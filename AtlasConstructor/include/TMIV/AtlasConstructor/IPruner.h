@@ -31,4 +31,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
+#define _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
+
+namespace TMIV::AtlasConstructor {
+// IPruner interface (part of AtlasConstructorLib)
+class IPruner {
+public:
+  IPruner() = default;
+  IPruner(const IPruner &) = delete;
+  IPruner(IPruner &&) = default;
+  IPruner &operator=(const IPruner &) = delete;
+  IPruner &operator=(IPruner &&) = default;
+  virtual ~IPruner() = default;
+};
+} // namespace TMIV::AtlasConstructor
+
+#endif

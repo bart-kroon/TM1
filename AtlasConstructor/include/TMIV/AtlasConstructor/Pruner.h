@@ -31,4 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
+#define _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
+
+#include <TMIV/AtlasConstructor/IPruner.h>
+#include <TMIV/Common/Json.h>
+
+namespace TMIV::AtlasConstructor {
+// The Pruner of TMIV 1.0 provided by Technicolor
+class Pruner : public IPruner {
+public:
+  Pruner(const Common::Json&);
+  Pruner(const Pruner &) = delete;
+  Pruner(Pruner &&) = default;
+  Pruner &operator=(const Pruner &) = delete;
+  Pruner &operator=(Pruner &&) = default;
+};
+} // namespace TMIV::AtlasConstructor
+
+#endif

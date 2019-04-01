@@ -31,4 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/AtlasConstructor/Pruner.h>
+
+namespace TMIV::AtlasConstructor {
+Pruner::Pruner(const Common::Json &) {}
+} // namespace TMIV::AtlasConstructor

@@ -31,4 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/Common/Application.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::ViewOptimizer {
+class Application : public Common::Application {
+public:
+  Application(vector<const char *> argv)
+      : Common::Application{"ViewOptimizer", move(argv)} {
+    m_optimizer = create<IViewOptimizer>("ViewOptimizer");
+  }
+
+  void run() override {}
+
+private:
+  unique_ptr<IViewOptimizer> m_optimizer;
+};
+} // namespace TMIV::ViewOptimizer
+
+int main(int argc, char *argv[]) {
+  TMIV::ViewOptimizer::Application app{{argv, argv + argc}};
+  app.run();
+  return 0;
+}

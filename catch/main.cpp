@@ -31,4 +31,5 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#define CATCH_CONFIG_MAIN
+#include <catch.hpp>

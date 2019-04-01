@@ -31,4 +31,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_ENCODER_ENCODER_H_
+#define _TMIV_ENCODER_ENCODER_H_
+
+#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+
+namespace TMIV::Encoder {
+// The Encoder of TMIV 1.0
+class Encoder : public IEncoder {
+public:
+  Encoder(const Common::Json &node);
+  Encoder(const Encoder &) = delete;
+  Encoder(Encoder &&) = default;
+  Encoder &operator=(const Encoder &) = delete;
+  Encoder &operator=(Encoder &&) = default;
+
+private:
+  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
+  std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
+};
+} // namespace TMIV::Encoder
+
+#endif

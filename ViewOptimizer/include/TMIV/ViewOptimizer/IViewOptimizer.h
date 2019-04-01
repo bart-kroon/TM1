@@ -31,4 +31,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H_
+#define _TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H_
+
+namespace TMIV::ViewOptimizer {
+// IViewOptimizer interface (part of ViewOptimizerLib)
+class IViewOptimizer {
+public:
+  IViewOptimizer() = default;
+  IViewOptimizer(const IViewOptimizer &) = default;
+  IViewOptimizer(IViewOptimizer &&) = default;
+  IViewOptimizer &operator=(const IViewOptimizer &) = default;
+  IViewOptimizer &operator=(IViewOptimizer &&) = default;
+  virtual ~IViewOptimizer() = default;
+};
+} // namespace TMIV::ViewOptimizer
+
+#endif

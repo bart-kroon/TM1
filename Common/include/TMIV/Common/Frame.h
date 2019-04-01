@@ -31,4 +31,61 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_COMMON_FRAME_H_
+#define _TMIV_COMMON_FRAME_H_
+
+#include <cstdint>
+#include <istream>
+#include <ostream>
+
+#include <TMIV/Common/Matrix.h>
+
+namespace TMIV::Common {
+class YUV400P8 {};
+class YUV400P16 {};
+class YUV420P8 {};
+class YUV420P10 {};
+class YUV420P16 {};
+
+namespace detail {
+template <class FORMAT> struct PixelFormatHelper {};
+} // namespace detail
+
+template <class FORMAT> class Frame {
+public:
+  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
+  using plane_type = heap::Matrix<base_type>;
+
+protected:
+  static constexpr int nb_plane = detail::PixelFormatHelper<FORMAT>::nb_plane;
+
+protected:
+  int m_width = 0, m_height = 0;
+  std::array<plane_type, nb_plane> m_planes;
+
+public:
+  Frame(int w = 0, int h = 0) { resize(w, h); }
+  Frame(const Frame &) = default;
+  Frame(Frame &&) = default;
+  Frame &operator=(const Frame &) = default;
+  Frame &operator=(Frame &&) = default;
+
+  void resize(int w, int h);
+
+  const plane_type &getPlane(int id) const { return m_planes[id]; }
+  plane_type &getPlane(int id) { return m_planes[id]; }
+  int getWidth() const { return m_width; }
+  int getHeight() const { return m_height; }
+  static constexpr int getNumberOfPlanes() { return nb_plane; }
+
+  void read(std::istream &is, bool vFlip = false);
+  void dump(std::ostream &os, bool vFlip = false) const;
+};
+
+template <class FROM, class TO>
+void convert(const Frame<FROM> &inputFrame, Frame<TO> &outputFrame);
+} // namespace TMIV::Common
+
+#include "Frame.hpp"
+
+#endif

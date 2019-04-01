@@ -31,4 +31,33 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <memory>
+
+#include <TMIV/Common/Application.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/Encoder/IEncoder.h>
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::Encoder {
+class Application : public Common::Application {
+public:
+  Application(vector<const char *> argv)
+      : Common::Application{"Encoder", move(argv)} {
+    m_encoder = create<IEncoder>("Encoder");
+  }
+
+  void run() override {}
+
+private:
+  unique_ptr<IEncoder> m_encoder;
+};
+} // namespace TMIV::Encoder
+
+int main(int argc, char *argv[]) {
+  TMIV::Encoder::Application app{{argv, argv + argc}};
+  app.run();
+  return 0;
+}

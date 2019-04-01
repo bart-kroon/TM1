@@ -1,0 +1,354 @@
+/* The copyright in this software is being made available under the BSD
+ * License, included below. This software may be subject to other third party
+ * and contributor rights, including patent rights, and no such rights are
+ * granted under this license.
+ *
+ * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *    be used to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <TMIV/Common/Json.h>
+
+#include <cctype>
+#include <cmath>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+using namespace std;
+
+namespace TMIV::Common {
+namespace {
+void skipWhitespaceAndLineComments(istream &stream) {
+  for (;;) {
+    // Skip whitespace
+    while (!stream.eof() && (isspace(stream.peek()) != 0)) {
+      stream.get();
+    }
+
+    if (stream.eof() || stream.peek() != '/') {
+      // No line comment
+      return;
+    }
+
+    // Skip line comment
+    stream.get();
+    if (stream.eof()) {
+      throw runtime_error("Stray '/' at end of file");
+    }
+    if (stream.peek() != '/') {
+      ostringstream what;
+      what << "Stray character 0x" << hex << stream.peek()
+           << " at end of file\n";
+      throw runtime_error(what.str());
+    }
+    while (!stream.eof() && stream.peek() != '\n') {
+      stream.get();
+    }
+  }
+}
+
+void matchCharacter(istream &stream, istream::int_type expected) {
+  auto actual = stream.get();
+
+  if (actual != expected) {
+    ostringstream what;
+    what << "Expected '" << static_cast<char>(expected) << "' but found '"
+         << static_cast<char>(actual) << "' (0x" << hex << actual << ")";
+    throw runtime_error(what.str());
+  }
+}
+
+void matchText(istream &stream, string const &text) {
+  for (auto ch : text) {
+    matchCharacter(stream, ch);
+  }
+}
+} // namespace
+
+static shared_ptr<Value> readValue(istream &stream);
+
+struct Value {
+  explicit Value(Json::Type type) : type(type) {}
+  Value(Value const &) = default;
+  Value(Value &&) = default;
+  Value &operator=(Value const &) = default;
+  Value &operator=(Value &&) = default;
+  virtual ~Value() = default;
+
+  Json::Type type;
+};
+
+struct String : public Value {
+public:
+  explicit String(istream &stream) : Value(Json::Type::string) {
+    matchCharacter(stream, '"');
+    auto ch = stream.get();
+
+    while (ch != '"') {
+      if (ch == '\\') {
+        throw runtime_error("JSON parser: string escaping not implemented");
+      }
+      value.push_back(static_cast<char>(ch));
+      ch = stream.get();
+    }
+  }
+
+  string value;
+};
+
+struct Number : public Value {
+  explicit Number(istream &stream) : Value(Json::Type::number) {
+    stream >> value;
+  }
+
+  double value{};
+};
+
+struct Object : public Value {
+  explicit Object(istream &stream) : Value(Json::Type::object) {
+    matchCharacter(stream, '{');
+    skipWhitespaceAndLineComments(stream);
+
+    while (stream.peek() != '}') {
+      if (!value.empty()) {
+        matchCharacter(stream, ',');
+        skipWhitespaceAndLineComments(stream);
+      }
+
+      auto key = String(stream);
+      skipWhitespaceAndLineComments(stream);
+      matchCharacter(stream, ':');
+      skipWhitespaceAndLineComments(stream);
+      value[key.value] = readValue(stream);
+      skipWhitespaceAndLineComments(stream);
+    }
+
+    stream.get();
+  }
+
+  map<string, shared_ptr<Value>> value;
+};
+
+struct Array : public Value {
+  explicit Array(istream &stream) : Value(Json::Type::array) {
+    matchCharacter(stream, '[');
+    skipWhitespaceAndLineComments(stream);
+
+    if (stream.peek() != ']') {
+      value.push_back(readValue(stream));
+      skipWhitespaceAndLineComments(stream);
+
+      while (stream.peek() == ',') {
+        stream.get();
+        value.push_back(readValue(stream));
+        skipWhitespaceAndLineComments(stream);
+      }
+    }
+
+    matchCharacter(stream, ']');
+  }
+
+  vector<shared_ptr<Value>> value;
+};
+
+struct Bool : public Value {
+public:
+  explicit Bool(istream &stream) : Value(Json::Type::boolean) {
+    value = stream.peek() == 't';
+    matchText(stream, value ? "true" : "false");
+  }
+
+  bool value;
+};
+
+struct Null : public Value {
+  Null() : Value(Json::Type::null) {}
+
+  explicit Null(istream &stream) : Null() { matchText(stream, "null"); }
+};
+
+Json::Json() : m_value(new Null) {}
+
+Json::Json(shared_ptr<Value> value) : m_value(move(value)) {}
+
+Json::Json(istream &stream) {
+  try {
+    stream.exceptions(ios::badbit | ios::failbit);
+    auto value = readValue(stream);
+    skipWhitespaceAndLineComments(stream);
+
+    if (!stream.eof()) {
+      auto ch = stream.get();
+      ostringstream what;
+      what << "Stray character " << static_cast<char>(ch) << " (0x" << ios::hex
+           << ch << ")";
+      throw runtime_error(what.str());
+    }
+
+    Json{value};
+  } catch (runtime_error &e) {
+    throw runtime_error(string("JSON parser: ") + e.what());
+  }
+}
+
+void Json::setOverrides(Json overrides) {
+  if (type() == Type::object && overrides.type() == Type::object) {
+    m_overrides = dynamic_pointer_cast<Object>(overrides.m_value);
+  } else {
+    throw runtime_error("Overrides should be a JSON object, e.g. {...}");
+  }
+}
+
+Json::Type Json::type() const { return m_value->type; }
+
+Json Json::optional(string const &key) const {
+  if (m_overrides) {
+    try {
+      return Json{m_overrides->value.at(key)};
+    } catch (out_of_range &) {
+    }
+  }
+  try {
+    return Json{dynamic_cast<Object &>(*m_value).value.at(key)};
+  } catch (out_of_range &) {
+    return {};
+  } catch (bad_cast &) {
+    ostringstream what;
+    what << "JSON parser: Querying optional key '" << key
+         << "', but node is not an object";
+    throw runtime_error(what.str());
+  }
+}
+
+Json Json::require(string const &key) const {
+  auto node = optional(key);
+  if (node.type() != Type::null) {
+    return node;
+  }
+  ostringstream stream;
+  stream << "JSON parser: Parameter " << key << " is required but missing";
+  throw runtime_error(stream.str());
+}
+
+Json Json::at(size_t index) const {
+  if (type() != Type::array) {
+    throw runtime_error("JSON parser: Expected an array");
+  }
+  return Json{dynamic_cast<Array &>(*m_value).value.at(index)};
+}
+
+size_t Json::size() const {
+  switch (type()) {
+  case Type::array:
+    return dynamic_cast<Array &>(*m_value).value.size();
+  case Type::object:
+    return dynamic_cast<Object &>(*m_value).value.size();
+  default:
+    throw runtime_error("JSON parser: Expected an array or object");
+  }
+}
+
+double Json::asDouble() const {
+  if (type() != Type::number) {
+    throw runtime_error("JSON parser: Expected a number");
+  }
+  return dynamic_cast<Number &>(*m_value).value;
+}
+
+float Json::asFloat() const { return static_cast<float>(asDouble()); }
+
+int Json::asInt() const {
+  auto value = asDouble();
+  auto rounded = static_cast<int>(lround(value));
+  auto error = value - rounded;
+  if (error > 1e-6) {
+    throw runtime_error("JSON parser: Expected an integer value");
+  }
+  return rounded;
+}
+
+string const &Json::asString() const {
+  if (type() != Type::string) {
+    throw runtime_error("JSON parser: Expected a string");
+  }
+  return dynamic_cast<String &>(*m_value).value;
+}
+
+bool Json::asBool() const {
+  if (type() != Type::boolean) {
+    throw runtime_error("JSON parser: Expected a boolean");
+  }
+  return dynamic_cast<Bool &>(*m_value).value;
+}
+
+Json::operator bool() const {
+  switch (type()) {
+  case Type::null:
+    return false;
+  case Type::boolean:
+    return asBool();
+  default:
+    return true;
+  }
+}
+
+static shared_ptr<Value> readValue(istream &stream) {
+  skipWhitespaceAndLineComments(stream);
+  auto ch = stream.peek();
+
+  switch (ch) {
+  case '{':
+    return make_shared<Object>(stream);
+  case '[':
+    return make_shared<Array>(stream);
+  case '"':
+    return make_shared<String>(stream);
+  case 't':
+    return make_shared<Bool>(stream);
+  case 'f':
+    return make_shared<Bool>(stream);
+  case 'n':
+    return make_shared<Null>(stream);
+  default:
+    break;
+  }
+
+  if (ch == '-' || (isdigit(ch) != 0)) {
+    return make_shared<Number>(stream);
+  }
+
+  ostringstream what;
+  what << "Invalid character " << static_cast<char>(ch) << " (0x" << ios::hex
+       << ch << ")";
+  throw runtime_error(what.str());
+}
+} // namespace TMIV::Common

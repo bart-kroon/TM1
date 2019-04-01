@@ -31,4 +31,57 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_COMMON_JSON_H_
+#define _TMIV_COMMON_JSON_H_
+
+#include <iosfwd>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace TMIV::Common {
+struct Value;
+struct Object;
+
+class Json {
+public:
+  enum class Type { number, string, array, object, boolean, null };
+
+  // Initialize as a null node
+  Json();
+
+  // Initialize from an input stream
+  explicit Json(std::istream &stream);
+
+  // For a Json of type Object specify another Json of Type Object that
+  // overrides this one for all keys
+  void setOverrides(Json overrides);
+
+  Type type() const;
+  Json optional(std::string const &key) const;
+  Json require(std::string const &key) const;
+
+  // Index into an array
+  Json at(size_t index) const;
+
+  // Return the number of elements in an object or array
+  size_t size() const;
+
+  double asDouble() const;
+  float asFloat() const;
+  int asInt() const;
+  std::string const &asString() const;
+  bool asBool() const;
+
+  // Anything apart from false and null is true
+  explicit operator bool() const;
+
+private:
+  explicit Json(std::shared_ptr<Value> value);
+
+  std::shared_ptr<Value> m_value;
+  std::shared_ptr<Object> m_overrides;
+};
+} // namespace TMIV::Common
+
+#endif

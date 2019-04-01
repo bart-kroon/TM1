@@ -31,4 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/Encoder/Encoder.h>
+#include <TMIV/Common/Factory.h>
+
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::ViewOptimizer;
+using namespace TMIV::AtlasConstructor;
+
+namespace TMIV::Encoder {
+Encoder::Encoder(const Common::Json &node) {
+  m_viewOptimizer = Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", node);
+  m_atlasConstructor = Factory<IAtlasConstructor>::getInstance().create("AtlasConstructor", node);
+}
+} // namespace TMIV::Encoder

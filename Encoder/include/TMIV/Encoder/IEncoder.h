@@ -31,4 +31,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_ENCODER_IENCODER_H_
+#define _TMIV_ENCODER_IENCODER_H_
+
+namespace TMIV::Encoder {
+// IEncoder interface (part of EncoderLib)
+class IEncoder {
+public:
+  IEncoder() = default;
+  IEncoder(const IEncoder &) = delete;
+  IEncoder(IEncoder &&) = default;
+  IEncoder &operator=(const IEncoder &) = delete;
+  IEncoder &operator=(IEncoder &&) = default;
+  virtual ~IEncoder() = default;
+};
+} // namespace TMIV::Encoder
+
+#endif

@@ -31,4 +31,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_COMMON_COMMON_H_
+#error "Include the .h instead of the .hpp."
+#endif
+
+namespace TMIV::Common {
+template <class... Args>
+inline std::string format(char const* fmt, Args&&... args)
+{
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+    auto chars = snprintf(nullptr, 0, fmt, forward<Args>(args)...);
+    vector<char> buffer(chars + 1);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+    snprintf(buffer.data(), chars + 1, fmt, forward<Args>(args)...);
+    return { buffer.begin(), buffer.end() - 1 };
+}
+}

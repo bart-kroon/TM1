@@ -31,4 +31,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_COMMON_COMMON_H_
+#define _TMIV_COMMON_COMMON_H_
+
+// Common data types and functions that are often used and do not need a separate header file
+
+#include <string>
+
+namespace TMIV::Common {
+// Format a string using printf syntax
+template <class... Args>
+std::string format(char const* fmt, Args&&... args);
+}
+
+#include "Common.hpp"
+
+#endif

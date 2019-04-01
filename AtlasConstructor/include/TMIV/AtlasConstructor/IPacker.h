@@ -31,4 +31,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_ATLASCONSTRUCTOR_IPACKER_H_
+#define _TMIV_ATLASCONSTRUCTOR_IPACKER_H_
+
+namespace TMIV::AtlasConstructor {
+// IPacker interface (part of AtlasConstructorLib)
+class IPacker {
+public:
+  IPacker() = default;
+  IPacker(const IPacker &) = delete;
+  IPacker(IPacker &&) = default;
+  IPacker &operator=(const IPacker &) = delete;
+  IPacker &operator=(IPacker &&) = default;
+  virtual ~IPacker() = default;
+};
+} // namespace TMIV::AtlasConstructor
+
+#endif

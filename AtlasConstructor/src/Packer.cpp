@@ -31,4 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/AtlasConstructor/Packer.h>
+
+namespace TMIV::AtlasConstructor {
+Packer::Packer(const Common::Json &) {}
+} // namespace TMIV::AtlasConstructor

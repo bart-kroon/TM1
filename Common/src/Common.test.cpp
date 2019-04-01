@@ -32,3 +32,7 @@
  */
 
 #include <TMIV/Common/Common.h>
+
+namespace TMIV::Common {
+    
+}

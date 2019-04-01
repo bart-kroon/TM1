@@ -31,4 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/ViewOptimizer/ViewReducer.h>
+
+namespace TMIV::ViewOptimizer {
+ViewReducer::ViewReducer(const Common::Json &node) {}
+} // namespace TMIV::ViewOptimizer

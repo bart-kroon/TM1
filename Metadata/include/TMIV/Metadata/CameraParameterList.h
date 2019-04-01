@@ -31,4 +31,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_METADATA_CAMERAPARAMETERLIST_H_
+#define _TMIV_METADATA_CAMERAPARAMETERLIST_H_
+
+#include <cstdint>
+#include <vector>
+
+namespace TMIV::Metadata {
+// PatchList data type (part of MetadataLib)
+struct CameraParameters {
+  // TODO
+};
+
+using CameraParameterList = std::vector<CameraParameters>;
+} // namespace TMIV::Metadata
+
+#endif

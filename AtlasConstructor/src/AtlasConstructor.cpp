@@ -31,4 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/AtlasConstructor/AtlasConstructor.h>
+#include <TMIV/Common/Factory.h>
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::AtlasConstructor {
+AtlasConstructor::AtlasConstructor(const Common::Json &node) {
+  m_pruner = Factory<IPruner>::getInstance().create("Pruner", node);
+  m_packer = Factory<IPacker>::getInstance().create("Packer", node);
+}
+} // namespace TMIV::AtlasConstructor

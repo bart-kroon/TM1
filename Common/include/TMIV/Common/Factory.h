@@ -31,4 +31,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_COMMON_FACTORY_H_
+#define _TMIV_COMMON_FACTORY_H_
+
+#include <functional>
+#include <map>
+#include <string>
+
+#include <TMIV/Common/Json.h>
+
+namespace TMIV::Common {
+// Factory that allows specifying data processing blocks in the configuration
+// file. Because in general the parameters (of future implementations) are
+// unknown the parameter is a Json.
+template <class Interface> class Factory {
+public:
+  using Object = std::unique_ptr<Interface>;
+  using Creator = std::function<Object(const Json &)>;
+
+private:
+  std::map<std::string, Creator> m_creators;
+
+  Factory() = default;
+
+public:
+  Factory(const Factory &) = delete;
+  Factory(Factory &&) = delete;
+  Factory &operator=(const Factory &) = delete;
+  Factory &operator=(Factory &&) = delete;
+
+  // Return the singleton
+  static Factory &getInstance() {
+    static Factory instance;
+    return instance;
+  }
+
+  // Create an object based on the method ID and JSON configuration
+  Object create(const std::string &id, const Json &config) const {
+    return m_creators.at(id)(config);
+  }
+
+  // Register a new creator with a method ID
+  template <class Derived> void registerAs(std::string id) {
+    m_creators[id] = [](const Json &config) {
+      return std::make_unique<Derived>(config);
+    };
+  }
+};
+} // namespace TMIV::Common
+
+#endif

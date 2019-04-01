@@ -31,4 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/Common/Application.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::AtlasConstructor {
+class Application : public Common::Application {
+public:
+  Application(vector<const char *> argv)
+      : Common::Application{"AtlasConstructor", move(argv)} {
+    m_optimizer = create<IAtlasConstructor>("AtlasConstructor");
+  }
+
+  void run() override {}
+
+private:
+  unique_ptr<IAtlasConstructor> m_optimizer;
+};
+} // namespace TMIV::AtlasConstructor
+
+int main(int argc, char *argv[]) {
+  TMIV::AtlasConstructor::Application app{{argv, argv + argc}};
+  app.run();
+  return 0;
+}

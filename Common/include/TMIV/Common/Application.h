@@ -31,4 +31,43 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_COMMON_APPLICATION_H_
+#define _TMIV_COMMON_APPLICATION_H_
+
+#include "Json.h"
+
+namespace TMIV::Common {
+class Application {
+public:
+  // Parse command-line arguments
+  Application(char const *tool, std::vector<const char *>);
+
+  Application(const Application &other) = delete;
+  Application(Application &&other) = default;
+  Application &operator=(const Application &other) = delete;
+  Application &operator=(Application &&other) = default;
+  virtual ~Application() = default;
+
+  virtual void run() = 0;
+
+protected:
+  const Json &json() const;
+
+  // Use the configuration file with a factory to create a component/module
+  template <class Interface> auto create(const std::string &name) const {
+    auto method = json().require(name + "Method").asString();
+    auto node = json().require(method);
+    auto &factory = Factory<Interface>::getInstance();
+    return factory.create(move(method), move(node));
+  }
+
+private:
+  void add_file(const std::string &path);
+  void add_parameter(const std::string &key, std::string value);
+  void add_stream(std::istream &stream);
+
+  std::shared_ptr<Json> m_json;
+};
+} // namespace TMIV::Common
+
+#endif

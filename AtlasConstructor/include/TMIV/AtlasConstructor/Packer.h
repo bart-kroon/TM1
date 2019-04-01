@@ -31,4 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_ATLASCONSTRUCTOR_PACKER_H_
+#define _TMIV_ATLASCONSTRUCTOR_PACKER_H_
+
+#include <TMIV/AtlasConstructor/IPacker.h>
+#include <TMIV/Common/Json.h>
+
+namespace TMIV::AtlasConstructor {
+// The Packer of TMIV 1.0 provided by Technicolor
+class Packer : public IPacker {
+public:
+  Packer(const Common::Json&);
+  Packer(const Packer &) = delete;
+  Packer(Packer &&) = default;
+  Packer &operator=(const Packer &) = delete;
+  Packer &operator=(Packer &&) = default;
+};
+} // namespace TMIV::AtlasConstructor
+
+#endif

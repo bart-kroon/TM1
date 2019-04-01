@@ -31,4 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#ifndef _TMIV_VIEWOPTIMIZER_VIEWREDUCER_H_
+#define _TMIV_VIEWOPTIMIZER_VIEWREDUCER_H_
+
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include <TMIV/Common/Json.h>
+
+namespace TMIV::ViewOptimizer {
+// The ViewOptimizer of TMIV 1.0 provided by Zhejiang University
+class ViewReducer : public IViewOptimizer {
+public:
+  ViewReducer(const Common::Json &node);
+  ViewReducer(const ViewReducer &) = default;
+  ViewReducer(ViewReducer &&) = default;
+  ViewReducer &operator=(const ViewReducer &) = default;
+  ViewReducer &operator=(ViewReducer &&) = default;
+};
+} // namespace TMIV::ViewOptimizer
+
+#endif

@@ -49,6 +49,13 @@ public:
   Encoder &operator=(const Encoder &) = delete;
   Encoder &operator=(Encoder &&) = default;
 
+  void prepareIntraPeriod() override;
+  void pushFrame(CameraParameterList camera, MVDFrame views) override;
+  void completeIntraPeriod() override;
+  const CameraParameterList &getCameras() const override;
+  const PatchParameterList &getPatchList() const override;
+  MVDFrame popAtlas() override;
+
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;

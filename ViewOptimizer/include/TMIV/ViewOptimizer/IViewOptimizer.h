@@ -34,7 +34,13 @@
 #ifndef _TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H_
 #define _TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H_
 
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/CameraParameterList.h>
+
 namespace TMIV::ViewOptimizer {
+using Common::MVDFrame;
+using Metadata::CameraParameterList;
+
 // IViewOptimizer interface (part of ViewOptimizerLib)
 class IViewOptimizer {
 public:
@@ -44,6 +50,19 @@ public:
   IViewOptimizer &operator=(const IViewOptimizer &) = default;
   IViewOptimizer &operator=(IViewOptimizer &&) = default;
   virtual ~IViewOptimizer() = default;
+
+  struct Output {
+    CameraParameterList baseCameras;
+    MVDFrame baseViews;
+    CameraParameterList additionalCameras;
+    MVDFrame additionalViews;
+  };
+
+  // Optimize a frame, passing on the pixel data
+  //
+  // Implementations should use move semantics to avoid unnecessary large copies
+  virtual Output optimizeFrame(CameraParameterList cameras,
+                               MVDFrame views) const = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

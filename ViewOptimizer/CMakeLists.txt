@@ -10,7 +10,8 @@ add_library(TMIV::ViewOptimizerLib
 	ALIAS ViewOptimizerLib)
 
 target_link_libraries(ViewOptimizerLib
-	PUBLIC TMIV::CommonLib)
+	PUBLIC TMIV::CommonLib
+	PUBLIC TMIV::MetadataLib)
 
 target_include_directories(ViewOptimizerLib
 	PUBLIC

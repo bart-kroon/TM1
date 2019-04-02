@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Encoder/Encoder.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -41,7 +41,31 @@ using namespace TMIV::AtlasConstructor;
 
 namespace TMIV::Encoder {
 Encoder::Encoder(const Common::Json &node) {
-  m_viewOptimizer = Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", node);
-  m_atlasConstructor = Factory<IAtlasConstructor>::getInstance().create("AtlasConstructor", node);
+  m_viewOptimizer =
+      Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", node);
+  m_atlasConstructor = Factory<IAtlasConstructor>::getInstance().create(
+      "AtlasConstructor", node);
 }
+void Encoder::prepareIntraPeriod() { m_atlasConstructor->prepareIntraPeriod(); }
+
+void Encoder::pushFrame(CameraParameterList cameras, MVDFrame views) {
+  auto output = m_viewOptimizer->optimizeFrame(move(cameras), move(views));
+  m_atlasConstructor->pushFrame(output.baseCameras, output.baseViews,
+                                output.additionalCameras,
+                                output.additionalViews);
+}
+
+void Encoder::completeIntraPeriod() {
+  m_atlasConstructor->completeIntraPeriod();
+}
+
+const CameraParameterList &Encoder::getCameras() const {
+  return m_atlasConstructor->getCameras();
+}
+
+const PatchParameterList &Encoder::getPatchList() const {
+  return m_atlasConstructor->getPatchList();
+}
+
+MVDFrame Encoder::popAtlas() { return m_atlasConstructor->popAtlas(); }
 } // namespace TMIV::Encoder

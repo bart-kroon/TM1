@@ -1296,7 +1296,7 @@ template <typename A1, typename A2> bool same_size(const A1 &a1, const A2 &a2) {
 
 //! \brief array/scalar + operator.
 template <typename A1, typename U, typename A2,
-          class = typename A1::dim_iterator, class = NumericChecker<U>,
+          class = typename A1::dim_iterator, class = typename TMIV::Common::NumericChecker<U>,
           class = typename A2::dim_iterator>
 void add(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
@@ -1308,7 +1308,7 @@ void add(const A1 &m, U u, A2 &out) {
 }
 template <
     typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename NumericChecker<U>, class = typename A2::dim_iterator>
+    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void add(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1318,14 +1318,14 @@ void add(U u, const A1 &m, A2 &out) {
       });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
-          class = typename NumericChecker<U>>
+          class = typename TMIV::Common::NumericChecker<U>>
 A1 operator+(const A1 &m, U u) {
   A1 out;
   add(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
-          class = typename TMIV::NumericChecker<U>>
+          class = typename TMIV::Common::NumericChecker<U>>
 A1 operator+(U u, const A1 &m) {
   A1 out;
   add(u, m, out);
@@ -1335,7 +1335,7 @@ A1 operator+(U u, const A1 &m) {
 //! \brief array/scalar - operator.
 template <
     typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::NumericChecker<U>, class = typename A2::dim_iterator>
+    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void sub(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1346,7 +1346,7 @@ void sub(const A1 &m, U u, A2 &out) {
 }
 template <
     typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::NumericChecker<U>, class = typename A2::dim_iterator>
+    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void sub(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1356,14 +1356,14 @@ void sub(U u, const A1 &m, A2 &out) {
       });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
-          class = typename TMIV::NumericChecker<U>>
+          class = typename TMIV::Common::NumericChecker<U>>
 A1 operator-(const A1 &m, U u) {
   A1 out;
   sub(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
-          class = typename TMIV::NumericChecker<U>>
+          class = typename TMIV::Common::NumericChecker<U>>
 A1 operator-(U u, const A1 &m) {
   A1 out;
   sub(u, m, out);
@@ -1373,7 +1373,7 @@ A1 operator-(U u, const A1 &m) {
 //! \brief array/scalar * operator.
 template <
     typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::NumericChecker<U>, class = typename A2::dim_iterator>
+    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void mult(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1384,7 +1384,7 @@ void mult(const A1 &m, U u, A2 &out) {
 }
 template <
     typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::NumericChecker<U>, class = typename A2::dim_iterator>
+    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void mult(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1394,14 +1394,14 @@ void mult(U u, const A1 &m, A2 &out) {
       });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
-          class = typename TMIV::NumericChecker<U>>
+          class = typename TMIV::Common::NumericChecker<U>>
 A1 operator*(const A1 &m, U u) {
   A1 out;
   mult(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
-          class = typename TMIV::NumericChecker<U>>
+          class = typename TMIV::Common::NumericChecker<U>>
 A1 operator*(U u, const A1 &m) {
   A1 out;
   mult(u, m, out);
@@ -1411,7 +1411,7 @@ A1 operator*(U u, const A1 &m) {
 //! \brief array/scalar / operator.
 template <
     typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::NumericChecker<U>, class = typename A2::dim_iterator>
+    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void div(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1421,7 +1421,7 @@ void div(const A1 &m, U u, A2 &out) {
       });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
-          class = typename TMIV::NumericChecker<U>>
+          class = typename TMIV::Common::NumericChecker<U>>
 A1 operator/(const A1 &m, U u) {
   A1 out;
   div(m, u, out);

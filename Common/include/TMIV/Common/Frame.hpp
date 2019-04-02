@@ -79,8 +79,8 @@ template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
 
   for (int planeId = 0; planeId < nb_plane; planeId++)
     m_planes[planeId].resize(
-        PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
-        PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
+        detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
+        detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
 }
 
 template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {

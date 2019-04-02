@@ -33,9 +33,13 @@
 
 namespace TMIV::Common {
 namespace detail {
+
 template <typename T>
 void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB,
              shallow::Matrix<T> C) {
+
+  using size_type = Array::size_type;
+
   if (mA == 'N') {
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++)
@@ -403,6 +407,9 @@ namespace detail {
 template <typename T>
 int mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
              shallow::Matrix<T> out) {
+
+  using size_type = Array::size_type;
+
   // PLU decomposition
   heap::Matrix<T> LU;
   std::vector<int> P;

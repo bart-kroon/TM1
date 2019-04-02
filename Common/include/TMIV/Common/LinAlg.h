@@ -152,6 +152,6 @@ template <typename MAT1, typename MAT2> int inv(const MAT1 &A, MAT2 &out);
 template <typename MAT> MAT inv(const MAT &A, int *info = nullptr);
 } // namespace TMIV::Common
 
-#include "linalg.hpp"
+#include "LinAlg.hpp"
 
 #endif

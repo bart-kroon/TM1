@@ -34,6 +34,7 @@
 #ifndef _TMIV_COMMON_APPLICATION_H_
 #define _TMIV_COMMON_APPLICATION_H_
 
+#include "Factory.h"
 #include "Json.h"
 
 namespace TMIV::Common {
@@ -58,7 +59,7 @@ protected:
     auto method = json().require(name + "Method").asString();
     auto node = json().require(method);
     auto &factory = Factory<Interface>::getInstance();
-    return factory.create(move(method), move(node));
+    return factory.create(std::move(method), std::move(node));
   }
 
 private:

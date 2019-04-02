@@ -39,7 +39,10 @@
 #include <limits>
 
 namespace TMIV::Common {
+	
+#ifndef M_PI
 constexpr double M_PI = 3.141592653589793238462643383279;
+#endif
 constexpr double M_2PI = M_PI * 2.0;
 
 inline double deg2rad(double x) { return x * M_PI / 180.; }

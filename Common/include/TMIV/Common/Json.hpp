@@ -32,67 +32,31 @@
  */
 
 #ifndef _TMIV_COMMON_JSON_H_
-#define _TMIV_COMMON_JSON_H_
-
-#include <iosfwd>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include <TMIV/Common/Vector.h>
+#error "Include the .h, not the .hpp"
+#endif
 
 namespace TMIV::Common {
-namespace impl {
-  struct Value;
-  struct Object;
+template <stack::size_type M>
+auto Json::asFloatVector() const -> stack::Vector<float, M> {
+  stack::Vector<float, M> result;
+  if (size() != M) {
+    throw runtime_error("JSON float vector has wrong length");
+  }
+  for (stack::size_type i = 0; i != M; ++i) {
+	  result[i] = at(i).asFloat();
+  }
+  return result;
 }
 
-class Json {
-public:
-  enum class Type { number, string, array, object, boolean, null };
-
-  // Initialize as a null node
-  Json();
-
-  // Initialize from an input stream
-  explicit Json(std::istream &stream);
-
-  // For a Json of type Object specify another Json of Type Object that
-  // overrides this one for all keys
-  void setOverrides(Json overrides);
-
-  Type type() const;
-  Json optional(std::string const &key) const;
-  Json require(std::string const &key) const;
-
-  // Index into an array
-  Json at(size_t index) const;
-
-  // Return the number of elements in an object or array
-  size_t size() const;
-
-  double asDouble() const;
-  float asFloat() const;
-  int asInt() const;
-  std::string const &asString() const;
-  bool asBool() const;
-  auto asStringVector() const -> std::vector<std::string>;
-  template <stack::size_type M>
-  auto asIntVector() const -> stack::Vector<int, M>;
-  template <stack::size_type M>
-  auto asFloatVector() const -> stack::Vector<float, M>;
-
-  // Anything apart from false and null is true
-  explicit operator bool() const;
-
-private:
-  explicit Json(std::shared_ptr<impl::Value> value);
-
-  std::shared_ptr<impl::Value> m_value;
-  std::shared_ptr<impl::Object> m_overrides;
-};
+template <stack::size_type M>
+auto Json::asIntVector() const -> stack::Vector<int, M> {
+  stack::Vector<int, M> result;
+  if (size() != M) {
+    throw runtime_error("JSON int vector has wrong length");
+  }
+  for (stack::size_type i = 0; i != M; ++i) {
+	  result[i] = at(i).asInt();
+  }
+  return result;
+}
 } // namespace TMIV::Common
-
-#include "Json.hpp"
-
-#endif

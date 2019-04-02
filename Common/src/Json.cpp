@@ -94,8 +94,9 @@ void matchText(istream &stream, string const &text) {
 }
 } // namespace
 
-static shared_ptr<Value> readValue(istream &stream);
+static shared_ptr<impl::Value> readValue(istream &stream);
 
+namespace impl {
 struct Value {
   explicit Value(Json::Type type) : type(type) {}
   Value(Value const &) = default;
@@ -195,10 +196,11 @@ struct Null : public Value {
 
   explicit Null(istream &stream) : Null() { matchText(stream, "null"); }
 };
+} // namespace impl
 
-Json::Json() : m_value(new Null) {}
+Json::Json() : m_value(new impl::Null) {}
 
-Json::Json(shared_ptr<Value> value) : m_value(move(value)) {}
+Json::Json(shared_ptr<impl::Value> value) : m_value(move(value)) {}
 
 Json::Json(istream &stream) {
   try {
@@ -222,7 +224,7 @@ Json::Json(istream &stream) {
 
 void Json::setOverrides(Json overrides) {
   if (type() == Type::object && overrides.type() == Type::object) {
-    m_overrides = dynamic_pointer_cast<Object>(overrides.m_value);
+    m_overrides = dynamic_pointer_cast<impl::Object>(overrides.m_value);
   } else {
     throw runtime_error("Overrides should be a JSON object, e.g. {...}");
   }
@@ -238,7 +240,7 @@ Json Json::optional(string const &key) const {
     }
   }
   try {
-    return Json{dynamic_cast<Object &>(*m_value).value.at(key)};
+    return Json{dynamic_cast<impl::Object &>(*m_value).value.at(key)};
   } catch (out_of_range &) {
     return {};
   } catch (bad_cast &) {
@@ -263,15 +265,15 @@ Json Json::at(size_t index) const {
   if (type() != Type::array) {
     throw runtime_error("JSON parser: Expected an array");
   }
-  return Json{dynamic_cast<Array &>(*m_value).value.at(index)};
+  return Json{dynamic_cast<impl::Array &>(*m_value).value.at(index)};
 }
 
 size_t Json::size() const {
   switch (type()) {
   case Type::array:
-    return dynamic_cast<Array &>(*m_value).value.size();
+    return dynamic_cast<impl::Array &>(*m_value).value.size();
   case Type::object:
-    return dynamic_cast<Object &>(*m_value).value.size();
+    return dynamic_cast<impl::Object &>(*m_value).value.size();
   default:
     throw runtime_error("JSON parser: Expected an array or object");
   }
@@ -281,7 +283,7 @@ double Json::asDouble() const {
   if (type() != Type::number) {
     throw runtime_error("JSON parser: Expected a number");
   }
-  return dynamic_cast<Number &>(*m_value).value;
+  return dynamic_cast<impl::Number &>(*m_value).value;
 }
 
 float Json::asFloat() const { return static_cast<float>(asDouble()); }
@@ -300,14 +302,23 @@ string const &Json::asString() const {
   if (type() != Type::string) {
     throw runtime_error("JSON parser: Expected a string");
   }
-  return dynamic_cast<String &>(*m_value).value;
+  return dynamic_cast<impl::String &>(*m_value).value;
 }
 
 bool Json::asBool() const {
   if (type() != Type::boolean) {
     throw runtime_error("JSON parser: Expected a boolean");
   }
-  return dynamic_cast<Bool &>(*m_value).value;
+  return dynamic_cast<impl::Bool &>(*m_value).value;
+}
+
+auto Json::asStringVector() const -> vector<string> {
+  auto v = vector<string>();
+  v.reserve(size());
+  for (size_t i = 0; i < size(); ++i) {
+    v.emplace_back(at(i).asString());
+  }
+  return v;
 }
 
 Json::operator bool() const {
@@ -321,29 +332,29 @@ Json::operator bool() const {
   }
 }
 
-static shared_ptr<Value> readValue(istream &stream) {
+static shared_ptr<impl::Value> readValue(istream &stream) {
   skipWhitespaceAndLineComments(stream);
   auto ch = stream.peek();
 
   switch (ch) {
   case '{':
-    return make_shared<Object>(stream);
+    return make_shared<impl::Object>(stream);
   case '[':
-    return make_shared<Array>(stream);
+    return make_shared<impl::Array>(stream);
   case '"':
-    return make_shared<String>(stream);
+    return make_shared<impl::String>(stream);
   case 't':
-    return make_shared<Bool>(stream);
+    return make_shared<impl::Bool>(stream);
   case 'f':
-    return make_shared<Bool>(stream);
+    return make_shared<impl::Bool>(stream);
   case 'n':
-    return make_shared<Null>(stream);
+    return make_shared<impl::Null>(stream);
   default:
     break;
   }
 
   if (ch == '-' || (isdigit(ch) != 0)) {
-    return make_shared<Number>(stream);
+    return make_shared<impl::Number>(stream);
   }
 
   ostringstream what;

@@ -31,34 +31,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_PATCHPARAMETERLIST_H_
-#define _TMIV_METADATA_PATCHPARAMETERLIST_H_
+#ifndef _TMIV_ATLASCONSTRUCTOR_CLUSTER_H_
+#define _TMIV_ATLASCONSTRUCTOR_CLUSTER_H_
 
-#include <cstdint>
-#include <vector>
+#include <TMIV/AtlasConstructor/IPruner.h>
 
-#include <TMIV/Common/Vector.h>
+namespace TMIV::AtlasConstructor
+{
 
-namespace TMIV::Metadata {
-enum class PatchRotation {
-  upright,       // what was up stays up
-  clockwise90deg // what was up goes right
+using ClusteringMap = Common::Mat<uint16_t>;
+using ClusteringMapList = std::vector<ClusteringMap>;
+
+class Cluster;
+using ClusterList = std::vector<Cluster>;
+
+class Cluster
+{
+protected:
+	int cameraId_ = 0, clusterId_ = 0;
+	int imin_ = std::numeric_limits<int>::max(), jmin_ = std::numeric_limits<int>::max();
+	int imax_ = std::numeric_limits<int>::min(), jmax_ = std::numeric_limits<int>::min();
+	int filling_ = 0;
+public:
+	Cluster() = default;
+	Cluster(int cameraId, int clusterId);
+	Cluster(const Cluster&) = default;
+	Cluster(Cluster&&) = default;
+	Cluster& operator=(const Cluster&) = default;
+	Cluster& operator=(Cluster&&) = default;
+	void push(int i, int j);
+	int getCameraId() const { return cameraId_; }
+	int getClusterId() const { return clusterId_; }
+	int imin() const { return imin_; }
+	int jmin() const { return jmin_; }
+	int imax() const { return imax_; }
+	int jmax() const { return jmax_; }
+	int getFilling() const { return filling_; }
+	int width() const { return (jmax_ - jmin_ + 1); }
+	int height() const { return (imax_ - imin_ + 1); }
+	int getArea() const { return width() * height(); }
+	std::pair<Cluster, Cluster> split(const Mask& clusteringBuffer) const;
+	static Cluster Empty() { Cluster out; out.imin_ = 0; out.imax_ = 0; out.jmin_ = 0; out.jmax_ = 0; return out; }
+	static Cluster align(const Cluster& c, int alignment);
+	static Cluster merge(const Cluster& c1, const Cluster& c2);
+	static std::pair<ClusterList, ClusteringMap> retrieve(int cameraId, const Mask& maskMap, int firstClusterId = 0, bool shouldMerge = false);
 };
 
-// Data type that matches with an entry of patch_params of the working draft
-struct PatchParameters {
-  using Vec2i = TMIV::Common::Vec2i;
-
-  uint8_t atlasId;
-  uint8_t virtualCameraId;
-  Vec2i patchSize;
-  Vec2i patchMappingPos;
-  Vec2i patchPackingPos;
-  PatchRotation patchRotation;
-};
-
-// Data type that matches with patch_params of the working draft
-using PatchParameterList = std::vector<PatchParameters>;
-} // namespace TMIV::Metadata
+} // namespace TMIV::AtlasConstructor
 
 #endif
+ 

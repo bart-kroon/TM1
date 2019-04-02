@@ -38,8 +38,9 @@
 #include <deque>
 
 #include <TMIV/AtlasConstructor/IAtlasConstructor.h>
-#include <TMIV/AtlasConstructor/IPacker.h>
 #include <TMIV/AtlasConstructor/IPruner.h>
+#include <TMIV/AtlasConstructor/IAggregator.h>
+#include <TMIV/AtlasConstructor/IPacker.h>
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {
@@ -53,26 +54,24 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
 
   void prepareIntraPeriod() override;
-  void pushFrame(const CameraParameterList &baseCamera,
-                 const Common::MVDFrame &baseViews,
-                 const CameraParameterList &additionalCamera,
-                 const Common::MVDFrame &additionalViews) override;
+  void pushFrame(const CameraParameterList &baseCameras,
+                 const MVDFrame &baseViews,
+                 const CameraParameterList &additionalCameras,
+                 const MVDFrame &additionalViews) override;
   void completeIntraPeriod() override;
-  const CameraParameterList &getCameras() const override;
-  const PatchParameterList &getPatchList() const override;
-  Common::MVDFrame popAtlas() override;
+  const CameraParameterList &getCameras() const override { return m_cameras; }
+  const PatchParameterList &getPatchList() const override { return m_patchList; }
+  MVDFrame popAtlas() override;
 
 private:
-  struct Parameters {};
-
   std::unique_ptr<IPruner> m_pruner;
+  std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
-
-  Parameters m_parameters;
-  std::deque<Common::MVDFrame> m_inputBuffer;
-  std::vector<CameraParameterList> m_cameras;
-  PatchParameterList m_patchList;
-  std::deque<Common::MVDFrame> m_outputBuffer;
+  std::vector<std::uint8_t> m_isReferenceView;
+  std::vector<MVDFrame> m_viewBuffer;
+  Metadata::CameraParameterList m_cameras;
+  Metadata::PatchParameterList m_patchList;
+  std::vector<MVDFrame> m_atlasBuffer;
 };
 } // namespace TMIV::AtlasConstructor
 

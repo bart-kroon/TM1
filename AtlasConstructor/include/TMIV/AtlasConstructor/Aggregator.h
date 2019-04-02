@@ -31,34 +31,33 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_PATCHPARAMETERLIST_H_
-#define _TMIV_METADATA_PATCHPARAMETERLIST_H_
+#ifndef _TMIV_ATLASCONSTRUCTOR_AGGREGATOR_H_
+#define _TMIV_ATLASCONSTRUCTOR_AGGREGATOR_H_
 
-#include <cstdint>
-#include <vector>
+#include <TMIV/AtlasConstructor/IAggregator.h>
+#include <TMIV/Common/Json.h>
 
-#include <TMIV/Common/Vector.h>
+namespace TMIV::AtlasConstructor {
 
-namespace TMIV::Metadata {
-enum class PatchRotation {
-  upright,       // what was up stays up
-  clockwise90deg // what was up goes right
+// The Aggregator of TMIV 1.0 provided by Technicolor
+class Aggregator : public IAggregator {
+public:
+  Aggregator(const Common::Json&);
+  Aggregator(const Aggregator &) = delete;
+  Aggregator(Aggregator &&) = default;
+  Aggregator &operator=(const Aggregator &) = delete;
+  Aggregator &operator=(Aggregator &&) = default;
+  
+  void prepareIntraPeriod() override;
+  void pushMask(const MaskList& mask) override;
+  void completeIntraPeriod() override {}
+  const MaskList& getAggregatedMask() const override { return m_aggregatedMask; }
+
+private:
+  MaskList m_aggregatedMask;
 };
 
-// Data type that matches with an entry of patch_params of the working draft
-struct PatchParameters {
-  using Vec2i = TMIV::Common::Vec2i;
-
-  uint8_t atlasId;
-  uint8_t virtualCameraId;
-  Vec2i patchSize;
-  Vec2i patchMappingPos;
-  Vec2i patchPackingPos;
-  PatchRotation patchRotation;
-};
-
-// Data type that matches with patch_params of the working draft
-using PatchParameterList = std::vector<PatchParameters>;
-} // namespace TMIV::Metadata
+} // namespace TMIV::AtlasConstructor
 
 #endif
+ 

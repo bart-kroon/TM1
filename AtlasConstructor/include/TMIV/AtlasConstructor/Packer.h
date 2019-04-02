@@ -38,6 +38,7 @@
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {
+
 // The Packer of TMIV 1.0 provided by Technicolor
 class Packer : public IPacker {
 public:
@@ -46,7 +47,10 @@ public:
   Packer(Packer &&) = default;
   Packer &operator=(const Packer &) = delete;
   Packer &operator=(Packer &&) = default;
+  
+  PatchParameterList doPacking(const MaskList& masks, const std::vector<std::uint8_t>& shouldNotBeSplit) override;
 };
+
 } // namespace TMIV::AtlasConstructor
 
 #endif

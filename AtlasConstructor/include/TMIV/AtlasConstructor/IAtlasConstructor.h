@@ -49,18 +49,19 @@ public:
   IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
   virtual ~IAtlasConstructor() = default;
 
+  using MVDFrame = Common::MVDFrame;
   using CameraParameterList = Metadata::CameraParameterList;
   using PatchParameterList = Metadata::PatchParameterList;
 
   virtual void prepareIntraPeriod() = 0;
-  virtual void pushFrame(const CameraParameterList &baseCamera,
-                         const Common::MVDFrame &baseViews,
-                         const CameraParameterList &additionalCamera,
-                         const Common::MVDFrame &additionalViews) = 0;
+  virtual void pushFrame(const CameraParameterList &baseCameras,
+                         const MVDFrame &baseViews,
+                         const CameraParameterList &additionalCameras,
+                         const MVDFrame &additionalViews) = 0;
   virtual void completeIntraPeriod() = 0;
   virtual const CameraParameterList &getCameras() const = 0;
   virtual const PatchParameterList &getPatchList() const = 0;
-  virtual Common::MVDFrame popAtlas() = 0;
+  virtual MVDFrame popAtlas() = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

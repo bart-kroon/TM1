@@ -33,13 +33,79 @@
 
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
 #include <TMIV/Common/Factory.h>
+#include "Cluster.h"
 
 using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::AtlasConstructor {
+
 AtlasConstructor::AtlasConstructor(const Common::Json &node) {
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", node);
+  m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", node);
   m_packer = Factory<IPacker>::getInstance().create("Packer", node);
 }
+
+void AtlasConstructor::prepareIntraPeriod()
+{
+	m_viewBuffer.clear();
+	m_aggregator->prepareIntraPeriod();
+}
+
+void AtlasConstructor::pushFrame(
+				const CameraParameterList &baseCameras,
+				const MVDFrame &baseViews,
+				const CameraParameterList &additionalCameras,
+				const MVDFrame &additionalViews)
+{
+	// Merging
+	CameraParameterList cameras;
+	MVDFrame views;
+	std::vector<std::uint8_t> isReferenceView;
+	
+	cameras.insert(cameras.end(), baseCameras.begin(), baseCameras.end());
+	views.insert(views.end(), baseViews.begin(), baseViews.end());
+	isReferenceView.insert(isReferenceView.end(), isReferenceView.size(), 1);
+	
+	cameras.insert(cameras.end(), additionalCameras.begin(), additionalCameras.end());
+	views.insert(views.end(), additionalViews.begin(), additionalViews.end());
+	isReferenceView.insert(isReferenceView.end(), additionalViews.size(), 0);
+	
+	// Cameras definition
+	if(m_viewBuffer.empty())
+	{
+		m_isReferenceView = std::move(isReferenceView);
+		m_cameras = std::move(cameras);
+	}
+
+	// View Buffering
+	m_viewBuffer.push_back(std::move(views));
+	
+	// Pruning mask
+	MaskList masks = m_pruner->doPruning(cameras, views, m_isReferenceView);
+	
+	// Mask Aggregation
+	m_aggregator->pushMask(masks);
+}
+
+void AtlasConstructor::completeIntraPeriod()
+{
+	// Aggregated mask
+	m_aggregator->completeIntraPeriod();
+	const MaskList& aggregatedMask = m_aggregator->getAggregatedMask();
+	
+	// Packing
+	m_patchList = m_packer->doPacking(aggregatedMask, m_isReferenceView);
+	
+	// Atlas construction
+	// TODO
+
+}
+
+Common::MVDFrame AtlasConstructor::popAtlas()
+{
+	
+	// TODO
+}
+
 } // namespace TMIV::AtlasConstructor

@@ -168,6 +168,7 @@ template <typename T> using Matrix = MatrixInterface<Array<2, T>>;
 }
 
 // Additional definitions
+using Mat3x3i = stack::Mat3x3<int>;
 using Mat3x3f = stack::Mat3x3<float>;
 using Mat4x4f = stack::Mat4x4<float>;
 using Mat3x3d = stack::Mat3x3<double>;

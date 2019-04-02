@@ -5,12 +5,18 @@ add_library(AtlasConstructorLib
     "src/AtlasConstructor.cpp"
 	"src/IPruner.cpp"
 	"src/Pruner.cpp"
+	"src/IAggregator.cpp"
+	"src/Aggregator.cpp"
 	"src/IPacker.cpp"
+	"src/Cluster.cpp"
+	"src/MaxRectPiP.cpp"
 	"src/Packer.cpp"
 	"include/TMIV/AtlasConstructor/IAtlasConstructor.h"
 	"include/TMIV/AtlasConstructor/AtlasConstructor.h"
 	"include/TMIV/AtlasConstructor/IPruner.h"
 	"include/TMIV/AtlasConstructor/Pruner.h"
+	"include/TMIV/AtlasConstructor/IAggregator.h"
+	"include/TMIV/AtlasConstructor/Aggregator.h"
 	"include/TMIV/AtlasConstructor/IPacker.h"
 	"include/TMIV/AtlasConstructor/Packer.h")
 

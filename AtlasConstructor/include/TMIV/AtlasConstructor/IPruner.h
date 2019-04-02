@@ -34,7 +34,15 @@
 #ifndef _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
 #define _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
 
+#include <TMIV/Common/Matrix.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/CameraParameterList.h>
+
 namespace TMIV::AtlasConstructor {
+
+using Mask = TMIV::Common::Mat<std::uint8_t>;
+using MaskList = std::vector<Mask>;
+
 // IPruner interface (part of AtlasConstructorLib)
 class IPruner {
 public:
@@ -44,6 +52,11 @@ public:
   IPruner &operator=(const IPruner &) = delete;
   IPruner &operator=(IPruner &&) = default;
   virtual ~IPruner() = default;
+  
+  using MVDFrame = Common::MVDFrame;
+  using CameraParameterList = Metadata::CameraParameterList;
+  
+  virtual MaskList doPruning(const CameraParameterList& cameras, const MVDFrame& views, const std::vector<std::uint8_t>& shouldNotBePruned) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

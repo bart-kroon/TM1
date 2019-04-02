@@ -36,8 +36,10 @@
 
 #include <TMIV/AtlasConstructor/IPruner.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/Common/Frame.h>
 
 namespace TMIV::AtlasConstructor {
+
 // The Pruner of TMIV 1.0 provided by Technicolor
 class Pruner : public IPruner {
 public:
@@ -46,7 +48,14 @@ public:
   Pruner(Pruner &&) = default;
   Pruner &operator=(const Pruner &) = delete;
   Pruner &operator=(Pruner &&) = default;
+  
+  MaskList doPruning(const CameraParameterList& cameras, const MVDFrame& views, const std::vector<std::uint8_t>& shouldNotBePruned) override;
+private:
+  float m_redundancyFactor = 0.02f;
+  int m_erosionIter = 2;
+  int m_dilationIter = 10;
 };
+
 } // namespace TMIV::AtlasConstructor
 
 #endif

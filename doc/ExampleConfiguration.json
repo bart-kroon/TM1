@@ -1,0 +1,87 @@
+{
+	"SourceTexturePathFmt": "SRC_SA_R0_Td_v%02d.yuv",
+	"SourceDepthPathFmt": "SRC_SA_R0_Td_v%02d.yuv",
+	"SourceCameraParameters": "ClassroomVideo.json",
+
+	// Encoder: source (texture, depth, camera parameters) --> atlas (texture, depth, metadata)
+	// Coordinated by Bart
+	"EncoderMethod": "Encoder",
+	"Encoder": {
+		// ViewOptimizer: source (texture, depth, camera parameters) --> optimized (texture, depth, metadata)
+		// Provided by ZJU for TM1
+		"ViewOptimizerMethod": "ViewReducer",
+		"ViewReducer": {
+
+		},
+
+		"OptimizedTexturePathFmt": "OPT_SA_R0_Tt_c%02d.yuv",
+		"OptimizedDepthPathFmt": "OPT_SA_R0_Td_c%02d.yuv",
+		"OptimizedMetadataPath": "OPT_SA_R0_Tm_c00.bit",
+
+		// AtlasConstructor: optimized (texture, depth, metadata) --> atlas (texture, depth, metadata)
+		// Coordinated by Julien
+		"AtlasConstructorMethod": "AtlasConstructor",
+		"AtlasConstructor": {
+			// Pruner: optimized (texture, depth, metadata) --> pruning mask
+			// Provided by TCH for TM1
+			"PrunerMethod": "Pruner",
+			"Pruner": {
+
+			},
+
+			"PruningKeyPathFmt": "PRU_SA_R0_Td_c%02d.bit",
+
+			// Packer: pruned (texture, depth, key, metadata) --> atlas (texture, depth, metadata)
+			// Provided by TCH for TM1
+			"PackerMethod": "Packer",
+			"Packer": {
+
+			}
+		}
+	},
+
+	"AtlasTexturePathFmt": "ATL_SA_R0_Tt_c%02d.yuv",
+	"AtlasDepthPathFmt": "ATL_SA_R0_Td_c%02d.yuv",
+	"AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
+
+	// Decoder: atlas (texture, depth, metadata) --> rendered texture
+	"DecoderMethod": "Decoder",
+	"Decoder": {
+		// AtlasDeconstructor: atlas (texture, depth, metadata) --> patches (texture, depth, metadata)
+		// Coordinated by Julien
+		"AtlasDeconstructorMethod": "AtlasDeconstructor",
+		"AtlasDeconstructor": {
+
+		},
+
+		"PatchesTexturePathFmt": "PAT_SA_R0_Tt_c%02d.yuv",
+		"PatchesDepthPathFmt": "PAT_SA_R0_Td_c%02d.yuv",
+		"PatchesMetadataPath": "PAT_SA_R0_Tm_c00.bit",
+
+		// Renderer: patches (texture, depth, metadata) --> rendered (texture, depth)
+		// Coordinated by Bart, with contribution from Intel
+		"RendererMethod": "MultiPassRenderer",
+		"MultiPassRenderer": {
+			"PoseTrace": "SomePoseTrace.csv",
+
+			// View synthesis (incl. blending): patches (texture, depth, metadata) --> synthesized (texture, depth, key)
+			// Provided by Philips in TM1
+			"ViewSynthesizerMethod": "ViewSynthesizer",
+			"ViewSynthesizer": {
+				"RayAngleParameter": 1,
+				"DepthParameter": 1,
+				"StretchingParameter": 1
+			},
+
+			// Inpainter: synthesized (texture, depth, key) --> rendered (texture, depth)
+			// Provided by PUT in TM1
+			"InpainterMethod": "Inpainter",
+			"Inpainter": {
+
+			}
+		}
+	},
+
+	"RenderedTexturePath": "TM1_SA_R0_Tt_p%02d.yuv",
+	"RenderedDepthPath": "TM1_SA_R0_Td_p%02d.yuv"
+}

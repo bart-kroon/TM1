@@ -150,8 +150,8 @@ Metadata::PatchParameterList Packer::doPacking(const MaskList& masks, const std:
 	}
 
 	// Packing
-	
-
+	// TODO
+	return Metadata::PatchParameterList();
 	
 	
 }

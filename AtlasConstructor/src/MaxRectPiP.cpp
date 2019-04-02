@@ -211,6 +211,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster& c, const ClusteringMap& clust
 bool MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output& packerOutput)
 {
  // TODO
+	return true;
 }
 
 bool MaxRectPiP::pushInFreeSpace(int w, int h, MaxRectPiP::Output& packerOutput)

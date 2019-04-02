@@ -40,7 +40,7 @@ template <stack::size_type M>
 auto Json::asFloatVector() const -> stack::Vector<float, M> {
   stack::Vector<float, M> result;
   if (size() != M) {
-    throw runtime_error("JSON float vector has wrong length");
+    throw std::runtime_error("JSON float vector has wrong length");
   }
   for (stack::size_type i = 0; i != M; ++i) {
 	  result[i] = at(i).asFloat();
@@ -52,7 +52,7 @@ template <stack::size_type M>
 auto Json::asIntVector() const -> stack::Vector<int, M> {
   stack::Vector<int, M> result;
   if (size() != M) {
-    throw runtime_error("JSON int vector has wrong length");
+    throw std::runtime_error("JSON int vector has wrong length");
   }
   for (stack::size_type i = 0; i != M; ++i) {
 	  result[i] = at(i).asInt();

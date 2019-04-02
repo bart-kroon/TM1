@@ -43,6 +43,7 @@
 namespace TMIV::Metadata {
 enum class ProjectionType { ERP, CubeMap, Perspective };
 enum class CubicMapType { CubeMap, EAC };
+using Common::Vec2i;
 using Common::Vec2f;
 using Common::Vec3f;
 

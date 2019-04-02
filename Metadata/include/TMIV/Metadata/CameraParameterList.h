@@ -78,7 +78,7 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
 // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
 //
 // The parameter is a an item of the cameras node (a JSON object).
-CameraParameters loadCameraFromJson(const Common::Json &node);
+CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node);
 } // namespace TMIV::Metadata
 
 #endif

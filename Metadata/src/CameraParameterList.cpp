@@ -44,7 +44,8 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
   for (const auto &name : names) {
     for (int i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
-        result.push_back(loadCameraFromJson(node.at(i)));
+        // NOTE: The JSON format does not have a camera ID
+        result.push_back(loadCameraFromJson(0, node.at(i)));
         break;
       }
     }
@@ -56,6 +57,7 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
   return result;
 }
 
+// The parameter is a an item of the cameras node (a JSON object).
 CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node) {
   CameraParameters parameters;
   parameters.id = id;

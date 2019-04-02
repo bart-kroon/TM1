@@ -31,9 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <memory>
 
 #include <TMIV/Common/Application.h>
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Encoder/IEncoder.h>
@@ -47,12 +51,89 @@ public:
   Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)} {
     m_encoder = create<IEncoder>("Encoder");
+    m_startFrame = json().require("startFrame").asInt();
+    m_numberOfFrames = json().require("numberOfFrames").asInt();
+    m_intraPeriod = json().require("intraPeriod").asInt();
+    m_sourceResolution = json().require("SourceResolution").asIntVector<2>();
   }
 
-  void run() override {}
+  void run() override {
+    auto cameras = loadCameras();
+
+    for (int intraFrame = 0; intraFrame < m_numberOfFrames;
+         intraFrame += m_intraPeriod) {
+      int endFrame = min(m_numberOfFrames, intraFrame + m_intraPeriod);
+      cout << "Intra period: [" << intraFrame << ", " << endFrame << ")\n";
+
+      m_encoder->prepareIntraPeriod();
+      for (int frame = intraFrame; frame < endFrame; ++frame) {
+        cout << "Push input frame " << (m_startFrame + frame) << '\n';
+        m_encoder->pushFrame(cameras,
+                             loadViews(m_startFrame + frame, cameras.size()));
+      }
+      m_encoder->completeIntraPeriod();
+
+      saveMetadata(intraFrame, m_encoder->getCameras(),
+                   m_encoder->getPatchList());
+
+      for (int frame = intraFrame; frame < endFrame; ++frame) {
+        cout << "Pop output atlas " << frame << '\n';
+        auto atlases = m_encoder->popAtlas();
+        saveViews(frame, atlases);
+      }
+    }
+  }
 
 private:
+  CameraParameterList loadCameras() const {
+    ifstream stream{json().require("SourceCameraParameters").asString()};
+    if (!stream.good()) {
+      throw runtime_error("Failed to load source camera parameters");
+    }
+    return Metadata::loadCamerasFromJson(
+        Common::Json{stream}.require("cameras"),
+        json().require("SourceCameraNames").asStringVector());
+  }
+
+  MVDFrame loadViews(int inputFrame, size_t numberOfViews) const {
+    MVDFrame result(numberOfViews);
+
+    for (size_t view = 0; view < numberOfViews; ++view) {
+      auto id = json().require("SourceCameraIDs").at(view).asInt();
+      {
+        auto texturePath = Common::format(
+            json().require("SourceTexturePathFmt").asString().c_str(), id);
+        ifstream stream{texturePath};
+        stream.seekg(streampos(inputFrame) * m_sourceResolution.x() *
+                     m_sourceResolution.y() * 3); // YUV420P10
+        result[view].first.resize(m_sourceResolution.x(),
+                                  m_sourceResolution.y());
+        result[view].first.read(stream);
+      }
+      {
+        auto depthPath = Common::format(
+            json().require("SourceDepthPathFmt").asString().c_str(), id);
+        ifstream stream{depthPath};
+        stream.seekg(streampos(inputFrame) * m_sourceResolution.x() *
+                     m_sourceResolution.y() * 2); // YUV400P16
+        result[view].second.resize(m_sourceResolution.x(),
+                                   m_sourceResolution.y());
+        result[view].second.read(stream);
+      }
+    }
+	return result;
+  }
+
+  void saveViews(int outputFrame, const MVDFrame &) const {}
+
+  void saveMetadata(int outputFrame, const CameraParameterList &cameras,
+                    const PatchParameterList &patches) {}
+
   unique_ptr<IEncoder> m_encoder;
+  int m_startFrame;
+  int m_numberOfFrames;
+  int m_intraPeriod;
+  Vec2i m_sourceResolution;
 };
 } // namespace TMIV::Encoder
 

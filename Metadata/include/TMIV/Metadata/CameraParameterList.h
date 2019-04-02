@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <vector>
 
+#include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
 namespace TMIV::Metadata {
@@ -50,22 +51,34 @@ using Common::Vec3f;
 //
 // Read the RVS 3.x manual for interpretation of angles
 struct CameraParameters {
-  uint16_t m_id{};    // Some camera ID
-  Vec3f m_position{}; // (x, y, z) in meters, OMAF definition
-  Vec3f m_rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
+  uint16_t id{};    // Some camera ID
+  Vec3f position{}; // (x, y, z) in meters, OMAF definition
+  Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
 
-  ProjectionType m_type{ProjectionType::ERP};
-  Vec2f m_erpPhiRange{};   // Horizontal range in degrees
-  Vec2f m_erpThetaRange{}; // Vertical rnage in degrees
-  CubicMapType m_cubicMapType{CubicMapType::CubeMap};
-  Vec2f m_perspectiveFocal{};  // Focal length
-  Vec2f m_perspectiveCenter{}; // Principle point
-  Vec2f m_depthRange{};        // [near, far]
+  ProjectionType type{ProjectionType::ERP};
+  Vec2f erpPhiRange{};   // Horizontal range in degrees
+  Vec2f erpThetaRange{}; // Vertical rnage in degrees
+  CubicMapType cubicMapType{CubicMapType::CubeMap};
+  Vec2f perspectiveFocal{};  // Focal length
+  Vec2f perspectiveCenter{}; // Principle point
+  Vec2f depthRange{};        // [near, far]
 };
 
 using CameraParameterList = std::vector<CameraParameters>;
 
 bool intrinsicParamsEqual(const CameraParameterList &);
+
+// Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
+// with cameras specified by name, in that order
+//
+// The first parameter is the cameras node (a JSON array).
+CameraParameterList loadCamerasFromJson(const Common::Json &node,
+                                        const std::vector<std::string> &names);
+
+// Load a single (source) camera from a JSON metadata file (RVS 3.x format)
+//
+// The parameter is a an item of the cameras node (a JSON object).
+CameraParameters loadCameraFromJson(const Common::Json &node);
 } // namespace TMIV::Metadata
 
 #endif

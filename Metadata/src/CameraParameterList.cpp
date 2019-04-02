@@ -32,3 +32,50 @@
  */
 
 #include <TMIV/Metadata/CameraParameterList.h>
+
+#include <TMIV/Common/Json.h>
+
+using namespace std;
+
+namespace TMIV::Metadata {
+CameraParameterList loadCamerasFromJson(const Common::Json &node,
+                                        const std::vector<std::string> &names) {
+  CameraParameterList result;
+  for (const auto &name : names) {
+    for (int i = 0; i != node.size(); ++i) {
+      if (name == node.at(i).require("Name").asString()) {
+        result.push_back(loadCameraFromJson(node.at(i)));
+        break;
+      }
+    }
+  }
+  if (result.size() != names.size()) {
+    throw runtime_error(
+        "Could not find all requested camera names in the metadata JSON file");
+  }
+  return result;
+}
+
+CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node) {
+  CameraParameters parameters;
+  parameters.id = id;
+  parameters.position = node.require("Position").asFloatVector<3>();
+  parameters.rotation = node.require("Rotation").asFloatVector<3>();
+  parameters.depthRange = node.require("Depth_range").asFloatVector<2>();
+
+  auto proj = node.require("Projection").asString();
+  if (proj == "Equirectangular") {
+    parameters.type = ProjectionType::ERP;
+    parameters.erpPhiRange = node.require("Rotation").asFloatVector<2>();
+    parameters.erpThetaRange = node.require("Rotation").asFloatVector<2>();
+  } else if (proj == "Perspective") {
+    parameters.type = ProjectionType::Perspective;
+    parameters.perspectiveFocal = node.require("Focal").asFloatVector<2>();
+    parameters.perspectiveCenter =
+        node.require("Principle_point").asFloatVector<2>();
+  } else {
+    throw runtime_error("Unknown projection type in metadata JSON file");
+  }
+  return parameters;
+}
+} // namespace TMIV::Metadata

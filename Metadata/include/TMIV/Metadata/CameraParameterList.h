@@ -37,13 +37,35 @@
 #include <cstdint>
 #include <vector>
 
+#include <TMIV/Common/Vector.h>
+
 namespace TMIV::Metadata {
-// PatchList data type (part of MetadataLib)
+enum class ProjectionType { ERP, CubeMap, Perspective };
+enum class CubicMapType { CubeMap, EAC };
+using Common::Vec2f;
+using Common::Vec3f;
+
+// Camera parameters data type (part of MetadataLib)
+// Based on working draft description
+//
+// Read the RVS 3.x manual for interpretation of angles
 struct CameraParameters {
-  // TODO
+  uint16_t m_id{};    // Some camera ID
+  Vec3f m_position{}; // (x, y, z) in meters, OMAF definition
+  Vec3f m_rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
+
+  ProjectionType m_type{ProjectionType::ERP};
+  Vec2f m_erpPhiRange{};   // Horizontal range in degrees
+  Vec2f m_erpThetaRange{}; // Vertical rnage in degrees
+  CubicMapType m_cubicMapType{CubicMapType::CubeMap};
+  Vec2f m_perspectiveFocal{};  // Focal length
+  Vec2f m_perspectiveCenter{}; // Principle point
+  Vec2f m_depthRange{};        // [near, far]
 };
 
 using CameraParameterList = std::vector<CameraParameters>;
+
+bool intrinsicParamsEqual(const CameraParameterList &);
 } // namespace TMIV::Metadata
 
 #endif

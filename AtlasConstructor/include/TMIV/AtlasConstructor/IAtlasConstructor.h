@@ -34,7 +34,7 @@
 #ifndef _TMIV_ATLASCONSTRUCTOR_IATLASCONSTRUCTOR_H_
 #define _TMIV_ATLASCONSTRUCTOR_IATLASCONSTRUCTOR_H_
 
-#include <TMIV/Common/MVDFrame.h>
+#include <TMIV/Common/Frame.h>
 #include <TMIV/Metadata/CameraParameterList.h>
 #include <TMIV/Metadata/PatchParameterList.h>
 

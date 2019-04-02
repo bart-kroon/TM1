@@ -88,4 +88,10 @@ void convert(const Frame<FROM> &inputFrame, Frame<TO> &outputFrame);
 
 #include "Frame.hpp"
 
+namespace TMIV::Common {
+using TextureFrame = Frame<YUV420P10>;
+using DepthFrame = Frame<YUV400P16>;
+using MVDFrame = std::vector<std::pair<TextureFrame, DepthFrame>>;
+} // namespace TMIV::Common
+
 #endif

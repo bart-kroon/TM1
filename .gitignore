@@ -1,3 +1,5 @@
 .vscode
+.kateproject
+.directory
 build
 Catch/catch.hpp

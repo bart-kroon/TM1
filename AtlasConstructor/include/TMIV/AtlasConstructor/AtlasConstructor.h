@@ -52,21 +52,15 @@ public:
   AtlasConstructor &operator=(const AtlasConstructor &) = delete;
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
 
-  using CameraParameterList = Metadata::CameraParameterList;
-  using PatchParameterList = Metadata::PatchParameterList;
-  using TextureFrame = Common::Frame<Common::YUV420P10>;
-  using DepthFrame = Common::Frame<Common::YUV400P16>;
-  using MVDFrame = std::vector<std::pair<TextureFrame, DepthFrame>>;
-
   void prepareIntraPeriod() override;
   void pushFrame(const CameraParameterList &baseCamera,
-                 const MVDFrame &baseViews,
+                 const Common::MVDFrame &baseViews,
                  const CameraParameterList &additionalCamera,
-                 const MVDFrame &additionalViews) override;
+                 const Common::MVDFrame &additionalViews) override;
   void completeIntraPeriod() override;
   const CameraParameterList &getCameras() const override;
   const PatchParameterList &getPatchList() const override;
-  MVDFrame popAtlas() override;
+  Common::MVDFrame popAtlas() override;
 
 private:
   struct Parameters {};
@@ -75,10 +69,10 @@ private:
   std::unique_ptr<IPacker> m_packer;
 
   Parameters m_parameters;
-  std::deque<MVDFrame> m_inputBuffer;
+  std::deque<Common::MVDFrame> m_inputBuffer;
   std::vector<CameraParameterList> m_cameras;
   PatchParameterList m_patchList;
-  std::deque<MVDFrame> m_outputBuffer;
+  std::deque<Common::MVDFrame> m_outputBuffer;
 };
 } // namespace TMIV::AtlasConstructor
 

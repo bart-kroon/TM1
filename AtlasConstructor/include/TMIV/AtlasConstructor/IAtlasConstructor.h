@@ -34,7 +34,7 @@
 #ifndef _TMIV_ATLASCONSTRUCTOR_IATLASCONSTRUCTOR_H_
 #define _TMIV_ATLASCONSTRUCTOR_IATLASCONSTRUCTOR_H_
 
-#include <TMIV/Common/Frame.h>
+#include <TMIV/Common/MVDFrame.h>
 #include <TMIV/Metadata/CameraParameterList.h>
 #include <TMIV/Metadata/PatchParameterList.h>
 
@@ -51,19 +51,16 @@ public:
 
   using CameraParameterList = Metadata::CameraParameterList;
   using PatchParameterList = Metadata::PatchParameterList;
-  using TextureFrame = Common::Frame<Common::YUV420P10>;
-  using DepthFrame = Common::Frame<Common::YUV400P16>;
-  using MVDFrame = std::vector<std::pair<TextureFrame, DepthFrame>>;
 
   virtual void prepareIntraPeriod() = 0;
   virtual void pushFrame(const CameraParameterList &baseCamera,
-                         const MVDFrame &baseViews,
+                         const Common::MVDFrame &baseViews,
                          const CameraParameterList &additionalCamera,
-                         const MVDFrame &additionalViews) = 0;
+                         const Common::MVDFrame &additionalViews) = 0;
   virtual void completeIntraPeriod() = 0;
   virtual const CameraParameterList &getCameras() const = 0;
   virtual const PatchParameterList &getPatchList() const = 0;
-  virtual MVDFrame popAtlas() = 0;
+  virtual Common::MVDFrame popAtlas() = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

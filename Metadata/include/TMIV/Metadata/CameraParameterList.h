@@ -52,7 +52,6 @@ using Common::Vec3f;
 //
 // Read the RVS 3.x manual for interpretation of angles
 struct CameraParameters {
-  uint16_t id{};    // Some camera ID
   Vec2i size{}; // Camera sensor size (width, height) in pixels
   Vec3f position{}; // (x, y, z) in meters, OMAF definition
   Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
@@ -81,6 +80,11 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
 //
 // The parameter is a an item of the cameras node (a JSON object).
 CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node);
+
+// TODO: Reprojection of points (normative)
+// Matrix<Vec3f> unproject ( Matrix<Vec2f> positions, Matrix<float> depth , const CameraParameters& camera);
+// pair<Matrix<Vec2f>, Matrix<float>> project ( Matrix<Vec3f> positions, const CameraParameters& camera);
 } // namespace TMIV::Metadata
 
 #endif
+

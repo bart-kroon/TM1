@@ -60,7 +60,7 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
 // The parameter is a an item of the cameras node (a JSON object).
 CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node) {
   CameraParameters parameters;
-  parameters.id = id;
+  parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();
   parameters.rotation = node.require("Rotation").asFloatVector<3>();
   parameters.depthRange = node.require("Depth_range").asFloatVector<2>();

@@ -40,15 +40,15 @@
 #include <TMIV/Common/Vector.h>
 
 namespace TMIV::Metadata {
+using Vec2i = TMIV::Common::Vec2i;
+
 enum class PatchRotation {
-  upright,       // what was up stays up
-  clockwise90deg // what was up goes right
+  upright, // what was up stays up
+  ccw      // what was up goes left
 };
 
 // Data type that matches with an entry of patch_params of the working draft
 struct PatchParameters {
-  using Vec2i = TMIV::Common::Vec2i;
-
   uint8_t atlasId;
   uint8_t virtualCameraId;
   Vec2i patchSize;

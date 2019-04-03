@@ -90,15 +90,9 @@ private:
     if (!stream.good()) {
       throw runtime_error("Failed to load source camera parameters");
     }
-    auto cameras = Metadata::loadCamerasFromJson(
+    return Metadata::loadCamerasFromJson(
         Common::Json{stream}.require("cameras"),
         json().require("SourceCameraNames").asStringVector());
-
-	// Add the camera ID's that are used for the texture/depth paths
-    for (size_t view = 0; view < cameras.size(); ++view) {
-      cameras[view].id = json().require("SourceCameraIDs").at(view).asInt();
-    }
-	return cameras;
   }
 
   MVDFrame loadViews(int inputFrame, size_t numberOfViews) const {

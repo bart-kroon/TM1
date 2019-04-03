@@ -56,7 +56,6 @@ public:
 		bool isRotated() const { return m_isRotated; }
 	};
 	using OccupancyMap = TMIV::Common::Mat<std::uint8_t>;
-	using CorrelationMap = TMIV::Common::Mat<std::uint8_t>;
 private:
 	class Rectangle
 	{
@@ -83,10 +82,8 @@ protected:
 	std::list<Rectangle> m_F;
 	bool m_pip = true;
 	OccupancyMap m_occupancyMap;
-	CorrelationMap m_correlationMap;
 public:
 	MaxRectPiP(int w, int h, int a, bool pip);
-	void initialize(const Cluster& c0, const ClusteringMap& clusteringMap, Output& packerOutput);
 	bool push(const Cluster& c, const ClusteringMap& clusteringMap, Output& packerOutput);
 protected:
 	void updateOccupancyMap(const Cluster& c, const ClusteringMap& clusteringMap, const Output& packerOutput);

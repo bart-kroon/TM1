@@ -89,7 +89,7 @@ MaskList Pruner::doPruning(const Metadata::CameraParameterList& cameras, const C
 				int viewPrunedId = cameraOrderId[id2];
 				Mat<float> depthMapSynthesized; // TODO synthesize depth of view[viewToPruneId] from view[viewPrunedId] + convert synthesized map in float
 					
-				for(unsigned k=0;k<depthMapReference.size();k++)
+				for(int k=0;k<depthMapReference.size();k++)
 				{
 					auto& mask = currentMask[k];
 					

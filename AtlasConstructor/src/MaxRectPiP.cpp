@@ -86,30 +86,13 @@ float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const
 MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip): m_width(w), m_height(h), m_alignment(a), m_pip(pip)
 {
 	// Maps
-	unsigned wa = w / a, ha = h / a;
+	unsigned int wa = w / a, ha = h / a;
 	
 	m_occupancyMap.resize({ha, wa});
 	std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), 0);
-	
-	m_correlationMap.resize({ha, wa});
 
 	// Push full rectangle
 	m_F.push_back(Rectangle(0, 0, w - 1, h - 1));
-}
-
-void MaxRectPiP::initialize(const Cluster& c0, const ClusteringMap& clusteringMap, Output& packerOutput)
-{
-	// Free rectangles
-	std::vector<Rectangle> F = m_F.begin()->remove(Rectangle(c0.jmin(), c0.imin(), c0.jmax(), c0.imax()));
-
-	m_F.clear();
-	std::move(F.begin(), F.end(), std::back_inserter(m_F));
-
-	// Output
-	packerOutput.set(c0.jmin(), c0.imin(), false);
-	
-	// Occupancy map
-	updateOccupancyMap(c0, clusteringMap, packerOutput);
 }
 
 bool MaxRectPiP::push(const Cluster& c, const ClusteringMap& clusteringMap, Output& packerOutput)
@@ -135,12 +118,9 @@ void MaxRectPiP::updateOccupancyMap(const Cluster& c, const ClusteringMap& clust
 	Vec2i mappingSize = { c.width(), c.height() };
 	Vec2i packingPosition = { packerOutput.x(), packerOutput.y() };
 	Vec2i packingSize = packerOutput.isRotated() ? Vec2i({ mappingSize[1], mappingSize[0] }) : mappingSize;
+	
 	Mat3x3i Q2P;
-	
-	int w = clusteringMap.width(), h = clusteringMap.height();
-	int xMin = packingPosition[0], xMax = packingPosition[0] + packingSize[0] - 1;
-	int yMin = packingPosition[1], yMax = packingPosition[1] + packingSize[1] - 1;
-	
+
 	if(packerOutput.isRotated())
 	{
 		Q2P =
@@ -158,60 +138,97 @@ void MaxRectPiP::updateOccupancyMap(const Cluster& c, const ClusteringMap& clust
 			0, 1, mappingPosition[1] - packingPosition[1],
 			0, 0, 1 
 		};
-
 	}
 	
-// 	for(int x=xMin;x<=xMax;x++)
-// 	{
-// 		for(int y=yMin;y<=yMax;y++)
-// 		{
-// 			
-// 			
-// 		}
-// 	}
-	
-	
+	int wMinusOne = clusteringMap.width() - 1, hMinusOne = clusteringMap.height() - 1;
 
-	
-	for(int y=0;y<m_occupancyMap.height();y++)
+	int xMin = packingPosition[0], xMax = packingPosition[0] + packingSize[0] - 1;
+	int yMin = packingPosition[1], yMax = packingPosition[1] + packingSize[1] - 1;
+
+	int XMin = xMin / m_alignment, XMax = xMax / m_alignment;
+	int YMin = yMin / m_alignment, YMax = yMax / m_alignment;
+
+	for(int Y=YMin;Y<=YMax;Y++)
 	{
-		for(int x=0;x<m_occupancyMap.width();x++)
+		int y0 = std::max(yMin, Y * m_alignment), y1 = std::min(yMax, y0 + m_alignment);
+		
+		for(int X=XMin;X<=XMax;X++)
 		{
-			int y0 = y * m_alignment;
-			int x0 = x * m_alignment;
+			int x0 = std::max(xMin, X * m_alignment), x1 = std::min(xMax, x0 + m_alignment);
+			
+			bool available = true;
 
-			if(inRange(x0, xMin, xMax) && inRange(y0, yMin, yMax))
+			for(int y = y0; y < y1 ; y++)
 			{
-				bool done = false;
-
-				for(int x1 = x0; x1 < (x0 + m_alignment); x1++)
+				for(int x = x0 ; x < x1 ; x1++)
 				{
-					for(int y1 = y0; y < (y0 + m_alignment); y++)
-					{
-						Vec3i p = Q2P * Vec3i({ x1, y1, 1});
+					Vec3i p = Q2P * Vec3i({ x, y, 1});
 
-						if((p.x() < w) && (p.y() < h))
-						{
-							if(clusteringMap(p.y(), p.x()) == c.getClusterId())
-							{
-								m_occupancyMap(y, x) = 255;
-								done = true;
-							}
-						}
+					if(clusteringMap(p.y(), p.x()) == c.getClusterId()) // (inRange(p.x(), 0, wMinusOne) && inRange(p.y(), 0, hMinusOne)) && 
+					{
+						available = false;
+						break;
 					}
 				}
-
-				if(!done)
-					m_occupancyMap(y, x) = 128;
+				
+				if(!available)
+				{
+					m_occupancyMap(Y, X) = 255;
+					break;
+				}
 			}
+
+			if(available)
+				m_occupancyMap(Y, X) = 128;
 		}
 	}
 }
 
 bool MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output& packerOutput)
 {
- // TODO
-	return true;
+	int W = w / m_alignment, H = h / m_alignment;
+	
+	auto isGoodCandidate = 
+		[this](int xmin, int xmax, int ymin, int ymax) -> bool
+		{
+			if((xmax < m_occupancyMap.width()) && (ymax < m_occupancyMap.height()))
+			{
+				for(int y=ymin;y<=ymax;y++)
+				{
+					for(int x=xmin;x<=xmax;x++)
+					{
+						if(m_occupancyMap(y, x) != 128)
+							return false;
+					}
+				}
+				
+				return true;
+			}
+			else
+				return false;
+		};
+
+	for(int Y=0;Y<m_occupancyMap.height();Y++)
+	{
+		for(int X=0;X<m_occupancyMap.width();X++)
+		{
+			// Without Rotation
+			if(isGoodCandidate(X, X + W - 1, Y, Y + H - 1))
+			{
+				packerOutput.set(X * m_alignment, Y * m_alignment, false);
+				return true;
+			}
+			
+			// With Rotation
+			if(isGoodCandidate(X, X + H - 1, Y, Y + W - 1))
+			{
+				packerOutput.set(X * m_alignment, Y * m_alignment, true);
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 bool MaxRectPiP::pushInFreeSpace(int w, int h, MaxRectPiP::Output& packerOutput)

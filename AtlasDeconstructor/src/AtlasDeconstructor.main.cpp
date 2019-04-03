@@ -31,32 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
-#define _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
+#include <TMIV/Common/Application.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
+using namespace std;
+using namespace TMIV::Common;
 
-namespace TMIV::AtlasConstructor {
-
-using Mask = TMIV::Common::Mat<std::uint8_t>;
-using MaskList = std::vector<Mask>;
-
-// IPruner interface (part of AtlasConstructorLib)
-class IPruner {
+namespace TMIV::AtlasDeconstructor {
+class Application : public Common::Application {
 public:
-  IPruner() = default;
-  IPruner(const IPruner &) = delete;
-  IPruner(IPruner &&) = default;
-  IPruner &operator=(const IPruner &) = delete;
-  IPruner &operator=(IPruner &&) = default;
-  virtual ~IPruner() = default;
-  
-  using MVDFrame = Common::MVDFrame;
-  using CameraParameterList = Metadata::CameraParameterList;
-  
-  virtual MaskList doPruning(const CameraParameterList& cameras, const MVDFrame& views, const std::vector<std::uint8_t>& shouldNotBePruned) = 0;
-};
-} // namespace TMIV::AtlasConstructor
+  Application(vector<const char *> argv)
+      : Common::Application{"AtlasDeconstructor", move(argv)} {
+    m_optimizer = create<IAtlasDeconstructor>("AtlasDeconstructor");
+  }
 
-#endif
+  void run() override {}
+
+private:
+  unique_ptr<IAtlasDeconstructor> m_optimizer;
+};
+} // namespace TMIV::AtlasDeconstructor
+
+int main(int argc, char *argv[]) {
+  TMIV::AtlasDeconstructor::Application app{{argv, argv + argc}};
+  app.run();
+  return 0;
+}

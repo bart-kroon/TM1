@@ -48,7 +48,12 @@ public:
   Packer &operator=(const Packer &) = delete;
   Packer &operator=(Packer &&) = default;
   
-  PatchParameterList doPacking(const MaskList& masks, const std::vector<std::uint8_t>& shouldNotBeSplit) override;
+  PatchParameterList doPacking(const std::vector<Vec2i>& atlasSize, const MaskList& masks, const std::vector<std::uint8_t>& shouldNotBeSplit) override;
+  
+private:
+	int m_alignment = 8;
+	int m_minPatchSize = 64;
+	bool m_pip = true;
 };
 
 } // namespace TMIV::AtlasConstructor

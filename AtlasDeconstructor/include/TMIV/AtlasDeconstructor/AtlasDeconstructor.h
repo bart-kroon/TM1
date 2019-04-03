@@ -31,32 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
-#define _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
+#ifndef _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
+#define _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
+#include <TMIV/Common/Json.h>
 
-namespace TMIV::AtlasConstructor {
-
-using Mask = TMIV::Common::Mat<std::uint8_t>;
-using MaskList = std::vector<Mask>;
-
-// IPruner interface (part of AtlasConstructorLib)
-class IPruner {
+namespace TMIV::AtlasDeconstructor {
+// The AtlasDeconstructor of TMIV 1.0 provided by Technicolor
+class AtlasDeconstructor : public IAtlasDeconstructor {
 public:
-  IPruner() = default;
-  IPruner(const IPruner &) = delete;
-  IPruner(IPruner &&) = default;
-  IPruner &operator=(const IPruner &) = delete;
-  IPruner &operator=(IPruner &&) = default;
-  virtual ~IPruner() = default;
+  AtlasDeconstructor(const Common::Json &node);
+  AtlasDeconstructor(const AtlasDeconstructor &) = delete;
+  AtlasDeconstructor(AtlasDeconstructor &&) = default;
+  AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
+  AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
   
-  using MVDFrame = Common::MVDFrame;
-  using CameraParameterList = Metadata::CameraParameterList;
+  using PatchParameters = Metadata::PatchParameters;
   
-  virtual MaskList doPruning(const CameraParameterList& cameras, const MVDFrame& views, const std::vector<std::uint8_t>& shouldNotBePruned) = 0;
+  MVDFrame getPatchFrameListFromAtlas(const PatchParameterList& patchList, const MVDFrame& atlas) override;
+  
+private:
+  TextureDepthFrame readPatchFromAtlas(const PatchParameters& patch, const MVDFrame& atlas);
 };
-} // namespace TMIV::AtlasConstructor
+} // namespace TMIV::AtlasDeconstructor
 
 #endif

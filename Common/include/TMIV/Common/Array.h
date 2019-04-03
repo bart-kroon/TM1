@@ -698,7 +698,16 @@ public:
     m_property = that.getProperty();
   }
   //! \brief Move constructor.
-  Array(container_type &&that) = default;
+  Array(container_type &&that) {
+    m_size = that.m_size;
+    m_step = that.m_step;
+    m_v = std::move(that.m_v);
+    m_property = that.m_property;
+
+    that.m_size.fill(0);
+    that.m_step.fill(0);
+    that.m_property = -1;
+  }
   //! \brief Copy assignment.
   container_type &operator=(const container_type &that) = default;
   template <typename OTHER, class = typename OTHER::dim_iterator>
@@ -720,7 +729,18 @@ public:
     return *this;
   }
   //! \brief Move assignment.
-  container_type &operator=(container_type &&that) = default;
+  container_type &operator=(container_type &&that) {
+    m_size = that.m_size;
+    m_step = that.m_step;
+    m_v = std::move(that.m_v);
+    m_property = that.m_property;
+
+    that.m_size.fill(0);
+    that.m_step.fill(0);
+    that.m_property = -1;
+	
+	return *this;
+  }
   //! \brief Equal operator.
   bool operator==(const container_type &that) const {
     return (std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) &&
@@ -1021,7 +1041,17 @@ public:
     m_property = that.getProperty();
   }
   //! \brief Move constructor.
-  Array(container_type &&that) = default;
+  Array(container_type &&that) {
+    m_size = that.m_size;
+    m_step = that.m_step;
+    m_data = that.m_data;
+    m_property = that.m_property;
+
+    that.m_size.fill(0);
+    that.m_step.fill(0);
+    that.m_data = nullptr;
+    that.m_property = -1;
+  }
   //! \brief Copy assignment.
   container_type &operator=(const container_type &that) = default;
   template <typename OTHER, class = typename OTHER::dim_iterator>
@@ -1045,7 +1075,19 @@ public:
     return *this;
   }
   //! \brief Move assignment.
-  container_type &operator=(container_type &&that) = default;
+  container_type &operator=(container_type &&that) {
+    m_size = that.m_size;
+    m_step = that.m_step;
+    m_data = that.m_data;
+    m_property = that.m_property;
+
+    that.m_size.fill(0);
+    that.m_step.fill(0);
+    that.m_data = nullptr;
+    that.m_property = -1;
+
+    return *this;
+  }
   //! \brief Equal operator.
   bool operator==(const container_type &that) const {
     return (std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) &&

@@ -49,8 +49,9 @@ public:
   virtual ~IPacker() = default;
   
   using PatchParameterList = Metadata::PatchParameterList;
+  using Vec2i = Common::Vec2i;
 
-  virtual PatchParameterList doPacking(const MaskList& masks, const std::vector<std::uint8_t>& shouldNotBeSplit) = 0;
+  virtual PatchParameterList doPacking(const std::vector<Vec2i>& atlasSize, const MaskList& masks, const std::vector<std::uint8_t>& shouldNotBeSplit) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

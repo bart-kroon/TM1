@@ -53,6 +53,9 @@ public:
   AtlasConstructor &operator=(const AtlasConstructor &) = delete;
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
 
+  using Vec2i = Common::Vec2i;
+  using PatchParameters = Metadata::PatchParameters;
+
   void prepareIntraPeriod() override;
   void pushFrame(const CameraParameterList &baseCameras,
                  const MVDFrame &baseViews,
@@ -62,8 +65,13 @@ public:
   const CameraParameterList &getCameras() const override { return m_cameras; }
   const PatchParameterList &getPatchList() const override { return m_patchList; }
   MVDFrame popAtlas() override;
-
+  
 private:
+  void writePatchInAtlas(const PatchParameters& patch, const MVDFrame& views, MVDFrame& atlas);
+  
+private:
+  std::uint16_t m_nbAtlas = 0;
+  Vec2i m_atlasSize = {1920, 1080};
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
@@ -71,7 +79,7 @@ private:
   std::vector<MVDFrame> m_viewBuffer;
   Metadata::CameraParameterList m_cameras;
   Metadata::PatchParameterList m_patchList;
-  std::vector<MVDFrame> m_atlasBuffer;
+  std::deque<MVDFrame> m_atlasBuffer;
 };
 } // namespace TMIV::AtlasConstructor
 

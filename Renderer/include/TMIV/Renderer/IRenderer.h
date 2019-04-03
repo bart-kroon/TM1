@@ -34,8 +34,45 @@
 #ifndef _TMIV_RENDERER_IRENDERER_H_
 #define _TMIV_RENDERER_IRENDERER_H_
 
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/PatchParameterList.h>
+
 namespace TMIV::Renderer {
-class IRenderer {};
+class IRenderer {
+public:
+  IRenderer() = default;
+  IRenderer(const IRenderer &) = delete;
+  IRenderer(IRenderer &&) = default;
+  IRenderer &operator=(const IRenderer &) = delete;
+  IRenderer &operator=(IRenderer &&) = default;
+  virtual ~IRenderer() = default;
+
+  // Render a texture for a specified virtual view. This generally involves
+  // synthesis, blending and inpainting.
+  virtual Common::TextureFrame
+  renderTexture(const Common::MVDFrame &frame,
+                const Metadata::PatchParameterList &patches,
+                const Metadata::CameraParameterList &cameras,
+                const Metadata::CameraParameters &target) = 0;
+
+  // Render a depth map for a specified virtual view. This generally involves
+  // synthesis, blending and inpainting.
+  virtual Common::DepthFrame
+  renderDepth(const Common::MVDFrame &frame,
+              const Metadata::PatchParameterList &patches,
+              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParameters &target) = 0;
+
+  // Render both texture and depth. The default implementation calls
+  // renderTexture and renderDepth (in parallel), but this may be overriden for
+  // efficiency reasons.
+  virtual Common::TextureDepthFrame
+  renderTextureDepth(const Common::MVDFrame &frame,
+                     const Metadata::PatchParameterList &patches,
+                     const Metadata::CameraParameterList &cameras,
+                     const Metadata::CameraParameters &target);
+};
 } // namespace TMIV::Renderer
 
 #endif

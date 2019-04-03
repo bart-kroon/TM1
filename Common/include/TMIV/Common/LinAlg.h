@@ -47,36 +47,31 @@ MAT matprod(const MAT &A, char mA, const MAT &B, char mB);
 
 //! \brief Matrix product operator
 template <typename T, typename U>
-heap::Vector<decltype(T(0) * U(0))>
-operator*(const heap::Matrix<T> &A, const heap::Vector<U> &B);
+heap::Vector<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
+                                              const heap::Vector<U> &B);
 template <typename T, typename U, Array::size_type M>
-heap::Vector<decltype(T(0) * U(0))>
-operator*(const heap::Matrix<T> &A, const stack::Vector<U, M> &B);
+heap::Vector<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
+                                              const stack::Vector<U, M> &B);
 template <typename T, typename U>
-heap::Matrix<decltype(T(0) * U(0))>
-operator*(const heap::Matrix<T> &A, const heap::Matrix<U> &B);
+heap::Matrix<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
+                                              const heap::Matrix<U> &B);
 template <typename T, typename U, Array::size_type M, Array::size_type N>
-heap::Matrix<decltype(T(0) * U(0))>
-operator*(const heap::Matrix<T> &A,
-          const stack::Matrix<U, M, N> &B);
+heap::Matrix<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
+                                              const stack::Matrix<U, M, N> &B);
 
 template <typename T, typename U, Array::size_type M, Array::size_type N>
 stack::Vector<decltype(T(0) * U(0)), M>
-operator*(const stack::Matrix<T, M, N> &A,
-          const stack::Vector<U, N> &B);
+operator*(const stack::Matrix<T, M, N> &A, const stack::Vector<U, N> &B);
 template <typename T, typename U, Array::size_type M, Array::size_type N>
-heap::Vector<decltype(T(0) * U(0))>
-operator*(const stack::Matrix<T, M, N> &A,
-          const heap::Vector<U> &B);
+heap::Vector<decltype(T(0) * U(0))> operator*(const stack::Matrix<T, M, N> &A,
+                                              const heap::Vector<U> &B);
 template <typename T, typename U, Array::size_type M, Array::size_type N>
-heap::Matrix<decltype(T(0) * U(0))>
-operator*(const stack::Matrix<T, M, N> &A,
-          const heap::Matrix<U> &B);
+heap::Matrix<decltype(T(0) * U(0))> operator*(const stack::Matrix<T, M, N> &A,
+                                              const heap::Matrix<U> &B);
 template <typename T, typename U, Array::size_type M, Array::size_type N,
           Array::size_type O>
 stack::Matrix<decltype(T(0) * U(0)), M, O>
-operator*(const stack::Matrix<T, M, N> &A,
-          const stack::Matrix<U, N, O> &B);
+operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B);
 
 //! \brief Computes and returns A * A'.
 template <typename T, Array::size_type M>
@@ -92,8 +87,7 @@ template <typename MAT> decltype(square_type(MAT())) square(const MAT &A);
 //! \brief Computes and returns A' * A.
 template <typename T, Array::size_type M, Array::size_type N>
 stack::Matrix<T, N, N> transquare_type(stack::Matrix<T, M, N>);
-template <typename T>
-heap::Matrix<T> transquare_type(heap::Matrix<T>);
+template <typename T> heap::Matrix<T> transquare_type(heap::Matrix<T>);
 
 template <typename MAT1, typename MAT2>
 void transquare(const MAT1 &A, MAT2 &out);

@@ -32,4 +32,3 @@
  */
 
 #include <TMIV/AtlasConstructor/IAggregator.h>
- 

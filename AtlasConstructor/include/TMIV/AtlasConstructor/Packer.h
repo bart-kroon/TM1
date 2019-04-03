@@ -42,18 +42,20 @@ namespace TMIV::AtlasConstructor {
 // The Packer of TMIV 1.0 provided by Technicolor
 class Packer : public IPacker {
 public:
-  Packer(const Common::Json&);
+  Packer(const Common::Json &);
   Packer(const Packer &) = delete;
   Packer(Packer &&) = default;
   Packer &operator=(const Packer &) = delete;
   Packer &operator=(Packer &&) = default;
-  
-  PatchParameterList doPacking(const std::vector<Vec2i>& atlasSize, const MaskList& masks, const std::vector<std::uint8_t>& shouldNotBeSplit) override;
-  
+
+  PatchParameterList
+  doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
+            const std::vector<std::uint8_t> &shouldNotBeSplit) override;
+
 private:
-	int m_alignment = 8;
-	int m_minPatchSize = 64;
-	bool m_pip = true;
+  int m_alignment = 8;
+  int m_minPatchSize = 64;
+  bool m_pip = true;
 };
 
 } // namespace TMIV::AtlasConstructor

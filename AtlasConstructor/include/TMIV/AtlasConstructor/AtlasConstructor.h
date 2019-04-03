@@ -34,13 +34,13 @@
 #ifndef _TMIV_ATLASCONSTRUCTOR_ATLASCONSTRUCTOR_H_
 #define _TMIV_ATLASCONSTRUCTOR_ATLASCONSTRUCTOR_H_
 
-#include <memory>
 #include <deque>
+#include <memory>
 
-#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
-#include <TMIV/AtlasConstructor/IPruner.h>
 #include <TMIV/AtlasConstructor/IAggregator.h>
+#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/AtlasConstructor/IPacker.h>
+#include <TMIV/AtlasConstructor/IPruner.h>
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {
@@ -63,12 +63,15 @@ public:
                  const MVDFrame &additionalViews) override;
   void completeIntraPeriod() override;
   const CameraParameterList &getCameras() const override { return m_cameras; }
-  const PatchParameterList &getPatchList() const override { return m_patchList; }
+  const PatchParameterList &getPatchList() const override {
+    return m_patchList;
+  }
   MVDFrame popAtlas() override;
-  
+
 private:
-  void writePatchInAtlas(const PatchParameters& patch, const MVDFrame& views, MVDFrame& atlas);
-  
+  void writePatchInAtlas(const PatchParameters &patch, const MVDFrame &views,
+                         MVDFrame &atlas);
+
 private:
   std::uint16_t m_nbAtlas = 0;
   Vec2i m_atlasSize = {1920, 1080};

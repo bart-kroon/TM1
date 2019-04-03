@@ -738,8 +738,8 @@ public:
     that.m_size.fill(0);
     that.m_step.fill(0);
     that.m_property = -1;
-	
-	return *this;
+
+    return *this;
   }
   //! \brief Equal operator.
   bool operator==(const container_type &that) const {
@@ -1338,7 +1338,8 @@ template <typename A1, typename A2> bool same_size(const A1 &a1, const A2 &a2) {
 
 //! \brief array/scalar + operator.
 template <typename A1, typename U, typename A2,
-          class = typename A1::dim_iterator, class = typename TMIV::Common::NumericChecker<U>,
+          class = typename A1::dim_iterator,
+          class = typename TMIV::Common::NumericChecker<U>,
           class = typename A2::dim_iterator>
 void add(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
@@ -1348,9 +1349,10 @@ void add(const A1 &m, U u, A2 &out) {
         return (v + u);
       });
 }
-template <
-    typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
+template <typename A1, typename U, typename A2,
+          class = typename A1::dim_iterator,
+          class = typename TMIV::Common::NumericChecker<U>,
+          class = typename A2::dim_iterator>
 void add(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1375,9 +1377,10 @@ A1 operator+(U u, const A1 &m) {
 }
 
 //! \brief array/scalar - operator.
-template <
-    typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
+template <typename A1, typename U, typename A2,
+          class = typename A1::dim_iterator,
+          class = typename TMIV::Common::NumericChecker<U>,
+          class = typename A2::dim_iterator>
 void sub(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1386,9 +1389,10 @@ void sub(const A1 &m, U u, A2 &out) {
         return (v - u);
       });
 }
-template <
-    typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
+template <typename A1, typename U, typename A2,
+          class = typename A1::dim_iterator,
+          class = typename TMIV::Common::NumericChecker<U>,
+          class = typename A2::dim_iterator>
 void sub(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1413,9 +1417,10 @@ A1 operator-(U u, const A1 &m) {
 }
 
 //! \brief array/scalar * operator.
-template <
-    typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
+template <typename A1, typename U, typename A2,
+          class = typename A1::dim_iterator,
+          class = typename TMIV::Common::NumericChecker<U>,
+          class = typename A2::dim_iterator>
 void mult(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1424,9 +1429,10 @@ void mult(const A1 &m, U u, A2 &out) {
         return (v * u);
       });
 }
-template <
-    typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
+template <typename A1, typename U, typename A2,
+          class = typename A1::dim_iterator,
+          class = typename TMIV::Common::NumericChecker<U>,
+          class = typename A2::dim_iterator>
 void mult(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
   std::transform(
@@ -1451,9 +1457,10 @@ A1 operator*(U u, const A1 &m) {
 }
 
 //! \brief array/scalar / operator.
-template <
-    typename A1, typename U, typename A2, class = typename A1::dim_iterator,
-    class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
+template <typename A1, typename U, typename A2,
+          class = typename A1::dim_iterator,
+          class = typename TMIV::Common::NumericChecker<U>,
+          class = typename A2::dim_iterator>
 void div(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
   std::transform(

@@ -43,7 +43,7 @@ auto Json::asFloatVector() const -> stack::Vector<float, M> {
     throw std::runtime_error("JSON float vector has wrong length");
   }
   for (stack::size_type i = 0; i != M; ++i) {
-	  result[i] = at(i).asFloat();
+    result[i] = at(i).asFloat();
   }
   return result;
 }
@@ -55,7 +55,7 @@ auto Json::asIntVector() const -> stack::Vector<int, M> {
     throw std::runtime_error("JSON int vector has wrong length");
   }
   for (stack::size_type i = 0; i != M; ++i) {
-	  result[i] = at(i).asInt();
+    result[i] = at(i).asInt();
   }
   return result;
 }

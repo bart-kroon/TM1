@@ -51,11 +51,13 @@ public:
   IPruner &operator=(const IPruner &) = delete;
   IPruner &operator=(IPruner &&) = default;
   virtual ~IPruner() = default;
-  
+
   using MVDFrame = Common::MVDFrame;
   using CameraParameterList = Metadata::CameraParameterList;
-  
-  virtual MaskList doPruning(const CameraParameterList& cameras, const MVDFrame& views, const std::vector<std::uint8_t>& shouldNotBePruned) = 0;
+
+  virtual MaskList
+  doPruning(const CameraParameterList &cameras, const MVDFrame &views,
+            const std::vector<std::uint8_t> &shouldNotBePruned) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

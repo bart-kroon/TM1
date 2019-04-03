@@ -31,5 +31,5 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch.hpp>
 #include <TMIV/Encoder/Encoder.h>
+#include <catch.hpp>

@@ -39,13 +39,12 @@
 
 namespace TMIV::Common {
 template <class... Args>
-inline std::string format(char const* fmt, Args&&... args)
-{
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
-    auto chars = snprintf(nullptr, 0, fmt, std::forward<Args>(args)...);
-    std::vector<char> buffer(chars + 1);
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
-    snprintf(buffer.data(), chars + 1, fmt, std::forward<Args>(args)...);
-    return { buffer.begin(), buffer.end() - 1 };
+inline std::string format(char const *fmt, Args &&... args) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+  auto chars = snprintf(nullptr, 0, fmt, std::forward<Args>(args)...);
+  std::vector<char> buffer(chars + 1);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+  snprintf(buffer.data(), chars + 1, fmt, std::forward<Args>(args)...);
+  return {buffer.begin(), buffer.end() - 1};
 }
-}
+} // namespace TMIV::Common

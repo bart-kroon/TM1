@@ -43,9 +43,9 @@
 
 namespace TMIV::Common {
 namespace impl {
-  struct Value;
-  struct Object;
-}
+struct Value;
+struct Object;
+} // namespace impl
 
 class Json {
 public:

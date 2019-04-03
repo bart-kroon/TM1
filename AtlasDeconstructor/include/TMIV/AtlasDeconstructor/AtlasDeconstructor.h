@@ -46,13 +46,15 @@ public:
   AtlasDeconstructor(AtlasDeconstructor &&) = default;
   AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
-  
+
   using PatchParameters = Metadata::PatchParameters;
-  
-  MVDFrame getPatchFrameListFromAtlas(const PatchParameterList& patchList, const MVDFrame& atlas) override;
-  
+
+  MVDFrame getPatchFrameListFromAtlas(const PatchParameterList &patchList,
+                                      const MVDFrame &atlas) override;
+
 private:
-  TextureDepthFrame readPatchFromAtlas(const PatchParameters& patch, const MVDFrame& atlas);
+  TextureDepthFrame readPatchFromAtlas(const PatchParameters &patch,
+                                       const MVDFrame &atlas);
 };
 } // namespace TMIV::AtlasDeconstructor
 

@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch.hpp>
-#include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Inpainter.h>
+#include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Synthesizer.h>
+#include <catch.hpp>

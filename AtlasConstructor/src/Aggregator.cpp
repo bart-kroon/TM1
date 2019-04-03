@@ -35,36 +35,21 @@
 
 namespace TMIV::AtlasConstructor {
 
-Aggregator::Aggregator(const Common::Json &)
-{
-}
+Aggregator::Aggregator(const Common::Json &) {}
 
-void Aggregator::prepareIntraPeriod()
-{
-	m_aggregatedMask.clear();
-}
+void Aggregator::prepareIntraPeriod() { m_aggregatedMask.clear(); }
 
-void Aggregator::pushMask(const MaskList& mask)
-{
-	if(m_aggregatedMask.empty())
-		m_aggregatedMask = mask;
-	else
-	{
-		for(int i=0;i<mask.size();i++)
-		{
-			std::transform(
-				m_aggregatedMask[i].begin(),
-				m_aggregatedMask[i].end(),
-				mask[i].begin(),
-				m_aggregatedMask[i].begin(),
-				[](std::uint16_t v1, std::uint16_t v2)
-				{
-					return std::max(v1, v2);
-				}
-			);
-		}
-	}
+void Aggregator::pushMask(const MaskList &mask) {
+  if (m_aggregatedMask.empty())
+    m_aggregatedMask = mask;
+  else {
+    for (int i = 0; i < mask.size(); i++) {
+      std::transform(
+          m_aggregatedMask[i].begin(), m_aggregatedMask[i].end(),
+          mask[i].begin(), m_aggregatedMask[i].begin(),
+          [](std::uint16_t v1, std::uint16_t v2) { return std::max(v1, v2); });
+    }
+  }
 }
 
 } // namespace TMIV::AtlasConstructor
- 

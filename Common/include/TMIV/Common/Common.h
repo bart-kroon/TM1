@@ -34,15 +34,15 @@
 #ifndef _TMIV_COMMON_COMMON_H_
 #define _TMIV_COMMON_COMMON_H_
 
-// Common data types and functions that are often used and do not need a separate header file
+// Common data types and functions that are often used and do not need a
+// separate header file
 
 #include <string>
 
 namespace TMIV::Common {
 // Format a string using printf syntax
-template <class... Args>
-std::string format(char const* fmt, Args&&... args);
-}
+template <class... Args> std::string format(char const *fmt, Args &&... args);
+} // namespace TMIV::Common
 
 #include "Common.hpp"
 

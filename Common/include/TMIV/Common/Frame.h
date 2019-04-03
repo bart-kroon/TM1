@@ -66,31 +66,31 @@ protected:
 public:
   Frame(int w = 0, int h = 0) { resize(w, h); }
   Frame(const Frame &) = default;
-  Frame(Frame && that) {
+  Frame(Frame &&that) {
     m_width = that.m_width;
-	m_height = that.m_height;
-	m_planes = std::move(m_planes);
-	
-	that.m_width = 0;
-	that.m_height = 0;
+    m_height = that.m_height;
+    m_planes = std::move(m_planes);
+
+    that.m_width = 0;
+    that.m_height = 0;
   }
   Frame &operator=(const Frame &) = default;
-  Frame &operator=(Frame && that) {
+  Frame &operator=(Frame &&that) {
     m_width = that.m_width;
-	m_height = that.m_height;
-	m_planes = std::move(m_planes);
-	
-	that.m_width = 0;
-	that.m_height = 0;
-	
-	return *this;
+    m_height = that.m_height;
+    m_planes = std::move(m_planes);
+
+    that.m_width = 0;
+    that.m_height = 0;
+
+    return *this;
   }
 
   void resize(int w, int h);
 
-  std::array<plane_type, nb_plane>& getPlanes() { return m_planes; }
-  const std::array<plane_type, nb_plane>& getPlanes() const { return m_planes; }
-  
+  std::array<plane_type, nb_plane> &getPlanes() { return m_planes; }
+  const std::array<plane_type, nb_plane> &getPlanes() const { return m_planes; }
+
   const plane_type &getPlane(int id) const { return m_planes[id]; }
   plane_type &getPlane(int id) { return m_planes[id]; }
   int getWidth() const { return m_width; }

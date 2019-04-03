@@ -31,98 +31,103 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "MaxRectPiP.h"
 #include <TMIV/AtlasConstructor/Packer.h>
 #include <queue>
-#include "MaxRectPiP.h"
 
 namespace TMIV::AtlasConstructor {
 
-Packer::Packer(const Common::Json& node)
-{
-	if(auto subnode = node.optional("Alignment"))
-		m_alignment = subnode.asInt();
-	
-	if(auto subnode = node.optional("MinPatchSize"))
-		m_minPatchSize = subnode.asInt();
-	
-	if(auto subnode = node.optional("PiP"))
-		m_pip = subnode.asBool();
+Packer::Packer(const Common::Json &node) {
+  if (auto subnode = node.optional("Alignment"))
+    m_alignment = subnode.asInt();
+
+  if (auto subnode = node.optional("MinPatchSize"))
+    m_minPatchSize = subnode.asInt();
+
+  if (auto subnode = node.optional("PiP"))
+    m_pip = subnode.asBool();
 }
-  
-Metadata::PatchParameterList Packer::doPacking(const std::vector<Vec2i>& atlasSize, const MaskList& masks, const std::vector<std::uint8_t>& shouldNotBeSplit)
-{
-	// Mask clustering
-	ClusterList clusterList;
-	ClusteringMapList clusteringMap;
-	
-	for(int cameraId=0;cameraId<masks.size();cameraId++)
-	{
-		auto clusteringOutput = Cluster::retrieve(cameraId, masks[cameraId], clusterList.size(), shouldNotBeSplit[cameraId]);
-		
-		std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(), std::back_inserter(clusterList));
-		clusteringMap.push_back(std::move(clusteringOutput.second));
-	}
 
-	// Packing
-	PatchParameterList patchList;
-	std::vector<MaxRectPiP> packerList;
-	MaxRectPiP::Output packerOutput;
-	
-	for(const auto& sz: atlasSize)
-		packerList.push_back(MaxRectPiP(sz.x(), sz.y(), m_alignment, m_pip));
-	
-	auto comp = [](const Cluster& p1, const Cluster& p2) { return (p1.getArea() < p2.getArea()); };
-	std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)> clusterToPack(comp);
+Metadata::PatchParameterList
+Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
+                  const std::vector<std::uint8_t> &shouldNotBeSplit) {
+  // Mask clustering
+  ClusterList clusterList;
+  ClusteringMapList clusteringMap;
 
-	for(const auto& cluster: clusterList)
-		clusterToPack.push(cluster);
+  for (int cameraId = 0; cameraId < masks.size(); cameraId++) {
+    auto clusteringOutput =
+        Cluster::retrieve(cameraId, masks[cameraId], clusterList.size(),
+                          shouldNotBeSplit[cameraId]);
 
-	while(!clusterToPack.empty())
-	{
-		const Cluster& cluster = clusterToPack.top();
-		
-		if(m_minPatchSize < cluster.getFilling())
-		{
-			bool packed = false;
-			
-			for(int atlasId=0;atlasId<packerList.size();atlasId++)
-			{
-				MaxRectPiP& packer = packerList[atlasId];
-				
-				if(packer.push(cluster, clusteringMap[cluster.getCameraId()], packerOutput))
-				{
-					Metadata::PatchParameters p;
+    std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
+              std::back_inserter(clusterList));
+    clusteringMap.push_back(std::move(clusteringOutput.second));
+  }
 
-					p.atlasId = atlasId;
-					p.virtualCameraId = cluster.getCameraId();
-					p.patchSize = { Common::align(cluster.width(), m_alignment) , Common::align(cluster.height(), m_alignment) };
-					p.patchMappingPos = { cluster.jmin(), cluster.imin() };
-					p.patchPackingPos = { packerOutput.x(), packerOutput.y() };
-					p.patchRotation = packerOutput.isRotated() ? Metadata::PatchRotation::ccw : Metadata::PatchRotation::upright;
+  // Packing
+  PatchParameterList patchList;
+  std::vector<MaxRectPiP> packerList;
+  MaxRectPiP::Output packerOutput;
 
-					patchList.push_back(std::move(p));
-					
-					packed = true;
-					break;
-				}
-			}
+  for (const auto &sz : atlasSize)
+    packerList.push_back(MaxRectPiP(sz.x(), sz.y(), m_alignment, m_pip));
 
-			if(!packed)
-			{
-				std::pair<Cluster, Cluster> cc = cluster.split(clusteringMap[cluster.getCameraId()]);
-				
-				if(m_minPatchSize <= cc.first.getFilling())
-					clusterToPack.push(std::move(cc.first));
-				
-				if(m_minPatchSize <= cc.second.getFilling())
-					clusterToPack.push(std::move(cc.second));
-			}
-		}
+  auto comp = [](const Cluster &p1, const Cluster &p2) {
+    return (p1.getArea() < p2.getArea());
+  };
+  std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)>
+      clusterToPack(comp);
 
-		clusterToPack.pop();
-	}
+  for (const auto &cluster : clusterList)
+    clusterToPack.push(cluster);
 
-	return patchList;
+  while (!clusterToPack.empty()) {
+    const Cluster &cluster = clusterToPack.top();
+
+    if (m_minPatchSize < cluster.getFilling()) {
+      bool packed = false;
+
+      for (int atlasId = 0; atlasId < packerList.size(); atlasId++) {
+        MaxRectPiP &packer = packerList[atlasId];
+
+        if (packer.push(cluster, clusteringMap[cluster.getCameraId()],
+                        packerOutput)) {
+          Metadata::PatchParameters p;
+
+          p.atlasId = atlasId;
+          p.virtualCameraId = cluster.getCameraId();
+          p.patchSize = {Common::align(cluster.width(), m_alignment),
+                         Common::align(cluster.height(), m_alignment)};
+          p.patchMappingPos = {cluster.jmin(), cluster.imin()};
+          p.patchPackingPos = {packerOutput.x(), packerOutput.y()};
+          p.patchRotation = packerOutput.isRotated()
+                                ? Metadata::PatchRotation::ccw
+                                : Metadata::PatchRotation::upright;
+
+          patchList.push_back(std::move(p));
+
+          packed = true;
+          break;
+        }
+      }
+
+      if (!packed) {
+        std::pair<Cluster, Cluster> cc =
+            cluster.split(clusteringMap[cluster.getCameraId()]);
+
+        if (m_minPatchSize <= cc.first.getFilling())
+          clusterToPack.push(std::move(cc.first));
+
+        if (m_minPatchSize <= cc.second.getFilling())
+          clusterToPack.push(std::move(cc.second));
+      }
+    }
+
+    clusterToPack.pop();
+  }
+
+  return patchList;
 }
 
 } // namespace TMIV::AtlasConstructor

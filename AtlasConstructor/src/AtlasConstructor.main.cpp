@@ -31,9 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 
 using namespace std;
 using namespace TMIV::Common;

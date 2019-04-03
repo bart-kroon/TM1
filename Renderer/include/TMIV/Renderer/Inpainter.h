@@ -34,11 +34,10 @@
 #ifndef _TMIV_RENDERER_INPAINTER_H_
 #define _TMIV_RENDERER_INPAINTER_H_
 
-#include  <TMIV/Renderer/IInpainter.h>
+#include <TMIV/Renderer/IInpainter.h>
 
 namespace TMIV::Renderer {
-class Inpainter : public IInpainter {
-};
+class Inpainter : public IInpainter {};
 } // namespace TMIV::Renderer
 
 #endif

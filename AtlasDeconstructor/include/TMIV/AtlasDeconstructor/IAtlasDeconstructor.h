@@ -52,7 +52,9 @@ public:
   using MVDFrame = Common::MVDFrame;
   using PatchParameterList = Metadata::PatchParameterList;
 
-  virtual MVDFrame getPatchFrameListFromAtlas(const PatchParameterList& patchList, const MVDFrame& atlas) = 0;
+  virtual MVDFrame
+  getPatchFrameListFromAtlas(const PatchParameterList &patchList,
+                             const MVDFrame &atlas) = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

@@ -39,7 +39,7 @@
 #include <limits>
 
 namespace TMIV::Common {
-	
+
 #ifndef M_PI
 constexpr double M_PI = 3.141592653589793238462643383279;
 #endif
@@ -93,13 +93,17 @@ inline int lcm(int a, int b) { return std::abs(a * b) / gcd(a, b); }
 inline double ppd2pps(double ppd) { return sqr(180. * ppd / M_PI); }
 inline double pps2ppd(double pps) { return sqrt(pps) * M_PI / 180.; }
 
-template <typename T, typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value,
-                                              int>::type = 0>
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value ||
+                                      std::is_floating_point<T>::value,
+                                  int>::type = 0>
 T conjugate(T v) {
   return v;
 }
-template <typename T, typename std::enable_if<!(std::is_integral<T>::value || std::is_floating_point<T>::value),
-                                              int>::type = 0>
+template <typename T,
+          typename std::enable_if<!(std::is_integral<T>::value ||
+                                    std::is_floating_point<T>::value),
+                                  int>::type = 0>
 T conjugate(T v) {
   return std::conj(v);
 }

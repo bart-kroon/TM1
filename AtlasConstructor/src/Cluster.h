@@ -36,8 +36,7 @@
 
 #include <TMIV/AtlasConstructor/IPruner.h>
 
-namespace TMIV::AtlasConstructor
-{
+namespace TMIV::AtlasConstructor {
 
 using ClusteringMap = Common::Mat<uint16_t>;
 using ClusteringMapList = std::vector<ClusteringMap>;
@@ -45,39 +44,49 @@ using ClusteringMapList = std::vector<ClusteringMap>;
 class Cluster;
 using ClusterList = std::vector<Cluster>;
 
-class Cluster
-{
+class Cluster {
 protected:
-	int cameraId_ = 0, clusterId_ = 0;
-	int imin_ = std::numeric_limits<int>::max(), jmin_ = std::numeric_limits<int>::max();
-	int imax_ = std::numeric_limits<int>::min(), jmax_ = std::numeric_limits<int>::min();
-	int filling_ = 0;
+  int cameraId_ = 0, clusterId_ = 0;
+  int imin_ = std::numeric_limits<int>::max(),
+      jmin_ = std::numeric_limits<int>::max();
+  int imax_ = std::numeric_limits<int>::min(),
+      jmax_ = std::numeric_limits<int>::min();
+  int filling_ = 0;
+
 public:
-	Cluster() = default;
-	Cluster(int cameraId, int clusterId);
-	Cluster(const Cluster&) = default;
-	Cluster(Cluster&&) = default;
-	Cluster& operator=(const Cluster&) = default;
-	Cluster& operator=(Cluster&&) = default;
-	void push(int i, int j);
-	int getCameraId() const { return cameraId_; }
-	int getClusterId() const { return clusterId_; }
-	int imin() const { return imin_; }
-	int jmin() const { return jmin_; }
-	int imax() const { return imax_; }
-	int jmax() const { return jmax_; }
-	int getFilling() const { return filling_; }
-	int width() const { return (jmax_ - jmin_ + 1); }
-	int height() const { return (imax_ - imin_ + 1); }
-	int getArea() const { return width() * height(); }
-	std::pair<Cluster, Cluster> split(const Mask& clusteringBuffer) const;
-	static Cluster Empty() { Cluster out; out.imin_ = 0; out.imax_ = 0; out.jmin_ = 0; out.jmax_ = 0; return out; }
-	static Cluster align(const Cluster& c, int alignment);
-	static Cluster merge(const Cluster& c1, const Cluster& c2);
-	static std::pair<ClusterList, ClusteringMap> retrieve(int cameraId, const Mask& maskMap, int firstClusterId = 0, bool shouldMerge = false);
+  Cluster() = default;
+  Cluster(int cameraId, int clusterId);
+  Cluster(const Cluster &) = default;
+  Cluster(Cluster &&) = default;
+  Cluster &operator=(const Cluster &) = default;
+  Cluster &operator=(Cluster &&) = default;
+  void push(int i, int j);
+  int getCameraId() const { return cameraId_; }
+  int getClusterId() const { return clusterId_; }
+  int imin() const { return imin_; }
+  int jmin() const { return jmin_; }
+  int imax() const { return imax_; }
+  int jmax() const { return jmax_; }
+  int getFilling() const { return filling_; }
+  int width() const { return (jmax_ - jmin_ + 1); }
+  int height() const { return (imax_ - imin_ + 1); }
+  int getArea() const { return width() * height(); }
+  std::pair<Cluster, Cluster> split(const Mask &clusteringBuffer) const;
+  static Cluster Empty() {
+    Cluster out;
+    out.imin_ = 0;
+    out.imax_ = 0;
+    out.jmin_ = 0;
+    out.jmax_ = 0;
+    return out;
+  }
+  static Cluster align(const Cluster &c, int alignment);
+  static Cluster merge(const Cluster &c1, const Cluster &c2);
+  static std::pair<ClusterList, ClusteringMap>
+  retrieve(int cameraId, const Mask &maskMap, int firstClusterId = 0,
+           bool shouldMerge = false);
 };
 
 } // namespace TMIV::AtlasConstructor
 
 #endif
- 

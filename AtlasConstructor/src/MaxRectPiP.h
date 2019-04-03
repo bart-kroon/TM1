@@ -34,64 +34,72 @@
 #ifndef _TMIV_ATLASCONSTRUCTOR_MAXRECTPIP_H_
 #define _TMIV_ATLASCONSTRUCTOR_MAXRECTPIP_H_
 
-#include <list>
 #include "Cluster.h"
+#include <list>
 
-namespace TMIV::AtlasConstructor
-{
+namespace TMIV::AtlasConstructor {
 
-class MaxRectPiP
-{
+class MaxRectPiP {
 public:
-	class Output
-	{
-	protected:
-		int m_x = 0;
-		int m_y = 0;
-		bool m_isRotated = false;
-	public:
-		void set(int x, int y, bool isRotated) { m_x = x; m_y = y; m_isRotated = isRotated; }
-		int x() const { return m_x; }
-		int y() const { return m_y; }
-		bool isRotated() const { return m_isRotated; }
-	};
-	using OccupancyMap = TMIV::Common::Mat<std::uint8_t>;
+  class Output {
+  protected:
+    int m_x = 0;
+    int m_y = 0;
+    bool m_isRotated = false;
+
+  public:
+    void set(int x, int y, bool isRotated) {
+      m_x = x;
+      m_y = y;
+      m_isRotated = isRotated;
+    }
+    int x() const { return m_x; }
+    int y() const { return m_y; }
+    bool isRotated() const { return m_isRotated; }
+  };
+  using OccupancyMap = TMIV::Common::Mat<std::uint8_t>;
+
 private:
-	class Rectangle
-	{
-	protected:
-		int m_x0 = 0, m_y0 = 0;
-		int m_x1 = 0, m_y1 = 0;
-	public:
-		Rectangle() = default;
-		Rectangle(int x0, int y0, int x1, int y1): m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
-		int left() const { return m_x0; }
-		int right() const { return m_x1; }
-		int bottom() const { return m_y0; }
-		int top() const { return m_y1; }
-		int width() const { return (m_x1 - m_x0 + 1); }
-		int height() const { return (m_y1 - m_y0 + 1); }
-		std::vector<Rectangle> split(int w, int h) const;
-		std::vector<Rectangle> remove(const Rectangle& r) const;
-		bool isInside(const Rectangle& r) const;
-		float getShortSideFitScore(int w, int h) const;
-		int getArea() const { return (width() * height()); }
-	};
+  class Rectangle {
+  protected:
+    int m_x0 = 0, m_y0 = 0;
+    int m_x1 = 0, m_y1 = 0;
+
+  public:
+    Rectangle() = default;
+    Rectangle(int x0, int y0, int x1, int y1)
+        : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
+    int left() const { return m_x0; }
+    int right() const { return m_x1; }
+    int bottom() const { return m_y0; }
+    int top() const { return m_y1; }
+    int width() const { return (m_x1 - m_x0 + 1); }
+    int height() const { return (m_y1 - m_y0 + 1); }
+    std::vector<Rectangle> split(int w, int h) const;
+    std::vector<Rectangle> remove(const Rectangle &r) const;
+    bool isInside(const Rectangle &r) const;
+    float getShortSideFitScore(int w, int h) const;
+    int getArea() const { return (width() * height()); }
+  };
+
 protected:
-	int m_width = 0, m_height = 0, m_alignment = 0;
-	std::list<Rectangle> m_F;
-	bool m_pip = true;
-	OccupancyMap m_occupancyMap;
+  int m_width = 0, m_height = 0, m_alignment = 0;
+  std::list<Rectangle> m_F;
+  bool m_pip = true;
+  OccupancyMap m_occupancyMap;
+
 public:
-	MaxRectPiP(int w, int h, int a, bool pip);
-	bool push(const Cluster& c, const ClusteringMap& clusteringMap, Output& packerOutput);
+  MaxRectPiP(int w, int h, int a, bool pip);
+  bool push(const Cluster &c, const ClusteringMap &clusteringMap,
+            Output &packerOutput);
+
 protected:
-	void updateOccupancyMap(const Cluster& c, const ClusteringMap& clusteringMap, const Output& packerOutput);
-	bool pushInUsedSpace(int w, int h, Output& packerOutput);
-	bool pushInFreeSpace(int w, int h, Output& packerOutput);
+  void updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
+                          const Output &packerOutput);
+  bool pushInUsedSpace(int w, int h, Output &packerOutput);
+  bool pushInFreeSpace(int w, int h, Output &packerOutput);
 };
 
 } // namespace TMIV::AtlasConstructor
 
 #endif
- 

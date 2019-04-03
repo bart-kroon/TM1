@@ -34,12 +34,10 @@
 #ifndef _TMIV_RENDERER_MULTIPASSRENDERER_H_
 #define _TMIV_RENDERER_MULTIPASSRENDERER_H_
 
-#include  <TMIV/Renderer/IRenderer.h>
+#include <TMIV/Renderer/IRenderer.h>
 
 namespace TMIV::Renderer {
-class MultipassRenderer : public IRenderer {
-};
+class MultipassRenderer : public IRenderer {};
 } // namespace TMIV::Renderer
 
 #endif
-

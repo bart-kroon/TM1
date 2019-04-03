@@ -9,6 +9,7 @@ export CXXFLAGS="-Wall -Wextra -Wpedantic"
 cmake \
     -DCMAKE_INSTALL_PREFIX=../install.gcc \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -G "Unix Makefiles" ..
 cd ..
 

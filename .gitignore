@@ -2,4 +2,7 @@
 .kateproject
 .directory
 build
+build.*
+install
+install.*
 Catch/catch.hpp

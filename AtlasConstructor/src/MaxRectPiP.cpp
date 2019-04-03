@@ -86,7 +86,7 @@ float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const
 MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip): m_width(w), m_height(h), m_alignment(a), m_pip(pip)
 {
 	// Maps
-	uint wa = w / a, ha = h / a;
+	unsigned wa = w / a, ha = h / a;
 	
 	m_occupancyMap.resize({ha, wa});
 	std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), 0);

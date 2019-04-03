@@ -106,6 +106,7 @@ Common::MVDFrame AtlasConstructor::popAtlas()
 {
 	
 	// TODO
+  return {};
 }
 
 } // namespace TMIV::AtlasConstructor

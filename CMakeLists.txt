@@ -20,7 +20,7 @@ add_subdirectory(Metadata)
 add_subdirectory(ViewOptimizer)
 add_subdirectory(AtlasConstructor)
 # add_subdirectory(AtlasDeconstructor)
-# add_subdirectory(Renderer)
+add_subdirectory(Renderer)
 
 add_subdirectory(Encoder)
 # add_subdirectory(Decoder)

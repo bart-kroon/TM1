@@ -52,6 +52,6 @@ if (CMAKE_TESTING_ENABLED)
 		EncoderTest
 		PUBLIC
 			TMIV::EncoderLib
-			TMIV::catch)
+			Catch2::Catch2)
 endif()
 

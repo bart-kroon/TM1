@@ -31,7 +31,49 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <Catch2/catch.hpp>
+
+#include "AccumulatingPixel.h"
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Synthesizer.h>
-#include <catch.hpp>
+
+using namespace TMIV::Common;
+
+SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
+  using PA = TMIV::Renderer::AccumulatingPixel::PixelAccumulator;
+  using PV = TMIV::Renderer::AccumulatingPixel::PixelValue;
+
+  GIVEN("An accumulator with some parameters and a reference pixel value") {
+    float const ray_angle_param = 1.5f;
+    float const depth_param = 60.7f;
+    float const stretching_param = 3.2f;
+    float const ray_angle = 0.01f;
+    float const stretching = 3.f;
+
+    TMIV::Renderer::AccumulatingPixel pixel{ray_angle_param, depth_param,
+                                            stretching_param};
+
+    float const ray_angle_weight = pixel.rayAngleWeight(ray_angle);
+    float const stretching_weight = pixel.stretchingWeight(stretching);
+
+    PV reference{{0.3f, 0.7f, 0.1f},
+                 0.53f,
+                 ray_angle_weight * stretching_weight,
+                 stretching_weight};
+
+    WHEN("A pixel accumulator is constructed from a pixel value") {
+      PA accum = pixel.construct(reference.depth, reference.color, ray_angle,
+                                 stretching);
+      THEN("The average is the pixel value") {
+        PV actual = pixel.average(accum);
+        REQUIRE(actual.color[0] == reference.color[0]);
+        REQUIRE(actual.color[1] == reference.color[1]);
+        REQUIRE(actual.color[2] == reference.color[2]);
+        REQUIRE(actual.depth == reference.depth);
+        REQUIRE(actual.quality == reference.quality);
+        REQUIRE(actual.validity == reference.validity);
+      }
+    }
+  }
+}

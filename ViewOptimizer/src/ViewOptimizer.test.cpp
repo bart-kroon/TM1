@@ -31,5 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <Catch2/catch.hpp>
+
 #include <TMIV/ViewOptimizer/ViewReducer.h>
-#include <catch.hpp>

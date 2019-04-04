@@ -51,6 +51,6 @@ if (CMAKE_TESTING_ENABLED)
 		ViewOptimizerTest
 		PUBLIC
 			TMIV::ViewOptimizerLib
-			TMIV::catch)
+			Catch2::Catch2)
 endif()
 

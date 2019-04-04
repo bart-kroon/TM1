@@ -31,4 +31,5 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <catch.hpp>
+#define CATCH_CONFIG_MAIN
+#include <Catch2/catch.hpp>

@@ -63,6 +63,6 @@ if (CMAKE_TESTING_ENABLED)
 		RendererTest
 		PUBLIC
 			TMIV::RendererLib
-			TMIV::catch)
+			Catch2::Catch2)
 endif()
 

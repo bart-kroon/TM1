@@ -65,6 +65,6 @@ if (CMAKE_TESTING_ENABLED)
 		AtlasConstructorTest
 		PUBLIC
 			TMIV::AtlasConstructorLib
-			TMIV::catch)
+			Catch2::Catch2)
 endif()
 

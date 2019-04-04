@@ -55,5 +55,5 @@ if (CMAKE_TESTING_ENABLED)
 		CommonTest
 		PUBLIC
 			TMIV::CommonLib
-			TMIV::catch)
+			Catch2::Catch2)
 endif()

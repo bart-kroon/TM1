@@ -31,6 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <Catch2/catch.hpp>
+
 #include <TMIV/Common/Common.h>
 
 namespace TMIV::Common {}

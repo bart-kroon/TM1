@@ -55,16 +55,3 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
-
-if (CMAKE_TESTING_ENABLED)
-    add_library(
-		AtlasConstructorTest
-			"src/AtlasConstructor.test.cpp")
-
-    target_link_libraries(
-		AtlasConstructorTest
-		PUBLIC
-			TMIV::AtlasConstructorLib
-			Catch2::Catch2)
-endif()
-

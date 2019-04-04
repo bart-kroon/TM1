@@ -53,16 +53,3 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
-
-if (CMAKE_TESTING_ENABLED)
-    add_library(
-		RendererTest
-			"src/Renderer.test.cpp")
-
-    target_link_libraries(
-		RendererTest
-		PUBLIC
-			TMIV::RendererLib
-			Catch2::Catch2)
-endif()
-

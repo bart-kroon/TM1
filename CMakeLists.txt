@@ -25,17 +25,20 @@ add_subdirectory(Encoder)
 # add_subdirectory(Decoder)
 
 if (CMAKE_TESTING_ENABLED)
-	add_executable(Tester "Tester/Tester.cpp")
-	target_link_libraries(Tester PRIVATE
-		CommonTest
-		ViewOptimizerTest
-		AtlasConstructorTest
-		RendererTest
-		EncoderTest)
+	add_executable(Tester
+		"Common/src/Common.test.cpp"
+		"ViewOptimizer/src/ViewOptimizer.test.cpp"
+		"AtlasConstructor/src/AtlasConstructor.test.cpp"
+		"Encoder/src/Encoder.test.cpp"
+		"Renderer/src/Renderer.test.cpp")
+
+	target_link_libraries(Tester
+		Catch2::Catch2
+		TMIV::EncoderLib
+		TMIV::RendererLib)
 
 	include(Catch)
 	catch_discover_tests(Tester)
-	add_test(NAME Tester COMMAND Tester)
 endif()
 
 add_custom_target(clang_format COMMAND ${CMAKE_COMMAND} "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}" "-P" ${CMAKE_SOURCE_DIR}/clang_format.cmake )

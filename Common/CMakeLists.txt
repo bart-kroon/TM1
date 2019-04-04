@@ -45,15 +45,3 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
-
-if (CMAKE_TESTING_ENABLED)
-    add_library(
-		CommonTest
-			"src/Common.test.cpp")
-
-    target_link_libraries(
-		CommonTest
-		PUBLIC
-			TMIV::CommonLib
-			Catch2::Catch2)
-endif()

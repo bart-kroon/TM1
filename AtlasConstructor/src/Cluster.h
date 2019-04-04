@@ -71,7 +71,7 @@ public:
   int width() const { return (jmax_ - jmin_ + 1); }
   int height() const { return (imax_ - imin_ + 1); }
   int getArea() const { return width() * height(); }
-  std::pair<Cluster, Cluster> split(const Mask &clusteringBuffer) const;
+  std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringBuffer) const;
   static Cluster Empty() {
     Cluster out;
     out.imin_ = 0;

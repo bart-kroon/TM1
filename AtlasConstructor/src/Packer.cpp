@@ -51,20 +51,21 @@ Packer::Packer(const Common::Json &node) {
 Metadata::PatchParameterList
 Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
                   const std::vector<std::uint8_t> &shouldNotBeSplit) {
+  
   // Mask clustering
   ClusterList clusterList;
   ClusteringMapList clusteringMap;
-
+  
   for (auto cameraId = 0u; cameraId < masks.size(); cameraId++) {
     auto clusteringOutput =
-        Cluster::retrieve(cameraId, masks[cameraId], clusterList.size(),
+        Cluster::retrieve(cameraId, masks[cameraId], (int) clusterList.size(),
                           shouldNotBeSplit[cameraId]);
 
     std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
               std::back_inserter(clusterList));
     clusteringMap.push_back(std::move(clusteringOutput.second));
   }
-
+  
   // Packing
   PatchParameterList patchList;
   std::vector<MaxRectPiP> packerList;
@@ -72,7 +73,7 @@ Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
 
   for (const auto &sz : atlasSize)
     packerList.push_back(MaxRectPiP(sz.x(), sz.y(), m_alignment, m_pip));
-
+  
   auto comp = [](const Cluster &p1, const Cluster &p2) {
     return (p1.getArea() < p2.getArea());
   };
@@ -81,20 +82,20 @@ Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
 
   for (const auto &cluster : clusterList)
     clusterToPack.push(cluster);
-
+  
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
     if (m_minPatchSize < cluster.getFilling()) {
       bool packed = false;
-
+           
       for (auto atlasId = 0u; atlasId < packerList.size(); atlasId++) {
         MaxRectPiP &packer = packerList[atlasId];
-
+          
         if (packer.push(cluster, clusteringMap[cluster.getCameraId()],
                         packerOutput)) {
           Metadata::PatchParameters p;
-
+          
           p.atlasId = atlasId;
           p.virtualCameraId = cluster.getCameraId();
           p.patchSize = {Common::align(cluster.width(), m_alignment),
@@ -110,23 +111,24 @@ Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
           packed = true;
           break;
         }
+		
       }
-
+      
       if (!packed) {
-        std::pair<Cluster, Cluster> cc =
-            cluster.split(clusteringMap[cluster.getCameraId()]);
+        auto cc = cluster.split(clusteringMap[cluster.getCameraId()]);
 
         if (m_minPatchSize <= cc.first.getFilling())
           clusterToPack.push(std::move(cc.first));
 
         if (m_minPatchSize <= cc.second.getFilling())
           clusterToPack.push(std::move(cc.second));
+
       }
     }
 
     clusterToPack.pop();
   }
-
+ 
   return patchList;
 }
 

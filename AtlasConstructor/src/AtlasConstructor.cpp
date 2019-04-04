@@ -47,20 +47,17 @@ AtlasConstructor::AtlasConstructor(const Common::Json &node) {
   m_packer = Factory<IPacker>::getInstance().create("Packer", node);
 
   // Single atlas size
-  if (auto subnode = node.optional("AtlasWidth"))
-    m_atlasSize.x() = subnode.asInt();
-
-  if (auto subnode = node.optional("AtlasHeight"))
-    m_atlasSize.y() = subnode.asInt();
+  if (auto subnode = node.optional("AtlasResolution"))
+    m_atlasSize = subnode.asIntVector<2>();
 
   // Maximum pixel rate per frame (Texture or Depth)
-  int maxMegaPixelPerFrame = 7680 * 4320; // 8K UHD
+  int maxMegaPixelPerFrame = 7680 * 4320 / (1000000); // 8K UHD
 
-  if (auto subnode = node.optional("MaxMegaPixelPerFrame"))
+  if (auto subnode = node.optional("MPixel"))
     maxMegaPixelPerFrame = subnode.asInt();
 
   m_nbAtlas =
-      ceil((float)maxMegaPixelPerFrame / (m_atlasSize.x() * m_atlasSize.y()));
+      ceil((float)maxMegaPixelPerFrame * 1000000 / (m_atlasSize.x() * m_atlasSize.y()));
 }
 
 void AtlasConstructor::prepareIntraPeriod() {

@@ -34,4 +34,3 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/Encoder/Encoder.h>
-

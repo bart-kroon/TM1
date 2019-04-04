@@ -47,8 +47,14 @@ namespace Array {
 using size_type = unsigned int;
 
 template <typename T>
-class const_iterator
-    : public std::iterator<std::random_access_iterator_tag, T> {
+class const_iterator {
+public:
+  typedef std::random_access_iterator_tag iterator_category;
+  typedef T value_type;
+  typedef std::ptrdiff_t difference_type;
+  typedef T *pointer;
+  typedef T &reference;
+
 protected:
   T *m_p;
 
@@ -155,9 +161,13 @@ iterator<T> operator+(std::ptrdiff_t n, const iterator<T> &rhs) {
   return rhs + n;
 }
 
-template <typename T>
-class const_dim_iterator
-    : public std::iterator<std::random_access_iterator_tag, T> {
+template <typename T> class const_dim_iterator {
+public:
+  typedef std::random_access_iterator_tag iterator_category;
+  typedef T value_type;
+  typedef std::ptrdiff_t difference_type;
+  typedef T *pointer;
+  typedef T &reference;
 protected:
   T *m_p;
   std::ptrdiff_t m_step;
@@ -1483,9 +1493,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void add(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 + v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 + v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1501,9 +1512,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void sub(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 - v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 - v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1519,9 +1531,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void mult(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 * v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 * v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1537,9 +1550,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void div(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 / v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 / v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>

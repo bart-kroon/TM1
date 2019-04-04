@@ -47,7 +47,7 @@ void Aggregator::pushMask(const MaskList &mask) {
       std::transform(
           m_aggregatedMask[i].begin(), m_aggregatedMask[i].end(),
           mask[i].begin(), m_aggregatedMask[i].begin(),
-          [](std::uint16_t v1, std::uint16_t v2) { return std::max(v1, v2); });
+          [](std::uint8_t v1, std::uint8_t v2) { return std::max(v1, v2); });
     }
   }
 }

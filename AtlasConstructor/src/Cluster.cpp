@@ -94,7 +94,7 @@ Cluster Cluster::merge(const Cluster &c1, const Cluster &c2) {
   return c;
 }
 
-std::pair<Cluster, Cluster> Cluster::split(const Mask &clusteringMap) const {
+std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap) const {
   const Cluster &c = (*this);
   Cluster c1(c.getCameraId(), c.getClusterId()),
       c2(c.getCameraId(), c.getClusterId());

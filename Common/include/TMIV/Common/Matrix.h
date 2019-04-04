@@ -38,9 +38,11 @@
 #include "Math.h"
 
 namespace TMIV::Common {
-	
-struct Matrix { enum Property { None, Symmetric, Hermitian, Positive, Lower, Upper }; };
-	
+
+struct Matrix {
+  enum Property { None, Symmetric, Hermitian, Positive, Lower, Upper };
+};
+
 template <typename A> class MatrixInterface : public A {
 public:
   typedef typename A::size_type size_type;
@@ -126,9 +128,13 @@ public:
            (A::getProperty() == Matrix::Property::Positive);
   }
   //! \brief Returns true if the matrix is hermitian.
-  bool isHermitian() const { return (A::getProperty() == Matrix::Property::Hermitian); }
+  bool isHermitian() const {
+    return (A::getProperty() == Matrix::Property::Hermitian);
+  }
   //! \brief Returns true if the matrix is positive.
-  bool isPositive() const { return (A::getProperty() == Matrix::Property::Positive); }
+  bool isPositive() const {
+    return (A::getProperty() == Matrix::Property::Positive);
+  }
   //! \brief Returns true if the matrix is lower.
   bool isLower() const { return (A::getProperty() == Matrix::Property::Lower); }
   //! \brief Returns true if the matrix is upper.

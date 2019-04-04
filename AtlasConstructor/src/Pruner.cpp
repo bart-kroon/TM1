@@ -65,7 +65,7 @@ MaskList Pruner::doPruning(const Metadata::CameraParameterList &cameras,
             });
 
   // Pruning loop
-  int nbView = views.size();
+  int nbView = (int) views.size();
   MaskList masks(nbView);
 
   for (int id1 = 0; id1 < nbView; id1++) {

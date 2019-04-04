@@ -73,7 +73,7 @@ float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const {
   int dw = width() - w, dh = height() - h;
 
   if ((0 <= dw) && (0 <= dh))
-    return (std::min)(dw, dh);
+    return (float) (std::min)(dw, dh);
   else
     return std::numeric_limits<float>::max();
 }
@@ -180,7 +180,8 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
 
   auto isGoodCandidate = [this](int xmin, int xmax, int ymin,
                                 int ymax) -> bool {
-    if ((xmax < (int) m_occupancyMap.width()) && (ymax < (int) m_occupancyMap.height())) {
+    if ((xmax < (int)m_occupancyMap.width()) &&
+        (ymax < (int)m_occupancyMap.height())) {
       for (int y = ymin; y <= ymax; y++) {
         for (int x = xmin; x <= xmax; x++) {
           if (m_occupancyMap(y, x) != 128)
@@ -193,8 +194,8 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
       return false;
   };
 
-  for (std::size_t Y = 0; Y < m_occupancyMap.height(); Y++) {
-    for (std::size_t X = 0; X < m_occupancyMap.width(); X++) {
+  for (auto Y = 0u; Y < m_occupancyMap.height(); Y++) {
+    for (auto X = 0u; X < m_occupancyMap.width(); X++) {
       // Without Rotation
       if (isGoodCandidate(X, X + W - 1, Y, Y + H - 1)) {
         packerOutput.set(X * m_alignment, Y * m_alignment, false);

@@ -1,6 +1,8 @@
 #!/bin/bash
 # Example script for building TMIV with clang
 
+trap exit ERR
+
 mkdir -p build.clang
 cd build.clang
 export CC=clang

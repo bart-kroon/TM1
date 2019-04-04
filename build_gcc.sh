@@ -1,6 +1,8 @@
 #!/bin/bash
 # Example script for building TMIV with gcc
 
+trap exit ERR
+
 mkdir -p build.gcc
 cd build.gcc
 export CC=gcc

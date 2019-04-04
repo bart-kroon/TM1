@@ -38,13 +38,14 @@
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Synthesizer.h>
 
+using namespace std;
 using namespace TMIV::Common;
 
 SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
   using PA = TMIV::Renderer::AccumulatingPixel::PixelAccumulator;
   using PV = TMIV::Renderer::AccumulatingPixel::PixelValue;
 
-  GIVEN("An accumulator with some parameters and a reference pixel value") {
+  GIVEN("A pixel accumulator that is constructed from a pixel value") {
     float const ray_angle_param = 1.5f;
     float const depth_param = 60.7f;
     float const stretching_param = 3.2f;
@@ -62,11 +63,43 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
                  ray_angle_weight * stretching_weight,
                  stretching_weight};
 
-    WHEN("A pixel accumulator is constructed from a pixel value") {
-      PA accum = pixel.construct(reference.depth, reference.color, ray_angle,
-                                 stretching);
+    PA accum = pixel.construct(reference.depth, reference.color, ray_angle,
+                               stretching);
+
+    WHEN("The pixel value is directly computed") {
+      PV actual = pixel.average(accum);
+
       THEN("The average is the pixel value") {
-        PV actual = pixel.average(accum);
+        REQUIRE(actual.color[0] == reference.color[0]);
+        REQUIRE(actual.color[1] == reference.color[1]);
+        REQUIRE(actual.color[2] == reference.color[2]);
+        REQUIRE(actual.depth == reference.depth);
+        REQUIRE(actual.quality == reference.quality);
+        REQUIRE(actual.validity == reference.validity);
+      }
+    }
+
+    WHEN("The pixel is blended with itself") {
+      PA accum2 = pixel.blend(accum, accum);
+      PV actual = pixel.average(accum2);
+
+      THEN("The average is the same but with double quality") {
+        REQUIRE(actual.color[0] == reference.color[0]);
+        REQUIRE(actual.color[1] == reference.color[1]);
+        REQUIRE(actual.color[2] == reference.color[2]);
+        REQUIRE(actual.depth == reference.depth);
+        REQUIRE(actual.quality == 2 * reference.quality);
+        REQUIRE(actual.validity == reference.validity);
+      }
+    }
+
+    WHEN("The pixel is blended with another pixel that has invalid depth") {
+      const float NaN = numeric_limits<float>::quiet_NaN();
+      PA accumNaN =
+          pixel.construct(NaN, reference.color, ray_angle, stretching);
+      PV actual = pixel.average(pixel.blend(accum, accumNaN));
+
+      THEN("It is af the pixel has not been blended") {
         REQUIRE(actual.color[0] == reference.color[0]);
         REQUIRE(actual.color[1] == reference.color[1]);
         REQUIRE(actual.color[2] == reference.color[2]);

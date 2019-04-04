@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Catch2/catch.hpp>
+#include <catch2/catch.hpp>
 
 #include "AccumulatingPixel.h"
 #include <TMIV/Renderer/Inpainter.h>

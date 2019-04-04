@@ -46,6 +46,9 @@ using Mat2f = Common::Mat<Vec2f>;
 using Mat3f = Common::Mat<Vec3f>;
 using Metadata::CameraParameters;
 
+// Create a grid of positions indicating the center of each of the pixels
+Mat2f imagePositions(const CameraParameters &camera);
+
 // OMAF Referential: x forward, y left, z up
 // Image plane: u right, v down
 
@@ -72,6 +75,12 @@ std::pair<Mat2f, Mat1f> reprojectPoints(const CameraParameters &fromCamera,
                                         const CameraParameters &toCamera,
                                         const Mat2f &positions,
                                         const Mat1f &depth);
+
+// Calculate ray angles between input and output camera. Units are radians.
+//
+// The points should be in the target frame of reference.
+Mat1f calculateRayAngles(const CameraParameters &fromCamera,
+                         const CameraParameters &toCamera, const Mat3f &points);
 } // namespace TMIV::Renderer
 
 #endif

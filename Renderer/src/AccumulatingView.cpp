@@ -38,11 +38,29 @@
 #include <iterator>
 
 using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
 AccumulatingView::AccumulatingView(double rayAngleParam, double depthParam,
                                    double stretchingParam)
     : m_pixel{rayAngleParam, depthParam, stretchingParam} {}
+
+AccumulatingView::Mat1f AccumulatingView::depth() const {
+  assert(!m_sums.empty());
+  Mat1f result(m_sums.sizes());
+  std::transform(
+      begin(m_sums), end(m_sums), begin(result),
+      [this](const PixelAccumulator &acc) { return 1.f / acc.normDisp; });
+  return result;
+}
+
+AccumulatingView::Mat1f AccumulatingView::normDisp() const {
+  assert(!m_sums.empty());
+  Mat1f result(m_sums.sizes());
+  std::transform(begin(m_sums), end(m_sums), begin(result),
+                 [this](const PixelAccumulator &acc) { return acc.normDisp; });
+  return result;
+}
 
 AccumulatingView &AccumulatingView::blendWith(AccumulatingView const &other) {
   if (m_sums.empty()) {
@@ -59,7 +77,8 @@ AccumulatingView &AccumulatingView::blendWith(AccumulatingView const &other) {
 }
 
 void AccumulatingView::transform(const Mat3f &texture, const Mat2f &positions,
-                                 const Mat1f &depth, Vec2i outputSize,
+                                 const Mat1f &depth, const Mat1f &rayAngles,
+                                 Vec2i outputSize,
                                  WrappingMethod wrappingMethod) {
   if (m_sums.empty()) {
     m_sums.resize(outputSize.y(), outputSize.x());
@@ -78,7 +97,7 @@ void AccumulatingView::transform(const Mat3f &texture, const Mat2f &positions,
       auto TR = Vec2i{j + 1, i};
       auto BL = Vec2i{j, i + 1};
       auto BR = Vec2i{j + 1, i + 1};
-      colorizeSquare(texture, depth, positions, TL, TR, BR, BL);
+      colorizeSquare(texture, depth, positions, rayAngles, TL, TR, BR, BL);
     }
 
     // Stitch left and right borders with triangles (e.g. for
@@ -89,26 +108,28 @@ void AccumulatingView::transform(const Mat3f &texture, const Mat2f &positions,
       auto TR = Vec2i{0, i};
       auto BL = Vec2i{width - 1, i + 1};
       auto BR = Vec2i{0, i + 1};
-      colorizeSquare(texture, depth, positions, TL, TR, BR, BL);
+      colorizeSquare(texture, depth, positions, rayAngles, TL, TR, BR, BL);
     }
   }
 }
 
 void AccumulatingView::colorizeSquare(const Mat3f &color, const Mat1f &depth,
-                                      const Mat2f &input_positions, Vec2i TL,
+                                      const Mat2f &input_positions,
+                                      const Mat1f &rayAngles, Vec2i TL,
                                       Vec2i TR, Vec2i BR, Vec2i BL) {
   if (depth(TR.y(), TR.x()) > 0.f && depth(BL.y(), BL.x()) > 0.f) {
     if (depth(TL.y(), TL.x()) > 0.f) {
-      colorizeTriangle(color, depth, input_positions, TL, TR, BL);
+      colorizeTriangle(color, depth, input_positions, rayAngles, TL, TR, BL);
     }
     if (depth(BR.y(), BR.x()) > 0.f) {
-      colorizeTriangle(color, depth, input_positions, BR, BL, TR);
+      colorizeTriangle(color, depth, input_positions, rayAngles, BR, BL, TR);
     }
   }
 }
 
 void AccumulatingView::colorizeTriangle(const Mat3f &color, const Mat1f &depth,
-                                        const Mat2f &positions, Vec2i a,
+                                        const Mat2f &positions,
+                                        const Mat1f &rayAngles, Vec2i a,
                                         Vec2i b, Vec2i c) {
   Vec2f A = positions(a.y(), a.x());
   Vec2f B = positions(b.y(), b.x());
@@ -134,9 +155,8 @@ void AccumulatingView::colorizeTriangle(const Mat3f &color, const Mat1f &depth,
   auto stretching = max({norm(A - B), norm(A - C), norm(B - C)});
 
   // Cosine of ray angles between input and virtual camera
-  auto ray_angle =
-      min({m_rayAngleMap(a.y(), a.x()), m_rayAngleMap(b.y(), b.x()),
-           m_rayAngleMap(c.y(), c.x())});
+  auto ray_angle = min({rayAngles(a.y(), a.x()), rayAngles(b.y(), b.x()),
+                        rayAngles(c.y(), c.x())});
 
   // Fetch color and depth values
   auto colorA = color(a.y(), a.x());

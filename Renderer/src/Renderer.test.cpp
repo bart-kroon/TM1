@@ -37,13 +37,16 @@
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Synthesizer.h>
+#include <TMIV/Renderer/reprojectPoints.h>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
+using namespace TMIV::Renderer;
 
 SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
-  using PA = TMIV::Renderer::AccumulatingPixel::PixelAccumulator;
-  using PV = TMIV::Renderer::AccumulatingPixel::PixelValue;
+  using PA = AccumulatingPixel::PixelAccumulator;
+  using PV = AccumulatingPixel::PixelValue;
 
   GIVEN("A pixel accumulator that is constructed from a pixel value") {
     float const ray_angle_param = 1.5f;
@@ -52,8 +55,7 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     float const ray_angle = 0.01f;
     float const stretching = 3.f;
 
-    TMIV::Renderer::AccumulatingPixel pixel{ray_angle_param, depth_param,
-                                            stretching_param};
+    AccumulatingPixel pixel{ray_angle_param, depth_param, stretching_param};
 
     float const ray_angle_weight = pixel.rayAngleWeight(ray_angle);
     float const stretching_weight = pixel.stretchingWeight(stretching);
@@ -106,6 +108,92 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
         REQUIRE(actual.depth == reference.depth);
         REQUIRE(actual.quality == reference.quality);
         REQUIRE(actual.validity == reference.validity);
+      }
+    }
+  }
+}
+
+SCENARIO("Reprojecting points", "[reprojectPoints]") {
+  GIVEN("A camera and a depth map") {
+    CameraParameters camera{{100, 50},         // size
+                            {1.f, 0.f, -1.f},  // position
+                            {1.f, 2.f, -0.5f}, // orientation
+                            ProjectionType::ERP,
+                            {-180.f, 180.f}, // phi range
+                            {-90.f, 90.f},   // theta range
+                            {},
+                            {},
+                            {},
+                            {1.f, 10.f}}; // depth range
+
+    Mat1f depth({50u, 100u});
+    fill(begin(depth), end(depth), 2.f);
+
+    WHEN("Calculating image positions") {
+      auto positions = imagePositions(camera);
+
+      THEN("The image positions should be at the pixel centers") {
+        REQUIRE(positions(4, 7).x() == 7.5f);
+        REQUIRE(positions(0, 0).x() == 0.5f);
+        REQUIRE(positions(0, 0).y() == 0.5f);
+        REQUIRE(positions(49, 99).x() == 99.5f);
+        REQUIRE(positions(49, 99).y() == 49.5f);
+      }
+
+      WHEN("Reprojecting points to the same camera with valid depth values") {
+        auto actual = reprojectPoints(camera, camera, positions, depth);
+
+        THEN("The positions should not change too much") {
+          REQUIRE(actual.first(4, 7).x() == Approx(7.5f));
+          REQUIRE(actual.first(0, 0).x() == Approx(0.5f));
+          REQUIRE(actual.first(0, 0).y() == Approx(0.5f).margin(1e-4));
+          REQUIRE(actual.first(49, 99).x() == Approx(99.5f));
+          REQUIRE(actual.first(49, 99).y() == Approx(49.5f));
+        }
+
+        THEN("The depth values should not change too much") {
+          REQUIRE(actual.second(4, 7) == Approx(2.f));
+          REQUIRE(actual.second(0, 0) == Approx(2.f));
+          REQUIRE(actual.second(0, 0) == Approx(2.f));
+          REQUIRE(actual.second(49, 99) == Approx(2.f));
+          REQUIRE(actual.second(49, 99) == Approx(2.f));
+        }
+      }
+    }
+  }
+}
+
+SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
+  using Mat1f = TMIV::Common::Mat<float>;
+
+  GIVEN("A synthesizer, camera and a depth map") {
+    Synthesizer synthesizer{1., 1., 1.};
+
+    CameraParameters camera{{100, 50},         // size
+                            {1.f, 0.f, -1.f},  // position
+                            {1.f, 2.f, -0.5f}, // orientation
+                            ProjectionType::ERP,
+                            {-180.f, 180.f}, // phi range
+                            {-90.f, 90.f},   // theta range
+                            {},
+                            {},
+                            {},
+                            {1.f, 10.f}}; // depth range
+
+    Mat1f depth({unsigned(camera.size.y()), unsigned(camera.size.x())});
+    REQUIRE(depth.width() == 100);
+    REQUIRE(depth.height() == 50);
+	fill(begin(depth), end(depth), 2.f);
+
+    WHEN("Synthesizing to the same viewpoint") {
+      auto actual = synthesizer.renderDepth(depth, camera, camera);
+
+      THEN("The output depth should match the input depth") {
+        for (int i = 0; i != depth.height(); ++i) {
+          for (int j = 0; j != depth.width(); ++j) {
+            REQUIRE(actual(i, j) == Approx(2.f));
+          }
+        }
       }
     }
   }

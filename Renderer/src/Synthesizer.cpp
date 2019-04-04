@@ -42,18 +42,6 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 namespace {
-// TODO: Make a better mesh. This is just to get started.
-Mat2f imagePositions(const CameraParameters &camera) {
-  Mat2f result;
-  result.resize(camera.size.y(), camera.size.x());
-  for (unsigned i = 0; i != result.height(); ++i) {
-    for (unsigned j = 0; j != result.width(); ++j) {
-      result(i, j) = {float(j) + 0.5f, float(i) + 0.5f};
-    }
-  }
-  return result;
-}
-
 WrappingMethod wrappingMethod(const CameraParameters &camera) {
   if (camera.type == ProjectionType::ERP &&
       camera.erpPhiRange == Vec2f{-180.f, 180.f}) {
@@ -62,6 +50,11 @@ WrappingMethod wrappingMethod(const CameraParameters &camera) {
   return WrappingMethod::none;
 }
 } // namespace
+
+Synthesizer::Synthesizer(double rayAngleParam, double depthParam,
+                         double stretchingParam)
+    : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
+      m_stretchingParam{stretchingParam} {}
 
 TextureFrame Synthesizer::renderTexture(const MVDFrame &frame,
                                         const PatchParameterList &patches,
@@ -83,18 +76,22 @@ TextureDepthFrame Synthesizer::renderTextureDepth(
   return {};
 }
 
-Mat<float> Synthesizer::renderDepth(const Mat1f &frame,
-                                    const CameraParameters &camera,
-                                    const CameraParameters &target) const {
-  auto positions_depth =
-      reprojectPoints(camera, target, imagePositions(camera), frame);
+Mat1f Synthesizer::renderDepth(const Mat1f &frame,
+                               const CameraParameters &camera,
+                               const CameraParameters &target) const {
+  auto inPositions = imagePositions(camera);
+  auto inPoints = unprojectPoints(camera, inPositions, frame);
+  auto outPoints = changeReferenceFrame(camera, target, inPoints);
+  auto positions_depth = projectPoints(target, outPoints);
+  auto rayAngles = calculateRayAngles(camera, target, outPoints);
 
   AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam};
 
   // TODO: Templatize AccumulatingView to avoid interpolating and alphablending
   // texture for nothing
   Mat3f texture{positions_depth.first.sizes()};
-  av.transform(texture, positions_depth.first, positions_depth.second, target.size, wrappingMethod(target));
+  av.transform(texture, positions_depth.first, positions_depth.second, rayAngles,
+               target.size, wrappingMethod(target));
   return av.depth();
 }
 } // namespace TMIV::Renderer

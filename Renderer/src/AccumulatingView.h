@@ -71,10 +71,14 @@ public:
   // Synthesized and blended texture
   Mat3f texture() const;
 
-  // Syntesized and blended depth map
+  // Syntesized and blended depth map (depth values are meters)
   Mat1f depth() const;
 
-  // Quality of blended result (based on ray angle, depth and stretching of contributions)
+  // Syntesized and blended depth map (depth values are diopters)
+  Mat1f normDisp() const;
+
+  // Quality of blended result (based on ray angle, depth and stretching of
+  // contributions)
   Mat1f quality() const;
 
   // Validity of blended result (based on stretching of contributions)
@@ -93,20 +97,20 @@ public:
    * Calls average()
    */
   void transform(const Mat3f &texture, const Mat2f &positions,
-                 const Mat1f &depth, Vec2i outputSize,
+                 const Mat1f &depth, const Mat1f &rayAngles, Vec2i outputSize,
                  WrappingMethod wrappingMethod);
 
 private:
   void colorizeTriangle(const Mat3f &color, const Mat1f &depth,
-                        const Mat2f &positions, Vec2i a, Vec2i b, Vec2i c);
+                        const Mat2f &positions, const Mat1f &rayAngles, Vec2i a,
+                        Vec2i b, Vec2i c);
 
   void colorizeSquare(const Mat3f &color, const Mat1f &depth,
-                      const Mat2f &positions, Vec2i TL, Vec2i TR, Vec2i BR,
-                      Vec2i BL);
+                      const Mat2f &positions, const Mat1f &rayAngles, Vec2i TL,
+                      Vec2i TR, Vec2i BR, Vec2i BL);
 
   AccumulatingPixel m_pixel;
   Common::Mat<PixelAccumulator> m_sums;
-  Mat1f m_rayAngleMap;
 };
 } // namespace TMIV::Renderer
 

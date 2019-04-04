@@ -62,9 +62,9 @@ Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
 }
 
 Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
-  return mult(mult(rotationMatrixFromRotationAroundZ(rotation[0]),
-                   rotationMatrixFromRotationAroundY(rotation[1])),
-              rotationMatrixFromRotationAroundX(rotation[2]));
+  return mult(mult(rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]),
+                   rotationMatrixFromRotationAroundY(radperdeg * rotation[1])),
+              rotationMatrixFromRotationAroundX(radperdeg * rotation[2]));
 }
 
 template <ProjectionType TYPE> class Unprojector {};
@@ -161,6 +161,18 @@ private:
 };
 } // namespace
 
+// TODO: Make a better mesh. This is just to get started.
+Mat2f imagePositions(const CameraParameters &camera) {
+  Mat2f result;
+  result.resize(camera.size.y(), camera.size.x());
+  for (unsigned i = 0; i != result.height(); ++i) {
+    for (unsigned j = 0; j != result.width(); ++j) {
+      result(i, j) = {float(j) + 0.5f, float(i) + 0.5f};
+    }
+  }
+  return result;
+}
+
 template <ProjectionType TYPE>
 Mat3f unprojectPoints(const Mat2f &positions, const Mat1f &depth,
                       Unprojector<TYPE> unprojector) {
@@ -239,5 +251,25 @@ std::pair<Mat2f, Mat1f> reprojectPoints(const CameraParameters &fromCamera,
   auto points = unprojectPoints(fromCamera, positions, depth);
   points = changeReferenceFrame(fromCamera, toCamera, points);
   return projectPoints(toCamera, points);
+}
+
+Mat1f calculateRayAngles(const CameraParameters &fromCamera,
+                         const CameraParameters &toCamera,
+                         const Mat3f &points) {
+  Mat1f result(points.sizes());
+
+  const auto R2 = EulerAnglesToRotationMatrix(toCamera.rotation);
+  const auto &t1 = fromCamera.position;
+  const auto &t2 = toCamera.position;
+  const auto t = transpose(R2) * (t2 - t1);
+
+  transform(begin(points), end(points), begin(result), [t](Vec3f virtualRay) {
+    auto inputRay = virtualRay - t;
+    float cosRayAngle = min(1.f, dot(virtualRay, inputRay) /
+                                     (norm(virtualRay) * norm(inputRay)));
+    return acos(cosRayAngle);
+  });
+
+  return result;
 }
 } // namespace TMIV::Renderer

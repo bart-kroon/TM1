@@ -37,6 +37,19 @@
 namespace TMIV::AtlasConstructor {
 
 ////////////////////////////////////////////////////////////////////////////////
+std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w, int h) const
+{
+	std::vector<Rectangle> out;
+	
+	if(h < height())
+		out.push_back(Rectangle(m_x0, m_y0 + h, m_x1, m_y1));
+	
+	if(w < width())
+		out.push_back(Rectangle(m_x0 + w, m_y0, m_x1, m_y1));
+	
+	return out;
+}
+	
 std::vector<MaxRectPiP::Rectangle>
 MaxRectPiP::Rectangle::remove(const Rectangle &r) const {
   std::vector<Rectangle> out;

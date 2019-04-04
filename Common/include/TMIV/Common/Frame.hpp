@@ -92,7 +92,7 @@ template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
 
     for (int j = 0; j < h; j++) {
       is.read((char *)ptr, lineSize);
-      ptr = ptr + (vFlip ? -lineSize : lineSize);
+      ptr = ptr + (vFlip ? -w : w);
     }
   }
 }
@@ -107,7 +107,7 @@ void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
 
     for (int j = 0; j < h; j++) {
       os.write((char *)ptr, lineSize);
-      ptr = ptr + (vFlip ? -lineSize : lineSize);
+      ptr = ptr + (vFlip ? -w : w);
     }
   }
 }

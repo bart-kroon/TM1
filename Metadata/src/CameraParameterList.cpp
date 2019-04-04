@@ -68,8 +68,8 @@ CameraParameters loadCameraFromJson(uint16_t /*id*/, const Common::Json &node) {
   auto proj = node.require("Projection").asString();
   if (proj == "Equirectangular") {
     parameters.type = ProjectionType::ERP;
-    parameters.erpPhiRange = node.require("Rotation").asFloatVector<2>();
-    parameters.erpThetaRange = node.require("Rotation").asFloatVector<2>();
+    parameters.erpPhiRange = node.require("Hor_range").asFloatVector<2>();
+    parameters.erpThetaRange = node.require("Ver_range").asFloatVector<2>();
   } else if (proj == "Perspective") {
     parameters.type = ProjectionType::Perspective;
     parameters.perspectiveFocal = node.require("Focal").asFloatVector<2>();

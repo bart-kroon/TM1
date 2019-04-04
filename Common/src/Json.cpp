@@ -216,7 +216,7 @@ Json::Json(istream &stream) {
       throw runtime_error(what.str());
     }
 
-    Json{value};
+    m_value = move(value);
   } catch (runtime_error &e) {
     throw runtime_error(string("JSON parser: ") + e.what());
   }

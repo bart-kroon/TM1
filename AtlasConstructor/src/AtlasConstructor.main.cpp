@@ -31,6 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// AtlasConstructor/AtlasConstructor -p SourceDirectory /run/media/julien/My\ Passport/git/TMIV/data/ClassroomVideo/data/ -c /run/media/julien/My\ Passport/git/TMIV/data/ClassroomVideo/atlasConstructor.json
+
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
 #include <TMIV/AtlasConstructor/Pruner.h>
 #include <TMIV/AtlasConstructor/Aggregator.h>
@@ -63,28 +65,31 @@ private:
 		}
 	};
 private:
-	static ComponentRegistrator m_componentRegistrator;
+	std::string m_sourceDirectory;
 	int m_startFrame = 0;
 	int m_numberOfFrames = 32;
 	int m_intraPeriod = 32;
-	Vec2i m_sourceResolution = { 0, 0 };
 	std::vector<int> m_baseViewId = { 0 };
 	std::vector<int> m_additionalViewId = { 1 };
 	unique_ptr<IAtlasConstructor> m_atlasContructor;
 public:
 	Application(vector<const char *> argv): Common::Application{"AtlasConstructor", move(argv)}
 	{
+		static ComponentRegistrator componentRegistrator;
+		
+		if (auto subnode = json().optional("SourceDirectory"))
+			m_sourceDirectory = subnode.asString();
+
 		m_startFrame = json().require("startFrame").asInt();
 		m_numberOfFrames = json().require("numberOfFrames").asInt();
 		m_intraPeriod = json().require("intraPeriod").asInt();
-		m_sourceResolution = json().require("SourceResolution").asIntVector<2>();
 		
 		if (auto subnode = json().optional("BaseView"))
 		{
 			m_baseViewId.clear();
 
 			for(auto i=0u; i < subnode.size() ; i++)
-			m_baseViewId.push_back(subnode.at(i).asInt());
+				m_baseViewId.push_back(subnode.at(i).asInt());
 		}
 		
 		if (auto subnode = json().optional("AdditionalView"))
@@ -94,7 +99,7 @@ public:
 			for(auto i=0u; i < subnode.size() ; i++)
 				m_additionalViewId.push_back(subnode.at(i).asInt());
 		}
-		
+
 		m_atlasContructor = create<IAtlasConstructor>("AtlasConstructor");
 	}
 	
@@ -102,24 +107,17 @@ public:
 	{
 		// Loading cameras
 		auto allCameras = loadCameras();
-		CameraParameterList baseCameras, additionalCameras;
-		
-		for(auto id: m_baseViewId)
-			baseCameras.push_back(std::move(allCameras[id]));
-		
-		for(auto id: m_additionalViewId)
-			additionalCameras.push_back(std::move(allCameras[id]));
-		
-		
+
 		for (int intraFrame = 0; intraFrame < m_numberOfFrames; intraFrame += m_intraPeriod)
 		{
 			int endFrame = min(m_numberOfFrames, intraFrame + m_intraPeriod);
 			cout << "Intra period: [" << intraFrame << ", " << endFrame << ")\n";
 
 			m_atlasContructor->prepareIntraPeriod();
+			
 			for (int frame = intraFrame; frame < endFrame; ++frame)
 			{
-				MVDFrame allViews = loadViews(m_startFrame + frame, allCameras.size());
+				MVDFrame allViews = loadViews(allCameras, m_startFrame + frame, allCameras.size());
 				
 				// Lazy view optimization
 				MVDFrame baseViews, additionalViews;
@@ -139,26 +137,25 @@ public:
 
 				// Push frame
 				cout << "Push input frame " << (m_startFrame + frame) << '\n';
-				m_atlasContructor->pushFrame(baseCameras, baseViews, additionalCameras, additionalViews);
+//				m_atlasContructor->pushFrame(baseCameras, baseViews, additionalCameras, additionalViews);
 			}
 			
-			m_atlasContructor->completeIntraPeriod();
+//			m_atlasContructor->completeIntraPeriod();
 
-			saveMetadata(intraFrame, m_atlasContructor->getCameras(),
-						m_atlasContructor->getPatchList());
+// 			saveMetadata(intraFrame, m_atlasContructor->getCameras(), m_atlasContructor->getPatchList());
 
-			for (int frame = intraFrame; frame < endFrame; ++frame)
-			{
-				cout << "Pop output atlas " << frame << '\n';
-				auto atlases = m_atlasContructor->popAtlas();
-				saveViews(frame, atlases);
-			}
+// 			for (int frame = intraFrame; frame < endFrame; ++frame)
+// 			{
+// 				cout << "Pop output atlas " << frame << '\n';
+// 				auto atlas = m_atlasContructor->popAtlas();
+// 				saveViews(frame, atlas);
+// 			}
 		}
 	}
 private:
 	Metadata::CameraParameterList loadCameras() const
 	{
-		ifstream stream{json().require("SourceCameraParameters").asString()};
+		ifstream stream{m_sourceDirectory + "/" + json().require("SourceCameraParameters").asString()};
 		
 		if (!stream.good())
 		{
@@ -167,36 +164,37 @@ private:
 		
 		return Metadata::loadCamerasFromJson(Common::Json{stream}.require("cameras"), json().require("SourceCameraNames").asStringVector());
 	}
-	MVDFrame loadViews(int inputFrame, size_t numberOfViews) const
+	MVDFrame loadViews(const Metadata::CameraParameterList& cameras, int inputFrame, size_t numberOfViews) const
 	{
 		MVDFrame result(numberOfViews);
 
 		for (auto view = 0u; view < numberOfViews; ++view)
 		{
-			auto id = json().require("SourceCameraIDs").at(view).asInt();
-			
+			Vec2i sourceResolution = cameras[view].size;
+			auto id = json().require("SourceCameraNames").at(view).asString();
+
 			{
-				auto texturePath = Common::format(json().require("SourceTexturePathFmt").asString().c_str(), id);
-				ifstream stream{texturePath};
-				
-				stream.seekg(streampos(inputFrame) * m_sourceResolution.x() * m_sourceResolution.y() * 3); // YUV420P10
-				result[view].first.resize(m_sourceResolution.y(), m_sourceResolution.x());
+				auto texturePath = Common::format(json().require("SourceTexturePathFmt").asString().c_str(), id.c_str());
+				ifstream stream{m_sourceDirectory + "/" + texturePath};
+
+				stream.seekg(streampos(inputFrame) * sourceResolution.x() * sourceResolution.y() * 3); // YUV420P10
+				result[view].first.resize(sourceResolution.x(), sourceResolution.y());
 				result[view].first.read(stream);
 			}
 			
 			{
-				auto depthPath = Common::format(json().require("SourceDepthPathFmt").asString().c_str(), id);
-				ifstream stream{depthPath};
+				auto depthPath = Common::format(json().require("SourceDepthPathFmt").asString().c_str(), id.c_str());
+				ifstream stream{m_sourceDirectory + "/" + depthPath};
 				
-				stream.seekg(streampos(inputFrame) * m_sourceResolution.x() * m_sourceResolution.y() * 2); // YUV400P16
-				result[view].second.resize(m_sourceResolution.y(), m_sourceResolution.x());
+				stream.seekg(streampos(inputFrame) * sourceResolution.x() * sourceResolution.y() * 2); // YUV400P16
+				result[view].second.resize(sourceResolution.x(), sourceResolution.y());
 				result[view].second.read(stream);
 			}
 		}
 		
 		return result;
 	}
-	void saveViews(int outputFrame, const MVDFrame& atlases) const
+	void saveViews(int outputFrame, const MVDFrame& atlas) const
 	{
 		// TODO
 	}

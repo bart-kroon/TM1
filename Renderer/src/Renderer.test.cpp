@@ -189,8 +189,8 @@ SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
       auto actual = synthesizer.renderDepth(depth, camera, camera);
 
       THEN("The output depth should match the input depth") {
-        for (int i = 0; i != depth.height(); ++i) {
-          for (int j = 0; j != depth.width(); ++j) {
+        for (auto i = 0u; i != depth.height(); ++i) {
+          for (auto j = 0u; j != depth.width(); ++j) {
             REQUIRE(actual(i, j) == Approx(2.f));
           }
         }

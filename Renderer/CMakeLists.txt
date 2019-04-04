@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 add_library(RendererLib
 	"src/IRenderer.cpp"
 	"src/IInpainter.cpp"
@@ -23,7 +26,8 @@ add_library(TMIV::RendererLib
 
 target_link_libraries(RendererLib
 	PUBLIC TMIV::CommonLib
-	PUBLIC TMIV::MetadataLib)
+	PUBLIC TMIV::MetadataLib
+	PRIVATE Threads::Threads)
 
 target_include_directories(RendererLib
 	PUBLIC

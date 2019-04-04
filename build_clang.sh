@@ -5,7 +5,7 @@ mkdir -p build.clang
 cd build.clang
 export CC=clang
 export CXX=clang++
-export CXXFLAGS="-Wall -Wextra -Wpedantic"
+export CXXFLAGS="-Wall -Wextra -Wpedantic -stdlib=libc++"
 cmake \
     -DCMAKE_INSTALL_PREFIX=../install.clang \
     -DCMAKE_BUILD_TYPE=Release \

@@ -40,7 +40,7 @@
 namespace TMIV::Common {
 template <typename A> class MatrixInterface : public A {
 public:
-  enum class Property { None, Symmetric, Hermitian, Positive, Lower, Upper };
+  enum Property { None, Symmetric, Hermitian, Positive, Lower, Upper };
 
   typedef typename A::size_type size_type;
   typedef typename A::const_dim_iterator const_row_iterator;

@@ -42,7 +42,7 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
                                         const std::vector<std::string> &names) {
   CameraParameterList result;
   for (const auto &name : names) {
-    for (int i = 0; i != node.size(); ++i) {
+    for (std::size_t i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
         // NOTE: The JSON format does not have a camera ID
         result.push_back(loadCameraFromJson(0, node.at(i)));
@@ -58,7 +58,7 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
 }
 
 // The parameter is a an item of the cameras node (a JSON object).
-CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node) {
+CameraParameters loadCameraFromJson(uint16_t /*id*/, const Common::Json &node) {
   CameraParameters parameters;
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();

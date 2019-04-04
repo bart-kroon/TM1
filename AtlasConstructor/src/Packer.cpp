@@ -55,7 +55,7 @@ Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   ClusterList clusterList;
   ClusteringMapList clusteringMap;
 
-  for (int cameraId = 0; cameraId < masks.size(); cameraId++) {
+  for (auto cameraId = 0u; cameraId < masks.size(); cameraId++) {
     auto clusteringOutput =
         Cluster::retrieve(cameraId, masks[cameraId], clusterList.size(),
                           shouldNotBeSplit[cameraId]);
@@ -88,7 +88,7 @@ Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
     if (m_minPatchSize < cluster.getFilling()) {
       bool packed = false;
 
-      for (int atlasId = 0; atlasId < packerList.size(); atlasId++) {
+      for (auto atlasId = 0u; atlasId < packerList.size(); atlasId++) {
         MaxRectPiP &packer = packerList[atlasId];
 
         if (packer.push(cluster, clusteringMap[cluster.getCameraId()],

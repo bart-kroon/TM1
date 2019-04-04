@@ -18,7 +18,7 @@ add_subdirectory(Metadata)
 
 add_subdirectory(ViewOptimizer)
 add_subdirectory(AtlasConstructor)
-# add_subdirectory(AtlasDeconstructor)
+add_subdirectory(AtlasDeconstructor)
 add_subdirectory(Renderer)
 
 add_subdirectory(Encoder)
@@ -29,12 +29,14 @@ if (CMAKE_TESTING_ENABLED)
 		"Common/src/Common.test.cpp"
 		"ViewOptimizer/src/ViewOptimizer.test.cpp"
 		"AtlasConstructor/src/AtlasConstructor.test.cpp"
+		"AtlasDeconstructor/src/AtlasDeconstructor.test.cpp"
 		"Encoder/src/Encoder.test.cpp"
 		"Renderer/src/Renderer.test.cpp")
 
 	target_link_libraries(Tester
 		Catch2::Catch2
 		TMIV::EncoderLib
+		TMIV::AtlasDeconstructorLib
 		TMIV::RendererLib)
 
 	include(Catch)

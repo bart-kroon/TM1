@@ -360,8 +360,6 @@ template <typename MAT> MAT chol(const MAT &A, int *info) {
 
 namespace detail {
 template <typename T> T det(shallow::Matrix<T> A, int *info) {
-  using size_type = Array::size_type;
-
   heap::Matrix<T> LU;
   std::vector<int> P;
   int n = PLU(A, LU, P);

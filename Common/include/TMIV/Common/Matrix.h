@@ -38,13 +38,14 @@
 #include "Math.h"
 
 namespace TMIV::Common {
+	
+struct Matrix { enum Property { None, Symmetric, Hermitian, Positive, Lower, Upper }; };
+	
 template <typename A> class MatrixInterface : public A {
 public:
-  enum Property { None, Symmetric, Hermitian, Positive, Lower, Upper };
-
   typedef typename A::size_type size_type;
   typedef typename A::const_dim_iterator const_row_iterator;
-  typedef typename A::dim_iterator row_iterator;  
+  typedef typename A::dim_iterator row_iterator;
   typedef typename A::const_dim_iterator const_column_iterator;
   typedef typename A::dim_iterator column_iterator;
 
@@ -121,21 +122,21 @@ public:
   bool isColumn() const { return (n() == 1); }
   //! \brief Returns true if the matrix is symmetric.
   bool isSymmetric() const {
-    return (A::getProperty() == Property::Symmetric) ||
-           (A::getProperty() == Property::Positive);
+    return (A::getProperty() == Matrix::Property::Symmetric) ||
+           (A::getProperty() == Matrix::Property::Positive);
   }
   //! \brief Returns true if the matrix is hermitian.
-  bool isHermitian() const { return (A::getProperty() == Property::Hermitian); }
+  bool isHermitian() const { return (A::getProperty() == Matrix::Property::Hermitian); }
   //! \brief Returns true if the matrix is positive.
-  bool isPositive() const { return (A::getProperty() == Property::Positive); }
+  bool isPositive() const { return (A::getProperty() == Matrix::Property::Positive); }
   //! \brief Returns true if the matrix is lower.
-  bool isLower() const { return (A::getProperty() == Property::Lower); }
+  bool isLower() const { return (A::getProperty() == Matrix::Property::Lower); }
   //! \brief Returns true if the matrix is upper.
-  bool isUpper() const { return (A::getProperty() == Property::Upper); }
+  bool isUpper() const { return (A::getProperty() == Matrix::Property::Upper); }
   //! \brief Returns true if the matrix is triangular.
   bool isTriangular() const {
-    return (A::getProperty() == Property::Lower) ||
-           (A::getProperty() == Property::Upper);
+    return (A::getProperty() == Matrix::Property::Lower) ||
+           (A::getProperty() == Matrix::Property::Upper);
   }
   static MatrixInterface diag(const std::vector<typename A::value_type> &v) {
     MatrixInterface out;

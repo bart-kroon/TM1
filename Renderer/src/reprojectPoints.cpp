@@ -181,9 +181,9 @@ pair<Mat2f, Mat1f> projectPoints(const Mat3f &points,
   auto i_depth = begin(depth);
 
   for (auto point : points) {
-    auto [uv, d] = projector(point);
-    *i_positions++ = uv;
-    *i_depth++ = d;
+    auto uv_d = projector(point);
+    *i_positions++ = move(uv_d.first);
+    *i_depth++ = move(uv_d.second);
   }
 
   return {positions, depth};

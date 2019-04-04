@@ -86,15 +86,15 @@ TextureDepthFrame Synthesizer::renderTextureDepth(
 Mat<float> Synthesizer::renderDepth(const Mat1f &frame,
                                     const CameraParameters &camera,
                                     const CameraParameters &target) const {
-  auto [positions, depth] =
+  auto positions_depth =
       reprojectPoints(camera, target, imagePositions(camera), frame);
 
   AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam};
 
   // TODO: Templatize AccumulatingView to avoid interpolating and alphablending
   // texture for nothing
-  Mat3f texture{depth.sizes()};
-  av.transform(texture, positions, depth, target.size, wrappingMethod(target));
+  Mat3f texture{positions_depth.first.sizes()};
+  av.transform(texture, positions_depth.first, positions_depth.second, target.size, wrappingMethod(target));
   return av.depth();
 }
 } // namespace TMIV::Renderer

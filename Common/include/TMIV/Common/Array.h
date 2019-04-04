@@ -912,7 +912,7 @@ public:
   template <typename... I>
   size_type distance(size_type first, I... next) const {
     return pos(1, first, next...);
-  };
+  }
   //! \brief Unary - operator.
   container_type operator-() const {
     container_type v(sizes());
@@ -1238,7 +1238,7 @@ public:
   template <typename... I>
   size_type distance(size_type first, I... next) const {
     return pos(1, first, next...);
-  };
+  }
   //! \brief Unary - operator.
   container_type operator-() const {
     container_type v(sizes());

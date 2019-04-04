@@ -44,8 +44,7 @@ public:
 
   typedef typename A::size_type size_type;
   typedef typename A::const_dim_iterator const_row_iterator;
-  typedef typename A::dim_iterator row_iterator;
-  ;
+  typedef typename A::dim_iterator row_iterator;  
   typedef typename A::const_dim_iterator const_column_iterator;
   typedef typename A::dim_iterator column_iterator;
 

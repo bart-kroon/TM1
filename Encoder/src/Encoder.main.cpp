@@ -106,8 +106,8 @@ private:
         ifstream stream{texturePath};
         stream.seekg(streampos(inputFrame) * m_sourceResolution.x() *
                      m_sourceResolution.y() * 3); // YUV420P10
-        result[view].first.resize(m_sourceResolution.x(),
-                                  m_sourceResolution.y());
+        result[view].first.resize(m_sourceResolution.y(),
+                                  m_sourceResolution.x());
         result[view].first.read(stream);
       }
       {
@@ -116,8 +116,8 @@ private:
         ifstream stream{depthPath};
         stream.seekg(streampos(inputFrame) * m_sourceResolution.x() *
                      m_sourceResolution.y() * 2); // YUV400P16
-        result[view].second.resize(m_sourceResolution.x(),
-                                   m_sourceResolution.y());
+        result[view].second.resize(m_sourceResolution.y(),
+                                   m_sourceResolution.x());
         result[view].second.read(stream);
       }
     }

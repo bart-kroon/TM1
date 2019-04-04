@@ -31,55 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_CAMERAPARAMETERLIST_H_
-#define _TMIV_METADATA_CAMERAPARAMETERLIST_H_
+#ifndef _TMIV_RENDERER_REPROJECTPOINTS_H_
+#define _TMIV_RENDERER_REPROJECTPOINTS_H_
 
-#include <cstdint>
-#include <vector>
-
-#include <TMIV/Common/Json.h>
+#include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
+#include <TMIV/Metadata/CameraParameterList.h>
 
-namespace TMIV::Metadata {
-enum class ProjectionType { ERP, CubeMap, Perspective };
-enum class CubicMapType { CubeMap, EAC };
-using Common::Vec2f;
-using Common::Vec2i;
-using Common::Vec3f;
+namespace TMIV::Renderer {
+using Vec2f = Common::Vec2f;
+using Vec3f = Common::Vec3f;
+using Mat1f = Common::Mat<float>;
+using Mat2f = Common::Mat<Vec2f>;
+using Mat3f = Common::Mat<Vec3f>;
+using Metadata::CameraParameters;
 
-// Camera parameters data type (part of MetadataLib)
-// Based on working draft description
-//
-// Read the RVS 3.x manual for interpretation of angles
-struct CameraParameters {
-  Vec2i size{};     // Camera sensor size (width, height) in pixels
-  Vec3f position{}; // (x, y, z) in meters, OMAF definition
-  Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
+// OMAF Referential: x forward, y left, z up
+// Image plane: u right, v down
 
-  ProjectionType type{ProjectionType::ERP};
-  Vec2f erpPhiRange{};   // Horizontal range in degrees
-  Vec2f erpThetaRange{}; // Vertical rnage in degrees
-  CubicMapType cubicMapType{CubicMapType::CubeMap};
-  Vec2f perspectiveFocal{};  // Focal length
-  Vec2f perspectiveCenter{}; // Principle point
-  Vec2f depthRange{};        // [near, far]
-};
+// Unproject points: From image positions to world positions (with the camera as
+// reference frame)
+Mat3f unprojectPoints(const CameraParameters &camera, const Mat2f &positions,
+                      const Mat1f &depth);
 
-using CameraParameterList = std::vector<CameraParameters>;
+// Change the reference frame from one to another camera (merging extrinsic
+// parameters)
+Mat3f changeReferenceFrame(const CameraParameters &fromCamera,
+                           const CameraParameters &toCamera, Mat3f points);
 
-bool intrinsicParamsEqual(const CameraParameterList &);
+// Project points: From world positions (with the camera as reference frame)
+// to image positions
+std::pair<Mat2f, Mat1f> projectPoints(const CameraParameters &camera,
+                                      const Mat3f &points);
 
-// Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
-// with cameras specified by name, in that order
-//
-// The first parameter is the cameras node (a JSON array).
-CameraParameterList loadCamerasFromJson(const Common::Json &node,
-                                        const std::vector<std::string> &names);
-
-// Load a single (source) camera from a JSON metadata file (RVS 3.x format)
-//
-// The parameter is a an item of the cameras node (a JSON object).
-CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node);
-} // namespace TMIV::Metadata
+// Reproject points by combining above three steps:
+//  1) Unproject to world points in the reference frame of the first camera
+//  2) Change the reference frame from the first to the second camera
+//  3) Project to image points
+std::pair<Mat2f, Mat1f> reprojectPoints(const CameraParameters &fromCamera,
+                                        const CameraParameters &toCamera,
+                                        const Mat2f &positions,
+                                        const Mat1f &depth);
+} // namespace TMIV::Renderer
 
 #endif

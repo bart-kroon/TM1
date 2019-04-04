@@ -7,10 +7,14 @@ add_library(RendererLib
     "src/MultipassRenderer.cpp"
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
+	"src/reprojectPoints.cpp"
+	"src/AccumulatingPixel.cpp"
+	"src/AccumulatingView.cpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
     "include/TMIV/Renderer/MultipassRenderer.h"
-	"include/TMIV/Renderer/Inpainter.h")
+	"include/TMIV/Renderer/Inpainter.h"
+	"include/TMIV/Renderer/reprojectPoints.h")
 
 add_library(TMIV::RendererLib
 	ALIAS RendererLib)

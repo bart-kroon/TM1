@@ -42,13 +42,11 @@ using namespace TMIV::Metadata;
 namespace TMIV::Renderer {
 TextureDepthFrame
 IRenderer::renderTextureDepth(const MVDFrame &frame,
-                              const PatchParameterList &patches,
                               const CameraParameterList &cameras,
                               const Metadata::CameraParameters &target) const {
-  auto texture = async(launch::async, [&]() {
-    return renderTexture(frame, patches, cameras, target);
-  });
-  auto depth = renderDepth(frame, patches, cameras, target);
+  auto texture = async(launch::async,
+                       [&]() { return renderTexture(frame, cameras, target); });
+  auto depth = renderDepth(frame, cameras, target);
   return {texture.get(), move(depth)};
 }
 } // namespace TMIV::Renderer

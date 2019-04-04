@@ -48,21 +48,18 @@ public:
   // Implementation of IRenderer interface
   Common::TextureFrame
   renderTexture(const Common::MVDFrame &frame,
-                const Metadata::PatchParameterList &patches,
                 const Metadata::CameraParameterList &cameras,
                 const Metadata::CameraParameters &target) const override;
 
   // Implementation of IRenderer interface
   Common::DepthFrame
   renderDepth(const Common::MVDFrame &frame,
-              const Metadata::PatchParameterList &patches,
               const Metadata::CameraParameterList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   // Implementation of IRenderer interface
   Common::TextureDepthFrame
   renderTextureDepth(const Common::MVDFrame &frame,
-                     const Metadata::PatchParameterList &patches,
                      const Metadata::CameraParameterList &cameras,
                      const Metadata::CameraParameters &target) const override;
 

@@ -45,6 +45,14 @@ AccumulatingView::AccumulatingView(double rayAngleParam, double depthParam,
                                    double stretchingParam)
     : m_pixel{rayAngleParam, depthParam, stretchingParam} {}
 
+AccumulatingView::Mat3f AccumulatingView::texture() const {
+  assert(!m_sums.empty());
+  Mat3f result(m_sums.sizes());
+  std::transform(begin(m_sums), end(m_sums), begin(result),
+                 [this](const PixelAccumulator &acc) { return acc.color; });
+  return result;
+}
+
 AccumulatingView::Mat1f AccumulatingView::depth() const {
   assert(!m_sums.empty());
   Mat1f result(m_sums.sizes());

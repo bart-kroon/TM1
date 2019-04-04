@@ -52,7 +52,6 @@ public:
   // synthesis, blending and inpainting.
   virtual Common::TextureFrame
   renderTexture(const Common::MVDFrame &frame,
-                const Metadata::PatchParameterList &patches,
                 const Metadata::CameraParameterList &cameras,
                 const Metadata::CameraParameters &target) const = 0;
 
@@ -60,7 +59,6 @@ public:
   // synthesis, blending and inpainting.
   virtual Common::DepthFrame
   renderDepth(const Common::MVDFrame &frame,
-              const Metadata::PatchParameterList &patches,
               const Metadata::CameraParameterList &cameras,
               const Metadata::CameraParameters &target) const = 0;
 
@@ -69,7 +67,6 @@ public:
   // efficiency reasons.
   virtual Common::TextureDepthFrame
   renderTextureDepth(const Common::MVDFrame &frame,
-                     const Metadata::PatchParameterList &patches,
                      const Metadata::CameraParameterList &cameras,
                      const Metadata::CameraParameters &target) const;
 };

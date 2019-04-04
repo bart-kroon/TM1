@@ -131,9 +131,6 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
            0, 0, 1};
   }
 
-  int wMinusOne = clusteringMap.width() - 1,
-      hMinusOne = clusteringMap.height() - 1;
-
   int xMin = packingPosition[0], xMax = packingPosition[0] + packingSize[0] - 1;
   int yMin = packingPosition[1], yMax = packingPosition[1] + packingSize[1] - 1;
 
@@ -177,11 +174,13 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
 
 bool MaxRectPiP::pushInUsedSpace(int w, int h,
                                  MaxRectPiP::Output &packerOutput) {
+
+
   int W = w / m_alignment, H = h / m_alignment;
 
   auto isGoodCandidate = [this](int xmin, int xmax, int ymin,
                                 int ymax) -> bool {
-    if ((xmax < m_occupancyMap.width()) && (ymax < m_occupancyMap.height())) {
+    if ((xmax < (int) m_occupancyMap.width()) && (ymax < (int) m_occupancyMap.height())) {
       for (int y = ymin; y <= ymax; y++) {
         for (int x = xmin; x <= xmax; x++) {
           if (m_occupancyMap(y, x) != 128)
@@ -194,8 +193,8 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
       return false;
   };
 
-  for (int Y = 0; Y < m_occupancyMap.height(); Y++) {
-    for (int X = 0; X < m_occupancyMap.width(); X++) {
+  for (std::size_t Y = 0; Y < m_occupancyMap.height(); Y++) {
+    for (std::size_t X = 0; X < m_occupancyMap.width(); X++) {
       // Without Rotation
       if (isGoodCandidate(X, X + W - 1, Y, Y + H - 1)) {
         packerOutput.set(X * m_alignment, Y * m_alignment, false);

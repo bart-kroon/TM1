@@ -65,9 +65,10 @@ MaskList Pruner::doPruning(const Metadata::CameraParameterList &cameras,
             });
 
   // Pruning loop
-  MaskList masks(views.size());
+  int nbView = views.size();
+  MaskList masks(nbView);
 
-  for (int id1 = 0; id1 < views.size(); id1++) {
+  for (int id1 = 0; id1 < nbView; id1++) {
     int viewToPruneId = cameraOrderId[id1];
     auto &currentMask = masks[viewToPruneId];
 
@@ -80,13 +81,13 @@ MaskList Pruner::doPruning(const Metadata::CameraParameterList &cameras,
       Mat<float> depthMapReference; // TODO convert source depth map in float
 
       for (int id2 = 0; id2 < id1; id2++) {
-        int viewPrunedId = cameraOrderId[id2];
+        // int viewPrunedId = cameraOrderId[id2];
         Mat<float>
             depthMapSynthesized; // TODO synthesize depth of view[viewToPruneId]
                                  // from view[viewPrunedId] + convert
                                  // synthesized map in float
 
-        for (int k = 0; k < depthMapReference.size(); k++) {
+        for (auto k = 0u; k < depthMapReference.size(); k++) {
           auto &mask = currentMask[k];
 
           if (0 < mask) {

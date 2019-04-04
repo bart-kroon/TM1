@@ -48,6 +48,7 @@ public:
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
 
   using PatchParameters = Metadata::PatchParameters;
+  using TextureDepthFrame = Common::TextureDepthFrame;
 
   MVDFrame getPatchFrameListFromAtlas(const PatchParameterList &patchList,
                                       const MVDFrame &atlas) override;

@@ -37,7 +37,46 @@
 #include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {
-class Synthesizer : public ISynthesizer {};
+class Synthesizer : public ISynthesizer {
+public:
+  Synthesizer(double rayAngleParam, double depthParam, double stretchingParam);
+  Synthesizer(const Synthesizer &) = delete;
+  Synthesizer(Synthesizer &&) = default;
+  Synthesizer &operator=(const Synthesizer &) = delete;
+  Synthesizer &operator=(Synthesizer &&) = default;
+
+  // Implementation of IRenderer interface
+  Common::TextureFrame
+  renderTexture(const Common::MVDFrame &frame,
+                const Metadata::PatchParameterList &patches,
+                const Metadata::CameraParameterList &cameras,
+                const Metadata::CameraParameters &target) const override;
+
+  // Implementation of IRenderer interface
+  Common::DepthFrame
+  renderDepth(const Common::MVDFrame &frame,
+              const Metadata::PatchParameterList &patches,
+              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParameters &target) const override;
+
+  // Implementation of IRenderer interface
+  Common::TextureDepthFrame
+  renderTextureDepth(const Common::MVDFrame &frame,
+                     const Metadata::PatchParameterList &patches,
+                     const Metadata::CameraParameterList &cameras,
+                     const Metadata::CameraParameters &target) const override;
+
+  // Implementation of ISynthesizer interface
+  Common::Mat<float>
+  renderDepth(const Common::Mat<float> &frame,
+              const Metadata::CameraParameters &camera,
+              const Metadata::CameraParameters &target) const override;
+
+private:
+  double m_rayAngleParam;
+  double m_depthParam;
+  double m_stretchingParam;
+};
 } // namespace TMIV::Renderer
 
 #endif

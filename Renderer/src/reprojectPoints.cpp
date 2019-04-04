@@ -210,13 +210,8 @@ Mat3f changeReferenceFrame(const CameraParameters &fromCamera,
   const auto &t1 = fromCamera.position;
   const auto &t2 = toCamera.position;
 
-  Mat3x3f M = Mat3x3f::eye();
-  Vec3f pf = M * Vec3f{1.f, 2.f, 3.f};
-
-  const auto R = mult(transpose(R2), R1); // Is this a matrix product?
-  const auto t =
-      -mult(transpose(R2), t2 - t1); // Why isn't t a vector? This is confusing.
-  // static_assert(is_same<decltype(t), const Vec3f>::value);
+  const auto R = transpose(R2) * R1;
+  const auto t = transpose(R2) * (t2 - t1);
 
   for (auto &point : points) {
     point = mult(R, point) + t;

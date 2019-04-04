@@ -44,7 +44,7 @@ TextureDepthFrame
 IRenderer::renderTextureDepth(const MVDFrame &frame,
                               const PatchParameterList &patches,
                               const CameraParameterList &cameras,
-                              const Metadata::CameraParameters &target) {
+                              const Metadata::CameraParameters &target) const {
   auto texture = async(launch::async, [&]() {
     return renderTexture(frame, patches, cameras, target);
   });

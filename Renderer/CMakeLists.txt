@@ -12,8 +12,10 @@ add_library(RendererLib
 	"src/AccumulatingView.cpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
+	"include/TMIV/Renderer/ISynthesizer.h"
     "include/TMIV/Renderer/MultipassRenderer.h"
 	"include/TMIV/Renderer/Inpainter.h"
+	"include/TMIV/Renderer/Synthesizer.h"
 	"include/TMIV/Renderer/reprojectPoints.h")
 
 add_library(TMIV::RendererLib

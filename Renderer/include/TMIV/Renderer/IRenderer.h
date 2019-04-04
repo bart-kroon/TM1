@@ -54,7 +54,7 @@ public:
   renderTexture(const Common::MVDFrame &frame,
                 const Metadata::PatchParameterList &patches,
                 const Metadata::CameraParameterList &cameras,
-                const Metadata::CameraParameters &target) = 0;
+                const Metadata::CameraParameters &target) const = 0;
 
   // Render a depth map for a specified virtual view. This generally involves
   // synthesis, blending and inpainting.
@@ -62,7 +62,7 @@ public:
   renderDepth(const Common::MVDFrame &frame,
               const Metadata::PatchParameterList &patches,
               const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) = 0;
+              const Metadata::CameraParameters &target) const = 0;
 
   // Render both texture and depth. The default implementation calls
   // renderTexture and renderDepth (in parallel), but this may be overriden for
@@ -71,7 +71,7 @@ public:
   renderTextureDepth(const Common::MVDFrame &frame,
                      const Metadata::PatchParameterList &patches,
                      const Metadata::CameraParameterList &cameras,
-                     const Metadata::CameraParameters &target);
+                     const Metadata::CameraParameters &target) const;
 };
 } // namespace TMIV::Renderer
 

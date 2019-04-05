@@ -55,6 +55,7 @@ public:
 private:
   int m_alignment = 8;
   int m_minPatchSize = 64;
+  int m_overlap = 1;
   bool m_pip = true;
 };
 

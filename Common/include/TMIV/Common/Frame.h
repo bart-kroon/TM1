@@ -119,6 +119,8 @@ using Mask = Frame<YUV400P8>;
 using MaskList = std::vector<Mask>;
 
 // Decoder-side is all 10-bit
+using PatchIdMap = Frame<YUV400P16>;
+using PatchIdMapList = std::vector<PatchIdMap>;
 using Depth10Frame = Frame<YUV400P10>;
 using TextureDepth10Frame = std::pair<TextureFrame, Depth10Frame>;
 using MVD10Frame = std::vector<TextureDepth10Frame>;

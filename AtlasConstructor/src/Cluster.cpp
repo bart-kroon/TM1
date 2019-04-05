@@ -41,7 +41,7 @@ static const std::uint16_t INVALID = 65535;
 
 #define tryAddCandidate(a, b)                                                  \
   {                                                                            \
-    std::uint16_t &visitedId = clusteringBuffer(a, b);                            \
+    std::uint16_t &visitedId = clusteringBuffer(a, b);                         \
                                                                                \
     if (visitedId == ACTIVE) {                                                 \
       cluster.push(a, b);                                                      \
@@ -94,24 +94,27 @@ Cluster Cluster::merge(const Cluster &c1, const Cluster &c2) {
   return c;
 }
 
-std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap) const {
-	
-  const auto& clusteringBuffer = clusteringMap.getPlane(0);
+std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap,
+                                           int overlap) const {
+
+  const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = (*this);
   Cluster c1(c.getCameraId(), c.getClusterId()),
       c2(c.getCameraId(), c.getClusterId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
+    int imid1 = std::min(imid + overlap, (int)clusteringBuffer.m() - 1),
+        imid2 = std::max(0, imid - overlap);
 
-    for (int i = c.imin(); i < imid; i++) {
+    for (int i = c.imin(); i < imid1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
         if (clusteringBuffer(i, j) == c.getClusterId())
           c1.push(i, j);
       }
     }
 
-    for (int i = imid; i <= c.imax(); i++) {
+    for (int i = imid2; i <= c.imax(); i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
         if (clusteringBuffer(i, j) == c.getClusterId())
           c2.push(i, j);
@@ -119,16 +122,18 @@ std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap) c
     }
   } else {
     int jmid = (c.jmin() + c.jmax()) / 2;
+    int jmid1 = std::min(jmid + overlap, (int)clusteringBuffer.n() - 1),
+        jmid2 = std::max(0, jmid - overlap);
 
     for (int i = c.imin(); i <= c.imax(); i++) {
-      for (int j = c.jmin(); j < jmid; j++) {
+      for (int j = c.jmin(); j < jmid1; j++) {
         if (clusteringBuffer(i, j) == c.getClusterId())
           c1.push(i, j);
       }
     }
 
     for (int i = c.imin(); i <= c.imax(); i++) {
-      for (int j = jmid; j <= c.jmax(); j++) {
+      for (int j = jmid2; j <= c.jmax(); j++) {
         if (clusteringBuffer(i, j) == c.getClusterId())
           c2.push(i, j);
       }
@@ -138,18 +143,17 @@ std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap) c
   return std::pair<Cluster, Cluster>(std::move(c1), std::move(c2));
 }
 
-std::pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId,
-                                                        const Common::Mask &maskMap,
-                                                        int firstClusterId,
-                                                        bool shouldNotBeSplit) {
+std::pair<ClusterList, ClusteringMap>
+Cluster::retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId,
+                  bool shouldNotBeSplit) {
 
-  std::pair<ClusterList, ClusteringMap> out(ClusterList(), ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
+  std::pair<ClusterList, ClusteringMap> out(
+      ClusterList(), ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
   ClusterList &clusterList = out.first;
   auto &clusteringBuffer = out.second.getPlane(0);
-  
-  const auto& maskBuffer = maskMap.getPlane(0);
+
+  const auto &maskBuffer = maskMap.getPlane(0);
   int A = maskBuffer.m(), B = maskBuffer.n(), S = maskBuffer.size();
-  
 
   // Build active list
   std::vector<int> activeList;
@@ -227,10 +231,9 @@ std::pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId,
     }
 
     // Update seed
-    iter_seed =
-        std::find_if(iter_seed + 1, activeList.end(), [&clusteringBuffer](int i) {
-          return (clusteringBuffer[i] == ACTIVE);
-        });
+    iter_seed = std::find_if(
+        iter_seed + 1, activeList.end(),
+        [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
   }
 
   return out;

@@ -113,9 +113,9 @@ TEST_CASE("Reading a Json", "[Json]") {
     REQUIRE(!json.require("beta").asBool());
     REQUIRE(json.optional("alpha"));
     REQUIRE(!json.optional("beta"));
-	REQUIRE(json.optional("beta").type() == Json::Type::boolean);
+    REQUIRE(json.optional("beta").type() == Json::Type::boolean);
     REQUIRE(!json.optional("gamma"));
-	REQUIRE(json.optional("gamma").type() == Json::Type::null);
+    REQUIRE(json.optional("gamma").type() == Json::Type::null);
   }
 }
 } // namespace TMIV::Common

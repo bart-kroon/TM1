@@ -31,187 +31,216 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// AtlasConstructor/AtlasConstructor -p SourceDirectory /run/media/julien/My\ Passport/git/TMIV/data/ClassroomVideo/data/ -c /run/media/julien/My\ Passport/git/TMIV/data/ClassroomVideo/atlasConstructor.json
-
-#include <TMIV/AtlasConstructor/AtlasConstructor.h>
-#include <TMIV/Renderer/Synthesizer.h>
-#include <TMIV/AtlasConstructor/Pruner.h>
 #include <TMIV/AtlasConstructor/Aggregator.h>
+#include <TMIV/AtlasConstructor/AtlasConstructor.h>
 #include <TMIV/AtlasConstructor/Packer.h>
-#include <TMIV/Common/Common.h>
+#include <TMIV/AtlasConstructor/Pruner.h>
 #include <TMIV/Common/Application.h>
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Factory.h>
-#include <iostream>
+#include <TMIV/Renderer/Synthesizer.h>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
-namespace TMIV::AtlasConstructor
-{
+namespace TMIV::AtlasConstructor {
 
-class Application : public Common::Application
-{
+class Application : public Common::Application {
 private:
-	class ComponentRegistrator
-	{
-	public:
-		ComponentRegistrator()
-		{
-			Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
-			Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
-			Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");
-			Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
-			Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
-		}
-	};
+  class ComponentRegistrator {
+  public:
+    ComponentRegistrator() {
+      Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>(
+          "AtlasConstructor");
+      Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>(
+          "Synthesizer");
+      Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");
+      Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
+      Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
+    }
+  };
+
 private:
-	std::string m_sourceDirectory;
-	int m_startFrame = 0;
-	int m_numberOfFrames = 32;
-	int m_intraPeriod = 32;
-	std::vector<int> m_baseViewId = { 0 };
-	std::vector<int> m_additionalViewId = { 1 };
-	unique_ptr<IAtlasConstructor> m_atlasContructor;
+  std::string m_sourceDirectory = ".";
+  std::string m_outputDirectory = ".";
+  int m_startFrame = 0;
+  int m_numberOfFrames = 32;
+  int m_intraPeriod = 32;
+  std::vector<int> m_baseViewId = {0};
+  std::vector<int> m_additionalViewId = {1};
+  unique_ptr<IAtlasConstructor> m_atlasContructor;
+
 public:
-	Application(vector<const char *> argv): Common::Application{"AtlasConstructor", move(argv)}
-	{
-		static ComponentRegistrator componentRegistrator;
-		
-		if (auto subnode = json().optional("SourceDirectory"))
-			m_sourceDirectory = subnode.asString();
+  Application(vector<const char *> argv)
+      : Common::Application{"AtlasConstructor", move(argv)} {
+    static ComponentRegistrator componentRegistrator;
 
-		m_startFrame = json().require("startFrame").asInt();
-		m_numberOfFrames = json().require("numberOfFrames").asInt();
-		m_intraPeriod = json().require("intraPeriod").asInt();
-		
-		if (auto subnode = json().optional("BaseView"))
-		{
-			m_baseViewId.clear();
+    if (auto subnode = json().optional("SourceDirectory"))
+      m_sourceDirectory = subnode.asString();
 
-			for(auto i=0u; i < subnode.size() ; i++)
-				m_baseViewId.push_back(subnode.at(i).asInt());
-		}
-		
-		if (auto subnode = json().optional("AdditionalView"))
-		{
-			m_additionalViewId.clear();
-			
-			for(auto i=0u; i < subnode.size() ; i++)
-				m_additionalViewId.push_back(subnode.at(i).asInt());
-		}
+    if (auto subnode = json().optional("OutputDirectory"))
+      m_outputDirectory = subnode.asString();
 
-		m_atlasContructor = create<IAtlasConstructor>("AtlasConstructor");
-	}
-	
-	void run() override
-	{
-		// Loading cameras
-		auto allCameras = loadCameras();
+    m_startFrame = json().require("startFrame").asInt();
+    m_numberOfFrames = json().require("numberOfFrames").asInt();
+    m_intraPeriod = json().require("intraPeriod").asInt();
 
-		for (int intraFrame = 0; intraFrame < m_numberOfFrames; intraFrame += m_intraPeriod)
-		{
-			int endFrame = min(m_numberOfFrames, intraFrame + m_intraPeriod);
-			cout << "Intra period: [" << intraFrame << ", " << endFrame << ")\n";
+    if (auto subnode = json().optional("BaseView")) {
+      m_baseViewId.clear();
 
-			m_atlasContructor->prepareIntraPeriod();
-			
-			for (int frame = intraFrame; frame < endFrame; ++frame)
-			{
-				MVDFrame allViews = loadViews(allCameras, m_startFrame + frame, allCameras.size());
+      for (auto i = 0u; i < subnode.size(); i++)
+        m_baseViewId.push_back(subnode.at(i).asInt());
+    }
 
-				// Lazy view optimization
-				MVDFrame baseViews, additionalViews;
-				CameraParameterList baseCameras, additionalCameras;
-				
-				for(auto id: m_baseViewId)
-				{
-					baseViews.push_back(std::move(allViews[id]));
-					baseCameras.push_back(allCameras[id]);
-				}
+    if (auto subnode = json().optional("AdditionalView")) {
+      m_additionalViewId.clear();
 
-				for(auto id: m_additionalViewId)
-				{
-					additionalViews.push_back(std::move(allViews[id]));
-					additionalCameras.push_back(allCameras[id]);
-				}
+      for (auto i = 0u; i < subnode.size(); i++)
+        m_additionalViewId.push_back(subnode.at(i).asInt());
+    }
 
-				// Push frame
-				cout << "Push input frame " << (m_startFrame + frame) << '\n';
-				m_atlasContructor->pushFrame(baseCameras, baseViews, additionalCameras, additionalViews);
-			}
-			
-//			m_atlasContructor->completeIntraPeriod();
+    m_atlasContructor = create<IAtlasConstructor>("AtlasConstructor");
+  }
 
-// 			saveMetadata(intraFrame, m_atlasContructor->getCameras(), m_atlasContructor->getPatchList());
+  void run() override {
+    // Loading cameras
+    auto allCameras = loadCameras();
 
-// 			for (int frame = intraFrame; frame < endFrame; ++frame)
-// 			{
-// 				cout << "Pop output atlas " << frame << '\n';
-// 				auto atlas = m_atlasContructor->popAtlas();
-// 				saveViews(frame, atlas);
-// 			}
-		}
-	}
+    for (int intraFrame = 0; intraFrame < m_numberOfFrames;
+         intraFrame += m_intraPeriod) {
+      int endFrame = min(m_numberOfFrames, intraFrame + m_intraPeriod);
+      cout << "Intra period: [" << intraFrame << ", " << endFrame << ")\n";
+
+      m_atlasContructor->prepareIntraPeriod();
+
+      for (int frame = intraFrame; frame < endFrame; ++frame) {
+        MVDFrame allViews =
+            loadViews(allCameras, m_startFrame + frame, allCameras.size());
+
+        // Lazy view optimization
+        MVDFrame baseViews, additionalViews;
+        CameraParameterList baseCameras, additionalCameras;
+
+        for (auto id : m_baseViewId) {
+          baseViews.push_back(std::move(allViews[id]));
+          baseCameras.push_back(allCameras[id]);
+        }
+
+        for (auto id : m_additionalViewId) {
+          additionalViews.push_back(std::move(allViews[id]));
+          additionalCameras.push_back(allCameras[id]);
+        }
+
+        // Push frame
+        cout << "Push input frame " << (m_startFrame + frame) << '\n';
+        m_atlasContructor->pushFrame(baseCameras, baseViews, additionalCameras,
+                                     additionalViews);
+      }
+
+      m_atlasContructor->completeIntraPeriod();
+
+      saveMetadata(intraFrame, m_atlasContructor->getCameras(),
+                   m_atlasContructor->getPatchList());
+
+      for (int frame = intraFrame; frame < endFrame; ++frame) {
+        cout << "Pop output atlas " << frame << '\n';
+        auto atlas = m_atlasContructor->popAtlas();
+        saveViews(frame, atlas);
+      }
+    }
+  }
+
 private:
-	Metadata::CameraParameterList loadCameras() const
-	{
-		ifstream stream{m_sourceDirectory + "/" + json().require("SourceCameraParameters").asString()};
-		
-		if (!stream.good())
-		{
-			throw runtime_error("Failed to load source camera parameters");
-		}
-		
-		return Metadata::loadCamerasFromJson(Common::Json{stream}.require("cameras"), json().require("SourceCameraNames").asStringVector());
-	}
-	MVDFrame loadViews(const Metadata::CameraParameterList& cameras, int inputFrame, size_t numberOfViews) const
-	{
-		MVDFrame result(numberOfViews);
+  Metadata::CameraParameterList loadCameras() const {
+    ifstream stream{m_sourceDirectory + "/" +
+                    json().require("SourceCameraParameters").asString()};
 
-		for (auto view = 0u; view < numberOfViews; ++view)
-		{
-			Vec2i sourceResolution = cameras[view].size;
-			auto id = json().require("SourceCameraNames").at(view).asString();
+    if (!stream.good()) {
+      throw runtime_error("Failed to load source camera parameters");
+    }
 
-			{
-				auto texturePath = Common::format(json().require("SourceTexturePathFmt").asString().c_str(), id.c_str());
-				ifstream stream{m_sourceDirectory + "/" + texturePath};
+    return Metadata::loadCamerasFromJson(
+        Common::Json{stream}.require("cameras"),
+        json().require("SourceCameraNames").asStringVector());
+  }
+  MVDFrame loadViews(const Metadata::CameraParameterList &cameras,
+                     int inputFrame, size_t numberOfViews) const {
+    MVDFrame result(numberOfViews);
 
-				stream.seekg(streampos(inputFrame) * sourceResolution.x() * sourceResolution.y() * 3); // YUV420P10
-				result[view].first.resize(sourceResolution.x(), sourceResolution.y());
-				result[view].first.read(stream);
-			}
-			
-			{
-				auto depthPath = Common::format(json().require("SourceDepthPathFmt").asString().c_str(), id.c_str());
-				ifstream stream{m_sourceDirectory + "/" + depthPath};
-				
-				stream.seekg(streampos(inputFrame) * sourceResolution.x() * sourceResolution.y() * 2); // YUV400P16
-				result[view].second.resize(sourceResolution.x(), sourceResolution.y());
-				result[view].second.read(stream);
-			}
-		}
-		
-		return result;
-	}
-	void saveViews(int outputFrame, const MVDFrame& atlas) const
-	{
-		// TODO
-	}
-	void saveMetadata(int outputFrame, const CameraParameterList &cameras, const PatchParameterList &patches)
-	{
-		// TODO
-	}
+    for (auto view = 0u; view < numberOfViews; ++view) {
+      Vec2i sourceResolution = cameras[view].size;
+      auto id = json().require("SourceCameraNames").at(view).asString();
+
+      {
+        auto texturePath = Common::format(
+            json().require("SourceTexturePathFmt").asString().c_str(),
+            id.c_str());
+        ifstream stream(m_sourceDirectory + "/" + texturePath,
+                        ifstream::binary);
+
+        stream.seekg(streampos(inputFrame) * sourceResolution.x() *
+                     sourceResolution.y() * 3); // YUV420P10
+        result[view].first.resize(sourceResolution.x(), sourceResolution.y());
+        result[view].first.read(stream);
+      }
+
+      {
+        auto depthPath = Common::format(
+            json().require("SourceDepthPathFmt").asString().c_str(),
+            id.c_str());
+        ifstream stream(m_sourceDirectory + "/" + depthPath, ifstream::binary);
+
+        stream.seekg(streampos(inputFrame) * sourceResolution.x() *
+                     sourceResolution.y() * 2); // YUV400P16
+        result[view].second.resize(sourceResolution.x(), sourceResolution.y());
+        result[view].second.read(stream);
+      }
+    }
+
+    return result;
+  }
+  void saveViews(int outputFrame, const MVDFrame &atlas) const {
+    std::vector<Frame<YUV420P10>> outputDepth;
+
+    for (uint id = 0; id < atlas.size(); id++) {
+      {
+        auto texturePath = Common::format(
+            json().require("AtlasTexturePathFmt").asString().c_str(), id);
+        ofstream os(m_outputDirectory + "/" + texturePath,
+                    ((outputFrame == 0) ? ofstream::trunc : ofstream::app) |
+                        ofstream::binary);
+        atlas[id].first.dump(os);
+      }
+
+      {
+        auto depthPath = Common::format(
+            json().require("AtlasDepthPathFmt").asString().c_str(), id);
+        ofstream os(m_outputDirectory + "/" + depthPath,
+                    ((outputFrame == 0) ? ofstream::trunc : ofstream::app) |
+                        ofstream::binary);
+        Frame<YUV420P10> outputDepthFrame(atlas[id].second.getWidth(),
+                                          atlas[id].second.getHeight());
+
+        convert(atlas[id].second, outputDepthFrame);
+
+        outputDepthFrame.dump(os);
+      }
+    }
+  }
+  void saveMetadata(int outputFrame, const CameraParameterList &cameras,
+                    const PatchParameterList &patches) {
+    // TODO
+  }
 };
 
 } // namespace TMIV::AtlasConstructor
 
-int main(int argc, char *argv[])
-{
-	TMIV::AtlasConstructor::Application app{{argv, argv + argc}};
-	app.run();
-	return 0;
+int main(int argc, char *argv[]) {
+  TMIV::AtlasConstructor::Application app{{argv, argv + argc}};
+  app.run();
+  return 0;
 }

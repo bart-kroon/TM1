@@ -47,7 +47,7 @@ public:
   IAggregator &operator=(const IAggregator &) = delete;
   IAggregator &operator=(IAggregator &&) = default;
   virtual ~IAggregator() = default;
-  
+
   using MaskList = Common::MaskList;
 
   virtual void prepareIntraPeriod() = 0;

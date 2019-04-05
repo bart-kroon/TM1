@@ -48,14 +48,13 @@ public:
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
 
   using PatchParameters = Metadata::PatchParameters;
-  using TextureDepth10Frame = Common::TextureDepth10Frame;
 
-  MVD10Frame getPatchFrameListFromAtlas(const PatchParameterList &patchList,
-                                        const MVD10Frame &atlas) override;
+  PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
+                               const PatchParameterList &patchList) override;
 
 private:
-  TextureDepth10Frame readPatchFromAtlas(const PatchParameters &patch,
-                                         const MVD10Frame &atlas);
+  void writePatchIdInMap(const PatchParameters &patch,
+                         PatchIdMapList &patchMapList, std::uint16_t patchId);
 };
 } // namespace TMIV::AtlasDeconstructor
 

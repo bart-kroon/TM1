@@ -35,6 +35,7 @@
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
 #include <TMIV/Common/Factory.h>
 
+#include <fstream>
 #include <iostream>
 
 using namespace std;
@@ -44,9 +45,12 @@ namespace TMIV::AtlasConstructor {
 
 AtlasConstructor::AtlasConstructor(const Common::Json &node) {
   // Components
-  m_pruner = Factory<IPruner>::getInstance().create("Pruner", node);
-  m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", node);
-  m_packer = Factory<IPacker>::getInstance().create("Packer", node);
+  m_pruner =
+      Factory<IPruner>::getInstance().create("Pruner", node.require("Pruner"));
+  m_aggregator = Factory<IAggregator>::getInstance().create(
+      "Aggregator", node.require("Aggregator"));
+  m_packer =
+      Factory<IPacker>::getInstance().create("Packer", node.require("Packer"));
 
   // Single atlas size
   if (auto subnode = node.optional("AtlasResolution"))
@@ -58,12 +62,12 @@ AtlasConstructor::AtlasConstructor(const Common::Json &node) {
   if (auto subnode = node.optional("MPixel"))
     maxMegaPixelPerFrame = subnode.asInt();
 
-  m_nbAtlas =
-      ceil((float)maxMegaPixelPerFrame * 1000000 / (m_atlasSize.x() * m_atlasSize.y()));
+  m_nbAtlas = ceil((float)maxMegaPixelPerFrame * 1000000 /
+                   (m_atlasSize.x() * m_atlasSize.y()));
 }
 
 void AtlasConstructor::prepareIntraPeriod() {
-	
+
   m_cameras.clear();
   m_isReferenceView.clear();
   m_viewBuffer.clear();
@@ -78,27 +82,27 @@ void AtlasConstructor::pushFrame(const CameraParameterList &baseCameras,
                                  const MVDFrame &additionalViews) {
 
   // Cameras
-	if (m_cameras.empty())
-	{
-		m_cameras.insert(m_cameras.end(), baseCameras.begin(), baseCameras.end());
-		m_isReferenceView.insert(m_isReferenceView.end(), baseCameras.size(), 1);
-		m_cameras.insert(m_cameras.end(), additionalCameras.begin(), additionalCameras.end());
-		m_isReferenceView.insert(m_isReferenceView.end(), additionalViews.size(), 0);
-	}
-  
+  if (m_cameras.empty()) {
+    m_cameras.insert(m_cameras.end(), baseCameras.begin(), baseCameras.end());
+    m_isReferenceView.insert(m_isReferenceView.end(), baseCameras.size(), 1);
+    m_cameras.insert(m_cameras.end(), additionalCameras.begin(),
+                     additionalCameras.end());
+    m_isReferenceView.insert(m_isReferenceView.end(), additionalViews.size(),
+                             0);
+  }
+
   // Views
   MVDFrame views;
-  
+
   views.insert(views.end(), baseViews.begin(), baseViews.end());
   views.insert(views.end(), additionalViews.begin(), additionalViews.end());
-  
+
   // Pruning
   MaskList masks = m_pruner->doPruning(m_cameras, views, m_isReferenceView);
-  
+
   // Aggregation
   m_viewBuffer.push_back(std::move(views));
-//  m_aggregator->pushMask(masks);
-
+  m_aggregator->pushMask(masks);
 }
 
 void AtlasConstructor::completeIntraPeriod() {
@@ -115,12 +119,12 @@ void AtlasConstructor::completeIntraPeriod() {
     MVDFrame atlasList;
 
     for (int i = 0; i < m_nbAtlas; i++) {
-      std::pair<TextureFrame, DepthFrame> atlas = {
-          TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
-          DepthFrame(m_atlasSize.x(), m_atlasSize.y())};
+      TextureDepthFrame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
+                                 DepthFrame(m_atlasSize.x(), m_atlasSize.y())};
 
       for (auto &p : atlas.first.getPlanes())
         std::fill(p.begin(), p.end(), 512);
+
       std::fill(atlas.second.getPlane(0).begin(),
                 atlas.second.getPlane(0).end(), 0);
 
@@ -143,8 +147,8 @@ Common::MVDFrame AtlasConstructor::popAtlas() {
 void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
                                          const MVDFrame &views,
                                          MVDFrame &atlas) {
-  MVDFrame::value_type &currentAtlas = atlas[patch.atlasId];
-  const MVDFrame::value_type &currentView = views[patch.virtualCameraId];
+  auto &currentAtlas = atlas[patch.atlasId];
+  auto &currentView = views[patch.virtualCameraId];
 
   auto &textureAtlasMap = currentAtlas.first;
   auto &depthAtlasMap = currentAtlas.second;
@@ -154,7 +158,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
 
   int w = patch.patchSize.x(), h = patch.patchSize.y();
   int xM = patch.patchMappingPos.x(), yM = patch.patchMappingPos.y();
-  int xP = patch.patchPackingPos.y(), yP = patch.patchPackingPos.x();
+  int xP = patch.patchPackingPos.x(), yP = patch.patchPackingPos.y();
 
   if (patch.patchRotation == Metadata::PatchRotation::upright) {
     for (int dy = 0; dy < h; dy++) {

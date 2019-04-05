@@ -37,19 +37,19 @@
 namespace TMIV::AtlasConstructor {
 
 ////////////////////////////////////////////////////////////////////////////////
-std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w, int h) const
-{
-	std::vector<Rectangle> out;
-	
-	if(h < height())
-		out.push_back(Rectangle(m_x0, m_y0 + h, m_x1, m_y1));
-	
-	if(w < width())
-		out.push_back(Rectangle(m_x0 + w, m_y0, m_x1, m_y1));
-	
-	return out;
+std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w,
+                                                                int h) const {
+  std::vector<Rectangle> out;
+
+  if (h < height())
+    out.push_back(Rectangle(m_x0, m_y0 + h, m_x1, m_y1));
+
+  if (w < width())
+    out.push_back(Rectangle(m_x0 + w, m_y0, m_x1, m_y1));
+
+  return out;
 }
-	
+
 std::vector<MaxRectPiP::Rectangle>
 MaxRectPiP::Rectangle::remove(const Rectangle &r) const {
   std::vector<Rectangle> out;
@@ -86,7 +86,7 @@ float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const {
   int dw = width() - w, dh = height() - h;
 
   if ((0 <= dw) && (0 <= dh))
-    return (float) (std::min)(dw, dh);
+    return (float)(std::min)(dw, dh);
   else
     return std::numeric_limits<float>::max();
 }
@@ -112,7 +112,8 @@ bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap,
   if ((m_pip && pushInUsedSpace(w, h, packerOutput)) ||
       pushInFreeSpace(w, h, packerOutput)) {
     // Update occupancy map
-    updateOccupancyMap(c, clusteringMap, packerOutput);
+    if (m_pip)
+      updateOccupancyMap(c, clusteringMap, packerOutput);
 
     return true;
   } else
@@ -124,71 +125,44 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
                                     const MaxRectPiP::Output &packerOutput) {
   using namespace TMIV::Common;
 
-  const auto& clusteringBuffer = clusteringMap.getPlane(0);
-  Vec2i mappingPosition = {c.jmin(), c.imin()};
-  Vec2i mappingSize = {c.width(), c.height()};
-  Vec2i packingPosition = {packerOutput.x(), packerOutput.y()};
-  Vec2i packingSize = packerOutput.isRotated()
-                          ? Vec2i({mappingSize[1], mappingSize[0]})
-                          : mappingSize;
+  const auto &clusteringBuffer = clusteringMap.getPlane(0);
+  bool isRotated = packerOutput.isRotated();
+  int w = c.width(), h = c.height();
 
-  Mat3x3i Q2P;
+  // Step #0 (in atlas)
+  Vec2i q0 = {packerOutput.x(), packerOutput.y()};
+  int XMin = q0.x() / m_alignment,
+      XLast = (q0.x() + (isRotated ? h : w) - 1) / m_alignment + 1;
+  int YMin = q0.y() / m_alignment,
+      YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
 
-  if (packerOutput.isRotated()) {
-    Q2P = {
-        0, -1, (mappingSize[0] - 1) + (packingPosition[1] + mappingPosition[0]),
-        1, 0,  mappingPosition[1] - packingPosition[0],
-        0, 0,  1};
-  } else {
-    Q2P = {1, 0, mappingPosition[0] - packingPosition[0],
-           0, 1, mappingPosition[1] - packingPosition[1],
-           0, 0, 1};
-  }
+  for (auto Y = YMin; Y < YLast; Y++)
+    std::fill(m_occupancyMap.row_begin(Y) + XMin,
+              m_occupancyMap.row_begin(Y) + XLast, 128);
 
-  int xMin = packingPosition[0], xMax = packingPosition[0] + packingSize[0] - 1;
-  int yMin = packingPosition[1], yMax = packingPosition[1] + packingSize[1] - 1;
+  // Step #1 (in projection)
+  Vec2i p0 = {c.jmin(), c.imin()};
+  int xMin = p0.x(), xMax = p0.x() + w - 1;
+  int yMin = p0.y(), yMax = p0.y() + h - 1;
 
-  int XMin = xMin / m_alignment, XMax = xMax / m_alignment;
-  int YMin = yMin / m_alignment, YMax = yMax / m_alignment;
+  auto p2q = [isRotated, w, h, p0, q0](const Vec2i p) {
+    return isRotated
+               ? (q0 + Vec2i({p.y() - p0.y(), (w - 1) - (p.x() - p0.x())}))
+               : (q0 + (p - p0));
+  };
 
-  for (int Y = YMin; Y <= YMax; Y++) {
-    int y0 = std::max(yMin, Y * m_alignment),
-        y1 = std::min(yMax, y0 + m_alignment);
-
-    for (int X = XMin; X <= XMax; X++) {
-      int x0 = std::max(xMin, X * m_alignment),
-          x1 = std::min(xMax, x0 + m_alignment);
-
-      bool available = true;
-
-      for (int y = y0; y < y1; y++) {
-        for (int x = x0; x < x1; x1++) {
-          Vec3i p = Q2P * Vec3i({x, y, 1});
-
-          if (clusteringBuffer(p.y(), p.x()) ==
-              c.getClusterId()) // (inRange(p.x(), 0, wMinusOne) &&
-                                // inRange(p.y(), 0, hMinusOne)) &&
-          {
-            available = false;
-            break;
-          }
-        }
-
-        if (!available) {
-          m_occupancyMap(Y, X) = 255;
-          break;
-        }
+  for (auto y = yMin; y <= yMax; y++) {
+    for (auto x = xMin; x <= xMax; x++) {
+      if (clusteringBuffer(y, x) == c.getClusterId()) {
+        Vec2i q = p2q(Vec2i({(int)x, (int)y})) / m_alignment;
+        m_occupancyMap(q.y(), q.x()) = 0;
       }
-
-      if (available)
-        m_occupancyMap(Y, X) = 128;
     }
   }
 }
 
 bool MaxRectPiP::pushInUsedSpace(int w, int h,
                                  MaxRectPiP::Output &packerOutput) {
-
 
   int W = w / m_alignment, H = h / m_alignment;
 

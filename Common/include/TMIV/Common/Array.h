@@ -46,8 +46,7 @@ namespace TMIV::Common {
 namespace Array {
 using size_type = unsigned int;
 
-template <typename T>
-class const_iterator {
+template <typename T> class const_iterator {
 public:
   typedef std::random_access_iterator_tag iterator_category;
   typedef T value_type;
@@ -168,6 +167,7 @@ public:
   typedef std::ptrdiff_t difference_type;
   typedef T *pointer;
   typedef T &reference;
+
 protected:
   T *m_p;
   std::ptrdiff_t m_step;

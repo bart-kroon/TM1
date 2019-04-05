@@ -35,6 +35,8 @@
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
 #include <TMIV/Common/Factory.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace TMIV::Common;
 
@@ -61,6 +63,9 @@ AtlasConstructor::AtlasConstructor(const Common::Json &node) {
 }
 
 void AtlasConstructor::prepareIntraPeriod() {
+	
+  m_cameras.clear();
+  m_isReferenceView.clear();
   m_viewBuffer.clear();
   m_atlasBuffer.clear();
 
@@ -71,34 +76,29 @@ void AtlasConstructor::pushFrame(const CameraParameterList &baseCameras,
                                  const MVDFrame &baseViews,
                                  const CameraParameterList &additionalCameras,
                                  const MVDFrame &additionalViews) {
-  // Merging
-  CameraParameterList cameras;
+
+  // Cameras
+	if (m_cameras.empty())
+	{
+		m_cameras.insert(m_cameras.end(), baseCameras.begin(), baseCameras.end());
+		m_isReferenceView.insert(m_isReferenceView.end(), baseCameras.size(), 1);
+		m_cameras.insert(m_cameras.end(), additionalCameras.begin(), additionalCameras.end());
+		m_isReferenceView.insert(m_isReferenceView.end(), additionalViews.size(), 0);
+	}
+  
+  // Views
   MVDFrame views;
-  std::vector<std::uint8_t> isReferenceView;
-
-  cameras.insert(cameras.end(), baseCameras.begin(), baseCameras.end());
+  
   views.insert(views.end(), baseViews.begin(), baseViews.end());
-  isReferenceView.insert(isReferenceView.end(), isReferenceView.size(), 1);
-
-  cameras.insert(cameras.end(), additionalCameras.begin(),
-                 additionalCameras.end());
   views.insert(views.end(), additionalViews.begin(), additionalViews.end());
-  isReferenceView.insert(isReferenceView.end(), additionalViews.size(), 0);
-
-  // Cameras definition
-  if (m_viewBuffer.empty()) {
-    m_isReferenceView = std::move(isReferenceView);
-    m_cameras = std::move(cameras);
-  }
-
-  // View Buffering
+  
+  // Pruning
+  MaskList masks = m_pruner->doPruning(m_cameras, views, m_isReferenceView);
+  
+  // Aggregation
   m_viewBuffer.push_back(std::move(views));
+//  m_aggregator->pushMask(masks);
 
-  // Pruning mask
-  MaskList masks = m_pruner->doPruning(cameras, views, m_isReferenceView);
-
-  // Mask Aggregation
-  m_aggregator->pushMask(masks);
 }
 
 void AtlasConstructor::completeIntraPeriod() {

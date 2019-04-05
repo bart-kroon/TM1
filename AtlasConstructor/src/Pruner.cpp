@@ -32,10 +32,20 @@
  */
 
 #include <TMIV/AtlasConstructor/Pruner.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Renderer/quantize_and_expand.h>
+
+#include <fstream>
+
+using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::AtlasConstructor {
 
-Pruner::Pruner(const Common::Json &node) {
+Pruner::Pruner(const Json &node) {
+
+  m_synthesizer = Factory<Renderer::ISynthesizer>::getInstance().create("Synthesizer", node);
+  
   if (auto subnode = node.optional("RedundancyFactor"))
     m_redundancyFactor = subnode.asFloat();
 
@@ -47,9 +57,8 @@ Pruner::Pruner(const Common::Json &node) {
 }
 
 MaskList Pruner::doPruning(const Metadata::CameraParameterList &cameras,
-                           const Common::MVDFrame &views,
+                           const MVDFrame &views,
                            const std::vector<std::uint8_t> &shouldNotBePruned) {
-  using namespace TMIV::Common;
 
   // Sort cameras for pruning
   std::vector<int> cameraOrderId(cameras.size());
@@ -63,110 +72,148 @@ MaskList Pruner::doPruning(const Metadata::CameraParameterList &cameras,
               else
                 return (i1 < i2);
             });
-
+  
   // Pruning loop
   int nbView = (int) views.size();
   MaskList masks(nbView);
+  std::vector< Mat<float> > depthMapExpanded(nbView);
 
-  for (int id1 = 0; id1 < nbView; id1++) {
+  for (int id1 = 0; id1 < nbView; id1++)
+  {
     int viewToPruneId = cameraOrderId[id1];
-    auto &currentMask = masks[viewToPruneId];
+    auto &maskToPrune = masks[viewToPruneId];
 
-    currentMask.resize(views[viewToPruneId].first.getHeight(),
-                       views[viewToPruneId].first.getWidth());
-    std::fill(currentMask.begin(), currentMask.end(), 1);
+    maskToPrune.resize(views[viewToPruneId].first.getWidth(), views[viewToPruneId].first.getHeight());
+	auto& bufferToPrune = maskToPrune.getPlane(0);
 
-    if (!shouldNotBePruned[viewToPruneId]) {
-      // Depth-based redundancy removal
-      Mat<float> depthMapReference; // TODO convert source depth map in float
+    std::fill(bufferToPrune.begin(), bufferToPrune.end(), 255);
 
-      for (int id2 = 0; id2 < id1; id2++) {
-        // int viewPrunedId = cameraOrderId[id2];
-        Mat<float>
-            depthMapSynthesized; // TODO synthesize depth of view[viewToPruneId]
-                                 // from view[viewPrunedId] + convert
-                                 // synthesized map in float
+	depthMapExpanded[viewToPruneId] = Renderer::expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
+	
+    if (!shouldNotBePruned[viewToPruneId])
+	{
+		// Depth-based redundancy removal
+		Mat<float>& depthMapToPrune = depthMapExpanded[viewToPruneId];
 
-        for (auto k = 0u; k < depthMapReference.size(); k++) {
-          auto &mask = currentMask[k];
+#if 1
+		for (int id2 = 0; id2 < id1; id2++)
+		{
+			int viewPrunedId = cameraOrderId[id2];
+			Mat<float> depthMapFromPruned = m_synthesizer->renderDepth(depthMapExpanded[viewPrunedId], cameras[viewPrunedId], cameras[viewToPruneId]);
+			
+			for (auto k = 0u; k < depthMapToPrune.size(); k++)
+			{
+				auto &mask = bufferToPrune[k];
 
-          if (0 < mask) {
-            float zRef = depthMapReference[k];
-            float zSynth = depthMapSynthesized[k];
+				if (0 < mask)
+				{
+					float zToPrune = depthMapToPrune[k];
+					float zFromPruned = depthMapFromPruned[k];
 
-            if ((0. < zSynth) &&
-                (fabs(zSynth - zRef) < m_redundancyFactor * zSynth))
-              mask = 0;
-          }
-        }
-      }
+					if(0.f < zToPrune)
+					{
+						if((0.f < zFromPruned) && (fabs(zFromPruned - zToPrune) < m_redundancyFactor * std::min(zToPrune, zFromPruned)))
+							mask = 0;
+					}
+					else
+						mask = 0;
+				}
+			}
+		}
+		
+		{
+			std::ofstream os("maskPruned_" + std::to_string(id1) + ".yuv");
+			maskToPrune.dump(os);
+		}
+		
+#else
+		{
+			std::ifstream is("maskPruned_" + std::to_string(id1) + ".yuv");
+			maskToPrune.read(is);
+		}
+#endif
+		
+		// Mask post-processing
+		Mask maskPostProc(views[viewToPruneId].first.getWidth(), views[viewToPruneId].first.getHeight());
+		auto& bufferPostProc = maskPostProc.getPlane(0);
+		
+		int w = bufferToPrune.width(), h = bufferToPrune.height();
+		int wLast = w - 1, hLast = h - 1;
+		std::array<int, 8> neighbourOffset = {-1 - w, -w, 1 - w, -1, 1, -1 + w, w, 1 + w};
 
-      // Mask post-processing
-      int w = currentMask.n(), h = currentMask.m();
-      int wLast = w - 1, hLast = h - 1;
-      std::array<int, 8> neighbourOffset = {-1 - w, -w,     1 - w, -1,
-                                            1,      -1 + w, w,     1 + w};
-      Mask otherMask(currentMask.sizes());
+		// Erosion
+		if (0 < m_erosionIter)
+		{
+			auto &inputBuffer = (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
+			auto &outputBuffer = (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
 
-      // Erosion
-      if (0 < m_erosionIter) {
-        Mask &inputMask = (m_erosionIter % 2) ? otherMask : currentMask;
-        Mask &outputMask = (m_erosionIter % 2) ? currentMask : otherMask;
+			inputBuffer = bufferToPrune;
 
-        inputMask = currentMask;
+			for (int erosionId = 0; erosionId < m_erosionIter; erosionId++)
+			{
+				for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w)
+				{
+					for (int x = 1, k2 = k1; x < wLast; x++, k2++)
+					{
+						auto maskIn = inputBuffer[k2];
+						auto &maskOut = outputBuffer[k2];
 
-        for (int erosionId = 0; erosionId < m_erosionIter; erosionId++) {
-          for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w) {
-            for (int x = 1, k2 = k1; x < wLast; x++, k2++) {
-              auto maskIn = inputMask[k2];
-              auto &maskOut = outputMask[k2];
+						maskOut = maskIn;
 
-              maskOut = maskIn;
+						if (0 < maskIn)
+						{
+							for (auto o : neighbourOffset)
+							{
+								if (inputBuffer[k2 + o] == 0)
+								{
+									maskOut = 0;
+									break;
+								}
+							}
+						}
+					}
+				}
 
-              if (0 < maskIn) {
-                for (auto o : neighbourOffset) {
-                  if (inputMask[k2 + o] == 0) {
-                    maskOut = 0;
-                    break;
-                  }
-                }
-              }
-            }
-          }
+				std::swap(inputBuffer, outputBuffer);
+			}
+		}
 
-          std::swap(inputMask, outputMask);
-        }
-      }
+		// Dilation
+		if (0 < m_dilationIter)
+		{
+			auto &inputBuffer = (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
+			auto &outputBuffer = (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
 
-      // Dilation
-      if (0 < m_dilationIter) {
-        Mask &inputMask = (m_dilationIter % 2) ? otherMask : currentMask;
-        Mask &outputMask = (m_dilationIter % 2) ? currentMask : otherMask;
+			inputBuffer = bufferToPrune;
 
-        inputMask = currentMask;
+			for (int dilationId = 0; dilationId < m_dilationIter; dilationId++)
+			{
+				for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w)
+				{
+					for (int x = 1, k2 = k1; x < wLast; x++, k2++)
+					{
+						auto maskIn = inputBuffer[k2];
+						auto &maskOut = outputBuffer[k2];
 
-        for (int dilationId = 0; dilationId < m_dilationIter; dilationId++) {
-          for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w) {
-            for (int x = 1, k2 = k1; x < wLast; x++, k2++) {
-              auto maskIn = inputMask[k2];
-              auto &maskOut = outputMask[k2];
+						maskOut = maskIn;
 
-              maskOut = maskIn;
+						if (0 == maskIn)
+						{
+							for (auto o : neighbourOffset)
+							{
+								if (0 < inputBuffer[k2 + o])
+								{
+									maskOut = 1;
+									break;
+								}
+							}
+						}
+					}
+				}
 
-              if (0 < maskIn) {
-                for (auto o : neighbourOffset) {
-                  if (0 < inputMask[k2 + o]) {
-                    maskOut = 1;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          std::swap(inputMask, outputMask);
-        }
-      }
+				std::swap(inputBuffer, outputBuffer);
+			}
+		}
     }
   }
 

@@ -34,6 +34,7 @@
 // AtlasConstructor/AtlasConstructor -p SourceDirectory /run/media/julien/My\ Passport/git/TMIV/data/ClassroomVideo/data/ -c /run/media/julien/My\ Passport/git/TMIV/data/ClassroomVideo/atlasConstructor.json
 
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
+#include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/AtlasConstructor/Pruner.h>
 #include <TMIV/AtlasConstructor/Aggregator.h>
 #include <TMIV/AtlasConstructor/Packer.h>
@@ -46,6 +47,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
+using namespace TMIV::Renderer;
 
 namespace TMIV::AtlasConstructor
 {
@@ -59,6 +61,7 @@ private:
 		ComponentRegistrator()
 		{
 			Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
+			Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
 			Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");
 			Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
 			Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
@@ -118,9 +121,7 @@ public:
 			for (int frame = intraFrame; frame < endFrame; ++frame)
 			{
 				MVDFrame allViews = loadViews(allCameras, m_startFrame + frame, allCameras.size());
-				
 
-				
 				// Lazy view optimization
 				MVDFrame baseViews, additionalViews;
 				CameraParameterList baseCameras, additionalCameras;
@@ -129,15 +130,8 @@ public:
 				{
 					baseViews.push_back(std::move(allViews[id]));
 					baseCameras.push_back(allCameras[id]);
-					
-
 				}
-				
-					{
-						std::ofstream os("toto.yuv");
-						baseViews.front().first.dump(os);
-					}
-				
+
 				for(auto id: m_additionalViewId)
 				{
 					additionalViews.push_back(std::move(allViews[id]));
@@ -146,7 +140,7 @@ public:
 
 				// Push frame
 				cout << "Push input frame " << (m_startFrame + frame) << '\n';
-//				m_atlasContructor->pushFrame(baseCameras, baseViews, additionalCameras, additionalViews);
+				m_atlasContructor->pushFrame(baseCameras, baseViews, additionalCameras, additionalViews);
 			}
 			
 //			m_atlasContructor->completeIntraPeriod();

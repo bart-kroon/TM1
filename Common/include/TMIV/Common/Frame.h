@@ -115,6 +115,8 @@ using TextureFrame = Frame<YUV420P10>;
 using DepthFrame = Frame<YUV400P16>;
 using TextureDepthFrame = std::pair<TextureFrame, DepthFrame>;
 using MVDFrame = std::vector<TextureDepthFrame>;
+using Mask = Frame<YUV400P8>;
+using MaskList = std::vector<Mask>;
 
 // Decoder-side is all 10-bit
 using Depth10Frame = Frame<YUV400P10>;

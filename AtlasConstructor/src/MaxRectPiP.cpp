@@ -124,6 +124,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
                                     const MaxRectPiP::Output &packerOutput) {
   using namespace TMIV::Common;
 
+  const auto& clusteringBuffer = clusteringMap.getPlane(0);
   Vec2i mappingPosition = {c.jmin(), c.imin()};
   Vec2i mappingSize = {c.width(), c.height()};
   Vec2i packingPosition = {packerOutput.x(), packerOutput.y()};
@@ -164,7 +165,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
         for (int x = x0; x < x1; x1++) {
           Vec3i p = Q2P * Vec3i({x, y, 1});
 
-          if (clusteringMap(p.y(), p.x()) ==
+          if (clusteringBuffer(p.y(), p.x()) ==
               c.getClusterId()) // (inRange(p.x(), 0, wMinusOne) &&
                                 // inRange(p.y(), 0, hMinusOne)) &&
           {

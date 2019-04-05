@@ -36,6 +36,7 @@
 #include <cassert>
 
 #include "AccumulatingView.h"
+#include <TMIV/Common/Json.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 #include <TMIV/Renderer/quantize_and_expand.h>
 
@@ -53,6 +54,17 @@ WrappingMethod wrappingMethod(const CameraParameters &camera) {
   return WrappingMethod::none;
 }
 } // namespace
+
+Synthesizer::Synthesizer(const Common::Json &node) {
+  if (auto subnode = node.optional("RayAngleParam"))
+    m_rayAngleParam = subnode.asFloat();
+  
+  if (auto subnode = node.optional("DepthParam"))
+    m_depthParam = subnode.asFloat();
+  
+  if (auto subnode = node.optional("StretchingParam"))
+    m_stretchingParam = subnode.asFloat();
+}
 
 Synthesizer::Synthesizer(double rayAngleParam, double depthParam,
                          double stretchingParam)

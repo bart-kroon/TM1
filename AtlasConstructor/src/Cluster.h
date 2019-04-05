@@ -38,7 +38,7 @@
 
 namespace TMIV::AtlasConstructor {
 
-using ClusteringMap = Common::Mat<uint16_t>;
+using ClusteringMap = Common::Frame<Common::YUV400P16>;
 using ClusteringMapList = std::vector<ClusteringMap>;
 
 class Cluster;
@@ -83,7 +83,7 @@ public:
   static Cluster align(const Cluster &c, int alignment);
   static Cluster merge(const Cluster &c1, const Cluster &c2);
   static std::pair<ClusterList, ClusteringMap>
-  retrieve(int cameraId, const Mask &maskMap, int firstClusterId = 0,
+  retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId = 0,
            bool shouldMerge = false);
 };
 

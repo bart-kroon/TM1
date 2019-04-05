@@ -69,7 +69,7 @@ public:
   Frame(Frame &&that) {
     m_width = that.m_width;
     m_height = that.m_height;
-    m_planes = std::move(m_planes);
+    m_planes = std::move(that.m_planes);
 
     that.m_width = 0;
     that.m_height = 0;
@@ -78,7 +78,7 @@ public:
   Frame &operator=(Frame &&that) {
     m_width = that.m_width;
     m_height = that.m_height;
-    m_planes = std::move(m_planes);
+    m_planes = std::move(that.m_planes);
 
     that.m_width = 0;
     that.m_height = 0;

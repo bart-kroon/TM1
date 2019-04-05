@@ -119,6 +119,8 @@ public:
 			{
 				MVDFrame allViews = loadViews(allCameras, m_startFrame + frame, allCameras.size());
 				
+
+				
 				// Lazy view optimization
 				MVDFrame baseViews, additionalViews;
 				CameraParameterList baseCameras, additionalCameras;
@@ -127,7 +129,14 @@ public:
 				{
 					baseViews.push_back(std::move(allViews[id]));
 					baseCameras.push_back(allCameras[id]);
+					
+
 				}
+				
+					{
+						std::ofstream os("toto.yuv");
+						baseViews.front().first.dump(os);
+					}
 				
 				for(auto id: m_additionalViewId)
 				{
@@ -180,14 +189,6 @@ private:
 				stream.seekg(streampos(inputFrame) * sourceResolution.x() * sourceResolution.y() * 3); // YUV420P10
 				result[view].first.resize(sourceResolution.x(), sourceResolution.y());
 				result[view].first.read(stream);
-				
-				if(view == 0)
-				{
-					std::ofstream os("toto.yuv");
-					
-					result[view].first.dump(os);
-				}
-				
 			}
 			
 			{

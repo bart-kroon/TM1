@@ -37,6 +37,7 @@
 
 #include "AccumulatingView.h"
 #include <TMIV/Renderer/quantize_and_expand.h>
+#include <TMIV/Renderer/reprojectPoints.h>
 
 using namespace std;
 using namespace TMIV::Common;

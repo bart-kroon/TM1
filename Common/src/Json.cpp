@@ -224,7 +224,10 @@ Json::Json(istream &stream) {
 
 void Json::setOverrides(Json overrides) {
   if (type() == Type::object && overrides.type() == Type::object) {
-    m_overrides = dynamic_pointer_cast<impl::Object>(overrides.m_value);
+    for (auto &kvp :
+         dynamic_cast<const impl::Object &>(*overrides.m_value).value) {
+      dynamic_cast<impl::Object &>(*m_value).value[kvp.first] = kvp.second;
+    }
   } else {
     throw runtime_error("Overrides should be a JSON object, e.g. {...}");
   }
@@ -233,12 +236,6 @@ void Json::setOverrides(Json overrides) {
 Json::Type Json::type() const { return m_value->type; }
 
 Json Json::optional(string const &key) const {
-  if (m_overrides) {
-    try {
-      return Json{m_overrides->value.at(key)};
-    } catch (out_of_range &) {
-    }
-  }
   try {
     return Json{dynamic_cast<impl::Object &>(*m_value).value.at(key)};
   } catch (out_of_range &) {

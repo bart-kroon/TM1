@@ -89,7 +89,6 @@ private:
   explicit Json(std::shared_ptr<impl::Value> value);
 
   std::shared_ptr<impl::Value> m_value;
-  std::shared_ptr<impl::Object> m_overrides;
 };
 } // namespace TMIV::Common
 

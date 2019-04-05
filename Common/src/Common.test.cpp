@@ -34,6 +34,9 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
+using Catch::Matchers::Contains;
+
+#include <TMIV/Common/Application.h>
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/LinAlg.h>
@@ -46,7 +49,7 @@ using namespace std;
 namespace TMIV::Common {
 
 TEST_CASE("Array, Vector, Matrix, LinAlg") {
-  const float EPS = 1e-5;
+  const float EPS = 1e-5f;
 
   heap::Array<3, float> A({3, 5, 10});
   Mat3x3f m1 = {1., 2., 3., 4., 5., 6., 7., 8., -9.};
@@ -113,9 +116,72 @@ TEST_CASE("Reading a Json", "[Json]") {
     REQUIRE(!json.require("beta").asBool());
     REQUIRE(json.optional("alpha"));
     REQUIRE(!json.optional("beta"));
-	REQUIRE(json.optional("beta").type() == Json::Type::boolean);
+    REQUIRE(json.optional("beta").type() == Json::Type::boolean);
     REQUIRE(!json.optional("gamma"));
-	REQUIRE(json.optional("gamma").type() == Json::Type::null);
+    REQUIRE(json.optional("gamma").type() == Json::Type::null);
+  }
+}
+
+namespace {
+class FakeApplication : public Application {
+public:
+  using Application::Application;
+  using Application::json;
+
+  void run() {}
+};
+} // namespace
+
+TEST_CASE("Parsing the command-line", "[Application]") {
+  SECTION("Empty command-line returns usage instructions") {
+    try {
+      FakeApplication{"Fake", {"command"}};
+      REQUIRE(false);
+    } catch (runtime_error &e) {
+      REQUIRE_THAT(e.what(), Contains("Usage"));
+      REQUIRE_THAT(e.what(), Contains("Fake"));
+    }
+  }
+
+  SECTION("Specifying parameters with -p KEY VALUE") {
+    FakeApplication app{
+        "Fake", {"command", "-p", "Color", "green", "-p", "Shape", "circular"}};
+    REQUIRE(app.json().require("Color").asString() == "green");
+    REQUIRE(app.json().require("Shape").asString() == "circular");
+  }
+
+  SECTION("Right has preference over left") {
+    FakeApplication app{
+        "Fake", {"command", "-p", "Color", "green", "-p", "Color", "red"}};
+    REQUIRE(app.json().require("Color").asString() == "red");
+  }
+
+  SECTION("Load a Json") {
+    FakeApplication app{"Fake",
+                        {"command", "-c", "doc/ExampleConfiguration.json"}};
+    REQUIRE(app.json().require("intraPeriod").asInt() == 32);
+  }
+
+  SECTION("Load a Json and add a parameters") {
+    FakeApplication app{"Fake",
+                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                         "continent", "Africa"}};
+    REQUIRE(app.json().require("continent").asString() == "Africa");
+  }
+
+  SECTION("Load a Json and override a parameter") {
+    FakeApplication app{"Fake",
+                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                         "intraPeriod", "8"}};
+    REQUIRE(app.json().require("intraPeriod").asInt() == 8);
+  }
+
+  SECTION("Load a Json, override a parameter and add a parameter") {
+    FakeApplication app{"Fake",
+                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                         "intraPeriod", "8", "-p", "continent", "Africa"}};
+    REQUIRE(app.json().require("intraPeriod").asInt() == 8);
+    REQUIRE(app.json().require("continent").asString() == "Africa");
   }
 }
 } // namespace TMIV::Common

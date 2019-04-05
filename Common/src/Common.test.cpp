@@ -35,9 +35,13 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/Common/Common.h>
+#include <TMIV/Common/Json.h>
 #include <TMIV/Common/LinAlg.h>
 
 #include <iostream>
+#include <sstream>
+
+using namespace std;
 
 namespace TMIV::Common {
 
@@ -101,4 +105,17 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(fabs(trace(m1)) < EPS);
 }
 
+TEST_CASE("Reading a Json", "[Json]") {
+  istringstream stream{"{ \"alpha\": true, \"beta\": false }"};
+  auto json = Json{stream};
+  SECTION("Read booleans") {
+    REQUIRE(json.require("alpha").asBool());
+    REQUIRE(!json.require("beta").asBool());
+    REQUIRE(json.optional("alpha"));
+    REQUIRE(!json.optional("beta"));
+	REQUIRE(json.optional("beta").type() == Json::Type::boolean);
+    REQUIRE(!json.optional("gamma"));
+	REQUIRE(json.optional("gamma").type() == Json::Type::null);
+  }
+}
 } // namespace TMIV::Common

@@ -37,6 +37,7 @@
 
 #include "AccumulatingView.h"
 #include <TMIV/Renderer/reprojectPoints.h>
+#include <TMIV/Renderer/quantize_and_expand.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -50,110 +51,6 @@ WrappingMethod wrappingMethod(const CameraParameters &camera) {
     return WrappingMethod::horizontal;
   }
   return WrappingMethod::none;
-}
-
-const float NaN = numeric_limits<float>::quiet_NaN();
-
-constexpr unsigned maxlevel(unsigned bits) { return (1u << bits) - 1u; }
-
-template <unsigned bits> float expandValue(uint16_t x) {
-  return float(x) / float(maxlevel(bits));
-}
-
-template <unsigned bits> uint16_t quantizeValue(float x) {
-  if (x > 0) {
-    unsigned y = unsigned(float(maxlevel(bits)) * x);
-    return static_cast<uint16_t>(min(y, maxlevel(bits)));
-  }
-  return 0;
-}
-
-Mat3f expandTexture(const CameraParameters &camera, const TextureFrame &inYuv) {
-  static_assert(is_same_v<TextureFrame, Frame<YUV420P10>>);
-
-  auto &Y = inYuv.getPlane(0);
-  auto &U = inYuv.getPlane(1);
-  auto &V = inYuv.getPlane(2);
-  Mat3f out(inYuv.getPlane(0).sizes());
-  const auto width = Y.width();
-  const auto height = Y.height();
-
-  for (unsigned i = 0; i != height; ++i) {
-    for (unsigned j = 0; j != width; ++j) {
-      out(i, j) =
-          Vec3f{expandValue<10u>(Y(i, j)), expandValue<10u>(U(i / 2, j / 2)),
-                expandValue<10u>(V(i / 2, j / 2))};
-    }
-  }
-  return out;
-}
-
-TextureFrame quantizeTexture(const CameraParameters &camera, const Mat3f &in) {
-  static_assert(is_same_v<TextureFrame, Frame<YUV420P10>>);
-
-  TextureFrame outYuv(in.width(), in.height());
-  auto &Y = outYuv.getPlane(0);
-  auto &U = outYuv.getPlane(1);
-  auto &V = outYuv.getPlane(2);
-  const auto width = Y.width();
-  const auto height = Y.height();
-
-  for (unsigned i = 0; i != height; ++i) {
-    for (unsigned j = 0; j != width; ++j) {
-      Y(i, j) = quantizeValue<10u>(in(i, j).x());
-    }
-  }
-  for (unsigned i = 0; i != height / 2; ++i) {
-    for (unsigned j = 0; j != width / 2; ++j) {
-      U(i, j) = quantizeValue<10u>(
-          0.25f * (in(2 * i, 2 * j).y() + in(2 * i, 2 * j + 1).y() +
-                   in(2 * i + 1, 2 * j).y() + in(2 * i + 1, 2 * j + 1).y()));
-      V(i, j) = quantizeValue<10u>(
-          0.25f * (in(2 * i, 2 * j).z() + in(2 * i, 2 * j + 1).z() +
-                   in(2 * i + 1, 2 * j).z() + in(2 * i + 1, 2 * j + 1).z()));
-    }
-  }
-  return outYuv;
-}
-
-Mat1f expandDepth(const CameraParameters &camera, const DepthFrame &inYuv) {
-  static_assert(is_same_v<DepthFrame, Frame<YUV400P16>> ||
-                is_same_v<DepthFrame, Frame<YUV420P16>>);
-  auto &in = inYuv.getPlane(0);
-  Mat1f out(in.sizes());
-  transform(begin(in), end(in), begin(out),
-            [near = camera.depthRange[0],
-             far = camera.depthRange[1]](uint16_t x) -> float {
-              if (x > 0) {
-                const float normDisp = expandValue<16u>(x);
-                if (far >= 1000.f /*meter*/) {
-                  return near / normDisp;
-                }
-                return far * near / (near + normDisp * (far - near));
-              }
-              return NaN;
-            });
-  return out;
-}
-
-DepthFrame quantizeNormDisp(const CameraParameters &camera, const Mat1f &in) {
-  static_assert(is_same_v<DepthFrame, Frame<YUV400P16>> ||
-                is_same_v<DepthFrame, Frame<YUV420P16>>);
-  DepthFrame outYuv(in.width(), in.height());
-  auto &out = outYuv.getPlane(0);
-  transform(begin(in), end(in), begin(out),
-            [near = camera.depthRange[0],
-             far = camera.depthRange[1]](float normDisp) -> uint16_t {
-              if (normDisp > 0. && isfinite(normDisp)) {
-                if (far >= 1000.f /*meter*/) {
-                  return quantizeValue<16u>(near * normDisp);
-                }
-                return quantizeValue<16u>((far * near * normDisp - near) /
-                                          (far - near));
-              }
-              return 0;
-            });
-  return outYuv;
 }
 } // namespace
 
@@ -193,13 +90,13 @@ Synthesizer::renderTextureDepth(const MVDFrame &frame,
     auto positions_depth = projectPoints(target, outPoints);
     auto rayAngles = calculateRayAngles(camera, target, outPoints);
 
-    av.transform(expandTexture(camera, view.first), positions_depth.first,
+    av.transform(expandTexture(view.first), positions_depth.first,
                  positions_depth.second, rayAngles, target.size,
                  wrappingMethod(target));
   }
 
-  return {quantizeTexture(target, av.texture()),
-          quantizeNormDisp(target, av.normDisp())};
+  return {quantizeTexture(av.texture()),
+          quantizeNormDisp16(target, av.normDisp())};
 }
 
 Mat1f Synthesizer::renderDepth(const Mat1f &frame,

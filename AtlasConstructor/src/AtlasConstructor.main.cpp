@@ -206,7 +206,7 @@ private:
   void saveViews(int outputFrame, const MVDFrame &atlas) const {
     std::vector<Frame<YUV420P10>> outputDepth;
 
-    for (uint id = 0; id < atlas.size(); id++) {
+    for (unsigned id = 0; id < atlas.size(); id++) {
       {
         auto texturePath = Common::format(
             json().require("AtlasTexturePathFmt").asString().c_str(), id);

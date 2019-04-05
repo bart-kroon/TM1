@@ -48,7 +48,7 @@ template <unsigned bits> float expandValue(uint16_t x) {
 template <unsigned bits> uint16_t quantizeValue(float x) {
   if (x >= 0.f && x <= 1.f) {
     return static_cast<uint16_t>(
-        min(unsigned(x * float(maxLevel(bits))), maxLevel(bits)));
+        std::min(unsigned(x * float(maxLevel(bits))), maxLevel(bits)));
   }
   if (x > 0) {
     return maxLevel(bits);

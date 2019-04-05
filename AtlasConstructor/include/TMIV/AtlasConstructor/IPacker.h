@@ -48,8 +48,9 @@ public:
   IPacker &operator=(IPacker &&) = default;
   virtual ~IPacker() = default;
 
-  using PatchParameterList = Metadata::PatchParameterList;
   using Vec2i = Common::Vec2i;
+  using MaskList = Common::MaskList;
+  using PatchParameterList = Metadata::PatchParameterList;
 
   virtual PatchParameterList
   doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,

@@ -39,8 +39,7 @@
 
 namespace TMIV::AtlasConstructor {
 
-using Mask = TMIV::Common::Mat<std::uint8_t>;
-using MaskList = std::vector<Mask>;
+
 
 // IPruner interface (part of AtlasConstructorLib)
 class IPruner {
@@ -53,6 +52,7 @@ public:
   virtual ~IPruner() = default;
 
   using MVDFrame = Common::MVDFrame;
+  using MaskList = Common::MaskList;
   using CameraParameterList = Metadata::CameraParameterList;
 
   virtual MaskList

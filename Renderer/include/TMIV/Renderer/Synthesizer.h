@@ -39,6 +39,7 @@
 namespace TMIV::Renderer {
 class Synthesizer : public ISynthesizer {
 public:
+  Synthesizer(const Common::Json &node);
   Synthesizer(double rayAngleParam, double depthParam, double stretchingParam);
   Synthesizer(const Synthesizer &) = delete;
   Synthesizer(Synthesizer &&) = default;

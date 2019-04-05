@@ -35,6 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
 
 #include <TMIV/AtlasConstructor/IPruner.h>
+#include <TMIV/Renderer/ISynthesizer.h>
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
 
@@ -54,9 +55,10 @@ public:
             const std::vector<std::uint8_t> &shouldNotBePruned) override;
 
 private:
+  std::unique_ptr<Renderer::ISynthesizer> m_synthesizer;
   float m_redundancyFactor = 0.02f;
-  int m_erosionIter = 2;
-  int m_dilationIter = 10;
+  int m_erosionIter = 1;
+  int m_dilationIter = 5;
 };
 
 } // namespace TMIV::AtlasConstructor

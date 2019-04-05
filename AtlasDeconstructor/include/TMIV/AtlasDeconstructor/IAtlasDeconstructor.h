@@ -49,12 +49,12 @@ public:
   IAtlasDeconstructor &operator=(IAtlasDeconstructor &&) = default;
   virtual ~IAtlasDeconstructor() = default;
 
-  using MVDFrame = Common::MVDFrame;
+  using MVD10Frame = Common::MVD10Frame;
   using PatchParameterList = Metadata::PatchParameterList;
 
-  virtual MVDFrame
+  virtual MVD10Frame
   getPatchFrameListFromAtlas(const PatchParameterList &patchList,
-                             const MVDFrame &atlas) = 0;
+                             const MVD10Frame &atlas) = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

@@ -42,6 +42,7 @@
 
 namespace TMIV::Common {
 class YUV400P8 {};
+class YUV400P10 {};
 class YUV400P16 {};
 class YUV420P8 {};
 class YUV420P10 {};
@@ -108,10 +109,17 @@ void convert(const Frame<FROM> &inputFrame, Frame<TO> &outputFrame);
 #include "Frame.hpp"
 
 namespace TMIV::Common {
+// Encoder has 16-bit depth map input and 10-bit depth output
+// TODO: Rename types (Depth --> Depth16)
 using TextureFrame = Frame<YUV420P10>;
 using DepthFrame = Frame<YUV400P16>;
 using TextureDepthFrame = std::pair<TextureFrame, DepthFrame>;
 using MVDFrame = std::vector<TextureDepthFrame>;
+
+// Decoder-side is all 10-bit
+using Depth10Frame = Frame<YUV400P10>;
+using TextureDepth10Frame = std::pair<TextureFrame, Depth10Frame>;
+using MVD10Frame = std::vector<TextureDepth10Frame>;
 } // namespace TMIV::Common
 
 #endif

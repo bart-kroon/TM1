@@ -41,9 +41,9 @@ namespace TMIV::AtlasDeconstructor {
 
 AtlasDeconstructor::AtlasDeconstructor(const Common::Json &) {}
 
-MVDFrame AtlasDeconstructor::getPatchFrameListFromAtlas(
-    const PatchParameterList &patchList, const MVDFrame &atlas) {
-  MVDFrame patchFrameList;
+MVD10Frame AtlasDeconstructor::getPatchFrameListFromAtlas(
+    const PatchParameterList &patchList, const MVD10Frame &atlas) {
+  MVD10Frame patchFrameList;
 
   for (const auto &patch : patchList)
     patchFrameList.push_back(readPatchFromAtlas(patch, atlas));
@@ -51,11 +51,11 @@ MVDFrame AtlasDeconstructor::getPatchFrameListFromAtlas(
   return patchFrameList;
 }
 
-TextureDepthFrame
+TextureDepth10Frame
 AtlasDeconstructor::readPatchFromAtlas(const PatchParameters &patch,
-                                       const MVDFrame &atlas) {
-  TextureDepthFrame patchFrame;
-  const TextureDepthFrame &currentAtlas = atlas[patch.atlasId];
+                                       const MVD10Frame &atlas) {
+  TextureDepth10Frame patchFrame;
+  const TextureDepth10Frame &currentAtlas = atlas[patch.atlasId];
 
   auto &texturePatchFrame = patchFrame.first;
   auto &depthPatchFrame = patchFrame.second;

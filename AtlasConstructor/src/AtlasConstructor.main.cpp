@@ -180,6 +180,14 @@ private:
 				stream.seekg(streampos(inputFrame) * sourceResolution.x() * sourceResolution.y() * 3); // YUV420P10
 				result[view].first.resize(sourceResolution.x(), sourceResolution.y());
 				result[view].first.read(stream);
+				
+				if(view == 0)
+				{
+					std::ofstream os("toto.yuv");
+					
+					result[view].first.dump(os);
+				}
+				
 			}
 			
 			{

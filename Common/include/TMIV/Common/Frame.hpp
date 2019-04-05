@@ -101,12 +101,12 @@ template <class FORMAT>
 void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
   for (const auto &plane : m_planes) {
     int w = plane.width(), h = plane.height();
-    base_type *ptr =
+    const base_type *ptr =
         vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
     int lineSize = w * sizeof(base_type);
 
     for (int j = 0; j < h; j++) {
-      os.write((char *)ptr, lineSize);
+      os.write((const char *)ptr, lineSize);
       ptr = ptr + (vFlip ? -w : w);
     }
   }

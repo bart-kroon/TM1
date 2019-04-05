@@ -46,8 +46,12 @@ public:
   using Mat3f = Common::Mat<Vec3f>;
   using Mat1f = Common::Mat<float>;
 
+  enum class Mode { all, depth };
+
   AccumulatingPixel(double rayAngleParam, double depthParam,
-                    double stretchingParam);
+                    double stretchingParam, Mode mode);
+
+  Mode mode() const { return m_mode; }
 
   struct PixelAccumulator {
     // weight is implicit as norm_weight * normDispWeight(1 / depth)
@@ -98,6 +102,7 @@ private:
   float m_rayAngleParam;
   float m_depthParam;
   float m_stretchingParam;
+  Mode m_mode;
 };
 } // namespace TMIV::Renderer
 

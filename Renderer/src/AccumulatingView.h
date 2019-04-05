@@ -51,6 +51,8 @@ private:
   using PixelAccumulator = AccumulatingPixel::PixelAccumulator;
 
 public:
+  using Mode = AccumulatingPixel::Mode;
+
   /**
    * RayAngle: The angle [rad] between the ray from the input camera and the ray
    * from the virtual camera: exp(-RayAngleParameter × RayAngle). Prefer nearby
@@ -66,7 +68,7 @@ public:
    * objects.
    */
   AccumulatingView(double rayAngleParam, double depthParam,
-                   double stretchingParam);
+                   double stretchingParam, Mode mode);
 
   // Synthesized and blended texture
   Mat3f texture() const;
@@ -101,10 +103,12 @@ public:
                  WrappingMethod wrappingMethod);
 
 private:
+  template <Mode mode>
   void colorizeTriangle(const Mat3f &color, const Mat1f &depth,
                         const Mat2f &positions, const Mat1f &rayAngles, Vec2i a,
                         Vec2i b, Vec2i c);
 
+  template <Mode mode>
   void colorizeSquare(const Mat3f &color, const Mat1f &depth,
                       const Mat2f &positions, const Mat1f &rayAngles, Vec2i TL,
                       Vec2i TR, Vec2i BR, Vec2i BL);

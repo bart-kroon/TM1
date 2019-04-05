@@ -36,8 +36,8 @@
 #include <cassert>
 
 #include "AccumulatingView.h"
-#include <TMIV/Renderer/reprojectPoints.h>
 #include <TMIV/Renderer/quantize_and_expand.h>
+#include <TMIV/Renderer/reprojectPoints.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -75,7 +75,8 @@ TextureDepthFrame
 Synthesizer::renderTextureDepth(const MVDFrame &frame,
                                 const CameraParameterList &cameras,
                                 const CameraParameters &target) const {
-  AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam};
+  AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam,
+                      AccumulatingPixel::Mode::all};
 
   assert(frame.size() == cameras.size());
   auto i_camera = begin(cameras);
@@ -102,7 +103,8 @@ Synthesizer::renderTextureDepth(const MVDFrame &frame,
 Mat1f Synthesizer::renderDepth(const Mat1f &frame,
                                const CameraParameters &camera,
                                const CameraParameters &target) const {
-  AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam};
+  AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam,
+                      AccumulatingPixel::Mode::depth};
 
   auto outPoints = changeReferenceFrame(
       camera, target, unprojectPoints(camera, imagePositions(camera), frame));

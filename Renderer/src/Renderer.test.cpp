@@ -59,7 +59,8 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     float const ray_angle = 0.01f;
     float const stretching = 3.f;
 
-    AccumulatingPixel pixel{ray_angle_param, depth_param, stretching_param};
+    AccumulatingPixel pixel{ray_angle_param, depth_param, stretching_param,
+                            AccumulatingPixel::Mode::all};
 
     float const ray_angle_weight = pixel.rayAngleWeight(ray_angle);
     float const stretching_weight = pixel.stretchingWeight(stretching);

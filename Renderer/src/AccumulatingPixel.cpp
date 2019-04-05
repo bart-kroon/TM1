@@ -49,9 +49,9 @@ Vec3f alphaBlend(float alpha, const Vec3f &x1, const Vec3f &x2) {
 } // namespace
 
 AccumulatingPixel::AccumulatingPixel(double rayAngleParam, double depthParam,
-                                     double stretchingParam)
+                                     double stretchingParam, Mode mode)
     : m_rayAngleParam(float(rayAngleParam)), m_depthParam(float(depthParam)),
-      m_stretchingParam(float(stretchingParam)) {}
+      m_stretchingParam(float(stretchingParam)), m_mode(mode) {}
 
 AccumulatingPixel::PixelAccumulator
 AccumulatingPixel::construct(float pixelDepth, Vec3f pixelColor, float rayAngle,
@@ -84,10 +84,18 @@ AccumulatingPixel::blend(AccumulatingPixel::PixelAccumulator const &a,
   auto alpha = 1.f - b.normWeight / (weight_ab * a.normWeight + b.normWeight);
   // [0 <= alpha <= 0.5]
 
+  // Optimization: No alpha blending when alpha is almost zero
+  if (alpha < 0.01f) {
+    return b;
+  }
+
   auto normDisp = alphaBlend(alpha, b.normDisp, a.normDisp);
   auto normWeight = a.normWeight * normDispWeight(a.normDisp - normDisp) +
                     b.normWeight * normDispWeight(b.normDisp - normDisp);
 
+  if (m_mode == Mode::depth) {
+    return {normWeight, {}, normDisp, {}, {}};
+  }
   return {normWeight, alphaBlend(alpha, b.color, a.color), normDisp,
           alphaBlend(alpha, b.rayAngle, a.rayAngle),
           alphaBlend(alpha, b.stretching, a.stretching)};
@@ -106,10 +114,13 @@ AccumulatingPixel::average(AccumulatingPixel::PixelAccumulator const &x) const {
 
 void AccumulatingPixel::set(Vec2i point, PixelValue const &value, Mat3f &color,
                             Mat1f &depth, Mat1f &quality, Mat1f &validity) {
-  color(point.y(), point.x()) = value.color;
   depth(point.y(), point.x()) = value.depth;
-  quality(point.y(), point.x()) = value.quality;
-  validity(point.y(), point.x()) = value.validity;
+
+  if (m_mode != Mode::depth) {
+    color(point.y(), point.x()) = value.color;
+    quality(point.y(), point.x()) = value.quality;
+    validity(point.y(), point.x()) = value.validity;
+  }
 }
 
 // Calculate the weight of a pixel based on cosine of the ray angle between

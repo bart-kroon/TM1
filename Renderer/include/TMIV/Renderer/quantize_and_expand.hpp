@@ -39,19 +39,19 @@
 #include <limits>
 
 namespace TMIV::Renderer {
-constexpr unsigned maxlevel(unsigned bits) { return (1u << bits) - 1u; }
+constexpr unsigned maxLevel(unsigned bits) { return (1u << bits) - 1u; }
 
 template <unsigned bits> float expandValue(uint16_t x) {
-  return float(x) / float(maxlevel(bits));
+  return float(x) / float(maxLevel(bits));
 }
 
 template <unsigned bits> uint16_t quantizeValue(float x) {
   if (x >= 0.f && x <= 1.f) {
     return static_cast<uint16_t>(
-        min(unsigned(x * float(maxlevel(bits))), maxlevel(bits)));
+        min(unsigned(x * float(maxLevel(bits))), maxLevel(bits)));
   }
   if (x > 0) {
-    return maxlevel(bits);
+    return maxLevel(bits);
   }
   return 0u;
 }

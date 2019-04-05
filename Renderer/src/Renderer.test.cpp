@@ -204,9 +204,9 @@ SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
 }
 
 TEST_CASE("maxlevel", "[quantize_and_expand]") {
-  REQUIRE(maxlevel(8u) == 255u);
-  REQUIRE(maxlevel(10u) == 1023u);
-  REQUIRE(maxlevel(16u) == 65535u);
+  REQUIRE(maxLevel(8u) == 255u);
+  REQUIRE(maxLevel(10u) == 1023u);
+  REQUIRE(maxLevel(16u) == 65535u);
 }
 
 TEST_CASE("expandValue", "[quantize_and_expand]") {
@@ -239,11 +239,41 @@ SCENARIO("Expand YUV 4:2:0 10-bit texture", "[quantize_and_expand]") {
     }
 
     WHEN("The texture is expanded") {
-		auto expanded = expandTexture(texture);
+      auto expanded = expandTexture(texture);
 
       THEN("Luma plane samples are expanded") {
         REQUIRE(expanded(5, 9).x() == expandValue<10>(509));
       }
+
+      THEN("Chroma plane samples are upsampled using nearest interpolation") {
+        REQUIRE(expanded(4, 8).y() == expandValue<10>(602));
+        REQUIRE(expanded(4, 9).z() == expandValue<10>(602));
+        REQUIRE(expanded(5, 8).z() == expandValue<10>(602));
+        REQUIRE(expanded(5, 9).y() == expandValue<10>(602));
+      }
+    }
+  }
+}
+
+SCENARIO("Quantize planar 4:4:4 float to YUV 4:2:0 10-bit texture",
+         "[quantize_and_expand]") {
+  GIVEN("Such a texture with known values") {
+    Mat3f texture({6, 10});
+    for (int i = 0; i != 6; ++i) {
+      for (int j = 0; j != 10; ++j) {
+        texture(i, j) = Vec3f{0.1f * i + 0.01f * j, 0.2f * i + 0.001f * j,
+                              0.3f * i + 0.1f * j};
+      }
+    }
+
+    WHEN("The texture is quantized") {
+      auto quantized = quantizeTexture(texture);
+
+      THEN("Luma plane samples are quantized") {
+        REQUIRE(quantized.getPlane(0)(5, 9) == quantizeValue<10>(0.59f));
+      }
+
+      // TODO...
     }
   }
 }

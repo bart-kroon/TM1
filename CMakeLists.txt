@@ -8,6 +8,7 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Catch2)
 	add_subdirectory(Catch2)
 	list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Catch2/contrib)
 	enable_testing()
+	include(Catch)
 endif()
 
 add_subdirectory(Common)
@@ -29,26 +30,6 @@ add_subdirectory(Renderer)
 
 add_subdirectory(Encoder)
 add_subdirectory(Decoder)
-
-if (CMAKE_TESTING_ENABLED)
-	add_executable(Tester
-		"Common/src/Common.test.cpp"
-		"Image/src/Image.test.cpp"
-		"ViewOptimizer/src/ViewOptimizer.test.cpp"
-		"AtlasConstructor/src/AtlasConstructor.test.cpp"
-		"AtlasDeconstructor/src/AtlasDeconstructor.test.cpp"
-		"Encoder/src/Encoder.test.cpp"
-		"Renderer/src/Renderer.test.cpp")
-
-	target_link_libraries(Tester
-		Catch2::Catch2
-		TMIV::EncoderLib
-		TMIV::AtlasDeconstructorLib
-		TMIV::RendererLib)
-
-	include(Catch)
-	catch_discover_tests(Tester)
-endif()
 
 add_custom_target(clang_format COMMAND ${CMAKE_COMMAND} "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}" "-P" ${CMAKE_SOURCE_DIR}/clang_format.cmake )
 add_custom_target(clang_tidy COMMAND "run-clang-tidy.py" "-p" ${CMAKE_CURRENT_BINARY_DIR} "-header-filter" ${CMAKE_CURRENT_SOURCE_DIR} "-fix")

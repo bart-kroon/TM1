@@ -31,3 +31,14 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
+
+if (CMAKE_TESTING_ENABLED)
+	add_executable(ImageTest "src/Image.test.cpp")
+
+	target_link_libraries(ImageTest
+		PRIVATE
+			Catch2::Catch2
+			TMIV::ImageLib)
+
+	catch_discover_tests(ImageTest)
+endif()

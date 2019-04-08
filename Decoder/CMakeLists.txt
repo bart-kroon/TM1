@@ -44,3 +44,14 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
+
+if (CMAKE_TESTING_ENABLED)
+	add_executable(DecoderTest "src/Decoder.test.cpp")
+
+	target_link_libraries(DecoderTest
+		PRIVATE
+			Catch2::Catch2
+			TMIV::DecoderLib)
+
+	catch_discover_tests(DecoderTest)
+endif()

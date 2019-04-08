@@ -43,3 +43,14 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
+
+if (CMAKE_TESTING_ENABLED)
+	add_executable(AtlasDeconstructorTest "src/AtlasDeconstructor.test.cpp")
+
+	target_link_libraries(AtlasDeconstructorTest
+		PRIVATE
+			Catch2::Catch2
+			TMIV::AtlasDeconstructorLib)
+
+	catch_discover_tests(AtlasDeconstructorTest)
+endif()

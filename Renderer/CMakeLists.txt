@@ -61,3 +61,14 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
+	
+if (CMAKE_TESTING_ENABLED)
+	add_executable(RendererTest "src/Renderer.test.cpp")
+
+	target_link_libraries(RendererTest
+		PRIVATE
+			Catch2::Catch2
+			TMIV::RendererLib)
+
+	catch_discover_tests(RendererTest)
+endif()

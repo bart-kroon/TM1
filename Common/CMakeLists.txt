@@ -45,3 +45,14 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
+
+if (CMAKE_TESTING_ENABLED)
+	add_executable(CommonTest "src/Common.test.cpp")
+
+	target_link_libraries(CommonTest
+		PRIVATE
+			Catch2::Catch2
+			TMIV::CommonLib)
+
+	catch_discover_tests(CommonTest)
+endif()

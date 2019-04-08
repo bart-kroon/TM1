@@ -31,5 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/AtlasConstructor/AtlasConstructor.h>
+#define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
+
+#include <TMIV/AtlasConstructor/AtlasConstructor.h>
+

@@ -22,7 +22,9 @@ add_executable(AtlasDeconstructor
 	"src/AtlasDeconstructor.main.cpp")
 
 target_link_libraries(AtlasDeconstructor
-	PRIVATE AtlasDeconstructorLib)
+	PRIVATE
+		TMIV::AtlasDeconstructorLib
+		TMIV::IOLib)
 
 install(
 	TARGETS

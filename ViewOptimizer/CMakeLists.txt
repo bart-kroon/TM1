@@ -10,8 +10,9 @@ add_library(TMIV::ViewOptimizerLib
 	ALIAS ViewOptimizerLib)
 
 target_link_libraries(ViewOptimizerLib
-	PUBLIC TMIV::CommonLib
-	PUBLIC TMIV::MetadataLib)
+	PUBLIC
+		TMIV::CommonLib
+		TMIV::MetadataLib)
 
 target_include_directories(ViewOptimizerLib
 	PUBLIC
@@ -22,7 +23,9 @@ add_executable(ViewOptimizer
 	"src/ViewOptimizer.main.cpp")
 
 target_link_libraries(ViewOptimizer
-	PRIVATE ViewOptimizerLib)
+	PRIVATE
+		TMIV::ViewOptimizerLib
+		TMIV::IOLib)
 
 install(
 	TARGETS

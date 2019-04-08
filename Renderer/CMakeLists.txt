@@ -40,7 +40,9 @@ add_executable(Renderer
 	"src/Renderer.main.cpp")
 
 target_link_libraries(Renderer
-	PRIVATE RendererLib)
+	PRIVATE
+		TMIV::RendererLib
+		TMIV::IOLib)
 
 install(
 	TARGETS

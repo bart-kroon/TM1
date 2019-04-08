@@ -37,7 +37,9 @@ add_executable(AtlasConstructor
 	"src/AtlasConstructor.main.cpp")
 
 target_link_libraries(AtlasConstructor
-	PRIVATE AtlasConstructorLib)
+	PRIVATE
+		TMIV::AtlasConstructorLib
+		TMIV::IOLib)
 
 install(
 	TARGETS

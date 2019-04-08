@@ -11,10 +11,13 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Catch2)
 endif()
 
 add_subdirectory(Common)
-# add_subdirectory(IO)
-# add_subdirectory(Image)
 
+# Implementation of the MIV metadata
 add_subdirectory(Metadata)
+
+# The only library that is allowed to touch the filesystem. 
+# Only executables depend on this library.
+add_subdirectory(IO) 
 
 add_subdirectory(ViewOptimizer)
 add_subdirectory(AtlasConstructor)
@@ -22,7 +25,7 @@ add_subdirectory(AtlasDeconstructor)
 add_subdirectory(Renderer)
 
 add_subdirectory(Encoder)
-# add_subdirectory(Decoder)
+add_subdirectory(Decoder)
 
 if (CMAKE_TESTING_ENABLED)
 	add_executable(Tester

@@ -23,7 +23,9 @@ add_executable(Encoder
 	"src/Encoder.main.cpp")
 
 target_link_libraries(Encoder
-	PRIVATE EncoderLib)
+	PRIVATE
+		TMIV::EncoderLib
+		TMIV::IOLib)
 
 install(
 	TARGETS

@@ -33,12 +33,13 @@
 
 #include <TMIV/AtlasConstructor/Pruner.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/quantize_and_expand.h>
+#include <TMIV/Image/Image.h>
 
 #include <fstream>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Image;
 
 namespace TMIV::AtlasConstructor {
 
@@ -58,8 +59,8 @@ Pruner::Pruner(const Json &node) {
 }
 
 MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
-                           const MVD16Frame &views,
-                           const std::vector<std::uint8_t> &shouldNotBePruned) {
+                       const MVD16Frame &views,
+                       const std::vector<std::uint8_t> &shouldNotBePruned) {
 
   // Sort cameras for pruning
   std::vector<int> cameraOrderId(cameras.size());
@@ -89,8 +90,8 @@ MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
 
     std::fill(bufferToPrune.begin(), bufferToPrune.end(), 255);
 
-    depthMapExpanded[viewToPruneId] = Renderer::expandDepth(
-        cameras[viewToPruneId], views[viewToPruneId].second);
+    depthMapExpanded[viewToPruneId] =
+        expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
 
     if (!shouldNotBePruned[viewToPruneId]) {
       // Depth-based redundancy removal

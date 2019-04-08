@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Renderer/quantize_and_expand.h>
+#include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -42,7 +42,7 @@ using Mat3f = Mat<Vec3f>;
 
 constexpr auto NaN = numeric_limits<float>::quiet_NaN();
 
-namespace TMIV::Renderer {
+namespace TMIV::Image {
 Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {
   auto &Y = inYuv.getPlane(0);
   auto &U = inYuv.getPlane(1);
@@ -177,4 +177,4 @@ Frame<YUV400P16> quantizeDepth16(const CameraParameters &camera,
                                  const Mat1f &in) {
   return quantizeDepth_impl<16, Frame<YUV400P16>>(camera, in);
 }
-} // namespace TMIV::Renderer
+} // namespace TMIV::Image

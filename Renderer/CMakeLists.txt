@@ -13,22 +13,22 @@ add_library(RendererLib
 	"src/reprojectPoints.cpp"
 	"src/AccumulatingPixel.cpp"
 	"src/AccumulatingView.cpp"
-	"src/quantize_and_expand.cpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
 	"include/TMIV/Renderer/ISynthesizer.h"
     "include/TMIV/Renderer/MultipassRenderer.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"
-	"include/TMIV/Renderer/reprojectPoints.h"
-	"include/TMIV/Renderer/quantize_and_expand.h")
+	"include/TMIV/Renderer/reprojectPoints.h")
 
 add_library(TMIV::RendererLib
 	ALIAS RendererLib)
 
 target_link_libraries(RendererLib
-	PUBLIC TMIV::CommonLib
-	PUBLIC TMIV::MetadataLib
+	PUBLIC
+		TMIV::CommonLib
+		TMIV::MetadataLib
+		TMIV::ImageLib		
 	PRIVATE Threads::Threads)
 
 target_include_directories(RendererLib

@@ -31,14 +31,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_QUANTIZE_AND_EXPAND_H_
+#ifndef _TMIV_IMAGE_IMAGE_H_
 #error "Include the .h, not the .hpp"
 #endif
 
 #include <cstdint>
 #include <limits>
 
-namespace TMIV::Renderer {
+namespace TMIV::Image {
 constexpr unsigned maxLevel(unsigned bits) { return (1u << bits) - 1u; }
 
 template <unsigned bits> float expandValue(uint16_t x) {
@@ -55,4 +55,4 @@ template <unsigned bits> uint16_t quantizeValue(float x) {
   }
   return 0u;
 }
-} // namespace TMIV::Renderer
+} // namespace TMIV::Image

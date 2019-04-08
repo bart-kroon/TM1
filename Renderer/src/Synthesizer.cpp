@@ -36,12 +36,13 @@
 #include <cassert>
 
 #include "AccumulatingView.h"
-#include <TMIV/Renderer/quantize_and_expand.h>
+#include <TMIV/Image/Image.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
+using namespace TMIV::Image;
 
 namespace TMIV::Renderer {
 namespace {
@@ -77,8 +78,8 @@ TextureFrame Synthesizer::renderTexture(const MVD16Frame &frame,
 }
 
 Depth16Frame Synthesizer::renderDepth(const MVD16Frame &frame,
-                                    const CameraParameterList &cameras,
-                                    const CameraParameters &target) const {
+                                      const CameraParameterList &cameras,
+                                      const CameraParameters &target) const {
   return renderTextureDepth(frame, cameras, target).second;
 }
 

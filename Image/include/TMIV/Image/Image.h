@@ -31,13 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_QUANTIZE_AND_EXPAND_H_
-#define _TMIV_RENDERER_QUANTIZE_AND_EXPAND_H_
+#ifndef _TMIV_IMAGE_IMAGE_H_
+#define _TMIV_IMAGE_IMAGE_H_
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Metadata/CameraParameterList.h>
 
-namespace TMIV::Renderer {
+namespace TMIV::Image {
 // The maximum level for an unsigned integer of the specified number of bits
 constexpr unsigned maxLevel(unsigned bits);
 
@@ -84,8 +84,8 @@ quantizeDepth10(const Metadata::CameraParameters &camera,
 Common::Frame<Common::YUV400P16>
 quantizeDepth16(const Metadata::CameraParameters &camera,
                 const Common::Mat<float> &in);
-} // namespace TMIV::Renderer
+} // namespace TMIV::Image
 
-#include "quantize_and_expand.hpp"
+#include "Image.hpp"
 
 #endif

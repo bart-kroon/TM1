@@ -19,6 +19,9 @@ add_subdirectory(Metadata)
 # Only executables depend on this library.
 add_subdirectory(IO) 
 
+# Low-level image processing including texture and depth format conversion
+add_subdirectory(Image)
+
 add_subdirectory(ViewOptimizer)
 add_subdirectory(AtlasConstructor)
 add_subdirectory(AtlasDeconstructor)
@@ -30,6 +33,7 @@ add_subdirectory(Decoder)
 if (CMAKE_TESTING_ENABLED)
 	add_executable(Tester
 		"Common/src/Common.test.cpp"
+		"Image/src/Image.test.cpp"
 		"ViewOptimizer/src/ViewOptimizer.test.cpp"
 		"AtlasConstructor/src/AtlasConstructor.test.cpp"
 		"AtlasDeconstructor/src/AtlasDeconstructor.test.cpp"

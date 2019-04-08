@@ -32,21 +32,3 @@
  */
 
 #include <TMIV/Renderer/IRenderer.h>
-
-#include <future>
-
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Metadata;
-
-namespace TMIV::Renderer {
-TextureDepth16Frame
-IRenderer::renderTextureDepth(const MVD16Frame &frame,
-                              const CameraParameterList &cameras,
-                              const Metadata::CameraParameters &target) const {
-  auto texture = async(launch::async,
-                       [&]() { return renderTexture(frame, cameras, target); });
-  auto depth = renderDepth(frame, cameras, target);
-  return {texture.get(), move(depth)};
-}
-} // namespace TMIV::Renderer

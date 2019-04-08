@@ -34,8 +34,29 @@
 #ifndef _TMIV_RENDERER_IINPAINTER_H_
 #define _TMIV_RENDERER_IINPAINTER_H_
 
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/CameraParameterList.h>
+
 namespace TMIV::Renderer {
-class IInpainter {};
+class IInpainter {
+public:
+  IInpainter() = default;
+  IInpainter(const IInpainter &) = delete;
+  IInpainter(IInpainter &&) = default;
+  IInpainter &operator=(const IInpainter &) = delete;
+  IInpainter &operator=(IInpainter &&) = default;
+  virtual ~IInpainter() = default;
+
+  // Inpainting after decoder-side synthesis
+  virtual void
+  inplaceInpaint(Common::TextureDepth10Frame &viewport,
+                 const Metadata::CameraParameters &metadata) const = 0;
+
+  // Inpainting after encoder-side synthesis
+  virtual void
+  inplaceInpaint(Common::TextureDepth16Frame &viewport,
+                 const Metadata::CameraParameters &metadata) const = 0;
+};
 } // namespace TMIV::Renderer
 
 #endif

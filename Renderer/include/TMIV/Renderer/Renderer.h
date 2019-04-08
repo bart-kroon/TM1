@@ -31,36 +31,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IRENDERER_H_
-#define _TMIV_RENDERER_IRENDERER_H_
+#ifndef _TMIV_RENDERER_RENDERER_H_
+#define _TMIV_RENDERER_RENDERER_H_
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Renderer/IInpainter.h>
+#include <TMIV/Renderer/IRenderer.h>
+#include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {
-class IRenderer {
-public:
-  IRenderer() = default;
-  IRenderer(const IRenderer &) = delete;
-  IRenderer(IRenderer &&) = default;
-  IRenderer &operator=(const IRenderer &) = delete;
-  IRenderer &operator=(IRenderer &&) = default;
-  virtual ~IRenderer() = default;
+// Basic implementation of IRenderer
+class Renderer : public IRenderer {
+private:
+  std::unique_ptr<ISynthesizer> m_synthesizer;
+  std::unique_ptr<IInpainter> m_inpainter;
 
-  // Render from a texture atlas to a viewport (decoder side)
-  virtual Common::TextureDepth10Frame
+public:
+  Renderer(const Common::Json &);
+  Renderer(const Renderer &) = delete;
+  Renderer(Renderer &&) = default;
+  Renderer &operator=(const Renderer &) = delete;
+  Renderer &operator=(Renderer &&) = default;
+
+  Common::TextureDepth10Frame
   renderFrame(const Common::MVD10Frame &atlas,
               const Common::PatchIdMapList &maps,
               const Metadata::PatchParameterList &patches,
               const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
+              const Metadata::CameraParameters &target) const override;
 
-  // Render from a multiview source to a viewport (encoder side)
-  virtual Common::TextureDepth16Frame
+  Common::TextureDepth16Frame
   renderFrame(const Common::MVD16Frame &atlas,
               const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
+              const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Renderer
 

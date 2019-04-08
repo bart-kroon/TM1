@@ -71,29 +71,26 @@ Synthesizer::Synthesizer(double rayAngleParam, double depthParam,
     : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
       m_stretchingParam{stretchingParam} {}
 
-TextureFrame Synthesizer::renderTexture(const MVD16Frame &frame,
-                                        const CameraParameterList &cameras,
-                                        const CameraParameters &target) const {
-  return renderTextureDepth(frame, cameras, target).first;
+Common::TextureDepth10Frame
+Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
+                         const Common::PatchIdMapList &maps,
+                         const Metadata::PatchParameterList &patches,
+                         const Metadata::CameraParameterList &cameras,
+                         const Metadata::CameraParameters &target) const {
+  return {};
 }
 
-Depth16Frame Synthesizer::renderDepth(const MVD16Frame &frame,
-                                      const CameraParameterList &cameras,
-                                      const CameraParameters &target) const {
-  return renderTextureDepth(frame, cameras, target).second;
-}
-
-TextureDepth16Frame
-Synthesizer::renderTextureDepth(const MVD16Frame &frame,
-                                const CameraParameterList &cameras,
-                                const CameraParameters &target) const {
+Common::TextureDepth16Frame
+Synthesizer::renderFrame(const Common::MVD16Frame &atlas,
+                         const Metadata::CameraParameterList &cameras,
+                         const Metadata::CameraParameters &target) const {
   AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam,
                       AccumulatingPixel::Mode::all};
 
-  assert(frame.size() == cameras.size());
+  assert(atlas.size() == cameras.size());
   auto i_camera = begin(cameras);
 
-  for (const auto &view : frame) {
+  for (const auto &view : atlas) {
     auto &camera = *i_camera++;
 
     auto outPoints =

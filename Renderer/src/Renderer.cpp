@@ -31,37 +31,37 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IRENDERER_H_
-#define _TMIV_RENDERER_IRENDERER_H_
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Renderer/Renderer.h>
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
-class IRenderer {
-public:
-  IRenderer() = default;
-  IRenderer(const IRenderer &) = delete;
-  IRenderer(IRenderer &&) = default;
-  IRenderer &operator=(const IRenderer &) = delete;
-  IRenderer &operator=(IRenderer &&) = default;
-  virtual ~IRenderer() = default;
+Renderer::Renderer(const Common::Json &config)
+    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer",
+                                                                config)},
+      m_inpainter{
+          Factory<IInpainter>::getInstance().create("Inpainter", config)} {}
 
-  // Render from a texture atlas to a viewport (decoder side)
-  virtual Common::TextureDepth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
+Common::TextureDepth10Frame
+Renderer::renderFrame(const Common::MVD10Frame &atlas,
+                      const Common::PatchIdMapList &maps,
+                      const Metadata::PatchParameterList &patches,
+                      const Metadata::CameraParameterList &cameras,
+                      const Metadata::CameraParameters &target) const {
+  auto viewport =
+      m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
+  m_inpainter->inplaceInpaint(viewport, target);
+  return viewport;
+}
 
-  // Render from a multiview source to a viewport (encoder side)
-  virtual Common::TextureDepth16Frame
-  renderFrame(const Common::MVD16Frame &atlas,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
-};
+Common::TextureDepth16Frame
+Renderer::renderFrame(const Common::MVD16Frame &atlas,
+                      const Metadata::CameraParameterList &cameras,
+                      const Metadata::CameraParameters &target) const {
+  auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);
+  m_inpainter->inplaceInpaint(viewport, target);
+  return viewport;
+}
 } // namespace TMIV::Renderer
-
-#endif

@@ -34,10 +34,38 @@
 #ifndef _TMIV_RENDERER_MULTIPASSRENDERER_H_
 #define _TMIV_RENDERER_MULTIPASSRENDERER_H_
 
+#include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/IRenderer.h>
+#include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {
-class MultipassRenderer : public IRenderer {};
+// Advanced multipass implementation of IRenderer
+//
+// To be implemented by Basel (Intel)
+class MultipassRenderer : public IRenderer {
+private:
+  std::unique_ptr<ISynthesizer> m_synthesizer;
+  std::unique_ptr<IInpainter> m_inpainter;
+
+public:
+  MultipassRenderer(const Common::Json &);
+  MultipassRenderer(const MultipassRenderer &) = delete;
+  MultipassRenderer(MultipassRenderer &&) = default;
+  MultipassRenderer &operator=(const MultipassRenderer &) = delete;
+  MultipassRenderer &operator=(MultipassRenderer &&) = default;
+
+  Common::TextureDepth10Frame
+  renderFrame(const Common::MVD10Frame &atlas,
+              const Common::PatchIdMapList &maps,
+              const Metadata::PatchParameterList &patches,
+              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParameters &target) const override;
+
+  Common::TextureDepth16Frame
+  renderFrame(const Common::MVD16Frame &atlas,
+              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParameters &target) const override;
+};
 } // namespace TMIV::Renderer
 
 #endif

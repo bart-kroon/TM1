@@ -31,37 +31,71 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IRENDERER_H_
-#define _TMIV_RENDERER_IRENDERER_H_
+#include <algorithm>
+#include <iostream>
+#include <memory>
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Common/Application.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/IO/IO.h>
 
-namespace TMIV::Renderer {
-class IRenderer {
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::Encoder {
+class Application : public Common::Application {
+private:
+  unique_ptr<IEncoder> m_encoder;
+  int m_numberOfFrames;
+  int m_intraPeriod;
+  Metadata::CameraParameterList m_cameras;
+
 public:
-  IRenderer() = default;
-  IRenderer(const IRenderer &) = delete;
-  IRenderer(IRenderer &&) = default;
-  IRenderer &operator=(const IRenderer &) = delete;
-  IRenderer &operator=(IRenderer &&) = default;
-  virtual ~IRenderer() = default;
+  Application(vector<const char *> argv)
+      : Common::Application{"Encoder", move(argv)} {
+    m_encoder = create<IEncoder>("Encoder");
+    m_numberOfFrames = json().require("numberOfFrames").asInt();
+    m_intraPeriod = json().require("intraPeriod").asInt();
+  }
 
-  // Render from a texture atlas to a viewport (decoder side)
-  virtual Common::TextureDepth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
+  void run() override {
+    m_cameras = IO::loadSourceMetadata(json());
 
-  // Render from a multiview source to a viewport (encoder side)
-  virtual Common::TextureDepth16Frame
-  renderFrame(const Common::MVD16Frame &atlas,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
+    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
+      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
+      encodeIntraPeriod(i, endFrame);
+    }
+  }
+
+private:
+  void encodeIntraPeriod(int intraFrame, int endFrame) {
+    m_encoder->prepareIntraPeriod();
+
+    for (int i = intraFrame; i < endFrame; ++i) {
+      auto frame = IO::loadSourceFrame(json(), i);
+      m_encoder->pushFrame(m_cameras, move(frame));
+    }
+
+    m_encoder->completeIntraPeriod();
+
+    IO::saveMivMetadata(json(), intraFrame,
+                        {m_encoder->getPatchList(), m_encoder->getCameras()});
+
+    for (int i = intraFrame; i < endFrame; ++i) {
+      auto frame = m_encoder->popAtlas();
+      IO::saveAtlas(json(), i, frame);
+    }
+  }
 };
-} // namespace TMIV::Renderer
+} // namespace TMIV::Encoder
 
-#endif
+#include "Encoder.reg.hpp"
+
+int main(int argc, char *argv[]) {
+  TMIV::Encoder::registerComponents();
+  TMIV::Encoder::Application app{{argv, argv + argc}};
+  app.run();
+  return 0;
+}

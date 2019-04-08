@@ -57,12 +57,13 @@ public:
   using PatchParameters = Metadata::PatchParameters;
 
   void prepareIntraPeriod() override;
-  void pushFrame(const CameraParameterList &baseCameras,
-                 const MVD16Frame &baseViews,
-                 const CameraParameterList &additionalCameras,
-                 const MVD16Frame &additionalViews) override;
+  void pushFrame(CameraParameterList baseCameras, MVD16Frame baseViews,
+                 CameraParameterList additionalCameras,
+                 MVD16Frame additionalViews) override;
   void completeIntraPeriod() override;
-  const CameraParameterList &getCameras() const override { return m_cameras; }
+
+  std::vector<Common::Vec2i> getAtlasSize() const override;
+  const CameraParameterList &getCameraList() const override { return m_cameras; }
   const PatchParameterList &getPatchList() const override {
     return m_patchList;
   }

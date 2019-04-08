@@ -39,10 +39,6 @@
 #include <TMIV/Metadata/PatchParameterList.h>
 
 namespace TMIV::Encoder {
-using Common::MVD16Frame;
-using Metadata::CameraParameterList;
-using Metadata::PatchParameterList;
-
 // IEncoder interface (part of EncoderLib)
 class IEncoder {
 public:
@@ -54,11 +50,14 @@ public:
   virtual ~IEncoder() = default;
 
   virtual void prepareIntraPeriod() = 0;
-  virtual void pushFrame(CameraParameterList camera, MVD16Frame views) = 0;
+  virtual void pushFrame(Metadata::CameraParameterList camera,
+                         Common::MVD16Frame views) = 0;
   virtual void completeIntraPeriod() = 0;
-  virtual const CameraParameterList &getCameras() const = 0;
-  virtual const PatchParameterList &getPatchList() const = 0;
-  virtual MVD16Frame popAtlas() = 0;
+
+  virtual std::vector<Common::Vec2i> getAtlasSize() const = 0;
+  virtual const Metadata::CameraParameterList &getCameraList() const = 0;
+  virtual const Metadata::PatchParameterList &getPatchList() const = 0;
+  virtual Common::MVD16Frame popAtlas() = 0;
 };
 } // namespace TMIV::Encoder
 

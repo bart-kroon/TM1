@@ -36,16 +36,17 @@
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 using namespace TMIV::ViewOptimizer;
 using namespace TMIV::AtlasConstructor;
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &node) {
-  m_viewOptimizer =
-      Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", node);
-  m_atlasConstructor = Factory<IAtlasConstructor>::getInstance().create(
-      "AtlasConstructor", node);
-}
+Encoder::Encoder(const Common::Json &node)
+    : m_viewOptimizer{Factory<IViewOptimizer>::getInstance().create(
+          "ViewOptimizer", node)},
+      m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(
+          "AtlasConstructor", node)} {}
+
 void Encoder::prepareIntraPeriod() { m_atlasConstructor->prepareIntraPeriod(); }
 
 void Encoder::pushFrame(CameraParameterList cameras, MVD16Frame views) {
@@ -59,8 +60,12 @@ void Encoder::completeIntraPeriod() {
   m_atlasConstructor->completeIntraPeriod();
 }
 
-const CameraParameterList &Encoder::getCameras() const {
-  return m_atlasConstructor->getCameras();
+vector<Vec2i> Encoder::getAtlasSize() const {
+  return m_atlasConstructor->getAtlasSize();
+}
+
+const CameraParameterList &Encoder::getCameraList() const {
+  return m_atlasConstructor->getCameraList();
 }
 
 const PatchParameterList &Encoder::getPatchList() const {

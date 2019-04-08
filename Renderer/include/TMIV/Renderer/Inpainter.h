@@ -34,10 +34,25 @@
 #ifndef _TMIV_RENDERER_INPAINTER_H_
 #define _TMIV_RENDERER_INPAINTER_H_
 
+#include <TMIV/Common/Json.h>
 #include <TMIV/Renderer/IInpainter.h>
 
 namespace TMIV::Renderer {
-class Inpainter : public IInpainter {};
+class Inpainter : public IInpainter {
+public:
+  Inpainter(const Common::Json &config);
+  Inpainter(const IInpainter &) = delete;
+  Inpainter(Inpainter &&) = default;
+  Inpainter &operator=(const Inpainter &) = delete;
+  Inpainter &operator=(Inpainter &&) = default;
+
+  void
+  inplaceInpaint(Common::TextureDepth10Frame &viewport,
+                 const Metadata::CameraParameters &metadata) const override;
+  void
+  inplaceInpaint(Common::TextureDepth16Frame &viewport,
+                 const Metadata::CameraParameters &metadata) const override;
+};
 } // namespace TMIV::Renderer
 
 #endif

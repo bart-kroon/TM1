@@ -32,3 +32,15 @@
  */
 
 #include <TMIV/Renderer/Inpainter.h>
+
+namespace TMIV::Renderer {
+Inpainter::Inpainter(const Common::Json & /* config */) {}
+
+void Inpainter::inplaceInpaint(
+    Common::TextureDepth10Frame & /* viewport */,
+    const Metadata::CameraParameters & /* metadata */) const {}
+
+void Inpainter::inplaceInpaint(
+    Common::TextureDepth16Frame & /* viewport */,
+    const Metadata::CameraParameters & /* metadata */) const {}
+} // namespace TMIV::Renderer

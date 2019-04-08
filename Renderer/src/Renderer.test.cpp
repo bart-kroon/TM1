@@ -45,9 +45,6 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
-const auto NaN = numeric_limits<float>::quiet_NaN();
-const auto inf = numeric_limits<float>::infinity();
-
 SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
   using PA = AccumulatingPixel::PixelAccumulator;
   using PV = AccumulatingPixel::PixelValue;

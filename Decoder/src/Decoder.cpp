@@ -31,8 +31,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/Decoder.h>
 
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Metadata;
+using namespace TMIV::AtlasDeconstructor;
+using namespace TMIV::Renderer;
+
 namespace TMIV::Decoder {
-Decoder::Decoder(const Common::Json &node) {}
+Decoder::Decoder(const Json &node)
+    : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
+          "AtlasDeconstructor", node)},
+      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", node)} {}
+
+void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
+  m_atlasSize = move(atlasSize);
+  m_patches.clear();
+}
+
+void Decoder::updatePatchList(PatchParameterList patches) {
+  m_patches = move(patches);
+  m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches);
+}
+
+void Decoder::updateCameraList(CameraParameterList cameras) {
+  m_cameras = move(cameras);
+}
+
+TextureDepth10Frame Decoder::decodeFrame(MVD10Frame atlas,
+                                         const CameraParameters &target) const {
+  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_cameras,
+                                 target);
+}
 } // namespace TMIV::Decoder

@@ -35,8 +35,10 @@
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
 #include <TMIV/Common/Factory.h>
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -67,35 +69,29 @@ AtlasConstructor::AtlasConstructor(const Common::Json &node) {
 }
 
 void AtlasConstructor::prepareIntraPeriod() {
-
-  m_cameras.clear();
-  m_isReferenceView.clear();
-  m_viewBuffer.clear();
-  m_atlasBuffer.clear();
-
   m_aggregator->prepareIntraPeriod();
 }
 
-void AtlasConstructor::pushFrame(const CameraParameterList &baseCameras,
-                                 const MVD16Frame &baseViews,
-                                 const CameraParameterList &additionalCameras,
-                                 const MVD16Frame &additionalViews) {
+void AtlasConstructor::pushFrame(CameraParameterList baseCameras,
+                                 MVD16Frame baseViews,
+                                 CameraParameterList additionalCameras,
+                                 MVD16Frame additionalViews) {
+  m_cameras.clear();
+  m_cameras.insert(m_cameras.end(), make_move_iterator(begin(baseCameras)),
+                   make_move_iterator(end(baseCameras)));
+  m_cameras.insert(m_cameras.end(),
+                   make_move_iterator(begin(additionalCameras)),
+                   make_move_iterator(end(additionalCameras)));
 
-  // Cameras
-  if (m_cameras.empty()) {
-    m_cameras.insert(m_cameras.end(), baseCameras.begin(), baseCameras.end());
-    m_isReferenceView.insert(m_isReferenceView.end(), baseCameras.size(), 1);
-    m_cameras.insert(m_cameras.end(), additionalCameras.begin(),
-                     additionalCameras.end());
-    m_isReferenceView.insert(m_isReferenceView.end(), additionalViews.size(),
-                             0);
-  }
-
-  // Views
+  m_isReferenceView.clear();
+  m_isReferenceView.insert(m_isReferenceView.end(), baseCameras.size(), 1);
+  m_isReferenceView.insert(m_isReferenceView.end(), additionalCameras.size(),
+                           0);
   MVD16Frame views;
-
-  views.insert(views.end(), baseViews.begin(), baseViews.end());
-  views.insert(views.end(), additionalViews.begin(), additionalViews.end());
+  views.insert(views.end(), make_move_iterator(begin(baseViews)),
+               make_move_iterator(end(baseViews)));
+  views.insert(views.end(), make_move_iterator(begin(additionalViews)),
+               make_move_iterator(end(additionalViews)));
 
   // Pruning
   MaskList masks = m_pruner->prune(m_cameras, views, m_isReferenceView);
@@ -112,15 +108,16 @@ void AtlasConstructor::completeIntraPeriod() {
 
   // Packing
   m_patchList = m_packer->pack(std::vector<Vec2i>(m_nbAtlas, m_atlasSize),
-                                    aggregatedMask, m_isReferenceView);
+                               aggregatedMask, m_isReferenceView);
 
   // Atlas construction
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
 
     for (int i = 0; i < m_nbAtlas; i++) {
-      TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
-                                 Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
+      TextureDepth16Frame atlas = {
+          TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
+          Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
 
       for (auto &p : atlas.first.getPlanes())
         std::fill(p.begin(), p.end(), 512);
@@ -136,6 +133,15 @@ void AtlasConstructor::completeIntraPeriod() {
 
     m_atlasBuffer.push_back(std::move(atlasList));
   }
+}
+
+vector<Vec2i> AtlasConstructor::getAtlasSize() const {
+  assert(!m_atlasBuffer.empty());
+  vector<Vec2i> result;
+  for (const auto &view : m_atlasBuffer.front()) {
+    result.push_back({view.first.getWidth(), view.first.getHeight()});
+  }
+  return result;
 }
 
 Common::MVD16Frame AtlasConstructor::popAtlas() {

@@ -32,112 +32,70 @@
  */
 
 #include <algorithm>
-#include <fstream>
 #include <iostream>
 #include <memory>
 
 #include <TMIV/Common/Application.h>
-#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Common/Json.h>
 #include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/IO/IO.h>
 
 using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Encoder {
 class Application : public Common::Application {
+private:
+  unique_ptr<IEncoder> m_encoder;
+  int m_numberOfFrames;
+  int m_intraPeriod;
+  Metadata::CameraParameterList m_cameras;
+
 public:
   Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)} {
     m_encoder = create<IEncoder>("Encoder");
-    m_startFrame = json().require("startFrame").asInt();
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
-    m_sourceResolution = json().require("SourceResolution").asIntVector<2>();
   }
 
   void run() override {
-    auto cameras = loadCameras();
+    m_cameras = IO::loadSourceMetadata(json());
 
-    for (int intraFrame = 0; intraFrame < m_numberOfFrames;
-         intraFrame += m_intraPeriod) {
-      int endFrame = min(m_numberOfFrames, intraFrame + m_intraPeriod);
-      cout << "Intra period: [" << intraFrame << ", " << endFrame << ")\n";
-
-      m_encoder->prepareIntraPeriod();
-      for (int frame = intraFrame; frame < endFrame; ++frame) {
-        cout << "Push input frame " << (m_startFrame + frame) << '\n';
-        m_encoder->pushFrame(cameras,
-                             loadViews(m_startFrame + frame, cameras.size()));
-      }
-      m_encoder->completeIntraPeriod();
-
-      saveMetadata(intraFrame, m_encoder->getCameras(),
-                   m_encoder->getPatchList());
-
-      for (int frame = intraFrame; frame < endFrame; ++frame) {
-        cout << "Pop output atlas " << frame << '\n';
-        auto atlases = m_encoder->popAtlas();
-        saveViews(frame, atlases);
-      }
+    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
+      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
+      encodeIntraPeriod(i, endFrame);
     }
   }
 
 private:
-  CameraParameterList loadCameras() const {
-    ifstream stream{json().require("SourceCameraParameters").asString()};
-    if (!stream.good()) {
-      throw runtime_error("Failed to load source camera parameters");
+  void encodeIntraPeriod(int intraFrame, int endFrame) {
+    m_encoder->prepareIntraPeriod();
+
+    for (int i = intraFrame; i < endFrame; ++i) {
+      auto frame = IO::loadSourceFrame(json(), i);
+      m_encoder->pushFrame(m_cameras, move(frame));
     }
-    return Metadata::loadCamerasFromJson(
-        Common::Json{stream}.require("cameras"),
-        json().require("SourceCameraNames").asStringVector());
-  }
 
-  MVD16Frame loadViews(int inputFrame, size_t numberOfViews) const {
-    MVD16Frame result(numberOfViews);
+    m_encoder->completeIntraPeriod();
 
-    for (size_t view = 0; view < numberOfViews; ++view) {
-      auto id = json().require("SourceCameraIDs").at(view).asInt();
-      {
-        auto texturePath = Common::format(
-            json().require("SourceTexturePathFmt").asString().c_str(), id);
-        ifstream stream{texturePath};
-        stream.seekg(streampos(inputFrame) * m_sourceResolution.x() *
-                     m_sourceResolution.y() * 3); // YUV420P10
-        result[view].first.resize(m_sourceResolution.y(),
-                                  m_sourceResolution.x());
-        result[view].first.read(stream);
-      }
-      {
-        auto depthPath = Common::format(
-            json().require("SourceDepthPathFmt").asString().c_str(), id);
-        ifstream stream{depthPath};
-        stream.seekg(streampos(inputFrame) * m_sourceResolution.x() *
-                     m_sourceResolution.y() * 2); // YUV400P16
-        result[view].second.resize(m_sourceResolution.y(),
-                                   m_sourceResolution.x());
-        result[view].second.read(stream);
-      }
+    IO::saveMivMetadata(json(), intraFrame,
+                        {m_encoder->getAtlasSize(), m_encoder->getPatchList(),
+                         m_encoder->getCameraList()});
+
+    for (int i = intraFrame; i < endFrame; ++i) {
+      auto frame = m_encoder->popAtlas();
+      IO::saveAtlas(json(), i, frame);
     }
-    return result;
   }
-
-  void saveViews(int outputFrame, const MVD16Frame &) const {}
-
-  void saveMetadata(int outputFrame, const CameraParameterList &cameras,
-                    const PatchParameterList &patches) {}
-
-  unique_ptr<IEncoder> m_encoder;
-  int m_startFrame;
-  int m_numberOfFrames;
-  int m_intraPeriod;
-  Vec2i m_sourceResolution;
 };
 } // namespace TMIV::Encoder
 
+#include "Encoder.reg.hpp"
+
 int main(int argc, char *argv[]) {
+  TMIV::Encoder::registerComponents();
   TMIV::Encoder::Application app{{argv, argv + argc}};
   app.run();
   return 0;

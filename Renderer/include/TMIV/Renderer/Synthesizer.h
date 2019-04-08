@@ -46,25 +46,18 @@ public:
   Synthesizer &operator=(const Synthesizer &) = delete;
   Synthesizer &operator=(Synthesizer &&) = default;
 
-  // Implementation of IRenderer interface
-  Common::TextureFrame
-  renderTexture(const Common::MVD16Frame &frame,
-                const Metadata::CameraParameterList &cameras,
-                const Metadata::CameraParameters &target) const override;
-
-  // Implementation of IRenderer interface
-  Common::Depth16Frame
-  renderDepth(const Common::MVD16Frame &frame,
+  Common::TextureDepth10Frame
+  renderFrame(const Common::MVD10Frame &atlas,
+              const Common::PatchIdMapList &maps,
+              const Metadata::PatchParameterList &patches,
               const Metadata::CameraParameterList &cameras,
               const Metadata::CameraParameters &target) const override;
 
-  // Implementation of IRenderer interface
   Common::TextureDepth16Frame
-  renderTextureDepth(const Common::MVD16Frame &frame,
-                     const Metadata::CameraParameterList &cameras,
-                     const Metadata::CameraParameters &target) const override;
+  renderFrame(const Common::MVD16Frame &atlas,
+              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParameters &target) const override;
 
-  // Implementation of ISynthesizer interface
   Common::Mat<float>
   renderDepth(const Common::Mat<float> &frame,
               const Metadata::CameraParameters &camera,

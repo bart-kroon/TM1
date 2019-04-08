@@ -31,37 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IRENDERER_H_
-#define _TMIV_RENDERER_IRENDERER_H_
+#include "../../AtlasDeconstructor/src/AtlasDeconstructor.reg.hpp"
+#include "../../Renderer/src/Renderer.reg.hpp"
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/Decoder.h>
 
-namespace TMIV::Renderer {
-class IRenderer {
-public:
-  IRenderer() = default;
-  IRenderer(const IRenderer &) = delete;
-  IRenderer(IRenderer &&) = default;
-  IRenderer &operator=(const IRenderer &) = delete;
-  IRenderer &operator=(IRenderer &&) = default;
-  virtual ~IRenderer() = default;
+namespace TMIV::Decoder {
+void registerComponents() {
+  TMIV::AtlasDeconstructor::registerComponents();
+  TMIV::Renderer::registerComponents();
 
-  // Render from a texture atlas to a viewport (decoder side)
-  virtual Common::TextureDepth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
-
-  // Render from a multiview source to a viewport (encoder side)
-  virtual Common::TextureDepth16Frame
-  renderFrame(const Common::MVD16Frame &atlas,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
-};
-} // namespace TMIV::Renderer
-
-#endif
+  Common::Factory<IDecoder>::getInstance().registerAs<Decoder>("Decoder");
+}
+} // namespace TMIV::Decoder

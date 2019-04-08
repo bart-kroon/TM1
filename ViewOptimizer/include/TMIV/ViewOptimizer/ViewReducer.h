@@ -46,6 +46,9 @@ public:
   ViewReducer(ViewReducer &&) = default;
   ViewReducer &operator=(const ViewReducer &) = default;
   ViewReducer &operator=(ViewReducer &&) = default;
+
+  Output optimizeFrame(CameraParameterList cameras,
+                       MVD16Frame views) const override;
 };
 } // namespace TMIV::ViewOptimizer
 

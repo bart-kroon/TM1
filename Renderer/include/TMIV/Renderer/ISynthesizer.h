@@ -40,9 +40,6 @@
 namespace TMIV::Renderer {
 class ISynthesizer : public IRenderer {
 public:
-  // Avoid clang warning -Woverloaded-virtual
-  using IRenderer::renderDepth;
-
   // Synthesize a floating-piont depth map from one view to another without
   // inpainting. Pixels with NaN depth in the input are skipped. Pixels not
   // present in the output will have NaN depth. Depth values are in meters.

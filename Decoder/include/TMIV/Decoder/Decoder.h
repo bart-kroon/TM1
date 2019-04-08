@@ -43,12 +43,28 @@
 namespace TMIV::Decoder {
 // The Decoder of TMIV 1.0
 class Decoder : public IDecoder {
+private:
+  std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
+  std::unique_ptr<Renderer::IRenderer> m_renderer;
+  std::vector<Common::Vec2i> m_atlasSize;
+  Metadata::PatchParameterList m_patches;
+  Common::PatchIdMapList m_patchIdMaps;
+  Metadata::CameraParameterList m_cameras;
+
 public:
   Decoder(const Common::Json &node);
   Decoder(const Decoder &) = delete;
   Decoder(Decoder &&) = default;
   Decoder &operator=(const Decoder &) = delete;
   Decoder &operator=(Decoder &&) = default;
+
+  void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
+  void updatePatchList(Metadata::PatchParameterList patches) override;
+  void updateCameraList(Metadata::CameraParameterList cameras) override;
+
+  Common::TextureDepth10Frame
+  decodeFrame(Common::MVD10Frame atlas,
+              const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Decoder
 

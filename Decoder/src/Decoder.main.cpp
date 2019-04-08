@@ -31,4 +31,63 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-int main(int argc, char *argv[]) { return 0; }
+#include <algorithm>
+#include <iostream>
+#include <memory>
+
+#include <TMIV/Common/Application.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/IDecoder.h>
+#include <TMIV/IO/IO.h>
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::Decoder {
+class Application : public Common::Application {
+private:
+  unique_ptr<IDecoder> m_decoder;
+  int m_numberOfFrames;
+  int m_intraPeriod;
+
+public:
+  Application(vector<const char *> argv)
+      : Common::Application{"Decoder", move(argv)} {
+    m_decoder = create<IDecoder>("Decoder");
+    m_numberOfFrames = json().require("numberOfFrames").asInt();
+    m_intraPeriod = json().require("intraPeriod").asInt();
+  }
+
+  void run() override {
+    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
+      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
+      decodeIntraPeriod(i, endFrame);
+    }
+  }
+
+private:
+  void decodeIntraPeriod(int intraFrame, int endFrame) {
+    auto metadata = IO::loadMivMetadata(json(), intraFrame);
+	m_decoder->updateAtlasSize(metadata.atlasSize);
+    m_decoder->updatePatchList(move(metadata.patches));
+    m_decoder->updateCameraList(move(metadata.cameras));
+
+    for (int i = intraFrame; i < endFrame; ++i) {
+      auto frame = IO::loadAtlas(json(), i);
+      auto target = IO::loadViewportMetadata(json(), i);
+      auto viewport = m_decoder->decodeFrame(frame, target);
+      IO::saveViewport(json(), i, viewport);
+    }
+  }
+};
+} // namespace TMIV::Decoder
+
+#include "Decoder.reg.hpp"
+
+int main(int argc, char *argv[]) {
+  TMIV::Decoder::registerComponents();
+  TMIV::Decoder::Application app{{argv, argv + argc}};
+  app.run();
+  return 0;
+}

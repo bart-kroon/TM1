@@ -34,6 +34,10 @@
 #ifndef _TMIV_DECODER_IDECODER_H_
 #define _TMIV_DECODER_IDECODER_H_
 
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/PatchParameterList.h>
+
 namespace TMIV::Decoder {
 class IDecoder {
 public:
@@ -43,6 +47,28 @@ public:
   IDecoder &operator=(const IDecoder &) = delete;
   IDecoder &operator=(IDecoder &&) = default;
   virtual ~IDecoder() = default;
+
+  // Change the atlas size.
+  //
+  // This call invalidates the patch list and requires updatePatchList to be
+  // called before any call to decodeFrame.
+  virtual void updateAtlasSize(std::vector<Common::Vec2i> sizes) = 0;
+
+  // Change the patch list.
+  //
+  // This call shall be preceded by at least one call to updateAtlasSize.
+  virtual void updatePatchList(Metadata::PatchParameterList patches) = 0;
+
+  // Change the camera list.
+  virtual void updateCameraList(Metadata::CameraParameterList cameras) = 0;
+
+  // Decode a frame and render to a target viewport.
+  //
+  // This call shall be preceded by at least one call of each of
+  // updateAtlasSize, updatePatchList and updateCameraList.
+  virtual Common::TextureDepth10Frame
+  decodeFrame(Common::MVD10Frame atlas,
+              const Metadata::CameraParameters &target) const = 0;
 };
 } // namespace TMIV::Decoder
 

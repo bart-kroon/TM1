@@ -31,37 +31,23 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_IRENDERER_H_
-#define _TMIV_RENDERER_IRENDERER_H_
+#include <TMIV/AtlasConstructor/Aggregator.h>
+#include <TMIV/AtlasConstructor/AtlasConstructor.h>
+#include <TMIV/AtlasConstructor/Packer.h>
+#include <TMIV/AtlasConstructor/Pruner.h>
+#include <TMIV/Common/Factory.h>
+#include <TMIV/Renderer/Synthesizer.h>
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
-
-namespace TMIV::Renderer {
-class IRenderer {
-public:
-  IRenderer() = default;
-  IRenderer(const IRenderer &) = delete;
-  IRenderer(IRenderer &&) = default;
-  IRenderer &operator=(const IRenderer &) = delete;
-  IRenderer &operator=(IRenderer &&) = default;
-  virtual ~IRenderer() = default;
-
-  // Render from a texture atlas to a viewport (decoder side)
-  virtual Common::TextureDepth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
-
-  // Render from a multiview source to a viewport (encoder side)
-  virtual Common::TextureDepth16Frame
-  renderFrame(const Common::MVD16Frame &atlas,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const = 0;
-};
-} // namespace TMIV::Renderer
-
-#endif
+namespace TMIV::AtlasConstructor {
+void registerComponents() {
+  Common::Factory<IAtlasConstructor>::getInstance()
+      .registerAs<AtlasConstructor>("AtlasConstructor");
+  Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>(
+      "AtlasConstructor");
+  Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");
+  Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
+  Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
+  Factory<TMIV::Renderer::ISynthesizer>::getInstance()
+      .registerAs<TMIV::Renderer::Synthesizer>("Synthesizer");
+}
+} // namespace TMIV::AtlasConstructor

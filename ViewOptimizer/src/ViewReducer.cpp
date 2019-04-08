@@ -35,4 +35,9 @@
 
 namespace TMIV::ViewOptimizer {
 ViewReducer::ViewReducer(const Common::Json & /*node*/) {}
+
+ViewReducer::Output ViewReducer::optimizeFrame(CameraParameterList cameras,
+                                               MVD16Frame views) const {
+  return {};
+}
 } // namespace TMIV::ViewOptimizer

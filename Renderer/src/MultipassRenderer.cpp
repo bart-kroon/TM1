@@ -31,4 +31,36 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::Renderer {
+MultipassRenderer::MultipassRenderer(const Common::Json &config)
+    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer",
+                                                                config)},
+      m_inpainter{
+          Factory<IInpainter>::getInstance().create("Inpainter", config)} {}
+
+Common::TextureDepth10Frame
+MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
+                               const Common::PatchIdMapList &maps,
+                               const Metadata::PatchParameterList &patches,
+                               const Metadata::CameraParameterList &cameras,
+                               const Metadata::CameraParameters &target) const {
+  auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
+  m_inpainter->inplaceInpaint(viewport, target);
+  return viewport;
+}
+
+Common::TextureDepth16Frame
+MultipassRenderer::renderFrame(const Common::MVD16Frame &atlas,
+                               const Metadata::CameraParameterList &cameras,
+                               const Metadata::CameraParameters &target) const {
+  auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);
+  m_inpainter->inplaceInpaint(viewport, target);
+  return viewport;
+}
+} // namespace TMIV::Renderer

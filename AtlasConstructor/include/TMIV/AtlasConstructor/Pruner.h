@@ -51,7 +51,7 @@ public:
   Pruner &operator=(Pruner &&) = default;
 
   MaskList
-  doPruning(const CameraParameterList &cameras, const MVDFrame &views,
+  prune(const CameraParameterList &cameras, const MVD16Frame &views,
             const std::vector<std::uint8_t> &shouldNotBePruned) override;
 
 private:

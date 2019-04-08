@@ -77,9 +77,9 @@ void AtlasConstructor::prepareIntraPeriod() {
 }
 
 void AtlasConstructor::pushFrame(const CameraParameterList &baseCameras,
-                                 const MVDFrame &baseViews,
+                                 const MVD16Frame &baseViews,
                                  const CameraParameterList &additionalCameras,
-                                 const MVDFrame &additionalViews) {
+                                 const MVD16Frame &additionalViews) {
 
   // Cameras
   if (m_cameras.empty()) {
@@ -92,13 +92,13 @@ void AtlasConstructor::pushFrame(const CameraParameterList &baseCameras,
   }
 
   // Views
-  MVDFrame views;
+  MVD16Frame views;
 
   views.insert(views.end(), baseViews.begin(), baseViews.end());
   views.insert(views.end(), additionalViews.begin(), additionalViews.end());
 
   // Pruning
-  MaskList masks = m_pruner->doPruning(m_cameras, views, m_isReferenceView);
+  MaskList masks = m_pruner->prune(m_cameras, views, m_isReferenceView);
 
   // Aggregation
   m_viewBuffer.push_back(std::move(views));
@@ -111,16 +111,16 @@ void AtlasConstructor::completeIntraPeriod() {
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
 
   // Packing
-  m_patchList = m_packer->doPacking(std::vector<Vec2i>(m_nbAtlas, m_atlasSize),
+  m_patchList = m_packer->pack(std::vector<Vec2i>(m_nbAtlas, m_atlasSize),
                                     aggregatedMask, m_isReferenceView);
 
   // Atlas construction
   for (const auto &views : m_viewBuffer) {
-    MVDFrame atlasList;
+    MVD16Frame atlasList;
 
     for (int i = 0; i < m_nbAtlas; i++) {
-      TextureDepthFrame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
-                                 DepthFrame(m_atlasSize.x(), m_atlasSize.y())};
+      TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
+                                 Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
 
       for (auto &p : atlas.first.getPlanes())
         std::fill(p.begin(), p.end(), 512);
@@ -138,15 +138,15 @@ void AtlasConstructor::completeIntraPeriod() {
   }
 }
 
-Common::MVDFrame AtlasConstructor::popAtlas() {
-  Common::MVDFrame atlas = std::move(m_atlasBuffer.front());
+Common::MVD16Frame AtlasConstructor::popAtlas() {
+  Common::MVD16Frame atlas = std::move(m_atlasBuffer.front());
   m_atlasBuffer.pop_front();
   return atlas;
 }
 
 void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
-                                         const MVDFrame &views,
-                                         MVDFrame &atlas) {
+                                         const MVD16Frame &views,
+                                         MVD16Frame &atlas) {
   auto &currentAtlas = atlas[patch.atlasId];
   auto &currentView = views[patch.virtualCameraId];
 

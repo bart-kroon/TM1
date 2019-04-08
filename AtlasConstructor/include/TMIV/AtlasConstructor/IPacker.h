@@ -53,8 +53,8 @@ public:
   using PatchParameterList = Metadata::PatchParameterList;
 
   virtual PatchParameterList
-  doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
-            const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
+  pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
+       const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

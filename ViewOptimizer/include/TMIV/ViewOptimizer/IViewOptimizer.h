@@ -38,7 +38,7 @@
 #include <TMIV/Metadata/CameraParameterList.h>
 
 namespace TMIV::ViewOptimizer {
-using Common::MVDFrame;
+using Common::MVD16Frame;
 using Metadata::CameraParameterList;
 
 // IViewOptimizer interface (part of ViewOptimizerLib)
@@ -53,16 +53,16 @@ public:
 
   struct Output {
     CameraParameterList baseCameras;
-    MVDFrame baseViews;
+    MVD16Frame baseViews;
     CameraParameterList additionalCameras;
-    MVDFrame additionalViews;
+    MVD16Frame additionalViews;
   };
 
   // Optimize a frame, passing on the pixel data
   //
   // Implementations should use move semantics to avoid unnecessary large copies
   virtual Output optimizeFrame(CameraParameterList cameras,
-                               MVDFrame views) const = 0;
+                               MVD16Frame views) const = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

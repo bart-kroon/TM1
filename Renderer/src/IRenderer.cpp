@@ -40,8 +40,8 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
-TextureDepthFrame
-IRenderer::renderTextureDepth(const MVDFrame &frame,
+TextureDepth16Frame
+IRenderer::renderTextureDepth(const MVD16Frame &frame,
                               const CameraParameterList &cameras,
                               const Metadata::CameraParameters &target) const {
   auto texture = async(launch::async,

@@ -52,7 +52,7 @@ Packer::Packer(const Common::Json &node) {
 }
 
 Metadata::PatchParameterList
-Packer::doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
+Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
                   const std::vector<std::uint8_t> &shouldNotBeSplit) {
 
   // Mask clustering

@@ -57,8 +57,8 @@ Pruner::Pruner(const Json &node) {
     m_dilationIter = subnode.asInt();
 }
 
-MaskList Pruner::doPruning(const Metadata::CameraParameterList &cameras,
-                           const MVDFrame &views,
+MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
+                           const MVD16Frame &views,
                            const std::vector<std::uint8_t> &shouldNotBePruned) {
 
   // Sort cameras for pruning

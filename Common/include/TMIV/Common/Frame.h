@@ -112,9 +112,9 @@ namespace TMIV::Common {
 // Encoder has 16-bit depth map input and 10-bit depth output
 // TODO: Rename types (Depth --> Depth16)
 using TextureFrame = Frame<YUV420P10>;
-using DepthFrame = Frame<YUV400P16>;
-using TextureDepthFrame = std::pair<TextureFrame, DepthFrame>;
-using MVDFrame = std::vector<TextureDepthFrame>;
+using Depth16Frame = Frame<YUV400P16>;
+using TextureDepth16Frame = std::pair<TextureFrame, Depth16Frame>;
+using MVD16Frame = std::vector<TextureDepth16Frame>;
 using Mask = Frame<YUV400P8>;
 using MaskList = std::vector<Mask>;
 

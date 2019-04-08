@@ -50,11 +50,11 @@ public:
   Encoder &operator=(Encoder &&) = default;
 
   void prepareIntraPeriod() override;
-  void pushFrame(CameraParameterList camera, MVDFrame views) override;
+  void pushFrame(CameraParameterList camera, MVD16Frame views) override;
   void completeIntraPeriod() override;
   const CameraParameterList &getCameras() const override;
   const PatchParameterList &getPatchList() const override;
-  MVDFrame popAtlas() override;
+  MVD16Frame popAtlas() override;
 
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;

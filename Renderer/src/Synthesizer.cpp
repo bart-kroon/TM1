@@ -70,20 +70,20 @@ Synthesizer::Synthesizer(double rayAngleParam, double depthParam,
     : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
       m_stretchingParam{stretchingParam} {}
 
-TextureFrame Synthesizer::renderTexture(const MVDFrame &frame,
+TextureFrame Synthesizer::renderTexture(const MVD16Frame &frame,
                                         const CameraParameterList &cameras,
                                         const CameraParameters &target) const {
   return renderTextureDepth(frame, cameras, target).first;
 }
 
-DepthFrame Synthesizer::renderDepth(const MVDFrame &frame,
+Depth16Frame Synthesizer::renderDepth(const MVD16Frame &frame,
                                     const CameraParameterList &cameras,
                                     const CameraParameters &target) const {
   return renderTextureDepth(frame, cameras, target).second;
 }
 
-TextureDepthFrame
-Synthesizer::renderTextureDepth(const MVDFrame &frame,
+TextureDepth16Frame
+Synthesizer::renderTextureDepth(const MVD16Frame &frame,
                                 const CameraParameterList &cameras,
                                 const CameraParameters &target) const {
   AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam,

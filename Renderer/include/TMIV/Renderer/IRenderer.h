@@ -51,22 +51,22 @@ public:
   // Render a texture for a specified virtual view. This generally involves
   // synthesis, blending and inpainting.
   virtual Common::TextureFrame
-  renderTexture(const Common::MVDFrame &frame,
+  renderTexture(const Common::MVD16Frame &frame,
                 const Metadata::CameraParameterList &cameras,
                 const Metadata::CameraParameters &target) const = 0;
 
   // Render a depth map for a specified virtual view. This generally involves
   // synthesis, blending and inpainting.
-  virtual Common::DepthFrame
-  renderDepth(const Common::MVDFrame &frame,
+  virtual Common::Depth16Frame
+  renderDepth(const Common::MVD16Frame &frame,
               const Metadata::CameraParameterList &cameras,
               const Metadata::CameraParameters &target) const = 0;
 
   // Render both texture and depth. The default implementation calls
   // renderTexture and renderDepth (in parallel), but this may be overriden for
   // efficiency reasons.
-  virtual Common::TextureDepthFrame
-  renderTextureDepth(const Common::MVDFrame &frame,
+  virtual Common::TextureDepth16Frame
+  renderTextureDepth(const Common::MVD16Frame &frame,
                      const Metadata::CameraParameterList &cameras,
                      const Metadata::CameraParameters &target) const;
 };

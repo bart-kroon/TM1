@@ -48,7 +48,7 @@ Encoder::Encoder(const Common::Json &node) {
 }
 void Encoder::prepareIntraPeriod() { m_atlasConstructor->prepareIntraPeriod(); }
 
-void Encoder::pushFrame(CameraParameterList cameras, MVDFrame views) {
+void Encoder::pushFrame(CameraParameterList cameras, MVD16Frame views) {
   auto output = m_viewOptimizer->optimizeFrame(move(cameras), move(views));
   m_atlasConstructor->pushFrame(output.baseCameras, output.baseViews,
                                 output.additionalCameras,
@@ -67,5 +67,5 @@ const PatchParameterList &Encoder::getPatchList() const {
   return m_atlasConstructor->getPatchList();
 }
 
-MVDFrame Encoder::popAtlas() { return m_atlasConstructor->popAtlas(); }
+MVD16Frame Encoder::popAtlas() { return m_atlasConstructor->popAtlas(); }
 } // namespace TMIV::Encoder

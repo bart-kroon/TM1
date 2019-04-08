@@ -95,8 +95,8 @@ private:
         json().require("SourceCameraNames").asStringVector());
   }
 
-  MVDFrame loadViews(int inputFrame, size_t numberOfViews) const {
-    MVDFrame result(numberOfViews);
+  MVD16Frame loadViews(int inputFrame, size_t numberOfViews) const {
+    MVD16Frame result(numberOfViews);
 
     for (size_t view = 0; view < numberOfViews; ++view) {
       auto id = json().require("SourceCameraIDs").at(view).asInt();
@@ -124,7 +124,7 @@ private:
     return result;
   }
 
-  void saveViews(int outputFrame, const MVDFrame &) const {}
+  void saveViews(int outputFrame, const MVD16Frame &) const {}
 
   void saveMetadata(int outputFrame, const CameraParameterList &cameras,
                     const PatchParameterList &patches) {}

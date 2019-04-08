@@ -49,7 +49,7 @@ public:
   Packer &operator=(Packer &&) = default;
 
   PatchParameterList
-  doPacking(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
+  pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
             const std::vector<std::uint8_t> &shouldNotBeSplit) override;
 
 private:

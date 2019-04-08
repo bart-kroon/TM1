@@ -118,11 +118,11 @@ public:
       m_atlasContructor->prepareIntraPeriod();
 
       for (int frame = intraFrame; frame < endFrame; ++frame) {
-        MVDFrame allViews =
+        MVD16Frame allViews =
             loadViews(allCameras, m_startFrame + frame, allCameras.size());
 
         // Lazy view optimization
-        MVDFrame baseViews, additionalViews;
+        MVD16Frame baseViews, additionalViews;
         CameraParameterList baseCameras, additionalCameras;
 
         for (auto id : m_baseViewId) {
@@ -167,9 +167,9 @@ private:
         Common::Json{stream}.require("cameras"),
         json().require("SourceCameraNames").asStringVector());
   }
-  MVDFrame loadViews(const Metadata::CameraParameterList &cameras,
+  MVD16Frame loadViews(const Metadata::CameraParameterList &cameras,
                      int inputFrame, size_t numberOfViews) const {
-    MVDFrame result(numberOfViews);
+    MVD16Frame result(numberOfViews);
 
     for (auto view = 0u; view < numberOfViews; ++view) {
       Vec2i sourceResolution = cameras[view].size;
@@ -203,7 +203,7 @@ private:
 
     return result;
   }
-  void saveViews(int outputFrame, const MVDFrame &atlas) const {
+  void saveViews(int outputFrame, const MVD16Frame &atlas) const {
     std::vector<Frame<YUV420P10>> outputDepth;
 
     for (unsigned id = 0; id < atlas.size(); id++) {

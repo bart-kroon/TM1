@@ -58,19 +58,19 @@ public:
 
   void prepareIntraPeriod() override;
   void pushFrame(const CameraParameterList &baseCameras,
-                 const MVDFrame &baseViews,
+                 const MVD16Frame &baseViews,
                  const CameraParameterList &additionalCameras,
-                 const MVDFrame &additionalViews) override;
+                 const MVD16Frame &additionalViews) override;
   void completeIntraPeriod() override;
   const CameraParameterList &getCameras() const override { return m_cameras; }
   const PatchParameterList &getPatchList() const override {
     return m_patchList;
   }
-  MVDFrame popAtlas() override;
+  MVD16Frame popAtlas() override;
 
 private:
-  void writePatchInAtlas(const PatchParameters &patch, const MVDFrame &views,
-                         MVDFrame &atlas);
+  void writePatchInAtlas(const PatchParameters &patch, const MVD16Frame &views,
+                         MVD16Frame &atlas);
 
 private:
   std::uint16_t m_nbAtlas = 0;
@@ -79,10 +79,10 @@ private:
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
   std::vector<std::uint8_t> m_isReferenceView;
-  std::vector<MVDFrame> m_viewBuffer;
+  std::vector<MVD16Frame> m_viewBuffer;
   Metadata::CameraParameterList m_cameras;
   Metadata::PatchParameterList m_patchList;
-  std::deque<MVDFrame> m_atlasBuffer;
+  std::deque<MVD16Frame> m_atlasBuffer;
 };
 } // namespace TMIV::AtlasConstructor
 

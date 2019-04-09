@@ -127,7 +127,7 @@ template <typename T, size_type M>
 std::ostream &operator<<(std::ostream &stream, const Vector<T, M> &v) {
   const char *sep = "[";
   for (const auto &x : v) {
-    stream << sep << v;
+    stream << sep << x;
     sep = ", ";
   }
   return stream << "]";

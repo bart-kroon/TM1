@@ -53,10 +53,14 @@ Common::MVD16Frame loadSourceFrame(const Common::Json &config,
                                    const Metadata::CameraParameterList &cameras,
                                    int frameIndex);
 
-void saveOptimizedFrame(const Common::Json &config, int frameIndex,
-                        const BaseAdditional<Common::MVD16Frame> &frame);
-auto loadOptimizedFrame(const Common::Json &config, int frameIndex)
-    -> BaseAdditional<Common::MVD16Frame>;
+void saveOptimizedFrame(
+    const Common::Json &config, int frameIndex,
+    const BaseAdditional<Metadata::CameraParameterList> &cameras,
+    const BaseAdditional<Common::MVD16Frame> &frame);
+auto loadOptimizedFrame(
+    const Common::Json &config,
+    const BaseAdditional<Metadata::CameraParameterList> &cameras,
+    int frameIndex) -> BaseAdditional<Common::MVD16Frame>;
 void saveOptimizedMetadata(
     const Common::Json &config, int frameIndex,
     const BaseAdditional<Metadata::CameraParameterList> &metadata);

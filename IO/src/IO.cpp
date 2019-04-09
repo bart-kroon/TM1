@@ -33,6 +33,7 @@
 
 #include <TMIV/IO/IO.h>
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 
@@ -42,8 +43,12 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
+// TODO: Extract generic load/save functions to reduce code duplication in this
+// module
+
 namespace TMIV::IO {
 CameraParameterList loadSourceMetadata(const Json &config) {
+  cout << "Loading source metadata\n";
   ifstream stream{config.require("SourceCameraParameters").asString()};
   if (!stream.good()) {
     throw runtime_error("Failed to load source camera parameters");
@@ -95,27 +100,118 @@ Depth16Frame loadSourceDepth(const Json &config, int frameIndex,
 
 MVD16Frame loadSourceFrame(const Json &config,
                            const CameraParameterList &cameras, int frameIndex) {
+  frameIndex += config.require("startFrame").asInt();
+  cout << "Loading source frame " << frameIndex << '\n';
   MVD16Frame result(cameras.size());
 
   for (size_t id = 0; id < result.size(); ++id) {
     auto size = cameras[id].size;
-    loadSourceTexture(config, frameIndex, size, id);
+    result[id].first = loadSourceTexture(config, frameIndex, size, id);
     result[id].second = loadSourceDepth(config, frameIndex, size, id);
   }
   return result;
 }
 
-void saveOptimizedFrame(const Json &config, int frameIndex,
-                        const BaseAdditional<MVD16Frame> &frame) {}
+namespace {
+void saveOptimizedTexture(const Json &config, int frameIndex,
+                          TextureFrame const &frame, size_t cameraId) {
+  auto path = format(
+      config.require("OptimizedTexturePathFmt").asString().c_str(), cameraId);
+  ofstream stream{path, (frameIndex == 0 ? ofstream::trunc : ofstream::app) |
+                            ofstream::binary};
+  if (!stream.good()) {
+    throw runtime_error("Failed to open optimized texture for writing");
+  }
+  frame.dump(stream);
+  if (!stream.good()) {
+    throw runtime_error("Failed to write to optimized texture");
+  }
+}
 
-auto loadOptimizedFrame(const Json &config, int frameIndex)
-    -> BaseAdditional<MVD16Frame> {
+void saveOptimizedDepth(const Json &config, int frameIndex,
+                        Depth16Frame const &frame, size_t cameraId) {
+  auto path = format(config.require("OptimizedDepthPathFmt").asString().c_str(),
+                     cameraId);
+  ofstream stream(path, ((frameIndex == 0) ? ofstream::trunc : ofstream::app) |
+                            ofstream::binary);
+  if (!stream.good()) {
+    throw runtime_error("Failed to open optimized depth map for writing");
+  }
+  Frame<YUV420P16> frameYuv{frame.getWidth(), frame.getHeight()};
+  convert(frame, frameYuv);
+  frameYuv.dump(stream);
+  if (!stream.good()) {
+    throw runtime_error("Failed to write to optimized depth map");
+  }
+}
+
+void saveAdditionalTexture(const Json &config, int frameIndex,
+                           TextureFrame const &frame, size_t cameraId) {
+  auto path = format(
+      config.require("AdditionalTexturePathFmt").asString().c_str(), cameraId);
+  ofstream stream{path, (frameIndex == 0 ? ofstream::trunc : ofstream::app) |
+                            ofstream::binary};
+  if (!stream.good()) {
+    throw runtime_error("Failed to open additional texture for writing");
+  }
+  frame.dump(stream);
+  if (!stream.good()) {
+    throw runtime_error("Failed to write to additional texture");
+  }
+}
+
+void saveAdditionalDepth(const Json &config, int frameIndex,
+                         Depth16Frame const &frame, size_t cameraId) {
+  auto path = format(
+      config.require("AdditionalDepthPathFmt").asString().c_str(), cameraId);
+  ofstream stream(path, ((frameIndex == 0) ? ofstream::trunc : ofstream::app) |
+                            ofstream::binary);
+  if (!stream.good()) {
+    throw runtime_error("Failed to open additonal depth map for writing");
+  }
+  Frame<YUV420P16> frameYuv{frame.getWidth(), frame.getHeight()};
+  convert(frame, frameYuv);
+  frameYuv.dump(stream);
+  if (!stream.good()) {
+    throw runtime_error("Failed to write to additonal depth map");
+  }
+}
+} // namespace
+
+void saveOptimizedFrame(const Json &config, int frameIndex,
+                        const BaseAdditional<CameraParameterList> &cameras,
+                        const BaseAdditional<MVD16Frame> &frame) {
+  cout << "Saving optimized frame " << frameIndex << '\n';
+
+  assert(cameras.base.size() == frame.base.size());
+  for (size_t i = 0; i < cameras.base.size(); ++i) {
+    saveOptimizedTexture(config, frameIndex, frame.base[i].first,
+                         cameras.base[i].id);
+    saveOptimizedDepth(config, frameIndex, frame.base[i].second,
+                       cameras.base[i].id);
+  }
+
+  assert(cameras.additional.size() == frame.additional.size());
+  for (size_t i = 0; i < cameras.additional.size(); ++i) {
+    saveAdditionalTexture(config, frameIndex, frame.additional[i].first,
+                          cameras.additional[i].id);
+    saveAdditionalDepth(config, frameIndex, frame.additional[i].second,
+                        cameras.additional[i].id);
+  }
+}
+
+auto loadOptimizedFrame(
+    const Json &config,
+    const BaseAdditional<Metadata::CameraParameterList> &cameras,
+    int frameIndex) -> BaseAdditional<MVD16Frame> {
   return {};
 }
 
 void saveOptimizedMetadata(
     const Json &config, int frameIndex,
-    const BaseAdditional<CameraParameterList> &metadata) {}
+    const BaseAdditional<CameraParameterList> &metadata) {
+  cout << "Saving metadata of optimized frame " << frameIndex << '\n';
+}
 
 auto loadOptimizedMetadata(const Json &config, int frameIndex)
     -> BaseAdditional<CameraParameterList> {
@@ -132,8 +228,8 @@ auto loadMivMetadata(const Json &config, int frameIndex) -> MivMetadata {
 namespace {
 void saveAtlasTexture(const Json &config, int frameIndex,
                       TextureFrame const &frame, size_t atlasId) {
-  auto path = Common::format(
-      config.require("AtlasTexturePathFmt").asString().c_str(), atlasId);
+  auto path =
+      format(config.require("AtlasTexturePathFmt").asString().c_str(), atlasId);
   ofstream stream{path, (frameIndex == 0 ? ofstream::trunc : ofstream::app) |
                             ofstream::binary};
   if (!stream.good()) {
@@ -147,8 +243,8 @@ void saveAtlasTexture(const Json &config, int frameIndex,
 
 void saveAtlasDepth(const Json &config, int frameIndex,
                     Frame<YUV420P10> const &frame, size_t atlasId) {
-  auto path = Common::format(
-      config.require("AtlasDepthPathFmt").asString().c_str(), atlasId);
+  auto path =
+      format(config.require("AtlasDepthPathFmt").asString().c_str(), atlasId);
   ofstream stream(path, ((frameIndex == 0) ? ofstream::trunc : ofstream::app) |
                             ofstream::binary);
   if (!stream.good()) {

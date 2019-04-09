@@ -67,12 +67,12 @@ public:
 private:
   void runIntraPeriod(int intraFrame, int endFrame) {
     auto cameras = m_optimizer->optimizeIntraPeriod(m_cameras);
-    IO::saveOptimizedMetadata(json(), intraFrame, move(cameras));
+    IO::saveOptimizedMetadata(json(), intraFrame, cameras);
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto sourceFrame = IO::loadSourceFrame(json(), m_cameras, i);
       auto frame = m_optimizer->optimizeFrame(sourceFrame);
-      IO::saveOptimizedFrame(json(), i, move(frame));
+      IO::saveOptimizedFrame(json(), i, cameras, move(frame));
     }
   }
 };

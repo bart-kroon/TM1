@@ -10,7 +10,8 @@ add_library(TMIV::IOLib
 target_link_libraries(IOLib
 	PUBLIC
 		TMIV::CommonLib
-		TMIV::MetadataLib)
+		TMIV::MetadataLib
+		TMIV::ViewOptimizerLib)
 
 target_include_directories(IOLib
 	PUBLIC

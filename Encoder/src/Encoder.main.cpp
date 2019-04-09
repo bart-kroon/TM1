@@ -53,11 +53,10 @@ private:
 
 public:
   Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)} {
-    m_encoder = create<IEncoder>("Encoder");
-    m_numberOfFrames = json().require("numberOfFrames").asInt();
-    m_intraPeriod = json().require("intraPeriod").asInt();
-  }
+      : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>(
+                                                        "Encoder")},
+        m_numberOfFrames{json().require("numberOfFrames").asInt()},
+        m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
@@ -65,12 +64,12 @@ public:
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
       cout << "Intra period: [" << i << ", " << endFrame << ")\n";
-      encodeIntraPeriod(i, endFrame);
+      runIntraPeriod(i, endFrame);
     }
   }
 
 private:
-  void encodeIntraPeriod(int intraFrame, int endFrame) {
+  void runIntraPeriod(int intraFrame, int endFrame) {
     m_encoder->prepareIntraPeriod(m_cameras);
 
     for (int i = intraFrame; i < endFrame; ++i) {

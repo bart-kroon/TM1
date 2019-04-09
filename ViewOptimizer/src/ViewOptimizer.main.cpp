@@ -33,6 +33,7 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/IO/IO.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 #include <iostream>
 
@@ -41,19 +42,39 @@ using namespace TMIV::Common;
 
 namespace TMIV::ViewOptimizer {
 class Application : public Common::Application {
+  unique_ptr<IViewOptimizer> m_optimizer;
+  int m_numberOfFrames;
+  int m_intraPeriod;
+  Metadata::CameraParameterList m_cameras;
+
 public:
   Application(vector<const char *> argv)
-      : Common::Application{"ViewOptimizer", move(argv)} {
-    m_optimizer = create<IViewOptimizer>("ViewOptimizer");
-  }
+      : Common::Application{"ViewOptimizer", move(argv)},
+        m_optimizer{create<IViewOptimizer>("ViewOptimizer")},
+        m_numberOfFrames{json().require("numberOfFrames").asInt()},
+        m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
-  
-  
+    m_cameras = IO::loadSourceMetadata(json());
+
+    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
+      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
+      runIntraPeriod(i, endFrame);
+    }
   }
 
 private:
-  unique_ptr<IViewOptimizer> m_optimizer;
+  void runIntraPeriod(int intraFrame, int endFrame) {
+    auto cameras = m_optimizer->optimizeIntraPeriod(m_cameras);
+    IO::saveOptimizedMetadata(json(), intraFrame, move(cameras));
+
+    for (int i = intraFrame; i < endFrame; ++i) {
+      auto sourceFrame = IO::loadSourceFrame(json(), m_cameras, i);
+      auto frame = m_optimizer->optimizeFrame(sourceFrame);
+      IO::saveOptimizedFrame(json(), i, move(frame));
+    }
+  }
 };
 } // namespace TMIV::ViewOptimizer
 

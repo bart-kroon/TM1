@@ -38,28 +38,30 @@
 #include <TMIV/Common/Json.h>
 #include <TMIV/Metadata/CameraParameterList.h>
 #include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 // Functions for file I/O
 //
 // Frame indices are zero-based and relative to the StartFrame parameter.
 // These functions will print something short to screen.
 namespace TMIV::IO {
+template <class T>
+using BaseAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
+
 Metadata::CameraParameterList loadSourceMetadata(const Common::Json &config);
 Common::MVD16Frame loadSourceFrame(const Common::Json &config,
                                    const Metadata::CameraParameterList &cameras,
                                    int frameIndex);
 
-void saveOptimizedFrame(
-    const Common::Json &config, int frameIndex,
-    const std::pair<Common::MVD16Frame, Common::MVD16Frame> &frame);
+void saveOptimizedFrame(const Common::Json &config, int frameIndex,
+                        const BaseAdditional<Common::MVD16Frame> &frame);
 auto loadOptimizedFrame(const Common::Json &config, int frameIndex)
-    -> std::pair<Common::MVD16Frame, Common::MVD16Frame>;
+    -> BaseAdditional<Common::MVD16Frame>;
 void saveOptimizedMetadata(
     const Common::Json &config, int frameIndex,
-    const std::pair<Metadata::CameraParameterList,
-                    Metadata::CameraParameterList> &metadata);
+    const BaseAdditional<Metadata::CameraParameterList> &metadata);
 auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
-    -> std::pair<Metadata::CameraParameterList, Metadata::CameraParameterList>;
+    -> BaseAdditional<Metadata::CameraParameterList>;
 
 struct MivMetadata {
   std::vector<Common::Vec2i> atlasSize;

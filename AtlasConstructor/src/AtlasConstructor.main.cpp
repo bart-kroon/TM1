@@ -65,12 +65,12 @@ public:
 
   void runIntraPeriod(int intraFrame, int endFrame) {
     auto cameras = IO::loadOptimizedMetadata(json(), intraFrame);
-    m_atlasConstructor->prepareIntraPeriod(move(cameras.first),
-                                           move(cameras.second));
+    m_atlasConstructor->prepareIntraPeriod(move(cameras.base),
+                                           move(cameras.additional));
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto views = IO::loadOptimizedFrame(json(), i);
-      m_atlasConstructor->pushFrame(move(views.first), move(views.second));
+      m_atlasConstructor->pushFrame(move(views.base), move(views.additional));
     }
 
     m_atlasConstructor->completeIntraPeriod();

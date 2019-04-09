@@ -106,19 +106,19 @@ MVD16Frame loadSourceFrame(const Json &config,
 }
 
 void saveOptimizedFrame(const Json &config, int frameIndex,
-                        const std::pair<MVD16Frame, MVD16Frame> &frame) {}
+                        const BaseAdditional<MVD16Frame> &frame) {}
 
 auto loadOptimizedFrame(const Json &config, int frameIndex)
-    -> std::pair<MVD16Frame, MVD16Frame> {
+    -> BaseAdditional<MVD16Frame> {
   return {};
 }
 
 void saveOptimizedMetadata(
     const Json &config, int frameIndex,
-    const std::pair<CameraParameterList, CameraParameterList> &metadata) {}
+    const BaseAdditional<CameraParameterList> &metadata) {}
 
 auto loadOptimizedMetadata(const Json &config, int frameIndex)
-    -> std::pair<CameraParameterList, CameraParameterList> {
+    -> BaseAdditional<CameraParameterList> {
   return {};
 }
 

@@ -57,9 +57,8 @@ protected:
   // Use the configuration file with a factory to create a component/module
   template <class Interface> auto create(const std::string &name) const {
     auto method = json().require(name + "Method").asString();
-    auto node = json().require(method);
     auto &factory = Factory<Interface>::getInstance();
-    return factory.create(std::move(method), std::move(node));
+    return factory.create(std::move(method), json());
   }
 
 private:

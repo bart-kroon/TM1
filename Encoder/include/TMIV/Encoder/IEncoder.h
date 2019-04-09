@@ -49,9 +49,8 @@ public:
   IEncoder &operator=(IEncoder &&) = default;
   virtual ~IEncoder() = default;
 
-  virtual void prepareIntraPeriod() = 0;
-  virtual void pushFrame(Metadata::CameraParameterList camera,
-                         Common::MVD16Frame views) = 0;
+  virtual void prepareIntraPeriod(Metadata::CameraParameterList cameras) = 0;
+  virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual void completeIntraPeriod() = 0;
 
   virtual std::vector<Common::Vec2i> getAtlasSize() const = 0;

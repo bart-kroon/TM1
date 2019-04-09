@@ -36,6 +36,7 @@
 
 #include "Array.h"
 #include "Math.h"
+#include <ostream>
 
 namespace TMIV::Common {
 template <typename A> class VectorInterface : public A {
@@ -120,6 +121,17 @@ template <typename T> using Vec3 = Vector<T, 3>;
 template <typename T> using Vec4 = Vector<T, 4>;
 template <typename T> using Vec5 = Vector<T, 5>;
 template <typename T> using Vec6 = Vector<T, 6>;
+
+// Stream out
+template <typename T, size_type M>
+std::ostream &operator<<(std::ostream &stream, const Vector<T, M> &v) {
+  const char *sep = "[";
+  for (const auto &x : v) {
+    stream << sep << v;
+    sep = ", ";
+  }
+  return stream << "]";
+}
 
 //! \brief Returns the cross-product of a and b.
 template <typename T, typename U>

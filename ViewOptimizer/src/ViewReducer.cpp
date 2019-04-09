@@ -31,15 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <algorithm>
 #include <TMIV/ViewOptimizer/ViewReducer.h>
+#include <algorithm>
+#include <cassert>
+
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
 namespace TMIV::ViewOptimizer {
-ViewReducer::ViewReducer(const Common::Json &node) {}
+ViewReducer::ViewReducer(const Json &node) {}
 
-ViewReducer::Output ViewReducer::optimizeFrame(CameraParameterList cameras,
-                                               MVD16Frame views) const {
-  IViewOptimizer::Output ViewOutput;
+auto ViewReducer::optimizeIntraPeriod(Metadata::CameraParameterList cameras)
+    -> Output<Metadata::CameraParameterList> {
+  Output<Metadata::CameraParameterList> result;
+  m_priorities.assign(cameras.size(), false);
+
   const float radperdeg = 0.01745329251994329576923690768489f;
 
   int nbCameras = (int)cameras.size();
@@ -72,7 +79,7 @@ ViewReducer::Output ViewReducer::optimizeFrame(CameraParameterList cameras,
     }
   }
   // Calculte the hor_range of view i and j
-  if (cameras[id_i].type == Metadata::ProjectionType::ERP) {
+  if (cameras[id_i].type == ProjectionType::ERP) {
     range_i = abs(cameras[id_i].erpPhiRange[0] - cameras[id_i].erpPhiRange[1]) *
               radperdeg;
   } else {
@@ -80,7 +87,7 @@ ViewReducer::Output ViewReducer::optimizeFrame(CameraParameterList cameras,
         atan(cameras[id_i].size[0] / (2 * cameras[id_i].perspectiveFocal[0])) *
         radperdeg;
   }
-  if (cameras[id_j].type == Metadata::ProjectionType::ERP) {
+  if (cameras[id_j].type == ProjectionType::ERP) {
     range_j = abs(cameras[id_j].erpPhiRange[0] - cameras[id_j].erpPhiRange[1]) *
               radperdeg;
   } else {
@@ -89,17 +96,17 @@ ViewReducer::Output ViewReducer::optimizeFrame(CameraParameterList cameras,
         radperdeg;
   }
   // Decide whether the number is one or multiple
-  float overlapping = __max((range_i - max_angle), 0) +
-                      __max(max_angle + range_j - 360 * radperdeg, 0);
+  float overlapping = max(range_i - max_angle, 0.f) +
+                      max(max_angle + range_j - 360.f * radperdeg, 0.f);
 
   // Just select 1 view which has the shortest distance to center
   if (overlapping > 0.25 * (range_j + range_i)) {
-    
-	float x_center = 0;
+
+    float x_center = 0;
     float y_center = 0;
     float z_center = 0;
     int id_center = 0;
-    float distance = LONG_MAX;
+    float distance = static_cast<float>(LONG_MAX);
 
     for (int id = 0u; id < nbCameras; id++) {
       x_center += cameras[id].position[0];
@@ -119,28 +126,32 @@ ViewReducer::Output ViewReducer::optimizeFrame(CameraParameterList cameras,
         distance = distance_temp;
       }
     }
-    ViewOutput.baseCameras.push_back(cameras[id_center]);
-    ViewOutput.baseViews.push_back(views[id_center]);
-    for (int id = 0u; id < nbCameras; id++) {
-      if (id != id_center) {
-        ViewOutput.additionalCameras.push_back(cameras[id]);
-        ViewOutput.additionalViews.push_back(views[id]);
-      }
-    }
+    m_priorities[id_center] = true;
   }
   // Just select 2 view i and j
   else {
-    ViewOutput.baseCameras.push_back(cameras[id_i]);
-    ViewOutput.baseViews.push_back(views[id_i]);
-    ViewOutput.baseCameras.push_back(cameras[id_j]);
-    ViewOutput.baseViews.push_back(views[id_j]);
-    for (int id = 0u; id < nbCameras; id++) {
-      if (id != id_i && id != id_j) {
-        ViewOutput.additionalCameras.push_back(cameras[id]);
-        ViewOutput.additionalViews.push_back(views[id]);
-      }
-    }
-  };
-  return ViewOutput;
+    m_priorities[id_i] = true;
+    m_priorities[id_j] = true;
+  }
+
+  // Move cameras into base and additional partitions
+  for (size_t index = 0; index != cameras.size(); ++index) {
+    (m_priorities[index] ? result.base : result.additional)
+        .push_back(move(cameras[index]));
+  }
+  return result;
+}
+
+auto ViewReducer::optimizeFrame(Common::MVD16Frame views) const
+    -> Output<Common::MVD16Frame> {
+  Output<Common::MVD16Frame> result;
+  assert(m_priorities.size() == views.size());
+
+  // Move views into base and additional partitions
+  for (size_t index = 0; index != views.size(); ++index) {
+    (m_priorities[index] ? result.base : result.additional)
+        .push_back(move(views[index]));
+  }
+  return result;
 }
 } // namespace TMIV::ViewOptimizer

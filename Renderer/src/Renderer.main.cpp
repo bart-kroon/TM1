@@ -34,6 +34,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/IRenderer.h>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -54,7 +55,11 @@ private:
 } // namespace TMIV::Renderer
 
 int main(int argc, char *argv[]) {
-  TMIV::Renderer::Application app{{argv, argv + argc}};
-  app.run();
-  return 0;
+  try {
+    TMIV::Renderer::Application app{{argv, argv + argc}};
+    app.run();
+    return 0;
+  } catch (runtime_error &e) {
+    cerr << e.what() << endl;
+  }
 }

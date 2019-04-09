@@ -64,13 +64,13 @@ public:
   }
 
   void runIntraPeriod(int intraFrame, int endFrame) {
-    m_atlasConstructor->prepareIntraPeriod();
+    auto cameras = IO::loadOptimizedMetadata(json(), intraFrame);
+    m_atlasConstructor->prepareIntraPeriod(move(cameras.first),
+                                           move(cameras.second));
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto cameras = IO::loadOptimizedMetadata(json(), intraFrame);
       auto views = IO::loadOptimizedFrame(json(), i);
-      m_atlasConstructor->pushFrame(move(cameras.first), move(views.first),
-                                   move(cameras.second), move(views.second));
+      m_atlasConstructor->pushFrame(move(views.first), move(views.second));
     }
 
     m_atlasConstructor->completeIntraPeriod();
@@ -91,8 +91,12 @@ public:
 #include "AtlasConstructor.reg.hpp"
 
 int main(int argc, char *argv[]) {
-  TMIV::AtlasConstructor::registerComponents();
-  TMIV::AtlasConstructor::Application app{{argv, argv + argc}};
-  app.run();
-  return 0;
+  try {
+    TMIV::AtlasConstructor::registerComponents();
+    TMIV::AtlasConstructor::Application app{{argv, argv + argc}};
+    app.run();
+    return 0;
+  } catch (runtime_error &e) {
+    cerr << e.what() << endl;
+  }
 }

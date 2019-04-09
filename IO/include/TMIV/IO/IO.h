@@ -45,7 +45,9 @@
 // These functions will print something short to screen.
 namespace TMIV::IO {
 Metadata::CameraParameterList loadSourceMetadata(const Common::Json &config);
-Common::MVD16Frame loadSourceFrame(const Common::Json &config, int frameIndex);
+Common::MVD16Frame loadSourceFrame(const Common::Json &config,
+                                   const Metadata::CameraParameterList &cameras,
+                                   int frameIndex);
 
 void saveOptimizedFrame(
     const Common::Json &config, int frameIndex,

@@ -49,9 +49,8 @@ public:
   Encoder &operator=(const Encoder &) = delete;
   Encoder &operator=(Encoder &&) = default;
 
-  void prepareIntraPeriod() override;
-  void pushFrame(Metadata::CameraParameterList camera,
-                 Common::MVD16Frame views) override;
+  void prepareIntraPeriod(Metadata::CameraParameterList cameras) override;
+  void pushFrame(Common::MVD16Frame views) override;
   void completeIntraPeriod() override;
 
   std::vector<Common::Vec2i> getAtlasSize() const override;

@@ -68,14 +68,8 @@ AtlasConstructor::AtlasConstructor(const Common::Json &node) {
                    (m_atlasSize.x() * m_atlasSize.y()));
 }
 
-void AtlasConstructor::prepareIntraPeriod() {
-  m_aggregator->prepareIntraPeriod();
-}
-
-void AtlasConstructor::pushFrame(CameraParameterList baseCameras,
-                                 MVD16Frame baseViews,
-                                 CameraParameterList additionalCameras,
-                                 MVD16Frame additionalViews) {
+void AtlasConstructor::prepareIntraPeriod(
+    CameraParameterList baseCameras, CameraParameterList additionalCameras) {
   m_cameras.clear();
   m_cameras.insert(m_cameras.end(), make_move_iterator(begin(baseCameras)),
                    make_move_iterator(end(baseCameras)));
@@ -87,6 +81,12 @@ void AtlasConstructor::pushFrame(CameraParameterList baseCameras,
   m_isReferenceView.insert(m_isReferenceView.end(), baseCameras.size(), 1);
   m_isReferenceView.insert(m_isReferenceView.end(), additionalCameras.size(),
                            0);
+
+  m_aggregator->prepareIntraPeriod();
+}
+
+void AtlasConstructor::pushFrame(MVD16Frame baseViews,
+                                 MVD16Frame additionalViews) {
   MVD16Frame views;
   views.insert(views.end(), make_move_iterator(begin(baseViews)),
                make_move_iterator(end(baseViews)));

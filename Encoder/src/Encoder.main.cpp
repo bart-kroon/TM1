@@ -71,11 +71,11 @@ public:
 
 private:
   void encodeIntraPeriod(int intraFrame, int endFrame) {
-    m_encoder->prepareIntraPeriod();
+    m_encoder->prepareIntraPeriod(m_cameras);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = IO::loadSourceFrame(json(), i);
-      m_encoder->pushFrame(m_cameras, move(frame));
+      auto frame = IO::loadSourceFrame(json(), m_cameras, i);
+      m_encoder->pushFrame(move(frame));
     }
 
     m_encoder->completeIntraPeriod();
@@ -95,8 +95,12 @@ private:
 #include "Encoder.reg.hpp"
 
 int main(int argc, char *argv[]) {
-  TMIV::Encoder::registerComponents();
-  TMIV::Encoder::Application app{{argv, argv + argc}};
-  app.run();
-  return 0;
+  try {
+    TMIV::Encoder::registerComponents();
+    TMIV::Encoder::Application app{{argv, argv + argc}};
+    app.run();
+    return 0;
+  } catch (runtime_error &e) {
+    cerr << e.what() << endl;
+  }
 }

@@ -47,13 +47,16 @@ Encoder::Encoder(const Common::Json &node)
       m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(
           "AtlasConstructor", node)} {}
 
-void Encoder::prepareIntraPeriod() { m_atlasConstructor->prepareIntraPeriod(); }
+void Encoder::prepareIntraPeriod(CameraParameterList cameras) {
+  auto optimized = m_viewOptimizer->optimizeIntraPeriod(move(cameras));
+  m_atlasConstructor->prepareIntraPeriod(move(optimized.base),
+                                         move(optimized.additional));
+}
 
-void Encoder::pushFrame(CameraParameterList cameras, MVD16Frame views) {
-  auto output = m_viewOptimizer->optimizeFrame(move(cameras), move(views));
-  m_atlasConstructor->pushFrame(output.baseCameras, output.baseViews,
-                                output.additionalCameras,
-                                output.additionalViews);
+void Encoder::pushFrame(MVD16Frame views) {
+  auto optimized = m_viewOptimizer->optimizeFrame(move(views));
+  m_atlasConstructor->pushFrame(move(optimized.base),
+                                move(optimized.additional));
 }
 
 void Encoder::completeIntraPeriod() {

@@ -36,6 +36,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <iosfwd>
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
@@ -52,6 +53,7 @@ using Common::Vec3f;
 //
 // Read the RVS 3.x manual for interpretation of angles
 struct CameraParameters {
+  uint16_t id;
   Vec2i size{};     // Camera sensor size (width, height) in pixels
   Vec3f position{}; // (x, y, z) in meters, OMAF definition
   Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
@@ -63,6 +65,8 @@ struct CameraParameters {
   Vec2f perspectiveFocal{};  // Focal length
   Vec2f perspectiveCenter{}; // Principle point
   Vec2f depthRange{};        // [near, far]
+
+  friend std::ostream& operator << (std::ostream& stream, const CameraParameters& camera);
 };
 
 using CameraParameterList = std::vector<CameraParameters>;

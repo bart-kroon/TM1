@@ -34,6 +34,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -46,15 +47,25 @@ public:
     m_optimizer = create<IViewOptimizer>("ViewOptimizer");
   }
 
-  void run() override {}
+  void run() override {
+  
+  
+  }
 
 private:
   unique_ptr<IViewOptimizer> m_optimizer;
 };
 } // namespace TMIV::ViewOptimizer
 
+#include "ViewOptimizer.reg.hpp"
+
 int main(int argc, char *argv[]) {
-  TMIV::ViewOptimizer::Application app{{argv, argv + argc}};
-  app.run();
-  return 0;
+  try {
+    TMIV::ViewOptimizer::registerComponents();
+    TMIV::ViewOptimizer::Application app{{argv, argv + argc}};
+    app.run();
+    return 0;
+  } catch (runtime_error &e) {
+    cerr << e.what() << endl;
+  }
 }

@@ -69,7 +69,7 @@ public:
 private:
   void decodeIntraPeriod(int intraFrame, int endFrame) {
     auto metadata = IO::loadMivMetadata(json(), intraFrame);
-	m_decoder->updateAtlasSize(metadata.atlasSize);
+    m_decoder->updateAtlasSize(metadata.atlasSize);
     m_decoder->updatePatchList(move(metadata.patches));
     m_decoder->updateCameraList(move(metadata.cameras));
 
@@ -86,8 +86,12 @@ private:
 #include "Decoder.reg.hpp"
 
 int main(int argc, char *argv[]) {
-  TMIV::Decoder::registerComponents();
-  TMIV::Decoder::Application app{{argv, argv + argc}};
-  app.run();
-  return 0;
+  try {
+    TMIV::Decoder::registerComponents();
+    TMIV::Decoder::Application app{{argv, argv + argc}};
+    app.run();
+    return 0;
+  } catch (runtime_error &e) {
+    cerr << e.what() << endl;
+  }
 }

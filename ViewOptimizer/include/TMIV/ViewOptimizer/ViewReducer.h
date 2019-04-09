@@ -36,10 +36,14 @@
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include <vector>
 
 namespace TMIV::ViewOptimizer {
 // The ViewOptimizer of TMIV 1.0 provided by Zhejiang University
 class ViewReducer : public IViewOptimizer {
+private:
+  std::vector<bool> m_priorities;
+
 public:
   ViewReducer(const Common::Json &node);
   ViewReducer(const ViewReducer &) = default;
@@ -47,8 +51,11 @@ public:
   ViewReducer &operator=(const ViewReducer &) = default;
   ViewReducer &operator=(ViewReducer &&) = default;
 
-  Output optimizeFrame(CameraParameterList cameras,
-                       MVD16Frame views) const override;
+  auto optimizeIntraPeriod(Metadata::CameraParameterList cameras)
+      -> Output<Metadata::CameraParameterList>;
+
+  auto optimizeFrame(Common::MVD16Frame views) const
+      -> Output<Common::MVD16Frame>;
 };
 } // namespace TMIV::ViewOptimizer
 

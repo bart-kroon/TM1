@@ -34,18 +34,19 @@
 #include <TMIV/Metadata/CameraParameterList.h>
 
 #include <TMIV/Common/Json.h>
+#include <ostream>
 
 using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
-CameraParameterList loadCamerasFromJson(const Common::Json &node,
-                                        const std::vector<std::string> &names) {
+CameraParameterList loadCamerasFromJson(const Json &node,
+                                        const vector<string> &names) {
   CameraParameterList result;
   for (const auto &name : names) {
-    for (std::size_t i = 0; i != node.size(); ++i) {
+    for (size_t i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
-        // NOTE: The JSON format does not have a camera ID
-        result.push_back(loadCameraFromJson(0, node.at(i)));
+        result.push_back(loadCameraFromJson(uint16_t(i), node.at(i)));
         break;
       }
     }
@@ -57,9 +58,42 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
   return result;
 }
 
+ostream &operator<<(ostream &stream, const CameraParameters &camera) {
+  stream << "Camera: id=" << camera.id << ", size=" << camera.size
+         << ", position=" << camera.position << ", rotation=" << camera.rotation
+         << ", type=";
+  switch (camera.type) {
+  case ProjectionType::ERP:
+    stream << "ERP, phi in " << camera.erpPhiRange << ", theta in "
+           << camera.erpThetaRange;
+    break;
+  case ProjectionType::Perspective:
+    stream << "Perspective, focal=" << camera.perspectiveFocal
+           << ", center=" << camera.perspectiveCenter;
+    break;
+  case ProjectionType::CubeMap:
+    stream << "CubeMap, cubicMapType=";
+    switch (camera.cubicMapType) {
+    case CubicMapType::CubeMap:
+      stream << "CubeMap";
+      break;
+    case CubicMapType::EAC:
+      stream << "EAC";
+      break;
+    default:
+      stream << '?';
+    }
+    break;
+  default:
+    stream << '?';
+  }
+  return stream << ", depthRange=" << camera.depthRange;
+}
+
 // The parameter is a an item of the cameras node (a JSON object).
-CameraParameters loadCameraFromJson(uint16_t /*id*/, const Common::Json &node) {
+CameraParameters loadCameraFromJson(uint16_t id, const Json &node) {
   CameraParameters parameters;
+  parameters.id = id;
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();
   parameters.rotation = node.require("Rotation").asFloatVector<3>();

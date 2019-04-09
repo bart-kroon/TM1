@@ -38,9 +38,6 @@
 #include <TMIV/Metadata/CameraParameterList.h>
 
 namespace TMIV::ViewOptimizer {
-using Common::MVD16Frame;
-using Metadata::CameraParameterList;
-
 // IViewOptimizer interface (part of ViewOptimizerLib)
 class IViewOptimizer {
 public:
@@ -51,18 +48,18 @@ public:
   IViewOptimizer &operator=(IViewOptimizer &&) = default;
   virtual ~IViewOptimizer() = default;
 
-  struct Output {
-    CameraParameterList baseCameras;
-    MVD16Frame baseViews;
-    CameraParameterList additionalCameras;
-    MVD16Frame additionalViews;
+  template <class T> struct Output {
+    T base;
+    T additional;
   };
 
-  // Optimize a frame, passing on the pixel data
-  //
-  // Implementations should use move semantics to avoid unnecessary large copies
-  virtual Output optimizeFrame(CameraParameterList cameras,
-                               MVD16Frame views) const = 0;
+  // Optimize camera parameters for the coming intra period
+  virtual auto optimizeIntraPeriod(Metadata::CameraParameterList cameras)
+      -> Output<Metadata::CameraParameterList> = 0;
+
+  // Optimize a frame in the intra period
+  virtual auto optimizeFrame(Common::MVD16Frame views) const
+      -> Output<Common::MVD16Frame> = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

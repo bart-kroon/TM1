@@ -117,7 +117,8 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
 
 SCENARIO("Reprojecting points", "[reprojectPoints]") {
   GIVEN("A camera and a depth map") {
-    CameraParameters camera{{100, 50},         // size
+    CameraParameters camera{42,
+                            {100, 50},         // size
                             {1.f, 0.f, -1.f},  // position
                             {1.f, 2.f, -0.5f}, // orientation
                             ProjectionType::ERP,
@@ -171,7 +172,8 @@ SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
   GIVEN("A synthesizer, camera and a depth map") {
     Synthesizer synthesizer{1., 1., 1.};
 
-    CameraParameters camera{{100, 50},         // size
+    CameraParameters camera{42,
+                            {100, 50},         // size
                             {1.f, 0.f, -1.f},  // position
                             {1.f, 2.f, -0.5f}, // orientation
                             ProjectionType::ERP,

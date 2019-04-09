@@ -34,6 +34,7 @@
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -53,8 +54,15 @@ private:
 };
 } // namespace TMIV::AtlasDeconstructor
 
+#include "AtlasDeconstructor.reg.hpp"
+
 int main(int argc, char *argv[]) {
-  TMIV::AtlasDeconstructor::Application app{{argv, argv + argc}};
-  app.run();
-  return 0;
+  try {
+    TMIV::AtlasDeconstructor::registerComponents();
+    TMIV::AtlasDeconstructor::Application app{{argv, argv + argc}};
+    app.run();
+    return 0;
+  } catch (runtime_error &e) {
+    cerr << e.what() << endl;
+  }
 }

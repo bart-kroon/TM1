@@ -48,9 +48,13 @@ CameraParameterList loadSourceMetadata(const Json &config) {
   if (!stream.good()) {
     throw runtime_error("Failed to load source camera parameters");
   }
-  return loadCamerasFromJson(
-      Json{stream}.require("cameras"),
-      config.require("SourceCameraNames").asStringVector());
+  auto cameras =
+      loadCamerasFromJson(Json{stream}.require("cameras"),
+                          config.require("SourceCameraNames").asStringVector());
+  for (const auto &camera : cameras) {
+    cout << camera << '\n';
+  }
+  return cameras;
 }
 
 namespace {
@@ -89,12 +93,14 @@ Depth16Frame loadSourceDepth(const Json &config, int frameIndex,
 }
 } // namespace
 
-MVD16Frame loadSourceFrame(const Json &config, int frameIndex) {
-  MVD16Frame result(config.require("SourceCameraNames").size());
-  const auto resolution = config.require("SourceResolution").asIntVector<2>();
+MVD16Frame loadSourceFrame(const Json &config,
+                           const CameraParameterList &cameras, int frameIndex) {
+  MVD16Frame result(cameras.size());
+
   for (size_t id = 0; id < result.size(); ++id) {
-    result[id].first = loadSourceTexture(config, frameIndex, resolution, id);
-    result[id].second = loadSourceDepth(config, frameIndex, resolution, id);
+    auto size = cameras[id].size;
+    loadSourceTexture(config, frameIndex, size, id);
+    result[id].second = loadSourceDepth(config, frameIndex, size, id);
   }
   return result;
 }

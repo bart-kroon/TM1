@@ -11,6 +11,7 @@ add_library(RendererLib
     "src/MultipassRenderer.cpp"
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
+	"src/Engine.cpp"
 	"src/reprojectPoints.cpp"
 	"src/AccumulatingPixel.cpp"
 	"src/AccumulatingView.cpp"

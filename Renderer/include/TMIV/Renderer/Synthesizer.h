@@ -45,6 +45,7 @@ public:
   Synthesizer(Synthesizer &&) = default;
   Synthesizer &operator=(const Synthesizer &) = delete;
   Synthesizer &operator=(Synthesizer &&) = default;
+  ~Synthesizer();
 
   Common::TextureDepth10Frame
   renderFrame(const Common::MVD10Frame &atlas,
@@ -54,7 +55,7 @@ public:
               const Metadata::CameraParameters &target) const override;
 
   Common::TextureDepth16Frame
-  renderFrame(const Common::MVD16Frame &atlas,
+  renderFrame(const Common::MVD16Frame &frame,
               const Metadata::CameraParameterList &cameras,
               const Metadata::CameraParameters &target) const override;
 
@@ -64,9 +65,9 @@ public:
               const Metadata::CameraParameters &target) const override;
 
 private:
-  double m_rayAngleParam;
-  double m_depthParam;
-  double m_stretchingParam;
+  class Impl;
+
+  const std::unique_ptr<Impl> m_impl;
 };
 } // namespace TMIV::Renderer
 

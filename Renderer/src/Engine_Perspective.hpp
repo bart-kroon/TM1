@@ -31,25 +31,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_COMMON_H_
-#define _TMIV_COMMON_COMMON_H_
-
-// Common data types and functions that are often used and do not need a
-// separate header file
-
-#include <limits>
-#include <string>
-
-namespace TMIV::Common {
-// Format a string using printf syntax
-template <class... Args> std::string format(char const *fmt, Args &&... args);
-
-constexpr float radperdeg{0.01745329251994329576923690768489f};
-constexpr float degperrad{57.295779513082320876798154814092f};
-constexpr float NaN{std::numeric_limits<float>::quiet_NaN()};
-constexpr float inf{std::numeric_limits<float>::infinity()};
-} // namespace TMIV::Common
-
-#include "Common.hpp"
-
+#ifndef _TMIV_RENDERER_ENGINE_H_
+#error "Include the .h, not the .hpp"
 #endif
+
+#include <TMIV/Common/Common.h>
+#include <cassert>
+
+namespace TMIV::Renderer {
+template <> struct Engine<Metadata::ProjectionType::Perspective> {
+  Metadata::CameraParameters camera;
+
+  Engine(const Metadata::CameraParameters &camera_) : camera{camera_} {}
+
+  auto
+  makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
+                                const Metadata::CameraParameters &target) const
+      -> SceneVertexDescriptorList {
+    return {};
+  }
+
+  auto project(const SceneVertexDescriptorList &sceneDescriptors) const
+      -> ImageVertexDescriptorList {
+    return {};
+  }
+
+  auto makeTriangleDescriptorList() const -> TriangleDescriptorList {
+    return {};
+  }
+
+  template <class T>
+  auto makeVertexAttributeList(const Common::Mat<T> &matrix) const
+      -> std::vector<T> {
+    return {};
+  }
+};
+} // namespace TMIV::Renderer

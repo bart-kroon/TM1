@@ -33,43 +33,54 @@
 
 #include <TMIV/Renderer/Synthesizer.h>
 
-#include <cassert>
-
-#include "AccumulatingView.h"
-#include <TMIV/Image/Image.h>
-#include <TMIV/Renderer/reprojectPoints.h>
+#include "Engine.h"
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::Image;
 
 namespace TMIV::Renderer {
-namespace {
-WrappingMethod wrappingMethod(const CameraParameters &camera) {
-  if (camera.type == ProjectionType::ERP &&
-      camera.erpPhiRange == Vec2f{-180.f, 180.f}) {
-    return WrappingMethod::horizontal;
+class Synthesizer::Impl {
+private:
+public:
+  Impl(const Json &node) {}
+  Impl(double rayAngleParam, double depthParam, double stretchingParam) {}
+  Impl(const Impl &) = delete;
+  Impl(Impl &&) = delete;
+  Impl &operator=(const Impl &) = delete;
+  Impl &operator=(Impl &&) = delete;
+
+  TextureDepth10Frame renderFrame(const MVD10Frame &atlas,
+                                  const PatchIdMapList &maps,
+                                  const PatchParameterList &patches,
+                                  const CameraParameterList &cameras,
+                                  const CameraParameters &target) const {
+    return {};
   }
-  return WrappingMethod::none;
-}
-} // namespace
 
-Synthesizer::Synthesizer(const Common::Json &node) {
-  if (auto subnode = node.optional("RayAngleParam"))
-    m_rayAngleParam = subnode.asFloat();
+  TextureDepth16Frame renderFrame(const MVD16Frame &frame,
+                                  const CameraParameterList &cameras,
+                                  const CameraParameters &target) const {
+    return {};
+  }
 
-  if (auto subnode = node.optional("DepthParam"))
-    m_depthParam = subnode.asFloat();
+  Mat<float> renderDepth(const Mat<float> &frame,
+                         const CameraParameters &camera,
+                         const CameraParameters &target) const {
+    ImageVertexDescriptorList vertices =
+        makeImageVertexDescriptorList(frame, camera, target);
+    TriangleDescriptorList indices = makeTriangleDescriptorList(camera);
+    return {};
+  }
+};
 
-  if (auto subnode = node.optional("StretchingParam"))
-    m_stretchingParam = subnode.asFloat();
-}
+Synthesizer::Synthesizer(const Common::Json &node) : m_impl(new Impl(node)) {}
 
 Synthesizer::Synthesizer(double rayAngleParam, double depthParam,
                          double stretchingParam)
-    : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
-      m_stretchingParam{stretchingParam} {}
+    : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam)) {}
+
+Synthesizer::~Synthesizer() {}
 
 Common::TextureDepth10Frame
 Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
@@ -77,54 +88,20 @@ Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
                          const Metadata::PatchParameterList &patches,
                          const Metadata::CameraParameterList &cameras,
                          const Metadata::CameraParameters &target) const {
-  return {};
+  return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
 Common::TextureDepth16Frame
-Synthesizer::renderFrame(const Common::MVD16Frame &atlas,
+Synthesizer::renderFrame(const Common::MVD16Frame &frame,
                          const Metadata::CameraParameterList &cameras,
                          const Metadata::CameraParameters &target) const {
-  AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam,
-                      AccumulatingPixel::Mode::all};
-
-  assert(atlas.size() == cameras.size());
-  auto i_camera = begin(cameras);
-
-  for (const auto &view : atlas) {
-    auto &camera = *i_camera++;
-
-    auto outPoints =
-        changeReferenceFrame(camera, target,
-                             unprojectPoints(camera, imagePositions(camera),
-                                             expandDepth(camera, view.second)));
-    auto positions_depth = projectPoints(target, outPoints);
-    auto rayAngles = calculateRayAngles(camera, target, outPoints);
-
-    av.transform(expandTexture(view.first), positions_depth.first,
-                 positions_depth.second, rayAngles, target.size,
-                 wrappingMethod(target));
-  }
-
-  return {quantizeTexture(av.texture()),
-          quantizeNormDisp16(target, av.normDisp())};
+  return m_impl->renderFrame(frame, cameras, target);
 }
 
-Mat1f Synthesizer::renderDepth(const Mat1f &frame,
-                               const CameraParameters &camera,
-                               const CameraParameters &target) const {
-  AccumulatingView av{m_rayAngleParam, m_depthParam, m_stretchingParam,
-                      AccumulatingPixel::Mode::depth};
-
-  auto outPoints = changeReferenceFrame(
-      camera, target, unprojectPoints(camera, imagePositions(camera), frame));
-  auto positions_depth = projectPoints(target, outPoints);
-  auto rayAngles = calculateRayAngles(camera, target, outPoints);
-
-  // TODO: Templatize AccumulatingView to avoid interpolating and alphablending
-  // texture for nothing
-  Mat3f texture{positions_depth.first.sizes()};
-  av.transform(texture, positions_depth.first, positions_depth.second,
-               rayAngles, target.size, wrappingMethod(target));
-  return av.depth();
+Common::Mat<float>
+Synthesizer::renderDepth(const Common::Mat<float> &frame,
+                         const Metadata::CameraParameters &camera,
+                         const Metadata::CameraParameters &target) const {
+  return m_impl->renderDepth(frame, camera, target);
 }
 } // namespace TMIV::Renderer

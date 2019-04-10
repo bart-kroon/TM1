@@ -38,6 +38,9 @@
 #include <cmath>
 
 #include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/Common.h>
+
+// TODO: Reimplement using Engine.h
 
 using namespace std;
 using namespace TMIV::Common;
@@ -45,10 +48,6 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 namespace {
-const float radperdeg = 0.01745329251994329576923690768489f;
-const float degperrad = 57.295779513082320876798154814092f;
-const float NaN = numeric_limits<float>::quiet_NaN();
-
 Mat3x3f rotationMatrixFromRotationAroundX(float rx) {
   return Mat3x3f{1.f, 0.f, 0.f, 0.f, cos(rx), -sin(rx), 0.f, sin(rx), cos(rx)};
 }

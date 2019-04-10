@@ -35,6 +35,7 @@
 #define _TMIV_RENDERING_ACCUMULATINGVIEW_H_
 
 #include "AccumulatingPixel.h"
+#include <TMIV/Common/Json.h>
 
 namespace TMIV::Renderer {
 enum class WrappingMethod { none = 0, horizontal = 1 };
@@ -69,6 +70,8 @@ public:
    */
   AccumulatingView(double rayAngleParam, double depthParam,
                    double stretchingParam, Mode mode);
+
+  AccumulatingView(const Common::Json &node);
 
   // Synthesized and blended texture
   Mat3f texture() const;

@@ -31,6 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Renderer/reprojectPoints.h>
 #include <TMIV/ViewOptimizer/ViewReducer.h>
 #include <algorithm>
 #include <cassert>
@@ -38,6 +39,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
+using namespace TMIV::Renderer;
 
 namespace TMIV::ViewOptimizer {
 ViewReducer::ViewReducer(const Json &node) {}

@@ -260,11 +260,15 @@ V &normalize(V &v, U *n = nullptr) {
   v /= m;
   return v;
 }
-//! \brief Returns the angle between the two vectors given as arguments.
+//! \brief Returns the cosine of the angle between the two vectors given as
+//! arguments.
+//
+// This is also known as the normalized inner product of two vectors, or the
+// cosine measure.
 template <typename V1, typename V2>
 decltype(typename V1::value_type(0) * typename V2::value_type(0))
-angle(const V1 &v1, const V2 &v2) {
-  return dot(v1, v2) / (norm(v1) * norm(v2));
+cosAngle(const V1 &v1, const V2 &v2) {
+  return dot(v1, v2) / sqrt(norm2(v1) * norm2(v2));
 }
 } // namespace TMIV::Common
 

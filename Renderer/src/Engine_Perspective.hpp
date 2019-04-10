@@ -40,30 +40,155 @@
 
 namespace TMIV::Renderer {
 template <> struct Engine<Metadata::ProjectionType::Perspective> {
-  Metadata::CameraParameters camera;
+  const Metadata::CameraParameters camera;
+  const int irows;
+  const int icols;
+  const int orows;
+  const int ocols;
+  const int osize;
+  const int numTriangles;
+  const Common::Vec2f f;
+  const Common::Vec2f p;
+  
+  Engine(const Metadata::CameraParameters &camera_)
+      : camera{camera_},
 
-  Engine(const Metadata::CameraParameters &camera_) : camera{camera_} {}
+        // Mesh structure
+        icols{camera.size.x()}, irows{camera.size.y()},
+        ocols{camera.size.x() + 2}, orows{camera.size.y() + 2},
+        osize{ocols * orows}, numTriangles{2 * (orows - 1) * (ocols - 1)},
 
+        // Projection parameters
+        f{camera.perspectiveFocal}, p{camera.perspectiveCenter} {}
+
+  // Unprojection equation
+  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
+    if (depth > 0.f) {
+      return {depth, -(depth / f.x()) * (uv.x() - p.x()),
+              -(depth / f.y()) * (uv.y() - p.y())};
+    }
+    return {Common::NaN, Common::NaN, Common::NaN};
+  }
+
+  // Projection equation
+  auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor const {
+    if (v.position.x() > 0.f) {
+      auto uv = Common::Vec2f{-f.x() * v.position.y() / v.position.x() + p.x(),
+                              -f.y() * v.position.z() / v.position.x() + p.y()};
+      return {uv, v.position.x(), v.cosRayAngle};
+    }
+    return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};
+  }
+
+  // Helper function to calculate the v-component of image coordinates at output
+  // row i
+  float vAt(int i) const {
+    if (i == 0) {
+      return 0.f; // top edge of frame
+    }
+    if (i == orows - 1) {
+      return float(irows); // bottom edge of frame
+    }
+    return float(i) - 0.5f; // row middle
+  }
+
+  // Helper function to calculate the u-component of image coordinates at output
+  // column j
+  float uAt(int j) const {
+    if (j == 0) {
+      return 0.f; // left edge of frame
+    }
+    if (j == ocols - 1) {
+      return float(icols); // right edge of frame
+    }
+    return float(j) - 0.5f; // column centre
+  }
+
+  // Helper function to fetch a value from a matrix based on the output
+  // coordinate (i, j)
+  template <class T> T fetch(int i, int j, const Common::Mat<T> &matrix) const {
+    i = std::max(0, std::min(irows - 1, i - 1));
+    j = std::max(0, std::min(icols - 1, j - 1));
+    return matrix(i, j);
+  }
+
+  // Helper function to calculate the area of a triangle based on the output
+  // coordinate (i, j)
+  float triangleArea(int i, int j) const {
+    return (j == 0 || j == ocols - 1 ? 0.25f : 0.5f) *
+           (i == 0 || i == orows - 1 ? 0.5f : 1.f);
+  }
+
+  // List of 3-D vertices in the reference frame of the target camera
   auto
   makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
                                 const Metadata::CameraParameters &target) const
       -> SceneVertexDescriptorList {
-    return {};
+    SceneVertexDescriptorList result;
+    result.reserve(osize);
+    const auto R_t = affineParameters(camera, target);
+    for (int i = 0; i < orows; ++i) {
+      for (int j = 0; j < ocols; ++j) {
+        const auto u = uAt(j);
+        const auto v = vAt(i);
+        const auto d = fetch(i, j, depth);
+        const auto xyz = R_t.first * unprojectVertex({u, v}, d) + R_t.second;
+        const auto cosRayAngle = cosAngle(xyz, xyz - R_t.second);
+        result.push_back({xyz, cosRayAngle});
+      }
+    }
+    assert(result.size() == osize);
+    return result;
   }
 
-  auto project(const SceneVertexDescriptorList &sceneDescriptors) const
-      -> ImageVertexDescriptorList {
-    return {};
-  }
-
+  // List of triangles with indices into the vertex lists
   auto makeTriangleDescriptorList() const -> TriangleDescriptorList {
-    return {};
+    TriangleDescriptorList result;
+    result.reserve(numTriangles);
+    for (int i = 1; i < orows; ++i) {
+      for (int j = 1; j < ocols; ++j) {
+        const int br = i * ocols + j;
+        const int tr = br - ocols;
+        const int bl = br - 1;
+        const int tl = tr - 1;
+        const float area = triangleArea(i, j);
+        result.push_back({{tl, tr, br}, area});
+        result.push_back({{tl, br, bl}, area});
+      }
+    }
+    assert(result.size() == numTriangles);
+    return result;
   }
 
+  // List of vertex attributes in matching order
   template <class T>
   auto makeVertexAttributeList(const Common::Mat<T> &matrix) const
       -> std::vector<T> {
-    return {};
+    std::vector<T> result;
+    result.reserve(osize);
+    for (int i = 0; i < orows; ++i) {
+      for (int j = 0; j < ocols; ++j) {
+        result.push_back(fetch(i, j, matrix));
+      }
+    }
+    assert(result.size() == osize);
+    return result;
+  }
+
+  // Project mesh to target view
+  //
+  // TODO: Cull triangles
+  template <typename... T>
+  auto project(SceneVertexDescriptorList sceneVertices,
+               TriangleDescriptorList triangles,
+               std::tuple<std::vector<T>...> attributes) {
+    ImageVertexDescriptorList imageVertices;
+    imageVertices.reserve(sceneVertices.size());
+    for (const SceneVertexDescriptor &v : sceneVertices) {
+      imageVertices.push_back(projectVertex(v));
+    }
+    return tuple{move(imageVertices), triangles, attributes};
   }
 };
 } // namespace TMIV::Renderer

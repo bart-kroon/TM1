@@ -64,12 +64,10 @@ public:
     return {};
   }
 
-  Mat<float> renderDepth(const Mat<float> &frame,
+  Mat<float> renderDepth(const Mat<float> &depth,
                          const CameraParameters &camera,
                          const CameraParameters &target) const {
-    ImageVertexDescriptorList vertices =
-        makeImageVertexDescriptorList(frame, camera, target);
-    TriangleDescriptorList indices = makeTriangleDescriptorList(camera);
+    auto descriptors = reproject(depth, camera, target);
     return {};
   }
 };

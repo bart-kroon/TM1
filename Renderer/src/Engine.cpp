@@ -51,9 +51,9 @@ Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
 }
 
 Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
-  return mult(mult(rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]),
-                   rotationMatrixFromRotationAroundY(radperdeg * rotation[1])),
-              rotationMatrixFromRotationAroundX(radperdeg * rotation[2]));
+  return rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]) *
+         rotationMatrixFromRotationAroundY(radperdeg * rotation[1]) *
+         rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);
 }
 
 auto affineParameters(const CameraParameters &camera,
@@ -64,66 +64,7 @@ auto affineParameters(const CameraParameters &camera,
   const auto &t2 = target.position;
 
   const auto R = transpose(R2) * R1;
-  const auto t = transpose(R2) * (t2 - t1);
+  const auto t = transpose(R2) * (t1 - t2);
   return {R, t};
-}
-
-auto makeSceneVertexDescriptorList(const Mat<float> &depth,
-                                   const CameraParameters &camera,
-                                   const CameraParameters &target)
-    -> SceneVertexDescriptorList {
-  switch (camera.type) {
-  case ProjectionType::ERP: {
-    Engine<ProjectionType::ERP> engine{camera};
-    return engine.makeSceneVertexDescriptorList(depth, target);
-  }
-  case ProjectionType::Perspective: {
-    Engine<ProjectionType::Perspective> engine{camera};
-    return engine.makeSceneVertexDescriptorList(depth, target);
-  }
-  default:
-    abort();
-  }
-}
-
-auto project(const SceneVertexDescriptorList &sceneDescriptors,
-             const CameraParameters &target) -> ImageVertexDescriptorList {
-  switch (target.type) {
-  case ProjectionType::ERP: {
-    Engine<ProjectionType::ERP> engine{target};
-    return engine.project(sceneDescriptors);
-  }
-  case ProjectionType::Perspective: {
-    Engine<ProjectionType::Perspective> engine{target};
-    return engine.project(sceneDescriptors);
-  }
-  default:
-    abort();
-  }
-}
-
-auto makeImageVertexDescriptorList(const Mat<float> &depth,
-                                   const CameraParameters &camera,
-                                   const CameraParameters &target)
-    -> ImageVertexDescriptorList {
-  auto sceneVertexDescriptors =
-      makeSceneVertexDescriptorList(depth, camera, target);
-  return project(sceneVertexDescriptors, target);
-}
-
-auto makeTriangleDescriptorList(const CameraParameters &camera)
-    -> TriangleDescriptorList {
-  switch (camera.type) {
-  case ProjectionType::ERP: {
-    Engine<ProjectionType::ERP> engine{camera};
-    return engine.makeTriangleDescriptorList();
-  }
-  case ProjectionType::Perspective: {
-    Engine<ProjectionType::Perspective> engine{camera};
-    return engine.makeTriangleDescriptorList();
-  }
-  default:
-    abort();
-  }
 }
 } // namespace TMIV::Renderer

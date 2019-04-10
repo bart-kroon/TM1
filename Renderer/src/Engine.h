@@ -45,16 +45,12 @@ struct SceneVertexDescriptor {
 
 using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
 
-// Unproject vertices and change reference frame but do not reproject.
-//
-// This method is designed to allow for specialization per source camera
-// projection. The mesh topology may vary per source projection.
-//
-// Only the extrinsic parameters of the target camera may be used.
-auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                   const Metadata::CameraParameters &camera,
-                                   const Metadata::CameraParameters &target)
-    -> SceneVertexDescriptorList;
+struct TriangleDescriptor {
+  std::array<int, 3> indices; // indices into vertex lists
+  float area;                 // px², area before unprojection
+};
+
+using TriangleDescriptorList = std::vector<TriangleDescriptor>;
 
 struct ImageVertexDescriptor {
   Common::Vec2f position; // px, position in image (x right, y down)
@@ -64,55 +60,98 @@ struct ImageVertexDescriptor {
 
 using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
 
-// Project the scene vertices that are already in the reference frame of the
-// target camera.
-//
-// This method is designed to allow for specialization per target camera
-// projection.
-auto project(const SceneVertexDescriptorList &sceneDescriptors,
-             const Metadata::CameraParameters &target)
-    -> ImageVertexDescriptorList;
-
-// Combine makeSceneVertexDescriptorList and project in one call
-auto makeImageVertexDescriptorList(const Common::Mat<float> &depth,
-                                   const Metadata::CameraParameters &camera,
-                                   const Metadata::CameraParameters &target)
-    -> ImageVertexDescriptorList;
-
-struct TriangleDescriptor {
-  std::array<int, 3> indices; // indices into vertex lists
-  float area;                 // px², area before unprojection
-};
-
-using TriangleDescriptorList = std::vector<TriangleDescriptor>;
-
-// Complete triangular mesh by connecting vertices.
-//
-// This method is designed to allow for specialization per source camera
-// projection. The mesh topology may vary per source projection.
-//
-// The area is used to calculate triangle stretching.
-auto makeTriangleDescriptorList(const Metadata::CameraParameters &camera)
-    -> TriangleDescriptorList;
-
-// Make a vertex attribute list to augment a vertex descriptor list
-//
-// The most commonly used attribute is a tristimulus
-template <class T>
-auto makeVertexAttributeList(const Common::Mat<T> &matrix,
-                             const Metadata::CameraParameters &camera)
-    -> std::vector<T>;
-
 // Return (R, T) such that x -> Rx + t changes reference frame from the source
 // camera to the target camera
 auto affineParameters(const Metadata::CameraParameters &camera,
                       const Metadata::CameraParameters &target)
     -> std::pair<Common::Mat3x3f, Common::Vec3f>;
 
-// The Engine is fully specialized on projection type
+// The rendering engine is the part that is specalized per projection type
 template <Metadata::ProjectionType type> struct Engine {};
 } // namespace TMIV::Renderer
 
-#include "Engine.hpp"
+#include "Engine_ERP.hpp"
+#include "Engine_Perspective.hpp"
+
+namespace TMIV::Renderer {
+// Unproject from a source frame to scene coordinates in the reference frame of
+// the target camera, generating lists of vertices, triangles and attributes.
+//
+// This method is designed to allow for specialization per source camera
+// projection.
+template <typename Engine, typename... T>
+auto unproject(const Engine &engine, const Common::Mat<float> &depth,
+               const Metadata::CameraParameters &camera,
+               const Metadata::CameraParameters &target,
+               const Common::Mat<T> &... matrices) {
+  return std::tuple{engine.makeSceneVertexDescriptorList(depth, target),
+                    engine.makeTriangleDescriptorList(),
+                    std::tuple{makeVertexAttributeList(engine, matrices)...}};
+}
+
+// Unproject from a source frame to scene coordinates in the reference frame of
+// the target camera, generating lists of vertices, triangles and attributes.
+//
+// This method is designed to allow for specialization per source camera
+// projection.
+template <typename... T>
+auto unproject(const Common::Mat<float> &depth,
+               const Metadata::CameraParameters &camera,
+               const Metadata::CameraParameters &target,
+               const Common::Mat<T> &... matrices) {
+  switch (camera.type) {
+  case Metadata::ProjectionType::ERP: {
+    Engine<Metadata::ProjectionType::ERP> engine{camera};
+    return unproject(engine, depth, camera, target, matrices...);
+  }
+  case Metadata::ProjectionType::Perspective: {
+    Engine<Metadata::ProjectionType::Perspective> engine{camera};
+    return unproject(engine, depth, camera, target, matrices...);
+  }
+  default:
+    abort();
+  }
+}
+
+// Project the data that is already in the reference frame of the
+// target camera.
+//
+// This method is designed to allow for specialization per target camera
+// projection. The interface allows for culling and splitting triangles.
+//
+// TODO: Split triangles at poles (per projection)
+// TODO: cull triangles (per projection)
+
+template <typename... T>
+auto project(SceneVertexDescriptorList vertices,
+             TriangleDescriptorList triangles,
+             std::tuple<std::vector<T>...> attributes,
+             const Metadata::CameraParameters &target) {
+  switch (target.type) {
+  case Metadata::ProjectionType::ERP: {
+    Engine<Metadata::ProjectionType::ERP> engine{target};
+    return engine.project(move(vertices), move(triangles), move(attributes));
+  }
+  case Metadata::ProjectionType::Perspective: {
+    Engine<Metadata::ProjectionType::Perspective> engine{target};
+    return engine.project(move(vertices), move(triangles), move(attributes));
+  }
+  default:
+    abort();
+  }
+}
+
+// Reproject from a source frame with a source camera to a target camera,
+// generating lists of vertices, triangles and attributes.
+template <typename... T>
+auto reproject(const Common::Mat<float> &depth,
+               const Metadata::CameraParameters &camera,
+               const Metadata::CameraParameters &target,
+               const Common::Mat<T> &... matrices) {
+  auto x = unproject(depth, camera, target, matrices...);
+  return project(move(std::get<0>(x)), move(std::get<1>(x)),
+                 move(std::get<2>(x)), target);
+}
+} // namespace TMIV::Renderer
 
 #endif

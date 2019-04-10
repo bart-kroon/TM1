@@ -3,8 +3,8 @@
     "numberOfFrames": 120,
     "intraPeriod": 32,
 
-    "SourceTexturePathFmt": "SRC_SA_R0_Td_v%02d.yuv",
-    "SourceDepthPathFmt": "SRC_SA_R0_Td_v%02d.yuv",
+    "SourceTexturePathFmt": "P00_SA_R0_Tt_v%02d.yuv",
+    "SourceDepthPathFmt": "P00_SA_R0_Td_v%02d.yuv",
     "SourceCameraParameters": "ClassroomVideo.json",
     "SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14" ],
 
@@ -14,9 +14,12 @@
     "ViewOptimizerMethod": "ViewReducer",
     "ViewReducer": {},
 
-    "OptimizedTexturePathFmt": "OPT_SA_R0_Tt_c%02d.yuv",
-    "OptimizedDepthPathFmt": "OPT_SA_R0_Td_c%02d.yuv",
-    "OptimizedMetadataPath": "OPT_SA_R0_Tm_c00.bit",
+    "OptimizedTexturePathFmt": "OPT_SA_R0_Tt_v%02d.yuv",
+    "OptimizedDepthPathFmt": "OPT_SA_R0_Td_v%02d.yuv",
+    "OptimizedMetadataPath": "OPT_SA_R0_Tm_vxx.bit",
+    "AdditionalTexturePathFmt": "ADD_SA_R0_Tt_v%02d.yuv",
+    "AdditionalDepthPathFmt": "ADD_SA_R0_Td_v%02d.yuv",
+    "AdditionalMetadataPath": "ADD_SA_R0_Tm_vxx.bit",
 
     "AtlasConstructorMethod": "AtlasConstructor",
     "AtlasConstructor": {},

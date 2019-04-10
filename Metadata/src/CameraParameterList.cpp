@@ -33,7 +33,9 @@
 
 #include <TMIV/Metadata/CameraParameterList.h>
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Json.h>
+#include <iomanip>
 #include <ostream>
 
 using namespace std;
@@ -46,7 +48,8 @@ CameraParameterList loadCamerasFromJson(const Json &node,
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
-        result.push_back(loadCameraFromJson(uint16_t(i), node.at(i)));
+        auto id = static_cast<uint16_t>(result.size());
+        result.push_back(loadCameraFromJson(id, node.at(i)));
         break;
       }
     }
@@ -59,20 +62,17 @@ CameraParameterList loadCamerasFromJson(const Json &node,
 }
 
 ostream &operator<<(ostream &stream, const CameraParameters &camera) {
-  stream << "Camera: id=" << camera.id << ", size=" << camera.size
-         << ", position=" << camera.position << ", rotation=" << camera.rotation
-         << ", type=";
+  stream << "Camera " << setw(2) << camera.id << " " << camera.size << ", ";
   switch (camera.type) {
   case ProjectionType::ERP:
-    stream << "ERP, phi in " << camera.erpPhiRange << ", theta in "
-           << camera.erpThetaRange;
+    stream << "ERP " << camera.erpPhiRange << " x " << camera.erpThetaRange
+           << " deg";
     break;
   case ProjectionType::Perspective:
-    stream << "Perspective, focal=" << camera.perspectiveFocal
-           << ", center=" << camera.perspectiveCenter;
+    stream << "perspective " << camera.perspectiveFocal << ' '
+           << camera.perspectiveCenter;
     break;
   case ProjectionType::CubeMap:
-    stream << "CubeMap, cubicMapType=";
     switch (camera.cubicMapType) {
     case CubicMapType::CubeMap:
       stream << "CubeMap";
@@ -87,7 +87,11 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
   default:
     stream << '?';
   }
-  return stream << ", depthRange=" << camera.depthRange;
+  stream << ", depth in " << camera.depthRange << " m, pose "
+         << format("[%6.3f, %6.3f, %6.3f] m, ", camera.position.x(),
+                   camera.position.y(), camera.position.z())
+         << camera.rotation << " deg";
+  return stream;
 }
 
 // The parameter is a an item of the cameras node (a JSON object).

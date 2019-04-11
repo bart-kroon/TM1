@@ -35,8 +35,8 @@
 #define _TMIV_METADATA_CAMERAPARAMETERLIST_H_
 
 #include <cstdint>
-#include <vector>
 #include <iosfwd>
+#include <vector>
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
@@ -57,7 +57,6 @@ struct CameraParameters {
   Vec2i size{};     // Camera sensor size (width, height) in pixels
   Vec3f position{}; // (x, y, z) in meters, OMAF definition
   Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
-
   ProjectionType type{ProjectionType::ERP};
   Vec2f erpPhiRange{};   // Horizontal range in degrees
   Vec2f erpThetaRange{}; // Vertical rnage in degrees
@@ -66,7 +65,8 @@ struct CameraParameters {
   Vec2f perspectiveCenter{}; // Principle point
   Vec2f depthRange{};        // [near, far]
 
-  friend std::ostream& operator << (std::ostream& stream, const CameraParameters& camera);
+  friend std::ostream &operator<<(std::ostream &stream,
+                                  const CameraParameters &camera);
 };
 
 using CameraParameterList = std::vector<CameraParameters>;

@@ -52,17 +52,47 @@ TEST_CASE("Full ERP", "[Render engine]") {
   const CameraParameters camera{
       0,  {7, 5}, {}, {}, ProjectionType::ERP, {-180.f, 180.f}, {-90.f, 90.f},
       {}, {},     {}, {}};
-  /*SECTION("makeSceneVertexDescriptorList") {
-    auto vs = makeSceneVertexDescriptorList(depth, camera, camera);
+
+  SECTION("Unproject without attributes") {
+    auto mesh = unproject(depth, camera, camera);
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<>>);
+  }
+
+  SECTION("Reproject without attributes") {
+    auto mesh = reproject(depth, camera, camera);
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<>>);
+  }
+
+  SECTION("Unproject with an attribute") {
+    Mat<float> field({5, 7});
+    fill(begin(field), end(field), 3.f);
+    auto mesh = unproject(depth, camera, camera, field);
+
+    auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 1) * 5 + 2);
     for (auto v : vs) {
       REQUIRE(v.cosRayAngle == 1.f);
     }
     // Central vertex in forward (x) direction
     REQUIRE(vs[(5 / 2) * (7 + 1) + 7 / 2].position == Vec3f{2.f, 0.f, 0.f});
+
+    auto ts = get<1>(mesh);
+    REQUIRE(ts.size() == 2 * 7 * (5 - 1) + 2 * 7);
+
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<vector<float>>>);
+    REQUIRE(get<0>(as).size() == vs.size());
+    REQUIRE(get<0>(as)[0] == 3.f);
   }
-  SECTION("makeImageVertexDescriptorList") {
-    auto vs = makeImageVertexDescriptorList(depth, camera, camera);
+
+  SECTION("Reproject with an attribute") {
+    Mat<float> field({5, 7});
+    fill(begin(field), end(field), 3.f);
+    auto mesh = reproject(depth, camera, camera, field);
+
+    auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 1) * 5 + 2);
     for (auto v : vs) {
       REQUIRE(v.depth == Approx(2.f));
@@ -70,16 +100,15 @@ TEST_CASE("Full ERP", "[Render engine]") {
     }
     REQUIRE(vs[0].position.x() == Approx(0.5f));
     REQUIRE(vs[0].position.y() == Approx(0.5f));
-  }
-  SECTION("makeTriangleDescriptorList") {
-    auto ts = makeTriangleDescriptorList(camera);
+
+    auto ts = get<1>(mesh);
     REQUIRE(ts.size() == 2 * 7 * (5 - 1) + 2 * 7);
+
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<vector<float>>>);
+    REQUIRE(get<0>(as).size() == vs.size());
+    REQUIRE(get<0>(as)[0] == 3.f);
   }
-  SECTION("makeVertexAttributeList") {
-    auto as = makeVertexAttributeList(depth, camera);
-    REQUIRE(as.size() == (7 + 1) * 5 + 2);
-    REQUIRE(as.back() == 2.f);
-  }*/
 }
 
 TEST_CASE("Equirectangular viewport", "[Render engine]") {
@@ -88,17 +117,47 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
   const CameraParameters camera{
       0,  {7, 5}, {}, {}, ProjectionType::ERP, {-10.f, 10.f}, {-10.f, 10.f},
       {}, {},     {}, {}};
-  /*SECTION("makeSceneVertexDescriptorList") {
-    auto vs = makeSceneVertexDescriptorList(depth, camera, camera);
+
+  SECTION("Unproject without attributes") {
+    auto mesh = unproject(depth, camera, camera);
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<>>);
+  }
+
+  SECTION("Reproject without attributes") {
+    auto mesh = reproject(depth, camera, camera);
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<>>);
+  }
+
+  SECTION("Unproject with an attribute") {
+    Mat<float> field({5, 7});
+    fill(begin(field), end(field), 3.f);
+    auto mesh = unproject(depth, camera, camera, field);
+
+    auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
     for (auto v : vs) {
       REQUIRE(v.cosRayAngle == 1.f);
     }
     // Central vertex in forward (x) direction
     REQUIRE(vs[vs.size() / 2].position == Vec3f{2.f, 0.f, 0.f});
+
+    auto ts = get<1>(mesh);
+    REQUIRE(ts.size() == 2 * (7 + 1) * (5 + 1));
+
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<vector<float>>>);
+    REQUIRE(get<0>(as).size() == vs.size());
+    REQUIRE(get<0>(as)[0] == 3.f);
   }
-  SECTION("makeImageVertexDescriptorList") {
-    auto vs = makeImageVertexDescriptorList(depth, camera, camera);
+
+  SECTION("Reproject with an attribute") {
+    Mat<float> field({5, 7});
+    fill(begin(field), end(field), 3.f);
+    auto mesh = reproject(depth, camera, camera, field);
+
+    auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
     for (auto v : vs) {
       REQUIRE(v.depth == Approx(2.f));
@@ -106,16 +165,15 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
     }
     REQUIRE(vs.front().position.x() == 0.f);
     REQUIRE(vs.back().position.y() == 5.f);
-  }
-  SECTION("makeTriangleDescriptorList") {
-    auto ts = makeTriangleDescriptorList(camera);
+
+    auto ts = get<1>(mesh);
     REQUIRE(ts.size() == 2 * (7 + 1) * (5 + 1));
+
+    auto as = get<2>(mesh);
+    static_assert(is_same_v<decltype(as), tuple<vector<float>>>);
+    REQUIRE(get<0>(as).size() == vs.size());
+    REQUIRE(get<0>(as)[0] == 3.f);
   }
-  SECTION("makeVertexAttributeList") {
-    auto as = makeVertexAttributeList(depth, camera);
-    REQUIRE(as.size() == (7 + 2) * (5 + 2));
-    REQUIRE(as.back() == 2.f);
-  }*/
 }
 
 TEST_CASE("Perspective viewport", "[Render engine]") {
@@ -124,34 +182,7 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
   const CameraParameters camera{
       0,  {7, 5},       {},           {}, ProjectionType::Perspective, {}, {},
       {}, {10.f, 10.f}, {3.5f, 2.5f}, {}};
-  /*SECTION("makeSceneVertexDescriptorList") {
-    auto vs = makeSceneVertexDescriptorList(depth, camera, camera);
-    REQUIRE(vs.size() == (7 + 2) * (5 + 2));
-    for (auto v : vs) {
-      REQUIRE(v.cosRayAngle == 1.f);
-    }
-    // Central vertex in forward (x) direction
-    REQUIRE(vs[vs.size() / 2].position == Vec3f{2.f, 0.f, 0.f});
-  }
-  SECTION("makeImageVertexDescriptorList") {
-    auto vs = makeImageVertexDescriptorList(depth, camera, camera);
-    REQUIRE(vs.size() == (7 + 2) * (5 + 2));
-    for (auto v : vs) {
-      REQUIRE(v.depth == Approx(2.f));
-      REQUIRE(v.cosRayAngle == 1.f);
-    }
-    REQUIRE(vs.front().position.x() == 0.f);
-    REQUIRE(vs.back().position.y() == 5.f);
-  }
-  SECTION("makeTriangleDescriptorList") {
-    auto ts = makeTriangleDescriptorList(camera);
-    REQUIRE(ts.size() == 2 * (7 + 1) * (5 + 1));
-  }
-  SECTION("makeVertexAttributeList") {
-    auto as = makeVertexAttributeList(depth, camera);
-    REQUIRE(as.size() == (7 + 2) * (5 + 2));
-    REQUIRE(as.back() == 2.f);
-  }*/
+
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {

@@ -86,7 +86,7 @@ auto unproject(const Engine &engine, const Common::Mat<float> &depth,
                const Common::Mat<T> &... matrices) {
   return std::tuple{engine.makeSceneVertexDescriptorList(depth, target),
                     engine.makeTriangleDescriptorList(),
-                    std::tuple{makeVertexAttributeList(engine, matrices)...}};
+                    std::tuple{engine.makeVertexAttributeList(matrices)...}};
 }
 
 // Unproject from a source frame to scene coordinates in the reference frame of

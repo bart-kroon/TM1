@@ -71,8 +71,8 @@ private:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto sourceFrame = IO::loadSourceFrame(json(), m_cameras, i);
-      auto frame = m_optimizer->optimizeFrame(sourceFrame);
-      IO::saveOptimizedFrame(json(), i, cameras, move(frame));
+      auto frame = m_optimizer->optimizeFrame(move(sourceFrame));
+      IO::saveOptimizedFrame(json(), i, cameras, frame);
     }
   }
 };

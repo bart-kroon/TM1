@@ -13,8 +13,6 @@ add_library(RendererLib
 	"src/Synthesizer.cpp"
 	"src/Engine.cpp"
 	"src/reprojectPoints.cpp"
-	"src/AccumulatingPixel.cpp"
-	"src/AccumulatingView.cpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
 	"include/TMIV/Renderer/ISynthesizer.h"

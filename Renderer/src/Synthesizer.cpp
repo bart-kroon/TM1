@@ -34,6 +34,7 @@
 #include <TMIV/Renderer/Synthesizer.h>
 
 #include "Engine.h"
+// #include "Rasterizer.h"
 
 using namespace std;
 using namespace TMIV::Common;
@@ -41,7 +42,6 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 class Synthesizer::Impl {
-private:
 public:
   Impl(const Json &node) {}
   Impl(double rayAngleParam, double depthParam, double stretchingParam) {}
@@ -67,7 +67,9 @@ public:
   Mat<float> renderDepth(const Mat<float> &depth,
                          const CameraParameters &camera,
                          const CameraParameters &target) const {
-    auto descriptors = reproject(depth, camera, target);
+    // Rasterizer<> rasterizer(target.size());
+    auto mesh = reproject(depth, camera, target);
+    // m_rasterizer.submit(move(mesh));
     return {};
   }
 };

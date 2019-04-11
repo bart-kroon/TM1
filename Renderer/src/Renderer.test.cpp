@@ -182,7 +182,6 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
   const CameraParameters camera{
       0,  {7, 5},       {},           {}, ProjectionType::Perspective, {}, {},
       {}, {10.f, 10.f}, {3.5f, 2.5f}, {}};
-
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
@@ -210,8 +209,9 @@ TEST_CASE("Changing the reference frame", "[Render engine]") {
 }
 
 SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
-  using PA = AccumulatingPixel::PixelAccumulator;
-  using PV = AccumulatingPixel::PixelValue;
+  using Pixel = AccumulatingPixel<Vec3f>;
+  using Acc = PixelAccumulator<Vec3f>;
+  using Value = PixelValue<Vec3f>;
 
   GIVEN("A pixel accumulator that is constructed from a pixel value") {
     float const ray_angle_param = 1.5f;
@@ -220,59 +220,62 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     float const ray_angle = 0.01f;
     float const stretching = 3.f;
 
-    AccumulatingPixel pixel{ray_angle_param, depth_param, stretching_param,
-                            AccumulatingPixel::Mode::all};
+    Pixel pixel{ray_angle_param, depth_param, stretching_param};
 
     float const ray_angle_weight = pixel.rayAngleWeight(ray_angle);
     float const stretching_weight = pixel.stretchingWeight(stretching);
 
-    PV reference{{0.3f, 0.7f, 0.1f},
-                 0.53f,
-                 ray_angle_weight * stretching_weight,
-                 stretching_weight};
+    Value reference{
+        0.53f, ray_angle_weight * stretching_weight, {0.3f, 0.7f, 0.1f}};
 
-    PA accum = pixel.construct(reference.depth, reference.color, ray_angle,
-                               stretching);
+    Acc accum = pixel.construct(reference.attributes(), reference.normDisp,
+                                ray_angle, stretching);
 
     WHEN("The pixel value is directly computed") {
-      PV actual = pixel.average(accum);
+      Value actual = pixel.average(accum);
 
       THEN("The average is the pixel value") {
-        REQUIRE(actual.color[0] == reference.color[0]);
-        REQUIRE(actual.color[1] == reference.color[1]);
-        REQUIRE(actual.color[2] == reference.color[2]);
-        REQUIRE(actual.depth == reference.depth);
-        REQUIRE(actual.quality == reference.quality);
-        REQUIRE(actual.validity == reference.validity);
+        REQUIRE(get<0>(actual.attributes())[0] ==
+                get<0>(reference.attributes())[0]);
+        REQUIRE(get<0>(actual.attributes())[1] ==
+                get<0>(reference.attributes())[1]);
+        REQUIRE(get<0>(actual.attributes())[2] ==
+                get<0>(reference.attributes())[2]);
+        REQUIRE(actual.normDisp == reference.normDisp);
+        REQUIRE(actual.normWeight == reference.normWeight);
       }
     }
 
     WHEN("The pixel is blended with itself") {
-      PA accum2 = pixel.blend(accum, accum);
-      PV actual = pixel.average(accum2);
+      Acc accum2 = pixel.blend(accum, accum);
+      Value actual = pixel.average(accum2);
 
       THEN("The average is the same but with double quality") {
-        REQUIRE(actual.color[0] == reference.color[0]);
-        REQUIRE(actual.color[1] == reference.color[1]);
-        REQUIRE(actual.color[2] == reference.color[2]);
-        REQUIRE(actual.depth == reference.depth);
-        REQUIRE(actual.quality == 2 * reference.quality);
-        REQUIRE(actual.validity == reference.validity);
+        REQUIRE(get<0>(actual.attributes())[0] ==
+                get<0>(reference.attributes())[0]);
+        REQUIRE(get<0>(actual.attributes())[1] ==
+                get<0>(reference.attributes())[1]);
+        REQUIRE(get<0>(actual.attributes())[2] ==
+                get<0>(reference.attributes())[2]);
+        REQUIRE(actual.normDisp == reference.normDisp);
+        REQUIRE(actual.normWeight == 2 * reference.normWeight);
       }
     }
 
     WHEN("The pixel is blended with another pixel that has invalid depth") {
-      PA accumNaN =
-          pixel.construct(NaN, reference.color, ray_angle, stretching);
-      PV actual = pixel.average(pixel.blend(accum, accumNaN));
+      Acc accumInvalid =
+          pixel.construct(reference.attributes(), 0.f, ray_angle, stretching);
+      Value actual = pixel.average(pixel.blend(accum, accumInvalid));
 
       THEN("It is af the pixel has not been blended") {
-        REQUIRE(actual.color[0] == reference.color[0]);
-        REQUIRE(actual.color[1] == reference.color[1]);
-        REQUIRE(actual.color[2] == reference.color[2]);
-        REQUIRE(actual.depth == reference.depth);
-        REQUIRE(actual.quality == reference.quality);
-        REQUIRE(actual.validity == reference.validity);
+        REQUIRE(get<0>(actual.attributes())[0] ==
+                get<0>(reference.attributes())[0]);
+        REQUIRE(get<0>(actual.attributes())[1] ==
+                get<0>(reference.attributes())[1]);
+        REQUIRE(get<0>(actual.attributes())[2] ==
+                get<0>(reference.attributes())[2]);
+        REQUIRE(actual.normDisp == reference.normDisp);
+        REQUIRE(actual.normWeight == reference.normWeight);
       }
     }
   }
@@ -350,19 +353,18 @@ SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
     Mat1f depth({unsigned(camera.size.y()), unsigned(camera.size.x())});
     fill(begin(depth), end(depth), 2.f);
 
-    /* TODO
-WHEN("Synthesizing to the same viewpoint") {
-  auto actual = synthesizer.renderDepth(depth, camera, camera);
-  REQUIRE(actual.width() == 100);
-  REQUIRE(actual.height() == 50);
+    WHEN("Synthesizing to the same viewpoint") {
+      auto actual = synthesizer.renderDepth(depth, camera, camera);
+      REQUIRE(actual.width() == 100);
+      REQUIRE(actual.height() == 50);
 
-  THEN("The output depth should match the input depth") {
-    for (auto i = 0u; i != depth.height(); ++i) {
-      for (auto j = 0u; j != depth.width(); ++j) {
-        REQUIRE(actual(i, j) == Approx(2.f));
+      THEN("The output depth should match the input depth") {
+        for (auto i = 0u; i != depth.height(); ++i) {
+          for (auto j = 0u; j != depth.width(); ++j) {
+            REQUIRE(actual(i, j) == Approx(2.f));
+          }
+        }
       }
     }
-  }
-}*/
   }
 }

@@ -76,7 +76,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
     if (v.position.x() > 0.f) {
       auto uv = Common::Vec2f{-f.x() * v.position.y() / v.position.x() + p.x(),
                               -f.y() * v.position.z() / v.position.x() + p.y()};
-      return {uv, v.position.x(), v.cosRayAngle};
+      return {uv, v.position.x(), v.rayAngle};
     }
     return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};
   }

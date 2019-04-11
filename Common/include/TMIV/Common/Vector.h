@@ -270,6 +270,13 @@ decltype(typename V1::value_type(0) * typename V2::value_type(0))
 cosAngle(const V1 &v1, const V2 &v2) {
   return dot(v1, v2) / sqrt(norm2(v1) * norm2(v2));
 }
+
+//! \brief Returns the angle between the two vectors given as
+//! arguments.
+template <typename V1, typename V2> auto angle(const V1 &v1, const V2 &v2) {
+  return std::acos(std::min(1.f, cosAngle(v1, v2)));
+}
+
 } // namespace TMIV::Common
 
 #endif

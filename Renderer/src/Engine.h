@@ -40,7 +40,7 @@
 namespace TMIV::Renderer {
 struct SceneVertexDescriptor {
   Common::Vec3f position; // m, scene point in target reference frame
-  float cosRayAngle;      // cosine of ray angles: cos a = <v, w>/|v||w|
+  float rayAngle;         // rad, ray angle from: cos a = <v, w>/|v||w|
 };
 
 using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
@@ -55,7 +55,7 @@ using TriangleDescriptorList = std::vector<TriangleDescriptor>;
 struct ImageVertexDescriptor {
   Common::Vec2f position; // px, position in image (x right, y down)
   float depth;            // m, depth as defined in the target projection
-  float cosRayAngle;      // cosine of ray angles: cos a = <v, w>/|v||w|k
+  float rayAngle;         // rad, ray angle from: cos a = <v, w>/|v||w|
 };
 
 using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
@@ -118,10 +118,6 @@ auto unproject(const Common::Mat<float> &depth,
 //
 // This method is designed to allow for specialization per target camera
 // projection. The interface allows for culling and splitting triangles.
-//
-// TODO: Split triangles at poles (per projection)
-// TODO: cull triangles (per projection)
-
 template <typename... T>
 auto project(SceneVertexDescriptorList vertices,
              TriangleDescriptorList triangles,

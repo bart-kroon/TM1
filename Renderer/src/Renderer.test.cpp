@@ -73,7 +73,7 @@ TEST_CASE("Full ERP", "[Render engine]") {
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 1) * 5 + 2);
     for (auto v : vs) {
-      REQUIRE(v.cosRayAngle == 1.f);
+      REQUIRE(v.rayAngle == 0.f);
     }
     // Central vertex in forward (x) direction
     REQUIRE(vs[(5 / 2) * (7 + 1) + 7 / 2].position == Vec3f{2.f, 0.f, 0.f});
@@ -96,7 +96,7 @@ TEST_CASE("Full ERP", "[Render engine]") {
     REQUIRE(vs.size() == (7 + 1) * 5 + 2);
     for (auto v : vs) {
       REQUIRE(v.depth == Approx(2.f));
-      REQUIRE(v.cosRayAngle == 1.f);
+      REQUIRE(v.rayAngle == 0.f);
     }
     REQUIRE(vs[0].position.x() == Approx(0.5f));
     REQUIRE(vs[0].position.y() == Approx(0.5f));
@@ -138,7 +138,7 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
     for (auto v : vs) {
-      REQUIRE(v.cosRayAngle == 1.f);
+      REQUIRE(v.rayAngle == 0.f);
     }
     // Central vertex in forward (x) direction
     REQUIRE(vs[vs.size() / 2].position == Vec3f{2.f, 0.f, 0.f});
@@ -161,7 +161,7 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
     for (auto v : vs) {
       REQUIRE(v.depth == Approx(2.f));
-      REQUIRE(v.cosRayAngle == 1.f);
+      REQUIRE(v.rayAngle == 0.f);
     }
     REQUIRE(vs.front().position.x() == 0.f);
     REQUIRE(vs.back().position.y() == 5.f);
@@ -295,7 +295,7 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
                             {},
                             {1.f, 10.f}}; // depth range
 
-    Mat1f depth({50u, 100u});
+    Mat<float> depth({50u, 100u});
     fill(begin(depth), end(depth), 2.f);
 
     WHEN("Calculating image positions") {
@@ -332,6 +332,7 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
   }
 }
 
+/*
 SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
   using Mat1f = TMIV::Common::Mat<float>;
 
@@ -368,3 +369,4 @@ SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
     }
   }
 }
+*/

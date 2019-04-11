@@ -112,7 +112,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     const auto theta = asin(v.position.z() / radius);
     const auto position =
         Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
-    return {position, radius, v.cosRayAngle};
+    return {position, radius, v.rayAngle};
   }
 
   // Helper function to calculate the v-component of image coordinates at output
@@ -181,21 +181,21 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
         const auto v = vAt(i);
         const auto d = fetch(i, j, depth);
         const auto xyz = R_t.first * unprojectVertex({u, v}, d) + R_t.second;
-        const auto cosRayAngle = cosAngle(xyz, xyz - R_t.second);
-        result.push_back({xyz, cosRayAngle});
+        const auto rayAngle = angle(xyz, xyz - R_t.second);
+        result.push_back({xyz, rayAngle});
       }
     }
     if (northPole) {
       const auto d = averageRow(depth, 0, 0.);
       const auto xyz = R_t.first * Common::Vec3f{0.f, 0.f, d} + R_t.second;
-      const auto cosRayAngle = cosAngle(xyz, xyz - R_t.second);
-      result.push_back({xyz, cosRayAngle});
+      const auto rayAngle = angle(xyz, xyz - R_t.second);
+      result.push_back({xyz, rayAngle});
     }
     if (southPole) {
       const auto d = averageRow(depth, irows - 1, 0.);
       const auto xyz = R_t.first * Common::Vec3f{0.f, 0.f, -d} + R_t.second;
-      const auto cosRayAngle = cosAngle(xyz, xyz - R_t.second);
-      result.push_back({xyz, cosRayAngle});
+      const auto rayAngle = angle(xyz, xyz - R_t.second);
+      result.push_back({xyz, rayAngle});
     }
     assert(result.size() == osize);
     return result;
@@ -261,7 +261,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
   // Project mesh to target view
   //
-    // TODO: Cull and split triangles
+  // TODO: Cull and split triangles
   template <typename... T>
   auto project(SceneVertexDescriptorList sceneVertices,
                TriangleDescriptorList triangles,

@@ -33,136 +33,15 @@
 
 #include <TMIV/Renderer/reprojectPoints.h>
 
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-
-#include <TMIV/Common/LinAlg.h>
-#include <TMIV/Common/Common.h>
-
-// TODO: Reimplement using Engine.h
+#include "Engine.h"
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
-namespace {
-Mat3x3f rotationMatrixFromRotationAroundX(float rx) {
-  return Mat3x3f{1.f, 0.f, 0.f, 0.f, cos(rx), -sin(rx), 0.f, sin(rx), cos(rx)};
-}
-
-Mat3x3f rotationMatrixFromRotationAroundY(float ry) {
-  return Mat3x3f{cos(ry), 0.f, sin(ry), 0.f, 1.f, 0.f, -sin(ry), 0.f, cos(ry)};
-}
-
-Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
-  return Mat3x3f{cos(rz), -sin(rz), 0.f, sin(rz), cos(rz), 0.f, 0.f, 0.f, 1.f};
-}
-
-Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
-  return mult(mult(rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]),
-                   rotationMatrixFromRotationAroundY(radperdeg * rotation[1])),
-              rotationMatrixFromRotationAroundX(radperdeg * rotation[2]));
-}
-
-template <ProjectionType TYPE> class Unprojector {};
-template <ProjectionType TYPE> class Projector {};
-
-template <> class Unprojector<ProjectionType::ERP> {
-public:
-  explicit Unprojector(const CameraParameters &camera)
-      : m_phi0{radperdeg * camera.erpPhiRange[1]},
-        m_theta0{radperdeg * camera.erpThetaRange[1]},
-        m_dphi_du{-radperdeg * (camera.erpPhiRange[1] - camera.erpPhiRange[0]) /
-                  camera.size.x()},
-        m_dtheta_dv{-radperdeg *
-                    (camera.erpThetaRange[1] - camera.erpThetaRange[0]) /
-                    camera.size.y()} {};
-
-  Vec3f operator()(Vec2f position, float depth) const {
-    const float phi = m_phi0 + m_dphi_du * position.x();
-    const float theta = m_theta0 + m_dtheta_dv * position.y();
-    return depth *
-           Vec3f{cos(theta) * cos(phi), cos(theta) * sin(phi), sin(theta)};
-  }
-
-private:
-  const float m_phi0;
-  const float m_theta0;
-  const float m_dphi_du;
-  const float m_dtheta_dv;
-};
-
-template <> class Projector<ProjectionType::ERP> {
-public:
-  explicit Projector(const CameraParameters &camera)
-      : m_u0{camera.size.x() * camera.erpPhiRange[1] /
-             (camera.erpPhiRange[1] - camera.erpPhiRange[0])},
-        m_v0{camera.size.y() * camera.erpThetaRange[1] /
-             (camera.erpThetaRange[1] - camera.erpThetaRange[0])},
-        m_du_dphi{-degperrad * camera.size.x() /
-                  (camera.erpPhiRange[1] - camera.erpPhiRange[0])},
-        m_dv_dtheta{-degperrad * camera.size.y() /
-                    (camera.erpThetaRange[1] - camera.erpThetaRange[0])} {}
-
-  pair<Vec2f, float> operator()(Vec3f point) const {
-    const auto radius = norm(point);
-    const auto phi = atan2(point.y(), point.x());
-    const auto theta = asin(point.z() / radius);
-    const auto position =
-        Vec2f{m_u0 + m_du_dphi * phi, m_v0 + m_dv_dtheta * theta};
-    return {position, radius};
-  }
-
-private:
-  const float m_u0;
-  const float m_v0;
-  const float m_du_dphi;
-  const float m_dv_dtheta;
-};
-
-template <> class Unprojector<ProjectionType::Perspective> {
-public:
-  explicit Unprojector(const CameraParameters &camera)
-      : m_f{camera.perspectiveFocal}, m_p{camera.perspectiveCenter} {}
-
-  Vec3f operator()(Vec2f uv, float d) const {
-    if (d > 0.f) {
-      return Vec3f{d, -(d / m_f[0]) * (uv[0] - m_p[0]),
-                   -(d / m_f[1]) * (uv[1] - m_p[1])};
-    }
-    return Vec3f{NaN, NaN, NaN};
-  }
-
-private:
-  Vec2f m_f;
-  Vec2f m_p;
-};
-
-template <> class Projector<ProjectionType::Perspective> {
-public:
-  explicit Projector(const CameraParameters &camera)
-      : m_f{camera.perspectiveFocal}, m_p{camera.perspectiveCenter} {}
-
-  pair<Vec2f, float> operator()(Vec3f xyz) const {
-    if (xyz.x() > 0.f) {
-      auto uv = Vec2f{-m_f[0] * xyz[1] / xyz[0] + m_p[0],
-                      -m_f[1] * xyz[2] / xyz[0] + m_p[1]};
-      return {uv, xyz.x()};
-    }
-    return {{NaN, NaN}, NaN};
-  }
-
-private:
-  Vec2f m_f;
-  Vec2f m_p;
-};
-} // namespace
-
-// TODO: Make a better mesh. This is just to get started.
-Mat2f imagePositions(const CameraParameters &camera) {
-  Mat2f result;
+auto imagePositions(const CameraParameters &camera) -> Mat<Vec2f> {
+  Mat<Vec2f> result;
   result.resize(camera.size.y(), camera.size.x());
   for (unsigned i = 0; i != result.height(); ++i) {
     for (unsigned j = 0; j != result.width(); ++j) {
@@ -172,103 +51,100 @@ Mat2f imagePositions(const CameraParameters &camera) {
   return result;
 }
 
-template <ProjectionType TYPE>
-Mat3f unprojectPoints(const Mat2f &positions, const Mat1f &depth,
-                      Unprojector<TYPE> unprojector) {
-  Mat3f points{positions.sizes()};
+namespace {
+template <ProjectionType type>
+auto unprojectPoints(const Mat<Vec2f> &positions, const Mat<float> &depth,
+                     const Engine<type> &engine) -> Mat<Vec3f> {
+  Mat<Vec3f> points{positions.sizes()};
   assert(positions.sizes() == depth.sizes());
-  transform(begin(positions), end(positions), begin(depth), begin(points),
-            [=](Vec2f uv, float depth) { return unprojector(uv, depth); });
+  transform(
+      begin(positions), end(positions), begin(depth), begin(points),
+      [=](Vec2f uv, float depth) { return engine.unprojectVertex(uv, depth); });
   return points;
 }
+} // namespace
 
+auto unprojectPoints(const CameraParameters &camera,
+                     const Mat<Vec2f> &positions, const Mat<float> &depth)
+    -> Mat<Vec3f> {
+  switch (camera.type) {
+  case ProjectionType::ERP: {
+    Engine<ProjectionType::ERP> engine{camera};
+    return unprojectPoints(positions, depth, engine);
+  }
+  case ProjectionType::Perspective: {
+    Engine<ProjectionType::Perspective> engine{camera};
+    return unprojectPoints(positions, depth, engine);
+  }
+  default:
+    abort();
+  }
+}
+
+auto changeReferenceFrame(const CameraParameters &camera,
+                          const CameraParameters &target,
+                          const Mat<Vec3f> &points) -> Mat<Vec3f> {
+  Mat<Vec3f> result(points.sizes());
+  const auto R_t = affineParameters(camera, target);
+  transform(begin(points), end(points), begin(result),
+            [R = R_t.first, t = R_t.second](Vec3f x) { return R * x + t; });
+  return result;
+}
+
+namespace {
 template <ProjectionType TYPE>
-pair<Mat2f, Mat1f> projectPoints(const Mat3f &points,
-                                 Projector<TYPE> projector) {
-  Mat2f positions{points.sizes()};
-  Mat1f depth{points.sizes()};
+auto projectPoints(const Mat<Vec3f> &points, const Engine<TYPE> &engine)
+    -> pair<Mat<Vec2f>, Mat<float>> {
+  Mat<Vec2f> positions{points.sizes()};
+  Mat<float> depth{points.sizes()};
 
   auto i_positions = begin(positions);
   auto i_depth = begin(depth);
 
   for (auto point : points) {
-    auto uv_d = projector(point);
-    *i_positions++ = move(uv_d.first);
-    *i_depth++ = move(uv_d.second);
+    ImageVertexDescriptor v = engine.projectVertex({point, 0.f});
+    *i_positions++ = v.position;
+    *i_depth++ = v.depth;
   }
 
   return {positions, depth};
 }
+} // namespace
 
-Mat3f unprojectPoints(const CameraParameters &camera, const Mat2f &positions,
-                      const Mat1f &depth) {
+auto projectPoints(const CameraParameters &camera, const Mat<Vec3f> &points)
+    -> pair<Mat<Vec2f>, Mat<float>> {
   switch (camera.type) {
-  case ProjectionType::ERP:
-    return unprojectPoints(positions, depth,
-                           Unprojector<ProjectionType::ERP>{camera});
-  case ProjectionType::Perspective:
-    return unprojectPoints(positions, depth,
-                           Unprojector<ProjectionType::Perspective>{camera});
+  case ProjectionType::ERP: {
+    Engine<ProjectionType::ERP> engine{camera};
+    return projectPoints(points, engine);
+  }
+  case ProjectionType::Perspective: {
+    Engine<ProjectionType::Perspective> engine{camera};
+    return projectPoints(points, engine);
+  }
   default:
-    throw logic_error("Projection type unknown or not yet implemented");
+    abort();
   }
 }
 
-Mat3f changeReferenceFrame(const CameraParameters &fromCamera,
-                           const CameraParameters &toCamera, Mat3f points) {
-  const auto R1 = EulerAnglesToRotationMatrix(fromCamera.rotation);
-  const auto R2 = EulerAnglesToRotationMatrix(toCamera.rotation);
-  const auto &t1 = fromCamera.position;
-  const auto &t2 = toCamera.position;
-
-  const auto R = transpose(R2) * R1;
-  const auto t = transpose(R2) * (t2 - t1);
-
-  for (auto &point : points) {
-    point = mult(R, point) + t;
-  }
-  return points;
+auto reprojectPoints(const CameraParameters &camera,
+                     const CameraParameters &target,
+                     const Mat<Vec2f> &positions, const Mat<float> &depth)
+    -> pair<Mat<Vec2f>, Mat<float>> {
+  auto points = unprojectPoints(camera, positions, depth);
+  points = changeReferenceFrame(camera, target, points);
+  return projectPoints(target, points);
 }
 
-std::pair<Mat2f, Mat1f> projectPoints(const CameraParameters &camera,
-                                      const Mat3f &points) {
-  switch (camera.type) {
-  case ProjectionType::ERP:
-    return projectPoints(points, Projector<ProjectionType::ERP>{camera});
-  case ProjectionType::Perspective:
-    return projectPoints(points,
-                         Projector<ProjectionType::Perspective>{camera});
-  default:
-    throw logic_error("Projection type unknown or not yet implemented");
-  }
-}
-
-std::pair<Mat2f, Mat1f> reprojectPoints(const CameraParameters &fromCamera,
-                                        const CameraParameters &toCamera,
-                                        const Mat2f &positions,
-                                        const Mat1f &depth) {
-  auto points = unprojectPoints(fromCamera, positions, depth);
-  points = changeReferenceFrame(fromCamera, toCamera, points);
-  return projectPoints(toCamera, points);
-}
-
-Mat1f calculateRayAngles(const CameraParameters &fromCamera,
-                         const CameraParameters &toCamera,
-                         const Mat3f &points) {
-  Mat1f result(points.sizes());
-
-  const auto R2 = EulerAnglesToRotationMatrix(toCamera.rotation);
-  const auto &t1 = fromCamera.position;
-  const auto &t2 = toCamera.position;
-  const auto t = transpose(R2) * (t2 - t1);
-
-  transform(begin(points), end(points), begin(result), [t](Vec3f virtualRay) {
-    auto inputRay = virtualRay - t;
-    float cosRayAngle = min(1.f, dot(virtualRay, inputRay) /
-                                     (norm(virtualRay) * norm(inputRay)));
-    return acos(cosRayAngle);
-  });
-
+auto calculateRayAngles(const CameraParameters &camera,
+                        const CameraParameters &target,
+                        const Mat<Vec3f> &points) -> Mat<float> {
+  Mat<float> result(points.sizes());
+  const auto R_t = affineParameters(camera, target);
+  transform(begin(points), end(points), begin(result),
+            [t = R_t.second](Vec3f virtualRay) {
+              return angle(virtualRay, virtualRay - t);
+            });
   return result;
 }
 } // namespace TMIV::Renderer

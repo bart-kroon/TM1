@@ -35,20 +35,57 @@
 #define _TMIV_RENDERER_RASTERIZER_H_
 
 #include "AccumulatingPixel.h"
-#include <TMIV/Common/Matrix.h>
+#include "Engine.h"
 
 namespace TMIV::Renderer {
 template <typename... T> class Rasterizer {
 private:
+  using Attributes = PixelAttributes<T...>;
   using Pixel = AccumulatingPixel<T...>;
-  using Accumulator = Pixel::PixelAccumulator;
+  using Accumulator = PixelAccumulator<T...>;
+  using Value = PixelValue<T...>;
+
+  struct Batch {
+    ImageVertexDescriptorList vertices;
+    TriangleDescriptorList triangles;
+    std::tuple<std::vector<T>...> attributes;
+  };
 
   Pixel m_pixel;
   Common::Mat<Accumulator> m_matrix;
+  std::vector<Batch> m_batches;
 
 public:
-  Rasterizer(AccumulatingPixel pixel, Vec2i size)
-      : m_pixel{pixel}, m_matrix(size.y(), size.x()) {}
+  using Exception = std::logic_error;
+
+  // Construct a rasterizer with specified blender and a frame buffer of
+  // specified size
+  Rasterizer(Pixel pixel, Common::Vec2i size);
+
+  // Submit a batch of triangles
+  //
+  // The batch is stored within the Rasterizer for later processing.
+  // Multiple batches may be submitted sequentially.
+  void submit(ImageVertexDescriptorList vertices,
+              TriangleDescriptorList triangles, std::vector<T>... attributes);
+
+  // Raster all submitted batches
+  //
+  // On return the output maps may be calculated.
+  void run();
+
+  // Output the depth map (in meters)
+  auto depth() const -> Common::Mat<float>;
+
+  // Output the normalzied disparity map (in diopters)
+  auto normDisp() const -> Common::Mat<float>;
+
+  // Output the quality estimate (in a.u.)
+  auto quality() const -> Common::Mat<float>;
+
+  // Output attribute map I (e.g. color)
+  template <size_t I>
+  auto attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>>;
 };
 } // namespace TMIV::Renderer
 

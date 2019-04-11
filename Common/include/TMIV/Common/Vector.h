@@ -187,6 +187,10 @@ using Vec2d = stack::Vec2<double>;
 using Vec3d = stack::Vec3<double>;
 using Vec4d = stack::Vec4<double>;
 
+using Vec2w = stack::Vec2<uint16_t>;
+using Vec3w = stack::Vec3<uint16_t>;
+using Vec4w = stack::Vec4<uint16_t>;
+
 //! \brief Dot product.
 template <typename Iterator1, typename Iterator2,
           typename std::enable_if<

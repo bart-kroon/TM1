@@ -36,6 +36,7 @@
 
 #include "AccumulatingPixel.h"
 #include "Engine.h"
+#include "Rasterizer.h"
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Synthesizer.h>
@@ -326,6 +327,169 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
           REQUIRE(actual.second(0, 0) == Approx(2.f));
           REQUIRE(actual.second(49, 99) == Approx(2.f));
           REQUIRE(actual.second(49, 99) == Approx(2.f));
+        }
+      }
+    }
+  }
+}
+
+SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
+  GIVEN("A new rasterizer") {
+    Rasterizer<Vec3w> rasterizer(AccumulatingPixel<Vec3w>{1.f, 1.f, 1.f},
+                                 Vec2i{8, 4});
+
+    WHEN("Rastering nothing") {
+      THEN("The depth map is a matrix of NaN's") {
+        auto depth = rasterizer.depth();
+        static_assert(is_same_v<decltype(depth), Mat<float>>);
+        REQUIRE(depth.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(depth), end(depth), isnan<float>));
+      }
+      THEN("The normalized disparity map is a matrix of zeroes") {
+        auto normDisp = rasterizer.normDisp();
+        static_assert(is_same_v<decltype(normDisp), Mat<float>>);
+        REQUIRE(normDisp.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(normDisp), end(normDisp),
+                       [](float x) { return x == 0.f; }));
+      }
+      THEN("The quality map is a matrix of zeros") {
+        auto quality = rasterizer.quality();
+        static_assert(is_same_v<decltype(quality), Mat<float>>);
+        REQUIRE(quality.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(quality), end(quality),
+                       [](float x) { return x == 0.f; }));
+      }
+      THEN("The color map is a matrix of zero vectors") {
+        auto color = rasterizer.attribute<0>();
+        static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
+        REQUIRE(color.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(color), end(color),
+                       [](Vec3w x) { return x == Vec3w{}; }));
+      }
+    }
+    WHEN("Submitting meshes but not rastering") {
+      ImageVertexDescriptorList vs;
+      TriangleDescriptorList ts;
+      vector<Vec3w> as;
+      rasterizer.submit(vs, ts, as);
+      THEN("Requesting output maps throws a Rasterizer::Exception") {
+        using Ex = Rasterizer<Vec3w>::Exception;
+        REQUIRE_THROWS_AS(rasterizer.depth(), Ex);
+        REQUIRE_THROWS_AS(rasterizer.normDisp(), Ex);
+        REQUIRE_THROWS_AS(rasterizer.quality(), Ex);
+        REQUIRE_THROWS_AS(rasterizer.attribute<0>(), Ex);
+      }
+    }
+    WHEN("Rastering some empty meshes") {
+      ImageVertexDescriptorList vs;
+      TriangleDescriptorList ts;
+      vector<Vec3w> as;
+      rasterizer.submit(vs, ts, as);
+      rasterizer.submit(vs, ts, as);
+      rasterizer.run();
+
+      THEN("The depth map is a matrix of NaN's") {
+        auto depth = rasterizer.depth();
+        static_assert(is_same_v<decltype(depth), Mat<float>>);
+        REQUIRE(depth.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(depth), end(depth), isnan<float>));
+      }
+      THEN("The normalized disparity map is a matrix of zeroes") {
+        auto normDisp = rasterizer.normDisp();
+        static_assert(is_same_v<decltype(normDisp), Mat<float>>);
+        REQUIRE(normDisp.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(normDisp), end(normDisp),
+                       [](float x) { return x == 0.f; }));
+      }
+      THEN("The quality map is a matrix of zeros") {
+        auto quality = rasterizer.quality();
+        static_assert(is_same_v<decltype(quality), Mat<float>>);
+        REQUIRE(quality.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(quality), end(quality),
+                       [](float x) { return x == 0.f; }));
+      }
+      THEN("The color map is a matrix of zero vectors") {
+        auto color = rasterizer.attribute<0>();
+        static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
+        REQUIRE(color.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(color), end(color),
+                       [](Vec3w x) { return x == Vec3w{}; }));
+      }
+    }
+    WHEN("Rastering a quad") {
+      // Rectangle of 2 x 6 pixels within the 4 x 8 pixels frame
+      // Depth values misused to correspond to x-values
+      // Ray angles misused to correspond to y-values
+      ImageVertexDescriptorList vs{{{1, 1}, 1.f, 1.f},
+                                   {{7, 1}, 7.f, 1.f},
+                                   {{7, 3}, 7.f, 3.f},
+                                   {{1, 3}, 1.f, 3.f}};
+
+      // Two clockwise triangles
+      TriangleDescriptorList ts{{{0, 1, 2}, 6.f}, {{1, 2, 3}, 6.f}};
+
+      // Colors correspond to x and y-values times 100
+      vector<Vec3w> as{
+          {100, 0, 100}, {700, 0, 100}, {700, 0, 300}, {100, 0, 300}};
+
+      rasterizer.submit(vs, ts, as);
+      rasterizer.run();
+
+      THEN("The depth map has known values") {
+        auto depth = rasterizer.depth();
+        REQUIRE(isnan(depth(0, 0)));
+        REQUIRE(depth(1, 1) == 1.f);
+        REQUIRE(depth(1, 5) == 5.f);
+        REQUIRE(depth(2, 7) == 7.f);
+        REQUIRE(isnan(depth(3, 7)));
+      }
+      THEN("The normalized disparity map has known values") {
+        auto normDisp = rasterizer.normDisp();
+        REQUIRE(normDisp(0, 0) == 0.f);
+        REQUIRE(normDisp(1, 1) == 1.f / 1.f);
+        REQUIRE(normDisp(1, 5) == 1.f / 5.f);
+        REQUIRE(normDisp(2, 7) == 1.f / 7.f);
+        REQUIRE(normDisp(3, 7) == 0.f);
+      }
+      THEN("The quality map is constant within the quad and zero outside") {
+        auto quality = rasterizer.normDisp();
+        REQUIRE(quality(0, 0) == 0.f);
+        const auto c = quality(1, 1);
+        REQUIRE(c > 0.f);
+        REQUIRE(quality(1, 5) == c);
+        REQUIRE(quality(2, 7) == c);
+        REQUIRE(quality(3, 7) == 0.f);
+      }
+      THEN("The color map has known values") {
+        auto color = rasterizer.attribute<0>();
+        REQUIRE(color(0, 0) == Vec3w{});
+        REQUIRE(color(1, 1) == Vec3w{100, 0, 100});
+        REQUIRE(color(1, 5) == Vec3w{100, 0, 500});
+        REQUIRE(color(2, 7) == Vec3w{200, 0, 700});
+        REQUIRE(color(3, 7) == Vec3w{});
+
+        WHEN("Submitting more meshes but not rastering") {
+          rasterizer.submit({}, {}, {});
+          THEN("Requesting output maps throws a Rasterizer::Exception") {
+            using Ex = Rasterizer<Vec3w>::Exception;
+            REQUIRE_THROWS_AS(rasterizer.depth(), Ex);
+            REQUIRE_THROWS_AS(rasterizer.normDisp(), Ex);
+            REQUIRE_THROWS_AS(rasterizer.quality(), Ex);
+            REQUIRE_THROWS_AS(rasterizer.attribute<0>(), Ex);
+          }
+        }
+        WHEN("Rastering more meshes") {
+          rasterizer.submit({}, {}, {});
+          rasterizer.run();
+
+          THEN("This is accumulative") {
+            auto color2 = rasterizer.attribute<0>();
+            REQUIRE(color2(0, 0) == Vec3w{});
+            REQUIRE(color2(1, 1) == Vec3w{100, 0, 100});
+            REQUIRE(color2(1, 5) == Vec3w{100, 0, 500});
+            REQUIRE(color2(2, 7) == Vec3w{200, 0, 700});
+            REQUIRE(color2(3, 7) == Vec3w{});
+          }
         }
       }
     }

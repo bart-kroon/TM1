@@ -107,8 +107,8 @@ private:
   using Size = Common::Mat<float>::tuple_type;
 
   void submitTriangle(TriangleDescriptor descriptor, const Batch &batch);
-  void rasterTriangle(TriangleDescriptor descriptor, const Strip &strip,
-                      const Batch &batch);
+  void rasterTriangle(TriangleDescriptor descriptor, const Batch &batch,
+                      Strip &strip);
   void clearBatches();
 
   template <size_t... I>

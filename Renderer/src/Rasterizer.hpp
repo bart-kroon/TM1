@@ -90,14 +90,13 @@ template <typename... T> void Rasterizer<T...>::run() {
   // Launch all work
   for (auto &strip : m_strips) {
     work.push_back(std::async( // Strips in parallel
-        [this](const Strip &strip) {
+        [this, &strip]() {
           for (size_t i = 0; i < m_batches.size(); ++i) { // Batches in sequence
             for (auto triangle : strip.batches[i]) {
-              rasterTriangle(triangle, strip, m_batches[i]);
+              rasterTriangle(triangle, m_batches[i], strip);
             }
           }
-        },
-        strip));
+        }));
   }
 
   // Synchronize on completion
@@ -198,7 +197,7 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
 
 template <typename... T>
 void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
-                                      const Strip &strip, const Batch &batch) {
+                                      const Batch &batch, Strip &strip) {
   const auto n0 = descriptor.indices[0];
   const auto n1 = descriptor.indices[1];
   const auto n2 = descriptor.indices[2];

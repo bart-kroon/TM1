@@ -242,7 +242,7 @@ int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
     T pivot = *iter;
 
     if (std::abs(std::numeric_limits<T>::epsilon()) < std::abs(pivot)) {
-      size_type p = iter - LU.col_begin(k);
+      auto p = static_cast<size_type>(iter - LU.col_begin(k));
 
       if (p != k) {
         std::swap(P[k], P[p]);

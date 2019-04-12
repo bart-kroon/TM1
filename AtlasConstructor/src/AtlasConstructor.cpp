@@ -64,8 +64,8 @@ AtlasConstructor::AtlasConstructor(const Common::Json &node) {
   if (auto subnode = node.optional("MPixel"))
     maxMegaPixelPerFrame = subnode.asInt();
 
-  m_nbAtlas = ceil((float)maxMegaPixelPerFrame * 1000000 /
-                   (m_atlasSize.x() * m_atlasSize.y()));
+  m_nbAtlas = static_cast<uint16_t>(ceil((float)maxMegaPixelPerFrame * 1000000 /
+                                         (m_atlasSize.x() * m_atlasSize.y())));
 }
 
 void AtlasConstructor::prepareIntraPeriod(

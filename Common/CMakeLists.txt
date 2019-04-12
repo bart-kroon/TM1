@@ -10,6 +10,7 @@ add_library(CommonLib
 	"src/Vector.cpp"
 	"src/Matrix.cpp"
 	"src/Array.cpp"
+	"src/Traits.cpp"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Application.h"
 	"include/TMIV/Common/Json.h"

@@ -120,10 +120,10 @@ void AtlasConstructor::completeIntraPeriod() {
           Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
 
       for (auto &p : atlas.first.getPlanes())
-        std::fill(p.begin(), p.end(), 512);
+        std::fill(p.begin(), p.end(), uint16_t(512));
 
       std::fill(atlas.second.getPlane(0).begin(),
-                atlas.second.getPlane(0).end(), 0);
+                atlas.second.getPlane(0).end(), uint16_t(0));
 
       atlasList.push_back(std::move(atlas));
     }

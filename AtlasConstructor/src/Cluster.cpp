@@ -45,7 +45,7 @@ static const std::uint16_t INVALID = 65535;
                                                                                \
     if (visitedId == ACTIVE) {                                                 \
       cluster.push(a, b);                                                      \
-      visitedId = clusterId;                                                   \
+      visitedId = uint16_t(clusterId);                                         \
       candidates.push({a, b});                                                 \
     }                                                                          \
   }
@@ -180,7 +180,7 @@ Cluster::retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId,
 
     cluster.push(dv.quot, dv.rem);
     candidates.push({dv.quot, dv.rem});
-    clusteringBuffer(dv.quot, dv.rem) = clusterId;
+    clusteringBuffer(dv.quot, dv.rem) = static_cast<uint16_t>(clusterId);
 
     while (!candidates.empty()) {
       const std::array<int, 2> &current = candidates.front();

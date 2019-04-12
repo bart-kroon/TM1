@@ -67,13 +67,13 @@ SCENARIO("Expand YUV 4:2:0 10-bit texture", "[quantize_and_expand]") {
     Frame<YUV420P10> texture{10, 6};
     for (int i = 0; i != 6; ++i) {
       for (int j = 0; j != 10; ++j) {
-        texture.getPlane(0)(i, j) = 100 * i + j;
+        texture.getPlane(0)(i, j) = uint16_t(100 * i + j);
       }
     }
     for (int k = 1; k < 3; ++k) {
       for (int i = 0; i != 3; ++i) {
         for (int j = 0; j != 5; ++j) {
-          texture.getPlane(k)(i, j) = i + 150 * j;
+          texture.getPlane(k)(i, j) = uint16_t(i + 150 * j);
         }
       }
     }

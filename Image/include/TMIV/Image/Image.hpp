@@ -51,7 +51,7 @@ template <unsigned bits> uint16_t quantizeValue(float x) {
         std::min(unsigned(x * float(maxLevel(bits))), maxLevel(bits)));
   }
   if (x > 0) {
-    return maxLevel(bits);
+    return static_cast<uint16_t>(maxLevel(bits));
   }
   return 0u;
 }

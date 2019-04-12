@@ -49,9 +49,9 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P8> &outputFrame) {
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
-            128);
+            uint8_t(128));
   std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
-            128);
+            uint8_t(128));
 }
 
 template <>
@@ -63,9 +63,9 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P10> &outputFrame) {
       });
 
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
-            512);
+            uint16_t(512));
   std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
-            512);
+            uint16_t(512));
 }
 
 template <>
@@ -77,9 +77,9 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
       });
 
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
-            32768);
+            uint16_t(32768));
   std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
-            32768);
+            uint16_t(32768));
 }
 
 template <>
@@ -102,9 +102,9 @@ void convert(const Frame<YUV400P16> &inputFrame, Frame<YUV420P8> &outputFrame) {
       });
 
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
-            128);
+            uint8_t(128));
   std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
-            128);
+            uint8_t(128));
 }
 
 template <>
@@ -118,9 +118,9 @@ void convert(const Frame<YUV400P16> &inputFrame,
       });
 
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
-            512);
+            uint16_t(512));
   std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
-            512);
+            uint16_t(512));
 }
 
 template <>
@@ -129,9 +129,9 @@ void convert(const Frame<YUV400P16> &inputFrame,
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
-            32768);
+            uint16_t(32768));
   std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
-            32768);
+            uint16_t(32768));
 }
 
 template <>

@@ -98,7 +98,7 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
   unsigned int wa = w / a, ha = h / a;
 
   m_occupancyMap.resize({ha, wa});
-  std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), 0);
+  std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t(0));
 
   // Push full rectangle
   m_F.push_back(Rectangle(0, 0, w - 1, h - 1));
@@ -138,7 +138,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
 
   for (auto Y = YMin; Y < YLast; Y++)
     std::fill(m_occupancyMap.row_begin(Y) + XMin,
-              m_occupancyMap.row_begin(Y) + XLast, 128);
+              m_occupancyMap.row_begin(Y) + XLast, uint8_t(128));
 
   // Step #1 (in projection)
   Vec2i p0 = {c.jmin(), c.imin()};

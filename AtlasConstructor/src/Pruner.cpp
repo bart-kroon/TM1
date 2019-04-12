@@ -88,7 +88,7 @@ MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
                        views[viewToPruneId].first.getHeight());
     auto &bufferToPrune = maskToPrune.getPlane(0);
 
-    std::fill(bufferToPrune.begin(), bufferToPrune.end(), 255);
+    std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(255));
 
     depthMapExpanded[viewToPruneId] =
         expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);

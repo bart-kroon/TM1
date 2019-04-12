@@ -99,8 +99,8 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
                         packerOutput)) {
           Metadata::PatchParameters p;
 
-          p.atlasId = atlasId;
-          p.virtualCameraId = cluster.getCameraId();
+          p.atlasId = static_cast<uint8_t>(atlasId);
+          p.virtualCameraId = static_cast<uint8_t>(cluster.getCameraId());
           p.patchSize = {Common::align(cluster.width(), m_alignment),
                          Common::align(cluster.height(), m_alignment)};
           p.patchMappingPos = {cluster.jmin(), cluster.imin()};

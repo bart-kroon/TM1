@@ -352,11 +352,11 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         REQUIRE(all_of(begin(normDisp), end(normDisp),
                        [](float x) { return x == 0.f; }));
       }
-      THEN("The quality map is a matrix of zeros") {
-        auto quality = rasterizer.quality();
-        static_assert(is_same_v<decltype(quality), Mat<float>>);
-        REQUIRE(quality.sizes() == array{4u, 8u});
-        REQUIRE(all_of(begin(quality), end(quality),
+      THEN("The normalized weight (quality) map is a matrix of zeros") {
+        auto normWeight = rasterizer.normWeight();
+        static_assert(is_same_v<decltype(normWeight), Mat<float>>);
+        REQUIRE(normWeight.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(normWeight), end(normWeight),
                        [](float x) { return x == 0.f; }));
       }
       THEN("The color map is a matrix of zero vectors") {
@@ -371,12 +371,12 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       ImageVertexDescriptorList vs;
       TriangleDescriptorList ts;
       vector<Vec3w> as;
-      rasterizer.submit(vs, ts, as);
+      rasterizer.submit(vs, tuple{as}, ts);
       THEN("Requesting output maps throws a Rasterizer::Exception") {
         using Ex = Rasterizer<Vec3w>::Exception;
         REQUIRE_THROWS_AS(rasterizer.depth(), Ex);
         REQUIRE_THROWS_AS(rasterizer.normDisp(), Ex);
-        REQUIRE_THROWS_AS(rasterizer.quality(), Ex);
+        REQUIRE_THROWS_AS(rasterizer.normWeight(), Ex);
         REQUIRE_THROWS_AS(rasterizer.attribute<0>(), Ex);
       }
     }
@@ -384,8 +384,8 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       ImageVertexDescriptorList vs;
       TriangleDescriptorList ts;
       vector<Vec3w> as;
-      rasterizer.submit(vs, ts, as);
-      rasterizer.submit(vs, ts, as);
+      rasterizer.submit(vs, tuple{as}, ts);
+      rasterizer.submit(vs, tuple{as}, ts);
       rasterizer.run();
 
       THEN("The depth map is a matrix of NaN's") {
@@ -401,11 +401,11 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         REQUIRE(all_of(begin(normDisp), end(normDisp),
                        [](float x) { return x == 0.f; }));
       }
-      THEN("The quality map is a matrix of zeros") {
-        auto quality = rasterizer.quality();
-        static_assert(is_same_v<decltype(quality), Mat<float>>);
-        REQUIRE(quality.sizes() == array{4u, 8u});
-        REQUIRE(all_of(begin(quality), end(quality),
+      THEN("The normalized weight (quality) map is a matrix of zeros") {
+        auto normWeight = rasterizer.normWeight();
+        static_assert(is_same_v<decltype(normWeight), Mat<float>>);
+        REQUIRE(normWeight.sizes() == array{4u, 8u});
+        REQUIRE(all_of(begin(normWeight), end(normWeight),
                        [](float x) { return x == 0.f; }));
       }
       THEN("The color map is a matrix of zero vectors") {
@@ -432,7 +432,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       vector<Vec3w> as{
           {100, 0, 100}, {700, 0, 100}, {700, 0, 300}, {100, 0, 300}};
 
-      rasterizer.submit(vs, ts, as);
+      rasterizer.submit(vs, tuple{as}, ts);
       rasterizer.run();
 
       THEN("The depth map has known values") {
@@ -451,14 +451,15 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         REQUIRE(normDisp(2, 7) == 1.f / 7.f);
         REQUIRE(normDisp(3, 7) == 0.f);
       }
-      THEN("The quality map is constant within the quad and zero outside") {
-        auto quality = rasterizer.normDisp();
-        REQUIRE(quality(0, 0) == 0.f);
-        const auto c = quality(1, 1);
+      THEN("The normalized weight (quality) map is constant within the quad "
+           "and zero outside") {
+        auto normWeight = rasterizer.normWeight();
+        REQUIRE(normWeight(0, 0) == 0.f);
+        const auto c = normWeight(1, 1);
         REQUIRE(c > 0.f);
-        REQUIRE(quality(1, 5) == c);
-        REQUIRE(quality(2, 7) == c);
-        REQUIRE(quality(3, 7) == 0.f);
+        REQUIRE(normWeight(1, 5) == c);
+        REQUIRE(normWeight(2, 7) == c);
+        REQUIRE(normWeight(3, 7) == 0.f);
       }
       THEN("The color map has known values") {
         auto color = rasterizer.attribute<0>();
@@ -474,7 +475,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
             using Ex = Rasterizer<Vec3w>::Exception;
             REQUIRE_THROWS_AS(rasterizer.depth(), Ex);
             REQUIRE_THROWS_AS(rasterizer.normDisp(), Ex);
-            REQUIRE_THROWS_AS(rasterizer.quality(), Ex);
+            REQUIRE_THROWS_AS(rasterizer.normWeight(), Ex);
             REQUIRE_THROWS_AS(rasterizer.attribute<0>(), Ex);
           }
         }

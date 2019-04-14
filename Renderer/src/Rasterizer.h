@@ -122,8 +122,8 @@ private:
                                     const Attributes &a1, float w2,
                                     const Attributes &a2,
                                     std::index_sequence<I...>) -> Attributes {
-    return {std::tuple_element_t<I, Attributes>{
-        w0 * std::get<I>(a0) + w1 * std::get<I>(a1) + w2 * std::get<I>(a2)}...};
+    return {Pixel::blendValues(w0, std::get<I>(a0), w1, std::get<I>(a1), w2,
+                               std::get<I>(a2))...};
   }
 
   const Pixel m_pixel;

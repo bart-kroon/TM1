@@ -78,11 +78,6 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   // TODO: Use smaller type to save on memory
   float rayAngle{0.f};
 
-  // Stretching is the ratio of target vs. source triangle area
-  //
-  // TODO: Use smaller type to save on memory
-  float stretching{0.f};
-
   // Access the attributes
   const PixelAttributes<T...> &attributes() const { return *this; }
 

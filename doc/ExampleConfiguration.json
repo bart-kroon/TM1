@@ -14,8 +14,8 @@
     "ViewOptimizerMethod": "ViewReducer",
     "ViewReducer": {},
 
-    "OptimizedTexturePathFmt": "OPT_SA_R0_Tt_v%02d.yuv",
-    "OptimizedDepthPathFmt": "OPT_SA_R0_Td_v%02d.yuv",
+    "BaseTexturePathFmt": "OPT_SA_R0_Tt_v%02d.yuv",
+    "BaseDepthPathFmt": "OPT_SA_R0_Td_v%02d.yuv",
     "OptimizedMetadataPath": "OPT_SA_R0_Tm_vxx.bit",
     "AdditionalTexturePathFmt": "ADD_SA_R0_Tt_v%02d.yuv",
     "AdditionalDepthPathFmt": "ADD_SA_R0_Td_v%02d.yuv",

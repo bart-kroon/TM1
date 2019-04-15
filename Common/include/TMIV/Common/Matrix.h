@@ -50,6 +50,7 @@ public:
   typedef typename A::dim_iterator row_iterator;
   typedef typename A::const_dim_iterator const_column_iterator;
   typedef typename A::dim_iterator column_iterator;
+  template<typename U> using promoted_type = MatrixInterface< typename A::template promoted_type<U> >;
 
 public:
   using A::A;

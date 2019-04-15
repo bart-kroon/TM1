@@ -62,9 +62,7 @@ Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
 }
 
 Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
-  return mult(mult(rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]),
-                   rotationMatrixFromRotationAroundY(radperdeg * rotation[1])),
-              rotationMatrixFromRotationAroundX(radperdeg * rotation[2]));
+  return rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]) * rotationMatrixFromRotationAroundY(radperdeg * rotation[1]) * rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);
 }
 
 template <ProjectionType TYPE> class Unprojector {};
@@ -226,7 +224,7 @@ Mat3f changeReferenceFrame(const CameraParameters &fromCamera,
   const auto t = transpose(R2) * (t2 - t1);
 
   for (auto &point : points) {
-    point = mult(R, point) + t;
+    point = R * point + t;
   }
   return points;
 }

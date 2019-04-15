@@ -46,6 +46,7 @@ public:
   typedef typename A::iterator row_iterator;
   typedef typename A::const_iterator const_column_iterator;
   typedef typename A::iterator column_iterator;
+  template<typename U> using promoted_type = VectorInterface< typename A::template promoted_type<U> >;
 
 public:
   using A::A;

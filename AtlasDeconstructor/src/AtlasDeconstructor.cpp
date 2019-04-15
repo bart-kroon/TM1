@@ -47,10 +47,14 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize)
-    patchMapList.push_back(PatchIdMap(sz.x(), sz.y()));
+  {
+	  PatchIdMap patchMap(sz.x(), sz.y());
+	  std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), 65535);
+	  patchMapList.push_back(std::move(patchMap));
+  }
 
   for (auto id = 0u; id < patchList.size(); id++)
-    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id));
+    writePatchIdInMap(patchList[id], patchMapList, id);
 
   return patchMapList;
 }

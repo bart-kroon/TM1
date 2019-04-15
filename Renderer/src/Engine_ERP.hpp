@@ -44,10 +44,10 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   const bool northPole;
   const bool southPole;
   const bool wraps;
-  const int irows;
   const int icols;
-  const int orows;
+  const int irows;
   const int ocols;
+  const int orows;
   const int osize;
   const int numTriangles;
   const float phi0;
@@ -100,8 +100,8 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
     const float phi = phi0 + dphi_du * uv.x();
     const float theta = theta0 + dtheta_dv * uv.y();
-    return depth * Common::Vec3f{cos(theta) * cos(phi), cos(theta) * sin(phi),
-                                 sin(theta)};
+    return depth * Common::Vec3f{(float) (cos(theta) * cos(phi)), (float) (cos(theta) * sin(phi)),
+                                 (float) sin(theta)};
   }
 
   // Projection equation
@@ -111,7 +111,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     const auto phi = atan2(v.position.y(), v.position.x());
     const auto theta = asin(v.position.z() / radius);
     const auto position =
-        Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
+        Common::Vec2f{(float) (u0 + du_dphi * phi), (float) (v0 + dv_dtheta * theta)};
     return {position, radius, v.rayAngle};
   }
 
@@ -197,7 +197,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       const auto rayAngle = angle(xyz, xyz - R_t.second);
       result.push_back({xyz, rayAngle});
     }
-    assert(result.size() == osize);
+    assert((int) result.size() == osize);
     return result;
   }
 
@@ -234,7 +234,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
         result.push_back({{tl, tr, b}, area});
       }
     }
-    assert(result.size() == numTriangles);
+    assert((int) result.size() == numTriangles);
     return result;
   }
 
@@ -255,7 +255,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     if (southPole) {
       result.push_back(averageRow(matrix, irows - 1, 0. * T{}));
     }
-    assert(result.size() == osize);
+    assert((int) result.size() == osize);
     return result;
   }
 
@@ -271,7 +271,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     for (const SceneVertexDescriptor &v : sceneVertices) {
       imageVertices.push_back(projectVertex(v));
     }
-    return tuple{move(imageVertices), triangles, attributes};
+    return std::tuple{move(imageVertices), triangles, attributes};
   }
 };
 } // namespace TMIV::Renderer

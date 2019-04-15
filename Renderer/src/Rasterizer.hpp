@@ -115,36 +115,36 @@ template <typename... T> void Rasterizer<T...>::run() {
 template <typename... T>
 auto Rasterizer<T...>::depth() const -> Common::Mat<float> {
   Common::Mat<float> matrix(m_size);
-  auto i_matrix = begin(matrix);
+  auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
     *i_matrix++ = x.depth();
     return true;
   });
-  assert(i_matrix == end(matrix));
+  assert(i_matrix == std::end(matrix));
   return matrix;
 }
 
 template <typename... T>
 auto Rasterizer<T...>::normDisp() const -> Common::Mat<float> {
   Common::Mat<float> matrix(m_size);
-  auto i_matrix = begin(matrix);
+  auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
     *i_matrix++ = x.normDisp;
     return true;
   });
-  assert(i_matrix == end(matrix));
+  assert(i_matrix == std::end(matrix));
   return matrix;
 }
 
 template <typename... T>
 auto Rasterizer<T...>::normWeight() const -> Common::Mat<float> {
   Common::Mat<float> matrix(m_size);
-  auto i_matrix = begin(matrix);
+  auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
     *i_matrix++ = x.normWeight;
     return true;
   });
-  assert(i_matrix == end(matrix));
+  assert(i_matrix == std::end(matrix));
   return matrix;
 }
 
@@ -153,12 +153,12 @@ template <size_t I>
 auto Rasterizer<T...>::attribute() const
     -> Common::Mat<std::tuple_element_t<I, Attributes>> {
   Common::Mat<std::tuple_element_t<I, Attributes>> matrix(m_size);
-  auto i_matrix = begin(matrix);
+  auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
     *i_matrix++ = std::get<I>(x.attributes());
     return true;
   });
-  assert(i_matrix == end(matrix));
+  assert(i_matrix == std::end(matrix));
   return matrix;
 }
 
@@ -187,7 +187,7 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
 
   for (auto n : descriptor.indices) {
     const auto y = batch.vertices[n].position.y();
-    if (isnan(y)) {
+    if (std::isnan(y)) {
       return;
     }
     const auto k = int(y * m_dk_di);
@@ -207,6 +207,9 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
 template <typename... T>
 void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
                                       const Batch &batch, Strip &strip) {
+
+  using namespace TMIV::Common;
+
   const auto n0 = descriptor.indices[0];
   const auto n1 = descriptor.indices[1];
   const auto n2 = descriptor.indices[2];

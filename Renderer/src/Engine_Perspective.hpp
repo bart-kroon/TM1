@@ -41,10 +41,10 @@
 namespace TMIV::Renderer {
 template <> struct Engine<Metadata::ProjectionType::Perspective> {
   const Metadata::CameraParameters camera;
-  const int irows;
   const int icols;
-  const int orows;
+  const int irows;
   const int ocols;
+  const int orows;
   const int osize;
   const int numTriangles;
   const Common::Vec2f f;
@@ -138,7 +138,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
         result.push_back({xyz, cosRayAngle});
       }
     }
-    assert(result.size() == osize);
+    assert((int) result.size() == osize);
     return result;
   }
 
@@ -157,7 +157,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
         result.push_back({{tl, br, bl}, area});
       }
     }
-    assert(result.size() == numTriangles);
+    assert((int) result.size() == numTriangles);
     return result;
   }
 
@@ -172,7 +172,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
         result.push_back(fetch(i, j, matrix));
       }
     }
-    assert(result.size() == osize);
+    assert((int) result.size() == osize);
     return result;
   }
 
@@ -188,7 +188,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
     for (const SceneVertexDescriptor &v : sceneVertices) {
       imageVertices.push_back(projectVertex(v));
     }
-    return tuple{move(imageVertices), triangles, attributes};
+    return std::tuple{move(imageVertices), triangles, attributes};
   }
 };
 } // namespace TMIV::Renderer

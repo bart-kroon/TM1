@@ -337,8 +337,8 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
 // can mix uint16_t with float (or int) in the renderer
 SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
-    Rasterizer<Vec3w> rasterizer(AccumulatingPixel<Vec3w>{1.f, 1.f, 1.f},
-                                 Vec2i{8, 4});
+    AccumulatingPixel<Vec3w> pixel{1.f, 1.f, 1.f};
+    Rasterizer<Vec3w> rasterizer(pixel, Vec2i{8, 4});
 
     WHEN("Rastering nothing") {
       THEN("The depth map is a matrix of NaN's or Inf's") {
@@ -398,7 +398,6 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
-        cout << "normDisp: " << normDisp << endl;
         static_assert(is_same_v<decltype(normDisp), Mat<float>>);
         REQUIRE(normDisp.sizes() == array{4u, 8u});
         REQUIRE(all_of(begin(normDisp), end(normDisp),
@@ -406,7 +405,6 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       }
       THEN("The normalized weight (quality) map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
-        cout << "normWeight: " << normWeight << endl;
         static_assert(is_same_v<decltype(normWeight), Mat<float>>);
         REQUIRE(normWeight.sizes() == array{4u, 8u});
         REQUIRE(all_of(begin(normWeight), end(normWeight),
@@ -430,7 +428,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
                                    {{1, 3}, 1.f, 3.f}};
 
       // Two clockwise triangles
-      TriangleDescriptorList ts{{{0, 1, 2}, 6.f}, {{1, 2, 3}, 6.f}};
+      TriangleDescriptorList ts{{{0, 1, 2}, 3.f}, {{0, 2, 3}, 5.f}};
 
       // Colors correspond to x and y-values times 100
       vector<Vec3w> as{
@@ -441,40 +439,49 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
 
       THEN("The depth map has known values") {
         auto depth = rasterizer.depth();
-        cout << "depth: " << depth << endl;
         REQUIRE(!isfinite(depth(0, 0)));
-        REQUIRE(depth(1, 1) == 1.f);
-        REQUIRE(depth(1, 5) == 5.f);
-        REQUIRE(depth(2, 7) == 7.f);
+        REQUIRE(depth(1, 1) == 1.f / (11.f / 12.f + 1.f / 12.f / 7.f));
+        REQUIRE(depth(1, 5) == 1.f / (3.f / 12.f + 9.f / 12.f / 7.f));
+        REQUIRE(!isfinite(depth(2, 7)));
         REQUIRE(!isfinite(depth(3, 7)));
       }
       THEN("The normalized disparity map has known values") {
         auto normDisp = rasterizer.normDisp();
-        cout << "normDisp: " << normDisp << endl;
         REQUIRE(normDisp(0, 0) == 0.f);
-        REQUIRE(normDisp(1, 1) == 1.f / 1.f);
-        REQUIRE(normDisp(1, 5) == 1.f / 5.f);
-        REQUIRE(normDisp(2, 7) == 1.f / 7.f);
+        REQUIRE(normDisp(1, 1) == 11.f / 12.f + 1.f / 12.f / 7.f);
+        REQUIRE(normDisp(1, 5) == 3.f / 12.f + 9.f / 12.f / 7.f);
+        REQUIRE(normDisp(2, 7) == 0.f);
         REQUIRE(normDisp(3, 7) == 0.f);
       }
-      THEN("The normalized weight (quality) map is constant within the quad "
-           "and zero outside") {
+      THEN("The normalized weight (quality) has known values for except for "
+           "points that intersect triangle edges") {
         auto normWeight = rasterizer.normWeight();
-        cout << "normWeight: " << normWeight << endl;
+
+        // The average ray angle of all three vertices is used for all points in
+        // a triangle Note that ray angles are artifical examples. Typical
+        // values would be <0.1 rad.
+        const float rayAngle1 = 1.f * (2.f / 3.f) + 3.f * (1.f / 3.f);
+        const float rayAngle2 = 1.f * (1.f / 3.f) + 3.f * (2.f / 3.f);
+        const float w_rayAngle1 = pixel.rayAngleWeight(rayAngle1);
+        const float w_rayAngle2 = pixel.rayAngleWeight(rayAngle2);
+
+        // The same stretching weight is used for all points in a triangle.
+        // The stretching is the ratio of original and synthesized areas.
+        const float w_stretching1 = pixel.rayAngleWeight(6.f / 3.f);
+        const float w_stretching2 = pixel.rayAngleWeight(6.f / 5.f);
+
         REQUIRE(normWeight(0, 0) == 0.f);
-        const auto c = normWeight(1, 1);
-        REQUIRE(c > 0.f);
-        REQUIRE(normWeight(1, 5) == c);
-        REQUIRE(normWeight(2, 7) == c);
+        REQUIRE(normWeight(1, 1) == Approx(w_rayAngle2 * w_stretching2));
+        REQUIRE(normWeight(1, 5) == Approx(w_rayAngle1 * w_stretching1));
+        REQUIRE(normWeight(2, 7) == 0.f);
         REQUIRE(normWeight(3, 7) == 0.f);
       }
       THEN("The color map has known values") {
-        auto color = rasterizer.attribute<0>();
-        cout << "color: " << color << endl;
+        const auto color = rasterizer.attribute<0>();
         REQUIRE(color(0, 0) == Vec3w{});
-        REQUIRE(color(1, 1) == Vec3w{100, 0, 100});
-        REQUIRE(color(1, 5) == Vec3w{100, 0, 500});
-        REQUIRE(color(2, 7) == Vec3w{200, 0, 700});
+        REQUIRE(color(1, 1) == Vec3w{150, 0, 150});
+        REQUIRE(color(1, 5) == Vec3w{550, 0, 150});
+        REQUIRE(color(2, 7) == Vec3w{});
         REQUIRE(color(3, 7) == Vec3w{});
 
         WHEN("Submitting more meshes but not rastering") {
@@ -494,9 +501,9 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
           THEN("This is cumulative") {
             auto color2 = rasterizer.attribute<0>();
             REQUIRE(color2(0, 0) == Vec3w{});
-            REQUIRE(color2(1, 1) == Vec3w{100, 0, 100});
-            REQUIRE(color2(1, 5) == Vec3w{100, 0, 500});
-            REQUIRE(color2(2, 7) == Vec3w{200, 0, 700});
+            REQUIRE(color2(1, 1) == Vec3w{150, 0, 150});
+            REQUIRE(color2(1, 5) == Vec3w{550, 0, 150});
+            REQUIRE(color2(2, 7) == Vec3w{});
             REQUIRE(color2(3, 7) == Vec3w{});
           }
         }
@@ -545,7 +552,7 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
                                    {{1, 3}, 1.f, 3.f}};
 
       // Two clockwise triangles
-      TriangleDescriptorList ts{{{0, 1, 2}, 6.f}, {{1, 2, 3}, 6.f}};
+      TriangleDescriptorList ts{{{0, 1, 2}, 6.f}, {{0, 2, 3}, 6.f}};
 
       // Colors correspond to x and y-values times 100
       vector<Vec2f> as{
@@ -556,11 +563,12 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
 
       THEN("The field map has known values") {
         auto field = rasterizer.attribute<0>();
-        cout << "field: " << field << endl;
         REQUIRE(field(0, 0) == Vec2f{});
-        REQUIRE(field(1, 1) == Vec2f{100.f, 100.f});
-        REQUIRE(field(1, 5) == Vec2f{100.f, 500.f});
-        REQUIRE(field(2, 7) == Vec2f{200.f, 700.f});
+        REQUIRE(field(1, 1).x() == Approx(150.f));
+        REQUIRE(field(1, 1).y() == Approx(150.f));
+        REQUIRE(field(1, 5).x() == Approx(550.f));
+        REQUIRE(field(1, 5).y() == Approx(150.f));
+        REQUIRE(field(2, 7) == Vec2f{});
         REQUIRE(field(3, 7) == Vec2f{});
 
         WHEN("Rastering more meshes") {
@@ -570,9 +578,11 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
           THEN("This is cumulative") {
             auto field2 = rasterizer.attribute<0>();
             REQUIRE(field2(0, 0) == Vec2f{});
-            REQUIRE(field2(1, 1) == Vec2f{100.f, 100.f});
-            REQUIRE(field2(1, 5) == Vec2f{100.f, 500.f});
-            REQUIRE(field2(2, 7) == Vec2f{200.f, 700.f});
+            REQUIRE(field2(1, 1).x() == Approx(150.f));
+            REQUIRE(field2(1, 1).y() == Approx(150.f));
+            REQUIRE(field2(1, 5).x() == Approx(550.f));
+            REQUIRE(field2(1, 5).y() == Approx(150.f));
+            REQUIRE(field2(2, 7) == Vec2f{});
             REQUIRE(field2(3, 7) == Vec2f{});
           }
         }

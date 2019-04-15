@@ -207,17 +207,14 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
 template <typename... T>
 void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
                                       const Batch &batch, Strip &strip) {
-
-  using namespace TMIV::Common;
-
   const auto n0 = descriptor.indices[0];
   const auto n1 = descriptor.indices[1];
   const auto n2 = descriptor.indices[2];
 
   // Image coordinate within strip
-  const auto uv0 = batch.vertices[n0].position - Vec2f{0.f, float(strip.i1)};
-  const auto uv1 = batch.vertices[n1].position - Vec2f{0.f, float(strip.i1)};
-  const auto uv2 = batch.vertices[n2].position - Vec2f{0.f, float(strip.i1)};
+  const auto uv0 = batch.vertices[n0].position - Common::Vec2f{0.f, float(strip.i1)};
+  const auto uv1 = batch.vertices[n1].position - Common::Vec2f{0.f, float(strip.i1)};
+  const auto uv2 = batch.vertices[n2].position - Common::Vec2f{0.f, float(strip.i1)};
 
   // Determine triangle bounding box
   const auto u1 =

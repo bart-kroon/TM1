@@ -156,14 +156,14 @@ public:
   }
 
   // Blend two arithmetic tensors of fixed size
-  template <typename T> static T blendValues(float w_a, T a, float w_b, T b) {
-    if constexpr (std::is_floating_point_v<T>) {
+  template <typename U> static U blendValues(float w_a, U a, float w_b, U b) {
+    if constexpr (std::is_floating_point_v<U>) {
       return w_a * a + w_b * b;
-    } else if constexpr (std::is_integral_v<T>) {
-      return static_cast<T>(std::lround(w_a * static_cast<float>(a) +
+    } else if constexpr (std::is_integral_v<U>) {
+      return static_cast<U>(std::lround(w_a * static_cast<float>(a) +
                                         w_b * static_cast<float>(b)));
     } else {
-      T result;
+      U result;
       static_assert(result.size() == a.size()); // req. constexpr size()
       for (unsigned i = 0; i < result.size(); ++i) {
         result[i] = blendValues(w_a, a[i], w_b, b[i]);
@@ -173,16 +173,16 @@ public:
   }
 
   // Blend three arithmetic tensors of fixed size
-  template <typename T>
-  static T blendValues(float w_a, T a, float w_b, T b, float w_c, T c) {
-    if constexpr (std::is_floating_point_v<T>) {
+  template <typename U>
+  static U blendValues(float w_a, U a, float w_b, U b, float w_c, U c) {
+    if constexpr (std::is_floating_point_v<U>) {
       return w_a * a + w_b * b + w_c * c;
-    } else if constexpr (std::is_integral_v<T>) {
-      return static_cast<T>(std::lround(w_a * static_cast<float>(a) +
+    } else if constexpr (std::is_integral_v<U>) {
+      return static_cast<U>(std::lround(w_a * static_cast<float>(a) +
                                         w_b * static_cast<float>(b) +
                                         w_c * static_cast<float>(c)));
     } else {
-      T result;
+      U result;
       static_assert(result.size() == a.size()); // req. constexpr size()
       for (unsigned i = 0; i < result.size(); ++i) {
         result[i] = blendValues(w_a, a[i], w_b, b[i], w_c, c[i]);

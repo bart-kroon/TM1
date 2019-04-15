@@ -48,8 +48,13 @@ public:
   using AttributeMaps = std::tuple<std::vector<T>...>;
 
   // Construct a rasterizer with specified blender and a frame buffer of
-  // specified size
+  // specified size. The number of strips for concurrent processing is
+  // chosen based on image size and hardware concurrency.
   Rasterizer(Pixel pixel, Common::Vec2i size);
+
+  // Construct a rasterizer with specified blender and a frame buffer of
+  // specified size, and specify the number of strips for concurrent processing.
+  Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips);
 
   // Submit a batch of triangles
   //

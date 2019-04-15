@@ -57,17 +57,21 @@ int numStrips(int rows) {
 
 template <typename... T>
 Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size)
+    : Rasterizer{pixel, size, numStrips(size.y())} {}
+
+template <typename... T>
+Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
     : m_pixel{pixel}, m_size{unsigned(size.y()), unsigned(size.x())} {
   assert(size.x() >= 0 && size.y() >= 0);
-  const int N = numStrips(size.y());
-  m_strips.reserve(N);
-  for (int n = 0; n < N; ++n) {
-    const int i1 = size.y() * n / N;
-    const int i2 = size.y() * (n + 1) / N;
+  assert(numStrips > 0);
+  m_strips.reserve(numStrips);
+  for (int n = 0; n < numStrips; ++n) {
+    const int i1 = size.y() * n / numStrips;
+    const int i2 = size.y() * (n + 1) / numStrips;
     m_strips.push_back({i1, i2, size.x(), {}, {}});
     m_strips.back().matrix.resize(i2 - i1, size.x());
   }
-  m_dk_di = float(N) / float(size.y());
+  m_dk_di = float(numStrips) / float(size.y());
 }
 
 template <typename... T>
@@ -116,6 +120,7 @@ auto Rasterizer<T...>::depth() const -> Common::Mat<float> {
     *i_matrix++ = x.depth();
     return true;
   });
+  assert(i_matrix == end(matrix));
   return matrix;
 }
 
@@ -127,6 +132,7 @@ auto Rasterizer<T...>::normDisp() const -> Common::Mat<float> {
     *i_matrix++ = x.normDisp;
     return true;
   });
+  assert(i_matrix == end(matrix));
   return matrix;
 }
 
@@ -138,6 +144,7 @@ auto Rasterizer<T...>::normWeight() const -> Common::Mat<float> {
     *i_matrix++ = x.normWeight;
     return true;
   });
+  assert(i_matrix == end(matrix));
   return matrix;
 }
 
@@ -151,6 +158,7 @@ auto Rasterizer<T...>::attribute() const
     *i_matrix++ = std::get<I>(x.attributes());
     return true;
   });
+  assert(i_matrix == end(matrix));
   return matrix;
 }
 
@@ -173,7 +181,8 @@ void Rasterizer<T...>::visit(Visitor visitor) const {
 template <typename... T>
 void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
                                       const Batch &batch) {
-  auto k1 = int(m_strips.size());
+  const auto K = int(m_strips.size());
+  auto k1 = K;
   auto k2 = 0;
 
   for (auto n : descriptor.indices) {
@@ -182,13 +191,13 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
       return;
     }
     const auto k = int(y * m_dk_di);
-    if (k1 > k) {
-      k1 = k;
-    }
-    if (k2 <= k) {
-      k2 = k + 1;
-    }
+    k1 = std::min(k1, k);
+    k2 = std::max(k2, k + 1);
   }
+
+  // Cull
+  k1 = std::max(0, k1);
+  k2 = std::min(K, k2);
 
   for (int k = k1; k < k2; ++k) {
     m_strips[k].batches.back().push_back(descriptor);
@@ -251,22 +260,28 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
   // For each pixel in the bounding box
   for (int v = v1; v < v2; ++v) {
     for (int u = u1; u < u2; ++u) {
+      // Small epsilon value to avoid skipping pixels when the grids aligns.
+      // This happens when synthesizing from and to the same camera. This will
+      // not happen for arbitrary viewports but may happens on the Encoder side.
+      // TODO: Use fixed point image positions to avoid this problem
+      const float eps = 1e-4f;
+
       // Calculate the Barycentric coordinate of the pixel center (x +
       // 1/2, y + 1/2)
       const float w0 =
           inv_area * ((uv1.y() - uv2.y()) * (float(u) - uv2.x() + 0.5f) +
                       (uv2.x() - uv1.x()) * (float(v) - uv2.y() + 0.5f));
-      if (!(w0 >= 0.f)) {
+      if (!(w0 >= -eps)) {
         continue;
       }
       const float w1 =
           inv_area * ((uv2.y() - uv0.y()) * (float(u) - uv2.x() + 0.5f) +
                       (uv0.x() - uv2.x()) * (float(v) - uv2.y() + 0.5f));
-      if (!(w1 >= 0.f)) {
+      if (!(w1 >= -eps)) {
         continue;
       }
       const float w2 = 1.f - w0 - w1;
-      if (!(w2 >= 0.f)) {
+      if (!(w2 >= -eps)) {
         continue;
       }
 

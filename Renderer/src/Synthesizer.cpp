@@ -34,7 +34,7 @@
 #include <TMIV/Renderer/Synthesizer.h>
 
 #include "Engine.h"
-// #include "Rasterizer.h"
+#include "Rasterizer.h"
 
 using namespace std;
 using namespace TMIV::Common;
@@ -43,8 +43,10 @@ using namespace TMIV::Metadata;
 namespace TMIV::Renderer {
 class Synthesizer::Impl {
 public:
-  Impl(const Json &node) {}
-  Impl(double rayAngleParam, double depthParam, double stretchingParam) {}
+  Impl(float rayAngleParam, float depthParam, float stretchingParam)
+      : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
+        m_stretchingParam{stretchingParam} {}
+
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;
   Impl &operator=(const Impl &) = delete;
@@ -67,17 +69,30 @@ public:
   Mat<float> renderDepth(const Mat<float> &depth,
                          const CameraParameters &camera,
                          const CameraParameters &target) const {
-    // Rasterizer<> rasterizer(target.size());
+    AccumulatingPixel<> pixel{m_rayAngleParam, m_depthParam, m_stretchingParam};
     auto mesh = reproject(depth, camera, target);
-    // m_rasterizer.submit(move(mesh));
-    return {};
+
+    Rasterizer<> rasterizer{pixel, target.size};
+    rasterizer.submit(move(std::get<0>(mesh)), tuple{},
+                      move(std::get<1>(mesh)));
+    rasterizer.run();
+    return rasterizer.depth();
   }
+
+private:
+  float m_rayAngleParam;
+  float m_depthParam;
+  float m_stretchingParam;
 };
 
-Synthesizer::Synthesizer(const Common::Json &node) : m_impl(new Impl(node)) {}
+Synthesizer::Synthesizer(const Common::Json &node)
+    : m_impl(new Impl(
+          node.require("Synthesizer").require("rayAngleParam").asFloat(),
+          node.require("Synthesizer").require("depthParam").asFloat(),
+          node.require("Synthesizer").require("stretchingParam").asFloat())) {}
 
-Synthesizer::Synthesizer(double rayAngleParam, double depthParam,
-                         double stretchingParam)
+Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
+                         float stretchingParam)
     : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam)) {}
 
 Synthesizer::~Synthesizer() {}

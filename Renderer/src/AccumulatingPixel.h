@@ -277,7 +277,7 @@ public:
   // Calculate the weight of a pixel based on cosine of the ray
   // angle between input and virtual ray only
   float rayAngleWeight(float rayAngle) const {
-    return rayAngle > 0.f ? std::exp(-rayAngleParam * rayAngle) : 0.f;
+    return std::exp(-rayAngleParam * rayAngle);
   }
 
   // Calculate the weight of a pixel based on normalized disparity

@@ -47,6 +47,20 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
+auto makeFullERPCamera() {
+  return CameraParameters{42,
+                          {10, 5},           // size
+                          {1.f, 0.f, -1.f},  // position
+                          {1.f, 2.f, -0.5f}, // orientation
+                          ProjectionType::ERP,
+                          {-180.f, 180.f}, // phi range
+                          {-90.f, 90.f},   // theta range
+                          {},
+                          {},
+                          {},
+                          {1.f, 10.f}}; // depth range
+}
+
 TEST_CASE("Full ERP", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.f);
@@ -284,19 +298,8 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
 
 SCENARIO("Reprojecting points", "[reprojectPoints]") {
   GIVEN("A camera and a depth map") {
-    CameraParameters camera{42,
-                            {100, 50},         // size
-                            {1.f, 0.f, -1.f},  // position
-                            {1.f, 2.f, -0.5f}, // orientation
-                            ProjectionType::ERP,
-                            {-180.f, 180.f}, // phi range
-                            {-90.f, 90.f},   // theta range
-                            {},
-                            {},
-                            {},
-                            {1.f, 10.f}}; // depth range
-
-    Mat<float> depth({50u, 100u});
+    auto camera = makeFullERPCamera();
+    Mat<float> depth({5u, 10u});
     fill(begin(depth), end(depth), 2.f);
 
     WHEN("Calculating image positions") {
@@ -306,35 +309,36 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
         REQUIRE(positions(4, 7).x() == 7.5f);
         REQUIRE(positions(0, 0).x() == 0.5f);
         REQUIRE(positions(0, 0).y() == 0.5f);
-        REQUIRE(positions(49, 99).x() == 99.5f);
-        REQUIRE(positions(49, 99).y() == 49.5f);
+        REQUIRE(positions(4, 9).x() == 9.5f);
+        REQUIRE(positions(4, 9).y() == 4.5f);
       }
 
-      WHEN("Reprojecting points to the same camera with valid depth values") {
+      WHEN("Reprojecting points to the same camera with valid depth "
+           "values") {
         auto actual = reprojectPoints(camera, camera, positions, depth);
 
         THEN("The positions should not change too much") {
           REQUIRE(actual.first(4, 7).x() == Approx(7.5f));
           REQUIRE(actual.first(0, 0).x() == Approx(0.5f));
           REQUIRE(actual.first(0, 0).y() == Approx(0.5f).margin(1e-4));
-          REQUIRE(actual.first(49, 99).x() == Approx(99.5f));
-          REQUIRE(actual.first(49, 99).y() == Approx(49.5f));
+          REQUIRE(actual.first(4, 9).x() == Approx(9.5f));
+          REQUIRE(actual.first(4, 9).y() == Approx(4.5f));
         }
 
         THEN("The depth values should not change too much") {
           REQUIRE(actual.second(4, 7) == Approx(2.f));
           REQUIRE(actual.second(0, 0) == Approx(2.f));
           REQUIRE(actual.second(0, 0) == Approx(2.f));
-          REQUIRE(actual.second(49, 99) == Approx(2.f));
-          REQUIRE(actual.second(49, 99) == Approx(2.f));
+          REQUIRE(actual.second(4, 9) == Approx(2.f));
+          REQUIRE(actual.second(4, 9) == Approx(2.f));
         }
       }
     }
   }
 }
 
-// TODO: Add promotion rules to the linear algebra template classes so that we
-// can mix uint16_t with float (or int) in the renderer
+// TODO: Add promotion rules to the linear algebra template classes so that
+// we can mix uint16_t with float (or int) in the renderer
 SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
     AccumulatingPixel<Vec3w> pixel{1.f, 1.f, 1.f};
@@ -457,9 +461,9 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
            "points that intersect triangle edges") {
         auto normWeight = rasterizer.normWeight();
 
-        // The average ray angle of all three vertices is used for all points in
-        // a triangle Note that ray angles are artifical examples. Typical
-        // values would be <0.1 rad.
+        // The average ray angle of all three vertices is used for all
+        // points in a triangle Note that ray angles are artifical examples.
+        // Typical values would be <0.1 rad.
         const float rayAngle1 = 1.f * (2.f / 3.f) + 3.f * (1.f / 3.f);
         const float rayAngle2 = 1.f * (1.f / 3.f) + 3.f * (2.f / 3.f);
         const float w_rayAngle1 = pixel.rayAngleWeight(rayAngle1);
@@ -591,41 +595,40 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
   }
 }
 
-/*
 SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
   using Mat1f = TMIV::Common::Mat<float>;
 
   GIVEN("A synthesizer, camera and a depth map") {
     Synthesizer synthesizer{1., 1., 1.};
-
-    CameraParameters camera{42,
-                            {100, 50},         // size
-                            {1.f, 0.f, -1.f},  // position
-                            {1.f, 2.f, -0.5f}, // orientation
-                            ProjectionType::ERP,
-                            {-180.f, 180.f}, // phi range
-                            {-90.f, 90.f},   // theta range
-                            {},
-                            {},
-                            {},
-                            {1.f, 10.f}}; // depth range
+    auto camera = makeFullERPCamera();
 
     Mat1f depth({unsigned(camera.size.y()), unsigned(camera.size.x())});
     fill(begin(depth), end(depth), 2.f);
 
     WHEN("Synthesizing to the same viewpoint") {
       auto actual = synthesizer.renderDepth(depth, camera, camera);
-      REQUIRE(actual.width() == 100);
-      REQUIRE(actual.height() == 50);
+      REQUIRE(actual.width() == 10);
+      REQUIRE(actual.height() == 5);
 
-      THEN("The output depth should match the input depth") {
+      THEN("The output depth should match the input depth (EXCEPT FOR THE "
+           "RIGHT-MOST COLUMN)") {
         for (auto i = 0u; i != depth.height(); ++i) {
-          for (auto j = 0u; j != depth.width(); ++j) {
+          for (auto j = 0u; j + 1 < depth.width(); ++j) {
             REQUIRE(actual(i, j) == Approx(2.f));
           }
+        }
+      }
+
+      THEN("The last columns should also match the input depth\n(BUT IT "
+           "CURRENTLY DOES NOT)") {
+        // The ERP projector should split and cull triangles, but this has not
+        // been implemented. Until then this test case serves as a reminder of
+        // this unfinished work.
+        for (auto i = 0u; i != depth.height(); ++i) {
+          const int j = depth.width() - 1;
+          REQUIRE(actual(i, j) == Approx(2.f));
         }
       }
     }
   }
 }
-*/

@@ -100,8 +100,8 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
     const float phi = phi0 + dphi_du * uv.x();
     const float theta = theta0 + dtheta_dv * uv.y();
-    return depth * Common::Vec3f{(float) (cos(theta) * cos(phi)), (float) (cos(theta) * sin(phi)),
-                                 (float) sin(theta)};
+    return depth * Common::Vec3f{cosf(theta) * cosf(phi), cosf(theta) * sinf(phi),
+                                 sinf(theta)};
   }
 
   // Projection equation

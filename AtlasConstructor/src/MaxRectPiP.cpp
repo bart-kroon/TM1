@@ -145,7 +145,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   int xMin = p0.x(), xMax = p0.x() + w - 1;
   int yMin = p0.y(), yMax = p0.y() + h - 1;
 
-  auto p2q = [isRotated, w, h, p0, q0](const Vec2i p) {
+  auto p2q = [isRotated, w, p0, q0](const Vec2i p) {
     return isRotated
                ? (q0 + Vec2i({p.y() - p0.y(), (w - 1) - (p.x() - p0.x())}))
                : (q0 + (p - p0));

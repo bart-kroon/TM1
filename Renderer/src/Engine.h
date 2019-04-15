@@ -47,7 +47,7 @@ using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
 
 struct TriangleDescriptor {
   std::array<int, 3> indices; // indices into vertex lists
-  float area;                 // px², area before unprojection
+  float area;                 // pxï¿½, area before unprojection
 };
 
 using TriangleDescriptorList = std::vector<TriangleDescriptor>;
@@ -81,7 +81,6 @@ namespace TMIV::Renderer {
 // projection.
 template <typename Engine, typename... T>
 auto unproject(const Engine &engine, const Common::Mat<float> &depth,
-               const Metadata::CameraParameters &camera,
                const Metadata::CameraParameters &target,
                const Common::Mat<T> &... matrices) {
   return std::tuple{engine.makeSceneVertexDescriptorList(depth, target),
@@ -102,11 +101,11 @@ auto unproject(const Common::Mat<float> &depth,
   switch (camera.type) {
   case Metadata::ProjectionType::ERP: {
     Engine<Metadata::ProjectionType::ERP> engine{camera};
-    return unproject(engine, depth, camera, target, matrices...);
+    return unproject(engine, depth, target, matrices...);
   }
   case Metadata::ProjectionType::Perspective: {
     Engine<Metadata::ProjectionType::Perspective> engine{camera};
-    return unproject(engine, depth, camera, target, matrices...);
+    return unproject(engine, depth, target, matrices...);
   }
   default:
     abort();

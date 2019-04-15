@@ -64,9 +64,19 @@ public:
   void run();
 
   // Output the depth map (in meters)
+  //
+  // For effiency normalized disparity is blended. Because triangles are
+  // small there will be virtually no difference in practice. However when
+  // depth interpolation has to be more accurate, it is possible to
+  // specify the depth map as an attribute.
   auto depth() const -> Common::Mat<float>;
 
   // Output the normalized disparity map (in diopters)
+  //
+  // For effiency normalized disparity is blended. Because triangles are
+  // small there will be virtually no difference in practice. However when
+  // depth interpolation has to be more accurate, it is possible to
+  // specify the depth map as an attribute.
   auto normDisp() const -> Common::Mat<float>;
 
   // Output the quality estimate (in a.u.)

@@ -138,7 +138,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
         result.push_back({xyz, cosRayAngle});
       }
     }
-    assert((int) result.size() == osize);
+    assert(int(result.size()) == osize);
     return result;
   }
 
@@ -157,7 +157,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
         result.push_back({{tl, br, bl}, area});
       }
     }
-    assert((int) result.size() == numTriangles);
+    assert(int(result.size()) == numTriangles);
     return result;
   }
 
@@ -172,7 +172,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
         result.push_back(fetch(i, j, matrix));
       }
     }
-    assert((int) result.size() == osize);
+    assert(int(result.size()) == osize);
     return result;
   }
 

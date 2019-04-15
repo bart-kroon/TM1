@@ -32,6 +32,7 @@
  */
 
 #include <TMIV/Image/Image.h>
+#include <cmath>
 
 using namespace std;
 using namespace TMIV::Common;

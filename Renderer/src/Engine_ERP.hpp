@@ -37,6 +37,7 @@
 
 #include <TMIV/Common/Common.h>
 #include <cassert>
+#include <cmath>
 
 namespace TMIV::Renderer {
 template <> struct Engine<Metadata::ProjectionType::ERP> {
@@ -100,8 +101,9 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
     const float phi = phi0 + dphi_du * uv.x();
     const float theta = theta0 + dtheta_dv * uv.y();
-    return depth * Common::Vec3f{cosf(theta) * cosf(phi), cosf(theta) * sinf(phi),
-                                 sinf(theta)};
+    return depth * Common::Vec3f{std::cos(theta) * std::cos(phi),
+                                 std::cos(theta) * std::sin(phi),
+                                 std::sin(theta)};
   }
 
   // Projection equation
@@ -111,7 +113,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     const auto phi = atan2(v.position.y(), v.position.x());
     const auto theta = asin(v.position.z() / radius);
     const auto position =
-        Common::Vec2f{(float) (u0 + du_dphi * phi), (float) (v0 + dv_dtheta * theta)};
+        Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
     return {position, radius, v.rayAngle};
   }
 
@@ -197,7 +199,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       const auto rayAngle = angle(xyz, xyz - R_t.second);
       result.push_back({xyz, rayAngle});
     }
-    assert((int) result.size() == osize);
+    assert(int(result.size()) == osize);
     return result;
   }
 
@@ -234,7 +236,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
         result.push_back({{tl, tr, b}, area});
       }
     }
-    assert((int) result.size() == numTriangles);
+    assert(int(result.size()) == numTriangles);
     return result;
   }
 
@@ -255,7 +257,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     if (southPole) {
       result.push_back(averageRow(matrix, irows - 1, 0. * T{}));
     }
-    assert((int) result.size() == osize);
+    assert(int(result.size()) == osize);
     return result;
   }
 

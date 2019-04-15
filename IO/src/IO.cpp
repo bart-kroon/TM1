@@ -113,10 +113,10 @@ MVD16Frame loadSourceFrame(const Json &config,
 }
 
 namespace {
-void saveOptimizedTexture(const Json &config, int frameIndex,
-                          TextureFrame const &frame, size_t cameraId) {
-  auto path = format(
-      config.require("OptimizedTexturePathFmt").asString().c_str(), cameraId);
+void saveBaseTexture(const Json &config, int frameIndex,
+                     TextureFrame const &frame, size_t cameraId) {
+  auto path =
+      format(config.require("BaseTexturePathFmt").asString().c_str(), cameraId);
   ofstream stream{path, (frameIndex == 0 ? ofstream::trunc : ofstream::app) |
                             ofstream::binary};
   if (!stream.good()) {
@@ -128,10 +128,10 @@ void saveOptimizedTexture(const Json &config, int frameIndex,
   }
 }
 
-void saveOptimizedDepth(const Json &config, int frameIndex,
-                        Depth16Frame const &frame, size_t cameraId) {
-  auto path = format(config.require("OptimizedDepthPathFmt").asString().c_str(),
-                     cameraId);
+void saveBaseDepth(const Json &config, int frameIndex,
+                   Depth16Frame const &frame, size_t cameraId) {
+  auto path =
+      format(config.require("BaseDepthPathFmt").asString().c_str(), cameraId);
   ofstream stream(path, ((frameIndex == 0) ? ofstream::trunc : ofstream::app) |
                             ofstream::binary);
   if (!stream.good()) {
@@ -185,10 +185,9 @@ void saveOptimizedFrame(const Json &config, int frameIndex,
 
   assert(cameras.base.size() == frame.base.size());
   for (size_t i = 0; i < cameras.base.size(); ++i) {
-    saveOptimizedTexture(config, frameIndex, frame.base[i].first,
-                         cameras.base[i].id);
-    saveOptimizedDepth(config, frameIndex, frame.base[i].second,
-                       cameras.base[i].id);
+    saveBaseTexture(config, frameIndex, frame.base[i].first,
+                    cameras.base[i].id);
+    saveBaseDepth(config, frameIndex, frame.base[i].second, cameras.base[i].id);
   }
 
   assert(cameras.additional.size() == frame.additional.size());
@@ -211,17 +210,25 @@ void saveOptimizedMetadata(
     const Json &config, int frameIndex,
     const BaseAdditional<CameraParameterList> &metadata) {
   cout << "Saving metadata of optimized frame " << frameIndex << '\n';
+
+  // TODO
 }
 
 auto loadOptimizedMetadata(const Json &config, int frameIndex)
     -> BaseAdditional<CameraParameterList> {
+  // TODO
+
   return {};
 }
 
 void saveMivMetadata(const Json &config, int frameIndex,
-                     const MivMetadata &metadata) {}
+                     const MivMetadata &metadata) {
+  // TODO
+}
 
 auto loadMivMetadata(const Json &config, int frameIndex) -> MivMetadata {
+  // TODO
+
   return {};
 }
 

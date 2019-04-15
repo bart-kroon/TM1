@@ -381,6 +381,8 @@ public:
   typedef stack::size_type size_type;
   typedef Array<T, I...> container_type;
   typedef std::array<stack::size_type, sizeof...(I)> tuple_type;
+  template <typename U>
+  using promoted_type = Array<decltype(T(0) * U(0)), I...>;
 
 protected:
   class Helper {
@@ -669,6 +671,7 @@ public:
   typedef heap::size_type size_type;
   typedef Array<D, T> container_type;
   typedef std::array<heap::size_type, D> tuple_type;
+  template <typename U> using promoted_type = Array<D, decltype(T(0) * U(0))>;
 
 protected:
   std::array<size_type, D> m_size;
@@ -930,20 +933,24 @@ public:
     return v;
   }
   //! \brief += scalar operator.
-  void operator+=(T v) {
+  container_type &operator+=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a += v; });
+    return *this;
   }
   //! \brief -= scalar operator.
-  void operator-=(T v) {
+  container_type &operator-=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a -= v; });
+    return *this;
   }
   //! \brief /= scalar operator.
-  void operator/=(T v) {
+  container_type &operator/=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a /= v; });
+    return *this;
   }
   //! \brief *= scalar operator.
-  void operator*=(T v) {
+  container_type &operator*=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a *= v; });
+    return *this;
   }
   //! \brief += operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
@@ -1015,6 +1022,7 @@ public:
   typedef shallow::size_type size_type;
   typedef Array<D, T> container_type;
   typedef std::array<shallow::size_type, D> tuple_type;
+  template <typename U> using promoted_type = Array<D, decltype(T(0) * U(0))>;
 
 protected:
   std::array<size_type, D> m_size;
@@ -1256,20 +1264,24 @@ public:
     return v;
   }
   //! \brief += scalar operator.
-  void operator+=(T v) {
+  container_type &operator+=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a += v; });
+    return *this;
   }
   //! \brief -= scalar operator.
-  void operator-=(T v) {
+  container_type &operator-=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a -= v; });
+    return *this;
   }
   //! \brief /= scalar operator.
-  void operator/=(T v) {
+  container_type &operator/=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a /= v; });
+    return *this;
   }
   //! \brief *= scalar operator.
-  void operator*=(T v) {
+  container_type &operator*=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a *= v; });
+    return *this;
   }
   //! \brief += operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
@@ -1373,15 +1385,15 @@ void add(U u, const A1 &m, A2 &out) {
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-A1 operator+(const A1 &m, U u) {
-  A1 out;
+typename A1::template promoted_type<U> operator+(const A1 &m, U u) {
+  typename A1::template promoted_type<U> out;
   add(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-A1 operator+(U u, const A1 &m) {
-  A1 out;
+typename A1::template promoted_type<U> operator+(U u, const A1 &m) {
+  typename A1::template promoted_type<U> out;
   add(u, m, out);
   return out;
 }
@@ -1413,15 +1425,15 @@ void sub(U u, const A1 &m, A2 &out) {
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-A1 operator-(const A1 &m, U u) {
-  A1 out;
+typename A1::template promoted_type<U> operator-(const A1 &m, U u) {
+  typename A1::template promoted_type<U> out;
   sub(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-A1 operator-(U u, const A1 &m) {
-  A1 out;
+typename A1::template promoted_type<U> operator-(U u, const A1 &m) {
+  typename A1::template promoted_type<U> out;
   sub(u, m, out);
   return out;
 }
@@ -1453,15 +1465,15 @@ void mult(U u, const A1 &m, A2 &out) {
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-A1 operator*(const A1 &m, U u) {
-  A1 out;
+typename A1::template promoted_type<U> operator*(const A1 &m, U u) {
+  typename A1::template promoted_type<U> out;
   mult(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-A1 operator*(U u, const A1 &m) {
-  A1 out;
+typename A1::template promoted_type<U> operator*(U u, const A1 &m) {
+  typename A1::template promoted_type<U> out;
   mult(u, m, out);
   return out;
 }
@@ -1481,8 +1493,8 @@ void div(const A1 &m, U u, A2 &out) {
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-A1 operator/(const A1 &m, U u) {
-  A1 out;
+typename A1::template promoted_type<U> operator/(const A1 &m, U u) {
+  typename A1::template promoted_type<U> out;
   div(m, u, out);
   return out;
 }
@@ -1499,8 +1511,9 @@ void add(const A1 &m1, const A2 &m2, A3 &out) {
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-A1 operator+(const A1 &m1, const A2 &m2) {
-  A1 out;
+typename A1::template promoted_type<typename A2::value_type>
+operator+(const A1 &m1, const A2 &m2) {
+  typename A1::template promoted_type<typename A2::value_type> out;
   add(m1, m2, out);
   return out;
 }
@@ -1517,8 +1530,9 @@ void sub(const A1 &m1, const A2 &m2, A3 &out) {
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-A1 operator-(const A1 &m1, const A2 &m2) {
-  A1 out;
+typename A1::template promoted_type<typename A2::value_type>
+operator-(const A1 &m1, const A2 &m2) {
+  typename A1::template promoted_type<typename A2::value_type> out;
   sub(m1, m2, out);
   return out;
 }
@@ -1535,8 +1549,9 @@ void mult(const A1 &m1, const A2 &m2, A3 &out) {
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-A1 mult(const A1 &m1, const A2 &m2) {
-  A1 out;
+typename A1::template promoted_type<typename A2::value_type>
+mult(const A1 &m1, const A2 &m2) {
+  typename A1::template promoted_type<typename A2::value_type> out;
   mult(m1, m2, out);
   return out;
 }
@@ -1553,8 +1568,9 @@ void div(const A1 &m1, const A2 &m2, A3 &out) {
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-A1 div(const A1 &m1, const A2 &m2) {
-  A1 out;
+typename A1::template promoted_type<typename A2::value_type> div(const A1 &m1,
+                                                                 const A2 &m2) {
+  typename A1::template promoted_type<typename A2::value_type> out;
   div(m1, m2, out);
   return out;
 }

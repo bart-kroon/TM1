@@ -108,7 +108,7 @@ auto ViewReducer::optimizeIntraPeriod(Metadata::CameraParameterList cameras)
     float y_center = 0;
     float z_center = 0;
     int id_center = 0;
-    float distance = static_cast<float>(LONG_MAX);
+    float distance = std::numeric_limits<float>::max();
 
     for (int id = 0u; id < nbCameras; id++) {
       x_center += cameras[id].position[0];

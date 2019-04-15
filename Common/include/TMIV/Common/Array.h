@@ -671,7 +671,7 @@ public:
   typedef heap::size_type size_type;
   typedef Array<D, T> container_type;
   typedef std::array<heap::size_type, D> tuple_type;
-  template <typename U> using promoted_type = Array<D, decltype(T(0) * U(0))>;
+  template <typename U> using promoted_type = Array<D, decltype(T{} * U{})>;
 
 protected:
   std::array<size_type, D> m_size;

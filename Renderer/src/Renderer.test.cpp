@@ -41,6 +41,7 @@
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
+#include <algorithm>
 #include <cmath>
 
 using namespace std;
@@ -350,7 +351,8 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
         REQUIRE(depth.sizes() == array{4u, 8u});
-        REQUIRE(none_of(begin(depth), end(depth), std::isfinite<float>));
+        REQUIRE(none_of(begin(depth), end(depth),
+                        [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
@@ -399,7 +401,8 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
         REQUIRE(depth.sizes() == array{4u, 8u});
-        REQUIRE(none_of(begin(depth), end(depth), std::isfinite<float>));
+        REQUIRE(none_of(begin(depth), end(depth),
+                        [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();

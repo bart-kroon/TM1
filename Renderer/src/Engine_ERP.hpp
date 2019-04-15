@@ -110,8 +110,8 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   auto projectVertex(const SceneVertexDescriptor &v) const
       -> ImageVertexDescriptor const {
     const auto radius = norm(v.position);
-    const auto phi = atan2(v.position.y(), v.position.x());
-    const auto theta = asin(v.position.z() / radius);
+    const auto phi = std::atan2(v.position.y(), v.position.x());
+    const auto theta = std::asin(v.position.z() / radius);
     const auto position =
         Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
     return {position, radius, v.rayAngle};

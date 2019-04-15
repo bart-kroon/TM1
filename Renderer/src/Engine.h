@@ -125,11 +125,13 @@ auto project(SceneVertexDescriptorList vertices,
   switch (target.type) {
   case Metadata::ProjectionType::ERP: {
     Engine<Metadata::ProjectionType::ERP> engine{target};
-    return engine.project(move(vertices), move(triangles), move(attributes));
+    return engine.project(std::move(vertices), std::move(triangles),
+                          std::move(attributes));
   }
   case Metadata::ProjectionType::Perspective: {
     Engine<Metadata::ProjectionType::Perspective> engine{target};
-    return engine.project(move(vertices), move(triangles), move(attributes));
+    return engine.project(std::move(vertices), std::move(triangles),
+                          std::move(attributes));
   }
   default:
     abort();
@@ -144,8 +146,8 @@ auto reproject(const Common::Mat<float> &depth,
                const Metadata::CameraParameters &target,
                const Common::Mat<T> &... matrices) {
   auto x = unproject(depth, camera, target, matrices...);
-  return project(move(std::get<0>(x)), move(std::get<1>(x)),
-                 move(std::get<2>(x)), target);
+  return project(std::move(std::get<0>(x)), std::move(std::get<1>(x)),
+                 std::move(std::get<2>(x)), target);
 }
 } // namespace TMIV::Renderer
 

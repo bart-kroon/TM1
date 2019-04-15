@@ -73,8 +73,7 @@ public:
     auto mesh = reproject(depth, camera, target);
 
     Rasterizer<> rasterizer{pixel, target.size};
-    rasterizer.submit(move(std::get<0>(mesh)), tuple{},
-                      move(std::get<1>(mesh)));
+    rasterizer.submit(move(get<0>(mesh)), {}, move(get<1>(mesh)));
     rasterizer.run();
     return rasterizer.depth();
   }

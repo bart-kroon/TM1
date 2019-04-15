@@ -50,9 +50,8 @@ public:
   Pruner &operator=(const Pruner &) = delete;
   Pruner &operator=(Pruner &&) = default;
 
-  MaskList
-  prune(const CameraParameterList &cameras, const MVD16Frame &views,
-            const std::vector<std::uint8_t> &shouldNotBePruned) override;
+  MaskList prune(const CameraParameterList &cameras, const MVD16Frame &views,
+                 const std::vector<std::uint8_t> &shouldNotBePruned) override;
 
 private:
   std::unique_ptr<Renderer::ISynthesizer> m_synthesizer;

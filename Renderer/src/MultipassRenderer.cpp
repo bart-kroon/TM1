@@ -50,7 +50,8 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                                const Metadata::PatchParameterList &patches,
                                const Metadata::CameraParameterList &cameras,
                                const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
+  auto viewport =
+      m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

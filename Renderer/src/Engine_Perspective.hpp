@@ -49,7 +49,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
   const int numTriangles;
   const Common::Vec2f f;
   const Common::Vec2f p;
-  
+
   Engine(const Metadata::CameraParameters &camera_)
       : camera{camera_},
 

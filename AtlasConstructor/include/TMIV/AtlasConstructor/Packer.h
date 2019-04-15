@@ -50,7 +50,7 @@ public:
 
   PatchParameterList
   pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
-            const std::vector<std::uint8_t> &shouldNotBeSplit) override;
+       const std::vector<std::uint8_t> &shouldNotBeSplit) override;
 
 private:
   int m_alignment = 8;

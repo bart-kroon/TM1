@@ -89,7 +89,8 @@ void Application::add_file(const string &path) {
   ifstream stream(path);
   if (!stream.good()) {
     ostringstream what;
-    what << "Failed to open configuration file \"" << path << "\" for reading\n";
+    what << "Failed to open configuration file \"" << path
+         << "\" for reading\n";
     throw runtime_error(what.str());
   }
   add_stream(stream);

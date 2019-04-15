@@ -35,4 +35,3 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
-

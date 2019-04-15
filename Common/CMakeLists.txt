@@ -55,5 +55,5 @@ if (CMAKE_TESTING_ENABLED)
 			Catch2::Catch2
 			TMIV::CommonLib)
 
-	catch_discover_tests(CommonTest)
+	catch_discover_tests(CommonTest WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..)
 endif()

@@ -301,7 +301,7 @@ template <size_type D, typename T, size_type... I> struct _Array {};
 
 template <typename T, size_type M> struct _Array<1, T, M> {
 protected:
-  std::array<T, M> m_v;
+  std::array<T, M> m_v{};
 
 public:
   static constexpr size_type size(size_type) { return M; }

@@ -155,10 +155,22 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
   // Helper function to average the value over an entire row (used for the
   // poles)
-  template <class T, class INIT>
-  T averageRow(const Common::Mat<T> &matrix, int row, INIT init) const {
-    return T((1. / icols) * std::accumulate(matrix.crow_begin(row),
-                                            matrix.crow_end(row), init));
+  template <class T>
+  auto averageRow(const Common::Mat<T> &matrix, int row) const {
+    auto sum = 0. * T();
+    for (int column = 0; column < icols; ++column) {
+      auto value = matrix(row, column);
+      sum = sum + value;
+    }
+    if constexpr (std::is_arithmetic_v<T>) {
+      return T(sum / icols);
+    } else {
+      T result;
+      using V = typename T::value_type;
+      std::transform(begin(sum), end(sum), begin(result),
+                     [this](auto x) { return V(x / icols); });
+      return result;
+    }
   }
 
   // Helper function to calculate the area of a triangle based on the output
@@ -188,13 +200,13 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       }
     }
     if (northPole) {
-      const auto d = averageRow(depth, 0, 0.);
+      const auto d = averageRow(depth, 0);
       const auto xyz = R_t.first * Common::Vec3f{0.f, 0.f, d} + R_t.second;
       const auto rayAngle = angle(xyz, xyz - R_t.second);
       result.push_back({xyz, rayAngle});
     }
     if (southPole) {
-      const auto d = averageRow(depth, irows - 1, 0.);
+      const auto d = averageRow(depth, irows - 1);
       const auto xyz = R_t.first * Common::Vec3f{0.f, 0.f, -d} + R_t.second;
       const auto rayAngle = angle(xyz, xyz - R_t.second);
       result.push_back({xyz, rayAngle});
@@ -252,10 +264,10 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       }
     }
     if (northPole) {
-      result.push_back(averageRow(matrix, 0, 0. * T{}));
+      result.push_back(averageRow(matrix, 0));
     }
     if (southPole) {
-      result.push_back(averageRow(matrix, irows - 1, 0. * T{}));
+      result.push_back(averageRow(matrix, irows - 1));
     }
     assert(int(result.size()) == osize);
     return result;

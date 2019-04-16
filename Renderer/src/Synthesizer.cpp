@@ -35,10 +35,14 @@
 
 #include "Engine.h"
 #include "Rasterizer.h"
+#include <TMIV/Image/Image.h>
+#include <cassert>
+#include <future>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
+using namespace TMIV::Image;
 
 namespace TMIV::Renderer {
 class Synthesizer::Impl {
@@ -63,7 +67,38 @@ public:
   TextureDepth16Frame renderFrame(const MVD16Frame &frame,
                                   const CameraParameterList &cameras,
                                   const CameraParameters &target) const {
-    return {};
+    // Incremental view synthesis and blending
+    Rasterizer<Vec3f> rasterizer{
+        {m_rayAngleParam, m_depthParam, m_stretchingParam}, target.size};
+
+    // Pipeline mesh generation and rasterization
+    future<void> runner = async(launch::deferred, []() {});
+
+    assert(frame.size() == cameras.size());
+    for (size_t i = 0; i < frame.size(); ++i) {
+      // Generate a reprojected mesh
+      auto mesh = reproject(expandDepth(cameras[i], frame[i].second),
+                            cameras[i], target, expandTexture(frame[i].first));
+
+      // Synchronize with the rasterer
+      runner.get();
+
+      // Raster the mesh (asynchronously)
+      runner = async(
+          [&rasterizer](auto mesh) {
+            rasterizer.submit(move(get<0>(mesh)), move(get<2>(mesh)),
+                              move(get<1>(mesh)));
+            rasterizer.run();
+          },
+          move(mesh));
+    }
+
+    // Synchronize with the rasterer
+    runner.get();
+
+    // Read out the blended view and quantize
+    return {quantizeTexture(rasterizer.attribute<0>()),
+            quantizeNormDisp16(target, rasterizer.normDisp())};
   }
 
   Mat<float> renderDepth(const Mat<float> &depth,

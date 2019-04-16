@@ -583,6 +583,8 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex)
 
 void saveViewport(const Json &config, int frameIndex, const TextureDepth10Frame &frame)
 {
+	cout << "Saving viewport frame " << frameIndex << '\n';
+	
 	std::string texturePath = getFullPath(config, "OutputDirectory", "RenderedTexturePath", frameIndex);
 	writeFrame<YUV420P10>(texturePath, frame.first, (frameIndex == 0));
 	

@@ -34,6 +34,7 @@
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/IO/IO.h>
 #include <iostream>
 
 using namespace std;
@@ -41,17 +42,34 @@ using namespace TMIV::Common;
 
 namespace TMIV::AtlasDeconstructor {
 class Application : public Common::Application {
+private:
+  unique_ptr<IAtlasDeconstructor> m_atlasDeconstructor;
+  int m_numberOfFrames{};
+  int m_intraPeriod{};
 public:
   Application(vector<const char *> argv)
-      : Common::Application{"AtlasDeconstructor", move(argv)} {
-    m_optimizer = create<IAtlasDeconstructor>("AtlasDeconstructor");
+      : Common::Application{"AtlasDeconstructor", move(argv)},
+        m_atlasDeconstructor{create<IAtlasDeconstructor>("AtlasDeconstructor")},
+        m_numberOfFrames{json().require("numberOfFrames").asInt()},
+        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+
+  void run() override
+  {
+    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
+      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
+      runIntraPeriod(i, endFrame);
+    }
   }
 
-  void run() override {}
-
-private:
-  unique_ptr<IAtlasDeconstructor> m_optimizer;
+  void runIntraPeriod(int intraFrame, int /*endFrame*/) {
+    auto metadata = IO::loadMivMetadata(json(), intraFrame);
+    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize, metadata.patches);
+	
+	IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
+  }
 };
+
 } // namespace TMIV::AtlasDeconstructor
 
 #include "AtlasDeconstructor.reg.hpp"

@@ -56,6 +56,12 @@ public:
 
   auto optimizeFrame(Common::MVD16Frame views) const
       -> Output<Common::MVD16Frame>;
+
+private:
+  auto calculateFOV(Metadata::CameraParameters camera) -> size_t;
+
+  auto calculateDistance(Metadata::CameraParameters camera_1,
+                         Metadata::CameraParameters camera_2) -> float;
 };
 } // namespace TMIV::ViewOptimizer
 

@@ -52,7 +52,7 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   const float EPS = 1e-5f;
 
   heap::Array<3, float> A({3, 5, 10});
-  Mat3x3f m1 = {1., 2., 3., 4., 5., 6., 7., 8., -9.};
+  Mat3x3f m1 = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, -9.f};
   Mat<float> m2(
       {4, 3}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f});
   Vec3f v1({1.f, 2.f, 3.f}), v2({3.f, -1.f, 6.f});

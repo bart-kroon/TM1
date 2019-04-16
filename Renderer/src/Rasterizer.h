@@ -108,7 +108,7 @@ private:
     std::vector<TriangleDescriptorList> batches;
 
     // The strip of pixels with intermediate blending state
-    Common::Mat<Accumulator> matrix;
+    std::vector<Accumulator> matrix;
   };
 
   // Information of each batch that is shared between strips

@@ -91,8 +91,8 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
   for (int n = 0; n < numStrips; ++n) {
     const int i1 = size.y() * n / numStrips;
     const int i2 = size.y() * (n + 1) / numStrips;
-    m_strips.push_back({i1, i2, size.x(), {}, {}});
-    m_strips.back().matrix.resize(i2 - i1, size.x());
+    m_strips.push_back(
+        {i1, i2, size.x(), {}, std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
   }
   m_dk_di = float(numStrips) / float(size.y());
 }
@@ -316,7 +316,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 
       // Blend pixel
-      auto &P = strip.matrix(v, u);
+      auto &P = strip.matrix[v * strip.cols + u];
       P = m_pixel.blend(P, m_pixel.construct(a, d, rayAngle, stretching));
     }
   }

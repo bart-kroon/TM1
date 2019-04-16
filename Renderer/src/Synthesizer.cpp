@@ -56,17 +56,18 @@ public:
   Impl &operator=(const Impl &) = delete;
   Impl &operator=(Impl &&) = delete;
 
-  TextureDepth10Frame renderFrame(const MVD10Frame &atlas,
-                                  const PatchIdMapList &maps,
-                                  const PatchParameterList &patches,
-                                  const CameraParameterList &cameras,
-                                  const CameraParameters &target) const {
+  tuple<SceneVertexDescriptorList, TriangleDescriptorList, tuple<vector<Vec3f>>>
+  unprojectAtlas(const TextureDepth10Frame &atlas, const PatchIdMap &map,
+                 const PatchParameterList &patches,
+                 const CameraParameterList &cameras,
+                 const CameraParameters &target) const {
+    // TODO...
     return {};
   }
 
-  TextureDepth16Frame renderFrame(const MVD16Frame &frame,
-                                  const CameraParameterList &cameras,
-                                  const CameraParameters &target) const {
+  template <typename Unprojector>
+  Rasterizer<Vec3f> rasterFrame(size_t numViews, const CameraParameters &target,
+                                Unprojector unprojector) const {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam}, target.size};
@@ -74,11 +75,11 @@ public:
     // Pipeline mesh generation and rasterization
     future<void> runner = async(launch::deferred, []() {});
 
-    assert(frame.size() == cameras.size());
-    for (size_t i = 0; i < frame.size(); ++i) {
+    for (size_t i = 0; i < numViews; ++i) {
       // Generate a reprojected mesh
-      auto mesh = reproject(expandDepth(cameras[i], frame[i].second),
-                            cameras[i], target, expandTexture(frame[i].first));
+      auto [vertices, triangles, attributes] = unprojector(i, target);
+      auto mesh =
+          project(move(vertices), move(triangles), move(attributes), target);
 
       // Synchronize with the rasterer
       runner.get();
@@ -95,8 +96,32 @@ public:
 
     // Synchronize with the rasterer
     runner.get();
+    return rasterizer;
+  }
 
-    // Read out the blended view and quantize
+  TextureDepth10Frame renderFrame(const MVD10Frame &atlases,
+                                  const PatchIdMapList &maps,
+                                  const PatchParameterList &patches,
+                                  const CameraParameterList &cameras,
+                                  const CameraParameters &target) const {
+    assert(atlases.size() == maps.size());
+    auto rasterizer = rasterFrame(
+        atlases.size(), target, [&](size_t i, const CameraParameters &target) {
+          return unprojectAtlas(atlases[i], maps[i], patches, cameras, target);
+        });
+    return {quantizeTexture(rasterizer.attribute<0>()),
+            quantizeNormDisp10(target, rasterizer.normDisp())};
+  }
+
+  TextureDepth16Frame renderFrame(const MVD16Frame &frame,
+                                  const CameraParameterList &cameras,
+                                  const CameraParameters &target) const {
+    assert(frame.size() == cameras.size());
+    auto rasterizer = rasterFrame(
+        frame.size(), target, [&](size_t i, const CameraParameters &target) {
+          return unproject(expandDepth(cameras[i], frame[i].second), cameras[i],
+                           target, expandTexture(frame[i].first));
+        });
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }

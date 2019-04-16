@@ -134,8 +134,8 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
         const auto v = vAt(i);
         const auto d = fetch(i, j, depth);
         const auto xyz = R_t.first * unprojectVertex({u, v}, d) + R_t.second;
-        const auto cosRayAngle = cosAngle(xyz, xyz - R_t.second);
-        result.push_back({xyz, cosRayAngle});
+        const auto rayAngle = angle(xyz, xyz - R_t.second);
+        result.push_back({xyz, rayAngle});
       }
     }
     assert(int(result.size()) == osize);

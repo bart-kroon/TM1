@@ -34,10 +34,10 @@
 #ifndef _TMIV_RENDERER_ACCUMULATINGPIXEL_H_
 #define _TMIV_RENDERER_ACCUMULATINGPIXEL_H_
 
+#include "blend.h"
 #include <TMIV/Common/LinAlg.h>
 #include <cassert>
 #include <cmath>
-#include "blend.h"
 
 namespace TMIV::Renderer {
 // The attributes that are blended
@@ -48,7 +48,7 @@ template <typename... T> using PixelAttributes = std::tuple<T...>;
 // With empty base class initialization
 template <typename... T>
 struct PixelAccumulator : private PixelAttributes<T...> {
-  PixelAccumulator() = default;
+  PixelAccumulator() : PixelAttributes<T...>(T{}...) {}
   PixelAccumulator(const PixelAccumulator &) = default;
   PixelAccumulator(PixelAccumulator &&) = default;
   PixelAccumulator &operator=(const PixelAccumulator &) = default;
@@ -93,7 +93,7 @@ struct PixelAccumulator : private PixelAttributes<T...> {
 //
 // With empty base class initialization
 template <typename... T> struct PixelValue : private PixelAttributes<T...> {
-  PixelValue() = default;
+  PixelValue() : PixelAttributes<T...>(T{}...) {}  
   PixelValue(const PixelValue &) = default;
   PixelValue(PixelValue &&) = default;
   PixelValue &operator=(const PixelValue &) = default;

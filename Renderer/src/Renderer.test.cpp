@@ -287,6 +287,26 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
   using Acc = PixelAccumulator<Vec3f>;
   using Value = PixelValue<Vec3f>;
 
+  GIVEN("A default-constructed accumulator") {
+    Acc acc;
+    Pixel pixel{1.f, 1.f, 1.f};
+
+    THEN("The attributes are zero")
+    REQUIRE(std::get<0>(acc.attributes()).x() == 0.f);
+    REQUIRE(std::get<0>(acc.attributes()).y() == 0.f);
+    REQUIRE(std::get<0>(acc.attributes()).z() == 0.f);
+
+    WHEN("Averaging") {
+      auto val = pixel.average(acc);
+
+      THEN("The attributes are zero") {
+        REQUIRE(std::get<0>(val.attributes()).x() == 0.f);
+        REQUIRE(std::get<0>(val.attributes()).y() == 0.f);
+        REQUIRE(std::get<0>(val.attributes()).z() == 0.f);
+      }
+    }
+  }
+
   GIVEN("A pixel accumulator that is constructed from a pixel value") {
     float const ray_angle_param = 1.5f;
     float const depth_param = 60.7f;

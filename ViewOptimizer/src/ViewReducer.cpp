@@ -42,7 +42,7 @@ using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
 namespace TMIV::ViewOptimizer {
-ViewReducer::ViewReducer(const Json &node) {}
+ViewReducer::ViewReducer(const Json & /* node */) {}
 
 auto ViewReducer::optimizeIntraPeriod(Metadata::CameraParameterList cameras)
     -> Output<Metadata::CameraParameterList> {

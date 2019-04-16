@@ -31,44 +31,40 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SYNTHESIZER_H_
-#define _TMIV_RENDERER_SYNTHESIZER_H_
-
-#include <TMIV/Renderer/ISynthesizer.h>
+#ifndef _TMIV_RENDERER_BLEND_H_
+#define _TMIV_RENDERER_BLEND_H_
 
 namespace TMIV::Renderer {
-class Synthesizer : public ISynthesizer {
-public:
-  Synthesizer(const Common::Json &node);
-  Synthesizer(float rayAngleParam, float depthParam, float stretchingParam);
-  Synthesizer(const Synthesizer &) = delete;
-  Synthesizer(Synthesizer &&) = default;
-  Synthesizer &operator=(const Synthesizer &) = delete;
-  Synthesizer &operator=(Synthesizer &&) = default;
-  ~Synthesizer();
+// Blend two arithmetic tensors of fixed size
+template <typename T> static T blendValues(float w_a, T a, float w_b, T b);
 
-  Common::TextureDepth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const override;
+// Blend three arithmetic tensors of fixed size
+template <typename T>
+T blendValues(float w_a, T a, float w_b, T b, float w_c, T c);
 
-  Common::TextureDepth16Frame
-  renderFrame(const Common::MVD16Frame &frame,
-              const Metadata::CameraParameterList &cameras,
-              const Metadata::CameraParameters &target) const override;
+// Blend the attributes of two pixels
+template <typename T0, typename... T>
+auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
+                     const std::tuple<T0, T...> &b) -> std::tuple<T0, T...>;
 
-  Common::Mat<float>
-  renderDepth(const Common::Mat<float> &frame,
-              const Metadata::CameraParameters &camera,
-              const Metadata::CameraParameters &target) const override;
+inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */,
+                     float /* w_b */, const std::tuple<> & /* b */) {
+  return std::tuple{};
+}
 
-private:
-  class Impl;
+// Blend the attributes of three pixels
+template <typename T0, typename... T>
+auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
+                     const std::tuple<T0, T...> &b, float w_c,
+                     const std::tuple<T0, T...> &c) -> std::tuple<T0, T...>;
 
-  std::unique_ptr<Impl> m_impl;
-};
+inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */,
+                     float /* w_b */, const std::tuple<> & /* b */,
+                     float /* w_c */, const std::tuple<> & /* c */) {
+  return std::tuple{};
+}
 } // namespace TMIV::Renderer
+
+#include "blend.hpp"
 
 #endif

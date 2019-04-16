@@ -37,6 +37,7 @@
 #include <TMIV/Common/LinAlg.h>
 #include <cassert>
 #include <cmath>
+#include "blend.h"
 
 namespace TMIV::Renderer {
 // The attributes that are blended
@@ -155,58 +156,7 @@ public:
     return construct(std::tuple{attributes...}, normDisp, rayAngle, stretching);
   }
 
-  // Blend two arithmetic tensors of fixed size
-  template <typename U> static U blendValues(float w_a, U a, float w_b, U b) {
-    if constexpr (std::is_floating_point_v<U>) {
-      return w_a * a + w_b * b;
-    } else if constexpr (std::is_integral_v<U>) {
-      return static_cast<U>(std::lround(w_a * static_cast<float>(a) +
-                                        w_b * static_cast<float>(b)));
-    } else {
-      U result;
-      static_assert(result.size() == a.size()); // req. constexpr size()
-      for (unsigned i = 0; i < result.size(); ++i) {
-        result[i] = blendValues(w_a, a[i], w_b, b[i]);
-      }
-      return result;
-    }
-  }
-
-  // Blend three arithmetic tensors of fixed size
-  template <typename U>
-  static U blendValues(float w_a, U a, float w_b, U b, float w_c, U c) {
-    if constexpr (std::is_floating_point_v<U>) {
-      return w_a * a + w_b * b + w_c * c;
-    } else if constexpr (std::is_integral_v<U>) {
-      return static_cast<U>(std::lround(w_a * static_cast<float>(a) +
-                                        w_b * static_cast<float>(b) +
-                                        w_c * static_cast<float>(c)));
-    } else {
-      U result;
-      static_assert(result.size() == a.size()); // req. constexpr size()
-      for (unsigned i = 0; i < result.size(); ++i) {
-        result[i] = blendValues(w_a, a[i], w_b, b[i], w_c, c[i]);
-      }
-      return result;
-    }
-  }
-
 private:
-  // Blend the attributes of two pixels
-  template <std::size_t... I>
-  static auto blendAttributes(float w_a, const Attributes &a, float w_b,
-                              const Attributes &b, std::index_sequence<I...>)
-      -> Attributes {
-    return {blendValues(w_a, std::get<I>(a), w_b, std::get<I>(b))...};
-  }
-
-  // Blend the attributes of two pixels
-  static auto blendAttributes(float w_a, const Attributes &a, float w_b,
-                              const Attributes &b) -> Attributes {
-    return blendAttributes(w_a, a, w_b, b,
-                           std::make_index_sequence<sizeof...(T)>());
-  }
-
   // Blend two pixels with known blending weights
   auto blendAccumulators(float w_a, const Accumulator &a, float w_b,
                          const Accumulator &b) const -> Accumulator {

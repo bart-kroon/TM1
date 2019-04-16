@@ -35,6 +35,7 @@
 #error "Include the .h, not the .hpp"
 #endif
 
+#include "blend.h"
 #include <cmath>
 #include <future>
 #include <thread>
@@ -52,6 +53,28 @@ int numStrips(int rows) {
     return maximum;
   }
   return int(0.5 + sqrt(hw * maximum));
+}
+
+template <typename M0, typename... M>
+auto fetchAttributes(int index, const std::tuple<M0, M...> &attributes) {
+  std::tuple<typename M0::value_type, typename M::value_type...> result;
+  std::get<0>(result) = std::get<0>(attributes)[index];
+  if constexpr (sizeof...(M) >= 1) {
+    std::get<1>(result) = std::get<1>(attributes)[index];
+  }
+  if constexpr (sizeof...(M) >= 2) {
+    std::get<2>(result) = std::get<2>(attributes)[index];
+  }
+  if constexpr (sizeof...(M) >= 3) {
+    std::get<3>(result) = std::get<3>(attributes)[index];
+  }
+  static_assert(sizeof...(M) <= 3);
+  return result;
+}
+
+inline auto fetchAttributes(int /* index */, const std::tuple<> &
+                            /* attributes */) -> std::tuple<> {
+  return {};
 }
 } // namespace
 
@@ -255,10 +278,9 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
   const auto d2 = 1.f / batch.vertices[n2].depth;
 
   // Fetch multiple attributes (e.g. color)
-  constexpr auto seq = std::make_integer_sequence<size_t, sizeof...(T)>();
-  const auto a0 = fetchAttributes(n0, batch.attributes, seq);
-  const auto a1 = fetchAttributes(n1, batch.attributes, seq);
-  const auto a2 = fetchAttributes(n2, batch.attributes, seq);
+  const auto a0 = fetchAttributes(n0, batch.attributes);
+  const auto a1 = fetchAttributes(n1, batch.attributes);
+  const auto a2 = fetchAttributes(n2, batch.attributes);
 
   // For each pixel in the bounding box
   for (int v = v1; v < v2; ++v) {
@@ -291,7 +313,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       // Barycentric interpolation of normalized disparity and attributes
       // (e.g. color)
       const auto d = w0 * d0 + w1 * d1 + w2 * d2;
-      const auto a = interpolateAttributes(w0, a0, w1, a1, w2, a2, seq);
+      const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 
       // Blend pixel
       auto &P = strip.matrix(v, u);

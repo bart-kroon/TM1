@@ -126,21 +126,6 @@ private:
                       Strip &strip);
   void clearBatches();
 
-  template <size_t... I>
-  static auto fetchAttributes(int index, const AttributeMaps &attributes,
-                              std::index_sequence<I...>) -> Attributes {
-    return {std::get<I>(attributes)[index]...};
-  }
-
-  template <size_t... I>
-  static auto interpolateAttributes(float w0, const Attributes &a0, float w1,
-                                    const Attributes &a1, float w2,
-                                    const Attributes &a2,
-                                    std::index_sequence<I...>) -> Attributes {
-    return {Pixel::blendValues(w0, std::get<I>(a0), w1, std::get<I>(a1), w2,
-                               std::get<I>(a2))...};
-  }
-
   const Pixel m_pixel;
   const Size m_size;
   float m_dk_di; // i for row, j for column and k for strip index

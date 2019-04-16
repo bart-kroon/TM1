@@ -35,6 +35,16 @@
 
 namespace TMIV::Common {
 
+///////////////////////////////////////////////////////////
+template <>
+void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV400P10> &outputFrame) {
+  std::transform(
+      inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+      outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
+        return (Frame<YUV400P10>::base_type)floor(1024.f * (float(v) / 256.f));
+      });
+}
+
 template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV400P16> &outputFrame) {
   std::transform(
@@ -58,7 +68,7 @@ template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P10> &outputFrame) {
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
-      outputFrame.getPlane(0).begin(), [](Frame<YUV420P10>::base_type v) {
+      outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
         return (Frame<YUV420P10>::base_type)floor(1024.f * (float(v) / 256.f));
       });
 
@@ -72,7 +82,7 @@ template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
-      outputFrame.getPlane(0).begin(), [](Frame<YUV420P10>::base_type v) {
+      outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
         return (Frame<YUV420P16>::base_type)floor(65536.f * (float(v) / 256.f));
       });
 
@@ -82,6 +92,71 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
             uint16_t(32768));
 }
 
+///////////////////////////////////////////////////////////
+template <>
+void convert(const Frame<YUV400P10> &inputFrame, Frame<YUV400P8> &outputFrame) {
+  std::transform(
+      inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+      outputFrame.getPlane(0).begin(), [](Frame<YUV400P10>::base_type v) {
+        return (Frame<YUV400P8>::base_type)clamp(
+            (float)floor(256.f * (float(v) / 1024.f) + 0.5f), 0.f, 255.f);
+      });
+}
+
+template <>
+void convert(const Frame<YUV400P10> &inputFrame,
+             Frame<YUV400P16> &outputFrame) {
+  std::transform(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+                 outputFrame.getPlane(0).begin(),
+                 [](Frame<YUV400P10>::base_type v) {
+                   return (Frame<YUV400P16>::base_type)floor(
+                       65536.f * (float(v) / 1024.f));
+                 });
+}
+
+template <>
+void convert(const Frame<YUV400P10> &inputFrame, Frame<YUV420P8> &outputFrame) {
+    std::transform(
+        inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+        outputFrame.getPlane(0).begin(), [](Frame<YUV400P10>::base_type v) {
+          return (Frame<YUV420P8>::base_type)clamp(
+              (float)floor(256.f * (float(v) / 1024.f) + 0.5f), 0.f, 255.f);
+        });
+
+  std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
+            uint8_t(128));
+  std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
+            uint8_t(128));
+}
+
+template <>
+void convert(const Frame<YUV400P10> &inputFrame, Frame<YUV420P10> &outputFrame) {
+  std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+            outputFrame.getPlane(0).begin());
+
+  std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
+            uint16_t(512));
+  std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
+            uint16_t(512));
+}
+
+template <>
+void convert(const Frame<YUV400P10> &inputFrame,
+             Frame<YUV420P16> &outputFrame) {
+    std::transform(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+                   outputFrame.getPlane(0).begin(),
+                   [](Frame<YUV420P10>::base_type v) {
+                     return (Frame<YUV400P16>::base_type)floor(
+                         65536.f * (float(v) / 1024.f));
+                   });
+
+  std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
+            uint16_t(32768));
+  std::fill(outputFrame.getPlane(2).begin(), outputFrame.getPlane(2).end(),
+            uint16_t(32768));
+}
+
+///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV400P16> &inputFrame, Frame<YUV400P8> &outputFrame) {
   std::transform(
@@ -89,6 +164,17 @@ void convert(const Frame<YUV400P16> &inputFrame, Frame<YUV400P8> &outputFrame) {
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P16>::base_type v) {
         return (Frame<YUV400P8>::base_type)clamp(
             (float)floor(256.f * (float(v) / 65536.f) + 0.5f), 0.f, 255.f);
+      });
+}
+
+template <>
+void convert(const Frame<YUV400P16> &inputFrame,
+             Frame<YUV400P10> &outputFrame) {
+  std::transform(
+      inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+      outputFrame.getPlane(0).begin(), [](Frame<YUV400P16>::base_type v) {
+        return (Frame<YUV400P10>::base_type)clamp(
+            (float)floor(1024.f * (float(v) / 65536.f) + 0.5f), 0.f, 1023.f);
       });
 }
 
@@ -134,10 +220,21 @@ void convert(const Frame<YUV400P16> &inputFrame,
             uint16_t(32768));
 }
 
+///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV400P8> &outputFrame) {
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
+}
+
+template <>
+void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV400P10> &outputFrame) {
+    std::transform(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+                   outputFrame.getPlane(0).begin(),
+                   [](Frame<YUV420P8>::base_type v) {
+                     return (Frame<YUV400P10>::base_type)floor(
+                         1024.f * (float(v) / 256.f));
+                   });
 }
 
 template <>
@@ -173,6 +270,7 @@ void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
   }
 }
 
+///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV420P10> &inputFrame, Frame<YUV400P8> &outputFrame) {
   std::transform(
@@ -181,6 +279,12 @@ void convert(const Frame<YUV420P10> &inputFrame, Frame<YUV400P8> &outputFrame) {
         return (Frame<YUV400P8>::base_type)clamp(
             (float)floor(256.f * (float(v) / 1024.f) + 0.5f), 0.f, 255.f);
       });
+}
+
+template <>
+void convert(const Frame<YUV420P10> &inputFrame, Frame<YUV400P10> &outputFrame) {
+  std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+            outputFrame.getPlane(0).begin());
 }
 
 template <>
@@ -219,14 +323,26 @@ void convert(const Frame<YUV420P10> &inputFrame,
   }
 }
 
+///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV420P16> &inputFrame, Frame<YUV400P8> &outputFrame) {
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
-      outputFrame.getPlane(0).begin(), [](Frame<YUV420P10>::base_type v) {
+      outputFrame.getPlane(0).begin(), [](Frame<YUV420P16>::base_type v) {
         return (Frame<YUV400P8>::base_type)clamp(
             (float)floor(256.f * (float(v) / 65536.f) + 0.5f), 0.f, 255.f);
       });
+}
+
+template <>
+void convert(const Frame<YUV420P16> &inputFrame,
+             Frame<YUV400P10> &outputFrame) {
+    std::transform(
+        inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
+        outputFrame.getPlane(0).begin(), [](Frame<YUV420P16>::base_type v) {
+          return (Frame<YUV420P10>::base_type)clamp(
+              (float)floor(1024.f * (float(v) / 65536.f) + 0.5f), 0.f, 1023.f);
+        });
 }
 
 template <>
@@ -241,7 +357,7 @@ void convert(const Frame<YUV420P16> &inputFrame, Frame<YUV420P8> &outputFrame) {
   for (int i = 0; i < 3; i++) {
     std::transform(
         inputFrame.getPlane(i).begin(), inputFrame.getPlane(i).end(),
-        outputFrame.getPlane(i).begin(), [](Frame<YUV420P10>::base_type v) {
+        outputFrame.getPlane(i).begin(), [](Frame<YUV420P16>::base_type v) {
           return (Frame<YUV420P8>::base_type)clamp(
               (float)floor(256.f * (float(v) / 65536.f) + 0.5f), 0.f, 65535.f);
         });
@@ -254,7 +370,7 @@ void convert(const Frame<YUV420P16> &inputFrame,
   for (int i = 0; i < 3; i++) {
     std::transform(
         inputFrame.getPlane(i).begin(), inputFrame.getPlane(i).end(),
-        outputFrame.getPlane(i).begin(), [](Frame<YUV420P10>::base_type v) {
+        outputFrame.getPlane(i).begin(), [](Frame<YUV420P16>::base_type v) {
           return (Frame<YUV420P10>::base_type)clamp(
               (float)floor(1024.f * (float(v) / 65536.f) + 0.5f), 0.f, 1023.f);
         });

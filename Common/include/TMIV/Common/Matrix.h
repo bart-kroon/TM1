@@ -45,11 +45,11 @@ struct Matrix {
 
 template <typename A> class MatrixInterface : public A {
 public:
-  typedef typename A::size_type size_type;
-  typedef typename A::const_dim_iterator const_row_iterator;
-  typedef typename A::dim_iterator row_iterator;
-  typedef typename A::const_dim_iterator const_column_iterator;
-  typedef typename A::dim_iterator column_iterator;
+  using size_type = typename A::size_type;
+  using const_row_iterator = typename A::const_dim_iterator ;
+  using row_iterator = typename A::dim_iterator;
+  using const_column_iterator = typename A::const_dim_iterator;
+  using column_iterator = typename A::dim_iterator;
   template <typename U>
   using promoted_type = MatrixInterface<typename A::template promoted_type<U>>;
 

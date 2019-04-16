@@ -41,11 +41,11 @@
 namespace TMIV::Common {
 template <typename A> class VectorInterface : public A {
 public:
-  typedef typename A::size_type size_type;
-  typedef const typename A::const_iterator const_row_iterator;
-  typedef typename A::iterator row_iterator;
-  typedef typename A::const_iterator const_column_iterator;
-  typedef typename A::iterator column_iterator;
+  using size_type = typename A::size_type;
+  using const_row_iterator = typename A::const_dim_iterator ;
+  using row_iterator = typename A::dim_iterator;
+  using const_column_iterator = typename A::const_dim_iterator;
+  using column_iterator = typename A::dim_iterator;
   template <typename U>
   using promoted_type = VectorInterface<typename A::template promoted_type<U>>;
 

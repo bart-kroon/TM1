@@ -48,11 +48,11 @@ using size_type = unsigned int;
 
 template <typename T> class const_iterator {
 public:
-  typedef std::random_access_iterator_tag iterator_category;
-  typedef T value_type;
-  typedef std::ptrdiff_t difference_type;
-  typedef T *pointer;
-  typedef T &reference;
+  using iterator_category = std::random_access_iterator_tag;
+  using value_type = T ;
+  using difference_type = std::ptrdiff_t;
+  using pointer = T*;
+  using reference = T&;
 
 protected:
   T *m_p;
@@ -162,11 +162,11 @@ iterator<T> operator+(std::ptrdiff_t n, const iterator<T> &rhs) {
 
 template <typename T> class const_dim_iterator {
 public:
-  typedef std::random_access_iterator_tag iterator_category;
-  typedef T value_type;
-  typedef std::ptrdiff_t difference_type;
-  typedef T *pointer;
-  typedef T &reference;
+  using iterator_category = std::random_access_iterator_tag;
+  using value_type = T ;
+  using difference_type = std::ptrdiff_t;
+  using pointer = T*;
+  using reference = T&;
 
 protected:
   T *m_p;
@@ -368,19 +368,19 @@ public:
 
 template <typename T, size_type... I> class Array {
 public:
-  typedef T value_type;
-  typedef T &reference;
-  typedef const T &const_reference;
-  typedef TMIV::Common::Array::iterator<T> iterator;
-  typedef TMIV::Common::Array::const_iterator<T> const_iterator;
-  typedef TMIV::Common::Array::dim_iterator<T> dim_iterator;
-  typedef TMIV::Common::Array::const_dim_iterator<T> const_dim_iterator;
-  typedef TMIV::Common::Array::dim_iterator<T> diag_iterator;
-  typedef TMIV::Common::Array::const_dim_iterator<T> const_diag_iterator;
-  typedef std::ptrdiff_t difference_type;
-  typedef stack::size_type size_type;
-  typedef Array<T, I...> container_type;
-  typedef std::array<stack::size_type, sizeof...(I)> tuple_type;
+  using value_type = T;
+  using reference = T&;
+  using const_reference = const T&;
+  using iterator = TMIV::Common::Array::iterator<T>;
+  using const_iterator = TMIV::Common::Array::const_iterator<T>;
+  using dim_iterator = TMIV::Common::Array::dim_iterator<T>;
+  using const_dim_iterator = TMIV::Common::Array::const_dim_iterator<T>;
+  using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
+  using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
+  using difference_type = std::ptrdiff_t;
+  using size_type = stack::size_type ;
+  using container_type = Array<T, I...>;
+  using tuple_type = std::array<stack::size_type, sizeof...(I)>;
   template <typename U>
   using promoted_type = Array<decltype(T(0) * U(0)), I...>;
 
@@ -658,19 +658,19 @@ using size_type = TMIV::Common::Array::size_type;
 
 template <size_type D, typename T> class Array {
 public:
-  typedef T value_type;
-  typedef T &reference;
-  typedef const T &const_reference;
-  typedef TMIV::Common::Array::iterator<T> iterator;
-  typedef TMIV::Common::Array::const_iterator<T> const_iterator;
-  typedef TMIV::Common::Array::dim_iterator<T> dim_iterator;
-  typedef TMIV::Common::Array::const_dim_iterator<T> const_dim_iterator;
-  typedef TMIV::Common::Array::dim_iterator<T> diag_iterator;
-  typedef TMIV::Common::Array::const_dim_iterator<T> const_diag_iterator;
-  typedef std::ptrdiff_t difference_type;
-  typedef heap::size_type size_type;
-  typedef Array<D, T> container_type;
-  typedef std::array<heap::size_type, D> tuple_type;
+  using value_type = T;
+  using reference = T&;
+  using const_reference = const T&;
+  using iterator = TMIV::Common::Array::iterator<T>;
+  using const_iterator = TMIV::Common::Array::const_iterator<T>;
+  using dim_iterator = TMIV::Common::Array::dim_iterator<T>;
+  using const_dim_iterator = TMIV::Common::Array::const_dim_iterator<T>;
+  using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
+  using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
+  using difference_type = std::ptrdiff_t;
+  using size_type = heap::size_type ;
+  using container_type = Array<D, T>;
+  using tuple_type = std::array<heap::size_type, D>;
   template <typename U> using promoted_type = Array<D, decltype(T{} * U{})>;
 
 protected:
@@ -1009,19 +1009,19 @@ using size_type = TMIV::Common::Array::size_type;
 
 template <size_type D, typename T> class Array {
 public:
-  typedef T value_type;
-  typedef T &reference;
-  typedef const T &const_reference;
-  typedef TMIV::Common::Array::iterator<T> iterator;
-  typedef TMIV::Common::Array::const_iterator<T> const_iterator;
-  typedef TMIV::Common::Array::dim_iterator<T> dim_iterator;
-  typedef TMIV::Common::Array::const_dim_iterator<T> const_dim_iterator;
-  typedef TMIV::Common::Array::dim_iterator<T> diag_iterator;
-  typedef TMIV::Common::Array::const_dim_iterator<T> const_diag_iterator;
-  typedef std::ptrdiff_t difference_type;
-  typedef shallow::size_type size_type;
-  typedef Array<D, T> container_type;
-  typedef std::array<shallow::size_type, D> tuple_type;
+  using value_type = T;
+  using reference = T&;
+  using const_reference = const T&;
+  using iterator = TMIV::Common::Array::iterator<T>;
+  using const_iterator = TMIV::Common::Array::const_iterator<T>;
+  using dim_iterator = TMIV::Common::Array::dim_iterator<T>;
+  using const_dim_iterator = TMIV::Common::Array::const_dim_iterator<T>;
+  using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
+  using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
+  using difference_type = std::ptrdiff_t;
+  using size_type = shallow::size_type ;
+  using container_type = Array<D, T>;
+  using tuple_type = std::array<shallow::size_type, D>;
   template <typename U> using promoted_type = Array<D, decltype(T(0) * U(0))>;
 
 protected:

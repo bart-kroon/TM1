@@ -81,12 +81,12 @@ auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
 // 10-bit
 void saveAtlas(const Common::Json &config, int frameIndex,
                Common::MVD16Frame const &frame);
-auto loadAtlas(const Common::Json &config, int frameIndex)
+auto loadAtlas(const Common::Json &config, const std::vector<Common::Vec2i>& atlasSize, int frameIndex)
     -> Common::MVD10Frame;
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);
-auto loadPatchIdMaps(const Common::Json &config, int frameIndex)
+auto loadPatchIdMaps(const Common::Json &config, const std::vector<Common::Vec2i>& atlasSize, int frameIndex)
     -> Common::PatchIdMapList;
 
 auto loadViewportMetadata(const Common::Json &config, int frameIndex)

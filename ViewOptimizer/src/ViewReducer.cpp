@@ -71,7 +71,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
   float range_j = 0;
 
   // Early termination: if any view is full-ERP, choose this view
-  for (int id = 0u; id < nbCameras; id++) {
+  for (auto id = 0u; id < nbCameras; id++) {
     if (cameras[id].type == ProjectionType::ERP) {
       if (abs(cameras[id].erpPhiRange[0] - cameras[id].erpPhiRange[1]) ==
           360.f) {
@@ -190,7 +190,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
     int id_center = 0;
     float distance = numeric_limits<float>::max();
 
-    for (int id = 0u; id < nbCameras; id++) {
+    for (auto id = 0u; id < nbCameras; id++) {
       x_center += cameras[id].position[0];
       y_center += cameras[id].position[1];
       z_center += cameras[id].position[2];
@@ -216,7 +216,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
       }
     }
 
-    for (int i = 0u; i < camera_id.size(); i++) {
+    for (auto i = 0u; i < camera_id.size(); i++) {
       float temp_distance =
           sqrtf(powf(cameras[camera_id[i]].position[0] - x_center, 2) +
                 powf(cameras[camera_id[i]].position[1] - y_center, 2) +

@@ -48,7 +48,7 @@ template <typename... T> using PixelAttributes = std::tuple<T...>;
 // With empty base class initialization
 template <typename... T>
 struct PixelAccumulator : private PixelAttributes<T...> {
-  PixelAccumulator() : PixelAttributes<T...>(T{}...) {}
+  PixelAccumulator() = default;
   PixelAccumulator(const PixelAccumulator &) = default;
   PixelAccumulator(PixelAccumulator &&) = default;
   PixelAccumulator &operator=(const PixelAccumulator &) = default;
@@ -93,7 +93,7 @@ struct PixelAccumulator : private PixelAttributes<T...> {
 //
 // With empty base class initialization
 template <typename... T> struct PixelValue : private PixelAttributes<T...> {
-  PixelValue() : PixelAttributes<T...>(T{}...) {}  
+  PixelValue() = default;
   PixelValue(const PixelValue &) = default;
   PixelValue(PixelValue &&) = default;
   PixelValue &operator=(const PixelValue &) = default;

@@ -162,7 +162,7 @@ void writeCameraToFile(std::ofstream& os, const CameraParameters& camera)
 
 void writeCameraListToFile(std::ofstream& os, const CameraParameterList& list)
 {
-	uint16_t nbCamera = list.size();
+  uint16_t nbCamera = uint16_t(list.size());
 	
 	os.write((char *) &nbCamera, sizeof(uint16_t));
 	
@@ -194,7 +194,7 @@ void skipAtlasSizeFromFile(std::ifstream& is)
 
 void writeAtlasSizeToFile(std::ofstream& os, const std::vector<Vec2i>& atlasSize)
 {
-	uint8_t nbAtlas = atlasSize.size();
+  uint8_t nbAtlas = uint8_t(atlasSize.size());
 	
 	os.write((const char *) &nbAtlas, sizeof(uint8_t));
 	
@@ -256,7 +256,7 @@ void writePatchToFile(std::ofstream& os, const PatchParameters& patch)
 
 void writePatchListToFile(std::ofstream& os, const PatchParameterList& list)
 {
-	uint16_t nbPatch = list.size();
+  uint16_t nbPatch = uint16_t(list.size());
 	
 	os.write((char *) &nbPatch, sizeof(uint16_t));
 	

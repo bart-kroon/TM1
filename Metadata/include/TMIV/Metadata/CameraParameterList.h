@@ -53,7 +53,7 @@ using Common::Vec3f;
 //
 // Read the RVS 3.x manual for interpretation of angles
 struct CameraParameters {
-  uint16_t id;
+  uint16_t id{};
   Vec2i size{};     // Camera sensor size (width, height) in pixels
   Vec3f position{}; // (x, y, z) in meters, OMAF definition
   Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF

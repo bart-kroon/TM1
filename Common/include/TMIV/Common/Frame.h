@@ -124,6 +124,8 @@ using PatchIdMapList = std::vector<PatchIdMap>;
 using Depth10Frame = Frame<YUV400P10>;
 using TextureDepth10Frame = std::pair<TextureFrame, Depth10Frame>;
 using MVD10Frame = std::vector<TextureDepth10Frame>;
+
+const auto unusedPatchId = std::uint16_t(65535);
 } // namespace TMIV::Common
 
 #endif

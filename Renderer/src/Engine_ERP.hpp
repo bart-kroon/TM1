@@ -167,7 +167,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     } else {
       T result;
       using V = typename T::value_type;
-      std::transform(begin(sum), end(sum), begin(result),
+      std::transform(std::begin(sum), std::end(sum), std::begin(result),
                      [this](auto x) { return V(x / icols); });
       return result;
     }

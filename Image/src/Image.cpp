@@ -41,8 +41,6 @@ using namespace TMIV::Metadata;
 using Mat1f = Mat<float>;
 using Mat3f = Mat<Vec3f>;
 
-constexpr auto NaN = numeric_limits<float>::quiet_NaN();
-
 namespace TMIV::Image {
 Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {
   auto &Y = inYuv.getPlane(0);

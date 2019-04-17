@@ -416,8 +416,6 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
   }
 }
 
-// TODO: Add promotion rules to the linear algebra template classes so that
-// we can mix uint16_t with float (or int) in the renderer
 SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
     AccumulatingPixel<Vec3w> pixel{1.f, 1.f, 1.f};

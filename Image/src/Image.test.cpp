@@ -110,8 +110,6 @@ SCENARIO("Quantize planar 4:4:4 float to YUV 4:2:0 10-bit texture",
       THEN("Luma plane samples are quantized") {
         REQUIRE(quantized.getPlane(0)(5, 9) == quantizeValue<10>(0.59f));
       }
-
-      // TODO...
     }
   }
 }

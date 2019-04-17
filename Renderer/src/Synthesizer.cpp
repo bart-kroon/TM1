@@ -73,6 +73,7 @@ public:
     case PatchRotation::upright:
       return Vec2f(atlas - patch.patchPackingPos + patch.patchMappingPos);
     case PatchRotation::ccw:
+      // TODO: Rotate patch
       return Vec2f(atlas - patch.patchPackingPos + patch.patchMappingPos);
     default:
       abort();

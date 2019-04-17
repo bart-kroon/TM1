@@ -35,7 +35,6 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Image/Image.h>
 #include <TMIV/Renderer/reprojectPoints.h>
-#include <fstream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -54,6 +53,9 @@ Pruner::Pruner(const Json &node) {
 
   if (auto subnode = node.optional("DilationIter"))
     m_dilationIter = subnode.asInt();
+
+  if (auto subnode = node.optional("MaxAdditionalView"))
+    m_maxAdditionalView = subnode.asInt();
 }
 
 MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
@@ -73,170 +75,163 @@ MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
                 return (i1 < i2);
             });
 
+  // Possible discard some additional views (for debugging purpose)
+  int maxView = std::min(
+      int(cameraOrderId.size()),
+      int(std::count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) +
+          m_maxAdditionalView));
+
   // Pruning loop
   int nbView = (int)views.size();
   MaskList masks(nbView);
   std::vector<Mat<float>> depthMapExpanded(nbView);
 
-  for (int id1 = 0; id1 < nbView; id1++)
-  {
+  for (int id1 = 0; id1 < nbView; id1++) {
     int viewToPruneId = cameraOrderId[id1];
     auto &maskToPrune = masks[viewToPruneId];
 
-    maskToPrune.resize(views[viewToPruneId].first.getWidth(), views[viewToPruneId].first.getHeight());
+    maskToPrune.resize(views[viewToPruneId].first.getWidth(),
+                       views[viewToPruneId].first.getHeight());
     auto &bufferToPrune = maskToPrune.getPlane(0);
 
-    std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(255));
+    if (id1 < maxView) {
+      std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(255));
+      depthMapExpanded[viewToPruneId] =
+          expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
 
-    depthMapExpanded[viewToPruneId] = expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
+      if (!shouldNotBePruned[viewToPruneId]) {
+        // Depth-based redundancy removal
+        const Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];
+        Mat<Vec2f> gridMapToPrune = imagePositions(cameras[viewToPruneId]);
 
-	if(!shouldNotBePruned[viewToPruneId])
-	{
-		// Depth-based redundancy removal
-		const Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];	  
-		Mat<Vec2f> gridMapToPrune = imagePositions(cameras[viewToPruneId]);
+        for (int id2 = 0; id2 < id1; id2++) {
+          int viewPrunedId = cameraOrderId[id2];
+          const Mat<float> &depthMapPruned = depthMapExpanded[viewPrunedId];
 
-#if 1
-		for (int id2 = 0; id2 < id1; id2++)
-		{
-			int viewPrunedId = cameraOrderId[id2];
-			const Mat<float> &depthMapPruned = depthMapExpanded[viewPrunedId];
+          auto ptsToPruneOnPruned =
+              reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId],
+                              gridMapToPrune, depthMapToPrune);
+          int lastXPruned = cameras[viewPrunedId].size.x() - 1,
+              lastYPruned = cameras[viewPrunedId].size.y() - 1;
 
-			auto ptsToPruneOnPruned = reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId], gridMapToPrune, depthMapToPrune);
-			int lastXPruned = cameras[viewPrunedId].size.x() - 1, lastYPruned = cameras[viewPrunedId].size.y() - 1;
-			
-			for (auto k = 0u; k < bufferToPrune.size(); k++)
-			{
-				auto &mask = bufferToPrune[k];
-				
-				if(0 < mask)
-				{
-					float zToPrune = depthMapToPrune[k];
-					
-					if(!std::isnan(zToPrune))
-					{
-						float zToPruneOnPruned = ptsToPruneOnPruned.second[k];
-					
-						if(!std::isnan(zToPruneOnPruned))
-						{
-							const Vec2f& xyToPruneOnPruned = ptsToPruneOnPruned.first[k];
+          for (auto k = 0u; k < bufferToPrune.size(); k++) {
+            auto &mask = bufferToPrune[k];
 
-							int x1 = std::max(0, int(floor(xyToPruneOnPruned.x()))), x2 = std::min(lastXPruned, int(ceil(xyToPruneOnPruned.x())));
-							int y1 = std::max(0, int(floor(xyToPruneOnPruned.y()))), y2 = std::min(lastYPruned, int(ceil(xyToPruneOnPruned.y())));
+            if (0 < mask) {
+              float zToPrune = depthMapToPrune[k];
 
-							for(int y = y1 ; y <= y2 ; y++)
-							{
-								for(int x = x1; x <= x2 ; x++)
-								{
-									float zPruned = depthMapPruned(y, x);
-						
-									if(!std::isnan(zPruned))
-									{
-										if((fabs(zToPruneOnPruned - zPruned) < m_redundancyFactor * std::min(zPruned, zToPruneOnPruned)))
-										{
-											mask = 0;
-											goto endloop;
-										}
-									}
-								}
-							}
-						}
-					}
-					else
-						mask = 0;
-				}
-				
-				endloop: ;
-			}
-		}
+              if (!std::isnan(zToPrune)) {
+                float zToPruneOnPruned = ptsToPruneOnPruned.second[k];
 
-      // 		{
-      // 			std::ofstream os("maskPruned_" +
-      // std::to_string(id1) + ".yuv");
-      // maskToPrune.dump(os);
-      // 		}
+                if (!std::isnan(zToPruneOnPruned)) {
+                  const Vec2f &xyToPruneOnPruned = ptsToPruneOnPruned.first[k];
 
-#else
-      {
-        std::ifstream is("maskPruned_" + std::to_string(id1) + ".yuv");
-        maskToPrune.read(is);
-      }
-#endif
+                  int x1 = std::max(0, int(floor(xyToPruneOnPruned.x()))),
+                      x2 = std::min(lastXPruned,
+                                    int(ceil(xyToPruneOnPruned.x())));
+                  int y1 = std::max(0, int(floor(xyToPruneOnPruned.y()))),
+                      y2 = std::min(lastYPruned,
+                                    int(ceil(xyToPruneOnPruned.y())));
 
-      // Mask post-processing
-      Mask maskPostProc(views[viewToPruneId].first.getWidth(),
-                        views[viewToPruneId].first.getHeight());
-      auto &bufferPostProc = maskPostProc.getPlane(0);
+                  for (int y = y1; y <= y2; y++) {
+                    for (int x = x1; x <= x2; x++) {
+                      float zPruned = depthMapPruned(y, x);
 
-      int w = bufferToPrune.width(), h = bufferToPrune.height();
-      int wLast = w - 1, hLast = h - 1;
-      std::array<int, 8> neighbourOffset = {-1 - w, -w,     1 - w, -1,
-                                            1,      -1 + w, w,     1 + w};
+                      if (!std::isnan(zPruned)) {
+                        if ((fabs(zToPruneOnPruned - zPruned) <
+                             m_redundancyFactor *
+                                 std::min(zPruned, zToPruneOnPruned))) {
+                          mask = 0;
+                          goto endloop;
+                        }
+                      }
+                    }
+                  }
+                }
+              } else
+                mask = 0;
+            }
 
-      // Erosion
-      if (0 < m_erosionIter) {
-        auto &inputBuffer =
-            (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
-        auto &outputBuffer =
-            (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
+          endloop:;
+          }
+        }
 
-        inputBuffer = bufferToPrune;
+        // Mask post-processing
+        Mask maskPostProc(views[viewToPruneId].first.getWidth(),
+                          views[viewToPruneId].first.getHeight());
+        auto &bufferPostProc = maskPostProc.getPlane(0);
 
-        for (int erosionId = 0; erosionId < m_erosionIter; erosionId++) {
-          for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w) {
-            for (int x = 1, k2 = k1; x < wLast; x++, k2++) {
-              auto maskIn = inputBuffer[k2];
-              auto &maskOut = outputBuffer[k2];
+        int w = bufferToPrune.width(), h = bufferToPrune.height();
+        int wLast = w - 1, hLast = h - 1;
+        std::array<int, 8> neighbourOffset = {-1 - w, -w,     1 - w, -1,
+                                              1,      -1 + w, w,     1 + w};
 
-              maskOut = maskIn;
+        // Erosion
+        if (0 < m_erosionIter) {
+          auto &inputBuffer =
+              (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
+          auto &outputBuffer =
+              (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
 
-              if (0 < maskIn) {
-                for (auto o : neighbourOffset) {
-                  if (inputBuffer[k2 + o] == 0) {
-                    maskOut = 0;
-                    break;
+          inputBuffer = bufferToPrune;
+
+          for (int erosionId = 0; erosionId < m_erosionIter; erosionId++) {
+            for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w) {
+              for (int x = 1, k2 = k1; x < wLast; x++, k2++) {
+                auto maskIn = inputBuffer[k2];
+                auto &maskOut = outputBuffer[k2];
+
+                maskOut = maskIn;
+
+                if (0 < maskIn) {
+                  for (auto o : neighbourOffset) {
+                    if (inputBuffer[k2 + o] == 0) {
+                      maskOut = 0;
+                      break;
+                    }
                   }
                 }
               }
             }
+
+            std::swap(inputBuffer, outputBuffer);
           }
-
-          std::swap(inputBuffer, outputBuffer);
         }
-      }
 
-      // Dilation
-      if (0 < m_dilationIter) {
-        auto &inputBuffer =
-            (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
-        auto &outputBuffer =
-            (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
+        // Dilation
+        if (0 < m_dilationIter) {
+          auto &inputBuffer =
+              (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
+          auto &outputBuffer =
+              (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
 
-        inputBuffer = bufferToPrune;
+          inputBuffer = bufferToPrune;
 
-        for (int dilationId = 0; dilationId < m_dilationIter; dilationId++) {
-          for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w) {
-            for (int x = 1, k2 = k1; x < wLast; x++, k2++) {
-              auto maskIn = inputBuffer[k2];
-              auto &maskOut = outputBuffer[k2];
+          for (int dilationId = 0; dilationId < m_dilationIter; dilationId++) {
+            for (int y = 1, k1 = w + 1; y < hLast; y++, k1 += w) {
+              for (int x = 1, k2 = k1; x < wLast; x++, k2++) {
+                auto maskIn = inputBuffer[k2];
+                auto &maskOut = outputBuffer[k2];
 
-              maskOut = maskIn;
+                maskOut = maskIn;
 
-              if (0 == maskIn) {
-                for (auto o : neighbourOffset) {
-                  if (0 < inputBuffer[k2 + o]) {
-                    maskOut = 1;
-                    break;
+                if (0 == maskIn) {
+                  for (auto o : neighbourOffset) {
+                    if (0 < inputBuffer[k2 + o]) {
+                      maskOut = 1;
+                      break;
+                    }
                   }
                 }
               }
             }
-          }
 
-          std::swap(inputBuffer, outputBuffer);
+            std::swap(inputBuffer, outputBuffer);
+          }
         }
       }
-    }
+    } else
+      std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(0));
   }
 
   return masks;

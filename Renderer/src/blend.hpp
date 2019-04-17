@@ -36,8 +36,8 @@
 #endif
 
 #include <cmath>
-#include <type_traits>
 #include <tuple>
+#include <type_traits>
 
 namespace TMIV::Renderer {
 // Blend two arithmetic tensors of fixed size

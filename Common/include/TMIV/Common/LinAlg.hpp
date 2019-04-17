@@ -535,9 +535,7 @@ MAT1 mrdivide(const MAT1 &A, const MAT2 &B, int *info) {
 namespace detail {
 template <typename T> int inv(shallow::Matrix<T> A, shallow::Matrix<T> out) {
   auto I = heap::Matrix<T>::eye({A.m(), A.m()});
-  return mldivide(std::move(A),
-                  shallow::Matrix<T>(I),
-                  std::move(out));
+  return mldivide(std::move(A), shallow::Matrix<T>(I), std::move(out));
 }
 } // namespace detail
 

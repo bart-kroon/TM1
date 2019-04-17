@@ -42,7 +42,7 @@ namespace TMIV::Common {
 template <typename A> class VectorInterface : public A {
 public:
   using size_type = typename A::size_type;
-  using const_row_iterator = typename A::const_dim_iterator ;
+  using const_row_iterator = typename A::const_dim_iterator;
   using row_iterator = typename A::dim_iterator;
   using const_column_iterator = typename A::const_dim_iterator;
   using column_iterator = typename A::dim_iterator;

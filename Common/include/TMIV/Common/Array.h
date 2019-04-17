@@ -49,10 +49,10 @@ using size_type = unsigned int;
 template <typename T> class const_iterator {
 public:
   using iterator_category = std::random_access_iterator_tag;
-  using value_type = T ;
+  using value_type = T;
   using difference_type = std::ptrdiff_t;
-  using pointer = T*;
-  using reference = T&;
+  using pointer = T *;
+  using reference = T &;
 
 protected:
   T *m_p;
@@ -163,10 +163,10 @@ iterator<T> operator+(std::ptrdiff_t n, const iterator<T> &rhs) {
 template <typename T> class const_dim_iterator {
 public:
   using iterator_category = std::random_access_iterator_tag;
-  using value_type = T ;
+  using value_type = T;
   using difference_type = std::ptrdiff_t;
-  using pointer = T*;
-  using reference = T&;
+  using pointer = T *;
+  using reference = T &;
 
 protected:
   T *m_p;
@@ -369,8 +369,8 @@ public:
 template <typename T, size_type... I> class Array {
 public:
   using value_type = T;
-  using reference = T&;
-  using const_reference = const T&;
+  using reference = T &;
+  using const_reference = const T &;
   using iterator = TMIV::Common::Array::iterator<T>;
   using const_iterator = TMIV::Common::Array::const_iterator<T>;
   using dim_iterator = TMIV::Common::Array::dim_iterator<T>;
@@ -378,7 +378,7 @@ public:
   using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
   using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
   using difference_type = std::ptrdiff_t;
-  using size_type = stack::size_type ;
+  using size_type = stack::size_type;
   using container_type = Array<T, I...>;
   using tuple_type = std::array<stack::size_type, sizeof...(I)>;
   template <typename U>
@@ -659,8 +659,8 @@ using size_type = TMIV::Common::Array::size_type;
 template <size_type D, typename T> class Array {
 public:
   using value_type = T;
-  using reference = T&;
-  using const_reference = const T&;
+  using reference = T &;
+  using const_reference = const T &;
   using iterator = TMIV::Common::Array::iterator<T>;
   using const_iterator = TMIV::Common::Array::const_iterator<T>;
   using dim_iterator = TMIV::Common::Array::dim_iterator<T>;
@@ -668,7 +668,7 @@ public:
   using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
   using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
   using difference_type = std::ptrdiff_t;
-  using size_type = heap::size_type ;
+  using size_type = heap::size_type;
   using container_type = Array<D, T>;
   using tuple_type = std::array<heap::size_type, D>;
   template <typename U> using promoted_type = Array<D, decltype(T{} * U{})>;
@@ -1010,8 +1010,8 @@ using size_type = TMIV::Common::Array::size_type;
 template <size_type D, typename T> class Array {
 public:
   using value_type = T;
-  using reference = T&;
-  using const_reference = const T&;
+  using reference = T &;
+  using const_reference = const T &;
   using iterator = TMIV::Common::Array::iterator<T>;
   using const_iterator = TMIV::Common::Array::const_iterator<T>;
   using dim_iterator = TMIV::Common::Array::dim_iterator<T>;
@@ -1019,7 +1019,7 @@ public:
   using diag_iterator = TMIV::Common::Array::dim_iterator<T>;
   using const_diag_iterator = TMIV::Common::Array::const_dim_iterator<T>;
   using difference_type = std::ptrdiff_t;
-  using size_type = shallow::size_type ;
+  using size_type = shallow::size_type;
   using container_type = Array<D, T>;
   using tuple_type = std::array<shallow::size_type, D>;
   template <typename U> using promoted_type = Array<D, decltype(T(0) * U(0))>;
@@ -1505,9 +1505,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void add(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 + v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 + v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1524,9 +1525,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void sub(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 - v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 - v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1543,9 +1545,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void mult(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 * v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 * v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1562,9 +1565,10 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void div(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
-                 [](typename A1::value_type v1, typename A2::value_type v2) ->
-                 typename A3::value_type { return v1 / v2; });
+  std::transform(
+      m1.begin(), m1.end(), m2.begin(), out.begin(),
+      [](typename A1::value_type v1, typename A2::value_type v2) ->
+      typename A3::value_type { return v1 / v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>

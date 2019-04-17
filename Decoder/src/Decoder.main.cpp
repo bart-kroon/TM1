@@ -74,7 +74,7 @@ private:
     m_decoder->updateCameraList(move(metadata.cameras));
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = IO::loadAtlas(json(), metadata.atlasSize,  i);
+      auto frame = IO::loadAtlas(json(), metadata.atlasSize, i);
       auto target = IO::loadViewportMetadata(json(), i);
       auto viewport = m_decoder->decodeFrame(frame, target);
       IO::saveViewport(json(), i, viewport);

@@ -46,6 +46,7 @@ private:
   unique_ptr<IAtlasDeconstructor> m_atlasDeconstructor;
   int m_numberOfFrames{};
   int m_intraPeriod{};
+
 public:
   Application(vector<const char *> argv)
       : Common::Application{"AtlasDeconstructor", move(argv)},
@@ -53,8 +54,7 @@ public:
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
-  void run() override
-  {
+  void run() override {
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
       cout << "Intra period: [" << i << ", " << endFrame << ")\n";
@@ -64,9 +64,10 @@ public:
 
   void runIntraPeriod(int intraFrame, int /*endFrame*/) {
     auto metadata = IO::loadMivMetadata(json(), intraFrame);
-    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize, metadata.patches);
-	
-	IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
+    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize,
+                                                           metadata.patches);
+
+    IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
   }
 };
 

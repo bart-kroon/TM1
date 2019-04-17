@@ -46,22 +46,25 @@ using namespace TMIV::Common;
 namespace TMIV::AtlasConstructor {
 
 AtlasConstructor::AtlasConstructor(const Common::Json &node) {
+
+  auto localNode = node.require("AtlasConstructor");
+
   // Components
-  m_pruner =
-      Factory<IPruner>::getInstance().create("Pruner", node.require("Pruner"));
+  m_pruner = Factory<IPruner>::getInstance().create(
+      "Pruner", localNode.require("Pruner"));
   m_aggregator = Factory<IAggregator>::getInstance().create(
-      "Aggregator", node.require("Aggregator"));
-  m_packer =
-      Factory<IPacker>::getInstance().create("Packer", node.require("Packer"));
+      "Aggregator", localNode.require("Aggregator"));
+  m_packer = Factory<IPacker>::getInstance().create(
+      "Packer", localNode.require("Packer"));
 
   // Single atlas size
-  if (auto subnode = node.optional("AtlasResolution"))
+  if (auto subnode = localNode.optional("AtlasResolution"))
     m_atlasSize = subnode.asIntVector<2>();
 
   // Maximum pixel rate per frame (Texture or Depth)
   int maxMegaPixelPerFrame = 7680 * 4320 / (1000000); // 8K UHD
 
-  if (auto subnode = node.optional("MPixel"))
+  if (auto subnode = localNode.optional("MPixel"))
     maxMegaPixelPerFrame = subnode.asInt();
 
   m_nbAtlas = static_cast<uint16_t>(ceil((float)maxMegaPixelPerFrame * 1000000 /

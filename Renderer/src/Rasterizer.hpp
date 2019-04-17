@@ -92,7 +92,11 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
     const int i1 = size.y() * n / numStrips;
     const int i2 = size.y() * (n + 1) / numStrips;
     m_strips.push_back(
-        {i1, i2, size.x(), {}, std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
+        {i1,
+         i2,
+         size.x(),
+         {},
+         std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
   }
   m_dk_di = float(numStrips) / float(size.y());
 }

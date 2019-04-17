@@ -21,16 +21,31 @@
     "AdditionalDepthPathFmt": "ADD_SA_R0_Td_v%02d.yuv",
     "AdditionalMetadataPath": "ADD_SA_R0_Tm_vxx.bit",
 
-    "AtlasConstructorMethod": "AtlasConstructor",
-    "AtlasConstructor": {},
+	"AtlasConstructorMethod": "AtlasConstructor",
+	"AtlasConstructor": {
+	
+		"PrunerMethod": "Pruner",
+		"Pruner": {
+			"RedundancyFactor": 0.02,
+			"ErosionIter": 1,
+			"DilationIter": 5
+		},
+		
+		"AggregatorMethod": "Aggregator",
+		"Aggregator": {
+		},
 
-    "PrunerMethod": "Pruner",
-    "Pruner": {},
+		"PackerMethod": "Packer",
+		"Packer": {
+			"Alignment": 8,
+			"MinPatchSize": 8,
+			"Overlap": 1,
+			"PiP": 1
+		},
 
-    "PruningKeyPathFmt": "PRU_SA_R0_Td_c%02d.bit",
-
-    "PackerMethod": "Packer",
-    "Packer": {},
+		"AtlasResolution": [4096, 2048],
+		"MPixel": 20
+	},
 
     "AtlasTexturePathFmt": "ATL_SA_R0_Tt_c%02d.yuv",
     "AtlasDepthPathFmt": "ATL_SA_R0_Td_c%02d.yuv",
@@ -42,9 +57,7 @@
     "AtlasDeconstructorMethod": "AtlasDeconstructor",
     "AtlasDeconstructor": {},
 
-    "PatchesTexturePathFmt": "PAT_SA_R0_Tt_c%02d.yuv",
-    "PatchesDepthPathFmt": "PAT_SA_R0_Td_c%02d.yuv",
-    "PatchesMetadataPath": "PAT_SA_R0_Tm_c00.bit",
+	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d.yuv",
 
     "RendererMethod": "MultiPassRenderer",
     "MultiPassRenderer": {},

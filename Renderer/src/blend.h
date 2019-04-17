@@ -48,7 +48,7 @@ auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
                      const std::tuple<T0, T...> &b) -> std::tuple<T0, T...>;
 
 inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */,
-                     float /* w_b */, const std::tuple<> & /* b */) {
+                            float /* w_b */, const std::tuple<> & /* b */) {
   return std::tuple{};
 }
 
@@ -59,8 +59,8 @@ auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
                      const std::tuple<T0, T...> &c) -> std::tuple<T0, T...>;
 
 inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */,
-                     float /* w_b */, const std::tuple<> & /* b */,
-                     float /* w_c */, const std::tuple<> & /* c */) {
+                            float /* w_b */, const std::tuple<> & /* b */,
+                            float /* w_c */, const std::tuple<> & /* c */) {
   return std::tuple{};
 }
 } // namespace TMIV::Renderer

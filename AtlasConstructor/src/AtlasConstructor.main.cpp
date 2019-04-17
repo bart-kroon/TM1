@@ -36,8 +36,6 @@
 #include <TMIV/IO/IO.h>
 #include <iostream>
 
-// ./AtlasConstructor -p SourceDirectory pathToYourSourceDir -p OutputDirectory pathToYourOutputDir -c pathToAtlasConstructorConfigurationFile
-
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
@@ -76,9 +74,21 @@ public:
 
     m_atlasConstructor->completeIntraPeriod();
 
+    auto atlasSize = m_atlasConstructor->getAtlasSize();
+
+    for (auto i = 0u; i < atlasSize.size(); i++) {
+      auto sz = atlasSize[i];
+      uint nbPatch = std::count_if(
+          m_atlasConstructor->getPatchList().begin(),
+          m_atlasConstructor->getPatchList().end(),
+          [i](const PatchParameters &p) { return (p.atlasId == i); });
+
+      cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y()
+           << "): " << nbPatch << " patches\n";
+    }
+
     IO::saveMivMetadata(json(), intraFrame,
-                        {m_atlasConstructor->getAtlasSize(),
-                         m_atlasConstructor->getPatchList(),
+                        {atlasSize, m_atlasConstructor->getPatchList(),
                          m_atlasConstructor->getCameraList()});
 
     for (int i = intraFrame; i < endFrame; ++i) {

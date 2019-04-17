@@ -56,6 +56,7 @@ private:
   float m_redundancyFactor = 0.02f;
   int m_erosionIter = 1;
   int m_dilationIter = 5;
+  int m_maxAdditionalView = 1024;
 };
 
 } // namespace TMIV::AtlasConstructor

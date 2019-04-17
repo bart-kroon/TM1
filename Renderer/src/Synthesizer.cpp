@@ -56,13 +56,29 @@ public:
   Impl &operator=(const Impl &) = delete;
   Impl &operator=(Impl &&) = delete;
 
-  tuple<SceneVertexDescriptorList, TriangleDescriptorList, tuple<vector<Vec3f>>>
-  unprojectAtlas(const TextureDepth10Frame &atlas, const PatchIdMap &map,
-                 const PatchParameterList &patches,
-                 const CameraParameterList &cameras,
-                 const CameraParameters &target) const {
-    // TODO...
+  auto atlasVertices(const TextureDepth10Frame &atlas, const PatchIdMap &map,
+                     const PatchParameterList &patches,
+                     const CameraParameterList &cameras,
+                     const CameraParameters &target) const
+      -> SceneVertexDescriptorList {
     return {};
+  }
+
+  auto atlasTriangles(const TextureDepth10Frame &atlas) const
+      -> TriangleDescriptorList {
+    return {};
+  }
+
+  auto atlasColors(const TextureDepth10Frame &atlas) const -> vector<Vec3f> {
+    return {};
+  }
+
+  auto unprojectAtlas(const TextureDepth10Frame &atlas, const PatchIdMap &map,
+                      const PatchParameterList &patches,
+                      const CameraParameterList &cameras,
+                      const CameraParameters &target) const {
+    return tuple{atlasVertices(atlas, map, patches, cameras, target),
+                 atlasTriangles(atlas), tuple{atlasColors(atlas)}};
   }
 
   template <typename Unprojector>

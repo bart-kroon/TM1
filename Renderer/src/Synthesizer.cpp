@@ -64,21 +64,58 @@ public:
     return {};
   }
 
-  auto atlasTriangles(const TextureDepth10Frame &atlas) const
-      -> TriangleDescriptorList {
-    return {};
+  auto atlasTriangles(const TextureDepth10Frame &atlas,
+                      const PatchIdMap &map) const {
+    TriangleDescriptorList result;
+    const int rows = map.getHeight();
+    const int cols = map.getWidth();
+    assert(rows == atlas.second.getHeight());
+    assert(cols == atlas.second.getWidth());
+    const int size = 2 * (rows - 1) * (cols - 1);
+    result.reserve(size);
+
+    auto addTriangle = [&result, &map](int v0, int v1, int v2) {
+      const int id0 = map.getPlane(0)[v0];
+      if (id0 == unusedPatchId || id0 != map.getPlane(0)[v1] ||
+          id0 != map.getPlane(0)[v2]) {
+        return;
+      }
+      result.push_back({{v0, v1, v2}, 0.5f});
+    };
+
+    for (int i = 1; i < rows; ++i) {
+      for (int j = 1; j < cols; ++j) {
+        const int tl = (i - 1) * cols + (j - 1);
+        const int tr = (i - 1) * cols + j;
+        const int bl = i * cols + (j - 1);
+        const int br = i * cols + j;
+        addTriangle(tl, tr, br);
+        addTriangle(tl, br, bl);
+      }
+    }
+
+    // TODO: detect 360deg ERP patches and add some triangles for +180 -->
+    // -180.
+    // TODO: detect +/-90deg ERP patches and add north or south poles.
+
+    assert(size == result.size());
+    return result;
   }
 
-  auto atlasColors(const TextureDepth10Frame &atlas) const -> vector<Vec3f> {
-    return {};
+  auto atlasColors(const TextureDepth10Frame &atlas) const {
+    vector<Vec3f> result;
+    auto yuv444 = expandTexture(atlas.first);
+    result.reserve(distance(begin(result), end(result)));
+    copy(begin(yuv444), end(yuv444), back_inserter(result));
+    return result;
   }
 
-  auto unprojectAtlas(const TextureDepth10Frame &atlas, const PatchIdMap &map,
+  auto unprojectAtlas(const TextureDepth10Frame &atlas, const PatchIdMap &ids,
                       const PatchParameterList &patches,
                       const CameraParameterList &cameras,
                       const CameraParameters &target) const {
-    return tuple{atlasVertices(atlas, map, patches, cameras, target),
-                 atlasTriangles(atlas), tuple{atlasColors(atlas)}};
+    return tuple{atlasVertices(atlas, ids, patches, cameras, target),
+                 atlasTriangles(atlas, ids), tuple{atlasColors(atlas)}};
   }
 
   template <typename Unprojector>
@@ -116,14 +153,14 @@ public:
   }
 
   TextureDepth10Frame renderFrame(const MVD10Frame &atlases,
-                                  const PatchIdMapList &maps,
+                                  const PatchIdMapList &ids,
                                   const PatchParameterList &patches,
                                   const CameraParameterList &cameras,
                                   const CameraParameters &target) const {
-    assert(atlases.size() == maps.size());
+    assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(
         atlases.size(), target, [&](size_t i, const CameraParameters &target) {
-          return unprojectAtlas(atlases[i], maps[i], patches, cameras, target);
+          return unprojectAtlas(atlases[i], ids[i], patches, cameras, target);
         });
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp10(target, rasterizer.normDisp())};
@@ -158,7 +195,7 @@ private:
   float m_rayAngleParam;
   float m_depthParam;
   float m_stretchingParam;
-};
+}; // namespace TMIV::Renderer
 
 Synthesizer::Synthesizer(const Common::Json &node)
     : m_impl(new Impl(

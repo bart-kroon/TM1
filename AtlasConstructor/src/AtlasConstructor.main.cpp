@@ -78,7 +78,7 @@ public:
 
     for (auto i = 0u; i < atlasSize.size(); i++) {
       auto sz = atlasSize[i];
-      uint nbPatch = std::count_if(
+      auto nbPatch = std::count_if(
           m_atlasConstructor->getPatchList().begin(),
           m_atlasConstructor->getPatchList().end(),
           [i](const PatchParameters &p) { return (p.atlasId == i); });

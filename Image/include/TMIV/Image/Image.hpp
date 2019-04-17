@@ -35,6 +35,7 @@
 #error "Include the .h, not the .hpp"
 #endif
 
+#include <TMIV/Common/Common.h>
 #include <cstdint>
 #include <limits>
 
@@ -68,6 +69,6 @@ float expandDepthValue(const Metadata::CameraParameters &camera, uint16_t x) {
     }
     return far * near / (near + normDisp * (far - near));
   }
-  return NaN;
+  return Common::NaN;
 }
 } // namespace TMIV::Image

@@ -35,13 +35,11 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/Image/Image.h>
+#include <TMIV/Common/Common.h>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
-
-const auto NaN = numeric_limits<float>::quiet_NaN();
-const auto inf = numeric_limits<float>::infinity();
 
 TEST_CASE("maxlevel", "[quantize_and_expand]") {
   REQUIRE(maxLevel(8u) == 255u);

@@ -123,8 +123,7 @@ public:
     return result;
   }
 
-  auto atlasTriangles(const TextureDepth10Frame &atlas,
-                      const Mat<uint16_t> &ids) const {
+  auto atlasTriangles(const Mat<uint16_t> &ids) const {
     TriangleDescriptorList result;
     const int rows = ids.height();
     const int cols = ids.width();
@@ -154,7 +153,7 @@ public:
     // -180.
     // TODO: detect +/-90deg ERP patches and add north or south poles.
 
-    assert(size == result.size());
+    assert(size == int(result.size()));
     return result;
   }
 
@@ -171,12 +170,12 @@ public:
                       const PatchParameterList &patches,
                       const CameraParameterList &cameras,
                       const CameraParameters &target) const {
-    assert(ids.height() == atlas.first.getHeight());
-    assert(ids.height() == atlas.second.getHeight());
-    assert(ids.width() == atlas.first.getWidth());
-    assert(ids.width() == atlas.second.getWidth());
+    assert(int(ids.height()) == atlas.first.getHeight());
+    assert(int(ids.height()) == atlas.second.getHeight());
+    assert(int(ids.width()) == atlas.first.getWidth());
+    assert(int(ids.width()) == atlas.second.getWidth());
     return tuple{atlasVertices(atlas, ids, patches, cameras, target),
-                 atlasTriangles(atlas, ids), tuple{atlasColors(atlas)}};
+                 atlasTriangles(ids), tuple{atlasColors(atlas)}};
   }
 
   template <typename Unprojector>

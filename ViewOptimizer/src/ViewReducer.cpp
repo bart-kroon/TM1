@@ -154,7 +154,6 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
   }
 
   // Calculte the overlap of view pair
-  float overlap = 0;
   if (!isoneview) {
     id_i = camera_id_pair.first;
     id_j = camera_id_pair.second;

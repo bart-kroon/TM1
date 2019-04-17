@@ -318,8 +318,9 @@ void writeMetadataToFile(const std::string& path, int frameIndex, const T& metad
 CameraParameterList loadSourceMetadata(const Json &config)
 {
 	cout << "Loading source metadata\n";
-	
-	ifstream stream{config.require("SourceCameraParameters").asString()};
+
+	std::string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+	ifstream stream{cameraPath};
 	
 	if (!stream.good())
 		throw runtime_error("Failed to load source camera parameters");
@@ -359,42 +360,40 @@ BaseAdditional<CameraParameterList> loadOptimizedMetadata(const Json &config, in
 	cout << "Loading optimized metadata\n";
 	
 	BaseAdditional<CameraParameterList> result;
-	std::string metadataPath = getFullPath(config, "OutputDirectory", "OptimizedMetadataPath");
+	std::string baseMetadataPath = getFullPath(config, "OutputDirectory", "BaseMetadataPath");
+	std::string additionalMetadataPath = getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
 	
 	auto skipFunction =
 		[](std::ifstream& is)
 		{
 			skipCameraListFromFile(is);
-			skipCameraListFromFile(is);
 		};
 		
 	auto readFunction =
-		[](std::ifstream& is) -> BaseAdditional<CameraParameterList>
+		[](std::ifstream& is) -> CameraParameterList
 		{
-			auto baseList = readCameraListFromFile(is);
-			auto additionalList = readCameraListFromFile(is);
-			
-			return BaseAdditional<CameraParameterList>{std::move(baseList), std::move(additionalList)};
+			return readCameraListFromFile(is);
 		};
 	
 	// Reading
-	return readMetadataFromFile< BaseAdditional<CameraParameterList> >(metadataPath, frameIndex, skipFunction, readFunction);
+	return BaseAdditional<CameraParameterList>{ readMetadataFromFile<CameraParameterList>(baseMetadataPath, frameIndex, skipFunction, readFunction), readMetadataFromFile<CameraParameterList>(additionalMetadataPath, frameIndex, skipFunction, readFunction) };
 }
 
 void saveOptimizedMetadata(const Json &config, int frameIndex, const BaseAdditional<CameraParameterList> &metadata)
 {
 	cout << "Saving metadata of optimized frame " << frameIndex << '\n';
 	
-	std::string metadataPath = getFullPath(config, "OutputDirectory", "OptimizedMetadataPath");
+	std::string baseMetadataPath = getFullPath(config, "OutputDirectory", "BaseMetadataPath");
+	std::string additionalMetadataPath = getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
 
 	auto writeFunction =
-		[](std::ofstream& os, const BaseAdditional<CameraParameterList> &metadata)
+		[](std::ofstream& os, const CameraParameterList &metadata)
 		{
-			writeCameraListToFile(os, metadata.base);
-			writeCameraListToFile(os, metadata.additional);
+			writeCameraListToFile(os, metadata);
 		};
-
-	writeMetadataToFile< BaseAdditional<CameraParameterList> >(metadataPath, frameIndex, metadata, writeFunction, (frameIndex == 0));
+		
+	writeMetadataToFile<CameraParameterList>(baseMetadataPath, frameIndex, metadata.base, writeFunction, (frameIndex == 0));
+	writeMetadataToFile<CameraParameterList>(additionalMetadataPath, frameIndex, metadata.additional, writeFunction, (frameIndex == 0));
 }
 
 BaseAdditional<MVD16Frame> loadOptimizedFrame(const Json &config, const BaseAdditional<Metadata::CameraParameterList> &cameras, int frameIndex)

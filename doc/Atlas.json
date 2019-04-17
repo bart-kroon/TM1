@@ -1,0 +1,57 @@
+{
+	"startFrame": 0,
+	"numberOfFrames": 1,
+	"intraPeriod": 32,
+
+    "SourceTexturePathFmt": "v%d_4096_2048_420_10b.yuv",
+    "SourceDepthPathFmt": "v%d_4096_2048_0_8_1000_0_400_16b.yuv",
+    "SourceCameraParameters": "ClassroomVideo.json",
+	"SourceResolution": [4096, 2048],
+	"SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14" ],
+	
+    "BaseTexturePathFmt": "BAS_SA_R0_Tt_v%02d.yuv",
+    "BaseDepthPathFmt": "BAS_SA_R0_Td_v%02d.yuv",
+    "BaseMetadataPath": "BAS_SA_R0_Tm_vxx.bit",
+    
+    "AdditionalTexturePathFmt": "ADD_SA_R0_Tt_v%02d.yuv",
+    "AdditionalDepthPathFmt": "ADD_SA_R0_Td_v%02d.yuv",
+    "AdditionalMetadataPath": "ADD_SA_R0_Tm_vxx.bit",
+    
+	"AtlasTexturePathFmt": "ATL_SA_R0_Tt_c%02d.yuv",
+	"AtlasDepthPathFmt": "ATL_SA_R0_Td_c%02d.yuv",
+	"AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
+	
+    "PatchesTexturePathFmt": "PAT_SA_R0_Tt_c%02d.yuv",
+    "PatchesDepthPathFmt": "PAT_SA_R0_Td_c%02d.yuv",
+    "PatchesMetadataPath": "PAT_SA_R0_Tm_c00.bit",
+
+	"AtlasConstructorMethod": "AtlasConstructor",
+	"AtlasConstructor": {
+	
+		"PrunerMethod": "Pruner",
+		"Pruner": {
+			"RedundancyFactor": 0.02,
+			"ErosionIter": 1,
+			"DilationIter": 5
+		},
+		
+		"AggregatorMethod": "Aggregator",
+		"Aggregator": {
+		},
+
+		"PackerMethod": "Packer",
+		"Packer": {
+			"Alignment": 8,
+			"MinPatchSize": 8,
+			"Overlap": 1,
+			"PiP": 1
+		},
+
+		"AtlasResolution": [4096, 2048],
+		"MPixel": 20
+	},
+	
+	"AtlasDeconstructorMethod": "AtlasDeconstructor",
+	"AtlasDeconstructor": {
+	}
+}

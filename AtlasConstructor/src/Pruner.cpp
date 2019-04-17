@@ -34,19 +34,17 @@
 #include <TMIV/AtlasConstructor/Pruner.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Image/Image.h>
-
+#include <TMIV/Renderer/reprojectPoints.h>
 #include <fstream>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
+using namespace TMIV::Renderer;
 
 namespace TMIV::AtlasConstructor {
 
 Pruner::Pruner(const Json &node) {
-
-  m_synthesizer = Factory<Renderer::ISynthesizer>::getInstance().create(
-      "Synthesizer", node.require("Synthesizer"));
 
   if (auto subnode = node.optional("RedundancyFactor"))
     m_redundancyFactor = subnode.asFloat();
@@ -80,47 +78,77 @@ MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
   MaskList masks(nbView);
   std::vector<Mat<float>> depthMapExpanded(nbView);
 
-  for (int id1 = 0; id1 < nbView; id1++) {
+  for (int id1 = 0; id1 < nbView; id1++)
+  {
     int viewToPruneId = cameraOrderId[id1];
     auto &maskToPrune = masks[viewToPruneId];
 
-    maskToPrune.resize(views[viewToPruneId].first.getWidth(),
-                       views[viewToPruneId].first.getHeight());
+    maskToPrune.resize(views[viewToPruneId].first.getWidth(), views[viewToPruneId].first.getHeight());
     auto &bufferToPrune = maskToPrune.getPlane(0);
 
     std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(255));
 
-    depthMapExpanded[viewToPruneId] =
-        expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
+    depthMapExpanded[viewToPruneId] = expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
 
-    if (!shouldNotBePruned[viewToPruneId]) {
-      // Depth-based redundancy removal
-      Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];
+	if(!shouldNotBePruned[viewToPruneId])
+	{
+		// Depth-based redundancy removal
+		const Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];	  
+		Mat<Vec2f> gridMapToPrune = imagePositions(cameras[viewToPruneId]);
 
 #if 1
-      for (int id2 = 0; id2 < id1; id2++) {
-        int viewPrunedId = cameraOrderId[id2];
-        Mat<float> depthMapFromPruned = m_synthesizer->renderDepth(
-            depthMapExpanded[viewPrunedId], cameras[viewPrunedId],
-            cameras[viewToPruneId]);
+		for (int id2 = 0; id2 < id1; id2++)
+		{
+			int viewPrunedId = cameraOrderId[id2];
+			const Mat<float> &depthMapPruned = depthMapExpanded[viewPrunedId];
 
-        for (auto k = 0u; k < depthMapToPrune.size(); k++) {
-          auto &mask = bufferToPrune[k];
+			auto ptsToPruneOnPruned = reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId], gridMapToPrune, depthMapToPrune);
+			int lastXPruned = cameras[viewPrunedId].size.x() - 1, lastYPruned = cameras[viewPrunedId].size.y() - 1;
+			
+			for (auto k = 0u; k < bufferToPrune.size(); k++)
+			{
+				auto &mask = bufferToPrune[k];
+				
+				if(0 < mask)
+				{
+					float zToPrune = depthMapToPrune[k];
+					
+					if(!std::isnan(zToPrune))
+					{
+						float zToPruneOnPruned = ptsToPruneOnPruned.second[k];
+					
+						if(!std::isnan(zToPruneOnPruned))
+						{
+							const Vec2f& xyToPruneOnPruned = ptsToPruneOnPruned.first[k];
 
-          if (0 < mask) {
-            float zToPrune = depthMapToPrune[k];
-            float zFromPruned = depthMapFromPruned[k];
+							int x1 = std::max(0, int(floor(xyToPruneOnPruned.x()))), x2 = std::min(lastXPruned, int(ceil(xyToPruneOnPruned.x())));
+							int y1 = std::max(0, int(floor(xyToPruneOnPruned.y()))), y2 = std::min(lastYPruned, int(ceil(xyToPruneOnPruned.y())));
 
-            if (!std::isnan(zToPrune)) {
-              if ((!std::isnan(zFromPruned)) &&
-                  (fabs(zFromPruned - zToPrune) <
-                   m_redundancyFactor * std::min(zToPrune, zFromPruned)))
-                mask = 0;
-            } else
-              mask = 0;
-          }
-        }
-      }
+							for(int y = y1 ; y <= y2 ; y++)
+							{
+								for(int x = x1; x <= x2 ; x++)
+								{
+									float zPruned = depthMapPruned(y, x);
+						
+									if(!std::isnan(zPruned))
+									{
+										if((fabs(zToPruneOnPruned - zPruned) < m_redundancyFactor * std::min(zPruned, zToPruneOnPruned)))
+										{
+											mask = 0;
+											goto endloop;
+										}
+									}
+								}
+							}
+						}
+					}
+					else
+						mask = 0;
+				}
+				
+				endloop: ;
+			}
+		}
 
       // 		{
       // 			std::ofstream os("maskPruned_" +

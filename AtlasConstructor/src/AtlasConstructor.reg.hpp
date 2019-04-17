@@ -47,7 +47,5 @@ void registerComponents() {
   Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");
   Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
   Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
-  Factory<TMIV::Renderer::ISynthesizer>::getInstance()
-      .registerAs<TMIV::Renderer::Synthesizer>("Synthesizer");
 }
 } // namespace TMIV::AtlasConstructor

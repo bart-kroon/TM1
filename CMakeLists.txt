@@ -9,6 +9,11 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Catch2)
 	list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Catch2/contrib)
 	enable_testing()
 	include(Catch)
+
+	# To enable spikes, add a directory Spikes
+	if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Spikes)
+		add_subdirectory(Spikes)
+	endif()
 endif()
 
 add_subdirectory(Common)

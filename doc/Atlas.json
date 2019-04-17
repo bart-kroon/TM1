@@ -25,6 +25,10 @@
     "PatchesDepthPathFmt": "PAT_SA_R0_Td_c%02d.yuv",
     "PatchesMetadataPath": "PAT_SA_R0_Tm_c00.bit",
 
+    "ViewOptimizerMethod": "ViewReducer",
+    "ViewReducer": {
+    },
+
 	"AtlasConstructorMethod": "AtlasConstructor",
 	"AtlasConstructor": {
 	

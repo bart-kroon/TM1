@@ -81,6 +81,9 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
             (index == id ? result.base : result.additional)
                 .push_back(move(cameras[index]));
           }
+
+          m_priorities[id] = true;
+          
           return result;
         }
       }

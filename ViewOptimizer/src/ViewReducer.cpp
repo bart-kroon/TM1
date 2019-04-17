@@ -93,13 +93,13 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
     for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
       // Sphere distance function
       size_t temp_angle =
-          acos(sin(cameras[id_1].rotation[1] * radperdeg) *
+          size_t(acos(sin(cameras[id_1].rotation[1] * radperdeg) *
                    sin(cameras[id_2].rotation[1] * radperdeg) +
                cos(cameras[id_1].rotation[1] * radperdeg) *
                    cos(cameras[id_2].rotation[1] * radperdeg) *
                    cos((cameras[id_1].rotation[0] - cameras[id_2].rotation[0]) *
                        radperdeg)) /
-          degree_step;
+          degree_step);
 
       if (temp_angle > max_angle) {
         cameras_id_pair.clear();
@@ -222,7 +222,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
                 powf(cameras[camera_id[i]].position[1] - y_center, 2) +
                 powf(cameras[camera_id[i]].position[2] - z_center, 2));
       if (temp_distance < distance) {
-        id_center = camera_id[i];
+        id_center = int(camera_id[i]);
         distance = temp_distance;
       }
     }
@@ -259,17 +259,17 @@ auto ViewReducer::calculateFOV(CameraParameters camera) -> size_t {
   const float FOV_step = (45 * radperdeg) / 4;
 
   if (camera.type == ProjectionType::ERP) {
-    temp_FOV += (size_t)abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) *
+    temp_FOV += (size_t) (abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) *
                 radperdeg *
                 (abs(sin(camera.erpThetaRange[0] * radperdeg) -
                      sin(camera.erpThetaRange[1] * radperdeg))) /
-                FOV_step;
+                FOV_step);
   } else if (camera.type == ProjectionType::Perspective) {
     temp_FOV +=
-        (size_t)abs(
+        (size_t) (abs(
             4 * atan(camera.size[0] / (2 * camera.perspectiveFocal[0])) *
             sin(atan(camera.size[1] / (2 * camera.perspectiveFocal[1])))) /
-        FOV_step;
+        FOV_step);
   }
   return temp_FOV;
 }

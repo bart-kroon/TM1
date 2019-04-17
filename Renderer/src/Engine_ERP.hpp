@@ -275,7 +275,8 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
   // Project mesh to target view
   //
-  // TODO: Cull and split triangles
+  // TODO: Split edges that intersect y = 0 for x < 0
+  // TODO: Split edges that intersect (x, y) = 0
   template <typename... T>
   auto project(SceneVertexDescriptorList sceneVertices,
                TriangleDescriptorList triangles,

@@ -413,7 +413,8 @@ public:
   Array(const OTHER &that) : Array() {
     if ((dim() == that.dim()) &&
         std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin()))
-      std::copy(that.begin(), that.end(), begin());
+      std::transform(that.begin(), that.end(), begin(),
+                     [](auto v) { return T(v); });
   }
   //! \brief Move constructor.
   Array(container_type &&that) = default;
@@ -431,7 +432,8 @@ public:
   container_type &operator=(const OTHER &that) {
     if ((dim() == that.dim()) &&
         std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin()))
-      std::copy(that.begin(), that.end(), begin());
+      std::transform(that.begin(), that.end(), begin(),
+                     [](auto v) { return T(v); });
 
     return *this;
   }
@@ -642,7 +644,8 @@ public:
   }
   template <typename OTHER> static container_type from(const OTHER &other) {
     container_type out;
-    std::copy(other.begin(), other.begin() + out.size(), out.begin());
+    std::transform(other.begin(), other.end(), out.begin(),
+                   [](auto v) { return T(v); });
     return out;
   }
 };
@@ -706,7 +709,8 @@ public:
     std::fill(sz.begin() + that.sizes().size(), sz.end(), 1);
 
     this->resize(sz);
-    std::copy(that.begin(), that.end(), begin());
+    std::transform(that.begin(), that.end(), begin(),
+                   [](auto v) { return T(v); });
 
     m_property = that.getProperty();
   }
@@ -731,7 +735,8 @@ public:
     std::fill(sz.begin() + that.sizes().size(), sz.end(), 1);
 
     this->resize(sz);
-    std::copy(that.begin(), that.end(), begin());
+    std::transform(that.begin(), that.end(), begin(),
+                   [](auto v) { return T(v); });
 
     m_property = that.getProperty();
 
@@ -1081,7 +1086,8 @@ public:
       std::fill(sz.begin() + that.sizes().size(), sz.end(), 1);
 
       this->reshape(sz);
-      std::copy(that.begin(), that.end(), begin());
+      std::transform(that.begin(), that.end(), begin(),
+                     [](auto v) { return T(v); });
 
       m_property = that.getProperty();
     }
@@ -1505,10 +1511,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void add(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 + v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 + v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1525,10 +1530,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void sub(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 - v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 - v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1545,10 +1549,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void mult(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 * v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 * v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1565,10 +1568,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void div(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 / v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 / v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>

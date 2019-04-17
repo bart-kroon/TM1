@@ -149,6 +149,14 @@ auto reproject(const Common::Mat<float> &depth,
   return project(std::move(std::get<0>(x)), std::move(std::get<1>(x)),
                  std::move(std::get<2>(x)), target);
 }
+
+// Unproject a pixel from a source frame to scene coordinates in the reference
+// frame of the target camera.
+//
+// This method is less efficient because of the switch on projection type, but
+// suitable for rendering directly from an atlas.
+auto unprojectVertex(Common::Vec2f position, float depth,
+                     const Metadata::CameraParameters &camera) -> Common::Vec3f;
 } // namespace TMIV::Renderer
 
 #endif

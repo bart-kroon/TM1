@@ -35,6 +35,7 @@
 
 #include "Engine.h"
 #include "Rasterizer.h"
+#include <TMIV/Common/LinAlg.h>
 #include <TMIV/Image/Image.h>
 #include <cassert>
 #include <future>
@@ -56,28 +57,83 @@ public:
   Impl &operator=(const Impl &) = delete;
   Impl &operator=(Impl &&) = delete;
 
-  auto atlasVertices(const TextureDepth10Frame &atlas, const PatchIdMap &map,
+  auto affineParameterList(const CameraParameterList &cameras,
+                           const CameraParameters &target) const {
+    vector<pair<Mat3x3f, Vec3f>> result;
+    result.reserve(cameras.size());
+    transform(begin(cameras), end(cameras), back_inserter(result),
+              [&target](const Metadata::CameraParameters &camera) {
+                return affineParameters(camera, target);
+              });
+    return result;
+  }
+
+  static Vec2f imagePosition(Vec2i atlas, const PatchParameters &patch) {
+    switch (patch.patchRotation) {
+    case PatchRotation::upright:
+      return Vec2f(atlas - patch.patchPackingPos + patch.patchMappingPos);
+    case PatchRotation::ccw:
+      return Vec2f(atlas - patch.patchPackingPos + patch.patchMappingPos);
+    default:
+      abort();
+    }
+  }
+
+  auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                      const PatchParameterList &patches,
                      const CameraParameterList &cameras,
-                     const CameraParameters &target) const
-      -> SceneVertexDescriptorList {
-    return {};
+                     const CameraParameters &target) const {
+    SceneVertexDescriptorList result;
+    const auto rows = int(ids.height());
+    const auto cols = int(ids.width());
+    result.reserve(rows * cols);
+
+    auto R_t = affineParameterList(cameras, target);
+
+    auto i_ids = begin(ids);
+
+    // For each used pixel in the atlas...
+    for (int i_atlas = 0; i_atlas < rows; ++i_atlas) {
+      for (int j_atlas = 0; j_atlas < cols; ++j_atlas) {
+        auto patchId = *i_ids++;
+        if (patchId == unusedPatchId) {
+          continue;
+        }
+
+        // Look up metadata
+        assert(patchId < patches.size());
+        const auto &patch = patches[patchId];
+        assert(patch.virtualCameraId < cameras.size());
+        const auto &camera = cameras[patch.virtualCameraId];
+
+        // Look up depth value and affine parameters
+        const auto uv = imagePosition(Vec2i{j_atlas, i_atlas}, patch);
+        const auto d = expandDepthValue<10>(
+            camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
+        const auto &R = R_t[patch.virtualCameraId].first;
+        const auto &t = R_t[patch.virtualCameraId].second;
+
+        // Reproject and calculate ray angle
+        const auto xyz = R * unprojectVertex(uv, d, camera) + t;
+        const auto rayAngle = angle(xyz, xyz - t);
+        result.push_back({xyz, rayAngle});
+      }
+    }
+
+    return result;
   }
 
   auto atlasTriangles(const TextureDepth10Frame &atlas,
-                      const PatchIdMap &map) const {
+                      const Mat<uint16_t> &ids) const {
     TriangleDescriptorList result;
-    const int rows = map.getHeight();
-    const int cols = map.getWidth();
-    assert(rows == atlas.second.getHeight());
-    assert(cols == atlas.second.getWidth());
+    const int rows = ids.height();
+    const int cols = ids.width();
     const int size = 2 * (rows - 1) * (cols - 1);
     result.reserve(size);
 
-    auto addTriangle = [&result, &map](int v0, int v1, int v2) {
-      const int id0 = map.getPlane(0)[v0];
-      if (id0 == unusedPatchId || id0 != map.getPlane(0)[v1] ||
-          id0 != map.getPlane(0)[v2]) {
+    auto addTriangle = [&result, &ids](int v0, int v1, int v2) {
+      const int id0 = ids[v0];
+      if (id0 == unusedPatchId || id0 != ids[v1] || id0 != ids[v2]) {
         return;
       }
       result.push_back({{v0, v1, v2}, 0.5f});
@@ -110,10 +166,15 @@ public:
     return result;
   }
 
-  auto unprojectAtlas(const TextureDepth10Frame &atlas, const PatchIdMap &ids,
+  auto unprojectAtlas(const TextureDepth10Frame &atlas,
+                      const Mat<uint16_t> &ids,
                       const PatchParameterList &patches,
                       const CameraParameterList &cameras,
                       const CameraParameters &target) const {
+    assert(ids.height() == atlas.first.getHeight());
+    assert(ids.height() == atlas.second.getHeight());
+    assert(ids.width() == atlas.first.getWidth());
+    assert(ids.width() == atlas.second.getWidth());
     return tuple{atlasVertices(atlas, ids, patches, cameras, target),
                  atlasTriangles(atlas, ids), tuple{atlasColors(atlas)}};
   }
@@ -160,7 +221,8 @@ public:
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(
         atlases.size(), target, [&](size_t i, const CameraParameters &target) {
-          return unprojectAtlas(atlases[i], ids[i], patches, cameras, target);
+          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
+                                cameras, target);
         });
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp10(target, rasterizer.normDisp())};

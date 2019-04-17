@@ -93,18 +93,9 @@ template <unsigned bits, class FRAME>
 Mat1f expandDepth_impl(const CameraParameters &camera, const FRAME &inYuv) {
   auto &in = inYuv.getPlane(0);
   Mat1f out(in.sizes());
-  transform(begin(in), end(in), begin(out),
-            [near = camera.depthRange[0],
-             far = camera.depthRange[1]](uint16_t x) -> float {
-              if (x > 0) {
-                const float normDisp = expandValue<bits>(x);
-                if (far >= 1000.f /*meter*/) {
-                  return near / normDisp;
-                }
-                return far * near / (near + normDisp * (far - near));
-              }
-              return NaN;
-            });
+  transform(begin(in), end(in), begin(out), [&camera](uint16_t x) {
+    return expandDepthValue<bits>(camera, x);
+  });
   return out;
 }
 } // namespace

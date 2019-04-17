@@ -45,6 +45,16 @@ constexpr unsigned maxLevel(unsigned bits);
 // transfer
 template <unsigned bits> float expandValue(uint16_t x);
 
+// Expand a 10/16-bit depth value to a 32-bit float matrix with depth
+// values in meters. Input level 0 indicates invalid depth and is mapped to NaN.
+template <unsigned bits>
+float expandDepthValue(const Metadata::CameraParameters &camera, uint16_t x);
+
+// Expand a YUV 4:0:0 10/16-bit depth map to a 32-bit float matrix with depth
+// values in meters. Input level 0 indicates invalid depth and is mapped to NaN.
+Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera,
+                               const Common::Frame<Common::YUV400P10> &inYuv);
+
 // Quantize a value in the [0, 1] range to levels 0..2^bits - 1
 // NaN values are assigend to level 0
 // Other values are clipped to the [0, 1] range

@@ -67,4 +67,21 @@ auto affineParameters(const CameraParameters &camera,
   const auto t = transpose(R2) * (t1 - t2);
   return {R, t};
 }
+
+auto unprojectVertex(Common::Vec2f position, float depth,
+                     const Metadata::CameraParameters &camera)
+    -> Common::Vec3f {
+  switch (camera.type) {
+  case Metadata::ProjectionType::ERP: {
+    Engine<Metadata::ProjectionType::ERP> engine{camera};
+    return engine.unprojectVertex(position, depth);
+  }
+  case Metadata::ProjectionType::Perspective: {
+    Engine<Metadata::ProjectionType::ERP> engine{camera};
+    return engine.unprojectVertex(position, depth);
+  }
+  default:
+    abort();
+  }
+}
 } // namespace TMIV::Renderer

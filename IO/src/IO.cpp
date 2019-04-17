@@ -55,6 +55,10 @@ std::string getFullPath(const Json &config,
       fileName =
           format(config.require(fileNameField).asString().c_str(), cameraId);
 
+  if (!fileName.empty() && fileName.front() == '/') {
+    return fileName;
+  }
+
   if (auto subnode = config.optional(baseDirectoryField))
     baseDirectory = subnode.asString() + "/";
 

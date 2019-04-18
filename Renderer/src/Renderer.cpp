@@ -57,10 +57,10 @@ Renderer::renderFrame(const Common::MVD10Frame &atlas,
 }
 
 Common::TextureDepth16Frame
-Renderer::renderFrame(const Common::MVD16Frame &atlas,
+Renderer::renderFrame(const Common::MVD16Frame &frame,
                       const Metadata::CameraParameterList &cameras,
                       const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);
+  auto viewport = m_synthesizer->renderFrame(frame, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

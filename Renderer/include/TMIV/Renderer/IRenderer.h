@@ -58,7 +58,7 @@ public:
 
   // Render from a multiview source to a viewport (encoder side)
   virtual Common::TextureDepth16Frame
-  renderFrame(const Common::MVD16Frame &atlas,
+  renderFrame(const Common::MVD16Frame &frame,
               const Metadata::CameraParameterList &cameras,
               const Metadata::CameraParameters &target) const = 0;
 };

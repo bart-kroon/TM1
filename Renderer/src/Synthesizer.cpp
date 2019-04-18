@@ -68,13 +68,25 @@ public:
     return result;
   }
 
-  static Vec2f imagePosition(Vec2i atlas, const PatchParameters &patch) {
+  static Vec2i imagePosition(Vec2i atlas, const PatchParameters &patch) {
     switch (patch.patchRotation) {
     case PatchRotation::upright:
-      return Vec2f(atlas - patch.patchPackingPos + patch.patchMappingPos);
-    case PatchRotation::ccw:
-      // TODO: Rotate patch
-      return Vec2f(atlas - patch.patchPackingPos + patch.patchMappingPos);
+      return atlas - patch.patchPackingPos + patch.patchMappingPos;
+    case PatchRotation::ccw: {
+      // In reference to atlas constructor figure in TM document
+      // Sanity check: consider patch is at (0,0) in view and atlas
+      // Consider the top-left pixel in the patch in the atlas: (x, y) = (0, 0)
+      // This pixel corresponds to the top-right pixel in the patch in the view:
+      // (patch_width_in_view_x - 1, 0) = (j, i)
+
+      // Determine patch row and column in view orientation
+      const int i = atlas.x() - patch.patchPackingPos.x();
+      const int j =
+          patch.patchSize.x() - 1 - atlas.y() - patch.patchPackingPos.y();
+
+      // Return position in view
+      return patch.patchMappingPos + Vec2i{j, i};
+    }
     default:
       abort();
     }
@@ -111,7 +123,7 @@ public:
         const auto &camera = cameras[patch.virtualCameraId];
 
         // Look up depth value and affine parameters
-        const auto uv = imagePosition(Vec2i{j_atlas, i_atlas}, patch);
+        const auto uv = Vec2f(imagePosition(Vec2i{j_atlas, i_atlas}, patch));
         const auto d = expandDepthValue<10>(
             camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
         const auto &R = R_t[patch.virtualCameraId].first;

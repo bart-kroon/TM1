@@ -97,7 +97,10 @@ public:
     for (int i_atlas = 0; i_atlas < rows; ++i_atlas) {
       for (int j_atlas = 0; j_atlas < cols; ++j_atlas) {
         auto patchId = *i_ids++;
+
+        // Push dummy vertices to keep indexing simple
         if (patchId == unusedPatchId) {
+          result.emplace_back();
           continue;
         }
 

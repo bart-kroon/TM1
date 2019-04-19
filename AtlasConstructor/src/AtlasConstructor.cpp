@@ -110,9 +110,10 @@ void AtlasConstructor::completeIntraPeriod() {
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
 
   // Packing
+  cout << "Packing.." << endl;
   m_patchList = m_packer->pack(std::vector<Vec2i>(m_nbAtlas, m_atlasSize),
                                aggregatedMask, m_isReferenceView);
-
+  cout << "Atlas construction" << endl;
   // Atlas construction
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
@@ -131,8 +132,10 @@ void AtlasConstructor::completeIntraPeriod() {
       atlasList.push_back(std::move(atlas));
     }
 
-    for (const auto &patch : m_patchList)
+    cout << "writePatchInAtlas" << endl;
+    for (const auto &patch : m_patchList) 
       writePatchInAtlas(patch, views, atlasList);
+    
 
     m_atlasBuffer.push_back(std::move(atlasList));
   }
@@ -153,9 +156,11 @@ Common::MVD16Frame AtlasConstructor::popAtlas() {
   return atlas;
 }
 
+
 void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
                                          const MVD16Frame &views,
                                          MVD16Frame &atlas) {
+
   auto &currentAtlas = atlas[patch.atlasId];
   auto &currentView = views[patch.virtualCameraId];
 
@@ -171,6 +176,20 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
 
   if (patch.patchRotation == Metadata::PatchRotation::upright) {
     for (int dy = 0; dy < h; dy++) {
+
+      int twidth = textureViewMap.getPlane(0).width();
+      int xmax = std::max(xM, xP);
+      bool XoutOfBounds = xmax + w >= twidth;
+      if (XoutOfBounds)  {
+          cout << "x out of bounds: " << xmax + w << endl;
+          w = twidth - 1 - xmax;
+      }
+      int theight = textureViewMap.getPlane(0).height();
+      int ymax = std::max(yM, yP);
+      bool YoutOfBounds = ymax + dy>= theight;
+      if (YoutOfBounds) 
+        continue;
+
       // Y
       std::copy(textureViewMap.getPlane(0).row_begin(yM + dy) + xM,
                 textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w),

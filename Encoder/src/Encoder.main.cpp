@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     TMIV::Encoder::Application app{{argv, argv + argc}};
     app.run();
     return 0;
-  } catch (runtime_error &e) {
+  } catch (std::exception &e) {
     cerr << e.what() << endl;
   }
 }

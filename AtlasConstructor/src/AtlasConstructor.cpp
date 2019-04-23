@@ -179,10 +179,10 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
 
       int twidth = textureViewMap.getPlane(0).width();
       int xmax = std::max(xM, xP);
-      bool XoutOfBounds = xmax + w >= twidth;
+      bool XoutOfBounds = xmax + w > twidth;
       if (XoutOfBounds)  {
           cout << "x out of bounds: " << xmax + w << endl;
-          w = twidth - 1 - xmax;
+          w = twidth - xmax;
       }
       int theight = textureViewMap.getPlane(0).height();
       int ymax = std::max(yM, yP);

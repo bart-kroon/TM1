@@ -32,6 +32,8 @@
  */
 
 #include <TMIV/Common/Frame.h>
+#include <algorithm>
+#include <sstream>
 
 namespace TMIV::Common {
 
@@ -377,4 +379,59 @@ void convert(const Frame<YUV420P16> &inputFrame,
         });
   }
 }
+
+template <class FORMAT> std::string frameInfo(const Frame<FORMAT> &frame) {
+  std::ostringstream oss;
+
+  int N = frame.getNumberOfPlanes();
+  oss << "planes=" << N << std::endl;
+
+  for (int i = 0; i < N; ++i) {
+    auto w = frame.getPlane(i).width();
+    auto h = frame.getPlane(i).height();
+    oss << "plane=" << i << ", w=" << w << ", h=" << h << std::endl;
+
+    double firstValue = *frame.getPlane(i).row_begin(0);
+    double n = 0.0, s = 0.0, ss = 0.0, mn = firstValue, mx = firstValue;
+    for (auto y = 0u; y < h; ++y) {
+      for (auto it = frame.getPlane(i).row_begin(y),
+                itend = frame.getPlane(i).row_end(y);
+           it != itend; ++it) {
+        double v = static_cast<double>(*it);
+        n++;
+        s += v;
+        ss += v * v;
+        mn = std::min(mn, v);
+        mx = std::max(mn, v);
+      }
+    }
+    double mean = s / n;
+    double var = ss / n - mean * mean;
+    oss << "\tmin=" << mn << ", max=" << mx << ", mean=" << mean
+        << ", sdev=" << sqrt(var) << std::endl;
+  }
+  oss << std::endl;
+
+  return oss.str();
+}
+
+template <> std::string frameInfo(const TextureDepth16Frame &frame) {
+  std::ostringstream oss;
+  oss << "TextureDepth16Frame" << std::endl;
+  oss << "Texture " << frameInfo(frame.first) << std::endl;
+  oss << "Depth " << frameInfo(frame.second) << std::endl;
+
+  return oss.str();
+}
+
+template <> std::string frameInfo(const MVD16Frame &frame) {
+  std::ostringstream oss;
+  for (auto i = 0u; i < frame.size(); ++i) {
+    oss << "View " << i << std::endl;
+    oss << frameInfo(frame[i]);
+  }
+
+  return oss.str();
+}
+
 } // namespace TMIV::Common

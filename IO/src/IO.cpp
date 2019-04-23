@@ -327,7 +327,7 @@ CameraParameterList loadSourceMetadata(const Json &config) {
 
 MVD16Frame loadSourceFrame(const Json &config,
                            const CameraParameterList &cameras, int frameIndex) {
-  cout << "Loading source frame " << frameIndex << '\n';
+  cout << "Loading source frame " << frameIndex << std::flush;
 
   MVD16Frame result;
 
@@ -339,11 +339,26 @@ MVD16Frame loadSourceFrame(const Json &config,
 
     std::string depthPath =
         getFullPath(config, "SourceDirectory", "SourceDepthPathFmt", cam.id);
-    auto depthFrame = readFrame<YUV400P16>(depthPath, frameIndex, cam.size);
+
+    int bitdepthDepth = cam.bitDepthDepth;
+
+    Frame<YUV400P16> depthFrame(cam.size[0], cam.size[1]);
+    if (bitdepthDepth == 10) {
+      Frame<YUV420P10> depthFrame10 = readFrame<YUV420P10>(depthPath, frameIndex, cam.size);
+      convert(depthFrame10, depthFrame);
+    } 
+    else if (bitdepthDepth == 16) {
+      Frame<YUV420P16> depthFrame16 = readFrame<YUV420P16>(depthPath, frameIndex, cam.size);
+      convert(depthFrame16, depthFrame);
+    }
+    else
+      throw std::runtime_error("\nError unsuported bit depth for source files: " + std::to_string(bitdepthDepth) );
+    
 
     result.push_back(
         TextureDepth16Frame(std::move(textureFrame), std::move(depthFrame)));
   }
+  cout << " ok\n";
 
   return result;
 }

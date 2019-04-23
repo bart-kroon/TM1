@@ -107,6 +107,9 @@ public:
 
 template <class FROM, class TO>
 void convert(const Frame<FROM> &inputFrame, Frame<TO> &outputFrame);
+
+template <class T> std::string frameInfo(const T &frame);
+
 } // namespace TMIV::Common
 
 #include "Frame.hpp"

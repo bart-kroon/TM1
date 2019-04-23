@@ -64,6 +64,8 @@ struct CameraParameters {
   Vec2f perspectiveFocal{};  // Focal length
   Vec2f perspectiveCenter{}; // Principle point
   Vec2f depthRange{};        // [near, far]
+  int bitDepthColor{};
+  int bitDepthDepth{};
 
   friend std::ostream &operator<<(std::ostream &stream,
                                   const CameraParameters &camera);

@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     TMIV::Decoder::Application app{{argv, argv + argc}};
     app.run();
     return 0;
-  } catch (runtime_error &e) {
+  } catch (exception &e) {
     cerr << e.what() << endl;
   }
 }

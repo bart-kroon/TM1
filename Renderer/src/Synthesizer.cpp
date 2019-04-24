@@ -276,9 +276,9 @@ private:
 
 Synthesizer::Synthesizer(const Common::Json &node)
     : m_impl(new Impl(
-          node.require("Synthesizer").require("rayAngleParam").asFloat(),
-          node.require("Synthesizer").require("depthParam").asFloat(),
-          node.require("Synthesizer").require("stretchingParam").asFloat())) {}
+          node.require("Synthesizer").require("rayAngleParameter").asFloat(),
+          node.require("Synthesizer").require("depthParameter").asFloat(),
+          node.require("Synthesizer").require("stretchingParameter").asFloat())) {}
 
 Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
                          float stretchingParam)

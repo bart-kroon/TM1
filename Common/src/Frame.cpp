@@ -434,4 +434,24 @@ template <> std::string frameInfo(const MVD16Frame &frame) {
   return oss.str();
 }
 
+template <> std::string frameInfo(const TextureDepth10Frame &frame) {
+  std::ostringstream oss;
+  oss << "TextureDepth10Frame" << std::endl;
+  oss << "Texture " << frameInfo(frame.first) << std::endl;
+  oss << "Depth " << frameInfo(frame.second) << std::endl;
+
+  return oss.str();
+}
+
+template <> std::string frameInfo(const MVD10Frame &frame) {
+  std::ostringstream oss;
+  for (auto i = 0u; i < frame.size(); ++i) {
+    oss << "View " << i << std::endl;
+    oss << frameInfo(frame[i]);
+  }
+
+  return oss.str();
+}
+
+
 } // namespace TMIV::Common

@@ -79,6 +79,7 @@
     "Inpainter": {},
 
     "RenderedTexturePath": "TM1_SA_R0_Tt_p%02d.yuv",
-    "RenderedDepthPath": "TM1_SA_R0_Td_p%02d.yuv"
+    "RenderedDepthPath": "TM1_SA_R0_Td_p%02d.yuv",
 
+	"OutputCameraName": [ "viewport"]
 }

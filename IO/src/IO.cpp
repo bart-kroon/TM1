@@ -607,8 +607,25 @@ void savePatchIdMaps(const Json &config, int frameIndex,
 
 /////////////////////////////////////////////////
 CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
-  // TODO
-  return {};
+  // TODO read posetrace
+  
+  std::string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+  
+  ifstream stream{cameraPath};
+
+  if (!stream.good())
+    throw runtime_error("Failed to load camera parameters\n " + cameraPath );
+
+  auto outputCameraName = config.require("OutputCameraName").asStringVector();
+  if (outputCameraName.size() > 1u)
+    throw runtime_error("OutputCameraName only allows a single entry");
+
+  auto cameras =  loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
+
+  if (cameras.empty())
+    throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
+
+  return cameras[0];
 }
 
 void saveViewport(const Json &config, int frameIndex,

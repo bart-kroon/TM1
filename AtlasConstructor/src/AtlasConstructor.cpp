@@ -172,28 +172,29 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
   const auto &depthViewMap = currentView.second;
 
   int w = patch.patchSize.x(), h = patch.patchSize.y();
+  int w_bound = w;
   int xM = patch.patchMappingPos.x(), yM = patch.patchMappingPos.y();
   int xP = patch.patchPackingPos.x(), yP = patch.patchPackingPos.y();
+
+  // testing if the patch in the view is out of bound ==> it only limits the reading in view to avoid out-of-bound issue
+  int twidth = textureViewMap.getPlane(0).width();
+  int theight = textureViewMap.getPlane(0).height();
+  bool XoutOfBounds = xM + w > twidth;
+  if (XoutOfBounds) {
+    cout << "x out of bounds : " << xM + w << endl;
+    w_bound = twidth - 1 - xM;
+  }
 
   if (patch.patchRotation == Metadata::PatchRotation::upright) {
     for (int dy = 0; dy < h; dy++) {
 
-      int twidth = textureViewMap.getPlane(0).width();
-      int xmax = std::max(xM, xP);
-      bool XoutOfBounds = xmax + w > twidth;
-      if (XoutOfBounds)  {
-          cout << "x out of bounds: " << xmax + w << endl;
-          w = twidth - xmax;
-      }
-      int theight = textureViewMap.getPlane(0).height();
-      int ymax = std::max(yM, yP);
-      bool YoutOfBounds = ymax + dy>= theight;
-      if (YoutOfBounds) 
+	  bool YoutOfBounds = yM + dy > theight;
+      if (YoutOfBounds)
         continue;
 
       // Y
       std::copy(textureViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w),
+                textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_bound),
                 textureAtlasMap.getPlane(0).row_begin(yP + dy) + xP);
 
       // UV
@@ -202,21 +203,26 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
           std::copy(
               textureViewMap.getPlane(p).row_begin((yM + dy) / 2) + xM / 2,
               textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
-                  (xM + w) / 2,
+                  (xM + w_bound) / 2,
               textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) + xP / 2);
         }
       }
 
       // Depth
       std::copy(depthViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                depthViewMap.getPlane(0).row_begin(yM + dy) + (xM + w),
+                depthViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_bound),
                 depthAtlasMap.getPlane(0).row_begin(yP + dy) + xP);
     }
   } else {
     for (int dy = 0; dy < h; dy++) {
-      // Y
+      
+	  bool YoutOfBounds = yM + dy > theight;
+      if (YoutOfBounds)
+        continue; 
+	  
+	  // Y
       std::copy(textureViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w),
+                textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_bound),
                 std::make_reverse_iterator(
                     textureAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)));
 
@@ -226,7 +232,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
           std::copy(textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
                         xM / 2,
                     textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
-                        (xM + w) / 2,
+                        (xM + w_bound) / 2,
                     std::make_reverse_iterator(
                         textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
                         (yP + w) / 2));
@@ -235,7 +241,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
 
       // Depth
       std::copy(depthViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                depthViewMap.getPlane(0).row_begin(yM + dy) + (xM + w),
+                depthViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_bound),
                 std::make_reverse_iterator(
                     depthAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)));
     }

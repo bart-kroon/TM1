@@ -85,6 +85,7 @@ void AtlasConstructor::prepareIntraPeriod(
   m_isReferenceView.insert(m_isReferenceView.end(), additionalCameras.size(),
                            0);
 
+  m_viewBuffer.clear();
   m_aggregator->prepareIntraPeriod();
 }
 

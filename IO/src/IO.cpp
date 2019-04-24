@@ -344,16 +344,17 @@ MVD16Frame loadSourceFrame(const Json &config,
 
     Frame<YUV400P16> depthFrame(cam.size[0], cam.size[1]);
     if (bitdepthDepth == 10) {
-      Frame<YUV420P10> depthFrame10 = readFrame<YUV420P10>(depthPath, frameIndex, cam.size);
+      Frame<YUV420P10> depthFrame10 =
+          readFrame<YUV420P10>(depthPath, frameIndex, cam.size);
       convert(depthFrame10, depthFrame);
-    } 
-    else if (bitdepthDepth == 16) {
-      Frame<YUV420P16> depthFrame16 = readFrame<YUV420P16>(depthPath, frameIndex, cam.size);
+    } else if (bitdepthDepth == 16) {
+      Frame<YUV420P16> depthFrame16 =
+          readFrame<YUV420P16>(depthPath, frameIndex, cam.size);
       convert(depthFrame16, depthFrame);
-    }
-    else
-      throw std::runtime_error("\nError unsuported bit depth for source files: " + std::to_string(bitdepthDepth) );
-    
+    } else
+      throw std::runtime_error(
+          "\nError unsuported bit depth for source files: " +
+          std::to_string(bitdepthDepth));
 
     result.push_back(
         TextureDepth16Frame(std::move(textureFrame), std::move(depthFrame)));
@@ -527,6 +528,23 @@ void saveMivMetadata(const Json &config, int frameIndex,
                                    writeFunction, (frameIndex == 0));
 }
 
+void savePatchList(const Json &config, const std::string &name,
+                       Metadata::PatchParameterList patches) {
+  
+  std::string baseDirectory = config.require("OutputDirectory").asString();
+  std::string path = baseDirectory + name;
+
+  std::ofstream os(path);
+  if (!os.good())
+    throw runtime_error("Failed to open file for writing: " + path);
+
+  int idx = 0;
+  for (const auto &p : patches)
+    os << idx++ << ": " << PatchParametersString(p) << endl;
+
+  os.close();
+}
+
 MVD10Frame loadAtlas(const Json &config,
                      const std::vector<Common::Vec2i> &atlasSize,
                      int frameIndex) {
@@ -608,19 +626,21 @@ void savePatchIdMaps(const Json &config, int frameIndex,
 /////////////////////////////////////////////////
 CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
   // TODO read posetrace
-  
-  std::string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
-  
+
+  std::string cameraPath =
+      getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+
   ifstream stream{cameraPath};
 
   if (!stream.good())
-    throw runtime_error("Failed to load camera parameters\n " + cameraPath );
+    throw runtime_error("Failed to load camera parameters\n " + cameraPath);
 
   auto outputCameraName = config.require("OutputCameraName").asStringVector();
   if (outputCameraName.size() > 1u)
     throw runtime_error("OutputCameraName only allows a single entry");
 
-  auto cameras =  loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
+  auto cameras =
+      loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
 
   if (cameras.empty())
     throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);

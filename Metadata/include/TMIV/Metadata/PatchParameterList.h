@@ -36,6 +36,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 #include <TMIV/Common/Vector.h>
 
@@ -56,6 +57,8 @@ struct PatchParameters {
   Vec2i patchPackingPos;
   PatchRotation patchRotation;
 };
+
+std::string PatchParametersString(const PatchParameters &patchParameters);
 
 // Data type that matches with patch_params of the working draft
 using PatchParameterList = std::vector<PatchParameters>;

@@ -77,6 +77,9 @@ void saveMivMetadata(const Common::Json &config, int frameIndex,
                      const MivMetadata &metadata);
 auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
 
+void savePatchList(const Common::Json &config, const std::string &name,
+                       Metadata::PatchParameterList patches);
+
 // Save the atlas (10-bit 4:2:0 texture, 16-bit depth) with depth converted to
 // 10-bit
 void saveAtlas(const Common::Json &config, int frameIndex,

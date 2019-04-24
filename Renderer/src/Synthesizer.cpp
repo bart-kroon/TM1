@@ -122,6 +122,12 @@ public:
         assert(patch.virtualCameraId < cameras.size());
         const auto &camera = cameras[patch.virtualCameraId];
 
+        // TODO REMOVE DEBUG ONLY
+        if (patch.patchRotation == PatchRotation::ccw) {
+          result.emplace_back();
+          continue;
+        }
+
         // Look up depth value and affine parameters
         const auto uv = Vec2f(imagePosition(Vec2i{j_atlas, i_atlas}, patch));
         const auto d = expandDepthValue<10>(
@@ -278,7 +284,9 @@ Synthesizer::Synthesizer(const Common::Json &node)
     : m_impl(new Impl(
           node.require("Synthesizer").require("rayAngleParameter").asFloat(),
           node.require("Synthesizer").require("depthParameter").asFloat(),
-          node.require("Synthesizer").require("stretchingParameter").asFloat())) {}
+          node.require("Synthesizer")
+              .require("stretchingParameter")
+              .asFloat())) {}
 
 Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
                          float stretchingParam)

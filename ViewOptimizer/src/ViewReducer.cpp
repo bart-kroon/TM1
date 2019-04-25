@@ -77,84 +77,104 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
           360.f) {
         if (abs(cameras[id].erpThetaRange[0] - cameras[id].erpThetaRange[1]) ==
             180.f) {
-          for (size_t index = 0; index != cameras.size(); ++index) {
-            (index == id ? result.base : result.additional)
-                .push_back(move(cameras[index]));
-          }
-
-          m_priorities[id] = true;
-          
-          return result;
+          isoneview = true;
+          break;
         }
       }
     }
   }
+  // namespace TMIV::ViewOptimizer
 
   // Calculate the angle between view i and view j
   size_t max_angle = 0;
-  for (size_t id_1 = 0; id_1 < nbCameras - 1; id_1++) {
-    for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
-      // Sphere distance function
-      size_t temp_angle =
-          size_t(acos(sin(cameras[id_1].rotation[1] * radperdeg) *
-                   sin(cameras[id_2].rotation[1] * radperdeg) +
-               cos(cameras[id_1].rotation[1] * radperdeg) *
-                   cos(cameras[id_2].rotation[1] * radperdeg) *
-                   cos((cameras[id_1].rotation[0] - cameras[id_2].rotation[0]) *
-                       radperdeg)) /
-          degree_step);
+  if (!isoneview) {
+    for (size_t id_1 = 0; id_1 < nbCameras - 1; id_1++) {
+      for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
+        // Sphere distance function
+        size_t temp_angle =
+            size_t(acos(sin(cameras[id_1].rotation[1] * radperdeg) *
+                            sin(cameras[id_2].rotation[1] * radperdeg) +
+                        cos(cameras[id_1].rotation[1] * radperdeg) *
+                            cos(cameras[id_2].rotation[1] * radperdeg) *
+                            cos((cameras[id_1].rotation[0] - 
+                                 cameras[id_2].rotation[0]) *
+                                radperdeg)) /
+                   degree_step);
 
-      if (temp_angle > max_angle) {
-        cameras_id_pair.clear();
-        cameras_id_pair.push_back(make_pair(id_1, id_2));
-        max_angle = temp_angle;
-      } else if (temp_angle == max_angle) {
-        cameras_id_pair.push_back(make_pair(id_1, id_2));
+        if (temp_angle > max_angle) {
+          cameras_id_pair.clear();
+          cameras_id_pair.push_back(make_pair(id_1, id_2));
+          max_angle = temp_angle;
+        } else if (temp_angle == max_angle) {
+          cameras_id_pair.push_back(make_pair(id_1, id_2));
+        }
       }
     }
-  }
-  // Early termination: if angle is zero, choose one view
-  if (max_angle == 0) {
-    isoneview = true;
-  }
-
-  // Calculate the sum of two views' FOV
-  size_t max_FOV = 0;
-  size_t max_num = 0;
-  for (size_t id = 0; id < cameras_id_pair.size(); id++) {
-    size_t temp_FOV = 0;
-    size_t id_1 = cameras_id_pair[id].first;
-    size_t id_2 = cameras_id_pair[id].second;
-
-    temp_FOV = calculateFOV(cameras[id_1]) + calculateFOV(cameras[id_2]);
-
-    if (temp_FOV > max_FOV) {
-      max_FOV = temp_FOV;
-      max_num = 1;
-      swap(cameras_id_pair[0], cameras_id_pair[id]);
-    } else if (temp_FOV == max_FOV) {
-      swap(cameras_id_pair[max_num], cameras_id_pair[id]);
-      max_num++;
-    }
-  }
-  cameras_id_pair.erase(cameras_id_pair.begin() + max_num,
-                        cameras_id_pair.end());
-  // Select a pair of view which is farest to each other
-  float max_distance = -1;
-  for (size_t id = 0; id < cameras_id_pair.size(); id++) {
-    float temp_distance = 0;
-    size_t id_1 = cameras_id_pair[id].first;
-    size_t id_2 = cameras_id_pair[id].second;
-
-    temp_distance = calculateDistance(cameras[id_1], cameras[id_2]);
-    if (temp_distance > max_distance) {
-      camera_id_pair = cameras_id_pair[id];
-      max_distance = temp_distance;
+    // Early termination: if angle is zero, choose one view
+    if (max_angle == 0) {
+      isoneview = true;
     }
   }
 
-  // Calculte the overlap of view pair
   if (!isoneview) {
+    // Calculate the sum of two views' FOV
+    size_t max_FOV = 0;
+    size_t max_num = 0;
+    for (size_t id = 0; id < cameras_id_pair.size(); id++) {
+      size_t temp_FOV = 0;
+      size_t id_1 = cameras_id_pair[id].first;
+      size_t id_2 = cameras_id_pair[id].second;
+
+      temp_FOV = calculateFOV(cameras[id_1]) + calculateFOV(cameras[id_2]);
+
+      if (temp_FOV > max_FOV) {
+        max_FOV = temp_FOV;
+        max_num = 1;
+        swap(cameras_id_pair[0], cameras_id_pair[id]);
+      } else if (temp_FOV == max_FOV) {
+        swap(cameras_id_pair[max_num], cameras_id_pair[id]);
+        max_num++;
+      }
+    }
+    cameras_id_pair.erase(cameras_id_pair.begin() + max_num,
+                          cameras_id_pair.end());
+    // Select a pair of view which is farest to each other
+    float max_distance = -1;
+    max_num = 0;
+    for (size_t id = 0; id < cameras_id_pair.size(); id++) {
+      float temp_distance = 0;
+      size_t id_1 = cameras_id_pair[id].first;
+      size_t id_2 = cameras_id_pair[id].second;
+
+      temp_distance = calculateDistance(cameras[id_1], cameras[id_2]);
+      if (temp_distance > max_distance) {
+        max_distance = temp_distance;
+        max_num = 1;
+        swap(cameras_id_pair[0], cameras_id_pair[id]);
+      } else if (temp_distance == max_distance) {
+        swap(cameras_id_pair[max_num], cameras_id_pair[id]);
+        max_num++;
+      }
+    }
+    cameras_id_pair.erase(cameras_id_pair.begin() + max_num,
+                          cameras_id_pair.end());
+
+    float min_distance = numeric_limits<float>::max();
+
+    for (size_t id = 0; id < cameras_id_pair.size(); id++) {
+      float temp_distance = 0;
+      size_t id_1 = cameras_id_pair[id].first;
+      size_t id_2 = cameras_id_pair[id].second;
+
+      temp_distance =
+          abs(cameras[id_1].position[0] - cameras[id_2].position[0]);
+      if (temp_distance < min_distance) {
+        min_distance = temp_distance;
+        camera_id_pair = cameras_id_pair[id];
+	    }
+	  }
+
+    // Calculte the overlap of view pair
     id_i = camera_id_pair.first;
     id_j = camera_id_pair.second;
 
@@ -168,6 +188,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
                      (2 * cameras[id_i].perspectiveFocal[0])) *
                 radperdeg;
     }
+
     if (cameras[id_j].type == ProjectionType::ERP) {
       range_j =
           abs(cameras[id_j].erpPhiRange[0] - cameras[id_j].erpPhiRange[1]) *
@@ -217,7 +238,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
         camera_id.push_back(id);
       }
     }
-
+    // Search views which have the least diatance to center
     for (auto i = 0u; i < camera_id.size(); i++) {
       float temp_distance =
           sqrtf(powf(cameras[camera_id[i]].position[0] - x_center, 2) +

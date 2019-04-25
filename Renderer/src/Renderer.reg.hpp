@@ -35,10 +35,12 @@
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Renderer.h>
+#include <TMIV/Renderer/Synthesizer.h>
 
 namespace TMIV::Renderer {
 void registerComponents() {
   Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
+  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
   Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
   Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>(
       "MultipassRenderer");

@@ -79,6 +79,8 @@ private:
 
     m_encoder->completeIntraPeriod();
 
+    //IO::savePatchList(json() ,"/patchlist.encoder.txt",  m_encoder->getPatchList());
+
     IO::saveMivMetadata(json(), intraFrame,
                         {m_encoder->getAtlasSize(), m_encoder->getPatchList(),
                          m_encoder->getCameraList()});
@@ -99,7 +101,7 @@ int main(int argc, char *argv[]) {
     TMIV::Encoder::Application app{{argv, argv + argc}};
     app.run();
     return 0;
-  } catch (runtime_error &e) {
+  } catch (std::exception &e) {
     cerr << e.what() << endl;
   }
 }

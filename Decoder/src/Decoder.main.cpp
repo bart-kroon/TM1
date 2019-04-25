@@ -69,6 +69,9 @@ public:
 private:
   void decodeIntraPeriod(int intraFrame, int endFrame) {
     auto metadata = IO::loadMivMetadata(json(), intraFrame);
+    
+    //IO::savePatchList(json(), "/patchlist.decoder.txt", metadata.patches);
+    
     m_decoder->updateAtlasSize(metadata.atlasSize);
     m_decoder->updatePatchList(move(metadata.patches));
     m_decoder->updateCameraList(move(metadata.cameras));
@@ -91,7 +94,7 @@ int main(int argc, char *argv[]) {
     TMIV::Decoder::Application app{{argv, argv + argc}};
     app.run();
     return 0;
-  } catch (runtime_error &e) {
+  } catch (exception &e) {
     cerr << e.what() << endl;
   }
 }

@@ -1,0 +1,85 @@
+{
+	"startFrame": 0,
+	"numberOfFrames": 1,
+	"intraPeriod": 32,
+
+    "SourceTexturePathFmt": "P00_SA_Src_Tt_v%02d.yuv",
+    "SourceDepthPathFmt": "P00_SA_Src_Td_v%02d.yuv",
+    "SourceCameraParameters": "../config_files/ClassroomVideo.json",
+	"SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14" ],
+	
+    "EncoderMethod": "Encoder",
+    "Encoder": {},
+
+	
+    "BaseTexturePathFmt": "BAS_SA_R0_Tt_v%02d.yuv",
+    "BaseDepthPathFmt": "BAS_SA_R0_Td_v%02d.yuv",
+    "BaseMetadataPath": "BAS_SA_R0_Tm_vxx.bit",
+    
+    "AdditionalTexturePathFmt": "ADD_SA_R0_Tt_v%02d.yuv",
+    "AdditionalDepthPathFmt": "ADD_SA_R0_Td_v%02d.yuv",
+    "AdditionalMetadataPath": "ADD_SA_R0_Tm_vxx.bit",
+    
+	"AtlasTexturePathFmt": "ATL_SA_R0_Tt_c%02d.yuv",
+	"AtlasDepthPathFmt": "ATL_SA_R0_Td_c%02d.yuv",
+	"AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
+	
+	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d.yuv",
+
+    "ViewOptimizerMethod": "ViewReducer",
+    "ViewReducer": {
+    },
+
+	"AtlasConstructorMethod": "AtlasConstructor",
+	"AtlasConstructor": {
+	
+		"PrunerMethod": "Pruner",
+		"Pruner": {
+			"RedundancyFactor": 0.02,
+			"ErosionIter": 1,
+			"DilationIter": 5,
+			"MaxAdditionalView": 1024
+		},
+		
+		"AggregatorMethod": "Aggregator",
+		"Aggregator": {
+		},
+
+		"PackerMethod": "Packer",
+		"Packer": {
+			"Alignment": 8,
+			"MinPatchSize": 8,
+			"Overlap": 1,
+			"PiP": 1
+		},
+
+		"AtlasResolution": [4096, 2048],
+		"MPixel": 20
+	},
+	
+	"DecoderMethod": "Decoder",
+    "Decoder": {},
+
+	"AtlasDeconstructorMethod": "AtlasDeconstructor",
+	"AtlasDeconstructor": {},
+	
+	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d.yuv",
+
+    "RendererMethod": "Renderer",
+    "Renderer": {},
+
+    "SynthesizerMethod": "Synthesizer", 
+    "Synthesizer": {
+        "rayAngleParameter": 1,
+        "depthParameter": 1,
+        "stretchingParameter": 1
+    },
+
+    "InpainterMethod": "Inpainter",
+    "Inpainter": {},
+
+    "RenderedTexturePath": "TM1_SA_R0_Tt_p%02d.yuv",
+    "RenderedDepthPath": "TM1_SA_R0_Td_p%02d.yuv",
+
+	"OutputCameraName": [ "v1"]
+}

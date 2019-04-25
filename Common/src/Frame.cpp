@@ -380,6 +380,7 @@ void convert(const Frame<YUV420P16> &inputFrame,
   }
 }
 
+///////////////////////////////////////////////////////////
 template <class FORMAT> std::string frameInfo(const Frame<FORMAT> &frame) {
   std::ostringstream oss;
 

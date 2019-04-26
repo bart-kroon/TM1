@@ -35,8 +35,8 @@
 #define _TMIV_METADATA_PATCHPARAMETERLIST_H_
 
 #include <cstdint>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <TMIV/Common/Vector.h>
 

@@ -51,10 +51,17 @@ public:
 
   using Vec2i = Common::Vec2i;
   using PatchIdMapList = Common::PatchIdMapList;
+  using CameraParameterList = Metadata::CameraParameterList;
   using PatchParameterList = Metadata::PatchParameterList;
+  using MVD16Frame = Common::MVD16Frame;
+  using MVD10Frame = Common::MVD10Frame;
 
   virtual PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
                                        const PatchParameterList &patchList) = 0;
+  virtual MVD16Frame
+  recoverTransportView(const MVD10Frame &atlas,
+                       const CameraParameterList &cameraList,
+                       const PatchParameterList &patchList) = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

@@ -454,5 +454,4 @@ template <> std::string frameInfo(const MVD10Frame &frame) {
   return oss.str();
 }
 
-
 } // namespace TMIV::Common

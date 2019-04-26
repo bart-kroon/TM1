@@ -61,7 +61,7 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
 
 void AtlasDeconstructor::writePatchIdInMap(const PatchParameters &patch,
                                            PatchIdMapList &patchMapList,
-                                           std::uint16_t patchId) {
+                                           std::uint16_t patchId) const {
   auto &patchMap = patchMapList[patch.atlasId];
 
   const Vec2i &q0 = patch.patchPackingPos;
@@ -73,6 +73,157 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParameters &patch,
   for (auto y = yMin; y < yLast; y++)
     std::fill(patchMap.getPlane(0).row_begin(y) + xMin,
               patchMap.getPlane(0).row_begin(y) + xLast, patchId);
+}
+
+MVD16Frame
+AtlasDeconstructor::recoverTransportView(const MVD10Frame &atlas,
+                                         const CameraParameterList &cameraList,
+                                         const PatchParameterList &patchList) {
+  // Initialization
+  MVD10Frame mvd10;
+
+  for (const auto &cam : cameraList) {
+    TextureFrame tex(cam.size.x(), cam.size.y());
+
+    std::fill(tex.getPlane(0).begin(), tex.getPlane(0).end(), 0);
+    std::fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), 512);
+    std::fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), 512);
+
+    Depth10Frame depth(cam.size.x(), cam.size.y());
+
+    std::fill(depth.getPlane(0).begin(), depth.getPlane(0).end(), 0);
+
+    mvd10.push_back(TextureDepth10Frame{std::move(tex), std::move(depth)});
+  }
+
+  // Process patches
+  MVD10Frame atlas_pruned = atlas;
+
+  for (auto iter = patchList.rbegin(); iter != patchList.rend(); ++iter) {
+    const auto &patch = *iter;
+
+    auto &currentAtlas = atlas_pruned[patch.atlasId];
+    auto &currentView = mvd10[patch.virtualCameraId];
+
+    auto &textureAtlasMap = currentAtlas.first;
+    auto &depthAtlasMap = currentAtlas.second;
+
+    auto &textureViewMap = currentView.first;
+    auto &depthViewMap = currentView.second;
+
+    int w = patch.patchSize.x(), h = patch.patchSize.y();
+    int xM = patch.patchMappingPos.x(), yM = patch.patchMappingPos.y();
+    int xP = patch.patchPackingPos.x(), yP = patch.patchPackingPos.y();
+    int w_tex = ((xM + w) <= (int)textureViewMap.getWidth())
+                    ? w
+                    : ((int)textureViewMap.getWidth() - xM);
+    int h_tex = ((yM + h) <= (int)textureViewMap.getHeight())
+                    ? h
+                    : ((int)textureViewMap.getHeight() - yM);
+
+    if (patch.patchRotation == Metadata::PatchRotation::upright) {
+      for (int dy = 0; dy < h_tex; dy++) {
+        // Y
+        std::copy(textureAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
+                  textureAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w_tex),
+                  textureViewMap.getPlane(0).row_begin(yM + dy) + xM);
+
+        std::fill(textureAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
+                  textureAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w), 0);
+
+        // UV
+        if ((dy % 2) == 0) {
+          for (int p = 1; p < 3; p++) {
+            std::copy(
+                textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) + xP / 2,
+                textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) +
+                    ((xP + w_tex) / 2),
+                textureViewMap.getPlane(p).row_begin((yM + dy) / 2) + xM / 2);
+
+            std::fill(textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) +
+                          xP / 2,
+                      textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) +
+                          ((xP + w) / 2),
+                      512);
+          }
+        }
+
+        // Depth
+        std::copy(depthAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
+                  depthAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w_tex),
+                  depthViewMap.getPlane(0).row_begin(yM + dy) + xM);
+
+        std::fill(depthAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
+                  depthAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w), 0);
+      }
+    } else {
+      for (int dy = 0; dy < h_tex; dy++) {
+        // Y
+        std::copy(
+            std::make_reverse_iterator(
+                textureAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
+            std::make_reverse_iterator(
+                textureAtlasMap.getPlane(0).col_begin(xP + dy) +
+                (yP + (w - w_tex))),
+            textureViewMap.getPlane(0).row_begin(yM + dy) + xM);
+
+        std::fill(
+            std::make_reverse_iterator(
+                textureAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
+            std::make_reverse_iterator(
+                textureAtlasMap.getPlane(0).col_begin(xP + dy) + yP),
+            0);
+
+        // UV
+        if ((dy % 2) == 0) {
+          for (int p = 1; p < 3; p++) {
+            std::copy(std::make_reverse_iterator(
+                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
+                          (yP + w) / 2),
+                      std::make_reverse_iterator(
+                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
+                          (yP + (w - w_tex)) / 2),
+                      textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
+                          xM / 2);
+
+            std::fill(std::make_reverse_iterator(
+                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
+                          (yP + w) / 2),
+                      std::make_reverse_iterator(
+                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
+                          yP / 2),
+                      512);
+          }
+        }
+
+        // Depth
+        std::copy(std::make_reverse_iterator(
+                      depthAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
+                  std::make_reverse_iterator(
+                      depthAtlasMap.getPlane(0).col_begin(xP + dy) +
+                      (yP + (w - w_tex))),
+                  depthViewMap.getPlane(0).row_begin(yM + dy) + xM);
+
+        std::fill(std::make_reverse_iterator(
+                      depthAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
+                  std::make_reverse_iterator(
+                      depthAtlasMap.getPlane(0).col_begin(xP + dy) + yP),
+                  0);
+      }
+    }
+  }
+
+  // Conversion
+  MVD16Frame mvd16;
+
+  for (auto view : mvd10) {
+    Depth16Frame depth16(view.second.getWidth(), view.second.getHeight());
+    convert(view.second, depth16);
+    mvd16.push_back(
+        TextureDepth16Frame(std::move(view.first), std::move(depth16)));
+  }
+
+  return mvd16;
 }
 
 } // namespace TMIV::AtlasDeconstructor

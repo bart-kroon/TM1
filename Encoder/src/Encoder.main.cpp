@@ -79,7 +79,8 @@ private:
 
     m_encoder->completeIntraPeriod();
 
-    //IO::savePatchList(json() ,"/patchlist.encoder.txt",  m_encoder->getPatchList());
+    // IO::savePatchList(json() ,"/patchlist.encoder.txt",
+    // m_encoder->getPatchList());
 
     IO::saveMivMetadata(json(), intraFrame,
                         {m_encoder->getAtlasSize(), m_encoder->getPatchList(),

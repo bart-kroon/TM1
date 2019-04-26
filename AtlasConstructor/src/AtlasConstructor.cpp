@@ -131,7 +131,7 @@ void AtlasConstructor::completeIntraPeriod() {
       atlasList.push_back(std::move(atlas));
     }
 
-    for (const auto &patch : m_patchList) 
+    for (const auto &patch : m_patchList)
       writePatchInAtlas(patch, views, atlasList);
 
     m_atlasBuffer.push_back(std::move(atlasList));
@@ -153,13 +153,12 @@ Common::MVD16Frame AtlasConstructor::popAtlas() {
   return atlas;
 }
 
-
 void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
                                          const MVD16Frame &views,
                                          MVD16Frame &atlas) {
 
   auto &currentAtlas = atlas[patch.atlasId];
-  auto &currentView = views[patch.virtualCameraId];
+  const auto &currentView = views[patch.virtualCameraId];
 
   auto &textureAtlasMap = currentAtlas.first;
   auto &depthAtlasMap = currentAtlas.second;
@@ -170,8 +169,12 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
   int w = patch.patchSize.x(), h = patch.patchSize.y();
   int xM = patch.patchMappingPos.x(), yM = patch.patchMappingPos.y();
   int xP = patch.patchPackingPos.x(), yP = patch.patchPackingPos.y();
-  int w_tex = ((xM + w) <= (int) textureViewMap.getPlane(0).width()) ? w : ((int) textureViewMap.getPlane(0).width() - xM);
-  int h_tex = ((yM + h) <= (int) textureViewMap.getPlane(0).height()) ? h : ((int) textureViewMap.getPlane(0).height() - yM);
+  int w_tex = ((xM + w) <= (int)textureViewMap.getWidth())
+                  ? w
+                  : ((int)textureViewMap.getWidth() - xM);
+  int h_tex = ((yM + h) <= (int)textureViewMap.getHeight())
+                  ? h
+                  : ((int)textureViewMap.getHeight() - yM);
 
   if (patch.patchRotation == Metadata::PatchRotation::upright) {
     for (int dy = 0; dy < h_tex; dy++) {
@@ -199,8 +202,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
     }
   } else {
     for (int dy = 0; dy < h_tex; dy++) {
-  
-	  // Y
+
+      // Y
       std::copy(textureViewMap.getPlane(0).row_begin(yM + dy) + xM,
                 textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_tex),
                 std::make_reverse_iterator(

@@ -37,7 +37,6 @@
 #include <functional>
 #include <map>
 #include <string>
-#include <iostream>
 
 #include <TMIV/Common/Json.h>
 
@@ -69,14 +68,9 @@ public:
 
   // Create an object based on the method ID and JSON configuration
   Object create(const std::string &id, const Json &config) const {
-    if (m_creators.count(id) == 0)  
-    {
-        std::cout << std::endl;
-        for (auto entry : m_creators)
-            std::cout << entry.first << std::endl;
-        throw std::runtime_error("Error no registration for " + id);
-    }
-      
+    if (m_creators.count(id) == 0)
+      throw std::runtime_error("Error no registration for " + id);
+
     return m_creators.at(id)(config);
   }
 

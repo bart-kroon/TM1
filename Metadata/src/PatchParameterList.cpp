@@ -36,13 +36,14 @@
 
 namespace TMIV::Metadata {
 
-std::string PatchParametersString(const PatchParameters &p)  {
-  
+std::string PatchParametersString(const PatchParameters &p) {
+
   std::ostringstream oss;
-  std::string rotationStr = p.patchRotation == PatchRotation::upright ? "U" : "R";
-  oss << int(p.atlasId) << " " << int(p.virtualCameraId) << " " << p.patchSize << " " << p.patchMappingPos << p.patchPackingPos << " " << rotationStr;
+  std::string rotationStr =
+      p.patchRotation == PatchRotation::upright ? "U" : "R";
+  oss << int(p.atlasId) << " " << int(p.virtualCameraId) << " " << p.patchSize
+      << " " << p.patchMappingPos << p.patchPackingPos << " " << rotationStr;
   return oss.str();
 }
 
-
-}
+} // namespace TMIV::Metadata

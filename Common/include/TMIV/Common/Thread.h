@@ -39,7 +39,7 @@
 
 namespace TMIV::Common {
 
-static uint MAX_THREAD = 8;
+static unsigned int MAX_THREAD = 8;
 
 inline void parallel_for(std::size_t nbIter,
                          std::function<void(std::size_t)> fun,

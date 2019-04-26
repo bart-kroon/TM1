@@ -198,6 +198,27 @@ public:
   Rasterizer<Vec3f> rasterFrame(size_t numViews, const CameraParameters &target,
                                 Unprojector unprojector) const {
     // Incremental view synthesis and blending
+    const int numStrips = 1;
+    Rasterizer<Vec3f> rasterizer{  {m_rayAngleParam, m_depthParam, m_stretchingParam}, target.size, numStrips };
+
+    for (size_t i = 0; i < numViews; ++i) 
+    {
+      // Generate a reprojected mesh
+      auto [vertices, triangles, attributes] = unprojector(i, target);
+      auto mesh =  project(move(vertices), move(triangles), move(attributes), target);
+
+      rasterizer.submit(move(get<0>(mesh)), move(get<2>(mesh)),  move(get<1>(mesh)));
+    }
+
+    // Synchronize with the rasterer
+    rasterizer.run();
+    return rasterizer;
+  }
+
+  template <typename Unprojector>
+  Rasterizer<Vec3f> rasterFrameParallel(size_t numViews, const CameraParameters &target,
+                                Unprojector unprojector) const {
+    // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam}, target.size};
 

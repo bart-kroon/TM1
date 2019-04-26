@@ -31,35 +31,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
-#define _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
+#ifndef _TMIV_COMMON_THREAD_H_
+#define _TMIV_COMMON_THREAD_H_
 
-#include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
-#include <TMIV/Common/Json.h>
+#include <functional>
+#include <future>
 
-namespace TMIV::AtlasDeconstructor {
-// The AtlasDeconstructor of TMIV 1.0 provided by Technicolor
-class AtlasDeconstructor : public IAtlasDeconstructor {
-public:
-  AtlasDeconstructor(const Common::Json &node);
-  AtlasDeconstructor(const AtlasDeconstructor &) = delete;
-  AtlasDeconstructor(AtlasDeconstructor &&) = default;
-  AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
-  AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
+namespace TMIV::Common {
 
-  using PatchParameters = Metadata::PatchParameters;
+static uint MAX_THREAD = 8;
 
-  PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                               const PatchParameterList &patchList) override;
-  MVD16Frame recoverTransportView(const MVD10Frame &atlas,
-                                  const CameraParameterList &cameraList,
-                                  const PatchParameterList &patchList) override;
+inline void parallel_for(std::size_t nbIter,
+                         std::function<void(std::size_t)> fun,
+                         std::size_t nbThread = MAX_THREAD) {
+  auto segment_execute = [&](std::size_t first, std::size_t last) {
+    for (auto id = first; id < last; id++)
+      fun(id);
+  };
 
-private:
-  void writePatchIdInMap(const PatchParameters &patch,
-                         PatchIdMapList &patchMapList,
-                         std::uint16_t patchId) const;
-};
-} // namespace TMIV::AtlasDeconstructor
+  if (nbThread == 1)
+    segment_execute(0, nbIter);
+  else {
+    std::size_t chunkSize = nbIter / nbThread;
+    std::vector<std::future<void>> threadList;
+
+    for (auto id = 0u; id < nbIter; id += chunkSize)
+      threadList.push_back(std::async(std::launch::async, segment_execute, id,
+                                      std::min(id + chunkSize, nbIter)));
+
+    for (auto &thread : threadList)
+      thread.wait();
+  }
+}
+
+} // namespace TMIV::Common
 
 #endif

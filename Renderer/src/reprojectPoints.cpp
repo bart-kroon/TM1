@@ -31,6 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Common/Thread.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include "Engine.h"
@@ -52,14 +53,22 @@ auto imagePositions(const CameraParameters &camera) -> Mat<Vec2f> {
 }
 
 namespace {
+
 template <ProjectionType type>
 auto unprojectPoints(const Mat<Vec2f> &positions, const Mat<float> &depth,
                      const Engine<type> &engine) -> Mat<Vec3f> {
   Mat<Vec3f> points{positions.sizes()};
   assert(positions.sizes() == depth.sizes());
-  transform(
-      begin(positions), end(positions), begin(depth), begin(points),
-      [=](Vec2f uv, float depth) { return engine.unprojectVertex(uv, depth); });
+
+  //   transform(
+  //       begin(positions), end(positions), begin(depth), begin(points),
+  //       [=](Vec2f uv, float depth) { return engine.unprojectVertex(uv,
+  //       depth); });
+
+  parallel_for(points.size(), [&](std::size_t id) {
+    points[id] = engine.unprojectVertex(positions[id], depth[id]);
+  });
+
   return points;
 }
 } // namespace
@@ -86,8 +95,15 @@ auto changeReferenceFrame(const CameraParameters &camera,
                           const Mat<Vec3f> &points) -> Mat<Vec3f> {
   Mat<Vec3f> result(points.sizes());
   const auto R_t = affineParameters(camera, target);
-  transform(begin(points), end(points), begin(result),
-            [R = R_t.first, t = R_t.second](Vec3f x) { return R * x + t; });
+
+  //   transform(begin(points), end(points), begin(result),
+  //             [R = R_t.first, t = R_t.second](Vec3f x) { return R * x + t;
+  //             });
+
+  parallel_for(points.size(), [&](std::size_t id) {
+    result[id] = R_t.first * points[id] + R_t.second;
+  });
+
   return result;
 }
 
@@ -95,17 +111,24 @@ namespace {
 template <ProjectionType TYPE>
 auto projectPoints(const Mat<Vec3f> &points, const Engine<TYPE> &engine)
     -> pair<Mat<Vec2f>, Mat<float>> {
+
   Mat<Vec2f> positions{points.sizes()};
   Mat<float> depth{points.sizes()};
 
-  auto i_positions = begin(positions);
-  auto i_depth = begin(depth);
+  //   auto i_positions = begin(positions);
+  //   auto i_depth = begin(depth);
+  //
+  //   for (auto point : points) {
+  //     ImageVertexDescriptor v = engine.projectVertex({point, 0.f});
+  //     *i_positions++ = v.position;
+  //     *i_depth++ = v.depth;
+  //   }
 
-  for (auto point : points) {
-    ImageVertexDescriptor v = engine.projectVertex({point, 0.f});
-    *i_positions++ = v.position;
-    *i_depth++ = v.depth;
-  }
+  parallel_for(points.size(), [&](std::size_t id) {
+    ImageVertexDescriptor v = engine.projectVertex({points[id], 0.f});
+    positions[id] = v.position;
+    depth[id] = v.depth;
+  });
 
   return {positions, depth};
 }

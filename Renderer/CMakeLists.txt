@@ -29,8 +29,10 @@ target_link_libraries(RendererLib
 	PUBLIC
 		TMIV::CommonLib
 		TMIV::MetadataLib
-		TMIV::ImageLib		
-	PRIVATE Threads::Threads)
+		TMIV::ImageLib
+	PRIVATE
+		Threads::Threads
+)
 
 target_include_directories(RendererLib
 	PUBLIC

@@ -16,6 +16,7 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Catch2)
 	endif()
 endif()
 
+# Common functionnalities
 add_subdirectory(Common)
 
 # Implementation of the MIV metadata

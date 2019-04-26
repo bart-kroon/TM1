@@ -62,12 +62,20 @@ public:
     }
   }
 
-  void runIntraPeriod(int intraFrame, int /*endFrame*/) {
+  void runIntraPeriod(int intraFrame, int endFrame) {
     auto metadata = IO::loadMivMetadata(json(), intraFrame);
+
     auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize,
                                                            metadata.patches);
-
     IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
+
+    for (int i = intraFrame; i < endFrame; ++i) {
+      auto atlas = IO::loadAtlas(json(), metadata.atlasSize, i);
+      auto recoveredTransportView = m_atlasDeconstructor->recoverTransportView(
+          atlas, metadata.cameras, metadata.patches);
+
+      IO::saveTransportFrame(json(), i, recoveredTransportView);
+    }
   }
 };
 

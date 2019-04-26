@@ -96,7 +96,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
                             sin(cameras[id_2].rotation[1] * radperdeg) +
                         cos(cameras[id_1].rotation[1] * radperdeg) *
                             cos(cameras[id_2].rotation[1] * radperdeg) *
-                            cos((cameras[id_1].rotation[0] - 
+                            cos((cameras[id_1].rotation[0] -
                                  cameras[id_2].rotation[0]) *
                                 radperdeg)) /
                    degree_step);
@@ -171,8 +171,8 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
         camera_id_pair = cameras_id_pair[id];
-	    }
-	  }
+      }
+    }
 
     // Calculte the overlap of view pair
     id_i = camera_id_pair.first;
@@ -282,15 +282,14 @@ auto ViewReducer::calculateFOV(CameraParameters camera) -> size_t {
   const float FOV_step = (45 * radperdeg) / 4;
 
   if (camera.type == ProjectionType::ERP) {
-    temp_FOV += (size_t) (abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) *
-                radperdeg *
-                (abs(sin(camera.erpThetaRange[0] * radperdeg) -
-                     sin(camera.erpThetaRange[1] * radperdeg))) /
-                FOV_step);
+    temp_FOV += (size_t)(abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) *
+                         radperdeg *
+                         (abs(sin(camera.erpThetaRange[0] * radperdeg) -
+                              sin(camera.erpThetaRange[1] * radperdeg))) /
+                         FOV_step);
   } else if (camera.type == ProjectionType::Perspective) {
-    temp_FOV +=
-        (size_t) (abs(
-            4 * atan(camera.size[0] / (2 * camera.perspectiveFocal[0])) *
+    temp_FOV += (size_t)(
+        abs(4 * atan(camera.size[0] / (2 * camera.perspectiveFocal[0])) *
             sin(atan(camera.size[1] / (2 * camera.perspectiveFocal[1])))) /
         FOV_step);
   }

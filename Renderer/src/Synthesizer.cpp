@@ -194,6 +194,7 @@ public:
                  atlasTriangles(ids), tuple{atlasColors(atlas)}};
   }
 
+  // TODO temporary sequential variant -bson
   template <typename Unprojector>
   Rasterizer<Vec3f> rasterFrame(size_t numViews, const CameraParameters &target,
                                 Unprojector unprojector) const {
@@ -215,8 +216,9 @@ public:
     return rasterizer;
   }
 
+  // TODO disabled since it cases out-of-bound problems in rasterTriangle -bson
   template <typename Unprojector>
-  Rasterizer<Vec3f> rasterFrameParallel(size_t numViews, const CameraParameters &target,
+  Rasterizer<Vec3f> rasterFrame_disabled_parllel(size_t numViews, const CameraParameters &target,
                                 Unprojector unprojector) const {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{

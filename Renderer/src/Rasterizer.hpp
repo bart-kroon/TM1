@@ -39,6 +39,7 @@
 #include <cmath>
 #include <future>
 #include <thread>
+#include <iostream>
 
 namespace TMIV::Renderer {
 namespace {
@@ -300,24 +301,31 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       const float w0 =
           inv_area * ((uv1.y() - uv2.y()) * (float(u) - uv2.x() + 0.5f) +
                       (uv2.x() - uv1.x()) * (float(v) - uv2.y() + 0.5f));
-      if (!(w0 >= -eps)) {
-        continue;
-      }
+      //if (!(w0 >= -eps)) {
+      //  continue;
+      //}
       const float w1 =
           inv_area * ((uv2.y() - uv0.y()) * (float(u) - uv2.x() + 0.5f) +
                       (uv0.x() - uv2.x()) * (float(v) - uv2.y() + 0.5f));
-      if (!(w1 >= -eps)) {
-        continue;
-      }
+      //if (!(w1 >= -eps)) {
+      //  continue;
+      //}
       const float w2 = 1.f - w0 - w1;
-      if (!(w2 >= -eps)) {
-        continue;
-      }
+      //if (!(w2 >= -eps)) {
+      //  continue;
+      //}
 
       // Barycentric interpolation of normalized disparity and attributes
       // (e.g. color)
       const auto d = w0 * d0 + w1 * d1 + w2 * d2;
       const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
+
+      // TODO remove this quard when it isn't required anymore.
+      // When batches are processed in parallel this out-of-bound event occurs -bson
+      if (v * strip.cols + u >= strip.matrix.size() ) {
+        cout << 'E' << std::flush;
+        continue;
+      }
 
       // Blend pixel
       auto &P = strip.matrix[v * strip.cols + u];

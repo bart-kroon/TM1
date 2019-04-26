@@ -33,6 +33,7 @@
 
 #include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/Common/Application.h>
+#include <TMIV/Common/Thread.h>
 #include <TMIV/IO/IO.h>
 #include <iostream>
 
@@ -53,7 +54,12 @@ public:
       : Common::Application{"AtlasConstructor", move(argv)},
         m_atlasConstructor{create<IAtlasConstructor>("AtlasConstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+        m_intraPeriod{json().require("intraPeriod").asInt()} {
+    if (auto subnode = json().optional("nbThread"))
+      Common::MAX_THREAD = subnode.asInt();
+    else
+      Common::MAX_THREAD = 1;
+  }
 
   void run() override {
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {

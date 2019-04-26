@@ -67,6 +67,9 @@ void saveOptimizedMetadata(
 auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
     -> BaseAdditional<Metadata::CameraParameterList>;
 
+void saveTransportFrame(const Common::Json &config, int frameIndex,
+                        const Common::MVD16Frame &frame);
+
 struct MivMetadata {
   std::vector<Common::Vec2i> atlasSize;
   Metadata::PatchParameterList patches;
@@ -78,7 +81,7 @@ void saveMivMetadata(const Common::Json &config, int frameIndex,
 auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
 
 void savePatchList(const Common::Json &config, const std::string &name,
-                       Metadata::PatchParameterList patches);
+                   Metadata::PatchParameterList patches);
 
 // Save the atlas (10-bit 4:2:0 texture, 16-bit depth) with depth converted to
 // 10-bit

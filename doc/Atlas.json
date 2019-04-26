@@ -2,6 +2,7 @@
 	"startFrame": 0,
 	"numberOfFrames": 1,
 	"intraPeriod": 32,
+	"nbThread": 8,
 
     "SourceTexturePathFmt": "v%d_4096_2048_420_10b.yuv",
     "SourceDepthPathFmt": "v%d_4096_2048_0_8_1000_0_400_16b.yuv",
@@ -21,6 +22,9 @@
 	"AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
 	
 	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d.yuv",
+	
+    "TransportViewTexturePathFmt": "TRANS_SA_R0_Tt_v%02d.yuv",
+    "TransportViewDepthPathFmt": "TRANS_SA_R0_Td_v%02d.yuv",
 
     "ViewOptimizerMethod": "ViewReducer",
     "ViewReducer": {

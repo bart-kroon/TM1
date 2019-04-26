@@ -313,7 +313,7 @@ CameraParameterList loadSourceMetadata(const Json &config) {
   ifstream stream{cameraPath};
 
   if (!stream.good())
-    throw runtime_error("Failed to load source camera parameters");
+    throw runtime_error("Failed to load source camera parameters\n" + cameraPath);
 
   auto cameras =
       loadCamerasFromJson(Json{stream}.require("cameras"),
@@ -484,6 +484,22 @@ void saveOptimizedFrame(const Json &config, int frameIndex,
 }
 
 /////////////////////////////////////////////////
+void saveTransportFrame(const Common::Json &config, int frameIndex,
+                        const Common::MVD16Frame &frame) {
+  cout << "Saving transport frame " << frameIndex << '\n';
+
+  for (auto i = 0u; i < frame.size(); i++) {
+    std::string texturePath = getFullPath(config, "OutputDirectory",
+                                          "TransportViewTexturePathFmt", i);
+    writeFrame<YUV420P10>(texturePath, frame[i].first, (frameIndex == 0));
+
+    std::string depthPath =
+        getFullPath(config, "OutputDirectory", "TransportViewDepthPathFmt", i);
+    writeFrame<YUV400P16>(depthPath, frame[i].second, (frameIndex == 0));
+  }
+}
+
+/////////////////////////////////////////////////
 MivMetadata loadMivMetadata(const Json &config, int frameIndex) {
   cout << "Loading MIV metadata of frame " << frameIndex << '\n';
 
@@ -529,8 +545,8 @@ void saveMivMetadata(const Json &config, int frameIndex,
 }
 
 void savePatchList(const Json &config, const std::string &name,
-                       Metadata::PatchParameterList patches) {
-  
+                   Metadata::PatchParameterList patches) {
+
   std::string baseDirectory = config.require("OutputDirectory").asString();
   std::string path = baseDirectory + name;
 

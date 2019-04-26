@@ -313,7 +313,7 @@ CameraParameterList loadSourceMetadata(const Json &config) {
   ifstream stream{cameraPath};
 
   if (!stream.good())
-    throw runtime_error("Failed to load source camera parameters");
+    throw runtime_error("Failed to load source camera parameters\n" + cameraPath);
 
   auto cameras =
       loadCamerasFromJson(Json{stream}.require("cameras"),

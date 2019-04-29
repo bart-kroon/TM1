@@ -67,7 +67,7 @@ void saveOptimizedMetadata(
 auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
     -> BaseAdditional<Metadata::CameraParameterList>;
 
-void saveTransportFrame(const Common::Json &config, int frameIndex,
+void savePrunedFrame(const Common::Json &config, int frameIndex,
                         const Common::MVD16Frame &frame);
 
 struct MivMetadata {

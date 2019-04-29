@@ -71,10 +71,10 @@ public:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto atlas = IO::loadAtlas(json(), metadata.atlasSize, i);
-      auto recoveredTransportView = m_atlasDeconstructor->recoverTransportView(
+      auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
           atlas, metadata.cameras, metadata.patches);
 
-      IO::saveTransportFrame(json(), i, recoveredTransportView);
+      IO::savePrunedFrame(json(), i, recoveredTransportView);
     }
   }
 };

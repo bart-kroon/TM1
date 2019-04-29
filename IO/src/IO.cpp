@@ -484,17 +484,17 @@ void saveOptimizedFrame(const Json &config, int frameIndex,
 }
 
 /////////////////////////////////////////////////
-void saveTransportFrame(const Common::Json &config, int frameIndex,
+void savePrunedFrame(const Common::Json &config, int frameIndex,
                         const Common::MVD16Frame &frame) {
-  cout << "Saving transport frame " << frameIndex << '\n';
+  cout << "Saving pruned frame " << frameIndex << '\n';
 
   for (auto i = 0u; i < frame.size(); i++) {
     std::string texturePath = getFullPath(config, "OutputDirectory",
-                                          "TransportViewTexturePathFmt", i);
+                                          "PrunedViewTexturePathFmt", i);
     writeFrame<YUV420P10>(texturePath, frame[i].first, (frameIndex == 0));
 
     std::string depthPath =
-        getFullPath(config, "OutputDirectory", "TransportViewDepthPathFmt", i);
+        getFullPath(config, "OutputDirectory", "PrunedViewDepthPathFmt", i);
     writeFrame<YUV400P16>(depthPath, frame[i].second, (frameIndex == 0));
   }
 }

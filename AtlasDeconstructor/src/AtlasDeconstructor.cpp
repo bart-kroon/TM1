@@ -76,7 +76,7 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParameters &patch,
 }
 
 MVD16Frame
-AtlasDeconstructor::recoverTransportView(const MVD10Frame &atlas,
+AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                                          const CameraParameterList &cameraList,
                                          const PatchParameterList &patchList) {
   // Initialization

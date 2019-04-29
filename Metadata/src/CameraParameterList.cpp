@@ -48,7 +48,7 @@ CameraParameterList loadCamerasFromJson(const Json &node,
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
-        auto id = static_cast<uint16_t>(result.size());
+        auto id = std::stoi(name.substr(1));
         result.push_back(loadCameraFromJson(id, node.at(i)));
         break;
       }

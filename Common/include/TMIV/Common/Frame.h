@@ -39,6 +39,7 @@
 #include <ostream>
 
 #include <TMIV/Common/Matrix.h>
+#include <TMIV/Common/Vector.h>
 
 namespace TMIV::Common {
 class YUV400P8 {};
@@ -96,6 +97,7 @@ public:
   plane_type &getPlane(int id) { return m_planes[id]; }
   int getWidth() const { return m_width; }
   int getHeight() const { return m_height; }
+  Vec2i getSize() const { return Vec2i{m_width, m_height}; }
   int getMemorySize() const {
     return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
   }

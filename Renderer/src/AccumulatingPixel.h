@@ -57,7 +57,10 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_,
                    float normDisp_, float rayAngle_)
       : PixelAttributes<T...>{attributes},
-        normWeight{normWeight_}, normDisp{normDisp_}, rayAngle{rayAngle_} {}
+        normWeight{normWeight_}, normDisp{normDisp_}, rayAngle{rayAngle_} {
+    assert(normWeight_ >= 0.f);
+    assert(normDisp_ >= 0.f);
+  }
 
   PixelAccumulator(float normWeight_, float normDisp_, float rayAngle_,
                    T... attributes)
@@ -146,6 +149,7 @@ public:
   // Construct a pixel accumulator from a single synthesized pixel
   auto construct(Attributes attributes, float normDisp, float rayAngle,
                  float stretching) const -> Accumulator {
+    assert(normDisp >= 0.f);
     return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching),
             normDisp, rayAngle};
   }

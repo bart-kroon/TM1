@@ -323,7 +323,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       // TODO remove this quard when it isn't required anymore.
       // When batches are processed in parallel this out-of-bound event occurs -bson
       if (v * strip.cols + u >= strip.matrix.size() ) {
-        cout << 'E' << std::flush;
+        std::cout << 'E' << std::flush;
         continue;
       }
 

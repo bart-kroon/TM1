@@ -33,6 +33,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <algorithm>
+#include <cassert>
 #include <sstream>
 
 namespace TMIV::Common {
@@ -40,6 +41,8 @@ namespace TMIV::Common {
 ///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV400P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
@@ -49,6 +52,8 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV400P10> &outputFrame) {
 
 template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV400P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
@@ -58,6 +63,8 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV400P16> &outputFrame) {
 
 template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
@@ -68,6 +75,8 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P8> &outputFrame) {
 
 template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
@@ -82,6 +91,8 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P10> &outputFrame) {
 
 template <>
 void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
@@ -97,6 +108,8 @@ void convert(const Frame<YUV400P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
 ///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV400P10> &inputFrame, Frame<YUV400P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P10>::base_type v) {
@@ -118,6 +131,8 @@ void convert(const Frame<YUV400P10> &inputFrame,
 
 template <>
 void convert(const Frame<YUV400P10> &inputFrame, Frame<YUV420P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P10>::base_type v) {
@@ -134,6 +149,8 @@ void convert(const Frame<YUV400P10> &inputFrame, Frame<YUV420P8> &outputFrame) {
 template <>
 void convert(const Frame<YUV400P10> &inputFrame,
              Frame<YUV420P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
 
@@ -146,6 +163,8 @@ void convert(const Frame<YUV400P10> &inputFrame,
 template <>
 void convert(const Frame<YUV400P10> &inputFrame,
              Frame<YUV420P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
                  outputFrame.getPlane(0).begin(),
                  [](Frame<YUV420P10>::base_type v) {
@@ -162,6 +181,8 @@ void convert(const Frame<YUV400P10> &inputFrame,
 ///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV400P16> &inputFrame, Frame<YUV400P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P16>::base_type v) {
@@ -173,6 +194,8 @@ void convert(const Frame<YUV400P16> &inputFrame, Frame<YUV400P8> &outputFrame) {
 template <>
 void convert(const Frame<YUV400P16> &inputFrame,
              Frame<YUV400P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P16>::base_type v) {
@@ -183,6 +206,8 @@ void convert(const Frame<YUV400P16> &inputFrame,
 
 template <>
 void convert(const Frame<YUV400P16> &inputFrame, Frame<YUV420P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P16>::base_type v) {
@@ -199,6 +224,8 @@ void convert(const Frame<YUV400P16> &inputFrame, Frame<YUV420P8> &outputFrame) {
 template <>
 void convert(const Frame<YUV400P16> &inputFrame,
              Frame<YUV420P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P16>::base_type v) {
@@ -215,6 +242,8 @@ void convert(const Frame<YUV400P16> &inputFrame,
 template <>
 void convert(const Frame<YUV400P16> &inputFrame,
              Frame<YUV420P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
   std::fill(outputFrame.getPlane(1).begin(), outputFrame.getPlane(1).end(),
@@ -226,12 +255,16 @@ void convert(const Frame<YUV400P16> &inputFrame,
 ///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV400P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
 }
 
 template <>
 void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV400P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV420P8>::base_type v) {
@@ -241,6 +274,8 @@ void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV400P10> &outputFrame) {
 
 template <>
 void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV400P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV400P8>::base_type v) {
@@ -262,6 +297,8 @@ void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV420P10> &outputFrame) {
 
 template <>
 void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   for (int i = 0; i < 3; i++) {
     std::transform(inputFrame.getPlane(i).begin(), inputFrame.getPlane(i).end(),
                    outputFrame.getPlane(i).begin(),
@@ -275,6 +312,8 @@ void convert(const Frame<YUV420P8> &inputFrame, Frame<YUV420P16> &outputFrame) {
 ///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV420P10> &inputFrame, Frame<YUV400P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV420P10>::base_type v) {
@@ -286,6 +325,8 @@ void convert(const Frame<YUV420P10> &inputFrame, Frame<YUV400P8> &outputFrame) {
 template <>
 void convert(const Frame<YUV420P10> &inputFrame,
              Frame<YUV400P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
 }
@@ -293,6 +334,8 @@ void convert(const Frame<YUV420P10> &inputFrame,
 template <>
 void convert(const Frame<YUV420P10> &inputFrame,
              Frame<YUV400P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
                  outputFrame.getPlane(0).begin(),
                  [](Frame<YUV420P10>::base_type v) {
@@ -303,6 +346,8 @@ void convert(const Frame<YUV420P10> &inputFrame,
 
 template <>
 void convert(const Frame<YUV420P10> &inputFrame, Frame<YUV420P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   for (int i = 0; i < 3; i++) {
     std::transform(
         inputFrame.getPlane(i).begin(), inputFrame.getPlane(i).end(),
@@ -316,6 +361,8 @@ void convert(const Frame<YUV420P10> &inputFrame, Frame<YUV420P8> &outputFrame) {
 template <>
 void convert(const Frame<YUV420P10> &inputFrame,
              Frame<YUV420P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   for (int i = 0; i < 3; i++) {
     std::transform(inputFrame.getPlane(i).begin(), inputFrame.getPlane(i).end(),
                    outputFrame.getPlane(i).begin(),
@@ -329,6 +376,8 @@ void convert(const Frame<YUV420P10> &inputFrame,
 ///////////////////////////////////////////////////////////
 template <>
 void convert(const Frame<YUV420P16> &inputFrame, Frame<YUV400P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV420P16>::base_type v) {
@@ -340,6 +389,8 @@ void convert(const Frame<YUV420P16> &inputFrame, Frame<YUV400P8> &outputFrame) {
 template <>
 void convert(const Frame<YUV420P16> &inputFrame,
              Frame<YUV400P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::transform(
       inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
       outputFrame.getPlane(0).begin(), [](Frame<YUV420P16>::base_type v) {
@@ -351,12 +402,16 @@ void convert(const Frame<YUV420P16> &inputFrame,
 template <>
 void convert(const Frame<YUV420P16> &inputFrame,
              Frame<YUV400P16> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   std::copy(inputFrame.getPlane(0).begin(), inputFrame.getPlane(0).end(),
             outputFrame.getPlane(0).begin());
 }
 
 template <>
 void convert(const Frame<YUV420P16> &inputFrame, Frame<YUV420P8> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   for (int i = 0; i < 3; i++) {
     std::transform(
         inputFrame.getPlane(i).begin(), inputFrame.getPlane(i).end(),
@@ -370,6 +425,8 @@ void convert(const Frame<YUV420P16> &inputFrame, Frame<YUV420P8> &outputFrame) {
 template <>
 void convert(const Frame<YUV420P16> &inputFrame,
              Frame<YUV420P10> &outputFrame) {
+  assert(inputFrame.getHeight() == outputFrame.getHeight() &&
+         inputFrame.getWidth() == outputFrame.getWidth());
   for (int i = 0; i < 3; i++) {
     std::transform(
         inputFrame.getPlane(i).begin(), inputFrame.getPlane(i).end(),

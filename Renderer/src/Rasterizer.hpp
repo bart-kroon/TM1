@@ -38,7 +38,6 @@
 #include "blend.h"
 #include <cmath>
 #include <future>
-#include <iostream>
 #include <thread>
 
 namespace TMIV::Renderer {

@@ -184,4 +184,18 @@ TEST_CASE("Parsing the command-line", "[Application]") {
     REQUIRE(app.json().require("continent").asString() == "Africa");
   }
 }
+
+TEST_CASE("Converting floating point to integer") {
+	REQUIRE(ifloor(-2.5f) == -3);
+	REQUIRE(ifloor(0.f) == 0);
+	REQUIRE(ifloor(1000000.9f) == 1000000);
+	REQUIRE(ifloor(1000001.0f) == 1000001);
+	REQUIRE(ifloor(1000001.1f) == 1000001);
+
+	REQUIRE(iceil(-2.5f) == -2);
+	REQUIRE(iceil(0.f) == 0);
+	REQUIRE(iceil(1000000.9f) == 1000001);
+	REQUIRE(iceil(1000001.0f) == 1000001);
+	REQUIRE(iceil(1000001.1f) == 1000002);
+}
 } // namespace TMIV::Common

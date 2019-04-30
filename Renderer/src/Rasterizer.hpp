@@ -218,9 +218,9 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
     if (std::isnan(y)) {
       return;
     }
-    const auto k = int(y * m_dk_di);
-    k1 = std::min(k1, k);
-    k2 = std::max(k2, k + 1);
+    const auto k = y * m_dk_di;
+    k1 = std::min(k1, ifloor(k));
+    k2 = std::max(k2, iceil(k) + 1);
   }
 
   // Cull

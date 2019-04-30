@@ -77,9 +77,14 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   for (const auto &sz : atlasSize)
     packerList.push_back(MaxRectPiP(sz.x(), sz.y(), m_alignment, m_pip));
 
-  auto comp = [](const Cluster &p1, const Cluster &p2) {
-    return (p1.getArea() < p2.getArea());
+  auto comp = [&](const Cluster &p1, const Cluster &p2) {
+    if (shouldNotBeSplit[p1.getCameraId()] !=
+        shouldNotBeSplit[p2.getCameraId()])
+      return (shouldNotBeSplit[p2.getCameraId()] != 0u);
+    else
+      return (p1.getArea() < p2.getArea());
   };
+
   std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)>
       clusterToPack(comp);
 

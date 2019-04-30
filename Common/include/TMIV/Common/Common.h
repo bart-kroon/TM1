@@ -37,9 +37,9 @@
 // Common data types and functions that are often used and do not need a
 // separate header file
 
+#include <cmath>
 #include <limits>
 #include <string>
-#include <cmath>
 
 namespace TMIV::Common {
 // Format a string using printf syntax

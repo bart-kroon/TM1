@@ -686,12 +686,12 @@ std::pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {
   int frameGroupId = frameIndex / numberOfFrames;
   int frameRelativeId = frameIndex % numberOfFrames;
 
-  int frameIndexMirrored = (frameGroupId % 2)
+  int frameIndexExtended = (frameGroupId % 2)
                                ? (numberOfFrames - (frameRelativeId + 1))
                                : frameRelativeId;
-  int metadataIndexMirrored = frameIndexMirrored / intraPeriod;
+  int metadataIndexExtended = frameIndexExtended / intraPeriod;
 
-  return {metadataIndexMirrored, frameIndexMirrored};
+  return {metadataIndexExtended, frameIndexExtended};
 }
 
 } // namespace TMIV::IO

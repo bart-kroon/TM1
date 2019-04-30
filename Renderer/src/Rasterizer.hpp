@@ -248,15 +248,19 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       batch.vertices[n2].position - Common::Vec2f{0.f, float(strip.i1)};
 
   // Determine triangle bounding box
-  const auto u1 = std::max(0, TMIV::Common::ifloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u1 =
+      std::max(0, TMIV::Common::ifloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
   const auto u2 =
-      std::min(strip.cols, 1 + TMIV::Common::iceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
+      std::min(strip.cols,
+               1 + TMIV::Common::iceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
   if (u1 >= u2) {
     return; // Cull
   }
-  const auto v1 = std::max(0, TMIV::Common::ifloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v1 =
+      std::max(0, TMIV::Common::ifloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
   const auto v2 =
-      std::min(strip.rows(), 1 + TMIV::Common::iceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
+      std::min(strip.rows(),
+               1 + TMIV::Common::iceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
   if (v1 >= v2) {
     return; // Cull
   }
@@ -314,7 +318,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       }
 
       // Barycentric interpolation of normalized disparity and attributes
-	  // (e.g. color)
+      // (e.g. color)
       const auto d = w0 * d0 + w1 * d1 + w2 * d2;
       const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 

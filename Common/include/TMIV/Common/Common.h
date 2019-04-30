@@ -39,6 +39,7 @@
 
 #include <limits>
 #include <string>
+#include <cmath>
 
 namespace TMIV::Common {
 // Format a string using printf syntax

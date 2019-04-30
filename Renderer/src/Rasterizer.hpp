@@ -219,8 +219,8 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
       return;
     }
     const auto k = y * m_dk_di;
-    k1 = std::min(k1, ifloor(k));
-    k2 = std::max(k2, iceil(k) + 1);
+    k1 = std::min(k1, TMIV::Common::ifloor(k));
+    k2 = std::max(k2, TMIV::Common::iceil(k) + 1);
   }
 
   // Cull
@@ -248,15 +248,15 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       batch.vertices[n2].position - Common::Vec2f{0.f, float(strip.i1)};
 
   // Determine triangle bounding box
-  const auto u1 = std::max(0, ifloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u1 = std::max(0, TMIV::Common::ifloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
   const auto u2 =
-      std::min(strip.cols, 1 + iceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
+      std::min(strip.cols, 1 + TMIV::Common::iceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
   if (u1 >= u2) {
     return; // Cull
   }
-  const auto v1 = std::max(0, ifloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v1 = std::max(0, TMIV::Common::ifloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
   const auto v2 =
-      std::min(strip.rows(), 1 + iceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
+      std::min(strip.rows(), 1 + TMIV::Common::iceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
   if (v1 >= v2) {
     return; // Cull
   }

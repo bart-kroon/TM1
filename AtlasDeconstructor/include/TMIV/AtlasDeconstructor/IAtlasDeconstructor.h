@@ -58,10 +58,9 @@ public:
 
   virtual PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
                                        const PatchParameterList &patchList) = 0;
-  virtual MVD16Frame
-  recoverPrunedView(const MVD10Frame &atlas,
-                       const CameraParameterList &cameraList,
-                       const PatchParameterList &patchList) = 0;
+  virtual MVD16Frame recoverPrunedView(const MVD10Frame &atlas,
+                                       const CameraParameterList &cameraList,
+                                       const PatchParameterList &patchList) = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

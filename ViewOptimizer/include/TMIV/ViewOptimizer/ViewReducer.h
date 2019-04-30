@@ -64,7 +64,7 @@ private:
                          Metadata::CameraParameters camera_2) -> float;
 
   auto calculateOverlapping(Metadata::CameraParameters camera_1,
-                        Metadata::CameraParameters camera_2) -> float;
+                            Metadata::CameraParameters camera_2) -> float;
 };
 } // namespace TMIV::ViewOptimizer
 

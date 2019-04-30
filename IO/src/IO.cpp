@@ -313,7 +313,8 @@ CameraParameterList loadSourceMetadata(const Json &config) {
   ifstream stream{cameraPath};
 
   if (!stream.good())
-    throw runtime_error("Failed to load source camera parameters\n" + cameraPath);
+    throw runtime_error("Failed to load source camera parameters\n" +
+                        cameraPath);
 
   auto cameras =
       loadCamerasFromJson(Json{stream}.require("cameras"),
@@ -485,12 +486,12 @@ void saveOptimizedFrame(const Json &config, int frameIndex,
 
 /////////////////////////////////////////////////
 void savePrunedFrame(const Common::Json &config, int frameIndex,
-                        const Common::MVD16Frame &frame) {
+                     const Common::MVD16Frame &frame) {
   cout << "Saving pruned frame " << frameIndex << '\n';
 
   for (auto i = 0u; i < frame.size(); i++) {
-    std::string texturePath = getFullPath(config, "OutputDirectory",
-                                          "PrunedViewTexturePathFmt", i);
+    std::string texturePath =
+        getFullPath(config, "OutputDirectory", "PrunedViewTexturePathFmt", i);
     writeFrame<YUV420P10>(texturePath, frame[i].first, (frameIndex == 0));
 
     std::string depthPath =
@@ -675,6 +676,22 @@ void saveViewport(const Json &config, int frameIndex,
   std::string depthPath =
       getFullPath(config, "OutputDirectory", "RenderedDepthPath", frameIndex);
   writeFrame<YUV400P10>(depthPath, frame.second, (frameIndex == 0));
+}
+
+/////////////////////////////////////////////////
+std::pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {
+  int numberOfFrames = config.require("numberOfFrames").asInt();
+  int intraPeriod = config.require("intraPeriod").asInt();
+
+  int frameGroupId = frameIndex / numberOfFrames;
+  int frameRelativeId = frameIndex % numberOfFrames;
+
+  int frameIndexMirrored = (frameGroupId % 2)
+                               ? (numberOfFrames - (frameRelativeId + 1))
+                               : frameRelativeId;
+  int metadataIndexMirrored = frameIndexMirrored / intraPeriod;
+
+  return {metadataIndexMirrored, frameIndexMirrored};
 }
 
 } // namespace TMIV::IO

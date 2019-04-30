@@ -52,9 +52,9 @@ Renderer::renderFrame(const Common::MVD10Frame &atlas,
                       const Metadata::CameraParameters &target) const {
   auto viewport =
       m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
-  
+
   // TODO inpainter crashes -bartson
-  //m_inpainter->inplaceInpaint(viewport, target);
+  // m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 

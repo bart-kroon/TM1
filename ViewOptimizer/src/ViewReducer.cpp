@@ -183,7 +183,6 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
                     : false;
   }
 
-
   // Just select 1 view which has the shortest distance to center
   if (isoneview) {
     float x_center = 0;
@@ -337,16 +336,16 @@ auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
                  (camera_from.erpThetaRange[0] - camera_from.erpThetaRange[1]) /
                  isoverlap.height()) *
             radperdeg;
-		//calculate weight of each pixel in sphere 
+        // calculate weight of each pixel in sphere
         weight = cos(angle);
       } else if (camera_from.type == ProjectionType::Perspective) {
         weight = 1;
       }
-	  weight_all += weight;
+      weight_all += weight;
       if (isoverlap(i, j)) {
-		  weight_overlapped += weight;
+        weight_overlapped += weight;
       }
-	}
+    }
   }
   overlapping = weight_overlapped / weight_all * calculateFOV(camera_from);
   return overlapping;

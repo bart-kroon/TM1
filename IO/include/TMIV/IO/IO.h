@@ -68,7 +68,7 @@ auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
     -> BaseAdditional<Metadata::CameraParameterList>;
 
 void savePrunedFrame(const Common::Json &config, int frameIndex,
-                        const Common::MVD16Frame &frame);
+                     const Common::MVD16Frame &frame);
 
 struct MivMetadata {
   std::vector<Common::Vec2i> atlasSize;
@@ -101,6 +101,14 @@ auto loadViewportMetadata(const Common::Json &config, int frameIndex)
     -> Metadata::CameraParameters;
 void saveViewport(const Common::Json &config, int frameIndex,
                   const Common::TextureDepth10Frame &frame);
+
+// Returns a pair of metadata and frame indices to pass to loadMivMetadata and
+// loadAtlas. If frameIndex is strictly less than the actual number of frames in
+// the encoded stream, then regular values are returned else mirrored indices
+// are computed.
+std::pair<int, int> getExtendedIndex(const Common::Json &config,
+                                     int frameIndex);
+
 } // namespace TMIV::IO
 
 #endif

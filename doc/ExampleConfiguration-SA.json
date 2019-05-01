@@ -1,0 +1,81 @@
+{
+	"startFrame": 108,
+	"numberOfFrames": 12,
+	"intraPeriod": 32,
+
+    "SourceTexturePathFmt": "v%d_4096_2048_420_10b.yuv",
+    "SourceDepthPathFmt": "v%d_4096_2048_0_8_1000_0_420_16b.yuv",
+    "SourceCameraParameters": "ClassroomVideo.json",
+	"SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14" ],
+    
+    "EncoderMethod": "Encoder",
+    "Encoder": {},
+
+    "ViewOptimizerMethod": "ViewReducer",
+    "ViewReducer": {},
+
+	"BaseTexturePathFmt": "BAS_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
+    "BaseDepthPathFmt": "BAS_SA_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
+    "BaseMetadataPath": "BAS_SA_R0_Tm_vxx.bit",    
+    "AdditionalTexturePathFmt": "ADD_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
+    "AdditionalDepthPathFmt": "ADD_SA_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
+    "AdditionalMetadataPath": "ADD_SA_R0_Tm_vxx.bit",
+	
+	"AtlasConstructorMethod": "AtlasConstructor",
+	"AtlasConstructor": {
+	
+		"PrunerMethod": "Pruner",
+		"Pruner": {
+			"RedundancyFactor": 0.02,
+			"ErosionIter": 1,
+			"DilationIter": 5
+		},
+		
+		"AggregatorMethod": "Aggregator",
+		"Aggregator": {
+		},
+
+		"PackerMethod": "Packer",
+		"Packer": {
+			"Alignment": 8,
+			"MinPatchSize": 8,
+			"Overlap": 1,
+			"PiP": 1
+		},
+
+		"AtlasResolution": [4096, 2048],
+		"MPixel": 20
+	},	
+	    
+	"AtlasTexturePathFmt": "ATL_SA_R0_Tt_c%02d_4096x2048_yuv420p10le.yuv",
+	"AtlasDepthPathFmt": "ATL_SA_R0_Td_c%02d_4096x2048_yuv420p10le.yuv",
+	"AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
+	
+	"DecoderMethod": "Decoder",
+    "Decoder": {},
+
+	"AtlasDeconstructorMethod": "AtlasDeconstructor",
+	"AtlasDeconstructor": {},
+
+	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d.yuv",
+	
+    "PrunedViewTexturePathFmt": "PRU_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
+    "PrunedViewDepthPathFmt": "PRU_SA_R0_Td_v%02d_4096x2048_yuv420p10le.yuv",
+    
+    "RendererMethod": "MultiPassRenderer",
+    "MultiPassRenderer": {},
+
+    "ViewSynthesizerMethod": "ViewSynthesizer",
+    "ViewSynthesizer": {
+        "rayAngleParameter": 46,
+        "depthParameter": 26,
+        "stretchingParameter": 3.3
+    },
+
+    "InpainterMethod": "Inpainter",
+    "Inpainter": {},
+
+    "RenderedTexturePath": "TM1_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
+	"RenderedDepthPath": "TM1_SA_R0_Td_v%02d_4096x2048_yuv420p10le.yuv",
+	"OutputCameraName": [ "v1"]
+}

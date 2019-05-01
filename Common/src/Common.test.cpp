@@ -158,27 +158,27 @@ TEST_CASE("Parsing the command-line", "[Application]") {
 
   SECTION("Load a Json") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json"}};
+                        {"command", "-c", "Common/test/CommonTest.json"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 32);
   }
 
   SECTION("Load a Json and add a parameters") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                        {"command", "-c", "Common/test/CommonTest.json", "-p",
                          "continent", "Africa"}};
     REQUIRE(app.json().require("continent").asString() == "Africa");
   }
 
   SECTION("Load a Json and override a parameter") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                        {"command", "-c", "Common/test/CommonTest.json", "-p",
                          "intraPeriod", "8"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 8);
   }
 
   SECTION("Load a Json, override a parameter and add a parameter") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                        {"command", "-c", "Common/test/CommonTest.json", "-p",
                          "intraPeriod", "8", "-p", "continent", "Africa"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 8);
     REQUIRE(app.json().require("continent").asString() == "Africa");

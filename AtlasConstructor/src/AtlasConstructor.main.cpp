@@ -74,7 +74,9 @@ public:
     m_atlasConstructor->prepareIntraPeriod(cameras.base, cameras.additional);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto views = IO::loadOptimizedFrame(json(), cameras, i);
+      auto views = IO::loadOptimizedFrame(
+          json(), {IO::sizesOf(cameras.base), IO::sizesOf(cameras.additional)},
+          i);
       m_atlasConstructor->pushFrame(move(views.base), move(views.additional));
     }
 

@@ -50,8 +50,7 @@ using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
-  return CameraParameters{42,
-                          {10, 5},           // size
+  return CameraParameters{{10, 5},           // size
                           {1.f, 0.f, -1.f},  // position
                           {1.f, 2.f, -0.5f}, // orientation
                           ProjectionType::ERP,
@@ -67,8 +66,8 @@ TEST_CASE("Full ERP", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.f);
   const CameraParameters camera{
-      0,  {7, 5}, {}, {}, ProjectionType::ERP, {-180.f, 180.f}, {-90.f, 90.f},
-      {}, {},     {}, {}};
+      {7, 5}, {}, {}, ProjectionType::ERP, {-180.f, 180.f}, {-90.f, 90.f}, {},
+      {},     {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -132,8 +131,8 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.f);
   const CameraParameters camera{
-      0,  {7, 5}, {}, {}, ProjectionType::ERP, {-10.f, 10.f}, {-10.f, 10.f},
-      {}, {},     {}, {}};
+      {7, 5}, {}, {}, ProjectionType::ERP, {-10.f, 10.f}, {-10.f, 10.f}, {},
+      {},     {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -197,8 +196,8 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.f);
   const CameraParameters camera{
-      0,  {7, 5},       {},           {}, ProjectionType::Perspective, {}, {},
-      {}, {10.f, 10.f}, {3.5f, 2.5f}, {}};
+      {7, 5},       {},           {}, ProjectionType::Perspective, {}, {}, {},
+      {10.f, 10.f}, {3.5f, 2.5f}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -261,9 +260,9 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
 TEST_CASE("Changing the reference frame", "[Render engine]") {
   const CameraParameters neutral{};
   const CameraParameters translated{
-      0, {}, {1.f, 2.f, 3.f}, {}, {}, {}, {}, {}, {}, {}, {}};
+      {}, {1.f, 2.f, 3.f}, {}, {}, {}, {}, {}, {}, {}, {}};
   const CameraParameters rotated{
-      0, {}, {}, {100.f, 30.f, -30.f}, {}, {}, {}, {}, {}, {}, {}};
+      {}, {}, {100.f, 30.f, -30.f}, {}, {}, {}, {}, {}, {}, {}};
   SECTION("trivial") {
     auto R_t = affineParameters(neutral, neutral);
     REQUIRE(R_t.first == Mat3x3f::eye());

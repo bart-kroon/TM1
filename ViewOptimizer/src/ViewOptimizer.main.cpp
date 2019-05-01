@@ -70,9 +70,9 @@ private:
     IO::saveOptimizedMetadata(json(), intraFrame, cameras);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto sourceFrame = IO::loadSourceFrame(json(), m_cameras, i);
+      auto sourceFrame = IO::loadSourceFrame(json(), IO::sizesOf(m_cameras), i);
       auto frame = m_optimizer->optimizeFrame(move(sourceFrame));
-      IO::saveOptimizedFrame(json(), i, cameras, frame);
+      IO::saveOptimizedFrame(json(), i, frame);
     }
   }
 };

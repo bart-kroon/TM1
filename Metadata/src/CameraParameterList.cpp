@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Json.h>
-#include <iomanip>
 #include <ostream>
 
 using namespace std;
@@ -48,8 +47,7 @@ CameraParameterList loadCamerasFromJson(const Json &node,
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
-        auto id = std::stoi(name.substr(1));
-        result.push_back(loadCameraFromJson(id, node.at(i)));
+        result.push_back(loadCameraFromJson(node.at(i)));
         break;
       }
     }
@@ -62,7 +60,7 @@ CameraParameterList loadCamerasFromJson(const Json &node,
 }
 
 ostream &operator<<(ostream &stream, const CameraParameters &camera) {
-  stream << "Camera " << setw(2) << camera.id << " " << camera.size << ", ";
+  stream << camera.size << ", ";
   switch (camera.type) {
   case ProjectionType::ERP:
     stream << "ERP " << camera.erpPhiRange << " x " << camera.erpThetaRange
@@ -95,9 +93,8 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
 }
 
 // The parameter is a an item of the cameras node (a JSON object).
-CameraParameters loadCameraFromJson(uint16_t id, const Json &node) {
+CameraParameters loadCameraFromJson(const Json &node) {
   CameraParameters parameters;
-  parameters.id = id;
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();
   parameters.rotation = node.require("Rotation").asFloatVector<3>();

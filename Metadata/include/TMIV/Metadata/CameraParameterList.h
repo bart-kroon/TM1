@@ -50,9 +50,6 @@ using Common::Vec3f;
 
 // Data type that corresponds to an entry of camera_params_list of MPEG/N18464
 struct CameraParameters {
-  // This field is NOT in MPEG/218464
-  uint16_t id;
-
   // In MPEG/N18464: projection_plane_{width,height}
   Vec2i size{};
 
@@ -101,7 +98,7 @@ CameraParameterList loadCamerasFromJson(const Common::Json &node,
 // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
 //
 // The parameter is a an item of the cameras node (a JSON object).
-CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node);
+CameraParameters loadCameraFromJson(const Common::Json &node);
 } // namespace TMIV::Metadata
 
 #endif

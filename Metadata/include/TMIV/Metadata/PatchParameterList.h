@@ -69,6 +69,8 @@ struct PatchParameters {
   PatchRotation rotation;
 };
 
+static_assert(sizeof(PatchParameters) == 32);
+
 std::string PatchParametersString(const PatchParameters &patchParameters);
 
 // Data type that matches with patch_params of the working draft

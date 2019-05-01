@@ -84,6 +84,8 @@ struct CameraParameters {
                                   const CameraParameters &camera);
 };
 
+static_assert(sizeof(CameraParameters) == 80);
+
 using CameraParameterList = std::vector<CameraParameters>;
 
 bool intrinsicParamsEqual(const CameraParameterList &);

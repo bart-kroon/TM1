@@ -101,6 +101,9 @@ public:
   int getMemorySize() const {
     return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
   }
+  int getDiskSize() const {
+    return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
+  }
   static constexpr int getNumberOfPlanes() { return nb_plane; }
 
   void read(std::istream &is, bool vFlip = false);

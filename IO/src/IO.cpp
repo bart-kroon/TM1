@@ -73,13 +73,19 @@ Frame<FORMAT> readFrame(const string &path, int frameIndex, Vec2i resolution) {
   if (!stream.good())
     throw runtime_error("Failed to open file: " + path);
 
-  stream.seekg(streampos(frameIndex) * result.getMemorySize());
+  stream.seekg(streampos(frameIndex) * result.getDiskSize());
   result.read(stream);
 
   if (!stream.good())
     throw runtime_error("Failed to read from file: " + path);
 
   return result;
+}
+
+void padZeros(ostream &stream, int bytes) {
+  while (bytes-- > 0) {
+    stream.put(0);
+  }
 }
 
 template <typename FORMAT>
@@ -91,6 +97,7 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame,
     throw runtime_error("Failed to open file for writing: " + path);
 
   frame.dump(stream);
+  padZeros(stream, frame.getDiskSize() - frame.getMemorySize());
 
   if (!stream.good())
     throw runtime_error("Failed to write to file: " + path);

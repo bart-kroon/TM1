@@ -11,7 +11,8 @@ target_link_libraries(IOLib
 	PUBLIC
 		TMIV::CommonLib
 		TMIV::MetadataLib
-		TMIV::ViewOptimizerLib)
+		TMIV::ViewOptimizerLib
+		TMIV::ImageLib)
 
 target_include_directories(IOLib
 	PUBLIC

@@ -40,10 +40,12 @@
 #include <iostream>
 
 #include <TMIV/Common/Common.h>
+#include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
+using namespace TMIV::Image;
 
 namespace TMIV::IO {
 namespace {
@@ -467,7 +469,19 @@ MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize,
                                  "AtlasDepthPathFmt");
 }
 
-void saveAtlas(const Json &config, int frameIndex, const MVD16Frame &frame) {
+void saveAtlas(const Json &config, int frameIndex, MVD16Frame frame) {
+  // Convert from 16 to 10-bit depth
+  MVD10Frame frame10;
+  frame10.reserve(frame.size());
+  transform(begin(frame), end(frame), back_inserter(frame10),
+            [](TextureDepth16Frame &view) {
+              return pair{move(view.first), requantize10(view.second)};
+            });
+
+  saveAtlas(config, frameIndex, frame10);
+}
+
+void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   saveMVDFrame(config, frameIndex, frame, "atlas", "OutputDirectory",
                "AtlasTexturePathFmt", "AtlasDepthPathFmt");
 }

@@ -107,9 +107,6 @@ public:
   void dump(std::ostream &os, bool vFlip = false) const;
 };
 
-template <class FROM, class TO>
-void convert(const Frame<FROM> &inputFrame, Frame<TO> &outputFrame);
-
 template <class T> std::string frameInfo(const T &frame);
 
 } // namespace TMIV::Common

@@ -96,7 +96,7 @@ public:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto frame = m_atlasConstructor->popAtlas();
-      IO::saveAtlas(json(), i, frame);
+      IO::saveAtlas(json(), i, move(frame));
     }
   }
 };

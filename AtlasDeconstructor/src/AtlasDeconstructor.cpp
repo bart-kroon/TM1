@@ -33,9 +33,11 @@
 
 #include <TMIV/AtlasDeconstructor/AtlasDeconstructor.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Image;
 
 namespace TMIV::AtlasDeconstructor {
 
@@ -213,16 +215,13 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     }
   }
 
-  // Conversion
+  // Convert from 10 to 16-bit depth
   MVD16Frame mvd16;
-
-  for (auto view : mvd10) {
-    Depth16Frame depth16(view.second.getWidth(), view.second.getHeight());
-    convert(view.second, depth16);
-    mvd16.push_back(
-        TextureDepth16Frame(std::move(view.first), std::move(depth16)));
-  }
-
+  mvd16.reserve(mvd10.size());
+  transform(begin(mvd10), end(mvd10), back_inserter(mvd16),
+            [](TextureDepth10Frame &view10) {
+              return pair{move(view10.first), requantize16(view10.second)};
+            });
   return mvd16;
 }
 

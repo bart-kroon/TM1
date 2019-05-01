@@ -39,32 +39,25 @@
 #include <vector>
 
 namespace TMIV::Common {
-
-static unsigned int MAX_THREAD = 8;
-
 inline void parallel_for(std::size_t nbIter,
-                         std::function<void(std::size_t)> fun,
-                         std::size_t nbThread = MAX_THREAD) {
+                         std::function<void(std::size_t)> fun) {
   auto segment_execute = [&](std::size_t first, std::size_t last) {
     for (auto id = first; id < last; id++)
       fun(id);
   };
 
-  if (nbThread == 1)
-    segment_execute(0, nbIter);
-  else {
-    std::size_t chunkSize = nbIter / nbThread;
-    std::vector<std::future<void>> threadList;
+  std::size_t chunkSize = nbIter / std::thread::hardware_concurrency();
+  std::vector<std::future<void>> threadList;
 
-    for (size_t id = 0u; id < nbIter; id += chunkSize)
-      threadList.push_back(std::async(std::launch::async, segment_execute, id,
-                                      std::min(id + chunkSize, nbIter)));
+  for (size_t id = 0u; id < nbIter; id += chunkSize) {
+    threadList.push_back(
+        std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
+  }
 
-    for (auto &thread : threadList)
-      thread.wait();
+  for (auto &thread : threadList) {
+    thread.wait();
   }
 }
-
 } // namespace TMIV::Common
 
 #endif

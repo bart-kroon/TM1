@@ -158,7 +158,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
                                          MVD16Frame &atlas) {
 
   auto &currentAtlas = atlas[patch.atlasId];
-  const auto &currentView = views[patch.virtualCameraId];
+  const auto &currentView = views[patch.viewId];
 
   auto &textureAtlasMap = currentAtlas.first;
   auto &depthAtlasMap = currentAtlas.second;
@@ -167,8 +167,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
   const auto &depthViewMap = currentView.second;
 
   int w = patch.patchSize.x(), h = patch.patchSize.y();
-  int xM = patch.patchMappingPos.x(), yM = patch.patchMappingPos.y();
-  int xP = patch.patchPackingPos.x(), yP = patch.patchPackingPos.y();
+  int xM = patch.posInView.x(), yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
   int w_tex = ((xM + w) <= (int)textureViewMap.getWidth())
                   ? w
                   : ((int)textureViewMap.getWidth() - xM);
@@ -176,7 +176,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
                   ? h
                   : ((int)textureViewMap.getHeight() - yM);
 
-  if (patch.patchRotation == Metadata::PatchRotation::upright) {
+  if (patch.rotation == Metadata::PatchRotation::upright) {
     for (int dy = 0; dy < h_tex; dy++) {
 
       // Y

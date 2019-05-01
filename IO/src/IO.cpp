@@ -198,11 +198,11 @@ PatchParameters readPatchFromFile(std::ifstream &is) {
   PatchParameters patch;
 
   is.read((char *)&(patch.atlasId), sizeof(uint8_t));
-  is.read((char *)&(patch.virtualCameraId), sizeof(uint8_t));
+  is.read((char *)&(patch.viewId), sizeof(uint8_t));
   is.read((char *)&(patch.patchSize), sizeof(Vec2i));
-  is.read((char *)&(patch.patchMappingPos), sizeof(Vec2i));
-  is.read((char *)&(patch.patchPackingPos), sizeof(Vec2i));
-  is.read((char *)&(patch.patchRotation), sizeof(PatchRotation));
+  is.read((char *)&(patch.posInView), sizeof(Vec2i));
+  is.read((char *)&(patch.posInAtlas), sizeof(Vec2i));
+  is.read((char *)&(patch.rotation), sizeof(PatchRotation));
 
   return patch;
 }
@@ -233,11 +233,11 @@ void skipPatchListFromFile(std::istream &is) {
 
 void writePatchToFile(std::ofstream &os, const PatchParameters &patch) {
   os.write((const char *)&(patch.atlasId), sizeof(uint8_t));
-  os.write((const char *)&(patch.virtualCameraId), sizeof(uint8_t));
+  os.write((const char *)&(patch.viewId), sizeof(uint8_t));
   os.write((const char *)&(patch.patchSize), sizeof(Vec2i));
-  os.write((const char *)&(patch.patchMappingPos), sizeof(Vec2i));
-  os.write((const char *)&(patch.patchPackingPos), sizeof(Vec2i));
-  os.write((const char *)&(patch.patchRotation), sizeof(PatchRotation));
+  os.write((const char *)&(patch.posInView), sizeof(Vec2i));
+  os.write((const char *)&(patch.posInAtlas), sizeof(Vec2i));
+  os.write((const char *)&(patch.rotation), sizeof(PatchRotation));
 }
 
 void writePatchListToFile(std::ofstream &os, const PatchParameterList &list) {
@@ -328,40 +328,22 @@ CameraParameterList loadSourceMetadata(const Json &config) {
 
 MVD16Frame loadSourceFrame(const Json &config,
                            const CameraParameterList &cameras, int frameIndex) {
+  frameIndex += config.require("startFrame").asInt();
   cout << "Loading source frame " << frameIndex << std::flush;
 
   MVD16Frame result;
 
-  frameIndex += config.require("startFrame").asInt();
   for (const auto &cam : cameras) {
     std::string texturePath =
         getFullPath(config, "SourceDirectory", "SourceTexturePathFmt", cam.id);
-    auto textureFrame = readFrame<YUV420P10>(texturePath, frameIndex, cam.size);
-
     std::string depthPath =
         getFullPath(config, "SourceDirectory", "SourceDepthPathFmt", cam.id);
 
-    int bitdepthDepth = cam.bitDepthDepth;
-
-    Frame<YUV400P16> depthFrame(cam.size[0], cam.size[1]);
-    if (bitdepthDepth == 10) {
-      Frame<YUV420P10> depthFrame10 =
-          readFrame<YUV420P10>(depthPath, frameIndex, cam.size);
-      convert(depthFrame10, depthFrame);
-    } else if (bitdepthDepth == 16) {
-      Frame<YUV420P16> depthFrame16 =
-          readFrame<YUV420P16>(depthPath, frameIndex, cam.size);
-      convert(depthFrame16, depthFrame);
-    } else
-      throw std::runtime_error(
-          "\nError unsuported bit depth for source files: " +
-          std::to_string(bitdepthDepth));
-
-    result.push_back(
-        TextureDepth16Frame(std::move(textureFrame), std::move(depthFrame)));
+    result.push_back(TextureDepth16Frame(
+        readFrame<YUV420P10>(texturePath, frameIndex, cam.size),
+        readFrame<YUV400P16>(depthPath, frameIndex, cam.size)));
   }
-  cout << " ok\n";
-
+  
   return result;
 }
 

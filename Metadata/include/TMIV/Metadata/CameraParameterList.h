@@ -48,24 +48,40 @@ using Common::Vec2f;
 using Common::Vec2i;
 using Common::Vec3f;
 
-// Camera parameters data type (part of MetadataLib)
-// Based on working draft description
-//
-// Read the RVS 3.x manual for interpretation of angles
+// Data type that corresponds to an entry of camera_params_list of MPEG/N18464
 struct CameraParameters {
-  uint16_t id{};
-  Vec2i size{};     // Camera sensor size (width, height) in pixels
-  Vec3f position{}; // (x, y, z) in meters, OMAF definition
-  Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
+  // This field is NOT in MPEG/218464
+  uint16_t id;
+
+  // In MPEG/N18464: projection_plane_{width,height}
+  Vec2i size{};
+
+  // In MPEG/N18464: cam_pos_{x,y,z}
+  Vec3f position{};
+
+  // In MPEG/N18464: cam_{yaw,pitch,roll}
+  Vec3f rotation{};
+
+  // In MPEG/N18464: cam_type
   ProjectionType type{ProjectionType::ERP};
-  Vec2f erpPhiRange{};   // Horizontal range in degrees
-  Vec2f erpThetaRange{}; // Vertical rnage in degrees
+
+  // In MPEG/N18464: erp_phi_{min,max}
+  Vec2f erpPhiRange{};
+
+  // In MPEG/N18464: erp_theta_{min,max}
+  Vec2f erpThetaRange{};
+
+  // In MPEG/N18464: cubic_map_type
   CubicMapType cubicMapType{CubicMapType::CubeMap};
-  Vec2f perspectiveFocal{};  // Focal length
-  Vec2f perspectiveCenter{}; // Principle point
-  Vec2f depthRange{};        // [near, far]
-  int bitDepthColor{};
-  int bitDepthDepth{};
+
+  // In MPEG/N18464: perspective_focal_{hor,ver}
+  Vec2f perspectiveFocal{};
+
+  // In MPEG/N18464: perspective_center_{hor,ver}
+  Vec2f perspectiveCenter{};
+
+  // In MPEG/N18464: depth_{near,far}
+  Vec2f depthRange{};
 
   friend std::ostream &operator<<(std::ostream &stream,
                                   const CameraParameters &camera);

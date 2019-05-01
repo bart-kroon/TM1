@@ -290,23 +290,13 @@ auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
 
   Mat<int> isoverlap;
   isoverlap.resize(camera_from.size.y(), camera_from.size.x());
-  float depth_temp = 0;
-  if (camera_from.bitDepthDepth == 10) {
-    depth_temp = sqrtf(expandDepthValue<10>(camera_from, 1) *
-                       expandDepthValue<10>(camera_from, 1023));
-  } else if (camera_from.bitDepthDepth == 16) {
-    depth_temp = sqrtf(expandDepthValue<16>(camera_from, 1) *
-                       expandDepthValue<16>(camera_from, 65535));
-  }
+  float depth_temp = sqrtf(expandDepthValue<16>(camera_from, 1) *
+                           expandDepthValue<16>(camera_from, 65535));
 
   for (unsigned i = 0; i != depth.height(); ++i) {
     for (unsigned j = 0; j != depth.width(); ++j) {
       isoverlap(i, j) = 0;
-      if (camera_from.bitDepthDepth == 10) {
-        depth(i, j) = depth_temp;
-      } else if (camera_from.bitDepthDepth == 16) {
-        depth(i, j) = depth_temp;
-      }
+      depth(i, j) = depth_temp;
     }
   }
   auto ptsOncamera_to =

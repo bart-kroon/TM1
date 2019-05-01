@@ -48,14 +48,25 @@ enum class PatchRotation {
   ccw      // what was up goes left
 };
 
-// Data type that matches with an entry of patch_params of the working draft
+// Data type that corresponds to an entry of atlas_params of MPEG/N18464
 struct PatchParameters {
+  // In MPEG/N18464: atlas_id
   uint8_t atlasId;
-  uint8_t virtualCameraId;
+
+  // In MPEG/N18464: view_id
+  uint8_t viewId;
+
+  // In MPEG/N18464: patch_{width,height}_in_view
   Vec2i patchSize;
-  Vec2i patchMappingPos;
-  Vec2i patchPackingPos;
-  PatchRotation patchRotation;
+
+  // In MPEG/N18464: patch_pos_in_view_{x,y}
+  Vec2i posInView;
+
+  // In MPEG/N18464: patch_pos_in_atlas_{x,y}
+  Vec2i posInAtlas;
+
+  // In MPEG/N18464: patch_rotation
+  PatchRotation rotation;
 };
 
 std::string PatchParametersString(const PatchParameters &patchParameters);

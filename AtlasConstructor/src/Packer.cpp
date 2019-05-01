@@ -105,21 +105,21 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
           Metadata::PatchParameters p;
 
           p.atlasId = static_cast<uint8_t>(atlasId);
-          p.virtualCameraId = static_cast<uint8_t>(cluster.getCameraId());
+          p.viewId = static_cast<uint8_t>(cluster.getCameraId());
           p.patchSize = {Common::align(cluster.width(), m_alignment),
                          Common::align(cluster.height(), m_alignment)};
-          p.patchMappingPos = {cluster.jmin(), cluster.imin()};
-          p.patchPackingPos = {packerOutput.x(), packerOutput.y()};
-          p.patchRotation = packerOutput.isRotated()
+          p.posInView = {cluster.jmin(), cluster.imin()};
+          p.posInAtlas = {packerOutput.x(), packerOutput.y()};
+          p.rotation = packerOutput.isRotated()
                                 ? Metadata::PatchRotation::ccw
                                 : Metadata::PatchRotation::upright;
 
-          auto patchOverflow = (p.patchMappingPos + p.patchSize) -
+          auto patchOverflow = (p.posInView + p.patchSize) -
                                masks[cluster.getCameraId()].getSize();
           if (patchOverflow.x() > 0)
-            p.patchMappingPos.x() -= patchOverflow.x();
+            p.posInView.x() -= patchOverflow.x();
           if (patchOverflow.y() > 0)
-            p.patchMappingPos.y() -= patchOverflow.y();
+            p.posInView.y() -= patchOverflow.y();
 
           patchList.push_back(std::move(p));
 

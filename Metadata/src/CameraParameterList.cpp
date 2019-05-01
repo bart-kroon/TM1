@@ -102,8 +102,6 @@ CameraParameters loadCameraFromJson(uint16_t id, const Json &node) {
   parameters.position = node.require("Position").asFloatVector<3>();
   parameters.rotation = node.require("Rotation").asFloatVector<3>();
   parameters.depthRange = node.require("Depth_range").asFloatVector<2>();
-  parameters.bitDepthColor = node.require("BitDepthColor").asInt();
-  parameters.bitDepthDepth = node.require("BitDepthDepth").asInt();
 
   auto proj = node.require("Projection").asString();
   if (proj == "Equirectangular") {

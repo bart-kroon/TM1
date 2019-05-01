@@ -57,6 +57,11 @@ template <unsigned bits> uint16_t quantizeValue(float x) {
   return 0u;
 }
 
+template <unsigned from_bits, unsigned to_bits>
+uint16_t requantizeValue(uint16_t x) {
+  return quantizeValue<to_bits>(expandValue<from_bits>(x));
+}
+
 template <unsigned bits>
 float expandDepthValue(const Metadata::CameraParameters &camera, uint16_t x) {
   const auto near = camera.depthRange[0];

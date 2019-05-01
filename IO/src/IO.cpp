@@ -108,7 +108,6 @@ MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes,
                               int frameIndex, const char *what,
                               const char *directory, const char *texturePathFmt,
                               const char *depthPathFmt) {
-  frameIndex += config.require("startFrame").asInt();
   cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
@@ -333,6 +332,7 @@ CameraParameterList loadSourceMetadata(const Json &config) {
 
 MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                            int frameIndex) {
+  frameIndex += config.require("startFrame").asInt();
   return loadMVDFrame<YUV400P16>(config, sizes, frameIndex, "source",
                                  "SourceDirectory", "SourceTexturePathFmt",
                                  "SourceDepthPathFmt");

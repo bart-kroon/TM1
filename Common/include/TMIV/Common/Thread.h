@@ -36,6 +36,7 @@
 
 #include <functional>
 #include <future>
+#include <vector>
 
 namespace TMIV::Common {
 

@@ -102,7 +102,7 @@ public:
     return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
   }
   int getDiskSize() const {
-    return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
+    return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
   }
   static constexpr int getNumberOfPlanes() { return nb_plane; }
 

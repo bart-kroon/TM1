@@ -58,10 +58,11 @@ public:
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto subnode = json().require("extendedNumberOfFrames"))
+    if (auto subnode = json().require("extendedNumberOfFrames")) {
       m_extendedNumberOfFrames = subnode.asInt();
-    else
+    } else {
       m_extendedNumberOfFrames = m_numberOfFrames;
+    }
   }
 
   void run() override {
@@ -72,17 +73,12 @@ public:
     for (int i = 0; i < m_extendedNumberOfFrames; i++) {
       auto idx = IO::getExtendedIndex(json(), i);
 
-      if (idx.first != lastIntraFrame) {
+      if (lastIntraFrame != idx.first) {
+        lastIntraFrame = idx.first;
         metadata = IO::loadMivMetadata(json(), idx.first);
-
-        // IO::savePatchList(json(), "/patchlist.decoder.txt",
-        // metadata.patches);
-
         m_decoder->updateAtlasSize(metadata.atlasSize);
         m_decoder->updatePatchList(move(metadata.patches));
         m_decoder->updateCameraList(move(metadata.cameras));
-
-        lastIntraFrame = idx.first;
       }
 
       auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);

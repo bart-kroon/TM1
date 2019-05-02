@@ -34,6 +34,7 @@
 #include "Renderer.reg.hpp"
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/IO/IO.h>
 #include <TMIV/Renderer/IRenderer.h>
 #include <iostream>
 
@@ -42,16 +43,46 @@ using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
 class Application : public Common::Application {
+private:
+  unique_ptr<IRenderer> m_renderer;
+  int m_numberOfFrames;
+  int m_extendedNumberOfFrames;
+  int m_intraPeriod;
+
 public:
   Application(vector<const char *> argv)
       : Common::Application{"Renderer", move(argv)} {
     m_renderer = create<IRenderer>("Renderer");
+    m_numberOfFrames = json().require("numberOfFrames").asInt();
+    m_intraPeriod = json().require("intraPeriod").asInt();
+
+    if (auto subnode = json().require("extendedNumberOfFrames")) {
+      m_extendedNumberOfFrames = subnode.asInt();
+    } else {
+      m_extendedNumberOfFrames = m_numberOfFrames;
+    }
   }
 
-  void run() override {}
+  void run() override {
+    int lastIntraFrame = -1;
+    IO::MivMetadata metadata;
+    PatchIdMapList maps;
 
-private:
-  unique_ptr<IRenderer> m_renderer;
+    for (int i = 0; i < m_extendedNumberOfFrames; ++i) {
+      auto idx = IO::getExtendedIndex(json(), i);
+      if (lastIntraFrame != idx.first) {
+        lastIntraFrame = idx.first;
+        metadata = IO::loadMivMetadata(json(), idx.first);
+        maps = IO::loadPatchIdMaps(json(), metadata.atlasSize, idx.second);
+      }
+
+      auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
+      auto target = IO::loadViewportMetadata(json(), idx.second);
+      auto viewport = m_renderer->renderFrame(
+          move(frame), maps, metadata.patches, metadata.cameras, target);
+      IO::saveViewport(json(), i, viewport);
+    }
+  }
 };
 } // namespace TMIV::Renderer
 

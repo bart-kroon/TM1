@@ -35,7 +35,7 @@
 #define _TMIV_RENDERER_REPROJECTPOINTS_H_
 
 #include <TMIV/Common/LinAlg.h>
-#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::Renderer {
 // Create a grid of positions indicating the center of each of the pixels

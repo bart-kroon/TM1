@@ -35,8 +35,8 @@
 #define _TMIV_DECODER_IDECODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/AtlasParametersList.h>
 
 namespace TMIV::Decoder {
 class IDecoder {
@@ -57,10 +57,10 @@ public:
   // Change the patch list.
   //
   // This call shall be preceded by at least one call to updateAtlasSize.
-  virtual void updatePatchList(Metadata::PatchParameterList patches) = 0;
+  virtual void updatePatchList(Metadata::AtlasParametersList patches) = 0;
 
   // Change the camera list.
-  virtual void updateCameraList(Metadata::CameraParameterList cameras) = 0;
+  virtual void updateCameraList(Metadata::CameraParametersList cameras) = 0;
 
   // Decode a frame and render to a target viewport.
   //

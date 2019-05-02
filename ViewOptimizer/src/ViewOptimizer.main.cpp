@@ -45,7 +45,7 @@ class Application : public Common::Application {
   unique_ptr<IViewOptimizer> m_optimizer;
   int m_numberOfFrames;
   int m_intraPeriod;
-  Metadata::CameraParameterList m_cameras;
+  Metadata::CameraParametersList m_cameras;
 
 public:
   Application(vector<const char *> argv)

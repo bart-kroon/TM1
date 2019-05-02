@@ -70,7 +70,7 @@ AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
 }
 
 void AtlasConstructor::prepareIntraPeriod(
-    CameraParameterList basicCameras, CameraParameterList additionalCameras) {
+    CameraParametersList basicCameras, CameraParametersList additionalCameras) {
   m_cameras.clear();
   m_cameras.insert(m_cameras.end(), make_move_iterator(begin(basicCameras)),
                    make_move_iterator(end(basicCameras)));
@@ -152,7 +152,7 @@ Common::MVD16Frame AtlasConstructor::popAtlas() {
   return atlas;
 }
 
-void AtlasConstructor::writePatchInAtlas(const PatchParameters &patch,
+void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
                                          const MVD16Frame &views,
                                          MVD16Frame &atlas) {
 

@@ -54,24 +54,24 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
 
   using Vec2i = Common::Vec2i;
-  using PatchParameters = Metadata::PatchParameters;
+  using AtlasParameters = Metadata::AtlasParameters;
 
-  void prepareIntraPeriod(CameraParameterList basicCameras,
-                          CameraParameterList additionalCameras) override;
+  void prepareIntraPeriod(CameraParametersList basicCameras,
+                          CameraParametersList additionalCameras) override;
   void pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) override;
   void completeIntraPeriod() override;
 
   std::vector<Common::Vec2i> getAtlasSize() const override;
-  const CameraParameterList &getCameraList() const override {
+  const CameraParametersList &getCameraList() const override {
     return m_cameras;
   }
-  const PatchParameterList &getPatchList() const override {
+  const AtlasParametersList &getPatchList() const override {
     return m_patchList;
   }
   MVD16Frame popAtlas() override;
 
 private:
-  void writePatchInAtlas(const PatchParameters &patch, const MVD16Frame &views,
+  void writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views,
                          MVD16Frame &atlas);
 
 private:
@@ -82,8 +82,8 @@ private:
   std::unique_ptr<IPacker> m_packer;
   std::vector<std::uint8_t> m_isReferenceView;
   std::vector<MVD16Frame> m_viewBuffer;
-  Metadata::CameraParameterList m_cameras;
-  Metadata::PatchParameterList m_patchList;
+  Metadata::CameraParametersList m_cameras;
+  Metadata::AtlasParametersList m_patchList;
   std::deque<MVD16Frame> m_atlasBuffer;
 };
 } // namespace TMIV::AtlasConstructor

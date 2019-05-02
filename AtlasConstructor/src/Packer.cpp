@@ -52,7 +52,7 @@ Packer::Packer(const Common::Json & /*rootNode*/,
     m_pip = subnode.asInt();
 }
 
-Metadata::PatchParameterList
+Metadata::AtlasParametersList
 Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
              const std::vector<std::uint8_t> &shouldNotBeSplit) {
 
@@ -71,7 +71,7 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   }
 
   // Packing
-  PatchParameterList patchList;
+  AtlasParametersList patchList;
   std::vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 
@@ -103,7 +103,7 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
 
         if (packer.push(cluster, clusteringMap[cluster.getCameraId()],
                         packerOutput)) {
-          Metadata::PatchParameters p;
+          Metadata::AtlasParameters p;
 
           p.atlasId = static_cast<uint8_t>(atlasId);
           p.viewId = static_cast<uint8_t>(cluster.getCameraId());

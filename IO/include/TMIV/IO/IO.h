@@ -36,8 +36,8 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/AtlasParametersList.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 // Functions for file I/O
@@ -48,9 +48,9 @@ namespace TMIV::IO {
 template <class T>
 using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
-auto sizesOf(const Metadata::CameraParameterList &cameras)
+auto sizesOf(const Metadata::CameraParametersList &cameras)
     -> std::vector<Common::Vec2i>;
-Metadata::CameraParameterList loadSourceMetadata(const Common::Json &config);
+Metadata::CameraParametersList loadSourceMetadata(const Common::Json &config);
 Common::MVD16Frame loadSourceFrame(const Common::Json &config,
                                    const std::vector<Common::Vec2i> &cameras,
                                    int frameIndex);
@@ -63,17 +63,17 @@ auto loadOptimizedFrame(
     -> BasicAdditional<Common::MVD16Frame>;
 void saveOptimizedMetadata(
     const Common::Json &config, int frameIndex,
-    const BasicAdditional<Metadata::CameraParameterList> &metadata);
+    const BasicAdditional<Metadata::CameraParametersList> &metadata);
 auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
-    -> BasicAdditional<Metadata::CameraParameterList>;
+    -> BasicAdditional<Metadata::CameraParametersList>;
 
 void savePrunedFrame(const Common::Json &config, int frameIndex,
                      const Common::MVD16Frame &frame);
 
 struct MivMetadata {
   std::vector<Common::Vec2i> atlasSize;
-  Metadata::PatchParameterList patches;
-  Metadata::CameraParameterList cameras;
+  Metadata::AtlasParametersList patches;
+  Metadata::CameraParametersList cameras;
 };
 
 void saveMivMetadata(const Common::Json &config, int frameIndex,
@@ -81,7 +81,7 @@ void saveMivMetadata(const Common::Json &config, int frameIndex,
 auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
 
 void savePatchList(const Common::Json &config, const std::string &name,
-                   Metadata::PatchParameterList patches);
+                   Metadata::AtlasParametersList patches);
 
 // Save the atlas (10-bit 4:2:0 texture, 16-bit depth) with depth converted to
 // 10-bit

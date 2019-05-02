@@ -35,7 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_IPACKER_H_
 
 #include <TMIV/AtlasConstructor/IPruner.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Metadata/AtlasParametersList.h>
 
 namespace TMIV::AtlasConstructor {
 // IPacker interface (part of AtlasConstructorLib)
@@ -50,9 +50,9 @@ public:
 
   using Vec2i = Common::Vec2i;
   using MaskList = Common::MaskList;
-  using PatchParameterList = Metadata::PatchParameterList;
+  using AtlasParametersList = Metadata::AtlasParametersList;
 
-  virtual PatchParameterList
+  virtual AtlasParametersList
   pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
        const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
 };

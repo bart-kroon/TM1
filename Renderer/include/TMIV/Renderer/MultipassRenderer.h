@@ -57,13 +57,13 @@ public:
   Common::TextureDepth10Frame
   renderFrame(const Common::MVD10Frame &atlas,
               const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
+              const Metadata::AtlasParametersList &patches,
+              const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   Common::TextureDepth16Frame
   renderFrame(const Common::MVD16Frame &atlas,
-              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Renderer

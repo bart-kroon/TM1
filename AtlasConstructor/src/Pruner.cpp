@@ -59,7 +59,7 @@ Pruner::Pruner(const Common::Json & /*rootNode*/,
     m_maxAdditionalView = subnode.asInt();
 }
 
-MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
+MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
                        const MVD16Frame &views,
                        const std::vector<std::uint8_t> &shouldNotBePruned) {
 

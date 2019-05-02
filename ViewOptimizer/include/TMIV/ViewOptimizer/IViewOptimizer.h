@@ -35,7 +35,7 @@
 #define _TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::ViewOptimizer {
 // IViewOptimizer interface (part of ViewOptimizerLib)
@@ -54,8 +54,8 @@ public:
   };
 
   // Optimize camera parameters for the coming intra period
-  virtual auto optimizeIntraPeriod(Metadata::CameraParameterList cameras)
-      -> Output<Metadata::CameraParameterList> = 0;
+  virtual auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
+      -> Output<Metadata::CameraParametersList> = 0;
 
   // Optimize a frame in the intra period
   virtual auto optimizeFrame(Common::MVD16Frame views) const

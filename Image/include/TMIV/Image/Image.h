@@ -35,7 +35,7 @@
 #define _TMIV_IMAGE_IMAGE_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::Image {
 // The maximum level for an unsigned integer of the specified number of bits

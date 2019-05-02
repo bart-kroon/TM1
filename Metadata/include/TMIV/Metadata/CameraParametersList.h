@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_CAMERAPARAMETERLIST_H_
-#define _TMIV_METADATA_CAMERAPARAMETERLIST_H_
+#ifndef _TMIV_METADATA_CAMERAPARAMETERSLIST_H_
+#define _TMIV_METADATA_CAMERAPARAMETERSLIST_H_
 
 #include <cstdint>
 #include <iosfwd>
@@ -86,16 +86,15 @@ struct CameraParameters {
 
 static_assert(sizeof(CameraParameters) == 80);
 
-using CameraParameterList = std::vector<CameraParameters>;
-
-bool intrinsicParamsEqual(const CameraParameterList &);
+// Data type that corresponds to camera_params_list of MPEG/N18464
+using CameraParametersList = std::vector<CameraParameters>;
 
 // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
 // with cameras specified by name, in that order
 //
 // The first parameter is the cameras node (a JSON array).
-CameraParameterList loadCamerasFromJson(const Common::Json &node,
-                                        const std::vector<std::string> &names);
+CameraParametersList loadCamerasFromJson(const Common::Json &node,
+                                         const std::vector<std::string> &names);
 
 // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
 //

@@ -145,9 +145,9 @@ CameraParameters readCameraFromFile(istream &is) {
   return camera;
 }
 
-CameraParameterList readCameraListFromFile(istream &is) {
+CameraParametersList readCameraListFromFile(istream &is) {
   uint16_t nbCamera = 0;
-  CameraParameterList list;
+  CameraParametersList list;
 
   is.read((char *)&nbCamera, sizeof(uint16_t));
 
@@ -168,7 +168,7 @@ void writeCameraToFile(ofstream &os, const CameraParameters &camera) {
   os.write(reinterpret_cast<const char *>(&camera), sizeof(camera));
 }
 
-void writeCameraListToFile(ofstream &os, const CameraParameterList &list) {
+void writeCameraListToFile(ofstream &os, const CameraParametersList &list) {
   uint16_t nbCamera = uint16_t(list.size());
 
   os.write((char *)&nbCamera, sizeof(uint16_t));
@@ -205,15 +205,15 @@ void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
   os.write((const char *)atlasSize.data(), nbAtlas * sizeof(Vec2i));
 }
 
-PatchParameters readPatchFromFile(ifstream &is) {
-  PatchParameters patch;
+AtlasParameters readPatchFromFile(ifstream &is) {
+  AtlasParameters patch;
   is.read(reinterpret_cast<char *>(&patch), sizeof(patch));
   return patch;
 }
 
-PatchParameterList readPatchListFromFile(ifstream &is) {
+AtlasParametersList readPatchListFromFile(ifstream &is) {
   uint16_t nbPatch = 0;
-  PatchParameterList list;
+  AtlasParametersList list;
 
   is.read((char *)&nbPatch, sizeof(uint16_t));
 
@@ -235,11 +235,11 @@ void skipPatchListFromFile(istream &is) {
   is.seekg(nbPatch * patchSizeInFile, ios::cur);
 }
 
-void writePatchToFile(ofstream &os, const PatchParameters &patch) {
+void writePatchToFile(ofstream &os, const AtlasParameters &patch) {
   os.write(reinterpret_cast<const char *>(&patch), sizeof(patch));
 }
 
-void writePatchListToFile(ofstream &os, const PatchParameterList &list) {
+void writePatchListToFile(ofstream &os, const AtlasParametersList &list) {
   uint16_t nbPatch = uint16_t(list.size());
 
   os.write((char *)&nbPatch, sizeof(uint16_t));
@@ -300,7 +300,7 @@ void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
 }
 } // namespace
 
-auto sizesOf(const CameraParameterList &cameras) -> vector<Vec2i> {
+auto sizesOf(const CameraParametersList &cameras) -> vector<Vec2i> {
   vector<Vec2i> sizes;
   sizes.reserve(cameras.size());
   transform(begin(cameras), end(cameras), back_inserter(sizes),
@@ -308,7 +308,7 @@ auto sizesOf(const CameraParameterList &cameras) -> vector<Vec2i> {
   return sizes;
 }
 
-CameraParameterList loadSourceMetadata(const Json &config) {
+CameraParametersList loadSourceMetadata(const Json &config) {
   cout << "Loading source metadata\n";
 
   string cameraPath =
@@ -338,11 +338,11 @@ MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                                  "SourceDepthPathFmt");
 }
 
-BasicAdditional<CameraParameterList> loadOptimizedMetadata(const Json &config,
-                                                           int frameIndex) {
+BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,
+                                                            int frameIndex) {
   cout << "Loading optimized metadata\n";
 
-  BasicAdditional<CameraParameterList> result;
+  BasicAdditional<CameraParametersList> result;
   string basicMetadataPath =
       getFullPath(config, "OutputDirectory", "BasicMetadataPath");
   string additionalMetadataPath =
@@ -350,21 +350,21 @@ BasicAdditional<CameraParameterList> loadOptimizedMetadata(const Json &config,
 
   auto skipFunction = [](ifstream &is) { skipCameraListFromFile(is); };
 
-  auto readFunction = [](ifstream &is) -> CameraParameterList {
+  auto readFunction = [](ifstream &is) -> CameraParametersList {
     return readCameraListFromFile(is);
   };
 
   // Reading
-  return BasicAdditional<CameraParameterList>{
-      readMetadataFromFile<CameraParameterList>(basicMetadataPath, frameIndex,
-                                                skipFunction, readFunction),
-      readMetadataFromFile<CameraParameterList>(
+  return BasicAdditional<CameraParametersList>{
+      readMetadataFromFile<CameraParametersList>(basicMetadataPath, frameIndex,
+                                                 skipFunction, readFunction),
+      readMetadataFromFile<CameraParametersList>(
           additionalMetadataPath, frameIndex, skipFunction, readFunction)};
 }
 
 void saveOptimizedMetadata(
     const Json &config, int frameIndex,
-    const BasicAdditional<CameraParameterList> &metadata) {
+    const BasicAdditional<CameraParametersList> &metadata) {
   cout << "Saving metadata of optimized frame " << frameIndex << '\n';
 
   string basicMetadataPath =
@@ -372,14 +372,14 @@ void saveOptimizedMetadata(
   string additionalMetadataPath =
       getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
 
-  auto writeFunction = [](ofstream &os, const CameraParameterList &metadata) {
+  auto writeFunction = [](ofstream &os, const CameraParametersList &metadata) {
     writeCameraListToFile(os, metadata);
   };
 
-  writeMetadataToFile<CameraParameterList>(basicMetadataPath, frameIndex,
-                                           metadata.basic, writeFunction);
-  writeMetadataToFile<CameraParameterList>(additionalMetadataPath, frameIndex,
-                                           metadata.additional, writeFunction);
+  writeMetadataToFile<CameraParametersList>(basicMetadataPath, frameIndex,
+                                            metadata.basic, writeFunction);
+  writeMetadataToFile<CameraParametersList>(additionalMetadataPath, frameIndex,
+                                            metadata.additional, writeFunction);
 }
 
 BasicAdditional<MVD16Frame>
@@ -454,7 +454,7 @@ void saveMivMetadata(const Json &config, int frameIndex,
 }
 
 void savePatchList(const Json &config, const string &name,
-                   Metadata::PatchParameterList patches) {
+                   Metadata::AtlasParametersList patches) {
 
   string baseDirectory = config.require("OutputDirectory").asString();
   string path = baseDirectory + name;

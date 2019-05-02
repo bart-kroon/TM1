@@ -52,12 +52,12 @@ void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
   m_patches.clear();
 }
 
-void Decoder::updatePatchList(PatchParameterList patches) {
+void Decoder::updatePatchList(AtlasParametersList patches) {
   m_patches = move(patches);
   m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches);
 }
 
-void Decoder::updateCameraList(CameraParameterList cameras) {
+void Decoder::updateCameraList(CameraParametersList cameras) {
   m_cameras = move(cameras);
 }
 

@@ -48,9 +48,9 @@ using namespace TMIV::Renderer;
 namespace TMIV::ViewOptimizer {
 ViewReducer::ViewReducer(const Json &, const Common::Json &) {}
 
-auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
-    -> Output<CameraParameterList> {
-  Output<CameraParameterList> result;
+auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
+    -> Output<CameraParametersList> {
+  Output<CameraParametersList> result;
   m_priorities.assign(cameras.size(), false);
 
   // choose 9 degree as quantization step of angle between view i and view j.

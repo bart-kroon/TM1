@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(MetadataLib
-	"src/PatchParameterList.cpp"
-	"src/CameraParameterList.cpp"
-	"include/TMIV/Metadata/PatchParameterList.h"
-	"include/TMIV/Metadata/CameraParameterList.h")
+	"src/AtlasParametersList.cpp"
+	"src/CameraParametersList.cpp"
+	"include/TMIV/Metadata/AtlasParametersList.h"
+	"include/TMIV/Metadata/CameraParametersList.h")
 
 add_library(TMIV::MetadataLib
 	ALIAS MetadataLib)

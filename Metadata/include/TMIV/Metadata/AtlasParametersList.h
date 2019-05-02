@@ -31,18 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Metadata/PatchParameterList.h>
-#include <sstream>
+#ifndef _TMIV_METADATA_ATLASPARAMETERSLIST_H_
+#define _TMIV_METADATA_ATLASPARAMETERSLIST_H_
+
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include <TMIV/Common/Vector.h>
 
 namespace TMIV::Metadata {
+using Vec2i = TMIV::Common::Vec2i;
 
-std::string PatchParametersString(const PatchParameters &p) {
+enum class PatchRotation {
+  upright, // what was up stays up
+  ccw      // what was up goes left
+};
 
-  std::ostringstream oss;
-  std::string rotationStr = p.rotation == PatchRotation::upright ? "U" : "R";
-  oss << int(p.atlasId) << " " << int(p.viewId) << " " << p.patchSize << " "
-      << p.posInView << p.posInAtlas << " " << rotationStr;
-  return oss.str();
-}
+// Data type that corresponds to an entry of atlas_params of MPEG/N18464
+struct AtlasParameters {
+  // In MPEG/N18464: atlas_id
+  uint8_t atlasId;
 
+  // In MPEG/N18464: view_id
+  uint8_t viewId;
+
+  // In MPEG/N18464: patch_{width,height}_in_view
+  Vec2i patchSize;
+
+  // In MPEG/N18464: patch_pos_in_view_{x,y}
+  Vec2i posInView;
+
+  // In MPEG/N18464: patch_pos_in_atlas_{x,y}
+  Vec2i posInAtlas;
+
+  // In MPEG/N18464: patch_rotation
+  PatchRotation rotation;
+};
+
+static_assert(sizeof(AtlasParameters) == 32);
+
+std::string PatchParametersString(const AtlasParameters &patchParameters);
+
+// Data type that corresponds to atlas_params_list of MPEG/N18464
+using AtlasParametersList = std::vector<AtlasParameters>;
 } // namespace TMIV::Metadata
+
+#endif

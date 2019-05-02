@@ -47,16 +47,16 @@ public:
   AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
 
-  using PatchParameters = Metadata::PatchParameters;
+  using AtlasParameters = Metadata::AtlasParameters;
 
   PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                               const PatchParameterList &patchList) override;
+                               const AtlasParametersList &patchList) override;
   MVD16Frame recoverPrunedView(const MVD10Frame &atlas,
-                               const CameraParameterList &cameraList,
-                               const PatchParameterList &patchList) override;
+                               const CameraParametersList &cameraList,
+                               const AtlasParametersList &patchList) override;
 
 private:
-  void writePatchIdInMap(const PatchParameters &patch,
+  void writePatchIdInMap(const AtlasParameters &patch,
                          PatchIdMapList &patchMapList,
                          std::uint16_t patchId) const;
 };

@@ -85,7 +85,7 @@ public:
       auto nbPatch = std::count_if(
           m_atlasConstructor->getPatchList().begin(),
           m_atlasConstructor->getPatchList().end(),
-          [i](const PatchParameters &p) { return (p.atlasId == i); });
+          [i](const AtlasParameters &p) { return (p.atlasId == i); });
 
       cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y()
            << "): " << nbPatch << " patches\n";

@@ -48,8 +48,8 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
 Common::TextureDepth10Frame
 MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                                const Common::PatchIdMapList &maps,
-                               const Metadata::PatchParameterList &patches,
-                               const Metadata::CameraParameterList &cameras,
+                               const Metadata::AtlasParametersList &patches,
+                               const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {
   auto viewport =
       m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
@@ -59,7 +59,7 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
 
 Common::TextureDepth16Frame
 MultipassRenderer::renderFrame(const Common::MVD16Frame &atlas,
-                               const Metadata::CameraParameterList &cameras,
+                               const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {
   auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);

@@ -50,7 +50,7 @@
 			"PackerMethod": "Packer",
 			"Packer": {
 				"Alignment": 8,
-				"MinPatchSize": 8,
+				"MinPatchSize": 16,
 				"Overlap": 1,
 				"PiP": 1
 			},

@@ -95,7 +95,7 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
-    if (m_minPatchSize < cluster.getMinSize()) {
+    if (m_minPatchSize <= cluster.getMinSize()) {
       bool packed = false;
 
       for (auto atlasId = 0u; atlasId < packerList.size(); atlasId++) {

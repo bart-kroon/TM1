@@ -1,6 +1,6 @@
 {
 	"startFrame": 108,
-	"numberOfFrames": 12,
+	"numberOfFrames": 3,
 	"intraPeriod": 32,
 
     "SourceTexturePathFmt": "v%d_4096_2048_420_10b.yuv",
@@ -57,7 +57,7 @@
 	"AtlasDeconstructorMethod": "AtlasDeconstructor",
 	"AtlasDeconstructor": {},
 
-	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d.yuv",
+	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d_4096x2048_yuv420p16le.yuv",
 	
     "PrunedViewTexturePathFmt": "PRU_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
     "PrunedViewDepthPathFmt": "PRU_SA_R0_Td_v%02d_4096x2048_yuv420p10le.yuv",

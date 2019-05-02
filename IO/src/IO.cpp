@@ -132,10 +132,10 @@ void saveMVDFrame(const Json &config, int frameIndex,
   cout << "Saving " << what << " frame " << frameIndex << endl;
 
   for (size_t i = 0u; i < frame.size(); ++i) {
-    writeFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i),
-                          frame[i].first, frameIndex);
-    writeFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i),
-                       frame[i].second, frameIndex);
+    writeFrame(getFullPath(config, directory, texturePathFmt, i),
+               frame[i].first, frameIndex);
+    writeFrame(getFullPath(config, directory, depthPathFmt, i), frame[i].second,
+               frameIndex);
   }
 }
 
@@ -518,7 +518,7 @@ void savePatchIdMaps(const Json &config, int frameIndex,
   for (auto id = 0u; id < maps.size(); id++) {
     string texturePath =
         getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
-    writeFrame<YUV400P16>(texturePath, maps[id], frameIndex);
+    writeFrame(texturePath, maps[id], frameIndex);
   }
 }
 
@@ -552,11 +552,11 @@ void saveViewport(const Json &config, int frameIndex,
 
   string texturePath =
       getFullPath(config, "OutputDirectory", "RenderedTexturePath", frameIndex);
-  writeFrame<YUV420P10>(texturePath, frame.first, frameIndex);
+  writeFrame(texturePath, frame.first, frameIndex);
 
   string depthPath =
       getFullPath(config, "OutputDirectory", "RenderedDepthPath", frameIndex);
-  writeFrame<YUV400P10>(depthPath, frame.second, frameIndex);
+  writeFrame(depthPath, frame.second, frameIndex);
 }
 
 pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {

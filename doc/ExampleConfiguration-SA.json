@@ -60,7 +60,7 @@
 	"AtlasPatchOccupancyMapFmt": "APO_SA_R0_Td_c%02d_4096x2048_yuv420p16le.yuv",
 	
     "PrunedViewTexturePathFmt": "PRU_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
-    "PrunedViewDepthPathFmt": "PRU_SA_R0_Td_v%02d_4096x2048_yuv420p10le.yuv",
+    "PrunedViewDepthPathFmt": "PRU_SA_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
     
     "RendererMethod": "MultiPassRenderer",
     "MultiPassRenderer": {},

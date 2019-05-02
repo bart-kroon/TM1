@@ -66,14 +66,6 @@ public:
     return instance;
   }
 
-  //   // Create an object based on the method ID and JSON configuration
-  //   Object create(const std::string &id, const Json &componentNode) const {
-  //     if (m_creators.count(id) == 0)
-  //       throw std::runtime_error("Error no registration for " + id);
-  //
-  //     return m_creators.at(id)(componentNode);
-  //   }
-
   // Use configuration JSON to create a component/module
   Object create(const std::string &name, const Json &rootNode,
                 const Json &componentNode) const {

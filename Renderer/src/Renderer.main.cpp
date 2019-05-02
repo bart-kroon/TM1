@@ -52,7 +52,7 @@ private:
 public:
   Application(vector<const char *> argv)
       : Common::Application{"Renderer", move(argv)} {
-    m_renderer = create<IRenderer>("Renderer");
+    m_renderer = create<IRenderer>("Decoder", "Renderer");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 

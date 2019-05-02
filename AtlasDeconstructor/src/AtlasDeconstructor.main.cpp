@@ -50,7 +50,8 @@ private:
 public:
   Application(vector<const char *> argv)
       : Common::Application{"AtlasDeconstructor", move(argv)},
-        m_atlasDeconstructor{create<IAtlasDeconstructor>("AtlasDeconstructor")},
+        m_atlasDeconstructor{
+            create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 

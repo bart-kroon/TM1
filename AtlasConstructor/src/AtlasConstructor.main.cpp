@@ -52,7 +52,8 @@ private:
 public:
   Application(vector<const char *> argv)
       : Common::Application{"AtlasConstructor", move(argv)},
-        m_atlasConstructor{create<IAtlasConstructor>("AtlasConstructor")},
+        m_atlasConstructor{
+            create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 

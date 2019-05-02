@@ -50,10 +50,9 @@ class Application : public Common::Application {
 public:
   Application(vector<const char *> argv)
       : Common::Application{"ViewOptimizer", move(argv)},
-        m_optimizer{create<IViewOptimizer>("ViewOptimizer")},
+        m_optimizer{create<IViewOptimizer>("Encoder", "ViewOptimizer")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
-
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
 

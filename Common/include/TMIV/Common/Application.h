@@ -55,16 +55,31 @@ protected:
   const Json &json() const;
 
   // Use the configuration file with a factory to create a component/module
-  template <class Interface> auto create(const std::string &name) const {
-    auto method = json().require(name + "Method").asString();
-    auto &factory = Factory<Interface>::getInstance();
-    return factory.create(std::move(method), json());
+  template <class Interface, typename... Args>
+  auto create(Args &&... next) const {
+    auto result =
+        getComponentParentAndName(json(), std::forward<Args>(next)...);
+    return Factory<Interface>::getInstance().create(std::move(result.second),
+                                                    json(), result.first);
   }
 
 private:
   void add_file(const std::string &path);
   void add_parameter(const std::string &key, std::string value);
   void add_stream(std::istream &stream);
+  std::pair<Json, std::string>
+  getComponentParentAndName(const Json &node, const std::string &name) const {
+    return {node, name};
+  }
+
+  template <typename... Args>
+  std::pair<Json, std::string>
+  getComponentParentAndName(const Json &node, std::string first,
+                            Args &&... next) const {
+    return getComponentParentAndName(
+        node.require(node.require(first + "Method").asString()),
+        std::forward<Args>(next)...);
+  }
 
   std::shared_ptr<Json> m_json;
 };

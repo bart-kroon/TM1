@@ -31,6 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "Renderer.reg.hpp"
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/IRenderer.h>
@@ -56,6 +57,7 @@ private:
 
 int main(int argc, char *argv[]) {
   try {
+    TMIV::Renderer::registerComponents();
     TMIV::Renderer::Application app{{argv, argv + argc}};
     app.run();
     return 0;

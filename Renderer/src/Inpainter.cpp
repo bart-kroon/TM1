@@ -34,7 +34,8 @@
 #include <TMIV/Renderer/Inpainter.h>
 
 namespace TMIV::Renderer {
-Inpainter::Inpainter(const Common::Json & /* config */) {}
+Inpainter::Inpainter(const Common::Json & /*rootNode*/,
+                     const Common::Json & /*componentNode*/) {}
 
 void Inpainter::inplaceInpaint(
     Common::TextureDepth10Frame &yuvd /* viewport */,

@@ -37,17 +37,18 @@
 
 namespace TMIV::AtlasConstructor {
 
-Packer::Packer(const Common::Json &node) {
-  if (auto subnode = node.optional("Alignment"))
+Packer::Packer(const Common::Json & /*rootNode*/,
+               const Common::Json &componentNode) {
+  if (auto subnode = componentNode.optional("Alignment"))
     m_alignment = subnode.asInt();
 
-  if (auto subnode = node.optional("MinPatchSize"))
+  if (auto subnode = componentNode.optional("MinPatchSize"))
     m_minPatchSize = subnode.asInt();
 
-  if (auto subnode = node.optional("Overlap"))
+  if (auto subnode = componentNode.optional("Overlap"))
     m_overlap = subnode.asInt();
 
-  if (auto subnode = node.optional("PiP"))
+  if (auto subnode = componentNode.optional("PiP"))
     m_pip = subnode.asInt();
 }
 

@@ -47,7 +47,7 @@ namespace TMIV::AtlasConstructor {
 // The AtlasConstructor of TMIV 1.0 provided by Technicolor
 class AtlasConstructor : public IAtlasConstructor {
 public:
-  AtlasConstructor(const Common::Json &node);
+  AtlasConstructor(const Common::Json &, const Common::Json &);
   AtlasConstructor(const AtlasConstructor &) = delete;
   AtlasConstructor(AtlasConstructor &&) = default;
   AtlasConstructor &operator=(const AtlasConstructor &) = delete;

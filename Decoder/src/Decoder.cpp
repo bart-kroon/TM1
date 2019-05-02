@@ -41,11 +41,11 @@ using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Renderer;
 
 namespace TMIV::Decoder {
-Decoder::Decoder(const Json &config)
+Decoder::Decoder(const Json &rootNode, const Json &componentNode)
     : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
-          config.require("AtlasDeconstructorMethod").asString(), config)},
-      m_renderer{Factory<IRenderer>::getInstance().create(
-          config.require("RendererMethod").asString(), config)} {}
+          "AtlasDeconstructor", rootNode, componentNode)},
+      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode,
+                                                          componentNode)} {}
 
 void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
   m_atlasSize = move(atlasSize);

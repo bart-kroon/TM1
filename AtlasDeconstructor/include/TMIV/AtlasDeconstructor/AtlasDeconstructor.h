@@ -41,7 +41,7 @@ namespace TMIV::AtlasDeconstructor {
 // The AtlasDeconstructor of TMIV 1.0 provided by Technicolor
 class AtlasDeconstructor : public IAtlasDeconstructor {
 public:
-  AtlasDeconstructor(const Common::Json &node);
+  AtlasDeconstructor(const Common::Json &, const Common::Json &);
   AtlasDeconstructor(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor(AtlasDeconstructor &&) = default;
   AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;

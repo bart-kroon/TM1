@@ -40,8 +40,6 @@
 
 namespace TMIV::AtlasConstructor {
 void registerComponents() {
-  Common::Factory<IAtlasConstructor>::getInstance()
-      .registerAs<AtlasConstructor>("AtlasConstructor");
   Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>(
       "AtlasConstructor");
   Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");

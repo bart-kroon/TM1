@@ -42,7 +42,7 @@ namespace TMIV::AtlasConstructor {
 // The Packer of TMIV 1.0 provided by Technicolor
 class Packer : public IPacker {
 public:
-  Packer(const Common::Json &);
+  Packer(const Common::Json &, const Common::Json &);
   Packer(const Packer &) = delete;
   Packer(Packer &&) = default;
   Packer &operator=(const Packer &) = delete;

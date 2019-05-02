@@ -40,7 +40,8 @@
 namespace TMIV::Renderer {
 class NoInpainter : public IInpainter {
 public:
-  NoInpainter(const Common::Json & /* config */) {}
+  NoInpainter(const Common::Json & /* rootNode */,
+              const Common::Json & /* componentNode */) {}
   NoInpainter(const NoInpainter &) = delete;
   NoInpainter(NoInpainter &&) = default;
   NoInpainter &operator=(const NoInpainter &) = delete;

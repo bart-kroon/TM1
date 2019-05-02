@@ -45,7 +45,7 @@ private:
   std::vector<bool> m_priorities;
 
 public:
-  ViewReducer(const Common::Json &node);
+  ViewReducer(const Common::Json &, const Common::Json &);
   ViewReducer(const ViewReducer &) = default;
   ViewReducer(ViewReducer &&) = default;
   ViewReducer &operator=(const ViewReducer &) = default;

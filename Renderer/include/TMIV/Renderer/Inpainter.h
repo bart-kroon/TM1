@@ -40,7 +40,7 @@
 namespace TMIV::Renderer {
 class Inpainter : public IInpainter {
 public:
-  Inpainter(const Common::Json &config);
+  Inpainter(const Common::Json &, const Common::Json &);
   Inpainter(const Inpainter &) = delete;
   Inpainter(Inpainter &&) = default;
   Inpainter &operator=(const Inpainter &) = delete;

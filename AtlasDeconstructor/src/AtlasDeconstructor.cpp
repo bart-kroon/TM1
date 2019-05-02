@@ -41,7 +41,9 @@ using namespace TMIV::Image;
 
 namespace TMIV::AtlasDeconstructor {
 
-AtlasDeconstructor::AtlasDeconstructor(const Common::Json &) {}
+AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
+                                       const Common::Json & /*componentNode*/) {
+}
 
 PatchIdMapList
 AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,

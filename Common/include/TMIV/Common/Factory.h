@@ -47,7 +47,7 @@ namespace TMIV::Common {
 template <class Interface> class Factory {
 public:
   using Object = std::unique_ptr<Interface>;
-  using Creator = std::function<Object(const Json &)>;
+  using Creator = std::function<Object(const Json &, const Json &)>;
 
 private:
   std::map<std::string, Creator> m_creators;
@@ -66,18 +66,33 @@ public:
     return instance;
   }
 
-  // Create an object based on the method ID and JSON configuration
-  Object create(const std::string &id, const Json &config) const {
-    if (m_creators.count(id) == 0)
-      throw std::runtime_error("Error no registration for " + id);
+  //   // Create an object based on the method ID and JSON configuration
+  //   Object create(const std::string &id, const Json &componentNode) const {
+  //     if (m_creators.count(id) == 0)
+  //       throw std::runtime_error("Error no registration for " + id);
+  //
+  //     return m_creators.at(id)(componentNode);
+  //   }
 
-    return m_creators.at(id)(config);
+  // Use configuration JSON to create a component/module
+  Object create(const std::string &name, const Json &rootNode,
+                const Json &componentNode) const {
+    auto method = componentNode.require(name + "Method").asString();
+
+    if (m_creators.count(method) == 0)
+      throw std::runtime_error("Error no registration for " + method);
+
+    return m_creators.at(method)(rootNode, componentNode.require(method));
+  }
+
+  Object create(const std::string &metaName, const Json &rootNode) const {
+    return create(metaName, rootNode, rootNode);
   }
 
   // Register a new creator with a method ID
   template <class Derived> void registerAs(std::string id) {
-    m_creators[id] = [](const Json &config) {
-      return std::make_unique<Derived>(config);
+    m_creators[id] = [](const Json &rootNode, const Json &componentNode) {
+      return std::make_unique<Derived>(rootNode, componentNode);
     };
   }
 };

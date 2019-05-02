@@ -46,7 +46,7 @@ private:
   std::unique_ptr<IInpainter> m_inpainter;
 
 public:
-  Renderer(const Common::Json &);
+  Renderer(const Common::Json &, const Common::Json &);
   Renderer(const Renderer &) = delete;
   Renderer(Renderer &&) = default;
   Renderer &operator=(const Renderer &) = delete;

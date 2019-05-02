@@ -41,11 +41,12 @@ using namespace TMIV::ViewOptimizer;
 using namespace TMIV::AtlasConstructor;
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &node)
+Encoder::Encoder(const Common::Json &rootNode,
+                 const Common::Json &componentNode)
     : m_viewOptimizer{Factory<IViewOptimizer>::getInstance().create(
-          "ViewOptimizer", node)},
+          "ViewOptimizer", rootNode, componentNode)},
       m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(
-          "AtlasConstructor", node)} {}
+          "AtlasConstructor", rootNode, componentNode)} {}
 
 void Encoder::prepareIntraPeriod(CameraParameterList cameras) {
   auto optimized = m_viewOptimizer->optimizeIntraPeriod(move(cameras));

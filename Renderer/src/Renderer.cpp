@@ -38,11 +38,12 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &config)
+Renderer::Renderer(const Common::Json &rootNode,
+                   const Common::Json &componentNode)
     : m_synthesizer{Factory<ISynthesizer>::getInstance().create(
-          config.require("SynthesizerMethod").asString(), config)},
+          "Synthesizer", rootNode, componentNode)},
       m_inpainter{Factory<IInpainter>::getInstance().create(
-          config.require("InpainterMethod").asString(), config)} {}
+          "Inpainter", rootNode, componentNode)} {}
 
 Common::TextureDepth10Frame
 Renderer::renderFrame(const Common::MVD10Frame &atlas,

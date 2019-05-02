@@ -39,10 +39,10 @@ using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
 Renderer::Renderer(const Common::Json &config)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer",
-                                                                config)},
-      m_inpainter{
-          Factory<IInpainter>::getInstance().create("Inpainter", config)} {}
+    : m_synthesizer{Factory<ISynthesizer>::getInstance().create(
+          config.require("SynthesizerMethod").asString(), config)},
+      m_inpainter{Factory<IInpainter>::getInstance().create(
+          config.require("InpainterMethod").asString(), config)} {}
 
 Common::TextureDepth10Frame
 Renderer::renderFrame(const Common::MVD10Frame &atlas,

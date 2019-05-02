@@ -76,7 +76,7 @@
     "Inpainter": {},
     "NoInpainter": {},
 
-    "RenderedTexturePath": "TM1_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
-    "RenderedDepthPath": "TM1_SA_R0_Td_v%02d_4096x2048_yuv420p10le.yuv",
+    "RenderedTexturePath": "TM1_SA_R0_Tt_v1_4096x2048_yuv420p10le.yuv",
+    "RenderedDepthPath": "TM1_SA_R0_Td_v1_4096x2048_yuv420p10le.yuv",
     "OutputCameraName": [ "v1" ]
 }

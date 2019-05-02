@@ -551,11 +551,11 @@ void saveViewport(const Json &config, int frameIndex,
   cout << "Saving viewport frame " << frameIndex << '\n';
 
   string texturePath =
-      getFullPath(config, "OutputDirectory", "RenderedTexturePath", frameIndex);
+      getFullPath(config, "OutputDirectory", "RenderedTexturePath");
   writeFrame(texturePath, frame.first, frameIndex);
 
   string depthPath =
-      getFullPath(config, "OutputDirectory", "RenderedDepthPath", frameIndex);
+      getFullPath(config, "OutputDirectory", "RenderedDepthPath");
   writeFrame(depthPath, frame.second, frameIndex);
 }
 

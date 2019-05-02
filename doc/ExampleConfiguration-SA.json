@@ -8,9 +8,9 @@
 	"SourceCameraParameters": "ClassroomVideo.json",
 	"SourceCameraNames": ["v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14"],
 
-	"BaseTexturePathFmt": "BAS_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
-	"BaseDepthPathFmt": "BAS_SA_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
-	"BaseMetadataPath": "BAS_SA_R0_Tm_vxx.bit",
+	"BasicTexturePathFmt": "BAS_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
+	"BasicDepthPathFmt": "BAS_SA_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
+	"BasicMetadataPath": "BAS_SA_R0_Tm_vxx.bit",
 	"AdditionalTexturePathFmt": "ADD_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
 	"AdditionalDepthPathFmt": "ADD_SA_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
 	"AdditionalMetadataPath": "ADD_SA_R0_Tm_vxx.bit",

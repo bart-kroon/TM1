@@ -235,9 +235,9 @@ auto ViewReducer::optimizeIntraPeriod(CameraParameterList cameras)
     m_priorities[camera_id_pair.second] = true;
   }
 
-  // Move cameras into base and additional partitions
+  // Move cameras into basic and additional partitions
   for (size_t index = 0; index != cameras.size(); ++index) {
-    (m_priorities[index] ? result.base : result.additional)
+    (m_priorities[index] ? result.basic : result.additional)
         .push_back(move(cameras[index]));
   }
   return result;
@@ -247,9 +247,9 @@ auto ViewReducer::optimizeFrame(MVD16Frame views) const -> Output<MVD16Frame> {
   Output<MVD16Frame> result;
   assert(m_priorities.size() == views.size());
 
-  // Move views into base and additional partitions
+  // Move views into basic and additional partitions
   for (size_t index = 0; index != views.size(); ++index) {
-    (m_priorities[index] ? result.base : result.additional)
+    (m_priorities[index] ? result.basic : result.additional)
         .push_back(move(views[index]));
   }
   return result;

@@ -70,16 +70,16 @@ AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
 }
 
 void AtlasConstructor::prepareIntraPeriod(
-    CameraParameterList baseCameras, CameraParameterList additionalCameras) {
+    CameraParameterList basicCameras, CameraParameterList additionalCameras) {
   m_cameras.clear();
-  m_cameras.insert(m_cameras.end(), make_move_iterator(begin(baseCameras)),
-                   make_move_iterator(end(baseCameras)));
+  m_cameras.insert(m_cameras.end(), make_move_iterator(begin(basicCameras)),
+                   make_move_iterator(end(basicCameras)));
   m_cameras.insert(m_cameras.end(),
                    make_move_iterator(begin(additionalCameras)),
                    make_move_iterator(end(additionalCameras)));
 
   m_isReferenceView.clear();
-  m_isReferenceView.insert(m_isReferenceView.end(), baseCameras.size(), 1);
+  m_isReferenceView.insert(m_isReferenceView.end(), basicCameras.size(), 1);
   m_isReferenceView.insert(m_isReferenceView.end(), additionalCameras.size(),
                            0);
 
@@ -87,11 +87,11 @@ void AtlasConstructor::prepareIntraPeriod(
   m_aggregator->prepareIntraPeriod();
 }
 
-void AtlasConstructor::pushFrame(MVD16Frame baseViews,
+void AtlasConstructor::pushFrame(MVD16Frame basicViews,
                                  MVD16Frame additionalViews) {
   MVD16Frame views;
-  views.insert(views.end(), make_move_iterator(begin(baseViews)),
-               make_move_iterator(end(baseViews)));
+  views.insert(views.end(), make_move_iterator(begin(basicViews)),
+               make_move_iterator(end(basicViews)));
   views.insert(views.end(), make_move_iterator(begin(additionalViews)),
                make_move_iterator(end(additionalViews)));
 

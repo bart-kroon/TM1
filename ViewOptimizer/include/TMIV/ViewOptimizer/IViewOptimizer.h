@@ -49,7 +49,7 @@ public:
   virtual ~IViewOptimizer() = default;
 
   template <class T> struct Output {
-    T base;
+    T basic;
     T additional;
   };
 

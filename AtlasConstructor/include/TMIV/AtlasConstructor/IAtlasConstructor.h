@@ -53,9 +53,9 @@ public:
   using CameraParameterList = Metadata::CameraParameterList;
   using PatchParameterList = Metadata::PatchParameterList;
 
-  virtual void prepareIntraPeriod(CameraParameterList baseCameras,
+  virtual void prepareIntraPeriod(CameraParameterList basicCameras,
                                   CameraParameterList additionalCameras) = 0;
-  virtual void pushFrame(MVD16Frame baseViews, MVD16Frame additionalViews) = 0;
+  virtual void pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) = 0;
   virtual void completeIntraPeriod() = 0;
 
   virtual std::vector<Common::Vec2i> getAtlasSize() const = 0;

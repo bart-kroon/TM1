@@ -338,13 +338,13 @@ MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                                  "SourceDepthPathFmt");
 }
 
-BaseAdditional<CameraParameterList> loadOptimizedMetadata(const Json &config,
-                                                          int frameIndex) {
+BasicAdditional<CameraParameterList> loadOptimizedMetadata(const Json &config,
+                                                           int frameIndex) {
   cout << "Loading optimized metadata\n";
 
-  BaseAdditional<CameraParameterList> result;
-  string baseMetadataPath =
-      getFullPath(config, "OutputDirectory", "BaseMetadataPath");
+  BasicAdditional<CameraParameterList> result;
+  string basicMetadataPath =
+      getFullPath(config, "OutputDirectory", "BasicMetadataPath");
   string additionalMetadataPath =
       getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
 
@@ -355,8 +355,8 @@ BaseAdditional<CameraParameterList> loadOptimizedMetadata(const Json &config,
   };
 
   // Reading
-  return BaseAdditional<CameraParameterList>{
-      readMetadataFromFile<CameraParameterList>(baseMetadataPath, frameIndex,
+  return BasicAdditional<CameraParameterList>{
+      readMetadataFromFile<CameraParameterList>(basicMetadataPath, frameIndex,
                                                 skipFunction, readFunction),
       readMetadataFromFile<CameraParameterList>(
           additionalMetadataPath, frameIndex, skipFunction, readFunction)};
@@ -364,11 +364,11 @@ BaseAdditional<CameraParameterList> loadOptimizedMetadata(const Json &config,
 
 void saveOptimizedMetadata(
     const Json &config, int frameIndex,
-    const BaseAdditional<CameraParameterList> &metadata) {
+    const BasicAdditional<CameraParameterList> &metadata) {
   cout << "Saving metadata of optimized frame " << frameIndex << '\n';
 
-  string baseMetadataPath =
-      getFullPath(config, "OutputDirectory", "BaseMetadataPath");
+  string basicMetadataPath =
+      getFullPath(config, "OutputDirectory", "BasicMetadataPath");
   string additionalMetadataPath =
       getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
 
@@ -376,18 +376,19 @@ void saveOptimizedMetadata(
     writeCameraListToFile(os, metadata);
   };
 
-  writeMetadataToFile<CameraParameterList>(baseMetadataPath, frameIndex,
-                                           metadata.base, writeFunction);
+  writeMetadataToFile<CameraParameterList>(basicMetadataPath, frameIndex,
+                                           metadata.basic, writeFunction);
   writeMetadataToFile<CameraParameterList>(additionalMetadataPath, frameIndex,
                                            metadata.additional, writeFunction);
 }
 
-BaseAdditional<MVD16Frame>
+BasicAdditional<MVD16Frame>
 loadOptimizedFrame(const Json &config,
-                   const BaseAdditional<vector<Vec2i>> &sizes, int frameIndex) {
-  return {loadMVDFrame<YUV400P16>(config, sizes.base, frameIndex,
-                                  "optimized base views of", "OutputDirectory",
-                                  "BaseTexturePathFmt", "BaseDepthPathFmt"),
+                   const BasicAdditional<vector<Vec2i>> &sizes,
+                   int frameIndex) {
+  return {loadMVDFrame<YUV400P16>(config, sizes.basic, frameIndex,
+                                  "basic views of", "OutputDirectory",
+                                  "BasicTexturePathFmt", "BasicDepthPathFmt"),
           loadMVDFrame<YUV400P16>(config, sizes.additional, frameIndex,
                                   "additional views of", "OutputDirectory",
                                   "AdditionalTexturePathFmt",
@@ -395,9 +396,9 @@ loadOptimizedFrame(const Json &config,
 }
 
 void saveOptimizedFrame(const Json &config, int frameIndex,
-                        const BaseAdditional<MVD16Frame> &frame) {
-  saveMVDFrame(config, frameIndex, frame.base, "optimized base views of",
-               "OutputDirectory", "BaseTexturePathFmt", "BaseDepthPathFmt");
+                        const BasicAdditional<MVD16Frame> &frame) {
+  saveMVDFrame(config, frameIndex, frame.basic, "basic views of",
+               "OutputDirectory", "BasicTexturePathFmt", "BasicDepthPathFmt");
   saveMVDFrame(config, frameIndex, frame.additional, "additional views of",
                "OutputDirectory", "AdditionalTexturePathFmt",
                "AdditionalDepthPathFmt");

@@ -46,7 +46,7 @@
 // These functions will print something short to screen.
 namespace TMIV::IO {
 template <class T>
-using BaseAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
+using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
 auto sizesOf(const Metadata::CameraParameterList &cameras)
     -> std::vector<Common::Vec2i>;
@@ -56,15 +56,16 @@ Common::MVD16Frame loadSourceFrame(const Common::Json &config,
                                    int frameIndex);
 
 void saveOptimizedFrame(const Common::Json &config, int frameIndex,
-                        const BaseAdditional<Common::MVD16Frame> &frame);
-auto loadOptimizedFrame(const Common::Json &config,
-                        const BaseAdditional<std::vector<Common::Vec2i>> &sizes,
-                        int frameIndex) -> BaseAdditional<Common::MVD16Frame>;
+                        const BasicAdditional<Common::MVD16Frame> &frame);
+auto loadOptimizedFrame(
+    const Common::Json &config,
+    const BasicAdditional<std::vector<Common::Vec2i>> &sizes, int frameIndex)
+    -> BasicAdditional<Common::MVD16Frame>;
 void saveOptimizedMetadata(
     const Common::Json &config, int frameIndex,
-    const BaseAdditional<Metadata::CameraParameterList> &metadata);
+    const BasicAdditional<Metadata::CameraParameterList> &metadata);
 auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
-    -> BaseAdditional<Metadata::CameraParameterList>;
+    -> BasicAdditional<Metadata::CameraParameterList>;
 
 void savePrunedFrame(const Common::Json &config, int frameIndex,
                      const Common::MVD16Frame &frame);

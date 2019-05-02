@@ -50,13 +50,13 @@ Encoder::Encoder(const Common::Json &rootNode,
 
 void Encoder::prepareIntraPeriod(CameraParameterList cameras) {
   auto optimized = m_viewOptimizer->optimizeIntraPeriod(move(cameras));
-  m_atlasConstructor->prepareIntraPeriod(move(optimized.base),
+  m_atlasConstructor->prepareIntraPeriod(move(optimized.basic),
                                          move(optimized.additional));
 }
 
 void Encoder::pushFrame(MVD16Frame views) {
   auto optimized = m_viewOptimizer->optimizeFrame(move(views));
-  m_atlasConstructor->pushFrame(move(optimized.base),
+  m_atlasConstructor->pushFrame(move(optimized.basic),
                                 move(optimized.additional));
 }
 

@@ -31,37 +31,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#ifndef _TMIV_RENDERER_NO_INPAINTER_H_
+#define _TMIV_RENDERER_NO_INPAINTER_H_
 
-using namespace std;
-using namespace TMIV::Common;
+#include <TMIV/Common/Json.h>
+#include <TMIV/Renderer/IInpainter.h>
 
 namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &config)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer",
-                                                                config)},
-      m_inpainter{
-          Factory<IInpainter>::getInstance().create("Inpainter", config)} {}
+class NoInpainter : public IInpainter {
+public:
+  NoInpainter(const Common::Json & /* config */) {}
+  NoInpainter(const NoInpainter &) = delete;
+  NoInpainter(NoInpainter &&) = default;
+  NoInpainter &operator=(const NoInpainter &) = delete;
+  NoInpainter &operator=(NoInpainter &&) = default;
 
-Common::TextureDepth10Frame
-Renderer::renderFrame(const Common::MVD10Frame &atlas,
-                      const Common::PatchIdMapList &maps,
-                      const Metadata::PatchParameterList &patches,
-                      const Metadata::CameraParameterList &cameras,
-                      const Metadata::CameraParameters &target) const {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
-
-Common::TextureDepth16Frame
-Renderer::renderFrame(const Common::MVD16Frame &frame,
-                      const Metadata::CameraParameterList &cameras,
-                      const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(frame, cameras, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
+  void inplaceInpaint(Common::TextureDepth10Frame & /* viewport */,
+                      const Metadata::CameraParameters & /* metadata */) const {
+  }
+  void inplaceInpaint(Common::TextureDepth16Frame & /* viewport */,
+                      const Metadata::CameraParameters & /* metadata */) const {
+  }
+};
 } // namespace TMIV::Renderer
+
+#endif

@@ -81,7 +81,7 @@ public:
 
       // Determine patch row and column in view orientation
       const int i = atlas.x() - patch.posInAtlas.x();
-      const int j = patch.patchSize.x() - 1 - atlas.y() - patch.posInAtlas.y();
+      const int j = patch.patchSize.x() - 1 - atlas.y() + patch.posInAtlas.y();
 
       // Return position in view
       return patch.posInView + Vec2i{j, i};

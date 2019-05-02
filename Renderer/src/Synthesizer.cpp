@@ -168,7 +168,7 @@ public:
     // -180.
     // TODO: detect +/-90deg ERP patches and add north or south poles.
 
-    assert(size == int(result.size()));
+    assert(int(result.size()) <= size);
     return result;
   }
 

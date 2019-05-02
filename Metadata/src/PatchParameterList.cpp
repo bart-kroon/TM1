@@ -39,10 +39,9 @@ namespace TMIV::Metadata {
 std::string PatchParametersString(const PatchParameters &p) {
 
   std::ostringstream oss;
-  std::string rotationStr =
-      p.rotation == PatchRotation::upright ? "U" : "R";
-  oss << int(p.atlasId) << " " << int(p.viewId) << " " << p.patchSize
-      << " " << p.posInView << p.posInAtlas << " " << rotationStr;
+  std::string rotationStr = p.rotation == PatchRotation::upright ? "U" : "R";
+  oss << int(p.atlasId) << " " << int(p.viewId) << " " << p.patchSize << " "
+      << p.posInView << p.posInAtlas << " " << rotationStr;
   return oss.str();
 }
 

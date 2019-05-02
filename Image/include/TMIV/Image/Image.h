@@ -97,9 +97,9 @@ quantizeDepth16(const Metadata::CameraParameters &camera,
 
 // Requantize with a different bit depth
 Common::Frame<Common::YUV400P16>
-    requantize16(const Common::Frame<Common::YUV400P10>& frame);
+requantize16(const Common::Frame<Common::YUV400P10> &frame);
 Common::Frame<Common::YUV400P10>
-    requantize10(const Common::Frame<Common::YUV400P16>& frame);
+requantize10(const Common::Frame<Common::YUV400P16> &frame);
 } // namespace TMIV::Image
 
 #include "Image.hpp"

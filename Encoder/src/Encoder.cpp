@@ -43,7 +43,7 @@ using namespace TMIV::AtlasConstructor;
 namespace TMIV::Encoder {
 Encoder::Encoder(const Common::Json &node)
     : m_viewOptimizer{Factory<IViewOptimizer>::getInstance().create(
-          "ViewReducer", node)},
+          "ViewOptimizer", node)},
       m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(
           "AtlasConstructor", node)} {}
 

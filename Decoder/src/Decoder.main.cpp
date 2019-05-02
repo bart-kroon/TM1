@@ -58,7 +58,7 @@ public:
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto subnode = json().require("extendedNumberOfFrames")) {
+    if (auto subnode = json().optional("extendedNumberOfFrames")) {
       m_extendedNumberOfFrames = subnode.asInt();
     } else {
       m_extendedNumberOfFrames = m_numberOfFrames;

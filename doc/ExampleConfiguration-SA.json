@@ -65,8 +65,8 @@
     "RendererMethod": "MultipassRenderer",
     "MultipassRenderer": {},
 
-    "ViewSynthesizerMethod": "ViewSynthesizer",
-    "ViewSynthesizer": {
+    "SynthesizerMethod": "Synthesizer",
+    "Synthesizer": {
         "rayAngleParameter": 46,
         "depthParameter": 26,
         "stretchingParameter": 3.3

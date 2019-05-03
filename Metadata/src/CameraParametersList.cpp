@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Json.h>

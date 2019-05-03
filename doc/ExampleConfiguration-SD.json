@@ -1,6 +1,6 @@
 {
     "startFrame": 0,
-    "numberOfFrames": 3,
+    "numberOfFrames": 2,
     "intraPeriod": 32,
 
     "SourceTexturePathFmt": "v%d_texture_2048x1088_yuv420p10le.yuv",

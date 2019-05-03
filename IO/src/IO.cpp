@@ -115,11 +115,15 @@ MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes,
   result.reserve(sizes.size());
 
   for (size_t i = 0u; i < sizes.size(); ++i) {
-    result.emplace_back(
-        readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i),
-                             frameIndex, sizes[i]),
-        readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i),
-                          frameIndex, sizes[i]));
+
+    if (0 < sizes[i].x()) {
+      result.emplace_back(
+          readFrame<YUV420P10>(
+              getFullPath(config, directory, texturePathFmt, i), frameIndex,
+              sizes[i]),
+          readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i),
+                            frameIndex, sizes[i]));
+    }
   }
 
   return result;
@@ -374,10 +378,28 @@ CameraParametersList loadSourceMetadata(const Json &config) {
   return cameras;
 }
 
+vector<int> loadSourceCameraIds(const Json &config) {
+  vector<int> sourceCameraIds;
+  auto sourceCameraNames = config.require("SourceCameraNames").asStringVector();
+
+  for (const auto &name : sourceCameraNames)
+    sourceCameraIds.push_back(stoi(name.substr(1)));
+
+  return sourceCameraIds;
+}
+
 MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                            int frameIndex) {
+  auto sourceCameraIds = loadSourceCameraIds(config);
+  int lastCameraId =
+      *std::max_element(sourceCameraIds.begin(), sourceCameraIds.end());
+  vector<Vec2i> adjustedSizes(lastCameraId + 1, Vec2i{0, 0});
+
+  for (auto i = 0u; i < sourceCameraIds.size(); i++)
+    adjustedSizes[sourceCameraIds[i]] = sizes[i];
+
   frameIndex += config.require("startFrame").asInt();
-  return loadMVDFrame<YUV400P16>(config, sizes, frameIndex, "source",
+  return loadMVDFrame<YUV400P16>(config, adjustedSizes, frameIndex, "source",
                                  "SourceDirectory", "SourceTexturePathFmt",
                                  "SourceDepthPathFmt");
 }
@@ -568,8 +590,6 @@ void savePatchIdMaps(const Json &config, int frameIndex,
 }
 
 CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
-  // TODO read posetrace
-
   if (auto nodeOutputCameraName = config.optional("OutputCameraName")) {
     string cameraPath =
         getFullPath(config, "SourceDirectory", "SourceCameraParameters");

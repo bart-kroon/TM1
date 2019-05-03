@@ -530,7 +530,6 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
       getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   ifstream stream{cameraPath};
-
   if (!stream.good())
     throw runtime_error("Failed to load camera parameters\n " + cameraPath);
 
@@ -552,12 +551,14 @@ void saveViewport(const Json &config, int frameIndex,
   cout << "Saving viewport frame " << frameIndex << '\n';
 
   string texturePath =
-      getFullPath(config, "OutputDirectory", "RenderedTexturePath");
+      getFullPath(config, "OutputDirectory", "OutputTexturePath");
   writeFrame(texturePath, frame.first, frameIndex);
 
-  string depthPath =
-      getFullPath(config, "OutputDirectory", "RenderedDepthPath");
-  writeFrame(depthPath, frame.second, frameIndex);
+  if (config.optional("OutputDepthPath")) {
+    string depthPath =
+        getFullPath(config, "OutputDirectory", "OutputDepthPath");
+    writeFrame(depthPath, frame.second, frameIndex);
+  }
 }
 
 pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {

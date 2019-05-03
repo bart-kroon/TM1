@@ -48,6 +48,9 @@ class YUV400P16 {};
 class YUV420P8 {};
 class YUV420P10 {};
 class YUV420P16 {};
+class YUV444P8 {};
+class YUV444P10 {};
+class YUV444P16 {};
 
 namespace detail {
 template <class FORMAT> struct PixelFormatHelper {};
@@ -110,8 +113,9 @@ public:
   void dump(std::ostream &os, bool vFlip = false) const;
 };
 
-template <class T> std::string frameInfo(const T &frame);
-
+Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame);
+Frame<YUV420P10> yuv420p(const Frame<YUV444P10> &frame);
+Frame<YUV420P16> yuv420p(const Frame<YUV444P16> &frame);
 } // namespace TMIV::Common
 
 #include "Frame.hpp"
@@ -131,6 +135,11 @@ using PatchIdMapList = std::vector<PatchIdMap>;
 using Depth10Frame = Frame<YUV400P10>;
 using TextureDepth10Frame = std::pair<TextureFrame, Depth10Frame>;
 using MVD10Frame = std::vector<TextureDepth10Frame>;
+
+// The renderer uses 4:4:4 internally
+using Texture444Frame = Frame<YUV444P10>;
+using Texture444Depth10Frame = std::pair<Texture444Frame, Depth10Frame>;
+using Texture444Depth16Frame = std::pair<Texture444Frame, Depth16Frame>;
 
 // Generalize on depth map format
 template <typename FORMAT>

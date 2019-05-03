@@ -62,7 +62,7 @@ public:
   void updatePatchList(Metadata::AtlasParametersList patches) override;
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 
-  Common::TextureDepth10Frame
+  Common::Texture444Depth10Frame
   decodeFrame(Common::MVD10Frame atlas,
               const Metadata::CameraParameters &target) const override;
 };

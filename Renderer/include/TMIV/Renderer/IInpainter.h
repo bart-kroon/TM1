@@ -49,12 +49,12 @@ public:
 
   // Inpainting after decoder-side synthesis
   virtual void
-  inplaceInpaint(Common::TextureDepth10Frame &viewport,
+  inplaceInpaint(Common::Texture444Depth10Frame &viewport,
                  const Metadata::CameraParameters &metadata) const = 0;
 
   // Inpainting after encoder-side synthesis
   virtual void
-  inplaceInpaint(Common::TextureDepth16Frame &viewport,
+  inplaceInpaint(Common::Texture444Depth16Frame &viewport,
                  const Metadata::CameraParameters &metadata) const = 0;
 };
 } // namespace TMIV::Renderer

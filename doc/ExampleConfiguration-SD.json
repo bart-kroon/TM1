@@ -76,7 +76,7 @@
                 "stretchingParameter": 3.3
             },
 
-            "InpainterMethod": "NoInpainter",
+            "InpainterMethod": "Inpainter",
             "Inpainter": {},
             "NoInpainter": {}
         }

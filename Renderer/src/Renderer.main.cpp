@@ -76,7 +76,7 @@ public:
       auto target = IO::loadViewportMetadata(json(), idx.second);
       auto viewport = m_renderer->renderFrame(
           move(frame), maps, metadata.patches, metadata.cameras, target);
-      IO::saveViewport(json(), i, viewport);
+      IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
     }
   }
 };

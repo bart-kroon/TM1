@@ -60,29 +60,19 @@ Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {
   return out;
 }
 
-Frame<YUV420P10> quantizeTexture(const Mat3f &in) {
-  Frame<YUV420P10> outYuv(int(in.width()), int(in.height()));
-  auto &Y = outYuv.getPlane(0);
-  auto &U = outYuv.getPlane(1);
-  auto &V = outYuv.getPlane(2);
-  const auto width = Y.width();
-  const auto height = Y.height();
+Frame<YUV444P10> quantizeTexture(const Mat3f &in) {
+  Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
+  const auto width = in.width();
+  const auto height = in.height();
 
-  for (unsigned i = 0; i != height; ++i) {
-    for (unsigned j = 0; j != width; ++j) {
-      Y(i, j) = quantizeValue<10u>(in(i, j).x());
+  for (int k = 0; k < 3; ++k) {
+    for (unsigned i = 0; i != height; ++i) {
+      for (unsigned j = 0; j != width; ++j) {
+        outYuv.getPlane(k)(i, j) = quantizeValue<10u>(in(i, j)[k]);
+      }
     }
   }
-  for (unsigned i = 0; i != height / 2; ++i) {
-    for (unsigned j = 0; j != width / 2; ++j) {
-      U(i, j) = quantizeValue<10u>(
-          0.25f * (in(2 * i, 2 * j).y() + in(2 * i, 2 * j + 1).y() +
-                   in(2 * i + 1, 2 * j).y() + in(2 * i + 1, 2 * j + 1).y()));
-      V(i, j) = quantizeValue<10u>(
-          0.25f * (in(2 * i, 2 * j).z() + in(2 * i, 2 * j + 1).z() +
-                   in(2 * i + 1, 2 * j).z() + in(2 * i + 1, 2 * j + 1).z()));
-    }
-  }
+
   return outYuv;
 }
 

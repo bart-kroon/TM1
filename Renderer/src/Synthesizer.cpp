@@ -231,11 +231,11 @@ public:
     return rasterizer;
   }
 
-  TextureDepth10Frame renderFrame(const MVD10Frame &atlases,
-                                  const PatchIdMapList &ids,
-                                  const AtlasParametersList &patches,
-                                  const CameraParametersList &cameras,
-                                  const CameraParameters &target) const {
+  Texture444Depth10Frame renderFrame(const MVD10Frame &atlases,
+                                     const PatchIdMapList &ids,
+                                     const AtlasParametersList &patches,
+                                     const CameraParametersList &cameras,
+                                     const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(
         atlases.size(), target, [&](size_t i, const CameraParameters &target) {
@@ -246,9 +246,9 @@ public:
             quantizeNormDisp10(target, rasterizer.normDisp())};
   }
 
-  TextureDepth16Frame renderFrame(const MVD16Frame &frame,
-                                  const CameraParametersList &cameras,
-                                  const CameraParameters &target) const {
+  Texture444Depth16Frame renderFrame(const MVD16Frame &frame,
+                                     const CameraParametersList &cameras,
+                                     const CameraParameters &target) const {
     assert(frame.size() == cameras.size());
     auto rasterizer = rasterFrame(
         frame.size(), target, [&](size_t i, const CameraParameters &target) {
@@ -290,7 +290,7 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
 
 Synthesizer::~Synthesizer() {}
 
-Common::TextureDepth10Frame
+Common::Texture444Depth10Frame
 Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
                          const Common::PatchIdMapList &maps,
                          const Metadata::AtlasParametersList &patches,
@@ -299,7 +299,7 @@ Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
-Common::TextureDepth16Frame
+Common::Texture444Depth16Frame
 Synthesizer::renderFrame(const Common::MVD16Frame &frame,
                          const Metadata::CameraParametersList &cameras,
                          const Metadata::CameraParameters &target) const {

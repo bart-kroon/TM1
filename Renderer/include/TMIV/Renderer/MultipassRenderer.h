@@ -46,6 +46,9 @@ class MultipassRenderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
+  // Intel Hybrid
+  int m_NumberOfPasses = 1;
+  std::vector<unsigned> m_NumberOfViewsPerPass;
 
 public:
   MultipassRenderer(const Common::Json &, const Common::Json &);

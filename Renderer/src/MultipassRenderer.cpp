@@ -62,17 +62,14 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                                const Metadata::CameraParameters &target) const {
 
   // Intel Hybrid
-  const int NumberOfPasses = 1;
-  int NumberOfViewsPerPass[NumberOfPasses] = {2};
-  // const int NumberOfPasses =
-  // TMIV::Renderer::MultipassRenderer::m_NumberOfPasses; const int int
-  // NumberOfViewsPerPass[NumberOfPasses] =
-  // TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass;
+  int NumberOfPasses = TMIV::Renderer::MultipassRenderer::m_NumberOfPasses;
+  
   Common::Texture444Depth10Frame viewport;
-  Common::Texture444Depth10Frame viewportPass[NumberOfPasses];
-  // MVD10Frame viewportPass;
-  Common::PatchIdMapList mapsPass[NumberOfPasses];
-
+  Common::Texture444Depth10Frame *viewportPass;
+  Common::PatchIdMapList *mapsPass;
+  viewportPass = new Common::Texture444Depth10Frame[NumberOfPasses];
+  mapsPass = new Common::PatchIdMapList[NumberOfPasses];
+ 
   for (auto j = 0; j < NumberOfPasses; j++) {
     for (auto k = 0; k < atlas.size(); k++) {
       PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
@@ -126,9 +123,8 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
     // Find the selected views for a given pass
     vector<unsigned int> SelectedViewsPass;
     for (auto id = 0u; id < cameras.size(); id++) {
-      if (SortedCamerasId[id] < NumberOfViewsPerPass[passId])
-        // TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass[passId])
-        SelectedViewsPass.push_back(id);
+      if (SortedCamerasId[id] < TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass[passId])
+          SelectedViewsPass.push_back(id);
     }
 
     // Update the Occupancy Map to be used in the Pass

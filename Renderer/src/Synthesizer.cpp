@@ -144,8 +144,8 @@ public:
 
   auto atlasTriangles(const Mat<uint16_t> &ids) const {
     TriangleDescriptorList result;
-    const int rows = ids.height();
-    const int cols = ids.width();
+    const int rows = int(ids.height());
+    const int cols = int(ids.width());
     const int size = 2 * (rows - 1) * (cols - 1);
     result.reserve(size);
 

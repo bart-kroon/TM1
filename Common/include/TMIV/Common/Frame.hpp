@@ -104,7 +104,7 @@ template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
 
 template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
   for (auto &plane : m_planes) {
-    int w = plane.width(), h = plane.height();
+    int w = int(plane.width()), h = int(plane.height());
     base_type *ptr =
         vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
     int lineSize = w * sizeof(base_type);
@@ -119,7 +119,7 @@ template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
 template <class FORMAT>
 void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
   for (const auto &plane : m_planes) {
-    int w = plane.width(), h = plane.height();
+    int w = int(plane.width()), h = int(plane.height());
     const base_type *ptr =
         vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
     int lineSize = w * sizeof(base_type);

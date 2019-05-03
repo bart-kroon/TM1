@@ -61,7 +61,7 @@ Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {
 }
 
 Frame<YUV420P10> quantizeTexture(const Mat3f &in) {
-  Frame<YUV420P10> outYuv(in.width(), in.height());
+  Frame<YUV420P10> outYuv(int(in.width()), int(in.height()));
   auto &Y = outYuv.getPlane(0);
   auto &U = outYuv.getPlane(1);
   auto &V = outYuv.getPlane(2);
@@ -111,7 +111,7 @@ Mat1f expandDepth(const CameraParameters &camera,
 namespace {
 template <unsigned bits, class FRAME>
 FRAME quantizeNormDisp_impl(const CameraParameters &camera, const Mat1f &in) {
-  FRAME outYuv(in.width(), in.height());
+  FRAME outYuv(int(in.width()), int(in.height()));
   auto &out = outYuv.getPlane(0);
   transform(begin(in), end(in), begin(out),
             [near = camera.depthRange[0],
@@ -130,7 +130,7 @@ FRAME quantizeNormDisp_impl(const CameraParameters &camera, const Mat1f &in) {
 
 template <unsigned bits, class FRAME>
 FRAME quantizeDepth_impl(const CameraParameters &camera, const Mat1f &in) {
-  FRAME outYuv(in.width(), in.height());
+  FRAME outYuv(int(in.width()), int(in.height()));
   auto &out = outYuv.getPlane(0);
   transform(begin(in), end(in), begin(out),
             [near = camera.depthRange[0],

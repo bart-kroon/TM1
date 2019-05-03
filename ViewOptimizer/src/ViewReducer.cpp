@@ -322,7 +322,7 @@ auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
       if (camera_from.type == ProjectionType::ERP) {
         float angle =
             (camera_from.erpThetaRange[1] +
-             (i + 0.5) *
+             (i + 0.5f) *
                  (camera_from.erpThetaRange[0] - camera_from.erpThetaRange[1]) /
                  isoverlap.height()) *
             radperdeg;

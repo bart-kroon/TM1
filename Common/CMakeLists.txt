@@ -15,6 +15,7 @@ add_library(CommonLib
 	"include/TMIV/Common/Application.h"
 	"include/TMIV/Common/Json.h"
 	"include/TMIV/Common/Factory.h"
+    "include/TMIV/Common/Thread.h"
 	"include/TMIV/Common/Frame.h"
 	"include/TMIV/Common/LinAlg.h"
 	"include/TMIV/Common/Vector.h"

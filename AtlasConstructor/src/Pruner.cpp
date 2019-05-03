@@ -162,7 +162,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
                           views[viewToPruneId].first.getHeight());
         auto &bufferPostProc = maskPostProc.getPlane(0);
 
-        int w = bufferToPrune.width(), h = bufferToPrune.height();
+        int w = int(bufferToPrune.width()), h = int(bufferToPrune.height());
         int wLast = w - 1, hLast = h - 1;
         std::array<int, 8> neighbourOffset = {-1 - w, -w,     1 - w, -1,
                                               1,      -1 + w, w,     1 + w};

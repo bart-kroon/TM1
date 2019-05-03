@@ -46,8 +46,8 @@ void Inpainter::inplaceInpaint(
   auto &V = yuvd.first.getPlane(2);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = Y.width();
-  const int height = Y.height();
+  const int width = int(Y.width());
+  const int height = int(Y.height());
 
   const int imsize = width * height;
 

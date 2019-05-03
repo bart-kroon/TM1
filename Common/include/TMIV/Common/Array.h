@@ -889,33 +889,33 @@ public:
   //! \brief Returns an iterator to the first diagonal element.
   const_diag_iterator diag_begin() const {
     return const_diag_iterator(
-        data(), std::accumulate(m_step.begin() + 1, m_step.end(), 0));
+        data(), std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
   }
   diag_iterator diag_begin() {
     return diag_iterator(data(),
-                         std::accumulate(m_step.begin() + 1, m_step.end(), 0));
+                         std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
   }
   //! \brief Returns a const iterator to the first diagonal element.
   const_diag_iterator cdiag_begin() const {
     return const_diag_iterator(
-        data(), std::accumulate(m_step.begin() + 1, m_step.end(), 0));
+        data(), std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
   }
   //! \brief Returns an iterator to the first element afer the last diagonal
   //! element.
   const_diag_iterator diag_end() const {
-    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), 0);
+    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0));
     return const_diag_iterator(
         data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   diag_iterator diag_end() {
-    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), 0);
+    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_type(0));
     return diag_iterator(
         data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   //! \brief Returns a const iterator to the first element afer the last
   //! diagonal element.
   const_diag_iterator cdiag_end() const {
-    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), 0);
+    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0));
     return const_diag_iterator(
         data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }

@@ -424,28 +424,28 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       THEN("The depth map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
-        REQUIRE(depth.sizes() == array{4u, 8u});
+        REQUIRE(depth.sizes() == array{4ul, 8ul});
         REQUIRE(none_of(begin(depth), end(depth),
                         [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(is_same_v<decltype(normDisp), Mat<float>>);
-        REQUIRE(normDisp.sizes() == array{4u, 8u});
+        REQUIRE(normDisp.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(normDisp), end(normDisp),
                        [](float x) { return x == 0.f; }));
       }
       THEN("The normalized weight (quality) map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(is_same_v<decltype(normWeight), Mat<float>>);
-        REQUIRE(normWeight.sizes() == array{4u, 8u});
+        REQUIRE(normWeight.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(normWeight), end(normWeight),
                        [](float x) { return x == 0.f; }));
       }
       THEN("The color map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
-        REQUIRE(color.sizes() == array{4u, 8u});
+        REQUIRE(color.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(color), end(color),
                        [](Vec3w x) { return x == Vec3w{}; }));
       }
@@ -474,28 +474,28 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       THEN("The depth map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
-        REQUIRE(depth.sizes() == array{4u, 8u});
+        REQUIRE(depth.sizes() == array{4ul, 8ul});
         REQUIRE(none_of(begin(depth), end(depth),
                         [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(is_same_v<decltype(normDisp), Mat<float>>);
-        REQUIRE(normDisp.sizes() == array{4u, 8u});
+        REQUIRE(normDisp.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(normDisp), end(normDisp),
                        [](float x) { return x == 0.f; }));
       }
       THEN("The normalized weight (quality) map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(is_same_v<decltype(normWeight), Mat<float>>);
-        REQUIRE(normWeight.sizes() == array{4u, 8u});
+        REQUIRE(normWeight.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(normWeight), end(normWeight),
                        [](float x) { return x == 0.f; }));
       }
       THEN("The color map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
-        REQUIRE(color.sizes() == array{4u, 8u});
+        REQUIRE(color.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(color), end(color),
                        [](Vec3w x) { return x == Vec3w{}; }));
       }
@@ -603,7 +603,7 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
       THEN("The field map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(field), Mat<Vec2f>>);
-        REQUIRE(field.sizes() == array{4u, 8u});
+        REQUIRE(field.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(field), end(field),
                        [](Vec2f x) { return x == Vec2f{}; }));
       }
@@ -619,7 +619,7 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
       THEN("The field map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(field), Mat<Vec2f>>);
-        REQUIRE(field.sizes() == array{4u, 8u});
+        REQUIRE(field.sizes() == array{4ul, 8ul});
         REQUIRE(all_of(begin(field), end(field),
                        [](Vec2f x) { return x == Vec2f{}; }));
       }

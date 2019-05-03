@@ -41,22 +41,23 @@ using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Renderer;
 
 namespace TMIV::Decoder {
-Decoder::Decoder(const Json &node)
+Decoder::Decoder(const Json &rootNode, const Json &componentNode)
     : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
-          "AtlasDeconstructor", node)},
-      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", node)} {}
+          "AtlasDeconstructor", rootNode, componentNode)},
+      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode,
+                                                          componentNode)} {}
 
 void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
   m_atlasSize = move(atlasSize);
   m_patches.clear();
 }
 
-void Decoder::updatePatchList(PatchParameterList patches) {
+void Decoder::updatePatchList(AtlasParametersList patches) {
   m_patches = move(patches);
   m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches);
 }
 
-void Decoder::updateCameraList(CameraParameterList cameras) {
+void Decoder::updateCameraList(CameraParametersList cameras) {
   m_cameras = move(cameras);
 }
 

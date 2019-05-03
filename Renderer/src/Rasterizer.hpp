@@ -36,10 +36,10 @@
 #endif
 
 #include "blend.h"
+#include <TMIV/Common/Common.h>
 #include <cmath>
 #include <future>
 #include <thread>
-#include <iostream>
 
 namespace TMIV::Renderer {
 namespace {
@@ -218,9 +218,9 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
     if (std::isnan(y)) {
       return;
     }
-    const auto k = int(y * m_dk_di);
-    k1 = std::min(k1, k);
-    k2 = std::max(k2, k + 1);
+    const auto k = y * m_dk_di;
+    k1 = std::min(k1, TMIV::Common::ifloor(k));
+    k2 = std::max(k2, TMIV::Common::iceil(k) + 1);
   }
 
   // Cull
@@ -249,16 +249,18 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
 
   // Determine triangle bounding box
   const auto u1 =
-      std::max(0, static_cast<int>(std::min({uv0.x(), uv1.x(), uv2.x()})));
-  const auto u2 = std::min(
-      strip.cols - 1, static_cast<int>(std::max({uv0.x(), uv1.x(), uv2.x()})));
+      std::max(0, TMIV::Common::ifloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u2 =
+      std::min(strip.cols,
+               1 + TMIV::Common::iceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
   if (u1 >= u2) {
     return; // Cull
   }
   const auto v1 =
-      std::max(0, static_cast<int>(std::min({uv0.y(), uv1.y(), uv2.y()})));
-  const auto v2 = std::min(
-      strip.cols - 1, static_cast<int>(std::max({uv0.y(), uv1.y(), uv2.y()})));
+      std::max(0, TMIV::Common::ifloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v2 =
+      std::min(strip.rows(),
+               1 + TMIV::Common::iceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
   if (v1 >= v2) {
     return; // Cull
   }
@@ -294,40 +296,34 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       // This happens when synthesizing from and to the same camera. This will
       // not happen for arbitrary viewports but may happens on the Encoder side.
       // TODO: Use fixed point image positions to avoid this problem
-      const float eps = 1e-4f;
+      const float eps = 1e-6f;
 
       // Calculate the Barycentric coordinate of the pixel center (x +
       // 1/2, y + 1/2)
       const float w0 =
           inv_area * ((uv1.y() - uv2.y()) * (float(u) - uv2.x() + 0.5f) +
                       (uv2.x() - uv1.x()) * (float(v) - uv2.y() + 0.5f));
-      //if (!(w0 >= -eps)) {
-      //  continue;
-      //}
+      if (!(w0 >= -eps)) {
+        continue;
+      }
       const float w1 =
           inv_area * ((uv2.y() - uv0.y()) * (float(u) - uv2.x() + 0.5f) +
                       (uv0.x() - uv2.x()) * (float(v) - uv2.y() + 0.5f));
-      //if (!(w1 >= -eps)) {
-      //  continue;
-      //}
+      if (!(w1 >= -eps)) {
+        continue;
+      }
       const float w2 = 1.f - w0 - w1;
-      //if (!(w2 >= -eps)) {
-      //  continue;
-      //}
+      if (!(w2 >= -eps)) {
+        continue;
+      }
 
       // Barycentric interpolation of normalized disparity and attributes
       // (e.g. color)
       const auto d = w0 * d0 + w1 * d1 + w2 * d2;
       const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 
-      // TODO remove this quard when it isn't required anymore.
-      // When batches are processed in parallel this out-of-bound event occurs -bson
-      if (v * strip.cols + u >= strip.matrix.size() ) {
-        cout << 'E' << std::flush;
-        continue;
-      }
-
       // Blend pixel
+      assert(v * strip.cols + u < int(strip.matrix.size()));
       auto &P = strip.matrix[v * strip.cols + u];
       P = m_pixel.blend(P, m_pixel.construct(a, d, rayAngle, stretching));
     }

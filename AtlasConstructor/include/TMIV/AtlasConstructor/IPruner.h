@@ -35,7 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::AtlasConstructor {
 
@@ -51,10 +51,10 @@ public:
 
   using MVD16Frame = Common::MVD16Frame;
   using MaskList = Common::MaskList;
-  using CameraParameterList = Metadata::CameraParameterList;
+  using CameraParametersList = Metadata::CameraParametersList;
 
   virtual MaskList
-  prune(const CameraParameterList &cameras, const MVD16Frame &views,
+  prune(const CameraParametersList &cameras, const MVD16Frame &views,
         const std::vector<std::uint8_t> &shouldNotBePruned) = 0;
 };
 } // namespace TMIV::AtlasConstructor

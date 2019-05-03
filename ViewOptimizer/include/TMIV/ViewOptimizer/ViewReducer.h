@@ -45,23 +45,26 @@ private:
   std::vector<bool> m_priorities;
 
 public:
-  ViewReducer(const Common::Json &node);
+  ViewReducer(const Common::Json &, const Common::Json &);
   ViewReducer(const ViewReducer &) = default;
   ViewReducer(ViewReducer &&) = default;
   ViewReducer &operator=(const ViewReducer &) = default;
   ViewReducer &operator=(ViewReducer &&) = default;
 
-  auto optimizeIntraPeriod(Metadata::CameraParameterList cameras)
-      -> Output<Metadata::CameraParameterList>;
+  auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
+      -> Output<Metadata::CameraParametersList>;
 
   auto optimizeFrame(Common::MVD16Frame views) const
       -> Output<Common::MVD16Frame>;
 
 private:
-  auto calculateFOV(Metadata::CameraParameters camera) -> size_t;
+  auto calculateFOV(Metadata::CameraParameters camera) -> float;
 
   auto calculateDistance(Metadata::CameraParameters camera_1,
                          Metadata::CameraParameters camera_2) -> float;
+
+  auto calculateOverlapping(Metadata::CameraParameters camera_1,
+                            Metadata::CameraParameters camera_2) -> float;
 };
 } // namespace TMIV::ViewOptimizer
 

@@ -52,14 +52,10 @@ private:
 public:
   Application(vector<const char *> argv)
       : Common::Application{"AtlasConstructor", move(argv)},
-        m_atlasConstructor{create<IAtlasConstructor>("AtlasConstructor")},
+        m_atlasConstructor{
+            create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {
-    if (auto subnode = json().optional("nbThread"))
-      Common::MAX_THREAD = subnode.asInt();
-    else
-      Common::MAX_THREAD = 1;
-  }
+        m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
@@ -71,11 +67,13 @@ public:
 
   void runIntraPeriod(int intraFrame, int endFrame) {
     auto cameras = IO::loadOptimizedMetadata(json(), intraFrame);
-    m_atlasConstructor->prepareIntraPeriod(cameras.base, cameras.additional);
+    m_atlasConstructor->prepareIntraPeriod(cameras.basic, cameras.additional);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto views = IO::loadOptimizedFrame(json(), cameras, i);
-      m_atlasConstructor->pushFrame(move(views.base), move(views.additional));
+      auto views = IO::loadOptimizedFrame(
+          json(), {IO::sizesOf(cameras.basic), IO::sizesOf(cameras.additional)},
+          i);
+      m_atlasConstructor->pushFrame(move(views.basic), move(views.additional));
     }
 
     m_atlasConstructor->completeIntraPeriod();
@@ -87,7 +85,7 @@ public:
       auto nbPatch = std::count_if(
           m_atlasConstructor->getPatchList().begin(),
           m_atlasConstructor->getPatchList().end(),
-          [i](const PatchParameters &p) { return (p.atlasId == i); });
+          [i](const AtlasParameters &p) { return (p.atlasId == i); });
 
       cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y()
            << "): " << nbPatch << " patches\n";
@@ -99,7 +97,7 @@ public:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto frame = m_atlasConstructor->popAtlas();
-      IO::saveAtlas(json(), i, frame);
+      IO::saveAtlas(json(), i, move(frame));
     }
   }
 };

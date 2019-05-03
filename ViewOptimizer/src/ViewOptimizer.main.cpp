@@ -45,15 +45,14 @@ class Application : public Common::Application {
   unique_ptr<IViewOptimizer> m_optimizer;
   int m_numberOfFrames;
   int m_intraPeriod;
-  Metadata::CameraParameterList m_cameras;
+  Metadata::CameraParametersList m_cameras;
 
 public:
   Application(vector<const char *> argv)
       : Common::Application{"ViewOptimizer", move(argv)},
-        m_optimizer{create<IViewOptimizer>("ViewOptimizer")},
+        m_optimizer{create<IViewOptimizer>("Encoder", "ViewOptimizer")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
-
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
 
@@ -70,9 +69,9 @@ private:
     IO::saveOptimizedMetadata(json(), intraFrame, cameras);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto sourceFrame = IO::loadSourceFrame(json(), m_cameras, i);
+      auto sourceFrame = IO::loadSourceFrame(json(), IO::sizesOf(m_cameras), i);
       auto frame = m_optimizer->optimizeFrame(move(sourceFrame));
-      IO::saveOptimizedFrame(json(), i, cameras, frame);
+      IO::saveOptimizedFrame(json(), i, frame);
     }
   }
 };

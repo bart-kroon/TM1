@@ -33,17 +33,21 @@
 
 #include <TMIV/AtlasDeconstructor/AtlasDeconstructor.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Image;
 
 namespace TMIV::AtlasDeconstructor {
 
-AtlasDeconstructor::AtlasDeconstructor(const Common::Json &) {}
+AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
+                                       const Common::Json & /*componentNode*/) {
+}
 
 PatchIdMapList
 AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                                  const PatchParameterList &patchList) {
+                                  const AtlasParametersList &patchList) {
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize) {
@@ -59,14 +63,14 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
   return patchMapList;
 }
 
-void AtlasDeconstructor::writePatchIdInMap(const PatchParameters &patch,
+void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
                                            PatchIdMapList &patchMapList,
                                            std::uint16_t patchId) const {
   auto &patchMap = patchMapList[patch.atlasId];
 
-  const Vec2i &q0 = patch.patchPackingPos;
+  const Vec2i &q0 = patch.posInAtlas;
   int w = patch.patchSize.x(), h = patch.patchSize.y();
-  bool isRotated = (patch.patchRotation != Metadata::PatchRotation::upright);
+  bool isRotated = (patch.rotation != Metadata::PatchRotation::upright);
   int xMin = q0.x(), xLast = q0.x() + (isRotated ? h : w);
   int yMin = q0.y(), yLast = q0.y() + (isRotated ? w : h);
 
@@ -76,9 +80,9 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParameters &patch,
 }
 
 MVD16Frame
-AtlasDeconstructor::recoverTransportView(const MVD10Frame &atlas,
-                                         const CameraParameterList &cameraList,
-                                         const PatchParameterList &patchList) {
+AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
+                                      const CameraParametersList &cameraList,
+                                      const AtlasParametersList &patchList) {
   // Initialization
   MVD10Frame mvd10;
 
@@ -103,7 +107,7 @@ AtlasDeconstructor::recoverTransportView(const MVD10Frame &atlas,
     const auto &patch = *iter;
 
     auto &currentAtlas = atlas_pruned[patch.atlasId];
-    auto &currentView = mvd10[patch.virtualCameraId];
+    auto &currentView = mvd10[patch.viewId];
 
     auto &textureAtlasMap = currentAtlas.first;
     auto &depthAtlasMap = currentAtlas.second;
@@ -112,8 +116,8 @@ AtlasDeconstructor::recoverTransportView(const MVD10Frame &atlas,
     auto &depthViewMap = currentView.second;
 
     int w = patch.patchSize.x(), h = patch.patchSize.y();
-    int xM = patch.patchMappingPos.x(), yM = patch.patchMappingPos.y();
-    int xP = patch.patchPackingPos.x(), yP = patch.patchPackingPos.y();
+    int xM = patch.posInView.x(), yM = patch.posInView.y();
+    int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
     int w_tex = ((xM + w) <= (int)textureViewMap.getWidth())
                     ? w
                     : ((int)textureViewMap.getWidth() - xM);
@@ -121,7 +125,7 @@ AtlasDeconstructor::recoverTransportView(const MVD10Frame &atlas,
                     ? h
                     : ((int)textureViewMap.getHeight() - yM);
 
-    if (patch.patchRotation == Metadata::PatchRotation::upright) {
+    if (patch.rotation == Metadata::PatchRotation::upright) {
       for (int dy = 0; dy < h_tex; dy++) {
         // Y
         std::copy(textureAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
@@ -213,16 +217,13 @@ AtlasDeconstructor::recoverTransportView(const MVD10Frame &atlas,
     }
   }
 
-  // Conversion
+  // Convert from 10 to 16-bit depth
   MVD16Frame mvd16;
-
-  for (auto view : mvd10) {
-    Depth16Frame depth16(view.second.getWidth(), view.second.getHeight());
-    convert(view.second, depth16);
-    mvd16.push_back(
-        TextureDepth16Frame(std::move(view.first), std::move(depth16)));
-  }
-
+  mvd16.reserve(mvd10.size());
+  transform(begin(mvd10), end(mvd10), back_inserter(mvd16),
+            [](TextureDepth10Frame &view10) {
+              return pair{move(view10.first), requantize16(view10.second)};
+            });
   return mvd16;
 }
 

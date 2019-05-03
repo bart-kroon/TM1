@@ -35,7 +35,7 @@
 #define _TMIV_IMAGE_IMAGE_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::Image {
 // The maximum level for an unsigned integer of the specified number of bits
@@ -94,6 +94,12 @@ quantizeDepth10(const Metadata::CameraParameters &camera,
 Common::Frame<Common::YUV400P16>
 quantizeDepth16(const Metadata::CameraParameters &camera,
                 const Common::Mat<float> &in);
+
+// Requantize with a different bit depth
+Common::Frame<Common::YUV400P16>
+requantize16(const Common::Frame<Common::YUV400P10> &frame);
+Common::Frame<Common::YUV400P10>
+requantize10(const Common::Frame<Common::YUV400P16> &frame);
 } // namespace TMIV::Image
 
 #include "Image.hpp"

@@ -36,8 +36,8 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Metadata/CameraParameterList.h>
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/AtlasParametersList.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 // Functions for file I/O
@@ -46,34 +46,34 @@
 // These functions will print something short to screen.
 namespace TMIV::IO {
 template <class T>
-using BaseAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
+using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
-Metadata::CameraParameterList loadSourceMetadata(const Common::Json &config);
+auto sizesOf(const Metadata::CameraParametersList &cameras)
+    -> std::vector<Common::Vec2i>;
+Metadata::CameraParametersList loadSourceMetadata(const Common::Json &config);
 Common::MVD16Frame loadSourceFrame(const Common::Json &config,
-                                   const Metadata::CameraParameterList &cameras,
+                                   const std::vector<Common::Vec2i> &cameras,
                                    int frameIndex);
 
-void saveOptimizedFrame(
-    const Common::Json &config, int frameIndex,
-    const BaseAdditional<Metadata::CameraParameterList> &cameras,
-    const BaseAdditional<Common::MVD16Frame> &frame);
+void saveOptimizedFrame(const Common::Json &config, int frameIndex,
+                        const BasicAdditional<Common::MVD16Frame> &frame);
 auto loadOptimizedFrame(
     const Common::Json &config,
-    const BaseAdditional<Metadata::CameraParameterList> &cameras,
-    int frameIndex) -> BaseAdditional<Common::MVD16Frame>;
+    const BasicAdditional<std::vector<Common::Vec2i>> &sizes, int frameIndex)
+    -> BasicAdditional<Common::MVD16Frame>;
 void saveOptimizedMetadata(
     const Common::Json &config, int frameIndex,
-    const BaseAdditional<Metadata::CameraParameterList> &metadata);
+    const BasicAdditional<Metadata::CameraParametersList> &metadata);
 auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
-    -> BaseAdditional<Metadata::CameraParameterList>;
+    -> BasicAdditional<Metadata::CameraParametersList>;
 
-void saveTransportFrame(const Common::Json &config, int frameIndex,
-                        const Common::MVD16Frame &frame);
+void savePrunedFrame(const Common::Json &config, int frameIndex,
+                     const Common::MVD16Frame &frame);
 
 struct MivMetadata {
   std::vector<Common::Vec2i> atlasSize;
-  Metadata::PatchParameterList patches;
-  Metadata::CameraParameterList cameras;
+  Metadata::AtlasParametersList patches;
+  Metadata::CameraParametersList cameras;
 };
 
 void saveMivMetadata(const Common::Json &config, int frameIndex,
@@ -81,12 +81,14 @@ void saveMivMetadata(const Common::Json &config, int frameIndex,
 auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
 
 void savePatchList(const Common::Json &config, const std::string &name,
-                   Metadata::PatchParameterList patches);
+                   Metadata::AtlasParametersList patches);
 
 // Save the atlas (10-bit 4:2:0 texture, 16-bit depth) with depth converted to
 // 10-bit
 void saveAtlas(const Common::Json &config, int frameIndex,
-               Common::MVD16Frame const &frame);
+               Common::MVD16Frame frame);
+void saveAtlas(const Common::Json &config, int frameIndex,
+               const Common::MVD10Frame &frame);
 auto loadAtlas(const Common::Json &config,
                const std::vector<Common::Vec2i> &atlasSize, int frameIndex)
     -> Common::MVD10Frame;
@@ -101,6 +103,14 @@ auto loadViewportMetadata(const Common::Json &config, int frameIndex)
     -> Metadata::CameraParameters;
 void saveViewport(const Common::Json &config, int frameIndex,
                   const Common::TextureDepth10Frame &frame);
+
+// Returns a pair of metadata and frame indices to pass to loadMivMetadata and
+// loadAtlas. If frameIndex is strictly less than the actual number of frames in
+// the encoded stream, then regular values are returned else mirrored indices
+// are computed.
+std::pair<int, int> getExtendedIndex(const Common::Json &config,
+                                     int frameIndex);
+
 } // namespace TMIV::IO
 
 #endif

@@ -48,7 +48,7 @@ private:
   std::unique_ptr<IInpainter> m_inpainter;
 
 public:
-  MultipassRenderer(const Common::Json &);
+  MultipassRenderer(const Common::Json &, const Common::Json &);
   MultipassRenderer(const MultipassRenderer &) = delete;
   MultipassRenderer(MultipassRenderer &&) = default;
   MultipassRenderer &operator=(const MultipassRenderer &) = delete;
@@ -57,13 +57,13 @@ public:
   Common::TextureDepth10Frame
   renderFrame(const Common::MVD10Frame &atlas,
               const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
+              const Metadata::AtlasParametersList &patches,
+              const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   Common::TextureDepth16Frame
   renderFrame(const Common::MVD16Frame &atlas,
-              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Renderer

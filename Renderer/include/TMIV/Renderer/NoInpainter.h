@@ -31,37 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_PATCHPARAMETERLIST_H_
-#define _TMIV_METADATA_PATCHPARAMETERLIST_H_
+#ifndef _TMIV_RENDERER_NO_INPAINTER_H_
+#define _TMIV_RENDERER_NO_INPAINTER_H_
 
-#include <cstdint>
-#include <string>
-#include <vector>
+#include <TMIV/Common/Json.h>
+#include <TMIV/Renderer/IInpainter.h>
 
-#include <TMIV/Common/Vector.h>
+namespace TMIV::Renderer {
+class NoInpainter : public IInpainter {
+public:
+  NoInpainter(const Common::Json & /* rootNode */,
+              const Common::Json & /* componentNode */) {}
+  NoInpainter(const NoInpainter &) = delete;
+  NoInpainter(NoInpainter &&) = default;
+  NoInpainter &operator=(const NoInpainter &) = delete;
+  NoInpainter &operator=(NoInpainter &&) = default;
 
-namespace TMIV::Metadata {
-using Vec2i = TMIV::Common::Vec2i;
-
-enum class PatchRotation {
-  upright, // what was up stays up
-  ccw      // what was up goes left
+  void inplaceInpaint(Common::TextureDepth10Frame & /* viewport */,
+                      const Metadata::CameraParameters & /* metadata */) const {
+  }
+  void inplaceInpaint(Common::TextureDepth16Frame & /* viewport */,
+                      const Metadata::CameraParameters & /* metadata */) const {
+  }
 };
-
-// Data type that matches with an entry of patch_params of the working draft
-struct PatchParameters {
-  uint8_t atlasId;
-  uint8_t virtualCameraId;
-  Vec2i patchSize;
-  Vec2i patchMappingPos;
-  Vec2i patchPackingPos;
-  PatchRotation patchRotation;
-};
-
-std::string PatchParametersString(const PatchParameters &patchParameters);
-
-// Data type that matches with patch_params of the working draft
-using PatchParameterList = std::vector<PatchParameters>;
-} // namespace TMIV::Metadata
+} // namespace TMIV::Renderer
 
 #endif

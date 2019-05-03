@@ -39,6 +39,7 @@
 #include <ostream>
 
 #include <TMIV/Common/Matrix.h>
+#include <TMIV/Common/Vector.h>
 
 namespace TMIV::Common {
 class YUV400P8 {};
@@ -96,17 +97,18 @@ public:
   plane_type &getPlane(int id) { return m_planes[id]; }
   int getWidth() const { return m_width; }
   int getHeight() const { return m_height; }
+  Vec2i getSize() const { return Vec2i{m_width, m_height}; }
   int getMemorySize() const {
     return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
+  }
+  int getDiskSize() const {
+    return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
   }
   static constexpr int getNumberOfPlanes() { return nb_plane; }
 
   void read(std::istream &is, bool vFlip = false);
   void dump(std::ostream &os, bool vFlip = false) const;
 };
-
-template <class FROM, class TO>
-void convert(const Frame<FROM> &inputFrame, Frame<TO> &outputFrame);
 
 template <class T> std::string frameInfo(const T &frame);
 
@@ -129,6 +131,12 @@ using PatchIdMapList = std::vector<PatchIdMap>;
 using Depth10Frame = Frame<YUV400P10>;
 using TextureDepth10Frame = std::pair<TextureFrame, Depth10Frame>;
 using MVD10Frame = std::vector<TextureDepth10Frame>;
+
+// Generalize on depth map format
+template <typename FORMAT>
+using TextureDepthFrame = std::pair<Frame<YUV420P10>, Frame<FORMAT>>;
+template <typename FORMAT>
+using MVDFrame = std::vector<TextureDepthFrame<FORMAT>>;
 
 const auto unusedPatchId = std::uint16_t(65535);
 } // namespace TMIV::Common

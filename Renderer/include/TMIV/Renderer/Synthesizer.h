@@ -39,7 +39,7 @@
 namespace TMIV::Renderer {
 class Synthesizer : public ISynthesizer {
 public:
-  Synthesizer(const Common::Json &node);
+  Synthesizer(const Common::Json &, const Common::Json &);
   Synthesizer(float rayAngleParam, float depthParam, float stretchingParam);
   Synthesizer(const Synthesizer &) = delete;
   Synthesizer(Synthesizer &&) = default;
@@ -50,13 +50,13 @@ public:
   Common::TextureDepth10Frame
   renderFrame(const Common::MVD10Frame &atlas,
               const Common::PatchIdMapList &maps,
-              const Metadata::PatchParameterList &patches,
-              const Metadata::CameraParameterList &cameras,
+              const Metadata::AtlasParametersList &patches,
+              const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   Common::TextureDepth16Frame
   renderFrame(const Common::MVD16Frame &frame,
-              const Metadata::CameraParameterList &cameras,
+              const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   Common::Mat<float>

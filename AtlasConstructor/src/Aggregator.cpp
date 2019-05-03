@@ -35,7 +35,8 @@
 
 namespace TMIV::AtlasConstructor {
 
-Aggregator::Aggregator(const Common::Json &) {}
+Aggregator::Aggregator(const Common::Json & /*rootNode*/,
+                       const Common::Json & /*componentNode*/) {}
 
 void Aggregator::prepareIntraPeriod() { m_aggregatedMask.clear(); }
 

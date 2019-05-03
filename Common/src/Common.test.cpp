@@ -158,30 +158,44 @@ TEST_CASE("Parsing the command-line", "[Application]") {
 
   SECTION("Load a Json") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json"}};
+                        {"command", "-c", "Common/test/CommonTest.json"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 32);
   }
 
   SECTION("Load a Json and add a parameters") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                        {"command", "-c", "Common/test/CommonTest.json", "-p",
                          "continent", "Africa"}};
     REQUIRE(app.json().require("continent").asString() == "Africa");
   }
 
   SECTION("Load a Json and override a parameter") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                        {"command", "-c", "Common/test/CommonTest.json", "-p",
                          "intraPeriod", "8"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 8);
   }
 
   SECTION("Load a Json, override a parameter and add a parameter") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "doc/ExampleConfiguration.json", "-p",
+                        {"command", "-c", "Common/test/CommonTest.json", "-p",
                          "intraPeriod", "8", "-p", "continent", "Africa"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 8);
     REQUIRE(app.json().require("continent").asString() == "Africa");
   }
+}
+
+TEST_CASE("Converting floating point to integer") {
+  REQUIRE(ifloor(-2.5f) == -3);
+  REQUIRE(ifloor(0.f) == 0);
+  REQUIRE(ifloor(1000000.9f) == 1000000);
+  REQUIRE(ifloor(1000001.0f) == 1000001);
+  REQUIRE(ifloor(1000001.1f) == 1000001);
+
+  REQUIRE(iceil(-2.5f) == -2);
+  REQUIRE(iceil(0.f) == 0);
+  REQUIRE(iceil(1000000.9f) == 1000001);
+  REQUIRE(iceil(1000001.0f) == 1000001);
+  REQUIRE(iceil(1000001.1f) == 1000002);
 }
 } // namespace TMIV::Common

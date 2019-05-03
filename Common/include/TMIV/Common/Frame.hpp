@@ -41,6 +41,7 @@ template <> struct PixelFormatHelper<YUV400P8> {
   static constexpr int nb_plane = 1;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return (W * H); }
+  static int getDiskSize(int W, int H) { return (W * H) * 3 / 2; }
   static int getPlaneWidth(int, int W) { return W; }
   static int getPlaneHeight(int, int H) { return H; }
 };
@@ -49,6 +50,7 @@ template <> struct PixelFormatHelper<YUV400P10> {
   static constexpr int nb_plane = 1;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
+  static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int, int W) { return W; }
   static int getPlaneHeight(int, int H) { return H; }
 };
@@ -57,6 +59,7 @@ template <> struct PixelFormatHelper<YUV400P16> {
   static constexpr int nb_plane = 1;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
+  static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int, int W) { return W; }
   static int getPlaneHeight(int, int H) { return H; }
 };
@@ -65,6 +68,7 @@ template <> struct PixelFormatHelper<YUV420P8> {
   static constexpr int nb_plane = 3;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H) / 2; }
+  static int getDiskSize(int W, int H) { return 3 * (W * H) / 2; }
   static int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
   static int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
 };
@@ -73,6 +77,7 @@ template <> struct PixelFormatHelper<YUV420P10> {
   static constexpr int nb_plane = 3;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
+  static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
   static int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
 };
@@ -81,6 +86,7 @@ template <> struct PixelFormatHelper<YUV420P16> {
   static constexpr int nb_plane = 3;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
+  static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
   static int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
 };

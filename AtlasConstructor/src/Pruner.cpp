@@ -43,22 +43,23 @@ using namespace TMIV::Renderer;
 
 namespace TMIV::AtlasConstructor {
 
-Pruner::Pruner(const Json &node) {
+Pruner::Pruner(const Common::Json & /*rootNode*/,
+               const Common::Json &componentNode) {
 
-  if (auto subnode = node.optional("RedundancyFactor"))
+  if (auto subnode = componentNode.optional("RedundancyFactor"))
     m_redundancyFactor = subnode.asFloat();
 
-  if (auto subnode = node.optional("ErosionIter"))
+  if (auto subnode = componentNode.optional("ErosionIter"))
     m_erosionIter = subnode.asInt();
 
-  if (auto subnode = node.optional("DilationIter"))
+  if (auto subnode = componentNode.optional("DilationIter"))
     m_dilationIter = subnode.asInt();
 
-  if (auto subnode = node.optional("MaxAdditionalView"))
+  if (auto subnode = componentNode.optional("MaxAdditionalView"))
     m_maxAdditionalView = subnode.asInt();
 }
 
-MaskList Pruner::prune(const Metadata::CameraParameterList &cameras,
+MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
                        const MVD16Frame &views,
                        const std::vector<std::uint8_t> &shouldNotBePruned) {
 

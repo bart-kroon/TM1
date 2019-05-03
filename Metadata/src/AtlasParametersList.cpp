@@ -31,18 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Metadata/PatchParameterList.h>
+#include <TMIV/Metadata/AtlasParameterList.h>
 #include <sstream>
 
 namespace TMIV::Metadata {
 
-std::string PatchParametersString(const PatchParameters &p) {
+std::string PatchParametersString(const AtlasParameters &p) {
 
   std::ostringstream oss;
-  std::string rotationStr =
-      p.patchRotation == PatchRotation::upright ? "U" : "R";
-  oss << int(p.atlasId) << " " << int(p.virtualCameraId) << " " << p.patchSize
-      << " " << p.patchMappingPos << p.patchPackingPos << " " << rotationStr;
+  std::string rotationStr = p.rotation == PatchRotation::upright ? "U" : "R";
+  oss << int(p.atlasId) << " " << int(p.viewId) << " " << p.patchSize << " "
+      << p.posInView << p.posInAtlas << " " << rotationStr;
   return oss.str();
 }
 

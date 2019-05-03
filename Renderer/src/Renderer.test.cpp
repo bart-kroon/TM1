@@ -50,8 +50,7 @@ using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
-  return CameraParameters{42,
-                          {10, 5},           // size
+  return CameraParameters{{10, 5},           // size
                           {1.f, 0.f, -1.f},  // position
                           {1.f, 2.f, -0.5f}, // orientation
                           ProjectionType::ERP,
@@ -67,8 +66,8 @@ TEST_CASE("Full ERP", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.f);
   const CameraParameters camera{
-      0,  {7, 5}, {}, {}, ProjectionType::ERP, {-180.f, 180.f}, {-90.f, 90.f},
-      {}, {},     {}, {}};
+      {7, 5}, {}, {}, ProjectionType::ERP, {-180.f, 180.f}, {-90.f, 90.f}, {},
+      {},     {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -126,62 +125,14 @@ TEST_CASE("Full ERP", "[Render engine]") {
     REQUIRE(get<0>(as).size() == vs.size());
     REQUIRE(get<0>(as)[0] == 3.f);
   }
-
-  /*
-  SECTION("Triangles across 180deg boundary are split") {
-    const auto inVertices =
-        SceneVertexDescriptorList{{{-4.f, -1.f, -1.f}, 0.f},  // Vertex 0
-                                  {{-4.f, -1.f, +1.f}, 0.f},  // Vertex 1
-                                  {{-4.f, +1.f, +1.f}, 0.f},  // Vertex 2
-                                  {{-4.f, -2.f, +1.f}, 0.f},  // Vertex 3
-                                  {{+4.f, -1.f, -1.f}, 0.f},  // Vertex 4
-                                  {{+4.f, -1.f, +1.f}, 0.f},  // Vertex 5
-                                  {{+4.f, +1.f, +1.f}, 0.f}}; // Vertex 6
-    const auto inTriangles = TriangleDescriptorList{
-        {{0, 1, 2}, 1.f},  // Triangle across 180deg boundary (one side)
-        {{0, 2, 1}, 1.f},  // Triangle across 180deg boundary (other side)
-        {{0, 1, 3}, 1.f},  // Triangle next to the boundary (one side)
-        {{0, 3, 1}, 1.f},  // Triangle left of the boundary (other side)
-        {{4, 5, 6}, 1.f},  // Triangle in front of the boundary (one side)
-        {{4, 6, 5}, 1.f}}; // Triangle in front of the boundary (one side)
-    const auto inAttributes =
-        tuple<vector<int>>{{900, 100, 200, 300, 400, 500, 600}};
-
-    const auto [outVertices, outTriangles, outAttributes] =
-        project(inVertices, inTriangles, inAttributes, camera);
-
-    // There are two triangles and four edges across the boundary
-    REQUIRE(outVertices.size() == inVertices.size() + 4u);
-    REQUIRE(get<0>(outAttributes).size() == outVertices.size());
-
-    // The two triangles are split in three resulting in a net extra of four
-    // triangles
-    REQUIRE(outTriangles.size() == inTriangles.size() + 4u);
-
-    // The 0:1:2 and 0:2:1 triangles should have been removed
-    REQUIRE(
-        end(inTriangles) ==
-        find_if(begin(inTriangles), end(inTriangles), [](TriangleDescriptor t) {
-          sort(begin(t.indices), end(t.indices));
-          return t.indices[0] == 0 && t.indices[1] == 1 && t.indices[2] == 2;
-        }));
-
-    // The attributes are interpolated
-    set<int> ids;
-    for (auto id : get<0>(outAttributes)) {
-      ids.insert(id);
-    }
-    REQUIRE(ids == set<int>{100, 150, 200, 300, 400, 500, 550, 600, 900});
-  }
-*/
 }
 
 TEST_CASE("Equirectangular viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.f);
   const CameraParameters camera{
-      0,  {7, 5}, {}, {}, ProjectionType::ERP, {-10.f, 10.f}, {-10.f, 10.f},
-      {}, {},     {}, {}};
+      {7, 5}, {}, {}, ProjectionType::ERP, {-10.f, 10.f}, {-10.f, 10.f}, {},
+      {},     {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -245,8 +196,8 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.f);
   const CameraParameters camera{
-      0,  {7, 5},       {},           {}, ProjectionType::Perspective, {}, {},
-      {}, {10.f, 10.f}, {3.5f, 2.5f}, {}};
+      {7, 5},       {},           {}, ProjectionType::Perspective, {}, {}, {},
+      {10.f, 10.f}, {3.5f, 2.5f}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -309,9 +260,9 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
 TEST_CASE("Changing the reference frame", "[Render engine]") {
   const CameraParameters neutral{};
   const CameraParameters translated{
-      0, {}, {1.f, 2.f, 3.f}, {}, {}, {}, {}, {}, {}, {}, {}};
+      {}, {1.f, 2.f, 3.f}, {}, {}, {}, {}, {}, {}, {}, {}};
   const CameraParameters rotated{
-      0, {}, {}, {100.f, 30.f, -30.f}, {}, {}, {}, {}, {}, {}, {}};
+      {}, {}, {100.f, 30.f, -30.f}, {}, {}, {}, {}, {}, {}, {}};
   SECTION("trivial") {
     auto R_t = affineParameters(neutral, neutral);
     REQUIRE(R_t.first == Mat3x3f::eye());
@@ -745,19 +696,6 @@ SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
           }
         }
       }
-
-      /*
-  THEN("The last columns should also match the input depth\n(BUT IT "
-       "CURRENTLY DOES NOT)") {
-    // The ERP projector should split and cull triangles, but this has
-    // not been implemented. Until then this test case serves as a
-    // reminder of this unfinished work.
-    for (auto i = 0u; i != depth.height(); ++i) {
-      const int j = depth.width() - 1;
-      REQUIRE(actual(i, j) == Approx(2.f));
-    }
-  }
-      */
     }
   }
 }

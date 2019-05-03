@@ -41,22 +41,22 @@ namespace TMIV::AtlasDeconstructor {
 // The AtlasDeconstructor of TMIV 1.0 provided by Technicolor
 class AtlasDeconstructor : public IAtlasDeconstructor {
 public:
-  AtlasDeconstructor(const Common::Json &node);
+  AtlasDeconstructor(const Common::Json &, const Common::Json &);
   AtlasDeconstructor(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor(AtlasDeconstructor &&) = default;
   AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
 
-  using PatchParameters = Metadata::PatchParameters;
+  using AtlasParameters = Metadata::AtlasParameters;
 
   PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                               const PatchParameterList &patchList) override;
-  MVD16Frame recoverTransportView(const MVD10Frame &atlas,
-                                  const CameraParameterList &cameraList,
-                                  const PatchParameterList &patchList) override;
+                               const AtlasParametersList &patchList) override;
+  MVD16Frame recoverPrunedView(const MVD10Frame &atlas,
+                               const CameraParametersList &cameraList,
+                               const AtlasParametersList &patchList) override;
 
 private:
-  void writePatchIdInMap(const PatchParameters &patch,
+  void writePatchIdInMap(const AtlasParameters &patch,
                          PatchIdMapList &patchMapList,
                          std::uint16_t patchId) const;
 };

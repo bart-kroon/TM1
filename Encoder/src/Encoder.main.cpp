@@ -49,7 +49,7 @@ private:
   unique_ptr<IEncoder> m_encoder;
   int m_numberOfFrames;
   int m_intraPeriod;
-  Metadata::CameraParameterList m_cameras;
+  Metadata::CameraParametersList m_cameras;
 
 public:
   Application(vector<const char *> argv)
@@ -73,7 +73,7 @@ private:
     m_encoder->prepareIntraPeriod(m_cameras);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = IO::loadSourceFrame(json(), m_cameras, i);
+      auto frame = IO::loadSourceFrame(json(), IO::sizesOf(m_cameras), i);
       m_encoder->pushFrame(move(frame));
     }
 

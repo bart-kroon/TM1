@@ -31,61 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_CAMERAPARAMETERLIST_H_
-#define _TMIV_METADATA_CAMERAPARAMETERLIST_H_
+#ifndef _TMIV_METADATA_ATLASPARAMETERSLIST_H_
+#define _TMIV_METADATA_ATLASPARAMETERSLIST_H_
 
 #include <cstdint>
-#include <iosfwd>
+#include <string>
 #include <vector>
 
-#include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
 namespace TMIV::Metadata {
-enum class ProjectionType { ERP, CubeMap, Perspective };
-enum class CubicMapType { CubeMap, EAC };
-using Common::Vec2f;
-using Common::Vec2i;
-using Common::Vec3f;
+using Vec2i = TMIV::Common::Vec2i;
 
-// Camera parameters data type (part of MetadataLib)
-// Based on working draft description
-//
-// Read the RVS 3.x manual for interpretation of angles
-struct CameraParameters {
-  uint16_t id{};
-  Vec2i size{};     // Camera sensor size (width, height) in pixels
-  Vec3f position{}; // (x, y, z) in meters, OMAF definition
-  Vec3f rotation{}; // Euler angles (yaw, pitch, roll), again OMAF
-  ProjectionType type{ProjectionType::ERP};
-  Vec2f erpPhiRange{};   // Horizontal range in degrees
-  Vec2f erpThetaRange{}; // Vertical rnage in degrees
-  CubicMapType cubicMapType{CubicMapType::CubeMap};
-  Vec2f perspectiveFocal{};  // Focal length
-  Vec2f perspectiveCenter{}; // Principle point
-  Vec2f depthRange{};        // [near, far]
-  int bitDepthColor{};
-  int bitDepthDepth{};
-
-  friend std::ostream &operator<<(std::ostream &stream,
-                                  const CameraParameters &camera);
+enum class PatchRotation {
+  upright, // what was up stays up
+  ccw      // what was up goes left
 };
 
-using CameraParameterList = std::vector<CameraParameters>;
+// Data type that corresponds to an entry of atlas_params of MPEG/N18464
+struct AtlasParameters {
+  // In MPEG/N18464: atlas_id
+  uint8_t atlasId;
 
-bool intrinsicParamsEqual(const CameraParameterList &);
+  // In MPEG/N18464: view_id
+  uint8_t viewId;
 
-// Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
-// with cameras specified by name, in that order
-//
-// The first parameter is the cameras node (a JSON array).
-CameraParameterList loadCamerasFromJson(const Common::Json &node,
-                                        const std::vector<std::string> &names);
+  // In MPEG/N18464: patch_{width,height}_in_view
+  Vec2i patchSize;
 
-// Load a single (source) camera from a JSON metadata file (RVS 3.x format)
-//
-// The parameter is a an item of the cameras node (a JSON object).
-CameraParameters loadCameraFromJson(uint16_t id, const Common::Json &node);
+  // In MPEG/N18464: patch_pos_in_view_{x,y}
+  Vec2i posInView;
+
+  // In MPEG/N18464: patch_pos_in_atlas_{x,y}
+  Vec2i posInAtlas;
+
+  // In MPEG/N18464: patch_rotation
+  PatchRotation rotation;
+};
+
+static_assert(sizeof(AtlasParameters) == 32);
+
+std::string PatchParametersString(const AtlasParameters &patchParameters);
+
+// Data type that corresponds to atlas_params_list of MPEG/N18464
+using AtlasParametersList = std::vector<AtlasParameters>;
 } // namespace TMIV::Metadata
 
 #endif

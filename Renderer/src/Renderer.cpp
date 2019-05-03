@@ -38,29 +38,28 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &config)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer",
-                                                                config)},
-      m_inpainter{
-          Factory<IInpainter>::getInstance().create("Inpainter", config)} {}
+Renderer::Renderer(const Common::Json &rootNode,
+                   const Common::Json &componentNode)
+    : m_synthesizer{Factory<ISynthesizer>::getInstance().create(
+          "Synthesizer", rootNode, componentNode)},
+      m_inpainter{Factory<IInpainter>::getInstance().create(
+          "Inpainter", rootNode, componentNode)} {}
 
 Common::TextureDepth10Frame
 Renderer::renderFrame(const Common::MVD10Frame &atlas,
                       const Common::PatchIdMapList &maps,
-                      const Metadata::PatchParameterList &patches,
-                      const Metadata::CameraParameterList &cameras,
+                      const Metadata::AtlasParametersList &patches,
+                      const Metadata::CameraParametersList &cameras,
                       const Metadata::CameraParameters &target) const {
   auto viewport =
       m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
-  
-  // TODO inpainter crashes -bartson
-  //m_inpainter->inplaceInpaint(viewport, target);
+  m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 
 Common::TextureDepth16Frame
 Renderer::renderFrame(const Common::MVD16Frame &frame,
-                      const Metadata::CameraParameterList &cameras,
+                      const Metadata::CameraParametersList &cameras,
                       const Metadata::CameraParameters &target) const {
   auto viewport = m_synthesizer->renderFrame(frame, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);

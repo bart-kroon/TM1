@@ -57,7 +57,7 @@ public:
   Impl &operator=(const Impl &) = delete;
   Impl &operator=(Impl &&) = delete;
 
-  auto affineParameterList(const CameraParameterList &cameras,
+  auto affineParameterList(const CameraParametersList &cameras,
                            const CameraParameters &target) const {
     vector<pair<Mat3x3f, Vec3f>> result;
     result.reserve(cameras.size());
@@ -68,10 +68,10 @@ public:
     return result;
   }
 
-  static Vec2i imagePosition(Vec2i atlas, const PatchParameters &patch) {
-    switch (patch.patchRotation) {
+  static Vec2i imagePosition(Vec2i atlas, const AtlasParameters &patch) {
+    switch (patch.rotation) {
     case PatchRotation::upright:
-      return atlas - patch.patchPackingPos + patch.patchMappingPos;
+      return atlas - patch.posInAtlas + patch.posInView;
     case PatchRotation::ccw: {
       // In reference to atlas constructor figure in TM document
       // Sanity check: consider patch is at (0,0) in view and atlas
@@ -80,12 +80,11 @@ public:
       // (patch_width_in_view_x - 1, 0) = (j, i)
 
       // Determine patch row and column in view orientation
-      const int i = atlas.x() - patch.patchPackingPos.x();
-      const int j =
-          patch.patchSize.x() - 1 - atlas.y() - patch.patchPackingPos.y();
+      const int i = atlas.x() - patch.posInAtlas.x();
+      const int j = patch.patchSize.x() - 1 - atlas.y() + patch.posInAtlas.y();
 
       // Return position in view
-      return patch.patchMappingPos + Vec2i{j, i};
+      return patch.posInView + Vec2i{j, i};
     }
     default:
       abort();
@@ -93,8 +92,8 @@ public:
   }
 
   auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                     const PatchParameterList &patches,
-                     const CameraParameterList &cameras,
+                     const AtlasParametersList &patches,
+                     const CameraParametersList &cameras,
                      const CameraParameters &target) const {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
@@ -119,15 +118,15 @@ public:
         // Look up metadata
         assert(patchId < patches.size());
         const auto &patch = patches[patchId];
-        assert(patch.virtualCameraId < cameras.size());
-        const auto &camera = cameras[patch.virtualCameraId];
+        assert(patch.viewId < cameras.size());
+        const auto &camera = cameras[patch.viewId];
 
         // Look up depth value and affine parameters
         const auto uv = Vec2f(imagePosition(Vec2i{j_atlas, i_atlas}, patch));
         const auto d = expandDepthValue<10>(
             camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
-        const auto &R = R_t[patch.virtualCameraId].first;
-        const auto &t = R_t[patch.virtualCameraId].second;
+        const auto &R = R_t[patch.viewId].first;
+        const auto &t = R_t[patch.viewId].second;
 
         // Reproject and calculate ray angle
         const auto xyz = R * unprojectVertex(uv, d, camera) + t;
@@ -169,7 +168,7 @@ public:
     // -180.
     // TODO: detect +/-90deg ERP patches and add north or south poles.
 
-    assert(size == int(result.size()));
+    assert(int(result.size()) <= size);
     return result;
   }
 
@@ -183,8 +182,8 @@ public:
 
   auto unprojectAtlas(const TextureDepth10Frame &atlas,
                       const Mat<uint16_t> &ids,
-                      const PatchParameterList &patches,
-                      const CameraParameterList &cameras,
+                      const AtlasParametersList &patches,
+                      const CameraParametersList &cameras,
                       const CameraParameters &target) const {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
@@ -194,31 +193,8 @@ public:
                  atlasTriangles(ids), tuple{atlasColors(atlas)}};
   }
 
-  // TODO temporary sequential variant -bson
   template <typename Unprojector>
   Rasterizer<Vec3f> rasterFrame(size_t numViews, const CameraParameters &target,
-                                Unprojector unprojector) const {
-    // Incremental view synthesis and blending
-    const int numStrips = 1;
-    Rasterizer<Vec3f> rasterizer{  {m_rayAngleParam, m_depthParam, m_stretchingParam}, target.size, numStrips };
-
-    for (size_t i = 0; i < numViews; ++i) 
-    {
-      // Generate a reprojected mesh
-      auto [vertices, triangles, attributes] = unprojector(i, target);
-      auto mesh =  project(move(vertices), move(triangles), move(attributes), target);
-
-      rasterizer.submit(move(get<0>(mesh)), move(get<2>(mesh)),  move(get<1>(mesh)));
-    }
-
-    // Synchronize with the rasterer
-    rasterizer.run();
-    return rasterizer;
-  }
-
-  // TODO disabled since it cases out-of-bound problems in rasterTriangle -bson
-  template <typename Unprojector>
-  Rasterizer<Vec3f> rasterFrame_disabled_parllel(size_t numViews, const CameraParameters &target,
                                 Unprojector unprojector) const {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
@@ -253,8 +229,8 @@ public:
 
   TextureDepth10Frame renderFrame(const MVD10Frame &atlases,
                                   const PatchIdMapList &ids,
-                                  const PatchParameterList &patches,
-                                  const CameraParameterList &cameras,
+                                  const AtlasParametersList &patches,
+                                  const CameraParametersList &cameras,
                                   const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(
@@ -267,7 +243,7 @@ public:
   }
 
   TextureDepth16Frame renderFrame(const MVD16Frame &frame,
-                                  const CameraParameterList &cameras,
+                                  const CameraParametersList &cameras,
                                   const CameraParameters &target) const {
     assert(frame.size() == cameras.size());
     auto rasterizer = rasterFrame(
@@ -297,13 +273,12 @@ private:
   float m_stretchingParam;
 }; // namespace TMIV::Renderer
 
-Synthesizer::Synthesizer(const Common::Json &node)
-    : m_impl(new Impl(
-          node.require("Synthesizer").require("rayAngleParameter").asFloat(),
-          node.require("Synthesizer").require("depthParameter").asFloat(),
-          node.require("Synthesizer")
-              .require("stretchingParameter")
-              .asFloat())) {}
+Synthesizer::Synthesizer(const Common::Json & /*rootNode*/,
+                         const Common::Json &componentNode)
+    : m_impl(new Impl(componentNode.require("rayAngleParameter").asFloat(),
+                      componentNode.require("depthParameter").asFloat(),
+                      componentNode.require("stretchingParameter").asFloat())) {
+}
 
 Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
                          float stretchingParam)
@@ -314,15 +289,15 @@ Synthesizer::~Synthesizer() {}
 Common::TextureDepth10Frame
 Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
                          const Common::PatchIdMapList &maps,
-                         const Metadata::PatchParameterList &patches,
-                         const Metadata::CameraParameterList &cameras,
+                         const Metadata::AtlasParametersList &patches,
+                         const Metadata::CameraParametersList &cameras,
                          const Metadata::CameraParameters &target) const {
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
 Common::TextureDepth16Frame
 Synthesizer::renderFrame(const Common::MVD16Frame &frame,
-                         const Metadata::CameraParameterList &cameras,
+                         const Metadata::CameraParametersList &cameras,
                          const Metadata::CameraParameters &target) const {
   return m_impl->renderFrame(frame, cameras, target);
 }

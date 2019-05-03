@@ -42,7 +42,7 @@ namespace TMIV::AtlasConstructor {
 // The Aggregator of TMIV 1.0 provided by Technicolor
 class Aggregator : public IAggregator {
 public:
-  Aggregator(const Common::Json &);
+  Aggregator(const Common::Json &, const Common::Json &);
   Aggregator(const Aggregator &) = delete;
   Aggregator(Aggregator &&) = default;
   Aggregator &operator=(const Aggregator &) = delete;

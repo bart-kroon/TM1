@@ -50,7 +50,8 @@ private:
 public:
   Application(vector<const char *> argv)
       : Common::Application{"AtlasDeconstructor", move(argv)},
-        m_atlasDeconstructor{create<IAtlasDeconstructor>("AtlasDeconstructor")},
+        m_atlasDeconstructor{
+            create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
@@ -71,10 +72,10 @@ public:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto atlas = IO::loadAtlas(json(), metadata.atlasSize, i);
-      auto recoveredTransportView = m_atlasDeconstructor->recoverTransportView(
+      auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
           atlas, metadata.cameras, metadata.patches);
 
-      IO::saveTransportFrame(json(), i, recoveredTransportView);
+      IO::savePrunedFrame(json(), i, recoveredTransportView);
     }
   }
 };

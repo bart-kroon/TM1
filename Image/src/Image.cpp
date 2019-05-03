@@ -167,4 +167,18 @@ Frame<YUV400P16> quantizeDepth16(const CameraParameters &camera,
                                  const Mat1f &in) {
   return quantizeDepth_impl<16, Frame<YUV400P16>>(camera, in);
 }
+
+Frame<YUV400P16> requantize16(const Frame<YUV400P10> &frame) {
+  Frame<YUV400P16> result(frame.getWidth(), frame.getHeight());
+  transform(begin(frame.getPlane(0)), end(frame.getPlane(0)),
+            begin(result.getPlane(0)), requantizeValue<10, 16>);
+  return result;
+}
+
+Frame<YUV400P10> requantize10(const Frame<YUV400P16> &frame) {
+  Frame<YUV400P10> result(frame.getWidth(), frame.getHeight());
+  transform(begin(frame.getPlane(0)), end(frame.getPlane(0)),
+            begin(result.getPlane(0)), requantizeValue<16, 10>);
+  return result;
+}
 } // namespace TMIV::Image

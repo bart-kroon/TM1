@@ -48,6 +48,7 @@ class Application : public Common::Application {
 private:
   unique_ptr<IDecoder> m_decoder;
   int m_numberOfFrames;
+  int m_extendedNumberOfFrames;
   int m_intraPeriod;
 
 public:
@@ -56,29 +57,32 @@ public:
     m_decoder = create<IDecoder>("Decoder");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
-  }
 
-  void run() override {
-    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
-      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
-      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
-      decodeIntraPeriod(i, endFrame);
+    if (auto subnode = json().optional("extendedNumberOfFrames")) {
+      m_extendedNumberOfFrames = subnode.asInt();
+    } else {
+      m_extendedNumberOfFrames = m_numberOfFrames;
     }
   }
 
-private:
-  void decodeIntraPeriod(int intraFrame, int endFrame) {
-    auto metadata = IO::loadMivMetadata(json(), intraFrame);
+  void run() override {
 
-    // IO::savePatchList(json(), "/patchlist.decoder.txt", metadata.patches);
+    int lastIntraFrame = -1;
+    IO::MivMetadata metadata;
 
-    m_decoder->updateAtlasSize(metadata.atlasSize);
-    m_decoder->updatePatchList(move(metadata.patches));
-    m_decoder->updateCameraList(move(metadata.cameras));
+    for (int i = 0; i < m_extendedNumberOfFrames; i++) {
+      auto idx = IO::getExtendedIndex(json(), i);
 
-    for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = IO::loadAtlas(json(), metadata.atlasSize, i);
-      auto target = IO::loadViewportMetadata(json(), i);
+      if (lastIntraFrame != idx.first) {
+        lastIntraFrame = idx.first;
+        metadata = IO::loadMivMetadata(json(), idx.first);
+        m_decoder->updateAtlasSize(metadata.atlasSize);
+        m_decoder->updatePatchList(move(metadata.patches));
+        m_decoder->updateCameraList(move(metadata.cameras));
+      }
+
+      auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
+      auto target = IO::loadViewportMetadata(json(), idx.second);
       auto viewport = m_decoder->decodeFrame(frame, target);
       IO::saveViewport(json(), i, viewport);
     }

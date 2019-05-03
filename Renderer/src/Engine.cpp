@@ -77,7 +77,7 @@ auto unprojectVertex(Common::Vec2f position, float depth,
     return engine.unprojectVertex(position, depth);
   }
   case Metadata::ProjectionType::Perspective: {
-    Engine<Metadata::ProjectionType::ERP> engine{camera};
+    Engine<Metadata::ProjectionType::Perspective> engine{camera};
     return engine.unprojectVertex(position, depth);
   }
   default:

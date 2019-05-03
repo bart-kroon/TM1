@@ -39,11 +39,20 @@ using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
 MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
-                                     const Common::Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create(
-          "Synthesizer", rootNode, componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create(
-          "Inpainter", rootNode, componentNode)} {}
+                                     const Common::Json &componentNode) {
+  m_synthesizer = Factory<ISynthesizer>::getInstance().create(
+      "Synthesizer", rootNode, componentNode);
+  m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode,
+                                                          componentNode);
+  if (auto subnode = componentNode.optional("NumberOfPasses"))
+    m_NumberOfPasses = subnode.asInt();
+  if (auto subnode = componentNode.optional("NumberOfViewsPerPass")) {
+    if (subnode) {
+      for (auto i = 0u; i != subnode.size(); i++)
+        m_NumberOfViewsPerPass.push_back(subnode.at(i).asInt());
+    }
+  }
+}
 
 Common::Texture444Depth10Frame
 MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,

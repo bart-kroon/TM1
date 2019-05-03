@@ -68,7 +68,9 @@
 
         "RendererMethod": "MultipassRenderer",
         "MultipassRenderer": {
-
+			"NumberOfPasses": 3,
+			"NumberOfViewsPerPass": [2, 5, 15],
+			
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
                 "rayAngleParameter": 46,

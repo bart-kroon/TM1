@@ -98,8 +98,8 @@ template <> struct PixelFormatHelper<YUV444P8> {
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static int getPlaneWidth(int id, int W) { return W; }
-  static int getPlaneHeight(int id, int H) { return H; }
+  static int getPlaneWidth(int /*id*/, int W) { return W; }
+  static int getPlaneHeight(int /*id*/, int H) { return H; }
 };
 
 template <> struct PixelFormatHelper<YUV444P10> {
@@ -107,8 +107,8 @@ template <> struct PixelFormatHelper<YUV444P10> {
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 6 * (W * H); }
   static int getDiskSize(int W, int H) { return 6 * (W * H); }
-  static int getPlaneWidth(int id, int W) { return W; }
-  static int getPlaneHeight(int id, int H) { return H; }
+  static int getPlaneWidth(int /*id*/, int W) { return W; }
+  static int getPlaneHeight(int /*id*/, int H) { return H; }
 };
 
 template <> struct PixelFormatHelper<YUV444P16> {
@@ -116,8 +116,8 @@ template <> struct PixelFormatHelper<YUV444P16> {
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 6 * (W * H); }
   static int getDiskSize(int W, int H) { return 6 * (W * H); }
-  static int getPlaneWidth(int id, int W) { return W; }
-  static int getPlaneHeight(int id, int H) { return H; }
+  static int getPlaneWidth(int /*id*/, int W) { return W; }
+  static int getPlaneHeight(int /*id*/, int H) { return H; }
 };
 } // namespace detail
 

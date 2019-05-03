@@ -45,7 +45,7 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
       m_inpainter{Factory<IInpainter>::getInstance().create(
           "Inpainter", rootNode, componentNode)} {}
 
-Common::TextureDepth10Frame
+Common::Texture444Depth10Frame
 MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                                const Common::PatchIdMapList &maps,
                                const Metadata::AtlasParametersList &patches,
@@ -57,7 +57,7 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   return viewport;
 }
 
-Common::TextureDepth16Frame
+Common::Texture444Depth16Frame
 MultipassRenderer::renderFrame(const Common::MVD16Frame &atlas,
                                const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {

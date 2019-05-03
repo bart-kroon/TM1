@@ -38,6 +38,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <regex>
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Image/Image.h>
@@ -50,10 +51,14 @@ using namespace TMIV::Image;
 namespace TMIV::IO {
 namespace {
 string getFullPath(const Json &config, const string &baseDirectoryField,
-                   const string &fileNameField, size_t cameraId = 0) {
+                   const string &fileNameField, size_t cameraId = 0,
+                   const std::string &cameraName = "") {
   string baseDirectory,
-      fileName =
-          format(config.require(fileNameField).asString().c_str(), cameraId);
+      fileName = cameraName.empty()
+                     ? format(config.require(fileNameField).asString().c_str(),
+                              cameraId)
+                     : format(config.require(fileNameField).asString().c_str(),
+                              cameraName.c_str());
 
   if (!fileName.empty() && fileName.front() == '/') {
     return fileName;
@@ -104,21 +109,27 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame,
 }
 
 template <typename FORMAT>
-MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes,
-                              int frameIndex, const char *what,
-                              const char *directory, const char *texturePathFmt,
-                              const char *depthPathFmt) {
+MVDFrame<FORMAT>
+loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
+             const char *what, const char *directory,
+             const char *texturePathFmt, const char *depthPathFmt,
+             const std::vector<std::string> &cameraNames = {}) {
   cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());
 
   for (size_t i = 0u; i < sizes.size(); ++i) {
+
     result.emplace_back(
-        readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i),
-                             frameIndex, sizes[i]),
-        readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i),
-                          frameIndex, sizes[i]));
+        readFrame<YUV420P10>(
+            getFullPath(config, directory, texturePathFmt, i,
+                        cameraNames.empty() ? "" : cameraNames[i]),
+            frameIndex, sizes[i]),
+        readFrame<FORMAT>(
+            getFullPath(config, directory, depthPathFmt, i,
+                        cameraNames.empty() ? "" : cameraNames[i]),
+            frameIndex, sizes[i]));
   }
 
   return result;
@@ -298,6 +309,49 @@ void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
   // Metadata
   writeFunction(stream, metadata);
 }
+
+struct Pose {
+  Vec3f position;
+  Vec3f rotation;
+};
+
+Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
+  std::string line;
+  std::getline(stream, line);
+
+  std::regex re_header(
+      "\\s*X\\s*,\\s*Y\\s*,\\s*Z\\s*,\\s*Yaw\\s*,\\s*Pitch\\s*,\\s*Roll\\s*");
+  if (!std::regex_match(line, re_header)) {
+    throw std::runtime_error("Format error in the pose trace header");
+  }
+
+  int currentFrameIndex = 0;
+  std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+  std::regex re_empty("\\s*");
+  bool trailing_empty_lines = false;
+
+  while (std::getline(stream, line)) {
+    std::smatch match;
+    if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
+
+      if (currentFrameIndex == frameIndex) {
+        return {Vec3f({std::stof(match[1].str()), std::stof(match[2].str()),
+                       std::stof(match[3].str())}),
+                Vec3f({std::stof(match[4].str()), std::stof(match[5].str()),
+                       std::stof(match[6].str())})};
+      } else
+        currentFrameIndex++;
+    } else if (std::regex_match(line, re_empty)) {
+      trailing_empty_lines = true;
+    } else {
+      throw std::runtime_error("Format error in a pose trace row");
+    }
+  }
+
+  throw std::runtime_error("Unable to load required frame index " +
+                           to_string(frameIndex));
+}
+
 } // namespace
 
 auto sizesOf(const CameraParametersList &cameras) -> vector<Vec2i> {
@@ -332,10 +386,12 @@ CameraParametersList loadSourceMetadata(const Json &config) {
 
 MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                            int frameIndex) {
+  auto sourceCameraNames = config.require("SourceCameraNames").asStringVector();
+
   frameIndex += config.require("startFrame").asInt();
   return loadMVDFrame<YUV400P16>(config, sizes, frameIndex, "source",
                                  "SourceDirectory", "SourceTexturePathFmt",
-                                 "SourceDepthPathFmt");
+                                 "SourceDepthPathFmt", sourceCameraNames);
 }
 
 BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,
@@ -524,17 +580,17 @@ void savePatchIdMaps(const Json &config, int frameIndex,
 }
 
 CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
-  // TODO read posetrace
+
+  CameraParameters result;
 
   string cameraPath =
       getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   ifstream stream{cameraPath};
-
   if (!stream.good())
     throw runtime_error("Failed to load camera parameters\n " + cameraPath);
 
-  auto outputCameraName = config.require("OutputCameraName").asStringVector();
+  auto outputCameraName = config.optional("OutputCameraName").asStringVector();
   if (outputCameraName.size() > 1u)
     throw runtime_error("OutputCameraName only allows a single entry");
 
@@ -544,7 +600,24 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
   if (cameras.empty())
     throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
 
-  return cameras[0];
+  result = cameras[0];
+
+  if (auto nodeOutputCameraPoseTrace =
+          config.optional("OutputCameraPoseTrace")) {
+    string poseTracePath =
+        getFullPath(config, "SourceDirectory", "OutputCameraPoseTrace");
+    ifstream stream{poseTracePath};
+
+    if (!stream.good())
+      throw runtime_error("Failed to load pose trace file\n " + poseTracePath);
+
+    auto pose = loadPoseFromCSV(stream, frameIndex);
+
+    result.position += pose.position;
+    result.rotation = pose.rotation;
+  }
+
+  return result;
 }
 
 void saveViewport(const Json &config, int frameIndex,
@@ -552,12 +625,14 @@ void saveViewport(const Json &config, int frameIndex,
   cout << "Saving viewport frame " << frameIndex << '\n';
 
   string texturePath =
-      getFullPath(config, "OutputDirectory", "RenderedTexturePath");
+      getFullPath(config, "OutputDirectory", "OutputTexturePath");
   writeFrame(texturePath, frame.first, frameIndex);
 
-  string depthPath =
-      getFullPath(config, "OutputDirectory", "RenderedDepthPath");
-  writeFrame(depthPath, frame.second, frameIndex);
+  if (config.optional("OutputDepthPath")) {
+    string depthPath =
+        getFullPath(config, "OutputDirectory", "OutputDepthPath");
+    writeFrame(depthPath, frame.second, frameIndex);
+  }
 }
 
 pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {

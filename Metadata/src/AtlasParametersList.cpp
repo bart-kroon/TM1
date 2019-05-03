@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Metadata/AtlasParameterList.h>
+#include <TMIV/Metadata/AtlasParametersList.h>
 #include <sstream>
 
 namespace TMIV::Metadata {

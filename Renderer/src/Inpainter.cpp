@@ -33,30 +33,31 @@
 
 #include <TMIV/Renderer/Inpainter.h>
 
-namespace TMIV::Renderer {
-Inpainter::Inpainter(const Common::Json & /*rootNode*/,
-                     const Common::Json & /*componentNode*/) {}
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
-void Inpainter::inplaceInpaint(
-    Common::TextureDepth10Frame &yuvd /* viewport */,
-    const Metadata::CameraParameters &meta /* metadata */) const {
+namespace TMIV::Renderer {
+namespace {
+template <typename YUVD>
+void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
+  static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
+                std::is_same_v<YUVD, Texture444Depth16Frame>);
 
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = Y.width();
-  const int height = Y.height();
+  const int width = int(Y.width());
+  const int height = int(Y.height());
 
   const int imsize = width * height;
 
   double DepthBlendingThreshold = 1;
 
-  if (meta.type == TMIV::Metadata::ProjectionType::ERP) {
-
-    double angleRange =
-        (meta.erpPhiRange[1] - meta.erpPhiRange[0]) / TMIV::Common::M_2PI;
+  if (meta.type == ProjectionType::ERP) {
+    double angleRange = (meta.erpPhiRange[1] - meta.erpPhiRange[0]) / M_2PI;
 
     bool *isHole = new bool[imsize];
 
@@ -312,7 +313,6 @@ void Inpainter::inplaceInpaint(
     delete isHole;
 
   } else {
-
     int *nonEmptyNeighborL = new int[imsize];
     int *nonEmptyNeighborR = new int[imsize];
     int *nonEmptyNeighborT = new int[imsize];
@@ -559,8 +559,18 @@ void Inpainter::inplaceInpaint(
 
   return;
 }
+} // namespace
 
-void Inpainter::inplaceInpaint(
-    Common::TextureDepth16Frame & /* viewport */,
-    const Metadata::CameraParameters & /* metadata */) const {}
+Inpainter::Inpainter(const Json & /*rootNode*/,
+                     const Json & /*componentNode*/) {}
+
+void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport,
+                               const CameraParameters &metadata) const {
+  inplaceInpaint_impl(viewport, metadata);
+}
+
+void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport,
+                               const CameraParameters &metadata) const {
+  inplaceInpaint_impl(viewport, metadata);
+}
 } // namespace TMIV::Renderer

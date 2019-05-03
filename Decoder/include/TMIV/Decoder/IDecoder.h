@@ -35,8 +35,8 @@
 #define _TMIV_DECODER_IDECODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParametersList.h>
 #include <TMIV/Metadata/AtlasParametersList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::Decoder {
 class IDecoder {
@@ -66,7 +66,7 @@ public:
   //
   // This call shall be preceded by at least one call of each of
   // updateAtlasSize, updatePatchList and updateCameraList.
-  virtual Common::TextureDepth10Frame
+  virtual Common::Texture444Depth10Frame
   decodeFrame(Common::MVD10Frame atlas,
               const Metadata::CameraParameters &target) const = 0;
 };

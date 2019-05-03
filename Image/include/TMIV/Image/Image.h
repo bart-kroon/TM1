@@ -67,7 +67,7 @@ expandTexture(const Common::Frame<Common::YUV420P10> &inYuv);
 
 // Quantize a packed 4:4:4 32-bit float texture as YUV 4:2:0 10-bit texture with
 // linear transfer and area interpolation for chroma
-Common::Frame<Common::YUV420P10>
+Common::Frame<Common::YUV444P10>
 quantizeTexture(const Common::Mat<Common::Vec3f> &in);
 
 // Expand a YUV 4:0:0 10/16-bit depth map to a 32-bit float matrix with depth

@@ -36,8 +36,8 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Metadata/CameraParametersList.h>
 #include <TMIV/Metadata/AtlasParametersList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 // Functions for file I/O

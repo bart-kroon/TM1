@@ -35,8 +35,8 @@
 #define _TMIV_ATLASDECONSTRUCTOR_IATLASDECONSTRUCTOR_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParametersList.h>
 #include <TMIV/Metadata/AtlasParametersList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::AtlasDeconstructor {
 // IAtlasDeconstructor interface (part of AtlasDeconstructorLib)
@@ -57,11 +57,13 @@ public:
   using MVD16Frame = Common::MVD16Frame;
   using MVD10Frame = Common::MVD10Frame;
 
-  virtual PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                                       const AtlasParametersList &patchList) = 0;
-  virtual MVD16Frame recoverPrunedView(const MVD10Frame &atlas,
-                                       const CameraParametersList &cameraList,
-                                       const AtlasParametersList &patchList) = 0;
+  virtual PatchIdMapList
+  getPatchIdMap(const std::vector<Vec2i> &atlasSize,
+                const AtlasParametersList &patchList) = 0;
+  virtual MVD16Frame
+  recoverPrunedView(const MVD10Frame &atlas,
+                    const CameraParametersList &cameraList,
+                    const AtlasParametersList &patchList) = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

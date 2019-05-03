@@ -44,7 +44,7 @@
 
 namespace TMIV::Common {
 namespace Array {
-using size_type = unsigned int;
+using size_type = std::size_t;
 
 template <typename T> class const_iterator {
 public:

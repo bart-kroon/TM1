@@ -35,8 +35,8 @@
 #define _TMIV_RENDERER_IRENDERER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParametersList.h>
 #include <TMIV/Metadata/AtlasParametersList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::Renderer {
 class IRenderer {
@@ -48,8 +48,8 @@ public:
   IRenderer &operator=(IRenderer &&) = default;
   virtual ~IRenderer() = default;
 
-  // Render from a texture atlas to a viewport (decoder side)
-  virtual Common::TextureDepth10Frame
+    // Render from a texture atlas to a viewport (decoder side)
+  virtual Common::Texture444Depth10Frame
   renderFrame(const Common::MVD10Frame &atlas,
               const Common::PatchIdMapList &maps,
               const Metadata::AtlasParametersList &patches,
@@ -57,7 +57,7 @@ public:
               const Metadata::CameraParameters &target) const = 0;
 
   // Render from a multiview source to a viewport (encoder side)
-  virtual Common::TextureDepth16Frame
+  virtual Common::Texture444Depth16Frame
   renderFrame(const Common::MVD16Frame &frame,
               const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const = 0;

@@ -48,7 +48,6 @@ class Application : public Common::Application {
 private:
   unique_ptr<IDecoder> m_decoder;
   int m_numberOfFrames;
-  int m_extendedNumberOfFrames;
   int m_intraPeriod;
 
 public:
@@ -58,11 +57,8 @@ public:
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto subnode = json().optional("extendedNumberOfFrames")) {
-      m_extendedNumberOfFrames = subnode.asInt();
-    } else {
-      m_extendedNumberOfFrames = m_numberOfFrames;
-    }
+    if (auto subnode = json().optional("extraNumberOfFrames"))
+      m_numberOfFrames += subnode.asInt();
   }
 
   void run() override {
@@ -70,7 +66,7 @@ public:
     int lastIntraFrame = -1;
     IO::MivMetadata metadata;
 
-    for (int i = 0; i < m_extendedNumberOfFrames; i++) {
+    for (int i = 0; i < m_numberOfFrames; i++) {
       auto idx = IO::getExtendedIndex(json(), i);
 
       if (lastIntraFrame != idx.first) {
@@ -84,7 +80,7 @@ public:
       auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
       auto target = IO::loadViewportMetadata(json(), idx.second);
       auto viewport = m_decoder->decodeFrame(frame, target);
-      IO::saveViewport(json(), i, viewport);
+      IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
     }
   }
 };

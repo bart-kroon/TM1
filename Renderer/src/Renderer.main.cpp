@@ -46,7 +46,6 @@ class Application : public Common::Application {
 private:
   unique_ptr<IRenderer> m_renderer;
   int m_numberOfFrames;
-  int m_extendedNumberOfFrames;
   int m_intraPeriod;
 
 public:
@@ -56,11 +55,8 @@ public:
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto subnode = json().optional("extendedNumberOfFrames")) {
-      m_extendedNumberOfFrames = subnode.asInt();
-    } else {
-      m_extendedNumberOfFrames = m_numberOfFrames;
-    }
+    if (auto subnode = json().optional("extraNumberOfFrames"))
+      m_numberOfFrames += subnode.asInt();
   }
 
   void run() override {
@@ -68,7 +64,7 @@ public:
     IO::MivMetadata metadata;
     PatchIdMapList maps;
 
-    for (int i = 0; i < m_extendedNumberOfFrames; ++i) {
+    for (int i = 0; i < m_numberOfFrames; ++i) {
       auto idx = IO::getExtendedIndex(json(), i);
       if (lastIntraFrame != idx.first) {
         lastIntraFrame = idx.first;
@@ -80,7 +76,7 @@ public:
       auto target = IO::loadViewportMetadata(json(), idx.second);
       auto viewport = m_renderer->renderFrame(
           move(frame), maps, metadata.patches, metadata.cameras, target);
-      IO::saveViewport(json(), i, viewport);
+      IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
     }
   }
 };

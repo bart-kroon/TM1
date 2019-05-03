@@ -47,10 +47,10 @@ public:
   NoInpainter &operator=(const NoInpainter &) = delete;
   NoInpainter &operator=(NoInpainter &&) = default;
 
-  void inplaceInpaint(Common::TextureDepth10Frame & /* viewport */,
+  void inplaceInpaint(Common::Texture444Depth10Frame & /* viewport */,
                       const Metadata::CameraParameters & /* metadata */) const {
   }
-  void inplaceInpaint(Common::TextureDepth16Frame & /* viewport */,
+  void inplaceInpaint(Common::Texture444Depth16Frame & /* viewport */,
                       const Metadata::CameraParameters & /* metadata */) const {
   }
 };

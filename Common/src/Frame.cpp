@@ -32,82 +32,46 @@
  */
 
 #include <TMIV/Common/Frame.h>
-#include <algorithm>
+
 #include <cassert>
-#include <sstream>
 
 namespace TMIV::Common {
-template <class FORMAT> std::string frameInfo(const Frame<FORMAT> &frame) {
-  std::ostringstream oss;
+namespace {
+template <class TO, class FROM>
+auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {
+  Frame<TO> result(frame.getWidth(), frame.getHeight());
+  std::copy(std::begin(frame.getPlane(0)), std::end(frame.getPlane(0)),
+            std::begin(result.getPlane(0)));
 
-  int N = frame.getNumberOfPlanes();
-  oss << "planes=" << N << std::endl;
+  assert(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
+  const int rows = result.getHeight() / 2;
+  const int cols = result.getWidth() / 2;
 
-  for (int i = 0; i < N; ++i) {
-    auto w = frame.getPlane(i).width();
-    auto h = frame.getPlane(i).height();
-    oss << "plane=" << i << ", w=" << w << ", h=" << h << std::endl;
-
-    double firstValue = *frame.getPlane(i).row_begin(0);
-    double n = 0.0, s = 0.0, ss = 0.0, mn = firstValue, mx = firstValue;
-    for (auto y = 0u; y < h; ++y) {
-      for (auto it = frame.getPlane(i).row_begin(y),
-                itend = frame.getPlane(i).row_end(y);
-           it != itend; ++it) {
-        double v = static_cast<double>(*it);
-        n++;
-        s += v;
-        ss += v * v;
-        mn = std::min(mn, v);
-        mx = std::max(mn, v);
+  for (int k = 1; k < 3; ++k) {
+    for (int i = 0; i < rows; ++i) {
+      for (int j = 0; j < cols; ++j) {
+        auto sum = frame.getPlane(k)(2 * i, 2 * j) +
+                   frame.getPlane(k)(2 * i + 1, 2 * j) +
+                   frame.getPlane(k)(2 * i, 2 * j + 1) +
+                   frame.getPlane(k)(2 * i + 1, 2 * j + 1);
+        result.getPlane(k)(i, j) = (sum + 2) / 4;
       }
     }
-    double mean = s / n;
-    double var = ss / n - mean * mean;
-    oss << "\tmin=" << mn << ", max=" << mx << ", mean=" << mean
-        << ", sdev=" << sqrt(var) << std::endl;
-  }
-  oss << std::endl;
-
-  return oss.str();
-}
-
-template <> std::string frameInfo(const TextureDepth16Frame &frame) {
-  std::ostringstream oss;
-  oss << "TextureDepth16Frame" << std::endl;
-  oss << "Texture " << frameInfo(frame.first) << std::endl;
-  oss << "Depth " << frameInfo(frame.second) << std::endl;
-
-  return oss.str();
-}
-
-template <> std::string frameInfo(const MVD16Frame &frame) {
-  std::ostringstream oss;
-  for (auto i = 0u; i < frame.size(); ++i) {
-    oss << "View " << i << std::endl;
-    oss << frameInfo(frame[i]);
   }
 
-  return oss.str();
+  return result;
+}
+} // namespace
+
+Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame) {
+  return yuv420p_impl<YUV420P8>(frame);
 }
 
-template <> std::string frameInfo(const TextureDepth10Frame &frame) {
-  std::ostringstream oss;
-  oss << "TextureDepth10Frame" << std::endl;
-  oss << "Texture " << frameInfo(frame.first) << std::endl;
-  oss << "Depth " << frameInfo(frame.second) << std::endl;
-
-  return oss.str();
+Frame<YUV420P10> yuv420p(const Frame<YUV444P10> &frame) {
+  return yuv420p_impl<YUV420P10>(frame);
 }
 
-template <> std::string frameInfo(const MVD10Frame &frame) {
-  std::ostringstream oss;
-  for (auto i = 0u; i < frame.size(); ++i) {
-    oss << "View " << i << std::endl;
-    oss << frameInfo(frame[i]);
-  }
-
-  return oss.str();
+Frame<YUV420P16> yuv420p(const Frame<YUV444P16> &frame) {
+  return yuv420p_impl<YUV420P16>(frame);
 }
-
 } // namespace TMIV::Common

@@ -1,0 +1,84 @@
+{
+    "startFrame": 0,
+    "numberOfFrames": 2,
+    "intraPeriod": 32,
+
+    "SourceTexturePathFmt": "%s_2048_2048_420_10b.yuv",
+    "SourceDepthPathFmt": "%s_2048_2048_0_5_25_0_420_16b.yuv",
+    "SourceCameraParameters": "TechnicolorMuseum.json",
+    "SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23" ],
+
+    "BasicTexturePathFmt": "BAS_SB_R0_Tt_v%02d_2048x2048_yuv420p10le.yuv",
+    "BasicDepthPathFmt": "BAS_SB_R0_Td_v%02d_2048x2048_yuv420p16le.yuv",
+    "BasicMetadataPath": "BAS_SB_R0_Tm_vxx.bit",
+    "AdditionalTexturePathFmt": "ADD_SB_R0_Tt_v%02d_2048x2048_yuv420p10le.yuv",
+    "AdditionalDepthPathFmt": "ADD_SB_R0_Td_v%02d_2048x2048_yuv420p16le.yuv",
+    "AdditionalMetadataPath": "ADD_SB_R0_Tm_vxx.bit",
+
+    "AtlasTexturePathFmt": "ATL_SB_R0_Tt_c%02d_2048x2048_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SB_R0_Td_c%02d_2048x2048_yuv420p10le.yuv",
+    "AtlasMetadataPath": "ATL_SB_R0_Tm_c00.bit",
+
+    "AtlasPatchOccupancyMapFmt": "APO_SB_R0_Td_c%02d_2048x2048_yuv420p16le.yuv",
+
+    "PrunedViewTexturePathFmt": "PRU_SB_R0_Tt_v%02d_2048x2048_yuv420p10le.yuv",
+    "PrunedViewDepthPathFmt": "PRU_SB_R0_Td_v%02d_2048x2048_yuv420p16le.yuv",
+
+    "OutputTexturePath": "TM1_SB_R0_Tt_v1_2048x2048_yuv420p10le.yuv",
+    "OutputDepthPath": "TM1_SB_R0_Td_v1_2048x2048_yuv420p10le.yuv",
+    "OutputCameraName": [ "v1" ],
+
+    "EncoderMethod": "Encoder",
+    "Encoder": {
+
+        "ViewOptimizerMethod": "ViewReducer",
+        "ViewReducer": {},
+
+        "AtlasConstructorMethod": "AtlasConstructor",
+        "AtlasConstructor": {
+
+            "PrunerMethod": "Pruner",
+            "Pruner": {
+                "RedundancyFactor": 0.02,
+                "ErosionIter": 1,
+                "DilationIter": 5
+            },
+
+            "AggregatorMethod": "Aggregator",
+            "Aggregator": {},
+
+            "PackerMethod": "Packer",
+            "Packer": {
+                "Alignment": 8,
+                "MinPatchSize": 16,
+                "Overlap": 1,
+                "PiP": 1
+            },
+
+            "AtlasResolution": [ 4096, 2048 ],
+            "MPixel": 20
+        }
+    },
+
+    "DecoderMethod": "Decoder",
+    "Decoder": {
+
+        "AtlasDeconstructorMethod": "AtlasDeconstructor",
+        "AtlasDeconstructor": {},
+
+        "RendererMethod": "MultipassRenderer",
+        "MultipassRenderer": {
+
+            "SynthesizerMethod": "Synthesizer",
+            "Synthesizer": {
+                "rayAngleParameter": 46,
+                "depthParameter": 26,
+                "stretchingParameter": 3.3
+            },
+
+            "InpainterMethod": "NoInpainter",
+            "Inpainter": {},
+            "NoInpainter": {}
+        }
+    }
+}

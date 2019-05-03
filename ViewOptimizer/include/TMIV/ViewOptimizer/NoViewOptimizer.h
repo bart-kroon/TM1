@@ -31,71 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <algorithm>
-#include <iostream>
-#include <memory>
+#ifndef _TMIV_VIEWOPTIMIZER_NOVIEWOPTIMIZER_H_
+#define _TMIV_VIEWOPTIMIZER_NOVIEWOPTIMIZER_H_
 
-#include <TMIV/Common/Application.h>
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Encoder/IEncoder.h>
-#include <TMIV/IO/IO.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-using namespace std;
-using namespace TMIV::Common;
+namespace TMIV::ViewOptimizer {
 
-namespace TMIV::Encoder {
-class Application : public Common::Application {
-private:
-  unique_ptr<IEncoder> m_encoder;
-  int m_numberOfFrames;
-  int m_intraPeriod;
-  Metadata::CameraParameterList m_cameras;
-
+class NoViewOptimizer : public IViewOptimizer {
 public:
-  Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)} {
-    m_encoder = create<IEncoder>("Encoder");
-    m_numberOfFrames = json().require("numberOfFrames").asInt();
-    m_intraPeriod = json().require("intraPeriod").asInt();
-  }
+  NoViewOptimizer(const Common::Json &, const Common::Json &) {}
+  NoViewOptimizer(const NoViewOptimizer &) = default;
+  NoViewOptimizer(NoViewOptimizer &&) = default;
+  NoViewOptimizer &operator=(const NoViewOptimizer &) = default;
+  NoViewOptimizer &operator=(NoViewOptimizer &&) = default;
 
-  void run() override {
-    m_cameras = IO::loadSourceMetadata(json());
+  auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
+      -> Output<Metadata::CameraParametersList> { return {std::move(cameras), {}}; }
 
-    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
-      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
-      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
-      encodeIntraPeriod(i, endFrame);
-    }
-  }
-
-private:
-  void encodeIntraPeriod(int intraFrame, int endFrame) {
-    m_encoder->prepareIntraPeriod();
-
-    for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = IO::loadSourceFrame(json(), i);
-      m_encoder->pushFrame(m_cameras, move(frame));
-    }
-
-    m_encoder->completeIntraPeriod();
-
-    IO::saveMivMetadata(json(), intraFrame,
-                        {m_encoder->getPatchList(), m_encoder->getCameras()});
-
-    for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = m_encoder->popAtlas();
-      IO::saveAtlas(json(), i, frame);
-    }
-  }
+  auto optimizeFrame(Common::MVD16Frame views) const
+      -> Output<Common::MVD16Frame> { return {std::move(views), {}}; }
 };
-} // namespace TMIV::Encoder
 
-#include "Encoder.reg.hpp"
+} // namespace TMIV::ViewOptimizer
 
-int main(int argc, char *argv[]) {
-  TMIV::Encoder::registerComponents();
-  TMIV::Encoder::Application app{{argv, argv + argc}};
-  app.run();
-  return 0;
-}
+#endif

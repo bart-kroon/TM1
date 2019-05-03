@@ -61,8 +61,8 @@ void Decoder::updateCameraList(CameraParametersList cameras) {
   m_cameras = move(cameras);
 }
 
-TextureDepth10Frame Decoder::decodeFrame(MVD10Frame atlas,
-                                         const CameraParameters &target) const {
+Texture444Depth10Frame
+Decoder::decodeFrame(MVD10Frame atlas, const CameraParameters &target) const {
   return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_cameras,
                                  target);
 }

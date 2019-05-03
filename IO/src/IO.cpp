@@ -51,10 +51,14 @@ using namespace TMIV::Image;
 namespace TMIV::IO {
 namespace {
 string getFullPath(const Json &config, const string &baseDirectoryField,
-                   const string &fileNameField, size_t cameraId = 0) {
+                   const string &fileNameField, size_t cameraId = 0,
+                   const std::string &cameraName = "") {
   string baseDirectory,
-      fileName =
-          format(config.require(fileNameField).asString().c_str(), cameraId);
+      fileName = cameraName.empty()
+                     ? format(config.require(fileNameField).asString().c_str(),
+                              cameraId)
+                     : format(config.require(fileNameField).asString().c_str(),
+                              cameraName.c_str());
 
   if (!fileName.empty() && fileName.front() == '/') {
     return fileName;
@@ -105,10 +109,11 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame,
 }
 
 template <typename FORMAT>
-MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes,
-                              int frameIndex, const char *what,
-                              const char *directory, const char *texturePathFmt,
-                              const char *depthPathFmt) {
+MVDFrame<FORMAT>
+loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
+             const char *what, const char *directory,
+             const char *texturePathFmt, const char *depthPathFmt,
+             const std::vector<std::string> &cameraNames = {}) {
   cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
@@ -116,14 +121,15 @@ MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes,
 
   for (size_t i = 0u; i < sizes.size(); ++i) {
 
-    if (0 < sizes[i].x()) {
-      result.emplace_back(
-          readFrame<YUV420P10>(
-              getFullPath(config, directory, texturePathFmt, i), frameIndex,
-              sizes[i]),
-          readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i),
-                            frameIndex, sizes[i]));
-    }
+    result.emplace_back(
+        readFrame<YUV420P10>(
+            getFullPath(config, directory, texturePathFmt, i,
+                        cameraNames.empty() ? "" : cameraNames[i]),
+            frameIndex, sizes[i]),
+        readFrame<FORMAT>(
+            getFullPath(config, directory, depthPathFmt, i,
+                        cameraNames.empty() ? "" : cameraNames[i]),
+            frameIndex, sizes[i]));
   }
 
   return result;
@@ -378,30 +384,14 @@ CameraParametersList loadSourceMetadata(const Json &config) {
   return cameras;
 }
 
-vector<int> loadSourceCameraIds(const Json &config) {
-  vector<int> sourceCameraIds;
-  auto sourceCameraNames = config.require("SourceCameraNames").asStringVector();
-
-  for (const auto &name : sourceCameraNames)
-    sourceCameraIds.push_back(stoi(name.substr(1)));
-
-  return sourceCameraIds;
-}
-
 MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                            int frameIndex) {
-  auto sourceCameraIds = loadSourceCameraIds(config);
-  int lastCameraId =
-      *std::max_element(sourceCameraIds.begin(), sourceCameraIds.end());
-  vector<Vec2i> adjustedSizes(lastCameraId + 1, Vec2i{0, 0});
-
-  for (auto i = 0u; i < sourceCameraIds.size(); i++)
-    adjustedSizes[sourceCameraIds[i]] = sizes[i];
+  auto sourceCameraNames = config.require("SourceCameraNames").asStringVector();
 
   frameIndex += config.require("startFrame").asInt();
-  return loadMVDFrame<YUV400P16>(config, adjustedSizes, frameIndex, "source",
+  return loadMVDFrame<YUV400P16>(config, sizes, frameIndex, "source",
                                  "SourceDirectory", "SourceTexturePathFmt",
-                                 "SourceDepthPathFmt");
+                                 "SourceDepthPathFmt", sourceCameraNames);
 }
 
 BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,
@@ -590,48 +580,44 @@ void savePatchIdMaps(const Json &config, int frameIndex,
 }
 
 CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
-  if (auto nodeOutputCameraName = config.optional("OutputCameraName")) {
-    string cameraPath =
-        getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
-    ifstream stream{cameraPath};
+  CameraParameters result;
+
+  string cameraPath =
+      getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+
+  ifstream stream{cameraPath};
+  if (!stream.good())
+    throw runtime_error("Failed to load camera parameters\n " + cameraPath);
+
+  auto outputCameraName = config.optional("OutputCameraName").asStringVector();
+  if (outputCameraName.size() > 1u)
+    throw runtime_error("OutputCameraName only allows a single entry");
+
+  auto cameras =
+      loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
+
+  if (cameras.empty())
+    throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
+
+  result = cameras[0];
+
+  if (auto nodeOutputCameraPoseTrace =
+          config.optional("OutputCameraPoseTrace")) {
+    string poseTracePath =
+        getFullPath(config, "SourceDirectory", "OutputCameraPoseTrace");
+    ifstream stream{poseTracePath};
+
     if (!stream.good())
-      throw runtime_error("Failed to load camera parameters\n " + cameraPath);
+      throw runtime_error("Failed to load pose trace file\n " + poseTracePath);
 
-    auto outputCameraName = nodeOutputCameraName.asStringVector();
-    if (outputCameraName.size() > 1u)
-      throw runtime_error("OutputCameraName only allows a single entry");
+    auto pose = loadPoseFromCSV(stream, frameIndex);
 
-    auto cameras =
-        loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
+    result.position += pose.position;
+    result.rotation = pose.rotation;
+  }
 
-    if (cameras.empty())
-      throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
-
-    return cameras[0];
-  } else if (auto nodeOutputCameraParameter =
-                 config.optional("OutputCameraParameter")) {
-    CameraParameters camera = loadCameraFromJson(nodeOutputCameraParameter);
-
-    if (auto nodeOutputCameraPoseTrace =
-            config.optional("OutputCameraPoseTrace")) {
-      string poseTracePath =
-          getFullPath(config, "SourceDirectory", "OutputCameraPoseTrace");
-      ifstream stream{poseTracePath};
-
-      if (!stream.good())
-        throw runtime_error("Failed to load pose trace file\n " +
-                            poseTracePath);
-
-      auto pose = loadPoseFromCSV(stream, frameIndex);
-
-      camera.position = pose.position;
-      camera.rotation = pose.rotation;
-    }
-
-    return camera;
-  } else
-    throw runtime_error("Unable to load viewport");
+  return result;
 }
 
 void saveViewport(const Json &config, int frameIndex,

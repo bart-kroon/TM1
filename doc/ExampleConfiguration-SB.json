@@ -3,8 +3,8 @@
     "numberOfFrames": 2,
     "intraPeriod": 32,
 
-    "SourceTexturePathFmt": "v%d_2048_2048_420_10b.yuv",
-    "SourceDepthPathFmt": "v%d_2048_2048_0_5_25_0_420_16b.yuv",
+    "SourceTexturePathFmt": "%s_2048_2048_420_10b.yuv",
+    "SourceDepthPathFmt": "%s_2048_2048_0_5_25_0_420_16b.yuv",
     "SourceCameraParameters": "TechnicolorMuseum.json",
     "SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23" ],
 

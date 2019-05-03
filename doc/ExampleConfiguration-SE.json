@@ -3,8 +3,8 @@
     "numberOfFrames": 2,
     "intraPeriod": 32,
 
-    "SourceTexturePathFmt": "v%d_1920_1080_420_10b.yuv",
-    "SourceDepthPathFmt": "v%d_1920_1080_0_3_1_62_420_16b.yuv",
+    "SourceTexturePathFmt": "%s_1920_1080_420_10b.yuv",
+    "SourceDepthPathFmt": "%s_1920_1080_0_3_1_62_420_16b.yuv",
     "SourceCameraParameters": "IntelKermit.json",
     "SourceCameraNames": [ "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13" ],
 

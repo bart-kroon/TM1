@@ -38,6 +38,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <regex>
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Image/Image.h>
@@ -298,6 +299,49 @@ void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
   // Metadata
   writeFunction(stream, metadata);
 }
+
+struct Pose {
+  Vec3f position;
+  Vec3f rotation;
+};
+
+Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
+  std::string line;
+  std::getline(stream, line);
+
+  std::regex re_header(
+      "\\s*X\\s*,\\s*Y\\s*,\\s*Z\\s*,\\s*Yaw\\s*,\\s*Pitch\\s*,\\s*Roll\\s*");
+  if (!std::regex_match(line, re_header)) {
+    throw std::runtime_error("Format error in the pose trace header");
+  }
+
+  int currentFrameIndex = 0;
+  std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+  std::regex re_empty("\\s*");
+  bool trailing_empty_lines = false;
+
+  while (std::getline(stream, line)) {
+    std::smatch match;
+    if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
+
+      if (currentFrameIndex == frameIndex) {
+        return {Vec3f({std::stof(match[1].str()), std::stof(match[2].str()),
+                       std::stof(match[3].str())}),
+                Vec3f({std::stof(match[4].str()), std::stof(match[5].str()),
+                       std::stof(match[6].str())})};
+      } else
+        currentFrameIndex++;
+    } else if (std::regex_match(line, re_empty)) {
+      trailing_empty_lines = true;
+    } else {
+      throw std::runtime_error("Format error in a pose trace row");
+    }
+  }
+
+  throw std::runtime_error("Unable to load required frame index " +
+                           to_string(frameIndex));
+}
+
 } // namespace
 
 auto sizesOf(const CameraParametersList &cameras) -> vector<Vec2i> {
@@ -526,24 +570,48 @@ void savePatchIdMaps(const Json &config, int frameIndex,
 CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
   // TODO read posetrace
 
-  string cameraPath =
-      getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+  if (auto nodeOutputCameraName = config.optional("OutputCameraName")) {
+    string cameraPath =
+        getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
-  ifstream stream{cameraPath};
-  if (!stream.good())
-    throw runtime_error("Failed to load camera parameters\n " + cameraPath);
+    ifstream stream{cameraPath};
+    if (!stream.good())
+      throw runtime_error("Failed to load camera parameters\n " + cameraPath);
 
-  auto outputCameraName = config.require("OutputCameraName").asStringVector();
-  if (outputCameraName.size() > 1u)
-    throw runtime_error("OutputCameraName only allows a single entry");
+    auto outputCameraName = nodeOutputCameraName.asStringVector();
+    if (outputCameraName.size() > 1u)
+      throw runtime_error("OutputCameraName only allows a single entry");
 
-  auto cameras =
-      loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
+    auto cameras =
+        loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
 
-  if (cameras.empty())
-    throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
+    if (cameras.empty())
+      throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
 
-  return cameras[0];
+    return cameras[0];
+  } else if (auto nodeOutputCameraParameter =
+                 config.optional("OutputCameraParameter")) {
+    CameraParameters camera = loadCameraFromJson(nodeOutputCameraParameter);
+
+    if (auto nodeOutputCameraPoseTrace =
+            config.optional("OutputCameraPoseTrace")) {
+      string poseTracePath =
+          getFullPath(config, "SourceDirectory", "OutputCameraPoseTrace");
+      ifstream stream{poseTracePath};
+
+      if (!stream.good())
+        throw runtime_error("Failed to load pose trace file\n " +
+                            poseTracePath);
+
+      auto pose = loadPoseFromCSV(stream, frameIndex);
+
+      camera.position = pose.position;
+      camera.rotation = pose.rotation;
+    }
+
+    return camera;
+  } else
+    throw runtime_error("Unable to load viewport");
 }
 
 void saveViewport(const Json &config, int frameIndex,

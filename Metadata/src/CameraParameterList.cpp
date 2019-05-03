@@ -96,8 +96,17 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
 CameraParameters loadCameraFromJson(const Json &node) {
   CameraParameters parameters;
   parameters.size = node.require("Resolution").asIntVector<2>();
-  parameters.position = node.require("Position").asFloatVector<3>();
-  parameters.rotation = node.require("Rotation").asFloatVector<3>();
+
+  if (auto subnode = node.optional("Position"))
+    parameters.position = subnode.asFloatVector<3>();
+  else
+    parameters.position = {0.f, 0.f, 0.f};
+
+  if (auto subnode = node.optional("Rotation"))
+    parameters.rotation = subnode.asFloatVector<3>();
+  else
+    parameters.rotation = {0.f, 0.f, 0.f};
+
   parameters.depthRange = node.require("Depth_range").asFloatVector<2>();
 
   auto proj = node.require("Projection").asString();

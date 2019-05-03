@@ -42,7 +42,7 @@ using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
 CameraParametersList loadCamerasFromJson(const Json &node,
-                                        const vector<string> &names) {
+                                         const vector<string> &names) {
   CameraParametersList result;
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {

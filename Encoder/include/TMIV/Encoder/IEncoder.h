@@ -35,8 +35,8 @@
 #define _TMIV_ENCODER_IENCODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParametersList.h>
 #include <TMIV/Metadata/AtlasParametersList.h>
+#include <TMIV/Metadata/CameraParametersList.h>
 
 namespace TMIV::Encoder {
 // IEncoder interface (part of EncoderLib)

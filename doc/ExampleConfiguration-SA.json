@@ -1,6 +1,6 @@
 {
     "startFrame": 0,
-    "numberOfFrames": 2,
+    "numberOfFrames": 1,
     "intraPeriod": 32,
 
     "SourceTexturePathFmt": "%s_4096_2048_420_10b.yuv",
@@ -24,9 +24,9 @@
     "PrunedViewTexturePathFmt": "PRU_SA_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
     "PrunedViewDepthPathFmt": "PRU_SA_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
 
-    "OutputTexturePath": "TM1_SA_R0_Tt_v1_4096x2048_yuv420p10le.yuv",
-    "OutputDepthPath": "TM1_SA_R0_Td_v1_4096x2048_yuv420p10le.yuv",
-    "OutputCameraName": [ "v1" ],
+    "OutputTexturePath": "TM1_SA_R0_Tt_v10_4096x2048_yuv420p10le.yuv",
+    "OutputDepthPath": "TM1_SA_R0_Td_v10_4096x2048_yuv420p10le.yuv",
+    "OutputCameraName": [ "v10" ],
 
     "EncoderMethod": "Encoder",
     "Encoder": {

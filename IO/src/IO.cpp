@@ -271,14 +271,14 @@ T readMetadataFromFile(const string &path, int frameIndex,
     uint32_t frameId = 0;
     stream.read((char *)&frameId, sizeof(uint32_t));
 
-	if (!stream.good())
+    if (!stream.good())
       throw runtime_error("Failed to read frame #" + to_string(frameIndex) +
                           " from file: " + path);
 
     if (frameId != uint32_t(frameIndex))
-		skipFunction(stream);
+      skipFunction(stream);
     else
-		break;
+      break;
   }
 
   // Reading

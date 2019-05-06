@@ -153,7 +153,8 @@ Cluster::retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId,
   auto &clusteringBuffer = out.second.getPlane(0);
 
   const auto &maskBuffer = maskMap.getPlane(0);
-  int A = int(maskBuffer.m()), B = int(maskBuffer.n()), S = int(maskBuffer.size());
+  int A = int(maskBuffer.m()), B = int(maskBuffer.n()),
+      S = int(maskBuffer.size());
 
   // Build active list
   std::vector<int> activeList;

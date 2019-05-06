@@ -159,4 +159,4 @@ void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
     }
   }
 }
-} // namespace
+} // namespace TMIV::Common

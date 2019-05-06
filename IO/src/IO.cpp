@@ -235,15 +235,11 @@ AtlasParametersList readPatchListFromFile(ifstream &is) {
 }
 
 void skipPatchListFromFile(istream &is) {
-  size_t patchSizeInFile = sizeof(uint8_t) + sizeof(uint8_t) + sizeof(Vec2i) +
-                           sizeof(Vec2i) + sizeof(Vec2i) +
-                           sizeof(PatchRotation);
-
   uint16_t nbPatch = 0;
 
   is.read((char *)&nbPatch, sizeof(uint16_t));
 
-  is.seekg(nbPatch * patchSizeInFile, ios::cur);
+  is.seekg(nbPatch * sizeof(AtlasParameters), ios::cur);
 }
 
 void writePatchToFile(ofstream &os, const AtlasParameters &patch) {
@@ -275,14 +271,14 @@ T readMetadataFromFile(const string &path, int frameIndex,
     uint32_t frameId = 0;
     stream.read((char *)&frameId, sizeof(uint32_t));
 
-    if (!stream.good())
+	if (!stream.good())
       throw runtime_error("Failed to read frame #" + to_string(frameIndex) +
                           " from file: " + path);
 
     if (frameId != uint32_t(frameIndex))
-      skipFunction(stream);
+		skipFunction(stream);
     else
-      break;
+		break;
   }
 
   // Reading

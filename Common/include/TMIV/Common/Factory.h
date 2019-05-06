@@ -77,10 +77,6 @@ public:
     return m_creators.at(method)(rootNode, componentNode.require(method));
   }
 
-  Object create(const std::string &metaName, const Json &rootNode) const {
-    return create(metaName, rootNode, rootNode);
-  }
-
   // Register a new creator with a method ID
   template <class Derived> void registerAs(std::string id) {
     m_creators[id] = [](const Json &rootNode, const Json &componentNode) {

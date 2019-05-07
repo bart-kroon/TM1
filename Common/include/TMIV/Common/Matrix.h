@@ -191,14 +191,12 @@ template <typename T> heap::Matrix<T> transpose_type(heap::Matrix<T>);
 //! \brief Returns the transpose of the matrix given as input.
 template <typename Mat1, typename Mat2>
 Mat2 &transpose(const Mat1 &in, Mat2 &out) {
-  using size_type = typename Array::size_type;
-
   out.resize({in.n(), in.m()});
 
   if (in.isRow() || in.isColumn() || in.isSymmetric()) {
     std::copy(in.begin(), in.end(), out.begin());
   } else {
-    for (size_type i = 0; i < out.m(); i++) {
+    for (Array::size_type i = 0; i < out.m(); i++) {
       std::copy(in.col_begin(i), in.col_end(i), out.row_begin(i));
     }
   }
@@ -215,8 +213,6 @@ decltype(transpose_type(Mat())) transpose(const Mat &m) {
 //! \brief Computes and returns the adjoint of the matrix a.
 template <typename Mat1, typename Mat2>
 Mat2 &adjoint(const Mat1 &in, Mat2 &out) {
-  using size_type = typename Array::size_type;
-
   out.resize({in.n(), in.m()});
 
   if (in.isRow() || in.isColumn()) {
@@ -226,7 +222,7 @@ Mat2 &adjoint(const Mat1 &in, Mat2 &out) {
   } else if (in.isHermitian()) {
     std::copy(in.begin(), in.end(), out.begin());
   } else {
-    for (size_type i = 0; i < out.m(); i++) {
+    for (Array::size_type i = 0; i < out.m(); i++) {
       std::transform(
           in.col_begin(i), in.col_end(i), out.row_begin(i),
           [](const typename Mat1::value_type &v) { return conjugate(v); });
@@ -244,17 +240,15 @@ template <typename Mat> decltype(transpose_type(Mat())) adjoint(const Mat &m) {
 //! \brief Symmetrizes the matrix A by filling its lower (mode == 'L') or upper
 //! (mode == 'U') part.
 template <typename Mat> void symmetrize(Mat &A, char mode = 'L') {
-  using size_type = typename Array::size_type;
-
   if (mode == 'L') {
-    for (size_type i = 1; i < A.m(); i++) {
+    for (Array::size_type i = 1; i < A.m(); i++) {
       auto ptr1 = A.row_begin(i);
       auto ptr2 = A.col_begin(i);
 
       std::copy(ptr2, ptr2 + i, ptr1);
     }
   } else {
-    for (size_type i = 1; i < A.m(); i++) {
+    for (Array::size_type i = 1; i < A.m(); i++) {
       auto ptr1 = A.row_begin(i);
       auto ptr2 = A.col_begin(i);
 
@@ -266,10 +260,8 @@ template <typename Mat> void symmetrize(Mat &A, char mode = 'L') {
 //! \brief Hermitianizes the lower (mode == 'L') or upper (mode == 'U') part of
 //! the matrix A.
 template <typename Mat> void hermitianize(Mat &A, char mode = 'L') {
-  using size_type = typename Array::size_type;
-
   if (mode == 'L') {
-    for (size_type i = 1; i < A.m(); i++) {
+    for (Array::size_type i = 1; i < A.m(); i++) {
       auto ptr1 = A.row_begin(i);
       auto ptr2 = A.col_begin(i);
 
@@ -278,7 +270,7 @@ template <typename Mat> void hermitianize(Mat &A, char mode = 'L') {
           [](const typename Mat::value_type &v) { return std::conj(v); });
     }
   } else {
-    for (size_type i = 1; i < A.m(); i++) {
+    for (Array::size_type i = 1; i < A.m(); i++) {
       auto ptr1 = A.row_begin(i);
       auto ptr2 = A.col_begin(i);
 
@@ -298,16 +290,14 @@ template <typename Mat> typename Mat::value_type trace(const Mat &a) {
 //! \brief Constructs a block matrix from the matrices given as input.
 template <typename Mat1, typename Mat2>
 Mat2 &block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) {
-  using size_type = typename Array::size_type;
-
   // Number of rows
-  size_type m0 = 0;
+  Array::size_type m0 = 0;
   for (auto iter = L.begin(); iter != L.end(); iter++) {
     m0 += iter->begin()->m();
   }
 
   // Number of columns
-  size_type n0 = 0;
+  Array::size_type n0 = 0;
   for (auto iter = L.begin()->begin(); iter != L.begin()->end(); iter++) {
     n0 += iter->n();
   }
@@ -315,13 +305,13 @@ Mat2 &block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) {
   out.resize({m0, n0});
 
   // Building
-  size_type i0 = 0, j0;
+  Array::size_type i0 = 0, j0;
 
   for (auto iter1 = L.begin(); iter1 != L.end(); iter1++) {
     j0 = 0;
 
     for (auto iter2 = iter1->begin(); iter2 != iter1->end(); iter2++) {
-      for (size_type i = 0; i < iter2->m(); i++) {
+      for (Array::size_type i = 0; i < iter2->m(); i++) {
         std::copy(iter2->row_begin(i), iter2->row_end(i),
                   out.row_begin(i0 + i) + j0);
       }
@@ -347,13 +337,11 @@ block(std::initializer_list<std::initializer_list<Mat>> L) {
 template <typename Mat1, typename Mat2>
 Mat2 &repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a,
              Mat2 &out) {
-  using size_type = typename Array::size_type;
-
   out.resize({dim[0] * a.m(), dim[1] * a.n()});
 
-  for (size_type i = 0, i0 = 0; i < dim[0]; i++, i0 += a.m()) {
-    for (size_type j = 0, j0 = 0; j < dim[1]; j++, j0 += a.n()) {
-      for (size_type k = 0; k < a.m(); k++) {
+  for (Array::size_type i = 0, i0 = 0; i < dim[0]; i++, i0 += a.m()) {
+    for (Array::size_type j = 0, j0 = 0; j < dim[1]; j++, j0 += a.n()) {
+      for (Array::size_type k = 0; k < a.m(); k++) {
         std::copy(a.row_begin(k), a.row_end(k), out.row_begin(i0 + k) + j0);
       }
     }

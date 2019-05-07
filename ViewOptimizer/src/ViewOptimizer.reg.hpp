@@ -33,10 +33,13 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/ViewOptimizer/ViewReducer.h>
+#include <TMIV/ViewOptimizer/NoViewOptimizer.h>
 
 namespace TMIV::ViewOptimizer {
 inline void registerComponents() {
   Common::Factory<IViewOptimizer>::getInstance().registerAs<ViewReducer>(
       "ViewReducer");
+  Common::Factory<IViewOptimizer>::getInstance().registerAs<NoViewOptimizer>(
+      "NoViewOptimizer");
 }
 } // namespace TMIV::ViewOptimizer

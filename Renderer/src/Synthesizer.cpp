@@ -76,15 +76,9 @@ public:
     case PatchRotation::upright:
       return atlas - posInAtlas + posInView;
     case PatchRotation::ccw: {
-      // In reference to atlas constructor figure in TM document
-      // Sanity check: consider patch is at (0,0) in view and atlas
-      // Consider the top-left pixel in the patch in the atlas: (x, y) = (0, 0)
-      // This pixel corresponds to the top-right pixel in the patch in the view:
-      // (patch_width_in_view_x - 1, 0) = (j, i)
-
       // Determine patch row and column in view orientation
       const auto i = atlas.x() - posInAtlas.x();
-      const auto j = patchSize.x() - 1.f - atlas.y() + posInAtlas.y();
+      const auto j = patchSize.x() - atlas.y() + posInAtlas.y();
 
       // Return position in view
       return patch.posInView + Vec2f{j, i};

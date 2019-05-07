@@ -664,6 +664,6 @@ pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {
                                : frameRelativeId;
   int metadataIndexExtended = frameIndexExtended / intraPeriod;
 
-  return {metadataIndexExtended, frameIndexExtended};
+  return {metadataIndexExtended * intraPeriod, frameIndexExtended};
 }
 } // namespace TMIV::IO

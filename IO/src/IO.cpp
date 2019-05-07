@@ -605,13 +605,10 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
     throw runtime_error("Failed to load camera parameters\n " + cameraPath);
   }
 
-  auto outputCameraName = config.optional("OutputCameraName").asStringVector();
-  if (outputCameraName.size() > 1u) {
-    throw runtime_error("OutputCameraName only allows a single entry");
-  }
+  auto outputCameraName = config.require("OutputCameraName").asString();
 
   auto cameras =
-      loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
+      loadCamerasFromJson(Json{stream}.require("cameras"), {outputCameraName});
 
   if (cameras.empty()) {
     throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
@@ -643,12 +640,14 @@ void saveViewport(const Json &config, int frameIndex,
   cout << "Saving viewport frame " << frameIndex << '\n';
 
   string texturePath =
-      getFullPath(config, "OutputDirectory", "OutputTexturePath");
+      getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
+                  config.require("OutputCameraName").asString());
   writeFrame(texturePath, frame.first, frameIndex);
 
   if (config.optional("OutputDepthPath")) {
     string depthPath =
-        getFullPath(config, "OutputDirectory", "OutputDepthPath");
+        getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,
+                    config.require("OutputCameraName").asString());
     writeFrame(depthPath, frame.second, frameIndex);
   }
 }

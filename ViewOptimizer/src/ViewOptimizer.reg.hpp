@@ -32,8 +32,8 @@
  */
 
 #include <TMIV/Common/Factory.h>
-#include <TMIV/ViewOptimizer/ViewReducer.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
+#include <TMIV/ViewOptimizer/ViewReducer.h>
 
 namespace TMIV::ViewOptimizer {
 inline void registerComponents() {

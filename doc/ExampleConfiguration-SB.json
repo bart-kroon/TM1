@@ -24,15 +24,16 @@
     "PrunedViewTexturePathFmt": "PRU_SB_R0_Tt_v%02d_2048x2048_yuv420p10le.yuv",
     "PrunedViewDepthPathFmt": "PRU_SB_R0_Td_v%02d_2048x2048_yuv420p16le.yuv",
 
-    "OutputTexturePath": "TM1_SB_R0_Tt_v1_2048x2048_yuv420p10le.yuv",
-    "OutputDepthPath": "TM1_SB_R0_Td_v1_2048x2048_yuv420p10le.yuv",
-    "OutputCameraName": [ "v1" ],
+    "OutputTexturePath": "TM1_SB_R0_Tt_%s_2048x2048_yuv420p10le.yuv",
+    "OutputDepthPath": "TM1_SB_R0_Td_%s_2048x2048_yuv420p10le.yuv",
+    "OutputCameraName": "v1",
 
     "EncoderMethod": "Encoder",
     "Encoder": {
 
         "ViewOptimizerMethod": "ViewReducer",
         "ViewReducer": {},
+        "NoViewOptimizer": {},
 
         "AtlasConstructorMethod": "AtlasConstructor",
         "AtlasConstructor": {

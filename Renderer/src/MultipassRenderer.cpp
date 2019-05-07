@@ -56,12 +56,12 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
 }
 
 vector<unsigned int> SelectedViewsPass, patchesViewId;
-//int Index = 0;
 uint16_t mapsFilter(uint16_t i) {
   if (i == unusedPatchId)
     return i;
   bool SelectedPixel = false;
-  for (auto SelectedViewIndex = 0; SelectedViewIndex < SelectedViewsPass.size(); SelectedViewIndex++) {
+  for (auto SelectedViewIndex = 0; SelectedViewIndex < SelectedViewsPass.size();
+       SelectedViewIndex++) {
     if (patchesViewId[i] == SelectedViewsPass[SelectedViewIndex]) {
       SelectedPixel = true;
     }
@@ -72,36 +72,8 @@ uint16_t mapsFilter(uint16_t i) {
     return i;
 }
 
-Common::Texture444Depth10Frame
-MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
-                               const Common::PatchIdMapList &maps,
-                               const Metadata::AtlasParametersList &patches,
-                               const Metadata::CameraParametersList &cameras,
-                               const Metadata::CameraParameters &target) const {
-
-  // Intel Hybrid
-  int NumberOfPasses = TMIV::Renderer::MultipassRenderer::m_NumberOfPasses;
-
-  Common::Texture444Depth10Frame viewport;
-  Common::Texture444Depth10Frame *viewportPass;
-  Common::PatchIdMapList *mapsPass;
-  viewportPass = new Common::Texture444Depth10Frame[NumberOfPasses];
-  mapsPass = new Common::PatchIdMapList[NumberOfPasses];
-  
-  for (auto j = 0; j < NumberOfPasses; j++) {
-    for (auto k = 0; k < atlas.size(); k++) {
-      PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
-      std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
-                unusedPatchId);
-      mapsPass[j].push_back(patchMap);
-    }
-  } // initalize mapsPass by 0xFFFF
-  
-  for (auto patchId = 0; patchId < patches.size(); patchId++) {
-    patchesViewId.push_back(patches[patchId].viewId);
-  }// initialize patchesViewId
-
-  // Ordering views based on their distance & angle to target view
+vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
+                               const Metadata::CameraParameters &target) {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];
@@ -138,7 +110,46 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
        [&Distance, &AngleWeight](size_t i1, size_t i2) {
          return Distance[i1] * AngleWeight[i1] < Distance[i2] * AngleWeight[i2];
        });
+  return SortedCamerasId;
+}
 
+Common::Texture444Depth10Frame
+MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
+                               const Common::PatchIdMapList &maps,
+                               const Metadata::AtlasParametersList &patches,
+                               const Metadata::CameraParametersList &cameras,
+                               const Metadata::CameraParameters &target) const {
+  //////////////////
+  // Initialization
+  //////////////////
+  int NumberOfPasses = TMIV::Renderer::MultipassRenderer::m_NumberOfPasses;
+  vector<unsigned int> numberOfViewPerPass =
+      TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass;
+
+  Common::Texture444Depth10Frame viewport;
+  Common::Texture444Depth10Frame *viewportPass;
+  Common::PatchIdMapList *mapsPass;
+  viewportPass = new Common::Texture444Depth10Frame[NumberOfPasses];
+  mapsPass = new Common::PatchIdMapList[NumberOfPasses];
+
+  for (auto j = 0; j < NumberOfPasses; j++) {
+    for (auto k = 0; k < atlas.size(); k++) {
+      PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
+      std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
+                unusedPatchId);
+      mapsPass[j].push_back(patchMap);
+    }
+  } // initalize mapsPass by 0xFFFF
+
+  for (auto patchId = 0; patchId < patches.size(); patchId++) {
+    patchesViewId.push_back(patches[patchId].viewId);
+  } // initialize patchesViewId
+
+  ///////////////
+  // Ordering views based on their distance & angle to target view
+  ///////////////
+  vector<size_t> SortedCamerasId(cameras.size());
+  SortedCamerasId = sortViews(cameras, target);
 
   for (auto passId = 0; passId < NumberOfPasses;
        passId++) // Loop over NumberOfPasses
@@ -146,65 +157,35 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
     // Find the selected views for a given pass
     SelectedViewsPass.empty();
     for (auto id = 0u; id < cameras.size(); id++) {
-      if (id < TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass[passId])
+      if (id <
+          TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass[passId])
         SelectedViewsPass.push_back(SortedCamerasId[id]);
     }
 
+	/////////////////
     // Update the Occupancy Map to be used in the Pass
-    //mapsPass[passId] = maps;
-    for (auto atlasId = 0; atlasId<maps.size(); atlasId++) {
+	/////////////////
+    for (auto atlasId = 0; atlasId < maps.size(); atlasId++) {
       std::transform(maps[atlasId].getPlane(0).begin(),
                      maps[atlasId].getPlane(0).end(),
-          mapsPass[passId][atlasId].getPlane(0).begin(), mapsFilter);
+                     mapsPass[passId][atlasId].getPlane(0).begin(), mapsFilter);
     }
-	
-    /*
-    for (auto patchId = 0; patchId < patches.size(); patchId++) {
-      // Access OccupancyMap and copy only Id of patches that belong to the
-      // selected views @ passId
-      bool SelectedPatch = false;
-      auto atlasId = patches[patchId].atlasId;
-      auto patch = patches[patchId];
-      const Vec2i &q0 = patch.posInAtlas;
-      int w = patch.patchSize.x(), h = patch.patchSize.y();
-      bool isRotated = (patch.rotation != Metadata::PatchRotation::upright);
-      int xMin = q0.x(), xLast = q0.x() + (isRotated ? h : w);
-      int yMin = q0.y(), yLast = q0.y() + (isRotated ? w : h);
 
-      for (auto SelectedViewIndex = 0;
-           SelectedViewIndex < SelectedViewsPass.size(); SelectedViewIndex++) {
-
-        if (patches[patchId].viewId == SelectedViewsPass[SelectedViewIndex]) {
-          SelectedPatch = true;
-          for (auto y = yMin; y < yLast; y++)
-            std::fill(mapsPass[passId][atlasId].getPlane(0).row_begin(y) + xMin,
-                      mapsPass[passId][atlasId].getPlane(0).row_begin(y) +
-                          xLast,
-                      patchId);
-        }
-      }
-      if (!SelectedPatch) { // if not selected copy unusedPatchId
-        for (auto y = yMin; y < yLast; y++)
-          std::fill(mapsPass[passId][atlasId].getPlane(0).row_begin(y) + xMin,
-                    mapsPass[passId][atlasId].getPlane(0).row_begin(y) + xLast,
-                    unusedPatchId);
-      }
-    }
-	*/
-        
+	////////////////
+	// Synthesis per pass
+	////////////////
     viewportPass[passId] =
         m_synthesizer->renderFrame(atlas, mapsPass[passId], patches, cameras,
-                                   target); // cameras or camerasPass ??
+                                   target);
   }                                         // namespace TMIV::Renderer
-
+  //////////////
   // Merging ///// Still in progress
+  //////////////
   viewport =
       viewportPass[NumberOfPasses - 1]; // Right now we are passing the final
                                         // pass results / mimicing single pass
 
-  // auto viewport =
-  //    m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
-  // m_inpainter->inplaceInpaint(viewport, target);
+ // m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 

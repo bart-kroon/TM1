@@ -1,4 +1,4 @@
-/* The copyright in this software is being made available under the BSD
+﻿/* The copyright in this software is being made available under the BSD
  * License, included below. This software may be subject to other third party
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
@@ -33,6 +33,7 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -54,6 +55,23 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
   }
 }
 
+vector<unsigned int> SelectedViewsPass, patchesViewId;
+//int Index = 0;
+uint16_t mapsFilter(uint16_t i) {
+  if (i == unusedPatchId)
+    return i;
+  bool SelectedPixel = false;
+  for (auto SelectedViewIndex = 0; SelectedViewIndex < SelectedViewsPass.size(); SelectedViewIndex++) {
+    if (patchesViewId[i] == SelectedViewsPass[SelectedViewIndex]) {
+      SelectedPixel = true;
+    }
+  }
+  if (!SelectedPixel)
+    return unusedPatchId;
+  else
+    return i;
+}
+
 Common::Texture444Depth10Frame
 MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                                const Common::PatchIdMapList &maps,
@@ -63,13 +81,13 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
 
   // Intel Hybrid
   int NumberOfPasses = TMIV::Renderer::MultipassRenderer::m_NumberOfPasses;
-  
+
   Common::Texture444Depth10Frame viewport;
   Common::Texture444Depth10Frame *viewportPass;
   Common::PatchIdMapList *mapsPass;
   viewportPass = new Common::Texture444Depth10Frame[NumberOfPasses];
   mapsPass = new Common::PatchIdMapList[NumberOfPasses];
- 
+  
   for (auto j = 0; j < NumberOfPasses; j++) {
     for (auto k = 0; k < atlas.size(); k++) {
       PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
@@ -78,6 +96,10 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
       mapsPass[j].push_back(patchMap);
     }
   } // initalize mapsPass by 0xFFFF
+  
+  for (auto patchId = 0; patchId < patches.size(); patchId++) {
+    patchesViewId.push_back(patches[patchId].viewId);
+  }// initialize patchesViewId
 
   // Ordering views based on their distance & angle to target view
   float x_target = target.position[0];
@@ -117,40 +139,26 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
          return Distance[i1] * AngleWeight[i1] < Distance[i2] * AngleWeight[i2];
        });
 
+
   for (auto passId = 0; passId < NumberOfPasses;
        passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
-    vector<unsigned int> SelectedViewsPass;
+    SelectedViewsPass.empty();
     for (auto id = 0u; id < cameras.size(); id++) {
-      if (SortedCamerasId[id] < TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass[passId])
-          SelectedViewsPass.push_back(id);
+      if (id < TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass[passId])
+        SelectedViewsPass.push_back(SortedCamerasId[id]);
     }
 
     // Update the Occupancy Map to be used in the Pass
+    //mapsPass[passId] = maps;
+    for (auto atlasId = 0; atlasId<maps.size(); atlasId++) {
+      std::transform(maps[atlasId].getPlane(0).begin(),
+                     maps[atlasId].getPlane(0).end(),
+          mapsPass[passId][atlasId].getPlane(0).begin(), mapsFilter);
+    }
+	
     /*
-    Common::PatchIdMap ids = maps[0];
-
-        std::copy_if(ids.getPlane(0).begin(), ids.getPlane(0).end(),
-                 std::back_inserter(v),
-                 [len](std::uint16_t i) { return len == i.length(); });
-
-        mapsPass[0][0] = [&ids](int index) {
-
-        }
-        */
-    /*
-   maps;
-   const Mat<uint16_t> &ids
-   auto addTriangle = [&result, &ids](int v0, int v1, int v2) {
-     const int id0 = ids[v0];
-     if (id0 == unusedPatchId || id0 != ids[v1] || id0 != ids[v2]) {
-       return;
-     }
-     result.push_back({{v0, v1, v2}, 0.5f});
-   };
-           */
-
     for (auto patchId = 0; patchId < patches.size(); patchId++) {
       // Access OccupancyMap and copy only Id of patches that belong to the
       // selected views @ passId
@@ -170,7 +178,8 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
           SelectedPatch = true;
           for (auto y = yMin; y < yLast; y++)
             std::fill(mapsPass[passId][atlasId].getPlane(0).row_begin(y) + xMin,
-                      mapsPass[passId][atlasId].getPlane(0).row_begin(y) + xLast,
+                      mapsPass[passId][atlasId].getPlane(0).row_begin(y) +
+                          xLast,
                       patchId);
         }
       }
@@ -181,11 +190,14 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                     unusedPatchId);
       }
     }
+	*/
+        
     viewportPass[passId] =
         m_synthesizer->renderFrame(atlas, mapsPass[passId], patches, cameras,
                                    target); // cameras or camerasPass ??
   }                                         // namespace TMIV::Renderer
 
+  // Merging ///// Still in progress
   viewport =
       viewportPass[NumberOfPasses - 1]; // Right now we are passing the final
                                         // pass results / mimicing single pass

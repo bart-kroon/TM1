@@ -68,8 +68,8 @@
 
         "RendererMethod": "MultipassRenderer",
         "MultipassRenderer": {
-			"NumberOfPasses": 3,
-			"NumberOfViewsPerPass": [2, 5, 15],
+			"NumberOfPasses": 1,
+			"NumberOfViewsPerPass": [2],
 			
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {

@@ -51,14 +51,15 @@ private:
   int m_intraPeriod;
 
 public:
-  Application(vector<const char *> argv)
+  explicit Application(vector<const char *> argv)
       : Common::Application{"Decoder", move(argv)} {
     m_decoder = create<IDecoder>("Decoder");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto subnode = json().optional("extraNumberOfFrames"))
+    if (auto subnode = json().optional("extraNumberOfFrames")) {
       m_numberOfFrames += subnode.asInt();
+    }
   }
 
   void run() override {

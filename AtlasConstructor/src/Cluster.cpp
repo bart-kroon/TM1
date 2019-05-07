@@ -54,14 +54,18 @@ Cluster::Cluster(int cameraId, int clusterId)
     : cameraId_(cameraId), clusterId_(clusterId) {}
 
 void Cluster::push(int i, int j) {
-  if (i < imin_)
+  if (i < imin_) {
     imin_ = i;
-  if (imax_ < i)
+  }
+  if (imax_ < i) {
     imax_ = i;
-  if (j < jmin_)
+  }
+  if (j < jmin_) {
     jmin_ = j;
-  if (jmax_ < j)
+  }
+  if (jmax_ < j) {
     jmax_ = j;
+  }
 
   filling_++;
 }
@@ -104,43 +108,49 @@ std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap,
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
-    int imid1 = std::min(imid + overlap, (int)clusteringBuffer.m() - 1),
+    int imid1 = std::min(imid + overlap,
+                         static_cast<int>(clusteringBuffer.m()) - 1),
         imid2 = std::max(0, imid - overlap);
 
     for (int i = c.imin(); i < imid1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
-        if (clusteringBuffer(i, j) == c.getClusterId())
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
           c1.push(i, j);
+        }
       }
     }
 
     for (int i = imid2; i <= c.imax(); i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
-        if (clusteringBuffer(i, j) == c.getClusterId())
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
           c2.push(i, j);
+        }
       }
     }
   } else {
     int jmid = (c.jmin() + c.jmax()) / 2;
-    int jmid1 = std::min(jmid + overlap, (int)clusteringBuffer.n() - 1),
+    int jmid1 = std::min(jmid + overlap,
+                         static_cast<int>(clusteringBuffer.n()) - 1),
         jmid2 = std::max(0, jmid - overlap);
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = c.jmin(); j < jmid1; j++) {
-        if (clusteringBuffer(i, j) == c.getClusterId())
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
           c1.push(i, j);
+        }
       }
     }
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = jmid2; j <= c.jmax(); j++) {
-        if (clusteringBuffer(i, j) == c.getClusterId())
+        if (clusteringBuffer(i, j) == c.getClusterId()) {
           c2.push(i, j);
+        }
       }
     }
   }
 
-  return std::pair<Cluster, Cluster>(std::move(c1), std::move(c2));
+  return std::pair<Cluster, Cluster>(c1, c2);
 }
 
 std::pair<ClusterList, ClusteringMap>
@@ -165,13 +175,14 @@ Cluster::retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId,
     if (0 < maskBuffer[i]) {
       activeList.push_back(i);
       clusteringBuffer[i] = ACTIVE;
-    } else
+    } else {
       clusteringBuffer[i] = INVALID;
+    }
   }
 
   // Region growing
   int clusterId = firstClusterId;
-  std::vector<int>::iterator iter_seed = activeList.begin();
+  auto iter_seed = activeList.begin();
   int clustered = 0;
 
   while (iter_seed != activeList.end()) {
@@ -218,16 +229,17 @@ Cluster::retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId,
 
     // Updating output
     if (shouldNotBeSplit) {
-      if (0 < clusterList.size())
+      if (!clusterList.empty()) {
         clusterList[0] = Cluster::merge(clusterList[0], cluster);
-      else
-        clusterList.push_back(std::move(cluster));
+      } else {
+        clusterList.push_back(cluster);
+      }
 
       clustered = clusterList[0].getFilling();
     } else {
       clustered += cluster.getFilling();
 
-      clusterList.push_back(std::move(cluster));
+      clusterList.push_back(cluster);
       clusterId++;
     }
 

@@ -50,7 +50,7 @@ private:
   int m_intraPeriod{};
 
 public:
-  Application(vector<const char *> argv)
+  explicit Application(vector<const char *> argv)
       : Common::Application{"AtlasConstructor", move(argv)},
         m_atlasConstructor{
             create<IAtlasConstructor>("Encoder", "AtlasConstructor")},

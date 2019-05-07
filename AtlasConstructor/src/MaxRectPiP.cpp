@@ -41,11 +41,13 @@ std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w,
                                                                 int h) const {
   std::vector<Rectangle> out;
 
-  if (h < height())
-    out.push_back(Rectangle(m_x0, m_y0 + h, m_x1, m_y1));
+  if (h < height()) {
+    out.emplace_back(m_x0, m_y0 + h, m_x1, m_y1);
+  }
 
-  if (w < width())
-    out.push_back(Rectangle(m_x0 + w, m_y0, m_x1, m_y1));
+  if (w < width()) {
+    out.emplace_back(m_x0 + w, m_y0, m_x1, m_y1);
+  }
 
   return out;
 }
@@ -57,20 +59,24 @@ MaxRectPiP::Rectangle::remove(const Rectangle &r) const {
   if (!((r.m_x1 <= m_x0) || (m_x1 <= r.m_x0) || (r.m_y1 <= m_y0) ||
         (m_y1 <= r.m_y0))) {
     // Left part
-    if (m_x0 < r.m_x0)
-      out.push_back(Rectangle(m_x0, m_y0, r.m_x0 - 1, m_y1));
+    if (m_x0 < r.m_x0) {
+      out.emplace_back(m_x0, m_y0, r.m_x0 - 1, m_y1);
+    }
 
     // Right part
-    if (r.m_x1 < m_x1)
-      out.push_back(Rectangle(r.m_x1 + 1, m_y0, m_x1, m_y1));
+    if (r.m_x1 < m_x1) {
+      out.emplace_back(r.m_x1 + 1, m_y0, m_x1, m_y1);
+    }
 
     // Bottom part
-    if (m_y0 < r.m_y0)
-      out.push_back(Rectangle(m_x0, m_y0, m_x1, r.m_y0 - 1));
+    if (m_y0 < r.m_y0) {
+      out.emplace_back(m_x0, m_y0, m_x1, r.m_y0 - 1);
+    }
 
     // Top part
-    if (r.m_y1 < m_y1)
-      out.push_back(Rectangle(m_x0, r.m_y1 + 1, m_x1, m_y1));
+    if (r.m_y1 < m_y1) {
+      out.emplace_back(m_x0, r.m_y1 + 1, m_x1, m_y1);
+    }
   }
 
   return out;
@@ -85,10 +91,10 @@ bool MaxRectPiP::Rectangle::isInside(const Rectangle &r) const {
 float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const {
   int dw = width() - w, dh = height() - h;
 
-  if ((0 <= dw) && (0 <= dh))
-    return (float)(std::min)(dw, dh);
-  else
-    return std::numeric_limits<float>::max();
+  if ((0 <= dw) && (0 <= dh)) {
+    return static_cast<float>((std::min)(dw, dh));
+  }
+  { return std::numeric_limits<float>::max(); }
 }
 
 //////////////////////////////////////////////////////////////
@@ -101,7 +107,7 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
   std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t(0));
 
   // Push full rectangle
-  m_F.push_back(Rectangle(0, 0, w - 1, h - 1));
+  m_F.emplace_back(0, 0, w - 1, h - 1);
 }
 
 bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap,
@@ -112,12 +118,13 @@ bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap,
   if ((m_pip && pushInUsedSpace(w, h, packerOutput)) ||
       pushInFreeSpace(w, h, packerOutput)) {
     // Update occupancy map
-    if (m_pip)
+    if (m_pip) {
       updateOccupancyMap(c, clusteringMap, packerOutput);
+    }
 
     return true;
-  } else
-    return false;
+  }
+  { return false; }
 }
 
 void MaxRectPiP::updateOccupancyMap(const Cluster &c,
@@ -136,9 +143,10 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   int YMin = q0.y() / m_alignment,
       YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
 
-  for (auto Y = YMin; Y < YLast; Y++)
+  for (auto Y = YMin; Y < YLast; Y++) {
     std::fill(m_occupancyMap.row_begin(Y) + XMin,
               m_occupancyMap.row_begin(Y) + XLast, uint8_t(128));
+  }
 
   // Step #1 (in projection)
   Vec2i p0 = {c.jmin(), c.imin()};
@@ -154,7 +162,8 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   for (auto y = yMin; y <= yMax; y++) {
     for (auto x = xMin; x <= xMax; x++) {
       if (clusteringBuffer(y, x) == c.getClusterId()) {
-        Vec2i q = p2q(Vec2i({(int)x, (int)y})) / m_alignment;
+        Vec2i q = p2q(Vec2i({static_cast<int>(x), static_cast<int>(y)})) /
+                  m_alignment;
         m_occupancyMap(q.y(), q.x()) = 0;
       }
     }
@@ -168,18 +177,19 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
 
   auto isGoodCandidate = [this](int xmin, int xmax, int ymin,
                                 int ymax) -> bool {
-    if ((xmax < (int)m_occupancyMap.width()) &&
-        (ymax < (int)m_occupancyMap.height())) {
+    if ((xmax < static_cast<int>(m_occupancyMap.width())) &&
+        (ymax < static_cast<int>(m_occupancyMap.height()))) {
       for (int y = ymin; y <= ymax; y++) {
         for (int x = xmin; x <= xmax; x++) {
-          if (m_occupancyMap(y, x) != 128)
+          if (m_occupancyMap(y, x) != 128) {
             return false;
+          }
         }
       }
 
       return true;
-    } else
-      return false;
+    }
+    { return false; }
   };
 
   for (auto Y = 0u; Y < m_occupancyMap.height(); Y++) {
@@ -204,7 +214,7 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
 bool MaxRectPiP::pushInFreeSpace(int w, int h,
                                  MaxRectPiP::Output &packerOutput) {
   // Select best free rectangles that fit current patch (BSSF criterion)
-  std::list<Rectangle>::const_iterator best_iter = m_F.cend();
+  auto best_iter = m_F.cend();
   float best_score = std::numeric_limits<float>::max();
   bool best_rotation = false;
 
@@ -224,8 +234,9 @@ bool MaxRectPiP::pushInFreeSpace(int w, int h,
     }
   }
 
-  if (best_iter == m_F.cend())
+  if (best_iter == m_F.cend()) {
     return false;
+  }
 
   // Update free rectangles
   Rectangle B(best_iter->left(), best_iter->bottom(),
@@ -240,7 +251,7 @@ bool MaxRectPiP::pushInFreeSpace(int w, int h,
 
   // Intersection with existing free rectangles
   std::vector<std::list<Rectangle>::const_iterator> intersected;
-  std::list<Rectangle>::const_iterator last = m_F.cend();
+  auto last = m_F.cend();
 
   for (auto iter = m_F.cbegin(); iter != last; iter++) {
     std::vector<Rectangle> intersecting = iter->remove(B);
@@ -252,8 +263,9 @@ bool MaxRectPiP::pushInFreeSpace(int w, int h,
     }
   }
 
-  for (const auto &iter : intersected)
+  for (const auto &iter : intersected) {
     m_F.erase(iter);
+  }
 
   // Degenerated free rectangles
   std::vector<std::list<Rectangle>::const_iterator> degenerated;
@@ -267,8 +279,9 @@ bool MaxRectPiP::pushInFreeSpace(int w, int h,
     }
   }
 
-  for (const auto &iter : degenerated)
+  for (const auto &iter : degenerated) {
     m_F.erase(iter);
+  }
 
   // Update output
   packerOutput.set(B.left(), B.bottom(), best_rotation);

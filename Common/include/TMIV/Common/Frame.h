@@ -69,7 +69,7 @@ protected:
   std::array<plane_type, nb_plane> m_planes;
 
 public:
-  Frame(int w = 0, int h = 0) { resize(w, h); }
+  explicit Frame(int w = 0, int h = 0) { resize(w, h); }
   Frame(const Frame &) = default;
   Frame(Frame &&that) {
     m_width = that.m_width;

@@ -100,9 +100,9 @@ public:
 private:
   struct Strip {
     // Strip dimensions
-    const int i1;
-    const int i2;
-    const int cols;
+    const int i1{};
+    const int i2{};
+    const int cols{};
 
     constexpr int rows() const { return i2 - i1; }
 
@@ -129,8 +129,8 @@ private:
   void clearBatches();
 
   const Pixel m_pixel;
-  const Size m_size;
-  float m_dk_di; // i for row, j for column and k for strip index
+  const Size m_size{};
+  float m_dk_di{}; // i for row, j for column and k for strip index
   std::vector<Strip> m_strips;
   std::vector<Batch> m_batches;
 };

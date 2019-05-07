@@ -60,7 +60,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   const float du_dphi;
   const float dv_dtheta;
 
-  Engine(const Metadata::CameraParameters &camera_)
+  explicit Engine(const Metadata::CameraParameters &camera_)
       : camera{camera_},
 
         // Projection sub-type
@@ -274,9 +274,6 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   }
 
   // Project mesh to target view
-  //
-  // TODO: Split edges that intersect y = 0 for x < 0
-  // TODO: Split edges that intersect (x, y) = 0
   template <typename... T>
   auto project(SceneVertexDescriptorList sceneVertices,
                TriangleDescriptorList triangles,

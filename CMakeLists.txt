@@ -39,5 +39,3 @@ add_subdirectory(Decoder)
 
 add_custom_target(clang_format COMMAND ${CMAKE_COMMAND} "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}" "-P" ${CMAKE_SOURCE_DIR}/clang_format.cmake )
 add_custom_target(clang_tidy COMMAND "run-clang-tidy.py" "-p" ${CMAKE_CURRENT_BINARY_DIR} "-header-filter" "${CMAKE_CURRENT_SOURCE_DIR}/\\*" "-fix" "-format")
-
-# TODO: Set version of this project

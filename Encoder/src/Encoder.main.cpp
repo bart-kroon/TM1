@@ -52,7 +52,7 @@ private:
   Metadata::CameraParametersList m_cameras;
 
 public:
-  Application(vector<const char *> argv)
+  explicit Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>(
                                                         "Encoder")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},

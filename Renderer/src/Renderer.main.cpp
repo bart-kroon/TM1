@@ -49,14 +49,15 @@ private:
   int m_intraPeriod;
 
 public:
-  Application(vector<const char *> argv)
+  explicit Application(vector<const char *> argv)
       : Common::Application{"Renderer", move(argv)} {
     m_renderer = create<IRenderer>("Decoder", "Renderer");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto subnode = json().optional("extraNumberOfFrames"))
+    if (auto subnode = json().optional("extraNumberOfFrames")) {
       m_numberOfFrames += subnode.asInt();
+    }
   }
 
   void run() override {
@@ -74,8 +75,8 @@ public:
 
       auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
       auto target = IO::loadViewportMetadata(json(), idx.second);
-      auto viewport = m_renderer->renderFrame(
-          move(frame), maps, metadata.patches, metadata.cameras, target);
+      auto viewport = m_renderer->renderFrame(frame, maps, metadata.patches,
+                                              metadata.cameras, target);
       IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
     }
   }

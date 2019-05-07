@@ -85,8 +85,9 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
         mapCassini2ERP[i][pp] = -1;
       }
     }
-    for (int pp = 0; pp < imsize; pp++)
-      isHole[pp] = 1;
+    for (int pp = 0; pp < imsize; pp++) {
+      isHole[pp] = true;
+    }
 
     int width2 = width / 2;
     int height2 = height / 2;
@@ -103,8 +104,9 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
 
         oldW = w - width2;
         tmpH = sqrt(height * h - h * h);
-        if (tmpH / height2 > angleRange)
+        if (tmpH / height2 > angleRange) {
           tmpH = height2 * angleRange;
+        }
         newW = oldW * tmpH / height2;
         newW += width2;
 
@@ -112,8 +114,9 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
         newH = oldH * width2 / tmpW;
         newH += height2;
 
-        if (int(newH + 0.5) < 0 || int(newH + 0.5) >= height)
+        if (int(newH + 0.5) < 0 || int(newH + 0.5) >= height) {
           continue;
+        }
 
         newPP = int(newH + 0.5) * width + int(newW + 0.5);
 
@@ -125,8 +128,9 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
           mapCassini2ERP[1][newPP] = w;
         }
 
-        if (D(h, w) != 0)
-          isHole[newPP] = 0; // 1 if hole
+        if (D(h, w) != 0) {
+          isHole[newPP] = false; // 1 if hole
+        }
       }
     }
 
@@ -329,10 +333,11 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
 
         if (D(h, w) == 0) {
 
-          if (w > 0)
+          if (w > 0) {
             nonEmptyNeighborL[pp] = nonEmptyNeighborL[pp - 1];
-          else
+          } else {
             nonEmptyNeighborL[pp] = -1;
+          }
         }
 
       } // w
@@ -349,10 +354,11 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
 
         if (D(h, w) == 0) {
 
-          if (w < width - 1)
+          if (w < width - 1) {
             nonEmptyNeighborR[pp] = nonEmptyNeighborR[pp + 1];
-          else
+          } else {
             nonEmptyNeighborR[pp] = -1;
+          }
         }
 
       } // w
@@ -363,8 +369,9 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
     for (int h = 0, pp = 0; h < height; h++) {
       for (int w = 0; w < width; w++, pp++) {
 
-        if (D(h, w) != 0)
+        if (D(h, w) != 0) {
           continue;
+        }
 
         int dist;
         float weight;
@@ -380,11 +387,13 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
                     ? D(h, nonEmptyNeighborL[pp])
                     : D(h, nonEmptyNeighborR[pp]);
             if (D(h, nonEmptyNeighborL[pp]) - farthestDepth <=
-                DepthBlendingThreshold)
+                DepthBlendingThreshold) {
               useL = true;
+            }
             if (D(h, nonEmptyNeighborR[pp]) - farthestDepth <=
-                DepthBlendingThreshold)
+                DepthBlendingThreshold) {
               useR = true;
+            }
           } else {
             useL = true;
           }
@@ -445,10 +454,11 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
 
         if (D(h, w) == 0) {
 
-          if (h > 0)
+          if (h > 0) {
             nonEmptyNeighborT[pp] = nonEmptyNeighborT[pp - width];
-          else
+          } else {
             nonEmptyNeighborT[pp] = -1;
+          }
         }
 
       } // w
@@ -465,10 +475,11 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
 
         if (D(h, w) == 0) {
 
-          if (h < height - 1)
+          if (h < height - 1) {
             nonEmptyNeighborB[pp] = nonEmptyNeighborB[pp + 1];
-          else
+          } else {
             nonEmptyNeighborB[pp] = -1;
+          }
         }
 
       } // w
@@ -479,8 +490,9 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
     for (int h = 0, pp = 0; h < height; h++) {
       for (int w = 0; w < width; w++, pp++) {
 
-        if (D(h, w) != 0)
+        if (D(h, w) != 0) {
           continue;
+        }
 
         int dist;
         float weight;
@@ -497,11 +509,13 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
                     : D(nonEmptyNeighborB[pp], w);
 
             if (D(nonEmptyNeighborT[pp], w) - farthestDepth <=
-                DepthBlendingThreshold)
+                DepthBlendingThreshold) {
               useT = true;
+            }
             if (D(nonEmptyNeighborB[pp], w) - farthestDepth <=
-                DepthBlendingThreshold)
+                DepthBlendingThreshold) {
               useB = true;
+            }
           } else {
             useT = true;
           }
@@ -556,8 +570,6 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
     delete nonEmptyNeighborT;
     delete nonEmptyNeighborB;
   }
-
-  return;
 }
 } // namespace
 

@@ -41,9 +41,9 @@ Aggregator::Aggregator(const Common::Json & /*rootNode*/,
 void Aggregator::prepareIntraPeriod() { m_aggregatedMask.clear(); }
 
 void Aggregator::pushMask(const MaskList &mask) {
-  if (m_aggregatedMask.empty())
+  if (m_aggregatedMask.empty()) {
     m_aggregatedMask = mask;
-  else {
+  } else {
     for (auto i = 0u; i < mask.size(); i++) {
       std::transform(
           m_aggregatedMask[i].getPlane(0).begin(),

@@ -73,13 +73,9 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   float normWeight{0.f};
 
   // Normalized disparity in diopters
-  //
-  // TODO: Use smaller type to save on memory
   float normDisp{0.f};
 
   // Ray angle in radians
-  //
-  // TODO: Use smaller type to save on memory
   float rayAngle{0.f};
 
   // Access the attributes

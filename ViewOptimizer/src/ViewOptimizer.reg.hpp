@@ -35,7 +35,7 @@
 #include <TMIV/ViewOptimizer/ViewReducer.h>
 
 namespace TMIV::ViewOptimizer {
-void registerComponents() {
+inline void registerComponents() {
   Common::Factory<IViewOptimizer>::getInstance().registerAs<ViewReducer>(
       "ViewReducer");
 }

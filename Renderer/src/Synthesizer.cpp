@@ -168,10 +168,6 @@ public:
       }
     }
 
-    // TODO: detect 360deg ERP patches and add some triangles for +180 -->
-    // -180.
-    // TODO: detect +/-90deg ERP patches and add north or south poles.
-
     assert(int(result.size()) <= size);
     return result;
   }
@@ -266,7 +262,7 @@ public:
     auto mesh = reproject(depth, camera, target);
 
     Rasterizer<> rasterizer{pixel, target.size};
-    rasterizer.submit(move(get<0>(mesh)), {}, move(get<1>(mesh)));
+    rasterizer.submit(move(get<0>(mesh)), {}, get<1>(mesh));
     rasterizer.run();
     return rasterizer.depth();
   }
@@ -288,7 +284,7 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
                          float stretchingParam)
     : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam)) {}
 
-Synthesizer::~Synthesizer() {}
+Synthesizer::~Synthesizer() = default;
 
 Common::Texture444Depth10Frame
 Synthesizer::renderFrame(const Common::MVD10Frame &atlas,

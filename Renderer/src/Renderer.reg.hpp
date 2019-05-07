@@ -39,7 +39,7 @@
 #include <TMIV/Renderer/Synthesizer.h>
 
 namespace TMIV::Renderer {
-void registerComponents() {
+inline void registerComponents() {
   Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
   Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>(
       "NoInpainter");

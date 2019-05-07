@@ -58,7 +58,7 @@ protected:
   T *m_p;
 
 public:
-  const_iterator(const T *x = nullptr) : m_p((T *)x) {}
+  explicit const_iterator(const T *x = nullptr) : m_p((T *)x) {}
   const_iterator(const const_iterator &iter) = default;
   const_iterator(const_iterator &&iter) = default;
   ~const_iterator() = default;
@@ -118,7 +118,7 @@ const_iterator<T> operator+(std::ptrdiff_t n, const const_iterator<T> &rhs) {
 
 template <typename T> class iterator : public const_iterator<T> {
 public:
-  iterator(T *x = nullptr) : const_iterator<T>(x) {}
+  explicit iterator(T *x = nullptr) : const_iterator<T>(x) {}
   T &operator*() { return *(this->m_p); }
   T *operator->() { return (this->m_p); }
   iterator &operator++() {
@@ -173,7 +173,7 @@ protected:
   std::ptrdiff_t m_step;
 
 public:
-  const_dim_iterator(const T *x = nullptr, std::ptrdiff_t s = 0)
+  explicit const_dim_iterator(const T *x = nullptr, std::ptrdiff_t s = 0)
       : m_p((T *)x), m_step(s) {}
   const_dim_iterator(const const_dim_iterator &iter) = default;
   const_dim_iterator(const_dim_iterator &&iter) = default;
@@ -244,7 +244,7 @@ const_dim_iterator<T> operator+(std::ptrdiff_t a,
 
 template <typename T> class dim_iterator : public const_dim_iterator<T> {
 public:
-  dim_iterator(T *x = nullptr, std::ptrdiff_t s = 0)
+  explicit dim_iterator(T *x = nullptr, std::ptrdiff_t s = 0)
       : const_dim_iterator<T>(x, s) {}
   T &operator*() { return *this->m_p; }
   T *operator->() { return this->m_p; }
@@ -304,7 +304,7 @@ protected:
   std::array<T, M> m_v{};
 
 public:
-  static constexpr size_type size(size_type) { return M; }
+  static constexpr size_type size(size_type /*unused*/) { return M; }
   static void sizes(size_type *iter) { *iter = M; }
   static constexpr size_type size() { return M; }
   static constexpr size_type min_size() { return M; }
@@ -315,7 +315,7 @@ public:
                                     size_type second = 0) {
     return (i == K) ? second : first;
   }
-  static constexpr size_type step(size_type i) { return i ? 1 : M; }
+  static constexpr size_type step(size_type i) { return i != 0u ? 1 : M; }
   static constexpr size_type diag_step() { return 1; }
   T get(size_type first) const { return m_v[first]; }
   T &get(size_type first) { return m_v[first]; }
@@ -328,7 +328,7 @@ protected:
 
 public:
   static constexpr size_type size(size_type i) {
-    return i ? _Array<D - 1, T, N, I...>::size(i - 1) : M;
+    return i != 0u ? _Array<D - 1, T, N, I...>::size(i - 1) : M;
   }
   static void sizes(size_type *iter) {
     *iter = M;
@@ -352,8 +352,8 @@ public:
                                                                    next...);
   }
   static constexpr size_type step(size_type i) {
-    return i ? _Array<D - 1, T, N, I...>::step(i - 1)
-             : M * _Array<D - 1, T, N, I...>::step(i);
+    return i != 0u ? _Array<D - 1, T, N, I...>::step(i - 1)
+                   : M * _Array<D - 1, T, N, I...>::step(i);
   }
   static constexpr size_type diag_step() {
     return step(1) + _Array<D - 1, T, N, I...>::diag_step();
@@ -405,16 +405,17 @@ public:
   ~Array() = default;
   //! \brief Copy constructors.
   Array(const container_type &that) = default;
-  Array(T t) { std::fill(begin(), end(), t); }
+  explicit Array(T t) { std::fill(begin(), end(), t); }
   Array(std::initializer_list<T> v) {
     std::copy(v.begin(), v.begin() + size(), begin());
   }
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  Array(const OTHER &that) : Array() {
+  explicit Array(const OTHER &that) : Array() {
     if ((dim() == that.dim()) &&
-        std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin()))
+        std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin())) {
       std::transform(that.begin(), that.end(), begin(),
                      [](auto v) { return T(v); });
+    }
   }
   //! \brief Move constructor.
   Array(container_type &&that) = default;
@@ -431,9 +432,10 @@ public:
   template <typename OTHER, class = typename OTHER::dim_iterator>
   container_type &operator=(const OTHER &that) {
     if ((dim() == that.dim()) &&
-        std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin()))
+        std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin())) {
       std::transform(that.begin(), that.end(), begin(),
                      [](auto v) { return T(v); });
+    }
 
     return *this;
   }
@@ -450,9 +452,9 @@ public:
   //! \brief Swap operator.
   void swap(container_type &that) { std::swap(m_v, that.m_v); }
   //! \brief Resize operator.
-  void resize(const tuple_type &) {}
+  void resize(const tuple_type & /*unused*/) {}
   //! \brief Reshape operator.
-  void reshape(const tuple_type &) {}
+  void reshape(const tuple_type & /*unused*/) {}
   //! \brief Returns the array dimension.
   static constexpr size_type dim() { return sizeof...(I); }
   //! \brief Returns the array size along the i-th dimension.
@@ -688,7 +690,7 @@ public:
     m_size.fill(0);
     m_step.fill(0);
   }
-  Array(const tuple_type &sz) : Array() { this->resize(sz); }
+  explicit Array(const tuple_type &sz) : Array() { this->resize(sz); }
   //! \brief Destructor.
   ~Array() = default;
   //! \brief Copy constructors.
@@ -702,7 +704,7 @@ public:
     m_v = v;
   }
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  Array(const OTHER &that) : Array() {
+  explicit Array(const OTHER &that) : Array() {
     tuple_type sz;
 
     std::copy(that.sizes().begin(), that.sizes().end(), sz.begin());
@@ -778,8 +780,9 @@ public:
   }
   //! \brief Resize operator.
   void resize(const tuple_type &sz) {
-    if (std::equal(m_size.begin(), m_size.end(), sz.begin()))
+    if (std::equal(m_size.begin(), m_size.end(), sz.begin())) {
       return;
+    }
 
     // Dimensions
     std::copy(sz.begin(), sz.end(), m_size.begin());
@@ -799,8 +802,9 @@ public:
   }
   //! \brief Reshape operator.
   void reshape(const tuple_type &sz) {
-    if (std::equal(m_size.begin(), m_size.end(), sz.begin()))
+    if (std::equal(m_size.begin(), m_size.end(), sz.begin())) {
       return;
+    }
 
     // Dimensions
     std::copy(sz.begin(), sz.end(), m_size.begin());
@@ -1000,7 +1004,7 @@ protected:
     return (i == K) ? offset<K>(i + 1, first, next...)
                     : first * m_step[i + 1] + offset<K>(i + 1, next...);
   }
-  size_type pos(size_type, size_type first) const { return first; }
+  size_type pos(size_type /*unused*/, size_type first) const { return first; }
   template <typename... I>
   size_type pos(size_type i, size_type first, I... next) const {
     return first * m_step[i] + pos(i + 1, next...);
@@ -1051,8 +1055,9 @@ public:
   }
   Array(const container_type &that) = default;
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  Array(const OTHER &that,
-        SameTypeChecker<T, typename OTHER::value_type> * = nullptr)
+  explicit Array(
+      const OTHER &that,
+      SameTypeChecker<T, typename OTHER::value_type> * /*unused*/ = nullptr)
       : Array() {
     tuple_type sz;
 
@@ -1131,11 +1136,12 @@ public:
     std::swap(m_property, that.m_property);
   }
   //! \brief Resize operator.
-  void resize(const tuple_type &) {}
+  void resize(const tuple_type & /*unused*/) {}
   //! \brief Reshape operator.
   void reshape(const tuple_type &sz) {
-    if (std::equal(m_size.begin(), m_size.end(), sz.begin()))
+    if (std::equal(m_size.begin(), m_size.end(), sz.begin())) {
       return;
+    }
 
     // Dimensions
     std::copy(sz.begin(), sz.end(), m_size.begin());
@@ -1317,7 +1323,7 @@ protected:
     return (i == K) ? offset<K>(i + 1, first, next...)
                     : first * m_step[i + 1] + offset<K>(i + 1, next...);
   }
-  size_type pos(size_type, size_type first) const { return first; }
+  size_type pos(size_type /*unused*/, size_type first) const { return first; }
   template <typename... I>
   size_type pos(size_type i, size_type first, I... next) const {
     return first * m_step[i] + pos(i + 1, next...);
@@ -1337,8 +1343,9 @@ std::ostream &operator<<(std::ostream &os, const A &a) {
   for (iter = iter1; iter != iter2; iter += step) {
     std::for_each(iter, iter + step,
                   [&os](typename A::value_type v) { os << v << " "; });
-    if ((iter + step) != iter2)
+    if ((iter + step) != iter2) {
       os << "\n";
+    }
   }
 
   return os;
@@ -1347,19 +1354,22 @@ std::ostream &operator<<(std::ostream &os, const A &a) {
 //! \brief Load the array a from the stream is.
 template <typename A, class = typename A::dim_iterator>
 std::istream &operator>>(std::istream &is, A &a) {
-  for (auto &e : a)
+  for (auto &e : a) {
     is >> e;
+  }
   return is;
 }
 
 //! \brief Return true if a1 and a2 have the same size.
 template <typename A1, typename A2> bool same_size(const A1 &a1, const A2 &a2) {
-  if (a1.dim() != a2.dim())
+  if (a1.dim() != a2.dim()) {
     return false;
+  }
 
   for (typename A1::size_type i = 0; i < a1.dim(); i++) {
-    if (a1.size(i) != a2.size(i))
+    if (a1.size(i) != a2.size(i)) {
       return false;
+    }
   }
 
   return true;
@@ -1512,10 +1522,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void add(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 + v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 + v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1532,10 +1541,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void sub(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 - v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 - v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1552,10 +1560,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void mult(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 * v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 * v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
@@ -1572,10 +1579,9 @@ template <typename A1, typename A2, typename A3,
           class = typename A3::dim_iterator>
 void div(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 / v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 / v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>

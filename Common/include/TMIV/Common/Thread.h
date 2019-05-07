@@ -42,8 +42,9 @@ namespace TMIV::Common {
 inline void parallel_for(std::size_t nbIter,
                          std::function<void(std::size_t)> fun) {
   auto segment_execute = [&](std::size_t first, std::size_t last) {
-    for (auto id = first; id < last; id++)
+    for (auto id = first; id < last; id++) {
       fun(id);
+    }
   };
 
   std::size_t chunkSize = nbIter / std::thread::hardware_concurrency();

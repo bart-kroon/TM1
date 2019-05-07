@@ -44,8 +44,8 @@ template <> struct PixelFormatHelper<YUV400P8> {
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return (W * H); }
   static int getDiskSize(int W, int H) { return (W * H) * 3 / 2; }
-  static int getPlaneWidth(int, int W) { return W; }
-  static int getPlaneHeight(int, int H) { return H; }
+  static int getPlaneWidth(int /*unused*/, int W) { return W; }
+  static int getPlaneHeight(int /*unused*/, int H) { return H; }
 };
 
 template <> struct PixelFormatHelper<YUV400P10> {
@@ -53,8 +53,8 @@ template <> struct PixelFormatHelper<YUV400P10> {
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static int getPlaneWidth(int, int W) { return W; }
-  static int getPlaneHeight(int, int H) { return H; }
+  static int getPlaneWidth(int /*unused*/, int W) { return W; }
+  static int getPlaneHeight(int /*unused*/, int H) { return H; }
 };
 
 template <> struct PixelFormatHelper<YUV400P16> {
@@ -62,8 +62,8 @@ template <> struct PixelFormatHelper<YUV400P16> {
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static int getPlaneWidth(int, int W) { return W; }
-  static int getPlaneHeight(int, int H) { return H; }
+  static int getPlaneWidth(int /*unused*/, int W) { return W; }
+  static int getPlaneHeight(int /*unused*/, int H) { return H; }
 };
 
 template <> struct PixelFormatHelper<YUV420P8> {
@@ -125,10 +125,11 @@ template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
   m_width = w;
   m_height = h;
 
-  for (int planeId = 0; planeId < nb_plane; planeId++)
+  for (int planeId = 0; planeId < nb_plane; planeId++) {
     m_planes[planeId].resize(
         detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
         detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
+  }
 }
 
 template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {

@@ -38,7 +38,7 @@
 #include <TMIV/Decoder/Decoder.h>
 
 namespace TMIV::Decoder {
-void registerComponents() {
+inline void registerComponents() {
   TMIV::AtlasDeconstructor::registerComponents();
   TMIV::Renderer::registerComponents();
 

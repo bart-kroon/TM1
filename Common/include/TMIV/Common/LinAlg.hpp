@@ -42,66 +42,84 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB,
 
   if (mA == 'N') {
     if (mB == 'N') {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i),
                                        B.col_begin(j), T(0));
+        }
+      }
     } else if (mB == 'T') {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i),
                                        B.row_begin(j), T(0));
+        }
+      }
     } else {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
               A.row_begin(i), A.row_end(i), B.row_begin(j), T(0),
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
+        }
+      }
     }
   } else if (mA == 'T') {
     if (mB == 'N') {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i),
                                        B.col_begin(j), T(0));
+        }
+      }
     } else if (mB == 'T') {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i),
                                        B.row_begin(j), T(0));
+        }
+      }
     } else {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
               A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
+        }
+      }
     }
   } else {
     if (mB == 'N') {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
               A.col_begin(i), A.col_end(i), B.col_begin(j), T(0),
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
+        }
+      }
     } else if (mB == 'T') {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
               A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
+        }
+      }
     } else {
-      for (size_type i = 0; i < C.m(); i++)
-        for (size_type j = 0; j < C.n(); j++)
+      for (size_type i = 0; i < C.m(); i++) {
+        for (size_type j = 0; j < C.n(); j++) {
           C(i, j) = std::inner_product(
               A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
               [](const T &v1, const T &v2) { return (v1 + v2); },
               [](const T &v1, const T &v2) {
                 return (conjugate(v1) * conjugate(v2));
               });
+        }
+      }
     }
   }
 }
@@ -256,8 +274,9 @@ int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
                        LU.row_begin(k) + (k + 1), LU.row_begin(i) + (k + 1),
                        [factor](T v1, T v2) { return v1 - factor * v2; });
       }
-    } else
+    } else {
       return -1;
+    }
   }
 
   return nb_permutations;
@@ -319,22 +338,25 @@ template <typename T> int chol(shallow::Matrix<T> A, shallow::Matrix<T> out) {
   // First column
   out(0, 0) = x = sqrt(A(0, 0));
 
-  for (size_type i = 1; i < n; i++)
+  for (size_type i = 1; i < n; i++) {
     out(i, 0) = A(i, 0) / x;
+  }
 
   // Remaining lower part
   for (size_type j = 1; j < n; j++) {
-    for (size_type i = 0; i < j; i++)
+    for (size_type i = 0; i < j; i++) {
       out(i, j) = 0;
+    }
 
     out(j, j) = x =
         sqrt(A(j, j) - dot_product(out.row_begin(j), out.row_begin(j) + j,
                                    out.row_begin(j)));
 
-    for (size_type i = (j + 1); i < n; i++)
+    for (size_type i = (j + 1); i < n; i++) {
       out(i, j) = (A(i, j) - dot_product(out.row_begin(i), out.row_begin(i) + j,
                                          out.row_begin(j))) /
                   x;
+    }
   }
 
   return 0;
@@ -352,8 +374,9 @@ template <typename MAT> MAT chol(const MAT &A, int *info) {
   MAT out;
 
   int information = chol(A, out);
-  if (info)
+  if (info) {
     *info = information;
+  }
 
   return out;
 }
@@ -366,11 +389,13 @@ template <typename T> T det(shallow::Matrix<T> A, int *info) {
   T d = std::accumulate(LU.diag_begin(), LU.diag_end(), T(1),
                         [](T v1, T v2) { return (v1 * v2); });
 
-  if (n % 2)
+  if (n % 2) {
     d = -d;
+  }
 
-  if (info)
+  if (info) {
     (*info) = 0;
+  }
 
   return d;
 }
@@ -395,8 +420,9 @@ template <typename MAT> typename MAT::value_type det(const MAT &A, int *info) {
     out = detail::det(shallow::Matrix<T>(A), &information);
   }
 
-  if (info)
+  if (info) {
     (*info) = information;
+  }
 
   return out;
 }
@@ -421,9 +447,10 @@ int mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
     for (size_type j = 0; j < Y.n(); j++) {
       Y(i, j) = B(P[i], j);
 
-      if (0 < i)
+      if (0 < i) {
         Y(i, j) -= std::inner_product(LU.row_begin(i), LU.row_begin(i) + i,
                                       Y.col_begin(j), T(0));
+      }
     }
   }
 
@@ -436,10 +463,11 @@ int mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
 
       out(k, j) = Y(k, j) / LU(k, k);
 
-      if (0 < i)
+      if (0 < i) {
         out(k, j) -= std::inner_product(LU.row_begin(k) + m - i, LU.row_end(k),
                                         out.col_begin(j) + m - i, T(0)) /
                      LU(k, k);
+      }
     }
   }
 
@@ -461,8 +489,9 @@ MAT2 mldivide(const MAT1 &A, const MAT2 &B, int *info) {
   MAT2 out;
 
   int information = mldivide(A, B, out);
-  if (info)
+  if (info) {
     *info = information;
+  }
 
   return out;
 }
@@ -486,10 +515,11 @@ int mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
     for (size_type j = 0; j < Y.n(); j++) {
       Y(i, j) = A(i, j) / LU(j, j);
 
-      if (0 < j)
+      if (0 < j) {
         Y(i, j) -= std::inner_product(Y.row_begin(i), Y.row_begin(i) + j,
                                       LU.col_begin(j), T(0)) /
                    LU(j, j);
+      }
     }
   }
 
@@ -500,9 +530,10 @@ int mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
     for (size_type j = 0; j < n; j++) {
       size_type k = n - j - 1;
 
-      if (0 < j)
+      if (0 < j) {
         Y(i, k) -= std::inner_product(Y.row_begin(i) + n - j, Y.row_end(i),
                                       LU.col_begin(k) + n - j, T(0));
+      }
 
       out(i, P[k]) = Y(i, k);
     }
@@ -526,8 +557,9 @@ MAT1 mrdivide(const MAT1 &A, const MAT2 &B, int *info) {
   MAT1 out;
 
   int information = mrdivide(A, B, out);
-  if (info)
+  if (info) {
     *info = information;
+  }
 
   return out;
 }
@@ -550,8 +582,9 @@ template <typename MAT> MAT inv(const MAT &A, int *info) {
   MAT out;
   int information = inv(A, out);
 
-  if (info)
+  if (info) {
     *info = information;
+  }
 
   return out;
 }

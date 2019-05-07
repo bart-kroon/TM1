@@ -48,7 +48,8 @@ private:
   std::unique_ptr<IInpainter> m_inpainter;
 
 public:
-  MultipassRenderer(const Common::Json &, const Common::Json &);
+  MultipassRenderer(const Common::Json & /*rootNode*/,
+                    const Common::Json & /*componentNode*/);
   MultipassRenderer(const MultipassRenderer &) = delete;
   MultipassRenderer(MultipassRenderer &&) = default;
   MultipassRenderer &operator=(const MultipassRenderer &) = delete;

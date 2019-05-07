@@ -38,7 +38,7 @@
 #include <TMIV/Encoder/Encoder.h>
 
 namespace TMIV::Encoder {
-void registerComponents() {
+inline void registerComponents() {
   TMIV::ViewOptimizer::registerComponents();
   TMIV::AtlasConstructor::registerComponents();
 

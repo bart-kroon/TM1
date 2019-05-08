@@ -49,6 +49,7 @@ private:
   // Intel Hybrid
   int m_NumberOfPasses = 1;
   std::vector<unsigned> m_NumberOfViewsPerPass;
+  int m_depthdump = 0;
 
 public:
   MultipassRenderer(const Common::Json & /*rootNode*/,

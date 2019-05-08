@@ -1,6 +1,6 @@
 {
     "startFrame": 0,
-    "numberOfFrames": 2,
+    "numberOfFrames": 1,
     "intraPeriod": 32,
 
     "SourceTexturePathFmt": "%s_texture_4096x2048_yuv420p10le.yuv",
@@ -26,7 +26,7 @@
 
     "OutputTexturePath": "TM1_SA_R0_Tt_%s_4096x2048_yuv420p10le.yuv",
     "OutputDepthPath": "TM1_SA_R0_Td_%s_4096x2048_yuv420p10le.yuv",
-    "OutputCameraName": "v1",
+    "OutputCameraName": "v10",
 
     "EncoderMethod": "Encoder",
     "Encoder": {
@@ -70,7 +70,8 @@
         "RendererMethod": "MultipassRenderer",
         "MultipassRenderer": {
 			"NumberOfPasses": 3,
-			"NumberOfViewsPerPass": [2, 5, 15],
+            "NumberOfViewsPerPass": [2, 5, 15 ],
+            "OutputDepth": [1],
 			
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {

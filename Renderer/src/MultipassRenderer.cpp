@@ -52,6 +52,8 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
         m_NumberOfViewsPerPass.push_back(subnode.at(i).asInt());
     }
   }
+  if (auto subnode = componentNode.optional("OutputDepthPath")) 
+      m_depthdump = subnode.asInt();
 }
 
 uint16_t filterMerge(uint16_t i, uint16_t j) {
@@ -197,8 +199,8 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                        viewportPass[passNum + 1].first.getPlane(i).begin(),
                        mergedviewport.first.getPlane(i).begin(), filterMerge);
         }
-        // if (TMIV::Renderer::MultipassRenderer::m_dumpDepthFile)
-        std::transform(viewportPass[passNum].second.getPlane(0).begin(),
+        if (TMIV::Renderer::MultipassRenderer::m_depthdump)
+            std::transform(viewportPass[passNum].second.getPlane(0).begin(),
                      viewportPass[passNum].second.getPlane(0).end(),
                      viewportPass[passNum + 1].second.getPlane(0).begin(),
                      mergedviewport.second.getPlane(0).begin(), filterMerge);

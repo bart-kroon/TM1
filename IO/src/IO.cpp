@@ -64,8 +64,9 @@ string getFullPath(const Json &config, const string &baseDirectoryField,
     return fileName;
   }
 
-  if (auto subnode = config.optional(baseDirectoryField))
+  if (auto subnode = config.optional(baseDirectoryField)) {
     baseDirectory = subnode.asString() + "/";
+  }
 
   return baseDirectory + fileName;
 }
@@ -75,14 +76,16 @@ Frame<FORMAT> readFrame(const string &path, int frameIndex, Vec2i resolution) {
   Frame<FORMAT> result(resolution.x(), resolution.y());
   ifstream stream{path, ifstream::binary};
 
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to open file: " + path);
+  }
 
   stream.seekg(streampos(frameIndex) * result.getDiskSize());
   result.read(stream);
 
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to read from file: " + path);
+  }
 
   return result;
 }
@@ -98,14 +101,16 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame,
                 int frameIndex) {
   ofstream stream(path,
                   (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary);
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to open file for writing: " + path);
+  }
 
   frame.dump(stream);
   padZeros(stream, frame.getDiskSize() - frame.getMemorySize());
 
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to write to file: " + path);
+  }
 }
 
 template <typename FORMAT>
@@ -160,17 +165,18 @@ CameraParametersList readCameraListFromFile(istream &is) {
   uint16_t nbCamera = 0;
   CameraParametersList list;
 
-  is.read((char *)&nbCamera, sizeof(uint16_t));
+  is.read(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
-  for (auto i = 0; i < nbCamera; i++)
+  for (auto i = 0; i < nbCamera; i++) {
     list.push_back(readCameraFromFile(is));
+  }
 
   return list;
 }
 
 void skipCameraListFromFile(istream &is) {
   uint16_t nbCamera = 0;
-  is.read((char *)&nbCamera, sizeof(uint16_t));
+  is.read(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
   is.seekg(nbCamera * sizeof(CameraParameters), ios::cur);
 }
@@ -180,22 +186,23 @@ void writeCameraToFile(ofstream &os, const CameraParameters &camera) {
 }
 
 void writeCameraListToFile(ofstream &os, const CameraParametersList &list) {
-  uint16_t nbCamera = uint16_t(list.size());
+  auto nbCamera = uint16_t(list.size());
 
-  os.write((char *)&nbCamera, sizeof(uint16_t));
+  os.write(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
-  for (const auto &camera : list)
+  for (const auto &camera : list) {
     writeCameraToFile(os, camera);
+  }
 }
 
 vector<Vec2i> readAtlasSizeFromFile(ifstream &is) {
   uint8_t nbAtlas = 0;
   vector<Vec2i> result;
 
-  is.read((char *)&nbAtlas, sizeof(uint8_t));
+  is.read(reinterpret_cast<char *>(&nbAtlas), sizeof(uint8_t));
 
   result.resize(nbAtlas);
-  is.read((char *)result.data(), nbAtlas * sizeof(Vec2i));
+  is.read(reinterpret_cast<char *>(result.data()), nbAtlas * sizeof(Vec2i));
 
   return result;
 }
@@ -203,17 +210,18 @@ vector<Vec2i> readAtlasSizeFromFile(ifstream &is) {
 void skipAtlasSizeFromFile(ifstream &is) {
   uint8_t nbAtlas = 0;
 
-  is.read((char *)&nbAtlas, sizeof(uint8_t));
+  is.read(reinterpret_cast<char *>(&nbAtlas), sizeof(uint8_t));
 
   is.seekg(nbAtlas * sizeof(Vec2i), ios::cur);
 }
 
 void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
-  uint8_t nbAtlas = uint8_t(atlasSize.size());
+  auto nbAtlas = uint8_t(atlasSize.size());
 
-  os.write((const char *)&nbAtlas, sizeof(uint8_t));
+  os.write(reinterpret_cast<const char *>(&nbAtlas), sizeof(uint8_t));
 
-  os.write((const char *)atlasSize.data(), nbAtlas * sizeof(Vec2i));
+  os.write(reinterpret_cast<const char *>(atlasSize.data()),
+           nbAtlas * sizeof(Vec2i));
 }
 
 AtlasParameters readPatchFromFile(ifstream &is) {
@@ -226,24 +234,21 @@ AtlasParametersList readPatchListFromFile(ifstream &is) {
   uint16_t nbPatch = 0;
   AtlasParametersList list;
 
-  is.read((char *)&nbPatch, sizeof(uint16_t));
+  is.read(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
-  for (auto i = 0; i < nbPatch; i++)
+  for (auto i = 0; i < nbPatch; i++) {
     list.push_back(readPatchFromFile(is));
+  }
 
   return list;
 }
 
 void skipPatchListFromFile(istream &is) {
-  size_t patchSizeInFile = sizeof(uint8_t) + sizeof(uint8_t) + sizeof(Vec2i) +
-                           sizeof(Vec2i) + sizeof(Vec2i) +
-                           sizeof(PatchRotation);
-
   uint16_t nbPatch = 0;
 
-  is.read((char *)&nbPatch, sizeof(uint16_t));
+  is.read(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
-  is.seekg(nbPatch * patchSizeInFile, ios::cur);
+  is.seekg(nbPatch * sizeof(AtlasParameters), ios::cur);
 }
 
 void writePatchToFile(ofstream &os, const AtlasParameters &patch) {
@@ -251,38 +256,42 @@ void writePatchToFile(ofstream &os, const AtlasParameters &patch) {
 }
 
 void writePatchListToFile(ofstream &os, const AtlasParametersList &list) {
-  uint16_t nbPatch = uint16_t(list.size());
+  auto nbPatch = uint16_t(list.size());
 
-  os.write((char *)&nbPatch, sizeof(uint16_t));
+  os.write(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
-  for (const auto &patch : list)
+  for (const auto &patch : list) {
     writePatchToFile(os, patch);
+  }
 }
 
 template <typename T>
 T readMetadataFromFile(const string &path, int frameIndex,
-                       function<void(ifstream &)> skipFunction,
+                       const function<void(ifstream &)> &skipFunction,
                        function<T(ifstream &)> readFunction) {
   ifstream stream{path, ios::binary};
 
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to open file: " + path);
+  }
 
   // Seeking
   stream.seekg(streamoff(0), ifstream::beg);
 
   while (true) {
     uint32_t frameId = 0;
-    stream.read((char *)&frameId, sizeof(uint32_t));
+    stream.read(reinterpret_cast<char *>(&frameId), sizeof(uint32_t));
 
-    if (!stream.good())
+    if (!stream.good()) {
       throw runtime_error("Failed to read frame #" + to_string(frameIndex) +
                           " from file: " + path);
+    }
 
-    if (frameId != uint32_t(frameIndex))
+    if (frameId != uint32_t(frameIndex)) {
       skipFunction(stream);
-    else
+    } else {
       break;
+    }
   }
 
   // Reading
@@ -295,16 +304,18 @@ void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
   ofstream stream{path,
                   (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary};
 
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to open file: " + path);
+  }
 
   // Frame index
   uint32_t frameId = frameIndex;
-  stream.write((const char *)&frameId, sizeof(uint32_t));
+  stream.write(reinterpret_cast<const char *>(&frameId), sizeof(uint32_t));
 
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to write frame #" + to_string(frameIndex) +
                         " to file: " + path);
+  }
 
   // Metadata
   writeFunction(stream, metadata);
@@ -320,7 +331,7 @@ Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
   std::getline(stream, line);
 
   std::regex re_header(
-      "\\s*X\\s*,\\s*Y\\s*,\\s*Z\\s*,\\s*Yaw\\s*,\\s*Pitch\\s*,\\s*Roll\\s*");
+      R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
   if (!std::regex_match(line, re_header)) {
     throw std::runtime_error("Format error in the pose trace header");
   }
@@ -339,8 +350,8 @@ Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
                        std::stof(match[3].str())}),
                 Vec3f({std::stof(match[4].str()), std::stof(match[5].str()),
                        std::stof(match[6].str())})};
-      } else
-        currentFrameIndex++;
+      }
+      { currentFrameIndex++; }
     } else if (std::regex_match(line, re_empty)) {
       trailing_empty_lines = true;
     } else {
@@ -369,9 +380,10 @@ CameraParametersList loadSourceMetadata(const Json &config) {
       getFullPath(config, "SourceDirectory", "SourceCameraParameters");
   ifstream stream{cameraPath};
 
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to load source camera parameters\n" +
                         cameraPath);
+  }
 
   auto cameras =
       loadCamerasFromJson(Json{stream}.require("cameras"),
@@ -516,12 +528,14 @@ void savePatchList(const Json &config, const string &name,
   string path = baseDirectory + name;
 
   ofstream os(path);
-  if (!os.good())
+  if (!os.good()) {
     throw runtime_error("Failed to open file for writing: " + path);
+  }
 
   int idx = 0;
-  for (const auto &p : patches)
+  for (const auto &p : patches) {
     os << idx++ << ": " << PatchParametersString(p) << endl;
+  }
 
   os.close();
 }
@@ -587,18 +601,18 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
       getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   ifstream stream{cameraPath};
-  if (!stream.good())
+  if (!stream.good()) {
     throw runtime_error("Failed to load camera parameters\n " + cameraPath);
+  }
 
-  auto outputCameraName = config.optional("OutputCameraName").asStringVector();
-  if (outputCameraName.size() > 1u)
-    throw runtime_error("OutputCameraName only allows a single entry");
+  auto outputCameraName = config.require("OutputCameraName").asString();
 
   auto cameras =
-      loadCamerasFromJson(Json{stream}.require("cameras"), outputCameraName);
+      loadCamerasFromJson(Json{stream}.require("cameras"), {outputCameraName});
 
-  if (cameras.empty())
+  if (cameras.empty()) {
     throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
+  }
 
   result = cameras[0];
 
@@ -608,8 +622,9 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
         getFullPath(config, "SourceDirectory", "OutputCameraPoseTrace");
     ifstream stream{poseTracePath};
 
-    if (!stream.good())
+    if (!stream.good()) {
       throw runtime_error("Failed to load pose trace file\n " + poseTracePath);
+    }
 
     auto pose = loadPoseFromCSV(stream, frameIndex);
 
@@ -625,12 +640,14 @@ void saveViewport(const Json &config, int frameIndex,
   cout << "Saving viewport frame " << frameIndex << '\n';
 
   string texturePath =
-      getFullPath(config, "OutputDirectory", "OutputTexturePath");
+      getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
+                  config.require("OutputCameraName").asString());
   writeFrame(texturePath, frame.first, frameIndex);
 
   if (config.optional("OutputDepthPath")) {
     string depthPath =
-        getFullPath(config, "OutputDirectory", "OutputDepthPath");
+        getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,
+                    config.require("OutputCameraName").asString());
     writeFrame(depthPath, frame.second, frameIndex);
   }
 }
@@ -642,11 +659,11 @@ pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {
   int frameGroupId = frameIndex / numberOfFrames;
   int frameRelativeId = frameIndex % numberOfFrames;
 
-  int frameIndexExtended = (frameGroupId % 2)
+  int frameIndexExtended = (frameGroupId % 2) != 0
                                ? (numberOfFrames - (frameRelativeId + 1))
                                : frameRelativeId;
   int metadataIndexExtended = frameIndexExtended / intraPeriod;
 
-  return {metadataIndexExtended, frameIndexExtended};
+  return {metadataIndexExtended * intraPeriod, frameIndexExtended};
 }
 } // namespace TMIV::IO

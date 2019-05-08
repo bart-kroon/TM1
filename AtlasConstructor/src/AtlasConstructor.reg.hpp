@@ -39,7 +39,7 @@
 #include <TMIV/Renderer/Synthesizer.h>
 
 namespace TMIV::AtlasConstructor {
-void registerComponents() {
+inline void registerComponents() {
   Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>(
       "AtlasConstructor");
   Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");

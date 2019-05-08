@@ -73,8 +73,6 @@ quantizeTexture(const Common::Mat<Common::Vec3f> &in);
 // Expand a YUV 4:0:0 10/16-bit depth map to a 32-bit float matrix with depth
 // values in meters. Input level 0 indicates invalid depth and is mapped to NaN.
 Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera,
-                               const Common::Frame<Common::YUV400P10> &inYuv);
-Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera,
                                const Common::Frame<Common::YUV400P16> &inYuv);
 
 // Quantize a 32-bit float depth map with depth values in diopters. NaN values

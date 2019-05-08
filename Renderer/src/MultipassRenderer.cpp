@@ -54,6 +54,13 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
   }
 }
 
+uint16_t filterMerge(uint16_t i, uint16_t j) {
+  if (i > 0)
+    return i;
+  else
+    return j;
+}
+
 vector<unsigned int> SelectedViewsPass, patchesViewId;
 uint16_t mapsFilter(uint16_t i) {
   if (i == unusedPatchId)
@@ -179,11 +186,26 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                                    target);
   }                                         // namespace TMIV::Renderer
   //////////////
-  // Merging ///// Still in progress
+  // Merging ///// 
   //////////////
-  viewport =
-      viewportPass[NumberOfPasses - 1]; // Right now we are passing the final
-                                        // pass results / mimicing single pass
+  if (NumberOfPasses > 1) {
+    Common::Texture444Depth10Frame mergedviewport = viewportPass[NumberOfPasses - 1];
+    for (auto passNum = 0; passNum < NumberOfPasses - 1; passNum++) {
+        for (auto i = 0; i < 3; i++) {
+            std::transform(viewportPass[passNum].first.getPlane(i).begin(),
+                       viewportPass[passNum].first.getPlane(i).end(),
+                       viewportPass[passNum + 1].first.getPlane(i).begin(),
+                       mergedviewport.first.getPlane(i).begin(), filterMerge);
+        }
+        // if (TMIV::Renderer::MultipassRenderer::m_dumpDepthFile)
+        std::transform(viewportPass[passNum].second.getPlane(0).begin(),
+                     viewportPass[passNum].second.getPlane(0).end(),
+                     viewportPass[passNum + 1].second.getPlane(0).begin(),
+                     mergedviewport.second.getPlane(0).begin(), filterMerge);
+    }
+    viewport = mergedviewport; // Final Merged
+  } else
+    viewport = viewportPass[NumberOfPasses - 1]; // Single Pass
 
  // m_inpainter->inplaceInpaint(viewport, target);
   return viewport;

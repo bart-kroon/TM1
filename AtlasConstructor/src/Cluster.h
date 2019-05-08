@@ -72,7 +72,7 @@ public:
   int height() const { return (imax_ - imin_ + 1); }
   int getArea() const { return width() * height(); }
   int getMinSize() const { return std::min(width(), height()); }
-  std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringBuffer,
+  std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringMap,
                                     int overlap) const;
   static Cluster Empty() {
     Cluster out;
@@ -86,7 +86,7 @@ public:
   static Cluster merge(const Cluster &c1, const Cluster &c2);
   static std::pair<ClusterList, ClusteringMap>
   retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId = 0,
-           bool shouldMerge = false);
+           bool shouldNotBeSplit = false);
 };
 
 } // namespace TMIV::AtlasConstructor

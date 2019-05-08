@@ -48,10 +48,14 @@ public:
   NoViewOptimizer &operator=(NoViewOptimizer &&) = default;
 
   auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
-      -> Output<Metadata::CameraParametersList> { return {std::move(cameras), {}}; }
+      -> Output<Metadata::CameraParametersList> {
+    return {std::move(cameras), {}};
+  }
 
   auto optimizeFrame(Common::MVD16Frame views) const
-      -> Output<Common::MVD16Frame> { return {std::move(views), {}}; }
+      -> Output<Common::MVD16Frame> {
+    return {std::move(views), {}};
+  }
 };
 
 } // namespace TMIV::ViewOptimizer

@@ -56,17 +56,20 @@ AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
       Factory<IPacker>::getInstance().create("Packer", rootNode, componentNode);
 
   // Single atlas size
-  if (auto subnode = componentNode.optional("AtlasResolution"))
+  if (auto subnode = componentNode.optional("AtlasResolution")) {
     m_atlasSize = subnode.asIntVector<2>();
+  }
 
   // Maximum pixel rate per frame (Texture or Depth)
   int maxMegaPixelPerFrame = 7680 * 4320 / (1000000); // 8K UHD
 
-  if (auto subnode = componentNode.optional("MPixel"))
+  if (auto subnode = componentNode.optional("MPixel")) {
     maxMegaPixelPerFrame = subnode.asInt();
+  }
 
-  m_nbAtlas = static_cast<uint16_t>(ceil((float)maxMegaPixelPerFrame * 1000000 /
-                                         (m_atlasSize.x() * m_atlasSize.y())));
+  m_nbAtlas = static_cast<uint16_t>(
+      ceil(static_cast<float>(maxMegaPixelPerFrame) * 1000000 /
+           (m_atlasSize.x() * m_atlasSize.y())));
 }
 
 void AtlasConstructor::prepareIntraPeriod(
@@ -121,8 +124,9 @@ void AtlasConstructor::completeIntraPeriod() {
           TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
           Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
 
-      for (auto &p : atlas.first.getPlanes())
+      for (auto &p : atlas.first.getPlanes()) {
         std::fill(p.begin(), p.end(), uint16_t(512));
+      }
 
       std::fill(atlas.second.getPlane(0).begin(),
                 atlas.second.getPlane(0).end(), uint16_t(0));
@@ -130,8 +134,9 @@ void AtlasConstructor::completeIntraPeriod() {
       atlasList.push_back(std::move(atlas));
     }
 
-    for (const auto &patch : m_patchList)
+    for (const auto &patch : m_patchList) {
       writePatchInAtlas(patch, views, atlasList);
+    }
 
     m_atlasBuffer.push_back(std::move(atlasList));
   }
@@ -168,12 +173,12 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
   int w = patch.patchSize.x(), h = patch.patchSize.y();
   int xM = patch.posInView.x(), yM = patch.posInView.y();
   int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
-  int w_tex = ((xM + w) <= (int)textureViewMap.getWidth())
+  int w_tex = ((xM + w) <= textureViewMap.getWidth())
                   ? w
-                  : ((int)textureViewMap.getWidth() - xM);
-  int h_tex = ((yM + h) <= (int)textureViewMap.getHeight())
+                  : (textureViewMap.getWidth() - xM);
+  int h_tex = ((yM + h) <= textureViewMap.getHeight())
                   ? h
-                  : ((int)textureViewMap.getHeight() - yM);
+                  : (textureViewMap.getHeight() - yM);
 
   if (patch.rotation == Metadata::PatchRotation::upright) {
     for (int dy = 0; dy < h_tex; dy++) {

@@ -52,8 +52,8 @@ public:
 public:
   using A::A;
   VectorInterface() : A() {}
-  VectorInterface(const A &a) : A(a) {}
-  VectorInterface(A &&a) : A(std::move(a)) {}
+  explicit VectorInterface(const A &a) : A(a) {}
+  explicit VectorInterface(A &&a) : A(std::move(a)) {}
   using A::operator=;
   VectorInterface &operator=(const A &a) {
     A::operator=(a);
@@ -69,7 +69,7 @@ public:
   constexpr size_type n() const { return 1; }
   //! \brief Overloaded resize operator.
   using A::resize;
-  void resize(size_type a, size_type = 1) { A::resize({a}); }
+  void resize(size_type a, size_type /*unused*/ = 1) { A::resize({a}); }
   //! \brief Returns an iterator to the first element of the ith row.
   const_row_iterator row_begin(size_type i) const {
     return const_row_iterator(A::data() + i);
@@ -93,17 +93,25 @@ public:
     return const_row_iterator(A::data() + (i + 1));
   }
   //! \brief Returns an iterator to the first element of the jth column.
-  const_column_iterator col_begin(size_type = 0) const { return A::begin(); }
-  column_iterator col_begin(size_type = 0) { return A::begin(); }
+  const_column_iterator col_begin(size_type /*unused*/ = 0) const {
+    return A::begin();
+  }
+  column_iterator col_begin(size_type /*unused*/ = 0) { return A::begin(); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  const_column_iterator ccol_begin(size_type = 0) const { return A::cbegin(); }
+  const_column_iterator ccol_begin(size_type /*unused*/ = 0) const {
+    return A::cbegin();
+  }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  const_column_iterator col_end(size_type = 0) const { return A::end(); }
-  column_iterator col_end(size_type = 0) { return A::end(); }
+  const_column_iterator col_end(size_type /*unused*/ = 0) const {
+    return A::end();
+  }
+  column_iterator col_end(size_type /*unused*/ = 0) { return A::end(); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  const_column_iterator ccol_end(size_type = 0) const { return A::cend(); }
+  const_column_iterator ccol_end(size_type /*unused*/ = 0) const {
+    return A::cend();
+  }
   //! \brief Getters.
   typename A::value_type x() const { return A::operator[](0); }
   typename A::value_type y() const { return A::operator[](1); }
@@ -163,10 +171,10 @@ double solid(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
       2. * atan(std::abs(triple(a, b, c)) / (na * nb * nc + na * dot(b, c) +
                                              nb * dot(a, c) + nc * dot(a, b)));
 
-  if (out < 0.)
+  if (out < 0.) {
     return (out + M_PI);
-  else
-    return out;
+  }
+  { return out; }
 }
 } // namespace stack
 
@@ -252,8 +260,9 @@ template <typename V,
           typename U = decltype(std::abs(typename V::value_type(0)))>
 V unit(const V &v, U *n = nullptr) {
   U m = norm(v);
-  if (n)
+  if (n) {
     *n = m;
+  }
   return v / m;
 }
 //! \brief Normalizes v and optionally returns ||v||.
@@ -261,8 +270,9 @@ template <typename V,
           typename U = decltype(std::abs(typename V::value_type(0)))>
 V &normalize(V &v, U *n = nullptr) {
   U m = norm(v);
-  if (n)
+  if (n) {
     *n = m;
+  }
   v /= m;
   return v;
 }

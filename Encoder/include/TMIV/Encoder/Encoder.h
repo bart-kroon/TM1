@@ -43,7 +43,8 @@ namespace TMIV::Encoder {
 // The Encoder of TMIV 1.0
 class Encoder : public IEncoder {
 public:
-  Encoder(const Common::Json &, const Common::Json &);
+  Encoder(const Common::Json & /*rootNode*/,
+          const Common::Json & /*componentNode*/);
   Encoder(const Encoder &) = delete;
   Encoder(Encoder &&) = default;
   Encoder &operator=(const Encoder &) = delete;

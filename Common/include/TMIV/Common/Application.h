@@ -41,7 +41,7 @@ namespace TMIV::Common {
 class Application {
 public:
   // Parse command-line arguments
-  Application(char const *tool, std::vector<const char *>);
+  Application(char const *tool, std::vector<const char *> /*argv*/);
 
   Application(const Application &other) = delete;
   Application(Application &&other) = default;
@@ -74,7 +74,7 @@ private:
 
   template <typename... Args>
   std::pair<Json, std::string>
-  getComponentParentAndName(const Json &node, std::string first,
+  getComponentParentAndName(const Json &node, const std::string &first,
                             Args &&... next) const {
     return getComponentParentAndName(
         node.require(node.require(first + "Method").asString()),

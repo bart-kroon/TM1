@@ -54,12 +54,13 @@ template <typename T> int sgn(T val) {
   return int(T(0) < val) - int(val < T(0));
 }
 template <typename T> T clamp(T val, T min, T max) {
-  if (val < min)
+  if (val < min) {
     return min;
-  else if (max < val)
+  }
+  if (max < val) {
     return max;
-  else
-    return val;
+  }
+  return val;
 }
 template <typename T> bool inRange(T val, T min, T max) {
   return ((min <= val) && (val <= max));
@@ -68,20 +69,24 @@ template <typename T> T is_zero(T val) {
   return (std::abs(val) < std::numeric_limits<T>::epsilon());
 }
 inline double squash(double a) {
-  while (M_PI < a)
+  while (M_PI < a) {
     a -= M_2PI;
-  while (a < -M_PI)
+  }
+  while (a < -M_PI) {
     a += M_2PI;
+  }
   return a;
 }
 inline int ipow(int base, int exp) {
   int result = 1;
   for (;;) {
-    if (exp & 1)
+    if ((exp & 1) != 0) {
       result *= base;
+    }
     exp >>= 1;
-    if (!exp)
+    if (exp == 0) {
       break;
+    }
     base *= base;
   }
   return result;

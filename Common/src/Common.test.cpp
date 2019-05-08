@@ -109,7 +109,7 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
 }
 
 TEST_CASE("Reading a Json", "[Json]") {
-  istringstream stream{"{ \"alpha\": true, \"beta\": false }"};
+  istringstream stream{R"({ "alpha": true, "beta": false })"};
   auto json = Json{stream};
   SECTION("Read booleans") {
     REQUIRE(json.require("alpha").asBool());
@@ -128,14 +128,14 @@ public:
   using Application::Application;
   using Application::json;
 
-  void run() {}
+  void run() override {}
 };
 } // namespace
 
 TEST_CASE("Parsing the command-line", "[Application]") {
   SECTION("Empty command-line returns usage instructions") {
     try {
-      FakeApplication{"Fake", {"command"}};
+      FakeApplication app{"Fake", {"command"}};
       REQUIRE(false);
     } catch (runtime_error &e) {
       REQUIRE_THAT(e.what(), Contains("Usage"));

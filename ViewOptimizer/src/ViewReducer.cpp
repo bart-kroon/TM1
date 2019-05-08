@@ -46,7 +46,8 @@ using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
 namespace TMIV::ViewOptimizer {
-ViewReducer::ViewReducer(const Json &, const Common::Json &) {}
+ViewReducer::ViewReducer(const Json & /*unused*/,
+                         const Common::Json & /*unused*/) {}
 
 auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     -> Output<CameraParametersList> {
@@ -91,7 +92,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     for (size_t id_1 = 0; id_1 < nbCameras - 1; id_1++) {
       for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
         // Sphere distance function
-        size_t temp_angle =
+        auto temp_angle =
             size_t(acos(sin(cameras[id_1].rotation[1] * radperdeg) *
                             sin(cameras[id_2].rotation[1] * radperdeg) +
                         cos(cameras[id_1].rotation[1] * radperdeg) *
@@ -103,10 +104,10 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
 
         if (temp_angle > max_angle) {
           cameras_id_pair.clear();
-          cameras_id_pair.push_back(make_pair(id_1, id_2));
+          cameras_id_pair.emplace_back(id_1, id_2);
           max_angle = temp_angle;
         } else if (temp_angle == max_angle) {
-          cameras_id_pair.push_back(make_pair(id_1, id_2));
+          cameras_id_pair.emplace_back(id_1, id_2);
         }
       }
     }
@@ -118,9 +119,9 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
       size_t id_1 = cameras_id_pair[id].first;
       size_t id_2 = cameras_id_pair[id].second;
 
-      temp_FOV =
-          (size_t)((calculateFOV(cameras[id_1]) + calculateFOV(cameras[id_2])) /
-                   FOV_step);
+      temp_FOV = static_cast<size_t>(
+          (calculateFOV(cameras[id_1]) + calculateFOV(cameras[id_2])) /
+          FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -157,16 +158,16 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
 
     float min_distance = numeric_limits<float>::max();
 
-    for (size_t id = 0; id < cameras_id_pair.size(); id++) {
+    for (auto &id : cameras_id_pair) {
       float temp_distance = 0;
-      size_t id_1 = cameras_id_pair[id].first;
-      size_t id_2 = cameras_id_pair[id].second;
+      size_t id_1 = id.first;
+      size_t id_2 = id.second;
 
       temp_distance =
           abs(cameras[id_1].position[0] - cameras[id_2].position[0]);
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
-        camera_id_pair = cameras_id_pair[id];
+        camera_id_pair = id;
       }
     }
 
@@ -177,10 +178,8 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     overlapping = calculateOverlapping(cameras[id_i], cameras[id_j]);
 
     // Decide whether the number is one or multiple
-    isoneview = (overlapping >= 0.5 * min(calculateFOV(cameras[id_i]),
-                                          calculateFOV(cameras[id_j])))
-                    ? true
-                    : false;
+    isoneview = overlapping >= 0.5 * min(calculateFOV(cameras[id_i]),
+                                         calculateFOV(cameras[id_j]));
   }
 
   // Just select 1 view which has the shortest distance to center
@@ -206,7 +205,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     for (size_t id = 0; id < nbCameras; id++) {
       size_t temp_FOV = 0;
 
-      temp_FOV = (size_t)(calculateFOV(cameras[id]) / FOV_step);
+      temp_FOV = static_cast<size_t>(calculateFOV(cameras[id]) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -217,13 +216,12 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
       }
     }
     // Search views which have the least diatance to center
-    for (auto i = 0u; i < camera_id.size(); i++) {
-      float temp_distance =
-          sqrtf(powf(cameras[camera_id[i]].position[0] - x_center, 2) +
-                powf(cameras[camera_id[i]].position[1] - y_center, 2) +
-                powf(cameras[camera_id[i]].position[2] - z_center, 2));
+    for (unsigned long i : camera_id) {
+      float temp_distance = sqrtf(powf(cameras[i].position[0] - x_center, 2) +
+                                  powf(cameras[i].position[1] - y_center, 2) +
+                                  powf(cameras[i].position[2] - z_center, 2));
       if (temp_distance < distance) {
-        id_center = int(camera_id[i]);
+        id_center = int(i);
         distance = temp_distance;
       }
     }
@@ -238,7 +236,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
   // Move cameras into basic and additional partitions
   for (size_t index = 0; index != cameras.size(); ++index) {
     (m_priorities[index] ? result.basic : result.additional)
-        .push_back(move(cameras[index]));
+        .push_back(cameras[index]);
   }
   return result;
 }
@@ -332,7 +330,7 @@ auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
         weight = 1;
       }
       weight_all += weight;
-      if (isoverlap(i, j)) {
+      if (isoverlap(i, j) != 0) {
         weight_overlapped += weight;
       }
     }

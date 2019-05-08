@@ -1,9 +1,9 @@
 {
-    "startFrame": 149,
-    "numberOfFrames": 1,
+    "startFrame": 0,
+    "numberOfFrames": 2,
     "intraPeriod": 32,
 
-    "SourceTexturePathFmt": "%s_2048_1088_420_10b.yuv",
+    "SourceTexturePathFmt": "%s_texture_2048x1088_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_2048x1088_yuv420p16le.yuv",
     "SourceCameraParameters": "TechnicolorPainter.json",
     "SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15" ],

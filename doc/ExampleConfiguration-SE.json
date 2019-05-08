@@ -1,6 +1,6 @@
 {
-    "startFrame": 142,
-    "numberOfFrames": 1,
+    "startFrame": 0,
+    "numberOfFrames": 2,
     "intraPeriod": 32,
 
     "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
@@ -24,15 +24,9 @@
     "PrunedViewTexturePathFmt": "PRU_SE_R0_Tt_v%02d_1920_1080_yuv420p10le.yuv",
     "PrunedViewDepthPathFmt": "PRU_SE_R0_Td_v%02d_1920_1080_yuv420p16le.yuv",
 
-<<<<<<< HEAD
-    "OutputTexturePath": "TM1_SE_R0_Tt_v2_1920_1080_yuv420p10le.yuv",
-    "OutputDepthPath": "TM1_SE_R0_Td_v2_1920_1080_yuv420p10le.yuv",
-    "OutputCameraName": [ "v2" ],
-=======
     "OutputTexturePath": "TM1_SE_R0_Tt_%s_1920_1080_yuv420p10le.yuv",
     "OutputDepthPath": "TM1_SE_R0_Td_%s_1920_1080_yuv420p10le.yuv",
     "OutputCameraName": "v1",
->>>>>>> 708c6acce349086aec2199370905ef3706129530
 
     "EncoderMethod": "Encoder",
     "Encoder": {
@@ -75,7 +69,9 @@
 
         "RendererMethod": "MultipassRenderer",
         "MultipassRenderer": {
-		
+			"NumberOfPasses": 1,
+			"NumberOfViewsPerPass": [13],
+			
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
                 "rayAngleParameter": 46,

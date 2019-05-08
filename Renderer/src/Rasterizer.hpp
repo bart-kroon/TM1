@@ -232,49 +232,69 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
   }
 }
 
+// Switch to fixed-point vertices to correctly handle edge points
+namespace fixed_point {
+using intfp = std::int_fast32_t;
+using Vec2fp = Common::stack::Vec2<intfp>;
+
+constexpr const auto bits = intfp{4};
+constexpr const auto eps = intfp{1};
+constexpr const auto one = eps << bits;
+constexpr const auto half = one / intfp{2};
+
+inline intfp fixed(float x) {
+  using std::ldexp;
+  using TMIV::Common::ifloor;
+  return static_cast<intfp>(ifloor(ldexp(x, bits)));
+}
+inline Vec2fp fixed(Common::Vec2f v) { return {fixed(v.x()), fixed(v.y())}; }
+inline intfp fixed(int x) { return static_cast<intfp>(x) << bits; }
+inline int fpfloor(intfp x) { return static_cast<int>(x >> bits); }
+inline int fpceil(intfp x) { return fpfloor(x + one - eps); }
+} // namespace fixed_point
+
 template <typename... T>
 void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
                                       const Batch &batch, Strip &strip) {
+  using namespace fixed_point;
+  using std::ldexp;
+  using std::max;
+  using std::min;
+
   const auto n0 = descriptor.indices[0];
   const auto n1 = descriptor.indices[1];
   const auto n2 = descriptor.indices[2];
 
   // Image coordinate within strip
-  const auto uv0 =
-      batch.vertices[n0].position - Common::Vec2f{0.f, float(strip.i1)};
-  const auto uv1 =
-      batch.vertices[n1].position - Common::Vec2f{0.f, float(strip.i1)};
-  const auto uv2 =
-      batch.vertices[n2].position - Common::Vec2f{0.f, float(strip.i1)};
+  const auto stripOffset = Vec2fp{0, fixed(strip.i1)};
+  const auto uv0 = fixed(batch.vertices[n0].position) - stripOffset;
+  const auto uv1 = fixed(batch.vertices[n1].position) - stripOffset;
+  const auto uv2 = fixed(batch.vertices[n2].position) - stripOffset;
 
   // Determine triangle bounding box
-  const auto u1 =
-      std::max(0, TMIV::Common::ifloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
-  const auto u2 =
-      std::min(strip.cols,
-               1 + TMIV::Common::iceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u1 = max(0, fpfloor(min({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u2 = min(strip.cols, 1 + fpceil(max({uv0.x(), uv1.x(), uv2.x()})));
   if (u1 >= u2) {
     return; // Cull
   }
-  const auto v1 =
-      std::max(0, TMIV::Common::ifloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v1 = max(0, fpfloor(min({uv0.y(), uv1.y(), uv2.y()})));
   const auto v2 =
-      std::min(strip.rows(),
-               1 + TMIV::Common::iceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
+      min(strip.rows(), 1 + fpceil(max({uv0.y(), uv1.y(), uv2.y()})));
   if (v1 >= v2) {
     return; // Cull
   }
 
   // Determine (unclipped) parallelogram area
-  const auto area = ((uv1.y() - uv2.y()) * (uv0.x() - uv2.x()) +
-                     (uv2.x() - uv1.x()) * (uv0.y() - uv2.y()));
-  if (area <= 0.f) {
+  const auto area = (uv1.y() - uv2.y()) * (uv0.x() - uv2.x()) +
+                    (uv2.x() - uv1.x()) * (uv0.y() - uv2.y());
+  if (area <= 0) {
     return; // Cull
   }
-  const auto inv_area = 1.f / area;
+  const auto area_f = ldexp(float(area), -2 * bits);
+  const auto inv_area = 1.f / float(area);
 
   // Calculate feature values for determining blending weights
-  const auto stretching = 0.5f * area / descriptor.area;
+  const auto stretching = 0.5f * area_f / descriptor.area;
   const auto rayAngle =
       (1 / 3.f) * (batch.vertices[n0].rayAngle + batch.vertices[n1].rayAngle +
                    batch.vertices[n2].rayAngle);
@@ -292,29 +312,26 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
   // For each pixel in the bounding box
   for (int v = v1; v < v2; ++v) {
     for (int u = u1; u < u2; ++u) {
-      // Small epsilon value to avoid skipping pixels when the grids aligns.
-      // This happens when synthesizing from and to the same camera. This will
-      // not happen for arbitrary viewports but may happens on the Encoder side.
-      const float eps = 1e-6f;
-
       // Calculate the Barycentric coordinate of the pixel center (x +
       // 1/2, y + 1/2)
-      const float w0 =
-          inv_area * ((uv1.y() - uv2.y()) * (float(u) - uv2.x() + 0.5f) +
-                      (uv2.x() - uv1.x()) * (float(v) - uv2.y() + 0.5f));
-      if (!(w0 >= -eps)) {
+      const auto X0 = (uv1.y() - uv2.y()) * (fixed(u) - uv2.x() + half) +
+                      (uv2.x() - uv1.x()) * (fixed(v) - uv2.y() + half);
+      if (X0 < 0) {
         continue;
       }
-      const float w1 =
-          inv_area * ((uv2.y() - uv0.y()) * (float(u) - uv2.x() + 0.5f) +
-                      (uv0.x() - uv2.x()) * (float(v) - uv2.y() + 0.5f));
-      if (!(w1 >= -eps)) {
+      const auto X1 = (uv2.y() - uv0.y()) * (fixed(u) - uv2.x() + half) +
+                      (uv0.x() - uv2.x()) * (fixed(v) - uv2.y() + half);
+      if (X1 < 0) {
         continue;
       }
-      const float w2 = 1.f - w0 - w1;
-      if (!(w2 >= -eps)) {
+      const auto X2 = area - X0 - X1;
+      if (X2 < 0) {
         continue;
       }
+
+      const auto w0 = inv_area * float(X0);
+      const auto w1 = inv_area * float(X1);
+      const auto w2 = inv_area * float(X2);
 
       // Barycentric interpolation of normalized disparity and attributes
       // (e.g. color)
@@ -324,7 +341,13 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       // Blend pixel
       assert(v * strip.cols + u < int(strip.matrix.size()));
       auto &P = strip.matrix[v * strip.cols + u];
-      P = m_pixel.blend(P, m_pixel.construct(a, d, rayAngle, stretching));
+
+      auto p = m_pixel.construct(a, d, rayAngle, stretching);
+      if (X0 == 0 || X1 == 0 || X2 == 0) {
+        // Count edge points half assuming there is an adjacent triangle
+        p.normWeight *= 0.5f;
+      }
+      P = m_pixel.blend(P, p);
     }
   }
 }

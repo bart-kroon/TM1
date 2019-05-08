@@ -52,25 +52,51 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
         m_NumberOfViewsPerPass.push_back(subnode.at(i).asInt());
     }
   }
-  if (auto subnode = componentNode.optional("OutputDepth")) 
-      m_depthdump = subnode.asInt();
+}
+
+template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
+inline _OutIt my_transform(
+    const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2,
+    const _InIt2 _First3, const _InIt2 _First4,
+    _OutIt _Dest,
+    _Fn _Func) { // transform [_First1, _Last1) and [_First2, ...) with _Func
+  _Adl_verify_range(_First1, _Last1);
+  auto _UFirst1 = _Get_unwrapped(_First1);
+  const auto _ULast1 = _Get_unwrapped(_Last1);
+  const auto _Count = _Idl_distance<_InIt1>(_UFirst1, _ULast1);
+  auto _UFirst2 = _Get_unwrapped_n(_First2, _Count);
+  auto _UFirst3 = _Get_unwrapped_n(_First3, _Count);
+  auto _UFirst4 = _Get_unwrapped_n(_First4, _Count);
+  auto _UDest = _Get_unwrapped_n(_Dest, _Count);
+  for (; _UFirst1 != _ULast1; ++_UFirst1, (void)++_UFirst2, (void)++_UFirst3,(void)++_UFirst4, _UDest) {
+    *_UDest = _Func(*_UFirst1, *_UFirst2, *_UFirst3, *_UFirst4);
+  }
+
+  _Seek_wrapped(_Dest, _UDest);
+  return (_Dest);
 }
 
 uint16_t filterMergeDepth(uint16_t i, uint16_t j) {
-  if (i >= j)// to enforce copying pixels if it is a foreground pixel only
+  if (i >= j) // to enforce copying pixels if it is a foreground pixel only
     return i;
   else
     return j;
 }
 
-uint16_t filterMerge(uint16_t i, uint16_t j) {
-  if (i > 0)
-   // if (id >= jd) // to enforce copying pixels if it is a foreground pixel only
-      return i;
+uint16_t filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) {
+    if (i > 0){
+        if (id >= jd)
+            return i; // foreground pixel
+        else        // conflict
+            return 0;
+    } else
+        return j;
+    
+   // if (id >= jd) // to enforce copying pixels if it is a foreground pixel
+    // only
+    //return i;
   //  else
-   //   return j;
-  else
-    return j;
+  //   return j;
 }
 
 vector<unsigned int> SelectedViewsPass, patchesViewId;
@@ -91,7 +117,7 @@ uint16_t filterMaps(uint16_t i) {
 }
 
 vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
-                               const Metadata::CameraParameters &target) {
+                         const Metadata::CameraParameters &target) {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];
@@ -169,7 +195,7 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   vector<size_t> SortedCamerasId(cameras.size());
   SortedCamerasId = sortViews(cameras, target);
 
-  //Produce the individual pass synthesis results
+  // Produce the individual pass synthesis results
   for (auto passId = 0; passId < NumberOfPasses;
        passId++) // Loop over NumberOfPasses
   {
@@ -181,53 +207,48 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
         SelectedViewsPass.push_back(SortedCamerasId[id]);
     }
 
-	/////////////////
+    /////////////////
     // Update the Occupancy Map to be used in the Pass
-	/////////////////
+    /////////////////
     for (auto atlasId = 0; atlasId < maps.size(); atlasId++) {
       std::transform(maps[atlasId].getPlane(0).begin(),
                      maps[atlasId].getPlane(0).end(),
                      mapsPass[passId][atlasId].getPlane(0).begin(), filterMaps);
     }
 
-	////////////////
-	// Synthesis per pass
-	////////////////
-    viewportPass[passId] =
-        m_synthesizer->renderFrame(atlas, mapsPass[passId], patches, cameras,
-                                   target);
-  }                                         // namespace TMIV::Renderer
+    ////////////////
+    // Synthesis per pass
+    ////////////////
+    viewportPass[passId] = m_synthesizer->renderFrame(atlas, mapsPass[passId],
+                                                      patches, cameras, target);
+  } // namespace TMIV::Renderer
   //////////////
-  // Merging ///// 
+  // Merging /////
   //////////////
   if (NumberOfPasses > 1) {
     Common::Texture444Depth10Frame mergedviewport = viewportPass[NumberOfPasses - 1];
+    mergedviewport = viewportPass[NumberOfPasses - 1];
     for (auto passNum = NumberOfPasses - 1; passNum > 0; passNum--) {
-      // if (TMIV::Renderer::MultipassRenderer::m_dumpDepthFile)
-      std::transform(viewportPass[passNum - 1].second.getPlane(0).begin(),
-                     viewportPass[passNum - 1].second.getPlane(0).end(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     filterMergeDepth);
+        std::transform(viewportPass[passNum - 1].second.getPlane(0).begin(),
+                       viewportPass[passNum - 1].second.getPlane(0).end(),
+                       mergedviewport.second.getPlane(0).begin(),
+                       mergedviewport.second.getPlane(0).begin(),
+                       filterMergeDepth);
 
-        for (auto i = 0; i < 3; i++) {
-            std::transform(viewportPass[passNum-1].first.getPlane(i).begin(),
-                       viewportPass[passNum-1].first.getPlane(i).end(),
-                         mergedviewport.first.getPlane(i).begin(),
-                       mergedviewport.first.getPlane(i).begin(), filterMerge);
-        }
-
-        if (TMIV::Renderer::MultipassRenderer::m_depthdump)
-            std::transform(viewportPass[passNum].second.getPlane(0).begin(),
-                     viewportPass[passNum].second.getPlane(0).end(),
-                     viewportPass[passNum + 1].second.getPlane(0).begin(),
-                     mergedviewport.second.getPlane(0).begin(), filterMerge);
+      for (auto i = 0; i < 3; i++) {
+        my_transform(viewportPass[passNum - 1].first.getPlane(i).begin(),
+                       viewportPass[passNum - 1].first.getPlane(i).end(),
+                       mergedviewport.first.getPlane(i).begin(),
+                        viewportPass[passNum - 1].second.getPlane(0).begin(),
+                        mergedviewport.second.getPlane(0).begin(),
+                       mergedviewport.first.getPlane(i).begin(), filterMergeTexture);
+      }
     }
     viewport = mergedviewport; // Final Merged
   } else
     viewport = viewportPass[NumberOfPasses - 1]; // Single Pass
-  
-	m_inpainter->inplaceInpaint(viewport, target);
+
+  m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 

@@ -552,9 +552,13 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         const float w_stretching1 = pixel.rayAngleWeight(6.f / 3.f);
         const float w_stretching2 = pixel.rayAngleWeight(6.f / 5.f);
 
+		// The weight is normalized by the depth weight, so effectively:
+		const float w_normWeight1 = w_rayAngle1 * w_stretching1;
+		const float w_normWeight2 = w_rayAngle2 * w_stretching2;
+
         REQUIRE(normWeight(0, 0) == 0.f);
-        REQUIRE(normWeight(1, 1) == Approx(w_rayAngle2 * w_stretching2));
-        REQUIRE(normWeight(1, 5) == Approx(w_rayAngle1 * w_stretching1));
+        REQUIRE(normWeight(1, 1) == Approx(w_normWeight2));
+        REQUIRE(normWeight(1, 5) == Approx(w_normWeight1));
         REQUIRE(normWeight(2, 7) == 0.f);
         REQUIRE(normWeight(3, 7) == 0.f);
       }

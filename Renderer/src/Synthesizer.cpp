@@ -76,15 +76,9 @@ public:
     case PatchRotation::upright:
       return atlas - posInAtlas + posInView;
     case PatchRotation::ccw: {
-      // In reference to atlas constructor figure in TM document
-      // Sanity check: consider patch is at (0,0) in view and atlas
-      // Consider the top-left pixel in the patch in the atlas: (x, y) = (0, 0)
-      // This pixel corresponds to the top-right pixel in the patch in the view:
-      // (patch_width_in_view_x - 1, 0) = (j, i)
-
       // Determine patch row and column in view orientation
       const auto i = atlas.x() - posInAtlas.x();
-      const auto j = patchSize.x() - 1.f - atlas.y() + posInAtlas.y();
+      const auto j = patchSize.x() - atlas.y() + posInAtlas.y();
 
       // Return position in view
       return patch.posInView + Vec2f{j, i};
@@ -167,10 +161,6 @@ public:
         addTriangle(tl, br, bl);
       }
     }
-
-    // TODO: detect 360deg ERP patches and add some triangles for +180 -->
-    // -180.
-    // TODO: detect +/-90deg ERP patches and add north or south poles.
 
     assert(int(result.size()) <= size);
     return result;
@@ -266,7 +256,7 @@ public:
     auto mesh = reproject(depth, camera, target);
 
     Rasterizer<> rasterizer{pixel, target.size};
-    rasterizer.submit(move(get<0>(mesh)), {}, move(get<1>(mesh)));
+    rasterizer.submit(move(get<0>(mesh)), {}, get<1>(mesh));
     rasterizer.run();
     return rasterizer.depth();
   }
@@ -288,7 +278,7 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
                          float stretchingParam)
     : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam)) {}
 
-Synthesizer::~Synthesizer() {}
+Synthesizer::~Synthesizer() = default;
 
 Common::Texture444Depth10Frame
 Synthesizer::renderFrame(const Common::MVD10Frame &atlas,

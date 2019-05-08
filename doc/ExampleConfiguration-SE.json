@@ -3,8 +3,8 @@
     "numberOfFrames": 2,
     "intraPeriod": 32,
 
-    "SourceTexturePathFmt": "%s_1920_1080_420_10b.yuv",
-    "SourceDepthPathFmt": "%s_1920_1080_0_3_1_62_420_16b.yuv",
+    "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
+    "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p16le.yuv",
     "SourceCameraParameters": "IntelKermit.json",
     "SourceCameraNames": [ "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13" ],
 
@@ -24,15 +24,16 @@
     "PrunedViewTexturePathFmt": "PRU_SE_R0_Tt_v%02d_1920_1080_yuv420p10le.yuv",
     "PrunedViewDepthPathFmt": "PRU_SE_R0_Td_v%02d_1920_1080_yuv420p16le.yuv",
 
-    "OutputTexturePath": "TM1_SE_R0_Tt_v1_1920_1080_yuv420p10le.yuv",
-    "OutputDepthPath": "TM1_SE_R0_Td_v1_1920_1080_yuv420p10le.yuv",
-    "OutputCameraName": [ "v1" ],
+    "OutputTexturePath": "TM1_SE_R0_Tt_%s_1920_1080_yuv420p10le.yuv",
+    "OutputDepthPath": "TM1_SE_R0_Td_%s_1920_1080_yuv420p10le.yuv",
+    "OutputCameraName": "v1",
 
     "EncoderMethod": "Encoder",
     "Encoder": {
 
         "ViewOptimizerMethod": "ViewReducer",
         "ViewReducer": {},
+        "NoViewOptimizer": {},
 
         "AtlasConstructorMethod": "AtlasConstructor",
         "AtlasConstructor": {

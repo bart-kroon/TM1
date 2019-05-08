@@ -39,17 +39,21 @@ namespace TMIV::AtlasConstructor {
 
 Packer::Packer(const Common::Json & /*rootNode*/,
                const Common::Json &componentNode) {
-  if (auto subnode = componentNode.optional("Alignment"))
+  if (auto subnode = componentNode.optional("Alignment")) {
     m_alignment = subnode.asInt();
+  }
 
-  if (auto subnode = componentNode.optional("MinPatchSize"))
+  if (auto subnode = componentNode.optional("MinPatchSize")) {
     m_minPatchSize = subnode.asInt();
+  }
 
-  if (auto subnode = componentNode.optional("Overlap"))
+  if (auto subnode = componentNode.optional("Overlap")) {
     m_overlap = subnode.asInt();
+  }
 
-  if (auto subnode = componentNode.optional("PiP"))
-    m_pip = subnode.asInt();
+  if (auto subnode = componentNode.optional("PiP")) {
+    m_pip = (subnode.asInt() != 0);
+  }
 }
 
 Metadata::AtlasParametersList
@@ -61,9 +65,9 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   ClusteringMapList clusteringMap;
 
   for (auto cameraId = 0u; cameraId < masks.size(); cameraId++) {
-    auto clusteringOutput =
-        Cluster::retrieve(cameraId, masks[cameraId], (int)clusterList.size(),
-                          shouldNotBeSplit[cameraId]);
+    auto clusteringOutput = Cluster::retrieve(
+        cameraId, masks[cameraId], static_cast<int>(clusterList.size()),
+        shouldNotBeSplit[cameraId] != 0u);
 
     std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
               std::back_inserter(clusterList));
@@ -75,22 +79,25 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   std::vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 
-  for (const auto &sz : atlasSize)
-    packerList.push_back(MaxRectPiP(sz.x(), sz.y(), m_alignment, m_pip));
+  packerList.reserve(atlasSize.size());
+  for (const auto &sz : atlasSize) {
+    packerList.emplace_back(sz.x(), sz.y(), m_alignment, m_pip);
+  }
 
   auto comp = [&](const Cluster &p1, const Cluster &p2) {
     if (shouldNotBeSplit[p1.getCameraId()] !=
-        shouldNotBeSplit[p2.getCameraId()])
+        shouldNotBeSplit[p2.getCameraId()]) {
       return (shouldNotBeSplit[p2.getCameraId()] != 0u);
-    else
-      return (p1.getArea() < p2.getArea());
+    }
+    { return (p1.getArea() < p2.getArea()); }
   };
 
   std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)>
       clusterToPack(comp);
 
-  for (const auto &cluster : clusterList)
+  for (const auto &cluster : clusterList) {
     clusterToPack.push(cluster);
+  }
 
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
@@ -117,12 +124,14 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
 
           auto patchOverflow = (p.posInView + p.patchSize) -
                                masks[cluster.getCameraId()].getSize();
-          if (patchOverflow.x() > 0)
+          if (patchOverflow.x() > 0) {
             p.posInView.x() -= patchOverflow.x();
-          if (patchOverflow.y() > 0)
+          }
+          if (patchOverflow.y() > 0) {
             p.posInView.y() -= patchOverflow.y();
+          }
 
-          patchList.push_back(std::move(p));
+          patchList.push_back(p);
 
           packed = true;
           break;
@@ -133,11 +142,13 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
         auto cc =
             cluster.split(clusteringMap[cluster.getCameraId()], m_overlap);
 
-        if (m_minPatchSize <= cc.first.getMinSize())
-          clusterToPack.push(std::move(cc.first));
+        if (m_minPatchSize <= cc.first.getMinSize()) {
+          clusterToPack.push(cc.first);
+        }
 
-        if (m_minPatchSize <= cc.second.getMinSize())
-          clusterToPack.push(std::move(cc.second));
+        if (m_minPatchSize <= cc.second.getMinSize()) {
+          clusterToPack.push(cc.second);
+        }
       }
     }
 

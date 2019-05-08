@@ -35,7 +35,7 @@
 #include <TMIV/Common/Factory.h>
 
 namespace TMIV::AtlasDeconstructor {
-void registerComponents() {
+inline void registerComponents() {
   Common::Factory<IAtlasDeconstructor>::getInstance()
       .registerAs<AtlasDeconstructor>("AtlasDeconstructor");
 }

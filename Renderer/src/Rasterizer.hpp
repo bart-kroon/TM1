@@ -295,7 +295,6 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       // Small epsilon value to avoid skipping pixels when the grids aligns.
       // This happens when synthesizing from and to the same camera. This will
       // not happen for arbitrary viewports but may happens on the Encoder side.
-      // TODO: Use fixed point image positions to avoid this problem
       const float eps = 1e-6f;
 
       // Calculate the Barycentric coordinate of the pixel center (x +

@@ -52,7 +52,8 @@ private:
   Metadata::CameraParametersList m_cameras;
 
 public:
-  Decoder(const Common::Json &, const Common::Json &);
+  Decoder(const Common::Json & /*rootNode*/,
+          const Common::Json & /*componentNode*/);
   Decoder(const Decoder &) = delete;
   Decoder(Decoder &&) = default;
   Decoder &operator=(const Decoder &) = delete;

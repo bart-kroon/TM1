@@ -48,7 +48,7 @@ private:
   int m_intraPeriod{};
 
 public:
-  Application(vector<const char *> argv)
+  explicit Application(vector<const char *> argv)
       : Common::Application{"AtlasDeconstructor", move(argv)},
         m_atlasDeconstructor{
             create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},

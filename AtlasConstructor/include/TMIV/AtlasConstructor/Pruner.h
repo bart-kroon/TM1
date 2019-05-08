@@ -43,7 +43,8 @@ namespace TMIV::AtlasConstructor {
 // The Pruner of TMIV 1.0 provided by Technicolor
 class Pruner : public IPruner {
 public:
-  Pruner(const Common::Json &, const Common::Json &);
+  Pruner(const Common::Json & /*unused*/,
+         const Common::Json & /*componentNode*/);
   Pruner(const Pruner &) = delete;
   Pruner(Pruner &&) = default;
   Pruner &operator=(const Pruner &) = delete;

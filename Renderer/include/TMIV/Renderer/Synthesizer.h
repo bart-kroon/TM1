@@ -39,13 +39,14 @@
 namespace TMIV::Renderer {
 class Synthesizer : public ISynthesizer {
 public:
-  Synthesizer(const Common::Json &, const Common::Json &);
+  Synthesizer(const Common::Json & /*unused*/,
+              const Common::Json & /*componentNode*/);
   Synthesizer(float rayAngleParam, float depthParam, float stretchingParam);
   Synthesizer(const Synthesizer &) = delete;
   Synthesizer(Synthesizer &&) = default;
   Synthesizer &operator=(const Synthesizer &) = delete;
   Synthesizer &operator=(Synthesizer &&) = default;
-  ~Synthesizer();
+  ~Synthesizer() override;
 
   Common::Texture444Depth10Frame
   renderFrame(const Common::MVD10Frame &atlas,

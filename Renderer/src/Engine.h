@@ -40,7 +40,7 @@
 namespace TMIV::Renderer {
 struct SceneVertexDescriptor {
   Common::Vec3f position; // m, scene point in target reference frame
-  float rayAngle;         // rad, ray angle from: cos a = <v, w>/|v||w|
+  float rayAngle{};       // rad, ray angle from: cos a = <v, w>/|v||w|
 };
 
 using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
@@ -54,8 +54,8 @@ using TriangleDescriptorList = std::vector<TriangleDescriptor>;
 
 struct ImageVertexDescriptor {
   Common::Vec2f position; // px, position in image (x right, y down)
-  float depth;            // m, depth as defined in the target projection
-  float rayAngle;         // rad, ray angle from: cos a = <v, w>/|v||w|
+  float depth{};          // m, depth as defined in the target projection
+  float rayAngle{};       // rad, ray angle from: cos a = <v, w>/|v||w|
 };
 
 using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;

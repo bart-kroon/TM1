@@ -46,17 +46,21 @@ namespace TMIV::AtlasConstructor {
 Pruner::Pruner(const Common::Json & /*rootNode*/,
                const Common::Json &componentNode) {
 
-  if (auto subnode = componentNode.optional("RedundancyFactor"))
+  if (auto subnode = componentNode.optional("RedundancyFactor")) {
     m_redundancyFactor = subnode.asFloat();
+  }
 
-  if (auto subnode = componentNode.optional("ErosionIter"))
+  if (auto subnode = componentNode.optional("ErosionIter")) {
     m_erosionIter = subnode.asInt();
+  }
 
-  if (auto subnode = componentNode.optional("DilationIter"))
+  if (auto subnode = componentNode.optional("DilationIter")) {
     m_dilationIter = subnode.asInt();
+  }
 
-  if (auto subnode = componentNode.optional("MaxAdditionalView"))
+  if (auto subnode = componentNode.optional("MaxAdditionalView")) {
     m_maxAdditionalView = subnode.asInt();
+  }
 }
 
 MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
@@ -70,10 +74,10 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
 
   std::sort(cameraOrderId.begin(), cameraOrderId.end(),
             [&shouldNotBePruned](int i1, int i2) {
-              if (shouldNotBePruned[i1] != shouldNotBePruned[i2])
+              if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
                 return (shouldNotBePruned[i1] != 0);
-              else
-                return (i1 < i2);
+              }
+              { return (i1 < i2); }
             });
 
   // Possible discard some additional views (for debugging purpose)
@@ -83,7 +87,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
           m_maxAdditionalView));
 
   // Pruning loop
-  int nbView = (int)views.size();
+  int nbView = static_cast<int>(views.size());
   MaskList masks(nbView);
   std::vector<Mat<float>> depthMapExpanded(nbView);
 
@@ -100,7 +104,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
       depthMapExpanded[viewToPruneId] =
           expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
 
-      if (!shouldNotBePruned[viewToPruneId]) {
+      if (shouldNotBePruned[viewToPruneId] == 0u) {
         // Depth-based redundancy removal
         const Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];
         Mat<Vec2f> gridMapToPrune = imagePositions(cameras[viewToPruneId]);
@@ -149,8 +153,9 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
                     }
                   }
                 }
-              } else
+              } else {
                 mask = 0;
+              }
             }
 
           endloop:;
@@ -170,9 +175,9 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
         // Erosion
         if (0 < m_erosionIter) {
           auto &inputBuffer =
-              (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
+              (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
           auto &outputBuffer =
-              (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
+              (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
 
           inputBuffer = bufferToPrune;
 
@@ -202,9 +207,9 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
         // Dilation
         if (0 < m_dilationIter) {
           auto &inputBuffer =
-              (m_erosionIter % 2) ? bufferToPrune : bufferPostProc;
+              (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
           auto &outputBuffer =
-              (m_erosionIter % 2) ? bufferPostProc : bufferToPrune;
+              (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
 
           inputBuffer = bufferToPrune;
 
@@ -231,8 +236,9 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
           }
         }
       }
-    } else
+    } else {
       std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(0));
+    }
   }
 
   return masks;

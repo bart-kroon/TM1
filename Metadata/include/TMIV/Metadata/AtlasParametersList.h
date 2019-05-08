@@ -51,10 +51,10 @@ enum class PatchRotation {
 // Data type that corresponds to an entry of atlas_params of MPEG/N18464
 struct AtlasParameters {
   // In MPEG/N18464: atlas_id
-  uint8_t atlasId;
+  uint8_t atlasId{};
 
   // In MPEG/N18464: view_id
-  uint8_t viewId;
+  uint8_t viewId{};
 
   // In MPEG/N18464: patch_{width,height}_in_view
   Vec2i patchSize;

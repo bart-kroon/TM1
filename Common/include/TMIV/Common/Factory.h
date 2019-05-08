@@ -71,14 +71,11 @@ public:
                 const Json &componentNode) const {
     auto method = componentNode.require(name + "Method").asString();
 
-    if (m_creators.count(method) == 0)
+    if (m_creators.count(method) == 0) {
       throw std::runtime_error("Error no registration for " + method);
+    }
 
     return m_creators.at(method)(rootNode, componentNode.require(method));
-  }
-
-  Object create(const std::string &metaName, const Json &rootNode) const {
-    return create(metaName, rootNode, rootNode);
   }
 
   // Register a new creator with a method ID

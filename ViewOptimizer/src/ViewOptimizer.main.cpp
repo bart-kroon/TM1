@@ -48,7 +48,7 @@ class Application : public Common::Application {
   Metadata::CameraParametersList m_cameras;
 
 public:
-  Application(vector<const char *> argv)
+  explicit Application(vector<const char *> argv)
       : Common::Application{"ViewOptimizer", move(argv)},
         m_optimizer{create<IViewOptimizer>("Encoder", "ViewOptimizer")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},

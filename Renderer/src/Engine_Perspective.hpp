@@ -50,7 +50,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
   const Common::Vec2f f;
   const Common::Vec2f p;
 
-  Engine(const Metadata::CameraParameters &camera_)
+  explicit Engine(const Metadata::CameraParameters &camera_)
       : camera{camera_},
 
         // Mesh structure
@@ -177,8 +177,6 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
   }
 
   // Project mesh to target view
-  //
-  // TODO: Cull triangles
   template <typename... T>
   auto project(SceneVertexDescriptorList sceneVertices,
                TriangleDescriptorList triangles,

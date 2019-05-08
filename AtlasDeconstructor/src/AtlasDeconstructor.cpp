@@ -57,8 +57,9 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
     patchMapList.push_back(std::move(patchMap));
   }
 
-  for (auto id = 0u; id < patchList.size(); id++)
+  for (auto id = 0u; id < patchList.size(); id++) {
     writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id));
+  }
 
   return patchMapList;
 }
@@ -74,9 +75,10 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   int xMin = q0.x(), xLast = q0.x() + (isRotated ? h : w);
   int yMin = q0.y(), yLast = q0.y() + (isRotated ? w : h);
 
-  for (auto y = yMin; y < yLast; y++)
+  for (auto y = yMin; y < yLast; y++) {
     std::fill(patchMap.getPlane(0).row_begin(y) + xMin,
               patchMap.getPlane(0).row_begin(y) + xLast, patchId);
+  }
 }
 
 MVD16Frame
@@ -118,12 +120,12 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     int w = patch.patchSize.x(), h = patch.patchSize.y();
     int xM = patch.posInView.x(), yM = patch.posInView.y();
     int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
-    int w_tex = ((xM + w) <= (int)textureViewMap.getWidth())
+    int w_tex = ((xM + w) <= textureViewMap.getWidth())
                     ? w
-                    : ((int)textureViewMap.getWidth() - xM);
-    int h_tex = ((yM + h) <= (int)textureViewMap.getHeight())
+                    : (textureViewMap.getWidth() - xM);
+    int h_tex = ((yM + h) <= textureViewMap.getHeight())
                     ? h
-                    : ((int)textureViewMap.getHeight() - yM);
+                    : (textureViewMap.getHeight() - yM);
 
     if (patch.rotation == Metadata::PatchRotation::upright) {
       for (int dy = 0; dy < h_tex; dy++) {

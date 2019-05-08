@@ -1,9 +1,9 @@
 {
-    "startFrame": 0,
-    "numberOfFrames": 2,
+    "startFrame": 149,
+    "numberOfFrames": 1,
     "intraPeriod": 32,
 
-    "SourceTexturePathFmt": "%s_texture_2048x1088_yuv420p10le.yuv",
+    "SourceTexturePathFmt": "%s_2048_1088_420_10b.yuv",
     "SourceDepthPathFmt": "%s_depth_2048x1088_yuv420p16le.yuv",
     "SourceCameraParameters": "TechnicolorPainter.json",
     "SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15" ],
@@ -68,6 +68,8 @@
 
         "RendererMethod": "MultipassRenderer",
         "MultipassRenderer": {
+			"NumberOfPasses": 1,
+			"NumberOfViewsPerPass": [16],
 
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {

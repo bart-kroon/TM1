@@ -33,7 +33,6 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
-#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -151,6 +150,7 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   vector<size_t> SortedCamerasId(cameras.size());
   SortedCamerasId = sortViews(cameras, target);
 
+  //Produce the individual pass synthesis results
   for (auto passId = 0; passId < NumberOfPasses;
        passId++) // Loop over NumberOfPasses
   {

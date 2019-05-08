@@ -549,8 +549,8 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
 
         // The same stretching weight is used for all points in a triangle.
         // The stretching is the ratio of original and synthesized areas.
-        const float w_stretching1 = pixel.rayAngleWeight(6.f / 3.f);
-        const float w_stretching2 = pixel.rayAngleWeight(6.f / 5.f);
+        const float w_stretching1 = pixel.stretchingWeight(6.f / 3.f);
+        const float w_stretching2 = pixel.stretchingWeight(6.f / 5.f);
 
         // The weight is normalized by the depth weight, so effectively:
         const float w_normWeight1 = w_rayAngle1 * w_stretching1;

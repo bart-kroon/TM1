@@ -245,7 +245,7 @@ constexpr const auto half = one / intfp{2};
 inline intfp fixed(float x) {
   using std::ldexp;
   using TMIV::Common::ifloor;
-  return static_cast<intfp>(ifloor(ldexp(x, bits)));
+  return static_cast<intfp>(ifloor(0.5f + ldexp(x, bits)));
 }
 inline Vec2fp fixed(Common::Vec2f v) { return {fixed(v.x()), fixed(v.y())}; }
 inline intfp fixed(int x) { return static_cast<intfp>(x) << bits; }

@@ -62,9 +62,6 @@ struct PixelAccumulator : private PixelAttributes<T...> {
     assert(normDisp_ >= 0.f);
   }
 
-  PixelAccumulator(float normWeight_, float normDisp_, T... attributes)
-      : PixelAccumulator{std::tuple{attributes...}, normWeight_, normDisp_} {}
-
   // weight is implicit as normWeight *
   // AccumulatingPixel<T...>::normDispWeight(normDisp) but never directly
   // calculated to avoid numerical instability.
@@ -100,9 +97,6 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
     assert(normDisp_ >= 0.f);
     assert(normWeight_ >= 0.f);
   }
-
-  PixelValue(float normDisp_, float normWeight_, T... attributes)
-      : PixelValue{std::tuple{attributes...}, normDisp_, normWeight_} {}
 
   // Normalized disparity in diopters
   float normDisp{0.f};
@@ -143,12 +137,6 @@ public:
     assert(normDisp >= 0.f);
     return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching),
             normDisp};
-  }
-
-  // Construct a pixel accumulator from a single synthesized pixel
-  auto construct(float normDisp, float rayAngle, float stretching,
-                 T... attributes) const -> Accumulator {
-    return construct(std::tuple{attributes...}, normDisp, rayAngle, stretching);
   }
 
 private:

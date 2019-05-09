@@ -319,7 +319,7 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     float const stretching_weight = pixel.stretchingWeight(stretching);
 
     Value reference{
-        0.53f, ray_angle_weight * stretching_weight, {0.3f, 0.7f, 0.1f}};
+        {{0.3f, 0.7f, 0.1f}}, 0.53f, ray_angle_weight * stretching_weight};
 
     Acc accum = pixel.construct(reference.attributes(), reference.normDisp,
                                 ray_angle, stretching);

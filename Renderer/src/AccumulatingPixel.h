@@ -62,10 +62,8 @@ struct PixelAccumulator : private PixelAttributes<T...> {
     assert(normDisp_ >= 0.f);
   }
 
-  PixelAccumulator(float normWeight_, float normDisp_, float rayAngle_,
-                   T... attributes)
-      : PixelAccumulator{std::tuple{attributes...}, normWeight_, normDisp_,
-                         rayAngle_} {}
+  PixelAccumulator(float normWeight_, float normDisp_, T... attributes)
+      : PixelAccumulator{std::tuple{attributes...}, normWeight_, normDisp_} {}
 
   // weight is implicit as normWeight *
   // AccumulatingPixel<T...>::normDispWeight(normDisp) but never directly

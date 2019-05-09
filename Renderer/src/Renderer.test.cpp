@@ -319,7 +319,7 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     float const stretching_weight = pixel.stretchingWeight(stretching);
 
     Value reference{
-        0.53f, ray_angle_weight * stretching_weight, {0.3f, 0.7f, 0.1f}};
+        {{0.3f, 0.7f, 0.1f}}, 0.53f, ray_angle_weight * stretching_weight};
 
     Acc accum = pixel.construct(reference.attributes(), reference.normDisp,
                                 ray_angle, stretching);
@@ -549,14 +549,23 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
 
         // The same stretching weight is used for all points in a triangle.
         // The stretching is the ratio of original and synthesized areas.
-        const float w_stretching1 = pixel.rayAngleWeight(6.f / 3.f);
-        const float w_stretching2 = pixel.rayAngleWeight(6.f / 5.f);
+        const float w_stretching1 = pixel.stretchingWeight(6.f / 3.f);
+        const float w_stretching2 = pixel.stretchingWeight(6.f / 5.f);
+
+        // The weight is normalized by the depth weight, so effectively:
+        const float w_normWeight1 = w_rayAngle1 * w_stretching1;
+        const float w_normWeight2 = w_rayAngle2 * w_stretching2;
 
         REQUIRE(normWeight(0, 0) == 0.f);
-        REQUIRE(normWeight(1, 1) == Approx(w_rayAngle2 * w_stretching2));
-        REQUIRE(normWeight(1, 5) == Approx(w_rayAngle1 * w_stretching1));
+        REQUIRE(normWeight(1, 1) == Approx(w_normWeight2));
+        REQUIRE(normWeight(1, 5) == Approx(w_normWeight1));
         REQUIRE(normWeight(2, 7) == 0.f);
         REQUIRE(normWeight(3, 7) == 0.f);
+
+        THEN("Points that intersect triangle edges are interpolated") {
+          REQUIRE(normWeight(1, 2) ==
+                  Approx((w_normWeight2 + w_normWeight1) / 2));
+        }
       }
       THEN("The color map has known values") {
         const auto color = rasterizer.attribute<0>();

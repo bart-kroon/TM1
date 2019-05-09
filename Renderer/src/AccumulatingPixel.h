@@ -55,17 +55,12 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAccumulator &operator=(PixelAccumulator &&) = default;
 
   PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_,
-                   float normDisp_, float rayAngle_)
+                   float normDisp_)
       : PixelAttributes<T...>{attributes},
-        normWeight{normWeight_}, normDisp{normDisp_}, rayAngle{rayAngle_} {
+        normWeight{normWeight_}, normDisp{normDisp_} {
     assert(normWeight_ >= 0.f);
     assert(normDisp_ >= 0.f);
   }
-
-  PixelAccumulator(float normWeight_, float normDisp_, float rayAngle_,
-                   T... attributes)
-      : PixelAccumulator{std::tuple{attributes...}, normWeight_, normDisp_,
-                         rayAngle_} {}
 
   // weight is implicit as normWeight *
   // AccumulatingPixel<T...>::normDispWeight(normDisp) but never directly
@@ -74,9 +69,6 @@ struct PixelAccumulator : private PixelAttributes<T...> {
 
   // Normalized disparity in diopters
   float normDisp{0.f};
-
-  // Ray angle in radians
-  float rayAngle{0.f};
 
   // Access the attributes
   const PixelAttributes<T...> &attributes() const { return *this; }
@@ -105,9 +97,6 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
     assert(normDisp_ >= 0.f);
     assert(normWeight_ >= 0.f);
   }
-
-  PixelValue(float normDisp_, float normWeight_, T... attributes)
-      : PixelValue{std::tuple{attributes...}, normDisp_, normWeight_} {}
 
   // Normalized disparity in diopters
   float normDisp{0.f};
@@ -147,13 +136,7 @@ public:
                  float stretching) const -> Accumulator {
     assert(normDisp >= 0.f);
     return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching),
-            normDisp, rayAngle};
-  }
-
-  // Construct a pixel accumulator from a single synthesized pixel
-  auto construct(float normDisp, float rayAngle, float stretching,
-                 T... attributes) const -> Accumulator {
-    return construct(std::tuple{attributes...}, normDisp, rayAngle, stretching);
+            normDisp};
   }
 
 private:
@@ -166,7 +149,7 @@ private:
         b.normWeight * normDispWeight(b.normDisp - normDisp);
     return Accumulator{
         blendAttributes(w_a, a.attributes(), w_b, b.attributes()), normWeight,
-        normDisp, blendValues(w_a, a.rayAngle, w_b, b.rayAngle)};
+        normDisp};
   }
 
 public:

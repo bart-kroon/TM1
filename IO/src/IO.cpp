@@ -611,7 +611,7 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
       loadCamerasFromJson(Json{stream}.require("cameras"), {outputCameraName});
 
   if (cameras.empty()) {
-    throw runtime_error("Unknown OutputCameraName" + outputCameraName[0]);
+    throw runtime_error("Unknown OutputCameraName " + outputCameraName);
   }
 
   result = cameras[0];

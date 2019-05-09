@@ -201,15 +201,13 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   SortedCamerasId = sortViews(cameras, target);
 
   // Produce the individual pass synthesis results
-  for (auto passId = 0; passId < NumberOfPasses;
-       passId++) // Loop over NumberOfPasses
+  for (auto passId = 0; passId < NumberOfPasses; passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
     SelectedViewsPass.empty();
     for (auto id = 0u; id < cameras.size(); id++) {
-      if (id <
-          TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass[passId])
-        SelectedViewsPass.push_back(SortedCamerasId[id]);
+        if (id < numberOfViewPerPass[passId])
+            SelectedViewsPass.push_back(SortedCamerasId[id]);
     }
 
     /////////////////

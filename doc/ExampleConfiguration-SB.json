@@ -56,7 +56,7 @@
                 "PiP": 1
             },
 
-            "AtlasResolution": [ 4096, 2048 ],
+            "AtlasResolution": [ 2048, 2048 ],
             "MPixel": 20
         }
     },

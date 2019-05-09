@@ -33,6 +33,7 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -54,11 +55,11 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
   }
 }
 
-template <class _InIt1, class _InIt2, class _OutIt, class _Fn>
+template <class _InIt1, class _InIt2, class _InIt3, class _InIt4, class _OutIt,
+          class _Fn>
 inline _OutIt my_transform(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2,
-    const _InIt2 _First3, const _InIt2 _First4,
-    _OutIt _Dest,
+    const _InIt3 _First3, const _InIt4 _First4, _OutIt _Dest,
     _Fn _Func) { // transform [_First1, _Last1) and [_First2, ...) with _Func
   _Adl_verify_range(_First1, _Last1);
   auto _UFirst1 = _Get_unwrapped(_First1);
@@ -68,7 +69,8 @@ inline _OutIt my_transform(
   auto _UFirst3 = _Get_unwrapped_n(_First3, _Count);
   auto _UFirst4 = _Get_unwrapped_n(_First4, _Count);
   auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-  for (; _UFirst1 != _ULast1; ++_UFirst1, (void)++_UFirst2, (void)++_UFirst3,(void)++_UFirst4, _UDest) {
+  for (; _UFirst1 != _ULast1; ++_UFirst1, (void)++_UFirst2, (void)++_UFirst3,
+                              (void)++_UFirst4, ++_UDest) {
     *_UDest = _Func(*_UFirst1, *_UFirst2, *_UFirst3, *_UFirst4);
   }
 
@@ -83,20 +85,21 @@ uint16_t filterMergeDepth(uint16_t i, uint16_t j) {
     return j;
 }
 
+uint16_t filterDepthAfterMerge(uint16_t i, uint16_t j) {
+  if (i > 0)
+    return j;
+  else
+    return 0;
+}
+
 uint16_t filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) {
-    if (i > 0){
-        if (id >= jd)
-            return i; // foreground pixel
-        else        // conflict
-            return 0;
-    } else
-        return j;
-    
-   // if (id >= jd) // to enforce copying pixels if it is a foreground pixel
-    // only
-    //return i;
-  //  else
-  //   return j;
+  if (i > 0) {
+    if (id >= jd) // Checking depth
+      return i;   // foreground pixel
+    else          // conflict
+      return j; //0;
+  } else 
+    return j;
 }
 
 vector<unsigned int> SelectedViewsPass, patchesViewId;
@@ -226,25 +229,32 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   // Merging /////
   //////////////
   if (NumberOfPasses > 1) {
-    Common::Texture444Depth10Frame mergedviewport = viewportPass[NumberOfPasses - 1];
-    mergedviewport = viewportPass[NumberOfPasses - 1];
-    for (auto passNum = NumberOfPasses - 1; passNum > 0; passNum--) {
-        std::transform(viewportPass[passNum - 1].second.getPlane(0).begin(),
-                       viewportPass[passNum - 1].second.getPlane(0).end(),
-                       mergedviewport.second.getPlane(0).begin(),
-                       mergedviewport.second.getPlane(0).begin(),
-                       filterMergeDepth);
+    Common::Texture444Depth10Frame mergedviewport =
+        viewportPass[NumberOfPasses - 1];
+    for (auto passId = NumberOfPasses - 1; passId > 0; passId--) {
+      std::transform(viewportPass[passId - 1].second.getPlane(0).begin(),
+                     viewportPass[passId - 1].second.getPlane(0).end(),
+                     mergedviewport.second.getPlane(0).begin(),
+                     mergedviewport.second.getPlane(0).begin(),
+                     filterMergeDepth);
 
-      for (auto i = 0; i < 3; i++) {
-        my_transform(viewportPass[passNum - 1].first.getPlane(i).begin(),
-                       viewportPass[passNum - 1].first.getPlane(i).end(),
-                       mergedviewport.first.getPlane(i).begin(),
-                        viewportPass[passNum - 1].second.getPlane(0).begin(),
-                        mergedviewport.second.getPlane(0).begin(),
-                       mergedviewport.first.getPlane(i).begin(), filterMergeTexture);
+      for (auto i = 0; i < viewport.first.getNumberOfPlanes(); i++) {
+        my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
+                     viewportPass[passId - 1].first.getPlane(i).end(),
+                     mergedviewport.first.getPlane(i).begin(),
+                     viewportPass[passId - 1].second.getPlane(0).begin(),
+                     mergedviewport.second.getPlane(0).begin(),
+                     mergedviewport.first.getPlane(i).begin(),
+                     filterMergeTexture);
       }
     }
     viewport = mergedviewport; // Final Merged
+
+    std::transform(viewport.first.getPlane(0).begin(),
+                   viewport.first.getPlane(0).end(),
+                   viewport.second.getPlane(0).begin(),
+                   viewport.second.getPlane(0).begin(), filterDepthAfterMerge);
+
   } else
     viewport = viewportPass[NumberOfPasses - 1]; // Single Pass
 

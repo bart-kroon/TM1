@@ -74,10 +74,12 @@ Cluster Cluster::align(const Cluster &c, int alignment) {
   Cluster d(c.cameraId_, c.clusterId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
-  d.imax_ = c.imax_ - (c.imax_ % alignment) + (alignment - 1);
+  d.imax_ = c.imax_; //modification to align the imin,jmin to even values to help renderer
+  //d.imax_ = c.imax_ - (c.imax_ % alignment) + (alignment - 1);
 
   d.jmin_ = c.jmin_ - (c.jmin_ % alignment);
-  d.jmax_ = c.jmax_ - (c.jmax_ % alignment) + (alignment - 1);
+  d.jmax_ = c.jmax_ ; //modification to align the imin,jmin to even values to help renderer
+  // d.jmax_ = c.jmax_ - (c.jmax_ % alignment) + (alignment - 1);
 
   d.filling_ = c.filling_;
 

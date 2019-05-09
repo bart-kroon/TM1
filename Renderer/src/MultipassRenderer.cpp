@@ -170,8 +170,10 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   // Initialization
   //////////////////
   int NumberOfPasses = TMIV::Renderer::MultipassRenderer::m_NumberOfPasses;
-  vector<unsigned int> numberOfViewPerPass =
-      TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass;
+  vector<unsigned int> numberOfViewPerPass = TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass;
+
+  if (NumberOfPasses != numberOfViewPerPass.size())
+    cout << "WARNING: " << "Please check number of passes " << endl;
 
   Common::Texture444Depth10Frame viewport;
   Common::Texture444Depth10Frame *viewportPass;

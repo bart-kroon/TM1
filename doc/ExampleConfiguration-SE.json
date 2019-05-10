@@ -8,24 +8,24 @@
     "SourceCameraParameters": "IntelKermit.json",
     "SourceCameraNames": [ "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13" ],
 
-    "BasicTexturePathFmt": "BAS_SE_R0_Tt_v%02d_1920_1080_yuv420p10le.yuv",
-    "BasicDepthPathFmt": "BAS_SE_R0_Td_v%02d_1920_1080_yuv420p16le.yuv",
+    "BasicTexturePathFmt": "BAS_SE_R0_Tt_v%02d_1920x1080_yuv420p10le.yuv",
+    "BasicDepthPathFmt": "BAS_SE_R0_Td_v%02d_1920x1080_yuv420p16le.yuv",
     "BasicMetadataPath": "BAS_SE_R0_Tm_vxx.bit",
-    "AdditionalTexturePathFmt": "ADD_SE_R0_Tt_v%02d_1920_1080_yuv420p10le.yuv",
-    "AdditionalDepthPathFmt": "ADD_SE_R0_Td_v%02d_1920_1080_yuv420p16le.yuv",
+    "AdditionalTexturePathFmt": "ADD_SE_R0_Tt_v%02d_1920x1080_yuv420p10le.yuv",
+    "AdditionalDepthPathFmt": "ADD_SE_R0_Td_v%02d_1920x1080_yuv420p16le.yuv",
     "AdditionalMetadataPath": "ADD_SE_R0_Tm_vxx.bit",
 
-    "AtlasTexturePathFmt": "ATL_SE_R0_Tt_c%02d_1920_1080_yuv420p10le.yuv",
-    "AtlasDepthPathFmt": "ATL_SE_R0_Td_c%02d_1920_1080_yuv420p10le.yuv",
+    "AtlasTexturePathFmt": "ATL_SE_R0_Tt_c%02d_1920x1080_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SE_R0_Td_c%02d_1920x1080_yuv420p10le.yuv",
     "AtlasMetadataPath": "ATL_SE_R0_Tm_c00.bit",
 
-    "AtlasPatchOccupancyMapFmt": "APO_SE_R0_Td_c%02d_1920_1080_yuv420p16le.yuv",
+    "AtlasPatchOccupancyMapFmt": "APO_SE_R0_Td_c%02d_1920x1080_yuv420p16le.yuv",
 
-    "PrunedViewTexturePathFmt": "PRU_SE_R0_Tt_v%02d_1920_1080_yuv420p10le.yuv",
-    "PrunedViewDepthPathFmt": "PRU_SE_R0_Td_v%02d_1920_1080_yuv420p16le.yuv",
+    "PrunedViewTexturePathFmt": "PRU_SE_R0_Tt_v%02d_1920x1080_yuv420p10le.yuv",
+    "PrunedViewDepthPathFmt": "PRU_SE_R0_Td_v%02d_1920x1080_yuv420p16le.yuv",
 
-    "OutputTexturePath": "TM1_SE_R0_Tt_%s_1920_1080_yuv420p10le.yuv",
-    "OutputDepthPath": "TM1_SE_R0_Td_%s_1920_1080_yuv420p10le.yuv",
+    "OutputTexturePath": "TM1_SE_R0_Tt_%s_1920x1080_yuv420p10le.yuv",
+    "OutputDepthPath": "TM1_SE_R0_Td_%s_1920x1080_yuv420p10le.yuv",
     "OutputCameraName": "v1",
 
     "EncoderMethod": "Encoder",

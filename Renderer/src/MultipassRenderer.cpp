@@ -183,6 +183,7 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   //////////////////
   int NumberOfPasses = TMIV::Renderer::MultipassRenderer::m_NumberOfPasses;
   vector<unsigned int> numberOfViewPerPass = TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass;
+  mergeConflict = m_mergeConflict;
 
   if (NumberOfPasses != numberOfViewPerPass.size())
     cout << "WARNING: " << "Please check number of passes " << endl;
@@ -238,10 +239,10 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                                                       patches, cameras, target);
   } // namespace TMIV::Renderer
   //////////////
-  // Merging /////
+  // Merging 
   //////////////
   if (NumberOfPasses > 1) {
-    Common::Texture444Depth10Frame mergedviewport =
+        Common::Texture444Depth10Frame mergedviewport =
         viewportPass[NumberOfPasses - 1];
     for (auto passId = NumberOfPasses - 1; passId > 0; passId--) {
       std::transform(viewportPass[passId - 1].second.getPlane(0).begin(),

@@ -53,6 +53,8 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
         m_NumberOfViewsPerPass.push_back(subnode.at(i).asInt());
     }
   }
+  if (auto subnode = componentNode.optional("MergeConflict"))
+    m_mergeConflict = subnode.asInt();
 }
 
 template <class _InIt1, class _InIt2, class _InIt3, class _InIt4, class _OutIt,
@@ -92,13 +94,23 @@ uint16_t filterDepthAfterMerge(uint16_t i, uint16_t j) {
     return 0;
 }
 
+int mergeConflict;
 uint16_t filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) {
   if (i > 0) {
     if (id >= jd) // Checking depth
-      return i;   // foreground pixel
-    else          // conflict
-      return j; //0;
-  } else 
+      return i;
+    else // conflict
+      switch (mergeConflict) {
+      case 0:
+        return 0; // return 0 values and let the inpainter fill them
+      case 1:
+        return i; // fill from the low-pass synthesis results which are in the
+                  // background
+      case 2:
+        return j; // 2 fill from the high-pass synthesis results which are in
+                  // the foreground
+      }
+  } else
     return j;
 }
 

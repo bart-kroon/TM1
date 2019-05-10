@@ -1,6 +1,6 @@
 {
-    "startFrame": 0,
-    "numberOfFrames": 2,
+    "startFrame": 180,
+    "numberOfFrames": 1,
     "intraPeriod": 32,
 
     "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
@@ -57,7 +57,7 @@
             },
 
             "AtlasResolution": [ 1920, 1080 ],
-            "MPixel": 20
+            "MPixel": 6
         }
     },
 
@@ -72,12 +72,12 @@
 
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
-                "rayAngleParameter": 46,
-                "depthParameter": 26,
-                "stretchingParameter": 3.3
+                "rayAngleParameter": 0,
+                "depthParameter": 25,
+                "stretchingParameter": 0.6
             },
 
-            "InpainterMethod": "NoInpainter",
+            "InpainterMethod": "Inpainter",
             "Inpainter": {},
             "NoInpainter": {}
         }

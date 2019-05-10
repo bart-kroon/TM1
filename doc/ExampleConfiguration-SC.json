@@ -1,6 +1,6 @@
 {
     "startFrame": 0,
-    "numberOfFrames": 2,
+    "numberOfFrames": 1,
     "intraPeriod": 32,
 
     "SourceTexturePathFmt": "%s_texture_4096x4096_yuv420p10le.yuv",
@@ -8,24 +8,24 @@
     "SourceCameraParameters": "TechnicolorHijack.json",
     "SourceCameraNames": [ "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9" ],
 
-    "BasicTexturePathFmt": "BAS_SC_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
-    "BasicDepthPathFmt": "BAS_SC_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
+    "BasicTexturePathFmt": "BAS_SC_R0_Tt_v%02d_4096x4096_yuv420p10le.yuv",
+    "BasicDepthPathFmt": "BAS_SC_R0_Td_v%02d_4096x4096_yuv420p16le.yuv",
     "BasicMetadataPath": "BAS_SC_R0_Tm_vxx.bit",
-    "AdditionalTexturePathFmt": "ADD_SC_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
-    "AdditionalDepthPathFmt": "ADD_SC_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
+    "AdditionalTexturePathFmt": "ADD_SC_R0_Tt_v%02d_4096x4096_yuv420p10le.yuv",
+    "AdditionalDepthPathFmt": "ADD_SC_R0_Td_v%02d_4096x4096_yuv420p16le.yuv",
     "AdditionalMetadataPath": "ADD_SC_R0_Tm_vxx.bit",
 
-    "AtlasTexturePathFmt": "ATL_SC_R0_Tt_c%02d_4096x2048_yuv420p10le.yuv",
-    "AtlasDepthPathFmt": "ATL_SC_R0_Td_c%02d_4096x2048_yuv420p10le.yuv",
+    "AtlasTexturePathFmt": "ATL_SC_R0_Tt_c%02d_4096x4096_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SC_R0_Td_c%02d_4096x4096_yuv420p10le.yuv",
     "AtlasMetadataPath": "ATL_SC_R0_Tm_c00.bit",
 
-    "AtlasPatchOccupancyMapFmt": "APO_SC_R0_Td_c%02d_4096x2048_yuv420p16le.yuv",
+    "AtlasPatchOccupancyMapFmt": "APO_SC_R0_Td_c%02d_4096x4096_yuv420p16le.yuv",
 
-    "PrunedViewTexturePathFmt": "PRU_SC_R0_Tt_v%02d_4096x2048_yuv420p10le.yuv",
-    "PrunedViewDepthPathFmt": "PRU_SC_R0_Td_v%02d_4096x2048_yuv420p16le.yuv",
+    "PrunedViewTexturePathFmt": "PRU_SC_R0_Tt_v%02d_4096x4096_yuv420p10le.yuv",
+    "PrunedViewDepthPathFmt": "PRU_SC_R0_Td_v%02d_4096x4096_yuv420p16le.yuv",
 
-    "OutputTexturePath": "TM1_SC_R0_Tt_%s_4096x2048_yuv420p10le.yuv",
-    "OutputDepthPath": "TM1_SC_R0_Td_%s_4096x2048_yuv420p10le.yuv",
+    "OutputTexturePath": "TM1_SC_R0_Tt_%s_4096x4096_yuv420p10le.yuv",
+    "OutputDepthPath": "TM1_SC_R0_Td_%s_4096x4096_yuv420p10le.yuv",
     "OutputCameraName": "v1",
 
     "EncoderMethod": "Encoder",
@@ -57,7 +57,7 @@
             },
 
             "AtlasResolution": [ 4096, 4096 ],
-            "MPixel": 20
+            "MPixel": 32
         }
     },
 
@@ -74,12 +74,12 @@
 
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
-                "rayAngleParameter": 46,
-                "depthParameter": 26,
-                "stretchingParameter": 3.3
+                "rayAngleParameter": 0,
+                "depthParameter": 25,
+                "stretchingParameter": 0.6
             },
 
-            "InpainterMethod": "NoInpainter",
+            "InpainterMethod": "Inpainter",
             "Inpainter": {},
             "NoInpainter": {}
         }

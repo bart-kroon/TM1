@@ -38,551 +38,385 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
-namespace {
-template <typename YUVD>
-void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
-  static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
-                std::is_same_v<YUVD, Texture444Depth16Frame>);
-
-  auto &Y = yuvd.first.getPlane(0);
-  auto &U = yuvd.first.getPlane(1);
-  auto &V = yuvd.first.getPlane(2);
-  auto &D = yuvd.second.getPlane(0);
-
-  const int width = int(Y.width());
-  const int height = int(Y.height());
-
-  const int imsize = width * height;
-
-  double DepthBlendingThreshold = 1;
-
-  if (meta.type == ProjectionType::ERP) {
-    double angleRange = (meta.erpPhiRange[1] - meta.erpPhiRange[0]) / M_2PI;
-
-    bool *isHole = new bool[imsize];
-
-    int **nonEmptyNeighborL = new int *[2];
-    nonEmptyNeighborL[0] = new int[imsize];
-    nonEmptyNeighborL[1] = new int[imsize];
-
-    int **nonEmptyNeighborR = new int *[2];
-    nonEmptyNeighborR[0] = new int[imsize];
-    nonEmptyNeighborR[1] = new int[imsize];
-
-    int **mapERP2Cassini = new int *[2];
-    mapERP2Cassini[0] = new int[imsize];
-    mapERP2Cassini[1] = new int[imsize];
-
-    int **mapCassini2ERP = new int *[2];
-    mapCassini2ERP[0] = new int[imsize];
-    mapCassini2ERP[1] = new int[imsize];
-
-    for (int i = 0; i < 2; i++) {
-      for (int pp = 0; pp < imsize; pp++) {
-        nonEmptyNeighborL[i][pp] = -1;
-        nonEmptyNeighborR[i][pp] = -1;
-        mapERP2Cassini[i][pp] = -1;
-        mapCassini2ERP[i][pp] = -1;
-      }
-    }
-    for (int pp = 0; pp < imsize; pp++) {
-      isHole[pp] = true;
-    }
-
-    int width2 = width / 2;
-    int height2 = height / 2;
-    double tmpH, tmpW;
-
-    int oldPP, oldH, oldW;
-    int newPP;
-    double newH, newW;
-
-    for (int h = 0; h < height; h++) {
-      oldH = h - height2;
-      for (int w = 0; w < width; w++) {
-        oldPP = h * width + w;
-
-        oldW = w - width2;
-        tmpH = sqrt(height * h - h * h);
-        if (tmpH / height2 > angleRange) {
-          tmpH = height2 * angleRange;
-        }
-        newW = oldW * tmpH / height2;
-        newW += width2;
-
-        tmpW = sqrt(width * newW - newW * newW);
-        newH = oldH * width2 / tmpW;
-        newH += height2;
-
-        if (int(newH + 0.5) < 0 || int(newH + 0.5) >= height) {
-          continue;
-        }
-
-        newPP = int(newH + 0.5) * width + int(newW + 0.5);
-
-        mapERP2Cassini[0][oldPP] = int(newH + 0.5);
-        mapERP2Cassini[1][oldPP] = int(newW + 0.5);
-
-        if (isHole[newPP] == 1) {
-          mapCassini2ERP[0][newPP] = h;
-          mapCassini2ERP[1][newPP] = w;
-        }
-
-        if (D(h, w) != 0) {
-          isHole[newPP] = false; // 1 if hole
-        }
-      }
-    }
-
-    // analysis from top-left
-
-    for (int h = 0; h < height; h++) {
-      int hW = h * width;
-      for (int w = 0; w < width; w++) {
-        int pp = hW + w;
-
-        nonEmptyNeighborL[0][pp] = mapCassini2ERP[0][pp];
-        nonEmptyNeighborL[1][pp] = mapCassini2ERP[1][pp];
-
-        if (isHole[pp]) {
-          if (w > 0) {
-            nonEmptyNeighborL[0][pp] = nonEmptyNeighborL[0][pp - 1];
-            nonEmptyNeighborL[1][pp] = nonEmptyNeighborL[1][pp - 1];
-          } else {
-            nonEmptyNeighborL[0][pp] = -1;
-            nonEmptyNeighborL[1][pp] = -1;
-          }
-        }
-
-      } // w
-    }   // h
-
-    // analysis from bottom-right
-
-    for (int h = height - 1; h >= 0; h--) {
-      int hW = h * width;
-      for (int w = width - 1; w >= 0; w--) {
-        int pp = hW + w;
-
-        nonEmptyNeighborR[0][pp] = mapCassini2ERP[0][pp];
-        nonEmptyNeighborR[1][pp] = mapCassini2ERP[1][pp];
-
-        if (isHole[pp]) {
-          if (w < width - 1) {
-            nonEmptyNeighborR[0][pp] = nonEmptyNeighborR[0][pp + 1];
-            nonEmptyNeighborR[1][pp] = nonEmptyNeighborR[1][pp + 1];
-          } else {
-            nonEmptyNeighborR[0][pp] = -1;
-            nonEmptyNeighborR[1][pp] = -1;
-          }
-        }
-
-      } // w
-    }   // h
-
-    // inpainting
-    double distL, distR, sumdist, weightL, weightR;
-
-    for (int h = 0, pp = 0; h < height; h++) {
-      for (int w = 0; w < width; w++, pp++) {
-
-        int posInCassini =
-            mapERP2Cassini[0][pp] * width + mapERP2Cassini[1][pp];
-        bool pointExistsInCassini = mapERP2Cassini[0][pp] != -1;
-
-        if (D(h, w) == 0 && pointExistsInCassini) {
-
-          int rowOfLeftInCassini = nonEmptyNeighborL[0][posInCassini];
-          int rowOfRightInCassini = nonEmptyNeighborR[0][posInCassini];
-
-          int colOfLeftInCassini = nonEmptyNeighborL[1][posInCassini];
-          int colOfRightInCassini = nonEmptyNeighborR[1][posInCassini];
-
-          int posOfLeftInCassini =
-              rowOfLeftInCassini * width + colOfLeftInCassini;
-          int posOfRightInCassini =
-              rowOfRightInCassini * width + colOfRightInCassini;
-
-          bool leftInCassiniExists = (nonEmptyNeighborL[0][posInCassini] != -1);
-          bool rightInCassiniExists =
-              (nonEmptyNeighborR[0][posInCassini] != -1);
-
-          if (leftInCassiniExists && rightInCassiniExists) {
-            if (D(rowOfLeftInCassini, colOfLeftInCassini) >
-                D(rowOfRightInCassini, colOfRightInCassini) +
-                    DepthBlendingThreshold) { // right further
-              Y(h, w) = Y(rowOfRightInCassini, colOfRightInCassini);
-              U(h, w) = U(rowOfRightInCassini, colOfRightInCassini);
-              V(h, w) = V(rowOfRightInCassini, colOfRightInCassini);
-              D(h, w) = D(rowOfRightInCassini, colOfRightInCassini);
-            } else if (D(rowOfRightInCassini, colOfRightInCassini) >
-                       D(rowOfLeftInCassini, colOfLeftInCassini) +
-                           DepthBlendingThreshold) { // left further
-              Y(h, w) = Y(rowOfLeftInCassini, colOfLeftInCassini);
-              U(h, w) = U(rowOfLeftInCassini, colOfLeftInCassini);
-              V(h, w) = V(rowOfLeftInCassini, colOfLeftInCassini);
-              D(h, w) = D(rowOfLeftInCassini, colOfLeftInCassini);
-            } else { // blend
-              distL = sqrt((h - rowOfLeftInCassini) * (h - rowOfLeftInCassini) +
-                           (w - colOfLeftInCassini) * (w - colOfLeftInCassini));
-              distR =
-                  sqrt((h - rowOfRightInCassini) * (h - rowOfRightInCassini) +
-                       (w - colOfRightInCassini) * (w - colOfRightInCassini));
-              sumdist = distL + distR;
-              weightL = distR / sumdist;
-              weightR = distL / sumdist;
-
-              Y(h, w) = Y(rowOfLeftInCassini, colOfLeftInCassini) * weightL +
-                        Y(rowOfRightInCassini, colOfRightInCassini) * weightR;
-              U(h, w) = Y(rowOfLeftInCassini, colOfLeftInCassini) * weightL +
-                        U(rowOfRightInCassini, colOfRightInCassini) * weightR;
-              V(h, w) = Y(rowOfLeftInCassini, colOfLeftInCassini) * weightL +
-                        V(rowOfRightInCassini, colOfRightInCassini) * weightR;
-              D(h, w) = Y(rowOfLeftInCassini, colOfLeftInCassini) * weightL +
-                        D(rowOfRightInCassini, colOfRightInCassini) * weightR;
-            }
-          } else if (leftInCassiniExists) {
-            Y(h, w) = Y(rowOfLeftInCassini, colOfLeftInCassini);
-            U(h, w) = U(rowOfLeftInCassini, colOfLeftInCassini);
-            V(h, w) = V(rowOfLeftInCassini, colOfLeftInCassini);
-            D(h, w) = D(rowOfLeftInCassini, colOfLeftInCassini);
-          } else if (rightInCassiniExists) {
-            Y(h, w) = Y(rowOfRightInCassini, colOfRightInCassini);
-
-            U(h, w) = U(rowOfRightInCassini, colOfRightInCassini);
-            V(h, w) = V(rowOfRightInCassini, colOfRightInCassini);
-            D(h, w) = D(rowOfRightInCassini, colOfRightInCassini);
-          }
-        }
-      }
-    }
-
-    // remaining points
-    for (int h = 0; h < height; h++) {
-      int hW = h * width;
-      for (int w = 0; w < width; w++) {
-        int pp = hW + w;
-        if (D(h, w) == 0) {
-          if (w > 0) {
-            Y(h, w) = Y(h, w - 1);
-            U(h, w) = U(h, w - 1);
-            V(h, w) = V(h, w - 1);
-            D(h, w) = D(h, w - 1);
-          } else if (h > 0) {
-            Y(h, w) = Y(h - 1, w);
-            U(h, w) = U(h - 1, w);
-            V(h, w) = V(h - 1, w);
-            D(h, w) = D(h - 1, w);
-          }
-        }
-      }
-    }
-
-    for (int h = height - 1; h >= 0; h--) {
-      int hW = h * width;
-      for (int w = width - 1; w >= 0; w--) {
-        int pp = hW + w;
-        if (D(h, w) == 0) {
-          if (w < width - 1) {
-            Y(h, w) = Y(h, w + 1);
-            U(h, w) = U(h, w + 1);
-            V(h, w) = V(h, w + 1);
-            D(h, w) = D(h, w + 1);
-          } else if (h < height - 1) {
-            Y(h, w) = Y(h + 1, w);
-            U(h, w) = U(h + 1, w);
-            V(h, w) = V(h + 1, w);
-            D(h, w) = D(h + 1, w);
-          }
-        }
-      }
-    }
-
-    delete nonEmptyNeighborL[0];
-    delete nonEmptyNeighborL[1];
-    delete nonEmptyNeighborL;
-
-    delete nonEmptyNeighborR[0];
-    delete nonEmptyNeighborR[1];
-    delete nonEmptyNeighborR;
-
-    delete mapERP2Cassini[0];
-    delete mapERP2Cassini[1];
-    delete mapERP2Cassini;
-
-    delete mapCassini2ERP[0];
-    delete mapCassini2ERP[1];
-    delete mapCassini2ERP;
-
-    delete isHole;
-
-  } else {
-    int *nonEmptyNeighborL = new int[imsize];
-    int *nonEmptyNeighborR = new int[imsize];
-    int *nonEmptyNeighborT = new int[imsize];
-    int *nonEmptyNeighborB = new int[imsize];
-
-    // analysis from top-left
-
-    for (int h = 0; h < height; h++) {
-      int hW = h * width;
-      for (int w = 0; w < width; w++) {
-        int pp = hW + w;
-
-        nonEmptyNeighborL[pp] = w;
-
-        if (D(h, w) == 0) {
-
-          if (w > 0) {
-            nonEmptyNeighborL[pp] = nonEmptyNeighborL[pp - 1];
-          } else {
-            nonEmptyNeighborL[pp] = -1;
-          }
-        }
-
-      } // w
-    }   // h
-
-    // analysis from bottom-right
-
-    for (int h = height - 1; h >= 0; h--) {
-      int hW = h * width;
-      for (int w = width - 1; w >= 0; w--) {
-        int pp = hW + w;
-
-        nonEmptyNeighborR[pp] = w;
-
-        if (D(h, w) == 0) {
-
-          if (w < width - 1) {
-            nonEmptyNeighborR[pp] = nonEmptyNeighborR[pp + 1];
-          } else {
-            nonEmptyNeighborR[pp] = -1;
-          }
-        }
-
-      } // w
-    }   // h
-
-    // horizontal inpainting
-
-    for (int h = 0, pp = 0; h < height; h++) {
-      for (int w = 0; w < width; w++, pp++) {
-
-        if (D(h, w) != 0) {
-          continue;
-        }
-
-        int dist;
-        float weight;
-
-        bool useL = false;
-        bool useR = false;
-
-        if (nonEmptyNeighborL[pp] != -1) {
-          if (nonEmptyNeighborR[pp] != -1) {
-
-            float farthestDepth =
-                D(h, nonEmptyNeighborL[pp]) < D(h, nonEmptyNeighborR[pp])
-                    ? D(h, nonEmptyNeighborL[pp])
-                    : D(h, nonEmptyNeighborR[pp]);
-            if (D(h, nonEmptyNeighborL[pp]) - farthestDepth <=
-                DepthBlendingThreshold) {
-              useL = true;
-            }
-            if (D(h, nonEmptyNeighborR[pp]) - farthestDepth <=
-                DepthBlendingThreshold) {
-              useR = true;
-            }
-          } else {
-            useL = true;
-          }
-        } else {
-          if (nonEmptyNeighborR[pp] != -1) {
-            useR = true;
-          } else {
-            continue;
-          }
-        }
-
-        if (useL) {
-          if (useR) {
-            float weightL = 1.0 / abs(w - nonEmptyNeighborL[pp]);
-            float weightR = 1.0 / abs(w - nonEmptyNeighborR[pp]);
-            float sumWeights = weightL + weightR;
-
-            weightL /= sumWeights;
-            weightR /= sumWeights;
-
-            Y(h, w) = Y(h, nonEmptyNeighborL[pp]) * weightL;
-            U(h, w) = U(h, nonEmptyNeighborL[pp]) * weightL;
-            V(h, w) = V(h, nonEmptyNeighborL[pp]) * weightL;
-            D(h, w) = D(h, nonEmptyNeighborL[pp]) * weightL;
-
-            Y(h, w) += (Y(h, nonEmptyNeighborR[pp]) * weightR);
-            U(h, w) += (U(h, nonEmptyNeighborR[pp]) * weightR);
-            V(h, w) += (V(h, nonEmptyNeighborR[pp]) * weightR);
-            D(h, w) += (D(h, nonEmptyNeighborR[pp]) * weightR);
-          } else {
-            Y(h, w) = Y(h, nonEmptyNeighborL[pp]);
-            U(h, w) = U(h, nonEmptyNeighborL[pp]);
-            V(h, w) = V(h, nonEmptyNeighborL[pp]);
-            D(h, w) = D(h, nonEmptyNeighborL[pp]);
-          }
-        } else {
-          if (useR) {
-            Y(h, w) = Y(h, nonEmptyNeighborR[pp]);
-            U(h, w) = U(h, nonEmptyNeighborR[pp]);
-            V(h, w) = V(h, nonEmptyNeighborR[pp]);
-            D(h, w) = D(h, nonEmptyNeighborR[pp]);
-          } else {
-            continue;
-          }
-        }
-
-      } // w
-    }   // h
-
-    // analysis from top-left
-
-    for (int h = 0; h < height; h++) {
-      int hW = h * width;
-      for (int w = 0; w < width; w++) {
-        int pp = hW + w;
-
-        nonEmptyNeighborT[pp] = h;
-
-        if (D(h, w) == 0) {
-
-          if (h > 0) {
-            nonEmptyNeighborT[pp] = nonEmptyNeighborT[pp - width];
-          } else {
-            nonEmptyNeighborT[pp] = -1;
-          }
-        }
-
-      } // w
-    }   // h
-
-    // analysis from bottom-right
-
-    for (int h = height - 1; h >= 0; h--) {
-      int hW = h * width;
-      for (int w = width - 1; w >= 0; w--) {
-        int pp = hW + w;
-
-        nonEmptyNeighborB[pp] = h;
-
-        if (D(h, w) == 0) {
-
-          if (h < height - 1) {
-            nonEmptyNeighborB[pp] = nonEmptyNeighborB[pp + 1];
-          } else {
-            nonEmptyNeighborB[pp] = -1;
-          }
-        }
-
-      } // w
-    }   // h
-
-    // vertical inpainting
-
-    for (int h = 0, pp = 0; h < height; h++) {
-      for (int w = 0; w < width; w++, pp++) {
-
-        if (D(h, w) != 0) {
-          continue;
-        }
-
-        int dist;
-        float weight;
-
-        bool useT = false;
-        bool useB = false;
-
-        if (nonEmptyNeighborT[pp] != -1) {
-          if (nonEmptyNeighborB[pp] != -1) {
-
-            float farthestDepth =
-                D(nonEmptyNeighborT[pp], w) < D(nonEmptyNeighborB[pp], w)
-                    ? D(nonEmptyNeighborT[pp], w)
-                    : D(nonEmptyNeighborB[pp], w);
-
-            if (D(nonEmptyNeighborT[pp], w) - farthestDepth <=
-                DepthBlendingThreshold) {
-              useT = true;
-            }
-            if (D(nonEmptyNeighborB[pp], w) - farthestDepth <=
-                DepthBlendingThreshold) {
-              useB = true;
-            }
-          } else {
-            useT = true;
-          }
-        } else {
-          if (nonEmptyNeighborB[pp] != -1) {
-            useB = true;
-          } else {
-            continue;
-          }
-        }
-
-        if (useT) {
-          if (useB) {
-            float weightT = 1.0 / abs(h - nonEmptyNeighborT[pp]);
-            float weightB = 1.0 / abs(h - nonEmptyNeighborB[pp]);
-            float sumWeights = weightT + weightB;
-
-            weightT /= sumWeights;
-            weightB /= sumWeights;
-
-            Y(h, w) = Y(nonEmptyNeighborT[pp], w) * weightT;
-            U(h, w) = U(nonEmptyNeighborT[pp], w) * weightT;
-            V(h, w) = V(nonEmptyNeighborT[pp], w) * weightT;
-            D(h, w) = D(nonEmptyNeighborT[pp], w) * weightT;
-
-            Y(h, w) += (Y(nonEmptyNeighborB[pp], w) * weightB);
-            U(h, w) += (U(nonEmptyNeighborB[pp], w) * weightB);
-            V(h, w) += (V(nonEmptyNeighborB[pp], w) * weightB);
-            D(h, w) += (D(nonEmptyNeighborB[pp], w) * weightB);
-          } else {
-            Y(h, w) = Y(nonEmptyNeighborT[pp], w);
-            U(h, w) = U(nonEmptyNeighborT[pp], w);
-            V(h, w) = V(nonEmptyNeighborT[pp], w);
-            D(h, w) = D(nonEmptyNeighborT[pp], w);
-          }
-        } else {
-          if (useB) {
-            Y(h, w) = Y(nonEmptyNeighborB[pp], w);
-            U(h, w) = U(nonEmptyNeighborB[pp], w);
-            V(h, w) = V(nonEmptyNeighborB[pp], w);
-            D(h, w) = D(nonEmptyNeighborB[pp], w);
-          } else {
-            continue;
-          }
-        }
-
-      } // w
-    }   // h
-
-    delete nonEmptyNeighborL;
-    delete nonEmptyNeighborR;
-    delete nonEmptyNeighborT;
-    delete nonEmptyNeighborB;
-  }
-}
-} // namespace
-
-Inpainter::Inpainter(const Json & /*rootNode*/,
-                     const Json & /*componentNode*/) {}
-
-void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport,
-                               const CameraParameters &metadata) const {
-  inplaceInpaint_impl(viewport, metadata);
-}
-
-void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport,
-                               const CameraParameters &metadata) const {
-  inplaceInpaint_impl(viewport, metadata);
-}
+	namespace {
+
+		template <typename YUVD> void perform2WayInpainting(YUVD &yuvd, double &DepthBlendingThreshold, int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/, Common::Mat<int> &nonEmptyNeighbor1, Common::Mat<int> &nonEmptyNeighbor2, Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
+
+			auto &Y = yuvd.first.getPlane(0);
+			auto &U = yuvd.first.getPlane(1);
+			auto &V = yuvd.first.getPlane(2);
+			auto &D = yuvd.second.getPlane(0);
+
+			const int width = int(Y.width());
+			const int height = int(Y.height());
+
+			for (int h = 0, pp = 0; h < height; h++) {
+				for (int w = 0; w < width; w++, pp++) {
+
+					if (D(h, w) != 0) continue;
+
+					int dist;
+					float weight;
+
+					bool use1 = false;
+					bool use2 = false;
+
+					int w0, h0, w1, h1, w2, h2;
+
+					if (inpaintingType == 2) { //omnidirectional
+						bool pointExistsInCassini = mapERP2Cassini(h, w) != -1;
+						if (!pointExistsInCassini) continue;
+
+						h0 = mapERP2Cassini(h, w) / width; //current pixel in Cassini projection
+						w0 = mapERP2Cassini(h, w) % width;
+
+						h1 = nonEmptyNeighbor1(h0, w0) / width; //left neighbor in Cassini projection
+						w1 = nonEmptyNeighbor1(h0, w0) % width;
+
+						h2 = nonEmptyNeighbor2(h0, w0) / width;  //right neighbor in Cassini projection
+						w2 = nonEmptyNeighbor2(h0, w0) % width;
+					}
+					else { //perspective
+						h0 = h; //current pixel
+						w0 = w;
+
+						h1 = inpaintingType ? h0 : nonEmptyNeighbor1(h0, w0); //left or top neighbor
+						w1 = inpaintingType ? nonEmptyNeighbor1(h0, w0) : w0;
+
+						h2 = inpaintingType ? h0 : nonEmptyNeighbor2(h0, w0); //right or bottom neighbor
+						w2 = inpaintingType ? nonEmptyNeighbor2(h0, w0) : w0;
+					}
+
+					if (nonEmptyNeighbor1(h0, w0) != -1) {
+						if (nonEmptyNeighbor2(h0, w0) != -1) {
+
+							float farthestDepth = D(h1, w1) < D(h2, w2) ? D(h1, w1) : D(h2, w2);
+							if (D(h1, w1) - farthestDepth <= DepthBlendingThreshold) use1 = true;
+							if (D(h2, w2) - farthestDepth <= DepthBlendingThreshold) use2 = true;
+						}
+						else {
+							use1 = true;
+						}
+					}
+					else {
+						if (nonEmptyNeighbor2(h0, w0) != -1) {
+							use2 = true;
+						}
+						else {
+							continue;
+						}
+					}
+
+					if (use1) {
+						if (use2) {
+
+							float dist1 = sqrt((h - h1) * (h - h1) + (w - w1) * (w - w1));
+							float dist2 = sqrt((h - h2) * (h - h2) + (w - w2) * (w - w2));
+							float sumdist = dist1 + dist2;
+							float weight1 = dist2 / sumdist;
+							float weight2 = dist1 / sumdist;
+
+							Y(h, w) = Y(h1, w1) * weight1;
+							U(h, w) = U(h1, w1) * weight1;
+							V(h, w) = V(h1, w1) * weight1;
+							D(h, w) = D(h1, w1) * weight1;
+
+							Y(h, w) += (Y(h2, w2) * weight2);
+							U(h, w) += (U(h2, w2) * weight2);
+							V(h, w) += (V(h2, w2) * weight2);
+							D(h, w) += (D(h2, w2) * weight2);
+						}
+						else {
+							Y(h, w) = Y(h1, w1);
+							U(h, w) = U(h1, w1);
+							V(h, w) = V(h1, w1);
+							D(h, w) = D(h1, w1);
+						}
+					}
+					else {
+						if (use2) {
+							Y(h, w) = Y(h2, w2);
+							U(h, w) = U(h2, w2);
+							V(h, w) = V(h2, w2);
+							D(h, w) = D(h2, w2);
+						}
+						else {
+							continue;
+						}
+					}
+
+				} // w
+			}   // h
+
+			return;
+		}
+
+		template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
+
+			auto &Y = yuvd.first.getPlane(0);
+			auto &U = yuvd.first.getPlane(1);
+			auto &V = yuvd.first.getPlane(2);
+			auto &D = yuvd.second.getPlane(0);
+
+			const int width = int(Y.width());
+			const int height = int(Y.height());
+
+			//fill vertical cracks
+			for (int h = 0;h < height;h++) {
+				for (int w = 1;w < width - 1;w++) {
+					if (D(h, w) == 0 && D(h, w - 1) != 0 && D(h, w + 1) != 0) {
+						Y(h, w) = (Y(h, w - 1) + Y(h, w + 1)) / 2;
+						U(h, w) = (U(h, w - 1) + U(h, w + 1)) / 2;
+						V(h, w) = (V(h, w - 1) + V(h, w + 1)) / 2;
+						D(h, w) = (D(h, w - 1) + D(h, w + 1)) / 2;
+					}
+				}
+			}
+
+			const int imsize = width * height;
+
+			return;
+		}
+
+		template <typename YUVD> void inpaintOmnidirectionalView(YUVD &yuvd, double &DepthBlendingThreshold, double &angleRange) {
+
+			auto &Y = yuvd.first.getPlane(0);
+			auto &U = yuvd.first.getPlane(1);
+			auto &V = yuvd.first.getPlane(2);
+			auto &D = yuvd.second.getPlane(0);
+
+			const int width = int(Y.width());
+			const int height = int(Y.height());
+
+			Common::Mat<int> isHole;
+			isHole.resize(height, width);
+
+			Common::Mat<int> nonEmptyNeighborL;
+			nonEmptyNeighborL.resize(height, width);
+
+			Common::Mat<int> nonEmptyNeighborR;
+			nonEmptyNeighborR.resize(height, width);
+
+			Common::Mat<int> mapERP2Cassini;
+			mapERP2Cassini.resize(height, width);
+
+			Common::Mat<int> mapCassini2ERP;
+			mapCassini2ERP.resize(height, width);
+
+			for (int h = 0; h < height; h++) {
+				for (int w = 0; w < width; w++) {
+					nonEmptyNeighborL(h, w) = -1;
+					nonEmptyNeighborR(h, w) = -1;
+					mapERP2Cassini(h, w) = -1;
+					mapCassini2ERP(h, w) = -1;
+					isHole(h, w) = 1;
+				}
+			}
+
+			int width2 = width / 2;
+			int height2 = height / 2;
+			double tmpH, tmpW;
+
+			int oldPP, oldH, oldW;
+			int newPP;
+			double newH, newW;
+			int iNewH, iNewW;
+
+			for (int h = 0; h < height; h++) {
+				oldH = h - height2;
+				for (int w = 0; w < width; w++) {
+					oldPP = h * width + w;
+
+					oldW = w - width2;
+					tmpH = sqrt(height * h - h * h);
+					if (tmpH / height2 > angleRange) tmpH = height2 * angleRange;
+					newW = oldW * tmpH / height2;
+					newW += width2;
+
+					tmpW = sqrt(width * newW - newW * newW);
+					newH = oldH * width2 / tmpW;
+					newH += height2;
+
+					iNewH = int(newH + 0.5);
+					iNewW = int(newW + 0.5);
+
+					if (iNewH < 0 || iNewH >= height) continue;
+
+					newPP = iNewH * width + iNewW;
+
+					mapERP2Cassini(h, w) = newPP;
+					if (isHole(iNewH, iNewW) == 1) mapCassini2ERP(iNewH, iNewW) = oldPP;
+					if (D(h, w) != 0) isHole(iNewH, iNewW) = 0; // 1 if hole
+				}
+			}
+
+			// analysis from top-left
+
+			for (int h = 0; h < height; h++) {
+				int hW = h * width;
+				for (int w = 0; w < width; w++) {
+					int pp = hW + w;
+
+					nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w);
+					if (isHole(h, w)) {
+						if (w > 0) nonEmptyNeighborL(h, w) = nonEmptyNeighborL(h, w - 1);
+						else nonEmptyNeighborL(h, w) = -1;
+					}
+
+				} // w
+			}   // h
+
+			// analysis from bottom-right
+
+			for (int h = height - 1; h >= 0; h--) {
+				int hW = h * width;
+				for (int w = width - 1; w >= 0; w--) {
+					int pp = hW + w;
+
+					nonEmptyNeighborR(h, w) = mapCassini2ERP(h, w);
+					if (isHole(h, w)) {
+						if (w < width - 1) nonEmptyNeighborR(h, w) = nonEmptyNeighborR(h, w + 1);
+						else nonEmptyNeighborR(h, w) = -1;
+					}
+
+				} // w
+			}   // h
+
+			// inpainting
+
+			perform2WayInpainting(yuvd, DepthBlendingThreshold, 2, nonEmptyNeighborL, nonEmptyNeighborR, mapERP2Cassini);
+
+			return;
+		}
+
+		template <typename YUVD> void inpaintPerspectiveView(YUVD &yuvd, double &DepthBlendingThreshold) {
+
+			auto &D = yuvd.second.getPlane(0);
+
+			const int width = int(D.width());
+			const int height = int(D.height());
+
+			const int imsize = width * height;
+
+			Common::Mat<int> nonEmptyNeighborL;
+			nonEmptyNeighborL.resize(height, width);
+
+			Common::Mat<int> nonEmptyNeighborR;
+			nonEmptyNeighborR.resize(height, width);
+
+			Common::Mat<int> nonEmptyNeighborT;
+			nonEmptyNeighborT.resize(height, width);
+
+			Common::Mat<int> nonEmptyNeighborB;
+			nonEmptyNeighborB.resize(height, width);
+
+			// analysis from top-left
+
+			for (int h = 0; h < height; h++) {
+				int hW = h * width;
+				for (int w = 0; w < width; w++) {
+					int pp = hW + w;
+
+					nonEmptyNeighborL(h, w) = w;
+
+					if (D(h, w) == 0) {
+						if (w > 0) nonEmptyNeighborL(h, w) = nonEmptyNeighborL(h, w - 1);
+						else nonEmptyNeighborL(h, w) = -1;
+					}
+
+				} // w
+			} // h
+
+			// analysis from bottom-right
+
+			for (int h = height - 1; h >= 0; h--) {
+				int hW = h * width;
+				for (int w = width - 1; w >= 0; w--) {
+					int pp = hW + w;
+
+					nonEmptyNeighborR(h, w) = w;
+
+					if (D(h, w) == 0) {
+						if (w < width - 1) nonEmptyNeighborR(h, w) = nonEmptyNeighborR(h, w + 1);
+						else nonEmptyNeighborR(h, w) = -1;
+					}
+
+				} // w
+			} // h
+
+			// horizontal inpainting
+
+			perform2WayInpainting(yuvd, DepthBlendingThreshold, 1, nonEmptyNeighborL, nonEmptyNeighborR);
+
+			// analysis from top-left
+
+			for (int h = 0; h < height; h++) {
+				int hW = h * width;
+				for (int w = 0; w < width; w++) {
+					int pp = hW + w;
+
+					nonEmptyNeighborT(h, w) = h;
+
+					if (D(h, w) == 0) {
+						if (h > 0) nonEmptyNeighborT(h, w) = nonEmptyNeighborT(h - 1, w);
+						else nonEmptyNeighborT(h, w) = -1;
+					}
+
+				} // w
+			} // h
+
+			// analysis from bottom-right
+
+			for (int h = height - 1; h >= 0; h--) {
+				int hW = h * width;
+				for (int w = width - 1; w >= 0; w--) {
+					int pp = hW + w;
+
+					nonEmptyNeighborB(h, w) = h;
+
+					if (D(h, w) == 0) {
+						if (h < height - 1) nonEmptyNeighborB(h, w) = nonEmptyNeighborB(h, w + 1);
+						else nonEmptyNeighborB(h, w) = -1;
+					}
+
+				} // w
+			} // h
+
+			// vertical inpainting
+
+			perform2WayInpainting(yuvd, DepthBlendingThreshold, 0, nonEmptyNeighborT, nonEmptyNeighborB);
+
+			return;
+		}
+
+		template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
+			static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> || std::is_same_v<YUVD, Texture444Depth16Frame>);
+
+			double DepthBlendingThreshold = 2.56; //1% of bit depth
+			
+			if (std::is_same_v< YUVD, Texture444Depth10Frame>) DepthBlendingThreshold = 1024.0 / 100;
+			if (std::is_same_v< YUVD, Texture444Depth16Frame>) DepthBlendingThreshold = 65536.0 / 100;
+
+			fillVerticalCracks(yuvd);
+
+			if (meta.type == ProjectionType::ERP) {
+				double angleRange = (meta.erpPhiRange[1] - meta.erpPhiRange[0]) / M_2PI;
+				inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, angleRange);
+			}
+
+			inpaintPerspectiveView(yuvd, DepthBlendingThreshold);
+
+			return;
+		}
+	} // namespace
+
+	Inpainter::Inpainter(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+
+	void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport, const CameraParameters &metadata) const {
+		inplaceInpaint_impl(viewport, metadata);
+	}
+
+	void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport, const CameraParameters &metadata) const {
+		inplaceInpaint_impl(viewport, metadata);
+	}
 } // namespace TMIV::Renderer

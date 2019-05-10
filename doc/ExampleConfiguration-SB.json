@@ -1,6 +1,6 @@
 {
     "startFrame": 0,
-    "numberOfFrames": 2,
+    "numberOfFrames": 1,
     "intraPeriod": 32,
 
     "SourceTexturePathFmt": "%s_texture_2048x2048_yuv420p10le.yuv",
@@ -26,7 +26,7 @@
 
     "OutputTexturePath": "TM1_SB_R0_Tt_%s_2048x2048_yuv420p10le.yuv",
     "OutputDepthPath": "TM1_SB_R0_Td_%s_2048x2048_yuv420p10le.yuv",
-    "OutputCameraName": "v1",
+    "OutputCameraName": "v7",
 
     "EncoderMethod": "Encoder",
     "Encoder": {
@@ -57,7 +57,7 @@
             },
 
             "AtlasResolution": [ 2048, 2048 ],
-            "MPixel": 20
+            "MPixel": 16
         }
     },
 
@@ -74,12 +74,12 @@
 
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
-                "rayAngleParameter": 46,
-                "depthParameter": 26,
-                "stretchingParameter": 3.3
+                "rayAngleParameter": 0,
+                "depthParameter": 25,
+                "stretchingParameter": 0.6
             },
 
-            "InpainterMethod": "NoInpainter",
+            "InpainterMethod": "Inpainter",
             "Inpainter": {},
             "NoInpainter": {}
         }

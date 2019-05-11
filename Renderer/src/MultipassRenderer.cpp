@@ -46,15 +46,15 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode,
                                                           componentNode);
   if (auto subnode = componentNode.optional("NumberOfPasses"))
-    m_numberofpasses = subnode.asInt();
+    m_numberOfPasses = subnode.asInt();
   if (auto subnode = componentNode.optional("NumberOfViewsPerPass")) {
     if (subnode) {
       for (auto i = 0u; i != subnode.size(); i++)
-        m_numberofviewsperpass.push_back(subnode.at(i).asInt());
+        m_numberOfViewsPerPass.push_back(subnode.at(i).asInt());
     }
   }
   if (auto subnode = componentNode.optional("MergeConflict"))
-    m_mergeconflict = subnode.asInt();
+    m_mergeConflict = subnode.asInt();
 }
 
 template <class _InIt1, class _InIt2, class _InIt3, class _InIt4, class _OutIt,
@@ -180,9 +180,9 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   //////////////////
   // Initialization
   //////////////////
-  int numberOfPasses = TMIV::Renderer::MultipassRenderer::m_numberofpasses;
-  vector<unsigned int> numberOfViewsPerPass = TMIV::Renderer::MultipassRenderer::m_numberofviewsperpass;
-  mergeConflict = m_mergeconflict;
+  int numberOfPasses = TMIV::Renderer::MultipassRenderer::m_numberOfPasses;
+  vector<unsigned int> numberOfViewsPerPass = TMIV::Renderer::MultipassRenderer::m_numberOfViewsPerPass;
+  mergeConflict = m_mergeConflict;
 
   if (numberOfPasses != numberOfViewsPerPass.size())
     cout << "WARNING: " << "Please check number of passes " << endl;

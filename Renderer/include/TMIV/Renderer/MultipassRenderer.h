@@ -44,9 +44,9 @@ class MultipassRenderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
-  int m_numberofpasses = 1;
-  std::vector<unsigned> m_numberofviewsperpass;
-  int m_mergeconflict = 0;
+  int m_numberOfPasses = 1;
+  std::vector<unsigned> m_numberOfViewsPerPass;
+  int m_mergeConflict = 0;
 
 public:
   MultipassRenderer(const Common::Json & /*rootNode*/,

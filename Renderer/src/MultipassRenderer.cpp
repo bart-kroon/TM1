@@ -46,15 +46,15 @@ MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode,
                                                           componentNode);
   if (auto subnode = componentNode.optional("NumberOfPasses"))
-    m_NumberOfPasses = subnode.asInt();
+    m_numberofpasses = subnode.asInt();
   if (auto subnode = componentNode.optional("NumberOfViewsPerPass")) {
     if (subnode) {
       for (auto i = 0u; i != subnode.size(); i++)
-        m_NumberOfViewsPerPass.push_back(subnode.at(i).asInt());
+        m_numberofviewsperpass.push_back(subnode.at(i).asInt());
     }
   }
   if (auto subnode = componentNode.optional("MergeConflict"))
-    m_mergeConflict = subnode.asInt();
+    m_mergeconflict = subnode.asInt();
 }
 
 template <class _InIt1, class _InIt2, class _InIt3, class _InIt4, class _OutIt,
@@ -114,18 +114,17 @@ uint16_t filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) {
     return j;
 }
 
-vector<unsigned int> SelectedViewsPass, patchesViewId;
+vector<unsigned int> selectedViewsPass, patchesViewId;
 uint16_t filterMaps(uint16_t i) {
   if (i == unusedPatchId)
     return i;
-  bool SelectedPixel = false;
-  for (auto SelectedViewIndex = 0; SelectedViewIndex < SelectedViewsPass.size();
-       SelectedViewIndex++) {
-    if (patchesViewId[i] == SelectedViewsPass[SelectedViewIndex]) {
-      SelectedPixel = true;
+  bool selectedPixel = false;
+  for (auto selectedViewIndex = 0; selectedViewIndex < selectedViewsPass.size(); selectedViewIndex++) {
+    if (patchesViewId[i] == selectedViewsPass[selectedViewIndex]) {
+        selectedPixel = true;
     }
   }
-  if (!SelectedPixel)
+  if (!selectedPixel)
     return unusedPatchId;
   else
     return i;
@@ -140,34 +139,34 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   float pitch_target = target.rotation[1];
   float roll_target = target.rotation[2];
   constexpr float radperdeg{0.01745329251994329576923690768489f};
-  vector<float> Distance, Angle, AngleWeight;
+  vector<float> distance, angle, angleWeight;
   for (auto id = 0u; id < cameras.size(); id++) {
-    Distance.push_back(sqrt(pow(cameras[id].position[0] - x_target, 2) +
+    distance.push_back(sqrt(pow(cameras[id].position[0] - x_target, 2) +
                             pow(cameras[id].position[1] - y_target, 2) +
                             pow(cameras[id].position[2] - z_target, 2)));
-    Angle.push_back(1 / radperdeg *
+    angle.push_back(1 / radperdeg *
                     acos(sin(cameras[id].rotation[1] * radperdeg) *
                              sin(pitch_target * radperdeg) +
                          cos(cameras[id].rotation[1] * radperdeg) *
                              cos(pitch_target * radperdeg) *
                              cos((cameras[id].rotation[0] - yaw_target) *
                                  radperdeg))); // Angle is in degree unit
-    if (Angle[id] > 180)
-      Angle[id] =
-          Angle[id] - 360; // to assure angle is ranging from -180 to 180 degree
+    if (angle[id] > 180)
+      angle[id] =
+          angle[id] - 360; // to assure angle is ranging from -180 to 180 degree
     // Introduce AngleWeight as a simple triangle function (with value of 1 when
     // angle is 0 & value of 0 when angle is 180)
-    if (Angle[id] > 0.0)
-      AngleWeight.push_back(-1 / 180 * Angle[id] + 1);
+    if (angle[id] > 0.0)
+      angleWeight.push_back(-1 / 180 * angle[id] + 1);
     else
-      AngleWeight.push_back(1 / 180 * Angle[id] + 1);
+      angleWeight.push_back(1 / 180 * angle[id] + 1);
   }
   // Find the sorted cameras indices
   vector<size_t> SortedCamerasId(cameras.size());
   iota(SortedCamerasId.begin(), SortedCamerasId.end(), 0); // initalization
   sort(SortedCamerasId.begin(), SortedCamerasId.end(),
-       [&Distance, &AngleWeight](size_t i1, size_t i2) {
-         return Distance[i1] * AngleWeight[i1] < Distance[i2] * AngleWeight[i2];
+       [&distance, &angleWeight](size_t i1, size_t i2) {
+         return distance[i1] * angleWeight[i1] < distance[i2] * angleWeight[i2];
        });
   return SortedCamerasId;
 }
@@ -181,20 +180,20 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   //////////////////
   // Initialization
   //////////////////
-  int NumberOfPasses = TMIV::Renderer::MultipassRenderer::m_NumberOfPasses;
-  vector<unsigned int> numberOfViewPerPass = TMIV::Renderer::MultipassRenderer::m_NumberOfViewsPerPass;
-  mergeConflict = m_mergeConflict;
+  int numberOfPasses = TMIV::Renderer::MultipassRenderer::m_numberofpasses;
+  vector<unsigned int> numberOfViewsPerPass = TMIV::Renderer::MultipassRenderer::m_numberofviewsperpass;
+  mergeConflict = m_mergeconflict;
 
-  if (NumberOfPasses != numberOfViewPerPass.size())
+  if (numberOfPasses != numberOfViewsPerPass.size())
     cout << "WARNING: " << "Please check number of passes " << endl;
 
   Common::Texture444Depth10Frame viewport;
   Common::Texture444Depth10Frame *viewportPass;
   Common::PatchIdMapList *mapsPass;
-  viewportPass = new Common::Texture444Depth10Frame[NumberOfPasses];
-  mapsPass = new Common::PatchIdMapList[NumberOfPasses];
+  viewportPass = new Common::Texture444Depth10Frame[numberOfPasses];
+  mapsPass = new Common::PatchIdMapList[numberOfPasses];
 
-  for (auto j = 0; j < NumberOfPasses; j++) {
+  for (auto j = 0; j < numberOfPasses; j++) {
     for (auto k = 0; k < atlas.size(); k++) {
       PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
       std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
@@ -214,13 +213,14 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   SortedCamerasId = sortViews(cameras, target);
 
   // Produce the individual pass synthesis results
-  for (auto passId = 0; passId < NumberOfPasses; passId++) // Loop over NumberOfPasses
+  for (auto passId = 0; passId < numberOfPasses;
+       passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
-    SelectedViewsPass.empty();
+    selectedViewsPass.empty();
     for (auto id = 0u; id < cameras.size(); id++) {
-        if (id < numberOfViewPerPass[passId])
-            SelectedViewsPass.push_back(SortedCamerasId[id]);
+      if (id < numberOfViewsPerPass[passId])
+        selectedViewsPass.push_back(SortedCamerasId[id]);
     }
 
     /////////////////
@@ -241,24 +241,23 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   //////////////
   // Merging 
   //////////////
-  if (NumberOfPasses > 1) {
-        Common::Texture444Depth10Frame mergedviewport =
-        viewportPass[NumberOfPasses - 1];
-    for (auto passId = NumberOfPasses - 1; passId > 0; passId--) {
-      std::transform(viewportPass[passId - 1].second.getPlane(0).begin(),
-                     viewportPass[passId - 1].second.getPlane(0).end(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     filterMergeDepth);
-
-      for (auto i = 0; i < viewport.first.getNumberOfPlanes(); i++) {
-        my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
-                     viewportPass[passId - 1].first.getPlane(i).end(),
-                     mergedviewport.first.getPlane(i).begin(),
-                     viewportPass[passId - 1].second.getPlane(0).begin(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     mergedviewport.first.getPlane(i).begin(),
-                     filterMergeTexture);
+  if (numberOfPasses > 1) {
+      Common::Texture444Depth10Frame mergedviewport = viewportPass[numberOfPasses - 1];
+      for (auto passId = numberOfPasses - 1; passId > 0; passId--) {
+          std::transform(viewportPass[passId - 1].second.getPlane(0).begin(),
+              viewportPass[passId - 1].second.getPlane(0).end(),
+              mergedviewport.second.getPlane(0).begin(),
+              mergedviewport.second.getPlane(0).begin(),
+              filterMergeDepth);
+      
+          for (auto i = 0; i < viewport.first.getNumberOfPlanes(); i++) {
+              my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
+                  viewportPass[passId - 1].first.getPlane(i).end(),
+                  mergedviewport.first.getPlane(i).begin(),
+                  viewportPass[passId - 1].second.getPlane(0).begin(),
+                  mergedviewport.second.getPlane(0).begin(),
+                  mergedviewport.first.getPlane(i).begin(),
+                  filterMergeTexture);
       }
     }
     viewport = mergedviewport; // Final Merged
@@ -269,7 +268,7 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
                    viewport.second.getPlane(0).begin(), filterDepthAfterMerge);
 
   } else
-    viewport = viewportPass[NumberOfPasses - 1]; // Single Pass
+    viewport = viewportPass[numberOfPasses - 1]; // Single Pass
 
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;

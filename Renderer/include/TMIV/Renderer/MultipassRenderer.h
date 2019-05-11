@@ -46,7 +46,7 @@ private:
   std::unique_ptr<IInpainter> m_inpainter;
   int m_numberOfPasses = 1;
   std::vector<unsigned> m_numberOfViewsPerPass;
-  int m_mergeConflict = 0;
+  int m_mergeConflict = 1;
 
 public:
   MultipassRenderer(const Common::Json & /*rootNode*/,

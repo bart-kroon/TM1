@@ -1,0 +1,71 @@
+{
+    "startFrame": 100,
+    "numberOfFrames": 97,
+    "intraPeriod": 32,
+    "SourceTexturePathFmt": "%s_texture_2048x2048_yuv420p10le.yuv",
+    "SourceDepthPathFmt": "%s_depth_2048x2048_yuv420p16le.yuv",
+    "SourceCameraParameters": "TechnicolorMuseum.json",
+    "SourceCameraNames": [
+        "v0",
+        "v1",
+        "v4",
+        "v8",
+        "v11",
+        "v12",
+        "v13",
+        "v17"
+    ],
+    "AtlasTexturePathFmt": "ATL_SB_QP5_Tt_c%02d_2048x2048_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SB_QP5_Td_c%02d_2048x2048_yuv420p10le.yuv",
+    "AtlasMetadataPath": "ATL_SB_QP5_Tm_c00.bit",
+    "OutputTexturePath": "TM1_SB_QP5_Tt_%s_2048x2048_yuv420p10le.yuv",
+    "OutputCameraName": "v1",
+    "EncoderMethod": "Encoder",
+    "Encoder": {
+        "ViewOptimizerMethod": "NoViewOptimizer",
+        "NoViewOptimizer": {},
+        "AtlasConstructorMethod": "AtlasConstructor",
+        "AtlasConstructor": {
+            "PrunerMethod": "Pruner",
+            "Pruner": {
+                "RedundancyFactor": 0.02,
+                "ErosionIter": 1,
+                "DilationIter": 5
+            },
+            "AggregatorMethod": "Aggregator",
+            "Aggregator": {},
+            "PackerMethod": "Packer",
+            "Packer": {
+                "Alignment": 8,
+                "MinPatchSize": 16,
+                "Overlap": 1,
+                "PiP": 1
+            },
+            "AtlasResolution": [
+                2048,
+                2048
+            ],
+            "MPixel": 16
+        }
+    },
+    "DecoderMethod": "Decoder",
+    "Decoder": {
+        "AtlasDeconstructorMethod": "AtlasDeconstructor",
+        "AtlasDeconstructor": {},
+        "RendererMethod": "MultipassRenderer",
+        "MultipassRenderer": {
+            "NumberOfPasses": 1,
+            "NumberOfViewsPerPass": [
+                24
+            ],
+            "SynthesizerMethod": "Synthesizer",
+            "Synthesizer": {
+                "rayAngleParameter": 20,
+                "depthParameter": 20,
+                "stretchingParameter": 0.6
+            },
+            "InpainterMethod": "Inpainter",
+            "Inpainter": {}
+        }
+    }
+}

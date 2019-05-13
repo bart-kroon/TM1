@@ -1,0 +1,73 @@
+{
+    "startFrame": 0,
+    "numberOfFrames": 97,
+    "intraPeriod": 32,
+    "SourceTexturePathFmt": "%s_texture_4096x4096_yuv420p10le.yuv",
+    "SourceDepthPathFmt": "%s_depth_4096x4096_yuv420p16le.yuv",
+    "SourceCameraParameters": "TechnicolorHijack.json",
+    "SourceCameraNames": [
+        "v0",
+        "v1",
+        "v2",
+        "v3",
+        "v4",
+        "v5",
+        "v6",
+        "v7",
+        "v8",
+        "v9"
+    ],
+    "AtlasTexturePathFmt": "ATL_SC_QP3_Tt_c%02d_4096x4096_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SC_QP3_Td_c%02d_4096x4096_yuv420p10le.yuv",
+    "AtlasMetadataPath": "ATL_SC_QP3_Tm_c00.bit",
+    "OutputTexturePath": "TM1_SC_QP3_Tt_%s_4096x4096_yuv420p10le.yuv",
+    "OutputCameraName": "v1",
+    "EncoderMethod": "Encoder",
+    "Encoder": {
+        "ViewOptimizerMethod": "NoViewOptimizer",
+        "NoViewOptimizer": {},
+        "AtlasConstructorMethod": "AtlasConstructor",
+        "AtlasConstructor": {
+            "PrunerMethod": "Pruner",
+            "Pruner": {
+                "RedundancyFactor": 0.02,
+                "ErosionIter": 1,
+                "DilationIter": 5
+            },
+            "AggregatorMethod": "Aggregator",
+            "Aggregator": {},
+            "PackerMethod": "Packer",
+            "Packer": {
+                "Alignment": 8,
+                "MinPatchSize": 16,
+                "Overlap": 1,
+                "PiP": 1
+            },
+            "AtlasResolution": [
+                4096,
+                4096
+            ],
+            "MPixel": 32
+        }
+    },
+    "DecoderMethod": "Decoder",
+    "Decoder": {
+        "AtlasDeconstructorMethod": "AtlasDeconstructor",
+        "AtlasDeconstructor": {},
+        "RendererMethod": "MultipassRenderer",
+        "MultipassRenderer": {
+            "NumberOfPasses": 1,
+            "NumberOfViewsPerPass": [
+                10
+            ],
+            "SynthesizerMethod": "Synthesizer",
+            "Synthesizer": {
+                "rayAngleParameter": 20,
+                "depthParameter": 20,
+                "stretchingParameter": 0.6
+            },
+            "InpainterMethod": "Inpainter",
+            "Inpainter": {}
+        }
+    }
+}

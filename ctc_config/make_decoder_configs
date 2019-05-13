@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for condition in QP1 QP2 QP3 QP4 QP5
+do
+    mkdir -p $condition
+    for config in TMIV_*.json
+    do
+        sed $(printf 's/R0/%s/g' $condition) < $config > $condition/$config
+    done
+done

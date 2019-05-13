@@ -15,12 +15,12 @@ The make_decoder_configs script generates variants with QP1...QP5 in the name.
 For example:
 
 mkdir output_SA
-Encoder -c ctc_config/TMIV_anchor_CG1_A.json \
-        -p SourceDirectory //fileserver/content/SA \
-		-p OutputDirectory output_SA
+Encoder -c ctc_config/TMIV_anchor_A.json \
+        -p SourceDirectory //fileserver/content/A \
+		-p OutputDirectory output_A
 # Run HEVC to make the QP4 streams
-Decoder -c ctc_config/QP4/TMIV_anchor_CG1_A.json \
-        -p SourceDirectory //fileserver/content/SA \
-		-p OutputDirectory output_SA \
+Decoder -c ctc_config/QP4/TMIV_anchor_A.json \
+        -p SourceDirectory //fileserver/content/A \
+		-p OutputDirectory output_A \
 		-p OutputCameraName v7
 ...

@@ -40,7 +40,7 @@ using namespace TMIV::Metadata;
 namespace TMIV::Renderer {
 	namespace {
 
-		template <typename YUVD> void perform2WayInpainting(YUVD &yuvd, double &DepthBlendingThreshold, int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/, Common::Mat<int> &nonEmptyNeighbor1, Common::Mat<int> &nonEmptyNeighbor2, Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
+		template <typename YUVD> void perform2WayInpainting(const YUVD &yuvd, const double &DepthBlendingThreshold, int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/, const Common::Mat<int> &nonEmptyNeighbor1, const Common::Mat<int> &nonEmptyNeighbor2, const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
 
 			auto &Y = yuvd.first.getPlane(0);
 			auto &U = yuvd.first.getPlane(1);
@@ -151,7 +151,7 @@ namespace TMIV::Renderer {
 			return;
 		}
 
-		template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
+		template <typename YUVD> void fillVerticalCracks(const YUVD &yuvd) {
 
 			auto &Y = yuvd.first.getPlane(0);
 			auto &U = yuvd.first.getPlane(1);
@@ -178,7 +178,7 @@ namespace TMIV::Renderer {
 			return;
 		}
 
-		template <typename YUVD> void inpaintOmnidirectionalView(YUVD &yuvd, double &DepthBlendingThreshold, double &angleRange) {
+		template <typename YUVD> void inpaintOmnidirectionalView(const YUVD &yuvd, const double &DepthBlendingThreshold, const double &angleRange) {
 
 			auto &Y = yuvd.first.getPlane(0);
 			auto &U = yuvd.first.getPlane(1);
@@ -257,7 +257,7 @@ namespace TMIV::Renderer {
 				for (int w = 0; w < width; w++) {
 					int pp = hW + w;
 
-					nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w);
+					nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w) ;
 					if (isHole(h, w)) {
 						if (w > 0) nonEmptyNeighborL(h, w) = nonEmptyNeighborL(h, w - 1);
 						else nonEmptyNeighborL(h, w) = -1;
@@ -289,7 +289,7 @@ namespace TMIV::Renderer {
 			return;
 		}
 
-		template <typename YUVD> void inpaintPerspectiveView(YUVD &yuvd, double &DepthBlendingThreshold) {
+		template <typename YUVD> void inpaintPerspectiveView(const YUVD &yuvd, const double &DepthBlendingThreshold) {
 
 			auto &D = yuvd.second.getPlane(0);
 
@@ -389,7 +389,7 @@ namespace TMIV::Renderer {
 			return;
 		}
 
-		template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
+		template <typename YUVD> void inplaceInpaint_impl(const YUVD &yuvd, const CameraParameters &meta) {
 			static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> || std::is_same_v<YUVD, Texture444Depth16Frame>);
 
 			double DepthBlendingThreshold = 2.56; //1% of bit depth
@@ -412,11 +412,11 @@ namespace TMIV::Renderer {
 
 	Inpainter::Inpainter(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-	void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport, const CameraParameters &metadata) const {
+	void Inpainter::inplaceInpaint(const Texture444Depth10Frame &viewport, const CameraParameters &metadata) const {
 		inplaceInpaint_impl(viewport, metadata);
 	}
 
-	void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport, const CameraParameters &metadata) const {
+	void Inpainter::inplaceInpaint(const Texture444Depth16Frame &viewport, const CameraParameters &metadata) const {
 		inplaceInpaint_impl(viewport, metadata);
 	}
 } // namespace TMIV::Renderer

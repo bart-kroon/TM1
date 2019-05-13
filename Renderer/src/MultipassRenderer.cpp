@@ -80,21 +80,33 @@ inline _OutIt my_transform(
   return (_Dest);
 }
 
+int mergeConflict;
 uint16_t filterMergeDepth(uint16_t i, uint16_t j) {
+  /*
   if (i >= j) // to enforce copying pixels if it is a foreground pixel only
     return i;
   else
     return j;
-}
-
-uint16_t filterDepthAfterMerge(uint16_t i, uint16_t j) {
-  if (i > 0)
-    return j;
+	*/
+  if (i > 0) {
+    if (i >= j) // Checking depth
+      return i;
+    else // conflict
+      switch (mergeConflict) {
+      case 0:
+        return 0; // return 0 values and let the inpainter fill them
+      case 1:
+        return i; // fill from the low-pass synthesis results which are in the
+                  // background
+      case 2:
+        return j; // 2 fill from the high-pass synthesis results which are in
+                  // the foreground
+      }
+  } 
   else
-    return 0;
+    return j;
 }
 
-int mergeConflict;
 uint16_t filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) {
   if (i > 0) {
     if (id >= jd) // Checking depth
@@ -165,7 +177,8 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   vector<size_t> SortedCamerasId(cameras.size());
   iota(SortedCamerasId.begin(), SortedCamerasId.end(), 0); // initalization
   sort(SortedCamerasId.begin(), SortedCamerasId.end(),
-       [&distance, &angleWeight](size_t i1, size_t i2) {
+       [&distance, &angleWeight](size_t i1, size_t 
+		   i2) {
          return distance[i1] * angleWeight[i1] < distance[i2] * angleWeight[i2];
        });
   return SortedCamerasId;
@@ -261,11 +274,6 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
       }
     }
     viewport = mergedviewport; // Final Merged
-
-    std::transform(viewport.first.getPlane(0).begin(),
-                   viewport.first.getPlane(0).end(),
-                   viewport.second.getPlane(0).begin(),
-                   viewport.second.getPlane(0).begin(), filterDepthAfterMerge);
 
   } else
     viewport = viewportPass[numberOfPasses - 1]; // Single Pass

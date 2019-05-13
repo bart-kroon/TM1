@@ -605,42 +605,6 @@
             "BitDepthDepth": 10,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
-        },
-        {
-            "Name": "cam_oculus",
-            "Position": [
-                0.0,
-                -0.070822,
-                -0.069605
-            ],
-            "Rotation": [
-                0.0,
-                -0.0,
-                0.0
-            ],
-            "Depthmap": 1,
-            "Background": 0,
-            "Depth_range": [
-                1.808811,
-                5.402476
-            ],
-            "Resolution": [
-                1080,
-                1200
-            ],
-            "Projection": "Perspective",
-            "Focal": [
-                2410.34,
-                2410.34
-            ],
-            "Principle_point": [
-                1041.39,
-                478.78
-            ],
-            "BitDepthColor": 10,
-            "BitDepthDepth": 10,
-            "ColorSpace": "YUV420",
-            "DepthColorSpace": "YUV420"
         }
     ]
 }

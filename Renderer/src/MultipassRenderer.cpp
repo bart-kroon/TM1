@@ -90,6 +90,8 @@ namespace TMIV::Renderer {
         case 2:
           return j; // 2 fill from the high-pass synthesis results which are in
                     // the foreground
+		default:
+			return 0;
         }
     }
     else
@@ -110,6 +112,8 @@ namespace TMIV::Renderer {
         case 2:
           return j; // 2 fill from the high-pass synthesis results which are in
                     // the foreground
+		default:
+			return 0;
         }
     }
     else
@@ -121,7 +125,7 @@ namespace TMIV::Renderer {
     if (i == unusedPatchId)
       return i;
     bool selectedPixel = false;
-    for (auto selectedViewIndex = 0; selectedViewIndex < selectedViewsPass.size(); selectedViewIndex++) {
+    for (auto selectedViewIndex = 0U; selectedViewIndex < selectedViewsPass.size(); selectedViewIndex++) {
       if (patchesViewId[i] == selectedViewsPass[selectedViewIndex]) {
         selectedPixel = true;
       }
@@ -139,7 +143,7 @@ namespace TMIV::Renderer {
     float z_target = target.position[2];
     float yaw_target = target.rotation[0];
     float pitch_target = target.rotation[1];
-    float roll_target = target.rotation[2];
+//     float roll_target = target.rotation[2];
     constexpr float radperdeg{ 0.01745329251994329576923690768489f };
     vector<float> distance, angle, angleWeight;
     for (auto id = 0u; id < cameras.size(); id++) {
@@ -187,7 +191,7 @@ namespace TMIV::Renderer {
     vector<unsigned int> numberOfViewsPerPass = TMIV::Renderer::MultipassRenderer::m_numberOfViewsPerPass;
     mergeConflict = m_mergeConflict;
 
-    if (numberOfPasses != numberOfViewsPerPass.size())
+    if (numberOfPasses != int(numberOfViewsPerPass.size()))
       cout << "WARNING: " << "Please check number of passes " << endl;
 
     Common::Texture444Depth10Frame viewport;
@@ -197,7 +201,7 @@ namespace TMIV::Renderer {
     mapsPass = new Common::PatchIdMapList[numberOfPasses];
 
     for (auto j = 0; j < numberOfPasses; j++) {
-      for (auto k = 0; k < atlas.size(); k++) {
+      for (auto k = 0U; k < atlas.size(); k++) {
         PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
         std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
           unusedPatchId);
@@ -205,7 +209,7 @@ namespace TMIV::Renderer {
       }
     } // initalize mapsPass by 0xFFFF
 
-    for (auto patchId = 0; patchId < patches.size(); patchId++) {
+    for (auto patchId = 0U; patchId < patches.size(); patchId++) {
       patchesViewId.push_back(patches[patchId].viewId);
     } // initialize patchesViewId
 
@@ -216,12 +220,12 @@ namespace TMIV::Renderer {
     SortedCamerasId = sortViews(cameras, target);
 
     // Produce the individual pass synthesis results
-    for (auto passId = 0; passId < numberOfPasses;
+    for (int passId = 0; passId < numberOfPasses;
       passId++) // Loop over NumberOfPasses
     {
       // Find the selected views for a given pass
       selectedViewsPass.clear();
-      for (auto id = 0u; id < cameras.size(); id++) {
+      for (auto id = 0U; id < cameras.size(); id++) {
         if (id < numberOfViewsPerPass[passId])
           selectedViewsPass.push_back( static_cast<unsigned int>(SortedCamerasId[id] ));
       }
@@ -229,7 +233,7 @@ namespace TMIV::Renderer {
       /////////////////
       // Update the Occupancy Map to be used in the Pass
       /////////////////
-      for (auto atlasId = 0; atlasId < maps.size(); atlasId++) {
+      for (auto atlasId = 0U; atlasId < maps.size(); atlasId++) {
         std::transform(maps[atlasId].getPlane(0).begin(),
           maps[atlasId].getPlane(0).end(),
           mapsPass[passId][atlasId].getPlane(0).begin(), filterMaps);

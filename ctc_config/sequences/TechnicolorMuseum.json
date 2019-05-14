@@ -35,7 +35,7 @@
 			"Ver_range": [-90, 90],
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -50,7 +50,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -65,7 +65,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -80,7 +80,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -95,7 +95,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -110,7 +110,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -125,7 +125,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -140,7 +140,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -155,7 +155,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -170,7 +170,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -185,7 +185,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -200,7 +200,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -215,7 +215,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -230,7 +230,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -245,7 +245,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -260,7 +260,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -275,7 +275,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -290,7 +290,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -305,7 +305,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -320,7 +320,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -335,7 +335,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -350,7 +350,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -365,7 +365,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -380,7 +380,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -395,7 +395,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -410,7 +410,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -425,7 +425,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -440,7 +440,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -455,7 +455,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -470,7 +470,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -485,7 +485,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -500,7 +500,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -515,7 +515,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -530,7 +530,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -545,7 +545,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -560,7 +560,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -575,7 +575,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -590,7 +590,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -605,7 +605,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -620,7 +620,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -635,7 +635,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -650,7 +650,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -665,7 +665,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -680,7 +680,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}, {
@@ -695,7 +695,7 @@
 			"Projection": "Equirectangular",
 			"Depth_range": [0.5, 25],
 			"BitDepthColor": 10,
-			"BitDepthDepth": 10,
+			"BitDepthDepth": 16,
 			"ColorSpace": "YUV420",
 			"DepthColorSpace": "YUV420"
 		}

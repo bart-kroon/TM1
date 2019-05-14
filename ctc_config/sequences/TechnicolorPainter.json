@@ -62,7 +62,7 @@
                 478.78
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -98,7 +98,7 @@
                 478.78
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -134,7 +134,7 @@
                 478.78
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -170,7 +170,7 @@
                 478.79
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -206,7 +206,7 @@
                 480.48
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -242,7 +242,7 @@
                 480.55
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -278,7 +278,7 @@
                 480.44
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -314,7 +314,7 @@
                 480.45
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -350,7 +350,7 @@
                 482.16
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -386,7 +386,7 @@
                 482.15
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -422,7 +422,7 @@
                 482.18
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -458,7 +458,7 @@
                 482.15
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -494,7 +494,7 @@
                 483.83
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -530,7 +530,7 @@
                 483.84
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -566,7 +566,7 @@
                 483.85
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         },
@@ -602,7 +602,7 @@
                 483.86
             ],
             "BitDepthColor": 10,
-            "BitDepthDepth": 10,
+            "BitDepthDepth": 16,
             "ColorSpace": "YUV420",
             "DepthColorSpace": "YUV420"
         }

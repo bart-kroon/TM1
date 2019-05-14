@@ -71,12 +71,6 @@ namespace TMIV::Renderer {
 
   int mergeConflict;
   uint16_t filterMergeDepth(uint16_t i, uint16_t j) {
-    /*
-    if (i >= j) // to enforce copying pixels if it is a foreground pixel only
-      return i;
-    else
-      return j;
-    */
     if (i > 0) {
       if (i >= j) // Checking depth
         return i;
@@ -142,7 +136,7 @@ namespace TMIV::Renderer {
     float y_target = target.position[1];
     float z_target = target.position[2];
     float yaw_target = target.rotation[0];
-    float pitch_target = target.rotation[1];
+    float pitch_target = target.rotation[1] - 90.0;
 //     float roll_target = target.rotation[2];
     constexpr float radperdeg{ 0.01745329251994329576923690768489f };
     vector<float> distance, angle, angleWeight;
@@ -151,21 +145,21 @@ namespace TMIV::Renderer {
         pow(cameras[id].position[1] - y_target, 2) +
         pow(cameras[id].position[2] - z_target, 2)));
       angle.push_back(1 / radperdeg *
-        acos(sin(cameras[id].rotation[1] * radperdeg) *
+        acos(sin((cameras[id].rotation[1] - 90.0) * radperdeg) *
           sin(pitch_target * radperdeg) +
-          cos(cameras[id].rotation[1] * radperdeg) *
+          cos((cameras[id].rotation[1] - 90.0) * radperdeg) *
           cos(pitch_target * radperdeg) *
           cos((cameras[id].rotation[0] - yaw_target) *
             radperdeg))); // Angle is in degree unit
-      if (angle[id] > 180)
+      if (angle[id] > 180.0)
         angle[id] =
-        angle[id] - 360; // to assure angle is ranging from -180 to 180 degree
+        angle[id] - 360.0; // to assure angle is ranging from -180 to 180 degree
   // Introduce AngleWeight as a simple triangle function (with value of 1 when
   // angle is 0 & value of 0 when angle is 180)
       if (angle[id] > 0.0)
-        angleWeight.push_back(-1 / 180 * angle[id] + 1);
+        angleWeight.push_back(-1.0 / 180.0 * angle[id] + 1.0);
       else
-        angleWeight.push_back(1 / 180 * angle[id] + 1);
+        angleWeight.push_back(1.0 / 180.0 * angle[id] + 1.0);
     }
     // Find the sorted cameras indices
     vector<size_t> SortedCamerasId(cameras.size());

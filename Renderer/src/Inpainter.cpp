@@ -40,7 +40,7 @@ using namespace TMIV::Metadata;
 namespace TMIV::Renderer {
 	namespace {
 
-		template <typename YUVD> void perform2WayInpainting(YUVD &yuvd, double &DepthBlendingThreshold, int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/, Common::Mat<int> &nonEmptyNeighbor1, Common::Mat<int> &nonEmptyNeighbor2, Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
+		template <typename YUVD> void perform2WayInpainting( YUVD &yuvd, const double &DepthBlendingThreshold, int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/, const Common::Mat<int> &nonEmptyNeighbor1, const Common::Mat<int> &nonEmptyNeighbor2, const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
 
 			auto &Y = yuvd.first.getPlane(0);
 			auto &U = yuvd.first.getPlane(1);
@@ -55,10 +55,7 @@ namespace TMIV::Renderer {
 
 					if (D(h, w) != 0) continue;
 
-					int dist;
-					float weight;
-
-					bool use1 = false;
+          bool use1 = false;
 					bool use2 = false;
 
 					int w0, h0, w1, h1, w2, h2;
@@ -173,16 +170,12 @@ namespace TMIV::Renderer {
 				}
 			}
 
-			const int imsize = width * height;
-
 			return;
 		}
 
-		template <typename YUVD> void inpaintOmnidirectionalView(YUVD &yuvd, double &DepthBlendingThreshold, double &angleRange) {
+		template <typename YUVD> void inpaintOmnidirectionalView( YUVD &yuvd, const double &DepthBlendingThreshold, const double &angleRange) {
 
 			auto &Y = yuvd.first.getPlane(0);
-			auto &U = yuvd.first.getPlane(1);
-			auto &V = yuvd.first.getPlane(2);
 			auto &D = yuvd.second.getPlane(0);
 
 			const int width = int(Y.width());
@@ -253,11 +246,9 @@ namespace TMIV::Renderer {
 			// analysis from top-left
 
 			for (int h = 0; h < height; h++) {
-				int hW = h * width;
 				for (int w = 0; w < width; w++) {
-					int pp = hW + w;
 
-					nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w);
+					nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w) ;
 					if (isHole(h, w)) {
 						if (w > 0) nonEmptyNeighborL(h, w) = nonEmptyNeighborL(h, w - 1);
 						else nonEmptyNeighborL(h, w) = -1;
@@ -269,9 +260,7 @@ namespace TMIV::Renderer {
 			// analysis from bottom-right
 
 			for (int h = height - 1; h >= 0; h--) {
-				int hW = h * width;
 				for (int w = width - 1; w >= 0; w--) {
-					int pp = hW + w;
 
 					nonEmptyNeighborR(h, w) = mapCassini2ERP(h, w);
 					if (isHole(h, w)) {
@@ -289,14 +278,12 @@ namespace TMIV::Renderer {
 			return;
 		}
 
-		template <typename YUVD> void inpaintPerspectiveView(YUVD &yuvd, double &DepthBlendingThreshold) {
+		template <typename YUVD> void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
 			auto &D = yuvd.second.getPlane(0);
 
 			const int width = int(D.width());
 			const int height = int(D.height());
-
-			const int imsize = width * height;
 
 			Common::Mat<int> nonEmptyNeighborL;
 			nonEmptyNeighborL.resize(height, width);
@@ -313,9 +300,7 @@ namespace TMIV::Renderer {
 			// analysis from top-left
 
 			for (int h = 0; h < height; h++) {
-				int hW = h * width;
 				for (int w = 0; w < width; w++) {
-					int pp = hW + w;
 
 					nonEmptyNeighborL(h, w) = w;
 
@@ -330,9 +315,7 @@ namespace TMIV::Renderer {
 			// analysis from bottom-right
 
 			for (int h = height - 1; h >= 0; h--) {
-				int hW = h * width;
 				for (int w = width - 1; w >= 0; w--) {
-					int pp = hW + w;
 
 					nonEmptyNeighborR(h, w) = w;
 
@@ -351,9 +334,7 @@ namespace TMIV::Renderer {
 			// analysis from top-left
 
 			for (int h = 0; h < height; h++) {
-				int hW = h * width;
 				for (int w = 0; w < width; w++) {
-					int pp = hW + w;
 
 					nonEmptyNeighborT(h, w) = h;
 
@@ -368,9 +349,7 @@ namespace TMIV::Renderer {
 			// analysis from bottom-right
 
 			for (int h = height - 1; h >= 0; h--) {
-				int hW = h * width;
 				for (int w = width - 1; w >= 0; w--) {
-					int pp = hW + w;
 
 					nonEmptyNeighborB(h, w) = h;
 
@@ -389,7 +368,7 @@ namespace TMIV::Renderer {
 			return;
 		}
 
-		template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
+		template <typename YUVD> void inplaceInpaint_impl( YUVD &yuvd, const CameraParameters &meta) {
 			static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> || std::is_same_v<YUVD, Texture444Depth16Frame>);
 
 			double DepthBlendingThreshold = 2.56; //1% of bit depth

@@ -1,0 +1,79 @@
+{
+    "startFrame": 10,
+    "numberOfFrames": 97,
+    "intraPeriod": 32,
+    "SourceTexturePathFmt": "%s_texture_2048x1088_yuv420p10le.yuv",
+    "SourceDepthPathFmt": "%s_depth_2048x1088_yuv420p16le.yuv",
+    "SourceCameraParameters": "TechnicolorPainter.json",
+    "SourceCameraNames": [
+        "v0",
+        "v1",
+        "v2",
+        "v3",
+        "v4",
+        "v5",
+        "v6",
+        "v7",
+        "v8",
+        "v9",
+        "v10",
+        "v11",
+        "v12",
+        "v13",
+        "v14",
+        "v15"
+    ],
+    "AtlasTexturePathFmt": "ATL_SD_R0_Tt_c%02d_2048x1088_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SD_R0_Td_c%02d_2048x1088_yuv420p10le.yuv",
+    "AtlasMetadataPath": "ATL_SD_R0_Tm_c00.bit",
+    "OutputTexturePath": "TM1_SD_R0_Tt_%s_2048x1088_yuv420p10le.yuv",
+    "OutputCameraName": "v1",
+    "EncoderMethod": "Encoder",
+    "Encoder": {
+        "ViewOptimizerMethod": "ViewReducer",
+        "ViewReducer": {},
+        "AtlasConstructorMethod": "AtlasConstructor",
+        "AtlasConstructor": {
+            "PrunerMethod": "Pruner",
+            "Pruner": {
+                "RedundancyFactor": 0.02,
+                "ErosionIter": 1,
+                "DilationIter": 5
+            },
+            "AggregatorMethod": "Aggregator",
+            "Aggregator": {},
+            "PackerMethod": "Packer",
+            "Packer": {
+                "Alignment": 8,
+                "MinPatchSize": 16,
+                "Overlap": 1,
+                "PiP": 1
+            },
+            "AtlasResolution": [
+                2048,
+                1088
+            ],
+            "MPixel": 8
+        }
+    },
+    "DecoderMethod": "Decoder",
+    "Decoder": {
+        "AtlasDeconstructorMethod": "AtlasDeconstructor",
+        "AtlasDeconstructor": {},
+        "RendererMethod": "MultipassRenderer",
+        "MultipassRenderer": {
+            "NumberOfPasses": 1,
+            "NumberOfViewsPerPass": [
+                16
+            ],
+            "SynthesizerMethod": "Synthesizer",
+            "Synthesizer": {
+                "rayAngleParameter": 20,
+                "depthParameter": 20,
+                "stretchingParameter": 0.6
+            },
+            "InpainterMethod": "Inpainter",
+            "Inpainter": {}
+        }
+    }
+}

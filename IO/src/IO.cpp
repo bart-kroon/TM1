@@ -617,9 +617,9 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
   result = cameras[0];
 
   if (auto nodeOutputCameraPoseTrace =
-          config.optional("OutputCameraPoseTrace")) {
+          config.optional("PoseTracePath")) {
     string poseTracePath =
-        getFullPath(config, "SourceDirectory", "OutputCameraPoseTrace");
+        getFullPath(config, "SourceDirectory", "PoseTracePath");
     ifstream stream{poseTracePath};
 
     if (!stream.good()) {

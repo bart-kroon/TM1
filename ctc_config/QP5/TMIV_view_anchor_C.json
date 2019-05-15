@@ -6,14 +6,9 @@
     "SourceDepthPathFmt": "%s_depth_4096x4096_yuv420p16le.yuv",
     "SourceCameraParameters": "TechnicolorHijack.json",
     "SourceCameraNames": [
-        "v0",
         "v1",
-        "v2",
-        "v3",
         "v4",
         "v5",
-        "v6",
-        "v7",
         "v8",
         "v9"
     ],
@@ -47,7 +42,7 @@
                 4096,
                 4096
             ],
-            "MPixel": 32
+            "MPixel": 83
         }
     },
     "DecoderMethod": "Decoder",

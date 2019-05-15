@@ -46,7 +46,7 @@
                 4096,
                 2048
             ],
-            "MPixel": 16
+            "MPixel": 75
         }
     },
     "DecoderMethod": "Decoder",

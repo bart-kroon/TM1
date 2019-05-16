@@ -55,11 +55,12 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAccumulator &operator=(PixelAccumulator &&) = default;
 
   PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_,
-                   float normDisp_)
+                   float normDisp_, float stretching_)
       : PixelAttributes<T...>{attributes},
-        normWeight{normWeight_}, normDisp{normDisp_} {
+        normWeight{normWeight_}, normDisp{normDisp_}, stretching{stretching_} {
     assert(normWeight_ >= 0.f);
     assert(normDisp_ >= 0.f);
+    assert(stretching_ > 0.f);
   }
 
   // weight is implicit as normWeight *
@@ -69,6 +70,9 @@ struct PixelAccumulator : private PixelAttributes<T...> {
 
   // Normalized disparity in diopters
   float normDisp{0.f};
+
+  // Stretching as a ratio of areas
+  float stretching{0.f};
 
   // Access the attributes
   const PixelAttributes<T...> &attributes() const { return *this; }
@@ -91,11 +95,12 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
   PixelValue &operator=(PixelValue &&) = default;
 
   PixelValue(PixelAttributes<T...> attributes, float normDisp_,
-             float normWeight_)
+             float normWeight_, float stretching_)
       : PixelAttributes<T...>{attributes}, normDisp{normDisp_},
-        normWeight{normWeight_} {
+        normWeight{normWeight_}, stretching{stretching_} {
     assert(normDisp_ >= 0.f);
     assert(normWeight_ >= 0.f);
+    assert(stretching_ > 0.f);
   }
 
   // Normalized disparity in diopters
@@ -103,6 +108,9 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
 
   // The normalized weight serves as a quality indication
   float normWeight{0.f};
+
+  // Amount of stretching as a ratio of area (another quality indication)
+  float stretching{0.f};
 
   // Access the attributes
   const PixelAttributes<T...> &attributes() const { return *this; }
@@ -137,7 +145,7 @@ public:
                  float stretching) const -> Accumulator {
     assert(normDisp >= 0.f);
     return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching),
-            normDisp};
+            normDisp, stretching};
   }
 
 private:
@@ -150,7 +158,7 @@ private:
         b.normWeight * normDispWeight(b.normDisp - normDisp);
     return Accumulator{
         blendAttributes(w_a, a.attributes(), w_b, b.attributes()), normWeight,
-        normDisp};
+        normDisp, blendValues(w_a, a.stretching, w_b, b.stretching)};
   }
 
 public:
@@ -202,10 +210,10 @@ public:
 
   // Average a pixel
   Value average(Accumulator const &x) const {
-    if (x.normWeight > 0.f) {
-      return {x.attributes(), x.normDisp, x.normWeight};
+    if (x.normWeight > 0.f && x.stretching < maxStretching) {
+      return {x.attributes(), x.normDisp, x.normWeight, x.stretching};
     }
-    return {Attributes{}, 0.f, 0.f};
+    return {Attributes{}, 0.f, 0.f, 0.f};
   }
 
   // Calculate the weight of a pixel based on cosine of the ray
@@ -222,8 +230,7 @@ public:
 
   // Calculate the weight of a pixel based on stretching only
   float stretchingWeight(float stretching) const {
-    return stretching < maxStretching ? std::exp(-stretchingParam * stretching)
-                                      : 0.f;
+    return std::exp(-stretchingParam * stretching);
   }
 };
 } // namespace TMIV::Renderer

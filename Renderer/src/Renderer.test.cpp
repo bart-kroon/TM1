@@ -288,7 +288,7 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
 
   GIVEN("A default-constructed accumulator") {
     Acc acc;
-    Pixel pixel{1.f, 1.f, 1.f};
+    Pixel pixel{1.f, 1.f, 1.f, 10.f};
 
     THEN("The attributes are zero")
     REQUIRE(std::get<0>(acc.attributes()).x() == 0.f);
@@ -310,10 +310,11 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     float const ray_angle_param = 1.5f;
     float const depth_param = 60.7f;
     float const stretching_param = 3.2f;
+	float const max_stretching = 10.f;
     float const ray_angle = 0.01f;
     float const stretching = 3.f;
 
-    Pixel pixel{ray_angle_param, depth_param, stretching_param};
+    Pixel pixel{ray_angle_param, depth_param, stretching_param, max_stretching};
 
     float const ray_angle_weight = pixel.rayAngleWeight(ray_angle);
     float const stretching_weight = pixel.stretchingWeight(stretching);
@@ -417,7 +418,7 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
 
 SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
-    AccumulatingPixel<Vec3w> pixel{1.f, 1.f, 1.f};
+    AccumulatingPixel<Vec3w> pixel{1.f, 1.f, 1.f, 10.f};
     Rasterizer<Vec3w> rasterizer(pixel, Vec2i{8, 4});
 
     WHEN("Rastering nothing") {
@@ -605,7 +606,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
 
 SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
-    Rasterizer<Vec2f> rasterizer(AccumulatingPixel<Vec2f>{1.f, 1.f, 1.f},
+    Rasterizer<Vec2f> rasterizer(AccumulatingPixel<Vec2f>{1.f, 1.f, 1.f, 10.f},
                                  Vec2i{8, 4});
 
     WHEN("Rastering nothing") {
@@ -686,7 +687,7 @@ SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
   using Mat1f = TMIV::Common::Mat<float>;
 
   GIVEN("A synthesizer, camera and a depth map") {
-    Synthesizer synthesizer{1., 1., 1.};
+    Synthesizer synthesizer{1., 1., 1., 10.f};
     auto camera = makeFullERPCamera();
 
     Mat1f depth({unsigned(camera.size.y()), unsigned(camera.size.x())});

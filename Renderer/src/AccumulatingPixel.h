@@ -125,11 +125,12 @@ public:
   const float rayAngleParam;
   const float depthParam;
   const float stretchingParam;
+  const float maxStretching;
 
   AccumulatingPixel(float rayAngleParam_, float depthParam_,
-                    float stretchingParam_)
+                    float stretchingParam_, float maxStretching_)
       : rayAngleParam{rayAngleParam_}, depthParam{depthParam_},
-        stretchingParam{stretchingParam_} {}
+        stretchingParam{stretchingParam_}, maxStretching{maxStretching_} {}
 
   // Construct a pixel accumulator from a single synthesized pixel
   auto construct(Attributes attributes, float normDisp, float rayAngle,
@@ -221,7 +222,8 @@ public:
 
   // Calculate the weight of a pixel based on stretching only
   float stretchingWeight(float stretching) const {
-    return std::exp(-stretchingParam * stretching);
+    return stretching < maxStretching ? std::exp(-stretchingParam * stretching)
+                                      : 0.f;
   }
 };
 } // namespace TMIV::Renderer

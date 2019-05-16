@@ -41,7 +41,8 @@ class Synthesizer : public ISynthesizer {
 public:
   Synthesizer(const Common::Json & /*unused*/,
               const Common::Json & /*componentNode*/);
-  Synthesizer(float rayAngleParam, float depthParam, float stretchingParam);
+  Synthesizer(float rayAngleParam, float depthParam, float stretchingParam,
+              float maxStretching);
   Synthesizer(const Synthesizer &) = delete;
   Synthesizer(Synthesizer &&) = default;
   Synthesizer &operator=(const Synthesizer &) = delete;

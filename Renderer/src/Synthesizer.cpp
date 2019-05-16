@@ -48,9 +48,10 @@ using namespace TMIV::Image;
 namespace TMIV::Renderer {
 class Synthesizer::Impl {
 public:
-  Impl(float rayAngleParam, float depthParam, float stretchingParam)
+  Impl(float rayAngleParam, float depthParam, float stretchingParam,
+       float maxStretching)
       : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
-        m_stretchingParam{stretchingParam} {}
+        m_stretchingParam{stretchingParam}, m_maxStretching{maxStretching} {}
 
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;
@@ -192,7 +193,8 @@ public:
                                 Unprojector unprojector) const {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
-        {m_rayAngleParam, m_depthParam, m_stretchingParam}, target.size};
+        {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
+        target.size};
 
     // Pipeline mesh generation and rasterization
     future<void> runner = async(launch::deferred, []() {});
@@ -252,7 +254,8 @@ public:
   Mat<float> renderDepth(const Mat<float> &depth,
                          const CameraParameters &camera,
                          const CameraParameters &target) const {
-    AccumulatingPixel<> pixel{m_rayAngleParam, m_depthParam, m_stretchingParam};
+    AccumulatingPixel<> pixel{m_rayAngleParam, m_depthParam, m_stretchingParam,
+                              m_maxStretching};
     auto mesh = reproject(depth, camera, target);
 
     Rasterizer<> rasterizer{pixel, target.size};
@@ -265,18 +268,20 @@ private:
   float m_rayAngleParam;
   float m_depthParam;
   float m_stretchingParam;
+  float m_maxStretching;
 }; // namespace TMIV::Renderer
 
 Synthesizer::Synthesizer(const Common::Json & /*rootNode*/,
                          const Common::Json &componentNode)
     : m_impl(new Impl(componentNode.require("rayAngleParameter").asFloat(),
                       componentNode.require("depthParameter").asFloat(),
-                      componentNode.require("stretchingParameter").asFloat())) {
-}
+                      componentNode.require("stretchingParameter").asFloat(),
+                      componentNode.require("maxStretching").asFloat())) {}
 
 Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
-                         float stretchingParam)
-    : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam)) {}
+                         float stretchingParam, float maxStretching)
+    : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam,
+                      maxStretching)) {}
 
 Synthesizer::~Synthesizer() = default;
 

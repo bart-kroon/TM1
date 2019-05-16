@@ -283,6 +283,17 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     for (const SceneVertexDescriptor &v : sceneVertices) {
       imageVertices.push_back(projectVertex(v));
     }
+
+	// Weighted sphere compensation of stretching
+    for (auto &triangle : triangles) {
+      auto v = 0.f;
+      for (auto index : triangle.indices) {
+        v += imageVertices[index].position.y() / 3.f;
+      }
+      const auto theta = theta0 + dtheta_dv * v;
+      triangle.area /= cos(theta);
+    }
+
     return std::tuple{move(imageVertices), triangles, attributes};
   }
 };

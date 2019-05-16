@@ -132,7 +132,7 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   float y_target = target.position[1];
   float z_target = target.position[2];
   float yaw_target = target.rotation[0];
-  float pitch_target = target.rotation[1] - 90.0;
+  float pitch_target = target.rotation[1];
   float yaw_camera, pitch_camera;
   //     float roll_target = target.rotation[2];
   constexpr float radperdeg{0.01745329251994329576923690768489f};
@@ -142,7 +142,7 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
                             pow(cameras[id].position[1] - y_target, 2) +
                             pow(cameras[id].position[2] - z_target, 2)));
     yaw_camera = cameras[id].rotation[0];
-    pitch_camera = cameras[id].rotation[1] - 90.0;
+    pitch_camera = cameras[id].rotation[1];
     // Compute Angle between the camera and target in degree unit
     angle.push_back(
         1 / radperdeg *
@@ -159,14 +159,18 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
     else
       angleWeight.push_back(1.0 / 180.0 * angle[id] + 1.0);
   }
+
   // Find the sorted cameras indices
-  vector<size_t> SortedCamerasId(cameras.size());
-  iota(SortedCamerasId.begin(), SortedCamerasId.end(), 0); // initalization
-  sort(SortedCamerasId.begin(), SortedCamerasId.end(),
+  vector<size_t> sortedCamerasId(cameras.size());
+  iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
+  sort(sortedCamerasId.begin(), sortedCamerasId.end(),
        [&distance, &angleWeight](size_t i1, size_t i2) {
-         return distance[i1] * angleWeight[i1] < distance[i2] * angleWeight[i2];
+         if (angleWeight[i1] == angleWeight[i2])
+           return distance[i1] < distance[i2];
+		 else
+			return distance[i1] * (1.0-angleWeight[i1]) < distance[i2] * (1.0-angleWeight[i2]);
        });
-  return SortedCamerasId;
+  return sortedCamerasId;
 }
 
 Common::Texture444Depth10Frame
@@ -209,8 +213,8 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   ///////////////
   // Ordering views based on their distance & angle to target view
   ///////////////
-  vector<size_t> SortedCamerasId(cameras.size());
-  SortedCamerasId = sortViews(cameras, target);
+  vector<size_t> sortedCamerasId(cameras.size());
+  sortedCamerasId = sortViews(cameras, target);
 
   // Produce the individual pass synthesis results
   for (int passId = 0; passId < numberOfPasses;
@@ -221,7 +225,7 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
     for (auto id = 0U; id < cameras.size(); id++) {
       if (id < numberOfViewsPerPass[passId])
         selectedViewsPass.push_back(
-            static_cast<unsigned int>(SortedCamerasId[id]));
+            static_cast<unsigned int>(sortedCamerasId[id]));
     }
 
     /////////////////

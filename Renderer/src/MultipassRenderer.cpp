@@ -149,15 +149,15 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
         acos(sin(pitch_camera * radperdeg) * sin(pitch_target * radperdeg) +
              cos(pitch_camera * radperdeg) * cos(pitch_target * radperdeg) *
                  cos((yaw_camera - yaw_target) * radperdeg)));
-    if (angle[id] > 180.0)// to assure angle is ranging from -180 to 180 degree
-      angle[id] = angle[id] - 360.0; 
+    if (angle[id] > 180.f)// to assure angle is ranging from -180 to 180 degree
+      angle[id] = angle[id] - 360.f; 
 	
     // Introduce AngleWeight as a simple triangle function (with value of 1 when
     // angle is 0 & value of 0 when angle is 180)
-    if (angle[id] > 0.0)
-      angleWeight.push_back(-1.0 / 180.0 * angle[id] + 1.0);
+    if (angle[id] > 0.f)
+      angleWeight.push_back(-1.f / 180.f * angle[id] + 1.f);
     else
-      angleWeight.push_back(1.0 / 180.0 * angle[id] + 1.0);
+      angleWeight.push_back(1.f / 180.f * angle[id] + 1.f);
   }
 
   // Find the sorted cameras indices

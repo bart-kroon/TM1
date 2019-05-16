@@ -45,14 +45,3 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
-
-if (CMAKE_TESTING_ENABLED)
-	add_executable(ViewOptimizerTest "src/ViewOptimizer.test.cpp")
-
-	target_link_libraries(ViewOptimizerTest
-		PRIVATE
-			Catch2::Catch2
-			TMIV::ViewOptimizerLib)
-
-	catch_discover_tests(ViewOptimizerTest)
-endif()

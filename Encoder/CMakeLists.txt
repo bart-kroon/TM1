@@ -44,14 +44,3 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
-
-if (CMAKE_TESTING_ENABLED)
-	add_executable(EncoderTest "src/Encoder.test.cpp")
-
-	target_link_libraries(EncoderTest
-		PRIVATE
-			Catch2::Catch2
-			TMIV::EncoderLib)
-
-	catch_discover_tests(EncoderTest)
-endif()

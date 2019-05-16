@@ -216,7 +216,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
       }
     }
     // Search views which have the least diatance to center
-    for (unsigned long i : camera_id) {
+    for (auto i : camera_id) {
       float temp_distance = sqrtf(powf(cameras[i].position[0] - x_center, 2) +
                                   powf(cameras[i].position[1] - y_center, 2) +
                                   powf(cameras[i].position[2] - z_center, 2));

@@ -58,14 +58,3 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
-
-if (CMAKE_TESTING_ENABLED)
-	add_executable(AtlasConstructorTest "src/AtlasConstructor.test.cpp")
-
-	target_link_libraries(AtlasConstructorTest
-		PRIVATE
-			Catch2::Catch2
-			TMIV::AtlasConstructorLib)
-
-	catch_discover_tests(AtlasConstructorTest)
-endif()

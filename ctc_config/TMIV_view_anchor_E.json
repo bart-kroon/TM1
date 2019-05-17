@@ -18,7 +18,7 @@
     "AtlasDepthPathFmt": "ATL_SE_R0_Td_c%02d_1920x1080_yuv420p10le.yuv",
     "AtlasMetadataPath": "ATL_SE_R0_Tm_c00.bit",
     "OutputTexturePath": "TM1_SE_R0_Tt_%s_1920x1080_yuv420p10le.yuv",
-    "OutputCameraName": "v1",
+    "OutputCameraName": "viewport",
     "EncoderMethod": "Encoder",
     "Encoder": {
         "ViewOptimizerMethod": "NoViewOptimizer",

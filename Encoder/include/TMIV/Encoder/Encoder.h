@@ -49,6 +49,7 @@ public:
   Encoder(Encoder &&) = default;
   Encoder &operator=(const Encoder &) = delete;
   Encoder &operator=(Encoder &&) = default;
+  ~Encoder() override = default;
 
   void prepareIntraPeriod(Metadata::CameraParametersList cameras) override;
   void pushFrame(Common::MVD16Frame views) override;

@@ -58,12 +58,12 @@ protected:
   T *m_p;
 
 public:
-  explicit const_iterator(const T *x = nullptr) : m_p((T *)x) {}
+  explicit const_iterator(const T *x = nullptr) : m_p(const_cast<T *>(x)) {}
   const_iterator(const const_iterator &iter) = default;
-  const_iterator(const_iterator &&iter) = default;
+  const_iterator(const_iterator &&iter) noexcept = default;
   ~const_iterator() = default;
   const_iterator &operator=(const const_iterator &rhs) = default;
-  const_iterator &operator=(const_iterator &&rhs) = default;
+  const_iterator &operator=(const_iterator &&rhs) noexcept = default;
   bool operator==(const const_iterator &rhs) const { return m_p == rhs.m_p; }
   bool operator!=(const const_iterator &rhs) const { return m_p != rhs.m_p; }
   const T &operator*() const { return *m_p; }
@@ -119,8 +119,8 @@ const_iterator<T> operator+(std::ptrdiff_t n, const const_iterator<T> &rhs) {
 template <typename T> class iterator : public const_iterator<T> {
 public:
   explicit iterator(T *x = nullptr) : const_iterator<T>(x) {}
-  T &operator*() { return *(this->m_p); }
-  T *operator->() { return (this->m_p); }
+  T &operator*() { return *this->m_p; }
+  T *operator->() { return this->m_p; }
   iterator &operator++() {
     ++this->m_p;
     return *this;
@@ -174,13 +174,13 @@ protected:
 
 public:
   explicit const_dim_iterator(const T *x = nullptr, std::ptrdiff_t s = 0)
-      : m_p((T *)x), m_step(s) {}
+      : m_p(const_cast<T *>(x)), m_step(s) {}
   const_dim_iterator(const const_dim_iterator &iter) = default;
-  const_dim_iterator(const_dim_iterator &&iter) = default;
+  const_dim_iterator(const_dim_iterator &&iter) noexcept = default;
   ~const_dim_iterator() = default;
   std::ptrdiff_t n() const { return m_step; }
   const_dim_iterator &operator=(const const_dim_iterator &rhs) = default;
-  const_dim_iterator &operator=(const_dim_iterator &&rhs) = default;
+  const_dim_iterator &operator=(const_dim_iterator &&rhs) noexcept = default;
   bool operator==(const const_dim_iterator &rhs) const {
     return m_p == rhs.m_p;
   }
@@ -308,8 +308,8 @@ public:
   static void sizes(size_type *iter) { *iter = M; }
   static constexpr size_type size() { return M; }
   static constexpr size_type min_size() { return M; }
-  T *data() { return reinterpret_cast<T *>(m_v.data()); }
-  const T *data() const { return reinterpret_cast<const T *>(m_v.data()); }
+  T *data() { return m_v.data(); }
+  const T *data() const { return m_v.data(); }
   template <size_type K>
   static constexpr size_type offset(size_type i, size_type first = 0,
                                     size_type second = 0) {
@@ -418,19 +418,19 @@ public:
     }
   }
   //! \brief Move constructor.
-  Array(container_type &&that) = default;
+  Array(container_type &&that) noexcept = default;
   //! \brief Copy assignment.
-  container_type &operator=(const container_type &that) = default;
-  container_type &operator=(T t) {
+  Array &operator=(const Array &that) = default;
+  Array &operator=(T t) {
     std::fill(begin(), end(), t);
     return *this;
   }
-  container_type &operator=(std::initializer_list<T> v) {
+  Array &operator=(std::initializer_list<T> v) {
     std::copy(v.begin(), v.begin() + size(), begin());
     return *this;
   }
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  container_type &operator=(const OTHER &that) {
+  Array &operator=(const OTHER &that) {
     if ((dim() == that.dim()) &&
         std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin())) {
       std::transform(that.begin(), that.end(), begin(),
@@ -440,17 +440,17 @@ public:
     return *this;
   }
   //! \brief Move assignment.
-  container_type &operator=(container_type &&that) = default;
+  Array &operator=(Array &&that) noexcept = default;
   //! \brief Equal operator.
-  bool operator==(const container_type &that) const {
+  bool operator==(const Array &that) const {
     return std::equal(begin(), end(), that.begin());
   }
   //! \brief Different operator.
-  bool operator!=(const container_type &that) const {
+  bool operator!=(const Array &that) const {
     return !std::equal(begin(), end(), that.begin());
   }
   //! \brief Swap operator.
-  void swap(container_type &that) { std::swap(m_v, that.m_v); }
+  void swap(Array &that) { std::swap(m_v, that.m_v); }
   //! \brief Resize operator.
   void resize(const tuple_type & /*unused*/) {}
   //! \brief Reshape operator.
@@ -488,22 +488,22 @@ public:
   int getProperty() const { return -1; }
   //! \brief Returns an iterator to the first element of the array.
   iterator begin() { return iterator(data()); }
-  const_iterator begin() const { return const_iterator((T *)data()); }
+  const_iterator begin() const { return const_iterator(data()); }
   //! \brief Returns a const iterator to the first element of the array.
-  const_iterator cbegin() const { return const_iterator((T *)data()); }
+  const_iterator cbegin() const { return const_iterator(data()); }
   //! \brief Returns an iterator to the first element after the end of the
   //! array.
   iterator end() { return iterator(data() + size()); }
-  const_iterator end() const { return const_iterator((T *)data() + size()); }
+  const_iterator end() const { return const_iterator(data() + size()); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! array.
-  const_iterator cend() const { return const_iterator((T *)data() + size()); }
+  const_iterator cend() const { return const_iterator(data() + size()); }
   //! \brief Returns an iterator along the Kth dimension to the first element of
   //! the hyperplane defined by next.
   template <size_type K, typename... J>
   const_dim_iterator dim_begin(J... next) const {
     return const_dim_iterator(
-        (T *)data() +
+        data() +
             _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
         _Array<sizeof...(I), T, I...>::step(K + 1));
   }
@@ -517,8 +517,7 @@ public:
   template <size_type K, typename... J>
   const_dim_iterator cdim_begin(J... next) const {
     return const_dim_iterator(
-        (T *)data() +
-            _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
+        data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
         _Array<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
@@ -526,8 +525,7 @@ public:
   template <size_type K, typename... J>
   const_dim_iterator dim_end(J... next) const {
     return const_dim_iterator(
-        (T *)data() +
-            _Array<sizeof...(I), T, I...>::template offset<K>(0, next...) +
+        data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...) +
             _Array<sizeof...(I), T, I...>::step(K),
         _Array<sizeof...(I), T, I...>::step(K + 1));
   }
@@ -542,14 +540,13 @@ public:
   template <size_type K, typename... J>
   const_dim_iterator cdim_end(J... next) const {
     return const_dim_iterator(
-        (T *)data() +
-            _Array<sizeof...(I), T, I...>::template offset<K>(next...) +
+        data() + _Array<sizeof...(I), T, I...>::template offset<K>(next...) +
             _Array<sizeof...(I), T, I...>::step(K),
         _Array<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns an iterator to the first diagonal element.
   const_diag_iterator diag_begin() const {
-    return const_diag_iterator((T *)data(),
+    return const_diag_iterator(data(),
                                _Array<sizeof...(I), T, I...>::diag_step());
   }
   diag_iterator diag_begin() {
@@ -557,15 +554,15 @@ public:
   }
   //! \brief Returns a const iterator to the first diagonal element.
   const_diag_iterator cdiag_begin() const {
-    return const_diag_iterator((T *)data(),
+    return const_diag_iterator(data(),
                                _Array<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns an iterator to the first element afer the last diagonal
   //! element.
   const_diag_iterator diag_end() const {
     return const_diag_iterator(
-        (T *)data() + _Array<sizeof...(I), T, I...>::min_size() *
-                          _Array<sizeof...(I), T, I...>::diag_step(),
+        data() + _Array<sizeof...(I), T, I...>::min_size() *
+                     _Array<sizeof...(I), T, I...>::diag_step(),
         _Array<sizeof...(I), T, I...>::diag_step());
   }
   diag_iterator diag_end() {
@@ -578,8 +575,8 @@ public:
   //! diagonal element.
   const_diag_iterator cdiag_end() const {
     return const_diag_iterator(
-        (T *)data() + _Array<sizeof...(I), T, I...>::min_size() *
-                          _Array<sizeof...(I), T, I...>::diag_step(),
+        data() + _Array<sizeof...(I), T, I...>::min_size() *
+                     _Array<sizeof...(I), T, I...>::diag_step(),
         _Array<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns m(i, j, k, ...)
@@ -694,7 +691,7 @@ public:
   //! \brief Destructor.
   ~Array() = default;
   //! \brief Copy constructors.
-  Array(const container_type &that) = default;
+  Array(const Array &that) = default;
   Array(const tuple_type &sz, T v) : Array() {
     this->resize(sz);
     std::fill(begin(), end(), v);
@@ -717,7 +714,7 @@ public:
     m_property = that.getProperty();
   }
   //! \brief Move constructor.
-  Array(container_type &&that) {
+  Array(Array &&that) noexcept {
     m_size = that.m_size;
     m_step = that.m_step;
     m_v = std::move(that.m_v);
@@ -728,9 +725,9 @@ public:
     that.m_property = -1;
   }
   //! \brief Copy assignment.
-  container_type &operator=(const container_type &that) = default;
+  Array &operator=(const Array &that) = default;
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  container_type &operator=(const OTHER &that) {
+  Array &operator=(const OTHER &that) {
     tuple_type sz;
 
     std::copy(that.sizes().begin(), that.sizes().end(), sz.begin());
@@ -744,12 +741,12 @@ public:
 
     return *this;
   }
-  container_type &operator=(T v) {
+  Array &operator=(T v) {
     std::fill(begin(), end(), v);
     return *this;
   }
   //! \brief Move assignment.
-  container_type &operator=(container_type &&that) {
+  Array &operator=(Array &&that) noexcept {
     m_size = that.m_size;
     m_step = that.m_step;
     m_v = std::move(that.m_v);
@@ -762,17 +759,17 @@ public:
     return *this;
   }
   //! \brief Equal operator.
-  bool operator==(const container_type &that) const {
+  bool operator==(const Array &that) const {
     return (std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) &&
             std::equal(begin(), end(), that.begin()));
   }
   //! \brief Different operator.
-  bool operator!=(const container_type &that) const {
+  bool operator!=(const Array &that) const {
     return (!std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) ||
             !std::equal(begin(), end(), that.begin()));
   }
   //! \brief Swap operator
-  void swap(container_type &that) {
+  void swap(Array &that) {
     std::swap(m_size, that.m_size);
     std::swap(m_step, that.m_step);
     m_v.swap(that.m_v);
@@ -937,34 +934,34 @@ public:
     return pos(1, first, next...);
   }
   //! \brief Unary - operator.
-  container_type operator-() const {
-    container_type v(sizes());
+  Array operator-() const {
+    Array v(sizes());
     std::transform(begin(), end(), v.begin(), [](T x) { return -x; });
     return v;
   }
   //! \brief += scalar operator.
-  container_type &operator+=(T v) {
+  Array &operator+=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a += v; });
     return *this;
   }
   //! \brief -= scalar operator.
-  container_type &operator-=(T v) {
+  Array &operator-=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a -= v; });
     return *this;
   }
   //! \brief /= scalar operator.
-  container_type &operator/=(T v) {
+  Array &operator/=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a /= v; });
     return *this;
   }
   //! \brief *= scalar operator.
-  container_type &operator*=(T v) {
+  Array &operator*=(T v) {
     std::for_each(begin(), end(), [v](T &a) { a *= v; });
     return *this;
   }
   //! \brief += operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  container_type &operator+=(const OTHER &that) {
+  Array &operator+=(const OTHER &that) {
     std::transform(
         begin(), end(), that.begin(), begin(),
         [](T v1, typename OTHER::value_type v2) { return (v1 + v2); });
@@ -972,21 +969,21 @@ public:
   }
   //! \brief -= operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  container_type &operator-=(const OTHER &that) {
+  Array &operator-=(const OTHER &that) {
     std::transform(
         begin(), end(), that.begin(), begin(),
         [](T v1, typename OTHER::value_type v2) { return (v1 - v2); });
     return *this;
   }
   //! \brief Return array filled with 0
-  static container_type zeros(const tuple_type &sz) {
-    container_type out(sz);
+  static Array zeros(const tuple_type &sz) {
+    Array out(sz);
     std::fill(out.begin(), out.end(), 0);
     return out;
   }
   //! \brief Return array with diagonal filled with 1
-  static container_type eye(const tuple_type &sz) {
-    container_type out(sz);
+  static Array eye(const tuple_type &sz) {
+    Array out(sz);
 
     std::fill(out.begin(), out.end(), T{0});
     std::fill(out.diag_begin(), out.diag_end(), T{1});
@@ -1065,12 +1062,12 @@ public:
     std::fill(sz.begin() + that.sizes().size(), sz.end(), 1);
 
     this->reshape(sz);
-    m_data = (T *)that.data();
+    m_data = const_cast<T *>(reinterpret_cast<const T *>(that.data()));
 
     m_property = that.getProperty();
   }
   //! \brief Move constructor.
-  Array(container_type &&that) {
+  Array(Array &&that) noexcept {
     m_size = that.m_size;
     m_step = that.m_step;
     m_data = that.m_data;
@@ -1082,9 +1079,9 @@ public:
     that.m_property = -1;
   }
   //! \brief Copy assignment.
-  container_type &operator=(const container_type &that) = default;
+  Array &operator=(const Array &that) = default;
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  container_type &operator=(const OTHER &that) {
+  Array &operator=(const OTHER &that) {
     if (size() == that.size()) {
       tuple_type sz;
 
@@ -1100,12 +1097,12 @@ public:
 
     return *this;
   }
-  container_type &operator=(T v) {
+  Array &operator=(T v) {
     std::fill(begin(), end(), v);
     return *this;
   }
   //! \brief Move assignment.
-  container_type &operator=(container_type &&that) {
+  Array &operator=(Array &&that) noexcept {
     m_size = that.m_size;
     m_step = that.m_step;
     m_data = that.m_data;
@@ -1119,17 +1116,17 @@ public:
     return *this;
   }
   //! \brief Equal operator.
-  bool operator==(const container_type &that) const {
+  bool operator==(const Array &that) const {
     return (std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) &&
             std::equal(begin(), end(), that.begin()));
   }
   //! \brief Different operator.
-  bool operator!=(const container_type &that) const {
+  bool operator!=(const Array &that) const {
     return (!std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) ||
             !std::equal(begin(), end(), that.begin()));
   }
   //! \brief Swap operator
-  void swap(container_type &that) {
+  void swap(Array &that) {
     std::swap(m_size, that.m_size);
     std::swap(m_step, that.m_step);
     std::swap(m_data, that.m_data);

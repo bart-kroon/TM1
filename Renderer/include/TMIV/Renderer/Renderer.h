@@ -52,6 +52,7 @@ public:
   Renderer(Renderer &&) = default;
   Renderer &operator=(const Renderer &) = delete;
   Renderer &operator=(Renderer &&) = default;
+  ~Renderer() override = default;
 
   Common::Texture444Depth10Frame
   renderFrame(const Common::MVD10Frame &atlas,

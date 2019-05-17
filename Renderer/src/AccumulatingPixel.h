@@ -53,6 +53,7 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAccumulator(PixelAccumulator &&) = default;
   PixelAccumulator &operator=(const PixelAccumulator &) = default;
   PixelAccumulator &operator=(PixelAccumulator &&) = default;
+  ~PixelAccumulator() = default;
 
   PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_,
                    float normDisp_, float stretching_)

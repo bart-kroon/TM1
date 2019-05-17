@@ -71,7 +71,7 @@ protected:
 public:
   explicit Frame(int w = 0, int h = 0) { resize(w, h); }
   Frame(const Frame &) = default;
-  Frame(Frame &&that) {
+  Frame(Frame &&that) noexcept {
     m_width = that.m_width;
     m_height = that.m_height;
     m_planes = std::move(that.m_planes);
@@ -80,7 +80,7 @@ public:
     that.m_height = 0;
   }
   Frame &operator=(const Frame &) = default;
-  Frame &operator=(Frame &&that) {
+  Frame &operator=(Frame &&that) noexcept {
     m_width = that.m_width;
     m_height = that.m_height;
     m_planes = std::move(that.m_planes);
@@ -90,6 +90,7 @@ public:
 
     return *this;
   }
+  ~Frame() = default;
 
   void resize(int w, int h);
 

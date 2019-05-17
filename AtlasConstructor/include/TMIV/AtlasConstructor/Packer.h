@@ -48,6 +48,7 @@ public:
   Packer(Packer &&) = default;
   Packer &operator=(const Packer &) = delete;
   Packer &operator=(Packer &&) = default;
+  ~Packer() override = default;
 
   AtlasParametersList
   pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,

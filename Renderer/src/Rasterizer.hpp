@@ -42,12 +42,12 @@
 #include <thread>
 
 namespace TMIV::Renderer {
-namespace {
+namespace detail {
 // Calculate a number of strips that should ensure there is enough work but
 // avoids having too many triangles in multiple strips
 //
 // Example: 8 hyper cores, 2048 rows ==> 128 strips of 16 rows each
-int numStrips(int rows) {
+inline int numStrips(int rows) {
   const double hw = std::thread::hardware_concurrency();
   const int maximum = (rows + 3) / 4;
   if (maximum <= hw) {
@@ -77,11 +77,11 @@ inline auto fetchAttributes(int /* index */, const std::tuple<> &
                             /* attributes */) -> std::tuple<> {
   return {};
 }
-} // namespace
+} // namespace detail
 
 template <typename... T>
 Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size)
-    : Rasterizer{pixel, size, numStrips(size.y())} {}
+    : Rasterizer{pixel, size, detail::numStrips(size.y())} {}
 
 template <typename... T>
 Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
@@ -305,9 +305,9 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
   const auto d2 = 1.f / batch.vertices[n2].depth;
 
   // Fetch multiple attributes (e.g. color)
-  const auto a0 = fetchAttributes(n0, batch.attributes);
-  const auto a1 = fetchAttributes(n1, batch.attributes);
-  const auto a2 = fetchAttributes(n2, batch.attributes);
+  const auto a0 = detail::fetchAttributes(n0, batch.attributes);
+  const auto a1 = detail::fetchAttributes(n1, batch.attributes);
+  const auto a2 = detail::fetchAttributes(n2, batch.attributes);
 
   // For each pixel in the bounding box
   for (int v = v1; v < v2; ++v) {

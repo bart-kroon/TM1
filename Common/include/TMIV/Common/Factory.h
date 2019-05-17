@@ -59,6 +59,7 @@ public:
   Factory(Factory &&) = delete;
   Factory &operator=(const Factory &) = delete;
   Factory &operator=(Factory &&) = delete;
+  ~Factory() = default;
 
   // Return the singleton
   static Factory &getInstance() {

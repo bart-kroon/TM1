@@ -50,6 +50,7 @@ public:
   ViewReducer(ViewReducer &&) = default;
   ViewReducer &operator=(const ViewReducer &) = default;
   ViewReducer &operator=(ViewReducer &&) = default;
+  ~ViewReducer() override = default;
 
   auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
       -> Output<Metadata::CameraParametersList> override;

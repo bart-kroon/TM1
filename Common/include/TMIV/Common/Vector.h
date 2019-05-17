@@ -227,7 +227,7 @@ dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
   using T2 = typename Iterator2::value_type;
 
   return std::inner_product(
-      first1, last1, first2, (T1)(0),
+      first1, last1, first2, T1(0),
       [](const T1 &v1, const T2 &v2) { return (v1 + v2); },
       [](const T1 &v1, const T2 &v2) { return (v1 * std::conj(v2)); });
 }

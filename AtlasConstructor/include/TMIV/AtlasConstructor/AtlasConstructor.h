@@ -53,6 +53,7 @@ public:
   AtlasConstructor(AtlasConstructor &&) = default;
   AtlasConstructor &operator=(const AtlasConstructor &) = delete;
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
+  ~AtlasConstructor() override = default;
 
   using Vec2i = Common::Vec2i;
   using AtlasParameters = Metadata::AtlasParameters;

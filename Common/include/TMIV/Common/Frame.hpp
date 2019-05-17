@@ -140,7 +140,7 @@ template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
     int lineSize = w * sizeof(base_type);
 
     for (int j = 0; j < h; j++) {
-      is.read((char *)ptr, lineSize);
+      is.read(reinterpret_cast<char *>(ptr), lineSize);
       ptr = ptr + (vFlip ? -w : w);
     }
   }
@@ -155,7 +155,7 @@ void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
     int lineSize = w * sizeof(base_type);
 
     for (int j = 0; j < h; j++) {
-      os.write((const char *)ptr, lineSize);
+      os.write(reinterpret_cast<const char *>(ptr), lineSize);
       ptr = ptr + (vFlip ? -w : w);
     }
   }

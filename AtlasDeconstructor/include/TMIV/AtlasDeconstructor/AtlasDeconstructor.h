@@ -47,6 +47,7 @@ public:
   AtlasDeconstructor(AtlasDeconstructor &&) = default;
   AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
+  ~AtlasDeconstructor() override = default;
 
   using AtlasParameters = Metadata::AtlasParameters;
 

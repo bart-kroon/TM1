@@ -46,6 +46,7 @@ public:
   NoInpainter(NoInpainter &&) = default;
   NoInpainter &operator=(const NoInpainter &) = delete;
   NoInpainter &operator=(NoInpainter &&) = default;
+  ~NoInpainter() override = default;
 
   void inplaceInpaint(
       Common::Texture444Depth10Frame & /* viewport */,

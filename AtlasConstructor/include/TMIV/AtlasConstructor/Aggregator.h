@@ -47,6 +47,7 @@ public:
   Aggregator(Aggregator &&) = default;
   Aggregator &operator=(const Aggregator &) = delete;
   Aggregator &operator=(Aggregator &&) = default;
+  ~Aggregator() override = default;
 
   void prepareIntraPeriod() override;
   void pushMask(const MaskList &mask) override;

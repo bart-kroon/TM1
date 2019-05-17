@@ -60,6 +60,8 @@ public:
   Cluster(Cluster &&) = default;
   Cluster &operator=(const Cluster &) = default;
   Cluster &operator=(Cluster &&) = default;
+  ~Cluster() = default;
+
   void push(int i, int j);
   int getCameraId() const { return cameraId_; }
   int getClusterId() const { return clusterId_; }

@@ -47,6 +47,7 @@ public:
   NoViewOptimizer(NoViewOptimizer &&) = default;
   NoViewOptimizer &operator=(const NoViewOptimizer &) = default;
   NoViewOptimizer &operator=(NoViewOptimizer &&) = default;
+  ~NoViewOptimizer() override = default;
 
   auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
       -> Output<Metadata::CameraParametersList> override {

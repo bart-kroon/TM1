@@ -57,6 +57,7 @@ public:
   Impl(Impl &&) = delete;
   Impl &operator=(const Impl &) = delete;
   Impl &operator=(Impl &&) = delete;
+  ~Impl() = default;
 
   auto affineParameterList(const CameraParametersList &cameras,
                            const CameraParameters &target) const {

@@ -55,6 +55,7 @@ public:
   MultipassRenderer(MultipassRenderer &&) = default;
   MultipassRenderer &operator=(const MultipassRenderer &) = delete;
   MultipassRenderer &operator=(MultipassRenderer &&) = default;
+  ~MultipassRenderer() override = default;
 
   Common::Texture444Depth10Frame
   renderFrame(const Common::MVD10Frame &atlas,

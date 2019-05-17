@@ -66,7 +66,7 @@ struct AtlasParameters {
   Vec2i posInAtlas;
 
   // In MPEG/N18464: patch_rotation
-  PatchRotation rotation;
+  PatchRotation rotation{};
 };
 
 static_assert(sizeof(AtlasParameters) == 32);

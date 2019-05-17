@@ -58,6 +58,7 @@ public:
   Decoder(Decoder &&) = default;
   Decoder &operator=(const Decoder &) = delete;
   Decoder &operator=(Decoder &&) = default;
+  ~Decoder() override = default;
 
   void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
   void updatePatchList(Metadata::AtlasParametersList patches) override;

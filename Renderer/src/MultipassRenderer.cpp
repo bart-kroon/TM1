@@ -39,8 +39,8 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
-MultipassRenderer::MultipassRenderer(const Common::Json &rootNode,
-                                     const Common::Json &componentNode) {
+MultipassRenderer::MultipassRenderer(const Json &rootNode,
+                                     const Json &componentNode) {
   m_synthesizer = Factory<ISynthesizer>::getInstance().create(
       "Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode,
@@ -174,9 +174,9 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   return sortedCamerasId;
 }
 
-Common::Texture444Depth10Frame
-MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
-                               const Common::PatchIdMapList &maps,
+Texture444Depth10Frame
+MultipassRenderer::renderFrame(const MVD10Frame &atlas,
+                               const PatchIdMapList &maps,
                                const Metadata::AtlasParametersList &patches,
                                const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {
@@ -192,17 +192,15 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
     cout << "WARNING: "
          << "Please check number of passes " << endl;
 
-  Common::Texture444Depth10Frame viewport;
-  Common::Texture444Depth10Frame *viewportPass;
-  Common::PatchIdMapList *mapsPass;
-  viewportPass = new Common::Texture444Depth10Frame[numberOfPasses];
-  mapsPass = new Common::PatchIdMapList[numberOfPasses];
+  Texture444Depth10Frame viewport;
+  vector<Texture444Depth10Frame> viewportPass(numberOfPasses);
+  vector<PatchIdMapList> mapsPass(numberOfPasses);
 
   for (auto j = 0; j < numberOfPasses; j++) {
     for (auto k = 0U; k < atlas.size(); k++) {
       PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
-      std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
-                unusedPatchId);
+      fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
+           unusedPatchId);
       mapsPass[j].push_back(patchMap);
     }
   } // initalize mapsPass by 0xFFFF
@@ -233,9 +231,9 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
     // Update the Occupancy Map to be used in the Pass
     /////////////////
     for (auto atlasId = 0U; atlasId < maps.size(); atlasId++) {
-      std::transform(maps[atlasId].getPlane(0).begin(),
-                     maps[atlasId].getPlane(0).end(),
-                     mapsPass[passId][atlasId].getPlane(0).begin(), filterMaps);
+      transform(maps[atlasId].getPlane(0).begin(),
+                maps[atlasId].getPlane(0).end(),
+                mapsPass[passId][atlasId].getPlane(0).begin(), filterMaps);
     }
 
     ////////////////
@@ -248,14 +246,12 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
   // Merging
   //////////////
   if (numberOfPasses > 1) {
-    Common::Texture444Depth10Frame mergedviewport =
-        viewportPass[numberOfPasses - 1];
+    Texture444Depth10Frame mergedviewport = viewportPass[numberOfPasses - 1];
     for (auto passId = numberOfPasses - 1; passId > 0; passId--) {
-      std::transform(viewportPass[passId - 1].second.getPlane(0).begin(),
-                     viewportPass[passId - 1].second.getPlane(0).end(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     filterMergeDepth);
+      transform(viewportPass[passId - 1].second.getPlane(0).begin(),
+                viewportPass[passId - 1].second.getPlane(0).end(),
+                mergedviewport.second.getPlane(0).begin(),
+                mergedviewport.second.getPlane(0).begin(), filterMergeDepth);
 
       for (auto i = 0; i < viewport.first.getNumberOfPlanes(); i++) {
         my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
@@ -269,15 +265,16 @@ MultipassRenderer::renderFrame(const Common::MVD10Frame &atlas,
     }
     viewport = mergedviewport; // Final Merged
 
-  } else
+  } else {
     viewport = viewportPass[numberOfPasses - 1]; // Single Pass
+  }
 
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 
-Common::Texture444Depth16Frame
-MultipassRenderer::renderFrame(const Common::MVD16Frame &atlas,
+Texture444Depth16Frame
+MultipassRenderer::renderFrame(const MVD16Frame &atlas,
                                const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {
   auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);

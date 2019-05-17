@@ -41,19 +41,20 @@ namespace TMIV::ViewOptimizer {
 
 class NoViewOptimizer : public IViewOptimizer {
 public:
-  NoViewOptimizer(const Common::Json &, const Common::Json &) {}
+  NoViewOptimizer(const Common::Json & /*unused*/,
+                  const Common::Json & /*unused*/) {}
   NoViewOptimizer(const NoViewOptimizer &) = default;
   NoViewOptimizer(NoViewOptimizer &&) = default;
   NoViewOptimizer &operator=(const NoViewOptimizer &) = default;
   NoViewOptimizer &operator=(NoViewOptimizer &&) = default;
 
   auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
-      -> Output<Metadata::CameraParametersList> {
+      -> Output<Metadata::CameraParametersList> override {
     return {std::move(cameras), {}};
   }
 
   auto optimizeFrame(Common::MVD16Frame views) const
-      -> Output<Common::MVD16Frame> {
+      -> Output<Common::MVD16Frame> override {
     return {std::move(views), {}};
   }
 };

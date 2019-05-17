@@ -284,7 +284,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       imageVertices.push_back(projectVertex(v));
     }
 
-	// Weighted sphere compensation of stretching
+    // Weighted sphere compensation of stretching
     for (auto &triangle : triangles) {
       auto v = 0.f;
       for (auto index : triangle.indices) {

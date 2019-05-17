@@ -149,9 +149,9 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
         acos(sin(pitch_camera * radperdeg) * sin(pitch_target * radperdeg) +
              cos(pitch_camera * radperdeg) * cos(pitch_target * radperdeg) *
                  cos((yaw_camera - yaw_target) * radperdeg)));
-    if (angle[id] > 180.f)// to assure angle is ranging from -180 to 180 degree
-      angle[id] = angle[id] - 360.f; 
-	
+    if (angle[id] > 180.f) // to assure angle is ranging from -180 to 180 degree
+      angle[id] = angle[id] - 360.f;
+
     // Introduce AngleWeight as a simple triangle function (with value of 1 when
     // angle is 0 & value of 0 when angle is 180)
     if (angle[id] > 0.f)
@@ -167,8 +167,9 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
        [&distance, &angleWeight](size_t i1, size_t i2) {
          if (angleWeight[i1] == angleWeight[i2])
            return distance[i1] < distance[i2];
-		 else
-			return distance[i1] * (1.0-angleWeight[i1]) < distance[i2] * (1.0-angleWeight[i2]);
+         else
+           return distance[i1] * (1.0 - angleWeight[i1]) <
+                  distance[i2] * (1.0 - angleWeight[i2]);
        });
   return sortedCamerasId;
 }

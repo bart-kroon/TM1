@@ -97,8 +97,8 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
 
   for (const auto &cluster : clusterList) {
     // modification to align the imin,jmin to even values to help renderer
-    Cluster c= Cluster::align(cluster, 2);
-    clusterToPack.push(c/*cluster*/);
+    Cluster c = Cluster::align(cluster, 2);
+    clusterToPack.push(c);
   }
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
@@ -144,15 +144,15 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
             cluster.split(clusteringMap[cluster.getCameraId()], m_overlap);
 
         if (m_minPatchSize <= cc.first.getMinSize()) {
-			// modification to align the imin,jmin to even values to help renderer
-			Cluster c= Cluster::align(cc.first, 2);
-          clusterToPack.push(c/*cc.first*/);
+          // modification to align the imin,jmin to even values to help renderer
+          Cluster c = Cluster::align(cc.first, 2);
+          clusterToPack.push(c);
         }
 
         if (m_minPatchSize <= cc.second.getMinSize()) {
-			// modification to align the imin,jmin to even values to help renderer
-			Cluster c= Cluster::align(cc.second, 2);
-          clusterToPack.push(c/*cc.second*/);
+          // modification to align the imin,jmin to even values to help renderer
+          Cluster c = Cluster::align(cc.second, 2);
+          clusterToPack.push(c);
         }
       }
     }

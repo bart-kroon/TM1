@@ -88,7 +88,7 @@ void AtlasConstructor::prepareIntraPeriod(
 
   m_viewBuffer.clear();
   m_aggregator->prepareIntraPeriod();
-  
+
   m_nbAtlas = std::max(std::uint16_t(basicCameras.size()), m_nbAtlas);
 }
 

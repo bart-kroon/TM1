@@ -39,6 +39,7 @@
 #include <TMIV/Image/Image.h>
 #include <cassert>
 #include <future>
+#include <numeric>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -191,7 +192,8 @@ public:
 
   template <typename Unprojector>
   Rasterizer<Vec3f> rasterFrame(size_t numViews, const CameraParameters &target,
-                                Unprojector unprojector) const {
+                                Unprojector unprojector,
+                                float compensation) const {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
@@ -205,6 +207,11 @@ public:
       auto [vertices, triangles, attributes] = unprojector(i, target);
       auto mesh =
           project(move(vertices), move(triangles), move(attributes), target);
+
+      // Compensate for resolution difference between source and target view
+      for (auto &triangle : get<1>(mesh)) {
+        triangle.area *= compensation;
+      }
 
       // Synchronize with the rasterer
       runner.get();
@@ -224,17 +231,47 @@ public:
     return rasterizer;
   }
 
+  // Field of view in deg
+  static float xFoV(const CameraParameters &camera) {
+    switch (camera.type) {
+    case ProjectionType::ERP:
+      return abs(camera.erpPhiRange[1] - camera.erpPhiRange[0]);
+    case ProjectionType::Perspective:
+      return degperrad * 2.f *
+             atan(camera.size.x() / (2 * camera.perspectiveFocal.x()));
+    default:
+      return 360.f;
+    }
+  }
+
+  // Resolution in px^2/deg^2
+  static float resolution(const CameraParameters &camera) {
+    return pow(camera.size.x() / xFoV(camera), 2.f);
+  }
+
+  static float resolutionRatio(const CameraParametersList &cameras,
+                               const CameraParameters &target) {
+    const auto sourceResolution =
+        accumulate(begin(cameras), end(cameras), 0.f,
+                   [&](float average, const CameraParameters &camera) {
+                     return average + resolution(camera) / cameras.size();
+                   });
+    return resolution(target) / sourceResolution;
+  }
+
   Texture444Depth10Frame renderFrame(const MVD10Frame &atlases,
                                      const PatchIdMapList &ids,
                                      const AtlasParametersList &patches,
                                      const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-        atlases.size(), target, [&](size_t i, const CameraParameters &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
-                                cameras, target);
-        });
+    auto rasterizer =
+        rasterFrame(atlases.size(), target,
+                    [&](size_t i, const CameraParameters &target) {
+                      return unprojectAtlas(atlases[i], ids[i].getPlane(0),
+                                            patches, cameras, target);
+                    },
+                    resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp10(target, rasterizer.normDisp())};
   }
@@ -244,10 +281,12 @@ public:
                                      const CameraParameters &target) const {
     assert(frame.size() == cameras.size());
     auto rasterizer = rasterFrame(
-        frame.size(), target, [&](size_t i, const CameraParameters &target) {
+        frame.size(), target,
+        [&](size_t i, const CameraParameters &target) {
           return unproject(expandDepth(cameras[i], frame[i].second), cameras[i],
                            target, expandTexture(frame[i].first));
-        });
+        },
+        resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }

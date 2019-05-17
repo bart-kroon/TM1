@@ -60,11 +60,7 @@
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
         "AtlasDeconstructor": {},
         "RendererMethod": "MultipassRenderer",
-        "MultipassRenderer": {
-            "NumberOfPasses": 1,
-            "NumberOfViewsPerPass": [
-                15
-            ],
+        "Renderer": {
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
                 "rayAngleParameter": 20,

@@ -57,7 +57,7 @@
     "Decoder": {
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
         "AtlasDeconstructor": {},
-        "RendererMethod": "MultipassRenderer",
+        "RendererMethod": "Renderer",
         "Renderer": {
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {

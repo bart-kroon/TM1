@@ -35,7 +35,7 @@
         "AtlasConstructor": {
             "PrunerMethod": "Pruner",
             "Pruner": {
-                "RedundancyFactor": 0.02,
+                "RedundancyFactor": 0.05,
                 "ErosionIter": 1,
                 "DilationIter": 5
             },
@@ -60,16 +60,13 @@
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
         "AtlasDeconstructor": {},
         "RendererMethod": "MultipassRenderer",
-        "MultipassRenderer": {
-            "NumberOfPasses": 1,
-            "NumberOfViewsPerPass": [
-                15
-            ],
+        "Renderer": {
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
-                "stretchingParameter": 0.6
+                "stretchingParameter": 0.6,
+				"maxStretching": 5
             },
             "InpainterMethod": "Inpainter",
             "Inpainter": {}

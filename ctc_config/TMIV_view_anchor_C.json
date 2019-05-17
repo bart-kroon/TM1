@@ -61,7 +61,8 @@
             "Synthesizer": {
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
-                "stretchingParameter": 0.6
+                "stretchingParameter": 0.6,
+                "maxStretching": 5
             },
             "InpainterMethod": "Inpainter",
             "Inpainter": {}

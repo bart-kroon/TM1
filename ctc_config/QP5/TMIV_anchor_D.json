@@ -36,7 +36,7 @@
         "AtlasConstructor": {
             "PrunerMethod": "Pruner",
             "Pruner": {
-                "RedundancyFactor": 0.02,
+                "RedundancyFactor": 0.05,
                 "ErosionIter": 1,
                 "DilationIter": 5
             },
@@ -53,7 +53,7 @@
                 2048,
                 1088
             ],
-            "MPixel": 8
+            "MPixel": 11
         }
     },
     "DecoderMethod": "Decoder",
@@ -61,16 +61,13 @@
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
         "AtlasDeconstructor": {},
         "RendererMethod": "MultipassRenderer",
-        "MultipassRenderer": {
-            "NumberOfPasses": 1,
-            "NumberOfViewsPerPass": [
-                16
-            ],
+        "Renderer": {
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
-                "stretchingParameter": 0.6
+                "stretchingParameter": 0.6,
+				"maxStretching": 5
             },
             "InpainterMethod": "Inpainter",
             "Inpainter": {}

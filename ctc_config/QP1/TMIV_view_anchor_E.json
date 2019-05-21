@@ -53,7 +53,7 @@
         "AtlasDeconstructor": {},
         "RendererMethod": "MultipassRenderer",
         "MultipassRenderer": {
-            "NumberOfPasses": 1,
+            "NumberOfPasses": 3,
             "NumberOfViewsPerPass": [
                 2,
                 4,

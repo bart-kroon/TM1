@@ -17,8 +17,8 @@
         "v8",
         "v9"
     ],
-    "AtlasTexturePathFmt": "ATL_SC_QP3_Tt_c%02d_4096x4096_yuv420p10le.yuv",
-    "AtlasDepthPathFmt": "ATL_SC_QP3_Td_c%02d_4096x4096_yuv420p10le.yuv",
+    "AtlasTexturePathFmt": "ATL_SC_QP3_Tt_c%02d_4096x5120_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SC_QP3_Td_c%02d_4096x5120_yuv420p10le.yuv",
     "AtlasMetadataPath": "ATL_SC_QP3_Tm_c00.bit",
     "OutputTexturePath": "TM1_SC_QP3_Tt_%s_4096x4096_yuv420p10le.yuv",
     "OutputCameraName": "v1",
@@ -28,11 +28,15 @@
         "ViewReducer": {},
         "AtlasConstructorMethod": "AtlasConstructor",
         "AtlasConstructor": {
-            "PrunerMethod": "Pruner",
-            "Pruner": {
-                "RedundancyFactor": 0.05,
-                "ErosionIter": 1,
-                "DilationIter": 5
+            "PrunerMethod": "HierarchicalPruner",
+            "HierarchicalPruner": {
+                "rayAngleParameter": 20,
+                "depthParameter": 20,
+                "stretchingParameter": 0.6,
+                "maxStretching": 5,
+                "erode": 2,
+                "dilate": 5,
+                "dumpTo": "PRN_SC_QP3_Tm_c%02d_4096x4096_yuv400p.yuv"
             },
             "AggregatorMethod": "Aggregator",
             "Aggregator": {},
@@ -45,9 +49,9 @@
             },
             "AtlasResolution": [
                 4096,
-                4096
+                5120
             ],
-            "MPixel": 50
+            "MPixel": 40
         }
     },
     "DecoderMethod": "Decoder",

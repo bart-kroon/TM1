@@ -41,6 +41,25 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
+bool CameraParameters::operator==(const CameraParameters &other) const {
+  if (size != other.size || position != other.position ||
+      depthRange != other.depthRange || type != other.type) {
+    return false;
+  }
+  switch (type) {
+  case ProjectionType::Perspective:
+    return perspectiveCenter == other.perspectiveCenter &&
+           perspectiveFocal == other.perspectiveFocal;
+  case ProjectionType::ERP:
+    return erpPhiRange == other.erpPhiRange &&
+           erpThetaRange == other.erpThetaRange;
+  case ProjectionType::CubeMap:
+    return cubicMapType == other.cubicMapType;
+  default:
+    abort();
+  }
+}
+
 CameraParametersList loadCamerasFromJson(const Json &node,
                                          const vector<string> &names) {
   CameraParametersList result;

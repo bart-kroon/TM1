@@ -396,14 +396,48 @@ CameraParametersList loadSourceMetadata(const Json &config) {
   return cameras;
 }
 
+namespace {
+template <typename FORMAT>
+auto depth16(int bits, MVDFrame<FORMAT> frame) -> MVD16Frame {
+  auto result = MVDFrame<YUV400P16>();
+  assert(0 < bits && bits <= 16);
+  const int maxLevel = (1 << bits) - 1;
+
+  for (auto &view : frame) {
+    const auto &in = view.second.getPlane(0);
+    auto depth = Depth16Frame{view.second.getWidth(), view.second.getHeight()};
+    auto &out = depth.getPlane(0);
+    transform(begin(in), end(in), begin(out), [=](int x) {
+      return uint16_t((x * 0xFFFF + maxLevel / 2) / maxLevel);
+    });
+    result.emplace_back(move(view.first), move(depth));
+  }
+
+  return result;
+}
+
+template <typename FORMAT>
+MVD16Frame loadSourceFrame_impl(int bits, const Json &config,
+                                const vector<Vec2i> &sizes, int frameIndex) {
+  return depth16(
+      bits, loadMVDFrame<FORMAT>(
+                config, sizes,
+                frameIndex + config.require("startFrame").asInt(), "source",
+                "SourceDirectory", "SourceTexturePathFmt", "SourceDepthPathFmt",
+                config.require("SourceCameraNames").asStringVector()));
+}
+} // namespace
+
 MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                            int frameIndex) {
-  auto sourceCameraNames = config.require("SourceCameraNames").asStringVector();
-
-  frameIndex += config.require("startFrame").asInt();
-  return loadMVDFrame<YUV400P16>(config, sizes, frameIndex, "source",
-                                 "SourceDirectory", "SourceTexturePathFmt",
-                                 "SourceDepthPathFmt", sourceCameraNames);
+  const auto bits = config.require("SourceDepthBitDepth").asInt();
+  if (0 < bits && bits <= 8) {
+    return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
+  } else if (8 < bits && bits <= 16) {
+    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
+  } else {
+    throw runtime_error("Invalid SourceDepthBitDepth");
+  }
 }
 
 BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,

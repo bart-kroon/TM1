@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_2048x2048_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_2048x2048_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "TechnicolorMuseum.json",
     "SourceCameraNames": [
         "v0",
@@ -33,7 +34,7 @@
     ],
     "AtlasTexturePathFmt": "ATL_SB_R0_Tt_c%02d_2048x2048_yuv420p10le.yuv",
     "AtlasDepthPathFmt": "ATL_SB_R0_Td_c%02d_2048x2048_yuv420p10le.yuv",
-    "AtlasMetadataPath": "ATL_SB_R0_Tm_c00.bit",    
+    "AtlasMetadataPath": "ATL_SB_R0_Tm_c00.bit",
     "OutputTexturePath": "TM1_SB_R0_Tt_%s_2048x2048_yuv420p10le.yuv",
     "OutputCameraName": "v1",
     "EncoderMethod": "Encoder",
@@ -75,7 +76,7 @@
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
                 "stretchingParameter": 0.6,
-				"maxStretching": 5
+                "maxStretching": 5
             },
             "InpainterMethod": "Inpainter",
             "Inpainter": {}

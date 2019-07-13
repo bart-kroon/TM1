@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "IntelKermit.json",
     "SourceCameraNames": [
         "v1",
@@ -64,7 +65,7 @@
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
                 "stretchingParameter": 0.6,
-				"maxStretching": 5
+                "maxStretching": 5
             },
             "InpainterMethod": "Inpainter",
             "Inpainter": {}

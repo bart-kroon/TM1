@@ -73,7 +73,12 @@ public:
       if (lastIntraFrame != idx.first) {
         lastIntraFrame = idx.first;
         metadata = IO::loadMivMetadata(json(), idx.first);
-        m_decoder->updateAtlasSize(metadata.atlasSize);
+
+		cout << "OMAF v1 compatible flag: " << boolalpha
+             << metadata.omafV1CompatibleFlag << " ("
+             << int(metadata.omafV1CompatibleFlag) << ")" << endl;
+
+		m_decoder->updateAtlasSize(metadata.atlasSize);
         m_decoder->updatePatchList(move(metadata.patches));
         m_decoder->updateCameraList(move(metadata.cameras));
       }

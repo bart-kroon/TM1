@@ -71,9 +71,12 @@ void savePrunedFrame(const Common::Json &config, int frameIndex,
                      const Common::MVD16Frame &frame);
 
 struct MivMetadata {
-  std::vector<Common::Vec2i> atlasSize;
+  std::vector<Common::Vec2i> atlasSize; // atlas_width/height in MPEG/N18576
+  bool omafV1CompatibleFlag{};          // omaf_v1_compatible in MPEG/N18576
   Metadata::AtlasParametersList patches;
   Metadata::CameraParametersList cameras;
+
+  bool operator==(const MivMetadata &other) const;
 };
 
 void saveMivMetadata(const Common::Json &config, int frameIndex,

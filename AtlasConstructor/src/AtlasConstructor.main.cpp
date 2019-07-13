@@ -48,6 +48,7 @@ private:
   unique_ptr<IAtlasConstructor> m_atlasConstructor;
   int m_numberOfFrames{};
   int m_intraPeriod{};
+  bool m_omafV1CompatibleFlag{};
 
 public:
   explicit Application(vector<const char *> argv)
@@ -55,7 +56,9 @@ public:
         m_atlasConstructor{
             create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+        m_intraPeriod{json().require("intraPeriod").asInt()},
+        m_omafV1CompatibleFlag{
+            json().require("OmafV1CompatibleFlag").asBool()} {}
 
   void run() override {
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
@@ -92,7 +95,8 @@ public:
     }
 
     IO::saveMivMetadata(json(), intraFrame,
-                        {atlasSize, m_atlasConstructor->getPatchList(),
+                        {atlasSize, m_omafV1CompatibleFlag,
+                         m_atlasConstructor->getPatchList(),
                          m_atlasConstructor->getCameraList()});
 
     for (int i = intraFrame; i < endFrame; ++i) {

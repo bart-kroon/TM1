@@ -92,6 +92,26 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
   return stream;
 }
 
+bool CameraParameters ::operator==(const CameraParameters &other) const {
+  if (size != other.size || position != other.position ||
+      rotation != other.rotation || type != other.type) {
+    return false;
+  }
+
+  switch (type) {
+  case ProjectionType::ERP:
+    return erpPhiRange == other.erpPhiRange &&
+           erpThetaRange == other.erpThetaRange;
+  case ProjectionType::Perspective:
+    return perspectiveFocal == other.perspectiveFocal &&
+           perspectiveCenter == other.perspectiveCenter;
+  case ProjectionType::CubeMap:
+    return cubicMapType == other.cubicMapType;
+  default:
+    abort();
+  }
+}
+
 // The parameter is a an item of the cameras node (a JSON object).
 CameraParameters loadCameraFromJson(const Json &node) {
   CameraParameters parameters;

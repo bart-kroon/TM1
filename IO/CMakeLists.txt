@@ -33,3 +33,14 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
+
+if (CMAKE_TESTING_ENABLED)
+	add_executable(IOTest "src/IO.test.cpp")
+
+	target_link_libraries(IOTest
+		PRIVATE
+			Catch2::Catch2
+			TMIV::IOLib)
+
+	catch_discover_tests(IOTest)
+endif()

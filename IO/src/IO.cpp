@@ -521,25 +521,6 @@ void saveMivMetadata(const Json &config, int frameIndex,
                                    writeFunction);
 }
 
-void savePatchList(const Json &config, const string &name,
-                   Metadata::AtlasParametersList patches) {
-
-  string baseDirectory = config.require("OutputDirectory").asString();
-  string path = baseDirectory + name;
-
-  ofstream os(path);
-  if (!os.good()) {
-    throw runtime_error("Failed to open file for writing: " + path);
-  }
-
-  int idx = 0;
-  for (const auto &p : patches) {
-    os << idx++ << ": " << PatchParametersString(p) << endl;
-  }
-
-  os.close();
-}
-
 MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize,
                      int frameIndex) {
   return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas",

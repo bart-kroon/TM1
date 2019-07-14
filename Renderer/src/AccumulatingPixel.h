@@ -101,7 +101,7 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
         normWeight{normWeight_}, stretching{stretching_} {
     assert(normDisp_ >= 0.f);
     assert(normWeight_ >= 0.f);
-    assert(stretching_ > 0.f);
+    assert(stretching_ >= 0.f);
   }
 
   // Normalized disparity in diopters

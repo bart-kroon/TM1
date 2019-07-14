@@ -93,11 +93,36 @@ Common::Frame<Common::YUV400P16>
 quantizeDepth16(const Metadata::CameraParameters &camera,
                 const Common::Mat<float> &in);
 
-// Requantize with a different bit depth
-Common::Frame<Common::YUV400P16>
-requantize16(const Common::Frame<Common::YUV400P10> &frame);
-Common::Frame<Common::YUV400P10>
-requantize10(const Common::Frame<Common::YUV400P16> &frame);
+// Requantize a value
+//
+//  Both input and output types have to be unsigned integers. The input type has
+//  to be wide enough to multiply the maximum input and output with each other.
+template <typename ToInt, typename WorkInt>
+auto requantizeValue(WorkInt x, WorkInt fromBits, WorkInt toBits) -> ToInt;
+
+// Requantize a frame
+//
+// The optional second parameter allows to specify a different number of input
+// bits than the underlying type, e.g. 10-bit values stored in 16-bit types.
+//
+// This function can also do YUV 4:x:y format conversions but no chroma scaling
+template <typename OutFormat, typename InFormat>
+auto requantize(
+    const Common::Frame<InFormat> &frame,
+    unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::Frame<OutFormat>;
+
+// Requantize the depth maps of a multiview frame
+//
+// The optional second parameter allows to specify a different number of input
+// bits than the underlying type, e.g. 10-bit values stored in 16-bit types.
+//
+// This function can also do YUV 4:x:y format conversions but no chroma scaling
+template <typename OutFormat, typename InFormat>
+auto requantize(
+    const Common::MVDFrame<InFormat> &frame,
+    unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::MVDFrame<OutFormat>;
 } // namespace TMIV::Image
 
 #include "Image.hpp"

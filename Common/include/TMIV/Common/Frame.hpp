@@ -41,6 +41,7 @@ namespace TMIV::Common {
 namespace detail {
 template <> struct PixelFormatHelper<YUV400P8> {
   static constexpr int nb_plane = 1;
+  static constexpr auto bitDepth = 8u;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return (W * H); }
   static int getDiskSize(int W, int H) { return (W * H) * 3 / 2; }
@@ -50,6 +51,7 @@ template <> struct PixelFormatHelper<YUV400P8> {
 
 template <> struct PixelFormatHelper<YUV400P10> {
   static constexpr int nb_plane = 1;
+  static constexpr auto bitDepth = 10u;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -59,6 +61,7 @@ template <> struct PixelFormatHelper<YUV400P10> {
 
 template <> struct PixelFormatHelper<YUV400P16> {
   static constexpr int nb_plane = 1;
+  static constexpr auto bitDepth = 16u;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -68,6 +71,7 @@ template <> struct PixelFormatHelper<YUV400P16> {
 
 template <> struct PixelFormatHelper<YUV420P8> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 8u;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H) / 2; }
   static int getDiskSize(int W, int H) { return 3 * (W * H) / 2; }
@@ -77,6 +81,7 @@ template <> struct PixelFormatHelper<YUV420P8> {
 
 template <> struct PixelFormatHelper<YUV420P10> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 10u;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -86,6 +91,7 @@ template <> struct PixelFormatHelper<YUV420P10> {
 
 template <> struct PixelFormatHelper<YUV420P16> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 16u;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -95,6 +101,7 @@ template <> struct PixelFormatHelper<YUV420P16> {
 
 template <> struct PixelFormatHelper<YUV444P8> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 8u;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -104,6 +111,7 @@ template <> struct PixelFormatHelper<YUV444P8> {
 
 template <> struct PixelFormatHelper<YUV444P10> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 10u;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 6 * (W * H); }
   static int getDiskSize(int W, int H) { return 6 * (W * H); }
@@ -113,6 +121,7 @@ template <> struct PixelFormatHelper<YUV444P10> {
 
 template <> struct PixelFormatHelper<YUV444P16> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 16u;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 6 * (W * H); }
   static int getDiskSize(int W, int H) { return 6 * (W * H); }

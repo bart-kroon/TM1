@@ -86,7 +86,7 @@ void savePatchList(const Common::Json &config, const std::string &name,
 // Save the atlas (10-bit 4:2:0 texture, 16-bit depth) with depth converted to
 // 10-bit
 void saveAtlas(const Common::Json &config, int frameIndex,
-               Common::MVD16Frame frame);
+               const Common::MVD16Frame &frame);
 void saveAtlas(const Common::Json &config, int frameIndex,
                const Common::MVD10Frame &frame);
 auto loadAtlas(const Common::Json &config,

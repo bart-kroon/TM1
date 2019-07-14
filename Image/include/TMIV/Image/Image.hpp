@@ -66,12 +66,12 @@ auto requantizeValue(WorkInt x, WorkInt fromBits, WorkInt toBits) -> ToInt {
          toBits <= std::numeric_limits<ToInt>::digits &&
          toBits + fromBits <= std::numeric_limits<WorkInt>::digits);
 
-  const int maxFrom = (1 << fromBits) - 1;
-  const int maxTo = (1 << toBits) - 1;
+  const auto maxFrom = (1u << fromBits) - 1u;
+  const auto maxTo = (1u << toBits) - 1u;
 
-  assert(0 <= x && x <= maxFrom);
+  assert(0u <= x && x <= maxFrom);
 
-  return ToInt((x * maxTo + maxFrom / 2) / maxFrom);
+  return ToInt((x * maxTo + maxFrom / 2u) / maxFrom);
 }
 
 template <typename OutFormat, typename InFormat>
@@ -81,7 +81,7 @@ auto requantize(const Common::Frame<InFormat> &frame, unsigned bits)
   using OutTraits = Common::detail::PixelFormatHelper<OutFormat>;
   using OutInt = typename OutTraits::base_type;
   using WorkInt = uint_fast32_t;
-  constexpr auto outBits = std::numeric_limits<OutInt>::digits;
+  constexpr auto outBits = OutTraits::bitDepth;
   constexpr auto numPlanes = std::min(InTraits::nb_plane, OutTraits::nb_plane);
 
   auto result = Common::Frame<OutFormat>(frame.getWidth(), frame.getHeight());

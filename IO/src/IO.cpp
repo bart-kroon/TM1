@@ -125,7 +125,6 @@ loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
   result.reserve(sizes.size());
 
   for (size_t i = 0u; i < sizes.size(); ++i) {
-
     result.emplace_back(
         readFrame<YUV420P10>(
             getFullPath(config, directory, texturePathFmt, i,

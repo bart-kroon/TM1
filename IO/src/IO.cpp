@@ -156,6 +156,7 @@ void saveMVDFrame(const Json &config, int frameIndex,
 
 CameraParameters readCameraFromFile(istream &is) {
   CameraParameters camera;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&camera), sizeof(camera));
   return camera;
 }
@@ -164,6 +165,7 @@ CameraParametersList readCameraListFromFile(istream &is) {
   uint16_t nbCamera = 0;
   CameraParametersList list;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
   for (auto i = 0; i < nbCamera; i++) {
@@ -175,18 +177,21 @@ CameraParametersList readCameraListFromFile(istream &is) {
 
 void skipCameraListFromFile(istream &is) {
   uint16_t nbCamera = 0;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
   is.seekg(nbCamera * sizeof(CameraParameters), ios::cur);
 }
 
 void writeCameraToFile(ofstream &os, const CameraParameters &camera) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(&camera), sizeof(camera));
 }
 
 void writeCameraListToFile(ofstream &os, const CameraParametersList &list) {
   auto nbCamera = uint16_t(list.size());
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
   for (const auto &camera : list) {
@@ -198,9 +203,11 @@ vector<Vec2i> readAtlasSizeFromFile(ifstream &is) {
   uint8_t nbAtlas = 0;
   vector<Vec2i> result;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbAtlas), sizeof(uint8_t));
 
   result.resize(nbAtlas);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(result.data()), nbAtlas * sizeof(Vec2i));
 
   return result;
@@ -209,6 +216,7 @@ vector<Vec2i> readAtlasSizeFromFile(ifstream &is) {
 void skipAtlasSizeFromFile(ifstream &is) {
   uint8_t nbAtlas = 0;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbAtlas), sizeof(uint8_t));
 
   is.seekg(nbAtlas * sizeof(Vec2i), ios::cur);
@@ -217,8 +225,10 @@ void skipAtlasSizeFromFile(ifstream &is) {
 void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
   auto nbAtlas = uint8_t(atlasSize.size());
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(&nbAtlas), sizeof(uint8_t));
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(atlasSize.data()),
            nbAtlas * sizeof(Vec2i));
 }
@@ -238,6 +248,7 @@ void writeFlagToFile(ofstream &os, bool flag) {
 
 AtlasParameters readPatchFromFile(ifstream &is) {
   AtlasParameters patch;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&patch), sizeof(patch));
   return patch;
 }
@@ -246,6 +257,7 @@ AtlasParametersList readPatchListFromFile(ifstream &is) {
   uint16_t nbPatch = 0;
   AtlasParametersList list;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
   for (auto i = 0; i < nbPatch; i++) {
@@ -258,18 +270,21 @@ AtlasParametersList readPatchListFromFile(ifstream &is) {
 void skipPatchListFromFile(istream &is) {
   uint16_t nbPatch = 0;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
   is.seekg(nbPatch * sizeof(AtlasParameters), ios::cur);
 }
 
 void writePatchToFile(ofstream &os, const AtlasParameters &patch) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(&patch), sizeof(patch));
 }
 
 void writePatchListToFile(ofstream &os, const AtlasParametersList &list) {
   auto nbPatch = uint16_t(list.size());
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
   for (const auto &patch : list) {
@@ -292,6 +307,7 @@ T readMetadataFromFile(const string &path, int frameIndex,
 
   while (true) {
     uint32_t frameId = 0;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     stream.read(reinterpret_cast<char *>(&frameId), sizeof(uint32_t));
 
     if (!stream.good()) {
@@ -322,6 +338,7 @@ void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
 
   // Frame index
   uint32_t frameId = frameIndex;
+  //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   stream.write(reinterpret_cast<const char *>(&frameId), sizeof(uint32_t));
 
   if (!stream.good()) {

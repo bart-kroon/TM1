@@ -220,13 +220,7 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
   }
 
   // Convert from 10 to 16-bit depth
-  MVD16Frame mvd16;
-  mvd16.reserve(mvd10.size());
-  transform(begin(mvd10), end(mvd10), back_inserter(mvd16),
-            [](TextureDepth10Frame &view10) {
-              return pair{move(view10.first), requantize16(view10.second)};
-            });
-  return mvd16;
+  return requantize<YUV400P16>(mvd10);
 }
 
 } // namespace TMIV::AtlasDeconstructor

@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_4096x2048_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_4096x2048_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "ClassroomVideo.json",
     "SourceCameraNames": [
         "v0",

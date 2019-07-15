@@ -113,3 +113,49 @@ SCENARIO("Quantize planar 4:4:4 float to YUV 4:2:0 10-bit texture",
     }
   }
 }
+
+TEST_CASE("requantizeValue", "[quantize_and_expand]") {
+  REQUIRE(0u == requantizeValue<uint16_t, uint32_t>(0u, 16, 16));
+  REQUIRE(0u == requantizeValue<uint16_t, uint32_t>(0u, 16, 13));
+  REQUIRE(0u == requantizeValue<uint16_t, uint32_t>(0u, 9, 15));
+  REQUIRE(0xFFFFu == requantizeValue<uint16_t, uint32_t>(0xFFFFu, 16, 16));
+  REQUIRE(0xFFFFu == requantizeValue<uint16_t, uint64_t>(0xFFFFu, 16, 16));
+  REQUIRE(0xFFFFu == requantizeValue<uint16_t, uint32_t>(0xFFFu, 12, 16));
+  REQUIRE(0x1Fu == requantizeValue<uint8_t, uint16_t>(0x7Fu, 7, 5));
+  REQUIRE(0x800 == requantizeValue<uint16_t, uint32_t>(0x8000, 16, 12));
+  REQUIRE(0x400 == requantizeValue<uint16_t, uint32_t>(0x800, 12, 11));
+}
+
+TEST_CASE("requantize", "[quantize_and_expand]") {
+  // Input is a multiview depth frame with a single view
+  auto inFrame =
+      MVD10Frame{TextureDepth10Frame{TextureFrame{5, 7}, Depth10Frame{32, 16}}};
+
+  // Put a 9-bit ramp in the depth map
+  auto i = 0u;
+  for (auto &x : inFrame.front().second.getPlane(0)) {
+    x = i++;
+  }
+
+  // Convert from YUV 4:0:0 9-bit (within 10-bit type) to YUV 4:2:0 16-bit
+  auto outFrame = requantize<YUV420P16>(inFrame, 9);
+
+  // Output has the same size
+  REQUIRE(outFrame.size() == 1);
+  REQUIRE(outFrame.front().first.getSize() == Vec2i{5, 7});
+  REQUIRE(outFrame.front().second.getSize() == Vec2i{32, 16});
+  const auto &Y = outFrame.front().second.getPlane(0);
+  const auto &Cb = outFrame.front().second.getPlane(1);
+  const auto &Cr = outFrame.front().second.getPlane(2);
+
+  // The conversion maps 0 --> 0 and 511 --> 65535 with rounding to the nearest
+  // integer
+  REQUIRE(0u == Y(0, 0));
+  REQUIRE(513u == Y(0, 4)); // 4 * 65535 / 511 == 512.994 (round up)
+  REQUIRE(641u == Y(0, 5)); // 5 * 65535 / 511 == 641.243 (round down)
+  REQUIRE(0xFFFFu == Y(0xF, 0x1F));
+
+  // Chroma is all zero
+  REQUIRE(0u == Cb(7, 13));
+  REQUIRE(0u == Cr(0, 5));
+}

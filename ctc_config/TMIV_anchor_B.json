@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_2048x2048_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_2048x2048_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "TechnicolorMuseum.json",
     "SourceCameraNames": [
         "v0",

@@ -125,7 +125,6 @@ loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
   result.reserve(sizes.size());
 
   for (size_t i = 0u; i < sizes.size(); ++i) {
-
     result.emplace_back(
         readFrame<YUV420P10>(
             getFullPath(config, directory, texturePathFmt, i,
@@ -409,14 +408,30 @@ CameraParametersList loadSourceMetadata(const Json &config) {
   return cameras;
 }
 
+namespace {
+template <typename FORMAT>
+MVD16Frame loadSourceFrame_impl(int bits, const Json &config,
+                                const vector<Vec2i> &sizes, int frameIndex) {
+  return requantize<YUV400P16>(
+      loadMVDFrame<FORMAT>(
+          config, sizes, frameIndex + config.require("startFrame").asInt(),
+          "source", "SourceDirectory", "SourceTexturePathFmt",
+          "SourceDepthPathFmt",
+          config.require("SourceCameraNames").asStringVector()),
+      bits);
+}
+} // namespace
+
 MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                            int frameIndex) {
-  auto sourceCameraNames = config.require("SourceCameraNames").asStringVector();
-
-  frameIndex += config.require("startFrame").asInt();
-  return loadMVDFrame<YUV400P16>(config, sizes, frameIndex, "source",
-                                 "SourceDirectory", "SourceTexturePathFmt",
-                                 "SourceDepthPathFmt", sourceCameraNames);
+  const auto bits = config.require("SourceDepthBitDepth").asInt();
+  if (0 < bits && bits <= 8) {
+    return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
+  } else if (8 < bits && bits <= 16) {
+    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
+  } else {
+    throw runtime_error("Invalid SourceDepthBitDepth");
+  }
 }
 
 BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,
@@ -546,16 +561,8 @@ MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize,
                                  "AtlasDepthPathFmt");
 }
 
-void saveAtlas(const Json &config, int frameIndex, MVD16Frame frame) {
-  // Convert from 16 to 10-bit depth
-  MVD10Frame frame10;
-  frame10.reserve(frame.size());
-  transform(begin(frame), end(frame), back_inserter(frame10),
-            [](TextureDepth16Frame &view) {
-              return pair{move(view.first), requantize10(view.second)};
-            });
-
-  saveAtlas(config, frameIndex, frame10);
+void saveAtlas(const Json &config, int frameIndex, const MVD16Frame &frame) {
+  saveAtlas(config, frameIndex, requantize<YUV400P10>(frame));
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {

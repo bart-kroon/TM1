@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_2048x1088_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_2048x1088_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "TechnicolorPainter.json",
     "SourceCameraNames": [
         "v0",

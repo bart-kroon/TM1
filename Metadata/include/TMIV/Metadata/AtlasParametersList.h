@@ -73,8 +73,6 @@ struct AtlasParameters {
 
 static_assert(sizeof(AtlasParameters) == 32);
 
-std::string PatchParametersString(const AtlasParameters &patchParameters);
-
 // Data type that corresponds to atlas_params_list of MPEG/N18464
 using AtlasParametersList = std::vector<AtlasParameters>;
 } // namespace TMIV::Metadata

@@ -35,6 +35,11 @@
 #include <sstream>
 
 namespace TMIV::Metadata {
+bool AtlasParameters::operator==(const AtlasParameters &other) const {
+  return atlasId == other.atlasId && viewId == other.viewId &&
+         patchSize == other.patchSize && posInView == other.posInView &&
+         posInAtlas == other.posInAtlas && rotation == other.rotation;
+}
 
 std::string PatchParametersString(const AtlasParameters &p) {
 

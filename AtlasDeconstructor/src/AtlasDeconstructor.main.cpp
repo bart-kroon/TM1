@@ -66,6 +66,10 @@ public:
   void runIntraPeriod(int intraFrame, int endFrame) {
     auto metadata = IO::loadMivMetadata(json(), intraFrame);
 
+    cout << "OMAF v1 compatible flag: " << boolalpha
+         << metadata.omafV1CompatibleFlag << " ("
+         << int(metadata.omafV1CompatibleFlag) << ")" << endl;
+
     auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize,
                                                            metadata.patches);
     IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);

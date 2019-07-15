@@ -31,52 +31,74 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_ATLASPARAMETERSLIST_H_
-#define _TMIV_METADATA_ATLASPARAMETERSLIST_H_
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
 
-#include <cstdint>
-#include <string>
-#include <vector>
+#include <TMIV/IO/IO.h>
 
-#include <TMIV/Common/Vector.h>
+#include <sstream>
 
-namespace TMIV::Metadata {
-using Vec2i = TMIV::Common::Vec2i;
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Metadata;
+using namespace TMIV::IO;
 
-enum class PatchRotation {
-  upright, // what was up stays up
-  ccw      // what was up goes left
+namespace {
+auto examplePatch() -> AtlasParameters {
+  return {
+      uint8_t{1},        // atlasId,
+      uint8_t{3},        // viewId
+      Vec2i{16, 32},     // patchSize
+      Vec2i{3, 4},       // posInView
+      Vec2i{8, 12},      // posInPatch
+      PatchRotation::ccw // rotation
+  };
+}
+
+auto exampleCamera() -> CameraParameters {
+  return {
+      Vec2i{3000, 2000},           // size
+      Vec3f{1.f, -2.f, 3.f},       // position
+      Vec3f{3.f, 4.f, 5.f},        // rotation
+      ProjectionType::Perspective, // type
+      Vec2f{-90.f, 70.f},          // erpPhiRange
+      Vec2f{-60.f, 80.f},          // erpThetaRange
+      CubicMapType{},              // cubicMapType
+      Vec2f{},                     // perspectiveFocal
+      Vec2f{},                     // perspectiveCenter
+      Vec2f{1.f, 100.f}            // depthRange
+  };
 };
 
-// Data type that corresponds to an entry of atlas_params of MPEG/N18464
-struct AtlasParameters {
-  // In MPEG/N18464: atlas_id
-  uint8_t atlasId{};
+auto exampleMetadata() -> MivMetadata {
+  return {vector<Vec2i>{{4000, 3000}}, // atlasSize
+          true,                        // omafV1CompatibleFlag
+          {examplePatch()},            // patches
+          {exampleCamera()}};          // cameras
+}
 
-  // In MPEG/N18464: view_id
-  uint8_t viewId{};
-
-  // In MPEG/N18464: patch_{width,height}_in_view
-  Vec2i patchSize;
-
-  // In MPEG/N18464: patch_pos_in_view_{x,y}
-  Vec2i posInView;
-
-  // In MPEG/N18464: patch_pos_in_atlas_{x,y}
-  Vec2i posInAtlas;
-
-  // In MPEG/N18464: patch_rotation
-  PatchRotation rotation{};
-
-  bool operator==(const AtlasParameters &other) const;
+auto minimalConfig() -> Json {
+  auto stream = istringstream{R"(
+{
+	"OutputDirectory": ".",
+	"AtlasMetadataPath": "IO.test.bit"
+}
+)"};
+  return Json{stream};
 };
+} // namespace
 
-static_assert(sizeof(AtlasParameters) == 32);
+TEST_CASE("save- and loadMivMetadata") {
+  auto config = minimalConfig();
+  auto reference = exampleMetadata();
+  auto frames = {0, 32, 48};
 
-std::string PatchParametersString(const AtlasParameters &patchParameters);
+  for (auto frame : frames) {
+    saveMivMetadata(config, frame, reference);
+  }
 
-// Data type that corresponds to atlas_params_list of MPEG/N18464
-using AtlasParametersList = std::vector<AtlasParameters>;
-} // namespace TMIV::Metadata
-
-#endif
+  for (auto frame : frames) {
+    auto actual = loadMivMetadata(config, frame);
+    REQUIRE(actual == reference);
+  }
+}

@@ -47,8 +47,9 @@ namespace TMIV::Encoder {
 class Application : public Common::Application {
 private:
   unique_ptr<IEncoder> m_encoder;
-  int m_numberOfFrames;
-  int m_intraPeriod;
+  int m_numberOfFrames{};
+  int m_intraPeriod{};
+  bool m_omafV1CompatibleFlag{};
   Metadata::CameraParametersList m_cameras;
 
 public:
@@ -56,7 +57,9 @@ public:
       : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>(
                                                         "Encoder")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+        m_intraPeriod{json().require("intraPeriod").asInt()},
+        m_omafV1CompatibleFlag{
+            json().require("OmafV1CompatibleFlag").asBool()} {}
 
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
@@ -83,7 +86,8 @@ private:
     // m_encoder->getPatchList());
 
     IO::saveMivMetadata(json(), intraFrame,
-                        {m_encoder->getAtlasSize(), m_encoder->getPatchList(),
+                        {m_encoder->getAtlasSize(), m_omafV1CompatibleFlag,
+                         m_encoder->getPatchList(),
                          m_encoder->getCameraList()});
 
     for (int i = intraFrame; i < endFrame; ++i) {

@@ -224,6 +224,19 @@ void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
            nbAtlas * sizeof(Vec2i));
 }
 
+bool readFlagFromFile(ifstream &is) {
+  char flag{};
+  is.read(&flag, 1);
+  return !!flag;
+}
+
+void skipFlagFromFile(ifstream &is) { is.seekg(1, ios::cur); }
+
+void writeFlagToFile(ofstream &os, bool flag) {
+  auto flag_c = flag ? '\x1' : '\x0';
+  os.write(&flag_c, 1);
+}
+
 AtlasParameters readPatchFromFile(ifstream &is) {
   AtlasParameters patch;
   is.read(reinterpret_cast<char *>(&patch), sizeof(patch));
@@ -487,21 +500,25 @@ MivMetadata loadMivMetadata(const Json &config, int frameIndex) {
 
   auto skipFunction = [](ifstream &is) {
     skipAtlasSizeFromFile(is);
+    skipFlagFromFile(is); // OMAF v1 compatible flag
     skipPatchListFromFile(is);
     skipCameraListFromFile(is);
   };
 
   auto readFunction = [](ifstream &is) -> MivMetadata {
-    auto atlasSize = readAtlasSizeFromFile(is);
-    auto patchList = readPatchListFromFile(is);
-    auto cameraList = readCameraListFromFile(is);
-
-    return MivMetadata{move(atlasSize), move(patchList), move(cameraList)};
+    return MivMetadata{readAtlasSizeFromFile(is), readFlagFromFile(is),
+                       readPatchListFromFile(is), readCameraListFromFile(is)};
   };
 
   // Reading
   return readMetadataFromFile<MivMetadata>(metadataPath, frameIndex,
                                            skipFunction, readFunction);
+}
+
+bool MivMetadata::operator==(const MivMetadata &other) const {
+  return atlasSize == other.atlasSize &&
+         omafV1CompatibleFlag == other.omafV1CompatibleFlag &&
+         patches == other.patches && cameras == other.cameras;
 }
 
 void saveMivMetadata(const Json &config, int frameIndex,
@@ -513,6 +530,7 @@ void saveMivMetadata(const Json &config, int frameIndex,
 
   auto writeFunction = [](ofstream &os, const MivMetadata &metadata) {
     writeAtlasSizeToFile(os, metadata.atlasSize);
+    writeFlagToFile(os, metadata.omafV1CompatibleFlag);
     writePatchListToFile(os, metadata.patches);
     writeCameraListToFile(os, metadata.cameras);
   };

@@ -82,6 +82,7 @@ struct CameraParameters {
 
   friend std::ostream &operator<<(std::ostream &stream,
                                   const CameraParameters &camera);
+  bool operator==(const CameraParameters &other) const;
 };
 
 static_assert(sizeof(CameraParameters) == 80);

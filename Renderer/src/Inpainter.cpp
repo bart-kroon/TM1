@@ -33,6 +33,8 @@
 
 #include <TMIV/Renderer/Inpainter.h>
 
+#include <cmath>
+
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
@@ -245,8 +247,8 @@ void inpaintOmnidirectionalView(YUVD &yuvd,
       newH = oldH * width2 / tmpW;
       newH += height2;
 
-      iNewH = int(newH + 0.5);
-      iNewW = int(newW + 0.5);
+      iNewH = int(lround(newH));
+      iNewW = int(lround(newW));
 
       if (iNewH < 0 || iNewH >= height) {
         continue;

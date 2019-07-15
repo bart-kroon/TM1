@@ -226,7 +226,7 @@ void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
 bool readFlagFromFile(ifstream &is) {
   char flag{};
   is.read(&flag, 1);
-  return !!flag;
+  return flag != 0;
 }
 
 void skipFlagFromFile(ifstream &is) { is.seekg(1, ios::cur); }
@@ -427,11 +427,11 @@ MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
   const auto bits = config.require("SourceDepthBitDepth").asInt();
   if (0 < bits && bits <= 8) {
     return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
-  } else if (8 < bits && bits <= 16) {
-    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
-  } else {
-    throw runtime_error("Invalid SourceDepthBitDepth");
   }
+  if (8 < bits && bits <= 16) {
+    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
+  }
+  throw runtime_error("Invalid SourceDepthBitDepth");
 }
 
 BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,

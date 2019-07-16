@@ -375,10 +375,10 @@ Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
     if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
 
       if (currentFrameIndex == frameIndex) {
-                return {Vec3f({std::stof(match[1].str()), std::stof(match[2].str()),
-                                              std::stof(match[3].str())}),
-                                Vec3f({std::stof(match[4].str()), std::stof(match[5].str()),
-                                              std::stof(match[6].str())})};
+        return {Vec3f({std::stof(match[1].str()), std::stof(match[2].str()),
+                       std::stof(match[3].str())}),
+                Vec3f({std::stof(match[4].str()), std::stof(match[5].str()),
+                       std::stof(match[6].str())})};
       }
       { currentFrameIndex++; }
     } else if (std::regex_match(line, re_empty)) {
@@ -442,9 +442,11 @@ MVD16Frame loadSourceFrame_impl(int bits, const Json &config,
 MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
                            int frameIndex) {
   const auto bits = config.require("SourceDepthBitDepth").asInt();
-  if (0 < bits && bits <= 8) {     return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
+  if (0 < bits && bits <= 8) {
+    return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
   }
-  if (8 < bits && bits <= 16) {     return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
+  if (8 < bits && bits <= 16) {
+    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
   }
   throw runtime_error("Invalid SourceDepthBitDepth");
 }

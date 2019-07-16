@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 project(TMIV)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+include(clang_tidy.cmake)
+
 # Read this first: https://gist.github.com/mbinna/c61dbb39bca0e4fb7d1f73b0d66a4fd1 
 
 # To enable testing, git clone https://github.com/catchorg/Catch2

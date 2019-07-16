@@ -11,7 +11,6 @@ export CXXFLAGS="-Wall -Wextra -Wpedantic -stdlib=libc++"
 cmake \
     -DCMAKE_INSTALL_PREFIX=../install.clang \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_CLANG_TIDY=clang-tidy \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -G "Unix Makefiles" ..
 cd ..

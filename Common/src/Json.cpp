@@ -222,7 +222,7 @@ Json::Json(istream &stream) {
   }
 }
 
-void Json::setOverrides(Json overrides) {
+void Json::setOverrides(const Json &overrides) {
   if (type() == Type::object && overrides.type() == Type::object) {
     for (auto &kvp :
          dynamic_cast<const impl::Object &>(*overrides.m_value).value) {
@@ -289,7 +289,8 @@ int Json::asInt() const {
   auto value = asDouble();
   auto rounded = static_cast<int>(lround(value));
   auto error = value - rounded;
-  if (error > 1e-6) {
+  constexpr auto eps = 1e-6;
+  if (error > eps) {
     throw runtime_error("JSON parser: Expected an integer value");
   }
   return rounded;

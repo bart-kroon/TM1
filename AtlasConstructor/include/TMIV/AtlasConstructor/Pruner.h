@@ -55,10 +55,10 @@ public:
                  const std::vector<std::uint8_t> &shouldNotBePruned) override;
 
 private:
-  float m_redundancyFactor = 0.02f;
-  int m_erosionIter = 1;
-  int m_dilationIter = 5;
-  int m_maxAdditionalView = 1024;
+  float m_redundancyFactor{};
+  int m_erosionIter{};
+  int m_dilationIter{};
+  int m_maxAdditionalView{INT16_MAX};
 };
 
 } // namespace TMIV::AtlasConstructor

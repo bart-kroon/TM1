@@ -39,17 +39,6 @@ namespace TMIV::AtlasConstructor {
 static const std::uint16_t ACTIVE = 65534;
 static const std::uint16_t INVALID = 65535;
 
-#define tryAddCandidate(a, b)                                                  \
-  {                                                                            \
-    std::uint16_t &visitedId = clusteringBuffer(a, b);                         \
-                                                                               \
-    if (visitedId == ACTIVE) {                                                 \
-      cluster.push(a, b);                                                      \
-      visitedId = uint16_t(clusterId);                                         \
-      candidates.push({a, b});                                                 \
-    }                                                                          \
-  }
-
 Cluster::Cluster(int cameraId, int clusterId)
     : cameraId_(cameraId), clusterId_(clusterId) {}
 
@@ -104,15 +93,15 @@ std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap,
                                            int overlap) const {
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
-  const Cluster &c = (*this);
-  Cluster c1(c.getCameraId(), c.getClusterId()),
-      c2(c.getCameraId(), c.getClusterId());
+  const Cluster &c = *this;
+  Cluster c1(c.getCameraId(), c.getClusterId());
+  Cluster c2(c.getCameraId(), c.getClusterId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
-    int imid1 = std::min(imid + overlap,
-                         static_cast<int>(clusteringBuffer.m()) - 1),
-        imid2 = std::max(0, imid - overlap);
+    int imid1 =
+        std::min(imid + overlap, static_cast<int>(clusteringBuffer.m()) - 1);
+    int imid2 = std::max(0, imid - overlap);
 
     for (int i = c.imin(); i < imid1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
@@ -131,9 +120,9 @@ std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap,
     }
   } else {
     int jmid = (c.jmin() + c.jmax()) / 2;
-    int jmid1 = std::min(jmid + overlap,
-                         static_cast<int>(clusteringBuffer.n()) - 1),
-        jmid2 = std::max(0, jmid - overlap);
+    int jmid1 =
+        std::min(jmid + overlap, static_cast<int>(clusteringBuffer.n()) - 1);
+    int jmid2 = std::max(0, jmid - overlap);
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = c.jmin(); j < jmid1; j++) {
@@ -165,8 +154,9 @@ Cluster::retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId,
   auto &clusteringBuffer = out.second.getPlane(0);
 
   const auto &maskBuffer = maskMap.getPlane(0);
-  int A = int(maskBuffer.m()), B = int(maskBuffer.n()),
-      S = int(maskBuffer.size());
+  int A = int(maskBuffer.m());
+  int B = int(maskBuffer.n());
+  int S = int(maskBuffer.size());
 
   // Build active list
   std::vector<int> activeList;
@@ -196,35 +186,49 @@ Cluster::retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId,
     candidates.push({dv.quot, dv.rem});
     clusteringBuffer(dv.quot, dv.rem) = static_cast<uint16_t>(clusterId);
 
+    auto tryAddCandidate = [&](int a, int b) {
+      std::uint16_t &visitedId = clusteringBuffer(a, b);
+
+      if (visitedId == ACTIVE) {
+        cluster.push(a, b);
+        visitedId = uint16_t(clusterId);
+        candidates.push({a, b});
+      }
+    };
+
     while (!candidates.empty()) {
       const std::array<int, 2> &current = candidates.front();
-      int a = current[0], b = current[1];
+      int a = current[0];
+      int b = current[1];
 
       if (0 < a) {
         tryAddCandidate(a - 1, b);
 
-        if (0 < b)
+        if (0 < b) {
           tryAddCandidate(a - 1, b - 1);
-
-        if (b < B - 1)
+        }
+        if (b < B - 1) {
           tryAddCandidate(a - 1, b + 1);
+        }
       }
 
       if (a < A - 1) {
         tryAddCandidate(a + 1, b);
 
-        if (0 < b)
+        if (0 < b) {
           tryAddCandidate(a + 1, b - 1);
-
-        if (b < B - 1)
+        }
+        if (b < B - 1) {
           tryAddCandidate(a + 1, b + 1);
+        }
       }
 
-      if (0 < b)
+      if (0 < b) {
         tryAddCandidate(a, b - 1);
-
-      if (b < B - 1)
+      }
+      if (b < B - 1) {
         tryAddCandidate(a, b + 1);
+      }
 
       candidates.pop();
     }

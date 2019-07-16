@@ -83,7 +83,7 @@ public:
 
     auto atlasSize = m_atlasConstructor->getAtlasSize();
 
-    for (auto i = 0u; i < atlasSize.size(); i++) {
+    for (size_t i = 0; i < atlasSize.size(); i++) {
       auto sz = atlasSize[i];
       auto nbPatch = std::count_if(
           m_atlasConstructor->getPatchList().begin(),

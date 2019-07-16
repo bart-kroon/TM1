@@ -43,6 +43,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::AtlasConstructor {
+constexpr auto neutralChroma = uint16_t(512);
 
 AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
                                    const Common::Json &componentNode) {
@@ -56,20 +57,16 @@ AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
       Factory<IPacker>::getInstance().create("Packer", rootNode, componentNode);
 
   // Single atlas size
-  if (auto subnode = componentNode.optional("AtlasResolution")) {
-    m_atlasSize = subnode.asIntVector<2>();
-  }
+  m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
   // Maximum pixel rate per frame (Texture or Depth)
-  int maxMegaPixelPerFrame = 7680 * 4320 / (1000000); // 8K UHD
+  int maxMegaPixelPerFrame = componentNode.require("MPixel").asInt();
 
-  if (auto subnode = componentNode.optional("MPixel")) {
-    maxMegaPixelPerFrame = subnode.asInt();
-  }
-
-  m_nbAtlas = static_cast<uint16_t>(
-      ceil(static_cast<float>(maxMegaPixelPerFrame) * 1000000 /
-           (m_atlasSize.x() * m_atlasSize.y())));
+  // TODO(BK): It is more logical to round down from a maximum
+  constexpr int mega = 1000000;
+  const auto pixelsPerAtlas = m_atlasSize.x() * m_atlasSize.y();
+  m_nbAtlas = uint16_t((maxMegaPixelPerFrame * mega + pixelsPerAtlas - 1) /
+                       pixelsPerAtlas);
 }
 
 void AtlasConstructor::prepareIntraPeriod(
@@ -127,7 +124,7 @@ void AtlasConstructor::completeIntraPeriod() {
           Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
 
       for (auto &p : atlas.first.getPlanes()) {
-        std::fill(p.begin(), p.end(), uint16_t(512));
+        std::fill(p.begin(), p.end(), neutralChroma);
       }
 
       std::fill(atlas.second.getPlane(0).begin(),
@@ -172,9 +169,12 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
   const auto &textureViewMap = currentView.first;
   const auto &depthViewMap = currentView.second;
 
-  int w = patch.patchSize.x(), h = patch.patchSize.y();
-  int xM = patch.posInView.x(), yM = patch.posInView.y();
-  int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
+  int w = patch.patchSize.x();
+  int h = patch.patchSize.y();
+  int xM = patch.posInView.x();
+  int yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x();
+  int yP = patch.posInAtlas.y();
   int w_tex = ((xM + w) <= textureViewMap.getWidth())
                   ? w
                   : (textureViewMap.getWidth() - xM);

@@ -40,6 +40,9 @@
 #include <cmath>
 
 namespace TMIV::Renderer {
+using Common::halfCycle;
+using Common::quarterCycle;
+
 template <> struct Engine<Metadata::ProjectionType::ERP> {
   const Metadata::CameraParameters camera;
   const bool northPole;
@@ -64,10 +67,10 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       : camera{camera_},
 
         // Projection sub-type
-        northPole{camera.erpThetaRange[1] == 90.f},
-        southPole{camera.erpThetaRange[0] == -90.f},
-        wraps{camera.erpPhiRange[0] == -180.f &&
-              camera.erpPhiRange[1] == 180.f},
+        northPole{camera.erpThetaRange[1] == quarterCycle},
+        southPole{camera.erpThetaRange[0] == -quarterCycle},
+        wraps{camera.erpPhiRange[0] == -halfCycle &&
+              camera.erpPhiRange[1] == halfCycle},
 
         // Mesh structure
         icols{camera.size.x()}, irows{camera.size.y()}, ocols{camera.size.x() +
@@ -99,19 +102,22 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
+    using std::cos;
+    using std::sin;
     const float phi = phi0 + dphi_du * uv.x();
     const float theta = theta0 + dtheta_dv * uv.y();
-    return depth * Common::Vec3f{std::cos(theta) * std::cos(phi),
-                                 std::cos(theta) * std::sin(phi),
-                                 std::sin(theta)};
+    return depth * Common::Vec3f{cos(theta) * cos(phi), cos(theta) * sin(phi),
+                                 sin(theta)};
   }
 
   // Projection equation
   auto projectVertex(const SceneVertexDescriptor &v) const
       -> ImageVertexDescriptor const {
+    using std::asin;
+    using std::atan2;
     const auto radius = norm(v.position);
-    const auto phi = std::atan2(v.position.y(), v.position.x());
-    const auto theta = std::asin(v.position.z() / radius);
+    const auto phi = atan2(v.position.y(), v.position.x());
+    const auto theta = asin(v.position.z() / radius);
     const auto position =
         Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
     return {position, radius, v.rayAngle};
@@ -121,24 +127,24 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   // row i
   float vAt(int i) const {
     if (!northPole && i == 0) {
-      return 0.f; // top edge of frame
+      return 0.F; // top edge of frame
     }
     if (!southPole && i == orows - 1) {
       return float(irows); // bottom edge of frame
     }
-    return float(i) + int(northPole) - 0.5f; // row middle
+    return float(i) + int(northPole) - 0.5F; // row middle
   }
 
   // Helper function to calculate the u-component of image coordinates at output
   // column j
   float uAt(int j) const {
     if (!wraps && j == 0) {
-      return 0.f; // left edge of frame
+      return 0.F; // left edge of frame
     }
     if (!wraps && j == ocols - 1) {
       return float(icols); // right edge of frame
     }
-    return float(j) + int(wraps) - 0.5f; // column centre
+    return float(j) + int(wraps) - 0.5F; // column centre
   }
 
   // Helper function to fetch a value from a matrix based on the output
@@ -176,9 +182,9 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   // Helper function to calculate the area of a triangle based on the output
   // coordinate (i, j)
   float triangleArea(int i, int j) const {
-    return (!wraps && (j == 0 || j == ocols - 1) ? 0.25f : 0.5f) *
-           ((!northPole && i == 0) || (!southPole && i == orows - 1) ? 0.5f
-                                                                     : 1.f);
+    return (!wraps && (j == 0 || j == ocols - 1) ? 0.25F : 0.5F) *
+           ((!northPole && i == 0) || (!southPole && i == orows - 1) ? 0.5F
+                                                                     : 1.F);
   }
 
   // List of 3-D vertices in the reference frame of the target camera
@@ -201,13 +207,13 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     }
     if (northPole) {
       const auto d = averageRow(depth, 0);
-      const auto xyz = R_t.first * Common::Vec3f{0.f, 0.f, d} + R_t.second;
+      const auto xyz = R_t.first * Common::Vec3f{0.F, 0.F, d} + R_t.second;
       const auto rayAngle = angle(xyz, xyz - R_t.second);
       result.push_back({xyz, rayAngle});
     }
     if (southPole) {
       const auto d = averageRow(depth, irows - 1);
-      const auto xyz = R_t.first * Common::Vec3f{0.f, 0.f, -d} + R_t.second;
+      const auto xyz = R_t.first * Common::Vec3f{0.F, 0.F, -d} + R_t.second;
       const auto rayAngle = angle(xyz, xyz - R_t.second);
       result.push_back({xyz, rayAngle});
     }
@@ -235,7 +241,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
         const int t = osize - 2;
         const int br = j;
         const int bl = br - 1;
-        const float area = !wraps && (j == 0 || j == ocols - 1) ? 0.25f : 0.5f;
+        const float area = !wraps && (j == 0 || j == ocols - 1) ? 0.25F : 0.5F;
         result.push_back({{t, br, bl}, area});
       }
     }
@@ -244,7 +250,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
         const int b = osize - 1;
         const int tr = (orows - 1) * ocols + j;
         const int tl = tr - 1;
-        const float area = !wraps && (j == 0 || j == ocols - 1) ? 0.25f : 0.5f;
+        const float area = !wraps && (j == 0 || j == ocols - 1) ? 0.25F : 0.5F;
         result.push_back({{tl, tr, b}, area});
       }
     }
@@ -286,9 +292,9 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
     // Weighted sphere compensation of stretching
     for (auto &triangle : triangles) {
-      auto v = 0.f;
+      auto v = 0.F;
       for (auto index : triangle.indices) {
-        v += imageVertices[index].position.y() / 3.f;
+        v += imageVertices[index].position.y() / 3.F;
       }
       const auto theta = theta0 + dtheta_dv * v;
       triangle.area /= cos(theta);

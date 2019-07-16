@@ -31,8 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
+
+#include <TMIV/Common/Common.h>
+#include <TMIV/Common/Factory.h>
+#include <cmath>
 #include <iostream>
 
 using namespace std;
@@ -45,17 +48,12 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode,
       "Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode,
                                                           componentNode);
-  if (auto subnode = componentNode.optional("NumberOfPasses")) {
-    m_numberOfPasses = subnode.asInt();
+  m_numberOfPasses = componentNode.require("NumberOfPasses").asInt();
+  auto subnode = componentNode.require("NumberOfViewsPerPass");
+  for (size_t i = 0; i != subnode.size(); ++i) {
+    m_numberOfViewsPerPass.push_back(subnode.at(i).asInt());
   }
-  if (auto subnode = componentNode.optional("NumberOfViewsPerPass")) {
-    if (subnode) {
-      for (auto i = 0u; i != subnode.size(); i++) {
-        m_numberOfViewsPerPass.push_back(subnode.at(i).asInt());
-      }
-    }
-  }
-  if (auto subnode = componentNode.optional("MergeConflict")) {
+  if (auto subnode = componentNode.require("MergeConflict")) {
     m_mergeConflict = subnode.asInt();
   }
 }
@@ -138,16 +136,15 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   float z_target = target.position[2];
   float yaw_target = target.rotation[0];
   float pitch_target = target.rotation[1];
-  float yaw_camera, pitch_camera;
-  //     float roll_target = target.rotation[2];
-  constexpr float radperdeg{0.01745329251994329576923690768489f};
-  vector<float> distance, angle, angleWeight;
-  for (auto id = 0u; id < cameras.size(); id++) {
-    distance.push_back(sqrt(pow(cameras[id].position[0] - x_target, 2) +
-                            pow(cameras[id].position[1] - y_target, 2) +
-                            pow(cameras[id].position[2] - z_target, 2)));
-    yaw_camera = cameras[id].rotation[0];
-    pitch_camera = cameras[id].rotation[1];
+  vector<float> distance;
+  vector<float> angle;
+  vector<float> angleWeight;
+  for (size_t id = 0; id < cameras.size(); ++id) {
+    distance.push_back(sqrt(square(cameras[id].position[0] - x_target) +
+                            square(cameras[id].position[1] - y_target) +
+                            square(cameras[id].position[2] - z_target)));
+    auto yaw_camera = cameras[id].rotation[0];
+    auto pitch_camera = cameras[id].rotation[1];
     // Compute Angle between the camera and target in degree unit
     angle.push_back(
         1 / radperdeg *
@@ -155,17 +152,16 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
              cos(pitch_camera * radperdeg) * cos(pitch_target * radperdeg) *
                  cos((yaw_camera - yaw_target) * radperdeg)));
     // to assure angle is ranging from -180 to 180 degree
-    if (angle[id] >
-        180.f) { 
-      angle[id] = angle[id] - 360.f;
+    if (angle[id] > halfCycle) {
+      angle[id] = angle[id] - fullCycle;
     }
 
     // Introduce AngleWeight as a simple triangle function (with value of 1 when
     // angle is 0 & value of 0 when angle is 180)
-    if (angle[id] > 0.f) {
-      angleWeight.push_back(-1.f / 180.f * angle[id] + 1.f);
+    if (angle[id] > 0.F) {
+      angleWeight.push_back(-1.F / halfCycle * angle[id] + 1.F);
     } else {
-      angleWeight.push_back(1.f / 180.f * angle[id] + 1.f);
+      angleWeight.push_back(1.F / halfCycle * angle[id] + 1.F);
     }
   }
 
@@ -207,7 +203,7 @@ MultipassRenderer::renderFrame(const MVD10Frame &atlas,
   vector<PatchIdMapList> mapsPass(numberOfPasses);
 
   for (auto &pass : mapsPass) {
-    for (auto k = 0U; k < atlas.size(); k++) {
+    for (size_t k = 0; k < atlas.size(); ++k) {
       PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
       fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
            unusedPatchId);
@@ -231,7 +227,7 @@ MultipassRenderer::renderFrame(const MVD10Frame &atlas,
   {
     // Find the selected views for a given pass
     selectedViewsPass.clear();
-    for (auto id = 0U; id < cameras.size(); id++) {
+    for (size_t id = 0; id < cameras.size(); ++id) {
       if (id < numberOfViewsPerPass[passId]) {
         selectedViewsPass.push_back(
             static_cast<unsigned int>(sortedCamerasId[id]));
@@ -241,7 +237,7 @@ MultipassRenderer::renderFrame(const MVD10Frame &atlas,
     /////////////////
     // Update the Occupancy Map to be used in the Pass
     /////////////////
-    for (auto atlasId = 0U; atlasId < maps.size(); atlasId++) {
+    for (size_t atlasId = 0; atlasId < maps.size(); ++atlasId) {
       transform(maps[atlasId].getPlane(0).begin(),
                 maps[atlasId].getPlane(0).end(),
                 mapsPass[passId][atlasId].getPlane(0).begin(), filterMaps);
@@ -264,7 +260,7 @@ MultipassRenderer::renderFrame(const MVD10Frame &atlas,
                 mergedviewport.second.getPlane(0).begin(),
                 mergedviewport.second.getPlane(0).begin(), filterMergeDepth);
 
-      for (auto i = 0; i < viewport.first.getNumberOfPlanes(); i++) {
+      for (auto i = 0; i < viewport.first.getNumberOfPlanes(); ++i) {
         my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
                      viewportPass[passId - 1].first.getPlane(i).end(),
                      mergedviewport.first.getPlane(i).begin(),

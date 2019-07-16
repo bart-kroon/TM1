@@ -244,6 +244,7 @@ namespace detail {
 template <typename T>
 int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
   using size_type = Array::size_type;
+  using std::abs;
 
   int nb_permutations = 0;
   size_type n = A.m();
@@ -254,12 +255,11 @@ int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
   std::copy(A.begin(), A.end(), LU.begin());
 
   for (size_type k = 0; k < n; k++) {
-    auto iter =
-        std::max_element(LU.col_begin(k) + k, LU.col_end(k),
-                         [](T x, T y) { return (std::abs(x) < std::abs(y)); });
+    auto iter = std::max_element(LU.col_begin(k) + k, LU.col_end(k),
+                                 [](T x, T y) { return (abs(x) < abs(y)); });
     T pivot = *iter;
 
-    if (std::abs(std::numeric_limits<T>::epsilon()) < std::abs(pivot)) {
+    if (abs(std::numeric_limits<T>::epsilon()) < abs(pivot)) {
       auto p = static_cast<size_type>(iter - LU.col_begin(k));
 
       if (p != k) {

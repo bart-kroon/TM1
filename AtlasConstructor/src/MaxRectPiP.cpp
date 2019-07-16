@@ -35,6 +35,7 @@
 #include <TMIV/Common/LinAlg.h>
 
 namespace TMIV::AtlasConstructor {
+constexpr auto occupied = uint8_t(128);
 
 ////////////////////////////////////////////////////////////////////////////////
 std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w,
@@ -89,7 +90,8 @@ bool MaxRectPiP::Rectangle::isInside(const Rectangle &r) const {
 }
 
 float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const {
-  int dw = width() - w, dh = height() - h;
+  int dw = width() - w;
+  int dh = height() - h;
 
   if ((0 <= dw) && (0 <= dh)) {
     return static_cast<float>((std::min)(dw, dh));
@@ -101,7 +103,8 @@ float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const {
 MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
     : m_width(w), m_height(h), m_alignment(a), m_pip(pip) {
   // Maps
-  unsigned int wa = w / a, ha = h / a;
+  auto wa = unsigned(w / a);
+  auto ha = unsigned(h / a);
 
   m_occupancyMap.resize({ha, wa});
   std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t(0));
@@ -112,8 +115,8 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
 
 bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap,
                       Output &packerOutput) {
-  int w = Common::align(c.width(), m_alignment),
-      h = Common::align(c.height(), m_alignment);
+  int w = Common::align(c.width(), m_alignment);
+  int h = Common::align(c.height(), m_alignment);
 
   if ((m_pip && pushInUsedSpace(w, h, packerOutput)) ||
       pushInFreeSpace(w, h, packerOutput)) {
@@ -134,24 +137,27 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   bool isRotated = packerOutput.isRotated();
-  int w = c.width(), h = c.height();
+  int w = c.width();
+  int h = c.height();
 
   // Step #0 (in atlas)
   Vec2i q0 = {packerOutput.x(), packerOutput.y()};
-  int XMin = q0.x() / m_alignment,
-      XLast = (q0.x() + (isRotated ? h : w) - 1) / m_alignment + 1;
-  int YMin = q0.y() / m_alignment,
-      YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
+  int XMin = q0.x() / m_alignment;
+  int XLast = (q0.x() + (isRotated ? h : w) - 1) / m_alignment + 1;
+  int YMin = q0.y() / m_alignment;
+  int YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
 
   for (auto Y = YMin; Y < YLast; Y++) {
     std::fill(m_occupancyMap.row_begin(Y) + XMin,
-              m_occupancyMap.row_begin(Y) + XLast, uint8_t(128));
+              m_occupancyMap.row_begin(Y) + XLast, occupied);
   }
 
   // Step #1 (in projection)
   Vec2i p0 = {c.jmin(), c.imin()};
-  int xMin = p0.x(), xMax = p0.x() + w - 1;
-  int yMin = p0.y(), yMax = p0.y() + h - 1;
+  int xMin = p0.x();
+  int xMax = p0.x() + w - 1;
+  int yMin = p0.y();
+  int yMax = p0.y() + h - 1;
 
   auto p2q = [isRotated, w, p0, q0](const Vec2i p) {
     return isRotated
@@ -173,7 +179,8 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
 bool MaxRectPiP::pushInUsedSpace(int w, int h,
                                  MaxRectPiP::Output &packerOutput) {
 
-  int W = w / m_alignment, H = h / m_alignment;
+  int W = w / m_alignment;
+  int H = h / m_alignment;
 
   auto isGoodCandidate = [this](int xmin, int xmax, int ymin,
                                 int ymax) -> bool {
@@ -181,7 +188,7 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
         (ymax < static_cast<int>(m_occupancyMap.height()))) {
       for (int y = ymin; y <= ymax; y++) {
         for (int x = xmin; x <= xmax; x++) {
-          if (m_occupancyMap(y, x) != 128) {
+          if (m_occupancyMap(y, x) != occupied) {
             return false;
           }
         }
@@ -192,8 +199,8 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
     { return false; }
   };
 
-  for (auto Y = 0u; Y < m_occupancyMap.height(); Y++) {
-    for (auto X = 0u; X < m_occupancyMap.width(); X++) {
+  for (auto Y = 0; Y < int(m_occupancyMap.height()); ++Y) {
+    for (auto X = 0; X < int(m_occupancyMap.width()); ++X) {
       // Without Rotation
       if (isGoodCandidate(X, X + W - 1, Y, Y + H - 1)) {
         packerOutput.set(X * m_alignment, Y * m_alignment, false);

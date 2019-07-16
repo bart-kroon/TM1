@@ -37,25 +37,28 @@
 
 #include <TMIV/Common/Common.h>
 #include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 
 namespace TMIV::Image {
-constexpr unsigned maxLevel(unsigned bits) { return (1u << bits) - 1u; }
+constexpr auto kilometer = 1000.F;
+
+constexpr unsigned maxLevel(unsigned bits) { return (1U << bits) - 1U; }
 
 template <unsigned bits> float expandValue(uint16_t x) {
   return float(x) / float(maxLevel(bits));
 }
 
 template <unsigned bits> uint16_t quantizeValue(float x) {
-  if (x >= 0.f && x <= 1.f) {
-    return static_cast<uint16_t>(
-        std::min(unsigned(0.5f + x * float(maxLevel(bits))), maxLevel(bits)));
+  if (x >= 0.F && x <= 1.F) {
+    return static_cast<uint16_t>(std::min(
+        unsigned(std::lround(x * float(maxLevel(bits)))), maxLevel(bits)));
   }
   if (x > 0) {
     return static_cast<uint16_t>(maxLevel(bits));
   }
-  return 0u;
+  return 0;
 }
 
 template <typename ToInt, typename WorkInt>
@@ -66,12 +69,12 @@ auto requantizeValue(WorkInt x, WorkInt fromBits, WorkInt toBits) -> ToInt {
          toBits <= std::numeric_limits<ToInt>::digits &&
          toBits + fromBits <= std::numeric_limits<WorkInt>::digits);
 
-  const auto maxFrom = (1u << fromBits) - 1u;
-  const auto maxTo = (1u << toBits) - 1u;
+  const auto maxFrom = (1U << fromBits) - 1U;
+  const auto maxTo = (1U << toBits) - 1U;
 
-  assert(0u <= x && x <= maxFrom);
+  assert(0U <= x && x <= maxFrom);
 
-  return ToInt((x * maxTo + maxFrom / 2u) / maxFrom);
+  return ToInt((x * maxTo + maxFrom / 2U) / maxFrom);
 }
 
 template <typename OutFormat, typename InFormat>
@@ -117,7 +120,7 @@ float expandDepthValue(const Metadata::CameraParameters &camera, uint16_t x) {
 
   if (x > 0) {
     const float normDisp = expandValue<bits>(x);
-    if (far >= 1000.f /*meter*/) {
+    if (far >= kilometer) {
       return near / normDisp;
     }
     return far * near / (near + normDisp * (far - near));

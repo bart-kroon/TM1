@@ -42,22 +42,22 @@ using namespace TMIV::Common;
 using namespace TMIV::Image;
 
 TEST_CASE("maxlevel", "[quantize_and_expand]") {
-  REQUIRE(maxLevel(8u) == 255u);
-  REQUIRE(maxLevel(10u) == 1023u);
-  REQUIRE(maxLevel(16u) == 65535u);
+  REQUIRE(maxLevel(8U) == 255U);
+  REQUIRE(maxLevel(10U) == 1023U);
+  REQUIRE(maxLevel(16U) == 65535U);
 }
 
 TEST_CASE("expandValue", "[quantize_and_expand]") {
-  REQUIRE(expandValue<10>(0) == 0.f);
-  REQUIRE(expandValue<8>(128) == 128.f / 255.f);
-  REQUIRE(expandValue<10>(1023) == 1.f);
-  REQUIRE(expandValue<16>(40000) == 40000.f / 65535.f);
+  REQUIRE(expandValue<10>(0) == 0.F);
+  REQUIRE(expandValue<8>(128) == 128.F / 255.F);
+  REQUIRE(expandValue<10>(1023) == 1.F);
+  REQUIRE(expandValue<16>(40000) == 40000.F / 65535.F);
 }
 
 TEST_CASE("quantizeValue", "[quantize_and_expand]") {
-  REQUIRE(quantizeValue<10>(NaN) == 0u);
-  REQUIRE(quantizeValue<10>(inf) == 1023u);
-  REQUIRE(quantizeValue<10>(1e20f) == 1023u);
+  REQUIRE(quantizeValue<10>(NaN) == 0U);
+  REQUIRE(quantizeValue<10>(inf) == 1023U);
+  REQUIRE(quantizeValue<10>(1e20F) == 1023U);
 }
 
 SCENARIO("Expand YUV 4:2:0 10-bit texture", "[quantize_and_expand]") {
@@ -99,8 +99,9 @@ SCENARIO("Quantize planar 4:4:4 float to YUV 4:2:0 10-bit texture",
     Mat<Vec3f> texture({6, 10});
     for (int i = 0; i != 6; ++i) {
       for (int j = 0; j != 10; ++j) {
-        texture(i, j) = Vec3f{0.1f * i + 0.01f * j, 0.2f * i + 0.001f * j,
-                              0.3f * i + 0.1f * j};
+        texture(i, j) = Vec3f{0.1F * float(i) + 0.01F * float(j),
+                              0.2F * float(i) + 0.001F * float(j),
+                              0.3F * float(i) + 0.1F * float(j)};
       }
     }
 
@@ -108,20 +109,20 @@ SCENARIO("Quantize planar 4:4:4 float to YUV 4:2:0 10-bit texture",
       auto quantized = quantizeTexture(texture);
 
       THEN("Luma plane samples are quantized") {
-        REQUIRE(quantized.getPlane(0)(5, 9) == quantizeValue<10>(0.59f));
+        REQUIRE(quantized.getPlane(0)(5, 9) == quantizeValue<10>(0.59F));
       }
     }
   }
 }
 
 TEST_CASE("requantizeValue", "[quantize_and_expand]") {
-  REQUIRE(0u == requantizeValue<uint16_t, uint32_t>(0u, 16, 16));
-  REQUIRE(0u == requantizeValue<uint16_t, uint32_t>(0u, 16, 13));
-  REQUIRE(0u == requantizeValue<uint16_t, uint32_t>(0u, 9, 15));
-  REQUIRE(0xFFFFu == requantizeValue<uint16_t, uint32_t>(0xFFFFu, 16, 16));
-  REQUIRE(0xFFFFu == requantizeValue<uint16_t, uint64_t>(0xFFFFu, 16, 16));
-  REQUIRE(0xFFFFu == requantizeValue<uint16_t, uint32_t>(0xFFFu, 12, 16));
-  REQUIRE(0x1Fu == requantizeValue<uint8_t, uint16_t>(0x7Fu, 7, 5));
+  REQUIRE(0U == requantizeValue<uint16_t, uint32_t>(0U, 16, 16));
+  REQUIRE(0U == requantizeValue<uint16_t, uint32_t>(0U, 16, 13));
+  REQUIRE(0U == requantizeValue<uint16_t, uint32_t>(0U, 9, 15));
+  REQUIRE(0xFFFFU == requantizeValue<uint16_t, uint32_t>(0xFFFFU, 16, 16));
+  REQUIRE(0xFFFFU == requantizeValue<uint16_t, uint64_t>(0xFFFFU, 16, 16));
+  REQUIRE(0xFFFFU == requantizeValue<uint16_t, uint32_t>(0xFFFU, 12, 16));
+  REQUIRE(0x1FU == requantizeValue<uint8_t, uint16_t>(0x7FU, 7, 5));
   REQUIRE(0x800 == requantizeValue<uint16_t, uint32_t>(0x8000, 16, 12));
   REQUIRE(0x400 == requantizeValue<uint16_t, uint32_t>(0x800, 12, 11));
 }
@@ -132,7 +133,7 @@ TEST_CASE("requantize", "[quantize_and_expand]") {
       MVD10Frame{TextureDepth10Frame{TextureFrame{5, 7}, Depth10Frame{32, 16}}};
 
   // Put a 9-bit ramp in the depth map
-  auto i = 0u;
+  auto i = 0U;
   for (auto &x : inFrame.front().second.getPlane(0)) {
     x = i++;
   }
@@ -150,12 +151,13 @@ TEST_CASE("requantize", "[quantize_and_expand]") {
 
   // The conversion maps 0 --> 0 and 511 --> 65535 with rounding to the nearest
   // integer
-  REQUIRE(0u == Y(0, 0));
-  REQUIRE(513u == Y(0, 4)); // 4 * 65535 / 511 == 512.994 (round up)
-  REQUIRE(641u == Y(0, 5)); // 5 * 65535 / 511 == 641.243 (round down)
-  REQUIRE(0xFFFFu == Y(0xF, 0x1F));
+  REQUIRE(0U == Y(0, 0));
+  REQUIRE(513U == Y(0, 4)); // 4 * 65535 / 511 == 512.994 (round up)
+  REQUIRE(641U == Y(0, 5)); // 5 * 65535 / 511 == 641.243 (round down)
+
+  REQUIRE(0xFFFFU == Y(0xF, 0x1F));
 
   // Chroma is all zero
-  REQUIRE(0u == Cb(7, 13));
-  REQUIRE(0u == Cr(0, 5));
+  REQUIRE(0U == Cb(7, 13));
+  REQUIRE(0U == Cr(0, 5));
 }

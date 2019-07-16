@@ -44,7 +44,7 @@ class MultipassRenderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
-  int m_numberOfPasses = 1;
+  int m_numberOfPasses{};
   std::vector<unsigned> m_numberOfViewsPerPass;
   int m_mergeConflict = 1;
 

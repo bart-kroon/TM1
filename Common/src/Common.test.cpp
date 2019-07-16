@@ -49,61 +49,62 @@ using namespace std;
 namespace TMIV::Common {
 
 TEST_CASE("Array, Vector, Matrix, LinAlg") {
-  const float EPS = 1e-5f;
+  const float EPS = 1e-5F;
 
   heap::Array<3, float> A({3, 5, 10});
-  Mat3x3f m1 = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, -9.f};
+  Mat3x3f m1 = {1.F, 2.F, 3.F, 4.F, 5.F, 6.F, 7.F, 8.F, -9.F};
   Mat<float> m2(
-      {4, 3}, {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f});
-  Vec3f v1({1.f, 2.f, 3.f}), v2({3.f, -1.f, 6.f});
+      {4, 3}, {1.F, 2.F, 3.F, 4.F, 5.F, 6.F, 7.F, 8.F, 9.F, 10.F, 11.F, 12.F});
+  Vec3f v1({1.F, 2.F, 3.F});
+  Vec3f v2({3.F, -1.F, 6.F});
 
   SECTION("Array")
   REQUIRE(A.size() == 150);
 
   SECTION("Vector norm")
-  REQUIRE(fabs(norm(v1) - 3.7416573f) < EPS);
+  REQUIRE(fabs(norm(v1) - 3.7416573F) < EPS);
 
   SECTION("Unit vector")
-  REQUIRE(fabs(norm(unit(v1)) - 1.f) < EPS);
+  REQUIRE(fabs(norm(unit(v1)) - 1.F) < EPS);
 
   SECTION("Vector dot product")
-  REQUIRE(fabs(dot(v1, v1) - 14.f) < EPS);
+  REQUIRE(fabs(dot(v1, v1) - 14.F) < EPS);
 
   SECTION("Vector cross product")
-  REQUIRE(norm_inf(cross(v1, v2) - Vec3f({15.f, 3.f, -7.f})) < EPS);
+  REQUIRE(norm_inf(cross(v1, v2) - Vec3f({15.F, 3.F, -7.F})) < EPS);
 
   SECTION("Matrix trace")
-  REQUIRE(fabs(trace(m1) - (-3.f)) < EPS);
+  REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);
 
   SECTION("Matrix transpose")
   REQUIRE(norm_inf(transpose(m2) -
-                   Mat<float>({3, 4}, {1.f, 4.f, 7.f, 10.f, 2.f, 5.f, 8.f, 11.f,
-                                       3.f, 6.f, 9.f, 12.f})) < EPS);
+                   Mat<float>({3, 4}, {1.F, 4.F, 7.F, 10.F, 2.F, 5.F, 8.F, 11.F,
+                                       3.F, 6.F, 9.F, 12.F})) < EPS);
 
   SECTION("Matrix / Vector product")
-  REQUIRE(norm_inf((m1 * v1) - Vec3f({14.f, 32.f, -4.f})) < EPS);
+  REQUIRE(norm_inf((m1 * v1) - Vec3f({14.F, 32.F, -4.F})) < EPS);
 
   SECTION("Matrix / Matrix product")
   REQUIRE(
       norm_inf((m2 * m1) -
-               Mat<float>({4, 3}, {30.f, 36.f, -12.f, 66.f, 81.f, -12.f, 102.f,
-                                   126.f, -12.f, 138.f, 171.f, -12.f})) < EPS);
+               Mat<float>({4, 3}, {30.F, 36.F, -12.F, 66.F, 81.F, -12.F, 102.F,
+                                   126.F, -12.F, 138.F, 171.F, -12.F})) < EPS);
 
   SECTION("Matrix inverse")
   REQUIRE(norm_inf((m1 * inv(m1)) - Mat3x3f::eye()) < EPS);
 
   SECTION("Linear system (right)")
   REQUIRE(norm_inf(mrdivide(m2, m1) -
-                   Mat<float>({4, 3}, {1.f, 0.f, 0.f, 0.f, 1.f, 0.f, -1.f, 2.f,
-                                       0.f, -2.f, 3.f, 0.f})) < EPS);
+                   Mat<float>({4, 3}, {1.F, 0.F, 0.F, 0.F, 1.F, 0.F, -1.F, 2.F,
+                                       0.F, -2.F, 3.F, 0.F})) < EPS);
 
   SECTION("Linear system (left)")
-  REQUIRE(norm_inf(mldivide(m1, v1) - Vec3f({-1.f, 2.f, 0.f}) / 3.f) < EPS);
+  REQUIRE(norm_inf(mldivide(m1, v1) - Vec3f({-1.F, 2.F, 0.F}) / 3.F) < EPS);
 
   SECTION("Matrix determinant")
-  REQUIRE(fabs(det(m1) - 54.f) < EPS);
+  REQUIRE(fabs(det(m1) - 54.F) < EPS);
 
-  std::fill(m1.diag_begin(), m1.diag_end(), 0.f);
+  std::fill(m1.diag_begin(), m1.diag_end(), 0.F);
   SECTION("Matrix iterator")
   REQUIRE(fabs(trace(m1)) < EPS);
 }
@@ -186,16 +187,16 @@ TEST_CASE("Parsing the command-line", "[Application]") {
 }
 
 TEST_CASE("Converting floating point to integer") {
-  REQUIRE(ifloor(-2.5f) == -3);
-  REQUIRE(ifloor(0.f) == 0);
-  REQUIRE(ifloor(1000000.9f) == 1000000);
-  REQUIRE(ifloor(1000001.0f) == 1000001);
-  REQUIRE(ifloor(1000001.1f) == 1000001);
+  REQUIRE(ifloor(-2.5F) == -3);
+  REQUIRE(ifloor(0.F) == 0);
+  REQUIRE(ifloor(1000000.9F) == 1000000);
+  REQUIRE(ifloor(1000001.0F) == 1000001);
+  REQUIRE(ifloor(1000001.1F) == 1000001);
 
-  REQUIRE(iceil(-2.5f) == -2);
-  REQUIRE(iceil(0.f) == 0);
-  REQUIRE(iceil(1000000.9f) == 1000001);
-  REQUIRE(iceil(1000001.0f) == 1000001);
-  REQUIRE(iceil(1000001.1f) == 1000002);
+  REQUIRE(iceil(-2.5F) == -2);
+  REQUIRE(iceil(0.F) == 0);
+  REQUIRE(iceil(1000000.9F) == 1000001);
+  REQUIRE(iceil(1000001.0F) == 1000001);
+  REQUIRE(iceil(1000001.1F) == 1000002);
 }
 } // namespace TMIV::Common

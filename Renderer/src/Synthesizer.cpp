@@ -38,6 +38,7 @@
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Image/Image.h>
 #include <cassert>
+#include <cmath>
 #include <future>
 #include <numeric>
 
@@ -123,7 +124,7 @@ public:
 
         // Look up depth value and affine parameters
         const auto uv = imagePosition(
-            {float(j_atlas) + 0.5f, float(i_atlas) + 0.5f}, patch);
+            {float(j_atlas) + 0.5F, float(i_atlas) + 0.5F}, patch);
         const auto d = expandDepthValue<10>(
             camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
         const auto &R = R_t[patch.viewId].first;
@@ -151,7 +152,8 @@ public:
       if (id0 == unusedPatchId || id0 != ids[v1] || id0 != ids[v2]) {
         return;
       }
-      result.push_back({{v0, v1, v2}, 0.5f});
+      constexpr auto triangleArea = 0.5F;
+      result.push_back({{v0, v1, v2}, triangleArea});
     };
 
     for (int i = 1; i < rows; ++i) {
@@ -237,22 +239,22 @@ public:
     case ProjectionType::ERP:
       return abs(camera.erpPhiRange[1] - camera.erpPhiRange[0]);
     case ProjectionType::Perspective:
-      return degperrad * 2.f *
+      return degperrad * 2 *
              atan(camera.size.x() / (2 * camera.perspectiveFocal.x()));
     default:
-      return 360.f;
+      return fullCycle;
     }
   }
 
   // Resolution in px^2/deg^2
   static float resolution(const CameraParameters &camera) {
-    return pow(camera.size.x() / xFoV(camera), 2.f);
+    return square(camera.size.x() / xFoV(camera));
   }
 
   static float resolutionRatio(const CameraParametersList &cameras,
                                const CameraParameters &target) {
     const auto sourceResolution =
-        accumulate(begin(cameras), end(cameras), 0.f,
+        accumulate(begin(cameras), end(cameras), 0.F,
                    [&](float average, const CameraParameters &camera) {
                      return average + resolution(camera) / cameras.size();
                    });
@@ -265,13 +267,13 @@ public:
                                      const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
-    auto rasterizer =
-        rasterFrame(atlases.size(), target,
-                    [&](size_t i, const CameraParameters &target) {
-                      return unprojectAtlas(atlases[i], ids[i].getPlane(0),
-                                            patches, cameras, target);
-                    },
-                    resolutionRatio(cameras, target));
+    auto rasterizer = rasterFrame(
+        atlases.size(), target,
+        [&](size_t i, const CameraParameters &target) {
+          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
+                                cameras, target);
+        },
+        resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp10(target, rasterizer.normDisp())};
   }

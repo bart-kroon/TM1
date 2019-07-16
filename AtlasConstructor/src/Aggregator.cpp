@@ -44,7 +44,7 @@ void Aggregator::pushMask(const MaskList &mask) {
   if (m_aggregatedMask.empty()) {
     m_aggregatedMask = mask;
   } else {
-    for (auto i = 0u; i < mask.size(); i++) {
+    for (size_t i = 0; i < mask.size(); i++) {
       std::transform(
           m_aggregatedMask[i].getPlane(0).begin(),
           m_aggregatedMask[i].getPlane(0).end(), mask[i].getPlane(0).begin(),

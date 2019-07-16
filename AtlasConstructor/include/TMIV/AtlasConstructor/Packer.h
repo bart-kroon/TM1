@@ -55,10 +55,10 @@ public:
        const std::vector<std::uint8_t> &shouldNotBeSplit) override;
 
 private:
-  int m_alignment = 8;
-  int m_minPatchSize = 64;
-  int m_overlap = 1;
-  bool m_pip = true;
+  int m_alignment{};
+  int m_minPatchSize{};
+  int m_overlap{};
+  bool m_pip{};
 };
 
 } // namespace TMIV::AtlasConstructor

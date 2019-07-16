@@ -58,15 +58,15 @@ auto examplePatch() -> AtlasParameters {
 auto exampleCamera() -> CameraParameters {
   return {
       Vec2i{3000, 2000},           // size
-      Vec3f{1.f, -2.f, 3.f},       // position
-      Vec3f{3.f, 4.f, 5.f},        // rotation
+      Vec3f{1.F, -2.F, 3.F},       // position
+      Vec3f{3.F, 4.F, 5.F},        // rotation
       ProjectionType::Perspective, // type
-      Vec2f{-90.f, 70.f},          // erpPhiRange
-      Vec2f{-60.f, 80.f},          // erpThetaRange
+      Vec2f{-90.F, 70.F},          // erpPhiRange
+      Vec2f{-60.F, 80.F},          // erpThetaRange
       CubicMapType{},              // cubicMapType
       Vec2f{},                     // perspectiveFocal
       Vec2f{},                     // perspectiveCenter
-      Vec2f{1.f, 100.f}            // depthRange
+      Vec2f{1.F, 100.F}            // depthRange
   };
 }
 

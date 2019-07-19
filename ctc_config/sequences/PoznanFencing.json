@@ -3,7 +3,7 @@
     "Frames_number": 1, 
     "cameras": [
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v00", 
             "Depth_range": [
                 3.5, 
@@ -39,7 +39,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v01", 
             "Depth_range": [
                 3.5, 
@@ -75,7 +75,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v02", 
             "Depth_range": [
                 3.5, 
@@ -111,7 +111,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v03", 
             "Depth_range": [
                 3.5, 
@@ -147,7 +147,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v04", 
             "Depth_range": [
                 3.5, 
@@ -183,7 +183,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v05", 
             "Depth_range": [
                 3.5, 
@@ -219,7 +219,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v06", 
             "Depth_range": [
                 3.5, 
@@ -255,7 +255,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v07", 
             "Depth_range": [
                 3.5, 
@@ -291,7 +291,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v08", 
             "Depth_range": [
                 3.5, 
@@ -327,7 +327,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v09", 
             "Depth_range": [
                 3.5, 

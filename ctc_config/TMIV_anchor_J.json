@@ -1,6 +1,6 @@
 {
     "startFrame": 0,
-    "numberOfFrames": 90,
+    "numberOfFrames": 97,
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p.yuv",
     "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p.yuv",

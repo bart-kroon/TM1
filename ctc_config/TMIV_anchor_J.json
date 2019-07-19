@@ -2,7 +2,7 @@
     "startFrame": 0,
     "numberOfFrames": 97,
     "intraPeriod": 32,
-    "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p.yuv",
+    "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p.yuv",
     "SourceDepthBitDepth": 8,
     "SourceCameraParameters": "OrangeKitchen.json",

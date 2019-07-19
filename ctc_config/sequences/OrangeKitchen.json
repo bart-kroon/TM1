@@ -3,7 +3,7 @@
     "Frames_number": 1, 
     "cameras": [
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v20", 
             "Depth_range": [
                 2.24, 
@@ -39,7 +39,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v15", 
             "Depth_range": [
                 2.24, 
@@ -75,7 +75,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v10", 
             "Depth_range": [
                 2.24, 
@@ -111,7 +111,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v05", 
             "Depth_range": [
                 2.24, 
@@ -147,7 +147,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v00", 
             "Depth_range": [
                 2.24, 
@@ -183,7 +183,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v21", 
             "Depth_range": [
                 2.24, 
@@ -219,7 +219,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v16", 
             "Depth_range": [
                 2.24, 
@@ -255,7 +255,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v11", 
             "Depth_range": [
                 2.24, 
@@ -291,7 +291,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v06", 
             "Depth_range": [
                 2.24, 
@@ -327,7 +327,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v01", 
             "Depth_range": [
                 2.24, 
@@ -363,7 +363,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v22", 
             "Depth_range": [
                 2.24, 
@@ -399,7 +399,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v17", 
             "Depth_range": [
                 2.24, 
@@ -435,7 +435,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v12", 
             "Depth_range": [
                 2.24, 
@@ -471,7 +471,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v07", 
             "Depth_range": [
                 2.24, 
@@ -507,7 +507,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v02", 
             "Depth_range": [
                 2.24, 
@@ -543,7 +543,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v23", 
             "Depth_range": [
                 2.24, 
@@ -579,7 +579,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v18", 
             "Depth_range": [
                 2.24, 
@@ -615,7 +615,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v13", 
             "Depth_range": [
                 2.24, 
@@ -651,7 +651,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v08", 
             "Depth_range": [
                 2.24, 
@@ -687,7 +687,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v03", 
             "Depth_range": [
                 2.24, 
@@ -723,7 +723,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v24", 
             "Depth_range": [
                 2.24, 
@@ -759,7 +759,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v19", 
             "Depth_range": [
                 2.24, 
@@ -795,7 +795,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v14", 
             "Depth_range": [
                 2.24, 
@@ -831,7 +831,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v09", 
             "Depth_range": [
                 2.24, 
@@ -867,7 +867,7 @@
             ]
         }, 
         {
-            "BitDepthColor": 8, 
+            "BitDepthColor": 10, 
             "Name": "v04", 
             "Depth_range": [
                 2.24, 

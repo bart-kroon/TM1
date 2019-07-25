@@ -42,6 +42,10 @@ using namespace std;
 using namespace std::string_literals;
 
 namespace TMIV::Common {
+const auto configFileOption = "-c"s;
+const auto parameterOption = "-p"s;
+const auto helpOption = "--help"s;
+
 Application::Application(const char *tool, vector<const char *> argv) {
   auto take = [&argv]() {
     if (argv.empty()) {
@@ -56,13 +60,13 @@ Application::Application(const char *tool, vector<const char *> argv) {
 
   while (!argv.empty()) {
     auto option = take();
-    if ("-c"s == option) {
+    if (configFileOption == option) {
       add_file(take());
-    } else if ("-p"s == option) {
+    } else if (parameterOption == option) {
       auto arg1 = take();
       auto arg2 = take();
       add_parameter(arg1, arg2);
-    } else if ("--help"s == option) {
+    } else if (helpOption == option) {
       m_json.reset();
       break;
     } else {
@@ -114,7 +118,7 @@ void Application::add_parameter(const string &key, string value) {
 void Application::add_stream(istream &stream) {
   auto root = Json{stream};
   if (m_json) {
-    m_json->setOverrides(move(root));
+    m_json->setOverrides(root);
   } else {
     m_json = make_shared<Json>(move(root));
   }

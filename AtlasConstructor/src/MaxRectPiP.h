@@ -62,8 +62,10 @@ public:
 private:
   class Rectangle {
   protected:
-    int m_x0 = 0, m_y0 = 0;
-    int m_x1 = 0, m_y1 = 0;
+    int m_x0 = 0;
+    int m_y0 = 0;
+    int m_x1 = 0;
+    int m_y1 = 0;
 
   public:
     Rectangle() = default;

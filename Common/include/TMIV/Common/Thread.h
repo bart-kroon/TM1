@@ -50,7 +50,7 @@ inline void parallel_for(std::size_t nbIter,
   std::size_t chunkSize = nbIter / std::thread::hardware_concurrency();
   std::vector<std::future<void>> threadList;
 
-  for (size_t id = 0u; id < nbIter; id += chunkSize) {
+  for (size_t id = 0; id < nbIter; id += chunkSize) {
     threadList.push_back(
         std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
   }

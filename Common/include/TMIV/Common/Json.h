@@ -59,7 +59,7 @@ public:
 
   // For a Json of type Object specify another Json of Type Object that
   // overrides this one for all keys
-  void setOverrides(Json overrides);
+  void setOverrides(const Json &overrides);
 
   Type type() const;
   Json optional(std::string const &key) const;

@@ -166,10 +166,12 @@ decltype(T(0) * U(0) * V(0)) triple(const Vec3<T> &a, const Vec3<U> &b,
 //! parameters
 template <typename T, typename U, typename V>
 double solid(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
+  using std::abs;
+  using std::atan;
   double na = norm(a), nb = norm(b), nc = norm(c);
   double out =
-      2. * atan(std::abs(triple(a, b, c)) / (na * nb * nc + na * dot(b, c) +
-                                             nb * dot(a, c) + nc * dot(a, b)));
+      2. * atan(abs(triple(a, b, c)) / (na * nb * nc + na * dot(b, c) +
+                                        nb * dot(a, c) + nc * dot(a, b)));
 
   if (out < 0.) {
     return (out + M_PI);
@@ -207,11 +209,9 @@ template <typename Iterator1, typename Iterator2,
               std::is_floating_point<typename Iterator1::value_type>::value &&
                   std::is_floating_point<typename Iterator2::value_type>::value,
               int>::type = 0>
-decltype((typename Iterator1::value_type)(0) *
-         (typename Iterator2::value_type)(0))
-dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
-  return std::inner_product(first1, last1, first2,
-                            (typename Iterator1::value_type)(0));
+auto dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
+  using value_type = typename Iterator1::value_type;
+  return std::inner_product(first1, last1, first2, value_type());
 }
 
 template <
@@ -220,9 +220,7 @@ template <
         !std::is_floating_point<typename Iterator1::value_type>::value &&
             !std::is_floating_point<typename Iterator2::value_type>::value,
         int>::type = 0>
-decltype((typename Iterator1::value_type)(0) *
-         (typename Iterator2::value_type)(0))
-dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
+auto dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
   using T1 = typename Iterator1::value_type;
   using T2 = typename Iterator2::value_type;
 
@@ -232,32 +230,29 @@ dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
       [](const T1 &v1, const T2 &v2) { return (v1 * std::conj(v2)); });
 }
 
-template <typename V1, typename V2>
-decltype((typename V1::value_type)(0) * (typename V2::value_type)(0))
-dot(const V1 &v1, const V2 &v2) {
+template <typename V1, typename V2> auto dot(const V1 &v1, const V2 &v2) {
   return dot_product(v1.begin(), v1.end(), v2.begin());
 }
 
 //! \brief Returns ||v||**2.
-template <typename V>
-decltype(std::abs(typename V::value_type(0))) norm2(const V &v) {
-  return std::abs(dot(v, v));
+template <typename V> auto norm2(const V &v) {
+  using std::abs;
+  return abs(dot(v, v));
 }
 //! \brief Returns ||v||.
-template <typename V>
-decltype(std::abs(typename V::value_type(0))) norm(const V &v) {
+template <typename V> auto norm(const V &v) {
+  using std::sqrt;
   return sqrt(norm2(v));
 }
 //! \brief Returns ||v||inf.
-template <typename V>
-decltype(std::abs(typename V::value_type(0))) norm_inf(const V &v) {
-  return std::abs(*std::max_element(v.begin(), v.end(), [](auto v1, auto v2) {
-    return std::abs(v1) < std::abs(v2);
-  }));
+template <typename V> auto norm_inf(const V &v) {
+  using std::abs;
+  return abs(*std::max_element(
+      v.begin(), v.end(), [](auto v1, auto v2) { return abs(v1) < abs(v2); }));
 }
 //! \brief Returns v / ||v|| and optionally ||v||.
-template <typename V,
-          typename U = decltype(std::abs(typename V::value_type(0)))>
+template <typename V, typename U = decltype(
+                          std::abs(std::declval<typename V::value_type>()))>
 V unit(const V &v, U *n = nullptr) {
   U m = norm(v);
   if (n) {
@@ -266,8 +261,8 @@ V unit(const V &v, U *n = nullptr) {
   return v / m;
 }
 //! \brief Normalizes v and optionally returns ||v||.
-template <typename V,
-          typename U = decltype(std::abs(typename V::value_type(0)))>
+template <typename V, typename U = decltype(
+                          std::abs(std::declval<typename V::value_type>()))>
 V &normalize(V &v, U *n = nullptr) {
   U m = norm(v);
   if (n) {
@@ -290,7 +285,9 @@ cosAngle(const V1 &v1, const V2 &v2) {
 //! \brief Returns the angle between the two vectors given as
 //! arguments.
 template <typename V1, typename V2> auto angle(const V1 &v1, const V2 &v2) {
-  return std::acos(std::min(1.f, cosAngle(v1, v2)));
+  using std::acos;
+  using std::min;
+  return acos(min(1.F, cosAngle(v1, v2)));
 }
 
 } // namespace TMIV::Common

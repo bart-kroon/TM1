@@ -53,12 +53,12 @@ namespace {
 string getFullPath(const Json &config, const string &baseDirectoryField,
                    const string &fileNameField, size_t cameraId = 0,
                    const std::string &cameraName = "") {
-  string baseDirectory,
-      fileName = cameraName.empty()
-                     ? format(config.require(fileNameField).asString().c_str(),
-                              cameraId)
-                     : format(config.require(fileNameField).asString().c_str(),
-                              cameraName.c_str());
+  string baseDirectory;
+  string fileName =
+      cameraName.empty()
+          ? format(config.require(fileNameField).asString().c_str(), cameraId)
+          : format(config.require(fileNameField).asString().c_str(),
+                   cameraName.c_str());
 
   if (!fileName.empty() && fileName.front() == '/') {
     return fileName;
@@ -124,7 +124,7 @@ loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());
 
-  for (size_t i = 0u; i < sizes.size(); ++i) {
+  for (size_t i = 0; i < sizes.size(); ++i) {
     result.emplace_back(
         readFrame<YUV420P10>(
             getFullPath(config, directory, texturePathFmt, i,
@@ -146,7 +146,7 @@ void saveMVDFrame(const Json &config, int frameIndex,
                   const char *depthPathFmt) {
   cout << "Saving " << what << " frame " << frameIndex << endl;
 
-  for (size_t i = 0u; i < frame.size(); ++i) {
+  for (size_t i = 0; i < frame.size(); ++i) {
     writeFrame(getFullPath(config, directory, texturePathFmt, i),
                frame[i].first, frameIndex);
     writeFrame(getFullPath(config, directory, depthPathFmt, i), frame[i].second,
@@ -156,6 +156,7 @@ void saveMVDFrame(const Json &config, int frameIndex,
 
 CameraParameters readCameraFromFile(istream &is) {
   CameraParameters camera;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&camera), sizeof(camera));
   return camera;
 }
@@ -164,6 +165,7 @@ CameraParametersList readCameraListFromFile(istream &is) {
   uint16_t nbCamera = 0;
   CameraParametersList list;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
   for (auto i = 0; i < nbCamera; i++) {
@@ -175,18 +177,21 @@ CameraParametersList readCameraListFromFile(istream &is) {
 
 void skipCameraListFromFile(istream &is) {
   uint16_t nbCamera = 0;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
   is.seekg(nbCamera * sizeof(CameraParameters), ios::cur);
 }
 
 void writeCameraToFile(ofstream &os, const CameraParameters &camera) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(&camera), sizeof(camera));
 }
 
 void writeCameraListToFile(ofstream &os, const CameraParametersList &list) {
   auto nbCamera = uint16_t(list.size());
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<char *>(&nbCamera), sizeof(uint16_t));
 
   for (const auto &camera : list) {
@@ -198,9 +203,11 @@ vector<Vec2i> readAtlasSizeFromFile(ifstream &is) {
   uint8_t nbAtlas = 0;
   vector<Vec2i> result;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbAtlas), sizeof(uint8_t));
 
   result.resize(nbAtlas);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(result.data()), nbAtlas * sizeof(Vec2i));
 
   return result;
@@ -209,6 +216,7 @@ vector<Vec2i> readAtlasSizeFromFile(ifstream &is) {
 void skipAtlasSizeFromFile(ifstream &is) {
   uint8_t nbAtlas = 0;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbAtlas), sizeof(uint8_t));
 
   is.seekg(nbAtlas * sizeof(Vec2i), ios::cur);
@@ -217,8 +225,10 @@ void skipAtlasSizeFromFile(ifstream &is) {
 void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
   auto nbAtlas = uint8_t(atlasSize.size());
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(&nbAtlas), sizeof(uint8_t));
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(atlasSize.data()),
            nbAtlas * sizeof(Vec2i));
 }
@@ -226,7 +236,7 @@ void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
 bool readFlagFromFile(ifstream &is) {
   char flag{};
   is.read(&flag, 1);
-  return !!flag;
+  return flag != 0;
 }
 
 void skipFlagFromFile(ifstream &is) { is.seekg(1, ios::cur); }
@@ -238,6 +248,7 @@ void writeFlagToFile(ofstream &os, bool flag) {
 
 AtlasParameters readPatchFromFile(ifstream &is) {
   AtlasParameters patch;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&patch), sizeof(patch));
   return patch;
 }
@@ -246,6 +257,7 @@ AtlasParametersList readPatchListFromFile(ifstream &is) {
   uint16_t nbPatch = 0;
   AtlasParametersList list;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
   for (auto i = 0; i < nbPatch; i++) {
@@ -258,18 +270,21 @@ AtlasParametersList readPatchListFromFile(ifstream &is) {
 void skipPatchListFromFile(istream &is) {
   uint16_t nbPatch = 0;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   is.read(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
   is.seekg(nbPatch * sizeof(AtlasParameters), ios::cur);
 }
 
 void writePatchToFile(ofstream &os, const AtlasParameters &patch) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<const char *>(&patch), sizeof(patch));
 }
 
 void writePatchListToFile(ofstream &os, const AtlasParametersList &list) {
   auto nbPatch = uint16_t(list.size());
 
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   os.write(reinterpret_cast<char *>(&nbPatch), sizeof(uint16_t));
 
   for (const auto &patch : list) {
@@ -292,6 +307,7 @@ T readMetadataFromFile(const string &path, int frameIndex,
 
   while (true) {
     uint32_t frameId = 0;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     stream.read(reinterpret_cast<char *>(&frameId), sizeof(uint32_t));
 
     if (!stream.good()) {
@@ -322,6 +338,7 @@ void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
 
   // Frame index
   uint32_t frameId = frameIndex;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   stream.write(reinterpret_cast<const char *>(&frameId), sizeof(uint32_t));
 
   if (!stream.good()) {
@@ -401,7 +418,7 @@ CameraParametersList loadSourceMetadata(const Json &config) {
       loadCamerasFromJson(Json{stream}.require("cameras"),
                           config.require("SourceCameraNames").asStringVector());
 
-  for (size_t i = 0u; i < cameras.size(); ++i) {
+  for (size_t i = 0; i < cameras.size(); ++i) {
     cout << "Camera " << setw(2) << i << ": " << cameras[i] << '\n';
   }
 
@@ -427,11 +444,11 @@ MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
   const auto bits = config.require("SourceDepthBitDepth").asInt();
   if (0 < bits && bits <= 8) {
     return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
-  } else if (8 < bits && bits <= 16) {
-    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
-  } else {
-    throw runtime_error("Invalid SourceDepthBitDepth");
   }
+  if (8 < bits && bits <= 16) {
+    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
+  }
+  throw runtime_error("Invalid SourceDepthBitDepth");
 }
 
 BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,
@@ -576,7 +593,7 @@ PatchIdMapList loadPatchIdMaps(const Json &config,
 
   PatchIdMapList result;
 
-  for (auto id = 0u; id < atlasSize.size(); id++) {
+  for (size_t id = 0; id < atlasSize.size(); ++id) {
     string texturePath =
         getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
     auto textureFrame =
@@ -592,7 +609,7 @@ void savePatchIdMaps(const Json &config, int frameIndex,
                      const PatchIdMapList &maps) {
   cout << "Saving patchIdMap frame " << frameIndex << '\n';
 
-  for (auto id = 0u; id < maps.size(); id++) {
+  for (size_t id = 0; id < maps.size(); ++id) {
     string texturePath =
         getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
     writeFrame(texturePath, maps[id], frameIndex);

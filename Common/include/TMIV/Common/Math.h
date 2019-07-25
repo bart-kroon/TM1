@@ -66,7 +66,8 @@ template <typename T> bool inRange(T val, T min, T max) {
   return ((min <= val) && (val <= max));
 }
 template <typename T> T is_zero(T val) {
-  return (std::abs(val) < std::numeric_limits<T>::epsilon());
+  using std::abs;
+  return (abs(val) < std::numeric_limits<T>::epsilon());
 }
 inline double squash(double a) {
   while (M_PI < a) {
@@ -80,10 +81,10 @@ inline double squash(double a) {
 inline int ipow(int base, int exp) {
   int result = 1;
   for (;;) {
-    if ((exp & 1) != 0) {
+    if ((exp % 2) != 0) {
       result *= base;
     }
-    exp >>= 1;
+    exp /= 2;
     if (exp == 0) {
       break;
     }
@@ -93,10 +94,16 @@ inline int ipow(int base, int exp) {
 }
 
 inline int gcd(int a, int b) { return (b == 0) ? a : gcd(b, a % b); }
-inline int lcm(int a, int b) { return std::abs(a * b) / gcd(a, b); }
+inline int lcm(int a, int b) {
+  using std::abs;
+  return abs(a * b) / gcd(a, b);
+}
 
 inline double ppd2pps(double ppd) { return sqr(180. * ppd / M_PI); }
-inline double pps2ppd(double pps) { return sqrt(pps) * M_PI / 180.; }
+inline double pps2ppd(double pps) {
+  using std::sqrt;
+  return sqrt(pps) * M_PI / 180.;
+}
 
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value ||

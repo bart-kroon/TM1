@@ -33,12 +33,18 @@
 
 #include <TMIV/Renderer/Inpainter.h>
 
+#include <cmath>
+
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 namespace {
+const auto depthBlendingThreshold8 = 2.56;    // 1% of bit depth
+const auto depthBlendingThreshold10 = 10.24;  // 1% of bit depth
+const auto depthBlendingThreshold16 = 655.36; // 1% of bit depth
+
 template <typename YUVD>
 void perform2WayInpainting(
     YUVD &yuvd, const double &DepthBlendingThreshold,
@@ -65,7 +71,12 @@ void perform2WayInpainting(
       bool use1 = false;
       bool use2 = false;
 
-      int w0, h0, w1, h1, w2, h2;
+      int w0;
+      int h0;
+      int w1;
+      int h1;
+      int w2;
+      int h2;
 
       if (inpaintingType == 2) { // omnidirectional
         bool pointExistsInCassini = mapERP2Cassini(h, w) != -1;
@@ -221,38 +232,31 @@ void inpaintOmnidirectionalView(YUVD &yuvd,
 
   int width2 = width / 2;
   int height2 = height / 2;
-  double tmpH, tmpW;
-
-  int oldPP, oldH, oldW;
-  int newPP;
-  double newH, newW;
-  int iNewH, iNewW;
-
   for (int h = 0; h < height; h++) {
-    oldH = h - height2;
+    auto oldH = h - height2;
     for (int w = 0; w < width; w++) {
-      oldPP = h * width + w;
+      auto oldPP = h * width + w;
 
-      oldW = w - width2;
-      tmpH = sqrt(height * h - h * h);
+      auto oldW = w - width2;
+      auto tmpH = sqrt(height * h - h * h);
       if (tmpH / height2 > angleRange) {
         tmpH = height2 * angleRange;
       }
-      newW = oldW * tmpH / height2;
+      auto newW = oldW * tmpH / height2;
       newW += width2;
 
-      tmpW = sqrt(width * newW - newW * newW);
-      newH = oldH * width2 / tmpW;
+      auto tmpW = sqrt(width * newW - newW * newW);
+      auto newH = oldH * width2 / tmpW;
       newH += height2;
 
-      iNewH = int(newH + 0.5);
-      iNewW = int(newW + 0.5);
+      auto iNewH = lround(newH);
+      auto iNewW = lround(newW);
 
       if (iNewH < 0 || iNewH >= height) {
         continue;
       }
 
-      newPP = iNewH * width + iNewW;
+      auto newPP = iNewH * width + iNewW;
 
       mapERP2Cassini(h, w) = newPP;
       if (isHole(iNewH, iNewW) == 1) {
@@ -412,13 +416,12 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
   static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
                 std::is_same_v<YUVD, Texture444Depth16Frame>);
 
-  double DepthBlendingThreshold = 2.56; // 1% of bit depth
-
+  double DepthBlendingThreshold = depthBlendingThreshold8;
   if (std::is_same_v<YUVD, Texture444Depth10Frame>) {
-    DepthBlendingThreshold = 1024.0 / 100;
+    DepthBlendingThreshold = depthBlendingThreshold10;
   }
   if (std::is_same_v<YUVD, Texture444Depth16Frame>) {
-    DepthBlendingThreshold = 65536.0 / 100;
+    DepthBlendingThreshold = depthBlendingThreshold16;
   }
 
   fillVerticalCracks(yuvd);

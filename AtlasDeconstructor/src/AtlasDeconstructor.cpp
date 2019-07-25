@@ -40,6 +40,7 @@ using namespace TMIV::Common;
 using namespace TMIV::Image;
 
 namespace TMIV::AtlasDeconstructor {
+constexpr auto neutralChroma = uint16_t(512);
 
 AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
                                        const Common::Json & /*componentNode*/) {
@@ -57,7 +58,7 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
     patchMapList.push_back(std::move(patchMap));
   }
 
-  for (auto id = 0u; id < patchList.size(); id++) {
+  for (size_t id = 0; id < patchList.size(); ++id) {
     writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id));
   }
 
@@ -70,10 +71,13 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   auto &patchMap = patchMapList[patch.atlasId];
 
   const Vec2i &q0 = patch.posInAtlas;
-  int w = patch.patchSize.x(), h = patch.patchSize.y();
-  bool isRotated = (patch.rotation != Metadata::PatchRotation::upright);
-  int xMin = q0.x(), xLast = q0.x() + (isRotated ? h : w);
-  int yMin = q0.y(), yLast = q0.y() + (isRotated ? w : h);
+  int w = patch.patchSize.x();
+  int h = patch.patchSize.y();
+  bool isRotated = patch.rotation != Metadata::PatchRotation::upright;
+  int xMin = q0.x();
+  int xLast = q0.x() + (isRotated ? h : w);
+  int yMin = q0.y();
+  int yLast = q0.y() + (isRotated ? w : h);
 
   for (auto y = yMin; y < yLast; y++) {
     std::fill(patchMap.getPlane(0).row_begin(y) + xMin,
@@ -92,8 +96,8 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     TextureFrame tex(cam.size.x(), cam.size.y());
 
     std::fill(tex.getPlane(0).begin(), tex.getPlane(0).end(), 0);
-    std::fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), 512);
-    std::fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), 512);
+    std::fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), neutralChroma);
+    std::fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), neutralChroma);
 
     Depth10Frame depth(cam.size.x(), cam.size.y());
 
@@ -117,9 +121,12 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     auto &textureViewMap = currentView.first;
     auto &depthViewMap = currentView.second;
 
-    int w = patch.patchSize.x(), h = patch.patchSize.y();
-    int xM = patch.posInView.x(), yM = patch.posInView.y();
-    int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
+    int w = patch.patchSize.x();
+    int h = patch.patchSize.y();
+    int xM = patch.posInView.x();
+    int yM = patch.posInView.y();
+    int xP = patch.posInAtlas.x();
+    int yP = patch.posInAtlas.y();
     int w_tex = ((xM + w) <= textureViewMap.getWidth())
                     ? w
                     : (textureViewMap.getWidth() - xM);
@@ -150,7 +157,7 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                           xP / 2,
                       textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) +
                           ((xP + w) / 2),
-                      512);
+                      neutralChroma);
           }
         }
 
@@ -198,7 +205,7 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                       std::make_reverse_iterator(
                           textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
                           yP / 2),
-                      512);
+                      neutralChroma);
           }
         }
 

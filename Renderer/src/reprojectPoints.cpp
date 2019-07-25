@@ -41,12 +41,14 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
+constexpr auto halfPixel = 0.5F;
+
 auto imagePositions(const CameraParameters &camera) -> Mat<Vec2f> {
   Mat<Vec2f> result;
   result.resize(camera.size.y(), camera.size.x());
   for (unsigned i = 0; i != result.height(); ++i) {
     for (unsigned j = 0; j != result.width(); ++j) {
-      result(i, j) = {float(j) + 0.5f, float(i) + 0.5f};
+      result(i, j) = {float(j) + halfPixel, float(i) + halfPixel};
     }
   }
   return result;
@@ -115,17 +117,8 @@ auto projectPoints(const Mat<Vec3f> &points, const Engine<TYPE> &engine)
   Mat<Vec2f> positions{points.sizes()};
   Mat<float> depth{points.sizes()};
 
-  //   auto i_positions = begin(positions);
-  //   auto i_depth = begin(depth);
-  //
-  //   for (auto point : points) {
-  //     ImageVertexDescriptor v = engine.projectVertex({point, 0.f});
-  //     *i_positions++ = v.position;
-  //     *i_depth++ = v.depth;
-  //   }
-
   parallel_for(points.size(), [&](std::size_t id) {
-    ImageVertexDescriptor v = engine.projectVertex({points[id], 0.f});
+    ImageVertexDescriptor v = engine.projectVertex({points[id], 0.F});
     positions[id] = v.position;
     depth[id] = v.depth;
   });

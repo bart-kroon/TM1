@@ -39,15 +39,15 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 Mat3x3f rotationMatrixFromRotationAroundX(float rx) {
-  return Mat3x3f{1.f, 0.f, 0.f, 0.f, cos(rx), -sin(rx), 0.f, sin(rx), cos(rx)};
+  return Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
 }
 
 Mat3x3f rotationMatrixFromRotationAroundY(float ry) {
-  return Mat3x3f{cos(ry), 0.f, sin(ry), 0.f, 1.f, 0.f, -sin(ry), 0.f, cos(ry)};
+  return Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
 }
 
 Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
-  return Mat3x3f{cos(rz), -sin(rz), 0.f, sin(rz), cos(rz), 0.f, 0.f, 0.f, 1.f};
+  return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
 }
 
 Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {

@@ -50,30 +50,30 @@ template <typename... T>
 struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAccumulator() = default;
   PixelAccumulator(const PixelAccumulator &) = default;
-  PixelAccumulator(PixelAccumulator &&) = default;
+  PixelAccumulator(PixelAccumulator &&) noexcept = default;
   PixelAccumulator &operator=(const PixelAccumulator &) = default;
-  PixelAccumulator &operator=(PixelAccumulator &&) = default;
+  PixelAccumulator &operator=(PixelAccumulator &&) noexcept = default;
   ~PixelAccumulator() = default;
 
   PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_,
                    float normDisp_, float stretching_)
       : PixelAttributes<T...>{attributes},
         normWeight{normWeight_}, normDisp{normDisp_}, stretching{stretching_} {
-    assert(normWeight_ >= 0.f);
-    assert(normDisp_ >= 0.f);
-    assert(stretching_ > 0.f);
+    assert(normWeight_ >= 0.F);
+    assert(normDisp_ >= 0.F);
+    assert(stretching_ > 0.F);
   }
 
   // weight is implicit as normWeight *
   // AccumulatingPixel<T...>::normDispWeight(normDisp) but never directly
   // calculated to avoid numerical instability.
-  float normWeight{0.f};
+  float normWeight{0.F};
 
   // Normalized disparity in diopters
-  float normDisp{0.f};
+  float normDisp{0.F};
 
   // Stretching as a ratio of areas
-  float stretching{0.f};
+  float stretching{0.F};
 
   // Access the attributes
   const PixelAttributes<T...> &attributes() const { return *this; }
@@ -82,7 +82,7 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAttributes<T...> &attributes() { return *this; }
 
   // Depth in meters
-  constexpr float depth() const { return 1.f / normDisp; }
+  constexpr float depth() const { return 1.F / normDisp; }
 };
 
 // The result of the blending process for a single pixel
@@ -91,27 +91,28 @@ struct PixelAccumulator : private PixelAttributes<T...> {
 template <typename... T> struct PixelValue : private PixelAttributes<T...> {
   PixelValue() = default;
   PixelValue(const PixelValue &) = default;
-  PixelValue(PixelValue &&) = default;
+  PixelValue(PixelValue &&) noexcept = default;
   PixelValue &operator=(const PixelValue &) = default;
-  PixelValue &operator=(PixelValue &&) = default;
+  PixelValue &operator=(PixelValue &&) noexcept = default;
+  ~PixelValue() = default;
 
   PixelValue(PixelAttributes<T...> attributes, float normDisp_,
              float normWeight_, float stretching_)
       : PixelAttributes<T...>{attributes}, normDisp{normDisp_},
         normWeight{normWeight_}, stretching{stretching_} {
-    assert(normDisp_ >= 0.f);
-    assert(normWeight_ >= 0.f);
-    assert(stretching_ >= 0.f);
+    assert(normDisp_ >= 0.F);
+    assert(normWeight_ >= 0.F);
+    assert(stretching_ >= 0.F);
   }
 
   // Normalized disparity in diopters
-  float normDisp{0.f};
+  float normDisp{0.F};
 
   // The normalized weight serves as a quality indication
-  float normWeight{0.f};
+  float normWeight{0.F};
 
   // Amount of stretching as a ratio of area (another quality indication)
-  float stretching{0.f};
+  float stretching{0.F};
 
   // Access the attributes
   const PixelAttributes<T...> &attributes() const { return *this; }
@@ -120,7 +121,7 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
   PixelAttributes<T...> &attributes() { return *this; }
 
   // Depth in meters
-  constexpr float depth() const { return 1.f / normDisp; }
+  constexpr float depth() const { return 1.F / normDisp; }
 };
 
 // Pixel blending operations
@@ -144,7 +145,7 @@ public:
   // Construct a pixel accumulator from a single synthesized pixel
   auto construct(Attributes attributes, float normDisp, float rayAngle,
                  float stretching) const -> Accumulator {
-    assert(normDisp >= 0.f);
+    assert(normDisp >= 0.F);
     return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching),
             normDisp, stretching};
   }
@@ -166,10 +167,10 @@ public:
   // Blend two pixels
   auto blend(const Accumulator &a, const Accumulator &b) const -> Accumulator {
     // Trivial blends occur often for atlases
-    if (!(a.normWeight > 0.f)) {
+    if (!(a.normWeight > 0.F)) {
       return b;
     }
-    if (!(b.normWeight > 0.f)) {
+    if (!(b.normWeight > 0.F)) {
       return a;
     }
 
@@ -180,27 +181,27 @@ public:
           a.normWeight /
           (a.normWeight +
            b.normWeight * normDispWeight(b.normDisp - a.normDisp));
-      assert(w_a >= 0.f);
-      const float w_b = 1.f - w_a;
+      assert(w_a >= 0.F);
+      const float w_b = 1.F - w_a;
 
       // Optimization: No alpha blending when w_b is almost zero
-      if (w_b < 0.01f) {
+      if (w_b < 0.01F) {
         return a;
       }
 
       // Full alpha blend
       return blendAccumulators(w_a, a, w_b, b);
-    } else {
+    } else { // NOLINT(readability-else-after-return)
       // b is in front of a
       const float w_b =
           b.normWeight /
           (b.normWeight +
            a.normWeight * normDispWeight(a.normDisp - b.normDisp));
-      assert(w_b >= 0.f);
-      const float w_a = 1.f - w_b;
+      assert(w_b >= 0.F);
+      const float w_a = 1.F - w_b;
 
       // Optimization: No alpha blending when w_a is almost zero
-      if (w_a < 0.01f) {
+      if (w_a < 0.01F) {
         return b;
       }
 
@@ -211,10 +212,10 @@ public:
 
   // Average a pixel
   Value average(Accumulator const &x) const {
-    if (x.normWeight > 0.f && x.stretching < maxStretching) {
+    if (x.normWeight > 0.F && x.stretching < maxStretching) {
       return {x.attributes(), x.normDisp, x.normWeight, x.stretching};
     }
-    return {Attributes{}, 0.f, 0.f, 0.f};
+    return {Attributes{}, 0.F, 0.F, 0.F};
   }
 
   // Calculate the weight of a pixel based on cosine of the ray

@@ -39,21 +39,10 @@ namespace TMIV::AtlasConstructor {
 
 Packer::Packer(const Common::Json & /*rootNode*/,
                const Common::Json &componentNode) {
-  if (auto subnode = componentNode.optional("Alignment")) {
-    m_alignment = subnode.asInt();
-  }
-
-  if (auto subnode = componentNode.optional("MinPatchSize")) {
-    m_minPatchSize = subnode.asInt();
-  }
-
-  if (auto subnode = componentNode.optional("Overlap")) {
-    m_overlap = subnode.asInt();
-  }
-
-  if (auto subnode = componentNode.optional("PiP")) {
-    m_pip = (subnode.asInt() != 0);
-  }
+  m_alignment = componentNode.require("Alignment").asInt();
+  m_minPatchSize = componentNode.require("MinPatchSize").asInt();
+  m_overlap = componentNode.require("Overlap").asInt();
+  m_pip = componentNode.require("PiP").asInt() != 0;
 }
 
 Metadata::AtlasParametersList
@@ -64,10 +53,10 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   ClusterList clusterList;
   ClusteringMapList clusteringMap;
 
-  for (auto cameraId = 0u; cameraId < masks.size(); cameraId++) {
+  for (auto cameraId = 0; cameraId < int(masks.size()); cameraId++) {
     auto clusteringOutput = Cluster::retrieve(
         cameraId, masks[cameraId], static_cast<int>(clusterList.size()),
-        shouldNotBeSplit[cameraId] != 0u);
+        shouldNotBeSplit[cameraId] != 0U);
 
     std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
               std::back_inserter(clusterList));
@@ -87,7 +76,7 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
   auto comp = [&](const Cluster &p1, const Cluster &p2) {
     if (shouldNotBeSplit[p1.getCameraId()] !=
         shouldNotBeSplit[p2.getCameraId()]) {
-      return (shouldNotBeSplit[p2.getCameraId()] != 0u);
+      return (shouldNotBeSplit[p2.getCameraId()] != 0U);
     }
     { return (p1.getArea() < p2.getArea()); }
   };
@@ -106,7 +95,7 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
     if (m_minPatchSize <= cluster.getMinSize()) {
       bool packed = false;
 
-      for (auto atlasId = 0u; atlasId < packerList.size(); atlasId++) {
+      for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
         MaxRectPiP &packer = packerList[atlasId];
 
         if (packer.push(cluster, clusteringMap[cluster.getCameraId()],

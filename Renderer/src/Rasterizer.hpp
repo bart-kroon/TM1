@@ -53,7 +53,7 @@ inline int numStrips(int rows) {
   if (maximum <= hw) {
     return maximum;
   }
-  return int(0.5 + sqrt(hw * maximum));
+  return int(std::lround(sqrt(hw * maximum)));
 }
 
 template <typename M0, typename... M>
@@ -245,7 +245,7 @@ constexpr const auto half = one / intfp{2};
 inline intfp fixed(float x) {
   using std::ldexp;
   using TMIV::Common::ifloor;
-  return static_cast<intfp>(ifloor(0.5f + ldexp(x, bits)));
+  return static_cast<intfp>(ifloor(0.5F + ldexp(x, bits)));
 }
 inline Vec2fp fixed(Common::Vec2f v) { return {fixed(v.x()), fixed(v.y())}; }
 inline intfp fixed(int x) { return static_cast<intfp>(x) << bits; }
@@ -291,18 +291,18 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
     return; // Cull
   }
   const auto area_f = ldexp(float(area), -2 * bits);
-  const auto inv_area = 1.f / float(area);
+  const auto inv_area = 1.F / float(area);
 
   // Calculate feature values for determining blending weights
-  const auto stretching = 0.5f * area_f / descriptor.area;
+  const auto stretching = 0.5F * area_f / descriptor.area;
   const auto rayAngle =
-      (1 / 3.f) * (batch.vertices[n0].rayAngle + batch.vertices[n1].rayAngle +
+      (1 / 3.F) * (batch.vertices[n0].rayAngle + batch.vertices[n1].rayAngle +
                    batch.vertices[n2].rayAngle);
 
   // Fetch normalized disparity values (diopters)
-  const auto d0 = 1.f / batch.vertices[n0].depth;
-  const auto d1 = 1.f / batch.vertices[n1].depth;
-  const auto d2 = 1.f / batch.vertices[n2].depth;
+  const auto d0 = 1.F / batch.vertices[n0].depth;
+  const auto d1 = 1.F / batch.vertices[n1].depth;
+  const auto d2 = 1.F / batch.vertices[n2].depth;
 
   // Fetch multiple attributes (e.g. color)
   const auto a0 = detail::fetchAttributes(n0, batch.attributes);
@@ -345,7 +345,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       auto p = m_pixel.construct(a, d, rayAngle, stretching);
       if (X0 == 0 || X1 == 0 || X2 == 0) {
         // Count edge points half assuming there is an adjacent triangle
-        p.normWeight *= 0.5f;
+        p.normWeight *= 0.5F;
       }
       P = m_pixel.blend(P, p);
     }

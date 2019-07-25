@@ -78,7 +78,7 @@ private:
 
 private:
   std::uint16_t m_nbAtlas = 0;
-  Vec2i m_atlasSize = {1920, 1080};
+  Vec2i m_atlasSize;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;

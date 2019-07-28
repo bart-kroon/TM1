@@ -37,6 +37,8 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
+#include <iomanip>
 
 using namespace std;
 using namespace std::string_literals;
@@ -123,4 +125,16 @@ void Application::add_stream(istream &stream) {
     m_json = make_shared<Json>(move(root));
   }
 }
+
+void Application::startTime() {
+  m_startTime = clock();
+}
+
+void Application::printTime() {
+  auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;
+  std::cout << std::endl
+            << "Total Time: " << std::fixed << std::setprecision(3)
+            << executeTime << " sec." << std::endl;
+}
+
 } // namespace TMIV::Common

@@ -98,7 +98,9 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::Decoder::registerComponents();
     TMIV::Decoder::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
   } catch (exception &e) {
     cerr << e.what() << endl;

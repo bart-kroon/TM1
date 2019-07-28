@@ -36,6 +36,7 @@
 
 #include "Factory.h"
 #include "Json.h"
+#include <ctime>
 
 namespace TMIV::Common {
 class Application {
@@ -48,7 +49,8 @@ public:
   Application &operator=(const Application &other) = delete;
   Application &operator=(Application &&other) = default;
   virtual ~Application() = default;
-
+  void startTime();
+  void printTime();
   virtual void run() = 0;
 
 protected:
@@ -82,6 +84,7 @@ private:
   }
 
   std::shared_ptr<Json> m_json;
+  clock_t m_startTime;
 };
 } // namespace TMIV::Common
 

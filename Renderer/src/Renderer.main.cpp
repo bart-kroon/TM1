@@ -87,7 +87,9 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::Renderer::registerComponents();
     TMIV::Renderer::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
   } catch (runtime_error &e) {
     cerr << e.what() << endl;

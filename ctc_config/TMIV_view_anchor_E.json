@@ -5,7 +5,7 @@
     "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p16le.yuv",
     "SourceDepthBitDepth": 16,
-    "SourceCameraParameters": "IntelKermit.json",
+    "SourceCameraParameters": "IntelFrog.json",
     "SourceCameraNames": [
         "v1",
         "v3",

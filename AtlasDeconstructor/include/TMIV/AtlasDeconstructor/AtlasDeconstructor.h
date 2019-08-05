@@ -57,6 +57,8 @@ public:
                                const CameraParametersList &cameraList,
                                const AtlasParametersList &patchList) override;
 
+  static Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch);
+
 private:
   void writePatchIdInMap(const AtlasParameters &patch,
                          PatchIdMapList &patchMapList,

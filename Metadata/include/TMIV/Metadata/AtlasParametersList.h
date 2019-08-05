@@ -45,8 +45,16 @@ using Vec2i = TMIV::Common::Vec2i;
 
 enum class PatchRotation {
   upright, // what was up stays up
-  ccw      // what was up goes left
+  ccw,     // what was up goes left, i.e. 90deg
+  ht,      // half-turn, i.e. 180deg
+  cw       // what was up goes right, i.e. 270deg
 };
+
+enum class PatchFlip {
+  none, // what was up stays up
+  vflip // what was up goes down, i.e. vertical flip
+};
+
 
 // Data type that corresponds to an entry of atlas_params of MPEG/N18464
 struct AtlasParameters {
@@ -68,10 +76,12 @@ struct AtlasParameters {
   // In MPEG/N18464: patch_rotation
   PatchRotation rotation{};
 
+  PatchFlip flip{};
+  
   bool operator==(const AtlasParameters &other) const;
 };
 
-static_assert(sizeof(AtlasParameters) == 32);
+static_assert(sizeof(AtlasParameters) == 36);
 
 // Data type that corresponds to atlas_params_list of MPEG/N18464
 using AtlasParametersList = std::vector<AtlasParameters>;

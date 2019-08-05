@@ -111,6 +111,7 @@ Packer::pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
           p.rotation = packerOutput.isRotated()
                            ? Metadata::PatchRotation::ccw
                            : Metadata::PatchRotation::upright;
+          p.flip = Metadata::PatchFlip::none;
 
           auto patchOverflow = (p.posInView + p.patchSize) -
                                masks[cluster.getCameraId()].getSize();

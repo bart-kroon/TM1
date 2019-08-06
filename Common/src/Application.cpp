@@ -35,10 +35,10 @@
 
 #include <cassert>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <iostream>
-#include <iomanip>
 
 using namespace std;
 using namespace std::string_literals;
@@ -127,9 +127,7 @@ void Application::add_stream(istream &stream) {
   }
 }
 
-void Application::startTime() {
-  m_startTime = clock();
-}
+void Application::startTime() { m_startTime = clock(); }
 
 void Application::printTime() {
   auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;

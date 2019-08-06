@@ -101,7 +101,9 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::Encoder::registerComponents();
     TMIV::Encoder::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
   } catch (std::exception &e) {
     cerr << e.what() << endl;

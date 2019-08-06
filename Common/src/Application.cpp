@@ -35,6 +35,8 @@
 
 #include <cassert>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -46,7 +48,8 @@ const auto configFileOption = "-c"s;
 const auto parameterOption = "-p"s;
 const auto helpOption = "--help"s;
 
-Application::Application(const char *tool, vector<const char *> argv) {
+Application::Application(const char *tool, vector<const char *> argv)
+    : m_startTime{} {
   auto take = [&argv]() {
     if (argv.empty()) {
       throw runtime_error("Missing a command-line argument");
@@ -123,4 +126,14 @@ void Application::add_stream(istream &stream) {
     m_json = make_shared<Json>(move(root));
   }
 }
+
+void Application::startTime() { m_startTime = clock(); }
+
+void Application::printTime() {
+  auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;
+  std::cout << std::endl
+            << "Total Time: " << std::fixed << std::setprecision(3)
+            << executeTime << " sec." << std::endl;
+}
+
 } // namespace TMIV::Common

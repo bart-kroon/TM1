@@ -48,7 +48,8 @@ const auto configFileOption = "-c"s;
 const auto parameterOption = "-p"s;
 const auto helpOption = "--help"s;
 
-Application::Application(const char *tool, vector<const char *> argv) {
+Application::Application(const char *tool, vector<const char *> argv)
+    : m_startTime{} {
   auto take = [&argv]() {
     if (argv.empty()) {
       throw runtime_error("Missing a command-line argument");

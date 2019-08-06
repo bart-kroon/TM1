@@ -1,35 +1,53 @@
 {
-    "startFrame": 135,
+    "startFrame": 0,
     "numberOfFrames": 97,
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
-    "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p16le.yuv",
-    "SourceDepthBitDepth": 16,
-    "SourceCameraParameters": "IntelFrog.json",
+    "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p.yuv",
+    "SourceDepthBitDepth": 8,
+    "SourceCameraParameters": "OrangeKitchen.json",
     "SourceCameraNames": [
-        "v1",
-        "v3",
-        "v5",
-        "v7",
-        "v9",
+        "v00",
+		"v01",
+        "v02",
+        "v03",
+        "v04",
+        "v05",
+        "v06",
+        "v07",
+        "v08",
+        "v09",
+        "v10",
         "v11",
-        "v13"
+        "v12",
+        "v13",
+		"v14",
+        "v15",
+        "v16",
+        "v17",
+        "v18",
+        "v19",
+        "v20",
+        "v21",
+        "v22",
+        "v23",
+		"v24"
     ],
-    "AtlasTexturePathFmt": "ATL_SE_R0_Tt_c%02d_1920x1080_yuv420p10le.yuv",
-    "AtlasDepthPathFmt": "ATL_SE_R0_Td_c%02d_1920x1080_yuv420p10le.yuv",
-    "AtlasMetadataPath": "ATL_SE_R0_Tm_c00.bit",
-    "OutputTexturePath": "TM1_SE_R0_Tt_%s_1920x1080_yuv420p10le.yuv",
-    "OutputCameraName": "v1",
+    "AtlasTexturePathFmt": "ATL_SJ_R0_Tt_c%02d_1920x1080_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SJ_R0_Td_c%02d_1920x1080_yuv420p10le.yuv",
+    "AtlasMetadataPath": "ATL_SJ_R0_Tm_c00.bit",
+    "OutputTexturePath": "TM1_SJ_R0_Tt_%s_1920x1080_yuv420p10le.yuv",
+    "OutputCameraName": "v01",
     "OmafV1CompatibleFlag": false,
     "EncoderMethod": "Encoder",
     "Encoder": {
-        "ViewOptimizerMethod": "NoViewOptimizer",
-        "NoViewOptimizer": {},
+        "ViewOptimizerMethod": "ViewReducer",
+        "ViewReducer": {},
         "AtlasConstructorMethod": "AtlasConstructor",
         "AtlasConstructor": {
             "PrunerMethod": "Pruner",
             "Pruner": {
-                "RedundancyFactor": 0.02,
+                "RedundancyFactor": 0.05,
                 "ErosionIter": 1,
                 "DilationIter": 5
             },
@@ -46,21 +64,15 @@
                 1920,
                 1080
             ],
-            "MPixel": 14
+            "MPixel": 20
         }
     },
     "DecoderMethod": "Decoder",
     "Decoder": {
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
         "AtlasDeconstructor": {},
-        "RendererMethod": "MultipassRenderer",
-        "MultipassRenderer": {
-            "NumberOfPasses": 3,
-            "NumberOfViewsPerPass": [
-                2,
-                4,
-                7
-            ],
+        "RendererMethod": "Renderer",
+        "Renderer": {
             "SynthesizerMethod": "Synthesizer",
             "Synthesizer": {
                 "rayAngleParameter": 20,

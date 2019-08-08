@@ -59,14 +59,12 @@ AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
   // Single atlas size
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
-  // Maximum pixel rate per frame (Texture or Depth)
-  int maxMegaPixelPerFrame = componentNode.require("MPixel").asInt();
-
-  // TODO(BK): It is more logical to round down from a maximum
-  constexpr int mega = 1000000;
-  const auto pixelsPerAtlas = m_atlasSize.x() * m_atlasSize.y();
-  m_nbAtlas = uint16_t((maxMegaPixelPerFrame * mega + pixelsPerAtlas - 1) /
-                       pixelsPerAtlas);
+  // The number of atlases is determined by the specified maximum number of luma
+  // samples per frame (texture and depth combined)
+  int maxLumaSamplesPerFrame =
+      componentNode.require("MaxLumaSamplesPerFrame").asInt();
+  const auto lumaSamplesPerAtlas = 2 * m_atlasSize.x() * m_atlasSize.y();
+  m_nbAtlas = uint16_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
 }
 
 void AtlasConstructor::prepareIntraPeriod(

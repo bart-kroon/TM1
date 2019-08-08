@@ -93,6 +93,22 @@ Common::Frame<Common::YUV400P16>
 quantizeDepth16(const Metadata::CameraParameters &camera,
                 const Common::Mat<float> &in);
 
+template <typename ToInt, typename WorkInt>
+auto compressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits,
+                        WorkInt offsetMax) -> ToInt;
+
+template <typename OutFormat, typename InFormat>
+auto compressDepthRange(
+    const Common::Frame<InFormat> &frame, unsigned offsetMax,
+    unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::Frame<OutFormat>;
+
+template <typename OutFormat, typename InFormat>
+auto compressDepthRange(
+    const Common::MVDFrame<InFormat> &frame, unsigned offsetMax,
+    unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::MVDFrame<OutFormat>;
+
 // Requantize a value
 //
 //  Both input and output types have to be unsigned integers. The input type has

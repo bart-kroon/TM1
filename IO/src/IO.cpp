@@ -429,13 +429,24 @@ namespace {
 template <typename FORMAT>
 MVD16Frame loadSourceFrame_impl(int bits, const Json &config,
                                 const vector<Vec2i> &sizes, int frameIndex) {
-  return requantize<YUV400P16>(
-      loadMVDFrame<FORMAT>(
-          config, sizes, frameIndex + config.require("startFrame").asInt(),
-          "source", "SourceDirectory", "SourceTexturePathFmt",
-          "SourceDepthPathFmt",
-          config.require("SourceCameraNames").asStringVector()),
-      bits);
+  const auto depthThreshold = config.require("depthThreshold").asInt();
+  if (depthThreshold) {
+    return compressDepthRange<YUV400P16>(
+        loadMVDFrame<FORMAT>(
+            config, sizes, frameIndex + config.require("startFrame").asInt(),
+            "source", "SourceDirectory", "SourceTexturePathFmt",
+            "SourceDepthPathFmt",
+            config.require("SourceCameraNames").asStringVector()),
+        static_cast<int>((depthThreshold * pow(2, bits)) / pow(2, 10)), bits);
+  } else {
+    return requantize<YUV400P16>(
+        loadMVDFrame<FORMAT>(
+            config, sizes, frameIndex + config.require("startFrame").asInt(),
+            "source", "SourceDirectory", "SourceTexturePathFmt",
+            "SourceDepthPathFmt",
+            config.require("SourceCameraNames").asStringVector()),
+        bits);
+  }
 }
 } // namespace
 

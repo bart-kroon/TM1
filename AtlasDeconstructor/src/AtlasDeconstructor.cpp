@@ -48,7 +48,8 @@ AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
 
 PatchIdMapList
 AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                                  const AtlasParametersList &patchList) {
+                                  const AtlasParametersList &patchList,
+                                  const MVD10Frame &frame) {
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize) {
@@ -58,8 +59,9 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
     patchMapList.push_back(std::move(patchMap));
   }
 
-  for (size_t id = 0; id < patchList.size(); ++id) {
-    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id));
+  for (auto id = 0U; id < patchList.size(); id++) {
+    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id),
+                      frame);
   }
 
   return patchMapList;
@@ -67,8 +69,10 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
                                            PatchIdMapList &patchMapList,
-                                           std::uint16_t patchId) const {
+                                           std::uint16_t patchId,
+                                           const MVD10Frame &frame) const {
   auto &patchMap = patchMapList[patch.atlasId];
+  auto &depthMap = frame[patch.atlasId].second.getPlane(0);
 
   const Vec2i &q0 = patch.posInAtlas;
   int w = patch.patchSize.x();
@@ -80,8 +84,11 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   int yLast = q0.y() + (isRotated ? w : h);
 
   for (auto y = yMin; y < yLast; y++) {
-    std::fill(patchMap.getPlane(0).row_begin(y) + xMin,
-              patchMap.getPlane(0).row_begin(y) + xLast, patchId);
+    for (auto x = xMin; x < xLast; x++) {
+      if (depthMap[y * patchMap.getWidth() + x] >= 64) {
+        patchMap.getPlane(0)[y * patchMap.getWidth() + x] = patchId;
+      }
+    }
   }
 }
 

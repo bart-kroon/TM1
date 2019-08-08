@@ -137,21 +137,28 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
         Vec2i pAtlas = {xP + dx, yP + dy};
         Vec2i pView = TMIV::Metadata::atlasToView(pAtlas, patch);
         // Y
-        textureViewMap.getPlane(0)(pView.y(), pView.x()) =
-            textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-        textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+        if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+          textureViewMap.getPlane(0)(pView.y(), pView.x()) =
+              textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
+          textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+        }
         // UV
         if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
           for (int p = 1; p < 3; p++) {
-            textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
-                textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-            textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 512;
+            if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+              textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
+                  textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 512;
+            }
           }
         }
         // Depth
-        depthViewMap.getPlane(0)(pView.y(), pView.x()) =
-            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-	  }
+        if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+          depthViewMap.getPlane(0)(pView.y(), pView.x()) =
+              depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
+          depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+        }
+      }
     }
   }
 

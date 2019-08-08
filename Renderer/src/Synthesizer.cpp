@@ -73,22 +73,56 @@ public:
   }
 
   static Vec2f imagePosition(Vec2f atlas, const AtlasParameters &patch) {
-    const auto posInAtlas = Vec2f(patch.posInAtlas);
-    const auto posInView = Vec2f(patch.posInView);
-    const auto patchSize = Vec2f(patch.patchSize);
-    switch (patch.rotation) {
-    case PatchRotation::upright:
-      return atlas - posInAtlas + posInView;
-    case PatchRotation::ccw: {
-      // Determine patch row and column in view orientation
-      const auto i = atlas.x() - posInAtlas.x();
-      const auto j = patchSize.x() - atlas.y() + posInAtlas.y();
+    // [FT, 7-aug-2019] : at the synthesizer level, only UR_none and 
+	//                    CCW_none cases are tested, since the packer
+	//                    itself has not been modified
+	const auto posInAtlas = Vec2f(patch.posInAtlas); // (xP, yP)
+    const auto posInView = Vec2f(patch.posInView);   // (xM, yM)
+    const auto patchSize = Vec2f(patch.patchSize);   // (w, h)
+    float i, j;
 
-      // Return position in view
-      return patch.posInView + Vec2f{j, i};
-    }
-    default:
-      abort();
+    if (patch.flip == Metadata::PatchFlip::none) {
+      switch (patch.rotation) {
+      case TMIV::Metadata::PatchRotation::upright:
+        i = atlas.y() - posInAtlas.y() + posInView.y();
+        j = atlas.x() - posInAtlas.x() + posInView.x();
+        return Vec2f{j, i};
+      case TMIV::Metadata::PatchRotation::ccw:
+        i = atlas.x() - posInAtlas.x() + posInView.y();
+        j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
+        return Vec2f{j, i};
+      case TMIV::Metadata::PatchRotation::ht:
+        i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
+        j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
+        return Vec2f{j, i};
+      case TMIV::Metadata::PatchRotation::cw:
+        i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
+        j = atlas.y() - posInAtlas.y() + posInView.x();
+        return Vec2f{j, i};
+      default:
+        abort();
+      }
+    } else { // patch.flip == Metadata::PatchFlip::vflip
+      switch (patch.rotation) {
+      case TMIV::Metadata::PatchRotation::upright:
+        i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
+        j = atlas.x() - posInAtlas.x() + posInView.x();
+        return Vec2f{j, i};
+      case TMIV::Metadata::PatchRotation::ccw:
+        i = atlas.x() - posInAtlas.x() + posInView.y();
+        j = atlas.y() - posInAtlas.y() + posInView.x();
+        return Vec2f{j, i};
+      case TMIV::Metadata::PatchRotation::ht:
+        i = atlas.y() - posInAtlas.y() + posInView.y();
+        j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
+        return Vec2f{j, i};
+      case TMIV::Metadata::PatchRotation::cw:
+        i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
+        j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
+        return Vec2f{j, i};
+      default:
+        abort();
+      }
     }
   }
 
@@ -124,14 +158,15 @@ public:
 
         // Look up depth value and affine parameters
         const auto uv = imagePosition(
-            {float(j_atlas) + 0.5F, float(i_atlas) + 0.5F}, patch);
+            {float(j_atlas) /*+ 0.5F*/, float(i_atlas) /*+ 0.5F*/}, patch);
         const auto d = expandDepthValue<10>(
             camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
 
         // Reproject and calculate ray angle
-        const auto xyz = R * unprojectVertex(uv, d, camera) + t;
+        const auto xyz =
+            R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, camera) + t;
         const auto rayAngle = angle(xyz, xyz - t);
         result.push_back({xyz, rayAngle});
       }
@@ -267,13 +302,13 @@ public:
                                      const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-        atlases.size(), target,
-        [&](size_t i, const CameraParameters &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
-                                cameras, target);
-        },
-        resolutionRatio(cameras, target));
+    auto rasterizer =
+        rasterFrame(atlases.size(), target,
+                    [&](size_t i, const CameraParameters &target) {
+                      return unprojectAtlas(atlases[i], ids[i].getPlane(0),
+                                            patches, cameras, target);
+                    },
+                    resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp10(target, rasterizer.normDisp())};
   }

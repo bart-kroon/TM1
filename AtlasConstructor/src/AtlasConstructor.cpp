@@ -156,57 +156,6 @@ Common::MVD16Frame AtlasConstructor::popAtlas() {
   return atlas;
 }
 
-Vec2i AtlasConstructor::viewToAtlas(Vec2i viewPosition,
-                                    const AtlasParameters &patch) {
-
-  int w = patch.patchSize.x(), h = patch.patchSize.y();
-  int xM = patch.posInView.x(), yM = patch.posInView.y();
-  int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
-  int x = viewPosition.x(), y = viewPosition.y();
-  Vec2i pAtlas;
-
-  if (patch.flip == Metadata::PatchFlip::none) {
-    switch (patch.rotation) {
-    case Metadata::PatchRotation::upright:
-      pAtlas.x() = x - xM + xP;
-      pAtlas.y() = y - yM + yP;
-      break;
-    case Metadata::PatchRotation::ccw:
-      pAtlas.x() = y - yM + xP;
-      pAtlas.y() = -x + xM + yP + w - 1;
-      break;
-    case Metadata::PatchRotation::ht:
-      pAtlas.x() = -x + xM + xP + w - 1;
-      pAtlas.y() = -y + yM + yP + h - 1;
-      break;
-    case Metadata::PatchRotation::cw:
-      pAtlas.x() = -y + yM + xP + h - 1;
-      pAtlas.y() = x - xM + yP;
-      break;
-    }
-  } else { // patch.flip == Metadata::PatchFlip::vflip
-    switch (patch.rotation) {
-    case Metadata::PatchRotation::upright:
-      pAtlas.x() = x - xM + xP;
-      pAtlas.y() = -y + yM + yP + h - 1;
-      break;
-    case Metadata::PatchRotation::ccw:
-      pAtlas.x() = y - yM + xP;
-      pAtlas.y() = x - xM + yP;
-      break;
-    case Metadata::PatchRotation::ht:
-      pAtlas.x() = -x + xM + xP + w - 1;
-      pAtlas.y() = y - yM + yP;
-      break;
-    case Metadata::PatchRotation::cw:
-      pAtlas.x() = -y + yM + xP + h - 1;
-      pAtlas.y() = -x + xM + yP + w - 1;
-      break;
-    }
-  }
-  return pAtlas;
-}
-
 void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
                                          const MVD16Frame &views,
                                          MVD16Frame &atlas) {
@@ -221,13 +170,12 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
   const auto &depthViewMap = currentView.second;
   int w = patch.patchSize.x(), h = patch.patchSize.y();
   int xM = patch.posInView.x(), yM = patch.posInView.y();
-  
-  Vec2i pView, pAtlas;
+
   for (int dy = 0; dy < h; dy++) {
     for (int dx = 0; dx < w; dx++) {
       // get position
-      pView = {xM + dx, yM + dy};
-      pAtlas = viewToAtlas(pView, patch);
+      Vec2i pView = {xM + dx, yM + dy};
+      Vec2i pAtlas = TMIV::Metadata::viewToAtlas(pView, patch);
       // Y
       textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
           textureViewMap.getPlane(0)(pView.y(), pView.x());

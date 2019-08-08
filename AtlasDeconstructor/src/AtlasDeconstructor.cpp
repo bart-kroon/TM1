@@ -130,13 +130,12 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     int wP = isRotated ? h : w;
     int hP = isRotated ? w : h;
     int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
-    Vec2i pView, pAtlas;
     
     for (int dy = 0; dy < hP; dy++) {
       for (int dx = 0; dx < wP; dx++) {
         // get position
-        pAtlas = {xP + dx, yP + dy};
-        pView = atlasToView(pAtlas, patch);
+        Vec2i pAtlas = {xP + dx, yP + dy};
+        Vec2i pView = TMIV::Metadata::atlasToView(pAtlas, patch);
         // Y
         textureViewMap.getPlane(0)(pView.y(), pView.x()) =
             textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
@@ -145,75 +144,19 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
         if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
           for (int p = 1; p < 3; p++) {
             textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
-                textureAtlasMap.getPlane(p)(
-                    (int)std::floor((double)pAtlas.y() / 2),
-                    (int)std::floor((double)pAtlas.x() / 2));
-            textureAtlasMap.getPlane(p)(
-                (int)std::floor((double)pAtlas.y() / 2),
-                (int)std::floor((double)pAtlas.x() / 2)) = 512;
+                textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+            textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 512;
           }
         }
         // Depth
         depthViewMap.getPlane(0)(pView.y(), pView.x()) =
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
 	  }
     }
   }
 
   // Convert from 10 to 16-bit depth
   return requantize<YUV400P16>(mvd10);
-}
-
-Vec2i AtlasDeconstructor::atlasToView(Vec2i atlasPosition,
-                                      const AtlasParameters &patch) {
-
-  int w = patch.patchSize.x(), h = patch.patchSize.y();
-  int xM = patch.posInView.x(), yM = patch.posInView.y();
-  int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
-  int x = atlasPosition.x(), y = atlasPosition.y();
-  Vec2i pView;
-
-  if (patch.flip == Metadata::PatchFlip::none) {
-    switch (patch.rotation) {
-    case Metadata::PatchRotation::upright:
-      pView.x() = x - xP + xM;
-      pView.y() = y - yP + yM;
-      break;
-    case Metadata::PatchRotation::ccw:
-      pView.x() = -y + yP + xM + w - 1;
-      pView.y() = x - xP + yM;
-      break;
-    case Metadata::PatchRotation::ht:
-      pView.x() = -x + xP + xM + w - 1;
-      pView.y() = -y + yP + yM + h - 1;
-      break;
-    case Metadata::PatchRotation::cw:
-      pView.x() = y - yP + xM;
-      pView.y() = -x + xP + yM + h - 1;
-      break;
-    }
-  } else { // patch.flip == Metadata::PatchFlip::vflip
-    switch (patch.rotation) {
-    case Metadata::PatchRotation::upright:
-      pView.x() = x - xP + xM;
-      pView.y() = -y + yP + yM + h - 1;
-      break;
-    case Metadata::PatchRotation::ccw:
-      pView.x() = y - yP + xM;
-      pView.y() = x - xP + yM;
-      break;
-    case Metadata::PatchRotation::ht:
-      pView.x() = -x + xP + xM + w - 1;
-      pView.y() = y - yP + yM;
-      break;
-    case Metadata::PatchRotation::cw:
-      pView.x() = -y + yP + xM + w - 1;
-      pView.y() = -x + xP + yM + h - 1;
-      break;
-    }
-  }
-  return pView;
 }
 
 } // namespace TMIV::AtlasDeconstructor

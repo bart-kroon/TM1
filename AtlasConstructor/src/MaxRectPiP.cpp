@@ -138,8 +138,8 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   bool isRotated = packerOutput.isRotated();
   int w = c.width();
-  int h = c.height();
-
+  int h = c.height(); 
+ 
   // Step #0 (in atlas)
   Vec2i q0 = {packerOutput.x(), packerOutput.y()};
   int XMin = q0.x() / m_alignment;
@@ -161,7 +161,8 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
 
   auto p2q = [isRotated, w, p0, q0](const Vec2i p) {
     return isRotated
-               ? (q0 + Vec2i({p.y() - p0.y(), (w - 1) - (p.x() - p0.x())}))
+               ? (q0 +
+                  Vec2i({p.y() - p0.y(), (w - 1) - (p.x() - p0.x())}))
                : (q0 + (p - p0));
   };
 

@@ -85,6 +85,11 @@ static_assert(sizeof(AtlasParameters) == 36);
 
 // Data type that corresponds to atlas_params_list of MPEG/N18464
 using AtlasParametersList = std::vector<AtlasParameters>;
+
+//Pixel position conversion from atlas to/from view
+Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch);
+Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch);
+
 } // namespace TMIV::Metadata
 
 #endif

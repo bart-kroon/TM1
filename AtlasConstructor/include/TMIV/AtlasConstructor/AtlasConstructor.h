@@ -72,8 +72,6 @@ public:
   }
   MVD16Frame popAtlas() override;
 
-  static Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch);
-
 private:
   void writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views,
                          MVD16Frame &atlas);

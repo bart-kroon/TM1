@@ -41,4 +41,109 @@ bool AtlasParameters::operator==(const AtlasParameters &other) const {
          posInAtlas == other.posInAtlas && rotation == other.rotation;
 }
 
+
+Vec2i viewToAtlas(Vec2i viewPosition,
+                                    const AtlasParameters &patch) {
+
+  int w = patch.patchSize.x(), h = patch.patchSize.y();
+  int xM = patch.posInView.x(), yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
+  int x = viewPosition.x(), y = viewPosition.y();
+
+  Vec2i pAtlas;
+
+  if (patch.flip == Metadata::PatchFlip::none) {
+    switch (patch.rotation) {
+    case TMIV::Metadata::PatchRotation::upright:
+      pAtlas.x() = x - xM + xP;
+      pAtlas.y() = y - yM + yP;
+      break;
+    case TMIV::Metadata::PatchRotation::ccw:
+      pAtlas.x() = y - yM + xP;
+      pAtlas.y() = -x + xM + yP + w - 1;
+      break;
+    case TMIV::Metadata::PatchRotation::ht:
+      pAtlas.x() = -x + xM + xP + w - 1;
+      pAtlas.y() = -y + yM + yP + h - 1;
+      break;
+    case TMIV::Metadata::PatchRotation::cw:
+      pAtlas.x() = -y + yM + xP + h - 1;
+      pAtlas.y() = x - xM + yP;
+      break;
+    }
+  } else { // patch.flip == Metadata::PatchFlip::vflip
+    switch (patch.rotation) {
+    case TMIV::Metadata::PatchRotation::upright:
+      pAtlas.x() = x - xM + xP;
+      pAtlas.y() = -y + yM + yP + h - 1;
+      break;
+    case TMIV::Metadata::PatchRotation::ccw:
+      pAtlas.x() = y - yM + xP;
+      pAtlas.y() = x - xM + yP;
+      break;
+    case TMIV::Metadata::PatchRotation::ht:
+      pAtlas.x() = -x + xM + xP + w - 1;
+      pAtlas.y() = y - yM + yP;
+      break;
+    case TMIV::Metadata::PatchRotation::cw:
+      pAtlas.x() = -y + yM + xP + h - 1;
+      pAtlas.y() = -x + xM + yP + w - 1;
+      break;
+    }
+  }
+  return pAtlas;
+}
+
+Vec2i atlasToView(Vec2i atlasPosition,
+                                      const AtlasParameters &patch) {
+
+  int w = patch.patchSize.x(), h = patch.patchSize.y();
+  int xM = patch.posInView.x(), yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
+  int x = atlasPosition.x(), y = atlasPosition.y();
+
+  Vec2i pView;
+
+  if (patch.flip == Metadata::PatchFlip::none) {
+    switch (patch.rotation) {
+    case Metadata::PatchRotation::upright:
+      pView.x() = x - xP + xM;
+      pView.y() = y - yP + yM;
+      break;
+    case Metadata::PatchRotation::ccw:
+      pView.x() = -y + yP + xM + w - 1;
+      pView.y() = x - xP + yM;
+      break;
+    case Metadata::PatchRotation::ht:
+      pView.x() = -x + xP + xM + w - 1;
+      pView.y() = -y + yP + yM + h - 1;
+      break;
+    case Metadata::PatchRotation::cw:
+      pView.x() = y - yP + xM;
+      pView.y() = -x + xP + yM + h - 1;
+      break;
+    }
+  } else { // patch.flip == Metadata::PatchFlip::vflip
+    switch (patch.rotation) {
+    case Metadata::PatchRotation::upright:
+      pView.x() = x - xP + xM;
+      pView.y() = -y + yP + yM + h - 1;
+      break;
+    case Metadata::PatchRotation::ccw:
+      pView.x() = y - yP + xM;
+      pView.y() = x - xP + yM;
+      break;
+    case Metadata::PatchRotation::ht:
+      pView.x() = -x + xP + xM + w - 1;
+      pView.y() = y - yP + yM;
+      break;
+    case Metadata::PatchRotation::cw:
+      pView.x() = -y + yP + xM + w - 1;
+      pView.y() = -x + xP + yM + h - 1;
+      break;
+    }
+  }
+  return pView;
+}
+
 } // namespace TMIV::Metadata

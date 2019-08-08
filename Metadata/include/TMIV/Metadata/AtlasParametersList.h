@@ -43,6 +43,7 @@
 namespace TMIV::Metadata {
 using Vec2i = TMIV::Common::Vec2i;
 
+// TODO(BK): Align with working draft: patch_rotation has eight possible values (4 rotations x 2 flips)
 enum class PatchRotation {
   upright, // what was up stays up
   ccw,     // what was up goes left, i.e. 90deg

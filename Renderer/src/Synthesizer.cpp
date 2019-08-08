@@ -66,57 +66,58 @@ public:
     vector<pair<Mat3x3f, Vec3f>> result;
     result.reserve(cameras.size());
     transform(begin(cameras), end(cameras), back_inserter(result),
-              [&target](const Metadata::CameraParameters &camera) {
+              [&target](const CameraParameters &camera) {
                 return affineParameters(camera, target);
               });
     return result;
   }
 
+  // TODO(BK): Replace imagePosition by TMIV::Metadata::atlasToView
   static Vec2f imagePosition(Vec2f atlas, const AtlasParameters &patch) {
-    // [FT, 7-aug-2019] : at the synthesizer level, only UR_none and 
-	//                    CCW_none cases are tested, since the packer
-	//                    itself has not been modified
-	const auto posInAtlas = Vec2f(patch.posInAtlas); // (xP, yP)
+    // [FT, 7-aug-2019] : at the synthesizer level, only UR_none and
+    //                    CCW_none cases are tested, since the packer
+    //                    itself has not been modified
+    const auto posInAtlas = Vec2f(patch.posInAtlas); // (xP, yP)
     const auto posInView = Vec2f(patch.posInView);   // (xM, yM)
     const auto patchSize = Vec2f(patch.patchSize);   // (w, h)
     float i, j;
 
-    if (patch.flip == Metadata::PatchFlip::none) {
+    if (patch.flip == PatchFlip::none) {
       switch (patch.rotation) {
-      case TMIV::Metadata::PatchRotation::upright:
+      case PatchRotation::upright:
         i = atlas.y() - posInAtlas.y() + posInView.y();
         j = atlas.x() - posInAtlas.x() + posInView.x();
         return Vec2f{j, i};
-      case TMIV::Metadata::PatchRotation::ccw:
+      case PatchRotation::ccw:
         i = atlas.x() - posInAtlas.x() + posInView.y();
         j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
         return Vec2f{j, i};
-      case TMIV::Metadata::PatchRotation::ht:
+      case PatchRotation::ht:
         i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
         j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
         return Vec2f{j, i};
-      case TMIV::Metadata::PatchRotation::cw:
+      case PatchRotation::cw:
         i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
         j = atlas.y() - posInAtlas.y() + posInView.x();
         return Vec2f{j, i};
       default:
         abort();
       }
-    } else { // patch.flip == Metadata::PatchFlip::vflip
+    } else { // patch.flip == PatchFlip::vflip
       switch (patch.rotation) {
-      case TMIV::Metadata::PatchRotation::upright:
+      case PatchRotation::upright:
         i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
         j = atlas.x() - posInAtlas.x() + posInView.x();
         return Vec2f{j, i};
-      case TMIV::Metadata::PatchRotation::ccw:
+      case PatchRotation::ccw:
         i = atlas.x() - posInAtlas.x() + posInView.y();
         j = atlas.y() - posInAtlas.y() + posInView.x();
         return Vec2f{j, i};
-      case TMIV::Metadata::PatchRotation::ht:
+      case PatchRotation::ht:
         i = atlas.y() - posInAtlas.y() + posInView.y();
         j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
         return Vec2f{j, i};
-      case TMIV::Metadata::PatchRotation::cw:
+      case PatchRotation::cw:
         i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
         j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
         return Vec2f{j, i};
@@ -362,26 +363,24 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
 
 Synthesizer::~Synthesizer() = default;
 
-Common::Texture444Depth10Frame
-Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
-                         const Common::PatchIdMapList &maps,
-                         const Metadata::AtlasParametersList &patches,
-                         const Metadata::CameraParametersList &cameras,
-                         const Metadata::CameraParameters &target) const {
+Common::Texture444Depth10Frame Synthesizer::renderFrame(
+    const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+    const AtlasParametersList &patches, const CameraParametersList &cameras,
+    const CameraParameters &target) const {
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
 Common::Texture444Depth16Frame
 Synthesizer::renderFrame(const Common::MVD16Frame &frame,
-                         const Metadata::CameraParametersList &cameras,
-                         const Metadata::CameraParameters &target) const {
+                         const CameraParametersList &cameras,
+                         const CameraParameters &target) const {
   return m_impl->renderFrame(frame, cameras, target);
 }
 
 Common::Mat<float>
 Synthesizer::renderDepth(const Common::Mat<float> &frame,
-                         const Metadata::CameraParameters &camera,
-                         const Metadata::CameraParameters &target) const {
+                         const CameraParameters &camera,
+                         const CameraParameters &target) const {
   return m_impl->renderDepth(frame, camera, target);
 }
 } // namespace TMIV::Renderer

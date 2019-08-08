@@ -168,8 +168,10 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
 
   const auto &textureViewMap = currentView.first;
   const auto &depthViewMap = currentView.second;
-  int w = patch.patchSize.x(), h = patch.patchSize.y();
-  int xM = patch.posInView.x(), yM = patch.posInView.y();
+  int w = patch.patchSize.x();
+  int h = patch.patchSize.y();
+  int xM = patch.posInView.x();
+  int yM = patch.posInView.y();
 
   for (int dy = 0; dy < h; dy++) {
     for (int dx = 0; dx < w; dx++) {
@@ -181,9 +183,8 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
           textureViewMap.getPlane(0)(pView.y(), pView.x());
       // UV
       if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-        for (int p = 1; p < 3; p++) {
-          textureAtlasMap.getPlane(p)((int)std::floor((double)pAtlas.y() / 2),
-                                      (int)std::floor((double)pAtlas.x() / 2)) =
+        for (int p = 1; p < 3; ++p) {
+          textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
         }
       }

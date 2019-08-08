@@ -38,6 +38,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
+using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasDeconstructor {
 constexpr auto neutralChroma = uint16_t(512);
@@ -73,8 +74,8 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   const Vec2i &q0 = patch.posInAtlas;
   int w = patch.patchSize.x();
   int h = patch.patchSize.y();
-  bool isRotated = (patch.rotation != Metadata::PatchRotation::upright &&
-                    patch.rotation != Metadata::PatchRotation::ht);
+  bool isRotated = patch.rotation != PatchRotation::upright &&
+                   patch.rotation != PatchRotation::ht;
   int xMin = q0.x();
   int xLast = q0.x() + (isRotated ? h : w);
   int yMin = q0.y();
@@ -121,21 +122,21 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
     auto &textureViewMap = currentView.first;
     auto &depthViewMap = currentView.second;
-    
-    int w = patch.patchSize.x(), h = patch.patchSize.y();
-    bool isRotated = (patch.rotation == Metadata::PatchRotation::ccw ||
-                      patch.rotation == Metadata::PatchRotation::cw)
-                         ? true
-                         : false;
+
+    int w = patch.patchSize.x();
+    int h = patch.patchSize.y();
+    bool isRotated = patch.rotation == PatchRotation::ccw ||
+                     patch.rotation == PatchRotation::cw;
     int wP = isRotated ? h : w;
     int hP = isRotated ? w : h;
-    int xP = patch.posInAtlas.x(), yP = patch.posInAtlas.y();
-    
+    int xP = patch.posInAtlas.x();
+    int yP = patch.posInAtlas.y();
+
     for (int dy = 0; dy < hP; dy++) {
       for (int dx = 0; dx < wP; dx++) {
         // get position
         Vec2i pAtlas = {xP + dx, yP + dy};
-        Vec2i pView = TMIV::Metadata::atlasToView(pAtlas, patch);
+        Vec2i pView = atlasToView(pAtlas, patch);
         // Y
         if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
           textureViewMap.getPlane(0)(pView.y(), pView.x()) =

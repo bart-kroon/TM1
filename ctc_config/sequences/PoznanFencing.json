@@ -1,5 +1,5 @@
 {
-    "Content_name": "PFencing", 
+    "Content_name": "PoznanFencing", 
     "Frames_number": 1, 
     "cameras": [
         {
@@ -149,6 +149,42 @@
         {
             "BitDepthColor": 10, 
             "Name": "v04", 
+            "Depth_range": [
+                3.5, 
+                7.0
+            ], 
+            "DepthColorSpace": "YUV420", 
+            "Position": [
+                -9.54932408395867, 
+                3.7793014335229884, 
+                0.3496560188568342
+            ], 
+            "Resolution": [
+                1920, 
+                1080
+            ], 
+            "BitDepthDepth": 8, 
+            "Projection": "Perspective", 
+            "ColorSpace": "YUV420", 
+            "Principle_point": [
+                939.320808, 
+                531.277189
+            ], 
+            "Depthmap": 1, 
+            "Background": 0, 
+            "Rotation": [
+                -21.613014647705867, 
+                30.978340956960142, 
+                -0.9528658087661201
+            ], 
+            "Focal": [
+                1729.119783, 
+                1726.488866
+            ]
+        }, 
+        {
+            "BitDepthColor": 10, 
+            "Name": "viewport", 
             "Depth_range": [
                 3.5, 
                 7.0

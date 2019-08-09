@@ -31,3 +31,14 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
+
+if (CMAKE_TESTING_ENABLED)
+	add_executable(MetadataTest "src/Metadata.test.cpp")
+
+	target_link_libraries(MetadataTest
+		PRIVATE
+			Catch2::Catch2
+			TMIV::MetadataLib)
+
+	catch_discover_tests(MetadataTest)
+endif()	

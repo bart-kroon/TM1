@@ -59,14 +59,12 @@ AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
   // Single atlas size
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
-  // Maximum pixel rate per frame (Texture or Depth)
-  int maxMegaPixelPerFrame = componentNode.require("MPixel").asInt();
-
-  // TODO(BK): It is more logical to round down from a maximum
-  constexpr int mega = 1000000;
-  const auto pixelsPerAtlas = m_atlasSize.x() * m_atlasSize.y();
-  m_nbAtlas = uint16_t((maxMegaPixelPerFrame * mega + pixelsPerAtlas - 1) /
-                       pixelsPerAtlas);
+  // The number of atlases is determined by the specified maximum number of luma
+  // samples per frame (texture and depth combined)
+  int maxLumaSamplesPerFrame =
+      componentNode.require("MaxLumaSamplesPerFrame").asInt();
+  const auto lumaSamplesPerAtlas = 2 * m_atlasSize.x() * m_atlasSize.y();
+  m_nbAtlas = uint16_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
 }
 
 void AtlasConstructor::prepareIntraPeriod(
@@ -168,73 +166,30 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
 
   const auto &textureViewMap = currentView.first;
   const auto &depthViewMap = currentView.second;
-
   int w = patch.patchSize.x();
   int h = patch.patchSize.y();
   int xM = patch.posInView.x();
   int yM = patch.posInView.y();
-  int xP = patch.posInAtlas.x();
-  int yP = patch.posInAtlas.y();
-  int w_tex = ((xM + w) <= textureViewMap.getWidth())
-                  ? w
-                  : (textureViewMap.getWidth() - xM);
-  int h_tex = ((yM + h) <= textureViewMap.getHeight())
-                  ? h
-                  : (textureViewMap.getHeight() - yM);
 
-  if (patch.rotation == Metadata::PatchRotation::upright) {
-    for (int dy = 0; dy < h_tex; dy++) {
-
+  for (int dy = 0; dy < h; dy++) {
+    for (int dx = 0; dx < w; dx++) {
+      // get position
+      Vec2i pView = {xM + dx, yM + dy};
+      Vec2i pAtlas = TMIV::Metadata::viewToAtlas(pView, patch);
       // Y
-      std::copy(textureViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_tex),
-                textureAtlasMap.getPlane(0).row_begin(yP + dy) + xP);
-
+      textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+          textureViewMap.getPlane(0)(pView.y(), pView.x());
       // UV
-      if ((dy % 2) == 0) {
-        for (int p = 1; p < 3; p++) {
-          std::copy(
-              textureViewMap.getPlane(p).row_begin((yM + dy) / 2) + xM / 2,
-              textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
-                  (xM + w_tex) / 2,
-              textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) + xP / 2);
+      if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
+        for (int p = 1; p < 3; ++p) {
+          textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
+              textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
         }
       }
-
       // Depth
-      std::copy(depthViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                depthViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_tex),
-                depthAtlasMap.getPlane(0).row_begin(yP + dy) + xP);
-    }
-  } else {
-    for (int dy = 0; dy < h_tex; dy++) {
-
-      // Y
-      std::copy(textureViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                textureViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_tex),
-                std::make_reverse_iterator(
-                    textureAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)));
-
-      // UV
-      if ((dy % 2) == 0) {
-        for (int p = 1; p < 3; p++) {
-          std::copy(textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
-                        xM / 2,
-                    textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
-                        (xM + w_tex) / 2,
-                    std::make_reverse_iterator(
-                        textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
-                        (yP + w) / 2));
-        }
-      }
-
-      // Depth
-      std::copy(depthViewMap.getPlane(0).row_begin(yM + dy) + xM,
-                depthViewMap.getPlane(0).row_begin(yM + dy) + (xM + w_tex),
-                std::make_reverse_iterator(
-                    depthAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)));
+      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+          depthViewMap.getPlane(0)(pView.y(), pView.x());
     }
   }
 }
-
 } // namespace TMIV::AtlasConstructor

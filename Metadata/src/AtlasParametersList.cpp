@@ -41,4 +41,112 @@ bool AtlasParameters::operator==(const AtlasParameters &other) const {
          posInAtlas == other.posInAtlas && rotation == other.rotation;
 }
 
+Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) {
+  int w = patch.patchSize.x();
+  int h = patch.patchSize.y();
+  int xM = patch.posInView.x();
+  int yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x();
+  int yP = patch.posInAtlas.y();
+  int x = viewPosition.x();
+  int y = viewPosition.y();
+
+  Vec2i pAtlas;
+
+  if (patch.flip == PatchFlip::none) {
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pAtlas.x() = x - xM + xP;
+      pAtlas.y() = y - yM + yP;
+      break;
+    case PatchRotation::ccw:
+      pAtlas.x() = y - yM + xP;
+      pAtlas.y() = -x + xM + yP + w - 1;
+      break;
+    case PatchRotation::ht:
+      pAtlas.x() = -x + xM + xP + w - 1;
+      pAtlas.y() = -y + yM + yP + h - 1;
+      break;
+    case PatchRotation::cw:
+      pAtlas.x() = -y + yM + xP + h - 1;
+      pAtlas.y() = x - xM + yP;
+      break;
+    }
+  } else { // patch.flip == PatchFlip::vflip
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pAtlas.x() = x - xM + xP;
+      pAtlas.y() = -y + yM + yP + h - 1;
+      break;
+    case PatchRotation::ccw:
+      pAtlas.x() = y - yM + xP;
+      pAtlas.y() = x - xM + yP;
+      break;
+    case PatchRotation::ht:
+      pAtlas.x() = -x + xM + xP + w - 1;
+      pAtlas.y() = y - yM + yP;
+      break;
+    case PatchRotation::cw:
+      pAtlas.x() = -y + yM + xP + h - 1;
+      pAtlas.y() = -x + xM + yP + w - 1;
+      break;
+    }
+  }
+  return pAtlas;
+}
+
+Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) {
+  int w = patch.patchSize.x();
+  int h = patch.patchSize.y();
+  int xM = patch.posInView.x();
+  int yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x();
+  int yP = patch.posInAtlas.y();
+  int x = atlasPosition.x();
+  int y = atlasPosition.y();
+
+  Vec2i pView;
+
+  if (patch.flip == PatchFlip::none) {
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pView.x() = x - xP + xM;
+      pView.y() = y - yP + yM;
+      break;
+    case PatchRotation::ccw:
+      pView.x() = -y + yP + xM + w - 1;
+      pView.y() = x - xP + yM;
+      break;
+    case PatchRotation::ht:
+      pView.x() = -x + xP + xM + w - 1;
+      pView.y() = -y + yP + yM + h - 1;
+      break;
+    case PatchRotation::cw:
+      pView.x() = y - yP + xM;
+      pView.y() = -x + xP + yM + h - 1;
+      break;
+    }
+  } else { // patch.flip == PatchFlip::vflip
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pView.x() = x - xP + xM;
+      pView.y() = -y + yP + yM + h - 1;
+      break;
+    case PatchRotation::ccw:
+      pView.x() = y - yP + xM;
+      pView.y() = x - xP + yM;
+      break;
+    case PatchRotation::ht:
+      pView.x() = -x + xP + xM + w - 1;
+      pView.y() = y - yP + yM;
+      break;
+    case PatchRotation::cw:
+      pView.x() = -y + yP + xM + w - 1;
+      pView.y() = -x + xP + yM + h - 1;
+      break;
+    }
+  }
+  return pView;
+}
+
 } // namespace TMIV::Metadata

@@ -41,71 +41,6 @@ using namespace TMIV::Metadata;
 
 using namespace TMIV::Common;
 
-static Vec2f imagePosition(Vec2f atlas, const AtlasParameters &patch) {
-  // [FT, 7-aug-2019] : at the synthesizer level, only UR_none and
-  //                    CCW_none cases are tested, since the packer
-  //                    itself has not been modified
-  const auto posInAtlas = Vec2f(patch.posInAtlas); // (xP, yP)
-  const auto posInView = Vec2f(patch.posInView);   // (xM, yM)
-  const auto patchSize = Vec2f(patch.patchSize);   // (w, h)
-  float i, j;
-
-  if (patch.flip == PatchFlip::none) {
-    switch (patch.rotation) {
-    case PatchRotation::upright:
-      i = atlas.y() - posInAtlas.y() + posInView.y();
-      j = atlas.x() - posInAtlas.x() + posInView.x();
-      return Vec2f{ j, i };
-    case PatchRotation::ccw:
-      i = atlas.x() - posInAtlas.x() + posInView.y();
-      j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
-      return Vec2f{ j, i };
-    case PatchRotation::ht:
-      i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
-      j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
-      return Vec2f{ j, i };
-    case PatchRotation::cw:
-      i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
-      j = atlas.y() - posInAtlas.y() + posInView.x();
-      return Vec2f{ j, i };
-    default:
-      abort();
-    }
-  }
-  else { // patch.flip == PatchFlip::vflip
-    switch (patch.rotation) {
-    case PatchRotation::upright:
-      i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
-      j = atlas.x() - posInAtlas.x() + posInView.x();
-      return Vec2f{ j, i };
-    case PatchRotation::ccw:
-      i = atlas.x() - posInAtlas.x() + posInView.y();
-      j = atlas.y() - posInAtlas.y() + posInView.x();
-      return Vec2f{ j, i };
-    case PatchRotation::ht:
-      i = atlas.y() - posInAtlas.y() + posInView.y();
-      j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
-      return Vec2f{ j, i };
-    case PatchRotation::cw:
-      i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
-      j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
-      return Vec2f{ j, i };
-    default:
-      abort();
-    }
-  }
-}
-
-Vec2i atlasToViewMod(Vec2i atlasPosition, const AtlasParameters &patch)
-{
-  Vec2f atlasPosition2f{ float(atlasPosition[0]) , float(atlasPosition[1]) };
-
-  auto viewPosition2f = imagePosition(atlasPosition2f, patch);
-
-  Vec2i viewPosition{ int(viewPosition2f[0]), int(viewPosition2f[1]) };
-  return viewPosition;
-
-}
 
 TEST_CASE("TestPatchRotationAndFlipTransforms") {
   AtlasParameters patch;
@@ -137,8 +72,7 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
         auto posInAtlas = viewToAtlas(posInViewEncode, patch);
         REQUIRE(posInAtlas == posInAtlasExpected[i]);
 
-        //auto posInViewDecode = atlasToView(posInAtlas, patch);
-        auto posInViewDecode = atlasToViewMod(posInAtlas, patch);
+        auto posInViewDecode = atlasToView(posInAtlas, patch);
         REQUIRE(posInViewDecode == posInViewEncode);
 
         ++i;
@@ -160,7 +94,7 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
         auto posInAtlas = viewToAtlas(posInViewEncode, patch);
         REQUIRE(posInAtlas == posInAtlasExpected[i]);
 
-        auto posInViewDecode = atlasToViewMod(posInAtlas, patch);
+        auto posInViewDecode = atlasToView(posInAtlas, patch);
         REQUIRE(posInViewDecode == posInViewEncode);
 
         ++i;

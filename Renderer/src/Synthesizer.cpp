@@ -72,61 +72,6 @@ public:
     return result;
   }
 
-  // TODO(BK): Replace imagePosition by TMIV::Metadata::atlasToView
-  static Vec2f imagePosition(Vec2f atlas, const AtlasParameters &patch) {
-    // [FT, 7-aug-2019] : at the synthesizer level, only UR_none and
-    //                    CCW_none cases are tested, since the packer
-    //                    itself has not been modified
-    const auto posInAtlas = Vec2f(patch.posInAtlas); // (xP, yP)
-    const auto posInView = Vec2f(patch.posInView);   // (xM, yM)
-    const auto patchSize = Vec2f(patch.patchSize);   // (w, h)
-    float i, j;
-
-    if (patch.flip == PatchFlip::none) {
-      switch (patch.rotation) {
-      case PatchRotation::upright:
-        i = atlas.y() - posInAtlas.y() + posInView.y();
-        j = atlas.x() - posInAtlas.x() + posInView.x();
-        return Vec2f{j, i};
-      case PatchRotation::ccw:
-        i = atlas.x() - posInAtlas.x() + posInView.y();
-        j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
-        return Vec2f{j, i};
-      case PatchRotation::ht:
-        i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
-        j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
-        return Vec2f{j, i};
-      case PatchRotation::cw:
-        i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
-        j = atlas.y() - posInAtlas.y() + posInView.x();
-        return Vec2f{j, i};
-      default:
-        abort();
-      }
-    } else { // patch.flip == PatchFlip::vflip
-      switch (patch.rotation) {
-      case PatchRotation::upright:
-        i = -atlas.y() + posInAtlas.y() + posInView.y() + patchSize.y() - 1;
-        j = atlas.x() - posInAtlas.x() + posInView.x();
-        return Vec2f{j, i};
-      case PatchRotation::ccw:
-        i = atlas.x() - posInAtlas.x() + posInView.y();
-        j = atlas.y() - posInAtlas.y() + posInView.x();
-        return Vec2f{j, i};
-      case PatchRotation::ht:
-        i = atlas.y() - posInAtlas.y() + posInView.y();
-        j = -atlas.x() + posInAtlas.x() + posInView.x() + patchSize.x() - 1;
-        return Vec2f{j, i};
-      case PatchRotation::cw:
-        i = -atlas.x() + posInAtlas.x() + posInView.y() + patchSize.y() - 1;
-        j = -atlas.y() + posInAtlas.y() + posInView.x() + patchSize.x() - 1;
-        return Vec2f{j, i};
-      default:
-        abort();
-      }
-    }
-  }
-
   auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                      const AtlasParametersList &patches,
                      const CameraParametersList &cameras,
@@ -158,8 +103,8 @@ public:
         const auto &camera = cameras[patch.viewId];
 
         // Look up depth value and affine parameters
-        const auto uv = imagePosition(
-            {float(j_atlas) /*+ 0.5F*/, float(i_atlas) /*+ 0.5F*/}, patch);
+        const auto uv = Vec2f( atlasToView({ j_atlas, i_atlas }, patch) );
+
         const auto d = expandDepthValue<10>(
             camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
         const auto &R = R_t[patch.viewId].first;

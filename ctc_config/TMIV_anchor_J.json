@@ -64,7 +64,7 @@
                 1920,
                 1080
             ],
-            "MaxLumaSamplesPerFrame": 16588800
+            "MaxLumaSamplesPerFrame": 12441600
         }
     },
     "DecoderMethod": "Decoder",

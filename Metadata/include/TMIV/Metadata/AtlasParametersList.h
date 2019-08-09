@@ -43,7 +43,8 @@
 namespace TMIV::Metadata {
 using Vec2i = TMIV::Common::Vec2i;
 
-// TODO(BK): Align with working draft: patch_rotation has eight possible values (4 rotations x 2 flips)
+// TODO(BK): Align with working draft: patch_rotation has eight possible values (4 rotations x 2
+// flips)
 enum class PatchRotation {
   upright, // what was up stays up
   ccw,     // what was up goes left, i.e. 90deg
@@ -55,7 +56,6 @@ enum class PatchFlip {
   none, // what was up stays up
   vflip // what was up goes down, i.e. vertical flip
 };
-
 
 // Data type that corresponds to an entry of atlas_params of MPEG/N18464
 struct AtlasParameters {
@@ -78,7 +78,7 @@ struct AtlasParameters {
   PatchRotation rotation{};
 
   PatchFlip flip{};
-  
+
   bool operator==(const AtlasParameters &other) const;
 };
 
@@ -87,7 +87,7 @@ static_assert(sizeof(AtlasParameters) == 36);
 // Data type that corresponds to atlas_params_list of MPEG/N18464
 using AtlasParametersList = std::vector<AtlasParameters>;
 
-//Pixel position conversion from atlas to/from view
+// Pixel position conversion from atlas to/from view
 Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch);
 Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch);
 

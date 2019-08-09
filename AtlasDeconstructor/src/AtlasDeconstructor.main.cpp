@@ -50,8 +50,7 @@ private:
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"AtlasDeconstructor", move(argv)},
-        m_atlasDeconstructor{
-            create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},
+        m_atlasDeconstructor{create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
@@ -66,19 +65,18 @@ public:
   void runIntraPeriod(int intraFrame, int endFrame) {
     auto metadata = IO::loadMivMetadata(json(), intraFrame);
 
-    cout << "OMAF v1 compatible flag: " << boolalpha
-         << metadata.omafV1CompatibleFlag << " ("
+    cout << "OMAF v1 compatible flag: " << boolalpha << metadata.omafV1CompatibleFlag << " ("
          << int(metadata.omafV1CompatibleFlag) << ")" << endl;
 
     auto frame = IO::loadAtlas(json(), metadata.atlasSize, intraFrame);
-    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(
-        metadata.atlasSize, metadata.patches, frame);
+    auto patchIdMaps =
+        m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize, metadata.patches, frame);
     IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto atlas = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, i);
-      auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
-          atlas, metadata.cameras, metadata.patches);
+      auto recoveredTransportView =
+          m_atlasDeconstructor->recoverPrunedView(atlas, metadata.cameras, metadata.patches);
 
       IO::savePrunedFrame(json(), i, recoveredTransportView);
     }

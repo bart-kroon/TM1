@@ -37,8 +37,7 @@
 
 namespace TMIV::Common {
 namespace {
-template <class TO, class FROM>
-auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {
+template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {
   Frame<TO> result(frame.getWidth(), frame.getHeight());
   std::copy(std::begin(frame.getPlane(0)), std::end(frame.getPlane(0)),
             std::begin(result.getPlane(0)));
@@ -50,10 +49,8 @@ auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {
   for (int k = 1; k < 3; ++k) {
     for (int i = 0; i < rows; ++i) {
       for (int j = 0; j < cols; ++j) {
-        auto sum = frame.getPlane(k)(2 * i, 2 * j) +
-                   frame.getPlane(k)(2 * i + 1, 2 * j) +
-                   frame.getPlane(k)(2 * i, 2 * j + 1) +
-                   frame.getPlane(k)(2 * i + 1, 2 * j + 1);
+        auto sum = frame.getPlane(k)(2 * i, 2 * j) + frame.getPlane(k)(2 * i + 1, 2 * j) +
+                   frame.getPlane(k)(2 * i, 2 * j + 1) + frame.getPlane(k)(2 * i + 1, 2 * j + 1);
         result.getPlane(k)(i, j) = (sum + 2) / 4;
       }
     }
@@ -63,15 +60,9 @@ auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {
 }
 } // namespace
 
-Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame) {
-  return yuv420p_impl<YUV420P8>(frame);
-}
+Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame) { return yuv420p_impl<YUV420P8>(frame); }
 
-Frame<YUV420P10> yuv420p(const Frame<YUV444P10> &frame) {
-  return yuv420p_impl<YUV420P10>(frame);
-}
+Frame<YUV420P10> yuv420p(const Frame<YUV444P10> &frame) { return yuv420p_impl<YUV420P10>(frame); }
 
-Frame<YUV420P16> yuv420p(const Frame<YUV444P16> &frame) {
-  return yuv420p_impl<YUV420P16>(frame);
-}
+Frame<YUV420P16> yuv420p(const Frame<YUV444P16> &frame) { return yuv420p_impl<YUV420P16>(frame); }
 } // namespace TMIV::Common

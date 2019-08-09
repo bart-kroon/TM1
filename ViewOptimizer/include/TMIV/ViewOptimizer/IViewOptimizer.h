@@ -58,8 +58,7 @@ public:
       -> Output<Metadata::CameraParametersList> = 0;
 
   // Optimize a frame in the intra period
-  virtual auto optimizeFrame(Common::MVD16Frame views) const
-      -> Output<Common::MVD16Frame> = 0;
+  virtual auto optimizeFrame(Common::MVD16Frame views) const -> Output<Common::MVD16Frame> = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

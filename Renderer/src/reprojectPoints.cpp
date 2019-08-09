@@ -75,9 +75,8 @@ auto unprojectPoints(const Mat<Vec2f> &positions, const Mat<float> &depth,
 }
 } // namespace
 
-auto unprojectPoints(const CameraParameters &camera,
-                     const Mat<Vec2f> &positions, const Mat<float> &depth)
-    -> Mat<Vec3f> {
+auto unprojectPoints(const CameraParameters &camera, const Mat<Vec2f> &positions,
+                     const Mat<float> &depth) -> Mat<Vec3f> {
   switch (camera.type) {
   case ProjectionType::ERP: {
     Engine<ProjectionType::ERP> engine{camera};
@@ -92,8 +91,7 @@ auto unprojectPoints(const CameraParameters &camera,
   }
 }
 
-auto changeReferenceFrame(const CameraParameters &camera,
-                          const CameraParameters &target,
+auto changeReferenceFrame(const CameraParameters &camera, const CameraParameters &target,
                           const Mat<Vec3f> &points) -> Mat<Vec3f> {
   Mat<Vec3f> result(points.sizes());
   const auto R_t = affineParameters(camera, target);
@@ -102,9 +100,8 @@ auto changeReferenceFrame(const CameraParameters &camera,
   //             [R = R_t.first, t = R_t.second](Vec3f x) { return R * x + t;
   //             });
 
-  parallel_for(points.size(), [&](std::size_t id) {
-    result[id] = R_t.first * points[id] + R_t.second;
-  });
+  parallel_for(points.size(),
+               [&](std::size_t id) { result[id] = R_t.first * points[id] + R_t.second; });
 
   return result;
 }
@@ -143,8 +140,7 @@ auto projectPoints(const CameraParameters &camera, const Mat<Vec3f> &points)
   }
 }
 
-auto reprojectPoints(const CameraParameters &camera,
-                     const CameraParameters &target,
+auto reprojectPoints(const CameraParameters &camera, const CameraParameters &target,
                      const Mat<Vec2f> &positions, const Mat<float> &depth)
     -> pair<Mat<Vec2f>, Mat<float>> {
   auto points = unprojectPoints(camera, positions, depth);
@@ -152,15 +148,12 @@ auto reprojectPoints(const CameraParameters &camera,
   return projectPoints(target, points);
 }
 
-auto calculateRayAngles(const CameraParameters &camera,
-                        const CameraParameters &target,
+auto calculateRayAngles(const CameraParameters &camera, const CameraParameters &target,
                         const Mat<Vec3f> &points) -> Mat<float> {
   Mat<float> result(points.sizes());
   const auto R_t = affineParameters(camera, target);
   transform(begin(points), end(points), begin(result),
-            [t = R_t.second](Vec3f virtualRay) {
-              return angle(virtualRay, virtualRay - t);
-            });
+            [t = R_t.second](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
   return result;
 }
 } // namespace TMIV::Renderer

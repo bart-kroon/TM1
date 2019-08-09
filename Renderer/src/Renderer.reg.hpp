@@ -41,12 +41,9 @@
 namespace TMIV::Renderer {
 inline void registerComponents() {
   Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>(
-      "NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>(
-      "Synthesizer");
+  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
+  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
   Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>(
-      "MultipassRenderer");
+  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
 }
 } // namespace TMIV::Renderer

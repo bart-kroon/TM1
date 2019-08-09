@@ -39,8 +39,7 @@
 #include <vector>
 
 namespace TMIV::Common {
-inline void parallel_for(std::size_t nbIter,
-                         std::function<void(std::size_t)> fun) {
+inline void parallel_for(std::size_t nbIter, std::function<void(std::size_t)> fun) {
   auto segment_execute = [&](std::size_t first, std::size_t last) {
     for (auto id = first; id < last; id++) {
       fun(id);
@@ -51,8 +50,7 @@ inline void parallel_for(std::size_t nbIter,
   std::vector<std::future<void>> threadList;
 
   for (size_t id = 0; id < nbIter; id += chunkSize) {
-    threadList.push_back(
-        std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
+    threadList.push_back(std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
   }
 
   for (auto &thread : threadList) {

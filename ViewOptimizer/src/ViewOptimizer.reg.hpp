@@ -37,9 +37,7 @@
 
 namespace TMIV::ViewOptimizer {
 inline void registerComponents() {
-  Common::Factory<IViewOptimizer>::getInstance().registerAs<ViewReducer>(
-      "ViewReducer");
-  Common::Factory<IViewOptimizer>::getInstance().registerAs<NoViewOptimizer>(
-      "NoViewOptimizer");
+  Common::Factory<IViewOptimizer>::getInstance().registerAs<ViewReducer>("ViewReducer");
+  Common::Factory<IViewOptimizer>::getInstance().registerAs<NoViewOptimizer>("NoViewOptimizer");
 }
 } // namespace TMIV::ViewOptimizer

@@ -38,8 +38,7 @@ namespace TMIV::AtlasConstructor {
 constexpr auto occupied = uint8_t(128);
 
 ////////////////////////////////////////////////////////////////////////////////
-std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w,
-                                                                int h) const {
+std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w, int h) const {
   std::vector<Rectangle> out;
 
   if (h < height()) {
@@ -53,12 +52,10 @@ std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w,
   return out;
 }
 
-std::vector<MaxRectPiP::Rectangle>
-MaxRectPiP::Rectangle::remove(const Rectangle &r) const {
+std::vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::remove(const Rectangle &r) const {
   std::vector<Rectangle> out;
 
-  if (!((r.m_x1 <= m_x0) || (m_x1 <= r.m_x0) || (r.m_y1 <= m_y0) ||
-        (m_y1 <= r.m_y0))) {
+  if (!((r.m_x1 <= m_x0) || (m_x1 <= r.m_x0) || (r.m_y1 <= m_y0) || (m_y1 <= r.m_y0))) {
     // Left part
     if (m_x0 < r.m_x0) {
       out.emplace_back(m_x0, m_y0, r.m_x0 - 1, m_y1);
@@ -84,9 +81,8 @@ MaxRectPiP::Rectangle::remove(const Rectangle &r) const {
 }
 
 bool MaxRectPiP::Rectangle::isInside(const Rectangle &r) const {
-  return ((r.m_x0 <= m_x0) && (m_x0 <= r.m_x1) && (r.m_x0 <= m_x1) &&
-          (m_x1 <= r.m_x1) && (r.m_y0 <= m_y0) && (m_y0 <= r.m_y1) &&
-          (r.m_y0 <= m_y1) && (m_y1 <= r.m_y1));
+  return ((r.m_x0 <= m_x0) && (m_x0 <= r.m_x1) && (r.m_x0 <= m_x1) && (m_x1 <= r.m_x1) &&
+          (r.m_y0 <= m_y0) && (m_y0 <= r.m_y1) && (r.m_y0 <= m_y1) && (m_y1 <= r.m_y1));
 }
 
 float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const {
@@ -113,13 +109,11 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
   m_F.emplace_back(0, 0, w - 1, h - 1);
 }
 
-bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap,
-                      Output &packerOutput) {
+bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput) {
   int w = Common::align(c.width(), m_alignment);
   int h = Common::align(c.height(), m_alignment);
 
-  if ((m_pip && pushInUsedSpace(w, h, packerOutput)) ||
-      pushInFreeSpace(w, h, packerOutput)) {
+  if ((m_pip && pushInUsedSpace(w, h, packerOutput)) || pushInFreeSpace(w, h, packerOutput)) {
     // Update occupancy map
     if (m_pip) {
       updateOccupancyMap(c, clusteringMap, packerOutput);
@@ -130,8 +124,7 @@ bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap,
   { return false; }
 }
 
-void MaxRectPiP::updateOccupancyMap(const Cluster &c,
-                                    const ClusteringMap &clusteringMap,
+void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
                                     const MaxRectPiP::Output &packerOutput) {
   using namespace TMIV::Common;
 
@@ -141,9 +134,10 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   int h = c.height();
   int w_align = Common::align(c.width(), m_alignment);
   int h_align = Common::align(c.height(), m_alignment);
-  //overflow
-  Vec2i patchOverflow = Vec2i({c.jmin(), c.imin()}) + Vec2i({w_align, h_align}) - clusteringMap.getSize();
- 
+  // overflow
+  Vec2i patchOverflow =
+      Vec2i({c.jmin(), c.imin()}) + Vec2i({w_align, h_align}) - clusteringMap.getSize();
+
   // Step #0 (in atlas)
   Vec2i q0 = {packerOutput.x(), packerOutput.y()};
   int XMin = q0.x() / m_alignment;
@@ -152,8 +146,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   int YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
 
   for (auto Y = YMin; Y < YLast; Y++) {
-    std::fill(m_occupancyMap.row_begin(Y) + XMin,
-              m_occupancyMap.row_begin(Y) + XLast, occupied);
+    std::fill(m_occupancyMap.row_begin(Y) + XMin, m_occupancyMap.row_begin(Y) + XLast, occupied);
   }
 
   // Step #1 (in projection)
@@ -170,31 +163,26 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   int yMax = p0.y() + h - 1;
 
   auto p2q = [isRotated, w_align, p0, q0](const Vec2i p) {
-    return isRotated
-               ? (q0 +
-                  Vec2i({p.y() - p0.y(), (w_align - 1) - (p.x() - p0.x())}))
-               : (q0 + (p - p0));
+    return isRotated ? (q0 + Vec2i({p.y() - p0.y(), (w_align - 1) - (p.x() - p0.x())}))
+                     : (q0 + (p - p0));
   };
 
   for (auto y = yMin; y <= yMax; y++) {
     for (auto x = xMin; x <= xMax; x++) {
       if (clusteringBuffer(y, x) == c.getClusterId()) {
-        Vec2i q = p2q(Vec2i({static_cast<int>(x), static_cast<int>(y)})) /
-                  m_alignment;
+        Vec2i q = p2q(Vec2i({static_cast<int>(x), static_cast<int>(y)})) / m_alignment;
         m_occupancyMap(q.y(), q.x()) = 0;
       }
     }
   }
 }
 
-bool MaxRectPiP::pushInUsedSpace(int w, int h,
-                                 MaxRectPiP::Output &packerOutput) {
+bool MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output &packerOutput) {
 
   int W = w / m_alignment;
   int H = h / m_alignment;
 
-  auto isGoodCandidate = [this](int xmin, int xmax, int ymin,
-                                int ymax) -> bool {
+  auto isGoodCandidate = [this](int xmin, int xmax, int ymin, int ymax) -> bool {
     if ((xmax < static_cast<int>(m_occupancyMap.width())) &&
         (ymax < static_cast<int>(m_occupancyMap.height()))) {
       for (int y = ymin; y <= ymax; y++) {
@@ -229,8 +217,7 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h,
   return false;
 }
 
-bool MaxRectPiP::pushInFreeSpace(int w, int h,
-                                 MaxRectPiP::Output &packerOutput) {
+bool MaxRectPiP::pushInFreeSpace(int w, int h, MaxRectPiP::Output &packerOutput) {
   // Select best free rectangles that fit current patch (BSSF criterion)
   auto best_iter = m_F.cend();
   float best_score = std::numeric_limits<float>::max();
@@ -276,8 +263,7 @@ bool MaxRectPiP::pushInFreeSpace(int w, int h,
 
     if (!intersecting.empty()) {
       intersected.push_back(iter);
-      std::move(intersecting.begin(), intersecting.end(),
-                std::back_inserter(m_F));
+      std::move(intersecting.begin(), intersecting.end(), std::back_inserter(m_F));
     }
   }
 

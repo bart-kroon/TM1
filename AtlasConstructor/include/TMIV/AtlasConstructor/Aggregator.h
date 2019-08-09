@@ -52,9 +52,7 @@ public:
   void prepareIntraPeriod() override;
   void pushMask(const MaskList &mask) override;
   void completeIntraPeriod() override {}
-  const MaskList &getAggregatedMask() const override {
-    return m_aggregatedMask;
-  }
+  const MaskList &getAggregatedMask() const override { return m_aggregatedMask; }
 
 private:
   MaskList m_aggregatedMask;

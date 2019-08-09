@@ -53,13 +53,9 @@ constexpr auto quarterCycle{90.F};
 constexpr auto NaN{std::numeric_limits<float>::quiet_NaN()};
 constexpr auto inf{std::numeric_limits<float>::infinity()};
 
-template <typename Float> int ifloor(Float x) {
-  return static_cast<int>(std::floor(x));
-}
+template <typename Float> int ifloor(Float x) { return static_cast<int>(std::floor(x)); }
 
-template <typename Float> int iceil(Float x) {
-  return static_cast<int>(std::ceil(x));
-}
+template <typename Float> int iceil(Float x) { return static_cast<int>(std::ceil(x)); }
 
 template <typename Float> auto square(Float x) { return x * x; }
 } // namespace TMIV::Common

@@ -80,8 +80,7 @@ struct CameraParameters {
   // In MPEG/N18464: depth_{near,far}
   Vec2f depthRange{};
 
-  friend std::ostream &operator<<(std::ostream &stream,
-                                  const CameraParameters &camera);
+  friend std::ostream &operator<<(std::ostream &stream, const CameraParameters &camera);
   bool operator==(const CameraParameters &other) const;
 };
 

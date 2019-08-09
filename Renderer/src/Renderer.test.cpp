@@ -66,8 +66,7 @@ TEST_CASE("Full ERP", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
   const CameraParameters camera{
-      {7, 5}, {}, {}, ProjectionType::ERP, {-180.F, 180.F}, {-90.F, 90.F}, {},
-      {},     {}, {}};
+      {7, 5}, {}, {}, ProjectionType::ERP, {-180.F, 180.F}, {-90.F, 90.F}, {}, {}, {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -131,8 +130,7 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
   const CameraParameters camera{
-      {7, 5}, {}, {}, ProjectionType::ERP, {-10.F, 10.F}, {-10.F, 10.F}, {},
-      {},     {}, {}};
+      {7, 5}, {}, {}, ProjectionType::ERP, {-10.F, 10.F}, {-10.F, 10.F}, {}, {}, {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -196,8 +194,7 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
   const CameraParameters camera{
-      {7, 5},       {},           {}, ProjectionType::Perspective, {}, {}, {},
-      {10.F, 10.F}, {3.5F, 2.5F}, {}};
+      {7, 5}, {}, {}, ProjectionType::Perspective, {}, {}, {}, {10.F, 10.F}, {3.5F, 2.5F}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -259,10 +256,8 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
   const CameraParameters neutral{};
-  const CameraParameters translated{
-      {}, {1.F, 2.F, 3.F}, {}, {}, {}, {}, {}, {}, {}, {}};
-  const CameraParameters rotated{
-      {}, {}, {100.F, 30.F, -30.F}, {}, {}, {}, {}, {}, {}, {}};
+  const CameraParameters translated{{}, {1.F, 2.F, 3.F}, {}, {}, {}, {}, {}, {}, {}, {}};
+  const CameraParameters rotated{{}, {}, {100.F, 30.F, -30.F}, {}, {}, {}, {}, {}, {}, {}};
   SECTION("trivial") {
     auto R_t = affineParameters(neutral, neutral);
     REQUIRE(R_t.first == Mat3x3f::eye());
@@ -275,8 +270,7 @@ TEST_CASE("Changing the reference frame", "[Render engine]") {
   }
   SECTION("rotation") {
     auto R_t = affineParameters(neutral, rotated);
-    REQUIRE(none_of(begin(R_t.first), end(R_t.first),
-                    [](auto x) { return x == 0.F; }));
+    REQUIRE(none_of(begin(R_t.first), end(R_t.first), [](auto x) { return x == 0.F; }));
     REQUIRE(R_t.second == Vec3f::zeros());
   }
 }
@@ -318,24 +312,17 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     float const ray_angle_weight = pixel.rayAngleWeight(ray_angle);
     float const stretching_weight = pixel.stretchingWeight(stretching);
 
-    Value reference{{{0.3F, 0.7F, 0.1F}},
-                    0.53F,
-                    ray_angle_weight * stretching_weight,
-                    stretching};
+    Value reference{{{0.3F, 0.7F, 0.1F}}, 0.53F, ray_angle_weight * stretching_weight, stretching};
 
-    Acc accum = pixel.construct(reference.attributes(), reference.normDisp,
-                                ray_angle, stretching);
+    Acc accum = pixel.construct(reference.attributes(), reference.normDisp, ray_angle, stretching);
 
     WHEN("The pixel value is directly computed") {
       Value actual = pixel.average(accum);
 
       THEN("The average is the pixel value") {
-        REQUIRE(get<0>(actual.attributes())[0] ==
-                get<0>(reference.attributes())[0]);
-        REQUIRE(get<0>(actual.attributes())[1] ==
-                get<0>(reference.attributes())[1]);
-        REQUIRE(get<0>(actual.attributes())[2] ==
-                get<0>(reference.attributes())[2]);
+        REQUIRE(get<0>(actual.attributes())[0] == get<0>(reference.attributes())[0]);
+        REQUIRE(get<0>(actual.attributes())[1] == get<0>(reference.attributes())[1]);
+        REQUIRE(get<0>(actual.attributes())[2] == get<0>(reference.attributes())[2]);
         REQUIRE(actual.normDisp == reference.normDisp);
         REQUIRE(actual.normWeight == reference.normWeight);
       }
@@ -346,29 +333,22 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
       Value actual = pixel.average(accum2);
 
       THEN("The average is the same but with double quality") {
-        REQUIRE(get<0>(actual.attributes())[0] ==
-                get<0>(reference.attributes())[0]);
-        REQUIRE(get<0>(actual.attributes())[1] ==
-                get<0>(reference.attributes())[1]);
-        REQUIRE(get<0>(actual.attributes())[2] ==
-                get<0>(reference.attributes())[2]);
+        REQUIRE(get<0>(actual.attributes())[0] == get<0>(reference.attributes())[0]);
+        REQUIRE(get<0>(actual.attributes())[1] == get<0>(reference.attributes())[1]);
+        REQUIRE(get<0>(actual.attributes())[2] == get<0>(reference.attributes())[2]);
         REQUIRE(actual.normDisp == reference.normDisp);
         REQUIRE(actual.normWeight == 2 * reference.normWeight);
       }
     }
 
     WHEN("The pixel is blended with another pixel that has invalid depth") {
-      Acc accumInvalid =
-          pixel.construct(reference.attributes(), 0.F, ray_angle, stretching);
+      Acc accumInvalid = pixel.construct(reference.attributes(), 0.F, ray_angle, stretching);
       Value actual = pixel.average(pixel.blend(accum, accumInvalid));
 
       THEN("It is af the pixel has not been blended") {
-        REQUIRE(get<0>(actual.attributes())[0] ==
-                get<0>(reference.attributes())[0]);
-        REQUIRE(get<0>(actual.attributes())[1] ==
-                get<0>(reference.attributes())[1]);
-        REQUIRE(get<0>(actual.attributes())[2] ==
-                get<0>(reference.attributes())[2]);
+        REQUIRE(get<0>(actual.attributes())[0] == get<0>(reference.attributes())[0]);
+        REQUIRE(get<0>(actual.attributes())[1] == get<0>(reference.attributes())[1]);
+        REQUIRE(get<0>(actual.attributes())[2] == get<0>(reference.attributes())[2]);
         REQUIRE(actual.normDisp == reference.normDisp);
         REQUIRE(actual.normWeight == reference.normWeight);
       }
@@ -427,29 +407,25 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
         REQUIRE(depth.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(none_of(begin(depth), end(depth),
-                        [](float x) { return isfinite(x); }));
+        REQUIRE(none_of(begin(depth), end(depth), [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(is_same_v<decltype(normDisp), Mat<float>>);
         REQUIRE(normDisp.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(normDisp), end(normDisp),
-                       [](float x) { return x == 0.F; }));
+        REQUIRE(all_of(begin(normDisp), end(normDisp), [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(is_same_v<decltype(normWeight), Mat<float>>);
         REQUIRE(normWeight.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(normWeight), end(normWeight),
-                       [](float x) { return x == 0.F; }));
+        REQUIRE(all_of(begin(normWeight), end(normWeight), [](float x) { return x == 0.F; }));
       }
       THEN("The color map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
         REQUIRE(color.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(color), end(color),
-                       [](Vec3w x) { return x == Vec3w{}; }));
+        REQUIRE(all_of(begin(color), end(color), [](Vec3w x) { return x == Vec3w{}; }));
       }
     }
     WHEN("Submitting meshes but not rastering") {
@@ -477,45 +453,38 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
         REQUIRE(depth.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(none_of(begin(depth), end(depth),
-                        [](float x) { return isfinite(x); }));
+        REQUIRE(none_of(begin(depth), end(depth), [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(is_same_v<decltype(normDisp), Mat<float>>);
         REQUIRE(normDisp.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(normDisp), end(normDisp),
-                       [](float x) { return x == 0.F; }));
+        REQUIRE(all_of(begin(normDisp), end(normDisp), [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(is_same_v<decltype(normWeight), Mat<float>>);
         REQUIRE(normWeight.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(normWeight), end(normWeight),
-                       [](float x) { return x == 0.F; }));
+        REQUIRE(all_of(begin(normWeight), end(normWeight), [](float x) { return x == 0.F; }));
       }
       THEN("The color map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
         REQUIRE(color.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(color), end(color),
-                       [](Vec3w x) { return x == Vec3w{}; }));
+        REQUIRE(all_of(begin(color), end(color), [](Vec3w x) { return x == Vec3w{}; }));
       }
     }
     WHEN("Rastering a quad") {
       // Rectangle of 2 x 6 pixels within the 4 x 8 pixels frame
       // Depth values misused to correspond to x-values
       // Ray angles misused to correspond to y-values
-      ImageVertexDescriptorList vs{{{1, 1}, 1.F, 1.F},
-                                   {{7, 1}, 7.F, 1.F},
-                                   {{7, 3}, 7.F, 3.F},
-                                   {{1, 3}, 1.F, 3.F}};
+      ImageVertexDescriptorList vs{
+          {{1, 1}, 1.F, 1.F}, {{7, 1}, 7.F, 1.F}, {{7, 3}, 7.F, 3.F}, {{1, 3}, 1.F, 3.F}};
       // Two clockwise triangles
       TriangleDescriptorList ts{{{0, 1, 2}, 3.F}, {{0, 2, 3}, 5.F}};
 
       // Colors correspond to x and y-values times 100
-      vector<Vec3w> as{
-          {100, 0, 100}, {700, 0, 100}, {700, 0, 300}, {100, 0, 300}};
+      vector<Vec3w> as{{100, 0, 100}, {700, 0, 100}, {700, 0, 300}, {100, 0, 300}};
       rasterizer.submit(vs, tuple{as}, ts);
       rasterizer.run();
 
@@ -563,8 +532,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
         REQUIRE(normWeight(3, 7) == 0.F);
 
         THEN("Points that intersect triangle edges are interpolated") {
-          REQUIRE(normWeight(1, 2) ==
-                  Approx((w_normWeight2 + w_normWeight1) / 2));
+          REQUIRE(normWeight(1, 2) == Approx((w_normWeight2 + w_normWeight1) / 2));
         }
       }
       THEN("The color map has known values") {
@@ -605,16 +573,14 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
 
 SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
-    Rasterizer<Vec2f> rasterizer(AccumulatingPixel<Vec2f>{1.F, 1.F, 1.F, 10.F},
-                                 Vec2i{8, 4});
+    Rasterizer<Vec2f> rasterizer(AccumulatingPixel<Vec2f>{1.F, 1.F, 1.F, 10.F}, Vec2i{8, 4});
 
     WHEN("Rastering nothing") {
       THEN("The field map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(field), Mat<Vec2f>>);
         REQUIRE(field.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(field), end(field),
-                       [](Vec2f x) { return x == Vec2f{}; }));
+        REQUIRE(all_of(begin(field), end(field), [](Vec2f x) { return x == Vec2f{}; }));
       }
     }
     WHEN("Rastering some empty meshes") {
@@ -629,25 +595,21 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
         auto field = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(field), Mat<Vec2f>>);
         REQUIRE(field.sizes() == array{std::size_t(4), std::size_t(8)});
-        REQUIRE(all_of(begin(field), end(field),
-                       [](Vec2f x) { return x == Vec2f{}; }));
+        REQUIRE(all_of(begin(field), end(field), [](Vec2f x) { return x == Vec2f{}; }));
       }
     }
     WHEN("Rastering a quad") {
       // Rectangle of 2 x 6 pixels within the 4 x 8 pixels frame
       // Depth values misused to correspond to x-values
       // Ray angles misused to correspond to y-values
-      ImageVertexDescriptorList vs{{{1, 1}, 1.F, 1.F},
-                                   {{7, 1}, 7.F, 1.F},
-                                   {{7, 3}, 7.F, 3.F},
-                                   {{1, 3}, 1.F, 3.F}};
+      ImageVertexDescriptorList vs{
+          {{1, 1}, 1.F, 1.F}, {{7, 1}, 7.F, 1.F}, {{7, 3}, 7.F, 3.F}, {{1, 3}, 1.F, 3.F}};
 
       // Two clockwise triangles
       TriangleDescriptorList ts{{{0, 1, 2}, 6.F}, {{0, 2, 3}, 6.F}};
 
       // Colors correspond to x and y-values times 100
-      vector<Vec2f> as{
-          {100.F, 100.F}, {700.F, 100.F}, {700.F, 300.F}, {100.F, 300.F}};
+      vector<Vec2f> as{{100.F, 100.F}, {700.F, 100.F}, {700.F, 300.F}, {100.F, 300.F}};
       rasterizer.submit(vs, tuple{as}, ts);
       rasterizer.run();
 

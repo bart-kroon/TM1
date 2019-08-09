@@ -54,9 +54,9 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
       : camera{camera_},
 
         // Mesh structure
-        icols{camera.size.x()}, irows{camera.size.y()},
-        ocols{camera.size.x() + 2}, orows{camera.size.y() + 2},
-        osize{ocols * orows}, numTriangles{2 * (orows - 1) * (ocols - 1)},
+        icols{camera.size.x()}, irows{camera.size.y()}, ocols{camera.size.x() + 2},
+        orows{camera.size.y() + 2}, osize{ocols * orows}, numTriangles{2 * (orows - 1) *
+                                                                       (ocols - 1)},
 
         // Projection parameters
         f{camera.perspectiveFocal}, p{camera.perspectiveCenter} {}
@@ -64,15 +64,13 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
     if (depth > 0.F) {
-      return {depth, -(depth / f.x()) * (uv.x() - p.x()),
-              -(depth / f.y()) * (uv.y() - p.y())};
+      return {depth, -(depth / f.x()) * (uv.x() - p.x()), -(depth / f.y()) * (uv.y() - p.y())};
     }
     return {Common::NaN, Common::NaN, Common::NaN};
   }
 
   // Projection equation
-  auto projectVertex(const SceneVertexDescriptor &v) const
-      -> ImageVertexDescriptor const {
+  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
     if (v.position.x() > 0.F) {
       auto uv = Common::Vec2f{-f.x() * v.position.y() / v.position.x() + p.x(),
                               -f.y() * v.position.z() / v.position.x() + p.y()};
@@ -116,14 +114,12 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
   // Helper function to calculate the area of a triangle based on the output
   // coordinate (i, j)
   float triangleArea(int i, int j) const {
-    return (j == 0 || j == ocols - 1 ? 0.25F : 0.5F) *
-           (i == 0 || i == orows - 1 ? 0.5F : 1.F);
+    return (j == 0 || j == ocols - 1 ? 0.25F : 0.5F) * (i == 0 || i == orows - 1 ? 0.5F : 1.F);
   }
 
   // List of 3-D vertices in the reference frame of the target camera
-  auto
-  makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                const Metadata::CameraParameters &target) const
+  auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
+                                     const Metadata::CameraParameters &target) const
       -> SceneVertexDescriptorList {
     SceneVertexDescriptorList result;
     result.reserve(osize);
@@ -163,8 +159,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
 
   // List of vertex attributes in matching order
   template <class T>
-  auto makeVertexAttributeList(const Common::Mat<T> &matrix) const
-      -> std::vector<T> {
+  auto makeVertexAttributeList(const Common::Mat<T> &matrix) const -> std::vector<T> {
     std::vector<T> result;
     result.reserve(osize);
     for (int i = 0; i < orows; ++i) {
@@ -178,8 +173,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
 
   // Project mesh to target view
   template <typename... T>
-  auto project(SceneVertexDescriptorList sceneVertices,
-               TriangleDescriptorList triangles,
+  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
                std::tuple<std::vector<T>...> attributes) {
     ImageVertexDescriptorList imageVertices;
     imageVertices.reserve(sceneVertices.size());

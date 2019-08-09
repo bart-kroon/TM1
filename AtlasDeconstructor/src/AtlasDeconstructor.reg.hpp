@@ -36,7 +36,7 @@
 
 namespace TMIV::AtlasDeconstructor {
 inline void registerComponents() {
-  Common::Factory<IAtlasDeconstructor>::getInstance()
-      .registerAs<AtlasDeconstructor>("AtlasDeconstructor");
+  Common::Factory<IAtlasDeconstructor>::getInstance().registerAs<AtlasDeconstructor>(
+      "AtlasDeconstructor");
 }
 } // namespace TMIV::AtlasDeconstructor

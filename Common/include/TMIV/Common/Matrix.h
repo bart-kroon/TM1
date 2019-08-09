@@ -81,45 +81,29 @@ public:
   using A::resize;
   void resize(size_type a, size_type b) { A::resize({a, b}); }
   //! \brief Returns an iterator to the first element of the ith row.
-  const_row_iterator row_begin(size_type i) const {
-    return A::template dim_begin<1>(i);
-  }
+  const_row_iterator row_begin(size_type i) const { return A::template dim_begin<1>(i); }
   row_iterator row_begin(size_type i) { return A::template dim_begin<1>(i); }
   //! \brief Returns a const iterator to the first element of the ith row.
-  const_row_iterator crow_begin(size_type i) const {
-    return A::template cdim_begin<1>(i);
-  }
+  const_row_iterator crow_begin(size_type i) const { return A::template cdim_begin<1>(i); }
   //! \brief Returns an iterator to the first element after the end of the ith
   //! row.
-  const_row_iterator row_end(size_type i) const {
-    return A::template dim_end<1>(i);
-  }
+  const_row_iterator row_end(size_type i) const { return A::template dim_end<1>(i); }
   row_iterator row_end(size_type i) { return A::template dim_end<1>(i); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! ith row.
-  const_row_iterator crow_end(size_type i) const {
-    return A::template cdim_end<1>(i);
-  }
+  const_row_iterator crow_end(size_type i) const { return A::template cdim_end<1>(i); }
   //! \brief Returns an iterator to the first element of the jth column.
-  const_column_iterator col_begin(size_type j) const {
-    return A::template dim_begin<0>(j);
-  }
+  const_column_iterator col_begin(size_type j) const { return A::template dim_begin<0>(j); }
   column_iterator col_begin(size_type j) { return A::template dim_begin<0>(j); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  const_column_iterator ccol_begin(size_type j) const {
-    return A::template cdim_begin<0>(j);
-  }
+  const_column_iterator ccol_begin(size_type j) const { return A::template cdim_begin<0>(j); }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  const_column_iterator col_end(size_type j) const {
-    return A::template dim_end<0>(j);
-  }
+  const_column_iterator col_end(size_type j) const { return A::template dim_end<0>(j); }
   column_iterator col_end(size_type j) { return A::template dim_end<0>(j); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  const_column_iterator ccol_end(size_type j) const {
-    return A::template cdim_end<0>(j);
-  }
+  const_column_iterator ccol_end(size_type j) const { return A::template cdim_end<0>(j); }
   //! \brief Returns true if the matrix is a row.
   bool isRow() const { return (m() == 1); }
   //! \brief Returns true if the matrix is a column.
@@ -130,13 +114,9 @@ public:
            (A::getProperty() == Matrix::Property::Positive);
   }
   //! \brief Returns true if the matrix is hermitian.
-  bool isHermitian() const {
-    return (A::getProperty() == Matrix::Property::Hermitian);
-  }
+  bool isHermitian() const { return (A::getProperty() == Matrix::Property::Hermitian); }
   //! \brief Returns true if the matrix is positive.
-  bool isPositive() const {
-    return (A::getProperty() == Matrix::Property::Positive);
-  }
+  bool isPositive() const { return (A::getProperty() == Matrix::Property::Positive); }
   //! \brief Returns true if the matrix is lower.
   bool isLower() const { return (A::getProperty() == Matrix::Property::Lower); }
   //! \brief Returns true if the matrix is upper.
@@ -158,8 +138,7 @@ public:
 };
 
 namespace stack {
-template <typename T, size_type M, size_type N>
-using Matrix = MatrixInterface<Array<T, M, N>>;
+template <typename T, size_type M, size_type N> using Matrix = MatrixInterface<Array<T, M, N>>;
 
 template <typename T> using Mat2x2 = Matrix<T, 2, 2>;
 template <typename T> using Mat3x3 = Matrix<T, 3, 3>;
@@ -189,8 +168,7 @@ stack::Matrix<T, N, M> transpose_type(stack::Matrix<T, M, N>);
 template <typename T> heap::Matrix<T> transpose_type(heap::Matrix<T>);
 
 //! \brief Returns the transpose of the matrix given as input.
-template <typename Mat1, typename Mat2>
-Mat2 &transpose(const Mat1 &in, Mat2 &out) {
+template <typename Mat1, typename Mat2> Mat2 &transpose(const Mat1 &in, Mat2 &out) {
   out.resize({in.n(), in.m()});
 
   if (in.isRow() || in.isColumn() || in.isSymmetric()) {
@@ -204,28 +182,24 @@ Mat2 &transpose(const Mat1 &in, Mat2 &out) {
   return out;
 }
 
-template <typename Mat>
-decltype(transpose_type(Mat())) transpose(const Mat &m) {
+template <typename Mat> decltype(transpose_type(Mat())) transpose(const Mat &m) {
   decltype(transpose_type(Mat())) out;
   return transpose(m, out);
 }
 
 //! \brief Computes and returns the adjoint of the matrix a.
-template <typename Mat1, typename Mat2>
-Mat2 &adjoint(const Mat1 &in, Mat2 &out) {
+template <typename Mat1, typename Mat2> Mat2 &adjoint(const Mat1 &in, Mat2 &out) {
   out.resize({in.n(), in.m()});
 
   if (in.isRow() || in.isColumn()) {
-    std::transform(
-        in.begin(), in.end(), out.begin(),
-        [](const typename Mat1::value_type &v) { return conjugate(v); });
+    std::transform(in.begin(), in.end(), out.begin(),
+                   [](const typename Mat1::value_type &v) { return conjugate(v); });
   } else if (in.isHermitian()) {
     std::copy(in.begin(), in.end(), out.begin());
   } else {
     for (Array::size_type i = 0; i < out.m(); i++) {
-      std::transform(
-          in.col_begin(i), in.col_end(i), out.row_begin(i),
-          [](const typename Mat1::value_type &v) { return conjugate(v); });
+      std::transform(in.col_begin(i), in.col_end(i), out.row_begin(i),
+                     [](const typename Mat1::value_type &v) { return conjugate(v); });
     }
   }
 
@@ -265,26 +239,23 @@ template <typename Mat> void hermitianize(Mat &A, char mode = 'L') {
       auto ptr1 = A.row_begin(i);
       auto ptr2 = A.col_begin(i);
 
-      std::transform(
-          ptr2, ptr2 + i, ptr1,
-          [](const typename Mat::value_type &v) { return std::conj(v); });
+      std::transform(ptr2, ptr2 + i, ptr1,
+                     [](const typename Mat::value_type &v) { return std::conj(v); });
     }
   } else {
     for (Array::size_type i = 1; i < A.m(); i++) {
       auto ptr1 = A.row_begin(i);
       auto ptr2 = A.col_begin(i);
 
-      std::transform(
-          ptr1, ptr1 + i, ptr2,
-          [](const typename Mat::value_type &v) { return std::conj(v); });
+      std::transform(ptr1, ptr1 + i, ptr2,
+                     [](const typename Mat::value_type &v) { return std::conj(v); });
     }
   }
 }
 
 //! \brief Computes and returns the trace of the matrix a.
 template <typename Mat> typename Mat::value_type trace(const Mat &a) {
-  return std::accumulate(a.diag_begin(), a.diag_end(),
-                         typename Mat::value_type(0));
+  return std::accumulate(a.diag_begin(), a.diag_end(), typename Mat::value_type(0));
 }
 
 //! \brief Constructs a block matrix from the matrices given as input.
@@ -312,8 +283,7 @@ Mat2 &block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) {
 
     for (auto iter2 = iter1->begin(); iter2 != iter1->end(); iter2++) {
       for (Array::size_type i = 0; i < iter2->m(); i++) {
-        std::copy(iter2->row_begin(i), iter2->row_end(i),
-                  out.row_begin(i0 + i) + j0);
+        std::copy(iter2->row_begin(i), iter2->row_end(i), out.row_begin(i0 + i) + j0);
       }
 
       j0 += iter2->n();
@@ -326,8 +296,7 @@ Mat2 &block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) {
 }
 
 template <typename Mat>
-heap::Matrix<typename Mat::value_type>
-block(std::initializer_list<std::initializer_list<Mat>> L) {
+heap::Matrix<typename Mat::value_type> block(std::initializer_list<std::initializer_list<Mat>> L) {
   heap::Matrix<typename Mat::value_type> out;
   block(L, out);
   return out;
@@ -335,8 +304,7 @@ block(std::initializer_list<std::initializer_list<Mat>> L) {
 
 //! \brief Replicates and tiles matrix a according to the dimension vector dim.
 template <typename Mat1, typename Mat2>
-Mat2 &repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a,
-             Mat2 &out) {
+Mat2 &repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a, Mat2 &out) {
   out.resize({dim[0] * a.m(), dim[1] * a.n()});
 
   for (Array::size_type i = 0, i0 = 0; i < dim[0]; i++, i0 += a.m()) {
@@ -351,8 +319,8 @@ Mat2 &repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a,
 }
 
 template <typename Mat>
-heap::Matrix<typename Mat::value_type>
-repmat(const std::array<Array::size_type, 2> &dim, const Mat &a) {
+heap::Matrix<typename Mat::value_type> repmat(const std::array<Array::size_type, 2> &dim,
+                                              const Mat &a) {
   heap::Matrix<typename Mat::value_type> out;
   repmat(dim, a, out);
   return out;

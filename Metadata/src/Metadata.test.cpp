@@ -41,7 +41,6 @@ using namespace TMIV::Metadata;
 
 using namespace TMIV::Common;
 
-
 TEST_CASE("TestPatchRotationAndFlipTransforms") {
   AtlasParameters patch;
 
@@ -61,11 +60,12 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
     Vec2i posInViewEncode = {0, 0};
     std::vector<Vec2i> posInAtlasExpected = {{0, 0}, {0, 9}, {9, 4}, {4, 0},
                                              {0, 4}, {0, 0}, {9, 0}, {4, 9}};
-    for (auto &pos : posInAtlasExpected)
+    for (auto &pos : posInAtlasExpected) {
       pos += patch.posInAtlas;
+    }
 
     int i = 0;
-    for (auto flip : flips)
+    for (auto flip : flips) {
       for (auto rotation : rotations) {
         patch.flip = flip;
         patch.rotation = rotation;
@@ -77,17 +77,19 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
 
         ++i;
       }
+    }
   }
 
   SECTION("EvaluateTransformationOf_BottomRight") {
     Vec2i posInViewEncode = {9, 4};
     std::vector<Vec2i> posInAtlasExpected = {{9, 4}, {4, 0}, {0, 0}, {0, 9},
                                              {9, 0}, {4, 9}, {0, 4}, {0, 0}};
-    for (auto &pos : posInAtlasExpected)
+    for (auto &pos : posInAtlasExpected) {
       pos += patch.posInAtlas;
+    }
 
     int i = 0;
-    for (auto flip : flips)
+    for (auto flip : flips) {
       for (auto rotation : rotations) {
         patch.flip = flip;
         patch.rotation = rotation;
@@ -99,7 +101,6 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
 
         ++i;
       }
+    }
   }
 }
-
-

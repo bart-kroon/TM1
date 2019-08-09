@@ -139,7 +139,11 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
   bool isRotated = packerOutput.isRotated();
   int w = c.width();
   int h = c.height();
-
+  int w_align = Common::align(c.width(), m_alignment);
+  int h_align = Common::align(c.height(), m_alignment);
+  //overflow
+  Vec2i patchOverflow = Vec2i({c.jmin(), c.imin()}) + Vec2i({w_align, h_align}) - clusteringMap.getSize();
+ 
   // Step #0 (in atlas)
   Vec2i q0 = {packerOutput.x(), packerOutput.y()};
   int XMin = q0.x() / m_alignment;
@@ -154,14 +158,21 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c,
 
   // Step #1 (in projection)
   Vec2i p0 = {c.jmin(), c.imin()};
+  if (patchOverflow.x() > 0) {
+    p0.x() -= patchOverflow.x();
+  }
+  if (patchOverflow.y() > 0) {
+    p0.y() -= patchOverflow.y();
+  }
   int xMin = p0.x();
   int xMax = p0.x() + w - 1;
   int yMin = p0.y();
   int yMax = p0.y() + h - 1;
 
-  auto p2q = [isRotated, w, p0, q0](const Vec2i p) {
+  auto p2q = [isRotated, w_align, p0, q0](const Vec2i p) {
     return isRotated
-               ? (q0 + Vec2i({p.y() - p0.y(), (w - 1) - (p.x() - p0.x())}))
+               ? (q0 +
+                  Vec2i({p.y() - p0.y(), (w_align - 1) - (p.x() - p0.x())}))
                : (q0 + (p - p0));
   };
 

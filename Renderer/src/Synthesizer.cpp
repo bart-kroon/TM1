@@ -66,30 +66,10 @@ public:
     vector<pair<Mat3x3f, Vec3f>> result;
     result.reserve(cameras.size());
     transform(begin(cameras), end(cameras), back_inserter(result),
-              [&target](const Metadata::CameraParameters &camera) {
+              [&target](const CameraParameters &camera) {
                 return affineParameters(camera, target);
               });
     return result;
-  }
-
-  static Vec2f imagePosition(Vec2f atlas, const AtlasParameters &patch) {
-    const auto posInAtlas = Vec2f(patch.posInAtlas);
-    const auto posInView = Vec2f(patch.posInView);
-    const auto patchSize = Vec2f(patch.patchSize);
-    switch (patch.rotation) {
-    case PatchRotation::upright:
-      return atlas - posInAtlas + posInView;
-    case PatchRotation::ccw: {
-      // Determine patch row and column in view orientation
-      const auto i = atlas.x() - posInAtlas.x();
-      const auto j = patchSize.x() - atlas.y() + posInAtlas.y();
-
-      // Return position in view
-      return patch.posInView + Vec2f{j, i};
-    }
-    default:
-      abort();
-    }
   }
 
   auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
@@ -123,15 +103,16 @@ public:
         const auto &camera = cameras[patch.viewId];
 
         // Look up depth value and affine parameters
-        const auto uv = imagePosition(
-            {float(j_atlas) + 0.5F, float(i_atlas) + 0.5F}, patch);
+        const auto uv = Vec2f( atlasToView({ j_atlas, i_atlas }, patch) );
+
         const auto d = expandDepthValue<10>(
             camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
 
         // Reproject and calculate ray angle
-        const auto xyz = R * unprojectVertex(uv, d, camera) + t;
+        const auto xyz =
+            R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, camera) + t;
         const auto rayAngle = angle(xyz, xyz - t);
         result.push_back({xyz, rayAngle});
       }
@@ -267,13 +248,13 @@ public:
                                      const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-        atlases.size(), target,
-        [&](size_t i, const CameraParameters &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
-                                cameras, target);
-        },
-        resolutionRatio(cameras, target));
+    auto rasterizer =
+        rasterFrame(atlases.size(), target,
+                    [&](size_t i, const CameraParameters &target) {
+                      return unprojectAtlas(atlases[i], ids[i].getPlane(0),
+                                            patches, cameras, target);
+                    },
+                    resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp10(target, rasterizer.normDisp())};
   }
@@ -327,26 +308,24 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam,
 
 Synthesizer::~Synthesizer() = default;
 
-Common::Texture444Depth10Frame
-Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
-                         const Common::PatchIdMapList &maps,
-                         const Metadata::AtlasParametersList &patches,
-                         const Metadata::CameraParametersList &cameras,
-                         const Metadata::CameraParameters &target) const {
+Common::Texture444Depth10Frame Synthesizer::renderFrame(
+    const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+    const AtlasParametersList &patches, const CameraParametersList &cameras,
+    const CameraParameters &target) const {
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
 Common::Texture444Depth16Frame
 Synthesizer::renderFrame(const Common::MVD16Frame &frame,
-                         const Metadata::CameraParametersList &cameras,
-                         const Metadata::CameraParameters &target) const {
+                         const CameraParametersList &cameras,
+                         const CameraParameters &target) const {
   return m_impl->renderFrame(frame, cameras, target);
 }
 
 Common::Mat<float>
 Synthesizer::renderDepth(const Common::Mat<float> &frame,
-                         const Metadata::CameraParameters &camera,
-                         const Metadata::CameraParameters &target) const {
+                         const CameraParameters &camera,
+                         const CameraParameters &target) const {
   return m_impl->renderDepth(frame, camera, target);
 }
 } // namespace TMIV::Renderer

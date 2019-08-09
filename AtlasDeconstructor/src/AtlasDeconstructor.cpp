@@ -38,6 +38,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
+using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasDeconstructor {
 constexpr auto neutralChroma = uint16_t(512);
@@ -73,7 +74,8 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   const Vec2i &q0 = patch.posInAtlas;
   int w = patch.patchSize.x();
   int h = patch.patchSize.y();
-  bool isRotated = patch.rotation != Metadata::PatchRotation::upright;
+  bool isRotated = patch.rotation != PatchRotation::upright &&
+                   patch.rotation != PatchRotation::ht;
   int xMin = q0.x();
   int xLast = q0.x() + (isRotated ? h : w);
   int yMin = q0.y();
@@ -123,105 +125,40 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
     int w = patch.patchSize.x();
     int h = patch.patchSize.y();
-    int xM = patch.posInView.x();
-    int yM = patch.posInView.y();
+    bool isRotated = patch.rotation == PatchRotation::ccw ||
+                     patch.rotation == PatchRotation::cw;
+    int wP = isRotated ? h : w;
+    int hP = isRotated ? w : h;
     int xP = patch.posInAtlas.x();
     int yP = patch.posInAtlas.y();
-    int w_tex = ((xM + w) <= textureViewMap.getWidth())
-                    ? w
-                    : (textureViewMap.getWidth() - xM);
-    int h_tex = ((yM + h) <= textureViewMap.getHeight())
-                    ? h
-                    : (textureViewMap.getHeight() - yM);
 
-    if (patch.rotation == Metadata::PatchRotation::upright) {
-      for (int dy = 0; dy < h_tex; dy++) {
+    for (int dy = 0; dy < hP; dy++) {
+      for (int dx = 0; dx < wP; dx++) {
+        // get position
+        Vec2i pAtlas = {xP + dx, yP + dy};
+        Vec2i pView = atlasToView(pAtlas, patch);
         // Y
-        std::copy(textureAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
-                  textureAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w_tex),
-                  textureViewMap.getPlane(0).row_begin(yM + dy) + xM);
-
-        std::fill(textureAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
-                  textureAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w), 0);
-
+        if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+          textureViewMap.getPlane(0)(pView.y(), pView.x()) =
+              textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
+          textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+        }
         // UV
-        if ((dy % 2) == 0) {
+        if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
           for (int p = 1; p < 3; p++) {
-            std::copy(
-                textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) + xP / 2,
-                textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) +
-                    ((xP + w_tex) / 2),
-                textureViewMap.getPlane(p).row_begin((yM + dy) / 2) + xM / 2);
-
-            std::fill(textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) +
-                          xP / 2,
-                      textureAtlasMap.getPlane(p).row_begin((yP + dy) / 2) +
-                          ((xP + w) / 2),
-                      neutralChroma);
+            if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+              textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
+                  textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 512;
+            }
           }
         }
-
         // Depth
-        std::copy(depthAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
-                  depthAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w_tex),
-                  depthViewMap.getPlane(0).row_begin(yM + dy) + xM);
-
-        std::fill(depthAtlasMap.getPlane(0).row_begin(yP + dy) + xP,
-                  depthAtlasMap.getPlane(0).row_begin(yP + dy) + (xP + w), 0);
-      }
-    } else {
-      for (int dy = 0; dy < h_tex; dy++) {
-        // Y
-        std::copy(
-            std::make_reverse_iterator(
-                textureAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
-            std::make_reverse_iterator(
-                textureAtlasMap.getPlane(0).col_begin(xP + dy) +
-                (yP + (w - w_tex))),
-            textureViewMap.getPlane(0).row_begin(yM + dy) + xM);
-
-        std::fill(
-            std::make_reverse_iterator(
-                textureAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
-            std::make_reverse_iterator(
-                textureAtlasMap.getPlane(0).col_begin(xP + dy) + yP),
-            0);
-
-        // UV
-        if ((dy % 2) == 0) {
-          for (int p = 1; p < 3; p++) {
-            std::copy(std::make_reverse_iterator(
-                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
-                          (yP + w) / 2),
-                      std::make_reverse_iterator(
-                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
-                          (yP + (w - w_tex)) / 2),
-                      textureViewMap.getPlane(p).row_begin((yM + dy) / 2) +
-                          xM / 2);
-
-            std::fill(std::make_reverse_iterator(
-                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
-                          (yP + w) / 2),
-                      std::make_reverse_iterator(
-                          textureAtlasMap.getPlane(p).col_begin((xP + dy) / 2) +
-                          yP / 2),
-                      neutralChroma);
-          }
+        if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+          depthViewMap.getPlane(0)(pView.y(), pView.x()) =
+              depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
+          depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
         }
-
-        // Depth
-        std::copy(std::make_reverse_iterator(
-                      depthAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
-                  std::make_reverse_iterator(
-                      depthAtlasMap.getPlane(0).col_begin(xP + dy) +
-                      (yP + (w - w_tex))),
-                  depthViewMap.getPlane(0).row_begin(yM + dy) + xM);
-
-        std::fill(std::make_reverse_iterator(
-                      depthAtlasMap.getPlane(0).col_begin(xP + dy) + (yP + w)),
-                  std::make_reverse_iterator(
-                      depthAtlasMap.getPlane(0).col_begin(xP + dy) + yP),
-                  0);
       }
     }
   }

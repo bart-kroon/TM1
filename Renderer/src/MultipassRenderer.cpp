@@ -53,7 +53,7 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode,
   for (size_t i = 0; i != subnode.size(); ++i) {
     m_numberOfViewsPerPass.push_back(subnode.at(i).asInt());
   }
-  if (auto subnode = componentNode.require("MergeConflict")) {
+  if (auto subnode = componentNode.optional("MergeConflict")) {
     m_mergeConflict = subnode.asInt();
   }
 }

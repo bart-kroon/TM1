@@ -86,7 +86,7 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {
       if (depthMap[y * patchMap.getWidth() + x] >= 64) {
-        patchMap.getPlane(0)[y * patchMap.getWidth() + x] = patchId;
+        patchMap.getPlane(0)(y, x) = patchId;
       }
     }
   }

@@ -161,3 +161,63 @@ TEST_CASE("requantize", "[quantize_and_expand]") {
   REQUIRE(0U == Cb(7, 13));
   REQUIRE(0U == Cr(0, 5));
 }
+
+TEST_CASE("Trivial use of compressRangeValue", "[compress_depth_range]") {
+	REQUIRE(0x00u == compressRangeValue<uint8_t, uint32_t>(0x00u, 8u, 8u, 0x00u));
+	REQUIRE(0x01u == compressRangeValue<uint8_t, uint32_t>(0x01u, 8u, 8u, 0x00u));
+	REQUIRE(0xFEu == compressRangeValue<uint8_t, uint32_t>(0xFEu, 8u, 8u, 0x00u));
+	REQUIRE(0xFFu == compressRangeValue<uint8_t, uint32_t>(0xFFu, 8u, 8u, 0x00u));
+	REQUIRE(0x0000u == compressRangeValue<uint16_t, uint32_t>(0x0000u, 16u, 16u, 0x0000u));
+	REQUIRE(0x0001u == compressRangeValue<uint16_t, uint32_t>(0x0001u, 16u, 16u, 0x0000u));
+	REQUIRE(0xFFFEu == compressRangeValue<uint16_t, uint32_t>(0xFFFEu, 16u, 16u, 0x0000u));
+	REQUIRE(0xFFFFu == compressRangeValue<uint16_t, uint32_t>(0xFFFFu, 16u, 16u, 0x0000u));
+	REQUIRE(0x000u == compressRangeValue<uint16_t, uint32_t>(0x0000u, 16u, 12u, 0x000u));
+	REQUIRE(0x000u == compressRangeValue<uint16_t, uint32_t>(0x0001u, 16u, 12u, 0x000u));
+	REQUIRE(0xFFFu == compressRangeValue<uint16_t, uint32_t>(0xFFFEu, 16u, 12u, 0x000u));
+	REQUIRE(0xFFFu == compressRangeValue<uint16_t, uint32_t>(0xFFFFu, 16u, 12u, 0x000u));
+}
+
+TEST_CASE("Non-trivial use of compressRangeValue", "[compress_depth_range]") {
+	REQUIRE(0x10u == compressRangeValue<uint8_t, uint32_t>(0x00u, 8u, 8u, 0x10u));
+	REQUIRE(0x21u == compressRangeValue<uint8_t, uint32_t>(0x01u, 8u, 8u, 0x20u));
+	REQUIRE(0xFEu == compressRangeValue<uint8_t, uint32_t>(0xFEu, 8u, 8u, 0x30u));
+	REQUIRE(0xFFu == compressRangeValue<uint8_t, uint32_t>(0xFFu, 8u, 8u, 0x40u));
+	REQUIRE(0x0001u == compressRangeValue<uint16_t, uint32_t>(0x0000u, 16u, 16u, 0x0001u));
+	REQUIRE(0x0021u == compressRangeValue<uint16_t, uint32_t>(0x0001u, 16u, 16u, 0x0020u));
+	REQUIRE(0xFFFEu == compressRangeValue<uint16_t, uint32_t>(0xFFFEu, 16u, 16u, 0x0300u));
+	REQUIRE(0xFFFFu == compressRangeValue<uint16_t, uint32_t>(0xFFFFu, 16u, 16u, 0x4000u));
+	REQUIRE(0x100u == compressRangeValue<uint16_t, uint32_t>(0x0000u, 16u, 12u, 0x100u));
+	REQUIRE(0x200u == compressRangeValue<uint16_t, uint32_t>(0x0001u, 16u, 12u, 0x200u));
+	REQUIRE(0xFFFu == compressRangeValue<uint16_t, uint32_t>(0xFFFEu, 16u, 12u, 0x300u));
+	REQUIRE(0xFFFu == compressRangeValue<uint16_t, uint32_t>(0xFFFFu, 16u, 12u, 0x400u));
+}
+
+TEST_CASE("Trivial use of decompressRangeValue", "[compress_depth_range]") {
+	REQUIRE(0x00u == decompressRangeValue<uint8_t, uint32_t>(0x00u, 8u, 8u, 0x00u));
+	REQUIRE(0x01u == decompressRangeValue<uint8_t, uint32_t>(0x01u, 8u, 8u, 0x00u));
+	REQUIRE(0xFEu == decompressRangeValue<uint8_t, uint32_t>(0xFEu, 8u, 8u, 0x00u));
+	REQUIRE(0xFFu == decompressRangeValue<uint8_t, uint32_t>(0xFFu, 8u, 8u, 0x00u));
+	REQUIRE(0x0000u == decompressRangeValue<uint16_t, uint32_t>(0x0000u, 16u, 16u, 0x0000u));
+	REQUIRE(0x0001u == decompressRangeValue<uint16_t, uint32_t>(0x0001u, 16u, 16u, 0x0000u));
+	REQUIRE(0xFFFEu == decompressRangeValue<uint16_t, uint32_t>(0xFFFEu, 16u, 16u, 0x0000u));
+	REQUIRE(0xFFFFu == decompressRangeValue<uint16_t, uint32_t>(0xFFFFu, 16u, 16u, 0x0000u));
+	REQUIRE(0x0000u == decompressRangeValue<uint16_t, uint32_t>(0x000u, 12u, 16u, 0x0000u));
+	REQUIRE(0x0010u == decompressRangeValue<uint16_t, uint32_t>(0x001u, 12u, 16u, 0x0000u));
+	REQUIRE(0xFFEFu == decompressRangeValue<uint16_t, uint32_t>(0xFFEu, 12u, 16u, 0x0000u));
+	REQUIRE(0xFFFFu == decompressRangeValue<uint16_t, uint32_t>(0xFFFu, 12u, 16u, 0x0000u));
+}
+
+TEST_CASE("Non-trivial use of decompressRangeValue", "[compress_depth_range]") {
+	REQUIRE(0x00u == decompressRangeValue<uint8_t, uint32_t>(0x10u, 8u, 8u, 0x10u));
+	REQUIRE(0x01u == decompressRangeValue<uint8_t, uint32_t>(0x21u, 8u, 8u, 0x20u));
+	REQUIRE(0xFEu == decompressRangeValue<uint8_t, uint32_t>(0xFEu, 8u, 8u, 0x30u));
+	REQUIRE(0xFFu == decompressRangeValue<uint8_t, uint32_t>(0xFFu, 8u, 8u, 0x40u));
+	REQUIRE(0x0000u == decompressRangeValue<uint16_t, uint32_t>(0x0001u, 16u, 16u, 0x0001u));
+	REQUIRE(0x0001u == decompressRangeValue<uint16_t, uint32_t>(0x0021u, 16u, 16u, 0x0020u));
+	REQUIRE(0xFFFEu == decompressRangeValue<uint16_t, uint32_t>(0xFFFEu, 16u, 16u, 0x0300u));
+	REQUIRE(0xFFFFu == decompressRangeValue<uint16_t, uint32_t>(0xFFFFu, 16u, 16u, 0x4000u));
+	REQUIRE(0x0000u == decompressRangeValue<uint16_t, uint32_t>(0x100u, 12u, 16u, 0x100u));
+	REQUIRE(0x0012u == decompressRangeValue<uint16_t, uint32_t>(0x201u, 12u, 16u, 0x200u));
+	REQUIRE(0xFFFFu == decompressRangeValue<uint16_t, uint32_t>(0xFFFu, 12u, 16u, 0x300u));
+	REQUIRE(0xFFFFu == decompressRangeValue<uint16_t, uint32_t>(0xFFFu, 12u, 16u, 0x400u));
+}

@@ -230,13 +230,10 @@ float expandDepthValue(const Metadata::CameraParameters &camera, uint16_t x) {
   const auto near = camera.depthRange[0];
   const auto far = camera.depthRange[1];
 
-  if (x > 0) {
-    const float normDisp = expandValue<bits>(x);
-    if (far >= kilometer) {
-      return near / normDisp;
-    }
-    return far * near / (near + normDisp * (far - near));
+  const float normDisp = expandValue<bits>(x);
+  if (far >= kilometer) {
+    return near / normDisp;
   }
-  return Common::NaN;
+  return far * near / (near + normDisp * (far - near));
 }
 } // namespace TMIV::Image

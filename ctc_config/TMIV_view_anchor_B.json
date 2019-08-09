@@ -2,7 +2,6 @@
     "startFrame": 100,
     "numberOfFrames": 97,
     "intraPeriod": 32,
-    "depthThreshold": 64,
     "SourceTexturePathFmt": "%s_texture_2048x2048_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_2048x2048_yuv420p16le.yuv",
     "SourceDepthBitDepth": 16,

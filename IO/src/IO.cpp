@@ -585,11 +585,11 @@ MVD10Frame loadAtlasAndDecompress(const Json &config,
       loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas",
                               "OutputDirectory", "AtlasTexturePathFmt",
                               "AtlasDepthPathFmt"),
-      64);
+      128);
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD16Frame &frame) {
-  saveAtlas(config, frameIndex, compressDepthRange<YUV400P10>(frame, 64));
+  saveAtlas(config, frameIndex, compressDepthRange<YUV400P10>(frame, 128));
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {

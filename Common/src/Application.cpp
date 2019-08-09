@@ -48,8 +48,7 @@ const auto configFileOption = "-c"s;
 const auto parameterOption = "-p"s;
 const auto helpOption = "--help"s;
 
-Application::Application(const char *tool, vector<const char *> argv)
-    : m_startTime{} {
+Application::Application(const char *tool, vector<const char *> argv) : m_startTime{} {
   auto take = [&argv]() {
     if (argv.empty()) {
       throw runtime_error("Missing a command-line argument");
@@ -81,8 +80,7 @@ Application::Application(const char *tool, vector<const char *> argv)
 
   if (!m_json) {
     ostringstream what;
-    what << "Usage: " << tool
-         << " [OPTIONS...] (-c CONFIGURATION|-p KEY VALUE)+\n";
+    what << "Usage: " << tool << " [OPTIONS...] (-c CONFIGURATION|-p KEY VALUE)+\n";
     throw runtime_error(what.str());
   }
 }
@@ -96,8 +94,7 @@ void Application::add_file(const string &path) {
   ifstream stream(path);
   if (!stream.good()) {
     ostringstream what;
-    what << "Failed to open configuration file \"" << path
-         << "\" for reading\n";
+    what << "Failed to open configuration file \"" << path << "\" for reading\n";
     throw runtime_error(what.str());
   }
   add_stream(stream);
@@ -132,8 +129,8 @@ void Application::startTime() { m_startTime = clock(); }
 void Application::printTime() {
   auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;
   std::cout << std::endl
-            << "Total Time: " << std::fixed << std::setprecision(3)
-            << executeTime << " sec." << std::endl;
+            << "Total Time: " << std::fixed << std::setprecision(3) << executeTime << " sec."
+            << std::endl;
 }
 
 } // namespace TMIV::Common

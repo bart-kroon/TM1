@@ -41,8 +41,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
-CameraParametersList loadCamerasFromJson(const Json &node,
-                                         const vector<string> &names) {
+CameraParametersList loadCamerasFromJson(const Json &node, const vector<string> &names) {
   CameraParametersList result;
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
@@ -53,8 +52,7 @@ CameraParametersList loadCamerasFromJson(const Json &node,
     }
   }
   if (result.size() != names.size()) {
-    throw runtime_error(
-        "Could not find all requested camera names in the metadata JSON file");
+    throw runtime_error("Could not find all requested camera names in the metadata JSON file");
   }
   return result;
 }
@@ -63,12 +61,10 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
   stream << camera.size << ", ";
   switch (camera.type) {
   case ProjectionType::ERP:
-    stream << "ERP " << camera.erpPhiRange << " x " << camera.erpThetaRange
-           << " deg";
+    stream << "ERP " << camera.erpPhiRange << " x " << camera.erpThetaRange << " deg";
     break;
   case ProjectionType::Perspective:
-    stream << "perspective " << camera.perspectiveFocal << ' '
-           << camera.perspectiveCenter;
+    stream << "perspective " << camera.perspectiveFocal << ' ' << camera.perspectiveCenter;
     break;
   case ProjectionType::CubeMap:
     switch (camera.cubicMapType) {
@@ -86,22 +82,21 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
     stream << '?';
   }
   stream << ", depth in " << camera.depthRange << " m, pose "
-         << format("[%6.3f, %6.3f, %6.3f] m, ", camera.position.x(),
-                   camera.position.y(), camera.position.z())
+         << format("[%6.3f, %6.3f, %6.3f] m, ", camera.position.x(), camera.position.y(),
+                   camera.position.z())
          << camera.rotation << " deg";
   return stream;
 }
 
 bool CameraParameters ::operator==(const CameraParameters &other) const {
-  if (size != other.size || position != other.position ||
-      rotation != other.rotation || type != other.type) {
+  if (size != other.size || position != other.position || rotation != other.rotation ||
+      type != other.type) {
     return false;
   }
 
   switch (type) {
   case ProjectionType::ERP:
-    return erpPhiRange == other.erpPhiRange &&
-           erpThetaRange == other.erpThetaRange;
+    return erpPhiRange == other.erpPhiRange && erpThetaRange == other.erpThetaRange;
   case ProjectionType::Perspective:
     return perspectiveFocal == other.perspectiveFocal &&
            perspectiveCenter == other.perspectiveCenter;
@@ -128,8 +123,7 @@ CameraParameters loadCameraFromJson(const Json &node) {
   } else if (proj == "Perspective") {
     parameters.type = ProjectionType::Perspective;
     parameters.perspectiveFocal = node.require("Focal").asFloatVector<2>();
-    parameters.perspectiveCenter =
-        node.require("Principle_point").asFloatVector<2>();
+    parameters.perspectiveCenter = node.require("Principle_point").asFloatVector<2>();
   } else {
     throw runtime_error("Unknown projection type in metadata JSON file");
   }

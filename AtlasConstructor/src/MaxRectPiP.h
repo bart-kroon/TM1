@@ -69,8 +69,7 @@ private:
 
   public:
     Rectangle() = default;
-    Rectangle(int x0, int y0, int x1, int y1)
-        : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
+    Rectangle(int x0, int y0, int x1, int y1) : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
     int left() const { return m_x0; }
     int right() const { return m_x1; }
     int bottom() const { return m_y0; }
@@ -92,8 +91,7 @@ protected:
 
 public:
   MaxRectPiP(int w, int h, int a, bool pip);
-  bool push(const Cluster &c, const ClusteringMap &clusteringMap,
-            Output &packerOutput);
+  bool push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput);
 
 protected:
   void updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,

@@ -44,33 +44,28 @@ namespace TMIV::AtlasDeconstructor {
 constexpr auto neutralChroma = uint16_t(512);
 
 AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
-                                       const Common::Json & /*componentNode*/) {
-}
+                                       const Common::Json & /*componentNode*/) {}
 
-PatchIdMapList
-AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                                  const AtlasParametersList &patchList,
-                                  const MVD10Frame &frame) {
+PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
+                                                 const AtlasParametersList &patchList,
+                                                 const MVD10Frame &frame) {
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize) {
     PatchIdMap patchMap(sz.x(), sz.y());
-    std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(),
-              unusedPatchId);
+    std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
     patchMapList.push_back(std::move(patchMap));
   }
 
   for (size_t id = 0U; id < patchList.size(); ++id) {
-    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id),
-                      frame);
+    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id), frame);
   }
 
   return patchMapList;
 }
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
-                                           PatchIdMapList &patchMapList,
-                                           std::uint16_t patchId,
+                                           PatchIdMapList &patchMapList, std::uint16_t patchId,
                                            const MVD10Frame &frame) const {
   auto &patchMap = patchMapList[patch.atlasId];
   auto &depthMap = frame[patch.atlasId].second.getPlane(0);
@@ -78,8 +73,7 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   const Vec2i &q0 = patch.posInAtlas;
   int w = patch.patchSize.x();
   int h = patch.patchSize.y();
-  bool isRotated = patch.rotation != PatchRotation::upright &&
-                   patch.rotation != PatchRotation::ht;
+  bool isRotated = patch.rotation != PatchRotation::upright && patch.rotation != PatchRotation::ht;
   int xMin = q0.x();
   int xLast = q0.x() + (isRotated ? h : w);
   int yMin = q0.y();
@@ -94,10 +88,9 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   }
 }
 
-MVD16Frame
-AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
-                                      const CameraParametersList &cameraList,
-                                      const AtlasParametersList &patchList) {
+MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
+                                                 const CameraParametersList &cameraList,
+                                                 const AtlasParametersList &patchList) {
   // Initialization
   MVD10Frame mvd10;
 
@@ -132,8 +125,7 @@ AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
     int w = patch.patchSize.x();
     int h = patch.patchSize.y();
-    bool isRotated = patch.rotation == PatchRotation::ccw ||
-                     patch.rotation == PatchRotation::cw;
+    bool isRotated = patch.rotation == PatchRotation::ccw || patch.rotation == PatchRotation::cw;
     int wP = isRotated ? h : w;
     int hP = isRotated ? w : h;
     int xP = patch.posInAtlas.x();

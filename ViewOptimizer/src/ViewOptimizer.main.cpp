@@ -49,8 +49,8 @@ class Application : public Common::Application {
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"ViewOptimizer", move(argv)},
-        m_optimizer{create<IViewOptimizer>("Encoder", "ViewOptimizer")},
+      : Common::Application{"ViewOptimizer", move(argv)}, m_optimizer{create<IViewOptimizer>(
+                                                              "Encoder", "ViewOptimizer")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
   void run() override {

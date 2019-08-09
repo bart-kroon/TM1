@@ -38,8 +38,7 @@
 #include <vector>
 
 namespace TMIV::Common {
-template <class... Args>
-inline std::string format(char const *fmt, Args &&... args) {
+template <class... Args> inline std::string format(char const *fmt, Args &&... args) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
   auto chars = snprintf(nullptr, 0, fmt, std::forward<Args>(args)...);
   std::vector<char> buffer(chars + 1);

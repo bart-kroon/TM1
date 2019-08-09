@@ -52,9 +52,8 @@ public:
   using MaskList = Common::MaskList;
   using AtlasParametersList = Metadata::AtlasParametersList;
 
-  virtual AtlasParametersList
-  pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
-       const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
+  virtual AtlasParametersList pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
+                                   const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

@@ -36,8 +36,7 @@
 #endif
 
 namespace TMIV::Common {
-template <stack::size_type M>
-auto Json::asFloatVector() const -> stack::Vector<float, M> {
+template <stack::size_type M> auto Json::asFloatVector() const -> stack::Vector<float, M> {
   stack::Vector<float, M> result;
   if (size() != M) {
     throw std::runtime_error("JSON float vector has wrong length");
@@ -48,8 +47,7 @@ auto Json::asFloatVector() const -> stack::Vector<float, M> {
   return result;
 }
 
-template <stack::size_type M>
-auto Json::asIntVector() const -> stack::Vector<int, M> {
+template <stack::size_type M> auto Json::asIntVector() const -> stack::Vector<int, M> {
   stack::Vector<int, M> result;
   if (size() != M) {
     throw std::runtime_error("JSON int vector has wrong length");

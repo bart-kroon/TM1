@@ -50,9 +50,7 @@ inline double rad2deg(double x) { return x * 180. / M_PI; }
 
 template <typename T> T sqr(T val) { return val * val; }
 template <typename T> T cube(T val) { return val * val * val; }
-template <typename T> int sgn(T val) {
-  return int(T(0) < val) - int(val < T(0));
-}
+template <typename T> int sgn(T val) { return int(T(0) < val) - int(val < T(0)); }
 template <typename T> T clamp(T val, T min, T max) {
   if (val < min) {
     return min;
@@ -62,9 +60,7 @@ template <typename T> T clamp(T val, T min, T max) {
   }
   return val;
 }
-template <typename T> bool inRange(T val, T min, T max) {
-  return ((min <= val) && (val <= max));
-}
+template <typename T> bool inRange(T val, T min, T max) { return ((min <= val) && (val <= max)); }
 template <typename T> T is_zero(T val) {
   using std::abs;
   return (abs(val) < std::numeric_limits<T>::epsilon());
@@ -106,15 +102,13 @@ inline double pps2ppd(double pps) {
 }
 
 template <typename T,
-          typename std::enable_if<std::is_integral<T>::value ||
-                                      std::is_floating_point<T>::value,
+          typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value,
                                   int>::type = 0>
 T conjugate(T v) {
   return v;
 }
 template <typename T,
-          typename std::enable_if<!(std::is_integral<T>::value ||
-                                    std::is_floating_point<T>::value),
+          typename std::enable_if<!(std::is_integral<T>::value || std::is_floating_point<T>::value),
                                   int>::type = 0>
 T conjugate(T v) {
   return std::conj(v);

@@ -53,12 +53,10 @@ private:
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"AtlasConstructor", move(argv)},
-        m_atlasConstructor{
-            create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
+        m_atlasConstructor{create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()},
-        m_omafV1CompatibleFlag{
-            json().require("OmafV1CompatibleFlag").asBool()} {}
+        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()} {}
 
   void run() override {
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
@@ -74,8 +72,7 @@ public:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto views = IO::loadOptimizedFrame(
-          json(), {IO::sizesOf(cameras.basic), IO::sizesOf(cameras.additional)},
-          i);
+          json(), {IO::sizesOf(cameras.basic), IO::sizesOf(cameras.additional)}, i);
       m_atlasConstructor->pushFrame(move(views.basic), move(views.additional));
     }
 
@@ -85,18 +82,15 @@ public:
 
     for (size_t i = 0; i < atlasSize.size(); i++) {
       auto sz = atlasSize[i];
-      auto nbPatch = std::count_if(
-          m_atlasConstructor->getPatchList().begin(),
-          m_atlasConstructor->getPatchList().end(),
-          [i](const AtlasParameters &p) { return (p.atlasId == i); });
+      auto nbPatch = std::count_if(m_atlasConstructor->getPatchList().begin(),
+                                   m_atlasConstructor->getPatchList().end(),
+                                   [i](const AtlasParameters &p) { return (p.atlasId == i); });
 
-      cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y()
-           << "): " << nbPatch << " patches\n";
+      cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y() << "): " << nbPatch << " patches\n";
     }
 
     IO::saveMivMetadata(json(), intraFrame,
-                        {atlasSize, m_omafV1CompatibleFlag,
-                         m_atlasConstructor->getPatchList(),
+                        {atlasSize, m_omafV1CompatibleFlag, m_atlasConstructor->getPatchList(),
                          m_atlasConstructor->getCameraList()});
 
     for (int i = intraFrame; i < endFrame; ++i) {

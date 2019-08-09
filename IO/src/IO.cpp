@@ -57,8 +57,7 @@ string getFullPath(const Json &config, const string &baseDirectoryField,
   string fileName =
       cameraName.empty()
           ? format(config.require(fileNameField).asString().c_str(), cameraId)
-          : format(config.require(fileNameField).asString().c_str(),
-                   cameraName.c_str());
+          : format(config.require(fileNameField).asString().c_str(), cameraName.c_str());
 
   if (!fileName.empty() && fileName.front() == '/') {
     return fileName;
@@ -97,10 +96,8 @@ void padZeros(ostream &stream, int bytes) {
 }
 
 template <typename FORMAT>
-void writeFrame(const string &path, const Frame<FORMAT> &frame,
-                int frameIndex) {
-  ofstream stream(path,
-                  (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary);
+void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) {
+  ofstream stream(path, (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary);
   if (!stream.good()) {
     throw runtime_error("Failed to open file for writing: " + path);
   }
@@ -114,43 +111,36 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame,
 }
 
 template <typename FORMAT>
-MVDFrame<FORMAT>
-loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
-             const char *what, const char *directory,
-             const char *texturePathFmt, const char *depthPathFmt,
-             const std::vector<std::string> &cameraNames = {}) {
+MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
+                              const char *what, const char *directory, const char *texturePathFmt,
+                              const char *depthPathFmt,
+                              const std::vector<std::string> &cameraNames = {}) {
   cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());
 
   for (size_t i = 0; i < sizes.size(); ++i) {
-    result.emplace_back(
-        readFrame<YUV420P10>(
-            getFullPath(config, directory, texturePathFmt, i,
-                        cameraNames.empty() ? "" : cameraNames[i]),
-            frameIndex, sizes[i]),
-        readFrame<FORMAT>(
-            getFullPath(config, directory, depthPathFmt, i,
-                        cameraNames.empty() ? "" : cameraNames[i]),
-            frameIndex, sizes[i]));
+    result.emplace_back(readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i,
+                                                         cameraNames.empty() ? "" : cameraNames[i]),
+                                             frameIndex, sizes[i]),
+                        readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i,
+                                                      cameraNames.empty() ? "" : cameraNames[i]),
+                                          frameIndex, sizes[i]));
   }
 
   return result;
 }
 
 template <typename FORMAT>
-void saveMVDFrame(const Json &config, int frameIndex,
-                  const MVDFrame<FORMAT> &frame, const char *what,
-                  const char *directory, const char *texturePathFmt,
+void saveMVDFrame(const Json &config, int frameIndex, const MVDFrame<FORMAT> &frame,
+                  const char *what, const char *directory, const char *texturePathFmt,
                   const char *depthPathFmt) {
   cout << "Saving " << what << " frame " << frameIndex << endl;
 
   for (size_t i = 0; i < frame.size(); ++i) {
-    writeFrame(getFullPath(config, directory, texturePathFmt, i),
-               frame[i].first, frameIndex);
-    writeFrame(getFullPath(config, directory, depthPathFmt, i), frame[i].second,
-               frameIndex);
+    writeFrame(getFullPath(config, directory, texturePathFmt, i), frame[i].first, frameIndex);
+    writeFrame(getFullPath(config, directory, depthPathFmt, i), frame[i].second, frameIndex);
   }
 }
 
@@ -229,8 +219,7 @@ void writeAtlasSizeToFile(ofstream &os, const vector<Vec2i> &atlasSize) {
   os.write(reinterpret_cast<const char *>(&nbAtlas), sizeof(uint8_t));
 
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  os.write(reinterpret_cast<const char *>(atlasSize.data()),
-           nbAtlas * sizeof(Vec2i));
+  os.write(reinterpret_cast<const char *>(atlasSize.data()), nbAtlas * sizeof(Vec2i));
 }
 
 bool readFlagFromFile(ifstream &is) {
@@ -311,8 +300,7 @@ T readMetadataFromFile(const string &path, int frameIndex,
     stream.read(reinterpret_cast<char *>(&frameId), sizeof(uint32_t));
 
     if (!stream.good()) {
-      throw runtime_error("Failed to read frame #" + to_string(frameIndex) +
-                          " from file: " + path);
+      throw runtime_error("Failed to read frame #" + to_string(frameIndex) + " from file: " + path);
     }
 
     if (frameId != uint32_t(frameIndex)) {
@@ -329,8 +317,7 @@ T readMetadataFromFile(const string &path, int frameIndex,
 template <typename T>
 void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
                          function<void(ofstream &, const T &)> writeFunction) {
-  ofstream stream{path,
-                  (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary};
+  ofstream stream{path, (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary};
 
   if (!stream.good()) {
     throw runtime_error("Failed to open file: " + path);
@@ -342,8 +329,7 @@ void writeMetadataToFile(const string &path, int frameIndex, const T &metadata,
   stream.write(reinterpret_cast<const char *>(&frameId), sizeof(uint32_t));
 
   if (!stream.good()) {
-    throw runtime_error("Failed to write frame #" + to_string(frameIndex) +
-                        " to file: " + path);
+    throw runtime_error("Failed to write frame #" + to_string(frameIndex) + " to file: " + path);
   }
 
   // Metadata
@@ -359,8 +345,7 @@ Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
   std::string line;
   std::getline(stream, line);
 
-  std::regex re_header(
-      R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
+  std::regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
   if (!std::regex_match(line, re_header)) {
     throw std::runtime_error("Format error in the pose trace header");
   }
@@ -388,8 +373,7 @@ Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
     }
   }
 
-  throw std::runtime_error("Unable to load required frame index " +
-                           to_string(frameIndex));
+  throw std::runtime_error("Unable to load required frame index " + to_string(frameIndex));
 }
 
 } // namespace
@@ -405,18 +389,15 @@ auto sizesOf(const CameraParametersList &cameras) -> vector<Vec2i> {
 CameraParametersList loadSourceMetadata(const Json &config) {
   cout << "Loading source metadata\n";
 
-  string cameraPath =
-      getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+  string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
   ifstream stream{cameraPath};
 
   if (!stream.good()) {
-    throw runtime_error("Failed to load source camera parameters\n" +
-                        cameraPath);
+    throw runtime_error("Failed to load source camera parameters\n" + cameraPath);
   }
 
-  auto cameras =
-      loadCamerasFromJson(Json{stream}.require("cameras"),
-                          config.require("SourceCameraNames").asStringVector());
+  auto cameras = loadCamerasFromJson(Json{stream}.require("cameras"),
+                                     config.require("SourceCameraNames").asStringVector());
 
   for (size_t i = 0; i < cameras.size(); ++i) {
     cout << "Camera " << setw(2) << i << ": " << cameras[i] << '\n';
@@ -427,20 +408,18 @@ CameraParametersList loadSourceMetadata(const Json &config) {
 
 namespace {
 template <typename FORMAT>
-MVD16Frame loadSourceFrame_impl(int bits, const Json &config,
-                                const vector<Vec2i> &sizes, int frameIndex) {
+MVD16Frame loadSourceFrame_impl(int bits, const Json &config, const vector<Vec2i> &sizes,
+                                int frameIndex) {
   return requantize<YUV400P16>(
-      loadMVDFrame<FORMAT>(
-          config, sizes, frameIndex + config.require("startFrame").asInt(),
-          "source", "SourceDirectory", "SourceTexturePathFmt",
-          "SourceDepthPathFmt",
-          config.require("SourceCameraNames").asStringVector()),
+      loadMVDFrame<FORMAT>(config, sizes, frameIndex + config.require("startFrame").asInt(),
+                           "source", "SourceDirectory", "SourceTexturePathFmt",
+                           "SourceDepthPathFmt",
+                           config.require("SourceCameraNames").asStringVector()),
       bits);
 }
 } // namespace
 
-MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
-                           int frameIndex) {
+MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex) {
   const auto bits = config.require("SourceDepthBitDepth").asInt();
   if (0 < bits && bits <= 8) {
     return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
@@ -451,15 +430,12 @@ MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes,
   throw runtime_error("Invalid SourceDepthBitDepth");
 }
 
-BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,
-                                                            int frameIndex) {
+BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config, int frameIndex) {
   cout << "Loading optimized metadata\n";
 
   BasicAdditional<CameraParametersList> result;
-  string basicMetadataPath =
-      getFullPath(config, "OutputDirectory", "BasicMetadataPath");
-  string additionalMetadataPath =
-      getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
+  string basicMetadataPath = getFullPath(config, "OutputDirectory", "BasicMetadataPath");
+  string additionalMetadataPath = getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
 
   auto skipFunction = [](ifstream &is) { skipCameraListFromFile(is); };
 
@@ -469,66 +445,57 @@ BasicAdditional<CameraParametersList> loadOptimizedMetadata(const Json &config,
 
   // Reading
   return BasicAdditional<CameraParametersList>{
-      readMetadataFromFile<CameraParametersList>(basicMetadataPath, frameIndex,
-                                                 skipFunction, readFunction),
-      readMetadataFromFile<CameraParametersList>(
-          additionalMetadataPath, frameIndex, skipFunction, readFunction)};
+      readMetadataFromFile<CameraParametersList>(basicMetadataPath, frameIndex, skipFunction,
+                                                 readFunction),
+      readMetadataFromFile<CameraParametersList>(additionalMetadataPath, frameIndex, skipFunction,
+                                                 readFunction)};
 }
 
-void saveOptimizedMetadata(
-    const Json &config, int frameIndex,
-    const BasicAdditional<CameraParametersList> &metadata) {
+void saveOptimizedMetadata(const Json &config, int frameIndex,
+                           const BasicAdditional<CameraParametersList> &metadata) {
   cout << "Saving metadata of optimized frame " << frameIndex << '\n';
 
-  string basicMetadataPath =
-      getFullPath(config, "OutputDirectory", "BasicMetadataPath");
-  string additionalMetadataPath =
-      getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
+  string basicMetadataPath = getFullPath(config, "OutputDirectory", "BasicMetadataPath");
+  string additionalMetadataPath = getFullPath(config, "OutputDirectory", "AdditionalMetadataPath");
 
   auto writeFunction = [](ofstream &os, const CameraParametersList &metadata) {
     writeCameraListToFile(os, metadata);
   };
 
-  writeMetadataToFile<CameraParametersList>(basicMetadataPath, frameIndex,
-                                            metadata.basic, writeFunction);
-  writeMetadataToFile<CameraParametersList>(additionalMetadataPath, frameIndex,
-                                            metadata.additional, writeFunction);
+  writeMetadataToFile<CameraParametersList>(basicMetadataPath, frameIndex, metadata.basic,
+                                            writeFunction);
+  writeMetadataToFile<CameraParametersList>(additionalMetadataPath, frameIndex, metadata.additional,
+                                            writeFunction);
 }
 
-BasicAdditional<MVD16Frame>
-loadOptimizedFrame(const Json &config,
-                   const BasicAdditional<vector<Vec2i>> &sizes,
-                   int frameIndex) {
-  return {loadMVDFrame<YUV400P16>(config, sizes.basic, frameIndex,
-                                  "basic views of", "OutputDirectory",
-                                  "BasicTexturePathFmt", "BasicDepthPathFmt"),
-          loadMVDFrame<YUV400P16>(config, sizes.additional, frameIndex,
-                                  "additional views of", "OutputDirectory",
-                                  "AdditionalTexturePathFmt",
+BasicAdditional<MVD16Frame> loadOptimizedFrame(const Json &config,
+                                               const BasicAdditional<vector<Vec2i>> &sizes,
+                                               int frameIndex) {
+  return {loadMVDFrame<YUV400P16>(config, sizes.basic, frameIndex, "basic views of",
+                                  "OutputDirectory", "BasicTexturePathFmt", "BasicDepthPathFmt"),
+          loadMVDFrame<YUV400P16>(config, sizes.additional, frameIndex, "additional views of",
+                                  "OutputDirectory", "AdditionalTexturePathFmt",
                                   "AdditionalDepthPathFmt")};
 }
 
 void saveOptimizedFrame(const Json &config, int frameIndex,
                         const BasicAdditional<MVD16Frame> &frame) {
-  saveMVDFrame(config, frameIndex, frame.basic, "basic views of",
-               "OutputDirectory", "BasicTexturePathFmt", "BasicDepthPathFmt");
-  saveMVDFrame(config, frameIndex, frame.additional, "additional views of",
-               "OutputDirectory", "AdditionalTexturePathFmt",
-               "AdditionalDepthPathFmt");
+  saveMVDFrame(config, frameIndex, frame.basic, "basic views of", "OutputDirectory",
+               "BasicTexturePathFmt", "BasicDepthPathFmt");
+  saveMVDFrame(config, frameIndex, frame.additional, "additional views of", "OutputDirectory",
+               "AdditionalTexturePathFmt", "AdditionalDepthPathFmt");
 }
 
-void savePrunedFrame(const Json &config, int frameIndex,
-                     const MVD16Frame &frame) {
-  saveMVDFrame(config, frameIndex, frame, "pruned", "OutputDirectory",
-               "PrunedViewTexturePathFmt", "PrunedViewDepthPathFmt");
+void savePrunedFrame(const Json &config, int frameIndex, const MVD16Frame &frame) {
+  saveMVDFrame(config, frameIndex, frame, "pruned", "OutputDirectory", "PrunedViewTexturePathFmt",
+               "PrunedViewDepthPathFmt");
 }
 
 MivMetadata loadMivMetadata(const Json &config, int frameIndex) {
   cout << "Loading MIV metadata of frame " << frameIndex << '\n';
 
   MivMetadata result;
-  string metadataPath =
-      getFullPath(config, "OutputDirectory", "AtlasMetadataPath");
+  string metadataPath = getFullPath(config, "OutputDirectory", "AtlasMetadataPath");
 
   auto skipFunction = [](ifstream &is) {
     skipAtlasSizeFromFile(is);
@@ -538,27 +505,23 @@ MivMetadata loadMivMetadata(const Json &config, int frameIndex) {
   };
 
   auto readFunction = [](ifstream &is) -> MivMetadata {
-    return MivMetadata{readAtlasSizeFromFile(is), readFlagFromFile(is),
-                       readPatchListFromFile(is), readCameraListFromFile(is)};
+    return MivMetadata{readAtlasSizeFromFile(is), readFlagFromFile(is), readPatchListFromFile(is),
+                       readCameraListFromFile(is)};
   };
 
   // Reading
-  return readMetadataFromFile<MivMetadata>(metadataPath, frameIndex,
-                                           skipFunction, readFunction);
+  return readMetadataFromFile<MivMetadata>(metadataPath, frameIndex, skipFunction, readFunction);
 }
 
 bool MivMetadata::operator==(const MivMetadata &other) const {
-  return atlasSize == other.atlasSize &&
-         omafV1CompatibleFlag == other.omafV1CompatibleFlag &&
+  return atlasSize == other.atlasSize && omafV1CompatibleFlag == other.omafV1CompatibleFlag &&
          patches == other.patches && cameras == other.cameras;
 }
 
-void saveMivMetadata(const Json &config, int frameIndex,
-                     const MivMetadata &metadata) {
+void saveMivMetadata(const Json &config, int frameIndex, const MivMetadata &metadata) {
   cout << "Saving MIV metadata of frame " << frameIndex << '\n';
 
-  string metadataPath =
-      getFullPath(config, "OutputDirectory", "AtlasMetadataPath");
+  string metadataPath = getFullPath(config, "OutputDirectory", "AtlasMetadataPath");
 
   auto writeFunction = [](ofstream &os, const MivMetadata &metadata) {
     writeAtlasSizeToFile(os, metadata.atlasSize);
@@ -567,24 +530,19 @@ void saveMivMetadata(const Json &config, int frameIndex,
     writeCameraListToFile(os, metadata.cameras);
   };
 
-  writeMetadataToFile<MivMetadata>(metadataPath, frameIndex, metadata,
-                                   writeFunction);
+  writeMetadataToFile<MivMetadata>(metadataPath, frameIndex, metadata, writeFunction);
 }
 
-MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize,
-                     int frameIndex) {
-  return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas",
-                                 "OutputDirectory", "AtlasTexturePathFmt",
-                                 "AtlasDepthPathFmt");
+MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize, int frameIndex) {
+  return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
+                                 "AtlasTexturePathFmt", "AtlasDepthPathFmt");
 }
 
-MVD10Frame loadAtlasAndDecompress(const Json &config,
-                                  const vector<Vec2i> &atlasSize,
+MVD10Frame loadAtlasAndDecompress(const Json &config, const vector<Vec2i> &atlasSize,
                                   int frameIndex) {
   return decompressDepthRange<YUV400P10>(
-      loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas",
-                              "OutputDirectory", "AtlasTexturePathFmt",
-                              "AtlasDepthPathFmt"),
+      loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
+                              "AtlasTexturePathFmt", "AtlasDepthPathFmt"),
       128);
 }
 
@@ -593,21 +551,18 @@ void saveAtlas(const Json &config, int frameIndex, const MVD16Frame &frame) {
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
-  saveMVDFrame(config, frameIndex, frame, "atlas", "OutputDirectory",
-               "AtlasTexturePathFmt", "AtlasDepthPathFmt");
+  saveMVDFrame(config, frameIndex, frame, "atlas", "OutputDirectory", "AtlasTexturePathFmt",
+               "AtlasDepthPathFmt");
 }
 
-PatchIdMapList loadPatchIdMaps(const Json &config,
-                               const vector<Vec2i> &atlasSize, int frameIndex) {
+PatchIdMapList loadPatchIdMaps(const Json &config, const vector<Vec2i> &atlasSize, int frameIndex) {
   cout << "Loading patchIdMap frame " << frameIndex << '\n';
 
   PatchIdMapList result;
 
   for (size_t id = 0; id < atlasSize.size(); ++id) {
-    string texturePath =
-        getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
-    auto textureFrame =
-        readFrame<YUV400P16>(texturePath, frameIndex, atlasSize[id]);
+    string texturePath = getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
+    auto textureFrame = readFrame<YUV400P16>(texturePath, frameIndex, atlasSize[id]);
 
     result.push_back(move(textureFrame));
   }
@@ -615,13 +570,11 @@ PatchIdMapList loadPatchIdMaps(const Json &config,
   return result;
 }
 
-void savePatchIdMaps(const Json &config, int frameIndex,
-                     const PatchIdMapList &maps) {
+void savePatchIdMaps(const Json &config, int frameIndex, const PatchIdMapList &maps) {
   cout << "Saving patchIdMap frame " << frameIndex << '\n';
 
   for (size_t id = 0; id < maps.size(); ++id) {
-    string texturePath =
-        getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
+    string texturePath = getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
     writeFrame(texturePath, maps[id], frameIndex);
   }
 }
@@ -630,8 +583,7 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
 
   CameraParameters result;
 
-  string cameraPath =
-      getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+  string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   ifstream stream{cameraPath};
   if (!stream.good()) {
@@ -640,8 +592,7 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
 
   auto outputCameraName = config.require("OutputCameraName").asString();
 
-  auto cameras =
-      loadCamerasFromJson(Json{stream}.require("cameras"), {outputCameraName});
+  auto cameras = loadCamerasFromJson(Json{stream}.require("cameras"), {outputCameraName});
 
   if (cameras.empty()) {
     throw runtime_error("Unknown OutputCameraName " + outputCameraName);
@@ -650,8 +601,7 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
   result = cameras[0];
 
   if (auto nodeOutputCameraPoseTrace = config.optional("PoseTracePath")) {
-    string poseTracePath =
-        getFullPath(config, "SourceDirectory", "PoseTracePath");
+    string poseTracePath = getFullPath(config, "SourceDirectory", "PoseTracePath");
     ifstream stream{poseTracePath};
 
     if (!stream.good()) {
@@ -667,19 +617,16 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
   return result;
 }
 
-void saveViewport(const Json &config, int frameIndex,
-                  const TextureDepth10Frame &frame) {
+void saveViewport(const Json &config, int frameIndex, const TextureDepth10Frame &frame) {
   cout << "Saving viewport frame " << frameIndex << '\n';
 
-  string texturePath =
-      getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
-                  config.require("OutputCameraName").asString());
+  string texturePath = getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
+                                   config.require("OutputCameraName").asString());
   writeFrame(texturePath, frame.first, frameIndex);
 
   if (config.optional("OutputDepthPath")) {
-    string depthPath =
-        getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,
-                    config.require("OutputCameraName").asString());
+    string depthPath = getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,
+                                   config.require("OutputCameraName").asString());
     writeFrame(depthPath, frame.second, frameIndex);
   }
 }
@@ -691,9 +638,8 @@ pair<int, int> getExtendedIndex(const Json &config, int frameIndex) {
   int frameGroupId = frameIndex / numberOfFrames;
   int frameRelativeId = frameIndex % numberOfFrames;
 
-  int frameIndexExtended = (frameGroupId % 2) != 0
-                               ? (numberOfFrames - (frameRelativeId + 1))
-                               : frameRelativeId;
+  int frameIndexExtended =
+      (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
   int metadataIndexExtended = frameIndexExtended / intraPeriod;
 
   return {metadataIndexExtended * intraPeriod, frameIndexExtended};

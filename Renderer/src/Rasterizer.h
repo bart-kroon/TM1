@@ -88,8 +88,7 @@ public:
   auto normWeight() const -> Common::Mat<float>;
 
   // Output attribute map I (e.g. color)
-  template <size_t I>
-  auto attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>>;
+  template <size_t I> auto attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>>;
 
   // Visit each pixel in row-major order
   //
@@ -124,8 +123,7 @@ private:
   using Size = Common::Mat<float>::tuple_type;
 
   void submitTriangle(TriangleDescriptor descriptor, const Batch &batch);
-  void rasterTriangle(TriangleDescriptor descriptor, const Batch &batch,
-                      Strip &strip);
+  void rasterTriangle(TriangleDescriptor descriptor, const Batch &batch, Strip &strip);
   void clearBatches();
 
   const Pixel m_pixel;

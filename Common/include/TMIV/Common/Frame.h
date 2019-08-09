@@ -143,10 +143,8 @@ using Texture444Depth10Frame = std::pair<Texture444Frame, Depth10Frame>;
 using Texture444Depth16Frame = std::pair<Texture444Frame, Depth16Frame>;
 
 // Generalize on depth map format
-template <typename FORMAT>
-using TextureDepthFrame = std::pair<Frame<YUV420P10>, Frame<FORMAT>>;
-template <typename FORMAT>
-using MVDFrame = std::vector<TextureDepthFrame<FORMAT>>;
+template <typename FORMAT> using TextureDepthFrame = std::pair<Frame<YUV420P10>, Frame<FORMAT>>;
+template <typename FORMAT> using MVDFrame = std::vector<TextureDepthFrame<FORMAT>>;
 
 const auto unusedPatchId = std::uint16_t(65535);
 } // namespace TMIV::Common

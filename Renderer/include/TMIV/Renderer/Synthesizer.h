@@ -39,10 +39,8 @@
 namespace TMIV::Renderer {
 class Synthesizer : public ISynthesizer {
 public:
-  Synthesizer(const Common::Json & /*unused*/,
-              const Common::Json & /*componentNode*/);
-  Synthesizer(float rayAngleParam, float depthParam, float stretchingParam,
-              float maxStretching);
+  Synthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  Synthesizer(float rayAngleParam, float depthParam, float stretchingParam, float maxStretching);
   Synthesizer(const Synthesizer &) = delete;
   Synthesizer(Synthesizer &&) = default;
   Synthesizer &operator=(const Synthesizer &) = delete;
@@ -50,21 +48,18 @@ public:
   ~Synthesizer() override;
 
   Common::Texture444Depth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
+  renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
               const Metadata::AtlasParametersList &patches,
               const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD16Frame &frame,
-              const Metadata::CameraParametersList &cameras,
+  renderFrame(const Common::MVD16Frame &frame, const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
-  Common::Mat<float>
-  renderDepth(const Common::Mat<float> &frame,
-              const Metadata::CameraParameters &camera,
-              const Metadata::CameraParameters &target) const override;
+  Common::Mat<float> renderDepth(const Common::Mat<float> &frame,
+                                 const Metadata::CameraParameters &camera,
+                                 const Metadata::CameraParameters &target) const override;
 
 private:
   class Impl;

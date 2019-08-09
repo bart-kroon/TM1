@@ -67,27 +67,24 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       : camera{camera_},
 
         // Projection sub-type
-        northPole{camera.erpThetaRange[1] == quarterCycle},
-        southPole{camera.erpThetaRange[0] == -quarterCycle},
-        wraps{camera.erpPhiRange[0] == -halfCycle &&
-              camera.erpPhiRange[1] == halfCycle},
+        northPole{camera.erpThetaRange[1] == quarterCycle}, southPole{camera.erpThetaRange[0] ==
+                                                                      -quarterCycle},
+        wraps{camera.erpPhiRange[0] == -halfCycle && camera.erpPhiRange[1] == halfCycle},
 
         // Mesh structure
-        icols{camera.size.x()}, irows{camera.size.y()}, ocols{camera.size.x() +
-                                                              2 - int(wraps)},
-        orows{camera.size.y() + 2 - int(northPole) - int(southPole)},
-        osize{ocols * orows + int(southPole) + int(northPole)},
-        numTriangles{2 * (orows - 1) * (ocols - 1) +
-                     (northPole ? ocols - 1 : 0) + (southPole ? ocols - 1 : 0)},
+        icols{camera.size.x()}, irows{camera.size.y()}, ocols{camera.size.x() + 2 - int(wraps)},
+        orows{camera.size.y() + 2 - int(northPole) - int(southPole)}, osize{ocols * orows +
+                                                                            int(southPole) +
+                                                                            int(northPole)},
+        numTriangles{2 * (orows - 1) * (ocols - 1) + (northPole ? ocols - 1 : 0) +
+                     (southPole ? ocols - 1 : 0)},
 
         // Precomputed values used in te unprojection equation
-        phi0{Common::radperdeg * camera.erpPhiRange[1]},
-        theta0{Common::radperdeg * camera.erpThetaRange[1]},
-        dphi_du{-Common::radperdeg *
-                (camera.erpPhiRange[1] - camera.erpPhiRange[0]) /
+        phi0{Common::radperdeg * camera.erpPhiRange[1]}, theta0{Common::radperdeg *
+                                                                camera.erpThetaRange[1]},
+        dphi_du{-Common::radperdeg * (camera.erpPhiRange[1] - camera.erpPhiRange[0]) /
                 camera.size.x()},
-        dtheta_dv{-Common::radperdeg *
-                  (camera.erpThetaRange[1] - camera.erpThetaRange[0]) /
+        dtheta_dv{-Common::radperdeg * (camera.erpThetaRange[1] - camera.erpThetaRange[0]) /
                   camera.size.y()},
 
         // Precomputed values used in the projection equation
@@ -106,20 +103,17 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
     using std::sin;
     const float phi = phi0 + dphi_du * uv.x();
     const float theta = theta0 + dtheta_dv * uv.y();
-    return depth * Common::Vec3f{cos(theta) * cos(phi), cos(theta) * sin(phi),
-                                 sin(theta)};
+    return depth * Common::Vec3f{cos(theta) * cos(phi), cos(theta) * sin(phi), sin(theta)};
   }
 
   // Projection equation
-  auto projectVertex(const SceneVertexDescriptor &v) const
-      -> ImageVertexDescriptor const {
+  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
     using std::asin;
     using std::atan2;
     const auto radius = norm(v.position);
     const auto phi = atan2(v.position.y(), v.position.x());
     const auto theta = asin(v.position.z() / radius);
-    const auto position =
-        Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
+    const auto position = Common::Vec2f{u0 + du_dphi * phi, v0 + dv_dtheta * theta};
     return {position, radius, v.rayAngle};
   }
 
@@ -161,8 +155,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
   // Helper function to average the value over an entire row (used for the
   // poles)
-  template <class T>
-  auto averageRow(const Common::Mat<T> &matrix, int row) const {
+  template <class T> auto averageRow(const Common::Mat<T> &matrix, int row) const {
     auto sum = 0. * T();
     for (int column = 0; column < icols; ++column) {
       auto value = matrix(row, column);
@@ -183,14 +176,12 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
   // coordinate (i, j)
   float triangleArea(int i, int j) const {
     return (!wraps && (j == 0 || j == ocols - 1) ? 0.25F : 0.5F) *
-           ((!northPole && i == 0) || (!southPole && i == orows - 1) ? 0.5F
-                                                                     : 1.F);
+           ((!northPole && i == 0) || (!southPole && i == orows - 1) ? 0.5F : 1.F);
   }
 
   // List of 3-D vertices in the reference frame of the target camera
-  auto
-  makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                const Metadata::CameraParameters &target) const
+  auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
+                                     const Metadata::CameraParameters &target) const
       -> SceneVertexDescriptorList {
     SceneVertexDescriptorList result;
     result.reserve(osize);
@@ -260,8 +251,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
   // List of vertex attributes in matching order
   template <class T>
-  auto makeVertexAttributeList(const Common::Mat<T> &matrix) const
-      -> std::vector<T> {
+  auto makeVertexAttributeList(const Common::Mat<T> &matrix) const -> std::vector<T> {
     std::vector<T> result;
     result.reserve(osize);
     for (int i = 0; i < orows; ++i) {
@@ -281,8 +271,7 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
 
   // Project mesh to target view
   template <typename... T>
-  auto project(SceneVertexDescriptorList sceneVertices,
-               TriangleDescriptorList triangles,
+  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
                std::tuple<std::vector<T>...> attributes) {
     ImageVertexDescriptorList imageVertices;
     imageVertices.reserve(sceneVertices.size());

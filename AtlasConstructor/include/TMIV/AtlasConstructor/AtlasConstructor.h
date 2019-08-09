@@ -47,8 +47,7 @@ namespace TMIV::AtlasConstructor {
 // The AtlasConstructor of TMIV 1.0 provided by Technicolor
 class AtlasConstructor : public IAtlasConstructor {
 public:
-  AtlasConstructor(const Common::Json & /*rootNode*/,
-                   const Common::Json & /*componentNode*/);
+  AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   AtlasConstructor(const AtlasConstructor &) = delete;
   AtlasConstructor(AtlasConstructor &&) = default;
   AtlasConstructor &operator=(const AtlasConstructor &) = delete;
@@ -64,17 +63,12 @@ public:
   void completeIntraPeriod() override;
 
   std::vector<Common::Vec2i> getAtlasSize() const override;
-  const CameraParametersList &getCameraList() const override {
-    return m_cameras;
-  }
-  const AtlasParametersList &getPatchList() const override {
-    return m_patchList;
-  }
+  const CameraParametersList &getCameraList() const override { return m_cameras; }
+  const AtlasParametersList &getPatchList() const override { return m_patchList; }
   MVD16Frame popAtlas() override;
 
 private:
-  void writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views,
-                         MVD16Frame &atlas);
+  void writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views, MVD16Frame &atlas);
 
 private:
   std::uint16_t m_nbAtlas = 0;

@@ -77,10 +77,8 @@ public:
   std::string const &asString() const;
   bool asBool() const;
   auto asStringVector() const -> std::vector<std::string>;
-  template <stack::size_type M>
-  auto asIntVector() const -> stack::Vector<int, M>;
-  template <stack::size_type M>
-  auto asFloatVector() const -> stack::Vector<float, M>;
+  template <stack::size_type M> auto asIntVector() const -> stack::Vector<int, M>;
+  template <stack::size_type M> auto asFloatVector() const -> stack::Vector<float, M>;
 
   // Anything apart from false and null is true
   explicit operator bool() const;

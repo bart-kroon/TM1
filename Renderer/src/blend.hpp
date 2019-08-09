@@ -45,8 +45,7 @@ template <typename T> static T blendValues(float w_a, T a, float w_b, T b) {
   if constexpr (std::is_floating_point_v<T>) {
     return w_a * a + w_b * b;
   } else if constexpr (std::is_integral_v<T>) {
-    return static_cast<T>(
-        std::lround(w_a * static_cast<float>(a) + w_b * static_cast<float>(b)));
+    return static_cast<T>(std::lround(w_a * static_cast<float>(a) + w_b * static_cast<float>(b)));
   } else {
     T result;
     static_assert(result.size() == a.size()); // req. constexpr size()
@@ -58,13 +57,11 @@ template <typename T> static T blendValues(float w_a, T a, float w_b, T b) {
 }
 
 // Blend three arithmetic tensors of fixed size
-template <typename T>
-T blendValues(float w_a, T a, float w_b, T b, float w_c, T c) {
+template <typename T> T blendValues(float w_a, T a, float w_b, T b, float w_c, T c) {
   if constexpr (std::is_floating_point_v<T>) {
     return w_a * a + w_b * b + w_c * c;
   } else if constexpr (std::is_integral_v<T>) {
-    return static_cast<T>(std::lround(w_a * static_cast<float>(a) +
-                                      w_b * static_cast<float>(b) +
+    return static_cast<T>(std::lround(w_a * static_cast<float>(a) + w_b * static_cast<float>(b) +
                                       w_c * static_cast<float>(c)));
   } else {
     T result;
@@ -98,22 +95,21 @@ auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
 // Blend the attributes of three pixels
 template <typename T0, typename... T>
 auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
-                     const std::tuple<T0, T...> &b, float w_c,
-                     const std::tuple<T0, T...> &c) -> std::tuple<T0, T...> {
+                     const std::tuple<T0, T...> &b, float w_c, const std::tuple<T0, T...> &c)
+    -> std::tuple<T0, T...> {
   std::tuple<T0, T...> result;
-  std::get<0>(result) = blendValues(w_a, std::get<0>(a), w_b, std::get<0>(b),
-                                    w_c, std::get<0>(c));
+  std::get<0>(result) = blendValues(w_a, std::get<0>(a), w_b, std::get<0>(b), w_c, std::get<0>(c));
   if constexpr (sizeof...(T) >= 1) {
-    std::get<1>(result) = blendValues(w_a, std::get<1>(a), w_b, std::get<1>(b),
-                                      w_c, std::get<1>(c));
+    std::get<1>(result) =
+        blendValues(w_a, std::get<1>(a), w_b, std::get<1>(b), w_c, std::get<1>(c));
   }
   if constexpr (sizeof...(T) >= 2) {
-    std::get<2>(result) = blendValues(w_a, std::get<2>(a), w_b, std::get<2>(b),
-                                      w_c, std::get<2>(c));
+    std::get<2>(result) =
+        blendValues(w_a, std::get<2>(a), w_b, std::get<2>(b), w_c, std::get<2>(c));
   }
   if constexpr (sizeof...(T) >= 3) {
-    std::get<3>(result) = blendValues(w_a, std::get<3>(a), w_b, std::get<3>(b),
-                                      w_c, std::get<3>(c));
+    std::get<3>(result) =
+        blendValues(w_a, std::get<3>(a), w_b, std::get<3>(b), w_c, std::get<3>(c));
   }
   static_assert(sizeof...(T) <= 3);
   return result;

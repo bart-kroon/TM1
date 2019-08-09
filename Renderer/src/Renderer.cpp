@@ -38,21 +38,18 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &rootNode,
-                   const Common::Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create(
-          "Synthesizer", rootNode, componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create(
-          "Inpainter", rootNode, componentNode)} {}
+Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNode)
+    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
+                                                                componentNode)},
+      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)} {
+}
 
 Common::Texture444Depth10Frame
-Renderer::renderFrame(const Common::MVD10Frame &atlas,
-                      const Common::PatchIdMapList &maps,
+Renderer::renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
                       const Metadata::AtlasParametersList &patches,
                       const Metadata::CameraParametersList &cameras,
                       const Metadata::CameraParameters &target) const {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
+  auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

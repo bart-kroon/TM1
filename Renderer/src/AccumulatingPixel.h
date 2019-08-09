@@ -46,8 +46,7 @@ template <typename... T> using PixelAttributes = std::tuple<T...>;
 // The information that is kept per pixel to blend multiple pixels
 //
 // With empty base class initialization
-template <typename... T>
-struct PixelAccumulator : private PixelAttributes<T...> {
+template <typename... T> struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAccumulator() = default;
   PixelAccumulator(const PixelAccumulator &) = default;
   PixelAccumulator(PixelAccumulator &&) noexcept = default;
@@ -55,10 +54,10 @@ struct PixelAccumulator : private PixelAttributes<T...> {
   PixelAccumulator &operator=(PixelAccumulator &&) noexcept = default;
   ~PixelAccumulator() = default;
 
-  PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_,
-                   float normDisp_, float stretching_)
-      : PixelAttributes<T...>{attributes},
-        normWeight{normWeight_}, normDisp{normDisp_}, stretching{stretching_} {
+  PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_, float normDisp_,
+                   float stretching_)
+      : PixelAttributes<T...>{attributes}, normWeight{normWeight_}, normDisp{normDisp_},
+        stretching{stretching_} {
     assert(normWeight_ >= 0.F);
     assert(normDisp_ >= 0.F);
     assert(stretching_ > 0.F);
@@ -96,10 +95,10 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
   PixelValue &operator=(PixelValue &&) noexcept = default;
   ~PixelValue() = default;
 
-  PixelValue(PixelAttributes<T...> attributes, float normDisp_,
-             float normWeight_, float stretching_)
-      : PixelAttributes<T...>{attributes}, normDisp{normDisp_},
-        normWeight{normWeight_}, stretching{stretching_} {
+  PixelValue(PixelAttributes<T...> attributes, float normDisp_, float normWeight_,
+             float stretching_)
+      : PixelAttributes<T...>{attributes}, normDisp{normDisp_}, normWeight{normWeight_},
+        stretching{stretching_} {
     assert(normDisp_ >= 0.F);
     assert(normWeight_ >= 0.F);
     assert(stretching_ >= 0.F);
@@ -137,30 +136,28 @@ public:
   const float stretchingParam;
   const float maxStretching;
 
-  AccumulatingPixel(float rayAngleParam_, float depthParam_,
-                    float stretchingParam_, float maxStretching_)
-      : rayAngleParam{rayAngleParam_}, depthParam{depthParam_},
-        stretchingParam{stretchingParam_}, maxStretching{maxStretching_} {}
+  AccumulatingPixel(float rayAngleParam_, float depthParam_, float stretchingParam_,
+                    float maxStretching_)
+      : rayAngleParam{rayAngleParam_}, depthParam{depthParam_}, stretchingParam{stretchingParam_},
+        maxStretching{maxStretching_} {}
 
   // Construct a pixel accumulator from a single synthesized pixel
-  auto construct(Attributes attributes, float normDisp, float rayAngle,
-                 float stretching) const -> Accumulator {
+  auto construct(Attributes attributes, float normDisp, float rayAngle, float stretching) const
+      -> Accumulator {
     assert(normDisp >= 0.F);
-    return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching),
-            normDisp, stretching};
+    return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching), normDisp,
+            stretching};
   }
 
 private:
   // Blend two pixels with known blending weights
-  auto blendAccumulators(float w_a, const Accumulator &a, float w_b,
-                         const Accumulator &b) const -> Accumulator {
+  auto blendAccumulators(float w_a, const Accumulator &a, float w_b, const Accumulator &b) const
+      -> Accumulator {
     const float normDisp = blendValues(w_a, a.normDisp, w_b, b.normDisp);
-    const float normWeight =
-        a.normWeight * normDispWeight(a.normDisp - normDisp) +
-        b.normWeight * normDispWeight(b.normDisp - normDisp);
-    return Accumulator{
-        blendAttributes(w_a, a.attributes(), w_b, b.attributes()), normWeight,
-        normDisp, blendValues(w_a, a.stretching, w_b, b.stretching)};
+    const float normWeight = a.normWeight * normDispWeight(a.normDisp - normDisp) +
+                             b.normWeight * normDispWeight(b.normDisp - normDisp);
+    return Accumulator{blendAttributes(w_a, a.attributes(), w_b, b.attributes()), normWeight,
+                       normDisp, blendValues(w_a, a.stretching, w_b, b.stretching)};
   }
 
 public:
@@ -178,9 +175,7 @@ public:
     if (a.normDisp >= b.normDisp) {
       // a is in front of b
       const float w_a =
-          a.normWeight /
-          (a.normWeight +
-           b.normWeight * normDispWeight(b.normDisp - a.normDisp));
+          a.normWeight / (a.normWeight + b.normWeight * normDispWeight(b.normDisp - a.normDisp));
       assert(w_a >= 0.F);
       const float w_b = 1.F - w_a;
 
@@ -194,9 +189,7 @@ public:
     } else { // NOLINT(readability-else-after-return)
       // b is in front of a
       const float w_b =
-          b.normWeight /
-          (b.normWeight +
-           a.normWeight * normDispWeight(a.normDisp - b.normDisp));
+          b.normWeight / (b.normWeight + a.normWeight * normDispWeight(a.normDisp - b.normDisp));
       assert(w_b >= 0.F);
       const float w_a = 1.F - w_b;
 
@@ -220,20 +213,14 @@ public:
 
   // Calculate the weight of a pixel based on cosine of the ray
   // angle between input and virtual ray only
-  float rayAngleWeight(float rayAngle) const {
-    return std::exp(-rayAngleParam * rayAngle);
-  }
+  float rayAngleWeight(float rayAngle) const { return std::exp(-rayAngleParam * rayAngle); }
 
   // Calculate the weight of a pixel based on normalized disparity
   // (diopters) only
-  float normDispWeight(float normDisp) const {
-    return std::exp(depthParam * normDisp);
-  }
+  float normDispWeight(float normDisp) const { return std::exp(depthParam * normDisp); }
 
   // Calculate the weight of a pixel based on stretching only
-  float stretchingWeight(float stretching) const {
-    return std::exp(-stretchingParam * stretching);
-  }
+  float stretchingWeight(float stretching) const { return std::exp(-stretchingParam * stretching); }
 };
 } // namespace TMIV::Renderer
 

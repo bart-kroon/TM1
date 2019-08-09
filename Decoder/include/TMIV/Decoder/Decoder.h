@@ -52,8 +52,7 @@ private:
   Metadata::CameraParametersList m_cameras;
 
 public:
-  Decoder(const Common::Json & /*rootNode*/,
-          const Common::Json & /*componentNode*/);
+  Decoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   Decoder(const Decoder &) = delete;
   Decoder(Decoder &&) = default;
   Decoder &operator=(const Decoder &) = delete;
@@ -66,8 +65,7 @@ public:
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 
   Common::Texture444Depth10Frame
-  decodeFrame(Common::MVD10Frame atlas,
-              const Metadata::CameraParameters &target) const override;
+  decodeFrame(Common::MVD10Frame atlas, const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Decoder
 

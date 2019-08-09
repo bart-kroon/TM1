@@ -43,8 +43,7 @@ using namespace TMIV::Renderer;
 
 namespace TMIV::AtlasConstructor {
 
-Pruner::Pruner(const Common::Json & /*rootNode*/,
-               const Common::Json &componentNode) {
+Pruner::Pruner(const Common::Json & /*rootNode*/, const Common::Json &componentNode) {
 
   m_redundancyFactor = componentNode.require("RedundancyFactor").asFloat();
   m_erosionIter = componentNode.require("ErosionIter").asInt();
@@ -55,8 +54,7 @@ Pruner::Pruner(const Common::Json & /*rootNode*/,
   }
 }
 
-MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
-                       const MVD16Frame &views,
+MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD16Frame &views,
                        const std::vector<std::uint8_t> &shouldNotBePruned) {
 
   // Sort cameras for pruning
@@ -64,19 +62,17 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
 
   std::iota(cameraOrderId.begin(), cameraOrderId.end(), 0);
 
-  std::sort(cameraOrderId.begin(), cameraOrderId.end(),
-            [&shouldNotBePruned](int i1, int i2) {
-              if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
-                return (shouldNotBePruned[i1] != 0);
-              }
-              { return (i1 < i2); }
-            });
+  std::sort(cameraOrderId.begin(), cameraOrderId.end(), [&shouldNotBePruned](int i1, int i2) {
+    if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
+      return (shouldNotBePruned[i1] != 0);
+    }
+    { return (i1 < i2); }
+  });
 
   // Possible discard some additional views (for debugging purpose)
   int maxView = std::min(
       int(cameraOrderId.size()),
-      int(std::count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) +
-          m_maxAdditionalView));
+      int(std::count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) + m_maxAdditionalView));
 
   // Pruning loop
   int nbView = static_cast<int>(views.size());
@@ -105,9 +101,8 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
           int viewPrunedId = cameraOrderId[id2];
           const Mat<float> &depthMapPruned = depthMapExpanded[viewPrunedId];
 
-          auto ptsToPruneOnPruned =
-              reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId],
-                              gridMapToPrune, depthMapToPrune);
+          auto ptsToPruneOnPruned = reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId],
+                                                    gridMapToPrune, depthMapToPrune);
           int lastXPruned = cameras[viewPrunedId].size.x() - 1;
           int lastYPruned = cameras[viewPrunedId].size.y() - 1;
 
@@ -124,11 +119,9 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
                   const Vec2f &xyToPruneOnPruned = ptsToPruneOnPruned.first[k];
 
                   int x1 = std::max(0, int(floor(xyToPruneOnPruned.x())));
-                  int x2 =
-                      std::min(lastXPruned, int(ceil(xyToPruneOnPruned.x())));
+                  int x2 = std::min(lastXPruned, int(ceil(xyToPruneOnPruned.x())));
                   int y1 = std::max(0, int(floor(xyToPruneOnPruned.y())));
-                  int y2 =
-                      std::min(lastYPruned, int(ceil(xyToPruneOnPruned.y())));
+                  int y2 = std::min(lastYPruned, int(ceil(xyToPruneOnPruned.y())));
 
                   for (int y = y1; y <= y2; y++) {
                     for (int x = x1; x <= x2; x++) {
@@ -136,8 +129,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
 
                       if (!std::isnan(zPruned)) {
                         if ((fabs(zToPruneOnPruned - zPruned) <
-                             m_redundancyFactor *
-                                 std::min(zPruned, zToPruneOnPruned))) {
+                             m_redundancyFactor * std::min(zPruned, zToPruneOnPruned))) {
                           mask = 0;
                           goto endloop;
                         }
@@ -164,15 +156,13 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
         int wLast = w - 1;
         int hLast = h - 1;
         constexpr int numNeighbors = 8;
-        std::array<int, numNeighbors> neighbourOffset = {
-            -1 - w, -w, 1 - w, -1, 1, -1 + w, w, 1 + w};
+        std::array<int, numNeighbors> neighbourOffset = {-1 - w, -w,     1 - w, -1,
+                                                         1,      -1 + w, w,     1 + w};
 
         // Erosion
         if (0 < m_erosionIter) {
-          auto &inputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
-          auto &outputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
+          auto &inputBuffer = (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
+          auto &outputBuffer = (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
 
           inputBuffer = bufferToPrune;
 
@@ -201,10 +191,8 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
 
         // Dilation
         if (0 < m_dilationIter) {
-          auto &inputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
-          auto &outputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
+          auto &inputBuffer = (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
+          auto &outputBuffer = (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
 
           inputBuffer = bufferToPrune;
 

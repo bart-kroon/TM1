@@ -81,8 +81,7 @@ namespace TMIV::Renderer {
 // projection.
 template <typename Engine, typename... T>
 auto unproject(const Engine &engine, const Common::Mat<float> &depth,
-               const Metadata::CameraParameters &target,
-               const Common::Mat<T> &... matrices) {
+               const Metadata::CameraParameters &target, const Common::Mat<T> &... matrices) {
   return std::tuple{engine.makeSceneVertexDescriptorList(depth, target),
                     engine.makeTriangleDescriptorList(),
                     std::tuple{engine.makeVertexAttributeList(matrices)...}};
@@ -94,10 +93,8 @@ auto unproject(const Engine &engine, const Common::Mat<float> &depth,
 // This method is designed to allow for specialization per source camera
 // projection.
 template <typename... T>
-auto unproject(const Common::Mat<float> &depth,
-               const Metadata::CameraParameters &camera,
-               const Metadata::CameraParameters &target,
-               const Common::Mat<T> &... matrices) {
+auto unproject(const Common::Mat<float> &depth, const Metadata::CameraParameters &camera,
+               const Metadata::CameraParameters &target, const Common::Mat<T> &... matrices) {
   switch (camera.type) {
   case Metadata::ProjectionType::ERP: {
     Engine<Metadata::ProjectionType::ERP> engine{camera};
@@ -118,20 +115,16 @@ auto unproject(const Common::Mat<float> &depth,
 // This method is designed to allow for specialization per target camera
 // projection. The interface allows for culling and splitting triangles.
 template <typename... T>
-auto project(SceneVertexDescriptorList vertices,
-             TriangleDescriptorList triangles,
-             std::tuple<std::vector<T>...> attributes,
-             const Metadata::CameraParameters &target) {
+auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
+             std::tuple<std::vector<T>...> attributes, const Metadata::CameraParameters &target) {
   switch (target.type) {
   case Metadata::ProjectionType::ERP: {
     Engine<Metadata::ProjectionType::ERP> engine{target};
-    return engine.project(std::move(vertices), std::move(triangles),
-                          std::move(attributes));
+    return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
   }
   case Metadata::ProjectionType::Perspective: {
     Engine<Metadata::ProjectionType::Perspective> engine{target};
-    return engine.project(std::move(vertices), std::move(triangles),
-                          std::move(attributes));
+    return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
   }
   default:
     abort();
@@ -141,13 +134,11 @@ auto project(SceneVertexDescriptorList vertices,
 // Reproject from a source frame with a source camera to a target camera,
 // generating lists of vertices, triangles and attributes.
 template <typename... T>
-auto reproject(const Common::Mat<float> &depth,
-               const Metadata::CameraParameters &camera,
-               const Metadata::CameraParameters &target,
-               const Common::Mat<T> &... matrices) {
+auto reproject(const Common::Mat<float> &depth, const Metadata::CameraParameters &camera,
+               const Metadata::CameraParameters &target, const Common::Mat<T> &... matrices) {
   auto x = unproject(depth, camera, target, matrices...);
-  return project(std::move(std::get<0>(x)), std::move(std::get<1>(x)),
-                 std::move(std::get<2>(x)), target);
+  return project(std::move(std::get<0>(x)), std::move(std::get<1>(x)), std::move(std::get<2>(x)),
+                 target);
 }
 
 // Unproject a pixel from a source frame to scene coordinates in the reference
@@ -155,8 +146,8 @@ auto reproject(const Common::Mat<float> &depth,
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto unprojectVertex(Common::Vec2f position, float depth,
-                     const Metadata::CameraParameters &camera) -> Common::Vec3f;
+auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::CameraParameters &camera)
+    -> Common::Vec3f;
 } // namespace TMIV::Renderer
 
 #endif

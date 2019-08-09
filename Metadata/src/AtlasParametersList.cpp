@@ -36,9 +36,9 @@
 
 namespace TMIV::Metadata {
 bool AtlasParameters::operator==(const AtlasParameters &other) const {
-  return atlasId == other.atlasId && viewId == other.viewId &&
-         patchSize == other.patchSize && posInView == other.posInView &&
-         posInAtlas == other.posInAtlas && rotation == other.rotation;
+  return atlasId == other.atlasId && viewId == other.viewId && patchSize == other.patchSize &&
+         posInView == other.posInView && posInAtlas == other.posInAtlas &&
+         rotation == other.rotation;
 }
 
 Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) {

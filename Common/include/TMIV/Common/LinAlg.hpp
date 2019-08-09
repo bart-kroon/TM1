@@ -35,8 +35,7 @@ namespace TMIV::Common {
 namespace detail {
 
 template <typename T>
-void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB,
-             shallow::Matrix<T> C) {
+void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shallow::Matrix<T> C) {
 
   using size_type = Array::size_type;
 
@@ -44,15 +43,13 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB,
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i),
-                                       B.col_begin(j), T(0));
+          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.col_begin(j), T(0));
         }
       }
     } else if (mB == 'T') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i),
-                                       B.row_begin(j), T(0));
+          C(i, j) = std::inner_product(A.row_begin(i), A.row_end(i), B.row_begin(j), T(0));
         }
       }
     } else {
@@ -69,15 +66,13 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB,
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i),
-                                       B.col_begin(j), T(0));
+          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.col_begin(j), T(0));
         }
       }
     } else if (mB == 'T') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i),
-                                       B.row_begin(j), T(0));
+          C(i, j) = std::inner_product(A.col_begin(i), A.col_end(i), B.row_begin(j), T(0));
         }
       }
     } else {
@@ -115,9 +110,7 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB,
           C(i, j) = std::inner_product(
               A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
               [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) {
-                return (conjugate(v1) * conjugate(v2));
-              });
+              [](const T &v1, const T &v2) { return (conjugate(v1) * conjugate(v2)); });
         }
       }
     }
@@ -130,20 +123,17 @@ MAT3 &matprod(const MAT1 &A, char mA, const MAT2 &B, char mB, MAT3 &C) {
   using T = typename MAT1::value_type;
 
   C.resize((mA == 'N') ? A.m() : A.n(), (mB == 'N') ? B.n() : B.m());
-  detail::matprod(shallow::Matrix<T>(A), mA, shallow::Matrix<T>(B), mB,
-                  shallow::Matrix<T>(C));
+  detail::matprod(shallow::Matrix<T>(A), mA, shallow::Matrix<T>(B), mB, shallow::Matrix<T>(C));
   return C;
 }
 
-template <typename MAT>
-MAT matprod(const MAT &A, char mA, const MAT &B, char mB) {
+template <typename MAT> MAT matprod(const MAT &A, char mA, const MAT &B, char mB) {
   MAT C;
   return matprod(A, mA, B, mB, C);
 }
 
 template <typename T, typename U>
-heap::Vector<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
-                                              const heap::Vector<U> &B) {
+heap::Vector<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A, const heap::Vector<U> &B) {
   heap::Vector<decltype(T(0) * U(0))> out;
   return matprod(A, 'N', B, 'N', out);
 }
@@ -156,8 +146,7 @@ heap::Vector<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
 }
 
 template <typename T, typename U>
-heap::Matrix<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
-                                              const heap::Matrix<U> &B) {
+heap::Matrix<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A, const heap::Matrix<U> &B) {
   heap::Matrix<decltype(T(0) * U(0))> out;
   return matprod(A, 'N', B, 'N', out);
 }
@@ -170,8 +159,8 @@ heap::Matrix<decltype(T(0) * U(0))> operator*(const heap::Matrix<T> &A,
 }
 
 template <typename T, typename U, Array::size_type M, Array::size_type N>
-stack::Vector<decltype(T(0) * U(0)), M>
-operator*(const stack::Matrix<T, M, N> &A, const stack::Vector<U, N> &B) {
+stack::Vector<decltype(T(0) * U(0)), M> operator*(const stack::Matrix<T, M, N> &A,
+                                                  const stack::Vector<U, N> &B) {
   stack::Vector<decltype(T(0) * U(0)), M> out;
   return matprod(A, 'N', B, 'N', out);
 }
@@ -190,17 +179,15 @@ heap::Matrix<decltype(T(0) * U(0))> operator*(const stack::Matrix<T, M, N> &A,
   return matprod(A, 'N', B, 'N', out);
 }
 
-template <typename T, typename U, Array::size_type M, Array::size_type N,
-          Array::size_type O>
-stack::Matrix<decltype(T(0) * U(0)), M, O>
-operator*(const stack::Matrix<T, M, N> &A, const stack::Matrix<U, N, O> &B) {
+template <typename T, typename U, Array::size_type M, Array::size_type N, Array::size_type O>
+stack::Matrix<decltype(T(0) * U(0)), M, O> operator*(const stack::Matrix<T, M, N> &A,
+                                                     const stack::Matrix<U, N, O> &B) {
   stack::Matrix<decltype(T(0) * U(0)), M, O> out;
   return matprod(A, 'N', B, 'N', out);
 }
 
 namespace detail {
-template <typename T>
-void square(shallow::Matrix<T> A, shallow::Matrix<T> out) {
+template <typename T> void square(shallow::Matrix<T> A, shallow::Matrix<T> out) {
   matprod(A, 'N', A, 'T', out);
 }
 } // namespace detail
@@ -219,30 +206,26 @@ template <typename MAT> decltype(square_type(MAT())) square(const MAT &A) {
 }
 
 namespace detail {
-template <typename T>
-void transquare(shallow::Matrix<T> A, shallow::Matrix<T> out) {
+template <typename T> void transquare(shallow::Matrix<T> A, shallow::Matrix<T> out) {
   detail::matprod(A, 'T', A, 'N', out);
 }
 } // namespace detail
 
-template <typename MAT1, typename MAT2>
-void transquare(const MAT1 &A, MAT2 &out) {
+template <typename MAT1, typename MAT2> void transquare(const MAT1 &A, MAT2 &out) {
   using T = typename MAT1::value_type;
 
   out.resize(A.n(), A.n());
   detail::transquare(shallow::Matrix<T>(A), shallow::Matrix<T>(out));
 }
 
-template <typename MAT>
-decltype(transquare_type(MAT())) transquare(const MAT &A) {
+template <typename MAT> decltype(transquare_type(MAT())) transquare(const MAT &A) {
   decltype(transquare_type(MAT())) out;
   transquare(A, out);
   return out;
 }
 
 namespace detail {
-template <typename T>
-int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
+template <typename T> int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
   using size_type = Array::size_type;
   using std::abs;
 
@@ -270,8 +253,8 @@ int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
 
       for (size_type i = k + 1; i < n; i++) {
         T factor = (LU(i, k) /= pivot);
-        std::transform(LU.row_begin(i) + (k + 1), LU.row_end(i),
-                       LU.row_begin(k) + (k + 1), LU.row_begin(i) + (k + 1),
+        std::transform(LU.row_begin(i) + (k + 1), LU.row_end(i), LU.row_begin(k) + (k + 1),
+                       LU.row_begin(i) + (k + 1),
                        [factor](T v1, T v2) { return v1 - factor * v2; });
       }
     } else {
@@ -283,16 +266,14 @@ int PLU(shallow::Matrix<T> A, shallow::Matrix<T> LU, std::vector<int> &P) {
 }
 } // namespace detail
 
-template <typename MAT1, typename MAT2>
-int PLU(const MAT1 &A, MAT2 &LU, std::vector<int> &P) {
+template <typename MAT1, typename MAT2> int PLU(const MAT1 &A, MAT2 &LU, std::vector<int> &P) {
   using T = typename MAT1::value_type;
 
   LU.resize(A.m(), A.n());
   return detail::PLU(shallow::Matrix<T>(A), shallow::Matrix<T>(LU), P);
 }
 
-template <typename MAT1, typename MAT2>
-int PLU(const MAT1 &A, MAT2 &L, MAT2 &U, MAT2 &P) {
+template <typename MAT1, typename MAT2> int PLU(const MAT1 &A, MAT2 &L, MAT2 &U, MAT2 &P) {
   using size_type = Array::size_type;
   using T1 = typename MAT2::value_type;
   using T2 = typename MAT2::value_type;
@@ -349,13 +330,11 @@ template <typename T> int chol(shallow::Matrix<T> A, shallow::Matrix<T> out) {
     }
 
     out(j, j) = x =
-        sqrt(A(j, j) - dot_product(out.row_begin(j), out.row_begin(j) + j,
-                                   out.row_begin(j)));
+        sqrt(A(j, j) - dot_product(out.row_begin(j), out.row_begin(j) + j, out.row_begin(j)));
 
     for (size_type i = (j + 1); i < n; i++) {
-      out(i, j) = (A(i, j) - dot_product(out.row_begin(i), out.row_begin(i) + j,
-                                         out.row_begin(j))) /
-                  x;
+      out(i, j) =
+          (A(i, j) - dot_product(out.row_begin(i), out.row_begin(i) + j, out.row_begin(j))) / x;
     }
   }
 
@@ -386,8 +365,7 @@ template <typename T> T det(shallow::Matrix<T> A, int *info) {
   heap::Matrix<T> LU;
   std::vector<int> P;
   int n = PLU(A, LU, P);
-  T d = std::accumulate(LU.diag_begin(), LU.diag_end(), T(1),
-                        [](T v1, T v2) { return (v1 * v2); });
+  T d = std::accumulate(LU.diag_begin(), LU.diag_end(), T(1), [](T v1, T v2) { return (v1 * v2); });
 
   if (n % 2) {
     d = -d;
@@ -410,8 +388,7 @@ template <typename MAT> typename MAT::value_type det(const MAT &A, int *info) {
 
     if (!information) {
       out = 1;
-      std::for_each(L.diag_begin(), L.diag_end(),
-                    [&out](typename MAT::value_type t) { out *= t; });
+      std::for_each(L.diag_begin(), L.diag_end(), [&out](typename MAT::value_type t) { out *= t; });
       out = sqr(out);
     }
   } else {
@@ -429,8 +406,7 @@ template <typename MAT> typename MAT::value_type det(const MAT &A, int *info) {
 
 namespace detail {
 template <typename T>
-int mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
-             shallow::Matrix<T> out) {
+int mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out) {
 
   using size_type = Array::size_type;
 
@@ -448,8 +424,7 @@ int mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
       Y(i, j) = B(P[i], j);
 
       if (0 < i) {
-        Y(i, j) -= std::inner_product(LU.row_begin(i), LU.row_begin(i) + i,
-                                      Y.col_begin(j), T(0));
+        Y(i, j) -= std::inner_product(LU.row_begin(i), LU.row_begin(i) + i, Y.col_begin(j), T(0));
       }
     }
   }
@@ -480,12 +455,10 @@ int mldivide(const MAT1 &A, const MAT2 &B, MAT3 &out) {
   using T = typename MAT1::value_type;
 
   out.resize(B.m(), B.n());
-  return detail::mldivide(shallow::Matrix<T>(A), shallow::Matrix<T>(B),
-                          shallow::Matrix<T>(out));
+  return detail::mldivide(shallow::Matrix<T>(A), shallow::Matrix<T>(B), shallow::Matrix<T>(out));
 }
 
-template <typename MAT1, typename MAT2>
-MAT2 mldivide(const MAT1 &A, const MAT2 &B, int *info) {
+template <typename MAT1, typename MAT2> MAT2 mldivide(const MAT1 &A, const MAT2 &B, int *info) {
   MAT2 out;
 
   int information = mldivide(A, B, out);
@@ -498,8 +471,7 @@ MAT2 mldivide(const MAT1 &A, const MAT2 &B, int *info) {
 
 namespace detail {
 template <typename T>
-int mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
-             shallow::Matrix<T> out) {
+int mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out) {
   using size_type = Array::size_type;
 
   // PLU decomposition
@@ -516,8 +488,7 @@ int mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
       Y(i, j) = A(i, j) / LU(j, j);
 
       if (0 < j) {
-        Y(i, j) -= std::inner_product(Y.row_begin(i), Y.row_begin(i) + j,
-                                      LU.col_begin(j), T(0)) /
+        Y(i, j) -= std::inner_product(Y.row_begin(i), Y.row_begin(i) + j, LU.col_begin(j), T(0)) /
                    LU(j, j);
       }
     }
@@ -531,8 +502,8 @@ int mrdivide(shallow::Matrix<T> A, shallow::Matrix<T> B,
       size_type k = n - j - 1;
 
       if (0 < j) {
-        Y(i, k) -= std::inner_product(Y.row_begin(i) + n - j, Y.row_end(i),
-                                      LU.col_begin(k) + n - j, T(0));
+        Y(i, k) -=
+            std::inner_product(Y.row_begin(i) + n - j, Y.row_end(i), LU.col_begin(k) + n - j, T(0));
       }
 
       out(i, P[k]) = Y(i, k);
@@ -548,12 +519,10 @@ int mrdivide(const MAT1 &A, const MAT2 &B, MAT3 &out) {
   using T = typename MAT1::value_type;
 
   out.resize(A.m(), A.n());
-  return detail::mrdivide(shallow::Matrix<T>(A), shallow::Matrix<T>(B),
-                          shallow::Matrix<T>(out));
+  return detail::mrdivide(shallow::Matrix<T>(A), shallow::Matrix<T>(B), shallow::Matrix<T>(out));
 }
 
-template <typename MAT1, typename MAT2>
-MAT1 mrdivide(const MAT1 &A, const MAT2 &B, int *info) {
+template <typename MAT1, typename MAT2> MAT1 mrdivide(const MAT1 &A, const MAT2 &B, int *info) {
   MAT1 out;
 
   int information = mrdivide(A, B, out);

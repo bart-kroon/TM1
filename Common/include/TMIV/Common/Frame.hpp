@@ -135,9 +135,8 @@ template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
   m_height = h;
 
   for (int planeId = 0; planeId < nb_plane; planeId++) {
-    m_planes[planeId].resize(
-        detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
-        detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
+    m_planes[planeId].resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
+                             detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
   }
 }
 
@@ -158,8 +157,7 @@ template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
   }
 }
 
-template <class FORMAT>
-void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
+template <class FORMAT> void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
   for (const auto &plane : m_planes) {
     int w = int(plane.width()), h = int(plane.height());
     const base_type *ptr =

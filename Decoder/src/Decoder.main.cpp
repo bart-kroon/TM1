@@ -51,8 +51,7 @@ private:
   int m_intraPeriod;
 
 public:
-  explicit Application(vector<const char *> argv)
-      : Common::Application{"Decoder", move(argv)} {
+  explicit Application(vector<const char *> argv) : Common::Application{"Decoder", move(argv)} {
     m_decoder = create<IDecoder>("Decoder");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
@@ -75,8 +74,7 @@ public:
         lastIntraFrame = idx.first;
         metadata = IO::loadMivMetadata(json(), idx.first);
 
-        cout << "OMAF v1 compatible flag: " << boolalpha
-             << metadata.omafV1CompatibleFlag << " ("
+        cout << "OMAF v1 compatible flag: " << boolalpha << metadata.omafV1CompatibleFlag << " ("
              << int(metadata.omafV1CompatibleFlag) << ")" << endl;
 
         m_decoder->updateAtlasSize(metadata.atlasSize);
@@ -85,8 +83,7 @@ public:
         m_decoder->updateCameraList(move(metadata.cameras));
       }
 
-      frame =
-          IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
+      frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
       auto target = IO::loadViewportMetadata(json(), idx.second);
       auto viewport = m_decoder->decodeFrame(frame, target);
       IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});

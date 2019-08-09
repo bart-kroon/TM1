@@ -53,8 +53,8 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
   patch.flip = PatchFlip::none;
 
   auto flips = {PatchFlip::none, PatchFlip::vflip};
-  auto rotations = {PatchRotation::upright, PatchRotation::ccw,
-                    PatchRotation::ht, PatchRotation::cw};
+  auto rotations = {PatchRotation::upright, PatchRotation::ccw, PatchRotation::ht,
+                    PatchRotation::cw};
 
   SECTION("EvaluateTransformationOf_TopLeft") {
     Vec2i posInViewEncode = {0, 0};

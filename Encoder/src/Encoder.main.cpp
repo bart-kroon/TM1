@@ -54,12 +54,10 @@ private:
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>(
-                                                        "Encoder")},
+      : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()},
-        m_omafV1CompatibleFlag{
-            json().require("OmafV1CompatibleFlag").asBool()} {}
+        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()} {}
 
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
@@ -84,8 +82,7 @@ private:
 
     IO::saveMivMetadata(json(), intraFrame,
                         {m_encoder->getAtlasSize(), m_omafV1CompatibleFlag,
-                         m_encoder->getPatchList(),
-                         m_encoder->getCameraList()});
+                         m_encoder->getPatchList(), m_encoder->getCameraList()});
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto frame = m_encoder->popAtlas();

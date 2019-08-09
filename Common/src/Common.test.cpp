@@ -53,8 +53,7 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
 
   heap::Array<3, float> A({3, 5, 10});
   Mat3x3f m1 = {1.F, 2.F, 3.F, 4.F, 5.F, 6.F, 7.F, 8.F, -9.F};
-  Mat<float> m2(
-      {4, 3}, {1.F, 2.F, 3.F, 4.F, 5.F, 6.F, 7.F, 8.F, 9.F, 10.F, 11.F, 12.F});
+  Mat<float> m2({4, 3}, {1.F, 2.F, 3.F, 4.F, 5.F, 6.F, 7.F, 8.F, 9.F, 10.F, 11.F, 12.F});
   Vec3f v1({1.F, 2.F, 3.F});
   Vec3f v2({3.F, -1.F, 6.F});
 
@@ -77,26 +76,22 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);
 
   SECTION("Matrix transpose")
-  REQUIRE(norm_inf(transpose(m2) -
-                   Mat<float>({3, 4}, {1.F, 4.F, 7.F, 10.F, 2.F, 5.F, 8.F, 11.F,
-                                       3.F, 6.F, 9.F, 12.F})) < EPS);
+  REQUIRE(norm_inf(transpose(m2) - Mat<float>({3, 4}, {1.F, 4.F, 7.F, 10.F, 2.F, 5.F, 8.F, 11.F,
+                                                       3.F, 6.F, 9.F, 12.F})) < EPS);
 
   SECTION("Matrix / Vector product")
   REQUIRE(norm_inf((m1 * v1) - Vec3f({14.F, 32.F, -4.F})) < EPS);
 
   SECTION("Matrix / Matrix product")
-  REQUIRE(
-      norm_inf((m2 * m1) -
-               Mat<float>({4, 3}, {30.F, 36.F, -12.F, 66.F, 81.F, -12.F, 102.F,
-                                   126.F, -12.F, 138.F, 171.F, -12.F})) < EPS);
+  REQUIRE(norm_inf((m2 * m1) - Mat<float>({4, 3}, {30.F, 36.F, -12.F, 66.F, 81.F, -12.F, 102.F,
+                                                   126.F, -12.F, 138.F, 171.F, -12.F})) < EPS);
 
   SECTION("Matrix inverse")
   REQUIRE(norm_inf((m1 * inv(m1)) - Mat3x3f::eye()) < EPS);
 
   SECTION("Linear system (right)")
-  REQUIRE(norm_inf(mrdivide(m2, m1) -
-                   Mat<float>({4, 3}, {1.F, 0.F, 0.F, 0.F, 1.F, 0.F, -1.F, 2.F,
-                                       0.F, -2.F, 3.F, 0.F})) < EPS);
+  REQUIRE(norm_inf(mrdivide(m2, m1) - Mat<float>({4, 3}, {1.F, 0.F, 0.F, 0.F, 1.F, 0.F, -1.F, 2.F,
+                                                          0.F, -2.F, 3.F, 0.F})) < EPS);
 
   SECTION("Linear system (left)")
   REQUIRE(norm_inf(mldivide(m1, v1) - Vec3f({-1.F, 2.F, 0.F}) / 3.F) < EPS);
@@ -145,42 +140,37 @@ TEST_CASE("Parsing the command-line", "[Application]") {
   }
 
   SECTION("Specifying parameters with -p KEY VALUE") {
-    FakeApplication app{
-        "Fake", {"command", "-p", "Color", "green", "-p", "Shape", "circular"}};
+    FakeApplication app{"Fake", {"command", "-p", "Color", "green", "-p", "Shape", "circular"}};
     REQUIRE(app.json().require("Color").asString() == "green");
     REQUIRE(app.json().require("Shape").asString() == "circular");
   }
 
   SECTION("Right has preference over left") {
-    FakeApplication app{
-        "Fake", {"command", "-p", "Color", "green", "-p", "Color", "red"}};
+    FakeApplication app{"Fake", {"command", "-p", "Color", "green", "-p", "Color", "red"}};
     REQUIRE(app.json().require("Color").asString() == "red");
   }
 
   SECTION("Load a Json") {
-    FakeApplication app{"Fake",
-                        {"command", "-c", "Common/test/CommonTest.json"}};
+    FakeApplication app{"Fake", {"command", "-c", "Common/test/CommonTest.json"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 32);
   }
 
   SECTION("Load a Json and add a parameters") {
-    FakeApplication app{"Fake",
-                        {"command", "-c", "Common/test/CommonTest.json", "-p",
-                         "continent", "Africa"}};
+    FakeApplication app{
+        "Fake", {"command", "-c", "Common/test/CommonTest.json", "-p", "continent", "Africa"}};
     REQUIRE(app.json().require("continent").asString() == "Africa");
   }
 
   SECTION("Load a Json and override a parameter") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "Common/test/CommonTest.json", "-p",
-                         "intraPeriod", "8"}};
+                        {"command", "-c", "Common/test/CommonTest.json", "-p", "intraPeriod", "8"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 8);
   }
 
   SECTION("Load a Json, override a parameter and add a parameter") {
     FakeApplication app{"Fake",
-                        {"command", "-c", "Common/test/CommonTest.json", "-p",
-                         "intraPeriod", "8", "-p", "continent", "Africa"}};
+                        {"command", "-c", "Common/test/CommonTest.json", "-p", "intraPeriod", "8",
+                         "-p", "continent", "Africa"}};
     REQUIRE(app.json().require("intraPeriod").asInt() == 8);
     REQUIRE(app.json().require("continent").asString() == "Africa");
   }

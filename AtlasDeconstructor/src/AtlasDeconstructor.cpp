@@ -60,7 +60,7 @@ AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
     patchMapList.push_back(std::move(patchMap));
   }
 
-  for (auto id = 0U; id < patchList.size(); id++) {
+  for (size_t id = 0U; id < patchList.size(); ++id) {
     writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id),
                       frame);
   }

@@ -48,7 +48,7 @@
                 4096,
                 2048
             ],
-            "MPixel": 75
+            "MaxLumaSamplesPerFrame": 150994944
         }
     },
     "DecoderMethod": "Decoder",

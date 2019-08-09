@@ -44,7 +44,7 @@
 		},
 
 		"AtlasResolution": [4096, 2048],
-		"MPixel": 20
+		"MaxLumaSamplesPerFrame": 50331648
 	},	
 	    
 	"AtlasTexturePathFmt": "ATL_SA_R0_Tt_c%02d_4096x2048_yuv420p10le.yuv",

@@ -76,7 +76,7 @@ public:
     IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto atlas = IO::loadAtlas(json(), metadata.atlasSize, i);
+      auto atlas = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, i);
       auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
           atlas, metadata.cameras, metadata.patches);
 

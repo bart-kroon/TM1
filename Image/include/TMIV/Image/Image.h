@@ -109,6 +109,22 @@ auto compressDepthRange(
     unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
     -> Common::MVDFrame<OutFormat>;
 
+template <typename ToInt, typename WorkInt>
+auto decompressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits,
+                          WorkInt offsetMax) -> ToInt;
+
+template <typename OutFormat, typename InFormat>
+auto decompressDepthRange(
+    const Common::Frame<InFormat> &frame, unsigned offsetMax,
+    unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::Frame<OutFormat>;
+
+template <typename OutFormat, typename InFormat>
+auto decompressDepthRange(
+    const Common::MVDFrame<InFormat> &frame, unsigned offsetMax,
+    unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::MVDFrame<OutFormat>;
+
 // Requantize a value
 //
 //  Both input and output types have to be unsigned integers. The input type has

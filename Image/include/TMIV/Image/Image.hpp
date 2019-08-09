@@ -73,7 +73,7 @@ auto compressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits,
   const auto maxFrom = (1U << fromBits) - 1U;
   const auto maxTo = (1U << toBits) - 1U - offsetMax;
   assert(0U <= x && x <= maxFrom);
-  return ToInt((x * maxTo + maxFrom / 2U) / maxFrom);
+  return ToInt(((x * maxTo + maxFrom / 2U) / maxFrom) + offsetMax);
 }
 
 template <typename OutFormat, typename InFormat>
@@ -111,6 +111,62 @@ auto compressDepthRange(const Common::MVDFrame<InFormat> &frame,
                  [=](const Common::TextureDepthFrame<InFormat> &view)
                      -> Common::TextureDepthFrame<OutFormat> {
                    return {view.first, compressDepthRange<OutFormat>(
+                                           view.second, offsetMax, bits)};
+                 });
+
+  return result;
+}
+
+template <typename ToInt, typename WorkInt>
+auto decompressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits,
+                          WorkInt offsetMax) -> ToInt {
+  static_assert(std::is_integral_v<WorkInt> && std::is_unsigned_v<WorkInt>);
+  static_assert(std::is_integral_v<ToInt> && std::is_unsigned_v<ToInt>);
+  assert(0 < fromBits && 0 < toBits &&
+         toBits <= std::numeric_limits<ToInt>::digits &&
+         toBits + fromBits <= std::numeric_limits<WorkInt>::digits);
+
+  const auto maxFrom = (1U << fromBits) - 1U - offsetMax;
+  const auto maxTo = (1U << toBits) - 1U;
+  assert(0U <= x && (x - offsetMax) <= maxFrom);
+  return ToInt((((x - offsetMax) * maxTo + maxFrom / 2U) / maxFrom));
+}
+
+template <typename OutFormat, typename InFormat>
+auto decompressDepthRange(const Common::Frame<InFormat> &frame,
+                          unsigned offsetMax, unsigned bits)
+    -> Common::Frame<OutFormat> {
+  using InTraits = Common::detail::PixelFormatHelper<InFormat>;
+  using OutTraits = Common::detail::PixelFormatHelper<OutFormat>;
+  using OutInt = typename OutTraits::base_type;
+  using WorkInt = uint_fast32_t;
+  constexpr auto outBits = OutTraits::bitDepth;
+  constexpr auto numPlanes = std::min(InTraits::nb_plane, OutTraits::nb_plane);
+
+  auto result = Common::Frame<OutFormat>(frame.getWidth(), frame.getHeight());
+  for (int i = 0; i < numPlanes; ++i) {
+    assert(frame.getPlane(i).width() == result.getPlane(i).width());
+    assert(frame.getPlane(i).height() == result.getPlane(i).height());
+    std::transform(std::begin(frame.getPlane(i)), std::end(frame.getPlane(i)),
+                   std::begin(result.getPlane(i)), [=](WorkInt x) {
+                     return decompressRangeValue<OutInt, WorkInt>(
+                         x, bits, outBits, offsetMax);
+                   });
+  }
+
+  return result;
+}
+
+template <typename OutFormat, typename InFormat>
+auto decompressDepthRange(const Common::MVDFrame<InFormat> &frame,
+                          unsigned offsetMax, unsigned bits)
+    -> Common::MVDFrame<OutFormat> {
+  auto result = Common::MVDFrame<OutFormat>();
+  result.reserve(frame.size());
+  std::transform(std::begin(frame), std::end(frame), std::back_inserter(result),
+                 [=](const Common::TextureDepthFrame<InFormat> &view)
+                     -> Common::TextureDepthFrame<OutFormat> {
+                   return {view.first, decompressDepthRange<OutFormat>(
                                            view.second, offsetMax, bits)};
                  });
 

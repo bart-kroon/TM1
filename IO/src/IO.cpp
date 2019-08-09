@@ -429,24 +429,13 @@ namespace {
 template <typename FORMAT>
 MVD16Frame loadSourceFrame_impl(int bits, const Json &config,
                                 const vector<Vec2i> &sizes, int frameIndex) {
-  const auto depthThreshold = config.require("depthThreshold").asInt();
-  if (depthThreshold) {
-    return compressDepthRange<YUV400P16>(
-        loadMVDFrame<FORMAT>(
-            config, sizes, frameIndex + config.require("startFrame").asInt(),
-            "source", "SourceDirectory", "SourceTexturePathFmt",
-            "SourceDepthPathFmt",
-            config.require("SourceCameraNames").asStringVector()),
-        static_cast<int>((depthThreshold * pow(2, bits)) / pow(2, 10)), bits);
-  } else {
-    return requantize<YUV400P16>(
-        loadMVDFrame<FORMAT>(
-            config, sizes, frameIndex + config.require("startFrame").asInt(),
-            "source", "SourceDirectory", "SourceTexturePathFmt",
-            "SourceDepthPathFmt",
-            config.require("SourceCameraNames").asStringVector()),
-        bits);
-  }
+  return requantize<YUV400P16>(
+      loadMVDFrame<FORMAT>(
+          config, sizes, frameIndex + config.require("startFrame").asInt(),
+          "source", "SourceDirectory", "SourceTexturePathFmt",
+          "SourceDepthPathFmt",
+          config.require("SourceCameraNames").asStringVector()),
+      bits);
 }
 } // namespace
 
@@ -589,8 +578,18 @@ MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize,
                                  "AtlasDepthPathFmt");
 }
 
+MVD10Frame loadAtlasAndDecompress(const Json &config,
+                                  const vector<Vec2i> &atlasSize,
+                                  int frameIndex) {
+  return decompressDepthRange<YUV400P10>(
+      loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas",
+                              "OutputDirectory", "AtlasTexturePathFmt",
+                              "AtlasDepthPathFmt"),
+      64);
+}
+
 void saveAtlas(const Json &config, int frameIndex, const MVD16Frame &frame) {
-  saveAtlas(config, frameIndex, requantize<YUV400P10>(frame));
+  saveAtlas(config, frameIndex, compressDepthRange<YUV400P10>(frame, 64));
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {

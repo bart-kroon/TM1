@@ -57,9 +57,9 @@ public:
   using MVD16Frame = Common::MVD16Frame;
   using MVD10Frame = Common::MVD10Frame;
 
-  virtual PatchIdMapList
-  getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                const AtlasParametersList &patchList) = 0;
+  virtual PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
+                                       const AtlasParametersList &patchList,
+                                       const MVD10Frame &frame) = 0;
   virtual MVD16Frame
   recoverPrunedView(const MVD10Frame &atlas,
                     const CameraParametersList &cameraList,

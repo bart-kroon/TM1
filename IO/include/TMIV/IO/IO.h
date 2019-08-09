@@ -92,6 +92,9 @@ void saveAtlas(const Common::Json &config, int frameIndex,
 auto loadAtlas(const Common::Json &config,
                const std::vector<Common::Vec2i> &atlasSize, int frameIndex)
     -> Common::MVD10Frame;
+auto loadAtlasAndDecompress(const Common::Json &config,
+                            const std::vector<Common::Vec2i> &atlasSize,
+                            int frameIndex) -> Common::MVD10Frame;
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);

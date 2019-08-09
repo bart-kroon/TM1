@@ -52,9 +52,11 @@ void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
   m_patches.clear();
 }
 
-void Decoder::updatePatchList(AtlasParametersList patches) {
+void Decoder::updatePatchList(AtlasParametersList patches,
+                              const Common::MVD10Frame &frame) {
   m_patches = move(patches);
-  m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches);
+  m_patchIdMaps =
+      m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, frame);
 }
 
 void Decoder::updateCameraList(CameraParametersList cameras) {

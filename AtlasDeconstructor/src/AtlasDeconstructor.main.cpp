@@ -70,12 +70,13 @@ public:
          << metadata.omafV1CompatibleFlag << " ("
          << int(metadata.omafV1CompatibleFlag) << ")" << endl;
 
-    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize,
-                                                           metadata.patches);
+    auto frame = IO::loadAtlas(json(), metadata.atlasSize, intraFrame);
+    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(
+        metadata.atlasSize, metadata.patches, frame);
     IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto atlas = IO::loadAtlas(json(), metadata.atlasSize, i);
+      auto atlas = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, i);
       auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
           atlas, metadata.cameras, metadata.patches);
 

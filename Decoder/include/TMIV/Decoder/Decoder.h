@@ -61,7 +61,8 @@ public:
   ~Decoder() override = default;
 
   void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
-  void updatePatchList(Metadata::AtlasParametersList patches) override;
+  void updatePatchList(Metadata::AtlasParametersList patches,
+                       const Common::MVD10Frame &frame) override;
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 
   Common::Texture444Depth10Frame

@@ -113,5 +113,6 @@ int main(int argc, char *argv[]) {
     return 0;
   } catch (runtime_error &e) {
     cerr << e.what() << endl;
+	return 1;
   }
 }

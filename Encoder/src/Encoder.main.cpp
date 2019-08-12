@@ -102,7 +102,8 @@ int main(int argc, char *argv[]) {
     app.run();
     app.printTime();
     return 0;
-  } catch (std::exception &e) {
+  } catch (runtime_error &e) {
     cerr << e.what() << endl;
+    return 1;
   }
 }

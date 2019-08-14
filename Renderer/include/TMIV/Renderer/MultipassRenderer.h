@@ -56,8 +56,8 @@ public:
   MultipassRenderer &operator=(MultipassRenderer &&) = default;
   ~MultipassRenderer() override = default;
 
-  Common::Texture444Depth10Frame
-  renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+  Common::Texture444Depth16Frame
+  renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
               const Metadata::AtlasParametersList &patches,
               const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;

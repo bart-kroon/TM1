@@ -69,7 +69,6 @@ public:
     for (int i = 0; i < m_numberOfFrames; i++) {
       auto idx = IO::getExtendedIndex(json(), i);
 
-      MVD10Frame frame;
       if (lastIntraFrame != idx.first) {
         lastIntraFrame = idx.first;
         metadata = IO::loadMivMetadata(json(), idx.first);
@@ -78,12 +77,12 @@ public:
              << int(metadata.omafV1CompatibleFlag) << ")" << endl;
 
         m_decoder->updateAtlasSize(metadata.atlasSize);
-        frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
+        auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
         m_decoder->updatePatchList(move(metadata.patches), frame);
         m_decoder->updateCameraList(move(metadata.cameras));
       }
 
-      frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
+      auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
       auto target = IO::loadViewportMetadata(json(), idx.second);
       auto viewport = m_decoder->decodeFrame(frame, target);
       IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});

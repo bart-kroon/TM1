@@ -72,7 +72,7 @@ public:
         maps = IO::loadPatchIdMaps(json(), metadata.atlasSize, idx.second);
       }
 
-      auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
+      auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
       auto target = IO::loadViewportMetadata(json(), idx.second);
       auto viewport =
           m_renderer->renderFrame(frame, maps, metadata.patches, metadata.cameras, target);

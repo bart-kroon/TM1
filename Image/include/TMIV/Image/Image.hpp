@@ -109,6 +109,8 @@ auto compressDepthRange(const Common::MVDFrame<InFormat> &frame, unsigned offset
   return result;
 }
 
+// #29: For 10-bit encoded depth values <64 indicates invalid.
+//      For 16-bit decompressed depth values only zero indicates invalid.
 template <typename ToInt, typename WorkInt>
 auto decompressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits, WorkInt offsetMax) -> ToInt {
   static_assert(std::is_integral_v<WorkInt> && std::is_unsigned_v<WorkInt>);
@@ -116,10 +118,14 @@ auto decompressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits, WorkInt o
   assert(0 < fromBits && 0 < toBits && toBits <= std::numeric_limits<ToInt>::digits &&
          toBits + fromBits <= std::numeric_limits<WorkInt>::digits);
 
+  if (x < 64U) {
+    return 0U;
+  }
   const auto maxFrom = (1U << fromBits) - 1U - offsetMax;
   const auto maxTo = (1U << toBits) - 1U;
   assert(0U <= x && (x - offsetMax) <= maxFrom);
-  return ToInt((((x - offsetMax) * maxTo + maxFrom / 2U) / maxFrom));
+  auto value = ToInt((((x - offsetMax) * maxTo + maxFrom / 2U) / maxFrom));
+  return value > 0U ? value : 1U;
 }
 
 template <typename OutFormat, typename InFormat>

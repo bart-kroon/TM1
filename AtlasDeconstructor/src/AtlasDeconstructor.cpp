@@ -81,7 +81,8 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {
-      if (depthMap[y * patchMap.getWidth() + x] >= 64) {
+      // #29: For 16-bit decompressed depth zero indicates invalid.
+      if (depthMap(y, x) > 0) {
         patchMap.getPlane(0)(y, x) = patchId;
       }
     }

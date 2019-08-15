@@ -49,6 +49,8 @@ public:
   virtual ~IRenderer() = default;
 
   // Render from a texture atlas to a viewport (decoder side)
+  //
+  // #29: For 16-bit decompressed depth values (decoder side) zero indicates invalid.
   virtual Common::Texture444Depth16Frame
   renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
               const Metadata::AtlasParametersList &patches,
@@ -56,6 +58,8 @@ public:
               const Metadata::CameraParameters &target) const = 0;
 
   // Render from a multiview source to a viewport (encoder side)
+  //
+  // #29: For 16-bit depth values on the encoder side all levels are valid.
   virtual Common::Texture444Depth16Frame
   renderFrame(const Common::MVD16Frame &frame, const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const = 0;

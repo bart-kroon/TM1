@@ -100,6 +100,8 @@ auto compressDepthRange(const Common::MVDFrame<InFormat> &frame, unsigned offset
                         unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
     -> Common::MVDFrame<OutFormat>;
 
+// #29: For 10-bit encoded depth values <64 indicates invalid.
+//      For 16-bit decompressed depth values only zero indicates invalid.
 template <typename ToInt, typename WorkInt>
 auto decompressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits, WorkInt offsetMax) -> ToInt;
 

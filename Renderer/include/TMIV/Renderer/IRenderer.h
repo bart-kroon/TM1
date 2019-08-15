@@ -49,8 +49,8 @@ public:
   virtual ~IRenderer() = default;
 
   // Render from a texture atlas to a viewport (decoder side)
-  virtual Common::Texture444Depth10Frame
-  renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+  virtual Common::Texture444Depth16Frame
+  renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
               const Metadata::AtlasParametersList &patches,
               const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const = 0;

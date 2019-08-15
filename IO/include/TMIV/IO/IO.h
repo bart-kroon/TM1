@@ -83,7 +83,7 @@ void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Fr
 auto loadAtlas(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
                int frameIndex) -> Common::MVD10Frame;
 auto loadAtlasAndDecompress(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
-                            int frameIndex) -> Common::MVD10Frame;
+                            int frameIndex) -> Common::MVD16Frame;
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);
@@ -92,7 +92,7 @@ auto loadPatchIdMaps(const Common::Json &config, const std::vector<Common::Vec2i
 
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::CameraParameters;
 void saveViewport(const Common::Json &config, int frameIndex,
-                  const Common::TextureDepth10Frame &frame);
+                  const Common::TextureDepth16Frame &frame);
 
 // Returns a pair of metadata and frame indices to pass to loadMivMetadata and
 // loadAtlas. If frameIndex is strictly less than the actual number of frames in

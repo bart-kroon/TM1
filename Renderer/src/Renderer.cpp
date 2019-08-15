@@ -44,8 +44,8 @@ Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNo
       m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)} {
 }
 
-Common::Texture444Depth10Frame
-Renderer::renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+Common::Texture444Depth16Frame
+Renderer::renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
                       const Metadata::AtlasParametersList &patches,
                       const Metadata::CameraParametersList &cameras,
                       const Metadata::CameraParameters &target) const {

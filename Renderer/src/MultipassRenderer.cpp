@@ -173,8 +173,8 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   return sortedCamerasId;
 }
 
-Texture444Depth10Frame
-MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
+Texture444Depth16Frame
+MultipassRenderer::renderFrame(const MVD16Frame &atlas, const PatchIdMapList &maps,
                                const Metadata::AtlasParametersList &patches,
                                const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {
@@ -191,8 +191,8 @@ MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &ma
          << "Please check number of passes " << endl;
   }
 
-  Texture444Depth10Frame viewport;
-  vector<Texture444Depth10Frame> viewportPass(numberOfPasses);
+  Texture444Depth16Frame viewport;
+  vector<Texture444Depth16Frame> viewportPass(numberOfPasses);
   vector<PatchIdMapList> mapsPass(numberOfPasses);
 
   for (auto &pass : mapsPass) {
@@ -242,7 +242,7 @@ MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &ma
   // Merging
   //////////////
   if (numberOfPasses > 1) {
-    Texture444Depth10Frame mergedviewport = viewportPass[numberOfPasses - 1];
+    Texture444Depth16Frame mergedviewport = viewportPass[numberOfPasses - 1];
     for (auto passId = numberOfPasses - 1; passId > 0; passId--) {
       transform(viewportPass[passId - 1].second.getPlane(0).begin(),
                 viewportPass[passId - 1].second.getPlane(0).end(),

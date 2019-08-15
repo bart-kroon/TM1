@@ -538,9 +538,9 @@ MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize, int fra
                                  "AtlasTexturePathFmt", "AtlasDepthPathFmt");
 }
 
-MVD10Frame loadAtlasAndDecompress(const Json &config, const vector<Vec2i> &atlasSize,
+MVD16Frame loadAtlasAndDecompress(const Json &config, const vector<Vec2i> &atlasSize,
                                   int frameIndex) {
-  return decompressDepthRange<YUV400P10>(
+  return decompressDepthRange<YUV400P16>(
       loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
                               "AtlasTexturePathFmt", "AtlasDepthPathFmt"),
       128);
@@ -617,7 +617,7 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
   return result;
 }
 
-void saveViewport(const Json &config, int frameIndex, const TextureDepth10Frame &frame) {
+void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame &frame) {
   cout << "Saving viewport frame " << frameIndex << '\n';
 
   string texturePath = getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,

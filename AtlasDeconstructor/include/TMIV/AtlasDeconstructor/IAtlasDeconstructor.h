@@ -60,7 +60,7 @@ public:
   virtual PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
                                        const AtlasParametersList &patchList,
                                        const MVD10Frame &frame) = 0;
-  virtual MVD16Frame recoverPrunedView(const MVD10Frame &atlas,
+  virtual MVD16Frame recoverPrunedView(const MVD16Frame &atlas,
                                        const CameraParametersList &cameraList,
                                        const AtlasParametersList &patchList) = 0;
 };

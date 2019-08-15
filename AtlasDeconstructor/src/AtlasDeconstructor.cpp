@@ -88,11 +88,11 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   }
 }
 
-MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
+MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD16Frame &atlas,
                                                  const CameraParametersList &cameraList,
                                                  const AtlasParametersList &patchList) {
   // Initialization
-  MVD10Frame mvd10;
+  MVD16Frame frame;
 
   for (const auto &cam : cameraList) {
     TextureFrame tex(cam.size.x(), cam.size.y());
@@ -101,21 +101,21 @@ MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     std::fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), neutralChroma);
     std::fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), neutralChroma);
 
-    Depth10Frame depth(cam.size.x(), cam.size.y());
+    Depth16Frame depth(cam.size.x(), cam.size.y());
 
     std::fill(depth.getPlane(0).begin(), depth.getPlane(0).end(), 0);
 
-    mvd10.push_back(TextureDepth10Frame{std::move(tex), std::move(depth)});
+    frame.push_back(TextureDepth16Frame{std::move(tex), std::move(depth)});
   }
 
   // Process patches
-  MVD10Frame atlas_pruned = atlas;
+  MVD16Frame atlas_pruned = atlas;
 
   for (auto iter = patchList.rbegin(); iter != patchList.rend(); ++iter) {
     const auto &patch = *iter;
 
     auto &currentAtlas = atlas_pruned[patch.atlasId];
-    auto &currentView = mvd10[patch.viewId];
+    auto &currentView = frame[patch.viewId];
 
     auto &textureAtlasMap = currentAtlas.first;
     auto &depthAtlasMap = currentAtlas.second;
@@ -148,7 +148,7 @@ MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
             if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
                   textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 512;
+              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 0x8000;
             }
           }
         }
@@ -162,8 +162,7 @@ MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     }
   }
 
-  // Convert from 10 to 16-bit depth
-  return requantize<YUV400P16>(mvd10);
+  return frame;
 }
 
 } // namespace TMIV::AtlasDeconstructor

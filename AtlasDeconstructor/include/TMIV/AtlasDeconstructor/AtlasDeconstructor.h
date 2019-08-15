@@ -53,7 +53,7 @@ public:
   PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
                                const AtlasParametersList &patchList,
                                const MVD10Frame &frame) override;
-  MVD16Frame recoverPrunedView(const MVD10Frame &atlas, const CameraParametersList &cameraList,
+  MVD16Frame recoverPrunedView(const MVD16Frame &atlas, const CameraParametersList &cameraList,
                                const AtlasParametersList &patchList) override;
 
 private:

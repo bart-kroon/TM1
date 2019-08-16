@@ -102,7 +102,9 @@ public:
         // Look up depth value and affine parameters
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
 
-        const auto d = expandDepthValue<16>(camera, atlas.second.getPlane(0)(i_atlas, j_atlas));
+        auto d16 = atlas.second.getPlane(0)(i_atlas, j_atlas);
+        assert(d16 > 0U); // #29: Having a patch ID, this depth has to be valid.
+        const auto d = expandDepthValue<16>(camera, d16);
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
 
@@ -229,7 +231,7 @@ public:
     return resolution(target) / sourceResolution;
   }
 
-  Texture444Depth16Frame renderFrame(const MVD16Frame &atlases, const PatchIdMapList &ids,
+   Texture444Depth16Frame renderFrame(const MVD16Frame &atlases, const PatchIdMapList &ids,
                                      const AtlasParametersList &patches,
                                      const CameraParametersList &cameras,
                                      const CameraParameters &target) const {

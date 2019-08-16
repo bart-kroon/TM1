@@ -107,11 +107,13 @@ FRAME quantizeNormDisp_impl(const CameraParameters &camera, const Mat1f &in) {
             [near = camera.depthRange[0], far = camera.depthRange[1]](float normDisp) -> uint16_t {
               if (normDisp > 0.F && isfinite(normDisp)) {
                 if (far >= kilometer) {
-                  return quantizeValue<bits>(near * normDisp);
+                  auto value = quantizeValue<bits>(near * normDisp);
+                  return value > 0U ? value : 1U;
                 }
-                return quantizeValue<bits>((far * near * normDisp - near) / (far - near));
+                auto value = quantizeValue<bits>((far * near * normDisp - near) / (far - near));
+                return value > 0U ? value : 1U;
               }
-              return 0;
+              return 0U;
             });
   return outYuv;
 }

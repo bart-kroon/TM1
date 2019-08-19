@@ -80,8 +80,6 @@ auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
 // 10-bit
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD16Frame &frame);
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
-auto loadAtlas(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
-               int frameIndex) -> Common::MVD10Frame;
 auto loadAtlasAndDecompress(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
                             int frameIndex) -> Common::MVD16Frame;
 

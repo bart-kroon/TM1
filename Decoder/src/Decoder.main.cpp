@@ -77,7 +77,7 @@ public:
              << int(metadata.omafV1CompatibleFlag) << ")" << endl;
 
         m_decoder->updateAtlasSize(metadata.atlasSize);
-        auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
+        auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
         m_decoder->updatePatchList(move(metadata.patches), frame);
         m_decoder->updateCameraList(move(metadata.cameras));
       }
@@ -103,6 +103,6 @@ int main(int argc, char *argv[]) {
     return 0;
   } catch (runtime_error &e) {
     cerr << e.what() << endl;
-	return 1;
+    return 1;
   }
 }

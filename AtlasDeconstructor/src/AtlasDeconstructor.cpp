@@ -48,7 +48,7 @@ AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
 
 PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
                                                  const AtlasParametersList &patchList,
-                                                 const MVD10Frame &frame) {
+                                                 const MVD16Frame &frame) {
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize) {
@@ -66,7 +66,7 @@ PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlas
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
                                            PatchIdMapList &patchMapList, std::uint16_t patchId,
-                                           const MVD10Frame &frame) const {
+                                           const MVD16Frame &frame) const {
   auto &patchMap = patchMapList[patch.atlasId];
   auto &depthMap = frame[patch.atlasId].second.getPlane(0);
 

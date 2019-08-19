@@ -52,13 +52,13 @@ public:
 
   PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
                                const AtlasParametersList &patchList,
-                               const MVD10Frame &frame) override;
+                               const MVD16Frame &frame) override;
   MVD16Frame recoverPrunedView(const MVD16Frame &atlas, const CameraParametersList &cameraList,
                                const AtlasParametersList &patchList) override;
 
 private:
   void writePatchIdInMap(const AtlasParameters &patch, PatchIdMapList &patchMapList,
-                         std::uint16_t patchId, const MVD10Frame &frame) const;
+                         std::uint16_t patchId, const MVD16Frame &frame) const;
 };
 } // namespace TMIV::AtlasDeconstructor
 

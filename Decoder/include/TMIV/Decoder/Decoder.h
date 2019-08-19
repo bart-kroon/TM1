@@ -61,7 +61,7 @@ public:
 
   void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
   void updatePatchList(Metadata::AtlasParametersList patches,
-                       const Common::MVD10Frame &frame) override;
+                       const Common::MVD16Frame &frame) override;
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 
   Common::Texture444Depth16Frame

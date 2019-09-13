@@ -41,8 +41,7 @@
 namespace TMIV::AtlasConstructor {
 class HierarchicalPruner : public IPruner {
 public:
-  HierarchicalPruner(const Common::Json &rootConfig,
-                     const Common::Json &nodeConfig);
+  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
   HierarchicalPruner(const HierarchicalPruner &) = delete;
   HierarchicalPruner(HierarchicalPruner &&) = default;
   HierarchicalPruner &operator=(const HierarchicalPruner &) = delete;

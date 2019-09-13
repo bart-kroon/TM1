@@ -43,8 +43,7 @@ namespace TMIV::AtlasConstructor {
 inline void registerComponents() {
   Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
   Factory<IPruner>::getInstance().registerAs<Pruner>("Pruner");
-  Factory<IPruner>::getInstance().registerAs<HierarchicalPruner>(
-      "HierarchicalPruner");
+  Factory<IPruner>::getInstance().registerAs<HierarchicalPruner>("HierarchicalPruner");
   Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
   Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
 }

@@ -53,8 +53,7 @@ namespace TMIV::AtlasConstructor {
 class HierarchicalPruner::Impl {
 private:
   struct Synthesizer {
-    Synthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size,
-                size_t index_)
+    Synthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_)
         : rasterizer{config, size}, index{index_} {}
 
     Rasterizer<Vec3f> rasterizer;
@@ -82,8 +81,7 @@ public:
         m_dilate{nodeConfig.require("dilate").asInt()},
         m_config{nodeConfig.require("rayAngleParameter").asFloat(),
                  nodeConfig.require("depthParameter").asFloat(),
-                 nodeConfig.require("stretchingParameter").asFloat(),
-                 m_maxStretching} {
+                 nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {
     if (auto node = nodeConfig.optional("dumpTo"); node) {
       const auto outputDir = rootConfig.require("OutputDirectory").asString();
       m_dumpTo = outputDir + '/' + node.asString();
@@ -131,8 +129,7 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_cameras.size(); ++i) {
       if (m_isReferenceView[i] == 0) {
-        m_synthesizers.emplace_back(
-            make_unique<Synthesizer>(m_config, m_cameras[i].size, i));
+        m_synthesizers.emplace_back(make_unique<Synthesizer>(m_config, m_cameras[i].size, i));
       }
     }
   }
@@ -158,8 +155,7 @@ private:
     auto sumValues = 0.;
     auto sumPixels = 0.;
     for (const auto &mask : m_masks) {
-      sumValues =
-          accumulate(begin(mask.getPlane(0)), end(mask.getPlane(0)), sumValues);
+      sumValues = accumulate(begin(mask.getPlane(0)), end(mask.getPlane(0)), sumValues);
       sumPixels += mask.getWidth() * mask.getHeight();
     }
     auto numAtlases = double(m_masks.size()) * sumValues / (255. * sumPixels);
@@ -169,12 +165,11 @@ private:
   void pruneIntraFrame(const MVD16Frame &views) {
     m_pruningOrder.clear();
     while (!m_synthesizers.empty()) {
-      auto it = max_element(begin(m_synthesizers), end(m_synthesizers),
-                            [](const auto &s1, const auto &s2) {
-                              return s1->maskAverage < s2->maskAverage;
-                            });
-      cout << "pruneIntraFrame: view=" << (*it)->index
-           << ", maskAverage=" << (*it)->maskAverage << "\n";
+      auto it = max_element(
+          begin(m_synthesizers), end(m_synthesizers),
+          [](const auto &s1, const auto &s2) { return s1->maskAverage < s2->maskAverage; });
+      cout << "pruneIntraFrame: view=" << (*it)->index << ", maskAverage=" << (*it)->maskAverage
+           << "\n";
       const auto i = (*it)->index;
       m_synthesizers.erase(it);
       synthesizeViews(i, views[i]);
@@ -186,8 +181,7 @@ private:
     for (auto i : m_pruningOrder) {
       auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
                         [i](const auto &s) { return s->index == i; });
-      cout << "pruneInterFrame: view=" << i
-           << ", maskAverage=" << (*it)->maskAverage << "\n";
+      cout << "pruneInterFrame: view=" << i << ", maskAverage=" << (*it)->maskAverage << "\n";
       m_synthesizers.erase(it);
       synthesizeViews(i, views[i]);
     }
@@ -204,20 +198,17 @@ private:
   // Unproject a pruned (masked) view, resulting in a mesh in the reference
   // frame of the source view
   void maskedUnproject(size_t index, const TextureDepth16Frame &view,
-                       SceneVertexDescriptorList &vertices,
-                       TriangleDescriptorList &triangles,
+                       SceneVertexDescriptorList &vertices, TriangleDescriptorList &triangles,
                        vector<Vec3f> &attributes) const {
     const auto &camera = m_cameras[index];
     switch (camera.type) {
     case ProjectionType::ERP: {
       Engine<ProjectionType::ERP> engine{camera};
-      return maskedUnproject(engine, index, view, vertices, triangles,
-                             attributes);
+      return maskedUnproject(engine, index, view, vertices, triangles, attributes);
     }
     case ProjectionType::Perspective: {
       Engine<ProjectionType::Perspective> engine{camera};
-      return maskedUnproject(engine, index, view, vertices, triangles,
-                             attributes);
+      return maskedUnproject(engine, index, view, vertices, triangles, attributes);
     }
     default:
       abort();
@@ -226,8 +217,7 @@ private:
 
   template <typename E>
   void maskedUnproject(E &engine, size_t index, const TextureDepth16Frame &view,
-                       SceneVertexDescriptorList &vertices,
-                       TriangleDescriptorList &triangles,
+                       SceneVertexDescriptorList &vertices, TriangleDescriptorList &triangles,
                        vector<Vec3f> &attributes) const {
     const auto &camera = m_cameras[index];
     const auto &mask = m_masks[index].getPlane(0);
@@ -267,8 +257,8 @@ private:
       attributes.shrink_to_fit();
     }
 
-    cout << "Mesh has " << vertices.size() << " vertices ("
-         << double(vertices.size()) / numPixels << " of full view)\n";
+    cout << "Mesh has " << vertices.size() << " vertices (" << double(vertices.size()) / numPixels
+         << " of full view)\n";
 
     assert(triangles.empty());
     const auto maxTriangles = 2 * vertices.size();
@@ -276,8 +266,7 @@ private:
     cout << "Reserving for " << maxTriangles << " triangles\n";
 
     const auto considerTriangle = [&](Vec2i a, Vec2i b, Vec2i c) {
-      if (mask(a.y(), a.x()) == 0 || mask(b.y(), b.x()) == 0 ||
-          mask(c.y(), c.x()) == 0) {
+      if (mask(a.y(), a.x()) == 0 || mask(b.y(), b.x()) == 0 || mask(c.y(), c.x()) == 0) {
         return;
       }
 
@@ -298,8 +287,8 @@ private:
   }
 
   // Change reference frame and project vertices
-  void project(const SceneVertexDescriptorList &in, size_t iview,
-               ImageVertexDescriptorList &out, size_t oview) const {
+  void project(const SceneVertexDescriptorList &in, size_t iview, ImageVertexDescriptorList &out,
+               size_t oview) const {
     const auto &camera = m_cameras[oview];
     switch (camera.type) {
     case ProjectionType::ERP: {
@@ -316,9 +305,8 @@ private:
   }
 
   template <typename E>
-  void project(const E &engine, const SceneVertexDescriptorList &in,
-               size_t iview, ImageVertexDescriptorList &out,
-               size_t oview) const {
+  void project(const E &engine, const SceneVertexDescriptorList &in, size_t iview,
+               ImageVertexDescriptorList &out, size_t oview) const {
     const auto [R, t] = affineParameters(m_cameras[iview], m_cameras[oview]);
     out.clear();
     out.reserve(in.size());
@@ -331,8 +319,7 @@ private:
 
   // Weighted sphere compensation of stretching as performed by
   // Engine<ERP>::project
-  void weightedSphere(const CameraParameters &target,
-                      const ImageVertexDescriptorList &vertices,
+  void weightedSphere(const CameraParameters &target, const ImageVertexDescriptorList &vertices,
                       TriangleDescriptorList &triangles) const {
     switch (target.type) {
     case ProjectionType::ERP: {
@@ -390,8 +377,7 @@ private:
   }
 
   // Visit all pixel neighbors (in between 3 and 8)
-  template <typename F>
-  static bool forNeighbors(int i, int j, array<size_t, 2> sizes, F f) {
+  template <typename F> static bool forNeighbors(int i, int j, array<size_t, 2> sizes, F f) {
     const int n1 = max(0, i - 1);
     const int n2 = min(int(sizes[0]), i + 2);
     const int m1 = max(0, j - 1);
@@ -411,10 +397,8 @@ private:
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
-          forNeighbors(i, j, mask.sizes(),
-                       [&mask](int n, int m) { return mask(n, m) > 0; })
-              ? 255
-              : 0;
+          forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) > 0; }) ? 255
+                                                                                             : 0;
     });
     return result;
   }
@@ -423,10 +407,8 @@ private:
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
-          forNeighbors(i, j, mask.sizes(),
-                       [&mask](int n, int m) { return mask(n, m) == 0; })
-              ? 0
-              : 255;
+          forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) == 0; }) ? 0
+                                                                                              : 255;
     });
     return result;
   }
@@ -444,23 +426,20 @@ private:
     for (int n = 0; n < m_dilate; ++n) {
       mask = dilate(mask);
     }
-    synthesizer.maskAverage = float(accumulate(begin(mask), end(mask), 0)) /
-                              float(mask.width() * mask.height());
-    cout << "  New maskAverage for " << synthesizer.index << " is "
-         << synthesizer.maskAverage << "\n";
+    synthesizer.maskAverage =
+        float(accumulate(begin(mask), end(mask), 0)) / float(mask.width() * mask.height());
+    cout << "  New maskAverage for " << synthesizer.index << " is " << synthesizer.maskAverage
+         << "\n";
   }
 }; // namespace TMIV::AtlasConstructor
 
-HierarchicalPruner::HierarchicalPruner(const Json &rootConfig,
-                                       const Json &nodeConfig)
+HierarchicalPruner::HierarchicalPruner(const Json &rootConfig, const Json &nodeConfig)
     : m_impl(new Impl{rootConfig, nodeConfig}) {}
 
 HierarchicalPruner::~HierarchicalPruner() {}
 
-auto HierarchicalPruner::prune(const CameraParametersList &cameras,
-                               const MVD16Frame &views,
-                               const vector<uint8_t> &shouldNotBePruned)
-    -> MaskList {
+auto HierarchicalPruner::prune(const CameraParametersList &cameras, const MVD16Frame &views,
+                               const vector<uint8_t> &shouldNotBePruned) -> MaskList {
   return m_impl->prune(cameras, views, shouldNotBePruned);
 }
 } // namespace TMIV::AtlasConstructor

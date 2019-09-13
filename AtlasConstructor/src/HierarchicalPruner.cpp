@@ -57,7 +57,7 @@ private:
 
     Rasterizer<Vec3f> rasterizer;
     size_t index;
-    float maskAverage{0.f};
+    float maskAverage{0.F};
   };
 
   const float m_maxStretching{};
@@ -73,14 +73,13 @@ private:
   vector<Frame<YUV400P8>> m_masks;
 
 public:
-  Impl(const Json &rootConfig, const Json &nodeConfig)
+  explicit Impl(const Json &nodeConfig)
       : m_maxStretching{nodeConfig.require("maxStretching").asFloat()},
         m_erode{nodeConfig.require("erode").asInt()},
         m_dilate{nodeConfig.require("dilate").asInt()},
         m_config{nodeConfig.require("rayAngleParameter").asFloat(),
                  nodeConfig.require("depthParameter").asFloat(),
-                 nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {
-  }
+                 nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
   auto prune(const CameraParametersList &cameras, const MVD16Frame &views,
              const vector<uint8_t> &isReferenceView) -> MaskList {
@@ -123,7 +122,7 @@ private:
   }
 
   void synthesizeReferenceViews(const MVD16Frame &views) {
-    for (size_t i = 0u; i < m_cameras.size(); ++i) {
+    for (size_t i = 0; i < m_cameras.size(); ++i) {
       if (m_isReferenceView[i] > 0) {
         cout << "synthesizeReferenceViews: view=" << i << "\n";
         synthesizeViews(i, views[i]);
@@ -202,7 +201,7 @@ private:
     const auto &camera = m_cameras[index];
     const auto &mask = m_masks[index].getPlane(0);
     const auto size = camera.size;
-    const auto numPixels = size_t(size.x() * size.y());
+    const auto numPixels = size.x() * size.y();
 
     const auto &Y = view.first.getPlane(0);
     const auto &U = view.first.getPlane(1);
@@ -222,12 +221,12 @@ private:
         key.push_back(int(vertices.size()));
 
         if (mask(y, x) > 0) {
-          const auto uv = Vec2f{float(x) + 0.5f, float(y) + 0.5f};
+          const auto uv = Vec2f{float(x) + 0.5F, float(y) + 0.5F};
           const auto d = expandDepthValue<16>(camera, D(y, x));
           vertices.push_back({engine.unprojectVertex(uv, d), NaN});
-          attributes.emplace_back(Vec3f{expandValue<10u>(Y(y, x)),
-                                        expandValue<10u>(U(y / 2, x / 2)),
-                                        expandValue<10u>(V(y / 2, x / 2))});
+          attributes.emplace_back(Vec3f{expandValue<10U>(Y(y, x)),
+                                        expandValue<10U>(U(y / 2, x / 2)),
+                                        expandValue<10U>(V(y / 2, x / 2))});
         }
       }
     }
@@ -253,7 +252,7 @@ private:
       const auto ia = key[a.y() * size.x() + a.x()];
       const auto ib = key[b.y() * size.x() + b.x()];
       const auto ic = key[c.y() * size.x() + c.x()];
-      triangles.push_back({{ia, ib, ic}, 0.5f});
+      triangles.push_back({{ia, ib, ic}, 0.5F});
     };
 
     for (int y = 1; y < size.y(); ++y) {
@@ -317,12 +316,12 @@ private:
                       const ImageVertexDescriptorList &vertices,
                       TriangleDescriptorList &triangles) const {
     for (auto &triangle : triangles) {
-      auto v = 0.f;
+      auto v = 0.F;
       for (auto index : triangle.indices) {
-        v += vertices[index].position.y() / 3.f;
+        v += vertices[index].position.y() / 3.F;
       }
       const auto theta = engine.theta0 + engine.dtheta_dv * v;
-      triangle.area = 0.5f / cos(theta);
+      triangle.area = 0.5F / cos(theta);
     }
   }
 
@@ -413,10 +412,10 @@ private:
   }
 }; // namespace TMIV::AtlasConstructor
 
-HierarchicalPruner::HierarchicalPruner(const Json &rootConfig, const Json &nodeConfig)
-    : m_impl(new Impl{rootConfig, nodeConfig}) {}
+HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &nodeConfig)
+    : m_impl(new Impl{nodeConfig}) {}
 
-HierarchicalPruner::~HierarchicalPruner() {}
+HierarchicalPruner::~HierarchicalPruner() = default;
 
 auto HierarchicalPruner::prune(const CameraParametersList &cameras, const MVD16Frame &views,
                                const vector<uint8_t> &shouldNotBePruned) -> MaskList {

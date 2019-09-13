@@ -52,14 +52,17 @@ namespace TMIV::AtlasConstructor {
 class HierarchicalPruner::Impl {
 private:
   struct Synthesizer {
-    Synthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_)
-        : rasterizer{config, size}, index{index_} {}
+    Synthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_,
+                Mat<float> reference_)
+        : rasterizer{config, size}, index{index_}, reference{move(reference_)} {}
 
     Rasterizer<Vec3f> rasterizer;
     size_t index;
     float maskAverage{0.F};
+    Mat<float> reference;
   };
 
+  const float m_maxDepthError{};
   const float m_maxStretching{};
   const int m_erode{};
   const int m_dilate{};
@@ -74,7 +77,8 @@ private:
 
 public:
   explicit Impl(const Json &nodeConfig)
-      : m_maxStretching{nodeConfig.require("maxStretching").asFloat()},
+      : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()},
+        m_maxStretching{nodeConfig.require("maxStretching").asFloat()},
         m_erode{nodeConfig.require("erode").asInt()},
         m_dilate{nodeConfig.require("dilate").asInt()},
         m_config{nodeConfig.require("rayAngleParameter").asFloat(),
@@ -99,7 +103,7 @@ public:
 private:
   void prepareFrame(const MVD16Frame &views) {
     createInitialMasks();
-    createSynthesizerPerPartialView();
+    createSynthesizerPerPartialView(views);
     synthesizeReferenceViews(views);
   }
 
@@ -112,11 +116,13 @@ private:
     }
   }
 
-  void createSynthesizerPerPartialView() {
+  void createSynthesizerPerPartialView(const MVD16Frame &views) {
     m_synthesizers.clear();
     for (size_t i = 0; i < m_cameras.size(); ++i) {
       if (m_isReferenceView[i] == 0) {
-        m_synthesizers.emplace_back(make_unique<Synthesizer>(m_config, m_cameras[i].size, i));
+        auto reference = expandDepth(m_cameras[i], views[i].second);
+        m_synthesizers.emplace_back(
+            make_unique<Synthesizer>(m_config, m_cameras[i].size, i, reference));
       }
     }
   }
@@ -395,8 +401,10 @@ private:
   void updateMask(Synthesizer &synthesizer) {
     auto &mask = m_masks[synthesizer.index].getPlane(0);
     auto i = begin(mask);
-    synthesizer.rasterizer.visit([&i](const PixelValue<Vec3f> &x) {
-      *i++ = uint8_t(x.normDisp > 0 ? 0 : 255);
+    auto j = begin(synthesizer.reference);
+    synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
+      const auto depthError = abs(x.depth() / *j++ - 1.F);
+      *i++ = uint8_t(x.normDisp > 0 && depthError < m_maxDepthError ? 0 : 255);
       return true;
     });
     for (int n = 0; n < m_erode; ++n) {

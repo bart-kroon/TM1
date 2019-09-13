@@ -40,8 +40,7 @@
                 "stretchingParameter": 0.6,
                 "maxStretching": 5,
                 "erode": 2,
-                "dilate": 5,
-                "dumpTo": "PRN_SE_R0_Tm_c%02d_1920x1080_yuv400p.yuv"
+                "dilate": 5
             },
             "AggregatorMethod": "Aggregator",
             "Aggregator": {},

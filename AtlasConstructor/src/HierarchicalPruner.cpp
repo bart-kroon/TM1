@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <fstream>
 #include <future>
 #include <iostream>
 #include <numeric>
@@ -65,7 +64,6 @@ private:
   const int m_erode{};
   const int m_dilate{};
   const AccumulatingPixel<Vec3f> m_config;
-  string m_dumpTo;
   bool m_intra{true};
   bool m_firstFrame{true};
   CameraParametersList m_cameras;
@@ -82,10 +80,6 @@ public:
         m_config{nodeConfig.require("rayAngleParameter").asFloat(),
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {
-    if (auto node = nodeConfig.optional("dumpTo"); node) {
-      const auto outputDir = rootConfig.require("OutputDirectory").asString();
-      m_dumpTo = outputDir + '/' + node.asString();
-    }
   }
 
   auto prune(const CameraParametersList &cameras, const MVD16Frame &views,
@@ -98,12 +92,6 @@ public:
     }
     prepareFrame(views);
     pruneFrame(views);
-
-    // Unfortunately the Pruner, Aggregator and Packer cannot be run as separate
-    // executables. This "dumpTo" functionality is a workaround.
-    if (!m_dumpTo.empty()) {
-      dumpFrame();
-    }
 
     m_firstFrame = false;
     return move(m_masks);
@@ -184,14 +172,6 @@ private:
       cout << "pruneInterFrame: view=" << i << ", maskAverage=" << (*it)->maskAverage << "\n";
       m_synthesizers.erase(it);
       synthesizeViews(i, views[i]);
-    }
-  }
-
-  void dumpFrame() {
-    for (auto i = size_t(0); i != m_masks.size(); ++i) {
-      const auto path = format(m_dumpTo.c_str(), i);
-      ofstream stream{path, ios::binary | (m_firstFrame ? ios::out : ios::app)};
-      m_masks[i].dump(stream);
     }
   }
 

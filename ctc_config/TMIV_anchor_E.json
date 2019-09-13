@@ -35,6 +35,7 @@
         "AtlasConstructor": {
             "PrunerMethod": "HierarchicalPruner",
             "HierarchicalPruner": {
+                "maxDepthError": 0.1,
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
                 "stretchingParameter": 0.6,
@@ -55,7 +56,7 @@
                 1920,
                 1984
             ],
-            "MaxLumaSamplesPerFrame": 20971520
+            "MaxLumaSamplesPerFrame": 22855680
         }
     },
     "DecoderMethod": "Decoder",

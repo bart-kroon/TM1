@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -44,29 +44,26 @@ class MultipassRenderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
-  int m_numberOfPasses = 1;
+  int m_numberOfPasses{};
   std::vector<unsigned> m_numberOfViewsPerPass;
   int m_mergeConflict = 1;
 
 public:
-  MultipassRenderer(const Common::Json & /*rootNode*/,
-                    const Common::Json & /*componentNode*/);
+  MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   MultipassRenderer(const MultipassRenderer &) = delete;
   MultipassRenderer(MultipassRenderer &&) = default;
   MultipassRenderer &operator=(const MultipassRenderer &) = delete;
   MultipassRenderer &operator=(MultipassRenderer &&) = default;
   ~MultipassRenderer() override = default;
 
-  Common::Texture444Depth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
+  Common::Texture444Depth16Frame
+  renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
               const Metadata::AtlasParametersList &patches,
               const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD16Frame &atlas,
-              const Metadata::CameraParametersList &cameras,
+  renderFrame(const Common::MVD16Frame &atlas, const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Renderer

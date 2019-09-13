@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -47,8 +47,7 @@ namespace TMIV::AtlasConstructor {
 // The AtlasConstructor of TMIV 1.0 provided by Technicolor
 class AtlasConstructor : public IAtlasConstructor {
 public:
-  AtlasConstructor(const Common::Json & /*rootNode*/,
-                   const Common::Json & /*componentNode*/);
+  AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   AtlasConstructor(const AtlasConstructor &) = delete;
   AtlasConstructor(AtlasConstructor &&) = default;
   AtlasConstructor &operator=(const AtlasConstructor &) = delete;
@@ -64,21 +63,16 @@ public:
   void completeIntraPeriod() override;
 
   std::vector<Common::Vec2i> getAtlasSize() const override;
-  const CameraParametersList &getCameraList() const override {
-    return m_cameras;
-  }
-  const AtlasParametersList &getPatchList() const override {
-    return m_patchList;
-  }
+  const CameraParametersList &getCameraList() const override { return m_cameras; }
+  const AtlasParametersList &getPatchList() const override { return m_patchList; }
   MVD16Frame popAtlas() override;
 
 private:
-  void writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views,
-                         MVD16Frame &atlas);
+  void writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views, MVD16Frame &atlas);
 
 private:
   std::uint16_t m_nbAtlas = 0;
-  Vec2i m_atlasSize = {1920, 1080};
+  Vec2i m_atlasSize;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;

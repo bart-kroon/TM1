@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -43,28 +43,18 @@ using namespace TMIV::Renderer;
 
 namespace TMIV::AtlasConstructor {
 
-Pruner::Pruner(const Common::Json & /*rootNode*/,
-               const Common::Json &componentNode) {
+Pruner::Pruner(const Common::Json & /*rootNode*/, const Common::Json &componentNode) {
 
-  if (auto subnode = componentNode.optional("RedundancyFactor")) {
-    m_redundancyFactor = subnode.asFloat();
-  }
-
-  if (auto subnode = componentNode.optional("ErosionIter")) {
-    m_erosionIter = subnode.asInt();
-  }
-
-  if (auto subnode = componentNode.optional("DilationIter")) {
-    m_dilationIter = subnode.asInt();
-  }
+  m_redundancyFactor = componentNode.require("RedundancyFactor").asFloat();
+  m_erosionIter = componentNode.require("ErosionIter").asInt();
+  m_dilationIter = componentNode.require("DilationIter").asInt();
 
   if (auto subnode = componentNode.optional("MaxAdditionalView")) {
     m_maxAdditionalView = subnode.asInt();
   }
 }
 
-MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
-                       const MVD16Frame &views,
+MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD16Frame &views,
                        const std::vector<std::uint8_t> &shouldNotBePruned) {
 
   // Sort cameras for pruning
@@ -72,19 +62,17 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
 
   std::iota(cameraOrderId.begin(), cameraOrderId.end(), 0);
 
-  std::sort(cameraOrderId.begin(), cameraOrderId.end(),
-            [&shouldNotBePruned](int i1, int i2) {
-              if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
-                return (shouldNotBePruned[i1] != 0);
-              }
-              { return (i1 < i2); }
-            });
+  std::sort(cameraOrderId.begin(), cameraOrderId.end(), [&shouldNotBePruned](int i1, int i2) {
+    if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
+      return (shouldNotBePruned[i1] != 0);
+    }
+    { return (i1 < i2); }
+  });
 
   // Possible discard some additional views (for debugging purpose)
   int maxView = std::min(
       int(cameraOrderId.size()),
-      int(std::count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) +
-          m_maxAdditionalView));
+      int(std::count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) + m_maxAdditionalView));
 
   // Pruning loop
   int nbView = static_cast<int>(views.size());
@@ -100,11 +88,11 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
     auto &bufferToPrune = maskToPrune.getPlane(0);
 
     if (id1 < maxView) {
-      std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(255));
+      std::fill(bufferToPrune.begin(), bufferToPrune.end(), UINT8_MAX);
       depthMapExpanded[viewToPruneId] =
           expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
 
-      if (shouldNotBePruned[viewToPruneId] == 0u) {
+      if (shouldNotBePruned[viewToPruneId] == 0U) {
         // Depth-based redundancy removal
         const Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];
         Mat<Vec2f> gridMapToPrune = imagePositions(cameras[viewToPruneId]);
@@ -113,13 +101,12 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
           int viewPrunedId = cameraOrderId[id2];
           const Mat<float> &depthMapPruned = depthMapExpanded[viewPrunedId];
 
-          auto ptsToPruneOnPruned =
-              reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId],
-                              gridMapToPrune, depthMapToPrune);
-          int lastXPruned = cameras[viewPrunedId].size.x() - 1,
-              lastYPruned = cameras[viewPrunedId].size.y() - 1;
+          auto ptsToPruneOnPruned = reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId],
+                                                    gridMapToPrune, depthMapToPrune);
+          int lastXPruned = cameras[viewPrunedId].size.x() - 1;
+          int lastYPruned = cameras[viewPrunedId].size.y() - 1;
 
-          for (auto k = 0u; k < bufferToPrune.size(); k++) {
+          for (size_t k = 0; k < bufferToPrune.size(); ++k) {
             auto &mask = bufferToPrune[k];
 
             if (0 < mask) {
@@ -131,12 +118,10 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
                 if (!std::isnan(zToPruneOnPruned)) {
                   const Vec2f &xyToPruneOnPruned = ptsToPruneOnPruned.first[k];
 
-                  int x1 = std::max(0, int(floor(xyToPruneOnPruned.x()))),
-                      x2 = std::min(lastXPruned,
-                                    int(ceil(xyToPruneOnPruned.x())));
-                  int y1 = std::max(0, int(floor(xyToPruneOnPruned.y()))),
-                      y2 = std::min(lastYPruned,
-                                    int(ceil(xyToPruneOnPruned.y())));
+                  int x1 = std::max(0, int(floor(xyToPruneOnPruned.x())));
+                  int x2 = std::min(lastXPruned, int(ceil(xyToPruneOnPruned.x())));
+                  int y1 = std::max(0, int(floor(xyToPruneOnPruned.y())));
+                  int y2 = std::min(lastYPruned, int(ceil(xyToPruneOnPruned.y())));
 
                   for (int y = y1; y <= y2; y++) {
                     for (int x = x1; x <= x2; x++) {
@@ -144,8 +129,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
 
                       if (!std::isnan(zPruned)) {
                         if ((fabs(zToPruneOnPruned - zPruned) <
-                             m_redundancyFactor *
-                                 std::min(zPruned, zToPruneOnPruned))) {
+                             m_redundancyFactor * std::min(zPruned, zToPruneOnPruned))) {
                           mask = 0;
                           goto endloop;
                         }
@@ -167,17 +151,18 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
                           views[viewToPruneId].first.getHeight());
         auto &bufferPostProc = maskPostProc.getPlane(0);
 
-        int w = int(bufferToPrune.width()), h = int(bufferToPrune.height());
-        int wLast = w - 1, hLast = h - 1;
-        std::array<int, 8> neighbourOffset = {-1 - w, -w,     1 - w, -1,
-                                              1,      -1 + w, w,     1 + w};
+        auto w = int(bufferToPrune.width());
+        auto h = int(bufferToPrune.height());
+        int wLast = w - 1;
+        int hLast = h - 1;
+        constexpr int numNeighbors = 8;
+        std::array<int, numNeighbors> neighbourOffset = {-1 - w, -w,     1 - w, -1,
+                                                         1,      -1 + w, w,     1 + w};
 
         // Erosion
         if (0 < m_erosionIter) {
-          auto &inputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
-          auto &outputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
+          auto &inputBuffer = (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
+          auto &outputBuffer = (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
 
           inputBuffer = bufferToPrune;
 
@@ -206,10 +191,8 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras,
 
         // Dilation
         if (0 < m_dilationIter) {
-          auto &inputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
-          auto &outputBuffer =
-              (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
+          auto &inputBuffer = (m_erosionIter % 2) != 0 ? bufferToPrune : bufferPostProc;
+          auto &outputBuffer = (m_erosionIter % 2) != 0 ? bufferPostProc : bufferToPrune;
 
           inputBuffer = bufferToPrune;
 

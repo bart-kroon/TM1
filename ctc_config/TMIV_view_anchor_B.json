@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_2048x2048_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_2048x2048_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "TechnicolorMuseum.json",
     "SourceCameraNames": [
         "v0",
@@ -20,6 +21,7 @@
     "AtlasMetadataPath": "ATL_SB_R0_Tm_c00.bit",
     "OutputTexturePath": "TM1_SB_R0_Tt_%s_2048x2048_yuv420p10le.yuv",
     "OutputCameraName": "v1",
+    "OmafV1CompatibleFlag": false,
     "EncoderMethod": "Encoder",
     "Encoder": {
         "ViewOptimizerMethod": "NoViewOptimizer",
@@ -45,7 +47,7 @@
                 2048,
                 2048
             ],
-            "MPixel": 33
+            "MaxLumaSamplesPerFrame": 67108864
         }
     },
     "DecoderMethod": "Decoder",

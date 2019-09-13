@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -45,18 +45,19 @@ namespace TMIV::Common {
 // Format a string using printf syntax
 template <class... Args> std::string format(char const *fmt, Args &&... args);
 
-constexpr float radperdeg{0.01745329251994329576923690768489f};
-constexpr float degperrad{57.295779513082320876798154814092f};
-constexpr float NaN{std::numeric_limits<float>::quiet_NaN()};
-constexpr float inf{std::numeric_limits<float>::infinity()};
+constexpr auto radperdeg{0.01745329251994329576923690768489F};
+constexpr auto degperrad{57.295779513082320876798154814092F};
+constexpr auto fullCycle{360.F};
+constexpr auto halfCycle{180.F};
+constexpr auto quarterCycle{90.F};
+constexpr auto NaN{std::numeric_limits<float>::quiet_NaN()};
+constexpr auto inf{std::numeric_limits<float>::infinity()};
 
-template <typename Float> int ifloor(Float x) {
-  return static_cast<int>(std::floor(x));
-}
+template <typename Float> int ifloor(Float x) { return static_cast<int>(std::floor(x)); }
 
-template <typename Float> int iceil(Float x) {
-  return static_cast<int>(std::ceil(x));
-}
+template <typename Float> int iceil(Float x) { return static_cast<int>(std::ceil(x)); }
+
+template <typename Float> auto square(Float x) { return x * x; }
 } // namespace TMIV::Common
 
 #include "Common.hpp"

@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -53,7 +53,7 @@ inline int numStrips(int rows) {
   if (maximum <= hw) {
     return maximum;
   }
-  return int(0.5 + sqrt(hw * maximum));
+  return int(std::lround(sqrt(hw * maximum)));
 }
 
 template <typename M0, typename... M>
@@ -93,18 +93,13 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
     const int i1 = size.y() * n / numStrips;
     const int i2 = size.y() * (n + 1) / numStrips;
     m_strips.push_back(
-        {i1,
-         i2,
-         size.x(),
-         {},
-         std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
+        {i1, i2, size.x(), {}, std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
   }
   m_dk_di = float(numStrips) / float(size.y());
 }
 
 template <typename... T>
-void Rasterizer<T...>::submit(ImageVertexDescriptorList vertices,
-                              AttributeMaps attributes,
+void Rasterizer<T...>::submit(ImageVertexDescriptorList vertices, AttributeMaps attributes,
                               const TriangleDescriptorList &triangles) {
   m_batches.push_back(Batch{move(vertices), move(attributes)});
   for (auto &strip : m_strips) {
@@ -140,8 +135,7 @@ template <typename... T> void Rasterizer<T...>::run() {
   clearBatches();
 }
 
-template <typename... T>
-auto Rasterizer<T...>::depth() const -> Common::Mat<float> {
+template <typename... T> auto Rasterizer<T...>::depth() const -> Common::Mat<float> {
   Common::Mat<float> matrix(m_size);
   auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
@@ -152,8 +146,7 @@ auto Rasterizer<T...>::depth() const -> Common::Mat<float> {
   return matrix;
 }
 
-template <typename... T>
-auto Rasterizer<T...>::normDisp() const -> Common::Mat<float> {
+template <typename... T> auto Rasterizer<T...>::normDisp() const -> Common::Mat<float> {
   Common::Mat<float> matrix(m_size);
   auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
@@ -164,8 +157,7 @@ auto Rasterizer<T...>::normDisp() const -> Common::Mat<float> {
   return matrix;
 }
 
-template <typename... T>
-auto Rasterizer<T...>::normWeight() const -> Common::Mat<float> {
+template <typename... T> auto Rasterizer<T...>::normWeight() const -> Common::Mat<float> {
   Common::Mat<float> matrix(m_size);
   auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
@@ -178,8 +170,7 @@ auto Rasterizer<T...>::normWeight() const -> Common::Mat<float> {
 
 template <typename... T>
 template <size_t I>
-auto Rasterizer<T...>::attribute() const
-    -> Common::Mat<std::tuple_element_t<I, Attributes>> {
+auto Rasterizer<T...>::attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>> {
   Common::Mat<std::tuple_element_t<I, Attributes>> matrix(m_size);
   auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
@@ -207,8 +198,7 @@ void Rasterizer<T...>::visit(Visitor visitor) const {
 }
 
 template <typename... T>
-void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor,
-                                      const Batch &batch) {
+void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch &batch) {
   const auto K = int(m_strips.size());
   auto k1 = K;
   auto k2 = 0;
@@ -245,7 +235,7 @@ constexpr const auto half = one / intfp{2};
 inline intfp fixed(float x) {
   using std::ldexp;
   using TMIV::Common::ifloor;
-  return static_cast<intfp>(ifloor(0.5f + ldexp(x, bits)));
+  return static_cast<intfp>(ifloor(0.5F + ldexp(x, bits)));
 }
 inline Vec2fp fixed(Common::Vec2f v) { return {fixed(v.x()), fixed(v.y())}; }
 inline intfp fixed(int x) { return static_cast<intfp>(x) << bits; }
@@ -254,8 +244,8 @@ inline int fpceil(intfp x) { return fpfloor(x + one - eps); }
 } // namespace fixed_point
 
 template <typename... T>
-void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
-                                      const Batch &batch, Strip &strip) {
+void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch &batch,
+                                      Strip &strip) {
   using namespace fixed_point;
   using std::ldexp;
   using std::max;
@@ -278,31 +268,29 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
     return; // Cull
   }
   const auto v1 = max(0, fpfloor(min({uv0.y(), uv1.y(), uv2.y()})));
-  const auto v2 =
-      min(strip.rows(), 1 + fpceil(max({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v2 = min(strip.rows(), 1 + fpceil(max({uv0.y(), uv1.y(), uv2.y()})));
   if (v1 >= v2) {
     return; // Cull
   }
 
   // Determine (unclipped) parallelogram area
-  const auto area = (uv1.y() - uv2.y()) * (uv0.x() - uv2.x()) +
-                    (uv2.x() - uv1.x()) * (uv0.y() - uv2.y());
+  const auto area =
+      (uv1.y() - uv2.y()) * (uv0.x() - uv2.x()) + (uv2.x() - uv1.x()) * (uv0.y() - uv2.y());
   if (area <= 0) {
     return; // Cull
   }
   const auto area_f = ldexp(float(area), -2 * bits);
-  const auto inv_area = 1.f / float(area);
+  const auto inv_area = 1.F / float(area);
 
   // Calculate feature values for determining blending weights
-  const auto stretching = 0.5f * area_f / descriptor.area;
-  const auto rayAngle =
-      (1 / 3.f) * (batch.vertices[n0].rayAngle + batch.vertices[n1].rayAngle +
-                   batch.vertices[n2].rayAngle);
+  const auto stretching = 0.5F * area_f / descriptor.area;
+  const auto rayAngle = (1 / 3.F) * (batch.vertices[n0].rayAngle + batch.vertices[n1].rayAngle +
+                                     batch.vertices[n2].rayAngle);
 
   // Fetch normalized disparity values (diopters)
-  const auto d0 = 1.f / batch.vertices[n0].depth;
-  const auto d1 = 1.f / batch.vertices[n1].depth;
-  const auto d2 = 1.f / batch.vertices[n2].depth;
+  const auto d0 = 1.F / batch.vertices[n0].depth;
+  const auto d1 = 1.F / batch.vertices[n1].depth;
+  const auto d2 = 1.F / batch.vertices[n2].depth;
 
   // Fetch multiple attributes (e.g. color)
   const auto a0 = detail::fetchAttributes(n0, batch.attributes);
@@ -345,7 +333,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor,
       auto p = m_pixel.construct(a, d, rayAngle, stretching);
       if (X0 == 0 || X1 == 0 || X2 == 0) {
         // Count edge points half assuming there is an adjacent triangle
-        p.normWeight *= 0.5f;
+        p.normWeight *= 0.5F;
       }
       P = m_pixel.blend(P, p);
     }

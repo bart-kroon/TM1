@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -48,14 +48,15 @@ private:
   unique_ptr<IAtlasConstructor> m_atlasConstructor;
   int m_numberOfFrames{};
   int m_intraPeriod{};
+  bool m_omafV1CompatibleFlag{};
 
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"AtlasConstructor", move(argv)},
-        m_atlasConstructor{
-            create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
+        m_atlasConstructor{create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+        m_intraPeriod{json().require("intraPeriod").asInt()},
+        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()} {}
 
   void run() override {
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
@@ -71,8 +72,7 @@ public:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto views = IO::loadOptimizedFrame(
-          json(), {IO::sizesOf(cameras.basic), IO::sizesOf(cameras.additional)},
-          i);
+          json(), {IO::sizesOf(cameras.basic), IO::sizesOf(cameras.additional)}, i);
       m_atlasConstructor->pushFrame(move(views.basic), move(views.additional));
     }
 
@@ -80,24 +80,22 @@ public:
 
     auto atlasSize = m_atlasConstructor->getAtlasSize();
 
-    for (auto i = 0u; i < atlasSize.size(); i++) {
+    for (size_t i = 0; i < atlasSize.size(); i++) {
       auto sz = atlasSize[i];
-      auto nbPatch = std::count_if(
-          m_atlasConstructor->getPatchList().begin(),
-          m_atlasConstructor->getPatchList().end(),
-          [i](const AtlasParameters &p) { return (p.atlasId == i); });
+      auto nbPatch = std::count_if(m_atlasConstructor->getPatchList().begin(),
+                                   m_atlasConstructor->getPatchList().end(),
+                                   [i](const AtlasParameters &p) { return (p.atlasId == i); });
 
-      cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y()
-           << "): " << nbPatch << " patches\n";
+      cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y() << "): " << nbPatch << " patches\n";
     }
 
     IO::saveMivMetadata(json(), intraFrame,
-                        {atlasSize, m_atlasConstructor->getPatchList(),
+                        {atlasSize, m_omafV1CompatibleFlag, m_atlasConstructor->getPatchList(),
                          m_atlasConstructor->getCameraList()});
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto frame = m_atlasConstructor->popAtlas();
-      IO::saveAtlas(json(), i, move(frame));
+      IO::saveAtlas(json(), i, frame);
     }
   }
 };
@@ -109,9 +107,12 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::AtlasConstructor::registerComponents();
     TMIV::AtlasConstructor::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
   } catch (runtime_error &e) {
     cerr << e.what() << endl;
+	return 1;
   }
 }

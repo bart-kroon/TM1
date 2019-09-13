@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -41,32 +41,25 @@ using namespace TMIV::ViewOptimizer;
 using namespace TMIV::AtlasConstructor;
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &rootNode,
-                 const Common::Json &componentNode)
-    : m_viewOptimizer{Factory<IViewOptimizer>::getInstance().create(
-          "ViewOptimizer", rootNode, componentNode)},
+Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
+    : m_viewOptimizer{Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", rootNode,
+                                                                    componentNode)},
       m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(
           "AtlasConstructor", rootNode, componentNode)} {}
 
 void Encoder::prepareIntraPeriod(CameraParametersList cameras) {
   auto optimized = m_viewOptimizer->optimizeIntraPeriod(move(cameras));
-  m_atlasConstructor->prepareIntraPeriod(move(optimized.basic),
-                                         move(optimized.additional));
+  m_atlasConstructor->prepareIntraPeriod(move(optimized.basic), move(optimized.additional));
 }
 
 void Encoder::pushFrame(MVD16Frame views) {
   auto optimized = m_viewOptimizer->optimizeFrame(move(views));
-  m_atlasConstructor->pushFrame(move(optimized.basic),
-                                move(optimized.additional));
+  m_atlasConstructor->pushFrame(move(optimized.basic), move(optimized.additional));
 }
 
-void Encoder::completeIntraPeriod() {
-  m_atlasConstructor->completeIntraPeriod();
-}
+void Encoder::completeIntraPeriod() { m_atlasConstructor->completeIntraPeriod(); }
 
-vector<Vec2i> Encoder::getAtlasSize() const {
-  return m_atlasConstructor->getAtlasSize();
-}
+vector<Vec2i> Encoder::getAtlasSize() const { return m_atlasConstructor->getAtlasSize(); }
 
 const CameraParametersList &Encoder::getCameraList() const {
   return m_atlasConstructor->getCameraList();

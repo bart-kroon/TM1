@@ -1,0 +1,77 @@
+{
+    "startFrame": 0,
+    "numberOfFrames": 97,
+    "intraPeriod": 32,
+    "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
+    "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p10le.yuv",
+    "SourceDepthBitDepth": 10,
+    "SourceCameraParameters": "OrangeKitchen.json",
+    "SourceCameraNames": [
+        "v00",
+        "v02",
+        "v04",
+        "v10",
+        "v12",
+        "v14",
+        "v20",
+        "v22",
+        "v24"
+    ],
+    "AtlasTexturePathFmt": "ATL_SJ_R0_Tt_c%02d_1920x1080_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SJ_R0_Td_c%02d_1920x1080_yuv420p10le.yuv",
+    "AtlasMetadataPath": "ATL_SJ_R0_Tm_c00.bit",
+    "OutputTexturePath": "TM1_SJ_R0_Tt_%s_1920x1080_yuv420p10le.yuv",
+    "OutputCameraName": "v01",
+    "OmafV1CompatibleFlag": false,
+    "EncoderMethod": "Encoder",
+    "Encoder": {
+        "ViewOptimizerMethod": "NoViewOptimizer",
+        "NoViewOptimizer": {},
+        "AtlasConstructorMethod": "AtlasConstructor",
+        "AtlasConstructor": {
+            "PrunerMethod": "Pruner",
+            "Pruner": {
+                "RedundancyFactor": 0.02,
+                "ErosionIter": 1,
+                "DilationIter": 5
+            },
+            "AggregatorMethod": "Aggregator",
+            "Aggregator": {},
+            "PackerMethod": "Packer",
+            "Packer": {
+                "Alignment": 8,
+                "MinPatchSize": 16,
+                "Overlap": 1,
+                "PiP": 1
+            },
+            "AtlasResolution": [
+                1920,
+                1080
+            ],
+            "MaxLumaSamplesPerFrame": 37324800
+        }
+    },
+    "DecoderMethod": "Decoder",
+    "Decoder": {
+        "AtlasDeconstructorMethod": "AtlasDeconstructor",
+        "AtlasDeconstructor": {},
+        "RendererMethod": "MultipassRenderer",
+        "MultipassRenderer": {
+            "NumberOfPasses": 3,
+            "NumberOfViewsPerPass": [
+                2,
+                4,
+                7
+            ],
+            "SynthesizerMethod": "Synthesizer",
+            "Synthesizer": {
+                "rayAngleParameter": 20,
+                "depthParameter": 20,
+                "stretchingParameter": 0.6,
+                "maxStretching": 5
+            },
+            "InpainterMethod": "Inpainter",
+            "Inpainter": {}
+        }
+    }
+}

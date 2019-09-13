@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -66,8 +66,7 @@ void skipWhitespaceAndLineComments(istream &stream) {
     }
     if (stream.peek() != '/') {
       ostringstream what;
-      what << "Stray character 0x" << hex << stream.peek()
-           << " at end of file\n";
+      what << "Stray character 0x" << hex << stream.peek() << " at end of file\n";
       throw runtime_error(what.str());
     }
     while (!stream.eof() && stream.peek() != '\n') {
@@ -127,9 +126,7 @@ public:
 };
 
 struct Number : public Value {
-  explicit Number(istream &stream) : Value(Json::Type::number) {
-    stream >> value;
-  }
+  explicit Number(istream &stream) : Value(Json::Type::number) { stream >> value; }
 
   double value{};
 };
@@ -211,8 +208,7 @@ Json::Json(istream &stream) {
     if (!stream.eof()) {
       auto ch = stream.get();
       ostringstream what;
-      what << "Stray character " << static_cast<char>(ch) << " (0x" << ios::hex
-           << ch << ")";
+      what << "Stray character " << static_cast<char>(ch) << " (0x" << ios::hex << ch << ")";
       throw runtime_error(what.str());
     }
 
@@ -222,10 +218,9 @@ Json::Json(istream &stream) {
   }
 }
 
-void Json::setOverrides(Json overrides) {
+void Json::setOverrides(const Json &overrides) {
   if (type() == Type::object && overrides.type() == Type::object) {
-    for (auto &kvp :
-         dynamic_cast<const impl::Object &>(*overrides.m_value).value) {
+    for (auto &kvp : dynamic_cast<const impl::Object &>(*overrides.m_value).value) {
       dynamic_cast<impl::Object &>(*m_value).value[kvp.first] = kvp.second;
     }
   } else {
@@ -242,8 +237,7 @@ Json Json::optional(string const &key) const {
     return {};
   } catch (bad_cast &) {
     ostringstream what;
-    what << "JSON parser: Querying optional key '" << key
-         << "', but node is not an object";
+    what << "JSON parser: Querying optional key '" << key << "', but node is not an object";
     throw runtime_error(what.str());
   }
 }
@@ -289,7 +283,8 @@ int Json::asInt() const {
   auto value = asDouble();
   auto rounded = static_cast<int>(lround(value));
   auto error = value - rounded;
-  if (error > 1e-6) {
+  constexpr auto eps = 1e-6;
+  if (error > eps) {
     throw runtime_error("JSON parser: Expected an integer value");
   }
   return rounded;
@@ -355,8 +350,7 @@ static shared_ptr<impl::Value> readValue(istream &stream) {
   }
 
   ostringstream what;
-  what << "Invalid character " << static_cast<char>(ch) << " (0x" << ios::hex
-       << ch << ")";
+  what << "Invalid character " << static_cast<char>(ch) << " (0x" << ios::hex << ch << ")";
   throw runtime_error(what.str());
 }
 } // namespace TMIV::Common

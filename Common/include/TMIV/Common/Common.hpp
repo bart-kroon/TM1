@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -38,12 +38,11 @@
 #include <vector>
 
 namespace TMIV::Common {
-template <class... Args>
-inline std::string format(char const *fmt, Args &&... args) {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+template <class... Args> inline std::string format(char const *fmt, Args &&... args) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
   auto chars = snprintf(nullptr, 0, fmt, std::forward<Args>(args)...);
   std::vector<char> buffer(chars + 1);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg, hicpp-vararg)
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
   snprintf(buffer.data(), chars + 1, fmt, std::forward<Args>(args)...);
   return {buffer.begin(), buffer.end() - 1};
 }

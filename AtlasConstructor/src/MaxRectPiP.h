@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -62,13 +62,14 @@ public:
 private:
   class Rectangle {
   protected:
-    int m_x0 = 0, m_y0 = 0;
-    int m_x1 = 0, m_y1 = 0;
+    int m_x0 = 0;
+    int m_y0 = 0;
+    int m_x1 = 0;
+    int m_y1 = 0;
 
   public:
     Rectangle() = default;
-    Rectangle(int x0, int y0, int x1, int y1)
-        : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
+    Rectangle(int x0, int y0, int x1, int y1) : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
     int left() const { return m_x0; }
     int right() const { return m_x1; }
     int bottom() const { return m_y0; }
@@ -90,8 +91,7 @@ protected:
 
 public:
   MaxRectPiP(int w, int h, int a, bool pip);
-  bool push(const Cluster &c, const ClusteringMap &clusteringMap,
-            Output &packerOutput);
+  bool push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput);
 
 protected:
   void updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,

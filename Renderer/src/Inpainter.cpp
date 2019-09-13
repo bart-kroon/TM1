@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -33,19 +33,24 @@
 
 #include <TMIV/Renderer/Inpainter.h>
 
+#include <cmath>
+
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 namespace {
+const auto depthBlendingThreshold8 = 2.56;    // 1% of bit depth
+const auto depthBlendingThreshold10 = 10.24;  // 1% of bit depth
+const auto depthBlendingThreshold16 = 655.36; // 1% of bit depth
+
 template <typename YUVD>
-void perform2WayInpainting(
-    YUVD &yuvd, const double &DepthBlendingThreshold,
-    int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/,
-    const Common::Mat<int> &nonEmptyNeighbor1,
-    const Common::Mat<int> &nonEmptyNeighbor2,
-    const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
+void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
+                           int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/,
+                           const Common::Mat<int> &nonEmptyNeighbor1,
+                           const Common::Mat<int> &nonEmptyNeighbor2,
+                           const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
 
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
@@ -65,7 +70,12 @@ void perform2WayInpainting(
       bool use1 = false;
       bool use2 = false;
 
-      int w0, h0, w1, h1, w2, h2;
+      int w0;
+      int h0;
+      int w1;
+      int h1;
+      int w2;
+      int h2;
 
       if (inpaintingType == 2) { // omnidirectional
         bool pointExistsInCassini = mapERP2Cassini(h, w) != -1;
@@ -77,24 +87,19 @@ void perform2WayInpainting(
                                            // projection
         w0 = mapERP2Cassini(h, w) % width;
 
-        h1 = nonEmptyNeighbor1(h0, w0) /
-             width; // left neighbor in Cassini projection
+        h1 = nonEmptyNeighbor1(h0, w0) / width; // left neighbor in Cassini projection
         w1 = nonEmptyNeighbor1(h0, w0) % width;
 
-        h2 = nonEmptyNeighbor2(h0, w0) /
-             width; // right neighbor in Cassini projection
+        h2 = nonEmptyNeighbor2(h0, w0) / width; // right neighbor in Cassini projection
         w2 = nonEmptyNeighbor2(h0, w0) % width;
       } else {  // perspective
         h0 = h; // current pixel
         w0 = w;
 
-        h1 = inpaintingType ? h0
-                            : nonEmptyNeighbor1(h0, w0); // left or top neighbor
+        h1 = inpaintingType ? h0 : nonEmptyNeighbor1(h0, w0); // left or top neighbor
         w1 = inpaintingType ? nonEmptyNeighbor1(h0, w0) : w0;
 
-        h2 = inpaintingType
-                 ? h0
-                 : nonEmptyNeighbor2(h0, w0); // right or bottom neighbor
+        h2 = inpaintingType ? h0 : nonEmptyNeighbor2(h0, w0); // right or bottom neighbor
         w2 = inpaintingType ? nonEmptyNeighbor2(h0, w0) : w0;
       }
 
@@ -122,10 +127,8 @@ void perform2WayInpainting(
       if (use1) {
         if (use2) {
 
-          auto dist1 = sqrt(
-              static_cast<float>((h - h1) * (h - h1) + (w - w1) * (w - w1)));
-          auto dist2 = sqrt(
-              static_cast<float>((h - h2) * (h - h2) + (w - w2) * (w - w2)));
+          auto dist1 = sqrt(static_cast<float>((h - h1) * (h - h1) + (w - w1) * (w - w1)));
+          auto dist2 = sqrt(static_cast<float>((h - h2) * (h - h2) + (w - w2) * (w - w2)));
           float sumdist = dist1 + dist2;
           float weight1 = dist2 / sumdist;
           float weight2 = dist1 / sumdist;
@@ -184,8 +187,7 @@ template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
 }
 
 template <typename YUVD>
-void inpaintOmnidirectionalView(YUVD &yuvd,
-                                const double &DepthBlendingThreshold,
+void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold,
                                 const double &angleRange) {
 
   auto &Y = yuvd.first.getPlane(0);
@@ -221,38 +223,31 @@ void inpaintOmnidirectionalView(YUVD &yuvd,
 
   int width2 = width / 2;
   int height2 = height / 2;
-  double tmpH, tmpW;
-
-  int oldPP, oldH, oldW;
-  int newPP;
-  double newH, newW;
-  int iNewH, iNewW;
-
   for (int h = 0; h < height; h++) {
-    oldH = h - height2;
+    auto oldH = h - height2;
     for (int w = 0; w < width; w++) {
-      oldPP = h * width + w;
+      auto oldPP = h * width + w;
 
-      oldW = w - width2;
-      tmpH = sqrt(height * h - h * h);
+      auto oldW = w - width2;
+      auto tmpH = sqrt(height * h - h * h);
       if (tmpH / height2 > angleRange) {
         tmpH = height2 * angleRange;
       }
-      newW = oldW * tmpH / height2;
+      auto newW = oldW * tmpH / height2;
       newW += width2;
 
-      tmpW = sqrt(width * newW - newW * newW);
-      newH = oldH * width2 / tmpW;
+      auto tmpW = sqrt(width * newW - newW * newW);
+      auto newH = oldH * width2 / tmpW;
       newH += height2;
 
-      iNewH = int(newH + 0.5);
-      iNewW = int(newW + 0.5);
+      auto iNewH = lround(newH);
+      auto iNewW = lround(newW);
 
       if (iNewH < 0 || iNewH >= height) {
         continue;
       }
 
-      newPP = iNewH * width + iNewW;
+      auto newPP = iNewH * width + iNewW;
 
       mapERP2Cassini(h, w) = newPP;
       if (isHole(iNewH, iNewW) == 1) {
@@ -300,8 +295,8 @@ void inpaintOmnidirectionalView(YUVD &yuvd,
 
   // inpainting
 
-  perform2WayInpainting(yuvd, DepthBlendingThreshold, 2, nonEmptyNeighborL,
-                        nonEmptyNeighborR, mapERP2Cassini);
+  perform2WayInpainting(yuvd, DepthBlendingThreshold, 2, nonEmptyNeighborL, nonEmptyNeighborR,
+                        mapERP2Cassini);
 }
 
 template <typename YUVD>
@@ -362,8 +357,7 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
   // horizontal inpainting
 
-  perform2WayInpainting(yuvd, DepthBlendingThreshold, 1, nonEmptyNeighborL,
-                        nonEmptyNeighborR);
+  perform2WayInpainting(yuvd, DepthBlendingThreshold, 1, nonEmptyNeighborL, nonEmptyNeighborR);
 
   // analysis from top-left
 
@@ -403,22 +397,19 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
   // vertical inpainting
 
-  perform2WayInpainting(yuvd, DepthBlendingThreshold, 0, nonEmptyNeighborT,
-                        nonEmptyNeighborB);
+  perform2WayInpainting(yuvd, DepthBlendingThreshold, 0, nonEmptyNeighborT, nonEmptyNeighborB);
 }
 
-template <typename YUVD>
-void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
+template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
   static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
                 std::is_same_v<YUVD, Texture444Depth16Frame>);
 
-  double DepthBlendingThreshold = 2.56; // 1% of bit depth
-
+  double DepthBlendingThreshold = depthBlendingThreshold8;
   if (std::is_same_v<YUVD, Texture444Depth10Frame>) {
-    DepthBlendingThreshold = 1024.0 / 100;
+    DepthBlendingThreshold = depthBlendingThreshold10;
   }
   if (std::is_same_v<YUVD, Texture444Depth16Frame>) {
-    DepthBlendingThreshold = 65536.0 / 100;
+    DepthBlendingThreshold = depthBlendingThreshold16;
   }
 
   fillVerticalCracks(yuvd);
@@ -432,8 +423,7 @@ void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
 }
 } // namespace
 
-Inpainter::Inpainter(const Json & /*rootNode*/,
-                     const Json & /*componentNode*/) {}
+Inpainter::Inpainter(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
 void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport,
                                const CameraParameters &metadata) const {

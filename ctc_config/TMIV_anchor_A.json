@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_4096x2048_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_4096x2048_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "ClassroomVideo.json",
     "SourceCameraNames": [
         "v0",
@@ -27,6 +28,7 @@
     "AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
     "OutputTexturePath": "TM1_SA_R0_Tt_%s_4096x2048_yuv420p10le.yuv",
     "OutputCameraName": "v1",
+    "OmafV1CompatibleFlag": false,
     "EncoderMethod": "Encoder",
     "Encoder": {
         "ViewOptimizerMethod": "ViewReducer",
@@ -56,7 +58,7 @@
                 4096,
                 3072
             ],
-            "MPixel": 12
+            "MaxLumaSamplesPerFrame": 25165824
         }
     },
     "DecoderMethod": "Decoder",
@@ -70,7 +72,7 @@
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
                 "stretchingParameter": 0.6,
-				"maxStretching": 5
+                "maxStretching": 5
             },
             "InpainterMethod": "Inpainter",
             "Inpainter": {}

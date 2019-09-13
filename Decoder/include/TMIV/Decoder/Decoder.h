@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -52,8 +52,7 @@ private:
   Metadata::CameraParametersList m_cameras;
 
 public:
-  Decoder(const Common::Json & /*rootNode*/,
-          const Common::Json & /*componentNode*/);
+  Decoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   Decoder(const Decoder &) = delete;
   Decoder(Decoder &&) = default;
   Decoder &operator=(const Decoder &) = delete;
@@ -61,12 +60,12 @@ public:
   ~Decoder() override = default;
 
   void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
-  void updatePatchList(Metadata::AtlasParametersList patches) override;
+  void updatePatchList(Metadata::AtlasParametersList patches,
+                       const Common::MVD16Frame &frame) override;
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 
-  Common::Texture444Depth10Frame
-  decodeFrame(Common::MVD10Frame atlas,
-              const Metadata::CameraParameters &target) const override;
+  Common::Texture444Depth16Frame
+  decodeFrame(Common::MVD16Frame atlas, const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Decoder
 

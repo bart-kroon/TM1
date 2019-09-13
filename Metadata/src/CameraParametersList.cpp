@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -41,27 +41,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
-bool CameraParameters::operator==(const CameraParameters &other) const {
-  if (size != other.size || position != other.position ||
-      depthRange != other.depthRange || type != other.type) {
-    return false;
-  }
-  switch (type) {
-  case ProjectionType::Perspective:
-    return perspectiveCenter == other.perspectiveCenter &&
-           perspectiveFocal == other.perspectiveFocal;
-  case ProjectionType::ERP:
-    return erpPhiRange == other.erpPhiRange &&
-           erpThetaRange == other.erpThetaRange;
-  case ProjectionType::CubeMap:
-    return cubicMapType == other.cubicMapType;
-  default:
-    abort();
-  }
-}
-
-CameraParametersList loadCamerasFromJson(const Json &node,
-                                         const vector<string> &names) {
+CameraParametersList loadCamerasFromJson(const Json &node, const vector<string> &names) {
   CameraParametersList result;
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
@@ -72,8 +52,7 @@ CameraParametersList loadCamerasFromJson(const Json &node,
     }
   }
   if (result.size() != names.size()) {
-    throw runtime_error(
-        "Could not find all requested camera names in the metadata JSON file");
+    throw runtime_error("Could not find all requested camera names in the metadata JSON file");
   }
   return result;
 }
@@ -82,12 +61,10 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
   stream << camera.size << ", ";
   switch (camera.type) {
   case ProjectionType::ERP:
-    stream << "ERP " << camera.erpPhiRange << " x " << camera.erpThetaRange
-           << " deg";
+    stream << "ERP " << camera.erpPhiRange << " x " << camera.erpThetaRange << " deg";
     break;
   case ProjectionType::Perspective:
-    stream << "perspective " << camera.perspectiveFocal << ' '
-           << camera.perspectiveCenter;
+    stream << "perspective " << camera.perspectiveFocal << ' ' << camera.perspectiveCenter;
     break;
   case ProjectionType::CubeMap:
     switch (camera.cubicMapType) {
@@ -105,10 +82,29 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
     stream << '?';
   }
   stream << ", depth in " << camera.depthRange << " m, pose "
-         << format("[%6.3f, %6.3f, %6.3f] m, ", camera.position.x(),
-                   camera.position.y(), camera.position.z())
+         << format("[%6.3f, %6.3f, %6.3f] m, ", camera.position.x(), camera.position.y(),
+                   camera.position.z())
          << camera.rotation << " deg";
   return stream;
+}
+
+bool CameraParameters ::operator==(const CameraParameters &other) const {
+  if (size != other.size || position != other.position || rotation != other.rotation ||
+      type != other.type) {
+    return false;
+  }
+
+  switch (type) {
+  case ProjectionType::ERP:
+    return erpPhiRange == other.erpPhiRange && erpThetaRange == other.erpThetaRange;
+  case ProjectionType::Perspective:
+    return perspectiveFocal == other.perspectiveFocal &&
+           perspectiveCenter == other.perspectiveCenter;
+  case ProjectionType::CubeMap:
+    return cubicMapType == other.cubicMapType;
+  default:
+    abort();
+  }
 }
 
 // The parameter is a an item of the cameras node (a JSON object).
@@ -127,8 +123,7 @@ CameraParameters loadCameraFromJson(const Json &node) {
   } else if (proj == "Perspective") {
     parameters.type = ProjectionType::Perspective;
     parameters.perspectiveFocal = node.require("Focal").asFloatVector<2>();
-    parameters.perspectiveCenter =
-        node.require("Principle_point").asFloatVector<2>();
+    parameters.perspectiveCenter = node.require("Principle_point").asFloatVector<2>();
   } else {
     throw runtime_error("Unknown projection type in metadata JSON file");
   }

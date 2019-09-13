@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -38,21 +38,18 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &rootNode,
-                   const Common::Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create(
-          "Synthesizer", rootNode, componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create(
-          "Inpainter", rootNode, componentNode)} {}
+Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNode)
+    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
+                                                                componentNode)},
+      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)} {
+}
 
-Common::Texture444Depth10Frame
-Renderer::renderFrame(const Common::MVD10Frame &atlas,
-                      const Common::PatchIdMapList &maps,
+Common::Texture444Depth16Frame
+Renderer::renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
                       const Metadata::AtlasParametersList &patches,
                       const Metadata::CameraParametersList &cameras,
                       const Metadata::CameraParameters &target) const {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
+  auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

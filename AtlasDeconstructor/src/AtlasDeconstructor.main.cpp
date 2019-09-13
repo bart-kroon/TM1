@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -50,8 +50,7 @@ private:
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"AtlasDeconstructor", move(argv)},
-        m_atlasDeconstructor{
-            create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},
+        m_atlasDeconstructor{create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
@@ -66,14 +65,18 @@ public:
   void runIntraPeriod(int intraFrame, int endFrame) {
     auto metadata = IO::loadMivMetadata(json(), intraFrame);
 
-    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize,
-                                                           metadata.patches);
+    cout << "OMAF v1 compatible flag: " << boolalpha << metadata.omafV1CompatibleFlag << " ("
+         << int(metadata.omafV1CompatibleFlag) << ")" << endl;
+
+    auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, intraFrame);
+    auto patchIdMaps =
+        m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize, metadata.patches, frame);
     IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto atlas = IO::loadAtlas(json(), metadata.atlasSize, i);
-      auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
-          atlas, metadata.cameras, metadata.patches);
+      auto atlas = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, i);
+      auto recoveredTransportView =
+          m_atlasDeconstructor->recoverPrunedView(atlas, metadata.cameras, metadata.patches);
 
       IO::savePrunedFrame(json(), i, recoveredTransportView);
     }
@@ -88,9 +91,12 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::AtlasDeconstructor::registerComponents();
     TMIV::AtlasDeconstructor::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
   } catch (runtime_error &e) {
     cerr << e.what() << endl;
+    return 1;
   }
 }

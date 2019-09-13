@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -39,28 +39,27 @@ namespace TMIV::Renderer {
 template <typename T> static T blendValues(float w_a, T a, float w_b, T b);
 
 // Blend three arithmetic tensors of fixed size
-template <typename T>
-T blendValues(float w_a, T a, float w_b, T b, float w_c, T c);
+template <typename T> T blendValues(float w_a, T a, float w_b, T b, float w_c, T c);
 
 // Blend the attributes of two pixels
 template <typename T0, typename... T>
 auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
                      const std::tuple<T0, T...> &b) -> std::tuple<T0, T...>;
 
-inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */,
-                            float /* w_b */, const std::tuple<> & /* b */) {
+inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */, float /* w_b */,
+                            const std::tuple<> & /* b */) {
   return std::tuple{};
 }
 
 // Blend the attributes of three pixels
 template <typename T0, typename... T>
 auto blendAttributes(float w_a, const std::tuple<T0, T...> &a, float w_b,
-                     const std::tuple<T0, T...> &b, float w_c,
-                     const std::tuple<T0, T...> &c) -> std::tuple<T0, T...>;
+                     const std::tuple<T0, T...> &b, float w_c, const std::tuple<T0, T...> &c)
+    -> std::tuple<T0, T...>;
 
-inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */,
-                            float /* w_b */, const std::tuple<> & /* b */,
-                            float /* w_c */, const std::tuple<> & /* c */) {
+inline auto blendAttributes(float /* w_a */, const std::tuple<> & /* a */, float /* w_b */,
+                            const std::tuple<> & /* b */, float /* w_c */,
+                            const std::tuple<> & /* c */) {
   return std::tuple{};
 }
 } // namespace TMIV::Renderer

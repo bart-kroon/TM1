@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -39,15 +39,15 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 Mat3x3f rotationMatrixFromRotationAroundX(float rx) {
-  return Mat3x3f{1.f, 0.f, 0.f, 0.f, cos(rx), -sin(rx), 0.f, sin(rx), cos(rx)};
+  return Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
 }
 
 Mat3x3f rotationMatrixFromRotationAroundY(float ry) {
-  return Mat3x3f{cos(ry), 0.f, sin(ry), 0.f, 1.f, 0.f, -sin(ry), 0.f, cos(ry)};
+  return Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
 }
 
 Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
-  return Mat3x3f{cos(rz), -sin(rz), 0.f, sin(rz), cos(rz), 0.f, 0.f, 0.f, 1.f};
+  return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
 }
 
 Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
@@ -56,8 +56,8 @@ Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
          rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);
 }
 
-auto affineParameters(const CameraParameters &camera,
-                      const CameraParameters &target) -> pair<Mat3x3f, Vec3f> {
+auto affineParameters(const CameraParameters &camera, const CameraParameters &target)
+    -> pair<Mat3x3f, Vec3f> {
   const auto R1 = EulerAnglesToRotationMatrix(camera.rotation);
   const auto R2 = EulerAnglesToRotationMatrix(target.rotation);
   const auto &t1 = camera.position;
@@ -68,8 +68,7 @@ auto affineParameters(const CameraParameters &camera,
   return {R, t};
 }
 
-auto unprojectVertex(Common::Vec2f position, float depth,
-                     const Metadata::CameraParameters &camera)
+auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::CameraParameters &camera)
     -> Common::Vec3f {
   switch (camera.type) {
   case Metadata::ProjectionType::ERP: {

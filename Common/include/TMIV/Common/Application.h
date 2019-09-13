@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -36,6 +36,7 @@
 
 #include "Factory.h"
 #include "Json.h"
+#include <ctime>
 
 namespace TMIV::Common {
 class Application {
@@ -48,40 +49,37 @@ public:
   Application &operator=(const Application &other) = delete;
   Application &operator=(Application &&other) = default;
   virtual ~Application() = default;
-
+  void startTime();
+  void printTime();
   virtual void run() = 0;
 
 protected:
   const Json &json() const;
 
   // Use the configuration file with a factory to create a component/module
-  template <class Interface, typename... Args>
-  auto create(Args &&... next) const {
-    auto result =
-        getComponentParentAndName(json(), std::forward<Args>(next)...);
-    return Factory<Interface>::getInstance().create(std::move(result.second),
-                                                    json(), result.first);
+  template <class Interface, typename... Args> auto create(Args &&... next) const {
+    auto result = getComponentParentAndName(json(), std::forward<Args>(next)...);
+    return Factory<Interface>::getInstance().create(std::move(result.second), json(), result.first);
   }
 
 private:
   void add_file(const std::string &path);
   void add_parameter(const std::string &key, std::string value);
   void add_stream(std::istream &stream);
-  std::pair<Json, std::string>
-  getComponentParentAndName(const Json &node, const std::string &name) const {
+  std::pair<Json, std::string> getComponentParentAndName(const Json &node,
+                                                         const std::string &name) const {
     return {node, name};
   }
 
   template <typename... Args>
-  std::pair<Json, std::string>
-  getComponentParentAndName(const Json &node, const std::string &first,
-                            Args &&... next) const {
-    return getComponentParentAndName(
-        node.require(node.require(first + "Method").asString()),
-        std::forward<Args>(next)...);
+  std::pair<Json, std::string> getComponentParentAndName(const Json &node, const std::string &first,
+                                                         Args &&... next) const {
+    return getComponentParentAndName(node.require(node.require(first + "Method").asString()),
+                                     std::forward<Args>(next)...);
   }
 
   std::shared_ptr<Json> m_json;
+  clock_t m_startTime;
 };
 } // namespace TMIV::Common
 

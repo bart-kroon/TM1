@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -44,26 +44,22 @@ namespace TMIV::Decoder {
 Decoder::Decoder(const Json &rootNode, const Json &componentNode)
     : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
           "AtlasDeconstructor", rootNode, componentNode)},
-      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode,
-                                                          componentNode)} {}
+      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)} {}
 
 void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
   m_atlasSize = move(atlasSize);
   m_patches.clear();
 }
 
-void Decoder::updatePatchList(AtlasParametersList patches) {
+void Decoder::updatePatchList(AtlasParametersList patches, const Common::MVD16Frame &frame) {
   m_patches = move(patches);
-  m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches);
+  m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, frame);
 }
 
-void Decoder::updateCameraList(CameraParametersList cameras) {
-  m_cameras = move(cameras);
-}
+void Decoder::updateCameraList(CameraParametersList cameras) { m_cameras = move(cameras); }
 
-Texture444Depth10Frame
-Decoder::decodeFrame(MVD10Frame atlas, const CameraParameters &target) const {
-  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_cameras,
-                                 target);
+Texture444Depth16Frame Decoder::decodeFrame(MVD16Frame atlas,
+                                            const CameraParameters &target) const {
+  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_cameras, target);
 }
 } // namespace TMIV::Decoder

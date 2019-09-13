@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -39,8 +39,7 @@
 
 namespace TMIV::Renderer {
 // Create a grid of positions indicating the center of each of the pixels
-auto imagePositions(const Metadata::CameraParameters &camera)
-    -> Common::Mat<Common::Vec2f>;
+auto imagePositions(const Metadata::CameraParameters &camera) -> Common::Mat<Common::Vec2f>;
 
 // OMAF Referential: x forward, y left, z up
 // Image plane: u right, v down
@@ -48,16 +47,14 @@ auto imagePositions(const Metadata::CameraParameters &camera)
 // Unproject points: From image positions to world positions (with the camera as
 // reference frame)
 auto unprojectPoints(const Metadata::CameraParameters &camera,
-                     const Common::Mat<Common::Vec2f> &positions,
-                     const Common::Mat<float> &depth)
+                     const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> Common::Mat<Common::Vec3f>;
 
 // Change the reference frame from one to another camera (merging extrinsic
 // parameters)
 auto changeReferenceFrame(const Metadata::CameraParameters &camera,
                           const Metadata::CameraParameters &target,
-                          const Common::Mat<Common::Vec3f> &points)
-    -> Common::Mat<Common::Vec3f>;
+                          const Common::Mat<Common::Vec3f> &points) -> Common::Mat<Common::Vec3f>;
 
 // Project points: From world positions (with the camera as reference frame)
 // to image positions
@@ -71,8 +68,7 @@ auto projectPoints(const Metadata::CameraParameters &camera,
 //  3) Project to image points
 auto reprojectPoints(const Metadata::CameraParameters &camera,
                      const Metadata::CameraParameters &target,
-                     const Common::Mat<Common::Vec2f> &positions,
-                     const Common::Mat<float> &depth)
+                     const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Calculate ray angles between input and output camera. Units are radians.
@@ -80,8 +76,7 @@ auto reprojectPoints(const Metadata::CameraParameters &camera,
 // The points should be in the target frame of reference.
 auto calculateRayAngles(const Metadata::CameraParameters &camera,
                         const Metadata::CameraParameters &target,
-                        const Common::Mat<Common::Vec3f> &points)
-    -> Common::Mat<float>;
+                        const Common::Mat<Common::Vec3f> &points) -> Common::Mat<float>;
 } // namespace TMIV::Renderer
 
 #endif

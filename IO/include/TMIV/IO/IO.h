@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -45,71 +45,58 @@
 // Frame indices are zero-based and relative to the StartFrame parameter.
 // These functions will print something short to screen.
 namespace TMIV::IO {
-template <class T>
-using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
+template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
-auto sizesOf(const Metadata::CameraParametersList &cameras)
-    -> std::vector<Common::Vec2i>;
+auto sizesOf(const Metadata::CameraParametersList &cameras) -> std::vector<Common::Vec2i>;
 Metadata::CameraParametersList loadSourceMetadata(const Common::Json &config);
 Common::MVD16Frame loadSourceFrame(const Common::Json &config,
-                                   const std::vector<Common::Vec2i> &sizes,
-                                   int frameIndex);
+                                   const std::vector<Common::Vec2i> &sizes, int frameIndex);
 
 void saveOptimizedFrame(const Common::Json &config, int frameIndex,
                         const BasicAdditional<Common::MVD16Frame> &frame);
-auto loadOptimizedFrame(
-    const Common::Json &config,
-    const BasicAdditional<std::vector<Common::Vec2i>> &sizes, int frameIndex)
+auto loadOptimizedFrame(const Common::Json &config,
+                        const BasicAdditional<std::vector<Common::Vec2i>> &sizes, int frameIndex)
     -> BasicAdditional<Common::MVD16Frame>;
-void saveOptimizedMetadata(
-    const Common::Json &config, int frameIndex,
-    const BasicAdditional<Metadata::CameraParametersList> &metadata);
+void saveOptimizedMetadata(const Common::Json &config, int frameIndex,
+                           const BasicAdditional<Metadata::CameraParametersList> &metadata);
 auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
     -> BasicAdditional<Metadata::CameraParametersList>;
 
-void savePrunedFrame(const Common::Json &config, int frameIndex,
-                     const Common::MVD16Frame &frame);
+void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD16Frame &frame);
 
 struct MivMetadata {
-  std::vector<Common::Vec2i> atlasSize;
+  std::vector<Common::Vec2i> atlasSize; // atlas_width/height in MPEG/N18576
+  bool omafV1CompatibleFlag{};          // omaf_v1_compatible in MPEG/N18576
   Metadata::AtlasParametersList patches;
   Metadata::CameraParametersList cameras;
+
+  bool operator==(const MivMetadata &other) const;
 };
 
-void saveMivMetadata(const Common::Json &config, int frameIndex,
-                     const MivMetadata &metadata);
+void saveMivMetadata(const Common::Json &config, int frameIndex, const MivMetadata &metadata);
 auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
-
-void savePatchList(const Common::Json &config, const std::string &name,
-                   Metadata::AtlasParametersList patches);
 
 // Save the atlas (10-bit 4:2:0 texture, 16-bit depth) with depth converted to
 // 10-bit
-void saveAtlas(const Common::Json &config, int frameIndex,
-               Common::MVD16Frame frame);
-void saveAtlas(const Common::Json &config, int frameIndex,
-               const Common::MVD10Frame &frame);
-auto loadAtlas(const Common::Json &config,
-               const std::vector<Common::Vec2i> &atlasSize, int frameIndex)
-    -> Common::MVD10Frame;
+void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD16Frame &frame);
+void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
+auto loadAtlasAndDecompress(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
+                            int frameIndex) -> Common::MVD16Frame;
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);
-auto loadPatchIdMaps(const Common::Json &config,
-                     const std::vector<Common::Vec2i> &atlasSize,
+auto loadPatchIdMaps(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
                      int frameIndex) -> Common::PatchIdMapList;
 
-auto loadViewportMetadata(const Common::Json &config, int frameIndex)
-    -> Metadata::CameraParameters;
+auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::CameraParameters;
 void saveViewport(const Common::Json &config, int frameIndex,
-                  const Common::TextureDepth10Frame &frame);
+                  const Common::TextureDepth16Frame &frame);
 
 // Returns a pair of metadata and frame indices to pass to loadMivMetadata and
 // loadAtlas. If frameIndex is strictly less than the actual number of frames in
 // the encoded stream, then regular values are returned else mirrored indices
 // are computed.
-std::pair<int, int> getExtendedIndex(const Common::Json &config,
-                                     int frameIndex);
+std::pair<int, int> getExtendedIndex(const Common::Json &config, int frameIndex);
 
 } // namespace TMIV::IO
 

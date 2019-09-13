@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -36,8 +36,7 @@
 #endif
 
 namespace TMIV::Common {
-template <stack::size_type M>
-auto Json::asFloatVector() const -> stack::Vector<float, M> {
+template <stack::size_type M> auto Json::asFloatVector() const -> stack::Vector<float, M> {
   stack::Vector<float, M> result;
   if (size() != M) {
     throw std::runtime_error("JSON float vector has wrong length");
@@ -48,8 +47,7 @@ auto Json::asFloatVector() const -> stack::Vector<float, M> {
   return result;
 }
 
-template <stack::size_type M>
-auto Json::asIntVector() const -> stack::Vector<int, M> {
+template <stack::size_type M> auto Json::asIntVector() const -> stack::Vector<int, M> {
   stack::Vector<int, M> result;
   if (size() != M) {
     throw std::runtime_error("JSON int vector has wrong length");

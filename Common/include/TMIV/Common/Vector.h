@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -71,47 +71,29 @@ public:
   using A::resize;
   void resize(size_type a, size_type /*unused*/ = 1) { A::resize({a}); }
   //! \brief Returns an iterator to the first element of the ith row.
-  const_row_iterator row_begin(size_type i) const {
-    return const_row_iterator(A::data() + i);
-  }
+  const_row_iterator row_begin(size_type i) const { return const_row_iterator(A::data() + i); }
   row_iterator row_begin(size_type i) { return row_iterator(A::data() + i); }
   //! \brief Returns a const iterator to the first element of the ith row.
-  const_row_iterator crow_begin(size_type i) const {
-    return const_row_iterator(A::data() + i);
-  }
+  const_row_iterator crow_begin(size_type i) const { return const_row_iterator(A::data() + i); }
   //! \brief Returns an iterator to the first element after the end of the ith
   //! row.
-  const_row_iterator row_end(size_type i) const {
-    return const_row_iterator(A::data() + (i + 1));
-  }
-  row_iterator row_end(size_type i) {
-    return row_iterator(A::data() + (i + 1));
-  }
+  const_row_iterator row_end(size_type i) const { return const_row_iterator(A::data() + (i + 1)); }
+  row_iterator row_end(size_type i) { return row_iterator(A::data() + (i + 1)); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! ith row.
-  const_row_iterator crow_end(size_type i) const {
-    return const_row_iterator(A::data() + (i + 1));
-  }
+  const_row_iterator crow_end(size_type i) const { return const_row_iterator(A::data() + (i + 1)); }
   //! \brief Returns an iterator to the first element of the jth column.
-  const_column_iterator col_begin(size_type /*unused*/ = 0) const {
-    return A::begin();
-  }
+  const_column_iterator col_begin(size_type /*unused*/ = 0) const { return A::begin(); }
   column_iterator col_begin(size_type /*unused*/ = 0) { return A::begin(); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  const_column_iterator ccol_begin(size_type /*unused*/ = 0) const {
-    return A::cbegin();
-  }
+  const_column_iterator ccol_begin(size_type /*unused*/ = 0) const { return A::cbegin(); }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  const_column_iterator col_end(size_type /*unused*/ = 0) const {
-    return A::end();
-  }
+  const_column_iterator col_end(size_type /*unused*/ = 0) const { return A::end(); }
   column_iterator col_end(size_type /*unused*/ = 0) { return A::end(); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  const_column_iterator ccol_end(size_type /*unused*/ = 0) const {
-    return A::cend();
-  }
+  const_column_iterator ccol_end(size_type /*unused*/ = 0) const { return A::cend(); }
   //! \brief Getters.
   typename A::value_type x() const { return A::operator[](0); }
   typename A::value_type y() const { return A::operator[](1); }
@@ -157,8 +139,7 @@ Vec3<decltype(T(0) * U(0))> cross(const Vec3<T> &a, const Vec3<U> &b) {
 
 //! \brief Returns the triple-product of a, b and c (a . (b x c)).
 template <typename T, typename U, typename V>
-decltype(T(0) * U(0) * V(0)) triple(const Vec3<T> &a, const Vec3<U> &b,
-                                    const Vec3<V> &c) {
+decltype(T(0) * U(0) * V(0)) triple(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
   return dot(a, cross(b, c));
 }
 
@@ -166,10 +147,11 @@ decltype(T(0) * U(0) * V(0)) triple(const Vec3<T> &a, const Vec3<U> &b,
 //! parameters
 template <typename T, typename U, typename V>
 double solid(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
+  using std::abs;
+  using std::atan;
   double na = norm(a), nb = norm(b), nc = norm(c);
-  double out =
-      2. * atan(std::abs(triple(a, b, c)) / (na * nb * nc + na * dot(b, c) +
-                                             nb * dot(a, c) + nc * dot(a, b)));
+  double out = 2. * atan(abs(triple(a, b, c)) /
+                         (na * nb * nc + na * dot(b, c) + nb * dot(a, c) + nc * dot(a, b)));
 
   if (out < 0.) {
     return (out + M_PI);
@@ -203,61 +185,50 @@ using Vec4w = stack::Vec4<uint16_t>;
 
 //! \brief Dot product.
 template <typename Iterator1, typename Iterator2,
-          typename std::enable_if<
-              std::is_floating_point<typename Iterator1::value_type>::value &&
-                  std::is_floating_point<typename Iterator2::value_type>::value,
-              int>::type = 0>
-decltype((typename Iterator1::value_type)(0) *
-         (typename Iterator2::value_type)(0))
-dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
-  return std::inner_product(first1, last1, first2,
-                            (typename Iterator1::value_type)(0));
+          typename std::enable_if<std::is_floating_point<typename Iterator1::value_type>::value &&
+                                      std::is_floating_point<typename Iterator2::value_type>::value,
+                                  int>::type = 0>
+auto dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
+  using value_type = typename Iterator1::value_type;
+  return std::inner_product(first1, last1, first2, value_type());
 }
 
 template <
     typename Iterator1, typename Iterator2,
-    typename std::enable_if<
-        !std::is_floating_point<typename Iterator1::value_type>::value &&
-            !std::is_floating_point<typename Iterator2::value_type>::value,
-        int>::type = 0>
-decltype((typename Iterator1::value_type)(0) *
-         (typename Iterator2::value_type)(0))
-dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
+    typename std::enable_if<!std::is_floating_point<typename Iterator1::value_type>::value &&
+                                !std::is_floating_point<typename Iterator2::value_type>::value,
+                            int>::type = 0>
+auto dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
   using T1 = typename Iterator1::value_type;
   using T2 = typename Iterator2::value_type;
 
   return std::inner_product(
-      first1, last1, first2, T1(0),
-      [](const T1 &v1, const T2 &v2) { return (v1 + v2); },
+      first1, last1, first2, T1(0), [](const T1 &v1, const T2 &v2) { return (v1 + v2); },
       [](const T1 &v1, const T2 &v2) { return (v1 * std::conj(v2)); });
 }
 
-template <typename V1, typename V2>
-decltype((typename V1::value_type)(0) * (typename V2::value_type)(0))
-dot(const V1 &v1, const V2 &v2) {
+template <typename V1, typename V2> auto dot(const V1 &v1, const V2 &v2) {
   return dot_product(v1.begin(), v1.end(), v2.begin());
 }
 
 //! \brief Returns ||v||**2.
-template <typename V>
-decltype(std::abs(typename V::value_type(0))) norm2(const V &v) {
-  return std::abs(dot(v, v));
+template <typename V> auto norm2(const V &v) {
+  using std::abs;
+  return abs(dot(v, v));
 }
 //! \brief Returns ||v||.
-template <typename V>
-decltype(std::abs(typename V::value_type(0))) norm(const V &v) {
+template <typename V> auto norm(const V &v) {
+  using std::sqrt;
   return sqrt(norm2(v));
 }
 //! \brief Returns ||v||inf.
-template <typename V>
-decltype(std::abs(typename V::value_type(0))) norm_inf(const V &v) {
-  return std::abs(*std::max_element(v.begin(), v.end(), [](auto v1, auto v2) {
-    return std::abs(v1) < std::abs(v2);
-  }));
+template <typename V> auto norm_inf(const V &v) {
+  using std::abs;
+  return abs(
+      *std::max_element(v.begin(), v.end(), [](auto v1, auto v2) { return abs(v1) < abs(v2); }));
 }
 //! \brief Returns v / ||v|| and optionally ||v||.
-template <typename V,
-          typename U = decltype(std::abs(typename V::value_type(0)))>
+template <typename V, typename U = decltype(std::abs(std::declval<typename V::value_type>()))>
 V unit(const V &v, U *n = nullptr) {
   U m = norm(v);
   if (n) {
@@ -266,8 +237,7 @@ V unit(const V &v, U *n = nullptr) {
   return v / m;
 }
 //! \brief Normalizes v and optionally returns ||v||.
-template <typename V,
-          typename U = decltype(std::abs(typename V::value_type(0)))>
+template <typename V, typename U = decltype(std::abs(std::declval<typename V::value_type>()))>
 V &normalize(V &v, U *n = nullptr) {
   U m = norm(v);
   if (n) {
@@ -282,15 +252,17 @@ V &normalize(V &v, U *n = nullptr) {
 // This is also known as the normalized inner product of two vectors, or the
 // cosine measure.
 template <typename V1, typename V2>
-decltype(typename V1::value_type(0) * typename V2::value_type(0))
-cosAngle(const V1 &v1, const V2 &v2) {
+decltype(typename V1::value_type(0) * typename V2::value_type(0)) cosAngle(const V1 &v1,
+                                                                           const V2 &v2) {
   return dot(v1, v2) / sqrt(norm2(v1) * norm2(v2));
 }
 
 //! \brief Returns the angle between the two vectors given as
 //! arguments.
 template <typename V1, typename V2> auto angle(const V1 &v1, const V2 &v2) {
-  return std::acos(std::min(1.f, cosAngle(v1, v2)));
+  using std::acos;
+  using std::min;
+  return acos(min(1.F, cosAngle(v1, v2)));
 }
 
 } // namespace TMIV::Common

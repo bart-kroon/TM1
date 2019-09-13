@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -43,9 +43,18 @@
 namespace TMIV::Metadata {
 using Vec2i = TMIV::Common::Vec2i;
 
+// TODO(BK): Align with working draft: patch_rotation has eight possible values (4 rotations x 2
+// flips)
 enum class PatchRotation {
   upright, // what was up stays up
-  ccw      // what was up goes left
+  ccw,     // what was up goes left, i.e. 90deg
+  ht,      // half-turn, i.e. 180deg
+  cw       // what was up goes right, i.e. 270deg
+};
+
+enum class PatchFlip {
+  none, // what was up stays up
+  vflip // what was up goes down, i.e. vertical flip
 };
 
 // Data type that corresponds to an entry of atlas_params of MPEG/N18464
@@ -67,14 +76,21 @@ struct AtlasParameters {
 
   // In MPEG/N18464: patch_rotation
   PatchRotation rotation{};
+
+  PatchFlip flip{};
+
+  bool operator==(const AtlasParameters &other) const;
 };
 
-static_assert(sizeof(AtlasParameters) == 32);
-
-std::string PatchParametersString(const AtlasParameters &patchParameters);
+static_assert(sizeof(AtlasParameters) == 36);
 
 // Data type that corresponds to atlas_params_list of MPEG/N18464
 using AtlasParametersList = std::vector<AtlasParameters>;
+
+// Pixel position conversion from atlas to/from view
+Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch);
+Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch);
+
 } // namespace TMIV::Metadata
 
 #endif

@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -42,23 +42,21 @@ namespace TMIV::AtlasConstructor {
 // The Packer of TMIV 1.0 provided by Technicolor
 class Packer : public IPacker {
 public:
-  Packer(const Common::Json & /*unused*/,
-         const Common::Json & /*componentNode*/);
+  Packer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
   Packer(const Packer &) = delete;
   Packer(Packer &&) = default;
   Packer &operator=(const Packer &) = delete;
   Packer &operator=(Packer &&) = default;
   ~Packer() override = default;
 
-  AtlasParametersList
-  pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
-       const std::vector<std::uint8_t> &shouldNotBeSplit) override;
+  AtlasParametersList pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
+                           const std::vector<std::uint8_t> &shouldNotBeSplit) override;
 
 private:
-  int m_alignment = 8;
-  int m_minPatchSize = 64;
-  int m_overlap = 1;
-  bool m_pip = true;
+  int m_alignment{};
+  int m_minPatchSize{};
+  int m_overlap{};
+  bool m_pip{};
 };
 
 } // namespace TMIV::AtlasConstructor

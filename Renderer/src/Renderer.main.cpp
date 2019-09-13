@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -49,8 +49,7 @@ private:
   int m_intraPeriod;
 
 public:
-  explicit Application(vector<const char *> argv)
-      : Common::Application{"Renderer", move(argv)} {
+  explicit Application(vector<const char *> argv) : Common::Application{"Renderer", move(argv)} {
     m_renderer = create<IRenderer>("Decoder", "Renderer");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
@@ -73,10 +72,10 @@ public:
         maps = IO::loadPatchIdMaps(json(), metadata.atlasSize, idx.second);
       }
 
-      auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
+      auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
       auto target = IO::loadViewportMetadata(json(), idx.second);
-      auto viewport = m_renderer->renderFrame(frame, maps, metadata.patches,
-                                              metadata.cameras, target);
+      auto viewport =
+          m_renderer->renderFrame(frame, maps, metadata.patches, metadata.cameras, target);
       IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
     }
   }
@@ -87,9 +86,12 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::Renderer::registerComponents();
     TMIV::Renderer::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
   } catch (runtime_error &e) {
     cerr << e.what() << endl;
+    return 1;
   }
 }

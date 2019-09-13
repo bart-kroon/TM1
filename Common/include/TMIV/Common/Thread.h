@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -39,8 +39,7 @@
 #include <vector>
 
 namespace TMIV::Common {
-inline void parallel_for(std::size_t nbIter,
-                         std::function<void(std::size_t)> fun) {
+inline void parallel_for(std::size_t nbIter, std::function<void(std::size_t)> fun) {
   auto segment_execute = [&](std::size_t first, std::size_t last) {
     for (auto id = first; id < last; id++) {
       fun(id);
@@ -50,9 +49,8 @@ inline void parallel_for(std::size_t nbIter,
   std::size_t chunkSize = nbIter / std::thread::hardware_concurrency();
   std::vector<std::future<void>> threadList;
 
-  for (size_t id = 0u; id < nbIter; id += chunkSize) {
-    threadList.push_back(
-        std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
+  for (size_t id = 0; id < nbIter; id += chunkSize) {
+    threadList.push_back(std::async(segment_execute, id, std::min(id + chunkSize, nbIter)));
   }
 
   for (auto &thread : threadList) {

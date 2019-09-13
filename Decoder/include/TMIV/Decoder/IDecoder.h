@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -57,7 +57,8 @@ public:
   // Change the patch list.
   //
   // This call shall be preceded by at least one call to updateAtlasSize.
-  virtual void updatePatchList(Metadata::AtlasParametersList patches) = 0;
+  virtual void updatePatchList(Metadata::AtlasParametersList patches,
+                               const Common::MVD16Frame &frame) = 0;
 
   // Change the camera list.
   virtual void updateCameraList(Metadata::CameraParametersList cameras) = 0;
@@ -66,9 +67,8 @@ public:
   //
   // This call shall be preceded by at least one call of each of
   // updateAtlasSize, updatePatchList and updateCameraList.
-  virtual Common::Texture444Depth10Frame
-  decodeFrame(Common::MVD10Frame atlas,
-              const Metadata::CameraParameters &target) const = 0;
+  virtual Common::Texture444Depth16Frame
+  decodeFrame(Common::MVD16Frame atlas, const Metadata::CameraParameters &target) const = 0;
 };
 } // namespace TMIV::Decoder
 

@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -47,10 +47,8 @@ using ClusterList = std::vector<Cluster>;
 class Cluster {
 protected:
   int cameraId_ = 0, clusterId_ = 0;
-  int imin_ = std::numeric_limits<int>::max(),
-      jmin_ = std::numeric_limits<int>::max();
-  int imax_ = std::numeric_limits<int>::min(),
-      jmax_ = std::numeric_limits<int>::min();
+  int imin_ = std::numeric_limits<int>::max(), jmin_ = std::numeric_limits<int>::max();
+  int imax_ = std::numeric_limits<int>::min(), jmax_ = std::numeric_limits<int>::min();
   int filling_ = 0;
 
 public:
@@ -74,8 +72,7 @@ public:
   int height() const { return (imax_ - imin_ + 1); }
   int getArea() const { return width() * height(); }
   int getMinSize() const { return std::min(width(), height()); }
-  std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringMap,
-                                    int overlap) const;
+  std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringMap, int overlap) const;
   static Cluster Empty() {
     Cluster out;
     out.imin_ = 0;
@@ -86,9 +83,9 @@ public:
   }
   static Cluster align(const Cluster &c, int alignment);
   static Cluster merge(const Cluster &c1, const Cluster &c2);
-  static std::pair<ClusterList, ClusteringMap>
-  retrieve(int cameraId, const Common::Mask &maskMap, int firstClusterId = 0,
-           bool shouldNotBeSplit = false);
+  static std::pair<ClusterList, ClusteringMap> retrieve(int cameraId, const Common::Mask &maskMap,
+                                                        int firstClusterId = 0,
+                                                        bool shouldNotBeSplit = false);
 };
 
 } // namespace TMIV::AtlasConstructor

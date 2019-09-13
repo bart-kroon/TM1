@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -46,24 +46,21 @@ private:
   std::unique_ptr<IInpainter> m_inpainter;
 
 public:
-  Renderer(const Common::Json & /*rootNode*/,
-           const Common::Json & /*componentNode*/);
+  Renderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   Renderer(const Renderer &) = delete;
   Renderer(Renderer &&) = default;
   Renderer &operator=(const Renderer &) = delete;
   Renderer &operator=(Renderer &&) = default;
   ~Renderer() override = default;
 
-  Common::Texture444Depth10Frame
-  renderFrame(const Common::MVD10Frame &atlas,
-              const Common::PatchIdMapList &maps,
+  Common::Texture444Depth16Frame
+  renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
               const Metadata::AtlasParametersList &patches,
               const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 
   Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD16Frame &frame,
-              const Metadata::CameraParametersList &cameras,
+  renderFrame(const Common::MVD16Frame &frame, const Metadata::CameraParametersList &cameras,
               const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Renderer

@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -43,8 +43,7 @@ namespace TMIV::AtlasConstructor {
 // The Pruner of TMIV 1.0 provided by Technicolor
 class Pruner : public IPruner {
 public:
-  Pruner(const Common::Json & /*unused*/,
-         const Common::Json & /*componentNode*/);
+  Pruner(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
   Pruner(const Pruner &) = delete;
   Pruner(Pruner &&) = default;
   Pruner &operator=(const Pruner &) = delete;
@@ -55,10 +54,10 @@ public:
                  const std::vector<std::uint8_t> &shouldNotBePruned) override;
 
 private:
-  float m_redundancyFactor = 0.02f;
-  int m_erosionIter = 1;
-  int m_dilationIter = 5;
-  int m_maxAdditionalView = 1024;
+  float m_redundancyFactor{};
+  int m_erosionIter{};
+  int m_dilationIter{};
+  int m_maxAdditionalView{INT16_MAX};
 };
 
 } // namespace TMIV::AtlasConstructor

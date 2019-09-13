@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -41,6 +41,7 @@ namespace TMIV::Common {
 namespace detail {
 template <> struct PixelFormatHelper<YUV400P8> {
   static constexpr int nb_plane = 1;
+  static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return (W * H); }
   static int getDiskSize(int W, int H) { return (W * H) * 3 / 2; }
@@ -50,6 +51,7 @@ template <> struct PixelFormatHelper<YUV400P8> {
 
 template <> struct PixelFormatHelper<YUV400P10> {
   static constexpr int nb_plane = 1;
+  static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -59,6 +61,7 @@ template <> struct PixelFormatHelper<YUV400P10> {
 
 template <> struct PixelFormatHelper<YUV400P16> {
   static constexpr int nb_plane = 1;
+  static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 2 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -68,6 +71,7 @@ template <> struct PixelFormatHelper<YUV400P16> {
 
 template <> struct PixelFormatHelper<YUV420P8> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H) / 2; }
   static int getDiskSize(int W, int H) { return 3 * (W * H) / 2; }
@@ -77,6 +81,7 @@ template <> struct PixelFormatHelper<YUV420P8> {
 
 template <> struct PixelFormatHelper<YUV420P10> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -86,6 +91,7 @@ template <> struct PixelFormatHelper<YUV420P10> {
 
 template <> struct PixelFormatHelper<YUV420P16> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -95,6 +101,7 @@ template <> struct PixelFormatHelper<YUV420P16> {
 
 template <> struct PixelFormatHelper<YUV444P8> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
   static int getMemorySize(int W, int H) { return 3 * (W * H); }
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
@@ -104,6 +111,7 @@ template <> struct PixelFormatHelper<YUV444P8> {
 
 template <> struct PixelFormatHelper<YUV444P10> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 6 * (W * H); }
   static int getDiskSize(int W, int H) { return 6 * (W * H); }
@@ -113,6 +121,7 @@ template <> struct PixelFormatHelper<YUV444P10> {
 
 template <> struct PixelFormatHelper<YUV444P16> {
   static constexpr int nb_plane = 3;
+  static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
   static int getMemorySize(int W, int H) { return 6 * (W * H); }
   static int getDiskSize(int W, int H) { return 6 * (W * H); }
@@ -126,9 +135,8 @@ template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
   m_height = h;
 
   for (int planeId = 0; planeId < nb_plane; planeId++) {
-    m_planes[planeId].resize(
-        detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
-        detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
+    m_planes[planeId].resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
+                             detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
   }
 }
 
@@ -136,26 +144,31 @@ template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
   for (auto &plane : m_planes) {
     int w = int(plane.width()), h = int(plane.height());
     base_type *ptr =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
     int lineSize = w * sizeof(base_type);
 
     for (int j = 0; j < h; j++) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       is.read(reinterpret_cast<char *>(ptr), lineSize);
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
       ptr = ptr + (vFlip ? -w : w);
     }
   }
 }
 
-template <class FORMAT>
-void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
+template <class FORMAT> void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
   for (const auto &plane : m_planes) {
     int w = int(plane.width()), h = int(plane.height());
     const base_type *ptr =
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
     int lineSize = w * sizeof(base_type);
 
     for (int j = 0; j < h; j++) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       os.write(reinterpret_cast<const char *>(ptr), lineSize);
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
       ptr = ptr + (vFlip ? -w : w);
     }
   }

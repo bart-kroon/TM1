@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -35,14 +35,118 @@
 #include <sstream>
 
 namespace TMIV::Metadata {
+bool AtlasParameters::operator==(const AtlasParameters &other) const {
+  return atlasId == other.atlasId && viewId == other.viewId && patchSize == other.patchSize &&
+         posInView == other.posInView && posInAtlas == other.posInAtlas &&
+         rotation == other.rotation;
+}
 
-std::string PatchParametersString(const AtlasParameters &p) {
+Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) {
+  int w = patch.patchSize.x();
+  int h = patch.patchSize.y();
+  int xM = patch.posInView.x();
+  int yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x();
+  int yP = patch.posInAtlas.y();
+  int x = viewPosition.x();
+  int y = viewPosition.y();
 
-  std::ostringstream oss;
-  std::string rotationStr = p.rotation == PatchRotation::upright ? "U" : "R";
-  oss << int(p.atlasId) << " " << int(p.viewId) << " " << p.patchSize << " "
-      << p.posInView << p.posInAtlas << " " << rotationStr;
-  return oss.str();
+  Vec2i pAtlas;
+
+  if (patch.flip == PatchFlip::none) {
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pAtlas.x() = x - xM + xP;
+      pAtlas.y() = y - yM + yP;
+      break;
+    case PatchRotation::ccw:
+      pAtlas.x() = y - yM + xP;
+      pAtlas.y() = -x + xM + yP + w - 1;
+      break;
+    case PatchRotation::ht:
+      pAtlas.x() = -x + xM + xP + w - 1;
+      pAtlas.y() = -y + yM + yP + h - 1;
+      break;
+    case PatchRotation::cw:
+      pAtlas.x() = -y + yM + xP + h - 1;
+      pAtlas.y() = x - xM + yP;
+      break;
+    }
+  } else { // patch.flip == PatchFlip::vflip
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pAtlas.x() = x - xM + xP;
+      pAtlas.y() = -y + yM + yP + h - 1;
+      break;
+    case PatchRotation::ccw:
+      pAtlas.x() = y - yM + xP;
+      pAtlas.y() = x - xM + yP;
+      break;
+    case PatchRotation::ht:
+      pAtlas.x() = -x + xM + xP + w - 1;
+      pAtlas.y() = y - yM + yP;
+      break;
+    case PatchRotation::cw:
+      pAtlas.x() = -y + yM + xP + h - 1;
+      pAtlas.y() = -x + xM + yP + w - 1;
+      break;
+    }
+  }
+  return pAtlas;
+}
+
+Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) {
+  int w = patch.patchSize.x();
+  int h = patch.patchSize.y();
+  int xM = patch.posInView.x();
+  int yM = patch.posInView.y();
+  int xP = patch.posInAtlas.x();
+  int yP = patch.posInAtlas.y();
+  int x = atlasPosition.x();
+  int y = atlasPosition.y();
+
+  Vec2i pView;
+
+  if (patch.flip == PatchFlip::none) {
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pView.x() = x - xP + xM;
+      pView.y() = y - yP + yM;
+      break;
+    case PatchRotation::ccw:
+      pView.x() = -y + yP + xM + w - 1;
+      pView.y() = x - xP + yM;
+      break;
+    case PatchRotation::ht:
+      pView.x() = -x + xP + xM + w - 1;
+      pView.y() = -y + yP + yM + h - 1;
+      break;
+    case PatchRotation::cw:
+      pView.x() = y - yP + xM;
+      pView.y() = -x + xP + yM + h - 1;
+      break;
+    }
+  } else { // patch.flip == PatchFlip::vflip
+    switch (patch.rotation) {
+    case PatchRotation::upright:
+      pView.x() = x - xP + xM;
+      pView.y() = -y + yP + yM + h - 1;
+      break;
+    case PatchRotation::ccw:
+      pView.x() = y - yP + xM;
+      pView.y() = x - xP + yM;
+      break;
+    case PatchRotation::ht:
+      pView.x() = -x + xP + xM + w - 1;
+      pView.y() = y - yP + yM;
+      break;
+    case PatchRotation::cw:
+      pView.x() = -y + yP + xM + w - 1;
+      pView.y() = -x + xP + yM + h - 1;
+      break;
+    }
+  }
+  return pView;
 }
 
 } // namespace TMIV::Metadata

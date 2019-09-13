@@ -4,6 +4,7 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_4096x4096_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_4096x4096_yuv420p16le.yuv",
+    "SourceDepthBitDepth": 16,
     "SourceCameraParameters": "TechnicolorHijack.json",
     "SourceCameraNames": [
         "v0",
@@ -22,6 +23,7 @@
     "AtlasMetadataPath": "ATL_SC_R0_Tm_c00.bit",
     "OutputTexturePath": "TM1_SC_R0_Tt_%s_4096x4096_yuv420p10le.yuv",
     "OutputCameraName": "v1",
+    "OmafV1CompatibleFlag": false,
     "EncoderMethod": "Encoder",
     "Encoder": {
         "ViewOptimizerMethod": "ViewReducer",
@@ -51,7 +53,7 @@
                 4096,
                 5120
             ],
-            "MPixel": 40
+            "MaxLumaSamplesPerFrame": 83886080
         }
     },
     "DecoderMethod": "Decoder",
@@ -65,7 +67,7 @@
                 "rayAngleParameter": 20,
                 "depthParameter": 20,
                 "stretchingParameter": 0.6,
-				"maxStretching": 5
+                "maxStretching": 5
             },
             "InpainterMethod": "Inpainter",
             "Inpainter": {}

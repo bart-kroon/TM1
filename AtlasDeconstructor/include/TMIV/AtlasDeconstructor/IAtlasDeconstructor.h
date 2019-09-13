@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -55,15 +55,13 @@ public:
   using CameraParametersList = Metadata::CameraParametersList;
   using AtlasParametersList = Metadata::AtlasParametersList;
   using MVD16Frame = Common::MVD16Frame;
-  using MVD10Frame = Common::MVD10Frame;
 
-  virtual PatchIdMapList
-  getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                const AtlasParametersList &patchList) = 0;
-  virtual MVD16Frame
-  recoverPrunedView(const MVD10Frame &atlas,
-                    const CameraParametersList &cameraList,
-                    const AtlasParametersList &patchList) = 0;
+  virtual PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
+                                       const AtlasParametersList &patchList,
+                                       const MVD16Frame &frame) = 0;
+  virtual MVD16Frame recoverPrunedView(const MVD16Frame &atlas,
+                                       const CameraParametersList &cameraList,
+                                       const AtlasParametersList &patchList) = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

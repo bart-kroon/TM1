@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -62,13 +62,11 @@ template <unsigned bits> uint16_t quantizeValue(float x);
 
 // Expand a YUV 4:2:0 10-bit texture to packed 4:4:4 32-bit float texture with
 // linear transfer and nearest interpolation for chroma
-Common::Mat<Common::Vec3f>
-expandTexture(const Common::Frame<Common::YUV420P10> &inYuv);
+Common::Mat<Common::Vec3f> expandTexture(const Common::Frame<Common::YUV420P10> &inYuv);
 
 // Quantize a packed 4:4:4 32-bit float texture as YUV 4:2:0 10-bit texture with
 // linear transfer and area interpolation for chroma
-Common::Frame<Common::YUV444P10>
-quantizeTexture(const Common::Mat<Common::Vec3f> &in);
+Common::Frame<Common::YUV444P10> quantizeTexture(const Common::Mat<Common::Vec3f> &in);
 
 // Expand a YUV 4:0:0 10/16-bit depth map to a 32-bit float matrix with depth
 // values in meters. Input level 0 indicates invalid depth and is mapped to NaN.
@@ -77,27 +75,74 @@ Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera,
 
 // Quantize a 32-bit float depth map with depth values in diopters. NaN values
 // are translated to level 0.
-Common::Frame<Common::YUV400P10>
-quantizeNormDisp10(const Metadata::CameraParameters &camera,
-                   const Common::Mat<float> &in);
-Common::Frame<Common::YUV400P16>
-quantizeNormDisp16(const Metadata::CameraParameters &camera,
-                   const Common::Mat<float> &in);
+Common::Frame<Common::YUV400P10> quantizeNormDisp10(const Metadata::CameraParameters &camera,
+                                                    const Common::Mat<float> &in);
+Common::Frame<Common::YUV400P16> quantizeNormDisp16(const Metadata::CameraParameters &camera,
+                                                    const Common::Mat<float> &in);
 
 // Quantize a 32-bit float depth map with depth values in meters. NaN values
 // are translated to level 0.
-Common::Frame<Common::YUV400P10>
-quantizeDepth10(const Metadata::CameraParameters &camera,
-                const Common::Mat<float> &in);
-Common::Frame<Common::YUV400P16>
-quantizeDepth16(const Metadata::CameraParameters &camera,
-                const Common::Mat<float> &in);
+Common::Frame<Common::YUV400P10> quantizeDepth10(const Metadata::CameraParameters &camera,
+                                                 const Common::Mat<float> &in);
+Common::Frame<Common::YUV400P16> quantizeDepth16(const Metadata::CameraParameters &camera,
+                                                 const Common::Mat<float> &in);
 
-// Requantize with a different bit depth
-Common::Frame<Common::YUV400P16>
-requantize16(const Common::Frame<Common::YUV400P10> &frame);
-Common::Frame<Common::YUV400P10>
-requantize10(const Common::Frame<Common::YUV400P16> &frame);
+template <typename ToInt, typename WorkInt>
+auto compressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits, WorkInt offsetMax) -> ToInt;
+
+template <typename OutFormat, typename InFormat>
+auto compressDepthRange(const Common::Frame<InFormat> &frame, unsigned offsetMax,
+                        unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::Frame<OutFormat>;
+
+template <typename OutFormat, typename InFormat>
+auto compressDepthRange(const Common::MVDFrame<InFormat> &frame, unsigned offsetMax,
+                        unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::MVDFrame<OutFormat>;
+
+// #29: For 10-bit encoded depth values <64 indicates invalid.
+//      For 16-bit decompressed depth values only zero indicates invalid.
+template <typename ToInt, typename WorkInt>
+auto decompressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits, WorkInt offsetMax) -> ToInt;
+
+template <typename OutFormat, typename InFormat>
+auto decompressDepthRange(const Common::Frame<InFormat> &frame, unsigned offsetMax,
+                          unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::Frame<OutFormat>;
+
+template <typename OutFormat, typename InFormat>
+auto decompressDepthRange(const Common::MVDFrame<InFormat> &frame, unsigned offsetMax,
+                          unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::MVDFrame<OutFormat>;
+
+// Requantize a value
+//
+//  Both input and output types have to be unsigned integers. The input type has
+//  to be wide enough to multiply the maximum input and output with each other.
+template <typename ToInt, typename WorkInt>
+auto requantizeValue(WorkInt x, WorkInt fromBits, WorkInt toBits) -> ToInt;
+
+// Requantize a frame
+//
+// The optional second parameter allows to specify a different number of input
+// bits than the underlying type, e.g. 10-bit values stored in 16-bit types.
+//
+// This function can also do YUV 4:x:y format conversions but no chroma scaling
+template <typename OutFormat, typename InFormat>
+auto requantize(const Common::Frame<InFormat> &frame,
+                unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::Frame<OutFormat>;
+
+// Requantize the depth maps of a multiview frame
+//
+// The optional second parameter allows to specify a different number of input
+// bits than the underlying type, e.g. 10-bit values stored in 16-bit types.
+//
+// This function can also do YUV 4:x:y format conversions but no chroma scaling
+template <typename OutFormat, typename InFormat>
+auto requantize(const Common::MVDFrame<InFormat> &frame,
+                unsigned bits = Common::detail::PixelFormatHelper<InFormat>::bitDepth)
+    -> Common::MVDFrame<OutFormat>;
 } // namespace TMIV::Image
 
 #include "Image.hpp"

@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 project(TMIV)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+include(clang_tidy.cmake)
+
 # Read this first: https://gist.github.com/mbinna/c61dbb39bca0e4fb7d1f73b0d66a4fd1 
 
 # To enable testing, git clone https://github.com/catchorg/Catch2
@@ -37,5 +40,4 @@ add_subdirectory(Renderer)
 add_subdirectory(Encoder)
 add_subdirectory(Decoder)
 
-add_custom_target(clang_format COMMAND ${CMAKE_COMMAND} "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}" "-P" ${CMAKE_SOURCE_DIR}/clang_format.cmake )
-add_custom_target(clang_tidy COMMAND "run-clang-tidy.py" "-p" ${CMAKE_CURRENT_BINARY_DIR} "-header-filter" "${CMAKE_CURRENT_SOURCE_DIR}/\\*" "-fix" "-format")
+add_custom_target(clang_format COMMAND ${CMAKE_COMMAND} "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}" "-P" ${CMAKE_SOURCE_DIR}/clang_format.cmake)

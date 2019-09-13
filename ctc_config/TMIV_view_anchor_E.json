@@ -4,7 +4,8 @@
     "intraPeriod": 32,
     "SourceTexturePathFmt": "%s_texture_1920x1080_yuv420p10le.yuv",
     "SourceDepthPathFmt": "%s_depth_1920x1080_yuv420p16le.yuv",
-    "SourceCameraParameters": "IntelKermit.json",
+    "SourceDepthBitDepth": 16,
+    "SourceCameraParameters": "IntelFrog.json",
     "SourceCameraNames": [
         "v1",
         "v3",
@@ -19,6 +20,7 @@
     "AtlasMetadataPath": "ATL_SE_R0_Tm_c00.bit",
     "OutputTexturePath": "TM1_SE_R0_Tt_%s_1920x1080_yuv420p10le.yuv",
     "OutputCameraName": "v1",
+    "OmafV1CompatibleFlag": false,
     "EncoderMethod": "Encoder",
     "Encoder": {
         "ViewOptimizerMethod": "NoViewOptimizer",
@@ -44,7 +46,7 @@
                 1920,
                 1080
             ],
-            "MPixel": 14
+            "MaxLumaSamplesPerFrame": 29030400
         }
     },
     "DecoderMethod": "Decoder",

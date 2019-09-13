@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -47,16 +47,17 @@ namespace TMIV::Encoder {
 class Application : public Common::Application {
 private:
   unique_ptr<IEncoder> m_encoder;
-  int m_numberOfFrames;
-  int m_intraPeriod;
+  int m_numberOfFrames{};
+  int m_intraPeriod{};
+  bool m_omafV1CompatibleFlag{};
   Metadata::CameraParametersList m_cameras;
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>(
-                                                        "Encoder")},
+      : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+        m_intraPeriod{json().require("intraPeriod").asInt()},
+        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()} {}
 
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
@@ -79,12 +80,9 @@ private:
 
     m_encoder->completeIntraPeriod();
 
-    // IO::savePatchList(json() ,"/patchlist.encoder.txt",
-    // m_encoder->getPatchList());
-
     IO::saveMivMetadata(json(), intraFrame,
-                        {m_encoder->getAtlasSize(), m_encoder->getPatchList(),
-                         m_encoder->getCameraList()});
+                        {m_encoder->getAtlasSize(), m_omafV1CompatibleFlag,
+                         m_encoder->getPatchList(), m_encoder->getCameraList()});
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto frame = m_encoder->popAtlas();
@@ -100,9 +98,12 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::Encoder::registerComponents();
     TMIV::Encoder::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
-  } catch (std::exception &e) {
+  } catch (runtime_error &e) {
     cerr << e.what() << endl;
+    return 1;
   }
 }

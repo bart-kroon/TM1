@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -50,9 +50,7 @@ inline double rad2deg(double x) { return x * 180. / M_PI; }
 
 template <typename T> T sqr(T val) { return val * val; }
 template <typename T> T cube(T val) { return val * val * val; }
-template <typename T> int sgn(T val) {
-  return int(T(0) < val) - int(val < T(0));
-}
+template <typename T> int sgn(T val) { return int(T(0) < val) - int(val < T(0)); }
 template <typename T> T clamp(T val, T min, T max) {
   if (val < min) {
     return min;
@@ -62,11 +60,10 @@ template <typename T> T clamp(T val, T min, T max) {
   }
   return val;
 }
-template <typename T> bool inRange(T val, T min, T max) {
-  return ((min <= val) && (val <= max));
-}
+template <typename T> bool inRange(T val, T min, T max) { return ((min <= val) && (val <= max)); }
 template <typename T> T is_zero(T val) {
-  return (std::abs(val) < std::numeric_limits<T>::epsilon());
+  using std::abs;
+  return (abs(val) < std::numeric_limits<T>::epsilon());
 }
 inline double squash(double a) {
   while (M_PI < a) {
@@ -80,10 +77,10 @@ inline double squash(double a) {
 inline int ipow(int base, int exp) {
   int result = 1;
   for (;;) {
-    if ((exp & 1) != 0) {
+    if ((exp % 2) != 0) {
       result *= base;
     }
-    exp >>= 1;
+    exp /= 2;
     if (exp == 0) {
       break;
     }
@@ -93,21 +90,25 @@ inline int ipow(int base, int exp) {
 }
 
 inline int gcd(int a, int b) { return (b == 0) ? a : gcd(b, a % b); }
-inline int lcm(int a, int b) { return std::abs(a * b) / gcd(a, b); }
+inline int lcm(int a, int b) {
+  using std::abs;
+  return abs(a * b) / gcd(a, b);
+}
 
 inline double ppd2pps(double ppd) { return sqr(180. * ppd / M_PI); }
-inline double pps2ppd(double pps) { return sqrt(pps) * M_PI / 180.; }
+inline double pps2ppd(double pps) {
+  using std::sqrt;
+  return sqrt(pps) * M_PI / 180.;
+}
 
 template <typename T,
-          typename std::enable_if<std::is_integral<T>::value ||
-                                      std::is_floating_point<T>::value,
+          typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value,
                                   int>::type = 0>
 T conjugate(T v) {
   return v;
 }
 template <typename T,
-          typename std::enable_if<!(std::is_integral<T>::value ||
-                                    std::is_floating_point<T>::value),
+          typename std::enable_if<!(std::is_integral<T>::value || std::is_floating_point<T>::value),
                                   int>::type = 0>
 T conjugate(T v) {
   return std::conj(v);

@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ITU/ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -51,8 +51,7 @@ private:
   int m_intraPeriod;
 
 public:
-  explicit Application(vector<const char *> argv)
-      : Common::Application{"Decoder", move(argv)} {
+  explicit Application(vector<const char *> argv) : Common::Application{"Decoder", move(argv)} {
     m_decoder = create<IDecoder>("Decoder");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
@@ -73,13 +72,18 @@ public:
       if (lastIntraFrame != idx.first) {
         lastIntraFrame = idx.first;
         metadata = IO::loadMivMetadata(json(), idx.first);
+
+        cout << "OMAF v1 compatible flag: " << boolalpha << metadata.omafV1CompatibleFlag << " ("
+             << int(metadata.omafV1CompatibleFlag) << ")" << endl;
+
         m_decoder->updateAtlasSize(metadata.atlasSize);
-        m_decoder->updatePatchList(move(metadata.patches));
+        auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
+        m_decoder->updatePatchList(move(metadata.patches), frame);
         m_decoder->updateCameraList(move(metadata.cameras));
       }
 
-      auto frame = IO::loadAtlas(json(), metadata.atlasSize, idx.second);
-      auto target = IO::loadViewportMetadata(json(), idx.second);
+      auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
+      auto target = IO::loadViewportMetadata(json(), i);
       auto viewport = m_decoder->decodeFrame(frame, target);
       IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
     }
@@ -93,9 +97,12 @@ int main(int argc, char *argv[]) {
   try {
     TMIV::Decoder::registerComponents();
     TMIV::Decoder::Application app{{argv, argv + argc}};
+    app.startTime();
     app.run();
+    app.printTime();
     return 0;
-  } catch (exception &e) {
+  } catch (runtime_error &e) {
     cerr << e.what() << endl;
+    return 1;
   }
 }

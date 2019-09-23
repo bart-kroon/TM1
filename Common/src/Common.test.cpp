@@ -189,4 +189,12 @@ TEST_CASE("Converting floating point to integer") {
   REQUIRE(iceil(1000001.0F) == 1000001);
   REQUIRE(iceil(1000001.1F) == 1000002);
 }
+
+TEST_CASE("Assignment of fixed size matrix N x 1 to fixed size vector") {
+  stack::Matrix<double, 6, 1> A;
+  fill(begin(A), end(A), 1.);
+  stack::Vector<double, 6> b;
+  b = A;
+  REQUIRE(b[5] == 1);
+}
 } // namespace TMIV::Common

@@ -31,35 +31,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#ifndef _TMIV_METADATA_VERIFY_H_
+#define _TMIV_METADATA_VERIFY_H_
 
-using namespace std;
-using namespace TMIV::Common;
+namespace TMIV::Metadata {
+// Check decoder postconditions even in Release build
+#define verify(condition) (void)(!!(condition) || verifyFailed(#condition, __FILE__, __LINE__))
 
-namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)} {
-}
+bool verifyFailed(char const *condition, char const *file, int line);
+} // namespace TMIV::Metadata
 
-Common::Texture444Depth16Frame
-Renderer::renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                      const Metadata::AtlasParametersList &patches,
-                      const Metadata::CameraParametersList &cameras,
-                      const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
-
-Common::Texture444Depth16Frame
-Renderer::renderFrame(const Common::MVD10Frame &frame,
-                      const Metadata::CameraParametersList &cameras,
-                      const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(frame, cameras, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
-} // namespace TMIV::Renderer
+#endif

@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(IOLib
 	"src/IO.cpp"
-	"include/TMIV/IO/IO.h")
+	"src/IvMetadataReader.cpp"
+	"src/IvMetadataWriter.cpp"
+	"include/TMIV/IO/IO.h"
+	"include/TMIV/IO/IvMetadataReader.h"
+	"include/TMIV/IO/IvMetadataWriter.h")
 
 add_library(TMIV::IOLib
 	ALIAS IOLib)
@@ -33,14 +37,3 @@ install(
 install(
 	DIRECTORY "include/"
 	DESTINATION "include")
-
-if (CMAKE_TESTING_ENABLED)
-	add_executable(IOTest "src/IO.test.cpp")
-
-	target_link_libraries(IOTest
-		PRIVATE
-			Catch2::Catch2
-			TMIV::IOLib)
-
-	catch_discover_tests(IOTest)
-endif()

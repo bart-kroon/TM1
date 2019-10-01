@@ -35,8 +35,8 @@
 #define _TMIV_ATLASCONSTRUCTOR_IATLASCONSTRUCTOR_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/AtlasParametersList.h>
-#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::AtlasConstructor {
 // IAtlasConstructor interface (part of AtlasConstructorLib)

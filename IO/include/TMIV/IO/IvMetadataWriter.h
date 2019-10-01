@@ -31,35 +31,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#ifndef _TMIV_IO_IVMETADATAWRITER_H_
+#define _TMIV_IO_IVMETADATAWRITER_H_
 
-using namespace std;
-using namespace TMIV::Common;
+#include <TMIV/Metadata/Bitstream.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
-namespace TMIV::Renderer {
-Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)} {
-}
+#include <fstream>
 
-Common::Texture444Depth16Frame
-Renderer::renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                      const Metadata::AtlasParametersList &patches,
-                      const Metadata::CameraParametersList &cameras,
-                      const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
+namespace TMIV::IO {
+class IvMetadataWriter {
+public:
+  IvMetadataWriter(const Common::Json &config, const std::string &baseDirectoryField,
+                   const std::string &fileNameField);
 
-Common::Texture444Depth16Frame
-Renderer::renderFrame(const Common::MVD10Frame &frame,
-                      const Metadata::CameraParametersList &cameras,
-                      const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(frame, cameras, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
-} // namespace TMIV::Renderer
+  void writeIvSequenceParams(Metadata::IvsParams);
+  void writeIvSequenceParams(Metadata::CameraParametersList);
+  void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
+  void writeIvAccessUnitParams(Metadata::AtlasParametersList patches, bool omafV1CompatibleFlag,
+                               std::vector<Common::Vec2i> atlasSizes);
+
+  auto cameraList() const -> const Metadata::CameraParamsList & {
+    return m_ivsParams.cameraParamsList;
+  }
+
+private:
+  std::string m_path;
+  std::ofstream m_stream;
+  Metadata::OutputBitstream m_bitstream{m_stream};
+  Metadata::IvsParams m_ivsParams;
+  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
+};
+} // namespace TMIV::IO
+
+#endif

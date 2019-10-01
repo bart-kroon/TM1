@@ -31,74 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include <TMIV/IO/IvMetadataWriter.h>
 
 #include <TMIV/IO/IO.h>
-
-#include <sstream>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::IO;
 
-namespace {
-auto examplePatch() -> AtlasParameters {
-  return {
-      uint8_t{1},        // atlasId,
-      uint8_t{3},        // viewId
-      Vec2i{16, 32},     // patchSize
-      Vec2i{3, 4},       // posInView
-      Vec2i{8, 12},      // posInPatch
-      PatchRotation::ccw // rotation
-  };
-}
-
-auto exampleCamera() -> CameraParameters {
-  return {
-      Vec2i{3000, 2000},           // size
-      Vec3f{1.F, -2.F, 3.F},       // position
-      Vec3f{3.F, 4.F, 5.F},        // rotation
-      ProjectionType::Perspective, // type
-      Vec2f{-90.F, 70.F},          // erpPhiRange
-      Vec2f{-60.F, 80.F},          // erpThetaRange
-      CubicMapType{},              // cubicMapType
-      Vec2f{},                     // perspectiveFocal
-      Vec2f{},                     // perspectiveCenter
-      Vec2f{1.F, 100.F}            // depthRange
-  };
-}
-
-auto exampleMetadata() -> MivMetadata {
-  return {vector<Vec2i>{{4000, 3000}}, // atlasSize
-          true,                        // omafV1CompatibleFlag
-          {examplePatch()},            // patches
-          {exampleCamera()}};          // cameras
-}
-
-auto minimalConfig() -> Json {
-  auto stream = istringstream{R"(
-{
-	"OutputDirectory": ".",
-	"AtlasMetadataPath": "IO.test.bit"
-}
-)"};
-  return Json{stream};
-}
-} // namespace
-
-TEST_CASE("save- and loadMivMetadata") {
-  auto config = minimalConfig();
-  auto reference = exampleMetadata();
-  auto frames = {0, 32, 48};
-
-  for (auto frame : frames) {
-    saveMivMetadata(config, frame, reference);
-  }
-
-  for (auto frame : frames) {
-    auto actual = loadMivMetadata(config, frame);
-    REQUIRE(actual == reference);
+namespace TMIV::IO {
+IvMetadataWriter::IvMetadataWriter(const Common::Json &config,
+                                   const std::string &baseDirectoryField,
+                                   const std::string &fileNameField) {
+  m_path = getFullPath(config, baseDirectoryField, fileNameField);
+  m_stream.open(m_path, ios::binary);
+  if (!m_stream.good()) {
+    ostringstream what;
+    what << "Failed to open metadata file " << m_path;
+    throw runtime_error(what.str());
   }
 }
+
+void IvMetadataWriter::writeIvSequenceParams(IvsParams ivsParams) {
+  m_ivsParams = move(ivsParams);
+  m_ivsParams.encodeTo(m_bitstream);
+}
+
+void IvMetadataWriter::writeIvSequenceParams(CameraParametersList cameras) {
+  writeIvSequenceParams({IvsProfileTierLevel{}, CameraParamsList{move(cameras)}});
+}
+
+void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitParams) {
+  const bool skipAtlasParamsList =
+      m_ivAccessUnitParams.atlasParamsList == ivAccessUnitParams.atlasParamsList;
+  m_ivAccessUnitParams = ivAccessUnitParams;
+  if (skipAtlasParamsList) {
+    ivAccessUnitParams.atlasParamsList.reset();
+  }
+  ivAccessUnitParams.encodeTo(m_bitstream, m_ivsParams.cameraParamsList);
+}
+
+void IvMetadataWriter::writeIvAccessUnitParams(AtlasParametersList patches,
+                                               bool omafV1CompatibleFlag,
+                                               vector<Vec2i> atlasSizes) {
+  writeIvAccessUnitParams({{{move(patches), omafV1CompatibleFlag, move(atlasSizes)}}});
+}
+
+} // namespace TMIV::IO

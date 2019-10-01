@@ -35,7 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_IPACKER_H_
 
 #include <TMIV/AtlasConstructor/IPruner.h>
-#include <TMIV/Metadata/AtlasParametersList.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
 
 namespace TMIV::AtlasConstructor {
 // IPacker interface (part of AtlasConstructorLib)

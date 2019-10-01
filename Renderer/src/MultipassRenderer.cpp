@@ -174,7 +174,7 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
 }
 
 Texture444Depth16Frame
-MultipassRenderer::renderFrame(const MVD16Frame &atlas, const PatchIdMapList &maps,
+MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                                const Metadata::AtlasParametersList &patches,
                                const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {
@@ -269,7 +269,7 @@ MultipassRenderer::renderFrame(const MVD16Frame &atlas, const PatchIdMapList &ma
 }
 
 Texture444Depth16Frame
-MultipassRenderer::renderFrame(const MVD16Frame &atlas,
+MultipassRenderer::renderFrame(const MVD10Frame &atlas,
                                const Metadata::CameraParametersList &cameras,
                                const Metadata::CameraParameters &target) const {
   auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);

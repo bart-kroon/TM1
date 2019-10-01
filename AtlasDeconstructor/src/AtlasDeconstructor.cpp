@@ -35,6 +35,8 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Image/Image.h>
 
+#include <cassert>
+
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
@@ -48,7 +50,8 @@ AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
 
 PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
                                                  const AtlasParametersList &patchList,
-                                                 const MVD16Frame &frame) {
+                                                 const CameraParametersList &cameraList,
+                                                 const MVD10Frame &frame) {
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize) {
@@ -58,7 +61,9 @@ PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlas
   }
 
   for (size_t id = 0U; id < patchList.size(); ++id) {
-    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id), frame);
+    assert(patchList[id].viewId < cameraList.size());
+    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id), frame,
+                      cameraList[patchList[id].viewId].depthOccMapThreshold);
   }
 
   return patchMapList;
@@ -66,34 +71,32 @@ PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlas
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
                                            PatchIdMapList &patchMapList, std::uint16_t patchId,
-                                           const MVD16Frame &frame) const {
+                                           const MVD10Frame &frame,
+                                           uint16_t depthOccMapThreshold) const {
   auto &patchMap = patchMapList[patch.atlasId];
   auto &depthMap = frame[patch.atlasId].second.getPlane(0);
 
   const Vec2i &q0 = patch.posInAtlas;
-  int w = patch.patchSize.x();
-  int h = patch.patchSize.y();
-  bool isRotated = patch.rotation != PatchRotation::upright && patch.rotation != PatchRotation::ht;
+  const auto sizeInAtlas = patch.patchSizeInAtlas();
   int xMin = q0.x();
-  int xLast = q0.x() + (isRotated ? h : w);
+  int xLast = q0.x() + sizeInAtlas.x();
   int yMin = q0.y();
-  int yLast = q0.y() + (isRotated ? w : h);
+  int yLast = q0.y() + sizeInAtlas.y();
 
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {
-      // #29: For 16-bit decompressed depth zero indicates invalid.
-      if (depthMap(y, x) > 0) {
+      if (depthMap(y, x) >= depthOccMapThreshold) {
         patchMap.getPlane(0)(y, x) = patchId;
       }
     }
   }
 }
 
-MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD16Frame &atlas,
+MVD10Frame AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                                                  const CameraParametersList &cameraList,
                                                  const AtlasParametersList &patchList) {
   // Initialization
-  MVD16Frame frame;
+  MVD10Frame frame;
 
   for (const auto &cam : cameraList) {
     TextureFrame tex(cam.size.x(), cam.size.y());
@@ -102,18 +105,19 @@ MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD16Frame &atlas,
     std::fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), neutralChroma);
     std::fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), neutralChroma);
 
-    Depth16Frame depth(cam.size.x(), cam.size.y());
+    Depth10Frame depth(cam.size.x(), cam.size.y());
 
     std::fill(depth.getPlane(0).begin(), depth.getPlane(0).end(), 0);
 
-    frame.push_back(TextureDepth16Frame{std::move(tex), std::move(depth)});
+    frame.push_back(TextureDepth10Frame{std::move(tex), std::move(depth)});
   }
 
   // Process patches
-  MVD16Frame atlas_pruned = atlas;
+  MVD10Frame atlas_pruned = atlas;
 
   for (auto iter = patchList.rbegin(); iter != patchList.rend(); ++iter) {
     const auto &patch = *iter;
+    const auto depthOccMapThreshold = cameraList[patch.viewId].depthOccMapThreshold;
 
     auto &currentAtlas = atlas_pruned[patch.atlasId];
     auto &currentView = frame[patch.viewId];
@@ -124,11 +128,9 @@ MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD16Frame &atlas,
     auto &textureViewMap = currentView.first;
     auto &depthViewMap = currentView.second;
 
-    int w = patch.patchSize.x();
-    int h = patch.patchSize.y();
-    bool isRotated = patch.rotation == PatchRotation::ccw || patch.rotation == PatchRotation::cw;
-    int wP = isRotated ? h : w;
-    int hP = isRotated ? w : h;
+    const auto sizeInAtlas = patch.patchSizeInAtlas();
+    int wP = sizeInAtlas.x();
+    int hP = sizeInAtlas.y();
     int xP = patch.posInAtlas.x();
     int yP = patch.posInAtlas.y();
 
@@ -138,7 +140,7 @@ MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD16Frame &atlas,
         Vec2i pAtlas = {xP + dx, yP + dy};
         Vec2i pView = atlasToView(pAtlas, patch);
         // Y
-        if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+        if (depthOccMapThreshold <= depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
           textureViewMap.getPlane(0)(pView.y(), pView.x()) =
               textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
           textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
@@ -146,15 +148,15 @@ MVD16Frame AtlasDeconstructor::recoverPrunedView(const MVD16Frame &atlas,
         // UV
         if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
           for (int p = 1; p < 3; p++) {
-            if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+            if (depthOccMapThreshold <= depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
                   textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 0x8000;
+              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 0x200;
             }
           }
         }
         // Depth
-        if (0 < depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
+        if (depthOccMapThreshold <= depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x())) {
           depthViewMap.getPlane(0)(pView.y(), pView.x()) =
               depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;

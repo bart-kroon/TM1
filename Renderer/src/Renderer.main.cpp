@@ -31,10 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Renderer.reg.hpp"
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/IO/IvMetadataReader.h>
 #include <TMIV/Renderer/IRenderer.h>
 #include <iostream>
 
@@ -47,9 +47,12 @@ private:
   unique_ptr<IRenderer> m_renderer;
   int m_numberOfFrames;
   int m_intraPeriod;
+  IO::IvMetadataReader m_metadataReader;
 
 public:
-  explicit Application(vector<const char *> argv) : Common::Application{"Renderer", move(argv)} {
+  explicit Application(vector<const char *> argv)
+      : Common::Application{"Renderer", move(argv)}, m_metadataReader{json(), "OutputDirectory",
+                                                                      "AtlasMetadataPath"} {
     m_renderer = create<IRenderer>("Decoder", "Renderer");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
@@ -60,27 +63,26 @@ public:
   }
 
   void run() override {
-    int lastIntraFrame = -1;
-    IO::MivMetadata metadata;
-    PatchIdMapList maps;
+    for (int outputFrame = 0; outputFrame < m_numberOfFrames; ++outputFrame) {
+      auto inputFrame = IO::getExtendedIndex(json(), outputFrame);
 
-    for (int i = 0; i < m_numberOfFrames; ++i) {
-      auto idx = IO::getExtendedIndex(json(), i);
-      if (lastIntraFrame != idx.first) {
-        lastIntraFrame = idx.first;
-        metadata = IO::loadMivMetadata(json(), idx.first);
-        maps = IO::loadPatchIdMaps(json(), metadata.atlasSize, idx.second);
+      if (m_metadataReader.readAccessUnit(inputFrame / m_intraPeriod)) {
+        cout << "OMAF v1 compatible flag: " << boolalpha << m_metadataReader.omafV1CompatibleFlag()
+             << '\n';
       }
 
-      auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
-      auto target = IO::loadViewportMetadata(json(), idx.second);
-      auto viewport =
-          m_renderer->renderFrame(frame, maps, metadata.patches, metadata.cameras, target);
-      IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
+      auto frame = IO::loadAtlas(json(), m_metadataReader.atlasSizes(), inputFrame);
+      auto patchIds = IO::loadPatchIdMaps(json(), m_metadataReader.atlasSizes(), inputFrame);
+      auto target = IO::loadViewportMetadata(json(), inputFrame);
+      auto viewport = m_renderer->renderFrame(frame, patchIds, m_metadataReader.atlasParamsList(),
+                                              m_metadataReader.cameraParamsList(), target);
+      IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
     }
   }
 };
 } // namespace TMIV::Renderer
+
+#include "Renderer.reg.hpp"
 
 int main(int argc, char *argv[]) {
   try {

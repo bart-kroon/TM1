@@ -32,7 +32,12 @@
  */
 
 #include <TMIV/Image/Image.h>
+
+#include <TMIV/Common/Common.h>
+#include <cassert>
 #include <cmath>
+#include <cstdint>
+#include <limits>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -42,6 +47,28 @@ using Mat1f = Mat<float>;
 using Mat3f = Mat<Vec3f>;
 
 namespace TMIV::Image {
+auto modifyDepthRange(const MVD16Frame &frame16, const CameraParametersList &cameras16,
+                      const CameraParametersList &cameras10) -> MVD10Frame {
+  auto frame10 = MVD10Frame{};
+  frame10.reserve(frame16.size());
+  auto i_camera16 = begin(cameras16);
+  auto i_camera10 = begin(cameras10);
+  transform(begin(frame16), end(frame16), back_inserter(frame10),
+            [&](const TextureDepth16Frame &view16) -> TextureDepth10Frame {
+              auto view10 = TextureDepth10Frame{
+                  view16.first, Depth10Frame{view16.second.getWidth(), view16.second.getHeight()}};
+              transform(begin(view16.second.getPlane(0)), end(view16.second.getPlane(0)),
+                        begin(view10.second.getPlane(0)), [&](uint16_t x) {
+                          const auto normDisp = impl::expandNormDispValue<16>(*i_camera16, x);
+                          return impl::quantizeNormDispValue<10>(*i_camera10, normDisp);
+                        });
+              ++i_camera16;
+              ++i_camera10;
+              return view10;
+            });
+  return frame10;
+}
+
 Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {
   auto &Y = inYuv.getPlane(0);
   auto &U = inYuv.getPlane(1);
@@ -53,8 +80,9 @@ Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {
 
   for (unsigned i = 0; i != height; ++i) {
     for (unsigned j = 0; j != width; ++j) {
-      out(i, j) = Vec3f{expandValue<bitDepth>(Y(i, j)), expandValue<bitDepth>(U(i / 2, j / 2)),
-                        expandValue<bitDepth>(V(i / 2, j / 2))};
+      out(i, j) =
+          Vec3f{impl::expandValue<bitDepth>(Y(i, j)), impl::expandValue<bitDepth>(U(i / 2, j / 2)),
+                impl::expandValue<bitDepth>(V(i / 2, j / 2))};
     }
   }
   return out;
@@ -69,7 +97,7 @@ Frame<YUV444P10> quantizeTexture(const Mat3f &in) {
     for (unsigned i = 0; i != height; ++i) {
       for (unsigned j = 0; j != width; ++j) {
         constexpr auto bitDepth = 10U;
-        outYuv.getPlane(k)(i, j) = quantizeValue<bitDepth>(in(i, j)[k]);
+        outYuv.getPlane(k)(i, j) = impl::quantizeValue<bitDepth>(in(i, j)[k]);
       }
     }
   }
@@ -77,82 +105,24 @@ Frame<YUV444P10> quantizeTexture(const Mat3f &in) {
   return outYuv;
 }
 
-namespace {
-template <unsigned bits, class FRAME>
-Mat1f expandDepth_impl(const CameraParameters &camera, const FRAME &inYuv) {
-  auto &in = inYuv.getPlane(0);
-  Mat1f out(in.sizes());
-  transform(begin(in), end(in), begin(out),
-            [&camera](uint16_t x) { return expandDepthValue<bits>(camera, x); });
+Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera, const Depth10Frame &in) {
+  auto out = Common::Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
+  transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
+            [&](uint16_t x) { return impl::expandDepthValue<10>(camera, x); });
   return out;
 }
-} // namespace
 
-Mat1f expandDepth(const CameraParameters &camera, const Frame<YUV400P10> &inYuv) {
-  constexpr auto bitDepth = 10;
-  return expandDepth_impl<bitDepth>(camera, inYuv);
+Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera, const Depth16Frame &in) {
+  auto out = Common::Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
+  transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
+            [&](uint16_t x) { return impl::expandDepthValue<16>(camera, x); });
+  return out;
 }
 
-Mat1f expandDepth(const CameraParameters &camera, const Frame<YUV400P16> &inYuv) {
-  constexpr auto bitDepth = 16;
-  return expandDepth_impl<bitDepth>(camera, inYuv);
-}
-
-namespace {
-template <unsigned bits, class FRAME>
-FRAME quantizeNormDisp_impl(const CameraParameters &camera, const Mat1f &in) {
-  FRAME outYuv(int(in.width()), int(in.height()));
-  auto &out = outYuv.getPlane(0);
-  transform(begin(in), end(in), begin(out),
-            [near = camera.depthRange[0], far = camera.depthRange[1]](float normDisp) -> uint16_t {
-              if (normDisp > 0.F && isfinite(normDisp)) {
-                if (far >= kilometer) {
-                  auto value = quantizeValue<bits>(near * normDisp);
-                  return value > 0U ? value : 1U;
-                }
-                auto value = quantizeValue<bits>((far * near * normDisp - near) / (far - near));
-                return value > 0U ? value : 1U;
-              }
-              return 0U;
-            });
-  return outYuv;
-}
-
-template <unsigned bits, class FRAME>
-FRAME quantizeDepth_impl(const CameraParameters &camera, const Mat1f &in) {
-  FRAME outYuv(int(in.width()), int(in.height()));
-  auto &out = outYuv.getPlane(0);
-  transform(begin(in), end(in), begin(out),
-            [near = camera.depthRange[0], far = camera.depthRange[1]](float normDisp) -> uint16_t {
-              if (normDisp > 0.F && isfinite(normDisp)) {
-                if (far >= kilometer) {
-                  return quantizeValue<bits>(near / normDisp);
-                }
-                return quantizeValue<bits>((far * near / normDisp - near) / (far - near));
-              }
-              return 0;
-            });
-  return outYuv;
-}
-} // namespace
-
-Frame<YUV400P10> quantizeNormDisp10(const CameraParameters &camera, const Mat1f &in) {
-  constexpr int bitDepth = 10;
-  return quantizeNormDisp_impl<bitDepth, Frame<YUV400P10>>(camera, in);
-}
-
-Frame<YUV400P16> quantizeNormDisp16(const CameraParameters &camera, const Mat1f &in) {
-  constexpr int bitDepth = 16;
-  return quantizeNormDisp_impl<bitDepth, Frame<YUV400P16>>(camera, in);
-}
-
-Frame<YUV400P10> quantizeDepth10(const CameraParameters &camera, const Mat1f &in) {
-  constexpr int bitDepth = 10;
-  return quantizeDepth_impl<bitDepth, Frame<YUV400P10>>(camera, in);
-}
-
-Frame<YUV400P16> quantizeDepth16(const CameraParameters &camera, const Mat1f &in) {
-  constexpr int bitDepth = 16;
-  return quantizeDepth_impl<bitDepth, Frame<YUV400P16>>(camera, in);
+Depth16Frame quantizeNormDisp16(const CameraParameters &camera, const Mat1f &in) {
+  auto out = Depth16Frame{int(in.width()), int(in.height())};
+  transform(begin(in), end(in), begin(out.getPlane(0)),
+            [&](float x) { return impl::quantizeNormDispValue<16>(camera, x); });
+  return out;
 }
 } // namespace TMIV::Image

@@ -39,13 +39,15 @@
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
 namespace TMIV::ViewOptimizer {
 class Application : public Common::Application {
+private:
   unique_ptr<IViewOptimizer> m_optimizer;
-  int m_numberOfFrames;
-  int m_intraPeriod;
-  Metadata::CameraParametersList m_cameras;
+  int m_numberOfFrames{};
+  int m_intraPeriod{};
+  Metadata::CameraParamsList m_cameras;
 
 public:
   explicit Application(vector<const char *> argv)
@@ -53,8 +55,10 @@ public:
                                                               "Encoder", "ViewOptimizer")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
+
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
+    cout << "Source cameras:\n" << m_cameras;
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -66,7 +70,9 @@ public:
 private:
   void runIntraPeriod(int intraFrame, int endFrame) {
     auto cameras = m_optimizer->optimizeIntraPeriod(m_cameras);
-    IO::saveOptimizedMetadata(json(), intraFrame, cameras);
+    if (intraFrame == 0) {
+      IO::saveOptimizedMetadata(json(), cameras);
+    }
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto sourceFrame = IO::loadSourceFrame(json(), IO::sizesOf(m_cameras), i);

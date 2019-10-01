@@ -70,7 +70,7 @@ public:
     return result;
   }
 
-  auto atlasVertices(const TextureDepth16Frame &atlas, const Mat<uint16_t> &ids,
+  auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                      const AtlasParametersList &patches, const CameraParametersList &cameras,
                      const CameraParameters &target) const {
     SceneVertexDescriptorList result;
@@ -102,9 +102,9 @@ public:
         // Look up depth value and affine parameters
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
 
-        auto d16 = atlas.second.getPlane(0)(i_atlas, j_atlas);
-        assert(d16 > 0U); // #29: Having a patch ID, this depth has to be valid.
-        const auto d = expandDepthValue<16>(camera, d16);
+        auto level = atlas.second.getPlane(0)(i_atlas, j_atlas);
+        assert(level > 0U); // #29: Having a patch ID, this depth has to be valid.
+        const auto d = expandDepthValue10(camera, level);
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
 
@@ -149,7 +149,7 @@ public:
     return result;
   }
 
-  auto atlasColors(const TextureDepth16Frame &atlas) const {
+  auto atlasColors(const TextureDepth10Frame &atlas) const {
     vector<Vec3f> result;
     auto yuv444 = expandTexture(atlas.first);
     result.reserve(distance(begin(result), end(result)));
@@ -157,7 +157,7 @@ public:
     return result;
   }
 
-  auto unprojectAtlas(const TextureDepth16Frame &atlas, const Mat<uint16_t> &ids,
+  auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                       const AtlasParametersList &patches, const CameraParametersList &cameras,
                       const CameraParameters &target) const {
     assert(int(ids.height()) == atlas.first.getHeight());
@@ -231,31 +231,31 @@ public:
     return resolution(target) / sourceResolution;
   }
 
-   Texture444Depth16Frame renderFrame(const MVD16Frame &atlases, const PatchIdMapList &ids,
+  Texture444Depth16Frame renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
                                      const AtlasParametersList &patches,
                                      const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(
-        atlases.size(), target,
-        [&](size_t i, const CameraParameters &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, cameras, target);
-        },
-        resolutionRatio(cameras, target));
+		atlases.size(), target,
+		[&](size_t i, const CameraParameters &target) {
+		  return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, cameras, target);
+		},
+		resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }
 
-  Texture444Depth16Frame renderFrame(const MVD16Frame &frame, const CameraParametersList &cameras,
+  Texture444Depth16Frame renderFrame(const MVD10Frame &frame, const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(frame.size() == cameras.size());
     auto rasterizer = rasterFrame(
-        frame.size(), target,
-        [&](size_t i, const CameraParameters &target) {
-          return unproject(expandDepth(cameras[i], frame[i].second), cameras[i], target,
-                           expandTexture(frame[i].first));
-        },
-        resolutionRatio(cameras, target));
+					frame.size(), target,
+                    [&](size_t i, const CameraParameters &target) {
+                      return unproject(expandDepth(cameras[i], frame[i].second), cameras[i], target,
+                                       expandTexture(frame[i].first));
+                    },
+                    resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }
@@ -290,7 +290,7 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretching
 
 Synthesizer::~Synthesizer() = default;
 
-Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD16Frame &atlas,
+Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
                                                         const Common::PatchIdMapList &maps,
                                                         const AtlasParametersList &patches,
                                                         const CameraParametersList &cameras,
@@ -298,7 +298,7 @@ Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD16Frame
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
-Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD16Frame &frame,
+Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD10Frame &frame,
                                                         const CameraParametersList &cameras,
                                                         const CameraParameters &target) const {
   return m_impl->renderFrame(frame, cameras, target);

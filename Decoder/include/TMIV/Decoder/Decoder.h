@@ -60,12 +60,12 @@ public:
   ~Decoder() override = default;
 
   void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
-  void updatePatchList(Metadata::AtlasParametersList patches,
-                       const Common::MVD16Frame &frame) override;
+  void updatePatchList(Metadata::AtlasParametersList patches, 
+                       const Common::MVD10Frame &frame) override;
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 
   Common::Texture444Depth16Frame
-  decodeFrame(Common::MVD16Frame atlas, const Metadata::CameraParameters &target) const override;
+  decodeFrame(Common::MVD10Frame atlas, const Metadata::CameraParameters &target) const override;
 };
 } // namespace TMIV::Decoder
 

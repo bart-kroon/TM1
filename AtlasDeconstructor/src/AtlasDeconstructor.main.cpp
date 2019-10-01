@@ -35,6 +35,8 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/IO/IvMetadataReader.h>
+#include <TMIV/Metadata/Bitstream.h>
 #include <iostream>
 
 using namespace std;
@@ -46,15 +48,21 @@ private:
   unique_ptr<IAtlasDeconstructor> m_atlasDeconstructor;
   int m_numberOfFrames{};
   int m_intraPeriod{};
+  IO::IvMetadataReader m_metadataReader;
 
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"AtlasDeconstructor", move(argv)},
         m_atlasDeconstructor{create<IAtlasDeconstructor>("Decoder", "AtlasDeconstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+        m_intraPeriod{json().require("intraPeriod").asInt()}, m_metadataReader{
+                                                                  json(), "OutputDirectory",
+                                                                  "AtlasMetadataPath"} {}
 
   void run() override {
+    m_metadataReader.readIvSequenceParams();
+	cout << "Camera parameters:\n" << m_metadataReader.cameraParamsList();
+
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
       cout << "Intra period: [" << i << ", " << endFrame << ")\n";
@@ -63,22 +71,44 @@ public:
   }
 
   void runIntraPeriod(int intraFrame, int endFrame) {
-    auto metadata = IO::loadMivMetadata(json(), intraFrame);
+    m_metadataReader.readIvAccessUnitParams();
 
-    cout << "OMAF v1 compatible flag: " << boolalpha << metadata.omafV1CompatibleFlag << " ("
-         << int(metadata.omafV1CompatibleFlag) << ")" << endl;
-
-    auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, intraFrame);
-    auto patchIdMaps =
-        m_atlasDeconstructor->getPatchIdMap(metadata.atlasSize, metadata.patches, frame);
-    IO::savePatchIdMaps(json(), intraFrame, patchIdMaps);
+    cout << "OMAF v1 compatible flag: " << boolalpha << m_metadataReader.omafV1CompatibleFlag()
+         << endl;
+    printStatistics();
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto atlas = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, i);
-      auto recoveredTransportView =
-          m_atlasDeconstructor->recoverPrunedView(atlas, metadata.cameras, metadata.patches);
+      auto atlas = IO::loadAtlas(json(), m_metadataReader.atlasSizes(), i);
 
+      auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(
+          m_metadataReader.atlasSizes(), m_metadataReader.atlasParamsList(),
+          m_metadataReader.cameraParamsList(), atlas);
+      IO::savePatchIdMaps(json(), i, patchIdMaps);
+
+      auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
+          atlas, m_metadataReader.cameraParamsList(), m_metadataReader.atlasParamsList());
       IO::savePrunedFrame(json(), i, recoveredTransportView);
+    }
+  }
+
+private:
+  void printStatistics() const {
+    map<size_t, size_t> numPatchesPerAtlas;
+    map<size_t, size_t> numPatchesPerView;
+
+    for (const auto &patch : m_metadataReader.atlasParamsList()) {
+      ++numPatchesPerAtlas.insert({patch.atlasId, 0}).first->second;
+      ++numPatchesPerView.insert({patch.viewId, 0}).first->second;
+    }
+
+    for (auto [atlasId, numPatches] : numPatchesPerAtlas) {
+      auto atlasSize = m_metadataReader.atlasSizes()[atlasId];
+      cout << "Atlas #" << atlasId << " (" << atlasSize.x() << "x" << atlasSize.y()
+           << "): " << numPatches << " patches\n";
+    }
+
+    for (auto [viewId, numPatches] : numPatchesPerView) {
+      cout << "View #" << viewId << ": " << numPatches << " patches\n";
     }
   }
 };

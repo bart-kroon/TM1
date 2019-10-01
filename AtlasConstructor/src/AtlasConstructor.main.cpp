@@ -35,6 +35,8 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/IO/IvMetadataWriter.h>
+#include <TMIV/Image/Image.h>
 #include <iostream>
 
 using namespace std;
@@ -42,13 +44,14 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasConstructor {
-
 class Application : public Common::Application {
 private:
   unique_ptr<IAtlasConstructor> m_atlasConstructor;
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_omafV1CompatibleFlag{};
+  IO::BasicAdditional<CameraParamsList> m_cameras;
+  IO::IvMetadataWriter m_metadataWriter;
 
 public:
   explicit Application(vector<const char *> argv)
@@ -56,9 +59,14 @@ public:
         m_atlasConstructor{create<IAtlasConstructor>("Encoder", "AtlasConstructor")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()},
-        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()} {}
+        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()},
+        m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {}
 
   void run() override {
+    m_cameras = IO::loadOptimizedMetadata(json());
+    cout << "Basic cameras:\n" << m_cameras.basic;
+    cout << "Additional cameras:\n" << m_cameras.additional;
+
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
       cout << "Intra period: [" << i << ", " << endFrame << ")\n";
@@ -67,12 +75,11 @@ public:
   }
 
   void runIntraPeriod(int intraFrame, int endFrame) {
-    auto cameras = IO::loadOptimizedMetadata(json(), intraFrame);
-    m_atlasConstructor->prepareIntraPeriod(cameras.basic, cameras.additional);
+    m_atlasConstructor->prepareIntraPeriod(m_cameras.basic, m_cameras.additional);
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto views = IO::loadOptimizedFrame(
-          json(), {IO::sizesOf(cameras.basic), IO::sizesOf(cameras.additional)}, i);
+          json(), {IO::sizesOf(m_cameras.basic), IO::sizesOf(m_cameras.additional)}, i);
       m_atlasConstructor->pushFrame(move(views.basic), move(views.additional));
     }
 
@@ -89,13 +96,18 @@ public:
       cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y() << "): " << nbPatch << " patches\n";
     }
 
-    IO::saveMivMetadata(json(), intraFrame,
-                        {atlasSize, m_omafV1CompatibleFlag, m_atlasConstructor->getPatchList(),
-                         m_atlasConstructor->getCameraList()});
+    if (intraFrame == 0) {
+      m_metadataWriter.writeIvSequenceParams(
+          Metadata::modifyDepthRange(m_atlasConstructor->getCameraList()));
+    }
+    m_metadataWriter.writeIvAccessUnitParams(m_atlasConstructor->getPatchList(),
+                                             m_omafV1CompatibleFlag, atlasSize);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = m_atlasConstructor->popAtlas();
-      IO::saveAtlas(json(), i, frame);
+      IO::saveAtlas(json(), i,
+                    Image::modifyDepthRange(m_atlasConstructor->popAtlas(),
+                                            m_atlasConstructor->getCameraList(),
+                                            m_metadataWriter.cameraList()));
     }
   }
 };
@@ -113,6 +125,6 @@ int main(int argc, char *argv[]) {
     return 0;
   } catch (runtime_error &e) {
     cerr << e.what() << endl;
-	return 1;
+    return 1;
   }
 }

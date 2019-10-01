@@ -35,16 +35,12 @@
 #error "Include the .h, not the .hpp"
 #endif
 
-#include <TMIV/Common/Common.h>
-#include <cassert>
-#include <cmath>
-#include <cstdint>
-#include <limits>
-
 namespace TMIV::Image {
-constexpr auto kilometer = 1000.F;
-
 constexpr unsigned maxLevel(unsigned bits) { return (1U << bits) - 1U; }
+
+namespace impl {
+// An implementation-specific maximum depth value
+constexpr auto kilometer = 1000.F;
 
 template <unsigned bits> float expandValue(uint16_t x) { return float(x) / float(maxLevel(bits)); }
 
@@ -59,169 +55,42 @@ template <unsigned bits> uint16_t quantizeValue(float x) {
   return 0;
 }
 
-template <typename ToInt, typename WorkInt>
-auto compressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits, WorkInt offsetMax) -> ToInt {
-  static_assert(std::is_integral_v<WorkInt> && std::is_unsigned_v<WorkInt>);
-  static_assert(std::is_integral_v<ToInt> && std::is_unsigned_v<ToInt>);
-  assert(0 < fromBits && 0 < toBits && toBits <= std::numeric_limits<ToInt>::digits &&
-         toBits + fromBits <= std::numeric_limits<WorkInt>::digits);
-
-  const auto maxFrom = (1U << fromBits) - 1U;
-  const auto maxTo = (1U << toBits) - 1U - offsetMax;
-  assert(0U <= x && x <= maxFrom);
-  return ToInt(((x * maxTo + maxFrom / 2U) / maxFrom) + offsetMax);
-}
-
-template <typename OutFormat, typename InFormat>
-auto compressDepthRange(const Common::Frame<InFormat> &frame, unsigned offsetMax, unsigned bits)
-    -> Common::Frame<OutFormat> {
-  using InTraits = Common::detail::PixelFormatHelper<InFormat>;
-  using OutTraits = Common::detail::PixelFormatHelper<OutFormat>;
-  using OutInt = typename OutTraits::base_type;
-  using WorkInt = uint_fast32_t;
-  constexpr auto outBits = OutTraits::bitDepth;
-  constexpr auto numPlanes = std::min(InTraits::nb_plane, OutTraits::nb_plane);
-
-  auto result = Common::Frame<OutFormat>(frame.getWidth(), frame.getHeight());
-  for (int i = 0; i < numPlanes; ++i) {
-    assert(frame.getPlane(i).width() == result.getPlane(i).width());
-    assert(frame.getPlane(i).height() == result.getPlane(i).height());
-    std::transform(std::begin(frame.getPlane(i)), std::end(frame.getPlane(i)),
-                   std::begin(result.getPlane(i)), [=](WorkInt x) {
-                     return compressRangeValue<OutInt, WorkInt>(x, bits, outBits, offsetMax);
-                   });
+template <unsigned bits>
+float expandNormDispValue(const Metadata::CameraParameters &camera, uint16_t x) {
+  if (x >= camera.depthOccMapThreshold) {
+    const auto &R = camera.normDispRange;
+    return std::max(1.F / kilometer, R[0] + (R[1] - R[0]) * expandValue<bits>(x));
   }
-
-  return result;
-}
-
-template <typename OutFormat, typename InFormat>
-auto compressDepthRange(const Common::MVDFrame<InFormat> &frame, unsigned offsetMax, unsigned bits)
-    -> Common::MVDFrame<OutFormat> {
-  auto result = Common::MVDFrame<OutFormat>();
-  result.reserve(frame.size());
-  std::transform(
-      std::begin(frame), std::end(frame), std::back_inserter(result),
-      [=](const Common::TextureDepthFrame<InFormat> &view) -> Common::TextureDepthFrame<OutFormat> {
-        return {view.first, compressDepthRange<OutFormat>(view.second, offsetMax, bits)};
-      });
-
-  return result;
-}
-
-// #29: For 10-bit encoded depth values <64 indicates invalid.
-//      For 16-bit decompressed depth values only zero indicates invalid.
-template <typename ToInt, typename WorkInt>
-auto decompressRangeValue(WorkInt x, WorkInt fromBits, WorkInt toBits, WorkInt offsetMax) -> ToInt {
-  static_assert(std::is_integral_v<WorkInt> && std::is_unsigned_v<WorkInt>);
-  static_assert(std::is_integral_v<ToInt> && std::is_unsigned_v<ToInt>);
-  assert(0 < fromBits && 0 < toBits && toBits <= std::numeric_limits<ToInt>::digits &&
-         toBits + fromBits <= std::numeric_limits<WorkInt>::digits);
-
-  if (x < 64U) {
-    return 0U;
-  }
-  const auto maxFrom = (1U << fromBits) - 1U - offsetMax;
-  const auto maxTo = (1U << toBits) - 1U;
-  assert(0U <= x && (x - offsetMax) <= maxFrom);
-  auto value = ToInt((((x - offsetMax) * maxTo + maxFrom / 2U) / maxFrom));
-  return value > 0U ? value : 1U;
-}
-
-template <typename OutFormat, typename InFormat>
-auto decompressDepthRange(const Common::Frame<InFormat> &frame, unsigned offsetMax, unsigned bits)
-    -> Common::Frame<OutFormat> {
-  using InTraits = Common::detail::PixelFormatHelper<InFormat>;
-  using OutTraits = Common::detail::PixelFormatHelper<OutFormat>;
-  using OutInt = typename OutTraits::base_type;
-  using WorkInt = uint_fast32_t;
-  constexpr auto outBits = OutTraits::bitDepth;
-  constexpr auto numPlanes = std::min(InTraits::nb_plane, OutTraits::nb_plane);
-
-  auto result = Common::Frame<OutFormat>(frame.getWidth(), frame.getHeight());
-  for (int i = 0; i < numPlanes; ++i) {
-    assert(frame.getPlane(i).width() == result.getPlane(i).width());
-    assert(frame.getPlane(i).height() == result.getPlane(i).height());
-    std::transform(std::begin(frame.getPlane(i)), std::end(frame.getPlane(i)),
-                   std::begin(result.getPlane(i)), [=](WorkInt x) {
-                     return decompressRangeValue<OutInt, WorkInt>(x, bits, outBits, offsetMax);
-                   });
-  }
-
-  return result;
-}
-
-template <typename OutFormat, typename InFormat>
-auto decompressDepthRange(const Common::MVDFrame<InFormat> &frame, unsigned offsetMax,
-                          unsigned bits) -> Common::MVDFrame<OutFormat> {
-  auto result = Common::MVDFrame<OutFormat>();
-  result.reserve(frame.size());
-  std::transform(
-      std::begin(frame), std::end(frame), std::back_inserter(result),
-      [=](const Common::TextureDepthFrame<InFormat> &view) -> Common::TextureDepthFrame<OutFormat> {
-        return {view.first, decompressDepthRange<OutFormat>(view.second, offsetMax, bits)};
-      });
-
-  return result;
-}
-
-template <typename ToInt, typename WorkInt>
-auto requantizeValue(WorkInt x, WorkInt fromBits, WorkInt toBits) -> ToInt {
-  static_assert(std::is_integral_v<WorkInt> && std::is_unsigned_v<WorkInt>);
-  static_assert(std::is_integral_v<ToInt> && std::is_unsigned_v<ToInt>);
-  assert(0 < fromBits && 0 < toBits && toBits <= std::numeric_limits<ToInt>::digits &&
-         toBits + fromBits <= std::numeric_limits<WorkInt>::digits);
-
-  const auto maxFrom = (1U << fromBits) - 1U;
-  const auto maxTo = (1U << toBits) - 1U;
-
-  assert(0U <= x && x <= maxFrom);
-
-  return ToInt((x * maxTo + maxFrom / 2U) / maxFrom);
-}
-
-template <typename OutFormat, typename InFormat>
-auto requantize(const Common::Frame<InFormat> &frame, unsigned bits) -> Common::Frame<OutFormat> {
-  using InTraits = Common::detail::PixelFormatHelper<InFormat>;
-  using OutTraits = Common::detail::PixelFormatHelper<OutFormat>;
-  using OutInt = typename OutTraits::base_type;
-  using WorkInt = uint_fast32_t;
-  constexpr auto outBits = OutTraits::bitDepth;
-  constexpr auto numPlanes = std::min(InTraits::nb_plane, OutTraits::nb_plane);
-
-  auto result = Common::Frame<OutFormat>(frame.getWidth(), frame.getHeight());
-  for (int i = 0; i < numPlanes; ++i) {
-    assert(frame.getPlane(i).width() == result.getPlane(i).width());
-    assert(frame.getPlane(i).height() == result.getPlane(i).height());
-    std::transform(std::begin(frame.getPlane(i)), std::end(frame.getPlane(i)),
-                   std::begin(result.getPlane(i)),
-                   [=](WorkInt x) { return requantizeValue<OutInt, WorkInt>(x, bits, outBits); });
-  }
-  return result;
-}
-
-template <typename OutFormat, typename InFormat>
-auto requantize(const Common::MVDFrame<InFormat> &frame, unsigned bits)
-    -> Common::MVDFrame<OutFormat> {
-  auto result = Common::MVDFrame<OutFormat>();
-  result.reserve(frame.size());
-  std::transform(
-      std::begin(frame), std::end(frame), std::back_inserter(result),
-      [=](const Common::TextureDepthFrame<InFormat> &view) -> Common::TextureDepthFrame<OutFormat> {
-        return {view.first, requantize<OutFormat>(view.second, bits)};
-      });
-  return result;
+  return 0.F;
 }
 
 template <unsigned bits>
 float expandDepthValue(const Metadata::CameraParameters &camera, uint16_t x) {
-  const auto near = camera.depthRange[0];
-  const auto far = camera.depthRange[1];
+  const auto normDisp = expandNormDispValue<bits>(camera, x);
+  return normDisp > 0.F ? 1.F / normDisp : 0.F;
+}
 
-  const float normDisp = expandValue<bits>(x);
-  if (far >= kilometer) {
-    return near / normDisp;
+template <unsigned bits>
+uint16_t quantizeNormDispValue(const Metadata::CameraParameters &camera, float x) {
+  if (x > 0.F && std::isfinite(x)) {
+    const auto &R = camera.normDispRange;
+    const auto value = quantizeValue<bits>((x - R[0]) / (R[1] - R[0]));
+    return std::max(camera.depthOccMapThreshold, value);
   }
-  return far * near / (near + normDisp * (far - near));
+  return 0;
+}
+
+template <unsigned bits>
+uint16_t quantizeDepthValue(const Metadata::CameraParameters &camera, float x) {
+  return x > 0.F ? quantizeNormDispValue<bits>(camera, 1.F / x) : 0;
+}
+} // namespace impl
+
+inline float expandDepthValue10(const Metadata::CameraParameters &camera, uint16_t x) {
+  return impl::expandDepthValue<10>(camera, x);
+}
+
+inline float expandDepthValue16(const Metadata::CameraParameters &camera, uint16_t x) {
+  return impl::expandDepthValue<16>(camera, x);
 }
 } // namespace TMIV::Image

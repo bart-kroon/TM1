@@ -35,7 +35,7 @@
 #define _TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::ViewOptimizer {
 // IViewOptimizer interface (part of ViewOptimizerLib)

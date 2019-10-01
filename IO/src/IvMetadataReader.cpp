@@ -31,38 +31,67 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/Decoder.h>
+#include <TMIV/IO/IvMetadataReader.h>
 
-#include <cassert>
+#include <TMIV/IO/IO.h>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::AtlasDeconstructor;
-using namespace TMIV::Renderer;
 
-namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
-          "AtlasDeconstructor", rootNode, componentNode)},
-      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)} {}
-
-void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
-  m_atlasSize = move(atlasSize);
-  m_patches.clear();
+namespace TMIV::IO {
+IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirectoryField,
+                                   const string &fileNameField) {
+  m_path = getFullPath(config, baseDirectoryField, fileNameField);
+  m_stream.open(m_path, ios::binary);
+  if (!m_stream.good()) {
+    ostringstream what;
+    what << "Failed to open metadata file " << m_path;
+    throw runtime_error(what.str());
+  }
 }
 
-void Decoder::updatePatchList(AtlasParametersList patches, const Common::MVD10Frame &frame) {
-  m_patches = move(patches);
-  assert(!m_cameras.empty());
-  m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, m_cameras, frame);
+void IvMetadataReader::readIvSequenceParams() { m_ivsParams = IvsParams::decodeFrom(m_bitstream); }
+
+void IvMetadataReader::readIvAccessUnitParams() {
+  const auto currentAtlasParamsList = m_ivAccessUnitParams.atlasParamsList;
+  m_ivAccessUnitParams = IvAccessUnitParams::decodeFrom(m_bitstream, m_ivsParams.cameraParamsList);
+  if (!m_ivAccessUnitParams.atlasParamsList) {
+    m_ivAccessUnitParams.atlasParamsList = currentAtlasParamsList.value();
+  }
 }
 
-void Decoder::updateCameraList(CameraParametersList cameras) { m_cameras = move(cameras); }
-
-Texture444Depth16Frame Decoder::decodeFrame(MVD10Frame atlas,
-                                            const CameraParameters &target) const {
-  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_cameras, target);
+bool IvMetadataReader::readAccessUnit(int accessUnit) {
+  if (m_accessUnit == accessUnit) {
+    return false;
+  }
+  m_accessUnit = accessUnit;
+  m_bitstream.reset();
+  m_stream.seekg(0);
+  readIvSequenceParams();
+  for (int i = 0; i <= accessUnit; ++i) {
+    readIvAccessUnitParams();
+  }
+  return true;
 }
-} // namespace TMIV::Decoder
+
+auto IvMetadataReader::cameraParamsList() const -> const CameraParamsList & {
+  return m_ivsParams.cameraParamsList;
+}
+
+bool IvMetadataReader::omafV1CompatibleFlag() const {
+  return atlasParamsList().omafV1CompatibleFlag;
+}
+
+auto IvMetadataReader::atlasSizes() const -> const std::vector<Common::Vec2i> & {
+  return atlasParamsList().atlasSizes;
+}
+
+auto IvMetadataReader::atlasParamsList() const -> const AtlasParamsList & {
+  return m_ivAccessUnitParams.atlasParamsList.value();
+}
+
+auto IvMetadataReader::atlasParametersList() const -> const AtlasParametersList & {
+  return atlasParamsList();
+}
+} // namespace TMIV::IO

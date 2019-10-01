@@ -39,9 +39,12 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Encoder/IEncoder.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/IO/IvMetadataWriter.h>
+#include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
 namespace TMIV::Encoder {
 class Application : public Common::Application {
@@ -50,17 +53,20 @@ private:
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_omafV1CompatibleFlag{};
-  Metadata::CameraParametersList m_cameras;
+  Metadata::CameraParamsList m_cameras;
+  IO::IvMetadataWriter m_metadataWriter;
 
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
         m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()},
-        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()} {}
+        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()},
+        m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {}
 
   void run() override {
     m_cameras = IO::loadSourceMetadata(json());
+    cout << "Source cameras:\n" << m_cameras;
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -80,13 +86,17 @@ private:
 
     m_encoder->completeIntraPeriod();
 
-    IO::saveMivMetadata(json(), intraFrame,
-                        {m_encoder->getAtlasSize(), m_omafV1CompatibleFlag,
-                         m_encoder->getPatchList(), m_encoder->getCameraList()});
+    if (intraFrame == 0) {
+      m_metadataWriter.writeIvSequenceParams(
+          Metadata::modifyDepthRange(m_encoder->getCameraList()));
+    }
+    m_metadataWriter.writeIvAccessUnitParams(m_encoder->getPatchList(), m_omafV1CompatibleFlag,
+                                             m_encoder->getAtlasSize());
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = m_encoder->popAtlas();
-      IO::saveAtlas(json(), i, frame);
+      IO::saveAtlas(json(), i,
+                    Image::modifyDepthRange(m_encoder->popAtlas(), m_encoder->getCameraList(),
+                                            m_metadataWriter.cameraList()));
     }
   }
 };

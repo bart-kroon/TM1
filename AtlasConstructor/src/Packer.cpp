@@ -100,15 +100,15 @@ Metadata::AtlasParametersList Packer::pack(const std::vector<Vec2i> &atlasSize,
 
           p.atlasId = static_cast<uint8_t>(atlasId);
           p.viewId = static_cast<uint8_t>(cluster.getCameraId());
-          p.patchSize = {Common::align(cluster.width(), m_alignment),
-                         Common::align(cluster.height(), m_alignment)};
+          p.patchSizeInView = {Common::align(cluster.width(), m_alignment),
+                               Common::align(cluster.height(), m_alignment)};
           p.posInView = {cluster.jmin(), cluster.imin()};
           p.posInAtlas = {packerOutput.x(), packerOutput.y()};
-          p.rotation = packerOutput.isRotated() ? Metadata::PatchRotation::ccw
-                                                : Metadata::PatchRotation::upright;
-          p.flip = Metadata::PatchFlip::none;
+          p.rotation = packerOutput.isRotated() ? Metadata::PatchRotation::rot270
+                                                : Metadata::PatchRotation::none;
 
-          auto patchOverflow = (p.posInView + p.patchSize) - masks[cluster.getCameraId()].getSize();
+          auto patchOverflow =
+              (p.posInView + p.patchSizeInView) - masks[cluster.getCameraId()].getSize();
           if (patchOverflow.x() > 0) {
             p.posInView.x() -= patchOverflow.x();
           }

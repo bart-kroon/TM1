@@ -156,8 +156,8 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
 
   const auto &textureViewMap = currentView.first;
   const auto &depthViewMap = currentView.second;
-  int w = patch.patchSize.x();
-  int h = patch.patchSize.y();
+  int w = patch.patchSizeInView.x();
+  int h = patch.patchSizeInView.y();
   int xM = patch.posInView.x();
   int yM = patch.posInView.y();
 

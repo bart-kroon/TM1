@@ -39,6 +39,7 @@
 #include <numeric>
 #include <ostream>
 #include <vector>
+#include <cassert>
 
 #include "Traits.h"
 
@@ -422,11 +423,19 @@ public:
   }
   template <typename OTHER, class = typename OTHER::dim_iterator>
   Array &operator=(const OTHER &that) {
-    if ((dim() == that.dim()) &&
-        std::equal(that.sizes().begin(), that.sizes().end(), sizes().begin())) {
-      std::transform(that.begin(), that.end(), begin(), [](auto v) { return T(v); });
+#ifndef NDEBUG
+    size_t i = 0;
+    for (; i < dim() && i < that.dim(); ++i) {
+      assert(size(i) == that.size(i));
     }
-
+    for (; i < dim(); ++i) {
+      assert(size(i) == 1);
+    }
+    for (; i < that.dim(); ++i) {
+      assert(that.size(i) == 1);
+    }
+#endif
+    std::transform(that.begin(), that.end(), begin(), [](auto v) { return T(v); });
     return *this;
   }
   //! \brief Move assignment.

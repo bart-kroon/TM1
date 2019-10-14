@@ -68,15 +68,14 @@ auto affineParameters(const CameraParameters &camera, const CameraParameters &ta
   return {R, t};
 }
 
-auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::CameraParameters &camera)
-    -> Common::Vec3f {
+auto unprojectVertex(Vec2f position, float depth, const CameraParameters &camera) -> Vec3f {
   switch (camera.type) {
-  case Metadata::ProjectionType::ERP: {
-    Engine<Metadata::ProjectionType::ERP> engine{camera};
+  case ProjectionType::ERP: {
+    Engine<ProjectionType::ERP> engine{camera};
     return engine.unprojectVertex(position, depth);
   }
-  case Metadata::ProjectionType::Perspective: {
-    Engine<Metadata::ProjectionType::Perspective> engine{camera};
+  case ProjectionType::Perspective: {
+    Engine<ProjectionType::Perspective> engine{camera};
     return engine.unprojectVertex(position, depth);
   }
   default:

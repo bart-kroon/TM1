@@ -37,9 +37,9 @@
 #include <cassert>
 
 using namespace std;
+using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Renderer;
 
 namespace TMIV::Decoder {
@@ -53,7 +53,7 @@ void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
   m_patches.clear();
 }
 
-void Decoder::updatePatchList(AtlasParametersList patches, const Common::MVD10Frame &frame) {
+void Decoder::updatePatchList(AtlasParametersList patches, const MVD10Frame &frame) {
   m_patches = move(patches);
   assert(!m_cameras.empty());
   m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, m_cameras, frame);

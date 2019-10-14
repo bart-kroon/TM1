@@ -48,19 +48,18 @@ public:
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
   ~AtlasDeconstructor() override = default;
 
-  using AtlasParameters = Metadata::AtlasParameters;
-
-  PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                               const AtlasParametersList &patchList,
-                               const CameraParametersList &cameraList,
-                               const MVD10Frame &frame) override;
-  MVD10Frame recoverPrunedView(const MVD10Frame &atlas, const CameraParametersList &cameraList,
-                               const AtlasParametersList &patchList) override;
+  Common::PatchIdMapList getPatchIdMap(const std::vector<Common::Vec2i> &atlasSize,
+                                       const Metadata::AtlasParametersList &patchList,
+                                       const Metadata::CameraParametersList &cameraList,
+                                       const Common::MVD10Frame &frame) override;
+  Common::MVD10Frame recoverPrunedView(const Common::MVD10Frame &atlas,
+                                       const Metadata::CameraParametersList &cameraList,
+                                       const Metadata::AtlasParametersList &patchList) override;
 
 private:
-  void writePatchIdInMap(const AtlasParameters &patch, PatchIdMapList &patchMapList,
-                         std::uint16_t patchId, const MVD10Frame &frame,
-                         std::uint16_t depthOccMapThreshold) const;
+  void writePatchIdInMap(const Metadata::AtlasParameters &patch,
+                         Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
+                         const Common::MVD10Frame &frame, std::uint16_t depthOccMapThreshold) const;
 };
 } // namespace TMIV::AtlasDeconstructor
 

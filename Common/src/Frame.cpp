@@ -35,12 +35,13 @@
 
 #include <cassert>
 
+using namespace std;
+
 namespace TMIV::Common {
 namespace {
 template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {
   Frame<TO> result(frame.getWidth(), frame.getHeight());
-  std::copy(std::begin(frame.getPlane(0)), std::end(frame.getPlane(0)),
-            std::begin(result.getPlane(0)));
+  copy(begin(frame.getPlane(0)), end(frame.getPlane(0)), begin(result.getPlane(0)));
 
   assert(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
   const int rows = result.getHeight() / 2;

@@ -40,6 +40,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &componentNode) {
@@ -125,8 +126,7 @@ uint16_t filterMaps(uint16_t i) {
   return i;
 }
 
-vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
-                         const Metadata::CameraParameters &target) {
+vector<size_t> sortViews(const CameraParametersList &cameras, const CameraParameters &target) {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];
@@ -173,11 +173,11 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   return sortedCamerasId;
 }
 
-Texture444Depth16Frame
-MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                               const Metadata::AtlasParametersList &patches,
-                               const Metadata::CameraParametersList &cameras,
-                               const Metadata::CameraParameters &target) const {
+Texture444Depth16Frame MultipassRenderer::renderFrame(const MVD10Frame &atlas,
+                                                      const PatchIdMapList &maps,
+                                                      const AtlasParametersList &patches,
+                                                      const CameraParametersList &cameras,
+                                                      const CameraParameters &target) const {
   //////////////////
   // Initialization
   //////////////////
@@ -268,10 +268,9 @@ MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &ma
   return viewport;
 }
 
-Texture444Depth16Frame
-MultipassRenderer::renderFrame(const MVD10Frame &atlas,
-                               const Metadata::CameraParametersList &cameras,
-                               const Metadata::CameraParameters &target) const {
+Texture444Depth16Frame MultipassRenderer::renderFrame(const MVD10Frame &atlas,
+                                                      const CameraParametersList &cameras,
+                                                      const CameraParameters &target) const {
   auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;

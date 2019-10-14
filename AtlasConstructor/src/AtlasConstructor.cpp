@@ -41,12 +41,12 @@
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasConstructor {
 constexpr auto neutralChroma = uint16_t(512);
 
-AtlasConstructor::AtlasConstructor(const Common::Json &rootNode,
-                                   const Common::Json &componentNode) {
+AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
 
   // Components
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", rootNode, componentNode);
@@ -78,7 +78,7 @@ void AtlasConstructor::prepareIntraPeriod(CameraParametersList basicCameras,
   m_viewBuffer.clear();
   m_aggregator->prepareIntraPeriod();
 
-  m_nbAtlas = std::max(std::uint16_t(basicCameras.size()), m_nbAtlas);
+  m_nbAtlas = max(uint16_t(basicCameras.size()), m_nbAtlas);
 }
 
 void AtlasConstructor::pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) {
@@ -92,7 +92,7 @@ void AtlasConstructor::pushFrame(MVD16Frame basicViews, MVD16Frame additionalVie
   MaskList masks = m_pruner->prune(m_cameras, views, m_isReferenceView);
 
   // Aggregation
-  m_viewBuffer.push_back(std::move(views));
+  m_viewBuffer.push_back(move(views));
   m_aggregator->pushMask(masks);
 }
 
@@ -103,7 +103,7 @@ void AtlasConstructor::completeIntraPeriod() {
 
   // Packing
   m_patchList =
-      m_packer->pack(std::vector<Vec2i>(m_nbAtlas, m_atlasSize), aggregatedMask, m_isReferenceView);
+      m_packer->pack(vector<Vec2i>(m_nbAtlas, m_atlasSize), aggregatedMask, m_isReferenceView);
 
   // Atlas construction
   for (const auto &views : m_viewBuffer) {
@@ -114,19 +114,19 @@ void AtlasConstructor::completeIntraPeriod() {
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
 
       for (auto &p : atlas.first.getPlanes()) {
-        std::fill(p.begin(), p.end(), neutralChroma);
+        fill(p.begin(), p.end(), neutralChroma);
       }
 
-      std::fill(atlas.second.getPlane(0).begin(), atlas.second.getPlane(0).end(), uint16_t(0));
+      fill(atlas.second.getPlane(0).begin(), atlas.second.getPlane(0).end(), uint16_t(0));
 
-      atlasList.push_back(std::move(atlas));
+      atlasList.push_back(move(atlas));
     }
 
     for (const auto &patch : m_patchList) {
       writePatchInAtlas(patch, views, atlasList);
     }
 
-    m_atlasBuffer.push_back(std::move(atlasList));
+    m_atlasBuffer.push_back(move(atlasList));
   }
 }
 
@@ -139,8 +139,8 @@ vector<Vec2i> AtlasConstructor::getAtlasSize() const {
   return result;
 }
 
-Common::MVD16Frame AtlasConstructor::popAtlas() {
-  Common::MVD16Frame atlas = std::move(m_atlasBuffer.front());
+MVD16Frame AtlasConstructor::popAtlas() {
+  MVD16Frame atlas = move(m_atlasBuffer.front());
   m_atlasBuffer.pop_front();
   return atlas;
 }
@@ -165,7 +165,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
     for (int dx = 0; dx < w; dx++) {
       // get position
       Vec2i pView = {xM + dx, yM + dy};
-      Vec2i pAtlas = TMIV::Metadata::viewToAtlas(pView, patch);
+      Vec2i pAtlas = viewToAtlas(pView, patch);
       // Y
       textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
           textureViewMap.getPlane(0)(pView.y(), pView.x());

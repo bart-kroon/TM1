@@ -40,6 +40,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
+using namespace TMIV::Image::impl;
 
 TEST_CASE("maxlevel", "[quantize_and_expand]") {
   REQUIRE(maxLevel(8U) == 255U);
@@ -48,16 +49,16 @@ TEST_CASE("maxlevel", "[quantize_and_expand]") {
 }
 
 TEST_CASE("expandValue", "[quantize_and_expand]") {
-  REQUIRE(TMIV::Image::impl::expandValue<10>(0) == 0.F);
-  REQUIRE(TMIV::Image::impl::expandValue<8>(128) == 128.F / 255.F);
-  REQUIRE(TMIV::Image::impl::expandValue<10>(1023) == 1.F);
-  REQUIRE(TMIV::Image::impl::expandValue<16>(40000) == 40000.F / 65535.F);
+  REQUIRE(expandValue<10>(0) == 0.F);
+  REQUIRE(expandValue<8>(128) == 128.F / 255.F);
+  REQUIRE(expandValue<10>(1023) == 1.F);
+  REQUIRE(expandValue<16>(40000) == 40000.F / 65535.F);
 }
 
 TEST_CASE("quantizeValue", "[quantize_and_expand]") {
-  REQUIRE(TMIV::Image::impl::quantizeValue<10>(NaN) == 0U);
-  REQUIRE(TMIV::Image::impl::quantizeValue<10>(inf) == 1023U);
-  REQUIRE(TMIV::Image::impl::quantizeValue<10>(1e20F) == 1023U);
+  REQUIRE(quantizeValue<10>(NaN) == 0U);
+  REQUIRE(quantizeValue<10>(inf) == 1023U);
+  REQUIRE(quantizeValue<10>(1e20F) == 1023U);
 }
 
 SCENARIO("Expand YUV 4:2:0 10-bit texture", "[quantize_and_expand]") {
@@ -80,14 +81,14 @@ SCENARIO("Expand YUV 4:2:0 10-bit texture", "[quantize_and_expand]") {
       auto expanded = expandTexture(texture);
 
       THEN("Luma plane samples are expanded") {
-        REQUIRE(expanded(5, 9).x() == TMIV::Image::impl::expandValue<10>(509));
+        REQUIRE(expanded(5, 9).x() == expandValue<10>(509));
       }
 
       THEN("Chroma plane samples are upsampled using nearest interpolation") {
-        REQUIRE(expanded(4, 8).y() == TMIV::Image::impl::expandValue<10>(602));
-        REQUIRE(expanded(4, 9).z() == TMIV::Image::impl::expandValue<10>(602));
-        REQUIRE(expanded(5, 8).z() == TMIV::Image::impl::expandValue<10>(602));
-        REQUIRE(expanded(5, 9).y() == TMIV::Image::impl::expandValue<10>(602));
+        REQUIRE(expanded(4, 8).y() == expandValue<10>(602));
+        REQUIRE(expanded(4, 9).z() == expandValue<10>(602));
+        REQUIRE(expanded(5, 8).z() == expandValue<10>(602));
+        REQUIRE(expanded(5, 9).y() == expandValue<10>(602));
       }
     }
   }
@@ -108,7 +109,7 @@ SCENARIO("Quantize planar 4:4:4 float to YUV 4:2:0 10-bit texture", "[quantize_a
       auto quantized = quantizeTexture(texture);
 
       THEN("Luma plane samples are quantized") {
-        REQUIRE(quantized.getPlane(0)(5, 9) == TMIV::Image::impl::quantizeValue<10>(0.59F));
+        REQUIRE(quantized.getPlane(0)(5, 9) == quantizeValue<10>(0.59F));
       }
     }
   }

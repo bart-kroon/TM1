@@ -39,9 +39,8 @@
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 using namespace std;
-using namespace TMIV::Metadata;
-
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
 TEST_CASE("TestPatchRotationAndFlipTransforms") {
   AtlasParameters patch;
@@ -59,8 +58,8 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
 
   SECTION("EvaluateTransformationOf_TopLeft") {
     Vec2i posInViewEncode = {0, 0};
-    std::vector<Vec2i> posInAtlasExpected = {{0, 0}, {0, 9}, {9, 4}, {4, 0},
-                                             {0, 4}, {0, 0}, {9, 0}, {4, 9}};
+    vector<Vec2i> posInAtlasExpected = {{0, 0}, {0, 9}, {9, 4}, {4, 0},
+                                        {0, 4}, {0, 0}, {9, 0}, {4, 9}};
     for (auto &pos : posInAtlasExpected) {
       pos += patch.posInAtlas;
     }
@@ -80,8 +79,8 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
 
   SECTION("EvaluateTransformationOf_BottomRight") {
     Vec2i posInViewEncode = {9, 4};
-    std::vector<Vec2i> posInAtlasExpected = {{9, 4}, {4, 0}, {0, 0}, {0, 9},
-                                             {9, 0}, {4, 9}, {0, 4}, {0, 0}};
+    vector<Vec2i> posInAtlasExpected = {{9, 4}, {4, 0}, {0, 0}, {0, 9},
+                                        {9, 0}, {4, 9}, {0, 4}, {0, 0}};
     for (auto &pos : posInAtlasExpected) {
       pos += patch.posInAtlas;
     }

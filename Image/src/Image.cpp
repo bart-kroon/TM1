@@ -105,15 +105,15 @@ Frame<YUV444P10> quantizeTexture(const Mat3f &in) {
   return outYuv;
 }
 
-Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera, const Depth10Frame &in) {
-  auto out = Common::Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
+Mat<float> expandDepth(const CameraParameters &camera, const Depth10Frame &in) {
+  auto out = Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
   transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
             [&](uint16_t x) { return impl::expandDepthValue<10>(camera, x); });
   return out;
 }
 
-Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera, const Depth16Frame &in) {
-  auto out = Common::Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
+Mat<float> expandDepth(const CameraParameters &camera, const Depth16Frame &in) {
+  auto out = Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
   transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
             [&](uint16_t x) { return impl::expandDepthValue<16>(camera, x); });
   return out;

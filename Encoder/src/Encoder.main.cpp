@@ -44,6 +44,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Image;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Encoder {
@@ -53,7 +54,7 @@ private:
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_omafV1CompatibleFlag{};
-  Metadata::CameraParamsList m_cameras;
+  CameraParamsList m_cameras;
   IO::IvMetadataWriter m_metadataWriter;
 
 public:
@@ -87,17 +88,16 @@ private:
     m_encoder->completeIntraPeriod();
 
     if (intraFrame == 0) {
-      m_metadataWriter.writeIvSequenceParams(
-          Metadata::modifyDepthRange(m_encoder->getCameraList()));
-	  cout << "Encoded cameras:\n" << m_metadataWriter.cameraList();
+      m_metadataWriter.writeIvSequenceParams(modifyDepthRange(m_encoder->getCameraList()));
+      cout << "Encoded cameras:\n" << m_metadataWriter.cameraList();
     }
     m_metadataWriter.writeIvAccessUnitParams(m_encoder->getPatchList(), m_omafV1CompatibleFlag,
                                              m_encoder->getAtlasSize());
 
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,
-                    Image::modifyDepthRange(m_encoder->popAtlas(), m_encoder->getCameraList(),
-                                            m_metadataWriter.cameraList()));
+                    modifyDepthRange(m_encoder->popAtlas(), m_encoder->getCameraList(),
+                                     m_metadataWriter.cameraList()));
     }
   }
 };

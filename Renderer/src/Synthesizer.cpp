@@ -44,8 +44,8 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
 using namespace TMIV::Image;
+using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 class Synthesizer::Impl {
@@ -236,12 +236,12 @@ public:
                                      const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-		atlases.size(), target,
-		[&](size_t i, const CameraParameters &target) {
-		  return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, cameras, target);
-		},
-		resolutionRatio(cameras, target));
+    auto rasterizer = rasterFrame(atlases.size(), target,
+                                  [&](size_t i, const CameraParameters &target) {
+                                    return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
+                                                          cameras, target);
+                                  },
+                                  resolutionRatio(cameras, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }
@@ -249,8 +249,8 @@ public:
   Texture444Depth16Frame renderFrame(const MVD10Frame &frame, const CameraParametersList &cameras,
                                      const CameraParameters &target) const {
     assert(frame.size() == cameras.size());
-    auto rasterizer = rasterFrame(
-					frame.size(), target,
+    auto rasterizer =
+        rasterFrame(frame.size(), target,
                     [&](size_t i, const CameraParameters &target) {
                       return unproject(expandDepth(cameras[i], frame[i].second), cameras[i], target,
                                        expandTexture(frame[i].first));
@@ -278,7 +278,7 @@ private:
   float m_maxStretching;
 }; // namespace TMIV::Renderer
 
-Synthesizer::Synthesizer(const Common::Json & /*rootNode*/, const Common::Json &componentNode)
+Synthesizer::Synthesizer(const Json & /*rootNode*/, const Json &componentNode)
     : m_impl(new Impl(componentNode.require("rayAngleParameter").asFloat(),
                       componentNode.require("depthParameter").asFloat(),
                       componentNode.require("stretchingParameter").asFloat(),
@@ -290,23 +290,21 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretching
 
 Synthesizer::~Synthesizer() = default;
 
-Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD10Frame &atlas,
-                                                        const Common::PatchIdMapList &maps,
-                                                        const AtlasParametersList &patches,
-                                                        const CameraParametersList &cameras,
-                                                        const CameraParameters &target) const {
+Texture444Depth16Frame Synthesizer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
+                                                const AtlasParametersList &patches,
+                                                const CameraParametersList &cameras,
+                                                const CameraParameters &target) const {
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
-Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD10Frame &frame,
-                                                        const CameraParametersList &cameras,
-                                                        const CameraParameters &target) const {
+Texture444Depth16Frame Synthesizer::renderFrame(const MVD10Frame &frame,
+                                                const CameraParametersList &cameras,
+                                                const CameraParameters &target) const {
   return m_impl->renderFrame(frame, cameras, target);
 }
 
-Common::Mat<float> Synthesizer::renderDepth(const Common::Mat<float> &frame,
-                                            const CameraParameters &camera,
-                                            const CameraParameters &target) const {
+Mat<float> Synthesizer::renderDepth(const Mat<float> &frame, const CameraParameters &camera,
+                                    const CameraParameters &target) const {
   return m_impl->renderDepth(frame, camera, target);
 }
 } // namespace TMIV::Renderer

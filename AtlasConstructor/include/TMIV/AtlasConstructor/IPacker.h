@@ -48,12 +48,9 @@ public:
   IPacker &operator=(IPacker &&) = default;
   virtual ~IPacker() = default;
 
-  using Vec2i = Common::Vec2i;
-  using MaskList = Common::MaskList;
-  using AtlasParametersList = Metadata::AtlasParametersList;
-
-  virtual AtlasParametersList pack(const std::vector<Vec2i> &atlasSize, const MaskList &masks,
-                                   const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
+  virtual Metadata::AtlasParametersList pack(const std::vector<Common::Vec2i> &atlasSize,
+                                             const Common::MaskList &masks,
+                                             const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

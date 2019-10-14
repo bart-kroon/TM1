@@ -47,7 +47,7 @@ private:
   unique_ptr<IViewOptimizer> m_optimizer;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  Metadata::CameraParamsList m_cameras;
+  CameraParamsList m_cameras;
 
 public:
   explicit Application(vector<const char *> argv)

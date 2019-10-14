@@ -67,9 +67,8 @@ auto unprojectPoints(const Mat<Vec2f> &positions, const Mat<float> &depth,
   //       [=](Vec2f uv, float depth) { return engine.unprojectVertex(uv,
   //       depth); });
 
-  parallel_for(points.size(), [&](std::size_t id) {
-    points[id] = engine.unprojectVertex(positions[id], depth[id]);
-  });
+  parallel_for(points.size(),
+               [&](size_t id) { points[id] = engine.unprojectVertex(positions[id], depth[id]); });
 
   return points;
 }
@@ -100,8 +99,7 @@ auto changeReferenceFrame(const CameraParameters &camera, const CameraParameters
   //             [R = R_t.first, t = R_t.second](Vec3f x) { return R * x + t;
   //             });
 
-  parallel_for(points.size(),
-               [&](std::size_t id) { result[id] = R_t.first * points[id] + R_t.second; });
+  parallel_for(points.size(), [&](size_t id) { result[id] = R_t.first * points[id] + R_t.second; });
 
   return result;
 }
@@ -114,7 +112,7 @@ auto projectPoints(const Mat<Vec3f> &points, const Engine<TYPE> &engine)
   Mat<Vec2f> positions{points.sizes()};
   Mat<float> depth{points.sizes()};
 
-  parallel_for(points.size(), [&](std::size_t id) {
+  parallel_for(points.size(), [&](size_t id) {
     ImageVertexDescriptor v = engine.projectVertex({points[id], 0.F});
     positions[id] = v.position;
     depth[id] = v.depth;

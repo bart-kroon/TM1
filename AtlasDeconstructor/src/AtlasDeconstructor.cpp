@@ -45,10 +45,9 @@ using namespace TMIV::Metadata;
 namespace TMIV::AtlasDeconstructor {
 constexpr auto neutralChroma = uint16_t(512);
 
-AtlasDeconstructor::AtlasDeconstructor(const Common::Json & /*rootNode*/,
-                                       const Common::Json & /*componentNode*/) {}
+AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlasSize,
+PatchIdMapList AtlasDeconstructor::getPatchIdMap(const vector<Vec2i> &atlasSize,
                                                  const AtlasParametersList &patchList,
                                                  const CameraParametersList &cameraList,
                                                  const MVD10Frame &frame) {
@@ -56,8 +55,8 @@ PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlas
 
   for (const auto &sz : atlasSize) {
     PatchIdMap patchMap(sz.x(), sz.y());
-    std::fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
-    patchMapList.push_back(std::move(patchMap));
+    fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
+    patchMapList.push_back(move(patchMap));
   }
 
   for (size_t id = 0U; id < patchList.size(); ++id) {
@@ -70,7 +69,7 @@ PatchIdMapList AtlasDeconstructor::getPatchIdMap(const std::vector<Vec2i> &atlas
 }
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
-                                           PatchIdMapList &patchMapList, std::uint16_t patchId,
+                                           PatchIdMapList &patchMapList, uint16_t patchId,
                                            const MVD10Frame &frame,
                                            uint16_t depthOccMapThreshold) const {
   auto &patchMap = patchMapList[patch.atlasId];
@@ -101,15 +100,15 @@ MVD10Frame AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
   for (const auto &cam : cameraList) {
     TextureFrame tex(cam.size.x(), cam.size.y());
 
-    std::fill(tex.getPlane(0).begin(), tex.getPlane(0).end(), 0);
-    std::fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), neutralChroma);
-    std::fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), neutralChroma);
+    fill(tex.getPlane(0).begin(), tex.getPlane(0).end(), 0);
+    fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), neutralChroma);
+    fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), neutralChroma);
 
     Depth10Frame depth(cam.size.x(), cam.size.y());
 
-    std::fill(depth.getPlane(0).begin(), depth.getPlane(0).end(), 0);
+    fill(depth.getPlane(0).begin(), depth.getPlane(0).end(), 0);
 
-    frame.push_back(TextureDepth10Frame{std::move(tex), std::move(depth)});
+    frame.push_back(TextureDepth10Frame{move(tex), move(depth)});
   }
 
   // Process patches

@@ -43,7 +43,7 @@ using namespace TMIV::Renderer;
 
 namespace TMIV::AtlasConstructor {
 
-Pruner::Pruner(const Common::Json & /*rootNode*/, const Common::Json &componentNode) {
+Pruner::Pruner(const Json & /*rootNode*/, const Json &componentNode) {
 
   m_redundancyFactor = componentNode.require("RedundancyFactor").asFloat();
   m_erosionIter = componentNode.require("ErosionIter").asInt();
@@ -54,15 +54,15 @@ Pruner::Pruner(const Common::Json & /*rootNode*/, const Common::Json &componentN
   }
 }
 
-MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD16Frame &views,
-                       const std::vector<std::uint8_t> &shouldNotBePruned) {
+MaskList Pruner::prune(const CameraParametersList &cameras, const MVD16Frame &views,
+                       const vector<uint8_t> &shouldNotBePruned) {
 
   // Sort cameras for pruning
-  std::vector<int> cameraOrderId(cameras.size());
+  vector<int> cameraOrderId(cameras.size());
 
-  std::iota(cameraOrderId.begin(), cameraOrderId.end(), 0);
+  iota(cameraOrderId.begin(), cameraOrderId.end(), 0);
 
-  std::sort(cameraOrderId.begin(), cameraOrderId.end(), [&shouldNotBePruned](int i1, int i2) {
+  sort(cameraOrderId.begin(), cameraOrderId.end(), [&shouldNotBePruned](int i1, int i2) {
     if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
       return (shouldNotBePruned[i1] != 0);
     }
@@ -70,14 +70,14 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD1
   });
 
   // Possible discard some additional views (for debugging purpose)
-  int maxView = std::min(
-      int(cameraOrderId.size()),
-      int(std::count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) + m_maxAdditionalView));
+  int maxView =
+      min(int(cameraOrderId.size()),
+          int(count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) + m_maxAdditionalView));
 
   // Pruning loop
   int nbView = static_cast<int>(views.size());
   MaskList masks(nbView);
-  std::vector<Mat<float>> depthMapExpanded(nbView);
+  vector<Mat<float>> depthMapExpanded(nbView);
 
   for (int id1 = 0; id1 < nbView; id1++) {
     int viewToPruneId = cameraOrderId[id1];
@@ -88,7 +88,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD1
     auto &bufferToPrune = maskToPrune.getPlane(0);
 
     if (id1 < maxView) {
-      std::fill(bufferToPrune.begin(), bufferToPrune.end(), UINT8_MAX);
+      fill(bufferToPrune.begin(), bufferToPrune.end(), UINT8_MAX);
       depthMapExpanded[viewToPruneId] =
           expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
 
@@ -112,24 +112,24 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD1
             if (0 < mask) {
               float zToPrune = depthMapToPrune[k];
 
-              if (!std::isnan(zToPrune)) {
+              if (!isnan(zToPrune)) {
                 float zToPruneOnPruned = ptsToPruneOnPruned.second[k];
 
-                if (!std::isnan(zToPruneOnPruned)) {
+                if (!isnan(zToPruneOnPruned)) {
                   const Vec2f &xyToPruneOnPruned = ptsToPruneOnPruned.first[k];
 
-                  int x1 = std::max(0, int(floor(xyToPruneOnPruned.x())));
-                  int x2 = std::min(lastXPruned, int(ceil(xyToPruneOnPruned.x())));
-                  int y1 = std::max(0, int(floor(xyToPruneOnPruned.y())));
-                  int y2 = std::min(lastYPruned, int(ceil(xyToPruneOnPruned.y())));
+                  int x1 = max(0, int(floor(xyToPruneOnPruned.x())));
+                  int x2 = min(lastXPruned, int(ceil(xyToPruneOnPruned.x())));
+                  int y1 = max(0, int(floor(xyToPruneOnPruned.y())));
+                  int y2 = min(lastYPruned, int(ceil(xyToPruneOnPruned.y())));
 
                   for (int y = y1; y <= y2; y++) {
                     for (int x = x1; x <= x2; x++) {
                       float zPruned = depthMapPruned(y, x);
 
-                      if (!std::isnan(zPruned)) {
+                      if (!isnan(zPruned)) {
                         if ((fabs(zToPruneOnPruned - zPruned) <
-                             m_redundancyFactor * std::min(zPruned, zToPruneOnPruned))) {
+                             m_redundancyFactor * min(zPruned, zToPruneOnPruned))) {
                           mask = 0;
                           goto endloop;
                         }
@@ -156,8 +156,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD1
         int wLast = w - 1;
         int hLast = h - 1;
         constexpr int numNeighbors = 8;
-        std::array<int, numNeighbors> neighbourOffset = {-1 - w, -w,     1 - w, -1,
-                                                         1,      -1 + w, w,     1 + w};
+        array<int, numNeighbors> neighbourOffset = {-1 - w, -w, 1 - w, -1, 1, -1 + w, w, 1 + w};
 
         // Erosion
         if (0 < m_erosionIter) {
@@ -185,7 +184,7 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD1
               }
             }
 
-            std::swap(inputBuffer, outputBuffer);
+            swap(inputBuffer, outputBuffer);
           }
         }
 
@@ -215,12 +214,12 @@ MaskList Pruner::prune(const Metadata::CameraParametersList &cameras, const MVD1
               }
             }
 
-            std::swap(inputBuffer, outputBuffer);
+            swap(inputBuffer, outputBuffer);
           }
         }
       }
     } else {
-      std::fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(0));
+      fill(bufferToPrune.begin(), bufferToPrune.end(), uint8_t(0));
     }
   }
 

@@ -50,7 +50,7 @@ namespace TMIV::ViewOptimizer {
 constexpr auto overlapThreshold = 0.5;
 constexpr auto halfPixel = 0.5F;
 
-ViewReducer::ViewReducer(const Json & /*unused*/, const Common::Json & /*unused*/) {}
+ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
 auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     -> Output<CameraParametersList> {
@@ -263,8 +263,8 @@ auto ViewReducer::calculateDistance(CameraParameters camera_1, CameraParameters 
               square(camera_1.position[1] - camera_2.position[1]) +
               square(camera_1.position[2] - camera_2.position[2]));
 }
-auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
-                                       Metadata::CameraParameters camera_to) -> float {
+auto ViewReducer::calculateOverlapping(CameraParameters camera_from, CameraParameters camera_to)
+    -> float {
 
   float overlapping = 0.0F;
   float weight_all = 0.0F;
@@ -276,8 +276,8 @@ auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
 
   Mat<int> isoverlap;
   isoverlap.resize(camera_from.size.y(), camera_from.size.x());
-  float depth_temp = sqrtf(expandDepthValue16(camera_from, 1) *
-                           expandDepthValue16(camera_from, UINT16_MAX));
+  float depth_temp =
+      sqrtf(expandDepthValue16(camera_from, 1) * expandDepthValue16(camera_from, UINT16_MAX));
 
   for (unsigned i = 0; i != depth.height(); ++i) {
     for (unsigned j = 0; j != depth.width(); ++j) {

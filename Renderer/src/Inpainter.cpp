@@ -48,9 +48,8 @@ const auto depthBlendingThreshold16 = 655.36; // 1% of bit depth
 template <typename YUVD>
 void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
                            int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/,
-                           const Common::Mat<int> &nonEmptyNeighbor1,
-                           const Common::Mat<int> &nonEmptyNeighbor2,
-                           const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
+                           const Mat<int> &nonEmptyNeighbor1, const Mat<int> &nonEmptyNeighbor2,
+                           const Mat<int> &mapERP2Cassini = Mat<int>()) {
 
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
@@ -196,19 +195,19 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
   const int width = int(Y.width());
   const int height = int(Y.height());
 
-  Common::Mat<int> isHole;
+  Mat<int> isHole;
   isHole.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborL;
+  Mat<int> nonEmptyNeighborL;
   nonEmptyNeighborL.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborR;
+  Mat<int> nonEmptyNeighborR;
   nonEmptyNeighborR.resize(height, width);
 
-  Common::Mat<int> mapERP2Cassini;
+  Mat<int> mapERP2Cassini;
   mapERP2Cassini.resize(height, width);
 
-  Common::Mat<int> mapCassini2ERP;
+  Mat<int> mapCassini2ERP;
   mapCassini2ERP.resize(height, width);
 
   for (int h = 0; h < height; h++) {
@@ -307,16 +306,16 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
   const int width = int(D.width());
   const int height = int(D.height());
 
-  Common::Mat<int> nonEmptyNeighborL;
+  Mat<int> nonEmptyNeighborL;
   nonEmptyNeighborL.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborR;
+  Mat<int> nonEmptyNeighborR;
   nonEmptyNeighborR.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborT;
+  Mat<int> nonEmptyNeighborT;
   nonEmptyNeighborT.resize(height, width);
 
-  Common::Mat<int> nonEmptyNeighborB;
+  Mat<int> nonEmptyNeighborB;
   nonEmptyNeighborB.resize(height, width);
 
   // analysis from top-left
@@ -401,14 +400,13 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 }
 
 template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
-  static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
-                std::is_same_v<YUVD, Texture444Depth16Frame>);
+  static_assert(is_same_v<YUVD, Texture444Depth10Frame> || is_same_v<YUVD, Texture444Depth16Frame>);
 
   double DepthBlendingThreshold = depthBlendingThreshold8;
-  if (std::is_same_v<YUVD, Texture444Depth10Frame>) {
+  if (is_same_v<YUVD, Texture444Depth10Frame>) {
     DepthBlendingThreshold = depthBlendingThreshold10;
   }
-  if (std::is_same_v<YUVD, Texture444Depth16Frame>) {
+  if (is_same_v<YUVD, Texture444Depth16Frame>) {
     DepthBlendingThreshold = depthBlendingThreshold16;
   }
 

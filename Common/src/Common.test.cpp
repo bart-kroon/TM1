@@ -99,7 +99,7 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   SECTION("Matrix determinant")
   REQUIRE(fabs(det(m1) - 54.F) < EPS);
 
-  std::fill(m1.diag_begin(), m1.diag_end(), 0.F);
+  fill(m1.diag_begin(), m1.diag_end(), 0.F);
   SECTION("Matrix iterator")
   REQUIRE(fabs(trace(m1)) < EPS);
 }

@@ -50,7 +50,7 @@ using namespace TMIV::Image;
 
 namespace TMIV::IO {
 string getFullPath(const Json &config, const string &baseDirectoryField,
-                   const string &fileNameField, size_t cameraId, const std::string &cameraName) {
+                   const string &fileNameField, size_t cameraId, const string &cameraName) {
   string baseDirectory;
   string fileName =
       cameraName.empty()
@@ -112,8 +112,7 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
 template <typename FORMAT>
 MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
                               const char *what, const char *directory, const char *texturePathFmt,
-                              const char *depthPathFmt,
-                              const std::vector<std::string> &cameraNames = {}) {
+                              const char *depthPathFmt, const vector<string> &cameraNames = {}) {
   cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
@@ -148,39 +147,37 @@ struct Pose {
   Vec3f rotation;
 };
 
-Pose loadPoseFromCSV(std::istream &stream, int frameIndex) {
-  std::string line;
-  std::getline(stream, line);
+Pose loadPoseFromCSV(istream &stream, int frameIndex) {
+  string line;
+  getline(stream, line);
 
-  std::regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
-  if (!std::regex_match(line, re_header)) {
-    throw std::runtime_error("Format error in the pose trace header");
+  regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
+  if (!regex_match(line, re_header)) {
+    throw runtime_error("Format error in the pose trace header");
   }
 
   int currentFrameIndex = 0;
-  std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
-  std::regex re_empty("\\s*");
+  regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+  regex re_empty("\\s*");
   bool trailing_empty_lines = false;
 
-  while (std::getline(stream, line)) {
-    std::smatch match;
-    if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
+  while (getline(stream, line)) {
+    smatch match;
+    if (!trailing_empty_lines && regex_match(line, match, re_row)) {
 
       if (currentFrameIndex == frameIndex) {
-        return {Vec3f({std::stof(match[1].str()), std::stof(match[2].str()),
-                       std::stof(match[3].str())}),
-                Vec3f({std::stof(match[4].str()), std::stof(match[5].str()),
-                       std::stof(match[6].str())})};
+        return {Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
+                Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};
       }
       { currentFrameIndex++; }
-    } else if (std::regex_match(line, re_empty)) {
+    } else if (regex_match(line, re_empty)) {
       trailing_empty_lines = true;
     } else {
-      throw std::runtime_error("Format error in a pose trace row");
+      throw runtime_error("Format error in a pose trace row");
     }
   }
 
-  throw std::runtime_error("Unable to load required frame index " + to_string(frameIndex));
+  throw runtime_error("Unable to load required frame index " + to_string(frameIndex));
 }
 
 } // namespace

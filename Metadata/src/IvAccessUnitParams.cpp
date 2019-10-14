@@ -52,7 +52,7 @@ bool AtlasParameters::isRotated() const {
          rotation == PatchRotation::rot270 || rotation == PatchRotation::mrot90;
 }
 
-auto AtlasParameters::patchSizeInAtlas() const -> Common::Vec2i {
+auto AtlasParameters::patchSizeInAtlas() const -> Vec2i {
   if (isRotated()) {
     return {patchSizeInView.y(), patchSizeInView.x()};
   }

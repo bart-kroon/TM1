@@ -40,9 +40,8 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::IO {
-IvMetadataWriter::IvMetadataWriter(const Common::Json &config,
-                                   const std::string &baseDirectoryField,
-                                   const std::string &fileNameField) {
+IvMetadataWriter::IvMetadataWriter(const Json &config, const string &baseDirectoryField,
+                                   const string &fileNameField) {
   m_path = getFullPath(config, baseDirectoryField, fileNameField);
   m_stream.open(m_path, ios::binary);
   if (!m_stream.good()) {

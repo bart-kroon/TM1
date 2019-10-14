@@ -54,33 +54,31 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  using Vec2i = Common::Vec2i;
-  using AtlasParameters = Metadata::AtlasParameters;
-
-  void prepareIntraPeriod(CameraParametersList basicCameras,
-                          CameraParametersList additionalCameras) override;
-  void pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) override;
+  void prepareIntraPeriod(Metadata::CameraParametersList basicCameras,
+                          Metadata::CameraParametersList additionalCameras) override;
+  void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) override;
   void completeIntraPeriod() override;
 
   std::vector<Common::Vec2i> getAtlasSize() const override;
-  const CameraParametersList &getCameraList() const override { return m_cameras; }
-  const AtlasParametersList &getPatchList() const override { return m_patchList; }
-  MVD16Frame popAtlas() override;
+  const Metadata::CameraParametersList &getCameraList() const override { return m_cameras; }
+  const Metadata::AtlasParametersList &getPatchList() const override { return m_patchList; }
+  Common::MVD16Frame popAtlas() override;
 
 private:
-  void writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views, MVD16Frame &atlas);
+  void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
+                         Common::MVD16Frame &atlas);
 
 private:
   std::uint16_t m_nbAtlas = 0;
-  Vec2i m_atlasSize;
+  Common::Vec2i m_atlasSize;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
   std::vector<std::uint8_t> m_isReferenceView;
-  std::vector<MVD16Frame> m_viewBuffer;
+  std::vector<Common::MVD16Frame> m_viewBuffer;
   Metadata::CameraParametersList m_cameras;
   Metadata::AtlasParametersList m_patchList;
-  std::deque<MVD16Frame> m_atlasBuffer;
+  std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
 } // namespace TMIV::AtlasConstructor
 

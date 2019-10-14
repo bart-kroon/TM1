@@ -41,6 +41,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Image;
 using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasConstructor {
@@ -89,25 +90,24 @@ public:
 
     for (size_t i = 0; i < atlasSize.size(); i++) {
       auto sz = atlasSize[i];
-      auto nbPatch = std::count_if(m_atlasConstructor->getPatchList().begin(),
-                                   m_atlasConstructor->getPatchList().end(),
-                                   [i](const AtlasParameters &p) { return (p.atlasId == i); });
+      auto nbPatch = count_if(m_atlasConstructor->getPatchList().begin(),
+                              m_atlasConstructor->getPatchList().end(),
+                              [i](const AtlasParameters &p) { return (p.atlasId == i); });
 
       cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y() << "): " << nbPatch << " patches\n";
     }
 
     if (intraFrame == 0) {
-      m_metadataWriter.writeIvSequenceParams(
-          Metadata::modifyDepthRange(m_atlasConstructor->getCameraList()));
+      m_metadataWriter.writeIvSequenceParams(modifyDepthRange(m_atlasConstructor->getCameraList()));
     }
     m_metadataWriter.writeIvAccessUnitParams(m_atlasConstructor->getPatchList(),
                                              m_omafV1CompatibleFlag, atlasSize);
 
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,
-                    Image::modifyDepthRange(m_atlasConstructor->popAtlas(),
-                                            m_atlasConstructor->getCameraList(),
-                                            m_metadataWriter.cameraList()));
+                    modifyDepthRange(m_atlasConstructor->popAtlas(),
+                                     m_atlasConstructor->getCameraList(),
+                                     m_metadataWriter.cameraList()));
     }
   }
 };

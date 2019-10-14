@@ -35,13 +35,13 @@
 #include <TMIV/Encoder/Encoder.h>
 
 using namespace std;
+using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 using namespace TMIV::ViewOptimizer;
-using namespace TMIV::AtlasConstructor;
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
+Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     : m_viewOptimizer{Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", rootNode,
                                                                     componentNode)},
       m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(

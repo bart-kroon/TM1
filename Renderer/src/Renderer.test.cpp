@@ -64,8 +64,8 @@ auto makeFullERPCamera() {
 TEST_CASE("Full ERP", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const CameraParameters camera{
-      {7, 5}, {}, {}, ProjectionType::ERP, {-180.F, 180.F}, {-90.F, 90.F}, {}, {}, {}};
+  const CameraParameters camera{{7, 5}, {}, {}, ProjectionType::ERP, {-180.F, 180.F}, {-90.F, 90.F},
+                                {},     {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -128,8 +128,8 @@ TEST_CASE("Full ERP", "[Render engine]") {
 TEST_CASE("Equirectangular viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const CameraParameters camera{
-      {7, 5}, {}, {}, ProjectionType::ERP, {-10.F, 10.F}, {-10.F, 10.F}, {}, {}, {}};
+  const CameraParameters camera{{7, 5}, {}, {}, ProjectionType::ERP, {-10.F, 10.F}, {-10.F, 10.F},
+                                {},     {}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -192,8 +192,8 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
 TEST_CASE("Perspective viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const CameraParameters camera{
-      {7, 5}, {}, {}, ProjectionType::Perspective, {}, {}, {10.F, 10.F}, {3.5F, 2.5F}, {}};
+  const CameraParameters camera{{7, 5},       {},           {}, ProjectionType::Perspective, {}, {},
+                                {10.F, 10.F}, {3.5F, 2.5F}, {}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -284,17 +284,17 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
     Pixel pixel{1.F, 1.F, 1.F, 10.F};
 
     THEN("The attributes are zero")
-    REQUIRE(std::get<0>(acc.attributes()).x() == 0.F);
-    REQUIRE(std::get<0>(acc.attributes()).y() == 0.F);
-    REQUIRE(std::get<0>(acc.attributes()).z() == 0.F);
+    REQUIRE(get<0>(acc.attributes()).x() == 0.F);
+    REQUIRE(get<0>(acc.attributes()).y() == 0.F);
+    REQUIRE(get<0>(acc.attributes()).z() == 0.F);
 
     WHEN("Averaging") {
       auto val = pixel.average(acc);
 
       THEN("The attributes are zero") {
-        REQUIRE(std::get<0>(val.attributes()).x() == 0.F);
-        REQUIRE(std::get<0>(val.attributes()).y() == 0.F);
-        REQUIRE(std::get<0>(val.attributes()).z() == 0.F);
+        REQUIRE(get<0>(val.attributes()).x() == 0.F);
+        REQUIRE(get<0>(val.attributes()).y() == 0.F);
+        REQUIRE(get<0>(val.attributes()).z() == 0.F);
       }
     }
   }
@@ -405,25 +405,25 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       THEN("The depth map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
-        REQUIRE(depth.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(depth.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(none_of(begin(depth), end(depth), [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(is_same_v<decltype(normDisp), Mat<float>>);
-        REQUIRE(normDisp.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(normDisp.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(normDisp), end(normDisp), [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(is_same_v<decltype(normWeight), Mat<float>>);
-        REQUIRE(normWeight.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(normWeight.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(normWeight), end(normWeight), [](float x) { return x == 0.F; }));
       }
       THEN("The color map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
-        REQUIRE(color.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(color.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(color), end(color), [](Vec3w x) { return x == Vec3w{}; }));
       }
     }
@@ -451,25 +451,25 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       THEN("The depth map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(is_same_v<decltype(depth), Mat<float>>);
-        REQUIRE(depth.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(depth.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(none_of(begin(depth), end(depth), [](float x) { return isfinite(x); }));
       }
       THEN("The normalized disparity map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(is_same_v<decltype(normDisp), Mat<float>>);
-        REQUIRE(normDisp.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(normDisp.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(normDisp), end(normDisp), [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(is_same_v<decltype(normWeight), Mat<float>>);
-        REQUIRE(normWeight.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(normWeight.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(normWeight), end(normWeight), [](float x) { return x == 0.F; }));
       }
       THEN("The color map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(color), Mat<Vec3w>>);
-        REQUIRE(color.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(color.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(color), end(color), [](Vec3w x) { return x == Vec3w{}; }));
       }
     }
@@ -578,7 +578,7 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
       THEN("The field map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(field), Mat<Vec2f>>);
-        REQUIRE(field.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(field.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(field), end(field), [](Vec2f x) { return x == Vec2f{}; }));
       }
     }
@@ -593,7 +593,7 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
       THEN("The field map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
         static_assert(is_same_v<decltype(field), Mat<Vec2f>>);
-        REQUIRE(field.sizes() == array{std::size_t(4), std::size_t(8)});
+        REQUIRE(field.sizes() == array{size_t(4), size_t(8)});
         REQUIRE(all_of(begin(field), end(field), [](Vec2f x) { return x == Vec2f{}; }));
       }
     }
@@ -643,13 +643,11 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
 }
 
 SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
-  using Mat1f = TMIV::Common::Mat<float>;
-
   GIVEN("A synthesizer, camera and a depth map") {
     Synthesizer synthesizer{1., 1., 1., 10.F};
     auto camera = makeFullERPCamera();
 
-    Mat1f depth({unsigned(camera.size.y()), unsigned(camera.size.x())});
+    Mat<float> depth({unsigned(camera.size.y()), unsigned(camera.size.x())});
     fill(begin(depth), end(depth), 2.F);
 
     WHEN("Synthesizing to the same viewpoint") {

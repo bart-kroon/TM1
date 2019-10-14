@@ -35,18 +35,21 @@
 #include <TMIV/AtlasConstructor/Packer.h>
 #include <queue>
 
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Metadata;
+
 namespace TMIV::AtlasConstructor {
 
-Packer::Packer(const Common::Json & /*rootNode*/, const Common::Json &componentNode) {
+Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
   m_alignment = componentNode.require("Alignment").asInt();
   m_minPatchSize = componentNode.require("MinPatchSize").asInt();
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
 }
 
-Metadata::AtlasParametersList Packer::pack(const std::vector<Vec2i> &atlasSize,
-                                           const MaskList &masks,
-                                           const std::vector<std::uint8_t> &shouldNotBeSplit) {
+AtlasParametersList Packer::pack(const vector<Vec2i> &atlasSize, const MaskList &masks,
+                                 const vector<uint8_t> &shouldNotBeSplit) {
 
   // Mask clustering
   ClusterList clusterList;
@@ -57,14 +60,13 @@ Metadata::AtlasParametersList Packer::pack(const std::vector<Vec2i> &atlasSize,
         Cluster::retrieve(cameraId, masks[cameraId], static_cast<int>(clusterList.size()),
                           shouldNotBeSplit[cameraId] != 0U);
 
-    std::move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
-              std::back_inserter(clusterList));
-    clusteringMap.push_back(std::move(clusteringOutput.second));
+    move(clusteringOutput.first.begin(), clusteringOutput.first.end(), back_inserter(clusterList));
+    clusteringMap.push_back(move(clusteringOutput.second));
   }
 
   // Packing
   AtlasParametersList patchList;
-  std::vector<MaxRectPiP> packerList;
+  vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 
   packerList.reserve(atlasSize.size());
@@ -79,7 +81,7 @@ Metadata::AtlasParametersList Packer::pack(const std::vector<Vec2i> &atlasSize,
     { return (p1.getArea() < p2.getArea()); }
   };
 
-  std::priority_queue<Cluster, std::vector<Cluster>, decltype(comp)> clusterToPack(comp);
+  priority_queue<Cluster, vector<Cluster>, decltype(comp)> clusterToPack(comp);
 
   for (const auto &cluster : clusterList) {
     // modification to align the imin,jmin to even values to help renderer
@@ -96,16 +98,15 @@ Metadata::AtlasParametersList Packer::pack(const std::vector<Vec2i> &atlasSize,
         MaxRectPiP &packer = packerList[atlasId];
 
         if (packer.push(cluster, clusteringMap[cluster.getCameraId()], packerOutput)) {
-          Metadata::AtlasParameters p;
+          AtlasParameters p;
 
           p.atlasId = static_cast<uint8_t>(atlasId);
           p.viewId = static_cast<uint8_t>(cluster.getCameraId());
-          p.patchSizeInView = {Common::align(cluster.width(), m_alignment),
-                               Common::align(cluster.height(), m_alignment)};
+          p.patchSizeInView = {align(cluster.width(), m_alignment),
+                               align(cluster.height(), m_alignment)};
           p.posInView = {cluster.jmin(), cluster.imin()};
           p.posInAtlas = {packerOutput.x(), packerOutput.y()};
-          p.rotation = packerOutput.isRotated() ? Metadata::PatchRotation::rot270
-                                                : Metadata::PatchRotation::none;
+          p.rotation = packerOutput.isRotated() ? PatchRotation::rot270 : PatchRotation::none;
 
           auto patchOverflow =
               (p.posInView + p.patchSizeInView) - masks[cluster.getCameraId()].getSize();

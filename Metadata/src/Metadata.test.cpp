@@ -202,7 +202,8 @@ const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
-const auto ivsParams = array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1]}};
+const auto ivSequenceParams =
+    array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1]}};
 
 const auto atlasParamsList = array{
     AtlasParamsList{{AtlasParameters{0, 0, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90}},
@@ -254,7 +255,7 @@ TEST_CASE("Metadata bitstreams") {
   SECTION("camera_params_list[0]") { REQUIRE(codingTest(examples::cameraParameterList[0], 59)); }
   SECTION("camera_params_list[1]") { REQUIRE(codingTest(examples::cameraParameterList[1], 83)); }
   SECTION("camera_params_list[2]") { REQUIRE(codingTest(examples::cameraParameterList[2], 115)); }
-  SECTION("ivs_params[0]") { REQUIRE(codingTest(examples::ivsParams[0], 83)); }
+  SECTION("ivs_params[0]") { REQUIRE(codingTest(examples::ivSequenceParams[0], 83)); }
   SECTION("atlas_params_list[0]") {
     REQUIRE(codingTest(examples::atlasParamsList[0], 17, examples::cameraParameterList[0]));
   }

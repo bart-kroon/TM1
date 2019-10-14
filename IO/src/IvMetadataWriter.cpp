@@ -51,8 +51,8 @@ IvMetadataWriter::IvMetadataWriter(const Json &config, const string &baseDirecto
   }
 }
 
-void IvMetadataWriter::writeIvSequenceParams(IvSequenceParams ivsParams) {
-  m_ivSequenceParams = move(ivsParams);
+void IvMetadataWriter::writeIvSequenceParams(IvSequenceParams ivSequenceParams) {
+  m_ivSequenceParams = move(ivSequenceParams);
   m_ivSequenceParams.encodeTo(m_bitstream);
 }
 

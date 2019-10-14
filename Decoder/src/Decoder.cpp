@@ -49,24 +49,18 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
           "AtlasDeconstructor", rootNode, componentNode)},
       m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)} {}
 
-void Decoder::updateAtlasSize(SizeVector atlasSize) {
-  m_atlasSize = move(atlasSize);
-  m_patches.clear();
+void Decoder::updateSequenceParams(Metadata::IvSequenceParams ivSequenceParams) {
+  m_ivSequenceParams = move(ivSequenceParams);
 }
 
-void Decoder::updatePatchList(AtlasParamsVector patches, const MVD10Frame &frame) {
-  m_patches = move(patches);
-  assert(!m_ivSequenceParams.empty());
-  m_patchIdMaps =
-      m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, m_ivSequenceParams, frame);
-}
-
-void Decoder::updateCameraList(ViewParamsVector viewParamsVector) {
-  m_ivSequenceParams = move(viewParamsVector);
+void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams accessUnitParams) {
+  m_ivAccessUnitParams = accessUnitParams;
 }
 
 auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
     -> Texture444Depth16Frame {
-  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_ivSequenceParams, target);
+  return m_renderer->renderFrame(
+      atlas, m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas),
+      m_ivSequenceParams, m_ivAccessUnitParams, target);
 }
 } // namespace TMIV::Decoder

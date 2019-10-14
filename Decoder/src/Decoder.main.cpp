@@ -38,7 +38,6 @@
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
 
-#include <algorithm>
 #include <iostream>
 #include <memory>
 
@@ -67,21 +66,21 @@ public:
   }
 
   void run() override {
+    m_metadataReader.readIvSequenceParams();
+    cout << "Decoded sequence parameters:\n" << m_metadataReader.ivSequeceParams();
+
     for (int outputFrame = 0; outputFrame < m_numberOfFrames; ++outputFrame) {
       auto inputFrame = IO::getExtendedIndex(json(), outputFrame);
 
       if (m_metadataReader.readAccessUnit(inputFrame / m_intraPeriod)) {
-        cout << "OMAF v1 compatible flag: " << boolalpha << m_metadataReader.omafV1CompatibleFlag()
-             << '\n';
-        cout << "Decoded viewParamsVector:\n" << m_metadataReader.viewParamsList();
-        m_decoder->updateAtlasSize(m_metadataReader.atlasSizes());
-        m_decoder->updateCameraList(m_metadataReader.viewParamsList());
+        cout << "Decoded access unit parameters:\n" << m_metadataReader.ivAccessUnitParams();
+        m_decoder->updateAccessUnitParams(m_metadataReader.ivAccessUnitParams());
       }
 
-      auto atlas = IO::loadAtlas(json(), m_metadataReader.atlasSizes(), inputFrame);
-      m_decoder->updatePatchList(m_metadataReader.atlasParametersList(), atlas);
-      auto target = IO::loadViewportMetadata(json(), outputFrame);
-      auto viewport = m_decoder->decodeFrame(atlas, target);
+      auto viewport = m_decoder->decodeFrame(
+          IO::loadAtlas(json(), m_metadataReader.ivAccessUnitParams().atlasParamsList->atlasSizes,
+                        inputFrame),
+          IO::loadViewportMetadata(json(), outputFrame));
       IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
     }
   }

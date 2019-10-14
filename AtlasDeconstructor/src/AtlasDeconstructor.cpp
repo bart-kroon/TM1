@@ -48,22 +48,24 @@ constexpr auto neutralChroma = uint16_t(512);
 
 AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-auto AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
-                                       const AtlasParamsVector &atlasParamsVector,
-                                       const ViewParamsVector &viewParamsVector,
+auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
+                                       const IvAccessUnitParams &ivAccessUnitParams,
                                        const MVD10Frame &frame) -> PatchIdMapList {
   PatchIdMapList patchMapList;
+  assert(ivAccessUnitParams.atlasParamsList);
+  const auto &viewParamsList = ivSequenceParams.viewParamsList;
+  const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
-  for (const auto &sz : atlasSize) {
+  for (const auto &sz : atlasParamsList.atlasSizes) {
     PatchIdMap patchMap(sz.x(), sz.y());
     fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
     patchMapList.push_back(move(patchMap));
   }
 
-  for (size_t id = 0U; id < atlasParamsVector.size(); ++id) {
-    assert(atlasParamsVector[id].viewId < viewParamsVector.size());
-    writePatchIdInMap(atlasParamsVector[id], patchMapList, static_cast<uint16_t>(id), frame,
-                      viewParamsVector[atlasParamsVector[id].viewId].depthOccMapThreshold);
+  for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
+    assert(atlasParamsList[id].viewId < viewParamsList.size());
+    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
+                      viewParamsList[atlasParamsList[id].viewId].depthOccMapThreshold);
   }
 
   return patchMapList;

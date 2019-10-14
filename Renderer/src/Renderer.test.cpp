@@ -636,28 +636,3 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
     }
   }
 }
-
-SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
-  GIVEN("A synthesizer, camera and a depth map") {
-    Synthesizer synthesizer{1., 1., 1., 10.F};
-    auto viewParams = makeFullERPCamera();
-
-    Mat<float> depth({unsigned(viewParams.size.y()), unsigned(viewParams.size.x())});
-    fill(begin(depth), end(depth), 2.F);
-
-    WHEN("Synthesizing to the same viewpoint") {
-      auto actual = synthesizer.renderDepth(depth, viewParams, viewParams);
-      REQUIRE(actual.width() == 10);
-      REQUIRE(actual.height() == 5);
-
-      THEN("The output depth should match the input depth (EXCEPT FOR THE "
-           "RIGHT-MOST COLUMN)") {
-        for (size_t i = 0; i != depth.height(); ++i) {
-          for (size_t j = 0; j + 1 < depth.width(); ++j) {
-            REQUIRE(actual(i, j) == Approx(2.F));
-          }
-        }
-      }
-    }
-  }
-}

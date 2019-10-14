@@ -175,8 +175,8 @@ vector<size_t> sortViews(const ViewParamsVector &viewParamsVector, const ViewPar
 }
 
 auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                                    const AtlasParamsVector &patches,
-                                    const ViewParamsVector &viewParamsVector,
+                                    const IvSequenceParams &ivSequenceParams,
+                                    const IvAccessUnitParams &ivAccessUnitParams,
                                     const ViewParams &target) const -> Texture444Depth16Frame {
   //////////////////
   // Initialization
@@ -203,22 +203,25 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     }
   } // initalize mapsPass by 0xFFFF
 
-  for (const auto &patch : patches) {
+  assert(ivAccessUnitParams.atlasParamsList);
+  const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
+
+  for (const auto &patch : atlasParamsList) {
     patchesViewId.push_back(patch.viewId);
   } // initialize patchesViewId
 
   ///////////////
   // Ordering views based on their distance & angle to target view
   ///////////////
-  vector<size_t> sortedCamerasId(viewParamsVector.size());
-  sortedCamerasId = sortViews(viewParamsVector, target);
+  vector<size_t> sortedCamerasId(ivSequenceParams.viewParamsList.size());
+  sortedCamerasId = sortViews(ivSequenceParams.viewParamsList, target);
 
   // Produce the individual pass synthesis results
   for (int passId = 0; passId < numberOfPasses; passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
     selectedViewsPass.clear();
-    for (size_t id = 0; id < viewParamsVector.size(); ++id) {
+    for (size_t id = 0; id < ivSequenceParams.viewParamsList.size(); ++id) {
       if (id < numberOfViewsPerPass[passId]) {
         selectedViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
       }
@@ -235,9 +238,10 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     ////////////////
     // Synthesis per pass
     ////////////////
-    viewportPass[passId] =
-        m_synthesizer->renderFrame(atlas, mapsPass[passId], patches, viewParamsVector, target);
-  } // namespace TMIV::Renderer
+    viewportPass[passId] = m_synthesizer->renderFrame(atlas, mapsPass[passId], ivSequenceParams,
+                                                      ivAccessUnitParams, target);
+  }
+
   //////////////
   // Merging
   //////////////
@@ -264,14 +268,6 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     viewport = viewportPass[numberOfPasses - 1]; // Single Pass
   }
 
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
-
-auto MultipassRenderer::renderFrame(const MVD10Frame &atlas,
-                                    const ViewParamsVector &viewParamsVector,
-                                    const ViewParams &target) const -> Texture444Depth16Frame {
-  auto viewport = m_synthesizer->renderFrame(atlas, viewParamsVector, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

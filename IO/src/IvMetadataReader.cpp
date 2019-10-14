@@ -77,24 +77,4 @@ bool IvMetadataReader::readAccessUnit(int accessUnit) {
   }
   return true;
 }
-
-auto IvMetadataReader::viewParamsList() const -> const ViewParamsList & {
-  return m_ivSequenceParams.viewParamsList;
-}
-
-bool IvMetadataReader::omafV1CompatibleFlag() const {
-  return atlasParamsList().omafV1CompatibleFlag;
-}
-
-auto IvMetadataReader::atlasSizes() const -> const SizeVector & {
-  return atlasParamsList().atlasSizes;
-}
-
-auto IvMetadataReader::atlasParamsList() const -> const AtlasParamsList & {
-  return m_ivAccessUnitParams.atlasParamsList.value();
-}
-
-auto IvMetadataReader::atlasParametersList() const -> const AtlasParamsVector & {
-  return atlasParamsList();
-}
 } // namespace TMIV::IO

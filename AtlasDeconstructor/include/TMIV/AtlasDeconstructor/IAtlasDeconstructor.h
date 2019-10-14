@@ -48,10 +48,10 @@ public:
   IAtlasDeconstructor &operator=(IAtlasDeconstructor &&) = default;
   virtual ~IAtlasDeconstructor() = default;
 
-  virtual auto getPatchIdMap(const Common::SizeVector &atlasSize,
-                             const Metadata::AtlasParamsVector &atlasParamsVector,
-                             const Metadata::ViewParamsVector &viewParamsVector,
+  virtual auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
+                             const Metadata::IvAccessUnitParams &ivAccessUnitParams,
                              const Common::MVD10Frame &frame) -> Common::PatchIdMapList = 0;
+
   virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
                                  const Metadata::ViewParamsVector &viewParamsVector,
                                  const Metadata::AtlasParamsVector &atlasParamsVector)

@@ -50,11 +50,8 @@ public:
   void readIvAccessUnitParams();
   bool readAccessUnit(int accessUnit);
 
-  auto viewParamsList() const -> const Metadata::ViewParamsList &;
-  bool omafV1CompatibleFlag() const;
-  auto atlasSizes() const -> const Common::SizeVector &;
-  auto atlasParamsList() const -> const Metadata::AtlasParamsList &;
-  auto atlasParametersList() const -> const Metadata::AtlasParamsVector &;
+  auto ivSequeceParams() const -> const Metadata::IvSequenceParams &;
+  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
 
 private:
   std::string m_path;
@@ -64,6 +61,15 @@ private:
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   int m_accessUnit{-1};
 };
+
+inline auto IvMetadataReader::ivSequeceParams() const -> const Metadata::IvSequenceParams & {
+  return m_ivSequenceParams;
+}
+
+inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
+  return m_ivAccessUnitParams;
+}
+
 } // namespace TMIV::IO
 
 #endif

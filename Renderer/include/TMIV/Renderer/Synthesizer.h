@@ -48,18 +48,10 @@ public:
   ~Synthesizer() override;
 
   auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::AtlasParamsVector &patches,
-                   const Metadata::ViewParamsVector &viewParamsVector,
+                   const Metadata::IvSequenceParams &ivSequenceParams,
+                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
                    const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
-
-  auto renderFrame(const Common::MVD10Frame &frame,
-                   const Metadata::ViewParamsVector &viewParamsVector,
-                   const Metadata::ViewParams &target) const
-      -> Common::Texture444Depth16Frame override;
-
-  auto renderDepth(const Common::Mat<float> &frame, const Metadata::ViewParams &viewParams,
-                   const Metadata::ViewParams &target) const -> Common::Mat<float> override;
 
 private:
   class Impl;

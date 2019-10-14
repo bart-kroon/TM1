@@ -48,20 +48,8 @@ public:
   IDecoder &operator=(IDecoder &&) = default;
   virtual ~IDecoder() = default;
 
-  // Change the atlas size.
-  //
-  // This call invalidates the patch list and requires updatePatchList to be
-  // called before any call to decodeFrame.
-  virtual void updateAtlasSize(Common::SizeVector sizes) = 0;
-
-  // Change the patch list.
-  //
-  // This call shall be preceded by at least one call to updateAtlasSize.
-  virtual void updatePatchList(Metadata::AtlasParamsVector patches,
-                               const Common::MVD10Frame &frame) = 0;
-
-  // Change the camera list.
-  virtual void updateCameraList(Metadata::ViewParamsVector viewParamsVector) = 0;
+  virtual void updateSequenceParams(Metadata::IvSequenceParams) = 0;
+  virtual void updateAccessUnitParams(Metadata::IvAccessUnitParams) = 0;
 
   // Decode a frame and render to a target viewport.
   //

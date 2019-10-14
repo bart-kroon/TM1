@@ -293,20 +293,13 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretching
 
 Synthesizer::~Synthesizer() = default;
 
-auto Synthesizer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                              const AtlasParamsVector &patches,
-                              const ViewParamsVector &viewParamsVector,
-                              const ViewParams &target) const -> Texture444Depth16Frame {
-  return m_impl->renderFrame(atlas, maps, patches, viewParamsVector, target);
-}
-
-auto Synthesizer::renderFrame(const MVD10Frame &frame, const ViewParamsVector &viewParamsVector,
-                              const ViewParams &target) const -> Texture444Depth16Frame {
-  return m_impl->renderFrame(frame, viewParamsVector, target);
-}
-
-auto Synthesizer::renderDepth(const Mat<float> &frame, const ViewParams &viewParams,
-                              const ViewParams &target) const -> Mat<float> {
-  return m_impl->renderDepth(frame, viewParams, target);
+auto Synthesizer::renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                              const Metadata::IvSequenceParams &ivSequenceParams,
+                              const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                              const Metadata::ViewParams &target) const
+    -> Common::Texture444Depth16Frame {
+  assert(ivAccessUnitParams.atlasParamsList);
+  return m_impl->renderFrame(atlas, maps, *ivAccessUnitParams.atlasParamsList,
+                             ivSequenceParams.viewParamsList, target);
 }
 } // namespace TMIV::Renderer

@@ -57,13 +57,8 @@ public:
   ~MultipassRenderer() override = default;
 
   auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::AtlasParamsVector &patches,
-                   const Metadata::ViewParamsVector &viewParamsVector,
-                   const Metadata::ViewParams &target) const
-      -> Common::Texture444Depth16Frame override;
-
-  auto renderFrame(const Common::MVD10Frame &atlas,
-                   const Metadata::ViewParamsVector &viewParamsVector,
+                   const Metadata::IvSequenceParams &ivSequenceParams,
+                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
                    const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 };

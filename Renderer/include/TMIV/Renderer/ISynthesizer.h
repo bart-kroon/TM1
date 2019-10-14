@@ -34,18 +34,10 @@
 #ifndef _TMIV_RENDERER_ISYNTHESIZER_H_
 #define _TMIV_RENDERER_ISYNTHESIZER_H_
 
-#include <TMIV/Common/Matrix.h>
 #include <TMIV/Renderer/IRenderer.h>
 
 namespace TMIV::Renderer {
-class ISynthesizer : public IRenderer {
-public:
-  // Synthesize a floating-piont depth map from one view to another without
-  // inpainting. Pixels with NaN depth in the input are skipped. Pixels not
-  // present in the output will have NaN depth. Depth values are in meters.
-  virtual auto renderDepth(const Common::Mat<float> &frame, const Metadata::ViewParams &viewParams,
-                           const Metadata::ViewParams &target) const -> Common::Mat<float> = 0;
-};
+using ISynthesizer = IRenderer;
 } // namespace TMIV::Renderer
 
 #endif

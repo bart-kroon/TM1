@@ -45,10 +45,9 @@ class Decoder : public IDecoder {
 private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
-  Common::SizeVector m_atlasSize;
-  Metadata::AtlasParamsVector m_patches;
+  Metadata::IvSequenceParams m_ivSequenceParams;
+  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   Common::PatchIdMapList m_patchIdMaps;
-  Metadata::ViewParamsVector m_ivSequenceParams;
 
 public:
   Decoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -58,10 +57,8 @@ public:
   Decoder &operator=(Decoder &&) = default;
   ~Decoder() override = default;
 
-  void updateAtlasSize(Common::SizeVector atlasSize) override;
-  void updatePatchList(Metadata::AtlasParamsVector patches,
-                       const Common::MVD10Frame &frame) override;
-  void updateCameraList(Metadata::ViewParamsVector viewParamsVector) override;
+  void updateSequenceParams(Metadata::IvSequenceParams) override;
+  void updateAccessUnitParams(Metadata::IvAccessUnitParams) override;
 
   auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;

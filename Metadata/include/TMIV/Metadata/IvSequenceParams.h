@@ -48,9 +48,8 @@ namespace TMIV::Metadata {
 class InputBitstream;
 class OutputBitstream;
 
+// In specification: ivs_profile_tier_level( )
 struct IvsProfileTierLevel {
-  // Not yet defined in the specification
-
   bool operator==(const IvsProfileTierLevel &other) const;
   bool operator!=(const IvsProfileTierLevel &other) const { return !operator==(other); }
 
@@ -59,10 +58,12 @@ struct IvsProfileTierLevel {
 };
 
 struct ErpParams {
-  // In specification: erp_phi_{min,max}
+  // In specification: erp_phi_min[ v ]
+  // In specification: erp_phi_max[ v ]
   Common::Vec2f phiRange{};
 
-  // In specification: erp_theta_{min,max}
+  // In specification: erp_theta_min[ v ]
+  // In specification: erp_theta_max[ v ]
   Common::Vec2f thetaRange{};
 
   friend std::ostream &operator<<(std::ostream &stream, const ErpParams &);
@@ -74,10 +75,12 @@ struct ErpParams {
 };
 
 struct PerspectiveParams {
-  // In specification: perspective_focal_{hor,ver}
+  // In specification: perspective_focal_hor[ v ]
+  // In specification: perspective_focal_ver[ v ]
   Common::Vec2f focal{};
 
-  // In specification: perspective_center_{hor,ver}
+  // In specification: perspective_center_hor[ v ]
+  // In specification: perspective_center_ver[ v ]
   Common::Vec2f center{};
 
   friend std::ostream &operator<<(std::ostream &stream, const PerspectiveParams &);
@@ -90,25 +93,31 @@ struct PerspectiveParams {
 
 using ProjectionParams = std::variant<ErpParams, PerspectiveParams>;
 
-// Data type that corresponds to an entry of camera_params_list of specification
 struct ViewParams {
-  // In specification: projection_plane_{width,height}
+  // In specification: projection_plane_width_minus1[ v ]
+  // In specification: projection_plane_height_minus1[ v ]
   Common::Vec2i size{};
 
-  // In specification: cam_pos_{x,y,z}
+  // In specification: cam_pos_x[ i ]
+  // In specification: cam_pos_y[ i ]
+  // In specification: cam_pos_z[ i ]
   Common::Vec3f position{};
 
-  // In specification: cam_{yaw,pitch,roll}
+  // In specification: cam_yaw[ i ]
+  // In specification: cam_pitch[ i ]
+  // In specification: cam_roll[ i ]
   Common::Vec3f rotation{};
 
-  // In specification: cam_type
+  // In specification: cam_type[ v ]
   ProjectionParams projection{};
   auto erp() const -> const ErpParams &;
   auto perspective() const -> const PerspectiveParams &;
 
-  // In specification: depth_{near,far}
+  // In specification: norm_disp_low[ v ]
+  // In specification: norm_disp_high[ v ]
   Common::Vec2f normDispRange{};
 
+  // In specification: depth_occ_map_threshold_default[ v ]
   uint16_t depthOccMapThreshold{};
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &camera);
@@ -137,7 +146,10 @@ struct ViewParamsList : public ViewParamsVector {
   ViewParamsList &operator=(const ViewParamsList &) = default;
   ViewParamsList &operator=(ViewParamsList &&) = default;
 
+  // In specification: intrinsic_params_equal_flag
   bool areIntrinsicParamsEqual() const;
+
+  // In specification: depth_quantization_params_equal_flag
   bool areDepthQuantizationParamsEqual() const;
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &cameras);
@@ -156,7 +168,10 @@ struct ViewParamsList : public ViewParamsVector {
 };
 
 struct IvSequenceParams {
+  // In specification: ivs_profile_tier_level( )
   IvsProfileTierLevel ivsProfileTierLevel;
+
+  // In specification: view_params_list( )
   ViewParamsList cameraParamsList;
 
   bool operator==(const IvSequenceParams &other) const;

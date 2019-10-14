@@ -307,20 +307,20 @@ CameraParamsList CameraParamsList::loadFromJson(const Json &node, const vector<s
   return result;
 }
 
-bool IvsParams::operator==(const IvsParams &other) const {
+bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
   return ivsProfileTierLevel == other.ivsProfileTierLevel &&
          cameraParamsList == other.cameraParamsList;
 }
 
-auto IvsParams::decodeFrom(InputBitstream &bitstream) -> IvsParams {
+auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
   const auto ivsProfileTierLevel = IvsProfileTierLevel::decodeFrom(bitstream);
   const auto cameraParamsList = CameraParamsList::decodeFrom(bitstream);
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
-  return IvsParams{ivsProfileTierLevel, cameraParamsList};
+  return IvSequenceParams{ivsProfileTierLevel, cameraParamsList};
 }
 
-void IvsParams::encodeTo(OutputBitstream &bitstream) const {
+void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   ivsProfileTierLevel.encodeTo(bitstream);
   cameraParamsList.encodeTo(bitstream);
   bitstream.putFlag(false);

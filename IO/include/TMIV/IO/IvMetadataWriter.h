@@ -46,7 +46,7 @@ public:
   IvMetadataWriter(const Common::Json &config, const std::string &baseDirectoryField,
                    const std::string &fileNameField);
 
-  void writeIvSequenceParams(Metadata::IvsParams);
+  void writeIvSequenceParams(Metadata::IvSequenceParams);
   void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
 
   auto cameraList() const -> const Metadata::CameraParamsList &;
@@ -55,7 +55,7 @@ private:
   std::string m_path;
   std::ofstream m_stream;
   Metadata::OutputBitstream m_bitstream{m_stream};
-  Metadata::IvsParams m_ivsParams;
+  Metadata::IvSequenceParams m_ivsParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
 };
 

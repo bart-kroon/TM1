@@ -51,7 +51,9 @@ IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirecto
   }
 }
 
-void IvMetadataReader::readIvSequenceParams() { m_ivsParams = IvsParams::decodeFrom(m_bitstream); }
+void IvMetadataReader::readIvSequenceParams() {
+  m_ivsParams = IvSequenceParams::decodeFrom(m_bitstream);
+}
 
 void IvMetadataReader::readIvAccessUnitParams() {
   const auto currentAtlasParamsList = m_ivAccessUnitParams.atlasParamsList;

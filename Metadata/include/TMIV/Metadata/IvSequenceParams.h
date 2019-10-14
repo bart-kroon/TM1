@@ -155,14 +155,14 @@ struct CameraParamsList : public CameraParametersVector {
                                        const std::vector<std::string> &names);
 };
 
-struct IvsParams {
+struct IvSequenceParams {
   IvsProfileTierLevel ivsProfileTierLevel;
   CameraParamsList cameraParamsList;
 
-  bool operator==(const IvsParams &other) const;
-  bool operator!=(const IvsParams &other) const { return !operator==(other); }
+  bool operator==(const IvSequenceParams &other) const;
+  bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> IvsParams;
+  static auto decodeFrom(InputBitstream &) -> IvSequenceParams;
   void encodeTo(OutputBitstream &) const;
 };
 

@@ -203,7 +203,7 @@ const auto cameraParameterList =
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
-const auto ivsParams = array{IvsParams{ivsProfileTierLevel[0], cameraParameterList[1]}};
+const auto ivsParams = array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1]}};
 
 const auto atlasParamsList = array{
     AtlasParamsList{{AtlasParameters{0, 0, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90}},

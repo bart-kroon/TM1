@@ -54,7 +54,7 @@ private:
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_omafV1CompatibleFlag{};
-  CameraParamsList m_cameras;
+  ViewParamsList m_cameras;
   IO::IvMetadataWriter m_metadataWriter;
 
 public:
@@ -89,7 +89,7 @@ private:
 
     if (intraFrame == 0) {
       m_metadataWriter.writeIvSequenceParams(
-          {{}, CameraParamsList{modifyDepthRange(m_encoder->getCameraList())}});
+          {{}, ViewParamsList{modifyDepthRange(m_encoder->getCameraList())}});
       cout << "Encoded cameras:\n" << m_metadataWriter.cameraList();
     }
     m_metadataWriter.writeIvAccessUnitParams(

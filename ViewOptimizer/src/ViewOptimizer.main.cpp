@@ -49,7 +49,7 @@ private:
   unique_ptr<IViewOptimizer> m_optimizer;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  CameraParamsList m_cameras;
+  ViewParamsList m_cameras;
 
 public:
   explicit Application(vector<const char *> argv)

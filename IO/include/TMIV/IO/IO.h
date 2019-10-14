@@ -51,14 +51,13 @@ std::string getFullPath(const Common::Json &config, const std::string &baseDirec
 template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
 auto sizesOf(const Metadata::ViewParamsVector &cameras) -> Common::SizeVector;
-Metadata::CameraParamsList loadSourceMetadata(const Common::Json &config);
+Metadata::ViewParamsList loadSourceMetadata(const Common::Json &config);
 Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
                                    int frameIndex);
 
 void saveOptimizedMetadata(const Common::Json &config,
                            const BasicAdditional<Metadata::ViewParamsVector> &);
-auto loadOptimizedMetadata(const Common::Json &config)
-    -> BasicAdditional<Metadata::CameraParamsList>;
+auto loadOptimizedMetadata(const Common::Json &config) -> BasicAdditional<Metadata::ViewParamsList>;
 void saveOptimizedFrame(const Common::Json &config, int frameIndex,
                         const BasicAdditional<Common::MVD16Frame> &frame);
 auto loadOptimizedFrame(const Common::Json &config,

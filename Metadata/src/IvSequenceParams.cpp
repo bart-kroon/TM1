@@ -132,7 +132,7 @@ auto modifyDepthRange(const ViewParamsVector &in) -> ViewParamsVector {
   return out;
 }
 
-bool CameraParamsList::areIntrinsicParamsEqual() const {
+bool ViewParamsList::areIntrinsicParamsEqual() const {
   for (auto i = begin() + 1; i < end(); ++i) {
     if (front().projection != i->projection) {
       return false;
@@ -142,7 +142,7 @@ bool CameraParamsList::areIntrinsicParamsEqual() const {
   return true;
 }
 
-bool CameraParamsList::areDepthQuantizationParamsEqual() const {
+bool ViewParamsList::areDepthQuantizationParamsEqual() const {
   for (auto i = begin() + 1; i < end(); ++i) {
     if (front().normDispRange != i->normDispRange) {
       return false;
@@ -152,14 +152,14 @@ bool CameraParamsList::areDepthQuantizationParamsEqual() const {
   return true;
 }
 
-ostream &operator<<(ostream &stream, const CameraParamsList &cameras) {
+ostream &operator<<(ostream &stream, const ViewParamsList &cameras) {
   for (size_t i = 0; i < cameras.size(); ++i) {
     stream << "Camera " << setw(2) << i << ": " << cameras[i] << '\n';
   }
   return stream;
 }
 
-bool CameraParamsList::operator==(const CameraParamsList &other) const {
+bool ViewParamsList::operator==(const ViewParamsList &other) const {
   return equal(begin(), end(), other.begin(), other.end());
 }
 
@@ -181,8 +181,8 @@ auto PerspectiveParams::decodeFrom(InputBitstream &bitstream) -> PerspectivePara
   return projection;
 }
 
-auto CameraParamsList::decodeFrom(InputBitstream &bitstream) -> CameraParamsList {
-  auto cameraParamsList = CameraParamsList{ViewParamsVector(bitstream.getUint16() + 1)};
+auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
+  auto cameraParamsList = ViewParamsList{ViewParamsVector(bitstream.getUint16() + 1)};
 
   for (auto &cameraParams : cameraParamsList) {
     cameraParams.position.x() = bitstream.getFloat32();
@@ -250,7 +250,7 @@ void PerspectiveParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFloat32(center.y());
 }
 
-void CameraParamsList::encodeTo(OutputBitstream &bitstream) const {
+void ViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   assert(!empty() && size() - 1 <= UINT16_MAX);
   bitstream.putUint16(uint16_t(size() - 1));
 
@@ -291,8 +291,8 @@ void CameraParamsList::encodeTo(OutputBitstream &bitstream) const {
   }
 }
 
-CameraParamsList CameraParamsList::loadFromJson(const Json &node, const vector<string> &names) {
-  CameraParamsList result;
+ViewParamsList ViewParamsList::loadFromJson(const Json &node, const vector<string> &names) {
+  ViewParamsList result;
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
@@ -314,7 +314,7 @@ bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
 
 auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
   const auto ivsProfileTierLevel = IvsProfileTierLevel::decodeFrom(bitstream);
-  const auto cameraParamsList = CameraParamsList::decodeFrom(bitstream);
+  const auto cameraParamsList = ViewParamsList::decodeFrom(bitstream);
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
   return IvSequenceParams{ivsProfileTierLevel, cameraParamsList};

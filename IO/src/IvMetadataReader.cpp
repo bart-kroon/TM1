@@ -77,7 +77,7 @@ bool IvMetadataReader::readAccessUnit(int accessUnit) {
   return true;
 }
 
-auto IvMetadataReader::cameraParamsList() const -> const CameraParamsList & {
+auto IvMetadataReader::cameraParamsList() const -> const ViewParamsList & {
   return m_ivsParams.cameraParamsList;
 }
 

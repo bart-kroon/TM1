@@ -43,7 +43,7 @@
 namespace TMIV::Metadata {
 enum class PatchRotation { none, swap, rot90, rot180, rot270, mirror, mrot90, mrot180 };
 
-struct CameraParamsList;
+struct ViewParamsList;
 class InputBitstream;
 class OutputBitstream;
 
@@ -94,8 +94,8 @@ struct AtlasParamsList : public AtlasParametersVector {
   bool omafV1CompatibleFlag{};
   Common::SizeVector atlasSizes;
 
-  static auto decodeFrom(InputBitstream &, const CameraParamsList &) -> AtlasParamsList;
-  void encodeTo(OutputBitstream &, const CameraParamsList &) const;
+  static auto decodeFrom(InputBitstream &, const ViewParamsList &) -> AtlasParamsList;
+  void encodeTo(OutputBitstream &, const ViewParamsList &) const;
 };
 
 // Pixel position conversion from atlas to/from view
@@ -108,8 +108,8 @@ struct IvAccessUnitParams {
   bool operator==(const IvAccessUnitParams &other) const;
   bool operator!=(const IvAccessUnitParams &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &, const CameraParamsList &cameras) -> IvAccessUnitParams;
-  void encodeTo(OutputBitstream &, const CameraParamsList &cameras) const;
+  static auto decodeFrom(InputBitstream &, const ViewParamsList &cameras) -> IvAccessUnitParams;
+  void encodeTo(OutputBitstream &, const ViewParamsList &cameras) const;
 };
 } // namespace TMIV::Metadata
 

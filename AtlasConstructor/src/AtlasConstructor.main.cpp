@@ -52,7 +52,7 @@ private:
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_omafV1CompatibleFlag{};
-  IO::BasicAdditional<CameraParamsList> m_cameras;
+  IO::BasicAdditional<ViewParamsList> m_cameras;
   IO::IvMetadataWriter m_metadataWriter;
 
 public:
@@ -100,7 +100,7 @@ public:
 
     if (intraFrame == 0) {
       m_metadataWriter.writeIvSequenceParams(
-          {{}, CameraParamsList{modifyDepthRange(m_atlasConstructor->getCameraList())}});
+          {{}, ViewParamsList{modifyDepthRange(m_atlasConstructor->getCameraList())}});
     }
     m_metadataWriter.writeIvAccessUnitParams(
         {{{m_atlasConstructor->getPatchList(), m_omafV1CompatibleFlag, atlasSize}}});

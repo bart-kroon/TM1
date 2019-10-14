@@ -65,7 +65,7 @@ bool AtlasParameters::operator==(const AtlasParameters &other) const {
          posInAtlas == other.posInAtlas && rotation == other.rotation;
 }
 
-auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const CameraParamsList &cameras)
+auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList &cameras)
     -> AtlasParamsList {
   auto atlasParamsList = AtlasParamsList{};
   auto numAtlases = bitstream.getUExpGolomb() + 1;
@@ -107,7 +107,7 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const CameraParamsLi
   return atlasParamsList;
 }
 
-void AtlasParamsList::encodeTo(OutputBitstream &bitstream, const CameraParamsList &cameras) const {
+void AtlasParamsList::encodeTo(OutputBitstream &bitstream, const ViewParamsList &cameras) const {
   // Count patches per atlas ID
   auto atlasIds = map<uint8_t, uint_least16_t>{};
   for (const auto &patch : *this) {
@@ -222,7 +222,7 @@ bool IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const {
   return atlasParamsList == other.atlasParamsList;
 }
 
-auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream, const CameraParamsList &cameras)
+auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream, const ViewParamsList &cameras)
     -> IvAccessUnitParams {
   auto ivsAccessUnitParams = IvAccessUnitParams{};
   const auto atlasParamsPresentFlag = bitstream.getFlag();
@@ -234,8 +234,7 @@ auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream, const CameraParam
   return ivsAccessUnitParams;
 }
 
-void IvAccessUnitParams::encodeTo(OutputBitstream &bitstream,
-                                  const CameraParamsList &cameras) const {
+void IvAccessUnitParams::encodeTo(OutputBitstream &bitstream, const ViewParamsList &cameras) const {
   bitstream.putFlag(!!atlasParamsList);
   if (atlasParamsList) {
     atlasParamsList->encodeTo(bitstream, cameras);

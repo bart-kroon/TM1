@@ -196,10 +196,9 @@ const auto cameraParameters = array{ViewParams{{4096, 2048},
                                                PerspectiveParams{{1000, 1010}, {960, 540}},
                                                {1.F, 50.F}}};
 
-const auto cameraParameterList =
-    array{CameraParamsList{{cameraParameters[0]}},
-          CameraParamsList{{cameraParameters[0], cameraParameters[0]}},
-          CameraParamsList{{cameraParameters[0], cameraParameters[1]}}};
+const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
+                                       ViewParamsList{{cameraParameters[0], cameraParameters[0]}},
+                                       ViewParamsList{{cameraParameters[0], cameraParameters[1]}}};
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
@@ -237,7 +236,7 @@ bool codingTest(const Type &reference, int size, Args &... args) {
 }
 } // namespace
 
-TEST_CASE("CameraParamsList") {
+TEST_CASE("ViewParamsList") {
   SECTION("areIntrinsicParamsEqual") {
     REQUIRE(examples::cameraParameterList[0].areIntrinsicParamsEqual());
     REQUIRE(examples::cameraParameterList[1].areIntrinsicParamsEqual());

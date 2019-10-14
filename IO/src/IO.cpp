@@ -190,7 +190,7 @@ auto sizesOf(const ViewParamsVector &cameras) -> SizeVector {
   return sizes;
 }
 
-CameraParamsList loadSourceMetadata(const Json &config) {
+ViewParamsList loadSourceMetadata(const Json &config) {
   string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
   ifstream stream{cameraPath};
 
@@ -198,8 +198,8 @@ CameraParamsList loadSourceMetadata(const Json &config) {
     throw runtime_error("Failed to load source camera parameters\n" + cameraPath);
   }
 
-  return CameraParamsList::loadFromJson(Json{stream}.require("cameras"),
-                                        config.require("SourceCameraNames").asStringVector());
+  return ViewParamsList::loadFromJson(Json{stream}.require("cameras"),
+                                      config.require("SourceCameraNames").asStringVector());
 }
 
 namespace {
@@ -262,7 +262,7 @@ void saveCameras(const Json &config, const ViewParamsVector &cameras, const stri
   }
 }
 
-auto loadCameras(const Json &config, const string &fileNameField) -> CameraParamsList {
+auto loadCameras(const Json &config, const string &fileNameField) -> ViewParamsList {
   const auto path = getFullPath(config, "OutputDirectory", fileNameField);
 
   ifstream stream{path, ios::binary};
@@ -280,7 +280,7 @@ auto loadCameras(const Json &config, const string &fileNameField) -> CameraParam
     throw runtime_error("Binary camera file is truncated or incompatible");
   }
 
-  auto cameras = CameraParamsList{};
+  auto cameras = ViewParamsList{};
   cameras.resize(size / sizeof(ViewParams));
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   stream.read(reinterpret_cast<char *>(cameras.data()), size);
@@ -300,7 +300,7 @@ void saveOptimizedMetadata(const Json &config, const BasicAdditional<ViewParamsV
   saveCameras(config, cameras.additional, "AdditionalMetadataPath");
 }
 
-auto loadOptimizedMetadata(const Json &config) -> BasicAdditional<CameraParamsList> {
+auto loadOptimizedMetadata(const Json &config) -> BasicAdditional<ViewParamsList> {
   return {loadCameras(config, "BasicMetadataPath"), loadCameras(config, "AdditionalMetadataPath")};
 }
 
@@ -371,8 +371,7 @@ ViewParams loadViewportMetadata(const Json &config, int frameIndex) {
 
   auto outputCameraName = config.require("OutputCameraName").asString();
 
-  auto cameras =
-      CameraParamsList::loadFromJson(Json{stream}.require("cameras"), {outputCameraName});
+  auto cameras = ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputCameraName});
 
   if (cameras.empty()) {
     throw runtime_error("Unknown OutputCameraName " + outputCameraName);

@@ -128,36 +128,36 @@ using ViewParamsVector = std::vector<ViewParams>;
 auto modifyDepthRange(const ViewParamsVector &) -> ViewParamsVector;
 
 // Data type that corresponds to camera_params_list of specification
-struct CameraParamsList : public ViewParamsVector {
-  CameraParamsList() = default;
-  explicit CameraParamsList(ViewParamsVector cameraParameters)
+struct ViewParamsList : public ViewParamsVector {
+  ViewParamsList() = default;
+  explicit ViewParamsList(ViewParamsVector cameraParameters)
       : ViewParamsVector{std::move(cameraParameters)} {}
-  CameraParamsList(const CameraParamsList &) = default;
-  CameraParamsList(CameraParamsList &&) = default;
-  CameraParamsList &operator=(const CameraParamsList &) = default;
-  CameraParamsList &operator=(CameraParamsList &&) = default;
+  ViewParamsList(const ViewParamsList &) = default;
+  ViewParamsList(ViewParamsList &&) = default;
+  ViewParamsList &operator=(const ViewParamsList &) = default;
+  ViewParamsList &operator=(ViewParamsList &&) = default;
 
   bool areIntrinsicParamsEqual() const;
   bool areDepthQuantizationParamsEqual() const;
 
-  friend std::ostream &operator<<(std::ostream &stream, const CameraParamsList &cameras);
-  bool operator==(const CameraParamsList &other) const;
-  bool operator!=(const CameraParamsList &other) const { return !operator==(other); }
+  friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &cameras);
+  bool operator==(const ViewParamsList &other) const;
+  bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> CameraParamsList;
+  static auto decodeFrom(InputBitstream &) -> ViewParamsList;
   void encodeTo(OutputBitstream &) const;
 
   // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
   // with cameras specified by name, in that order
   //
   // The first parameter is the cameras node (a JSON array).
-  static CameraParamsList loadFromJson(const Common::Json &node,
-                                       const std::vector<std::string> &names);
+  static ViewParamsList loadFromJson(const Common::Json &node,
+                                     const std::vector<std::string> &names);
 };
 
 struct IvSequenceParams {
   IvsProfileTierLevel ivsProfileTierLevel;
-  CameraParamsList cameraParamsList;
+  ViewParamsList cameraParamsList;
 
   bool operator==(const IvSequenceParams &other) const;
   bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }

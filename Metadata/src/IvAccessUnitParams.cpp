@@ -65,7 +65,7 @@ bool AtlasParameters::operator==(const AtlasParameters &other) const {
          posInAtlas == other.posInAtlas && rotation == other.rotation;
 }
 
-auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList &cameras)
+auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList &viewParamsVector)
     -> AtlasParamsList {
   auto atlasParamsList = AtlasParamsList{};
   auto numAtlases = bitstream.getUExpGolomb() + 1;
@@ -85,8 +85,8 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList
     const auto atlasSize = atlasParamsList.atlasSizes[patch.atlasId];
 
     while (numPatches-- > 0) {
-      patch.viewId = uint16_t(bitstream.getUVar(cameras.size()));
-      const auto viewSize = cameras[patch.viewId].size;
+      patch.viewId = uint16_t(bitstream.getUVar(viewParamsVector.size()));
+      const auto viewSize = viewParamsVector[patch.viewId].size;
 
       patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
       patch.patchSizeInView.y() = int(bitstream.getUVar(viewSize.y()) + 1);
@@ -107,7 +107,8 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList
   return atlasParamsList;
 }
 
-void AtlasParamsList::encodeTo(OutputBitstream &bitstream, const ViewParamsList &cameras) const {
+void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
+                               const ViewParamsList &viewParamsVector) const {
   // Count patches per atlas ID
   auto atlasIds = map<uint8_t, uint_least16_t>{};
   for (const auto &patch : *this) {
@@ -130,7 +131,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream, const ViewParamsList 
 
     for (const auto &patch : *this) {
       if (patch.atlasId == atlasId) {
-        const auto viewSize = cameras[patch.viewId].size;
+        const auto viewSize = viewParamsVector[patch.viewId].size;
 
 #ifndef NDEBUG
         assert(0 < patch.patchSizeInView.x() && 0 < patch.patchSizeInView.y());
@@ -141,7 +142,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream, const ViewParamsList 
         assert(patch.posInAtlas.y() + patch.patchSizeInAtlas().y() <= atlasSize.y());
 #endif
 
-        bitstream.putUVar(patch.viewId, cameras.size());
+        bitstream.putUVar(patch.viewId, viewParamsVector.size());
         bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());
         bitstream.putUVar(patch.patchSizeInView.y() - 1, viewSize.y());
         bitstream.putUVar(patch.posInAtlas.x(), atlasSize.x());
@@ -222,22 +223,23 @@ bool IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const {
   return atlasParamsList == other.atlasParamsList;
 }
 
-auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream, const ViewParamsList &cameras)
-    -> IvAccessUnitParams {
+auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream,
+                                    const ViewParamsList &viewParamsVector) -> IvAccessUnitParams {
   auto ivsAccessUnitParams = IvAccessUnitParams{};
   const auto atlasParamsPresentFlag = bitstream.getFlag();
   if (atlasParamsPresentFlag) {
-    ivsAccessUnitParams.atlasParamsList = AtlasParamsList::decodeFrom(bitstream, cameras);
+    ivsAccessUnitParams.atlasParamsList = AtlasParamsList::decodeFrom(bitstream, viewParamsVector);
   }
   const auto ivsAupExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_aup_extension_present_flag=" << boolalpha << ivsAupExtensionPresentFlag << '\n';
   return ivsAccessUnitParams;
 }
 
-void IvAccessUnitParams::encodeTo(OutputBitstream &bitstream, const ViewParamsList &cameras) const {
+void IvAccessUnitParams::encodeTo(OutputBitstream &bitstream,
+                                  const ViewParamsList &viewParamsVector) const {
   bitstream.putFlag(!!atlasParamsList);
   if (atlasParamsList) {
-    atlasParamsList->encodeTo(bitstream, cameras);
+    atlasParamsList->encodeTo(bitstream, viewParamsVector);
   }
   bitstream.putFlag(false);
 }

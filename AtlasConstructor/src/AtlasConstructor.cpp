@@ -65,11 +65,11 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
 
 void AtlasConstructor::prepareIntraPeriod(ViewParamsVector basicCameras,
                                           ViewParamsVector additionalCameras) {
-  m_cameras.clear();
-  m_cameras.insert(m_cameras.end(), make_move_iterator(begin(basicCameras)),
-                   make_move_iterator(end(basicCameras)));
-  m_cameras.insert(m_cameras.end(), make_move_iterator(begin(additionalCameras)),
-                   make_move_iterator(end(additionalCameras)));
+  m_viewParamsVector.clear();
+  m_viewParamsVector.insert(m_viewParamsVector.end(), make_move_iterator(begin(basicCameras)),
+                            make_move_iterator(end(basicCameras)));
+  m_viewParamsVector.insert(m_viewParamsVector.end(), make_move_iterator(begin(additionalCameras)),
+                            make_move_iterator(end(additionalCameras)));
 
   m_isReferenceView.clear();
   m_isReferenceView.insert(m_isReferenceView.end(), basicCameras.size(), 1);
@@ -89,7 +89,7 @@ void AtlasConstructor::pushFrame(MVD16Frame basicViews, MVD16Frame additionalVie
                make_move_iterator(end(additionalViews)));
 
   // Pruning
-  MaskList masks = m_pruner->prune(m_cameras, views, m_isReferenceView);
+  MaskList masks = m_pruner->prune(m_viewParamsVector, views, m_isReferenceView);
 
   // Aggregation
   m_viewBuffer.push_back(move(views));

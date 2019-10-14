@@ -152,9 +152,9 @@ bool ViewParamsList::areDepthQuantizationParamsEqual() const {
   return true;
 }
 
-ostream &operator<<(ostream &stream, const ViewParamsList &cameras) {
-  for (size_t i = 0; i < cameras.size(); ++i) {
-    stream << "Camera " << setw(2) << i << ": " << cameras[i] << '\n';
+ostream &operator<<(ostream &stream, const ViewParamsList &viewParamsVector) {
+  for (size_t i = 0; i < viewParamsVector.size(); ++i) {
+    stream << "Camera " << setw(2) << i << ": " << viewParamsVector[i] << '\n';
   }
   return stream;
 }

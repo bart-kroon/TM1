@@ -73,7 +73,7 @@ public:
       if (m_metadataReader.readAccessUnit(inputFrame / m_intraPeriod)) {
         cout << "OMAF v1 compatible flag: " << boolalpha << m_metadataReader.omafV1CompatibleFlag()
              << '\n';
-        cout << "Decoded cameras:\n" << m_metadataReader.viewParamsList();
+        cout << "Decoded viewParamsVector:\n" << m_metadataReader.viewParamsList();
         m_decoder->updateAtlasSize(m_metadataReader.atlasSizes());
         m_decoder->updateCameraList(m_metadataReader.viewParamsList());
       }

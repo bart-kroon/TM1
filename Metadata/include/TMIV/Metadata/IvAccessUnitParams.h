@@ -112,8 +112,9 @@ struct IvAccessUnitParams {
   bool operator==(const IvAccessUnitParams &other) const;
   bool operator!=(const IvAccessUnitParams &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &, const ViewParamsList &cameras) -> IvAccessUnitParams;
-  void encodeTo(OutputBitstream &, const ViewParamsList &cameras) const;
+  static auto decodeFrom(InputBitstream &, const ViewParamsList &viewParamsVector)
+      -> IvAccessUnitParams;
+  void encodeTo(OutputBitstream &, const ViewParamsList &viewParamsVector) const;
 };
 } // namespace TMIV::Metadata
 

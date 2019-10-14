@@ -126,7 +126,7 @@ struct ViewParams {
 
   // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
   //
-  // The parameter is a an item of the cameras node (a JSON object).
+  // The parameter is a an item of the viewParamsVector node (a JSON object).
   static ViewParams loadFromJson(const Common::Json &node);
 };
 
@@ -152,7 +152,7 @@ struct ViewParamsList : public ViewParamsVector {
   // In specification: depth_quantization_params_equal_flag
   bool areDepthQuantizationParamsEqual() const;
 
-  friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &cameras);
+  friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &viewParamsVector);
   bool operator==(const ViewParamsList &other) const;
   bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
 
@@ -160,9 +160,9 @@ struct ViewParamsList : public ViewParamsVector {
   void encodeTo(OutputBitstream &) const;
 
   // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
-  // with cameras specified by name, in that order
+  // with viewParamsVector specified by name, in that order
   //
-  // The first parameter is the cameras node (a JSON array).
+  // The first parameter is the viewParamsVector node (a JSON array).
   static ViewParamsList loadFromJson(const Common::Json &node,
                                      const std::vector<std::string> &names);
 };

@@ -49,7 +49,7 @@ public:
   Pruner &operator=(Pruner &&) = default;
   ~Pruner() override = default;
 
-  auto prune(const Metadata::ViewParamsVector &cameras, const Common::MVD16Frame &views,
+  auto prune(const Metadata::ViewParamsVector &viewParamsVector, const Common::MVD16Frame &views,
              const std::vector<std::uint8_t> &shouldNotBePruned) -> Common::MaskList override;
 
 private:

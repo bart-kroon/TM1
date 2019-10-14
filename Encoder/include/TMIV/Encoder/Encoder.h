@@ -50,7 +50,7 @@ public:
   Encoder &operator=(Encoder &&) = default;
   ~Encoder() override = default;
 
-  void prepareIntraPeriod(Metadata::ViewParamsVector cameras) override;
+  void prepareIntraPeriod(Metadata::ViewParamsVector viewParamsVector) override;
   void pushFrame(Common::MVD16Frame views) override;
   void completeIntraPeriod() override;
 

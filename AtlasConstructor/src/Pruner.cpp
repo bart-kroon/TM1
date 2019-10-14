@@ -55,11 +55,11 @@ Pruner::Pruner(const Json & /*rootNode*/, const Json &componentNode) {
   }
 }
 
-auto Pruner::prune(const ViewParamsVector &cameras, const MVD16Frame &views,
+auto Pruner::prune(const ViewParamsVector &viewParamsVector, const MVD16Frame &views,
                    const vector<uint8_t> &shouldNotBePruned) -> MaskList {
 
-  // Sort cameras for pruning
-  vector<int> cameraOrderId(cameras.size());
+  // Sort viewParamsVector for pruning
+  vector<int> cameraOrderId(viewParamsVector.size());
 
   iota(cameraOrderId.begin(), cameraOrderId.end(), 0);
 
@@ -91,21 +91,22 @@ auto Pruner::prune(const ViewParamsVector &cameras, const MVD16Frame &views,
     if (id1 < maxView) {
       fill(bufferToPrune.begin(), bufferToPrune.end(), UINT8_MAX);
       depthMapExpanded[viewToPruneId] =
-          expandDepth(cameras[viewToPruneId], views[viewToPruneId].second);
+          expandDepth(viewParamsVector[viewToPruneId], views[viewToPruneId].second);
 
       if (shouldNotBePruned[viewToPruneId] == 0U) {
         // Depth-based redundancy removal
         const Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];
-        Mat<Vec2f> gridMapToPrune = imagePositions(cameras[viewToPruneId]);
+        Mat<Vec2f> gridMapToPrune = imagePositions(viewParamsVector[viewToPruneId]);
 
         for (int id2 = 0; id2 < id1; id2++) {
           int viewPrunedId = cameraOrderId[id2];
           const Mat<float> &depthMapPruned = depthMapExpanded[viewPrunedId];
 
-          auto ptsToPruneOnPruned = reprojectPoints(cameras[viewToPruneId], cameras[viewPrunedId],
-                                                    gridMapToPrune, depthMapToPrune);
-          int lastXPruned = cameras[viewPrunedId].size.x() - 1;
-          int lastYPruned = cameras[viewPrunedId].size.y() - 1;
+          auto ptsToPruneOnPruned =
+              reprojectPoints(viewParamsVector[viewToPruneId], viewParamsVector[viewPrunedId],
+                              gridMapToPrune, depthMapToPrune);
+          int lastXPruned = viewParamsVector[viewPrunedId].size.x() - 1;
+          int lastYPruned = viewParamsVector[viewPrunedId].size.y() - 1;
 
           for (size_t k = 0; k < bufferToPrune.size(); ++k) {
             auto &mask = bufferToPrune[k];

@@ -58,11 +58,12 @@ public:
 
   auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
                    const Metadata::AtlasParametersVector &patches,
-                   const Metadata::ViewParamsVector &cameras,
+                   const Metadata::ViewParamsVector &viewParamsVector,
                    const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 
-  auto renderFrame(const Common::MVD10Frame &atlas, const Metadata::ViewParamsVector &cameras,
+  auto renderFrame(const Common::MVD10Frame &atlas,
+                   const Metadata::ViewParamsVector &viewParamsVector,
                    const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 };

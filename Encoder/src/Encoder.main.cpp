@@ -54,7 +54,7 @@ private:
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_omafV1CompatibleFlag{};
-  ViewParamsList m_cameras;
+  ViewParamsList m_viewParamsVector;
   IO::IvMetadataWriter m_metadataWriter;
 
 public:
@@ -66,8 +66,8 @@ public:
         m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {}
 
   void run() override {
-    m_cameras = IO::loadSourceMetadata(json());
-    cout << "Source cameras:\n" << m_cameras;
+    m_viewParamsVector = IO::loadSourceMetadata(json());
+    cout << "Source viewParamsVector:\n" << m_viewParamsVector;
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -78,10 +78,10 @@ public:
 
 private:
   void runIntraPeriod(int intraFrame, int endFrame) {
-    m_encoder->prepareIntraPeriod(m_cameras);
+    m_encoder->prepareIntraPeriod(m_viewParamsVector);
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = IO::loadSourceFrame(json(), IO::sizesOf(m_cameras), i);
+      auto frame = IO::loadSourceFrame(json(), IO::sizesOf(m_viewParamsVector), i);
       m_encoder->pushFrame(move(frame));
     }
 
@@ -90,7 +90,7 @@ private:
     if (intraFrame == 0) {
       m_metadataWriter.writeIvSequenceParams(
           {{}, ViewParamsList{modifyDepthRange(m_encoder->getCameraList())}});
-      cout << "Encoded cameras:\n" << m_metadataWriter.viewParamsList();
+      cout << "Encoded viewParamsVector:\n" << m_metadataWriter.viewParamsList();
     }
     m_metadataWriter.writeIvAccessUnitParams(
         {{{m_encoder->getPatchList(), m_omafV1CompatibleFlag, m_encoder->getAtlasSize()}}});

@@ -48,7 +48,7 @@ public:
   IEncoder &operator=(IEncoder &&) = default;
   virtual ~IEncoder() = default;
 
-  virtual void prepareIntraPeriod(Metadata::ViewParamsVector cameras) = 0;
+  virtual void prepareIntraPeriod(Metadata::ViewParamsVector viewParamsVector) = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual void completeIntraPeriod() = 0;
 

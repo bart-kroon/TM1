@@ -54,16 +54,17 @@ constexpr auto halfPixel = 0.5F;
 
 ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
-auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewParamsVector> {
+auto ViewReducer::optimizeIntraPeriod(ViewParamsVector viewParamsVector)
+    -> Output<ViewParamsVector> {
   Output<ViewParamsVector> result;
-  m_priorities.assign(cameras.size(), false);
+  m_priorities.assign(viewParamsVector.size(), false);
 
   // choose 9 degree as quantization step of angle between view i and view j.
   const float degree_step = radperdeg * 9;
   // choose 64 as quantization step of FOV.
   const float FOV_step = (45 * radperdeg) / 4;
 
-  size_t nbCameras = cameras.size();
+  size_t nbCameras = viewParamsVector.size();
 
   // search the largest angle between two views i,j
   vector<pair<size_t, size_t>> cameras_id_pair;
@@ -76,7 +77,7 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
   size_t id_j;
 
   // Early termination: if any view is full-ERP, choose this view
-  for (auto &camera : cameras) {
+  for (auto &camera : viewParamsVector) {
     if (auto projection = get_if<ErpParams>(&camera.projection)) {
       if (abs(projection->phiRange[0] - projection->phiRange[1]) == fullCycle) {
         if (abs(projection->thetaRange[0] - projection->thetaRange[1]) == halfCycle) {
@@ -94,11 +95,12 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
       for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
         // Sphere distance function
         auto temp_angle = size_t(
-            acos(sin(cameras[id_1].rotation[1] * radperdeg) *
-                     sin(cameras[id_2].rotation[1] * radperdeg) +
-                 cos(cameras[id_1].rotation[1] * radperdeg) *
-                     cos(cameras[id_2].rotation[1] * radperdeg) *
-                     cos((cameras[id_1].rotation[0] - cameras[id_2].rotation[0]) * radperdeg)) /
+            acos(sin(viewParamsVector[id_1].rotation[1] * radperdeg) *
+                     sin(viewParamsVector[id_2].rotation[1] * radperdeg) +
+                 cos(viewParamsVector[id_1].rotation[1] * radperdeg) *
+                     cos(viewParamsVector[id_2].rotation[1] * radperdeg) *
+                     cos((viewParamsVector[id_1].rotation[0] - viewParamsVector[id_2].rotation[0]) *
+                         radperdeg)) /
             degree_step);
 
         if (temp_angle > max_angle) {
@@ -118,8 +120,8 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
       size_t id_1 = cameras_id_pair[id].first;
       size_t id_2 = cameras_id_pair[id].second;
 
-      temp_FOV = static_cast<size_t>((calculateFOV(cameras[id_1]) + calculateFOV(cameras[id_2])) /
-                                     FOV_step);
+      temp_FOV = static_cast<size_t>(
+          (calculateFOV(viewParamsVector[id_1]) + calculateFOV(viewParamsVector[id_2])) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -140,7 +142,7 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
       size_t id_1 = cameras_id_pair[id].first;
       size_t id_2 = cameras_id_pair[id].second;
 
-      temp_distance = calculateDistance(cameras[id_1], cameras[id_2]);
+      temp_distance = calculateDistance(viewParamsVector[id_1], viewParamsVector[id_2]);
       if (temp_distance > max_distance) {
         max_distance = temp_distance;
         max_num = 1;
@@ -159,7 +161,7 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
       size_t id_1 = id.first;
       size_t id_2 = id.second;
 
-      temp_distance = abs(cameras[id_1].position[0] - cameras[id_2].position[0]);
+      temp_distance = abs(viewParamsVector[id_1].position[0] - viewParamsVector[id_2].position[0]);
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
         camera_id_pair = id;
@@ -170,11 +172,11 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
     id_i = camera_id_pair.first;
     id_j = camera_id_pair.second;
     float overlapping = 0;
-    overlapping = calculateOverlapping(cameras[id_i], cameras[id_j]);
+    overlapping = calculateOverlapping(viewParamsVector[id_i], viewParamsVector[id_j]);
 
     // Decide whether the number is one or multiple
-    isoneview = overlapping >=
-                overlapThreshold * min(calculateFOV(cameras[id_i]), calculateFOV(cameras[id_j]));
+    isoneview = overlapping >= overlapThreshold * min(calculateFOV(viewParamsVector[id_i]),
+                                                      calculateFOV(viewParamsVector[id_j]));
   }
 
   // Just select 1 view which has the shortest distance to center
@@ -185,7 +187,7 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
     int id_center = 0;
     float distance = numeric_limits<float>::max();
 
-    for (auto &camera : cameras) {
+    for (auto &camera : viewParamsVector) {
       x_center += camera.position[0];
       y_center += camera.position[1];
       z_center += camera.position[2];
@@ -200,7 +202,7 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
     for (size_t id = 0; id < nbCameras; id++) {
       size_t temp_FOV = 0;
 
-      temp_FOV = static_cast<size_t>(calculateFOV(cameras[id]) / FOV_step);
+      temp_FOV = static_cast<size_t>(calculateFOV(viewParamsVector[id]) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -212,9 +214,9 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
     }
     // Search views which have the least diatance to center
     for (auto i : camera_id) {
-      float temp_distance = sqrt(square(cameras[i].position[0] - x_center) +
-                                 square(cameras[i].position[1] - y_center) +
-                                 square(cameras[i].position[2] - z_center));
+      float temp_distance = sqrt(square(viewParamsVector[i].position[0] - x_center) +
+                                 square(viewParamsVector[i].position[1] - y_center) +
+                                 square(viewParamsVector[i].position[2] - z_center));
       if (temp_distance < distance) {
         id_center = int(i);
         distance = temp_distance;
@@ -228,9 +230,9 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewPa
     m_priorities[camera_id_pair.second] = true;
   }
 
-  // Move cameras into basic and additional partitions
-  for (size_t index = 0; index != cameras.size(); ++index) {
-    (m_priorities[index] ? result.basic : result.additional).push_back(cameras[index]);
+  // Move viewParamsVector into basic and additional partitions
+  for (size_t index = 0; index != viewParamsVector.size(); ++index) {
+    (m_priorities[index] ? result.basic : result.additional).push_back(viewParamsVector[index]);
   }
   return result;
 }

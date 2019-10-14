@@ -76,13 +76,13 @@ private:
   std::unique_ptr<IPacker> m_packer;
   std::vector<std::uint8_t> m_isReferenceView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
-  Metadata::ViewParamsVector m_cameras;
+  Metadata::ViewParamsVector m_viewParamsVector;
   Metadata::AtlasParametersVector m_patchList;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
 
 inline auto AtlasConstructor::getCameraList() const -> const Metadata::ViewParamsVector & {
-  return m_cameras;
+  return m_viewParamsVector;
 }
 
 inline auto AtlasConstructor::getPatchList() const -> const Metadata::AtlasParametersVector & {

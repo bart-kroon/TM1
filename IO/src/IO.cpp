@@ -182,10 +182,10 @@ Pose loadPoseFromCSV(istream &stream, int frameIndex) {
 
 } // namespace
 
-auto sizesOf(const ViewParamsVector &cameras) -> SizeVector {
+auto sizesOf(const ViewParamsVector &viewParamsVector) -> SizeVector {
   SizeVector sizes;
-  sizes.reserve(cameras.size());
-  transform(begin(cameras), end(cameras), back_inserter(sizes),
+  sizes.reserve(viewParamsVector.size());
+  transform(begin(viewParamsVector), end(viewParamsVector), back_inserter(sizes),
             [](const ViewParams &camera) { return camera.size; });
   return sizes;
 }
@@ -198,7 +198,7 @@ ViewParamsList loadSourceMetadata(const Json &config) {
     throw runtime_error("Failed to load source camera parameters\n" + cameraPath);
   }
 
-  return ViewParamsList::loadFromJson(Json{stream}.require("cameras"),
+  return ViewParamsList::loadFromJson(Json{stream}.require("viewParamsVector"),
                                       config.require("SourceCameraNames").asStringVector());
 }
 
@@ -242,7 +242,8 @@ MVD16Frame loadSourceFrame(const Json &config, const SizeVector &sizes, int fram
 }
 
 namespace {
-void saveCameras(const Json &config, const ViewParamsVector &cameras, const string &fileNameField) {
+void saveCameras(const Json &config, const ViewParamsVector &viewParamsVector,
+                 const string &fileNameField) {
   const auto path = getFullPath(config, "OutputDirectory", fileNameField);
 
   ofstream stream{path, ios::binary};
@@ -253,7 +254,8 @@ void saveCameras(const Json &config, const ViewParamsVector &cameras, const stri
   }
 
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  stream.write(reinterpret_cast<const char *>(cameras.data()), cameras.size() * sizeof(ViewParams));
+  stream.write(reinterpret_cast<const char *>(viewParamsVector.data()),
+               viewParamsVector.size() * sizeof(ViewParams));
 
   if (!stream.good()) {
     ostringstream what;
@@ -280,10 +282,10 @@ auto loadCameras(const Json &config, const string &fileNameField) -> ViewParamsL
     throw runtime_error("Binary camera file is truncated or incompatible");
   }
 
-  auto cameras = ViewParamsList{};
-  cameras.resize(size / sizeof(ViewParams));
+  auto viewParamsVector = ViewParamsList{};
+  viewParamsVector.resize(size / sizeof(ViewParams));
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  stream.read(reinterpret_cast<char *>(cameras.data()), size);
+  stream.read(reinterpret_cast<char *>(viewParamsVector.data()), size);
 
   if (!stream.good()) {
     ostringstream what;
@@ -291,13 +293,14 @@ auto loadCameras(const Json &config, const string &fileNameField) -> ViewParamsL
     throw runtime_error(what.str());
   }
 
-  return cameras;
+  return viewParamsVector;
 }
 } // namespace
 
-void saveOptimizedMetadata(const Json &config, const BasicAdditional<ViewParamsVector> &cameras) {
-  saveCameras(config, cameras.basic, "BasicMetadataPath");
-  saveCameras(config, cameras.additional, "AdditionalMetadataPath");
+void saveOptimizedMetadata(const Json &config,
+                           const BasicAdditional<ViewParamsVector> &viewParamsVector) {
+  saveCameras(config, viewParamsVector.basic, "BasicMetadataPath");
+  saveCameras(config, viewParamsVector.additional, "AdditionalMetadataPath");
 }
 
 auto loadOptimizedMetadata(const Json &config) -> BasicAdditional<ViewParamsList> {
@@ -371,13 +374,14 @@ ViewParams loadViewportMetadata(const Json &config, int frameIndex) {
 
   auto outputCameraName = config.require("OutputCameraName").asString();
 
-  auto cameras = ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputCameraName});
+  auto viewParamsVector =
+      ViewParamsList::loadFromJson(Json{stream}.require("viewParamsVector"), {outputCameraName});
 
-  if (cameras.empty()) {
+  if (viewParamsVector.empty()) {
     throw runtime_error("Unknown OutputCameraName " + outputCameraName);
   }
 
-  ViewParams &result = cameras.front();
+  ViewParams &result = viewParamsVector.front();
 
   // Override hasInvalidDepth parameter to be true because view synthesis may result in invalid
   // depth values

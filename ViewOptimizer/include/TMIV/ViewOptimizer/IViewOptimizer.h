@@ -53,7 +53,7 @@ public:
   };
 
   // Optimize camera parameters for the coming intra period
-  virtual auto optimizeIntraPeriod(Metadata::ViewParamsVector cameras)
+  virtual auto optimizeIntraPeriod(Metadata::ViewParamsVector viewParamsVector)
       -> Output<Metadata::ViewParamsVector> = 0;
 
   // Optimize a frame in the intra period

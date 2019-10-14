@@ -57,7 +57,8 @@ void IvMetadataReader::readIvSequenceParams() {
 
 void IvMetadataReader::readIvAccessUnitParams() {
   const auto currentAtlasParamsList = m_ivAccessUnitParams.atlasParamsList;
-  m_ivAccessUnitParams = IvAccessUnitParams::decodeFrom(m_bitstream, m_ivSequenceParams.viewParamsList);
+  m_ivAccessUnitParams =
+      IvAccessUnitParams::decodeFrom(m_bitstream, m_ivSequenceParams.viewParamsList);
   if (!m_ivAccessUnitParams.atlasParamsList) {
     m_ivAccessUnitParams.atlasParamsList = currentAtlasParamsList.value();
   }

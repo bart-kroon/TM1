@@ -52,7 +52,7 @@ private:
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_omafV1CompatibleFlag{};
-  IO::BasicAdditional<ViewParamsList> m_cameras;
+  IO::BasicAdditional<ViewParamsList> m_viewParamsVector;
   IO::IvMetadataWriter m_metadataWriter;
 
 public:
@@ -65,9 +65,9 @@ public:
         m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {}
 
   void run() override {
-    m_cameras = IO::loadOptimizedMetadata(json());
-    cout << "Basic cameras:\n" << m_cameras.basic;
-    cout << "Additional cameras:\n" << m_cameras.additional;
+    m_viewParamsVector = IO::loadOptimizedMetadata(json());
+    cout << "Basic viewParamsVector:\n" << m_viewParamsVector.basic;
+    cout << "Additional viewParamsVector:\n" << m_viewParamsVector.additional;
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -77,11 +77,12 @@ public:
   }
 
   void runIntraPeriod(int intraFrame, int endFrame) {
-    m_atlasConstructor->prepareIntraPeriod(m_cameras.basic, m_cameras.additional);
+    m_atlasConstructor->prepareIntraPeriod(m_viewParamsVector.basic, m_viewParamsVector.additional);
 
     for (int i = intraFrame; i < endFrame; ++i) {
       auto views = IO::loadOptimizedFrame(
-          json(), {IO::sizesOf(m_cameras.basic), IO::sizesOf(m_cameras.additional)}, i);
+          json(),
+          {IO::sizesOf(m_viewParamsVector.basic), IO::sizesOf(m_viewParamsVector.additional)}, i);
       m_atlasConstructor->pushFrame(move(views.basic), move(views.additional));
     }
 

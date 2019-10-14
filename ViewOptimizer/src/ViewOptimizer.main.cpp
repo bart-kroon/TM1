@@ -49,7 +49,7 @@ private:
   unique_ptr<IViewOptimizer> m_optimizer;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  ViewParamsList m_cameras;
+  ViewParamsList m_viewParamsVector;
 
 public:
   explicit Application(vector<const char *> argv)
@@ -59,8 +59,8 @@ public:
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
-    m_cameras = IO::loadSourceMetadata(json());
-    cout << "Source cameras:\n" << m_cameras;
+    m_viewParamsVector = IO::loadSourceMetadata(json());
+    cout << "Source viewParamsVector:\n" << m_viewParamsVector;
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -71,13 +71,13 @@ public:
 
 private:
   void runIntraPeriod(int intraFrame, int endFrame) {
-    auto cameras = m_optimizer->optimizeIntraPeriod(m_cameras);
+    auto viewParamsVector = m_optimizer->optimizeIntraPeriod(m_viewParamsVector);
     if (intraFrame == 0) {
-      IO::saveOptimizedMetadata(json(), cameras);
+      IO::saveOptimizedMetadata(json(), viewParamsVector);
     }
 
     for (int i = intraFrame; i < endFrame; ++i) {
-      auto sourceFrame = IO::loadSourceFrame(json(), IO::sizesOf(m_cameras), i);
+      auto sourceFrame = IO::loadSourceFrame(json(), IO::sizesOf(m_viewParamsVector), i);
       auto frame = m_optimizer->optimizeFrame(move(sourceFrame));
       IO::saveOptimizedFrame(json(), i, frame);
     }

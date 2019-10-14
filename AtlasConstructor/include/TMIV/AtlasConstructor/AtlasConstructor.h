@@ -54,8 +54,8 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  void prepareIntraPeriod(Metadata::ViewParamsVector basicCameras,
-                          Metadata::ViewParamsVector additionalCameras) override;
+  void prepareIntraPeriod(Metadata::ViewParamsVector basicViewParamsVector,
+                          Metadata::ViewParamsVector additionalViewParamsVector) override;
   void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) override;
   void completeIntraPeriod() override;
 

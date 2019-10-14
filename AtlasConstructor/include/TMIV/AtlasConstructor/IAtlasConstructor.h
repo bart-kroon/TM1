@@ -48,8 +48,8 @@ public:
   IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
   virtual ~IAtlasConstructor() = default;
 
-  virtual void prepareIntraPeriod(Metadata::ViewParamsVector basicCameras,
-                                  Metadata::ViewParamsVector additionalCameras) = 0;
+  virtual void prepareIntraPeriod(Metadata::ViewParamsVector basicViewParamsVector,
+                                  Metadata::ViewParamsVector additionalViewParamsVector) = 0;
   virtual void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) = 0;
   virtual void completeIntraPeriod() = 0;
 

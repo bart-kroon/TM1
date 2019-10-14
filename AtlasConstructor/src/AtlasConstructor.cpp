@@ -63,22 +63,24 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_nbAtlas = uint16_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
 }
 
-void AtlasConstructor::prepareIntraPeriod(ViewParamsVector basicCameras,
-                                          ViewParamsVector additionalCameras) {
+void AtlasConstructor::prepareIntraPeriod(ViewParamsVector basicViewParamsVector,
+                                          ViewParamsVector additionalViewParamsVector) {
   m_viewParamsVector.clear();
-  m_viewParamsVector.insert(m_viewParamsVector.end(), make_move_iterator(begin(basicCameras)),
-                            make_move_iterator(end(basicCameras)));
-  m_viewParamsVector.insert(m_viewParamsVector.end(), make_move_iterator(begin(additionalCameras)),
-                            make_move_iterator(end(additionalCameras)));
+  m_viewParamsVector.insert(m_viewParamsVector.end(),
+                            make_move_iterator(begin(basicViewParamsVector)),
+                            make_move_iterator(end(basicViewParamsVector)));
+  m_viewParamsVector.insert(m_viewParamsVector.end(),
+                            make_move_iterator(begin(additionalViewParamsVector)),
+                            make_move_iterator(end(additionalViewParamsVector)));
 
   m_isReferenceView.clear();
-  m_isReferenceView.insert(m_isReferenceView.end(), basicCameras.size(), 1);
-  m_isReferenceView.insert(m_isReferenceView.end(), additionalCameras.size(), 0);
+  m_isReferenceView.insert(m_isReferenceView.end(), basicViewParamsVector.size(), 1);
+  m_isReferenceView.insert(m_isReferenceView.end(), additionalViewParamsVector.size(), 0);
 
   m_viewBuffer.clear();
   m_aggregator->prepareIntraPeriod();
 
-  m_nbAtlas = max(uint16_t(basicCameras.size()), m_nbAtlas);
+  m_nbAtlas = max(uint16_t(basicViewParamsVector.size()), m_nbAtlas);
 }
 
 void AtlasConstructor::pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) {

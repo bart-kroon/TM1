@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(ImageLib
 	"src/Image.cpp"
-	"include/TMIV/Image/Image.h")
+	"include/TMIV/Image/Image.h"
+	"include/TMIV/Image/Image.hpp")
 
 add_library(TMIV::ImageLib
 	ALIAS ImageLib)

@@ -4,15 +4,17 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 add_library(RendererLib
-	"src/IRenderer.cpp"
-	"src/IInpainter.cpp"
-	"src/ISynthesizer.cpp"
     "src/Renderer.cpp"
     "src/MultipassRenderer.cpp"
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
 	"src/Engine.cpp"
+	"src/Engine_ERP.hpp"
+	"src/Engine_Perspective.hpp"
+	"src/blend.hpp"
+	"src/Rasterizer.hpp"
 	"src/reprojectPoints.cpp"
+	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
 	"include/TMIV/Renderer/ISynthesizer.h"

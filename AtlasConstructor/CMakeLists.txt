@@ -1,16 +1,13 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(AtlasConstructorLib
-	"src/IAtlasConstructor.cpp"
     "src/AtlasConstructor.cpp"
-	"src/IPruner.cpp"
 	"src/Pruner.cpp"
-	"src/IAggregator.cpp"
 	"src/Aggregator.cpp"
-	"src/IPacker.cpp"
 	"src/Cluster.cpp"
 	"src/MaxRectPiP.cpp"
 	"src/Packer.cpp"
+	"src/AtlasConstructor.reg.hpp"
 	"include/TMIV/AtlasConstructor/IAtlasConstructor.h"
 	"include/TMIV/AtlasConstructor/AtlasConstructor.h"
 	"include/TMIV/AtlasConstructor/IPruner.h"

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(EncoderLib
-	"src/IEncoder.cpp"
     "src/Encoder.cpp"
+	"src/Encoder.reg.hpp"
 	"include/TMIV/Encoder/IEncoder.h"
     "include/TMIV/Encoder/Encoder.h")
 

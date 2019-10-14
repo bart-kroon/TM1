@@ -52,6 +52,7 @@ struct IvsProfileTierLevel {
   // Not yet defined in the specification
 
   bool operator==(const IvsProfileTierLevel &other) const;
+  bool operator!=(const IvsProfileTierLevel &other) const { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> IvsProfileTierLevel;
   void encodeTo(OutputBitstream &) const;
@@ -112,6 +113,7 @@ struct CameraParameters {
 
   friend std::ostream &operator<<(std::ostream &stream, const CameraParameters &camera);
   bool operator==(const CameraParameters &other) const;
+  bool operator!=(const CameraParameters &other) const { return !operator==(other); }
 
   // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
   //
@@ -140,6 +142,7 @@ struct CameraParamsList : public CameraParametersVector {
 
   friend std::ostream &operator<<(std::ostream &stream, const CameraParamsList &cameras);
   bool operator==(const CameraParamsList &other) const;
+  bool operator!=(const CameraParamsList &other) const { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> CameraParamsList;
   void encodeTo(OutputBitstream &) const;
@@ -157,6 +160,7 @@ struct IvsParams {
   CameraParamsList cameraParamsList;
 
   bool operator==(const IvsParams &other) const;
+  bool operator!=(const IvsParams &other) const { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> IvsParams;
   void encodeTo(OutputBitstream &) const;

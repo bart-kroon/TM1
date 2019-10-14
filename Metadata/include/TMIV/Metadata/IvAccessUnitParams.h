@@ -74,6 +74,7 @@ struct AtlasParameters {
   auto patchSizeInAtlas() const -> Common::Vec2i;
 
   bool operator==(const AtlasParameters &other) const;
+  bool operator!=(const AtlasParameters &other) const { return !operator==(other); };
 };
 
 using AtlasParametersVector = std::vector<AtlasParameters>;
@@ -105,6 +106,7 @@ struct IvAccessUnitParams {
   std::optional<AtlasParamsList> atlasParamsList;
 
   bool operator==(const IvAccessUnitParams &other) const;
+  bool operator!=(const IvAccessUnitParams &other) const { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &, const CameraParamsList &cameras) -> IvAccessUnitParams;
   void encodeTo(OutputBitstream &, const CameraParamsList &cameras) const;

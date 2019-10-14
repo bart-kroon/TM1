@@ -38,7 +38,6 @@
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasDeconstructor {
-// The AtlasDeconstructor of TMIV 1.0 provided by Technicolor
 class AtlasDeconstructor : public IAtlasDeconstructor {
 public:
   AtlasDeconstructor(const Common::Json & /*unused*/, const Common::Json & /*unused*/);

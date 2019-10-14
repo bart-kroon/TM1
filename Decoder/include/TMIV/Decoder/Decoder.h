@@ -41,7 +41,6 @@
 #include <TMIV/Renderer/IRenderer.h>
 
 namespace TMIV::Decoder {
-// The Decoder of TMIV 1.0
 class Decoder : public IDecoder {
 private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;

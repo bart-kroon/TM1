@@ -57,33 +57,33 @@ struct IvsProfileTierLevel {
   void encodeTo(OutputBitstream &) const;
 };
 
-// Data type that corresponds to an entry of camera_params_list of MPEG/N18576
+// Data type that corresponds to an entry of camera_params_list of specification
 struct CameraParameters {
-  // In MPEG/N18576: projection_plane_{width,height}
+  // In specification: projection_plane_{width,height}
   Common::Vec2i size{};
 
-  // In MPEG/N18576: cam_pos_{x,y,z}
+  // In specification: cam_pos_{x,y,z}
   Common::Vec3f position{};
 
-  // In MPEG/N18576: cam_{yaw,pitch,roll}
+  // In specification: cam_{yaw,pitch,roll}
   Common::Vec3f rotation{};
 
-  // In MPEG/N18576: cam_type
+  // In specification: cam_type
   ProjectionType type{ProjectionType::ERP};
 
-  // In MPEG/N18576: erp_phi_{min,max}
+  // In specification: erp_phi_{min,max}
   Common::Vec2f erpPhiRange{};
 
-  // In MPEG/N18576: erp_theta_{min,max}
+  // In specification: erp_theta_{min,max}
   Common::Vec2f erpThetaRange{};
 
-  // In MPEG/N18576: perspective_focal_{hor,ver}
+  // In specification: perspective_focal_{hor,ver}
   Common::Vec2f perspectiveFocal{};
 
-  // In MPEG/N18576: perspective_center_{hor,ver}
+  // In specification: perspective_center_{hor,ver}
   Common::Vec2f perspectiveCenter{};
 
-  // In MPEG/N18576: depth_{near,far}
+  // In specification: depth_{near,far}
   Common::Vec2f normDispRange{};
 
   uint16_t depthOccMapThreshold{};
@@ -103,7 +103,7 @@ using CameraParametersList = std::vector<CameraParameters>;
 // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
 auto modifyDepthRange(const CameraParametersList &) -> CameraParametersList;
 
-// Data type that corresponds to camera_params_list of MPEG/N18576
+// Data type that corresponds to camera_params_list of specification
 struct CameraParamsList : public CameraParametersList {
   CameraParamsList() = default;
   explicit CameraParamsList(CameraParametersList cameraParameters)

@@ -38,8 +38,6 @@
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::AtlasConstructor {
-
-// IPruner interface (part of AtlasConstructorLib)
 class IPruner {
 public:
   IPruner() = default;

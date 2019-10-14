@@ -39,7 +39,6 @@
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::Encoder {
-// IEncoder interface (part of EncoderLib)
 class IEncoder {
 public:
   IEncoder() = default;

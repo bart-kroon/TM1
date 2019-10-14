@@ -47,24 +47,24 @@ struct CameraParamsList;
 class InputBitstream;
 class OutputBitstream;
 
-// Data type that corresponds to an entry of atlas_params of MPEG/N18576
+// Data type that corresponds to an entry of atlas_params of specification
 struct AtlasParameters {
-  // In MPEG/N18576: atlas_id
+  // In specification: atlas_id
   uint8_t atlasId{};
 
-  // In MPEG/N18576: view_id
+  // In specification: view_id
   unsigned viewId{};
 
-  // In MPEG/N18576: patch_{width,height}_in_view
+  // In specification: patch_{width,height}_in_view
   Common::Vec2i patchSizeInView;
 
-  // In MPEG/N18576: patch_pos_in_view_{x,y}
+  // In specification: patch_pos_in_view_{x,y}
   Common::Vec2i posInView;
 
-  // In MPEG/N18576: patch_pos_in_atlas_{x,y}
+  // In specification: patch_pos_in_atlas_{x,y}
   Common::Vec2i posInAtlas;
 
-  // In MPEG/N18576: patch_rotation
+  // In specification: patch_rotation
   PatchRotation rotation{};
 
   // Is the patch rotated such that width and height swap?
@@ -78,7 +78,7 @@ struct AtlasParameters {
 
 using AtlasParametersList = std::vector<AtlasParameters>;
 
-// Data type that corresponds to atlas_params_list of MPEG/N18576
+// Data type that corresponds to atlas_params_list of specification
 struct AtlasParamsList : public AtlasParametersList {
   AtlasParamsList() = default;
   AtlasParamsList(AtlasParametersList atlasParameters, bool omafV1CompatibleFlag_,

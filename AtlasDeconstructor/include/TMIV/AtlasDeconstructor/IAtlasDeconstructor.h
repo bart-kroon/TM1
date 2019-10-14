@@ -39,8 +39,6 @@
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::AtlasDeconstructor {
-// IAtlasDeconstructor interface (part of AtlasDeconstructorLib)
-// Referred as AtlasPatchOccupancyMapGenerator in MPEG/N18464
 class IAtlasDeconstructor {
 public:
   IAtlasDeconstructor() = default;

@@ -38,7 +38,6 @@
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::ViewOptimizer {
-// IViewOptimizer interface (part of ViewOptimizerLib)
 class IViewOptimizer {
 public:
   IViewOptimizer() = default;

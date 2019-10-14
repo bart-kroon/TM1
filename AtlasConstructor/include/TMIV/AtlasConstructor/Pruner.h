@@ -39,8 +39,6 @@
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {
-
-// The Pruner of TMIV 1.0 provided by Technicolor
 class Pruner : public IPruner {
 public:
   Pruner(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);

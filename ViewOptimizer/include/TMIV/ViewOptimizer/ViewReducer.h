@@ -39,7 +39,6 @@
 #include <vector>
 
 namespace TMIV::ViewOptimizer {
-// The ViewOptimizer of TMIV 1.0 provided by Zhejiang University
 class ViewReducer : public IViewOptimizer {
 private:
   std::vector<bool> m_priorities;

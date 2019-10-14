@@ -38,7 +38,6 @@
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 
 namespace TMIV::AtlasConstructor {
-// IPacker interface (part of AtlasConstructorLib)
 class IPacker {
 public:
   IPacker() = default;

@@ -44,7 +44,6 @@
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {
-// The AtlasConstructor of TMIV 1.0 provided by Technicolor
 class AtlasConstructor : public IAtlasConstructor {
 public:
   AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);

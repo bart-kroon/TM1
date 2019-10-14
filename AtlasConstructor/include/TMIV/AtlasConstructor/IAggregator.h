@@ -37,8 +37,6 @@
 #include <TMIV/AtlasConstructor/IPruner.h>
 
 namespace TMIV::AtlasConstructor {
-
-// IAggregator interface (part of AtlasConstructorLib)
 class IAggregator {
 public:
   IAggregator() = default;

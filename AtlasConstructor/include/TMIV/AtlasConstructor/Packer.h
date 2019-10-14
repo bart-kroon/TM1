@@ -38,8 +38,6 @@
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {
-
-// The Packer of TMIV 1.0 provided by Technicolor
 class Packer : public IPacker {
 public:
   Packer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);

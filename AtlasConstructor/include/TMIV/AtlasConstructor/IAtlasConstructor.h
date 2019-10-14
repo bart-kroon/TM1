@@ -39,7 +39,6 @@
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::AtlasConstructor {
-// IAtlasConstructor interface (part of AtlasConstructorLib)
 class IAtlasConstructor {
 public:
   IAtlasConstructor() = default;

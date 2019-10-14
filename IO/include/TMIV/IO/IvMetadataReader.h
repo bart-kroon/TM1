@@ -60,7 +60,7 @@ private:
   std::string m_path;
   std::ifstream m_stream;
   Metadata::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivsParams;
+  Metadata::IvSequenceParams m_ivSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   int m_accessUnit{-1};
 };

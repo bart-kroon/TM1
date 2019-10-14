@@ -52,12 +52,12 @@ IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirecto
 }
 
 void IvMetadataReader::readIvSequenceParams() {
-  m_ivsParams = IvSequenceParams::decodeFrom(m_bitstream);
+  m_ivSequenceParams = IvSequenceParams::decodeFrom(m_bitstream);
 }
 
 void IvMetadataReader::readIvAccessUnitParams() {
   const auto currentAtlasParamsList = m_ivAccessUnitParams.atlasParamsList;
-  m_ivAccessUnitParams = IvAccessUnitParams::decodeFrom(m_bitstream, m_ivsParams.viewParamsList);
+  m_ivAccessUnitParams = IvAccessUnitParams::decodeFrom(m_bitstream, m_ivSequenceParams.viewParamsList);
   if (!m_ivAccessUnitParams.atlasParamsList) {
     m_ivAccessUnitParams.atlasParamsList = currentAtlasParamsList.value();
   }
@@ -78,7 +78,7 @@ bool IvMetadataReader::readAccessUnit(int accessUnit) {
 }
 
 auto IvMetadataReader::viewParamsList() const -> const ViewParamsList & {
-  return m_ivsParams.viewParamsList;
+  return m_ivSequenceParams.viewParamsList;
 }
 
 bool IvMetadataReader::omafV1CompatibleFlag() const {

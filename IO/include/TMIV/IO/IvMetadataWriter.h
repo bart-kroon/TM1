@@ -55,12 +55,12 @@ private:
   std::string m_path;
   std::ofstream m_stream;
   Metadata::OutputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivsParams;
+  Metadata::IvSequenceParams m_ivSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
 };
 
 inline auto IvMetadataWriter::viewParamsList() const -> const Metadata::ViewParamsList & {
-  return m_ivsParams.viewParamsList;
+  return m_ivSequenceParams.viewParamsList;
 }
 } // namespace TMIV::IO
 

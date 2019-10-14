@@ -52,8 +52,8 @@ IvMetadataWriter::IvMetadataWriter(const Json &config, const string &baseDirecto
 }
 
 void IvMetadataWriter::writeIvSequenceParams(IvSequenceParams ivsParams) {
-  m_ivsParams = move(ivsParams);
-  m_ivsParams.encodeTo(m_bitstream);
+  m_ivSequenceParams = move(ivsParams);
+  m_ivSequenceParams.encodeTo(m_bitstream);
 }
 
 void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitParams) {
@@ -63,6 +63,6 @@ void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitPa
   if (skipAtlasParamsList) {
     ivAccessUnitParams.atlasParamsList.reset();
   }
-  ivAccessUnitParams.encodeTo(m_bitstream, m_ivsParams.viewParamsList);
+  ivAccessUnitParams.encodeTo(m_bitstream, m_ivSequenceParams.viewParamsList);
 }
 } // namespace TMIV::IO

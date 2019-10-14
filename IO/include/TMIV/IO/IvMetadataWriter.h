@@ -60,7 +60,7 @@ private:
 };
 
 inline auto IvMetadataWriter::cameraList() const -> const Metadata::ViewParamsList & {
-  return m_ivsParams.cameraParamsList;
+  return m_ivsParams.viewParamsList;
 }
 } // namespace TMIV::IO
 

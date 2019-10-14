@@ -182,9 +182,9 @@ auto PerspectiveParams::decodeFrom(InputBitstream &bitstream) -> PerspectivePara
 }
 
 auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
-  auto cameraParamsList = ViewParamsList{ViewParamsVector(bitstream.getUint16() + 1)};
+  auto viewParamsList = ViewParamsList{ViewParamsVector(bitstream.getUint16() + 1)};
 
-  for (auto &cameraParams : cameraParamsList) {
+  for (auto &cameraParams : viewParamsList) {
     cameraParams.position.x() = bitstream.getFloat32();
     cameraParams.position.y() = bitstream.getFloat32();
     cameraParams.position.z() = bitstream.getFloat32();
@@ -195,8 +195,8 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
 
   const auto intrinsicParamsEqualFlag = bitstream.getFlag();
 
-  for (auto camera = cameraParamsList.begin(); camera != cameraParamsList.end(); ++camera) {
-    if (camera == cameraParamsList.begin() || !intrinsicParamsEqualFlag) {
+  for (auto camera = viewParamsList.begin(); camera != viewParamsList.end(); ++camera) {
+    if (camera == viewParamsList.begin() || !intrinsicParamsEqualFlag) {
       auto camType = bitstream.getUint8();
       camera->size.x() = bitstream.getUint16();
       camera->size.y() = bitstream.getUint16();
@@ -213,27 +213,27 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
         abort();
       }
     } else {
-      camera->size = cameraParamsList.front().size;
-      camera->projection = cameraParamsList.front().projection;
+      camera->size = viewParamsList.front().size;
+      camera->projection = viewParamsList.front().projection;
     }
   }
 
   const auto depthQuantizationParamsEqualFlag = bitstream.getFlag();
 
-  for (auto camera = cameraParamsList.begin(); camera != cameraParamsList.end(); ++camera) {
-    if (camera == cameraParamsList.begin() || !depthQuantizationParamsEqualFlag) {
+  for (auto camera = viewParamsList.begin(); camera != viewParamsList.end(); ++camera) {
+    if (camera == viewParamsList.begin() || !depthQuantizationParamsEqualFlag) {
       const auto quantizationLaw = bitstream.getUint8();
       verify(quantizationLaw == 0);
       camera->normDispRange.x() = bitstream.getFloat32();
       camera->normDispRange.y() = bitstream.getFloat32();
       camera->depthOccMapThreshold = bitstream.getUint16();
     } else {
-      camera->normDispRange = cameraParamsList.front().normDispRange;
-      camera->depthOccMapThreshold = cameraParamsList.front().depthOccMapThreshold;
+      camera->normDispRange = viewParamsList.front().normDispRange;
+      camera->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
     }
   }
 
-  return cameraParamsList;
+  return viewParamsList;
 }
 
 void ErpParams::encodeTo(OutputBitstream &bitstream) const {
@@ -308,21 +308,20 @@ ViewParamsList ViewParamsList::loadFromJson(const Json &node, const vector<strin
 }
 
 bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
-  return ivsProfileTierLevel == other.ivsProfileTierLevel &&
-         cameraParamsList == other.cameraParamsList;
+  return ivsProfileTierLevel == other.ivsProfileTierLevel && viewParamsList == other.viewParamsList;
 }
 
 auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
   const auto ivsProfileTierLevel = IvsProfileTierLevel::decodeFrom(bitstream);
-  const auto cameraParamsList = ViewParamsList::decodeFrom(bitstream);
+  const auto viewParamsList = ViewParamsList::decodeFrom(bitstream);
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
-  return IvSequenceParams{ivsProfileTierLevel, cameraParamsList};
+  return IvSequenceParams{ivsProfileTierLevel, viewParamsList};
 }
 
 void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   ivsProfileTierLevel.encodeTo(bitstream);
-  cameraParamsList.encodeTo(bitstream);
+  viewParamsList.encodeTo(bitstream);
   bitstream.putFlag(false);
 }
 } // namespace TMIV::Metadata

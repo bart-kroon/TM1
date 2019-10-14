@@ -63,7 +63,7 @@ public:
 
   void run() override {
     m_metadataReader.readIvSequenceParams();
-    cout << "Camera parameters:\n" << m_metadataReader.cameraParamsList();
+    cout << "View parameters:\n" << m_metadataReader.viewParamsList();
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -84,11 +84,11 @@ public:
 
       auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(
           m_metadataReader.atlasSizes(), m_metadataReader.atlasParamsList(),
-          m_metadataReader.cameraParamsList(), atlas);
+          m_metadataReader.viewParamsList(), atlas);
       IO::savePatchIdMaps(json(), i, patchIdMaps);
 
       auto recoveredTransportView = m_atlasDeconstructor->recoverPrunedView(
-          atlas, m_metadataReader.cameraParamsList(), m_metadataReader.atlasParamsList());
+          atlas, m_metadataReader.viewParamsList(), m_metadataReader.atlasParamsList());
       IO::savePrunedFrame(json(), i, recoveredTransportView);
     }
   }

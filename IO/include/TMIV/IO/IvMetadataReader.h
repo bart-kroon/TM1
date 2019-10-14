@@ -50,7 +50,7 @@ public:
   void readIvAccessUnitParams();
   bool readAccessUnit(int accessUnit);
 
-  auto cameraParamsList() const -> const Metadata::ViewParamsList &;
+  auto viewParamsList() const -> const Metadata::ViewParamsList &;
   bool omafV1CompatibleFlag() const;
   auto atlasSizes() const -> const Common::SizeVector &;
   auto atlasParamsList() const -> const Metadata::AtlasParamsList &;

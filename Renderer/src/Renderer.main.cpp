@@ -77,7 +77,7 @@ public:
       auto patchIds = IO::loadPatchIdMaps(json(), m_metadataReader.atlasSizes(), inputFrame);
       auto target = IO::loadViewportMetadata(json(), inputFrame);
       auto viewport = m_renderer->renderFrame(frame, patchIds, m_metadataReader.atlasParamsList(),
-                                              m_metadataReader.cameraParamsList(), target);
+                                              m_metadataReader.viewParamsList(), target);
       IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
     }
   }

@@ -172,7 +172,7 @@ struct IvSequenceParams {
   IvsProfileTierLevel ivsProfileTierLevel;
 
   // In specification: view_params_list( )
-  ViewParamsList cameraParamsList;
+  ViewParamsList viewParamsList;
 
   bool operator==(const IvSequenceParams &other) const;
   bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }

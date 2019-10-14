@@ -52,7 +52,7 @@ public:
   //
   // This call invalidates the patch list and requires updatePatchList to be
   // called before any call to decodeFrame.
-  virtual void updateAtlasSize(std::vector<Common::Vec2i> sizes) = 0;
+  virtual void updateAtlasSize(Common::SizeVector sizes) = 0;
 
   // Change the patch list.
   //

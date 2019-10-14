@@ -101,7 +101,7 @@ using CameraParametersList = std::vector<CameraParameters>;
 
 // No change when depthOccMapThreshold == 0 (no invalid depth)
 // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
-auto modifyDepthRange(const CameraParametersList&) -> CameraParametersList;
+auto modifyDepthRange(const CameraParametersList &) -> CameraParametersList;
 
 // Data type that corresponds to camera_params_list of MPEG/N18576
 struct CameraParamsList : public CameraParametersList {

@@ -50,7 +50,7 @@ public:
   void writeIvSequenceParams(Metadata::CameraParametersList);
   void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
   void writeIvAccessUnitParams(Metadata::AtlasParametersList patches, bool omafV1CompatibleFlag,
-                               std::vector<Common::Vec2i> atlasSizes);
+                               Common::SizeVector atlasSizes);
 
   auto cameraList() const -> const Metadata::CameraParamsList & {
     return m_ivsParams.cameraParamsList;

@@ -48,7 +48,7 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
           "AtlasDeconstructor", rootNode, componentNode)},
       m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)} {}
 
-void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
+void Decoder::updateAtlasSize(SizeVector atlasSize) {
   m_atlasSize = move(atlasSize);
   m_patches.clear();
 }

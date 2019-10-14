@@ -52,7 +52,7 @@ public:
 
   auto cameraParamsList() const -> const Metadata::CameraParamsList &;
   bool omafV1CompatibleFlag() const;
-  auto atlasSizes() const -> const std::vector<Common::Vec2i> &;
+  auto atlasSizes() const -> const Common::SizeVector &;
   auto atlasParamsList() const -> const Metadata::AtlasParamsList &;
   auto atlasParametersList() const -> const Metadata::AtlasParametersList &;
 

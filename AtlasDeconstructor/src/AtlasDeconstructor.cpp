@@ -47,7 +47,7 @@ constexpr auto neutralChroma = uint16_t(512);
 
 AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-PatchIdMapList AtlasDeconstructor::getPatchIdMap(const vector<Vec2i> &atlasSize,
+PatchIdMapList AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
                                                  const AtlasParametersList &patchList,
                                                  const CameraParametersList &cameraList,
                                                  const MVD10Frame &frame) {

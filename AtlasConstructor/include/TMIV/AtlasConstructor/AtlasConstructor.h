@@ -59,7 +59,7 @@ public:
   void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) override;
   void completeIntraPeriod() override;
 
-  std::vector<Common::Vec2i> getAtlasSize() const override;
+  Common::SizeVector getAtlasSize() const override;
   const Metadata::CameraParametersList &getCameraList() const override { return m_cameras; }
   const Metadata::AtlasParametersList &getPatchList() const override { return m_patchList; }
   Common::MVD16Frame popAtlas() override;

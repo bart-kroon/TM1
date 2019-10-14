@@ -103,7 +103,7 @@ void AtlasConstructor::completeIntraPeriod() {
 
   // Packing
   m_patchList =
-      m_packer->pack(vector<Vec2i>(m_nbAtlas, m_atlasSize), aggregatedMask, m_isReferenceView);
+      m_packer->pack(SizeVector(m_nbAtlas, m_atlasSize), aggregatedMask, m_isReferenceView);
 
   // Atlas construction
   for (const auto &views : m_viewBuffer) {
@@ -130,9 +130,9 @@ void AtlasConstructor::completeIntraPeriod() {
   }
 }
 
-vector<Vec2i> AtlasConstructor::getAtlasSize() const {
+SizeVector AtlasConstructor::getAtlasSize() const {
   assert(!m_atlasBuffer.empty());
-  vector<Vec2i> result;
+  SizeVector result;
   for (const auto &view : m_atlasBuffer.front()) {
     result.push_back({view.first.getWidth(), view.first.getHeight()});
   }

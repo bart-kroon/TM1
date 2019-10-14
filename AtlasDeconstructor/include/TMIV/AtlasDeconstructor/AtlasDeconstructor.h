@@ -48,7 +48,7 @@ public:
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
   ~AtlasDeconstructor() override = default;
 
-  Common::PatchIdMapList getPatchIdMap(const std::vector<Common::Vec2i> &atlasSize,
+  Common::PatchIdMapList getPatchIdMap(const Common::SizeVector &atlasSize,
                                        const Metadata::AtlasParametersList &patchList,
                                        const Metadata::CameraParametersList &cameraList,
                                        const Common::MVD10Frame &frame) override;

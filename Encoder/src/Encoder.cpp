@@ -59,7 +59,7 @@ void Encoder::pushFrame(MVD16Frame views) {
 
 void Encoder::completeIntraPeriod() { m_atlasConstructor->completeIntraPeriod(); }
 
-vector<Vec2i> Encoder::getAtlasSize() const { return m_atlasConstructor->getAtlasSize(); }
+SizeVector Encoder::getAtlasSize() const { return m_atlasConstructor->getAtlasSize(); }
 
 const CameraParametersList &Encoder::getCameraList() const {
   return m_atlasConstructor->getCameraList();

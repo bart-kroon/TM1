@@ -71,8 +71,7 @@ void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitPa
 }
 
 void IvMetadataWriter::writeIvAccessUnitParams(AtlasParametersList patches,
-                                               bool omafV1CompatibleFlag,
-                                               vector<Vec2i> atlasSizes) {
+                                               bool omafV1CompatibleFlag, SizeVector atlasSizes) {
   writeIvAccessUnitParams({{{move(patches), omafV1CompatibleFlag, move(atlasSizes)}}});
 }
 

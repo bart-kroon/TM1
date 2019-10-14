@@ -110,7 +110,7 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
 }
 
 template <typename FORMAT>
-MVDFrame<FORMAT> loadMVDFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex,
+MVDFrame<FORMAT> loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex,
                               const char *what, const char *directory, const char *texturePathFmt,
                               const char *depthPathFmt, const vector<string> &cameraNames = {}) {
   cout << "Loading " << what << " frame " << frameIndex << endl;
@@ -182,8 +182,8 @@ Pose loadPoseFromCSV(istream &stream, int frameIndex) {
 
 } // namespace
 
-auto sizesOf(const CameraParametersList &cameras) -> vector<Vec2i> {
-  vector<Vec2i> sizes;
+auto sizesOf(const CameraParametersList &cameras) -> SizeVector {
+  SizeVector sizes;
   sizes.reserve(cameras.size());
   transform(begin(cameras), end(cameras), back_inserter(sizes),
             [](const CameraParameters &camera) { return camera.size; });
@@ -204,7 +204,7 @@ CameraParamsList loadSourceMetadata(const Json &config) {
 
 namespace {
 template <typename FORMAT>
-MVD16Frame loadSourceFrame_impl(int bits, const Json &config, const vector<Vec2i> &sizes,
+MVD16Frame loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
                                 int frameIndex) {
   auto frame = loadMVDFrame<FORMAT>(config, sizes,
                                     frameIndex + config.require("startFrame").asInt(), "source",
@@ -230,7 +230,7 @@ MVD16Frame loadSourceFrame_impl(int bits, const Json &config, const vector<Vec2i
 }
 } // namespace
 
-MVD16Frame loadSourceFrame(const Json &config, const vector<Vec2i> &sizes, int frameIndex) {
+MVD16Frame loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex) {
   const auto bits = config.require("SourceDepthBitDepth").asInt();
   if (0 < bits && bits <= 8) {
     return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
@@ -307,9 +307,8 @@ auto loadOptimizedMetadata(const Json &config) -> BasicAdditional<CameraParamsLi
   return {loadCameras(config, "BasicMetadataPath"), loadCameras(config, "AdditionalMetadataPath")};
 }
 
-BasicAdditional<MVD16Frame> loadOptimizedFrame(const Json &config,
-                                               const BasicAdditional<vector<Vec2i>> &sizes,
-                                               int frameIndex) {
+BasicAdditional<MVD16Frame>
+loadOptimizedFrame(const Json &config, const BasicAdditional<SizeVector> &sizes, int frameIndex) {
   return {loadMVDFrame<YUV400P16>(config, sizes.basic, frameIndex, "basic views of",
                                   "OutputDirectory", "BasicTexturePathFmt", "BasicDepthPathFmt"),
           loadMVDFrame<YUV400P16>(config, sizes.additional, frameIndex, "additional views of",
@@ -330,7 +329,7 @@ void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame
                "PrunedViewDepthPathFmt");
 }
 
-MVD10Frame loadAtlas(const Json &config, const vector<Vec2i> &atlasSize, int frameIndex) {
+MVD10Frame loadAtlas(const Json &config, const SizeVector &atlasSize, int frameIndex) {
   return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
                                  "AtlasTexturePathFmt", "AtlasDepthPathFmt");
 }
@@ -340,7 +339,7 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
                "AtlasDepthPathFmt");
 }
 
-PatchIdMapList loadPatchIdMaps(const Json &config, const vector<Vec2i> &atlasSize, int frameIndex) {
+PatchIdMapList loadPatchIdMaps(const Json &config, const SizeVector &atlasSize, int frameIndex) {
   cout << "Loading patchIdMap frame " << frameIndex << '\n';
 
   PatchIdMapList result;

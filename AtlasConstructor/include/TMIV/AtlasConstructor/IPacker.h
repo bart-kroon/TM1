@@ -48,7 +48,7 @@ public:
   IPacker &operator=(IPacker &&) = default;
   virtual ~IPacker() = default;
 
-  virtual Metadata::AtlasParametersList pack(const std::vector<Common::Vec2i> &atlasSize,
+  virtual Metadata::AtlasParametersList pack(const Common::SizeVector &atlasSize,
                                              const Common::MaskList &masks,
                                              const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
 };

@@ -49,7 +49,7 @@ public:
   Packer &operator=(Packer &&) = default;
   ~Packer() override = default;
 
-  Metadata::AtlasParametersList pack(const std::vector<Common::Vec2i> &atlasSize,
+  Metadata::AtlasParametersList pack(const Common::SizeVector &atlasSize,
                                      const Common::MaskList &masks,
                                      const std::vector<std::uint8_t> &shouldNotBeSplit) override;
 

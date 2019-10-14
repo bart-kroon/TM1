@@ -83,7 +83,7 @@ bool IvMetadataReader::omafV1CompatibleFlag() const {
   return atlasParamsList().omafV1CompatibleFlag;
 }
 
-auto IvMetadataReader::atlasSizes() const -> const vector<Vec2i> & {
+auto IvMetadataReader::atlasSizes() const -> const SizeVector & {
   return atlasParamsList().atlasSizes;
 }
 

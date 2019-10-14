@@ -55,10 +55,10 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
     } else {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.row_begin(i), A.row_end(i), B.row_begin(j), T(0),
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
+          C(i, j) =
+              std::inner_product(A.row_begin(i), A.row_end(i), B.row_begin(j), T(0),
+                                 [](const T &v1, const T &v2) { return (v1 + v2); },
+                                 [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
         }
       }
     }
@@ -78,10 +78,10 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
     } else {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
+          C(i, j) =
+              std::inner_product(A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
+                                 [](const T &v1, const T &v2) { return (v1 + v2); },
+                                 [](const T &v1, const T &v2) { return (v1 * conjugate(v2)); });
         }
       }
     }
@@ -89,19 +89,19 @@ void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shall
     if (mB == 'N') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.col_begin(j), T(0),
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
+          C(i, j) =
+              std::inner_product(A.col_begin(i), A.col_end(i), B.col_begin(j), T(0),
+                                 [](const T &v1, const T &v2) { return (v1 + v2); },
+                                 [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
         }
       }
     } else if (mB == 'T') {
       for (size_type i = 0; i < C.m(); i++) {
         for (size_type j = 0; j < C.n(); j++) {
-          C(i, j) = std::inner_product(
-              A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
-              [](const T &v1, const T &v2) { return (v1 + v2); },
-              [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
+          C(i, j) =
+              std::inner_product(A.col_begin(i), A.col_end(i), B.row_begin(j), T(0),
+                                 [](const T &v1, const T &v2) { return (v1 + v2); },
+                                 [](const T &v1, const T &v2) { return (conjugate(v1) * v2); });
         }
       }
     } else {

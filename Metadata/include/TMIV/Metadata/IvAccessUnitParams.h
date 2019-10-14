@@ -82,7 +82,7 @@ using AtlasParametersList = std::vector<AtlasParameters>;
 struct AtlasParamsList : public AtlasParametersList {
   AtlasParamsList() = default;
   AtlasParamsList(AtlasParametersList atlasParameters, bool omafV1CompatibleFlag_,
-                  std::vector<Common::Vec2i> atlasSizes_)
+                  Common::SizeVector atlasSizes_)
       : AtlasParametersList{std::move(atlasParameters)},
         omafV1CompatibleFlag{omafV1CompatibleFlag_}, atlasSizes{atlasSizes_} {}
   AtlasParamsList(const AtlasParamsList &) = default;
@@ -91,7 +91,7 @@ struct AtlasParamsList : public AtlasParametersList {
   AtlasParamsList &operator=(AtlasParamsList &&) = default;
 
   bool omafV1CompatibleFlag{};
-  std::vector<Common::Vec2i> atlasSizes;
+  Common::SizeVector atlasSizes;
 
   static auto decodeFrom(InputBitstream &, const CameraParamsList &) -> AtlasParamsList;
   void encodeTo(OutputBitstream &, const CameraParamsList &) const;

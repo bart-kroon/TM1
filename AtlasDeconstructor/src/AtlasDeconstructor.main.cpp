@@ -61,7 +61,7 @@ public:
 
   void run() override {
     m_metadataReader.readIvSequenceParams();
-	cout << "Camera parameters:\n" << m_metadataReader.cameraParamsList();
+    cout << "Camera parameters:\n" << m_metadataReader.cameraParamsList();
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int endFrame = min(m_numberOfFrames, i + m_intraPeriod);

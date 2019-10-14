@@ -46,7 +46,7 @@ class Decoder : public IDecoder {
 private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
-  std::vector<Common::Vec2i> m_atlasSize;
+  Common::SizeVector m_atlasSize;
   Metadata::AtlasParametersList m_patches;
   Common::PatchIdMapList m_patchIdMaps;
   Metadata::CameraParametersList m_cameras;
@@ -59,8 +59,8 @@ public:
   Decoder &operator=(Decoder &&) = default;
   ~Decoder() override = default;
 
-  void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
-  void updatePatchList(Metadata::AtlasParametersList patches, 
+  void updateAtlasSize(Common::SizeVector atlasSize) override;
+  void updatePatchList(Metadata::AtlasParametersList patches,
                        const Common::MVD10Frame &frame) override;
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 

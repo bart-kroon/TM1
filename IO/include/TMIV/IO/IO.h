@@ -50,10 +50,10 @@ std::string getFullPath(const Common::Json &config, const std::string &baseDirec
 
 template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
-auto sizesOf(const Metadata::CameraParametersList &cameras) -> std::vector<Common::Vec2i>;
+auto sizesOf(const Metadata::CameraParametersList &cameras) -> Common::SizeVector;
 Metadata::CameraParamsList loadSourceMetadata(const Common::Json &config);
-Common::MVD16Frame loadSourceFrame(const Common::Json &config,
-                                   const std::vector<Common::Vec2i> &sizes, int frameIndex);
+Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
+                                   int frameIndex);
 
 void saveOptimizedMetadata(const Common::Json &config,
                            const BasicAdditional<Metadata::CameraParametersList> &);
@@ -62,18 +62,18 @@ auto loadOptimizedMetadata(const Common::Json &config)
 void saveOptimizedFrame(const Common::Json &config, int frameIndex,
                         const BasicAdditional<Common::MVD16Frame> &frame);
 auto loadOptimizedFrame(const Common::Json &config,
-                        const BasicAdditional<std::vector<Common::Vec2i>> &sizes, int frameIndex)
+                        const BasicAdditional<Common::SizeVector> &sizes, int frameIndex)
     -> BasicAdditional<Common::MVD16Frame>;
 
 void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
-auto loadAtlas(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
-               int frameIndex) -> Common::MVD10Frame;
+auto loadAtlas(const Common::Json &config, const Common::SizeVector &atlasSize, int frameIndex)
+    -> Common::MVD10Frame;
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);
-auto loadPatchIdMaps(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
+auto loadPatchIdMaps(const Common::Json &config, const Common::SizeVector &atlasSize,
                      int frameIndex) -> Common::PatchIdMapList;
 
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::CameraParameters;

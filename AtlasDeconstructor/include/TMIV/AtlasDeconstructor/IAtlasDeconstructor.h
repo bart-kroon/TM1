@@ -50,7 +50,7 @@ public:
   IAtlasDeconstructor &operator=(IAtlasDeconstructor &&) = default;
   virtual ~IAtlasDeconstructor() = default;
 
-  virtual Common::PatchIdMapList getPatchIdMap(const std::vector<Common::Vec2i> &atlasSize,
+  virtual Common::PatchIdMapList getPatchIdMap(const Common::SizeVector &atlasSize,
                                                const Metadata::AtlasParametersList &patchList,
                                                const Metadata::CameraParametersList &cameraList,
                                                const Common::MVD10Frame &frame) = 0;

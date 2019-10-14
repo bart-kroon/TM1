@@ -32,6 +32,7 @@
  */
 
 #include <TMIV/AtlasDeconstructor/AtlasDeconstructor.h>
+
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Image/Image.h>
 

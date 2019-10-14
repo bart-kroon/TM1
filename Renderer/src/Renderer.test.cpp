@@ -41,6 +41,7 @@
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
+
 #include <algorithm>
 #include <cmath>
 

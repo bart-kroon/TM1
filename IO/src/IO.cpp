@@ -33,15 +33,15 @@
 
 #include <TMIV/IO/IO.h>
 
+#include <TMIV/Common/Common.h>
+#include <TMIV/Image/Image.h>
+
 #include <cassert>
 #include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
 #include <regex>
-
-#include <TMIV/Common/Common.h>
-#include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::Common;

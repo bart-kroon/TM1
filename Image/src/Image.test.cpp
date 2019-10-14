@@ -35,6 +35,7 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/Common/Common.h>
+
 #include <TMIV/Image/Image.h>
 
 using namespace std;

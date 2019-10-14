@@ -37,6 +37,7 @@
 #include "Rasterizer.h"
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Image/Image.h>
+
 #include <cassert>
 #include <cmath>
 #include <future>

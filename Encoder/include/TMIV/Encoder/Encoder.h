@@ -34,9 +34,10 @@
 #ifndef _TMIV_ENCODER_ENCODER_H_
 #define _TMIV_ENCODER_ENCODER_H_
 
+#include <TMIV/Encoder/IEncoder.h>
+
 #include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Encoder/IEncoder.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 namespace TMIV::Encoder {

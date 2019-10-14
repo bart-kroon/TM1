@@ -34,13 +34,13 @@
 #ifndef _TMIV_COMMON_ARRAY_H_
 #define _TMIV_COMMON_ARRAY_H_
 
+#include "Traits.h"
+
 #include <algorithm>
 #include <array>
 #include <numeric>
 #include <ostream>
 #include <vector>
-
-#include "Traits.h"
 
 namespace TMIV::Common {
 namespace Array {

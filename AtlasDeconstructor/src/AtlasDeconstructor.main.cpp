@@ -32,11 +32,13 @@
  */
 
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
+
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
 #include <TMIV/Metadata/Bitstream.h>
+
 #include <iostream>
 
 using namespace std;

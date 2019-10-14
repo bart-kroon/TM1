@@ -33,14 +33,13 @@
 
 #include <TMIV/Metadata/IvSequenceParams.h>
 
+#include "verify.h"
 #include <TMIV/Common/Common.h>
 #include <TMIV/Metadata/Bitstream.h>
 
 #include <cassert>
 #include <iomanip>
 #include <iostream>
-
-#include "verify.h"
 
 using namespace std;
 using namespace TMIV::Common;

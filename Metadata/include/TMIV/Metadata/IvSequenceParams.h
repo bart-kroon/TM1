@@ -34,13 +34,13 @@
 #ifndef _TMIV_METADATA_IVSEQUENCEPARAMS_H_
 #define _TMIV_METADATA_IVSEQUENCEPARAMS_H_
 
+#include <TMIV/Common/Json.h>
+#include <TMIV/Common/Vector.h>
+
 #include <cstdint>
 #include <iosfwd>
 #include <utility>
 #include <vector>
-
-#include <TMIV/Common/Json.h>
-#include <TMIV/Common/Vector.h>
 
 namespace TMIV::Metadata {
 enum class ProjectionType { ERP, Perspective };

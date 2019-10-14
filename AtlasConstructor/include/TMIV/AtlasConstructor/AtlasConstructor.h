@@ -34,14 +34,15 @@
 #ifndef _TMIV_ATLASCONSTRUCTOR_ATLASCONSTRUCTOR_H_
 #define _TMIV_ATLASCONSTRUCTOR_ATLASCONSTRUCTOR_H_
 
-#include <deque>
-#include <memory>
+#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 
 #include <TMIV/AtlasConstructor/IAggregator.h>
-#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/AtlasConstructor/IPacker.h>
 #include <TMIV/AtlasConstructor/IPruner.h>
 #include <TMIV/Common/Json.h>
+
+#include <deque>
+#include <memory>
 
 namespace TMIV::AtlasConstructor {
 class AtlasConstructor : public IAtlasConstructor {

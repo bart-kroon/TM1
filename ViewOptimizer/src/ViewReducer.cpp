@@ -31,10 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/ViewOptimizer/ViewReducer.h>
+
 #include <TMIV/Common/Common.h>
 #include <TMIV/Image/Image.h>
 #include <TMIV/Renderer/reprojectPoints.h>
-#include <TMIV/ViewOptimizer/ViewReducer.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>

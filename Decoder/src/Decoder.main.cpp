@@ -31,15 +31,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <algorithm>
-#include <iostream>
-#include <memory>
+#include <TMIV/Decoder/IDecoder.h>
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/IDecoder.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
+
+#include <algorithm>
+#include <iostream>
+#include <memory>
 
 using namespace std;
 using namespace TMIV::Common;

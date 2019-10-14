@@ -34,8 +34,9 @@
 #ifndef _TMIV_VIEWOPTIMIZER_VIEWREDUCER_H_
 #define _TMIV_VIEWOPTIMIZER_VIEWREDUCER_H_
 
-#include <TMIV/Common/Json.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
+
+#include <TMIV/Common/Json.h>
 #include <vector>
 
 namespace TMIV::ViewOptimizer {

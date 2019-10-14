@@ -31,10 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+
 #include <iostream>
 
 using namespace std;

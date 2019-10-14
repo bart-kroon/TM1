@@ -31,10 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "Engine.h"
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Renderer/reprojectPoints.h>
-
-#include "Engine.h"
 
 using namespace std;
 using namespace TMIV::Common;

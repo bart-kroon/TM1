@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(CommonLib
-	"src/Common.cpp"
 	"src/Application.cpp"
 	"src/Json.cpp"
-	"src/Factory.cpp"
 	"src/Frame.cpp"
-	"src/LinAlg.cpp"
-	"src/Vector.cpp"
-	"src/Matrix.cpp"
-	"src/Array.cpp"
-	"src/Traits.cpp"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Common.hpp"
 	"include/TMIV/Common/Application.h"

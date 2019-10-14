@@ -31,8 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
 #include <TMIV/Encoder/Encoder.h>
+
+#include <TMIV/Common/Factory.h>
 
 using namespace std;
 using namespace TMIV::AtlasConstructor;

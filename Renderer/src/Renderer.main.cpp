@@ -31,11 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Renderer/IRenderer.h>
+
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
-#include <TMIV/Renderer/IRenderer.h>
+
 #include <iostream>
 
 using namespace std;

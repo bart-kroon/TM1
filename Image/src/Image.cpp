@@ -34,6 +34,7 @@
 #include <TMIV/Image/Image.h>
 
 #include <TMIV/Common/Common.h>
+
 #include <cassert>
 #include <cmath>
 #include <cstdint>

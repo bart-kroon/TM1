@@ -35,6 +35,7 @@
 #define _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
 
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
+
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasDeconstructor {

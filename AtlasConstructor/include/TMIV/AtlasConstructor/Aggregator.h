@@ -35,6 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_AGGREGATOR_H_
 
 #include <TMIV/AtlasConstructor/IAggregator.h>
+
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {

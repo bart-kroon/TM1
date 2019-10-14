@@ -36,6 +36,7 @@
 
 #include "Array.h"
 #include "Math.h"
+
 #include <ostream>
 
 namespace TMIV::Common {

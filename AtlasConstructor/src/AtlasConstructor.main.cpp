@@ -32,6 +32,7 @@
  */
 
 #include <TMIV/AtlasConstructor/IAtlasConstructor.h>
+
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/IO/IO.h>

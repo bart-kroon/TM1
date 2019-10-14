@@ -34,12 +34,12 @@
 #ifndef _TMIV_COMMON_JSON_H_
 #define _TMIV_COMMON_JSON_H_
 
+#include <TMIV/Common/Vector.h>
+
 #include <iosfwd>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <TMIV/Common/Vector.h>
 
 namespace TMIV::Common {
 namespace impl {

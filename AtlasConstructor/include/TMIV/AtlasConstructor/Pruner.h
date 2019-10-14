@@ -35,6 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
 
 #include <TMIV/AtlasConstructor/IPruner.h>
+
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
 

@@ -90,7 +90,7 @@ private:
     if (intraFrame == 0) {
       m_metadataWriter.writeIvSequenceParams(
           {{}, ViewParamsList{modifyDepthRange(m_encoder->getCameraList())}});
-      cout << "Encoded cameras:\n" << m_metadataWriter.cameraList();
+      cout << "Encoded cameras:\n" << m_metadataWriter.viewParamsList();
     }
     m_metadataWriter.writeIvAccessUnitParams(
         {{{m_encoder->getPatchList(), m_omafV1CompatibleFlag, m_encoder->getAtlasSize()}}});
@@ -98,7 +98,7 @@ private:
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,
                     modifyDepthRange(m_encoder->popAtlas(), m_encoder->getCameraList(),
-                                     m_metadataWriter.cameraList()));
+                                     m_metadataWriter.viewParamsList()));
     }
   }
 };

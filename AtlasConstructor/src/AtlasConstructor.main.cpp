@@ -109,7 +109,7 @@ public:
       IO::saveAtlas(json(), i,
                     modifyDepthRange(m_atlasConstructor->popAtlas(),
                                      m_atlasConstructor->getCameraList(),
-                                     m_metadataWriter.cameraList()));
+                                     m_metadataWriter.viewParamsList()));
     }
   }
 };

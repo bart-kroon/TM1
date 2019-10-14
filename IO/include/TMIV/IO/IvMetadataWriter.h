@@ -49,7 +49,7 @@ public:
   void writeIvSequenceParams(Metadata::IvSequenceParams);
   void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
 
-  auto cameraList() const -> const Metadata::ViewParamsList &;
+  auto viewParamsList() const -> const Metadata::ViewParamsList &;
 
 private:
   std::string m_path;
@@ -59,7 +59,7 @@ private:
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
 };
 
-inline auto IvMetadataWriter::cameraList() const -> const Metadata::ViewParamsList & {
+inline auto IvMetadataWriter::viewParamsList() const -> const Metadata::ViewParamsList & {
   return m_ivsParams.viewParamsList;
 }
 } // namespace TMIV::IO

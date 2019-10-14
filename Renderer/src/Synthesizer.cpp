@@ -208,14 +208,14 @@ public:
 
   // Field of view in deg
   static float xFoV(const CameraParameters &camera) {
-    switch (camera.type) {
-    case ProjectionType::ERP:
-      return abs(camera.erpPhiRange[1] - camera.erpPhiRange[0]);
-    case ProjectionType::Perspective:
-      return degperrad * 2 * atan(camera.size.x() / (2 * camera.perspectiveFocal.x()));
-    default:
-      return fullCycle;
-    }
+    return visit(overload(
+                     [](const ErpParams &projection) {
+                       return abs(projection.phiRange[1] - projection.phiRange[0]);
+                     },
+                     [&](const PerspectiveParams &projection) {
+                       return degperrad * 2 * atan(camera.size.x() / (2 * projection.focal.x()));
+                     }),
+                 camera.projection);
   }
 
   // Resolution in px^2/deg^2

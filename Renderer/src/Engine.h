@@ -67,7 +67,7 @@ auto affineParameters(const Metadata::CameraParameters &camera,
     -> std::pair<Common::Mat3x3f, Common::Vec3f>;
 
 // The rendering engine is the part that is specalized per projection type
-template <Metadata::ProjectionType type> struct Engine {};
+template <typename Projection> struct Engine {};
 } // namespace TMIV::Renderer
 
 #include "Engine_ERP.hpp"
@@ -95,18 +95,12 @@ auto unproject(const Engine &engine, const Common::Mat<float> &depth,
 template <typename... T>
 auto unproject(const Common::Mat<float> &depth, const Metadata::CameraParameters &camera,
                const Metadata::CameraParameters &target, const Common::Mat<T> &... matrices) {
-  switch (camera.type) {
-  case Metadata::ProjectionType::ERP: {
-    Engine<Metadata::ProjectionType::ERP> engine{camera};
-    return unproject(engine, depth, target, matrices...);
-  }
-  case Metadata::ProjectionType::Perspective: {
-    Engine<Metadata::ProjectionType::Perspective> engine{camera};
-    return unproject(engine, depth, target, matrices...);
-  }
-  default:
-    abort();
-  }
+  return visit(
+      [&](auto const &x) {
+        Engine<decay_t<decltype(x)>> engine{camera};
+        return unproject(engine, depth, target, matrices...);
+      },
+      camera.projection);
 }
 
 // Project the data that is already in the reference frame of the
@@ -117,18 +111,12 @@ auto unproject(const Common::Mat<float> &depth, const Metadata::CameraParameters
 template <typename... T>
 auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
              std::tuple<std::vector<T>...> attributes, const Metadata::CameraParameters &target) {
-  switch (target.type) {
-  case Metadata::ProjectionType::ERP: {
-    Engine<Metadata::ProjectionType::ERP> engine{target};
-    return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
-  }
-  case Metadata::ProjectionType::Perspective: {
-    Engine<Metadata::ProjectionType::Perspective> engine{target};
-    return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
-  }
-  default:
-    abort();
-  }
+  return visit(
+      [&](auto const &x) {
+        Engine<decay_t<decltype(x)>> engine{target};
+        return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
+      },
+      target.projection);
 }
 
 // Reproject from a source frame with a source camera to a target camera,

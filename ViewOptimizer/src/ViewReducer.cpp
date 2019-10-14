@@ -78,9 +78,9 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersVector cameras)
 
   // Early termination: if any view is full-ERP, choose this view
   for (auto &camera : cameras) {
-    if (camera.type == ProjectionType::ERP) {
-      if (abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) == fullCycle) {
-        if (abs(camera.erpThetaRange[0] - camera.erpThetaRange[1]) == halfCycle) {
+    if (auto projection = get_if<ErpParams>(&camera.projection)) {
+      if (abs(projection->phiRange[0] - projection->phiRange[1]) == fullCycle) {
+        if (abs(projection->thetaRange[0] - projection->thetaRange[1]) == halfCycle) {
           isoneview = true;
           break;
         }
@@ -248,17 +248,17 @@ auto ViewReducer::optimizeFrame(MVD16Frame views) const -> Output<MVD16Frame> {
 }
 
 auto ViewReducer::calculateFOV(CameraParameters camera) -> float {
-  float temp_FOV = 0;
-
-  if (camera.type == ProjectionType::ERP) {
-    temp_FOV =
-        abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) * radperdeg *
-        (abs(sin(camera.erpThetaRange[0] * radperdeg) - sin(camera.erpThetaRange[1] * radperdeg)));
-  } else if (camera.type == ProjectionType::Perspective) {
-    temp_FOV = abs(4 * atan(camera.size[0] / (2 * camera.perspectiveFocal[0])) *
-                   sin(atan(camera.size[1] / (2 * camera.perspectiveFocal[1]))));
-  }
-  return temp_FOV;
+  return visit(overload(
+                   [](const ErpParams &projection) {
+                     return abs(projection.phiRange[0] - projection.phiRange[1]) * radperdeg *
+                            (abs(sin(projection.thetaRange[0] * radperdeg) -
+                                 sin(projection.thetaRange[1] * radperdeg)));
+                   },
+                   [&](const PerspectiveParams &projection) {
+                     return abs(4 * atan(camera.size[0] / (2 * projection.focal[0])) *
+                                sin(atan(camera.size[1] / (2 * projection.focal[1]))));
+                   }),
+               camera.projection);
 }
 auto ViewReducer::calculateDistance(CameraParameters camera_1, CameraParameters camera_2) -> float {
   return sqrt(square(camera_1.position[0] - camera_2.position[0]) +
@@ -305,18 +305,18 @@ auto ViewReducer::calculateOverlapping(CameraParameters camera_from, CameraParam
 
   for (unsigned i = 0; i != isoverlap.height(); ++i) {
     for (unsigned j = 0; j != isoverlap.width(); ++j) {
-      float weight = 0.0F;
-      if (camera_from.type == ProjectionType::ERP) {
-        float angle = (camera_from.erpThetaRange[1] +
-                       (float(i) + halfPixel) *
-                           (camera_from.erpThetaRange[0] - camera_from.erpThetaRange[1]) /
-                           isoverlap.height()) *
-                      radperdeg;
-        // calculate weight of each pixel in sphere
-        weight = cos(angle);
-      } else if (camera_from.type == ProjectionType::Perspective) {
-        weight = 1;
-      }
+      const float weight =
+          visit(overload(
+                    [&](const ErpParams &projection) { // calculate weight of each pixel in sphere
+                      float angle = (projection.thetaRange[1] +
+                                     (float(i) + halfPixel) *
+                                         (projection.thetaRange[0] - projection.thetaRange[1]) /
+                                         isoverlap.height()) *
+                                    radperdeg;
+                      return cos(angle);
+                    },
+                    [](const PerspectiveParams & /* unused */) { return 1.F; }),
+                camera_from.projection);
       weight_all += weight;
       if (isoverlap(i, j) != 0) {
         weight_overlapped += weight;

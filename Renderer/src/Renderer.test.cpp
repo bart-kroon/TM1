@@ -51,22 +51,18 @@ using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
-  return CameraParameters{{10, 5},           // size
-                          {1.F, 0.F, -1.F},  // position
-                          {1.F, 2.F, -0.5F}, // orientation
-                          ProjectionType::ERP,
-                          {-180.F, 180.F}, // phi range
-                          {-90.F, 90.F},   // theta range
-                          {},
-                          {},
-                          {1.F, 10.F}}; // depth range
+  return CameraParameters{{10, 5},                   // size
+                          {1.F, 0.F, -1.F},          // position
+                          {1.F, 2.F, -0.5F},         // orientation
+                          ErpParams{{-180.F, 180.F}, // phi range
+                                    {-90.F, 90.F}},  // theta range
+                          {1.F, 10.F}};              // depth range
 }
 
 TEST_CASE("Full ERP", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const CameraParameters camera{{7, 5}, {}, {}, ProjectionType::ERP, {-180.F, 180.F}, {-90.F, 90.F},
-                                {},     {}, {}};
+  const CameraParameters camera{{7, 5}, {}, {}, ErpParams{{-180.F, 180.F}, {-90.F, 90.F}}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -129,8 +125,7 @@ TEST_CASE("Full ERP", "[Render engine]") {
 TEST_CASE("Equirectangular viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const CameraParameters camera{{7, 5}, {}, {}, ProjectionType::ERP, {-10.F, 10.F}, {-10.F, 10.F},
-                                {},     {}, {}};
+  const CameraParameters camera{{7, 5}, {}, {}, ErpParams{{-10.F, 10.F}, {-10.F, 10.F}}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -193,8 +188,7 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
 TEST_CASE("Perspective viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const CameraParameters camera{{7, 5},       {},           {}, ProjectionType::Perspective, {}, {},
-                                {10.F, 10.F}, {3.5F, 2.5F}, {}};
+  const CameraParameters camera{{7, 5}, {}, {}, PerspectiveParams{{10.F, 10.F}, {3.5F, 2.5F}}};
 
   SECTION("Unproject without attributes") {
     auto mesh = unproject(depth, camera, camera);
@@ -256,8 +250,8 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
   const CameraParameters neutral{};
-  const CameraParameters translated{{}, {1.F, 2.F, 3.F}, {}, {}, {}, {}, {}, {}, {}};
-  const CameraParameters rotated{{}, {}, {100.F, 30.F, -30.F}, {}, {}, {}, {}, {}, {}};
+  const CameraParameters translated{{}, {1.F, 2.F, 3.F}};
+  const CameraParameters rotated{{}, {}, {100.F, 30.F, -30.F}};
   SECTION("trivial") {
     auto R_t = affineParameters(neutral, neutral);
     REQUIRE(R_t.first == Mat3x3f::eye());

@@ -44,7 +44,7 @@ namespace TMIV::Renderer {
 using Common::halfCycle;
 using Common::quarterCycle;
 
-template <> struct Engine<Metadata::ProjectionType::ERP> {
+template <> struct Engine<Metadata::ErpParams> {
   const Metadata::CameraParameters camera;
   const bool northPole;
   const bool southPole;
@@ -68,9 +68,11 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
       : camera{camera_},
 
         // Projection sub-type
-        northPole{camera.erpThetaRange[1] == quarterCycle}, southPole{camera.erpThetaRange[0] ==
-                                                                      -quarterCycle},
-        wraps{camera.erpPhiRange[0] == -halfCycle && camera.erpPhiRange[1] == halfCycle},
+        northPole{camera.erp().thetaRange[1] == quarterCycle},
+        southPole{camera.erp().thetaRange[0] == -quarterCycle}, wraps{camera.erp().phiRange[0] ==
+                                                                          -halfCycle &&
+                                                                      camera.erp().phiRange[1] ==
+                                                                          halfCycle},
 
         // Mesh structure
         icols{camera.size.x()}, irows{camera.size.y()}, ocols{camera.size.x() + 2 - int(wraps)},
@@ -81,22 +83,22 @@ template <> struct Engine<Metadata::ProjectionType::ERP> {
                      (southPole ? ocols - 1 : 0)},
 
         // Precomputed values used in te unprojection equation
-        phi0{Common::radperdeg * camera.erpPhiRange[1]}, theta0{Common::radperdeg *
-                                                                camera.erpThetaRange[1]},
-        dphi_du{-Common::radperdeg * (camera.erpPhiRange[1] - camera.erpPhiRange[0]) /
+        phi0{Common::radperdeg * camera.erp().phiRange[1]}, theta0{Common::radperdeg *
+                                                                   camera.erp().thetaRange[1]},
+        dphi_du{-Common::radperdeg * (camera.erp().phiRange[1] - camera.erp().phiRange[0]) /
                 camera.size.x()},
-        dtheta_dv{-Common::radperdeg * (camera.erpThetaRange[1] - camera.erpThetaRange[0]) /
+        dtheta_dv{-Common::radperdeg * (camera.erp().thetaRange[1] - camera.erp().thetaRange[0]) /
                   camera.size.y()},
 
         // Precomputed values used in the projection equation
-        u0{camera.size.x() * camera.erpPhiRange[1] /
-           (camera.erpPhiRange[1] - camera.erpPhiRange[0])},
-        v0{camera.size.y() * camera.erpThetaRange[1] /
-           (camera.erpThetaRange[1] - camera.erpThetaRange[0])},
+        u0{camera.size.x() * camera.erp().phiRange[1] /
+           (camera.erp().phiRange[1] - camera.erp().phiRange[0])},
+        v0{camera.size.y() * camera.erp().thetaRange[1] /
+           (camera.erp().thetaRange[1] - camera.erp().thetaRange[0])},
         du_dphi{-Common::degperrad * camera.size.x() /
-                (camera.erpPhiRange[1] - camera.erpPhiRange[0])},
+                (camera.erp().phiRange[1] - camera.erp().phiRange[0])},
         dv_dtheta{-Common::degperrad * camera.size.y() /
-                  (camera.erpThetaRange[1] - camera.erpThetaRange[0])} {}
+                  (camera.erp().thetaRange[1] - camera.erp().thetaRange[0])} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

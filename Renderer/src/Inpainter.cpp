@@ -412,8 +412,8 @@ template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParame
 
   fillVerticalCracks(yuvd);
 
-  if (meta.type == ProjectionType::ERP) {
-    double angleRange = (meta.erpPhiRange[1] - meta.erpPhiRange[0]) / M_2PI;
+  if (auto projection = get_if<ErpParams>(&meta.projection)) {
+    double angleRange = (projection->phiRange[1] - projection->phiRange[0]) / M_2PI;
     inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, angleRange);
   }
 

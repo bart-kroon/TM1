@@ -40,7 +40,7 @@
 #include <cassert>
 
 namespace TMIV::Renderer {
-template <> struct Engine<Metadata::ProjectionType::Perspective> {
+template <> struct Engine<Metadata::PerspectiveParams> {
   const Metadata::CameraParameters camera;
   const int icols;
   const int irows;
@@ -60,7 +60,7 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
                                                                        (ocols - 1)},
 
         // Projection parameters
-        f{camera.perspectiveFocal}, p{camera.perspectiveCenter} {}
+        f{camera.perspective().focal}, p{camera.perspective().center} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

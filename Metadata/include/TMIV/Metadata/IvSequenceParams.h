@@ -37,14 +37,14 @@
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
+#include <cassert>
 #include <cstdint>
 #include <iosfwd>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace TMIV::Metadata {
-enum class ProjectionType { ERP, Perspective };
-
 class InputBitstream;
 class OutputBitstream;
 
@@ -56,6 +56,38 @@ struct IvsProfileTierLevel {
   static auto decodeFrom(InputBitstream &) -> IvsProfileTierLevel;
   void encodeTo(OutputBitstream &) const;
 };
+
+struct ErpParams {
+  // In specification: erp_phi_{min,max}
+  Common::Vec2f phiRange{};
+
+  // In specification: erp_theta_{min,max}
+  Common::Vec2f thetaRange{};
+
+  friend std::ostream &operator<<(std::ostream &stream, const ErpParams &);
+  bool operator==(const ErpParams &) const;
+  bool operator!=(const ErpParams &other) const { return !operator==(other); }
+
+  static auto decodeFrom(InputBitstream &) -> ErpParams;
+  void encodeTo(OutputBitstream &) const;
+};
+
+struct PerspectiveParams {
+  // In specification: perspective_focal_{hor,ver}
+  Common::Vec2f focal{};
+
+  // In specification: perspective_center_{hor,ver}
+  Common::Vec2f center{};
+
+  friend std::ostream &operator<<(std::ostream &stream, const PerspectiveParams &);
+  bool operator==(const PerspectiveParams &) const;
+  bool operator!=(const PerspectiveParams &other) const { return !operator==(other); }
+
+  static auto decodeFrom(InputBitstream &) -> PerspectiveParams;
+  void encodeTo(OutputBitstream &) const;
+};
+
+using ProjectionParams = std::variant<ErpParams, PerspectiveParams>;
 
 // Data type that corresponds to an entry of camera_params_list of specification
 struct CameraParameters {
@@ -69,19 +101,9 @@ struct CameraParameters {
   Common::Vec3f rotation{};
 
   // In specification: cam_type
-  ProjectionType type{ProjectionType::ERP};
-
-  // In specification: erp_phi_{min,max}
-  Common::Vec2f erpPhiRange{};
-
-  // In specification: erp_theta_{min,max}
-  Common::Vec2f erpThetaRange{};
-
-  // In specification: perspective_focal_{hor,ver}
-  Common::Vec2f perspectiveFocal{};
-
-  // In specification: perspective_center_{hor,ver}
-  Common::Vec2f perspectiveCenter{};
+  ProjectionParams projection;
+  auto erp() const -> const ErpParams &;
+  auto perspective() const -> const PerspectiveParams &;
 
   // In specification: depth_{near,far}
   Common::Vec2f normDispRange{};
@@ -139,6 +161,16 @@ struct IvsParams {
   static auto decodeFrom(InputBitstream &) -> IvsParams;
   void encodeTo(OutputBitstream &) const;
 };
+
+inline auto CameraParameters::erp() const -> const ErpParams & {
+  assert(std::holds_alternative<ErpParams>(projection));
+  return *std::get_if<ErpParams>(&projection);
+}
+
+inline auto CameraParameters::perspective() const -> const PerspectiveParams & {
+  assert(std::holds_alternative<PerspectiveParams>(projection));
+  return *std::get_if<PerspectiveParams>(&projection);
+}
 } // namespace TMIV::Metadata
 
 #endif

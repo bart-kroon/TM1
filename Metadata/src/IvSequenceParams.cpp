@@ -55,18 +55,17 @@ auto IvsProfileTierLevel::decodeFrom(InputBitstream & /* unused */) -> IvsProfil
 
 void IvsProfileTierLevel::encodeTo(OutputBitstream & /* unused */) const {}
 
+ostream &operator<<(ostream &stream, const ErpParams &projection) {
+  return stream << "ERP " << projection.phiRange << " x " << projection.thetaRange << " deg";
+}
+
+ostream &operator<<(ostream &stream, const PerspectiveParams &projection) {
+  return stream << "perspective " << projection.focal << ' ' << projection.center;
+}
+
 ostream &operator<<(ostream &stream, const CameraParameters &camera) {
   stream << camera.size << ", ";
-  switch (camera.type) {
-  case ProjectionType::ERP:
-    stream << "ERP " << camera.erpPhiRange << " x " << camera.erpThetaRange << " deg";
-    break;
-  case ProjectionType::Perspective:
-    stream << "perspective " << camera.perspectiveFocal << ' ' << camera.perspectiveCenter;
-    break;
-  default:
-    abort();
-  }
+  visit([&](const auto &x) { stream << x; }, camera.projection);
   stream << ", norm. disp in " << camera.normDispRange << " m^-1, depthOccMapThreshold "
          << camera.depthOccMapThreshold << ", pose "
          << format("[%6.3f, %6.3f, %6.3f] m, ", camera.position.x(), camera.position.y(),
@@ -75,22 +74,18 @@ ostream &operator<<(ostream &stream, const CameraParameters &camera) {
   return stream;
 }
 
-bool CameraParameters::operator==(const CameraParameters &other) const {
-  if (size != other.size || position != other.position || rotation != other.rotation ||
-      type != other.type || normDispRange != other.normDispRange ||
-      depthOccMapThreshold != other.depthOccMapThreshold) {
-    return false;
-  }
+bool ErpParams::operator==(const ErpParams &other) const {
+  return phiRange == other.phiRange && thetaRange == other.thetaRange;
+}
 
-  switch (type) {
-  case ProjectionType::ERP:
-    return erpPhiRange == other.erpPhiRange && erpThetaRange == other.erpThetaRange;
-  case ProjectionType::Perspective:
-    return perspectiveFocal == other.perspectiveFocal &&
-           perspectiveCenter == other.perspectiveCenter;
-  default:
-    abort();
-  }
+bool PerspectiveParams::operator==(const PerspectiveParams &other) const {
+  return focal == other.focal && center == other.center;
+}
+
+bool CameraParameters::operator==(const CameraParameters &other) const {
+  return size == other.size && position == other.position && rotation == other.rotation &&
+         projection == other.projection && normDispRange == other.normDispRange &&
+         depthOccMapThreshold == other.depthOccMapThreshold;
 }
 
 CameraParameters CameraParameters::loadFromJson(const Json &node) {
@@ -108,13 +103,11 @@ CameraParameters CameraParameters::loadFromJson(const Json &node) {
 
   auto proj = node.require("Projection").asString();
   if (proj == "Equirectangular") {
-    parameters.type = ProjectionType::ERP;
-    parameters.erpPhiRange = node.require("Hor_range").asFloatVector<2>();
-    parameters.erpThetaRange = node.require("Ver_range").asFloatVector<2>();
+    parameters.projection = ErpParams{node.require("Hor_range").asFloatVector<2>(),
+                                      node.require("Ver_range").asFloatVector<2>()};
   } else if (proj == "Perspective") {
-    parameters.type = ProjectionType::Perspective;
-    parameters.perspectiveFocal = node.require("Focal").asFloatVector<2>();
-    parameters.perspectiveCenter = node.require("Principle_point").asFloatVector<2>();
+    parameters.projection = PerspectiveParams{node.require("Focal").asFloatVector<2>(),
+                                              node.require("Principle_point").asFloatVector<2>()};
   } else {
     throw runtime_error("Unknown projection type in metadata JSON file");
   }
@@ -141,25 +134,8 @@ auto modifyDepthRange(const CameraParametersVector &in) -> CameraParametersVecto
 
 bool CameraParamsList::areIntrinsicParamsEqual() const {
   for (auto i = begin() + 1; i < end(); ++i) {
-    if (front().type != i->type) {
+    if (front().projection != i->projection) {
       return false;
-    }
-
-    switch (front().type) {
-    case ProjectionType::ERP:
-      if (front().erpPhiRange != i->erpPhiRange || front().erpThetaRange != i->erpThetaRange) {
-        return false;
-      }
-      break;
-    case ProjectionType::Perspective:
-      if (front().perspectiveFocal != i->perspectiveFocal ||
-          front().perspectiveCenter != i->perspectiveCenter) {
-        return false;
-      }
-      break;
-
-    default:
-      abort();
     }
   }
 
@@ -187,6 +163,24 @@ bool CameraParamsList::operator==(const CameraParamsList &other) const {
   return equal(begin(), end(), other.begin(), other.end());
 }
 
+auto ErpParams::decodeFrom(InputBitstream &bitstream) -> ErpParams {
+  ErpParams projection;
+  projection.phiRange.x() = bitstream.getFloat32();
+  projection.phiRange.y() = bitstream.getFloat32();
+  projection.thetaRange.x() = bitstream.getFloat32();
+  projection.thetaRange.y() = bitstream.getFloat32();
+  return projection;
+}
+
+auto PerspectiveParams::decodeFrom(InputBitstream &bitstream) -> PerspectiveParams {
+  PerspectiveParams projection;
+  projection.focal.x() = bitstream.getFloat32();
+  projection.focal.y() = bitstream.getFloat32();
+  projection.center.x() = bitstream.getFloat32();
+  projection.center.y() = bitstream.getFloat32();
+  return projection;
+}
+
 auto CameraParamsList::decodeFrom(InputBitstream &bitstream) -> CameraParamsList {
   auto cameraParamsList = CameraParamsList{CameraParametersVector(bitstream.getUint16() + 1)};
 
@@ -203,34 +197,24 @@ auto CameraParamsList::decodeFrom(InputBitstream &bitstream) -> CameraParamsList
 
   for (auto camera = cameraParamsList.begin(); camera != cameraParamsList.end(); ++camera) {
     if (camera == cameraParamsList.begin() || !intrinsicParamsEqualFlag) {
-      camera->type = ProjectionType(bitstream.getUint8());
+      auto camType = bitstream.getUint8();
       camera->size.x() = bitstream.getUint16();
       camera->size.y() = bitstream.getUint16();
 
-      verify(camera->type == ProjectionType::ERP || camera->type == ProjectionType::Perspective);
-
-      switch (camera->type) {
-      case ProjectionType::ERP:
-        camera->erpPhiRange.x() = bitstream.getFloat32();
-        camera->erpPhiRange.y() = bitstream.getFloat32();
-        camera->erpThetaRange.x() = bitstream.getFloat32();
-        camera->erpThetaRange.y() = bitstream.getFloat32();
+      verify(camType < 2);
+      switch (camType) {
+      case 0:
+        camera->projection = ErpParams::decodeFrom(bitstream);
         break;
-
-      case ProjectionType::Perspective:
-        camera->perspectiveFocal.x() = bitstream.getFloat32();
-        camera->perspectiveFocal.y() = bitstream.getFloat32();
-        camera->perspectiveCenter.x() = bitstream.getFloat32();
-        camera->perspectiveCenter.y() = bitstream.getFloat32();
+      case 1:
+        camera->projection = PerspectiveParams::decodeFrom(bitstream);
         break;
+      default:
+        abort();
       }
     } else {
-      camera->type = cameraParamsList.front().type;
       camera->size = cameraParamsList.front().size;
-      camera->erpPhiRange = cameraParamsList.front().erpPhiRange;
-      camera->erpThetaRange = cameraParamsList.front().erpThetaRange;
-      camera->perspectiveFocal = cameraParamsList.front().perspectiveFocal;
-      camera->perspectiveCenter = cameraParamsList.front().perspectiveCenter;
+      camera->projection = cameraParamsList.front().projection;
     }
   }
 
@@ -252,6 +236,20 @@ auto CameraParamsList::decodeFrom(InputBitstream &bitstream) -> CameraParamsList
   return cameraParamsList;
 }
 
+void ErpParams::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.putFloat32(phiRange.x());
+  bitstream.putFloat32(phiRange.y());
+  bitstream.putFloat32(thetaRange.x());
+  bitstream.putFloat32(thetaRange.y());
+}
+
+void PerspectiveParams::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.putFloat32(focal.x());
+  bitstream.putFloat32(focal.y());
+  bitstream.putFloat32(center.x());
+  bitstream.putFloat32(center.y());
+}
+
 void CameraParamsList::encodeTo(OutputBitstream &bitstream) const {
   assert(!empty() && size() - 1 <= UINT16_MAX);
   bitstream.putUint16(uint16_t(size() - 1));
@@ -269,29 +267,10 @@ void CameraParamsList::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(intrinsicParamsEqualFlag);
 
   for (const auto &camera : *this) {
-    bitstream.putUint8(uint8_t(camera.type));
+    bitstream.putUint8(uint8_t(camera.projection.index()));
     bitstream.putUint16(uint16_t(camera.size.x()));
     bitstream.putUint16(uint16_t(camera.size.y()));
-
-    switch (camera.type) {
-    case ProjectionType::ERP:
-      bitstream.putFloat32(camera.erpPhiRange.x());
-      bitstream.putFloat32(camera.erpPhiRange.y());
-      bitstream.putFloat32(camera.erpThetaRange.x());
-      bitstream.putFloat32(camera.erpThetaRange.y());
-      break;
-
-    case ProjectionType::Perspective:
-      bitstream.putFloat32(camera.perspectiveFocal.x());
-      bitstream.putFloat32(camera.perspectiveFocal.y());
-      bitstream.putFloat32(camera.perspectiveCenter.x());
-      bitstream.putFloat32(camera.perspectiveCenter.y());
-      break;
-
-    default:
-      abort();
-    }
-
+    visit([&](const auto &x) { x.encodeTo(bitstream); }, camera.projection);
     if (intrinsicParamsEqualFlag) {
       break;
     }

@@ -69,17 +69,11 @@ auto affineParameters(const CameraParameters &camera, const CameraParameters &ta
 }
 
 auto unprojectVertex(Vec2f position, float depth, const CameraParameters &camera) -> Vec3f {
-  switch (camera.type) {
-  case ProjectionType::ERP: {
-    Engine<ProjectionType::ERP> engine{camera};
-    return engine.unprojectVertex(position, depth);
-  }
-  case ProjectionType::Perspective: {
-    Engine<ProjectionType::Perspective> engine{camera};
-    return engine.unprojectVertex(position, depth);
-  }
-  default:
-    abort();
-  }
+  return visit(
+      [&](const auto &projection) {
+        Engine<decay_t<decltype(projection)>> engine{camera};
+        return engine.unprojectVertex(position, depth);
+      },
+      camera.projection);
 }
 } // namespace TMIV::Renderer

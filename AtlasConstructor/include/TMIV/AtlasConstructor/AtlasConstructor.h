@@ -61,7 +61,7 @@ public:
 
   auto getAtlasSize() const -> Common::SizeVector override;
   auto getViewParamsVector() const -> const Metadata::ViewParamsVector & override;
-  auto getPatchList() const -> const Metadata::AtlasParametersVector & override;
+  auto getAtlasParamsVector() const -> const Metadata::AtlasParametersVector & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:
@@ -85,7 +85,7 @@ inline auto AtlasConstructor::getViewParamsVector() const -> const Metadata::Vie
   return m_viewParamsVector;
 }
 
-inline auto AtlasConstructor::getPatchList() const -> const Metadata::AtlasParametersVector & {
+inline auto AtlasConstructor::getAtlasParamsVector() const -> const Metadata::AtlasParametersVector & {
   return m_atlasParamsVector;
 }
 } // namespace TMIV::AtlasConstructor

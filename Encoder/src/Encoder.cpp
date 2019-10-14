@@ -66,8 +66,8 @@ auto Encoder::getViewParamsVector() const -> const ViewParamsVector & {
   return m_atlasConstructor->getViewParamsVector();
 }
 
-auto Encoder::getPatchList() const -> const AtlasParametersVector & {
-  return m_atlasConstructor->getPatchList();
+auto Encoder::getAtlasParamsVector() const -> const AtlasParametersVector & {
+  return m_atlasConstructor->getAtlasParamsVector();
 }
 
 auto Encoder::popAtlas() -> MVD16Frame { return m_atlasConstructor->popAtlas(); }

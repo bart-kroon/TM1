@@ -92,8 +92,8 @@ public:
 
     for (size_t i = 0; i < atlasSize.size(); i++) {
       auto sz = atlasSize[i];
-      auto nbPatch = count_if(m_atlasConstructor->getPatchList().begin(),
-                              m_atlasConstructor->getPatchList().end(),
+      auto nbPatch = count_if(m_atlasConstructor->getAtlasParamsVector().begin(),
+                              m_atlasConstructor->getAtlasParamsVector().end(),
                               [i](const AtlasParameters &p) { return (p.atlasId == i); });
 
       cout << "Atlas #" << i << " (" << sz.x() << 'x' << sz.y() << "): " << nbPatch << " patches\n";
@@ -104,7 +104,7 @@ public:
           {{}, ViewParamsList{modifyDepthRange(m_atlasConstructor->getViewParamsVector())}});
     }
     m_metadataWriter.writeIvAccessUnitParams(
-        {{{m_atlasConstructor->getPatchList(), m_omafV1CompatibleFlag, atlasSize}}});
+        {{{m_atlasConstructor->getAtlasParamsVector(), m_omafV1CompatibleFlag, atlasSize}}});
 
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,

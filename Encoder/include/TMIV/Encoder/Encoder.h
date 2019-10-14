@@ -56,7 +56,7 @@ public:
 
   auto getAtlasSize() const -> Common::SizeVector override;
   auto getViewParamsVector() const -> const Metadata::ViewParamsVector & override;
-  auto getPatchList() const -> const Metadata::AtlasParametersVector & override;
+  auto getAtlasParamsVector() const -> const Metadata::AtlasParametersVector & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:

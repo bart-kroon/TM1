@@ -93,7 +93,7 @@ private:
       cout << "Encoded viewParamsVector:\n" << m_metadataWriter.viewParamsList();
     }
     m_metadataWriter.writeIvAccessUnitParams(
-        {{{m_encoder->getPatchList(), m_omafV1CompatibleFlag, m_encoder->getAtlasSize()}}});
+        {{{m_encoder->getAtlasParamsVector(), m_omafV1CompatibleFlag, m_encoder->getAtlasSize()}}});
 
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,

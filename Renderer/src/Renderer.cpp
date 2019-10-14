@@ -46,7 +46,7 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
 }
 
 auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                           const AtlasParametersVector &patches,
+                           const AtlasParamsVector &patches,
                            const ViewParamsVector &viewParamsVector, const ViewParams &target) const
     -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, viewParamsVector, target);

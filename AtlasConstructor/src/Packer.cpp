@@ -49,7 +49,7 @@ Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
 }
 
 auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
-                  const vector<uint8_t> &shouldNotBeSplit) -> AtlasParametersVector {
+                  const vector<uint8_t> &shouldNotBeSplit) -> AtlasParamsVector {
 
   // Mask clustering
   ClusterList clusterList;
@@ -65,7 +65,7 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
   }
 
   // Packing
-  AtlasParametersVector atlasParamsVector;
+  AtlasParamsVector atlasParamsVector;
   vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 

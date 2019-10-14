@@ -175,7 +175,7 @@ vector<size_t> sortViews(const ViewParamsVector &viewParamsVector, const ViewPar
 }
 
 auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                                    const AtlasParametersVector &patches,
+                                    const AtlasParamsVector &patches,
                                     const ViewParamsVector &viewParamsVector,
                                     const ViewParams &target) const -> Texture444Depth16Frame {
   //////////////////

@@ -54,7 +54,7 @@ public:
   ~Renderer() override = default;
 
   auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::AtlasParametersVector &patches,
+                   const Metadata::AtlasParamsVector &patches,
                    const Metadata::ViewParamsVector &viewParamsVector,
                    const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;

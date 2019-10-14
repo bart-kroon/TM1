@@ -66,7 +66,7 @@ auto Encoder::getViewParamsVector() const -> const ViewParamsVector & {
   return m_atlasConstructor->getViewParamsVector();
 }
 
-auto Encoder::getAtlasParamsVector() const -> const AtlasParametersVector & {
+auto Encoder::getAtlasParamsVector() const -> const AtlasParamsVector & {
   return m_atlasConstructor->getAtlasParamsVector();
 }
 

@@ -54,7 +54,7 @@ void Decoder::updateAtlasSize(SizeVector atlasSize) {
   m_patches.clear();
 }
 
-void Decoder::updatePatchList(AtlasParametersVector patches, const MVD10Frame &frame) {
+void Decoder::updatePatchList(AtlasParamsVector patches, const MVD10Frame &frame) {
   m_patches = move(patches);
   assert(!m_viewParamsVector.empty());
   m_patchIdMaps =

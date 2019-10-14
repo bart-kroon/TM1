@@ -46,7 +46,7 @@ private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
   Common::SizeVector m_atlasSize;
-  Metadata::AtlasParametersVector m_patches;
+  Metadata::AtlasParamsVector m_patches;
   Common::PatchIdMapList m_patchIdMaps;
   Metadata::ViewParamsVector m_viewParamsVector;
 
@@ -59,7 +59,7 @@ public:
   ~Decoder() override = default;
 
   void updateAtlasSize(Common::SizeVector atlasSize) override;
-  void updatePatchList(Metadata::AtlasParametersVector patches,
+  void updatePatchList(Metadata::AtlasParamsVector patches,
                        const Common::MVD10Frame &frame) override;
   void updateCameraList(Metadata::ViewParamsVector viewParamsVector) override;
 

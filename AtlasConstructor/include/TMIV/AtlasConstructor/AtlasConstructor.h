@@ -61,7 +61,7 @@ public:
 
   auto getAtlasSize() const -> Common::SizeVector override;
   auto getViewParamsVector() const -> const Metadata::ViewParamsVector & override;
-  auto getAtlasParamsVector() const -> const Metadata::AtlasParametersVector & override;
+  auto getAtlasParamsVector() const -> const Metadata::AtlasParamsVector & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:
@@ -77,7 +77,7 @@ private:
   std::vector<std::uint8_t> m_isReferenceView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
   Metadata::ViewParamsVector m_viewParamsVector;
-  Metadata::AtlasParametersVector m_atlasParamsVector;
+  Metadata::AtlasParamsVector m_atlasParamsVector;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
 
@@ -85,7 +85,7 @@ inline auto AtlasConstructor::getViewParamsVector() const -> const Metadata::Vie
   return m_viewParamsVector;
 }
 
-inline auto AtlasConstructor::getAtlasParamsVector() const -> const Metadata::AtlasParametersVector & {
+inline auto AtlasConstructor::getAtlasParamsVector() const -> const Metadata::AtlasParamsVector & {
   return m_atlasParamsVector;
 }
 } // namespace TMIV::AtlasConstructor

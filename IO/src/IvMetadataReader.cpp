@@ -94,7 +94,7 @@ auto IvMetadataReader::atlasParamsList() const -> const AtlasParamsList & {
   return m_ivAccessUnitParams.atlasParamsList.value();
 }
 
-auto IvMetadataReader::atlasParametersList() const -> const AtlasParametersVector & {
+auto IvMetadataReader::atlasParametersList() const -> const AtlasParamsVector & {
   return atlasParamsList();
 }
 } // namespace TMIV::IO

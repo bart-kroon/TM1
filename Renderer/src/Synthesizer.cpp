@@ -72,7 +72,7 @@ public:
   }
 
   auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                     const AtlasParametersVector &patches, const ViewParamsVector &viewParamsVector,
+                     const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
                      const ViewParams &target) const {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
@@ -159,8 +159,8 @@ public:
   }
 
   auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                      const AtlasParametersVector &patches,
-                      const ViewParamsVector &viewParamsVector, const ViewParams &target) const {
+                      const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
+                      const ViewParams &target) const {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
     assert(int(ids.width()) == atlas.first.getWidth());
@@ -234,7 +234,7 @@ public:
   }
 
   Texture444Depth16Frame renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
-                                     const AtlasParametersVector &patches,
+                                     const AtlasParamsVector &patches,
                                      const ViewParamsVector &viewParamsVector,
                                      const ViewParams &target) const {
     assert(atlases.size() == ids.size());
@@ -294,7 +294,7 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretching
 Synthesizer::~Synthesizer() = default;
 
 auto Synthesizer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                              const AtlasParametersVector &patches,
+                              const AtlasParamsVector &patches,
                               const ViewParamsVector &viewParamsVector,
                               const ViewParams &target) const -> Texture444Depth16Frame {
   return m_impl->renderFrame(atlas, maps, patches, viewParamsVector, target);

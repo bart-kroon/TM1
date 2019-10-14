@@ -49,7 +49,7 @@ public:
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const std::vector<std::uint8_t> &shouldNotBeSplit)
-      -> Metadata::AtlasParametersVector override;
+      -> Metadata::AtlasParamsVector override;
 
 private:
   int m_alignment{};

@@ -49,7 +49,7 @@ constexpr auto neutralChroma = uint16_t(512);
 AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
 auto AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
-                                       const AtlasParametersVector &atlasParamsVector,
+                                       const AtlasParamsVector &atlasParamsVector,
                                        const ViewParamsVector &viewParamsVector,
                                        const MVD10Frame &frame) -> PatchIdMapList {
   PatchIdMapList patchMapList;
@@ -94,7 +94,7 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                                            const ViewParamsVector &viewParamsVector,
-                                           const AtlasParametersVector &atlasParamsVector)
+                                           const AtlasParamsVector &atlasParamsVector)
     -> MVD10Frame {
   // Initialization
   MVD10Frame frame;

@@ -63,14 +63,14 @@ ostream &operator<<(ostream &stream, const PerspectiveParams &projection) {
   return stream << "perspective " << projection.focal << ' ' << projection.center;
 }
 
-ostream &operator<<(ostream &stream, const ViewParams &camera) {
-  stream << camera.size << ", ";
-  visit([&](const auto &x) { stream << x; }, camera.projection);
-  stream << ", norm. disp in " << camera.normDispRange << " m^-1, depthOccMapThreshold "
-         << camera.depthOccMapThreshold << ", pose "
-         << format("[%6.3f, %6.3f, %6.3f] m, ", camera.position.x(), camera.position.y(),
-                   camera.position.z())
-         << camera.rotation << " deg";
+ostream &operator<<(ostream &stream, const ViewParams &viewParams) {
+  stream << viewParams.size << ", ";
+  visit([&](const auto &x) { stream << x; }, viewParams.projection);
+  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
+         << viewParams.depthOccMapThreshold << ", pose "
+         << format("[%6.3f, %6.3f, %6.3f] m, ", viewParams.position.x(), viewParams.position.y(),
+                   viewParams.position.z())
+         << viewParams.rotation << " deg";
   return stream;
 }
 

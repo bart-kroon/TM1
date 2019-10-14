@@ -58,7 +58,7 @@ public:
                    const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 
-  auto renderDepth(const Common::Mat<float> &frame, const Metadata::ViewParams &camera,
+  auto renderDepth(const Common::Mat<float> &frame, const Metadata::ViewParams &viewParams,
                    const Metadata::ViewParams &target) const -> Common::Mat<float> override;
 
 private:

@@ -185,7 +185,7 @@ auto sizesOf(const ViewParamsVector &viewParamsVector) -> SizeVector {
   SizeVector sizes;
   sizes.reserve(viewParamsVector.size());
   transform(begin(viewParamsVector), end(viewParamsVector), back_inserter(sizes),
-            [](const ViewParams &camera) { return camera.size; });
+            [](const ViewParams &viewParams) { return viewParams.size; });
   return sizes;
 }
 

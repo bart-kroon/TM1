@@ -106,24 +106,24 @@ Frame<YUV444P10> quantizeTexture(const Mat3f &in) {
   return outYuv;
 }
 
-Mat<float> expandDepth(const ViewParams &camera, const Depth10Frame &in) {
+Mat<float> expandDepth(const ViewParams &viewParams, const Depth10Frame &in) {
   auto out = Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
   transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
-            [&](uint16_t x) { return impl::expandDepthValue<10>(camera, x); });
+            [&](uint16_t x) { return impl::expandDepthValue<10>(viewParams, x); });
   return out;
 }
 
-Mat<float> expandDepth(const ViewParams &camera, const Depth16Frame &in) {
+Mat<float> expandDepth(const ViewParams &viewParams, const Depth16Frame &in) {
   auto out = Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
   transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
-            [&](uint16_t x) { return impl::expandDepthValue<16>(camera, x); });
+            [&](uint16_t x) { return impl::expandDepthValue<16>(viewParams, x); });
   return out;
 }
 
-Depth16Frame quantizeNormDisp16(const ViewParams &camera, const Mat1f &in) {
+Depth16Frame quantizeNormDisp16(const ViewParams &viewParams, const Mat1f &in) {
   auto out = Depth16Frame{int(in.width()), int(in.height())};
   transform(begin(in), end(in), begin(out.getPlane(0)),
-            [&](float x) { return impl::quantizeNormDispValue<16>(camera, x); });
+            [&](float x) { return impl::quantizeNormDispValue<16>(viewParams, x); });
   return out;
 }
 } // namespace TMIV::Image

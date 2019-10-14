@@ -120,7 +120,7 @@ struct ViewParams {
   // In specification: depth_occ_map_threshold_default[ v ]
   uint16_t depthOccMapThreshold{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const ViewParams &camera);
+  friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;
   bool operator!=(const ViewParams &other) const { return !operator==(other); }
 

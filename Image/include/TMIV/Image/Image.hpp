@@ -55,39 +55,42 @@ template <unsigned bits> uint16_t quantizeValue(float x) {
   return 0;
 }
 
-template <unsigned bits> float expandNormDispValue(const Metadata::ViewParams &camera, uint16_t x) {
-  if (x >= camera.depthOccMapThreshold) {
-    const auto &R = camera.normDispRange;
+template <unsigned bits>
+float expandNormDispValue(const Metadata::ViewParams &viewParams, uint16_t x) {
+  if (x >= viewParams.depthOccMapThreshold) {
+    const auto &R = viewParams.normDispRange;
     return std::max(1.F / kilometer, R[0] + (R[1] - R[0]) * expandValue<bits>(x));
   }
   return 0.F;
 }
 
-template <unsigned bits> float expandDepthValue(const Metadata::ViewParams &camera, uint16_t x) {
-  const auto normDisp = expandNormDispValue<bits>(camera, x);
+template <unsigned bits>
+float expandDepthValue(const Metadata::ViewParams &viewParams, uint16_t x) {
+  const auto normDisp = expandNormDispValue<bits>(viewParams, x);
   return normDisp > 0.F ? 1.F / normDisp : 0.F;
 }
 
 template <unsigned bits>
-uint16_t quantizeNormDispValue(const Metadata::ViewParams &camera, float x) {
+uint16_t quantizeNormDispValue(const Metadata::ViewParams &viewParams, float x) {
   if (x > 0.F && std::isfinite(x)) {
-    const auto &R = camera.normDispRange;
+    const auto &R = viewParams.normDispRange;
     const auto value = quantizeValue<bits>((x - R[0]) / (R[1] - R[0]));
-    return std::max(camera.depthOccMapThreshold, value);
+    return std::max(viewParams.depthOccMapThreshold, value);
   }
   return 0;
 }
 
-template <unsigned bits> uint16_t quantizeDepthValue(const Metadata::ViewParams &camera, float x) {
+template <unsigned bits>
+uint16_t quantizeDepthValue(const Metadata::ViewParams &viewParams, float x) {
   return x > 0.F ? quantizeNormDispValue<bits>(camera, 1.F / x) : 0;
 }
 } // namespace impl
 
-inline float expandDepthValue10(const Metadata::ViewParams &camera, uint16_t x) {
-  return impl::expandDepthValue<10>(camera, x);
+inline float expandDepthValue10(const Metadata::ViewParams &viewParams, uint16_t x) {
+  return impl::expandDepthValue<10>(viewParams, x);
 }
 
-inline float expandDepthValue16(const Metadata::ViewParams &camera, uint16_t x) {
-  return impl::expandDepthValue<16>(camera, x);
+inline float expandDepthValue16(const Metadata::ViewParams &viewParams, uint16_t x) {
+  return impl::expandDepthValue<16>(viewParams, x);
 }
 } // namespace TMIV::Image

@@ -65,8 +65,9 @@ public:
                            const ViewParams &target) const {
     vector<pair<Mat3x3f, Vec3f>> result;
     result.reserve(viewParamsVector.size());
-    transform(begin(viewParamsVector), end(viewParamsVector), back_inserter(result),
-              [&target](const ViewParams &camera) { return affineParameters(camera, target); });
+    transform(
+        begin(viewParamsVector), end(viewParamsVector), back_inserter(result),
+        [&target](const ViewParams &viewParams) { return affineParameters(viewParams, target); });
     return result;
   }
 
@@ -206,27 +207,28 @@ public:
   }
 
   // Field of view in deg
-  static float xFoV(const ViewParams &camera) {
+  static float xFoV(const ViewParams &viewParams) {
     return visit(overload(
                      [](const ErpParams &projection) {
                        return abs(projection.phiRange[1] - projection.phiRange[0]);
                      },
                      [&](const PerspectiveParams &projection) {
-                       return degperrad * 2 * atan(camera.size.x() / (2 * projection.focal.x()));
+                       return degperrad * 2 *
+                              atan(viewParams.size.x() / (2 * projection.focal.x()));
                      }),
-                 camera.projection);
+                 viewParams.projection);
   }
 
   // Resolution in px^2/deg^2
-  static float resolution(const ViewParams &camera) {
-    return square(camera.size.x() / xFoV(camera));
+  static float resolution(const ViewParams &viewParams) {
+    return square(viewParams.size.x() / xFoV(viewParams));
   }
 
   static float resolutionRatio(const ViewParamsVector &viewParamsVector, const ViewParams &target) {
     const auto sourceResolution =
         accumulate(begin(viewParamsVector), end(viewParamsVector), 0.F,
-                   [&](float average, const ViewParams &camera) {
-                     return average + resolution(camera) / viewParamsVector.size();
+                   [&](float average, const ViewParams &viewParams) {
+                     return average + resolution(viewParams) / viewParamsVector.size();
                    });
     return resolution(target) / sourceResolution;
   }
@@ -261,10 +263,10 @@ public:
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }
 
-  Mat<float> renderDepth(const Mat<float> &depth, const ViewParams &camera,
+  Mat<float> renderDepth(const Mat<float> &depth, const ViewParams &viewParams,
                          const ViewParams &target) const {
     AccumulatingPixel<> pixel{m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching};
-    auto mesh = reproject(depth, camera, target);
+    auto mesh = reproject(depth, viewParams, target);
 
     Rasterizer<> rasterizer{pixel, target.size};
     rasterizer.submit(move(get<0>(mesh)), {}, get<1>(mesh));
@@ -303,8 +305,8 @@ auto Synthesizer::renderFrame(const MVD10Frame &frame, const ViewParamsVector &v
   return m_impl->renderFrame(frame, viewParamsVector, target);
 }
 
-auto Synthesizer::renderDepth(const Mat<float> &frame, const ViewParams &camera,
+auto Synthesizer::renderDepth(const Mat<float> &frame, const ViewParams &viewParams,
                               const ViewParams &target) const -> Mat<float> {
-  return m_impl->renderDepth(frame, camera, target);
+  return m_impl->renderDepth(frame, viewParams, target);
 }
 } // namespace TMIV::Renderer

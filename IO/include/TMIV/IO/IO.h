@@ -45,7 +45,7 @@
 // These functions will print something short to screen.
 namespace TMIV::IO {
 std::string getFullPath(const Common::Json &config, const std::string &baseDirectoryField,
-                        const std::string &fileNameField, size_t cameraId = 0,
+                        const std::string &fileNameField, size_t viewId = 0,
                         const std::string &cameraName = "");
 
 template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;

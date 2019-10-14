@@ -46,14 +46,17 @@ using ClusterList = std::vector<Cluster>;
 
 class Cluster {
 protected:
-  int cameraId_ = 0, clusterId_ = 0;
-  int imin_ = std::numeric_limits<int>::max(), jmin_ = std::numeric_limits<int>::max();
-  int imax_ = std::numeric_limits<int>::min(), jmax_ = std::numeric_limits<int>::min();
+  int viewId_ = 0;
+  int clusterId_ = 0;
+  int imin_ = std::numeric_limits<int>::max();
+  int jmin_ = std::numeric_limits<int>::max();
+  int imax_ = std::numeric_limits<int>::min();
+  int jmax_ = std::numeric_limits<int>::min();
   int filling_ = 0;
 
 public:
   Cluster() = default;
-  Cluster(int cameraId, int clusterId);
+  Cluster(int viewId, int clusterId);
   Cluster(const Cluster &) = default;
   Cluster(Cluster &&) = default;
   Cluster &operator=(const Cluster &) = default;
@@ -61,7 +64,7 @@ public:
   ~Cluster() = default;
 
   void push(int i, int j);
-  int getCameraId() const { return cameraId_; }
+  int getViewId() const { return viewId_; }
   int getClusterId() const { return clusterId_; }
   int imin() const { return imin_; }
   int jmin() const { return jmin_; }
@@ -83,7 +86,7 @@ public:
   }
   static Cluster align(const Cluster &c, int alignment);
   static Cluster merge(const Cluster &c1, const Cluster &c2);
-  static std::pair<ClusterList, ClusteringMap> retrieve(int cameraId, const Common::Mask &maskMap,
+  static std::pair<ClusterList, ClusteringMap> retrieve(int viewId, const Common::Mask &maskMap,
                                                         int firstClusterId = 0,
                                                         bool shouldNotBeSplit = false);
 };

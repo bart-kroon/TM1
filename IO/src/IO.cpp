@@ -50,11 +50,11 @@ using namespace TMIV::Image;
 
 namespace TMIV::IO {
 string getFullPath(const Json &config, const string &baseDirectoryField,
-                   const string &fileNameField, size_t cameraId, const string &cameraName) {
+                   const string &fileNameField, size_t viewId, const string &cameraName) {
   string baseDirectory;
   string fileName =
       cameraName.empty()
-          ? format(config.require(fileNameField).asString().c_str(), cameraId)
+          ? format(config.require(fileNameField).asString().c_str(), viewId)
           : format(config.require(fileNameField).asString().c_str(), cameraName.c_str());
 
   if (!fileName.empty() && fileName.front() == '/') {

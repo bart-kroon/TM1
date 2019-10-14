@@ -41,7 +41,7 @@ namespace TMIV::AtlasConstructor {
 static const uint16_t ACTIVE = 65534;
 static const uint16_t INVALID = 65535;
 
-Cluster::Cluster(int cameraId, int clusterId) : cameraId_(cameraId), clusterId_(clusterId) {}
+Cluster::Cluster(int viewId, int clusterId) : viewId_(viewId), clusterId_(clusterId) {}
 
 void Cluster::push(int i, int j) {
   if (i < imin_) {
@@ -61,7 +61,7 @@ void Cluster::push(int i, int j) {
 }
 
 Cluster Cluster::align(const Cluster &c, int alignment) {
-  Cluster d(c.cameraId_, c.clusterId_);
+  Cluster d(c.viewId_, c.clusterId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
   d.imax_ = c.imax_; // modification to align the imin,jmin to even values to
@@ -77,7 +77,7 @@ Cluster Cluster::align(const Cluster &c, int alignment) {
 }
 
 Cluster Cluster::merge(const Cluster &c1, const Cluster &c2) {
-  Cluster c(c1.cameraId_, c1.clusterId_);
+  Cluster c(c1.viewId_, c1.clusterId_);
 
   c.imin_ = min(c1.imin_, c2.imin_);
   c.imax_ = max(c1.imax_, c2.imax_);
@@ -94,8 +94,8 @@ pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, int ov
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
-  Cluster c1(c.getCameraId(), c.getClusterId());
-  Cluster c2(c.getCameraId(), c.getClusterId());
+  Cluster c1(c.getViewId(), c.getClusterId());
+  Cluster c2(c.getViewId(), c.getClusterId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
@@ -142,7 +142,7 @@ pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, int ov
   return pair<Cluster, Cluster>(c1, c2);
 }
 
-pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId, const Mask &maskMap,
+pair<ClusterList, ClusteringMap> Cluster::retrieve(int viewId, const Mask &maskMap,
                                                    int firstClusterId, bool shouldNotBeSplit) {
 
   pair<ClusterList, ClusteringMap> out(ClusterList(),
@@ -176,7 +176,7 @@ pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId, const Mask &mas
 
   while (iter_seed != activeList.end()) {
     div_t dv = div(*iter_seed, B);
-    Cluster cluster(cameraId, clusterId);
+    Cluster cluster(viewId, clusterId);
     queue<array<int, 2>> candidates;
 
     cluster.push(dv.quot, dv.rem);

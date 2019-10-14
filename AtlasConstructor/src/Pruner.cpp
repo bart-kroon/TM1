@@ -59,11 +59,11 @@ auto Pruner::prune(const ViewParamsVector &viewParamsVector, const MVD16Frame &v
                    const vector<uint8_t> &shouldNotBePruned) -> MaskList {
 
   // Sort viewParamsVector for pruning
-  vector<int> cameraOrderId(viewParamsVector.size());
+  vector<int> viewOrderId(viewParamsVector.size());
 
-  iota(cameraOrderId.begin(), cameraOrderId.end(), 0);
+  iota(viewOrderId.begin(), viewOrderId.end(), 0);
 
-  sort(cameraOrderId.begin(), cameraOrderId.end(), [&shouldNotBePruned](int i1, int i2) {
+  sort(viewOrderId.begin(), viewOrderId.end(), [&shouldNotBePruned](int i1, int i2) {
     if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
       return (shouldNotBePruned[i1] != 0);
     }
@@ -72,7 +72,7 @@ auto Pruner::prune(const ViewParamsVector &viewParamsVector, const MVD16Frame &v
 
   // Possible discard some additional views (for debugging purpose)
   int maxView =
-      min(int(cameraOrderId.size()),
+      min(int(viewOrderId.size()),
           int(count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) + m_maxAdditionalView));
 
   // Pruning loop
@@ -81,7 +81,7 @@ auto Pruner::prune(const ViewParamsVector &viewParamsVector, const MVD16Frame &v
   vector<Mat<float>> depthMapExpanded(nbView);
 
   for (int id1 = 0; id1 < nbView; id1++) {
-    int viewToPruneId = cameraOrderId[id1];
+    int viewToPruneId = viewOrderId[id1];
     auto &maskToPrune = masks[viewToPruneId];
 
     maskToPrune.resize(views[viewToPruneId].first.getWidth(),
@@ -99,7 +99,7 @@ auto Pruner::prune(const ViewParamsVector &viewParamsVector, const MVD16Frame &v
         Mat<Vec2f> gridMapToPrune = imagePositions(viewParamsVector[viewToPruneId]);
 
         for (int id2 = 0; id2 < id1; id2++) {
-          int viewPrunedId = cameraOrderId[id2];
+          int viewPrunedId = viewOrderId[id2];
           const Mat<float> &depthMapPruned = depthMapExpanded[viewPrunedId];
 
           auto ptsToPruneOnPruned =

@@ -55,10 +55,10 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
   ClusterList clusterList;
   ClusteringMapList clusteringMap;
 
-  for (auto cameraId = 0; cameraId < int(masks.size()); cameraId++) {
+  for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     auto clusteringOutput =
-        Cluster::retrieve(cameraId, masks[cameraId], static_cast<int>(clusterList.size()),
-                          shouldNotBeSplit[cameraId] != 0U);
+        Cluster::retrieve(viewId, masks[viewId], static_cast<int>(clusterList.size()),
+                          shouldNotBeSplit[viewId] != 0U);
 
     move(clusteringOutput.first.begin(), clusteringOutput.first.end(), back_inserter(clusterList));
     clusteringMap.push_back(move(clusteringOutput.second));
@@ -75,8 +75,8 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
   }
 
   auto comp = [&](const Cluster &p1, const Cluster &p2) {
-    if (shouldNotBeSplit[p1.getCameraId()] != shouldNotBeSplit[p2.getCameraId()]) {
-      return (shouldNotBeSplit[p2.getCameraId()] != 0U);
+    if (shouldNotBeSplit[p1.getViewId()] != shouldNotBeSplit[p2.getViewId()]) {
+      return (shouldNotBeSplit[p2.getViewId()] != 0U);
     }
     { return (p1.getArea() < p2.getArea()); }
   };
@@ -97,11 +97,11 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
       for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
         MaxRectPiP &packer = packerList[atlasId];
 
-        if (packer.push(cluster, clusteringMap[cluster.getCameraId()], packerOutput)) {
+        if (packer.push(cluster, clusteringMap[cluster.getViewId()], packerOutput)) {
           AtlasParameters p;
 
           p.atlasId = static_cast<uint8_t>(atlasId);
-          p.viewId = static_cast<uint8_t>(cluster.getCameraId());
+          p.viewId = static_cast<uint8_t>(cluster.getViewId());
           p.patchSizeInView = {align(cluster.width(), m_alignment),
                                align(cluster.height(), m_alignment)};
           p.posInView = {cluster.jmin(), cluster.imin()};
@@ -109,7 +109,7 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
           p.rotation = packerOutput.isRotated() ? PatchRotation::rot270 : PatchRotation::none;
 
           auto patchOverflow =
-              (p.posInView + p.patchSizeInView) - masks[cluster.getCameraId()].getSize();
+              (p.posInView + p.patchSizeInView) - masks[cluster.getViewId()].getSize();
           if (patchOverflow.x() > 0) {
             p.posInView.x() -= patchOverflow.x();
           }
@@ -125,7 +125,7 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
       }
 
       if (!packed) {
-        auto cc = cluster.split(clusteringMap[cluster.getCameraId()], m_overlap);
+        auto cc = cluster.split(clusteringMap[cluster.getViewId()], m_overlap);
 
         if (m_minPatchSize <= cc.first.getMinSize()) {
           // modification to align the imin,jmin to even values to help renderer

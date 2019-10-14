@@ -104,7 +104,7 @@ void AtlasConstructor::completeIntraPeriod() {
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
 
   // Packing
-  m_patchList =
+  m_atlasParamsVector =
       m_packer->pack(SizeVector(m_nbAtlas, m_atlasSize), aggregatedMask, m_isReferenceView);
 
   // Atlas construction
@@ -124,7 +124,7 @@ void AtlasConstructor::completeIntraPeriod() {
       atlasList.push_back(move(atlas));
     }
 
-    for (const auto &patch : m_patchList) {
+    for (const auto &patch : m_atlasParamsVector) {
       writePatchInAtlas(patch, views, atlasList);
     }
 

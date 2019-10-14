@@ -49,12 +49,12 @@ public:
   virtual ~IAtlasDeconstructor() = default;
 
   virtual auto getPatchIdMap(const Common::SizeVector &atlasSize,
-                             const Metadata::AtlasParametersVector &patchList,
+                             const Metadata::AtlasParametersVector &atlasParamsVector,
                              const Metadata::ViewParamsVector &viewParamsVector,
                              const Common::MVD10Frame &frame) -> Common::PatchIdMapList = 0;
   virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
                                  const Metadata::ViewParamsVector &viewParamsVector,
-                                 const Metadata::AtlasParametersVector &patchList)
+                                 const Metadata::AtlasParametersVector &atlasParamsVector)
       -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::AtlasDeconstructor

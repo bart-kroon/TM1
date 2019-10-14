@@ -77,7 +77,7 @@ private:
   std::vector<std::uint8_t> m_isReferenceView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
   Metadata::ViewParamsVector m_viewParamsVector;
-  Metadata::AtlasParametersVector m_patchList;
+  Metadata::AtlasParametersVector m_atlasParamsVector;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
 
@@ -86,7 +86,7 @@ inline auto AtlasConstructor::getCameraList() const -> const Metadata::ViewParam
 }
 
 inline auto AtlasConstructor::getPatchList() const -> const Metadata::AtlasParametersVector & {
-  return m_patchList;
+  return m_atlasParamsVector;
 }
 } // namespace TMIV::AtlasConstructor
 

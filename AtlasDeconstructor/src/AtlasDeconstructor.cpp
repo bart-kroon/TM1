@@ -49,7 +49,7 @@ constexpr auto neutralChroma = uint16_t(512);
 AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
 auto AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
-                                       const AtlasParametersVector &patchList,
+                                       const AtlasParametersVector &atlasParamsVector,
                                        const ViewParamsVector &viewParamsVector,
                                        const MVD10Frame &frame) -> PatchIdMapList {
   PatchIdMapList patchMapList;
@@ -60,10 +60,10 @@ auto AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
     patchMapList.push_back(move(patchMap));
   }
 
-  for (size_t id = 0U; id < patchList.size(); ++id) {
-    assert(patchList[id].viewId < viewParamsVector.size());
-    writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                      viewParamsVector[patchList[id].viewId].depthOccMapThreshold);
+  for (size_t id = 0U; id < atlasParamsVector.size(); ++id) {
+    assert(atlasParamsVector[id].viewId < viewParamsVector.size());
+    writePatchIdInMap(atlasParamsVector[id], patchMapList, static_cast<uint16_t>(id), frame,
+                      viewParamsVector[atlasParamsVector[id].viewId].depthOccMapThreshold);
   }
 
   return patchMapList;
@@ -94,7 +94,8 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                                            const ViewParamsVector &viewParamsVector,
-                                           const AtlasParametersVector &patchList) -> MVD10Frame {
+                                           const AtlasParametersVector &atlasParamsVector)
+    -> MVD10Frame {
   // Initialization
   MVD10Frame frame;
 
@@ -115,7 +116,7 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
   // Process patches
   MVD10Frame atlas_pruned = atlas;
 
-  for (auto iter = patchList.rbegin(); iter != patchList.rend(); ++iter) {
+  for (auto iter = atlasParamsVector.rbegin(); iter != atlasParamsVector.rend(); ++iter) {
     const auto &patch = *iter;
     const auto depthOccMapThreshold = viewParamsVector[patch.viewId].depthOccMapThreshold;
 

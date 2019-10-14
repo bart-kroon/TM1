@@ -65,7 +65,7 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
   }
 
   // Packing
-  AtlasParametersVector patchList;
+  AtlasParametersVector atlasParamsVector;
   vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 
@@ -117,7 +117,7 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
             p.posInView.y() -= patchOverflow.y();
           }
 
-          patchList.push_back(p);
+          atlasParamsVector.push_back(p);
 
           packed = true;
           break;
@@ -144,7 +144,7 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
     clusterToPack.pop();
   }
 
-  return patchList;
+  return atlasParamsVector;
 }
 
 } // namespace TMIV::AtlasConstructor

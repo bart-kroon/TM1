@@ -50,12 +50,11 @@ using namespace TMIV::Image;
 
 namespace TMIV::IO {
 string getFullPath(const Json &config, const string &baseDirectoryField,
-                   const string &fileNameField, size_t viewId, const string &cameraName) {
+                   const string &fileNameField, size_t viewId, const string &viewName) {
   string baseDirectory;
   string fileName =
-      cameraName.empty()
-          ? format(config.require(fileNameField).asString().c_str(), viewId)
-          : format(config.require(fileNameField).asString().c_str(), cameraName.c_str());
+      viewName.empty() ? format(config.require(fileNameField).asString().c_str(), viewId)
+                       : format(config.require(fileNameField).asString().c_str(), viewName.c_str());
 
   if (!fileName.empty() && fileName.front() == '/') {
     return fileName;
@@ -112,7 +111,7 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
 template <typename FORMAT>
 MVDFrame<FORMAT> loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex,
                               const char *what, const char *directory, const char *texturePathFmt,
-                              const char *depthPathFmt, const vector<string> &cameraNames = {}) {
+                              const char *depthPathFmt, const vector<string> &viewNames = {}) {
   cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
@@ -120,10 +119,10 @@ MVDFrame<FORMAT> loadMVDFrame(const Json &config, const SizeVector &sizes, int f
 
   for (size_t i = 0; i < sizes.size(); ++i) {
     result.emplace_back(readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i,
-                                                         cameraNames.empty() ? "" : cameraNames[i]),
+                                                         viewNames.empty() ? "" : viewNames[i]),
                                              frameIndex, sizes[i]),
                         readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i,
-                                                      cameraNames.empty() ? "" : cameraNames[i]),
+                                                      viewNames.empty() ? "" : viewNames[i]),
                                           frameIndex, sizes[i]));
   }
 
@@ -372,13 +371,13 @@ ViewParams loadViewportMetadata(const Json &config, int frameIndex) {
     throw runtime_error("Failed to load camera parameters\n " + cameraPath);
   }
 
-  auto outputCameraName = config.require("OutputCameraName").asString();
+  auto outputviewName = config.require("OutputCameraName").asString();
 
   auto viewParamsVector =
-      ViewParamsList::loadFromJson(Json{stream}.require("viewParamsVector"), {outputCameraName});
+      ViewParamsList::loadFromJson(Json{stream}.require("viewParamsVector"), {outputviewName});
 
   if (viewParamsVector.empty()) {
-    throw runtime_error("Unknown OutputCameraName " + outputCameraName);
+    throw runtime_error("Unknown OutputCameraName " + outputviewName);
   }
 
   ViewParams &result = viewParamsVector.front();

@@ -49,22 +49,25 @@ class OutputBitstream;
 
 // Data type that corresponds to an entry of atlas_params of specification
 struct AtlasParameters {
-  // In specification: atlas_id
+  // In specification: atlas_id[ i ]
   uint8_t atlasId{};
 
-  // In specification: view_id
+  // In specification: view_id[ a ][ i ]
   unsigned viewId{};
 
-  // In specification: patch_{width,height}_in_view
+  // In specification: patch_width_in_view_minus1[ a ][ i ]
+  // In specification: patch_height_in_view_minus1[ a ][ i ]
   Common::Vec2i patchSizeInView;
 
-  // In specification: patch_pos_in_view_{x,y}
+  // In specification: patch_pos_in_view_x[ a ][ i ]
+  // In specification: patch_pos_in_view_y[ a ][ i ]
   Common::Vec2i posInView;
 
-  // In specification: patch_pos_in_atlas_{x,y}
+  // In specification: patch_pos_in_atlas_x[ a ][ i ]
+  // In specification: patch_pos_in_atlas_y[ a ][ i ]
   Common::Vec2i posInAtlas;
 
-  // In specification: patch_rotation
+  // In specification: patch_rotation[ a ][ i ]
   PatchRotation rotation{};
 
   // Is the patch rotated such that width and height swap?
@@ -103,6 +106,7 @@ Common::Vec2i viewToAtlas(Common::Vec2i viewPosition, const AtlasParameters &pat
 Common::Vec2i atlasToView(Common::Vec2i atlasPosition, const AtlasParameters &patch);
 
 struct IvAccessUnitParams {
+  // In specification: atlas_params_list( )
   std::optional<AtlasParamsList> atlasParamsList;
 
   bool operator==(const IvAccessUnitParams &other) const;

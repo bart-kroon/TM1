@@ -97,7 +97,7 @@ auto unproject(const Common::Mat<float> &depth, const Metadata::CameraParameters
                const Metadata::CameraParameters &target, const Common::Mat<T> &... matrices) {
   return visit(
       [&](auto const &x) {
-        Engine<decay_t<decltype(x)>> engine{camera};
+        Engine<std::decay_t<decltype(x)>> engine{camera};
         return unproject(engine, depth, target, matrices...);
       },
       camera.projection);
@@ -113,7 +113,7 @@ auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangle
              std::tuple<std::vector<T>...> attributes, const Metadata::CameraParameters &target) {
   return visit(
       [&](auto const &x) {
-        Engine<decay_t<decltype(x)>> engine{target};
+        Engine<std::decay_t<decltype(x)>> engine{target};
         return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
       },
       target.projection);

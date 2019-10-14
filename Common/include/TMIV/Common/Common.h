@@ -67,7 +67,7 @@ template <typename... Ts> struct Overload : public Ts... {
 template <typename... Ts>
 auto overload(Ts &&... values) -> Overload<std::remove_reference_t<Ts>...> {
   return {std::forward<Ts>(values)...};
-};
+}
 } // namespace TMIV::Common
 
 #include "Common.hpp"

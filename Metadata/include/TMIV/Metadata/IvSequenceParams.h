@@ -102,7 +102,7 @@ struct CameraParameters {
   Common::Vec3f rotation{};
 
   // In specification: cam_type
-  ProjectionParams projection;
+  ProjectionParams projection{};
   auto erp() const -> const ErpParams &;
   auto perspective() const -> const PerspectiveParams &;
 

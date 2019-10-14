@@ -50,8 +50,8 @@ AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /
 
 auto AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
                                        const AtlasParametersVector &patchList,
-                                       const CameraParametersVector &cameraList,
-                                       const MVD10Frame &frame) -> PatchIdMapList {
+                                       const ViewParamsVector &cameraList, const MVD10Frame &frame)
+    -> PatchIdMapList {
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize) {
@@ -93,7 +93,7 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 }
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
-                                           const CameraParametersVector &cameraList,
+                                           const ViewParamsVector &cameraList,
                                            const AtlasParametersVector &patchList) -> MVD10Frame {
   // Initialization
   MVD10Frame frame;

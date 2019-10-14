@@ -60,7 +60,7 @@ void Decoder::updatePatchList(AtlasParametersVector patches, const MVD10Frame &f
   m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, m_cameras, frame);
 }
 
-void Decoder::updateCameraList(CameraParametersVector cameras) { m_cameras = move(cameras); }
+void Decoder::updateCameraList(ViewParamsVector cameras) { m_cameras = move(cameras); }
 
 auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
     -> Texture444Depth16Frame {

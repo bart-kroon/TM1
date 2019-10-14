@@ -50,12 +50,12 @@ public:
   Encoder &operator=(Encoder &&) = default;
   ~Encoder() override = default;
 
-  void prepareIntraPeriod(Metadata::CameraParametersVector cameras) override;
+  void prepareIntraPeriod(Metadata::ViewParamsVector cameras) override;
   void pushFrame(Common::MVD16Frame views) override;
   void completeIntraPeriod() override;
 
   auto getAtlasSize() const -> Common::SizeVector override;
-  auto getCameraList() const -> const Metadata::CameraParametersVector & override;
+  auto getCameraList() const -> const Metadata::ViewParamsVector & override;
   auto getPatchList() const -> const Metadata::AtlasParametersVector & override;
   auto popAtlas() -> Common::MVD16Frame override;
 

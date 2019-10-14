@@ -121,17 +121,17 @@ struct ViewParams {
   static ViewParams loadFromJson(const Common::Json &node);
 };
 
-using CameraParametersVector = std::vector<ViewParams>;
+using ViewParamsVector = std::vector<ViewParams>;
 
 // No change when depthOccMapThreshold == 0 (no invalid depth)
 // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
-auto modifyDepthRange(const CameraParametersVector &) -> CameraParametersVector;
+auto modifyDepthRange(const ViewParamsVector &) -> ViewParamsVector;
 
 // Data type that corresponds to camera_params_list of specification
-struct CameraParamsList : public CameraParametersVector {
+struct CameraParamsList : public ViewParamsVector {
   CameraParamsList() = default;
-  explicit CameraParamsList(CameraParametersVector cameraParameters)
-      : CameraParametersVector{std::move(cameraParameters)} {}
+  explicit CameraParamsList(ViewParamsVector cameraParameters)
+      : ViewParamsVector{std::move(cameraParameters)} {}
   CameraParamsList(const CameraParamsList &) = default;
   CameraParamsList(CameraParamsList &&) = default;
   CameraParamsList &operator=(const CameraParamsList &) = default;

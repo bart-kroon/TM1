@@ -54,13 +54,13 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  void prepareIntraPeriod(Metadata::CameraParametersVector basicCameras,
-                          Metadata::CameraParametersVector additionalCameras) override;
+  void prepareIntraPeriod(Metadata::ViewParamsVector basicCameras,
+                          Metadata::ViewParamsVector additionalCameras) override;
   void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) override;
   void completeIntraPeriod() override;
 
   auto getAtlasSize() const -> Common::SizeVector override;
-  auto getCameraList() const -> const Metadata::CameraParametersVector & override;
+  auto getCameraList() const -> const Metadata::ViewParamsVector & override;
   auto getPatchList() const -> const Metadata::AtlasParametersVector & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
@@ -76,12 +76,12 @@ private:
   std::unique_ptr<IPacker> m_packer;
   std::vector<std::uint8_t> m_isReferenceView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
-  Metadata::CameraParametersVector m_cameras;
+  Metadata::ViewParamsVector m_cameras;
   Metadata::AtlasParametersVector m_patchList;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
 
-inline auto AtlasConstructor::getCameraList() const -> const Metadata::CameraParametersVector & {
+inline auto AtlasConstructor::getCameraList() const -> const Metadata::ViewParamsVector & {
   return m_cameras;
 }
 

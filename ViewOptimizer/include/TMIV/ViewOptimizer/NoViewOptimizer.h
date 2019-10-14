@@ -48,8 +48,8 @@ public:
   NoViewOptimizer &operator=(NoViewOptimizer &&) = default;
   ~NoViewOptimizer() override = default;
 
-  auto optimizeIntraPeriod(Metadata::CameraParametersVector cameras)
-      -> Output<Metadata::CameraParametersVector> override {
+  auto optimizeIntraPeriod(Metadata::ViewParamsVector cameras)
+      -> Output<Metadata::ViewParamsVector> override {
     return {std::move(cameras), {}};
   }
 

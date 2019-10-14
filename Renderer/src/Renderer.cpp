@@ -46,15 +46,14 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
 }
 
 auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                           const AtlasParametersVector &patches,
-                           const CameraParametersVector &cameras, const ViewParams &target) const
-    -> Texture444Depth16Frame {
+                           const AtlasParametersVector &patches, const ViewParamsVector &cameras,
+                           const ViewParams &target) const -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 
-auto Renderer::renderFrame(const MVD10Frame &frame, const CameraParametersVector &cameras,
+auto Renderer::renderFrame(const MVD10Frame &frame, const ViewParamsVector &cameras,
                            const ViewParams &target) const -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);

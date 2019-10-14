@@ -48,8 +48,8 @@ using Mat1f = Mat<float>;
 using Mat3f = Mat<Vec3f>;
 
 namespace TMIV::Image {
-auto modifyDepthRange(const MVD16Frame &frame16, const CameraParametersVector &cameras16,
-                      const CameraParametersVector &cameras10) -> MVD10Frame {
+auto modifyDepthRange(const MVD16Frame &frame16, const ViewParamsVector &cameras16,
+                      const ViewParamsVector &cameras10) -> MVD10Frame {
   auto frame10 = MVD10Frame{};
   frame10.reserve(frame16.size());
   auto i_camera16 = begin(cameras16);

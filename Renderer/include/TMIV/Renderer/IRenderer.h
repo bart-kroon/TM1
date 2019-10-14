@@ -51,13 +51,13 @@ public:
   // Render from a texture atlas to a viewport (decoder side)
   virtual auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
                            const Metadata::AtlasParametersVector &patches,
-                           const Metadata::CameraParametersVector &cameras,
+                           const Metadata::ViewParamsVector &cameras,
                            const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame = 0;
 
   // Render from a multiview source to a viewport (encoder side)
   virtual auto renderFrame(const Common::MVD10Frame &frame,
-                           const Metadata::CameraParametersVector &cameras,
+                           const Metadata::ViewParamsVector &cameras,
                            const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame = 0;
 };

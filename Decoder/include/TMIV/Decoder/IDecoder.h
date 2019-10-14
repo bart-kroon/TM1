@@ -61,7 +61,7 @@ public:
                                const Common::MVD10Frame &frame) = 0;
 
   // Change the camera list.
-  virtual void updateCameraList(Metadata::CameraParametersVector cameras) = 0;
+  virtual void updateCameraList(Metadata::ViewParamsVector cameras) = 0;
 
   // Decode a frame and render to a target viewport.
   //

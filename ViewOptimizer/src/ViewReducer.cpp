@@ -54,9 +54,8 @@ constexpr auto halfPixel = 0.5F;
 
 ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
-auto ViewReducer::optimizeIntraPeriod(CameraParametersVector cameras)
-    -> Output<CameraParametersVector> {
-  Output<CameraParametersVector> result;
+auto ViewReducer::optimizeIntraPeriod(ViewParamsVector cameras) -> Output<ViewParamsVector> {
+  Output<ViewParamsVector> result;
   m_priorities.assign(cameras.size(), false);
 
   // choose 9 degree as quantization step of angle between view i and view j.

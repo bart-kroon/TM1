@@ -114,8 +114,8 @@ ViewParams ViewParams::loadFromJson(const Json &node) {
   return parameters;
 }
 
-auto modifyDepthRange(const CameraParametersVector &in) -> CameraParametersVector {
-  auto out = CameraParametersVector{};
+auto modifyDepthRange(const ViewParamsVector &in) -> ViewParamsVector {
+  auto out = ViewParamsVector{};
   out.reserve(in.size());
   transform(begin(in), end(in), back_inserter(out), [](ViewParams x) {
     if (x.depthOccMapThreshold == 0) {
@@ -182,7 +182,7 @@ auto PerspectiveParams::decodeFrom(InputBitstream &bitstream) -> PerspectivePara
 }
 
 auto CameraParamsList::decodeFrom(InputBitstream &bitstream) -> CameraParamsList {
-  auto cameraParamsList = CameraParamsList{CameraParametersVector(bitstream.getUint16() + 1)};
+  auto cameraParamsList = CameraParamsList{ViewParamsVector(bitstream.getUint16() + 1)};
 
   for (auto &cameraParams : cameraParamsList) {
     cameraParams.position.x() = bitstream.getFloat32();

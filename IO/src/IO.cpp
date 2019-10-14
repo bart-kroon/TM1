@@ -182,7 +182,7 @@ Pose loadPoseFromCSV(istream &stream, int frameIndex) {
 
 } // namespace
 
-auto sizesOf(const CameraParametersVector &cameras) -> SizeVector {
+auto sizesOf(const ViewParamsVector &cameras) -> SizeVector {
   SizeVector sizes;
   sizes.reserve(cameras.size());
   transform(begin(cameras), end(cameras), back_inserter(sizes),
@@ -242,8 +242,7 @@ MVD16Frame loadSourceFrame(const Json &config, const SizeVector &sizes, int fram
 }
 
 namespace {
-void saveCameras(const Json &config, const CameraParametersVector &cameras,
-                 const string &fileNameField) {
+void saveCameras(const Json &config, const ViewParamsVector &cameras, const string &fileNameField) {
   const auto path = getFullPath(config, "OutputDirectory", fileNameField);
 
   ofstream stream{path, ios::binary};
@@ -296,8 +295,7 @@ auto loadCameras(const Json &config, const string &fileNameField) -> CameraParam
 }
 } // namespace
 
-void saveOptimizedMetadata(const Json &config,
-                           const BasicAdditional<CameraParametersVector> &cameras) {
+void saveOptimizedMetadata(const Json &config, const BasicAdditional<ViewParamsVector> &cameras) {
   saveCameras(config, cameras.basic, "BasicMetadataPath");
   saveCameras(config, cameras.additional, "AdditionalMetadataPath");
 }

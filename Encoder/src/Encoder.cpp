@@ -48,7 +48,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
       m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(
           "AtlasConstructor", rootNode, componentNode)} {}
 
-void Encoder::prepareIntraPeriod(CameraParametersVector cameras) {
+void Encoder::prepareIntraPeriod(ViewParamsVector cameras) {
   auto optimized = m_viewOptimizer->optimizeIntraPeriod(move(cameras));
   m_atlasConstructor->prepareIntraPeriod(move(optimized.basic), move(optimized.additional));
 }
@@ -62,7 +62,7 @@ void Encoder::completeIntraPeriod() { m_atlasConstructor->completeIntraPeriod();
 
 auto Encoder::getAtlasSize() const -> SizeVector { return m_atlasConstructor->getAtlasSize(); }
 
-auto Encoder::getCameraList() const -> const CameraParametersVector & {
+auto Encoder::getCameraList() const -> const ViewParamsVector & {
   return m_atlasConstructor->getCameraList();
 }
 

@@ -48,7 +48,7 @@ private:
   Common::SizeVector m_atlasSize;
   Metadata::AtlasParametersVector m_patches;
   Common::PatchIdMapList m_patchIdMaps;
-  Metadata::CameraParametersVector m_cameras;
+  Metadata::ViewParamsVector m_cameras;
 
 public:
   Decoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -61,7 +61,7 @@ public:
   void updateAtlasSize(Common::SizeVector atlasSize) override;
   void updatePatchList(Metadata::AtlasParametersVector patches,
                        const Common::MVD10Frame &frame) override;
-  void updateCameraList(Metadata::CameraParametersVector cameras) override;
+  void updateCameraList(Metadata::ViewParamsVector cameras) override;
 
   auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;

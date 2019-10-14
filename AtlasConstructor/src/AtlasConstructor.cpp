@@ -63,8 +63,8 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_nbAtlas = uint16_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
 }
 
-void AtlasConstructor::prepareIntraPeriod(CameraParametersVector basicCameras,
-                                          CameraParametersVector additionalCameras) {
+void AtlasConstructor::prepareIntraPeriod(ViewParamsVector basicCameras,
+                                          ViewParamsVector additionalCameras) {
   m_cameras.clear();
   m_cameras.insert(m_cameras.end(), make_move_iterator(begin(basicCameras)),
                    make_move_iterator(end(basicCameras)));

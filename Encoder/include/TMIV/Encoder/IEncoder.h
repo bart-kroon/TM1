@@ -48,13 +48,13 @@ public:
   IEncoder &operator=(IEncoder &&) = default;
   virtual ~IEncoder() = default;
 
-  virtual void prepareIntraPeriod(Metadata::CameraParametersList cameras) = 0;
+  virtual void prepareIntraPeriod(Metadata::CameraParametersVector cameras) = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual void completeIntraPeriod() = 0;
 
   virtual auto getAtlasSize() const -> Common::SizeVector = 0;
-  virtual const Metadata::CameraParametersList &getCameraList() const = 0;
-  virtual const Metadata::AtlasParametersList &getPatchList() const = 0;
+  virtual const Metadata::CameraParametersVector &getCameraList() const = 0;
+  virtual const Metadata::AtlasParametersVector &getPatchList() const = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::Encoder

@@ -76,14 +76,14 @@ struct AtlasParameters {
   bool operator==(const AtlasParameters &other) const;
 };
 
-using AtlasParametersList = std::vector<AtlasParameters>;
+using AtlasParametersVector = std::vector<AtlasParameters>;
 
 // Data type that corresponds to atlas_params_list of specification
-struct AtlasParamsList : public AtlasParametersList {
+struct AtlasParamsList : public AtlasParametersVector {
   AtlasParamsList() = default;
-  AtlasParamsList(AtlasParametersList atlasParameters, bool omafV1CompatibleFlag_,
+  AtlasParamsList(AtlasParametersVector atlasParameters, bool omafV1CompatibleFlag_,
                   Common::SizeVector atlasSizes_)
-      : AtlasParametersList{std::move(atlasParameters)},
+      : AtlasParametersVector{std::move(atlasParameters)},
         omafV1CompatibleFlag{omafV1CompatibleFlag_}, atlasSizes{atlasSizes_} {}
   AtlasParamsList(const AtlasParamsList &) = default;
   AtlasParamsList(AtlasParamsList &&) = default;

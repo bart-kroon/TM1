@@ -54,13 +54,13 @@ void Decoder::updateAtlasSize(SizeVector atlasSize) {
   m_patches.clear();
 }
 
-void Decoder::updatePatchList(AtlasParametersList patches, const MVD10Frame &frame) {
+void Decoder::updatePatchList(AtlasParametersVector patches, const MVD10Frame &frame) {
   m_patches = move(patches);
   assert(!m_cameras.empty());
   m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, m_cameras, frame);
 }
 
-void Decoder::updateCameraList(CameraParametersList cameras) { m_cameras = move(cameras); }
+void Decoder::updateCameraList(CameraParametersVector cameras) { m_cameras = move(cameras); }
 
 auto Decoder::decodeFrame(MVD10Frame atlas, const CameraParameters &target) const
     -> Texture444Depth16Frame {

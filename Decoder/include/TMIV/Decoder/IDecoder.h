@@ -57,11 +57,11 @@ public:
   // Change the patch list.
   //
   // This call shall be preceded by at least one call to updateAtlasSize.
-  virtual void updatePatchList(Metadata::AtlasParametersList patches,
+  virtual void updatePatchList(Metadata::AtlasParametersVector patches,
                                const Common::MVD10Frame &frame) = 0;
 
   // Change the camera list.
-  virtual void updateCameraList(Metadata::CameraParametersList cameras) = 0;
+  virtual void updateCameraList(Metadata::CameraParametersVector cameras) = 0;
 
   // Decode a frame and render to a target viewport.
   //

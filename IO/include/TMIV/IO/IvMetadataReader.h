@@ -54,7 +54,7 @@ public:
   bool omafV1CompatibleFlag() const;
   auto atlasSizes() const -> const Common::SizeVector &;
   auto atlasParamsList() const -> const Metadata::AtlasParamsList &;
-  auto atlasParametersList() const -> const Metadata::AtlasParametersList &;
+  auto atlasParametersList() const -> const Metadata::AtlasParametersVector &;
 
 private:
   std::string m_path;

@@ -48,12 +48,12 @@ public:
   ~Synthesizer() override;
 
   auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::AtlasParametersList &patches,
-                   const Metadata::CameraParametersList &cameras,
+                   const Metadata::AtlasParametersVector &patches,
+                   const Metadata::CameraParametersVector &cameras,
                    const Metadata::CameraParameters &target) const
       -> Common::Texture444Depth16Frame override;
 
-  auto renderFrame(const Common::MVD10Frame &frame, const Metadata::CameraParametersList &cameras,
+  auto renderFrame(const Common::MVD10Frame &frame, const Metadata::CameraParametersVector &cameras,
                    const Metadata::CameraParameters &target) const
       -> Common::Texture444Depth16Frame override;
 

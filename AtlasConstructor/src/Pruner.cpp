@@ -55,7 +55,7 @@ Pruner::Pruner(const Json & /*rootNode*/, const Json &componentNode) {
   }
 }
 
-auto Pruner::prune(const CameraParametersList &cameras, const MVD16Frame &views,
+auto Pruner::prune(const CameraParametersVector &cameras, const MVD16Frame &views,
                    const vector<uint8_t> &shouldNotBePruned) -> MaskList {
 
   // Sort cameras for pruning

@@ -45,8 +45,8 @@ constexpr unsigned maxLevel(unsigned bits);
 // Modify depth range from 16-bit to 10-bit with camera parameters that may have different
 // normDispRange and depthOccMapThreshold values.
 auto modifyDepthRange(const Common::MVD16Frame &frame16,
-                      const Metadata::CameraParametersList &cameras16,
-                      const Metadata::CameraParametersList &cameras10) -> Common::MVD10Frame;
+                      const Metadata::CameraParametersVector &cameras16,
+                      const Metadata::CameraParametersVector &cameras10) -> Common::MVD10Frame;
 
 // Expand a YUV 4:2:0 10-bit texture to packed 4:4:4 32-bit float texture with
 // linear transfer and nearest interpolation for chroma

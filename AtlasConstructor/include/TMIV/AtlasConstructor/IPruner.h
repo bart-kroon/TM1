@@ -47,7 +47,8 @@ public:
   IPruner &operator=(IPruner &&) = default;
   virtual ~IPruner() = default;
 
-  virtual auto prune(const Metadata::CameraParametersList &cameras, const Common::MVD16Frame &views,
+  virtual auto prune(const Metadata::CameraParametersVector &cameras,
+                     const Common::MVD16Frame &views,
                      const std::vector<std::uint8_t> &shouldNotBePruned) -> Common::MaskList = 0;
 };
 } // namespace TMIV::AtlasConstructor

@@ -121,8 +121,8 @@ CameraParameters CameraParameters::loadFromJson(const Json &node) {
   return parameters;
 }
 
-auto modifyDepthRange(const CameraParametersList &in) -> CameraParametersList {
-  auto out = CameraParametersList{};
+auto modifyDepthRange(const CameraParametersVector &in) -> CameraParametersVector {
+  auto out = CameraParametersVector{};
   out.reserve(in.size());
   transform(begin(in), end(in), back_inserter(out), [](CameraParameters x) {
     if (x.depthOccMapThreshold == 0) {
@@ -188,7 +188,7 @@ bool CameraParamsList::operator==(const CameraParamsList &other) const {
 }
 
 auto CameraParamsList::decodeFrom(InputBitstream &bitstream) -> CameraParamsList {
-  auto cameraParamsList = CameraParamsList{CameraParametersList(bitstream.getUint16() + 1)};
+  auto cameraParamsList = CameraParamsList{CameraParametersVector(bitstream.getUint16() + 1)};
 
   for (auto &cameraParams : cameraParamsList) {
     cameraParams.position.x() = bitstream.getFloat32();

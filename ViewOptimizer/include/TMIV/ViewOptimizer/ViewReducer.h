@@ -52,8 +52,8 @@ public:
   ViewReducer &operator=(ViewReducer &&) = default;
   ~ViewReducer() override = default;
 
-  auto optimizeIntraPeriod(Metadata::CameraParametersList cameras)
-      -> Output<Metadata::CameraParametersList> override;
+  auto optimizeIntraPeriod(Metadata::CameraParametersVector cameras)
+      -> Output<Metadata::CameraParametersVector> override;
 
   auto optimizeFrame(Common::MVD16Frame views) const -> Output<Common::MVD16Frame> override;
 

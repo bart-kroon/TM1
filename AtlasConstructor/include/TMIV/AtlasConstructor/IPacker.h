@@ -49,7 +49,7 @@ public:
 
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
                     const std::vector<std::uint8_t> &shouldNotBeSplit)
-      -> Metadata::AtlasParametersList = 0;
+      -> Metadata::AtlasParametersVector = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

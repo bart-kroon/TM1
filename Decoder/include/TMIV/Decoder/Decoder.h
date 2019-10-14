@@ -46,9 +46,9 @@ private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
   Common::SizeVector m_atlasSize;
-  Metadata::AtlasParametersList m_patches;
+  Metadata::AtlasParametersVector m_patches;
   Common::PatchIdMapList m_patchIdMaps;
-  Metadata::CameraParametersList m_cameras;
+  Metadata::CameraParametersVector m_cameras;
 
 public:
   Decoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -59,9 +59,9 @@ public:
   ~Decoder() override = default;
 
   void updateAtlasSize(Common::SizeVector atlasSize) override;
-  void updatePatchList(Metadata::AtlasParametersList patches,
+  void updatePatchList(Metadata::AtlasParametersVector patches,
                        const Common::MVD10Frame &frame) override;
-  void updateCameraList(Metadata::CameraParametersList cameras) override;
+  void updateCameraList(Metadata::CameraParametersVector cameras) override;
 
   auto decodeFrame(Common::MVD10Frame atlas, const Metadata::CameraParameters &target) const
       -> Common::Texture444Depth16Frame override;

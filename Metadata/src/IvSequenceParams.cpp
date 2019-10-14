@@ -195,41 +195,41 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
 
   const auto intrinsicParamsEqualFlag = bitstream.getFlag();
 
-  for (auto camera = viewParamsList.begin(); camera != viewParamsList.end(); ++camera) {
-    if (camera == viewParamsList.begin() || !intrinsicParamsEqualFlag) {
+  for (auto viewParams = viewParamsList.begin(); viewParams != viewParamsList.end(); ++viewParams) {
+    if (viewParams == viewParamsList.begin() || !intrinsicParamsEqualFlag) {
       auto camType = bitstream.getUint8();
-      camera->size.x() = bitstream.getUint16();
-      camera->size.y() = bitstream.getUint16();
+      viewParams->size.x() = bitstream.getUint16();
+      viewParams->size.y() = bitstream.getUint16();
 
       verify(camType < 2);
       switch (camType) {
       case 0:
-        camera->projection = ErpParams::decodeFrom(bitstream);
+        viewParams->projection = ErpParams::decodeFrom(bitstream);
         break;
       case 1:
-        camera->projection = PerspectiveParams::decodeFrom(bitstream);
+        viewParams->projection = PerspectiveParams::decodeFrom(bitstream);
         break;
       default:
         abort();
       }
     } else {
-      camera->size = viewParamsList.front().size;
-      camera->projection = viewParamsList.front().projection;
+      viewParams->size = viewParamsList.front().size;
+      viewParams->projection = viewParamsList.front().projection;
     }
   }
 
   const auto depthQuantizationParamsEqualFlag = bitstream.getFlag();
 
-  for (auto camera = viewParamsList.begin(); camera != viewParamsList.end(); ++camera) {
-    if (camera == viewParamsList.begin() || !depthQuantizationParamsEqualFlag) {
+  for (auto viewParams = viewParamsList.begin(); viewParams != viewParamsList.end(); ++viewParams) {
+    if (viewParams == viewParamsList.begin() || !depthQuantizationParamsEqualFlag) {
       const auto quantizationLaw = bitstream.getUint8();
       verify(quantizationLaw == 0);
-      camera->normDispRange.x() = bitstream.getFloat32();
-      camera->normDispRange.y() = bitstream.getFloat32();
-      camera->depthOccMapThreshold = bitstream.getUint16();
+      viewParams->normDispRange.x() = bitstream.getFloat32();
+      viewParams->normDispRange.y() = bitstream.getFloat32();
+      viewParams->depthOccMapThreshold = bitstream.getUint16();
     } else {
-      camera->normDispRange = viewParamsList.front().normDispRange;
-      camera->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
+      viewParams->normDispRange = viewParamsList.front().normDispRange;
+      viewParams->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
     }
   }
 
@@ -254,23 +254,23 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   assert(!empty() && size() - 1 <= UINT16_MAX);
   bitstream.putUint16(uint16_t(size() - 1));
 
-  for (const auto &camera : *this) {
-    bitstream.putFloat32(camera.position.x());
-    bitstream.putFloat32(camera.position.y());
-    bitstream.putFloat32(camera.position.z());
-    bitstream.putFloat32(camera.rotation.x());
-    bitstream.putFloat32(camera.rotation.y());
-    bitstream.putFloat32(camera.rotation.z());
+  for (const auto &viewParams : *this) {
+    bitstream.putFloat32(viewParams.position.x());
+    bitstream.putFloat32(viewParams.position.y());
+    bitstream.putFloat32(viewParams.position.z());
+    bitstream.putFloat32(viewParams.rotation.x());
+    bitstream.putFloat32(viewParams.rotation.y());
+    bitstream.putFloat32(viewParams.rotation.z());
   }
 
   const auto intrinsicParamsEqualFlag = areIntrinsicParamsEqual();
   bitstream.putFlag(intrinsicParamsEqualFlag);
 
-  for (const auto &camera : *this) {
-    bitstream.putUint8(uint8_t(camera.projection.index()));
-    bitstream.putUint16(uint16_t(camera.size.x()));
-    bitstream.putUint16(uint16_t(camera.size.y()));
-    visit([&](const auto &x) { x.encodeTo(bitstream); }, camera.projection);
+  for (const auto &viewParams : *this) {
+    bitstream.putUint8(uint8_t(viewParams.projection.index()));
+    bitstream.putUint16(uint16_t(viewParams.size.x()));
+    bitstream.putUint16(uint16_t(viewParams.size.y()));
+    visit([&](const auto &x) { x.encodeTo(bitstream); }, viewParams.projection);
     if (intrinsicParamsEqualFlag) {
       break;
     }
@@ -279,11 +279,11 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   const auto depthQuantizationParamsEqualFlag = areDepthQuantizationParamsEqual();
   bitstream.putFlag(depthQuantizationParamsEqualFlag);
 
-  for (const auto &camera : *this) {
+  for (const auto &viewParams : *this) {
     bitstream.putUint8(0); // quantization_law
-    bitstream.putFloat32(camera.normDispRange.x());
-    bitstream.putFloat32(camera.normDispRange.y());
-    bitstream.putUint16(camera.depthOccMapThreshold);
+    bitstream.putFloat32(viewParams.normDispRange.x());
+    bitstream.putFloat32(viewParams.normDispRange.y());
+    bitstream.putUint16(viewParams.depthOccMapThreshold);
 
     if (depthQuantizationParamsEqualFlag) {
       break;

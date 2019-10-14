@@ -62,16 +62,16 @@ auto makeFullERPCamera() {
 TEST_CASE("Full ERP", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const ViewParams camera{{7, 5}, {}, {}, ErpParams{{-180.F, 180.F}, {-90.F, 90.F}}};
+  const ViewParams viewParams{{7, 5}, {}, {}, ErpParams{{-180.F, 180.F}, {-90.F, 90.F}}};
 
   SECTION("Unproject without attributes") {
-    auto mesh = unproject(depth, camera, camera);
+    auto mesh = unproject(depth, viewParams, viewParams);
     auto as = get<2>(mesh);
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
 
   SECTION("Reproject without attributes") {
-    auto mesh = reproject(depth, camera, camera);
+    auto mesh = reproject(depth, viewParams, viewParams);
     auto as = get<2>(mesh);
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
@@ -79,7 +79,7 @@ TEST_CASE("Full ERP", "[Render engine]") {
   SECTION("Unproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
-    auto mesh = unproject(depth, camera, camera, field);
+    auto mesh = unproject(depth, viewParams, viewParams, field);
 
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 1) * 5 + 2);
@@ -101,7 +101,7 @@ TEST_CASE("Full ERP", "[Render engine]") {
   SECTION("Reproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
-    auto mesh = reproject(depth, camera, camera, field);
+    auto mesh = reproject(depth, viewParams, viewParams, field);
 
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 1) * 5 + 2);
@@ -125,16 +125,16 @@ TEST_CASE("Full ERP", "[Render engine]") {
 TEST_CASE("Equirectangular viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const ViewParams camera{{7, 5}, {}, {}, ErpParams{{-10.F, 10.F}, {-10.F, 10.F}}};
+  const ViewParams viewParams{{7, 5}, {}, {}, ErpParams{{-10.F, 10.F}, {-10.F, 10.F}}};
 
   SECTION("Unproject without attributes") {
-    auto mesh = unproject(depth, camera, camera);
+    auto mesh = unproject(depth, viewParams, viewParams);
     auto as = get<2>(mesh);
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
 
   SECTION("Reproject without attributes") {
-    auto mesh = reproject(depth, camera, camera);
+    auto mesh = reproject(depth, viewParams, viewParams);
     auto as = get<2>(mesh);
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
@@ -142,7 +142,7 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
   SECTION("Unproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
-    auto mesh = unproject(depth, camera, camera, field);
+    auto mesh = unproject(depth, viewParams, viewParams, field);
 
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
@@ -164,7 +164,7 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
   SECTION("Reproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
-    auto mesh = reproject(depth, camera, camera, field);
+    auto mesh = reproject(depth, viewParams, viewParams, field);
 
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
@@ -188,16 +188,16 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
 TEST_CASE("Perspective viewport", "[Render engine]") {
   Mat<float> depth({5, 7});
   fill(begin(depth), end(depth), 2.F);
-  const ViewParams camera{{7, 5}, {}, {}, PerspectiveParams{{10.F, 10.F}, {3.5F, 2.5F}}};
+  const ViewParams viewParams{{7, 5}, {}, {}, PerspectiveParams{{10.F, 10.F}, {3.5F, 2.5F}}};
 
   SECTION("Unproject without attributes") {
-    auto mesh = unproject(depth, camera, camera);
+    auto mesh = unproject(depth, viewParams, viewParams);
     auto as = get<2>(mesh);
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
 
   SECTION("Reproject without attributes") {
-    auto mesh = reproject(depth, camera, camera);
+    auto mesh = reproject(depth, viewParams, viewParams);
     auto as = get<2>(mesh);
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
@@ -205,7 +205,7 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
   SECTION("Unproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
-    auto mesh = unproject(depth, camera, camera, field);
+    auto mesh = unproject(depth, viewParams, viewParams, field);
 
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
@@ -227,7 +227,7 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
   SECTION("Reproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
-    auto mesh = reproject(depth, camera, camera, field);
+    auto mesh = reproject(depth, viewParams, viewParams, field);
 
     auto vs = get<0>(mesh);
     REQUIRE(vs.size() == (7 + 2) * (5 + 2));
@@ -352,12 +352,12 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
 
 SCENARIO("Reprojecting points", "[reprojectPoints]") {
   GIVEN("A camera and a depth map") {
-    auto camera = makeFullERPCamera();
+    auto viewParams = makeFullERPCamera();
     Mat<float> depth({5U, 10U});
     fill(begin(depth), end(depth), 2.F);
 
     WHEN("Calculating image positions") {
-      auto positions = imagePositions(camera);
+      auto positions = imagePositions(viewParams);
 
       THEN("The image positions should be at the pixel centers") {
         REQUIRE(positions(4, 7).x() == 7.5F);
@@ -369,7 +369,7 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
 
       WHEN("Reprojecting points to the same camera with valid depth "
            "values") {
-        auto actual = reprojectPoints(camera, camera, positions, depth);
+        auto actual = reprojectPoints(viewParams, viewParams, positions, depth);
 
         THEN("The positions should not change too much") {
           REQUIRE(actual.first(4, 7).x() == Approx(7.5F));
@@ -640,13 +640,13 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
 SCENARIO("Synthesis of a depth map", "[Synthesizer]") {
   GIVEN("A synthesizer, camera and a depth map") {
     Synthesizer synthesizer{1., 1., 1., 10.F};
-    auto camera = makeFullERPCamera();
+    auto viewParams = makeFullERPCamera();
 
-    Mat<float> depth({unsigned(camera.size.y()), unsigned(camera.size.x())});
+    Mat<float> depth({unsigned(viewParams.size.y()), unsigned(viewParams.size.x())});
     fill(begin(depth), end(depth), 2.F);
 
     WHEN("Synthesizing to the same viewpoint") {
-      auto actual = synthesizer.renderDepth(depth, camera, camera);
+      auto actual = synthesizer.renderDepth(depth, viewParams, viewParams);
       REQUIRE(actual.width() == 10);
       REQUIRE(actual.height() == 5);
 

@@ -58,7 +58,7 @@ public:
   auto optimizeFrame(Common::MVD16Frame views) const -> Output<Common::MVD16Frame> override;
 
 private:
-  auto calculateFOV(Metadata::ViewParams camera) -> float;
+  auto calculateFOV(Metadata::ViewParams viewParams) -> float;
 
   auto calculateDistance(Metadata::ViewParams camera_1, Metadata::ViewParams camera_2) -> float;
 

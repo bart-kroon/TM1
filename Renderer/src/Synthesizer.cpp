@@ -98,19 +98,19 @@ public:
         assert(patchId < patches.size());
         const auto &patch = patches[patchId];
         assert(patch.viewId < viewParamsVector.size());
-        const auto &camera = viewParamsVector[patch.viewId];
+        const auto &viewParams = viewParamsVector[patch.viewId];
 
         // Look up depth value and affine parameters
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
 
         auto level = atlas.second.getPlane(0)(i_atlas, j_atlas);
         assert(level > 0U);
-        const auto d = expandDepthValue10(camera, level);
+        const auto d = expandDepthValue10(viewParams, level);
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
 
         // Reproject and calculate ray angle
-        const auto xyz = R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, camera) + t;
+        const auto xyz = R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams) + t;
         const auto rayAngle = angle(xyz, xyz - t);
         result.push_back({xyz, rayAngle});
       }

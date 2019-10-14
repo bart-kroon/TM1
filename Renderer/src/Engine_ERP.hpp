@@ -45,7 +45,7 @@ using Common::halfCycle;
 using Common::quarterCycle;
 
 template <> struct Engine<Metadata::ErpParams> {
-  const Metadata::ViewParams camera;
+  const Metadata::ViewParams viewParams;
   const bool northPole;
   const bool southPole;
   const bool wraps;
@@ -64,41 +64,42 @@ template <> struct Engine<Metadata::ErpParams> {
   const float du_dphi;
   const float dv_dtheta;
 
-  explicit Engine(const Metadata::ViewParams &camera_)
-      : camera{camera_},
+  explicit Engine(const Metadata::ViewParams &viewParams_)
+      : viewParams{viewParams_},
 
         // Projection sub-type
-        northPole{camera.erp().thetaRange[1] == quarterCycle},
-        southPole{camera.erp().thetaRange[0] == -quarterCycle}, wraps{camera.erp().phiRange[0] ==
-                                                                          -halfCycle &&
-                                                                      camera.erp().phiRange[1] ==
-                                                                          halfCycle},
+        northPole{viewParams.erp().thetaRange[1] == quarterCycle},
+        southPole{viewParams.erp().thetaRange[0] == -quarterCycle},
+        wraps{viewParams.erp().phiRange[0] == -halfCycle &&
+              viewParams.erp().phiRange[1] == halfCycle},
 
         // Mesh structure
-        icols{camera.size.x()}, irows{camera.size.y()}, ocols{camera.size.x() + 2 - int(wraps)},
-        orows{camera.size.y() + 2 - int(northPole) - int(southPole)}, osize{ocols * orows +
-                                                                            int(southPole) +
-                                                                            int(northPole)},
+        icols{viewParams.size.x()}, irows{viewParams.size.y()}, ocols{viewParams.size.x() + 2 -
+                                                                      int(wraps)},
+        orows{viewParams.size.y() + 2 - int(northPole) - int(southPole)}, osize{ocols * orows +
+                                                                                int(southPole) +
+                                                                                int(northPole)},
         numTriangles{2 * (orows - 1) * (ocols - 1) + (northPole ? ocols - 1 : 0) +
                      (southPole ? ocols - 1 : 0)},
 
         // Precomputed values used in te unprojection equation
-        phi0{Common::radperdeg * camera.erp().phiRange[1]}, theta0{Common::radperdeg *
-                                                                   camera.erp().thetaRange[1]},
-        dphi_du{-Common::radperdeg * (camera.erp().phiRange[1] - camera.erp().phiRange[0]) /
-                camera.size.x()},
-        dtheta_dv{-Common::radperdeg * (camera.erp().thetaRange[1] - camera.erp().thetaRange[0]) /
-                  camera.size.y()},
+        phi0{Common::radperdeg * viewParams.erp().phiRange[1]},
+        theta0{Common::radperdeg * viewParams.erp().thetaRange[1]},
+        dphi_du{-Common::radperdeg * (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0]) /
+                viewParams.size.x()},
+        dtheta_dv{-Common::radperdeg *
+                  (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0]) /
+                  viewParams.size.y()},
 
         // Precomputed values used in the projection equation
-        u0{camera.size.x() * camera.erp().phiRange[1] /
-           (camera.erp().phiRange[1] - camera.erp().phiRange[0])},
-        v0{camera.size.y() * camera.erp().thetaRange[1] /
-           (camera.erp().thetaRange[1] - camera.erp().thetaRange[0])},
-        du_dphi{-Common::degperrad * camera.size.x() /
-                (camera.erp().phiRange[1] - camera.erp().phiRange[0])},
-        dv_dtheta{-Common::degperrad * camera.size.y() /
-                  (camera.erp().thetaRange[1] - camera.erp().thetaRange[0])} {}
+        u0{viewParams.size.x() * viewParams.erp().phiRange[1] /
+           (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0])},
+        v0{viewParams.size.y() * viewParams.erp().thetaRange[1] /
+           (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0])},
+        du_dphi{-Common::degperrad * viewParams.size.x() /
+                (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0])},
+        dv_dtheta{-Common::degperrad * viewParams.size.y() /
+                  (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0])} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
@@ -188,7 +189,7 @@ template <> struct Engine<Metadata::ErpParams> {
       -> SceneVertexDescriptorList {
     SceneVertexDescriptorList result;
     result.reserve(osize);
-    const auto R_t = affineParameters(camera, target);
+    const auto R_t = affineParameters(viewParams, target);
     for (int i = 0; i < orows; ++i) {
       for (int j = 0; j < ocols; ++j) {
         const auto u = uAt(j);

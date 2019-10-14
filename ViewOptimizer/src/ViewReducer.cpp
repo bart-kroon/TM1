@@ -77,8 +77,8 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector viewParamsVector)
   size_t id_j;
 
   // Early termination: if any view is full-ERP, choose this view
-  for (auto &camera : viewParamsVector) {
-    if (auto projection = get_if<ErpParams>(&camera.projection)) {
+  for (auto &viewParams : viewParamsVector) {
+    if (auto projection = get_if<ErpParams>(&viewParams.projection)) {
       if (abs(projection->phiRange[0] - projection->phiRange[1]) == fullCycle) {
         if (abs(projection->thetaRange[0] - projection->thetaRange[1]) == halfCycle) {
           isoneview = true;
@@ -187,10 +187,10 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector viewParamsVector)
     int id_center = 0;
     float distance = numeric_limits<float>::max();
 
-    for (auto &camera : viewParamsVector) {
-      x_center += camera.position[0];
-      y_center += camera.position[1];
-      z_center += camera.position[2];
+    for (auto &viewParams : viewParamsVector) {
+      x_center += viewParams.position[0];
+      y_center += viewParams.position[1];
+      z_center += viewParams.position[2];
     }
     x_center /= nbCameras;
     y_center /= nbCameras;
@@ -248,7 +248,7 @@ auto ViewReducer::optimizeFrame(MVD16Frame views) const -> Output<MVD16Frame> {
   return result;
 }
 
-auto ViewReducer::calculateFOV(ViewParams camera) -> float {
+auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {
   return visit(overload(
                    [](const ErpParams &projection) {
                      return abs(projection.phiRange[0] - projection.phiRange[1]) * radperdeg *
@@ -256,10 +256,10 @@ auto ViewReducer::calculateFOV(ViewParams camera) -> float {
                                  sin(projection.thetaRange[1] * radperdeg)));
                    },
                    [&](const PerspectiveParams &projection) {
-                     return abs(4 * atan(camera.size[0] / (2 * projection.focal[0])) *
-                                sin(atan(camera.size[1] / (2 * projection.focal[1]))));
+                     return abs(4 * atan(viewParams.size[0] / (2 * projection.focal[0])) *
+                                sin(atan(viewParams.size[1] / (2 * projection.focal[1]))));
                    }),
-               camera.projection);
+               viewParams.projection);
 }
 auto ViewReducer::calculateDistance(ViewParams camera_1, ViewParams camera_2) -> float {
   return sqrt(square(camera_1.position[0] - camera_2.position[0]) +

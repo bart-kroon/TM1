@@ -82,7 +82,7 @@ uint16_t quantizeNormDispValue(const Metadata::ViewParams &viewParams, float x) 
 
 template <unsigned bits>
 uint16_t quantizeDepthValue(const Metadata::ViewParams &viewParams, float x) {
-  return x > 0.F ? quantizeNormDispValue<bits>(camera, 1.F / x) : 0;
+  return x > 0.F ? quantizeNormDispValue<bits>(viewParams, 1.F / x) : 0;
 }
 } // namespace impl
 

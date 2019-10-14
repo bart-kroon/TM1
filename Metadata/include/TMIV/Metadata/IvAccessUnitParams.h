@@ -37,6 +37,7 @@
 #include <TMIV/Common/Vector.h>
 
 #include <cstdint>
+#include <iosfwd>
 #include <optional>
 #include <vector>
 
@@ -97,6 +98,9 @@ struct AtlasParamsList : public AtlasParamsVector {
   bool omafV1CompatibleFlag{};
   Common::SizeVector atlasSizes;
 
+  void setAtlasParamsVector(AtlasParamsVector x) { static_cast<AtlasParamsVector &>(*this) = move(x); }
+
+  friend std::ostream &operator<<(std::ostream &, const AtlasParamsList &);
   static auto decodeFrom(InputBitstream &, const ViewParamsList &) -> AtlasParamsList;
   void encodeTo(OutputBitstream &, const ViewParamsList &) const;
 };
@@ -109,6 +113,7 @@ struct IvAccessUnitParams {
   // In specification: atlas_params_list( )
   std::optional<AtlasParamsList> atlasParamsList;
 
+  friend std::ostream &operator<<(std::ostream &, const IvAccessUnitParams &);
   bool operator==(const IvAccessUnitParams &other) const;
   bool operator!=(const IvAccessUnitParams &other) const { return !operator==(other); }
 

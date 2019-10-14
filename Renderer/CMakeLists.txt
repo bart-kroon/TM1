@@ -41,21 +41,11 @@ target_include_directories(RendererLib
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 		"$<INSTALL_INTERFACE:include>")
 
-add_executable(Renderer
-	"src/Renderer.main.cpp")
-
-target_link_libraries(Renderer
-	PRIVATE
-		TMIV::RendererLib
-		TMIV::IOLib)
-
 install(
 	TARGETS
-		Renderer
 		RendererLib
 	EXPORT Renderer.Targets
-	ARCHIVE DESTINATION "lib"
-	RUNTIME DESTINATION "bin")
+	ARCHIVE DESTINATION "lib")
 
 install(
 	EXPORT Renderer.Targets

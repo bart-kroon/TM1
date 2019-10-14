@@ -34,41 +34,48 @@
 #include <TMIV/Encoder/Encoder.h>
 
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
+using namespace TMIV::Image;
 using namespace TMIV::Metadata;
 using namespace TMIV::ViewOptimizer;
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Json &rootNode, const Json &componentNode)
-    : m_viewOptimizer{Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", rootNode,
-                                                                    componentNode)},
-      m_atlasConstructor{Factory<IAtlasConstructor>::getInstance().create(
-          "AtlasConstructor", rootNode, componentNode)} {}
-
-void Encoder::prepareIntraPeriod(ViewParamsVector viewParamsVector) {
-  auto optimized = m_viewOptimizer->optimizeIntraPeriod(move(viewParamsVector));
-  m_atlasConstructor->prepareIntraPeriod(move(optimized.basic), move(optimized.additional));
+Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
+  m_viewOptimizer =
+      Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", rootNode, componentNode);
+  m_atlasConstructor =
+      Factory<IAtlasConstructor>::getInstance().create("AtlasConstructor", rootNode, componentNode);
 }
 
-void Encoder::pushFrame(MVD16Frame views) {
+auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+    -> const Metadata::IvSequenceParams & {
+  auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+  m_constructedSequenceParams =
+      m_atlasConstructor->prepareSequence(move(optimized.basic), move(optimized.additional));
+  m_codedSequenceParams = m_constructedSequenceParams.modifyDepthRange();
+  return m_codedSequenceParams;
+}
+
+void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+  return m_atlasConstructor->prepareAccessUnit(ivAccessUnitParams);
+}
+
+void Encoder::pushFrame(Common::MVD16Frame views) {
   auto optimized = m_viewOptimizer->optimizeFrame(move(views));
-  m_atlasConstructor->pushFrame(move(optimized.basic), move(optimized.additional));
+  return m_atlasConstructor->pushFrame(move(optimized.basic), move(optimized.additional));
 }
 
-void Encoder::completeIntraPeriod() { m_atlasConstructor->completeIntraPeriod(); }
-
-auto Encoder::getAtlasSize() const -> SizeVector { return m_atlasConstructor->getAtlasSize(); }
-
-auto Encoder::getViewParamsVector() const -> const ViewParamsVector & {
-  return m_atlasConstructor->getViewParamsVector();
+auto Encoder::completeAccessUnit() -> const Metadata::IvAccessUnitParams & {
+  return m_atlasConstructor->completeAccessUnit();
 }
 
-auto Encoder::getAtlasParamsVector() const -> const AtlasParamsVector & {
-  return m_atlasConstructor->getAtlasParamsVector();
+auto Encoder::popAtlas() -> Common::MVD10Frame {
+  return modifyDepthRange(m_atlasConstructor->popAtlas(),
+                          m_constructedSequenceParams.viewParamsList,
+                          m_codedSequenceParams.viewParamsList);
 }
-
-auto Encoder::popAtlas() -> MVD16Frame { return m_atlasConstructor->popAtlas(); }
 } // namespace TMIV::Encoder

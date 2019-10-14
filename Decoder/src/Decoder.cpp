@@ -56,17 +56,17 @@ void Decoder::updateAtlasSize(SizeVector atlasSize) {
 
 void Decoder::updatePatchList(AtlasParamsVector patches, const MVD10Frame &frame) {
   m_patches = move(patches);
-  assert(!m_viewParamsVector.empty());
+  assert(!m_ivSequenceParams.empty());
   m_patchIdMaps =
-      m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, m_viewParamsVector, frame);
+      m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, m_ivSequenceParams, frame);
 }
 
 void Decoder::updateCameraList(ViewParamsVector viewParamsVector) {
-  m_viewParamsVector = move(viewParamsVector);
+  m_ivSequenceParams = move(viewParamsVector);
 }
 
 auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
     -> Texture444Depth16Frame {
-  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_viewParamsVector, target);
+  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_ivSequenceParams, target);
 }
 } // namespace TMIV::Decoder

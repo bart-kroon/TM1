@@ -48,14 +48,12 @@ public:
   IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
   virtual ~IAtlasConstructor() = default;
 
-  virtual void prepareIntraPeriod(Metadata::ViewParamsVector basicViewParamsVector,
-                                  Metadata::ViewParamsVector additionalViewParamsVector) = 0;
+  virtual auto prepareSequence(Metadata::IvSequenceParams basicSequenceParams,
+                               Metadata::IvSequenceParams additionalSequenceParams)
+      -> const Metadata::IvSequenceParams & = 0;
+  virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
   virtual void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) = 0;
-  virtual void completeIntraPeriod() = 0;
-
-  virtual auto getAtlasSize() const -> Common::SizeVector = 0;
-  virtual auto getViewParamsVector() const -> const Metadata::ViewParamsVector & = 0;
-  virtual auto getAtlasParamsVector() const -> const Metadata::AtlasParamsVector & = 0;
+  virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::AtlasConstructor

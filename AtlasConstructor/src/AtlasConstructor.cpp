@@ -47,7 +47,6 @@ namespace TMIV::AtlasConstructor {
 constexpr auto neutralChroma = uint16_t(512);
 
 AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
-
   // Components
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", rootNode, componentNode);
   m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", rootNode, componentNode);
@@ -60,27 +59,37 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   // samples per frame (texture and depth combined)
   int maxLumaSamplesPerFrame = componentNode.require("MaxLumaSamplesPerFrame").asInt();
   const auto lumaSamplesPerAtlas = 2 * m_atlasSize.x() * m_atlasSize.y();
-  m_nbAtlas = uint16_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
+  m_nbAtlas = size_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
 }
 
-void AtlasConstructor::prepareIntraPeriod(ViewParamsVector basicViewParamsVector,
-                                          ViewParamsVector additionalViewParamsVector) {
-  m_viewParamsVector.clear();
-  m_viewParamsVector.insert(m_viewParamsVector.end(),
-                            make_move_iterator(begin(basicViewParamsVector)),
-                            make_move_iterator(end(basicViewParamsVector)));
-  m_viewParamsVector.insert(m_viewParamsVector.end(),
-                            make_move_iterator(begin(additionalViewParamsVector)),
-                            make_move_iterator(end(additionalViewParamsVector)));
+auto AtlasConstructor::prepareSequence(IvSequenceParams basicSequenceParams,
+                                       IvSequenceParams additionalSequenceParams)
+    -> const IvSequenceParams & {
+  // Make sure to carry all metadata
+  m_ivSequenceParams = basicSequenceParams;
+
+  // Add parameters of additional views
+  m_ivSequenceParams.viewParamsList.insert(
+      m_ivSequenceParams.viewParamsList.end(),
+      make_move_iterator(begin(additionalSequenceParams.viewParamsList)),
+      make_move_iterator(end(additionalSequenceParams.viewParamsList)));
 
   m_isReferenceView.clear();
-  m_isReferenceView.insert(m_isReferenceView.end(), basicViewParamsVector.size(), 1);
-  m_isReferenceView.insert(m_isReferenceView.end(), additionalViewParamsVector.size(), 0);
+  m_isReferenceView.insert(m_isReferenceView.end(), basicSequenceParams.viewParamsList.size(), 1);
+  m_isReferenceView.insert(m_isReferenceView.end(), additionalSequenceParams.viewParamsList.size(),
+                           0);
 
+  // Construct at least the basic views
+  m_nbAtlas = max(basicSequenceParams.viewParamsList.size(), m_nbAtlas);
+
+  return m_ivSequenceParams;
+}
+
+void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+  assert(ivAccessUnitParams.atlasParamsList);
+  m_ivAccessUnitParams = ivAccessUnitParams;
   m_viewBuffer.clear();
-  m_aggregator->prepareIntraPeriod();
-
-  m_nbAtlas = max(uint16_t(basicViewParamsVector.size()), m_nbAtlas);
+  m_aggregator->prepareAccessUnit();
 }
 
 void AtlasConstructor::pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) {
@@ -91,21 +100,22 @@ void AtlasConstructor::pushFrame(MVD16Frame basicViews, MVD16Frame additionalVie
                make_move_iterator(end(additionalViews)));
 
   // Pruning
-  MaskList masks = m_pruner->prune(m_viewParamsVector, views, m_isReferenceView);
+  MaskList masks = m_pruner->prune(m_ivSequenceParams.viewParamsList, views, m_isReferenceView);
 
   // Aggregation
   m_viewBuffer.push_back(move(views));
   m_aggregator->pushMask(masks);
 }
 
-void AtlasConstructor::completeIntraPeriod() {
+auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   // Aggregated mask
-  m_aggregator->completeIntraPeriod();
+  m_aggregator->completeAccessUnit();
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
 
   // Packing
-  m_atlasParamsVector =
-      m_packer->pack(SizeVector(m_nbAtlas, m_atlasSize), aggregatedMask, m_isReferenceView);
+  assert(m_ivAccessUnitParams.atlasParamsList);
+  m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
+      m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isReferenceView));
 
   // Atlas construction
   for (const auto &views : m_viewBuffer) {
@@ -124,21 +134,14 @@ void AtlasConstructor::completeIntraPeriod() {
       atlasList.push_back(move(atlas));
     }
 
-    for (const auto &patch : m_atlasParamsVector) {
+    for (const auto &patch : *m_ivAccessUnitParams.atlasParamsList) {
       writePatchInAtlas(patch, views, atlasList);
     }
 
     m_atlasBuffer.push_back(move(atlasList));
   }
-}
 
-auto AtlasConstructor::getAtlasSize() const -> SizeVector {
-  assert(!m_atlasBuffer.empty());
-  SizeVector result;
-  for (const auto &view : m_atlasBuffer.front()) {
-    result.push_back({view.first.getWidth(), view.first.getHeight()});
-  }
-  return result;
+  return m_ivAccessUnitParams;
 }
 
 auto AtlasConstructor::popAtlas() -> MVD16Frame {

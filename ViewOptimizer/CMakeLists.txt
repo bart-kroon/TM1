@@ -20,21 +20,11 @@ target_include_directories(ViewOptimizerLib
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 		"$<INSTALL_INTERFACE:include>")
 
-add_executable(ViewOptimizer
-	"src/ViewOptimizer.main.cpp")
-
-target_link_libraries(ViewOptimizer
-	PRIVATE
-		TMIV::ViewOptimizerLib
-		TMIV::IOLib)
-
 install(
 	TARGETS
-		ViewOptimizer
 		ViewOptimizerLib
 	EXPORT ViewOptimizer.Targets
-	ARCHIVE DESTINATION "lib"
-	RUNTIME DESTINATION "bin")
+	ARCHIVE DESTINATION "lib")
 
 install(
 	EXPORT ViewOptimizer.Targets

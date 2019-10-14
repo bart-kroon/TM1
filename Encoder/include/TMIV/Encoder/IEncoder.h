@@ -48,14 +48,12 @@ public:
   IEncoder &operator=(IEncoder &&) = default;
   virtual ~IEncoder() = default;
 
-  virtual void prepareIntraPeriod(Metadata::ViewParamsVector viewParamsVector) = 0;
+  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+      -> const Metadata::IvSequenceParams & = 0;
+  virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;
-  virtual void completeIntraPeriod() = 0;
-
-  virtual auto getAtlasSize() const -> Common::SizeVector = 0;
-  virtual auto getViewParamsVector() const -> const Metadata::ViewParamsVector & = 0;
-  virtual auto getAtlasParamsVector() const -> const Metadata::AtlasParamsVector & = 0;
-  virtual auto popAtlas() -> Common::MVD16Frame = 0;
+  virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
+  virtual auto popAtlas() -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::Encoder
 

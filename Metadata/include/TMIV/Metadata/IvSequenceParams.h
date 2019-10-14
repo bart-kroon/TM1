@@ -50,6 +50,8 @@ class OutputBitstream;
 
 // In specification: ivs_profile_tier_level( )
 struct IvsProfileTierLevel {
+  friend std::ostream &operator<<(std::ostream &stream,
+                                  const IvsProfileTierLevel &viewParamsVector);
   bool operator==(const IvsProfileTierLevel &other) const;
   bool operator!=(const IvsProfileTierLevel &other) const { return !operator==(other); }
 
@@ -132,10 +134,6 @@ struct ViewParams {
 
 using ViewParamsVector = std::vector<ViewParams>;
 
-// No change when depthOccMapThreshold == 0 (no invalid depth)
-// Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
-auto modifyDepthRange(const ViewParamsVector &) -> ViewParamsVector;
-
 // Data type that corresponds to camera_params_list of specification
 struct ViewParamsList : public ViewParamsVector {
   ViewParamsList() = default;
@@ -151,6 +149,9 @@ struct ViewParamsList : public ViewParamsVector {
 
   // In specification: depth_quantization_params_equal_flag
   bool areDepthQuantizationParamsEqual() const;
+
+  // Size of each view as a vector
+  auto viewSizes() const -> Common::SizeVector;
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &viewParamsVector);
   bool operator==(const ViewParamsList &other) const;
@@ -174,6 +175,11 @@ struct IvSequenceParams {
   // In specification: view_params_list( )
   ViewParamsList viewParamsList;
 
+  // No change when depthOccMapThreshold == 0 (no invalid depth)
+  // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
+  auto modifyDepthRange() const -> IvSequenceParams;
+
+  friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams);
   bool operator==(const IvSequenceParams &other) const;
   bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }
 

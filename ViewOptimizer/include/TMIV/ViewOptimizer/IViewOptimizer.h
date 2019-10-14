@@ -52,9 +52,9 @@ public:
     T additional;
   };
 
-  // Optimize camera parameters for the coming intra period
-  virtual auto optimizeIntraPeriod(Metadata::ViewParamsVector viewParamsVector)
-      -> Output<Metadata::ViewParamsVector> = 0;
+  // Optimize camera parameters for the sequence
+  virtual auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams)
+      -> Output<Metadata::IvSequenceParams> = 0;
 
   // Optimize a frame in the intra period
   virtual auto optimizeFrame(Common::MVD16Frame views) const -> Output<Common::MVD16Frame> = 0;

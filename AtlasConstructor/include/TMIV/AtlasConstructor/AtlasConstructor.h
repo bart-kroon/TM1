@@ -54,14 +54,12 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  void prepareIntraPeriod(Metadata::ViewParamsVector basicViewParamsVector,
-                          Metadata::ViewParamsVector additionalViewParamsVector) override;
+  auto prepareSequence(Metadata::IvSequenceParams basicSequenceParams,
+                       Metadata::IvSequenceParams additionalSequenceParams)
+      -> const Metadata::IvSequenceParams & override;
+  void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) override;
-  void completeIntraPeriod() override;
-
-  auto getAtlasSize() const -> Common::SizeVector override;
-  auto getViewParamsVector() const -> const Metadata::ViewParamsVector & override;
-  auto getAtlasParamsVector() const -> const Metadata::AtlasParamsVector & override;
+  auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:
@@ -69,25 +67,17 @@ private:
                          Common::MVD16Frame &atlas);
 
 private:
-  std::uint16_t m_nbAtlas = 0;
+  std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
   std::vector<std::uint8_t> m_isReferenceView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
-  Metadata::ViewParamsVector m_viewParamsVector;
-  Metadata::AtlasParamsVector m_atlasParamsVector;
+  Metadata::IvSequenceParams m_ivSequenceParams;
+  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
-
-inline auto AtlasConstructor::getViewParamsVector() const -> const Metadata::ViewParamsVector & {
-  return m_viewParamsVector;
-}
-
-inline auto AtlasConstructor::getAtlasParamsVector() const -> const Metadata::AtlasParamsVector & {
-  return m_atlasParamsVector;
-}
 } // namespace TMIV::AtlasConstructor
 
 #endif

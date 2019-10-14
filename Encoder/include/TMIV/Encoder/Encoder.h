@@ -50,18 +50,18 @@ public:
   Encoder &operator=(Encoder &&) = default;
   ~Encoder() override = default;
 
-  void prepareIntraPeriod(Metadata::ViewParamsVector viewParamsVector) override;
+  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+      -> const Metadata::IvSequenceParams & override;
+  void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame views) override;
-  void completeIntraPeriod() override;
-
-  auto getAtlasSize() const -> Common::SizeVector override;
-  auto getViewParamsVector() const -> const Metadata::ViewParamsVector & override;
-  auto getAtlasParamsVector() const -> const Metadata::AtlasParamsVector & override;
-  auto popAtlas() -> Common::MVD16Frame override;
+  auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
+  auto popAtlas() -> Common::MVD10Frame override;
 
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
+  Metadata::IvSequenceParams m_constructedSequenceParams;
+  Metadata::IvSequenceParams m_codedSequenceParams;
 };
 } // namespace TMIV::Encoder
 

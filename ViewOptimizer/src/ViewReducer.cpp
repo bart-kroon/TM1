@@ -54,9 +54,13 @@ constexpr auto halfPixel = 0.5F;
 
 ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
-auto ViewReducer::optimizeIntraPeriod(ViewParamsVector viewParamsVector)
-    -> Output<ViewParamsVector> {
-  Output<ViewParamsVector> result;
+auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output<IvSequenceParams> {
+  // Make sure to carry all metadata
+  Output<IvSequenceParams> result = {ivSequenceParams, ivSequenceParams};
+  result.basic.viewParamsList.clear();
+  result.additional.viewParamsList.clear();
+
+  const auto &viewParamsVector = ivSequenceParams.viewParamsList;
   m_priorities.assign(viewParamsVector.size(), false);
 
   // choose 9 degree as quantization step of angle between view i and view j.
@@ -232,7 +236,8 @@ auto ViewReducer::optimizeIntraPeriod(ViewParamsVector viewParamsVector)
 
   // Move viewParamsVector into basic and additional partitions
   for (size_t index = 0; index != viewParamsVector.size(); ++index) {
-    (m_priorities[index] ? result.basic : result.additional).push_back(viewParamsVector[index]);
+    (m_priorities[index] ? result.basic : result.additional)
+        .viewParamsList.push_back(viewParamsVector[index]);
   }
   return result;
 }

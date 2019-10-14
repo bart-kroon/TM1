@@ -19,21 +19,11 @@ target_include_directories(AtlasDeconstructorLib
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 		"$<INSTALL_INTERFACE:include>")
 
-add_executable(AtlasDeconstructor
-	"src/AtlasDeconstructor.main.cpp")
-
-target_link_libraries(AtlasDeconstructor
-	PRIVATE
-		TMIV::AtlasDeconstructorLib
-		TMIV::IOLib)
-
 install(
 	TARGETS
-		AtlasDeconstructor
 		AtlasDeconstructorLib
 	EXPORT AtlasDeconstructor.Targets
-	ARCHIVE DESTINATION "lib"
-	RUNTIME DESTINATION "bin")
+	ARCHIVE DESTINATION "lib")
 
 install(
 	EXPORT AtlasDeconstructor.Targets

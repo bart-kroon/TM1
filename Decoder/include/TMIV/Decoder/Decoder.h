@@ -48,7 +48,7 @@ private:
   Common::SizeVector m_atlasSize;
   Metadata::AtlasParamsVector m_patches;
   Common::PatchIdMapList m_patchIdMaps;
-  Metadata::ViewParamsVector m_viewParamsVector;
+  Metadata::ViewParamsVector m_ivSequenceParams;
 
 public:
   Decoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);

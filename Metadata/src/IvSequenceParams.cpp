@@ -45,6 +45,10 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
+std::ostream &operator<<(std::ostream &stream, const IvsProfileTierLevel & /* unused */) {
+  return stream << "{}";
+}
+
 bool IvsProfileTierLevel::operator==(const IvsProfileTierLevel & /* unused */) const {
   return true;
 }
@@ -114,21 +118,18 @@ ViewParams ViewParams::loadFromJson(const Json &node) {
   return parameters;
 }
 
-auto modifyDepthRange(const ViewParamsVector &in) -> ViewParamsVector {
-  auto out = ViewParamsVector{};
-  out.reserve(in.size());
-  transform(begin(in), end(in), back_inserter(out), [](ViewParams x) {
-    if (x.depthOccMapThreshold == 0) {
-      return x;
+auto IvSequenceParams::modifyDepthRange() const -> IvSequenceParams {
+  auto out = *this;
+  for (auto &x : out.viewParamsList) {
+    if (x.depthOccMapThreshold != 0) {
+      x.depthOccMapThreshold = 64; // =T
+      const auto nearLevel = 1023.F;
+      const auto farLevel = float(2 * x.depthOccMapThreshold);
+      // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
+      x.normDispRange[0] +=
+          (0.F - farLevel) / (nearLevel - farLevel) * (x.normDispRange[1] - x.normDispRange[0]);
     }
-    x.depthOccMapThreshold = 64; // =T
-    const auto nearLevel = 1023.F;
-    const auto farLevel = float(2 * x.depthOccMapThreshold);
-    // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
-    x.normDispRange[0] +=
-        (0.F - farLevel) / (nearLevel - farLevel) * (x.normDispRange[1] - x.normDispRange[0]);
-    return x;
-  });
+  }
   return out;
 }
 
@@ -150,6 +151,14 @@ bool ViewParamsList::areDepthQuantizationParamsEqual() const {
   }
 
   return true;
+}
+
+auto ViewParamsList::viewSizes() const -> SizeVector {
+  SizeVector sizes;
+  sizes.reserve(size());
+  transform(begin(), end(), back_inserter(sizes),
+            [](const ViewParams &viewParams) { return viewParams.size; });
+  return sizes;
 }
 
 ostream &operator<<(ostream &stream, const ViewParamsList &viewParamsVector) {
@@ -305,6 +314,12 @@ ViewParamsList ViewParamsList::loadFromJson(const Json &node, const vector<strin
     throw runtime_error("Could not find all requested camera names in the metadata JSON file");
   }
   return result;
+}
+
+std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams) {
+  return stream << "ivs_profile_tier_level()=" << ivSequenceParams.ivsProfileTierLevel
+                << ", view_params_list()=\n"
+                << ivSequenceParams.viewParamsList;
 }
 
 bool IvSequenceParams::operator==(const IvSequenceParams &other) const {

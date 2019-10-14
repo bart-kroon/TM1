@@ -48,9 +48,8 @@ Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
   m_pip = componentNode.require("PiP").asInt() != 0;
 }
 
-auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
+auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                   const vector<uint8_t> &shouldNotBeSplit) -> AtlasParamsVector {
-
   // Mask clustering
   ClusterList clusterList;
   ClusteringMapList clusteringMap;
@@ -69,8 +68,8 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
   vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 
-  packerList.reserve(atlasSize.size());
-  for (const auto &sz : atlasSize) {
+  packerList.reserve(atlasSizes.size());
+  for (const auto &sz : atlasSizes) {
     packerList.emplace_back(sz.x(), sz.y(), m_alignment, m_pip);
   }
 
@@ -78,7 +77,7 @@ auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
     if (shouldNotBeSplit[p1.getViewId()] != shouldNotBeSplit[p2.getViewId()]) {
       return (shouldNotBeSplit[p2.getViewId()] != 0U);
     }
-    { return (p1.getArea() < p2.getArea()); }
+    return p1.getArea() < p2.getArea();
   };
 
   priority_queue<Cluster, vector<Cluster>, decltype(comp)> clusterToPack(comp);

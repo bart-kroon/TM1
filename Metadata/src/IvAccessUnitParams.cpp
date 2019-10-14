@@ -65,6 +65,18 @@ bool AtlasParameters::operator==(const AtlasParameters &other) const {
          posInAtlas == other.posInAtlas && rotation == other.rotation;
 }
 
+std::ostream &operator<<(std::ostream &stream, const AtlasParamsList &atlasParamsList) {
+  return stream << "num_patches=" << atlasParamsList.size()
+                << ", omaf_v1_compatible_flag=" << atlasParamsList.omafV1CompatibleFlag
+                << ", atlasSizes={";
+  auto sep = "";
+  for (auto &atlasSize : atlasParamsList.atlasSizes) {
+    stream << sep << atlasSize;
+    sep = ", ";
+  }
+  return stream << '\n';
+}
+
 auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList &viewParamsVector)
     -> AtlasParamsList {
   auto atlasParamsList = AtlasParamsList{};
@@ -217,6 +229,14 @@ Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) {
   default:
     abort();
   }
+}
+
+std::ostream &operator<<(std::ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) {
+  stream << '{';
+  if (const auto &x = ivAccessUnitParams.atlasParamsList) {
+    return stream << *x;
+  }
+  return stream << "}\n";
 }
 
 bool IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const {

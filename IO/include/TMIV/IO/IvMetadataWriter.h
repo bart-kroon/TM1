@@ -49,8 +49,6 @@ public:
   void writeIvSequenceParams(Metadata::IvSequenceParams);
   void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
 
-  auto viewParamsList() const -> const Metadata::ViewParamsList &;
-
 private:
   std::string m_path;
   std::ofstream m_stream;
@@ -58,10 +56,6 @@ private:
   Metadata::IvSequenceParams m_ivSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
 };
-
-inline auto IvMetadataWriter::viewParamsList() const -> const Metadata::ViewParamsList & {
-  return m_ivSequenceParams.viewParamsList;
-}
 } // namespace TMIV::IO
 
 #endif

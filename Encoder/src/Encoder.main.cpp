@@ -31,20 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <algorithm>
-#include <iostream>
-#include <memory>
+#include <TMIV/Encoder/IEncoder.h>
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Encoder/IEncoder.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataWriter.h>
-#include <TMIV/Image/Image.h>
+
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Image;
+using namespace TMIV::IO;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Encoder {
@@ -53,52 +51,57 @@ private:
   unique_ptr<IEncoder> m_encoder;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  bool m_omafV1CompatibleFlag{};
-  ViewParamsList m_viewParamsVector;
-  IO::IvMetadataWriter m_metadataWriter;
+  IvMetadataWriter m_metadataWriter;
+  SizeVector m_viewSizes;
 
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
-        m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()},
-        m_omafV1CompatibleFlag{json().require("OmafV1CompatibleFlag").asBool()},
-        m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {}
+        m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {
+    m_numberOfFrames = json().require("numberOfFrames").asInt();
+    m_intraPeriod = json().require("intraPeriod").asInt();
+  }
 
   void run() override {
-    m_viewParamsVector = IO::loadSourceMetadata(json());
-    cout << "Source viewParamsVector:\n" << m_viewParamsVector;
+    const auto sourceSequenceParams = loadSourceIvSequenceParams(json());
+    m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
+    cout << "Source sequence parameters:\n" << sourceSequenceParams;
+
+    const auto codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
+    m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
+    cout << "Coded sequence parameters:\n" << codedSequenceParams;
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
-      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
-      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
-      runIntraPeriod(i, endFrame);
+      int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      encodeAccessUnit(i, lastFrame);
     }
   }
 
 private:
-  void runIntraPeriod(int intraFrame, int endFrame) {
-    m_encoder->prepareIntraPeriod(m_viewParamsVector);
+  void encodeAccessUnit(int firstFrame, int lastFrame) {
+    cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
 
-    for (int i = intraFrame; i < endFrame; ++i) {
-      auto frame = IO::loadSourceFrame(json(), IO::sizesOf(m_viewParamsVector), i);
-      m_encoder->pushFrame(move(frame));
+    const auto sourceAccessUnitParams = loadSourceIvAccessUnitParams(json());
+    m_encoder->prepareAccessUnit(sourceAccessUnitParams);
+    cout << "Source access unit parameters\n" << sourceAccessUnitParams;
+
+    pushFrames(firstFrame, lastFrame);
+    const auto codedAccessUnitParams = m_encoder->completeAccessUnit();
+    cout << "Coded access unit parameters\n" << codedAccessUnitParams;
+
+    m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams);
+    popAtlases(firstFrame, lastFrame);
+  }
+
+  void pushFrames(int firstFrame, int lastFrame) {
+    for (int i = firstFrame; i < lastFrame; ++i) {
+      m_encoder->pushFrame(loadSourceFrame(json(), m_viewSizes, i));
     }
+  }
 
-    m_encoder->completeIntraPeriod();
-
-    if (intraFrame == 0) {
-      m_metadataWriter.writeIvSequenceParams(
-          {{}, ViewParamsList{modifyDepthRange(m_encoder->getViewParamsVector())}});
-      cout << "Encoded viewParamsVector:\n" << m_metadataWriter.viewParamsList();
-    }
-    m_metadataWriter.writeIvAccessUnitParams(
-        {{{m_encoder->getAtlasParamsVector(), m_omafV1CompatibleFlag, m_encoder->getAtlasSize()}}});
-
-    for (int i = intraFrame; i < endFrame; ++i) {
-      IO::saveAtlas(json(), i,
-                    modifyDepthRange(m_encoder->popAtlas(), m_encoder->getViewParamsVector(),
-                                     m_metadataWriter.viewParamsList()));
+  void popAtlases(int firstFrame, int lastFrame) {
+    for (int i = firstFrame; i < lastFrame; ++i) {
+      saveAtlas(json(), i, m_encoder->popAtlas());
     }
   }
 };

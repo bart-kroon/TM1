@@ -48,9 +48,9 @@ public:
   Aggregator &operator=(Aggregator &&) = default;
   ~Aggregator() override = default;
 
-  void prepareIntraPeriod() override;
+  void prepareAccessUnit() override;
   void pushMask(const Common::MaskList &mask) override;
-  void completeIntraPeriod() override {}
+  void completeAccessUnit() override {}
   auto getAggregatedMask() const -> const Common::MaskList & override;
 
 private:

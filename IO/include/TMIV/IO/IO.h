@@ -36,6 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
@@ -50,20 +51,13 @@ std::string getFullPath(const Common::Json &config, const std::string &baseDirec
 
 template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
-auto sizesOf(const Metadata::ViewParamsVector &viewParamsVector) -> Common::SizeVector;
-Metadata::ViewParamsList loadSourceMetadata(const Common::Json &config);
+auto loadSourceIvSequenceParams(const Common::Json &config) -> Metadata::IvSequenceParams;
+auto loadSourceIvAccessUnitParams(const Common::Json &config) -> Metadata::IvAccessUnitParams;
 Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
                                    int frameIndex);
 
-void saveOptimizedMetadata(const Common::Json &config,
-                           const BasicAdditional<Metadata::ViewParamsVector> &);
-auto loadOptimizedMetadata(const Common::Json &config) -> BasicAdditional<Metadata::ViewParamsList>;
 void saveOptimizedFrame(const Common::Json &config, int frameIndex,
                         const BasicAdditional<Common::MVD16Frame> &frame);
-auto loadOptimizedFrame(const Common::Json &config,
-                        const BasicAdditional<Common::SizeVector> &sizes, int frameIndex)
-    -> BasicAdditional<Common::MVD16Frame>;
-
 void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
@@ -72,8 +66,6 @@ auto loadAtlas(const Common::Json &config, const Common::SizeVector &atlasSize, 
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);
-auto loadPatchIdMaps(const Common::Json &config, const Common::SizeVector &atlasSize,
-                     int frameIndex) -> Common::PatchIdMapList;
 
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::ViewParams;
 void saveViewport(const Common::Json &config, int frameIndex,

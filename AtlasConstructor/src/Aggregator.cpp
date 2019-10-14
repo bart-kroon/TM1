@@ -39,7 +39,7 @@ using namespace TMIV::Common;
 namespace TMIV::AtlasConstructor {
 Aggregator::Aggregator(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-void Aggregator::prepareIntraPeriod() { m_aggregatedMask.clear(); }
+void Aggregator::prepareAccessUnit() { m_aggregatedMask.clear(); }
 
 void Aggregator::pushMask(const MaskList &mask) {
   if (m_aggregatedMask.empty()) {

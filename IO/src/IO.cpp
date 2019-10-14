@@ -181,24 +181,21 @@ Pose loadPoseFromCSV(istream &stream, int frameIndex) {
 
 } // namespace
 
-auto sizesOf(const ViewParamsVector &viewParamsVector) -> SizeVector {
-  SizeVector sizes;
-  sizes.reserve(viewParamsVector.size());
-  transform(begin(viewParamsVector), end(viewParamsVector), back_inserter(sizes),
-            [](const ViewParams &viewParams) { return viewParams.size; });
-  return sizes;
-}
+auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
+  string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
-ViewParamsList loadSourceMetadata(const Json &config) {
-  string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
-  ifstream stream{cameraPath};
-
+  ifstream stream{viewPath};
   if (!stream.good()) {
-    throw runtime_error("Failed to load source camera parameters\n" + cameraPath);
+    throw runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
 
-  return ViewParamsList::loadFromJson(Json{stream}.require("viewParamsVector"),
-                                      config.require("SourceCameraNames").asStringVector());
+  return {{},
+          ViewParamsList::loadFromJson(Json{stream}.require("cameras"),
+                                       config.require("SourceCameraNames").asStringVector())};
+}
+
+auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitParams {
+  return {AtlasParamsList{{}, config.require("OmafV1CompatibleFlag").asBool(), {}}};
 }
 
 namespace {
@@ -238,81 +235,6 @@ MVD16Frame loadSourceFrame(const Json &config, const SizeVector &sizes, int fram
     return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
   }
   throw runtime_error("Invalid SourceDepthBitDepth");
-}
-
-namespace {
-void saveCameras(const Json &config, const ViewParamsVector &viewParamsVector,
-                 const string &fileNameField) {
-  const auto path = getFullPath(config, "OutputDirectory", fileNameField);
-
-  ofstream stream{path, ios::binary};
-  if (!stream.good()) {
-    ostringstream what;
-    what << "Failed to open binary camera file for writing: " << path;
-    throw runtime_error(what.str());
-  }
-
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  stream.write(reinterpret_cast<const char *>(viewParamsVector.data()),
-               viewParamsVector.size() * sizeof(ViewParams));
-
-  if (!stream.good()) {
-    ostringstream what;
-    what << "Failed to write to binary camera file: " << path;
-    throw runtime_error(what.str());
-  }
-}
-
-auto loadCameras(const Json &config, const string &fileNameField) -> ViewParamsList {
-  const auto path = getFullPath(config, "OutputDirectory", fileNameField);
-
-  ifstream stream{path, ios::binary};
-  if (!stream.good()) {
-    ostringstream what;
-    what << "Failed to open file for reading: " << path;
-    throw runtime_error(what.str());
-  }
-
-  stream.seekg(0, ios::end);
-  auto size = stream.tellg();
-  stream.seekg(0);
-
-  if (size == 0 || size % sizeof(ViewParams) != 0) {
-    throw runtime_error("Binary camera file is truncated or incompatible");
-  }
-
-  auto viewParamsVector = ViewParamsList{};
-  viewParamsVector.resize(size / sizeof(ViewParams));
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  stream.read(reinterpret_cast<char *>(viewParamsVector.data()), size);
-
-  if (!stream.good()) {
-    ostringstream what;
-    what << "Failed to read from binary camera file: " << path;
-    throw runtime_error(what.str());
-  }
-
-  return viewParamsVector;
-}
-} // namespace
-
-void saveOptimizedMetadata(const Json &config,
-                           const BasicAdditional<ViewParamsVector> &viewParamsVector) {
-  saveCameras(config, viewParamsVector.basic, "BasicMetadataPath");
-  saveCameras(config, viewParamsVector.additional, "AdditionalMetadataPath");
-}
-
-auto loadOptimizedMetadata(const Json &config) -> BasicAdditional<ViewParamsList> {
-  return {loadCameras(config, "BasicMetadataPath"), loadCameras(config, "AdditionalMetadataPath")};
-}
-
-BasicAdditional<MVD16Frame>
-loadOptimizedFrame(const Json &config, const BasicAdditional<SizeVector> &sizes, int frameIndex) {
-  return {loadMVDFrame<YUV400P16>(config, sizes.basic, frameIndex, "basic views of",
-                                  "OutputDirectory", "BasicTexturePathFmt", "BasicDepthPathFmt"),
-          loadMVDFrame<YUV400P16>(config, sizes.additional, frameIndex, "additional views of",
-                                  "OutputDirectory", "AdditionalTexturePathFmt",
-                                  "AdditionalDepthPathFmt")};
 }
 
 void saveOptimizedFrame(const Json &config, int frameIndex,

@@ -50,8 +50,8 @@ AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /
 
 auto AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
                                        const AtlasParametersVector &patchList,
-                                       const ViewParamsVector &cameraList, const MVD10Frame &frame)
-    -> PatchIdMapList {
+                                       const ViewParamsVector &viewParamsVector,
+                                       const MVD10Frame &frame) -> PatchIdMapList {
   PatchIdMapList patchMapList;
 
   for (const auto &sz : atlasSize) {
@@ -61,9 +61,9 @@ auto AtlasDeconstructor::getPatchIdMap(const SizeVector &atlasSize,
   }
 
   for (size_t id = 0U; id < patchList.size(); ++id) {
-    assert(patchList[id].viewId < cameraList.size());
+    assert(patchList[id].viewId < viewParamsVector.size());
     writePatchIdInMap(patchList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                      cameraList[patchList[id].viewId].depthOccMapThreshold);
+                      viewParamsVector[patchList[id].viewId].depthOccMapThreshold);
   }
 
   return patchMapList;
@@ -93,12 +93,12 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 }
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
-                                           const ViewParamsVector &cameraList,
+                                           const ViewParamsVector &viewParamsVector,
                                            const AtlasParametersVector &patchList) -> MVD10Frame {
   // Initialization
   MVD10Frame frame;
 
-  for (const auto &cam : cameraList) {
+  for (const auto &cam : viewParamsVector) {
     TextureFrame tex(cam.size.x(), cam.size.y());
 
     fill(tex.getPlane(0).begin(), tex.getPlane(0).end(), 0);
@@ -117,7 +117,7 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   for (auto iter = patchList.rbegin(); iter != patchList.rend(); ++iter) {
     const auto &patch = *iter;
-    const auto depthOccMapThreshold = cameraList[patch.viewId].depthOccMapThreshold;
+    const auto depthOccMapThreshold = viewParamsVector[patch.viewId].depthOccMapThreshold;
 
     auto &currentAtlas = atlas_pruned[patch.atlasId];
     auto &currentView = frame[patch.viewId];

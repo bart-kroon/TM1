@@ -50,10 +50,10 @@ public:
 
   virtual auto getPatchIdMap(const Common::SizeVector &atlasSize,
                              const Metadata::AtlasParametersVector &patchList,
-                             const Metadata::ViewParamsVector &cameraList,
+                             const Metadata::ViewParamsVector &viewParamsVector,
                              const Common::MVD10Frame &frame) -> Common::PatchIdMapList = 0;
   virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                                 const Metadata::ViewParamsVector &cameraList,
+                                 const Metadata::ViewParamsVector &viewParamsVector,
                                  const Metadata::AtlasParametersVector &patchList)
       -> Common::MVD10Frame = 0;
 };

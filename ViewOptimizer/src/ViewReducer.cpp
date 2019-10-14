@@ -247,7 +247,7 @@ auto ViewReducer::optimizeFrame(MVD16Frame views) const -> Output<MVD16Frame> {
   return result;
 }
 
-auto ViewReducer::calculateFOV(CameraParameters camera) -> float {
+auto ViewReducer::calculateFOV(ViewParams camera) -> float {
   return visit(overload(
                    [](const ErpParams &projection) {
                      return abs(projection.phiRange[0] - projection.phiRange[1]) * radperdeg *
@@ -260,13 +260,12 @@ auto ViewReducer::calculateFOV(CameraParameters camera) -> float {
                    }),
                camera.projection);
 }
-auto ViewReducer::calculateDistance(CameraParameters camera_1, CameraParameters camera_2) -> float {
+auto ViewReducer::calculateDistance(ViewParams camera_1, ViewParams camera_2) -> float {
   return sqrt(square(camera_1.position[0] - camera_2.position[0]) +
               square(camera_1.position[1] - camera_2.position[1]) +
               square(camera_1.position[2] - camera_2.position[2]));
 }
-auto ViewReducer::calculateOverlapping(CameraParameters camera_from, CameraParameters camera_to)
-    -> float {
+auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera_to) -> float {
 
   float overlapping = 0.0F;
   float weight_all = 0.0F;

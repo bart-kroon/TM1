@@ -76,7 +76,7 @@ void savePatchIdMaps(const Common::Json &config, int frameIndex,
 auto loadPatchIdMaps(const Common::Json &config, const Common::SizeVector &atlasSize,
                      int frameIndex) -> Common::PatchIdMapList;
 
-auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::CameraParameters;
+auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::ViewParams;
 void saveViewport(const Common::Json &config, int frameIndex,
                   const Common::TextureDepth16Frame &frame);
 

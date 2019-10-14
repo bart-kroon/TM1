@@ -45,7 +45,7 @@ using Common::halfCycle;
 using Common::quarterCycle;
 
 template <> struct Engine<Metadata::ErpParams> {
-  const Metadata::CameraParameters camera;
+  const Metadata::ViewParams camera;
   const bool northPole;
   const bool southPole;
   const bool wraps;
@@ -64,7 +64,7 @@ template <> struct Engine<Metadata::ErpParams> {
   const float du_dphi;
   const float dv_dtheta;
 
-  explicit Engine(const Metadata::CameraParameters &camera_)
+  explicit Engine(const Metadata::ViewParams &camera_)
       : camera{camera_},
 
         // Projection sub-type
@@ -184,7 +184,7 @@ template <> struct Engine<Metadata::ErpParams> {
 
   // List of 3-D vertices in the reference frame of the target camera
   auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                     const Metadata::CameraParameters &target) const
+                                     const Metadata::ViewParams &target) const
       -> SceneVertexDescriptorList {
     SceneVertexDescriptorList result;
     result.reserve(osize);

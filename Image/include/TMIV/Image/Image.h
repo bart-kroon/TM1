@@ -58,25 +58,23 @@ Common::Frame<Common::YUV444P10> quantizeTexture(const Common::Mat<Common::Vec3f
 
 // Expand a 10-bit depth value. The return value is 0.F for levels below depthOccMapThreshold. Other
 // levels are translated to depth in meter.
-float expandDepthValue10(const Metadata::CameraParameters &camera, uint16_t x);
+float expandDepthValue10(const Metadata::ViewParams &camera, uint16_t x);
 
 // Expand a 16-bit depth value. The return value is 0.F for levels below depthOccMapThreshold. Other
 // levels are translated to depth in meter.
-float expandDepthValue16(const Metadata::CameraParameters &camera, uint16_t x);
+float expandDepthValue16(const Metadata::ViewParams &camera, uint16_t x);
 
 // Expand a 10-bit depth map. Levels below depthOccMapThreshold become 0.F. Other levels are
 // translated to depth in meter.
-Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera,
-                               const Common::Depth10Frame &in);
+Common::Mat<float> expandDepth(const Metadata::ViewParams &camera, const Common::Depth10Frame &in);
 
 // Expand a 10-bit depth map. Levels below depthOccMapThreshold become 0.F. Other levels are
 // translated to depth in meter.
-Common::Mat<float> expandDepth(const Metadata::CameraParameters &camera,
-                               const Common::Depth16Frame &in);
+Common::Mat<float> expandDepth(const Metadata::ViewParams &camera, const Common::Depth16Frame &in);
 
 // Quantize a normalized disparity map (in meter^-1) to 16-bit values according to the normDispRange
 // and depthOccMapThreshold camera parameters
-Common::Depth16Frame quantizeNormDisp16(const Metadata::CameraParameters &camera,
+Common::Depth16Frame quantizeNormDisp16(const Metadata::ViewParams &camera,
                                         const Common::Mat<float> &in);
 } // namespace TMIV::Image
 

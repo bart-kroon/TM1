@@ -185,16 +185,16 @@ TEST_CASE("Bitstream primitives") {
 }
 
 namespace examples {
-const auto cameraParameters = array{CameraParameters{{4096, 2048},
-                                                     {1.F, 2.F, 3.F},
-                                                     {40.F, -60.F, 30.F},
-                                                     ErpParams{{-60.F, 70.F}, {-50.F, 70.F}},
-                                                     {0.5F, 100.F}},
-                                    CameraParameters{{1920, 1080},
-                                                     {4.F, 5.F, 6.F},
-                                                     {0.F, 0.F, 0.F},
-                                                     PerspectiveParams{{1000, 1010}, {960, 540}},
-                                                     {1.F, 50.F}}};
+const auto cameraParameters = array{ViewParams{{4096, 2048},
+                                               {1.F, 2.F, 3.F},
+                                               {40.F, -60.F, 30.F},
+                                               ErpParams{{-60.F, 70.F}, {-50.F, 70.F}},
+                                               {0.5F, 100.F}},
+                                    ViewParams{{1920, 1080},
+                                               {4.F, 5.F, 6.F},
+                                               {0.F, 0.F, 0.F},
+                                               PerspectiveParams{{1000, 1010}, {960, 540}},
+                                               {1.F, 50.F}}};
 
 const auto cameraParameterList =
     array{CameraParamsList{{cameraParameters[0]}},

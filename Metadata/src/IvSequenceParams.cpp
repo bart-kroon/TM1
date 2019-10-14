@@ -63,7 +63,7 @@ ostream &operator<<(ostream &stream, const PerspectiveParams &projection) {
   return stream << "perspective " << projection.focal << ' ' << projection.center;
 }
 
-ostream &operator<<(ostream &stream, const CameraParameters &camera) {
+ostream &operator<<(ostream &stream, const ViewParams &camera) {
   stream << camera.size << ", ";
   visit([&](const auto &x) { stream << x; }, camera.projection);
   stream << ", norm. disp in " << camera.normDispRange << " m^-1, depthOccMapThreshold "
@@ -82,14 +82,14 @@ bool PerspectiveParams::operator==(const PerspectiveParams &other) const {
   return focal == other.focal && center == other.center;
 }
 
-bool CameraParameters::operator==(const CameraParameters &other) const {
+bool ViewParams::operator==(const ViewParams &other) const {
   return size == other.size && position == other.position && rotation == other.rotation &&
          projection == other.projection && normDispRange == other.normDispRange &&
          depthOccMapThreshold == other.depthOccMapThreshold;
 }
 
-CameraParameters CameraParameters::loadFromJson(const Json &node) {
-  CameraParameters parameters;
+ViewParams ViewParams::loadFromJson(const Json &node) {
+  ViewParams parameters;
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();
   parameters.rotation = node.require("Rotation").asFloatVector<3>();
@@ -117,7 +117,7 @@ CameraParameters CameraParameters::loadFromJson(const Json &node) {
 auto modifyDepthRange(const CameraParametersVector &in) -> CameraParametersVector {
   auto out = CameraParametersVector{};
   out.reserve(in.size());
-  transform(begin(in), end(in), back_inserter(out), [](CameraParameters x) {
+  transform(begin(in), end(in), back_inserter(out), [](ViewParams x) {
     if (x.depthOccMapThreshold == 0) {
       return x;
     }
@@ -296,7 +296,7 @@ CameraParamsList CameraParamsList::loadFromJson(const Json &node, const vector<s
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
       if (name == node.at(i).require("Name").asString()) {
-        result.push_back(CameraParameters::loadFromJson(node.at(i)));
+        result.push_back(ViewParams::loadFromJson(node.at(i)));
         break;
       }
     }

@@ -55,8 +55,7 @@ template <unsigned bits> uint16_t quantizeValue(float x) {
   return 0;
 }
 
-template <unsigned bits>
-float expandNormDispValue(const Metadata::CameraParameters &camera, uint16_t x) {
+template <unsigned bits> float expandNormDispValue(const Metadata::ViewParams &camera, uint16_t x) {
   if (x >= camera.depthOccMapThreshold) {
     const auto &R = camera.normDispRange;
     return std::max(1.F / kilometer, R[0] + (R[1] - R[0]) * expandValue<bits>(x));
@@ -64,14 +63,13 @@ float expandNormDispValue(const Metadata::CameraParameters &camera, uint16_t x) 
   return 0.F;
 }
 
-template <unsigned bits>
-float expandDepthValue(const Metadata::CameraParameters &camera, uint16_t x) {
+template <unsigned bits> float expandDepthValue(const Metadata::ViewParams &camera, uint16_t x) {
   const auto normDisp = expandNormDispValue<bits>(camera, x);
   return normDisp > 0.F ? 1.F / normDisp : 0.F;
 }
 
 template <unsigned bits>
-uint16_t quantizeNormDispValue(const Metadata::CameraParameters &camera, float x) {
+uint16_t quantizeNormDispValue(const Metadata::ViewParams &camera, float x) {
   if (x > 0.F && std::isfinite(x)) {
     const auto &R = camera.normDispRange;
     const auto value = quantizeValue<bits>((x - R[0]) / (R[1] - R[0]));
@@ -80,17 +78,16 @@ uint16_t quantizeNormDispValue(const Metadata::CameraParameters &camera, float x
   return 0;
 }
 
-template <unsigned bits>
-uint16_t quantizeDepthValue(const Metadata::CameraParameters &camera, float x) {
+template <unsigned bits> uint16_t quantizeDepthValue(const Metadata::ViewParams &camera, float x) {
   return x > 0.F ? quantizeNormDispValue<bits>(camera, 1.F / x) : 0;
 }
 } // namespace impl
 
-inline float expandDepthValue10(const Metadata::CameraParameters &camera, uint16_t x) {
+inline float expandDepthValue10(const Metadata::ViewParams &camera, uint16_t x) {
   return impl::expandDepthValue<10>(camera, x);
 }
 
-inline float expandDepthValue16(const Metadata::CameraParameters &camera, uint16_t x) {
+inline float expandDepthValue16(const Metadata::ViewParams &camera, uint16_t x) {
   return impl::expandDepthValue<16>(camera, x);
 }
 } // namespace TMIV::Image

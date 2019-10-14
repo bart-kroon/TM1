@@ -50,15 +50,15 @@ public:
   auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
                    const Metadata::AtlasParametersVector &patches,
                    const Metadata::CameraParametersVector &cameras,
-                   const Metadata::CameraParameters &target) const
+                   const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 
   auto renderFrame(const Common::MVD10Frame &frame, const Metadata::CameraParametersVector &cameras,
-                   const Metadata::CameraParameters &target) const
+                   const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 
-  auto renderDepth(const Common::Mat<float> &frame, const Metadata::CameraParameters &camera,
-                   const Metadata::CameraParameters &target) const -> Common::Mat<float> override;
+  auto renderDepth(const Common::Mat<float> &frame, const Metadata::ViewParams &camera,
+                   const Metadata::ViewParams &target) const -> Common::Mat<float> override;
 
 private:
   class Impl;

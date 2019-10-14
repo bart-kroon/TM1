@@ -61,19 +61,17 @@ public:
   Impl &operator=(Impl &&) = delete;
   ~Impl() = default;
 
-  auto affineParameterList(const CameraParametersVector &cameras,
-                           const CameraParameters &target) const {
+  auto affineParameterList(const CameraParametersVector &cameras, const ViewParams &target) const {
     vector<pair<Mat3x3f, Vec3f>> result;
     result.reserve(cameras.size());
-    transform(
-        begin(cameras), end(cameras), back_inserter(result),
-        [&target](const CameraParameters &camera) { return affineParameters(camera, target); });
+    transform(begin(cameras), end(cameras), back_inserter(result),
+              [&target](const ViewParams &camera) { return affineParameters(camera, target); });
     return result;
   }
 
   auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                      const AtlasParametersVector &patches, const CameraParametersVector &cameras,
-                     const CameraParameters &target) const {
+                     const ViewParams &target) const {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
     const auto cols = int(ids.width());
@@ -160,7 +158,7 @@ public:
 
   auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                       const AtlasParametersVector &patches, const CameraParametersVector &cameras,
-                      const CameraParameters &target) const {
+                      const ViewParams &target) const {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
     assert(int(ids.width()) == atlas.first.getWidth());
@@ -170,8 +168,8 @@ public:
   }
 
   template <typename Unprojector>
-  Rasterizer<Vec3f> rasterFrame(size_t numViews, const CameraParameters &target,
-                                Unprojector unprojector, float compensation) const {
+  Rasterizer<Vec3f> rasterFrame(size_t numViews, const ViewParams &target, Unprojector unprojector,
+                                float compensation) const {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching}, target.size};
@@ -207,7 +205,7 @@ public:
   }
 
   // Field of view in deg
-  static float xFoV(const CameraParameters &camera) {
+  static float xFoV(const ViewParams &camera) {
     return visit(overload(
                      [](const ErpParams &projection) {
                        return abs(projection.phiRange[1] - projection.phiRange[0]);
@@ -219,26 +217,25 @@ public:
   }
 
   // Resolution in px^2/deg^2
-  static float resolution(const CameraParameters &camera) {
+  static float resolution(const ViewParams &camera) {
     return square(camera.size.x() / xFoV(camera));
   }
 
-  static float resolutionRatio(const CameraParametersVector &cameras,
-                               const CameraParameters &target) {
-    const auto sourceResolution = accumulate(begin(cameras), end(cameras), 0.F,
-                                             [&](float average, const CameraParameters &camera) {
-                                               return average + resolution(camera) / cameras.size();
-                                             });
+  static float resolutionRatio(const CameraParametersVector &cameras, const ViewParams &target) {
+    const auto sourceResolution =
+        accumulate(begin(cameras), end(cameras), 0.F, [&](float average, const ViewParams &camera) {
+          return average + resolution(camera) / cameras.size();
+        });
     return resolution(target) / sourceResolution;
   }
 
   Texture444Depth16Frame renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
                                      const AtlasParametersVector &patches,
                                      const CameraParametersVector &cameras,
-                                     const CameraParameters &target) const {
+                                     const ViewParams &target) const {
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(atlases.size(), target,
-                                  [&](size_t i, const CameraParameters &target) {
+                                  [&](size_t i, const ViewParams &target) {
                                     return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
                                                           cameras, target);
                                   },
@@ -248,11 +245,11 @@ public:
   }
 
   Texture444Depth16Frame renderFrame(const MVD10Frame &frame, const CameraParametersVector &cameras,
-                                     const CameraParameters &target) const {
+                                     const ViewParams &target) const {
     assert(frame.size() == cameras.size());
     auto rasterizer =
         rasterFrame(frame.size(), target,
-                    [&](size_t i, const CameraParameters &target) {
+                    [&](size_t i, const ViewParams &target) {
                       return unproject(expandDepth(cameras[i], frame[i].second), cameras[i], target,
                                        expandTexture(frame[i].first));
                     },
@@ -261,8 +258,8 @@ public:
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }
 
-  Mat<float> renderDepth(const Mat<float> &depth, const CameraParameters &camera,
-                         const CameraParameters &target) const {
+  Mat<float> renderDepth(const Mat<float> &depth, const ViewParams &camera,
+                         const ViewParams &target) const {
     AccumulatingPixel<> pixel{m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching};
     auto mesh = reproject(depth, camera, target);
 
@@ -293,18 +290,18 @@ Synthesizer::~Synthesizer() = default;
 
 auto Synthesizer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                               const AtlasParametersVector &patches,
-                              const CameraParametersVector &cameras,
-                              const CameraParameters &target) const -> Texture444Depth16Frame {
+                              const CameraParametersVector &cameras, const ViewParams &target) const
+    -> Texture444Depth16Frame {
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
 auto Synthesizer::renderFrame(const MVD10Frame &frame, const CameraParametersVector &cameras,
-                              const CameraParameters &target) const -> Texture444Depth16Frame {
+                              const ViewParams &target) const -> Texture444Depth16Frame {
   return m_impl->renderFrame(frame, cameras, target);
 }
 
-auto Synthesizer::renderDepth(const Mat<float> &frame, const CameraParameters &camera,
-                              const CameraParameters &target) const -> Mat<float> {
+auto Synthesizer::renderDepth(const Mat<float> &frame, const ViewParams &camera,
+                              const ViewParams &target) const -> Mat<float> {
   return m_impl->renderDepth(frame, camera, target);
 }
 } // namespace TMIV::Renderer

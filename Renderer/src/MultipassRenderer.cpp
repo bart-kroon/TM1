@@ -127,7 +127,7 @@ uint16_t filterMaps(uint16_t i) {
   return i;
 }
 
-vector<size_t> sortViews(const CameraParametersVector &cameras, const CameraParameters &target) {
+vector<size_t> sortViews(const CameraParametersVector &cameras, const ViewParams &target) {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];
@@ -177,8 +177,7 @@ vector<size_t> sortViews(const CameraParametersVector &cameras, const CameraPara
 auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                                     const AtlasParametersVector &patches,
                                     const CameraParametersVector &cameras,
-                                    const CameraParameters &target) const
-    -> Texture444Depth16Frame {
+                                    const ViewParams &target) const -> Texture444Depth16Frame {
   //////////////////
   // Initialization
   //////////////////
@@ -270,8 +269,7 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
 }
 
 auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const CameraParametersVector &cameras,
-                                    const CameraParameters &target) const
-    -> Texture444Depth16Frame {
+                                    const ViewParams &target) const -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;

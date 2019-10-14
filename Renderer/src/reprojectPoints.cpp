@@ -42,7 +42,7 @@ using namespace TMIV::Metadata;
 namespace TMIV::Renderer {
 constexpr auto halfPixel = 0.5F;
 
-auto imagePositions(const CameraParameters &camera) -> Mat<Vec2f> {
+auto imagePositions(const ViewParams &camera) -> Mat<Vec2f> {
   Mat<Vec2f> result;
   result.resize(camera.size.y(), camera.size.x());
   for (unsigned i = 0; i != result.height(); ++i) {
@@ -53,8 +53,8 @@ auto imagePositions(const CameraParameters &camera) -> Mat<Vec2f> {
   return result;
 }
 
-auto unprojectPoints(const CameraParameters &camera, const Mat<Vec2f> &positions,
-                     const Mat<float> &depth) -> Mat<Vec3f> {
+auto unprojectPoints(const ViewParams &camera, const Mat<Vec2f> &positions, const Mat<float> &depth)
+    -> Mat<Vec3f> {
   assert(positions.sizes() == depth.sizes());
 
   return visit(
@@ -71,7 +71,7 @@ auto unprojectPoints(const CameraParameters &camera, const Mat<Vec2f> &positions
       camera.projection);
 }
 
-auto changeReferenceFrame(const CameraParameters &camera, const CameraParameters &target,
+auto changeReferenceFrame(const ViewParams &camera, const ViewParams &target,
                           const Mat<Vec3f> &points) -> Mat<Vec3f> {
   Mat<Vec3f> result(points.sizes());
   const auto R_t = affineParameters(camera, target);
@@ -81,7 +81,7 @@ auto changeReferenceFrame(const CameraParameters &camera, const CameraParameters
   return result;
 }
 
-auto projectPoints(const CameraParameters &camera, const Mat<Vec3f> &points)
+auto projectPoints(const ViewParams &camera, const Mat<Vec3f> &points)
     -> pair<Mat<Vec2f>, Mat<float>> {
   return visit(
       [&](const auto &projection) {
@@ -101,7 +101,7 @@ auto projectPoints(const CameraParameters &camera, const Mat<Vec3f> &points)
       camera.projection);
 }
 
-auto reprojectPoints(const CameraParameters &camera, const CameraParameters &target,
+auto reprojectPoints(const ViewParams &camera, const ViewParams &target,
                      const Mat<Vec2f> &positions, const Mat<float> &depth)
     -> pair<Mat<Vec2f>, Mat<float>> {
   auto points = unprojectPoints(camera, positions, depth);
@@ -109,7 +109,7 @@ auto reprojectPoints(const CameraParameters &camera, const CameraParameters &tar
   return projectPoints(target, points);
 }
 
-auto calculateRayAngles(const CameraParameters &camera, const CameraParameters &target,
+auto calculateRayAngles(const ViewParams &camera, const ViewParams &target,
                         const Mat<Vec3f> &points) -> Mat<float> {
   Mat<float> result(points.sizes());
   const auto R_t = affineParameters(camera, target);

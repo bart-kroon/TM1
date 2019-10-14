@@ -56,8 +56,7 @@ Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
          rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);
 }
 
-auto affineParameters(const CameraParameters &camera, const CameraParameters &target)
-    -> pair<Mat3x3f, Vec3f> {
+auto affineParameters(const ViewParams &camera, const ViewParams &target) -> pair<Mat3x3f, Vec3f> {
   const auto R1 = EulerAnglesToRotationMatrix(camera.rotation);
   const auto R2 = EulerAnglesToRotationMatrix(target.rotation);
   const auto &t1 = camera.position;
@@ -68,7 +67,7 @@ auto affineParameters(const CameraParameters &camera, const CameraParameters &ta
   return {R, t};
 }
 
-auto unprojectVertex(Vec2f position, float depth, const CameraParameters &camera) -> Vec3f {
+auto unprojectVertex(Vec2f position, float depth, const ViewParams &camera) -> Vec3f {
   return visit(
       [&](const auto &projection) {
         Engine<decay_t<decltype(projection)>> engine{camera};

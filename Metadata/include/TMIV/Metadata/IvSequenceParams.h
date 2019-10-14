@@ -91,7 +91,7 @@ struct PerspectiveParams {
 using ProjectionParams = std::variant<ErpParams, PerspectiveParams>;
 
 // Data type that corresponds to an entry of camera_params_list of specification
-struct CameraParameters {
+struct ViewParams {
   // In specification: projection_plane_{width,height}
   Common::Vec2i size{};
 
@@ -111,17 +111,17 @@ struct CameraParameters {
 
   uint16_t depthOccMapThreshold{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const CameraParameters &camera);
-  bool operator==(const CameraParameters &other) const;
-  bool operator!=(const CameraParameters &other) const { return !operator==(other); }
+  friend std::ostream &operator<<(std::ostream &stream, const ViewParams &camera);
+  bool operator==(const ViewParams &other) const;
+  bool operator!=(const ViewParams &other) const { return !operator==(other); }
 
   // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
   //
   // The parameter is a an item of the cameras node (a JSON object).
-  static CameraParameters loadFromJson(const Common::Json &node);
+  static ViewParams loadFromJson(const Common::Json &node);
 };
 
-using CameraParametersVector = std::vector<CameraParameters>;
+using CameraParametersVector = std::vector<ViewParams>;
 
 // No change when depthOccMapThreshold == 0 (no invalid depth)
 // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
@@ -166,12 +166,12 @@ struct IvSequenceParams {
   void encodeTo(OutputBitstream &) const;
 };
 
-inline auto CameraParameters::erp() const -> const ErpParams & {
+inline auto ViewParams::erp() const -> const ErpParams & {
   assert(std::holds_alternative<ErpParams>(projection));
   return *std::get_if<ErpParams>(&projection);
 }
 
-inline auto CameraParameters::perspective() const -> const PerspectiveParams & {
+inline auto ViewParams::perspective() const -> const PerspectiveParams & {
   assert(std::holds_alternative<PerspectiveParams>(projection));
   return *std::get_if<PerspectiveParams>(&projection);
 }

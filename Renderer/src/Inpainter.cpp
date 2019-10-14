@@ -399,7 +399,7 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
   perform2WayInpainting(yuvd, DepthBlendingThreshold, 0, nonEmptyNeighborT, nonEmptyNeighborB);
 }
 
-template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParameters &meta) {
+template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &meta) {
   static_assert(is_same_v<YUVD, Texture444Depth10Frame> || is_same_v<YUVD, Texture444Depth16Frame>);
 
   double DepthBlendingThreshold = depthBlendingThreshold8;
@@ -423,13 +423,11 @@ template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const CameraParame
 
 Inpainter::Inpainter(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport,
-                               const CameraParameters &metadata) const {
+void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport, const ViewParams &metadata) const {
   inplaceInpaint_impl(viewport, metadata);
 }
 
-void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport,
-                               const CameraParameters &metadata) const {
+void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport, const ViewParams &metadata) const {
   inplaceInpaint_impl(viewport, metadata);
 }
 } // namespace TMIV::Renderer

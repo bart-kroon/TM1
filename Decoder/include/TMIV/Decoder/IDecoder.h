@@ -67,7 +67,7 @@ public:
   //
   // This call shall be preceded by at least one call of each of
   // updateAtlasSize, updatePatchList and updateCameraList.
-  virtual auto decodeFrame(Common::MVD10Frame atlas, const Metadata::CameraParameters &target) const
+  virtual auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame = 0;
 };
 } // namespace TMIV::Decoder

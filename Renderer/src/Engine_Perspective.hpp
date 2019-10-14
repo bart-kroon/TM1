@@ -41,7 +41,7 @@
 
 namespace TMIV::Renderer {
 template <> struct Engine<Metadata::PerspectiveParams> {
-  const Metadata::CameraParameters camera;
+  const Metadata::ViewParams camera;
   const int icols;
   const int irows;
   const int ocols;
@@ -51,7 +51,7 @@ template <> struct Engine<Metadata::PerspectiveParams> {
   const Common::Vec2f f;
   const Common::Vec2f p;
 
-  explicit Engine(const Metadata::CameraParameters &camera_)
+  explicit Engine(const Metadata::ViewParams &camera_)
       : camera{camera_},
 
         // Mesh structure
@@ -120,7 +120,7 @@ template <> struct Engine<Metadata::PerspectiveParams> {
 
   // List of 3-D vertices in the reference frame of the target camera
   auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                     const Metadata::CameraParameters &target) const
+                                     const Metadata::ViewParams &target) const
       -> SceneVertexDescriptorList {
     SceneVertexDescriptorList result;
     result.reserve(osize);

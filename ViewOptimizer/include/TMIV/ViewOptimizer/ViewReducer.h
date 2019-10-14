@@ -58,13 +58,12 @@ public:
   auto optimizeFrame(Common::MVD16Frame views) const -> Output<Common::MVD16Frame> override;
 
 private:
-  auto calculateFOV(Metadata::CameraParameters camera) -> float;
+  auto calculateFOV(Metadata::ViewParams camera) -> float;
 
-  auto calculateDistance(Metadata::CameraParameters camera_1, Metadata::CameraParameters camera_2)
+  auto calculateDistance(Metadata::ViewParams camera_1, Metadata::ViewParams camera_2) -> float;
+
+  auto calculateOverlapping(Metadata::ViewParams camera_from, Metadata::ViewParams camera_to)
       -> float;
-
-  auto calculateOverlapping(Metadata::CameraParameters camera_from,
-                            Metadata::CameraParameters camera_to) -> float;
 };
 } // namespace TMIV::ViewOptimizer
 

@@ -186,7 +186,7 @@ auto sizesOf(const CameraParametersVector &cameras) -> SizeVector {
   SizeVector sizes;
   sizes.reserve(cameras.size());
   transform(begin(cameras), end(cameras), back_inserter(sizes),
-            [](const CameraParameters &camera) { return camera.size; });
+            [](const ViewParams &camera) { return camera.size; });
   return sizes;
 }
 
@@ -254,8 +254,7 @@ void saveCameras(const Json &config, const CameraParametersVector &cameras,
   }
 
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  stream.write(reinterpret_cast<const char *>(cameras.data()),
-               cameras.size() * sizeof(CameraParameters));
+  stream.write(reinterpret_cast<const char *>(cameras.data()), cameras.size() * sizeof(ViewParams));
 
   if (!stream.good()) {
     ostringstream what;
@@ -278,12 +277,12 @@ auto loadCameras(const Json &config, const string &fileNameField) -> CameraParam
   auto size = stream.tellg();
   stream.seekg(0);
 
-  if (size == 0 || size % sizeof(CameraParameters) != 0) {
+  if (size == 0 || size % sizeof(ViewParams) != 0) {
     throw runtime_error("Binary camera file is truncated or incompatible");
   }
 
   auto cameras = CameraParamsList{};
-  cameras.resize(size / sizeof(CameraParameters));
+  cameras.resize(size / sizeof(ViewParams));
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   stream.read(reinterpret_cast<char *>(cameras.data()), size);
 
@@ -363,7 +362,7 @@ void savePatchIdMaps(const Json &config, int frameIndex, const PatchIdMapList &m
   }
 }
 
-CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
+ViewParams loadViewportMetadata(const Json &config, int frameIndex) {
 
   string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -381,7 +380,7 @@ CameraParameters loadViewportMetadata(const Json &config, int frameIndex) {
     throw runtime_error("Unknown OutputCameraName " + outputCameraName);
   }
 
-  CameraParameters &result = cameras.front();
+  ViewParams &result = cameras.front();
 
   // Override hasInvalidDepth parameter to be true because view synthesis may result in invalid
   // depth values

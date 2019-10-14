@@ -101,7 +101,7 @@ public:
 
     if (intraFrame == 0) {
       m_metadataWriter.writeIvSequenceParams(
-          {{}, ViewParamsList{modifyDepthRange(m_atlasConstructor->getCameraList())}});
+          {{}, ViewParamsList{modifyDepthRange(m_atlasConstructor->getViewParamsVector())}});
     }
     m_metadataWriter.writeIvAccessUnitParams(
         {{{m_atlasConstructor->getPatchList(), m_omafV1CompatibleFlag, atlasSize}}});
@@ -109,7 +109,7 @@ public:
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,
                     modifyDepthRange(m_atlasConstructor->popAtlas(),
-                                     m_atlasConstructor->getCameraList(),
+                                     m_atlasConstructor->getViewParamsVector(),
                                      m_metadataWriter.viewParamsList()));
     }
   }

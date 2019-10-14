@@ -62,8 +62,8 @@ void Encoder::completeIntraPeriod() { m_atlasConstructor->completeIntraPeriod();
 
 auto Encoder::getAtlasSize() const -> SizeVector { return m_atlasConstructor->getAtlasSize(); }
 
-auto Encoder::getCameraList() const -> const ViewParamsVector & {
-  return m_atlasConstructor->getCameraList();
+auto Encoder::getViewParamsVector() const -> const ViewParamsVector & {
+  return m_atlasConstructor->getViewParamsVector();
 }
 
 auto Encoder::getPatchList() const -> const AtlasParametersVector & {

@@ -53,8 +53,8 @@ public:
   virtual void completeIntraPeriod() = 0;
 
   virtual auto getAtlasSize() const -> Common::SizeVector = 0;
-  virtual const Metadata::ViewParamsVector &getCameraList() const = 0;
-  virtual const Metadata::AtlasParametersVector &getPatchList() const = 0;
+  virtual auto getViewParamsVector() const -> const Metadata::ViewParamsVector & = 0;
+  virtual auto getPatchList() const -> const Metadata::AtlasParametersVector & = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::Encoder

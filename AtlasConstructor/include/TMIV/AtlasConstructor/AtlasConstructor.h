@@ -60,7 +60,7 @@ public:
   void completeIntraPeriod() override;
 
   auto getAtlasSize() const -> Common::SizeVector override;
-  auto getCameraList() const -> const Metadata::ViewParamsVector & override;
+  auto getViewParamsVector() const -> const Metadata::ViewParamsVector & override;
   auto getPatchList() const -> const Metadata::AtlasParametersVector & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
@@ -81,7 +81,7 @@ private:
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
 
-inline auto AtlasConstructor::getCameraList() const -> const Metadata::ViewParamsVector & {
+inline auto AtlasConstructor::getViewParamsVector() const -> const Metadata::ViewParamsVector & {
   return m_viewParamsVector;
 }
 

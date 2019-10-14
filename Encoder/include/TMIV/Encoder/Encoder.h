@@ -55,7 +55,7 @@ public:
   void completeIntraPeriod() override;
 
   auto getAtlasSize() const -> Common::SizeVector override;
-  auto getCameraList() const -> const Metadata::ViewParamsVector & override;
+  auto getViewParamsVector() const -> const Metadata::ViewParamsVector & override;
   auto getPatchList() const -> const Metadata::AtlasParametersVector & override;
   auto popAtlas() -> Common::MVD16Frame override;
 

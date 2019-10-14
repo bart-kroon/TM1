@@ -89,7 +89,7 @@ private:
 
     if (intraFrame == 0) {
       m_metadataWriter.writeIvSequenceParams(
-          {{}, ViewParamsList{modifyDepthRange(m_encoder->getCameraList())}});
+          {{}, ViewParamsList{modifyDepthRange(m_encoder->getViewParamsVector())}});
       cout << "Encoded viewParamsVector:\n" << m_metadataWriter.viewParamsList();
     }
     m_metadataWriter.writeIvAccessUnitParams(
@@ -97,7 +97,7 @@ private:
 
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,
-                    modifyDepthRange(m_encoder->popAtlas(), m_encoder->getCameraList(),
+                    modifyDepthRange(m_encoder->popAtlas(), m_encoder->getViewParamsVector(),
                                      m_metadataWriter.viewParamsList()));
     }
   }

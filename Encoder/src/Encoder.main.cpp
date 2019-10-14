@@ -88,11 +88,12 @@ private:
     m_encoder->completeIntraPeriod();
 
     if (intraFrame == 0) {
-      m_metadataWriter.writeIvSequenceParams(modifyDepthRange(m_encoder->getCameraList()));
+      m_metadataWriter.writeIvSequenceParams(
+          {{}, CameraParamsList{modifyDepthRange(m_encoder->getCameraList())}});
       cout << "Encoded cameras:\n" << m_metadataWriter.cameraList();
     }
-    m_metadataWriter.writeIvAccessUnitParams(m_encoder->getPatchList(), m_omafV1CompatibleFlag,
-                                             m_encoder->getAtlasSize());
+    m_metadataWriter.writeIvAccessUnitParams(
+        {{{m_encoder->getPatchList(), m_omafV1CompatibleFlag, m_encoder->getAtlasSize()}}});
 
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,

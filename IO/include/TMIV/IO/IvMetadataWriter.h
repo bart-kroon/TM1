@@ -47,14 +47,9 @@ public:
                    const std::string &fileNameField);
 
   void writeIvSequenceParams(Metadata::IvsParams);
-  void writeIvSequenceParams(Metadata::CameraParametersList);
   void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
-  void writeIvAccessUnitParams(Metadata::AtlasParametersList patches, bool omafV1CompatibleFlag,
-                               Common::SizeVector atlasSizes);
 
-  auto cameraList() const -> const Metadata::CameraParamsList & {
-    return m_ivsParams.cameraParamsList;
-  }
+  auto cameraList() const -> const Metadata::CameraParamsList &;
 
 private:
   std::string m_path;
@@ -63,6 +58,10 @@ private:
   Metadata::IvsParams m_ivsParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
 };
+
+inline auto IvMetadataWriter::cameraList() const -> const Metadata::CameraParamsList & {
+  return m_ivsParams.cameraParamsList;
+}
 } // namespace TMIV::IO
 
 #endif

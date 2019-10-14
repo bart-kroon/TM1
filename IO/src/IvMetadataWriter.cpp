@@ -56,10 +56,6 @@ void IvMetadataWriter::writeIvSequenceParams(IvsParams ivsParams) {
   m_ivsParams.encodeTo(m_bitstream);
 }
 
-void IvMetadataWriter::writeIvSequenceParams(CameraParametersList cameras) {
-  writeIvSequenceParams({IvsProfileTierLevel{}, CameraParamsList{move(cameras)}});
-}
-
 void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitParams) {
   const bool skipAtlasParamsList =
       m_ivAccessUnitParams.atlasParamsList == ivAccessUnitParams.atlasParamsList;
@@ -69,10 +65,4 @@ void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitPa
   }
   ivAccessUnitParams.encodeTo(m_bitstream, m_ivsParams.cameraParamsList);
 }
-
-void IvMetadataWriter::writeIvAccessUnitParams(AtlasParametersList patches,
-                                               bool omafV1CompatibleFlag, SizeVector atlasSizes) {
-  writeIvAccessUnitParams({{{move(patches), omafV1CompatibleFlag, move(atlasSizes)}}});
-}
-
 } // namespace TMIV::IO

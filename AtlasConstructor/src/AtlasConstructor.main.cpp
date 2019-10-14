@@ -99,10 +99,11 @@ public:
     }
 
     if (intraFrame == 0) {
-      m_metadataWriter.writeIvSequenceParams(modifyDepthRange(m_atlasConstructor->getCameraList()));
+      m_metadataWriter.writeIvSequenceParams(
+          {{}, CameraParamsList{modifyDepthRange(m_atlasConstructor->getCameraList())}});
     }
-    m_metadataWriter.writeIvAccessUnitParams(m_atlasConstructor->getPatchList(),
-                                             m_omafV1CompatibleFlag, atlasSize);
+    m_metadataWriter.writeIvAccessUnitParams(
+        {{{m_atlasConstructor->getPatchList(), m_omafV1CompatibleFlag, atlasSize}}});
 
     for (int i = intraFrame; i < endFrame; ++i) {
       IO::saveAtlas(json(), i,

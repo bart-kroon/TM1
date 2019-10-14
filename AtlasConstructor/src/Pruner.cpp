@@ -39,6 +39,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
+using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
 namespace TMIV::AtlasConstructor {
@@ -54,8 +55,8 @@ Pruner::Pruner(const Json & /*rootNode*/, const Json &componentNode) {
   }
 }
 
-MaskList Pruner::prune(const CameraParametersList &cameras, const MVD16Frame &views,
-                       const vector<uint8_t> &shouldNotBePruned) {
+auto Pruner::prune(const CameraParametersList &cameras, const MVD16Frame &views,
+                   const vector<uint8_t> &shouldNotBePruned) -> MaskList {
 
   // Sort cameras for pruning
   vector<int> cameraOrderId(cameras.size());

@@ -59,15 +59,15 @@ void Encoder::pushFrame(MVD16Frame views) {
 
 void Encoder::completeIntraPeriod() { m_atlasConstructor->completeIntraPeriod(); }
 
-SizeVector Encoder::getAtlasSize() const { return m_atlasConstructor->getAtlasSize(); }
+auto Encoder::getAtlasSize() const -> SizeVector { return m_atlasConstructor->getAtlasSize(); }
 
-const CameraParametersList &Encoder::getCameraList() const {
+auto Encoder::getCameraList() const -> const CameraParametersList & {
   return m_atlasConstructor->getCameraList();
 }
 
-const AtlasParametersList &Encoder::getPatchList() const {
+auto Encoder::getPatchList() const -> const AtlasParametersList & {
   return m_atlasConstructor->getPatchList();
 }
 
-MVD16Frame Encoder::popAtlas() { return m_atlasConstructor->popAtlas(); }
+auto Encoder::popAtlas() -> MVD16Frame { return m_atlasConstructor->popAtlas(); }
 } // namespace TMIV::Encoder

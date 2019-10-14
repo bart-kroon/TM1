@@ -43,9 +43,10 @@ public:
   // Synthesize a floating-piont depth map from one view to another without
   // inpainting. Pixels with NaN depth in the input are skipped. Pixels not
   // present in the output will have NaN depth. Depth values are in meters.
-  virtual Common::Mat<float> renderDepth(const Common::Mat<float> &frame,
-                                         const Metadata::CameraParameters &camera,
-                                         const Metadata::CameraParameters &target) const = 0;
+  virtual auto renderDepth(const Common::Mat<float> &frame,
+                           const Metadata::CameraParameters &camera,
+                           const Metadata::CameraParameters &target) const
+      -> Common::Mat<float> = 0;
 };
 } // namespace TMIV::Renderer
 

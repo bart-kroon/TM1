@@ -52,12 +52,15 @@ public:
   void prepareIntraPeriod() override;
   void pushMask(const Common::MaskList &mask) override;
   void completeIntraPeriod() override {}
-  const Common::MaskList &getAggregatedMask() const override { return m_aggregatedMask; }
+  auto getAggregatedMask() const -> const Common::MaskList & override;
 
 private:
   Common::MaskList m_aggregatedMask;
 };
 
+inline auto Aggregator::getAggregatedMask() const -> const Common::MaskList & {
+  return m_aggregatedMask;
+}
 } // namespace TMIV::AtlasConstructor
 
 #endif

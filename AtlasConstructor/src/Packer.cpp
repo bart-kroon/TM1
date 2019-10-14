@@ -48,8 +48,8 @@ Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
   m_pip = componentNode.require("PiP").asInt() != 0;
 }
 
-AtlasParametersList Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
-                                 const vector<uint8_t> &shouldNotBeSplit) {
+auto Packer::pack(const SizeVector &atlasSize, const MaskList &masks,
+                  const vector<uint8_t> &shouldNotBeSplit) -> AtlasParametersList {
 
   // Mask clustering
   ClusterList clusterList;

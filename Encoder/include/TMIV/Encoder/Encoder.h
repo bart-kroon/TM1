@@ -54,10 +54,10 @@ public:
   void pushFrame(Common::MVD16Frame views) override;
   void completeIntraPeriod() override;
 
-  Common::SizeVector getAtlasSize() const override;
-  const Metadata::CameraParametersList &getCameraList() const override;
-  const Metadata::AtlasParametersList &getPatchList() const override;
-  Common::MVD16Frame popAtlas() override;
+  auto getAtlasSize() const -> Common::SizeVector override;
+  auto getCameraList() const -> const Metadata::CameraParametersList & override;
+  auto getPatchList() const -> const Metadata::AtlasParametersList & override;
+  auto popAtlas() -> Common::MVD16Frame override;
 
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;

@@ -45,18 +45,16 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
       m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)} {
 }
 
-Texture444Depth16Frame Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                                             const AtlasParametersList &patches,
-                                             const CameraParametersList &cameras,
-                                             const CameraParameters &target) const {
+auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
+                           const AtlasParametersList &patches, const CameraParametersList &cameras,
+                           const CameraParameters &target) const -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(atlas, maps, patches, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 
-Texture444Depth16Frame Renderer::renderFrame(const MVD10Frame &frame,
-                                             const CameraParametersList &cameras,
-                                             const CameraParameters &target) const {
+auto Renderer::renderFrame(const MVD10Frame &frame, const CameraParametersList &cameras,
+                           const CameraParameters &target) const -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;

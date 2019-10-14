@@ -49,9 +49,9 @@ public:
   Packer &operator=(Packer &&) = default;
   ~Packer() override = default;
 
-  Metadata::AtlasParametersList pack(const Common::SizeVector &atlasSize,
-                                     const Common::MaskList &masks,
-                                     const std::vector<std::uint8_t> &shouldNotBeSplit) override;
+  auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
+            const std::vector<std::uint8_t> &shouldNotBeSplit)
+      -> Metadata::AtlasParametersList override;
 
 private:
   int m_alignment{};

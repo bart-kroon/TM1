@@ -130,7 +130,7 @@ void AtlasConstructor::completeIntraPeriod() {
   }
 }
 
-SizeVector AtlasConstructor::getAtlasSize() const {
+auto AtlasConstructor::getAtlasSize() const -> SizeVector {
   assert(!m_atlasBuffer.empty());
   SizeVector result;
   for (const auto &view : m_atlasBuffer.front()) {
@@ -139,7 +139,7 @@ SizeVector AtlasConstructor::getAtlasSize() const {
   return result;
 }
 
-MVD16Frame AtlasConstructor::popAtlas() {
+auto AtlasConstructor::popAtlas() -> MVD16Frame {
   MVD16Frame atlas = move(m_atlasBuffer.front());
   m_atlasBuffer.pop_front();
   return atlas;

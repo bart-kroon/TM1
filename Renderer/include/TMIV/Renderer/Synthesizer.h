@@ -47,19 +47,18 @@ public:
   Synthesizer &operator=(Synthesizer &&) = default;
   ~Synthesizer() override;
 
-  Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-              const Metadata::AtlasParametersList &patches,
-              const Metadata::CameraParametersList &cameras,
-              const Metadata::CameraParameters &target) const override;
+  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                   const Metadata::AtlasParametersList &patches,
+                   const Metadata::CameraParametersList &cameras,
+                   const Metadata::CameraParameters &target) const
+      -> Common::Texture444Depth16Frame override;
 
-  Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD10Frame &frame, const Metadata::CameraParametersList &cameras,
-              const Metadata::CameraParameters &target) const override;
+  auto renderFrame(const Common::MVD10Frame &frame, const Metadata::CameraParametersList &cameras,
+                   const Metadata::CameraParameters &target) const
+      -> Common::Texture444Depth16Frame override;
 
-  Common::Mat<float> renderDepth(const Common::Mat<float> &frame,
-                                 const Metadata::CameraParameters &camera,
-                                 const Metadata::CameraParameters &target) const override;
+  auto renderDepth(const Common::Mat<float> &frame, const Metadata::CameraParameters &camera,
+                   const Metadata::CameraParameters &target) const -> Common::Mat<float> override;
 
 private:
   class Impl;

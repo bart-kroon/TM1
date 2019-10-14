@@ -48,13 +48,14 @@ public:
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
   ~AtlasDeconstructor() override = default;
 
-  Common::PatchIdMapList getPatchIdMap(const Common::SizeVector &atlasSize,
-                                       const Metadata::AtlasParametersList &patchList,
-                                       const Metadata::CameraParametersList &cameraList,
-                                       const Common::MVD10Frame &frame) override;
-  Common::MVD10Frame recoverPrunedView(const Common::MVD10Frame &atlas,
-                                       const Metadata::CameraParametersList &cameraList,
-                                       const Metadata::AtlasParametersList &patchList) override;
+  auto getPatchIdMap(const Common::SizeVector &atlasSize,
+                     const Metadata::AtlasParametersList &patchList,
+                     const Metadata::CameraParametersList &cameraList,
+                     const Common::MVD10Frame &frame) -> Common::PatchIdMapList override;
+  auto recoverPrunedView(const Common::MVD10Frame &atlas,
+                         const Metadata::CameraParametersList &cameraList,
+                         const Metadata::AtlasParametersList &patchList)
+      -> Common::MVD10Frame override;
 
 private:
   void writePatchIdInMap(const Metadata::AtlasParameters &patch,

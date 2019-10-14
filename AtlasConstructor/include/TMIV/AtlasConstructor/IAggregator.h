@@ -51,7 +51,7 @@ public:
   virtual void prepareIntraPeriod() = 0;
   virtual void pushMask(const Common::MaskList &mask) = 0;
   virtual void completeIntraPeriod() = 0;
-  virtual const Common::MaskList &getAggregatedMask() const = 0;
+  virtual auto getAggregatedMask() const -> const Common::MaskList & = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

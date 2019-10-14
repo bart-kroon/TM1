@@ -48,9 +48,9 @@ public:
   IPacker &operator=(IPacker &&) = default;
   virtual ~IPacker() = default;
 
-  virtual Metadata::AtlasParametersList pack(const Common::SizeVector &atlasSize,
-                                             const Common::MaskList &masks,
-                                             const std::vector<std::uint8_t> &shouldNotBeSplit) = 0;
+  virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
+                    const std::vector<std::uint8_t> &shouldNotBeSplit)
+      -> Metadata::AtlasParametersList = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

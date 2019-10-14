@@ -290,21 +290,20 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretching
 
 Synthesizer::~Synthesizer() = default;
 
-Texture444Depth16Frame Synthesizer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                                                const AtlasParametersList &patches,
-                                                const CameraParametersList &cameras,
-                                                const CameraParameters &target) const {
+auto Synthesizer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
+                              const AtlasParametersList &patches,
+                              const CameraParametersList &cameras,
+                              const CameraParameters &target) const -> Texture444Depth16Frame {
   return m_impl->renderFrame(atlas, maps, patches, cameras, target);
 }
 
-Texture444Depth16Frame Synthesizer::renderFrame(const MVD10Frame &frame,
-                                                const CameraParametersList &cameras,
-                                                const CameraParameters &target) const {
+auto Synthesizer::renderFrame(const MVD10Frame &frame, const CameraParametersList &cameras,
+                              const CameraParameters &target) const -> Texture444Depth16Frame {
   return m_impl->renderFrame(frame, cameras, target);
 }
 
-Mat<float> Synthesizer::renderDepth(const Mat<float> &frame, const CameraParameters &camera,
-                                    const CameraParameters &target) const {
+auto Synthesizer::renderDepth(const Mat<float> &frame, const CameraParameters &camera,
+                              const CameraParameters &target) const -> Mat<float> {
   return m_impl->renderDepth(frame, camera, target);
 }
 } // namespace TMIV::Renderer

@@ -50,13 +50,14 @@ public:
   IAtlasDeconstructor &operator=(IAtlasDeconstructor &&) = default;
   virtual ~IAtlasDeconstructor() = default;
 
-  virtual Common::PatchIdMapList getPatchIdMap(const Common::SizeVector &atlasSize,
-                                               const Metadata::AtlasParametersList &patchList,
-                                               const Metadata::CameraParametersList &cameraList,
-                                               const Common::MVD10Frame &frame) = 0;
-  virtual Common::MVD10Frame recoverPrunedView(const Common::MVD10Frame &atlas,
-                                               const Metadata::CameraParametersList &cameraList,
-                                               const Metadata::AtlasParametersList &patchList) = 0;
+  virtual auto getPatchIdMap(const Common::SizeVector &atlasSize,
+                             const Metadata::AtlasParametersList &patchList,
+                             const Metadata::CameraParametersList &cameraList,
+                             const Common::MVD10Frame &frame) -> Common::PatchIdMapList = 0;
+  virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
+                                 const Metadata::CameraParametersList &cameraList,
+                                 const Metadata::AtlasParametersList &patchList)
+      -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

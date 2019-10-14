@@ -61,8 +61,8 @@ void Decoder::updatePatchList(AtlasParametersList patches, const MVD10Frame &fra
 
 void Decoder::updateCameraList(CameraParametersList cameras) { m_cameras = move(cameras); }
 
-Texture444Depth16Frame Decoder::decodeFrame(MVD10Frame atlas,
-                                            const CameraParameters &target) const {
+auto Decoder::decodeFrame(MVD10Frame atlas, const CameraParameters &target) const
+    -> Texture444Depth16Frame {
   return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_cameras, target);
 }
 } // namespace TMIV::Decoder

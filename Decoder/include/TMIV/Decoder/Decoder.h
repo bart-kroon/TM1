@@ -64,8 +64,8 @@ public:
                        const Common::MVD10Frame &frame) override;
   void updateCameraList(Metadata::CameraParametersList cameras) override;
 
-  Common::Texture444Depth16Frame
-  decodeFrame(Common::MVD10Frame atlas, const Metadata::CameraParameters &target) const override;
+  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::CameraParameters &target) const
+      -> Common::Texture444Depth16Frame override;
 };
 } // namespace TMIV::Decoder
 

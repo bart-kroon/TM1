@@ -50,8 +50,8 @@ public:
   Pruner &operator=(Pruner &&) = default;
   ~Pruner() override = default;
 
-  MaskList prune(const CameraParametersList &cameras, const MVD16Frame &views,
-                 const std::vector<std::uint8_t> &shouldNotBePruned) override;
+  auto prune(const Metadata::CameraParametersList &cameras, const Common::MVD16Frame &views,
+             const std::vector<std::uint8_t> &shouldNotBePruned) -> Common::MaskList override;
 
 private:
   float m_redundancyFactor{};

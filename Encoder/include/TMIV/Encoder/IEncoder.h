@@ -53,10 +53,10 @@ public:
   virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual void completeIntraPeriod() = 0;
 
-  virtual Common::SizeVector getAtlasSize() const = 0;
+  virtual auto getAtlasSize() const -> Common::SizeVector = 0;
   virtual const Metadata::CameraParametersList &getCameraList() const = 0;
   virtual const Metadata::AtlasParametersList &getPatchList() const = 0;
-  virtual Common::MVD16Frame popAtlas() = 0;
+  virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::Encoder
 

@@ -59,10 +59,10 @@ public:
   void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) override;
   void completeIntraPeriod() override;
 
-  Common::SizeVector getAtlasSize() const override;
-  const Metadata::CameraParametersList &getCameraList() const override { return m_cameras; }
-  const Metadata::AtlasParametersList &getPatchList() const override { return m_patchList; }
-  Common::MVD16Frame popAtlas() override;
+  auto getAtlasSize() const -> Common::SizeVector override;
+  auto getCameraList() const -> const Metadata::CameraParametersList & override;
+  auto getPatchList() const -> const Metadata::AtlasParametersList & override;
+  auto popAtlas() -> Common::MVD16Frame override;
 
 private:
   void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
@@ -80,6 +80,14 @@ private:
   Metadata::AtlasParametersList m_patchList;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
+
+inline auto AtlasConstructor::getCameraList() const -> const Metadata::CameraParametersList & {
+  return m_cameras;
+}
+
+inline auto AtlasConstructor::getPatchList() const -> const Metadata::AtlasParametersList & {
+  return m_patchList;
+}
 } // namespace TMIV::AtlasConstructor
 
 #endif

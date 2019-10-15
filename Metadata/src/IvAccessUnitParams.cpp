@@ -135,8 +135,8 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
     auto numPatches = bitstream.getUint16() + 1;
 
     auto atlasSize = Vec2i{};
-    atlasSize.x() = bitstream.getUint16();
-    atlasSize.y() = bitstream.getUint16();
+    atlasSize.x() = bitstream.getUint16() + 1;
+    atlasSize.y() = bitstream.getUint16() + 1;
     assignAt(atlasParamsList.atlasSizes, patch.atlasId, atlasSize);
 
     while (numPatches-- > 0) {
@@ -188,8 +188,9 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
     }
 
     bitstream.putUint16(uint16_t(numPatches - 1));
-    bitstream.putUint16(atlasSize.x());
-    bitstream.putUint16(atlasSize.y());
+    assert(atlasSize.x() >= 1 && atlasSize.y() >= 1);
+    bitstream.putUint16(atlasSize.x() - 1);
+    bitstream.putUint16(atlasSize.y() - 1);
 
     for (const auto &patch : *this) {
       if (patch.atlasId == atlasId) {

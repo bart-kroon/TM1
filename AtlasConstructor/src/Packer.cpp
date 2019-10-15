@@ -34,6 +34,7 @@
 #include "MaxRectPiP.h"
 #include <TMIV/AtlasConstructor/Packer.h>
 #include <queue>
+#include <stdexcept>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -50,6 +51,14 @@ Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                   const vector<uint8_t> &shouldNotBeSplit) -> AtlasParamsVector {
+
+  // Check atlas size
+  for (const auto &sz : atlasSizes) {
+    if (((sz.x() % m_alignment) != 0) || ((sz.y() % m_alignment) != 0)) {
+      throw std::runtime_error("Atlas size should be a multiple of aligment");
+    }
+  }
+
   // Mask clustering
   ClusterList clusterList;
   ClusteringMapList clusteringMap;

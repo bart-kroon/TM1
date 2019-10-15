@@ -121,7 +121,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
 
-    for (int i = 0; i < m_nbAtlas; i++) {
+    for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
 

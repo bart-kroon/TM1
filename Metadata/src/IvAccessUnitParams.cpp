@@ -156,13 +156,13 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.posInView.y() = int(bitstream.getUVar(viewSize.y()));
       patch.rotation = PatchRotation(bitstream.readBits(3));
 
-      if (const bool depthThresholdPresentFlag = bitstream.getFlag()) {
+      if (const bool depthThresholdPresentFlag = bitstream.getFlag(); depthThresholdPresentFlag) {
         verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
         patch.depthOccMapThreshold =
             uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
       }
 
-      if (const bool depthStartPresentFlag = bitstream.getFlag()) {
+      if (const bool depthStartPresentFlag = bitstream.getFlag(); depthStartPresentFlag) {
         verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
         patch.depthStart =
             uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));

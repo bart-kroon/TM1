@@ -212,13 +212,13 @@ const auto ivSequenceParams =
           }};
 
 const auto atlasParamsList = array{
-    AtlasParamsList{{AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90}},
+    AtlasParamsList{{AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90, {}, {}}},
                     true,            // omaf v1 compatible flags
                     {},              // no group ID's
                     {{1920, 1080}}}, // atlas sizes
     AtlasParamsList{
-        {AtlasParameters{0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90},
-         AtlasParameters{0, 1, {1}, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180, {64}},
+        {AtlasParameters{0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90, {}, {}},
+         AtlasParameters{0, 1, {1}, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180, {64}, {}},
          AtlasParameters{
              2, 1, {1}, {100, 30}, {500, 400}, {340, 220}, PatchRotation::rot180, {}, {128}}},
         true,                                   // omaf v1 compatible flag

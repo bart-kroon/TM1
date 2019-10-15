@@ -163,7 +163,7 @@ auto ViewParamsList::viewSizes() const -> SizeVector {
 
 ostream &operator<<(ostream &stream, const ViewParamsList &viewParamsVector) {
   for (size_t i = 0; i < viewParamsVector.size(); ++i) {
-    stream << "Camera " << setw(2) << i << ": " << viewParamsVector[i] << '\n';
+    stream << "View " << setw(2) << i << ": " << viewParamsVector[i] << '\n';
   }
   return stream;
 }

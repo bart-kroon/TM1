@@ -65,11 +65,11 @@ public:
   void run() override {
     const auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
-    cout << "Source sequence parameters:\n" << sourceSequenceParams;
+    cout << "\nSource sequence parameters:\n" << sourceSequenceParams;
 
     const auto codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
-    cout << "Coded sequence parameters:\n" << codedSequenceParams;
+    cout << "\nCoded sequence parameters:\n" << codedSequenceParams;
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -83,11 +83,11 @@ private:
 
     const auto sourceAccessUnitParams = loadSourceIvAccessUnitParams(json());
     m_encoder->prepareAccessUnit(sourceAccessUnitParams);
-    cout << "Source access unit parameters\n" << sourceAccessUnitParams;
+    cout << "\nSource access unit parameters:\n" << sourceAccessUnitParams;
 
     pushFrames(firstFrame, lastFrame);
     const auto codedAccessUnitParams = m_encoder->completeAccessUnit();
-    cout << "Coded access unit parameters\n" << codedAccessUnitParams;
+    cout << "\nCoded access unit parameters:\n" << codedAccessUnitParams;
 
     m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams);
     popAtlases(firstFrame, lastFrame);

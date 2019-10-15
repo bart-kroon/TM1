@@ -317,11 +317,10 @@ Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) {
 }
 
 ostream &operator<<(ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) {
-  stream << '{';
   if (const auto &x = ivAccessUnitParams.atlasParamsList) {
     return stream << *x;
   }
-  return stream << "}\n";
+  return stream << "No atlas parameters list\n";
 }
 
 bool IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const {

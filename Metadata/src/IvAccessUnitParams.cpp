@@ -199,7 +199,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
     bitstream.putUint8(atlasId);
 
     if (ivSequenceParams.numGroups > 1) {
-      assert(groupIds);
+      verify(groupIds);
       const auto &groupIds_ = *groupIds;
       bitstream.putUVar(groupIds_[atlasId], ivSequenceParams.numGroups);
     }

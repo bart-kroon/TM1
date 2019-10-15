@@ -207,8 +207,8 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
   for (auto viewParams = viewParamsList.begin(); viewParams != viewParamsList.end(); ++viewParams) {
     if (viewParams == viewParamsList.begin() || !intrinsicParamsEqualFlag) {
       auto camType = bitstream.getUint8();
-      viewParams->size.x() = bitstream.getUint16();
-      viewParams->size.y() = bitstream.getUint16();
+      viewParams->size.x() = bitstream.getUint16() + 1;
+      viewParams->size.y() = bitstream.getUint16() + 1;
 
       verify(camType < 2);
       switch (camType) {
@@ -277,8 +277,9 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream) const {
 
   for (const auto &viewParams : *this) {
     bitstream.putUint8(uint8_t(viewParams.projection.index()));
-    bitstream.putUint16(uint16_t(viewParams.size.x()));
-    bitstream.putUint16(uint16_t(viewParams.size.y()));
+    assert(viewParams.size.x() >= 1 && viewParams.size.y() >= 1);
+    bitstream.putUint16(uint16_t(viewParams.size.x() - 1));
+    bitstream.putUint16(uint16_t(viewParams.size.y() - 1));
     visit([&](const auto &x) { x.encodeTo(bitstream); }, viewParams.projection);
     if (intrinsicParamsEqualFlag) {
       break;

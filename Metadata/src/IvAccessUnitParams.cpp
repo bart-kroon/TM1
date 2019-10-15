@@ -59,7 +59,7 @@ auto AtlasParameters::patchSizeInAtlas() const -> Vec2i {
 }
 
 bool AtlasParameters::operator==(const AtlasParameters &other) const {
-  return atlasId == other.atlasId && viewId == other.viewId &&
+  return atlasId == other.atlasId && viewId == other.viewId && objectId == other.objectId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
          posInAtlas == other.posInAtlas && rotation == other.rotation;
 }
@@ -143,6 +143,10 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
       const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
+      if (ivSequenceParams.maxObjects > 1) {
+        patch.objectId = unsigned(bitstream.getUVar(ivSequenceParams.maxObjects));
+      }
+
       patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
       patch.patchSizeInView.y() = int(bitstream.getUVar(viewSize.y()) + 1);
       patch.posInAtlas.x() = int(bitstream.getUVar(atlasSize.x()));
@@ -206,6 +210,12 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
 #endif
 
         bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
+
+        if (ivSequenceParams.maxObjects > 1) {
+          assert(patch.objectId);
+          bitstream.putUVar(*patch.objectId, ivSequenceParams.maxObjects);
+        }
+
         bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());
         bitstream.putUVar(patch.patchSizeInView.y() - 1, viewSize.y());
         bitstream.putUVar(patch.posInAtlas.x(), atlasSize.x());

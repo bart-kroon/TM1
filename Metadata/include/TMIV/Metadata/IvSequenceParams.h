@@ -181,6 +181,9 @@ struct IvSequenceParams {
   // In specification: num_groups_minus1
   unsigned numGroups{1};
 
+  // In specification: max_objects_minus1
+  unsigned maxObjects{1};
+
   // No change when depthOccMapThreshold == 0 (no invalid depth)
   // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
   auto modifyDepthRange() const -> IvSequenceParams;

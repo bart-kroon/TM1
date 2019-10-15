@@ -201,7 +201,13 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     throw runtime_error("Require numGroups >= 1");
   }
 
-  return {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups)};
+  const auto maxObjects = config.require("maxObjects").asInt();
+  if (maxObjects < 1) {
+    throw runtime_error("Require maxObjects >= 1");
+  }
+
+  return {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups),
+          unsigned(maxObjects)};
 }
 
 auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitParams {

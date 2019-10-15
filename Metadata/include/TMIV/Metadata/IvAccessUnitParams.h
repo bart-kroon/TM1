@@ -56,6 +56,9 @@ struct AtlasParameters {
   // In specification: view_id[ a ][ i ]
   unsigned viewId{};
 
+  // In specification: object_id[ a ][ i ]
+  std::optional<unsigned> objectId{};
+
   // In specification: patch_width_in_view_minus1[ a ][ i ]
   // In specification: patch_height_in_view_minus1[ a ][ i ]
   Common::Vec2i patchSizeInView;

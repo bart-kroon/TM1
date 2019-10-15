@@ -318,15 +318,19 @@ ViewParamsList ViewParamsList::loadFromJson(const Json &node, const vector<strin
 }
 
 std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams) {
-  return stream << "ivs_profile_tier_level()=" << ivSequenceParams.ivsProfileTierLevel
-                << ", view_params_list()=\n"
-                << ivSequenceParams.viewParamsList;
+  stream << "ivs_profile_tier_level()=" << ivSequenceParams.ivsProfileTierLevel << '\n';
+  stream << "depth_low_quality_flag=" << boolalpha << ivSequenceParams.depthLowQualityFlag << '\n';
+  stream << "num_groups=" << ivSequenceParams.numGroups << '\n';
+  stream << "max_objects=" << ivSequenceParams.maxObjects << '\n';
+  stream << "view_params_list()=\n";
+  return stream << ivSequenceParams.viewParamsList;
 }
 
 bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
   return ivsProfileTierLevel == other.ivsProfileTierLevel &&
          viewParamsList == other.viewParamsList &&
-         depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups;
+         depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups &&
+         maxObjects == other.maxObjects;
 }
 
 auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
@@ -334,9 +338,11 @@ auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams
   const auto viewParamsList = ViewParamsList::decodeFrom(bitstream);
   const auto depthLowQualityFlag = bitstream.getFlag();
   const auto numGroups = unsigned(1 + bitstream.getUExpGolomb());
+  const auto maxObjects = unsigned(1 + bitstream.getUExpGolomb());
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
-  return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, numGroups};
+  return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, numGroups,
+                          maxObjects};
 }
 
 void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
@@ -345,6 +351,8 @@ void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(depthLowQualityFlag);
   verify(numGroups >= 1);
   bitstream.putUExpGolomb(numGroups - 1);
+  verify(maxObjects >= 1);
+  bitstream.putUExpGolomb(maxObjects - 1);
   bitstream.putFlag(false);
 }
 } // namespace TMIV::Metadata

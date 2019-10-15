@@ -204,17 +204,22 @@ const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
-          IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1], true, 2}};
+          IvSequenceParams{
+              ivsProfileTierLevel[0], cameraParameterList[1],
+              true, // low depth quality flag
+              2,    // num objects
+              2,    // max groups
+          }};
 
 const auto atlasParamsList = array{
-    AtlasParamsList{{AtlasParameters{0, 0, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90}},
+    AtlasParamsList{{AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90}},
                     true,            // omaf v1 compatible flags
                     {},              // no group ID's
                     {{1920, 1080}}}, // atlas sizes
     AtlasParamsList{
-        {AtlasParameters{0, 0, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90},
-         AtlasParameters{0, 1, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180},
-         AtlasParameters{2, 1, {100, 30}, {500, 400}, {340, 220}, PatchRotation::rot180}},
+        {AtlasParameters{0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90},
+         AtlasParameters{0, 1, {1}, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180},
+         AtlasParameters{2, 1, {1}, {100, 30}, {500, 400}, {340, 220}, PatchRotation::rot180}},
         true,                                   // omaf v1 compatible flag
         {{1, 0, 1}},                            // group ID's,
         {{2048, 4096}, {0, 0}, {2048, 1088}}}}; // atlas sizes
@@ -264,12 +269,12 @@ TEST_CASE("Metadata bitstreams") {
 
   SECTION("ivs_params") {
     REQUIRE(codingTest(examples::ivSequenceParams[0], 59));
-    REQUIRE(codingTest(examples::ivSequenceParams[1], 83));
+    REQUIRE(codingTest(examples::ivSequenceParams[1], 84));
   }
 
   SECTION("atlas_params_list") {
     REQUIRE(codingTest(examples::atlasParamsList[0], 17, examples::ivSequenceParams[0]));
-    REQUIRE(codingTest(examples::atlasParamsList[1], 42, examples::ivSequenceParams[1]));
+    REQUIRE(codingTest(examples::atlasParamsList[1], 43, examples::ivSequenceParams[1]));
   }
 
   SECTION("iv_access_unit_params") {

@@ -61,7 +61,8 @@ auto AtlasParameters::patchSizeInAtlas() const -> Vec2i {
 bool AtlasParameters::operator==(const AtlasParameters &other) const {
   return atlasId == other.atlasId && viewId == other.viewId && objectId == other.objectId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
-         posInAtlas == other.posInAtlas && rotation == other.rotation;
+         posInAtlas == other.posInAtlas && rotation == other.rotation &&
+         depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
 }
 
 AtlasParamsList::AtlasParamsList(AtlasParamsVector atlasParameters, bool omafV1CompatibleFlag_,
@@ -155,6 +156,15 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.posInView.y() = int(bitstream.getUVar(viewSize.y()));
       patch.rotation = PatchRotation(bitstream.readBits(3));
 
+      if (const bool depthThresholdPresentFlag = bitstream.getFlag()) {
+        patch.depthOccMapThreshold =
+            bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits);
+      }
+
+      if (const bool depthStartPresentFlag = bitstream.getFlag()) {
+        patch.depthStart = bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits);
+      }
+
       verify(patch.posInView.x() + patch.patchSizeInView.x() <= viewSize.x());
       verify(patch.posInView.y() + patch.patchSizeInView.y() <= viewSize.y());
       verify(patch.posInAtlas.x() + patch.patchSizeInAtlas().x() <= atlasSize.x());
@@ -223,6 +233,17 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
         bitstream.putUVar(patch.posInView.x(), viewSize.x());
         bitstream.putUVar(patch.posInView.y(), viewSize.y());
         bitstream.writeBits(unsigned(patch.rotation), 3);
+
+        bitstream.putFlag(!!patch.depthOccMapThreshold);
+        if (patch.depthOccMapThreshold) {
+          bitstream.writeBits(*patch.depthOccMapThreshold,
+                              ivSequenceParams.depthOccMapThresholdNumBits);
+        }
+
+        bitstream.putFlag(!!patch.depthStart);
+        if (patch.depthStart) {
+          bitstream.writeBits(*patch.depthStart, ivSequenceParams.depthOccMapThresholdNumBits);
+        }
       }
     }
   }

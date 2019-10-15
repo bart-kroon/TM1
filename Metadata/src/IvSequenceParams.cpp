@@ -322,6 +322,8 @@ std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenc
   stream << "depth_low_quality_flag=" << boolalpha << ivSequenceParams.depthLowQualityFlag << '\n';
   stream << "num_groups=" << ivSequenceParams.numGroups << '\n';
   stream << "max_objects=" << ivSequenceParams.maxObjects << '\n';
+  stream << "depth_occ_map_threshold_num_bits=" << ivSequenceParams.depthOccMapThresholdNumBits
+         << '\n';
   stream << "view_params_list()=\n";
   return stream << ivSequenceParams.viewParamsList;
 }
@@ -330,7 +332,8 @@ bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
   return ivsProfileTierLevel == other.ivsProfileTierLevel &&
          viewParamsList == other.viewParamsList &&
          depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups &&
-         maxObjects == other.maxObjects;
+         maxObjects == other.maxObjects &&
+         depthOccMapThresholdNumBits == other.depthOccMapThresholdNumBits;
 }
 
 auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
@@ -339,10 +342,11 @@ auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams
   const auto depthLowQualityFlag = bitstream.getFlag();
   const auto numGroups = unsigned(1 + bitstream.getUExpGolomb());
   const auto maxObjects = unsigned(1 + bitstream.getUExpGolomb());
+  const auto depthOccMapThresholdNumBits = unsigned(8 + bitstream.readBits(4));
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
-  return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, numGroups,
-                          maxObjects};
+  return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
+                          numGroups,           maxObjects,     depthOccMapThresholdNumBits};
 }
 
 void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
@@ -353,6 +357,8 @@ void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(numGroups - 1);
   verify(maxObjects >= 1);
   bitstream.putUExpGolomb(maxObjects - 1);
+  verify(depthOccMapThresholdNumBits >= 8);
+  bitstream.writeBits(depthOccMapThresholdNumBits - 8, 4);
   bitstream.putFlag(false);
 }
 } // namespace TMIV::Metadata

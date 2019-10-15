@@ -74,6 +74,14 @@ struct AtlasParameters {
   // In specification: patch_rotation[ a ][ i ]
   PatchRotation rotation{};
 
+  // In specification: depth_threshold_present_flag[ a ][ i ]
+  // In specification: depth_occ_map_threshold[ a ][ i ]
+  std::optional<uint16_t> depthOccMapThreshold;
+
+    // In specification: depth_start_present_flag[ a ][ i ]
+  // In specification: depth_start[ a ][ i ]
+  std::optional<uint16_t> depthStart;
+
   // Is the patch rotated such that width and height swap?
   bool isRotated() const;
 

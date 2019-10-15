@@ -98,7 +98,7 @@ ostream &operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) {
     stream << sep << atlasSize;
     sep = ", ";
   }
-  stream << '}\n';
+  stream << "}\n";
 
   return stream << '\n';
 }
@@ -157,12 +157,15 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.rotation = PatchRotation(bitstream.readBits(3));
 
       if (const bool depthThresholdPresentFlag = bitstream.getFlag()) {
+        verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
         patch.depthOccMapThreshold =
-            bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits);
+            uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
       }
 
       if (const bool depthStartPresentFlag = bitstream.getFlag()) {
-        patch.depthStart = bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits);
+        verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
+        patch.depthStart =
+            uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
       }
 
       verify(patch.posInView.x() + patch.patchSizeInView.x() <= viewSize.x());

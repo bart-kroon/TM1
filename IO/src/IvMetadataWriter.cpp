@@ -63,6 +63,6 @@ void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitPa
   if (skipAtlasParamsList) {
     ivAccessUnitParams.atlasParamsList.reset();
   }
-  ivAccessUnitParams.encodeTo(m_bitstream, m_ivSequenceParams.viewParamsList);
+  ivAccessUnitParams.encodeTo(m_bitstream, m_ivSequenceParams);
 }
 } // namespace TMIV::IO

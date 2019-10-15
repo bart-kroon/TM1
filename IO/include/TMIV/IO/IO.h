@@ -51,8 +51,16 @@ std::string getFullPath(const Common::Json &config, const std::string &baseDirec
 
 template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
+// Load sequence metadata from the configuration files. It is up to the Encoder to comply (or
+// ignore) fields such as num_groups. The in-memory metadata representation has to be complete
+// only after IEncoder.
 auto loadSourceIvSequenceParams(const Common::Json &config) -> Metadata::IvSequenceParams;
+
+// Load access unit metadata from the configuration files. It is up to the Encoder to comply (or
+// ignore) fields such as omaf_v1_compatible_flag. The in-memory metadata representation has to be
+// complete only after IEncoder.
 auto loadSourceIvAccessUnitParams(const Common::Json &config) -> Metadata::IvAccessUnitParams;
+
 Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
                                    int frameIndex);
 

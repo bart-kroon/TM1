@@ -323,20 +323,27 @@ std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenc
 }
 
 bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
-  return ivsProfileTierLevel == other.ivsProfileTierLevel && viewParamsList == other.viewParamsList;
+  return ivsProfileTierLevel == other.ivsProfileTierLevel &&
+         viewParamsList == other.viewParamsList &&
+         depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups;
 }
 
 auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
   const auto ivsProfileTierLevel = IvsProfileTierLevel::decodeFrom(bitstream);
   const auto viewParamsList = ViewParamsList::decodeFrom(bitstream);
+  const auto depthLowQualityFlag = bitstream.getFlag();
+  const auto numGroups = unsigned(1 + bitstream.getUExpGolomb());
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
-  return IvSequenceParams{ivsProfileTierLevel, viewParamsList};
+  return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, numGroups};
 }
 
 void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   ivsProfileTierLevel.encodeTo(bitstream);
   viewParamsList.encodeTo(bitstream);
+  bitstream.putFlag(depthLowQualityFlag);
+  verify(numGroups >= 1);
+  bitstream.putUExpGolomb(numGroups - 1);
   bitstream.putFlag(false);
 }
 } // namespace TMIV::Metadata

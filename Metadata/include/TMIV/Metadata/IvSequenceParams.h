@@ -175,6 +175,12 @@ struct IvSequenceParams {
   // In specification: view_params_list( )
   ViewParamsList viewParamsList;
 
+  // In specification: depth_low_quality_flag
+  bool depthLowQualityFlag{};
+
+  // In specification: num_groups_minus1
+  unsigned numGroups{1};
+
   // No change when depthOccMapThreshold == 0 (no invalid depth)
   // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
   auto modifyDepthRange() const -> IvSequenceParams;

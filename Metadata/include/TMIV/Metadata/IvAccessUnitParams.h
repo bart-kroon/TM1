@@ -35,6 +35,7 @@
 #define _TMIV_METADATA_IVACCESSUNITPARAMS_H_
 
 #include <TMIV/Common/Vector.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 #include <cstdint>
 #include <iosfwd>
@@ -44,7 +45,6 @@
 namespace TMIV::Metadata {
 enum class PatchRotation { none, swap, rot90, rot180, rot270, mirror, mrot90, mrot180 };
 
-struct ViewParamsList;
 class InputBitstream;
 class OutputBitstream;
 
@@ -87,22 +87,30 @@ using AtlasParamsVector = std::vector<AtlasParameters>;
 struct AtlasParamsList : public AtlasParamsVector {
   AtlasParamsList() = default;
   AtlasParamsList(AtlasParamsVector atlasParameters, bool omafV1CompatibleFlag_,
-                  Common::SizeVector atlasSizes_)
-      : AtlasParamsVector{std::move(atlasParameters)}, omafV1CompatibleFlag{omafV1CompatibleFlag_},
-        atlasSizes{atlasSizes_} {}
+                  std::optional<std::vector<unsigned>> groupIds_, Common::SizeVector atlasSizes_);
   AtlasParamsList(const AtlasParamsList &) = default;
   AtlasParamsList(AtlasParamsList &&) = default;
   AtlasParamsList &operator=(const AtlasParamsList &) = default;
   AtlasParamsList &operator=(AtlasParamsList &&) = default;
 
+  // In specification: omaf_v1_compatible_flag
   bool omafV1CompatibleFlag{};
+
+  // In specification: group_id[ i ] but stored as group_id[ a ]
+  std::optional<std::vector<unsigned>> groupIds;
+
+  // In specification: atlas_width_minus1[ a ]
+  // In specification: atlas_height_minus1[ a ]
   Common::SizeVector atlasSizes;
 
-  void setAtlasParamsVector(AtlasParamsVector x) { static_cast<AtlasParamsVector &>(*this) = move(x); }
+  void setAtlasParamsVector(AtlasParamsVector x) { AtlasParamsVector::operator=(move(x)); }
 
   friend std::ostream &operator<<(std::ostream &, const AtlasParamsList &);
-  static auto decodeFrom(InputBitstream &, const ViewParamsList &) -> AtlasParamsList;
-  void encodeTo(OutputBitstream &, const ViewParamsList &) const;
+  bool operator==(const AtlasParamsList &other) const;
+  bool operator!=(const AtlasParamsList &other) const { return !operator==(other); }
+
+  static auto decodeFrom(InputBitstream &, const IvSequenceParams &) -> AtlasParamsList;
+  void encodeTo(OutputBitstream &, const IvSequenceParams &) const;
 };
 
 // Pixel position conversion from atlas to/from view
@@ -117,9 +125,8 @@ struct IvAccessUnitParams {
   bool operator==(const IvAccessUnitParams &other) const;
   bool operator!=(const IvAccessUnitParams &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &, const ViewParamsList &viewParamsVector)
-      -> IvAccessUnitParams;
-  void encodeTo(OutputBitstream &, const ViewParamsList &viewParamsVector) const;
+  static auto decodeFrom(InputBitstream &, const IvSequenceParams &) -> IvAccessUnitParams;
+  void encodeTo(OutputBitstream &, const IvSequenceParams &) const;
 };
 } // namespace TMIV::Metadata
 

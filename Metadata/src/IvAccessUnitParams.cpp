@@ -34,7 +34,6 @@
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 
 #include <TMIV/Metadata/Bitstream.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
 
 #include <algorithm>
 #include <cassert>
@@ -65,40 +64,84 @@ bool AtlasParameters::operator==(const AtlasParameters &other) const {
          posInAtlas == other.posInAtlas && rotation == other.rotation;
 }
 
-std::ostream &operator<<(std::ostream &stream, const AtlasParamsList &atlasParamsList) {
-  return stream << "num_patches=" << atlasParamsList.size()
-                << ", omaf_v1_compatible_flag=" << atlasParamsList.omafV1CompatibleFlag
-                << ", atlasSizes={";
+AtlasParamsList::AtlasParamsList(AtlasParamsVector atlasParameters, bool omafV1CompatibleFlag_,
+                                 optional<vector<unsigned>> groupIds_, SizeVector atlasSizes_)
+    : AtlasParamsVector{move(atlasParameters)}, omafV1CompatibleFlag{omafV1CompatibleFlag_},
+      groupIds{move(groupIds_)}, atlasSizes{move(atlasSizes_)} {}
+
+bool AtlasParamsList::operator==(const AtlasParamsList &other) const {
+  return equal(begin(), end(), other.begin(), other.end()) &&
+         omafV1CompatibleFlag == other.omafV1CompatibleFlag && groupIds == other.groupIds &&
+         atlasSizes == other.atlasSizes;
+}
+
+ostream &operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) {
+  stream << "num_patches=" << atlasParamsList.size() << '\n';
+  stream << "omaf_v1_compatible_flag=" << boolalpha << atlasParamsList.omafV1CompatibleFlag << '\n';
+
+  if (atlasParamsList.groupIds) {
+    stream << "groupIds={";
+    auto sep = "";
+    for (auto &groupId : *atlasParamsList.groupIds) {
+      stream << sep << groupId;
+      sep = ", ";
+    }
+    stream << "}\n";
+  } else {
+    stream << "No group ID's\n";
+  }
+
+  stream << "atlasSizes={";
   auto sep = "";
   for (auto &atlasSize : atlasParamsList.atlasSizes) {
     stream << sep << atlasSize;
     sep = ", ";
   }
+  stream << '}\n';
+
   return stream << '\n';
 }
 
-auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList &viewParamsVector)
-    -> AtlasParamsList {
+namespace {
+// Use vector<T> as a map<size_t, T>
+template <typename Vector, typename Value>
+void assignAt(Vector &vector, size_t position, Value &&value) {
+  while (vector.size() <= position) {
+    vector.emplace_back();
+  }
+  vector[position] = forward<Value>(value);
+}
+} // namespace
+
+auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
+                                 const IvSequenceParams &ivSequenceParams) -> AtlasParamsList {
   auto atlasParamsList = AtlasParamsList{};
   auto numAtlases = bitstream.getUExpGolomb() + 1;
   atlasParamsList.omafV1CompatibleFlag = bitstream.getFlag();
 
+  if (ivSequenceParams.numGroups > 1) {
+    atlasParamsList.groupIds = vector<unsigned>(numAtlases, 0U);
+  }
+
   while (numAtlases-- > 0) {
     AtlasParameters patch;
     patch.atlasId = bitstream.getUint8();
+
+    if (ivSequenceParams.numGroups > 1) {
+      assignAt(*atlasParamsList.groupIds, patch.atlasId,
+               unsigned(bitstream.getUVar(ivSequenceParams.numGroups)));
+    }
+
     auto numPatches = bitstream.getUint16() + 1;
 
-    // It is not guaranteed that atlas ID's are consecutive
-    while (patch.atlasId >= atlasParamsList.atlasSizes.size()) {
-      atlasParamsList.atlasSizes.emplace_back();
-    }
-    atlasParamsList.atlasSizes[patch.atlasId].x() = bitstream.getUint16();
-    atlasParamsList.atlasSizes[patch.atlasId].y() = bitstream.getUint16();
-    const auto atlasSize = atlasParamsList.atlasSizes[patch.atlasId];
+    auto atlasSize = Vec2i{};
+    atlasSize.x() = bitstream.getUint16();
+    atlasSize.y() = bitstream.getUint16();
+    assignAt(atlasParamsList.atlasSizes, patch.atlasId, atlasSize);
 
     while (numPatches-- > 0) {
-      patch.viewId = uint16_t(bitstream.getUVar(viewParamsVector.size()));
-      const auto viewSize = viewParamsVector[patch.viewId].size;
+      patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
+      const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
       patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
       patch.patchSizeInView.y() = int(bitstream.getUVar(viewSize.y()) + 1);
@@ -120,7 +163,7 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream, const ViewParamsList
 }
 
 void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
-                               const ViewParamsList &viewParamsVector) const {
+                               const IvSequenceParams &ivSequenceParams) const {
   // Count patches per atlas ID
   auto atlasIds = map<uint8_t, uint_least16_t>{};
   for (const auto &patch : *this) {
@@ -137,13 +180,20 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
     const auto atlasSize = atlasSizes[atlasId];
 
     bitstream.putUint8(atlasId);
+
+    if (ivSequenceParams.numGroups > 1) {
+      assert(groupIds);
+      const auto &groupIds_ = *groupIds;
+      bitstream.putUVar(groupIds_[atlasId], ivSequenceParams.numGroups);
+    }
+
     bitstream.putUint16(uint16_t(numPatches - 1));
     bitstream.putUint16(atlasSize.x());
     bitstream.putUint16(atlasSize.y());
 
     for (const auto &patch : *this) {
       if (patch.atlasId == atlasId) {
-        const auto viewSize = viewParamsVector[patch.viewId].size;
+        const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
 #ifndef NDEBUG
         assert(0 < patch.patchSizeInView.x() && 0 < patch.patchSizeInView.y());
@@ -154,7 +204,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
         assert(patch.posInAtlas.y() + patch.patchSizeInAtlas().y() <= atlasSize.y());
 #endif
 
-        bitstream.putUVar(patch.viewId, viewParamsVector.size());
+        bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
         bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());
         bitstream.putUVar(patch.patchSizeInView.y() - 1, viewSize.y());
         bitstream.putUVar(patch.posInAtlas.x(), atlasSize.x());
@@ -231,7 +281,7 @@ Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) {
   }
 }
 
-std::ostream &operator<<(std::ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) {
+ostream &operator<<(ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) {
   stream << '{';
   if (const auto &x = ivAccessUnitParams.atlasParamsList) {
     return stream << *x;
@@ -244,11 +294,12 @@ bool IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const {
 }
 
 auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream,
-                                    const ViewParamsList &viewParamsVector) -> IvAccessUnitParams {
+                                    const IvSequenceParams &ivSequenceParams)
+    -> IvAccessUnitParams {
   auto ivsAccessUnitParams = IvAccessUnitParams{};
   const auto atlasParamsPresentFlag = bitstream.getFlag();
   if (atlasParamsPresentFlag) {
-    ivsAccessUnitParams.atlasParamsList = AtlasParamsList::decodeFrom(bitstream, viewParamsVector);
+    ivsAccessUnitParams.atlasParamsList = AtlasParamsList::decodeFrom(bitstream, ivSequenceParams);
   }
   const auto ivsAupExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_aup_extension_present_flag=" << boolalpha << ivsAupExtensionPresentFlag << '\n';
@@ -256,10 +307,10 @@ auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream,
 }
 
 void IvAccessUnitParams::encodeTo(OutputBitstream &bitstream,
-                                  const ViewParamsList &viewParamsVector) const {
+                                  const IvSequenceParams &ivSequenceParams) const {
   bitstream.putFlag(!!atlasParamsList);
   if (atlasParamsList) {
-    atlasParamsList->encodeTo(bitstream, viewParamsVector);
+    atlasParamsList->encodeTo(bitstream, ivSequenceParams);
   }
   bitstream.putFlag(false);
 }

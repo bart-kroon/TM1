@@ -203,18 +203,21 @@ const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
 const auto ivSequenceParams =
-    array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1]}};
+    array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
+          IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1], true, 2}};
 
 const auto atlasParamsList = array{
     AtlasParamsList{{AtlasParameters{0, 0, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90}},
-                    true,
-                    {{1920, 1080}}},
+                    true,            // omaf v1 compatible flags
+                    {},              // no group ID's
+                    {{1920, 1080}}}, // atlas sizes
     AtlasParamsList{
         {AtlasParameters{0, 0, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90},
          AtlasParameters{0, 1, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180},
          AtlasParameters{2, 1, {100, 30}, {500, 400}, {340, 220}, PatchRotation::rot180}},
-        true,
-        {{2048, 4096}, {0, 0}, {2048, 1088}}}};
+        true,                                   // omaf v1 compatible flag
+        {{1, 0, 1}},                            // group ID's,
+        {{2048, 4096}, {0, 0}, {2048, 1088}}}}; // atlas sizes
 
 const auto ivAccessUnitParams =
     array{IvAccessUnitParams{}, IvAccessUnitParams{{atlasParamsList[1]}}};
@@ -251,21 +254,26 @@ TEST_CASE("ViewParamsList") {
 }
 
 TEST_CASE("Metadata bitstreams") {
-  SECTION("ivs_profile_tier_level[0]") { REQUIRE(codingTest(examples::ivsProfileTierLevel[0], 0)); }
-  SECTION("camera_params_list[0]") { REQUIRE(codingTest(examples::cameraParameterList[0], 59)); }
-  SECTION("camera_params_list[1]") { REQUIRE(codingTest(examples::cameraParameterList[1], 83)); }
-  SECTION("camera_params_list[2]") { REQUIRE(codingTest(examples::cameraParameterList[2], 115)); }
-  SECTION("ivs_params[0]") { REQUIRE(codingTest(examples::ivSequenceParams[0], 83)); }
-  SECTION("atlas_params_list[0]") {
-    REQUIRE(codingTest(examples::atlasParamsList[0], 17, examples::cameraParameterList[0]));
+  SECTION("ivs_profile_tier_level") { REQUIRE(codingTest(examples::ivsProfileTierLevel[0], 0)); }
+
+  SECTION("camera_params_list") {
+    REQUIRE(codingTest(examples::cameraParameterList[0], 59));
+    REQUIRE(codingTest(examples::cameraParameterList[1], 83));
+    REQUIRE(codingTest(examples::cameraParameterList[2], 115));
   }
-  SECTION("atlas_params_list[1]") {
-    REQUIRE(codingTest(examples::atlasParamsList[1], 42, examples::cameraParameterList[1]));
+
+  SECTION("ivs_params") {
+    REQUIRE(codingTest(examples::ivSequenceParams[0], 59));
+    REQUIRE(codingTest(examples::ivSequenceParams[1], 83));
   }
-  SECTION("iv_access_unit_params[0]") {
-    REQUIRE(codingTest(examples::ivAccessUnitParams[0], 1, examples::cameraParameterList[1]));
+
+  SECTION("atlas_params_list") {
+    REQUIRE(codingTest(examples::atlasParamsList[0], 17, examples::ivSequenceParams[0]));
+    REQUIRE(codingTest(examples::atlasParamsList[1], 42, examples::ivSequenceParams[1]));
   }
-  SECTION("iv_access_unit_params[1]") {
-    REQUIRE(codingTest(examples::ivAccessUnitParams[1], 42, examples::cameraParameterList[1]));
+
+  SECTION("iv_access_unit_params") {
+    REQUIRE(codingTest(examples::ivAccessUnitParams[0], 1, examples::ivSequenceParams[1]));
+    REQUIRE(codingTest(examples::ivAccessUnitParams[1], 43, examples::ivSequenceParams[1]));
   }
 }

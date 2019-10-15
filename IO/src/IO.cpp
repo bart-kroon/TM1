@@ -189,13 +189,23 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     throw runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
 
-  return {{},
-          ViewParamsList::loadFromJson(Json{stream}.require("cameras"),
-                                       config.require("SourceCameraNames").asStringVector())};
+  const auto ivsProfileTierLevel = IvsProfileTierLevel{};
+
+  const auto viewParamsList = ViewParamsList::loadFromJson(
+      Json{stream}.require("cameras"), config.require("SourceCameraNames").asStringVector());
+
+  const auto depthLowQualityFlag = config.require("depthLowQualityFlag").asBool();
+
+  const auto numGroups = config.require("numGroups").asInt();
+  if (numGroups < 1) {
+    throw runtime_error("Require numGroups >= 1");
+  }
+
+  return {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups)};
 }
 
 auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitParams {
-  return {AtlasParamsList{{}, config.require("OmafV1CompatibleFlag").asBool(), {}}};
+  return {AtlasParamsList{{}, config.require("OmafV1CompatibleFlag").asBool(), {}, {}}};
 }
 
 namespace {

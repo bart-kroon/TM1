@@ -225,7 +225,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
         bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
 
         if (ivSequenceParams.maxObjects > 1) {
-          assert(patch.objectId);
+          verify(patch.objectId);
           bitstream.putUVar(*patch.objectId, ivSequenceParams.maxObjects);
         }
 

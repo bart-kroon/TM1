@@ -72,16 +72,16 @@ public:
 
     for (int outputFrame = 0; outputFrame < m_numberOfFrames; ++outputFrame) {
       auto inputFrame = IO::getExtendedIndex(json(), outputFrame);
+      cout << "\nDECODE INPUT FRAME " << inputFrame << " TO OUTPUT FRAME " << outputFrame << ":\n\n";
 
       if (m_metadataReader.readAccessUnit(inputFrame / m_intraPeriod)) {
-        cout << "Decoded access unit parameters:\n" << m_metadataReader.ivAccessUnitParams();
+        cout << "\nDecoded access unit parameters:\n" << m_metadataReader.ivAccessUnitParams();
         m_decoder->updateAccessUnitParams(m_metadataReader.ivAccessUnitParams());
       }
 
-      auto viewport = m_decoder->decodeFrame(
-          IO::loadAtlas(json(), m_metadataReader.ivAccessUnitParams().atlasParamsList->atlasSizes,
-                        inputFrame),
-          IO::loadViewportMetadata(json(), outputFrame));
+      const auto &atlasSizes = m_metadataReader.ivAccessUnitParams().atlasParamsList->atlasSizes;
+      const auto viewport = m_decoder->decodeFrame(IO::loadAtlas(json(), atlasSizes, inputFrame),
+                                                   IO::loadViewportMetadata(json(), outputFrame));
       IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
     }
   }

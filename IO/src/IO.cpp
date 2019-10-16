@@ -312,7 +312,7 @@ ViewParams loadViewportMetadata(const Json &config, int frameIndex) {
   auto outputviewName = config.require("OutputCameraName").asString();
 
   auto viewParamsVector =
-      ViewParamsList::loadFromJson(Json{stream}.require("viewParamsVector"), {outputviewName});
+      ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputviewName});
 
   if (viewParamsVector.empty()) {
     throw runtime_error("Unknown OutputCameraName " + outputviewName);

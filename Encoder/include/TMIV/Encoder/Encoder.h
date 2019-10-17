@@ -62,6 +62,7 @@ private:
   std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
   Metadata::IvSequenceParams m_constructedSequenceParams;
   Metadata::IvSequenceParams m_codedSequenceParams;
+  Metadata::IvAccessUnitParams m_accessUnitParams;
 };
 } // namespace TMIV::Encoder
 

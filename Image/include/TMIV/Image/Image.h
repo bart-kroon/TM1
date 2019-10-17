@@ -36,6 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Matrix.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::Image {
@@ -44,7 +45,8 @@ constexpr unsigned maxLevel(unsigned bits);
 
 // Modify depth range from 16-bit to 10-bit with camera parameters that may have different
 // normDispRange and depthOccMapThreshold values.
-auto modifyDepthRange(const Common::MVD16Frame &frame16,
+auto modifyDepthRange(const Common::MVD16Frame &atlases16,
+                      const Metadata::AtlasParamsList &atlasParamsList,
                       const Metadata::ViewParamsVector &cameras16,
                       const Metadata::ViewParamsVector &cameras10) -> Common::MVD10Frame;
 

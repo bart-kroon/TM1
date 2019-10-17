@@ -48,26 +48,34 @@ using Mat1f = Mat<float>;
 using Mat3f = Mat<Vec3f>;
 
 namespace TMIV::Image {
-auto modifyDepthRange(const MVD16Frame &frame16, const ViewParamsVector &cameras16,
-                      const ViewParamsVector &cameras10) -> MVD10Frame {
-  auto frame10 = MVD10Frame{};
-  frame10.reserve(frame16.size());
-  auto i_camera16 = begin(cameras16);
-  auto i_camera10 = begin(cameras10);
-  transform(begin(frame16), end(frame16), back_inserter(frame10),
-            [&](const TextureDepth16Frame &view16) -> TextureDepth10Frame {
-              auto view10 = TextureDepth10Frame{
-                  view16.first, Depth10Frame{view16.second.getWidth(), view16.second.getHeight()}};
-              transform(begin(view16.second.getPlane(0)), end(view16.second.getPlane(0)),
-                        begin(view10.second.getPlane(0)), [&](uint16_t x) {
-                          const auto normDisp = impl::expandNormDispValue<16>(*i_camera16, x);
-                          return impl::quantizeNormDispValue<10>(*i_camera10, normDisp);
-                        });
-              ++i_camera16;
-              ++i_camera10;
-              return view10;
-            });
-  return frame10;
+auto modifyDepthRange(const Common::MVD16Frame &atlases16,
+                      const Metadata::AtlasParamsList &atlasParamsList,
+                      const Metadata::ViewParamsVector &cameras16,
+                      const Metadata::ViewParamsVector &cameras10) -> Common::MVD10Frame {
+  auto atlases10 = MVD10Frame{};
+  atlases10.reserve(atlases16.size());
+
+  for (auto &atlas16 : atlases16) {
+    atlases10.emplace_back(atlas16.first,
+                           Depth10Frame{atlas16.second.getWidth(), atlas16.second.getHeight()});
+  }
+
+  // We need to go through the entire patch list again
+  for (const auto &patch : atlasParamsList) {
+    const auto patchSizeInAtlas = patch.patchSizeInAtlas();
+    for (int i = 0; i < patchSizeInAtlas.y(); ++i) {
+      for (int j = 0; j < patchSizeInAtlas.x(); ++j) {
+        int n = i + patch.posInAtlas.y();
+        int m = j + patch.posInAtlas.x();
+        const auto level16 = atlases16[patch.atlasId].second.getPlane(0)(n, m);
+        const auto normDisp = impl::expandNormDispValue<16>(cameras16[patch.viewId], level16);
+        const auto level10 = impl::quantizeNormDispValue<10>(cameras10[patch.viewId], normDisp);
+        atlases10[patch.atlasId].second.getPlane(0)(n, m) = level10;
+      }
+    }
+  }
+
+  return atlases10;
 }
 
 Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {

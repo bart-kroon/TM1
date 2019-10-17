@@ -70,11 +70,12 @@ void Encoder::pushFrame(Common::MVD16Frame views) {
 }
 
 auto Encoder::completeAccessUnit() -> const Metadata::IvAccessUnitParams & {
-  return m_atlasConstructor->completeAccessUnit();
+  m_accessUnitParams = m_atlasConstructor->completeAccessUnit();
+  return m_accessUnitParams;
 }
 
 auto Encoder::popAtlas() -> Common::MVD10Frame {
-  return modifyDepthRange(m_atlasConstructor->popAtlas(),
+  return modifyDepthRange(m_atlasConstructor->popAtlas(), *m_accessUnitParams.atlasParamsList,
                           m_constructedSequenceParams.viewParamsList,
                           m_codedSequenceParams.viewParamsList);
 }

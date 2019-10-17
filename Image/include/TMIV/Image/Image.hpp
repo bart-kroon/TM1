@@ -75,7 +75,7 @@ uint16_t quantizeNormDispValue(const Metadata::ViewParams &viewParams, float x) 
   if (x > 0.F && std::isfinite(x)) {
     const auto &R = viewParams.normDispRange;
     const auto value = quantizeValue<bits>((x - R[0]) / (R[1] - R[0]));
-    return std::max(viewParams.depthOccMapThreshold, value);
+    return std::max(uint16_t(2 * viewParams.depthOccMapThreshold), value);
   }
   return 0;
 }

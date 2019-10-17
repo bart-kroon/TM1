@@ -212,10 +212,11 @@ const auto ivSequenceParams =
           }};
 
 const auto atlasParamsList = array{
-    AtlasParamsList{{AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90, {}, {}}},
-                    true,            // omaf v1 compatible flags
-                    {},              // no group ID's
-                    {{1920, 1080}}}, // atlas sizes
+    AtlasParamsList{
+        {AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90, {}, {}}},
+        true,            // omaf v1 compatible flags
+        {},              // no group ID's
+        {{1920, 1080}}}, // atlas sizes
     AtlasParamsList{
         {AtlasParameters{0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90, {}, {}},
          AtlasParameters{0, 1, {1}, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180, {64}, {}},
@@ -281,5 +282,45 @@ TEST_CASE("Metadata bitstreams") {
   SECTION("iv_access_unit_params") {
     REQUIRE(codingTest(examples::ivAccessUnitParams[0], 1, examples::ivSequenceParams[1]));
     REQUIRE(codingTest(examples::ivAccessUnitParams[1], 46, examples::ivSequenceParams[1]));
+  }
+}
+
+SCENARIO("Depth/occupancy coding") {
+  GIVEN("View parameters without invalid depth") {
+    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
+    const auto sourceSequenceParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
+
+    WHEN("Modifying the depth range") {
+      const auto codedSequenceParams = sourceSequenceParams.modifyDepthRange();
+
+      THEN("The camera parameters are unmodified") {
+        REQUIRE(codedSequenceParams == sourceSequenceParams);
+      }
+    }
+  }
+
+  GIVEN("View parameters with invalid depth") {
+    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 1};
+    const auto sourceSeqParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
+
+    WHEN("Modifying the depth range") {
+      const auto codedSeqParams = sourceSeqParams.modifyDepthRange();
+      const auto &codedViewParams = codedSeqParams.viewParamsList.front();
+
+      THEN("depthOccMapThreshold (T) >> 0") {
+        const auto T = codedViewParams.depthOccMapThreshold;
+        REQUIRE(T >= 8);
+
+        THEN("Coded level 2T matches with source level 0") {
+          // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
+          const auto twoT = float(2 * T);
+          const auto refViewParams = ViewParams{
+              {1920, 1080}, {}, {}, projection, {0.2F - twoT * 2.F / (1023.F - twoT), 2.2F}, T};
+          REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
+        }
+      }
+    }
   }
 }

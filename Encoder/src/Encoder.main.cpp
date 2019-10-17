@@ -35,6 +35,7 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/IDecoder.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataWriter.h>
 
@@ -44,6 +45,7 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::IO;
 using namespace TMIV::Metadata;
+using namespace TMIV::Decoder;
 
 namespace TMIV::Encoder {
 class Application : public Common::Application {
@@ -53,6 +55,7 @@ private:
   int m_intraPeriod{};
   IvMetadataWriter m_metadataWriter;
   SizeVector m_viewSizes;
+  unique_ptr<IDecoder> m_reconstructor;
 
 public:
   explicit Application(vector<const char *> argv)
@@ -60,6 +63,10 @@ public:
         m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
+
+    if (auto node = json().optional("reconstruct"); node.asBool()) {
+      m_reconstructor = create<IDecoder>("Decoder");
+    }
   }
 
   void run() override {
@@ -70,6 +77,10 @@ public:
     const auto codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
     cout << "\nCoded sequence parameters:\n" << codedSequenceParams;
+
+    if (m_reconstructor) {
+      m_reconstructor->updateSequenceParams(codedSequenceParams);
+    }
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -90,6 +101,11 @@ private:
     cout << "\nCoded access unit parameters:\n" << codedAccessUnitParams;
 
     m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams);
+
+    if (m_reconstructor) {
+      m_reconstructor->updateAccessUnitParams(codedAccessUnitParams);
+    }
+
     popAtlases(firstFrame, lastFrame);
   }
 
@@ -101,17 +117,28 @@ private:
 
   void popAtlases(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      saveAtlas(json(), i, m_encoder->popAtlas());
+      const auto atlas = m_encoder->popAtlas();
+      saveAtlas(json(), i, atlas);
+
+      if (m_reconstructor) {
+        const auto viewportParams = loadViewportMetadata(json(), i);
+        const auto viewport = m_reconstructor->decodeFrame(atlas, viewportParams);
+		cout << "Reconstruction: " << viewportParams << '\n';
+
+        saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
+      }
     }
   }
 };
 } // namespace TMIV::Encoder
 
+#include "../../Decoder/src/Decoder.reg.hpp"
 #include "Encoder.reg.hpp"
 
 int main(int argc, char *argv[]) {
   try {
     TMIV::Encoder::registerComponents();
+    TMIV::Decoder::registerComponents();
     TMIV::Encoder::Application app{{argv, argv + argc}};
     app.startTime();
     app.run();

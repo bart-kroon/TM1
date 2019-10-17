@@ -12,7 +12,8 @@ add_library(TMIV::EncoderLib
 target_link_libraries(EncoderLib
 	PUBLIC
 		TMIV::ViewOptimizerLib
-		TMIV::AtlasConstructorLib)
+		TMIV::AtlasConstructorLib
+		TMIV::DepthOccupancyLib)
 
 target_include_directories(EncoderLib
 	PUBLIC

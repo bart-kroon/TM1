@@ -42,6 +42,7 @@ using namespace TMIV::Common;
 using namespace TMIV::Image;
 using namespace TMIV::Metadata;
 using namespace TMIV::ViewOptimizer;
+using namespace TMIV::DepthOccupancy;
 
 namespace TMIV::Encoder {
 Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
@@ -49,19 +50,19 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
       Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", rootNode, componentNode);
   m_atlasConstructor =
       Factory<IAtlasConstructor>::getInstance().create("AtlasConstructor", rootNode, componentNode);
+  m_depthOccupancy =
+      Factory<IDepthOccupancy>::getInstance().create("DepthOccupancy", rootNode, componentNode);
 }
 
 auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
     -> const Metadata::IvSequenceParams & {
-  auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
-  m_constructedSequenceParams =
-      m_atlasConstructor->prepareSequence(move(optimized.basic), move(optimized.additional));
-  m_codedSequenceParams = m_constructedSequenceParams.modifyDepthRange();
-  return m_codedSequenceParams;
+  const auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+  return m_depthOccupancy->transformSequenceParams(
+      m_atlasConstructor->prepareSequence(move(optimized.basic), move(optimized.additional)));
 }
 
 void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
-  return m_atlasConstructor->prepareAccessUnit(move(ivAccessUnitParams));
+  m_atlasConstructor->prepareAccessUnit(move(ivAccessUnitParams));
 }
 
 void Encoder::pushFrame(Common::MVD16Frame views) {
@@ -70,13 +71,10 @@ void Encoder::pushFrame(Common::MVD16Frame views) {
 }
 
 auto Encoder::completeAccessUnit() -> const Metadata::IvAccessUnitParams & {
-  m_accessUnitParams = m_atlasConstructor->completeAccessUnit();
-  return m_accessUnitParams;
+  return m_depthOccupancy->transformAccessUnitParams(m_atlasConstructor->completeAccessUnit());
 }
 
 auto Encoder::popAtlas() -> Common::MVD10Frame {
-  return modifyDepthRange(m_atlasConstructor->popAtlas(), *m_accessUnitParams.atlasParamsList,
-                          m_constructedSequenceParams.viewParamsList,
-                          m_codedSequenceParams.viewParamsList);
+  return m_depthOccupancy->transformAtlases(m_atlasConstructor->popAtlas());
 }
 } // namespace TMIV::Encoder

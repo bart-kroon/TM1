@@ -31,20 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
+#ifndef _TMIV_DEPTHOCCUPANCY_IDEPTHOCCUPANCY_H_
+#define _TMIV_DEPTHOCCUPANCY_IDEPTHOCCUPANCY_H_
 
-#include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
-#include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
-#include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
-#include <TMIV/Common/Factory.h>
+namespace TMIV::DepthOccupancy {
+class IDepthOccupancy {
+public:
+  IDepthOccupancy() = default;
+  IDepthOccupancy(const IDepthOccupancy &) = default;
+  IDepthOccupancy(IDepthOccupancy &&) = default;
+  IDepthOccupancy &operator=(const IDepthOccupancy &) = default;
+  IDepthOccupancy &operator=(IDepthOccupancy &&) = default;
+  virtual ~IDepthOccupancy() = default;
 
-namespace TMIV::Encoder {
-inline void registerComponents() {
-  TMIV::ViewOptimizer::registerComponents();
-  TMIV::AtlasConstructor::registerComponents();
-  TMIV::DepthOccupancy::registerComponents();
+  virtual auto transformSequenceParams(Metadata::IvSequenceParams)
+      -> const Metadata::IvSequenceParams & = 0;
+  virtual auto transformAccessUnitParams(Metadata::IvAccessUnitParams)
+      -> const Metadata::IvAccessUnitParams & = 0;
+  virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
+};
+} // namespace TMIV::DepthOccupancy
 
-  Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
-}
-} // namespace TMIV::Encoder
+#endif

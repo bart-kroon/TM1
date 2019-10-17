@@ -284,7 +284,7 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
   Mat<int> isoverlap;
   isoverlap.resize(camera_from.size.y(), camera_from.size.x());
   float depth_temp =
-      sqrtf(expandDepthValue16(camera_from, 1) * expandDepthValue16(camera_from, UINT16_MAX));
+      sqrtf(expandDepthValue<16>(camera_from, 1) * expandDepthValue<16>(camera_from, UINT16_MAX));
 
   for (unsigned i = 0; i != depth.height(); ++i) {
     for (unsigned j = 0; j != depth.width(); ++j) {

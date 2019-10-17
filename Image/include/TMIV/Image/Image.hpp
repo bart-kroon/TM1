@@ -41,6 +41,7 @@ constexpr unsigned maxLevel(unsigned bits) { return (1U << bits) - 1U; }
 namespace impl {
 // An implementation-specific maximum depth value
 constexpr auto kilometer = 1000.F;
+} // namespace impl
 
 template <unsigned bits> float expandValue(uint16_t x) { return float(x) / float(maxLevel(bits)); }
 
@@ -59,7 +60,7 @@ template <unsigned bits>
 float expandNormDispValue(const Metadata::ViewParams &viewParams, uint16_t x) {
   if (x >= viewParams.depthOccMapThreshold) {
     const auto &R = viewParams.normDispRange;
-    return std::max(1.F / kilometer, R[0] + (R[1] - R[0]) * expandValue<bits>(x));
+    return std::max(1.F / impl::kilometer, R[0] + (R[1] - R[0]) * expandValue<bits>(x));
   }
   return 0.F;
 }
@@ -83,14 +84,5 @@ uint16_t quantizeNormDispValue(const Metadata::ViewParams &viewParams, float x) 
 template <unsigned bits>
 uint16_t quantizeDepthValue(const Metadata::ViewParams &viewParams, float x) {
   return x > 0.F ? quantizeNormDispValue<bits>(viewParams, 1.F / x) : 0;
-}
-} // namespace impl
-
-inline float expandDepthValue10(const Metadata::ViewParams &viewParams, uint16_t x) {
-  return impl::expandDepthValue<10>(viewParams, x);
-}
-
-inline float expandDepthValue16(const Metadata::ViewParams &viewParams, uint16_t x) {
-  return impl::expandDepthValue<16>(viewParams, x);
 }
 } // namespace TMIV::Image

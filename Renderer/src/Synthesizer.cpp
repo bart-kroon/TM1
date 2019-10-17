@@ -105,7 +105,7 @@ public:
 
         auto level = atlas.second.getPlane(0)(i_atlas, j_atlas);
         assert(level >= viewParams.depthOccMapThreshold);
-        const auto d = expandDepthValue10(viewParams, level);
+        const auto d = expandDepthValue<10>(viewParams, level);
         assert(d > 0.F);
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
@@ -247,32 +247,6 @@ public:
                                   resolutionRatio(viewParamsVector, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
-  }
-
-  Texture444Depth16Frame renderFrame(const MVD10Frame &frame,
-                                     const ViewParamsVector &viewParamsVector,
-                                     const ViewParams &target) const {
-    assert(frame.size() == viewParamsVector.size());
-    auto rasterizer =
-        rasterFrame(frame.size(), target,
-                    [&](size_t i, const ViewParams &target) {
-                      return unproject(expandDepth(viewParamsVector[i], frame[i].second),
-                                       viewParamsVector[i], target, expandTexture(frame[i].first));
-                    },
-                    resolutionRatio(viewParamsVector, target));
-    return {quantizeTexture(rasterizer.attribute<0>()),
-            quantizeNormDisp16(target, rasterizer.normDisp())};
-  }
-
-  Mat<float> renderDepth(const Mat<float> &depth, const ViewParams &viewParams,
-                         const ViewParams &target) const {
-    AccumulatingPixel<> pixel{m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching};
-    auto mesh = reproject(depth, viewParams, target);
-
-    Rasterizer<> rasterizer{pixel, target.size};
-    rasterizer.submit(move(get<0>(mesh)), {}, get<1>(mesh));
-    rasterizer.run();
-    return rasterizer.depth();
   }
 
 private:

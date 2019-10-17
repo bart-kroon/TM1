@@ -31,69 +31,54 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Image/Image.h>
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
 
-#include <TMIV/Common/Common.h>
-
-#include <cassert>
-#include <cmath>
-#include <cstdint>
-#include <limits>
+#include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
+using namespace TMIV::DepthOccupancy;
 
-using Mat1f = Mat<float>;
-using Mat3f = Mat<Vec3f>;
+SCENARIO("Depth/occupancy coding") {
+  DepthOccupancy depthOccupancy{37};
 
-namespace TMIV::Image {
-Mat3f expandTexture(const Frame<YUV420P10> &inYuv) {
-  auto &Y = inYuv.getPlane(0);
-  auto &U = inYuv.getPlane(1);
-  auto &V = inYuv.getPlane(2);
-  Mat3f out(inYuv.getPlane(0).sizes());
-  const auto width = Y.width();
-  const auto height = Y.height();
-  constexpr auto bitDepth = 10U;
+  GIVEN("View parameters without invalid depth") {
+    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
+    const auto sourceSequenceParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
 
-  for (unsigned i = 0; i != height; ++i) {
-    for (unsigned j = 0; j != width; ++j) {
-      out(i, j) = Vec3f{expandValue<bitDepth>(Y(i, j)), expandValue<bitDepth>(U(i / 2, j / 2)),
-                        expandValue<bitDepth>(V(i / 2, j / 2))};
-    }
-  }
-  return out;
-}
+    WHEN("Modifying the depth range") {
+      const auto codedSequenceParams = depthOccupancy.transformSequenceParams(sourceSequenceParams);
 
-Frame<YUV444P10> quantizeTexture(const Mat3f &in) {
-  Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
-  const auto width = in.width();
-  const auto height = in.height();
-
-  for (int k = 0; k < 3; ++k) {
-    for (unsigned i = 0; i != height; ++i) {
-      for (unsigned j = 0; j != width; ++j) {
-        constexpr auto bitDepth = 10U;
-        outYuv.getPlane(k)(i, j) = quantizeValue<bitDepth>(in(i, j)[k]);
+      THEN("The camera parameters are unmodified") {
+        REQUIRE(codedSequenceParams == sourceSequenceParams);
       }
     }
   }
 
-  return outYuv;
-}
+  GIVEN("View parameters with invalid depth") {
+    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 1};
+    const auto sourceSeqParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
 
-Mat<float> expandDepth(const ViewParams &viewParams, const Depth16Frame &in) {
-  auto out = Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
-  transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
-            [&](uint16_t x) { return expandDepthValue<16>(viewParams, x); });
-  return out;
-}
+    WHEN("Modifying the depth range") {
+      const auto codedSeqParams = depthOccupancy.transformSequenceParams(sourceSeqParams);
+      const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
-Depth16Frame quantizeNormDisp16(const ViewParams &viewParams, const Mat1f &in) {
-  auto out = Depth16Frame{int(in.width()), int(in.height())};
-  transform(begin(in), end(in), begin(out.getPlane(0)),
-            [&](float x) { return quantizeNormDispValue<16>(viewParams, x); });
-  return out;
+      THEN("depthOccMapThreshold (T) >> 0") {
+        const auto T = codedViewParams.depthOccMapThreshold;
+        REQUIRE(T >= 8);
+
+        THEN("Coded level 2T matches with source level 0") {
+          // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
+          const auto twoT = float(2 * T);
+          const auto refViewParams = ViewParams{
+              {1920, 1080}, {}, {}, projection, {0.2F - twoT * 2.F / (1023.F - twoT), 2.2F}, T};
+          REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
+        }
+      }
+    }
+  }
 }
-} // namespace TMIV::Image

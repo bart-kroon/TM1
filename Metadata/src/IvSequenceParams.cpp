@@ -118,21 +118,6 @@ ViewParams ViewParams::loadFromJson(const Json &node) {
   return parameters;
 }
 
-auto IvSequenceParams::modifyDepthRange() const -> IvSequenceParams {
-  auto out = *this;
-  for (auto &x : out.viewParamsList) {
-    if (x.depthOccMapThreshold != 0) {
-      x.depthOccMapThreshold = 64; // =T
-      const auto nearLevel = 1023.F;
-      const auto farLevel = float(2 * x.depthOccMapThreshold);
-      // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
-      x.normDispRange[0] +=
-          (0.F - farLevel) / (nearLevel - farLevel) * (x.normDispRange[1] - x.normDispRange[0]);
-    }
-  }
-  return out;
-}
-
 bool ViewParamsList::areIntrinsicParamsEqual() const {
   for (auto i = begin() + 1; i < end(); ++i) {
     if (front().projection != i->projection) {

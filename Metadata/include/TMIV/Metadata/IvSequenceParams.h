@@ -187,10 +187,6 @@ struct IvSequenceParams {
   // In specification: depth_occ_map_threshold_num_bits_minus8
   unsigned depthOccMapThresholdNumBits{10};
 
-  // No change when depthOccMapThreshold == 0 (no invalid depth)
-  // Otherwise set depthOccMapThreshold -> 64 and adjust normDispRange
-  auto modifyDepthRange() const -> IvSequenceParams;
-
   friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams);
   bool operator==(const IvSequenceParams &other) const;
   bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }

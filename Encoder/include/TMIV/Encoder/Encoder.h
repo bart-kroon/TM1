@@ -38,6 +38,7 @@
 
 #include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 namespace TMIV::Encoder {
@@ -60,9 +61,7 @@ public:
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
-  Metadata::IvSequenceParams m_constructedSequenceParams;
-  Metadata::IvSequenceParams m_codedSequenceParams;
-  Metadata::IvAccessUnitParams m_accessUnitParams;
+  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
 };
 } // namespace TMIV::Encoder
 

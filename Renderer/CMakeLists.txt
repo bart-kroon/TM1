@@ -9,6 +9,7 @@ add_library(RendererLib
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
 	"src/Engine.cpp"
+	"src/Engine.h"
 	"src/Engine_ERP.hpp"
 	"src/Engine_Perspective.hpp"
 	"src/blend.hpp"

@@ -56,7 +56,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
 
 auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
     -> const Metadata::IvSequenceParams & {
-  const auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+  auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
   return m_depthOccupancy->transformSequenceParams(
       m_atlasConstructor->prepareSequence(move(optimized.basic), move(optimized.additional)));
 }

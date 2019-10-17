@@ -65,6 +65,13 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
 auto AtlasConstructor::prepareSequence(IvSequenceParams basicSequenceParams,
                                        IvSequenceParams additionalSequenceParams)
     -> const IvSequenceParams & {
+  // TODO(BK): Why not change the interfaces to provide one set of sequence parameters +
+  // isReferenceView (or isBasicView) directly
+  m_isReferenceView.clear();
+  m_isReferenceView.insert(m_isReferenceView.end(), basicSequenceParams.viewParamsList.size(), 1);
+  m_isReferenceView.insert(m_isReferenceView.end(), additionalSequenceParams.viewParamsList.size(),
+                           0);
+
   // Make sure to carry all metadata
   m_ivSequenceParams = basicSequenceParams;
 
@@ -73,11 +80,6 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams basicSequenceParams,
       m_ivSequenceParams.viewParamsList.end(),
       make_move_iterator(begin(additionalSequenceParams.viewParamsList)),
       make_move_iterator(end(additionalSequenceParams.viewParamsList)));
-
-  m_isReferenceView.clear();
-  m_isReferenceView.insert(m_isReferenceView.end(), basicSequenceParams.viewParamsList.size(), 1);
-  m_isReferenceView.insert(m_isReferenceView.end(), additionalSequenceParams.viewParamsList.size(),
-                           0);
 
   // Construct at least the basic views
   m_nbAtlas = max(basicSequenceParams.viewParamsList.size(), m_nbAtlas);

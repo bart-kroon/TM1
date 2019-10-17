@@ -13,8 +13,12 @@ class ConfigurationParameters:
 	def __init__(self, seqId, anchorType):
 		self.sourceDepthBitDepth = 16
 		self.outputCameraName = "v1"
-		self.numberOfFrames = 97
-		
+				
+		if anchorType == 'anchor97':
+			self.numberOfFrames = 97
+		else:
+			self.numberOfFrames = 17
+			
 		if seqId == "A":
 			self.name = "ClassroomVideo"		
 			self.startFrame = 23
@@ -92,7 +96,7 @@ class ConfigurationParameters:
 		else:
 			exit(-1)
 		
-		if anchorType == 'view_anchor': 
+		if anchorType == 'view_anchor17': 
 			self.sourceCameraNames = sourceCameraNamesViewAnchor
 			self.maxLumaSamplesPerFrame = maxLumaSamplesPerFrameViewAnchor
 
@@ -113,7 +117,7 @@ def makeConfiguration(anchorType, testPoint, seqId, parameters):
 				"stretchingParameter": 0.6,
 				"maxStretching": 5 }
 	
-	if anchorType == 'view_anchor':
+	if anchorType == 'view_anchor17':
 		decoder =  {
 			"AtlasDeconstructorMethod": "AtlasDeconstructor",
 			"AtlasDeconstructor": {},
@@ -199,7 +203,7 @@ if __name__ == '__main__':
 	for testPoint in ["R0", "QP1", "QP2", "QP3", "QP4", "QP5"]:
 		if not os.path.exists(testPoint):
 			os.makedirs(testPoint)
-		for anchorType in [ 'anchor', 'view_anchor' ]:
+		for anchorType in [ 'anchor97', 'anchor17', 'view_anchor17' ]:
 			for seqId in ["A", "B", "C", "D", "E", "J", "L"]:
 				print(anchorType, testPoint, seqId)
 				parameters = ConfigurationParameters(seqId, anchorType)

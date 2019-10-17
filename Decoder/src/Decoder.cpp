@@ -53,8 +53,8 @@ void Decoder::updateSequenceParams(Metadata::IvSequenceParams ivSequenceParams) 
   m_ivSequenceParams = move(ivSequenceParams);
 }
 
-void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams accessUnitParams) {
-  m_ivAccessUnitParams = accessUnitParams;
+void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+  m_ivAccessUnitParams = move(ivAccessUnitParams);
 }
 
 auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const

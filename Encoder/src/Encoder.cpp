@@ -61,7 +61,7 @@ auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
 }
 
 void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
-  return m_atlasConstructor->prepareAccessUnit(ivAccessUnitParams);
+  return m_atlasConstructor->prepareAccessUnit(move(ivAccessUnitParams));
 }
 
 void Encoder::pushFrame(Common::MVD16Frame views) {

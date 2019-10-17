@@ -104,7 +104,9 @@ public:
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
 
         auto level = atlas.second.getPlane(0)(i_atlas, j_atlas);
+        assert(level >= viewParams.depthOccMapThreshold);
         const auto d = expandDepthValue10(viewParams, level);
+        assert(d > 0.F);
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
 

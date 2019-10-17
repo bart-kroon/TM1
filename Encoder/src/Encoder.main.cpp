@@ -64,7 +64,7 @@ public:
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto node = json().optional("reconstruct"); node.asBool()) {
+    if (auto node = json().optional("reconstruct"); node && node.asBool()) {
       m_reconstructor = create<IDecoder>("Decoder");
     }
   }

@@ -37,8 +37,6 @@
 
 #include <TMIV/Common/Common.h>
 
-#include <cassert>
-
 namespace TMIV::Renderer {
 template <> struct Engine<Metadata::PerspectiveParams> {
   const Metadata::ViewParams viewParams;
@@ -78,44 +76,6 @@ template <> struct Engine<Metadata::PerspectiveParams> {
       return {uv, v.position.x(), v.rayAngle};
     }
     return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};
-  }
-
-  // Helper function to calculate the v-component of image coordinates at output
-  // row i
-  float vAt(int i) const {
-    if (i == 0) {
-      return 0.F; // top edge of frame
-    }
-    if (i == orows - 1) {
-      return float(irows); // bottom edge of frame
-    }
-    return float(i) - 0.5F; // row middle
-  }
-
-  // Helper function to calculate the u-component of image coordinates at output
-  // column j
-  float uAt(int j) const {
-    if (j == 0) {
-      return 0.F; // left edge of frame
-    }
-    if (j == ocols - 1) {
-      return float(icols); // right edge of frame
-    }
-    return float(j) - 0.5F; // column centre
-  }
-
-  // Helper function to fetch a value from a matrix based on the output
-  // coordinate (i, j)
-  template <class T> T fetch(int i, int j, const Common::Mat<T> &matrix) const {
-    i = std::max(0, std::min(irows - 1, i - 1));
-    j = std::max(0, std::min(icols - 1, j - 1));
-    return matrix(i, j);
-  }
-
-  // Helper function to calculate the area of a triangle based on the output
-  // coordinate (i, j)
-  float triangleArea(int i, int j) const {
-    return (j == 0 || j == ocols - 1 ? 0.25F : 0.5F) * (i == 0 || i == orows - 1 ? 0.5F : 1.F);
   }
 
   // Project mesh to target view

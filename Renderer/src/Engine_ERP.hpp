@@ -121,68 +121,6 @@ template <> struct Engine<Metadata::ErpParams> {
     return {position, radius, v.rayAngle};
   }
 
-  // Helper function to calculate the v-component of image coordinates at output
-  // row i
-  float vAt(int i) const {
-    if (!northPole && i == 0) {
-      return 0.F; // top edge of frame
-    }
-    if (!southPole && i == orows - 1) {
-      return float(irows); // bottom edge of frame
-    }
-    return float(i) + int(northPole) - 0.5F; // row middle
-  }
-
-  // Helper function to calculate the u-component of image coordinates at output
-  // column j
-  float uAt(int j) const {
-    if (!wraps && j == 0) {
-      return 0.F; // left edge of frame
-    }
-    if (!wraps && j == ocols - 1) {
-      return float(icols); // right edge of frame
-    }
-    return float(j) + int(wraps) - 0.5F; // column centre
-  }
-
-  // Helper function to fetch a value from a matrix based on the output
-  // coordinate (i, j)
-  template <class T> T fetch(int i, int j, const Common::Mat<T> &matrix) const {
-    i = std::max(0, std::min(irows - 1, i + int(northPole) - 1));
-    if (wraps) {
-      j = j < icols ? j : 0;
-    } else {
-      j = std::max(0, std::min(icols - 1, j - 1));
-    }
-    return matrix(i, j);
-  }
-
-  // Helper function to average the value over an entire row (used for the
-  // poles)
-  template <class T> auto averageRow(const Common::Mat<T> &matrix, int row) const {
-    auto sum = 0. * T();
-    for (int column = 0; column < icols; ++column) {
-      auto value = matrix(row, column);
-      sum = sum + value;
-    }
-    if constexpr (std::is_arithmetic_v<T>) {
-      return T(sum / icols);
-    } else {
-      T result;
-      using V = typename T::value_type;
-      std::transform(std::begin(sum), std::end(sum), std::begin(result),
-                     [this](auto x) { return V(x / icols); });
-      return result;
-    }
-  }
-
-  // Helper function to calculate the area of a triangle based on the output
-  // coordinate (i, j)
-  float triangleArea(int i, int j) const {
-    return (!wraps && (j == 0 || j == ocols - 1) ? 0.25F : 0.5F) *
-           ((!northPole && i == 0) || (!southPole && i == orows - 1) ? 0.5F : 1.F);
-  }
-
   // Project mesh to target view
   template <typename... T>
   auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,

@@ -42,7 +42,7 @@
 namespace TMIV::ViewOptimizer {
 class ViewReducer : public IViewOptimizer {
 private:
-  std::vector<bool> m_priorities;
+  std::vector<bool> m_isBasicView;
 
 public:
   ViewReducer(const Common::Json & /*unused*/, const Common::Json & /*unused*/);

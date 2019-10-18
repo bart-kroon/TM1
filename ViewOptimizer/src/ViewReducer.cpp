@@ -57,7 +57,7 @@ ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output {
 
   const auto &viewParamsVector = ivSequenceParams.viewParamsList;
-  m_priorities.assign(viewParamsVector.size(), false);
+  m_isBasicView.assign(viewParamsVector.size(), false);
 
   // choose 9 degree as quantization step of angle between view i and view j.
   const float degree_step = radperdeg * 9;
@@ -222,16 +222,16 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
         distance = temp_distance;
       }
     }
-    m_priorities[id_center] = true;
+    m_isBasicView[id_center] = true;
   }
   // Just select 2 view i and j
   else {
-    m_priorities[camera_id_pair.first] = true;
-    m_priorities[camera_id_pair.second] = true;
+    m_isBasicView[camera_id_pair.first] = true;
+    m_isBasicView[camera_id_pair.second] = true;
   }
 
   // Output
-  return {std::move(ivSequenceParams), m_priorities};
+  return {std::move(ivSequenceParams), m_isBasicView};
 }
 
 auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {

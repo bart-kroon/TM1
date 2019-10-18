@@ -48,7 +48,7 @@ public:
   ~Packer() override = default;
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-            const std::vector<bool> &shouldNotBeSplit) -> Metadata::AtlasParamsVector override;
+            const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
 
 private:
   int m_alignment{};

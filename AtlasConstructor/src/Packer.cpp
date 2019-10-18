@@ -50,7 +50,7 @@ Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
-                  const vector<bool> &shouldNotBeSplit) -> AtlasParamsVector {
+                  const vector<bool> &isBasicView) -> AtlasParamsVector {
 
   // Check atlas size
   for (const auto &sz : atlasSizes) {
@@ -65,7 +65,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     auto clusteringOutput = Cluster::retrieve(
-        viewId, masks[viewId], static_cast<int>(clusterList.size()), shouldNotBeSplit[viewId]);
+        viewId, masks[viewId], static_cast<int>(clusterList.size()), isBasicView[viewId]);
 
     move(clusteringOutput.first.begin(), clusteringOutput.first.end(), back_inserter(clusterList));
     clusteringMap.push_back(move(clusteringOutput.second));
@@ -82,8 +82,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   }
 
   auto comp = [&](const Cluster &p1, const Cluster &p2) {
-    if (shouldNotBeSplit[p1.getViewId()] != shouldNotBeSplit[p2.getViewId()]) {
-      return shouldNotBeSplit[p2.getViewId()];
+    if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
+      return isBasicView[p2.getViewId()];
     }
     return p1.getArea() < p2.getArea();
   };

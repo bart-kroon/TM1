@@ -74,6 +74,19 @@ auto reprojectPoints(const Metadata::ViewParams &viewParams, const Metadata::Vie
 // The points should be in the target frame of reference.
 auto calculateRayAngles(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target,
                         const Common::Mat<Common::Vec3f> &points) -> Common::Mat<float>;
+
+// Return (R, T) such that x -> Rx + t changes reference frame from the source
+// camera to the target camera
+auto affineParameters(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target)
+    -> std::pair<Common::Mat3x3f, Common::Vec3f>;
+
+// Unproject a pixel from a source frame to scene coordinates in the reference
+// frame of the target camera.
+//
+// This method is less efficient because of the switch on projection type, but
+// suitable for rendering directly from an atlas.
+auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewParams &viewParams)
+    -> Common::Vec3f;
 } // namespace TMIV::Renderer
 
 #endif

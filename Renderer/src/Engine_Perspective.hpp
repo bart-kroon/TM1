@@ -37,8 +37,6 @@
 
 #include <TMIV/Common/Common.h>
 
-#include <cassert>
-
 namespace TMIV::Renderer {
 template <> struct Engine<Metadata::PerspectiveParams> {
   const Metadata::ViewParams viewParams;
@@ -78,98 +76,6 @@ template <> struct Engine<Metadata::PerspectiveParams> {
       return {uv, v.position.x(), v.rayAngle};
     }
     return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};
-  }
-
-  // Helper function to calculate the v-component of image coordinates at output
-  // row i
-  float vAt(int i) const {
-    if (i == 0) {
-      return 0.F; // top edge of frame
-    }
-    if (i == orows - 1) {
-      return float(irows); // bottom edge of frame
-    }
-    return float(i) - 0.5F; // row middle
-  }
-
-  // Helper function to calculate the u-component of image coordinates at output
-  // column j
-  float uAt(int j) const {
-    if (j == 0) {
-      return 0.F; // left edge of frame
-    }
-    if (j == ocols - 1) {
-      return float(icols); // right edge of frame
-    }
-    return float(j) - 0.5F; // column centre
-  }
-
-  // Helper function to fetch a value from a matrix based on the output
-  // coordinate (i, j)
-  template <class T> T fetch(int i, int j, const Common::Mat<T> &matrix) const {
-    i = std::max(0, std::min(irows - 1, i - 1));
-    j = std::max(0, std::min(icols - 1, j - 1));
-    return matrix(i, j);
-  }
-
-  // Helper function to calculate the area of a triangle based on the output
-  // coordinate (i, j)
-  float triangleArea(int i, int j) const {
-    return (j == 0 || j == ocols - 1 ? 0.25F : 0.5F) * (i == 0 || i == orows - 1 ? 0.5F : 1.F);
-  }
-
-  // List of 3-D vertices in the reference frame of the target camera
-  auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                     const Metadata::ViewParams &target) const
-      -> SceneVertexDescriptorList {
-    SceneVertexDescriptorList result;
-    result.reserve(osize);
-    const auto R_t = affineParameters(viewParams, target);
-    for (int i = 0; i < orows; ++i) {
-      for (int j = 0; j < ocols; ++j) {
-        const auto u = uAt(j);
-        const auto v = vAt(i);
-        const auto d = fetch(i, j, depth);
-        const auto xyz = R_t.first * unprojectVertex({u, v}, d) + R_t.second;
-        const auto rayAngle = angle(xyz, xyz - R_t.second);
-        result.push_back({xyz, rayAngle});
-      }
-    }
-    assert(int(result.size()) == osize);
-    return result;
-  }
-
-  // List of triangles with indices into the vertex lists
-  auto makeTriangleDescriptorList() const -> TriangleDescriptorList {
-    TriangleDescriptorList result;
-    result.reserve(numTriangles);
-    for (int i = 1; i < orows; ++i) {
-      for (int j = 1; j < ocols; ++j) {
-        const int br = i * ocols + j;
-        const int tr = br - ocols;
-        const int bl = br - 1;
-        const int tl = tr - 1;
-        const float area = triangleArea(i, j);
-        result.push_back({{tl, tr, br}, area});
-        result.push_back({{tl, br, bl}, area});
-      }
-    }
-    assert(int(result.size()) == numTriangles);
-    return result;
-  }
-
-  // List of vertex attributes in matching order
-  template <class T>
-  auto makeVertexAttributeList(const Common::Mat<T> &matrix) const -> std::vector<T> {
-    std::vector<T> result;
-    result.reserve(osize);
-    for (int i = 0; i < orows; ++i) {
-      for (int j = 0; j < ocols; ++j) {
-        result.push_back(fetch(i, j, matrix));
-      }
-    }
-    assert(int(result.size()) == osize);
-    return result;
   }
 
   // Project mesh to target view

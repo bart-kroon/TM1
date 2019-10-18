@@ -117,4 +117,43 @@ auto calculateRayAngles(const ViewParams &viewParams, const ViewParams &target,
             [t = R_t.second](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
   return result;
 }
+
+Mat3x3f rotationMatrixFromRotationAroundX(float rx) {
+  return Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
+}
+
+Mat3x3f rotationMatrixFromRotationAroundY(float ry) {
+  return Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
+}
+
+Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
+  return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
+}
+
+Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
+  return rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]) *
+         rotationMatrixFromRotationAroundY(radperdeg * rotation[1]) *
+         rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);
+}
+
+auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
+    -> pair<Mat3x3f, Vec3f> {
+  const auto R1 = EulerAnglesToRotationMatrix(viewParams.rotation);
+  const auto R2 = EulerAnglesToRotationMatrix(target.rotation);
+  const auto &t1 = viewParams.position;
+  const auto &t2 = target.position;
+
+  const auto R = transpose(R2) * R1;
+  const auto t = transpose(R2) * (t1 - t2);
+  return {R, t};
+}
+
+auto unprojectVertex(Vec2f position, float depth, const ViewParams &viewParams) -> Vec3f {
+  return visit(
+      [&](const auto &projection) {
+        Engine<decay_t<decltype(projection)>> engine{viewParams};
+        return engine.unprojectVertex(position, depth);
+      },
+      viewParams.projection);
+}
 } // namespace TMIV::Renderer

@@ -50,7 +50,7 @@ public:
   ~Pruner() override = default;
 
   auto prune(const Metadata::ViewParamsVector &viewParamsVector, const Common::MVD16Frame &views,
-             const std::vector<std::uint8_t> &shouldNotBePruned) -> Common::MaskList override;
+             const std::vector<bool> &shouldNotBePruned) -> Common::MaskList override;
 
 private:
   float m_redundancyFactor{};

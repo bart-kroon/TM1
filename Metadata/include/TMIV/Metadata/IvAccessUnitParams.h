@@ -78,7 +78,7 @@ struct AtlasParameters {
   // In specification: depth_occ_map_threshold[ a ][ i ]
   std::optional<uint16_t> depthOccMapThreshold;
 
-    // In specification: depth_start_present_flag[ a ][ i ]
+  // In specification: depth_start_present_flag[ a ][ i ]
   // In specification: depth_start[ a ][ i ]
   std::optional<uint16_t> depthStart;
 

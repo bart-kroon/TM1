@@ -58,7 +58,7 @@ auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
     -> const Metadata::IvSequenceParams & {
   auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
   return m_depthOccupancy->transformSequenceParams(
-      m_atlasConstructor->prepareSequence(move(optimized.basic), move(optimized.additional)));
+      m_atlasConstructor->prepareSequence(std::move(optimized.first), std::move(optimized.second)));
 }
 
 void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
@@ -67,7 +67,7 @@ void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams)
 
 void Encoder::pushFrame(Common::MVD16Frame views) {
   auto optimized = m_viewOptimizer->optimizeFrame(move(views));
-  return m_atlasConstructor->pushFrame(move(optimized.basic), move(optimized.additional));
+  return m_atlasConstructor->pushFrame(optimized);
 }
 
 auto Encoder::completeAccessUnit() -> const Metadata::IvAccessUnitParams & {

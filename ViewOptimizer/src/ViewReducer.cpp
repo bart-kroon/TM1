@@ -54,11 +54,7 @@ constexpr auto halfPixel = 0.5F;
 
 ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
-auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output<IvSequenceParams> {
-  // Make sure to carry all metadata
-  Output<IvSequenceParams> result = {ivSequenceParams, ivSequenceParams};
-  result.basic.viewParamsList.clear();
-  result.additional.viewParamsList.clear();
+auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output {
 
   const auto &viewParamsVector = ivSequenceParams.viewParamsList;
   m_priorities.assign(viewParamsVector.size(), false);
@@ -234,23 +230,8 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output<
     m_priorities[camera_id_pair.second] = true;
   }
 
-  // Move viewParamsVector into basic and additional partitions
-  for (size_t index = 0; index != viewParamsVector.size(); ++index) {
-    (m_priorities[index] ? result.basic : result.additional)
-        .viewParamsList.push_back(viewParamsVector[index]);
-  }
-  return result;
-}
-
-auto ViewReducer::optimizeFrame(MVD16Frame views) const -> Output<MVD16Frame> {
-  Output<MVD16Frame> result;
-  assert(m_priorities.size() == views.size());
-
-  // Move views into basic and additional partitions
-  for (size_t index = 0; index != views.size(); ++index) {
-    (m_priorities[index] ? result.basic : result.additional).push_back(move(views[index]));
-  }
-  return result;
+  // Output
+  return {std::move(ivSequenceParams), m_priorities};
 }
 
 auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {

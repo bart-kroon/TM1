@@ -34,8 +34,8 @@
 #include <TMIV/Encoder/Encoder.h>
 
 #include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
-#include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
 #include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
+#include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
 
 #include <TMIV/Common/Factory.h>
 

@@ -90,8 +90,8 @@ public:
   auto prune(const Metadata::ViewParamsVector &viewParamsVector, const MVD16Frame &views,
              const vector<bool> &isBasicView) -> MaskList {
     m_intra = m_viewParamsVector != viewParamsVector || m_isBasicView != isBasicView;
-    cout << "HierarchicalPruner: m_intra=" << m_intra << "\n";
     if (m_intra) {
+      cout << "The pruning order is (re)determined at this frame\n";
       m_viewParamsVector = viewParamsVector;
       m_isBasicView = isBasicView;
     }
@@ -130,9 +130,15 @@ private:
   }
 
   void synthesizeReferenceViews(const MVD16Frame &views) {
+    if (m_synthesizers.empty()) {
+      // Skip generation the meshes
+      cout << "Nothing to prune: only basic views\n";
+      return;
+    }
+
     for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
       if (m_isBasicView[i]) {
-        cout << "synthesizeReferenceViews: view=" << i << "\n";
+        cout << "Synthesize basic view " << i << " to all remaining additional views:\n";
         synthesizeViews(i, views[i]);
       }
     }
@@ -148,13 +154,11 @@ private:
     }
 
     auto sumValues = 0.;
-    auto sumPixels = 0.;
     for (const auto &mask : m_masks) {
       sumValues = accumulate(begin(mask.getPlane(0)), end(mask.getPlane(0)), sumValues);
-      sumPixels += mask.getWidth() * mask.getHeight();
     }
-    auto numAtlases = double(m_masks.size()) * sumValues / (255. * sumPixels);
-    cout << "Theoretical number of atlases is " << numAtlases << '\n';
+    const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
+    cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
   }
 
   void pruneIntraFrame(const MVD16Frame &views) {
@@ -163,8 +167,7 @@ private:
       auto it = max_element(
           begin(m_synthesizers), end(m_synthesizers),
           [](const auto &s1, const auto &s2) { return s1->maskAverage < s2->maskAverage; });
-      cout << "pruneIntraFrame: view=" << (*it)->index << ", maskAverage=" << (*it)->maskAverage
-           << "\n";
+      cout << "Prune view " << (*it)->index << ":\n";
       const auto i = (*it)->index;
       m_synthesizers.erase(it);
       synthesizeViews(i, views[i]);
@@ -176,7 +179,7 @@ private:
     for (auto i : m_pruningOrder) {
       auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
                         [i](const auto &s) { return s->index == i; });
-      cout << "pruneInterFrame: view=" << i << ", maskAverage=" << (*it)->maskAverage << "\n";
+      cout << "Prune view " << i << ":\n";
       m_synthesizers.erase(it);
       synthesizeViews(i, views[i]);
     }
@@ -238,13 +241,12 @@ private:
       attributes.shrink_to_fit();
     }
 
-    cout << "Mesh has " << vertices.size() << " vertices (" << double(vertices.size()) / numPixels
-         << " of full view)\n";
+    cout << "  The mesh has " << vertices.size() << " vertices ("
+         << 100. * double(vertices.size()) / numPixels << "% of full view)\n";
 
     assert(triangles.empty());
     const auto maxTriangles = 2 * vertices.size();
     triangles.reserve(maxTriangles);
-    cout << "Reserving for " << maxTriangles << " triangles\n";
 
     const auto considerTriangle = [&](Vec2i a, Vec2i b, Vec2i c) {
       if (mask(a.y(), a.x()) == 0 || mask(b.y(), b.x()) == 0 || mask(c.y(), c.x()) == 0) {
@@ -263,8 +265,6 @@ private:
         considerTriangle({x - 1, y - 1}, {x, y}, {x - 1, y});
       }
     }
-
-    cout << "The mesh has " << triangles.size() << " triangles\n";
   }
 
   // Change reference frame and project vertices
@@ -390,10 +390,10 @@ private:
     for (int n = 0; n < m_dilate; ++n) {
       mask = dilate(mask);
     }
-    synthesizer.maskAverage =
-        float(accumulate(begin(mask), end(mask), 0)) / float(mask.width() * mask.height());
-    cout << "  New maskAverage for " << synthesizer.index << " is " << synthesizer.maskAverage
-         << "\n";
+    synthesizer.maskAverage = float(accumulate(begin(mask), end(mask), 0)) /
+                              (2.55F * float(mask.width() * mask.height()));
+    cout << "  New mask average for view " << synthesizer.index << " is " << synthesizer.maskAverage
+         << "%\n";
   }
 }; // namespace TMIV::AtlasConstructor
 

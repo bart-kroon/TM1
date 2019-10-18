@@ -73,35 +73,6 @@ template <typename Projection> struct Engine {};
 #include "Engine_Perspective.hpp"
 
 namespace TMIV::Renderer {
-// Unproject from a source frame to scene coordinates in the reference frame of
-// the target camera, generating lists of vertices, triangles and attributes.
-//
-// This method is designed to allow for specialization per source camera
-// projection.
-template <typename Engine, typename... T>
-auto unproject(const Engine &engine, const Common::Mat<float> &depth,
-               const Metadata::ViewParams &target, const Common::Mat<T> &... matrices) {
-  return std::tuple{engine.makeSceneVertexDescriptorList(depth, target),
-                    engine.makeTriangleDescriptorList(),
-                    std::tuple{engine.makeVertexAttributeList(matrices)...}};
-}
-
-// Unproject from a source frame to scene coordinates in the reference frame of
-// the target camera, generating lists of vertices, triangles and attributes.
-//
-// This method is designed to allow for specialization per source camera
-// projection.
-template <typename... T>
-auto unproject(const Common::Mat<float> &depth, const Metadata::ViewParams &viewParams,
-               const Metadata::ViewParams &target, const Common::Mat<T> &... matrices) {
-  return visit(
-      [&](auto const &x) {
-        Engine<std::decay_t<decltype(x)>> engine{viewParams};
-        return unproject(engine, depth, target, matrices...);
-      },
-      viewParams.projection);
-}
-
 // Project the data that is already in the reference frame of the
 // target camera.
 //

@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2019, ISO/IEC
+ * Copyright (c) 2010-2019, ITU/ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  * Neither the name of the ISO/IEC nor the names of its contributors may
+ *  * Neither the name of the ITU/ISO/IEC nor the names of its contributors may
  *    be used to endorse or promote products derived from this software without
  *    specific prior written permission.
  *
@@ -31,34 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
-#define _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
+#ifndef _TMIV_ATLASCONSTRUCTOR_HIERARCHICAL_PRUNER_H_
+#define _TMIV_ATLASCONSTRUCTOR_HIERARCHICAL_PRUNER_H_
 
 #include <TMIV/AtlasConstructor/IPruner.h>
 
-#include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
+#include <memory>
 
 namespace TMIV::AtlasConstructor {
-class Pruner : public IPruner {
+class HierarchicalPruner : public IPruner {
 public:
-  Pruner(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
-  Pruner(const Pruner &) = delete;
-  Pruner(Pruner &&) = default;
-  Pruner &operator=(const Pruner &) = delete;
-  Pruner &operator=(Pruner &&) = default;
-  ~Pruner() override = default;
+  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
+  HierarchicalPruner(const HierarchicalPruner &) = delete;
+  HierarchicalPruner(HierarchicalPruner &&) = default;
+  HierarchicalPruner &operator=(const HierarchicalPruner &) = delete;
+  HierarchicalPruner &operator=(HierarchicalPruner &&) = default;
+  ~HierarchicalPruner() override;
 
-  auto prune(const Metadata::ViewParamsVector &viewParamsVector, const Common::MVD16Frame &views,
-             const std::vector<bool> &isBasicView) -> Common::MaskList override;
+  auto prune(const Metadata::ViewParamsVector &viewParamsVector,
+                     const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
+      -> Common::MaskList override;
 
 private:
-  float m_redundancyFactor{};
-  int m_erosionIter{};
-  int m_dilationIter{};
-  int m_maxAdditionalView{INT16_MAX};
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
 };
-
 } // namespace TMIV::AtlasConstructor
 
 #endif

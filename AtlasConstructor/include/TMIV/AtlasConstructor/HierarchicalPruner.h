@@ -55,7 +55,7 @@ public:
 
 private:
   class Impl;
-  std::unique_ptr<Impl> m_impl;
+  const std::unique_ptr<Impl> m_impl;
 };
 } // namespace TMIV::AtlasConstructor
 

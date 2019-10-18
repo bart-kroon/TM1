@@ -59,9 +59,9 @@ private:
         : rasterizer{config, size}, index{index_}, reference{move(reference_)} {}
 
     Rasterizer<Vec3f> rasterizer;
-    size_t index;
+    const size_t index;
     float maskAverage{0.F};
-    Mat<float> reference;
+    const Mat<float> reference;
   };
 
   const float m_maxDepthError{};
@@ -122,9 +122,9 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
       if (m_isBasicView[i] == 0) {
-        auto reference = expandDepth(m_viewParamsVector[i], views[i].second);
         m_synthesizers.emplace_back(
-            make_unique<Synthesizer>(m_config, m_viewParamsVector[i].size, i, reference));
+            make_unique<Synthesizer>(m_config, m_viewParamsVector[i].size, i,
+                                     expandDepth(m_viewParamsVector[i], views[i].second)));
       }
     }
   }
@@ -295,7 +295,7 @@ private:
   // Engine<ErpParams>::project
   void weightedSphere(const ViewParams &target, const ImageVertexDescriptorList &vertices,
                       TriangleDescriptorList &triangles) const {
-    if (auto projection = get_if<ErpParams>(&target.projection)) {
+    if (const auto projection = get_if<ErpParams>(&target.projection)) {
       Engine<ErpParams> engine{target};
       for (auto &triangle : triangles) {
         auto v = 0.F;

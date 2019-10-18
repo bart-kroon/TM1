@@ -118,16 +118,6 @@ auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangle
       target.projection);
 }
 
-// Reproject from a source frame with a source camera to a target camera,
-// generating lists of vertices, triangles and attributes.
-template <typename... T>
-auto reproject(const Common::Mat<float> &depth, const Metadata::ViewParams &viewParams,
-               const Metadata::ViewParams &target, const Common::Mat<T> &... matrices) {
-  auto x = unproject(depth, viewParams, target, matrices...);
-  return project(std::move(std::get<0>(x)), std::move(std::get<1>(x)), std::move(std::get<2>(x)),
-                 target);
-}
-
 // Unproject a pixel from a source frame to scene coordinates in the reference
 // frame of the target camera.
 //

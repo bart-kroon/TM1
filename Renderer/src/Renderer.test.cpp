@@ -70,12 +70,6 @@ TEST_CASE("Full ERP", "[Render engine]") {
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
 
-  SECTION("Reproject without attributes") {
-    auto mesh = reproject(depth, viewParams, viewParams);
-    auto as = get<2>(mesh);
-    static_assert(is_same_v<decltype(as), tuple<>>);
-  }
-
   SECTION("Unproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
@@ -88,29 +82,6 @@ TEST_CASE("Full ERP", "[Render engine]") {
     }
     // Central vertex in forward (x) direction
     REQUIRE(vs[(5 / 2) * (7 + 1) + 7 / 2].position == Vec3f{2.F, 0.F, 0.F});
-
-    auto ts = get<1>(mesh);
-    REQUIRE(ts.size() == 2 * 7 * (5 - 1) + 2 * 7);
-
-    auto as = get<2>(mesh);
-    static_assert(is_same_v<decltype(as), tuple<vector<float>>>);
-    REQUIRE(get<0>(as).size() == vs.size());
-    REQUIRE(get<0>(as)[0] == 3.F);
-  }
-
-  SECTION("Reproject with an attribute") {
-    Mat<float> field({5, 7});
-    fill(begin(field), end(field), 3.F);
-    auto mesh = reproject(depth, viewParams, viewParams, field);
-
-    auto vs = get<0>(mesh);
-    REQUIRE(vs.size() == (7 + 1) * 5 + 2);
-    for (auto v : vs) {
-      REQUIRE(v.depth == Approx(2.F));
-      REQUIRE(v.rayAngle == 0.F);
-    }
-    REQUIRE(vs[0].position.x() == Approx(0.5F));
-    REQUIRE(vs[0].position.y() == Approx(0.5F));
 
     auto ts = get<1>(mesh);
     REQUIRE(ts.size() == 2 * 7 * (5 - 1) + 2 * 7);
@@ -133,12 +104,6 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
 
-  SECTION("Reproject without attributes") {
-    auto mesh = reproject(depth, viewParams, viewParams);
-    auto as = get<2>(mesh);
-    static_assert(is_same_v<decltype(as), tuple<>>);
-  }
-
   SECTION("Unproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
@@ -151,29 +116,6 @@ TEST_CASE("Equirectangular viewport", "[Render engine]") {
     }
     // Central vertex in forward (x) direction
     REQUIRE(vs[vs.size() / 2].position == Vec3f{2.F, 0.F, 0.F});
-
-    auto ts = get<1>(mesh);
-    REQUIRE(ts.size() == 2 * (7 + 1) * (5 + 1));
-
-    auto as = get<2>(mesh);
-    static_assert(is_same_v<decltype(as), tuple<vector<float>>>);
-    REQUIRE(get<0>(as).size() == vs.size());
-    REQUIRE(get<0>(as)[0] == 3.F);
-  }
-
-  SECTION("Reproject with an attribute") {
-    Mat<float> field({5, 7});
-    fill(begin(field), end(field), 3.F);
-    auto mesh = reproject(depth, viewParams, viewParams, field);
-
-    auto vs = get<0>(mesh);
-    REQUIRE(vs.size() == (7 + 2) * (5 + 2));
-    for (auto v : vs) {
-      REQUIRE(v.depth == Approx(2.F));
-      REQUIRE(v.rayAngle == 0.F);
-    }
-    REQUIRE(vs.front().position.x() == 0.F);
-    REQUIRE(vs.back().position.y() == 5.F);
 
     auto ts = get<1>(mesh);
     REQUIRE(ts.size() == 2 * (7 + 1) * (5 + 1));
@@ -196,12 +138,6 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
     static_assert(is_same_v<decltype(as), tuple<>>);
   }
 
-  SECTION("Reproject without attributes") {
-    auto mesh = reproject(depth, viewParams, viewParams);
-    auto as = get<2>(mesh);
-    static_assert(is_same_v<decltype(as), tuple<>>);
-  }
-
   SECTION("Unproject with an attribute") {
     Mat<float> field({5, 7});
     fill(begin(field), end(field), 3.F);
@@ -214,29 +150,6 @@ TEST_CASE("Perspective viewport", "[Render engine]") {
     }
     // Central vertex in forward (x) direction
     REQUIRE(vs[vs.size() / 2].position == Vec3f{2.F, 0.F, 0.F});
-
-    auto ts = get<1>(mesh);
-    REQUIRE(ts.size() == 2 * (7 + 1) * (5 + 1));
-
-    auto as = get<2>(mesh);
-    static_assert(is_same_v<decltype(as), tuple<vector<float>>>);
-    REQUIRE(get<0>(as).size() == vs.size());
-    REQUIRE(get<0>(as)[0] == 3.F);
-  }
-
-  SECTION("Reproject with an attribute") {
-    Mat<float> field({5, 7});
-    fill(begin(field), end(field), 3.F);
-    auto mesh = reproject(depth, viewParams, viewParams, field);
-
-    auto vs = get<0>(mesh);
-    REQUIRE(vs.size() == (7 + 2) * (5 + 2));
-    for (auto v : vs) {
-      REQUIRE(v.depth == Approx(2.F));
-      REQUIRE(v.rayAngle == 0.F);
-    }
-    REQUIRE(vs.front().position.x() == 0.F);
-    REQUIRE(vs.back().position.y() == 5.F);
 
     auto ts = get<1>(mesh);
     REQUIRE(ts.size() == 2 * (7 + 1) * (5 + 1));

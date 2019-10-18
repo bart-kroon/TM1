@@ -195,7 +195,9 @@ const auto cameraParameters = array{ViewParams{{4096, 2048},
                                                {4.F, 5.F, 6.F},
                                                {0.F, 0.F, 0.F},
                                                PerspectiveParams{{1000, 1010}, {960, 540}},
-                                               {1.F, 50.F}}};
+                                               {1.F, 50.F},
+                                               64,
+                                               {128}}};
 
 const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
                                        ViewParamsList{{cameraParameters[0], cameraParameters[0]}},
@@ -267,13 +269,14 @@ TEST_CASE("Metadata bitstreams") {
   SECTION("ivs_profile_tier_level") { REQUIRE(codingTest(examples::ivsProfileTierLevel[0], 0)); }
 
   SECTION("camera_params_list") {
-    REQUIRE(codingTest(examples::cameraParameterList[0], 59));
-    REQUIRE(codingTest(examples::cameraParameterList[1], 83));
-    REQUIRE(codingTest(examples::cameraParameterList[2], 115));
+    const auto depthOccMapThresholdNumBits = 10U;
+    REQUIRE(codingTest(examples::cameraParameterList[0], 58, depthOccMapThresholdNumBits));
+    REQUIRE(codingTest(examples::cameraParameterList[1], 82, depthOccMapThresholdNumBits));
+    REQUIRE(codingTest(examples::cameraParameterList[2], 115, depthOccMapThresholdNumBits));
   }
 
   SECTION("ivs_params") {
-    REQUIRE(codingTest(examples::ivSequenceParams[0], 60));
+    REQUIRE(codingTest(examples::ivSequenceParams[0], 59));
     REQUIRE(codingTest(examples::ivSequenceParams[1], 84));
   }
 

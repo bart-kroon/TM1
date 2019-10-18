@@ -124,6 +124,10 @@ struct ViewParams {
   // In specification: depth_occ_map_threshold_default[ v ]
   uint16_t depthOccMapThreshold{};
 
+  // In specification: depth_start_default_present_flag[ v ]
+  // In specification: depth_start_default[ v ]
+  std::optional<uint16_t> depthStart{};
+
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;
   bool operator!=(const ViewParams &other) const { return !operator==(other); }
@@ -159,8 +163,8 @@ struct ViewParamsList : public ViewParamsVector {
   bool operator==(const ViewParamsList &other) const;
   bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> ViewParamsList;
-  void encodeTo(OutputBitstream &) const;
+  static auto decodeFrom(InputBitstream &, unsigned depthOccMapThresholdNumBits) -> ViewParamsList;
+  void encodeTo(OutputBitstream &, unsigned depthOccMapThresholdNumBits) const;
 
   // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
   // with viewParamsVector specified by name, in that order

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 add_library(AtlasConstructorLib
     "src/AtlasConstructor.cpp"
 	"src/HierarchicalPruner.cpp"
+	"src/PrunedMesh.cpp"
+	"src/PrunedMesh.h"
 	"src/Aggregator.cpp"
 	"src/Cluster.cpp"
 	"src/Cluster.h"

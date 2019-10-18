@@ -33,6 +33,7 @@
 
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 
+#include "PrunedMesh.h"
 #include <TMIV/Image/Image.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
@@ -53,9 +54,9 @@ using namespace std;
 namespace TMIV::AtlasConstructor {
 class HierarchicalPruner::Impl {
 private:
-  struct Synthesizer {
-    Synthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_,
-                Mat<float> reference_)
+  struct IncrementalSynthesizer {
+    IncrementalSynthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_,
+                           Mat<float> reference_)
         : rasterizer{config, size}, index{index_}, reference{move(reference_)} {}
 
     Rasterizer<Vec3f> rasterizer;
@@ -73,7 +74,7 @@ private:
   bool m_firstFrame{true};
   ViewParamsVector m_viewParamsVector;
   vector<bool> m_isBasicView;
-  vector<unique_ptr<Synthesizer>> m_synthesizers;
+  vector<unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   vector<size_t> m_pruningOrder;
   vector<Frame<YUV400P8>> m_masks;
 
@@ -122,9 +123,9 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
       if (m_isBasicView[i] == 0) {
-        m_synthesizers.emplace_back(
-            make_unique<Synthesizer>(m_config, m_viewParamsVector[i].size, i,
-                                     expandDepth(m_viewParamsVector[i], views[i].second)));
+        m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
+            m_config, m_viewParamsVector[i].size, i,
+            expandDepth(m_viewParamsVector[i], views[i].second)));
       }
     }
   }
@@ -185,144 +186,20 @@ private:
     }
   }
 
-  // Unproject a pruned (masked) view, resulting in a mesh in the reference
-  // frame of the source view
-  void maskedUnproject(size_t index, const TextureDepth16Frame &view,
-                       SceneVertexDescriptorList &vertices, TriangleDescriptorList &triangles,
-                       vector<Vec3f> &attributes) const {
-    const auto &viewParams = m_viewParamsVector[index];
-    return visit(
-        [&](const auto &projection) {
-          Engine<decay_t<decltype(projection)>> engine{viewParams};
-          return maskedUnproject(engine, index, view, vertices, triangles, attributes);
-        },
-        viewParams.projection);
-  }
-
-  template <typename E>
-  void maskedUnproject(E &engine, size_t index, const TextureDepth16Frame &view,
-                       SceneVertexDescriptorList &vertices, TriangleDescriptorList &triangles,
-                       vector<Vec3f> &attributes) const {
-    const auto &viewParams = m_viewParamsVector[index];
-    const auto &mask = m_masks[index].getPlane(0);
-    const auto size = viewParams.size;
-    const auto numPixels = size.x() * size.y();
-
-    const auto &Y = view.first.getPlane(0);
-    const auto &U = view.first.getPlane(1);
-    const auto &V = view.first.getPlane(2);
-    const auto &D = view.second.getPlane(0);
-
-    assert(vertices.empty());
-    vertices.reserve(numPixels);
-    assert(attributes.empty());
-    attributes.reserve(numPixels);
-
-    vector<int> key;
-    key.reserve(vertices.size());
-
-    for (int y = 0; y < size.y(); ++y) {
-      for (int x = 0; x < size.x(); ++x) {
-        key.push_back(int(vertices.size()));
-
-        if (mask(y, x) > 0) {
-          const auto uv = Vec2f{float(x) + 0.5F, float(y) + 0.5F};
-          const auto d = expandDepthValue<16>(viewParams, D(y, x));
-          vertices.push_back({engine.unprojectVertex(uv, d), NaN});
-          attributes.emplace_back(Vec3f{expandValue<10U>(Y(y, x)),
-                                        expandValue<10U>(U(y / 2, x / 2)),
-                                        expandValue<10U>(V(y / 2, x / 2))});
-        }
-      }
-    }
-
-    if (vertices.capacity() > 2 * vertices.size()) {
-      vertices.shrink_to_fit();
-      attributes.shrink_to_fit();
-    }
-
-    cout << "  The mesh has " << vertices.size() << " vertices ("
-         << 100. * double(vertices.size()) / numPixels << "% of full view)\n";
-
-    assert(triangles.empty());
-    const auto maxTriangles = 2 * vertices.size();
-    triangles.reserve(maxTriangles);
-
-    const auto considerTriangle = [&](Vec2i a, Vec2i b, Vec2i c) {
-      if (mask(a.y(), a.x()) == 0 || mask(b.y(), b.x()) == 0 || mask(c.y(), c.x()) == 0) {
-        return;
-      }
-
-      const auto ia = key[a.y() * size.x() + a.x()];
-      const auto ib = key[b.y() * size.x() + b.x()];
-      const auto ic = key[c.y() * size.x() + c.x()];
-      triangles.push_back({{ia, ib, ic}, 0.5F});
-    };
-
-    for (int y = 1; y < size.y(); ++y) {
-      for (int x = 1; x < size.x(); ++x) {
-        considerTriangle({x - 1, y - 1}, {x, y - 1}, {x, y});
-        considerTriangle({x - 1, y - 1}, {x, y}, {x - 1, y});
-      }
-    }
-  }
-
-  // Change reference frame and project vertices
-  void project(const SceneVertexDescriptorList &in, size_t iview, ImageVertexDescriptorList &out,
-               size_t oview) const {
-    const auto &target = m_viewParamsVector[oview];
-    visit(
-        [&](const auto &projection) {
-          Engine<decay_t<decltype(projection)>> engine{target};
-          return project(engine, in, iview, out, oview);
-        },
-        target.projection);
-  }
-
-  template <typename E>
-  void project(const E &engine, const SceneVertexDescriptorList &in, size_t iview,
-               ImageVertexDescriptorList &out, size_t oview) const {
-    const auto [R, t] = affineParameters(m_viewParamsVector[iview], m_viewParamsVector[oview]);
-    out.clear();
-    out.reserve(in.size());
-    transform(begin(in), end(in), back_inserter(out),
-              [&engine, R = R, t = t](SceneVertexDescriptor v) {
-                const auto p = R * v.position + t;
-                return engine.projectVertex({p, angle(p, p - t)});
-              });
-  }
-
-  // Weighted sphere compensation of stretching as performed by
-  // Engine<ErpParams>::project
-  void weightedSphere(const ViewParams &target, const ImageVertexDescriptorList &vertices,
-                      TriangleDescriptorList &triangles) const {
-    if (const auto projection = get_if<ErpParams>(&target.projection)) {
-      Engine<ErpParams> engine{target};
-      for (auto &triangle : triangles) {
-        auto v = 0.F;
-        for (auto index : triangle.indices) {
-          v += vertices[index].position.y() / 3.F;
-        }
-        const auto theta = engine.theta0 + engine.dtheta_dv * v;
-        triangle.area = 0.5F / cos(theta);
-      }
-    }
-  }
-
   // Synthesize the specified view to all remaining partial views.
   //
   // Special care is taken to make a pruned (masked) mesh once and re-use that
   // multiple times.
   void synthesizeViews(size_t index, const TextureDepth16Frame &view) {
-    SceneVertexDescriptorList ivertices;
-    TriangleDescriptorList triangles;
-    vector<Vec3f> attributes;
-    maskedUnproject(index, view, ivertices, triangles, attributes);
+    auto [ivertices, triangles, attributes] =
+        unprojectPrunedView(view, m_viewParamsVector[index], m_masks[index].getPlane(0));
 
-    ImageVertexDescriptorList overtices; // allocate once
+    cout << "  The mesh has " << ivertices.size() << " vertices ("
+         << 100. * double(ivertices.size()) / (view.first.getWidth() * view.first.getHeight())
+         << "% of full view)\n";
 
     for (auto &s : m_synthesizers) {
-      project(ivertices, index, overtices, s->index);
+      auto overtices = project(ivertices, m_viewParamsVector[index], m_viewParamsVector[s->index]);
       weightedSphere(m_viewParamsVector[s->index], overtices, triangles);
       s->rasterizer.submit(overtices, attributes, triangles);
       s->rasterizer.run();
@@ -376,7 +253,7 @@ private:
     return result;
   }
 
-  void updateMask(Synthesizer &synthesizer) {
+  void updateMask(IncrementalSynthesizer &synthesizer) {
     auto &mask = m_masks[synthesizer.index].getPlane(0);
     auto i = begin(mask);
     auto j = begin(synthesizer.reference);

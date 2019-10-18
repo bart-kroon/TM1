@@ -118,60 +118,6 @@ template <> struct Engine<Metadata::PerspectiveParams> {
     return (j == 0 || j == ocols - 1 ? 0.25F : 0.5F) * (i == 0 || i == orows - 1 ? 0.5F : 1.F);
   }
 
-  // List of 3-D vertices in the reference frame of the target camera
-  auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                     const Metadata::ViewParams &target) const
-      -> SceneVertexDescriptorList {
-    SceneVertexDescriptorList result;
-    result.reserve(osize);
-    const auto R_t = affineParameters(viewParams, target);
-    for (int i = 0; i < orows; ++i) {
-      for (int j = 0; j < ocols; ++j) {
-        const auto u = uAt(j);
-        const auto v = vAt(i);
-        const auto d = fetch(i, j, depth);
-        const auto xyz = R_t.first * unprojectVertex({u, v}, d) + R_t.second;
-        const auto rayAngle = angle(xyz, xyz - R_t.second);
-        result.push_back({xyz, rayAngle});
-      }
-    }
-    assert(int(result.size()) == osize);
-    return result;
-  }
-
-  // List of triangles with indices into the vertex lists
-  auto makeTriangleDescriptorList() const -> TriangleDescriptorList {
-    TriangleDescriptorList result;
-    result.reserve(numTriangles);
-    for (int i = 1; i < orows; ++i) {
-      for (int j = 1; j < ocols; ++j) {
-        const int br = i * ocols + j;
-        const int tr = br - ocols;
-        const int bl = br - 1;
-        const int tl = tr - 1;
-        const float area = triangleArea(i, j);
-        result.push_back({{tl, tr, br}, area});
-        result.push_back({{tl, br, bl}, area});
-      }
-    }
-    assert(int(result.size()) == numTriangles);
-    return result;
-  }
-
-  // List of vertex attributes in matching order
-  template <class T>
-  auto makeVertexAttributeList(const Common::Mat<T> &matrix) const -> std::vector<T> {
-    std::vector<T> result;
-    result.reserve(osize);
-    for (int i = 0; i < orows; ++i) {
-      for (int j = 0; j < ocols; ++j) {
-        result.push_back(fetch(i, j, matrix));
-      }
-    }
-    assert(int(result.size()) == osize);
-    return result;
-  }
-
   // Project mesh to target view
   template <typename... T>
   auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,

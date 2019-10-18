@@ -31,11 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Decoder/Decoder.h>
+
 #include "../../AtlasDeconstructor/src/AtlasDeconstructor.reg.hpp"
 #include "../../Renderer/src/Renderer.reg.hpp"
 
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/Decoder.h>
 
 namespace TMIV::Decoder {
 inline void registerComponents() {

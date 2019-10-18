@@ -31,66 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_METADATA_ATLASPARAMETERSLIST_H_
-#define _TMIV_METADATA_ATLASPARAMETERSLIST_H_
+#ifndef _TMIV_DEPTHOCCUPANCY_IDEPTHOCCUPANCY_H_
+#define _TMIV_DEPTHOCCUPANCY_IDEPTHOCCUPANCY_H_
 
-#include <cstdint>
-#include <string>
-#include <vector>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
-#include <TMIV/Common/Vector.h>
+namespace TMIV::DepthOccupancy {
+class IDepthOccupancy {
+public:
+  IDepthOccupancy() = default;
+  IDepthOccupancy(const IDepthOccupancy &) = default;
+  IDepthOccupancy(IDepthOccupancy &&) = default;
+  IDepthOccupancy &operator=(const IDepthOccupancy &) = default;
+  IDepthOccupancy &operator=(IDepthOccupancy &&) = default;
+  virtual ~IDepthOccupancy() = default;
 
-namespace TMIV::Metadata {
-using Vec2i = TMIV::Common::Vec2i;
-
-// TODO(BK): Align with working draft: patch_rotation has eight possible values (4 rotations x 2
-// flips)
-enum class PatchRotation {
-  upright, // what was up stays up
-  ccw,     // what was up goes left, i.e. 90deg
-  ht,      // half-turn, i.e. 180deg
-  cw       // what was up goes right, i.e. 270deg
+  virtual auto transformSequenceParams(Metadata::IvSequenceParams)
+      -> const Metadata::IvSequenceParams & = 0;
+  virtual auto transformAccessUnitParams(Metadata::IvAccessUnitParams)
+      -> const Metadata::IvAccessUnitParams & = 0;
+  virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
 };
-
-enum class PatchFlip {
-  none, // what was up stays up
-  vflip // what was up goes down, i.e. vertical flip
-};
-
-// Data type that corresponds to an entry of atlas_params of MPEG/N18464
-struct AtlasParameters {
-  // In MPEG/N18464: atlas_id
-  uint8_t atlasId{};
-
-  // In MPEG/N18464: view_id
-  uint8_t viewId{};
-
-  // In MPEG/N18464: patch_{width,height}_in_view
-  Vec2i patchSize;
-
-  // In MPEG/N18464: patch_pos_in_view_{x,y}
-  Vec2i posInView;
-
-  // In MPEG/N18464: patch_pos_in_atlas_{x,y}
-  Vec2i posInAtlas;
-
-  // In MPEG/N18464: patch_rotation
-  PatchRotation rotation{};
-
-  PatchFlip flip{};
-
-  bool operator==(const AtlasParameters &other) const;
-};
-
-static_assert(sizeof(AtlasParameters) == 36);
-
-// Data type that corresponds to atlas_params_list of MPEG/N18464
-using AtlasParametersList = std::vector<AtlasParameters>;
-
-// Pixel position conversion from atlas to/from view
-Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch);
-Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch);
-
-} // namespace TMIV::Metadata
+} // namespace TMIV::DepthOccupancy
 
 #endif

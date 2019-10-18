@@ -31,64 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Application.h>
-#include <TMIV/Common/Factory.h>
+#include <TMIV/IO/IvMetadataReader.h>
+
 #include <TMIV/IO/IO.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
-#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
-namespace TMIV::ViewOptimizer {
-class Application : public Common::Application {
-  unique_ptr<IViewOptimizer> m_optimizer;
-  int m_numberOfFrames;
-  int m_intraPeriod;
-  Metadata::CameraParametersList m_cameras;
-
-public:
-  explicit Application(vector<const char *> argv)
-      : Common::Application{"ViewOptimizer", move(argv)}, m_optimizer{create<IViewOptimizer>(
-                                                              "Encoder", "ViewOptimizer")},
-        m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
-  void run() override {
-    m_cameras = IO::loadSourceMetadata(json());
-
-    for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
-      int endFrame = min(m_numberOfFrames, i + m_intraPeriod);
-      cout << "Intra period: [" << i << ", " << endFrame << ")\n";
-      runIntraPeriod(i, endFrame);
-    }
-  }
-
-private:
-  void runIntraPeriod(int intraFrame, int endFrame) {
-    auto cameras = m_optimizer->optimizeIntraPeriod(m_cameras);
-    IO::saveOptimizedMetadata(json(), intraFrame, cameras);
-
-    for (int i = intraFrame; i < endFrame; ++i) {
-      auto sourceFrame = IO::loadSourceFrame(json(), IO::sizesOf(m_cameras), i);
-      auto frame = m_optimizer->optimizeFrame(move(sourceFrame));
-      IO::saveOptimizedFrame(json(), i, frame);
-    }
-  }
-};
-} // namespace TMIV::ViewOptimizer
-
-#include "ViewOptimizer.reg.hpp"
-
-int main(int argc, char *argv[]) {
-  try {
-    TMIV::ViewOptimizer::registerComponents();
-    TMIV::ViewOptimizer::Application app{{argv, argv + argc}};
-    app.startTime();
-    app.run();
-    app.printTime();
-    return 0;
-  } catch (runtime_error &e) {
-    cerr << e.what() << endl;
-    return 1;
+namespace TMIV::IO {
+IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirectoryField,
+                                   const string &fileNameField) {
+  m_path = getFullPath(config, baseDirectoryField, fileNameField);
+  m_stream.open(m_path, ios::binary);
+  if (!m_stream.good()) {
+    ostringstream what;
+    what << "Failed to open metadata file " << m_path;
+    throw runtime_error(what.str());
   }
 }
+
+void IvMetadataReader::readIvSequenceParams() {
+  m_ivSequenceParams = IvSequenceParams::decodeFrom(m_bitstream);
+}
+
+void IvMetadataReader::readIvAccessUnitParams() {
+  const auto currentAtlasParamsList = m_ivAccessUnitParams.atlasParamsList;
+  m_ivAccessUnitParams = IvAccessUnitParams::decodeFrom(m_bitstream, m_ivSequenceParams);
+  if (!m_ivAccessUnitParams.atlasParamsList) {
+    m_ivAccessUnitParams.atlasParamsList = currentAtlasParamsList.value();
+  }
+  // TODO(BK): Partial atlas information? (With only some atlas_id's present.)
+}
+
+bool IvMetadataReader::readAccessUnit(int accessUnit) {
+  if (m_accessUnit == accessUnit) {
+    return false;
+  }
+  m_accessUnit = accessUnit;
+  m_bitstream.reset();
+  m_stream.seekg(0);
+  readIvSequenceParams();
+  for (int i = 0; i <= accessUnit; ++i) {
+    readIvAccessUnitParams();
+  }
+  return true;
+}
+} // namespace TMIV::IO

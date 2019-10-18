@@ -31,4 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
+#include <TMIV/DepthOccupancy/DepthOccupancy.h>
+
+#include <TMIV/Common/Factory.h>
+
+namespace TMIV::DepthOccupancy {
+inline void registerComponents() {
+  Common::Factory<IDepthOccupancy>::getInstance().registerAs<DepthOccupancy>("DepthOccupancy");
+}
+} // namespace TMIV::DepthOccupancy

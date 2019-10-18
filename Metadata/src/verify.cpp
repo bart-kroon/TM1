@@ -31,4 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/IDecoder.h>
+#include "verify.h"
+
+#include <cstdlib>
+#include <iostream>
+
+using namespace std;
+
+namespace TMIV::Metadata {
+bool verifyFailed(char const *condition, char const *file, int line) {
+  cerr << "Failed to decode metadata: " << condition << " [" << file << "@" << line << endl;
+  abort();
+  return false;
+}
+} // namespace TMIV::Metadata

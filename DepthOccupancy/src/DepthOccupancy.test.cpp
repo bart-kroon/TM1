@@ -34,71 +34,51 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include <TMIV/IO/IO.h>
-
-#include <sstream>
+#include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::IO;
+using namespace TMIV::DepthOccupancy;
 
-namespace {
-auto examplePatch() -> AtlasParameters {
-  return {
-      uint8_t{1},        // atlasId,
-      uint8_t{3},        // viewId
-      Vec2i{16, 32},     // patchSize
-      Vec2i{3, 4},       // posInView
-      Vec2i{8, 12},      // posInPatch
-      PatchRotation::ccw // rotation
-  };
-}
+SCENARIO("Depth/occupancy coding") {
+  DepthOccupancy depthOccupancy{37};
 
-auto exampleCamera() -> CameraParameters {
-  return {
-      Vec2i{3000, 2000},           // size
-      Vec3f{1.F, -2.F, 3.F},       // position
-      Vec3f{3.F, 4.F, 5.F},        // rotation
-      ProjectionType::Perspective, // type
-      Vec2f{-90.F, 70.F},          // erpPhiRange
-      Vec2f{-60.F, 80.F},          // erpThetaRange
-      CubicMapType{},              // cubicMapType
-      Vec2f{},                     // perspectiveFocal
-      Vec2f{},                     // perspectiveCenter
-      Vec2f{1.F, 100.F}            // depthRange
-  };
-}
+  GIVEN("View parameters without invalid depth") {
+    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
+    const auto sourceSequenceParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
 
-auto exampleMetadata() -> MivMetadata {
-  return {vector<Vec2i>{{4000, 3000}}, // atlasSize
-          true,                        // omafV1CompatibleFlag
-          {examplePatch()},            // patches
-          {exampleCamera()}};          // cameras
-}
+    WHEN("Modifying the depth range") {
+      const auto codedSequenceParams = depthOccupancy.transformSequenceParams(sourceSequenceParams);
 
-auto minimalConfig() -> Json {
-  auto stream = istringstream{R"(
-{
-	"OutputDirectory": ".",
-	"AtlasMetadataPath": "IO.test.bit"
-}
-)"};
-  return Json{stream};
-}
-} // namespace
-
-TEST_CASE("save- and loadMivMetadata") {
-  auto config = minimalConfig();
-  auto reference = exampleMetadata();
-  auto frames = {0, 32, 48};
-
-  for (auto frame : frames) {
-    saveMivMetadata(config, frame, reference);
+      THEN("The camera parameters are unmodified") {
+        REQUIRE(codedSequenceParams == sourceSequenceParams);
+      }
+    }
   }
 
-  for (auto frame : frames) {
-    auto actual = loadMivMetadata(config, frame);
-    REQUIRE(actual == reference);
+  GIVEN("View parameters with invalid depth") {
+    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 1};
+    const auto sourceSeqParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
+
+    WHEN("Modifying the depth range") {
+      const auto codedSeqParams = depthOccupancy.transformSequenceParams(sourceSeqParams);
+      const auto &codedViewParams = codedSeqParams.viewParamsList.front();
+
+      THEN("depthOccMapThreshold (T) >> 0") {
+        const auto T = codedViewParams.depthOccMapThreshold;
+        REQUIRE(T >= 8);
+
+        THEN("Coded level 2T matches with source level 0") {
+          // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
+          const auto twoT = float(2 * T);
+          const auto refViewParams = ViewParams{
+              {1920, 1080}, {}, {}, projection, {0.2F - twoT * 2.F / (1023.F - twoT), 2.2F}, T};
+          REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
+        }
+      }
+    }
   }
 }

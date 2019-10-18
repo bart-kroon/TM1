@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(EncoderLib
-	"src/IEncoder.cpp"
     "src/Encoder.cpp"
+	"src/Encoder.reg.hpp"
 	"include/TMIV/Encoder/IEncoder.h"
     "include/TMIV/Encoder/Encoder.h")
 
@@ -12,7 +12,8 @@ add_library(TMIV::EncoderLib
 target_link_libraries(EncoderLib
 	PUBLIC
 		TMIV::ViewOptimizerLib
-		TMIV::AtlasConstructorLib)
+		TMIV::AtlasConstructorLib
+		TMIV::DepthOccupancyLib)
 
 target_include_directories(EncoderLib
 	PUBLIC
@@ -25,6 +26,7 @@ add_executable(Encoder
 target_link_libraries(Encoder
 	PRIVATE
 		TMIV::EncoderLib
+		TMIV::DecoderLib
 		TMIV::IOLib)
 
 install(

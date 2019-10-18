@@ -31,10 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "Engine.h"
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Renderer/reprojectPoints.h>
-
-#include "Engine.h"
 
 using namespace std;
 using namespace TMIV::Common;
@@ -43,9 +42,9 @@ using namespace TMIV::Metadata;
 namespace TMIV::Renderer {
 constexpr auto halfPixel = 0.5F;
 
-auto imagePositions(const CameraParameters &camera) -> Mat<Vec2f> {
+auto imagePositions(const ViewParams &viewParams) -> Mat<Vec2f> {
   Mat<Vec2f> result;
-  result.resize(camera.size.y(), camera.size.x());
+  result.resize(viewParams.size.y(), viewParams.size.x());
   for (unsigned i = 0; i != result.height(); ++i) {
     for (unsigned j = 0; j != result.width(); ++j) {
       result(i, j) = {float(j) + halfPixel, float(i) + halfPixel};
@@ -54,104 +53,66 @@ auto imagePositions(const CameraParameters &camera) -> Mat<Vec2f> {
   return result;
 }
 
-namespace {
-
-template <ProjectionType type>
-auto unprojectPoints(const Mat<Vec2f> &positions, const Mat<float> &depth,
-                     const Engine<type> &engine) -> Mat<Vec3f> {
-  Mat<Vec3f> points{positions.sizes()};
+auto unprojectPoints(const ViewParams &viewParams, const Mat<Vec2f> &positions,
+                     const Mat<float> &depth) -> Mat<Vec3f> {
   assert(positions.sizes() == depth.sizes());
 
-  //   transform(
-  //       begin(positions), end(positions), begin(depth), begin(points),
-  //       [=](Vec2f uv, float depth) { return engine.unprojectVertex(uv,
-  //       depth); });
+  return visit(
+      [&](const auto &projection) {
+        Engine<decay_t<decltype(projection)>> engine{viewParams};
+        Mat<Vec3f> points{positions.sizes()};
 
-  parallel_for(points.size(), [&](std::size_t id) {
-    points[id] = engine.unprojectVertex(positions[id], depth[id]);
-  });
+        parallel_for(points.size(), [&](size_t id) {
+          points[id] = engine.unprojectVertex(positions[id], depth[id]);
+        });
 
-  return points;
-}
-} // namespace
-
-auto unprojectPoints(const CameraParameters &camera, const Mat<Vec2f> &positions,
-                     const Mat<float> &depth) -> Mat<Vec3f> {
-  switch (camera.type) {
-  case ProjectionType::ERP: {
-    Engine<ProjectionType::ERP> engine{camera};
-    return unprojectPoints(positions, depth, engine);
-  }
-  case ProjectionType::Perspective: {
-    Engine<ProjectionType::Perspective> engine{camera};
-    return unprojectPoints(positions, depth, engine);
-  }
-  default:
-    abort();
-  }
+        return points;
+      },
+      viewParams.projection);
 }
 
-auto changeReferenceFrame(const CameraParameters &camera, const CameraParameters &target,
+auto changeReferenceFrame(const ViewParams &viewParams, const ViewParams &target,
                           const Mat<Vec3f> &points) -> Mat<Vec3f> {
   Mat<Vec3f> result(points.sizes());
-  const auto R_t = affineParameters(camera, target);
+  const auto R_t = affineParameters(viewParams, target);
 
-  //   transform(begin(points), end(points), begin(result),
-  //             [R = R_t.first, t = R_t.second](Vec3f x) { return R * x + t;
-  //             });
-
-  parallel_for(points.size(),
-               [&](std::size_t id) { result[id] = R_t.first * points[id] + R_t.second; });
+  parallel_for(points.size(), [&](size_t id) { result[id] = R_t.first * points[id] + R_t.second; });
 
   return result;
 }
 
-namespace {
-template <ProjectionType TYPE>
-auto projectPoints(const Mat<Vec3f> &points, const Engine<TYPE> &engine)
+auto projectPoints(const ViewParams &viewParams, const Mat<Vec3f> &points)
     -> pair<Mat<Vec2f>, Mat<float>> {
+  return visit(
+      [&](const auto &projection) {
+        Engine<decay_t<decltype(projection)>> engine{viewParams};
 
-  Mat<Vec2f> positions{points.sizes()};
-  Mat<float> depth{points.sizes()};
+        Mat<Vec2f> positions{points.sizes()};
+        Mat<float> depth{points.sizes()};
 
-  parallel_for(points.size(), [&](std::size_t id) {
-    ImageVertexDescriptor v = engine.projectVertex({points[id], 0.F});
-    positions[id] = v.position;
-    depth[id] = v.depth;
-  });
+        parallel_for(points.size(), [&](size_t id) {
+          ImageVertexDescriptor v = engine.projectVertex({points[id], 0.F});
+          positions[id] = v.position;
+          depth[id] = v.depth;
+        });
 
-  return {positions, depth};
-}
-} // namespace
-
-auto projectPoints(const CameraParameters &camera, const Mat<Vec3f> &points)
-    -> pair<Mat<Vec2f>, Mat<float>> {
-  switch (camera.type) {
-  case ProjectionType::ERP: {
-    Engine<ProjectionType::ERP> engine{camera};
-    return projectPoints(points, engine);
-  }
-  case ProjectionType::Perspective: {
-    Engine<ProjectionType::Perspective> engine{camera};
-    return projectPoints(points, engine);
-  }
-  default:
-    abort();
-  }
+        return pair{positions, depth};
+      },
+      viewParams.projection);
 }
 
-auto reprojectPoints(const CameraParameters &camera, const CameraParameters &target,
+auto reprojectPoints(const ViewParams &viewParams, const ViewParams &target,
                      const Mat<Vec2f> &positions, const Mat<float> &depth)
     -> pair<Mat<Vec2f>, Mat<float>> {
-  auto points = unprojectPoints(camera, positions, depth);
-  points = changeReferenceFrame(camera, target, points);
+  auto points = unprojectPoints(viewParams, positions, depth);
+  points = changeReferenceFrame(viewParams, target, points);
   return projectPoints(target, points);
 }
 
-auto calculateRayAngles(const CameraParameters &camera, const CameraParameters &target,
+auto calculateRayAngles(const ViewParams &viewParams, const ViewParams &target,
                         const Mat<Vec3f> &points) -> Mat<float> {
   Mat<float> result(points.sizes());
-  const auto R_t = affineParameters(camera, target);
+  const auto R_t = affineParameters(viewParams, target);
   transform(begin(points), end(points), begin(result),
             [t = R_t.second](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
   return result;

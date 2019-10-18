@@ -35,11 +35,10 @@
 #define _TMIV_ATLASCONSTRUCTOR_IATLASCONSTRUCTOR_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/AtlasParametersList.h>
-#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::AtlasConstructor {
-// IAtlasConstructor interface (part of AtlasConstructorLib)
 class IAtlasConstructor {
 public:
   IAtlasConstructor() = default;
@@ -49,19 +48,13 @@ public:
   IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
   virtual ~IAtlasConstructor() = default;
 
-  using MVD16Frame = Common::MVD16Frame;
-  using CameraParametersList = Metadata::CameraParametersList;
-  using AtlasParametersList = Metadata::AtlasParametersList;
-
-  virtual void prepareIntraPeriod(CameraParametersList basicCameras,
-                                  CameraParametersList additionalCameras) = 0;
-  virtual void pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) = 0;
-  virtual void completeIntraPeriod() = 0;
-
-  virtual std::vector<Common::Vec2i> getAtlasSize() const = 0;
-  virtual const CameraParametersList &getCameraList() const = 0;
-  virtual const AtlasParametersList &getPatchList() const = 0;
-  virtual MVD16Frame popAtlas() = 0;
+  virtual auto prepareSequence(Metadata::IvSequenceParams basicSequenceParams,
+                               Metadata::IvSequenceParams additionalSequenceParams)
+      -> const Metadata::IvSequenceParams & = 0;
+  virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
+  virtual void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) = 0;
+  virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
+  virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

@@ -31,10 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/ViewOptimizer/ViewReducer.h>
+
 #include <TMIV/Common/Common.h>
 #include <TMIV/Image/Image.h>
 #include <TMIV/Renderer/reprojectPoints.h>
-#include <TMIV/ViewOptimizer/ViewReducer.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -50,19 +52,23 @@ namespace TMIV::ViewOptimizer {
 constexpr auto overlapThreshold = 0.5;
 constexpr auto halfPixel = 0.5F;
 
-ViewReducer::ViewReducer(const Json & /*unused*/, const Common::Json & /*unused*/) {}
+ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
-auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
-    -> Output<CameraParametersList> {
-  Output<CameraParametersList> result;
-  m_priorities.assign(cameras.size(), false);
+auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output<IvSequenceParams> {
+  // Make sure to carry all metadata
+  Output<IvSequenceParams> result = {ivSequenceParams, ivSequenceParams};
+  result.basic.viewParamsList.clear();
+  result.additional.viewParamsList.clear();
+
+  const auto &viewParamsVector = ivSequenceParams.viewParamsList;
+  m_priorities.assign(viewParamsVector.size(), false);
 
   // choose 9 degree as quantization step of angle between view i and view j.
   const float degree_step = radperdeg * 9;
   // choose 64 as quantization step of FOV.
   const float FOV_step = (45 * radperdeg) / 4;
 
-  size_t nbCameras = cameras.size();
+  size_t nbCameras = viewParamsVector.size();
 
   // search the largest angle between two views i,j
   vector<pair<size_t, size_t>> cameras_id_pair;
@@ -75,10 +81,10 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
   size_t id_j;
 
   // Early termination: if any view is full-ERP, choose this view
-  for (auto &camera : cameras) {
-    if (camera.type == ProjectionType::ERP) {
-      if (abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) == fullCycle) {
-        if (abs(camera.erpThetaRange[0] - camera.erpThetaRange[1]) == halfCycle) {
+  for (auto &viewParams : viewParamsVector) {
+    if (auto projection = get_if<ErpParams>(&viewParams.projection)) {
+      if (abs(projection->phiRange[0] - projection->phiRange[1]) == fullCycle) {
+        if (abs(projection->thetaRange[0] - projection->thetaRange[1]) == halfCycle) {
           isoneview = true;
           break;
         }
@@ -93,11 +99,12 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
       for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
         // Sphere distance function
         auto temp_angle = size_t(
-            acos(sin(cameras[id_1].rotation[1] * radperdeg) *
-                     sin(cameras[id_2].rotation[1] * radperdeg) +
-                 cos(cameras[id_1].rotation[1] * radperdeg) *
-                     cos(cameras[id_2].rotation[1] * radperdeg) *
-                     cos((cameras[id_1].rotation[0] - cameras[id_2].rotation[0]) * radperdeg)) /
+            acos(sin(viewParamsVector[id_1].rotation[1] * radperdeg) *
+                     sin(viewParamsVector[id_2].rotation[1] * radperdeg) +
+                 cos(viewParamsVector[id_1].rotation[1] * radperdeg) *
+                     cos(viewParamsVector[id_2].rotation[1] * radperdeg) *
+                     cos((viewParamsVector[id_1].rotation[0] - viewParamsVector[id_2].rotation[0]) *
+                         radperdeg)) /
             degree_step);
 
         if (temp_angle > max_angle) {
@@ -117,8 +124,8 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
       size_t id_1 = cameras_id_pair[id].first;
       size_t id_2 = cameras_id_pair[id].second;
 
-      temp_FOV = static_cast<size_t>((calculateFOV(cameras[id_1]) + calculateFOV(cameras[id_2])) /
-                                     FOV_step);
+      temp_FOV = static_cast<size_t>(
+          (calculateFOV(viewParamsVector[id_1]) + calculateFOV(viewParamsVector[id_2])) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -139,7 +146,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
       size_t id_1 = cameras_id_pair[id].first;
       size_t id_2 = cameras_id_pair[id].second;
 
-      temp_distance = calculateDistance(cameras[id_1], cameras[id_2]);
+      temp_distance = calculateDistance(viewParamsVector[id_1], viewParamsVector[id_2]);
       if (temp_distance > max_distance) {
         max_distance = temp_distance;
         max_num = 1;
@@ -158,7 +165,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
       size_t id_1 = id.first;
       size_t id_2 = id.second;
 
-      temp_distance = abs(cameras[id_1].position[0] - cameras[id_2].position[0]);
+      temp_distance = abs(viewParamsVector[id_1].position[0] - viewParamsVector[id_2].position[0]);
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
         camera_id_pair = id;
@@ -169,11 +176,11 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     id_i = camera_id_pair.first;
     id_j = camera_id_pair.second;
     float overlapping = 0;
-    overlapping = calculateOverlapping(cameras[id_i], cameras[id_j]);
+    overlapping = calculateOverlapping(viewParamsVector[id_i], viewParamsVector[id_j]);
 
     // Decide whether the number is one or multiple
-    isoneview = overlapping >=
-                overlapThreshold * min(calculateFOV(cameras[id_i]), calculateFOV(cameras[id_j]));
+    isoneview = overlapping >= overlapThreshold * min(calculateFOV(viewParamsVector[id_i]),
+                                                      calculateFOV(viewParamsVector[id_j]));
   }
 
   // Just select 1 view which has the shortest distance to center
@@ -184,10 +191,10 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     int id_center = 0;
     float distance = numeric_limits<float>::max();
 
-    for (auto &camera : cameras) {
-      x_center += camera.position[0];
-      y_center += camera.position[1];
-      z_center += camera.position[2];
+    for (auto &viewParams : viewParamsVector) {
+      x_center += viewParams.position[0];
+      y_center += viewParams.position[1];
+      z_center += viewParams.position[2];
     }
     x_center /= nbCameras;
     y_center /= nbCameras;
@@ -199,7 +206,7 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     for (size_t id = 0; id < nbCameras; id++) {
       size_t temp_FOV = 0;
 
-      temp_FOV = static_cast<size_t>(calculateFOV(cameras[id]) / FOV_step);
+      temp_FOV = static_cast<size_t>(calculateFOV(viewParamsVector[id]) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -211,9 +218,9 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     }
     // Search views which have the least diatance to center
     for (auto i : camera_id) {
-      float temp_distance = sqrt(square(cameras[i].position[0] - x_center) +
-                                 square(cameras[i].position[1] - y_center) +
-                                 square(cameras[i].position[2] - z_center));
+      float temp_distance = sqrt(square(viewParamsVector[i].position[0] - x_center) +
+                                 square(viewParamsVector[i].position[1] - y_center) +
+                                 square(viewParamsVector[i].position[2] - z_center));
       if (temp_distance < distance) {
         id_center = int(i);
         distance = temp_distance;
@@ -227,9 +234,10 @@ auto ViewReducer::optimizeIntraPeriod(CameraParametersList cameras)
     m_priorities[camera_id_pair.second] = true;
   }
 
-  // Move cameras into basic and additional partitions
-  for (size_t index = 0; index != cameras.size(); ++index) {
-    (m_priorities[index] ? result.basic : result.additional).push_back(cameras[index]);
+  // Move viewParamsVector into basic and additional partitions
+  for (size_t index = 0; index != viewParamsVector.size(); ++index) {
+    (m_priorities[index] ? result.basic : result.additional)
+        .viewParamsList.push_back(viewParamsVector[index]);
   }
   return result;
 }
@@ -245,26 +253,25 @@ auto ViewReducer::optimizeFrame(MVD16Frame views) const -> Output<MVD16Frame> {
   return result;
 }
 
-auto ViewReducer::calculateFOV(CameraParameters camera) -> float {
-  float temp_FOV = 0;
-
-  if (camera.type == ProjectionType::ERP) {
-    temp_FOV =
-        abs(camera.erpPhiRange[0] - camera.erpPhiRange[1]) * radperdeg *
-        (abs(sin(camera.erpThetaRange[0] * radperdeg) - sin(camera.erpThetaRange[1] * radperdeg)));
-  } else if (camera.type == ProjectionType::Perspective) {
-    temp_FOV = abs(4 * atan(camera.size[0] / (2 * camera.perspectiveFocal[0])) *
-                   sin(atan(camera.size[1] / (2 * camera.perspectiveFocal[1]))));
-  }
-  return temp_FOV;
+auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {
+  return visit(overload(
+                   [](const ErpParams &projection) {
+                     return abs(projection.phiRange[0] - projection.phiRange[1]) * radperdeg *
+                            (abs(sin(projection.thetaRange[0] * radperdeg) -
+                                 sin(projection.thetaRange[1] * radperdeg)));
+                   },
+                   [&](const PerspectiveParams &projection) {
+                     return abs(4 * atan(viewParams.size[0] / (2 * projection.focal[0])) *
+                                sin(atan(viewParams.size[1] / (2 * projection.focal[1]))));
+                   }),
+               viewParams.projection);
 }
-auto ViewReducer::calculateDistance(CameraParameters camera_1, CameraParameters camera_2) -> float {
+auto ViewReducer::calculateDistance(ViewParams camera_1, ViewParams camera_2) -> float {
   return sqrt(square(camera_1.position[0] - camera_2.position[0]) +
               square(camera_1.position[1] - camera_2.position[1]) +
               square(camera_1.position[2] - camera_2.position[2]));
 }
-auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
-                                       Metadata::CameraParameters camera_to) -> float {
+auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera_to) -> float {
 
   float overlapping = 0.0F;
   float weight_all = 0.0F;
@@ -276,9 +283,8 @@ auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
 
   Mat<int> isoverlap;
   isoverlap.resize(camera_from.size.y(), camera_from.size.x());
-  constexpr auto bitDepth = 16;
-  float depth_temp = sqrtf(expandDepthValue<bitDepth>(camera_from, 1) *
-                           expandDepthValue<bitDepth>(camera_from, UINT16_MAX));
+  float depth_temp =
+      sqrtf(expandDepthValue<16>(camera_from, 1) * expandDepthValue<16>(camera_from, UINT16_MAX));
 
   for (unsigned i = 0; i != depth.height(); ++i) {
     for (unsigned j = 0; j != depth.width(); ++j) {
@@ -304,18 +310,18 @@ auto ViewReducer::calculateOverlapping(Metadata::CameraParameters camera_from,
 
   for (unsigned i = 0; i != isoverlap.height(); ++i) {
     for (unsigned j = 0; j != isoverlap.width(); ++j) {
-      float weight = 0.0F;
-      if (camera_from.type == ProjectionType::ERP) {
-        float angle = (camera_from.erpThetaRange[1] +
-                       (float(i) + halfPixel) *
-                           (camera_from.erpThetaRange[0] - camera_from.erpThetaRange[1]) /
-                           isoverlap.height()) *
-                      radperdeg;
-        // calculate weight of each pixel in sphere
-        weight = cos(angle);
-      } else if (camera_from.type == ProjectionType::Perspective) {
-        weight = 1;
-      }
+      const float weight =
+          visit(overload(
+                    [&](const ErpParams &projection) { // calculate weight of each pixel in sphere
+                      float angle = (projection.thetaRange[1] +
+                                     (float(i) + halfPixel) *
+                                         (projection.thetaRange[0] - projection.thetaRange[1]) /
+                                         isoverlap.height()) *
+                                    radperdeg;
+                      return cos(angle);
+                    },
+                    [](const PerspectiveParams & /* unused */) { return 1.F; }),
+                camera_from.projection);
       weight_all += weight;
       if (isoverlap(i, j) != 0) {
         weight_overlapped += weight;

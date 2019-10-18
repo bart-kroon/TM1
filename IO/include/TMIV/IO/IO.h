@@ -36,8 +36,8 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Metadata/AtlasParametersList.h>
-#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 // Functions for file I/O
@@ -45,59 +45,43 @@
 // Frame indices are zero-based and relative to the StartFrame parameter.
 // These functions will print something short to screen.
 namespace TMIV::IO {
+std::string getFullPath(const Common::Json &config, const std::string &baseDirectoryField,
+                        const std::string &fileNameField, size_t viewId = 0,
+                        const std::string &viewName = "");
+
 template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
 
-auto sizesOf(const Metadata::CameraParametersList &cameras) -> std::vector<Common::Vec2i>;
-Metadata::CameraParametersList loadSourceMetadata(const Common::Json &config);
-Common::MVD16Frame loadSourceFrame(const Common::Json &config,
-                                   const std::vector<Common::Vec2i> &sizes, int frameIndex);
+// Load sequence metadata from the configuration files. It is up to the Encoder to comply (or
+// ignore) fields such as num_groups. The in-memory metadata representation has to be complete
+// only after IEncoder.
+auto loadSourceIvSequenceParams(const Common::Json &config) -> Metadata::IvSequenceParams;
+
+// Load access unit metadata from the configuration files. It is up to the Encoder to comply (or
+// ignore) fields such as omaf_v1_compatible_flag. The in-memory metadata representation has to be
+// complete only after IEncoder.
+auto loadSourceIvAccessUnitParams(const Common::Json &config) -> Metadata::IvAccessUnitParams;
+
+Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
+                                   int frameIndex);
 
 void saveOptimizedFrame(const Common::Json &config, int frameIndex,
                         const BasicAdditional<Common::MVD16Frame> &frame);
-auto loadOptimizedFrame(const Common::Json &config,
-                        const BasicAdditional<std::vector<Common::Vec2i>> &sizes, int frameIndex)
-    -> BasicAdditional<Common::MVD16Frame>;
-void saveOptimizedMetadata(const Common::Json &config, int frameIndex,
-                           const BasicAdditional<Metadata::CameraParametersList> &metadata);
-auto loadOptimizedMetadata(const Common::Json &config, int frameIndex)
-    -> BasicAdditional<Metadata::CameraParametersList>;
+void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
-void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD16Frame &frame);
-
-struct MivMetadata {
-  std::vector<Common::Vec2i> atlasSize; // atlas_width/height in MPEG/N18576
-  bool omafV1CompatibleFlag{};          // omaf_v1_compatible in MPEG/N18576
-  Metadata::AtlasParametersList patches;
-  Metadata::CameraParametersList cameras;
-
-  bool operator==(const MivMetadata &other) const;
-};
-
-void saveMivMetadata(const Common::Json &config, int frameIndex, const MivMetadata &metadata);
-auto loadMivMetadata(const Common::Json &config, int frameIndex) -> MivMetadata;
-
-// Save the atlas (10-bit 4:2:0 texture, 16-bit depth) with depth converted to
-// 10-bit
-void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD16Frame &frame);
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
-auto loadAtlasAndDecompress(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
-                            int frameIndex) -> Common::MVD16Frame;
+auto loadAtlas(const Common::Json &config, const Common::SizeVector &atlasSize, int frameIndex)
+    -> Common::MVD10Frame;
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);
-auto loadPatchIdMaps(const Common::Json &config, const std::vector<Common::Vec2i> &atlasSize,
-                     int frameIndex) -> Common::PatchIdMapList;
 
-auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::CameraParameters;
+auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::ViewParams;
 void saveViewport(const Common::Json &config, int frameIndex,
                   const Common::TextureDepth16Frame &frame);
 
-// Returns a pair of metadata and frame indices to pass to loadMivMetadata and
-// loadAtlas. If frameIndex is strictly less than the actual number of frames in
-// the encoded stream, then regular values are returned else mirrored indices
-// are computed.
-std::pair<int, int> getExtendedIndex(const Common::Json &config, int frameIndex);
-
+// Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
+// encoded stream, then regular values are returned else mirrored indices are computed.
+int getExtendedIndex(const Common::Json &config, int frameIndex);
 } // namespace TMIV::IO
 
 #endif

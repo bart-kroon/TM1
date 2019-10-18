@@ -37,6 +37,7 @@
 #include "Rasterizer.h"
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Image/Image.h>
+
 #include <cassert>
 #include <cmath>
 #include <future>
@@ -44,8 +45,8 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
 using namespace TMIV::Image;
+using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 class Synthesizer::Impl {
@@ -60,25 +61,25 @@ public:
   Impl &operator=(Impl &&) = delete;
   ~Impl() = default;
 
-  auto affineParameterList(const CameraParametersList &cameras,
-                           const CameraParameters &target) const {
+  auto affineParameterList(const ViewParamsVector &viewParamsVector,
+                           const ViewParams &target) const {
     vector<pair<Mat3x3f, Vec3f>> result;
-    result.reserve(cameras.size());
+    result.reserve(viewParamsVector.size());
     transform(
-        begin(cameras), end(cameras), back_inserter(result),
-        [&target](const CameraParameters &camera) { return affineParameters(camera, target); });
+        begin(viewParamsVector), end(viewParamsVector), back_inserter(result),
+        [&target](const ViewParams &viewParams) { return affineParameters(viewParams, target); });
     return result;
   }
 
-  auto atlasVertices(const TextureDepth16Frame &atlas, const Mat<uint16_t> &ids,
-                     const AtlasParametersList &patches, const CameraParametersList &cameras,
-                     const CameraParameters &target) const {
+  auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
+                     const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
+                     const ViewParams &target) const {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
     const auto cols = int(ids.width());
     result.reserve(rows * cols);
 
-    auto R_t = affineParameterList(cameras, target);
+    auto R_t = affineParameterList(viewParamsVector, target);
 
     auto i_ids = begin(ids);
 
@@ -96,20 +97,21 @@ public:
         // Look up metadata
         assert(patchId < patches.size());
         const auto &patch = patches[patchId];
-        assert(patch.viewId < cameras.size());
-        const auto &camera = cameras[patch.viewId];
+        assert(patch.viewId < viewParamsVector.size());
+        const auto &viewParams = viewParamsVector[patch.viewId];
 
         // Look up depth value and affine parameters
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
 
-        auto d16 = atlas.second.getPlane(0)(i_atlas, j_atlas);
-        assert(d16 > 0U); // #29: Having a patch ID, this depth has to be valid.
-        const auto d = expandDepthValue<16>(camera, d16);
+        auto level = atlas.second.getPlane(0)(i_atlas, j_atlas);
+        assert(level >= viewParams.depthOccMapThreshold);
+        const auto d = expandDepthValue<10>(viewParams, level);
+        assert(d > 0.F);
         const auto &R = R_t[patch.viewId].first;
         const auto &t = R_t[patch.viewId].second;
 
         // Reproject and calculate ray angle
-        const auto xyz = R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, camera) + t;
+        const auto xyz = R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams) + t;
         const auto rayAngle = angle(xyz, xyz - t);
         result.push_back({xyz, rayAngle});
       }
@@ -149,7 +151,7 @@ public:
     return result;
   }
 
-  auto atlasColors(const TextureDepth16Frame &atlas) const {
+  auto atlasColors(const TextureDepth10Frame &atlas) const {
     vector<Vec3f> result;
     auto yuv444 = expandTexture(atlas.first);
     result.reserve(distance(begin(result), end(result)));
@@ -157,20 +159,20 @@ public:
     return result;
   }
 
-  auto unprojectAtlas(const TextureDepth16Frame &atlas, const Mat<uint16_t> &ids,
-                      const AtlasParametersList &patches, const CameraParametersList &cameras,
-                      const CameraParameters &target) const {
+  auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
+                      const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
+                      const ViewParams &target) const {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
     assert(int(ids.width()) == atlas.first.getWidth());
     assert(int(ids.width()) == atlas.second.getWidth());
-    return tuple{atlasVertices(atlas, ids, patches, cameras, target), atlasTriangles(ids),
+    return tuple{atlasVertices(atlas, ids, patches, viewParamsVector, target), atlasTriangles(ids),
                  tuple{atlasColors(atlas)}};
   }
 
   template <typename Unprojector>
-  Rasterizer<Vec3f> rasterFrame(size_t numViews, const CameraParameters &target,
-                                Unprojector unprojector, float compensation) const {
+  Rasterizer<Vec3f> rasterFrame(size_t numViews, const ViewParams &target, Unprojector unprojector,
+                                float compensation) const {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching}, target.size};
@@ -206,69 +208,45 @@ public:
   }
 
   // Field of view in deg
-  static float xFoV(const CameraParameters &camera) {
-    switch (camera.type) {
-    case ProjectionType::ERP:
-      return abs(camera.erpPhiRange[1] - camera.erpPhiRange[0]);
-    case ProjectionType::Perspective:
-      return degperrad * 2 * atan(camera.size.x() / (2 * camera.perspectiveFocal.x()));
-    default:
-      return fullCycle;
-    }
+  static float xFoV(const ViewParams &viewParams) {
+    return visit(overload(
+                     [](const ErpParams &projection) {
+                       return abs(projection.phiRange[1] - projection.phiRange[0]);
+                     },
+                     [&](const PerspectiveParams &projection) {
+                       return degperrad * 2 *
+                              atan(viewParams.size.x() / (2 * projection.focal.x()));
+                     }),
+                 viewParams.projection);
   }
 
   // Resolution in px^2/deg^2
-  static float resolution(const CameraParameters &camera) {
-    return square(camera.size.x() / xFoV(camera));
+  static float resolution(const ViewParams &viewParams) {
+    return square(viewParams.size.x() / xFoV(viewParams));
   }
 
-  static float resolutionRatio(const CameraParametersList &cameras,
-                               const CameraParameters &target) {
-    const auto sourceResolution = accumulate(begin(cameras), end(cameras), 0.F,
-                                             [&](float average, const CameraParameters &camera) {
-                                               return average + resolution(camera) / cameras.size();
-                                             });
+  static float resolutionRatio(const ViewParamsVector &viewParamsVector, const ViewParams &target) {
+    const auto sourceResolution =
+        accumulate(begin(viewParamsVector), end(viewParamsVector), 0.F,
+                   [&](float average, const ViewParams &viewParams) {
+                     return average + resolution(viewParams) / viewParamsVector.size();
+                   });
     return resolution(target) / sourceResolution;
   }
 
-   Texture444Depth16Frame renderFrame(const MVD16Frame &atlases, const PatchIdMapList &ids,
-                                     const AtlasParametersList &patches,
-                                     const CameraParametersList &cameras,
-                                     const CameraParameters &target) const {
+  Texture444Depth16Frame renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
+                                     const AtlasParamsVector &patches,
+                                     const ViewParamsVector &viewParamsVector,
+                                     const ViewParams &target) const {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-        atlases.size(), target,
-        [&](size_t i, const CameraParameters &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, cameras, target);
-        },
-        resolutionRatio(cameras, target));
+    auto rasterizer = rasterFrame(atlases.size(), target,
+                                  [&](size_t i, const ViewParams &target) {
+                                    return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
+                                                          viewParamsVector, target);
+                                  },
+                                  resolutionRatio(viewParamsVector, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
-  }
-
-  Texture444Depth16Frame renderFrame(const MVD16Frame &frame, const CameraParametersList &cameras,
-                                     const CameraParameters &target) const {
-    assert(frame.size() == cameras.size());
-    auto rasterizer = rasterFrame(
-        frame.size(), target,
-        [&](size_t i, const CameraParameters &target) {
-          return unproject(expandDepth(cameras[i], frame[i].second), cameras[i], target,
-                           expandTexture(frame[i].first));
-        },
-        resolutionRatio(cameras, target));
-    return {quantizeTexture(rasterizer.attribute<0>()),
-            quantizeNormDisp16(target, rasterizer.normDisp())};
-  }
-
-  Mat<float> renderDepth(const Mat<float> &depth, const CameraParameters &camera,
-                         const CameraParameters &target) const {
-    AccumulatingPixel<> pixel{m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching};
-    auto mesh = reproject(depth, camera, target);
-
-    Rasterizer<> rasterizer{pixel, target.size};
-    rasterizer.submit(move(get<0>(mesh)), {}, get<1>(mesh));
-    rasterizer.run();
-    return rasterizer.depth();
   }
 
 private:
@@ -278,7 +256,7 @@ private:
   float m_maxStretching;
 }; // namespace TMIV::Renderer
 
-Synthesizer::Synthesizer(const Common::Json & /*rootNode*/, const Common::Json &componentNode)
+Synthesizer::Synthesizer(const Json & /*rootNode*/, const Json &componentNode)
     : m_impl(new Impl(componentNode.require("rayAngleParameter").asFloat(),
                       componentNode.require("depthParameter").asFloat(),
                       componentNode.require("stretchingParameter").asFloat(),
@@ -290,23 +268,13 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretching
 
 Synthesizer::~Synthesizer() = default;
 
-Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD16Frame &atlas,
-                                                        const Common::PatchIdMapList &maps,
-                                                        const AtlasParametersList &patches,
-                                                        const CameraParametersList &cameras,
-                                                        const CameraParameters &target) const {
-  return m_impl->renderFrame(atlas, maps, patches, cameras, target);
-}
-
-Common::Texture444Depth16Frame Synthesizer::renderFrame(const Common::MVD16Frame &frame,
-                                                        const CameraParametersList &cameras,
-                                                        const CameraParameters &target) const {
-  return m_impl->renderFrame(frame, cameras, target);
-}
-
-Common::Mat<float> Synthesizer::renderDepth(const Common::Mat<float> &frame,
-                                            const CameraParameters &camera,
-                                            const CameraParameters &target) const {
-  return m_impl->renderDepth(frame, camera, target);
+auto Synthesizer::renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                              const Metadata::IvSequenceParams &ivSequenceParams,
+                              const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                              const Metadata::ViewParams &target) const
+    -> Common::Texture444Depth16Frame {
+  assert(ivAccessUnitParams.atlasParamsList);
+  return m_impl->renderFrame(atlas, maps, *ivAccessUnitParams.atlasParamsList,
+                             ivSequenceParams.viewParamsList, target);
 }
 } // namespace TMIV::Renderer

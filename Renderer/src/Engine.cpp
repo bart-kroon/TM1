@@ -56,11 +56,11 @@ Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
          rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);
 }
 
-auto affineParameters(const CameraParameters &camera, const CameraParameters &target)
+auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
     -> pair<Mat3x3f, Vec3f> {
-  const auto R1 = EulerAnglesToRotationMatrix(camera.rotation);
+  const auto R1 = EulerAnglesToRotationMatrix(viewParams.rotation);
   const auto R2 = EulerAnglesToRotationMatrix(target.rotation);
-  const auto &t1 = camera.position;
+  const auto &t1 = viewParams.position;
   const auto &t2 = target.position;
 
   const auto R = transpose(R2) * R1;
@@ -68,19 +68,12 @@ auto affineParameters(const CameraParameters &camera, const CameraParameters &ta
   return {R, t};
 }
 
-auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::CameraParameters &camera)
-    -> Common::Vec3f {
-  switch (camera.type) {
-  case Metadata::ProjectionType::ERP: {
-    Engine<Metadata::ProjectionType::ERP> engine{camera};
-    return engine.unprojectVertex(position, depth);
-  }
-  case Metadata::ProjectionType::Perspective: {
-    Engine<Metadata::ProjectionType::Perspective> engine{camera};
-    return engine.unprojectVertex(position, depth);
-  }
-  default:
-    abort();
-  }
+auto unprojectVertex(Vec2f position, float depth, const ViewParams &viewParams) -> Vec3f {
+  return visit(
+      [&](const auto &projection) {
+        Engine<decay_t<decltype(projection)>> engine{viewParams};
+        return engine.unprojectVertex(position, depth);
+      },
+      viewParams.projection);
 }
 } // namespace TMIV::Renderer

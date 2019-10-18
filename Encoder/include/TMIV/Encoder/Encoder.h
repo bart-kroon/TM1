@@ -34,13 +34,14 @@
 #ifndef _TMIV_ENCODER_ENCODER_H_
 #define _TMIV_ENCODER_ENCODER_H_
 
+#include <TMIV/Encoder/IEncoder.h>
+
 #include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 namespace TMIV::Encoder {
-// The Encoder of TMIV 1.0
 class Encoder : public IEncoder {
 public:
   Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -50,18 +51,17 @@ public:
   Encoder &operator=(Encoder &&) = default;
   ~Encoder() override = default;
 
-  void prepareIntraPeriod(Metadata::CameraParametersList cameras) override;
+  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+      -> const Metadata::IvSequenceParams & override;
+  void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame views) override;
-  void completeIntraPeriod() override;
-
-  std::vector<Common::Vec2i> getAtlasSize() const override;
-  const Metadata::CameraParametersList &getCameraList() const override;
-  const Metadata::AtlasParametersList &getPatchList() const override;
-  Common::MVD16Frame popAtlas() override;
+  auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
+  auto popAtlas() -> Common::MVD10Frame override;
 
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
+  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
 };
 } // namespace TMIV::Encoder
 

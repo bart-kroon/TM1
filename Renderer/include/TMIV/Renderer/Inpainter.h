@@ -48,9 +48,9 @@ public:
   ~Inpainter() override = default;
 
   void inplaceInpaint(Common::Texture444Depth10Frame &viewport,
-                      const Metadata::CameraParameters &metadata) const override;
+                      const Metadata::ViewParams &metadata) const override;
   void inplaceInpaint(Common::Texture444Depth16Frame &viewport,
-                      const Metadata::CameraParameters &metadata) const override;
+                      const Metadata::ViewParams &metadata) const override;
 };
 } // namespace TMIV::Renderer
 

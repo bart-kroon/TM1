@@ -31,16 +31,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Encoder/Encoder.h>
+
 #include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
 #include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
+#include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
 
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Encoder/Encoder.h>
 
 namespace TMIV::Encoder {
 inline void registerComponents() {
   TMIV::ViewOptimizer::registerComponents();
   TMIV::AtlasConstructor::registerComponents();
+  TMIV::DepthOccupancy::registerComponents();
 
   Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
 }

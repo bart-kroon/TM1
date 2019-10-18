@@ -34,12 +34,14 @@
 #include "Cluster.h"
 #include <queue>
 
+using namespace std;
+using namespace TMIV::Common;
+
 namespace TMIV::AtlasConstructor {
+static const uint16_t ACTIVE = 65534;
+static const uint16_t INVALID = 65535;
 
-static const std::uint16_t ACTIVE = 65534;
-static const std::uint16_t INVALID = 65535;
-
-Cluster::Cluster(int cameraId, int clusterId) : cameraId_(cameraId), clusterId_(clusterId) {}
+Cluster::Cluster(int viewId, int clusterId) : viewId_(viewId), clusterId_(clusterId) {}
 
 void Cluster::push(int i, int j) {
   if (i < imin_) {
@@ -59,7 +61,7 @@ void Cluster::push(int i, int j) {
 }
 
 Cluster Cluster::align(const Cluster &c, int alignment) {
-  Cluster d(c.cameraId_, c.clusterId_);
+  Cluster d(c.viewId_, c.clusterId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
   d.imax_ = c.imax_; // modification to align the imin,jmin to even values to
@@ -75,30 +77,30 @@ Cluster Cluster::align(const Cluster &c, int alignment) {
 }
 
 Cluster Cluster::merge(const Cluster &c1, const Cluster &c2) {
-  Cluster c(c1.cameraId_, c1.clusterId_);
+  Cluster c(c1.viewId_, c1.clusterId_);
 
-  c.imin_ = std::min(c1.imin_, c2.imin_);
-  c.imax_ = std::max(c1.imax_, c2.imax_);
+  c.imin_ = min(c1.imin_, c2.imin_);
+  c.imax_ = max(c1.imax_, c2.imax_);
 
-  c.jmin_ = std::min(c1.jmin_, c2.jmin_);
-  c.jmax_ = std::max(c1.jmax_, c2.jmax_);
+  c.jmin_ = min(c1.jmin_, c2.jmin_);
+  c.jmax_ = max(c1.jmax_, c2.jmax_);
 
   c.filling_ = (c1.filling_ + c2.filling_);
 
   return c;
 }
 
-std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, int overlap) const {
+pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, int overlap) const {
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
-  Cluster c1(c.getCameraId(), c.getClusterId());
-  Cluster c2(c.getCameraId(), c.getClusterId());
+  Cluster c1(c.getViewId(), c.getClusterId());
+  Cluster c2(c.getViewId(), c.getClusterId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
-    int imid1 = std::min(imid + overlap, static_cast<int>(clusteringBuffer.m()) - 1);
-    int imid2 = std::max(0, imid - overlap);
+    int imid1 = min(imid + overlap, static_cast<int>(clusteringBuffer.m()) - 1);
+    int imid2 = max(0, imid - overlap);
 
     for (int i = c.imin(); i < imid1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
@@ -117,8 +119,8 @@ std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, i
     }
   } else {
     int jmid = (c.jmin() + c.jmax()) / 2;
-    int jmid1 = std::min(jmid + overlap, static_cast<int>(clusteringBuffer.n()) - 1);
-    int jmid2 = std::max(0, jmid - overlap);
+    int jmid1 = min(jmid + overlap, static_cast<int>(clusteringBuffer.n()) - 1);
+    int jmid2 = max(0, jmid - overlap);
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = c.jmin(); j < jmid1; j++) {
@@ -137,14 +139,14 @@ std::pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, i
     }
   }
 
-  return std::pair<Cluster, Cluster>(c1, c2);
+  return pair<Cluster, Cluster>(c1, c2);
 }
 
-std::pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId, const Common::Mask &maskMap,
-                                                        int firstClusterId, bool shouldNotBeSplit) {
+pair<ClusterList, ClusteringMap> Cluster::retrieve(int viewId, const Mask &maskMap,
+                                                   int firstClusterId, bool shouldNotBeSplit) {
 
-  std::pair<ClusterList, ClusteringMap> out(ClusterList(),
-                                            ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
+  pair<ClusterList, ClusteringMap> out(ClusterList(),
+                                       ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
   ClusterList &clusterList = out.first;
   auto &clusteringBuffer = out.second.getPlane(0);
 
@@ -154,7 +156,7 @@ std::pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId, const Comm
   int S = int(maskBuffer.size());
 
   // Build active list
-  std::vector<int> activeList;
+  vector<int> activeList;
 
   activeList.reserve(S);
 
@@ -173,16 +175,16 @@ std::pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId, const Comm
   int clustered = 0;
 
   while (iter_seed != activeList.end()) {
-    std::div_t dv = std::div(*iter_seed, B);
-    Cluster cluster(cameraId, clusterId);
-    std::queue<std::array<int, 2>> candidates;
+    div_t dv = div(*iter_seed, B);
+    Cluster cluster(viewId, clusterId);
+    queue<array<int, 2>> candidates;
 
     cluster.push(dv.quot, dv.rem);
     candidates.push({dv.quot, dv.rem});
     clusteringBuffer(dv.quot, dv.rem) = static_cast<uint16_t>(clusterId);
 
     auto tryAddCandidate = [&](int a, int b) {
-      std::uint16_t &visitedId = clusteringBuffer(a, b);
+      uint16_t &visitedId = clusteringBuffer(a, b);
 
       if (visitedId == ACTIVE) {
         cluster.push(a, b);
@@ -192,7 +194,7 @@ std::pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId, const Comm
     };
 
     while (!candidates.empty()) {
-      const std::array<int, 2> &current = candidates.front();
+      const array<int, 2> &current = candidates.front();
       int a = current[0];
       int b = current[1];
 
@@ -245,9 +247,8 @@ std::pair<ClusterList, ClusteringMap> Cluster::retrieve(int cameraId, const Comm
     }
 
     // Update seed
-    iter_seed = std::find_if(iter_seed + 1, activeList.end(), [&clusteringBuffer](int i) {
-      return (clusteringBuffer[i] == ACTIVE);
-    });
+    iter_seed = find_if(iter_seed + 1, activeList.end(),
+                        [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
   }
 
   return out;

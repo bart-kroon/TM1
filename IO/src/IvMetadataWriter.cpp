@@ -31,4 +31,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/IO/IvMetadataWriter.h>
+
+#include <TMIV/IO/IO.h>
+
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Metadata;
+
+namespace TMIV::IO {
+IvMetadataWriter::IvMetadataWriter(const Json &config, const string &baseDirectoryField,
+                                   const string &fileNameField) {
+  m_path = getFullPath(config, baseDirectoryField, fileNameField);
+  m_stream.open(m_path, ios::binary);
+  if (!m_stream.good()) {
+    ostringstream what;
+    what << "Failed to open metadata file " << m_path;
+    throw runtime_error(what.str());
+  }
+}
+
+void IvMetadataWriter::writeIvSequenceParams(IvSequenceParams ivSequenceParams) {
+  m_ivSequenceParams = move(ivSequenceParams);
+  m_ivSequenceParams.encodeTo(m_bitstream);
+}
+
+void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitParams) {
+  const bool skipAtlasParamsList =
+      m_ivAccessUnitParams.atlasParamsList == ivAccessUnitParams.atlasParamsList;
+  m_ivAccessUnitParams = ivAccessUnitParams;
+  if (skipAtlasParamsList) {
+    ivAccessUnitParams.atlasParamsList.reset();
+  }
+  ivAccessUnitParams.encodeTo(m_bitstream, m_ivSequenceParams);
+}
+} // namespace TMIV::IO

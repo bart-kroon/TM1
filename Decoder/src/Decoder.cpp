@@ -31,13 +31,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/Decoder.h>
 
+#include <TMIV/Common/Factory.h>
+
+#include <cassert>
+
 using namespace std;
+using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Renderer;
 
 namespace TMIV::Decoder {
@@ -46,20 +49,18 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
           "AtlasDeconstructor", rootNode, componentNode)},
       m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)} {}
 
-void Decoder::updateAtlasSize(vector<Vec2i> atlasSize) {
-  m_atlasSize = move(atlasSize);
-  m_patches.clear();
+void Decoder::updateSequenceParams(Metadata::IvSequenceParams ivSequenceParams) {
+  m_ivSequenceParams = move(ivSequenceParams);
 }
 
-void Decoder::updatePatchList(AtlasParametersList patches, const Common::MVD16Frame &frame) {
-  m_patches = move(patches);
-  m_patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_atlasSize, m_patches, frame);
+void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+  m_ivAccessUnitParams = move(ivAccessUnitParams);
 }
 
-void Decoder::updateCameraList(CameraParametersList cameras) { m_cameras = move(cameras); }
-
-Texture444Depth16Frame Decoder::decodeFrame(MVD16Frame atlas,
-                                            const CameraParameters &target) const {
-  return m_renderer->renderFrame(atlas, m_patchIdMaps, m_patches, m_cameras, target);
+auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
+    -> Texture444Depth16Frame {
+  return m_renderer->renderFrame(
+      atlas, m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas),
+      m_ivSequenceParams, m_ivAccessUnitParams, target);
 }
 } // namespace TMIV::Decoder

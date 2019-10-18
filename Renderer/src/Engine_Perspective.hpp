@@ -36,11 +36,12 @@
 #endif
 
 #include <TMIV/Common/Common.h>
+
 #include <cassert>
 
 namespace TMIV::Renderer {
-template <> struct Engine<Metadata::ProjectionType::Perspective> {
-  const Metadata::CameraParameters camera;
+template <> struct Engine<Metadata::PerspectiveParams> {
+  const Metadata::ViewParams viewParams;
   const int icols;
   const int irows;
   const int ocols;
@@ -50,16 +51,16 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
   const Common::Vec2f f;
   const Common::Vec2f p;
 
-  explicit Engine(const Metadata::CameraParameters &camera_)
-      : camera{camera_},
+  explicit Engine(const Metadata::ViewParams &viewParams_)
+      : viewParams{viewParams_},
 
         // Mesh structure
-        icols{camera.size.x()}, irows{camera.size.y()}, ocols{camera.size.x() + 2},
-        orows{camera.size.y() + 2}, osize{ocols * orows}, numTriangles{2 * (orows - 1) *
-                                                                       (ocols - 1)},
+        icols{viewParams.size.x()}, irows{viewParams.size.y()}, ocols{viewParams.size.x() + 2},
+        orows{viewParams.size.y() + 2}, osize{ocols * orows}, numTriangles{2 * (orows - 1) *
+                                                                           (ocols - 1)},
 
         // Projection parameters
-        f{camera.perspectiveFocal}, p{camera.perspectiveCenter} {}
+        f{viewParams.perspective().focal}, p{viewParams.perspective().center} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
@@ -119,11 +120,11 @@ template <> struct Engine<Metadata::ProjectionType::Perspective> {
 
   // List of 3-D vertices in the reference frame of the target camera
   auto makeSceneVertexDescriptorList(const Common::Mat<float> &depth,
-                                     const Metadata::CameraParameters &target) const
+                                     const Metadata::ViewParams &target) const
       -> SceneVertexDescriptorList {
     SceneVertexDescriptorList result;
     result.reserve(osize);
-    const auto R_t = affineParameters(camera, target);
+    const auto R_t = affineParameters(viewParams, target);
     for (int i = 0; i < orows; ++i) {
       for (int j = 0; j < ocols; ++j) {
         const auto u = uAt(j);

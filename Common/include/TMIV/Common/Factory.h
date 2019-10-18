@@ -34,11 +34,11 @@
 #ifndef _TMIV_COMMON_FACTORY_H_
 #define _TMIV_COMMON_FACTORY_H_
 
+#include <TMIV/Common/Json.h>
+
 #include <functional>
 #include <map>
 #include <string>
-
-#include <TMIV/Common/Json.h>
 
 namespace TMIV::Common {
 // Factory that allows specifying data processing blocks in the configuration

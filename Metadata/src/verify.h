@@ -31,4 +31,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Renderer/IInpainter.h>
+#ifndef _TMIV_METADATA_VERIFY_H_
+#define _TMIV_METADATA_VERIFY_H_
+
+namespace TMIV::Metadata {
+// Check decoder postconditions even in Release build
+#define verify(condition) (void)(!!(condition) || verifyFailed(#condition, __FILE__, __LINE__))
+
+bool verifyFailed(char const *condition, char const *file, int line);
+} // namespace TMIV::Metadata
+
+#endif

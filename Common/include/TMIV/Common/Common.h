@@ -58,6 +58,16 @@ template <typename Float> int ifloor(Float x) { return static_cast<int>(std::flo
 template <typename Float> int iceil(Float x) { return static_cast<int>(std::ceil(x)); }
 
 template <typename Float> auto square(Float x) { return x * x; }
+
+// http://open-std.org/JTC1/SC22/WG21/docs/papers/2018/p0051r3.pdf
+template <typename... Ts> struct Overload : public Ts... {
+  template <typename... Us> Overload(Us &&... values) : Ts{std::forward<Us>(values)}... {}
+  using Ts::operator()...;
+};
+template <typename... Ts>
+auto overload(Ts &&... values) -> Overload<std::remove_reference_t<Ts>...> {
+  return {std::forward<Ts>(values)...};
+}
 } // namespace TMIV::Common
 
 #include "Common.hpp"

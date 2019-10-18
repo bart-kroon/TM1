@@ -31,14 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <algorithm>
-#include <iostream>
-#include <memory>
+#include <TMIV/Decoder/IDecoder.h>
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/IDecoder.h>
 #include <TMIV/IO/IO.h>
+#include <TMIV/IO/IvMetadataReader.h>
+
+#include <iostream>
+#include <memory>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -49,9 +50,12 @@ private:
   unique_ptr<IDecoder> m_decoder;
   int m_numberOfFrames;
   int m_intraPeriod;
+  IO::IvMetadataReader m_metadataReader;
 
 public:
-  explicit Application(vector<const char *> argv) : Common::Application{"Decoder", move(argv)} {
+  explicit Application(vector<const char *> argv)
+      : Common::Application{"Decoder", move(argv)}, m_metadataReader{json(), "OutputDirectory",
+                                                                     "AtlasMetadataPath"} {
     m_decoder = create<IDecoder>("Decoder");
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
@@ -62,30 +66,27 @@ public:
   }
 
   void run() override {
+    m_metadataReader.readIvSequenceParams();
+    m_decoder->updateSequenceParams(m_metadataReader.ivSequeceParams());
+    cout << "Decoded sequence parameters:\n" << m_metadataReader.ivSequeceParams();
 
-    int lastIntraFrame = -1;
-    IO::MivMetadata metadata;
+    for (int outputFrame = 0; outputFrame < m_numberOfFrames; ++outputFrame) {
+      auto inputFrame = IO::getExtendedIndex(json(), outputFrame);
+      cout << "\nDECODE INPUT FRAME " << inputFrame << " TO OUTPUT FRAME " << outputFrame
+           << ":\n\n";
 
-    for (int i = 0; i < m_numberOfFrames; i++) {
-      auto idx = IO::getExtendedIndex(json(), i);
-
-      if (lastIntraFrame != idx.first) {
-        lastIntraFrame = idx.first;
-        metadata = IO::loadMivMetadata(json(), idx.first);
-
-        cout << "OMAF v1 compatible flag: " << boolalpha << metadata.omafV1CompatibleFlag << " ("
-             << int(metadata.omafV1CompatibleFlag) << ")" << endl;
-
-        m_decoder->updateAtlasSize(metadata.atlasSize);
-        auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
-        m_decoder->updatePatchList(move(metadata.patches), frame);
-        m_decoder->updateCameraList(move(metadata.cameras));
+      if (m_metadataReader.readAccessUnit(inputFrame / m_intraPeriod)) {
+        cout << "\nDecoded access unit parameters:\n" << m_metadataReader.ivAccessUnitParams();
+        m_decoder->updateAccessUnitParams(m_metadataReader.ivAccessUnitParams());
       }
 
-      auto frame = IO::loadAtlasAndDecompress(json(), metadata.atlasSize, idx.second);
-      auto target = IO::loadViewportMetadata(json(), i);
-      auto viewport = m_decoder->decodeFrame(frame, target);
-      IO::saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
+      const auto viewportParams = IO::loadViewportMetadata(json(), outputFrame);
+      cout << "Target viewport: " << viewportParams << "\n";
+
+      const auto &atlasSizes = m_metadataReader.ivAccessUnitParams().atlasParamsList->atlasSizes;
+      const auto viewport =
+          m_decoder->decodeFrame(IO::loadAtlas(json(), atlasSizes, inputFrame), viewportParams);
+      IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
     }
   }
 };

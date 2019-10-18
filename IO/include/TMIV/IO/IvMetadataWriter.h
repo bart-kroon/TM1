@@ -31,4 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
+#ifndef _TMIV_IO_IVMETADATAWRITER_H_
+#define _TMIV_IO_IVMETADATAWRITER_H_
+
+#include <TMIV/Metadata/Bitstream.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
+
+#include <fstream>
+
+namespace TMIV::IO {
+class IvMetadataWriter {
+public:
+  IvMetadataWriter(const Common::Json &config, const std::string &baseDirectoryField,
+                   const std::string &fileNameField);
+
+  void writeIvSequenceParams(Metadata::IvSequenceParams);
+  void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
+
+private:
+  std::string m_path;
+  std::ofstream m_stream;
+  Metadata::OutputBitstream m_bitstream{m_stream};
+  Metadata::IvSequenceParams m_ivSequenceParams;
+  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
+};
+} // namespace TMIV::IO
+
+#endif

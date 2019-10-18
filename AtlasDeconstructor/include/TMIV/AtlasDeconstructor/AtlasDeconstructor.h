@@ -35,10 +35,10 @@
 #define _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
 
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
+
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasDeconstructor {
-// The AtlasDeconstructor of TMIV 1.0 provided by Technicolor
 class AtlasDeconstructor : public IAtlasDeconstructor {
 public:
   AtlasDeconstructor(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
@@ -48,17 +48,19 @@ public:
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
   ~AtlasDeconstructor() override = default;
 
-  using AtlasParameters = Metadata::AtlasParameters;
-
-  PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                               const AtlasParametersList &patchList,
-                               const MVD16Frame &frame) override;
-  MVD16Frame recoverPrunedView(const MVD16Frame &atlas, const CameraParametersList &cameraList,
-                               const AtlasParametersList &patchList) override;
+  auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
+                     const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                     const Common::MVD10Frame &frame) -> Common::PatchIdMapList override;
+  
+  auto recoverPrunedView(const Common::MVD10Frame &atlas,
+                         const Metadata::ViewParamsVector &viewParamsVector,
+                         const Metadata::AtlasParamsVector &atlasParamsVector)
+      -> Common::MVD10Frame override;
 
 private:
-  void writePatchIdInMap(const AtlasParameters &patch, PatchIdMapList &patchMapList,
-                         std::uint16_t patchId, const MVD16Frame &frame) const;
+  void writePatchIdInMap(const Metadata::AtlasParameters &patch,
+                         Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
+                         const Common::MVD10Frame &frame, std::uint16_t depthOccMapThreshold) const;
 };
 } // namespace TMIV::AtlasDeconstructor
 

@@ -33,8 +33,8 @@
 
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 
-#include "../../Renderer/src/Rasterizer.h"
 #include <TMIV/Image/Image.h>
+#include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
@@ -278,6 +278,7 @@ private:
         },
         target.projection);
   }
+
   template <typename E>
   void project(const E &engine, const SceneVertexDescriptorList &in, size_t iview,
                ImageVertexDescriptorList &out, size_t oview) const {

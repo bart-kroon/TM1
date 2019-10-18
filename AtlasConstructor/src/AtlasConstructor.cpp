@@ -36,8 +36,6 @@
 #include <TMIV/Common/Factory.h>
 
 #include <cassert>
-#include <fstream>
-#include <iterator>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -62,27 +60,16 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_nbAtlas = size_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
 }
 
-auto AtlasConstructor::prepareSequence(IvSequenceParams basicSequenceParams,
-                                       IvSequenceParams additionalSequenceParams)
+auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
     -> const IvSequenceParams & {
-  // TODO(BK): Why not change the interfaces to provide one set of sequence parameters +
-  // isReferenceView (or isBasicView) directly
-  m_isReferenceView.clear();
-  m_isReferenceView.insert(m_isReferenceView.end(), basicSequenceParams.viewParamsList.size(), 1);
-  m_isReferenceView.insert(m_isReferenceView.end(), additionalSequenceParams.viewParamsList.size(),
-                           0);
-
-  // Make sure to carry all metadata
-  m_ivSequenceParams = basicSequenceParams;
-
-  // Add parameters of additional views
-  m_ivSequenceParams.viewParamsList.insert(
-      m_ivSequenceParams.viewParamsList.end(),
-      make_move_iterator(begin(additionalSequenceParams.viewParamsList)),
-      make_move_iterator(end(additionalSequenceParams.viewParamsList)));
 
   // Construct at least the basic views
-  m_nbAtlas = max(basicSequenceParams.viewParamsList.size(), m_nbAtlas);
+  m_nbAtlas =
+      max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
+
+  // Copy sequence parameters + Basic view ids
+  m_ivSequenceParams = move(ivSequenceParams);
+  m_isBasicView = move(isBasicView);
 
   return m_ivSequenceParams;
 }
@@ -94,18 +81,13 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
   m_aggregator->prepareAccessUnit();
 }
 
-void AtlasConstructor::pushFrame(MVD16Frame basicViews, MVD16Frame additionalViews) {
-  MVD16Frame views;
-  views.insert(views.end(), make_move_iterator(begin(basicViews)),
-               make_move_iterator(end(basicViews)));
-  views.insert(views.end(), make_move_iterator(begin(additionalViews)),
-               make_move_iterator(end(additionalViews)));
-
+void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Pruning
-  MaskList masks = m_pruner->prune(m_ivSequenceParams.viewParamsList, views, m_isReferenceView);
+  MaskList masks =
+      m_pruner->prune(m_ivSequenceParams.viewParamsList, transportViews, m_isBasicView);
 
   // Aggregation
-  m_viewBuffer.push_back(move(views));
+  m_viewBuffer.push_back(move(transportViews));
   m_aggregator->pushMask(masks);
 }
 
@@ -118,7 +100,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   assert(m_ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams.atlasParamsList->atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
   m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
-      m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isReferenceView));
+      m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
 
   // Atlas construction
   for (const auto &views : m_viewBuffer) {

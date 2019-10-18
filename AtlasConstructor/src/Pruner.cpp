@@ -56,24 +56,24 @@ Pruner::Pruner(const Json & /*rootNode*/, const Json &componentNode) {
 }
 
 auto Pruner::prune(const ViewParamsVector &viewParamsVector, const MVD16Frame &views,
-                   const vector<uint8_t> &shouldNotBePruned) -> MaskList {
+                   const vector<bool> &isBasicView) -> MaskList {
 
   // Sort viewParamsVector for pruning
   vector<int> viewOrderId(viewParamsVector.size());
 
   iota(viewOrderId.begin(), viewOrderId.end(), 0);
 
-  sort(viewOrderId.begin(), viewOrderId.end(), [&shouldNotBePruned](int i1, int i2) {
-    if (shouldNotBePruned[i1] != shouldNotBePruned[i2]) {
-      return (shouldNotBePruned[i1] != 0);
+  sort(viewOrderId.begin(), viewOrderId.end(), [&isBasicView](int i1, int i2) {
+    if (isBasicView[i1] != isBasicView[i2]) {
+      return isBasicView[i1];
     }
     { return (i1 < i2); }
   });
 
   // Possible discard some additional views (for debugging purpose)
-  int maxView =
-      min(int(viewOrderId.size()),
-          int(count(shouldNotBePruned.begin(), shouldNotBePruned.end(), 1) + m_maxAdditionalView));
+  int maxView = min(
+      int(viewOrderId.size()),
+      int(count(isBasicView.begin(), isBasicView.end(), true) + m_maxAdditionalView));
 
   // Pruning loop
   int nbView = static_cast<int>(views.size());
@@ -93,7 +93,7 @@ auto Pruner::prune(const ViewParamsVector &viewParamsVector, const MVD16Frame &v
       depthMapExpanded[viewToPruneId] =
           expandDepth(viewParamsVector[viewToPruneId], views[viewToPruneId].second);
 
-      if (shouldNotBePruned[viewToPruneId] == 0U) {
+      if (!isBasicView[viewToPruneId]) {
         // Depth-based redundancy removal
         const Mat<float> &depthMapToPrune = depthMapExpanded[viewToPruneId];
         Mat<Vec2f> gridMapToPrune = imagePositions(viewParamsVector[viewToPruneId]);

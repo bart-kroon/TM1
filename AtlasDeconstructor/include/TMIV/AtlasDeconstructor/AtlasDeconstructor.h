@@ -51,7 +51,7 @@ public:
   auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
                      const Metadata::IvAccessUnitParams &ivAccessUnitParams,
                      const Common::MVD10Frame &frame) -> Common::PatchIdMapList override;
-  
+
   auto recoverPrunedView(const Common::MVD10Frame &atlas,
                          const Metadata::ViewParamsVector &viewParamsVector,
                          const Metadata::AtlasParamsVector &atlasParamsVector)

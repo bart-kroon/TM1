@@ -47,17 +47,13 @@ public:
   IViewOptimizer &operator=(IViewOptimizer &&) = default;
   virtual ~IViewOptimizer() = default;
 
-  template <class T> struct Output {
-    T basic;
-    T additional;
-  };
+  using Output = std::pair<Metadata::IvSequenceParams, std::vector<bool>>;
 
   // Optimize camera parameters for the sequence
-  virtual auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams)
-      -> Output<Metadata::IvSequenceParams> = 0;
+  virtual auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams) -> Output = 0;
 
   // Optimize a frame in the intra period
-  virtual auto optimizeFrame(Common::MVD16Frame views) const -> Output<Common::MVD16Frame> = 0;
+  virtual auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

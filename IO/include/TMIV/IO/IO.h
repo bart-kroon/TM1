@@ -49,8 +49,6 @@ std::string getFullPath(const Common::Json &config, const std::string &baseDirec
                         const std::string &fileNameField, size_t viewId = 0,
                         const std::string &viewName = "");
 
-template <class T> using BasicAdditional = ViewOptimizer::IViewOptimizer::Output<T>;
-
 // Load sequence metadata from the configuration files. It is up to the Encoder to comply (or
 // ignore) fields such as num_groups. The in-memory metadata representation has to be complete
 // only after IEncoder.
@@ -64,8 +62,6 @@ auto loadSourceIvAccessUnitParams(const Common::Json &config) -> Metadata::IvAcc
 Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
                                    int frameIndex);
 
-void saveOptimizedFrame(const Common::Json &config, int frameIndex,
-                        const BasicAdditional<Common::MVD16Frame> &frame);
 void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);

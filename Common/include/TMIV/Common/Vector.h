@@ -205,9 +205,9 @@ auto dot_product(Iterator1 first1, Iterator1 last1, Iterator2 first2) {
   using T1 = typename Iterator1::value_type;
   using T2 = typename Iterator2::value_type;
 
-  return std::inner_product(first1, last1, first2, T1(0),
-                            [](const T1 &v1, const T2 &v2) { return (v1 + v2); },
-                            [](const T1 &v1, const T2 &v2) { return (v1 * std::conj(v2)); });
+  return std::inner_product(
+      first1, last1, first2, T1(0), [](const T1 &v1, const T2 &v2) { return (v1 + v2); },
+      [](const T1 &v1, const T2 &v2) { return (v1 * std::conj(v2)); });
 }
 
 template <typename V1, typename V2> auto dot(const V1 &v1, const V2 &v2) {

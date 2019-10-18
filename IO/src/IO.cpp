@@ -253,14 +253,6 @@ MVD16Frame loadSourceFrame(const Json &config, const SizeVector &sizes, int fram
   throw runtime_error("Invalid SourceDepthBitDepth");
 }
 
-void saveOptimizedFrame(const Json &config, int frameIndex,
-                        const BasicAdditional<MVD16Frame> &frame) {
-  saveMVDFrame(config, frameIndex, frame.basic, "basic views of", "OutputDirectory",
-               "BasicTexturePathFmt", "BasicDepthPathFmt");
-  saveMVDFrame(config, frameIndex, frame.additional, "additional views of", "OutputDirectory",
-               "AdditionalTexturePathFmt", "AdditionalDepthPathFmt");
-}
-
 void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame) {
   saveMVDFrame(config, frameIndex, frame, "pruned", "OutputDirectory", "PrunedViewTexturePathFmt",
                "PrunedViewDepthPathFmt");

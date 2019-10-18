@@ -48,8 +48,8 @@ public:
   virtual ~IPruner() = default;
 
   virtual auto prune(const Metadata::ViewParamsVector &viewParamsVector,
-                     const Common::MVD16Frame &views,
-                     const std::vector<std::uint8_t> &shouldNotBePruned) -> Common::MaskList = 0;
+                     const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
+      -> Common::MaskList = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

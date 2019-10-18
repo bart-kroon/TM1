@@ -54,11 +54,10 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  auto prepareSequence(Metadata::IvSequenceParams basicSequenceParams,
-                       Metadata::IvSequenceParams additionalSequenceParams)
+  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, std::vector<bool> isBasicView)
       -> const Metadata::IvSequenceParams & override;
   void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) override;
+  void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
@@ -72,7 +71,7 @@ private:
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
-  std::vector<std::uint8_t> m_isReferenceView;
+  std::vector<bool> m_isBasicView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
   Metadata::IvSequenceParams m_ivSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;

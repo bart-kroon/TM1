@@ -42,7 +42,7 @@
 namespace TMIV::ViewOptimizer {
 class ViewReducer : public IViewOptimizer {
 private:
-  std::vector<bool> m_priorities;
+  std::vector<bool> m_isBasicView;
 
 public:
   ViewReducer(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
@@ -52,10 +52,11 @@ public:
   ViewReducer &operator=(ViewReducer &&) = default;
   ~ViewReducer() override = default;
 
-  auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams)
-      -> Output<Metadata::IvSequenceParams> override;
+  auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams) -> Output override;
 
-  auto optimizeFrame(Common::MVD16Frame views) const -> Output<Common::MVD16Frame> override;
+  auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
+    return views;
+  }
 
 private:
   auto calculateFOV(Metadata::ViewParams viewParams) -> float;

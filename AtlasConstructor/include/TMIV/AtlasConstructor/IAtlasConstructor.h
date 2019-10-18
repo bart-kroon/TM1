@@ -48,11 +48,11 @@ public:
   IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
   virtual ~IAtlasConstructor() = default;
 
-  virtual auto prepareSequence(Metadata::IvSequenceParams basicSequenceParams,
-                               Metadata::IvSequenceParams additionalSequenceParams)
+  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams,
+                               std::vector<bool> isBasicView)
       -> const Metadata::IvSequenceParams & = 0;
   virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
-  virtual void pushFrame(Common::MVD16Frame basicViews, Common::MVD16Frame additionalViews) = 0;
+  virtual void pushFrame(Common::MVD16Frame transportViews) = 0;
   virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };

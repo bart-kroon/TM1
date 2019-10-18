@@ -71,12 +71,10 @@ ostream &operator<<(ostream &stream, const ViewParams &viewParams) {
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
   stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
-         << viewParams.depthOccMapThreshold << ", depthStart ";
+         << viewParams.depthOccMapThreshold;
 
   if (viewParams.depthStart) {
-    stream << *viewParams.depthStart;
-  } else {
-    stream << "not present";
+    stream << ", depthStart " << *viewParams.depthStart;
   }
 
   stream << ", pose "

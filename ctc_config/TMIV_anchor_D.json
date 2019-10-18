@@ -24,8 +24,8 @@
         "v14",
         "v15"
     ],
-    "AtlasTexturePathFmt": "ATL_SD_R0_Tt_c%02d_2048x1344_yuv420p10le.yuv",
-    "AtlasDepthPathFmt": "ATL_SD_R0_Td_c%02d_2048x1344_yuv420p10le.yuv",
+    "AtlasTexturePathFmt": "ATL_SD_R0_Tt_c%02d_2048x1088_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SD_R0_Td_c%02d_2048x1088_yuv420p10le.yuv",
     "AtlasMetadataPath": "ATL_SD_R0_Tm_c00.bit",
     "OutputTexturePath": "TM1_SD_R0_Tt_%s_2048x1088_yuv420p10le.yuv",
     "OutputCameraName": "v1",
@@ -57,9 +57,9 @@
             },
             "AtlasResolution": [
                 2048,
-                1344
+                1088
             ],
-            "MaxLumaSamplesPerFrame": 11010048
+            "MaxLumaSamplesPerFrame": 22282240
         }
     },
     "DecoderMethod": "Decoder",

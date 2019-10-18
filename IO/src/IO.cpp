@@ -211,7 +211,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
 }
 
 auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitParams {
-  return {AtlasParamsList{{}, config.require("OmafV1CompatibleFlag").asBool(), {}, {}}};
+  return {AtlasParamsList{{}, config.require("OmafV1CompatibleFlag").asBool(), {}, {}, {}}};
 }
 
 namespace {

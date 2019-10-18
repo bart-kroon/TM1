@@ -59,7 +59,7 @@ public:
   auto transformSequenceParams(Metadata::IvSequenceParams)
       -> const Metadata::IvSequenceParams & override;
 
-  // Pass through
+  // depthOccupancyParamsPresentFlags = zeros
   auto transformAccessUnitParams(Metadata::IvAccessUnitParams)
       -> const Metadata::IvAccessUnitParams & override;
 

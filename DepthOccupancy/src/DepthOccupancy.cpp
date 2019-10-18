@@ -80,6 +80,10 @@ auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequence
 auto DepthOccupancy::transformAccessUnitParams(Metadata::IvAccessUnitParams accessUnitParams)
     -> const Metadata::IvAccessUnitParams & {
   m_accessUnitParams = accessUnitParams;
+  if (m_accessUnitParams.atlasParamsList) {
+    m_accessUnitParams.atlasParamsList->depthOccupancyParamsPresentFlags =
+        vector<bool>(m_accessUnitParams.atlasParamsList->atlasSizes.size(), false);
+  }
   return m_accessUnitParams;
 }
 

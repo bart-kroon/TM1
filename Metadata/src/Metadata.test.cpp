@@ -219,17 +219,19 @@ const auto ivSequenceParams =
 const auto atlasParamsList = array{
     AtlasParamsList{
         {AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90, {}, {}}},
-        true,            // omaf v1 compatible flags
-        {},              // no group ID's
-        {{1920, 1080}}}, // atlas sizes
+        true,           // omaf v1 compatible flags
+        {},             // no group ID's
+        {{1920, 1080}}, // atlas sizes
+        {false}},       // depth occ. params present flags
     AtlasParamsList{
         {AtlasParameters{0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90, {}, {}},
          AtlasParameters{0, 1, {1}, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180, {64}, {}},
          AtlasParameters{
              2, 1, {1}, {100, 30}, {500, 400}, {340, 220}, PatchRotation::rot180, {}, {128}}},
-        true,                                   // omaf v1 compatible flag
-        {{1, 0, 1}},                            // group ID's,
-        {{2048, 4096}, {0, 0}, {2048, 1088}}}}; // atlas sizes
+        true,                                 // omaf v1 compatible flag
+        {{1, 0, 1}},                          // group ID's,
+        {{2048, 4096}, {0, 0}, {2048, 1088}}, // atlas sizes
+        {true, false, true}}};                // namespace examples
 
 const auto ivAccessUnitParams =
     array{IvAccessUnitParams{}, IvAccessUnitParams{{atlasParamsList[1]}}};

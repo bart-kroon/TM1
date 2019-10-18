@@ -98,7 +98,8 @@ using AtlasParamsVector = std::vector<AtlasParameters>;
 struct AtlasParamsList : public AtlasParamsVector {
   AtlasParamsList() = default;
   AtlasParamsList(AtlasParamsVector atlasParameters, bool omafV1CompatibleFlag_,
-                  std::optional<std::vector<unsigned>> groupIds_, Common::SizeVector atlasSizes_);
+                  std::optional<std::vector<unsigned>> groupIds_, Common::SizeVector atlasSizes_,
+                  std::vector<bool> depthOccupancyParamsPresentFlags_);
   AtlasParamsList(const AtlasParamsList &) = default;
   AtlasParamsList(AtlasParamsList &&) = default;
   AtlasParamsList &operator=(const AtlasParamsList &) = default;
@@ -113,6 +114,9 @@ struct AtlasParamsList : public AtlasParamsVector {
   // In specification: atlas_width_minus1[ a ]
   // In specification: atlas_height_minus1[ a ]
   Common::SizeVector atlasSizes;
+
+  // In specification: depth_occ_params_present_flag[ a ]
+  std::vector<bool> depthOccupancyParamsPresentFlags;
 
   void setAtlasParamsVector(AtlasParamsVector x) { AtlasParamsVector::operator=(move(x)); }
 

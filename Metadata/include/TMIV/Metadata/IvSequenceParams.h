@@ -34,12 +34,14 @@
 #ifndef _TMIV_METADATA_IVSEQUENCEPARAMS_H_
 #define _TMIV_METADATA_IVSEQUENCEPARAMS_H_
 
+#include "ViewingSpace.h"
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
 #include <cassert>
 #include <cstdint>
 #include <iosfwd>
+#include <optional>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -186,6 +188,10 @@ struct IvSequenceParams {
 
   // In specification: depth_occ_map_threshold_num_bits_minus8
   unsigned depthOccMapThresholdNumBits{10};
+
+  // In specification: viewing_space_present_flag
+  // In specification: viewing_space( )
+  std::optional<ViewingSpace> viewingSpace;
 
   friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams);
   bool operator==(const IvSequenceParams &other) const;

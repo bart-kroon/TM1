@@ -37,6 +37,7 @@
 #include <TMIV/Metadata/Bitstream.h>
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/Metadata/ViewingSpace.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -202,14 +203,16 @@ const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
+const auto viewingSpace = array{ViewingSpace{}};
+
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
-          IvSequenceParams{
-              ivsProfileTierLevel[0], cameraParameterList[1],
-              true, // low depth quality flag
-              2,    // num objects
-              2,    // max groups
-          }};
+          IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1],
+                           true, // low depth quality flag
+                           2,    // num objects
+                           2,    // max groups
+                           12,   // num depth occupancy bits
+                           ViewingSpace{}}};
 
 const auto atlasParamsList = array{
     AtlasParamsList{
@@ -276,11 +279,13 @@ TEST_CASE("Metadata bitstreams") {
 
   SECTION("atlas_params_list") {
     REQUIRE(codingTest(examples::atlasParamsList[0], 17, examples::ivSequenceParams[0]));
-    REQUIRE(codingTest(examples::atlasParamsList[1], 46, examples::ivSequenceParams[1]));
+    REQUIRE(codingTest(examples::atlasParamsList[1], 47, examples::ivSequenceParams[1]));
   }
 
   SECTION("iv_access_unit_params") {
     REQUIRE(codingTest(examples::ivAccessUnitParams[0], 1, examples::ivSequenceParams[1]));
-    REQUIRE(codingTest(examples::ivAccessUnitParams[1], 46, examples::ivSequenceParams[1]));
+    REQUIRE(codingTest(examples::ivAccessUnitParams[1], 47, examples::ivSequenceParams[1]));
   }
+
+  SECTION("viewing_space") { REQUIRE(codingTest(examples::viewingSpace[0], 0)); }
 }

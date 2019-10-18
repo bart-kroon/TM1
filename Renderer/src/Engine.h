@@ -60,11 +60,6 @@ struct ImageVertexDescriptor {
 
 using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
 
-// Return (R, T) such that x -> Rx + t changes reference frame from the source
-// camera to the target camera
-auto affineParameters(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target)
-    -> std::pair<Common::Mat3x3f, Common::Vec3f>;
-
 // The rendering engine is the part that is specalized per projection type
 template <typename Projection> struct Engine {};
 } // namespace TMIV::Renderer
@@ -88,14 +83,6 @@ auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangle
       },
       target.projection);
 }
-
-// Unproject a pixel from a source frame to scene coordinates in the reference
-// frame of the target camera.
-//
-// This method is less efficient because of the switch on projection type, but
-// suitable for rendering directly from an atlas.
-auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewParams &viewParams)
-    -> Common::Vec3f;
 } // namespace TMIV::Renderer
 
 #endif

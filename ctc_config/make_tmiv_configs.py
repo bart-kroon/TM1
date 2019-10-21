@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 
 def saveJson(data, path):
     with open(path, 'w') as stream:
@@ -94,7 +95,8 @@ class ConfigurationParameters:
 			self.sourceDepthBitDepth = 8
 			self.outputCameraName = "v01"
 		else:
-			exit(-1)
+			print("Logic error: unknown sequence id")
+			exit(-2)
 		
 		if anchorType == 'view_anchor17': 
 			self.sourceCameraNames = sourceCameraNamesViewAnchor
@@ -199,6 +201,10 @@ def makeConfiguration(anchorType, testPoint, seqId, parameters):
 		
 		
 if __name__ == '__main__':
+
+	if sys.version_info[0] < 3:
+		print ("Error: Python version < 3")
+		exit(-1)
 
 	for testPoint in ["R0", "QP1", "QP2", "QP3", "QP4", "QP5"]:
 		if not os.path.exists(testPoint):

@@ -88,15 +88,17 @@ class DecoderConfiguration:
 		return self.viewWidth()
 
 	def atlasHeight(self):
-		return {
-			'A': 3072,
-			'B': 2368,
-			'C': 5120,
-			'D': 1088,
-			'E': 1984,
-			'J': 1080,
-			'L': 1080
-		}[self.seqId]
+		if anchorId == 'anchor97' or anchorId == 'anchor17':
+			return {
+				'A': 3072,
+				'B': 2368,
+				'C': 5120,
+				'D': 1088,
+				'E': 1984,
+				'J': 1080,
+				'L': 1080
+			}[self.seqId]
+		return self.viewWidth()
 
 	def atlasTexturePathFmt(self):
 		return 'ATL_S{}_{}_Tt_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.testPoint, self.atlasWidth(), self.atlasHeight())
@@ -327,7 +329,22 @@ class EncoderConfiguration(DecoderConfiguration):
 	def path(self):
 		return 'TMIV_{}_{}.json'.format(self.anchorId, self.seqId)
 
+	def saveHmCfg(self):
+		path = 'HM_{}_{}.cfg'.format(self.anchorId, self.seqId)
+		print(path)
+		with open(path, 'w') as stream:
+			stream.write('InputBitDepth: 10\n')
+			stream.write('InputChromaFormat: 420\n')
+			stream.write('FrameRate: 30\n')
+			stream.write('FrameSkip: 0\n')
+			stream.write('SourceWidth: {}\n'.format(self.atlasWidth()))
+			stream.write('SourceHeight: {}\n'.format(self.atlasHeight()))
+			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
+			stream.write('SEIDecodedPictureHash: 1\n')
+			stream.write('Level: 5.2\n')
+
 def saveJson(data, path):	
+	print(path)
 	with open(path, 'w') as stream:
 		json.dump(data, stream, indent=4, sort_keys=True, separators=(',', ': '))
 
@@ -343,8 +360,8 @@ if __name__ == '__main__':
 	for anchorId in anchors:
 		for seqId in seqIds:
 			config = EncoderConfiguration(anchorId, seqId)
-			print(config.path())
 			saveJson(config.parameters(), config.path())
+			config.saveHmCfg()
 
 	for testPoint in testPoints:
 		if not os.path.exists(testPoint):
@@ -352,5 +369,4 @@ if __name__ == '__main__':
 		for anchorId in anchors:
 			for seqId in seqIds:
 				config = DecoderConfiguration(anchorId, seqId, testPoint)
-				print(config.path())
 				saveJson(config.parameters(), config.path())

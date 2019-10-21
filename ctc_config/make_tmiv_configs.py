@@ -37,10 +37,12 @@ import os
 import sys
 
 class DecoderConfiguration:
-	def __init__(self, anchorId, seqId, testPoint):		
+	def __init__(self, anchorId, seqId, testPoint):
 		self.anchorId = anchorId
 		self.seqId = seqId
 		self.testPoint = testPoint
+		with open(self.sequenceJsonPath(), 'r') as stream:			
+			self.sequenceParams = json.load(stream)
 
 	def numberOfFrames(self):
 		if self.anchorId == 'anchor97':
@@ -67,27 +69,20 @@ class DecoderConfiguration:
 	def sourceCameraParameters(self):
 		return '{}.json'.format(self.seqName())	
 
+	def sequenceJsonPath(self):
+		return 'sequences/{}'.format(self.sourceCameraParameters())
+
+	def firstSourceCamera(self):
+		for camera in self.sequenceParams['cameras']:
+			if camera['Name'] == self.firstSourceCameraName():
+				return camera
+		raise 'Could not find first source camera in sequence configuration'
+
 	def viewWidth(self):
-		return {
-			'A': 4096,
-			'B': 2048,
-			'C': 4096,
-			'D': 2048,
-			'E': 1920,
-			'J': 1920,
-			'L': 1920
-		}[self.seqId]
+		return self.firstSourceCamera()['Resolution'][0]
 
 	def viewHeight(self):
-		return {
-			'A': 2048,
-			'B': 2048,
-			'C': 4096,
-			'D': 1088,
-			'E': 1080,
-			'J': 1080,
-			'L': 1080
-		}[self.seqId]
+		return self.firstSourceCamera()['Resolution'][1]
 
 	def atlasWidth(self):
 		return self.viewWidth()
@@ -116,18 +111,10 @@ class DecoderConfiguration:
 		return '.'
 
 	def outputTexturePath(self):
-		return 'TM1_S{}_{}_Tt_%s_{}x{}_yuv420p10le.yuv'.format(seqId, self.testPoint, self.viewWidth(), self.viewHeight())
+		return 'TM1_S{}_{}_Tt_%s_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.testPoint, self.viewWidth(), self.viewHeight())
 
 	def outputCameraName(self):
-		return {
-			'A': 'v1',
-			'B': 'v1',
-			'C': 'v1',
-			'D': 'v1',
-			'E': 'v1',
-			'J': 'v01',
-			'L': 'v01'
-		}[self.seqId]
+		return self.viewNameFormat().format(1)
 
 	def synthesizer(self):
 		return {
@@ -154,8 +141,8 @@ class DecoderConfiguration:
 		return 0
 
 	def viewNameFormat(self):
-		if seqId == 'J' or seqId == 'L':
-			return 'v{:2}'
+		if self.seqId == 'J' or self.seqId == 'L':
+			return 'v{:02}'
 		return 'v{}'
 
 	def sourceCameraNames(self):
@@ -170,6 +157,9 @@ class DecoderConfiguration:
 				'L': [ 'v00', 'v02', 'v04', 'v06', 'v08' ]
 			}[self.seqId]
 		return list(map(lambda x: self.viewNameFormat().format(x + self.firstSourceView()), range(0, self.numberOfSourceViews())))
+
+	def firstSourceCameraName(self):
+		return self.viewNameFormat().format(self.firstSourceView())
 
 	def numberOfCodedSourceViews(self):
 		len(self.sourceCameraNames())
@@ -246,11 +236,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		return '%s_texture_{}x{}_yuv420p10le.yuv'.format(self.viewWidth(), self.viewHeight())
 
 	def sourceDepthBitDepth(self):
-		if self.seqId == 'J':
-			return 10
-		if self.seqId == 'L':
-			return 8
-		return 16
+		return self.firstSourceCamera()['BitDepthDepth']
 
 	def sourceDepthVideoFormat(self):
 		return {
@@ -275,6 +261,14 @@ class EncoderConfiguration(DecoderConfiguration):
 		})
 		return config
 
+	def packer(self):
+		return {
+			'Alignment': 8,
+			'MinPatchSize': 16,
+			'Overlap': 1,
+			'PiP': 1
+		}
+
 	def lumaSamplesPerView(self):
 		return 2 * self.atlasWidth() * self.atlasHeight()
 
@@ -291,6 +285,29 @@ class EncoderConfiguration(DecoderConfiguration):
 			}[self.seqId] * self.lumaSamplesPerView()
 		return 0
 
+	def atlasConstructor(self):
+		return {
+			'PrunerMethod': 'Pruner',
+			'Pruner': self.pruner(),
+			'AggregatorMethod': 'Aggregator',
+			'Aggregator': {},
+			'PackerMethod': 'Packer',
+			'Packer': self.packer(),
+			'AtlasResolution': [
+				self.atlasWidth(),
+				self.atlasHeight()
+			],
+			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
+		}
+
+	def encoder(self):		
+		return {
+			'ViewOptimizerMethod': self.viewOptimizerMethod(),
+			self.viewOptimizerMethod(): {},
+			'AtlasConstructorMethod': 'AtlasConstructor',
+			'AtlasConstructor': self.atlasConstructor()
+		}
+
 	def parameters(self):
 		# The encoder configuration includes the decoder configuration for testing.
 		# Enabling reconstruction will run the decoder while encoding.
@@ -304,37 +321,15 @@ class EncoderConfiguration(DecoderConfiguration):
 		config['SourceCameraNames'] = self.sourceCameraNames()
 		config['OmafV1CompatibleFlag'] = self.omafV1CompatibleFlag()
 		config['EncoderMethod'] = 'Encoder'
-		config['Encoder'] = {
-				'ViewOptimizerMethod': self.viewOptimizerMethod(),
-				self.viewOptimizerMethod(): {},
-				'AtlasConstructorMethod': 'AtlasConstructor',
-				'AtlasConstructor': {
-					'PrunerMethod': 'Pruner',
-					'Pruner': self.pruner(),
-					'AggregatorMethod': 'Aggregator',
-					'Aggregator': {},
-					'PackerMethod': 'Packer',
-					'Packer': {
-						'Alignment': 8,
-						'MinPatchSize': 16,
-						'Overlap': 1,
-						'PiP': 1
-					},
-					'AtlasResolution': [
-						self.atlasWidth(),
-						self.atlasHeight()
-					],
-					'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
-				}
-			}
+		config['Encoder'] = self.encoder()
 		return config
 		
 	def path(self):
 		return 'TMIV_{}_{}.json'.format(self.anchorId, self.seqId)
 
-def saveJson(data, path):
-    with open(path, 'w') as stream:
-        json.dump(data, stream, indent=4, sort_keys=True, separators=(',', ': '))
+def saveJson(data, path):	
+	with open(path, 'w') as stream:
+		json.dump(data, stream, indent=4, sort_keys=True, separators=(',', ': '))
 
 if __name__ == '__main__':
 	if sys.version_info[0] < 3:

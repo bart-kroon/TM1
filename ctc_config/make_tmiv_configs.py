@@ -75,8 +75,11 @@ class DecoderConfiguration:
 			return '{}.json'.format(self.seqName())	
 		return self.sequenceJsonPath()
 
+	def configPath(self):
+		return os.path.dirname(sys.argv[0])
+
 	def sequenceJsonPath(self):
-		return os.path.realpath('sequences/{}.json'.format(self.seqName()))
+		return os.path.realpath('{}/sequences/{}.json'.format(self.configPath(), self.seqName()))
 
 	def firstSourceCamera(self):
 		for camera in self.sequenceParams['cameras']:
@@ -232,7 +235,7 @@ class DecoderConfiguration:
 	def poseTracePath(self):
 		if ctc_archive:
 			return self.poseTraceBasename()
-		return os.path.realpath('pose_traces/{}'.format(self.poseTraceBasename()))
+		return os.path.realpath('{}/pose_traces/{}'.format(self.configPath(), self.poseTraceBasename()))
 
 	def parameters(self):
 		config = {
@@ -275,6 +278,7 @@ class DecoderConfiguration:
 		os.makedirs(os.path.dirname(self.path()), exist_ok = True)
 		with open(self.path(), 'w') as stream:
 			json.dump(self.parameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
+			stream.write('\n')
 
 
 # Iterate over target views and pose traces

@@ -370,8 +370,8 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def atlasConstructor(self):
 		return {
-			'PrunerMethod': 'Pruner',
-			'Pruner': self.pruner(),
+			'PrunerMethod': 'HierarchicalPruner',
+			'HierarchicalPruner': self.pruner(),
 			'AggregatorMethod': 'Aggregator',
 			'Aggregator': {},
 			'PackerMethod': 'Packer',
@@ -383,28 +383,48 @@ class EncoderConfiguration(DecoderConfiguration):
 			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
 		}
 
+	def depthOccupancy(self):
+		return {
+			'depthOccMapThreshold': 64
+		}
+
 	def encoder(self):		
 		return {
 			'ViewOptimizerMethod': self.viewOptimizerMethod(),
 			self.viewOptimizerMethod(): {},
 			'AtlasConstructorMethod': 'AtlasConstructor',
-			'AtlasConstructor': self.atlasConstructor()
+			'AtlasConstructor': self.atlasConstructor(),
+			'DepthOccupancyMethod': 'DepthOccupancy',
+			'DepthOccupancy': self.depthOccupancy()
 		}
+
+	def depthLowQualityFlag(self):
+		return self.seqId == 'E'
+
+	def numGroups(self):
+		return 1
+
+	def maxObjects(self):
+		return 1
 
 	def parameters(self):
 		# The encoder configuration includes the decoder configuration for testing.
 		# Enabling reconstruction will run the decoder while encoding.
 		config = DecoderConfiguration.parameters(self)
-		config['reconstruct'] = False
-
-		config['startFrame'] = self.startFrame()
-		config['SourceTexturePathFmt'] = self.sourceTexturePathFmt()
-		config['SourceDepthPathFmt'] = self.sourceDepthPathFmt()
-		config['SourceDepthBitDepth'] = self.sourceDepthBitDepth()
-		config['SourceCameraNames'] = self.sourceCameraNames()
-		config['OmafV1CompatibleFlag'] = self.omafV1CompatibleFlag()
-		config['EncoderMethod'] = 'Encoder'
-		config['Encoder'] = self.encoder()
+		config.update({
+			'depthLowQualityFlag': self.depthLowQualityFlag(),
+			'numGroups': self.numGroups(),
+			'maxObjects': self.maxObjects(),
+			'reconstruct': False,
+			'startFrame': self.startFrame(),
+			'SourceTexturePathFmt': self.sourceTexturePathFmt(),
+			'SourceDepthPathFmt': self.sourceDepthPathFmt(),
+			'SourceDepthBitDepth': self.sourceDepthBitDepth(),
+			'SourceCameraNames': self.sourceCameraNames(),
+			'OmafV1CompatibleFlag': self.omafV1CompatibleFlag(),
+			'EncoderMethod': 'Encoder',
+			'Encoder': self.encoder()
+		})
 		return config
 		
 	def path(self):

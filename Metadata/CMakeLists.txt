@@ -4,10 +4,12 @@ add_library(MetadataLib
 	"src/Bitstream.cpp"
 	"src/IvSequenceParams.cpp"
 	"src/IvAccessUnitParams.cpp"
+	"src/ViewingSpace.cpp"
 	"src/verify.cpp"
 	"include/TMIV/Metadata/Bitstream.h"
 	"include/TMIV/Metadata/IvSequenceParams.h"
-	"include/TMIV/Metadata/IvAccessUnitParams.h")
+	"include/TMIV/Metadata/IvAccessUnitParams.h"
+	"include/TMIV/Metadata/ViewingSpace.h")
 
 add_library(TMIV::MetadataLib
 	ALIAS MetadataLib)

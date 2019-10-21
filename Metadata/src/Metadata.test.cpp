@@ -37,6 +37,7 @@
 #include <TMIV/Metadata/Bitstream.h>
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/Metadata/ViewingSpace.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -194,7 +195,9 @@ const auto cameraParameters = array{ViewParams{{4096, 2048},
                                                {4.F, 5.F, 6.F},
                                                {0.F, 0.F, 0.F},
                                                PerspectiveParams{{1000, 1010}, {960, 540}},
-                                               {1.F, 50.F}}};
+                                               {1.F, 50.F},
+                                               64,
+                                               {128}}};
 
 const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
                                        ViewParamsList{{cameraParameters[0], cameraParameters[0]}},
@@ -202,29 +205,33 @@ const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
+const auto viewingSpace = array{ViewingSpace{}};
+
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
-          IvSequenceParams{
-              ivsProfileTierLevel[0], cameraParameterList[1],
-              true, // low depth quality flag
-              2,    // num objects
-              2,    // max groups
-          }};
+          IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[1],
+                           true, // low depth quality flag
+                           2,    // num objects
+                           2,    // max groups
+                           12,   // num depth occupancy bits
+                           ViewingSpace{}}};
 
 const auto atlasParamsList = array{
     AtlasParamsList{
         {AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90, {}, {}}},
-        true,            // omaf v1 compatible flags
-        {},              // no group ID's
-        {{1920, 1080}}}, // atlas sizes
+        true,           // omaf v1 compatible flags
+        {},             // no group ID's
+        {{1920, 1080}}, // atlas sizes
+        {false}},       // depth occ. params present flags
     AtlasParamsList{
         {AtlasParameters{0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90, {}, {}},
          AtlasParameters{0, 1, {1}, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180, {64}, {}},
          AtlasParameters{
              2, 1, {1}, {100, 30}, {500, 400}, {340, 220}, PatchRotation::rot180, {}, {128}}},
-        true,                                   // omaf v1 compatible flag
-        {{1, 0, 1}},                            // group ID's,
-        {{2048, 4096}, {0, 0}, {2048, 1088}}}}; // atlas sizes
+        true,                                 // omaf v1 compatible flag
+        {{1, 0, 1}},                          // group ID's,
+        {{2048, 4096}, {0, 0}, {2048, 1088}}, // atlas sizes
+        {true, false, true}}};                // namespace examples
 
 const auto ivAccessUnitParams =
     array{IvAccessUnitParams{}, IvAccessUnitParams{{atlasParamsList[1]}}};
@@ -264,23 +271,26 @@ TEST_CASE("Metadata bitstreams") {
   SECTION("ivs_profile_tier_level") { REQUIRE(codingTest(examples::ivsProfileTierLevel[0], 0)); }
 
   SECTION("camera_params_list") {
-    REQUIRE(codingTest(examples::cameraParameterList[0], 59));
-    REQUIRE(codingTest(examples::cameraParameterList[1], 83));
-    REQUIRE(codingTest(examples::cameraParameterList[2], 115));
+    const auto depthOccMapThresholdNumBits = 10U;
+    REQUIRE(codingTest(examples::cameraParameterList[0], 58, depthOccMapThresholdNumBits));
+    REQUIRE(codingTest(examples::cameraParameterList[1], 82, depthOccMapThresholdNumBits));
+    REQUIRE(codingTest(examples::cameraParameterList[2], 115, depthOccMapThresholdNumBits));
   }
 
   SECTION("ivs_params") {
-    REQUIRE(codingTest(examples::ivSequenceParams[0], 60));
+    REQUIRE(codingTest(examples::ivSequenceParams[0], 59));
     REQUIRE(codingTest(examples::ivSequenceParams[1], 84));
   }
 
   SECTION("atlas_params_list") {
     REQUIRE(codingTest(examples::atlasParamsList[0], 17, examples::ivSequenceParams[0]));
-    REQUIRE(codingTest(examples::atlasParamsList[1], 46, examples::ivSequenceParams[1]));
+    REQUIRE(codingTest(examples::atlasParamsList[1], 47, examples::ivSequenceParams[1]));
   }
 
   SECTION("iv_access_unit_params") {
     REQUIRE(codingTest(examples::ivAccessUnitParams[0], 1, examples::ivSequenceParams[1]));
-    REQUIRE(codingTest(examples::ivAccessUnitParams[1], 46, examples::ivSequenceParams[1]));
+    REQUIRE(codingTest(examples::ivAccessUnitParams[1], 47, examples::ivSequenceParams[1]));
   }
+
+  SECTION("viewing_space") { REQUIRE(codingTest(examples::viewingSpace[0], 0)); }
 }

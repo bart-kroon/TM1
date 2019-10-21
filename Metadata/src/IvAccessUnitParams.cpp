@@ -66,14 +66,17 @@ bool AtlasParameters::operator==(const AtlasParameters &other) const {
 }
 
 AtlasParamsList::AtlasParamsList(AtlasParamsVector atlasParameters, bool omafV1CompatibleFlag_,
-                                 optional<vector<unsigned>> groupIds_, SizeVector atlasSizes_)
+                                 optional<vector<unsigned>> groupIds_, SizeVector atlasSizes_,
+                                 vector<bool> depthOccupancyParamsPresentFlags_)
     : AtlasParamsVector{move(atlasParameters)}, omafV1CompatibleFlag{omafV1CompatibleFlag_},
-      groupIds{move(groupIds_)}, atlasSizes{move(atlasSizes_)} {}
+      groupIds{move(groupIds_)}, atlasSizes{move(atlasSizes_)},
+      depthOccupancyParamsPresentFlags{move(depthOccupancyParamsPresentFlags_)} {}
 
 bool AtlasParamsList::operator==(const AtlasParamsList &other) const {
   return equal(begin(), end(), other.begin(), other.end()) &&
          omafV1CompatibleFlag == other.omafV1CompatibleFlag && groupIds == other.groupIds &&
-         atlasSizes == other.atlasSizes;
+         atlasSizes == other.atlasSizes &&
+         depthOccupancyParamsPresentFlags == other.depthOccupancyParamsPresentFlags;
 }
 
 ostream &operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) {
@@ -92,10 +95,18 @@ ostream &operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) {
     stream << "No group ID's\n";
   }
 
-  stream << "atlasSizes={";
+  stream << "atlas_size[]={";
   auto sep = "";
   for (auto &atlasSize : atlasParamsList.atlasSizes) {
     stream << sep << atlasSize;
+    sep = ", ";
+  }
+  stream << "}\n";
+
+  stream << "depth_occ_params_present_flag[]={";
+  sep = "";
+  for (auto depthOccupancyParamsPresentFlag : atlasParamsList.depthOccupancyParamsPresentFlags) {
+    stream << sep << depthOccupancyParamsPresentFlag;
     sep = ", ";
   }
   stream << "}\n";
@@ -139,6 +150,7 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
     atlasSize.x() = bitstream.getUint16() + 1;
     atlasSize.y() = bitstream.getUint16() + 1;
     assignAt(atlasParamsList.atlasSizes, patch.atlasId, atlasSize);
+    assignAt(atlasParamsList.depthOccupancyParamsPresentFlags, patch.atlasId, bitstream.getFlag());
 
     while (numPatches-- > 0) {
       patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
@@ -156,16 +168,18 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.posInView.y() = int(bitstream.getUVar(viewSize.y()));
       patch.rotation = PatchRotation(bitstream.readBits(3));
 
-      if (const bool depthThresholdPresentFlag = bitstream.getFlag(); depthThresholdPresentFlag) {
-        verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
-        patch.depthOccMapThreshold =
-            uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
-      }
+      if (atlasParamsList.depthOccupancyParamsPresentFlags[patch.atlasId]) {
+        if (const bool depthThresholdPresentFlag = bitstream.getFlag(); depthThresholdPresentFlag) {
+          verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
+          patch.depthOccMapThreshold =
+              uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
+        }
 
-      if (const bool depthStartPresentFlag = bitstream.getFlag(); depthStartPresentFlag) {
-        verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
-        patch.depthStart =
-            uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
+        if (const bool depthStartPresentFlag = bitstream.getFlag(); depthStartPresentFlag) {
+          verify(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
+          patch.depthStart =
+              uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
+        }
       }
 
       verify(patch.posInView.x() + patch.patchSizeInView.x() <= viewSize.x());
@@ -181,6 +195,8 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
 
 void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
                                const IvSequenceParams &ivSequenceParams) const {
+  assert(atlasSizes.size() == depthOccupancyParamsPresentFlags.size());
+
   // Count patches per atlas ID
   auto atlasIds = map<uint8_t, uint_least16_t>{};
   for (const auto &patch : *this) {
@@ -208,6 +224,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
     assert(atlasSize.x() >= 1 && atlasSize.y() >= 1);
     bitstream.putUint16(atlasSize.x() - 1);
     bitstream.putUint16(atlasSize.y() - 1);
+    bitstream.putFlag(depthOccupancyParamsPresentFlags[atlasId]);
 
     for (const auto &patch : *this) {
       if (patch.atlasId == atlasId) {
@@ -237,15 +254,19 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
         bitstream.putUVar(patch.posInView.y(), viewSize.y());
         bitstream.writeBits(unsigned(patch.rotation), 3);
 
-        bitstream.putFlag(!!patch.depthOccMapThreshold);
-        if (patch.depthOccMapThreshold) {
-          bitstream.writeBits(*patch.depthOccMapThreshold,
-                              ivSequenceParams.depthOccMapThresholdNumBits);
-        }
+        if (depthOccupancyParamsPresentFlags[patch.atlasId]) {
+          bitstream.putFlag(!!patch.depthOccMapThreshold);
+          if (patch.depthOccMapThreshold) {
+            bitstream.writeBits(*patch.depthOccMapThreshold,
+                                ivSequenceParams.depthOccMapThresholdNumBits);
+          }
 
-        bitstream.putFlag(!!patch.depthStart);
-        if (patch.depthStart) {
-          bitstream.writeBits(*patch.depthStart, ivSequenceParams.depthOccMapThresholdNumBits);
+          bitstream.putFlag(!!patch.depthStart);
+          if (patch.depthStart) {
+            bitstream.writeBits(*patch.depthStart, ivSequenceParams.depthOccMapThresholdNumBits);
+          }
+        } else {
+          verify(!patch.depthOccMapThreshold && !patch.depthStart);
         }
       }
     }

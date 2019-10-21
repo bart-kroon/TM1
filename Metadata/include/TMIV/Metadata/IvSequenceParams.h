@@ -34,12 +34,14 @@
 #ifndef _TMIV_METADATA_IVSEQUENCEPARAMS_H_
 #define _TMIV_METADATA_IVSEQUENCEPARAMS_H_
 
+#include "ViewingSpace.h"
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
 #include <cassert>
 #include <cstdint>
 #include <iosfwd>
+#include <optional>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -122,6 +124,10 @@ struct ViewParams {
   // In specification: depth_occ_map_threshold_default[ v ]
   uint16_t depthOccMapThreshold{};
 
+  // In specification: depth_start_default_present_flag[ v ]
+  // In specification: depth_start_default[ v ]
+  std::optional<uint16_t> depthStart{};
+
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;
   bool operator!=(const ViewParams &other) const { return !operator==(other); }
@@ -157,8 +163,8 @@ struct ViewParamsList : public ViewParamsVector {
   bool operator==(const ViewParamsList &other) const;
   bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> ViewParamsList;
-  void encodeTo(OutputBitstream &) const;
+  static auto decodeFrom(InputBitstream &, unsigned depthOccMapThresholdNumBits) -> ViewParamsList;
+  void encodeTo(OutputBitstream &, unsigned depthOccMapThresholdNumBits) const;
 
   // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
   // with viewParamsVector specified by name, in that order
@@ -186,6 +192,10 @@ struct IvSequenceParams {
 
   // In specification: depth_occ_map_threshold_num_bits_minus8
   unsigned depthOccMapThresholdNumBits{10};
+
+  // In specification: viewing_space_present_flag
+  // In specification: viewing_space( )
+  std::optional<ViewingSpace> viewingSpace{};
 
   friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams);
   bool operator==(const IvSequenceParams &other) const;

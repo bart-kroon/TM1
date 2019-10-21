@@ -31,47 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DEPTHOCCUPANCY_DEPTHOCCUPANCY_H_
-#define _TMIV_DEPTHOCCUPANCY_DEPTHOCCUPANCY_H_
+#ifndef _TMIV_METADATA_VIEWINGSPACE_H_
+#define _TMIV_METADATA_VIEWINGSPACE_H_
 
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
+#include <iosfwd>
 
-#include <TMIV/Common/Json.h>
+namespace TMIV::Metadata {
+class InputBitstream;
+class OutputBitstream;
 
-namespace TMIV::DepthOccupancy {
-class DepthOccupancy : public IDepthOccupancy {
-public:
-  // Initialize with specified depthOccMapThreshold
-  //
-  // When incoming view parameters have depthOccMapThreshold > 0, then the outgoing view parameters
-  // will have the specified depthOccMapThreshold value.
-  explicit DepthOccupancy(uint16_t depthOccMapThreshold);
+// In specification: viewing_space( )
+struct ViewingSpace {
+  friend std::ostream &operator<<(std::ostream &stream, const ViewingSpace &viewParamsVector);
+  bool operator==(const ViewingSpace &other) const;
+  bool operator!=(const ViewingSpace &other) const { return !operator==(other); }
 
-  DepthOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  DepthOccupancy(const DepthOccupancy &) = default;
-  DepthOccupancy(DepthOccupancy &&) = default;
-  DepthOccupancy &operator=(const DepthOccupancy &) = default;
-  DepthOccupancy &operator=(DepthOccupancy &&) = default;
-  ~DepthOccupancy() override = default;
-
-  // No change when depthOccMapThreshold == 0 (no invalid depth)
-  // Otherwise set depthOccMapThreshold and adjust normDispRange
-  auto transformSequenceParams(Metadata::IvSequenceParams)
-      -> const Metadata::IvSequenceParams & override;
-
-  // depthOccupancyParamsPresentFlags = zeros
-  auto transformAccessUnitParams(Metadata::IvAccessUnitParams)
-      -> const Metadata::IvAccessUnitParams & override;
-
-  // Transform depth bit depth and range
-  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
-
-private:
-  uint16_t m_depthOccMapThreshold{};
-  Metadata::IvSequenceParams m_inSequenceParams;
-  Metadata::IvSequenceParams m_outSequenceParams;
-  Metadata::IvAccessUnitParams m_accessUnitParams;
+  static auto decodeFrom(InputBitstream &) -> ViewingSpace;
+  void encodeTo(OutputBitstream &) const;
 };
-} // namespace TMIV::DepthOccupancy
+} // namespace TMIV::Metadata
 
 #endif

@@ -71,7 +71,13 @@ ostream &operator<<(ostream &stream, const ViewParams &viewParams) {
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
   stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
-         << viewParams.depthOccMapThreshold << ", pose "
+         << viewParams.depthOccMapThreshold;
+
+  if (viewParams.depthStart) {
+    stream << ", depthStart " << *viewParams.depthStart;
+  }
+
+  stream << ", pose "
          << format("[%6.3f, %6.3f, %6.3f] m, ", viewParams.position.x(), viewParams.position.y(),
                    viewParams.position.z())
          << viewParams.rotation << " deg";
@@ -89,7 +95,7 @@ bool PerspectiveParams::operator==(const PerspectiveParams &other) const {
 bool ViewParams::operator==(const ViewParams &other) const {
   return size == other.size && position == other.position && rotation == other.rotation &&
          projection == other.projection && normDispRange == other.normDispRange &&
-         depthOccMapThreshold == other.depthOccMapThreshold;
+         depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
 }
 
 ViewParams ViewParams::loadFromJson(const Json &node) {
@@ -175,7 +181,8 @@ auto PerspectiveParams::decodeFrom(InputBitstream &bitstream) -> PerspectivePara
   return projection;
 }
 
-auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
+auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapThresholdNumBits)
+    -> ViewParamsList {
   auto viewParamsList = ViewParamsList{ViewParamsVector(bitstream.getUint16() + 1)};
 
   for (auto &cameraParams : viewParamsList) {
@@ -220,7 +227,12 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream) -> ViewParamsList {
       verify(quantizationLaw == 0);
       viewParams->normDispRange.x() = bitstream.getFloat32();
       viewParams->normDispRange.y() = bitstream.getFloat32();
-      viewParams->depthOccMapThreshold = bitstream.getUint16();
+      viewParams->depthOccMapThreshold = uint16_t(bitstream.readBits(depthOccMapThresholdNumBits));
+
+      if (const auto depthStartDefaultPresentFlag = bitstream.getFlag();
+          depthStartDefaultPresentFlag) {
+        viewParams->depthStart = uint16_t(bitstream.readBits(depthOccMapThresholdNumBits));
+      }
     } else {
       viewParams->normDispRange = viewParamsList.front().normDispRange;
       viewParams->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
@@ -244,7 +256,8 @@ void PerspectiveParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFloat32(center.y());
 }
 
-void ViewParamsList::encodeTo(OutputBitstream &bitstream) const {
+void ViewParamsList::encodeTo(OutputBitstream &bitstream,
+                              unsigned depthOccMapThresholdNumBits) const {
   assert(!empty() && size() - 1 <= UINT16_MAX);
   bitstream.putUint16(uint16_t(size() - 1));
 
@@ -278,7 +291,12 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream) const {
     bitstream.putUint8(0); // quantization_law
     bitstream.putFloat32(viewParams.normDispRange.x());
     bitstream.putFloat32(viewParams.normDispRange.y());
-    bitstream.putUint16(viewParams.depthOccMapThreshold);
+    bitstream.writeBits(viewParams.depthOccMapThreshold, depthOccMapThresholdNumBits);
+
+    bitstream.putFlag(!!viewParams.depthStart);
+    if (viewParams.depthStart) {
+      bitstream.writeBits(*viewParams.depthStart, depthOccMapThresholdNumBits);
+    }
 
     if (depthQuantizationParamsEqualFlag) {
       break;
@@ -310,7 +328,15 @@ std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenc
   stream << "depth_occ_map_threshold_num_bits=" << ivSequenceParams.depthOccMapThresholdNumBits
          << '\n';
   stream << "view_params_list()=\n";
-  return stream << ivSequenceParams.viewParamsList;
+  stream << ivSequenceParams.viewParamsList;
+
+  if (ivSequenceParams.viewingSpace) {
+    stream << "viewing_space()=\n" << *ivSequenceParams.viewingSpace;
+  } else {
+    stream << "No viewing space present\n";
+  }
+
+  return stream;
 }
 
 bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
@@ -318,32 +344,46 @@ bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
          viewParamsList == other.viewParamsList &&
          depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups &&
          maxObjects == other.maxObjects &&
-         depthOccMapThresholdNumBits == other.depthOccMapThresholdNumBits;
+         depthOccMapThresholdNumBits == other.depthOccMapThresholdNumBits &&
+         viewingSpace == other.viewingSpace;
 }
 
 auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
   const auto ivsProfileTierLevel = IvsProfileTierLevel::decodeFrom(bitstream);
-  const auto viewParamsList = ViewParamsList::decodeFrom(bitstream);
+  const auto depthOccMapThresholdNumBits = unsigned(8 + bitstream.readBits(4));
+  const auto viewParamsList = ViewParamsList::decodeFrom(bitstream, depthOccMapThresholdNumBits);
   const auto depthLowQualityFlag = bitstream.getFlag();
   const auto numGroups = unsigned(1 + bitstream.getUExpGolomb());
   const auto maxObjects = unsigned(1 + bitstream.getUExpGolomb());
-  const auto depthOccMapThresholdNumBits = unsigned(8 + bitstream.readBits(4));
+
+  auto viewingSpace = optional<ViewingSpace>{};
+  if (const auto viewingSpacePresentFlag = bitstream.getFlag(); viewingSpacePresentFlag) {
+    viewingSpace = ViewingSpace::decodeFrom(bitstream);
+  }
+
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
   return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
-                          numGroups,           maxObjects,     depthOccMapThresholdNumBits};
+                          numGroups,           maxObjects,     depthOccMapThresholdNumBits,
+                          viewingSpace};
 }
 
 void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   ivsProfileTierLevel.encodeTo(bitstream);
-  viewParamsList.encodeTo(bitstream);
+  bitstream.writeBits(depthOccMapThresholdNumBits - 8, 4);
+  viewParamsList.encodeTo(bitstream, depthOccMapThresholdNumBits);
   bitstream.putFlag(depthLowQualityFlag);
   verify(numGroups >= 1);
   bitstream.putUExpGolomb(numGroups - 1);
   verify(maxObjects >= 1);
   bitstream.putUExpGolomb(maxObjects - 1);
   verify(depthOccMapThresholdNumBits >= 8);
-  bitstream.writeBits(depthOccMapThresholdNumBits - 8, 4);
+
+  bitstream.putFlag(!!viewingSpace);
+  if (viewingSpace) {
+    viewingSpace->encodeTo(bitstream);
+  }
+
   bitstream.putFlag(false);
 }
 } // namespace TMIV::Metadata

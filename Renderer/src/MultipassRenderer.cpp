@@ -35,11 +35,13 @@
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Factory.h>
+
 #include <cmath>
 #include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &componentNode) {
@@ -125,8 +127,7 @@ uint16_t filterMaps(uint16_t i) {
   return i;
 }
 
-vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
-                         const Metadata::CameraParameters &target) {
+vector<size_t> sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target) {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];
@@ -135,12 +136,12 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   vector<float> distance;
   vector<float> angle;
   vector<float> angleWeight;
-  for (size_t id = 0; id < cameras.size(); ++id) {
-    distance.push_back(sqrt(square(cameras[id].position[0] - x_target) +
-                            square(cameras[id].position[1] - y_target) +
-                            square(cameras[id].position[2] - z_target)));
-    auto yaw_camera = cameras[id].rotation[0];
-    auto pitch_camera = cameras[id].rotation[1];
+  for (size_t id = 0; id < viewParamsVector.size(); ++id) {
+    distance.push_back(sqrt(square(viewParamsVector[id].position[0] - x_target) +
+                            square(viewParamsVector[id].position[1] - y_target) +
+                            square(viewParamsVector[id].position[2] - z_target)));
+    auto yaw_camera = viewParamsVector[id].rotation[0];
+    auto pitch_camera = viewParamsVector[id].rotation[1];
     // Compute Angle between the camera and target in degree unit
     angle.push_back(1 / radperdeg *
                     acos(sin(pitch_camera * radperdeg) * sin(pitch_target * radperdeg) +
@@ -160,8 +161,8 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
     }
   }
 
-  // Find the sorted cameras indices
-  vector<size_t> sortedCamerasId(cameras.size());
+  // Find the sorted viewParamsVector indices
+  vector<size_t> sortedCamerasId(viewParamsVector.size());
   iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
   sort(sortedCamerasId.begin(), sortedCamerasId.end(),
        [&distance, &angleWeight](size_t i1, size_t i2) {
@@ -173,11 +174,10 @@ vector<size_t> sortViews(const Metadata::CameraParametersList &cameras,
   return sortedCamerasId;
 }
 
-Texture444Depth16Frame
-MultipassRenderer::renderFrame(const MVD16Frame &atlas, const PatchIdMapList &maps,
-                               const Metadata::AtlasParametersList &patches,
-                               const Metadata::CameraParametersList &cameras,
-                               const Metadata::CameraParameters &target) const {
+auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
+                                    const IvSequenceParams &ivSequenceParams,
+                                    const IvAccessUnitParams &ivAccessUnitParams,
+                                    const ViewParams &target) const -> Texture444Depth16Frame {
   //////////////////
   // Initialization
   //////////////////
@@ -203,22 +203,25 @@ MultipassRenderer::renderFrame(const MVD16Frame &atlas, const PatchIdMapList &ma
     }
   } // initalize mapsPass by 0xFFFF
 
-  for (const auto &patch : patches) {
+  assert(ivAccessUnitParams.atlasParamsList);
+  const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
+
+  for (const auto &patch : atlasParamsList) {
     patchesViewId.push_back(patch.viewId);
   } // initialize patchesViewId
 
   ///////////////
   // Ordering views based on their distance & angle to target view
   ///////////////
-  vector<size_t> sortedCamerasId(cameras.size());
-  sortedCamerasId = sortViews(cameras, target);
+  vector<size_t> sortedCamerasId(ivSequenceParams.viewParamsList.size());
+  sortedCamerasId = sortViews(ivSequenceParams.viewParamsList, target);
 
   // Produce the individual pass synthesis results
   for (int passId = 0; passId < numberOfPasses; passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
     selectedViewsPass.clear();
-    for (size_t id = 0; id < cameras.size(); ++id) {
+    for (size_t id = 0; id < ivSequenceParams.viewParamsList.size(); ++id) {
       if (id < numberOfViewsPerPass[passId]) {
         selectedViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
       }
@@ -235,9 +238,10 @@ MultipassRenderer::renderFrame(const MVD16Frame &atlas, const PatchIdMapList &ma
     ////////////////
     // Synthesis per pass
     ////////////////
-    viewportPass[passId] =
-        m_synthesizer->renderFrame(atlas, mapsPass[passId], patches, cameras, target);
-  } // namespace TMIV::Renderer
+    viewportPass[passId] = m_synthesizer->renderFrame(atlas, mapsPass[passId], ivSequenceParams,
+                                                      ivAccessUnitParams, target);
+  }
+
   //////////////
   // Merging
   //////////////
@@ -264,15 +268,6 @@ MultipassRenderer::renderFrame(const MVD16Frame &atlas, const PatchIdMapList &ma
     viewport = viewportPass[numberOfPasses - 1]; // Single Pass
   }
 
-  m_inpainter->inplaceInpaint(viewport, target);
-  return viewport;
-}
-
-Texture444Depth16Frame
-MultipassRenderer::renderFrame(const MVD16Frame &atlas,
-                               const Metadata::CameraParametersList &cameras,
-                               const Metadata::CameraParameters &target) const {
-  auto viewport = m_synthesizer->renderFrame(atlas, cameras, target);
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

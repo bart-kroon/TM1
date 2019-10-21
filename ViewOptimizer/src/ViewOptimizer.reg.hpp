@@ -31,9 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
 #include <TMIV/ViewOptimizer/ViewReducer.h>
+
+#include <TMIV/Common/Factory.h>
 
 namespace TMIV::ViewOptimizer {
 inline void registerComponents() {

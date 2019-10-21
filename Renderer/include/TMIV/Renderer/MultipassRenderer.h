@@ -56,15 +56,11 @@ public:
   MultipassRenderer &operator=(MultipassRenderer &&) = default;
   ~MultipassRenderer() override = default;
 
-  Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
-              const Metadata::AtlasParametersList &patches,
-              const Metadata::CameraParametersList &cameras,
-              const Metadata::CameraParameters &target) const override;
-
-  Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD16Frame &atlas, const Metadata::CameraParametersList &cameras,
-              const Metadata::CameraParameters &target) const override;
+  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                   const Metadata::IvSequenceParams &ivSequenceParams,
+                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                   const Metadata::ViewParams &target) const
+      -> Common::Texture444Depth16Frame override;
 };
 } // namespace TMIV::Renderer
 

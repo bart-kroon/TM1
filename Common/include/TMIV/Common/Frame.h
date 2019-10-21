@@ -34,12 +34,12 @@
 #ifndef _TMIV_COMMON_FRAME_H_
 #define _TMIV_COMMON_FRAME_H_
 
+#include <TMIV/Common/Matrix.h>
+#include <TMIV/Common/Vector.h>
+
 #include <cstdint>
 #include <istream>
 #include <ostream>
-
-#include <TMIV/Common/Matrix.h>
-#include <TMIV/Common/Vector.h>
 
 namespace TMIV::Common {
 class YUV400P8 {};

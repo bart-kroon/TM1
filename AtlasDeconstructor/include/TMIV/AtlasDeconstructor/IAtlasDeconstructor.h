@@ -35,12 +35,10 @@
 #define _TMIV_ATLASDECONSTRUCTOR_IATLASDECONSTRUCTOR_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/AtlasParametersList.h>
-#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::AtlasDeconstructor {
-// IAtlasDeconstructor interface (part of AtlasDeconstructorLib)
-// Referred as AtlasPatchOccupancyMapGenerator in MPEG/N18464
 class IAtlasDeconstructor {
 public:
   IAtlasDeconstructor() = default;
@@ -50,18 +48,14 @@ public:
   IAtlasDeconstructor &operator=(IAtlasDeconstructor &&) = default;
   virtual ~IAtlasDeconstructor() = default;
 
-  using Vec2i = Common::Vec2i;
-  using PatchIdMapList = Common::PatchIdMapList;
-  using CameraParametersList = Metadata::CameraParametersList;
-  using AtlasParametersList = Metadata::AtlasParametersList;
-  using MVD16Frame = Common::MVD16Frame;
+  virtual auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
+                             const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                             const Common::MVD10Frame &frame) -> Common::PatchIdMapList = 0;
 
-  virtual PatchIdMapList getPatchIdMap(const std::vector<Vec2i> &atlasSize,
-                                       const AtlasParametersList &patchList,
-                                       const MVD16Frame &frame) = 0;
-  virtual MVD16Frame recoverPrunedView(const MVD16Frame &atlas,
-                                       const CameraParametersList &cameraList,
-                                       const AtlasParametersList &patchList) = 0;
+  virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
+                                 const Metadata::ViewParamsVector &viewParamsVector,
+                                 const Metadata::AtlasParamsVector &atlasParamsVector)
+      -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

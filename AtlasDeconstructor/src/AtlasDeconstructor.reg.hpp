@@ -32,6 +32,7 @@
  */
 
 #include <TMIV/AtlasDeconstructor/AtlasDeconstructor.h>
+
 #include <TMIV/Common/Factory.h>
 
 namespace TMIV::AtlasDeconstructor {

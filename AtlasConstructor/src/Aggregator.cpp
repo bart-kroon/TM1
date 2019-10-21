@@ -33,20 +33,22 @@
 
 #include <TMIV/AtlasConstructor/Aggregator.h>
 
+using namespace std;
+using namespace TMIV::Common;
+
 namespace TMIV::AtlasConstructor {
+Aggregator::Aggregator(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-Aggregator::Aggregator(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/) {}
-
-void Aggregator::prepareIntraPeriod() { m_aggregatedMask.clear(); }
+void Aggregator::prepareAccessUnit() { m_aggregatedMask.clear(); }
 
 void Aggregator::pushMask(const MaskList &mask) {
   if (m_aggregatedMask.empty()) {
     m_aggregatedMask = mask;
   } else {
     for (size_t i = 0; i < mask.size(); i++) {
-      std::transform(m_aggregatedMask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).end(),
-                     mask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).begin(),
-                     [](std::uint8_t v1, std::uint8_t v2) { return std::max(v1, v2); });
+      transform(m_aggregatedMask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).end(),
+                mask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).begin(),
+                [](uint8_t v1, uint8_t v2) { return max(v1, v2); });
     }
   }
 }

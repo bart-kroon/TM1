@@ -35,11 +35,10 @@
 #define _TMIV_ENCODER_IENCODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/AtlasParametersList.h>
-#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::Encoder {
-// IEncoder interface (part of EncoderLib)
 class IEncoder {
 public:
   IEncoder() = default;
@@ -49,14 +48,12 @@ public:
   IEncoder &operator=(IEncoder &&) = default;
   virtual ~IEncoder() = default;
 
-  virtual void prepareIntraPeriod(Metadata::CameraParametersList cameras) = 0;
+  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+      -> const Metadata::IvSequenceParams & = 0;
+  virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;
-  virtual void completeIntraPeriod() = 0;
-
-  virtual std::vector<Common::Vec2i> getAtlasSize() const = 0;
-  virtual const Metadata::CameraParametersList &getCameraList() const = 0;
-  virtual const Metadata::AtlasParametersList &getPatchList() const = 0;
-  virtual Common::MVD16Frame popAtlas() = 0;
+  virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
+  virtual auto popAtlas() -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::Encoder
 

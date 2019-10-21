@@ -35,11 +35,13 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/Common/Common.h>
+
 #include <TMIV/Image/Image.h>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
+using namespace TMIV::Image::impl;
 
 TEST_CASE("maxlevel", "[quantize_and_expand]") {
   REQUIRE(maxLevel(8U) == 255U);
@@ -112,112 +114,4 @@ SCENARIO("Quantize planar 4:4:4 float to YUV 4:2:0 10-bit texture", "[quantize_a
       }
     }
   }
-}
-
-TEST_CASE("requantizeValue", "[quantize_and_expand]") {
-  REQUIRE(0U == requantizeValue<uint16_t, uint32_t>(0U, 16, 16));
-  REQUIRE(0U == requantizeValue<uint16_t, uint32_t>(0U, 16, 13));
-  REQUIRE(0U == requantizeValue<uint16_t, uint32_t>(0U, 9, 15));
-  REQUIRE(0xFFFFU == requantizeValue<uint16_t, uint32_t>(0xFFFFU, 16, 16));
-  REQUIRE(0xFFFFU == requantizeValue<uint16_t, uint64_t>(0xFFFFU, 16, 16));
-  REQUIRE(0xFFFFU == requantizeValue<uint16_t, uint32_t>(0xFFFU, 12, 16));
-  REQUIRE(0x1FU == requantizeValue<uint8_t, uint16_t>(0x7FU, 7, 5));
-  REQUIRE(0x800 == requantizeValue<uint16_t, uint32_t>(0x8000, 16, 12));
-  REQUIRE(0x400 == requantizeValue<uint16_t, uint32_t>(0x800, 12, 11));
-}
-
-TEST_CASE("requantize", "[quantize_and_expand]") {
-  // Input is a multiview depth frame with a single view
-  auto inFrame = MVD10Frame{TextureDepth10Frame{TextureFrame{5, 7}, Depth10Frame{32, 16}}};
-
-  // Put a 9-bit ramp in the depth map
-  auto i = 0U;
-  for (auto &x : inFrame.front().second.getPlane(0)) {
-    x = i++;
-  }
-
-  // Convert from YUV 4:0:0 9-bit (within 10-bit type) to YUV 4:2:0 16-bit
-  auto outFrame = requantize<YUV420P16>(inFrame, 9);
-
-  // Output has the same size
-  REQUIRE(outFrame.size() == 1);
-  REQUIRE(outFrame.front().first.getSize() == Vec2i{5, 7});
-  REQUIRE(outFrame.front().second.getSize() == Vec2i{32, 16});
-  const auto &Y = outFrame.front().second.getPlane(0);
-  const auto &Cb = outFrame.front().second.getPlane(1);
-  const auto &Cr = outFrame.front().second.getPlane(2);
-
-  // The conversion maps 0 --> 0 and 511 --> 65535 with rounding to the nearest
-  // integer
-  REQUIRE(0U == Y(0, 0));
-  REQUIRE(513U == Y(0, 4)); // 4 * 65535 / 511 == 512.994 (round up)
-  REQUIRE(641U == Y(0, 5)); // 5 * 65535 / 511 == 641.243 (round down)
-
-  REQUIRE(0xFFFFU == Y(0xF, 0x1F));
-
-  // Chroma is all zero
-  REQUIRE(0U == Cb(7, 13));
-  REQUIRE(0U == Cr(0, 5));
-}
-
-TEST_CASE("Trivial use of compressRangeValue", "[compress_depth_range]") {
-  REQUIRE(0x00U == compressRangeValue<uint8_t, uint32_t>(0x00U, 8U, 8U, 0x00U));
-  REQUIRE(0x01U == compressRangeValue<uint8_t, uint32_t>(0x01U, 8U, 8U, 0x00U));
-  REQUIRE(0xFEU == compressRangeValue<uint8_t, uint32_t>(0xFEU, 8U, 8U, 0x00U));
-  REQUIRE(0xFFU == compressRangeValue<uint8_t, uint32_t>(0xFFU, 8U, 8U, 0x00U));
-  REQUIRE(0x0000U == compressRangeValue<uint16_t, uint32_t>(0x0000U, 16U, 16U, 0x0000U));
-  REQUIRE(0x0001U == compressRangeValue<uint16_t, uint32_t>(0x0001U, 16U, 16U, 0x0000U));
-  REQUIRE(0xFFFEU == compressRangeValue<uint16_t, uint32_t>(0xFFFEU, 16U, 16U, 0x0000U));
-  REQUIRE(0xFFFFU == compressRangeValue<uint16_t, uint32_t>(0xFFFFU, 16U, 16U, 0x0000U));
-  REQUIRE(0x000U == compressRangeValue<uint16_t, uint32_t>(0x0000U, 16U, 12U, 0x000U));
-  REQUIRE(0x000U == compressRangeValue<uint16_t, uint32_t>(0x0001U, 16U, 12U, 0x000U));
-  REQUIRE(0xFFFU == compressRangeValue<uint16_t, uint32_t>(0xFFFEU, 16U, 12U, 0x000U));
-  REQUIRE(0xFFFU == compressRangeValue<uint16_t, uint32_t>(0xFFFFU, 16U, 12U, 0x000U));
-}
-
-TEST_CASE("Non-trivial use of compressRangeValue", "[compress_depth_range]") {
-  REQUIRE(0x10U == compressRangeValue<uint8_t, uint32_t>(0x00U, 8U, 8U, 0x10U));
-  REQUIRE(0x21U == compressRangeValue<uint8_t, uint32_t>(0x01U, 8U, 8U, 0x20U));
-  REQUIRE(0xFEU == compressRangeValue<uint8_t, uint32_t>(0xFEU, 8U, 8U, 0x30U));
-  REQUIRE(0xFFU == compressRangeValue<uint8_t, uint32_t>(0xFFU, 8U, 8U, 0x40U));
-  REQUIRE(0x0001U == compressRangeValue<uint16_t, uint32_t>(0x0000U, 16U, 16U, 0x0001U));
-  REQUIRE(0x0021U == compressRangeValue<uint16_t, uint32_t>(0x0001U, 16U, 16U, 0x0020U));
-  REQUIRE(0xFFFEU == compressRangeValue<uint16_t, uint32_t>(0xFFFEU, 16U, 16U, 0x0300U));
-  REQUIRE(0xFFFFU == compressRangeValue<uint16_t, uint32_t>(0xFFFFU, 16U, 16U, 0x4000U));
-  REQUIRE(0x100U == compressRangeValue<uint16_t, uint32_t>(0x0000U, 16U, 12U, 0x100U));
-  REQUIRE(0x200U == compressRangeValue<uint16_t, uint32_t>(0x0001U, 16U, 12U, 0x200U));
-  REQUIRE(0xFFFU == compressRangeValue<uint16_t, uint32_t>(0xFFFEU, 16U, 12U, 0x300U));
-  REQUIRE(0xFFFU == compressRangeValue<uint16_t, uint32_t>(0xFFFFU, 16U, 12U, 0x400U));
-}
-
-TEST_CASE("Trivial use of decompressRangeValue", "[compress_depth_range]") {
-  // #29: Levels below 64 signal invalid and are translated to zero
-  REQUIRE(0x00U == decompressRangeValue<uint8_t, uint32_t>(0x00U, 8U, 8U, 0x00U));
-  REQUIRE(0x00U == decompressRangeValue<uint8_t, uint32_t>(0x01U, 8U, 8U, 0x00U));
-  REQUIRE(0xFEU == decompressRangeValue<uint8_t, uint32_t>(0xFEU, 8U, 8U, 0x00U));
-  REQUIRE(0xFFU == decompressRangeValue<uint8_t, uint32_t>(0xFFU, 8U, 8U, 0x00U));
-  REQUIRE(0x0000U == decompressRangeValue<uint16_t, uint32_t>(0x0000U, 16U, 16U, 0x0000U));
-  REQUIRE(0x0000U == decompressRangeValue<uint16_t, uint32_t>(0x0001U, 16U, 16U, 0x0000U));
-  REQUIRE(0xFFFEU == decompressRangeValue<uint16_t, uint32_t>(0xFFFEU, 16U, 16U, 0x0000U));
-  REQUIRE(0xFFFFU == decompressRangeValue<uint16_t, uint32_t>(0xFFFFU, 16U, 16U, 0x0000U));
-  REQUIRE(0x0000U == decompressRangeValue<uint16_t, uint32_t>(0x000U, 12U, 16U, 0x0000U));
-  REQUIRE(0x0000U == decompressRangeValue<uint16_t, uint32_t>(0x001U, 12U, 16U, 0x0000U));
-  REQUIRE(0xFFEFU == decompressRangeValue<uint16_t, uint32_t>(0xFFEU, 12U, 16U, 0x0000U));
-  REQUIRE(0xFFFFU == decompressRangeValue<uint16_t, uint32_t>(0xFFFU, 12U, 16U, 0x0000U));
-}
-
-TEST_CASE("Non-trivial use of decompressRangeValue", "[compress_depth_range]") {
-  // #29: Levels below 64 signal invalid and are translated to zero
-  REQUIRE(0x00U == decompressRangeValue<uint8_t, uint32_t>(0x10U, 8U, 8U, 0x10U));
-  REQUIRE(0x00U == decompressRangeValue<uint8_t, uint32_t>(0x21U, 8U, 8U, 0x20U));
-  REQUIRE(0xFEU == decompressRangeValue<uint8_t, uint32_t>(0xFEU, 8U, 8U, 0x30U));
-  REQUIRE(0xFFU == decompressRangeValue<uint8_t, uint32_t>(0xFFU, 8U, 8U, 0x40U));
-  REQUIRE(0x0000U == decompressRangeValue<uint16_t, uint32_t>(0x0001U, 16U, 16U, 0x0001U));
-  REQUIRE(0x0000U == decompressRangeValue<uint16_t, uint32_t>(0x0021U, 16U, 16U, 0x0020U));
-  REQUIRE(0xFFFEU == decompressRangeValue<uint16_t, uint32_t>(0xFFFEU, 16U, 16U, 0x0300U));
-  REQUIRE(0xFFFFU == decompressRangeValue<uint16_t, uint32_t>(0xFFFFU, 16U, 16U, 0x4000U));
-  REQUIRE(0x0001U == decompressRangeValue<uint16_t, uint32_t>(0x100U, 12U, 16U, 0x100U));
-  REQUIRE(0x0012U == decompressRangeValue<uint16_t, uint32_t>(0x201U, 12U, 16U, 0x200U));
-  REQUIRE(0xFFFFU == decompressRangeValue<uint16_t, uint32_t>(0xFFFU, 12U, 16U, 0x300U));
-  REQUIRE(0xFFFFU == decompressRangeValue<uint16_t, uint32_t>(0xFFFU, 12U, 16U, 0x400U));
 }

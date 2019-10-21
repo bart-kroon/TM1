@@ -47,19 +47,11 @@ public:
   Synthesizer &operator=(Synthesizer &&) = default;
   ~Synthesizer() override;
 
-  Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD16Frame &atlas, const Common::PatchIdMapList &maps,
-              const Metadata::AtlasParametersList &patches,
-              const Metadata::CameraParametersList &cameras,
-              const Metadata::CameraParameters &target) const override;
-
-  Common::Texture444Depth16Frame
-  renderFrame(const Common::MVD16Frame &frame, const Metadata::CameraParametersList &cameras,
-              const Metadata::CameraParameters &target) const override;
-
-  Common::Mat<float> renderDepth(const Common::Mat<float> &frame,
-                                 const Metadata::CameraParameters &camera,
-                                 const Metadata::CameraParameters &target) const override;
+  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                   const Metadata::IvSequenceParams &ivSequenceParams,
+                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                   const Metadata::ViewParams &target) const
+      -> Common::Texture444Depth16Frame override;
 
 private:
   class Impl;

@@ -41,15 +41,13 @@
 #include <TMIV/Renderer/IRenderer.h>
 
 namespace TMIV::Decoder {
-// The Decoder of TMIV 1.0
 class Decoder : public IDecoder {
 private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
-  std::vector<Common::Vec2i> m_atlasSize;
-  Metadata::AtlasParametersList m_patches;
+  Metadata::IvSequenceParams m_ivSequenceParams;
+  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   Common::PatchIdMapList m_patchIdMaps;
-  Metadata::CameraParametersList m_cameras;
 
 public:
   Decoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -59,13 +57,11 @@ public:
   Decoder &operator=(Decoder &&) = default;
   ~Decoder() override = default;
 
-  void updateAtlasSize(std::vector<Common::Vec2i> atlasSize) override;
-  void updatePatchList(Metadata::AtlasParametersList patches,
-                       const Common::MVD16Frame &frame) override;
-  void updateCameraList(Metadata::CameraParametersList cameras) override;
+  void updateSequenceParams(Metadata::IvSequenceParams) override;
+  void updateAccessUnitParams(Metadata::IvAccessUnitParams) override;
 
-  Common::Texture444Depth16Frame
-  decodeFrame(Common::MVD16Frame atlas, const Metadata::CameraParameters &target) const override;
+  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
+      -> Common::Texture444Depth16Frame override;
 };
 } // namespace TMIV::Decoder
 

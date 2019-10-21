@@ -35,11 +35,9 @@
 #define _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/CameraParametersList.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::AtlasConstructor {
-
-// IPruner interface (part of AtlasConstructorLib)
 class IPruner {
 public:
   IPruner() = default;
@@ -49,12 +47,9 @@ public:
   IPruner &operator=(IPruner &&) = default;
   virtual ~IPruner() = default;
 
-  using MVD16Frame = Common::MVD16Frame;
-  using MaskList = Common::MaskList;
-  using CameraParametersList = Metadata::CameraParametersList;
-
-  virtual MaskList prune(const CameraParametersList &cameras, const MVD16Frame &views,
-                         const std::vector<std::uint8_t> &shouldNotBePruned) = 0;
+  virtual auto prune(const Metadata::ViewParamsVector &viewParamsVector,
+                     const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
+      -> Common::MaskList = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

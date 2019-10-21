@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(AtlasDeconstructorLib
-	"src/IAtlasDeconstructor.cpp"
     "src/AtlasDeconstructor.cpp"
+	"src/AtlasDeconstructor.reg.hpp"
 	"include/TMIV/AtlasDeconstructor/IAtlasDeconstructor.h"
 	"include/TMIV/AtlasDeconstructor/AtlasDeconstructor.h")
 
@@ -19,21 +19,11 @@ target_include_directories(AtlasDeconstructorLib
 		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 		"$<INSTALL_INTERFACE:include>")
 
-add_executable(AtlasDeconstructor
-	"src/AtlasDeconstructor.main.cpp")
-
-target_link_libraries(AtlasDeconstructor
-	PRIVATE
-		TMIV::AtlasDeconstructorLib
-		TMIV::IOLib)
-
 install(
 	TARGETS
-		AtlasDeconstructor
 		AtlasDeconstructorLib
 	EXPORT AtlasDeconstructor.Targets
-	ARCHIVE DESTINATION "lib"
-	RUNTIME DESTINATION "bin")
+	ARCHIVE DESTINATION "lib")
 
 install(
 	EXPORT AtlasDeconstructor.Targets

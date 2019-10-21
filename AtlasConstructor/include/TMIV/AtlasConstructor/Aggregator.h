@@ -35,11 +35,10 @@
 #define _TMIV_ATLASCONSTRUCTOR_AGGREGATOR_H_
 
 #include <TMIV/AtlasConstructor/IAggregator.h>
+
 #include <TMIV/Common/Json.h>
 
 namespace TMIV::AtlasConstructor {
-
-// The Aggregator of TMIV 1.0 provided by Technicolor
 class Aggregator : public IAggregator {
 public:
   Aggregator(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
@@ -49,15 +48,18 @@ public:
   Aggregator &operator=(Aggregator &&) = default;
   ~Aggregator() override = default;
 
-  void prepareIntraPeriod() override;
-  void pushMask(const MaskList &mask) override;
-  void completeIntraPeriod() override {}
-  const MaskList &getAggregatedMask() const override { return m_aggregatedMask; }
+  void prepareAccessUnit() override;
+  void pushMask(const Common::MaskList &mask) override;
+  void completeAccessUnit() override {}
+  auto getAggregatedMask() const -> const Common::MaskList & override;
 
 private:
-  MaskList m_aggregatedMask;
+  Common::MaskList m_aggregatedMask;
 };
 
+inline auto Aggregator::getAggregatedMask() const -> const Common::MaskList & {
+  return m_aggregatedMask;
+}
 } // namespace TMIV::AtlasConstructor
 
 #endif

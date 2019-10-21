@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(DecoderLib
-	"src/IDecoder.cpp"
     "src/Decoder.cpp"
+	"src/Decoder.reg.hpp"
 	"include/TMIV/Decoder/IDecoder.h"
     "include/TMIV/Decoder/Decoder.h")
 

@@ -128,9 +128,7 @@ void Application::startTime() { m_startTime = clock(); }
 
 void Application::printTime() {
   auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;
-  std::cout << std::endl
-            << "Total Time: " << std::fixed << std::setprecision(3) << executeTime << " sec."
-            << std::endl;
+  cout << endl << "Total Time: " << fixed << setprecision(3) << executeTime << " sec." << endl;
 }
 
 } // namespace TMIV::Common

@@ -38,13 +38,13 @@
 using namespace std;
 
 namespace TMIV::Metadata {
-std::ostream &operator<<(std::ostream &stream, const ViewingSpace &viewParamsVector) {
+std::ostream &operator<<(std::ostream &stream, const ViewingSpace &/*viewParamsVector*/) {
   return stream;
 }
 
 bool ViewingSpace::operator==(const ViewingSpace & /* other */) const { return true; }
 
-auto ViewingSpace::decodeFrom(InputBitstream &) -> ViewingSpace { return {}; }
+auto ViewingSpace::decodeFrom(InputBitstream &/*unused*/) -> ViewingSpace { return {}; }
 
-void ViewingSpace::encodeTo(OutputBitstream &) const {}
+void ViewingSpace::encodeTo(OutputBitstream &/*unused*/) const {}
 } // namespace TMIV::Metadata

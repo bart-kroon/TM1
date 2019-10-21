@@ -195,7 +195,7 @@ struct IvSequenceParams {
 
   // In specification: viewing_space_present_flag
   // In specification: viewing_space( )
-  std::optional<ViewingSpace> viewingSpace;
+  std::optional<ViewingSpace> viewingSpace{};
 
   friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams);
   bool operator==(const IvSequenceParams &other) const;

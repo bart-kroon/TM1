@@ -31,34 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
-#define _TMIV_ATLASCONSTRUCTOR_PRUNER_H_
-
-#include <TMIV/AtlasConstructor/IPruner.h>
+#ifndef _TMIV_ATLASCONSTRUCTOR_PRUNED_MESH_H_
+#define _TMIV_ATLASCONSTRUCTOR_PRUNED_MESH_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
+#include <TMIV/Renderer/Engine.h>
 
 namespace TMIV::AtlasConstructor {
-class Pruner : public IPruner {
-public:
-  Pruner(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
-  Pruner(const Pruner &) = delete;
-  Pruner(Pruner &&) = default;
-  Pruner &operator=(const Pruner &) = delete;
-  Pruner &operator=(Pruner &&) = default;
-  ~Pruner() override = default;
+// Unproject a pruned (masked) view, resulting in a mesh in the reference
+// frame of the source view
+auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
+                         const Metadata::ViewParams &viewParams,
+                         const Common::Mat<std::uint8_t> &mask)
+    -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
+                  std::vector<Common::Vec3f>>;
 
-  auto prune(const Metadata::ViewParamsVector &viewParamsVector, const Common::MVD16Frame &views,
-             const std::vector<bool> &isBasicView) -> Common::MaskList override;
+// Change reference frame and project vertices
+auto project(const Renderer::SceneVertexDescriptorList &vertices,
+             const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target)
+    -> Renderer::ImageVertexDescriptorList;
 
-private:
-  float m_redundancyFactor{};
-  int m_erosionIter{};
-  int m_dilationIter{};
-  int m_maxAdditionalView{INT16_MAX};
-};
-
+// Weighted sphere compensation of stretching as performed by
+// Engine<ErpParams>::project
+void weightedSphere(const Metadata::ViewParams &target,
+                    const Renderer::ImageVertexDescriptorList &vertices,
+                    Renderer::TriangleDescriptorList &triangles);
 } // namespace TMIV::AtlasConstructor
 
 #endif

@@ -33,10 +33,10 @@
 
 #include <TMIV/Renderer/Synthesizer.h>
 
-#include "Engine.h"
-#include "Rasterizer.h"
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Image/Image.h>
+#include <TMIV/Renderer/Engine.h>
+#include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <cassert>
@@ -240,12 +240,12 @@ public:
                                      const ViewParamsVector &viewParamsVector,
                                      const ViewParams &target) const {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-        atlases.size(), target,
-        [&](size_t i, const ViewParams &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, viewParamsVector, target);
-        },
-        resolutionRatio(viewParamsVector, target));
+    auto rasterizer = rasterFrame(atlases.size(), target,
+                                  [&](size_t i, const ViewParams &target) {
+                                    return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
+                                                          viewParamsVector, target);
+                                  },
+                                  resolutionRatio(viewParamsVector, target));
     return {quantizeTexture(rasterizer.attribute<0>()),
             quantizeNormDisp16(target, rasterizer.normDisp())};
   }

@@ -8,14 +8,6 @@ add_library(RendererLib
     "src/MultipassRenderer.cpp"
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
-	"src/Engine.h"
-	"src/Engine_ERP.hpp"
-	"src/Engine_Perspective.hpp"
-	"src/blend.h"
-	"src/blend.hpp"
-	"src/Rasterizer.h"
-	"src/Rasterizer.hpp"
-	"src/AccumulatingPixel.h"
 	"src/reprojectPoints.cpp"
 	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
@@ -25,7 +17,15 @@ add_library(RendererLib
     "include/TMIV/Renderer/MultipassRenderer.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"
-	"include/TMIV/Renderer/reprojectPoints.h")
+	"include/TMIV/Renderer/reprojectPoints.h"
+	"include/TMIV/Renderer/Engine.h"
+	"include/TMIV/Renderer/Engine_ERP.hpp"
+	"include/TMIV/Renderer/Engine_Perspective.hpp"
+	"include/TMIV/Renderer/blend.h"
+	"include/TMIV/Renderer/blend.hpp"
+	"include/TMIV/Renderer/Rasterizer.h"
+	"include/TMIV/Renderer/Rasterizer.hpp"
+	"include/TMIV/Renderer/AccumulatingPixel.h")
 
 add_library(TMIV::RendererLib
 	ALIAS RendererLib)

@@ -31,18 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/AtlasConstructor/Aggregator.h>
-#include <TMIV/AtlasConstructor/AtlasConstructor.h>
-#include <TMIV/AtlasConstructor/HierarchicalPruner.h>
-#include <TMIV/AtlasConstructor/Packer.h>
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Synthesizer.h>
+#ifndef _TMIV_ATLASCONSTRUCTOR_HIERARCHICAL_PRUNER_H_
+#define _TMIV_ATLASCONSTRUCTOR_HIERARCHICAL_PRUNER_H_
+
+#include <TMIV/AtlasConstructor/IPruner.h>
+
+#include <TMIV/Common/Json.h>
+#include <memory>
 
 namespace TMIV::AtlasConstructor {
-inline void registerComponents() {
-  Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
-  Factory<IPruner>::getInstance().registerAs<HierarchicalPruner>("HierarchicalPruner");
-  Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
-  Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
-}
+class HierarchicalPruner : public IPruner {
+public:
+  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
+  HierarchicalPruner(const HierarchicalPruner &) = delete;
+  HierarchicalPruner(HierarchicalPruner &&) = default;
+  HierarchicalPruner &operator=(const HierarchicalPruner &) = delete;
+  HierarchicalPruner &operator=(HierarchicalPruner &&) = default;
+  ~HierarchicalPruner() override;
+
+  auto prune(const Metadata::ViewParamsVector &viewParamsVector,
+                     const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
+      -> Common::MaskList override;
+
+private:
+  class Impl;
+  const std::unique_ptr<Impl> m_impl;
+};
 } // namespace TMIV::AtlasConstructor
+
+#endif

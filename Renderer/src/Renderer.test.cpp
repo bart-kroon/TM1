@@ -34,11 +34,11 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include "AccumulatingPixel.h"
-#include "Engine.h"
-#include "Rasterizer.h"
+#include <TMIV/Renderer/AccumulatingPixel.h>
+#include <TMIV/Renderer/Engine.h>
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
+#include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 

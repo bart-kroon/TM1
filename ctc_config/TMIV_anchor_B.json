@@ -32,9 +32,9 @@
         "v22",
         "v23"
     ],
-    "AtlasTexturePathFmt": "ATL_SB_R0_Tt_c%02d_2048x2048_yuv420p10le.yuv",
-    "AtlasDepthPathFmt": "ATL_SB_R0_Td_c%02d_2048x2048_yuv420p10le.yuv",
-    "AtlasMetadataPath": "ATL_SB_R0_Tm_c00.bit",
+    "AtlasTexturePathFmt": "ATL_SB_R0_Tt_c%02d_2048x2368_yuv420p10le.yuv",
+    "AtlasDepthPathFmt": "ATL_SB_R0_Td_c%02d_2048x2368_yuv420p10le.yuv",
+    "AtlasMetadataPath": "ATL_SB_R0_Tm_c00.bit",    
     "OutputTexturePath": "TM1_SB_R0_Tt_%s_2048x2048_yuv420p10le.yuv",
     "OutputCameraName": "v1",
     "OmafV1CompatibleFlag": false,
@@ -44,11 +44,15 @@
         "ViewReducer": {},
         "AtlasConstructorMethod": "AtlasConstructor",
         "AtlasConstructor": {
-            "PrunerMethod": "Pruner",
-            "Pruner": {
-                "RedundancyFactor": 0.05,
-                "ErosionIter": 1,
-                "DilationIter": 5
+            "PrunerMethod": "HierarchicalPruner",
+            "HierarchicalPruner": {
+                "maxDepthError": 0.1,
+                "rayAngleParameter": 20,
+                "depthParameter": 20,
+                "stretchingParameter": 0.6,
+                "maxStretching": 5,
+                "erode": 2,
+                "dilate": 5
             },
             "AggregatorMethod": "Aggregator",
             "Aggregator": {},
@@ -61,9 +65,9 @@
             },
             "AtlasResolution": [
                 2048,
-                2048
+                2368
             ],
-            "MaxLumaSamplesPerFrame": 33554432
+            "MaxLumaSamplesPerFrame": 29097984
         }
     },
     "DecoderMethod": "Decoder",

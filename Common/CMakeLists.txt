@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 add_library(CommonLib
 	"src/Application.cpp"
 	"src/Json.cpp"
+	"src/Half.cpp"
 	"src/Frame.cpp"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Common.hpp"
@@ -13,6 +14,8 @@ add_library(CommonLib
     "include/TMIV/Common/Thread.h"
 	"include/TMIV/Common/Frame.h"
 	"include/TMIV/Common/Frame.hpp"
+	"include/TMIV/Common/Half.h"
+	"include/TMIV/Common/Half.hpp"
 	"include/TMIV/Common/LinAlg.h"
 	"include/TMIV/Common/LinAlg.hpp"
 	"include/TMIV/Common/Vector.h"

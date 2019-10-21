@@ -50,7 +50,10 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
   return visit(
       [&](const auto &projection) {
         tuple<SceneVertexDescriptorList, TriangleDescriptorList, vector<Vec3f>> mesh;
-        auto &[vertices, triangles, attributes] = mesh;
+//         auto &[vertices, triangles, attributes] = mesh;
+        auto& vertices = std::get<0>(mesh);
+        auto& triangles = std::get<1>(mesh);
+        auto& attributes = std::get<2>(mesh);
 
         Engine<decay_t<decltype(projection)>> engine{viewParams};
         const auto size = viewParams.size;

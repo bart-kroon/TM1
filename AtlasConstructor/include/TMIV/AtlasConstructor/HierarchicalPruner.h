@@ -44,9 +44,9 @@ class HierarchicalPruner : public IPruner {
 public:
   HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
   HierarchicalPruner(const HierarchicalPruner &) = delete;
-  HierarchicalPruner(HierarchicalPruner &&) = default;
+  HierarchicalPruner(HierarchicalPruner &&) = delete;
   HierarchicalPruner &operator=(const HierarchicalPruner &) = delete;
-  HierarchicalPruner &operator=(HierarchicalPruner &&) = default;
+  HierarchicalPruner &operator=(HierarchicalPruner &&) = delete;
   ~HierarchicalPruner() override;
 
   auto prune(const Metadata::ViewParamsVector &viewParamsVector,

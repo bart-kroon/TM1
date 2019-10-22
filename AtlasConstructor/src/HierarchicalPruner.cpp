@@ -122,7 +122,7 @@ private:
   void createSynthesizerPerPartialView(const MVD16Frame &views) {
     m_synthesizers.clear();
     for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
-      if (m_isBasicView[i]) {
+      if (!m_isBasicView[i]) {
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
             m_config, m_viewParamsVector[i].size, i,
             expandDepth(m_viewParamsVector[i], views[i].second)));

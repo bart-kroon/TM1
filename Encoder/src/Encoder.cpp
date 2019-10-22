@@ -36,6 +36,8 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Image/Image.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
@@ -57,6 +59,17 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
 auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
     -> const Metadata::IvSequenceParams & {
   auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+
+  cout << "\nBasic view(s): ";
+  auto sep = "";
+  for (size_t i = 0; i < optimized.second.size(); ++i) {
+    if (optimized.second[i]) {
+      cout << i;
+      sep = ", ";
+    }
+  }
+  cout << '\n';
+
   return m_depthOccupancy->transformSequenceParams(
       m_atlasConstructor->prepareSequence(std::move(optimized.first), std::move(optimized.second)));
 }

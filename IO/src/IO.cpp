@@ -56,7 +56,9 @@ string getFullPath(const Json &config, const string &baseDirectoryField,
       viewName.empty() ? format(config.require(fileNameField).asString().c_str(), viewId)
                        : format(config.require(fileNameField).asString().c_str(), viewName.c_str());
 
-  if (!fileName.empty() && fileName.front() == '/') {
+  // Detect absolute paths for /POSIX, \Windows and C:\Windows
+  if ((!fileName.empty() && (fileName.front() == '/' || fileName.front() == '\\')) ||
+      (fileName.size() >= 2 && fileName[1] == ':')) {
     return fileName;
   }
 

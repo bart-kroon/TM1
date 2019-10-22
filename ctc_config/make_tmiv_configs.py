@@ -37,7 +37,7 @@ import os
 import sys
 
 # See Usage description at the end of the script
-ctc_archive = False
+ctc_archive = True
 source_directory = '.'
 
 class DecoderConfiguration:
@@ -76,7 +76,10 @@ class DecoderConfiguration:
 		return self.sequenceJsonPath()
 
 	def configPath(self):
-		return os.path.dirname(sys.argv[0])
+		x = os.path.dirname(sys.argv[0])
+		if len(x) > 0:
+			return x
+		return '.'
 
 	def sequenceJsonPath(self):
 		return os.path.realpath('{}/sequences/{}.json'.format(self.configPath(), self.seqName()))

@@ -115,9 +115,39 @@ public:
 
     while (ch != '"') {
       if (ch == '\\') {
-        throw runtime_error("JSON parser: string escaping not implemented");
+        switch (stream.get()) {
+        case '"':
+          value.push_back('"');
+          break;
+        case '\\':
+          value.push_back('\\');
+          break;
+        case '/':
+          value.push_back('/');
+          break;
+        case 'b':
+          value.push_back('\b');
+          break;
+        case 'f':
+          value.push_back('\f');
+          break;
+        case 'n':
+          value.push_back('\n');
+          break;
+        case 'r':
+          value.push_back('\r');
+          break;
+        case 't':
+          value.push_back('\t');
+          break;
+        case 'u':
+          throw runtime_error("JSON parser: unicode string escaping not yet implemented");
+        default:
+          throw runtime_error("JSON parser: invalid string escape character");
+        }
+      } else {
+        value.push_back(static_cast<char>(ch));
       }
-      value.push_back(static_cast<char>(ch));
       ch = stream.get();
     }
   }

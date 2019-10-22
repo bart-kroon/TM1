@@ -64,7 +64,7 @@ auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
   auto sep = "";
   for (size_t i = 0; i < optimized.second.size(); ++i) {
     if (optimized.second[i]) {
-      cout << i;
+      cout << sep << i;
       sep = ", ";
     }
   }

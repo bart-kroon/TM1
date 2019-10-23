@@ -225,7 +225,8 @@ private:
   }
 
   // Visit all pixel neighbors (in between 3 and 8)
-  template <typename F> static bool forNeighbors(int i, int j, array<size_t, 2> sizes, F f) {
+  template <typename F>
+  static auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
     const int n1 = max(0, i - 1);
     const int n2 = min(int(sizes[0]), i + 2);
     const int m1 = max(0, j - 1);
@@ -241,7 +242,7 @@ private:
     return true;
   }
 
-  Mat<uint8_t> erode(Mat<uint8_t> &mask) const {
+  static auto erode(Mat<uint8_t> &mask) -> Mat<uint8_t> {
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
@@ -251,7 +252,7 @@ private:
     return result;
   }
 
-  Mat<uint8_t> dilate(Mat<uint8_t> &mask) const {
+  static auto dilate(Mat<uint8_t> &mask) -> Mat<uint8_t> {
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =

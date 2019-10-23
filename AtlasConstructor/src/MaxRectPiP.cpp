@@ -41,7 +41,7 @@ namespace TMIV::AtlasConstructor {
 constexpr auto occupied = uint8_t(128);
 
 ////////////////////////////////////////////////////////////////////////////////
-vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w, int h) const {
+auto MaxRectPiP::Rectangle::split(int w, int h) const -> vector<MaxRectPiP::Rectangle> {
   vector<Rectangle> out;
 
   if (h < height()) {
@@ -55,7 +55,7 @@ vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::split(int w, int h) const {
   return out;
 }
 
-vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::remove(const Rectangle &r) const {
+auto MaxRectPiP::Rectangle::remove(const Rectangle &r) const -> vector<MaxRectPiP::Rectangle> {
   vector<Rectangle> out;
 
   if (!((r.m_x1 <= m_x0) || (m_x1 <= r.m_x0) || (r.m_y1 <= m_y0) || (m_y1 <= r.m_y0))) {
@@ -83,12 +83,12 @@ vector<MaxRectPiP::Rectangle> MaxRectPiP::Rectangle::remove(const Rectangle &r) 
   return out;
 }
 
-bool MaxRectPiP::Rectangle::isInside(const Rectangle &r) const {
+auto MaxRectPiP::Rectangle::isInside(const Rectangle &r) const -> bool {
   return ((r.m_x0 <= m_x0) && (m_x0 <= r.m_x1) && (r.m_x0 <= m_x1) && (m_x1 <= r.m_x1) &&
           (r.m_y0 <= m_y0) && (m_y0 <= r.m_y1) && (r.m_y0 <= m_y1) && (m_y1 <= r.m_y1));
 }
 
-float MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const {
+auto MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const -> float {
   int dw = width() - w;
   int dh = height() - h;
 
@@ -112,7 +112,8 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
   m_F.emplace_back(0, 0, w - 1, h - 1);
 }
 
-bool MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput) {
+auto MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput)
+    -> bool {
   int w = align(c.width(), m_alignment);
   int h = align(c.height(), m_alignment);
 
@@ -180,7 +181,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
   }
 }
 
-bool MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output &packerOutput) {
+auto MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output &packerOutput) -> bool {
 
   int W = w / m_alignment;
   int H = h / m_alignment;
@@ -220,7 +221,7 @@ bool MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output &packerOutput)
   return false;
 }
 
-bool MaxRectPiP::pushInFreeSpace(int w, int h, MaxRectPiP::Output &packerOutput) {
+auto MaxRectPiP::pushInFreeSpace(int w, int h, MaxRectPiP::Output &packerOutput) -> bool {
   // Select best free rectangles that fit current patch (BSSF criterion)
   auto best_iter = m_F.cend();
   float best_score = numeric_limits<float>::max();

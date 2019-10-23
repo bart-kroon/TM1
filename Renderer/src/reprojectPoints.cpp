@@ -119,19 +119,19 @@ auto calculateRayAngles(const ViewParams &viewParams, const ViewParams &target,
   return result;
 }
 
-Mat3x3f rotationMatrixFromRotationAroundX(float rx) {
+auto rotationMatrixFromRotationAroundX(float rx) -> Mat3x3f {
   return Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
 }
 
-Mat3x3f rotationMatrixFromRotationAroundY(float ry) {
+auto rotationMatrixFromRotationAroundY(float ry) -> Mat3x3f {
   return Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
 }
 
-Mat3x3f rotationMatrixFromRotationAroundZ(float rz) {
+auto rotationMatrixFromRotationAroundZ(float rz) -> Mat3x3f {
   return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
 }
 
-Mat3x3f EulerAnglesToRotationMatrix(Vec3f rotation) {
+auto EulerAnglesToRotationMatrix(Vec3f rotation) -> Mat3x3f {
   return rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]) *
          rotationMatrixFromRotationAroundY(radperdeg * rotation[1]) *
          rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);

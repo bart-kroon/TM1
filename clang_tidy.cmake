@@ -14,5 +14,5 @@ else()
     set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
 endif()
 if(CLANG_TIDY AND CLANG_TIDY_EXE)
-    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE})
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}" "-fix")
 endif()

@@ -39,7 +39,7 @@
 using namespace std;
 
 namespace TMIV::Metadata {
-bool verifyFailed(char const *condition, char const *file, int line) {
+auto verifyFailed(char const *condition, char const *file, int line) -> bool {
   cerr << "Failed to decode metadata: " << condition << " [" << file << "@" << line << endl;
   abort();
   return false;

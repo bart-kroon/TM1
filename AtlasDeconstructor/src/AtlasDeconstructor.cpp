@@ -73,8 +73,7 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
                                            PatchIdMapList &patchMapList, uint16_t patchId,
-                                           const MVD10Frame &frame,
-                                           uint16_t depthOccMapThreshold) const {
+                                           const MVD10Frame &frame, uint16_t depthOccMapThreshold) {
   auto &patchMap = patchMapList[patch.atlasId];
   auto &depthMap = frame[patch.atlasId].second.getPlane(0);
 

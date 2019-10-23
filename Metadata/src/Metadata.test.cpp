@@ -239,7 +239,7 @@ const auto ivAccessUnitParams =
 
 namespace {
 template <typename Type, typename... Args>
-bool codingTest(const Type &reference, int size, Args &... args) {
+auto codingTest(const Type &reference, int size, Args &... args) -> bool {
   stringstream stream;
   OutputBitstream obitstream{stream};
   reference.encodeTo(obitstream, args...);

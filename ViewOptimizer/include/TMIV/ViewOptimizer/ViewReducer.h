@@ -59,11 +59,12 @@ public:
   }
 
 private:
-  auto calculateFOV(Metadata::ViewParams viewParams) -> float;
+  static auto calculateFOV(Metadata::ViewParams viewParams) -> float;
 
-  auto calculateDistance(Metadata::ViewParams camera_1, Metadata::ViewParams camera_2) -> float;
+  static auto calculateDistance(Metadata::ViewParams camera_1, Metadata::ViewParams camera_2)
+      -> float;
 
-  auto calculateOverlapping(Metadata::ViewParams camera_from, Metadata::ViewParams camera_to)
+  static auto calculateOverlapping(Metadata::ViewParams camera_from, Metadata::ViewParams camera_to)
       -> float;
 };
 } // namespace TMIV::ViewOptimizer

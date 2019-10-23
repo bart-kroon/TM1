@@ -85,7 +85,7 @@ Application::Application(const char *tool, vector<const char *> argv) : m_startT
   }
 }
 
-const Json &Application::json() const {
+auto Application::json() const -> const Json & {
   assert(m_json);
   return *m_json;
 }

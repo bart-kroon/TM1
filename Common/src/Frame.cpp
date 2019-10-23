@@ -61,9 +61,15 @@ template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> F
 }
 } // namespace
 
-Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame) { return yuv420p_impl<YUV420P8>(frame); }
+auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8> {
+  return yuv420p_impl<YUV420P8>(frame);
+}
 
-Frame<YUV420P10> yuv420p(const Frame<YUV444P10> &frame) { return yuv420p_impl<YUV420P10>(frame); }
+auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10> {
+  return yuv420p_impl<YUV420P10>(frame);
+}
 
-Frame<YUV420P16> yuv420p(const Frame<YUV444P16> &frame) { return yuv420p_impl<YUV420P16>(frame); }
+auto yuv420p(const Frame<YUV444P16> &frame) -> Frame<YUV420P16> {
+  return yuv420p_impl<YUV420P16>(frame);
+}
 } // namespace TMIV::Common

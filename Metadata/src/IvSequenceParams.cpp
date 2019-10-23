@@ -45,11 +45,11 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
-std::ostream &operator<<(std::ostream &stream, const IvsProfileTierLevel & /* unused */) {
+auto operator<<(std::ostream &stream, const IvsProfileTierLevel & /* unused */) -> std::ostream & {
   return stream << "{}";
 }
 
-bool IvsProfileTierLevel::operator==(const IvsProfileTierLevel & /* unused */) const {
+auto IvsProfileTierLevel::operator==(const IvsProfileTierLevel & /* unused */) const -> bool {
   return true;
 }
 
@@ -59,15 +59,15 @@ auto IvsProfileTierLevel::decodeFrom(InputBitstream & /* unused */) -> IvsProfil
 
 void IvsProfileTierLevel::encodeTo(OutputBitstream & /* unused */) const {}
 
-ostream &operator<<(ostream &stream, const ErpParams &projection) {
+auto operator<<(ostream &stream, const ErpParams &projection) -> ostream & {
   return stream << "ERP " << projection.phiRange << " x " << projection.thetaRange << " deg";
 }
 
-ostream &operator<<(ostream &stream, const PerspectiveParams &projection) {
+auto operator<<(ostream &stream, const PerspectiveParams &projection) -> ostream & {
   return stream << "perspective " << projection.focal << ' ' << projection.center;
 }
 
-ostream &operator<<(ostream &stream, const ViewParams &viewParams) {
+auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
   stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
@@ -84,21 +84,21 @@ ostream &operator<<(ostream &stream, const ViewParams &viewParams) {
   return stream;
 }
 
-bool ErpParams::operator==(const ErpParams &other) const {
+auto ErpParams::operator==(const ErpParams &other) const -> bool {
   return phiRange == other.phiRange && thetaRange == other.thetaRange;
 }
 
-bool PerspectiveParams::operator==(const PerspectiveParams &other) const {
+auto PerspectiveParams::operator==(const PerspectiveParams &other) const -> bool {
   return focal == other.focal && center == other.center;
 }
 
-bool ViewParams::operator==(const ViewParams &other) const {
+auto ViewParams::operator==(const ViewParams &other) const -> bool {
   return size == other.size && position == other.position && rotation == other.rotation &&
          projection == other.projection && normDispRange == other.normDispRange &&
          depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
 }
 
-ViewParams ViewParams::loadFromJson(const Json &node) {
+auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   ViewParams parameters;
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();
@@ -124,7 +124,7 @@ ViewParams ViewParams::loadFromJson(const Json &node) {
   return parameters;
 }
 
-bool ViewParamsList::areIntrinsicParamsEqual() const {
+auto ViewParamsList::areIntrinsicParamsEqual() const -> bool {
   for (auto i = begin() + 1; i < end(); ++i) {
     if (front().projection != i->projection) {
       return false;
@@ -134,7 +134,7 @@ bool ViewParamsList::areIntrinsicParamsEqual() const {
   return true;
 }
 
-bool ViewParamsList::areDepthQuantizationParamsEqual() const {
+auto ViewParamsList::areDepthQuantizationParamsEqual() const -> bool {
   for (auto i = begin() + 1; i < end(); ++i) {
     if (front().normDispRange != i->normDispRange) {
       return false;
@@ -152,14 +152,14 @@ auto ViewParamsList::viewSizes() const -> SizeVector {
   return sizes;
 }
 
-ostream &operator<<(ostream &stream, const ViewParamsList &viewParamsVector) {
+auto operator<<(ostream &stream, const ViewParamsList &viewParamsVector) -> ostream & {
   for (size_t i = 0; i < viewParamsVector.size(); ++i) {
     stream << "View " << setw(2) << i << ": " << viewParamsVector[i] << '\n';
   }
   return stream;
 }
 
-bool ViewParamsList::operator==(const ViewParamsList &other) const {
+auto ViewParamsList::operator==(const ViewParamsList &other) const -> bool {
   return equal(begin(), end(), other.begin(), other.end());
 }
 
@@ -304,7 +304,7 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
   }
 }
 
-ViewParamsList ViewParamsList::loadFromJson(const Json &node, const vector<string> &names) {
+auto ViewParamsList::loadFromJson(const Json &node, const vector<string> &names) -> ViewParamsList {
   ViewParamsList result;
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {
@@ -320,7 +320,7 @@ ViewParamsList ViewParamsList::loadFromJson(const Json &node, const vector<strin
   return result;
 }
 
-std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams) {
+auto operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams) -> std::ostream & {
   stream << "ivs_profile_tier_level()=" << ivSequenceParams.ivsProfileTierLevel << '\n';
   stream << "depth_low_quality_flag=" << boolalpha << ivSequenceParams.depthLowQualityFlag << '\n';
   stream << "num_groups=" << ivSequenceParams.numGroups << '\n';
@@ -339,7 +339,7 @@ std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenc
   return stream;
 }
 
-bool IvSequenceParams::operator==(const IvSequenceParams &other) const {
+auto IvSequenceParams::operator==(const IvSequenceParams &other) const -> bool {
   return ivsProfileTierLevel == other.ivsProfileTierLevel &&
          viewParamsList == other.viewParamsList &&
          depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups &&

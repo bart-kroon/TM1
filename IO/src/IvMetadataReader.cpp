@@ -64,7 +64,7 @@ void IvMetadataReader::readIvAccessUnitParams() {
   // TODO(BK): Partial atlas information? (With only some atlas_id's present.)
 }
 
-bool IvMetadataReader::readAccessUnit(int accessUnit) {
+auto IvMetadataReader::readAccessUnit(int accessUnit) -> bool {
   if (m_accessUnit == accessUnit) {
     return false;
   }

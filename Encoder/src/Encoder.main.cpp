@@ -135,7 +135,7 @@ private:
 #include "../../Decoder/src/Decoder.reg.hpp"
 #include "Encoder.reg.hpp"
 
-int main(int argc, char *argv[]) {
+auto main(int argc, char *argv[]) -> int {
   try {
     TMIV::Encoder::registerComponents();
     TMIV::Decoder::registerComponents();

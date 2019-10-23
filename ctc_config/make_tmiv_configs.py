@@ -276,31 +276,6 @@ class DecoderConfiguration:
 		return '{0}/S{1}/{2}/{0}_S{1}_{3}_{4}.json'.format(
 			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName())
 
-	def saveTmivJson(self):	
-		print(self.path())
-		os.makedirs(os.path.dirname(self.path()), exist_ok = True)
-		with open(self.path(), 'w') as stream:
-			json.dump(self.parameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
-			stream.write('\n')
-
-
-# Iterate over target views and pose traces
-class AllDecoderConfigurations(DecoderConfiguration):
-	def saveTmivJson(self):
-		for v in self.allTargetCameraNames():
-			self.overrideOutputCameraName = v
-			DecoderConfiguration.saveTmivJson(self)
-
-	def outputCameraName(self):
-		return self.overrideOutputCameraName
-
-	def allTargetCameraNames(self):
-		return self.allSourceCameraNames() + ['p01', 'p02', 'p03']
-
-class EncoderConfiguration(DecoderConfiguration):
-	def __init__(self, anchorId, seqId):
-		DecoderConfiguration.__init__(self, anchorId, seqId, 'R0')
-
 	def startFrame(self):
 		# TODO(BK): Decide on startFrame for 17-frame anchors
 		return {
@@ -312,6 +287,78 @@ class EncoderConfiguration(DecoderConfiguration):
 			'J': 0,
 			'L': 30
 		}[self.seqId]		
+
+	def outputCamera(self):
+		target = self.outputCameraName()
+		for camera in self.sequenceParams['cameras']:
+			if camera['Name'] == target:
+				return camera
+		raise 'Could not find output camera in sequence configuration'
+
+	def saveTmivJson(self):	
+		print(self.path())
+		os.makedirs(os.path.dirname(self.path()), exist_ok = True)
+		with open(self.path(), 'w') as stream:
+			json.dump(self.parameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
+			stream.write('\n')
+
+	def wspsnrPath(self):
+		return '{0}/S{1}/{2}/{0}_S{1}_{3}_{4}.wspsnr.json'.format(
+			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName())
+
+	def originalFilePath(self, camera):
+		path = '{}_texture_{}x{}_yuv420p10le.yuv'.format(camera['Name'], camera['Resolution'][0], camera['Resolution'][1])
+		if self.sourceDirectory() == '.':
+			return path
+		return os.path.join(self.sourceDirectory(), path)
+
+	def wspsnrParameters(self):
+		camera = self.outputCamera()
+		config = {
+			"Version": 2.0,
+			"Projection": camera['Projection'],
+			"Original_file_path": self.originalFilePath(camera),
+			"Reconstructed_file_path": self.outputTexturePath(),
+			"ColorSpace": "YUV420",
+			"Video_width": camera['Resolution'][0],
+			"Video_height": camera['Resolution'][1],
+			"BitDepth": 10,
+			"Start_frame_of_original_file": self.startFrame(),
+			"NumberOfFrames": self.numberOfFrames(),
+			"Peak_value_of_10bits": 1020
+		}
+		if camera['Projection'] == 'Equirectangular':
+			config.update({
+				'Longitude_range_of_ERP': camera['Hor_range'][1] - camera['Hor_range'][0],
+				'Latitude_range_of_ERP': camera['Ver_range'][1] - camera['Ver_range'][0]
+			})
+		return config
+
+	def saveWspsnrJson(self):
+		print(self.wspsnrPath())
+		with open(self.wspsnrPath(), 'w') as stream:
+			json.dump(self.wspsnrParameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
+			stream.write('\n')
+
+# Iterate over target views and pose traces
+class AllDecoderConfigurations(DecoderConfiguration):
+	def saveTmivJson(self):
+		for v in self.allTargetCameraNames():
+			self.overrideOutputCameraName = v
+			DecoderConfiguration.saveTmivJson(self)
+		for v in self.allSourceCameraNames():
+			self.overrideOutputCameraName = v
+			self.saveWspsnrJson()
+
+	def outputCameraName(self):
+		return self.overrideOutputCameraName
+
+	def allTargetCameraNames(self):
+		return self.allSourceCameraNames() + ['p01', 'p02', 'p03']
+
+class EncoderConfiguration(DecoderConfiguration):
+	def __init__(self, anchorId, seqId):
+		DecoderConfiguration.__init__(self, anchorId, seqId, 'R0')
 
 	def viewOptimizerMethod(self):
 		if anchorId == 'V17':

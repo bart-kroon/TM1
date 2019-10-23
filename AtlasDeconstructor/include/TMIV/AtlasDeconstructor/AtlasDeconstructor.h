@@ -58,9 +58,10 @@ public:
       -> Common::MVD10Frame override;
 
 private:
-  void writePatchIdInMap(const Metadata::AtlasParameters &patch,
-                         Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
-                         const Common::MVD10Frame &frame, std::uint16_t depthOccMapThreshold) const;
+  static void writePatchIdInMap(const Metadata::AtlasParameters &patch,
+                                Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
+                                const Common::MVD10Frame &frame,
+                                std::uint16_t depthOccMapThreshold);
 };
 } // namespace TMIV::AtlasDeconstructor
 

@@ -62,8 +62,8 @@ public:
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:
-  void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
-                         Common::MVD16Frame &atlas);
+  static void writePatchInAtlas(const Metadata::AtlasParameters &patch,
+                                const Common::MVD16Frame &views, Common::MVD16Frame &atlas);
 
 private:
   std::size_t m_nbAtlas{};

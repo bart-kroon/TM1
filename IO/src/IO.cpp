@@ -49,14 +49,16 @@ using namespace TMIV::Metadata;
 using namespace TMIV::Image;
 
 namespace TMIV::IO {
-string getFullPath(const Json &config, const string &baseDirectoryField,
-                   const string &fileNameField, size_t viewId, const string &viewName) {
+auto getFullPath(const Json &config, const string &baseDirectoryField, const string &fileNameField,
+                 size_t viewId, const string &viewName) -> string {
   string baseDirectory;
   string fileName =
       viewName.empty() ? format(config.require(fileNameField).asString().c_str(), viewId)
                        : format(config.require(fileNameField).asString().c_str(), viewName.c_str());
 
-  if (!fileName.empty() && fileName.front() == '/') {
+  // Detect absolute paths for /POSIX, \Windows and C:\Windows
+  if ((!fileName.empty() && (fileName.front() == '/' || fileName.front() == '\\')) ||
+      (fileName.size() >= 2 && fileName[1] == ':')) {
     return fileName;
   }
 
@@ -69,7 +71,7 @@ string getFullPath(const Json &config, const string &baseDirectoryField,
 
 namespace {
 template <typename FORMAT>
-Frame<FORMAT> readFrame(const string &path, int frameIndex, Vec2i resolution) {
+auto readFrame(const string &path, int frameIndex, Vec2i resolution) -> Frame<FORMAT> {
   Frame<FORMAT> result(resolution.x(), resolution.y());
   ifstream stream{path, ifstream::binary};
 
@@ -109,9 +111,9 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
 }
 
 template <typename FORMAT>
-MVDFrame<FORMAT> loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex,
-                              const char *what, const char *directory, const char *texturePathFmt,
-                              const char *depthPathFmt, const vector<string> &viewNames = {}) {
+auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
+                  const char *directory, const char *texturePathFmt, const char *depthPathFmt,
+                  const vector<string> &viewNames = {}) -> MVDFrame<FORMAT> {
   cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
@@ -146,7 +148,7 @@ struct Pose {
   Vec3f rotation;
 };
 
-Pose loadPoseFromCSV(istream &stream, int frameIndex) {
+auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
   string line;
   getline(stream, line);
 
@@ -216,8 +218,8 @@ auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitP
 
 namespace {
 template <typename FORMAT>
-MVD16Frame loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
-                                int frameIndex) {
+auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes, int frameIndex)
+    -> MVD16Frame {
   auto frame = loadMVDFrame<FORMAT>(config, sizes,
                                     frameIndex + config.require("startFrame").asInt(), "source",
                                     "SourceDirectory", "SourceTexturePathFmt", "SourceDepthPathFmt",
@@ -242,7 +244,7 @@ MVD16Frame loadSourceFrame_impl(int bits, const Json &config, const SizeVector &
 }
 } // namespace
 
-MVD16Frame loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex) {
+auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex) -> MVD16Frame {
   const auto bits = config.require("SourceDepthBitDepth").asInt();
   if (0 < bits && bits <= 8) {
     return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
@@ -258,7 +260,7 @@ void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame
                "PrunedViewDepthPathFmt");
 }
 
-MVD10Frame loadAtlas(const Json &config, const SizeVector &atlasSize, int frameIndex) {
+auto loadAtlas(const Json &config, const SizeVector &atlasSize, int frameIndex) -> MVD10Frame {
   return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
                                  "AtlasTexturePathFmt", "AtlasDepthPathFmt");
 }
@@ -268,7 +270,8 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
                "AtlasDepthPathFmt");
 }
 
-PatchIdMapList loadPatchIdMaps(const Json &config, const SizeVector &atlasSize, int frameIndex) {
+auto loadPatchIdMaps(const Json &config, const SizeVector &atlasSize, int frameIndex)
+    -> PatchIdMapList {
   cout << "Loading patchIdMap frame " << frameIndex << '\n';
 
   PatchIdMapList result;
@@ -292,7 +295,7 @@ void savePatchIdMaps(const Json &config, int frameIndex, const PatchIdMapList &m
   }
 }
 
-ViewParams loadViewportMetadata(const Json &config, int frameIndex) {
+auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 
   string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -347,7 +350,7 @@ void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame 
   }
 }
 
-int getExtendedIndex(const Json &config, int frameIndex) {
+auto getExtendedIndex(const Json &config, int frameIndex) -> int {
   int numberOfFrames = config.require("numberOfFrames").asInt();
   int frameGroupId = frameIndex / numberOfFrames;
   int frameRelativeId = frameIndex % numberOfFrames;

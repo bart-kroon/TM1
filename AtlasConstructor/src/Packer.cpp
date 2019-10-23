@@ -81,7 +81,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     packerList.emplace_back(sz.x(), sz.y(), m_alignment, m_pip);
   }
 
-  auto comp = [&](const Cluster &p1, const Cluster &p2) {
+  auto comp = [&](const Cluster &p1, const Cluster &p2) -> bool {
     if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
       return isBasicView[p2.getViewId()];
     }

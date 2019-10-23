@@ -58,12 +58,12 @@ public:
 
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;
-  Impl &operator=(const Impl &) = delete;
-  Impl &operator=(Impl &&) = delete;
+  auto operator=(const Impl &) -> Impl & = delete;
+  auto operator=(Impl &&) -> Impl & = delete;
   ~Impl() = default;
 
-  auto affineParameterList(const ViewParamsVector &viewParamsVector,
-                           const ViewParams &target) const {
+  static auto affineParameterList(const ViewParamsVector &viewParamsVector,
+                                  const ViewParams &target) {
     vector<pair<Mat3x3f, Vec3f>> result;
     result.reserve(viewParamsVector.size());
     transform(
@@ -72,9 +72,9 @@ public:
     return result;
   }
 
-  auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                     const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
-                     const ViewParams &target) const {
+  static auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
+                            const AtlasParamsVector &patches,
+                            const ViewParamsVector &viewParamsVector, const ViewParams &target) {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
     const auto cols = int(ids.width());
@@ -121,7 +121,7 @@ public:
     return result;
   }
 
-  auto atlasTriangles(const Mat<uint16_t> &ids) const {
+  static auto atlasTriangles(const Mat<uint16_t> &ids) {
     TriangleDescriptorList result;
     const int rows = int(ids.height());
     const int cols = int(ids.width());
@@ -152,7 +152,7 @@ public:
     return result;
   }
 
-  auto atlasColors(const TextureDepth10Frame &atlas) const {
+  static auto atlasColors(const TextureDepth10Frame &atlas) {
     vector<Vec3f> result;
     auto yuv444 = expandTexture(atlas.first);
     result.reserve(distance(begin(result), end(result)));
@@ -160,9 +160,9 @@ public:
     return result;
   }
 
-  auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                      const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
-                      const ViewParams &target) const {
+  static auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
+                             const AtlasParamsVector &patches,
+                             const ViewParamsVector &viewParamsVector, const ViewParams &target) {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
     assert(int(ids.width()) == atlas.first.getWidth());
@@ -172,8 +172,8 @@ public:
   }
 
   template <typename Unprojector>
-  Rasterizer<Vec3f> rasterFrame(size_t numViews, const ViewParams &target, Unprojector unprojector,
-                                float compensation) const {
+  auto rasterFrame(size_t numViews, const ViewParams &target, Unprojector unprojector,
+                   float compensation) const -> Rasterizer<Vec3f> {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching}, target.size};
@@ -209,7 +209,7 @@ public:
   }
 
   // Field of view in deg
-  static float xFoV(const ViewParams &viewParams) {
+  static auto xFoV(const ViewParams &viewParams) -> float {
     return visit(overload(
                      [](const ErpParams &projection) {
                        return abs(projection.phiRange[1] - projection.phiRange[0]);
@@ -222,11 +222,12 @@ public:
   }
 
   // Resolution in px^2/deg^2
-  static float resolution(const ViewParams &viewParams) {
+  static auto resolution(const ViewParams &viewParams) -> float {
     return square(viewParams.size.x() / xFoV(viewParams));
   }
 
-  static float resolutionRatio(const ViewParamsVector &viewParamsVector, const ViewParams &target) {
+  static auto resolutionRatio(const ViewParamsVector &viewParamsVector, const ViewParams &target)
+      -> float {
     const auto sourceResolution =
         accumulate(begin(viewParamsVector), end(viewParamsVector), 0.F,
                    [&](float average, const ViewParams &viewParams) {
@@ -235,10 +236,9 @@ public:
     return resolution(target) / sourceResolution;
   }
 
-  Texture444Depth16Frame renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
-                                     const AtlasParamsVector &patches,
-                                     const ViewParamsVector &viewParamsVector,
-                                     const ViewParams &target) const {
+  auto renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
+                   const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
+                   const ViewParams &target) const -> Texture444Depth16Frame {
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(atlases.size(), target,
                                   [&](size_t i, const ViewParams &target) {

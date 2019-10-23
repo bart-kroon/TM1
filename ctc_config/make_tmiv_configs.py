@@ -273,7 +273,7 @@ class DecoderConfiguration:
 		return self.testPoint
 
 	def path(self):
-		return '{0}/S{1}/{2}/{0}_S{1}_{3}_{4}.json'.format(
+		return '{0}/S{1}/{2}/TMIV_{0}_S{1}_{3}_{4}.json'.format(
 			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName())
 
 	def startFrame(self):
@@ -303,7 +303,7 @@ class DecoderConfiguration:
 			stream.write('\n')
 
 	def wspsnrPath(self):
-		return '{0}/S{1}/{2}/{0}_S{1}_{3}_{4}.wspsnr.json'.format(
+		return '{0}/S{1}/{2}/WSPSNR_{0}_S{1}_{3}_{4}.json'.format(
 			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName())
 
 	def originalFilePath(self, camera):

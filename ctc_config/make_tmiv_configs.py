@@ -208,7 +208,7 @@ class DecoderConfiguration:
 		return self.viewNameFormat().format(self.firstSourceView())
 
 	def numberOfCodedSourceViews(self):
-		len(self.sourceCameraNames())
+		return len(self.sourceCameraNames())
 
 	def useMultipassRenderer(self):
 		return self.anchorId == 'V17'

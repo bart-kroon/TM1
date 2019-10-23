@@ -110,7 +110,7 @@ class DecoderConfiguration:
 				'J': 1080,
 				'L': 1080
 			}[self.seqId]
-		return self.viewWidth()
+		return self.viewHeight()
 
 	def viewportWidth(self):
 		if self.outputCameraName()[0] == 'p':

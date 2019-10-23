@@ -315,7 +315,7 @@ class DecoderConfiguration:
 	def wspsnrParameters(self):
 		camera = self.outputCamera()
 		config = {
-			"Version": 2.0,
+			"Version": "2.0",
 			"Projection": camera['Projection'],
 			"Original_file_path": self.originalFilePath(camera),
 			"Reconstructed_file_path": self.outputTexturePath(),

@@ -34,14 +34,12 @@
 #include <TMIV/Encoder/Encoder.h>
 
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Image/Image.h>
 
 #include <iostream>
 
 using namespace std;
 using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
-using namespace TMIV::Image;
 using namespace TMIV::Metadata;
 using namespace TMIV::ViewOptimizer;
 using namespace TMIV::DepthOccupancy;

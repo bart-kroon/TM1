@@ -9,6 +9,8 @@ add_library(MetadataLib
 	"include/TMIV/Metadata/Bitstream.h"
 	"include/TMIV/Metadata/IvSequenceParams.h"
 	"include/TMIV/Metadata/IvAccessUnitParams.h"
+	"include/TMIV/Metadata/DepthOccupancyTransform.h"
+	"include/TMIV/Metadata/DepthOccupancyTransform.hpp"
 	"include/TMIV/Metadata/ViewingSpace.h")
 
 add_library(TMIV::MetadataLib

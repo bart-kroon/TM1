@@ -61,7 +61,7 @@ private:
   static void writePatchIdInMap(const Metadata::AtlasParameters &patch,
                                 Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
                                 const Common::MVD10Frame &frame,
-                                std::uint16_t depthOccMapThreshold);
+                                const Metadata::ViewParamsVector &viewParamsVector);
 };
 } // namespace TMIV::AtlasDeconstructor
 

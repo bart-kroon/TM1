@@ -34,7 +34,6 @@
 #include <TMIV/IO/IO.h>
 
 #include <TMIV/Common/Common.h>
-#include <TMIV/Image/Image.h>
 
 #include <cassert>
 #include <fstream>
@@ -46,7 +45,6 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::Image;
 
 namespace TMIV::IO {
 auto getFullPath(const Json &config, const string &baseDirectoryField, const string &fileNameField,

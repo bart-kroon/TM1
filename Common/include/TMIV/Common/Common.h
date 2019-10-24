@@ -68,6 +68,15 @@ template <typename... Ts>
 auto overload(Ts &&... values) -> Overload<std::remove_reference_t<Ts>...> {
   return {std::forward<Ts>(values)...};
 }
+
+// The maximum level for an unsigned integer of the specified number of bits
+constexpr unsigned maxLevel(unsigned bits);
+
+// Expand an integral value to floating-point using a linear transfer function
+template <unsigned bits> float expandValue(uint16_t x);
+
+// Quantize a value using a linear transfer function
+template <unsigned bits> uint16_t quantizeValue(float x);
 } // namespace TMIV::Common
 
 #include "Common.hpp"

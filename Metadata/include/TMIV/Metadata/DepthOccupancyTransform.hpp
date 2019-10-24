@@ -38,6 +38,11 @@
 #include <TMIV/Common/Common.h>
 
 namespace TMIV::Metadata {
+namespace impl {
+// An implementation-specific minimum normalized disparity
+constexpr auto minNormDisp = 1e-3F; // 1 kilometer
+} // namespace impl
+
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams)
     : m_threshold{viewParams.depthOccMapThreshold} {}
 
@@ -70,7 +75,7 @@ DepthTransform<bits>::DepthTransform(const ViewParams &viewParams,
 
 template <unsigned bits> auto DepthTransform<bits>::expandNormDisp(uint16_t x) const -> float {
   const auto level = Common::expandValue<bits>(max(m_depthStart, x));
-  return m_normDispRange[0] + (m_normDispRange[1] - m_normDispRange[0]) * level;
+  return max(impl::minNormDisp, m_normDispRange[0] + (m_normDispRange[1] - m_normDispRange[0]) * level);
 }
 
 template <unsigned bits> auto DepthTransform<bits>::expandDepth(uint16_t x) const -> float {

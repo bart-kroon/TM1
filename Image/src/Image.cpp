@@ -35,24 +35,15 @@
 
 #include <TMIV/Common/Common.h>
 
-#include <cassert>
-#include <cmath>
-#include <cstdint>
-#include <limits>
-
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
-
-using Mat1f = Mat<float>;
-using Mat3f = Mat<Vec3f>;
 
 namespace TMIV::Image {
-auto expandTexture(const Frame<YUV420P10> &inYuv) -> Mat3f {
+auto expandTexture(const Frame<YUV420P10> &inYuv) -> Mat<Vec3f> {
   auto &Y = inYuv.getPlane(0);
   auto &U = inYuv.getPlane(1);
   auto &V = inYuv.getPlane(2);
-  Mat3f out(inYuv.getPlane(0).sizes());
+  Mat<Vec3f> out(inYuv.getPlane(0).sizes());
   const auto width = Y.width();
   const auto height = Y.height();
   constexpr auto bitDepth = 10U;
@@ -66,7 +57,7 @@ auto expandTexture(const Frame<YUV420P10> &inYuv) -> Mat3f {
   return out;
 }
 
-auto quantizeTexture(const Mat3f &in) -> Frame<YUV444P10> {
+auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
   Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
   const auto width = in.width();
   const auto height = in.height();
@@ -81,19 +72,5 @@ auto quantizeTexture(const Mat3f &in) -> Frame<YUV444P10> {
   }
 
   return outYuv;
-}
-
-auto expandDepth(const ViewParams &viewParams, const Depth16Frame &in) -> Mat<float> {
-  auto out = Mat<float>({size_t(in.getHeight()), size_t(in.getWidth())});
-  transform(begin(in.getPlane(0)), end(in.getPlane(0)), begin(out),
-            [&](uint16_t x) { return expandDepthValue<16>(viewParams, x); });
-  return out;
-}
-
-auto quantizeNormDisp16(const ViewParams &viewParams, const Mat1f &in) -> Depth16Frame {
-  auto out = Depth16Frame{int(in.width()), int(in.height())};
-  transform(begin(in), end(in), begin(out.getPlane(0)),
-            [&](float x) { return quantizeNormDispValue<16>(viewParams, x); });
-  return out;
 }
 } // namespace TMIV::Image

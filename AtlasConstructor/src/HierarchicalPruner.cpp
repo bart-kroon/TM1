@@ -34,7 +34,7 @@
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 
 #include "PrunedMesh.h"
-#include <TMIV/Image/Image.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
@@ -49,7 +49,6 @@
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
-using namespace TMIV::Image;
 using namespace std;
 
 namespace TMIV::AtlasConstructor {
@@ -124,9 +123,9 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
       if (!m_isBasicView[i]) {
+        const auto depthTransform = DepthTransform<16>{m_viewParamsVector[i]};
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
-            m_config, m_viewParamsVector[i].size, i,
-            expandDepth(m_viewParamsVector[i], views[i].second)));
+            m_config, m_viewParamsVector[i].size, i, depthTransform.expandDepth(views[i].second)));
       }
     }
   }

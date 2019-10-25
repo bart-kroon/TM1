@@ -37,6 +37,8 @@
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
 
+#include <TMIV/Common/Frame.h>
+
 namespace TMIV::Metadata {
 // Extract the occupancy transform for the specified view [and patch]
 class OccupancyTransform {

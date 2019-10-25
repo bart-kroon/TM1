@@ -100,7 +100,9 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
     const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.viewId];
     const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.viewId];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
+#ifndef NDEBUG
     const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
+#endif
     const auto inDepthTransform = DepthTransform<16>{inViewParams};
     const auto outDepthTransform = DepthTransform<10>{outViewParams, patch};
 

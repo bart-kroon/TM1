@@ -79,7 +79,7 @@ auto GroupBasedEncoder::completeAccessUnit() -> const IvAccessUnitParams & {
   auto perGroupIvAccessUnitParams = vector<const IvAccessUnitParams *>(numGroups(), nullptr);
 
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    perGroupIvAccessUnitParams.push_back(&m_encoders[groupId].completeAccessUnit());
+    perGroupIvAccessUnitParams[groupId] = &m_encoders[groupId].completeAccessUnit();
   }
 
   return mergeAccessUnitParams(perGroupIvAccessUnitParams);
@@ -168,6 +168,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
   auto &atlasParamsList = *m_ivAccessUnitParams.atlasParamsList;
   atlasParamsList.clear();
   atlasParamsList.groupIds = vector<unsigned>{};
+  atlasParamsList.atlasSizes.clear();
 
   size_t firstAtlasId = 0;
   size_t firstViewId = 0;

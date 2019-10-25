@@ -411,10 +411,10 @@ class EncoderConfiguration(DecoderConfiguration):
 				'A': 1,
 				'B': 3,
 				'C': 2,
-				'D': 4,
-				'E': 3,
-				'J': 4,
-				'L': 3
+				'D': 2,
+				'E': 2,
+				'J': 2,
+				'L': 2
 			}[self.seqId] * self.lumaSamplesPerView()
 		return 0
 
@@ -452,7 +452,18 @@ class EncoderConfiguration(DecoderConfiguration):
 		return self.seqId == 'E'
 
 	def numGroups(self):
-		return 1
+		if anchorId == 'A97' or anchorId == 'A17':
+			return {
+				'A': 1,
+				'B': 1,
+				'C': 1,
+				'D': 3,
+				'E': 3,
+				'J': 3,
+				'L': 3
+			}[self.seqId]	
+		if anchorId == 'V17': 
+			return 1
 
 	def maxObjects(self):
 		return 1
@@ -472,8 +483,8 @@ class EncoderConfiguration(DecoderConfiguration):
 			'SourceDepthBitDepth': self.sourceDepthBitDepth(),
 			'SourceCameraNames': self.sourceCameraNames(),
 			'OmafV1CompatibleFlag': self.omafV1CompatibleFlag(),
-			'EncoderMethod': 'Encoder',
-			'Encoder': self.encoder()
+			'EncoderMethod': 'GroupBasedEncoder',
+			'GroupBasedEncoder': self.encoder()
 		})
 		return config
 		

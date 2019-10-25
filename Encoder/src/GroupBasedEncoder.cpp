@@ -71,6 +71,7 @@ void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams)
 
 void GroupBasedEncoder::pushFrame(MVD16Frame views) {
   for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
+    printf("Processing G%d : \n", groupId);
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
 }
@@ -101,12 +102,119 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
     -> Grouping {
   auto grouping = Grouping{};
 
-  for (size_t viewId = 0; viewId < ivSequenceParams.viewParamsList.size(); ++viewId) {
-    // This is a stub. To be implemented.
-    const auto groupId = viewId % numGroups();
-    grouping.emplace_back(groupId, viewId);
+  int m_numberOfGroups = ivSequenceParams.numGroups;
+  auto cameras = ivSequenceParams.viewParamsList;
+  // Compute axial ranges and find the dominant one
+  vector<float> Tx, Ty, Tz;
+
+  for (int camIndex = 0; camIndex < cameras.size(); camIndex++) {
+    Tx.push_back(cameras[camIndex].position[0]);
+    Ty.push_back(cameras[camIndex].position[1]);
+    Tz.push_back(cameras[camIndex].position[2]);
+  }
+  float xMax = *std::max_element(Tx.begin(), Tx.end());
+  float xMin = *std::min_element(Tx.begin(), Tx.end());
+  float yMax = *std::max_element(Ty.begin(), Ty.end());
+  float yMin = *std::min_element(Ty.begin(), Ty.end());
+  float zMax = *std::max_element(Tz.begin(), Tz.end());
+  float zMin = *std::min_element(Tz.begin(), Tz.end());
+
+  float xRange = xMax - xMin;
+  float yRange = yMax - yMin;
+  float zRange = zMax - zMin;
+  int dominantAxis;
+  if (zRange >= xRange & zRange >= yRange)
+    dominantAxis = 2;
+  else if (yRange >= xRange & yRange >= zRange)
+    dominantAxis = 1;
+  else
+    dominantAxis = 0;
+
+  // Select views per group
+  vector<Metadata::ViewParams> viewsPool;
+  vector<uint8_t> viewsLabels, viewsInGroup;
+  vector<int> numViewsPerGroup;
+  float T0[3];
+  for (int camIndex = 0; camIndex < cameras.size(); camIndex++) {
+    viewsPool.push_back(cameras[camIndex]);
+    viewsLabels.push_back(camIndex);
   }
 
+  for (int gIndex = 0; gIndex < m_numberOfGroups; gIndex++) {
+    viewsInGroup.clear();
+    Metadata::ViewParamsList camerasInGroup, camerasOutGroup;
+    if (gIndex < m_numberOfGroups - 1) {
+      numViewsPerGroup.push_back(std::floor(cameras.size() / m_numberOfGroups));
+      // select max axial position for the group and find nearest cameras
+      if (dominantAxis == 0) {
+        T0[0] = *std::max_element(Tx.begin(), Tx.end());
+        T0[1] = std::accumulate(Ty.begin(), Ty.end(), 0.0) / Ty.size();
+        T0[2] = std::accumulate(Tz.begin(), Tz.end(), 0.0) / Tz.size();
+      } else if (dominantAxis == 1) {
+        T0[0] = std::accumulate(Tx.begin(), Tx.end(), 0.0) / Tx.size();
+        T0[1] = *std::max_element(Ty.begin(), Ty.end());
+        T0[2] = std::accumulate(Tz.begin(), Tz.end(), 0.0) / Tz.size();
+      } else {
+        T0[0] = std::accumulate(Tx.begin(), Tx.end(), 0.0) / Tx.size();
+        T0[1] = std::accumulate(Ty.begin(), Ty.end(), 0.0) / Ty.size();
+        T0[2] = *std::max_element(Tz.begin(), Tz.end());
+      }
+      vector<float> distance;
+      for (size_t id = 0; id < viewsPool.size(); ++id)
+        distance.push_back(sqrt(std::pow(viewsPool[id].position[0] - T0[0], 2) +
+                                std::pow(viewsPool[id].position[1] - T0[1], 2) +
+                                std::pow(viewsPool[id].position[2] - T0[2], 2)));
+      // ascending order
+      vector<size_t> sortedCamerasId(viewsPool.size());
+      iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
+      sort(sortedCamerasId.begin(), sortedCamerasId.end(),
+           [&distance](size_t i1, size_t i2) { return distance[i1] < distance[i2]; });
+      for (int camIndex = 0; camIndex < numViewsPerGroup[gIndex]; camIndex++)
+        camerasInGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
+      // update the viewsPool
+      Tx.clear();
+      Ty.clear();
+      Tz.clear();
+      camerasOutGroup.clear();
+      for (int camIndex = numViewsPerGroup[gIndex]; camIndex < viewsPool.size(); camIndex++) {
+        camerasOutGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
+        Tx.push_back(viewsPool[sortedCamerasId[camIndex]].position[0]);
+        Ty.push_back(viewsPool[sortedCamerasId[camIndex]].position[1]);
+        Tz.push_back(viewsPool[sortedCamerasId[camIndex]].position[2]);
+      }
+
+      printf("Views (0-based) Selected for G%d : ", gIndex);
+      for (auto i = 0; i < camerasInGroup.size(); i++) {
+        printf("v%d, ", viewsLabels[sortedCamerasId[i]]);
+        viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
+      }
+      printf("\n");
+
+      vector<uint8_t> viewLabelsTemp;
+      for (auto i = camerasInGroup.size(); i < viewsLabels.size(); i++)
+        viewLabelsTemp.push_back(viewsLabels[sortedCamerasId[i]]);
+      viewsLabels.assign(viewLabelsTemp.begin(), viewLabelsTemp.end());
+
+      viewsPool.clear();
+      for (int camIndex = 0; camIndex < camerasOutGroup.size(); camIndex++)
+        viewsPool.push_back(camerasOutGroup[camIndex]);
+    } else {
+      camerasInGroup.clear();
+      numViewsPerGroup.push_back(
+          cameras.size() - (m_numberOfGroups - 1) * std::floor(cameras.size() / m_numberOfGroups));
+      for (int camIndex = 0; camIndex < viewsPool.size(); camIndex++)
+        camerasInGroup.push_back(viewsPool[camIndex]);
+
+      printf("Views (0-based) Selected for G%d : ", gIndex);
+      for (auto i = 0; i < camerasInGroup.size(); i++) {
+        printf("v%d, ", viewsLabels[i]);
+        viewsInGroup.push_back(viewsLabels[i]);
+      }
+      printf("\n");
+    }
+    for (size_t viewId = 0; viewId < viewsInGroup.size(); ++viewId) 
+		grouping.emplace_back(gIndex, viewsInGroup[viewId]);
+  }
   return grouping;
 }
 

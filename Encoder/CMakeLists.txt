@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(EncoderLib
     "src/Encoder.cpp"
+	"src/GroupBasedEncoder.cpp"
 	"src/Encoder.reg.hpp"
 	"include/TMIV/Encoder/IEncoder.h"
-    "include/TMIV/Encoder/Encoder.h")
+    "include/TMIV/Encoder/Encoder.h"
+	"include/TMIV/Encoder/GroupBasedEncoder.h")
 
 add_library(TMIV::EncoderLib
 	ALIAS EncoderLib)

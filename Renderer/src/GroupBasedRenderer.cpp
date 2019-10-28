@@ -50,6 +50,7 @@ GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &compone
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode);
 }
 
+namespace {
 template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
 void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, Fn Func) {
   for (; i1 != end1; ++i1, ++i2, ++i3, ++i4, ++dest) {
@@ -57,154 +58,162 @@ void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest
   }
 }
 
-int mergeMode;
-std::vector<std::size_t> m_numberOfViewsPerPass;
-vector<unsigned int> m_selectedGViewsPass, m_patchesGViewId;
+struct GroupBasedRendererHelper {
+  int mergeMode;
+  vector<size_t> numberOfViewsPerPass;
+  vector<unsigned int> selectedGViewsPass;
+  vector<unsigned int> patchesGViewId;
 
-auto filterGMergeDepth(uint16_t i, uint16_t j) -> uint16_t {
-  if (i > 0) {
-    if (i >= j) { // Checking depth
+  auto filterGMergeDepth(uint16_t i, uint16_t j) const -> uint16_t {
+    if (i > 0) {
+      if (i >= j) { // Checking depth
+        return i;
+      }
+      // conflict
+      switch (mergeMode) {
+      case 0:
+        return 0; // return 0 values and let the inpainter fill them
+      case 1:
+        return i; // fill from the low-pass synthesis results which are in the
+                  // background
+      case 2:
+        return j; // 2 fill from the high-pass synthesis results which are in
+                  // the foreground
+      default:
+        return 0;
+      }
+    }
+    return j;
+  }
+
+  auto filterGMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) const -> uint16_t {
+    if (i > 0) {
+      if (id >= jd) { // Checking depth
+        return i;
+      }
+      // conflict
+      switch (mergeMode) {
+      case 0:
+        return 0; // return 0 values and let the inpainter fill them
+      case 1:
+        return i; // fill from the low-pass synthesis results which are in the
+                  // background
+      case 2:
+        return j; // 2 fill from the high-pass synthesis results which are in
+                  // the foreground
+      default:
+        return 0;
+      }
+    }
+    return j;
+  }
+
+  auto filterGMaps(uint16_t i) const -> uint16_t {
+    if (i == unusedPatchId) {
       return i;
     }
-    // conflict
-    switch (mergeMode) {
-    case 0:
-      return 0; // return 0 values and let the inpainter fill them
-    case 1:
-      return i; // fill from the low-pass synthesis results which are in the
-                // background
-    case 2:
-      return j; // 2 fill from the high-pass synthesis results which are in
-                // the foreground
-    default:
-      return 0;
+    bool selectedPixel = false;
+    for (auto selectedView : selectedGViewsPass) {
+      if (patchesGViewId[i] == selectedView) {
+        selectedPixel = true;
+      }
     }
-  }
-  return j;
-}
-
-auto filterGMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) -> uint16_t {
-  if (i > 0) {
-    if (id >= jd) { // Checking depth
-      return i;
+    if (!selectedPixel) {
+      return unusedPatchId;
     }
-    // conflict
-    switch (mergeMode) {
-    case 0:
-      return 0; // return 0 values and let the inpainter fill them
-    case 1:
-      return i; // fill from the low-pass synthesis results which are in the
-                // background
-    case 2:
-      return j; // 2 fill from the high-pass synthesis results which are in
-                // the foreground
-    default:
-      return 0;
-    }
-  }
-  return j;
-}
-
-auto filterGMaps(uint16_t i) -> uint16_t {
-  if (i == unusedPatchId) {
     return i;
   }
-  bool selectedPixel = false;
-  for (auto selectedView : m_selectedGViewsPass) {
-    if (m_patchesGViewId[i] == selectedView) {
-      selectedPixel = true;
-    }
-  }
-  if (!selectedPixel) {
-    return unusedPatchId;
-  }
-  return i;
-}
 
-auto GroupBasedRenderer::sortGViews(const vector<vector<uint8_t>> &viewsPerGroup, const ViewParamsVector &cameras,
-                const ViewParams &target) const -> vector<size_t> {
-  float x_target = target.position[0];
-  float y_target = target.position[1];
-  float z_target = target.position[2];
-  float yaw_target = target.rotation[0];
-  float pitch_target = target.rotation[1];
-  vector<vector<size_t>> sortedGCamerasId;
-  vector<float> distanceG;
-  size_t camSum = 0;
-  for (int gIndex = 0; gIndex < viewsPerGroup.size(); gIndex++) {
-    vector<uint8_t> views = viewsPerGroup[gIndex];
-    vector<float> distance;
-    vector<float> angle;
-    vector<float> angleWeight;
-    for (int id = 0; id < views.size(); id++) {
-      distance.push_back(sqrt(square(cameras[views[id]].position[0] - x_target) +
-                              square(cameras[views[id]].position[1] - y_target) +
-                              square(cameras[views[id]].position[2] - z_target)));
-      auto yaw_camera = cameras[views[id]].rotation[0];
-      auto pitch_camera = cameras[views[id]].rotation[1];
-      // Compute Angle between the camera and target in degree unit
-      angle.push_back(1 / radperdeg *
-                      acos(sin(pitch_camera * radperdeg) * sin(pitch_target * radperdeg) +
-                           cos(pitch_camera * radperdeg) * cos(pitch_target * radperdeg) *
-                               cos((yaw_camera - yaw_target) * radperdeg)));
-      // to assure angle is ranging from -180 to 180 degree
-      if (angle[id] > halfCycle) {
-        angle[id] = angle[id] - fullCycle;
+  // NOTE: Mutates numberOfViewsPerPass
+  auto sortGViews(const vector<vector<uint8_t>> &viewsPerGroup, const ViewParamsVector &cameras,
+                  const ViewParams &target) /*mutable*/ -> vector<size_t> {
+    float x_target = target.position[0];
+    float y_target = target.position[1];
+    float z_target = target.position[2];
+    float yaw_target = target.rotation[0];
+    float pitch_target = target.rotation[1];
+    vector<vector<size_t>> sortedGCamerasId;
+    vector<float> distanceG;
+    size_t camSum = 0;
+    for (int gIndex = 0; gIndex < viewsPerGroup.size(); gIndex++) {
+      vector<uint8_t> views = viewsPerGroup[gIndex];
+      vector<float> distance;
+      vector<float> angle;
+      vector<float> angleWeight;
+      for (int id = 0; id < views.size(); id++) {
+        distance.push_back(sqrt(square(cameras[views[id]].position[0] - x_target) +
+                                square(cameras[views[id]].position[1] - y_target) +
+                                square(cameras[views[id]].position[2] - z_target)));
+        auto yaw_camera = cameras[views[id]].rotation[0];
+        auto pitch_camera = cameras[views[id]].rotation[1];
+        // Compute Angle between the camera and target in degree unit
+        angle.push_back(1 / radperdeg *
+                        acos(sin(pitch_camera * radperdeg) * sin(pitch_target * radperdeg) +
+                             cos(pitch_camera * radperdeg) * cos(pitch_target * radperdeg) *
+                                 cos((yaw_camera - yaw_target) * radperdeg)));
+        // to assure angle is ranging from -180 to 180 degree
+        if (angle[id] > halfCycle) {
+          angle[id] = angle[id] - fullCycle;
+        }
+
+        // Introduce AngleWeight as a simple triangle function (with value of 1 when
+        // angle is 0 & value of 0 when angle is 180)
+        if (angle[id] > 0.F) {
+          angleWeight.push_back(-1.F / halfCycle * angle[id] + 1.F);
+        } else {
+          angleWeight.push_back(1.F / halfCycle * angle[id] + 1.F);
+        }
       }
-
-      // Introduce AngleWeight as a simple triangle function (with value of 1 when
-      // angle is 0 & value of 0 when angle is 180)
-      if (angle[id] > 0.F) {
-        angleWeight.push_back(-1.F / halfCycle * angle[id] + 1.F);
-      } else {
-        angleWeight.push_back(1.F / halfCycle * angle[id] + 1.F);
-      }
+      // Find the sorted cameras indices per group
+      vector<size_t> sortedCamerasId(views.size());
+      iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
+      sort(sortedCamerasId.begin(), sortedCamerasId.end(),
+           [&distance, &angleWeight](size_t i1, size_t i2) {
+             if (angleWeight[i1] == angleWeight[i2]) {
+               return distance[i1] < distance[i2];
+             }
+             return distance[i1] * (1.0 - angleWeight[i1]) < distance[i2] * (1.0 - angleWeight[i2]);
+           });
+      distanceG.push_back(distance[sortedCamerasId[0]]);
+      for (int index = 0; index < sortedCamerasId.size(); index++)
+        sortedCamerasId[index] = sortedCamerasId[index] + camSum;
+      sortedGCamerasId.push_back(sortedCamerasId);
+      camSum = camSum + sortedCamerasId.size();
     }
-    // Find the sorted cameras indices per group
-    vector<size_t> sortedCamerasId(views.size());
-    iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
-    sort(sortedCamerasId.begin(), sortedCamerasId.end(),
-         [&distance, &angleWeight](size_t i1, size_t i2) {
-           if (angleWeight[i1] == angleWeight[i2]) {
-             return distance[i1] < distance[i2];
-           }
-           return distance[i1] * (1.0 - angleWeight[i1]) < distance[i2] * (1.0 - angleWeight[i2]);
-         });
-    distanceG.push_back(distance[sortedCamerasId[0]]);
-    for (int index = 0; index < sortedCamerasId.size(); index++)
-      sortedCamerasId[index] = sortedCamerasId[index] + camSum;
-    sortedGCamerasId.push_back(sortedCamerasId);
-    camSum = camSum + sortedCamerasId.size();
-  }
-  // Find the nearest group
-  vector<uint8_t> sortedDistanceId(distanceG.size());
-  iota(sortedDistanceId.begin(), sortedDistanceId.end(), 0); // initalization
-  sort(sortedDistanceId.begin(), sortedDistanceId.end(),
-       [&distanceG](size_t i1, size_t i2) { return distanceG[i1] < distanceG[i2]; });
+    // Find the nearest group
+    vector<uint8_t> sortedDistanceId(distanceG.size());
+    iota(sortedDistanceId.begin(), sortedDistanceId.end(), 0); // initalization
+    sort(sortedDistanceId.begin(), sortedDistanceId.end(),
+         [&distanceG](size_t i1, size_t i2) { return distanceG[i1] < distanceG[i2]; });
 
-  vector<size_t> sortedGCamerasIdFinal;
-  camSum = 0;
-  for (auto dIndex : sortedDistanceId) {
-    vector<size_t> views = sortedGCamerasId[dIndex];
-    for (uint8_t vIndex = 0; vIndex < views.size(); vIndex++)
-      sortedGCamerasIdFinal.push_back(views[vIndex]);
-    camSum = camSum + views.size();
-    m_numberOfViewsPerPass.push_back(camSum);
+    vector<size_t> sortedGCamerasIdFinal;
+    camSum = 0;
+    for (auto dIndex : sortedDistanceId) {
+      vector<size_t> views = sortedGCamerasId[dIndex];
+      for (uint8_t vIndex = 0; vIndex < views.size(); vIndex++)
+        sortedGCamerasIdFinal.push_back(views[vIndex]);
+      camSum = camSum + views.size();
+      numberOfViewsPerPass.push_back(camSum);
+    }
+    return sortedGCamerasIdFinal;
   }
-  return sortedGCamerasIdFinal;
-}
+};
+} // namespace
 
 auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                                      const IvSequenceParams &ivSequenceParams,
                                      const IvAccessUnitParams &ivAccessUnitParams,
                                      const ViewParams &target) const -> Texture444Depth16Frame {
+  GroupBasedRendererHelper helper;
+
   //////////////////
   // Initialization
   //////////////////
-  if (ivSequenceParams.depthLowQualityFlag)
-    mergeMode = 1;
-  else
-    mergeMode = 2;
+  if (ivSequenceParams.depthLowQualityFlag) {
+    helper.mergeMode = 1;
+  } else {
+    helper.mergeMode = 2;
+  }
   auto groupIds = vector<unsigned>(atlas.size(), 0);
   if (ivAccessUnitParams.atlasParamsList->groupIds) {
     groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
@@ -227,7 +236,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
   for (const auto &patch : atlasParamsList) {
-    m_patchesGViewId.push_back(patch.viewId);
+    helper.patchesGViewId.push_back(patch.viewId);
   } // initialize patchesViewId
 
   // Find views per group
@@ -258,24 +267,24 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   // Ordering views based on their distance & angle to target view
   ///////////////
   vector<size_t> sortedCamerasId(ivSequenceParams.viewParamsList.size());
-  sortedCamerasId = sortGViews(viewsPerGroup, ivSequenceParams.viewParamsList, target);
-  if (m_numberOfViewsPerPass.size() == 0) // in case of numberOfGroups = 1
-    m_numberOfViewsPerPass.push_back(ivSequenceParams.viewParamsList.size());
+  sortedCamerasId = helper.sortGViews(viewsPerGroup, ivSequenceParams.viewParamsList, target);
+  if (helper.numberOfViewsPerPass.size() == 0) // in case of numberOfGroups = 1
+    helper.numberOfViewsPerPass.push_back(ivSequenceParams.viewParamsList.size());
 
   // Produce the individual pass synthesis results
   for (int passId = 0; passId < numberOfPasses; passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
-    m_selectedGViewsPass.clear();
+    helper.selectedGViewsPass.clear();
     for (size_t id = 0; id < ivSequenceParams.viewParamsList.size(); ++id) {
-      if (id < m_numberOfViewsPerPass[passId]) {
-        m_selectedGViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
+      if (id < helper.numberOfViewsPerPass[passId]) {
+        helper.selectedGViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
       }
     }
 
     printf("Selected Optimized Views in Pass %d : ", passId);
-    for (auto i = 0; i < m_selectedGViewsPass.size(); i++) {
-      printf("o%d, ", m_selectedGViewsPass[i]);
+    for (auto i = 0; i < helper.selectedGViewsPass.size(); i++) {
+      printf("o%d, ", helper.selectedGViewsPass[i]);
     }
     printf("\n");
 
@@ -284,7 +293,8 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
     /////////////////
     for (size_t atlasId = 0; atlasId < maps.size(); ++atlasId) {
       transform(maps[atlasId].getPlane(0).begin(), maps[atlasId].getPlane(0).end(),
-                mapsPass[passId][atlasId].getPlane(0).begin(), filterGMaps);
+                mapsPass[passId][atlasId].getPlane(0).begin(),
+                [&helper](auto i) { return helper.filterGMaps(i); });
     }
 
     ////////////////
@@ -303,7 +313,8 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
       transform(viewportPass[passId - 1].second.getPlane(0).begin(),
                 viewportPass[passId - 1].second.getPlane(0).end(),
                 mergedviewport.second.getPlane(0).begin(),
-                mergedviewport.second.getPlane(0).begin(), filterGMergeDepth);
+                mergedviewport.second.getPlane(0).begin(),
+                [&helper](auto i, auto j) { return helper.filterGMergeDepth(i, j); });
 
       for (auto i = 0; i < viewport.first.getNumberOfPlanes(); ++i) {
         my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
@@ -311,7 +322,10 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
                      mergedviewport.first.getPlane(i).begin(),
                      viewportPass[passId - 1].second.getPlane(0).begin(),
                      mergedviewport.second.getPlane(0).begin(),
-                     mergedviewport.first.getPlane(i).begin(), filterGMergeTexture);
+                     mergedviewport.first.getPlane(i).begin(),
+                     [&helper](auto i, auto j, auto id, auto jd) {
+                       return helper.filterGMergeTexture(i, j, id, jd);
+                     });
       }
     }
     viewport = mergedviewport; // Final Merged

@@ -146,6 +146,7 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
     if (gIndex < m_numberOfGroups - 1) {
       numViewsPerGroup.push_back(std::floor(cameras.size() / m_numberOfGroups));
       // select max axial position for the group and find nearest cameras
+      /*
       if (dominantAxis == 0) {
         T0[0] = *std::max_element(Tx.begin(), Tx.end());
         T0[1] = std::accumulate(Ty.begin(), Ty.end(), 0.0) / Ty.size();
@@ -159,6 +160,17 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
         T0[1] = std::accumulate(Ty.begin(), Ty.end(), 0.0) / Ty.size();
         T0[2] = *std::max_element(Tz.begin(), Tz.end());
       }
+	  */
+      int maxElementIndex;
+      if (dominantAxis == 0)
+        maxElementIndex = std::max_element(Tx.begin(), Tx.end())-Tx.begin();
+      else if (dominantAxis == 1)
+        maxElementIndex = std::max_element(Ty.begin(), Ty.end()) - Ty.begin();
+      else
+        maxElementIndex = std::max_element(Tz.begin(), Tz.end()) - Tz.begin();
+      T0[0] = Tx[maxElementIndex];
+      T0[1] = Ty[maxElementIndex];
+      T0[2] = Tz[maxElementIndex];
       vector<float> distance;
       for (size_t id = 0; id < viewsPool.size(); ++id)
         distance.push_back(sqrt(std::pow(viewsPool[id].position[0] - T0[0], 2) +

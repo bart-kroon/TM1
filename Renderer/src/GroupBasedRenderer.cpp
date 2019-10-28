@@ -48,13 +48,6 @@ GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &compone
   m_synthesizer =
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode);
-  if (auto subnode = rootNode.require("depthLowQualityFlag")) {
-    bool depthLowQualityFlag = subnode.asBool();
-    if (depthLowQualityFlag)
-      m_mergeMode = 1;
-    else
-      m_mergeMode = 2;
-  }
 }
 
 template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
@@ -208,7 +201,10 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   //////////////////
   // Initialization
   //////////////////
-  mergeMode = m_mergeMode;
+  if (ivSequenceParams.depthLowQualityFlag)
+    mergeMode = 1;
+  else
+    mergeMode = 2;
   auto groupIds = vector<unsigned>(atlas.size(), 0);
   if (ivAccessUnitParams.atlasParamsList->groupIds) {
     groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;

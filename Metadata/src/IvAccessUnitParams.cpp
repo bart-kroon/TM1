@@ -156,8 +156,8 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
       const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
-      if (ivSequenceParams.maxObjects > 1) {
-        patch.objectId = unsigned(bitstream.getUVar(ivSequenceParams.maxObjects));
+      if (ivSequenceParams.maxEntities > 1) {
+        patch.objectId = unsigned(bitstream.getUVar(ivSequenceParams.maxEntities));
       }
 
       patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
@@ -241,9 +241,9 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
 
         bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
 
-        if (ivSequenceParams.maxObjects > 1) {
+        if (ivSequenceParams.maxEntities > 1) {
           verify(patch.objectId);
-          bitstream.putUVar(*patch.objectId, ivSequenceParams.maxObjects);
+          bitstream.putUVar(*patch.objectId, ivSequenceParams.maxEntities);
         }
 
         bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());

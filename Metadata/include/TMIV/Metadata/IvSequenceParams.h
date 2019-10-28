@@ -187,8 +187,8 @@ struct IvSequenceParams {
   // In specification: num_groups_minus1
   unsigned numGroups{1};
 
-  // In specification: max_objects_minus1
-  unsigned maxObjects{1};
+  // In specification: max_entities_minus1
+  unsigned maxEntities{1};
 
   // In specification: depth_occ_map_threshold_num_bits_minus8
   unsigned depthOccMapThresholdNumBits{10};

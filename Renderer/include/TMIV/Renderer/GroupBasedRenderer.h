@@ -31,21 +31,34 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
-#include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/Synthesizer.h>
+#ifndef _TMIV_RENDERER_GROUPBASEDRENDERER_H_
+#define _TMIV_RENDERER_GROUPBASEDRENDERER_H_
+
+#include <TMIV/Renderer/IInpainter.h>
+#include <TMIV/Renderer/IRenderer.h>
+#include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {
-inline void registerComponents() {
-  Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
-  Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<GroupBasedRenderer>("GroupBasedRenderer");
-}
+// Advanced GroupBased implementation of IRenderer
+class GroupBasedRenderer : public IRenderer {
+private:
+  std::unique_ptr<ISynthesizer> m_synthesizer;
+  std::unique_ptr<IInpainter> m_inpainter;
+
+public:
+  GroupBasedRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+  GroupBasedRenderer(const GroupBasedRenderer &) = delete;
+  GroupBasedRenderer(GroupBasedRenderer &&) = default;
+  GroupBasedRenderer &operator=(const GroupBasedRenderer &) = delete;
+  GroupBasedRenderer &operator=(GroupBasedRenderer &&) = default;
+  ~GroupBasedRenderer() override = default;
+
+  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                   const Metadata::IvSequenceParams &ivSequenceParams,
+                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                   const Metadata::ViewParams &target) const
+      -> Common::Texture444Depth16Frame override;
+};
 } // namespace TMIV::Renderer
+
+#endif

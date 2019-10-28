@@ -216,7 +216,7 @@ class DecoderConfiguration:
 	def rendererMethod(self):
 		if self.useMultipassRenderer():
 			return 'MultipassRenderer'
-		return 'Renderer'
+		return 'GroupBasedRenderer'
 
 	def renderer(self):
 		config = {

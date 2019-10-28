@@ -6,6 +6,7 @@ find_package(Threads REQUIRED)
 add_library(RendererLib
     "src/Renderer.cpp"
     "src/MultipassRenderer.cpp"
+    "src/GroupBasedRenderer.cpp"
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
 	"src/reprojectPoints.cpp"
@@ -15,6 +16,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/ISynthesizer.h"
     "include/TMIV/Renderer/Renderer.h"
     "include/TMIV/Renderer/MultipassRenderer.h"
+    "include/TMIV/Renderer/GroupBasedRenderer.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"
 	"include/TMIV/Renderer/reprojectPoints.h"

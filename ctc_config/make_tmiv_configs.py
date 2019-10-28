@@ -453,15 +453,10 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def numGroups(self):
 		if anchorId == 'A97' or anchorId == 'A17':
-			return {
-				'A': 1,
-				'B': 1,
-				'C': 1,
-				'D': 3,
-				'E': 3,
-				'J': 3,
-				'L': 3
-			}[self.seqId]	
+			if self.firstSourceCamera()['Projection'] == 'Perspective':
+				return 3
+			return 1	
+			[self.seqId]	
 		if anchorId == 'V17': 
 			return 1
 

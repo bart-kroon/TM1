@@ -44,6 +44,11 @@ class GroupBasedRenderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
+  int m_mergeMode;
+ // auto filterGMergeDepth(uint16_t i, uint16_t j) -> uint16_t;
+  auto sortGViews(const std::vector<std::vector<std::uint8_t>> &viewsPerGroup, const Metadata::ViewParamsVector &cameras,
+                  const Metadata::ViewParams &target) const
+	  -> std::vector<std::size_t>; 
 
 public:
   GroupBasedRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);

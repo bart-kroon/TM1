@@ -48,6 +48,13 @@ GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &compone
   m_synthesizer =
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode);
+  if (auto subnode = rootNode.require("depthLowQualityFlag")) {
+    bool depthLowQualityFlag = subnode.asBool();
+    if (depthLowQualityFlag)
+      m_mergeMode = 1;
+    else
+      m_mergeMode = 2;
+  }
 }
 
 template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
@@ -57,7 +64,10 @@ void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest
   }
 }
 
-int mergeMode = 2;
+int mergeMode;
+std::vector<std::size_t> m_numberOfViewsPerPass;
+vector<unsigned int> m_selectedGViewsPass, m_patchesGViewId;
+
 auto filterGMergeDepth(uint16_t i, uint16_t j) -> uint16_t {
   if (i > 0) {
     if (i >= j) { // Checking depth
@@ -102,14 +112,13 @@ auto filterGMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) -> ui
   return j;
 }
 
-vector<unsigned int> selectedGViewsPass, patchesGViewId;
 auto filterGMaps(uint16_t i) -> uint16_t {
   if (i == unusedPatchId) {
     return i;
   }
   bool selectedPixel = false;
-  for (auto selectedView : selectedGViewsPass) {
-    if (patchesGViewId[i] == selectedView) {
+  for (auto selectedView : m_selectedGViewsPass) {
+    if (m_patchesGViewId[i] == selectedView) {
       selectedPixel = true;
     }
   }
@@ -119,12 +128,8 @@ auto filterGMaps(uint16_t i) -> uint16_t {
   return i;
 }
 
-vector<uint8_t> groupIds;
-vector<uint8_t> numberOfViewsPerPass;
-
-auto sortGViews(const vector<vector<uint8_t>> &viewsPerGroup, 
-				const ViewParamsVector &cameras,
-                const ViewParams &target) -> vector<size_t> {
+auto GroupBasedRenderer::sortGViews(const vector<vector<uint8_t>> &viewsPerGroup, const ViewParamsVector &cameras,
+                const ViewParams &target) const -> vector<size_t> {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];
@@ -191,7 +196,7 @@ auto sortGViews(const vector<vector<uint8_t>> &viewsPerGroup,
     for (uint8_t vIndex = 0; vIndex < views.size(); vIndex++)
       sortedGCamerasIdFinal.push_back(views[vIndex]);
     camSum = camSum + views.size();
-    numberOfViewsPerPass.push_back(camSum);
+    m_numberOfViewsPerPass.push_back(camSum);
   }
   return sortedGCamerasIdFinal;
 }
@@ -203,18 +208,12 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   //////////////////
   // Initialization
   //////////////////
-  //const auto &patches = ivAccessUnitParams.atlasParamsList;
-  // const auto &groupId = inAccessUnitParams.atlasParamsList->groupIds;
-  if (ivSequenceParams.numGroups>1)
-	groupIds = {0, 0, 1, 1, 2, 2};// Need to be updated from the atlas metadata ////////////////////////////////////////
-
-  if (groupIds.size() == 0)
-    groupIds.assign(atlas.size(), 0);
+  mergeMode = m_mergeMode;
+  auto groupIds = vector<unsigned>(atlas.size(), 0);
+  if (ivAccessUnitParams.atlasParamsList->groupIds) {
+    groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
+  }
   int numberOfPasses = ivSequenceParams.numGroups;
-  if (ivSequenceParams.depthLowQualityFlag)
-    mergeMode = 1;
-  else
-    mergeMode = 2;
 
   Texture444Depth16Frame viewport;
   vector<Texture444Depth16Frame> viewportPass(numberOfPasses);
@@ -232,11 +231,11 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
   for (const auto &patch : atlasParamsList) {
-    patchesGViewId.push_back(patch.viewId);
+    m_patchesGViewId.push_back(patch.viewId);
   } // initialize patchesViewId
 
   // Find views per group
-  vector<vector<uint8_t>> viewsPerGroup;// {{2, 3, 1}, {0, 4, 5}, {6, 7, 8, 9}};
+  vector<vector<uint8_t>> viewsPerGroup; // {{2, 3, 1}, {0, 4, 5}, {6, 7, 8, 9}};
   for (int gIndex = 0; gIndex < ivSequenceParams.numGroups; gIndex++) {
     vector<uint8_t> atlasIds;
     for (int aIndex = 0; aIndex < groupIds.size(); aIndex++) {
@@ -263,24 +262,24 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   // Ordering views based on their distance & angle to target view
   ///////////////
   vector<size_t> sortedCamerasId(ivSequenceParams.viewParamsList.size());
-  sortedCamerasId = sortGViews(viewsPerGroup,ivSequenceParams.viewParamsList, target);
-  if (numberOfViewsPerPass.size() == 0) // in case of numberOfGroups = 1
-    numberOfViewsPerPass.push_back(ivSequenceParams.viewParamsList.size());
+  sortedCamerasId = sortGViews(viewsPerGroup, ivSequenceParams.viewParamsList, target);
+  if (m_numberOfViewsPerPass.size() == 0) // in case of numberOfGroups = 1
+    m_numberOfViewsPerPass.push_back(ivSequenceParams.viewParamsList.size());
 
   // Produce the individual pass synthesis results
   for (int passId = 0; passId < numberOfPasses; passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
-    selectedGViewsPass.clear();
+    m_selectedGViewsPass.clear();
     for (size_t id = 0; id < ivSequenceParams.viewParamsList.size(); ++id) {
-      if (id < numberOfViewsPerPass[passId]) {
-        selectedGViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
+      if (id < m_numberOfViewsPerPass[passId]) {
+        m_selectedGViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
       }
     }
 
-	printf("Selected Optimized Views in Pass %d : ", passId);
-    for (auto i = 0; i < selectedGViewsPass.size(); i++) {
-      printf("o%d, ", selectedGViewsPass[i]);
+    printf("Selected Optimized Views in Pass %d : ", passId);
+    for (auto i = 0; i < m_selectedGViewsPass.size(); i++) {
+      printf("o%d, ", m_selectedGViewsPass[i]);
     }
     printf("\n");
 

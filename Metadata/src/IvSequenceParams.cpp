@@ -362,7 +362,7 @@ auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams
   }
 
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
-  cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
+  cout << "ivs_sp_extension_present_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
   return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
                           numGroups,           maxEntities,    depthOccMapThresholdNumBits,
                           viewingSpace};

@@ -48,38 +48,39 @@ enum class PatchRotation { none, swap, rot90, rot180, rot270, mirror, mrot90, mr
 class InputBitstream;
 class OutputBitstream;
 
-// Data type that corresponds to an entry of atlas_params of specification
+// Data type that corresponds to the [ a ][ p ]-indiced entries of atlas_params( a ) and
+// depth_occupancy( a, p ) for a single (a, p)-combination
 struct AtlasParameters {
-  // In specification: atlas_id[ i ]
+  // In specification: atlas_id[ i ] (= a)
   uint8_t atlasId{};
 
-  // In specification: view_id[ a ][ i ]
+  // In specification: view_id[ a ][ p ]
   unsigned viewId{};
 
-  // In specification: entity_id[ a ][ i ]
+  // In specification: entity_id[ a ][ p ]
   std::optional<unsigned> entityId{};
 
-  // In specification: patch_width_in_view_minus1[ a ][ i ]
-  // In specification: patch_height_in_view_minus1[ a ][ i ]
+  // In specification: patch_width_in_view_minus1[ a ][ p ]
+  // In specification: patch_height_in_view_minus1[ a ][ p ]
   Common::Vec2i patchSizeInView;
 
-  // In specification: patch_pos_in_view_x[ a ][ i ]
-  // In specification: patch_pos_in_view_y[ a ][ i ]
+  // In specification: patch_pos_in_view_x[ a ][ p ]
+  // In specification: patch_pos_in_view_y[ a ][ p ]
   Common::Vec2i posInView;
 
-  // In specification: patch_pos_in_atlas_x[ a ][ i ]
-  // In specification: patch_pos_in_atlas_y[ a ][ i ]
+  // In specification: patch_pos_in_atlas_x[ a ][ p ]
+  // In specification: patch_pos_in_atlas_y[ a ][ p ]
   Common::Vec2i posInAtlas;
 
-  // In specification: patch_rotation[ a ][ i ]
+  // In specification: patch_rotation[ a ][ p ]
   PatchRotation rotation{};
 
-  // In specification: depth_threshold_present_flag[ a ][ i ]
-  // In specification: depth_occ_map_threshold[ a ][ i ]
+  // In specification: depth_threshold_present_flag[ a ][ p ]
+  // In specification: depth_occ_map_threshold[ a ][ p ]
   std::optional<uint16_t> depthOccMapThreshold;
 
-  // In specification: depth_start_present_flag[ a ][ i ]
-  // In specification: depth_start[ a ][ i ]
+  // In specification: depth_start_present_flag[ a ][ p ]
+  // In specification: depth_start[ a ][ p ]
   std::optional<uint16_t> depthStart;
 
   // Is the patch rotated such that width and height swap?
@@ -92,6 +93,9 @@ struct AtlasParameters {
   bool operator!=(const AtlasParameters &other) const { return !operator==(other); };
 };
 
+// Data type that corresponds to the [ a ][ p ]-indiced fields of atlas_params( a ) and
+// depth_occupancy( a, p ) over all (a, p) combinations. Note that p is not directly visible in this
+// implementation but it is inferred to be element p counting only those for which atlasId == a.
 using AtlasParamsVector = std::vector<AtlasParameters>;
 
 // Data type that corresponds to atlas_params_list of specification

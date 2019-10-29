@@ -53,9 +53,9 @@ inline Half::operator float() const {
 }
 
 inline Half::Half(float value) {
-  const auto x = abs(value);
+  const auto x = std::abs(value);
 
-  if (!isfinite(value) || x > 65504.F) {
+  if (!std::isfinite(value) || x > 65504.F) {
     throw HalfError(value);
   }
 
@@ -68,7 +68,7 @@ inline Half::Half(float value) {
     m_code = uint16_t((unsigned(exponent + 14) << 10) | (mantissa & 0x3FF));
   }
 
-  if (signbit(value)) {
+  if (std::signbit(value)) {
     m_code |= 0x8000;
   }
 }

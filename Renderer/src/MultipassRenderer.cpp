@@ -58,6 +58,7 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &component
   }
 }
 
+namespace {
 template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
 void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, Fn Func) {
   for (; i1 != end1; ++i1, ++i2, ++i3, ++i4, ++dest) {
@@ -65,7 +66,8 @@ void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest
   }
 }
 
-int mergeConflict;
+struct GroupBasedRendererHelper {
+  int mergeConflict;
 auto filterMergeDepth(uint16_t i, uint16_t j) -> uint16_t {
   if (i > 0) {
     if (i >= j) { // Checking depth
@@ -128,7 +130,7 @@ auto filterMaps(uint16_t i) -> uint16_t {
 }
 
 auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target)
-    -> vector<size_t> {
+    /*mutable*/ -> vector<size_t> {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];
@@ -174,18 +176,22 @@ auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &targe
        });
   return sortedCamerasId;
 }
+};
+} // namespace
 
 auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                                     const IvSequenceParams &ivSequenceParams,
                                     const IvAccessUnitParams &ivAccessUnitParams,
                                     const ViewParams &target) const -> Texture444Depth16Frame {
+  GroupBasedRendererHelper helper;
+
   //////////////////
   // Initialization
   //////////////////
   int numberOfPasses = TMIV::Renderer::MultipassRenderer::m_numberOfPasses;
   vector<unsigned int> numberOfViewsPerPass =
       TMIV::Renderer::MultipassRenderer::m_numberOfViewsPerPass;
-  mergeConflict = m_mergeConflict;
+  helper.mergeConflict = m_mergeConflict;
 
   if (numberOfPasses != int(numberOfViewsPerPass.size())) {
     cout << "WARNING: "
@@ -208,32 +214,39 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
   for (const auto &patch : atlasParamsList) {
-    patchesViewId.push_back(patch.viewId);
+    helper.patchesViewId.push_back(patch.viewId);
   } // initialize patchesViewId
 
   ///////////////
   // Ordering views based on their distance & angle to target view
   ///////////////
   vector<size_t> sortedCamerasId(ivSequenceParams.viewParamsList.size());
-  sortedCamerasId = sortViews(ivSequenceParams.viewParamsList, target);
+  sortedCamerasId = helper.sortViews(ivSequenceParams.viewParamsList, target);
 
   // Produce the individual pass synthesis results
   for (int passId = 0; passId < numberOfPasses; passId++) // Loop over NumberOfPasses
   {
     // Find the selected views for a given pass
-    selectedViewsPass.clear();
+    helper.selectedViewsPass.clear();
     for (size_t id = 0; id < ivSequenceParams.viewParamsList.size(); ++id) {
       if (id < numberOfViewsPerPass[passId]) {
-        selectedViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
+        helper.selectedViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
       }
     }
+
+	printf("Selected Optimized Views in Pass %d : ", passId);
+    for (auto i = 0; i < helper.selectedViewsPass.size(); i++) {
+      printf("o%d, ", helper.selectedViewsPass[i]);
+    }
+    printf("\n");
 
     /////////////////
     // Update the Occupancy Map to be used in the Pass
     /////////////////
     for (size_t atlasId = 0; atlasId < maps.size(); ++atlasId) {
       transform(maps[atlasId].getPlane(0).begin(), maps[atlasId].getPlane(0).end(),
-                mapsPass[passId][atlasId].getPlane(0).begin(), filterMaps);
+                mapsPass[passId][atlasId].getPlane(0).begin(), 
+		  [&helper] (auto i) { return helper.filterMaps(i); });
     }
 
     ////////////////
@@ -252,7 +265,8 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
       transform(viewportPass[passId - 1].second.getPlane(0).begin(),
                 viewportPass[passId - 1].second.getPlane(0).end(),
                 mergedviewport.second.getPlane(0).begin(),
-                mergedviewport.second.getPlane(0).begin(), filterMergeDepth);
+                mergedviewport.second.getPlane(0).begin(),
+                [&helper](auto i, auto j) { return helper.filterMergeDepth(i, j); });
 
       for (auto i = 0; i < viewport.first.getNumberOfPlanes(); ++i) {
         my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
@@ -260,7 +274,10 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
                      mergedviewport.first.getPlane(i).begin(),
                      viewportPass[passId - 1].second.getPlane(0).begin(),
                      mergedviewport.second.getPlane(0).begin(),
-                     mergedviewport.first.getPlane(i).begin(), filterMergeTexture);
+                     mergedviewport.first.getPlane(i).begin(), 
+					 [&helper](auto i, auto j, auto id, auto jd) {
+                       return helper.filterMergeTexture(i, j, id, jd);
+                     });
       }
     }
     viewport = mergedviewport; // Final Merged

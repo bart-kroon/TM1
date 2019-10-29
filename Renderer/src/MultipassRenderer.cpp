@@ -234,11 +234,11 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
       }
     }
 
-	printf("Selected Optimized Views in Pass %d : ", passId);
+	cout << "Selected Optimized Views in Pass " << passId << " :";
     for (auto i = 0; i < helper.selectedViewsPass.size(); i++) {
-      printf("o%d, ", helper.selectedViewsPass[i]);
+      cout << "o" << helper.selectedViewsPass[i] << ", ";
     }
-    printf("\n");
+    cout << "\n";
 
     /////////////////
     // Update the Occupancy Map to be used in the Pass

@@ -282,11 +282,11 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
       }
     }
 
-    printf("Selected Optimized Views in Pass %d : ", passId);
+	cout << "Selected Optimized Views in Pass " << passId << " :";
     for (auto i = 0; i < helper.selectedGViewsPass.size(); i++) {
-      printf("o%d, ", helper.selectedGViewsPass[i]);
+          cout << "o" << helper.selectedGViewsPass[i] << ", ";
     }
-    printf("\n");
+	cout<<"\n";
 
     /////////////////
     // Update the Occupancy Map to be used in the Pass

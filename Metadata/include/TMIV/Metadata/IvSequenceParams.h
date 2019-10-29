@@ -102,14 +102,14 @@ struct ViewParams {
   // In specification: projection_plane_height_minus1[ v ]
   Common::Vec2i size{};
 
-  // In specification: cam_pos_x[ i ]
-  // In specification: cam_pos_y[ i ]
-  // In specification: cam_pos_z[ i ]
+  // In specification: cam_pos_x[ v ]
+  // In specification: cam_pos_y[ v ]
+  // In specification: cam_pos_z[ v ]
   Common::Vec3f position{};
 
-  // In specification: cam_yaw[ i ]
-  // In specification: cam_pitch[ i ]
-  // In specification: cam_roll[ i ]
+  // In specification: cam_yaw[ v ]
+  // In specification: cam_pitch[ v ]
+  // In specification: cam_roll[ v ]
   Common::Vec3f rotation{};
 
   // In specification: cam_type[ v ]
@@ -187,8 +187,8 @@ struct IvSequenceParams {
   // In specification: num_groups_minus1
   unsigned numGroups{1};
 
-  // In specification: max_objects_minus1
-  unsigned maxObjects{1};
+  // In specification: max_entities_minus1
+  unsigned maxEntities{1};
 
   // In specification: depth_occ_map_threshold_num_bits_minus8
   unsigned depthOccMapThresholdNumBits{10};

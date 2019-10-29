@@ -196,9 +196,9 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
         Tz.push_back(viewsPool[sortedCamerasId[camIndex]].position[2]);
       }
 
-	  cout << "Views (0-based) Selected for G" << gIndex << " :";
+	  cout << "Views (0-based) Selected for G" << gIndex << " : ";
       for (auto i = 0; i < camerasInGroup.size(); i++) {
-            cout << "v" << viewsLabels[sortedCamerasId[i]] << ", ";
+            cout << "v" << unsigned(viewsLabels[sortedCamerasId[i]]) << ", ";
 			viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
       }
       cout<<"\n";
@@ -217,9 +217,9 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
       for (int camIndex = 0; camIndex < viewsPool.size(); camIndex++)
         camerasInGroup.push_back(viewsPool[camIndex]);
 
-      cout << "Views (0-based) Selected for G" << gIndex << " :";
+      cout << "Views (0-based) Selected for G" << gIndex << " : ";
       for (auto i = 0; i < camerasInGroup.size(); i++) {
-        cout << "v" << viewsLabels[i] << ", ";
+        cout << "v" << unsigned (viewsLabels[i]) << ", ";
         viewsInGroup.push_back(viewsLabels[i]);
       }
       cout << "\n";

@@ -282,9 +282,9 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
       }
     }
 
-	cout << "Selected Optimized Views in Pass " << passId << " :";
+	cout << "Selected Optimized Views in Pass " << passId << " : ";
     for (auto i = 0; i < helper.selectedGViewsPass.size(); i++) {
-          cout << "o" << helper.selectedGViewsPass[i] << ", ";
+          cout << "o" << unsigned(helper.selectedGViewsPass[i]) << ", ";
     }
 	cout<<"\n";
 

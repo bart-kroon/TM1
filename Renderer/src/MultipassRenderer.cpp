@@ -234,9 +234,9 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
       }
     }
 
-	cout << "Selected Optimized Views in Pass " << passId << " :";
+	cout << "Selected Optimized Views in Pass " << passId << " : ";
     for (auto i = 0; i < helper.selectedViewsPass.size(); i++) {
-      cout << "o" << helper.selectedViewsPass[i] << ", ";
+          cout << "o" << unsigned(helper.selectedViewsPass[i]) << ", ";
     }
     cout << "\n";
 

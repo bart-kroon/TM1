@@ -103,7 +103,7 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
     -> Grouping {
   auto grouping = Grouping{};
 
-  int m_numberOfGroups = ivSequenceParams.numGroups;
+  unsigned int m_numberOfGroups = ivSequenceParams.numGroups;
   auto cameras = ivSequenceParams.viewParamsList;
   // Compute axial ranges and find the dominant one
   vector<float> Tx, Ty, Tz;
@@ -124,9 +124,9 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
   float yRange = yMax - yMin;
   float zRange = zMax - zMin;
   int dominantAxis;
-  if (zRange >= xRange & zRange >= yRange)
+  if (zRange >= xRange && zRange >= yRange)
     dominantAxis = 2;
-  else if (yRange >= xRange & yRange >= zRange)
+  else if (yRange >= xRange && yRange >= zRange)
     dominantAxis = 1;
   else
     dominantAxis = 0;
@@ -141,11 +141,11 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
     viewsLabels.push_back(camIndex);
   }
 
-  for (int gIndex = 0; gIndex < m_numberOfGroups; gIndex++) {
+  for (unsigned int gIndex = 0; gIndex < m_numberOfGroups; gIndex++) {
     viewsInGroup.clear();
     Metadata::ViewParamsList camerasInGroup, camerasOutGroup;
     if (gIndex < m_numberOfGroups - 1) {
-      numViewsPerGroup.push_back(std::floor(cameras.size() / m_numberOfGroups));
+      numViewsPerGroup.push_back((int) std::floor( cameras.size() / m_numberOfGroups));
       // select max axial position for the group and find nearest cameras
       /*
       if (dominantAxis == 0) {
@@ -162,9 +162,9 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
         T0[2] = *std::max_element(Tz.begin(), Tz.end());
       }
           */
-      int maxElementIndex;
+      std::int64_t maxElementIndex;
       if (dominantAxis == 0)
-        maxElementIndex = std::max_element(Tx.begin(), Tx.end())-Tx.begin();
+        maxElementIndex = std::max_element(Tx.begin(), Tx.end()) - Tx.begin();
       else if (dominantAxis == 1)
         maxElementIndex = std::max_element(Ty.begin(), Ty.end()) - Ty.begin();
       else
@@ -213,8 +213,7 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
         viewsPool.push_back(camerasOutGroup[camIndex]);
     } else {
       camerasInGroup.clear();
-      numViewsPerGroup.push_back(
-          cameras.size() - (m_numberOfGroups - 1) * std::floor(cameras.size() / m_numberOfGroups));
+      numViewsPerGroup.push_back((int)(cameras.size() - (m_numberOfGroups - 1) * std::floor(cameras.size() / m_numberOfGroups)));
       for (int camIndex = 0; camIndex < viewsPool.size(); camIndex++)
         camerasInGroup.push_back(viewsPool[camIndex]);
 

@@ -241,7 +241,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
 
   // Find views per group
   vector<vector<uint8_t>> viewsPerGroup;
-  for (int gIndex = 0; gIndex < ivSequenceParams.numGroups; gIndex++) {
+  for (unsigned int gIndex = 0; gIndex < ivSequenceParams.numGroups; gIndex++) {
     vector<uint8_t> atlasIds;
     for (int aIndex = 0; aIndex < groupIds.size(); aIndex++) {
       if (groupIds[aIndex] == gIndex)

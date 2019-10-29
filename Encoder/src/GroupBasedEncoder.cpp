@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -71,7 +72,7 @@ void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams)
 
 void GroupBasedEncoder::pushFrame(MVD16Frame views) {
   for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    printf("Processing G%d : \n", groupId);
+    cout << "Processing G" << groupId << " : \n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
 }
@@ -160,7 +161,7 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
         T0[1] = std::accumulate(Ty.begin(), Ty.end(), 0.0) / Ty.size();
         T0[2] = *std::max_element(Tz.begin(), Tz.end());
       }
-	  */
+          */
       int maxElementIndex;
       if (dominantAxis == 0)
         maxElementIndex = std::max_element(Tx.begin(), Tx.end())-Tx.begin();
@@ -224,8 +225,8 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
       }
       printf("\n");
     }
-    for (size_t viewId = 0; viewId < viewsInGroup.size(); ++viewId) 
-		grouping.emplace_back(gIndex, viewsInGroup[viewId]);
+    for (size_t viewId = 0; viewId < viewsInGroup.size(); ++viewId)
+      grouping.emplace_back(gIndex, viewsInGroup[viewId]);
   }
   return grouping;
 }

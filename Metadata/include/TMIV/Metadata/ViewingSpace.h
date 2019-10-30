@@ -64,7 +64,7 @@ enum class ElementaryShapeOperation {
   subtract = 1
 }; // In specification: elementary_shape_operation[ e ]
 
-using ElementaryShapeVector = std::vector<std::pair<ElementaryShape, ElementaryShapeOperation>>;
+using ElementaryShapeVector = std::vector<std::pair<ElementaryShapeOperation, ElementaryShape>>;
 
 // In specification: viewing_space( )
 struct ViewingSpace {
@@ -112,10 +112,10 @@ struct Cuboid {
   Common::Vec3f size{};
 
   friend std::ostream &operator<<(std::ostream &stream, const Cuboid &shape);
-  bool operator==(const PrimitiveShape &other) const;
-  bool operator!=(const PrimitiveShape &other) const { return !operator==(other); }
+  bool operator==(const Cuboid &other) const;
+  bool operator!=(const Cuboid &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> PrimitiveShape;
+  static auto decodeFrom(InputBitstream &) -> Cuboid;
   void encodeTo(OutputBitstream &) const;
 };
 
@@ -129,10 +129,10 @@ struct Spheroid {
   Common::Vec3f radius{};
 
   friend std::ostream &operator<<(std::ostream &stream, const Spheroid &shape);
-  bool operator==(const PrimitiveShape &other) const;
-  bool operator!=(const PrimitiveShape &other) const { return !operator==(other); }
+  bool operator==(const Spheroid &other) const;
+  bool operator!=(const Spheroid &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> PrimitiveShape;
+  static auto decodeFrom(InputBitstream &) -> Spheroid;
   void encodeTo(OutputBitstream &) const;
 };
 
@@ -146,10 +146,10 @@ struct Halfspace {
   float distance{};
 
   friend std::ostream &operator<<(std::ostream &stream, const Halfspace &shape);
-  bool operator==(const PrimitiveShape &other) const;
-  bool operator!=(const PrimitiveShape &other) const { return !operator==(other); }
+  bool operator==(const Halfspace &other) const;
+  bool operator!=(const Halfspace &other) const { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> PrimitiveShape;
+  static auto decodeFrom(InputBitstream &) -> Halfspace;
   void encodeTo(OutputBitstream &) const;
 };
 
@@ -159,6 +159,8 @@ struct PrimitiveShape {
   // In specification: spheroid_primitive( e, s )
   // In specification: halfspace_primitive( e, s )
   std::variant<Cuboid, Spheroid, Halfspace> primitive;
+
+  auto shapeType() const -> PrimitiveShapeType;
 
   // In specification: guard_band_present_flag[ e ]
   // In specification: guard_band_size[ e ]
@@ -181,16 +183,26 @@ struct PrimitiveShape {
     std::optional<float> guardBandDirectionSize{};
     float yawCenter{}, yawRange{360.f};
     float pitchCenter{}, pitchRange{180.f};
+
+	bool operator==(const ViewingDirectionConstraint &other) const;
+    bool operator!=(const ViewingDirectionConstraint &other) const { return !operator==(other); }
   };
   std::optional<ViewingDirectionConstraint> viewingDirectionConstraint;
 
   friend std::ostream &operator<<(std::ostream &stream, const PrimitiveShape &shape);
   bool operator==(const PrimitiveShape &other) const;
   bool operator!=(const PrimitiveShape &other) const { return !operator==(other); }
-
-  static auto decodeFrom(InputBitstream &) -> PrimitiveShape;
-  void encodeTo(OutputBitstream &) const;
 };
+
+inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {
+  assert(primitive.index() != std::variant_npos);
+  if (std::holds_alternative<Cuboid>(primitive))
+    return PrimitiveShapeType::cuboid;
+  if (std::holds_alternative<Spheroid>(primitive))
+    return PrimitiveShapeType::spheroid;
+  if (std::holds_alternative<Halfspace>(primitive))
+    return PrimitiveShapeType::halfspace;
+}
 
 } // namespace TMIV::Metadata
 

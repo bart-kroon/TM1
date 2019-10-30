@@ -35,16 +35,280 @@
 
 #include <TMIV/Metadata/Bitstream.h>
 
+#include <TMIV/Common/Half.h>
+
 using namespace std;
 
 namespace TMIV::Metadata {
-auto operator<<(std::ostream &stream, const ViewingSpace & /*viewParamsVector*/) -> std::ostream & {
+
+using Common::Half;
+
+auto inline decodeHalf(InputBitstream &stream) -> float { return Half::decode(stream.getUint16()); }
+inline void encodeHalf(const float x, OutputBitstream &stream) {
+  stream.putUint16(Half(x).encode());
+}
+
+auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
+  stream << "Viewing space:" << endl;
+  for (const auto s : viewingSpace.elementaryShapes) {
+    stream << (s.first == ElementaryShapeOperation::add ? "add " : "subtract ");
+    stream << '(' << s.second << ')' << endl;
+  }
   return stream;
 }
 
-auto ViewingSpace::operator==(const ViewingSpace & /* other */) const -> bool { return true; }
+auto ViewingSpace::operator==(const ViewingSpace &other) const -> bool {
+  if (elementaryShapes != other.elementaryShapes)
+    return false;
+  return true;
+}
 
-auto ViewingSpace::decodeFrom(InputBitstream &/*unused*/) -> ViewingSpace { return {}; }
+auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
+  ViewingSpace vs;
+  size_t numShapes = stream.getUExpGolomb() + 1;
+  vs.elementaryShapes.reserve(numShapes);
+  for (auto i = 0; i < numShapes; ++i) {
+    const auto op = (ElementaryShapeOperation)stream.readBits(1);
+    const auto shape = ElementaryShape::decodeFrom(stream);
+    vs.elementaryShapes.emplace_back(op, shape);
+  }
+  return vs;
+}
 
-void ViewingSpace::encodeTo(OutputBitstream &/*unused*/) const {}
+void ViewingSpace::encodeTo(OutputBitstream &stream) const {
+  const auto numShapes = elementaryShapes.size();
+  stream.putUExpGolomb(numShapes);
+  for (auto i = 0; i < numShapes; ++i) {
+    stream.writeBits((uint_least64_t)elementaryShapes[i].first, 1);
+    elementaryShapes[i].second.encodeTo(stream);
+  }
+}
+
+auto operator<<(std::ostream &stream, const ElementaryShape &elementaryShape) -> std::ostream & {
+  stream << (elementaryShape.primitiveOperation == PrimitiveShapeOperation::interpolate
+                 ? "interpolate "
+                 : "add ");
+  for (const auto p : elementaryShape.primitives) {
+    if (&p != &elementaryShape.primitives.front()) {
+      stream << ", ";
+    }
+    stream << p;
+  }
+  return stream;
+}
+
+auto ElementaryShape::operator==(const ElementaryShape &other) const -> bool {
+  if (primitives != other.primitives)
+    return false;
+  return true;
+}
+
+auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
+  const auto numPrimitives = stream.readBits(8) + 1;
+  const auto operation = (PrimitiveShapeOperation)stream.readBits(1);
+  const auto guardBandPresent = stream.getFlag();
+  const auto orientationPresent = stream.getFlag();
+  const auto directionConstraintPresent = stream.getFlag();
+  PrimitiveShape shape;
+  for (auto i = 0; i < numPrimitives; ++i) {
+    const auto shapeType = (PrimitiveShapeType)stream.readBits(2);
+    switch (shapeType) {
+    case PrimitiveShapeType::cuboid:
+      shape.primitive = Cuboid::decodeFrom(stream);
+      break;
+    case PrimitiveShapeType::spheroid:
+      shape.primitive = Spheroid::decodeFrom(stream);
+      break;
+    case PrimitiveShapeType::halfspace:
+      shape.primitive = Halfspace::decodeFrom(stream);
+      break;
+    default:
+      abort();
+    }
+    if (guardBandPresent) {
+      shape.guardBandSize = decodeHalf(stream);
+    }
+    if (orientationPresent) {
+      shape.rotation = Common::Vec3f();
+      shape.rotation.value().x() = decodeHalf(stream);
+      shape.rotation.value().y() = decodeHalf(stream);
+      shape.rotation.value().z() = decodeHalf(stream);
+    }
+    if (directionConstraintPresent) {
+      auto &vdc = shape.viewingDirectionConstraint.value();
+      if (guardBandPresent)
+        vdc.guardBandDirectionSize = Half::decode(stream.getUint16());
+      vdc.yawCenter = decodeHalf(stream);
+      vdc.yawRange = decodeHalf(stream);
+      vdc.pitchCenter = decodeHalf(stream);
+      vdc.pitchRange = decodeHalf(stream);
+    }
+  }
+  return {};
+}
+
+void ElementaryShape::encodeTo(OutputBitstream &stream) const {
+  bool guardBandPresent{}, orientationPresent{}, directionConstraintPresent{};
+  for (const auto &p : primitives) {
+    guardBandPresent |= p.guardBandSize.has_value();
+    orientationPresent |= p.rotation.has_value();
+    if (p.viewingDirectionConstraint.has_value()) {
+      directionConstraintPresent |= true;
+      guardBandPresent |= p.viewingDirectionConstraint.value().guardBandDirectionSize.has_value();
+    }
+  }
+  stream.writeBits(primitives.size() - 1, 8);
+  stream.writeBits((unsigned)primitiveOperation, 1);
+  stream.putFlag(guardBandPresent);
+  stream.putFlag(orientationPresent);
+  stream.putFlag(directionConstraintPresent);
+  for (const auto &p : primitives) {
+    stream.writeBits((unsigned)p.shapeType(), 2);
+    visit([&](const auto &x) { x.encodeTo(stream); }, p.primitive);
+    if (guardBandPresent)
+      encodeHalf(p.guardBandSize.value_or(0.f), stream);
+    if (orientationPresent) {
+      const Common::Vec3f r = p.rotation.value_or(Common::Vec3f());
+      encodeHalf(r.x(), stream);
+      encodeHalf(r.y(), stream);
+      encodeHalf(r.z(), stream);
+    }
+    if (directionConstraintPresent) {
+      const auto vdc =
+          p.viewingDirectionConstraint.value_or(PrimitiveShape::ViewingDirectionConstraint());
+      if (guardBandPresent)
+        encodeHalf(vdc.guardBandDirectionSize.value_or(0.f), stream);
+      encodeHalf(vdc.yawCenter, stream);
+      encodeHalf(vdc.yawRange, stream);
+      encodeHalf(vdc.pitchCenter, stream);
+      encodeHalf(vdc.pitchRange, stream);
+    }
+  }
+}
+
+auto operator<<(std::ostream &stream, const PrimitiveShape &shape) -> std::ostream & {
+  visit([&](const auto &x) { stream << x; }, shape.primitive);
+  if (shape.guardBandSize.has_value()) {
+    stream << " guardband " << shape.guardBandSize.value();
+  }
+  if (shape.rotation.has_value()) {
+    stream << " rotation " << shape.rotation.value();
+  }
+  if (shape.viewingDirectionConstraint.has_value()) {
+    const auto &vdc = shape.viewingDirectionConstraint.value();
+    stream << " yaw " << vdc.yawCenter << "+/-" << 0.5f * vdc.yawRange << " pitch "
+           << vdc.pitchRange << "+/-" << 0.5f * vdc.pitchRange;
+    if (vdc.guardBandDirectionSize.has_value()) {
+      stream << " guardband " << vdc.guardBandDirectionSize.value();
+    }
+  }
+  return stream;
+}
+
+auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
+  if (primitive != other.primitive)
+    return false;
+  if (guardBandSize != other.guardBandSize)
+    return false;
+  if (rotation != other.rotation)
+    return false;
+  if (viewingDirectionConstraint != other.viewingDirectionConstraint)
+    return false;
+  return true;
+}
+
+bool PrimitiveShape::ViewingDirectionConstraint::
+operator==(const ViewingDirectionConstraint& other) const {
+  if (guardBandDirectionSize != other.guardBandDirectionSize)
+    return false;
+  if (yawCenter != other.yawCenter || pitchCenter != other.pitchCenter)
+    return false;
+  if (yawRange != other.yawRange || pitchRange != other.pitchRange)
+    return false;
+  return true;
+}
+
+auto operator<<(std::ostream &stream, const Cuboid &cuboid) -> std::ostream & {
+  stream << "cuboid " << cuboid.center << " size " << cuboid.size;
+  return stream;
+}
+
+auto Cuboid::operator==(const Cuboid &other) const -> bool {
+  return center == other.center && size == other.size;
+}
+
+auto Cuboid::decodeFrom(InputBitstream &stream) -> Cuboid {
+  Cuboid cuboid;
+  cuboid.center.x() = decodeHalf(stream);
+  cuboid.center.y() = decodeHalf(stream);
+  cuboid.center.z() = decodeHalf(stream);
+  cuboid.size.x() = decodeHalf(stream);
+  cuboid.size.y() = decodeHalf(stream);
+  cuboid.size.z() = decodeHalf(stream);
+  return cuboid;
+}
+
+void Cuboid::encodeTo(OutputBitstream &stream) const {
+  encodeHalf(center.x(), stream);
+  encodeHalf(center.y(), stream);
+  encodeHalf(center.z(), stream);
+  encodeHalf(size.x(), stream);
+  encodeHalf(size.y(), stream);
+  encodeHalf(size.z(), stream);
+}
+
+auto operator<<(std::ostream &stream, const Spheroid &spheroid) -> std::ostream & {
+  stream << "spheroid " << spheroid.center << " radius " << spheroid.radius;
+  return stream;
+}
+
+auto Spheroid::operator==(const Spheroid &other) const -> bool {
+  return center == other.center && radius == other.radius;
+}
+
+auto Spheroid::decodeFrom(InputBitstream &stream) -> Spheroid {
+  Spheroid spheroid;
+  spheroid.center.x() = decodeHalf(stream);
+  spheroid.center.y() = decodeHalf(stream);
+  spheroid.center.z() = decodeHalf(stream);
+  spheroid.radius.x() = decodeHalf(stream);
+  spheroid.radius.y() = decodeHalf(stream);
+  spheroid.radius.z() = decodeHalf(stream);
+  return spheroid;
+}
+
+void Spheroid::encodeTo(OutputBitstream &stream) const {
+  encodeHalf(center.x(), stream);
+  encodeHalf(center.y(), stream);
+  encodeHalf(center.z(), stream);
+  encodeHalf(radius.x(), stream);
+  encodeHalf(radius.y(), stream);
+  encodeHalf(radius.z(), stream);
+}
+
+auto operator<<(std::ostream &stream, const Halfspace &halfspace) -> std::ostream & {
+  stream << "halfspace " << halfspace.normal << " distance " << halfspace.distance;
+  return stream;
+}
+
+auto Halfspace::operator==(const Halfspace &other) const -> bool {
+	return normal == other.normal && distance == other.distance;
+}
+
+auto Halfspace::decodeFrom(InputBitstream &stream) -> Halfspace {
+  Halfspace plane;
+  plane.normal.x() = decodeHalf(stream);
+  plane.normal.y() = decodeHalf(stream);
+  plane.normal.z() = decodeHalf(stream);
+  plane.distance = decodeHalf(stream);
+  return plane;
+}
+
+void Halfspace::encodeTo(OutputBitstream &stream) const {
+  encodeHalf(normal.x(), stream);
+  encodeHalf(normal.y(), stream);
+  encodeHalf(normal.z(), stream);
+  encodeHalf(distance, stream);
+}
+
 } // namespace TMIV::Metadata

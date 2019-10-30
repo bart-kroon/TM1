@@ -36,19 +36,8 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Matrix.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::Image {
-// The maximum level for an unsigned integer of the specified number of bits
-constexpr unsigned maxLevel(unsigned bits);
-
-// Expand an integral value to floating-point using a linear transfer function
-template <unsigned bits> float expandValue(uint16_t x);
-
-// Quantize a value using a linear transfer function
-template <unsigned bits> uint16_t quantizeValue(float x);
-
 // Expand a YUV 4:2:0 10-bit texture to packed 4:4:4 32-bit float texture with
 // linear transfer and nearest interpolation for chroma
 Common::Mat<Common::Vec3f> expandTexture(const Common::Frame<Common::YUV420P10> &inYuv);
@@ -56,39 +45,6 @@ Common::Mat<Common::Vec3f> expandTexture(const Common::Frame<Common::YUV420P10> 
 // Quantize a packed 4:4:4 32-bit float texture as YUV 4:2:0 10-bit texture with
 // linear transfer and area interpolation for chroma
 Common::Frame<Common::YUV444P10> quantizeTexture(const Common::Mat<Common::Vec3f> &in);
-
-// Expand a n integral depth value. The return value is 0.F for levels below depthOccMapThreshold.
-// Other levels are translated to depth in meter.
-template <unsigned bits> float expandDepthValue(const Metadata::ViewParams &viewParams, uint16_t x);
-
-// Expand a 10-bit depth map. Levels below depthOccMapThreshold become 0.F. Other levels are
-// translated to depth in meter.
-// TODO(BK): Remove this function after the new pruner is integrated
-Common::Mat<float> expandDepth(const Metadata::ViewParams &viewParams,
-                               const Common::Depth16Frame &in);
-
-// Expand an integral depth value. The return value is 0.F for levels below depthOccMapThreshold.
-// Other levels are translated to depth in meter.
-template <unsigned bits>
-uint16_t quantizeDepthValue(const Metadata::ViewParams &viewParams, float x);
-
-// Expand an integral normalized disparity value to floating-point. The return value is 0.F for
-// levels below depthOccMapThreshold. Other levels are translated to normalized disparity in
-// meter^-1.
-template <unsigned bits>
-float expandNormDispValue(const Metadata::ViewParams &viewParams, uint16_t x);
-
-// Quantize a normalized disparity value (in meter^-1) according to the normDispRange and
-// depthOccMapThreshold camera parameters
-template <unsigned bits>
-uint16_t quantizeNormDispValue(const Metadata::ViewParams &viewParams, float x);
-
-// Quantize a normalized disparity map (in meter^-1) to 16-bit values according to the normDispRange
-// and depthOccMapThreshold camera parameters
-Common::Depth16Frame quantizeNormDisp16(const Metadata::ViewParams &viewParams,
-                                        const Common::Mat<float> &in);
 } // namespace TMIV::Image
-
-#include "Image.hpp"
 
 #endif

@@ -33,13 +33,13 @@
 
 #include "PrunedMesh.h"
 
-#include <TMIV/Image/Image.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
+
 #include <cassert>
 
 using namespace std;
 using namespace TMIV::Metadata;
-using namespace TMIV::Image;
 using namespace TMIV::Common;
 using namespace TMIV::Renderer;
 
@@ -50,10 +50,9 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
   return visit(
       [&](const auto &projection) {
         tuple<SceneVertexDescriptorList, TriangleDescriptorList, vector<Vec3f>> mesh;
-//         auto &[vertices, triangles, attributes] = mesh;
-        auto& vertices = std::get<0>(mesh);
-        auto& triangles = std::get<1>(mesh);
-        auto& attributes = std::get<2>(mesh);
+        auto &vertices = std::get<0>(mesh);
+        auto &triangles = std::get<1>(mesh);
+        auto &attributes = std::get<2>(mesh);
 
         Engine<decay_t<decltype(projection)>> engine{viewParams};
         const auto size = viewParams.size;
@@ -72,13 +71,16 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
         vector<int> key;
         key.reserve(vertices.size());
 
-        for (int y = 0; y < size.y(); ++y) {
+        const auto depthTransform = DepthTransform<16>{viewParams};
+
+		for (int y = 0; y < size.y(); ++y) {
           for (int x = 0; x < size.x(); ++x) {
             key.push_back(int(vertices.size()));
+            const auto D_yx = D(y, x);
 
             if (mask(y, x) > 0) {
               const auto uv = Vec2f{float(x) + 0.5F, float(y) + 0.5F};
-              const auto d = expandDepthValue<16>(viewParams, D(y, x));
+              const auto d = depthTransform.expandDepth(D_yx);
               vertices.push_back({engine.unprojectVertex(uv, d), NaN});
               attributes.emplace_back(Vec3f{expandValue<10U>(Y(y, x)),
                                             expandValue<10U>(U(y / 2, x / 2)),

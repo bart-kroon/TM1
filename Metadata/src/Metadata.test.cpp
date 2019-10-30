@@ -35,6 +35,7 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/Metadata/Bitstream.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
 #include <TMIV/Metadata/ViewingSpace.h>
@@ -293,4 +294,120 @@ TEST_CASE("Metadata bitstreams") {
   }
 
   SECTION("viewing_space") { REQUIRE(codingTest(examples::viewingSpace[0], 0)); }
+}
+
+TEST_CASE("OccupancyTransform") {
+  SECTION("Zero threshold view") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {}, 0, 100};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, {}, {}};
+    const auto transform = OccupancyTransform{viewParams, atlasParams};
+    REQUIRE(transform.occupant(0));
+    REQUIRE(transform.occupant(0xFFFF));
+  }
+
+  SECTION("Zero threshold patch") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {}, 100, 100};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, 0, {}};
+    const auto transform = OccupancyTransform{viewParams, atlasParams};
+    REQUIRE(transform.occupant(0));
+    REQUIRE(transform.occupant(0xFFFF));
+  }
+
+  SECTION("Non-zero threshold view") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {}, 100, 100};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, {}, {}};
+    const auto transform = OccupancyTransform{viewParams, atlasParams};
+    REQUIRE(!transform.occupant(99));
+    REQUIRE(transform.occupant(100));
+  }
+
+  SECTION("Non-zero threshold patch") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {}, 100, 100};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, 50, {}};
+    const auto transform = OccupancyTransform{viewParams, atlasParams};
+    REQUIRE(!transform.occupant(49));
+    REQUIRE(transform.occupant(50));
+  }
+}
+
+TEST_CASE("DepthTransform") {
+  SECTION("View without depth start") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {-1.F, 4.F}, 100, {}};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, {}, {}};
+    const auto transform = DepthTransform<12>{viewParams, atlasParams};
+
+    REQUIRE(transform.expandNormDisp(0) > 0.F);
+    REQUIRE(transform.expandNormDisp(1500) == -1.F + 5.F * 1500.F / 4095.F);
+    REQUIRE(transform.expandNormDisp(0xFFF) == 4.F);
+
+    REQUIRE(transform.expandDepth(0) == 1.F / transform.expandNormDisp(0));
+    REQUIRE(transform.expandDepth(1500) == 1.F / transform.expandNormDisp(1500));
+    REQUIRE(transform.expandDepth(0xFFF) == 1.F / transform.expandNormDisp(0xFFF));
+  }
+
+  SECTION("Quantize normalized disparity") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {-1.F, 4.F}, 100, 46};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, 33, 75};
+    const auto transform = DepthTransform<13>{viewParams, atlasParams};
+
+    REQUIRE(transform.quantizeNormDisp(0.F, 0) == 0);
+    REQUIRE(transform.quantizeNormDisp(-0.1F, 0) == 0);
+    REQUIRE(transform.quantizeNormDisp(4.1F, 0) == 8191);
+    REQUIRE(transform.quantizeNormDisp(NaN, 0) == 0);
+    REQUIRE(transform.quantizeNormDisp(-inf, 0) == 0);
+    REQUIRE(transform.quantizeNormDisp(inf, 0) == 8191);
+
+    REQUIRE(transform.quantizeNormDisp(0.1F, 0) == lround(1.1F / 5.F * 8191));
+    REQUIRE(transform.quantizeNormDisp(4.F, 0) == 8191);
+
+    REQUIRE(transform.quantizeNormDisp(0.F, 4000) == 0);
+    REQUIRE(transform.quantizeNormDisp(-0.1F, 4000) == 0);
+    REQUIRE(transform.quantizeNormDisp(4.1F, 4000) == 8191);
+    REQUIRE(transform.quantizeNormDisp(NaN, 4000) == 0);
+    REQUIRE(transform.quantizeNormDisp(-inf, 4000) == 0);
+    REQUIRE(transform.quantizeNormDisp(inf, 4000) == 8191);
+
+    REQUIRE(transform.quantizeNormDisp(0.1F, 4000) == 4000);
+    REQUIRE(transform.quantizeNormDisp(4.F, 4000) == 8191);
+  }
+
+  SECTION("View with depth start") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {-1.F, 4.F}, 100, 400};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, {}, {}};
+    const auto transform = DepthTransform<10>{viewParams, atlasParams};
+    const auto reference = -1.F + 5.F * 400.F / 1023.F;
+    REQUIRE(transform.expandNormDisp(0) == reference);
+    REQUIRE(transform.expandNormDisp(399) == reference);
+    REQUIRE(transform.expandNormDisp(400) == reference);
+    REQUIRE(transform.expandNormDisp(401) > reference);
+    REQUIRE(transform.expandNormDisp(0x3FF) == 4.F);
+
+    REQUIRE(transform.expandDepth(0) == 1.F / transform.expandNormDisp(0));
+    REQUIRE(transform.expandDepth(400) == 1.F / transform.expandNormDisp(400));
+    REQUIRE(transform.expandDepth(0xFFF) == 1.F / transform.expandNormDisp(0xFFF));
+  }
+
+  SECTION("Patch that overrides depth start (1)") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {-1.F, 4.F}, 100, 400};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, {}, 50};
+    const auto transform = DepthTransform<10>{viewParams, atlasParams};
+    REQUIRE(transform.expandNormDisp(0) > 0);
+    REQUIRE(transform.expandNormDisp(0x3FF) == 4.F);
+
+    REQUIRE(transform.expandDepth(0) == 1.F / transform.expandNormDisp(0));
+  }
+
+  SECTION("Patch that overrides depth start (2)") {
+    const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {2.F, 4.F}, 100, 400};
+    const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, {}, 50};
+    const auto transform = DepthTransform<10>{viewParams, atlasParams};
+    const auto reference = 2.F + 2.F * 50.F / 1023.F;
+    REQUIRE(transform.expandNormDisp(0) == reference);
+    REQUIRE(transform.expandNormDisp(49) == reference);
+    REQUIRE(transform.expandNormDisp(50) == reference);
+    REQUIRE(transform.expandNormDisp(51) > reference);
+    REQUIRE(transform.expandNormDisp(0x3FF) == 4.F);
+
+    REQUIRE(transform.expandDepth(51) == 1.F / transform.expandNormDisp(51));
+  }
 }

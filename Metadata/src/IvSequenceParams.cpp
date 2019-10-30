@@ -324,7 +324,7 @@ auto operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams) 
   stream << "ivs_profile_tier_level()=" << ivSequenceParams.ivsProfileTierLevel << '\n';
   stream << "depth_low_quality_flag=" << boolalpha << ivSequenceParams.depthLowQualityFlag << '\n';
   stream << "num_groups=" << ivSequenceParams.numGroups << '\n';
-  stream << "max_objects=" << ivSequenceParams.maxObjects << '\n';
+  stream << "max_entities=" << ivSequenceParams.maxEntities << '\n';
   stream << "depth_occ_map_threshold_num_bits=" << ivSequenceParams.depthOccMapThresholdNumBits
          << '\n';
   stream << "view_params_list()=\n";
@@ -343,7 +343,7 @@ auto IvSequenceParams::operator==(const IvSequenceParams &other) const -> bool {
   return ivsProfileTierLevel == other.ivsProfileTierLevel &&
          viewParamsList == other.viewParamsList &&
          depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups &&
-         maxObjects == other.maxObjects &&
+         maxEntities == other.maxEntities &&
          depthOccMapThresholdNumBits == other.depthOccMapThresholdNumBits &&
          viewingSpace == other.viewingSpace;
 }
@@ -354,7 +354,7 @@ auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams
   const auto viewParamsList = ViewParamsList::decodeFrom(bitstream, depthOccMapThresholdNumBits);
   const auto depthLowQualityFlag = bitstream.getFlag();
   const auto numGroups = unsigned(1 + bitstream.getUExpGolomb());
-  const auto maxObjects = unsigned(1 + bitstream.getUExpGolomb());
+  const auto maxEntities = unsigned(1 + bitstream.getUExpGolomb());
 
   auto viewingSpace = optional<ViewingSpace>{};
   if (const auto viewingSpacePresentFlag = bitstream.getFlag(); viewingSpacePresentFlag) {
@@ -362,9 +362,9 @@ auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams
   }
 
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
-  cout << "ivs_sp_extension_data_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
+  cout << "ivs_sp_extension_present_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
   return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
-                          numGroups,           maxObjects,     depthOccMapThresholdNumBits,
+                          numGroups,           maxEntities,    depthOccMapThresholdNumBits,
                           viewingSpace};
 }
 
@@ -375,8 +375,8 @@ void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(depthLowQualityFlag);
   verify(numGroups >= 1);
   bitstream.putUExpGolomb(numGroups - 1);
-  verify(maxObjects >= 1);
-  bitstream.putUExpGolomb(maxObjects - 1);
+  verify(maxEntities >= 1);
+  bitstream.putUExpGolomb(maxEntities - 1);
   verify(depthOccMapThresholdNumBits >= 8);
 
   bitstream.putFlag(!!viewingSpace);

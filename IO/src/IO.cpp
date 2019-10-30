@@ -34,7 +34,6 @@
 #include <TMIV/IO/IO.h>
 
 #include <TMIV/Common/Common.h>
-#include <TMIV/Image/Image.h>
 
 #include <cassert>
 #include <fstream>
@@ -46,7 +45,6 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
-using namespace TMIV::Image;
 
 namespace TMIV::IO {
 auto getFullPath(const Json &config, const string &baseDirectoryField, const string &fileNameField,
@@ -203,13 +201,13 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     throw runtime_error("Require numGroups >= 1");
   }
 
-  const auto maxObjects = config.require("maxObjects").asInt();
-  if (maxObjects < 1) {
-    throw runtime_error("Require maxObjects >= 1");
+  const auto maxEntities = config.require("maxEntities").asInt();
+  if (maxEntities < 1) {
+    throw runtime_error("Require maxEntities >= 1");
   }
 
   return {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups),
-          unsigned(maxObjects)};
+          unsigned(maxEntities)};
 }
 
 auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitParams {

@@ -197,4 +197,23 @@ TEST_CASE("Assignment of fixed size matrix N x 1 to fixed size vector") {
   b = A;
   REQUIRE(b[5] == 1);
 }
+
+TEST_CASE("maxlevel", "[quantize_and_expand]") {
+  REQUIRE(maxLevel(8U) == 255U);
+  REQUIRE(maxLevel(10U) == 1023U);
+  REQUIRE(maxLevel(16U) == 65535U);
+}
+
+TEST_CASE("expandValue", "[quantize_and_expand]") {
+  REQUIRE(expandValue<10>(0) == 0.F);
+  REQUIRE(expandValue<8>(128) == 128.F / 255.F);
+  REQUIRE(expandValue<10>(1023) == 1.F);
+  REQUIRE(expandValue<16>(40000) == 40000.F / 65535.F);
+}
+
+TEST_CASE("quantizeValue", "[quantize_and_expand]") {
+  REQUIRE(quantizeValue<10>(NaN) == 0U);
+  REQUIRE(quantizeValue<10>(inf) == 1023U);
+  REQUIRE(quantizeValue<10>(1e20F) == 1023U);
+}
 } // namespace TMIV::Common

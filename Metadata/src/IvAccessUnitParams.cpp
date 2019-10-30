@@ -59,7 +59,7 @@ auto AtlasParameters::patchSizeInAtlas() const -> Vec2i {
 }
 
 auto AtlasParameters::operator==(const AtlasParameters &other) const -> bool {
-  return atlasId == other.atlasId && viewId == other.viewId && objectId == other.objectId &&
+  return atlasId == other.atlasId && viewId == other.viewId && entityId == other.entityId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
          posInAtlas == other.posInAtlas && rotation == other.rotation &&
          depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
@@ -156,8 +156,8 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
       const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
-      if (ivSequenceParams.maxObjects > 1) {
-        patch.objectId = unsigned(bitstream.getUVar(ivSequenceParams.maxObjects));
+      if (ivSequenceParams.maxEntities > 1) {
+        patch.entityId = unsigned(bitstream.getUVar(ivSequenceParams.maxEntities));
       }
 
       patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
@@ -241,9 +241,9 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
 
         bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
 
-        if (ivSequenceParams.maxObjects > 1) {
-          verify(patch.objectId);
-          bitstream.putUVar(*patch.objectId, ivSequenceParams.maxObjects);
+        if (ivSequenceParams.maxEntities > 1) {
+          verify(patch.entityId);
+          bitstream.putUVar(*patch.entityId, ivSequenceParams.maxEntities);
         }
 
         bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());

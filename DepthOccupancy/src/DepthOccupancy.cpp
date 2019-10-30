@@ -33,14 +33,14 @@
 
 #include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
-#include <TMIV/Image/Image.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
 
 #include <iostream>
 #include <stdexcept>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Image;
+using namespace TMIV::Metadata;
 
 namespace TMIV::DepthOccupancy {
 DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThreshold)
@@ -97,17 +97,31 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
   }
 
   for (const auto &patch : *m_accessUnitParams.atlasParamsList) {
+    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.viewId];
+    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.viewId];
+    const auto inOccupancyTransform = OccupancyTransform{inViewParams};
+#ifndef NDEBUG
+    const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
+#endif
+    const auto inDepthTransform = DepthTransform<16>{inViewParams};
+    const auto outDepthTransform = DepthTransform<10>{outViewParams, patch};
+
     const auto patchSizeInAtlas = patch.patchSizeInAtlas();
+
     for (int i = 0; i < patchSizeInAtlas.y(); ++i) {
       for (int j = 0; j < patchSizeInAtlas.x(); ++j) {
-        int n = i + patch.posInAtlas.y();
-        int m = j + patch.posInAtlas.x();
+        const int n = i + patch.posInAtlas.y();
+        const int m = j + patch.posInAtlas.x();
+
         const auto inLevel = inAtlases[patch.atlasId].second.getPlane(0)(n, m);
-        const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.viewId];
-        const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.viewId];
-        const auto normDisp = expandNormDispValue<16>(inViewParams, inLevel);
-        const auto outLevel = quantizeNormDispValue<10>(outViewParams, normDisp);
-        outAtlases[patch.atlasId].second.getPlane(0)(n, m) = outLevel;
+
+        if (inOccupancyTransform.occupant(inLevel)) {
+          const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
+          const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
+          assert(outOccupancyTransform.occupant(outLevel));
+
+          outAtlases[patch.atlasId].second.getPlane(0)(n, m) = outLevel;
+        }
       }
     }
   }

@@ -454,7 +454,7 @@ class EncoderConfiguration(DecoderConfiguration):
 	def numGroups(self):
 		return 1
 
-	def maxObjects(self):
+	def maxEntities(self):
 		return 1
 
 	def parameters(self):
@@ -464,7 +464,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		config.update({
 			'depthLowQualityFlag': self.depthLowQualityFlag(),
 			'numGroups': self.numGroups(),
-			'maxObjects': self.maxObjects(),
+			'maxEntities': self.maxEntities(),
 			'reconstruct': False,
 			'startFrame': self.startFrame(),
 			'SourceTexturePathFmt': self.sourceTexturePathFmt(),

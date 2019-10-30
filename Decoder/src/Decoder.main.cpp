@@ -94,7 +94,7 @@ public:
 
 #include "Decoder.reg.hpp"
 
-int main(int argc, char *argv[]) {
+auto main(int argc, char *argv[]) -> int {
   try {
     TMIV::Decoder::registerComponents();
     TMIV::Decoder::Application app{{argv, argv + argc}};

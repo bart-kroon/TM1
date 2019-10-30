@@ -46,4 +46,19 @@ template <class... Args> inline std::string format(char const *fmt, Args &&... a
   snprintf(buffer.data(), chars + 1, fmt, std::forward<Args>(args)...);
   return {buffer.begin(), buffer.end() - 1};
 }
+
+inline constexpr unsigned maxLevel(unsigned bits) { return (1U << bits) - 1U; }
+
+template <unsigned bits> float expandValue(uint16_t x) { return float(x) / float(maxLevel(bits)); }
+
+template <unsigned bits> uint16_t quantizeValue(float x) {
+  if (x >= 0.F && x <= 1.F) {
+    return static_cast<uint16_t>(
+        std::min(unsigned(std::lround(x * float(maxLevel(bits)))), maxLevel(bits)));
+  }
+  if (x > 0) {
+    return static_cast<uint16_t>(maxLevel(bits));
+  }
+  return 0;
+}
 } // namespace TMIV::Common

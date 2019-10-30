@@ -36,6 +36,7 @@
 #include <TMIV/Common/Factory.h>
 
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -95,6 +96,14 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   // Aggregated mask
   m_aggregator->completeAccessUnit();
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
+
+  // Print statistics the same way the HierarchicalPruner does
+  auto sumValues = 0.;
+  for (const auto &mask : aggregatedMask) {
+    sumValues = accumulate(begin(mask.getPlane(0)), end(mask.getPlane(0)), sumValues);
+  }
+  const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
+  cout << "Aggregated luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
   // Packing
   assert(m_ivAccessUnitParams.atlasParamsList);

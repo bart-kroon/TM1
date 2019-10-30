@@ -93,15 +93,15 @@ void matchText(istream &stream, string const &text) {
 }
 } // namespace
 
-static shared_ptr<impl::Value> readValue(istream &stream);
+static auto readValue(istream &stream) -> shared_ptr<impl::Value>;
 
 namespace impl {
 struct Value {
   explicit Value(Json::Type type) : type(type) {}
   Value(Value const &) = default;
   Value(Value &&) = default;
-  Value &operator=(Value const &) = default;
-  Value &operator=(Value &&) = default;
+  auto operator=(Value const &) -> Value & = default;
+  auto operator=(Value &&) -> Value & = default;
   virtual ~Value() = default;
 
   Json::Type type;
@@ -115,9 +115,39 @@ public:
 
     while (ch != '"') {
       if (ch == '\\') {
-        throw runtime_error("JSON parser: string escaping not implemented");
+        switch (stream.get()) {
+        case '"':
+          value.push_back('"');
+          break;
+        case '\\':
+          value.push_back('\\');
+          break;
+        case '/':
+          value.push_back('/');
+          break;
+        case 'b':
+          value.push_back('\b');
+          break;
+        case 'f':
+          value.push_back('\f');
+          break;
+        case 'n':
+          value.push_back('\n');
+          break;
+        case 'r':
+          value.push_back('\r');
+          break;
+        case 't':
+          value.push_back('\t');
+          break;
+        case 'u':
+          throw runtime_error("JSON parser: unicode string escaping not yet implemented");
+        default:
+          throw runtime_error("JSON parser: invalid string escape character");
+        }
+      } else {
+        value.push_back(static_cast<char>(ch));
       }
-      value.push_back(static_cast<char>(ch));
       ch = stream.get();
     }
   }
@@ -228,9 +258,9 @@ void Json::setOverrides(const Json &overrides) {
   }
 }
 
-Json::Type Json::type() const { return m_value->type; }
+auto Json::type() const -> Json::Type { return m_value->type; }
 
-Json Json::optional(string const &key) const {
+auto Json::optional(string const &key) const -> Json {
   try {
     return Json{dynamic_cast<impl::Object &>(*m_value).value.at(key)};
   } catch (out_of_range &) {
@@ -242,7 +272,7 @@ Json Json::optional(string const &key) const {
   }
 }
 
-Json Json::require(string const &key) const {
+auto Json::require(string const &key) const -> Json {
   auto node = optional(key);
   if (node.type() != Type::null) {
     return node;
@@ -252,14 +282,14 @@ Json Json::require(string const &key) const {
   throw runtime_error(stream.str());
 }
 
-Json Json::at(size_t index) const {
+auto Json::at(size_t index) const -> Json {
   if (type() != Type::array) {
     throw runtime_error("JSON parser: Expected an array");
   }
   return Json{dynamic_cast<impl::Array &>(*m_value).value.at(index)};
 }
 
-size_t Json::size() const {
+auto Json::size() const -> size_t {
   switch (type()) {
   case Type::array:
     return dynamic_cast<impl::Array &>(*m_value).value.size();
@@ -270,16 +300,16 @@ size_t Json::size() const {
   }
 }
 
-double Json::asDouble() const {
+auto Json::asDouble() const -> double {
   if (type() != Type::number) {
     throw runtime_error("JSON parser: Expected a number");
   }
   return dynamic_cast<impl::Number &>(*m_value).value;
 }
 
-float Json::asFloat() const { return static_cast<float>(asDouble()); }
+auto Json::asFloat() const -> float { return static_cast<float>(asDouble()); }
 
-int Json::asInt() const {
+auto Json::asInt() const -> int {
   auto value = asDouble();
   auto rounded = static_cast<int>(lround(value));
   auto error = value - rounded;
@@ -290,14 +320,14 @@ int Json::asInt() const {
   return rounded;
 }
 
-string const &Json::asString() const {
+auto Json::asString() const -> string const & {
   if (type() != Type::string) {
     throw runtime_error("JSON parser: Expected a string");
   }
   return dynamic_cast<impl::String &>(*m_value).value;
 }
 
-bool Json::asBool() const {
+auto Json::asBool() const -> bool {
   if (type() != Type::boolean) {
     throw runtime_error("JSON parser: Expected a boolean");
   }
@@ -324,7 +354,7 @@ Json::operator bool() const {
   }
 }
 
-static shared_ptr<impl::Value> readValue(istream &stream) {
+static auto readValue(istream &stream) -> shared_ptr<impl::Value> {
   skipWhitespaceAndLineComments(stream);
   auto ch = stream.peek();
 
@@ -336,7 +366,6 @@ static shared_ptr<impl::Value> readValue(istream &stream) {
   case '"':
     return make_shared<impl::String>(stream);
   case 't':
-    return make_shared<impl::Bool>(stream);
   case 'f':
     return make_shared<impl::Bool>(stream);
   case 'n':

@@ -68,7 +68,7 @@ auto InputBitstream::getFloat32() -> float {
 }
 
 namespace {
-unsigned ceilLog2(uint_least64_t range) {
+auto ceilLog2(uint_least64_t range) -> unsigned {
   if (range == 0) {
     return 0;
   }

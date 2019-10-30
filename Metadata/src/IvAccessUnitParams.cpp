@@ -46,7 +46,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Metadata {
-bool AtlasParameters::isRotated() const {
+auto AtlasParameters::isRotated() const -> bool {
   return rotation == PatchRotation::rot90 || rotation == PatchRotation::swap ||
          rotation == PatchRotation::rot270 || rotation == PatchRotation::mrot90;
 }
@@ -58,8 +58,8 @@ auto AtlasParameters::patchSizeInAtlas() const -> Vec2i {
   return patchSizeInView;
 }
 
-bool AtlasParameters::operator==(const AtlasParameters &other) const {
-  return atlasId == other.atlasId && viewId == other.viewId && objectId == other.objectId &&
+auto AtlasParameters::operator==(const AtlasParameters &other) const -> bool {
+  return atlasId == other.atlasId && viewId == other.viewId && entityId == other.entityId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
          posInAtlas == other.posInAtlas && rotation == other.rotation &&
          depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
@@ -72,14 +72,14 @@ AtlasParamsList::AtlasParamsList(AtlasParamsVector atlasParameters, bool omafV1C
       groupIds{move(groupIds_)}, atlasSizes{move(atlasSizes_)},
       depthOccupancyParamsPresentFlags{move(depthOccupancyParamsPresentFlags_)} {}
 
-bool AtlasParamsList::operator==(const AtlasParamsList &other) const {
+auto AtlasParamsList::operator==(const AtlasParamsList &other) const -> bool {
   return equal(begin(), end(), other.begin(), other.end()) &&
          omafV1CompatibleFlag == other.omafV1CompatibleFlag && groupIds == other.groupIds &&
          atlasSizes == other.atlasSizes &&
          depthOccupancyParamsPresentFlags == other.depthOccupancyParamsPresentFlags;
 }
 
-ostream &operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) {
+auto operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) -> ostream & {
   stream << "num_patches=" << atlasParamsList.size() << '\n';
   stream << "omaf_v1_compatible_flag=" << boolalpha << atlasParamsList.omafV1CompatibleFlag << '\n';
 
@@ -156,8 +156,8 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
       const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
-      if (ivSequenceParams.maxObjects > 1) {
-        patch.objectId = unsigned(bitstream.getUVar(ivSequenceParams.maxObjects));
+      if (ivSequenceParams.maxEntities > 1) {
+        patch.entityId = unsigned(bitstream.getUVar(ivSequenceParams.maxEntities));
       }
 
       patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
@@ -241,9 +241,9 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
 
         bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
 
-        if (ivSequenceParams.maxObjects > 1) {
-          verify(patch.objectId);
-          bitstream.putUVar(*patch.objectId, ivSequenceParams.maxObjects);
+        if (ivSequenceParams.maxEntities > 1) {
+          verify(patch.entityId);
+          bitstream.putUVar(*patch.entityId, ivSequenceParams.maxEntities);
         }
 
         bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());
@@ -273,7 +273,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
   }
 }
 
-Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) {
+auto viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) -> Vec2i {
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
   int xM = patch.posInView.x();
@@ -305,7 +305,7 @@ Vec2i viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) {
   }
 }
 
-Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) {
+auto atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) -> Vec2i {
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
   int xM = patch.posInView.x();
@@ -337,14 +337,14 @@ Vec2i atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) {
   }
 }
 
-ostream &operator<<(ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) {
+auto operator<<(ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) -> ostream & {
   if (const auto &x = ivAccessUnitParams.atlasParamsList) {
     return stream << *x;
   }
   return stream << "No atlas parameters list\n";
 }
 
-bool IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const {
+auto IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const -> bool {
   return atlasParamsList == other.atlasParamsList;
 }
 

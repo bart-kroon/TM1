@@ -220,8 +220,8 @@ TEST_CASE("Half") {
   }
 
   SECTION("Encode") {
-    for (uint16_t code : {0x0400u, 0x7BFFu, 0x3BFFu, 0x3C00u, 0x3C01u, 0x3555u,
-                          0xC000u, 0x0000u, 0x8000u}) {
+    for (uint16_t code :
+         {0x0400u, 0x7BFFu, 0x3BFFu, 0x3C00u, 0x3C01u, 0x3555u, 0xC000u, 0x0000u, 0x8000u}) {
       REQUIRE(Half::decode(code).encode() == code);
     }
   }
@@ -253,5 +253,24 @@ TEST_CASE("Half") {
     REQUIRE(Half(0.F).encode() == 0x0000);         // positive zero
     REQUIRE(Half(-0.F).encode() == 0x8000);        // negative zero
   }
+}
+
+TEST_CASE("maxlevel", "[quantize_and_expand]") {
+  REQUIRE(maxLevel(8U) == 255U);
+  REQUIRE(maxLevel(10U) == 1023U);
+  REQUIRE(maxLevel(16U) == 65535U);
+}
+
+TEST_CASE("expandValue", "[quantize_and_expand]") {
+  REQUIRE(expandValue<10>(0) == 0.F);
+  REQUIRE(expandValue<8>(128) == 128.F / 255.F);
+  REQUIRE(expandValue<10>(1023) == 1.F);
+  REQUIRE(expandValue<16>(40000) == 40000.F / 65535.F);
+}
+
+TEST_CASE("quantizeValue", "[quantize_and_expand]") {
+  REQUIRE(quantizeValue<10>(NaN) == 0U);
+  REQUIRE(quantizeValue<10>(inf) == 1023U);
+  REQUIRE(quantizeValue<10>(1e20F) == 1023U);
 }
 } // namespace TMIV::Common

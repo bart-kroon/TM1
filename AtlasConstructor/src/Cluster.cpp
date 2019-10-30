@@ -60,7 +60,7 @@ void Cluster::push(int i, int j) {
   filling_++;
 }
 
-Cluster Cluster::align(const Cluster &c, int alignment) {
+auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
   Cluster d(c.viewId_, c.clusterId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
@@ -76,7 +76,7 @@ Cluster Cluster::align(const Cluster &c, int alignment) {
   return d;
 }
 
-Cluster Cluster::merge(const Cluster &c1, const Cluster &c2) {
+auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   Cluster c(c1.viewId_, c1.clusterId_);
 
   c.imin_ = min(c1.imin_, c2.imin_);
@@ -90,7 +90,8 @@ Cluster Cluster::merge(const Cluster &c1, const Cluster &c2) {
   return c;
 }
 
-pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, int overlap) const {
+auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
+    -> pair<Cluster, Cluster> {
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
@@ -142,8 +143,8 @@ pair<Cluster, Cluster> Cluster::split(const ClusteringMap &clusteringMap, int ov
   return pair<Cluster, Cluster>(c1, c2);
 }
 
-pair<ClusterList, ClusteringMap> Cluster::retrieve(int viewId, const Mask &maskMap,
-                                                   int firstClusterId, bool shouldNotBeSplit) {
+auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool shouldNotBeSplit)
+    -> pair<ClusterList, ClusteringMap> {
 
   pair<ClusterList, ClusteringMap> out(ClusterList(),
                                        ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));

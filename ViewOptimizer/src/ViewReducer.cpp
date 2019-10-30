@@ -34,7 +34,7 @@
 #include <TMIV/ViewOptimizer/ViewReducer.h>
 
 #include <TMIV/Common/Common.h>
-#include <TMIV/Image/Image.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
@@ -43,7 +43,6 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Image;
 using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 
@@ -264,13 +263,14 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
 
   Mat<int> isoverlap;
   isoverlap.resize(camera_from.size.y(), camera_from.size.x());
-  float depth_temp =
-      sqrtf(expandDepthValue<16>(camera_from, 1) * expandDepthValue<16>(camera_from, UINT16_MAX));
+  const auto depthTransform = DepthTransform<16>{camera_from};
+  const float middleDepth =
+      sqrtf(depthTransform.expandDepth(1) * depthTransform.expandDepth(UINT16_MAX));
 
   for (unsigned i = 0; i != depth.height(); ++i) {
     for (unsigned j = 0; j != depth.width(); ++j) {
       isoverlap(i, j) = 0;
-      depth(i, j) = depth_temp;
+      depth(i, j) = middleDepth;
     }
   }
   auto ptsOncamera_to = reprojectPoints(camera_from, camera_to, gridMapToProject, depth);

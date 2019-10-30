@@ -66,7 +66,7 @@ void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest
 }
 
 int mergeConflict;
-uint16_t filterMergeDepth(uint16_t i, uint16_t j) {
+auto filterMergeDepth(uint16_t i, uint16_t j) -> uint16_t {
   if (i > 0) {
     if (i >= j) { // Checking depth
       return i;
@@ -88,7 +88,7 @@ uint16_t filterMergeDepth(uint16_t i, uint16_t j) {
   return j;
 }
 
-uint16_t filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) {
+auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) -> uint16_t {
   if (i > 0) {
     if (id >= jd) { // Checking depth
       return i;
@@ -111,7 +111,7 @@ uint16_t filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) {
 }
 
 vector<unsigned int> selectedViewsPass, patchesViewId;
-uint16_t filterMaps(uint16_t i) {
+auto filterMaps(uint16_t i) -> uint16_t {
   if (i == unusedPatchId) {
     return i;
   }
@@ -127,7 +127,8 @@ uint16_t filterMaps(uint16_t i) {
   return i;
 }
 
-vector<size_t> sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target) {
+auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target)
+    -> vector<size_t> {
   float x_target = target.position[0];
   float y_target = target.position[1];
   float z_target = target.position[2];

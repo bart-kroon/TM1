@@ -34,7 +34,7 @@
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 
 #include "PrunedMesh.h"
-#include <TMIV/Image/Image.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
@@ -42,13 +42,13 @@
 #include <cassert>
 #include <cmath>
 #include <future>
+#include <iomanip>
 #include <iostream>
 #include <numeric>
 
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
-using namespace TMIV::Image;
 using namespace std;
 
 namespace TMIV::AtlasConstructor {
@@ -122,10 +122,10 @@ private:
   void createSynthesizerPerPartialView(const MVD16Frame &views) {
     m_synthesizers.clear();
     for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
-      if (m_isBasicView[i]) {
+      if (!m_isBasicView[i]) {
+        const auto depthTransform = DepthTransform<16>{m_viewParamsVector[i]};
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
-            m_config, m_viewParamsVector[i].size, i,
-            expandDepth(m_viewParamsVector[i], views[i].second)));
+            m_config, m_viewParamsVector[i].size, i, depthTransform.expandDepth(views[i].second)));
       }
     }
   }
@@ -139,7 +139,6 @@ private:
 
     for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
       if (m_isBasicView[i]) {
-        cout << "Synthesize basic view " << i << " to all remaining additional views:\n";
         synthesizeViews(i, views[i]);
       }
     }
@@ -168,7 +167,6 @@ private:
       auto it = max_element(
           begin(m_synthesizers), end(m_synthesizers),
           [](const auto &s1, const auto &s2) { return s1->maskAverage < s2->maskAverage; });
-      cout << "Prune view " << (*it)->index << ":\n";
       const auto i = (*it)->index;
       m_synthesizers.erase(it);
       synthesizeViews(i, views[i]);
@@ -180,7 +178,6 @@ private:
     for (auto i : m_pruningOrder) {
       auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
                         [i](const auto &s) { return s->index == i; });
-      cout << "Prune view " << i << ":\n";
       m_synthesizers.erase(it);
       synthesizeViews(i, views[i]);
     }
@@ -194,9 +191,19 @@ private:
     auto [ivertices, triangles, attributes] =
         unprojectPrunedView(view, m_viewParamsVector[index], m_masks[index].getPlane(0));
 
-    cout << "  The mesh has " << ivertices.size() << " vertices ("
+    if (m_isBasicView[index]) {
+      cout << "Basic view ";
+    } else {
+      cout << "Prune view ";
+    }
+
+    const auto prec = cout.precision(2);
+    const auto flags = cout.setf(ios::fixed, ios::floatfield);
+    cout << setw(2) << index << ": " << ivertices.size() << " vertices ("
          << 100. * double(ivertices.size()) / (view.first.getWidth() * view.first.getHeight())
          << "% of full view)\n";
+    cout.precision(prec);
+    cout.setf(flags);
 
     for (auto &s : m_synthesizers) {
       auto overtices = project(ivertices, m_viewParamsVector[index], m_viewParamsVector[s->index]);
@@ -217,7 +224,8 @@ private:
   }
 
   // Visit all pixel neighbors (in between 3 and 8)
-  template <typename F> static bool forNeighbors(int i, int j, array<size_t, 2> sizes, F f) {
+  template <typename F>
+  static auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
     const int n1 = max(0, i - 1);
     const int n2 = min(int(sizes[0]), i + 2);
     const int m1 = max(0, j - 1);
@@ -233,7 +241,7 @@ private:
     return true;
   }
 
-  Mat<uint8_t> erode(Mat<uint8_t> &mask) const {
+  static auto erode(Mat<uint8_t> &mask) -> Mat<uint8_t> {
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
@@ -243,7 +251,7 @@ private:
     return result;
   }
 
-  Mat<uint8_t> dilate(Mat<uint8_t> &mask) const {
+  static auto dilate(Mat<uint8_t> &mask) -> Mat<uint8_t> {
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
@@ -270,10 +278,8 @@ private:
     }
     synthesizer.maskAverage = float(accumulate(begin(mask), end(mask), 0)) /
                               (2.55F * float(mask.width() * mask.height()));
-    cout << "  New mask average for view " << synthesizer.index << " is " << synthesizer.maskAverage
-         << "%\n";
   }
-}; // namespace TMIV::AtlasConstructor
+};
 
 HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &nodeConfig)
     : m_impl(new Impl{nodeConfig}) {}

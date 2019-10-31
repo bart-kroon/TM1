@@ -34,6 +34,8 @@
 #ifndef _TMIV_METADATA_BITSTREAM_H_
 #define _TMIV_METADATA_BITSTREAM_H_
 
+#include <TMIV/Common/Half.h>
+
 #include <cstdint>
 #include <istream>
 
@@ -52,6 +54,7 @@ public:
   auto getUint8() -> uint8_t { return uint8_t(readBits(8)); }
   auto getUint16() -> uint16_t { return uint16_t(readBits(16)); }
   auto getUint32() -> uint32_t { return uint32_t(readBits(32)); }
+  auto getFloat16() -> Common::Half;
   auto getFloat32() -> float;
   auto getUVar(uint_least64_t range) -> uint_least64_t;
   auto getUExpGolomb() -> uint_least64_t;
@@ -78,6 +81,7 @@ public:
   void putUint8(uint8_t value) { writeBits(value, 8); }
   void putUint16(uint16_t value) { writeBits(value, 16); }
   void putUint32(uint32_t value) { writeBits(value, 32); }
+  void putFloat16(Common::Half value);
   void putFloat32(float value);
   void putUVar(uint_least64_t value, uint_least64_t range);
   void putUExpGolomb(uint_least64_t value);

@@ -250,9 +250,9 @@ const auto viewingSpace = array{
                                                    }}}}}}},
     ViewingSpace{
         {{ElementaryShapeOperation::add,
-          ElementaryShape{{PrimitiveShape{Cuboid{{1.F, 1.F, 1.F}, {1.F, 1.F, 1.F}}, {}, {}, {}},
-                           PrimitiveShape{Spheroid{{1.F, 1.F, 1.F}, {1.F, 1.F, 1.F}}, {}, {}, {}},
-                           PrimitiveShape{Halfspace{{1.F, 1.F, 1.F}, -1.F}, {}, {}, {}}}}}}}};
+          ElementaryShape{{PrimitiveShape{Cuboid{{-1.F, 0.F, 1.F}, {1.F, 2.F, 3.F}}, {}, {}, {}},
+                           PrimitiveShape{Spheroid{{-2.F, 2.F, 2.F}, {3.F, 2.F, 1.F}}, {}, {}, {}},
+                           PrimitiveShape{Halfspace{{3.F, 3.F, 3.F}, -1.F}, {}, {}, {}}}}}}}};
 
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},

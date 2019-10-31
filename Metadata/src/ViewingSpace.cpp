@@ -37,6 +37,8 @@
 
 #include <TMIV/Common/Half.h>
 
+#include <cassert>
+
 using namespace std;
 
 namespace TMIV::Metadata {
@@ -77,7 +79,8 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
 
 void ViewingSpace::encodeTo(OutputBitstream &stream) const {
   const auto numShapes = elementaryShapes.size();
-  stream.putUExpGolomb(numShapes);
+  assert(numShapes > 0);
+  stream.putUExpGolomb(numShapes - 1);
   for (auto i = 0; i < numShapes; ++i) {
     stream.writeBits((uint_least64_t)elementaryShapes[i].first, 1);
     elementaryShapes[i].second.encodeTo(stream);
@@ -86,12 +89,10 @@ void ViewingSpace::encodeTo(OutputBitstream &stream) const {
 
 auto operator<<(std::ostream &stream, const ElementaryShape &elementaryShape) -> std::ostream & {
   stream << (elementaryShape.primitiveOperation == PrimitiveShapeOperation::interpolate
-                 ? "interpolate "
-                 : "add ");
+                 ? "interpolate"
+                 : "add");
   for (const auto p : elementaryShape.primitives) {
-    if (&p != &elementaryShape.primitives.front()) {
-      stream << ", ";
-    }
+	stream << ", ";
     stream << p;
   }
   return stream;
@@ -104,50 +105,54 @@ auto ElementaryShape::operator==(const ElementaryShape &other) const -> bool {
 }
 
 auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
+  ElementaryShape elementaryShape;
   const auto numPrimitives = stream.readBits(8) + 1;
   const auto operation = (PrimitiveShapeOperation)stream.readBits(1);
   const auto guardBandPresent = stream.getFlag();
   const auto orientationPresent = stream.getFlag();
   const auto directionConstraintPresent = stream.getFlag();
-  PrimitiveShape shape;
+  elementaryShape.primitives.reserve(numPrimitives);
   for (auto i = 0; i < numPrimitives; ++i) {
+    PrimitiveShape primitiveShape;
     const auto shapeType = (PrimitiveShapeType)stream.readBits(2);
     switch (shapeType) {
     case PrimitiveShapeType::cuboid:
-      shape.primitive = Cuboid::decodeFrom(stream);
+      primitiveShape.primitive = Cuboid::decodeFrom(stream);
       break;
     case PrimitiveShapeType::spheroid:
-      shape.primitive = Spheroid::decodeFrom(stream);
+      primitiveShape.primitive = Spheroid::decodeFrom(stream);
       break;
     case PrimitiveShapeType::halfspace:
-      shape.primitive = Halfspace::decodeFrom(stream);
+      primitiveShape.primitive = Halfspace::decodeFrom(stream);
       break;
     default:
       abort();
     }
     if (guardBandPresent) {
-      shape.guardBandSize = decodeHalf(stream);
+      primitiveShape.guardBandSize = decodeHalf(stream);
     }
     if (orientationPresent) {
-      shape.rotation = Common::Vec3f();
-      shape.rotation.value().x() = decodeHalf(stream);
-      shape.rotation.value().y() = decodeHalf(stream);
-      shape.rotation.value().z() = decodeHalf(stream);
+      primitiveShape.rotation = Common::Vec3f();
+      primitiveShape.rotation.value().x() = decodeHalf(stream);
+      primitiveShape.rotation.value().y() = decodeHalf(stream);
+      primitiveShape.rotation.value().z() = decodeHalf(stream);
     }
     if (directionConstraintPresent) {
-      auto &vdc = shape.viewingDirectionConstraint.value();
+      auto &vdc = primitiveShape.viewingDirectionConstraint.value();
       if (guardBandPresent)
-        vdc.guardBandDirectionSize = Half::decode(stream.getUint16());
+        vdc.guardBandDirectionSize = decodeHalf(stream);
       vdc.yawCenter = decodeHalf(stream);
       vdc.yawRange = decodeHalf(stream);
       vdc.pitchCenter = decodeHalf(stream);
       vdc.pitchRange = decodeHalf(stream);
     }
+    elementaryShape.primitives.emplace_back(primitiveShape);
   }
-  return {};
+  return elementaryShape;
 }
 
 void ElementaryShape::encodeTo(OutputBitstream &stream) const {
+  assert(primitives.size() > 0);
   bool guardBandPresent{}, orientationPresent{}, directionConstraintPresent{};
   for (const auto &p : primitives) {
     guardBandPresent |= p.guardBandSize.has_value();

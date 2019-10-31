@@ -206,7 +206,9 @@ const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
-const auto viewingSpace = array{ViewingSpace{}};
+const auto viewingSpace =
+    array{ViewingSpace{{{ElementaryShapeOperation::add,
+                         ElementaryShape{{PrimitiveShape{Cuboid{{}, {}}, {}, {}, {}}}}}}}};
 
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
@@ -215,7 +217,7 @@ const auto ivSequenceParams =
                            2,    // num objects
                            2,    // max groups
                            12,   // num depth occupancy bits
-                           ViewingSpace{}}};
+                           viewingSpace[0]}};
 
 const auto atlasParamsList = array{
     AtlasParamsList{
@@ -280,7 +282,7 @@ TEST_CASE("Metadata bitstreams") {
 
   SECTION("ivs_params") {
     REQUIRE(codingTest(examples::ivSequenceParams[0], 59));
-    REQUIRE(codingTest(examples::ivSequenceParams[1], 84));
+    REQUIRE(codingTest(examples::ivSequenceParams[1], 98));
   }
 
   SECTION("atlas_params_list") {
@@ -293,7 +295,7 @@ TEST_CASE("Metadata bitstreams") {
     REQUIRE(codingTest(examples::ivAccessUnitParams[1], 47, examples::ivSequenceParams[1]));
   }
 
-  SECTION("viewing_space") { REQUIRE(codingTest(examples::viewingSpace[0], 0)); }
+  SECTION("viewing_space") { REQUIRE(codingTest(examples::viewingSpace[0], 14)); }
 }
 
 TEST_CASE("OccupancyTransform") {

@@ -133,7 +133,7 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
       primitiveShape.rotation.value().z() = decodeHalf(stream);
     }
     if (directionConstraintPresent) {
-      auto &vdc = primitiveShape.viewingDirectionConstraint.value();
+      auto vdc = PrimitiveShape::ViewingDirectionConstraint();
       if (guardBandPresent) {
         vdc.guardBandDirectionSize = decodeHalf(stream);
       }
@@ -141,6 +141,7 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
       vdc.yawRange = decodeHalf(stream);
       vdc.pitchCenter = decodeHalf(stream);
       vdc.pitchRange = decodeHalf(stream);
+      primitiveShape.viewingDirectionConstraint = vdc;
     }
     elementaryShape.primitives.emplace_back(primitiveShape);
   }

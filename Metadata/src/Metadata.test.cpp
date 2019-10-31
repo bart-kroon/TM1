@@ -206,9 +206,53 @@ const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
-const auto viewingSpace =
-    array{ViewingSpace{{{ElementaryShapeOperation::add,
-                         ElementaryShape{{PrimitiveShape{Cuboid{{}, {}}, {}, {}, {}}}}}}}};
+const auto viewingSpace = array{
+    ViewingSpace{
+        {{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
+                                                             Cuboid{{}, {}}, // primitive
+                                                             {},             // guard band size
+                                                             {},             // orientation
+                                                             {} // viewing direction constraint
+                                                         }},
+                                                         {}}}}},
+    ViewingSpace{{{ElementaryShapeOperation::subtract,
+                   ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, {}, {}, {}}},
+                                   PrimitiveShapeOperation::interpolate}},
+                  {ElementaryShapeOperation::add,
+                   ElementaryShape{{PrimitiveShape{Halfspace{{}, {}}, {}, {}, {}}}}}}},
+    ViewingSpace{{{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
+                                                      Cuboid{{}, {}},
+                                                      1.F,                // guard band size
+                                                      Vec3f{30.F, 60.F, 90.F}, // orientation
+                                                      {} // viewing direction constraint
+                                                  }}}}}},
+    ViewingSpace{{{ElementaryShapeOperation::add,
+                   ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
+                                                   {},
+                                                   {},
+                                                   PrimitiveShape::ViewingDirectionConstraint{
+                                                       {},
+                                                       90.F, // yaw_center
+                                                       30.F, // yaw_range,
+                                                       45.F, // pitch_center
+                                                       60.F  // pitch_range
+                                                   }}}}}}},
+    ViewingSpace{{{ElementaryShapeOperation::add,
+                   ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
+                                                   1.F,
+                                                   {},
+                                                   PrimitiveShape::ViewingDirectionConstraint{
+                                                       15.F, // guard_band_direction_size
+                                                       90.F, // yaw_center
+                                                       30.F, // yaw_range,
+                                                       45.F, // pitch_center
+                                                       60.F  // pitch_range
+                                                   }}}}}}},
+    ViewingSpace{
+        {{ElementaryShapeOperation::add,
+          ElementaryShape{{PrimitiveShape{Cuboid{{1.F, 1.F, 1.F}, {1.F, 1.F, 1.F}}, {}, {}, {}},
+                           PrimitiveShape{Spheroid{{1.F, 1.F, 1.F}, {1.F, 1.F, 1.F}}, {}, {}, {}},
+                           PrimitiveShape{Halfspace{{1.F, 1.F, 1.F}, -1.F}, {}, {}, {}}}}}}}};
 
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
@@ -295,7 +339,14 @@ TEST_CASE("Metadata bitstreams") {
     REQUIRE(codingTest(examples::ivAccessUnitParams[1], 47, examples::ivSequenceParams[1]));
   }
 
-  SECTION("viewing_space") { REQUIRE(codingTest(examples::viewingSpace[0], 14)); }
+  SECTION("viewing_space") {
+    REQUIRE(codingTest(examples::viewingSpace[0], 14));
+    REQUIRE(codingTest(examples::viewingSpace[1], 25));
+    REQUIRE(codingTest(examples::viewingSpace[2], 22));
+    REQUIRE(codingTest(examples::viewingSpace[3], 22));
+    REQUIRE(codingTest(examples::viewingSpace[4], 26));
+    REQUIRE(codingTest(examples::viewingSpace[5], 35));
+  }
 }
 
 TEST_CASE("OccupancyTransform") {

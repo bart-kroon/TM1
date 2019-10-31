@@ -52,7 +52,7 @@ inline void encodeHalf(const float x, OutputBitstream &stream) {
 
 auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
   stream << "Viewing space:" << endl;
-  for (const auto s : viewingSpace.elementaryShapes) {
+  for (const auto &s : viewingSpace.elementaryShapes) {
     stream << (s.first == ElementaryShapeOperation::add ? "add " : "subtract ");
     stream << '(' << s.second << ')' << endl;
   }
@@ -60,9 +60,7 @@ auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::
 }
 
 auto ViewingSpace::operator==(const ViewingSpace &other) const -> bool {
-  if (elementaryShapes != other.elementaryShapes)
-    return false;
-  return true;
+  return (elementaryShapes == other.elementaryShapes);
 }
 
 auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
@@ -70,7 +68,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
   size_t numShapes = stream.getUExpGolomb() + 1;
   vs.elementaryShapes.reserve(numShapes);
   for (auto i = 0; i < numShapes; ++i) {
-    const auto op = (ElementaryShapeOperation)stream.readBits(1);
+    const auto op = ElementaryShapeOperation(stream.readBits(1));
     const auto shape = ElementaryShape::decodeFrom(stream);
     vs.elementaryShapes.emplace_back(op, shape);
   }
@@ -78,12 +76,11 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
 }
 
 void ViewingSpace::encodeTo(OutputBitstream &stream) const {
-  const auto numShapes = elementaryShapes.size();
-  assert(numShapes > 0);
-  stream.putUExpGolomb(numShapes - 1);
-  for (auto i = 0; i < numShapes; ++i) {
-    stream.writeBits((uint_least64_t)elementaryShapes[i].first, 1);
-    elementaryShapes[i].second.encodeTo(stream);
+  assert(!elementaryShapes.empty());
+  stream.putUExpGolomb(elementaryShapes.size() - 1);
+  for (const auto& shape : elementaryShapes) {
+    stream.writeBits(uint_least64_t(shape.first), 1);
+    shape.second.encodeTo(stream);
   }
 }
 
@@ -91,7 +88,7 @@ auto operator<<(std::ostream &stream, const ElementaryShape &elementaryShape) ->
   stream << (elementaryShape.primitiveOperation == PrimitiveShapeOperation::interpolate
                  ? "interpolate"
                  : "add");
-  for (const auto p : elementaryShape.primitives) {
+  for (const auto &p : elementaryShape.primitives) {
 	stream << ", ";
     stream << p;
   }
@@ -99,22 +96,20 @@ auto operator<<(std::ostream &stream, const ElementaryShape &elementaryShape) ->
 }
 
 auto ElementaryShape::operator==(const ElementaryShape &other) const -> bool {
-  if (primitives != other.primitives)
-    return false;
-  return true;
+  return (primitives == other.primitives);
 }
 
 auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
   ElementaryShape elementaryShape;
   const auto numPrimitives = stream.readBits(8) + 1;
-  const auto operation = (PrimitiveShapeOperation)stream.readBits(1);
+  elementaryShape.primitiveOperation = PrimitiveShapeOperation(stream.readBits(1));
   const auto guardBandPresent = stream.getFlag();
   const auto orientationPresent = stream.getFlag();
   const auto directionConstraintPresent = stream.getFlag();
   elementaryShape.primitives.reserve(numPrimitives);
   for (auto i = 0; i < numPrimitives; ++i) {
     PrimitiveShape primitiveShape;
-    const auto shapeType = (PrimitiveShapeType)stream.readBits(2);
+    const auto shapeType = PrimitiveShapeType(stream.readBits(2));
     switch (shapeType) {
     case PrimitiveShapeType::cuboid:
       primitiveShape.primitive = Cuboid::decodeFrom(stream);
@@ -139,8 +134,9 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
     }
     if (directionConstraintPresent) {
       auto &vdc = primitiveShape.viewingDirectionConstraint.value();
-      if (guardBandPresent)
+      if (guardBandPresent) {
         vdc.guardBandDirectionSize = decodeHalf(stream);
+      }
       vdc.yawCenter = decodeHalf(stream);
       vdc.yawRange = decodeHalf(stream);
       vdc.pitchCenter = decodeHalf(stream);
@@ -152,8 +148,10 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
 }
 
 void ElementaryShape::encodeTo(OutputBitstream &stream) const {
-  assert(primitives.size() > 0);
-  bool guardBandPresent{}, orientationPresent{}, directionConstraintPresent{};
+  assert(!primitives.empty());
+  bool guardBandPresent{};
+  bool orientationPresent{};
+  bool directionConstraintPresent{};
   for (const auto &p : primitives) {
     guardBandPresent |= p.guardBandSize.has_value();
     orientationPresent |= p.rotation.has_value();
@@ -163,15 +161,16 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
     }
   }
   stream.writeBits(primitives.size() - 1, 8);
-  stream.writeBits((unsigned)primitiveOperation, 1);
+  stream.writeBits(unsigned(primitiveOperation), 1);
   stream.putFlag(guardBandPresent);
   stream.putFlag(orientationPresent);
   stream.putFlag(directionConstraintPresent);
   for (const auto &p : primitives) {
-    stream.writeBits((unsigned)p.shapeType(), 2);
+    stream.writeBits(unsigned(p.shapeType()), 2);
     visit([&](const auto &x) { x.encodeTo(stream); }, p.primitive);
-    if (guardBandPresent)
-      encodeHalf(p.guardBandSize.value_or(0.f), stream);
+    if (guardBandPresent) {
+      encodeHalf(p.guardBandSize.value_or(0.F), stream);
+    }
     if (orientationPresent) {
       const Common::Vec3f r = p.rotation.value_or(Common::Vec3f());
       encodeHalf(r.x(), stream);
@@ -181,8 +180,9 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
     if (directionConstraintPresent) {
       const auto vdc =
           p.viewingDirectionConstraint.value_or(PrimitiveShape::ViewingDirectionConstraint());
-      if (guardBandPresent)
-        encodeHalf(vdc.guardBandDirectionSize.value_or(0.f), stream);
+      if (guardBandPresent) {
+        encodeHalf(vdc.guardBandDirectionSize.value_or(0.F), stream);
+      }
       encodeHalf(vdc.yawCenter, stream);
       encodeHalf(vdc.yawRange, stream);
       encodeHalf(vdc.pitchCenter, stream);
@@ -201,8 +201,8 @@ auto operator<<(std::ostream &stream, const PrimitiveShape &shape) -> std::ostre
   }
   if (shape.viewingDirectionConstraint.has_value()) {
     const auto &vdc = shape.viewingDirectionConstraint.value();
-    stream << " yaw " << vdc.yawCenter << "+/-" << 0.5f * vdc.yawRange << " pitch "
-           << vdc.pitchRange << "+/-" << 0.5f * vdc.pitchRange;
+    stream << " yaw " << vdc.yawCenter << "+/-" << 0.5F * vdc.yawRange << " pitch "
+           << vdc.pitchRange << "+/-" << 0.5F * vdc.pitchRange;
     if (vdc.guardBandDirectionSize.has_value()) {
       stream << " guardband " << vdc.guardBandDirectionSize.value();
     }
@@ -211,25 +211,32 @@ auto operator<<(std::ostream &stream, const PrimitiveShape &shape) -> std::ostre
 }
 
 auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
-  if (primitive != other.primitive)
+  if (primitive != other.primitive) {
     return false;
-  if (guardBandSize != other.guardBandSize)
+  }
+  if (guardBandSize != other.guardBandSize) {
     return false;
-  if (rotation != other.rotation)
+  }
+  if (rotation != other.rotation) {
     return false;
-  if (viewingDirectionConstraint != other.viewingDirectionConstraint)
+  }
+  if (viewingDirectionConstraint != other.viewingDirectionConstraint) {
     return false;
+  }
   return true;
 }
 
-bool PrimitiveShape::ViewingDirectionConstraint::
-operator==(const ViewingDirectionConstraint& other) const {
-  if (guardBandDirectionSize != other.guardBandDirectionSize)
+auto PrimitiveShape::ViewingDirectionConstraint::
+operator==(const ViewingDirectionConstraint& other) const -> bool {
+  if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
-  if (yawCenter != other.yawCenter || pitchCenter != other.pitchCenter)
+  }
+  if (yawCenter != other.yawCenter || pitchCenter != other.pitchCenter) {
     return false;
-  if (yawRange != other.yawRange || pitchRange != other.pitchRange)
+  }
+  if (yawRange != other.yawRange || pitchRange != other.pitchRange) {
     return false;
+  }
   return true;
 }
 

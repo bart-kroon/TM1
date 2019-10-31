@@ -237,7 +237,7 @@ TEST_CASE("Half") {
     REQUIRE(Half::decode(0x0000) == 0.F);         // positive zero
     REQUIRE(Half::decode(0x8000) == -0.F);        // negative zero
   }
-
+  
   SECTION("Explicit conversion from float (lossy)") {
     REQUIRE_THROWS_AS(Half(nextafter(65504.F, 1e6F)), HalfError);
     REQUIRE_THROWS_AS(Half(nextafter(-65504.F, -1e6F)), HalfError);

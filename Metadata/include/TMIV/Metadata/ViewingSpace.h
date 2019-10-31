@@ -73,7 +73,7 @@ struct ViewingSpace {
   // In specification: elementary_shape[ e ]
   ElementaryShapeVector elementaryShapes;
 
-  friend std::ostream &operator<<(std::ostream &stream, const ViewingSpace &viewSpace);
+  friend std::ostream &operator<<(std::ostream &stream, const ViewingSpace &viewingSpace);
   bool operator==(const ViewingSpace &other) const;
   bool operator!=(const ViewingSpace &other) const { return !operator==(other); }
 
@@ -111,7 +111,7 @@ struct Cuboid {
   // In specification: size_z[e][s]
   Common::Vec3f size{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const Cuboid &shape);
+  friend std::ostream &operator<<(std::ostream &stream, const Cuboid &cuboid);
   bool operator==(const Cuboid &other) const;
   bool operator!=(const Cuboid &other) const { return !operator==(other); }
 
@@ -128,7 +128,7 @@ struct Spheroid {
   // In specification: radius[e][s]
   Common::Vec3f radius{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const Spheroid &shape);
+  friend std::ostream &operator<<(std::ostream &stream, const Spheroid &spheroid);
   bool operator==(const Spheroid &other) const;
   bool operator!=(const Spheroid &other) const { return !operator==(other); }
 
@@ -145,7 +145,7 @@ struct Halfspace {
   // In specification: distance[e][s]
   float distance{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const Halfspace &shape);
+  friend std::ostream &operator<<(std::ostream &stream, const Halfspace &halfspace);
   bool operator==(const Halfspace &other) const;
   bool operator!=(const Halfspace &other) const { return !operator==(other); }
 

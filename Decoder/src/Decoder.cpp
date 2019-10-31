@@ -63,4 +63,14 @@ auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
       atlas, m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas),
       m_ivSequenceParams, m_ivAccessUnitParams, target);
 }
+
+auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList {
+  return m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas);
+}
+
+auto Decoder::recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame {
+  return m_atlasDeconstructor->recoverPrunedView(atlas, m_ivSequenceParams.viewParamsList,
+                                                 *m_ivAccessUnitParams.atlasParamsList);
+}
+
 } // namespace TMIV::Decoder

@@ -204,6 +204,7 @@ inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {
     return PrimitiveShapeType::spheroid;
   if (std::holds_alternative<Halfspace>(primitive))
     return PrimitiveShapeType::halfspace;
+  abort();
 }
 
 } // namespace TMIV::Metadata

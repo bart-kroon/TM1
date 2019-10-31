@@ -235,7 +235,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   // Ordering views based on their distance & angle to target view
   const auto sortedCamerasId =
       helper.sortGViews(viewsPerGroup, ivSequenceParams.viewParamsList, target);
-  if (helper.numberOfViewsPerPass.size() == 0) { // in case of numGroups == 1
+  if (helper.numberOfViewsPerPass.empty()) { // in case of numGroups == 1
     helper.numberOfViewsPerPass.push_back(ivSequenceParams.viewParamsList.size());
   }
 

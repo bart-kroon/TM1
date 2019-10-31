@@ -103,105 +103,93 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
     -> Grouping {
   auto grouping = Grouping{};
 
-  unsigned int m_numberOfGroups = ivSequenceParams.numGroups;
-  auto cameras = ivSequenceParams.viewParamsList;
+  const auto &cameras = ivSequenceParams.viewParamsList;
+  const auto numGroups = ivSequenceParams.numGroups;
+
   // Compute axial ranges and find the dominant one
   vector<float> Tx, Ty, Tz;
-
   for (int camIndex = 0; camIndex < cameras.size(); camIndex++) {
     Tx.push_back(cameras[camIndex].position[0]);
     Ty.push_back(cameras[camIndex].position[1]);
     Tz.push_back(cameras[camIndex].position[2]);
   }
-  float xMax = *std::max_element(Tx.begin(), Tx.end());
-  float xMin = *std::min_element(Tx.begin(), Tx.end());
-  float yMax = *std::max_element(Ty.begin(), Ty.end());
-  float yMin = *std::min_element(Ty.begin(), Ty.end());
-  float zMax = *std::max_element(Tz.begin(), Tz.end());
-  float zMin = *std::min_element(Tz.begin(), Tz.end());
 
-  float xRange = xMax - xMin;
-  float yRange = yMax - yMin;
-  float zRange = zMax - zMin;
-  int dominantAxis;
-  if (zRange >= xRange && zRange >= yRange)
+  const float xMax = *std::max_element(Tx.begin(), Tx.end());
+  const float xMin = *std::min_element(Tx.begin(), Tx.end());
+  const float yMax = *std::max_element(Ty.begin(), Ty.end());
+  const float yMin = *std::min_element(Ty.begin(), Ty.end());
+  const float zMax = *std::max_element(Tz.begin(), Tz.end());
+  const float zMin = *std::min_element(Tz.begin(), Tz.end());
+
+  const float xRange = xMax - xMin;
+  const float yRange = yMax - yMin;
+  const float zRange = zMax - zMin;
+
+  int dominantAxis = 0;
+  if (zRange >= xRange && zRange >= yRange) {
     dominantAxis = 2;
-  else if (yRange >= xRange && yRange >= zRange)
+  } else if (yRange >= xRange && yRange >= zRange) {
     dominantAxis = 1;
-  else
-    dominantAxis = 0;
-
-  // Select views per group
-  vector<Metadata::ViewParams> viewsPool;
-  vector<uint8_t> viewsLabels, viewsInGroup;
-  vector<int> numViewsPerGroup;
-  float T0[3];
-  for (int camIndex = 0; camIndex < cameras.size(); camIndex++) {
-    viewsPool.push_back(cameras[camIndex]);
-    viewsLabels.push_back(camIndex);
   }
 
-  for (unsigned int gIndex = 0; gIndex < m_numberOfGroups; gIndex++) {
+  // Select views per group
+  auto viewsPool = vector<Metadata::ViewParams>{};
+  auto viewsLabels = vector<uint8_t>{};
+  auto viewsInGroup = vector<uint8_t>{};
+  auto numViewsPerGroup = vector<int>{};
+
+  for (size_t camIndex = 0; camIndex < cameras.size(); camIndex++) {
+    viewsPool.push_back(cameras[camIndex]);
+    viewsLabels.push_back(uint8_t(camIndex));
+  }
+
+  for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
     viewsInGroup.clear();
     Metadata::ViewParamsList camerasInGroup, camerasOutGroup;
-    if (gIndex < m_numberOfGroups - 1) {
-      numViewsPerGroup.push_back((int) std::floor( cameras.size() / m_numberOfGroups));
-      // select max axial position for the group and find nearest cameras
-      /*
-      if (dominantAxis == 0) {
-        T0[0] = *std::max_element(Tx.begin(), Tx.end());
-        T0[1] = std::accumulate(Ty.begin(), Ty.end(), 0.0) / Ty.size();
-        T0[2] = std::accumulate(Tz.begin(), Tz.end(), 0.0) / Tz.size();
-      } else if (dominantAxis == 1) {
-        T0[0] = std::accumulate(Tx.begin(), Tx.end(), 0.0) / Tx.size();
-        T0[1] = *std::max_element(Ty.begin(), Ty.end());
-        T0[2] = std::accumulate(Tz.begin(), Tz.end(), 0.0) / Tz.size();
-      } else {
-        T0[0] = std::accumulate(Tx.begin(), Tx.end(), 0.0) / Tx.size();
-        T0[1] = std::accumulate(Ty.begin(), Ty.end(), 0.0) / Ty.size();
-        T0[2] = *std::max_element(Tz.begin(), Tz.end());
-      }
-          */
+    if (gIndex < numGroups - 1) {
+      numViewsPerGroup.push_back((int)std::floor(cameras.size() / numGroups));
       std::int64_t maxElementIndex;
-      if (dominantAxis == 0)
+
+      if (dominantAxis == 0) {
         maxElementIndex = std::max_element(Tx.begin(), Tx.end()) - Tx.begin();
-      else if (dominantAxis == 1)
+      } else if (dominantAxis == 1) {
         maxElementIndex = std::max_element(Ty.begin(), Ty.end()) - Ty.begin();
-      else
+      } else {
         maxElementIndex = std::max_element(Tz.begin(), Tz.end()) - Tz.begin();
-      T0[0] = Tx[maxElementIndex];
-      T0[1] = Ty[maxElementIndex];
-      T0[2] = Tz[maxElementIndex];
+      }
+
+      const auto T0 = Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
       vector<float> distance;
       for (size_t id = 0; id < viewsPool.size(); ++id)
-        distance.push_back(sqrt(std::pow(viewsPool[id].position[0] - T0[0], 2) +
-                                std::pow(viewsPool[id].position[1] - T0[1], 2) +
-                                std::pow(viewsPool[id].position[2] - T0[2], 2)));
+        distance.push_back(norm(viewsPool[id].position - T0));
+
       // ascending order
       vector<size_t> sortedCamerasId(viewsPool.size());
       iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
       sort(sortedCamerasId.begin(), sortedCamerasId.end(),
            [&distance](size_t i1, size_t i2) { return distance[i1] < distance[i2]; });
-      for (int camIndex = 0; camIndex < numViewsPerGroup[gIndex]; camIndex++)
+      for (int camIndex = 0; camIndex < numViewsPerGroup[gIndex]; camIndex++) {
         camerasInGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
+      }
+
       // update the viewsPool
       Tx.clear();
       Ty.clear();
       Tz.clear();
       camerasOutGroup.clear();
-      for (int camIndex = numViewsPerGroup[gIndex]; camIndex < viewsPool.size(); camIndex++) {
+      for (size_t camIndex = numViewsPerGroup[gIndex]; camIndex < viewsPool.size(); camIndex++) {
         camerasOutGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
         Tx.push_back(viewsPool[sortedCamerasId[camIndex]].position[0]);
         Ty.push_back(viewsPool[sortedCamerasId[camIndex]].position[1]);
         Tz.push_back(viewsPool[sortedCamerasId[camIndex]].position[2]);
       }
 
-	  cout << "Views (0-based) Selected for G" << gIndex << " : ";
-      for (auto i = 0; i < camerasInGroup.size(); i++) {
-            cout << "v" << unsigned(viewsLabels[sortedCamerasId[i]]) << ", ";
-			viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
+      cout << "Views (0-based) Selected for G" << gIndex << " : ";
+      for (size_t i = 0; i < camerasInGroup.size(); i++) {
+        cout << "v" << unsigned(viewsLabels[sortedCamerasId[i]]) << ", ";
+        viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
       }
-      cout<<"\n";
+      cout << "\n";
 
       vector<uint8_t> viewLabelsTemp;
       for (auto i = camerasInGroup.size(); i < viewsLabels.size(); i++)
@@ -209,23 +197,26 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
       viewsLabels.assign(viewLabelsTemp.begin(), viewLabelsTemp.end());
 
       viewsPool.clear();
-      for (int camIndex = 0; camIndex < camerasOutGroup.size(); camIndex++)
+      for (size_t camIndex = 0; camIndex < camerasOutGroup.size(); camIndex++)
         viewsPool.push_back(camerasOutGroup[camIndex]);
     } else {
       camerasInGroup.clear();
-      numViewsPerGroup.push_back((int)(cameras.size() - (m_numberOfGroups - 1) * std::floor(cameras.size() / m_numberOfGroups)));
-      for (int camIndex = 0; camIndex < viewsPool.size(); camIndex++)
+      numViewsPerGroup.push_back(
+          int((cameras.size() - (numGroups - 1) * std::floor(cameras.size() / numGroups))));
+      for (size_t camIndex = 0; camIndex < viewsPool.size(); camIndex++) {
         camerasInGroup.push_back(viewsPool[camIndex]);
+      }
 
       cout << "Views (0-based) Selected for G" << gIndex << " : ";
       for (auto i = 0; i < camerasInGroup.size(); i++) {
-        cout << "v" << unsigned (viewsLabels[i]) << ", ";
+        cout << "v" << unsigned(viewsLabels[i]) << ", ";
         viewsInGroup.push_back(viewsLabels[i]);
       }
       cout << "\n";
     }
-    for (size_t viewId = 0; viewId < viewsInGroup.size(); ++viewId)
+    for (size_t viewId = 0; viewId < viewsInGroup.size(); ++viewId) {
       grouping.emplace_back(gIndex, viewsInGroup[viewId]);
+    }
   }
   return grouping;
 }

@@ -62,7 +62,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
   ViewingSpace vs;
   size_t numShapes = stream.getUExpGolomb() + 1;
   vs.elementaryShapes.reserve(numShapes);
-  for (auto i = 0; i < numShapes; ++i) {
+  for (size_t i = 0; i < numShapes; ++i) {
     const auto op = ElementaryShapeOperation(stream.readBits(1));
     const auto shape = ElementaryShape::decodeFrom(stream);
     vs.elementaryShapes.emplace_back(op, shape);
@@ -102,7 +102,7 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
   const auto orientationPresent = stream.getFlag();
   const auto directionConstraintPresent = stream.getFlag();
   elementaryShape.primitives.reserve(numPrimitives);
-  for (auto i = 0; i < numPrimitives; ++i) {
+  for (size_t i = 0; i < numPrimitives; ++i) {
     PrimitiveShape primitiveShape;
     const auto shapeType = PrimitiveShapeType(stream.readBits(2));
     switch (shapeType) {

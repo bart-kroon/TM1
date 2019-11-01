@@ -103,15 +103,17 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
     -> Grouping {
   auto grouping = Grouping{};
 
-  const auto &cameras = ivSequenceParams.viewParamsList;
+  const auto &viewParamsList = ivSequenceParams.viewParamsList;
   const auto numGroups = ivSequenceParams.numGroups;
 
   // Compute axial ranges and find the dominant one
-  vector<float> Tx, Ty, Tz;
-  for (int camIndex = 0; camIndex < cameras.size(); camIndex++) {
-    Tx.push_back(cameras[camIndex].position[0]);
-    Ty.push_back(cameras[camIndex].position[1]);
-    Tz.push_back(cameras[camIndex].position[2]);
+  auto Tx = vector<float>{};
+  auto Ty = vector<float>{};
+  auto Tz = vector<float>{};
+  for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
+    Tx.push_back(viewParamsList[camIndex].position[0]);
+    Ty.push_back(viewParamsList[camIndex].position[1]);
+    Tz.push_back(viewParamsList[camIndex].position[2]);
   }
 
   const float xMax = *std::max_element(Tx.begin(), Tx.end());
@@ -138,16 +140,17 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
   auto viewsInGroup = vector<uint8_t>{};
   auto numViewsPerGroup = vector<int>{};
 
-  for (size_t camIndex = 0; camIndex < cameras.size(); camIndex++) {
-    viewsPool.push_back(cameras[camIndex]);
+  for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
+    viewsPool.push_back(viewParamsList[camIndex]);
     viewsLabels.push_back(uint8_t(camIndex));
   }
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
     viewsInGroup.clear();
-    Metadata::ViewParamsList camerasInGroup, camerasOutGroup;
+    auto camerasInGroup = Metadata::ViewParamsList{};
+    auto camerasOutGroup = Metadata::ViewParamsList{};
     if (gIndex < numGroups - 1) {
-      numViewsPerGroup.push_back((int)std::floor(cameras.size() / numGroups));
+      numViewsPerGroup.push_back(int(std::floor(viewParamsList.size() / numGroups)));
       std::int64_t maxElementIndex;
 
       if (dominantAxis == 0) {
@@ -159,9 +162,11 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
       }
 
       const auto T0 = Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
-      vector<float> distance;
-      for (size_t id = 0; id < viewsPool.size(); ++id)
-        distance.push_back(norm(viewsPool[id].position - T0));
+      auto distance = vector<float>();
+      distance.reserve(viewsPool.size());
+      for (const auto &viewParams : viewsPool) {
+        distance.push_back(norm(viewParams.position - T0));
+      }
 
       // ascending order
       vector<size_t> sortedCamerasId(viewsPool.size());
@@ -191,31 +196,30 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
       }
       cout << "\n";
 
-      vector<uint8_t> viewLabelsTemp;
-      for (auto i = camerasInGroup.size(); i < viewsLabels.size(); i++)
+      auto viewLabelsTemp = vector<uint8_t>{};
+      for (size_t i = camerasInGroup.size(); i < viewsLabels.size(); i++) {
         viewLabelsTemp.push_back(viewsLabels[sortedCamerasId[i]]);
+      }
       viewsLabels.assign(viewLabelsTemp.begin(), viewLabelsTemp.end());
 
-      viewsPool.clear();
-      for (size_t camIndex = 0; camIndex < camerasOutGroup.size(); camIndex++)
-        viewsPool.push_back(camerasOutGroup[camIndex]);
+      viewsPool = camerasOutGroup;
     } else {
-      camerasInGroup.clear();
       numViewsPerGroup.push_back(
-          int((cameras.size() - (numGroups - 1) * std::floor(cameras.size() / numGroups))));
-      for (size_t camIndex = 0; camIndex < viewsPool.size(); camIndex++) {
-        camerasInGroup.push_back(viewsPool[camIndex]);
-      }
+          int((viewParamsList.size() -
+               (numGroups - 1) * std::floor(viewParamsList.size() / numGroups))));
+
+      camerasInGroup.clear();
+      copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
 
       cout << "Views (0-based) Selected for G" << gIndex << " : ";
-      for (auto i = 0; i < camerasInGroup.size(); i++) {
+      for (size_t i = 0; i < camerasInGroup.size(); i++) {
         cout << "v" << unsigned(viewsLabels[i]) << ", ";
         viewsInGroup.push_back(viewsLabels[i]);
       }
       cout << "\n";
     }
-    for (size_t viewId = 0; viewId < viewsInGroup.size(); ++viewId) {
-      grouping.emplace_back(gIndex, viewsInGroup[viewId]);
+    for (const auto viewInGroup : viewsInGroup) {
+      grouping.emplace_back(gIndex, viewInGroup);
     }
   }
   return grouping;

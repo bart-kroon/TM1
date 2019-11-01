@@ -206,8 +206,14 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     throw runtime_error("Require maxEntities >= 1");
   }
 
-  return {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups),
+  IvSequenceParams params = {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups),
           unsigned(maxEntities)};
+
+  if (auto subnode = config.optional("ViewingSpace"); subnode) {
+    params.viewingSpace = ViewingSpace::loadFromJson(subnode);
+  }
+
+  return params;
 }
 
 auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitParams {

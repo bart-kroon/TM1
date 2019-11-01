@@ -34,6 +34,7 @@
 #ifndef _TMIV_METADATA_VIEWINGSPACE_H_
 #define _TMIV_METADATA_VIEWINGSPACE_H_
 
+#include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
 #include <iosfwd>
@@ -79,6 +80,8 @@ struct ViewingSpace {
 
   static auto decodeFrom(InputBitstream &) -> ViewingSpace;
   void encodeTo(OutputBitstream &) const;
+
+  static auto loadFromJson(const Common::Json &node) -> ViewingSpace;
 };
 
 using PrimitiveShapeVector = std::vector<PrimitiveShape>;
@@ -98,6 +101,8 @@ struct ElementaryShape {
 
   static auto decodeFrom(InputBitstream &) -> ElementaryShape;
   void encodeTo(OutputBitstream &) const;
+
+  static auto loadFromJson(const Common::Json &node) -> ElementaryShape;
 };
 
 // In specification: cuboid_primitive( e, s )
@@ -117,6 +122,8 @@ struct Cuboid {
 
   static auto decodeFrom(InputBitstream &) -> Cuboid;
   void encodeTo(OutputBitstream &) const;
+
+  static auto loadFromJson(const Common::Json &node) -> Cuboid;
 };
 
 // In specification: sphere_primitive( e, s )
@@ -134,6 +141,8 @@ struct Spheroid {
 
   static auto decodeFrom(InputBitstream &) -> Spheroid;
   void encodeTo(OutputBitstream &) const;
+
+  static auto loadFromJson(const Common::Json &node) -> Spheroid;
 };
 
 // In specification: halfspace_primitive( e, s )
@@ -151,6 +160,8 @@ struct Halfspace {
 
   static auto decodeFrom(InputBitstream &) -> Halfspace;
   void encodeTo(OutputBitstream &) const;
+
+  static auto loadFromJson(const Common::Json &node) -> Halfspace;
 };
 
 struct PrimitiveShape {
@@ -194,6 +205,8 @@ struct PrimitiveShape {
   friend std::ostream &operator<<(std::ostream &stream, const PrimitiveShape &shape);
   bool operator==(const PrimitiveShape &other) const;
   bool operator!=(const PrimitiveShape &other) const { return !operator==(other); }
+
+  static auto loadFromJson(const Common::Json &node) -> PrimitiveShape;
 };
 
 inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {

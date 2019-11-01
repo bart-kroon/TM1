@@ -222,7 +222,7 @@ const auto viewingSpace = array{
                    ElementaryShape{{PrimitiveShape{Halfspace{{}, {}}, {}, {}, {}}}}}}},
     ViewingSpace{{{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
                                                       Cuboid{{}, {}},
-                                                      1.F,                // guard band size
+                                                      1.F,                     // guard band size
                                                       Vec3f{30.F, 60.F, 90.F}, // orientation
                                                       {} // viewing direction constraint
                                                   }}}}}},
@@ -237,22 +237,37 @@ const auto viewingSpace = array{
                                                        45.F, // pitch_center
                                                        60.F  // pitch_range
                                                    }}}}}}},
-    ViewingSpace{{{ElementaryShapeOperation::add,
-                   ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
-                                                   1.F,
-                                                   {},
-                                                   PrimitiveShape::ViewingDirectionConstraint{
-                                                       15.F, // guard_band_direction_size
-                                                       90.F, // yaw_center
-                                                       30.F, // yaw_range,
-                                                       45.F, // pitch_center
-                                                       60.F  // pitch_range
-                                                   }}}}}}},
     ViewingSpace{
         {{ElementaryShapeOperation::add,
+          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
+                                          1.F,
+                                          Vec3f{30.F, 45.F, 60.F},
+                                          PrimitiveShape::ViewingDirectionConstraint{
+                                              15.F, // guard_band_direction_size
+                                              90.F, // yaw_center
+                                              30.F, // yaw_range,
+                                              45.F, // pitch_center
+                                              60.F  // pitch_range
+                                          }}}}},
+         {ElementaryShapeOperation::subtract,
           ElementaryShape{{PrimitiveShape{Cuboid{{-1.F, 0.F, 1.F}, {1.F, 2.F, 3.F}}, {}, {}, {}},
                            PrimitiveShape{Spheroid{{-2.F, 2.F, 2.F}, {3.F, 2.F, 1.F}}, {}, {}, {}},
-                           PrimitiveShape{Halfspace{{3.F, 3.F, 3.F}, -1.F}, {}, {}, {}}}}}}}};
+                           PrimitiveShape{Halfspace{{3.F, 3.F, 3.F}, -1.F}, {}, {}, {}}},
+                          PrimitiveShapeOperation::interpolate}}}}};
+
+const auto viewingSpaceJson = array{
+    "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"add\",\"ElementaryShape\": "
+    "{\"PrimitiveShapeOperation\": \"add\",\"PrimitiveShapes\": [{\"PrimitiveShapeType\": "
+    "\"cuboid\",\"Center\":[0,0,0],\"Size\":[0,0,0]}]}}]}",
+    "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"add\",\"ElementaryShape\":{"
+    "\"PrimitiveShapeOperation\":\"add\",\"PrimitiveShapes\":[{\"PrimitiveShapeType\":\"Cuboid\","
+    "\"GuardBandSize\":1.0,\"Rotation\":[30,45,60],\"ViewingDirectionConstraint\":{"
+    "\"GuardBandDirectionSize\":15.0,\"YawCenter\":90.0,\"YawRange\":30.0,\"PitchCenter\":45.0,"
+    "\"PitchRange\":60.0}}]}},{\"ElementaryShapeOperation\":\"subtract\",\"ElementaryShape\":{"
+    "\"PrimitiveShapes\":[{\"PrimitiveShapeType\":\"cuboid\",\"Center\":[-1.0,0.0,1.0],\"Size\":[1."
+    "0,2.0,3.0]},{\"PrimitiveShapeType\":\"spheroid\",\"Center\":[-2.0,2.0,2.0],\"Radius\":[3.0,2."
+    "0,1.0]},{\"PrimitiveShapeType\":\"halfspace\",\"Normal\":[3.0,3.0,3.0],\"Distance\":-1.0}],"
+    "\"PrimitiveShapeOperation\":\"interpolate\"}}]}"};
 
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
@@ -299,6 +314,11 @@ auto codingTest(const Type &reference, int size, Args &... args) -> bool {
 
   return actual == reference;
 }
+template <typename Type> auto loadJson(const std::string& str) -> Type {
+  istringstream stream(str);
+  Json json(stream);
+  return Type::loadFromJson(json);
+}
 } // namespace
 
 TEST_CASE("ViewParamsList") {
@@ -344,8 +364,14 @@ TEST_CASE("Metadata bitstreams") {
     REQUIRE(codingTest(examples::viewingSpace[1], 25));
     REQUIRE(codingTest(examples::viewingSpace[2], 22));
     REQUIRE(codingTest(examples::viewingSpace[3], 22));
-    REQUIRE(codingTest(examples::viewingSpace[4], 26));
-    REQUIRE(codingTest(examples::viewingSpace[5], 35));
+    REQUIRE(codingTest(examples::viewingSpace[4], 67));
+  }
+}
+
+TEST_CASE("Metadata_json") {
+  SECTION("viewing_space") {
+    REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[0]) == examples::viewingSpace[0]);
+    REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[1]) == examples::viewingSpace[4]);
   }
 }
 

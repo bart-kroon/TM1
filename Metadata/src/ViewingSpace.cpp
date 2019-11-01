@@ -44,6 +44,7 @@ using namespace std;
 namespace TMIV::Metadata {
 
 using Common::Half;
+using Common::Json;
 
 auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
   stream << "Viewing space:" << endl;
@@ -73,7 +74,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
 void ViewingSpace::encodeTo(OutputBitstream &stream) const {
   assert(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
-  for (const auto& shape : elementaryShapes) {
+  for (const auto &shape : elementaryShapes) {
     stream.writeBits(uint_least64_t(shape.first), 1);
     shape.second.encodeTo(stream);
   }
@@ -84,7 +85,7 @@ auto operator<<(std::ostream &stream, const ElementaryShape &elementaryShape) ->
                  ? "interpolate"
                  : "add");
   for (const auto &p : elementaryShape.primitives) {
-	stream << ", ";
+    stream << ", ";
     stream << p;
   }
   return stream;
@@ -223,7 +224,7 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
 }
 
 auto PrimitiveShape::ViewingDirectionConstraint::
-operator==(const ViewingDirectionConstraint& other) const -> bool {
+operator==(const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }
@@ -300,7 +301,7 @@ auto operator<<(std::ostream &stream, const Halfspace &halfspace) -> std::ostrea
 }
 
 auto Halfspace::operator==(const Halfspace &other) const -> bool {
-	return normal == other.normal && distance == other.distance;
+  return normal == other.normal && distance == other.distance;
 }
 
 auto Halfspace::decodeFrom(InputBitstream &stream) -> Halfspace {
@@ -317,6 +318,137 @@ void Halfspace::encodeTo(OutputBitstream &stream) const {
   stream.putFloat16(Half(normal.y()));
   stream.putFloat16(Half(normal.z()));
   stream.putFloat16(Half(distance));
+}
+
+auto ViewingSpace::loadFromJson(const Json &node) -> ViewingSpace {
+  auto parseOperation = [](const std::string &str) -> auto {
+    if (str == "add") {
+      return ElementaryShapeOperation::add;
+    }
+    if (str == "subtract") {
+      return ElementaryShapeOperation::subtract;
+    };
+    throw runtime_error("Invalid elementary shape operation in the metadata JSON file");
+  };
+
+  ViewingSpace viewingSpace{};
+  const auto elementaryShapes = node.require("ElementaryShapes");
+  for (size_t i = 0; i < elementaryShapes.size(); ++i) {
+    viewingSpace.elementaryShapes.emplace_back(
+        parseOperation(elementaryShapes.at(i).require("ElementaryShapeOperation").asString()),
+        ElementaryShape::loadFromJson(elementaryShapes.at(i).require("ElementaryShape")));
+  }
+  // consolidate the optional values across all primitives in each elementary shape
+  for (auto &elementaryShape : viewingSpace.elementaryShapes) {
+    bool guardBandPresent{};
+    bool rotationPresent{};
+    bool directionConstraintPresent{};
+    for (auto &primitive : elementaryShape.second.primitives) {
+      guardBandPresent |= primitive.guardBandSize.has_value();
+      rotationPresent |= primitive.rotation.has_value();
+      if (primitive.viewingDirectionConstraint.has_value()) {
+        directionConstraintPresent |= true;
+        guardBandPresent |=
+            primitive.viewingDirectionConstraint.value().guardBandDirectionSize.has_value();
+      }
+    }
+    for (auto &primitive : elementaryShape.second.primitives) {
+      if (guardBandPresent && !primitive.guardBandSize.has_value()) {
+        primitive.guardBandSize = 0.F;
+      }
+      if (rotationPresent && !primitive.rotation.has_value()) {
+        primitive.rotation = Common::Vec3f();
+      }
+      if (directionConstraintPresent) {
+        if (!primitive.viewingDirectionConstraint.has_value()) {
+          primitive.viewingDirectionConstraint = PrimitiveShape::ViewingDirectionConstraint();
+        }
+        if (guardBandPresent &&
+            !primitive.viewingDirectionConstraint.value().guardBandDirectionSize.has_value()) {
+          primitive.viewingDirectionConstraint.value().guardBandDirectionSize = 0.F;
+        }
+      }
+    }
+  }
+  return viewingSpace;
+}
+
+auto ElementaryShape::loadFromJson(const Json &node) -> ElementaryShape {
+  auto parseOperation = [](const std::string &str) -> auto {
+    if (str == "add") {
+      return PrimitiveShapeOperation::add;
+    }
+    if (str == "interpolate") {
+      return PrimitiveShapeOperation::interpolate;
+    };
+    throw runtime_error("Invalid primitive shape operation in the metadata JSON file");
+  };
+
+  ElementaryShape elementaryShape{};
+  elementaryShape.primitiveOperation =
+      parseOperation(node.require("PrimitiveShapeOperation").asString());
+  const auto primitiveShapes = node.require("PrimitiveShapes");
+  for (size_t i = 0; i < primitiveShapes.size(); ++i) {
+    elementaryShape.primitives.push_back(PrimitiveShape::loadFromJson(primitiveShapes.at(i)));
+  }
+  return elementaryShape;
+}
+
+auto PrimitiveShape::loadFromJson(const Json &node) -> PrimitiveShape {
+  PrimitiveShape primitiveShape{};
+  const auto &shapeType = node.require("PrimitiveShapeType").asString();
+  if (shapeType == "cuboid") {
+    primitiveShape.primitive = Cuboid::loadFromJson(node);
+  }
+  if (shapeType == "spheroid") {
+    primitiveShape.primitive = Spheroid::loadFromJson(node);
+  }
+  if (shapeType == "halfspace") {
+    primitiveShape.primitive = Halfspace::loadFromJson(node);
+  }
+  if (auto subnode = node.optional("GuardBandSize"); subnode) {
+    primitiveShape.guardBandSize = subnode.asFloat();
+  }
+  if (auto subnode = node.optional("Rotation"); subnode) {
+    primitiveShape.rotation = subnode.asFloatVector<3>();
+  }
+  if (auto subnode = node.optional("ViewingDirectionConstraint"); subnode) {
+    primitiveShape.viewingDirectionConstraint = PrimitiveShape::ViewingDirectionConstraint();
+    if (auto subsubnode = subnode.optional("GuardBandDirectionSize"); subsubnode) {
+      primitiveShape.viewingDirectionConstraint.value().guardBandDirectionSize =
+          subsubnode.asFloat();
+    }
+    primitiveShape.viewingDirectionConstraint.value().yawCenter =
+        subnode.require("YawCenter").asFloat();
+    primitiveShape.viewingDirectionConstraint.value().yawRange =
+        subnode.require("YawRange").asFloat();
+    primitiveShape.viewingDirectionConstraint.value().pitchCenter =
+        subnode.require("PitchCenter").asFloat();
+    primitiveShape.viewingDirectionConstraint.value().pitchRange =
+        subnode.require("PitchRange").asFloat();
+  }
+  return primitiveShape;
+}
+
+auto Cuboid::loadFromJson(const Json &node) -> Cuboid {
+  Cuboid cuboid;
+  cuboid.center = node.require("Center").asFloatVector<3>();
+  cuboid.size = node.require("Size").asFloatVector<3>();
+  return cuboid;
+}
+
+auto Spheroid::loadFromJson(const Json &node) -> Spheroid {
+  Spheroid spheroid;
+  spheroid.center = node.require("Center").asFloatVector<3>();
+  spheroid.radius = node.require("Radius").asFloatVector<3>();
+  return spheroid;
+}
+
+auto Halfspace::loadFromJson(const Json &node) -> Halfspace {
+  Halfspace plane;
+  plane.normal = node.require("Normal").asFloatVector<3>();
+  plane.distance = node.require("Distance").asFloat();
+  return plane;
 }
 
 } // namespace TMIV::Metadata

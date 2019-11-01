@@ -43,6 +43,9 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
+// TODO(BK): Large code duplication between MultipassRenderer (MPR) and GroupBasedRenderer. To be
+// addressed in TMIV 4. Equal sections are marked with "Same as MPR".
+
 namespace TMIV::Renderer {
 GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &componentNode) {
   m_synthesizer =
@@ -65,38 +68,19 @@ enum class MergeMode {
 };
 
 struct GroupBasedRendererHelper {
-  MergeMode mergeMode{};
-  vector<size_t> numberOfViewsPerPass;
-  vector<unsigned> selectedGViewsPass;
-  vector<unsigned> patchesGViewId;
+  MergeMode mergeConflict{};           // Same as MPR, aligning names in the implementation
+  vector<size_t> numberOfViewsPerPass; // Same as MPR
+  vector<unsigned> selectedViewsPass;  // Same as MPR, aligning names in the implementation
+  vector<unsigned> patchesViewId;      // Same as MPR, aligning names in the implementation
 
-  auto filterGMergeDepth(uint16_t i, uint16_t j) const -> uint16_t {
-    if (i > 0) {
-      if (i >= j) { // Checking depth
-        return i;
-      }
-      // Handle conflict
-      switch (mergeMode) {
-      case MergeMode::inpaint:
-        return 0;
-      case MergeMode::lowPass:
-        return i;
-      case MergeMode::highPass:
-        return j;
-      default:
-        abort();
-      }
-    }
-    return j;
-  }
-
-  auto filterGMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) const -> uint16_t {
+  // Same as MPR
+  auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) const -> uint16_t {
     if (i > 0) {
       if (id >= jd) { // Checking depth
         return i;
       }
       // Handle conflict
-      switch (mergeMode) {
+      switch (mergeConflict) {
       case MergeMode::inpaint:
         return 0;
       case MergeMode::lowPass:
@@ -110,27 +94,34 @@ struct GroupBasedRendererHelper {
     return j;
   }
 
-  auto filterGMaps(uint16_t i) const -> uint16_t {
-    if (i != unusedPatchId && contains(selectedGViewsPass, patchesGViewId[i])) {
+  // Same as MPR
+  auto filterMergeDepth(uint16_t i, uint16_t j) const -> uint16_t {
+    return filterMergeTexture(i, j, i, j);
+  }
+
+  // Same as MPR
+  auto filterMaps(uint16_t i) const -> uint16_t {
+    if (i != unusedPatchId && contains(selectedViewsPass, patchesViewId[i])) {
       return i;
     }
     return unusedPatchId;
   }
 
   // NOTE: Mutates numberOfViewsPerPass
-  auto sortGViews(const vector<vector<uint16_t>> &viewsPerGroup, const ViewParamsVector &cameras,
+  auto sortGViews(const vector<vector<uint16_t>> &viewsPerGroup,
+                  const ViewParamsVector &viewParamsVector,
                   const ViewParams &target) /*mutable*/ -> vector<size_t> {
-    vector<vector<size_t>> sortedGCamerasId;
-    vector<float> distanceG;
+    auto sortedGCamerasId = vector<vector<size_t>>();
+    auto distanceG = vector<float>();
     size_t camSum = 0;
 
-    for (const auto &views : viewsPerGroup) {
+    for (const auto &viewsInGroup : viewsPerGroup) {
       vector<float> distance;
       vector<float> angle;
       vector<float> angleWeight;
 
-      for (size_t i = 0; i < views.size(); i++) {
-        const auto &source = cameras[views[i]];
+      for (size_t i = 0; i < viewsInGroup.size(); i++) {
+        const auto &source = viewParamsVector[viewsInGroup[i]];
         distance.push_back(norm(source.position - target.position));
 
         // Compute Angle between the camera and target in degree unit
@@ -152,15 +143,15 @@ struct GroupBasedRendererHelper {
         angleWeight.push_back(1.F - abs(angle[i]) / halfCycle);
       }
 
-      // Find the sorted cameras indices per group
-      vector<size_t> sortedCamerasId(views.size());
+      // Find the sorted view indices per group
+      vector<size_t> sortedCamerasId(viewsInGroup.size());
       iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0);
       sort(sortedCamerasId.begin(), sortedCamerasId.end(),
            [&distance, &angleWeight](size_t i1, size_t i2) {
              if (angleWeight[i1] == angleWeight[i2]) {
                return distance[i1] < distance[i2];
              }
-             return distance[i1] * (1.0 - angleWeight[i1]) < distance[i2] * (1.0 - angleWeight[i2]);
+             return distance[i1] * (1.F - angleWeight[i1]) < distance[i2] * (1.F - angleWeight[i2]);
            });
       distanceG.push_back(distance[sortedCamerasId[0]]);
       for (auto &viewId : sortedCamerasId) {
@@ -195,22 +186,21 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
                                      const ViewParams &target) const -> Texture444Depth16Frame {
   GroupBasedRendererHelper helper;
 
+  const int numberOfPasses = ivSequenceParams.numGroups;
+
+  helper.mergeConflict =
+      ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::highPass;
+
   assert(ivAccessUnitParams.atlasParamsList);
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
-
-  // Initialization
-  helper.mergeMode =
-      ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::highPass;
 
   auto groupIds = vector<unsigned>(atlas.size(), 0);
   if (atlasParamsList.groupIds) {
     groupIds = *atlasParamsList.groupIds;
   }
 
-  const int numberOfPasses = ivSequenceParams.numGroups;
-
-  // initalize mapsPass by unusedPatchId
-  vector<PatchIdMapList> mapsPass(numberOfPasses);
+  // Initalize mapsPass by unusedPatchId (same as MPR)
+  auto mapsPass = vector<PatchIdMapList>(numberOfPasses);
   for (auto &pass : mapsPass) {
     for (const auto &patchIds : maps) {
       PatchIdMap patchMap(patchIds.getWidth(), patchIds.getHeight());
@@ -220,10 +210,10 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
   }
 
   for (const auto &patch : atlasParamsList) {
-    helper.patchesGViewId.push_back(patch.viewId);
+    helper.patchesViewId.push_back(patch.viewId);
   }
 
-  // Find views per group
+  // Find viewsInGroup per group
   auto viewsPerGroup = vector<vector<uint16_t>>(ivSequenceParams.numGroups);
   for (const auto &patch : atlasParamsList) {
     auto &viewIds = viewsPerGroup[groupIds[patch.atlasId]];
@@ -232,49 +222,49 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
     }
   }
 
-  // Ordering views based on their distance & angle to target view
+  // Ordering viewsInGroup based on their distance & angle to target view
   const auto sortedCamerasId =
       helper.sortGViews(viewsPerGroup, ivSequenceParams.viewParamsList, target);
   if (helper.numberOfViewsPerPass.empty()) { // in case of numGroups == 1
     helper.numberOfViewsPerPass.push_back(ivSequenceParams.viewParamsList.size());
   }
 
-  // Produce the individual pass synthesis results
+  // Produce the individual pass synthesis results (Same as MPR)
   auto viewportPass = vector<Texture444Depth16Frame>(numberOfPasses);
   for (int passId = 0; passId < numberOfPasses; passId++) {
-    // Find the selected views for a given pass
-    helper.selectedGViewsPass.clear();
-    for (size_t id = 0; id < ivSequenceParams.viewParamsList.size(); ++id) {
-      if (id < helper.numberOfViewsPerPass[passId]) {
-        helper.selectedGViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
+    // Find the selected viewsInGroup for a given pass
+    helper.selectedViewsPass.clear();
+    for (size_t i = 0; i < ivSequenceParams.viewParamsList.size(); ++i) {
+      if (i < helper.numberOfViewsPerPass[passId]) {
+        helper.selectedViewsPass.push_back(unsigned(sortedCamerasId[i]));
       }
     }
 
-	cout << "Selected Optimized Views in Pass " << passId << " : ";
-    for (size_t i = 0; i < helper.selectedGViewsPass.size(); i++) {
-      cout << "o" << helper.selectedGViewsPass[i] << ", ";
+    cout << "Selected Optimized Views in Pass " << passId << " : ";
+    for (size_t i = 0; i < helper.selectedViewsPass.size(); i++) {
+      cout << "o" << helper.selectedViewsPass[i] << ", ";
     }
-    cout << '\n';
+    cout << "\n";
 
     // Update the Occupancy Map to be used in the Pass
     for (size_t atlasId = 0; atlasId < maps.size(); ++atlasId) {
       transform(maps[atlasId].getPlane(0).begin(), maps[atlasId].getPlane(0).end(),
                 mapsPass[passId][atlasId].getPlane(0).begin(),
-                [&helper](auto i) { return helper.filterGMaps(i); });
+                [&helper](auto i) { return helper.filterMaps(i); });
     }
 
-    // Synthesis per pass
+    // Synthesis per pass (same as MPR)
     viewportPass[passId] = m_synthesizer->renderFrame(atlas, mapsPass[passId], ivSequenceParams,
                                                       ivAccessUnitParams, target);
   }
 
-  // Merging
+  // Merging (same as MPR)
   auto viewport = viewportPass[numberOfPasses - 1];
   for (auto passId = numberOfPasses - 1; passId > 0; passId--) {
     transform(viewportPass[passId - 1].second.getPlane(0).begin(),
               viewportPass[passId - 1].second.getPlane(0).end(),
               viewport.second.getPlane(0).begin(), viewport.second.getPlane(0).begin(),
-              [&helper](auto i, auto j) { return helper.filterGMergeDepth(i, j); });
+              [&helper](auto i, auto j) { return helper.filterMergeDepth(i, j); });
 
     for (auto i = 0; i < viewport.first.getNumberOfPlanes(); ++i) {
       my_transform(
@@ -282,10 +272,11 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
           viewportPass[passId - 1].first.getPlane(i).end(), viewport.first.getPlane(i).begin(),
           viewportPass[passId - 1].second.getPlane(0).begin(), viewport.second.getPlane(0).begin(),
           viewport.first.getPlane(i).begin(), [&helper](auto i, auto j, auto id, auto jd) {
-            return helper.filterGMergeTexture(i, j, id, jd);
+            return helper.filterMergeTexture(i, j, id, jd);
           });
     }
   }
+  
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

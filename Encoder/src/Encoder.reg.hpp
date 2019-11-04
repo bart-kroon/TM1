@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
+#include <TMIV/Encoder/GroupBasedEncoder.h>
 
 #include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
 #include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
@@ -46,5 +46,6 @@ inline void registerComponents() {
   TMIV::DepthOccupancy::registerComponents();
 
   Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
+  Common::Factory<IEncoder>::getInstance().registerAs<GroupBasedEncoder>("GroupBasedEncoder");
 }
 } // namespace TMIV::Encoder

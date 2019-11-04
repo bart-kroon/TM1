@@ -87,6 +87,24 @@ public:
       const auto viewport =
           m_decoder->decodeFrame(IO::loadAtlas(json(), atlasSizes, inputFrame), viewportParams);
       IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
+
+      //////////////////////////////////////////////////////////////////////////////////////
+      // dumping intermediate results to disk
+      if (auto subnode = json().optional("AtlasPatchOccupancyMapFmt")) {
+        std::cout << "Dumping patch map Id list to disk" << std::endl;
+        auto patchMapIdList =
+            m_decoder->getPatchIdMapList(IO::loadAtlas(json(), atlasSizes, inputFrame));
+        IO::savePatchIdMaps(json(), outputFrame, patchMapIdList);
+      };
+      if (auto subnode1 = json().optional("PrunedViewTexturePathFmt")){
+        if (auto subnode2 = json().optional("PrunedViewDepthPathFmt")){
+            std::cout << "Dumping recovered pruned views to disk" << std::endl;
+            auto recoveredTransportView =
+                m_decoder->recoverPrunedView(IO::loadAtlas(json(), atlasSizes, inputFrame));
+            IO::savePrunedFrame(json(), outputFrame, recoveredTransportView);
+        }
+      }
+      //////////////////////////////////////////////////////////////////////////////////////
     }
   }
 };

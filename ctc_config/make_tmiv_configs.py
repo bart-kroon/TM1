@@ -67,7 +67,8 @@ class DecoderConfiguration:
 			'D': 'TechnicolorPainter',
 			'E': 'IntelFrog',
 			'J': 'OrangeKitchen',
-			'L': 'PoznanFencing'
+			'L': 'PoznanFencing',
+			'N': 'NokiaChess'
 		}[self.seqId]
 
 	def sourceCameraParameters(self):
@@ -108,7 +109,8 @@ class DecoderConfiguration:
 				'D': 1088,
 				'E': 1080,
 				'J': 1080,
-				'L': 1080
+				'L': 1080,
+                                'N': 2368
 			}[self.seqId]
 		return self.viewHeight()
 
@@ -121,7 +123,8 @@ class DecoderConfiguration:
 				'D': 1920,
 				'E': 1920,
 				'J': 1920,
-				'L': 1920
+				'L': 1920,
+                                'N': 2048
 			}[self.seqId]
 		return self.viewWidth()
 
@@ -134,7 +137,8 @@ class DecoderConfiguration:
 				'D': 1080,
 				'E': 1080,
 				'J': 1080,
-				'L': 1080
+				'L': 1080,
+                                'N': 2048
 			}[self.seqId]
 		return self.viewHeight()
 
@@ -175,7 +179,8 @@ class DecoderConfiguration:
 			'D': 16,
 			'E': 13,
 			'J': 25,
-			'L': 10
+			'L': 10,
+                        'N': 10
 		}[self.seqId]
 
 	def firstSourceView(self):
@@ -200,7 +205,8 @@ class DecoderConfiguration:
 				'D': [ 'v0', 'v3', 'v5', 'v6', 'v9', 'v10', 'v12', 'v15' ],
 				'E': [ 'v1', 'v3', 'v5', 'v7', 'v9', 'v11', 'v13' ],
 				'J': [ 'v00', 'v02', 'v04', 'v10', 'v12', 'v14', 'v20', 'v22', 'v24' ],
-				'L': [ 'v00', 'v02', 'v04', 'v06', 'v08' ]
+				'L': [ 'v00', 'v02', 'v04', 'v06', 'v08' ],
+				'N': [ 'v0', 'v1', 'v3', 'v5', 'v7', 'v9' ]
 			}[self.seqId]
 		return self.allSourceCameraNames()
 
@@ -285,7 +291,8 @@ class DecoderConfiguration:
 			'D': 10,
 			'E': 135,
 			'J': 0,
-			'L': 30
+			'L': 30,
+			'N': 60
 		}[self.seqId]		
 
 	def outputCamera(self):
@@ -414,7 +421,8 @@ class EncoderConfiguration(DecoderConfiguration):
 				'D': 2,
 				'E': 2,
 				'J': 2,
-				'L': 2
+				'L': 2,
+				'N': 3
 			}[self.seqId] * self.lumaSamplesPerView()
 		return 0
 
@@ -520,7 +528,7 @@ if __name__ == '__main__':
 		ctc_archive = False
 
 	anchors = [ 'A97', 'A17', 'V17' ]
-	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L']
+	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
 	testPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']
 
 	for anchorId in anchors:

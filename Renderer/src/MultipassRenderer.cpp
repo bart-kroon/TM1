@@ -49,15 +49,19 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &component
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode);
   m_numberOfPasses = componentNode.require("NumberOfPasses").asInt();
-  auto subnode = componentNode.require("NumberOfViewsPerPass");
+  const auto subnode = componentNode.require("NumberOfViewsPerPass");
   for (size_t i = 0; i != subnode.size(); ++i) {
     m_numberOfViewsPerPass.push_back(subnode.at(i).asInt());
   }
+  if (m_numberOfPasses != int(m_numberOfViewsPerPass.size())) {
+    throw runtime_error("NumberOfPasses and NumberOfViewsPerPass are inconsistent");
+  }
   if (auto subnode = componentNode.optional("MergeConflict")) {
-    m_mergeConflict = subnode.asInt();
+    m_mergeConflict = MergeMode(subnode.asInt());
   }
 }
 
+namespace {
 template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
 void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, Fn Func) {
   for (; i1 != end1; ++i1, ++i2, ++i3, ++i4, ++dest) {
@@ -65,208 +69,160 @@ void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest
   }
 }
 
-int mergeConflict;
-auto filterMergeDepth(uint16_t i, uint16_t j) -> uint16_t {
-  if (i > 0) {
-    if (i >= j) { // Checking depth
+struct MultipassRendererHelper {
+  MergeMode mergeConflict{};
+  vector<unsigned> selectedViewsPass;
+  vector<unsigned> patchesViewId;
+
+  auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) const -> uint16_t {
+    if (i > 0) {
+      if (id >= jd) { // Checking depth
+        return i;
+      }
+      // Handle conflict
+      switch (mergeConflict) {
+      case MergeMode::inpaint:
+        return 0;
+      case MergeMode::lowPass:
+        return i;
+      case MergeMode::highPass:
+        return j;
+      default:
+        abort();
+      }
+    }
+    return j;
+  }
+
+  auto filterMergeDepth(uint16_t i, uint16_t j) const -> uint16_t {
+    return filterMergeTexture(i, j, i, j);
+  }
+
+  auto filterMaps(uint16_t i) const -> uint16_t {
+    if (i != unusedPatchId && contains(selectedViewsPass, patchesViewId[i])) {
       return i;
     }
-    // conflict
-    switch (mergeConflict) {
-    case 0:
-      return 0; // return 0 values and let the inpainter fill them
-    case 1:
-      return i; // fill from the low-pass synthesis results which are in the
-                // background
-    case 2:
-      return j; // 2 fill from the high-pass synthesis results which are in
-                // the foreground
-    default:
-      return 0;
-    }
-  }
-  return j;
-}
-
-auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) -> uint16_t {
-  if (i > 0) {
-    if (id >= jd) { // Checking depth
-      return i;
-    }
-    // conflict
-    switch (mergeConflict) {
-    case 0:
-      return 0; // return 0 values and let the inpainter fill them
-    case 1:
-      return i; // fill from the low-pass synthesis results which are in the
-                // background
-    case 2:
-      return j; // 2 fill from the high-pass synthesis results which are in
-                // the foreground
-    default:
-      return 0;
-    }
-  }
-  return j;
-}
-
-vector<unsigned int> selectedViewsPass, patchesViewId;
-auto filterMaps(uint16_t i) -> uint16_t {
-  if (i == unusedPatchId) {
-    return i;
-  }
-  bool selectedPixel = false;
-  for (auto selectedView : selectedViewsPass) {
-    if (patchesViewId[i] == selectedView) {
-      selectedPixel = true;
-    }
-  }
-  if (!selectedPixel) {
     return unusedPatchId;
   }
-  return i;
-}
 
-auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target)
-    -> vector<size_t> {
-  float x_target = target.position[0];
-  float y_target = target.position[1];
-  float z_target = target.position[2];
-  float yaw_target = target.rotation[0];
-  float pitch_target = target.rotation[1];
-  vector<float> distance;
-  vector<float> angle;
-  vector<float> angleWeight;
-  for (size_t id = 0; id < viewParamsVector.size(); ++id) {
-    distance.push_back(sqrt(square(viewParamsVector[id].position[0] - x_target) +
-                            square(viewParamsVector[id].position[1] - y_target) +
-                            square(viewParamsVector[id].position[2] - z_target)));
-    auto yaw_camera = viewParamsVector[id].rotation[0];
-    auto pitch_camera = viewParamsVector[id].rotation[1];
-    // Compute Angle between the camera and target in degree unit
-    angle.push_back(1 / radperdeg *
-                    acos(sin(pitch_camera * radperdeg) * sin(pitch_target * radperdeg) +
-                         cos(pitch_camera * radperdeg) * cos(pitch_target * radperdeg) *
-                             cos((yaw_camera - yaw_target) * radperdeg)));
-    // to assure angle is ranging from -180 to 180 degree
-    if (angle[id] > halfCycle) {
-      angle[id] = angle[id] - fullCycle;
+  auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target) const
+      -> vector<size_t> {
+    vector<float> distance;
+    vector<float> angle;
+    vector<float> angleWeight;
+
+    for (size_t i = 0; i < viewParamsVector.size(); ++i) {
+      const auto &source = viewParamsVector[i];
+      distance.push_back(norm(source.position - target.position));
+
+      // Compute Angle between the camera and target in degree unit
+      const auto yaw_target = target.rotation[0] * radperdeg;
+      const auto yaw_source = source.rotation[0] * radperdeg;
+      const auto pitch_target = target.rotation[1] * radperdeg;
+      const auto pitch_source = source.rotation[1] * radperdeg;
+      angle.push_back(degperrad *
+                      acos(sin(pitch_source) * sin(pitch_target) +
+                           cos(pitch_source) * cos(pitch_target) * cos(yaw_source - yaw_target)));
+
+      // to assure angle is ranging from -180 to 180 degree
+      if (angle[i] > halfCycle) {
+        angle[i] -= fullCycle;
+      }
+
+      // Introduce AngleWeight as a simple triangle function (with value of 1 when
+      // angle is 0 & value of 0 when angle is 180)
+      angleWeight.push_back(1.F - abs(angle[i]) / halfCycle);
     }
 
-    // Introduce AngleWeight as a simple triangle function (with value of 1 when
-    // angle is 0 & value of 0 when angle is 180)
-    if (angle[id] > 0.F) {
-      angleWeight.push_back(-1.F / halfCycle * angle[id] + 1.F);
-    } else {
-      angleWeight.push_back(1.F / halfCycle * angle[id] + 1.F);
-    }
+    // Find the sorted viewParamsVector indices
+    vector<size_t> sortedCamerasId(viewParamsVector.size());
+    iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0);
+    sort(sortedCamerasId.begin(), sortedCamerasId.end(),
+         [&distance, &angleWeight](size_t i1, size_t i2) {
+           if (angleWeight[i1] == angleWeight[i2]) {
+             return distance[i1] < distance[i2];
+           }
+           return distance[i1] * (1.F - angleWeight[i1]) < distance[i2] * (1.F - angleWeight[i2]);
+         });
+    return sortedCamerasId;
   }
-
-  // Find the sorted viewParamsVector indices
-  vector<size_t> sortedCamerasId(viewParamsVector.size());
-  iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
-  sort(sortedCamerasId.begin(), sortedCamerasId.end(),
-       [&distance, &angleWeight](size_t i1, size_t i2) {
-         if (angleWeight[i1] == angleWeight[i2]) {
-           return distance[i1] < distance[i2];
-         }
-         return distance[i1] * (1.0 - angleWeight[i1]) < distance[i2] * (1.0 - angleWeight[i2]);
-       });
-  return sortedCamerasId;
-}
+};
+} // namespace
 
 auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                                     const IvSequenceParams &ivSequenceParams,
                                     const IvAccessUnitParams &ivAccessUnitParams,
                                     const ViewParams &target) const -> Texture444Depth16Frame {
-  //////////////////
-  // Initialization
-  //////////////////
-  int numberOfPasses = TMIV::Renderer::MultipassRenderer::m_numberOfPasses;
-  vector<unsigned int> numberOfViewsPerPass =
-      TMIV::Renderer::MultipassRenderer::m_numberOfViewsPerPass;
-  mergeConflict = m_mergeConflict;
+  MultipassRendererHelper helper;
 
-  if (numberOfPasses != int(numberOfViewsPerPass.size())) {
-    cout << "WARNING: "
-         << "Please check number of passes " << endl;
-  }
-
-  Texture444Depth16Frame viewport;
-  vector<Texture444Depth16Frame> viewportPass(numberOfPasses);
-  vector<PatchIdMapList> mapsPass(numberOfPasses);
-
-  for (auto &pass : mapsPass) {
-    for (size_t k = 0; k < atlas.size(); ++k) {
-      PatchIdMap patchMap(maps[k].getWidth(), maps[k].getHeight());
-      fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
-      pass.push_back(patchMap);
-    }
-  } // initalize mapsPass by 0xFFFF
+  helper.mergeConflict = m_mergeConflict;
 
   assert(ivAccessUnitParams.atlasParamsList);
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
-  for (const auto &patch : atlasParamsList) {
-    patchesViewId.push_back(patch.viewId);
-  } // initialize patchesViewId
+  // Initalize mapsPass by unusedPatchId
+  auto mapsPass = vector<PatchIdMapList>(m_numberOfPasses);
+  for (auto &pass : mapsPass) {
+    for (const auto &patchIds : maps) {
+      PatchIdMap patchMap(patchIds.getWidth(), patchIds.getHeight());
+      fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
+      pass.push_back(patchMap);
+    }
+  }
 
-  ///////////////
+  for (const auto &patch : atlasParamsList) {
+    helper.patchesViewId.push_back(patch.viewId);
+  }
+
   // Ordering views based on their distance & angle to target view
-  ///////////////
-  vector<size_t> sortedCamerasId(ivSequenceParams.viewParamsList.size());
-  sortedCamerasId = sortViews(ivSequenceParams.viewParamsList, target);
+  const auto sortedCamerasId = helper.sortViews(ivSequenceParams.viewParamsList, target);
 
   // Produce the individual pass synthesis results
-  for (int passId = 0; passId < numberOfPasses; passId++) // Loop over NumberOfPasses
-  {
+  auto viewportPass = vector<Texture444Depth16Frame>(m_numberOfPasses);
+  for (int passId = 0; passId < m_numberOfPasses; passId++) {
     // Find the selected views for a given pass
-    selectedViewsPass.clear();
-    for (size_t id = 0; id < ivSequenceParams.viewParamsList.size(); ++id) {
-      if (id < numberOfViewsPerPass[passId]) {
-        selectedViewsPass.push_back(static_cast<unsigned int>(sortedCamerasId[id]));
+    helper.selectedViewsPass.clear();
+    for (size_t i = 0; i < ivSequenceParams.viewParamsList.size(); ++i) {
+      if (i < m_numberOfViewsPerPass[passId]) {
+        helper.selectedViewsPass.push_back(unsigned(sortedCamerasId[i]));
       }
     }
 
-    /////////////////
+    cout << "Selected Optimized Views in Pass " << passId << " : ";
+    for (size_t i = 0; i < helper.selectedViewsPass.size(); i++) {
+      cout << "o" << helper.selectedViewsPass[i] << ", ";
+    }
+    cout << "\n";
+
     // Update the Occupancy Map to be used in the Pass
-    /////////////////
     for (size_t atlasId = 0; atlasId < maps.size(); ++atlasId) {
       transform(maps[atlasId].getPlane(0).begin(), maps[atlasId].getPlane(0).end(),
-                mapsPass[passId][atlasId].getPlane(0).begin(), filterMaps);
+                mapsPass[passId][atlasId].getPlane(0).begin(),
+                [&helper](auto i) { return helper.filterMaps(i); });
     }
 
-    ////////////////
     // Synthesis per pass
-    ////////////////
     viewportPass[passId] = m_synthesizer->renderFrame(atlas, mapsPass[passId], ivSequenceParams,
                                                       ivAccessUnitParams, target);
   }
 
-  //////////////
   // Merging
-  //////////////
-  if (numberOfPasses > 1) {
-    Texture444Depth16Frame mergedviewport = viewportPass[numberOfPasses - 1];
-    for (auto passId = numberOfPasses - 1; passId > 0; passId--) {
-      transform(viewportPass[passId - 1].second.getPlane(0).begin(),
-                viewportPass[passId - 1].second.getPlane(0).end(),
-                mergedviewport.second.getPlane(0).begin(),
-                mergedviewport.second.getPlane(0).begin(), filterMergeDepth);
+  auto viewport = viewportPass[m_numberOfPasses - 1];
+  for (auto passId = m_numberOfPasses - 1; passId > 0; passId--) {
+    transform(viewportPass[passId - 1].second.getPlane(0).begin(),
+              viewportPass[passId - 1].second.getPlane(0).end(),
+              viewport.second.getPlane(0).begin(), viewport.second.getPlane(0).begin(),
+              [&helper](auto i, auto j) { return helper.filterMergeDepth(i, j); });
 
-      for (auto i = 0; i < viewport.first.getNumberOfPlanes(); ++i) {
-        my_transform(viewportPass[passId - 1].first.getPlane(i).begin(),
-                     viewportPass[passId - 1].first.getPlane(i).end(),
-                     mergedviewport.first.getPlane(i).begin(),
-                     viewportPass[passId - 1].second.getPlane(0).begin(),
-                     mergedviewport.second.getPlane(0).begin(),
-                     mergedviewport.first.getPlane(i).begin(), filterMergeTexture);
-      }
+    for (auto i = 0; i < viewport.first.getNumberOfPlanes(); ++i) {
+      my_transform(
+          viewportPass[passId - 1].first.getPlane(i).begin(),
+          viewportPass[passId - 1].first.getPlane(i).end(), viewport.first.getPlane(i).begin(),
+          viewportPass[passId - 1].second.getPlane(0).begin(), viewport.second.getPlane(0).begin(),
+          viewport.first.getPlane(i).begin(), [&helper](auto i, auto j, auto id, auto jd) {
+            return helper.filterMergeTexture(i, j, id, jd);
+          });
     }
-    viewport = mergedviewport; // Final Merged
-
-  } else {
-    viewport = viewportPass[numberOfPasses - 1]; // Single Pass
   }
 
   m_inpainter->inplaceInpaint(viewport, target);

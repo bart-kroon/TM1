@@ -39,6 +39,12 @@
 #include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {
+enum class MergeMode {
+  inpaint = 0, // let the inpainter fill
+  lowPass = 1, // fill from the low-pass synthesis results which are in the background
+  highPass = 2 // fill from the high-pass synthesis results which are in the foreground
+};
+
 // Advanced multipass implementation of IRenderer
 class MultipassRenderer : public IRenderer {
 private:
@@ -46,7 +52,7 @@ private:
   std::unique_ptr<IInpainter> m_inpainter;
   int m_numberOfPasses{};
   std::vector<unsigned> m_numberOfViewsPerPass;
-  int m_mergeConflict = 1;
+  MergeMode m_mergeConflict = MergeMode::lowPass;
 
 public:
   MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);

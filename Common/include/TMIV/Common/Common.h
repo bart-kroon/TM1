@@ -37,6 +37,7 @@
 // Common data types and functions that are often used and do not need a
 // separate header file
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <string>
@@ -77,6 +78,15 @@ template <unsigned bits> float expandValue(uint16_t x);
 
 // Quantize a value using a linear transfer function
 template <unsigned bits> uint16_t quantizeValue(float x);
+
+// Does a collection contain a specified value?
+template <typename Collection, typename Value>
+auto contains(const Collection &collection, Value &&value) -> bool {
+  using std::cbegin;
+  using std::cend;
+  return std::any_of(cbegin(collection), cend(collection),
+                     [&value](const auto &x) { return x == value; });
+}
 } // namespace TMIV::Common
 
 #include "Common.hpp"

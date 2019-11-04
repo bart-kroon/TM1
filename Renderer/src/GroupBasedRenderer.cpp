@@ -241,8 +241,8 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
     }
 
     cout << "Selected Optimized Views in Pass " << passId << " : ";
-    for (size_t i = 0; i < helper.selectedViewsPass.size(); i++) {
-      cout << "o" << helper.selectedViewsPass[i] << ", ";
+    for (auto i : helper.selectedViewsPass) {
+      cout << "o" << i << ", ";
     }
     cout << "\n";
 
@@ -276,7 +276,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
           });
     }
   }
-  
+
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

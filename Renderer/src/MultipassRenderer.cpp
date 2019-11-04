@@ -48,12 +48,12 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &component
   m_synthesizer =
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode);
-  m_numberOfPasses = componentNode.require("NumberOfPasses").asInt();
+  m_numberOfPasses = size_t(componentNode.require("NumberOfPasses").asInt());
   const auto subnode = componentNode.require("NumberOfViewsPerPass");
   for (size_t i = 0; i != subnode.size(); ++i) {
-    m_numberOfViewsPerPass.push_back(subnode.at(i).asInt());
+    m_numberOfViewsPerPass.push_back(size_t(subnode.at(i).asInt()));
   }
-  if (m_numberOfPasses != int(m_numberOfViewsPerPass.size())) {
+  if (m_numberOfPasses != m_numberOfViewsPerPass.size()) {
     throw runtime_error("NumberOfPasses and NumberOfViewsPerPass are inconsistent");
   }
   if (auto subnode = componentNode.optional("MergeConflict")) {
@@ -105,7 +105,7 @@ struct MultipassRendererHelper {
     return unusedPatchId;
   }
 
-  auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target) const
+  static auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target)
       -> vector<size_t> {
     vector<float> distance;
     vector<float> angle;
@@ -179,7 +179,7 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
 
   // Produce the individual pass synthesis results
   auto viewportPass = vector<Texture444Depth16Frame>(m_numberOfPasses);
-  for (int passId = 0; passId < m_numberOfPasses; passId++) {
+  for (size_t passId = 0; passId < m_numberOfPasses; passId++) {
     // Find the selected views for a given pass
     helper.selectedViewsPass.clear();
     for (size_t i = 0; i < ivSequenceParams.viewParamsList.size(); ++i) {
@@ -189,8 +189,8 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     }
 
     cout << "Selected Optimized Views in Pass " << passId << " : ";
-    for (size_t i = 0; i < helper.selectedViewsPass.size(); i++) {
-      cout << "o" << helper.selectedViewsPass[i] << ", ";
+    for (auto i : helper.selectedViewsPass) {
+      cout << "o" << i << ", ";
     }
     cout << "\n";
 

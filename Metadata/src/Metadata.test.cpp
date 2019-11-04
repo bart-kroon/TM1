@@ -206,7 +206,68 @@ const auto cameraParameterList = array{ViewParamsList{{cameraParameters[0]}},
 
 const auto ivsProfileTierLevel = array{IvsProfileTierLevel{}};
 
-const auto viewingSpace = array{ViewingSpace{}};
+const auto viewingSpace = array{
+    ViewingSpace{
+        {{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
+                                                             Cuboid{{}, {}}, // primitive
+                                                             {},             // guard band size
+                                                             {},             // orientation
+                                                             {} // viewing direction constraint
+                                                         }},
+                                                         {}}}}},
+    ViewingSpace{{{ElementaryShapeOperation::subtract,
+                   ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, {}, {}, {}}},
+                                   PrimitiveShapeOperation::interpolate}},
+                  {ElementaryShapeOperation::add,
+                   ElementaryShape{{PrimitiveShape{Halfspace{{}, {}}, {}, {}, {}}}}}}},
+    ViewingSpace{{{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
+                                                      Cuboid{{}, {}},
+                                                      1.F,                     // guard band size
+                                                      Vec3f{30.F, 60.F, 90.F}, // orientation
+                                                      {} // viewing direction constraint
+                                                  }}}}}},
+    ViewingSpace{{{ElementaryShapeOperation::add,
+                   ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
+                                                   {},
+                                                   {},
+                                                   PrimitiveShape::ViewingDirectionConstraint{
+                                                       {},
+                                                       90.F, // yaw_center
+                                                       30.F, // yaw_range,
+                                                       45.F, // pitch_center
+                                                       60.F  // pitch_range
+                                                   }}}}}}},
+    ViewingSpace{
+        {{ElementaryShapeOperation::add,
+          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
+                                          1.F,
+                                          Vec3f{30.F, 45.F, 60.F},
+                                          PrimitiveShape::ViewingDirectionConstraint{
+                                              15.F, // guard_band_direction_size
+                                              90.F, // yaw_center
+                                              30.F, // yaw_range,
+                                              45.F, // pitch_center
+                                              60.F  // pitch_range
+                                          }}}}},
+         {ElementaryShapeOperation::subtract,
+          ElementaryShape{{PrimitiveShape{Cuboid{{-1.F, 0.F, 1.F}, {1.F, 2.F, 3.F}}, {}, {}, {}},
+                           PrimitiveShape{Spheroid{{-2.F, 2.F, 2.F}, {3.F, 2.F, 1.F}}, {}, {}, {}},
+                           PrimitiveShape{Halfspace{{3.F, 3.F, 3.F}, -1.F}, {}, {}, {}}},
+                          PrimitiveShapeOperation::interpolate}}}}};
+
+const auto viewingSpaceJson = array{
+    "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"add\",\"ElementaryShape\": "
+    "{\"PrimitiveShapeOperation\": \"add\",\"PrimitiveShapes\": [{\"PrimitiveShapeType\": "
+    "\"cuboid\",\"Center\":[0,0,0],\"Size\":[0,0,0]}]}}]}",
+    "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"add\",\"ElementaryShape\":{"
+    "\"PrimitiveShapeOperation\":\"add\",\"PrimitiveShapes\":[{\"PrimitiveShapeType\":\"Cuboid\","
+    "\"GuardBandSize\":1.0,\"Rotation\":[30,45,60],\"ViewingDirectionConstraint\":{"
+    "\"GuardBandDirectionSize\":15.0,\"YawCenter\":90.0,\"YawRange\":30.0,\"PitchCenter\":45.0,"
+    "\"PitchRange\":60.0}}]}},{\"ElementaryShapeOperation\":\"subtract\",\"ElementaryShape\":{"
+    "\"PrimitiveShapes\":[{\"PrimitiveShapeType\":\"cuboid\",\"Center\":[-1.0,0.0,1.0],\"Size\":[1."
+    "0,2.0,3.0]},{\"PrimitiveShapeType\":\"spheroid\",\"Center\":[-2.0,2.0,2.0],\"Radius\":[3.0,2."
+    "0,1.0]},{\"PrimitiveShapeType\":\"halfspace\",\"Normal\":[3.0,3.0,3.0],\"Distance\":-1.0}],"
+    "\"PrimitiveShapeOperation\":\"interpolate\"}}]}"};
 
 const auto ivSequenceParams =
     array{IvSequenceParams{ivsProfileTierLevel[0], cameraParameterList[0]},
@@ -215,7 +276,7 @@ const auto ivSequenceParams =
                            2,    // num objects
                            2,    // max groups
                            12,   // num depth occupancy bits
-                           ViewingSpace{}}};
+                           viewingSpace[0]}};
 
 const auto atlasParamsList = array{
     AtlasParamsList{
@@ -253,6 +314,11 @@ auto codingTest(const Type &reference, int size, Args &... args) -> bool {
 
   return actual == reference;
 }
+template <typename Type> auto loadJson(const std::string& str) -> Type {
+  istringstream stream(str);
+  Json json(stream);
+  return Type::loadFromJson(json);
+}
 } // namespace
 
 TEST_CASE("ViewParamsList") {
@@ -280,7 +346,7 @@ TEST_CASE("Metadata bitstreams") {
 
   SECTION("ivs_params") {
     REQUIRE(codingTest(examples::ivSequenceParams[0], 59));
-    REQUIRE(codingTest(examples::ivSequenceParams[1], 84));
+    REQUIRE(codingTest(examples::ivSequenceParams[1], 98));
   }
 
   SECTION("atlas_params_list") {
@@ -293,7 +359,20 @@ TEST_CASE("Metadata bitstreams") {
     REQUIRE(codingTest(examples::ivAccessUnitParams[1], 47, examples::ivSequenceParams[1]));
   }
 
-  SECTION("viewing_space") { REQUIRE(codingTest(examples::viewingSpace[0], 0)); }
+  SECTION("viewing_space") {
+    REQUIRE(codingTest(examples::viewingSpace[0], 14));
+    REQUIRE(codingTest(examples::viewingSpace[1], 25));
+    REQUIRE(codingTest(examples::viewingSpace[2], 22));
+    REQUIRE(codingTest(examples::viewingSpace[3], 22));
+    REQUIRE(codingTest(examples::viewingSpace[4], 67));
+  }
+}
+
+TEST_CASE("Metadata_json") {
+  SECTION("viewing_space") {
+    REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[0]) == examples::viewingSpace[0]);
+    REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[1]) == examples::viewingSpace[4]);
+  }
 }
 
 TEST_CASE("OccupancyTransform") {

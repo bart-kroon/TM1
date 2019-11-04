@@ -31,43 +31,35 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_MULTIPASSRENDERER_H_
-#define _TMIV_RENDERER_MULTIPASSRENDERER_H_
+#include <TMIV/Common/Half.h>
 
-#include <TMIV/Renderer/IInpainter.h>
-#include <TMIV/Renderer/IRenderer.h>
-#include <TMIV/Renderer/ISynthesizer.h>
+#include <sstream>
 
-namespace TMIV::Renderer {
-enum class MergeMode {
-  inpaint = 0, // let the inpainter fill
-  lowPass = 1, // fill from the low-pass synthesis results which are in the background
-  highPass = 2 // fill from the high-pass synthesis results which are in the foreground
-};
+using namespace std;
 
-// Advanced multipass implementation of IRenderer
-class MultipassRenderer : public IRenderer {
-private:
-  std::unique_ptr<ISynthesizer> m_synthesizer;
-  std::unique_ptr<IInpainter> m_inpainter;
-  std::size_t m_numberOfPasses{};
-  std::vector<std::size_t> m_numberOfViewsPerPass;
-  MergeMode m_mergeConflict = MergeMode::lowPass;
+namespace TMIV::Common {
+namespace {
+auto message(uint16_t code) -> string {
+  ostringstream what;
+  what << "Special half code ";
+  what.setf(ios::hex, ios::basefield);
+  what.setf(ios::showbase);
+  what.setf(ios::uppercase);
+  what.fill('0');
+  what.width(4);
+  what << code << " is not supported by the specification";
+  return what.str();
+}
 
-public:
-  MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  MultipassRenderer(const MultipassRenderer &) = delete;
-  MultipassRenderer(MultipassRenderer &&) = default;
-  MultipassRenderer &operator=(const MultipassRenderer &) = delete;
-  MultipassRenderer &operator=(MultipassRenderer &&) = default;
-  ~MultipassRenderer() override = default;
+auto message(float value) -> string {
+  ostringstream what;
+  what << "Floating-point value " << hexfloat << showbase << value
+       << " cannot be encoded as fl(16)";
+  return what.str();
+}
+} // namespace
 
-  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::IvSequenceParams &ivSequenceParams,
-                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                   const Metadata::ViewParams &target) const
-      -> Common::Texture444Depth16Frame override;
-};
-} // namespace TMIV::Renderer
+HalfError::HalfError(uint16_t code) : runtime_error(message(code)) {}
 
-#endif
+HalfError::HalfError(float value) : runtime_error(message(value)) {}
+} // namespace TMIV::Common

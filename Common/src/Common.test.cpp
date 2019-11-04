@@ -38,6 +38,7 @@ using Catch::Matchers::Contains;
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Common.h>
+#include <TMIV/Common/Half.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/LinAlg.h>
 
@@ -196,6 +197,62 @@ TEST_CASE("Assignment of fixed size matrix N x 1 to fixed size vector") {
   stack::Vector<double, 6> b;
   b = A;
   REQUIRE(b[5] == 1);
+}
+
+TEST_CASE("Half") {
+  // Examples taken from https://en.wikipedia.org/wiki/Half-precision_floating-point_format
+
+  SECTION("Decode") {
+    REQUIRE_THROWS_AS(Half::decode(0x0001), HalfError); // the WD excludes subnormals
+    REQUIRE_THROWS_AS(Half::decode(0x03FF), HalfError); // the WD excludes subnormals
+    REQUIRE_NOTHROW(Half::decode(0x0400));              // smallest positive normal number
+    REQUIRE_NOTHROW(Half::decode(0x7BFF));              // largest normal number
+    REQUIRE_NOTHROW(Half::decode(0x3BFF));              // largest number less than one
+    REQUIRE_NOTHROW(Half::decode(0x3C00));              // one
+    REQUIRE_NOTHROW(Half::decode(0x3C01));              // smallest number larger then one
+    REQUIRE_NOTHROW(Half::decode(0x3555));              // one third (rounded down)
+    REQUIRE_NOTHROW(Half::decode(0xC000));              // minus two
+    REQUIRE_NOTHROW(Half::decode(0x0000));              // positive zero
+    REQUIRE_NOTHROW(Half::decode(0x8000));              // negative zero
+    REQUIRE_THROWS_AS(Half::decode(0x7C00), HalfError); // the WD excludes infinitity
+    REQUIRE_THROWS_AS(Half::decode(0xFC00), HalfError); // the WD excludes -infinitity
+    REQUIRE_THROWS_AS(Half::decode(0x7C01), HalfError); // the WD excludes NaN values
+  }
+
+  SECTION("Encode") {
+    for (uint16_t code :
+         {0x0400u, 0x7BFFu, 0x3BFFu, 0x3C00u, 0x3C01u, 0x3555u, 0xC000u, 0x0000u, 0x8000u}) {
+      REQUIRE(Half::decode(code).encode() == code);
+    }
+  }
+
+  SECTION("Implicit conversion to float (lossless)") {
+    REQUIRE(Half::decode(0x0400) == 0x1.p-14F);   // smallest positive normal number
+    REQUIRE(Half::decode(0x7BFF) == 65504.F);     // largest normal number
+    REQUIRE(Half::decode(0x3BFF) == 0x1.FFCp-1F); // largest number less than one
+    REQUIRE(Half::decode(0x3C00) == 1.F);         // one
+    REQUIRE(Half::decode(0x3C01) == 0x1.004p0F);  // smallest number larger then one
+    REQUIRE(Half::decode(0x3555) == 0x1.554p-2F); // one third (rounded down)
+    REQUIRE(Half::decode(0xC000) == -2.F);        // minus two
+    REQUIRE(Half::decode(0x0000) == 0.F);         // positive zero
+    REQUIRE(Half::decode(0x8000) == -0.F);        // negative zero
+  }
+  
+  SECTION("Explicit conversion from float (lossy)") {
+    REQUIRE_THROWS_AS(Half(nextafter(65504.F, 1e6F)), HalfError);
+    REQUIRE_THROWS_AS(Half(nextafter(-65504.F, -1e6F)), HalfError);
+    REQUIRE_THROWS_AS(Half(NaN), HalfError);
+    REQUIRE_THROWS_AS(Half(inf), HalfError);
+    REQUIRE(Half(0x1.p-14F).encode() == 0x0400);   // smallest positive normal number
+    REQUIRE(Half(65504.F).encode() == 0x7BFF);     // largest normal number
+    REQUIRE(Half(0x1.FFCp-1F).encode() == 0x3BFF); // largest number less than one
+    REQUIRE(Half(1.F).encode() == 0x3C00);         // one
+    REQUIRE(Half(0x1.004p0F).encode() == 0x3C01);  // smallest number larger then one
+    REQUIRE(Half(0x1.554p-2F).encode() == 0x3555); // one third (rounded down)
+    REQUIRE(Half(-2.F).encode() == 0xC000);        // minus two
+    REQUIRE(Half(0.F).encode() == 0x0000);         // positive zero
+    REQUIRE(Half(-0.F).encode() == 0x8000);        // negative zero
+  }
 }
 
 TEST_CASE("maxlevel", "[quantize_and_expand]") {

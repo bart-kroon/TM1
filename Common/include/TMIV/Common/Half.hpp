@@ -31,43 +31,56 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_MULTIPASSRENDERER_H_
-#define _TMIV_RENDERER_MULTIPASSRENDERER_H_
-
-#include <TMIV/Renderer/IInpainter.h>
-#include <TMIV/Renderer/IRenderer.h>
-#include <TMIV/Renderer/ISynthesizer.h>
-
-namespace TMIV::Renderer {
-enum class MergeMode {
-  inpaint = 0, // let the inpainter fill
-  lowPass = 1, // fill from the low-pass synthesis results which are in the background
-  highPass = 2 // fill from the high-pass synthesis results which are in the foreground
-};
-
-// Advanced multipass implementation of IRenderer
-class MultipassRenderer : public IRenderer {
-private:
-  std::unique_ptr<ISynthesizer> m_synthesizer;
-  std::unique_ptr<IInpainter> m_inpainter;
-  std::size_t m_numberOfPasses{};
-  std::vector<std::size_t> m_numberOfViewsPerPass;
-  MergeMode m_mergeConflict = MergeMode::lowPass;
-
-public:
-  MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  MultipassRenderer(const MultipassRenderer &) = delete;
-  MultipassRenderer(MultipassRenderer &&) = default;
-  MultipassRenderer &operator=(const MultipassRenderer &) = delete;
-  MultipassRenderer &operator=(MultipassRenderer &&) = default;
-  ~MultipassRenderer() override = default;
-
-  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::IvSequenceParams &ivSequenceParams,
-                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                   const Metadata::ViewParams &target) const
-      -> Common::Texture444Depth16Frame override;
-};
-} // namespace TMIV::Renderer
-
+#ifndef _TMIV_COMMON_HALF_H_
+#error "Include the .h, not the .hpp"
 #endif
+
+#include <cmath>
+#include <sstream>
+
+namespace TMIV::Common {
+inline Half::operator float() const {
+  const auto abs = m_code & 0x7FFFU;
+  const auto sign = m_code == abs ? 1.F : -1.F;
+
+  if (abs == 0) {
+    return sign * 0.F;
+  }
+
+  const auto exponent = int((m_code & 0x7C00U) >> 10U);
+  const auto mantissa = (m_code & 0x03FFU) | 0x400U;
+  return sign * ldexp(float(mantissa), exponent - 25);
+}
+
+inline Half::Half(float value) {
+  const auto x = std::abs(value);
+
+  if (!std::isfinite(value) || x > 65504.F) {
+    throw HalfError(value);
+  }
+
+  if (x < 0x1.p-14F) {
+    m_code = 0; // the WD excludes subnormal numbers
+  } else {
+    int exponent{};
+    const auto mantissa_f = frexp(x, &exponent);
+    const auto mantissa = unsigned(lround(ldexp(mantissa_f, 11)));
+    m_code = uint16_t((unsigned(exponent + 14) << 10) | (mantissa & 0x3FF));
+  }
+
+  if (std::signbit(value)) {
+    m_code |= 0x8000;
+  }
+}
+
+inline Half Half::decode(uint16_t code) {
+  Half result;
+  if ((code & 0x7FFFU) != 0 && ((code & 0x7C00U) == 0 || (code & 0x7C00U) == 0x7C00)) {
+    throw HalfError(code);
+  }
+  result.m_code = code;
+  return result;
+}
+
+inline auto Half::encode() const -> uint16_t { return m_code; }
+} // namespace TMIV::Common

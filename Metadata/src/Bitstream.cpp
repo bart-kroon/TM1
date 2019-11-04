@@ -60,6 +60,11 @@ auto InputBitstream::readBits(unsigned bits) -> uint_least64_t {
   return value;
 }
 
+auto InputBitstream::getFloat16() -> Common::Half {
+  using Common::Half;
+  return Half::decode(getUint16());
+}
+
 auto InputBitstream::getFloat32() -> float {
   uint32_t code = getUint32();
   float value;
@@ -137,6 +142,10 @@ void OutputBitstream::putUExpGolomb(uint_least64_t value) {
   putFlag(false);
   auto mask = (uint_least64_t{1} << bits) - 1;
   writeBits(value - mask, bits);
+}
+
+void OutputBitstream::putFloat16(Common::Half value) {
+	putUint16(value.encode());
 }
 
 void OutputBitstream::putFloat32(float value) {

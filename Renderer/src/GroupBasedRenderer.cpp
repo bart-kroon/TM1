@@ -186,7 +186,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
                                      const ViewParams &target) const -> Texture444Depth16Frame {
   GroupBasedRendererHelper helper;
 
-  const int numberOfPasses = ivSequenceParams.numGroups;
+  const auto numberOfPasses = ivSequenceParams.numGroups;
 
   helper.mergeConflict =
       ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::highPass;
@@ -231,7 +231,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
 
   // Produce the individual pass synthesis results (Same as MPR)
   auto viewportPass = vector<Texture444Depth16Frame>(numberOfPasses);
-  for (int passId = 0; passId < numberOfPasses; passId++) {
+  for (unsigned passId = 0; passId < numberOfPasses; passId++) {
     // Find the selected viewsInGroup for a given pass
     helper.selectedViewsPass.clear();
     for (size_t i = 0; i < ivSequenceParams.viewParamsList.size(); ++i) {
@@ -241,8 +241,8 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
     }
 
     cout << "Selected Optimized Views in Pass " << passId << " : ";
-    for (size_t i = 0; i < helper.selectedViewsPass.size(); i++) {
-      cout << "o" << helper.selectedViewsPass[i] << ", ";
+    for (auto i : helper.selectedViewsPass) {
+      cout << "o" << i << ", ";
     }
     cout << "\n";
 
@@ -276,7 +276,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLi
           });
     }
   }
-  
+
   m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }

@@ -31,43 +31,36 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_MULTIPASSRENDERER_H_
-#define _TMIV_RENDERER_MULTIPASSRENDERER_H_
+#ifndef _TMIV_COMMON_HALF_H_
+#define _TMIV_COMMON_HALF_H_
 
-#include <TMIV/Renderer/IInpainter.h>
-#include <TMIV/Renderer/IRenderer.h>
-#include <TMIV/Renderer/ISynthesizer.h>
+#include <cmath>
+#include <cstdint>
+#include <stdexcept>
 
-namespace TMIV::Renderer {
-enum class MergeMode {
-  inpaint = 0, // let the inpainter fill
-  lowPass = 1, // fill from the low-pass synthesis results which are in the background
-  highPass = 2 // fill from the high-pass synthesis results which are in the foreground
-};
-
-// Advanced multipass implementation of IRenderer
-class MultipassRenderer : public IRenderer {
-private:
-  std::unique_ptr<ISynthesizer> m_synthesizer;
-  std::unique_ptr<IInpainter> m_inpainter;
-  std::size_t m_numberOfPasses{};
-  std::vector<std::size_t> m_numberOfViewsPerPass;
-  MergeMode m_mergeConflict = MergeMode::lowPass;
-
+namespace TMIV::Common {
+// https://en.wikipedia.org/wiki/Half-precision_floating-point_format
+class Half {
 public:
-  MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  MultipassRenderer(const MultipassRenderer &) = delete;
-  MultipassRenderer(MultipassRenderer &&) = default;
-  MultipassRenderer &operator=(const MultipassRenderer &) = delete;
-  MultipassRenderer &operator=(MultipassRenderer &&) = default;
-  ~MultipassRenderer() override = default;
+  Half() = default;
+  explicit Half(float value);
 
-  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::IvSequenceParams &ivSequenceParams,
-                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                   const Metadata::ViewParams &target) const
-      -> Common::Texture444Depth16Frame override;
+  /*implicit*/ operator float() const;
+
+  static Half decode(uint16_t code);
+  auto encode() const -> uint16_t;
+
+private:
+  uint16_t m_code{};
 };
-} // namespace TMIV::Renderer
+
+class HalfError : public std::runtime_error {
+public:
+  explicit HalfError(uint16_t);
+  explicit HalfError(float);
+};
+} // namespace TMIV::Common
+
+#include "Half.hpp"
 
 #endif

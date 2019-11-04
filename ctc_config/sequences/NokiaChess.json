@@ -6,29 +6,29 @@
     "Informative": {
         "Cameras_number": 10,
         "RigRadius": 0.3,
-	    "Document": "MPEG128/m50787"
+        "Document": "MPEG128/m50787"
     },
     "cameras": [ {
-	    "Background": 1,
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 10,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
-	    "Depth_range": [0.1, 500],
-	    "Depthmap": 1,
-	    "Name": "viewport",
-	    "Projection": "Perspective",
+        "Background": 1,
+        "BitDepthColor": 10,
+        "BitDepthDepth": 10,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
+        "Depth_range": [0.1, 500],
+        "Depthmap": 1,
+        "Name": "viewport",
+        "Projection": "Perspective",
         "Position": [ -0.5, -0.5, 1.0 ],
-	    "Resolution": [2048, 2048],
+        "Resolution": [2048, 2048],
         "Rotation": [ 0.0, 0.0, 0.0 ],
-	    "Focal": [1024, 1024],
-	    "Principle_point": [1024, 1024]
-	},
-	{
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "Focal": [1024, 1024],
+        "Principle_point": [1024, 1024]
+    },
+    {
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v0",
@@ -39,10 +39,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v1",
@@ -53,10 +53,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v2",
@@ -67,10 +67,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v3",
@@ -81,10 +81,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v4",
@@ -95,10 +95,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v5",
@@ -109,10 +109,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v6",
@@ -123,10 +123,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v7",
@@ -137,10 +137,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v8",
@@ -151,10 +151,10 @@
         "Ver_range": [ -90.0, 90.0 ]
     },
     {
-	    "BitDepthColor": 10,
-	    "BitDepthDepth": 16,
-	    "ColorSpace": "YUV420",
-	    "DepthColorSpace": "YUV420",
+        "BitDepthColor": 10,
+        "BitDepthDepth": 16,
+        "ColorSpace": "YUV420",
+        "DepthColorSpace": "YUV420",
         "Depth_range": [ 0.1, 500.0 ],
         "Hor_range": [ -90.0, 90.0 ],
         "Name": "v9",

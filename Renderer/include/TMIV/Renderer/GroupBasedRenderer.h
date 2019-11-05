@@ -85,7 +85,7 @@ private:
     float distance;
     float angleWeight;
 
-    bool operator<(const Priority &other) const;
+    auto operator<(const Priority &other) const -> bool;
   };
 
   // Determine the priority of a group

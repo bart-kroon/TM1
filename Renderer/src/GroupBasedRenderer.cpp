@@ -151,8 +151,9 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
   // Enumerate the views that occur in this group (in arbitrary order)
   vector<unsigned> viewIds;
   viewIds.reserve(ivSequenceParams.viewParamsList.size());
+  const auto & groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
   for (const auto &patch : *ivAccessUnitParams.atlasParamsList) {
-    if (groupId == patch.groupId && !contains(viewIds, patch.viewId)) {
+    if (groupId == groupIds[patch.atlasId] && !contains(viewIds, patch.viewId)) {
       viewIds.push_back(patch.viewId);
     }
   }
@@ -253,7 +254,7 @@ auto GroupBasedRenderer::filterMergeTexture(uint16_t i, uint16_t j, uint16_t id,
   return j;
 }
 
-bool GroupBasedRenderer::Priority::operator<(const Priority &other) const {
+auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> bool {
   return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
 }
 

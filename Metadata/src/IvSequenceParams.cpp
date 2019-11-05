@@ -68,7 +68,7 @@ auto operator<<(ostream &stream, const PerspectiveParams &projection) -> ostream
 }
 
 auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
-  stream << viewParams.size << ", ";
+  stream << "(" << viewParams.name << "), " << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
   stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
          << viewParams.depthOccMapThreshold;
@@ -100,6 +100,7 @@ auto ViewParams::operator==(const ViewParams &other) const -> bool {
 
 auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   ViewParams parameters;
+  parameters.name = node.require("Name").asString();
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();
   parameters.rotation = node.require("Rotation").asFloatVector<3>();

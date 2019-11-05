@@ -72,7 +72,7 @@ void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams)
 
 void GroupBasedEncoder::pushFrame(MVD16Frame views) {
   for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    cout << "Processing G" << groupId << " : \n";
+    cout << "Processing group " << groupId << ":\n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
 }
@@ -189,10 +189,12 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
         Tz.push_back(viewsPool[sortedCamerasId[camIndex]].position[2]);
       }
 
-      cout << "Views (0-based) Selected for G" << gIndex << " : ";
+      cout << "Views selected for group " << gIndex << ": ";
+      auto sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        cout << "v" << unsigned(viewsLabels[sortedCamerasId[i]]) << ", ";
+        cout << sep << unsigned(viewsLabels[sortedCamerasId[i]]);
         viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
+        sep = ", ";
       }
       cout << "\n";
 
@@ -211,10 +213,12 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
       camerasInGroup.clear();
       copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
 
-      cout << "Views (0-based) Selected for G" << gIndex << " : ";
+      cout << "Views selected for group " << gIndex << ": ";
+      auto sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        cout << "v" << unsigned(viewsLabels[i]) << ", ";
+        cout << sep << unsigned(viewsLabels[i]);
         viewsInGroup.push_back(viewsLabels[i]);
+        sep = ", ";
       }
       cout << "\n";
     }

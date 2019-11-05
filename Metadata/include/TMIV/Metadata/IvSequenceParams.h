@@ -129,7 +129,7 @@ struct ViewParams {
   std::optional<uint16_t> depthStart{};
 
   // Not in the specification. Just to improve screen output
-  std::string name;
+  std::string name{};
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;

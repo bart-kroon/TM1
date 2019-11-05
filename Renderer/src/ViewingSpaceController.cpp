@@ -31,23 +31,49 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
-#include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/Renderer/ViewingSpaceController.h>
 
+#include <cmath>
+
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Metadata;
+
 namespace TMIV::Renderer {
-inline void registerComponents() {
-  Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("ViewingSpaceController");
-  Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<GroupBasedRenderer>("GroupBasedRenderer");
+
+namespace {
+
+	float computeIndex(const ViewParams& metadata) {
+		//TO DO
+		return 1.F;
+	}
+
+	template <typename YUVD> 
+	void inplaceFading_impl(YUVD& yuvd, const ViewParams& meta, float index) {
+		//TO DO
+	}
+
+
 }
+
+ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/, const Json & /*componentNode*/) {
+	//should we do something here ?
+}
+
+void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport, 
+	                                       const ViewParams &metadata) const {
+  // 1) computeIndex function call 
+  float index = computeIndex(metadata);
+  // 2) fading function call 
+  inplaceFading_impl(viewport, metadata, index);  
+}
+
+void ViewingSpaceController::inplaceFading(Texture444Depth16Frame &viewport,
+                                           const ViewParams &metadata) const {
+  // 1) computeIndex function call
+  float index = computeIndex(metadata);
+  // 2) fading function call
+  inplaceFading_impl(viewport, metadata, index);
+}
+
 } // namespace TMIV::Renderer

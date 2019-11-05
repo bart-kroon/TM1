@@ -31,23 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
-#include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/Synthesizer.h>
-#include <TMIV/Renderer/ViewingSpaceController.h>
+#ifndef _TMIV_RENDERER_VIEWINGSPACECONTROLLER_H_
+#define _TMIV_RENDERER_VIEWINGSPACECONTROLLER_H_
+
+#include <TMIV/Common/Json.h>
+#include <TMIV/Renderer/IViewingSpaceController.h>
 
 namespace TMIV::Renderer {
-inline void registerComponents() {
-  Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("ViewingSpaceController");
-  Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<GroupBasedRenderer>("GroupBasedRenderer");
-}
+class ViewingSpaceController : public IViewingSpaceController {
+public:
+  ViewingSpaceController(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
+  ViewingSpaceController(const ViewingSpaceController &) = delete;
+  ViewingSpaceController(ViewingSpaceController &&) = default;
+  ViewingSpaceController &operator=(const ViewingSpaceController &) = delete;
+  ViewingSpaceController &operator=(ViewingSpaceController &&) = default;
+  ~ViewingSpaceController() override = default;
+
+  void inplaceFading(Common::Texture444Depth10Frame &viewport,
+                      const Metadata::ViewParams &metadata) const override;
+  void inplaceFading(Common::Texture444Depth16Frame &viewport,
+                     const Metadata::ViewParams &metadata) const override;
+};
 } // namespace TMIV::Renderer
+
+#endif

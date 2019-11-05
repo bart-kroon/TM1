@@ -31,23 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
-#include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/Synthesizer.h>
-#include <TMIV/Renderer/ViewingSpaceController.h>
+#ifndef _TMIV_RENDERER_IVIEWINGSPACECONTROLLER_H_
+#define _TMIV_RENDERER_IVIEWINGSPACECONTROLLER_H_
+
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::Renderer {
-inline void registerComponents() {
-  Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("ViewingSpaceController");
-  Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<GroupBasedRenderer>("GroupBasedRenderer");
-}
+class IViewingSpaceController {
+public:
+  IViewingSpaceController() = default;
+  IViewingSpaceController(const IViewingSpaceController &) = delete;
+  IViewingSpaceController(IViewingSpaceController &&) = default;
+  IViewingSpaceController &operator=(const IViewingSpaceController &) = delete;
+  IViewingSpaceController &operator=(IViewingSpaceController &&) = default;
+  virtual ~IViewingSpaceController() = default;
+
+  // Viewing space fading
+  virtual void inplaceFading(Common::Texture444Depth10Frame &viewport,
+                              const Metadata::ViewParams &metadata) const = 0;
+  virtual void inplaceFading(Common::Texture444Depth16Frame &viewport,
+                             const Metadata::ViewParams &metadata) const = 0;
+
+};
 } // namespace TMIV::Renderer
+
+#endif

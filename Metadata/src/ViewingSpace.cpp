@@ -37,7 +37,7 @@
 
 #include <TMIV/Common/Half.h>
 
-#include <cassert>
+#include "verify.h"
 
 using namespace std;
 
@@ -72,7 +72,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
 }
 
 void ViewingSpace::encodeTo(OutputBitstream &stream) const {
-  assert(!elementaryShapes.empty());
+  verify(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
   for (const auto &shape : elementaryShapes) {
     stream.writeBits(uint_least64_t(shape.first), 1);
@@ -145,7 +145,7 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
 }
 
 void ElementaryShape::encodeTo(OutputBitstream &stream) const {
-  assert(!primitives.empty());
+  verify(!primitives.empty());
   bool guardBandPresent{};
   bool orientationPresent{};
   bool directionConstraintPresent{};

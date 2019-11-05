@@ -37,7 +37,6 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/Metadata/Bitstream.h>
 
-#include <cassert>
 #include <iomanip>
 #include <iostream>
 
@@ -258,7 +257,7 @@ void PerspectiveParams::encodeTo(OutputBitstream &bitstream) const {
 
 void ViewParamsList::encodeTo(OutputBitstream &bitstream,
                               unsigned depthOccMapThresholdNumBits) const {
-  assert(!empty() && size() - 1 <= UINT16_MAX);
+  verify(!empty() && size() - 1 <= UINT16_MAX);
   bitstream.putUint16(uint16_t(size() - 1));
 
   for (const auto &viewParams : *this) {
@@ -275,7 +274,7 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
 
   for (const auto &viewParams : *this) {
     bitstream.putUint8(uint8_t(viewParams.projection.index()));
-    assert(viewParams.size.x() >= 1 && viewParams.size.y() >= 1);
+    verify(viewParams.size.x() >= 1 && viewParams.size.y() >= 1);
     bitstream.putUint16(uint16_t(viewParams.size.x() - 1));
     bitstream.putUint16(uint16_t(viewParams.size.y() - 1));
     visit([&](const auto &x) { x.encodeTo(bitstream); }, viewParams.projection);

@@ -163,7 +163,7 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
     return {};
   }
 
-  // Find the view with the highest priority
+  // Find the view with the highest priority (i.e. the view within the group that is closest to the target view)
   const auto highest = *min_element(begin(viewIds), end(viewIds), [&](unsigned i, unsigned j) {
     return viewPriority(ivSequenceParams.viewParamsList[i], target) <
            viewPriority(ivSequenceParams.viewParamsList[j], target);
@@ -255,7 +255,10 @@ auto GroupBasedRenderer::filterMergeTexture(uint16_t i, uint16_t j, uint16_t id,
 }
 
 auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> bool {
-  return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
+  if (angleWeight == other.angleWeight)
+    return distance < other.distance;
+  else
+	return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
 }
 
 } // namespace TMIV::Renderer

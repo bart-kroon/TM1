@@ -101,7 +101,7 @@ class DecoderConfiguration:
 		return self.viewWidth()
 
 	def atlasHeight(self):
-		if anchorId == 'A97' or anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17':
 			return {
 				'A': 3072,
 				'B': 2368,
@@ -110,7 +110,7 @@ class DecoderConfiguration:
 				'E': 1080,
 				'J': 1080,
 				'L': 1080,
-                                'N': 2368
+				'N': 2368
 			}[self.seqId]
 		return self.viewHeight()
 
@@ -124,7 +124,7 @@ class DecoderConfiguration:
 				'E': 1920,
 				'J': 1920,
 				'L': 1920,
-                                'N': 2048
+				'N': 2048
 			}[self.seqId]
 		return self.viewWidth()
 
@@ -138,7 +138,7 @@ class DecoderConfiguration:
 				'E': 1080,
 				'J': 1080,
 				'L': 1080,
-                                'N': 2048
+				'N': 2048
 			}[self.seqId]
 		return self.viewHeight()
 
@@ -180,7 +180,7 @@ class DecoderConfiguration:
 			'E': 13,
 			'J': 25,
 			'L': 10,
-                        'N': 10
+            'N': 10
 		}[self.seqId]
 
 	def firstSourceView(self):
@@ -360,15 +360,22 @@ class AllDecoderConfigurations(DecoderConfiguration):
 	def outputCameraName(self):
 		return self.overrideOutputCameraName
 
+	def allSourceCameraNames(self):
+		if self.anchorId == 'R17':
+			return []
+		return DecoderConfiguration.allSourceCameraNames(self)
+
 	def allTargetCameraNames(self):
 		return self.allSourceCameraNames() + ['p01', 'p02', 'p03']
 
 class EncoderConfiguration(DecoderConfiguration):
 	def __init__(self, anchorId, seqId):
 		DecoderConfiguration.__init__(self, anchorId, seqId, 'R0')
+		self.anchorId = anchorId
+		self.seqId = seqId
 
 	def viewOptimizerMethod(self):
-		if anchorId == 'V17':
+		if self.anchorId == 'V17' or self.anchorId == 'R17':
 			return 'NoViewOptimizer'
 		return 'ViewReducer'
 
@@ -460,13 +467,10 @@ class EncoderConfiguration(DecoderConfiguration):
 		return self.seqId == 'E'
 
 	def numGroups(self):
-		if anchorId == 'A97' or anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':
 				return 3
-			return 1	
-			[self.seqId]	
-		if anchorId == 'V17': 
-			return 1
+		return 1
 
 	def maxEntities(self):
 		return 1
@@ -527,8 +531,16 @@ if __name__ == '__main__':
 		source_directory = sys.argv[1]
 		ctc_archive = False
 
-	anchors = [ 'A97', 'A17', 'V17' ]
 	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
+
+	# R17 anchor
+	for seqId in seqIds:
+		config = EncoderConfiguration('R17', seqId)
+		config.saveTmivJson()
+		config = AllDecoderConfigurations('R17', seqId, 'R0')
+		config.saveTmivJson()
+
+	anchors = [ 'A97', 'A17', 'V17' ]
 	testPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']
 
 	for anchorId in anchors:

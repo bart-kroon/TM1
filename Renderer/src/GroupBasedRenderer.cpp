@@ -152,7 +152,7 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
   vector<unsigned> viewIds;
   viewIds.reserve(ivSequenceParams.viewParamsList.size());
   for (const auto &patch : *ivAccessUnitParams.atlasParamsList) {
-    if (!contains(viewIds, patch.viewId)) {
+    if (groupId == patch.groupId && !contains(viewIds, patch.viewId)) {
       viewIds.push_back(patch.viewId);
     }
   }

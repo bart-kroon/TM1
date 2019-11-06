@@ -38,12 +38,12 @@ import sys
 from make_tmiv_configs import *
 
 class QpTuningEncoderConfiguration(EncoderConfiguration):
-	def __init__(self, seqId):
-		EncoderConfiguration.__init__(self, 'A17', seqId)
+	def __init__(self, sourceDir, seqId):
+		EncoderConfiguration.__init__(self, sourceDir, 'A17', seqId)
 
 class AllQpTuningDecoderConfigurations(AllDecoderConfigurations):
-	def __init__(self, seqId, textureQPs, deltaQPs):
-		AllDecoderConfigurations.__init__(self, 'A17', seqId, 'R0')
+	def __init__(self, sourceDir, seqId, textureQPs, deltaQPs):
+		AllDecoderConfigurations.__init__(self, sourceDir, 'A17', seqId, 'R0')
 		self.textureQPs = textureQPs
 		self.deltaQPs = deltaQPs
 
@@ -70,19 +70,18 @@ if __name__ == '__main__':
 		print ('Error: Python version < 3')
 		exit(-1)
 
-	if len(sys.argv) > 2 or len(sys.argv) == 2 and sys.argv[1] == '--help':
+	if len(sys.argv) != 2 or len(sys.argv) == 2 and sys.argv[1] == '--help':
 		print('Usage: [python3] ./qp_tuning_configs.py SOURCE_DIRECTORY')
 		print()
 		print('SOURCE_DIRECTORY may use replacement fields {0} for seqId (A) or {1} for seqName (ClassroomVideo).')
 		print('The script should be run from the root of the output directory structure.')
 		exit(1)
 
-	source_directory = sys.argv[1]
-	ctc_archive = False
+	sourceDir = sys.argv[1]
 
 	for seqId in ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']:
-		config = QpTuningEncoderConfiguration(seqId)
+		config = QpTuningEncoderConfiguration(sourceDir, seqId)
 		config.saveTmivJson()
 		config.saveHmCfg()
-		config = AllQpTuningDecoderConfigurations(seqId, [22, 27, 32, 37, 42], [-14, -10, -6, -3, 0])
+		config = AllQpTuningDecoderConfigurations(sourceDir, seqId, [22, 27, 32, 37, 42], [-14, -10, -6, -3, 0])
 		config.saveTmivJson()

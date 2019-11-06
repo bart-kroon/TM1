@@ -7,3 +7,4 @@ install
 install.*
 Catch2
 Spikes
+/ctc_config/__pycache__

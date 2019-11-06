@@ -57,7 +57,7 @@ class DecoderConfiguration:
 		return 32
 
 	def sourceDirectory(self):
-		return source_directory.format(seqId, self.seqName())
+		return source_directory.format(self.seqId, self.seqName())
 
 	def seqName(self):
 		return {

@@ -302,12 +302,12 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
     // Copy atlas sizes in group order
     copy(begin(groupParams.atlasParamsList->atlasSizes),
          end(groupParams.atlasParamsList->atlasSizes), back_inserter(atlasParamsList.atlasSizes));
-    
-	// Copy depthOccupancyParamsPresentFlags in group order
+
+    // Copy depthOccupancyParamsPresentFlags in group order
     copy(begin(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
          end(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
          back_inserter(atlasParamsList.depthOccupancyParamsPresentFlags));
-		 
+
     // Assign group ID's
     while (atlasParamsList.groupIds->size() < atlasParamsList.atlasSizes.size()) {
       atlasParamsList.groupIds->push_back(unsigned(groupId));

@@ -38,6 +38,8 @@
 #include <TMIV/Renderer/IRenderer.h>
 #include <TMIV/Renderer/ISynthesizer.h>
 
+#include <bitset>
+
 namespace TMIV::Renderer {
 // Advanced GroupBased implementation of IRenderer
 class GroupBasedRenderer : public IRenderer {
@@ -53,11 +55,62 @@ public:
   GroupBasedRenderer &operator=(GroupBasedRenderer &&) = default;
   ~GroupBasedRenderer() override = default;
 
-  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+  auto renderFrame(const Common::MVD10Frame &atlases, const Common::PatchIdMapList &patchIdMapList,
                    const Metadata::IvSequenceParams &ivSequenceParams,
                    const Metadata::IvAccessUnitParams &ivAccessUnitParams,
                    const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
+
+private:
+  using GroupIdMask = std::bitset<32>;
+
+  // Render multiple groups
+  auto renderPass(GroupIdMask groupIdMask, const Common::MVD10Frame &atlases,
+                  const Common::PatchIdMapList &patchIdMapList,
+                  const Metadata::IvSequenceParams &ivSequenceParams,
+                  const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                  const Metadata::ViewParams &target) const -> Common::Texture444Depth16Frame;
+
+  // Determine group render order (multipass rendering)
+  static auto groupRenderOrder(const Metadata::IvSequenceParams &ivSequenceParams,
+                               const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                               const Metadata::ViewParams &target) -> std::vector<unsigned>;
+
+  // Filter the patch id map list for groups included in the mask
+  static auto filterPatchIdMapList(GroupIdMask groupIdMask, Common::PatchIdMapList patchIdMapList,
+                                   const Metadata::IvAccessUnitParams &ivAccessUnitParams)
+      -> Common::PatchIdMapList;
+
+  struct Priority {
+    float distance;
+    float angleWeight;
+
+    auto operator<(const Priority &other) const -> bool;
+  };
+
+  // Determine the priority of a group
+  static auto groupPriority(unsigned groupId, const Metadata::IvSequenceParams &ivSequenceParams,
+                            const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                            const Metadata::ViewParams &target) -> Priority;
+
+  // Determine the priority of a view
+  static auto viewPriority(const Metadata::ViewParams &source, const Metadata::ViewParams &target)
+      -> Priority;
+
+  enum class MergeMode {
+    inpaint = 0, // let the inpainter fill
+    lowPass = 1, // fill from the low-pass synthesis results which are in the background
+    highPass = 2 // fill from the high-pass synthesis results which are in the foreground
+  };
+
+  // Merge a render pass into the partial render result
+  static void inplaceMerge(Common::Texture444Depth16Frame &viewport,
+                           const Common::Texture444Depth16Frame &viewportPass, MergeMode mergeMode);
+
+  static auto filterMergeDepth(uint16_t i, uint16_t j, MergeMode mergeMode) -> uint16_t;
+
+  static auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd,
+                                 MergeMode mergeMode) -> uint16_t;
 };
 } // namespace TMIV::Renderer
 

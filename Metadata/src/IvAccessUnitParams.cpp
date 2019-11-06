@@ -36,7 +36,6 @@
 #include <TMIV/Metadata/Bitstream.h>
 
 #include <algorithm>
-#include <cassert>
 #include <iostream>
 #include <map>
 
@@ -195,7 +194,7 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
 
 void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
                                const IvSequenceParams &ivSequenceParams) const {
-  assert(atlasSizes.size() == depthOccupancyParamsPresentFlags.size());
+  verify(atlasSizes.size() == depthOccupancyParamsPresentFlags.size());
 
   // Count patches per atlas ID
   auto atlasIds = map<uint8_t, uint_least16_t>{};
@@ -203,13 +202,13 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
     ++atlasIds.insert({patch.atlasId, 0}).first->second;
   }
 
-  assert(!atlasIds.empty());
+  verify(!atlasIds.empty());
   bitstream.putUExpGolomb(atlasIds.size() - 1);
   bitstream.putFlag(omafV1CompatibleFlag);
 
   for (auto [atlasId, numPatches] : atlasIds) {
-    assert(numPatches > 0 && numPatches - 1 <= UINT16_MAX);
-    assert(atlasId < atlasSizes.size());
+    verify(numPatches > 0 && numPatches - 1 <= UINT16_MAX);
+    verify(atlasId < atlasSizes.size());
     const auto atlasSize = atlasSizes[atlasId];
 
     bitstream.putUint8(atlasId);
@@ -221,7 +220,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
     }
 
     bitstream.putUint16(uint16_t(numPatches - 1));
-    assert(atlasSize.x() >= 1 && atlasSize.y() >= 1);
+    verify(atlasSize.x() >= 1 && atlasSize.y() >= 1);
     bitstream.putUint16(atlasSize.x() - 1);
     bitstream.putUint16(atlasSize.y() - 1);
     bitstream.putFlag(depthOccupancyParamsPresentFlags[atlasId]);
@@ -230,14 +229,12 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
       if (patch.atlasId == atlasId) {
         const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
-#ifndef NDEBUG
-        assert(0 < patch.patchSizeInView.x() && 0 < patch.patchSizeInView.y());
-        assert(0 <= patch.posInView.x() && 0 <= patch.posInView.y());
-        assert(patch.posInView.x() + patch.patchSizeInView.x() <= viewSize.x());
-        assert(patch.posInView.y() + patch.patchSizeInView.y() <= viewSize.y());
-        assert(patch.posInAtlas.x() + patch.patchSizeInAtlas().x() <= atlasSize.x());
-        assert(patch.posInAtlas.y() + patch.patchSizeInAtlas().y() <= atlasSize.y());
-#endif
+        verify(0 < patch.patchSizeInView.x() && 0 < patch.patchSizeInView.y());
+        verify(0 <= patch.posInView.x() && 0 <= patch.posInView.y());
+        verify(patch.posInView.x() + patch.patchSizeInView.x() <= viewSize.x());
+        verify(patch.posInView.y() + patch.patchSizeInView.y() <= viewSize.y());
+        verify(patch.posInAtlas.x() + patch.patchSizeInAtlas().x() <= atlasSize.x());
+        verify(patch.posInAtlas.y() + patch.patchSizeInAtlas().y() <= atlasSize.y());
 
         bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
 

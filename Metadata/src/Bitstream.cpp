@@ -33,7 +33,6 @@
 
 #include <TMIV/Metadata/Bitstream.h>
 
-#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <limits>
@@ -119,7 +118,7 @@ void OutputBitstream::writeBits(uint_least64_t value, unsigned bits) {
   constexpr unsigned chunk = numeric_limits<uchar>::digits;
 
   verify((value >> bits) == 0);
-  assert(m_size + bits <= numeric_limits<uint_least64_t>::digits);
+  verify(m_size + bits <= numeric_limits<uint_least64_t>::digits);
 
   m_buffer = (m_buffer << bits) | value;
   m_size += bits;

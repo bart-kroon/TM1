@@ -68,7 +68,10 @@ auto operator<<(ostream &stream, const PerspectiveParams &projection) -> ostream
 }
 
 auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
-  stream << "(" << viewParams.name << "), " << viewParams.size << ", ";
+  if (!viewParams.name.empty()) {
+    stream << "(" << setw(3) << viewParams.name << "), ";
+  }
+  stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
   stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
          << viewParams.depthOccMapThreshold;

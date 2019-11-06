@@ -57,13 +57,16 @@ class AllQpTuningDecoderConfigurations(AllDecoderConfigurations):
 				AllDecoderConfigurations.saveTmivJson(self)
 
 	def atlasTexturePathFmt(self):
-		return 'ATL_S{}_Q{:02}_Tt_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.textureQP, self.atlasWidth(), self.atlasHeight())
+		return os.path.join('..',
+			'ATL_S{}_Q{:02}_Tt_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.textureQP, self.atlasWidth(), self.atlasHeight()))
 
 	def atlasDepthPathFmt(self):
-		return 'ATL_S{}_Q{:02}_Td_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.depthQP, self.atlasWidth(), self.atlasHeight())
+		return os.path.join('..',
+			'ATL_S{}_Q{:02}_Td_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.depthQP, self.atlasWidth(), self.atlasHeight()))
 
 	def atlasMetadataPath(self):
-		return 'ATL_S{}_R0_Tm_c00.bit'.format(self.seqId)
+		return os.path.join('..',
+			'ATL_S{}_R0_Tm_c00.bit'.format(self.seqId))
 
 if __name__ == '__main__':
 	if sys.version_info[0] < 3:

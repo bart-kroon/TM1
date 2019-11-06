@@ -35,6 +35,8 @@
 
 #include <cmath>
 
+#include <iostream>
+
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
@@ -43,35 +45,88 @@ namespace TMIV::Renderer {
 
 namespace {
 
-	float computeIndex(const ViewParams& metadata) {
-		//TO DO
-		return 1.F;
-	}
+float computeIndex(const ViewParams &metadata) {
+  // TO DO
+  float index = 1.F;
+  
+  //[FT] : lines below are just to test the fading operation 
+  /*{
+  float step = 0.95F;
+  static int FRAME = 0;
+  index = index * std::powf(step, (float)(FRAME));
+  FRAME++;
+  }*/
+  
 
-	template <typename YUVD> 
-	void inplaceFading_impl(YUVD& yuvd, const ViewParams& meta, float index) {
-		//TO DO
-	}
-
-
+  return index;
 }
 
-ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/, const Json & /*componentNode*/) {
-	//should we do something here ?
+template <typename YUVD> void inplaceFading_impl(YUVD &yuvd, const ViewParams &meta, float index) {
+  // TO DO
+  auto &Y = yuvd.first.getPlane(0);
+  auto &U = yuvd.first.getPlane(1);
+  auto &V = yuvd.first.getPlane(2);
+
+  const int width_Y = int(Y.width());
+  const int height_Y = int(Y.height());
+  const int width_UV = int(U.width());
+  const int height_UV = int(U.height());
+
+  float weight = index; // for test:just a recopy of the index ==> mapping might be changed
+  float R = 0.F;
+  float G = 0.F;
+  float B = 0.F;
+
+  // RGB to/from YUV conversion coefficients
+  Common::Vec3f YUVtoR({1.164F,  0.F,     1.596F});
+  Common::Vec3f YUVtoG({1.164F, -0.392F, -0.813F});
+  Common::Vec3f YUVtoB({1.164F,  2.017F,  0.F});
+  Common::Vec3f RGBtoY({ 0.257F,  0.504F,  0.098F});
+  Common::Vec3f RGBtoU({-0.148F, -0.291F,  0.439F});
+  Common::Vec3f RGBtoV({ 0.439F, -0.368F, -0.071F});
+  Common::Vec3f Cte({64.F, 512.F, 512.F});
+  
+  // YUV clamping :
+  //   over  8 bits : Y is in range [16, 235], UV is in range [16, 240]
+  //   over 10 bits : Y is in range [64, 940], UV is in range [64, 960]
+  // https://stackoverflow.com/questions/25804565/accurate-yuv-10-bits-to-8-bits-conversion
+
+  // 1) get RGB from YUV, 2) then greyish it, 3) then back to YUV
+  for (int h = 0; h < height_Y; h++) {
+    for (int w = 0; w < width_Y; w++) {
+      R = min(max( (Y(h, w) - Cte[0]) * YUVtoR[0] + (U(h, w) - Cte[1]) * YUVtoR[1] + (V(h, w) - Cte[2]) * YUVtoR[2], 0.F), 1023.F) * weight;
+      G = min(max( (Y(h, w) - Cte[0]) * YUVtoG[0] + (U(h, w) - Cte[1]) * YUVtoG[1] + (V(h, w) - Cte[2]) * YUVtoG[2], 0.F), 1023.F) * weight;
+      B = min(max( (Y(h, w) - Cte[0]) * YUVtoB[0] + (U(h, w) - Cte[1]) * YUVtoB[1] + (V(h, w) - Cte[2]) * YUVtoB[2], 0.F), 1023.F) * weight;
+
+      Y(h, w) = static_cast<int>( min(max( R * RGBtoY[0] + G * RGBtoY[1] + B * RGBtoY[2] + Cte[0], 64.F), 940.F) );
+      U(h, w) = static_cast<int>( min(max( R * RGBtoU[0] + G * RGBtoU[1] + B * RGBtoU[2] + Cte[1], 64.F), 960.F) );
+      V(h, w) = static_cast<int>( min(max( R * RGBtoV[0] + G * RGBtoV[1] + B * RGBtoV[2] + Cte[2], 64.F), 960.F) );
+    }
+  }
+ 
 }
 
-void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport, 
-	                                       const ViewParams &metadata) const {
-  // 1) computeIndex function call 
+} // namespace
+
+ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/,
+                                               const Json & /*componentNode*/) {
+  // should we do something here ?
+}
+
+void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport,
+                                           const ViewParams &metadata) const {
+  // 1) computeIndex function call
   float index = computeIndex(metadata);
-  // 2) fading function call 
-  inplaceFading_impl(viewport, metadata, index);  
+
+  // 2) fading function call
+  inplaceFading_impl(viewport, metadata, index);
 }
 
 void ViewingSpaceController::inplaceFading(Texture444Depth16Frame &viewport,
                                            const ViewParams &metadata) const {
   // 1) computeIndex function call
   float index = computeIndex(metadata);
+
   // 2) fading function call
   inplaceFading_impl(viewport, metadata, index);
 }

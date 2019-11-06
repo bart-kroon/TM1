@@ -151,7 +151,7 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
   // Enumerate the views that occur in this group (in arbitrary order)
   vector<unsigned> viewIds;
   viewIds.reserve(ivSequenceParams.viewParamsList.size());
-  const auto & groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
+  const auto &groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
   for (const auto &patch : *ivAccessUnitParams.atlasParamsList) {
     if (groupId == groupIds[patch.atlasId] && !contains(viewIds, patch.viewId)) {
       viewIds.push_back(patch.viewId);
@@ -163,7 +163,8 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
     return {};
   }
 
-  // Find the view with the highest priority (i.e. the view within the group that is closest to the target view)
+  // Find the view with the highest priority (i.e. the view within the group that is closest to the
+  // target view)
   const auto highest = *min_element(begin(viewIds), end(viewIds), [&](unsigned i, unsigned j) {
     return viewPriority(ivSequenceParams.viewParamsList[i], target) <
            viewPriority(ivSequenceParams.viewParamsList[j], target);
@@ -255,10 +256,11 @@ auto GroupBasedRenderer::filterMergeTexture(uint16_t i, uint16_t j, uint16_t id,
 }
 
 auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> bool {
-  if (angleWeight == other.angleWeight)
+  // avoid 0 < 0 when angleWeight == other.angleWeight == 1
+  if (angleWeight == other.angleWeight) {
     return distance < other.distance;
-  else
-	return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
+  }
+  return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
 }
 
 } // namespace TMIV::Renderer

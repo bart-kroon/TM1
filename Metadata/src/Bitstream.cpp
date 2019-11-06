@@ -47,7 +47,8 @@ auto InputBitstream::readBits(unsigned bits) -> uint_least64_t {
   constexpr unsigned chunk = numeric_limits<uchar>::digits;
 
   while (m_size < bits) {
-    verify(m_size + chunk <= numeric_limits<uint_least64_t>::digits);
+    assert(m_size + chunk <= numeric_limits<uint_least64_t>::digits);
+	verify(m_stream.good());
 
     m_buffer = (m_buffer << chunk) | uchar(m_stream.get());
     m_size += chunk;

@@ -52,7 +52,7 @@ GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &component
 
 auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
     -> const IvSequenceParams & {
-  m_grouping = groupSelector(ivSequenceParams);
+  m_grouping = sourceSplitter(ivSequenceParams);
 
   auto perGroupIvSequenceParams = vector<const IvSequenceParams *>(numGroups(), nullptr);
 
@@ -99,7 +99,7 @@ auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
   return result;
 }
 
-auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequenceParams)
+auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSequenceParams)
     -> Grouping {
   auto grouping = Grouping{};
 

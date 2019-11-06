@@ -69,7 +69,7 @@ protected:
   using Grouping = std::vector<std::pair<std::size_t, std::size_t>>;
 
   // Partition the views, thereby forming the groups
-  virtual auto groupSelector(const Metadata::IvSequenceParams &ivSequenceParams) -> Grouping;
+  virtual auto sourceSplitter(const Metadata::IvSequenceParams &ivSequenceParams) -> Grouping;
 
 protected:
   // Split per-group sequence parameters

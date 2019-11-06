@@ -86,5 +86,5 @@ if __name__ == '__main__':
 		config = QpTuningEncoderConfiguration(sourceDir, seqId)
 		config.saveTmivJson()
 		config.saveHmCfg()
-		config = AllQpTuningDecoderConfigurations(sourceDir, seqId, [22, 27, 32, 37, 42], [-14, -10, -6, -3, 0])
+		config = AllQpTuningDecoderConfigurations(sourceDir, seqId, [22, 27, 32, 37, 42], [-13, -10, -8, -5, -3, 0])
 		config.saveTmivJson()

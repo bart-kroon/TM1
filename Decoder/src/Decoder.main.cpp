@@ -67,8 +67,8 @@ public:
 
   void run() override {
     m_metadataReader.readIvSequenceParams();
-    m_decoder->updateSequenceParams(m_metadataReader.ivSequeceParams());
-    cout << "Decoded sequence parameters:\n" << m_metadataReader.ivSequeceParams();
+    m_decoder->updateSequenceParams(m_metadataReader.ivSequenceParams());
+    cout << "Decoded sequence parameters:\n" << m_metadataReader.ivSequenceParams();
 
     for (int outputFrame = 0; outputFrame < m_numberOfFrames; ++outputFrame) {
       auto inputFrame = IO::getExtendedIndex(json(), outputFrame);

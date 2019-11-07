@@ -50,7 +50,7 @@ public:
   void readIvAccessUnitParams();
   bool readAccessUnit(int accessUnit);
 
-  auto ivSequeceParams() const -> const Metadata::IvSequenceParams &;
+  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
   auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
 
 private:
@@ -62,7 +62,7 @@ private:
   int m_accessUnit{-1};
 };
 
-inline auto IvMetadataReader::ivSequeceParams() const -> const Metadata::IvSequenceParams & {
+inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
   return m_ivSequenceParams;
 }
 

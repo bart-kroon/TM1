@@ -162,7 +162,7 @@
         "Projection": "Equirectangular",
         "Resolution": [ 2048, 2048 ],
         "Rotation": [ 90.00000250447816, 90.00000250447816, 0.0 ],
-        "Ver_range": [ -89.0, 90.0 ]
+        "Ver_range": [ -90.0, 90.0 ]
     }
     ]
 }

@@ -106,10 +106,10 @@ class DecoderConfiguration:
 				'A': 3072,
 				'B': 2368,
 				'C': 5120,
-				'D': 1088,
-				'E': 1080,
-				'J': 1080,
-				'L': 1080,
+				'D': 2048,
+				'E': 1920,
+				'J': 1920,
+				'L': 1920,
 				'N': 2368
 			}[self.seqId]
 		return self.viewHeight()
@@ -425,10 +425,10 @@ class EncoderConfiguration(DecoderConfiguration):
 				'A': 1,
 				'B': 3,
 				'C': 2,
-				'D': 2,
-				'E': 2,
-				'J': 2,
-				'L': 2,
+				'D': 1,
+				'E': 1,
+				'J': 1,
+				'L': 1,
 				'N': 3
 			}[self.seqId] * self.lumaSamplesPerView()
 		return 0

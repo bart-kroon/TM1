@@ -36,17 +36,17 @@ import json
 import os
 import sys
 
-# See Usage description at the end of the script
-ctc_archive = True
-source_directory = '.'
-
 class DecoderConfiguration:
-	def __init__(self, anchorId, seqId, testPoint):
+	def __init__(self, sourceDir, anchorId, seqId, testPoint):
+		self.sourceDir = sourceDir
 		self.anchorId = anchorId
 		self.seqId = seqId
 		self.testPoint = testPoint
 		with open(self.sequenceJsonPath(), 'r') as stream:			
 			self.sequenceParams = json.load(stream)
+
+	def ctcArchive(self):
+		return self.sourceDir == '.'
 
 	def numberOfFrames(self):
 		if self.anchorId == 'A97':
@@ -57,7 +57,7 @@ class DecoderConfiguration:
 		return 32
 
 	def sourceDirectory(self):
-		return source_directory.format(seqId, self.seqName())
+		return self.sourceDir.format(self.seqId, self.seqName())
 
 	def seqName(self):
 		return {
@@ -72,7 +72,7 @@ class DecoderConfiguration:
 		}[self.seqId]
 
 	def sourceCameraParameters(self):
-		if ctc_archive:
+		if self.ctcArchive():
 			return '{}.json'.format(self.seqName())	
 		return self.sequenceJsonPath()
 
@@ -152,7 +152,7 @@ class DecoderConfiguration:
 		return 'ATL_S{}_{}_Tm_c00.bit'.format(self.seqId, self.testPoint)
 
 	def outputDirectory(self):
-		if ctc_archive:
+		if self.ctcArchive():
 			return '.'
 		return os.path.realpath(os.path.dirname(self.path()))
 
@@ -242,7 +242,7 @@ class DecoderConfiguration:
 		return '{}{}.csv'.format(self.seqId, self.outputCameraName())
 
 	def poseTracePath(self):
-		if ctc_archive:
+		if self.ctcArchive():
 			return self.poseTraceBasename()
 		return os.path.realpath('{}/pose_traces/{}'.format(self.configPath(), self.poseTraceBasename()))
 
@@ -369,8 +369,8 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		return self.allSourceCameraNames() + ['p01', 'p02', 'p03']
 
 class EncoderConfiguration(DecoderConfiguration):
-	def __init__(self, anchorId, seqId):
-		DecoderConfiguration.__init__(self, anchorId, seqId, 'R0')
+	def __init__(self, sourceDir, anchorId, seqId):
+		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
 		self.anchorId = anchorId
 		self.seqId = seqId
 
@@ -527,17 +527,17 @@ if __name__ == '__main__':
 		print('The script should be run from the root of the output directory structure.')
 		exit(1)
 
+	sourceDir = '.'
 	if len(sys.argv) == 2:
-		source_directory = sys.argv[1]
-		ctc_archive = False
+		sourceDir = sys.argv[1]
 
 	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
 
 	# R17 anchor
 	for seqId in seqIds:
-		config = EncoderConfiguration('R17', seqId)
+		config = EncoderConfiguration(sourceDir, 'R17', seqId)
 		config.saveTmivJson()
-		config = AllDecoderConfigurations('R17', seqId, 'R0')
+		config = AllDecoderConfigurations(sourceDir, 'R17', seqId, 'R0')
 		config.saveTmivJson()
 
 	anchors = [ 'A97', 'A17', 'V17' ]
@@ -545,12 +545,12 @@ if __name__ == '__main__':
 
 	for anchorId in anchors:
 		for seqId in seqIds:
-			config = EncoderConfiguration(anchorId, seqId)
+			config = EncoderConfiguration(sourceDir, anchorId, seqId)
 			config.saveTmivJson()
 			config.saveHmCfg()
 
 	for testPoint in testPoints:
 		for anchorId in anchors:
 			for seqId in seqIds:
-				config = AllDecoderConfigurations(anchorId, seqId, testPoint)
+				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint)
 				config.saveTmivJson()

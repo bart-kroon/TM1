@@ -107,8 +107,8 @@ class DecoderConfiguration:
 				'B': 2368,
 				'C': 5120,
 				'D': 2048,
-				'E': 1920,
-				'J': 1920,
+				'E': 1080,
+				'J': 1080,
 				'L': 1920,
 				'N': 2368
 			}[self.seqId]
@@ -426,8 +426,8 @@ class EncoderConfiguration(DecoderConfiguration):
 				'B': 3,
 				'C': 2,
 				'D': 1,
-				'E': 1,
-				'J': 1,
+				'E': 2,
+				'J': 2,
 				'L': 1,
 				'N': 3
 			}[self.seqId] * self.lumaSamplesPerView()

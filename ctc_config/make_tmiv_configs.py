@@ -361,7 +361,7 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		return self.overrideOutputCameraName
 
 	def allSourceCameraNames(self):
-		if self.anchorId == 'R97':
+		if self.anchorId == 'R97' or self.anchorId == 'R17':
 			return []
 		return DecoderConfiguration.allSourceCameraNames(self)
 
@@ -375,7 +375,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		self.seqId = seqId
 
 	def viewOptimizerMethod(self):
-		if self.anchorId == 'V17' or self.anchorId == 'R97':
+		if self.anchorId == 'V17' or self.anchorId == 'R17' or self.anchorId == 'R97':
 			return 'NoViewOptimizer'
 		return 'ViewReducer'
 
@@ -532,6 +532,13 @@ if __name__ == '__main__':
 		sourceDir = sys.argv[1]
 
 	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
+	
+	# R17 anchor
+	for seqId in seqIds:
+		config = EncoderConfiguration(sourceDir, 'R17', seqId)
+		config.saveTmivJson()
+		config = AllDecoderConfigurations(sourceDir, 'R17', seqId, 'R0')
+		config.saveTmivJson()
 
 	# R97 anchor
 	for seqId in seqIds:

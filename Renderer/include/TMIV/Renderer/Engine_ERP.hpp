@@ -41,20 +41,7 @@
 #include <cmath>
 
 namespace TMIV::Renderer {
-using Common::halfCycle;
-using Common::quarterCycle;
-
 template <> struct Engine<Metadata::ErpParams> {
-  const Metadata::ViewParams viewParams;
-  const bool northPole;
-  const bool southPole;
-  const bool wraps;
-  const int icols;
-  const int irows;
-  const int ocols;
-  const int orows;
-  const int osize;
-  const int numTriangles;
   const float phi0;
   const float theta0;
   const float dphi_du;
@@ -64,25 +51,8 @@ template <> struct Engine<Metadata::ErpParams> {
   const float du_dphi;
   const float dv_dtheta;
 
-  explicit Engine(const Metadata::ViewParams &viewParams_)
-      : viewParams{viewParams_},
-
-        // Projection sub-type
-        northPole{viewParams.erp().thetaRange[1] == quarterCycle},
-        southPole{viewParams.erp().thetaRange[0] == -quarterCycle},
-        wraps{viewParams.erp().phiRange[0] == -halfCycle &&
-              viewParams.erp().phiRange[1] == halfCycle},
-
-        // Mesh structure
-        icols{viewParams.size.x()}, irows{viewParams.size.y()}, ocols{viewParams.size.x() + 2 -
-                                                                      int(wraps)},
-        orows{viewParams.size.y() + 2 - int(northPole) - int(southPole)}, osize{ocols * orows +
-                                                                                int(southPole) +
-                                                                                int(northPole)},
-        numTriangles{2 * (orows - 1) * (ocols - 1) + (northPole ? ocols - 1 : 0) +
-                     (southPole ? ocols - 1 : 0)},
-
-        // Precomputed values used in te unprojection equation
+  explicit Engine(const Metadata::ViewParams &viewParams)
+      : // Precomputed values used in te unprojection equation
         phi0{Common::radperdeg * viewParams.erp().phiRange[1]},
         theta0{Common::radperdeg * viewParams.erp().thetaRange[1]},
         dphi_du{-Common::radperdeg * (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0]) /

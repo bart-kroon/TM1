@@ -37,6 +37,7 @@
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/IRenderer.h>
 #include <TMIV/Renderer/ISynthesizer.h>
+#include <TMIV/Renderer/IViewingSpaceController.h>
 
 namespace TMIV::Renderer {
 enum class MergeMode {
@@ -50,6 +51,7 @@ class MultipassRenderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
+  std::unique_ptr<IViewingSpaceController> m_viewingSpaceController;
   std::size_t m_numberOfPasses{};
   std::vector<std::size_t> m_numberOfViewsPerPass;
   MergeMode m_mergeConflict = MergeMode::lowPass;

@@ -45,7 +45,7 @@ namespace TMIV::Renderer {
 
 namespace {
 
-float computeIndex(const ViewParams &metadata) {
+float computeIndex(const ViewParams &metadata, const Metadata::IvSequenceParams &ivSequenceParams) {
   // TO DO
   float index = 1.F;
   
@@ -113,19 +113,21 @@ ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/,
   // should we do something here ?
 }
 
-void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport,
-                                           const ViewParams &metadata) const {
+void ViewingSpaceController::inplaceFading(
+    Texture444Depth10Frame &viewport, const ViewParams &metadata,
+    const Metadata::IvSequenceParams &ivSequenceParams) const {
   // 1) computeIndex function call
-  float index = computeIndex(metadata);
+  float index = computeIndex(metadata, ivSequenceParams);
 
   // 2) fading function call
   inplaceFading_impl(viewport, metadata, index);
 }
 
-void ViewingSpaceController::inplaceFading(Texture444Depth16Frame &viewport,
-                                           const ViewParams &metadata) const {
+void ViewingSpaceController::inplaceFading(
+    Texture444Depth16Frame &viewport, const ViewParams &metadata,
+    const Metadata::IvSequenceParams &ivSequenceParams) const {
   // 1) computeIndex function call
-  float index = computeIndex(metadata);
+  float index = computeIndex(metadata, ivSequenceParams);
 
   // 2) fading function call
   inplaceFading_impl(viewport, metadata, index);

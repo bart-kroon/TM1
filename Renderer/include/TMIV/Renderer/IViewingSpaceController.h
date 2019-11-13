@@ -49,9 +49,11 @@ public:
 
   // Viewing space fading
   virtual void inplaceFading(Common::Texture444Depth10Frame &viewport,
-                              const Metadata::ViewParams &metadata) const = 0;
+                             const Metadata::ViewParams &metadata,
+                             const Metadata::IvSequenceParams &ivSequenceParams) const = 0;
   virtual void inplaceFading(Common::Texture444Depth16Frame &viewport,
-                             const Metadata::ViewParams &metadata) const = 0;
+                             const Metadata::ViewParams &metadata,
+                             const Metadata::IvSequenceParams &ivSequenceParams) const = 0;
 
 };
 } // namespace TMIV::Renderer

@@ -58,7 +58,7 @@ auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
   
   // fading to grey with respect to viewing space
   if (ivSequenceParams.viewingSpace)
-    m_viewingSpaceController->inplaceFading(viewport, target);
+    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
   
   return viewport;
 }

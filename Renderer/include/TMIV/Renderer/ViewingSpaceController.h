@@ -47,10 +47,10 @@ public:
   ViewingSpaceController &operator=(ViewingSpaceController &&) = default;
   ~ViewingSpaceController() override = default;
 
-  void inplaceFading(Common::Texture444Depth10Frame &viewport,
-                      const Metadata::ViewParams &metadata) const override;
-  void inplaceFading(Common::Texture444Depth16Frame &viewport,
-                     const Metadata::ViewParams &metadata) const override;
+  void inplaceFading(Common::Texture444Depth10Frame &viewport, const Metadata::ViewParams &metadata,
+                     const Metadata::IvSequenceParams &ivSequenceParams) const override;
+  void inplaceFading(Common::Texture444Depth16Frame &viewport, const Metadata::ViewParams &metadata,
+                     const Metadata::IvSequenceParams &ivSequenceParams) const override;
 };
 } // namespace TMIV::Renderer
 

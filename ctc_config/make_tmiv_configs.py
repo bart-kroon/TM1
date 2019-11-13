@@ -217,7 +217,7 @@ class DecoderConfiguration:
 		return len(self.sourceCameraNames())
 
 	def useMultipassRenderer(self):
-		return self.anchorId == 'V17'
+		return self.anchorId == 'V17' or self.anchorId == 'R97'
 
 	def rendererMethod(self):
 		if self.useMultipassRenderer():

@@ -183,7 +183,7 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     // Find the selected views for a given pass
     helper.selectedViewsPass.clear();
     for (size_t i = 0; i < ivSequenceParams.viewParamsList.size(); ++i) {
-      if (i < m_numberOfViewsPerPass[passId]) {
+      if (i < m_numberOfViewsPerPass[passId] || m_numberOfViewsPerPass[passId] == 0) {
         helper.selectedViewsPass.push_back(unsigned(sortedCamerasId[i]));
       }
     }

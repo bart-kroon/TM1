@@ -37,7 +37,6 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/Metadata/Bitstream.h>
 
-#include <cassert>
 #include <iomanip>
 #include <iostream>
 
@@ -68,6 +67,9 @@ auto operator<<(ostream &stream, const PerspectiveParams &projection) -> ostream
 }
 
 auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
+  if (!viewParams.name.empty()) {
+    stream << "(" << setw(3) << viewParams.name << "), ";
+  }
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
   stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
@@ -100,6 +102,7 @@ auto ViewParams::operator==(const ViewParams &other) const -> bool {
 
 auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   ViewParams parameters;
+  parameters.name = node.require("Name").asString();
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.position = node.require("Position").asFloatVector<3>();
   parameters.rotation = node.require("Rotation").asFloatVector<3>();
@@ -258,7 +261,7 @@ void PerspectiveParams::encodeTo(OutputBitstream &bitstream) const {
 
 void ViewParamsList::encodeTo(OutputBitstream &bitstream,
                               unsigned depthOccMapThresholdNumBits) const {
-  assert(!empty() && size() - 1 <= UINT16_MAX);
+  verify(!empty() && size() - 1 <= UINT16_MAX);
   bitstream.putUint16(uint16_t(size() - 1));
 
   for (const auto &viewParams : *this) {
@@ -275,7 +278,7 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
 
   for (const auto &viewParams : *this) {
     bitstream.putUint8(uint8_t(viewParams.projection.index()));
-    assert(viewParams.size.x() >= 1 && viewParams.size.y() >= 1);
+    verify(viewParams.size.x() >= 1 && viewParams.size.y() >= 1);
     bitstream.putUint16(uint16_t(viewParams.size.x() - 1));
     bitstream.putUint16(uint16_t(viewParams.size.y() - 1));
     visit([&](const auto &x) { x.encodeTo(bitstream); }, viewParams.projection);

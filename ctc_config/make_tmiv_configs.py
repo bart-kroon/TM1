@@ -36,17 +36,17 @@ import json
 import os
 import sys
 
-# See Usage description at the end of the script
-ctc_archive = True
-source_directory = '.'
-
 class DecoderConfiguration:
-	def __init__(self, anchorId, seqId, testPoint):
+	def __init__(self, sourceDir, anchorId, seqId, testPoint):
+		self.sourceDir = sourceDir
 		self.anchorId = anchorId
 		self.seqId = seqId
 		self.testPoint = testPoint
 		with open(self.sequenceJsonPath(), 'r') as stream:			
 			self.sequenceParams = json.load(stream)
+
+	def ctcArchive(self):
+		return self.sourceDir == '.'
 
 	def numberOfFrames(self):
 		if self.anchorId == 'A97':
@@ -57,7 +57,7 @@ class DecoderConfiguration:
 		return 32
 
 	def sourceDirectory(self):
-		return source_directory.format(seqId, self.seqName())
+		return self.sourceDir.format(self.seqId, self.seqName())
 
 	def seqName(self):
 		return {
@@ -72,7 +72,7 @@ class DecoderConfiguration:
 		}[self.seqId]
 
 	def sourceCameraParameters(self):
-		if ctc_archive:
+		if self.ctcArchive():
 			return '{}.json'.format(self.seqName())	
 		return self.sequenceJsonPath()
 
@@ -101,16 +101,16 @@ class DecoderConfiguration:
 		return self.viewWidth()
 
 	def atlasHeight(self):
-		if anchorId == 'A97' or anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17':
 			return {
 				'A': 3072,
 				'B': 2368,
 				'C': 5120,
-				'D': 1088,
+				'D': 2048,
 				'E': 1080,
 				'J': 1080,
-				'L': 1080,
-                                'N': 2368
+				'L': 1920,
+				'N': 2368
 			}[self.seqId]
 		return self.viewHeight()
 
@@ -124,7 +124,7 @@ class DecoderConfiguration:
 				'E': 1920,
 				'J': 1920,
 				'L': 1920,
-                                'N': 2048
+				'N': 2048
 			}[self.seqId]
 		return self.viewWidth()
 
@@ -138,7 +138,7 @@ class DecoderConfiguration:
 				'E': 1080,
 				'J': 1080,
 				'L': 1080,
-                                'N': 2048
+				'N': 2048
 			}[self.seqId]
 		return self.viewHeight()
 
@@ -152,7 +152,7 @@ class DecoderConfiguration:
 		return 'ATL_S{}_{}_Tm_c00.bit'.format(self.seqId, self.testPoint)
 
 	def outputDirectory(self):
-		if ctc_archive:
+		if self.ctcArchive():
 			return '.'
 		return os.path.realpath(os.path.dirname(self.path()))
 
@@ -180,7 +180,7 @@ class DecoderConfiguration:
 			'E': 13,
 			'J': 25,
 			'L': 10,
-                        'N': 10
+            'N': 10
 		}[self.seqId]
 
 	def firstSourceView(self):
@@ -242,7 +242,7 @@ class DecoderConfiguration:
 		return '{}{}.csv'.format(self.seqId, self.outputCameraName())
 
 	def poseTracePath(self):
-		if ctc_archive:
+		if self.ctcArchive():
 			return self.poseTraceBasename()
 		return os.path.realpath('{}/pose_traces/{}'.format(self.configPath(), self.poseTraceBasename()))
 
@@ -360,15 +360,22 @@ class AllDecoderConfigurations(DecoderConfiguration):
 	def outputCameraName(self):
 		return self.overrideOutputCameraName
 
+	def allSourceCameraNames(self):
+		if self.anchorId == 'R17':
+			return []
+		return DecoderConfiguration.allSourceCameraNames(self)
+
 	def allTargetCameraNames(self):
 		return self.allSourceCameraNames() + ['p01', 'p02', 'p03']
 
 class EncoderConfiguration(DecoderConfiguration):
-	def __init__(self, anchorId, seqId):
-		DecoderConfiguration.__init__(self, anchorId, seqId, 'R0')
+	def __init__(self, sourceDir, anchorId, seqId):
+		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
+		self.anchorId = anchorId
+		self.seqId = seqId
 
 	def viewOptimizerMethod(self):
-		if anchorId == 'V17':
+		if self.anchorId == 'V17' or self.anchorId == 'R17':
 			return 'NoViewOptimizer'
 		return 'ViewReducer'
 
@@ -418,10 +425,10 @@ class EncoderConfiguration(DecoderConfiguration):
 				'A': 1,
 				'B': 3,
 				'C': 2,
-				'D': 2,
+				'D': 1,
 				'E': 2,
 				'J': 2,
-				'L': 2,
+				'L': 1,
 				'N': 3
 			}[self.seqId] * self.lumaSamplesPerView()
 		return 0
@@ -460,13 +467,10 @@ class EncoderConfiguration(DecoderConfiguration):
 		return self.seqId == 'E'
 
 	def numGroups(self):
-		if anchorId == 'A97' or anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':
 				return 3
-			return 1	
-			[self.seqId]	
-		if anchorId == 'V17': 
-			return 1
+		return 1
 
 	def maxEntities(self):
 		return 1
@@ -523,22 +527,30 @@ if __name__ == '__main__':
 		print('The script should be run from the root of the output directory structure.')
 		exit(1)
 
+	sourceDir = '.'
 	if len(sys.argv) == 2:
-		source_directory = sys.argv[1]
-		ctc_archive = False
+		sourceDir = sys.argv[1]
+
+	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
+
+	# R17 anchor
+	for seqId in seqIds:
+		config = EncoderConfiguration(sourceDir, 'R17', seqId)
+		config.saveTmivJson()
+		config = AllDecoderConfigurations(sourceDir, 'R17', seqId, 'R0')
+		config.saveTmivJson()
 
 	anchors = [ 'A97', 'A17', 'V17' ]
-	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
 	testPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']
 
 	for anchorId in anchors:
 		for seqId in seqIds:
-			config = EncoderConfiguration(anchorId, seqId)
+			config = EncoderConfiguration(sourceDir, anchorId, seqId)
 			config.saveTmivJson()
 			config.saveHmCfg()
 
 	for testPoint in testPoints:
 		for anchorId in anchors:
 			for seqId in seqIds:
-				config = AllDecoderConfigurations(anchorId, seqId, testPoint)
+				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint)
 				config.saveTmivJson()

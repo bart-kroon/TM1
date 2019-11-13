@@ -52,7 +52,7 @@ GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &component
 
 auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
     -> const IvSequenceParams & {
-  m_grouping = groupSelector(ivSequenceParams);
+  m_grouping = sourceSplitter(ivSequenceParams);
 
   auto perGroupIvSequenceParams = vector<const IvSequenceParams *>(numGroups(), nullptr);
 
@@ -72,7 +72,7 @@ void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams)
 
 void GroupBasedEncoder::pushFrame(MVD16Frame views) {
   for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    cout << "Processing G" << groupId << " : \n";
+    cout << "Processing group " << groupId << ":\n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
 }
@@ -99,7 +99,7 @@ auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
   return result;
 }
 
-auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequenceParams)
+auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSequenceParams)
     -> Grouping {
   auto grouping = Grouping{};
 
@@ -189,10 +189,12 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
         Tz.push_back(viewsPool[sortedCamerasId[camIndex]].position[2]);
       }
 
-      cout << "Views (0-based) Selected for G" << gIndex << " : ";
+      cout << "Views selected for group " << gIndex << ": ";
+      auto sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        cout << "v" << unsigned(viewsLabels[sortedCamerasId[i]]) << ", ";
+        cout << sep << unsigned(viewsLabels[sortedCamerasId[i]]);
         viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
+        sep = ", ";
       }
       cout << "\n";
 
@@ -211,10 +213,12 @@ auto GroupBasedEncoder::groupSelector(const Metadata::IvSequenceParams &ivSequen
       camerasInGroup.clear();
       copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
 
-      cout << "Views (0-based) Selected for G" << gIndex << " : ";
+      cout << "Views selected for group " << gIndex << ": ";
+      auto sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        cout << "v" << unsigned(viewsLabels[i]) << ", ";
+        cout << sep << unsigned(viewsLabels[i]);
         viewsInGroup.push_back(viewsLabels[i]);
+        sep = ", ";
       }
       cout << "\n";
     }
@@ -284,6 +288,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
   atlasParamsList.clear();
   atlasParamsList.groupIds = vector<unsigned>{};
   atlasParamsList.atlasSizes.clear();
+  atlasParamsList.depthOccupancyParamsPresentFlags.clear();
 
   size_t firstAtlasId = 0;
   size_t firstViewId = 0;
@@ -301,6 +306,11 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
     // Copy atlas sizes in group order
     copy(begin(groupParams.atlasParamsList->atlasSizes),
          end(groupParams.atlasParamsList->atlasSizes), back_inserter(atlasParamsList.atlasSizes));
+
+    // Copy depthOccupancyParamsPresentFlags in group order
+    copy(begin(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
+         end(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
+         back_inserter(atlasParamsList.depthOccupancyParamsPresentFlags));
 
     // Assign group ID's
     while (atlasParamsList.groupIds->size() < atlasParamsList.atlasSizes.size()) {

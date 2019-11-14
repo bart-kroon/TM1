@@ -39,26 +39,11 @@
 
 namespace TMIV::Renderer {
 template <> struct Engine<Metadata::PerspectiveParams> {
-  const Metadata::ViewParams viewParams;
-  const int icols;
-  const int irows;
-  const int ocols;
-  const int orows;
-  const int osize;
-  const int numTriangles;
   const Common::Vec2f f;
   const Common::Vec2f p;
 
-  explicit Engine(const Metadata::ViewParams &viewParams_)
-      : viewParams{viewParams_},
-
-        // Mesh structure
-        icols{viewParams.size.x()}, irows{viewParams.size.y()}, ocols{viewParams.size.x() + 2},
-        orows{viewParams.size.y() + 2}, osize{ocols * orows}, numTriangles{2 * (orows - 1) *
-                                                                           (ocols - 1)},
-
-        // Projection parameters
-        f{viewParams.perspective().focal}, p{viewParams.perspective().center} {}
+  explicit Engine(const Metadata::ViewParams &viewParams)
+      : f{viewParams.perspective().focal}, p{viewParams.perspective().center} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

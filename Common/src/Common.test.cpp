@@ -73,6 +73,16 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   SECTION("Vector cross product")
   REQUIRE(norm_inf(cross(v1, v2) - Vec3f({15.F, 3.F, -7.F})) < EPS);
 
+  SECTION("Vector-scalar product")
+  REQUIRE(Vec3f({1.F, 2.F, 4.F}) * 2.F == Vec3f({2.F, 4.F, 8.F}));
+  REQUIRE(2.F * Vec3f({1.F, 2.F, 4.F}) == Vec3f({2.F, 4.F, 8.F}));
+
+  SECTION("matrix-scalar product")
+  REQUIRE(m1 * 1.F == m1);
+  REQUIRE(m2 * 1.F == m2);
+  REQUIRE(1.F * m1 == m1);
+  REQUIRE(1.F * m2 == m2);
+
   SECTION("Matrix trace")
   REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);
 
@@ -237,7 +247,7 @@ TEST_CASE("Half") {
     REQUIRE(Half::decode(0x0000) == 0.F);         // positive zero
     REQUIRE(Half::decode(0x8000) == -0.F);        // negative zero
   }
-  
+
   SECTION("Explicit conversion from float (lossy)") {
     REQUIRE_THROWS_AS(Half(nextafter(65504.F, 1e6F)), HalfError);
     REQUIRE_THROWS_AS(Half(nextafter(-65504.F, -1e6F)), HalfError);

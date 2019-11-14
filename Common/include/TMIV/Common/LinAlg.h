@@ -39,6 +39,28 @@
 #include "Vector.h"
 
 namespace TMIV::Common {
+// Vector x Scalar and Scalar x Vector
+template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(const heap::Vector<T> &A, X B) -> heap::Vector<decltype(A(0) * B)>;
+template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(X B, const heap::Vector<T> &A) -> heap::Vector<decltype(A(0) * B)>;
+template <typename T, size_t M, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(const stack::Vector<T, M> &A, X B) -> stack::Vector<decltype(A(0) * B), M>;
+template <typename T, size_t M, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(X B, const stack::Vector<T, M> &A) -> stack::Vector<decltype(A(0) * B), M>;
+
+// Matrix x Scalar and Scalar x Matrix
+template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(const heap::Matrix<T> &A, X B) -> heap::Matrix<decltype(A(0, 0) * B)>;
+template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(X B, const heap::Matrix<T> &A) -> heap::Matrix<decltype(A(0, 0) * B)>;
+template <typename T, size_t M, size_t N, typename X,
+          typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(const stack::Matrix<T, M, N> &A, X B) -> stack::Matrix<decltype(A(0, 0) * B), M, N>;
+template <typename T, size_t M, size_t N, typename X,
+          typename = std::enable_if_t<std::is_arithmetic_v<X>>>
+auto operator*(X B, const stack::Matrix<T, M, N> &A) -> stack::Matrix<decltype(A(0, 0) * B), M, N>;
+
 //! \brief Matrix product.
 template <typename MAT1, typename MAT2, typename MAT3>
 MAT3 &matprod(const MAT1 &A, char mA, const MAT2 &B, char mB, MAT3 &C);

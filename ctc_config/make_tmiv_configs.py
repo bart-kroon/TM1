@@ -353,9 +353,10 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		for v in self.allTargetCameraNames():
 			self.overrideOutputCameraName = v
 			DecoderConfiguration.saveTmivJson(self)
-		for v in self.allSourceCameraNames():
-			self.overrideOutputCameraName = v
-			self.saveWspsnrJson()
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'V17':
+			for v in self.allSourceCameraNames():
+				self.overrideOutputCameraName = v
+				self.saveWspsnrJson()
 
 	def outputCameraName(self):
 		return self.overrideOutputCameraName

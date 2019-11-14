@@ -78,8 +78,10 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(2.F * Vec3f({1.F, 2.F, 4.F}) == Vec3f({2.F, 4.F, 8.F}));
 
   SECTION("matrix-scalar product")
-  REQUIRE(Mat3x3f::eye() * 1.F == Matx3x3f::eye());
-  REQUIRE(1.F * Mat3x3f::eye() == Matx3x3f::eye());
+  REQUIRE(m1 * 1.F == m1);
+  REQUIRE(m2 * 1.F == m2);
+  REQUIRE(1.F * m1 == m1);
+  REQUIRE(1.F * m2 == m2);
 
   SECTION("Matrix trace")
   REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);

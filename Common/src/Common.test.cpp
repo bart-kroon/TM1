@@ -77,6 +77,21 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(Vec3f({1.F, 2.F, 4.F}) * 2.F == Vec3f({2.F, 4.F, 8.F}));
   REQUIRE(2.F * Vec3f({1.F, 2.F, 4.F}) == Vec3f({2.F, 4.F, 8.F}));
 
+  SECTION("Vector-scalar min/max")
+  REQUIRE(min(v1, 2.F) == Vec3f({1.F, 2.F, 2.F}));
+  REQUIRE(min(v1, 2.F) == min(2.F, v1));
+  REQUIRE(max(v1, 2.F) == Vec3f({2.F, 2.F, 3.F}));
+  REQUIRE(max(v1, 2.F) == max(2.F, v1));
+
+  SECTION("Vector-vector min/max")
+  REQUIRE(min(v1, v2) == Vec3f({1.F, -1.F, 3.F}));
+  REQUIRE(max(v1, v2) == Vec3f({3.F, 2.F, 6.F}));
+  REQUIRE(min(v1, v2) == min(v2, v1));
+  REQUIRE(max(v1, v2) == max(v2, v1));
+
+  SECTION("Vector abs")
+  REQUIRE(abs(v2) == Vec3f({3.F, 1.F, 6.F}));
+
   SECTION("matrix-scalar product")
   REQUIRE(m1 * 1.F == m1);
   REQUIRE(m2 * 1.F == m2);

@@ -49,6 +49,42 @@ auto operator*(const stack::Vector<T, M> &A, X B) -> stack::Vector<decltype(A(0)
 template <typename T, size_t M, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
 auto operator*(X B, const stack::Vector<T, M> &A) -> stack::Vector<decltype(A(0) * B), M>;
 
+// Vector-scalar & scalar-vector min
+template <typename T>
+auto min(const heap::Vector<T> &A, T B) -> heap::Vector<T>;
+template <typename T>
+auto min(T B, const heap::Vector<T> &A) -> heap::Vector<T>;
+template <typename T, size_t M>
+auto min(const stack::Vector<T, M> &A, T B) -> stack::Vector<T, M>;
+template <typename T, size_t M>
+auto min(T B, const stack::Vector<T, M> &A) -> stack::Vector<T, M>;
+
+// Vector-scalar & scalar-vector max
+template <typename T>
+auto max(const heap::Vector<T> &A, T B) -> heap::Vector<T>;
+template <typename T>
+auto max(T B, const heap::Vector<T> &A) -> heap::Vector<T>;
+template <typename T, size_t M>
+auto max(const stack::Vector<T, M> &A, T B) -> stack::Vector<T, M>;
+template <typename T, size_t M>
+auto max(T B, const stack::Vector<T, M> &A) -> stack::Vector<T, M>;
+
+// Vector-vector min
+template <typename T>
+auto min(const heap::Vector<T> &A, const heap::Vector<T> &B) -> heap::Vector<T>;
+template <typename T, size_t M>
+auto min(const stack::Vector<T, M> &A, const stack::Vector<T, M> &B) -> stack::Vector<T, M>;
+
+// Vector-vector min
+template <typename T>
+auto max(const heap::Vector<T> &A, const heap::Vector<T> &B) -> heap::Vector<T>;
+template <typename T, size_t M>
+auto max(const stack::Vector<T, M> &A, const stack::Vector<T, M> &B) -> stack::Vector<T, M>;
+
+// Vector abs
+template <typename T> auto abs(const heap::Vector<T> &A) -> heap::Vector<T>;
+template <typename T, size_t M> auto abs(const stack::Vector<T, M> &A) -> stack::Vector<T, M>;
+
 // Matrix x Scalar and Scalar x Matrix
 template <typename T, typename X, typename = std::enable_if_t<std::is_arithmetic_v<X>>>
 auto operator*(const heap::Matrix<T> &A, X B) -> heap::Matrix<decltype(A(0, 0) * B)>;

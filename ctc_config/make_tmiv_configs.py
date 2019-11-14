@@ -360,13 +360,11 @@ class AllDecoderConfigurations(DecoderConfiguration):
 	def outputCameraName(self):
 		return self.overrideOutputCameraName
 
-	def allSourceCameraNames(self):
-		if self.anchorId == 'R97' or self.anchorId == 'R17':
-			return []
-		return DecoderConfiguration.allSourceCameraNames(self)
-
 	def allTargetCameraNames(self):
-		return self.allSourceCameraNames() + ['p01', 'p02', 'p03']
+		poseTraces = ['p01', 'p02', 'p03']
+		if self.anchorId == 'R97' or self.anchorId == 'R17':
+			return poseTraces
+		return self.allSourceCameraNames() + poseTraces
 
 class EncoderConfiguration(DecoderConfiguration):
 	def __init__(self, sourceDir, anchorId, seqId):

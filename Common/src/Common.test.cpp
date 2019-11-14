@@ -73,6 +73,9 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   SECTION("Vector cross product")
   REQUIRE(norm_inf(cross(v1, v2) - Vec3f({15.F, 3.F, -7.F})) < EPS);
 
+  SECTION("Vector-scalar product")
+  REQUIRE(Vec3f({1.F, 2.F, 4.F}) * 2.F == Vec3f({2.F, 4.F, 8.F}));
+
   SECTION("Matrix trace")
   REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);
 

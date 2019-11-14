@@ -77,6 +77,10 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(Vec3f({1.F, 2.F, 4.F}) * 2.F == Vec3f({2.F, 4.F, 8.F}));
   REQUIRE(2.F * Vec3f({1.F, 2.F, 4.F}) == Vec3f({2.F, 4.F, 8.F}));
 
+  SECTION("matrix-scalar product")
+  REQUIRE(Mat3x3f::eye() * 1.F == Matx3x3f::eye());
+  REQUIRE(1.F * Mat3x3f::eye() == Matx3x3f::eye());
+
   SECTION("Matrix trace")
   REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);
 
@@ -241,7 +245,7 @@ TEST_CASE("Half") {
     REQUIRE(Half::decode(0x0000) == 0.F);         // positive zero
     REQUIRE(Half::decode(0x8000) == -0.F);        // negative zero
   }
-  
+
   SECTION("Explicit conversion from float (lossy)") {
     REQUIRE_THROWS_AS(Half(nextafter(65504.F, 1e6F)), HalfError);
     REQUIRE_THROWS_AS(Half(nextafter(-65504.F, -1e6F)), HalfError);

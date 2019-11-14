@@ -75,6 +75,7 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
 
   SECTION("Vector-scalar product")
   REQUIRE(Vec3f({1.F, 2.F, 4.F}) * 2.F == Vec3f({2.F, 4.F, 8.F}));
+  REQUIRE(2.F * Vec3f({1.F, 2.F, 4.F}) == Vec3f({2.F, 4.F, 8.F}));
 
   SECTION("Matrix trace")
   REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);

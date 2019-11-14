@@ -33,7 +33,64 @@
 
 namespace TMIV::Common {
 namespace detail {
+template <typename R, typename T, typename X> auto elementwiseProduct(const T &A, X B) -> R {
+  auto result = R(A);
+  for (auto &y : result) {
+    y *= B;
+  }
+  return result;
+}
+} // namespace detail
 
+template <typename T, typename X, typename>
+auto operator*(const heap::Vector<T> &A, X B) -> heap::Vector<decltype(A(0) * B)> {
+  using R = heap::Vector<decltype(A(0) * B)>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T, typename X, typename>
+auto operator*(X B, const heap::Vector<T> &A) -> heap::Vector<decltype(A(0) * B)> {
+  using R = heap::Vector<decltype(A(0) * B)>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T, size_t M, typename X, typename>
+auto operator*(const stack::Vector<T, M> &A, X B) -> stack::Vector<decltype(A(0) * B), M> {
+  using R = stack::Vector<decltype(A(0) * B), M>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T, size_t M, typename X, typename>
+auto operator*(X B, const stack::Vector<T, M> &A) -> stack::Vector<decltype(A(0) * B), M> {
+  using R = stack::Vector<decltype(A(0) * B), M>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T, typename X, typename>
+auto operator*(const heap::Matrix<T> &A, X B) -> heap::Matrix<decltype(A(0, 0) * B)> {
+  using R = heap::Matrix<decltype(A(0) * B)>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T, typename X, typename>
+auto operator*(X B, const heap::Matrix<T> &A) -> heap::Matrix<decltype(A(0, 0) * B)> {
+  using R = heap::Matrix<decltype(A(0, 0) * B)>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T, size_t M, size_t N, typename X, typename>
+auto operator*(const stack::Matrix<T, M, N> &A, X B) -> stack::Matrix<decltype(A(0, 0) * B), M, N> {
+  using R = stack::Matrix<decltype(A(0, 0) * B), M, N>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T, size_t M, size_t N, typename X, typename>
+auto operator*(X B, const stack::Matrix<T, M, N> &A) -> stack::Matrix<decltype(A(0, 0) * B), M, N> {
+  using R = stack::Matrix<decltype(A(0, 0) * B), M, N>;
+  return detail::elementwiseProduct<R>(A, B);
+}
+
+namespace detail {
 template <typename T>
 void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shallow::Matrix<T> C) {
 

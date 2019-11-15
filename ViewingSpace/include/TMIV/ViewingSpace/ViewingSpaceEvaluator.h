@@ -38,10 +38,17 @@
 
 namespace TMIV::ViewingSpace {
 
+//! \brief Viewing parameters for a viewing space query; angle values in degrees.
+struct ViewingParams {
+  Common::Vec3f viewPosition;
+  float yaw;
+  float pitch;
+};
+
 class ViewingSpaceEvaluator {
   ViewingSpaceEvaluator() = delete;
 public:
-  static auto computeInclusion(Metadata::ViewingSpace &viewingSpace, Common::Vec3f &position, Common::Vec3f &direction) -> float;
+  static auto computeInclusion(const Metadata::ViewingSpace &viewingSpace, const ViewingParams &viewingParams) -> float;
 };
 
 } // namespace TMIV::ViewingSpace

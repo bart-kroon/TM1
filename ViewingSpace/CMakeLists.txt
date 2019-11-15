@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(ViewingSpaceLib
-    "src/ViewingSpaceEvaluator.cpp"
-	"include/TMIV/ViewingSpace/ViewingSpaceEvaluator.h"
-	"include/TMIV/ViewingSpace/SignedDistance.h")
+    "src/SignedDistance.cpp"
+	"src/ViewingSpaceEvaluator.cpp"
+	"include/TMIV/ViewingSpace/SignedDistance.h"
+	"include/TMIV/ViewingSpace/ViewingSpaceEvaluator.h")
 
 add_library(TMIV::ViewingSpaceLib
 	ALIAS ViewingSpaceLib)

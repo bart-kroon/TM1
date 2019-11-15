@@ -35,6 +35,7 @@
 #include <catch2/catch.hpp>
 
 #include <TMIV/ViewingSpace/SignedDistance.h>
+#include <TMIV/ViewingSpace/ViewingSpaceEvaluator.h>
 
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
@@ -48,21 +49,19 @@ TEST_CASE("Signed distance functions") {
   const Cuboid cuboid{{1.F, 2.F, 3.F}, {11.F, 13.F, 17.F}};
   const Spheroid spheroid{{5.F, 4.F, 3.F}, {2.F, 3.F, 4.F}};
   SECTION("Cuboid") {
-    REQUIRE(signedDistance(cuboid, EulerAngles({}), cuboid.center).isInside());
-    REQUIRE(
-        signedDistance(cuboid, EulerAngles({}), cuboid.center + 0.49F * cuboid.size).isInside());
+    REQUIRE(signedDistance(cuboid, {}, cuboid.center).isInside());
+    REQUIRE(signedDistance(cuboid, {}, cuboid.center + 0.49F * cuboid.size).isInside());
     REQUIRE(
         signedDistance(cuboid, EulerAngles({180.F, 0.F, 0.F}), cuboid.center - 0.49F * cuboid.size)
             .isInside());
-    REQUIRE(
-        signedDistance(cuboid, EulerAngles({}), cuboid.center + 0.51F * cuboid.size).isOutside());
+    REQUIRE(signedDistance(cuboid, {}, cuboid.center + 0.51F * cuboid.size).isOutside());
     REQUIRE(signedDistance(cuboid, EulerAngles({180.F, 180.F, 180.F}),
                            cuboid.center - 0.51F * cuboid.size)
                 .isOutside());
   }
   SECTION("Spheroid") {
-    REQUIRE(signedDistance(spheroid, EulerAngles({}), spheroid.center).isInside());
-    REQUIRE(signedDistance(spheroid, EulerAngles({}),
+    REQUIRE(signedDistance(spheroid, {}, spheroid.center).isInside());
+    REQUIRE(signedDistance(spheroid, {},
                            spheroid.center + Vec3f({0.49F * spheroid.radius.x(), 0.F, 0.F}))
                 .isInside());
     REQUIRE(signedDistance(spheroid, EulerAngles({0.F, 90.F, 0.F}),
@@ -71,27 +70,25 @@ TEST_CASE("Signed distance functions") {
     REQUIRE(signedDistance(spheroid, EulerAngles({0.F, 90.F, 0.F}),
                            spheroid.center + Vec3f({0.F, 1.01F * spheroid.radius.y(), 0.F}))
                 .isOutside());
-    REQUIRE(signedDistance(spheroid, EulerAngles({}), spheroid.center + 1.01F * spheroid.radius)
-                .isOutside());
-    REQUIRE(signedDistance(spheroid, EulerAngles({}), spheroid.center - 1.01F * spheroid.radius)
-                .isOutside());
+    REQUIRE(signedDistance(spheroid, {}, spheroid.center + 1.01F * spheroid.radius).isOutside());
+    REQUIRE(signedDistance(spheroid, {}, spheroid.center - 1.01F * spheroid.radius).isOutside());
   }
   SECTION("Halfspace") {
     const Halfspace hs1({{1.F, 0.F, 0.F}, 10.F});
-    REQUIRE(signedDistance(hs1, EulerAngles({}), Vec3f({9.F, 10.F, 1.0e6F})).isInside());
-    REQUIRE(signedDistance(hs1, EulerAngles({}), Vec3f({11.F, -100.F, 0.F})).isOutside());
+    REQUIRE(signedDistance(hs1, {}, Vec3f({9.F, 10.F, 1.0e6F})).isInside());
+    REQUIRE(signedDistance(hs1, {}, Vec3f({11.F, -100.F, 0.F})).isOutside());
     const Halfspace hs2({{0.F, 0.707F, -0.707F}, 0.F});
-    REQUIRE(signedDistance(hs1, EulerAngles({}), 0.99F * hs1.distance * hs1.normal).isInside());
-    REQUIRE(signedDistance(hs2, EulerAngles({}), -0.1F * hs2.normal).isInside());
-    REQUIRE(signedDistance(hs1, EulerAngles({}), 1.01F * hs1.distance * hs1.normal).isOutside());
-    REQUIRE(signedDistance(hs2, EulerAngles({}), 0.1F * hs2.normal).isOutside());
+    REQUIRE(signedDistance(hs1, {}, 0.99F * hs1.distance * hs1.normal).isInside());
+    REQUIRE(signedDistance(hs2, {}, -0.1F * hs2.normal).isInside());
+    REQUIRE(signedDistance(hs1, {}, 1.01F * hs1.distance * hs1.normal).isOutside());
+    REQUIRE(signedDistance(hs2, {}, 0.1F * hs2.normal).isOutside());
   }
 
   SECTION("Addition and subtraction") {
     {
       const auto point = cuboid.center - 0.49F * cuboid.size;
-      const auto sd1 = signedDistance(cuboid, EulerAngles({}), point);
-      const auto sd2 = signedDistance(spheroid, EulerAngles({}), point);
+      const auto sd1 = signedDistance(cuboid, {}, point);
+      const auto sd2 = signedDistance(spheroid, {}, point);
       REQUIRE(sd1.isInside());
       REQUIRE(sd2.isOutside());
       REQUIRE((sd1 + sd2).isInside());
@@ -100,13 +97,45 @@ TEST_CASE("Signed distance functions") {
     }
     {
       const auto point = spheroid.center;
-      const auto sd1 = signedDistance(cuboid, EulerAngles({}), point);
-      const auto sd2 = signedDistance(spheroid, EulerAngles({}), point);
+      const auto sd1 = signedDistance(cuboid, {}, point);
+      const auto sd2 = signedDistance(spheroid, {}, point);
       REQUIRE(sd1.isInside());
       REQUIRE(sd2.isInside());
       REQUIRE((sd1 + sd2).isInside());
       REQUIRE((sd1 - sd2).isOutside());
       REQUIRE((sd2 - sd1).isOutside());
     }
+  }
+}
+
+TEST_CASE("Viewing space evaluation") {
+  const PrimitiveShape cuboid = {Cuboid{{-1.F, -1.F, -1.F}, {5.F, 5.F, 5.F}}, 1.F, {}, {}};
+  const PrimitiveShape spheroid = {
+      Spheroid{{1.F, 1.F, 1.F}, {5.F, 5.F, 5.F}}, 1.F, {}, PrimitiveShape::ViewingDirectionConstraint{30.F, 90.F, 90.F, -30.F, 60.F}};
+  SECTION("Guard band") {
+    const ViewingSpace vs1 = {{{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}}}};
+    const float inside = ViewingSpaceEvaluator::computeInclusion(vs1, {{0.F, 0.F, 0.F}, 0.F, 0.F});
+    const float guardband1 =
+        ViewingSpaceEvaluator::computeInclusion(vs1, {{1.F, 0.F, 0.F}, 0.F, 0.F});
+    const float guardband2 =
+        ViewingSpaceEvaluator::computeInclusion(vs1, {{1.F, 0.F, 0.F}, 180.F, 90.F});
+    const float outside =
+        ViewingSpaceEvaluator::computeInclusion(vs1, {{2.F, 0.F, 0.F}, -90.F, -30.F});
+    REQUIRE(inside == 1.F);
+    REQUIRE(guardband1 > 0.F);
+    REQUIRE(guardband1 < 1.F);
+    REQUIRE(guardband2 == guardband1);
+    REQUIRE(outside == 0.F);
+  }
+  SECTION("Direction guard band") {
+    const ViewingSpace vs2 = {{{ElementaryShapeOperation::add, ElementaryShape{{spheroid}}}}};
+    const Vec3f pos = {1.F, 1.F, 1.F};
+    const float outside = ViewingSpaceEvaluator::computeInclusion(vs2, {{pos}, 40.F, 0.F});
+    const float inside = ViewingSpaceEvaluator::computeInclusion(vs2, {{pos}, 90.F, -30.F});
+    const float guardband = ViewingSpaceEvaluator::computeInclusion(vs2, {{pos}, 50.F, -50.F});
+    REQUIRE(inside == 1.F);
+    REQUIRE(guardband > 0.F);
+    REQUIRE(guardband < 1.F);
+    REQUIRE(outside == 0.F);
   }
 }

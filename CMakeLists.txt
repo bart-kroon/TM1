@@ -37,6 +37,7 @@ add_subdirectory(AtlasConstructor)
 add_subdirectory(AtlasDeconstructor)
 add_subdirectory(DepthOccupancy)
 add_subdirectory(Renderer)
+add_subdirectory(ViewingSpace)
 
 add_subdirectory(Encoder)
 add_subdirectory(Decoder)

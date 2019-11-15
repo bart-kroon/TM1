@@ -31,26 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_TRANSFORMATION_H_
-#define _TMIV_COMMON_TRANSFORMATION_H_
-
-#include "Common.h"
-#include "LinAlg.h"
+#include <TMIV/Common/Transformation.h>
 
 namespace TMIV::Common {
 
-struct EulerAngles {
-  Common::Vec3f value{};
-  EulerAngles() = default;
-  explicit EulerAngles(const Common::Vec3f &eulerAngles) : value(eulerAngles) {}
-};
+auto rotationMatrixFromRotationAroundX(float rx) -> Common::Mat3x3f {
+  using std::cos;
+  using std::sin;
+  return Common::Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
+}
 
-auto rotationMatrixFromRotationAroundX(float rx) -> Common::Mat3x3f;
-auto rotationMatrixFromRotationAroundY(float ry) -> Common::Mat3x3f;
-auto rotationMatrixFromRotationAroundZ(float rz) -> Common::Mat3x3f;
+auto rotationMatrixFromRotationAroundY(float ry) -> Common::Mat3x3f {
+  using std::cos;
+  using std::sin;
+  return Common::Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
+}
 
-auto EulerAnglesToRotationMatrix(Common::EulerAngles rotation) -> Common::Mat3x3f;
+auto rotationMatrixFromRotationAroundZ(float rz) -> Common::Mat3x3f {
+  using std::cos;
+  using std::sin;
+  return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
+}
+
+auto EulerAnglesToRotationMatrix(Common::EulerAngles rotation) -> Common::Mat3x3f {
+  return rotationMatrixFromRotationAroundZ(Common::radperdeg * rotation.value[0]) *
+         rotationMatrixFromRotationAroundY(Common::radperdeg * rotation.value[1]) *
+         rotationMatrixFromRotationAroundX(Common::radperdeg * rotation.value[2]);
+}
 
 } // namespace TMIV::Common
-
-#endif

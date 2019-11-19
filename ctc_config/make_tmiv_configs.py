@@ -49,7 +49,7 @@ class DecoderConfiguration:
 		return self.sourceDir == '.'
 
 	def numberOfFrames(self):
-		if self.anchorId == 'A97' or self.anchorId == 'R97':
+		if self.anchorId == 'A97' or self.anchorId == 'R97' or self.anchorId == 'E97':
 			return 97
 		return 17
 
@@ -101,7 +101,7 @@ class DecoderConfiguration:
 		return self.viewWidth()
 
 	def atlasHeight(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97':
 			return {
 				'A': 3072,
 				'B': 2368,
@@ -269,7 +269,7 @@ class DecoderConfiguration:
 		if self.outputCameraName()[0] == 'p':
 			config['OutputCameraName'] = 'viewport'
 			config['PoseTracePath'] = self.poseTracePath()
-			if self.anchorId == 'A97' or self.anchorId == 'R97':
+			if self.anchorId == 'A97' or self.anchorId == 'R97' or self.anchorId == 'E97':
 				config['extraNumberOfFrames'] = 300 - 97
 		return config
 
@@ -353,7 +353,7 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		for v in self.allTargetCameraNames():
 			self.overrideOutputCameraName = v
 			DecoderConfiguration.saveTmivJson(self)
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'V17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'V17' or self.anchorId == 'E97':
 			for v in self.allSourceCameraNames():
 				self.overrideOutputCameraName = v
 				self.saveWspsnrJson()
@@ -390,9 +390,27 @@ class EncoderConfiguration(DecoderConfiguration):
 			10: 'yuv420p10le',
 			16: 'yuv420p16le'
 		}[self.sourceDepthBitDepth()]
-
+	
 	def sourceDepthPathFmt(self):
 		return '%s_depth_{}x{}_{}.yuv'.format(self.viewWidth(), self.viewHeight(), self.sourceDepthVideoFormat())
+		
+	def sourceEntityBitDepth(self):
+		if self.maxEntities() <= 256 :
+			return 8
+		if self.maxEntities() > 256 & self.maxEntities() <= 1024 :
+			return 10
+		if self.maxEntities() > 1024 :
+			return 16
+
+	def sourceEntityVideoFormat(self):
+		return {
+			8: 'yuv420p',
+			10: 'yuv420p10le',
+			16: 'yuv420p16le'
+		}[self.sourceEntityBitDepth()]
+		
+	def sourceEntityPathFmt(self):
+		return '%s_entity_{}x{}_{}.yuv'.format(self.viewWidth(), self.viewHeight(), self.sourceEntityVideoFormat())
 
 	def omafV1CompatibleFlag(self):
 		# Just to do something slightly more interesting than False
@@ -419,7 +437,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		return 2 * self.atlasWidth() * self.atlasHeight()
 
 	def maxLumaSamplesPerFrame(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97':
 			return {
 				'A': 1,
 				'B': 3,
@@ -466,12 +484,23 @@ class EncoderConfiguration(DecoderConfiguration):
 		return self.seqId == 'E'
 
 	def numGroups(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':
 				return 3
 		return 1
 
 	def maxEntities(self):
+		if self.anchorId == 'E97' :
+			return {
+				'A': 1,
+				'B': 12,
+				'C': 1,
+				'D': 1,
+				'E': 1,
+				'J': 1,
+				'L': 1,
+				'N': 1
+			}[self.seqId]
 		return 1
 
 	def parameters(self):
@@ -487,6 +516,8 @@ class EncoderConfiguration(DecoderConfiguration):
 			'SourceTexturePathFmt': self.sourceTexturePathFmt(),
 			'SourceDepthPathFmt': self.sourceDepthPathFmt(),
 			'SourceDepthBitDepth': self.sourceDepthBitDepth(),
+			'SourceEntityPathFmt': self.sourceEntityPathFmt(),
+			'SourceEntityBitDepth': self.sourceEntityBitDepth(),
 			'SourceCameraNames': self.sourceCameraNames(),
 			'OmafV1CompatibleFlag': self.omafV1CompatibleFlag(),
 			'EncoderMethod': 'GroupBasedEncoder',
@@ -546,7 +577,7 @@ if __name__ == '__main__':
 		config = AllDecoderConfigurations(sourceDir, 'R97', seqId, 'R0')
 		config.saveTmivJson()
 
-	anchors = [ 'A97', 'A17', 'V17' ]
+	anchors = [ 'A97', 'A17', 'V17', 'E97' ]
 	testPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']
 
 	for anchorId in anchors:

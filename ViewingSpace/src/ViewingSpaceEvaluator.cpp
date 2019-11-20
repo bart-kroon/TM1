@@ -45,7 +45,7 @@ using DirectionConstraint = PrimitiveShape::ViewingDirectionConstraint;
 struct ViewingSpaceEvaluation {
   SignedDistance sdBoundary;
   SignedDistance sdGuardBand;
-  DirectionConstraint directionConstraint;
+  std::optional<DirectionConstraint> directionConstraint;
 };
 
 static auto yawDelta(const float b, const float a) -> float {
@@ -59,7 +59,14 @@ static auto yawDelta(const float b, const float a) -> float {
   return d;
 }
 
-static auto blend(const DirectionConstraint &a, const DirectionConstraint &b, const float s) {
+static auto blend(const std::optional<DirectionConstraint> &ao,
+                  const std::optional<DirectionConstraint> &bo, const float s)
+    -> std::optional<DirectionConstraint> {
+  if (!ao.has_value() && !bo.has_value()) {
+    return ao;
+  }
+  const auto &a = ao.value_or(DirectionConstraint());
+  const auto &b = bo.value_or(DirectionConstraint());
   assert(a.pitchCenter >= -90.F && a.pitchCenter <= 90.F);
   assert(b.pitchCenter >= -90.F && b.pitchCenter <= 90.F);
   assert(s >= 0.F && s <= 1.F);
@@ -68,9 +75,17 @@ static auto blend(const DirectionConstraint &a, const DirectionConstraint &b, co
   const float sb = s;
 
   DirectionConstraint result;
-  result.yawCenter = a.yawCenter + s * yawDelta(b.yawCenter, a.yawCenter);
+  if (!ao.has_value()) {
+    result.yawCenter = b.yawCenter;
+    result.pitchCenter = b.pitchCenter;
+  } else if (!bo.has_value()) {
+    result.yawCenter = a.yawCenter;
+    result.pitchCenter = a.pitchCenter;
+  } else {
+    result.yawCenter = a.yawCenter + s * yawDelta(b.yawCenter, a.yawCenter);
+    result.pitchCenter = sa * a.pitchCenter + sb * b.pitchCenter;
+  }
   result.yawRange = sa * a.yawRange + sb * b.yawRange;
-  result.pitchCenter = sa * a.pitchCenter + sb * b.pitchCenter;
   result.pitchRange = sa * a.pitchRange + sb * b.pitchRange;
   result.guardBandDirectionSize =
       sa * a.guardBandDirectionSize.value_or(0.F) + sb * b.guardBandDirectionSize.value_or(0.F);
@@ -82,7 +97,7 @@ static auto evaluate(const PrimitiveShape &shape, const ViewingParams &viewingPa
   ViewingSpaceEvaluation result;
   result.sdBoundary = signedDistance(shape, viewingParams.viewPosition);
   result.sdGuardBand = SignedDistance(result.sdBoundary.value + shape.guardBandSize.value_or(0.F));
-  result.directionConstraint = shape.viewingDirectionConstraint.value_or(DirectionConstraint());
+  result.directionConstraint = shape.viewingDirectionConstraint;
   return result;
 }
 
@@ -147,7 +162,7 @@ static auto angleInclusion(const float deltaAngle, const float range, const floa
   if (absDelta > maxDelta) {
     return 0.F;
   }
-  const float inclusion = (absDelta - guardStart) / guardBand;
+  const float inclusion = (maxDelta - absDelta) / guardBand;
   assert(inRange(inclusion, 0.F, 1.F));
   return inclusion;
 }
@@ -174,7 +189,7 @@ auto ViewingSpaceEvaluator::computeInclusion(const Metadata::ViewingSpace &viewi
     }
   }
 
-  const auto &dc = global.directionConstraint;
+  const auto &dc = global.directionConstraint.value_or(DirectionConstraint());
 
   const float kPosition = distanceInclusion(global.sdBoundary, global.sdGuardBand);
   const float kYaw = angleInclusion(yawDelta(dc.yawCenter, viewingParams.yaw), dc.yawRange,

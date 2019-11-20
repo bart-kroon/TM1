@@ -111,7 +111,10 @@ TEST_CASE("Signed distance functions") {
 TEST_CASE("Viewing space evaluation") {
   const PrimitiveShape cuboid = {Cuboid{{-1.F, -1.F, -1.F}, {5.F, 5.F, 5.F}}, 1.F, {}, {}};
   const PrimitiveShape spheroid = {
-      Spheroid{{1.F, 1.F, 1.F}, {5.F, 5.F, 5.F}}, 1.F, {}, PrimitiveShape::ViewingDirectionConstraint{30.F, 90.F, 90.F, -30.F, 60.F}};
+      Spheroid{{1.F, 1.F, 1.F}, {5.F, 5.F, 5.F}},
+      1.F,
+      {},
+      PrimitiveShape::ViewingDirectionConstraint{30.F, 90.F, 90.F, -30.F, 60.F}};
   SECTION("Guard band") {
     const ViewingSpace vs1 = {{{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}}}};
     const float inside = ViewingSpaceEvaluator::computeInclusion(vs1, {{0.F, 0.F, 0.F}, 0.F, 0.F});
@@ -137,5 +140,19 @@ TEST_CASE("Viewing space evaluation") {
     REQUIRE(guardband > 0.F);
     REQUIRE(guardband < 1.F);
     REQUIRE(outside == 0.F);
+  }
+  SECTION("Additive elementary shape") {
+    const ViewingSpace vs3 = {{{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}},
+                               {ElementaryShapeOperation::add, ElementaryShape{{spheroid}}}}};
+    const ViewingParams poseInside = {{0.F, 0.F, 0.F}, 90.F, -30.F};
+    const ViewingParams poseGuard = {{0.F, 0.F, 0.F}, 160.F, -60.F};
+    REQUIRE(ViewingSpaceEvaluator::computeInclusion(vs3, poseInside) == 1.F);
+    REQUIRE(inRange(ViewingSpaceEvaluator::computeInclusion(vs3, poseGuard), 0.1F, 0.9F));
+  }
+  SECTION("Subtractive elementary shape") {
+    const ViewingSpace vs4 = {{{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}},
+                               {ElementaryShapeOperation::subtract, ElementaryShape{{spheroid}}}}};
+    const Vec3f posOutside = {0.F, 0.F, 0.F};
+    REQUIRE(ViewingSpaceEvaluator::computeInclusion(vs4, {posOutside, 90.F, -30.F}) == 0.F);
   }
 }

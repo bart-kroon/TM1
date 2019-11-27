@@ -131,10 +131,19 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
           float weight1 = dist2 / sumdist;
           float weight2 = dist1 / sumdist;
 
-          Y(h, w) = static_cast<int>(Y(h1, w1) * weight1 + Y(h2, w2) * weight2);
-          U(h, w) = static_cast<int>(U(h1, w1) * weight1 + U(h2, w2) * weight2);
-          V(h, w) = static_cast<int>(V(h1, w1) * weight1 + V(h2, w2) * weight2);
-          D(h, w) = static_cast<int>(D(h1, w1) * weight1 + D(h2, w2) * weight2);
+          Y(h, w) = static_cast<int>(Y(h1, w1) * weight1);
+          U(h, w) = static_cast<int>(U(h1, w1) * weight1);
+          V(h, w) = static_cast<int>(V(h1, w1) * weight1);
+          D(h, w) = static_cast<int>(D(h1, w1) * weight1);
+
+          Y(h, w) += static_cast<int>(Y(h2, w2) * weight2);
+          U(h, w) += static_cast<int>(U(h2, w2) * weight2);
+          V(h, w) += static_cast<int>(V(h2, w2) * weight2);
+          D(h, w) += static_cast<int>(D(h2, w2) * weight2);
+
+          if (D(h, w) == 0) {
+            D(h, w) = static_cast<int>(D(h1, w1) * weight1 + D(h2, w2) * weight2);
+          }
         } else {
           Y(h, w) = Y(h1, w1);
           U(h, w) = U(h1, w1);

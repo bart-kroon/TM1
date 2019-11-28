@@ -90,7 +90,12 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   priority_queue<Cluster, vector<Cluster>, decltype(comp)> clusterToPack(comp);
 
+  std::vector<Cluster> out;
   for (const auto &cluster : clusterList) {
+    cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_alignment, m_minPatchSize);
+  }
+
+  for (const auto &cluster : out) {
     // modification to align the imin,jmin to even values to help renderer
     Cluster c = Cluster::align(cluster, 2);
     clusterToPack.push(c);

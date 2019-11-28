@@ -34,6 +34,8 @@
 #include "Cluster.h"
 #include <queue>
 
+int roundToAlignment(int val, int alignment) { return ((val) / alignment + 1); }
+
 using namespace std;
 using namespace TMIV::Common;
 
@@ -88,6 +90,367 @@ auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   c.filling_ = (c1.filling_ + c2.filling_);
 
   return c;
+}
+
+std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
+                                             std::vector<Cluster> &out, int alignment,
+                                             int minPatchSize, int divLvl) const {
+
+  // fprintf(stdout, "%i\n", divLvl);
+
+  bool splitted = false;
+
+  double splitThresholdL = 0.9;
+  double splitThresholdC = 0.3;
+
+  int maxNonsplittableSize = 64;
+  int minSplittedPatchSize = minPatchSize;
+
+  const Cluster &c = (*this);
+  const auto &clusteringBuffer = clusteringMap.getPlane(0);
+
+  int H = c.height();
+  int W = c.width();
+
+  int *min_w = new int[H];
+  int *max_w = new int[H];
+  for (int h = 0; h < H; h++) {
+    min_w[h] = W - 1;
+    max_w[h] = 0;
+  }
+  int *min_h = new int[W];
+  int *max_h = new int[W];
+  for (int w = 0; w < W; w++) {
+    min_h[w] = H - 1;
+    max_h[w] = 0;
+  }
+
+  int **min_w_agg = new int *[2];
+  min_w_agg[0] = new int[H];
+  min_w_agg[1] = new int[H];
+  int **max_w_agg = new int *[2];
+  max_w_agg[0] = new int[H];
+  max_w_agg[1] = new int[H];
+
+  int **min_h_agg = new int *[2];
+  min_h_agg[0] = new int[W];
+  min_h_agg[1] = new int[W];
+  int **max_h_agg = new int *[2];
+  max_h_agg[0] = new int[W];
+  max_h_agg[1] = new int[W];
+
+  for (int h = 0; h < H; h++) {
+    int i = h + c.imin();
+
+    for (int w = 0; w < W; w++) {
+      int j = w + c.jmin();
+      if (clusteringBuffer(i, j) == c.getClusterId()) {
+        min_w[h] = w;
+        break;
+      }
+    }
+
+    for (int w = W - 1; w >= 0; w--) {
+      int j = w + c.jmin();
+      if (clusteringBuffer(i, j) == c.getClusterId()) {
+        max_w[h] = w;
+        break;
+      }
+    }
+  }
+
+  for (int w = 0; w < W; w++) {
+    int j = w + c.jmin();
+
+    for (int h = 0; h < H; h++) {
+      int i = h + c.imin();
+      if (clusteringBuffer(i, j) == c.getClusterId()) {
+        min_h[w] = h;
+        break;
+      }
+    }
+
+    for (int h = H - 1; h >= 0; h--) {
+      int i = h + c.imin();
+      if (clusteringBuffer(i, j) == c.getClusterId()) {
+        max_h[w] = h;
+        break;
+      }
+    }
+  }
+
+  min_w_agg[0][0] = min_w[0];
+  max_w_agg[0][0] = max_w[0];
+  for (int h = 1; h < H; h++) {
+    min_w_agg[0][h] = std::min(min_w_agg[0][h - 1], min_w[h]);
+    max_w_agg[0][h] = std::max(max_w_agg[0][h - 1], max_w[h]);
+  }
+  min_w_agg[1][H - 1] = min_w[H - 1];
+  max_w_agg[1][H - 1] = max_w[H - 1];
+  for (int h = H - 2; h >= 0; h--) {
+    min_w_agg[1][h] = std::min(min_w_agg[1][h + 1], min_w[h]);
+    max_w_agg[1][h] = std::max(max_w_agg[1][h + 1], max_w[h]);
+  }
+
+  min_h_agg[0][0] = min_h[0];
+  max_h_agg[0][0] = max_h[0];
+  for (int w = 1; w < W; w++) {
+    min_h_agg[0][w] = std::min(min_h_agg[0][w - 1], min_h[w]);
+    max_h_agg[0][w] = std::max(max_h_agg[0][w - 1], max_h[w]);
+  }
+  min_h_agg[1][W - 1] = min_h[W - 1];
+  max_h_agg[1][W - 1] = max_h[W - 1];
+  for (int w = W - 2; w >= 0; w--) {
+    min_h_agg[1][w] = std::min(min_h_agg[1][w + 1], min_h[w]);
+    max_h_agg[1][w] = std::max(max_h_agg[1][w + 1], max_h[w]);
+  }
+
+  int alignedImsize = roundToAlignment(W, alignment) * roundToAlignment(H, alignment);
+
+  if (W > H) { // split vertically
+
+    if (W > maxNonsplittableSize) {
+
+      // L-shaped patch splitting
+      int minArea = alignedImsize;
+      int bestSplitPos = 0;
+      for (int w = minSplittedPatchSize; w < W - minSplittedPatchSize; w++) {
+        int currArea = roundToAlignment(w + 1, alignment) *
+                           roundToAlignment(max_h_agg[0][w] - min_h_agg[0][w], alignment) +
+                       roundToAlignment(W - w - 1, alignment) *
+                           roundToAlignment(max_h_agg[1][w] - min_h_agg[1][w], alignment);
+
+        if (minArea > currArea) {
+          minArea = currArea;
+          bestSplitPos = w;
+        }
+      }
+
+      if (bestSplitPos && double(minArea) / alignedImsize < splitThresholdL) {
+        Cluster c1(c.getViewId(), c.getClusterId());
+        Cluster c2(c.getViewId(), c.getClusterId());
+
+        for (int i = c.imin(); i <= c.imax(); i++) {
+          for (int j = c.jmin(); j < c.jmin() + bestSplitPos; j++) {
+            if (clusteringBuffer(i, j) == c.getClusterId()) {
+              c1.push(i, j);
+            }
+          }
+        }
+        for (int i = c.imin(); i <= c.imax(); i++) {
+          for (int j = c.jmin() + bestSplitPos; j <= c.jmax(); j++) {
+            if (clusteringBuffer(i, j) == c.getClusterId()) {
+              c2.push(i, j);
+            }
+          }
+        }
+
+        c1.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+        c2.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+
+        splitted = true;
+      }
+
+      // C-shaped patch splitting
+      if (!splitted) {
+        int numOfEmptyBlocks = 0;
+        int numOfNonEmptyBlocks = 0;
+
+        for (int h = 0; h < H; h += alignment) {
+          for (int w = 0; w < W; w += alignment) {
+
+            bool isEmpty = true;
+
+            for (int hh = h; hh < std::min(h + alignment, H); hh++) {
+              int i = hh + c.imin();
+              for (int ww = w; ww < std::min(w + alignment, W); ww++) {
+                int j = ww + c.jmin();
+
+                if (clusteringBuffer(i, j) == c.getClusterId()) {
+                  isEmpty = false;
+                  break;
+                }
+              } // ww
+              if (!isEmpty) {
+                break;
+              }
+            } // hh
+            if (isEmpty) {
+              numOfEmptyBlocks++;
+            } else {
+              numOfNonEmptyBlocks++;
+            }
+          } // w
+        }   // h
+
+        if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
+            splitThresholdC) {
+
+          int bestSplitPos = roundToAlignment(W, alignment);
+
+          Cluster c1(c.getViewId(), c.getClusterId());
+          Cluster c2(c.getViewId(), c.getClusterId());
+
+          for (int i = c.imin(); i <= c.imax(); i++) {
+            for (int j = c.jmin(); j < c.jmin() + bestSplitPos; j++) {
+              if (clusteringBuffer(i, j) == c.getClusterId()) {
+                c1.push(i, j);
+              }
+            }
+          }
+          for (int i = c.imin(); i <= c.imax(); i++) {
+            for (int j = c.jmin() + bestSplitPos; j <= c.jmax(); j++) {
+              if (clusteringBuffer(i, j) == c.getClusterId()) {
+                c2.push(i, j);
+              }
+            }
+          }
+
+          c1.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+          c2.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+
+          splitted = true;
+        }
+      }
+    }
+  } else { // split horizontally
+
+    if (H > maxNonsplittableSize) {
+
+      // L-shaped patch splitting
+      int minArea = alignedImsize;
+      int bestSplitPos = 0;
+      for (int h = minSplittedPatchSize; h < H - minSplittedPatchSize; h++) {
+        int currArea = roundToAlignment(h + 1, alignment) *
+                           roundToAlignment(max_w_agg[0][h] - min_w_agg[0][h], alignment) +
+                       roundToAlignment(H - h - 1, alignment) *
+                           roundToAlignment(max_w_agg[1][h] - min_w_agg[1][h], alignment);
+
+        if (minArea > currArea) {
+          minArea = currArea;
+          bestSplitPos = h;
+        }
+      }
+
+      int pixCnt1 = 0, pixCnt2 = 0;
+
+      if (bestSplitPos && double(minArea) / alignedImsize < splitThresholdL) {
+        Cluster c1(c.getViewId(), c.getClusterId());
+        Cluster c2(c.getViewId(), c.getClusterId());
+
+        for (int i = c.imin(); i < c.imin() + bestSplitPos; i++) {
+          for (int j = c.jmin(); j <= c.jmax(); j++) {
+            if (clusteringBuffer(i, j) == c.getClusterId()) {
+              c1.push(i, j);
+              pixCnt1++;
+            }
+          }
+        }
+        for (int i = c.imin() + bestSplitPos; i <= c.imax(); i++) {
+          for (int j = c.jmin(); j <= c.jmax(); j++) {
+            if (clusteringBuffer(i, j) == c.getClusterId()) {
+              c2.push(i, j);
+              pixCnt2++;
+            }
+          }
+        }
+
+        c1.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+        c2.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+
+        splitted = true;
+      }
+
+      // C-shaped patch splitting
+      if (!splitted) {
+        int numOfEmptyBlocks = 0;
+        int numOfNonEmptyBlocks = 0;
+
+        for (int h = 0; h < H; h += alignment) {
+          for (int w = 0; w < W; w += alignment) {
+
+            bool isEmpty = true;
+
+            for (int hh = h; hh < std::min(h + alignment, H); hh++) {
+              int i = hh + c.imin();
+              for (int ww = w; ww < std::min(w + alignment, W); ww++) {
+                int j = ww + c.jmin();
+
+                if (clusteringBuffer(i, j) == c.getClusterId()) {
+                  isEmpty = false;
+                  break;
+                }
+              } // ww
+              if (!isEmpty) {
+                break;
+              }
+            } // hh
+            if (isEmpty) {
+              numOfEmptyBlocks++;
+            } else {
+              numOfNonEmptyBlocks++;
+            }
+          } // w
+        }   // h
+
+        if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
+            splitThresholdC) {
+
+          int bestSplitPos = roundToAlignment(H, alignment);
+
+          Cluster c1(c.getViewId(), c.getClusterId());
+          Cluster c2(c.getViewId(), c.getClusterId());
+
+          for (int i = c.imin(); i < c.imin() + bestSplitPos; i++) {
+            for (int j = c.jmin(); j <= c.jmax(); j++) {
+              if (clusteringBuffer(i, j) == c.getClusterId()) {
+                c1.push(i, j);
+                pixCnt1++;
+              }
+            }
+          }
+          for (int i = c.imin() + bestSplitPos; i <= c.imax(); i++) {
+            for (int j = c.jmin(); j <= c.jmax(); j++) {
+              if (clusteringBuffer(i, j) == c.getClusterId()) {
+                c2.push(i, j);
+                pixCnt2++;
+              }
+            }
+          }
+
+          c1.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+          c2.recursiveSplit(clusteringMap, out, alignment, minPatchSize, divLvl + 1);
+
+          splitted = true;
+        }
+      }
+    }
+  }
+
+  if (!splitted) {
+    out.push_back(c);
+  }
+
+  delete min_h;
+  delete max_h;
+  delete min_w;
+  delete max_w;
+
+  delete min_h_agg[0];
+  delete min_h_agg[1];
+  delete max_h_agg[0];
+  delete max_h_agg[1];
+  delete min_w_agg[0];
+  delete min_w_agg[1];
+  delete max_w_agg[0];
+  delete max_w_agg[1];
+
+  delete min_h_agg;
+  delete max_h_agg;
+  delete min_w_agg;
+  delete max_w_agg;
+
+  return out;
 }
 
 auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const

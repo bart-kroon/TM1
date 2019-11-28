@@ -35,6 +35,10 @@
 
 #include <TMIV/ViewingSpace/SignedDistance.h>
 
+#define _VERBOSE
+#include <fstream>
+#include <iostream>
+
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
@@ -119,10 +123,221 @@ static auto evaluateAddition(const PrimitiveShapeVector &primitives,
   return result;
 }
 
+namespace MiscInterpolation {
+
+Vec3f normalToPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3) {
+  Vec3f normal = cross(pos2 - pos1, pos3 - pos1);
+  normal /= norm(normal);
+  return normal;
+}
+
+Vec4f orthogonalPlane(Vec3f pos1, Vec3f pos2, Vec4f predecessor) {
+  Vec3f normal = (pos1 - pos2) / norm(pos2 - pos1);
+  Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
+  if (dot(normal, normal_pred) < 0)
+    normal *= -1;
+  return Vec4f({normal[0], normal[1], normal[2], -dot(pos1, normal)});
+}
+
+Vec4f bisectingPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3, Vec4f predecessor) {
+  Vec3f vec1 = pos1 - pos2;
+  vec1 /= norm(vec1);
+  Vec3f vec3 = pos3 - pos2;
+  vec3 /= norm(vec3);
+  Vec3f bisecting_dir = vec1 + vec3;
+  if (norm(bisecting_dir) > 0) {
+    bisecting_dir /= norm(bisecting_dir);
+    Vec3f normal1 = normalToPlane(pos1, pos2, pos3);
+    Vec3f normal2 = cross(bisecting_dir, normal1);
+    Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
+    if (dot(normal2, normal_pred) < 0)
+      normal2 *= -1;
+    return Vec4f({normal2[0], normal2[1], normal2[2], -dot(pos2, normal2)});
+  } else // note: degenerate case, 3 aligned points
+    return orthogonalPlane(pos2, pos1, predecessor);
+}
+
+float distanceToPlane(Vec4f plane, Vec3f point) {
+  Vec3f normal({plane[0], plane[1], plane[2]});
+  return dot(point, normal) + plane[3];
+}
+
+Vec3f projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) {
+  Vec3f pp;
+  if (a == b)
+    pp = a;
+  else {
+    Vec4f pplane = Vec4f({normal[0], normal[1], normal[2], -dot(point, normal)});
+    float aap = abs(distanceToPlane(pplane, a));
+    float bbp = abs(distanceToPlane(pplane, b));
+    float app = aap / (aap + bbp);
+    pp = a + app * (b - a);
+  }
+  return pp;
+}
+
+static auto computeBisectPlanes(const PrimitiveShapeVector &primitives) -> std::vector<Vec4f> {
+  auto nvb = primitives.size();
+  std::vector<Vec3f> center(nvb);
+  for (auto i = 0; i < nvb; i++) {
+    if (primitives[i].shapeType() == PrimitiveShapeType::spheroid)
+      center[i] = std::get<Spheroid>(primitives[i].primitive).center;
+    else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid)
+      center[i] = std::get<Cuboid>(primitives[i].primitive).center;
+  }
+
+  std::vector<Vec4f> bisect;
+  Vec4f predecessor;
+  for (auto i = 0; i < nvb; i++) {
+    if (i == 0) {
+      predecessor = {1, 0, 0, 0};
+      bisect.push_back(MiscInterpolation::orthogonalPlane(center[0], center[1], predecessor));
+    } else if (i < nvb - 1) {
+      predecessor = bisect[i - 1];
+      bisect.push_back(
+          MiscInterpolation::bisectingPlane(center[i - 1], center[i], center[i + 1], predecessor));
+    } else {
+      predecessor = bisect[i - 1];
+      bisect.push_back(MiscInterpolation::orthogonalPlane(center[i], center[i - 1], predecessor));
+    }
+  }
+  return bisect;
+}
+} // namespace MiscInterpolation
+
+PrimitiveShape interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f center,
+                                float w) {
+  PrimitiveShape output(a);
+  assert(a.shapeType() == b.shapeType());
+  assert(a.shapeType() == PrimitiveShapeType::spheroid ||
+         (a.shapeType() == PrimitiveShapeType::cuboid));
+
+  // dimension and position
+  if (a.shapeType() == PrimitiveShapeType::spheroid) {
+    Vec3f ra = std::get<Spheroid>(a.primitive).radius;
+    Vec3f rb = std::get<Spheroid>(b.primitive).radius;
+    std::get<Spheroid>(output.primitive).radius = (float)(1. - w) * ra + w * rb;
+    std::get<Spheroid>(output.primitive).center = center;
+#ifdef _VERBOSE
+    std::cout << "interpolated shape:" << std::endl;
+    std::cout << "  center = " << center << std::endl;
+    std::cout << "  radius = " << std::get<Spheroid>(output.primitive).radius << std::endl;
+#endif
+  } else if (a.shapeType() == PrimitiveShapeType::cuboid) {
+    Vec3f sa = std::get<Cuboid>(a.primitive).size;
+    Vec3f sb = std::get<Cuboid>(b.primitive).size;
+    std::get<Cuboid>(output.primitive).size = (1. - w) * sa + w * sb;
+    std::get<Spheroid>(output.primitive).center = center;
+  }
+
+  // rotation
+  Vec3f rota = a.rotation.value_or(Vec3f({0, 0, 0}));
+  Vec3f rotb = b.rotation.value_or(Vec3f({0, 0, 0}));
+  output.rotation = (1. - w) * rota + w * rotb;
+#ifdef _VERBOSE
+  std::cout << "  rotation = " << output.rotation.value() << std::endl;
+#endif
+  // guard band size
+  float gba = a.guardBandSize.value_or(0.F);
+  float gbb = b.guardBandSize.value_or(0.F);
+  output.guardBandSize = (float)(1.F - w) * gba + w * gbb;
+#ifdef _VERBOSE
+  std::cout << "  guard band = " << output.guardBandSize.value() << std::endl;
+#endif
+  // viewing direction constraint
+  DirectionConstraint dira = a.viewingDirectionConstraint.value_or(DirectionConstraint());
+  DirectionConstraint dirb = b.viewingDirectionConstraint.value_or(DirectionConstraint());
+  output.viewingDirectionConstraint =
+      blend(a.viewingDirectionConstraint.value(), b.viewingDirectionConstraint.value(), w);
+#ifdef _VERBOSE
+  std::cout << "  yaw: center = " << output.viewingDirectionConstraint.value().yawCenter
+            << " - range = " << output.viewingDirectionConstraint.value().yawRange << std::endl;
+  std::cout << "  pitch: center = " << output.viewingDirectionConstraint.value().pitchCenter
+            << " - range = " << output.viewingDirectionConstraint.value().pitchRange << std::endl;
+#endif
+  // directional guard band size
+  float vgba = a.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
+  float vgbb = b.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
+  output.viewingDirectionConstraint.value().guardBandDirectionSize =
+      (float)(1. - w) * vgba + w * vgbb;
+#ifdef _VERBOSE
+  std::cout << "  viewing direction guard band = "
+            << output.viewingDirectionConstraint.value().guardBandDirectionSize.value()
+            << std::endl;
+#endif
+  return output;
+}
 static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
                                   const ViewingParams &viewingParams) -> ViewingSpaceEvaluation {
   ViewingSpaceEvaluation result;
-  // TODO implement interpolation
+
+  // computation of bisecting planes (once per sequence)
+  static auto bisect = MiscInterpolation::computeBisectPlanes(primitives);
+
+  // interpolate primitive shape and evaluate distance
+  int nvb = (int)primitives.size();
+  if (nvb > 1) {
+    Vec2i segment;
+    Vec3f pos = viewingParams.viewPosition;
+
+    // distance to shape centers
+    std::vector<Vec3f> center(nvb);
+    std::vector<float> dist;
+    for (auto i = 0; i < nvb; i++) {
+      if (primitives[i].shapeType() == PrimitiveShapeType::spheroid)
+        center[i] = std::get<Spheroid>(primitives[i].primitive).center;
+      else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid)
+        center[i] = std::get<Cuboid>(primitives[i].primitive).center;
+      dist.push_back(norm(pos - center[i]));
+    }
+
+    // find closest shape
+    std::vector<float>::iterator it;
+    it = std::min_element(dist.begin(), dist.end());
+    int closest = (int)std::distance(dist.begin(), it);
+
+    // find segment of attachment
+    if (closest == 0)
+      segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[0], pos)) ==
+                 std::signbit(MiscInterpolation::distanceToPlane(bisect[1], pos)))
+                    ? Vec2i({0, 0})
+                    : Vec2i({0, 1});
+    else if (closest == nvb - 1)
+      segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[nvb - 1], pos)) ==
+                 std::signbit(MiscInterpolation::distanceToPlane(bisect[nvb - 2], pos)))
+                    ? Vec2i({nvb - 1, nvb - 1})
+                    : Vec2i({nvb - 2, nvb - 1});
+    else
+      segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[closest - 1], pos)) ==
+                 std::signbit(MiscInterpolation::distanceToPlane(bisect[closest], pos)))
+                    ? Vec2i({closest, closest + 1})
+                    : Vec2i({closest - 1, closest});
+
+    // compute position of interpolated shape within segment of attachment
+    int start(segment[0]), end(segment[1]);
+    float w = (start != end) ? dist[start] / (dist[start] + dist[end]) : 0;
+    Vec3f n_start({bisect[start][0], bisect[start][1], bisect[start][2]});
+    Vec3f n_end({bisect[end][0], bisect[end][1], bisect[end][2]});
+    Vec3f n_proj = w * n_end + (1 - w) * n_start;
+#ifdef _VERBOSE
+    std::cout << "segment <" << start << "," << end << "> ";
+    std::cout << "weight = " << w << std::endl;
+#endif
+    Vec3f p = MiscInterpolation::projectedPointOnPlane(center[start], center[end], n_proj, pos);
+
+    // interpolate shape dimension, rotation, guard band size, viewing direction constraint
+    PrimitiveShape shape = interpolateShape(primitives[start], primitives[end], p, w);
+
+    // evaluate distance to interpolated shape
+    result = evaluate(shape, viewingParams);
+
+  } else
+    result = evaluate(primitives[0], viewingParams);
+#ifdef _VERBOSE
+  std::cout << "signed distance = " << result.sdBoundary.value << std::endl;
+  std::cout << "signed distance + guard band = " << result.sdGuardBand.value << std::endl;
+  std::cout << "isInside = " << result.sdBoundary.isInside() << std::endl;
+#endif
   return result;
 }
 
@@ -162,7 +377,8 @@ static auto angleInclusion(const float deltaAngle, const float range, const floa
   if (absDelta > maxDelta) {
     return 0.F;
   }
-  const float inclusion = (maxDelta - absDelta) / guardBand;
+  const float inclusion = 1.F - (absDelta - guardStart) / guardBand; // correction BCh 22/11/2019
+
   assert(inRange(inclusion, 0.F, 1.F));
   return inclusion;
 }
@@ -197,6 +413,15 @@ auto ViewingSpaceEvaluator::computeInclusion(const Metadata::ViewingSpace &viewi
   const float kPitch = angleInclusion(viewingParams.pitch - dc.pitchCenter, dc.pitchRange,
                                       dc.guardBandDirectionSize.value_or(0.F));
   const float result = kPosition * kYaw * kPitch;
+
+#ifdef _VERBOSE
+  std::cout << "kPosition = " << kPosition << std::endl;
+  if (kPosition) {
+    std::cout << "kYaw = " << kYaw << std::endl;
+    std::cout << "kPitch = " << kPitch << std::endl;
+  }
+#endif
+
   assert(inRange(result, 0.F, 1.F));
   return result;
 }

@@ -40,6 +40,7 @@ target_link_libraries(RendererLib
 		TMIV::CommonLib
 		TMIV::MetadataLib
 		TMIV::ImageLib
+		TMIV::ViewingSpaceLib
 	PRIVATE
 		Threads::Threads
 )

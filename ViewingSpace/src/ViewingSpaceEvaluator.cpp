@@ -377,7 +377,7 @@ static auto angleInclusion(const float deltaAngle, const float range, const floa
   if (absDelta > maxDelta) {
     return 0.F;
   }
-  const float inclusion = 1.F - (absDelta - guardStart) / guardBand; // correction BCh 22/11/2019
+  const float inclusion = (maxDelta - absDelta) / guardBand;
 
   assert(inRange(inclusion, 0.F, 1.F));
   return inclusion;
@@ -394,8 +394,8 @@ auto ViewingSpaceEvaluator::computeInclusion(const Metadata::ViewingSpace &viewi
       global.sdGuardBand += eval.sdGuardBand;
     }
     if (e.first == ElementaryShapeOperation::subtract) {
-      global.sdBoundary -= eval.sdBoundary;
-      global.sdGuardBand -= eval.sdGuardBand;
+      global.sdBoundary -= eval.sdGuardBand;
+      global.sdGuardBand -= eval.sdBoundary;
     }
     if (eval.sdBoundary.isInside()) {
       const float weight = -eval.sdBoundary.value;

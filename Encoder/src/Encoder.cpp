@@ -76,9 +76,9 @@ void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams)
   m_atlasConstructor->prepareAccessUnit(move(ivAccessUnitParams));
 }
 
-void Encoder::pushFrame(Common::MVD16Frame views) {
+void Encoder::pushFrame(Common::MVD16Frame views, int frame) {
   auto optimized = m_viewOptimizer->optimizeFrame(move(views));
-  return m_atlasConstructor->pushFrame(optimized);
+  return m_atlasConstructor->pushFrame(optimized, frame);
 }
 
 auto Encoder::completeAccessUnit() -> const Metadata::IvAccessUnitParams & {

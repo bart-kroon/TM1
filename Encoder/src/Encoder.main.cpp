@@ -111,7 +111,7 @@ private:
 
   void pushFrames(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      m_encoder->pushFrame(loadSourceFrame(json(), m_viewSizes, i));
+      m_encoder->pushFrame(loadSourceFrame(json(), m_viewSizes, i), i - firstFrame);
     }
   }
 

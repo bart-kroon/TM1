@@ -50,6 +50,8 @@ public:
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
 
+  int getAlignment() override;
+
 private:
   int m_alignment{};
   int m_minPatchSize{};

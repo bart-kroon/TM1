@@ -52,7 +52,7 @@ public:
                                std::vector<bool> isBasicView)
       -> const Metadata::IvSequenceParams & = 0;
   virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
-  virtual void pushFrame(Common::MVD16Frame transportViews) = 0;
+  virtual void pushFrame(Common::MVD16Frame transportViews, int frame) = 0;
   virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };

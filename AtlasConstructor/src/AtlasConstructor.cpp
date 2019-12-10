@@ -82,10 +82,23 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
   m_aggregator->prepareAccessUnit();
 }
 
-void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
+void AtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
   // Pruning
   MaskList masks =
       m_pruner->prune(m_ivSequenceParams.viewParamsList, transportViews, m_isBasicView);
+
+  int H = transportViews[0].first.getHeight();
+  int W = transportViews[0].first.getWidth();
+
+  for (int view = 0; view < masks.size(); view++) {
+    for (int h = 0; h < H; h++) {
+      for (int w = 0; w < W; w++) {
+        if (masks[view].getPlane(0)(h, w)) {
+          m_nonAggregatedMask[view][h * W + w] |= (1 << frame);
+        }
+      } // w
+    }   // h
+  }     // view
 
   // Aggregation
   m_viewBuffer.push_back(move(transportViews));
@@ -112,6 +125,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
       m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
 
   // Atlas construction
+  int frame = 0;
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
 
@@ -129,11 +143,17 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     }
 
     for (const auto &patch : *m_ivAccessUnitParams.atlasParamsList) {
-      writePatchInAtlas(patch, views, atlasList);
+      writePatchInAtlas(patch, views, atlasList, frame);
     }
 
     m_atlasBuffer.push_back(move(atlasList));
+    frame++;
   }
+
+  for (int view = 0; view < m_viewBuffer.size(); view++) {
+    delete m_nonAggregatedMask[view];
+  }
+  delete m_nonAggregatedMask;
 
   return m_ivAccessUnitParams;
 }
@@ -145,7 +165,7 @@ auto AtlasConstructor::popAtlas() -> MVD16Frame {
 }
 
 void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views,
-                                         MVD16Frame &atlas) {
+                                         MVD16Frame &atlas, int frame) {
 
   auto &currentAtlas = atlas[patch.atlasId];
   const auto &currentView = views[patch.viewId];
@@ -160,11 +180,52 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
   int xM = patch.posInView.x();
   int yM = patch.posInView.y();
 
+  int alignment = m_packer->getAlignment();
+
   for (int dy = 0; dy < h; dy++) {
+
+    bool isAggregatedMaskBlockNonEmpty = false;
+    int dyAligned = (dy / alignment) * alignment;
+
     for (int dx = 0; dx < w; dx++) {
+
+      isAggregatedMaskBlockNonEmpty = false;
+      int dxAligned = (dx / alignment) * alignment;
+
+      for (int dyy = dyAligned; dyy < dyAligned + alignment; dyy++) {
+        if (dyy + yM >= textureViewMap.getHeight() || dyy + yM < 0) {
+          continue;
+        }
+        for (int dxx = dxAligned; dxx < dxAligned + alignment; dxx++) {
+          if (dxx + xM >= textureViewMap.getWidth() || dxx + xM < 0) {
+            continue;
+          }
+          if (m_nonAggregatedMask[patch.viewId]
+                                 [(dyy + yM) * textureViewMap.getWidth() + (dxx + xM)] &
+              (1 << frame)) {
+            isAggregatedMaskBlockNonEmpty = true;
+            break;
+          }
+        }
+        if (isAggregatedMaskBlockNonEmpty) {
+          break;
+        }
+      }
+
       // get position
       Vec2i pView = {xM + dx, yM + dy};
       Vec2i pAtlas = viewToAtlas(pView, patch);
+
+      if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
+          pAtlas.y() >= textureAtlasMap.getHeight() || pAtlas.x() >= textureAtlasMap.getWidth() ||
+          pView.y() < 0 || pView.x() < 0 || pAtlas.y() < 0 || pAtlas.x() < 0)
+        continue;
+
+      if (!isAggregatedMaskBlockNonEmpty) {
+        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+        continue;
+      }
+
       // Y
       textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
           textureViewMap.getPlane(0)(pView.y(), pView.x());
@@ -176,8 +237,8 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
         }
       }
       // Depth
-      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-          depthViewMap.getPlane(0)(pView.y(), pView.x());
+      //depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depthViewMap.getPlane(0)(pView.y(), pView.x());
+      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
     }
   }
 }

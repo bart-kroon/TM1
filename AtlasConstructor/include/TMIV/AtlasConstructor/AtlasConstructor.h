@@ -57,13 +57,15 @@ public:
   auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, std::vector<bool> isBasicView)
       -> const Metadata::IvSequenceParams & override;
   void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame transportViews) override;
+  void pushFrame(Common::MVD16Frame transportViews, int frame) override;
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
+  uint32_t **m_nonAggregatedMask;
+
 private:
-  static void writePatchInAtlas(const Metadata::AtlasParameters &patch,
-                                const Common::MVD16Frame &views, Common::MVD16Frame &atlas);
+  void writePatchInAtlas(const Metadata::AtlasParameters &patch,
+                                const Common::MVD16Frame &views, Common::MVD16Frame &atlas, int frame);
 
 private:
   std::size_t m_nbAtlas{};

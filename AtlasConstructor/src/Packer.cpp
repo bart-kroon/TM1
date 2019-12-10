@@ -49,6 +49,8 @@ Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
   m_pip = componentNode.require("PiP").asInt() != 0;
 }
 
+int Packer::getAlignment() { return m_alignment; }
+
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                   const vector<bool> &isBasicView) -> AtlasParamsVector {
 

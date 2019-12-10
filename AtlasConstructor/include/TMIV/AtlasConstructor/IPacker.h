@@ -47,6 +47,8 @@ public:
   IPacker &operator=(IPacker &&) = default;
   virtual ~IPacker() = default;
 
+  virtual int getAlignment() = 0;
+
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
                     const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector = 0;
 };

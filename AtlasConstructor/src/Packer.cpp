@@ -103,7 +103,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
-    if (m_minPatchSize <= cluster.getMinSize()) {
+    if (m_minPatchSize * m_minPatchSize <= cluster.getArea()) {
+    //if (m_minPatchSize <= cluster.getMinSize()) {
       bool packed = false;
 
       for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
@@ -139,13 +140,15 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       if (!packed) {
         auto cc = cluster.split(clusteringMap[cluster.getViewId()], m_overlap);
 
-        if (m_minPatchSize <= cc.first.getMinSize()) {
+        if (m_minPatchSize * m_minPatchSize <= cc.first.getArea()) {
+        //if (m_minPatchSize  <= cc.first.getMinSize()) {
           // modification to align the imin,jmin to even values to help renderer
           Cluster c = Cluster::align(cc.first, 2);
           clusterToPack.push(c);
         }
 
-        if (m_minPatchSize <= cc.second.getMinSize()) {
+        if (m_minPatchSize * m_minPatchSize <= cc.second.getArea()) {
+        //if (m_minPatchSize <= cc.second.getMinSize()) {
           // modification to align the imin,jmin to even values to help renderer
           Cluster c = Cluster::align(cc.second, 2);
           clusterToPack.push(c);

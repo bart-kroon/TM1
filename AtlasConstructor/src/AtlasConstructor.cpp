@@ -78,6 +78,20 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
 void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
   assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
+
+  int numOfCam = m_ivSequenceParams.viewParamsList.size();
+  int H = m_ivSequenceParams.viewParamsList[0].size.y();
+  int W = m_ivSequenceParams.viewParamsList[0].size.x();
+  int imsize = (W * H);
+
+  m_nonAggregatedMask = new uint32_t *[numOfCam];
+  for (int view = 0; view < numOfCam; view++) {
+    m_nonAggregatedMask[view] = new uint32_t[imsize];
+    for (int pp = 0; pp < imsize; pp++) {
+      m_nonAggregatedMask[view][pp] = 0;
+    }
+  }
+
   m_viewBuffer.clear();
   m_aggregator->prepareAccessUnit();
 }
@@ -89,7 +103,7 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
 
   int H = transportViews[0].first.getHeight();
   int W = transportViews[0].first.getWidth();
-
+  
   for (int view = 0; view < masks.size(); view++) {
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
@@ -150,7 +164,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     frame++;
   }
 
-  for (int view = 0; view < m_viewBuffer.size(); view++) {
+  for (int view = 0; view < aggregatedMask.size(); view++) {
     delete m_nonAggregatedMask[view];
   }
   delete m_nonAggregatedMask;
@@ -237,8 +251,8 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
         }
       }
       // Depth
-      //depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depthViewMap.getPlane(0)(pView.y(), pView.x());
-      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
+      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+          std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
     }
   }
 }

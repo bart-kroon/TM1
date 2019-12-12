@@ -137,6 +137,23 @@ using Depth10Frame = Frame<YUV400P10>;
 using TextureDepth10Frame = std::pair<TextureFrame, Depth10Frame>;
 using MVD10Frame = std::vector<TextureDepth10Frame>;
 
+// Encoder can read 8-bit, 10-bit, or 16-bit entity map input
+using Entity8Frame = Frame<YUV400P8>;
+using Entity10Frame = Frame<YUV400P10>;
+using Entity16Frame = Frame<YUV400P16>;
+using TextureDepth16Entity16Frame = std::pair<TextureDepth16Frame, Entity16Frame>;
+using MVD16E16Frame = std::vector<TextureDepth16Entity16Frame>;
+using TextureDepth16Entity10Frame = std::pair<TextureDepth16Frame, Entity10Frame>;
+using MVD16E10Frame = std::vector<TextureDepth16Entity10Frame>;
+using TextureDepth16Entity8Frame = std::pair<TextureDepth16Frame, Entity8Frame>;
+using MVD16E8Frame = std::vector<TextureDepth16Entity8Frame>;
+using TextureDepth10Entity16Frame = std::pair<TextureDepth10Frame, Entity16Frame>;
+using MVD10E16Frame = std::vector<TextureDepth10Entity16Frame>;
+using TextureDepth10Entity10Frame = std::pair<TextureDepth10Frame, Entity10Frame>;
+using MVD10E10Frame = std::vector<TextureDepth10Entity10Frame>;
+using TextureDepth10Entity8Frame = std::pair<TextureDepth10Frame, Entity8Frame>;
+using MVD10E8Frame = std::vector<TextureDepth10Entity8Frame>;
+
 // The renderer uses 4:4:4 internally
 using Texture444Frame = Frame<YUV444P10>;
 using Texture444Depth10Frame = std::pair<Texture444Frame, Depth10Frame>;
@@ -145,6 +162,10 @@ using Texture444Depth16Frame = std::pair<Texture444Frame, Depth16Frame>;
 // Generalize on depth map format
 template <typename FORMAT> using TextureDepthFrame = std::pair<Frame<YUV420P10>, Frame<FORMAT>>;
 template <typename FORMAT> using MVDFrame = std::vector<TextureDepthFrame<FORMAT>>;
+
+// Generalize on entity map format
+template <typename FORMAT> using EntityFrame = Frame<FORMAT>;
+template <typename FORMAT> using MEFrame = std::vector<EntityFrame<FORMAT>>;
 
 const auto unusedPatchId = std::uint16_t(65535);
 } // namespace TMIV::Common

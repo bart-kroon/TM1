@@ -194,6 +194,9 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
 
 void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
                                const IvSequenceParams &ivSequenceParams) const {
+
+  fprintf(stdout, "\t\t\t AtlasParamsList::encodeTo: start\n");
+
   verify(atlasSizes.size() == depthOccupancyParamsPresentFlags.size());
 
   // Count patches per atlas ID
@@ -268,6 +271,8 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
       }
     }
   }
+
+  fprintf(stdout, "\t\t\t AtlasParamsList::encodeTo: end\n");
 }
 
 auto viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) -> Vec2i {
@@ -360,10 +365,15 @@ auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream,
 
 void IvAccessUnitParams::encodeTo(OutputBitstream &bitstream,
                                   const IvSequenceParams &ivSequenceParams) const {
+  fprintf(stdout, "\t4.1 w encodeTo");
   bitstream.putFlag(!!atlasParamsList);
+  fprintf(stdout, "\t4.2 przed if atlasParamsList");
   if (atlasParamsList) {
+    fprintf(stdout, "\t\t4.2.1 w if atlasParamsList");
     atlasParamsList->encodeTo(bitstream, ivSequenceParams);
+    fprintf(stdout, "\t\t4.2.2 w if atlasParamsList po encode to");
   }
+  fprintf(stdout, "\t4.3 po if atlasParamsList");
   bitstream.putFlag(false);
 }
 } // namespace TMIV::Metadata

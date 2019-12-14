@@ -91,17 +91,27 @@ void EntityBasedAtlasConstructor::prepareAccessUnit(
   m_aggregator->prepareAccessUnit();
 }
 
+auto EntityBasedAtlasConstructor::entitySeparator(MVD16Frame transportViews, ME16Frame entityMaps,
+                                                  uint16_t eIndex)
+    -> MVD16Frame {
+  MVD16Frame entityViews;
+
+  entityViews = transportViews;
+
+  return entityViews;
+}
+
 void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Entity Maps Loader
   SizeVector m_viewSizes = m_ivSequenceParams.viewParamsList.viewSizes();
-  ME16Frame entityViews=loadSourceEntityFrame(m_rootNode, m_viewSizes, m_fIndex);
+  ME16Frame entityMaps=loadSourceEntityFrame(m_rootNode, m_viewSizes, m_fIndex);
 
   // Entity Separator
   vector<MVD16Frame> transportEntityViews;
-  for (int eIndex = 0; eIndex < m_ivSequenceParams.maxEntities; eIndex++)
-    transportEntityViews.push_back(transportViews);
+  for (uint16_t eIndex = 0; eIndex < m_ivSequenceParams.maxEntities; eIndex++)
+    transportEntityViews.push_back(entitySeparator(transportViews, entityMaps, eIndex));
 
-  for (int eIndex = 0; eIndex < m_ivSequenceParams.maxEntities; eIndex++) {
+  for (uint16_t eIndex = 0; eIndex < m_ivSequenceParams.maxEntities; eIndex++) {
     // Pruning
     MaskList masks = m_pruner->prune(m_ivSequenceParams.viewParamsList,
                                      transportEntityViews[eIndex], m_isBasicView);

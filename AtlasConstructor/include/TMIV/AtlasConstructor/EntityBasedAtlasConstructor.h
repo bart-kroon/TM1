@@ -61,6 +61,8 @@ public:
   void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
+  Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
+                                     Common::ME16Frame entityMaps, uint16_t eIndex);
 
 private:
   static void writePatchInAtlas(const Metadata::AtlasParameters &patch,

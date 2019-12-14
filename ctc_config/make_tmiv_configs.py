@@ -451,6 +451,24 @@ class EncoderConfiguration(DecoderConfiguration):
 		return 0
 
 	def atlasConstructor(self):
+		if self.anchorId == 'E97':
+			return {
+				'EntityEncRange': [
+					0,
+					self.maxEntities()-1
+				],
+				'PrunerMethod': 'HierarchicalPruner',
+				'HierarchicalPruner': self.pruner(),
+				'AggregatorMethod': 'Aggregator',
+				'Aggregator': {},
+				'PackerMethod': 'Packer',
+				'Packer': self.packer(),
+				'AtlasResolution': [
+					self.atlasWidth(),
+					self.atlasHeight()
+				],
+				'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
+			}
 		return {
 			'PrunerMethod': 'HierarchicalPruner',
 			'HierarchicalPruner': self.pruner(),
@@ -470,7 +488,16 @@ class EncoderConfiguration(DecoderConfiguration):
 			'depthOccMapThreshold': 64
 		}
 
-	def encoder(self):		
+	def encoder(self):
+		if self.anchorId == 'E97':
+			return {
+				'ViewOptimizerMethod': self.viewOptimizerMethod(),
+				self.viewOptimizerMethod(): {},
+				'AtlasConstructorMethod': 'EntityBasedAtlasConstructor',
+				'EntityBasedAtlasConstructor': self.atlasConstructor(),
+				'DepthOccupancyMethod': 'DepthOccupancy',
+				'DepthOccupancy': self.depthOccupancy()
+			}
 		return {
 			'ViewOptimizerMethod': self.viewOptimizerMethod(),
 			self.viewOptimizerMethod(): {},
@@ -493,7 +520,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		if self.anchorId == 'E97' :
 			return {
 				'A': 1,
-				'B': 12,
+				'B': 25,
 				'C': 1,
 				'D': 1,
 				'E': 1,

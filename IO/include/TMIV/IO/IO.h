@@ -62,6 +62,9 @@ auto loadSourceIvAccessUnitParams(const Common::Json &config) -> Metadata::IvAcc
 Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
                                    int frameIndex);
 
+Common::ME16Frame loadSourceEntityFrame(const Common::Json &config, const Common::SizeVector &sizes,
+                                   int frameIndex);
+
 void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);

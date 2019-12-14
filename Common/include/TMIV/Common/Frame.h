@@ -141,18 +141,9 @@ using MVD10Frame = std::vector<TextureDepth10Frame>;
 using Entity8Frame = Frame<YUV400P8>;
 using Entity10Frame = Frame<YUV400P10>;
 using Entity16Frame = Frame<YUV400P16>;
-using TextureDepth16Entity16Frame = std::pair<TextureDepth16Frame, Entity16Frame>;
-using MVD16E16Frame = std::vector<TextureDepth16Entity16Frame>;
-using TextureDepth16Entity10Frame = std::pair<TextureDepth16Frame, Entity10Frame>;
-using MVD16E10Frame = std::vector<TextureDepth16Entity10Frame>;
-using TextureDepth16Entity8Frame = std::pair<TextureDepth16Frame, Entity8Frame>;
-using MVD16E8Frame = std::vector<TextureDepth16Entity8Frame>;
-using TextureDepth10Entity16Frame = std::pair<TextureDepth10Frame, Entity16Frame>;
-using MVD10E16Frame = std::vector<TextureDepth10Entity16Frame>;
-using TextureDepth10Entity10Frame = std::pair<TextureDepth10Frame, Entity10Frame>;
-using MVD10E10Frame = std::vector<TextureDepth10Entity10Frame>;
-using TextureDepth10Entity8Frame = std::pair<TextureDepth10Frame, Entity8Frame>;
-using MVD10E8Frame = std::vector<TextureDepth10Entity8Frame>;
+using ME8Frame = std::vector < Frame<YUV400P8>>;
+using ME10Frame = std::vector < Frame<YUV400P10>>;
+using ME16Frame = std::vector < Frame<YUV400P16>>;
 
 // The renderer uses 4:4:4 internally
 using Texture444Frame = Frame<YUV444P10>;

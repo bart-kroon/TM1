@@ -103,7 +103,7 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
 
   int H = transportViews[0].first.getHeight();
   int W = transportViews[0].first.getWidth();
-  
+
   for (int view = 0; view < masks.size(); view++) {
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
@@ -117,6 +117,27 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
   // Aggregation
   m_viewBuffer.push_back(move(transportViews));
   m_aggregator->pushMask(masks);
+}
+
+void AtlasConstructor::compressDepthRange(TextureDepth16Frame &atlas) {
+
+  int max = 65535;
+  double newMinPercent = 1.5;
+
+  int newMin = max * newMinPercent / 100;
+  int oldRange = max;
+  int newRange = max - newMin;
+
+  for (int h = 0; h < m_atlasSize.y(); h++) {
+    for (int w = 0; w < m_atlasSize.x(); w++) {
+      if (atlas.second.getPlane(0)(h, w)) {
+        atlas.second.getPlane(0)(h, w) =
+            atlas.second.getPlane(0)(h, w) * newRange / oldRange + newMin;
+      }
+    }
+  }
+
+  return;
 }
 
 auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
@@ -159,6 +180,10 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     for (const auto &patch : *m_ivAccessUnitParams.atlasParamsList) {
       writePatchInAtlas(patch, views, atlasList, frame);
     }
+
+	for (size_t i = 0; i < m_nbAtlas; ++i) {
+      compressDepthRange(atlasList[i]);
+	}
 
     m_atlasBuffer.push_back(move(atlasList));
     frame++;

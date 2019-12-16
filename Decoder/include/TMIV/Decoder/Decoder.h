@@ -60,8 +60,9 @@ public:
   void updateSequenceParams(Metadata::IvSequenceParams) override;
   void updateAccessUnitParams(Metadata::IvAccessUnitParams) override;
 
-  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
-      -> Common::Texture444Depth16Frame override;
+  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) -> Common::Texture444Depth16Frame override;
+
+  void decompressDepthRange(Common::TextureDepth10Frame &atlas);
 
   // getters for intermediate results dumping to disk
   auto getPatchIdMapList(const Common::MVD10Frame &atlas) const -> Common::PatchIdMapList override;

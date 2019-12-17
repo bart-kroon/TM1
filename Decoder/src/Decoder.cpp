@@ -73,6 +73,8 @@ void Decoder::decompressDepthRange(TextureDepth10Frame &atlas) {
     for (int w = 0; w < W; w++) {
       if (atlas.second.getPlane(0)(h, w) < oldMin) {
         atlas.second.getPlane(0)(h, w) = 0;
+      } else if (atlas.second.getPlane(0)(h, w) == oldMin) {
+        atlas.second.getPlane(0)(h, w) = 1;
       } else {
         atlas.second.getPlane(0)(h, w) =
             (atlas.second.getPlane(0)(h, w) - oldMin) * newRange / oldRange;

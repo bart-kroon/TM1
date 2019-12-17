@@ -76,6 +76,9 @@ public:
   int getArea() const { return width() * height(); }
   int getMinSize() const { return std::min(width(), height()); }
   std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringMap, int overlap) const;
+  std::vector<Cluster> recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                                      int alignment, int minPatchSize, int divLvl = 0) const;
+
   static Cluster Empty() {
     Cluster out;
     out.imin_ = 0;

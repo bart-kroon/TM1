@@ -63,6 +63,13 @@ public:
   auto popAtlas() -> Common::MVD16Frame override;
   Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
                                      Common::ME16Frame entityMaps, uint16_t eIndex);
+  Common::ME16Frame_420 yuvSampler(const Common::ME16Frame &in);
+  void mergeViews(Common::MVD16Frame & entityMergedViews,
+                                Common::MVD16Frame transportEntityViews);
+  void mergeMasks(Common::MaskList & entityMergedMasks, Common::MaskList masks);
+  void updateEntityMasks(Common::ME16Frame &entityMasks, Common::MaskList masks, uint16_t eIndex);
+  void aggregateEntityMasks(Common::ME16Frame &entityMasks);
+  void swap0(Common::ME16Frame &entityMasks);
 
 private:
   static void writePatchInAtlas(const Metadata::AtlasParameters &patch,
@@ -71,6 +78,7 @@ private:
 private:
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
+  Common::Vec2i EntityEncRange;
   Common::Json m_rootNode;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;

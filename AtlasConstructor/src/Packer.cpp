@@ -124,6 +124,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
             p.posInView.y() -= patchOverflow.y();
           }
 
+		  p.entityId = 0;
+
           atlasParamsVector.push_back(p);
 
           packed = true;

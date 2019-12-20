@@ -77,6 +77,9 @@ void savePatchIdMaps(const Common::Json &config, int frameIndex,
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> Metadata::ViewParams;
 void saveViewport(const Common::Json &config, int frameIndex,
                   const Common::TextureDepth16Frame &frame);
+void saveMask(const Common::Json &config, int frameIndex,
+                  const Common::Mask &frame);
+void save16Mask(const Common::Json &config, int frameIndex, const Common::Entity16Frame &frame);
 
 // Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
 // encoded stream, then regular values are returned else mirrored indices are computed.

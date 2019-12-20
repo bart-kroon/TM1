@@ -235,7 +235,11 @@ class DecoderConfiguration:
 			config.update({
 				'NumberOfPasses': 3,
 				'NumberOfViewsPerPass': [2, 4, self.numberOfCodedSourceViews()]
-			})
+			}),
+		if self.anchorId == 'E97' :
+			config.update({
+				"EntityDecRange": [0, self.maxEntities()-1]
+				})
 		return config
 
 	def poseTraceBasename(self):
@@ -366,7 +370,7 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		if self.anchorId == 'R97' or self.anchorId == 'R17':
 			return poseTraces
 		return self.allSourceCameraNames() + poseTraces
-
+	
 class EncoderConfiguration(DecoderConfiguration):
 	def __init__(self, sourceDir, anchorId, seqId):
 		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
@@ -453,10 +457,7 @@ class EncoderConfiguration(DecoderConfiguration):
 	def atlasConstructor(self):
 		if self.anchorId == 'E97':
 			return {
-				'EntityEncRange': [
-					0,
-					self.maxEntities()-1
-				],
+				'EntityEncRange': [0, self.maxEntities()-1],
 				'PrunerMethod': 'HierarchicalPruner',
 				'HierarchicalPruner': self.pruner(),
 				'AggregatorMethod': 'Aggregator',

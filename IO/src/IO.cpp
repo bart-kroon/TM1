@@ -133,7 +133,7 @@ template <typename FORMAT>
 auto loadEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
                      const char *directory, const char *entityPathFmt,
                      const vector<string> &viewNames = {}) -> MEFrame<FORMAT> {
-  cout << "Loading " << what << " entity frame " << frameIndex << endl;
+  //cout << "Loading " << what << " entity frame " << frameIndex << endl;
 
   MEFrame<FORMAT> result;
   result.reserve(sizes.size());
@@ -405,6 +405,26 @@ void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame 
     string depthPath = getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,
                                    config.require("OutputCameraName").asString());
     writeFrame(depthPath, frame.second, frameIndex);
+  }
+}
+
+void saveMask(const Json &config, int frameIndex, const Mask &frame) { // for debugging
+  cout << "Saving Mask frame " << frameIndex << '\n';
+
+  if (config.optional("OutputMaskPath")) {
+    string maskPath = getFullPath(config, "OutputDirectory", "OutputMaskPath", 0,
+                                   config.require("OutputCameraName").asString());
+    writeFrame(maskPath, frame, frameIndex);
+  }
+}
+
+void save16Mask(const Json &config, int frameIndex, const Entity16Frame &frame) { // for debugging
+  cout << "Saving Mask frame " << frameIndex << '\n';
+
+  if (config.optional("OutputMaskPath")) {
+    string maskPath = getFullPath(config, "OutputDirectory", "OutputMaskPath", 0,
+                                  config.require("OutputCameraName").asString());
+    writeFrame(maskPath, frame, frameIndex);
   }
 }
 

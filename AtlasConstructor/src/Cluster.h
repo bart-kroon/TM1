@@ -48,6 +48,7 @@ class Cluster {
 protected:
   int viewId_ = 0;
   int clusterId_ = 0;
+  int entityId_ = 0;
   int imin_ = std::numeric_limits<int>::max();
   int jmin_ = std::numeric_limits<int>::max();
   int imax_ = std::numeric_limits<int>::min();
@@ -57,6 +58,7 @@ protected:
 public:
   Cluster() = default;
   Cluster(int viewId, int clusterId);
+  Cluster(int viewId, int clusterId, int entityId);
   Cluster(const Cluster &) = default;
   Cluster(Cluster &&) = default;
   Cluster &operator=(const Cluster &) = default;
@@ -66,6 +68,7 @@ public:
   void push(int i, int j);
   int getViewId() const { return viewId_; }
   int getClusterId() const { return clusterId_; }
+  int getEntityId() const { return entityId_; }
   int imin() const { return imin_; }
   int jmin() const { return jmin_; }
   int imax() const { return imax_; }
@@ -84,6 +87,7 @@ public:
     out.jmax_ = 0;
     return out;
   }
+  static Cluster setEntityId(Cluster &c, int entityId); 
   static Cluster align(const Cluster &c, int alignment);
   static Cluster merge(const Cluster &c1, const Cluster &c2);
   static std::pair<ClusterList, ClusteringMap> retrieve(int viewId, const Common::Mask &maskMap,

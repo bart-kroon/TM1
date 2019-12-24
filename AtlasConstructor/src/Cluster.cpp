@@ -42,6 +42,8 @@ static const uint16_t ACTIVE = 65534;
 static const uint16_t INVALID = 65535;
 
 Cluster::Cluster(int viewId, int clusterId) : viewId_(viewId), clusterId_(clusterId) {}
+Cluster::Cluster(int viewId, int clusterId, int entityId)
+    : viewId_(viewId), clusterId_(clusterId), entityId_(entityId) {}
 
 void Cluster::push(int i, int j) {
   if (i < imin_) {
@@ -60,8 +62,18 @@ void Cluster::push(int i, int j) {
   filling_++;
 }
 
+auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
+  Cluster d(c.viewId_, c.clusterId_, entityId);
+  d.imin_ = c.imin_;
+  d.imax_ = c.imax_;
+  d.jmin_ = c.jmin_;
+  d.jmax_ = c.jmax_;
+  d.filling_ = c.filling_;
+  return d;
+}
+
 auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
-  Cluster d(c.viewId_, c.clusterId_);
+  Cluster d(c.viewId_, c.clusterId_, c.entityId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
   d.imax_ = c.imax_; // modification to align the imin,jmin to even values to
@@ -77,7 +89,7 @@ auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
 }
 
 auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
-  Cluster c(c1.viewId_, c1.clusterId_);
+  Cluster c(c1.viewId_, c1.clusterId_, c1.entityId_);
 
   c.imin_ = min(c1.imin_, c2.imin_);
   c.imax_ = max(c1.imax_, c2.imax_);
@@ -95,8 +107,8 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
-  Cluster c1(c.getViewId(), c.getClusterId());
-  Cluster c2(c.getViewId(), c.getClusterId());
+  Cluster c1(c.getViewId(), c.getClusterId(), c.getEntityId());
+  Cluster c2(c.getViewId(), c.getClusterId(), c.getEntityId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;

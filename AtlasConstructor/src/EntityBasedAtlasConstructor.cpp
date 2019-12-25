@@ -64,7 +64,7 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
   m_rootNode = rootNode;
 
   // Read the entity encoding range
-  EntityEncRange = componentNode.require("EntityEncRange").asIntVector<2>();
+  m_EntityEncRange = componentNode.require("EntityEncRange").asIntVector<2>();
 
   // The number of atlases is determined by the specified maximum number of luma
   // samples per frame (texture and depth combined)
@@ -284,7 +284,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   SizeVector m_viewSizes = m_ivSequenceParams.viewParamsList.viewSizes();
   ME16Frame entityMaps = loadSourceEntityFrame(m_rootNode, m_viewSizes, m_fIndex);
 
-  for (uint16_t eIndex = EntityEncRange[0]; eIndex <= EntityEncRange[1]; eIndex++) {
+  for (uint16_t eIndex = m_EntityEncRange[0]; eIndex <= m_EntityEncRange[1]; eIndex++) {
     cout << "Processing entity " << eIndex << '\n';
 
     // Entity Separator
@@ -358,7 +358,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   // Packing
   assert(m_ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams.atlasParamsList->atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
-  m_packer->updateEntityMasks(m_aggregatedEntityMask, EntityEncRange);
+  m_packer->updateEntityMasks(m_aggregatedEntityMask, m_EntityEncRange);
   m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
       m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
 

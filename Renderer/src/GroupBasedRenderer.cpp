@@ -44,6 +44,8 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
+constexpr auto neutralChroma = uint16_t(512);
+
 GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &componentNode) {
   m_synthesizer =
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
@@ -79,7 +81,10 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   }
 
   // Inpainting
-  m_inpainter->inplaceInpaint(viewport, target);
+  if (ivSequenceParams.maxEntities > 1)
+    fillNeutral(viewport);
+  else
+    m_inpainter->inplaceInpaint(viewport, target);
   return viewport;
 }
 
@@ -109,9 +114,10 @@ auto GroupBasedRenderer::renderPass(GroupIdMask groupIdMask, const MVD10Frame &a
                                     const IvSequenceParams &ivSequenceParams,
                                     const IvAccessUnitParams &ivAccessUnitParams,
                                     const ViewParams &target) const -> Texture444Depth16Frame {
-  return m_synthesizer->renderFrame(
-      atlases, filterPatchIdMapList(groupIdMask, patchIdMapList, ivAccessUnitParams),
-      ivSequenceParams, ivAccessUnitParams, target);
+  return m_synthesizer->renderFrame(atlases,
+                                    filterPatchIdMapList(groupIdMask, patchIdMapList,
+                                                         ivAccessUnitParams),
+                                    ivSequenceParams, ivAccessUnitParams, target);
 }
 
 auto GroupBasedRenderer::filterPatchIdMapList(GroupIdMask groupIdMask,
@@ -261,6 +267,16 @@ auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> boo
     return distance < other.distance;
   }
   return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
+}
+
+void GroupBasedRenderer::fillNeutral(Texture444Depth16Frame &viewport) {
+  vector<int> Indices(viewport.second.getPlane(0).size());
+  std::iota(Indices.begin(), Indices.end(), 0);
+  std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    if (viewport.second.getPlane(0)[i] == 0)
+      for (int pIndex = 0; pIndex < viewport.first.getNumberOfPlanes(); pIndex++)
+        viewport.first.getPlane(pIndex)[i] = neutralChroma;
+  });
 }
 
 } // namespace TMIV::Renderer

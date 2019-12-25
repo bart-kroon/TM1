@@ -235,11 +235,7 @@ class DecoderConfiguration:
 			config.update({
 				'NumberOfPasses': 3,
 				'NumberOfViewsPerPass': [2, 4, self.numberOfCodedSourceViews()]
-			}),
-		if self.anchorId == 'E97' :
-			config.update({
-				"EntityDecRange": [0, self.maxEntities()-1]
-				})
+			})
 		return config
 
 	def poseTraceBasename(self):
@@ -262,14 +258,28 @@ class DecoderConfiguration:
 			'OutputDirectory': self.outputDirectory(),
 			'OutputTexturePath': self.outputTexturePath(),
 			'OutputCameraName': self.outputCameraName(),
-			'DecoderMethod': 'Decoder',
-			'Decoder': {
-				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
-				'AtlasDeconstructor': {},
-				'RendererMethod': self.rendererMethod(),
-				self.rendererMethod(): self.renderer()
-			}
+			'DecoderMethod': 'Decoder'
 		}
+		if self.anchorId == 'E97' :
+			config.update({
+				'Decoder': {
+					'AtlasDeconstructorMethod': 'AtlasDeconstructor',
+					'AtlasDeconstructor': {
+						"EntityDecRange": [0, self.maxEntities()-1]
+					},
+					'RendererMethod': self.rendererMethod(),
+					self.rendererMethod(): self.renderer()
+				}
+			})
+		else:
+			config.update({
+				'Decoder': {
+					'AtlasDeconstructorMethod': 'AtlasDeconstructor',
+					'AtlasDeconstructor': {},
+					'RendererMethod': self.rendererMethod(),
+					self.rendererMethod(): self.renderer()
+				}
+			})
 		if self.outputCameraName()[0] == 'p':
 			config['OutputCameraName'] = 'viewport'
 			config['PoseTracePath'] = self.poseTracePath()
@@ -371,6 +381,20 @@ class AllDecoderConfigurations(DecoderConfiguration):
 			return poseTraces
 		return self.allSourceCameraNames() + poseTraces
 	
+	def maxEntities(self):
+		if self.anchorId == 'E97' :
+			return {
+				'A': 1,
+				'B': 25,
+				'C': 1,
+				'D': 1,
+				'E': 1,
+				'J': 1,
+				'L': 1,
+				'N': 1
+			}[self.seqId]
+		return 1
+		
 class EncoderConfiguration(DecoderConfiguration):
 	def __init__(self, sourceDir, anchorId, seqId):
 		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')

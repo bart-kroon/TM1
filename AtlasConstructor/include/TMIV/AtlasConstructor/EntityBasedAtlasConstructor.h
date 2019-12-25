@@ -81,7 +81,7 @@ private:
 private:
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
-  Common::Vec2i EntityEncRange;
+  Common::Vec2i m_EntityEncRange;
   Common::Json m_rootNode;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;

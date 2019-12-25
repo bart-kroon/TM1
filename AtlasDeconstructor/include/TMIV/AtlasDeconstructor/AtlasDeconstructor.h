@@ -58,6 +58,7 @@ public:
       -> Common::MVD10Frame override;
 
 private:
+  Common::Vec2i m_EntityDecRange;
   static void writePatchIdInMap(const Metadata::AtlasParameters &patch,
                                 Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
                                 const Common::MVD10Frame &frame,

@@ -35,7 +35,7 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Metadata/DepthOccupancyTransform.h>
-
+#include <iostream>
 #include <cassert>
 
 using namespace std;
@@ -45,7 +45,9 @@ using namespace TMIV::Metadata;
 namespace TMIV::AtlasDeconstructor {
 constexpr auto neutralChroma = uint16_t(512);
 
-AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json &componentNode) {
+  m_EntityDecRange = componentNode.require("EntityDecRange").asIntVector<2>();
+}
 
 auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
                                        const IvAccessUnitParams &ivAccessUnitParams,
@@ -61,10 +63,21 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
     patchMapList.push_back(move(patchMap));
   }
 
+  if (ivSequenceParams.maxEntities > 1)
+    cout << "Entity-Based Atlas Deconstructor is applied for EntityDecRange [ "
+         << m_EntityDecRange[0] << ", " << m_EntityDecRange[1] << "] \n";
+
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     assert(atlasParamsList[id].viewId < viewParamsList.size());
-    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                      viewParamsList);
+    if (ivSequenceParams.maxEntities > 1) {
+      if (atlasParamsList[id].entityId >= m_EntityDecRange[0] &
+          atlasParamsList[id].entityId <= m_EntityDecRange[1])
+        writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
+                          viewParamsList);
+    }
+    else
+      writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
+                        viewParamsList);
   }
 
   return patchMapList;

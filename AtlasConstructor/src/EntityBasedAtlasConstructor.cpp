@@ -45,7 +45,9 @@ using namespace TMIV::IO;
 
 static int m_fIndex{0};
 static ME16Frame m_aggregatedEntityMask;
+static std::vector<ME16Frame> m_entityMasksBuffer;
 static int m_maxEntities;
+static int m_frameInGOPIndex{0};
 
 namespace TMIV::AtlasConstructor {
 constexpr auto neutralChroma = uint16_t(512);
@@ -93,6 +95,8 @@ void EntityBasedAtlasConstructor::prepareAccessUnit(
   assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
   m_viewBuffer.clear();
+  m_aggregatedEntityMask.clear();
+  m_entityMasksBuffer.clear();
   m_aggregator->prepareAccessUnit();
 }
 
@@ -309,8 +313,8 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
 
     // Merging
     mergeViews(entityMergedViews, transportEntityViews);
-    mergeMasks(entityMergedMasks, masks);
-
+	mergeMasks(entityMergedMasks, masks);
+	
     /*
     // Debugging
     for (int vIndex = 0; vIndex < transportViews.size(); vIndex++) {
@@ -323,6 +327,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   m_viewBuffer.push_back(move(entityMergedViews));
   m_aggregator->pushMask(entityMergedMasks);
   aggregateEntityMasks(entityMasks);
+  m_entityMasksBuffer.push_back(move(entityMasks));
 
   m_fIndex++;
 }
@@ -332,6 +337,9 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   m_aggregator->completeAccessUnit();
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
   swap0(m_aggregatedEntityMask);
+  for (int i = 0; i < m_entityMasksBuffer.size(); i++) {
+    swap0(m_entityMasksBuffer[i]);
+  }
 
   // Setting isBasicView to all false since no basic views to be shown in entity-based atlases
   /*
@@ -361,7 +369,8 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   m_packer->updateEntityMasks(m_aggregatedEntityMask, m_EntityEncRange);
   m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
       m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
-
+  
+  m_frameInGOPIndex = 0;
   // Atlas construction
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
@@ -380,10 +389,11 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
     }
 
     for (const auto &patch : *m_ivAccessUnitParams.atlasParamsList) {
-      writePatchInAtlas(patch, views, atlasList);
-    }
+        writePatchInAtlas(patch, views, atlasList);
+      }
 
     m_atlasBuffer.push_back(move(atlasList));
+      m_frameInGOPIndex++;
   }
 
   return m_ivAccessUnitParams;
@@ -429,8 +439,8 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
 
   TextureDepth16Frame currentView;
   if (m_maxEntities > 1) {
-    currentView =
-        setView(views[patch.viewId], m_aggregatedEntityMask[patch.viewId], *patch.entityId);
+    currentView = setView(views[patch.viewId], m_entityMasksBuffer[m_frameInGOPIndex][patch.viewId],
+                          *patch.entityId); // m_aggregatedEntityMask[patch.viewId]
   } else {
     currentView = views[patch.viewId];
   }

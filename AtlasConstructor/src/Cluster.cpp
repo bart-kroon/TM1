@@ -68,6 +68,7 @@ auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
   d.imax_ = c.imax_;
   d.jmin_ = c.jmin_;
   d.jmax_ = c.jmax_;
+  d.numActivePixels_ = c.numActivePixels_;
   d.filling_ = c.filling_;
   return d;
 }
@@ -83,6 +84,7 @@ auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
   d.jmax_ = c.jmax_; // modification to align the imin,jmin to even values to
                      // help renderer
 
+  d.numActivePixels_ = c.numActivePixels_;
   d.filling_ = c.filling_;
 
   return d;
@@ -97,6 +99,7 @@ auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   c.jmin_ = min(c1.jmin_, c2.jmin_);
   c.jmax_ = max(c1.jmax_, c2.jmax_);
 
+  c.numActivePixels_ = c1.numActivePixels_ + c1.numActivePixels_;
   c.filling_ = (c1.filling_ + c2.filling_);
 
   return c;
@@ -172,11 +175,12 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
   vector<int> activeList;
 
   activeList.reserve(S);
-
+  int numActivePixels = 0;
   for (int i = 0; i < S; i++) {
     if (0 < maskBuffer[i]) {
       activeList.push_back(i);
       clusteringBuffer[i] = ACTIVE;
+      numActivePixels++;
     } else {
       clusteringBuffer[i] = INVALID;
     }
@@ -243,6 +247,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       candidates.pop();
     }
 
+	cluster.numActivePixels_ = numActivePixels;
     // Updating output
     if (shouldNotBeSplit) {
       if (!clusterList.empty()) {

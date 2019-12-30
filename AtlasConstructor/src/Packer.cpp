@@ -140,7 +140,10 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
       return isBasicView[p2.getViewId()];
     }
-    return p1.getArea() < p2.getArea();
+    if (m_maxEntities>1)
+		return p1.getNumActivePixels() < p2.getNumActivePixels();
+    else
+		return p1.getArea() < p2.getArea();
   };
 
   priority_queue<Cluster, vector<Cluster>, decltype(comp)> clusterToPack(comp);

@@ -49,6 +49,7 @@ protected:
   int viewId_ = 0;
   int clusterId_ = 0;
   int entityId_ = 0;
+  int numActivePixels_ = 0;
   int imin_ = std::numeric_limits<int>::max();
   int jmin_ = std::numeric_limits<int>::max();
   int imax_ = std::numeric_limits<int>::min();
@@ -69,6 +70,7 @@ public:
   int getViewId() const { return viewId_; }
   int getClusterId() const { return clusterId_; }
   int getEntityId() const { return entityId_; }
+  int getNumActivePixels() const { return numActivePixels_; }
   int imin() const { return imin_; }
   int jmin() const { return jmin_; }
   int imax() const { return imax_; }

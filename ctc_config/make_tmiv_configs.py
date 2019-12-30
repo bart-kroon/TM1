@@ -454,6 +454,13 @@ class EncoderConfiguration(DecoderConfiguration):
 		return config
 
 	def packer(self):
+		if self.anchorId == 'E97':
+			return {
+				'Alignment': 8,
+				'MinPatchSize': 16,
+				'Overlap': 1,
+				'PiP': 0
+			}
 		return {
 			'Alignment': 8,
 			'MinPatchSize': 16,

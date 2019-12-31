@@ -80,8 +80,9 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
     -> const IvSequenceParams & {
 
   // Construct at least the basic views
-  m_nbAtlas =
-      max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
+  if (ivSequenceParams.maxEntities == 1)
+    m_nbAtlas =
+        max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
 
   // Copy sequence parameters + Basic view ids
   m_ivSequenceParams = move(ivSequenceParams);

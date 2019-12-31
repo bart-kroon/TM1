@@ -175,12 +175,10 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
   vector<int> activeList;
 
   activeList.reserve(S);
-  int numActivePixels = 0;
   for (int i = 0; i < S; i++) {
     if (0 < maskBuffer[i]) {
       activeList.push_back(i);
       clusteringBuffer[i] = ACTIVE;
-      numActivePixels++;
     } else {
       clusteringBuffer[i] = INVALID;
     }
@@ -247,7 +245,15 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       candidates.pop();
     }
 
-	cluster.numActivePixels_ = numActivePixels;
+	// Update seed & compute # Active Pixels In Patch
+    auto prevIter = iter_seed;
+    iter_seed = find_if(iter_seed + 1, activeList.end(),
+                        [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
+    auto currentIter = iter_seed;
+    int counter = 0;
+    for_each(prevIter, currentIter, [&](auto i) { counter++; });
+    cluster.numActivePixels_ = counter;
+
     // Updating output
     if (shouldNotBeSplit) {
       if (!clusterList.empty()) {
@@ -263,10 +269,6 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       clusterList.push_back(cluster);
       clusterId++;
     }
-
-    // Update seed
-    iter_seed = find_if(iter_seed + 1, activeList.end(),
-                        [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
   }
 
   return out;

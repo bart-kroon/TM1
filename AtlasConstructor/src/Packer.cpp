@@ -185,7 +185,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           if (m_maxEntities > 1) {
             p.entityId = cluster.getEntityId();
             cout << "Packing patch " << pIndex << " of entity " << *p.entityId << " from view "
-                 << p.viewId << " in atlas " << (int)p.atlasId << endl;
+                 << p.viewId << " with #active pixels " << cluster.getNumActivePixels() << " in atlas " << (int)p.atlasId
+                 << endl;
           }
 
           atlasParamsVector.push_back(p);

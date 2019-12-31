@@ -49,7 +49,7 @@ public:
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
-  void updateEntityMasks(Common::ME16Frame entityMasks, Common::Vec2i m_EntityEncRange);
+  void updateEntityMasks(Common::ME16Frame entityMasks);
   auto setMask(int vIndex, int eIndex) -> Common::Mask;
 
 private:

@@ -472,10 +472,21 @@ class EncoderConfiguration(DecoderConfiguration):
 		return 2 * self.atlasWidth() * self.atlasHeight()
 
 	def maxLumaSamplesPerFrame(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97':
+		if self.anchorId == 'A97' or self.anchorId == 'A17':
 			return {
 				'A': 1,
 				'B': 3,
+				'C': 2,
+				'D': 1,
+				'E': 2,
+				'J': 2,
+				'L': 1,
+				'N': 3
+			}[self.seqId] * self.lumaSamplesPerView()
+		if self.anchorId == 'E97':
+			return {
+				'A': 1,
+				'B': 4,
 				'C': 2,
 				'D': 1,
 				'E': 2,

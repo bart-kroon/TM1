@@ -408,26 +408,6 @@ void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame 
   }
 }
 
-void saveMask(const Json &config, int frameIndex, const Mask &frame) { // for debugging
-  cout << "Saving Mask frame " << frameIndex << '\n';
-
-  if (config.optional("OutputMaskPath")) {
-    string maskPath = getFullPath(config, "OutputDirectory", "OutputMaskPath", 0,
-                                   config.require("OutputCameraName").asString());
-    writeFrame(maskPath, frame, frameIndex);
-  }
-}
-
-void save16Mask(const Json &config, int frameIndex, const Entity16Frame &frame) { // for debugging
-  cout << "Saving Mask frame " << frameIndex << '\n';
-
-  if (config.optional("OutputMaskPath")) {
-    string maskPath = getFullPath(config, "OutputDirectory", "OutputMaskPath", 0,
-                                  config.require("OutputCameraName").asString());
-    writeFrame(maskPath, frame, frameIndex);
-  }
-}
-
 auto getExtendedIndex(const Json &config, int frameIndex) -> int {
   int numberOfFrames = config.require("numberOfFrames").asInt();
   int frameGroupId = frameIndex / numberOfFrames;

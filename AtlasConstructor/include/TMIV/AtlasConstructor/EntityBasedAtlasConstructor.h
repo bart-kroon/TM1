@@ -67,8 +67,7 @@ public:
   void mergeViews(Common::MVD16Frame & entityMergedViews,
                                 Common::MVD16Frame transportEntityViews);
   void mergeMasks(Common::MaskList & entityMergedMasks, Common::MaskList masks);
-  void updateMasks(Common::MVD16Frame &views, Common::MaskList &masks,
-                   std::vector<bool> m_isBasicView); 
+  void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks); 
   void updateEntityMasks(Common::ME16Frame &entityMasks, const Common::MaskList &masks, uint16_t eIndex);
   void aggregateEntityMasks(Common::ME16Frame &entityMasks);
   void swap0(Common::ME16Frame &entityMasks);
@@ -88,7 +87,6 @@ private:
   std::unique_ptr<IPacker> m_packer;
   std::vector<bool> m_isBasicView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
-  //std::vector<Common::ME16Frame> m_entityMasksBuffer;
   Metadata::IvSequenceParams m_ivSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;

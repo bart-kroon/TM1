@@ -33,7 +33,6 @@
 
 #include "MaxRectPiP.h"
 #include <TMIV/AtlasConstructor/Packer.h>
-#include <fstream>
 #include <iostream>
 #include <queue>
 #include <stdexcept>
@@ -50,13 +49,16 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
   m_maxEntities = rootNode.require("maxEntities").asInt();
+  if (m_maxEntities > 1)
+    m_EntityEncRange = rootNode.require("GroupBasedEncoder")
+                           .require("EntityBasedAtlasConstructor")
+                           .require("EntityEncRange")
+                           .asIntVector<2>();
 }
 
-void Packer::updateEntityMasks(ME16Frame entityMasks, Vec2i EntityEncRange) {
+void Packer::updateEntityMasks(ME16Frame entityMasks) {
   for (int vIndex = 0; vIndex < entityMasks.size(); vIndex++)
     m_entityMasks.push_back(entityMasks[vIndex]);
-
-  m_EntityEncRange = EntityEncRange;
 }
 
 auto Packer::setMask(int vIndex, int eIndex) -> Mask {
@@ -89,17 +91,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (m_maxEntities > 1) {
       for (int eIndex = m_EntityEncRange[0]; eIndex <= m_EntityEncRange[1]; eIndex++) {
         Mask mask = setMask(viewId, eIndex);
-        /*
-        const string path =
-            "F:/MPEGData/3DOFPlusTestSequences/TechnicolorMuseum/TMIVContent/E97Test/mask" +
-            std::to_string(viewId) + "_2048x2048_yuv420p.yuv";
-        ofstream stream(path, (eIndex == 0 ? ios::trunc : ios::app) | ios::binary);
-        mask.dump(stream);
-        int bytes = mask.getDiskSize() - mask.getMemorySize();
-        while (bytes-- > 0) {
-          stream.put(0);
-        }
-                */
+
         auto clusteringOutput = Cluster::retrieve(
             viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId]);
 
@@ -111,9 +103,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
              back_inserter(clusterList));
         clusteringMap.push_back(move(clusteringOutput.second));
-
-        cout << "entity " << eIndex << " from view " << viewId << " results in "
-             << clusteringOutput.first.size() << " patch \n";
+        if (clusteringOutput.first.size()>0)
+			cout << "entity " << eIndex << " from view " << viewId << " results in "
+				 << clusteringOutput.first.size() << " patch \n";
       }
 
     } else {

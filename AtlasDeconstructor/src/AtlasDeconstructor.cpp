@@ -46,7 +46,9 @@ namespace TMIV::AtlasDeconstructor {
 constexpr auto neutralChroma = uint16_t(512);
 
 AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json &componentNode) {
-  m_EntityDecRange = componentNode.require("EntityDecRange").asIntVector<2>();
+    if(auto subnode = componentNode.optional("EntityDecRange")){
+        m_EntityDecRange = subnode.asIntVector<2>();
+    }
 }
 
 auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,

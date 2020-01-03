@@ -294,13 +294,11 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
     // Pruning
     masks = m_pruner->prune(m_ivSequenceParams.viewParamsList, transportEntityViews, m_isBasicView);
 
-    // update the pruned basic masks and filter other masks.
+    // updating the pruned basic masks for entities and filter other masks.
     updateMasks(transportEntityViews, masks);
 
-    // Tracking entityIds after pruning
+    // Entity Masking and Merging (Tracking entityIds after pruning)
     updateEntityMasks(entityMasks, masks, eIndex);
-
-    // Merging
     mergeViews(mergedViews, transportEntityViews);
     mergeMasks(mergedMasks, masks);
   }
@@ -335,7 +333,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   // Packing
   assert(m_ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams.atlasParamsList->atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
-  m_packer->updateEntityMasks(m_aggregatedEntityMask);
+  m_packer->updateAggEntityMasks(m_aggregatedEntityMask);
   m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
       m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
 

@@ -56,18 +56,18 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
                            .asIntVector<2>();
 }
 
-void Packer::updateEntityMasks(ME16Frame entityMasks) {
+void Packer::updateAggEntityMasks(ME16Frame entityMasks) {
   for (int vIndex = 0; vIndex < entityMasks.size(); vIndex++)
-    m_entityMasks.push_back(entityMasks[vIndex]);
+    m_aggEntityMasks.push_back(entityMasks[vIndex]);
 }
 
 auto Packer::setMask(int vIndex, int eIndex) -> Mask {
-  Mask mask(m_entityMasks[vIndex].getWidth(), m_entityMasks[vIndex].getHeight());
+  Mask mask(m_aggEntityMasks[vIndex].getWidth(), m_aggEntityMasks[vIndex].getHeight());
   fill(mask.getPlane(0).begin(), mask.getPlane(0).end(), uint8_t(0));
   vector<int> Indices(mask.getPlane(0).size());
   std::iota(Indices.begin(), Indices.end(), 0);
   std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-    if (m_entityMasks[vIndex].getPlane(0)[i] == eIndex)
+    if (m_aggEntityMasks[vIndex].getPlane(0)[i] == eIndex)
       mask.getPlane(0)[i] = uint8_t(255);
   });
   return mask;
@@ -90,6 +90,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
       for (int eIndex = m_EntityEncRange[0]; eIndex <= m_EntityEncRange[1]; eIndex++) {
+        // Entity Clustering
         Mask mask = setMask(viewId, eIndex);
 
         auto clusteringOutput = Cluster::retrieve(
@@ -107,7 +108,6 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 			cout << "entity " << eIndex << " from view " << viewId << " results in "
 				 << clusteringOutput.first.size() << " patch \n";
       }
-
     } else {
       auto clusteringOutput = Cluster::retrieve(
           viewId, masks[viewId], static_cast<int>(clusterList.size()), isBasicView[viewId]);

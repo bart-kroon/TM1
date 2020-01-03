@@ -486,7 +486,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return {
 				'A': 1,
-				'B': 4,
+				'B': 5,
 				'C': 2,
 				'D': 1,
 				'E': 2,

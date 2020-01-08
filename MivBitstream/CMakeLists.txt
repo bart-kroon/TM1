@@ -64,6 +64,4 @@ if (CMAKE_TESTING_ENABLED)
 			Catch2::Catch2
 			TMIV::MivBitstreamLib
 			TMIV::IOLib)
-
-	catch_discover_tests(MivBitstreamSpikes)
 endif()	

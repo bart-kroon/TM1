@@ -81,6 +81,4 @@ if (CMAKE_TESTING_ENABLED)
 		PRIVATE
 			Catch2::Catch2
 			TMIV::VpccBitstreamLib)
-
-	catch_discover_tests(VpccBitstreamSpikes)
 endif()	

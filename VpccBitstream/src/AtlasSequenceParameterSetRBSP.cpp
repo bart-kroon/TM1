@@ -258,7 +258,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   VERIFY_MIVBITSTREAM(!x.asps_point_local_reconstruction_enabled_flag());
 
   x.asps_map_count(uint8_t(bitstream.readBits(4) + 1));
-  VERIFY_MIVBITSTREAM(x.asps_map_count() == 1);
+  // TODO(BK): Check somewhere else that asps_map_count == vps_map_count
 
   x.asps_vui_parameters_present_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.asps_vui_parameters_present_flag());
@@ -321,7 +321,6 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   bitstream.putFlag(asps_point_local_reconstruction_enabled_flag());
 
   VERIFY_VPCCBITSTREAM(1 <= asps_map_count());
-  VERIFY_MIVBITSTREAM(asps_map_count() == 1);
   bitstream.writeBits(asps_map_count() - 1, 4);
 
   VERIFY_MIVBITSTREAM(!asps_vui_parameters_present_flag());

@@ -33,7 +33,7 @@
 
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 
-#include <TMIV/Metadata/Bitstream.h>
+#include <TMIV/Common/Bitstream.h>
 
 #include <algorithm>
 #include <iostream>

@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 add_library(CommonLib
 	"src/Application.cpp"
+	"src/Bitstream.cpp"
+	"src/Bytestream.cpp"
 	"src/Json.cpp"
 	"src/Half.cpp"
 	"src/Frame.cpp"
+	"include/TMIV/Common/Bitstream.h"
+	"include/TMIV/Common/Bytestream.h"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Common.hpp"
 	"include/TMIV/Common/Application.h"
@@ -49,7 +53,9 @@ install(
 	DESTINATION "include")
 
 if (CMAKE_TESTING_ENABLED)
-	add_executable(CommonTest "src/Common.test.cpp")
+	add_executable(CommonTest
+		"src/Bitstream.test.cpp"
+		"src/Common.test.cpp")
 
 	target_link_libraries(CommonTest
 		PRIVATE

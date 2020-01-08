@@ -25,6 +25,12 @@ add_subdirectory(Common)
 # Implementation of the MIV metadata
 add_subdirectory(Metadata)
 
+# (Partial) implementation of the V-PCC sample bitstream
+add_subdirectory(VpccBitstream)
+
+# (Partial) implementation of the MIV extensions to the V_PCC sample bitstream
+add_subdirectory(MivBitstream)
+
 # The only library that is allowed to touch the filesystem. 
 # Only executables depend on this library.
 add_subdirectory(IO) 

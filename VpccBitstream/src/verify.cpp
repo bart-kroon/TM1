@@ -31,45 +31,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#include "verify.h"
+#include <iostream>
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+using namespace std;
 
-#include <fstream>
-
-namespace TMIV::IO {
-class IvMetadataReader {
-public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
-
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
-
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
-
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
-};
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
+namespace TMIV::VpccBitstream {
+[[noreturn]] void vpccError(char const *condition, char const *file, int line) {
+  cerr << "Failed to encode/decode V-PCC bitstream: " << condition << " [" << file << "@" << line
+       << '\n';
+  abort();
 }
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
+[[noreturn]] void mivError(char const *condition, char const *file, int line) {
+  cerr << "Failed to encode/decode MIV bitstream (restriction on V-PCC): " << condition << " ["
+       << file << "@" << line << '\n';
+  abort();
 }
-
-} // namespace TMIV::IO
-
-#endif
+} // namespace TMIV::VpccBitstream

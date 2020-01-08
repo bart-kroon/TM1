@@ -31,45 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#ifndef _TMIV_VPCCBITSTREAM_EMPTYSYNTAXSTRUCTURE_H_
+#define _TMIV_VPCCBITSTREAM_EMPTYSYNTAXSTRUCTURE_H_
 
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
 
-#include <fstream>
+#include <iosfwd>
 
-namespace TMIV::IO {
-class IvMetadataReader {
+namespace TMIV::VpccBitstream {
+template <typename Derived> class EmptySyntaxStructure {
 public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+  friend auto operator<<(std::ostream &stream, const Derived & /* x */) -> std::ostream & {
+    return stream;
+  }
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
+  constexpr auto operator==(const Derived & /* other */) const noexcept { return true; }
+  constexpr auto operator!=(const Derived & /* other */) const noexcept { return false; }
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
+  static auto decodeFrom(Common::InputBitstream & /* bitstream */) -> Derived { return {}; }
+  static auto decodeFrom(std::istream & /* stream */) -> Derived { return {}; }
 
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
+  void encodeTo(Common::OutputBitstream & /* bitstream */) const {}
+  void encodeTo(std::ostream & /* stream */) const {}
 };
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
-}
-
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
-}
-
-} // namespace TMIV::IO
+} // namespace TMIV::VpccBitstream
 
 #endif

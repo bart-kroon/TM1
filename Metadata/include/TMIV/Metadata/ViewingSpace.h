@@ -34,6 +34,7 @@
 #ifndef _TMIV_METADATA_VIEWINGSPACE_H_
 #define _TMIV_METADATA_VIEWINGSPACE_H_
 
+#include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
@@ -43,8 +44,8 @@
 #include <vector>
 
 namespace TMIV::Metadata {
-class InputBitstream;
-class OutputBitstream;
+using Common::InputBitstream;
+using Common::OutputBitstream;
 
 struct PrimitiveShape;
 struct ElementaryShape;
@@ -192,12 +193,12 @@ struct PrimitiveShape {
   // In specification: primitive_shape_viewing_direction_pitch_range[ e ]
   struct ViewingDirectionConstraint {
     std::optional<float> guardBandDirectionSize{};
-    float yawCenter{};    
-	float yawRange{360.f};
-    float pitchCenter{};    
-	float pitchRange{180.f};
+    float yawCenter{};
+    float yawRange{360.f};
+    float pitchCenter{};
+    float pitchRange{180.f};
 
-	bool operator==(const ViewingDirectionConstraint &other) const;
+    bool operator==(const ViewingDirectionConstraint &other) const;
     bool operator!=(const ViewingDirectionConstraint &other) const { return !operator==(other); }
   };
   std::optional<ViewingDirectionConstraint> viewingDirectionConstraint;

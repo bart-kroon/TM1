@@ -31,45 +31,60 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#include <TMIV/VpccBitstream/NalSampleStream.h>
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/VpccBitstream/NalSampleStreamFormat.h>
+#include <TMIV/VpccBitstream/NalUnit.h>
 
-#include <fstream>
+#include <sstream>
 
-namespace TMIV::IO {
-class IvMetadataReader {
-public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+using namespace std;
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
-
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
-
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
-};
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
+namespace TMIV::VpccBitstream {
+auto operator<<(ostream &stream, const NalSampleStream &x) -> ostream & {
+  stream << x.sample_stream_nal_header();
+  for (const auto &nal_unit : x.nal_units()) {
+    stream << nal_unit;
+  }
+  return stream;
 }
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
+auto NalSampleStream::operator==(const NalSampleStream &other) const noexcept -> bool {
+  return sample_stream_nal_header() == other.sample_stream_nal_header() &&
+         m_nal_units == other.m_nal_units;
 }
 
-} // namespace TMIV::IO
+auto NalSampleStream::operator!=(const NalSampleStream &other) const noexcept -> bool {
+  return !operator==(other);
+}
 
-#endif
+auto NalSampleStream::decodeFrom(istream &stream) -> NalSampleStream {
+  const auto streamStart = stream.tellg();
+  stream.seekg(0, ios::end);
+  const auto streamEnd = stream.tellg();
+  stream.seekg(streamStart);
+
+  auto asb = NalSampleStream{SampleStreamNalHeader::decodeFrom(stream)};
+
+  while (stream.tellg() != streamEnd) {
+    const auto ssnu = SampleStreamNalUnit::decodeFrom(stream, asb.sample_stream_nal_header());
+
+    istringstream substream{ssnu.ssnu_nal_unit()};
+    asb.nal_units().push_back(NalUnit::decodeFrom(substream, ssnu.ssnu_nal_unit().size()));
+  }
+
+  return asb;
+}
+
+void NalSampleStream::encodeTo(ostream &stream) const {
+  sample_stream_nal_header().encodeTo(stream);
+
+  for (const auto &nal_unit : m_nal_units) {
+    ostringstream substream;
+    nal_unit.encodeTo(substream);
+
+    const auto ssnu = SampleStreamNalUnit{substream.str()};
+    ssnu.encodeTo(stream, sample_stream_nal_header());
+  }
+}
+} // namespace TMIV::VpccBitstream

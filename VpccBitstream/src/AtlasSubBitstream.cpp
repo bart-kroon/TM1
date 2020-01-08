@@ -31,45 +31,56 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#include <TMIV/VpccBitstream/AtlasSubBitstream.h>
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include "verify.h"
 
-#include <fstream>
+using namespace std;
 
-namespace TMIV::IO {
-class IvMetadataReader {
-public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
-
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
-
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
-
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
-};
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
+namespace TMIV::VpccBitstream {
+const auto &AtlasSubBitstream::nal_sample_stream() const noexcept {
+  VERIFY_MIVBITSTREAM(!!m_nss);
+  return *m_nss;
 }
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
+auto operator<<(ostream &stream, const AtlasSubBitstream &x) -> ostream & {
+  stream << x.nal_sample_stream();
+  for (const auto &asps : x.atlas_sequence_parameter_sets()) {
+    stream << asps;
+  }
+  return stream;
 }
 
-} // namespace TMIV::IO
+auto AtlasSubBitstream::operator==(const AtlasSubBitstream &other) const noexcept -> bool {
+  return nal_sample_stream() == other.nal_sample_stream();
+}
 
-#endif
+auto AtlasSubBitstream::operator!=(const AtlasSubBitstream &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto AtlasSubBitstream::decodeFrom(istream &stream) -> AtlasSubBitstream {
+  auto asb = AtlasSubBitstream{NalSampleStream::decodeFrom(stream)};
+  for (const auto &nal_unit : asb.nal_sample_stream().nal_units()) {
+    asb.decodeNalUnit(nal_unit);
+  }
+  return asb;
+}
+
+void AtlasSubBitstream::encodeTo(ostream &stream) const { nal_sample_stream().encodeTo(stream); }
+
+void AtlasSubBitstream::decodeNalUnit(const NalUnit &nal_unit) {
+  if (nal_unit.nal_unit_header().nal_unit_type() == NalUnitType::NAL_ASPS) {
+    decodeAsps(nal_unit);
+  }
+}
+
+void AtlasSubBitstream::decodeAsps(const NalUnit &nal_unit) {
+  istringstream substream{nal_unit.rbsp()};
+  auto asps = AtlasSequenceParameterSetRBSP::decodeFrom(substream);
+  while (asps.asps_atlas_sequence_parameter_set_id() >= m_asps.size()) {
+    m_asps.emplace_back();
+  }
+  m_asps[asps.asps_atlas_sequence_parameter_set_id()] = move(asps);
+}
+} // namespace TMIV::VpccBitstream

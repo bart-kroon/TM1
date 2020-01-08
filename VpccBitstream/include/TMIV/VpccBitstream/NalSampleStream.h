@@ -31,45 +31,36 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#ifndef _TMIV_VPCCBITSTREAM_NALSAMPLESTREAM_H_
+#define _TMIV_VPCCBITSTREAM_NALSAMPLESTREAM_H_
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/VpccBitstream/NalSampleStreamFormat.h>
+#include <TMIV/VpccBitstream/NalUnit.h>
 
-#include <fstream>
+#include <vector>
 
-namespace TMIV::IO {
-class IvMetadataReader {
+namespace TMIV::VpccBitstream {
+class NalSampleStream {
 public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+  explicit NalSampleStream(const SampleStreamNalHeader &ssnh) : m_ssnh{ssnh} {}
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
+  constexpr auto &sample_stream_nal_header() const noexcept { return m_ssnh; }
+  constexpr auto &sample_stream_nal_header() noexcept { return m_ssnh; }
+  constexpr auto &nal_units() const noexcept { return m_nal_units; }
+  constexpr auto &nal_units() noexcept { return m_nal_units; }
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
+  friend auto operator<<(std::ostream &stream, const NalSampleStream &x) -> std::ostream &;
+
+  auto operator==(const NalSampleStream &other) const noexcept -> bool;
+  auto operator!=(const NalSampleStream &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream) -> NalSampleStream;
+  void encodeTo(std::ostream &stream) const;
 
 private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
+  SampleStreamNalHeader m_ssnh;
+  std::vector<NalUnit> m_nal_units;
 };
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
-}
-
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
-}
-
-} // namespace TMIV::IO
+} // namespace TMIV::VpccBitstream
 
 #endif

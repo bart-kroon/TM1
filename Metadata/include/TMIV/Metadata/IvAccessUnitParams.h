@@ -34,6 +34,7 @@
 #ifndef _TMIV_METADATA_IVACCESSUNITPARAMS_H_
 #define _TMIV_METADATA_IVACCESSUNITPARAMS_H_
 
+#include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Vector.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
 
@@ -43,10 +44,10 @@
 #include <vector>
 
 namespace TMIV::Metadata {
-enum class PatchRotation { none, swap, rot90, rot180, rot270, mirror, mrot90, mrot180 };
+using Common::InputBitstream;
+using Common::OutputBitstream;
 
-class InputBitstream;
-class OutputBitstream;
+enum class PatchRotation { none, swap, rot90, rot180, rot270, mirror, mrot90, mrot180 };
 
 // Data type that corresponds to the [ a ][ p ]-indiced entries of atlas_params( a ) and
 // depth_occupancy( a, p ) for a single (a, p)-combination

@@ -31,45 +31,62 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#include "test.h"
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/VpccBitstream/NalUnit.h>
 
-#include <fstream>
+using namespace TMIV::VpccBitstream;
 
-namespace TMIV::IO {
-class IvMetadataReader {
-public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+TEST_CASE("nal_unit_header", "[NAL unit]") {
+  SECTION("Example 1") {
+    const auto nal_unit_header = NalUnitHeader{NalUnitType::NAL_EOS, 0, 3};
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
+    REQUIRE(toString(nal_unit_header) ==
+            R"(nal_unit_type=NAL_EOS
+nal_layer_id=0
+nal_temporal_id=3
+)");
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
+    REQUIRE(byteCodingTest(nal_unit_header, 2));
+  }
 
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
-};
+  SECTION("Example 2") {
+    const auto nal_unit_header = NalUnitHeader{NalUnitType::NAL_BLA_W_LP, 2, 1};
 
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
+    REQUIRE(byteCodingTest(nal_unit_header, 2));
+
+    REQUIRE(toString(nal_unit_header) ==
+            R"(nal_unit_type=NAL_BLA_W_LP
+nal_layer_id=2
+nal_temporal_id=1
+)");
+  }
 }
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
+TEST_CASE("nal_unit", "[NAL unit]") {
+  SECTION("Example 1") {
+    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_EOS, 0, 0}, {}};
+
+    REQUIRE(toString(nal_unit) ==
+            R"(nal_unit_type=NAL_EOS
+nal_layer_id=0
+nal_temporal_id=0
+NumBytesInRbsp=0
+)");
+
+    REQUIRE(unitCodingTest(nal_unit, 2));
+  }
+
+  SECTION("Example 2") {
+    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_RADL, 1, 2}, "payload"};
+
+    REQUIRE(toString(nal_unit) ==
+            R"(nal_unit_type=NAL_RADL
+nal_layer_id=1
+nal_temporal_id=2
+NumBytesInRbsp=7
+)");
+
+    REQUIRE(unitCodingTest(nal_unit, 9));
+  }
 }
-
-} // namespace TMIV::IO
-
-#endif

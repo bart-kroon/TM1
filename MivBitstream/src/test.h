@@ -31,45 +31,69 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#ifndef _TMIV_MIVBITSTREAM_TEST_H_
+#define _TMIV_MIVBITSTREAM_TEST_H_
+
+#include <catch2/catch.hpp>
 
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
 
-#include <fstream>
+#include <array>
+#include <iostream>
+#include <sstream>
 
-namespace TMIV::IO {
-class IvMetadataReader {
-public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+namespace {
+template <typename Type, typename... Args>
+auto byteCodingTest(const Type &reference, int size, Args &&... args) -> bool {
+  std::stringstream stream;
+  reference.encodeTo(stream, args...);
+  REQUIRE(stream.tellp() == size);
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
+  const auto actual = Type::decodeFrom(stream, std::forward<Args>(args)...);
+  REQUIRE(stream.tellg() == size);
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
-
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
-};
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
+  return actual == reference;
 }
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
+template <typename Type, typename... Args>
+auto unitCodingTest(const Type &reference, int size, Args &&... args) -> bool {
+  std::stringstream stream;
+  REQUIRE(size == reference.encodeTo(stream, args...));
+  REQUIRE(size == stream.tellp());
+
+  const auto actual = Type::decodeFrom(stream, std::forward<Args>(args)..., size);
+  REQUIRE(size == stream.tellg());
+
+  return actual == reference;
 }
 
-} // namespace TMIV::IO
+template <typename Type, typename... Args>
+auto bitCodingTest(const Type &reference, int bitsize, Args &&... args) -> bool {
+  std::stringstream stream;
+  TMIV::Common::OutputBitstream obitstream{stream};
+  reference.encodeTo(obitstream, args...);
+  REQUIRE(bitsize == obitstream.tellp());
+  obitstream.byteAlign();
+
+  TMIV::Common::InputBitstream ibitstream{stream};
+  const auto actual = Type::decodeFrom(ibitstream, std::forward<Args>(args)...);
+  REQUIRE(bitsize == ibitstream.tellg());
+
+  return actual == reference;
+}
+
+template <typename Type> auto toString(const Type &metadata) -> std::string {
+  std::ostringstream stream;
+  stream << metadata;
+  return stream.str();
+}
+
+template <typename Type, typename... Args>
+auto toString(const Type &metadata, Args &&... args) -> std::string {
+  std::ostringstream stream;
+  metadata.printTo(stream, std::forward<Args>(args)...);
+  return stream.str();
+}
+} // namespace
 
 #endif

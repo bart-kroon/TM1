@@ -71,7 +71,10 @@ void AtlasSubBitstream::encodeTo(ostream &stream) const { nal_sample_stream().en
 
 void AtlasSubBitstream::decodeNalUnit(const NalUnit &nal_unit) {
   if (nal_unit.nal_unit_header().nal_unit_type() == NalUnitType::NAL_ASPS) {
-    decodeAsps(nal_unit);
+    return decodeAsps(nal_unit);
+  }
+  if (nal_unit.nal_unit_header().nal_unit_type() == NalUnitType::NAL_AFPS) {
+    return decodeAfps(nal_unit);
   }
 }
 
@@ -82,5 +85,14 @@ void AtlasSubBitstream::decodeAsps(const NalUnit &nal_unit) {
     m_asps.emplace_back();
   }
   m_asps[asps.asps_atlas_sequence_parameter_set_id()] = move(asps);
+}
+
+void AtlasSubBitstream::decodeAfps(const NalUnit &nal_unit) {
+  istringstream substream{nal_unit.rbsp()};
+  auto afps = AtlasFrameParameterSetRBSP::decodeFrom(substream, m_asps);
+  while (afps.afps_atlas_frame_parameter_set_id() >= m_afps.size()) {
+    m_afps.emplace_back();
+  }
+  m_afps[afps.afps_atlas_frame_parameter_set_id()] = move(afps);
 }
 } // namespace TMIV::VpccBitstream

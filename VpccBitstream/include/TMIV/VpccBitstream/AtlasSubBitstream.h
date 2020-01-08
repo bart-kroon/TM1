@@ -34,6 +34,7 @@
 #ifndef _TMIV_VPCCBITSTREAM_ATLASSUBBITSTREAM_H_
 #define _TMIV_VPCCBITSTREAM_ATLASSUBBITSTREAM_H_
 
+#include <TMIV/VpccBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/VpccBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/VpccBitstream/NalSampleStream.h>
 
@@ -55,6 +56,7 @@ public:
 
   const auto &nal_sample_stream() const noexcept;
   const auto &atlas_sequence_parameter_sets() const noexcept { return m_asps; }
+  const auto &atlas_frame_parameter_sets() const noexcept { return m_afps; }
 
   friend auto operator<<(std::ostream &stream, const AtlasSubBitstream &x) -> std::ostream &;
 
@@ -69,9 +71,11 @@ protected:
 
 private:
   void decodeAsps(const NalUnit &nal_unit);
+  void decodeAfps(const NalUnit &nal_unit);
 
   std::optional<NalSampleStream> m_nss;
   std::vector<AtlasSequenceParameterSetRBSP> m_asps;
+  std::vector<AtlasFrameParameterSetRBSP> m_afps;
 };
 } // namespace TMIV::VpccBitstream
 

@@ -62,7 +62,7 @@ afps_extension_present_flag=false
 )");
 
   SECTION("Example 1") {
-    auto asps = AtlasSequenceParameterSetRBSP{};
+    const auto aspses = std::vector<AtlasSequenceParameterSetRBSP>(1);
 
     x.afps_num_ref_idx_default_active(1)
         .afps_2d_pos_x_bit_count(1)
@@ -85,15 +85,16 @@ afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 4, asps));
+    REQUIRE(byteCodingTest(x, 4, aspses));
   }
 
   SECTION("Example 2") {
-    auto asps = AtlasSequenceParameterSetRBSP{};
-    asps.asps_log2_max_atlas_frame_order_cnt_lsb(7).asps_long_term_ref_atlas_frames_flag(true);
+    auto aspses = std::vector<AtlasSequenceParameterSetRBSP>(2);
+    aspses.back().asps_log2_max_atlas_frame_order_cnt_lsb(7).asps_long_term_ref_atlas_frames_flag(
+        true);
 
     x.afps_atlas_frame_parameter_set_id(63)
-        .afps_atlas_sequence_parameter_set_id(15)
+        .afps_atlas_sequence_parameter_set_id(1)
         .afps_num_ref_idx_default_active(14)
         .afps_additional_lt_afoc_lsb_len(25)
         .afps_2d_pos_x_bit_count(16)
@@ -104,7 +105,7 @@ afps_extension_present_flag=false
         .afps_raw_3d_pos_bit_count_explicit_mode_flag(true);
 
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
-afps_atlas_sequence_parameter_set_id=15
+afps_atlas_sequence_parameter_set_id=1
 afti_single_tile_in_atlas_frame_flag=true
 afps_num_ref_idx_default_active=14
 afps_additional_lt_afoc_lsb_len=25
@@ -118,6 +119,6 @@ afps_raw_3d_pos_bit_count_explicit_mode_flag=true
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 9, asps));
+    REQUIRE(byteCodingTest(x, 8, aspses));
   }
 }

@@ -102,8 +102,8 @@ auto AtlasFrameParameterSetRBSP::operator!=(const AtlasFrameParameterSetRBSP &ot
   return !operator==(other);
 }
 
-auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
-                                            const AtlasSequenceParameterSetRBSP &asps)
+auto AtlasFrameParameterSetRBSP::decodeFrom(
+    istream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspses)
     -> AtlasFrameParameterSetRBSP {
   auto x = AtlasFrameParameterSetRBSP{};
   InputBitstream bitstream{stream};
@@ -113,6 +113,8 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
 
   x.afps_atlas_sequence_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
   VERIFY_VPCCBITSTREAM(x.afps_atlas_sequence_parameter_set_id() <= 15);
+  VERIFY_VPCCBITSTREAM(x.afps_atlas_sequence_parameter_set_id() < aspses.size());
+  const auto &asps = aspses[x.afps_atlas_sequence_parameter_set_id()];
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
 
@@ -144,15 +146,17 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   return x;
 }
 
-void AtlasFrameParameterSetRBSP::encodeTo(ostream &stream,
-                                          const AtlasSequenceParameterSetRBSP &asps) const {
+void AtlasFrameParameterSetRBSP::encodeTo(
+    ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspses) const {
   OutputBitstream bitstream{stream};
 
   VERIFY_VPCCBITSTREAM(afps_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(afps_atlas_frame_parameter_set_id());
 
   VERIFY_VPCCBITSTREAM(afps_atlas_sequence_parameter_set_id() <= 15);
+  VERIFY_VPCCBITSTREAM(afps_atlas_sequence_parameter_set_id() < aspses.size());
   bitstream.putUExpGolomb(afps_atlas_sequence_parameter_set_id());
+  const auto &asps = aspses[afps_atlas_sequence_parameter_set_id()];
 
   atlas_frame_tile_information().encodeTo(bitstream);
 

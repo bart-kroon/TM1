@@ -36,19 +36,6 @@
 #endif
 
 namespace TMIV::VpccBitstream {
-constexpr auto RefListStruct::num_ref_entries() const noexcept {
-  // NOTE(BK): Only implementing intra coding of atlases (for now)
-  return 0;
-}
-
-constexpr auto RefListStruct::operator==(const RefListStruct &other) const noexcept {
-  return num_ref_entries() == other.num_ref_entries();
-}
-
-constexpr auto RefListStruct::operator!=(const RefListStruct &other) const noexcept {
-  return !operator==(other);
-}
-
 constexpr auto AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id() const
     noexcept {
   return m_asps_atlas_sequence_parameter_set_id;

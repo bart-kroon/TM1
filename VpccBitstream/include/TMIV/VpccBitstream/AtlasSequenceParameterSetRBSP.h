@@ -39,22 +39,34 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iosfwd>
+#include <optional>
 #include <vector>
 
 namespace TMIV::VpccBitstream {
+class AtlasSequenceParameterSetRBSP;
+
 // 23090-5: ref_list_struct( rlsIdx )
 class RefListStruct {
 public:
-  constexpr auto num_ref_entries() const noexcept;
+  RefListStruct() = default;
+  explicit RefListStruct(std::vector<std::int16_t> deltaAfocSt);
+
+  auto num_ref_entries() const noexcept -> std::size_t;
+  auto deltaAfocSt(std::size_t i) const noexcept -> std::int16_t;
 
   auto printTo(std::ostream &stream, std::uint8_t rlsIdx) const -> std::ostream &;
 
-  constexpr auto operator==(const RefListStruct &other) const noexcept;
-  constexpr auto operator!=(const RefListStruct &other) const noexcept;
+  auto operator==(const RefListStruct &other) const noexcept -> bool;
+  auto operator!=(const RefListStruct &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> RefListStruct;
+  static auto decodeFrom(Common::InputBitstream &bitstream,
+                         const AtlasSequenceParameterSetRBSP &asps) -> RefListStruct;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream,
+                const AtlasSequenceParameterSetRBSP &asps) const;
+
+private:
+  std::vector<std::int16_t> m_deltaAfocSt;
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp()

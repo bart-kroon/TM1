@@ -42,48 +42,86 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::VpccBitstream {
+RefListStruct::RefListStruct(vector<int16_t> deltaAfocSt) : m_deltaAfocSt{move(deltaAfocSt)} {}
+
+auto RefListStruct::num_ref_entries() const noexcept -> size_t { return m_deltaAfocSt.size(); }
+
+auto RefListStruct::deltaAfocSt(size_t i) const noexcept -> int16_t {
+  VERIFY_VPCCBITSTREAM(i < num_ref_entries());
+  return m_deltaAfocSt[i];
+}
+
 auto RefListStruct::printTo(ostream &stream, uint8_t rlsIdx) const -> ostream & {
-  return stream << "num_ref_entries( " << int(rlsIdx) << " )=" << int(num_ref_entries()) << '\n';
+  stream << "num_ref_entries( " << int(rlsIdx) << " )=" << int(num_ref_entries()) << '\n';
+  for (size_t i = 0; i < num_ref_entries(); ++i) {
+    stream << "DeltaAfocSt( " << int(rlsIdx) << ", " << i << " )=" << deltaAfocSt(i) << '\n';
+  }
+  return stream;
 }
 
-auto RefListStruct::decodeFrom(InputBitstream &bitstream) -> RefListStruct {
-  const auto num_ref_entries = bitstream.getUExpGolomb();
-  VERIFY_MIVBITSTREAM(num_ref_entries == 0);
-  const auto x = RefListStruct{};
-  static_assert(x.num_ref_entries() == 0);
-  return x;
+auto RefListStruct::operator==(const RefListStruct &other) const noexcept -> bool {
+  return m_deltaAfocSt == other.m_deltaAfocSt;
 }
 
-void RefListStruct::encodeTo(OutputBitstream &bitstream) const {
+auto RefListStruct::operator!=(const RefListStruct &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto RefListStruct::decodeFrom(InputBitstream &bitstream, const AtlasSequenceParameterSetRBSP &asps)
+    -> RefListStruct {
+  VERIFY_MIVBITSTREAM(!asps.asps_long_term_ref_atlas_frames_flag());
+  auto deltaAfocSt = vector<int16_t>(bitstream.getUExpGolomb(), 0);
+
+  for (auto &x : deltaAfocSt) {
+    const auto abs_delta_afoc_st = int(bitstream.getUExpGolomb());
+    VERIFY_VPCCBITSTREAM(0 <= abs_delta_afoc_st && abs_delta_afoc_st <= INT16_MAX);
+
+    if (abs_delta_afoc_st != 0) {
+      const auto strpf_entry_sign_flag = bitstream.getFlag();
+      x = strpf_entry_sign_flag ? abs_delta_afoc_st : -abs_delta_afoc_st;
+    }
+  }
+
+  return RefListStruct{deltaAfocSt};
+}
+
+void RefListStruct::encodeTo(OutputBitstream &bitstream,
+                             const AtlasSequenceParameterSetRBSP &asps) const {
+  VERIFY_MIVBITSTREAM(!asps.asps_long_term_ref_atlas_frames_flag());
   bitstream.putUExpGolomb(num_ref_entries());
-  VERIFY_MIVBITSTREAM(num_ref_entries() == 0);
+
+  for (auto x : m_deltaAfocSt) {
+    bitstream.putUExpGolomb(abs(x));
+    if (x != 0) {
+      bitstream.putFlag(x > 0);
+    }
+  }
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps() const noexcept
-    -> std::uint8_t {
+    -> uint8_t {
   return uint8_t(m_ref_list_structs.size());
 }
 
-auto AtlasSequenceParameterSetRBSP::ref_list_struct(std::uint8_t rlsIdx) const
-    -> const RefListStruct & {
+auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) const -> const RefListStruct & {
   VERIFY_VPCCBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
   return m_ref_list_structs[rlsIdx];
 }
 
-auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const std::size_t value)
+auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const size_t value)
     -> AtlasSequenceParameterSetRBSP & {
   m_ref_list_structs.resize(value);
   return *this;
 }
 
-auto AtlasSequenceParameterSetRBSP::ref_list_struct(std::uint8_t rlsIdx, RefListStruct value)
+auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx, RefListStruct value)
     -> AtlasSequenceParameterSetRBSP & {
   VERIFY_VPCCBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
   m_ref_list_structs[rlsIdx] = value;
   return *this;
 }
 
-auto AtlasSequenceParameterSetRBSP::ref_list_struct(std::uint8_t rlsIdx) -> RefListStruct & {
+auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) -> RefListStruct & {
   VERIFY_VPCCBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
   return m_ref_list_structs[rlsIdx];
 }
@@ -176,13 +214,11 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   VERIFY_VPCCBITSTREAM(x.asps_atlas_sequence_parameter_set_id() <= 15);
 
   x.asps_frame_width(bitstream.getUint16());
-  // TODO(BK): Restore check after TMC2 update:
-  // VERIFY_VPCCBITSTREAM(0 < x.asps_frame_width());
+  VERIFY_VPCCBITSTREAM(0 < x.asps_frame_width());
   // TODO(BK): Check somewhere else that asps_frame_width == vps_frame_width
 
   x.asps_frame_height(bitstream.getUint16());
-  // TODO(BK): Restore check after TMC2 update:
-  // VERIFY_VPCCBITSTREAM(0 < x.asps_frame_height());
+  VERIFY_VPCCBITSTREAM(0 < x.asps_frame_height());
   // TODO(BK): Check somewhere else that asps_frame_height == vps_frame_height
 
   x.asps_log2_patch_packing_block_size(uint8_t(bitstream.readBits(3)));
@@ -200,7 +236,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   VERIFY_VPCCBITSTREAM(x.asps_num_ref_atlas_frame_lists_in_asps() <= 64);
 
   for (int rlsIdx = 0; rlsIdx < x.asps_num_ref_atlas_frame_lists_in_asps(); ++rlsIdx) {
-    x.ref_list_struct(rlsIdx, RefListStruct::decodeFrom(bitstream));
+    x.ref_list_struct(rlsIdx, RefListStruct::decodeFrom(bitstream, x));
   }
 
   x.asps_use_eight_orientations_flag(bitstream.getFlag());
@@ -263,7 +299,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   bitstream.putUExpGolomb(asps_num_ref_atlas_frame_lists_in_asps());
 
   for (int rlsIdx = 0; rlsIdx < asps_num_ref_atlas_frame_lists_in_asps(); ++rlsIdx) {
-    ref_list_struct(rlsIdx).encodeTo(bitstream);
+    ref_list_struct(rlsIdx).encodeTo(bitstream, *this);
   }
 
   bitstream.putFlag(asps_use_eight_orientations_flag());

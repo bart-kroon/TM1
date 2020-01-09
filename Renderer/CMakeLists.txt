@@ -9,16 +9,19 @@ add_library(RendererLib
     "src/GroupBasedRenderer.cpp"
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
+	"src/ViewingSpaceController.cpp"
 	"src/reprojectPoints.cpp"
 	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
 	"include/TMIV/Renderer/ISynthesizer.h"
+	"include/TMIV/Renderer/IViewingSpaceController.h"
     "include/TMIV/Renderer/Renderer.h"
     "include/TMIV/Renderer/MultipassRenderer.h"
     "include/TMIV/Renderer/GroupBasedRenderer.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"
+	"include/TMIV/Renderer/ViewingSpaceController.h"
 	"include/TMIV/Renderer/reprojectPoints.h"
 	"include/TMIV/Renderer/Engine.h"
 	"include/TMIV/Renderer/Engine_ERP.hpp"
@@ -37,6 +40,7 @@ target_link_libraries(RendererLib
 		TMIV::CommonLib
 		TMIV::MetadataLib
 		TMIV::ImageLib
+		TMIV::ViewingSpaceLib
 	PRIVATE
 		Threads::Threads
 )

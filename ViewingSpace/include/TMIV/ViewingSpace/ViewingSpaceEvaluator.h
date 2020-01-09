@@ -31,34 +31,26 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#ifndef _TMIV_VIEWINGSPACE_VIEWINGSPACEEVALUATOR_H_
+#define _TMIV_VIEWINGSPACE_VIEWINGSPACEEVALUATOR_H_
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+#include <TMIV/Metadata/ViewingSpace.h>
 
-namespace TMIV::Renderer {
-Renderer::Renderer(const Json &rootNode, const Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)},
-      m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
-          "ViewingSpaceController", rootNode, componentNode)} {
-}
+namespace TMIV::ViewingSpace {
 
-auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                           const IvSequenceParams &ivSequenceParams,
-                           const IvAccessUnitParams &ivAccessUnitParams,
-                           const ViewParams &target) const -> Texture444Depth16Frame {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  
-  // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
-    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
-  
-  return viewport;
-}
-} // namespace TMIV::Renderer
+//! \brief Viewing parameters for a viewing space query; angle values in degrees.
+struct ViewingParams {
+  Common::Vec3f viewPosition;
+  float yaw;
+  float pitch;
+};
+
+class ViewingSpaceEvaluator {
+  ViewingSpaceEvaluator() = delete;
+public:
+  static auto computeInclusion(const Metadata::ViewingSpace &viewingSpace, const ViewingParams &viewingParams) -> float;
+};
+
+} // namespace TMIV::ViewingSpace
+
+#endif

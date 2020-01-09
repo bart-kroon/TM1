@@ -40,6 +40,41 @@ template <typename R, typename T, typename X> auto elementwiseProduct(const T &A
   }
   return result;
 }
+template <typename T, typename X> auto elementwiseMin(const T &A, X B) -> T {
+  auto result = T(A);
+  for (auto &y : result) {
+    y = std::min(y, B);
+  }
+  return result;
+}
+template <typename T, typename X> auto elementwiseMax(const T &A, X B) -> T {
+  auto result = T(A);
+  for (auto &y : result) {
+    y = std::max(y, B);
+  }
+  return result;
+}
+template <typename T> auto elementwiseMin(const T &A, const T &B) -> T {
+  auto result = T(A);
+  for (size_t i = 0; i < result.size(); ++i) {
+    result[i] = std::min(result[i], B[i]);
+  }
+  return result;
+}
+template <typename T> auto elementwiseMax(const T &A, const T &B) -> T {
+  auto result = T(A);
+  for (size_t i = 0; i < result.size(); ++i) {
+    result[i] = std::max(result[i], B[i]);
+  }
+  return result;
+}
+template <typename T> auto elementwiseAbs(const T &A) -> T {
+  auto result = T(A);
+  for (auto &y : result) {
+    y = std::abs(y);
+  }
+  return result;
+}
 } // namespace detail
 
 template <typename T, typename X, typename>
@@ -88,6 +123,63 @@ template <typename T, size_t M, size_t N, typename X, typename>
 auto operator*(X B, const stack::Matrix<T, M, N> &A) -> stack::Matrix<decltype(A(0, 0) * B), M, N> {
   using R = stack::Matrix<decltype(A(0, 0) * B), M, N>;
   return detail::elementwiseProduct<R>(A, B);
+}
+
+template <typename T> auto min(const heap::Vector<T> &A, T B) -> heap::Vector<T> {
+  return detail::elementwiseMin(A, B);
+}
+
+template <typename T> auto min(T B, const heap::Vector<T> &A) -> heap::Vector<T> {
+  return detail::elementwiseMin(A, B);
+}
+
+template <typename T, size_t M> auto min(const stack::Vector<T, M> &A, T B) -> stack::Vector<T, M> {
+  return detail::elementwiseMin(A, B);
+}
+template <typename T, size_t M> auto min(T B, const stack::Vector<T, M> &A) -> stack::Vector<T, M> {
+  return detail::elementwiseMin(A, B);
+}
+
+template <typename T> auto max(const heap::Vector<T> &A, T B) -> heap::Vector<T> {
+  return detail::elementwiseMax(A, B);
+}
+
+template <typename T> auto max(T B, const heap::Vector<T> &A) -> heap::Vector<T> {
+  return detail::elementwiseMax(A, B);
+}
+
+template <typename T, size_t M> auto max(const stack::Vector<T, M> &A, T B) -> stack::Vector<T, M> {
+  return detail::elementwiseMax(A, B);
+}
+
+template <typename T, size_t M> auto max(T B, const stack::Vector<T, M> &A) -> stack::Vector<T, M> {
+  return detail::elementwiseMax(A, B);
+}
+
+template <typename T>
+auto min(const heap::Vector<T> &A, const heap::Vector<T> &B) -> heap::Vector<T> {
+  return detail::elementwiseMin(A, B);
+}
+
+template <typename T, size_t M>
+auto min(const stack::Vector<T, M> &A, const stack::Vector<T, M> &B) -> stack::Vector<T, M> {
+  return detail::elementwiseMin(A, B);
+}
+
+template <typename T>
+auto max(const heap::Vector<T> &A, const heap::Vector<T> &B) -> heap::Vector<T> {
+  return detail::elementwiseMax(A, B);
+}
+template <typename T, size_t M>
+auto max(const stack::Vector<T, M>& A, const stack::Vector<T, M>& B) -> stack::Vector<T, M> {
+  return detail::elementwiseMax(A, B);
+}
+
+template <typename T> auto abs(const heap::Vector<T>& A) -> heap::Vector<T> {
+  return detail::elementwiseAbs(A);
+}
+template <typename T, size_t M> auto abs(const stack::Vector<T, M> &A) -> stack::Vector<T, M> {
+  return detail::elementwiseAbs(A);
 }
 
 namespace detail {

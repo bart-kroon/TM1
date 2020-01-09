@@ -5,6 +5,7 @@ add_library(CommonLib
 	"src/Json.cpp"
 	"src/Half.cpp"
 	"src/Frame.cpp"
+	"src/Transformation.cpp"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Common.hpp"
 	"include/TMIV/Common/Application.h"
@@ -18,6 +19,7 @@ add_library(CommonLib
 	"include/TMIV/Common/Half.hpp"
 	"include/TMIV/Common/LinAlg.h"
 	"include/TMIV/Common/LinAlg.hpp"
+	"include/TMIV/Common/Transformation.h"
 	"include/TMIV/Common/Vector.h"
 	"include/TMIV/Common/Matrix.h"
 	"include/TMIV/Common/Array.h")

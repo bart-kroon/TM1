@@ -117,13 +117,14 @@ TEST_CASE("Viewing space evaluation") {
       PrimitiveShape::ViewingDirectionConstraint{30.F, 90.F, 90.F, -30.F, 60.F}};
   SECTION("Guard band") {
     const ViewingSpace vs1 = {{{ElementaryShapeOperation::add, ElementaryShape{{cuboid}}}}};
-    const float inside = ViewingSpaceEvaluator::computeInclusion(vs1, {{0.F, 0.F, 0.F}, 0.F, 0.F});
-    const float guardband1 =
-        ViewingSpaceEvaluator::computeInclusion(vs1, {{1.F, 0.F, 0.F}, 0.F, 0.F});
-    const float guardband2 =
-        ViewingSpaceEvaluator::computeInclusion(vs1, {{1.F, 0.F, 0.F}, 180.F, 90.F});
-    const float outside =
-        ViewingSpaceEvaluator::computeInclusion(vs1, {{2.F, 0.F, 0.F}, -90.F, -30.F});
+    const auto vpi = ViewingParams{{0.F, 0.F, 0.F}, 0.F, 0.F};
+    const float inside = ViewingSpaceEvaluator::computeInclusion(vs1, vpi);
+    const auto vp1 = ViewingParams{{1.F, 0.F, 0.F}, 0.F, 0.F};
+    const float guardband1 = ViewingSpaceEvaluator::computeInclusion(vs1, vp1);
+    const auto vp2 = ViewingParams{{1.F, 0.F, 0.F}, 180.F, 90.F};
+    const float guardband2 = ViewingSpaceEvaluator::computeInclusion(vs1, vp2);
+    const auto vpo = ViewingParams{{2.F, 0.F, 0.F}, -90.F, -30.F};
+    const float outside = ViewingSpaceEvaluator::computeInclusion(vs1, vpo);
     REQUIRE(inside == 1.F);
     REQUIRE(guardband1 > 0.F);
     REQUIRE(guardband1 < 1.F);

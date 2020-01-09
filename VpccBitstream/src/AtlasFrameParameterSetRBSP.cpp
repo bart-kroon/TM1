@@ -48,7 +48,38 @@ auto operator<<(ostream &stream, const AtlasFrameTileInformation & /* unused */)
 
 auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFrameTileInformation {
   const auto afti_single_tile_in_atlas_frame_flag = bitstream.getFlag();
-  VERIFY_MIVBITSTREAM(afti_single_tile_in_atlas_frame_flag);
+  // NOTE(BK): The proposal is to restrict to afti_single_tile_in_atlas_frame_flag == 1, but for
+  // sake of being able to parse the provided V-PCC bitstream, this implementation accepts more
+  // as long as there is only a single tile and tile group.
+
+  if (afti_single_tile_in_atlas_frame_flag) {
+    return {};
+  }
+
+  const auto afti_uniform_tile_spacing_flag = bitstream.getFlag();
+  VERIFY_MIVBITSTREAM(!afti_uniform_tile_spacing_flag);
+
+  const auto afti_num_tile_columns = bitstream.getUExpGolomb() + 1;
+  VERIFY_MIVBITSTREAM(afti_num_tile_columns == 1);
+
+  const auto afti_num_tile_rows = bitstream.getUExpGolomb() + 1;
+  VERIFY_MIVBITSTREAM(afti_num_tile_rows == 1);
+
+  const auto numTilesInAtlasFrame = afti_num_tile_columns * afti_num_tile_rows;
+
+  const auto afti_single_tile_per_tile_group_flag = bitstream.getFlag();
+
+  if (!afti_single_tile_per_tile_group_flag) {
+    const auto afti_num_tile_groups_in_atlas_frame = bitstream.getUExpGolomb() + 1;
+    VERIFY_MIVBITSTREAM(afti_num_tile_groups_in_atlas_frame == 1);
+
+	// TODO(BK): Remove this hack
+	bitstream.getFlag();
+  }
+
+  const auto afti_signalled_tile_group_id_flag = bitstream.getFlag();
+  VERIFY_MIVBITSTREAM(!afti_signalled_tile_group_id_flag);
+
   return {};
 }
 

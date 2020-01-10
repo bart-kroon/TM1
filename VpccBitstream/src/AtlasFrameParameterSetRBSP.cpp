@@ -72,9 +72,6 @@ auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFr
   if (!afti_single_tile_per_tile_group_flag) {
     const auto afti_num_tile_groups_in_atlas_frame = bitstream.getUExpGolomb() + 1;
     VERIFY_MIVBITSTREAM(afti_num_tile_groups_in_atlas_frame == 1);
-
-	// TODO(BK): Remove this hack
-	bitstream.getFlag();
   }
 
   const auto afti_signalled_tile_group_id_flag = bitstream.getFlag();

@@ -87,9 +87,12 @@ auto readFrame(const string &path, int frameIndex, Vec2i resolution) -> Frame<FO
   return result;
 }
 
-void padZeros(ostream &stream, int bytes) {
-  while (bytes-- > 0) {
-    stream.put(0);
+template <typename FORMAT> void padChroma(ostream &stream, Vec2i size) {
+  constexpr auto neutralChroma = detail::PixelFormatHelper<FORMAT>::neutralChroma();
+  const auto line = std::vector(size.x(), neutralChroma);
+  auto buffer = std::vector<char>(line.size() * sizeof(neutralChroma));
+  for (int i = 0; i < size.y(); ++i) {
+    memcpy(buffer.data(), line.data(), buffer.size());
   }
 }
 
@@ -101,7 +104,7 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
   }
 
   frame.dump(stream);
-  padZeros(stream, frame.getDiskSize() - frame.getMemorySize());
+  padChroma<FORMAT>(stream, frame.getSize());
 
   if (!stream.good()) {
     throw runtime_error("Failed to write to file: " + path);
@@ -206,8 +209,8 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     throw runtime_error("Require maxEntities >= 1");
   }
 
-  IvSequenceParams params = {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups),
-          unsigned(maxEntities)};
+  IvSequenceParams params = {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
+                             unsigned(numGroups), unsigned(maxEntities)};
 
   if (auto subnode = config.optional("ViewingSpace"); subnode) {
     params.viewingSpace = ViewingSpace::loadFromJson(subnode);

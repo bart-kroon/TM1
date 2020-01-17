@@ -47,6 +47,7 @@ template <> struct PixelFormatHelper<YUV400P8> {
   static int getDiskSize(int W, int H) { return (W * H) * 3 / 2; }
   static int getPlaneWidth(int /*unused*/, int W) { return W; }
   static int getPlaneHeight(int /*unused*/, int H) { return H; }
+  static constexpr auto neutralChroma() -> std::uint8_t { return 0x80; }
 };
 
 template <> struct PixelFormatHelper<YUV400P10> {
@@ -57,6 +58,7 @@ template <> struct PixelFormatHelper<YUV400P10> {
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int /*unused*/, int W) { return W; }
   static int getPlaneHeight(int /*unused*/, int H) { return H; }
+  static constexpr auto neutralChroma() -> std::uint16_t { return 0x200; }
 };
 
 template <> struct PixelFormatHelper<YUV400P16> {
@@ -67,6 +69,7 @@ template <> struct PixelFormatHelper<YUV400P16> {
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int /*unused*/, int W) { return W; }
   static int getPlaneHeight(int /*unused*/, int H) { return H; }
+  static constexpr auto neutralChroma() -> std::uint16_t { return 0x8000; }
 };
 
 template <> struct PixelFormatHelper<YUV420P8> {
@@ -77,6 +80,7 @@ template <> struct PixelFormatHelper<YUV420P8> {
   static int getDiskSize(int W, int H) { return 3 * (W * H) / 2; }
   static int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
   static int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
+  static constexpr auto neutralChroma() -> std::uint8_t { return 0x80; }
 };
 
 template <> struct PixelFormatHelper<YUV420P10> {
@@ -87,6 +91,7 @@ template <> struct PixelFormatHelper<YUV420P10> {
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
   static int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
+  static constexpr auto neutralChroma() -> std::uint16_t { return 0x200; }
 };
 
 template <> struct PixelFormatHelper<YUV420P16> {
@@ -97,6 +102,7 @@ template <> struct PixelFormatHelper<YUV420P16> {
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
   static int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
+  static constexpr auto neutralChroma() -> std::uint16_t { return 0x8000; }
 };
 
 template <> struct PixelFormatHelper<YUV444P8> {
@@ -107,6 +113,7 @@ template <> struct PixelFormatHelper<YUV444P8> {
   static int getDiskSize(int W, int H) { return 3 * (W * H); }
   static int getPlaneWidth(int /*id*/, int W) { return W; }
   static int getPlaneHeight(int /*id*/, int H) { return H; }
+  static constexpr auto neutralChroma() -> std::uint8_t { return 0x80; }
 };
 
 template <> struct PixelFormatHelper<YUV444P10> {
@@ -117,6 +124,7 @@ template <> struct PixelFormatHelper<YUV444P10> {
   static int getDiskSize(int W, int H) { return 6 * (W * H); }
   static int getPlaneWidth(int /*id*/, int W) { return W; }
   static int getPlaneHeight(int /*id*/, int H) { return H; }
+  static constexpr auto neutralChroma() -> std::uint16_t { return 0x200; }
 };
 
 template <> struct PixelFormatHelper<YUV444P16> {
@@ -127,6 +135,7 @@ template <> struct PixelFormatHelper<YUV444P16> {
   static int getDiskSize(int W, int H) { return 6 * (W * H); }
   static int getPlaneWidth(int /*id*/, int W) { return W; }
   static int getPlaneHeight(int /*id*/, int H) { return H; }
+  static constexpr auto neutralChroma() -> std::uint16_t { return 0x8000; }
 };
 } // namespace detail
 
@@ -137,6 +146,10 @@ template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
   for (int planeId = 0; planeId < nb_plane; planeId++) {
     m_planes[planeId].resize(detail::PixelFormatHelper<FORMAT>::getPlaneHeight(planeId, h),
                              detail::PixelFormatHelper<FORMAT>::getPlaneWidth(planeId, w));
+    if (0 < planeId) {
+      std::fill(std::begin(m_planes[planeId]), std::end(m_planes[planeId]),
+                detail::PixelFormatHelper<FORMAT>::neutralChroma());
+    }
   }
 }
 

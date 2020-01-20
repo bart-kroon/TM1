@@ -133,8 +133,6 @@ template <typename FORMAT>
 auto loadEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
                      const char *directory, const char *entityPathFmt,
                      const vector<string> &viewNames = {}) -> MEFrame<FORMAT> {
-  //cout << "Loading " << what << " entity frame " << frameIndex << endl;
-
   MEFrame<FORMAT> result;
   result.reserve(sizes.size());
 
@@ -224,8 +222,8 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     throw runtime_error("Require maxEntities >= 1");
   }
 
-  IvSequenceParams params = {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag, unsigned(numGroups),
-          unsigned(maxEntities)};
+  IvSequenceParams params = {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
+                             unsigned(numGroups), unsigned(maxEntities)};
 
   if (auto subnode = config.optional("ViewingSpace"); subnode) {
     params.viewingSpace = ViewingSpace::loadFromJson(subnode);
@@ -266,27 +264,19 @@ auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
 }
 
 template <typename FORMAT>
-auto loadSourceEntityFrame_impl(int bits, const Json &config, const SizeVector &sizes, int frameIndex)
-    -> ME16Frame {
-  auto frame = loadEntityFrame<FORMAT>(config, sizes,
-                                    frameIndex + config.require("startFrame").asInt(), "source",
-                                    "SourceDirectory", "SourceEntityPathFmt",
-                                    config.require("SourceCameraNames").asStringVector());
+auto loadSourceEntityFrame_impl(int bits, const Json &config, const SizeVector &sizes,
+                                int frameIndex) -> ME16Frame {
+  auto frame = loadEntityFrame<FORMAT>(
+      config, sizes, frameIndex + config.require("startFrame").asInt(), "source", "SourceDirectory",
+      "SourceEntityPathFmt", config.require("SourceCameraNames").asStringVector());
   auto frame16 = ME16Frame{};
   frame16.reserve(frame.size());
-  transform(begin(frame), end(frame), back_inserter(frame16),
-            [bits](EntityFrame<FORMAT> &view) {
-              auto view16 = Entity16Frame{view.getWidth(), view.getHeight()};
-              transform(begin(view.getPlane(0)), end(view.getPlane(0)),
-                        begin(view16.getPlane(0)), [bits](unsigned x) {
-                          const auto x_max = maxLevel(bits);
-                          assert(0 <= x && x <= x_max);
-                          const auto y = x; // (0xFFFF * x + x_max / 2) / x_max;
-                          assert(0 <= y && y <= UINT16_MAX);
-                          return uint16_t(y);
-                        });
-              return view16;
-            });
+  transform(begin(frame), end(frame), back_inserter(frame16), [](EntityFrame<FORMAT> &view) {
+    auto view16 = Entity16Frame{view.getWidth(), view.getHeight()};
+    transform(begin(view.getPlane(0)), end(view.getPlane(0)), begin(view16.getPlane(0)),
+              [](unsigned x) { return uint16_t(x); });
+    return view16;
+  });
   return frame16;
 }
 } // namespace
@@ -302,7 +292,8 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
   throw runtime_error("Invalid SourceDepthBitDepth");
 }
 
-auto loadSourceEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex) -> ME16Frame {
+auto loadSourceEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex)
+    -> ME16Frame {
   const auto bits = config.require("SourceEntityBitDepth").asInt();
   if (0 < bits && bits <= 8) {
     return loadSourceEntityFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);

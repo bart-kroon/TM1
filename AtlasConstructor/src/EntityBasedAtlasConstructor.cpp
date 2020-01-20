@@ -383,7 +383,7 @@ auto EntityBasedAtlasConstructor::setView(TextureDepth16Frame view, Entity16Fram
 
   ME16Frame entityMasks;
   entityMasks.push_back(entityMask);
-  ME16Frame_420 &entityMasksYUV = yuvSampler(entityMasks);
+  auto entityMasksYUV = yuvSampler(entityMasks);
   for (int pIndex = 0; pIndex < 3; pIndex++) {
     vector<int> Indices(view.first.getPlane(pIndex).size());
     std::iota(Indices.begin(), Indices.end(), 0);

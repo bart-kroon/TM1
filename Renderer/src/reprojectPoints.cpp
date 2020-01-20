@@ -34,8 +34,8 @@
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <TMIV/Common/Thread.h>
-#include <TMIV/Renderer/Engine.h>
 #include <TMIV/Common/Transformation.h>
+#include <TMIV/Renderer/Engine.h>
 
 using namespace std;
 using namespace TMIV::Common;

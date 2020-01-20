@@ -44,8 +44,7 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
                                                                 componentNode)},
       m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)},
       m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
-          "ViewingSpaceController", rootNode, componentNode)} {
-}
+          "ViewingSpaceController", rootNode, componentNode)} {}
 
 auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                            const IvSequenceParams &ivSequenceParams,
@@ -59,9 +58,10 @@ auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
   }
   
   // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
+  if (ivSequenceParams.viewingSpace) {
     m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
-  
+  }
+
   return viewport;
 }
 } // namespace TMIV::Renderer

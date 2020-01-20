@@ -31,37 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#ifndef _TMIV_RENDERER_IVIEWINGSPACECONTROLLER_H_
+#define _TMIV_RENDERER_IVIEWINGSPACECONTROLLER_H_
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
 namespace TMIV::Renderer {
-Renderer::Renderer(const Json &rootNode, const Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)},
-      m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
-          "ViewingSpaceController", rootNode, componentNode)} {
-}
+class IViewingSpaceController {
+public:
+  IViewingSpaceController() = default;
+  IViewingSpaceController(const IViewingSpaceController &) = delete;
+  IViewingSpaceController(IViewingSpaceController &&) = default;
+  IViewingSpaceController &operator=(const IViewingSpaceController &) = delete;
+  IViewingSpaceController &operator=(IViewingSpaceController &&) = default;
+  virtual ~IViewingSpaceController() = default;
 
-auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                           const IvSequenceParams &ivSequenceParams,
-                           const IvAccessUnitParams &ivAccessUnitParams,
-                           const ViewParams &target) const -> Texture444Depth16Frame {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
+  // Viewing space fading
+  virtual void inplaceFading(Common::Texture444Depth10Frame &viewport,
+                             const Metadata::ViewParams &metadata,
+                             const Metadata::IvSequenceParams &ivSequenceParams) const = 0;
+  virtual void inplaceFading(Common::Texture444Depth16Frame &viewport,
+                             const Metadata::ViewParams &metadata,
+                             const Metadata::IvSequenceParams &ivSequenceParams) const = 0;
 
-  if (ivSequenceParams.maxEntities == 1) {
-    m_inpainter->inplaceInpaint(viewport, target);
-  }
-  
-  // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
-    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
-  
-  return viewport;
-}
+};
 } // namespace TMIV::Renderer
+
+#endif

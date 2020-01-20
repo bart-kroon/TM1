@@ -50,6 +50,8 @@ GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &compone
   m_synthesizer =
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode);
+  m_viewingSpaceController = Factory<IViewingSpaceController>::getInstance().create(
+      "ViewingSpaceController", rootNode, componentNode);
 }
 
 auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
@@ -81,10 +83,15 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   }
 
   // Inpainting
-  if (ivSequenceParams.maxEntities > 1)
-    fillNeutral(viewport);
-  else
-    m_inpainter->inplaceInpaint(viewport, target);
+  if (ivSequenceParams.maxEntities == 1) {
+	m_inpainter->inplaceInpaint(viewport, target);
+  }
+
+  // fading to grey with respect to viewing space
+  if (ivSequenceParams.viewingSpace) {
+    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  }
+
   return viewport;
 }
 

@@ -37,6 +37,7 @@
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/IRenderer.h>
 #include <TMIV/Renderer/ISynthesizer.h>
+#include <TMIV/Renderer/IViewingSpaceController.h>
 
 namespace TMIV::Renderer {
 // Basic implementation of IRenderer
@@ -44,6 +45,7 @@ class Renderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
+  std::unique_ptr<IViewingSpaceController> m_viewingSpaceController;
 
 public:
   Renderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);

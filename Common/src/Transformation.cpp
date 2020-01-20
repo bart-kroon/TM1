@@ -31,37 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#include <TMIV/Common/Transformation.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+namespace TMIV::Common {
 
-namespace TMIV::Renderer {
-Renderer::Renderer(const Json &rootNode, const Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)},
-      m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
-          "ViewingSpaceController", rootNode, componentNode)} {
+auto rotationMatrixFromRotationAroundX(float rx) -> Common::Mat3x3f {
+  using std::cos;
+  using std::sin;
+  return Common::Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
 }
 
-auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                           const IvSequenceParams &ivSequenceParams,
-                           const IvAccessUnitParams &ivAccessUnitParams,
-                           const ViewParams &target) const -> Texture444Depth16Frame {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
-
-  if (ivSequenceParams.maxEntities == 1) {
-    m_inpainter->inplaceInpaint(viewport, target);
-  }
-  
-  // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
-    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
-  
-  return viewport;
+auto rotationMatrixFromRotationAroundY(float ry) -> Common::Mat3x3f {
+  using std::cos;
+  using std::sin;
+  return Common::Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
 }
-} // namespace TMIV::Renderer
+
+auto rotationMatrixFromRotationAroundZ(float rz) -> Common::Mat3x3f {
+  using std::cos;
+  using std::sin;
+  return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
+}
+
+auto EulerAnglesToRotationMatrix(Common::EulerAngles rotation) -> Common::Mat3x3f {
+  return rotationMatrixFromRotationAroundZ(Common::radperdeg * rotation.value[0]) *
+         rotationMatrixFromRotationAroundY(Common::radperdeg * rotation.value[1]) *
+         rotationMatrixFromRotationAroundX(Common::radperdeg * rotation.value[2]);
+}
+
+} // namespace TMIV::Common

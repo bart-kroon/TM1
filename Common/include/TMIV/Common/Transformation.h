@@ -31,37 +31,26 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Renderer.h>
+#ifndef _TMIV_COMMON_TRANSFORMATION_H_
+#define _TMIV_COMMON_TRANSFORMATION_H_
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+#include "Common.h"
+#include "LinAlg.h"
 
-namespace TMIV::Renderer {
-Renderer::Renderer(const Json &rootNode, const Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)},
-      m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
-          "ViewingSpaceController", rootNode, componentNode)} {
-}
+namespace TMIV::Common {
 
-auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                           const IvSequenceParams &ivSequenceParams,
-                           const IvAccessUnitParams &ivAccessUnitParams,
-                           const ViewParams &target) const -> Texture444Depth16Frame {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
+struct EulerAngles {
+  Common::Vec3f value{};
+  EulerAngles() = default;
+  explicit EulerAngles(const Common::Vec3f &eulerAngles) : value(eulerAngles) {}
+};
 
-  if (ivSequenceParams.maxEntities == 1) {
-    m_inpainter->inplaceInpaint(viewport, target);
-  }
-  
-  // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
-    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
-  
-  return viewport;
-}
-} // namespace TMIV::Renderer
+auto rotationMatrixFromRotationAroundX(float rx) -> Common::Mat3x3f;
+auto rotationMatrixFromRotationAroundY(float ry) -> Common::Mat3x3f;
+auto rotationMatrixFromRotationAroundZ(float rz) -> Common::Mat3x3f;
+
+auto EulerAnglesToRotationMatrix(Common::EulerAngles rotation) -> Common::Mat3x3f;
+
+} // namespace TMIV::Common
+
+#endif

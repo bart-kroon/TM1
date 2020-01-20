@@ -73,8 +73,6 @@ template <typename YUVD> void inplaceFading_impl(YUVD &yuvd, const ViewParams &m
 
   const int width_Y = int(Y.width());
   const int height_Y = int(Y.height());
-  const int width_UV = int(U.width());
-  const int height_UV = int(U.height());
 
   float weight = index; // for test:just a recopy of the index ==> mapping might be changed
   float R = 0.F;

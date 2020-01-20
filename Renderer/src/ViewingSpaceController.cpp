@@ -46,7 +46,7 @@ namespace TMIV::Renderer {
 
 namespace {
 
-float computeIndex(const ViewParams &metadata, const IvSequenceParams &ivSequenceParams) {
+auto computeIndex(const ViewParams &metadata, const IvSequenceParams &ivSequenceParams) -> float {
   float index = 1.F;
 
   if (ivSequenceParams.viewingSpace) {
@@ -65,7 +65,7 @@ float computeIndex(const ViewParams &metadata, const IvSequenceParams &ivSequenc
   return index;
 }
 
-template <typename YUVD> void inplaceFading_impl(YUVD &yuvd, const ViewParams &meta, float index) {
+template <typename YUVD> void inplaceFading_impl(YUVD &yuvd, const ViewParams &/* unused */, float index) {
   // TO DO
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
@@ -73,8 +73,6 @@ template <typename YUVD> void inplaceFading_impl(YUVD &yuvd, const ViewParams &m
 
   const int width_Y = int(Y.width());
   const int height_Y = int(Y.height());
-  const int width_UV = int(U.width());
-  const int height_UV = int(U.height());
 
   float weight = index; // for test:just a recopy of the index ==> mapping might be changed
   float R = 0.F;

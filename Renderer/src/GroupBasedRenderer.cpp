@@ -84,8 +84,9 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   m_inpainter->inplaceInpaint(viewport, target);
 
   // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
+  if (ivSequenceParams.viewingSpace) {
     m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  }
 
   return viewport;
 }

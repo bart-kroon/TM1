@@ -183,7 +183,7 @@ auto projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) -> Vec3f
 static auto computeBisectPlanes(const PrimitiveShapeVector &primitives) -> std::vector<Vec4f> {
   auto nvb = primitives.size();
   std::vector<Vec3f> center(nvb);
-  for (auto i = 0; i < nvb; i++) {
+  for (size_t i = 0; i < nvb; i++) {
     if (primitives[i].shapeType() == PrimitiveShapeType::spheroid) {
       center[i] = std::get<Spheroid>(primitives[i].primitive).center;
     } else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid) {
@@ -193,11 +193,11 @@ static auto computeBisectPlanes(const PrimitiveShapeVector &primitives) -> std::
 
   std::vector<Vec4f> bisect;
   Vec4f predecessor;
-  for (auto i = 0; i < nvb; i++) {
+  for (size_t i = 0; i < nvb; i++) {
     if (i == 0) {
       predecessor = {1, 0, 0, 0};
       bisect.push_back(MiscInterpolation::orthogonalPlane(center[0], center[1], predecessor));
-    } else if (i < nvb - 1) {
+    } else if (i + 1 < nvb) {
       predecessor = bisect[i - 1];
       bisect.push_back(
           MiscInterpolation::bisectingPlane(center[i - 1], center[i], center[i + 1], predecessor));
@@ -250,8 +250,6 @@ auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f cent
   std::cout << "  guard band = " << output.guardBandSize.value() << std::endl;
 #endif
   // viewing direction constraint
-  DirectionConstraint dira = a.viewingDirectionConstraint.value_or(DirectionConstraint());
-  DirectionConstraint dirb = b.viewingDirectionConstraint.value_or(DirectionConstraint());
   output.viewingDirectionConstraint =
       blend(a.viewingDirectionConstraint.value(), b.viewingDirectionConstraint.value(), w);
 #ifdef _VERBOSE

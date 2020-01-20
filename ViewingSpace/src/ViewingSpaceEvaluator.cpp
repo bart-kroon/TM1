@@ -263,8 +263,7 @@ auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f cent
   // directional guard band size
   float vgba = a.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
   float vgbb = b.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
-  output.viewingDirectionConstraint.value().guardBandDirectionSize =
-      (1.F - w) * vgba + w * vgbb;
+  output.viewingDirectionConstraint.value().guardBandDirectionSize = (1.F - w) * vgba + w * vgbb;
 #ifdef _VERBOSE
   std::cout << "  viewing direction guard band = "
             << output.viewingDirectionConstraint.value().guardBandDirectionSize.value()

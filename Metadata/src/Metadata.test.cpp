@@ -239,9 +239,7 @@ const auto viewingSpace = array{
                                                    }}}}}}},
     ViewingSpace{
         {{ElementaryShapeOperation::add,
-          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
-                                          1.F,
-                                          Vec3f{30.F, 45.F, 60.F},
+          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}}, 1.F, Vec3f{30.F, 45.F, 60.F},
                                           PrimitiveShape::ViewingDirectionConstraint{
                                               15.F, // guard_band_direction_size
                                               90.F, // yaw_center
@@ -314,7 +312,7 @@ auto codingTest(const Type &reference, int size, Args &... args) -> bool {
 
   return actual == reference;
 }
-template <typename Type> auto loadJson(const std::string& str) -> Type {
+template <typename Type> auto loadJson(const std::string &str) -> Type {
   istringstream stream(str);
   Json json(stream);
   return Type::loadFromJson(json);

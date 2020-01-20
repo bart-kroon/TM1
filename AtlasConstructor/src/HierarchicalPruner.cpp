@@ -199,8 +199,8 @@ private:
 
     const auto prec = cout.precision(2);
     const auto flags = cout.setf(ios::fixed, ios::floatfield);
-    cout << setw(2) << index << " (" << setw(3) << m_viewParamsVector[index].name << "): " << ivertices.size()
-         << " vertices ("
+    cout << setw(2) << index << " (" << setw(3) << m_viewParamsVector[index].name
+         << "): " << ivertices.size() << " vertices ("
          << 100. * double(ivertices.size()) / (view.first.getWidth() * view.first.getHeight())
          << "% of full view)\n";
     cout.precision(prec);

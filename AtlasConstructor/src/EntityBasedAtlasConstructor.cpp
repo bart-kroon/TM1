@@ -132,7 +132,7 @@ auto EntityBasedAtlasConstructor::yuvSampler(const ME16Frame &in) -> ME16Frame_4
 void EntityBasedAtlasConstructor::mergeViews(MVD16Frame &mergedViews,
                                              MVD16Frame transportEntityViews) {
   for (size_t vIndex = 0; vIndex < mergedViews.size(); vIndex++) {
-    for (size_t pIndex = 0; pIndex < 3; pIndex++) {
+    for (int pIndex = 0; pIndex < 3; pIndex++) {
       vector<int> Indices(transportEntityViews[vIndex].first.getPlane(pIndex).size());
       std::iota(Indices.begin(), Indices.end(), 0);
       std::for_each(Indices.begin(), Indices.end(), [&](auto i) {

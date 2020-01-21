@@ -411,15 +411,8 @@ class EncoderConfiguration(DecoderConfiguration):
 	def sourceEntityBitDepth(self):
 		return 8
 
-	def sourceEntityVideoFormat(self):
-		return {
-			8: 'yuv420p',
-			10: 'yuv420p10le',
-			16: 'yuv420p16le'
-		}[self.sourceEntityBitDepth()]
-		
 	def sourceEntityPathFmt(self):
-		return '%s_entity_{}x{}_{}.yuv'.format(self.viewWidth(), self.viewHeight(), self.sourceEntityVideoFormat())
+		return '%s_entity_{}x{}_yuv420p.yuv'.format(self.viewWidth(), self.viewHeight())
 
 	def omafV1CompatibleFlag(self):
 		# Just to do something slightly more interesting than False

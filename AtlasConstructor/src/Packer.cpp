@@ -57,19 +57,20 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
-void Packer::updateAggEntityMasks(ME16Frame entityMasks) {
+void Packer::updateAggregatedEntityMasks(ME16Frame entityMasks) {
   for (const auto &entityMask : entityMasks) {
-    m_aggEntityMasks.push_back(entityMask);
+    m_aggregatedEntityMasks.push_back(entityMask);
   }
 }
 
 auto Packer::setMask(int vIndex, int eIndex) -> Mask {
-  Mask mask(m_aggEntityMasks[vIndex].getWidth(), m_aggEntityMasks[vIndex].getHeight());
+  Mask mask(m_aggregatedEntityMasks[vIndex].getWidth(),
+            m_aggregatedEntityMasks[vIndex].getHeight());
   fill(mask.getPlane(0).begin(), mask.getPlane(0).end(), uint8_t(0));
   vector<int> Indices(mask.getPlane(0).size());
   std::iota(Indices.begin(), Indices.end(), 0);
   std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-    if (m_aggEntityMasks[vIndex].getPlane(0)[i] == eIndex) {
+    if (m_aggregatedEntityMasks[vIndex].getPlane(0)[i] == eIndex) {
       mask.getPlane(0)[i] = uint8_t(255);
     }
   });
@@ -108,7 +109,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         clusteringMap.push_back(move(clusteringOutput.second));
         if (!clusteringOutput.first.empty()) {
           cout << "entity " << eIndex << " from view " << viewId << " results in "
-               << clusteringOutput.first.size() << " patch \n";
+               << clusteringOutput.first.size() << " patches\n";
         }
       }
     } else {
@@ -153,6 +154,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   int clusteringMap_viewId;
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
+
     if (m_maxEntities > 1) {
       clusteringMap_viewId =
           (cluster.getEntityId() - m_EntityEncodeRange[0]) * static_cast<int>(masks.size()) +
@@ -160,6 +162,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     } else {
       clusteringMap_viewId = cluster.getViewId();
     }
+
     if (m_minPatchSize <= cluster.getMinSize()) {
       bool packed = false;
 

@@ -49,7 +49,7 @@ public:
 
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
                     const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector = 0;
-  virtual void updateAggEntityMasks(Common::ME16Frame entityMasks) = 0;
+  virtual void updateAggregatedEntityMasks(Common::ME16Frame entityMasks) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

@@ -341,7 +341,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   // Packing
   assert(m_ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams.atlasParamsList->atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
-  m_packer->updateAggEntityMasks(m_aggregatedEntityMask);
+  m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
       m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
 

@@ -231,7 +231,7 @@ class DecoderConfiguration:
 			'InpainterMethod': 'Inpainter',
 			'Inpainter': {},
 			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
-            'ViewingSpaceController': {}
+			'ViewingSpaceController': {}
 		}
 		if self.useMultipassRenderer():
 			config.update({

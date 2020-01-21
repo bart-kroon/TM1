@@ -113,8 +113,6 @@ private:
 
   static auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd,
                                  MergeMode mergeMode) -> uint16_t;
-
-  static void fillNeutral(Common::Texture444Depth16Frame &viewport);
 };
 } // namespace TMIV::Renderer
 

@@ -44,8 +44,6 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
-constexpr auto neutralChroma = uint16_t(512);
-
 GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &componentNode) {
   m_synthesizer =
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
@@ -274,17 +272,4 @@ auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> boo
   }
   return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
 }
-
-void GroupBasedRenderer::fillNeutral(Texture444Depth16Frame &viewport) {
-  vector<int> Indices(viewport.second.getPlane(0).size());
-  std::iota(Indices.begin(), Indices.end(), 0);
-  std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-    if (viewport.second.getPlane(0)[i] == 0) {
-      for (int pIndex = 0; pIndex < viewport.first.getNumberOfPlanes(); pIndex++) {
-        viewport.first.getPlane(pIndex)[i] = neutralChroma;
-      }
-    }
-  });
-}
-
 } // namespace TMIV::Renderer

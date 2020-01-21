@@ -229,7 +229,9 @@ class DecoderConfiguration:
 			'SynthesizerMethod': 'Synthesizer',
 			'Synthesizer': self.synthesizer(),
 			'InpainterMethod': 'Inpainter',
-			'Inpainter': {}
+			'Inpainter': {},
+			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
+            'ViewingSpaceController': {}
 		}
 		if self.useMultipassRenderer():
 			config.update({

@@ -50,10 +50,10 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   m_pip = componentNode.require("PiP").asInt() != 0;
   m_maxEntities = rootNode.require("maxEntities").asInt();
   if (m_maxEntities > 1) {
-    m_EntityEncRange = rootNode.require("GroupBasedEncoder")
-                           .require("EntityBasedAtlasConstructor")
-                           .require("EntityEncRange")
-                           .asIntVector<2>();
+    m_EntityEncodeRange = rootNode.require("GroupBasedEncoder")
+                              .require("EntityBasedAtlasConstructor")
+                              .require("EntityEncodeRange")
+                              .asIntVector<2>();
   }
 }
 
@@ -92,7 +92,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
-      for (int eIndex = m_EntityEncRange[0]; eIndex <= m_EntityEncRange[1]; eIndex++) {
+      for (int eIndex = m_EntityEncodeRange[0]; eIndex <= m_EntityEncodeRange[1]; eIndex++) {
         // Entity Clustering
         Mask mask = setMask(viewId, eIndex);
 
@@ -155,7 +155,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     const Cluster &cluster = clusterToPack.top();
     if (m_maxEntities > 1) {
       clusteringMap_viewId =
-          (cluster.getEntityId() - m_EntityEncRange[0]) * static_cast<int>(masks.size()) +
+          (cluster.getEntityId() - m_EntityEncodeRange[0]) * static_cast<int>(masks.size()) +
           cluster.getViewId();
     } else {
       clusteringMap_viewId = cluster.getViewId();

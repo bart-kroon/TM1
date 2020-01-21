@@ -219,6 +219,18 @@ class DecoderConfiguration:
 	def useMultipassRenderer(self):
 		return self.anchorId == 'V17' or self.anchorId == 'R97'
 
+	def maxEntities(self):
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return 25
+		return 1
+		
+	def atlasDeconstructor(self):
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return {
+				"EntityDecodeRange": [0, self.maxEntities() - 1]
+			}
+		return {}
+
 	def rendererMethod(self):
 		if self.useMultipassRenderer():
 			return 'MultipassRenderer'
@@ -260,28 +272,14 @@ class DecoderConfiguration:
 			'OutputDirectory': self.outputDirectory(),
 			'OutputTexturePath': self.outputTexturePath(),
 			'OutputCameraName': self.outputCameraName(),
-			'DecoderMethod': 'Decoder'
+			'DecoderMethod': 'Decoder',
+			'Decoder': {
+				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
+				'AtlasDeconstructor': self.atlasDeconstructor(),
+				'RendererMethod': self.rendererMethod(),
+				self.rendererMethod(): self.renderer()
+			}
 		}
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			config.update({
-				'Decoder': {
-					'AtlasDeconstructorMethod': 'AtlasDeconstructor',
-					'AtlasDeconstructor': {
-						"EntityDecRange": [0, self.maxEntities()-1]
-					},
-					'RendererMethod': self.rendererMethod(),
-					self.rendererMethod(): self.renderer()
-				}
-			})
-		else:
-			config.update({
-				'Decoder': {
-					'AtlasDeconstructorMethod': 'AtlasDeconstructor',
-					'AtlasDeconstructor': {},
-					'RendererMethod': self.rendererMethod(),
-					self.rendererMethod(): self.renderer()
-				}
-			})
 		if self.outputCameraName()[0] == 'p':
 			config['OutputCameraName'] = 'viewport'
 			config['PoseTracePath'] = self.poseTracePath()
@@ -383,20 +381,6 @@ class AllDecoderConfigurations(DecoderConfiguration):
 			return poseTraces
 		return self.allSourceCameraNames() + poseTraces
 	
-	def maxEntities(self):
-		if self.anchorId == 'E97' or self.anchorId == 'E17' :
-			return {
-				'A': 1,
-				'B': 25,
-				'C': 1,
-				'D': 1,
-				'E': 1,
-				'J': 1,
-				'L': 1,
-				'N': 1
-			}[self.seqId]
-		return 1
-		
 class EncoderConfiguration(DecoderConfiguration):
 	def __init__(self, sourceDir, anchorId, seqId):
 		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
@@ -425,12 +409,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		return '%s_depth_{}x{}_{}.yuv'.format(self.viewWidth(), self.viewHeight(), self.sourceDepthVideoFormat())
 		
 	def sourceEntityBitDepth(self):
-		if self.maxEntities() <= 256 :
-			return 8
-		if self.maxEntities() > 256 & self.maxEntities() <= 1024 :
-			return 10
-		if self.maxEntities() > 1024 :
-			return 16
+		return 8
 
 	def sourceEntityVideoFormat(self):
 		return {
@@ -455,19 +434,18 @@ class EncoderConfiguration(DecoderConfiguration):
 		})
 		return config
 
-	def packer(self):
+	def pip(self):
+		# TODO(BK): Remove this after fixing the PiP bug
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return {
-				'Alignment': 8,
-				'MinPatchSize': 16,
-				'Overlap': 1,
-				'PiP': 0
-			}
+			return 0
+		return 1
+
+	def packer(self):
 		return {
 			'Alignment': 8,
 			'MinPatchSize': 16,
 			'Overlap': 1,
-			'PiP': 1
+			'PiP': self.pip()
 		}
 
 	def lumaSamplesPerView(self):
@@ -486,35 +464,11 @@ class EncoderConfiguration(DecoderConfiguration):
 				'N': 3
 			}[self.seqId] * self.lumaSamplesPerView()
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return {
-				'A': 1,
-				'B': 6,
-				'C': 2,
-				'D': 1,
-				'E': 2,
-				'J': 2,
-				'L': 1,
-				'N': 3
-			}[self.seqId] * self.lumaSamplesPerView()
+			return 6 * self.lumaSamplesPerView()
 		return 0
 
 	def atlasConstructor(self):
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return {
-				'EntityEncRange': [0, self.maxEntities()-1],
-				'PrunerMethod': 'HierarchicalPruner',
-				'HierarchicalPruner': self.pruner(),
-				'AggregatorMethod': 'Aggregator',
-				'Aggregator': {},
-				'PackerMethod': 'Packer',
-				'Packer': self.packer(),
-				'AtlasResolution': [
-					self.atlasWidth(),
-					self.atlasHeight()
-				],
-				'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
-			}
-		return {
+		config = {
 			'PrunerMethod': 'HierarchicalPruner',
 			'HierarchicalPruner': self.pruner(),
 			'AggregatorMethod': 'Aggregator',
@@ -527,6 +481,9 @@ class EncoderConfiguration(DecoderConfiguration):
 			],
 			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
 		}
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			config['EntityEncodeRange'] = [0, self.maxEntities() - 1]
+		return config
 
 	def depthOccupancy(self):
 		return {
@@ -534,16 +491,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		}
 
 	def encoder(self):
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return {
-				'ViewOptimizerMethod': self.viewOptimizerMethod(),
-				self.viewOptimizerMethod(): {},
-				'AtlasConstructorMethod': 'EntityBasedAtlasConstructor',
-				'EntityBasedAtlasConstructor': self.atlasConstructor(),
-				'DepthOccupancyMethod': 'DepthOccupancy',
-				'DepthOccupancy': self.depthOccupancy()
-			}
-		return {
+		config = {
 			'ViewOptimizerMethod': self.viewOptimizerMethod(),
 			self.viewOptimizerMethod(): {},
 			'AtlasConstructorMethod': 'AtlasConstructor',
@@ -551,6 +499,9 @@ class EncoderConfiguration(DecoderConfiguration):
 			'DepthOccupancyMethod': 'DepthOccupancy',
 			'DepthOccupancy': self.depthOccupancy()
 		}
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			config['AtlasConstructorMethod'] = 'EntityBasedAtlasConstructor'
+		return config
 
 	def depthLowQualityFlag(self):
 		return self.seqId == 'E'
@@ -559,20 +510,6 @@ class EncoderConfiguration(DecoderConfiguration):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':
 				return 3
-		return 1
-
-	def maxEntities(self):
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return {
-				'A': 1,
-				'B': 25,
-				'C': 1,
-				'D': 1,
-				'E': 1,
-				'J': 1,
-				'L': 1,
-				'N': 1
-			}[self.seqId]
 		return 1
 
 	def parameters(self):
@@ -614,6 +551,20 @@ class EncoderConfiguration(DecoderConfiguration):
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('Level: 5.2\n')
 
+def generate(anchorIds, seqIds, testPoints):
+	for anchorId in anchorIds:
+		for seqId in seqIds:
+			config = EncoderConfiguration(sourceDir, anchorId, seqId)
+			config.saveTmivJson()
+			if len(testPoints) > 1:
+				config.saveHmCfg()
+
+	for testPoint in testPoints:
+		for anchorId in anchorIds:
+			for seqId in seqIds:
+				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint)
+				config.saveTmivJson()
+
 if __name__ == '__main__':
 	if sys.version_info[0] < 3:
 		print ('Error: Python version < 3')
@@ -633,33 +584,9 @@ if __name__ == '__main__':
 	if len(sys.argv) == 2:
 		sourceDir = sys.argv[1]
 
-	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
-	
-	# R17 anchor
-	for seqId in seqIds:
-		config = EncoderConfiguration(sourceDir, 'R17', seqId)
-		config.saveTmivJson()
-		config = AllDecoderConfigurations(sourceDir, 'R17', seqId, 'R0')
-		config.saveTmivJson()
+	allSeqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
+	allTestPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']	
 
-	# R97 anchor
-	for seqId in seqIds:
-		config = EncoderConfiguration(sourceDir, 'R97', seqId)
-		config.saveTmivJson()
-		config = AllDecoderConfigurations(sourceDir, 'R97', seqId, 'R0')
-		config.saveTmivJson()
-
-	anchors = [ 'A97', 'A17', 'V17', 'E97', 'E17' ]
-	testPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']
-
-	for anchorId in anchors:
-		for seqId in seqIds:
-			config = EncoderConfiguration(sourceDir, anchorId, seqId)
-			config.saveTmivJson()
-			config.saveHmCfg()
-
-	for testPoint in testPoints:
-		for anchorId in anchors:
-			for seqId in seqIds:
-				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint)
-				config.saveTmivJson()
+	generate(['R17', 'R97'], allSeqIds, ['R0'])
+	generate(['A17', 'A97', 'V17'], allSeqIds, allTestPoints)
+	generate(['E17', 'E97'], ['B'], allTestPoints)

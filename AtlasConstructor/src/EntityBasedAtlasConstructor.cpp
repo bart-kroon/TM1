@@ -67,7 +67,7 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
   m_rootNode = rootNode;
 
   // Read the entity encoding range
-  m_EntityEncRange = componentNode.require("EntityEncRange").asIntVector<2>();
+  m_EntityEncodeRange = componentNode.require("EntityEncodeRange").asIntVector<2>();
 
   // The number of atlases is determined by the specified maximum number of luma
   // samples per frame (texture and depth combined)
@@ -293,7 +293,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   SizeVector m_viewSizes = m_ivSequenceParams.viewParamsList.viewSizes();
   ME16Frame entityMaps = loadSourceEntityFrame(m_rootNode, m_viewSizes, m_fIndex);
 
-  for (auto eIndex = m_EntityEncRange[0]; eIndex <= m_EntityEncRange[1]; eIndex++) {
+  for (auto eIndex = m_EntityEncodeRange[0]; eIndex <= m_EntityEncodeRange[1]; eIndex++) {
     cout << "Processing entity " << eIndex << '\n';
 
     // Entity Separator

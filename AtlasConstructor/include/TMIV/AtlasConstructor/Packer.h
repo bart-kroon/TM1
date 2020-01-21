@@ -60,7 +60,7 @@ private:
   bool m_pip{};
   int m_maxEntities{1};
   Common::ME16Frame m_aggEntityMasks{};
-  Common::Vec2i m_EntityEncRange;
+  Common::Vec2i m_EntityEncodeRange;
 };
 
 } // namespace TMIV::AtlasConstructor

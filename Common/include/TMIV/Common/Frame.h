@@ -122,42 +122,37 @@ Frame<YUV420P16> yuv420p(const Frame<YUV444P16> &frame);
 #include "Frame.hpp"
 
 namespace TMIV::Common {
-// Encoder has 16-bit depth map input and 10-bit depth output
 using TextureFrame = Frame<YUV420P10>;
-using Depth16Frame = Frame<YUV400P16>;
-using TextureDepth16Frame = std::pair<TextureFrame, Depth16Frame>;
-using MVD16Frame = std::vector<TextureDepth16Frame>;
+using Texture444Frame = Frame<YUV444P10>; // The renderer uses 4:4:4 internally
+using Depth10Frame = Frame<YUV400P10>;    // Decoder side
+using Depth16Frame = Frame<YUV400P16>;    // Encoder side
 using Mask = Frame<YUV400P8>;
-using MaskList = std::vector<Mask>;
-
-// Decoder-side is all 10-bit
 using PatchIdMap = Frame<YUV400P16>;
-using PatchIdMapList = std::vector<PatchIdMap>;
-using Depth10Frame = Frame<YUV400P10>;
-using TextureDepth10Frame = std::pair<TextureFrame, Depth10Frame>;
-using MVD10Frame = std::vector<TextureDepth10Frame>;
+using EntityMap = Frame<YUV400P16>;
 
-// Encoder can read 8-bit, 10-bit, or 16-bit entity map input
-using Entity8Frame = Frame<YUV400P8>;
-using Entity10Frame = Frame<YUV400P10>;
-using Entity16Frame = Frame<YUV400P16>;
-using ME8Frame = std::vector<Frame<YUV400P8>>;
-using ME10Frame = std::vector<Frame<YUV400P10>>;
-using ME16Frame = std::vector<Frame<YUV400P16>>;
-using ME16Frame_420 = std::vector<Frame<YUV420P16>>;
+// TODO(BK): Rename struct and data members after TMIV-4.0alpha1 milestone
+template <typename FORMAT> struct TextureDepthFrame {
+  TextureFrame first;
+  Frame<FORMAT> second;
+  EntityMap entities{};
 
-// The renderer uses 4:4:4 internally
-using Texture444Frame = Frame<YUV444P10>;
+  TextureDepthFrame() = default;
+  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)
+      : first{std::move(texture_)}, second{std::move(depth_)} {}
+  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, EntityMap entities_)
+      : first{std::move(texture_)}, second{std::move(depth_)}, entities{std::move(entities_)} {}
+};
+using TextureDepth10Frame = TextureDepthFrame<YUV400P10>;
+using TextureDepth16Frame = TextureDepthFrame<YUV400P16>;
 using Texture444Depth10Frame = std::pair<Texture444Frame, Depth10Frame>;
 using Texture444Depth16Frame = std::pair<Texture444Frame, Depth16Frame>;
 
-// Generalize on depth map format
-template <typename FORMAT> using TextureDepthFrame = std::pair<Frame<YUV420P10>, Frame<FORMAT>>;
+using EntityMapList = std::vector<EntityMap>;
 template <typename FORMAT> using MVDFrame = std::vector<TextureDepthFrame<FORMAT>>;
-
-// Generalize on entity map format
-template <typename FORMAT> using EntityFrame = Frame<FORMAT>;
-template <typename FORMAT> using MEFrame = std::vector<EntityFrame<FORMAT>>;
+using MVD10Frame = MVDFrame<YUV400P10>;
+using MVD16Frame = MVDFrame<YUV400P16>;
+using MaskList = std::vector<Mask>;
+using PatchIdMapList = std::vector<PatchIdMap>;
 
 const auto unusedPatchId = std::uint16_t(65535);
 } // namespace TMIV::Common

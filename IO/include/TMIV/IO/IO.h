@@ -59,11 +59,9 @@ auto loadSourceIvSequenceParams(const Common::Json &config) -> Metadata::IvSeque
 // complete only after IEncoder.
 auto loadSourceIvAccessUnitParams(const Common::Json &config) -> Metadata::IvAccessUnitParams;
 
+// Loads a source frame including entity maps when applicable
 Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
                                    int frameIndex);
-
-Common::ME16Frame loadSourceEntityFrame(const Common::Json &config, const Common::SizeVector &sizes,
-                                        int frameIndex);
 
 void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 

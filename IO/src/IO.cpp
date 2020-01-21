@@ -130,22 +130,6 @@ auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, c
 }
 
 template <typename FORMAT>
-auto loadEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex,
-                     const char *directory, const char *entityPathFmt,
-                     const vector<string> &viewNames = {}) -> MEFrame<FORMAT> {
-  MEFrame<FORMAT> result;
-  result.reserve(sizes.size());
-
-  for (size_t i = 0; i < sizes.size(); ++i) {
-    result.emplace_back(readFrame<FORMAT>(
-        getFullPath(config, directory, entityPathFmt, i, viewNames.empty() ? "" : viewNames[i]),
-        frameIndex, sizes[i]));
-  }
-
-  return result;
-}
-
-template <typename FORMAT>
 void saveMVDFrame(const Json &config, int frameIndex, const MVDFrame<FORMAT> &frame,
                   const char *what, const char *directory, const char *texturePathFmt,
                   const char *depthPathFmt) {
@@ -240,14 +224,17 @@ namespace {
 template <typename FORMAT>
 auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes, int frameIndex)
     -> MVD16Frame {
-  auto frame = loadMVDFrame<FORMAT>(config, sizes,
-                                    frameIndex + config.require("startFrame").asInt(), "source",
-                                    "SourceDirectory", "SourceTexturePathFmt", "SourceDepthPathFmt",
-                                    config.require("SourceCameraNames").asStringVector());
+  const auto viewNames = config.require("SourceCameraNames").asStringVector();
+
+  const auto frame = loadMVDFrame<FORMAT>(
+      config, sizes, frameIndex + config.require("startFrame").asInt(), "source", "SourceDirectory",
+      "SourceTexturePathFmt", "SourceDepthPathFmt", viewNames);
+
   auto frame16 = MVD16Frame{};
   frame16.reserve(frame.size());
-  transform(begin(frame), end(frame), back_inserter(frame16),
-            [bits](TextureDepthFrame<FORMAT> &view) {
+
+  transform(cbegin(frame), cend(frame), back_inserter(frame16),
+            [bits](const TextureDepthFrame<FORMAT> &view) {
               auto view16 = TextureDepth16Frame{
                   move(view.first), Depth16Frame{view.second.getWidth(), view.second.getHeight()}};
               transform(begin(view.second.getPlane(0)), end(view.second.getPlane(0)),
@@ -260,23 +247,32 @@ auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
                         });
               return view16;
             });
-  return frame16;
-}
 
-template <typename FORMAT>
-auto loadSourceEntityFrame_impl(const Json &config, const SizeVector &sizes, int frameIndex)
-    -> ME16Frame {
-  auto frame = loadEntityFrame<FORMAT>(
-      config, sizes, frameIndex + config.require("startFrame").asInt(), "SourceDirectory",
-      "SourceEntityPathFmt", config.require("SourceCameraNames").asStringVector());
-  auto frame16 = ME16Frame{};
-  frame16.reserve(frame.size());
-  transform(begin(frame), end(frame), back_inserter(frame16), [](EntityFrame<FORMAT> &view) {
-    auto view16 = Entity16Frame{view.getWidth(), view.getHeight()};
-    transform(begin(view.getPlane(0)), end(view.getPlane(0)), begin(view16.getPlane(0)),
-              [](unsigned x) { return uint16_t(x); });
-    return view16;
-  });
+  if (config.optional("SourceEntityBitDepth")) {
+    const auto entityBits = config.require("SourceEntityBitDepth").asInt();
+
+    for (size_t i = 0; i < frame.size(); ++i) {
+      cout << "Loading entity map list for frame " << frameIndex << endl;
+
+      frame16[i].entities.resize(sizes[i].x(), sizes[i].y());
+      if (1 <= entityBits && entityBits <= 8) {
+        const auto entities = readFrame<YUV400P8>(
+            getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
+            frameIndex, sizes[i]);
+        copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
+             begin(frame16[i].entities.getPlane(0)));
+      } else if (9 <= entityBits && entityBits <= 16) {
+        const auto entities = readFrame<YUV400P16>(
+            getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
+            frameIndex, sizes[i]);
+        copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
+             begin(frame16[i].entities.getPlane(0)));
+      } else {
+        throw runtime_error("Invalid SourceEntityBitDepth");
+      }
+    }
+  }
+
   return frame16;
 }
 } // namespace
@@ -290,18 +286,6 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
     return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
   }
   throw runtime_error("Invalid SourceDepthBitDepth");
-}
-
-auto loadSourceEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex)
-    -> ME16Frame {
-  const auto bits = config.require("SourceEntityBitDepth").asInt();
-  if (0 < bits && bits <= 8) {
-    return loadSourceEntityFrame_impl<YUV400P8>(config, sizes, frameIndex);
-  }
-  if (8 < bits && bits <= 16) {
-    return loadSourceEntityFrame_impl<YUV400P16>(config, sizes, frameIndex);
-  }
-  throw runtime_error("Invalid SourceEntityBitDepth");
 }
 
 void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame) {

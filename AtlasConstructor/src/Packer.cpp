@@ -57,7 +57,7 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
-void Packer::updateAggregatedEntityMasks(ME16Frame entityMasks) {
+void Packer::updateAggregatedEntityMasks(const EntityMapList& entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
   }

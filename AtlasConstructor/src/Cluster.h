@@ -89,7 +89,7 @@ public:
     out.jmax_ = 0;
     return out;
   }
-  static Cluster setEntityId(Cluster &c, int entityId); 
+  static Cluster setEntityId(Cluster &c, int entityId);
   static Cluster align(const Cluster &c, int alignment);
   static Cluster merge(const Cluster &c1, const Cluster &c2);
   static std::pair<ClusterList, ClusteringMap> retrieve(int viewId, const Common::Mask &maskMap,

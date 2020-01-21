@@ -84,7 +84,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
 
   // Inpainting
   if (ivSequenceParams.maxEntities == 1) {
-	m_inpainter->inplaceInpaint(viewport, target);
+    m_inpainter->inplaceInpaint(viewport, target);
   }
 
   // fading to grey with respect to viewing space
@@ -121,10 +121,9 @@ auto GroupBasedRenderer::renderPass(GroupIdMask groupIdMask, const MVD10Frame &a
                                     const IvSequenceParams &ivSequenceParams,
                                     const IvAccessUnitParams &ivAccessUnitParams,
                                     const ViewParams &target) const -> Texture444Depth16Frame {
-  return m_synthesizer->renderFrame(atlases,
-                                    filterPatchIdMapList(groupIdMask, patchIdMapList,
-                                                         ivAccessUnitParams),
-                                    ivSequenceParams, ivAccessUnitParams, target);
+  return m_synthesizer->renderFrame(
+      atlases, filterPatchIdMapList(groupIdMask, patchIdMapList, ivAccessUnitParams),
+      ivSequenceParams, ivAccessUnitParams, target);
 }
 
 auto GroupBasedRenderer::filterPatchIdMapList(GroupIdMask groupIdMask,
@@ -280,9 +279,11 @@ void GroupBasedRenderer::fillNeutral(Texture444Depth16Frame &viewport) {
   vector<int> Indices(viewport.second.getPlane(0).size());
   std::iota(Indices.begin(), Indices.end(), 0);
   std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-    if (viewport.second.getPlane(0)[i] == 0)
-      for (int pIndex = 0; pIndex < viewport.first.getNumberOfPlanes(); pIndex++)
+    if (viewport.second.getPlane(0)[i] == 0) {
+      for (int pIndex = 0; pIndex < viewport.first.getNumberOfPlanes(); pIndex++) {
         viewport.first.getPlane(pIndex)[i] = neutralChroma;
+      }
+    }
   });
 }
 

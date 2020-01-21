@@ -245,13 +245,12 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       candidates.pop();
     }
 
-	// Update seed & compute # Active Pixels In Patch
+    // Update seed & compute # Active Pixels In Patch
     auto prevIter = iter_seed;
     iter_seed = find_if(iter_seed + 1, activeList.end(),
                         [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
     auto currentIter = iter_seed;
-    int counter = 0;
-    for_each(prevIter, currentIter, [&](auto i) { counter++; });
+    auto counter = int(distance(prevIter, currentIter));
     cluster.numActivePixels_ = counter;
 
     // Updating output

@@ -141,8 +141,8 @@ using MVD10Frame = std::vector<TextureDepth10Frame>;
 using Entity8Frame = Frame<YUV400P8>;
 using Entity10Frame = Frame<YUV400P10>;
 using Entity16Frame = Frame<YUV400P16>;
-using ME8Frame = std::vector < Frame<YUV400P8>>;
-using ME10Frame = std::vector < Frame<YUV400P10>>;
+using ME8Frame = std::vector<Frame<YUV400P8>>;
+using ME10Frame = std::vector<Frame<YUV400P10>>;
 using ME16Frame = std::vector<Frame<YUV400P16>>;
 using ME16Frame_420 = std::vector<Frame<YUV420P16>>;
 

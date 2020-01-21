@@ -49,16 +49,18 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
   m_maxEntities = rootNode.require("maxEntities").asInt();
-  if (m_maxEntities > 1)
+  if (m_maxEntities > 1) {
     m_EntityEncRange = rootNode.require("GroupBasedEncoder")
                            .require("EntityBasedAtlasConstructor")
                            .require("EntityEncRange")
                            .asIntVector<2>();
+  }
 }
 
 void Packer::updateAggEntityMasks(ME16Frame entityMasks) {
-  for (int vIndex = 0; vIndex < entityMasks.size(); vIndex++)
-    m_aggEntityMasks.push_back(entityMasks[vIndex]);
+  for (const auto &entityMask : entityMasks) {
+    m_aggEntityMasks.push_back(entityMask);
+  }
 }
 
 auto Packer::setMask(int vIndex, int eIndex) -> Mask {
@@ -67,8 +69,9 @@ auto Packer::setMask(int vIndex, int eIndex) -> Mask {
   vector<int> Indices(mask.getPlane(0).size());
   std::iota(Indices.begin(), Indices.end(), 0);
   std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-    if (m_aggEntityMasks[vIndex].getPlane(0)[i] == eIndex)
+    if (m_aggEntityMasks[vIndex].getPlane(0)[i] == eIndex) {
       mask.getPlane(0)[i] = uint8_t(255);
+    }
   });
   return mask;
 }
@@ -96,17 +99,17 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         auto clusteringOutput = Cluster::retrieve(
             viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId]);
 
-        for (int i = 0; i < clusteringOutput.first.size(); i++) {
-          auto &cluster = clusteringOutput.first[i];
-          clusteringOutput.first[i] = Cluster::setEntityId(cluster, eIndex);
+        for (auto &cluster : clusteringOutput.first) {
+          cluster = Cluster::setEntityId(cluster, eIndex);
         }
 
         move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
              back_inserter(clusterList));
         clusteringMap.push_back(move(clusteringOutput.second));
-        if (clusteringOutput.first.size()>0)
-			cout << "entity " << eIndex << " from view " << viewId << " results in "
-				 << clusteringOutput.first.size() << " patch \n";
+        if (!clusteringOutput.first.empty()) {
+          cout << "entity " << eIndex << " from view " << viewId << " results in "
+               << clusteringOutput.first.size() << " patch \n";
+        }
       }
     } else {
       auto clusteringOutput = Cluster::retrieve(
@@ -132,10 +135,10 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
       return isBasicView[p2.getViewId()];
     }
-    if (m_maxEntities>1)
-		return p1.getNumActivePixels() < p2.getNumActivePixels();
-    else
-		return p1.getArea() < p2.getArea();
+    if (m_maxEntities > 1) {
+      return p1.getNumActivePixels() < p2.getNumActivePixels();
+    }
+    return p1.getArea() < p2.getArea();
   };
 
   priority_queue<Cluster, vector<Cluster>, decltype(comp)> clusterToPack(comp);
@@ -152,7 +155,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     const Cluster &cluster = clusterToPack.top();
     if (m_maxEntities > 1) {
       clusteringMap_viewId =
-          (cluster.getEntityId() - m_EntityEncRange[0]) * (int)masks.size() + cluster.getViewId();
+          (cluster.getEntityId() - m_EntityEncRange[0]) * static_cast<int>(masks.size()) +
+          cluster.getViewId();
     } else {
       clusteringMap_viewId = cluster.getViewId();
     }
@@ -185,8 +189,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           if (m_maxEntities > 1) {
             p.entityId = cluster.getEntityId();
             cout << "Packing patch " << pIndex << " of entity " << *p.entityId << " from view "
-                 << p.viewId << " with #active pixels " << cluster.getNumActivePixels() << " in atlas " << (int)p.atlasId
-                 << endl;
+                 << p.viewId << " with #active pixels " << cluster.getNumActivePixels()
+                 << " in atlas " << static_cast<int>(p.atlasId) << endl;
           }
 
           atlasParamsVector.push_back(p);

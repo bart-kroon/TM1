@@ -61,18 +61,20 @@ public:
   void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
-  Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
-                                     Common::ME16Frame entityMaps, uint16_t eIndex);
+  static Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
+                                            Common::ME16Frame entityMaps, uint16_t eIndex);
   static Common::ME16Frame_420 yuvSampler(const Common::ME16Frame &in);
-  void mergeViews(Common::MVD16Frame & entityMergedViews,
-                                Common::MVD16Frame transportEntityViews);
-  void mergeMasks(Common::MaskList & entityMergedMasks, Common::MaskList masks);
-  void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks); 
-  void updateEntityMasks(Common::ME16Frame &entityMasks, const Common::MaskList &masks, uint16_t eIndex);
-  void aggregateEntityMasks(Common::ME16Frame &entityMasks);
+  static void mergeViews(Common::MVD16Frame &entityMergedViews,
+                         Common::MVD16Frame transportEntityViews);
+  static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
+  static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
+  void updateEntityMasks(Common::ME16Frame &entityMasks, const Common::MaskList &masks,
+                         uint16_t eIndex);
+  static void aggregateEntityMasks(Common::ME16Frame &entityMasks);
   void swap0(Common::ME16Frame &entityMasks);
-  static auto setView(Common::TextureDepth16Frame view, Common::Entity16Frame entityMask,
-                                            int eIndex) -> Common::TextureDepth16Frame;
+  static auto setView(Common::TextureDepth16Frame view, const Common::Entity16Frame &entityMask,
+                      int eIndex) -> Common::TextureDepth16Frame;
+
 private:
   static void writePatchInAtlas(const Metadata::AtlasParameters &patch,
                                 const Common::MVD16Frame &views, Common::MVD16Frame &atlas);

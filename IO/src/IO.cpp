@@ -130,7 +130,7 @@ auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, c
 }
 
 template <typename FORMAT>
-auto loadEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
+auto loadEntityFrame(const Json &config, const SizeVector &sizes, int frameIndex,
                      const char *directory, const char *entityPathFmt,
                      const vector<string> &viewNames = {}) -> MEFrame<FORMAT> {
   MEFrame<FORMAT> result;
@@ -264,10 +264,10 @@ auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
 }
 
 template <typename FORMAT>
-auto loadSourceEntityFrame_impl(int bits, const Json &config, const SizeVector &sizes,
-                                int frameIndex) -> ME16Frame {
+auto loadSourceEntityFrame_impl(const Json &config, const SizeVector &sizes, int frameIndex)
+    -> ME16Frame {
   auto frame = loadEntityFrame<FORMAT>(
-      config, sizes, frameIndex + config.require("startFrame").asInt(), "source", "SourceDirectory",
+      config, sizes, frameIndex + config.require("startFrame").asInt(), "SourceDirectory",
       "SourceEntityPathFmt", config.require("SourceCameraNames").asStringVector());
   auto frame16 = ME16Frame{};
   frame16.reserve(frame.size());
@@ -296,10 +296,10 @@ auto loadSourceEntityFrame(const Json &config, const SizeVector &sizes, int fram
     -> ME16Frame {
   const auto bits = config.require("SourceEntityBitDepth").asInt();
   if (0 < bits && bits <= 8) {
-    return loadSourceEntityFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
+    return loadSourceEntityFrame_impl<YUV400P8>(config, sizes, frameIndex);
   }
   if (8 < bits && bits <= 16) {
-    return loadSourceEntityFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
+    return loadSourceEntityFrame_impl<YUV400P16>(config, sizes, frameIndex);
   }
   throw runtime_error("Invalid SourceEntityBitDepth");
 }

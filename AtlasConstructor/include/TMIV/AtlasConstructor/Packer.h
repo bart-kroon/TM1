@@ -50,9 +50,10 @@ public:
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
   void updateAggEntityMasks(Common::ME16Frame entityMasks) override;
-  auto setMask(int vIndex, int eIndex) -> Common::Mask;
 
 private:
+  auto setMask(int vIndex, int eIndex) -> Common::Mask;
+
   int m_alignment{};
   int m_minPatchSize{};
   int m_overlap{};

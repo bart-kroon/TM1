@@ -61,6 +61,8 @@ public:
   void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
+
+private:
   static Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
                                             Common::ME16Frame entityMaps, uint16_t eIndex);
   static Common::ME16Frame_420 yuvSampler(const Common::ME16Frame &in);
@@ -74,12 +76,9 @@ public:
   void swap0(Common::ME16Frame &entityMasks);
   static auto setView(Common::TextureDepth16Frame view, const Common::Entity16Frame &entityMask,
                       int eIndex) -> Common::TextureDepth16Frame;
-
-private:
   static void writePatchInAtlas(const Metadata::AtlasParameters &patch,
                                 const Common::MVD16Frame &views, Common::MVD16Frame &atlas);
 
-private:
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
   Common::Vec2i m_EntityEncRange;

@@ -93,7 +93,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
-      for (int eIndex = m_EntityEncodeRange[0]; eIndex <= m_EntityEncodeRange[1]; eIndex++) {
+      for (int eIndex = m_EntityEncodeRange[0]; eIndex < m_EntityEncodeRange[1]; eIndex++) {
         // Entity Clustering
         Mask mask = setMask(viewId, eIndex);
 

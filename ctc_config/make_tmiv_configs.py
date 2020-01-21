@@ -227,7 +227,7 @@ class DecoderConfiguration:
 	def atlasDeconstructor(self):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return {
-				"EntityDecodeRange": [0, self.maxEntities() - 1]
+				"EntityDecodeRange": [0, self.maxEntities()]
 			}
 		return {}
 
@@ -475,7 +475,7 @@ class EncoderConfiguration(DecoderConfiguration):
 			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
 		}
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			config['EntityEncodeRange'] = [0, self.maxEntities() - 1]
+			config['EntityEncodeRange'] = [0, self.maxEntities()]
 		return config
 
 	def depthOccupancy(self):

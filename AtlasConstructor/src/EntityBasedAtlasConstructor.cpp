@@ -293,7 +293,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   SizeVector m_viewSizes = m_ivSequenceParams.viewParamsList.viewSizes();
   ME16Frame entityMaps = loadSourceEntityFrame(m_rootNode, m_viewSizes, m_fIndex);
 
-  for (auto eIndex = m_EntityEncodeRange[0]; eIndex <= m_EntityEncodeRange[1]; eIndex++) {
+  for (auto eIndex = m_EntityEncodeRange[0]; eIndex < m_EntityEncodeRange[1]; eIndex++) {
     cout << "Processing entity " << eIndex << '\n';
 
     // Entity Separator

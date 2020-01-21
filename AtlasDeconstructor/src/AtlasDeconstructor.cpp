@@ -67,18 +67,14 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
 
   if (ivSequenceParams.maxEntities > 1) {
     cout << "Entity-Based Atlas Deconstructor is applied for EntityDecodeRange [ "
-         << m_entityDecodeRange[0] << ", " << m_entityDecodeRange[1] << "] \n";
+         << m_entityDecodeRange[0] << ", " << m_entityDecodeRange[1] << ")\n";
   }
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     assert(atlasParamsList[id].viewId < viewParamsList.size());
-    if (ivSequenceParams.maxEntities > 1) {
-      if (atlasParamsList[id].entityId >= m_entityDecodeRange[0] &&
-          atlasParamsList[id].entityId <= m_entityDecodeRange[1]) {
-        writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                          viewParamsList);
-      }
-    } else {
+    if (ivSequenceParams.maxEntities == 1 ||
+        (atlasParamsList[id].entityId >= m_entityDecodeRange[0] &&
+         atlasParamsList[id].entityId < m_entityDecodeRange[1])) {
       writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
                         viewParamsList);
     }

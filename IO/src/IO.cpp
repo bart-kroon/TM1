@@ -226,11 +226,12 @@ namespace {
 template <typename FORMAT>
 auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes, int frameIndex)
     -> MVD16Frame {
+  const auto sourceFrameIndex = frameIndex + config.require("startFrame").asInt();
   const auto viewNames = config.require("SourceCameraNames").asStringVector();
 
-  const auto frame = loadMVDFrame<FORMAT>(
-      config, sizes, frameIndex + config.require("startFrame").asInt(), "source", "SourceDirectory",
-      "SourceTexturePathFmt", "SourceDepthPathFmt", viewNames);
+  const auto frame =
+      loadMVDFrame<FORMAT>(config, sizes, sourceFrameIndex, "source", "SourceDirectory",
+                           "SourceTexturePathFmt", "SourceDepthPathFmt", viewNames);
 
   auto frame16 = MVD16Frame{};
   frame16.reserve(frame.size());
@@ -252,21 +253,20 @@ auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
 
   if (config.optional("SourceEntityBitDepth")) {
     const auto entityBits = config.require("SourceEntityBitDepth").asInt();
+    cout << "Loading entity map list for frame " << sourceFrameIndex << endl;
 
     for (size_t i = 0; i < frame.size(); ++i) {
-      cout << "Loading entity map list for frame " << frameIndex << endl;
-
       frame16[i].entities.resize(sizes[i].x(), sizes[i].y());
       if (1 <= entityBits && entityBits <= 8) {
         const auto entities = readFrame<YUV400P8>(
             getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
-            frameIndex, sizes[i]);
+            sourceFrameIndex, sizes[i]);
         copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
              begin(frame16[i].entities.getPlane(0)));
       } else if (9 <= entityBits && entityBits <= 16) {
         const auto entities = readFrame<YUV400P16>(
             getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
-            frameIndex, sizes[i]);
+            sourceFrameIndex, sizes[i]);
         copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
              begin(frame16[i].entities.getPlane(0)));
       } else {

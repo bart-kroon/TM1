@@ -245,8 +245,6 @@ PrimitiveShape interpolateShape(const PrimitiveShape a, const PrimitiveShape b, 
   std::cout << "  guard band = " << output.guardBandSize.value() << std::endl;
 #endif
   // viewing direction constraint
-  DirectionConstraint dira = a.viewingDirectionConstraint.value_or(DirectionConstraint());
-  DirectionConstraint dirb = b.viewingDirectionConstraint.value_or(DirectionConstraint());
   output.viewingDirectionConstraint =
       blend(a.viewingDirectionConstraint.value(), b.viewingDirectionConstraint.value(), w);
 #ifdef _VERBOSE

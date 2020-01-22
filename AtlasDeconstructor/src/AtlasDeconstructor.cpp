@@ -43,8 +43,6 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasDeconstructor {
-constexpr auto neutralChroma = uint16_t(512);
-
 AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
 auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
@@ -104,15 +102,8 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   for (const auto &cam : viewParamsVector) {
     TextureFrame tex(cam.size.x(), cam.size.y());
-
-    fill(tex.getPlane(0).begin(), tex.getPlane(0).end(), 0);
-    fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), neutralChroma);
-    fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), neutralChroma);
-
     Depth10Frame depth(cam.size.x(), cam.size.y());
-
-    fill(depth.getPlane(0).begin(), depth.getPlane(0).end(), 0);
-
+    tex.fillNeutral();
     frame.push_back(TextureDepth10Frame{move(tex), move(depth)});
   }
 

@@ -252,8 +252,10 @@ public:
                                   },
                                   resolutionRatio(viewParamsVector, target));
     const auto depthTransform = DepthTransform<16>{target};
-    return {quantizeTexture(rasterizer.attribute<0>()),
-            depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
+    auto frame = Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
+                                        depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
+	frame.first.filIInvalidWithNeutral(frame.second);
+	return frame;
   }
 
 private:

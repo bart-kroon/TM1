@@ -58,10 +58,10 @@ public:
   virtual auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
       -> Common::Texture444Depth16Frame = 0;
 
-
-  //getters for intermediate results dumping to disk
-  virtual auto getPatchIdMapList(const Common::MVD10Frame &atlas) const -> Common::PatchIdMapList = 0;
-  virtual auto recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame =0;
+  // getters for intermediate results dumping to disk
+  virtual auto getPatchIdMapList(const Common::MVD10Frame &atlas) const
+      -> Common::PatchIdMapList = 0;
+  virtual auto recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::Decoder
 

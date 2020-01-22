@@ -48,7 +48,7 @@ auto InputBitstream::readBits(unsigned bits) -> uint_least64_t {
 
   while (m_size < bits) {
     verify(m_size + chunk <= numeric_limits<uint_least64_t>::digits);
-	verify(m_stream.good());
+    verify(m_stream.good());
 
     m_buffer = (m_buffer << chunk) | uchar(m_stream.get());
     m_size += chunk;
@@ -144,9 +144,7 @@ void OutputBitstream::putUExpGolomb(uint_least64_t value) {
   writeBits(value - mask, bits);
 }
 
-void OutputBitstream::putFloat16(Common::Half value) {
-	putUint16(value.encode());
-}
+void OutputBitstream::putFloat16(Common::Half value) { putUint16(value.encode()); }
 
 void OutputBitstream::putFloat32(float value) {
   uint32_t code;

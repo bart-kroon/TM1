@@ -49,7 +49,7 @@ class DecoderConfiguration:
 		return self.sourceDir == '.'
 
 	def numberOfFrames(self):
-		if self.anchorId == 'A97' or self.anchorId == 'R97':
+		if self.anchorId == 'A97' or self.anchorId == 'R97' or self.anchorId == 'E97':
 			return 97
 		return 17
 
@@ -101,7 +101,7 @@ class DecoderConfiguration:
 		return self.viewWidth()
 
 	def atlasHeight(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			return {
 				'A': 3072,
 				'B': 2368,
@@ -219,6 +219,18 @@ class DecoderConfiguration:
 	def useMultipassRenderer(self):
 		return self.anchorId == 'V17' or self.anchorId == 'R97'
 
+	def maxEntities(self):
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return 25
+		return 1
+		
+	def atlasDeconstructor(self):
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return {
+				"EntityDecodeRange": [0, self.maxEntities()]
+			}
+		return {}
+
 	def rendererMethod(self):
 		if self.useMultipassRenderer():
 			return 'MultipassRenderer'
@@ -263,7 +275,7 @@ class DecoderConfiguration:
 			'DecoderMethod': 'Decoder',
 			'Decoder': {
 				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
-				'AtlasDeconstructor': {},
+				'AtlasDeconstructor': self.atlasDeconstructor(),
 				'RendererMethod': self.rendererMethod(),
 				self.rendererMethod(): self.renderer()
 			}
@@ -271,7 +283,7 @@ class DecoderConfiguration:
 		if self.outputCameraName()[0] == 'p':
 			config['OutputCameraName'] = 'viewport'
 			config['PoseTracePath'] = self.poseTracePath()
-			if self.anchorId == 'A97' or self.anchorId == 'R97':
+			if self.anchorId == 'A97' or self.anchorId == 'R97' or self.anchorId == 'E97':
 				config['extraNumberOfFrames'] = 300 - 97
 		return config
 
@@ -355,7 +367,7 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		for v in self.allTargetCameraNames():
 			self.overrideOutputCameraName = v
 			DecoderConfiguration.saveTmivJson(self)
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'V17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'V17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			for v in self.allSourceCameraNames():
 				self.overrideOutputCameraName = v
 				self.saveWspsnrJson()
@@ -368,7 +380,7 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		if self.anchorId == 'R97' or self.anchorId == 'R17':
 			return poseTraces
 		return self.allSourceCameraNames() + poseTraces
-
+	
 class EncoderConfiguration(DecoderConfiguration):
 	def __init__(self, sourceDir, anchorId, seqId):
 		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
@@ -392,9 +404,15 @@ class EncoderConfiguration(DecoderConfiguration):
 			10: 'yuv420p10le',
 			16: 'yuv420p16le'
 		}[self.sourceDepthBitDepth()]
-
+	
 	def sourceDepthPathFmt(self):
 		return '%s_depth_{}x{}_{}.yuv'.format(self.viewWidth(), self.viewHeight(), self.sourceDepthVideoFormat())
+		
+	def sourceEntityBitDepth(self):
+		return 8
+
+	def sourceEntityPathFmt(self):
+		return '%s_entity_{}x{}_yuv420p.yuv'.format(self.viewWidth(), self.viewHeight())
 
 	def omafV1CompatibleFlag(self):
 		# Just to do something slightly more interesting than False
@@ -409,12 +427,18 @@ class EncoderConfiguration(DecoderConfiguration):
 		})
 		return config
 
+	def pip(self):
+		# TODO(BK): Remove this after fixing the PiP bug
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return 0
+		return 1
+
 	def packer(self):
 		return {
 			'Alignment': 8,
 			'MinPatchSize': 16,
 			'Overlap': 1,
-			'PiP': 1
+			'PiP': self.pip()
 		}
 
 	def lumaSamplesPerView(self):
@@ -432,10 +456,17 @@ class EncoderConfiguration(DecoderConfiguration):
 				'L': 1,
 				'N': 3
 			}[self.seqId] * self.lumaSamplesPerView()
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return 6 * self.lumaSamplesPerView()
 		return 0
+		
+	def atlasConstructorMethod(self):
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return 'EntityBasedAtlasConstructor'
+		return 'AtlasConstructor'
 
 	def atlasConstructor(self):
-		return {
+		config = {
 			'PrunerMethod': 'HierarchicalPruner',
 			'HierarchicalPruner': self.pruner(),
 			'AggregatorMethod': 'Aggregator',
@@ -448,18 +479,21 @@ class EncoderConfiguration(DecoderConfiguration):
 			],
 			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
 		}
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			config['EntityEncodeRange'] = [0, self.maxEntities()]
+		return config
 
 	def depthOccupancy(self):
 		return {
 			'depthOccMapThreshold': 64
 		}
 
-	def encoder(self):		
+	def encoder(self):
 		return {
 			'ViewOptimizerMethod': self.viewOptimizerMethod(),
 			self.viewOptimizerMethod(): {},
-			'AtlasConstructorMethod': 'AtlasConstructor',
-			'AtlasConstructor': self.atlasConstructor(),
+			'AtlasConstructorMethod': self.atlasConstructorMethod(),
+			self.atlasConstructorMethod(): self.atlasConstructor(),
 			'DepthOccupancyMethod': 'DepthOccupancy',
 			'DepthOccupancy': self.depthOccupancy()
 		}
@@ -468,12 +502,9 @@ class EncoderConfiguration(DecoderConfiguration):
 		return self.seqId == 'E'
 
 	def numGroups(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17':
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':
 				return 3
-		return 1
-
-	def maxEntities(self):
 		return 1
 
 	def parameters(self):
@@ -494,6 +525,11 @@ class EncoderConfiguration(DecoderConfiguration):
 			'EncoderMethod': 'GroupBasedEncoder',
 			'GroupBasedEncoder': self.encoder()
 		})
+		if self.anchorId == 'E17' or self.anchorId == 'E97':
+		    config.update({
+			    'SourceEntityPathFmt': self.sourceEntityPathFmt(),
+			    'SourceEntityBitDepth': self.sourceEntityBitDepth()
+		    })
 		return config
 		
 	def path(self):
@@ -512,6 +548,20 @@ class EncoderConfiguration(DecoderConfiguration):
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('Level: 5.2\n')
+
+def generate(anchorIds, seqIds, testPoints):
+	for anchorId in anchorIds:
+		for seqId in seqIds:
+			config = EncoderConfiguration(sourceDir, anchorId, seqId)
+			config.saveTmivJson()
+			if len(testPoints) > 1:
+				config.saveHmCfg()
+
+	for testPoint in testPoints:
+		for anchorId in anchorIds:
+			for seqId in seqIds:
+				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint)
+				config.saveTmivJson()
 
 if __name__ == '__main__':
 	if sys.version_info[0] < 3:
@@ -532,33 +582,9 @@ if __name__ == '__main__':
 	if len(sys.argv) == 2:
 		sourceDir = sys.argv[1]
 
-	seqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
-	
-	# R17 anchor
-	for seqId in seqIds:
-		config = EncoderConfiguration(sourceDir, 'R17', seqId)
-		config.saveTmivJson()
-		config = AllDecoderConfigurations(sourceDir, 'R17', seqId, 'R0')
-		config.saveTmivJson()
+	allSeqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
+	allTestPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']	
 
-	# R97 anchor
-	for seqId in seqIds:
-		config = EncoderConfiguration(sourceDir, 'R97', seqId)
-		config.saveTmivJson()
-		config = AllDecoderConfigurations(sourceDir, 'R97', seqId, 'R0')
-		config.saveTmivJson()
-
-	anchors = [ 'A97', 'A17', 'V17' ]
-	testPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']
-
-	for anchorId in anchors:
-		for seqId in seqIds:
-			config = EncoderConfiguration(sourceDir, anchorId, seqId)
-			config.saveTmivJson()
-			config.saveHmCfg()
-
-	for testPoint in testPoints:
-		for anchorId in anchors:
-			for seqId in seqIds:
-				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint)
-				config.saveTmivJson()
+	generate(['R17', 'R97'], allSeqIds, ['R0'])
+	generate(['A17', 'A97', 'V17'], allSeqIds, allTestPoints)
+	generate(['E17', 'E97'], ['B'], allTestPoints)

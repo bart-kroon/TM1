@@ -71,14 +71,14 @@ public:
     auto ivSequenceParams = m_metadataReader.ivSequenceParams();
     {
       if (auto subnode = json().optional("ViewingSpace"); subnode) {
-       cout << "Overriding viewing space from JSON" << endl;
+        cout << "Overriding viewing space from JSON" << endl;
         ivSequenceParams.viewingSpace = Metadata::ViewingSpace::loadFromJson(subnode);
       }
     }
     m_decoder->updateSequenceParams(ivSequenceParams);
     cout << "Decoded sequence parameters:\n" << ivSequenceParams;
 
-	int firstOutputFrame = 0;
+    int firstOutputFrame = 0;
     int outputFrameStep = 1;
     if (auto subnode = json().optional("firstOutputFrame"); subnode) {
       firstOutputFrame = subnode.asInt();
@@ -86,7 +86,8 @@ public:
     if (auto subnode = json().optional("outputFrameStep"); subnode) {
       outputFrameStep = subnode.asInt();
     }
-    for (int outputFrame = firstOutputFrame; outputFrame < m_numberOfFrames; outputFrame += outputFrameStep) {
+    for (int outputFrame = firstOutputFrame; outputFrame < m_numberOfFrames;
+         outputFrame += outputFrameStep) {
       auto inputFrame = IO::getExtendedIndex(json(), outputFrame);
       cout << "\nDECODE INPUT FRAME " << inputFrame << " TO OUTPUT FRAME " << outputFrame
            << ":\n\n";

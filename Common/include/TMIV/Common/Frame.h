@@ -118,12 +118,21 @@ public:
   void read(std::istream &is, bool vFlip = false);
   void dump(std::ostream &os, bool vFlip = false) const;
 
-  // Set all pixels to the neutral color
+  // Reset all samples to zero
+  //
+  // Note that samples are already set to zero on construction
+  void fillZero();
+
+  // Set all samples to the neutral color
   void fillNeutral();
 
-  // Set invalid pixels to the neutral color
+  // Set invalid samples to the neutral color
   template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
   void filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
+
+  static constexpr auto neutralColor() {
+    return detail::PixelFormatHelper<FORMAT>::neutralColor();
+  }
 };
 
 Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame);
@@ -151,8 +160,6 @@ template <typename FORMAT> struct TextureDepthFrame {
   TextureDepthFrame() = default;
   TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)
       : first{std::move(texture_)}, second{std::move(depth_)} {}
-  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, EntityMap entities_)
-      : first{std::move(texture_)}, second{std::move(depth_)}, entities{std::move(entities_)} {}
 };
 using TextureDepth10Frame = TextureDepthFrame<YUV400P10>;
 using TextureDepth16Frame = TextureDepthFrame<YUV400P16>;

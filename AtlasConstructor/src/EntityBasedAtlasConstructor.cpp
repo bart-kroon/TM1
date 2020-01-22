@@ -45,9 +45,6 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasConstructor {
-// TODO(BK): Interaction with merge request !91. Replace with TMIV::Common::neutralColor<FORMAT>().
-constexpr auto neutralChroma = uint16_t(512);
-
 EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
                                                          const Json &componentNode) {
   // Components
@@ -104,10 +101,8 @@ void EntityBasedAtlasConstructor::mergeViews(MVD16Frame &mergedViews,
     for (int planeId = 0; planeId < 3; planeId++) {
       copy_if(cbegin(transportEntityViews[viewId].first.getPlane(planeId)),
               cend(transportEntityViews[viewId].first.getPlane(planeId)),
-              begin(mergedViews[viewId].first.getPlane(planeId)), [](auto x) {
-                // TODO(BK): This may be a bug
-                return x != neutralChroma;
-              });
+              begin(mergedViews[viewId].first.getPlane(planeId)),
+              [](auto x) { return x != TextureFrame::neutralColor(); });
     }
 
     copy_if(cbegin(transportEntityViews[viewId].second.getPlane(0)),
@@ -126,8 +121,9 @@ void EntityBasedAtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList mas
 void EntityBasedAtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
     for (size_t i = 0; i < masks[viewId].getPlane(0).size(); ++i) {
-      if (views[viewId].first.getPlane(0)[i] == neutralChroma /* is this necessary? */ &&
-          views[viewId].second.getPlane(0)[i] == 0) {
+      if (views[viewId].first.getPlane(0)[i] ==
+              views[viewId].first.neutralColor() /* is this necessary? */
+          && views[viewId].second.getPlane(0)[i] == 0) {
         masks[viewId].getPlane(0)[i] = 0;
       }
     }
@@ -173,19 +169,10 @@ void EntityBasedAtlasConstructor::aggregateEntityMasks(EntityMapList &entityMask
   }
 }
 
-auto EntityBasedAtlasConstructor::entitySeparator(MVD16Frame transportViews, uint16_t entityId)
+auto EntityBasedAtlasConstructor::maskViews(MVD16Frame transportViews, uint16_t entityId)
     -> MVD16Frame {
   for (auto &transportView : transportViews) {
-    for (int i = 0; i < transportView.first.getHeight(); ++i) {
-      for (int j = 0; j < transportView.first.getWidth(); ++j) {
-        if (entityId != transportView.entities.getPlane(0)(i, j)) {
-          static_assert(is_same_v<TextureFrame, Frame<YUV420P10>>); // 4:2:0 assumption
-          transportView.first.getPlane(0)(i, j) = neutralChroma;
-          transportView.first.getPlane(1)(i / 2, j / 2) = neutralChroma;
-          transportView.first.getPlane(2)(i / 2, j / 2) = neutralChroma;
-        }
-      }
-    }
+    transportView = maskView(transportView, entityId);
   }
   return transportViews;
 }
@@ -194,10 +181,8 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Merged views start as neutral gray
   auto mergedViews = transportViews;
   for (auto &mergedView : mergedViews) {
-    for (auto &mergedPlane : mergedView.first.getPlanes()) {
-      fill(begin(mergedPlane), end(mergedPlane), neutralChroma);
-    }
-    fill(begin(mergedView.second.getPlane(0)), end(mergedView.second.getPlane(0)), 0);
+    mergedView.first.fillNeutral();
+    mergedView.second.fillZero();
   }
 
   // Merged masks start all zero
@@ -213,7 +198,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
     cout << "Processing entity " << entityId << '\n';
 
     // Separate out other entities
-    const auto entityViews = entitySeparator(transportViews, entityId);
+    const auto entityViews = maskViews(transportViews, entityId);
 
     // Prune this entity
     auto masks = m_pruner->prune(m_ivSequenceParams.viewParamsList, entityViews, m_isBasicView);
@@ -267,10 +252,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
-      for (auto &p : atlas.first.getPlanes()) {
-        fill(p.begin(), p.end(), neutralChroma);
-      }
-      fill(atlas.second.getPlane(0).begin(), atlas.second.getPlane(0).end(), uint16_t(0));
+      atlas.first.fillNeutral();
       atlasList.push_back(move(atlas));
     }
 
@@ -296,9 +278,9 @@ auto EntityBasedAtlasConstructor::maskView(TextureDepth16Frame view, int entityI
     for (int j = 0; j < view.first.getWidth(); ++j) {
       if (entityId != view.entities.getPlane(0)(i, j)) {
         static_assert(is_same_v<TextureFrame, Frame<YUV420P10>>); // 4:2:0 assumption
-        view.first.getPlane(0)(i, j) = neutralChroma;
-        view.first.getPlane(1)(i / 2, j / 2) = neutralChroma;
-        view.first.getPlane(2)(i / 2, j / 2) = neutralChroma;
+        view.first.getPlane(0)(i, j) = view.first.neutralColor();
+        view.first.getPlane(1)(i / 2, j / 2) = view.first.neutralColor();
+        view.first.getPlane(2)(i / 2, j / 2) = view.first.neutralColor();
       }
     }
   }
@@ -310,7 +292,6 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
   auto &currentAtlas = atlas[patch.atlasId];
   auto currentView = views[patch.viewId];
   if (m_maxEntities > 1) {
-    // TODO(BK): Why copy the entire view? This is very inefficient and unneeded.
     currentView = maskView(currentView, *patch.entityId);
   }
 

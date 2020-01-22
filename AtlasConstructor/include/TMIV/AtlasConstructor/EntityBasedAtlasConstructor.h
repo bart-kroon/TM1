@@ -63,7 +63,7 @@ public:
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:
-  static Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews, uint16_t entityId);
+  static Common::MVD16Frame maskViews(Common::MVD16Frame transportViews, uint16_t entityId);
   static void mergeViews(Common::MVD16Frame &entityMergedViews,
                          Common::MVD16Frame transportEntityViews);
   static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
@@ -91,7 +91,7 @@ private:
   std::deque<Common::MVD16Frame> m_atlasBuffer;
   Common::EntityMapList m_aggregatedEntityMask;
   std::vector<Common::EntityMapList> m_entityMasksBuffer;
-  unsigned m_maxEntities;
+  unsigned m_maxEntities{1};
 };
 } // namespace TMIV::AtlasConstructor
 

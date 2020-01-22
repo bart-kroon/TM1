@@ -57,29 +57,25 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
-void Packer::updateAggregatedEntityMasks(const EntityMapList& entityMasks) {
+void Packer::updateAggregatedEntityMasks(const EntityMapList &entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
   }
 }
 
-auto Packer::setMask(int vIndex, int eIndex) -> Mask {
-  Mask mask(m_aggregatedEntityMasks[vIndex].getWidth(),
-            m_aggregatedEntityMasks[vIndex].getHeight());
-  fill(mask.getPlane(0).begin(), mask.getPlane(0).end(), uint8_t(0));
-  vector<int> Indices(mask.getPlane(0).size());
-  std::iota(Indices.begin(), Indices.end(), 0);
-  std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-    if (m_aggregatedEntityMasks[vIndex].getPlane(0)[i] == eIndex) {
+auto Packer::setMask(int viewId, int entityId) -> Mask {
+  Mask mask(m_aggregatedEntityMasks[viewId].getWidth(),
+            m_aggregatedEntityMasks[viewId].getHeight());
+  for (size_t i = 0; i < mask.getPlane(0).size(); ++i) {
+    if (entityId == m_aggregatedEntityMasks[viewId].getPlane(0)[i]) {
       mask.getPlane(0)[i] = uint8_t(255);
     }
-  });
+  }
   return mask;
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                   const vector<bool> &isBasicView) -> AtlasParamsVector {
-
   // Check atlas size
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % m_alignment) != 0) || ((sz.y() % m_alignment) != 0)) {
@@ -93,22 +89,22 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
-      for (int eIndex = m_EntityEncodeRange[0]; eIndex < m_EntityEncodeRange[1]; eIndex++) {
-        // Entity Clustering
-        Mask mask = setMask(viewId, eIndex);
+      for (int entityId = m_EntityEncodeRange[0]; entityId < m_EntityEncodeRange[1]; entityId++) {
+        // Entity clustering
+        Mask mask = setMask(viewId, entityId);
 
         auto clusteringOutput = Cluster::retrieve(
             viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId]);
 
         for (auto &cluster : clusteringOutput.first) {
-          cluster = Cluster::setEntityId(cluster, eIndex);
+          cluster = Cluster::setEntityId(cluster, entityId);
         }
 
         move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
              back_inserter(clusterList));
         clusteringMap.push_back(move(clusteringOutput.second));
         if (!clusteringOutput.first.empty()) {
-          cout << "entity " << eIndex << " from view " << viewId << " results in "
+          cout << "entity " << entityId << " from view " << viewId << " results in "
                << clusteringOutput.first.size() << " patches\n";
         }
       }

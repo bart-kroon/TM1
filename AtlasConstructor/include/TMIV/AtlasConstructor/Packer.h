@@ -52,7 +52,7 @@ public:
   void updateAggregatedEntityMasks(const Common::EntityMapList& entityMasks) override;
 
 private:
-  auto setMask(int vIndex, int eIndex) -> Common::Mask;
+  auto setMask(int viewId, int entityId) -> Common::Mask;
 
   int m_alignment{};
   int m_minPatchSize{};

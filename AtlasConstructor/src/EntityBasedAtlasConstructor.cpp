@@ -59,7 +59,7 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
   m_rootNode = rootNode;
 
   // Read the entity encoding range
-  m_EntityEncRange = componentNode.require("EntityEncRange").asIntVector<2>();
+  m_EntityEncRange = componentNode.require("EntityEncodeRange").asIntVector<2>();
 
   // The number of atlases is determined by the specified maximum number of luma
   // samples per frame (texture and depth combined)

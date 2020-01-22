@@ -10,8 +10,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CMake/clang_tidy.cmake)
 
-# To enable testing, get https://github.com/catchorg/Catch2 2.10.2 or newer, build and install.
-# Then Set Catch2_DIR to the lib/cmake/Catch2 directory of the Catch2 installation.
+# To enable testing, clone https://github.com/catchorg/Catch2 2.10.2 or newer, build and install.
+# Then in the CMake GUI set Catch2_DIR to the lib/cmake/Catch2 directory of the Catch2 installation.
 find_package(Catch2 2.10.2 QUIET)
 if (Catch2_FOUND)
 	enable_testing()
@@ -34,9 +34,9 @@ add_custom_target(clang_format
 		"-P"
 		"${CMAKE_CURRENT_LIST_DIR}/CMake/clang_format.cmake")
 
-# To use TMIV as a sub project, build and install.
-# Then set TMIV_DIR to the lib/cmake/TMIV directory of the TMIV installation.
-# Then in the super project use find_package(TMIV 4.0.0 REQUIRED)
+# To use TMIV as a sub project, clone, build and install.
+# Then in the CMake GUI set TMIV_DIR to the lib/cmake/TMIV directory of the TMIV installation.
+# In the super project CMakeLists.txt use find_package(TMIV 4.0.0 REQUIRED)
 set(TMIV_CMAKE_CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/TMIV")
 
 install(

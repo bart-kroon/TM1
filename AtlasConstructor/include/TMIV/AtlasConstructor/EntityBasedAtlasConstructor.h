@@ -63,18 +63,19 @@ public:
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:
-  Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
-                                     Common::EntityMapList entityMaps, uint16_t entityId);
+  static Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
+                                            Common::EntityMapList entityMaps, uint16_t entityId);
   static std::vector<Common::Frame<Common::YUV420P16>> yuvSampler(const Common::EntityMapList &in);
-  void mergeViews(Common::MVD16Frame &entityMergedViews, Common::MVD16Frame transportEntityViews);
-  void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
-  void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
+  static void mergeViews(Common::MVD16Frame &entityMergedViews,
+                         Common::MVD16Frame transportEntityViews);
+  static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
+  static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void updateEntityMasks(Common::EntityMapList &entityMasks, const Common::MaskList &masks,
                          uint16_t entityId);
   void aggregateEntityMasks(Common::EntityMapList &entityMasks);
   void swap0(Common::EntityMapList &entityMasks);
-  static auto setView(Common::TextureDepth16Frame view, Common::EntityMap entityMask, int entityId)
-      -> Common::TextureDepth16Frame;
+  static auto setView(Common::TextureDepth16Frame view, const Common::EntityMap &entityMask,
+                      int entityId) -> Common::TextureDepth16Frame;
   void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
                          Common::MVD16Frame &atlas);
 
@@ -93,7 +94,7 @@ private:
   int m_fIndex{0};
   Common::EntityMapList m_aggregatedEntityMask;
   std::vector<Common::EntityMapList> m_entityMasksBuffer;
-  int m_maxEntities;
+  int m_maxEntities{};
   int m_frameInGOPIndex{0};
 };
 } // namespace TMIV::AtlasConstructor

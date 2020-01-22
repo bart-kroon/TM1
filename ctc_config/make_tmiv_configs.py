@@ -518,13 +518,16 @@ class EncoderConfiguration(DecoderConfiguration):
 			'SourceTexturePathFmt': self.sourceTexturePathFmt(),
 			'SourceDepthPathFmt': self.sourceDepthPathFmt(),
 			'SourceDepthBitDepth': self.sourceDepthBitDepth(),
-			'SourceEntityPathFmt': self.sourceEntityPathFmt(),
-			'SourceEntityBitDepth': self.sourceEntityBitDepth(),
 			'SourceCameraNames': self.sourceCameraNames(),
 			'OmafV1CompatibleFlag': self.omafV1CompatibleFlag(),
 			'EncoderMethod': 'GroupBasedEncoder',
 			'GroupBasedEncoder': self.encoder()
 		})
+		if self.anchorId == 'E17' or self.anchorId == 'E97':
+		    config.update({
+			    'SourceEntityPathFmt': self.sourceEntityPathFmt(),
+			    'SourceEntityBitDepth': self.sourceEntityBitDepth()
+		    })
 		return config
 		
 	def path(self):

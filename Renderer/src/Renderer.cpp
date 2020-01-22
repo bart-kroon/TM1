@@ -56,7 +56,7 @@ auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
   if (ivSequenceParams.maxEntities == 1) {
     m_inpainter->inplaceInpaint(viewport, target);
   }
-  
+
   // fading to grey with respect to viewing space
   if (ivSequenceParams.viewingSpace) {
     m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);

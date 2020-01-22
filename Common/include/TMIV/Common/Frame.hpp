@@ -184,7 +184,7 @@ template <class FORMAT> void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) c
 }
 
 template <typename FORMAT> void Frame<FORMAT>::fillZero() {
-  using base_type = detail::PixelFormatHelper<FORMAT>::base_type;
+  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
   for (int k = 0; k < getNumberOfPlanes(); ++k) {
     std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), base_type{0});
   }

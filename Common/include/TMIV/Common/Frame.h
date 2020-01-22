@@ -130,9 +130,7 @@ public:
   template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
   void filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
 
-  static constexpr auto neutralColor() {
-    return detail::PixelFormatHelper<FORMAT>::neutralColor();
-  }
+  static constexpr auto neutralColor() { return detail::PixelFormatHelper<FORMAT>::neutralColor(); }
 };
 
 Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame);

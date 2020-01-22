@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(DecoderLib
     "src/Decoder.cpp"
 	"src/Decoder.reg.hpp"
 	"include/TMIV/Decoder/IDecoder.h"
-    "include/TMIV/Decoder/Decoder.h")
+    "include/TMIV/Decoder/Decoder.h"	
+	)
 
 add_library(TMIV::DecoderLib
 	ALIAS DecoderLib)
@@ -16,8 +17,7 @@ target_link_libraries(DecoderLib
 
 target_include_directories(DecoderLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 add_executable(Decoder
 	"src/Decoder.main.cpp")
@@ -31,16 +31,10 @@ install(
 	TARGETS
 		Decoder
 		DecoderLib
-	EXPORT Decoder.Targets
-	ARCHIVE DESTINATION "lib"
-	RUNTIME DESTINATION "bin")
-
-install(
-	EXPORT Decoder.Targets
-	FILE "Decoder.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

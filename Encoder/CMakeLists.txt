@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(EncoderLib
     "src/Encoder.cpp"
@@ -6,7 +6,8 @@ add_library(EncoderLib
 	"src/Encoder.reg.hpp"
 	"include/TMIV/Encoder/IEncoder.h"
     "include/TMIV/Encoder/Encoder.h"
-	"include/TMIV/Encoder/GroupBasedEncoder.h")
+	"include/TMIV/Encoder/GroupBasedEncoder.h"
+	)
 
 add_library(TMIV::EncoderLib
 	ALIAS EncoderLib)
@@ -19,8 +20,7 @@ target_link_libraries(EncoderLib
 
 target_include_directories(EncoderLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 add_executable(Encoder
 	"src/Encoder.main.cpp"
@@ -37,16 +37,10 @@ install(
 	TARGETS
 		Encoder
 		EncoderLib
-	EXPORT Encoder.Targets
-	ARCHIVE DESTINATION "lib"
-	RUNTIME DESTINATION "bin")
-
-install(
-	EXPORT Encoder.Targets
-	FILE "Encoder.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(CommonLib
 	"src/Application.cpp"
@@ -22,7 +22,8 @@ add_library(CommonLib
 	"include/TMIV/Common/Transformation.h"
 	"include/TMIV/Common/Vector.h"
 	"include/TMIV/Common/Matrix.h"
-	"include/TMIV/Common/Array.h")
+	"include/TMIV/Common/Array.h"
+	)
 
 add_library(TMIV::CommonLib
 	ALIAS CommonLib)
@@ -36,19 +37,14 @@ target_compile_features(CommonLib
 	PUBLIC cxx_std_17)
 
 install(
-	TARGETS CommonLib
-	EXPORT Common.Targets
-	ARCHIVE DESTINATION "lib")
-
-install(
-	EXPORT Common.Targets
-	FILE "Common.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	TARGETS
+		CommonLib
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (CMAKE_TESTING_ENABLED)
 	add_executable(CommonTest "src/Common.test.cpp")

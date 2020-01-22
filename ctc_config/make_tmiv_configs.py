@@ -459,6 +459,11 @@ class EncoderConfiguration(DecoderConfiguration):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 6 * self.lumaSamplesPerView()
 		return 0
+		
+	def atlasConstructorMethod(self):
+		if self.anchorId == 'E97' or self.anchorId == 'E17':
+			return 'EntityBasedAtlasConstructor'
+		return 'AtlasConstructor'
 
 	def atlasConstructor(self):
 		config = {
@@ -484,17 +489,14 @@ class EncoderConfiguration(DecoderConfiguration):
 		}
 
 	def encoder(self):
-		config = {
+		return {
 			'ViewOptimizerMethod': self.viewOptimizerMethod(),
 			self.viewOptimizerMethod(): {},
-			'AtlasConstructorMethod': 'AtlasConstructor',
-			'AtlasConstructor': self.atlasConstructor(),
+			'AtlasConstructorMethod': self.atlasConstructorMethod(),
+			self.atlasConstructorMethod(): self.atlasConstructor(),
 			'DepthOccupancyMethod': 'DepthOccupancy',
 			'DepthOccupancy': self.depthOccupancy()
 		}
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			config['AtlasConstructorMethod'] = 'EntityBasedAtlasConstructor'
-		return config
 
 	def depthLowQualityFlag(self):
 		return self.seqId == 'E'

@@ -107,9 +107,9 @@ auto EntityBasedAtlasConstructor::yuvSampler(const EntityMapList &in) -> vector<
         step = 2;
       }
       int rowIndex = 0;
-      for (unsigned i = 0; i != height; i = i + step) {
+      for (int i = 0; i != height; i = i + step) {
         int colIndex = 0;
-        for (unsigned j = 0; j != width; j = j + step) {
+        for (int j = 0; j != width; j = j + step) {
           outYuv.getPlane(k)(rowIndex, colIndex) = viewId.getPlane(0)(i, j);
           colIndex++;
         }
@@ -123,7 +123,7 @@ auto EntityBasedAtlasConstructor::yuvSampler(const EntityMapList &in) -> vector<
 
 void EntityBasedAtlasConstructor::mergeViews(MVD16Frame &mergedViews,
                                              MVD16Frame transportEntityViews) {
-  for (int viewId = 0; viewId < mergedViews.size(); viewId++) {
+  for (size_t viewId = 0; viewId < mergedViews.size(); viewId++) {
     for (int planeId = 0; planeId < 3; planeId++) {
       vector<int> Indices(transportEntityViews[viewId].first.getPlane(planeId).size());
       std::iota(Indices.begin(), Indices.end(), 0);
@@ -147,7 +147,7 @@ void EntityBasedAtlasConstructor::mergeViews(MVD16Frame &mergedViews,
 }
 
 void EntityBasedAtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList masks) {
-  for (int viewId = 0; viewId < mergedMasks.size(); viewId++) {
+  for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
     vector<int> Indices(mergedMasks[viewId].getPlane(0).size());
     std::iota(Indices.begin(), Indices.end(), 0);
     std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
@@ -159,11 +159,11 @@ void EntityBasedAtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList mas
 }
 
 void EntityBasedAtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
-  for (int viewId = 0; viewId < views.size(); viewId++) {
+  for (size_t viewId = 0; viewId < views.size(); viewId++) {
     vector<int> Indices(masks[viewId].getPlane(0).size());
     std::iota(Indices.begin(), Indices.end(), 0);
     std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-      if ((views[viewId].first.getPlane(0)[i] == neutralChroma) &
+      if ((views[viewId].first.getPlane(0)[i] == neutralChroma) &&
           (views[viewId].second.getPlane(0)[i] == uint16_t(0))) {
         masks[viewId].getPlane(0)[i] = uint8_t(0);
       }
@@ -176,7 +176,7 @@ void EntityBasedAtlasConstructor::updateEntityMasks(EntityMapList &entityMasks,
   if (entityId == 0) {
     entityId = m_ivSequenceParams.maxEntities; // to avoid getting lost with the initalized 0s
   }
-  for (int viewId = 0; viewId < entityMasks.size(); viewId++) {
+  for (size_t viewId = 0; viewId < entityMasks.size(); viewId++) {
     vector<int> Indices(entityMasks[viewId].getPlane(0).size());
     std::iota(Indices.begin(), Indices.end(), 0);
     std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
@@ -238,7 +238,7 @@ auto EntityBasedAtlasConstructor::entitySeparator(MVD16Frame transportViews,
 
   auto entityMapsYUV = yuvSampler(entityMaps);
 
-  for (int viewId = 0; viewId < transportViews.size(); viewId++) {
+  for (size_t viewId = 0; viewId < transportViews.size(); viewId++) {
     for (int planeId = 0; planeId < transportViews[viewId].first.getNumberOfPlanes();
          planeId++) {                                                        //
       std::transform(transportViews[viewId].first.getPlane(planeId).begin(), // i's
@@ -291,7 +291,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
     entityMaps.push_back(transportView.entities);
   }
 
-  for (uint16_t entityId = m_EntityEncRange[0]; entityId <= m_EntityEncRange[1]; entityId++) {
+  for (auto entityId = m_EntityEncRange[0]; entityId < m_EntityEncRange[1]; entityId++) {
     cout << "Processing entity " << entityId << '\n';
 
     // Entity Separator

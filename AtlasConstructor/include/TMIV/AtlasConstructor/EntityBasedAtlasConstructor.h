@@ -94,7 +94,7 @@ private:
   int m_fIndex{0};
   Common::EntityMapList m_aggregatedEntityMask;
   std::vector<Common::EntityMapList> m_entityMasksBuffer;
-  int m_maxEntities{};
+  unsigned m_maxEntities{};
   int m_frameInGOPIndex{0};
 };
 } // namespace TMIV::AtlasConstructor

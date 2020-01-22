@@ -43,8 +43,6 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasConstructor {
-constexpr auto neutralChroma = uint16_t(512);
-
 AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
   // Components
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", rootNode, componentNode);
@@ -118,13 +116,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
-
-      for (auto &p : atlas.first.getPlanes()) {
-        fill(p.begin(), p.end(), neutralChroma);
-      }
-
-      fill(atlas.second.getPlane(0).begin(), atlas.second.getPlane(0).end(), uint16_t(0));
-
+      atlas.first.fillNeutral();
       atlasList.push_back(move(atlas));
     }
 

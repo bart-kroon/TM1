@@ -87,10 +87,12 @@ auto readFrame(const string &path, int frameIndex, Vec2i resolution) -> Frame<FO
   return result;
 }
 
-void padZeros(ostream &stream, int bytes) {
-  while (bytes-- > 0) {
-    stream.put(0);
-  }
+template <typename FORMAT> void padChroma(ostream &stream, int bytes) {
+  constexpr auto fillValue = neutralColor<FORMAT>();
+  const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
+  auto buffer = std::vector<char>(bytes);
+  memcpy(buffer.data(), padding.data(), buffer.size());
+  stream.write(buffer.data(), buffer.size());
 }
 
 template <typename FORMAT>
@@ -101,7 +103,7 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
   }
 
   frame.dump(stream);
-  padZeros(stream, frame.getDiskSize() - frame.getMemorySize());
+  padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());
 
   if (!stream.good()) {
     throw runtime_error("Failed to write to file: " + path);

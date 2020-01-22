@@ -37,6 +37,7 @@
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
 
+#include <cassert>
 #include <cstdint>
 #include <istream>
 #include <ostream>
@@ -55,6 +56,10 @@ class YUV444P16 {};
 namespace detail {
 template <class FORMAT> struct PixelFormatHelper {};
 } // namespace detail
+
+template <class FORMAT> constexpr auto neutralColor() {
+  return detail::PixelFormatHelper<FORMAT>::neutralColor();
+}
 
 template <class FORMAT> class Frame {
 public:
@@ -112,6 +117,13 @@ public:
 
   void read(std::istream &is, bool vFlip = false);
   void dump(std::ostream &os, bool vFlip = false) const;
+
+  // Set all pixels to the neutral color
+  void fillNeutral();
+
+  // Set invalid pixels to the neutral color
+  template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
+  void filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);
 };
 
 Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame);

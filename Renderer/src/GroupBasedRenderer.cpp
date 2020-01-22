@@ -81,11 +81,14 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   }
 
   // Inpainting
-  m_inpainter->inplaceInpaint(viewport, target);
+  if (ivSequenceParams.maxEntities == 1) {
+    m_inpainter->inplaceInpaint(viewport, target);
+  }
 
   // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
+  if (ivSequenceParams.viewingSpace) {
     m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  }
 
   return viewport;
 }
@@ -269,5 +272,4 @@ auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> boo
   }
   return distance * (1.F - angleWeight) < other.distance * (1.F - other.angleWeight);
 }
-
 } // namespace TMIV::Renderer

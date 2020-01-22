@@ -75,7 +75,8 @@ DepthTransform<bits>::DepthTransform(const ViewParams &viewParams,
 
 template <unsigned bits> auto DepthTransform<bits>::expandNormDisp(uint16_t x) const -> float {
   const auto level = Common::expandValue<bits>(std::max(m_depthStart, x));
-  return std::max(impl::minNormDisp, m_normDispRange[0] + (m_normDispRange[1] - m_normDispRange[0]) * level);
+  return std::max(impl::minNormDisp,
+                  m_normDispRange[0] + (m_normDispRange[1] - m_normDispRange[0]) * level);
 }
 
 template <unsigned bits> auto DepthTransform<bits>::expandDepth(uint16_t x) const -> float {
@@ -87,7 +88,7 @@ auto DepthTransform<bits>::expandDepth(const Common::Mat<uint16_t> &matrix) cons
     -> Common::Mat<float> {
   auto depth = Common::Mat<float>(matrix.sizes());
   std::transform(std::begin(matrix), std::end(matrix), std::begin(depth),
-            [this](uint16_t x) { return expandDepth(x); });
+                 [this](uint16_t x) { return expandDepth(x); });
   return depth;
 }
 
@@ -113,7 +114,7 @@ auto DepthTransform<bits>::quantizeNormDisp(const Common::Mat<float> &matrix,
   static_assert(bits == 16);
   auto frame = Common::Depth16Frame{int(matrix.width()), int(matrix.height())};
   std::transform(std::begin(matrix), std::end(matrix), std::begin(frame.getPlane(0)),
-            [=](float x) { return quantizeNormDisp(x, minLevel); });
+                 [=](float x) { return quantizeNormDisp(x, minLevel); });
   return frame;
 }
 } // namespace TMIV::Metadata

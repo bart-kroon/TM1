@@ -54,7 +54,6 @@ public:
   virtual void inplaceFading(Common::Texture444Depth16Frame &viewport,
                              const Metadata::ViewParams &metadata,
                              const Metadata::IvSequenceParams &ivSequenceParams) const = 0;
-
 };
 } // namespace TMIV::Renderer
 

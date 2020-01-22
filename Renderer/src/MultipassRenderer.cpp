@@ -230,8 +230,9 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
   m_inpainter->inplaceInpaint(viewport, target);
 
   // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
+  if (ivSequenceParams.viewingSpace) {
     m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  }
 
   return viewport;
 }

@@ -105,18 +105,26 @@ public:
 
 private:
   void prepareFrame(const MVD16Frame &views) {
-    createInitialMasks();
+    createInitialMasks(views);
     createSynthesizerPerPartialView(views);
     synthesizeReferenceViews(views);
   }
 
-  void createInitialMasks() {
+  void createInitialMasks(const MVD16Frame &views) {
     m_masks.clear();
-    for (auto &viewParams : m_viewParamsVector) {
-      m_masks.emplace_back(Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()});
-      auto &mask = m_masks.back();
-      fill(begin(mask.getPlane(0)), end(mask.getPlane(0)), uint8_t(255));
-    }
+    m_masks.reserve(views.size());
+    transform(cbegin(m_viewParamsVector), cend(m_viewParamsVector), cbegin(views),
+              back_inserter(m_masks),
+              [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
+                auto mask = Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()};
+                transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
+                          begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
+                            // #94: When there are invalid pixels in a basic view, these should be
+                            // excluded from the pruning mask
+                            return uint8_t(ot.occupant(x) ? 255 : 0);
+                          });
+                return mask;
+              });
   }
 
   void createSynthesizerPerPartialView(const MVD16Frame &views) {

@@ -84,7 +84,7 @@ TEST_CASE("Signed distance functions") {
     REQUIRE(signedDistance(hs2, {}, 0.1F * hs2.normal).isOutside());
   }
 
-  SECTION("Addition and subtraction") {
+  SECTION("Addition, subtraction, and intersection") {
     {
       const auto point = cuboid.center - 0.49F * cuboid.size;
       const auto sd1 = signedDistance(cuboid, {}, point);
@@ -94,6 +94,8 @@ TEST_CASE("Signed distance functions") {
       REQUIRE((sd1 + sd2).isInside());
       REQUIRE((sd1 - sd2).isInside());
       REQUIRE((sd2 - sd1).isOutside());
+      REQUIRE((sd1 & sd2).isOutside());
+      REQUIRE((sd2 & sd1).isOutside());
     }
     {
       const auto point = spheroid.center;
@@ -104,6 +106,8 @@ TEST_CASE("Signed distance functions") {
       REQUIRE((sd1 + sd2).isInside());
       REQUIRE((sd1 - sd2).isOutside());
       REQUIRE((sd2 - sd1).isOutside());
+      REQUIRE((sd1 & sd2).isInside());
+      REQUIRE((sd2 & sd1).isInside());
     }
   }
 }

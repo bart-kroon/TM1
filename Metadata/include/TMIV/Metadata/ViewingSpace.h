@@ -62,7 +62,8 @@ enum class PrimitiveShapeOperation {
 
 enum class ElementaryShapeOperation {
   add = 0,
-  subtract = 1
+  subtract = 1,
+  intersect = 2
 }; // In specification: elementary_shape_operation[ e ]
 
 using ElementaryShapeVector = std::vector<std::pair<ElementaryShapeOperation, ElementaryShape>>;

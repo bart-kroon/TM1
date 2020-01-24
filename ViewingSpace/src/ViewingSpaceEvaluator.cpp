@@ -403,6 +403,10 @@ auto ViewingSpaceEvaluator::computeInclusion(const Metadata::ViewingSpace &viewi
       global.sdBoundary -= eval.sdGuardBand;
       global.sdGuardBand -= eval.sdBoundary;
     }
+    if (e.first == ElementaryShapeOperation::intersect) {
+      global.sdBoundary &= eval.sdBoundary;
+      global.sdGuardBand &= eval.sdGuardBand;
+    }
     if (eval.sdBoundary.isInside()) {
       const float weight = -eval.sdBoundary.value;
       accumulatedDirectionWeight += weight;

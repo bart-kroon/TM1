@@ -36,12 +36,24 @@ import json
 import os
 import sys
 
+# Roundup resolution such that a downscaled resolution is still macroblock aligned
+def ResolutionAlignMacroblock(resolution, scale):
+	macroblock = 16
+	macroblockScaled = macroblock * scale
+	
+	remainder = resolution % macroblockScaled
+	if remainder == 0:
+		return resolution
+	else:
+		return resolution + macroblockScaled - remainder
+
 class DecoderConfiguration:
-	def __init__(self, sourceDir, anchorId, seqId, testPoint):
+	def __init__(self, sourceDir, anchorId, seqId, testPoint, depthScale):
 		self.sourceDir = sourceDir
 		self.anchorId = anchorId
 		self.seqId = seqId
 		self.testPoint = testPoint
+		self.depthScale = depthScale
 		with open(self.sequenceJsonPath(), 'r') as stream:			
 			self.sequenceParams = json.load(stream)
 
@@ -102,7 +114,7 @@ class DecoderConfiguration:
 
 	def atlasHeight(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
-			return {
+			h = {
 				'A': 3072,
 				'B': 2368,
 				'C': 5120,
@@ -112,7 +124,10 @@ class DecoderConfiguration:
 				'L': 1920,
 				'N': 2368
 			}[self.seqId]
-		return self.viewHeight()
+		else:
+			h = self.viewHeight()
+		return ResolutionAlignMacroblock(h, self.depthScale)
+		
 
 	def viewportWidth(self):
 		if self.outputCameraName()[0] == 'p':
@@ -146,8 +161,8 @@ class DecoderConfiguration:
 		return 'ATL_S{}_{}_Tt_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.testPoint, self.atlasWidth(), self.atlasHeight())
 
 	def atlasDepthPathFmt(self):
-		return 'ATL_S{}_{}_Td_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.testPoint, self.atlasWidth(), self.atlasHeight())
-
+		return 'ATL_S{}_{}_Td_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.testPoint, self.atlasWidth()//self.depthScale, self.atlasHeight()//self.depthScale)
+		
 	def atlasMetadataPath(self):
 		return 'ATL_S{}_{}_Tm_c00.bit'.format(self.seqId, self.testPoint)
 
@@ -180,7 +195,7 @@ class DecoderConfiguration:
 			'E': 13,
 			'J': 25,
 			'L': 10,
-            'N': 10
+			'N': 10
 		}[self.seqId]
 
 	def firstSourceView(self):
@@ -262,6 +277,7 @@ class DecoderConfiguration:
 
 	def parameters(self):
 		config = {
+			'depthDownScaleFlag': True if self.depthScale > 1 else False,
 			'numberOfFrames': self.numberOfFrames(),
 			'intraPeriod': self.intraPeriod(),
 			'SourceDirectory': self.sourceDirectory(),
@@ -277,7 +293,10 @@ class DecoderConfiguration:
 				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
 				'AtlasDeconstructor': self.atlasDeconstructor(),
 				'RendererMethod': self.rendererMethod(),
-				self.rendererMethod(): self.renderer()
+				self.rendererMethod(): self.renderer(),
+				"depthEdgeMagnitudeTh": 10,
+				"maxCurvature": 5,
+				"minForegroundConfidence": 0.5
 			}
 		}
 		if self.outputCameraName()[0] == 'p':
@@ -382,10 +401,11 @@ class AllDecoderConfigurations(DecoderConfiguration):
 		return self.allSourceCameraNames() + poseTraces
 	
 class EncoderConfiguration(DecoderConfiguration):
-	def __init__(self, sourceDir, anchorId, seqId):
-		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
+	def __init__(self, sourceDir, anchorId, seqId, depthScale):
+		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0', depthScale)
 		self.anchorId = anchorId
 		self.seqId = seqId
+		self.depthScale = depthScale
 
 	def viewOptimizerMethod(self):
 		if self.anchorId == 'V17' or self.anchorId == 'R17' or self.anchorId == 'R97':
@@ -512,6 +532,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		# Enabling reconstruction will run the decoder while encoding.
 		config = DecoderConfiguration.parameters(self)
 		config.update({
+			'depthDownScaleFlag': True if self.depthScale > 1 else False,
 			'depthLowQualityFlag': self.depthLowQualityFlag(),
 			'numGroups': self.numGroups(),
 			'maxEntities': self.maxEntities(),
@@ -535,32 +556,34 @@ class EncoderConfiguration(DecoderConfiguration):
 	def path(self):
 		return '{0}/S{1}/TMIV_{0}_S{1}.json'.format(self.anchorId, self.seqId)
 
-	def saveHmCfg(self):
-		path = '{0}/S{1}/HM_{0}_S{1}.cfg'.format(self.anchorId, self.seqId)
+	def saveHmCfg(self, component, scale):
+		path = '{0}/S{2}/HM_{0}_{1}_S{2}.cfg'.format(self.anchorId, component, self.seqId)
 		print(path)
 		with open(path, 'w') as stream:
 			stream.write('InputBitDepth: 10\n')
 			stream.write('InputChromaFormat: 420\n')
 			stream.write('FrameRate: 30\n')
 			stream.write('FrameSkip: 0\n')
-			stream.write('SourceWidth: {}\n'.format(self.atlasWidth()))
-			stream.write('SourceHeight: {}\n'.format(self.atlasHeight()))
+			stream.write('SourceWidth: {}\n'.format(self.atlasWidth()//scale))
+			stream.write('SourceHeight: {}\n'.format(self.atlasHeight()//scale))
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('Level: 5.2\n')
 
-def generate(anchorIds, seqIds, testPoints):
+def generate(anchorIds, seqIds, testPoints, depthScale):
 	for anchorId in anchorIds:
 		for seqId in seqIds:
-			config = EncoderConfiguration(sourceDir, anchorId, seqId)
+			config = EncoderConfiguration(sourceDir, anchorId, seqId, depthScale)
 			config.saveTmivJson()
 			if len(testPoints) > 1:
-				config.saveHmCfg()
+				config.saveHmCfg('Tt', 1)
+				config.saveHmCfg('Td', depthScale)
+
 
 	for testPoint in testPoints:
 		for anchorId in anchorIds:
 			for seqId in seqIds:
-				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint)
+				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint, depthScale)
 				config.saveTmivJson()
 
 if __name__ == '__main__':
@@ -578,6 +601,7 @@ if __name__ == '__main__':
 		print('The script should be run from the root of the output directory structure.')
 		exit(1)
 
+	depthScale = 2
 	sourceDir = '.'
 	if len(sys.argv) == 2:
 		sourceDir = sys.argv[1]
@@ -585,6 +609,6 @@ if __name__ == '__main__':
 	allSeqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
 	allTestPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']	
 
-	generate(['R17', 'R97'], allSeqIds, ['R0'])
-	generate(['A17', 'A97', 'V17'], allSeqIds, allTestPoints)
-	generate(['E17', 'E97'], ['B'], allTestPoints)
+	generate(['R17', 'R97'], allSeqIds, ['R0'], 1)
+	generate(['A17', 'A97', 'V17'], allSeqIds, allTestPoints, depthScale)
+	generate(['E17', 'E97'], ['B'], allTestPoints, depthScale)

@@ -58,9 +58,6 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &component
   if (m_numberOfPasses != m_numberOfViewsPerPass.size()) {
     throw runtime_error("NumberOfPasses and NumberOfViewsPerPass are inconsistent");
   }
-  if (auto subnode = componentNode.optional("MergeConflict")) {
-    m_mergeConflict = MergeMode(subnode.asInt());
-  }
 }
 
 namespace {
@@ -72,34 +69,9 @@ void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest
 }
 
 struct MultipassRendererHelper {
-  MergeMode mergeConflict{};
   vector<unsigned> selectedViewsPass;
   vector<unsigned> patchesViewId;
-
-  auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd) const -> uint16_t {
-    if (i > 0) {
-      if (id >= jd) { // Checking depth
-        return i;
-      }
-      // Handle conflict
-      switch (mergeConflict) {
-      case MergeMode::inpaint:
-        return 0;
-      case MergeMode::lowPass:
-        return i;
-      case MergeMode::highPass:
-        return j;
-      default:
-        abort();
-      }
-    }
-    return j;
-  }
-
-  auto filterMergeDepth(uint16_t i, uint16_t j) const -> uint16_t {
-    return filterMergeTexture(i, j, i, j);
-  }
-
+  
   auto filterMaps(uint16_t i) const -> uint16_t {
     if (i != unusedPatchId && contains(selectedViewsPass, patchesViewId[i])) {
       return i;
@@ -157,8 +129,6 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
                                     const ViewParams &target) const -> Texture444Depth16Frame {
   MultipassRendererHelper helper;
 
-  helper.mergeConflict = m_mergeConflict;
-
   assert(ivAccessUnitParams.atlasParamsList);
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
@@ -211,20 +181,16 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
   // Merging
   auto viewport = viewportPass[m_numberOfPasses - 1];
   for (auto passId = m_numberOfPasses - 1; passId > 0; passId--) {
-    transform(viewportPass[passId - 1].second.getPlane(0).begin(),
-              viewportPass[passId - 1].second.getPlane(0).end(),
-              viewport.second.getPlane(0).begin(), viewport.second.getPlane(0).begin(),
-              [&helper](auto i, auto j) { return helper.filterMergeDepth(i, j); });
-
-    for (auto i = 0; i < viewport.first.getNumberOfPlanes(); ++i) {
-      my_transform(
-          viewportPass[passId - 1].first.getPlane(i).begin(),
-          viewportPass[passId - 1].first.getPlane(i).end(), viewport.first.getPlane(i).begin(),
-          viewportPass[passId - 1].second.getPlane(0).begin(), viewport.second.getPlane(0).begin(),
-          viewport.first.getPlane(i).begin(), [&helper](auto i, auto j, auto id, auto jd) {
-            return helper.filterMergeTexture(i, j, id, jd);
-          });
-    }
+    vector<int> Indices(viewport.first.getPlane(0).size());
+    std::iota(Indices.begin(), Indices.end(), 0);
+    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+      if (viewportPass[passId - 1].second.getPlane(0)[i] != 0) {
+        // Always copy from the lower pass synthesis results if there is content there.
+        viewport.second.getPlane(0)[i] = viewportPass[passId - 1].second.getPlane(0)[i];
+        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+          viewport.first.getPlane(planeId)[i] = viewportPass[passId - 1].first.getPlane(planeId)[i];
+      }
+    });
   }
 
   m_inpainter->inplaceInpaint(viewport, target);

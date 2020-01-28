@@ -113,19 +113,24 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
 template <typename FORMAT>
 auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
                   const char *directory, const char *texturePathFmt, const char *depthPathFmt,
-                  const vector<string> &viewNames = {}) -> MVDFrame<FORMAT> {
-  cout << "Loading " << what << " frame " << frameIndex << endl;
+                  const vector<string> &viewNames = {}, bool downscaleDepth = false) -> MVDFrame<FORMAT> {
+  
+  cout << "Loading " << what << " frame " << frameIndex << " Downscale = " << downscaleDepth << endl;
 
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());
 
-  for (size_t i = 0; i < sizes.size(); ++i) {
+  for (size_t i = 0; i < sizes.size(); ++i) 
+  {
+    auto sizeDepthMap = sizes[i];
+    if (downscaleDepth) sizeDepthMap /= 2;
+    
     result.emplace_back(readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i,
                                                          viewNames.empty() ? "" : viewNames[i]),
                                              frameIndex, sizes[i]),
                         readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i,
                                                       viewNames.empty() ? "" : viewNames[i]),
-                                          frameIndex, sizes[i]));
+                                          frameIndex, sizeDepthMap));
   }
 
   return result;
@@ -296,8 +301,12 @@ void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame
 }
 
 auto loadAtlas(const Json &config, const SizeVector &atlasSize, int frameIndex) -> MVD10Frame {
+  
+  auto node = config.optional("depthDownScaleFlag");
+  bool downscaleDepth = node && node.asBool();
+
   return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
-                                 "AtlasTexturePathFmt", "AtlasDepthPathFmt");
+    "AtlasTexturePathFmt", "AtlasDepthPathFmt", {}, downscaleDepth);
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {

@@ -41,7 +41,7 @@
 namespace TMIV::AtlasDeconstructor {
 class AtlasDeconstructor : public IAtlasDeconstructor {
 public:
-  AtlasDeconstructor(const Common::Json & rootNode, const Common::Json & /*unused*/);
+  AtlasDeconstructor(const Common::Json & rootNode, const Common::Json & componentNode);
   AtlasDeconstructor(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor(AtlasDeconstructor &&) = default;
   AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;

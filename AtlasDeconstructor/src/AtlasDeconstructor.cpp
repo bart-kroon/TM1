@@ -44,11 +44,16 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasDeconstructor {
 
-AtlasDeconstructor::AtlasDeconstructor(const Json & rootNode, const Json & /*componentNode*/) 
+
+AtlasDeconstructor::AtlasDeconstructor(const Json & rootNode, const Json & componentNode) 
 {
-    if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
-        m_downscale_depth = node.asBool();
-    }
+  if (auto subnode = componentNode.optional("EntityDecodeRange")) {
+    m_entityDecodeRange = subnode.asIntVector<2>();
+  }
+  
+  if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
+    m_downscale_depth = node.asBool();
+  }
 
 }
 

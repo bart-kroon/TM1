@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(DepthOccupancyLib
     "src/DepthOccupancy.cpp"
 	"src/DepthOccupancy.reg.hpp"
 	"include/TMIV/DepthOccupancy/IDepthOccupancy.h"
-	"include/TMIV/DepthOccupancy/DepthOccupancy.h")
+	"include/TMIV/DepthOccupancy/DepthOccupancy.h"
+	)
 
 add_library(TMIV::DepthOccupancyLib
 	ALIAS DepthOccupancyLib)
@@ -17,25 +18,18 @@ target_link_libraries(DepthOccupancyLib
 
 target_include_directories(DepthOccupancyLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 install(
 	TARGETS
 		DepthOccupancyLib
-	EXPORT DepthOccupancy.Targets
-	ARCHIVE DESTINATION "lib")
-
-install(
-	EXPORT DepthOccupancy.Targets
-	FILE "DepthOccupancy.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
-	
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 if (CMAKE_TESTING_ENABLED)
 	add_executable(DepthOccupancyTest "src/DepthOccupancy.test.cpp")
 

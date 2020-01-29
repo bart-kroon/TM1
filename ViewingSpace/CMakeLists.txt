@@ -1,39 +1,32 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(ViewingSpaceLib
     "src/SignedDistance.cpp"
 	"src/ViewingSpaceEvaluator.cpp"
 	"include/TMIV/ViewingSpace/SignedDistance.h"
-	"include/TMIV/ViewingSpace/ViewingSpaceEvaluator.h")
+	"include/TMIV/ViewingSpace/ViewingSpaceEvaluator.h"
+	)
 
 add_library(TMIV::ViewingSpaceLib
 	ALIAS ViewingSpaceLib)
 
 target_link_libraries(ViewingSpaceLib
 	PUBLIC
-		TMIV::CommonLib
 		TMIV::MetadataLib)
 
 target_include_directories(ViewingSpaceLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 install(
 	TARGETS
 		ViewingSpaceLib
-	EXPORT ViewingSpace.Targets
-	ARCHIVE DESTINATION "lib")
-
-install(
-	EXPORT ViewingSpace.Targets
-	FILE "ViewingSpace.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 	
 if (CMAKE_TESTING_ENABLED)
 	add_executable(ViewingSpaceTest "src/ViewingSpace.test.cpp")
@@ -44,4 +37,4 @@ if (CMAKE_TESTING_ENABLED)
 			TMIV::ViewingSpaceLib)
 
 	catch_discover_tests(ViewingSpaceTest)
-endif()	
+endif()

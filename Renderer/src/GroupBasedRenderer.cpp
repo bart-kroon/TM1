@@ -254,52 +254,8 @@ void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
       }
     }
   });
-  /*
-  transform(viewportPass.second.getPlane(0).begin(), // i's
-            viewportPass.second.getPlane(0).end(),   //
-            viewport.second.getPlane(0).begin(),     // j's
-            viewport.second.getPlane(0).begin(),     // result
-            [=](auto i, auto j) { return filterMergeDepth(i, j, mergeMode); });
-
-  for (int d = 0; d < viewportPass.first.getNumberOfPlanes(); ++d) {
-    transform4(viewportPass.first.getPlane(d).begin(),  // i's
-               viewportPass.first.getPlane(d).end(),    //
-               viewport.first.getPlane(d).begin(),      // j's
-               viewportPass.second.getPlane(0).begin(), // id's
-               viewport.second.getPlane(0).begin(),     // jd's
-               viewport.first.getPlane(d).begin(),      // result
-               [=](auto i, auto j, auto id, auto jd) {
-                 return filterMergeTexture(i, j, id, jd, mergeMode);
-               });
-  }
-  */
-}
-/*
-auto GroupBasedRenderer::filterMergeDepth(uint16_t i, uint16_t j, MergeMode mergeMode) -> uint16_t {
-  return filterMergeTexture(i, j, i, j, mergeMode);
 }
 
-auto GroupBasedRenderer::filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd,
-                                            MergeMode mergeMode) -> uint16_t {
-  if (i > 0) {
-    if (id >= jd) { // Checking depth
-      return i;
-    }
-    // Handle conflict
-    switch (mergeMode) {
-    case MergeMode::inpaint:
-      return 0;
-    case MergeMode::lowPass:
-      return i;
-    case MergeMode::highPass:
-      return j;
-    default:
-      abort();
-    }
-  }
-  return j;
-}
-*/
 auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> bool {
   // avoid 0 < 0 when angleWeight == other.angleWeight == 1
   if (angleWeight == other.angleWeight) {

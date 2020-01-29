@@ -221,6 +221,40 @@ void transform4(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, 
 void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
                                       const Texture444Depth16Frame &viewportPass,
                                       MergeMode mergeMode) {
+  vector<int> Indices(viewport.first.getPlane(0).size());
+  std::iota(Indices.begin(), Indices.end(), 0);
+  std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    if (viewportPass.second.getPlane(0)[i] != 0) {
+      if (viewport.second.getPlane(0)[i] >= viewportPass.second.getPlane(0)[i]) {
+        // copy from lower pass synthesis results which have content from foreground objects
+        viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
+        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+          viewport.first.getPlane(planeId)[i] = viewportPass.first.getPlane(planeId)[i];
+      } else {
+        // Handle conflict
+        switch (mergeMode) {
+        case MergeMode::inpaint:
+          // put 0 in depth map, neutral color in texture, and let inpainter handle it
+          viewport.second.getPlane(0)[i] = 0;
+          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+            viewport.first.getPlane(planeId)[i] = TextureFrame::neutralColor();
+          break;
+        case MergeMode::lowPass:
+          // Always copy from the lower pass synthesis results if there is content there
+          viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
+          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+            viewport.first.getPlane(planeId)[i] =
+                viewportPass.first.getPlane(planeId)[i];
+          break;
+        case MergeMode::highPass:
+          break; // do nothing, as foreground objects will be always copyied from when merging.
+        default:
+          abort();
+        }
+      }
+    }
+  });
+  /*
   transform(viewportPass.second.getPlane(0).begin(), // i's
             viewportPass.second.getPlane(0).end(),   //
             viewport.second.getPlane(0).begin(),     // j's
@@ -238,8 +272,9 @@ void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
                  return filterMergeTexture(i, j, id, jd, mergeMode);
                });
   }
+  */
 }
-
+/*
 auto GroupBasedRenderer::filterMergeDepth(uint16_t i, uint16_t j, MergeMode mergeMode) -> uint16_t {
   return filterMergeTexture(i, j, i, j, mergeMode);
 }
@@ -264,7 +299,7 @@ auto GroupBasedRenderer::filterMergeTexture(uint16_t i, uint16_t j, uint16_t id,
   }
   return j;
 }
-
+*/
 auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> bool {
   // avoid 0 < 0 when angleWeight == other.angleWeight == 1
   if (angleWeight == other.angleWeight) {

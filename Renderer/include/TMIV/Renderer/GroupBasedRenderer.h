@@ -108,11 +108,12 @@ private:
   // Merge a render pass into the partial render result
   static void inplaceMerge(Common::Texture444Depth16Frame &viewport,
                            const Common::Texture444Depth16Frame &viewportPass, MergeMode mergeMode);
-
+  /*
   static auto filterMergeDepth(uint16_t i, uint16_t j, MergeMode mergeMode) -> uint16_t;
 
   static auto filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd,
                                  MergeMode mergeMode) -> uint16_t;
+								 */
 };
 } // namespace TMIV::Renderer
 

@@ -181,16 +181,14 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
   // Merging
   auto viewport = viewportPass[m_numberOfPasses - 1];
   for (auto passId = m_numberOfPasses - 1; passId > 0; passId--) {
-    vector<int> Indices(viewport.first.getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (size_t i = 0; i < viewport.first.getPlane(0).size(); i++) { 
       if (viewportPass[passId - 1].second.getPlane(0)[i] != 0) {
         // Always copy from the lower pass synthesis results if there is content there.
         viewport.second.getPlane(0)[i] = viewportPass[passId - 1].second.getPlane(0)[i];
         for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
           viewport.first.getPlane(planeId)[i] = viewportPass[passId - 1].first.getPlane(planeId)[i];
       }
-    });
+	}
   }
 
   m_inpainter->inplaceInpaint(viewport, target);

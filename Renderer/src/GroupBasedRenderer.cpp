@@ -221,9 +221,7 @@ void transform4(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, 
 void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
                                       const Texture444Depth16Frame &viewportPass,
                                       MergeMode mergeMode) {
-  vector<int> Indices(viewport.first.getPlane(0).size());
-  std::iota(Indices.begin(), Indices.end(), 0);
-  std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+  for (size_t i = 0; i < viewport.first.getPlane(0).size(); i++) { 
     if (viewportPass.second.getPlane(0)[i] != 0) {
       if (viewport.second.getPlane(0)[i] >= viewportPass.second.getPlane(0)[i]) {
         // copy from lower pass synthesis results which have content from foreground objects
@@ -243,8 +241,7 @@ void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
           // Always copy from the lower pass synthesis results if there is content there
           viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
           for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
-            viewport.first.getPlane(planeId)[i] =
-                viewportPass.first.getPlane(planeId)[i];
+            viewport.first.getPlane(planeId)[i] = viewportPass.first.getPlane(planeId)[i];
           break;
         case MergeMode::highPass:
           break; // do nothing, as foreground objects will be always copyied from when merging.
@@ -253,7 +250,7 @@ void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
         }
       }
     }
-  });
+  }
 }
 
 auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> bool {

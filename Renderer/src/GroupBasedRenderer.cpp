@@ -209,15 +209,6 @@ auto GroupBasedRenderer::viewPriority(const ViewParams &source, const ViewParams
   return {distance, angleWeight};
 }
 
-namespace {
-template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
-void transform4(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, Fn Func) {
-  for (; i1 != end1; ++i1, ++i2, ++i3, ++i4, ++dest) {
-    *dest = Func(*i1, *i2, *i3, *i4);
-  }
-}
-} // namespace
-
 void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
                                       const Texture444Depth16Frame &viewportPass,
                                       MergeMode mergeMode) {

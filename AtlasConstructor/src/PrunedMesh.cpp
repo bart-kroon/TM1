@@ -73,7 +73,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
 
         const auto depthTransform = DepthTransform<16>{viewParams};
 
-		for (int y = 0; y < size.y(); ++y) {
+        for (int y = 0; y < size.y(); ++y) {
           for (int x = 0; x < size.x(); ++x) {
             key.push_back(int(vertices.size()));
             const auto D_yx = D(y, x);

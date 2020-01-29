@@ -49,9 +49,8 @@ public:
   HierarchicalPruner &operator=(HierarchicalPruner &&) = delete;
   ~HierarchicalPruner() override;
 
-  auto prune(const Metadata::ViewParamsVector &viewParamsVector,
-                     const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
-      -> Common::MaskList override;
+  auto prune(const Metadata::ViewParamsVector &viewParamsVector, const Common::MVD16Frame &views,
+             const std::vector<bool> &isBasicView) -> Common::MaskList override;
 
 private:
   class Impl;

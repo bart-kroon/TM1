@@ -47,8 +47,10 @@ struct ViewingParams {
 
 class ViewingSpaceEvaluator {
   ViewingSpaceEvaluator() = delete;
+
 public:
-  static auto computeInclusion(const Metadata::ViewingSpace &viewingSpace, const ViewingParams &viewingParams) -> float;
+  static auto computeInclusion(const Metadata::ViewingSpace &viewingSpace,
+                               const ViewingParams &viewingParams) -> float;
 };
 
 } // namespace TMIV::ViewingSpace

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(AtlasConstructorLib
     "src/AtlasConstructor.cpp"
+    "src/EntityBasedAtlasConstructor.cpp"
 	"src/HierarchicalPruner.cpp"
 	"src/PrunedMesh.cpp"
 	"src/PrunedMesh.h"
@@ -14,6 +15,7 @@ add_library(AtlasConstructorLib
 	"src/AtlasConstructor.reg.hpp"
 	"include/TMIV/AtlasConstructor/IAtlasConstructor.h"
 	"include/TMIV/AtlasConstructor/AtlasConstructor.h"
+	"include/TMIV/AtlasConstructor/EntityBasedAtlasConstructor.h"
 	"include/TMIV/AtlasConstructor/IPruner.h"
 	"include/TMIV/AtlasConstructor/HierarchicalPruner.h"
 	"include/TMIV/AtlasConstructor/IAggregator.h"

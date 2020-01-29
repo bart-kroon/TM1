@@ -238,10 +238,8 @@ const auto viewingSpace = array{
                                                        60.F  // pitch_range
                                                    }}}}}}},
     ViewingSpace{
-        {{ElementaryShapeOperation::add,
-          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
-                                          1.F,
-                                          Vec3f{30.F, 45.F, 60.F},
+        {{ElementaryShapeOperation::intersect,
+          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}}, 1.F, Vec3f{30.F, 45.F, 60.F},
                                           PrimitiveShape::ViewingDirectionConstraint{
                                               15.F, // guard_band_direction_size
                                               90.F, // yaw_center
@@ -259,7 +257,7 @@ const auto viewingSpaceJson = array{
     "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"add\",\"ElementaryShape\": "
     "{\"PrimitiveShapeOperation\": \"add\",\"PrimitiveShapes\": [{\"PrimitiveShapeType\": "
     "\"cuboid\",\"Center\":[0,0,0],\"Size\":[0,0,0]}]}}]}",
-    "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"add\",\"ElementaryShape\":{"
+    "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"intersect\",\"ElementaryShape\":{"
     "\"PrimitiveShapeOperation\":\"add\",\"PrimitiveShapes\":[{\"PrimitiveShapeType\":\"Cuboid\","
     "\"GuardBandSize\":1.0,\"Rotation\":[30,45,60],\"ViewingDirectionConstraint\":{"
     "\"GuardBandDirectionSize\":15.0,\"YawCenter\":90.0,\"YawRange\":30.0,\"PitchCenter\":45.0,"
@@ -314,7 +312,7 @@ auto codingTest(const Type &reference, int size, Args &... args) -> bool {
 
   return actual == reference;
 }
-template <typename Type> auto loadJson(const std::string& str) -> Type {
+template <typename Type> auto loadJson(const std::string &str) -> Type {
   istringstream stream(str);
   Json json(stream);
   return Type::loadFromJson(json);
@@ -360,10 +358,10 @@ TEST_CASE("Metadata bitstreams") {
   }
 
   SECTION("viewing_space") {
-    REQUIRE(codingTest(examples::viewingSpace[0], 14));
+    REQUIRE(codingTest(examples::viewingSpace[0], 15));
     REQUIRE(codingTest(examples::viewingSpace[1], 25));
-    REQUIRE(codingTest(examples::viewingSpace[2], 22));
-    REQUIRE(codingTest(examples::viewingSpace[3], 22));
+    REQUIRE(codingTest(examples::viewingSpace[2], 23));
+    REQUIRE(codingTest(examples::viewingSpace[3], 23));
     REQUIRE(codingTest(examples::viewingSpace[4], 67));
   }
 }

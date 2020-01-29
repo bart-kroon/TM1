@@ -113,19 +113,24 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
 template <typename FORMAT>
 auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
                   const char *directory, const char *texturePathFmt, const char *depthPathFmt,
-                  const vector<string> &viewNames = {}) -> MVDFrame<FORMAT> {
-  cout << "Loading " << what << " frame " << frameIndex << endl;
+                  const vector<string> &viewNames = {}, bool downscaleDepth = false) -> MVDFrame<FORMAT> {
+  
+  cout << "Loading " << what << " frame " << frameIndex << " Downscale = " << downscaleDepth << endl;
 
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());
 
-  for (size_t i = 0; i < sizes.size(); ++i) {
+  for (size_t i = 0; i < sizes.size(); ++i) 
+  {
+    auto sizeDepthMap = sizes[i];
+    if (downscaleDepth) sizeDepthMap /= 2;
+    
     result.emplace_back(readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i,
                                                          viewNames.empty() ? "" : viewNames[i]),
                                              frameIndex, sizes[i]),
                         readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i,
                                                       viewNames.empty() ? "" : viewNames[i]),
-                                          frameIndex, sizes[i]));
+                                          frameIndex, sizeDepthMap));
   }
 
   return result;
@@ -226,14 +231,18 @@ namespace {
 template <typename FORMAT>
 auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes, int frameIndex)
     -> MVD16Frame {
-  auto frame = loadMVDFrame<FORMAT>(config, sizes,
-                                    frameIndex + config.require("startFrame").asInt(), "source",
-                                    "SourceDirectory", "SourceTexturePathFmt", "SourceDepthPathFmt",
-                                    config.require("SourceCameraNames").asStringVector());
+  const auto sourceFrameIndex = frameIndex + config.require("startFrame").asInt();
+  const auto viewNames = config.require("SourceCameraNames").asStringVector();
+
+  const auto frame =
+      loadMVDFrame<FORMAT>(config, sizes, sourceFrameIndex, "source", "SourceDirectory",
+                           "SourceTexturePathFmt", "SourceDepthPathFmt", viewNames);
+
   auto frame16 = MVD16Frame{};
   frame16.reserve(frame.size());
-  transform(begin(frame), end(frame), back_inserter(frame16),
-            [bits](TextureDepthFrame<FORMAT> &view) {
+
+  transform(cbegin(frame), cend(frame), back_inserter(frame16),
+            [bits](const TextureDepthFrame<FORMAT> &view) {
               auto view16 = TextureDepth16Frame{
                   move(view.first), Depth16Frame{view.second.getWidth(), view.second.getHeight()}};
               transform(begin(view.second.getPlane(0)), end(view.second.getPlane(0)),
@@ -246,6 +255,31 @@ auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
                         });
               return view16;
             });
+
+  if (config.optional("SourceEntityBitDepth")) {
+    const auto entityBits = config.require("SourceEntityBitDepth").asInt();
+    cout << "Loading entity map list for frame " << sourceFrameIndex << endl;
+
+    for (size_t i = 0; i < frame.size(); ++i) {
+      frame16[i].entities.resize(sizes[i].x(), sizes[i].y());
+      if (1 <= entityBits && entityBits <= 8) {
+        const auto entities = readFrame<YUV400P8>(
+            getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
+            sourceFrameIndex, sizes[i]);
+        copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
+             begin(frame16[i].entities.getPlane(0)));
+      } else if (9 <= entityBits && entityBits <= 16) {
+        const auto entities = readFrame<YUV400P16>(
+            getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
+            sourceFrameIndex, sizes[i]);
+        copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
+             begin(frame16[i].entities.getPlane(0)));
+      } else {
+        throw runtime_error("Invalid SourceEntityBitDepth");
+      }
+    }
+  }
+
   return frame16;
 }
 } // namespace
@@ -267,8 +301,12 @@ void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame
 }
 
 auto loadAtlas(const Json &config, const SizeVector &atlasSize, int frameIndex) -> MVD10Frame {
+  
+  auto node = config.optional("depthDownScaleFlag");
+  bool downscaleDepth = node && node.asBool();
+
   return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
-                                 "AtlasTexturePathFmt", "AtlasDepthPathFmt");
+    "AtlasTexturePathFmt", "AtlasDepthPathFmt", {}, downscaleDepth);
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {

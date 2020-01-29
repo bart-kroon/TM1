@@ -183,9 +183,16 @@ template <class FORMAT> void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) c
   }
 }
 
+template <typename FORMAT> void Frame<FORMAT>::fillZero() {
+  using base_type = typename detail::PixelFormatHelper<FORMAT>::base_type;
+  for (int k = 0; k < getNumberOfPlanes(); ++k) {
+    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), base_type{0});
+  }
+}
+
 template <typename FORMAT> void Frame<FORMAT>::fillNeutral() {
   for (int k = 0; k < getNumberOfPlanes(); ++k) {
-    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), neutralColor<FORMAT>());
+    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), neutralColor());
   }
 }
 
@@ -195,10 +202,10 @@ void Frame<FORMAT>::filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
   assert(depth.getSize() == getSize());
 
   for (int k = 0; k < getNumberOfPlanes(); ++k) {
-    for (int i = 0; i < getWidth(); ++i) {
-      for (int j = 0; j < getHeight(); ++j) {
+    for (int i = 0; i < getHeight(); ++i) {
+      for (int j = 0; j < getWidth(); ++j) {
         if (depth.getPlane(0)(i, j) == 0) {
-          getPlane(k)(i, j) = detail::PixelFormatHelper<FORMAT>::neutralColor();
+          getPlane(k)(i, j) = neutralColor();
         }
       }
     }

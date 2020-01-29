@@ -44,8 +44,7 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
                                                                 componentNode)},
       m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)},
       m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
-          "ViewingSpaceController", rootNode, componentNode)} {
-}
+          "ViewingSpaceController", rootNode, componentNode)} {}
 
 auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                            const IvSequenceParams &ivSequenceParams,
@@ -53,12 +52,16 @@ auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
                            const ViewParams &target) const -> Texture444Depth16Frame {
   auto viewport =
       m_synthesizer->renderFrame(atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
-  m_inpainter->inplaceInpaint(viewport, target);
-  
+
+  if (ivSequenceParams.maxEntities == 1) {
+    m_inpainter->inplaceInpaint(viewport, target);
+  }
+
   // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace)
+  if (ivSequenceParams.viewingSpace) {
     m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
-  
+  }
+
   return viewport;
 }
 } // namespace TMIV::Renderer

@@ -171,11 +171,11 @@ auto max(const heap::Vector<T> &A, const heap::Vector<T> &B) -> heap::Vector<T> 
   return detail::elementwiseMax(A, B);
 }
 template <typename T, size_t M>
-auto max(const stack::Vector<T, M>& A, const stack::Vector<T, M>& B) -> stack::Vector<T, M> {
+auto max(const stack::Vector<T, M> &A, const stack::Vector<T, M> &B) -> stack::Vector<T, M> {
   return detail::elementwiseMax(A, B);
 }
 
-template <typename T> auto abs(const heap::Vector<T>& A) -> heap::Vector<T> {
+template <typename T> auto abs(const heap::Vector<T> &A) -> heap::Vector<T> {
   return detail::elementwiseAbs(A);
 }
 template <typename T, size_t M> auto abs(const stack::Vector<T, M> &A) -> stack::Vector<T, M> {

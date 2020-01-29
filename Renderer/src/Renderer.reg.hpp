@@ -32,9 +32,9 @@
  */
 
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Renderer/GroupBasedRenderer.h>
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
 #include <TMIV/Renderer/NoInpainter.h>
 #include <TMIV/Renderer/Renderer.h>
 #include <TMIV/Renderer/Synthesizer.h>

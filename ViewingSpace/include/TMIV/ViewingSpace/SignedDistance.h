@@ -60,12 +60,21 @@ struct SignedDistance {
     return SignedDistance(std::max(value, -other.value));
   }
 
+  //! \brief Compute signed distance corresponding to intersection of shapes.
+  auto operator&(const SignedDistance &other) const -> SignedDistance {
+    return SignedDistance(std::max(value, other.value));
+  }
+
   auto operator+=(const SignedDistance &other) -> SignedDistance & {
     *this = (*this + other);
     return *this;
   }
   auto operator-=(const SignedDistance &other) -> SignedDistance & {
     *this = (*this - other);
+    return *this;
+  }
+  auto operator&=(const SignedDistance &other) -> SignedDistance & {
+    *this = (*this & other);
     return *this;
   }
 

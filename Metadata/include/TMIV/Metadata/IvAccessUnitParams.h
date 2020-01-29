@@ -58,7 +58,7 @@ struct AtlasParameters {
   unsigned viewId{};
 
   // In specification: entity_id[ a ][ p ]
-  std::optional<unsigned> entityId{};
+  std::optional<uint16_t> entityId{};
 
   // In specification: patch_width_in_view_minus1[ a ][ p ]
   // In specification: patch_height_in_view_minus1[ a ][ p ]

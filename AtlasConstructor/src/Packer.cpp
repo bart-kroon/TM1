@@ -33,6 +33,7 @@
 
 #include "MaxRectPiP.h"
 #include <TMIV/AtlasConstructor/Packer.h>
+#include <iostream>
 #include <queue>
 #include <stdexcept>
 
@@ -42,16 +43,39 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasConstructor {
 
-Packer::Packer(const Json & /*rootNode*/, const Json &componentNode) {
+Packer::Packer(const Json &rootNode, const Json &componentNode) {
   m_alignment = componentNode.require("Alignment").asInt();
   m_minPatchSize = componentNode.require("MinPatchSize").asInt();
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
+  m_maxEntities = rootNode.require("maxEntities").asInt();
+  if (m_maxEntities > 1) {
+    m_EntityEncodeRange = rootNode.require("GroupBasedEncoder")
+                              .require("EntityBasedAtlasConstructor")
+                              .require("EntityEncodeRange")
+                              .asIntVector<2>();
+  }
+}
+
+void Packer::updateAggregatedEntityMasks(const EntityMapList &entityMasks) {
+  for (const auto &entityMask : entityMasks) {
+    m_aggregatedEntityMasks.push_back(entityMask);
+  }
+}
+
+auto Packer::setMask(int viewId, int entityId) -> Mask {
+  Mask mask(m_aggregatedEntityMasks[viewId].getWidth(),
+            m_aggregatedEntityMasks[viewId].getHeight());
+  for (size_t i = 0; i < mask.getPlane(0).size(); ++i) {
+    if (entityId == m_aggregatedEntityMasks[viewId].getPlane(0)[i]) {
+      mask.getPlane(0)[i] = uint8_t(255);
+    }
+  }
+  return mask;
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                   const vector<bool> &isBasicView) -> AtlasParamsVector {
-
   // Check atlas size
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % m_alignment) != 0) || ((sz.y() % m_alignment) != 0)) {
@@ -64,11 +88,34 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   ClusteringMapList clusteringMap;
 
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
-    auto clusteringOutput = Cluster::retrieve(
-        viewId, masks[viewId], static_cast<int>(clusterList.size()), isBasicView[viewId]);
+    if (m_maxEntities > 1) {
+      for (int entityId = m_EntityEncodeRange[0]; entityId < m_EntityEncodeRange[1]; entityId++) {
+        // Entity clustering
+        Mask mask = setMask(viewId, entityId);
 
-    move(clusteringOutput.first.begin(), clusteringOutput.first.end(), back_inserter(clusterList));
-    clusteringMap.push_back(move(clusteringOutput.second));
+        auto clusteringOutput = Cluster::retrieve(
+            viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId]);
+
+        for (auto &cluster : clusteringOutput.first) {
+          cluster = Cluster::setEntityId(cluster, entityId);
+        }
+
+        move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
+             back_inserter(clusterList));
+        clusteringMap.push_back(move(clusteringOutput.second));
+        if (!clusteringOutput.first.empty()) {
+          cout << "entity " << entityId << " from view " << viewId << " results in "
+               << clusteringOutput.first.size() << " patches\n";
+        }
+      }
+    } else {
+      auto clusteringOutput = Cluster::retrieve(
+          viewId, masks[viewId], static_cast<int>(clusterList.size()), isBasicView[viewId]);
+
+      move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
+           back_inserter(clusterList));
+      clusteringMap.push_back(move(clusteringOutput.second));
+    }
   }
 
   // Packing
@@ -85,6 +132,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
       return isBasicView[p2.getViewId()];
     }
+    if (m_maxEntities > 1) {
+      return p1.getNumActivePixels() < p2.getNumActivePixels();
+    }
     return p1.getArea() < p2.getArea();
   };
 
@@ -95,8 +145,19 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     Cluster c = Cluster::align(cluster, 2);
     clusterToPack.push(c);
   }
+
+  int pIndex = 0;
+  int clusteringMap_viewId;
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
+
+    if (m_maxEntities > 1) {
+      clusteringMap_viewId =
+          (cluster.getEntityId() - m_EntityEncodeRange[0]) * static_cast<int>(masks.size()) +
+          cluster.getViewId();
+    } else {
+      clusteringMap_viewId = cluster.getViewId();
+    }
 
     if (m_minPatchSize <= cluster.getMinSize()) {
       bool packed = false;
@@ -104,7 +165,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
         MaxRectPiP &packer = packerList[atlasId];
 
-        if (packer.push(cluster, clusteringMap[cluster.getViewId()], packerOutput)) {
+        if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
           AtlasParameters p;
 
           p.atlasId = static_cast<uint8_t>(atlasId);
@@ -124,7 +185,15 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
             p.posInView.y() -= patchOverflow.y();
           }
 
+          if (m_maxEntities > 1) {
+            p.entityId = cluster.getEntityId();
+            cout << "Packing patch " << pIndex << " of entity " << *p.entityId << " from view "
+                 << p.viewId << " with #active pixels " << cluster.getNumActivePixels()
+                 << " in atlas " << static_cast<int>(p.atlasId) << endl;
+          }
+
           atlasParamsVector.push_back(p);
+          pIndex++;
 
           packed = true;
           break;
@@ -132,7 +201,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       }
 
       if (!packed) {
-        auto cc = cluster.split(clusteringMap[cluster.getViewId()], m_overlap);
+        auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 
         if (m_minPatchSize <= cc.first.getMinSize()) {
           // modification to align the imin,jmin to even values to help renderer

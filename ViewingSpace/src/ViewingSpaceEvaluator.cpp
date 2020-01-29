@@ -125,21 +125,22 @@ static auto evaluateAddition(const PrimitiveShapeVector &primitives,
 
 namespace MiscInterpolation {
 
-Vec3f normalToPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3) {
+auto normalToPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3) -> Vec3f {
   Vec3f normal = cross(pos2 - pos1, pos3 - pos1);
   normal /= norm(normal);
   return normal;
 }
 
-Vec4f orthogonalPlane(Vec3f pos1, Vec3f pos2, Vec4f predecessor) {
+auto orthogonalPlane(Vec3f pos1, Vec3f pos2, Vec4f predecessor) -> Vec4f {
   Vec3f normal = (pos1 - pos2) / norm(pos2 - pos1);
   Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
-  if (dot(normal, normal_pred) < 0)
+  if (dot(normal, normal_pred) < 0) {
     normal *= -1;
+  }
   return Vec4f({normal[0], normal[1], normal[2], -dot(pos1, normal)});
 }
 
-Vec4f bisectingPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3, Vec4f predecessor) {
+auto bisectingPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3, Vec4f predecessor) -> Vec4f {
   Vec3f vec1 = pos1 - pos2;
   vec1 /= norm(vec1);
   Vec3f vec3 = pos3 - pos2;
@@ -150,23 +151,26 @@ Vec4f bisectingPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3, Vec4f predecessor) {
     Vec3f normal1 = normalToPlane(pos1, pos2, pos3);
     Vec3f normal2 = cross(bisecting_dir, normal1);
     Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
-    if (dot(normal2, normal_pred) < 0)
+    if (dot(normal2, normal_pred) < 0) {
       normal2 *= -1;
+    }
     return Vec4f({normal2[0], normal2[1], normal2[2], -dot(pos2, normal2)});
-  } else // note: degenerate case, 3 aligned points
+  }
+  { // note: degenerate case, 3 aligned points
     return orthogonalPlane(pos2, pos1, predecessor);
+  }
 }
 
-float distanceToPlane(Vec4f plane, Vec3f point) {
+auto distanceToPlane(Vec4f plane, Vec3f point) -> float {
   Vec3f normal({plane[0], plane[1], plane[2]});
   return dot(point, normal) + plane[3];
 }
 
-Vec3f projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) {
+auto projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) -> Vec3f {
   Vec3f pp;
-  if (a == b)
+  if (a == b) {
     pp = a;
-  else {
+  } else {
     Vec4f pplane = Vec4f({normal[0], normal[1], normal[2], -dot(point, normal)});
     float aap = abs(distanceToPlane(pplane, a));
     float bbp = abs(distanceToPlane(pplane, b));
@@ -179,20 +183,21 @@ Vec3f projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) {
 static auto computeBisectPlanes(const PrimitiveShapeVector &primitives) -> std::vector<Vec4f> {
   auto nvb = primitives.size();
   std::vector<Vec3f> center(nvb);
-  for (auto i = 0; i < nvb; i++) {
-    if (primitives[i].shapeType() == PrimitiveShapeType::spheroid)
+  for (size_t i = 0; i < nvb; i++) {
+    if (primitives[i].shapeType() == PrimitiveShapeType::spheroid) {
       center[i] = std::get<Spheroid>(primitives[i].primitive).center;
-    else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid)
+    } else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid) {
       center[i] = std::get<Cuboid>(primitives[i].primitive).center;
+    }
   }
 
   std::vector<Vec4f> bisect;
   Vec4f predecessor;
-  for (auto i = 0; i < nvb; i++) {
+  for (size_t i = 0; i < nvb; i++) {
     if (i == 0) {
       predecessor = {1, 0, 0, 0};
       bisect.push_back(MiscInterpolation::orthogonalPlane(center[0], center[1], predecessor));
-    } else if (i < nvb - 1) {
+    } else if (i + 1 < nvb) {
       predecessor = bisect[i - 1];
       bisect.push_back(
           MiscInterpolation::bisectingPlane(center[i - 1], center[i], center[i + 1], predecessor));
@@ -205,8 +210,8 @@ static auto computeBisectPlanes(const PrimitiveShapeVector &primitives) -> std::
 }
 } // namespace MiscInterpolation
 
-PrimitiveShape interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f center,
-                                float w) {
+auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f center, float w)
+    -> PrimitiveShape {
   PrimitiveShape output(a);
   assert(a.shapeType() == b.shapeType());
   assert(a.shapeType() == PrimitiveShapeType::spheroid ||
@@ -216,7 +221,7 @@ PrimitiveShape interpolateShape(const PrimitiveShape a, const PrimitiveShape b, 
   if (a.shapeType() == PrimitiveShapeType::spheroid) {
     Vec3f ra = std::get<Spheroid>(a.primitive).radius;
     Vec3f rb = std::get<Spheroid>(b.primitive).radius;
-    std::get<Spheroid>(output.primitive).radius = (float)(1. - w) * ra + w * rb;
+    std::get<Spheroid>(output.primitive).radius = (1.F - w) * ra + w * rb;
     std::get<Spheroid>(output.primitive).center = center;
 #ifdef _VERBOSE
     std::cout << "interpolated shape:" << std::endl;
@@ -240,7 +245,7 @@ PrimitiveShape interpolateShape(const PrimitiveShape a, const PrimitiveShape b, 
   // guard band size
   float gba = a.guardBandSize.value_or(0.F);
   float gbb = b.guardBandSize.value_or(0.F);
-  output.guardBandSize = (float)(1.F - w) * gba + w * gbb;
+  output.guardBandSize = (1.F - w) * gba + w * gbb;
 #ifdef _VERBOSE
   std::cout << "  guard band = " << output.guardBandSize.value() << std::endl;
 #endif
@@ -256,8 +261,7 @@ PrimitiveShape interpolateShape(const PrimitiveShape a, const PrimitiveShape b, 
   // directional guard band size
   float vgba = a.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
   float vgbb = b.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
-  output.viewingDirectionConstraint.value().guardBandDirectionSize =
-      (float)(1. - w) * vgba + w * vgbb;
+  output.viewingDirectionConstraint.value().guardBandDirectionSize = (1.F - w) * vgba + w * vgbb;
 #ifdef _VERBOSE
   std::cout << "  viewing direction guard band = "
             << output.viewingDirectionConstraint.value().guardBandDirectionSize.value()
@@ -273,7 +277,7 @@ static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
   static auto bisect = MiscInterpolation::computeBisectPlanes(primitives);
 
   // interpolate primitive shape and evaluate distance
-  int nvb = (int)primitives.size();
+  int nvb = static_cast<int>(primitives.size());
   if (nvb > 1) {
     Vec2i segment;
     Vec3f pos = viewingParams.viewPosition;
@@ -282,37 +286,40 @@ static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
     std::vector<Vec3f> center(nvb);
     std::vector<float> dist;
     for (auto i = 0; i < nvb; i++) {
-      if (primitives[i].shapeType() == PrimitiveShapeType::spheroid)
+      if (primitives[i].shapeType() == PrimitiveShapeType::spheroid) {
         center[i] = std::get<Spheroid>(primitives[i].primitive).center;
-      else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid)
+      } else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid) {
         center[i] = std::get<Cuboid>(primitives[i].primitive).center;
+      }
       dist.push_back(norm(pos - center[i]));
     }
 
     // find closest shape
     std::vector<float>::iterator it;
     it = std::min_element(dist.begin(), dist.end());
-    int closest = (int)std::distance(dist.begin(), it);
+    int closest = static_cast<int>(std::distance(dist.begin(), it));
 
     // find segment of attachment
-    if (closest == 0)
+    if (closest == 0) {
       segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[0], pos)) ==
                  std::signbit(MiscInterpolation::distanceToPlane(bisect[1], pos)))
                     ? Vec2i({0, 0})
                     : Vec2i({0, 1});
-    else if (closest == nvb - 1)
+    } else if (closest == nvb - 1) {
       segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[nvb - 1], pos)) ==
                  std::signbit(MiscInterpolation::distanceToPlane(bisect[nvb - 2], pos)))
                     ? Vec2i({nvb - 1, nvb - 1})
                     : Vec2i({nvb - 2, nvb - 1});
-    else
+    } else {
       segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[closest - 1], pos)) ==
                  std::signbit(MiscInterpolation::distanceToPlane(bisect[closest], pos)))
                     ? Vec2i({closest, closest + 1})
                     : Vec2i({closest - 1, closest});
+    }
 
     // compute position of interpolated shape within segment of attachment
-    int start(segment[0]), end(segment[1]);
+    int start(segment[0]);
+    int end(segment[1]);
     float w = (start != end) ? dist[start] / (dist[start] + dist[end]) : 0;
     Vec3f n_start({bisect[start][0], bisect[start][1], bisect[start][2]});
     Vec3f n_end({bisect[end][0], bisect[end][1], bisect[end][2]});
@@ -329,8 +336,9 @@ static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
     // evaluate distance to interpolated shape
     result = evaluate(shape, viewingParams);
 
-  } else
+  } else {
     result = evaluate(primitives[0], viewingParams);
+  }
 #ifdef _VERBOSE
   std::cout << "signed distance = " << result.sdBoundary.value << std::endl;
   std::cout << "signed distance + guard band = " << result.sdGuardBand.value << std::endl;
@@ -395,6 +403,10 @@ auto ViewingSpaceEvaluator::computeInclusion(const Metadata::ViewingSpace &viewi
       global.sdBoundary -= eval.sdGuardBand;
       global.sdGuardBand -= eval.sdBoundary;
     }
+    if (e.first == ElementaryShapeOperation::intersect) {
+      global.sdBoundary &= eval.sdBoundary;
+      global.sdGuardBand &= eval.sdGuardBand;
+    }
     if (eval.sdBoundary.isInside()) {
       const float weight = -eval.sdBoundary.value;
       accumulatedDirectionWeight += weight;
@@ -414,7 +426,7 @@ auto ViewingSpaceEvaluator::computeInclusion(const Metadata::ViewingSpace &viewi
 
 #ifdef _VERBOSE
   std::cout << "kPosition = " << kPosition << std::endl;
-  if (kPosition) {
+  if (kPosition != 0.F) {
     std::cout << "kYaw = " << kYaw << std::endl;
     std::cout << "kPitch = " << kPitch << std::endl;
   }

@@ -101,8 +101,8 @@ private:
 
   enum class MergeMode {
     inpaint = 0, // let the inpainter fill
-    lowPass = 1, // fill from the low-pass synthesis results which are in the background
-    highPass = 2 // fill from the high-pass synthesis results which are in the foreground
+    lowPass = 1, // fill always from the lower pass whether belong to foreground or background
+    foreground = 2 // fill always from the foreground whether belong to lower pass or high pass
   };
 
   // Merge a render pass into the partial render result

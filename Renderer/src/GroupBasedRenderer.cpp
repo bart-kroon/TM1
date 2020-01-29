@@ -214,7 +214,7 @@ void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
                                       MergeMode mergeMode) {
   for (size_t i = 0; i < viewport.first.getPlane(0).size(); i++) { 
     if (viewportPass.second.getPlane(0)[i] != 0) {
-      if (viewport.second.getPlane(0)[i] >= viewportPass.second.getPlane(0)[i]) {
+      if (viewport.second.getPlane(0)[i] < viewportPass.second.getPlane(0)[i]) {
         // copy from lower pass synthesis results which have content from foreground objects
         viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
         for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
@@ -234,7 +234,7 @@ void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
           for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
             viewport.first.getPlane(planeId)[i] = viewportPass.first.getPlane(planeId)[i];
           break;
-        case MergeMode::highPass:
+        case MergeMode::foreground:
           break; // do nothing, as foreground objects will be always copyied from when merging.
         default:
           abort();

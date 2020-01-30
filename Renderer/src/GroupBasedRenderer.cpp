@@ -77,7 +77,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   auto viewport = move(viewportPass.back());
   for (auto pass = ivSequenceParams.numGroups - 1; pass > 0; --pass) {
     inplaceMerge(viewport, viewportPass[pass - 1],
-                 ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::highPass);
+                 ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::foreground);
   }
 
   // Inpainting

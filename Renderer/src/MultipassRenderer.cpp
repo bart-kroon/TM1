@@ -61,12 +61,6 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &component
 }
 
 namespace {
-template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
-void my_transform(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, Fn Func) {
-  for (; i1 != end1; ++i1, ++i2, ++i3, ++i4, ++dest) {
-    *dest = Func(*i1, *i2, *i3, *i4);
-  }
-}
 
 struct MultipassRendererHelper {
   vector<unsigned> selectedViewsPass;

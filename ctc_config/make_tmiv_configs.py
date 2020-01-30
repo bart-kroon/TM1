@@ -75,7 +75,7 @@ class DecoderConfiguration:
 		return {
 			'A': 'ClassroomVideo',
 			'B': 'TechnicolorMuseum',
-			'C': 'TechnicolorHijack',
+			'C': 'InterdigitalHijack',
 			'D': 'TechnicolorPainter',
 			'E': 'IntelFrog',
 			'J': 'OrangeKitchen',

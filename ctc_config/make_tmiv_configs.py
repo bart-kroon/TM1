@@ -115,14 +115,14 @@ class DecoderConfiguration:
 	def atlasHeight(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			h = {
-				'A': 3072,
-				'B': 2368,
-				'C': 5120,
-				'D': 2048,
-				'E': 1080,
-				'J': 1080,
-				'L': 1920,
-				'N': 2368
+				'A': 4096,
+				'B': 2736,
+				'C': 2048,
+				'D': 2736,
+				'E': 1456,
+				'J': 1456,
+				'L': 2912,
+				'N': 2736
 			}[self.seqId]
 		else:
 			h = self.viewHeight()

@@ -158,73 +158,69 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 
+    if (m_maxEntities > 1) {
+      clusteringMap_viewId =
+          (cluster.getEntityId() - m_EntityEncodeRange[0]) * static_cast<int>(masks.size()) +
+          cluster.getViewId();
+    } else {
+      clusteringMap_viewId = cluster.getViewId();
+    }
+
     if (m_minPatchSize * m_minPatchSize <= cluster.getArea()) {
-      if (m_maxEntities > 1) {
-        clusteringMap_viewId =
-            (cluster.getEntityId() - m_EntityEncodeRange[0]) * static_cast<int>(masks.size()) +
-            cluster.getViewId();
-      } else {
-        clusteringMap_viewId = cluster.getViewId();
+      bool packed = false;
+
+      for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
+        MaxRectPiP &packer = packerList[atlasId];
+
+        if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
+          AtlasParameters p;
+
+          p.atlasId = static_cast<uint8_t>(atlasId);
+          p.viewId = static_cast<uint8_t>(cluster.getViewId());
+          p.patchSizeInView = {align(cluster.width(), m_alignment),
+                               align(cluster.height(), m_alignment)};
+          p.posInView = {cluster.jmin(), cluster.imin()};
+          p.posInAtlas = {packerOutput.x(), packerOutput.y()};
+          p.rotation = packerOutput.isRotated() ? PatchRotation::rot270 : PatchRotation::none;
+
+          auto patchOverflow =
+              (p.posInView + p.patchSizeInView) - masks[cluster.getViewId()].getSize();
+          if (patchOverflow.x() > 0) {
+            p.posInView.x() -= patchOverflow.x();
+          }
+          if (patchOverflow.y() > 0) {
+            p.posInView.y() -= patchOverflow.y();
+          }
+
+          if (m_maxEntities > 1) {
+            p.entityId = cluster.getEntityId();
+            cout << "Packing patch " << pIndex << " of entity " << *p.entityId << " from view "
+                 << p.viewId << " with #active pixels " << cluster.getNumActivePixels()
+                 << " in atlas " << static_cast<int>(p.atlasId) << endl;
+          }
+
+          atlasParamsVector.push_back(p);
+          pIndex++;
+
+          packed = true;
+          break;
+        }
       }
 
-      if (m_minPatchSize <= cluster.getMinSize()) {
-        bool packed = false;
+      if (!packed) {
 
-        for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
-          MaxRectPiP &packer = packerList[atlasId];
+        auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 
-          if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
-            AtlasParameters p;
-
-            p.atlasId = static_cast<uint8_t>(atlasId);
-            p.viewId = static_cast<uint8_t>(cluster.getViewId());
-            p.patchSizeInView = {align(cluster.width(), m_alignment),
-                                 align(cluster.height(), m_alignment)};
-            p.posInView = {cluster.jmin(), cluster.imin()};
-            p.posInAtlas = {packerOutput.x(), packerOutput.y()};
-            p.rotation = packerOutput.isRotated() ? PatchRotation::rot270 : PatchRotation::none;
-
-            auto patchOverflow =
-                (p.posInView + p.patchSizeInView) - masks[cluster.getViewId()].getSize();
-            if (patchOverflow.x() > 0) {
-              p.posInView.x() -= patchOverflow.x();
-            }
-            if (patchOverflow.y() > 0) {
-              p.posInView.y() -= patchOverflow.y();
-            }
-
-            if (m_maxEntities > 1) {
-              p.entityId = cluster.getEntityId();
-              cout << "Packing patch " << pIndex << " of entity " << *p.entityId << " from view "
-                   << p.viewId << " with #active pixels " << cluster.getNumActivePixels()
-                   << " in atlas " << static_cast<int>(p.atlasId) << endl;
-            }
-
-            atlasParamsVector.push_back(p);
-            pIndex++;
-
-            packed = true;
-            break;
-          }
+        if (m_minPatchSize * m_minPatchSize <= cc.first.getArea()) {
+          // modification to align the imin,jmin to even values to help renderer
+          Cluster c = Cluster::align(cc.first, 2);
+          clusterToPack.push(c);
         }
 
-        if (!packed) {
-
-          auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
-
-          if (m_minPatchSize * m_minPatchSize <= cc.first.getArea()) {
-            // if (m_minPatchSize  <= cc.first.getMinSize()) {
-            // modification to align the imin,jmin to even values to help renderer
-            Cluster c = Cluster::align(cc.first, 2);
-            clusterToPack.push(c);
-          }
-
-          if (m_minPatchSize * m_minPatchSize <= cc.second.getArea()) {
-            // if (m_minPatchSize <= cc.second.getMinSize()) {
-            // modification to align the imin,jmin to even values to help renderer
-            Cluster c = Cluster::align(cc.second, 2);
-            clusterToPack.push(c);
-          }
+        if (m_minPatchSize * m_minPatchSize <= cc.second.getArea()) {
+          // modification to align the imin,jmin to even values to help renderer
+          Cluster c = Cluster::align(cc.second, 2);
+          clusterToPack.push(c);
         }
       }
     }

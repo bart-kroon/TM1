@@ -57,19 +57,12 @@ void IvMetadataWriter::writeIvSequenceParams(IvSequenceParams ivSequenceParams) 
 }
 
 void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitParams) {
-  fprintf(stdout, "1\n");
   const bool skipAtlasParamsList =
       m_ivAccessUnitParams.atlasParamsList == ivAccessUnitParams.atlasParamsList;
-  fprintf(stdout, "2\n");
   m_ivAccessUnitParams = ivAccessUnitParams;
-  fprintf(stdout, "3: przed if skipAtlasParamsList\n");
   if (skipAtlasParamsList) {
-    fprintf(stdout, "\t3.1 w if\n");
     ivAccessUnitParams.atlasParamsList.reset();
-    fprintf(stdout, "\t3.2 w if\n");
   }
-  fprintf(stdout, "4: po if skipAtlasParamsList\n");
   ivAccessUnitParams.encodeTo(m_bitstream, m_ivSequenceParams);
-  fprintf(stdout, "5: po encodeTo\n");
 }
 } // namespace TMIV::IO

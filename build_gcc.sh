@@ -12,6 +12,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=../install.gcc \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+	-DCLANG_TIDY=OFF \
     -G "Unix Makefiles" ..
 cd ..
 

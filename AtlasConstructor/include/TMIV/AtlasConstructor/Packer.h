@@ -49,14 +49,20 @@ public:
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
+  void updateAggregatedEntityMasks(const Common::EntityMapList &entityMasks) override;
 
   int getAlignment() override;
 
 private:
+  auto setMask(int viewId, int entityId) -> Common::Mask;
+
   int m_alignment{};
   int m_minPatchSize{};
   int m_overlap{};
   bool m_pip{};
+  int m_maxEntities{1};
+  Common::EntityMapList m_aggregatedEntityMasks{};
+  Common::Vec2i m_EntityEncodeRange;
 };
 
 } // namespace TMIV::AtlasConstructor

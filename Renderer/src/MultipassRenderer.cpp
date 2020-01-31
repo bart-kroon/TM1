@@ -48,6 +48,8 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &component
   m_synthesizer =
       Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode, componentNode);
   m_inpainter = Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode);
+  m_viewingSpaceController = Factory<IViewingSpaceController>::getInstance().create(
+      "ViewingSpaceController", rootNode, componentNode);
   m_numberOfPasses = size_t(componentNode.require("NumberOfPasses").asInt());
   const auto subnode = componentNode.require("NumberOfViewsPerPass");
   for (size_t i = 0; i != subnode.size(); ++i) {
@@ -226,6 +228,12 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
   }
 
   m_inpainter->inplaceInpaint(viewport, target);
+
+  // fading to grey with respect to viewing space
+  if (ivSequenceParams.viewingSpace) {
+    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  }
+
   return viewport;
 }
 } // namespace TMIV::Renderer

@@ -44,6 +44,8 @@ static const uint16_t ACTIVE = 65534;
 static const uint16_t INVALID = 65535;
 
 Cluster::Cluster(int viewId, int clusterId) : viewId_(viewId), clusterId_(clusterId) {}
+Cluster::Cluster(int viewId, int clusterId, int entityId)
+    : viewId_(viewId), clusterId_(clusterId), entityId_(entityId) {}
 
 void Cluster::push(int i, int j) {
   if (i < imin_) {
@@ -62,8 +64,19 @@ void Cluster::push(int i, int j) {
   filling_++;
 }
 
+auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
+  Cluster d(c.viewId_, c.clusterId_, entityId);
+  d.imin_ = c.imin_;
+  d.imax_ = c.imax_;
+  d.jmin_ = c.jmin_;
+  d.jmax_ = c.jmax_;
+  d.numActivePixels_ = c.numActivePixels_;
+  d.filling_ = c.filling_;
+  return d;
+}
+
 auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
-  Cluster d(c.viewId_, c.clusterId_);
+  Cluster d(c.viewId_, c.clusterId_, c.entityId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
   d.imax_ = c.imax_; // modification to align the imin,jmin to even values to
@@ -73,13 +86,14 @@ auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
   d.jmax_ = c.jmax_; // modification to align the imin,jmin to even values to
                      // help renderer
 
+  d.numActivePixels_ = c.numActivePixels_;
   d.filling_ = c.filling_;
 
   return d;
 }
 
 auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
-  Cluster c(c1.viewId_, c1.clusterId_);
+  Cluster c(c1.viewId_, c1.clusterId_, c1.entityId_);
 
   c.imin_ = min(c1.imin_, c2.imin_);
   c.imax_ = max(c1.imax_, c2.imax_);
@@ -87,6 +101,7 @@ auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   c.jmin_ = min(c1.jmin_, c2.jmin_);
   c.jmax_ = max(c1.jmax_, c2.jmax_);
 
+  c.numActivePixels_ = c1.numActivePixels_ + c1.numActivePixels_;
   c.filling_ = (c1.filling_ + c2.filling_);
 
   return c;
@@ -458,8 +473,8 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
-  Cluster c1(c.getViewId(), c.getClusterId());
-  Cluster c2(c.getViewId(), c.getClusterId());
+  Cluster c1(c.getViewId(), c.getClusterId(), c.getEntityId());
+  Cluster c2(c.getViewId(), c.getClusterId(), c.getEntityId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
@@ -523,7 +538,6 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
   vector<int> activeList;
 
   activeList.reserve(S);
-
   for (int i = 0; i < S; i++) {
     if (0 < maskBuffer[i]) {
       activeList.push_back(i);
@@ -594,6 +608,14 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       candidates.pop();
     }
 
+    // Update seed & compute # Active Pixels In Patch
+    auto prevIter = iter_seed;
+    iter_seed = find_if(iter_seed + 1, activeList.end(),
+                        [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
+    auto currentIter = iter_seed;
+    auto counter = int(distance(prevIter, currentIter));
+    cluster.numActivePixels_ = counter;
+
     // Updating output
     if (shouldNotBeSplit) {
       if (!clusterList.empty()) {
@@ -609,10 +631,6 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       clusterList.push_back(cluster);
       clusterId++;
     }
-
-    // Update seed
-    iter_seed = find_if(iter_seed + 1, activeList.end(),
-                        [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
   }
 
   return out;

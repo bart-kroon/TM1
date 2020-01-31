@@ -1,44 +1,65 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
-project(TMIV)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+
+project(
+	TMIV
+	DESCRIPTION "Test Model for Immersive Video"
+	VERSION 4.0.0
+	LANGUAGES CXX)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
-include(clang_tidy.cmake)
 
-# Read this first: https://gist.github.com/mbinna/c61dbb39bca0e4fb7d1f73b0d66a4fd1 
+include(CMake/clang_tidy.cmake)
 
-# To enable testing, git clone https://github.com/catchorg/Catch2
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Catch2)
-	add_subdirectory(Catch2)
-	list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Catch2/contrib)
+# To enable testing, clone https://github.com/catchorg/Catch2 2.10.2 or newer, build and install.
+# Then in the CMake GUI set Catch2_DIR to the lib/cmake/Catch2 directory of the Catch2 installation.
+find_package(Catch2 2.10.2 QUIET)
+if (Catch2_FOUND)
 	enable_testing()
 	include(Catch)
-
-	# To enable spikes, add a directory Spikes
-	if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Spikes)
-		add_subdirectory(Spikes)
-	endif()
 endif()
 
-# Common functionnalities
-add_subdirectory(Common)
+include(GNUInstallDirs)
 
-# Implementation of the MIV metadata
-add_subdirectory(Metadata)
+foreach(subdir
+		Common Metadata IO Image
+		ViewOptimizer AtlasConstructor AtlasDeconstructor DepthOccupancy Renderer ViewingSpace
+		Encoder Decoder)
+	add_subdirectory(${subdir})
+endforeach()
 
-# The only library that is allowed to touch the filesystem. 
-# Only executables depend on this library.
-add_subdirectory(IO) 
+add_custom_target(clang_format
+	COMMAND
+		${CMAKE_COMMAND}
+		"-DANALYZE_DIR=${CMAKE_SOURCE_DIR}"
+		"-P"
+		"${CMAKE_CURRENT_LIST_DIR}/CMake/clang_format.cmake")
 
-# Low-level image processing including texture and depth format conversion
-add_subdirectory(Image)
+# To use TMIV as a sub project, clone, build and install.
+# Then in the CMake GUI set TMIV_DIR to the lib/cmake/TMIV directory of the TMIV installation.
+# In the super project CMakeLists.txt use find_package(TMIV 4.0.0 REQUIRED)
+set(TMIV_CMAKE_CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/TMIV")
 
-add_subdirectory(ViewOptimizer)
-add_subdirectory(AtlasConstructor)
-add_subdirectory(AtlasDeconstructor)
-add_subdirectory(DepthOccupancy)
-add_subdirectory(Renderer)
+install(
+	EXPORT TMIVTargets
+	FILE "TMIVTargets.cmake"
+	NAMESPACE TMIV::
+	DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})
+export(EXPORT TMIVTargets NAMESPACE TMIV::)
 
-add_subdirectory(Encoder)
-add_subdirectory(Decoder)
+include(CMakePackageConfigHelpers)
 
-add_custom_target(clang_format COMMAND ${CMAKE_COMMAND} "-DANALYZE_DIR=${CMAKE_SOURCE_DIR}" "-P" ${CMAKE_SOURCE_DIR}/clang_format.cmake)
+configure_package_config_file(
+	"${CMAKE_CURRENT_LIST_DIR}/CMake/TMIVConfig.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/TMIVConfig.cmake"
+	INSTALL_DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})
+
+write_basic_package_version_file(
+	"${CMAKE_CURRENT_BINARY_DIR}/TMIVConfigVersion.cmake"
+	VERSION ${TMIV_VERSION}
+	COMPATIBILITY SameMajorVersion)
+
+install(
+	FILES
+		"${CMAKE_CURRENT_BINARY_DIR}/TMIVConfig.cmake"
+		"${CMAKE_CURRENT_BINARY_DIR}/TMIVConfigVersion.cmake"
+	DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})

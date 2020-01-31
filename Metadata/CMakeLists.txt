@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(MetadataLib
 	"src/Bitstream.cpp"
@@ -11,7 +11,8 @@ add_library(MetadataLib
 	"include/TMIV/Metadata/IvAccessUnitParams.h"
 	"include/TMIV/Metadata/DepthOccupancyTransform.h"
 	"include/TMIV/Metadata/DepthOccupancyTransform.hpp"
-	"include/TMIV/Metadata/ViewingSpace.h")
+	"include/TMIV/Metadata/ViewingSpace.h"
+	)
 
 add_library(TMIV::MetadataLib
 	ALIAS MetadataLib)
@@ -21,23 +22,16 @@ target_link_libraries(MetadataLib
 
 target_include_directories(MetadataLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
-
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 install(
-	TARGETS MetadataLib
-	EXPORT Metadata.Targets
-	ARCHIVE DESTINATION "lib")
-
-install(
-	EXPORT Metadata.Targets
-	FILE "Metadata.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	TARGETS
+		MetadataLib
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (CMAKE_TESTING_ENABLED)
 	add_executable(MetadataTest "src/Metadata.test.cpp")

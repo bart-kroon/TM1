@@ -37,6 +37,7 @@
 #include <TMIV/Renderer/IInpainter.h>
 #include <TMIV/Renderer/IRenderer.h>
 #include <TMIV/Renderer/ISynthesizer.h>
+#include <TMIV/Renderer/IViewingSpaceController.h>
 
 #include <bitset>
 
@@ -46,6 +47,7 @@ class GroupBasedRenderer : public IRenderer {
 private:
   std::unique_ptr<ISynthesizer> m_synthesizer;
   std::unique_ptr<IInpainter> m_inpainter;
+  std::unique_ptr<IViewingSpaceController> m_viewingSpaceController;
 
 public:
   GroupBasedRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);

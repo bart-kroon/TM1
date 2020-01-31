@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -9,16 +9,19 @@ add_library(RendererLib
     "src/GroupBasedRenderer.cpp"
 	"src/Inpainter.cpp"
 	"src/Synthesizer.cpp"
+	"src/ViewingSpaceController.cpp"
 	"src/reprojectPoints.cpp"
 	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
 	"include/TMIV/Renderer/ISynthesizer.h"
+	"include/TMIV/Renderer/IViewingSpaceController.h"
     "include/TMIV/Renderer/Renderer.h"
     "include/TMIV/Renderer/MultipassRenderer.h"
     "include/TMIV/Renderer/GroupBasedRenderer.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"
+	"include/TMIV/Renderer/ViewingSpaceController.h"
 	"include/TMIV/Renderer/reprojectPoints.h"
 	"include/TMIV/Renderer/Engine.h"
 	"include/TMIV/Renderer/Engine_ERP.hpp"
@@ -27,7 +30,8 @@ add_library(RendererLib
 	"include/TMIV/Renderer/blend.hpp"
 	"include/TMIV/Renderer/Rasterizer.h"
 	"include/TMIV/Renderer/Rasterizer.hpp"
-	"include/TMIV/Renderer/AccumulatingPixel.h")
+	"include/TMIV/Renderer/AccumulatingPixel.h"
+	)
 
 add_library(TMIV::RendererLib
 	ALIAS RendererLib)
@@ -37,31 +41,25 @@ target_link_libraries(RendererLib
 		TMIV::CommonLib
 		TMIV::MetadataLib
 		TMIV::ImageLib
+		TMIV::ViewingSpaceLib
 	PRIVATE
 		Threads::Threads
 )
 
 target_include_directories(RendererLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
-
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+	
 install(
 	TARGETS
 		RendererLib
-	EXPORT Renderer.Targets
-	ARCHIVE DESTINATION "lib")
-
-install(
-	EXPORT Renderer.Targets
-	FILE "Renderer.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
-	
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 if (CMAKE_TESTING_ENABLED)
 	add_executable(RendererTest "src/Renderer.test.cpp")
 

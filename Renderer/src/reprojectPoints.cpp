@@ -34,6 +34,7 @@
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <TMIV/Common/Thread.h>
+#include <TMIV/Common/Transformation.h>
 #include <TMIV/Renderer/Engine.h>
 
 using namespace std;
@@ -119,28 +120,10 @@ auto calculateRayAngles(const ViewParams &viewParams, const ViewParams &target,
   return result;
 }
 
-auto rotationMatrixFromRotationAroundX(float rx) -> Mat3x3f {
-  return Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
-}
-
-auto rotationMatrixFromRotationAroundY(float ry) -> Mat3x3f {
-  return Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
-}
-
-auto rotationMatrixFromRotationAroundZ(float rz) -> Mat3x3f {
-  return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
-}
-
-auto EulerAnglesToRotationMatrix(Vec3f rotation) -> Mat3x3f {
-  return rotationMatrixFromRotationAroundZ(radperdeg * rotation[0]) *
-         rotationMatrixFromRotationAroundY(radperdeg * rotation[1]) *
-         rotationMatrixFromRotationAroundX(radperdeg * rotation[2]);
-}
-
 auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
     -> pair<Mat3x3f, Vec3f> {
-  const auto R1 = EulerAnglesToRotationMatrix(viewParams.rotation);
-  const auto R2 = EulerAnglesToRotationMatrix(target.rotation);
+  const auto R1 = EulerAnglesToRotationMatrix(EulerAngles(viewParams.rotation));
+  const auto R2 = EulerAnglesToRotationMatrix(EulerAngles(target.rotation));
   const auto &t1 = viewParams.position;
   const auto &t2 = target.position;
 

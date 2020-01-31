@@ -35,17 +35,27 @@
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Metadata/DepthOccupancyTransform.h>
-
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasDeconstructor {
-constexpr auto neutralChroma = uint16_t(512);
 
-AtlasDeconstructor::AtlasDeconstructor(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+
+AtlasDeconstructor::AtlasDeconstructor(const Json & rootNode, const Json & componentNode) 
+{
+  if (auto subnode = componentNode.optional("EntityDecodeRange")) {
+    m_entityDecodeRange = subnode.asIntVector<2>();
+  }
+  
+  if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
+    m_downscale_depth = node.asBool();
+  }
+
+}
 
 auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
                                        const IvAccessUnitParams &ivAccessUnitParams,
@@ -55,16 +65,31 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
-  for (const auto &sz : atlasParamsList.atlasSizes) {
-    PatchIdMap patchMap(sz.x(), sz.y());
+
+
+  for ( const auto & sz : atlasParamsList.atlasSizes) {
+    
+    auto w = m_downscale_depth ? sz.x()/2 : sz.x();
+    auto h = m_downscale_depth ? sz.y()/2 : sz.y();
+            
+    PatchIdMap patchMap(w, h);
     fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
     patchMapList.push_back(move(patchMap));
   }
 
+  if (ivSequenceParams.maxEntities > 1) {
+    cout << "Entity-Based Atlas Deconstructor is applied for EntityDecodeRange [ "
+         << m_entityDecodeRange[0] << ", " << m_entityDecodeRange[1] << ")\n";
+  }
+
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     assert(atlasParamsList[id].viewId < viewParamsList.size());
-    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                      viewParamsList);
+    if (ivSequenceParams.maxEntities == 1 ||
+        (atlasParamsList[id].entityId >= m_entityDecodeRange[0] &&
+         atlasParamsList[id].entityId < m_entityDecodeRange[1])) {
+      writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
+                        viewParamsList);
+    }
   }
 
   return patchMapList;
@@ -86,6 +111,13 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 
   const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
 
+  if (m_downscale_depth) {
+    yMin /= 2;
+    yLast /= 2;
+    xMin /= 2;
+    xLast /= 2;
+  }
+
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {
       if (occupancyTransform.occupant(depthMap(y, x))) {
@@ -104,15 +136,8 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   for (const auto &cam : viewParamsVector) {
     TextureFrame tex(cam.size.x(), cam.size.y());
-
-    fill(tex.getPlane(0).begin(), tex.getPlane(0).end(), 0);
-    fill(tex.getPlane(1).begin(), tex.getPlane(1).end(), neutralChroma);
-    fill(tex.getPlane(2).begin(), tex.getPlane(2).end(), neutralChroma);
-
     Depth10Frame depth(cam.size.x(), cam.size.y());
-
-    fill(depth.getPlane(0).begin(), depth.getPlane(0).end(), 0);
-
+    tex.fillNeutral();
     frame.push_back(TextureDepth10Frame{move(tex), move(depth)});
   }
 

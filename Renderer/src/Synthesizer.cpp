@@ -251,15 +251,17 @@ public:
                    const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
                    const ViewParams &target) const -> Texture444Depth16Frame {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(atlases.size(), target,
-                                  [&](size_t i, const ViewParams &target) {
-                                    return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
-                                                          viewParamsVector, target);
-                                  },
-                                  resolutionRatio(viewParamsVector, target));
+    auto rasterizer = rasterFrame(
+        atlases.size(), target,
+        [&](size_t i, const ViewParams &target) {
+          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, viewParamsVector, target);
+        },
+        resolutionRatio(viewParamsVector, target));
     const auto depthTransform = DepthTransform<16>{target};
-    return {quantizeTexture(rasterizer.attribute<0>()),
-            depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
+    auto frame = Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
+                                        depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
+    frame.first.filIInvalidWithNeutral(frame.second);
+    return frame;
   }
 
 private:

@@ -62,7 +62,8 @@ enum class PrimitiveShapeOperation {
 
 enum class ElementaryShapeOperation {
   add = 0,
-  subtract = 1
+  subtract = 1,
+  intersect = 2
 }; // In specification: elementary_shape_operation[ e ]
 
 using ElementaryShapeVector = std::vector<std::pair<ElementaryShapeOperation, ElementaryShape>>;
@@ -192,12 +193,12 @@ struct PrimitiveShape {
   // In specification: primitive_shape_viewing_direction_pitch_range[ e ]
   struct ViewingDirectionConstraint {
     std::optional<float> guardBandDirectionSize{};
-    float yawCenter{};    
-	float yawRange{360.f};
-    float pitchCenter{};    
-	float pitchRange{180.f};
+    float yawCenter{};
+    float yawRange{360.f};
+    float pitchCenter{};
+    float pitchRange{180.f};
 
-	bool operator==(const ViewingDirectionConstraint &other) const;
+    bool operator==(const ViewingDirectionConstraint &other) const;
     bool operator!=(const ViewingDirectionConstraint &other) const { return !operator==(other); }
   };
   std::optional<ViewingDirectionConstraint> viewingDirectionConstraint;

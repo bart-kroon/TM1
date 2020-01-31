@@ -64,7 +64,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
   size_t numShapes = stream.getUExpGolomb() + 1;
   vs.elementaryShapes.reserve(numShapes);
   for (size_t i = 0; i < numShapes; ++i) {
-    const auto op = ElementaryShapeOperation(stream.readBits(1));
+    const auto op = ElementaryShapeOperation(stream.readBits(2));
     const auto shape = ElementaryShape::decodeFrom(stream);
     vs.elementaryShapes.emplace_back(op, shape);
   }
@@ -75,7 +75,7 @@ void ViewingSpace::encodeTo(OutputBitstream &stream) const {
   verify(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
   for (const auto &shape : elementaryShapes) {
-    stream.writeBits(uint_least64_t(shape.first), 1);
+    stream.writeBits(uint_least64_t(shape.first), 2);
     shape.second.encodeTo(stream);
   }
 }
@@ -223,8 +223,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   return true;
 }
 
-auto PrimitiveShape::ViewingDirectionConstraint::
-operator==(const ViewingDirectionConstraint &other) const -> bool {
+auto PrimitiveShape::ViewingDirectionConstraint::operator==(
+    const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }
@@ -328,6 +328,9 @@ auto ViewingSpace::loadFromJson(const Json &node) -> ViewingSpace {
     if (str == "subtract") {
       return ElementaryShapeOperation::subtract;
     };
+    if (str == "intersect") {
+      return ElementaryShapeOperation::intersect;
+	}
     throw runtime_error("Invalid elementary shape operation in the metadata JSON file");
   };
 

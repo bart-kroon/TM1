@@ -37,6 +37,7 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
+#include <TMIV/Metadata/ViewingSpace.h>
 
 #include <iostream>
 #include <memory>
@@ -67,10 +68,26 @@ public:
 
   void run() override {
     m_metadataReader.readIvSequenceParams();
-    m_decoder->updateSequenceParams(m_metadataReader.ivSequenceParams());
-    cout << "Decoded sequence parameters:\n" << m_metadataReader.ivSequenceParams();
+    auto ivSequenceParams = m_metadataReader.ivSequenceParams();
+    {
+      if (auto subnode = json().optional("ViewingSpace"); subnode) {
+        cout << "Overriding viewing space from JSON" << endl;
+        ivSequenceParams.viewingSpace = Metadata::ViewingSpace::loadFromJson(subnode);
+      }
+    }
+    m_decoder->updateSequenceParams(ivSequenceParams);
+    cout << "Decoded sequence parameters:\n" << ivSequenceParams;
 
-    for (int outputFrame = 0; outputFrame < m_numberOfFrames; ++outputFrame) {
+    int firstOutputFrame = 0;
+    int outputFrameStep = 1;
+    if (auto subnode = json().optional("firstOutputFrame"); subnode) {
+      firstOutputFrame = subnode.asInt();
+    }
+    if (auto subnode = json().optional("outputFrameStep"); subnode) {
+      outputFrameStep = subnode.asInt();
+    }
+    for (int outputFrame = firstOutputFrame; outputFrame < m_numberOfFrames;
+         outputFrame += outputFrameStep) {
       auto inputFrame = IO::getExtendedIndex(json(), outputFrame);
       cout << "\nDECODE INPUT FRAME " << inputFrame << " TO OUTPUT FRAME " << outputFrame
            << ":\n\n";
@@ -96,12 +113,12 @@ public:
             m_decoder->getPatchIdMapList(IO::loadAtlas(json(), atlasSizes, inputFrame));
         IO::savePatchIdMaps(json(), outputFrame, patchMapIdList);
       };
-      if (auto subnode1 = json().optional("PrunedViewTexturePathFmt")){
-        if (auto subnode2 = json().optional("PrunedViewDepthPathFmt")){
-            std::cout << "Dumping recovered pruned views to disk" << std::endl;
-            auto recoveredTransportView =
-                m_decoder->recoverPrunedView(IO::loadAtlas(json(), atlasSizes, inputFrame));
-            IO::savePrunedFrame(json(), outputFrame, recoveredTransportView);
+      if (auto subnode1 = json().optional("PrunedViewTexturePathFmt")) {
+        if (auto subnode2 = json().optional("PrunedViewDepthPathFmt")) {
+          std::cout << "Dumping recovered pruned views to disk" << std::endl;
+          auto recoveredTransportView =
+              m_decoder->recoverPrunedView(IO::loadAtlas(json(), atlasSizes, inputFrame));
+          IO::savePrunedFrame(json(), outputFrame, recoveredTransportView);
         }
       }
       //////////////////////////////////////////////////////////////////////////////////////

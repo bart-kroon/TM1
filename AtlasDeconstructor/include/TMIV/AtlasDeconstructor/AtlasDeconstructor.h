@@ -41,7 +41,7 @@
 namespace TMIV::AtlasDeconstructor {
 class AtlasDeconstructor : public IAtlasDeconstructor {
 public:
-  AtlasDeconstructor(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
+  AtlasDeconstructor(const Common::Json & rootNode, const Common::Json & componentNode);
   AtlasDeconstructor(const AtlasDeconstructor &) = delete;
   AtlasDeconstructor(AtlasDeconstructor &&) = default;
   AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
@@ -58,10 +58,12 @@ public:
       -> Common::MVD10Frame override;
 
 private:
-  static void writePatchIdInMap(const Metadata::AtlasParameters &patch,
+  Common::Vec2i m_entityDecodeRange;
+  void writePatchIdInMap(const Metadata::AtlasParameters &patch,
                                 Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
                                 const Common::MVD10Frame &frame,
                                 const Metadata::ViewParamsVector &viewParamsVector);
+  bool m_downscale_depth = false;
 };
 } // namespace TMIV::AtlasDeconstructor
 

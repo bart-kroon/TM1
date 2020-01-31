@@ -61,8 +61,6 @@ public:
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
-  void compressDepthRange(Common::TextureDepth16Frame &atlas);
-
   uint32_t **m_nonAggregatedMask;
 
 private:

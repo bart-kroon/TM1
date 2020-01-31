@@ -57,39 +57,7 @@ void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitPa
   m_ivAccessUnitParams = move(ivAccessUnitParams);
 }
 
-void Decoder::decompressDepthRange(TextureDepth10Frame &atlas) {
-
-  int W = atlas.second.getWidth();
-  int H = atlas.second.getHeight();
-
-  int max = 1023;
-  double oldMinPercent = 1.5;
-
-  int oldMin = max * oldMinPercent / 100;
-  int newRange = max;
-  int oldRange = max - oldMin;
-
-  for (int h = 0; h < H; h++) {
-    for (int w = 0; w < W; w++) {
-      if (atlas.second.getPlane(0)(h, w) < oldMin) {
-        atlas.second.getPlane(0)(h, w) = 0;
-      } else if (atlas.second.getPlane(0)(h, w) == oldMin) {
-        atlas.second.getPlane(0)(h, w) = 1;
-      } else {
-        atlas.second.getPlane(0)(h, w) =
-            (atlas.second.getPlane(0)(h, w) - oldMin) * newRange / oldRange;
-      }
-    }
-  }
-
-  return;
-}
-
 auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) -> Texture444Depth16Frame {
-
-  for (int a = 0; a < atlas.size(); a++) {
-    decompressDepthRange(atlas[a]);
-  }
   return m_renderer->renderFrame(
       atlas, m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas),
       m_ivSequenceParams, m_ivAccessUnitParams, target);

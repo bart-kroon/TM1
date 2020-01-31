@@ -231,14 +231,14 @@ std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
         Cluster c2(c.getViewId(), c.getClusterId());
 
         for (int i = c.imin(); i <= c.imax(); i++) {
-          for (int j = c.jmin(); j < c.jmin() + bestSplitPos; j++) {
+          for (int j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
             if (clusteringBuffer(i, j) == c.getClusterId()) {
               c1.push(i, j);
             }
           }
         }
         for (int i = c.imin(); i <= c.imax(); i++) {
-          for (int j = c.jmin() + bestSplitPos; j <= c.jmax(); j++) {
+          for (int j = c.jmin() + bestSplitPos - 1; j <= c.jmax(); j++) {
             if (clusteringBuffer(i, j) == c.getClusterId()) {
               c2.push(i, j);
             }
@@ -292,14 +292,14 @@ std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
           Cluster c2(c.getViewId(), c.getClusterId());
 
           for (int i = c.imin(); i <= c.imax(); i++) {
-            for (int j = c.jmin(); j < c.jmin() + bestSplitPos; j++) {
+            for (int j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
               if (clusteringBuffer(i, j) == c.getClusterId()) {
                 c1.push(i, j);
               }
             }
           }
           for (int i = c.imin(); i <= c.imax(); i++) {
-            for (int j = c.jmin() + bestSplitPos; j <= c.jmax(); j++) {
+            for (int j = c.jmin() + bestSplitPos - 1; j <= c.jmax(); j++) {
               if (clusteringBuffer(i, j) == c.getClusterId()) {
                 c2.push(i, j);
               }
@@ -338,7 +338,7 @@ std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
         Cluster c1(c.getViewId(), c.getClusterId());
         Cluster c2(c.getViewId(), c.getClusterId());
 
-        for (int i = c.imin(); i < c.imin() + bestSplitPos; i++) {
+        for (int i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
           for (int j = c.jmin(); j <= c.jmax(); j++) {
             if (clusteringBuffer(i, j) == c.getClusterId()) {
               c1.push(i, j);
@@ -346,7 +346,7 @@ std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
             }
           }
         }
-        for (int i = c.imin() + bestSplitPos; i <= c.imax(); i++) {
+        for (int i = c.imin() + bestSplitPos - 1; i <= c.imax(); i++) {
           for (int j = c.jmin(); j <= c.jmax(); j++) {
             if (clusteringBuffer(i, j) == c.getClusterId()) {
               c2.push(i, j);
@@ -401,7 +401,7 @@ std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
           Cluster c1(c.getViewId(), c.getClusterId());
           Cluster c2(c.getViewId(), c.getClusterId());
 
-          for (int i = c.imin(); i < c.imin() + bestSplitPos; i++) {
+          for (int i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
             for (int j = c.jmin(); j <= c.jmax(); j++) {
               if (clusteringBuffer(i, j) == c.getClusterId()) {
                 c1.push(i, j);
@@ -409,7 +409,7 @@ std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
               }
             }
           }
-          for (int i = c.imin() + bestSplitPos; i <= c.imax(); i++) {
+          for (int i = c.imin() + bestSplitPos - 1; i <= c.imax(); i++) {
             for (int j = c.jmin(); j <= c.jmax(); j++) {
               if (clusteringBuffer(i, j) == c.getClusterId()) {
                 c2.push(i, j);

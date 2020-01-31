@@ -67,7 +67,7 @@ void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitPa
 }
 
 
-auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) -> Texture444Depth16Frame {
+auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const -> Texture444Depth16Frame {
   
   
     auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas);

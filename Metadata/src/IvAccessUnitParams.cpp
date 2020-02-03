@@ -194,7 +194,6 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
 
 void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
                                const IvSequenceParams &ivSequenceParams) const {
-
   verify(atlasSizes.size() == depthOccupancyParamsPresentFlags.size());
 
   // Count patches per atlas ID

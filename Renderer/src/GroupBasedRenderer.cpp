@@ -77,7 +77,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   auto viewport = move(viewportPass.back());
   for (auto pass = ivSequenceParams.numGroups - 1; pass > 0; --pass) {
     inplaceMerge(viewport, viewportPass[pass - 1],
-                 ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::highPass);
+                 ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::foreground);
   }
 
   // Inpainting
@@ -209,60 +209,39 @@ auto GroupBasedRenderer::viewPriority(const ViewParams &source, const ViewParams
   return {distance, angleWeight};
 }
 
-namespace {
-template <class InIt1, class InIt2, class InIt3, class InIt4, class OutIt, class Fn>
-void transform4(InIt1 i1, InIt1 end1, InIt2 i2, InIt3 i3, InIt4 i4, OutIt dest, Fn Func) {
-  for (; i1 != end1; ++i1, ++i2, ++i3, ++i4, ++dest) {
-    *dest = Func(*i1, *i2, *i3, *i4);
-  }
-}
-} // namespace
-
 void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
                                       const Texture444Depth16Frame &viewportPass,
                                       MergeMode mergeMode) {
-  transform(viewportPass.second.getPlane(0).begin(), // i's
-            viewportPass.second.getPlane(0).end(),   //
-            viewport.second.getPlane(0).begin(),     // j's
-            viewport.second.getPlane(0).begin(),     // result
-            [=](auto i, auto j) { return filterMergeDepth(i, j, mergeMode); });
-
-  for (int d = 0; d < viewportPass.first.getNumberOfPlanes(); ++d) {
-    transform4(viewportPass.first.getPlane(d).begin(),  // i's
-               viewportPass.first.getPlane(d).end(),    //
-               viewport.first.getPlane(d).begin(),      // j's
-               viewportPass.second.getPlane(0).begin(), // id's
-               viewport.second.getPlane(0).begin(),     // jd's
-               viewport.first.getPlane(d).begin(),      // result
-               [=](auto i, auto j, auto id, auto jd) {
-                 return filterMergeTexture(i, j, id, jd, mergeMode);
-               });
-  }
-}
-
-auto GroupBasedRenderer::filterMergeDepth(uint16_t i, uint16_t j, MergeMode mergeMode) -> uint16_t {
-  return filterMergeTexture(i, j, i, j, mergeMode);
-}
-
-auto GroupBasedRenderer::filterMergeTexture(uint16_t i, uint16_t j, uint16_t id, uint16_t jd,
-                                            MergeMode mergeMode) -> uint16_t {
-  if (i > 0) {
-    if (id >= jd) { // Checking depth
-      return i;
-    }
-    // Handle conflict
-    switch (mergeMode) {
-    case MergeMode::inpaint:
-      return 0;
-    case MergeMode::lowPass:
-      return i;
-    case MergeMode::highPass:
-      return j;
-    default:
-      abort();
+  for (size_t i = 0; i < viewport.first.getPlane(0).size(); i++) { 
+    if (viewportPass.second.getPlane(0)[i] != 0) {
+      if (viewport.second.getPlane(0)[i] <= viewportPass.second.getPlane(0)[i]) {
+        // copy from lower pass synthesis results which have content from foreground objects
+        viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
+        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+          viewport.first.getPlane(planeId)[i] = viewportPass.first.getPlane(planeId)[i];
+      } else {
+        // Handle conflict
+        switch (mergeMode) {
+        case MergeMode::inpaint:
+          // put 0 in depth map, neutral color in texture, and let inpainter handle it
+          viewport.second.getPlane(0)[i] = 0;
+          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+            viewport.first.getPlane(planeId)[i] = TextureFrame::neutralColor();
+          break;
+        case MergeMode::lowPass:
+          // Always copy from the lower pass synthesis results if there is content there
+          viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
+          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+            viewport.first.getPlane(planeId)[i] = viewportPass.first.getPlane(planeId)[i];
+          break;
+        case MergeMode::foreground:
+          break; // do nothing, as foreground objects will be always copyied from when merging.
+        default:
+          abort();
+        }
+      }
     }
   }
-  return j;
 }
 
 auto GroupBasedRenderer::Priority::operator<(const Priority &other) const -> bool {

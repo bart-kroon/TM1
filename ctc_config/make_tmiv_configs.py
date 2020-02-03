@@ -447,18 +447,12 @@ class EncoderConfiguration(DecoderConfiguration):
 		})
 		return config
 
-	def pip(self):
-		# TODO(BK): Remove this after fixing the PiP bug
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return 0
-		return 1
-
 	def packer(self):
 		return {
 			'Alignment': 8,
 			'MinPatchSize': 16,
 			'Overlap': 1,
-			'PiP': self.pip()
+			'PiP': 1
 		}
 
 	def lumaSamplesPerView(self):
@@ -477,7 +471,7 @@ class EncoderConfiguration(DecoderConfiguration):
 				'N': 3
 			}[self.seqId] * self.lumaSamplesPerView()
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return 6 * self.lumaSamplesPerView()
+			return 4 * self.lumaSamplesPerView()
 		return 0
 		
 	def atlasConstructorMethod(self):

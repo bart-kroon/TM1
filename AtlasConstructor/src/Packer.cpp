@@ -86,7 +86,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   // Mask clustering
   ClusterList clusterList;
   ClusteringMapList clusteringMap;
-
+  vector<int> clusteringMap_Index;
+  int Index = 0;
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
       for (int entityId = m_EntityEncodeRange[0]; entityId < m_EntityEncodeRange[1]; entityId++) {
@@ -103,10 +104,15 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
              back_inserter(clusterList));
         clusteringMap.push_back(move(clusteringOutput.second));
+
+        for (int i = 0; i < clusteringOutput.first.size(); i++)
+          clusteringMap_Index.push_back(Index);
+
         if (!clusteringOutput.first.empty()) {
           cout << "entity " << entityId << " from view " << viewId << " results in "
                << clusteringOutput.first.size() << " patches\n";
         }
+        Index++;
       }
     } else {
       auto clusteringOutput = Cluster::retrieve(
@@ -152,9 +158,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     const Cluster &cluster = clusterToPack.top();
 
     if (m_maxEntities > 1) {
-      clusteringMap_viewId =
-          (cluster.getEntityId() - m_EntityEncodeRange[0]) * static_cast<int>(masks.size()) +
-          cluster.getViewId();
+      clusteringMap_viewId = clusteringMap_Index[cluster.getClusterId()];
     } else {
       clusteringMap_viewId = cluster.getViewId();
     }

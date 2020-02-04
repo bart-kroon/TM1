@@ -77,10 +77,10 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
   assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
 
-  int numOfCam = m_ivSequenceParams.viewParamsList.size();  
+  int numOfCam = m_ivSequenceParams.viewParamsList.size();
 
   for (int c = 0; c < numOfCam; c++) {
-    Mat<uint32_t> nonAggMask;
+    Mat<uint64_t> nonAggMask;
     int H = m_ivSequenceParams.viewParamsList[c].size.y();
     int W = m_ivSequenceParams.viewParamsList[c].size.x();
     nonAggMask.resize(H, W);
@@ -97,17 +97,20 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
 }
 
 void AtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
+
   // Pruning
   MaskList masks =
       m_pruner->prune(m_ivSequenceParams.viewParamsList, transportViews, m_isBasicView);
-  
+
   for (int view = 0; view < masks.size(); view++) {
     int H = transportViews[view].first.getHeight();
     int W = transportViews[view].first.getWidth();
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
         if (masks[view].getPlane(0)(h, w)) {
-          m_nonAggregatedMask[view](h, w) |= (1 << frame);
+          m_nonAggregatedMask[view](h, w) |=
+              (1 << (frame % 64)); // mod 64 to allow intra period be greater than 64 frames (but
+                                   // the efficiency will go down in this case)
         }
       } // w
     }   // h
@@ -202,7 +205,9 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           if (dxx + xM >= textureViewMap.getWidth() || dxx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patch.viewId](dyy + yM, dxx + xM) & (1 << frame)) {
+          if (m_nonAggregatedMask[patch.viewId](dyy + yM, dxx + xM) &
+              (1 << (frame % 64))) { // mod 64 to allow intra period be greater than 64 frames (but
+                                     // the efficiency will go down in this case)
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

@@ -61,7 +61,7 @@ public:
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
-  std::vector<Common::Mat<uint32_t>> m_nonAggregatedMask;
+  std::vector<Common::Mat<uint64_t>> m_nonAggregatedMask;
 
 private:
   void writePatchInAtlas(const Metadata::AtlasParameters &patch,

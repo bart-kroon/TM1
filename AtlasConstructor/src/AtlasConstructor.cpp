@@ -70,6 +70,12 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_ivSequenceParams = move(ivSequenceParams);
   m_isBasicView = move(isBasicView);
 
+  if (1) {
+    for (int c = 0; c < m_ivSequenceParams.viewParamsList.size(); c++) {
+      m_ivSequenceParams.viewParamsList[c].depthOccMapThreshold = 1;
+    }
+  }
+
   return m_ivSequenceParams;
 }
 
@@ -83,6 +89,7 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
     Mat<uint64_t> nonAggMask;
     int H = m_ivSequenceParams.viewParamsList[c].size.y();
     int W = m_ivSequenceParams.viewParamsList[c].size.x();
+
     nonAggMask.resize(H, W);
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
@@ -243,15 +250,15 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
         }
       }
-	   
+
       // Depth
-      //if (m_ivSequenceParams.viewParamsList[patch.atlasId].depthOccMapThreshold) {
+      if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold) {
         depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
             std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
-      /*} else {
+      } else {
         depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
             depthViewMap.getPlane(0)(pView.y(), pView.x());
-      }*/
+      }
     }
   }
 }

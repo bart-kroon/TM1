@@ -64,14 +64,14 @@ auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequence
   m_outSequenceParams = m_inSequenceParams;
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
-    //if (x.depthOccMapThreshold != 0) {
+    if (x.depthOccMapThreshold != 0) {
       x.depthOccMapThreshold = m_depthOccMapThreshold; // =T
       const auto nearLevel = 1023.F;
       const auto farLevel = float(2 * x.depthOccMapThreshold);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
       x.normDispRange[0] +=
           (0.F - farLevel) / (nearLevel - farLevel) * (x.normDispRange[1] - x.normDispRange[0]);
-   //}
+    }
   }
 
   return m_outSequenceParams;
@@ -114,9 +114,6 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
         const int m = j + patch.posInAtlas.x();
 
         const auto inLevel = inAtlases[patch.atlasId].second.getPlane(0)(n, m);
-
-        if (m_depthOccMapThreshold && inLevel == 0)
-          continue;
 
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);

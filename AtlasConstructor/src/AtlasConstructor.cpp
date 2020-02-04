@@ -96,11 +96,13 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
   m_aggregator->prepareAccessUnit();
 }
 
-void AtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
+void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
 
   // Pruning
   MaskList masks =
       m_pruner->prune(m_ivSequenceParams.viewParamsList, transportViews, m_isBasicView);
+
+  int frame = m_viewBuffer.size();
 
   for (int view = 0; view < masks.size(); view++) {
     int H = transportViews[view].first.getHeight();
@@ -241,9 +243,15 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
         }
       }
+	   
       // Depth
-      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-          std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
+      //if (m_ivSequenceParams.viewParamsList[patch.atlasId].depthOccMapThreshold) {
+        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+            std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
+      /*} else {
+        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+            depthViewMap.getPlane(0)(pView.y(), pView.x());
+      }*/
     }
   }
 }

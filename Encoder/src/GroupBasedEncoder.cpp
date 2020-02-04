@@ -70,10 +70,10 @@ void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams)
   }
 }
 
-void GroupBasedEncoder::pushFrame(MVD16Frame views, int frame) {
+void GroupBasedEncoder::pushFrame(MVD16Frame views) {
   for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
     cout << "Processing group " << groupId << ":\n";
-    m_encoders[groupId].pushFrame(splitViews(groupId, views), frame);
+    m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
 }
 

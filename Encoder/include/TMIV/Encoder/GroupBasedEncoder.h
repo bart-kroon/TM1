@@ -56,7 +56,7 @@ public:
   void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
 
   // Push frame to each per-group encoder
-  void pushFrame(Common::MVD16Frame views, int frame) override;
+  void pushFrame(Common::MVD16Frame views) override;
 
   // Let each per-group encoer complete the access unit and merge the metadata
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;

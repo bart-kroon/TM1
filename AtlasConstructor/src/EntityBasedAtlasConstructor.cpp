@@ -257,7 +257,7 @@ auto EntityBasedAtlasConstructor::entitySeparator(MVD16Frame transportViews,
   return entityViews;
 }
 
-void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
+void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Initalization
   MVD16Frame transportEntityViews;
   MVD16Frame mergedViews;

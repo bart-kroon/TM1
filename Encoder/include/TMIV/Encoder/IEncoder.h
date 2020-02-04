@@ -51,7 +51,7 @@ public:
   virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
       -> const Metadata::IvSequenceParams & = 0;
   virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
-  virtual void pushFrame(Common::MVD16Frame views, int frame) = 0;
+  virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD10Frame = 0;
 };

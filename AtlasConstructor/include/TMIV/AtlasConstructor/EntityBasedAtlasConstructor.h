@@ -58,7 +58,7 @@ public:
   auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, std::vector<bool> isBasicView)
       -> const Metadata::IvSequenceParams & override;
   void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame transportViews, int frame) override;
+  void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 

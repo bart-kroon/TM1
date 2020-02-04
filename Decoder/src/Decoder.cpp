@@ -46,8 +46,7 @@ using namespace TMIV::Renderer;
 namespace TMIV::Decoder {
 Decoder::Decoder(const Json &rootNode, const Json &componentNode)
     : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
-          "AtlasDeconstructor", rootNode, componentNode)},
-      
+          "AtlasDeconstructor", rootNode, componentNode)},      
       m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)}, 
       m_depthUpscaler(rootNode, componentNode)
 {

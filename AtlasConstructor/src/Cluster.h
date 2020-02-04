@@ -35,6 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_CLUSTER_H_
 
 #include <TMIV/AtlasConstructor/IPruner.h>
+#include <queue>
 
 namespace TMIV::AtlasConstructor {
 
@@ -81,8 +82,19 @@ public:
   int getArea() const { return width() * height(); }
   int getMinSize() const { return std::min(width(), height()); }
   std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringMap, int overlap) const;
+
+  bool splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize, std::deque<int> *min_h_agg,
+                             std::deque<int> *max_h_agg) const;
+  bool splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize, std::deque<int> *min_w_agg,
+                             std::deque<int> *max_w_agg) const;
+  bool splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize) const;
+  bool splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize) const;
   std::vector<Cluster> recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                                      int alignment, int minPatchSize, int divLvl = 0) const;
+                                      int alignment, int minPatchSize) const;
 
   static Cluster Empty() {
     Cluster out;

@@ -77,17 +77,19 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
   assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
 
-  int numOfCam = m_ivSequenceParams.viewParamsList.size();
-  int H = m_ivSequenceParams.viewParamsList[0].size.y();
-  int W = m_ivSequenceParams.viewParamsList[0].size.x();
-  int imsize = (W * H);
+  int numOfCam = m_ivSequenceParams.viewParamsList.size();  
 
-  m_nonAggregatedMask = new uint32_t *[numOfCam];
-  for (int view = 0; view < numOfCam; view++) {
-    m_nonAggregatedMask[view] = new uint32_t[imsize];
-    for (int pp = 0; pp < imsize; pp++) {
-      m_nonAggregatedMask[view][pp] = 0;
+  for (int c = 0; c < numOfCam; c++) {
+    Mat<uint32_t> nonAggMask;
+    int H = m_ivSequenceParams.viewParamsList[c].size.y();
+    int W = m_ivSequenceParams.viewParamsList[c].size.x();
+    nonAggMask.resize(H, W);
+    for (int h = 0; h < H; h++) {
+      for (int w = 0; w < W; w++) {
+        nonAggMask(h, w) = 0;
+      }
     }
+    m_nonAggregatedMask.push_back(nonAggMask);
   }
 
   m_viewBuffer.clear();
@@ -98,15 +100,14 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews, int frame) {
   // Pruning
   MaskList masks =
       m_pruner->prune(m_ivSequenceParams.viewParamsList, transportViews, m_isBasicView);
-
-  int H = transportViews[0].first.getHeight();
-  int W = transportViews[0].first.getWidth();
-
+  
   for (int view = 0; view < masks.size(); view++) {
+    int H = transportViews[view].first.getHeight();
+    int W = transportViews[view].first.getWidth();
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
         if (masks[view].getPlane(0)(h, w)) {
-          m_nonAggregatedMask[view][h * W + w] |= (1 << frame);
+          m_nonAggregatedMask[view](h, w) |= (1 << frame);
         }
       } // w
     }   // h
@@ -156,11 +157,6 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     frame++;
   }
 
-  for (int view = 0; view < aggregatedMask.size(); view++) {
-    delete m_nonAggregatedMask[view];
-  }
-  delete m_nonAggregatedMask;
-
   return m_ivAccessUnitParams;
 }
 
@@ -206,9 +202,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           if (dxx + xM >= textureViewMap.getWidth() || dxx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patch.viewId]
-                                 [(dyy + yM) * textureViewMap.getWidth() + (dxx + xM)] &
-              (1 << frame)) {
+          if (m_nonAggregatedMask[patch.viewId](dyy + yM, dxx + xM) & (1 << frame)) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

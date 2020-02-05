@@ -57,6 +57,11 @@ public:
                          const Metadata::AtlasParamsVector &atlasParamsVector)
       -> Common::MVD10Frame override;
 
+    auto recoverPrunedViewAndMask(const Common::MVD10Frame &atlas,
+                                const Metadata::ViewParamsVector &viewParamsVector,
+                                const Metadata::AtlasParamsVector &atlasParamsVector)
+      -> std::pair<Common::MVD10Frame, Common::MaskList> override;
+    
 private:
   Common::Vec2i m_entityDecodeRange;
   void writePatchIdInMap(const Metadata::AtlasParameters &patch,

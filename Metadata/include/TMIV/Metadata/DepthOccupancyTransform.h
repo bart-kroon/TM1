@@ -95,8 +95,8 @@ public:
   // Quantize a matrix of normalized disparities [m^-1] to a Depth16Frame
   //
   // See also quantizeNormDisp(float, uint16_t)
-  auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const
-      -> Common::Depth16Frame;
+  template <typename DepthFrame = Common::Depth16Frame>
+  auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const -> DepthFrame;
 
 private:
   const Common::Vec2f m_normDispRange;

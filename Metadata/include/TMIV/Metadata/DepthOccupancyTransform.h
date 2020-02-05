@@ -84,6 +84,7 @@ public:
   //
   // See also expandDepth(uint16_t)
   auto expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float>;
+  auto expandDepth(const Common::Depth10Frame &frame) const -> Common::Mat<float>;
 
   // Quantize normalized disparity [m^-1] to a level
   //

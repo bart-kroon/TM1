@@ -6,6 +6,7 @@ add_library(CommonLib
 	"src/Half.cpp"
 	"src/Frame.cpp"
 	"src/Transformation.cpp"
+	"src/Graph.cpp"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Common.hpp"
 	"include/TMIV/Common/Application.h"
@@ -23,6 +24,7 @@ add_library(CommonLib
 	"include/TMIV/Common/Vector.h"
 	"include/TMIV/Common/Matrix.h"
 	"include/TMIV/Common/Array.h"
+	"include/TMIV/Common/Graph.h"
 	)
 
 add_library(TMIV::CommonLib

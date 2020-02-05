@@ -31,40 +31,33 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
-#define _TMIV_ATLASDECONSTRUCTOR_ATLASDECONSTRUCTOR_H_
+#ifndef _TMIV_RENDERER_VIEWWEIGHTINGSYNTHESIZER_H_
+#define _TMIV_RENDERER_VIEWWEIGHTINGSYNTHESIZER_H_
 
-#include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
+#include <TMIV/Renderer/ISynthesizer.h>
 
-#include <TMIV/Common/Json.h>
-
-namespace TMIV::AtlasDeconstructor {
-class AtlasDeconstructor : public IAtlasDeconstructor {
-public:
-  AtlasDeconstructor(const Common::Json &rootNode, const Common::Json &componentNode);
-  AtlasDeconstructor(const AtlasDeconstructor &) = delete;
-  AtlasDeconstructor(AtlasDeconstructor &&) = default;
-  AtlasDeconstructor &operator=(const AtlasDeconstructor &) = delete;
-  AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
-  ~AtlasDeconstructor() override = default;
-
-  auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
-                     const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                     const Common::MVD10Frame &frame) -> Common::PatchIdMapList override;
-
-  auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                         const Metadata::ViewParamsVector &viewParamsVector,
-                         const Metadata::AtlasParamsVector &atlasParamsVector)
-      -> Common::MVD10Frame override;
-
+namespace TMIV::Renderer {
+class ViewWeightingSynthesizer : public ISynthesizer {
 private:
-  Common::Vec2i m_entityDecodeRange;
-  void writePatchIdInMap(const Metadata::AtlasParameters &patch,
-                         Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
-                         const Common::MVD10Frame &frame,
-                         const Metadata::ViewParamsVector &viewParamsVector);
-  bool m_downscale_depth = false;
+  class Impl;
+  mutable std::unique_ptr<Impl> m_impl;
+
+public:
+  ViewWeightingSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  ViewWeightingSynthesizer(float angularScaling, float minimalWeight, float stretchFactor,
+                           float blendingFactor, float overloadFactor, int filteringPass);
+  ViewWeightingSynthesizer(const ViewWeightingSynthesizer &) = delete;
+  ViewWeightingSynthesizer(ViewWeightingSynthesizer &&) = default;
+  ViewWeightingSynthesizer &operator=(const ViewWeightingSynthesizer &) = delete;
+  ViewWeightingSynthesizer &operator=(ViewWeightingSynthesizer &&) = default;
+  ~ViewWeightingSynthesizer() override;
+
+  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                   const Metadata::IvSequenceParams &ivSequenceParams,
+                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                   const Metadata::ViewParams &target) const
+      -> Common::Texture444Depth16Frame override;
 };
-} // namespace TMIV::AtlasDeconstructor
+} // namespace TMIV::Renderer
 
 #endif

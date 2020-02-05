@@ -100,6 +100,13 @@ auto DepthTransform<bits>::expandDepth(const Common::Depth16Frame &frame) const
 }
 
 template <unsigned bits>
+auto DepthTransform<bits>::expandDepth(const Common::Depth10Frame &frame) const
+    -> Common::Mat<float> {
+  static_assert(bits == 10);
+  return expandDepth(frame.getPlane(0));
+}
+
+template <unsigned bits>
 auto DepthTransform<bits>::quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t {
   if (x > 0.F) {
     const auto level = (x - m_normDispRange[0]) / (m_normDispRange[1] - m_normDispRange[0]);

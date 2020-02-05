@@ -70,10 +70,9 @@ public:
     if (auto node = json().optional("reconstruct"); node && node.asBool()) {
       m_reconstructor = create<IDecoder>("Decoder");
     }
-    if (auto node = json().optional("depthDownScaleFlag"); node ) {
-      m_downscale_depth = node.asBool() ;
+    if (auto node = json().optional("depthDownScaleFlag"); node) {
+      m_downscale_depth = node.asBool();
     }
-
   }
 
   void run() override {
@@ -125,7 +124,7 @@ private:
   void popAtlases(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
       auto atlas = m_encoder->popAtlas();
-      
+
       if (m_downscale_depth) {
         atlas = DownScaleAtlasDepth(atlas);
       }
@@ -142,14 +141,13 @@ private:
     }
   }
 
-  static auto MaxPool2x2(const Mat1w& depth) -> Mat1w
-  {
+  static auto MaxPool2x2(const Mat1w &depth) -> Mat1w {
     auto w = depth.width() / 2U;
     auto h = depth.height() / 2U;
-    
+
     Mat1w depthD2;
-    depthD2.resize(h,w);
-    
+    depthD2.resize(h, w);
+
     for (auto i = 0U; i < h; ++i) {
       for (auto j = 0U; j < w; ++j) {
         auto d0 = depth(2 * i, 2 * j);
@@ -165,23 +163,21 @@ private:
     return depthD2;
   }
 
-  static auto DownScaleAtlasDepth(const MVD10Frame &atlas) -> MVD10Frame
-  {
+  static auto DownScaleAtlasDepth(const MVD10Frame &atlas) -> MVD10Frame {
     TMIV::Common::MVD10Frame atlasOut(atlas.size());
 
     for (auto i = 0U; i < atlas.size(); ++i) {
       // copy texture
       atlasOut[i].first = atlas[i].first;
-      
+
       // downscale depth using max-of-4 operation
       auto depthD2 = MaxPool2x2(atlas[i].second.getPlane(0));
-      atlasOut[i].second.resize( int(depthD2.width()), int(depthD2.height()) );
+      atlasOut[i].second.resize(int(depthD2.width()), int(depthD2.height()));
       atlasOut[i].second.getPlane(0) = depthD2;
     }
 
     return atlasOut;
   }
-
 };
 } // namespace TMIV::Encoder
 

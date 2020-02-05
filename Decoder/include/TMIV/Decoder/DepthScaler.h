@@ -35,111 +35,109 @@
 #define _TMIV_DECODER_DEPTHSCALER_H_
 
 #include <algorithm>
-#include <numeric>
-#include <vector>
 #include <cassert>
 #include <iostream>
+#include <numeric>
+#include <vector>
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
 
+namespace TMIV::Decoder {
+using uchar = unsigned char;
+using ushort = unsigned short;
 
-namespace TMIV::Decoder 
-{
-  using uchar  = unsigned char;
-  using ushort = unsigned short;
+using TMIV::Common::Vec2i;
+using TMIV::Common::Vec3f;
+using TMIV::Common::Vec3w;
 
-  using TMIV::Common::Vec2i;
-  using TMIV::Common::Vec3w;
-  using TMIV::Common::Vec3f;
+template <class T> using Mat_ = TMIV::Common::heap::Matrix<T>;
+using Mat1w = Mat_<uint16_t>;
+using Mat3w = Mat_<Vec3w>;
+using Mat1b = Mat_<uint8_t>;
 
-  template<class T>
-  using Mat_  = TMIV::Common::heap::Matrix<T>;
-  using Mat1w = Mat_<uint16_t>;
-  using Mat3w = Mat_<Vec3w>;
-  using Mat1b = Mat_<uint8_t>;
+class DepthMapAlignerColorBased {
+public:
+  DepthMapAlignerColorBased(int depthEdgeMagnitudeTh, float minForegroundConfidence);
 
+  auto colorConfidence(const std::vector<ushort> &depthValues,
+                       const std::vector<Vec3w> &colorValues,
+                       const std::vector<uchar> &edgeMagnitudes) -> float;
+  auto colorConfidenceAt(const Mat3w &yuv, const Mat1w &depth, const Mat1b &edgeMagnitudes,
+                         const Vec2i &loc) -> float;
+  auto operator()(const Mat3w &yuv, const Mat1w &depth, const Mat1b &edgeMagnitudes) -> Mat1w;
 
-  class DepthMapAlignerColorBased
-  {
-  public:
-    DepthMapAlignerColorBased(int depthEdgeMagnitudeTh, float minForegroundConfidence);
-      
-    auto colorConfidence(const std::vector<ushort>& depthValues, const std::vector<Vec3w>& colorValues, const std::vector<uchar>& edgeMagnitudes) -> float;
-    auto colorConfidenceAt(const Mat3w& yuv, const Mat1w& depth, const Mat1b& edgeMagnitudes, const Vec2i& loc) ->float;
-    auto operator()(const Mat3w& yuv, const Mat1w& depth, const Mat1b& edgeMagnitudes)-> Mat1w;
+  // variant that handles texture atlas
+  auto colorConfidence(const std::vector<ushort> &depthValues,
+                       const std::vector<Vec3w> &colorValues,
+                       const std::vector<uchar> &edgeMagnitudes,
+                       const std::vector<ushort> &regionLabels) -> float;
+  auto colorConfidenceAt(const Mat3w &yuv, const Mat1w &depth, const Mat1b &edgeMagnitudes,
+                         const Mat1w &regions, const Vec2i &loc) -> float;
+  auto operator()(const Mat3w &yuv, const Mat1w &depth, const Mat1b &edgeMagnitudes,
+                  const Mat1w &regions) -> std::pair<Mat1w, Mat1w>;
 
-    // variant that handles texture atlas
-    auto colorConfidence(const std::vector<ushort>& depthValues, const std::vector<Vec3w>& colorValues, const std::vector<uchar>& edgeMagnitudes, const std::vector<ushort>& regionLabels) -> float;
-    auto colorConfidenceAt(const Mat3w& yuv, const Mat1w& depth, const Mat1b& edgeMagnitudes, const Mat1w& regions, const Vec2i& loc) -> float;
-    auto  operator()(const Mat3w& yuv, const Mat1w& depth, const Mat1b& edgeMagnitudes, const Mat1w& regions) ->std::pair<Mat1w, Mat1w>;
+private:
+  int m_depthEdgeMagnitudeTh = 11;
+  float m_minForegroundConfidence = 0.4F;
+  Mat1b m_markers;
+  std::vector<Vec2i> m_kernelPoints;
+  int m_B = 2;
+};
 
-  private:
-    int m_depthEdgeMagnitudeTh = 11;
-    float m_minForegroundConfidence = 0.4F;
-    Mat1b m_markers;
-    std::vector<Vec2i> m_kernelPoints;
-    int m_B = 2;
-  };
+class DepthMapAlignerCurvatureBased {
+public:
+  DepthMapAlignerCurvatureBased(int depthEdgeMagnitudeTh, int maxCurvature);
 
-  class DepthMapAlignerCurvatureBased
-  {
-  public:
-    DepthMapAlignerCurvatureBased(int depthEdgeMagnitudeTh, int maxCurvature);
-  
-    auto curvature(const std::vector<ushort>& depthValues) -> int;
-    auto curvatureAt(const Mat1w& depth, const Vec2i& loc) -> int;
-    auto operator()(const Mat1w& depth, const Mat1b& edgeMagnitudes) -> Mat1w;
+  auto curvature(const std::vector<ushort> &depthValues) -> int;
+  auto curvatureAt(const Mat1w &depth, const Vec2i &loc) -> int;
+  auto operator()(const Mat1w &depth, const Mat1b &edgeMagnitudes) -> Mat1w;
 
-    // variant that handles texture atlas
-    auto curvature(const std::vector<ushort>& depthValues, const std::vector<ushort>& regionLabels) -> int;
-    auto curvatureAt(const Mat1w& depth, const Mat1w& regions, const Vec2i& loc) -> int;
-    auto  operator()(const Mat1w& depth, const Mat1b& edgeMagnitudes, const Mat1w& regions) -> std::pair<Mat1w, Mat1w>;
+  // variant that handles texture atlas
+  auto curvature(const std::vector<ushort> &depthValues, const std::vector<ushort> &regionLabels)
+      -> int;
+  auto curvatureAt(const Mat1w &depth, const Mat1w &regions, const Vec2i &loc) -> int;
+  auto operator()(const Mat1w &depth, const Mat1b &edgeMagnitudes, const Mat1w &regions)
+      -> std::pair<Mat1w, Mat1w>;
 
-  private:
-    int m_depthEdgeMagnitudeTh = 11;
-    int   m_maxCurvature = 6;
-    Mat1b m_markers;
-    std::vector<Vec2i> kernelPoints;
-    int m_B = 1;
-  };
+private:
+  int m_depthEdgeMagnitudeTh = 11;
+  int m_maxCurvature = 6;
+  Mat1b m_markers;
+  std::vector<Vec2i> kernelPoints;
+  int m_B = 1;
+};
 
+class DepthUpscaler {
+public:
+  DepthUpscaler(int depthEdgeMagnitudeTh, float minForegroundConfidence, int maxCurvature);
 
+  auto operator()(const Mat1w &depthD2, const Mat3w &yuv) -> Mat1w;
+  auto operator()(const Mat1w &depthD2, const Mat1w &regionsD2, const Mat3w &yuv)
+      -> std::pair<Mat1w, Mat1w>;
 
-  class DepthUpscaler
-  {
-  public:
-    DepthUpscaler(int depthEdgeMagnitudeTh, float minForegroundConfidence, int maxCurvature);
-  
-    auto operator()(const Mat1w& depthD2, const Mat3w& yuv) -> Mat1w;
-    auto  operator()(const Mat1w& depthD2, const Mat1w& regionsD2, const Mat3w& yuv) -> std::pair<Mat1w, Mat1w>;
+private:
+  DepthMapAlignerColorBased m_alignerColor;
+  DepthMapAlignerCurvatureBased m_alignerCurvature;
+  Mat1b m_edgeMagnitudes1, m_edgeMagnitudes2;
+  Mat1w m_depthUpscaled, m_depthColorAligned, m_depthCurvatureAligned;
+  Mat1w m_regionsUpscaled, m_regionsColorAligned, m_regionsCurvatureAligned;
+};
 
-  private:
-    DepthMapAlignerColorBased m_alignerColor;
-    DepthMapAlignerCurvatureBased m_alignerCurvature;
-    Mat1b m_edgeMagnitudes1, m_edgeMagnitudes2;
-    Mat1w m_depthUpscaled, m_depthColorAligned, m_depthCurvatureAligned;
-    Mat1w m_regionsUpscaled, m_regionsColorAligned, m_regionsCurvatureAligned;
-  };
+class DepthUpscalerAtlas {
+public:
+  DepthUpscalerAtlas(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
+  auto upsampleDepthAndOccupancyMapMVD(const TMIV::Common::MVD10Frame &atlas,
+                                       const TMIV::Common::PatchIdMapList &maps) const
+      -> std::pair<TMIV::Common::MVD10Frame, TMIV::Common::PatchIdMapList>;
 
-  class DepthUpscalerAtlas
-  {
-  public:
-    DepthUpscalerAtlas(const Common::Json & /*rootNode*/, const Common::Json & componentNode);
-  
-    auto upsampleDepthAndOccupancyMapMVD(const TMIV::Common::MVD10Frame &atlas, const TMIV::Common::PatchIdMapList &maps) const
-      ->std::pair< TMIV::Common::MVD10Frame, TMIV::Common::PatchIdMapList>;
+private:
+  int m_depthEdgeMagnitudeTh = 11;
+  float m_minForegroundConfidence = 0.4F;
+  int m_maxCurvature = 4;
+};
 
-  private:
-    int m_depthEdgeMagnitudeTh = 11;
-    float m_minForegroundConfidence = 0.4F;
-    int m_maxCurvature = 4;
-  };
-
-
-} // namespace
-
-
+} // namespace TMIV::Decoder
 
 #endif

@@ -44,9 +44,11 @@ namespace TMIV::Common {
 constexpr double M_PI = 3.141592653589793238462643383279;
 #endif
 constexpr double M_2PI = M_PI * 2.0;
+constexpr double M_4PI = M_PI * 4.0;
+constexpr double M_PI2 = M_PI / 2.0;
 
-inline double deg2rad(double x) { return x * M_PI / 180.; }
-inline double rad2deg(double x) { return x * 180. / M_PI; }
+template <typename T> T deg2rad(T x) { return x * static_cast<T>(M_PI / 180.); }
+template <typename T> T rad2deg(T x) { return x * static_cast<T>(180. / M_PI); }
 
 template <typename T> T sqr(T val) { return val * val; }
 template <typename T> T cube(T val) { return val * val * val; }
@@ -90,16 +92,11 @@ inline int ipow(int base, int exp) {
 }
 
 inline int gcd(int a, int b) { return (b == 0) ? a : gcd(b, a % b); }
-inline int lcm(int a, int b) {
-  using std::abs;
-  return abs(a * b) / gcd(a, b);
-}
+inline int lcm(int a, int b) { return std::abs(a * b) / gcd(a, b); }
 
-inline double ppd2pps(double ppd) { return sqr(180. * ppd / M_PI); }
-inline double pps2ppd(double pps) {
-  using std::sqrt;
-  return sqrt(pps) * M_PI / 180.;
-}
+template <typename T> inline T ppd2pps(T ppd) { return sqr(ppd * static_cast<float>(180. / M_PI)); }
+
+template <typename T> T pps2ppd(T pps) { return std::sqrt(pps) * static_cast<float>(M_PI / 180.); }
 
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value,

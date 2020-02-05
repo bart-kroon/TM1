@@ -172,8 +172,8 @@ auto projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) -> Vec3f
     pp = a;
   } else {
     Vec4f pplane = Vec4f({normal[0], normal[1], normal[2], -dot(point, normal)});
-    float aap = abs(distanceToPlane(pplane, a));
-    float bbp = abs(distanceToPlane(pplane, b));
+    float aap = std::abs(distanceToPlane(pplane, a));
+    float bbp = std::abs(distanceToPlane(pplane, b));
     float app = aap / (aap + bbp);
     pp = a + app * (b - a);
   }

@@ -330,7 +330,7 @@ auto ViewingSpace::loadFromJson(const Json &node) -> ViewingSpace {
     };
     if (str == "intersect") {
       return ElementaryShapeOperation::intersect;
-	}
+    }
     throw runtime_error("Invalid elementary shape operation in the metadata JSON file");
   };
 

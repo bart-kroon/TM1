@@ -306,7 +306,7 @@ private:
     const unsigned N = 4;
     const Vec2f depthRange = {0.5F, 10.F};
 
-    std::vector<Vec3f> pointGrid;
+    std::vector<Vec3f> pointCloud;
     float x = 0.F;
     float step = 1.F / static_cast<float>(N - 1);
 
@@ -318,8 +318,8 @@ private:
       for (unsigned j = 0; j < N; j++) {
         float py = y * static_cast<float>(targetHelper.getViewParams().size.y());
 
-        pointGrid.push_back(targetHelper.doUnprojection({px, py}, depthRange.x()));
-        pointGrid.push_back(targetHelper.doUnprojection({px, py}, depthRange.y()));
+        pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.x()));
+        pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.y()));
 
         y += step;
       }
@@ -334,7 +334,7 @@ private:
       const auto &helper = sourceHelperList[viewId];
       unsigned K = 0;
 
-      for (const Vec3f &P : pointGrid) {
+      for (const Vec3f &P : pointCloud) {
         auto p = helper.doProjection(P);
 
         if (isValidDepth(p.second) && helper.isInsideViewport(p.first)) {

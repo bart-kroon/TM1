@@ -196,25 +196,19 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
 
   int alignment = m_packer->getAlignment();
 
-  for (int dy = 0; dy < h; dy++) {
+  for (int dyAligned = 0; dyAligned < h; dyAligned += alignment) {
+    for (int dxAligned = 0; dxAligned < w; dxAligned += alignment) {
 
-    bool isAggregatedMaskBlockNonEmpty = false;
-    int dyAligned = (dy / alignment) * alignment;
-
-    for (int dx = 0; dx < w; dx++) {
-
-      isAggregatedMaskBlockNonEmpty = false;
-      int dxAligned = (dx / alignment) * alignment;
-
-      for (int dyy = dyAligned; dyy < dyAligned + alignment; dyy++) {
-        if (dyy + yM >= textureViewMap.getHeight() || dyy + yM < 0) {
+      bool isAggregatedMaskBlockNonEmpty = false;
+      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
+        if (dy + yM >= textureViewMap.getHeight() || dy + yM < 0) {
           continue;
         }
-        for (int dxx = dxAligned; dxx < dxAligned + alignment; dxx++) {
-          if (dxx + xM >= textureViewMap.getWidth() || dxx + xM < 0) {
+        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
+          if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patch.viewId](dyy + yM, dxx + xM) &
+          if (m_nonAggregatedMask[patch.viewId](dy + yM, dx + xM) &
               (1 << (frame % 64))) { // mod 64 to allow intra period be greater than 64 frames (but
                                      // the efficiency will go down in this case)
             isAggregatedMaskBlockNonEmpty = true;
@@ -226,38 +220,43 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
         }
       }
 
-      // get position
-      Vec2i pView = {xM + dx, yM + dy};
-      Vec2i pAtlas = viewToAtlas(pView, patch);
+      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
+        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
 
-      if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
-          pAtlas.y() >= textureAtlasMap.getHeight() || pAtlas.x() >= textureAtlasMap.getWidth() ||
-          pView.y() < 0 || pView.x() < 0 || pAtlas.y() < 0 || pAtlas.x() < 0)
-        continue;
+          Vec2i pView = {xM + dx, yM + dy};
+          Vec2i pAtlas = viewToAtlas(pView, patch);
 
-      if (!isAggregatedMaskBlockNonEmpty) {
-        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-        continue;
-      }
+          if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
+              pAtlas.y() >= textureAtlasMap.getHeight() ||
+              pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||
+              pAtlas.y() < 0 || pAtlas.x() < 0)
+            continue;
 
-      // Y
-      textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-          textureViewMap.getPlane(0)(pView.y(), pView.x());
-      // UV
-      if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-        for (int p = 1; p < 3; ++p) {
-          textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
-              textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
+          if (!isAggregatedMaskBlockNonEmpty) {
+            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+            continue;
+          }
+
+          // Y
+          textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+              textureViewMap.getPlane(0)(pView.y(), pView.x());
+          // UV
+          if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
+            for (int p = 1; p < 3; ++p) {
+              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
+                  textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
+            }
+          }
+
+          // Depth
+          if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold) {
+            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+                std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
+          } else {
+            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+                depthViewMap.getPlane(0)(pView.y(), pView.x());
+          }
         }
-      }
-
-      // Depth
-      if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold) {
-        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-            std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
-      } else {
-        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-            depthViewMap.getPlane(0)(pView.y(), pView.x());
       }
     }
   }

@@ -94,9 +94,9 @@ inline int ipow(int base, int exp) {
 inline int gcd(int a, int b) { return (b == 0) ? a : gcd(b, a % b); }
 inline int lcm(int a, int b) { return std::abs(a * b) / gcd(a, b); }
 
-template <typename T> inline T ppd2pps(T ppd) { return sqr(ppd * static_cast<float>(180. / M_PI)); }
+template <typename T> inline T ppd2pps(T ppd) { return sqr(ppd * static_cast<T>(180. / M_PI)); }
 
-template <typename T> T pps2ppd(T pps) { return std::sqrt(pps) * static_cast<float>(M_PI / 180.); }
+template <typename T> T pps2ppd(T pps) { return std::sqrt(pps) * static_cast<T>(M_PI / 180.); }
 
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value,

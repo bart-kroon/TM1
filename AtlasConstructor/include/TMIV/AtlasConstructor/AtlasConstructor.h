@@ -43,8 +43,11 @@
 
 #include <deque>
 #include <memory>
+#include <bitset>
 
 namespace TMIV::AtlasConstructor {
+constexpr auto maxIntraPeriod = uint8_t(32);
+
 class AtlasConstructor : public IAtlasConstructor {
 public:
   AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -61,7 +64,7 @@ public:
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
-  std::vector<Common::Mat<uint64_t>> m_nonAggregatedMask;
+  std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
   void writePatchInAtlas(const Metadata::AtlasParameters &patch,

@@ -57,6 +57,10 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   int maxLumaSamplesPerFrame = componentNode.require("MaxLumaSamplesPerFrame").asInt();
   const auto lumaSamplesPerAtlas = 2 * m_atlasSize.x() * m_atlasSize.y();
   m_nbAtlas = size_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
+
+  if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
+    throw runtime_error("The intraPeriod parameter cannot be greater than 32.");
+  }
 }
 
 auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
@@ -70,10 +74,8 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_ivSequenceParams = move(ivSequenceParams);
   m_isBasicView = move(isBasicView);
 
-  if (1) {
-    for (int c = 0; c < m_ivSequenceParams.viewParamsList.size(); c++) {
-      m_ivSequenceParams.viewParamsList[c].depthOccMapThreshold = 1;
-    }
+  for (int c = 0; c < m_ivSequenceParams.viewParamsList.size(); c++) {
+    m_ivSequenceParams.viewParamsList[c].depthOccMapThreshold = 1;
   }
 
   return m_ivSequenceParams;
@@ -86,7 +88,7 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
   int numOfCam = m_ivSequenceParams.viewParamsList.size();
 
   for (int c = 0; c < numOfCam; c++) {
-    Mat<uint64_t> nonAggMask;
+    Mat<std::bitset<maxIntraPeriod>> nonAggMask;
     int H = m_ivSequenceParams.viewParamsList[c].size.y();
     int W = m_ivSequenceParams.viewParamsList[c].size.x();
 
@@ -117,9 +119,7 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
         if (masks[view].getPlane(0)(h, w)) {
-          m_nonAggregatedMask[view](h, w) |=
-              (1 << (frame % 64)); // mod 64 to allow intra period be greater than 64 frames (but
-                                   // the efficiency will go down in this case)
+          m_nonAggregatedMask[view](h, w)[frame] = 1;
         }
       } // w
     }   // h
@@ -208,9 +208,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patch.viewId](dy + yM, dx + xM) &
-              (1 << (frame % 64))) { // mod 64 to allow intra period be greater than 64 frames (but
-                                     // the efficiency will go down in this case)
+          if (m_nonAggregatedMask[patch.viewId](dy + yM, dx + xM)[frame]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

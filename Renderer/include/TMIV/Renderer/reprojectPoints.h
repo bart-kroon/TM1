@@ -197,8 +197,9 @@ public:
 };
 
 template <typename SourceProjectionType>
-auto getPointCloudList(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
-                      unsigned N = 16) -> PointCloudList {
+auto getPointCloudList(
+    const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList, unsigned N = 16)
+    -> PointCloudList {
   PointCloudList pointCloudList;
 
   for (const auto &helper : sourceHelperList) {

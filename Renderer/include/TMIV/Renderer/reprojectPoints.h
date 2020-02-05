@@ -100,8 +100,8 @@ auto projectVertex(const Common::Vec3f &position, const Metadata::ViewParams &vi
 
 inline bool isValidDepth(float z) { return ((0.F < z) && std::isfinite(z)); }
 
-using PointGrid = std::vector<Common::Vec3f>;
-using PointGridList = std::vector<PointGrid>;
+using PointCloud = std::vector<Common::Vec3f>;
+using PointCloudList = std::vector<PointCloud>;
 
 template <typename Projection> class ProjectionHelper {
 public:
@@ -163,8 +163,8 @@ public:
     return {1.F / m_viewParams.normDispRange[1], 1.F / m_viewParams.normDispRange[0]};
   }
   auto getRadialRange() const -> Common::Vec2f;
-  auto getPointGrid(unsigned N = 8) const -> PointGrid {
-    PointGrid pointGrid;
+  auto getPointCloud(unsigned N = 8) const -> PointCloud {
+    PointCloud pointCloud;
     float step = 1.F / static_cast<float>(N - 1U);
     auto depthRange = getDepthRange();
 
@@ -181,7 +181,7 @@ public:
         float py = y * static_cast<float>(m_viewParams.size[1]);
 
         for (unsigned k = 0U; k < N; k++) {
-          pointGrid.emplace_back(doUnprojection({px, py}, z));
+          pointCloud.emplace_back(doUnprojection({px, py}, z));
 
           z += step * (depthRange.y() - depthRange.x());
         }
@@ -192,32 +192,32 @@ public:
       x += step;
     }
 
-    return pointGrid;
+    return pointCloud;
   }
 };
 
 template <typename SourceProjectionType>
-auto getPointGridList(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
-                      unsigned N = 16) -> PointGridList {
-  PointGridList pointGridList;
+auto getPointCloudList(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
+                      unsigned N = 16) -> PointCloudList {
+  PointCloudList pointCloudList;
 
   for (const auto &helper : sourceHelperList) {
-    pointGridList.emplace_back(helper.getPointGrid(N));
+    pointCloudList.emplace_back(helper.getPointCloud(N));
   }
 
-  return pointGridList;
+  return pointCloudList;
 }
 
 template <typename ProjectionType>
 auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList,
-                    const PointGridList &pointGridList, std::size_t firstId, std::size_t secondId)
+                    const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float {
   std::size_t N = 0;
 
   const ProjectionHelper<ProjectionType> &secondHelper = sourceHelperList[secondId];
-  const PointGrid &firstPointGrid = pointGridList[firstId];
+  const PointCloud &firstPointCloud = pointCloudList[firstId];
 
-  for (const auto &P : firstPointGrid) {
+  for (const auto &P : firstPointCloud) {
 
     auto p = secondHelper.doProjection(P);
 
@@ -226,7 +226,7 @@ auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourc
     }
   }
 
-  return static_cast<float>(N) / static_cast<float>(firstPointGrid.size());
+  return static_cast<float>(N) / static_cast<float>(firstPointCloud.size());
 }
 
 template <typename ProjectionType>
@@ -234,7 +234,7 @@ static auto
 computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList)
     -> Common::Mat<float> {
 
-  auto pointGridList = getPointGridList<ProjectionType>(sourceHelperList, 16);
+  auto pointCloudList = getPointCloudList<ProjectionType>(sourceHelperList, 16);
   std::size_t K = sourceHelperList.size();
   Common::Mat<float> overlappingMatrix({K, K});
 
@@ -243,7 +243,7 @@ computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &
 
       if (i != j) {
         overlappingMatrix(i, j) =
-            getOverlapping<ProjectionType>(sourceHelperList, pointGridList, i, j);
+            getOverlapping<ProjectionType>(sourceHelperList, pointCloudList, i, j);
       } else {
         overlappingMatrix(i, j) = 1.F;
       }

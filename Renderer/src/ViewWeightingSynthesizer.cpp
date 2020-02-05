@@ -42,9 +42,6 @@
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
-#include <fstream>
-#include<iostream>
-
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::Metadata;
@@ -53,40 +50,6 @@ using namespace TMIV::Image;
 namespace TMIV::Renderer {
 ////////////////////////////////////////////////////////////////////////////////
 namespace {
-
-//template <typename FORMAT>
-//bool writeFrameNoExcept(const std::string &path, const Common::Frame<FORMAT> &frame,
-//                        int frameIndex) {
-//
-//  std::ofstream stream(path,
-//                       (frameIndex == 0 ? std::ios::trunc : std::ios::app) | std::ios::binary);
-//  if (!stream.good()) {
-//    return false;
-//  }
-//
-//  frame.dump(stream);
-//
-//  int bytesToPad = frame.getDiskSize() - frame.getMemorySize();
-//
-//  while (bytesToPad-- > 0) {
-//    stream.put(0);
-//  }
-//
-//  return (!stream.good());
-//}
-//
-//auto depthToDisp(const Mat<float> &in) -> Mat<float> {
-//  Mat<float> out(in.sizes());
-//  std::transform(in.begin(), in.end(), out.begin(), [](auto z) {
-//    if (z == 0.F)
-//      return 0.F;
-//    else
-//      return 1.F / z;
-//  });
-//  return out;
-//}
-
-
 
 template <typename MAT>
 auto textureGather(const MAT &m, const Vec2f &p) -> stack::Vec4<typename MAT::value_type> {
@@ -216,94 +179,6 @@ public:
         ivSequenceParams.viewParamsList};
     ProjectionHelper<TargetProjectionType> targetHelper{targetCamera};
 
-
-    //######################################################################################
-    // 0) Initialization
-    computeCameraWeight<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
-    computeCameraVisibility<SourceProjectionType, TargetProjectionType>(sourceHelperList,
-                                                                        targetHelper);
-    computeAngularDistortionPerSource<SourceProjectionType>(sourceHelperList);
-
-    //std::cout << "Initialization... done !" << std::endl;
-
-    //######################################################################################
-    // 1) Deconstruction
-    recoverPrunedSource<MVD, SourceProjectionType>(
-        atlasList, ivSequenceParams, *ivAccessUnitParams.atlasParamsList, sourceHelperList);
-
-   //for(auto viewId = 0; viewId < m_sourceColor.size(); viewId++) {
-   //     const auto& sourceColor = m_sourceColor[viewId];
-   //     writeFrameNoExcept("prunedColor_" + std::to_string(viewId) + "_" +
-   // std::to_string(sourceColor.width()) + "x" + std::to_string(sourceColor.height()) +
-   // "_yuv444p10le.yuv", quantizeTexture(sourceColor), 0);
-   // }
-
-    //std::cout << "recoverPrunedSource... done !" << std::endl;
-
-    //######################################################################################
-    // 2) Reprojection
-    reprojectPrunedSource<SourceProjectionType, TargetProjectionType>(
-        maps, *ivAccessUnitParams.atlasParamsList, sourceHelperList, targetHelper);
-
-    //std::cout << "reprojectPrunedSource... done !" << std::endl;
-
-    //######################################################################################
-    // 3) Warping
-    warpPrunedSource<TargetProjectionType>(*ivAccessUnitParams.atlasParamsList, targetHelper);
-
-    //for (auto viewId = 0; viewId < m_viewportDepth.size(); viewId++) {
-    //const auto &viewportDepth = m_viewportDepth[viewId];
-    //writeFrameNoExcept(
-    //    "viewportDepth_" + std::to_string(viewId) + "_" +
-    //    std::to_string(viewportDepth.width()) +
-    //        "x" + std::to_string(viewportDepth.height()) + "_yuv420p10le.yuv",
-    //    DepthTransform<10>{targetHelper.getViewParams()}.quantizeNormDisp<Depth10Frame>(
-    //        depthToDisp(viewportDepth), 1),
-    //    0);
-    //}
-
-   // std::cout << "warpPrunedSource... done !" << std::endl;
-
-    //######################################################################################
-    // 4) Weight recovery
-    recoverPrunedWeight<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
-
-    // std::cout << "recoverPrunedWeight... done !" << std::endl;
-
-    //######################################################################################
-    // 5) Selection
-    selectViewportDepth<TargetProjectionType>(!ivSequenceParams.depthLowQualityFlag, targetHelper);
-
-    //writeFrameNoExcept(
-    //    "viewportVisibility_" + std::to_string(m_viewportVisibility.width()) + "x" +
-    //        std::to_string(m_viewportVisibility.height()) + "_yuv420p10le.yuv",
-    //    DepthTransform<10>{targetHelper.getViewParams()}.quantizeNormDisp<Depth10Frame>(
-    //        depthToDisp(m_viewportVisibility), 1),
-    //    0);
-
-    //     std::cout << "selectViewportDepth... done !" << std::endl;
-
-    //######################################################################################
-    // 6) Filtering
-    filterVisibilityMap();
-
-    // 	writeFrameNoExcept("viewportVisibility_" + std::to_string(m_viewportVisibility.width()) +
-    // "x" + std::to_string(m_viewportVisibility.height()) + "_yuv420p10le.yuv",
-    // DepthTransform<10>{targetHelper.getViewParams()}.quantizeNormDisp<Depth10Frame>(depthToDisp(m_viewportVisibility),
-    // 1), 0);
-    //
-    // 	std::cout << "filterVisibilityMap... done !" << std::endl;
-
-    //######################################################################################
-    // 7) Shading
-    computeShadingMap<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
-
-    // 	std::cout << "computeShadingMap... done !" << std::endl;
-
-
-
-
-#if 0
     //######################################################################################
     // 0) Initialization
     computeCameraWeight<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
@@ -340,7 +215,7 @@ public:
     //######################################################################################
     // 7) Shading
     computeShadingMap<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
-#endif
+
     //######################################################################################
     // 8) Output
     for (std::size_t i = 0U; i < m_viewportColor.size(); i++) {
@@ -496,11 +371,11 @@ private:
 
     // Recover pruned views
     TMIV::AtlasDeconstructor::AtlasDeconstructor atlasDesconstructor({}, {});
-    
+
     auto prunedViewsAndMask = atlasDesconstructor.recoverPrunedViewAndMask(
         atlasList, ivSequenceParams.viewParamsList, atlasParamsList);
 
-    const auto& prunedViews = prunedViewsAndMask.first;
+    const auto &prunedViews = prunedViewsAndMask.first;
     const auto &prunedMasks = prunedViewsAndMask.second;
 
     // Expand pruned views
@@ -516,12 +391,11 @@ private:
       m_sourceDepth.emplace_back(DepthTransform<DepthFrame::getBitDepth()>{viewParams}.expandDepth(
           prunedViews[sourceId].second));
 
-     std::transform(prunedMasks[sourceId].getPlane(0).begin(),
+      std::transform(prunedMasks[sourceId].getPlane(0).begin(),
                      prunedMasks[sourceId].getPlane(0).end(), m_sourceDepth.back().begin(),
                      m_sourceDepth.back().begin(), [&](auto maskValue, float depthValue) {
                        return (0 < maskValue) ? depthValue : Common::NaN;
                      });
-
     }
   }
   template <typename SourceProjectionType, typename TargetProjectionType>

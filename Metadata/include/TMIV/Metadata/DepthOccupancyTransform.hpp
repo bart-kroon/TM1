@@ -75,7 +75,8 @@ DepthTransform<bits>::DepthTransform(const ViewParams &viewParams,
 
 template <unsigned bits> auto DepthTransform<bits>::expandNormDisp(uint16_t x) const -> float {
   const auto level = Common::expandValue<bits>(std::max(m_depthStart, x));
-  return std::max(impl::minNormDisp, m_normDispRange[0] + (m_normDispRange[1] - m_normDispRange[0]) * level);
+  return std::max(impl::minNormDisp,
+                  m_normDispRange[0] + (m_normDispRange[1] - m_normDispRange[0]) * level);
 }
 
 template <unsigned bits> auto DepthTransform<bits>::expandDepth(uint16_t x) const -> float {

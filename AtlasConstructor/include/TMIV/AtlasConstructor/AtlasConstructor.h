@@ -41,10 +41,13 @@
 #include <TMIV/AtlasConstructor/IPruner.h>
 #include <TMIV/Common/Json.h>
 
+#include <bitset>
 #include <deque>
 #include <memory>
 
 namespace TMIV::AtlasConstructor {
+constexpr auto maxIntraPeriod = uint8_t(32);
+
 class AtlasConstructor : public IAtlasConstructor {
 public:
   AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
@@ -61,9 +64,11 @@ public:
   auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
+  std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
+
 private:
-  static void writePatchInAtlas(const Metadata::AtlasParameters &patch,
-                                const Common::MVD16Frame &views, Common::MVD16Frame &atlas);
+  void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
+                         Common::MVD16Frame &atlas, int frame);
 
 private:
   std::size_t m_nbAtlas{};

@@ -57,6 +57,8 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
+auto Packer::getAlignment() -> int { return m_alignment; }
+
 void Packer::updateAggregatedEntityMasks(const EntityMapList &entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
@@ -140,7 +142,12 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   priority_queue<Cluster, vector<Cluster>, decltype(comp)> clusterToPack(comp);
 
+  std::vector<Cluster> out;
   for (const auto &cluster : clusterList) {
+    cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_alignment, m_minPatchSize);
+  }
+
+  for (const auto &cluster : out) {
     // modification to align the imin,jmin to even values to help renderer
     Cluster c = Cluster::align(cluster, 2);
     clusterToPack.push(c);
@@ -159,7 +166,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       clusteringMap_viewId = cluster.getViewId();
     }
 
-    if (m_minPatchSize <= cluster.getMinSize()) {
+    if (m_minPatchSize * m_minPatchSize <= cluster.getArea()) {
       bool packed = false;
 
       for (size_t atlasId = 0; atlasId < packerList.size(); ++atlasId) {
@@ -201,15 +208,16 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       }
 
       if (!packed) {
+
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 
-        if (m_minPatchSize <= cc.first.getMinSize()) {
+        if (m_minPatchSize * m_minPatchSize <= cc.first.getArea()) {
           // modification to align the imin,jmin to even values to help renderer
           Cluster c = Cluster::align(cc.first, 2);
           clusterToPack.push(c);
         }
 
-        if (m_minPatchSize <= cc.second.getMinSize()) {
+        if (m_minPatchSize * m_minPatchSize <= cc.second.getArea()) {
           // modification to align the imin,jmin to even values to help renderer
           Cluster c = Cluster::align(cc.second, 2);
           clusterToPack.push(c);

@@ -40,11 +40,6 @@
 #include <TMIV/Renderer/IViewingSpaceController.h>
 
 namespace TMIV::Renderer {
-enum class MergeMode {
-  inpaint = 0, // let the inpainter fill
-  lowPass = 1, // fill from the low-pass synthesis results which are in the background
-  highPass = 2 // fill from the high-pass synthesis results which are in the foreground
-};
 
 // Advanced multipass implementation of IRenderer
 class MultipassRenderer : public IRenderer {
@@ -54,7 +49,6 @@ private:
   std::unique_ptr<IViewingSpaceController> m_viewingSpaceController;
   std::size_t m_numberOfPasses{};
   std::vector<std::size_t> m_numberOfViewsPerPass;
-  MergeMode m_mergeConflict = MergeMode::lowPass;
 
 public:
   MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);

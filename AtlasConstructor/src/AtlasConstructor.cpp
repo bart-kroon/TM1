@@ -59,7 +59,7 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_nbAtlas = size_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
 
   if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
-    throw runtime_error("The intraPeriod parameter cannot be greater than 32.");
+    throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 }
 

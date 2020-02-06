@@ -74,7 +74,8 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_ivSequenceParams = move(ivSequenceParams);
   m_isBasicView = move(isBasicView);
 
-  for (int c = 0; c < m_ivSequenceParams.viewParamsList.size(); c++) {
+  // Turn on occupancy coding
+  for (size_t c = 0; c < m_ivSequenceParams.viewParamsList.size(); ++c) {
     m_ivSequenceParams.viewParamsList[c].depthOccMapThreshold = 1;
   }
 
@@ -106,20 +107,19 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
 }
 
 void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
-
   // Pruning
   MaskList masks =
       m_pruner->prune(m_ivSequenceParams.viewParamsList, transportViews, m_isBasicView);
 
-  int frame = m_viewBuffer.size();
+  const auto frame = m_viewBuffer.size();
 
-  for (int view = 0; view < masks.size(); view++) {
+  for (size_t view = 0; view < masks.size(); ++view) {
     int H = transportViews[view].first.getHeight();
     int W = transportViews[view].first.getWidth();
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
-        if (masks[view].getPlane(0)(h, w) != 0u) {
-          m_nonAggregatedMask[view](h, w)[frame] = 1;
+        if (masks[view].getPlane(0)(h, w) != 0) {
+          m_nonAggregatedMask[view](h, w)[frame] = true;
         }
       } // w
     }   // h
@@ -248,7 +248,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           }
 
           // Depth
-          if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold != 0u) {
+          if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold != 0) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
                 std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
           } else {

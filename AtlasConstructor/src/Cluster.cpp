@@ -106,10 +106,10 @@ auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   return c;
 }
 
-auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                                      int alignment, int minPatchSize, std::deque<int> *min_w_agg,
-                                      std::deque<int> *max_w_agg) const -> bool {
-
+auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, vector<Cluster> &out,
+                                      int alignment, int minPatchSize,
+                                      const array<deque<int>, 2> &min_w_agg,
+                                      const array<deque<int>, 2> &max_w_agg) const -> bool {
   double splitThresholdL = 0.9;
 
   const Cluster &c = (*this);
@@ -160,7 +160,7 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::v
   return false;
 }
 
-auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                                     int alignment, int minPatchSize) const -> bool {
 
   double splitThresholdC = 0.3;
@@ -178,9 +178,9 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vec
 
       bool isEmpty = true;
 
-      for (int hh = h; hh < std::min(h + alignment, H); hh++) {
+      for (int hh = h; hh < min(h + alignment, H); hh++) {
         int i = hh + c.imin();
-        for (int ww = w; ww < std::min(w + alignment, W); ww++) {
+        for (int ww = w; ww < min(w + alignment, W); ww++) {
           int j = ww + c.jmin();
 
           if (clusteringBuffer(i, j) == c.getClusterId()) {
@@ -230,7 +230,7 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vec
   return false;
 }
 
-auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                                       int alignment, int minPatchSize) const -> bool {
 
   double splitThresholdC = 0.3;
@@ -248,9 +248,9 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::v
 
       bool isEmpty = true;
 
-      for (int hh = h; hh < std::min(h + alignment, H); hh++) {
+      for (int hh = h; hh < min(h + alignment, H); hh++) {
         int i = hh + c.imin();
-        for (int ww = w; ww < std::min(w + alignment, W); ww++) {
+        for (int ww = w; ww < min(w + alignment, W); ww++) {
           int j = ww + c.jmin();
 
           if (clusteringBuffer(i, j) == c.getClusterId()) {
@@ -300,9 +300,10 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::v
   return false;
 }
 
-auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                                    int alignment, int minPatchSize, std::deque<int> *min_h_agg,
-                                    std::deque<int> *max_h_agg) const -> bool {
+auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<Cluster> &out,
+                                    int alignment, int minPatchSize,
+                                    const array<deque<int>, 2> &min_h_agg,
+                                    const array<deque<int>, 2> &max_h_agg) const -> bool {
 
   double splitThresholdL = 0.9;
 
@@ -354,8 +355,8 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vec
   return false;
 }
 
-auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                             int alignment, int minPatchSize) const -> std::vector<Cluster> {
+auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, vector<Cluster> &out,
+                             int alignment, int minPatchSize) const -> vector<Cluster> {
 
   bool splitted = false;
 
@@ -367,14 +368,14 @@ auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Clu
   int H = c.height();
   int W = c.width();
 
-  std::vector<int> min_w;
-  std::vector<int> max_w;
+  vector<int> min_w;
+  vector<int> max_w;
   for (int h = 0; h < H; h++) {
     min_w.push_back(W - 1);
     max_w.push_back(0);
   }
-  std::vector<int> min_h;
-  std::vector<int> max_h;
+  vector<int> min_h;
+  vector<int> max_h;
   for (int w = 0; w < W; w++) {
     min_h.push_back(H - 1);
     max_h.push_back(0);
@@ -420,35 +421,35 @@ auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Clu
     }
   }
 
-  std::deque<int> min_w_agg[2];
-  std::deque<int> max_w_agg[2];
-  std::deque<int> min_h_agg[2];
-  std::deque<int> max_h_agg[2];
+  auto min_w_agg = array<deque<int>, 2>{};
+  auto max_w_agg = array<deque<int>, 2>{};
+  auto min_h_agg = array<deque<int>, 2>{};
+  auto max_h_agg = array<deque<int>, 2>{};
 
   min_w_agg[0].push_back(min_w[0]);
   max_w_agg[0].push_back(max_w[0]);
   for (int h = 1; h < H; h++) {
-    min_w_agg[0].push_back(std::min(min_w_agg[0][h - 1], min_w[h]));
-    max_w_agg[0].push_back(std::max(max_w_agg[0][h - 1], max_w[h]));
+    min_w_agg[0].push_back(min(min_w_agg[0][h - 1], min_w[h]));
+    max_w_agg[0].push_back(max(max_w_agg[0][h - 1], max_w[h]));
   }
   min_w_agg[1].push_front(min_w[H - 1]);
   max_w_agg[1].push_front(max_w[H - 1]);
   for (int h = H - 2; h >= 0; h--) {
-    min_w_agg[1].push_front(std::min(min_w_agg[1][0], min_w[h]));
-    max_w_agg[1].push_front(std::max(max_w_agg[1][0], max_w[h]));
+    min_w_agg[1].push_front(min(min_w_agg[1][0], min_w[h]));
+    max_w_agg[1].push_front(max(max_w_agg[1][0], max_w[h]));
   }
 
   min_h_agg[0].push_back(min_h[0]);
   max_h_agg[0].push_back(max_h[0]);
   for (int w = 1; w < W; w++) {
-    min_h_agg[0].push_back(std::min(min_h_agg[0][w - 1], min_h[w]));
-    max_h_agg[0].push_back(std::max(max_h_agg[0][w - 1], max_h[w]));
+    min_h_agg[0].push_back(min(min_h_agg[0][w - 1], min_h[w]));
+    max_h_agg[0].push_back(max(max_h_agg[0][w - 1], max_h[w]));
   }
   min_h_agg[1].push_front(min_h[W - 1]);
   max_h_agg[1].push_front(max_h[W - 1]);
   for (int w = W - 2; w >= 0; w--) {
-    min_h_agg[1].push_front(std::min(min_h_agg[1][0], min_h[w]));
-    max_h_agg[1].push_front(std::max(max_h_agg[1][0], max_h[w]));
+    min_h_agg[1].push_front(min(min_h_agg[1][0], min_h[w]));
+    max_h_agg[1].push_front(max(max_h_agg[1][0], max_h[w]));
   }
 
   if (W > H) { // split vertically

@@ -86,10 +86,10 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
   assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
 
-  int numOfCam = m_ivSequenceParams.viewParamsList.size();
+  const auto numOfCam = m_ivSequenceParams.viewParamsList.size();
 
-  for (int c = 0; c < numOfCam; c++) {
-    Mat<std::bitset<maxIntraPeriod>> nonAggMask;
+  for (size_t c = 0; c < numOfCam; c++) {
+    Mat<bitset<maxIntraPeriod>> nonAggMask;
     int H = m_ivSequenceParams.viewParamsList[c].size.y();
     int W = m_ivSequenceParams.viewParamsList[c].size.x();
 
@@ -250,7 +250,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           // Depth
           if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold != 0) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-                std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
+                max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
           } else {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
                 depthViewMap.getPlane(0)(pView.y(), pView.x());

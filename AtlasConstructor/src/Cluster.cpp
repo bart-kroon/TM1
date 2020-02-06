@@ -357,9 +357,9 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vec
 auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                              int alignment, int minPatchSize) const -> std::vector<Cluster> {
 
-  bool splitted = false;  
+  bool splitted = false;
 
-  int maxNonsplittableSize = 64;  
+  int maxNonsplittableSize = 64;
 
   const Cluster &c = (*this);
   const auto &clusteringBuffer = clusteringMap.getPlane(0);

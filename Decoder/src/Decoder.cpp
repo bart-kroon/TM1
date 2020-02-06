@@ -46,15 +46,12 @@ using namespace TMIV::Renderer;
 namespace TMIV::Decoder {
 Decoder::Decoder(const Json &rootNode, const Json &componentNode)
     : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
-          "AtlasDeconstructor", rootNode, componentNode)},      
-      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)}, 
-      m_depthUpscaler(rootNode, componentNode)
-{
-    if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
-        m_downscale_depth = node.asBool();
-
-    }
-
+          "AtlasDeconstructor", rootNode, componentNode)},
+      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)},
+      m_depthUpscaler(rootNode, componentNode) {
+  if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
+    m_downscale_depth = node.asBool();
+  }
 }
 
 void Decoder::updateSequenceParams(Metadata::IvSequenceParams ivSequenceParams) {
@@ -65,17 +62,18 @@ void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitPa
   m_ivAccessUnitParams = move(ivAccessUnitParams);
 }
 
+auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
+    -> Texture444Depth16Frame {
 
-auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const -> Texture444Depth16Frame {
-  
-  
-    auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas);
-    
-    if (m_downscale_depth) {
-      tie(atlas, patchIdMaps) = m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
-}
+  auto patchIdMaps =
+      m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas);
 
-  return m_renderer->renderFrame(   atlas, patchIdMaps,  m_ivSequenceParams, m_ivAccessUnitParams, target);
+  if (m_downscale_depth) {
+    tie(atlas, patchIdMaps) = m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
+  }
+
+  return m_renderer->renderFrame(atlas, patchIdMaps, m_ivSequenceParams, m_ivAccessUnitParams,
+                                 target);
 }
 
 auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList {

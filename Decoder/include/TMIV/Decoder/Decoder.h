@@ -38,8 +38,8 @@
 
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Renderer/IRenderer.h>
 #include <TMIV/Decoder/DepthScaler.h>
+#include <TMIV/Renderer/IRenderer.h>
 
 namespace TMIV::Decoder {
 class Decoder : public IDecoder {
@@ -47,15 +47,14 @@ private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
   DepthUpscalerAtlas m_depthUpscaler;
-  
+
   Metadata::IvSequenceParams m_ivSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   Common::PatchIdMapList m_patchIdMaps;
   bool m_downscale_depth = false;
-  
 
 public:
-  Decoder(const Common::Json & rootNode, const Common::Json & /*componentNode*/);
+  Decoder(const Common::Json &rootNode, const Common::Json & /*componentNode*/);
   Decoder(const Decoder &) = delete;
   Decoder(Decoder &&) = default;
   Decoder &operator=(const Decoder &) = delete;
@@ -65,7 +64,8 @@ public:
   void updateSequenceParams(Metadata::IvSequenceParams) override;
   void updateAccessUnitParams(Metadata::IvAccessUnitParams) override;
 
-  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const -> Common::Texture444Depth16Frame override;
+  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
+      -> Common::Texture444Depth16Frame override;
 
   // getters for intermediate results dumping to disk
   auto getPatchIdMapList(const Common::MVD10Frame &atlas) const -> Common::PatchIdMapList override;

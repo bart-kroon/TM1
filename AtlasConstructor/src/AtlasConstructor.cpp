@@ -118,7 +118,7 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
     int W = transportViews[view].first.getWidth();
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
-        if (masks[view].getPlane(0)(h, w)) {
+        if (masks[view].getPlane(0)(h, w) != 0u) {
           m_nonAggregatedMask[view](h, w)[frame] = 1;
         }
       } // w
@@ -227,8 +227,9 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
               pAtlas.y() >= textureAtlasMap.getHeight() ||
               pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||
-              pAtlas.y() < 0 || pAtlas.x() < 0)
+              pAtlas.y() < 0 || pAtlas.x() < 0) {
             continue;
+          }
 
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
@@ -247,7 +248,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           }
 
           // Depth
-          if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold) {
+          if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold != 0u) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
                 std::max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
           } else {

@@ -123,8 +123,10 @@ auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, c
   for (size_t i = 0; i < sizes.size(); ++i) 
   {
     auto sizeDepthMap = sizes[i];
-    if (downscaleDepth) sizeDepthMap /= 2;
-    
+    if (downscaleDepth) {
+      sizeDepthMap /= 2;
+    }
+
     result.emplace_back(readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i,
                                                          viewNames.empty() ? "" : viewNames[i]),
                                              frameIndex, sizes[i]),

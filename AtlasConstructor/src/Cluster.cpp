@@ -33,7 +33,7 @@
 
 #include "Cluster.h"
 
-int roundToAlignment(int val, int alignment) { return ((val) / alignment + 1); }
+auto roundToAlignment(int val, int alignment) -> int { return ((val) / alignment + 1); }
 
 using namespace std;
 using namespace TMIV::Common;
@@ -106,9 +106,9 @@ auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   return c;
 }
 
-bool Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                                       int alignment, int minPatchSize, std::deque<int> *min_w_agg,
-                                      std::deque<int> *max_w_agg) const {
+                                      std::deque<int> *max_w_agg) const -> bool {
 
   double splitThresholdL = 0.9;
 
@@ -133,7 +133,7 @@ bool Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::v
     }
   }
 
-  if (bestSplitPos && double(minArea) / alignedImsize < splitThresholdL) {
+  if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
     Cluster c1(c.getViewId(), c.getClusterId());
     Cluster c2(c.getViewId(), c.getClusterId());
 
@@ -160,8 +160,8 @@ bool Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::v
   return false;
 }
 
-bool Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                                    int alignment, int minPatchSize) const {
+auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                                    int alignment, int minPatchSize) const -> bool {
 
   double splitThresholdC = 0.3;
 
@@ -230,8 +230,8 @@ bool Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vec
   return false;
 }
 
-bool Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                                      int alignment, int minPatchSize) const {
+auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                                      int alignment, int minPatchSize) const -> bool {
 
   double splitThresholdC = 0.3;
 
@@ -300,9 +300,9 @@ bool Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::v
   return false;
 }
 
-bool Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                                     int alignment, int minPatchSize, std::deque<int> *min_h_agg,
-                                    std::deque<int> *max_h_agg) const {
+                                    std::deque<int> *max_h_agg) const -> bool {
 
   double splitThresholdL = 0.9;
 
@@ -327,7 +327,7 @@ bool Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vec
     }
   }
 
-  if (bestSplitPos && double(minArea) / alignedImsize < splitThresholdL) {
+  if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
     Cluster c1(c.getViewId(), c.getClusterId());
     Cluster c2(c.getViewId(), c.getClusterId());
 
@@ -354,9 +354,8 @@ bool Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vec
   return false;
 }
 
-std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
-                                             std::vector<Cluster> &out, int alignment,
-                                             int minPatchSize) const {
+auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize) const -> std::vector<Cluster> {
 
   bool splitted = false;  
 
@@ -456,15 +455,17 @@ std::vector<Cluster> Cluster::recursiveSplit(const ClusteringMap &clusteringMap,
     if (W > maxNonsplittableSize) {
       splitted =
           splitLPatchVertically(clusteringMap, out, alignment, minPatchSize, min_h_agg, max_h_agg);
-      if (!splitted)
+      if (!splitted) {
         splitted = splitCPatchVertically(clusteringMap, out, alignment, minPatchSize);
+      }
     }
   } else { // split horizontally
     if (H > maxNonsplittableSize) {
       splitted = splitLPatchHorizontally(clusteringMap, out, alignment, minPatchSize, min_w_agg,
                                          max_w_agg);
-      if (!splitted)
+      if (!splitted) {
         splitted = splitCPatchHorizontally(clusteringMap, out, alignment, minPatchSize);
+      }
     }
   }
 

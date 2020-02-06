@@ -57,7 +57,7 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
-int Packer::getAlignment() { return m_alignment; }
+auto Packer::getAlignment() -> int { return m_alignment; }
 
 void Packer::updateAggregatedEntityMasks(const EntityMapList &entityMasks) {
   for (const auto &entityMask : entityMasks) {

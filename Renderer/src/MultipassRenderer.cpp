@@ -179,8 +179,9 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
       if (viewportPass[passId - 1].second.getPlane(0)[i] != 0) {
         // Always copy from the lower pass synthesis results if there is content there.
         viewport.second.getPlane(0)[i] = viewportPass[passId - 1].second.getPlane(0)[i];
-        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++) {
           viewport.first.getPlane(planeId)[i] = viewportPass[passId - 1].first.getPlane(planeId)[i];
+        }
       }
 	}
   }

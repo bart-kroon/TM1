@@ -217,22 +217,25 @@ void GroupBasedRenderer::inplaceMerge(Texture444Depth16Frame &viewport,
       if (viewport.second.getPlane(0)[i] <= viewportPass.second.getPlane(0)[i]) {
         // copy from lower pass synthesis results which have content from foreground objects
         viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
-        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++) {
           viewport.first.getPlane(planeId)[i] = viewportPass.first.getPlane(planeId)[i];
+        }
       } else {
         // Handle conflict
         switch (mergeMode) {
         case MergeMode::inpaint:
           // put 0 in depth map, neutral color in texture, and let inpainter handle it
           viewport.second.getPlane(0)[i] = 0;
-          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++) {
             viewport.first.getPlane(planeId)[i] = TextureFrame::neutralColor();
+          }
           break;
         case MergeMode::lowPass:
           // Always copy from the lower pass synthesis results if there is content there
           viewport.second.getPlane(0)[i] = viewportPass.second.getPlane(0)[i];
-          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+          for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++) {
             viewport.first.getPlane(planeId)[i] = viewportPass.first.getPlane(planeId)[i];
+          }
           break;
         case MergeMode::foreground:
           break; // do nothing, as foreground objects will be always copyied from when merging.

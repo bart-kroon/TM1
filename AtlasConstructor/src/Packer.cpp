@@ -149,7 +149,11 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   for (const auto &cluster : clusterList) {
     // modification to align the imin,jmin to even values to help renderer
     Cluster c = Cluster::align(cluster, 2);
-    clusterToPack.push(c);
+    if (c.getNumActivePixels()==0)
+      cout << "Skipping patch of clusterID "<<c.getClusterId()<< " and size " << c.width() << "x" << c.height() << " from view "
+           << c.getViewId() << " and entity " << c.getEntityId() << endl;
+    else
+		clusterToPack.push(c);
   }
 
   int pIndex = 0;

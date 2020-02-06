@@ -99,7 +99,7 @@ auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
   c.jmin_ = min(c1.jmin_, c2.jmin_);
   c.jmax_ = max(c1.jmax_, c2.jmax_);
 
-  c.numActivePixels_ = c1.numActivePixels_ + c1.numActivePixels_;
+  c.numActivePixels_ = c1.numActivePixels_ + c2.numActivePixels_;
   c.filling_ = (c1.filling_ + c2.filling_);
 
   return c;

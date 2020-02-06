@@ -64,8 +64,8 @@ auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequence
   m_outSequenceParams = m_inSequenceParams;
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
-    if (x.depthOccMapThreshold != 0 || m_depthOccMapThreshold != 0) {
-      x.depthOccMapThreshold = std::max(x.depthOccMapThreshold, m_depthOccMapThreshold); // =T
+    if (x.depthOccMapThreshold != 0) {
+      x.depthOccMapThreshold = m_depthOccMapThreshold; // =T
       const auto nearLevel = 1023.F;
       const auto farLevel = float(2 * x.depthOccMapThreshold);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)

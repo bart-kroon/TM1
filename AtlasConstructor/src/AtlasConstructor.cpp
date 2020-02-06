@@ -70,6 +70,11 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_ivSequenceParams = move(ivSequenceParams);
   m_isBasicView = move(isBasicView);
 
+  // Turn on occupancy coding
+  for (size_t c = 0; c < m_ivSequenceParams.viewParamsList.size(); ++c) {
+    m_ivSequenceParams.viewParamsList[c].depthOccMapThreshold = 1;
+  }
+
   return m_ivSequenceParams;
 }
 

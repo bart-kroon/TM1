@@ -111,6 +111,7 @@ public:
         // Look up depth value and affine parameters
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
         auto level = atlas.second.getPlane(0)(i_atlas, j_atlas);
+
         const auto d = depthTransform[patchId].expandDepth(level);
         assert(d > 0.F && isfinite(d));
         const auto &R = R_t[patch.viewId].first;

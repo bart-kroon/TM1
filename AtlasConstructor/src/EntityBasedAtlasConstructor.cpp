@@ -78,13 +78,13 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
         max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
   }
 
-  // Register pruning relation
-  m_pruner->registerPruningRelation(m_ivSequenceParams, offsetId, m_isBasicView);
-
   // Copy sequence parameters + Basic view ids
   m_inIvSequenceParams = move(ivSequenceParams);
   m_outIvSequenceParams = m_inIvSequenceParams;
   m_isBasicView = move(isBasicView);
+
+  // Register pruning relation
+  m_pruner->registerPruningRelation(m_inIvSequenceParams, offsetId, m_isBasicView);
 
   // Turn on occupancy coding for all views
   for (auto &x : m_outIvSequenceParams.viewParamsList) {
@@ -307,7 +307,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
     transportEntityViews = entitySeparator(transportViews, entityMaps, entityId);
 
     // Pruning
-    masks = m_pruner->prune(m_ivSequenceParams, transportEntityViews, m_isBasicView);
+    masks = m_pruner->prune(m_inIvSequenceParams, transportEntityViews, m_isBasicView);
 
     // updating the pruned basic masks for entities and filter other masks.
     updateMasks(transportEntityViews, masks);

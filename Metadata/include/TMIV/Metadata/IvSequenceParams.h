@@ -123,7 +123,7 @@ struct ViewParams {
 
   // In specification: depth_occ_map_threshold_default[ v ]
   //
-  // Do not set within the encoder! Use encoder.hasOccupancy instead. 
+  // Do not set within the encoder! Use encoder.hasOccupancy instead.
   // The DepthOccupancy component determines this threshold.
   uint16_t depthOccMapThreshold{};
 

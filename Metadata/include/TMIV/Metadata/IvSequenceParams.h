@@ -146,6 +146,11 @@ struct ViewParams {
   // depth values prior to video coding.
   constexpr auto useOccupancy() const -> bool { return hasInvalidDepth || wantOccupancy; }
 
+  // Avoid marking valid depth as invalid depth when enabling occupancy
+  constexpr auto avoidInvalidDepth(std::uint16_t x) const {
+    return x > 0 || hasInvalidDepth || !useOccupancy() ? x : std::uint16_t(1);
+  }
+
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;
   bool operator!=(const ViewParams &other) const { return !operator==(other); }

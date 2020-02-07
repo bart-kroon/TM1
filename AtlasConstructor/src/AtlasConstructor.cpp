@@ -31,9 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Cluster.h"
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
+
+#include "Cluster.h"
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
 
 #include <cassert>
 #include <iostream>
@@ -197,6 +199,8 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
 
   int alignment = m_packer->getAlignment();
 
+  const auto &viewParams = m_ivSequenceParams.viewParamsList[patch.viewId];
+
   for (int dyAligned = 0; dyAligned < h; dyAligned += alignment) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += alignment) {
 
@@ -248,15 +252,9 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
             }
           }
 
-          // Depth
-          if (m_ivSequenceParams.viewParamsList[patch.viewId].useOccupancy()) {
-            // Value 0 is for invalid/non-occupied so it cannot be used
-            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-                max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
-          } else {
-            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-                depthViewMap.getPlane(0)(pView.y(), pView.x());
-          }
+          // Set depth value. Avoid marking valid depth as invalid.
+          depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+              viewParams.avoidInvalidDepth(depthViewMap.getPlane(0)(pView.y(), pView.x()));
         }
       }
     }

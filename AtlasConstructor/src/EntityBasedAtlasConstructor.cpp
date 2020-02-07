@@ -433,6 +433,8 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
   int xM = patch.posInView.x();
   int yM = patch.posInView.y();
 
+  const auto &viewParams = m_ivSequenceParams.viewParamsList[patch.viewId];
+
   for (int dy = 0; dy < h; dy++) {
     for (int dx = 0; dx < w; dx++) {
       // get position
@@ -448,9 +450,10 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
         }
       }
-      // Depth
+
+      // Set depth value. Avoid marking valid depth as invalid
       depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-          depthViewMap.getPlane(0)(pView.y(), pView.x());
+          viewParams.avoidInvalidDepth(depthViewMap.getPlane(0)(pView.y(), pView.x()));
     }
   }
 }

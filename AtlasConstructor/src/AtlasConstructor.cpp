@@ -78,7 +78,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, unsign
   m_isBasicView = move(isBasicView);
 
   // Register pruning relation
-  m_pruner->registerPruningRelation(m_inIvSequenceParams, offsetId, m_isBasicView);
+  m_pruner->registerPruningRelation(m_outIvSequenceParams, offsetId, m_isBasicView);
 
   // Turn on occupancy coding for partial views
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {

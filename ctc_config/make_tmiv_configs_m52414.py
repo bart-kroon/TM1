@@ -241,6 +241,9 @@ class DecoderConfiguration:
 	def numberOfCodedSourceViews(self):
 		return len(self.sourceCameraNames())
 
+	def useMultipassRenderer(self):
+		return self.anchorId == 'V17' or self.anchorId == 'R97'
+
 	def maxEntities(self):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 25
@@ -265,6 +268,11 @@ class DecoderConfiguration:
 			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
 			'ViewingSpaceController': {}
 		}
+		if self.useMultipassRenderer():
+			config.update({
+				'NumberOfPasses': 3,
+				'NumberOfViewsPerPass': [2, 4, self.numberOfCodedSourceViews()]
+			})
 		return config
 
 	def poseTraceBasename(self):
@@ -505,7 +513,7 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def depthOccupancy(self):
 		return {
-			'depthOccMapThreshold': 64
+			'depthOccMapThresholdIfSet': 64
 		}
 
 	def encoder(self):

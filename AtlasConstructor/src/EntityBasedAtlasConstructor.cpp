@@ -84,7 +84,7 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
   m_isBasicView = move(isBasicView);
 
   // Register pruning relation
-  m_pruner->registerPruningRelation(m_inIvSequenceParams, offsetId, m_isBasicView);
+  m_pruner->registerPruningRelation(m_outIvSequenceParams, offsetId, m_isBasicView);
 
   // Turn on occupancy coding for all views
   for (auto &x : m_outIvSequenceParams.viewParamsList) {

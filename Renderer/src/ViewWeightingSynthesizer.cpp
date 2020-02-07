@@ -41,6 +41,8 @@
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
+#include <iostream>
+
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::Metadata;
@@ -746,7 +748,7 @@ private:
   void
   recoverPrunedWeight(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
                       const ProjectionHelper<TargetProjectionType> &targetHelper) {
-
+	  
     // Retrieve pruning information
     auto hasPruningRelation =
         std::any_of(sourceHelperList.begin(), sourceHelperList.end(), [](const auto &helper) {

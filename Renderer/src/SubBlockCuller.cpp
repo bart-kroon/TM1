@@ -89,16 +89,6 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
     patch_dep_near = 1 / camera.normDispRange.y();
   }
 
-  // Using Patch depth
-  // const auto &dep_far = patch.depthStart;
-  // const auto &dep_near = 0;
-  /*double temp1 = camera.normDispRange.y() - camera.normDispRange.x();
-  double temp2 = camera.normDispRange.x();
-  double temp3 = n / 65535 * temp1 + temp2;
-  double patch_near = 1 / temp3;
-  temp3 = f / 65535 * temp1 + temp2;
-  double patch_far = 1 / temp3;*/
-
   for (int i = 0; i < 4; i++) {
     const auto xyz = R * unprojectVertex(uv[i], patch_dep_near, camera) + t;
     const auto rayAngle = angle(xyz, xyz - t);

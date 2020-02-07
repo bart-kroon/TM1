@@ -122,6 +122,9 @@ struct ViewParams {
   Common::Vec2f normDispRange{};
 
   // In specification: depth_occ_map_threshold_default[ v ]
+  //
+  // Do not set within the encoder! Use encoder.hasOccupancy instead. 
+  // The DepthOccupancy component determines this threshold.
   uint16_t depthOccMapThreshold{};
 
   // In specification: depth_start_default_present_flag[ v ]
@@ -133,6 +136,9 @@ struct ViewParams {
 
   // Not in the specification. Just to improve screen output
   std::string name{};
+
+  // Not part of the bitstream. Does the depth map have invalid/non-occupied?
+  bool hasOccupancy{};
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;

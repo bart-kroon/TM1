@@ -72,8 +72,8 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
   }
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
-  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
-         << viewParams.depthOccMapThreshold;
+  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, hasOccupancy " << boolalpha
+         << viewParams.hasOccupancy << ", depthOccMapThreshold " << viewParams.depthOccMapThreshold;
 
   if (viewParams.depthStart) {
     stream << ", depthStart " << *viewParams.depthStart;
@@ -111,7 +111,7 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   parameters.normDispRange.x() = depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F;
   parameters.normDispRange.y() = depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F;
   if (auto subnode = node.optional("HasInvalidDepth"); subnode) {
-    parameters.depthOccMapThreshold = subnode.asBool() ? 1 : 0;
+    parameters.hasOccupancy = subnode.asBool();
   }
 
   auto proj = node.require("Projection").asString();
@@ -231,6 +231,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
       viewParams->normDispRange.x() = bitstream.getFloat32();
       viewParams->normDispRange.y() = bitstream.getFloat32();
       viewParams->depthOccMapThreshold = uint16_t(bitstream.readBits(depthOccMapThresholdNumBits));
+      viewParams->hasOccupancy = viewParams->depthOccMapThreshold > 0;
 
       if (const auto depthStartDefaultPresentFlag = bitstream.getFlag();
           depthStartDefaultPresentFlag) {
@@ -239,6 +240,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
     } else {
       viewParams->normDispRange = viewParamsList.front().normDispRange;
       viewParams->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
+      viewParams->hasOccupancy = viewParamsList.front().hasOccupancy;
     }
   }
 

@@ -41,11 +41,11 @@
 namespace TMIV::DepthOccupancy {
 class DepthOccupancy : public IDepthOccupancy {
 public:
-  // Initialize with specified depthOccMapThreshold
+  // Initialize with specified depthOccMapThresholdIfSet
   //
-  // When incoming view parameters have depthOccMapThreshold > 0, then the outgoing view parameters
-  // will have the specified depthOccMapThreshold value.
-  explicit DepthOccupancy(uint16_t depthOccMapThreshold);
+  // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
+  // will have the specified depthOccMapThresholdIfSet value.
+  explicit DepthOccupancy(uint16_t depthOccMapThresholdIfSet);
 
   DepthOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   DepthOccupancy(const DepthOccupancy &) = default;
@@ -54,8 +54,8 @@ public:
   DepthOccupancy &operator=(DepthOccupancy &&) = default;
   ~DepthOccupancy() override = default;
 
-  // No change when depthOccMapThreshold == 0 (no invalid depth)
-  // Otherwise set depthOccMapThreshold and adjust normDispRange
+  // No change when useOccupancy() is false. Otherwise set depthOccMapThreshold
+  // to depthOccMapThresholdIfSet and adjust normDispRange.
   auto transformSequenceParams(Metadata::IvSequenceParams)
       -> const Metadata::IvSequenceParams & override;
 
@@ -67,7 +67,7 @@ public:
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
 
 private:
-  uint16_t m_depthOccMapThreshold{};
+  uint16_t m_depthOccMapThresholdIfSet{};
   Metadata::IvSequenceParams m_inSequenceParams;
   Metadata::IvSequenceParams m_outSequenceParams;
   Metadata::IvAccessUnitParams m_accessUnitParams;

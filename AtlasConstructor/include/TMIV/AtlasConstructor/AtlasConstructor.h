@@ -79,7 +79,8 @@ private:
   std::unique_ptr<IPacker> m_packer;
   std::vector<bool> m_isBasicView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
-  Metadata::IvSequenceParams m_ivSequenceParams;
+  Metadata::IvSequenceParams m_inIvSequenceParams;
+  Metadata::IvSequenceParams m_outIvSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };

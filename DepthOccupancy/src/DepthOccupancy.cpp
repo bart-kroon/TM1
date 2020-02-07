@@ -62,11 +62,6 @@ auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequence
     -> const Metadata::IvSequenceParams & {
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
-  
-  // Turn on occupancy coding
-  for (size_t c = 0; c < m_outSequenceParams.viewParamsList.size(); ++c) {
-    m_outSequenceParams.viewParamsList[c].depthOccMapThreshold = 1;
-  }
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
     if (x.depthOccMapThreshold != 0) {

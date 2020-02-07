@@ -241,9 +241,6 @@ class DecoderConfiguration:
 	def numberOfCodedSourceViews(self):
 		return len(self.sourceCameraNames())
 
-	def useMultipassRenderer(self):
-		return self.anchorId == 'V17' or self.anchorId == 'R97'
-
 	def maxEntities(self):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 25
@@ -257,8 +254,6 @@ class DecoderConfiguration:
 		return {}
 
 	def rendererMethod(self):
-		if self.useMultipassRenderer():
-			return 'MultipassRenderer'
 		return 'Renderer'
 
 	def renderer(self):

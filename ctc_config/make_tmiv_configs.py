@@ -80,7 +80,10 @@ class DecoderConfiguration:
 			'E': 'IntelFrog',
 			'J': 'OrangeKitchen',
 			'L': 'PoznanFencing',
-			'N': 'NokiaChess'
+			'N': 'NokiaChess',
+            'P': 'PoznanCarpark',
+            'U': 'PoznanStreet',
+            'T': 'PoznanHall'
 		}[self.seqId]
 
 	def sourceCameraParameters(self):
@@ -122,7 +125,10 @@ class DecoderConfiguration:
 				'E': 1456,
 				'J': 1456,
 				'L': 2912,
-				'N': 2736
+				'N': 2736,
+                'P': 2912,
+                'U': 2912,
+                'T': 2912
 			}[self.seqId]
 		else:
 			h = self.viewHeight()
@@ -139,7 +145,10 @@ class DecoderConfiguration:
 				'E': 1920,
 				'J': 1920,
 				'L': 1920,
-				'N': 2048
+				'N': 2048,
+                'P': 1920,
+                'U': 1920,
+                'T': 1920
 			}[self.seqId]
 		return self.viewWidth()
 
@@ -153,7 +162,10 @@ class DecoderConfiguration:
 				'E': 1080,
 				'J': 1080,
 				'L': 1080,
-				'N': 2048
+				'N': 2048,
+                'P': 1080,
+                'U': 1080,
+                'T': 1080
 			}[self.seqId]
 		return self.viewHeight()
 
@@ -195,7 +207,10 @@ class DecoderConfiguration:
 			'E': 13,
 			'J': 25,
 			'L': 10,
-			'N': 10
+			'N': 10,
+            'P': 9,
+            'U': 9,
+            'T': 9
 		}[self.seqId]
 
 	def firstSourceView(self):
@@ -221,7 +236,10 @@ class DecoderConfiguration:
 				'E': [ 'v1', 'v3', 'v5', 'v7', 'v9', 'v11', 'v13' ],
 				'J': [ 'v00', 'v02', 'v04', 'v10', 'v12', 'v14', 'v20', 'v22', 'v24' ],
 				'L': [ 'v00', 'v02', 'v04', 'v06', 'v08' ],
-				'N': [ 'v0', 'v1', 'v3', 'v5', 'v7', 'v9' ]
+				'N': [ 'v0', 'v1', 'v3', 'v5', 'v7', 'v9' ],
+                'P': [ 'v0', 'v2', 'v4', 'v6', 'v8' ],
+                'U': [ 'v0', 'v2', 'v4', 'v6', 'v8' ],
+                'T': [ 'v0', 'v2', 'v4', 'v6', 'v8' ]
 			}[self.seqId]
 		return self.allSourceCameraNames()
 
@@ -325,7 +343,10 @@ class DecoderConfiguration:
 			'E': 135,
 			'J': 0,
 			'L': 30,
-			'N': 60
+			'N': 60,
+            'P': 0,
+            'U': 0,
+            'T': 0
 		}[self.seqId]		
 
 	def outputCamera(self):
@@ -474,7 +495,10 @@ class EncoderConfiguration(DecoderConfiguration):
 				'E': 2,
 				'J': 2,
 				'L': 1,
-				'N': 3
+				'N': 3,
+                'P': 1,
+                'U': 1,
+                'T': 1
 			}[self.seqId] * self.lumaSamplesPerView()
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 6 * self.lumaSamplesPerView()
@@ -606,7 +630,7 @@ if __name__ == '__main__':
 	if len(sys.argv) == 2:
 		sourceDir = sys.argv[1]
 
-	allSeqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N']
+	allSeqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N','P', 'U', 'T']
 	allTestPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']	
 
 	generate(['R17', 'R97'], allSeqIds, ['R0'], 1)

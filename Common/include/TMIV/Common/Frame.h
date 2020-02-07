@@ -68,6 +68,7 @@ public:
 
 protected:
   static constexpr int nb_plane = detail::PixelFormatHelper<FORMAT>::nb_plane;
+  static constexpr int bitDepth = detail::PixelFormatHelper<FORMAT>::bitDepth;
 
 protected:
   int m_width = 0, m_height = 0;
@@ -114,6 +115,7 @@ public:
     return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
   }
   static constexpr int getNumberOfPlanes() { return nb_plane; }
+  static constexpr int getBitDepth() { return bitDepth; }
 
   void read(std::istream &is, bool vFlip = false);
   void dump(std::ostream &os, bool vFlip = false) const;
@@ -151,6 +153,10 @@ using EntityMap = Frame<YUV400P16>;
 
 // TODO(BK): Rename struct and data members after TMIV-4.0alpha1 milestone
 template <typename FORMAT> struct TextureDepthFrame {
+
+  using first_type = TextureFrame;
+  using second_type = Frame<FORMAT>;
+
   TextureFrame first;
   Frame<FORMAT> second;
   EntityMap entities{};

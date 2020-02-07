@@ -35,7 +35,9 @@
 #define _TMIV_RENDERER_REPROJECTPOINTS_H_
 
 #include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/Transformation.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/Renderer/Engine.h>
 
 namespace TMIV::Renderer {
 // Create a grid of positions indicating the center of each of the pixels
@@ -87,6 +89,73 @@ auto affineParameters(const Metadata::ViewParams &viewParams, const Metadata::Vi
 // suitable for rendering directly from an atlas.
 auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewParams &viewParams)
     -> Common::Vec3f;
+
+// Project point: From world position (with the camera as reference frame)
+// to image position
+//
+// This method is less efficient because of the switch on projection type, but
+// suitable for rendering directly from an atlas.
+auto projectVertex(const Common::Vec3f &position, const Metadata::ViewParams &viewParams)
+    -> std::pair<Common::Vec2f, float>;
+
+inline bool isValidDepth(float d) { return (0.F < d); }
+
+using PointCloud = std::vector<Common::Vec3f>;
+using PointCloudList = std::vector<PointCloud>;
+
+template <typename Projection> class ProjectionHelper {
+public:
+  class List : public std::vector<ProjectionHelper> {
+  public:
+    List(const Metadata::ViewParamsList &viewParamsList);
+    List(const List &) = default;
+    List(List &&) = default;
+    auto operator=(const List &) -> List & = default;
+    auto operator=(List &&) -> List & = default;
+  };
+
+private:
+  const Metadata::ViewParams &m_viewParams;
+  Engine<Projection> m_engine;
+  Common::Mat3x3f m_rotationMatrix;
+
+public:
+  ProjectionHelper(const Metadata::ViewParams &viewParams);
+  ProjectionHelper(const ProjectionHelper &) = default;
+  ProjectionHelper(ProjectionHelper &&) = default;
+  auto operator=(const ProjectionHelper &) -> ProjectionHelper & = default;
+  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
+  auto getViewParams() const -> const Metadata::ViewParams & { return m_viewParams; }
+  auto getViewingPosition() const -> const Common::Vec3f & { return m_viewParams.position; }
+  auto getViewingDirection() const -> Common::Vec3f;
+  auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
+  auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;
+  auto doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f;
+  auto isInsideViewport(const Common::Vec2f &p) const -> bool;
+  bool isValidDepth(float d) const;
+  auto getAngularResolution() const -> float;
+  auto getDepthRange() const -> Common::Vec2f;
+  auto getRadialRange() const -> Common::Vec2f;
+  auto getPointCloud(unsigned N = 8) const -> PointCloud;
+};
+
+template <typename SourceProjectionType>
+auto getPointCloudList(
+    const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList, unsigned N = 16)
+    -> PointCloudList;
+
+template <typename ProjectionType>
+auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList,
+                    const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
+    -> float;
+
+template <typename ProjectionType>
+static auto
+computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList)
+    -> Common::Mat<float>;
+
 } // namespace TMIV::Renderer
+
+#include "reprojectPoints.hpp"
 
 #endif

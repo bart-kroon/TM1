@@ -191,5 +191,4 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   return frame;
 }
-
 } // namespace TMIV::AtlasDeconstructor

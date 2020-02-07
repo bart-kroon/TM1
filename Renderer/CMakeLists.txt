@@ -11,6 +11,7 @@ add_library(RendererLib
 	"src/Synthesizer.cpp"
 	"src/ViewingSpaceController.cpp"
 	"src/reprojectPoints.cpp"
+	"src/ViewWeightingSynthesizer.cpp"
 	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
@@ -23,6 +24,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/Synthesizer.h"
 	"include/TMIV/Renderer/ViewingSpaceController.h"
 	"include/TMIV/Renderer/reprojectPoints.h"
+	"include/TMIV/Renderer/reprojectPoints.hpp"
 	"include/TMIV/Renderer/Engine.h"
 	"include/TMIV/Renderer/Engine_ERP.hpp"
 	"include/TMIV/Renderer/Engine_Perspective.hpp"
@@ -31,6 +33,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/Rasterizer.h"
 	"include/TMIV/Renderer/Rasterizer.hpp"
 	"include/TMIV/Renderer/AccumulatingPixel.h"
+	"include/TMIV/Renderer/ViewWeightingSynthesizer.h"
 	)
 
 add_library(TMIV::RendererLib

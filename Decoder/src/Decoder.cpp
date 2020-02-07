@@ -48,6 +48,7 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
     : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
           "AtlasDeconstructor", rootNode, componentNode)},
       m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)},
+      m_culler{Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode)},
       m_depthUpscaler(rootNode, componentNode) {
   if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
     m_downscale_depth = node.asBool();
@@ -72,8 +73,15 @@ auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
     tie(atlas, patchIdMaps) = m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
   }
 
-  return m_renderer->renderFrame(atlas, patchIdMaps, m_ivSequenceParams, m_ivAccessUnitParams,
-                                 target);
+   if (target.name == "viewport") {
+    auto updatedpatchIdMaps = m_culler->updatePatchIdmap(atlas, patchIdMaps, m_ivSequenceParams,
+                                                         m_ivAccessUnitParams, target);
+    return m_renderer->renderFrame(atlas, updatedpatchIdMaps, m_ivSequenceParams,
+                                   m_ivAccessUnitParams, target);
+  } else {
+    return m_renderer->renderFrame(atlas, patchIdMaps, m_ivSequenceParams, m_ivAccessUnitParams,
+                                   target);
+  }
 }
 
 auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList {

@@ -47,7 +47,6 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
-
 SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
 static auto affineParameterList(const ViewParamsVector &viewParamsVector,
@@ -67,8 +66,8 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
   const auto &R = R_t[patch.viewId].first;
   const auto &t = R_t[patch.viewId].second;
 
-  Vec2f uv[4];
-  Vec2f xy_v[8];
+  auto uv = array<Vec2f, 4>{};
+  auto xy_v = array<Vec2f, 8>{};
   float w = patch.patchSizeInView.x();
   float h = patch.patchSizeInView.y();
   uv[0] = Vec2f(patch.posInView);
@@ -77,17 +76,17 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
   uv[3] = uv[0] + Vec2f{w, h};
 
   // Using Camera depth
-  double patch_dep_near = 0;
-  double patch_dep_far = 0;
-  if (camera.normDispRange.x() <= 0) {
-    patch_dep_far = 1000.0;
+  auto patch_dep_near = 0.F;
+  auto patch_dep_far = 0.F;
+  if (camera.normDispRange.x() <= 0.F) {
+    patch_dep_far = 1.F / Metadata::impl::minNormDisp;
   } else {
-    patch_dep_far = 1 / camera.normDispRange.x();
+    patch_dep_far = 1.F / camera.normDispRange.x();
   }
-  if (camera.normDispRange.y() == 0.0f) {
-    patch_dep_near = 1000.0;
+  if (camera.normDispRange.y() == 0.F) {
+    patch_dep_near = 1.F / Metadata::impl::minNormDisp;
   } else {
-    patch_dep_near = 1 / camera.normDispRange.y();
+    patch_dep_near = 1.F / camera.normDispRange.y();
   }
 
   for (int i = 0; i < 4; i++) {
@@ -137,17 +136,13 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
       xy_v_ymin = i[1];
     }
   }
-  if (xy_v_xmin > target.size.x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
-      xy_v_ymin > target.size.y() ||
-      (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
-       xy_v_ymax != xy_v_ymax)) {
-    return 0;
-  }
-  { return 1; }
+  return xy_v_xmin > target.size.x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
+         xy_v_ymin > target.size.y() ||
+         (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
+          xy_v_ymax != xy_v_ymax);
 }
 
 auto baseview_divide(const AtlasParameters &patch, Vec2i blocksizes) {
-
   int blocknums_w = patch.patchSizeInView.x() / blocksizes.x();
   int blocknums_h = patch.patchSizeInView.y() / blocksizes.y();
   int blocknums_all = blocknums_w * blocknums_h;

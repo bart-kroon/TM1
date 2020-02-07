@@ -79,8 +79,8 @@ auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
     return m_renderer->renderFrame(atlas, updatedpatchIdMaps, m_ivSequenceParams,
                                    m_ivAccessUnitParams, target);
   }
-    return m_renderer->renderFrame(atlas, patchIdMaps, m_ivSequenceParams, m_ivAccessUnitParams,
-                                   target);
+  return m_renderer->renderFrame(atlas, patchIdMaps, m_ivSequenceParams, m_ivAccessUnitParams,
+                                 target);
 }
 
 auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList {

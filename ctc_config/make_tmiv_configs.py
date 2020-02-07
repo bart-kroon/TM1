@@ -292,6 +292,8 @@ class DecoderConfiguration:
 			'Decoder': {
 				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
 				'AtlasDeconstructor': self.atlasDeconstructor(),
+				'CullerMethod': 'SubBlockCuller',
+				'SubBlockCuller': {},
 				'RendererMethod': self.rendererMethod(),
 				self.rendererMethod(): self.renderer(),
 				"depthEdgeMagnitudeTh": 10,

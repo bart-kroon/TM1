@@ -125,49 +125,41 @@ void EntityBasedAtlasConstructor::mergeViews(MVD16Frame &mergedViews,
                                              MVD16Frame transportEntityViews) {
   for (size_t viewId = 0; viewId < mergedViews.size(); viewId++) {
     for (int planeId = 0; planeId < 3; planeId++) {
-      vector<int> Indices(transportEntityViews[viewId].first.getPlane(planeId).size());
-      std::iota(Indices.begin(), Indices.end(), 0);
-      std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+      for (auto i = 0; i < transportEntityViews[viewId].first.getPlane(planeId).size(); i++) {
         if (transportEntityViews[viewId].first.getPlane(planeId)[i] != neutralChroma) {
           mergedViews[viewId].first.getPlane(planeId)[i] =
               transportEntityViews[viewId].first.getPlane(planeId)[i];
         }
-      });
+      }
     }
 
-    vector<int> Indices(transportEntityViews[viewId].second.getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < transportEntityViews[viewId].second.getPlane(0).size(); i++) {
       if (transportEntityViews[viewId].second.getPlane(0)[i] != uint16_t(0)) {
         mergedViews[viewId].second.getPlane(0)[i] =
             transportEntityViews[viewId].second.getPlane(0)[i];
       }
-    });
+    }
   }
 }
 
 void EntityBasedAtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList masks) {
   for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
-    vector<int> Indices(mergedMasks[viewId].getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
       if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
         mergedMasks[viewId].getPlane(0)[i] = masks[viewId].getPlane(0)[i];
       }
-    });
+    }
   }
 }
 
 void EntityBasedAtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
-    vector<int> Indices(masks[viewId].getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].first.getPlane(0)[i] == neutralChroma) &&
           (views[viewId].second.getPlane(0)[i] == uint16_t(0))) {
         masks[viewId].getPlane(0)[i] = uint8_t(0);
       }
-    });
+    }
   }
 }
 
@@ -177,30 +169,24 @@ void EntityBasedAtlasConstructor::updateEntityMasks(EntityMapList &entityMasks,
     entityId = m_ivSequenceParams.maxEntities; // to avoid getting lost with the initalized 0s
   }
   for (size_t viewId = 0; viewId < entityMasks.size(); viewId++) {
-    vector<int> Indices(entityMasks[viewId].getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < entityMasks[viewId].getPlane(0).size(); i++) {
       if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
         entityMasks[viewId].getPlane(0)[i] = entityId;
       }
-    });
+    }
   }
 }
 
 void EntityBasedAtlasConstructor::swap0(EntityMapList &entityMasks) {
   for (auto &entityMask : entityMasks) {
-    vector<int> Indices(entityMask.getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < entityMask.getPlane(0).size(); i++) {
       if (entityMask.getPlane(0)[i] == uint8_t(0)) {
         entityMask.getPlane(0)[i] = unusedPatchId;
       }
-    });
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
       if (entityMask.getPlane(0)[i] == m_ivSequenceParams.maxEntities) {
         entityMask.getPlane(0)[i] = uint16_t(0);
       }
-    });
+    }
   }
 }
 
@@ -391,16 +377,14 @@ auto EntityBasedAtlasConstructor::setView(TextureDepth16Frame view, const Entity
   entityMasks.push_back(entityMask);
   auto entityMasksYUV = yuvSampler(entityMasks);
   for (int planeId = 0; planeId < 3; planeId++) {
-    vector<int> Indices(view.first.getPlane(planeId).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < view.first.getPlane(planeId).size(); i++) {
       if (entityMasksYUV[0].getPlane(planeId)[i] == entityId) {
         entityView.first.getPlane(planeId)[i] = view.first.getPlane(planeId)[i];
         if (planeId == 0) {
           entityView.second.getPlane(0)[i] = view.second.getPlane(0)[i];
         }
       }
-    });
+    }
   }
 
   return entityView;

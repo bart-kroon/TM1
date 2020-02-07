@@ -370,7 +370,7 @@ auto EntityBasedAtlasConstructor::popAtlas() -> MVD16Frame {
 }
 
 auto EntityBasedAtlasConstructor::setView(const TextureDepth16Frame &view, const EntityMap &entityMask,
-                                          int entityId) -> TextureDepth16Frame & {
+                                          int entityId) -> TextureDepth16Frame {
   TextureDepth16Frame entityView = {TextureFrame(view.first.getWidth(), view.first.getHeight()),
                                     Depth16Frame(view.second.getWidth(), view.second.getHeight())};
   for (auto &p : entityView.first.getPlanes()) {

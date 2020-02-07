@@ -49,7 +49,7 @@ public:
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
-  void updateAggregatedEntityMasks(const Common::EntityMapList &entityMasks) override;
+  void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks);
 
 private:
   auto setMask(int viewId, int entityId) -> Common::Mask;
@@ -59,7 +59,7 @@ private:
   int m_overlap{};
   bool m_pip{};
   int m_maxEntities{1};
-  Common::EntityMapList m_aggregatedEntityMasks{};
+  std::vector<Common::MaskList> m_aggregatedEntityMasks{};
   Common::Vec2i m_EntityEncodeRange;
 };
 

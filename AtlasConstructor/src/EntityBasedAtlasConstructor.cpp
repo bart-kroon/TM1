@@ -190,20 +190,16 @@ void EntityBasedAtlasConstructor::swap0(EntityMapList &entityMasks) {
   }
 }
 
-void EntityBasedAtlasConstructor::aggregateEntityMasks(EntityMapList &entityMasks) {
-  if (m_aggregatedEntityMask.empty()) {
-    m_aggregatedEntityMask = entityMasks;
+void EntityBasedAtlasConstructor::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) {
+  if (m_aggregatedEntityMask.size() < m_EntityEncRange[1] - m_EntityEncRange[0]) {
+    m_aggregatedEntityMask.push_back(Masks);
   } else {
-    uint16_t entityConflictValue = m_ivSequenceParams.maxEntities + 1;
-    for (size_t i = 0; i < entityMasks.size(); i++) {
-      transform(m_aggregatedEntityMask[i].getPlane(0).begin(),
-                m_aggregatedEntityMask[i].getPlane(0).end(), entityMasks[i].getPlane(0).begin(),
-                m_aggregatedEntityMask[i].getPlane(0).begin(),
-                [&entityConflictValue](auto v1, auto v2) {
-                  if (v1 != 0 && v2 != 0 && v1 != v2)
-                    return entityConflictValue; // entity conflict
-                  return max(v1, v2);
-                });
+    for (size_t i = 0; i < Masks.size(); i++) {
+      transform(m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).begin(),
+                m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).end(),
+                Masks[i].getPlane(0).begin(),
+                m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).begin(),
+                [](auto v1, auto v2) { return max(v1, v2); });
     }
   }
 }
@@ -294,6 +290,9 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
     // updating the pruned basic masks for entities and filter other masks.
     updateMasks(transportEntityViews, masks);
 
+	// Aggregate Entity Masks
+    aggregateEntityMasks(masks, entityId);
+
     // Entity Masking and Merging (Tracking entityIds after pruning)
     updateEntityMasks(entityMasks, masks, entityId);
     mergeViews(mergedViews, transportEntityViews);
@@ -302,7 +301,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Aggregation
   m_viewBuffer.push_back(move(mergedViews));
   m_aggregator->pushMask(mergedMasks);
-  aggregateEntityMasks(entityMasks);
+  //aggregateEntityMasks(entityMasks);
   m_entityMasksBuffer.push_back(move(entityMasks));
 
   m_fIndex++;
@@ -314,7 +313,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   // Aggregated mask
   m_aggregator->completeAccessUnit();
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
-  swap0(m_aggregatedEntityMask);
+  //swap0(m_aggregatedEntityMask);
   for (auto &i : m_entityMasksBuffer) {
     swap0(i);
   }

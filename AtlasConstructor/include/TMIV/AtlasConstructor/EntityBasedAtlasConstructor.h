@@ -72,7 +72,7 @@ private:
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void updateEntityMasks(Common::EntityMapList &entityMasks, const Common::MaskList &masks,
                          uint16_t entityId);
-  void aggregateEntityMasks(Common::EntityMapList &entityMasks);
+  void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
   void swap0(Common::EntityMapList &entityMasks);
   static auto setView(const Common::TextureDepth16Frame &view, const Common::EntityMap &entityMask,
                       int entityId) -> Common::TextureDepth16Frame;
@@ -92,7 +92,7 @@ private:
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
   int m_fIndex{0};
-  Common::EntityMapList m_aggregatedEntityMask;
+  std::vector<Common::MaskList> m_aggregatedEntityMask;
   std::vector<Common::EntityMapList> m_entityMasksBuffer;
   unsigned m_maxEntities{};
   int m_frameInGOPIndex{0};

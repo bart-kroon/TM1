@@ -57,12 +57,12 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
-void Packer::updateAggregatedEntityMasks(const EntityMapList &entityMasks) {
+void Packer::updateAggregatedEntityMasks(const vector<MaskList> &entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
   }
 }
-
+/*
 auto Packer::setMask(int viewId, int entityId) -> Mask {
   Mask mask(m_aggregatedEntityMasks[viewId].getWidth(),
             m_aggregatedEntityMasks[viewId].getHeight());
@@ -73,7 +73,7 @@ auto Packer::setMask(int viewId, int entityId) -> Mask {
   }
   return mask;
 }
-
+*/
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                   const vector<bool> &isBasicView) -> AtlasParamsVector {
   // Check atlas size
@@ -92,7 +92,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (m_maxEntities > 1) {
       for (int entityId = m_EntityEncodeRange[0]; entityId < m_EntityEncodeRange[1]; entityId++) {
         // Entity clustering
-        Mask mask = setMask(viewId, entityId);
+        Mask mask =
+            m_aggregatedEntityMasks[entityId - m_EntityEncodeRange[0]]
+                                           [viewId]; // setMask(viewId, entityId);
 
         auto clusteringOutput = Cluster::retrieve(
             viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId]);

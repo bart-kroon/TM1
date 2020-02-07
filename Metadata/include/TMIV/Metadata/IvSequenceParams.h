@@ -134,12 +134,12 @@ struct ViewParams {
   // Not part of the bitstream. Improve screen output.
   std::string name{};
 
-  // Not part of the bitstream. Does the source material have invalid depth? DepthTransform class
-  // evaluate this field to expand 16-bit depth values.
+  // Not part of the bitstream. Does the source material have invalid depth? The OccupancyTransform
+  // class evaluate this field to expand 16-bit depth values.
   bool hasInvalidDepth{};
 
-  // Not part of the bitstream. When an atlas constructor wants to use occupancy for a certain view
-  // view, then it has to set this data member to true.
+  // Not part of the bitstream. When an atlas constructor wants to use occupancy for a certain view,
+  // then it has to set this data member to true.
   bool wantOccupancy{};
 
   // The DepthOccupancy component evaluates this member function to decide how to transform the

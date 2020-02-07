@@ -505,7 +505,7 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def depthOccupancy(self):
 		return {
-			'depthOccMapThreshold': 64
+			'depthOccMapThresholdIfSet': 64
 		}
 
 	def encoder(self):

@@ -76,18 +76,8 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
   uv[3] = uv[0] + Vec2f{w, h};
 
   // Using Camera depth
-  auto patch_dep_near = 0.F;
-  auto patch_dep_far = 0.F;
-  if (camera.normDispRange.x() <= 0.F) {
-    patch_dep_far = 1.F / Metadata::impl::minNormDisp;
-  } else {
-    patch_dep_far = 1.F / camera.normDispRange.x();
-  }
-  if (camera.normDispRange.y() == 0.F) {
-    patch_dep_near = 1.F / Metadata::impl::minNormDisp;
-  } else {
-    patch_dep_near = 1.F / camera.normDispRange.y();
-  }
+  const auto patch_dep_near = 1.F / max(Metadata::impl::minNormDisp, camera.normDispRange.x());
+  const auto patch_dep_far = 1.F / max(Metadata::impl::minNormDisp, camera.normDispRange.y());
 
   for (int i = 0; i < 4; i++) {
     const auto xyz = R * unprojectVertex(uv[i], patch_dep_near, camera) + t;

@@ -77,7 +77,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
 
   // Turn on occupancy coding for partial views
   for (size_t viewId = 0; viewId < m_ivSequenceParams.viewParamsList.size(); ++viewId) {
-    if (!isBasicView[viewId]) {
+    if (!m_isBasicView[viewId]) {
       m_ivSequenceParams.viewParamsList[viewId].wantOccupancy = true;
     }
   }

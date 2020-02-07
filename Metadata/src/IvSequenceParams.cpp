@@ -231,6 +231,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
       viewParams->normDispRange.x() = bitstream.getFloat32();
       viewParams->normDispRange.y() = bitstream.getFloat32();
       viewParams->depthOccMapThreshold = uint16_t(bitstream.readBits(depthOccMapThresholdNumBits));
+      viewParams->hasOccupancy = viewParams->depthOccMapThreshold > 0;
 
       if (const auto depthStartDefaultPresentFlag = bitstream.getFlag();
           depthStartDefaultPresentFlag) {
@@ -239,6 +240,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
     } else {
       viewParams->normDispRange = viewParamsList.front().normDispRange;
       viewParams->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
+      viewParams->hasOccupancy = viewParamsList.front().hasOccupancy;
     }
   }
 

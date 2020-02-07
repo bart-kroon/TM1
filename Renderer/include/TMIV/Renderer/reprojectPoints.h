@@ -98,7 +98,7 @@ auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewPa
 auto projectVertex(const Common::Vec3f &position, const Metadata::ViewParams &viewParams)
     -> std::pair<Common::Vec2f, float>;
 
-inline bool isValidDepth(float z) { return ((0.F < z) && std::isfinite(z)); }
+inline bool isValidDepth(float d) { return (0.F < d); }
 
 using PointCloud = std::vector<Common::Vec3f>;
 using PointCloudList = std::vector<PointCloud>;
@@ -107,11 +107,7 @@ template <typename Projection> class ProjectionHelper {
 public:
   class List : public std::vector<ProjectionHelper> {
   public:
-    List(const Metadata::ViewParamsList &viewParamsList) {
-      for (const auto &viewParams : viewParamsList) {
-        this->emplace_back(viewParams);
-      }
-    }
+    List(const Metadata::ViewParamsList &viewParamsList);
     List(const List &) = default;
     List(List &&) = default;
     auto operator=(const List &) -> List & = default;
@@ -124,136 +120,42 @@ private:
   Common::Mat3x3f m_rotationMatrix;
 
 public:
-  ProjectionHelper(const Metadata::ViewParams &viewParams)
-      : m_viewParams{viewParams}, m_engine{viewParams},
-        m_rotationMatrix{
-            Common::EulerAnglesToRotationMatrix(Common::EulerAngles{viewParams.rotation})} {}
+  ProjectionHelper(const Metadata::ViewParams &viewParams);
   ProjectionHelper(const ProjectionHelper &) = default;
   ProjectionHelper(ProjectionHelper &&) = default;
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = default;
   auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
   auto getViewParams() const -> const Metadata::ViewParams & { return m_viewParams; }
   auto getViewingPosition() const -> const Common::Vec3f & { return m_viewParams.position; }
-  auto getViewingDirection() const -> Common::Vec3f {
-    return m_rotationMatrix * Common::Vec3f{1.F, 0.F, 0.F};
-  }
-  auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
-    return transpose(m_rotationMatrix) * (P - m_viewParams.position);
-  }
-  auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float> {
-    Common::Vec3f Q = transpose(m_rotationMatrix) * (P - m_viewParams.position);
-    auto imageVertexDescriptor = m_engine.projectVertex(SceneVertexDescriptor{Q, 0.F});
-    return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
-  }
-  auto doUnprojection(const Common::Vec2f &p, float z) const -> Common::Vec3f {
-    auto P = m_engine.unprojectVertex(p, z);
-    return (m_rotationMatrix * P + m_viewParams.position);
-  }
-  auto isInsideViewport(const Common::Vec2f &p) const -> bool {
-    return ((-0.5F <= p.x()) && (p.x() <= (m_viewParams.size.x() + 0.5F))) &&
-           ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.size.y() + 0.5F)));
-  }
-  bool isValidDepth(float z) const {
-    static constexpr auto far = 999.999F;
-    return (TMIV::Renderer::isValidDepth(z) && (m_viewParams.normDispRange[0] <= (1.F / z)) &&
-            (z < far));
-  }
+  auto getViewingDirection() const -> Common::Vec3f;
+  auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
+  auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;
+  auto doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f;
+  auto isInsideViewport(const Common::Vec2f &p) const -> bool;
+  bool isValidDepth(float d) const;
   auto getAngularResolution() const -> float;
-  auto getDepthRange() const -> Common::Vec2f {
-    return {1.F / m_viewParams.normDispRange[1], 1.F / m_viewParams.normDispRange[0]};
-  }
+  auto getDepthRange() const -> Common::Vec2f;
   auto getRadialRange() const -> Common::Vec2f;
-  auto getPointCloud(unsigned N = 8) const -> PointCloud {
-    PointCloud pointCloud;
-    float step = 1.F / static_cast<float>(N - 1U);
-    auto depthRange = getDepthRange();
-
-    float x = 0.F;
-
-    for (unsigned i = 0U; i < N; i++) {
-      float y = 0.F;
-
-      float px = x * static_cast<float>(m_viewParams.size[0]);
-
-      for (unsigned j = 0U; j < N; j++) {
-        float z = depthRange.x();
-
-        float py = y * static_cast<float>(m_viewParams.size[1]);
-
-        for (unsigned k = 0U; k < N; k++) {
-          pointCloud.emplace_back(doUnprojection({px, py}, z));
-
-          z += step * (depthRange.y() - depthRange.x());
-        }
-
-        y += step;
-      }
-
-      x += step;
-    }
-
-    return pointCloud;
-  }
+  auto getPointCloud(unsigned N = 8) const -> PointCloud;
 };
 
 template <typename SourceProjectionType>
 auto getPointCloudList(
     const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList, unsigned N = 16)
-    -> PointCloudList {
-  PointCloudList pointCloudList;
-
-  for (const auto &helper : sourceHelperList) {
-    pointCloudList.emplace_back(helper.getPointCloud(N));
-  }
-
-  return pointCloudList;
-}
+    -> PointCloudList;
 
 template <typename ProjectionType>
 auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
-    -> float {
-  std::size_t N = 0;
-
-  const ProjectionHelper<ProjectionType> &secondHelper = sourceHelperList[secondId];
-  const PointCloud &firstPointCloud = pointCloudList[firstId];
-
-  for (const auto &P : firstPointCloud) {
-
-    auto p = secondHelper.doProjection(P);
-
-    if (isValidDepth(p.second) && secondHelper.isInsideViewport(p.first)) {
-      N++;
-    }
-  }
-
-  return static_cast<float>(N) / static_cast<float>(firstPointCloud.size());
-}
+    -> float;
 
 template <typename ProjectionType>
 static auto
 computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList)
-    -> Common::Mat<float> {
-
-  auto pointCloudList = getPointCloudList<ProjectionType>(sourceHelperList, 16);
-  std::size_t K = sourceHelperList.size();
-  Common::Mat<float> overlappingMatrix({K, K});
-
-  for (std::size_t i = 0; i < K; i++) {
-    for (std::size_t j = 0; j < K; j++) {
-
-      if (i != j) {
-        overlappingMatrix(i, j) =
-            getOverlapping<ProjectionType>(sourceHelperList, pointCloudList, i, j);
-      } else {
-        overlappingMatrix(i, j) = 1.F;
-      }
-    }
-  }
-
-  return overlappingMatrix;
-}
+    -> Common::Mat<float>;
 
 } // namespace TMIV::Renderer
+
+#include "reprojectPoints.hpp"
 
 #endif

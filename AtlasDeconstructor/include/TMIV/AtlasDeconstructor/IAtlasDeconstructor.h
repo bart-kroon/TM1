@@ -56,11 +56,6 @@ public:
                                  const Metadata::ViewParamsVector &viewParamsVector,
                                  const Metadata::AtlasParamsVector &atlasParamsVector)
       -> Common::MVD10Frame = 0;
-
-  virtual auto recoverPrunedViewAndMask(const Common::MVD10Frame &atlas,
-                                        const Metadata::ViewParamsVector &viewParamsVector,
-                                        const Metadata::AtlasParamsVector &atlasParamsVector)
-      -> std::pair<Common::MVD10Frame, Common::MaskList> = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

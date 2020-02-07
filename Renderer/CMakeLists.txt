@@ -24,6 +24,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/Synthesizer.h"
 	"include/TMIV/Renderer/ViewingSpaceController.h"
 	"include/TMIV/Renderer/reprojectPoints.h"
+	"include/TMIV/Renderer/reprojectPoints.hpp"
 	"include/TMIV/Renderer/Engine.h"
 	"include/TMIV/Renderer/Engine_ERP.hpp"
 	"include/TMIV/Renderer/Engine_Perspective.hpp"
@@ -44,7 +45,6 @@ target_link_libraries(RendererLib
 		TMIV::MetadataLib
 		TMIV::ImageLib
 		TMIV::ViewingSpaceLib
-		TMIV::AtlasDeconstructorLib
 	PRIVATE
 		Threads::Threads
 )

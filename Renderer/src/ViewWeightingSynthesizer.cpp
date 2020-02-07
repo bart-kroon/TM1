@@ -31,7 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/AtlasDeconstructor/AtlasDeconstructor.h>
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Graph.h>
 #include <TMIV/Common/LinAlg.h>
@@ -360,6 +359,88 @@ private:
       }
     }
   }
+  template <typename MVD>
+  auto recoverPrunedViewAndMask(const MVD &atlas, const ViewParamsVector &viewParamsVector,
+                                const AtlasParamsVector &atlasParamsVector)
+      -> std::pair<MVD, MaskList> {
+
+    using TextureDepthFrame = typename MVD::value_type;
+    using DepthFrame = typename TextureDepthFrame::second_type;
+
+    // Initialization
+    MVD frame;
+    MaskList maskList;
+
+    for (const auto &cam : viewParamsVector) {
+      TextureFrame tex(cam.size.x(), cam.size.y());
+      DepthFrame depth(cam.size.x(), cam.size.y());
+      tex.fillNeutral();
+      frame.push_back(TextureDepthFrame{std::move(tex), std::move(depth)});
+
+      Mask mask(cam.size.x(), cam.size.y());
+      std::fill(mask.getPlane(0).begin(), mask.getPlane(0).end(), 0);
+      maskList.push_back(std::move(mask));
+    }
+
+    // Process patches
+    auto atlas_pruned = atlas;
+
+    for (auto iter = atlasParamsVector.rbegin(); iter != atlasParamsVector.rend(); ++iter) {
+      const auto &patch = *iter;
+      const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
+
+      auto &currentAtlas = atlas_pruned[patch.atlasId];
+      auto &currentView = frame[patch.viewId];
+
+      auto &textureAtlasMap = currentAtlas.first;
+      auto &depthAtlasMap = currentAtlas.second;
+
+      auto &textureViewMap = currentView.first;
+      auto &depthViewMap = currentView.second;
+
+      auto &mask = maskList[patch.viewId];
+
+      const auto sizeInAtlas = patch.patchSizeInAtlas();
+      int wP = sizeInAtlas.x();
+      int hP = sizeInAtlas.y();
+      int xP = patch.posInAtlas.x();
+      int yP = patch.posInAtlas.y();
+
+      for (int dy = 0; dy < hP; dy++) {
+        for (int dx = 0; dx < wP; dx++) {
+          // get position
+          Vec2i pAtlas = {xP + dx, yP + dy};
+          Vec2i pView = atlasToView(pAtlas, patch);
+          // Y
+          if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
+            textureViewMap.getPlane(0)(pView.y(), pView.x()) =
+                textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
+            textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+          }
+          // UV
+          if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
+            for (int p = 1; p < 3; p++) {
+              if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
+                textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
+                    textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
+                textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 0x200;
+              }
+            }
+          }
+          // Depth
+          if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
+            depthViewMap.getPlane(0)(pView.y(), pView.x()) =
+                depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
+            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+            mask.getPlane(0)(pView.y(), pView.x()) = 255U;
+          }
+        }
+      }
+    }
+
+    return {frame, maskList};
+  }
+
   template <typename MVD, typename SourceProjectionType>
   void recoverPrunedSource(
       const MVD &atlasList, const IvSequenceParams &ivSequenceParams,
@@ -370,10 +451,8 @@ private:
     using DepthFrame = typename TextureDepthFrame::second_type;
 
     // Recover pruned views
-    TMIV::AtlasDeconstructor::AtlasDeconstructor atlasDesconstructor({}, {});
-
-    auto prunedViewsAndMask = atlasDesconstructor.recoverPrunedViewAndMask(
-        atlasList, ivSequenceParams.viewParamsList, atlasParamsList);
+    auto prunedViewsAndMask =
+        recoverPrunedViewAndMask(atlasList, ivSequenceParams.viewParamsList, atlasParamsList);
 
     const auto &prunedViews = prunedViewsAndMask.first;
     const auto &prunedMasks = prunedViewsAndMask.second;
@@ -428,36 +507,39 @@ private:
 
     for (const auto &patchIdMap : patchIdMapList) {
 
-      parallel_for(
-          patchIdMap.getWidth(), patchIdMap.getHeight(), [&](std::size_t Y, std::size_t X) {
-            auto patchId = patchIdMap.getPlane(0)(Y, X);
+      if (0 < patchIdMap.getPlane(0).width() && 0 < patchIdMap.getPlane(0).height()) {
 
-            if (patchId != unusedPatchId) {
-              const auto &patch = atlasParamsList[patchId];
-              auto viewId = patch.viewId;
+        parallel_for(
+            patchIdMap.getWidth(), patchIdMap.getHeight(), [&](std::size_t Y, std::size_t X) {
+              auto patchId = patchIdMap.getPlane(0)(Y, X);
 
-              if (m_cameraVisibility[viewId]) {
-                auto posInView = atlasToView({static_cast<int>(X), static_cast<int>(Y)}, patch);
+              if (patchId != unusedPatchId) {
+                const auto &patch = atlasParamsList[patchId];
+                auto viewId = patch.viewId;
 
-                int x = posInView.x();
-                int y = posInView.y();
-                float z = m_sourceDepth[viewId](y, x);
+                if (m_cameraVisibility[viewId]) {
+                  auto posInView = atlasToView({static_cast<int>(X), static_cast<int>(Y)}, patch);
 
-                if (sourceHelperList[viewId].isValidDepth(z)) {
-                  auto P = sourceHelperList[viewId].doUnprojection(
-                      Vec2f({static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F}), z);
-                  auto p = targetHelper.doProjection(P);
+                  int x = posInView.x();
+                  int y = posInView.y();
+                  float z = m_sourceDepth[viewId](y, x);
 
-                  if (isValidDepth(p.second) && targetHelper.isInsideViewport(p.first)) {
-                    m_sourceUnprojection[viewId](y, x) = P;
-                    m_sourceReprojection[viewId](y, x) = p;
-                    m_sourceRayDirection[viewId](y, x) =
-                        unit(P - targetHelper.getViewParams().position);
+                  if (sourceHelperList[viewId].isValidDepth(z)) {
+                    auto P = sourceHelperList[viewId].doUnprojection(
+                        Vec2f({static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F}), z);
+                    auto p = targetHelper.doProjection(P);
+
+                    if (isValidDepth(p.second) && targetHelper.isInsideViewport(p.first)) {
+                      m_sourceUnprojection[viewId](y, x) = P;
+                      m_sourceReprojection[viewId](y, x) = p;
+                      m_sourceRayDirection[viewId](y, x) =
+                          unit(P - targetHelper.getViewParams().position);
+                    }
                   }
                 }
               }
-            }
-          });
+            });
+      }
     }
   }
   template <typename TargetProjectionType>

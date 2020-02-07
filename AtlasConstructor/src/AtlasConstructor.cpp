@@ -72,17 +72,17 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
       max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
 
   // Copy sequence parameters + Basic view ids
-  m_ivSequenceParams = move(ivSequenceParams);
+  m_ivSequenceParams = ivSequenceParams;
   m_isBasicView = move(isBasicView);
 
   // Turn on occupancy coding for partial views
-  for (size_t viewId = 0; viewId < m_ivSequenceParams.viewParamsList.size(); ++viewId) {
+  for (size_t viewId = 0; viewId < ivSequenceParams.viewParamsList.size(); ++viewId) {
     if (!m_isBasicView[viewId]) {
-      m_ivSequenceParams.viewParamsList[viewId].wantOccupancy = true;
+      ivSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
   }
 
-  return m_ivSequenceParams;
+  return ivSequenceParams;
 }
 
 void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
@@ -254,7 +254,9 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
 
           // Set depth value. Avoid marking valid depth as invalid.
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-              viewParams.avoidInvalidDepth(depthViewMap.getPlane(0)(pView.y(), pView.x()));
+              m_isBasicView[patch.viewId] || viewParams.hasOccupancy
+                  ? depthViewMap.getPlane(0)(pView.y(), pView.x())
+                  : max<uint16_t>(1, depthViewMap.getPlane(0)(pView.y(), pView.x()));
         }
       }
     }

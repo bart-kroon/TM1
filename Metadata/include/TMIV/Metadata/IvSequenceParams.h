@@ -123,8 +123,8 @@ struct ViewParams {
 
   // In specification: depth_occ_map_threshold_default[ v ]
   //
-  // Do not set within the encoder! Use encoder.hasInvalidDepth or encoder.wantOccupancy
-  // instead. The DepthOccupancy component determines this threshold.
+  // Do not set within the encoder! Use encoder.hasOccupancy instead. 
+  // The DepthOccupancy component determines this threshold.
   uint16_t depthOccMapThreshold{};
 
   // In specification: depth_start_default_present_flag[ v ]
@@ -134,22 +134,8 @@ struct ViewParams {
   // Not part of the bitstream. Improve screen output.
   std::string name{};
 
-  // Not part of the bitstream. Does the source material have invalid depth? The OccupancyTransform
-  // class evaluate this field to expand 16-bit depth values.
-  bool hasInvalidDepth{};
-
-  // Not part of the bitstream. When an atlas constructor wants to use occupancy for a certain view,
-  // then it has to set this data member to true.
-  bool wantOccupancy{};
-
-  // The DepthOccupancy component evaluates this member function to decide how to transform the
-  // depth values prior to video coding.
-  constexpr auto useOccupancy() const -> bool { return hasInvalidDepth || wantOccupancy; }
-
-  // Avoid marking valid depth as invalid depth when enabling occupancy
-  constexpr auto avoidInvalidDepth(std::uint16_t x) const {
-    return x > 0 || hasInvalidDepth || !useOccupancy() ? x : std::uint16_t(1);
-  }
+  // Not part of the bitstream. Does the depth map have invalid/non-occupied?
+  bool hasOccupancy{};
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;

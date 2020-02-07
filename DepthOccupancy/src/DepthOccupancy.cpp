@@ -64,7 +64,7 @@ auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequence
   m_outSequenceParams = m_inSequenceParams;
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
-    if (x.useOccupancy()) {
+    if (x.hasOccupancy) {
       x.depthOccMapThreshold = m_depthOccMapThresholdIfSet; // =T
       const auto nearLevel = 1023.F;
       const auto farLevel = float(2 * m_depthOccMapThresholdIfSet);

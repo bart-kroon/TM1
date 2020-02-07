@@ -45,7 +45,7 @@ constexpr auto minNormDisp = 1e-3F; // 1 kilometer
 
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
   m_threshold = viewParams.depthOccMapThreshold;
-  if (m_threshold == 0 && viewParams.hasInvalidDepth) {
+  if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }
 }
@@ -54,7 +54,7 @@ inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
                                               const AtlasParameters &atlasParams) {
   m_threshold = atlasParams.depthOccMapThreshold ? *atlasParams.depthOccMapThreshold
                                                  : viewParams.depthOccMapThreshold;
-  if (m_threshold == 0 && viewParams.hasInvalidDepth) {
+  if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }
 }

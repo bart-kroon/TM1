@@ -72,10 +72,8 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
   }
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
-  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, hasInvalidDepth " << boolalpha
-         << viewParams.hasInvalidDepth << ", wantOccupancy " << boolalpha
-         << viewParams.wantOccupancy << ", depthOccMapThreshold "
-         << viewParams.depthOccMapThreshold;
+  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, hasOccupancy " << boolalpha
+         << viewParams.hasOccupancy << ", depthOccMapThreshold " << viewParams.depthOccMapThreshold;
 
   if (viewParams.depthStart) {
     stream << ", depthStart " << *viewParams.depthStart;
@@ -113,7 +111,7 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   parameters.normDispRange.x() = depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F;
   parameters.normDispRange.y() = depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F;
   if (auto subnode = node.optional("HasInvalidDepth"); subnode) {
-    parameters.hasInvalidDepth = subnode.asBool();
+    parameters.hasOccupancy = subnode.asBool();
   }
 
   auto proj = node.require("Projection").asString();

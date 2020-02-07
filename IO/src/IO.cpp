@@ -363,7 +363,7 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
   ViewParams &result = viewParamsVector.front();
 
   // The result may have invalid depth values
-  result.hasInvalidDepth = true;
+  result.hasOccupancy = true;
 
   if (auto nodeOutputCameraPoseTrace = config.optional("PoseTracePath")) {
     string poseTracePath = getFullPath(config, "SourceDirectory", "PoseTracePath");

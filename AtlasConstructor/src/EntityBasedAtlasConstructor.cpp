@@ -79,15 +79,15 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
   }
 
   // Copy sequence parameters + Basic view ids
-  m_ivSequenceParams = move(ivSequenceParams);
+  m_ivSequenceParams = ivSequenceParams;
   m_isBasicView = move(isBasicView);
 
   // Turn on occupancy coding for all views
-  for (auto &x : m_ivSequenceParams.viewParamsList) {
-    x.wantOccupancy = true;
+  for (auto &x : ivSequenceParams.viewParamsList) {
+    x.hasOccupancy = true;
   }
 
-  return m_ivSequenceParams;
+  return ivSequenceParams;
 }
 
 void EntityBasedAtlasConstructor::prepareAccessUnit(
@@ -453,7 +453,9 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
 
       // Set depth value. Avoid marking valid depth as invalid
       depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-          viewParams.avoidInvalidDepth(depthViewMap.getPlane(0)(pView.y(), pView.x()));
+          viewParams.hasOccupancy
+              ? depthViewMap.getPlane(0)(pView.y(), pView.x())
+              : max<uint16_t>(1, depthViewMap.getPlane(0)(pView.y(), pView.x()));
     }
   }
 }

@@ -265,11 +265,6 @@ class DecoderConfiguration:
 			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
 			'ViewingSpaceController': {}
 		}
-		if self.useMultipassRenderer():
-			config.update({
-				'NumberOfPasses': 3,
-				'NumberOfViewsPerPass': [2, 4, self.numberOfCodedSourceViews()]
-			})
 		return config
 
 	def poseTraceBasename(self):

@@ -8,7 +8,7 @@ add_library(RendererLib
     "src/MultipassRenderer.cpp"
     "src/GroupBasedRenderer.cpp"
 	"src/Inpainter.cpp"
-               "src/SubBlockCuller.cpp"
+	"src/SubBlockCuller.cpp"
 	"src/Synthesizer.cpp"
 	"src/ViewingSpaceController.cpp"
 	"src/reprojectPoints.cpp"

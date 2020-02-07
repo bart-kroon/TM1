@@ -45,7 +45,6 @@ using namespace TMIV::Metadata;
 namespace TMIV::AtlasDeconstructor {
 
 AtlasDeconstructor::AtlasDeconstructor(const Json &rootNode, const Json &componentNode) {
-
   if (auto subnode = componentNode.optional("EntityDecodeRange")) {
     m_entityDecodeRange = subnode.asIntVector<2>();
   }

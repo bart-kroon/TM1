@@ -43,14 +43,19 @@ namespace impl {
 constexpr auto minNormDisp = 1e-3F; // 1 kilometer
 } // namespace impl
 
-inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams)
-    : m_threshold{viewParams.depthOccMapThreshold} {}
+inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
+  m_threshold = viewParams.depthOccMapThreshold;
+  if (m_threshold == 0 && viewParams.hasOccupancy) {
+    m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
+  }
+}
 
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
-                                              const AtlasParameters &atlasParams)
-    : OccupancyTransform{viewParams} {
-  if (atlasParams.depthOccMapThreshold) {
-    m_threshold = *atlasParams.depthOccMapThreshold;
+                                              const AtlasParameters &atlasParams) {
+  m_threshold = atlasParams.depthOccMapThreshold ? *atlasParams.depthOccMapThreshold
+                                                 : viewParams.depthOccMapThreshold;
+  if (m_threshold == 0 && viewParams.hasOccupancy) {
+    m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }
 }
 

@@ -34,6 +34,7 @@
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 
 #include "PrunedMesh.h"
+#include <TMIV/Common/Graph.h>
 #include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
@@ -47,6 +48,7 @@
 #include <numeric>
 
 using namespace TMIV::Common;
+using namespace TMIV::Common::Graph;
 using namespace TMIV::Metadata;
 using namespace TMIV::Renderer;
 using namespace std;
@@ -71,12 +73,12 @@ private:
   const int m_dilate{};
   const AccumulatingPixel<Vec3f> m_config;
   bool m_intra{true};
-  bool m_firstFrame{true};
-  ViewParamsVector m_viewParamsVector;
+  IvSequenceParams m_ivSequenceParams;
   vector<bool> m_isBasicView;
   vector<unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   vector<size_t> m_pruningOrder;
   vector<Frame<YUV400P8>> m_masks;
+  vector<Frame<YUV400P8>> m_status;
 
 public:
   explicit Impl(const Json &nodeConfig)
@@ -88,18 +90,115 @@ public:
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  auto prune(const Metadata::ViewParamsVector &viewParamsVector, const MVD16Frame &views,
-             const vector<bool> &isBasicView) -> MaskList {
-    m_intra = m_viewParamsVector != viewParamsVector || m_isBasicView != isBasicView;
-    if (m_intra) {
-      cout << "The pruning order is (re)determined at this frame\n";
-      m_viewParamsVector = viewParamsVector;
-      m_isBasicView = isBasicView;
+  void computePruningOrder(const Mat<float> &overlappingMatrix,
+                           const std::vector<bool> &isBasicView) {
+
+    std::vector<NodeId> processedList;
+    std::vector<NodeId> pendingList;
+
+    for (NodeId i = 0; i < overlappingMatrix.m(); i++) {
+
+      if (!isBasicView[i]) {
+        pendingList.emplace_back(i);
+      } else {
+        processedList.emplace_back(i);
+      }
     }
+
+    m_pruningOrder.clear();
+
+    while (!pendingList.empty()) {
+
+      float worseOverlapping = std::numeric_limits<float>::max();
+      NodeId bestPendingNodeId = 0;
+
+      for (auto pendingNodeId : pendingList) {
+        for (auto processNodeId : processedList) {
+          float overlapping = overlappingMatrix(processNodeId, pendingNodeId);
+
+          if (overlapping < worseOverlapping) {
+            bestPendingNodeId = pendingNodeId;
+            worseOverlapping = overlapping;
+          }
+        }
+      }
+
+      processedList.emplace_back(bestPendingNodeId);
+
+      auto iter = std::find(pendingList.begin(), pendingList.end(), bestPendingNodeId);
+      pendingList.erase(iter);
+
+      m_pruningOrder.push_back(bestPendingNodeId);
+    }
+  }
+
+  template <typename ProjectionType>
+  void registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams, unsigned offsetId,
+                               const std::vector<bool> &isBasicView) {
+
+    auto &viewParamsList = ivSequenceParams.viewParamsList;
+    typename ProjectionHelper<ProjectionType>::List cameraHelperList{viewParamsList};
+
+    // Overlapping Graph
+    auto overlappingMatrix = computeOverlappingMatrix<ProjectionType>(cameraHelperList);
+
+    // Pruning order
+    computePruningOrder(overlappingMatrix, isBasicView);
+
+    // Pruning graph
+    Graph::BuiltIn::Sparse<float> pruningGraph(viewParamsList.size());
+
+    if (!m_pruningOrder.empty()) {
+      for (size_t i = 0; i < viewParamsList.size(); ++i) {
+        if (isBasicView[i]) {
+          pruningGraph.connect(m_pruningOrder[0], i, 1.F, LinkType::Directed);
+        }
+      }
+
+      for (size_t i = 0; i < (m_pruningOrder.size() - 1); ++i) {
+        pruningGraph.connect(m_pruningOrder[i + 1], m_pruningOrder[i], 1.F, LinkType::Directed);
+      }
+    }
+
+    // Mapped pruning graph
+    Graph::BuiltIn::Sparse<float> pruningGraphMapped(offsetId + viewParamsList.size());
+
+    for (NodeId nodeSource = 0; nodeSource < pruningGraph.getNumberOfNodes(); ++nodeSource) {
+      for (const auto &linkTarget : pruningGraph.getNeighbourhood(nodeSource)) {
+        pruningGraphMapped.connect(offsetId + nodeSource, offsetId + linkTarget.node(), 1.F,
+                                   LinkType::Directed);
+      }
+    }
+
+    // Pruning mask
+    auto pruningGraphExport = getReversedGraph(pruningGraphMapped);
+
+    for (auto camId = 0U; camId < viewParamsList.size(); camId++) {
+
+      const auto &neighourhood = pruningGraphExport.getNeighbourhood(offsetId + camId);
+
+      if (!neighourhood.empty()) {
+
+        std::vector<std::uint16_t> childIdList;
+
+        for (const auto &link : neighourhood) {
+          childIdList.emplace_back(static_cast<std::uint16_t>(link.node()));
+        }
+
+        viewParamsList[camId].pruningChildren = std::move(childIdList);
+      }
+    }
+  }
+
+  auto prune(const Metadata::IvSequenceParams &ivSequenceParams, const MVD16Frame &views,
+             const vector<bool> &isBasicView) -> MaskList {
+
+    m_ivSequenceParams = ivSequenceParams;
+    m_isBasicView = isBasicView;
+
     prepareFrame(views);
     pruneFrame(views);
 
-    m_firstFrame = false;
     return move(m_masks);
   }
 
@@ -113,8 +212,8 @@ private:
   void createInitialMasks(const MVD16Frame &views) {
     m_masks.clear();
     m_masks.reserve(views.size());
-    transform(cbegin(m_viewParamsVector), cend(m_viewParamsVector), cbegin(views),
-              back_inserter(m_masks),
+    transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
+              cbegin(views), back_inserter(m_masks),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
                 auto mask = Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()};
                 transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
@@ -125,15 +224,31 @@ private:
                           });
                 return mask;
               });
+
+    m_status.clear();
+    m_status.reserve(views.size());
+    transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
+              cbegin(views), back_inserter(m_status),
+              [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
+                auto status = Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()};
+                transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
+                          begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
+                            // #94: When there are invalid pixels in a basic view, these should be
+                            // freezed from pruning
+                            return uint8_t(ot.occupant(x) ? 255 : 0);
+                          });
+                return status;
+              });
   }
 
   void createSynthesizerPerPartialView(const MVD16Frame &views) {
     m_synthesizers.clear();
-    for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
+    for (size_t i = 0; i < m_ivSequenceParams.viewParamsList.size(); ++i) {
       if (!m_isBasicView[i]) {
-        const auto depthTransform = DepthTransform<16>{m_viewParamsVector[i]};
-        m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
-            m_config, m_viewParamsVector[i].size, i, depthTransform.expandDepth(views[i].second)));
+        const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i]};
+        m_synthesizers.emplace_back(
+            make_unique<IncrementalSynthesizer>(m_config, m_ivSequenceParams.viewParamsList[i].size,
+                                                i, depthTransform.expandDepth(views[i].second)));
       }
     }
   }
@@ -145,7 +260,7 @@ private:
       return;
     }
 
-    for (size_t i = 0; i < m_viewParamsVector.size(); ++i) {
+    for (size_t i = 0; i < m_ivSequenceParams.viewParamsList.size(); ++i) {
       if (m_isBasicView[i]) {
         synthesizeViews(i, views[i]);
       }
@@ -153,13 +268,8 @@ private:
   }
 
   void pruneFrame(const MVD16Frame &views) {
-    if (m_intra) {
-      // Redetermine the pruning order on camera configuration changes...
-      pruneIntraFrame(views);
-    } else {
-      // ... otherwise maintain the same pruning order
-      pruneInterFrame(views);
-    }
+
+    pruneInterFrame(views);
 
     auto sumValues = 0.;
     for (const auto &mask : m_masks) {
@@ -167,19 +277,6 @@ private:
     }
     const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
     cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
-  }
-
-  void pruneIntraFrame(const MVD16Frame &views) {
-    m_pruningOrder.clear();
-    while (!m_synthesizers.empty()) {
-      auto it = max_element(
-          begin(m_synthesizers), end(m_synthesizers),
-          [](const auto &s1, const auto &s2) { return s1->maskAverage < s2->maskAverage; });
-      const auto i = (*it)->index;
-      m_synthesizers.erase(it);
-      synthesizeViews(i, views[i]);
-      m_pruningOrder.push_back(i);
-    }
   }
 
   void pruneInterFrame(const MVD16Frame &views) {
@@ -196,8 +293,8 @@ private:
   // Special care is taken to make a pruned (masked) mesh once and re-use that
   // multiple times.
   void synthesizeViews(size_t index, const TextureDepth16Frame &view) {
-    auto [ivertices, triangles, attributes] =
-        unprojectPrunedView(view, m_viewParamsVector[index], m_masks[index].getPlane(0));
+    auto [ivertices, triangles, attributes] = unprojectPrunedView(
+        view, m_ivSequenceParams.viewParamsList[index], m_masks[index].getPlane(0));
 
     if (m_isBasicView[index]) {
       cout << "Basic view ";
@@ -207,7 +304,7 @@ private:
 
     const auto prec = cout.precision(2);
     const auto flags = cout.setf(ios::fixed, ios::floatfield);
-    cout << setw(2) << index << " (" << setw(3) << m_viewParamsVector[index].name
+    cout << setw(2) << index << " (" << setw(3) << m_ivSequenceParams.viewParamsList[index].name
          << "): " << ivertices.size() << " vertices ("
          << 100. * double(ivertices.size()) / (view.first.getWidth() * view.first.getHeight())
          << "% of full view)\n";
@@ -215,8 +312,9 @@ private:
     cout.setf(flags);
 
     for (auto &s : m_synthesizers) {
-      auto overtices = project(ivertices, m_viewParamsVector[index], m_viewParamsVector[s->index]);
-      weightedSphere(m_viewParamsVector[s->index], overtices, triangles);
+      auto overtices = project(ivertices, m_ivSequenceParams.viewParamsList[index],
+                               m_ivSequenceParams.viewParamsList[s->index]);
+      weightedSphere(m_ivSequenceParams.viewParamsList[s->index], overtices, triangles);
       s->rasterizer.submit(overtices, attributes, triangles);
       s->rasterizer.run();
       updateMask(*s);
@@ -250,7 +348,7 @@ private:
     return true;
   }
 
-  static auto erode(Mat<uint8_t> &mask) -> Mat<uint8_t> {
+  static auto erode(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
@@ -260,7 +358,7 @@ private:
     return result;
   }
 
-  static auto dilate(Mat<uint8_t> &mask) -> Mat<uint8_t> {
+  static auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
     Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
@@ -271,12 +369,34 @@ private:
   }
 
   void updateMask(IncrementalSynthesizer &synthesizer) {
+
     auto &mask = m_masks[synthesizer.index].getPlane(0);
+    auto &status = m_status[synthesizer.index].getPlane(0);
+
     auto i = begin(mask);
     auto j = begin(synthesizer.reference);
+    auto k = begin(status);
+
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
-      const auto depthError = abs(x.depth() / *j++ - 1.F);
-      *i++ = uint8_t(x.normDisp > 0 && depthError < m_maxDepthError ? 0 : 255);
+      if (x.normDisp > 0) {
+        const auto depthError = (x.depth() / *j - 1.F);
+
+        if (std::abs(depthError) < m_maxDepthError) {
+          if (*k != 0) {
+            *i = 0;
+          }
+        } else if (m_ivSequenceParams.depthLowQualityFlag && (depthError < 0.F)) {
+          if (*k != 0) {
+            *k = 0;
+            *i = 255;
+          }
+        }
+      }
+
+      i++;
+      j++;
+      k++;
+
       return true;
     });
     for (int n = 0; n < m_erode; ++n) {
@@ -295,9 +415,22 @@ HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &no
 
 HierarchicalPruner::~HierarchicalPruner() = default;
 
-auto HierarchicalPruner::prune(const Metadata::ViewParamsVector &viewParamsVector,
+void HierarchicalPruner::registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams,
+                                                 unsigned offsetId,
+                                                 const std::vector<bool> &isBasicView) {
+  return std::visit(
+      [&](const auto &projection) {
+        using ProjectionType = std::decay_t<decltype(projection)>;
+
+        return m_impl->registerPruningRelation<ProjectionType>(ivSequenceParams, offsetId,
+                                                               isBasicView);
+      },
+      ivSequenceParams.viewParamsList[0].projection);
+}
+
+auto HierarchicalPruner::prune(const Metadata::IvSequenceParams &ivSequenceParams,
                                const Common::MVD16Frame &views,
                                const std::vector<bool> &isBasicView) -> Common::MaskList {
-  return m_impl->prune(viewParamsVector, views, isBasicView);
+  return m_impl->prune(ivSequenceParams, views, isBasicView);
 }
 } // namespace TMIV::AtlasConstructor

@@ -48,7 +48,7 @@ public:
   IEncoder &operator=(IEncoder &&) = default;
   virtual ~IEncoder() = default;
 
-  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, unsigned offsetId)
       -> const Metadata::IvSequenceParams & = 0;
   virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;

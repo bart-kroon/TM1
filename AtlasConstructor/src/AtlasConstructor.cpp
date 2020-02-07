@@ -63,8 +63,8 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   }
 }
 
-auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
-    -> const IvSequenceParams & {
+auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, unsigned offsetId,
+                                       vector<bool> isBasicView) -> const IvSequenceParams & {
 
   // Construct at least the basic views
   m_nbAtlas =
@@ -73,6 +73,9 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   // Copy sequence parameters + Basic view ids
   m_ivSequenceParams = move(ivSequenceParams);
   m_isBasicView = move(isBasicView);
+
+  // Register pruning relation
+  m_pruner->registerPruningRelation(m_ivSequenceParams, offsetId, m_isBasicView);
 
   // Turn on occupancy coding
   for (size_t c = 0; c < m_ivSequenceParams.viewParamsList.size(); ++c) {
@@ -108,8 +111,7 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
 
 void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Pruning
-  MaskList masks =
-      m_pruner->prune(m_ivSequenceParams.viewParamsList, transportViews, m_isBasicView);
+  MaskList masks = m_pruner->prune(m_ivSequenceParams, transportViews, m_isBasicView);
 
   const auto frame = m_viewBuffer.size();
 

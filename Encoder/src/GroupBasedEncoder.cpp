@@ -50,15 +50,22 @@ GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &component
   }
 }
 
-auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
+auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams, unsigned /*offsetId*/)
     -> const IvSequenceParams & {
   m_grouping = sourceSplitter(ivSequenceParams);
 
   auto perGroupIvSequenceParams = vector<const IvSequenceParams *>(numGroups(), nullptr);
 
+  unsigned offsetId = 0;
+
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
+
+    auto splittedSequenceParams = splitSequenceParams(groupId, ivSequenceParams);
+
     perGroupIvSequenceParams[groupId] =
-        &m_encoders[groupId].prepareSequence(splitSequenceParams(groupId, ivSequenceParams));
+        &m_encoders[groupId].prepareSequence(splittedSequenceParams, offsetId);
+
+    offsetId += static_cast<unsigned>(splittedSequenceParams.viewParamsList.size());
   }
 
   return mergeSequenceParams(perGroupIvSequenceParams);

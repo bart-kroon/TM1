@@ -51,7 +51,7 @@ public:
   Encoder &operator=(Encoder &&) = default;
   ~Encoder() override = default;
 
-  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, unsigned offsetId)
       -> const Metadata::IvSequenceParams & override;
   void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame views) override;

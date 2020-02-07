@@ -242,6 +242,22 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
     }
   }
 
+  const auto pruningGraphParamsPresentFlag = bitstream.getFlag();
+
+  if (pruningGraphParamsPresentFlag) {
+    for (auto viewParams = viewParamsList.begin(); viewParams != viewParamsList.end();
+         ++viewParams) {
+      bool isLeaf = bitstream.getFlag();
+      if (!isLeaf) {
+        std::vector<std::uint16_t> childIdList(bitstream.getUVar(viewParamsList.size() - 1) + 1);
+        for (auto &childId : childIdList) {
+          childId = bitstream.getUVar(viewParamsList.size() - 1);
+        }
+        viewParams->pruningChildren = std::move(childIdList);
+      }
+    }
+  }
+
   return viewParamsList;
 }
 
@@ -303,6 +319,29 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
 
     if (depthQuantizationParamsEqualFlag) {
       break;
+    }
+  }
+
+  bool pruningGraphParamsPresentFlag = std::any_of(begin(), end(), [](const auto &viewParams) {
+    return (viewParams.pruningChildren && !viewParams.pruningChildren->empty());
+  });
+  bitstream.putFlag(pruningGraphParamsPresentFlag);
+
+  if (pruningGraphParamsPresentFlag) {
+    for (const auto &viewParams : *this) {
+      if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
+
+        bitstream.putFlag(true);
+
+        const auto &childIdList = *viewParams.pruningChildren;
+        bitstream.putUVar(childIdList.size() - 1, size() - 1);
+
+        for (const auto &childId : childIdList) {
+          bitstream.putUVar(childId, size() - 1);
+        }
+      } else {
+        bitstream.putFlag(false);
+      }
     }
   }
 }

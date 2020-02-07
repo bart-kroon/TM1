@@ -49,7 +49,7 @@ public:
   ~GroupBasedEncoder() override = default;
 
   // Let each per-group encoder prepare the sequence and merge the metadata
-  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
+  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, unsigned offsetId)
       -> const Metadata::IvSequenceParams & override;
 
   // Let each per-group encoder prepare the access unit

@@ -128,6 +128,9 @@ struct ViewParams {
   // In specification: depth_start_default[ v ]
   std::optional<uint16_t> depthStart{};
 
+  // In specification: pruning_children[ v ]
+  std::optional<std::vector<uint16_t>> pruningChildren{};
+
   // Not in the specification. Just to improve screen output
   std::string name{};
 

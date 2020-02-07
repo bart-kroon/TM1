@@ -107,9 +107,6 @@ public:
 };
 
 } // namespace BuiltIn
-
-auto getBitFieldFromGraph(const BuiltIn::Sparse<float> &graph) -> std::vector<unsigned>;
-auto getGraphFromBitField(const std::vector<unsigned> &bitField) -> BuiltIn::Sparse<float>;
 auto getDescendingOrderId(const BuiltIn::Sparse<float> &g) -> std::vector<NodeId>;
 auto getReversedGraph(const BuiltIn::Sparse<float> &g) -> BuiltIn::Sparse<float>;
 

@@ -48,7 +48,7 @@ public:
   IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
   virtual ~IAtlasConstructor() = default;
 
-  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams,
+  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, unsigned offsetId,
                                std::vector<bool> isBasicView)
       -> const Metadata::IvSequenceParams & = 0;
   virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;

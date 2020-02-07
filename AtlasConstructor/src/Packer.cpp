@@ -67,7 +67,7 @@ auto Packer::setMask(int viewId, int entityId) -> Mask {
   Mask mask(m_aggregatedEntityMasks[viewId].getWidth(),
             m_aggregatedEntityMasks[viewId].getHeight());
   for (size_t i = 0; i < mask.getPlane(0).size(); ++i) {
-    if (entityId == m_aggregatedEntityMasks[viewId].getPlane(0)[i]) {
+    if (m_aggregatedEntityMasks[viewId].getPlane(0)[i] == entityId) {
       mask.getPlane(0)[i] = uint8_t(255);
     }
   }

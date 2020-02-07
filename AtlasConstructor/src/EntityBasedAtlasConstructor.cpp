@@ -194,11 +194,16 @@ void EntityBasedAtlasConstructor::aggregateEntityMasks(EntityMapList &entityMask
   if (m_aggregatedEntityMask.empty()) {
     m_aggregatedEntityMask = entityMasks;
   } else {
+    uint16_t entityConflictValue = m_ivSequenceParams.maxEntities + 1;
     for (size_t i = 0; i < entityMasks.size(); i++) {
       transform(m_aggregatedEntityMask[i].getPlane(0).begin(),
                 m_aggregatedEntityMask[i].getPlane(0).end(), entityMasks[i].getPlane(0).begin(),
                 m_aggregatedEntityMask[i].getPlane(0).begin(),
-                [](auto v1, auto v2) { return max(v1, v2); });
+                [&entityConflictValue](auto v1, auto v2) {
+                  if (v1 != 0 && v2 != 0 && v1 != v2)
+                    return entityConflictValue; // entity conflict
+                  return max(v1, v2);
+                });
     }
   }
 }
@@ -364,8 +369,8 @@ auto EntityBasedAtlasConstructor::popAtlas() -> MVD16Frame {
   return atlas;
 }
 
-auto EntityBasedAtlasConstructor::setView(TextureDepth16Frame view, const EntityMap &entityMask,
-                                          int entityId) -> TextureDepth16Frame {
+auto EntityBasedAtlasConstructor::setView(const TextureDepth16Frame &view, const EntityMap &entityMask,
+                                          int entityId) -> TextureDepth16Frame & {
   TextureDepth16Frame entityView = {TextureFrame(view.first.getWidth(), view.first.getHeight()),
                                     Depth16Frame(view.second.getWidth(), view.second.getHeight())};
   for (auto &p : entityView.first.getPlanes()) {

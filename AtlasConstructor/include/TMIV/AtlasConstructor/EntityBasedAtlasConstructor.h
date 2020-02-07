@@ -74,8 +74,8 @@ private:
                          uint16_t entityId);
   void aggregateEntityMasks(Common::EntityMapList &entityMasks);
   void swap0(Common::EntityMapList &entityMasks);
-  static auto setView(Common::TextureDepth16Frame view, const Common::EntityMap &entityMask,
-                      int entityId) -> Common::TextureDepth16Frame;
+  static auto setView(const Common::TextureDepth16Frame &view, const Common::EntityMap &entityMask,
+                      int entityId) -> Common::TextureDepth16Frame &;
   void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
                          Common::MVD16Frame &atlas);
 

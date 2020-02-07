@@ -37,9 +37,9 @@
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/NoInpainter.h>
 #include <TMIV/Renderer/Renderer.h>
+#include <TMIV/Renderer/SubBlockCuller.h>
 #include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
-#include <TMIV/Renderer/SubBlockCuller.h>
 #include <TMIV/Renderer/ViewingSpaceController.h>
 
 namespace TMIV::Renderer {

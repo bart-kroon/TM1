@@ -39,8 +39,8 @@
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/DepthScaler.h>
-#include <TMIV/Renderer/IRenderer.h>
 #include <TMIV/Renderer/ICuller.h>
+#include <TMIV/Renderer/IRenderer.h>
 
 namespace TMIV::Decoder {
 class Decoder : public IDecoder {

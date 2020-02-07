@@ -48,7 +48,7 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::Renderer {
 
- SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
 static auto affineParameterList(const ViewParamsVector &viewParamsVector,
                                 const ViewParams &target) {
@@ -60,8 +60,8 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
   return result;
 }
 
- bool choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
-                 const ViewParams &target) {
+auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
+                 const ViewParams &target) -> bool {
   const auto &camera = cameras[patch.viewId];
   auto R_t = affineParameterList(cameras, target);
   const auto &R = R_t[patch.viewId].first;
@@ -69,7 +69,8 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
 
   Vec2f uv[4];
   Vec2f xy_v[8];
-  float w = patch.patchSizeInView.x(), h = patch.patchSizeInView.y();
+  float w = patch.patchSizeInView.x();
+  float h = patch.patchSizeInView.y();
   uv[0] = Vec2f(patch.posInView);
   uv[1] = uv[0] + Vec2f{w, 0};
   uv[2] = uv[0] + Vec2f{0, h};
@@ -78,12 +79,12 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
   // Using Camera depth
   double patch_dep_near = 0;
   double patch_dep_far = 0;
-  if (camera.normDispRange.x()<=0) {
+  if (camera.normDispRange.x() <= 0) {
     patch_dep_far = 1000.0;
   } else {
     patch_dep_far = 1 / camera.normDispRange.x();
   }
-  if (!camera.normDispRange.y()) {
+  if (camera.normDispRange.y() == 0.0f) {
     patch_dep_near = 1000.0;
   } else {
     patch_dep_near = 1 / camera.normDispRange.y();
@@ -122,26 +123,30 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
   float xy_v_xmin = 65536;
   float xy_v_ymax = -1000;
   float xy_v_ymin = 65536;
-  for (int i = 0; i < 8; i++) {
-    if (xy_v[i][0] > xy_v_xmax)
-      xy_v_xmax = xy_v[i][0];
-    if (xy_v[i][0] < xy_v_xmin)
-      xy_v_xmin = xy_v[i][0];
-    if (xy_v[i][1] > xy_v_ymax)
-      xy_v_ymax = xy_v[i][1];
-    if (xy_v[i][1] < xy_v_ymin)
-      xy_v_ymin = xy_v[i][1];
+  for (auto &i : xy_v) {
+    if (i[0] > xy_v_xmax) {
+      xy_v_xmax = i[0];
+    }
+    if (i[0] < xy_v_xmin) {
+      xy_v_xmin = i[0];
+    }
+    if (i[1] > xy_v_ymax) {
+      xy_v_ymax = i[1];
+    }
+    if (i[1] < xy_v_ymin) {
+      xy_v_ymin = i[1];
+    }
   }
   if (xy_v_xmin > target.size.x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
       xy_v_ymin > target.size.y() ||
       (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
-       xy_v_ymax != xy_v_ymax))
+       xy_v_ymax != xy_v_ymax)) {
     return 0;
-  else
-    return 1;
+  }
+  { return 1; }
 }
 
- auto baseview_divide(const AtlasParameters &patch, Vec2i blocksizes) {
+auto baseview_divide(const AtlasParameters &patch, Vec2i blocksizes) {
 
   int blocknums_w = patch.patchSizeInView.x() / blocksizes.x();
   int blocknums_h = patch.patchSizeInView.y() / blocksizes.y();
@@ -160,14 +165,13 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
   return subblock;
 }
 
- auto SubBlockCuller::updatePatchIdmap(const MVD10Frame &atlas, const PatchIdMapList &maps,
+auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchIdMapList &maps,
                                       const IvSequenceParams &ivSequenceParams,
                                       const IvAccessUnitParams &ivAccessUnitParams,
                                       const ViewParams &target) -> PatchIdMapList {
-  PatchIdMapList updatedpatchMapList = move(maps);
+  PatchIdMapList updatedpatchMapList = maps;
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
-
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     // If patch is as large as source view
@@ -179,9 +183,9 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
       // size of sub-block is fixed now.
       Vec2i blocksizes = {128, 128};
       AtlasParamsVector blocks = baseview_divide(atlasParamsList[id], blocksizes);
-      for (int i = 0; i < blocks.size(); i++) {
-        if (!choosePatch(blocks[i], viewParamsList, target)) {
-          erasePatchIdInMap(blocks[i], updatedpatchMapList, static_cast<uint16_t>(id));
+      for (const auto &block : blocks) {
+        if (!choosePatch(block, viewParamsList, target)) {
+          erasePatchIdInMap(block, updatedpatchMapList, static_cast<uint16_t>(id));
         }
       }
     } else {
@@ -193,8 +197,8 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
   return updatedpatchMapList;
 }
 
- void SubBlockCuller::erasePatchIdInMap(const AtlasParameters &patch,
-                                           PatchIdMapList &patchMapList, uint16_t patchId) {
+void SubBlockCuller::erasePatchIdInMap(const AtlasParameters &patch, PatchIdMapList &patchMapList,
+                                       uint16_t patchId) {
   auto &patchMap = patchMapList[patch.atlasId];
 
   const Vec2i &q0 = patch.posInAtlas;
@@ -203,7 +207,6 @@ static auto affineParameterList(const ViewParamsVector &viewParamsVector,
   int xLast = q0.x() + sizeInAtlas.x();
   int yMin = q0.y();
   int yLast = q0.y() + sizeInAtlas.y();
-
 
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {

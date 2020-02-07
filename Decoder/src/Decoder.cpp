@@ -73,15 +73,14 @@ auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
     tie(atlas, patchIdMaps) = m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
   }
 
-   if (target.name == "viewport") {
+  if (target.name == "viewport") {
     auto updatedpatchIdMaps = m_culler->updatePatchIdmap(atlas, patchIdMaps, m_ivSequenceParams,
                                                          m_ivAccessUnitParams, target);
     return m_renderer->renderFrame(atlas, updatedpatchIdMaps, m_ivSequenceParams,
                                    m_ivAccessUnitParams, target);
-  } else {
+  }
     return m_renderer->renderFrame(atlas, patchIdMaps, m_ivSequenceParams, m_ivAccessUnitParams,
                                    target);
-  }
 }
 
 auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList {

@@ -53,9 +53,9 @@ public:
                         const Metadata::IvAccessUnitParams &ivAccessUnitParams,
                         const Metadata::ViewParams &target) -> Common::PatchIdMapList override;
 
-   private:
-    void erasePatchIdInMap(const Metadata::AtlasParameters &patch,
-                           Common::PatchIdMapList &patchMapList, std::uint16_t patchId);
+private:
+  static void erasePatchIdInMap(const Metadata::AtlasParameters &patch,
+                                Common::PatchIdMapList &patchMapList, std::uint16_t patchId);
 };
 } // namespace TMIV::Renderer
 

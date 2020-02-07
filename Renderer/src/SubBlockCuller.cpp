@@ -136,10 +136,10 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
       xy_v_ymin = i[1];
     }
   }
-  return xy_v_xmin > target.size.x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
-         xy_v_ymin > target.size.y() ||
-         (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
-          xy_v_ymax != xy_v_ymax);
+  return !(xy_v_xmin > target.size.x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
+           xy_v_ymin > target.size.y() ||
+           (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
+            xy_v_ymax != xy_v_ymax));
 }
 
 auto baseview_divide(const AtlasParameters &patch, Vec2i blocksizes) {

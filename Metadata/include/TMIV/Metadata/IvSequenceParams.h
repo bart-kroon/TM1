@@ -122,14 +122,29 @@ struct ViewParams {
   Common::Vec2f normDispRange{};
 
   // In specification: depth_occ_map_threshold_default[ v ]
+  //
+  // Do not set within the encoder! Use encoder.hasInvalidDepth or encoder.wantOccupancy
+  // instead. The DepthOccupancy component determines this threshold.
   uint16_t depthOccMapThreshold{};
 
   // In specification: depth_start_default_present_flag[ v ]
   // In specification: depth_start_default[ v ]
   std::optional<uint16_t> depthStart{};
 
-  // Not in the specification. Just to improve screen output
+  // Not part of the bitstream. Improve screen output.
   std::string name{};
+
+  // Not part of the bitstream. Does the source material have invalid depth? DepthTransform class
+  // evaluate this field to expand 16-bit depth values.
+  bool hasInvalidDepth{};
+
+  // Not part of the bitstream. When an atlas constructor wants to use occupancy for a certain view
+  // view, then it has to set this data member to true.
+  bool wantOccupancy{};
+
+  // The DepthOccupancy component evaluates this member function to decide how to transform the
+  // depth values prior to video coding.
+  constexpr auto useOccupancy() const -> bool { return hasInvalidDepth || wantOccupancy; }
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
   bool operator==(const ViewParams &other) const;

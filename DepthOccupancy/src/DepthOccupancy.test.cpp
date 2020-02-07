@@ -60,7 +60,8 @@ SCENARIO("Depth/occupancy coding") {
 
   GIVEN("View parameters with invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 1};
+    auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
+	sourceViewParams.hasInvalidDepth = true;
     const auto sourceSeqParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
 
     WHEN("Modifying the depth range") {

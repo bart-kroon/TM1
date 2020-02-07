@@ -43,20 +43,20 @@ using namespace TMIV::Common;
 using namespace TMIV::Metadata;
 
 namespace TMIV::DepthOccupancy {
-DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThreshold)
-    : m_depthOccMapThreshold{depthOccMapThreshold} {
-  if (depthOccMapThreshold < 1) {
-    throw runtime_error("The depthOccMapThreshold parameter is only used when a view has invalid "
-                        "depth. The value 0 is not allowed.");
+DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThresholdIfSet)
+    : m_depthOccMapThresholdIfSet{depthOccMapThresholdIfSet} {
+  if (depthOccMapThresholdIfSet < 1) {
+    throw runtime_error("The depthOccMapThresholdIfSet parameter is only used when the encoder "
+                        "needs to use occupancy. The value 0 is not allowed.");
   }
-  if (depthOccMapThreshold >= 500) {
+  if (depthOccMapThresholdIfSet >= 500) {
     throw runtime_error("The DepthOccupancy component takes a margin equal to the threshold, so "
                         "setting the threshold this high will make it impossible to encode depth.");
   }
 }
 
 DepthOccupancy::DepthOccupancy(const Json & /*unused*/, const Json &nodeConfig)
-    : DepthOccupancy{uint16_t(nodeConfig.require("depthOccMapThreshold").asInt())} {}
+    : DepthOccupancy{uint16_t(nodeConfig.require("depthOccMapThresholdIfSet").asInt())} {}
 
 auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequenceParams)
     -> const Metadata::IvSequenceParams & {
@@ -64,10 +64,10 @@ auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequence
   m_outSequenceParams = m_inSequenceParams;
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
-    if (x.depthOccMapThreshold != 0) {
-      x.depthOccMapThreshold = m_depthOccMapThreshold; // =T
+    if (x.useOccupancy()) {
+      x.depthOccMapThreshold = m_depthOccMapThresholdIfSet; // =T
       const auto nearLevel = 1023.F;
-      const auto farLevel = float(2 * x.depthOccMapThreshold);
+      const auto farLevel = float(2 * m_depthOccMapThresholdIfSet);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
       x.normDispRange[0] +=
           (0.F - farLevel) / (nearLevel - farLevel) * (x.normDispRange[1] - x.normDispRange[0]);

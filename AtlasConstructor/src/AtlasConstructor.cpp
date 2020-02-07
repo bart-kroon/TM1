@@ -65,7 +65,6 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
 
 auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
     -> const IvSequenceParams & {
-
   // Construct at least the basic views
   m_nbAtlas =
       max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
@@ -74,9 +73,11 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_ivSequenceParams = move(ivSequenceParams);
   m_isBasicView = move(isBasicView);
 
-  // Turn on occupancy coding
-  for (size_t c = 0; c < m_ivSequenceParams.viewParamsList.size(); ++c) {
-    m_ivSequenceParams.viewParamsList[c].depthOccMapThreshold = 1;
+  // Turn on occupancy coding for partial views
+  for (size_t viewId = 0; viewId < m_ivSequenceParams.viewParamsList.size(); ++viewId) {
+    if (!isBasicView[viewId]) {
+      m_ivSequenceParams.viewParamsList[viewId].wantOccupancy = true;
+    }
   }
 
   return m_ivSequenceParams;
@@ -248,7 +249,8 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           }
 
           // Depth
-          if (m_ivSequenceParams.viewParamsList[patch.viewId].depthOccMapThreshold != 0) {
+          if (m_ivSequenceParams.viewParamsList[patch.viewId].useOccupancy()) {
+            // Value 0 is for invalid/non-occupied so it cannot be used
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
                 max(depthViewMap.getPlane(0)(pView.y(), pView.x()), uint16_t(1));
           } else {

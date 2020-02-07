@@ -82,6 +82,11 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
   m_ivSequenceParams = move(ivSequenceParams);
   m_isBasicView = move(isBasicView);
 
+  // Turn on occupancy coding for all views
+  for (auto &x : m_ivSequenceParams.viewParamsList) {
+    x.wantOccupancy = true;
+  }
+
   return m_ivSequenceParams;
 }
 

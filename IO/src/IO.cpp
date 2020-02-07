@@ -362,9 +362,8 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 
   ViewParams &result = viewParamsVector.front();
 
-  // Override hasInvalidDepth parameter to be true because view synthesis may result in invalid
-  // depth values
-  result.depthOccMapThreshold = 1;
+  // The result may have invalid depth values
+  result.hasInvalidDepth = true;
 
   if (auto nodeOutputCameraPoseTrace = config.optional("PoseTracePath")) {
     string poseTracePath = getFullPath(config, "SourceDirectory", "PoseTracePath");

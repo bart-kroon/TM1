@@ -58,7 +58,7 @@ auto byteCodingTest(const Type &reference, int size, Args &&... args) -> bool {
 template <typename Type, typename... Args>
 auto unitCodingTest(const Type &reference, int size, Args &&... args) -> bool {
   std::stringstream stream;
-  REQUIRE(size == reference.encodeTo(stream, args...));
+  REQUIRE(size == static_cast<int>(reference.encodeTo(stream, args...)));
   REQUIRE(size == stream.tellp());
 
   const auto actual = Type::decodeFrom(stream, std::forward<Args>(args)..., size);

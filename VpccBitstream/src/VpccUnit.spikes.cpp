@@ -113,7 +113,7 @@ TEST_CASE("Parse V-PCC sample stream", "[VPCC Unit]") {
 
     if (auto vps = get_if<VpccParameterSet>(&vp.payload()); vps != nullptr) {
       while (vps->vps_vpcc_parameter_set_id() >= vpses.size()) {
-        vpses.push_back({});
+        vpses.emplace_back();
       }
       cout << "vpses[" << int(vps->vps_vpcc_parameter_set_id()) << "] := vps\n";
       vpses[vps->vps_vpcc_parameter_set_id()] = *vps;

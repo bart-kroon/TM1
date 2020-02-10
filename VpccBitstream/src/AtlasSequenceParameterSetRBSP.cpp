@@ -37,6 +37,7 @@
 #include <TMIV/Common/Bitstream.h>
 
 #include <ostream>
+#include <utility>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -117,7 +118,7 @@ auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const
 auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx, RefListStruct value)
     -> AtlasSequenceParameterSetRBSP & {
   VERIFY_VPCCBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
-  m_ref_list_structs[rlsIdx] = value;
+  m_ref_list_structs[rlsIdx] = std::move(value);
   return *this;
 }
 

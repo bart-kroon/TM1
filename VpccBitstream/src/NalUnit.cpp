@@ -39,6 +39,7 @@
 #include "verify.h"
 
 #include <algorithm>
+#include <utility>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -139,7 +140,7 @@ void NalUnitHeader::encodeTo(ostream &stream) const {
 }
 
 NalUnit::NalUnit(const NalUnitHeader &nal_unit_header, string rbsp)
-    : m_nal_unit_header{nal_unit_header}, m_rbsp{rbsp} {}
+    : m_nal_unit_header{nal_unit_header}, m_rbsp{std::move(std::move(rbsp))} {}
 
 auto operator<<(ostream &stream, const NalUnit &x) -> ostream & {
   return stream << x.m_nal_unit_header << "NumBytesInRbsp=" << x.m_rbsp.size() << "\n";

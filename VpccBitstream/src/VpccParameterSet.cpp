@@ -347,8 +347,8 @@ auto AttributeInformation::operator!=(const AttributeInformation &other) const n
   return !operator==(other);
 }
 
-auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const VpccParameterSet &vps,
-                                      uint8_t atlasId) -> AttributeInformation {
+auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const VpccParameterSet & /*vps*/,
+                                      uint8_t /*atlasId*/) -> AttributeInformation {
   auto x = AttributeInformation{};
   x.ai_attribute_count(uint8_t(bitstream.readBits(7)));
   for (auto i = 0; i < x.ai_attribute_count(); ++i) {

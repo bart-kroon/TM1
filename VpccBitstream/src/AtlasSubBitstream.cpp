@@ -38,7 +38,7 @@
 using namespace std;
 
 namespace TMIV::VpccBitstream {
-const auto &AtlasSubBitstream::nal_sample_stream() const noexcept {
+auto AtlasSubBitstream::nal_sample_stream() const noexcept -> const auto & {
   VERIFY_MIVBITSTREAM(!!m_nss);
   return *m_nss;
 }
@@ -93,6 +93,6 @@ void AtlasSubBitstream::decodeAfps(const NalUnit &nal_unit) {
   while (afps.afps_atlas_frame_parameter_set_id() >= m_afps.size()) {
     m_afps.emplace_back();
   }
-  m_afps[afps.afps_atlas_frame_parameter_set_id()] = move(afps);
+  m_afps[afps.afps_atlas_frame_parameter_set_id()] = afps;
 }
 } // namespace TMIV::VpccBitstream

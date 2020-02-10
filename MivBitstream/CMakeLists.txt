@@ -14,7 +14,8 @@ add_library(MivBitstreamLib
 	"include/TMIV/MivBitstream/MivPatchUnit.h"
 	"include/TMIV/MivBitstream/MivPatchUnit.hpp")
 
-add_library(TMIV::MivBitstreamLib ALIAS MivBitstreamLib)
+add_library(TMIV::MivBitstreamLib
+    ALIAS MivBitstreamLib)
 
 target_link_libraries(MivBitstreamLib
 	PUBLIC
@@ -23,23 +24,17 @@ target_link_libraries(MivBitstreamLib
 
 target_include_directories(MivBitstreamLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 install(
-	TARGETS MivBitstreamLib
-	EXPORT MivBitstream.Targets
-	ARCHIVE DESTINATION "lib")
-
-install(
-	EXPORT MivBitstream.Targets
-	FILE "MivBitstream.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	TARGETS
+	    MivBitstreamLib
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (CMAKE_TESTING_ENABLED)
 	add_executable(MivBitstreamTest
@@ -64,4 +59,4 @@ if (CMAKE_TESTING_ENABLED)
 			Catch2::Catch2
 			TMIV::MivBitstreamLib
 			TMIV::IOLib)
-endif()	
+endif()

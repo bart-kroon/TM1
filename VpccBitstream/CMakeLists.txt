@@ -30,7 +30,8 @@ add_library(VpccBitstreamLib
 	"include/TMIV/VpccBitstream/VpccUnit.h"
 	"include/TMIV/VpccBitstream/VpccUnit.hpp")
 
-add_library(TMIV::VpccBitstreamLib ALIAS VpccBitstreamLib)
+add_library(TMIV::VpccBitstreamLib
+    ALIAS VpccBitstreamLib)
 
 target_link_libraries(VpccBitstreamLib
 	PUBLIC
@@ -38,24 +39,18 @@ target_link_libraries(VpccBitstreamLib
 
 target_include_directories(VpccBitstreamLib
 	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-		"$<INSTALL_INTERFACE:include>")
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 install(
-	TARGETS VpccBitstreamLib
-	EXPORT VpccBitstream.Targets
-	ARCHIVE DESTINATION "lib")
-
-install(
-	EXPORT VpccBitstream.Targets
-	FILE "VpccBitstream.cmake"
-	NAMESPACE TMIV::
-	DESTINATION "lib/cmake/TMIV")
+	TARGETS
+	    VpccBitstreamLib
+	EXPORT TMIVTargets
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
 	DIRECTORY "include/"
-	DESTINATION "include")
-
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+	
 if (CMAKE_TESTING_ENABLED)
 	add_executable(VpccBitstreamTest
 		"src/AtlasFrameParameterSetRBSP.test.cpp"
@@ -81,4 +76,4 @@ if (CMAKE_TESTING_ENABLED)
 		PRIVATE
 			Catch2::Catch2
 			TMIV::VpccBitstreamLib)
-endif()	
+endif()

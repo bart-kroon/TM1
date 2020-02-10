@@ -282,7 +282,7 @@ auto GroupBasedEncoder::mergeSequenceParams(
       }
     }
 
-    pruningOffsetId += perGroupViewParamsList.size();
+    pruningOffsetId += static_cast<std::uint16_t>(perGroupViewParamsList.size());
 
     // Merging viewParamsList
     copy(begin(perGroupViewParamsList), end(perGroupViewParamsList),

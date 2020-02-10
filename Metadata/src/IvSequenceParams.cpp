@@ -262,7 +262,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
         std::vector<std::uint16_t> childIdList(bitstream.getUVar(viewParamsList.size() - 1) + 1);
 
         for (auto &childId : childIdList) {
-          childId = bitstream.getUVar(viewParamsList.size());
+          childId = static_cast<std::uint16_t>(bitstream.getUVar(viewParamsList.size()));
         }
         viewParams.pruningChildren = std::move(childIdList);
       }

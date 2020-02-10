@@ -139,7 +139,7 @@ public:
     auto &viewParamsList = ivSequenceParams.viewParamsList;
     typename ProjectionHelper<ProjectionType>::List cameraHelperList{viewParamsList};
 
-    // Overlapping Graph
+    // Overlapping matrix
     auto overlappingMatrix = computeOverlappingMatrix<ProjectionType>(cameraHelperList);
 
     // Pruning order

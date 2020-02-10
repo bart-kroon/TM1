@@ -31,48 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_DECODER_H_
-#define _TMIV_DECODER_DECODER_H_
+#ifndef _TMIV_RENDERER_SUBBLOCKCULLER_H_
+#define _TMIV_RENDERER_SUBBLOCKCULLER_H_
 
-#include <TMIV/Decoder/IDecoder.h>
-
-#include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/DepthScaler.h>
 #include <TMIV/Renderer/ICuller.h>
-#include <TMIV/Renderer/IRenderer.h>
 
-namespace TMIV::Decoder {
-class Decoder : public IDecoder {
-private:
-  std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
-  std::unique_ptr<Renderer::IRenderer> m_renderer;
-  std::unique_ptr<Renderer::ICuller> m_culler;
-  DepthUpscalerAtlas m_depthUpscaler;
-
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  Common::PatchIdMapList m_patchIdMaps;
-  bool m_downscale_depth = false;
-
+namespace TMIV::Renderer {
+class SubBlockCuller : public ICuller {
 public:
-  Decoder(const Common::Json &rootNode, const Common::Json & /*componentNode*/);
-  Decoder(const Decoder &) = delete;
-  Decoder(Decoder &&) = default;
-  Decoder &operator=(const Decoder &) = delete;
-  Decoder &operator=(Decoder &&) = default;
-  ~Decoder() override = default;
+  SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
+  SubBlockCuller(const SubBlockCuller &) = delete;
+  SubBlockCuller(SubBlockCuller &&) = default;
+  SubBlockCuller &operator=(const SubBlockCuller &) = delete;
+  SubBlockCuller &operator=(SubBlockCuller &&) = default;
+  ~SubBlockCuller() override = default;
 
-  void updateSequenceParams(Metadata::IvSequenceParams) override;
-  void updateAccessUnitParams(Metadata::IvAccessUnitParams) override;
+  // Do sub-block culling and update the PatchIdMap
+  auto updatePatchIdmap(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                        const Metadata::IvSequenceParams &ivSequenceParams,
+                        const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                        const Metadata::ViewParams &target) -> Common::PatchIdMapList override;
 
-  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
-      -> Common::Texture444Depth16Frame override;
-
-  // getters for intermediate results dumping to disk
-  auto getPatchIdMapList(const Common::MVD10Frame &atlas) const -> Common::PatchIdMapList override;
-  auto recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame override;
+private:
+  static void erasePatchIdInMap(const Metadata::AtlasParameters &patch,
+                                Common::PatchIdMapList &patchMapList, std::uint16_t patchId);
 };
-} // namespace TMIV::Decoder
+} // namespace TMIV::Renderer
 
 #endif

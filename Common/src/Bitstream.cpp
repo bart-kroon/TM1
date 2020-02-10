@@ -63,7 +63,7 @@ auto InputBitstream::readBits(unsigned bits) -> uint_least64_t {
     verify(m_size + charBits <= numeric_limits<uint_least64_t>::digits);
     verify(m_stream.good());
 
-	const auto value = m_stream.get();
+    const auto value = m_stream.get();
     m_buffer = (m_buffer << charBits) | uchar(value);
     m_size += charBits;
   }

@@ -34,8 +34,8 @@
 #include <TMIV/Metadata/IvSequenceParams.h>
 
 #include "verify.h"
-#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Common.h>
 
 #include <iomanip>
 #include <iostream>

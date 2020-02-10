@@ -45,6 +45,7 @@ install(
 	FILE "TMIVTargets.cmake"
 	NAMESPACE TMIV::
 	DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})
+export(EXPORT TMIVTargets NAMESPACE TMIV::)
 
 include(CMakePackageConfigHelpers)
 

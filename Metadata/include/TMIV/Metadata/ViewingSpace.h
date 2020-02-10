@@ -34,6 +34,7 @@
 #ifndef _TMIV_METADATA_VIEWINGSPACE_H_
 #define _TMIV_METADATA_VIEWINGSPACE_H_
 
+#include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
 
@@ -43,8 +44,8 @@
 #include <vector>
 
 namespace TMIV::Metadata {
-class InputBitstream;
-class OutputBitstream;
+using Common::InputBitstream;
+using Common::OutputBitstream;
 
 struct PrimitiveShape;
 struct ElementaryShape;

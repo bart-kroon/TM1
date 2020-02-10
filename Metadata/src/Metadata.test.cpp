@@ -34,7 +34,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include <TMIV/Metadata/Bitstream.h>
+#include <TMIV/Common/Bitstream.h>
 #include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>

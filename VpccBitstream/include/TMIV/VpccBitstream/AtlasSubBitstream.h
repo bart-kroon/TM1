@@ -31,45 +31,52 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#ifndef _TMIV_VPCCBITSTREAM_ATLASSUBBITSTREAM_H_
+#define _TMIV_VPCCBITSTREAM_ATLASSUBBITSTREAM_H_
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/VpccBitstream/AtlasFrameParameterSetRBSP.h>
+#include <TMIV/VpccBitstream/AtlasSequenceParameterSetRBSP.h>
+#include <TMIV/VpccBitstream/NalSampleStream.h>
 
-#include <fstream>
+#include <optional>
 
-namespace TMIV::IO {
-class IvMetadataReader {
+namespace TMIV::VpccBitstream {
+// 23090-5: atlas_sub_bitstream()
+class AtlasSubBitstream {
 public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+  AtlasSubBitstream() = default;
+  explicit AtlasSubBitstream(const NalSampleStream &nss) : m_nss{nss} {}
+  explicit AtlasSubBitstream(const SampleStreamNalHeader &ssnh)
+      : AtlasSubBitstream{NalSampleStream{ssnh}} {}
+  AtlasSubBitstream(const AtlasSubBitstream &) = default;
+  AtlasSubBitstream(AtlasSubBitstream &&) = default;
+  AtlasSubBitstream &operator=(const AtlasSubBitstream &) = default;
+  AtlasSubBitstream &operator=(AtlasSubBitstream &&) = default;
+  virtual ~AtlasSubBitstream() = default;
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
+  const auto &nal_sample_stream() const noexcept;
+  const auto &atlas_sequence_parameter_sets() const noexcept { return m_asps; }
+  const auto &atlas_frame_parameter_sets() const noexcept { return m_afps; }
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
+  friend auto operator<<(std::ostream &stream, const AtlasSubBitstream &x) -> std::ostream &;
+
+  auto operator==(const AtlasSubBitstream &other) const noexcept -> bool;
+  auto operator!=(const AtlasSubBitstream &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream) -> AtlasSubBitstream;
+  void encodeTo(std::ostream &stream) const;
+
+protected:
+  virtual void decodeNalUnit(const NalUnit &nal_unit);
 
 private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
+  void decodeAsps(const NalUnit &nal_unit);
+  void decodeAfps(const NalUnit &nal_unit);
+
+  std::optional<NalSampleStream> m_nss;
+  std::vector<AtlasSequenceParameterSetRBSP> m_asps;
+  std::vector<AtlasFrameParameterSetRBSP> m_afps;
 };
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
-}
-
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
-}
-
-} // namespace TMIV::IO
+} // namespace TMIV::VpccBitstream
 
 #endif

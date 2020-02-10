@@ -31,45 +31,56 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#include "test.h"
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/MivPatchUnit.h>
 
-#include <fstream>
+using namespace TMIV::MivBitstream;
+using namespace TMIV::VpccBitstream;
 
-namespace TMIV::IO {
-class IvMetadataReader {
-public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+TEST_CASE("miv_patch_unit", "[MIV Patch Unit]") {
+  auto pdu = PatchDataUnit{};
+  auto x = MivPatchUnit{pdu};
+  REQUIRE(toString(x, 856) == R"(pdu_2d_pos_x( 856 )=0
+pdu_2d_pos_y( 856 )=0
+pdu_2d_size_x( 856 )=0
+pdu_2d_size_y( 856 )=0
+mpu_view_pos_x( 856 )=0
+mpu_view_pos_y( 856 )=0
+mpu_view_id( 856 )=0
+pdu_orientation_index( 856 )=FPO_NULL
+)");
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
+  SECTION("Compatibility check") {
+    const auto pdu = x.patch_data_unit();
+    const auto y = MivPatchUnit{pdu};
+    REQUIRE(x == y);
+  }
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
+  SECTION("Example") {
+    x.pdu_2d_pos_x(1)
+        .pdu_2d_pos_y(2)
+        .pdu_2d_size_x(3)
+        .pdu_2d_size_y(5)
+        .mpu_view_pos_x(8)
+        .mpu_view_pos_y(13)
+        .mpu_view_id(21)
+        .pdu_orientation_index(FlexiblePatchOrientation::FPO_ROT270);
 
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
-};
+    REQUIRE(toString(x, 856) == R"(pdu_2d_pos_x( 856 )=1
+pdu_2d_pos_y( 856 )=2
+pdu_2d_size_x( 856 )=3
+pdu_2d_size_y( 856 )=5
+mpu_view_pos_x( 856 )=8
+mpu_view_pos_y( 856 )=13
+mpu_view_id( 856 )=21
+pdu_orientation_index( 856 )=FPO_ROT270
+)");
 
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
+    SECTION("Compatibility check") {
+      const auto pdu = x.patch_data_unit();
+      const auto y = MivPatchUnit{pdu};
+      REQUIRE(x == y);
+    }
+  }
 }
-
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
-}
-
-} // namespace TMIV::IO
-
-#endif

@@ -31,45 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#ifndef _TMIV_COMMON_BYTESTREAM_H_
+#define _TMIV_COMMON_BYTESTREAM_H_
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <cstdint>
+#include <iosfwd>
+#include <string>
 
-#include <fstream>
+namespace TMIV::Common {
+auto readBytes(std::istream &stream, size_t bytes) -> uint_least64_t;
+auto getUint8(std::istream &stream) -> uint8_t;
+auto getUint16(std::istream &stream) -> uint16_t;
+auto getUint32(std::istream &stream) -> uint32_t;
+auto getUint64(std::istream &stream) -> uint64_t;
+auto readString(std::istream &stream, size_t bytes) -> std::string;
 
-namespace TMIV::IO {
-class IvMetadataReader {
-public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
-
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
-
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
-
-private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
-};
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
-}
-
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
-}
-
-} // namespace TMIV::IO
+void writeBytes(std::ostream &stream, uint_least64_t value, size_t bytes);
+void putUint8(std::ostream &stream, uint8_t value);
+void putUint16(std::ostream &stream, uint8_t value);
+void putUint32(std::ostream &stream, uint8_t value);
+void putUint64(std::ostream &stream, uint8_t value);
+void writeString(std::ostream &stream, const std::string &buffer);
+} // namespace TMIV::Common
 
 #endif

@@ -47,8 +47,8 @@
 #include <vector>
 
 namespace TMIV::Metadata {
-class InputBitstream;
-class OutputBitstream;
+using Common::InputBitstream;
+using Common::OutputBitstream;
 
 // In specification: ivs_profile_tier_level( )
 struct IvsProfileTierLevel {

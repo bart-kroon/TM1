@@ -31,31 +31,62 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAWRITER_H_
-#define _TMIV_IO_IVMETADATAWRITER_H_
+#ifndef _TMIV_VPCCBITSTREAM_VPCCSAMPLESTREAMFORMAT_H_
+#define _TMIV_VPCCBITSTREAM_VPCCSAMPLESTREAMFORMAT_H_
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <cstdint>
+#include <iosfwd>
+#include <string>
 
-#include <fstream>
-
-namespace TMIV::IO {
-class IvMetadataWriter {
+namespace TMIV::VpccBitstream {
+// 23090-5: sample_stream_vpcc_header()
+class SampleStreamVpccHeader {
 public:
-  IvMetadataWriter(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+  explicit SampleStreamVpccHeader(int ssvh_unit_size_precision_bytes);
 
-  void writeIvSequenceParams(Metadata::IvSequenceParams);
-  void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
+  constexpr auto ssvh_unit_size_precision_bytes() const noexcept {
+    return m_ssvh_unit_size_precision_bytes;
+  }
+
+  friend auto operator<<(std::ostream &stream, const SampleStreamVpccHeader &x) -> std::ostream &;
+
+  constexpr auto operator==(const SampleStreamVpccHeader &other) const noexcept -> bool {
+    return m_ssvh_unit_size_precision_bytes == other.m_ssvh_unit_size_precision_bytes;
+  }
+
+  constexpr auto operator!=(const SampleStreamVpccHeader &other) const noexcept -> bool {
+    return !operator==(other);
+  }
+
+  static auto decodeFrom(std::istream &stream) -> SampleStreamVpccHeader;
+
+  void encodeTo(std::ostream &stream) const;
 
 private:
-  std::string m_path;
-  std::ofstream m_stream;
-  Common::OutputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
+  std::uint8_t m_ssvh_unit_size_precision_bytes;
 };
-} // namespace TMIV::IO
+
+// 23090-5: sample_stream_vpcc_unit()
+class SampleStreamVpccUnit {
+public:
+  explicit SampleStreamVpccUnit(std::string ssvu_vpcc_unit);
+
+  auto ssvu_vpcc_unit_size() const noexcept { return m_ssvu_vpcc_unit.size(); }
+  const auto &ssvu_vpcc_unit() const noexcept { return m_ssvu_vpcc_unit; }
+
+  friend auto operator<<(std::ostream &stream, const SampleStreamVpccUnit &x) -> std::ostream &;
+
+  auto operator==(const SampleStreamVpccUnit &other) const noexcept -> bool;
+  auto operator!=(const SampleStreamVpccUnit &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream, const SampleStreamVpccHeader &header)
+      -> SampleStreamVpccUnit;
+
+  void encodeTo(std::ostream &stream, const SampleStreamVpccHeader &header) const;
+
+private:
+  std::string m_ssvu_vpcc_unit;
+};
+} // namespace TMIV::VpccBitstream
 
 #endif

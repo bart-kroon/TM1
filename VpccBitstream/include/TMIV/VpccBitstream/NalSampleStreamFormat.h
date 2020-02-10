@@ -31,45 +31,62 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IVMETADATAREADER_H_
-#define _TMIV_IO_IVMETADATAREADER_H_
+#ifndef _TMIV_VPCCBITSTREAM_NALSAMPLESTREAMFORMAT_H_
+#define _TMIV_VPCCBITSTREAM_NALSAMPLESTREAMFORMAT_H_
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <cstdint>
+#include <iosfwd>
+#include <string>
 
-#include <fstream>
-
-namespace TMIV::IO {
-class IvMetadataReader {
+namespace TMIV::VpccBitstream {
+// 23090-5: sample_stream_nal_header()
+class SampleStreamNalHeader {
 public:
-  IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+  explicit SampleStreamNalHeader(int ssnh_unit_size_precision_bytes);
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
+  constexpr auto ssnh_unit_size_precision_bytes() const noexcept {
+    return m_ssnh_unit_size_precision_bytes;
+  }
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
+  friend auto operator<<(std::ostream &stream, const SampleStreamNalHeader &x) -> std::ostream &;
+
+  constexpr auto operator==(const SampleStreamNalHeader &other) const noexcept -> bool {
+    return m_ssnh_unit_size_precision_bytes == other.m_ssnh_unit_size_precision_bytes;
+  }
+
+  constexpr auto operator!=(const SampleStreamNalHeader &other) const noexcept -> bool {
+    return !operator==(other);
+  }
+
+  static auto decodeFrom(std::istream &stream) -> SampleStreamNalHeader;
+
+  void encodeTo(std::ostream &stream) const;
 
 private:
-  std::string m_path;
-  std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
+  std::uint8_t m_ssnh_unit_size_precision_bytes;
 };
 
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
-  return m_ivSequenceParams;
-}
+// 23090-5: sample_stream_nal_unit()
+class SampleStreamNalUnit {
+public:
+  explicit SampleStreamNalUnit(std::string ssnu_nal_unit);
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
-}
+  auto ssnu_nal_unit_size() const noexcept { return m_ssnu_nal_unit.size(); }
+  const auto &ssnu_nal_unit() const noexcept { return m_ssnu_nal_unit; }
 
-} // namespace TMIV::IO
+  friend auto operator<<(std::ostream &stream, const SampleStreamNalUnit &x) -> std::ostream &;
+
+  auto operator==(const SampleStreamNalUnit &other) const noexcept -> bool;
+  auto operator!=(const SampleStreamNalUnit &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream, const SampleStreamNalHeader &header)
+      -> SampleStreamNalUnit;
+
+  void encodeTo(std::ostream &stream, const SampleStreamNalHeader &header) const;
+
+private:
+  std::string m_ssnu_nal_unit;
+};
+} // namespace TMIV::VpccBitstream
 
 #endif

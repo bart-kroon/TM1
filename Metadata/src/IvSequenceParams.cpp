@@ -35,7 +35,7 @@
 
 #include "verify.h"
 #include <TMIV/Common/Common.h>
-#include <TMIV/Metadata/Bitstream.h>
+#include <TMIV/Common/Bitstream.h>
 
 #include <iomanip>
 #include <iostream>

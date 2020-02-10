@@ -33,7 +33,7 @@
 
 #include <TMIV/Metadata/ViewingSpace.h>
 
-#include <TMIV/Metadata/Bitstream.h>
+#include <TMIV/Common/Bitstream.h>
 
 #include <TMIV/Common/Half.h>
 

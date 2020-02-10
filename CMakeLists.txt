@@ -22,6 +22,7 @@ include(GNUInstallDirs)
 
 foreach(subdir
 		Common Metadata IO Image
+		VpccBitstream MivBitstream
 		ViewOptimizer AtlasConstructor AtlasDeconstructor DepthOccupancy Renderer ViewingSpace
 		Encoder Decoder)
 	add_subdirectory(${subdir})
@@ -38,13 +39,6 @@ add_custom_target(clang_format
 # Then in the CMake GUI set TMIV_DIR to the lib/cmake/TMIV directory of the TMIV installation.
 # In the super project CMakeLists.txt use find_package(TMIV 4.0.0 REQUIRED)
 set(TMIV_CMAKE_CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/TMIV")
-
-install(
-	EXPORT TMIVTargets
-	FILE "TMIVTargets.cmake"
-	NAMESPACE TMIV::
-	DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})
-export(EXPORT TMIVTargets NAMESPACE TMIV::)
 
 include(CMakePackageConfigHelpers)
 

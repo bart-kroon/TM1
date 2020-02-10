@@ -50,7 +50,7 @@ using namespace TMIV::Metadata;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::VpccBitstream;
 
-// TODO: Where to define this
+// TODO(BK): Where to define this
 enum : uint8_t {
   CODEC_HEVC = 0,                 // From TMC2
   CODEC_OCCUPANCY_IN_GEOMETRY = 1 // For MIV

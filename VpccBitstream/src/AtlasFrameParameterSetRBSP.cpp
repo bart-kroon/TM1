@@ -66,6 +66,7 @@ auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFr
   VERIFY_MIVBITSTREAM(afti_num_tile_rows == 1);
 
   const auto numTilesInAtlasFrame = afti_num_tile_columns * afti_num_tile_rows;
+  VERIFY_MIVBITSTREAM(numTilesInAtlasFrame == 1);
 
   const auto afti_single_tile_per_tile_group_flag = bitstream.getFlag();
 

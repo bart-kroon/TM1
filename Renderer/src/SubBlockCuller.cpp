@@ -68,8 +68,8 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
-  float w = static_cast<float>(patch.patchSizeInView.x());
-  float h = static_cast<float>(patch.patchSizeInView.y());
+  const auto w = static_cast<float>(patch.patchSizeInView.x());
+  const auto h = static_cast<float>(patch.patchSizeInView.y());
   uv[0] = Vec2f(patch.posInView);
   uv[1] = uv[0] + Vec2f{w, 0};
   uv[2] = uv[0] + Vec2f{0, h};

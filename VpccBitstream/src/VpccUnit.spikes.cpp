@@ -73,7 +73,9 @@ auto dumpVpccUnitPayload(streampos position, const SampleStreamVpccUnit &ssvu,
   }
 
   ofstream file{path.str(), ios::binary};
-  file.write(ssvu.ssvu_vpcc_unit().data() + 4, ssvu.ssvu_vpcc_unit().size() - 4);
+  auto payload = ssvu.ssvu_vpcc_unit();
+  payload.erase(payload.begin(), payload.begin() + 4);
+  file.write(payload.data(), payload.size());
 }
 
 TEST_CASE("Parse V-PCC sample stream", "[VPCC Unit]") {

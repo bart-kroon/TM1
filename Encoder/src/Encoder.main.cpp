@@ -80,7 +80,7 @@ public:
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
     cout << "\nSource sequence parameters:\n" << sourceSequenceParams;
 
-    const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams, 0);
+    const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
     cout << "\nCoded sequence parameters:\n" << codedSequenceParams;
 

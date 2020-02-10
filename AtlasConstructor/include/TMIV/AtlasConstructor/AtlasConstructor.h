@@ -57,8 +57,7 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, unsigned offsetId,
-                       std::vector<bool> isBasicView)
+  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, std::vector<bool> isBasicView)
       -> const Metadata::IvSequenceParams & override;
   void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame transportViews) override;

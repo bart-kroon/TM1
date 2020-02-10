@@ -133,7 +133,7 @@ public:
   }
 
   template <typename ProjectionType>
-  void registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams, unsigned offsetId,
+  void registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams,
                                const std::vector<bool> &isBasicView) {
 
     auto &viewParamsList = ivSequenceParams.viewParamsList;
@@ -160,22 +160,12 @@ public:
       }
     }
 
-    // Mapped pruning graph
-    Graph::BuiltIn::Sparse<float> pruningGraphMapped(offsetId + viewParamsList.size());
-
-    for (NodeId nodeSource = 0; nodeSource < pruningGraph.getNumberOfNodes(); ++nodeSource) {
-      for (const auto &linkTarget : pruningGraph.getNeighbourhood(nodeSource)) {
-        pruningGraphMapped.connect(offsetId + nodeSource, offsetId + linkTarget.node(), 1.F,
-                                   LinkType::Directed);
-      }
-    }
-
     // Pruning mask
-    auto pruningGraphExport = getReversedGraph(pruningGraphMapped);
+    auto pruningGraphExport = getReversedGraph(pruningGraph);
 
     for (auto camId = 0U; camId < viewParamsList.size(); camId++) {
 
-      const auto &neighourhood = pruningGraphExport.getNeighbourhood(offsetId + camId);
+      const auto &neighourhood = pruningGraphExport.getNeighbourhood(camId);
 
       if (!neighourhood.empty()) {
 
@@ -416,14 +406,12 @@ HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &no
 HierarchicalPruner::~HierarchicalPruner() = default;
 
 void HierarchicalPruner::registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams,
-                                                 unsigned offsetId,
                                                  const std::vector<bool> &isBasicView) {
   return std::visit(
       [&](const auto &projection) {
         using ProjectionType = std::decay_t<decltype(projection)>;
 
-        return m_impl->registerPruningRelation<ProjectionType>(ivSequenceParams, offsetId,
-                                                               isBasicView);
+        return m_impl->registerPruningRelation<ProjectionType>(ivSequenceParams, isBasicView);
       },
       ivSequenceParams.viewParamsList[0].projection);
 }

@@ -254,17 +254,16 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
   }
 
   const auto pruningGraphParamsPresentFlag = bitstream.getFlag();
-  
+
   if (pruningGraphParamsPresentFlag) {
-	  for(auto& viewParams: viewParamsList) {
+
+    for (auto &viewParams : viewParamsList) {
       bool isLeaf = bitstream.getFlag();
       if (!isLeaf) {
-//         std::vector<std::uint16_t> childIdList(bitstream.getUVar(viewParamsList.size() - 1) + 1);
-		std::vector<std::uint16_t> childIdList(bitstream.getUint16() + 1);
+        std::vector<std::uint16_t> childIdList(bitstream.getUVar(viewParamsList.size() - 1) + 1);
 
         for (auto &childId : childIdList) {
-//           childId = bitstream.getUVar(viewParamsList.size());
-		  childId = bitstream.getUint16();
+          childId = bitstream.getUVar(viewParamsList.size());
         }
         viewParams.pruningChildren = std::move(childIdList);
       }
@@ -338,25 +337,24 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
   bool pruningGraphParamsPresentFlag = std::any_of(begin(), end(), [](const auto &viewParams) {
     return (viewParams.pruningChildren && !viewParams.pruningChildren->empty());
   });
-  
+
   bitstream.putFlag(pruningGraphParamsPresentFlag);
 
   if (pruningGraphParamsPresentFlag) {
+
     for (const auto &viewParams : *this) {
       if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
 
-        bitstream.putFlag(true);
+        bitstream.putFlag(false);
 
         const auto &childIdList = *viewParams.pruningChildren;
-//         bitstream.putUVar(childIdList.size() - 1, size() - 1);
-			bitstream.putUint16(uint16_t(childIdList.size() - 1));
+        bitstream.putUVar(childIdList.size() - 1, size() - 1);
 
         for (const auto &childId : childIdList) {
-//           bitstream.putUVar(childId, size());
-			bitstream.putUint16(childId);
+          bitstream.putUVar(childId, size());
         }
       } else {
-        bitstream.putFlag(false);
+        bitstream.putFlag(true);
       }
     }
   }

@@ -748,7 +748,7 @@ private:
   void
   recoverPrunedWeight(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
                       const ProjectionHelper<TargetProjectionType> &targetHelper) {
-	  
+
     // Retrieve pruning information
     auto hasPruningRelation =
         std::any_of(sourceHelperList.begin(), sourceHelperList.end(), [](const auto &helper) {

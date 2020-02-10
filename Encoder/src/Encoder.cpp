@@ -54,7 +54,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
       Factory<IDepthOccupancy>::getInstance().create("DepthOccupancy", rootNode, componentNode);
 }
 
-auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams, unsigned offsetId)
+auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
     -> const Metadata::IvSequenceParams & {
   auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
 
@@ -68,8 +68,8 @@ auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams, unsig
   }
   cout << '\n';
 
-  return m_depthOccupancy->transformSequenceParams(m_atlasConstructor->prepareSequence(
-      std::move(optimized.first), offsetId, std::move(optimized.second)));
+  return m_depthOccupancy->transformSequenceParams(
+      m_atlasConstructor->prepareSequence(std::move(optimized.first), std::move(optimized.second)));
 }
 
 void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {

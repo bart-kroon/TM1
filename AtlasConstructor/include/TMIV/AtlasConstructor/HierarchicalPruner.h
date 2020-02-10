@@ -49,7 +49,7 @@ public:
   HierarchicalPruner &operator=(HierarchicalPruner &&) = delete;
   ~HierarchicalPruner() override;
 
-  void registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams, unsigned offsetId,
+  void registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams,
                                const std::vector<bool> &isBasicView) override;
   auto prune(const Metadata::IvSequenceParams &ivSequenceParams, const Common::MVD16Frame &views,
              const std::vector<bool> &isBasicView) -> Common::MaskList override;

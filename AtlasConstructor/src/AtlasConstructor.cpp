@@ -65,8 +65,8 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   }
 }
 
-auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, unsigned offsetId,
-                                       vector<bool> isBasicView) -> const IvSequenceParams & {
+auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
+    -> const IvSequenceParams & {
 
   // Construct at least the basic views
   m_nbAtlas =
@@ -78,7 +78,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, unsign
   m_isBasicView = move(isBasicView);
 
   // Register pruning relation
-  m_pruner->registerPruningRelation(m_outIvSequenceParams, offsetId, m_isBasicView);
+  m_pruner->registerPruningRelation(m_outIvSequenceParams, m_isBasicView);
 
   // Turn on occupancy coding for partial views
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {

@@ -60,7 +60,7 @@ msp_extension_present_flag=false
 
     REQUIRE(toString(x) == R"(msp_profile_idc=Basic
 msp_depth_params_num_bits=10
-View  0: [1, 1], ERP [0, 0] x [0, 0] deg, norm. disp in [0, 0] m^-1, depthOccMapThreshold 0, pose [ 0.000,  0.000,  0.000] m, [0, 0, 0] deg
+View  0: [1, 1], ERP [0, 0] x [0, 0] deg, norm. disp in [0, 0] m^-1, hasOccupancy false, depthOccMapThreshold 0, pose [ 0.000,  0.000,  0.000] m, [0, 0, 0] deg
 msp_depth_low_quality_flag=false
 msp_num_groups=1
 msp_max_entities=1
@@ -101,8 +101,8 @@ msp_extension_present_flag=false
 
     REQUIRE(toString(x) == R"(msp_profile_idc=Extended
 msp_depth_params_num_bits=11
-View  0: [4096, 2048], ERP [-10, 20] x [-30, 40] deg, norm. disp in [0.1, 0.2] m^-1, depthOccMapThreshold 345, depthStart 1100, pose [ 1.000,  2.000,  3.000] m, [0.4, 0.5, 0.6] deg
-View  1: [1, 1], ERP [0, 0] x [0, 0] deg, norm. disp in [0, 0] m^-1, depthOccMapThreshold 0, pose [ 0.000,  0.000,  0.000] m, [0, 0, 0] deg
+View  0: [4096, 2048], ERP [-10, 20] x [-30, 40] deg, norm. disp in [0.1, 0.2] m^-1, hasOccupancy false, depthOccMapThreshold 345, depthStart 1100, pose [ 1.000,  2.000,  3.000] m, [0.4, 0.5, 0.6] deg
+View  1: [1, 1], ERP [0, 0] x [0, 0] deg, norm. disp in [0, 0] m^-1, hasOccupancy false, depthOccMapThreshold 0, pose [ 0.000,  0.000,  0.000] m, [0, 0, 0] deg
 msp_depth_low_quality_flag=true
 msp_num_groups=3
 msp_max_entities=4
@@ -111,7 +111,7 @@ Viewing space:
 add (add, cuboid [0, 0, 0] size [0, 0, 0])
 msp_extension_present_flag=true
 )");
-    REQUIRE(bitCodingTest(x, 1052));
+    REQUIRE(bitCodingTest(x, 1053));
   }
 }
 
@@ -184,7 +184,7 @@ overridePduProjectionIdNumBits=0
 miv_sequence_params_present_flag=vps_extension_present_flag
 msp_profile_idc=Basic
 msp_depth_params_num_bits=10
-View  0: [1, 1], ERP [0, 0] x [0, 0] deg, norm. disp in [0, 0] m^-1, depthOccMapThreshold 0, pose [ 0.000,  0.000,  0.000] m, [0, 0, 0] deg
+View  0: [1, 1], ERP [0, 0] x [0, 0] deg, norm. disp in [0, 0] m^-1, hasOccupancy false, depthOccMapThreshold 0, pose [ 0.000,  0.000,  0.000] m, [0, 0, 0] deg
 msp_depth_low_quality_flag=false
 msp_num_groups=1
 msp_max_entities=1

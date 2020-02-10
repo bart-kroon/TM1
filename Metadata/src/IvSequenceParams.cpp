@@ -256,7 +256,6 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
   const auto pruningGraphParamsPresentFlag = bitstream.getFlag();
 
   if (pruningGraphParamsPresentFlag) {
-
     for (auto &viewParams : viewParamsList) {
       bool isLeaf = bitstream.getFlag();
       if (!isLeaf) {
@@ -341,7 +340,6 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
   bitstream.putFlag(pruningGraphParamsPresentFlag);
 
   if (pruningGraphParamsPresentFlag) {
-
     for (const auto &viewParams : *this) {
       if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
 

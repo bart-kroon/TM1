@@ -772,7 +772,6 @@ private:
       Graph::BuiltIn::Sparse<float> pruningGraph(sourceHelperList.size());
 
       for (std::size_t nodeId = 0; nodeId < sourceHelperList.size(); nodeId++) {
-
         const auto &viewParams = sourceHelperList[nodeId].getViewParams();
 
         if (viewParams.pruningChildren) {

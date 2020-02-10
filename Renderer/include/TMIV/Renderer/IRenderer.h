@@ -35,8 +35,8 @@
 #define _TMIV_RENDERER_IRENDERER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::Renderer {
 class IRenderer {
@@ -50,9 +50,9 @@ public:
 
   // Render from a texture atlas to a viewport (decoder side)
   virtual auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                           const Metadata::IvSequenceParams &ivSequenceParams,
-                           const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                           const Metadata::ViewParams &target) const
+                           const MivBitstream::IvSequenceParams &ivSequenceParams,
+                           const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                           const MivBitstream::ViewParams &target) const
       -> Common::Texture444Depth16Frame = 0;
 };
 } // namespace TMIV::Renderer

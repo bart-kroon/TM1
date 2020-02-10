@@ -37,8 +37,14 @@
 using namespace std;
 
 namespace TMIV::MivBitstream {
+[[noreturn]] void vpccError(char const *condition, char const *file, int line) {
+  cerr << "Failed to encode/decode V-PCC bitstream: " << condition << " [" << file << "@" << line
+       << '\n';
+  abort();
+}
+
 [[noreturn]] void mivError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode MIV bitstream (extension of V-PCC): " << condition << " ["
+  cerr << "Failed to encode/decode MIV bitstream: " << condition << " ["
        << file << "@" << line << '\n';
   abort();
 }

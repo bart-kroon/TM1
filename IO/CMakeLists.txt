@@ -15,7 +15,7 @@ add_library(TMIV::IOLib
 target_link_libraries(IOLib
 	PUBLIC
 		TMIV::CommonLib
-		TMIV::MetadataLib
+		TMIV::MivBitstreamLib
 		TMIV::ViewOptimizerLib
 		TMIV::ImageLib)
 

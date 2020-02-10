@@ -35,7 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_IPACKER_H_
 
 #include <TMIV/AtlasConstructor/IPruner.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
 
 namespace TMIV::AtlasConstructor {
 class IPacker {
@@ -50,7 +50,7 @@ public:
   virtual int getAlignment() = 0;
 
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-                    const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector = 0;
+                    const std::vector<bool> &isBasicView) -> MivBitstream::AtlasParamsVector = 0;
   virtual void updateAggregatedEntityMasks(const Common::EntityMapList &entityMasks) = 0;
 };
 } // namespace TMIV::AtlasConstructor

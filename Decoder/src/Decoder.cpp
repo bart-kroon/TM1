@@ -40,7 +40,7 @@
 using namespace std;
 using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 namespace TMIV::Decoder {
@@ -55,11 +55,11 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
   }
 }
 
-void Decoder::updateSequenceParams(Metadata::IvSequenceParams ivSequenceParams) {
+void Decoder::updateSequenceParams(MivBitstream::IvSequenceParams ivSequenceParams) {
   m_ivSequenceParams = move(ivSequenceParams);
 }
 
-void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+void Decoder::updateAccessUnitParams(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   m_ivAccessUnitParams = move(ivAccessUnitParams);
 }
 

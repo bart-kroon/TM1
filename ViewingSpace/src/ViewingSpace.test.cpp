@@ -38,7 +38,7 @@
 #include <TMIV/ViewingSpace/ViewingSpaceEvaluator.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::ViewingSpace;
 
 TEST_CASE("Signed distance functions") {

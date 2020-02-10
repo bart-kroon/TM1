@@ -12,7 +12,7 @@ add_library(TMIV::AtlasDeconstructorLib
 
 target_link_libraries(AtlasDeconstructorLib
 	PUBLIC
-		TMIV::MetadataLib
+		TMIV::MivBitstreamLib
 		TMIV::ImageLib)
 
 target_include_directories(AtlasDeconstructorLib

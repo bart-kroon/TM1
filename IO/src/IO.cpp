@@ -44,7 +44,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
 auto getFullPath(const Json &config, const string &baseDirectoryField, const string &fileNameField,
@@ -226,7 +226,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   return params;
 }
 
-auto loadSourceIvAccessUnitParams(const Json &config) -> Metadata::IvAccessUnitParams {
+auto loadSourceIvAccessUnitParams(const Json &config) -> MivBitstream::IvAccessUnitParams {
   return {AtlasParamsList{{}, config.require("OmafV1CompatibleFlag").asBool(), {}, {}, {}}};
 }
 

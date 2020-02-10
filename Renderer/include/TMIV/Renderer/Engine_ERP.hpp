@@ -41,7 +41,7 @@
 #include <cmath>
 
 namespace TMIV::Renderer {
-template <> struct Engine<Metadata::ErpParams> {
+template <> struct Engine<MivBitstream::ErpParams> {
   const float phi0;
   const float theta0;
   const float dphi_du;
@@ -51,7 +51,7 @@ template <> struct Engine<Metadata::ErpParams> {
   const float du_dphi;
   const float dv_dtheta;
 
-  explicit Engine(const Metadata::ViewParams &viewParams)
+  explicit Engine(const MivBitstream::ViewParams &viewParams)
       : // Precomputed values used in te unprojection equation
         phi0{Common::radperdeg * viewParams.erp().phiRange[1]},
         theta0{Common::radperdeg * viewParams.erp().thetaRange[1]},

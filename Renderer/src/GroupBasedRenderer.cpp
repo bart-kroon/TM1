@@ -41,7 +41,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &componentNode) {
@@ -93,9 +93,9 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   return viewport;
 }
 
-auto GroupBasedRenderer::groupRenderOrder(const Metadata::IvSequenceParams &ivSequenceParams,
-                                          const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                                          const Metadata::ViewParams &target)
+auto GroupBasedRenderer::groupRenderOrder(const MivBitstream::IvSequenceParams &ivSequenceParams,
+                                          const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                                          const MivBitstream::ViewParams &target)
     -> std::vector<unsigned> {
   auto groupPriorities = vector<Priority>();
   auto result = vector<unsigned>();

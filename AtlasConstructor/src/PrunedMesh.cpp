@@ -33,13 +33,13 @@
 
 #include "PrunedMesh.h"
 
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <cassert>
 
 using namespace std;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Common;
 using namespace TMIV::Renderer;
 

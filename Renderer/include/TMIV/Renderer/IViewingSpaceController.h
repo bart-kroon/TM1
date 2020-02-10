@@ -35,7 +35,7 @@
 #define _TMIV_RENDERER_IVIEWINGSPACECONTROLLER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::Renderer {
 class IViewingSpaceController {
@@ -49,11 +49,11 @@ public:
 
   // Viewing space fading
   virtual void inplaceFading(Common::Texture444Depth10Frame &viewport,
-                             const Metadata::ViewParams &metadata,
-                             const Metadata::IvSequenceParams &ivSequenceParams) const = 0;
+                             const MivBitstream::ViewParams &metadata,
+                             const MivBitstream::IvSequenceParams &ivSequenceParams) const = 0;
   virtual void inplaceFading(Common::Texture444Depth16Frame &viewport,
-                             const Metadata::ViewParams &metadata,
-                             const Metadata::IvSequenceParams &ivSequenceParams) const = 0;
+                             const MivBitstream::ViewParams &metadata,
+                             const MivBitstream::IvSequenceParams &ivSequenceParams) const = 0;
 };
 } // namespace TMIV::Renderer
 

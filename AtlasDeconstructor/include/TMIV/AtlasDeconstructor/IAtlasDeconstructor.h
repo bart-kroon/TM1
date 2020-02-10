@@ -35,8 +35,8 @@
 #define _TMIV_ATLASDECONSTRUCTOR_IATLASDECONSTRUCTOR_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::AtlasDeconstructor {
 class IAtlasDeconstructor {
@@ -48,13 +48,13 @@ public:
   IAtlasDeconstructor &operator=(IAtlasDeconstructor &&) = default;
   virtual ~IAtlasDeconstructor() = default;
 
-  virtual auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
-                             const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+  virtual auto getPatchIdMap(const MivBitstream::IvSequenceParams &ivSequenceParams,
+                             const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
                              const Common::MVD10Frame &frame) -> Common::PatchIdMapList = 0;
 
   virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                                 const Metadata::ViewParamsVector &viewParamsVector,
-                                 const Metadata::AtlasParamsVector &atlasParamsVector)
+                                 const MivBitstream::ViewParamsVector &viewParamsVector,
+                                 const MivBitstream::AtlasParamsVector &atlasParamsVector)
       -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::AtlasDeconstructor

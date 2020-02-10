@@ -40,7 +40,7 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::ViewingSpace {
 
@@ -389,7 +389,7 @@ static auto angleInclusion(const float deltaAngle, const float range, const floa
   return inclusion;
 }
 
-auto ViewingSpaceEvaluator::computeInclusion(const Metadata::ViewingSpace &viewingSpace,
+auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &viewingSpace,
                                              const ViewingParams &viewingParams) -> float {
   ViewingSpaceEvaluation global;
   float accumulatedDirectionWeight = 0.F;

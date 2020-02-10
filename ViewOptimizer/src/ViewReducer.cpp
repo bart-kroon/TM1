@@ -34,7 +34,7 @@
 #include <TMIV/ViewOptimizer/ViewReducer.h>
 
 #include <TMIV/Common/Common.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
@@ -43,7 +43,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 namespace TMIV::ViewOptimizer {

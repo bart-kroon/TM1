@@ -35,8 +35,8 @@
 #define _TMIV_RENDERER_ICULLER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::Renderer {
 class ICuller {
@@ -50,9 +50,9 @@ public:
 
   // Do sub-block culling and update the PatchIdMap
   virtual auto updatePatchIdmap(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                                const Metadata::IvSequenceParams &ivSequenceParams,
-                                const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                                const Metadata::ViewParams &target) -> Common::PatchIdMapList = 0;
+                                const MivBitstream::IvSequenceParams &ivSequenceParams,
+                                const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                                const MivBitstream::ViewParams &target) -> Common::PatchIdMapList = 0;
 };
 } // namespace TMIV::Renderer
 

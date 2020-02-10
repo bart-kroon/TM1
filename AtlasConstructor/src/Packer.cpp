@@ -39,7 +39,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::AtlasConstructor {
 

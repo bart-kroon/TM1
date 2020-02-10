@@ -35,7 +35,7 @@
 #define _TMIV_RENDERER_ENGINE_H_
 
 #include <TMIV/Common/LinAlg.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::Renderer {
 struct SceneVertexDescriptor {
@@ -75,7 +75,7 @@ namespace TMIV::Renderer {
 // projection. The interface allows for culling and splitting triangles.
 template <typename... T>
 auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
-             std::tuple<std::vector<T>...> attributes, const Metadata::ViewParams &target) {
+             std::tuple<std::vector<T>...> attributes, const MivBitstream::ViewParams &target) {
   return visit(
       [&](auto const &x) {
         Engine<std::decay_t<decltype(x)>> engine{target};

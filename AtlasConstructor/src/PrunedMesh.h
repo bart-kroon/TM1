@@ -41,19 +41,19 @@ namespace TMIV::AtlasConstructor {
 // Unproject a pruned (masked) view, resulting in a mesh in the reference
 // frame of the source view
 auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
-                         const Metadata::ViewParams &viewParams,
+                         const MivBitstream::ViewParams &viewParams,
                          const Common::Mat<std::uint8_t> &mask)
     -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
                   std::vector<Common::Vec3f>>;
 
 // Change reference frame and project vertices
 auto project(const Renderer::SceneVertexDescriptorList &vertices,
-             const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target)
+             const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target)
     -> Renderer::ImageVertexDescriptorList;
 
 // Weighted sphere compensation of stretching as performed by
 // Engine<ErpParams>::project
-void weightedSphere(const Metadata::ViewParams &target,
+void weightedSphere(const MivBitstream::ViewParams &target,
                     const Renderer::ImageVertexDescriptorList &vertices,
                     Renderer::TriangleDescriptorList &triangles);
 } // namespace TMIV::AtlasConstructor

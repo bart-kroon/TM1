@@ -40,7 +40,7 @@
 using namespace std;
 using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::ViewOptimizer;
 using namespace TMIV::DepthOccupancy;
 
@@ -54,8 +54,8 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
       Factory<IDepthOccupancy>::getInstance().create("DepthOccupancy", rootNode, componentNode);
 }
 
-auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
-    -> const Metadata::IvSequenceParams & {
+auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+    -> const MivBitstream::IvSequenceParams & {
   auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
 
   cout << "\nBasic view(s): ";
@@ -72,7 +72,7 @@ auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
       m_atlasConstructor->prepareSequence(std::move(optimized.first), std::move(optimized.second)));
 }
 
-void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+void Encoder::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   m_atlasConstructor->prepareAccessUnit(move(ivAccessUnitParams));
 }
 
@@ -81,7 +81,7 @@ void Encoder::pushFrame(Common::MVD16Frame views) {
   return m_atlasConstructor->pushFrame(optimized);
 }
 
-auto Encoder::completeAccessUnit() -> const Metadata::IvAccessUnitParams & {
+auto Encoder::completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & {
   return m_depthOccupancy->transformAccessUnitParams(m_atlasConstructor->completeAccessUnit());
 }
 

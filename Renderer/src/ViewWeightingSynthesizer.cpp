@@ -36,14 +36,14 @@
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Image/Image.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Engine.h>
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Image;
 
 namespace TMIV::Renderer {
@@ -170,9 +170,9 @@ public:
   }
   template <typename SourceProjectionType, typename TargetProjectionType, typename MVD>
   auto renderFrame(const MVD &atlasList, const PatchIdMapList &maps,
-                   const Metadata::IvSequenceParams &ivSequenceParams,
-                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                   const Metadata::ViewParams &targetCamera) -> Common::Texture444Depth16Frame {
+                   const MivBitstream::IvSequenceParams &ivSequenceParams,
+                   const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                   const MivBitstream::ViewParams &targetCamera) -> Common::Texture444Depth16Frame {
 
     typename ProjectionHelper<SourceProjectionType>::List sourceHelperList{
         ivSequenceParams.viewParamsList};
@@ -1102,9 +1102,9 @@ ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
 auto ViewWeightingSynthesizer::renderFrame(const Common::MVD10Frame &atlas,
                                            const Common::PatchIdMapList &maps,
-                                           const Metadata::IvSequenceParams &ivSequenceParams,
-                                           const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                                           const Metadata::ViewParams &target) const
+                                           const MivBitstream::IvSequenceParams &ivSequenceParams,
+                                           const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                                           const MivBitstream::ViewParams &target) const
     -> Common::Texture444Depth16Frame {
 
   return std::visit(

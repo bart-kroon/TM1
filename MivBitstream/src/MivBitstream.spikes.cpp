@@ -36,19 +36,17 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/MivBitstream/MivParameterSet.h>
 #include <TMIV/MivBitstream/MivPatchUnit.h>
-#include <TMIV/VpccBitstream/VpccSampleStreamFormat.h>
+#include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 
 #include <fstream>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::VpccBitstream;
 
 // TODO(BK): Where to define this
 enum : uint8_t {

@@ -36,7 +36,6 @@
 #include <TMIV/MivBitstream/MivPatchUnit.h>
 
 using namespace TMIV::MivBitstream;
-using namespace TMIV::VpccBitstream;
 
 TEST_CASE("miv_patch_unit", "[MIV Patch Unit]") {
   auto pdu = PatchDataUnit{};

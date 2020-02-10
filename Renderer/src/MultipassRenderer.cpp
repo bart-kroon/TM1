@@ -41,7 +41,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &componentNode) {

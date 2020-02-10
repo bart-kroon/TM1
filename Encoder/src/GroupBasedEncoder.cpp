@@ -39,7 +39,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &componentNode) {
@@ -99,7 +99,7 @@ auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
   return result;
 }
 
-auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSequenceParams)
+auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivSequenceParams)
     -> Grouping {
   auto grouping = Grouping{};
 
@@ -135,7 +135,7 @@ auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSeque
   }
 
   // Select views per group
-  auto viewsPool = vector<Metadata::ViewParams>{};
+  auto viewsPool = vector<MivBitstream::ViewParams>{};
   auto viewsLabels = vector<uint8_t>{};
   auto viewsInGroup = vector<uint8_t>{};
   auto numViewsPerGroup = vector<int>{};
@@ -147,8 +147,8 @@ auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSeque
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
     viewsInGroup.clear();
-    auto camerasInGroup = Metadata::ViewParamsList{};
-    auto camerasOutGroup = Metadata::ViewParamsList{};
+    auto camerasInGroup = MivBitstream::ViewParamsList{};
+    auto camerasOutGroup = MivBitstream::ViewParamsList{};
     if (gIndex < numGroups - 1) {
       numViewsPerGroup.push_back(int(std::floor(viewParamsList.size() / numGroups)));
       std::int64_t maxElementIndex;
@@ -260,8 +260,8 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
 }
 
 auto GroupBasedEncoder::mergeSequenceParams(
-    const std::vector<const Metadata::IvSequenceParams *> &perGroupParams)
-    -> const Metadata::IvSequenceParams & {
+    const std::vector<const MivBitstream::IvSequenceParams *> &perGroupParams)
+    -> const MivBitstream::IvSequenceParams & {
   // Independent metadata should work automatically. Just assume it is the same across groups.
   m_ivSequenceParams = *perGroupParams.front();
   m_ivSequenceParams.viewParamsList.clear();
@@ -279,8 +279,8 @@ auto GroupBasedEncoder::mergeSequenceParams(
 }
 
 auto GroupBasedEncoder::mergeAccessUnitParams(
-    const std::vector<const Metadata::IvAccessUnitParams *> &perGroupParams)
-    -> const Metadata::IvAccessUnitParams & {
+    const std::vector<const MivBitstream::IvAccessUnitParams *> &perGroupParams)
+    -> const MivBitstream::IvAccessUnitParams & {
 
   // Independent metadata should work automatically. Just assume it is the same across groups.
   m_ivAccessUnitParams = *perGroupParams.front();

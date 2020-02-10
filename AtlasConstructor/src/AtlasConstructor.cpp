@@ -35,14 +35,14 @@
 
 #include "Cluster.h"
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <cassert>
 #include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::AtlasConstructor {
 AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
@@ -86,7 +86,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   return m_outIvSequenceParams;
 }
 
-void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
 

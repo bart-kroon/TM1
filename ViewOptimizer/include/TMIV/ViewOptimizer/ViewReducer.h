@@ -52,19 +52,19 @@ public:
   ViewReducer &operator=(ViewReducer &&) = default;
   ~ViewReducer() override = default;
 
-  auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams) -> Output override;
+  auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output override;
 
   auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
     return views;
   }
 
 private:
-  static auto calculateFOV(Metadata::ViewParams viewParams) -> float;
+  static auto calculateFOV(MivBitstream::ViewParams viewParams) -> float;
 
-  static auto calculateDistance(Metadata::ViewParams camera_1, Metadata::ViewParams camera_2)
+  static auto calculateDistance(MivBitstream::ViewParams camera_1, MivBitstream::ViewParams camera_2)
       -> float;
 
-  static auto calculateOverlapping(Metadata::ViewParams camera_from, Metadata::ViewParams camera_to)
+  static auto calculateOverlapping(MivBitstream::ViewParams camera_from, MivBitstream::ViewParams camera_to)
       -> float;
 };
 } // namespace TMIV::ViewOptimizer

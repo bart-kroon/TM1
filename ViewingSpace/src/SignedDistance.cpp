@@ -36,7 +36,7 @@
 namespace TMIV::ViewingSpace {
 
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
-auto signedDistance(const Metadata::Cuboid &cuboid, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::EulerAngles &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
   using namespace Common;
   const auto rotationMatrix = transpose(EulerAnglesToRotationMatrix(rotation));
@@ -46,7 +46,7 @@ auto signedDistance(const Metadata::Cuboid &cuboid, const Common::EulerAngles &r
 }
 
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
-auto signedDistance(const Metadata::Spheroid &spheroid, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Spheroid &spheroid, const Common::EulerAngles &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
   using namespace Common;
   const auto rotationMatrix = transpose(EulerAnglesToRotationMatrix(rotation));
@@ -61,14 +61,14 @@ auto signedDistance(const Metadata::Spheroid &spheroid, const Common::EulerAngle
   return SignedDistance(k0 * (k0 - 1.0F) / k1);
 }
 
-auto signedDistance(const Metadata::Halfspace &halfspace, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Halfspace &halfspace, const Common::EulerAngles &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
   const auto rotationMatrix = transpose(EulerAnglesToRotationMatrix(rotation));
   const auto p = rotationMatrix * point;
   return SignedDistance(dot(halfspace.normal, p) - halfspace.distance);
 }
 
-auto signedDistance(const Metadata::PrimitiveShape &shape, const Common::Vec3f &point)
+auto signedDistance(const MivBitstream::PrimitiveShape &shape, const Common::Vec3f &point)
     -> SignedDistance {
   using namespace Common;
   const EulerAngles rotation = EulerAngles(shape.rotation.value_or(Vec3f()));

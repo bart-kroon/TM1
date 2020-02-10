@@ -13,7 +13,7 @@ add_library(TMIV::ViewOptimizerLib
 target_link_libraries(ViewOptimizerLib
 	PUBLIC
 		TMIV::CommonLib
-		TMIV::MetadataLib
+		TMIV::MivBitstreamLib
 		TMIV::RendererLib)
 
 target_include_directories(ViewOptimizerLib

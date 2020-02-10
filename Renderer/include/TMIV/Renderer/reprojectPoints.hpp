@@ -34,14 +34,14 @@
 namespace TMIV::Renderer {
 
 template <typename Projection>
-ProjectionHelper<Projection>::List::List(const Metadata::ViewParamsList &viewParamsList) {
+ProjectionHelper<Projection>::List::List(const MivBitstream::ViewParamsList &viewParamsList) {
   for (const auto &viewParams : viewParamsList) {
     this->emplace_back(viewParams);
   }
 }
 
 template <typename Projection>
-ProjectionHelper<Projection>::ProjectionHelper(const Metadata::ViewParams &viewParams)
+ProjectionHelper<Projection>::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
     : m_viewParams{viewParams}, m_engine{viewParams},
       m_rotationMatrix{
           Common::EulerAnglesToRotationMatrix(Common::EulerAngles{viewParams.rotation})} {}

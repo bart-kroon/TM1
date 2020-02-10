@@ -37,16 +37,27 @@
 #include <cstdlib>
 #include <iostream>
 
+// Checks against 23090-5 V-PCC specification
+//
+// These checks do not relate to 23090-12 profile restrictions.
+#define VERIFY_VPCCBITSTREAM(condition)                                                            \
+  static_cast<void>((!!(condition) ||                                                              \
+                     (::TMIV::MivBitstream::vpccError(#condition, __FILE__, __LINE__), false)))
+#define VPCCBITSTREAM_ERROR(what) ::TMIV::MivBitstream::vpccError(what, __FILE__, __LINE__)
+
 // Check against (proposed) 23090-12 MIV specification
 //
-// Note that the same macro exists within the VpccBitstream library but the error message is
-// different to distinguish between restriction and extension errors.
+// As a rule of thumb checks while encoding/decoding V-PCC structures are performed only at the
+// points where it saves implementation effort. For instance, by checking that a flag is false, it
+// may save the implementation of a entire syntax structure. This "lazy" checking makes it easier to
+// change the MIV specification/profile. MIV structures are checked similar to TMIV 3.0.
 #define VERIFY_MIVBITSTREAM(condition)                                                             \
   static_cast<void>(                                                                               \
       (!!(condition) || (::TMIV::MivBitstream::mivError(#condition, __FILE__, __LINE__), false)))
 #define MIVBITSTREAM_ERROR(what) ::TMIV::MivBitstream::mivError(what, __FILE__, __LINE__)
 
 namespace TMIV::MivBitstream {
+[[noreturn]] void vpccError(char const *condition, char const *file, int line);
 [[noreturn]] void mivError(char const *condition, char const *file, int line);
 } // namespace TMIV::MivBitstream
 

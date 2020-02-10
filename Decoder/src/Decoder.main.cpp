@@ -37,7 +37,7 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
-#include <TMIV/Metadata/ViewingSpace.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <iostream>
 #include <memory>
@@ -72,7 +72,7 @@ public:
     {
       if (auto subnode = json().optional("ViewingSpace"); subnode) {
         cout << "Overriding viewing space from JSON" << endl;
-        ivSequenceParams.viewingSpace = Metadata::ViewingSpace::loadFromJson(subnode);
+        ivSequenceParams.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode);
       }
     }
     m_decoder->updateSequenceParams(ivSequenceParams);

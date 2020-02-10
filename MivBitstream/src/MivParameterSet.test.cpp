@@ -31,14 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define CATCH_CONFIG_MAIN
 #include "test.h"
 
 #include <TMIV/MivBitstream/MivParameterSet.h>
 
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Metadata;
-using namespace TMIV::VpccBitstream;
 
 TEST_CASE("miv_sequence_params", "[MIV Parameter Set]") {
   auto x = MivSequenceParams{};

@@ -34,7 +34,7 @@
 #include <TMIV/Renderer/SubBlockCuller.h>
 
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <cassert>
 #include <iostream>
 
@@ -44,7 +44,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
@@ -76,8 +76,8 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
   uv[3] = uv[0] + Vec2f{w, h};
 
   // Using Camera depth
-  const auto patch_dep_near = 1.F / max(Metadata::impl::minNormDisp, camera.normDispRange.x());
-  const auto patch_dep_far = 1.F / max(Metadata::impl::minNormDisp, camera.normDispRange.y());
+  const auto patch_dep_near = 1.F / max(MivBitstream::impl::minNormDisp, camera.normDispRange.x());
+  const auto patch_dep_far = 1.F / max(MivBitstream::impl::minNormDisp, camera.normDispRange.y());
 
   for (int i = 0; i < 4; i++) {
     const auto xyz = R * unprojectVertex(uv[i], patch_dep_near, camera) + t;

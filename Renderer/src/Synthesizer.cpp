@@ -35,7 +35,7 @@
 
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Image/Image.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Engine.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
@@ -48,7 +48,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Image;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 class Synthesizer::Impl {
@@ -279,9 +279,9 @@ Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretching
 Synthesizer::~Synthesizer() = default;
 
 auto Synthesizer::renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                              const Metadata::IvSequenceParams &ivSequenceParams,
-                              const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                              const Metadata::ViewParams &target) const
+                              const MivBitstream::IvSequenceParams &ivSequenceParams,
+                              const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                              const MivBitstream::ViewParams &target) const
     -> Common::Texture444Depth16Frame {
   assert(ivAccessUnitParams.atlasParamsList);
   return m_impl->renderFrame(atlas, maps, *ivAccessUnitParams.atlasParamsList,

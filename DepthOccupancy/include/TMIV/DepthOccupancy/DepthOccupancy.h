@@ -56,21 +56,21 @@ public:
 
   // No change when useOccupancy() is false. Otherwise set depthOccMapThreshold
   // to depthOccMapThresholdIfSet and adjust normDispRange.
-  auto transformSequenceParams(Metadata::IvSequenceParams)
-      -> const Metadata::IvSequenceParams & override;
+  auto transformSequenceParams(MivBitstream::IvSequenceParams)
+      -> const MivBitstream::IvSequenceParams & override;
 
   // depthOccupancyParamsPresentFlags = zeros
-  auto transformAccessUnitParams(Metadata::IvAccessUnitParams)
-      -> const Metadata::IvAccessUnitParams & override;
+  auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
+      -> const MivBitstream::IvAccessUnitParams & override;
 
   // Transform depth bit depth and range
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
 
 private:
   uint16_t m_depthOccMapThresholdIfSet{};
-  Metadata::IvSequenceParams m_inSequenceParams;
-  Metadata::IvSequenceParams m_outSequenceParams;
-  Metadata::IvAccessUnitParams m_accessUnitParams;
+  MivBitstream::IvSequenceParams m_inSequenceParams;
+  MivBitstream::IvSequenceParams m_outSequenceParams;
+  MivBitstream::IvAccessUnitParams m_accessUnitParams;
 };
 } // namespace TMIV::DepthOccupancy
 

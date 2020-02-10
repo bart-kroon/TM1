@@ -38,7 +38,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 constexpr auto halfPixel = 0.5F;
@@ -140,7 +140,7 @@ auto unprojectVertex(Vec2f position, float depth, const ViewParams &viewParams) 
       viewParams.projection);
 }
 
-auto projectVertex(const Common::Vec3f &position, const Metadata::ViewParams &viewParams)
+auto projectVertex(const Common::Vec3f &position, const MivBitstream::ViewParams &viewParams)
     -> std::pair<Common::Vec2f, float> {
   return visit(
       [&](const auto &projection) {

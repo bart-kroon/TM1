@@ -36,50 +36,50 @@
 
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Common/Transformation.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/Renderer/Engine.h>
 
 namespace TMIV::Renderer {
 // Create a grid of positions indicating the center of each of the pixels
-auto imagePositions(const Metadata::ViewParams &viewParams) -> Common::Mat<Common::Vec2f>;
+auto imagePositions(const MivBitstream::ViewParams &viewParams) -> Common::Mat<Common::Vec2f>;
 
 // OMAF Referential: x forward, y left, z up
 // Image plane: u right, v down
 
 // Unproject points: From image positions to world positions (with the camera as
 // reference frame)
-auto unprojectPoints(const Metadata::ViewParams &viewParams,
+auto unprojectPoints(const MivBitstream::ViewParams &viewParams,
                      const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> Common::Mat<Common::Vec3f>;
 
 // Change the reference frame from one to another camera (merging extrinsic
 // parameters)
-auto changeReferenceFrame(const Metadata::ViewParams &viewParams,
-                          const Metadata::ViewParams &target,
+auto changeReferenceFrame(const MivBitstream::ViewParams &viewParams,
+                          const MivBitstream::ViewParams &target,
                           const Common::Mat<Common::Vec3f> &points) -> Common::Mat<Common::Vec3f>;
 
 // Project points: From world positions (with the camera as reference frame)
 // to image positions
-auto projectPoints(const Metadata::ViewParams &viewParams, const Common::Mat<Common::Vec3f> &points)
+auto projectPoints(const MivBitstream::ViewParams &viewParams, const Common::Mat<Common::Vec3f> &points)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Reproject points by combining above three steps:
 //  1) Unproject to world points in the reference frame of the first camera
 //  2) Change the reference frame from the first to the second camera
 //  3) Project to image points
-auto reprojectPoints(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target,
+auto reprojectPoints(const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target,
                      const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Calculate ray angles between input and output camera. Units are radians.
 //
 // The points should be in the target frame of reference.
-auto calculateRayAngles(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target,
+auto calculateRayAngles(const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target,
                         const Common::Mat<Common::Vec3f> &points) -> Common::Mat<float>;
 
 // Return (R, T) such that x -> Rx + t changes reference frame from the source
 // camera to the target camera
-auto affineParameters(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target)
+auto affineParameters(const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target)
     -> std::pair<Common::Mat3x3f, Common::Vec3f>;
 
 // Unproject a pixel from a source frame to scene coordinates in the reference
@@ -87,7 +87,7 @@ auto affineParameters(const Metadata::ViewParams &viewParams, const Metadata::Vi
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewParams &viewParams)
+auto unprojectVertex(Common::Vec2f position, float depth, const MivBitstream::ViewParams &viewParams)
     -> Common::Vec3f;
 
 // Project point: From world position (with the camera as reference frame)
@@ -95,7 +95,7 @@ auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewPa
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto projectVertex(const Common::Vec3f &position, const Metadata::ViewParams &viewParams)
+auto projectVertex(const Common::Vec3f &position, const MivBitstream::ViewParams &viewParams)
     -> std::pair<Common::Vec2f, float>;
 
 inline bool isValidDepth(float d) { return (0.F < d); }
@@ -107,7 +107,7 @@ template <typename Projection> class ProjectionHelper {
 public:
   class List : public std::vector<ProjectionHelper> {
   public:
-    List(const Metadata::ViewParamsList &viewParamsList);
+    List(const MivBitstream::ViewParamsList &viewParamsList);
     List(const List &) = default;
     List(List &&) = default;
     auto operator=(const List &) -> List & = default;
@@ -115,17 +115,17 @@ public:
   };
 
 private:
-  const Metadata::ViewParams &m_viewParams;
+  const MivBitstream::ViewParams &m_viewParams;
   Engine<Projection> m_engine;
   Common::Mat3x3f m_rotationMatrix;
 
 public:
-  ProjectionHelper(const Metadata::ViewParams &viewParams);
+  ProjectionHelper(const MivBitstream::ViewParams &viewParams);
   ProjectionHelper(const ProjectionHelper &) = default;
   ProjectionHelper(ProjectionHelper &&) = default;
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = default;
   auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
-  auto getViewParams() const -> const Metadata::ViewParams & { return m_viewParams; }
+  auto getViewParams() const -> const MivBitstream::ViewParams & { return m_viewParams; }
   auto getViewingPosition() const -> const Common::Vec3f & { return m_viewParams.position; }
   auto getViewingDirection() const -> Common::Vec3f;
   auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;

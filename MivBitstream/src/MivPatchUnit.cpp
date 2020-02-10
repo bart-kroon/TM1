@@ -36,7 +36,7 @@
 #include "verify.h"
 
 using namespace std;
-using namespace TMIV::VpccBitstream;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::MivBitstream {
 template <typename PDU> MivPatchUnit<PDU>::MivPatchUnit(PDU &pdu) noexcept : m_pdu{pdu} {
@@ -49,8 +49,6 @@ template <typename PDU> auto MivPatchUnit<PDU>::patchSizeInAtlas() const -> Comm
 }
 
 template <typename PDU> auto MivPatchUnit<PDU>::patchSizeInView() const -> Common::Vec2i {
-  using VpccBitstream::FlexiblePatchOrientation;
-
   switch (pdu_orientation_index()) {
   case FlexiblePatchOrientation::FPO_NULL:
   case FlexiblePatchOrientation::FPO_MIRROR:
@@ -88,6 +86,6 @@ auto MivPatchUnit<PDU>::printTo(std::ostream &stream, std::size_t patchIdx) cons
                 << " )=" << pdu_orientation_index() << '\n';
 }
 
-template class MivPatchUnit<VpccBitstream::PatchDataUnit>;
-template class MivPatchUnit<const VpccBitstream::PatchDataUnit>;
+template class MivPatchUnit<PatchDataUnit>;
+template class MivPatchUnit<const PatchDataUnit>;
 } // namespace TMIV::MivBitstream

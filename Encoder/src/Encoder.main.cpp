@@ -44,7 +44,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::IO;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Decoder;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;

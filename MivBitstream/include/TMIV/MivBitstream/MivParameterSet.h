@@ -34,8 +34,8 @@
 #ifndef _TMIV_MIVBITSTREAM_MIVPARAMETERSET_H_
 #define _TMIV_MIVBITSTREAM_MIVPARAMETERSET_H_
 
-#include <TMIV/Metadata/IvSequenceParams.h>
-#include <TMIV/VpccBitstream/VpccParameterSet.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/VpccParameterSet.h>
 
 namespace TMIV::MivBitstream {
 // NOTE(BK): The num values are just placeholders. I believe that we should discuss profiles during
@@ -55,34 +55,34 @@ public:
   constexpr auto msp_num_groups() const noexcept;
   constexpr auto msp_max_entities() const noexcept;
   constexpr auto msp_viewing_space_present_flag() const noexcept;
-  auto viewing_space() const noexcept -> const Metadata::ViewingSpace &;
+  auto viewing_space() const noexcept -> const ViewingSpace &;
   constexpr auto msp_extension_present_flag() const noexcept;
 
   constexpr auto &msp_profile_idc(MspProfileIdc value) noexcept;
   constexpr auto &msp_depth_params_num_bits(std::uint8_t value) noexcept;
-  auto view_params_list(Metadata::ViewParamsList value) -> MivSequenceParams &;
+  auto view_params_list(ViewParamsList value) -> MivSequenceParams &;
   constexpr auto &msp_depth_low_quality_flag(bool value) noexcept;
   constexpr auto &msp_num_groups(std::size_t value) noexcept;
   constexpr auto &msp_max_entities(std::size_t value) noexcept;
   auto msp_viewing_space_present_flag(bool value) noexcept -> MivSequenceParams &;
-  auto viewing_space(Metadata::ViewingSpace value) noexcept -> MivSequenceParams &;
+  auto viewing_space(ViewingSpace value) noexcept -> MivSequenceParams &;
   constexpr auto &msp_extension_present_flag(bool value) noexcept;
 
-  auto viewing_space() noexcept -> Metadata::ViewingSpace &;
+  auto viewing_space() noexcept -> ViewingSpace &;
 
   friend auto operator<<(std::ostream &stream, const MivSequenceParams &x) -> std::ostream &;
 
   auto operator==(const MivSequenceParams &other) const noexcept -> bool;
   auto operator!=(const MivSequenceParams &other) const noexcept -> bool;
 
-  static auto decodeFrom(Metadata::InputBitstream &bitstream) -> MivSequenceParams;
+  static auto decodeFrom(InputBitstream &bitstream) -> MivSequenceParams;
 
-  void encodeTo(Metadata::OutputBitstream &bitstream) const;
+  void encodeTo(OutputBitstream &bitstream) const;
 
 private:
   MspProfileIdc m_msp_profile_idc = MspProfileIdc::Basic;
   std::uint8_t m_msp_depth_params_num_bits = 10;
-  Metadata::ViewParamsList m_view_params_list;
+  ViewParamsList m_view_params_list;
   bool m_msp_depth_low_quality_flag = false;
 
   // TODO(BK): Figure out how to signal groups in atlas data (SEI message?)
@@ -92,16 +92,16 @@ private:
   std::size_t m_msp_max_entities = 1;
 
   // TODO(BK): This could be a SEI message so it can be used by V-PCC w/o MIV
-  std::optional<Metadata::ViewingSpace> m_viewing_space;
+  std::optional<ViewingSpace> m_viewing_space;
 
   bool m_msp_extension_present_flag = false;
 };
 
 // 23090-12 proposal: miv_parameter_set, extends 23090-5: vpcc_parameter_set
-struct MivParameterSet : public VpccBitstream::VpccParameterSet {
+struct MivParameterSet : public VpccParameterSet {
 public:
   MivParameterSet() = default;
-  MivParameterSet(VpccBitstream::VpccParameterSet vps, std::optional<MivSequenceParams> mps);
+  MivParameterSet(VpccParameterSet vps, std::optional<MivSequenceParams> mps);
 
   constexpr auto miv_sequence_params_present_flag() const noexcept;
   auto miv_sequence_params() const noexcept -> const MivSequenceParams &;

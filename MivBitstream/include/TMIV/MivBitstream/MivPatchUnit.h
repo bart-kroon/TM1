@@ -35,7 +35,7 @@
 #define _TMIV_MIVBITSTREAM_MIVPATCHUNIT_H_
 
 #include <TMIV/Common/Vector.h>
-#include <TMIV/VpccBitstream/AtlasTileGroupLayerRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
 
 #include <type_traits>
 
@@ -45,8 +45,8 @@ namespace TMIV::MivBitstream {
 // Implemented as a view (const or mutable) on PatchDataUnit
 template <typename PDU> class MivPatchUnit {
 public:
-  static_assert(std::is_same_v<PDU, VpccBitstream::PatchDataUnit> ||
-                std::is_same_v<PDU, const VpccBitstream::PatchDataUnit>);
+  static_assert(std::is_same_v<PDU, PatchDataUnit> ||
+                std::is_same_v<PDU, const PatchDataUnit>);
 
   explicit MivPatchUnit(PDU &pdu) noexcept;
 
@@ -123,7 +123,7 @@ public:
   // Set the patch orientation index
   // Specified by reference to 23090-5
   template <typename = std::enable_if<!std::is_const_v<PDU>>>
-  constexpr auto &pdu_orientation_index(VpccBitstream::FlexiblePatchOrientation value) noexcept;
+  constexpr auto &pdu_orientation_index(FlexiblePatchOrientation value) noexcept;
 
   // Get the size of the patch in the atlas (width, height)
   // This is a convenience function based on pdu_2d_size_{x,y}

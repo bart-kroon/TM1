@@ -48,9 +48,9 @@ public:
   ~Synthesizer() override;
 
   auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const Metadata::IvSequenceParams &ivSequenceParams,
-                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                   const Metadata::ViewParams &target) const
+                   const MivBitstream::IvSequenceParams &ivSequenceParams,
+                   const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                   const MivBitstream::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 
 private:

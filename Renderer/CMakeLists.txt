@@ -45,7 +45,7 @@ add_library(TMIV::RendererLib
 target_link_libraries(RendererLib
 	PUBLIC
 		TMIV::CommonLib
-		TMIV::MetadataLib
+		TMIV::MivBitstreamLib
 		TMIV::ImageLib
 		TMIV::ViewingSpaceLib
 	PRIVATE

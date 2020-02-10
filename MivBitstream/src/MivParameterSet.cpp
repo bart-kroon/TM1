@@ -41,8 +41,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
-using namespace TMIV::VpccBitstream;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, MspProfileIdc x) -> ostream & {
@@ -115,7 +114,7 @@ auto MivSequenceParams::operator!=(const MivSequenceParams &other) const noexcep
   return !operator==(other);
 }
 
-auto MivSequenceParams::decodeFrom(Metadata::InputBitstream &bitstream) -> MivSequenceParams {
+auto MivSequenceParams::decodeFrom(InputBitstream &bitstream) -> MivSequenceParams {
   auto x = MivSequenceParams{};
 
   x.msp_profile_idc(MspProfileIdc(bitstream.getUint8()));
@@ -135,7 +134,7 @@ auto MivSequenceParams::decodeFrom(Metadata::InputBitstream &bitstream) -> MivSe
   return x;
 }
 
-void MivSequenceParams::encodeTo(Metadata::OutputBitstream &bitstream) const {
+void MivSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint8(std::uint8_t(msp_profile_idc()));
 
   VERIFY_MIVBITSTREAM(8 <= msp_depth_params_num_bits() && msp_depth_params_num_bits() <= 23);

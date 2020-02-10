@@ -40,7 +40,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 
@@ -51,7 +51,7 @@ auto computeIndex(const ViewParams &metadata, const IvSequenceParams &ivSequence
 
   if (ivSequenceParams.viewingSpace) {
 
-    TMIV::Metadata::ViewingSpace vs = ivSequenceParams.viewingSpace.value();
+    TMIV::MivBitstream::ViewingSpace vs = ivSequenceParams.viewingSpace.value();
 
     TMIV::ViewingSpace::ViewingParams vp;
     vp.viewPosition = metadata.position;
@@ -132,7 +132,7 @@ ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/,
 
 void ViewingSpaceController::inplaceFading(
     Texture444Depth10Frame &viewport, const ViewParams &metadata,
-    const Metadata::IvSequenceParams &ivSequenceParams) const {
+    const MivBitstream::IvSequenceParams &ivSequenceParams) const {
   // 1) computeIndex function call
   float index = computeIndex(metadata, ivSequenceParams);
 
@@ -142,7 +142,7 @@ void ViewingSpaceController::inplaceFading(
 
 void ViewingSpaceController::inplaceFading(
     Texture444Depth16Frame &viewport, const ViewParams &metadata,
-    const Metadata::IvSequenceParams &ivSequenceParams) const {
+    const MivBitstream::IvSequenceParams &ivSequenceParams) const {
   // 1) computeIndex function call
   float index = computeIndex(metadata, ivSequenceParams);
 

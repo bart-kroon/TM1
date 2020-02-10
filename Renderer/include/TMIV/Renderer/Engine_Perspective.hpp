@@ -38,11 +38,11 @@
 #include <TMIV/Common/Common.h>
 
 namespace TMIV::Renderer {
-template <> struct Engine<Metadata::PerspectiveParams> {
+template <> struct Engine<MivBitstream::PerspectiveParams> {
   const Common::Vec2f f;
   const Common::Vec2f p;
 
-  explicit Engine(const Metadata::ViewParams &viewParams)
+  explicit Engine(const MivBitstream::ViewParams &viewParams)
       : f{viewParams.perspective().focal}, p{viewParams.perspective().center} {}
 
   // Unprojection equation

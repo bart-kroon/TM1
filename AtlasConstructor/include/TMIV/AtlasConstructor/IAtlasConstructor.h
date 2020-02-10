@@ -35,8 +35,8 @@
 #define _TMIV_ATLASCONSTRUCTOR_IATLASCONSTRUCTOR_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::AtlasConstructor {
 class IAtlasConstructor {
@@ -48,12 +48,12 @@ public:
   IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
   virtual ~IAtlasConstructor() = default;
 
-  virtual auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams,
+  virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
                                std::vector<bool> isBasicView)
-      -> const Metadata::IvSequenceParams & = 0;
-  virtual void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) = 0;
+      -> const MivBitstream::IvSequenceParams & = 0;
+  virtual void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) = 0;
   virtual void pushFrame(Common::MVD16Frame transportViews) = 0;
-  virtual auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & = 0;
+  virtual auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::AtlasConstructor

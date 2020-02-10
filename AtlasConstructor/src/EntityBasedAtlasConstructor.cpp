@@ -40,7 +40,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::AtlasConstructor {
 constexpr auto neutralChroma = TextureFrame::neutralColor();
@@ -92,7 +92,7 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
 }
 
 void EntityBasedAtlasConstructor::prepareAccessUnit(
-    Metadata::IvAccessUnitParams ivAccessUnitParams) {
+    MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
   m_viewBuffer.clear();

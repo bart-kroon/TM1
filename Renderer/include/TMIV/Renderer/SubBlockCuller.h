@@ -49,12 +49,12 @@ public:
 
   // Do sub-block culling and update the PatchIdMap
   auto updatePatchIdmap(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                        const Metadata::IvSequenceParams &ivSequenceParams,
-                        const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                        const Metadata::ViewParams &target) -> Common::PatchIdMapList override;
+                        const MivBitstream::IvSequenceParams &ivSequenceParams,
+                        const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                        const MivBitstream::ViewParams &target) -> Common::PatchIdMapList override;
 
 private:
-  static void erasePatchIdInMap(const Metadata::AtlasParameters &patch,
+  static void erasePatchIdInMap(const MivBitstream::AtlasParameters &patch,
                                 Common::PatchIdMapList &patchMapList, std::uint16_t patchId);
 };
 } // namespace TMIV::Renderer

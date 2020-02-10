@@ -48,21 +48,21 @@ public:
   AtlasDeconstructor &operator=(AtlasDeconstructor &&) = default;
   ~AtlasDeconstructor() override = default;
 
-  auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
-                     const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+  auto getPatchIdMap(const MivBitstream::IvSequenceParams &ivSequenceParams,
+                     const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
                      const Common::MVD10Frame &frame) -> Common::PatchIdMapList override;
 
   auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                         const Metadata::ViewParamsVector &viewParamsVector,
-                         const Metadata::AtlasParamsVector &atlasParamsVector)
+                         const MivBitstream::ViewParamsVector &viewParamsVector,
+                         const MivBitstream::AtlasParamsVector &atlasParamsVector)
       -> Common::MVD10Frame override;
 
 private:
   Common::Vec2i m_entityDecodeRange;
-  void writePatchIdInMap(const Metadata::AtlasParameters &patch,
+  void writePatchIdInMap(const MivBitstream::AtlasParameters &patch,
                          Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
                          const Common::MVD10Frame &frame,
-                         const Metadata::ViewParamsVector &viewParamsVector);
+                         const MivBitstream::ViewParamsVector &viewParamsVector);
   bool m_downscale_depth = false;
 };
 } // namespace TMIV::AtlasDeconstructor

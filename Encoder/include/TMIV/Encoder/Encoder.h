@@ -51,11 +51,11 @@ public:
   Encoder &operator=(Encoder &&) = default;
   ~Encoder() override = default;
 
-  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
-      -> const Metadata::IvSequenceParams & override;
-  void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
+  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+      -> const MivBitstream::IvSequenceParams & override;
+  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
+  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
 
 private:

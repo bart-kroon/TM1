@@ -50,8 +50,8 @@ private:
   std::unique_ptr<Renderer::ICuller> m_culler;
   DepthUpscalerAtlas m_depthUpscaler;
 
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
+  MivBitstream::IvSequenceParams m_ivSequenceParams;
+  MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
   Common::PatchIdMapList m_patchIdMaps;
   bool m_downscale_depth = false;
 
@@ -63,10 +63,10 @@ public:
   Decoder &operator=(Decoder &&) = default;
   ~Decoder() override = default;
 
-  void updateSequenceParams(Metadata::IvSequenceParams) override;
-  void updateAccessUnitParams(Metadata::IvAccessUnitParams) override;
+  void updateSequenceParams(MivBitstream::IvSequenceParams) override;
+  void updateAccessUnitParams(MivBitstream::IvAccessUnitParams) override;
 
-  auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
+  auto decodeFrame(Common::MVD10Frame atlas, const MivBitstream::ViewParams &target) const
       -> Common::Texture444Depth16Frame override;
 
   // getters for intermediate results dumping to disk

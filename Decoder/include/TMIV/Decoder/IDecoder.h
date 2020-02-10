@@ -35,8 +35,8 @@
 #define _TMIV_DECODER_IDECODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::Decoder {
 class IDecoder {
@@ -48,14 +48,14 @@ public:
   IDecoder &operator=(IDecoder &&) = default;
   virtual ~IDecoder() = default;
 
-  virtual void updateSequenceParams(Metadata::IvSequenceParams) = 0;
-  virtual void updateAccessUnitParams(Metadata::IvAccessUnitParams) = 0;
+  virtual void updateSequenceParams(MivBitstream::IvSequenceParams) = 0;
+  virtual void updateAccessUnitParams(MivBitstream::IvAccessUnitParams) = 0;
 
   // Decode a frame and render to a target viewport.
   //
   // This call shall be preceded by at least one call of each of
   // updateAtlasSize, updatePatchList and updateCameraList.
-  virtual auto decodeFrame(Common::MVD10Frame atlas, const Metadata::ViewParams &target) const
+  virtual auto decodeFrame(Common::MVD10Frame atlas, const MivBitstream::ViewParams &target) const
       -> Common::Texture444Depth16Frame = 0;
 
   // getters for intermediate results dumping to disk

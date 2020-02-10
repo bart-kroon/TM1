@@ -35,7 +35,7 @@
 #define _TMIV_VIEWOPTIMIZER_IVIEWOPTIMIZER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::ViewOptimizer {
 class IViewOptimizer {
@@ -47,10 +47,10 @@ public:
   IViewOptimizer &operator=(IViewOptimizer &&) = default;
   virtual ~IViewOptimizer() = default;
 
-  using Output = std::pair<Metadata::IvSequenceParams, std::vector<bool>>;
+  using Output = std::pair<MivBitstream::IvSequenceParams, std::vector<bool>>;
 
   // Optimize camera parameters for the sequence
-  virtual auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams) -> Output = 0;
+  virtual auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output = 0;
 
   // Optimize a frame in the intra period
   virtual auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame = 0;

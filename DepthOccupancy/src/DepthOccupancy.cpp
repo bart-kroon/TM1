@@ -33,14 +33,14 @@
 
 #include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <iostream>
 #include <stdexcept>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::DepthOccupancy {
 DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThresholdIfSet)
@@ -58,8 +58,8 @@ DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThresholdIfSet)
 DepthOccupancy::DepthOccupancy(const Json & /*unused*/, const Json &nodeConfig)
     : DepthOccupancy{uint16_t(nodeConfig.require("depthOccMapThresholdIfSet").asInt())} {}
 
-auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequenceParams)
-    -> const Metadata::IvSequenceParams & {
+auto DepthOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
+    -> const MivBitstream::IvSequenceParams & {
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
 
@@ -77,8 +77,8 @@ auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequence
   return m_outSequenceParams;
 }
 
-auto DepthOccupancy::transformAccessUnitParams(Metadata::IvAccessUnitParams accessUnitParams)
-    -> const Metadata::IvAccessUnitParams & {
+auto DepthOccupancy::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
+    -> const MivBitstream::IvAccessUnitParams & {
   m_accessUnitParams = accessUnitParams;
   if (m_accessUnitParams.atlasParamsList) {
     m_accessUnitParams.atlasParamsList->depthOccupancyParamsPresentFlags =

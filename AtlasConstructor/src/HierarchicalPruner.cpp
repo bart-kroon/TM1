@@ -34,7 +34,7 @@
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 
 #include "PrunedMesh.h"
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
@@ -47,7 +47,7 @@
 #include <numeric>
 
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 using namespace std;
 
@@ -88,7 +88,7 @@ public:
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  auto prune(const Metadata::ViewParamsVector &viewParamsVector, const MVD16Frame &views,
+  auto prune(const MivBitstream::ViewParamsVector &viewParamsVector, const MVD16Frame &views,
              const vector<bool> &isBasicView) -> MaskList {
     m_intra = m_viewParamsVector != viewParamsVector || m_isBasicView != isBasicView;
     if (m_intra) {
@@ -295,7 +295,7 @@ HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &no
 
 HierarchicalPruner::~HierarchicalPruner() = default;
 
-auto HierarchicalPruner::prune(const Metadata::ViewParamsVector &viewParamsVector,
+auto HierarchicalPruner::prune(const MivBitstream::ViewParamsVector &viewParamsVector,
                                const Common::MVD16Frame &views,
                                const std::vector<bool> &isBasicView) -> Common::MaskList {
   return m_impl->prune(viewParamsVector, views, isBasicView);

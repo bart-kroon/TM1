@@ -35,8 +35,8 @@
 #define _TMIV_IO_IVMETADATAREADER_H_
 
 #include <TMIV/Common/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 #include <fstream>
 
@@ -50,23 +50,23 @@ public:
   void readIvAccessUnitParams();
   bool readAccessUnit(int accessUnit);
 
-  auto ivSequenceParams() const -> const Metadata::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams &;
+  auto ivSequenceParams() const -> const MivBitstream::IvSequenceParams &;
+  auto ivAccessUnitParams() const -> const MivBitstream::IvAccessUnitParams &;
 
 private:
   std::string m_path;
   std::ifstream m_stream;
   Common::InputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
+  MivBitstream::IvSequenceParams m_ivSequenceParams;
+  MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
   int m_accessUnit{-1};
 };
 
-inline auto IvMetadataReader::ivSequenceParams() const -> const Metadata::IvSequenceParams & {
+inline auto IvMetadataReader::ivSequenceParams() const -> const MivBitstream::IvSequenceParams & {
   return m_ivSequenceParams;
 }
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const Metadata::IvAccessUnitParams & {
+inline auto IvMetadataReader::ivAccessUnitParams() const -> const MivBitstream::IvAccessUnitParams & {
   return m_ivAccessUnitParams;
 }
 

@@ -753,7 +753,7 @@ private:
     auto hasPruningRelation =
         std::any_of(sourceHelperList.begin(), sourceHelperList.end(), [](const auto &helper) {
           const auto &viewParams = helper.getViewParams();
-          return (viewParams.pruningChildren && !viewParams.pruningChildren->empty());
+          return viewParams.pruningChildren && !viewParams.pruningChildren->empty();
         });
 
     // Weight recovery
@@ -768,7 +768,6 @@ private:
     }
 
     if (hasPruningRelation) {
-
       // Pruning graph (from children to parent)
       Graph::BuiltIn::Sparse<float> pruningGraph(sourceHelperList.size());
 

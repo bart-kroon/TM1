@@ -40,6 +40,12 @@ add_custom_target(clang_format
 # In the super project CMakeLists.txt use find_package(TMIV 4.0.0 REQUIRED)
 set(TMIV_CMAKE_CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/TMIV")
 
+install(
+	EXPORT TMIVTargets
+	FILE "TMIVTargets.cmake"
+	NAMESPACE TMIV::
+	DESTINATION ${TMIV_CMAKE_CONFIG_DESTINATION})
+
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(

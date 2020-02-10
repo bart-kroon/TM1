@@ -527,7 +527,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		}
 
 	def depthLowQualityFlag(self):
-		return self.seqId == 'E'
+		return self.seqId == 'D' or self.seqId == 'E' or self.seqId == 'L'
 
 	def numGroups(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':

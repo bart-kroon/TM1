@@ -23,7 +23,7 @@
             "Projection": "Perspective",
             "Resolution": [
                 1920,
-                1088
+                1080
             ],
             "Name": "viewport",
             "Background": 0,

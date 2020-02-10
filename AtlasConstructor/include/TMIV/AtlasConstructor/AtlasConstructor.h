@@ -57,7 +57,8 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams, std::vector<bool> isBasicView)
+  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
+                       std::vector<bool> isBasicView)
       -> const MivBitstream::IvSequenceParams & override;
   void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame transportViews) override;
@@ -67,8 +68,8 @@ public:
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
-  void writePatchInAtlas(const MivBitstream::AtlasParameters &patch, const Common::MVD16Frame &views,
-                         Common::MVD16Frame &atlas, int frame);
+  void writePatchInAtlas(const MivBitstream::AtlasParameters &patch,
+                         const Common::MVD16Frame &views, Common::MVD16Frame &atlas, int frame);
 
 private:
   std::size_t m_nbAtlas{};

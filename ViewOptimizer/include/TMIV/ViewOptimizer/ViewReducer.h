@@ -61,11 +61,11 @@ public:
 private:
   static auto calculateFOV(MivBitstream::ViewParams viewParams) -> float;
 
-  static auto calculateDistance(MivBitstream::ViewParams camera_1, MivBitstream::ViewParams camera_2)
-      -> float;
+  static auto calculateDistance(MivBitstream::ViewParams camera_1,
+                                MivBitstream::ViewParams camera_2) -> float;
 
-  static auto calculateOverlapping(MivBitstream::ViewParams camera_from, MivBitstream::ViewParams camera_to)
-      -> float;
+  static auto calculateOverlapping(MivBitstream::ViewParams camera_from,
+                                   MivBitstream::ViewParams camera_to) -> float;
 };
 } // namespace TMIV::ViewOptimizer
 

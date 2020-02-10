@@ -55,7 +55,8 @@ public:
   EntityBasedAtlasConstructor &operator=(EntityBasedAtlasConstructor &&) = default;
   ~EntityBasedAtlasConstructor() override = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams, std::vector<bool> isBasicView)
+  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
+                       std::vector<bool> isBasicView)
       -> const MivBitstream::IvSequenceParams & override;
   void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame transportViews) override;
@@ -76,8 +77,8 @@ private:
   void swap0(Common::EntityMapList &entityMasks);
   static auto setView(Common::TextureDepth16Frame view, const Common::EntityMap &entityMask,
                       int entityId) -> Common::TextureDepth16Frame;
-  void writePatchInAtlas(const MivBitstream::AtlasParameters &patch, const Common::MVD16Frame &views,
-                         Common::MVD16Frame &atlas);
+  void writePatchInAtlas(const MivBitstream::AtlasParameters &patch,
+                         const Common::MVD16Frame &views, Common::MVD16Frame &atlas);
 
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;

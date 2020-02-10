@@ -93,10 +93,10 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   return viewport;
 }
 
-auto GroupBasedRenderer::groupRenderOrder(const MivBitstream::IvSequenceParams &ivSequenceParams,
-                                          const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
-                                          const MivBitstream::ViewParams &target)
-    -> std::vector<unsigned> {
+auto GroupBasedRenderer::groupRenderOrder(
+    const MivBitstream::IvSequenceParams &ivSequenceParams,
+    const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+    const MivBitstream::ViewParams &target) -> std::vector<unsigned> {
   auto groupPriorities = vector<Priority>();
   auto result = vector<unsigned>();
 

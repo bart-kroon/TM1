@@ -34,9 +34,9 @@
 #ifndef _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 #define _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 
-#include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <cassert>
 #include <cstdint>

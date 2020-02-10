@@ -45,8 +45,7 @@ namespace TMIV::MivBitstream {
 // Implemented as a view (const or mutable) on PatchDataUnit
 template <typename PDU> class MivPatchUnit {
 public:
-  static_assert(std::is_same_v<PDU, PatchDataUnit> ||
-                std::is_same_v<PDU, const PatchDataUnit>);
+  static_assert(std::is_same_v<PDU, PatchDataUnit> || std::is_same_v<PDU, const PatchDataUnit>);
 
   explicit MivPatchUnit(PDU &pdu) noexcept;
 

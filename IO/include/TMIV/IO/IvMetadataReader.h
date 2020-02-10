@@ -66,7 +66,8 @@ inline auto IvMetadataReader::ivSequenceParams() const -> const MivBitstream::Iv
   return m_ivSequenceParams;
 }
 
-inline auto IvMetadataReader::ivAccessUnitParams() const -> const MivBitstream::IvAccessUnitParams & {
+inline auto IvMetadataReader::ivAccessUnitParams() const
+    -> const MivBitstream::IvAccessUnitParams & {
   return m_ivAccessUnitParams;
 }
 

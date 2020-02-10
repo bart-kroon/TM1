@@ -41,8 +41,8 @@
 //
 // These checks do not relate to 23090-12 profile restrictions.
 #define VERIFY_VPCCBITSTREAM(condition)                                                            \
-  static_cast<void>((!!(condition) ||                                                              \
-                     (::TMIV::MivBitstream::vpccError(#condition, __FILE__, __LINE__), false)))
+  static_cast<void>(                                                                               \
+      (!!(condition) || (::TMIV::MivBitstream::vpccError(#condition, __FILE__, __LINE__), false)))
 #define VPCCBITSTREAM_ERROR(what) ::TMIV::MivBitstream::vpccError(what, __FILE__, __LINE__)
 
 // Check against (proposed) 23090-12 MIV specification

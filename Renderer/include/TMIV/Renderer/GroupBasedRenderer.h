@@ -91,13 +91,14 @@ private:
   };
 
   // Determine the priority of a group
-  static auto groupPriority(unsigned groupId, const MivBitstream::IvSequenceParams &ivSequenceParams,
+  static auto groupPriority(unsigned groupId,
+                            const MivBitstream::IvSequenceParams &ivSequenceParams,
                             const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
                             const MivBitstream::ViewParams &target) -> Priority;
 
   // Determine the priority of a view
-  static auto viewPriority(const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target)
-      -> Priority;
+  static auto viewPriority(const MivBitstream::ViewParams &source,
+                           const MivBitstream::ViewParams &target) -> Priority;
 
   enum class MergeMode {
     inpaint = 0,   // let the inpainter fill

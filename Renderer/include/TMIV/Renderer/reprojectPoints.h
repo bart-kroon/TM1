@@ -60,26 +60,30 @@ auto changeReferenceFrame(const MivBitstream::ViewParams &viewParams,
 
 // Project points: From world positions (with the camera as reference frame)
 // to image positions
-auto projectPoints(const MivBitstream::ViewParams &viewParams, const Common::Mat<Common::Vec3f> &points)
+auto projectPoints(const MivBitstream::ViewParams &viewParams,
+                   const Common::Mat<Common::Vec3f> &points)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Reproject points by combining above three steps:
 //  1) Unproject to world points in the reference frame of the first camera
 //  2) Change the reference frame from the first to the second camera
 //  3) Project to image points
-auto reprojectPoints(const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target,
+auto reprojectPoints(const MivBitstream::ViewParams &viewParams,
+                     const MivBitstream::ViewParams &target,
                      const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Calculate ray angles between input and output camera. Units are radians.
 //
 // The points should be in the target frame of reference.
-auto calculateRayAngles(const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target,
+auto calculateRayAngles(const MivBitstream::ViewParams &viewParams,
+                        const MivBitstream::ViewParams &target,
                         const Common::Mat<Common::Vec3f> &points) -> Common::Mat<float>;
 
 // Return (R, T) such that x -> Rx + t changes reference frame from the source
 // camera to the target camera
-auto affineParameters(const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target)
+auto affineParameters(const MivBitstream::ViewParams &viewParams,
+                      const MivBitstream::ViewParams &target)
     -> std::pair<Common::Mat3x3f, Common::Vec3f>;
 
 // Unproject a pixel from a source frame to scene coordinates in the reference
@@ -87,8 +91,8 @@ auto affineParameters(const MivBitstream::ViewParams &viewParams, const MivBitst
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto unprojectVertex(Common::Vec2f position, float depth, const MivBitstream::ViewParams &viewParams)
-    -> Common::Vec3f;
+auto unprojectVertex(Common::Vec2f position, float depth,
+                     const MivBitstream::ViewParams &viewParams) -> Common::Vec3f;
 
 // Project point: From world position (with the camera as reference frame)
 // to image position

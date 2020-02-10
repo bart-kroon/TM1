@@ -52,7 +52,8 @@ public:
   virtual auto updatePatchIdmap(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
                                 const MivBitstream::IvSequenceParams &ivSequenceParams,
                                 const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
-                                const MivBitstream::ViewParams &target) -> Common::PatchIdMapList = 0;
+                                const MivBitstream::ViewParams &target)
+      -> Common::PatchIdMapList = 0;
 };
 } // namespace TMIV::Renderer
 

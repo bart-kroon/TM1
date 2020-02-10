@@ -1100,12 +1100,11 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
-auto ViewWeightingSynthesizer::renderFrame(const Common::MVD10Frame &atlas,
-                                           const Common::PatchIdMapList &maps,
-                                           const MivBitstream::IvSequenceParams &ivSequenceParams,
-                                           const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
-                                           const MivBitstream::ViewParams &target) const
-    -> Common::Texture444Depth16Frame {
+auto ViewWeightingSynthesizer::renderFrame(
+    const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+    const MivBitstream::IvSequenceParams &ivSequenceParams,
+    const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+    const MivBitstream::ViewParams &target) const -> Common::Texture444Depth16Frame {
 
   return std::visit(
       [&](const auto &sourceProjection, const auto &targetProjection) {

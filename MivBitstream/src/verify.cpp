@@ -44,8 +44,8 @@ namespace TMIV::MivBitstream {
 }
 
 [[noreturn]] void mivError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode MIV bitstream: " << condition << " ["
-       << file << "@" << line << '\n';
+  cerr << "Failed to encode/decode MIV bitstream: " << condition << " [" << file << "@" << line
+       << '\n';
   abort();
 }
 } // namespace TMIV::MivBitstream

@@ -125,8 +125,7 @@ constexpr auto &MivPatchUnit<PDU>::mpu_view_id(std::uint16_t value) noexcept {
 
 template <typename PDU>
 template <typename>
-constexpr auto &
-MivPatchUnit<PDU>::pdu_orientation_index(FlexiblePatchOrientation value) noexcept {
+constexpr auto &MivPatchUnit<PDU>::pdu_orientation_index(FlexiblePatchOrientation value) noexcept {
   m_pdu.pdu_orientation_index(value);
   return *this;
 }

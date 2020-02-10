@@ -67,7 +67,6 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
 
 auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
     -> const IvSequenceParams & {
-
   // Construct at least the basic views
   m_nbAtlas =
       max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);

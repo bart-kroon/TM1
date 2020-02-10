@@ -185,6 +185,16 @@ class DecoderConfiguration:
 			'stretchingParameter': 3,
 			'maxStretching': 5
 		}
+	
+	def ViewWeightingSynthesizer(self):
+		return {
+			'angularScaling': 1.5,
+			'blendingFactor': 0.03,
+			'filteringPass': 1,
+			'minimalWeight': 2.5,
+			'overloadFactor': 2.0,
+			'stretchFactor': 100.0
+		}
 
 	def numberOfSourceViews(self):
 		return {
@@ -249,12 +259,12 @@ class DecoderConfiguration:
 	def rendererMethod(self):
 		if self.useMultipassRenderer():
 			return 'MultipassRenderer'
-		return 'GroupBasedRenderer'
+		return 'Renderer'
 
 	def renderer(self):
 		config = {
-			'SynthesizerMethod': 'Synthesizer',
-			'Synthesizer': self.synthesizer(),
+			'SynthesizerMethod': 'ViewWeightingSynthesizer',
+			'ViewWeightingSynthesizer': self.ViewWeightingSynthesizer(),
 			'InpainterMethod': 'Inpainter',
 			'Inpainter': {},
 			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
@@ -521,7 +531,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		}
 
 	def depthLowQualityFlag(self):
-		return self.seqId == 'E'
+		return self.seqId == 'D' or self.seqId == 'E' or self.seqId == 'L'
 
 	def numGroups(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':

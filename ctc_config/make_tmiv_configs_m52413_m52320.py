@@ -185,6 +185,16 @@ class DecoderConfiguration:
 			'stretchingParameter': 3,
 			'maxStretching': 5
 		}
+	
+	def ViewWeightingSynthesizer(self):
+		return {
+			'angularScaling': 1.5,
+			'blendingFactor': 0.03,
+			'filteringPass': 1,
+			'minimalWeight': 2.5,
+			'overloadFactor': 2.0,
+			'stretchFactor': 100.0
+		}
 
 	def numberOfSourceViews(self):
 		return {
@@ -231,9 +241,6 @@ class DecoderConfiguration:
 	def numberOfCodedSourceViews(self):
 		return len(self.sourceCameraNames())
 
-	def useMultipassRenderer(self):
-		return self.anchorId == 'V17' or self.anchorId == 'R97'
-
 	def maxEntities(self):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 25
@@ -247,24 +254,17 @@ class DecoderConfiguration:
 		return {}
 
 	def rendererMethod(self):
-		if self.useMultipassRenderer():
-			return 'MultipassRenderer'
-		return 'GroupBasedRenderer'
+		return 'Renderer'
 
 	def renderer(self):
 		config = {
-			'SynthesizerMethod': 'Synthesizer',
-			'Synthesizer': self.synthesizer(),
+			'SynthesizerMethod': 'ViewWeightingSynthesizer',
+			'ViewWeightingSynthesizer': self.ViewWeightingSynthesizer(),
 			'InpainterMethod': 'Inpainter',
 			'Inpainter': {},
 			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
 			'ViewingSpaceController': {}
 		}
-		if self.useMultipassRenderer():
-			config.update({
-				'NumberOfPasses': 3,
-				'NumberOfViewsPerPass': [2, 4, self.numberOfCodedSourceViews()]
-			})
 		return config
 
 	def poseTraceBasename(self):
@@ -291,9 +291,9 @@ class DecoderConfiguration:
 			'DecoderMethod': 'Decoder',
 			'Decoder': {
 				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
-				'AtlasDeconstructor': self.atlasDeconstructor(),
 				'CullerMethod': 'SubBlockCuller',
-				'SubBlockCuller': {},
+				'SubBlockCuller'：{},
+				'AtlasDeconstructor': self.atlasDeconstructor(),
 				'RendererMethod': self.rendererMethod(),
 				self.rendererMethod(): self.renderer(),
 				"depthEdgeMagnitudeTh": 10,
@@ -507,7 +507,7 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def depthOccupancy(self):
 		return {
-			'depthOccMapThresholdIfSet': 64
+			'depthOccMapThreshold': 64
 		}
 
 	def encoder(self):

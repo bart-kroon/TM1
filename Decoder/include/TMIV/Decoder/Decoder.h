@@ -39,6 +39,7 @@
 #include <TMIV/AtlasDeconstructor/IAtlasDeconstructor.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/DepthScaler.h>
+#include <TMIV/Renderer/ICuller.h>
 #include <TMIV/Renderer/IRenderer.h>
 
 namespace TMIV::Decoder {
@@ -46,6 +47,7 @@ class Decoder : public IDecoder {
 private:
   std::unique_ptr<AtlasDeconstructor::IAtlasDeconstructor> m_atlasDeconstructor;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
+  std::unique_ptr<Renderer::ICuller> m_culler;
   DepthUpscalerAtlas m_depthUpscaler;
 
   Metadata::IvSequenceParams m_ivSequenceParams;

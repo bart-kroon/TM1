@@ -31,47 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DEPTHOCCUPANCY_DEPTHOCCUPANCY_H_
-#define _TMIV_DEPTHOCCUPANCY_DEPTHOCCUPANCY_H_
+#ifndef _TMIV_RENDERER_ICULLER_H_
+#define _TMIV_RENDERER_ICULLER_H_
 
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Metadata/IvAccessUnitParams.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
-#include <TMIV/Common/Json.h>
-
-namespace TMIV::DepthOccupancy {
-class DepthOccupancy : public IDepthOccupancy {
+namespace TMIV::Renderer {
+class ICuller {
 public:
-  // Initialize with specified depthOccMapThresholdIfSet
-  //
-  // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
-  // will have the specified depthOccMapThresholdIfSet value.
-  explicit DepthOccupancy(uint16_t depthOccMapThresholdIfSet);
+  ICuller() = default;
+  ICuller(const ICuller &) = delete;
+  ICuller(ICuller &&) = default;
+  ICuller &operator=(const ICuller &) = delete;
+  ICuller &operator=(ICuller &&) = default;
+  virtual ~ICuller() = default;
 
-  DepthOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  DepthOccupancy(const DepthOccupancy &) = default;
-  DepthOccupancy(DepthOccupancy &&) = default;
-  DepthOccupancy &operator=(const DepthOccupancy &) = default;
-  DepthOccupancy &operator=(DepthOccupancy &&) = default;
-  ~DepthOccupancy() override = default;
-
-  // No change when useOccupancy() is false. Otherwise set depthOccMapThreshold
-  // to depthOccMapThresholdIfSet and adjust normDispRange.
-  auto transformSequenceParams(Metadata::IvSequenceParams)
-      -> const Metadata::IvSequenceParams & override;
-
-  // depthOccupancyParamsPresentFlags = zeros
-  auto transformAccessUnitParams(Metadata::IvAccessUnitParams)
-      -> const Metadata::IvAccessUnitParams & override;
-
-  // Transform depth bit depth and range
-  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
-
-private:
-  uint16_t m_depthOccMapThresholdIfSet{};
-  Metadata::IvSequenceParams m_inSequenceParams;
-  Metadata::IvSequenceParams m_outSequenceParams;
-  Metadata::IvAccessUnitParams m_accessUnitParams;
+  // Do sub-block culling and update the PatchIdMap
+  virtual auto updatePatchIdmap(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+                                const Metadata::IvSequenceParams &ivSequenceParams,
+                                const Metadata::IvAccessUnitParams &ivAccessUnitParams,
+                                const Metadata::ViewParams &target) -> Common::PatchIdMapList = 0;
 };
-} // namespace TMIV::DepthOccupancy
+} // namespace TMIV::Renderer
 
 #endif

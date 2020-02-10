@@ -270,7 +270,6 @@ auto GroupBasedEncoder::mergeSequenceParams(
   std::uint16_t pruningOffsetId = 0;
 
   for (auto groupParams : perGroupParams) {
-
     auto perGroupViewParamsList = groupParams->viewParamsList;
 
     // Merging pruning graphs

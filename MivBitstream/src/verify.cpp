@@ -49,7 +49,7 @@ namespace TMIV::MivBitstream {
   abort();
 }
 
-[[noreturn]] void tcm2Error(char const *condition, char const *file, int line) {
+[[noreturn]] void tmc2Error(char const *condition, char const *file, int line) {
   cerr << "Failed to encode/decode TMC2 bitstream: " << condition << " [" << file << "@" << line
        << '\n';
   abort();

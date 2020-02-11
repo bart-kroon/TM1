@@ -52,9 +52,9 @@ MivDecoder::MivDecoder(std::istream &stream)
     : m_stream{stream}, m_ssvh{sampleStreamVpccHeader(stream)} {}
 
 auto MivDecoder::decodeVpccUnit() -> bool {
-  VERIFY_MIVBITSTREAM(m_stream.good());
+  VERIFY_VPCCBITSTREAM(m_stream.good());
   const auto ssvu = SampleStreamVpccUnit::decodeFrom(m_stream, m_ssvh);
-  VERIFY_MIVBITSTREAM(m_stream.good());
+  VERIFY_VPCCBITSTREAM(m_stream.good());
 
   istringstream substream{ssvu.ssvu_vpcc_unit()};
   const auto vu = VpccUnit::decodeFrom(substream, m_vps, ssvu.ssvu_vpcc_unit_size());
@@ -72,7 +72,7 @@ void MivDecoder::decode() {
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader & /* vuh */,
                                const std::monostate & /* payload */) {
-  MIVBITSTREAM_ERROR("V-PCC payload of unknown type");
+  VPCCBITSTREAM_ERROR("V-PCC payload of unknown type");
 }
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps) {
@@ -93,9 +93,7 @@ void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstrea
 }
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd) {
-  if (m_mode == Mode::MIV) {
-    VERIFY_MIVBITSTREAM("TMIV does not yet support video sub bitstreams");
-  }
+  // TODO(BK): Implement
 }
 
 void MivDecoder::onNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {

@@ -37,26 +37,25 @@
 #include <cstdlib>
 #include <iostream>
 
-// Checks against 23090-5 V-PCC specification
+// Checks against (draft) ISO/IEC 23090-5 V-PCC specification
 //
-// These checks do not relate to 23090-12 profile restrictions.
+// These checks do not relate to ISO/IEC 23090-12 extensions or restrictions.
 #define VERIFY_VPCCBITSTREAM(condition)                                                            \
   static_cast<void>(                                                                               \
       (!!(condition) || (::TMIV::MivBitstream::vpccError(#condition, __FILE__, __LINE__), false)))
 #define VPCCBITSTREAM_ERROR(what) ::TMIV::MivBitstream::vpccError(what, __FILE__, __LINE__)
 
-// Check against (proposed) 23090-12 MIV specification
+// Check against (draft) ISO/IEC 23090-12 MIV specification
 //
-// As a rule of thumb checks while encoding/decoding V-PCC structures are performed only at the
-// points where it saves implementation effort. For instance, by checking that a flag is false, it
-// may save the implementation of a entire syntax structure. This "lazy" checking makes it easier to
-// change the MIV specification/profile. MIV structures are checked similar to TMIV 3.0.
+// These checks relate to ISO/IEC 23090-12 extensions of or restrictions on ISO/IEC 23090-5.
 #define VERIFY_MIVBITSTREAM(condition)                                                             \
   static_cast<void>(                                                                               \
       (!!(condition) || (::TMIV::MivBitstream::mivError(#condition, __FILE__, __LINE__), false)))
 #define MIVBITSTREAM_ERROR(what) ::TMIV::MivBitstream::mivError(what, __FILE__, __LINE__)
 
-// Checks against TMC2 bitstream
+// Checks against TMC2 bitstream when TMC2 deviates from ISO/IEC 23090-5
+//
+// See also MivDecoder::mode 
 #define VERIFY_TMC2BITSTREAM(condition)                                                            \
   static_cast<void>(                                                                               \
       (!!(condition) || (::TMIV::MivBitstream::tmc2Error(#condition, __FILE__, __LINE__), false)))

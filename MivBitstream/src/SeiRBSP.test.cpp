@@ -41,7 +41,7 @@ TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
   auto x = SeiRBSP{};
 
   REQUIRE(toString(x).empty());
-  
+
   SECTION("Example 1") {
     x.messages().emplace_back();
     x.messages().emplace_back();

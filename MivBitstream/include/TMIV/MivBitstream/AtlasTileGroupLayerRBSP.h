@@ -123,7 +123,7 @@ private:
 // 23090-5: skip_patch_data_unit(patchIdx)
 class SkipPatchDataUnit {
 public:
-  friend auto operator<<(std::ostream &stream, const SkipPatchDataUnit &x) -> std::ostream&;
+  friend auto operator<<(std::ostream &stream, const SkipPatchDataUnit &x) -> std::ostream &;
 
   constexpr auto operator==(const SkipPatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const SkipPatchDataUnit &other) const noexcept;

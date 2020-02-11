@@ -179,8 +179,6 @@ TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
   auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
   afpsV.front().afps_2d_pos_x_bit_count(12).afps_2d_pos_y_bit_count(11);
 
-  const auto atgh = AtlasTileGroupHeader{};
-
   auto pdu = PatchDataUnit{};
   pdu.pdu_2d_size_x(1).pdu_2d_size_y(1);
 

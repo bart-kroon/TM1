@@ -72,7 +72,6 @@ private:
   const int m_erode{};
   const int m_dilate{};
   const AccumulatingPixel<Vec3f> m_config;
-  bool m_intra{true};
   IvSequenceParams m_ivSequenceParams;
   vector<bool> m_isBasicView;
   vector<unique_ptr<IncrementalSynthesizer>> m_synthesizers;

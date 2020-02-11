@@ -150,8 +150,8 @@ void MivDecoder::onUnknownNalUnit(const VpccUnitHeader & /*vuh*/, const NalUnit 
        << '\n';
 }
 
-void MivDecoder::onAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                        AtlasTileGroupLayerRBSP atgl) {
+void MivDecoder::onAtgl(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+                        AtlasTileGroupLayerRBSP /* atgl */) {
   // TODO(BK): Implement
 }
 
@@ -188,24 +188,28 @@ void MivDecoder::onEos(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /
   // TODO(BK): Implement
 }
 
-void MivDecoder::onEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                       EndOfAtlasSubBitstreamRBSP eob) {
+void MivDecoder::onEob(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+                       EndOfAtlasSubBitstreamRBSP /* eob */) {
   // TODO(BK): Implement
 }
 
-void MivDecoder::onPrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+void MivDecoder::onPrefixNSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+                              SeiRBSP /* sei */) {
   // TODO(BK): Implement
 }
 
-void MivDecoder::onSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+void MivDecoder::onSuffixNSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+                              SeiRBSP /* sei */) {
   // TODO(BK): Implement
 }
 
-void MivDecoder::onPrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+void MivDecoder::onPrefixESei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+                              SeiRBSP /* sei */) {
   // TODO(BK): Implement
 }
 
-void MivDecoder::onSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+void MivDecoder::onSuffixESei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+                              SeiRBSP /* sei */) {
   // TODO(BK): Implement
 }
 

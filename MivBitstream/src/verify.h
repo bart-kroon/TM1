@@ -56,9 +56,16 @@
       (!!(condition) || (::TMIV::MivBitstream::mivError(#condition, __FILE__, __LINE__), false)))
 #define MIVBITSTREAM_ERROR(what) ::TMIV::MivBitstream::mivError(what, __FILE__, __LINE__)
 
+// Checks against TMC2 bitstream
+#define VERIFY_TMC2BITSTREAM(condition)                                                            \
+  static_cast<void>(                                                                               \
+      (!!(condition) || (::TMIV::MivBitstream::tmc2Error(#condition, __FILE__, __LINE__), false)))
+#define TMC2BITSTREAM_ERROR(what) ::TMIV::MivBitstream::tmc2Error(what, __FILE__, __LINE__)
+
 namespace TMIV::MivBitstream {
 [[noreturn]] void vpccError(char const *condition, char const *file, int line);
 [[noreturn]] void mivError(char const *condition, char const *file, int line);
+[[noreturn]] void tmc2Error(char const *condition, char const *file, int line);
 } // namespace TMIV::MivBitstream
 
 #endif

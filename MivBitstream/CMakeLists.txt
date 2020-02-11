@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(MivBitstreamLib
+	"src/AdaptationParameterSetRBSP.cpp"
 	"src/AtlasFrameParameterSetRBSP.cpp"
 	"src/AtlasSequenceParameterSetRBSP.cpp"
 	"src/AtlasSubBitstream.cpp"
@@ -20,6 +21,7 @@ add_library(MivBitstreamLib
 	"src/VpccParameterSet.cpp"
 	"src/VpccSampleStreamFormat.cpp"
 	"src/VpccUnit.cpp"
+	"include/TMIV/MivBitstream/AdaptationParameterSetRBSP.h"
 	"include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h"
 	"include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.hpp"
 	"include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h"

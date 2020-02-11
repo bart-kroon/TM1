@@ -34,6 +34,70 @@
 #ifndef _TMIV_MIVBITSTREAM_MIVDECODER_H_
 #define _TMIV_MIVBITSTREAM_MIVDECODER_H_
 
-namespace TMIV::MivBitstream {}
+#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
+#include <TMIV/MivBitstream/VideoSubBitstream.h>
+#include <TMIV/MivBitstream/VpccParameterSet.h>
+#include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
+#include <TMIV/MivBitstream/VpccUnit.h>
+
+#include <array>
+
+namespace TMIV::MivBitstream {
+class MivDecoder {
+public:
+  enum Mode {
+    MIV, // The goal is to achieve maximum conformance with the MIV specification
+    TMC2 // The goal is to parse a bitstream that was produced by TMC2
+  };
+
+  // Construct a MivDecoder and read the sample stream V-PCC header
+  explicit MivDecoder(std::istream &stream, Mode mode = Mode::MIV);
+
+  // Decode the next V-PCC unit
+  auto decodeVpccUnit() -> bool;
+
+  // Decode everything
+  void decode();
+
+protected:
+  // This function is called when a V-PCC unit of unknown type has been decoded.
+  virtual void onVpccPayload(const VpccUnitHeader &vuh, const std::monostate &payload);
+
+  // This function is called when a V-PCC parameter set (VPS) has been decoded.
+  virtual void onVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps);
+
+  // This function is called when an atlas sub bitstream V-PCC unit has been decoded.
+  virtual void onVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad);
+
+  // This function is called when a vide osub bitstream V-PCC unit has been decoded.
+  virtual void onVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd);
+
+private:
+  std::istream &m_stream;
+  Mode m_mode;
+  SampleStreamVpccHeader m_ssvh;
+
+  struct Atlas {
+    std::vector<AtlasSequenceParameterSetRBSP> asps;
+    std::vector<AtlasFrameParameterSetRBSP> afps;
+    std::vector<AdaptationParameterSetRBSP> aps;
+    AtlasTileGroupLayerRBSP atgl;
+  };
+
+  struct Sequence {
+    std::vector<Atlas> atlas;
+    std::optional<Atlas> specialAtlas;
+  };
+
+  static auto sampleStreamVpccHeader(std::istream &, Mode) -> SampleStreamVpccHeader;
+
+  std::vector<VpccParameterSet> m_vps;
+  std::vector<Sequence> m_sequence;
+};
+} // namespace TMIV::MivBitstream
 
 #endif

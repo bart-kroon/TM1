@@ -31,27 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "verify.h"
-#include <iostream>
+#ifndef _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
+#define _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
 
-using namespace std;
+#include <TMIV/Common/Bitstream.h>
+
+#include <iosfwd>
 
 namespace TMIV::MivBitstream {
-[[noreturn]] void vpccError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode V-PCC bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
-}
+// 23090-12: adapation_parameter_set_rbsp
+class AdaptationParameterSetRBSP {
+public:
+  friend auto operator<<(std::ostream &stream, const AdaptationParameterSetRBSP &x)
+      -> std::ostream &;
 
-[[noreturn]] void mivError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode MIV bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
-}
+  auto operator==(const AdaptationParameterSetRBSP &) const noexcept -> bool;
+  auto operator!=(const AdaptationParameterSetRBSP &) const noexcept -> bool;
 
-[[noreturn]] void tcm2Error(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode TMC2 bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
-}
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> AdaptationParameterSetRBSP;
+
+  static void encodeTo(Common::OutputBitstream &stream);
+};
 } // namespace TMIV::MivBitstream
+
+#endif

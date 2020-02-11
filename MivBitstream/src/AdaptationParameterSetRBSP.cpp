@@ -31,27 +31,4 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "verify.h"
-#include <iostream>
-
-using namespace std;
-
-namespace TMIV::MivBitstream {
-[[noreturn]] void vpccError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode V-PCC bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
-}
-
-[[noreturn]] void mivError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode MIV bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
-}
-
-[[noreturn]] void tcm2Error(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode TMC2 bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
-}
-} // namespace TMIV::MivBitstream
+#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>

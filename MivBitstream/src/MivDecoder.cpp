@@ -30,3 +30,80 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <TMIV/MivBitstream/MivDecoder.h>
+
+#include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Bytestream.h>
+#include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
+#include <TMIV/MivBitstream/VpccUnit.h>
+
+#include <istream>
+#include <sstream>
+#include <variant>
+
+#include "verify.h"
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::MivBitstream {
+MivDecoder::MivDecoder(std::istream &stream, Mode mode)
+    : m_stream{stream}, m_mode{mode}, m_ssvh{sampleStreamVpccHeader(stream, mode)} {}
+
+auto MivDecoder::decodeVpccUnit() -> bool {
+  VERIFY_MIVBITSTREAM(m_stream.good());
+  const auto ssvu = SampleStreamVpccUnit::decodeFrom(m_stream, m_ssvh);
+  VERIFY_MIVBITSTREAM(m_stream.good());
+
+  istringstream substream{ssvu.ssvu_vpcc_unit()};
+  const auto vu = VpccUnit::decodeFrom(substream, m_vps, ssvu.ssvu_vpcc_unit_size());
+  visit([this, &vu](const auto &payload) { onVpccPayload(vu.vpcc_unit_header(), payload); },
+        vu.vpcc_payload().payload());
+
+  m_stream.peek();
+  return !m_stream.eof();
+}
+
+void MivDecoder::decode() {
+  while (decodeVpccUnit())
+    ;
+}
+
+void MivDecoder::onVpccPayload(const VpccUnitHeader & /* vuh */,
+                               const std::monostate & /* payload */) {
+  MIVBITSTREAM_ERROR("V-PCC payload of unknown type");
+}
+
+void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps) {
+  const auto id = vps.vps_vpcc_parameter_set_id();
+  while (m_vps.size() <= id) {
+    m_vps.emplace_back();
+    m_sequence.emplace_back();
+  }
+  m_vps[id] = vps;
+  m_sequence[id] = Sequence{};
+  m_sequence[id].atlas.resize(vps.vps_atlas_count());
+}
+
+void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad) {}
+
+void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd) {
+  if (m_mode == Mode::MIV) {
+    VERIFY_MIVBITSTREAM("TMIV does not yet support video sub bitstreams");
+  }
+}
+
+auto MivDecoder::sampleStreamVpccHeader(istream &stream, MivDecoder::Mode mode)
+    -> SampleStreamVpccHeader {
+  if (mode == MivDecoder::Mode::TMC2) {
+    // Skip TMC2 header
+    const uint32_t PCCTMC2ContainerMagicNumber = 23021981;
+    const uint32_t PCCTMC2ContainerVersion = 1;
+    VERIFY_TMC2BITSTREAM(getUint32(stream) == PCCTMC2ContainerMagicNumber);
+    VERIFY_TMC2BITSTREAM(getUint32(stream) == PCCTMC2ContainerVersion);
+    VERIFY_TMC2BITSTREAM(getUint64(stream) == 0);
+  }
+  return SampleStreamVpccHeader::decodeFrom(stream);
+}
+} // namespace TMIV::MivBitstream

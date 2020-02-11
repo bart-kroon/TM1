@@ -47,6 +47,7 @@ using namespace TMIV::Metadata;
 namespace TMIV::AtlasConstructor {
 AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
   // Components
+  m_depthQualityAssessor = Factory<IDepthQualityAssessor>::getInstance().create("DepthQualityAssessor", rootNode, componentNode);
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", rootNode, componentNode);
   m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", rootNode, componentNode);
   m_packer = Factory<IPacker>::getInstance().create("Packer", rootNode, componentNode);
@@ -85,7 +86,16 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
       m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
   }
-
+  
+  // Depth assessment
+	if(m_shouldAssessDepthQuality) {
+		bool isLowDepthQuality = true;//m_depthQualityAssessor->isLowDepthQuality(m_inIvSequenceParams, transportViews);
+		cout << "isLowDepthQuality: " << isLowDepthQuality << "\n";
+		
+		m_outIvSequenceParams.depthLowQualityFlag = isLowDepthQuality;
+		m_shouldAssessDepthQuality = false;
+	}
+	
   return m_outIvSequenceParams;
 }
 

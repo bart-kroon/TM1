@@ -31,23 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/AtlasConstructor/Aggregator.h>
-#include <TMIV/AtlasConstructor/AtlasConstructor.h>
-#include <TMIV/AtlasConstructor/EntityBasedAtlasConstructor.h>
-#include <TMIV/AtlasConstructor/HierarchicalPruner.h>
-#include <TMIV/AtlasConstructor/Packer.h>
-#include <TMIV/AtlasConstructor/DepthQualityAssessor.h>
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Synthesizer.h>
+#ifndef _TMIV_ATLASCONSTRUCTOR_DEPTHQUALITYASSESSOR_H_
+#define _TMIV_ATLASCONSTRUCTOR_DEPTHQUALITYASSESSOR_H_
+
+#include <TMIV/Common/Frame.h>
+#include <TMIV/AtlasConstructor/IDepthQualityAssessor.h>
 
 namespace TMIV::AtlasConstructor {
-inline void registerComponents() {
-  Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
-  Factory<IAtlasConstructor>::getInstance().registerAs<EntityBasedAtlasConstructor>(
-      "EntityBasedAtlasConstructor");
-  Factory<IPruner>::getInstance().registerAs<HierarchicalPruner>("HierarchicalPruner");
-  Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
-  Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
-  Factory<IDepthQualityAssessor>::getInstance().registerAs<DepthQualityAssessor>("DepthQualityAssessor");
-}
+class DepthQualityAssessor: public IDepthQualityAssessor {
+public:
+  DepthQualityAssessor(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  DepthQualityAssessor(const DepthQualityAssessor &) = delete;
+  DepthQualityAssessor(DepthQualityAssessor &&) = default;
+  DepthQualityAssessor &operator=(const DepthQualityAssessor &) = delete;
+  DepthQualityAssessor &operator=(DepthQualityAssessor &&) = default;
+  ~DepthQualityAssessor() override = default;
+
+  auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
+                     const Common::MVD16Frame &views) -> bool override;
+					 
+private:
+	float m_blendingFactor{0.03F};
+};
 } // namespace TMIV::AtlasConstructor
+
+#endif
+ 
+ 

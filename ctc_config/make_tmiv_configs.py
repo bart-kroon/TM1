@@ -470,6 +470,11 @@ class EncoderConfiguration(DecoderConfiguration):
 	def omafV1CompatibleFlag(self):
 		# Just to do something slightly more interesting than False
 		return self.seqId == 'A' or self.seqId == 'C'
+	
+	def depthQualityAssessor(self):
+		return {
+			'blendingFactor': 0.03
+		}
 
 	def pruner(self):
 		config = self.synthesizer()
@@ -523,6 +528,8 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def atlasConstructor(self):
 		config = {
+			'DepthQualityAssessorMethod': 'DepthQualityAssessor',
+			'DepthQualityAssessor': self.depthQualityAssessor(),
 			'PrunerMethod': 'HierarchicalPruner',
 			'HierarchicalPruner': self.pruner(),
 			'AggregatorMethod': 'Aggregator',

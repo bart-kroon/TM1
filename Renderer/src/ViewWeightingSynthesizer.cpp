@@ -41,6 +41,8 @@
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
+#include <iostream>
+
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;
@@ -748,14 +750,11 @@ private:
                       const ProjectionHelper<TargetProjectionType> &targetHelper) {
 
     // Retrieve pruning information
-    std::vector<unsigned> pruningRelation;
-
-    //     for (const auto &helper : sourceHelperList) {
-    //       pruningRelation.emplace_back(helper.getViewParams().pruningRelation);
-    //     }
-
-    auto hasPruningRelation = std::any_of(pruningRelation.begin(), pruningRelation.end(),
-                                          [](unsigned v) { return (v != 0); });
+    auto hasPruningRelation =
+        std::any_of(sourceHelperList.begin(), sourceHelperList.end(), [](const auto &helper) {
+          const auto &viewParams = helper.getViewParams();
+          return viewParams.pruningChildren && !viewParams.pruningChildren->empty();
+        });
 
     // Weight recovery
     m_viewportWeight.resize(sourceHelperList.size());
@@ -769,10 +768,26 @@ private:
     }
 
     if (hasPruningRelation) {
+      // Pruning graph (from children to parent)
+      Graph::BuiltIn::Sparse<float> pruningGraph(sourceHelperList.size());
 
-      auto pruningGraph = getGraphFromBitField(pruningRelation);
+      for (std::size_t nodeId = 0; nodeId < sourceHelperList.size(); nodeId++) {
+        const auto &viewParams = sourceHelperList[nodeId].getViewParams();
+
+        if (viewParams.pruningChildren) {
+          for (auto childId : *viewParams.pruningChildren) {
+            pruningGraph.connect(nodeId, static_cast<std::size_t>(childId), 1.F,
+                                 LinkType::Directed);
+          }
+        }
+      }
+
+      pruningGraph = getReversedGraph(pruningGraph);
+
+      // Pruning order
       auto pruningOrderId = getDescendingOrderId(pruningGraph);
 
+      // Recovery
       parallel_for(
           targetHelper.getViewParams().size.x(), targetHelper.getViewParams().size.y(),
           [&](std::size_t y, std::size_t x) {

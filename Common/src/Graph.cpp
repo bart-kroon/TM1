@@ -1,38 +1,6 @@
 #include <TMIV/Common/Graph.h>
 
 namespace TMIV::Common::Graph {
-auto getBitFieldFromGraph(const BuiltIn::Sparse<float> &graph) -> std::vector<unsigned> {
-  std::vector<unsigned> bitField;
-
-  for (NodeId nodeId = 0; nodeId < graph.getNumberOfNodes(); nodeId++) {
-    unsigned bf = 0;
-
-    for (const auto &l : graph.getNeighbourhood(nodeId)) {
-      bf |= (1U << l.node());
-    }
-
-    bitField.push_back(bf);
-  }
-
-  return bitField;
-}
-
-auto getGraphFromBitField(const std::vector<unsigned> &bitField) -> BuiltIn::Sparse<float> {
-  BuiltIn::Sparse<float> graph(bitField.size());
-
-  for (NodeId nodeId = 0; nodeId < graph.getNumberOfNodes(); nodeId++) {
-    unsigned field = bitField[nodeId];
-
-    for (NodeId otherId = 0; otherId < graph.getNumberOfNodes(); otherId++) {
-      if ((field & (1U << otherId)) != 0U) {
-        graph.connect(nodeId, otherId, 1., LinkType::Directed);
-      }
-    }
-  }
-
-  return graph;
-}
-
 auto getDescendingOrderId(const BuiltIn::Sparse<float> &g) -> std::vector<NodeId> {
   std::vector<NodeId> descendingOrderId;
 
@@ -94,5 +62,4 @@ auto getReversedGraph(const BuiltIn::Sparse<float> &g) -> BuiltIn::Sparse<float>
 
   return reversedGraph;
 }
-
 } // namespace TMIV::Common::Graph

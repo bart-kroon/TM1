@@ -64,7 +64,7 @@ msp_max_entities=1
 msp_viewing_space_present_flag=false
 msp_extension_present_flag=false
 )");
-    REQUIRE(bitCodingTest(x, 478));
+    REQUIRE(bitCodingTest(x, 479));
   }
 
   SECTION("Example 2") {
@@ -108,7 +108,7 @@ Viewing space:
 add (add, cuboid [0, 0, 0] size [0, 0, 0])
 msp_extension_present_flag=true
 )");
-    REQUIRE(bitCodingTest(x, 1053));
+    REQUIRE(bitCodingTest(x, 1054));
   }
 }
 

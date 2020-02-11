@@ -47,7 +47,9 @@ public:
   IPruner &operator=(IPruner &&) = default;
   virtual ~IPruner() = default;
 
-  virtual auto prune(const MivBitstream::ViewParamsVector &viewParamsVector,
+  virtual void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
+                                       const std::vector<bool> &isBasicView) = 0;
+  virtual auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
                      const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
       -> Common::MaskList = 0;
 };

@@ -267,8 +267,25 @@ auto GroupBasedEncoder::mergeSequenceParams(
   m_ivSequenceParams.viewParamsList.clear();
 
   // Copy view parameters in group order
+  std::uint16_t pruningOffsetId = 0;
+
   for (auto groupParams : perGroupParams) {
-    copy(begin(groupParams->viewParamsList), end(groupParams->viewParamsList),
+    auto perGroupViewParamsList = groupParams->viewParamsList;
+
+    // Merging pruning graphs
+    for (auto &viewParams : perGroupViewParamsList) {
+
+      if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
+        for (auto &childId : *viewParams.pruningChildren) {
+          childId += pruningOffsetId;
+        }
+      }
+    }
+
+    pruningOffsetId += static_cast<std::uint16_t>(perGroupViewParamsList.size());
+
+    // Merging viewParamsList
+    copy(begin(perGroupViewParamsList), end(perGroupViewParamsList),
          back_inserter(m_ivSequenceParams.viewParamsList));
   }
 

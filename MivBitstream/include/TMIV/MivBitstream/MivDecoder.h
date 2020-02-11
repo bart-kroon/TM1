@@ -131,7 +131,6 @@ protected:
 
 private:
   std::istream &m_stream;
-  Mode m_mode;
   SampleStreamVpccHeader m_ssvh;
 
   struct Atlas {

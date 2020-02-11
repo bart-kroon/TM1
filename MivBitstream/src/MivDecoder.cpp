@@ -150,8 +150,9 @@ void MivDecoder::onUnknownNalUnit(const VpccUnitHeader & /*vuh*/, const NalUnit 
        << '\n';
 }
 
-void MivDecoder::onAtgl(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                        AtlasTileGroupLayerRBSP /* atgl */) {
+void MivDecoder::onAtgl(
+    const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+    AtlasTileGroupLayerRBSP /* atgl */) { // NOLINT(performance-unnecessary-value-param)
   // TODO(BK): Implement
 }
 
@@ -194,22 +195,23 @@ void MivDecoder::onEob(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /
 }
 
 void MivDecoder::onPrefixNSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) {
+                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
   // TODO(BK): Implement
 }
 
 void MivDecoder::onSuffixNSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) {
+                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
   // TODO(BK): Implement
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 void MivDecoder::onPrefixESei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) {
+                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
   // TODO(BK): Implement
 }
 
 void MivDecoder::onSuffixESei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) {
+                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
   // TODO(BK): Implement
 }
 

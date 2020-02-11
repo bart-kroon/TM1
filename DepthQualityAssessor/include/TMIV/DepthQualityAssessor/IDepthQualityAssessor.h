@@ -31,12 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASCONSTRUCTOR_IDEPTHQUALITYASSESSOR_H_
-#define _TMIV_ATLASCONSTRUCTOR_IDEPTHQUALITYASSESSOR_H_
+#ifndef _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
+#define _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
 
 #include <TMIV/Metadata/IvSequenceParams.h>
 
-namespace TMIV::AtlasConstructor {
+namespace TMIV::DepthQualityAssessor {
 class IDepthQualityAssessor {
 public:
   IDepthQualityAssessor() = default;
@@ -47,9 +47,8 @@ public:
   virtual ~IDepthQualityAssessor() = default;
 
   virtual auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
-                     const Common::MVD16Frame &views) -> bool = 0;
+                                 const Common::MVD16Frame &sourceViews) -> bool = 0;
 };
-} // namespace TMIV::AtlasConstructor
+} // namespace TMIV::DepthQualityAssessor
 
 #endif
- 

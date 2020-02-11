@@ -23,7 +23,7 @@ include(GNUInstallDirs)
 foreach(subdir
 		Common Metadata IO Image
 		ViewOptimizer AtlasConstructor AtlasDeconstructor DepthOccupancy Renderer ViewingSpace
-		Encoder Decoder)
+		Encoder Decoder DepthQualityAssessor)
 	add_subdirectory(${subdir})
 endforeach()
 

@@ -12,7 +12,6 @@ add_library(AtlasConstructorLib
 	"src/MaxRectPiP.cpp"
 	"src/MaxRectPiP.h"
 	"src/Packer.cpp"
-	"src/DepthQualityAssessor.cpp"
 	"src/AtlasConstructor.reg.hpp"
 	"include/TMIV/AtlasConstructor/IAtlasConstructor.h"
 	"include/TMIV/AtlasConstructor/AtlasConstructor.h"
@@ -23,8 +22,6 @@ add_library(AtlasConstructorLib
 	"include/TMIV/AtlasConstructor/Aggregator.h"
 	"include/TMIV/AtlasConstructor/IPacker.h"
 	"include/TMIV/AtlasConstructor/Packer.h"
-	"include/TMIV/AtlasConstructor/IDepthQualityAssessor.h"
-	"include/TMIV/AtlasConstructor/DepthQualityAssessor.h"
 	)
 
 add_library(TMIV::AtlasConstructorLib

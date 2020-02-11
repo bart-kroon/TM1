@@ -39,7 +39,6 @@
 #include <TMIV/AtlasConstructor/IAggregator.h>
 #include <TMIV/AtlasConstructor/IPacker.h>
 #include <TMIV/AtlasConstructor/IPruner.h>
-#include <TMIV/AtlasConstructor/IDepthQualityAssessor.h>
 #include <TMIV/Common/Json.h>
 
 #include <bitset>
@@ -74,7 +73,6 @@ private:
 private:
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
-  std::unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
@@ -84,7 +82,6 @@ private:
   Metadata::IvSequenceParams m_outIvSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
-  bool m_shouldAssessDepthQuality{true};
 };
 } // namespace TMIV::AtlasConstructor
 

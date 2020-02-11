@@ -473,7 +473,7 @@ class EncoderConfiguration(DecoderConfiguration):
 	
 	def depthQualityAssessor(self):
 		return {
-			'blendingFactor': 0.03
+			'blendingFactor': 0.01
 		}
 
 	def pruner(self):

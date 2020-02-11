@@ -36,6 +36,7 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/IDecoder.h>
+#include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataWriter.h>
 
@@ -46,6 +47,7 @@ using namespace TMIV::Common;
 using namespace TMIV::IO;
 using namespace TMIV::Metadata;
 using namespace TMIV::Decoder;
+using namespace TMIV::DepthQualityAssessor;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 
@@ -53,6 +55,7 @@ namespace TMIV::Encoder {
 class Application : public Common::Application {
 private:
   unique_ptr<IEncoder> m_encoder;
+  unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
   int m_numberOfFrames{};
   int m_intraPeriod{};
   bool m_downscale_depth = false;
@@ -63,6 +66,7 @@ private:
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
+        m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")},
         m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
@@ -76,8 +80,10 @@ public:
   }
 
   void run() override {
-    const auto sourceSequenceParams = loadSourceIvSequenceParams(json());
+    auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
+    sourceSequenceParams.depthLowQualityFlag = m_depthQualityAssessor->isLowDepthQuality(
+        sourceSequenceParams, loadSourceFrame(json(), m_viewSizes, 0));
     cout << "\nSource sequence parameters:\n" << sourceSequenceParams;
 
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);

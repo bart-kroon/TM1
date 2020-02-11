@@ -36,7 +36,6 @@
 #include <TMIV/AtlasConstructor/EntityBasedAtlasConstructor.h>
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 #include <TMIV/AtlasConstructor/Packer.h>
-#include <TMIV/AtlasConstructor/DepthQualityAssessor.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/Synthesizer.h>
 
@@ -48,6 +47,5 @@ inline void registerComponents() {
   Factory<IPruner>::getInstance().registerAs<HierarchicalPruner>("HierarchicalPruner");
   Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
   Factory<IPacker>::getInstance().registerAs<Packer>("Packer");
-  Factory<IDepthQualityAssessor>::getInstance().registerAs<DepthQualityAssessor>("DepthQualityAssessor");
 }
 } // namespace TMIV::AtlasConstructor

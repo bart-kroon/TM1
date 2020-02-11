@@ -31,16 +31,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/AtlasConstructor/DepthQualityAssessor.h>
+#ifndef _TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSOR_H_
+#define _TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSOR_H_
 
-namespace TMIV::AtlasConstructor {
-DepthQualityAssessor::DepthQualityAssessor(const Common::Json & /*unused*/, const Common::Json & componentNode) {
-	m_blendingFactor = componentNode.require("blendingFactor").asFloat();
-}
-	
-auto DepthQualityAssessor::isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
-                     const Common::MVD16Frame &views) -> bool {
-						 
-	return true;
-}
-} // namespace TMIV::AtlasConstructor 
+#include <TMIV/Common/Frame.h>
+#include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
+
+namespace TMIV::DepthQualityAssessor {
+class DepthQualityAssessor : public IDepthQualityAssessor {
+public:
+  DepthQualityAssessor(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  DepthQualityAssessor(const DepthQualityAssessor &) = delete;
+  DepthQualityAssessor(DepthQualityAssessor &&) = default;
+  DepthQualityAssessor &operator=(const DepthQualityAssessor &) = delete;
+  DepthQualityAssessor &operator=(DepthQualityAssessor &&) = default;
+  ~DepthQualityAssessor() override = default;
+
+  auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
+                         const Common::MVD16Frame &sourceViews) -> bool override;
+
+private:
+  float m_blendingFactor{0.01F};
+};
+} // namespace TMIV::DepthQualityAssessor
+
+#endif

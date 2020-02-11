@@ -31,30 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASCONSTRUCTOR_DEPTHQUALITYASSESSOR_H_
-#define _TMIV_ATLASCONSTRUCTOR_DEPTHQUALITYASSESSOR_H_
+#include <TMIV/Common/Factory.h>
+#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/AtlasConstructor/IDepthQualityAssessor.h>
-
-namespace TMIV::AtlasConstructor {
-class DepthQualityAssessor: public IDepthQualityAssessor {
-public:
-  DepthQualityAssessor(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
-  DepthQualityAssessor(const DepthQualityAssessor &) = delete;
-  DepthQualityAssessor(DepthQualityAssessor &&) = default;
-  DepthQualityAssessor &operator=(const DepthQualityAssessor &) = delete;
-  DepthQualityAssessor &operator=(DepthQualityAssessor &&) = default;
-  ~DepthQualityAssessor() override = default;
-
-  auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
-                     const Common::MVD16Frame &views) -> bool override;
-					 
-private:
-	float m_blendingFactor{0.03F};
-};
-} // namespace TMIV::AtlasConstructor
-
-#endif
- 
- 
+namespace TMIV::DepthQualityAssessor {
+inline void registerComponents() {
+  Factory<IDepthQualityAssessor>::getInstance().registerAs<DepthQualityAssessor>(
+      "DepthQualityAssessor");
+}
+} // namespace TMIV::DepthQualityAssessor

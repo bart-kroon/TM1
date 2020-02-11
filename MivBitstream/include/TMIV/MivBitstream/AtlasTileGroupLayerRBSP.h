@@ -38,6 +38,7 @@
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/VpccParameterSet.h>
+#include <TMIV/MivBitstream/VpccUnit.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -105,11 +106,13 @@ public:
   constexpr auto operator!=(const AtlasTileGroupHeader &other) const noexcept;
 
   static auto decodeFrom(Common::InputBitstream &bitstream,
-                         const AtlasSequenceParameterSetRBSP &asps,
-                         const AtlasFrameParameterSetRBSP &afps) -> AtlasTileGroupHeader;
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                         const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
+      -> AtlasTileGroupHeader;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const AtlasSequenceParameterSetRBSP &asps,
-                const AtlasFrameParameterSetRBSP &afps) const;
+  void encodeTo(Common::OutputBitstream &bitstream,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 
 private:
   std::uint8_t m_atgh_atlas_frame_parameter_set_id{};
@@ -165,15 +168,18 @@ public:
   constexpr auto operator==(const PatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccParameterSet &vps,
-                         std::uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                         const AtlasFrameParameterSetRBSP &afps, const AtlasTileGroupHeader &atgh,
-                         const PatchDataUnit *previous = nullptr) -> PatchDataUnit;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                         const VpccParameterSet &vps,
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
+                         const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
+                         const AtlasTileGroupHeader &atgh, const PatchDataUnit *previous)
+      -> PatchDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const VpccParameterSet &vps,
-                std::uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                const AtlasFrameParameterSetRBSP &afps, const AtlasTileGroupHeader &atgh,
-                const PatchDataUnit *previous) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                const VpccParameterSet &vps,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
+                const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
+                const AtlasTileGroupHeader &atgh, const PatchDataUnit *previous) const;
 
 private:
   std::uint32_t m_pdu_2d_pos_x{};
@@ -209,16 +215,19 @@ public:
   auto operator==(const PatchInformationData &other) const noexcept -> bool;
   auto operator!=(const PatchInformationData &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, AtghType atghType,
-                         AtgduPatchMode patchMode, const VpccParameterSet &vps,
-                         std::uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                         const AtlasFrameParameterSetRBSP &afps, const AtlasTileGroupHeader &atgh,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                         const VpccParameterSet &vps,
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                         const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                         const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
                          const PatchDataUnit *previous) -> PatchInformationData;
 
-  void encodeTo(Common::OutputBitstream &bitstream, AtghType atghType, AtgduPatchMode patchMode,
-                const VpccParameterSet &vps, std::uint8_t atlasId,
-                const AtlasSequenceParameterSetRBSP &asps, const AtlasFrameParameterSetRBSP &afps,
-                const AtlasTileGroupHeader &atgh, const PatchDataUnit *previous) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                const VpccParameterSet &vps,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
+                const PatchDataUnit *previous) const;
 
 private:
   Data m_data;
@@ -247,15 +256,17 @@ public:
   auto operator==(const AtlasTileGroupDataUnit &other) const -> bool;
   auto operator!=(const AtlasTileGroupDataUnit &other) const -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, AtghType atghType,
-                         const VpccParameterSet &vps, std::uint8_t atlasId,
-                         const AtlasSequenceParameterSetRBSP &asps,
-                         const AtlasFrameParameterSetRBSP &afps, const AtlasTileGroupHeader &atgh)
-      -> AtlasTileGroupDataUnit;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                         const VpccParameterSet &vps,
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                         const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                         const AtlasTileGroupHeader &atgh) -> AtlasTileGroupDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, AtghType atghType, const VpccParameterSet &vps,
-                std::uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                const AtlasFrameParameterSetRBSP &afps, const AtlasTileGroupHeader &atgh) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                const VpccParameterSet &vps,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
+                const AtlasTileGroupHeader &atgh) const;
 
 private:
   Vector m_vector;
@@ -285,14 +296,15 @@ public:
   constexpr auto operator==(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
   constexpr auto operator!=(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const VpccParameterSet &vps, std::uint8_t atlasId,
-                         const AtlasSequenceParameterSetRBSP &asps,
-                         const AtlasFrameParameterSetRBSP &afps, const AtlasTileGroupHeader &atgh)
+  static auto decodeFrom(std::istream &stream, const VpccUnitHeader &vuh,
+                         const VpccParameterSet &vps,
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                         const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
       -> AtlasTileGroupLayerRBSP;
 
-  void encodeTo(std::ostream &stream, const VpccParameterSet &vps, std::uint8_t atlasId,
-                const AtlasSequenceParameterSetRBSP &asps, const AtlasFrameParameterSetRBSP &afps,
-                const AtlasTileGroupHeader &atgh) const;
+  void encodeTo(std::ostream &stream, const VpccUnitHeader &vuh, const VpccParameterSet &vps,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 
 private:
   AtlasTileGroupHeader m_atlas_tile_group_header;

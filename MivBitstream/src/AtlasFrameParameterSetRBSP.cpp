@@ -131,8 +131,8 @@ auto AtlasFrameParameterSetRBSP::operator!=(const AtlasFrameParameterSetRBSP &ot
   return !operator==(other);
 }
 
-auto AtlasFrameParameterSetRBSP::decodeFrom(
-    istream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspses)
+auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
+                                            const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
     -> AtlasFrameParameterSetRBSP {
   auto x = AtlasFrameParameterSetRBSP{};
   InputBitstream bitstream{stream};
@@ -142,8 +142,8 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(
 
   x.afps_atlas_sequence_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
   VERIFY_VPCCBITSTREAM(x.afps_atlas_sequence_parameter_set_id() <= 15);
-  VERIFY_VPCCBITSTREAM(x.afps_atlas_sequence_parameter_set_id() < aspses.size());
-  const auto &asps = aspses[x.afps_atlas_sequence_parameter_set_id()];
+  VERIFY_VPCCBITSTREAM(x.afps_atlas_sequence_parameter_set_id() < aspsV.size());
+  const auto &asps = aspsV[x.afps_atlas_sequence_parameter_set_id()];
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
 
@@ -176,16 +176,16 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(
 }
 
 void AtlasFrameParameterSetRBSP::encodeTo(
-    ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspses) const {
+    ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
   OutputBitstream bitstream{stream};
 
   VERIFY_VPCCBITSTREAM(afps_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(afps_atlas_frame_parameter_set_id());
 
   VERIFY_VPCCBITSTREAM(afps_atlas_sequence_parameter_set_id() <= 15);
-  VERIFY_VPCCBITSTREAM(afps_atlas_sequence_parameter_set_id() < aspses.size());
+  VERIFY_VPCCBITSTREAM(afps_atlas_sequence_parameter_set_id() < aspsV.size());
   bitstream.putUExpGolomb(afps_atlas_sequence_parameter_set_id());
-  const auto &asps = aspses[afps_atlas_sequence_parameter_set_id()];
+  const auto &asps = aspsV[afps_atlas_sequence_parameter_set_id()];
 
   atlas_frame_tile_information().encodeTo(bitstream);
 

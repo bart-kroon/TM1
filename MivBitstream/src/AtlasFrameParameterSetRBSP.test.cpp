@@ -62,7 +62,7 @@ afps_extension_present_flag=false
 )");
 
   SECTION("Example 1") {
-    const auto aspses = std::vector<AtlasSequenceParameterSetRBSP>(1);
+    const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
 
     x.afps_num_ref_idx_default_active(1)
         .afps_2d_pos_x_bit_count(1)
@@ -85,12 +85,12 @@ afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 4, aspses));
+    REQUIRE(byteCodingTest(x, 4, aspsV));
   }
 
   SECTION("Example 2") {
-    auto aspses = std::vector<AtlasSequenceParameterSetRBSP>(2);
-    aspses.back().asps_log2_max_atlas_frame_order_cnt_lsb(7).asps_long_term_ref_atlas_frames_flag(
+    auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(2);
+    aspsV.back().asps_log2_max_atlas_frame_order_cnt_lsb(7).asps_long_term_ref_atlas_frames_flag(
         true);
 
     x.afps_atlas_frame_parameter_set_id(63)
@@ -119,6 +119,6 @@ afps_raw_3d_pos_bit_count_explicit_mode_flag=true
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 8, aspses));
+    REQUIRE(byteCodingTest(x, 8, aspsV));
   }
 }

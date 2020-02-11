@@ -160,13 +160,18 @@ auto operator<<(ostream &stream, const AtlasTileGroupHeader &x) -> ostream & {
 }
 
 auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
-                                      const AtlasSequenceParameterSetRBSP &asps,
-                                      const AtlasFrameParameterSetRBSP &afps)
+                                      const vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                      const vector<AtlasFrameParameterSetRBSP> &afpsV)
     -> AtlasTileGroupHeader {
   auto x = AtlasTileGroupHeader{};
 
   x.atgh_atlas_frame_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
   VERIFY_VPCCBITSTREAM(x.atgh_atlas_frame_parameter_set_id() <= 63);
+  VERIFY_VPCCBITSTREAM(x.atgh_atlas_frame_parameter_set_id() < afpsV.size());
+  const auto &afps = afpsV[x.atgh_atlas_frame_parameter_set_id()];
+
+  VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
+  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
   VERIFY_MIVBITSTREAM(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
   x.atgh_address(0);
@@ -211,10 +216,15 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
 }
 
 void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
-                                    const AtlasSequenceParameterSetRBSP &asps,
-                                    const AtlasFrameParameterSetRBSP &afps) const {
+                                    const vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                    const vector<AtlasFrameParameterSetRBSP> &afpsV) const {
   VERIFY_VPCCBITSTREAM(atgh_atlas_frame_parameter_set_id() <= 63);
+  VERIFY_VPCCBITSTREAM(atgh_atlas_frame_parameter_set_id() < afpsV.size());
   bitstream.putUExpGolomb(atgh_atlas_frame_parameter_set_id());
+  const auto &afps = afpsV[atgh_atlas_frame_parameter_set_id()];
+
+  VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
+  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
   VERIFY_MIVBITSTREAM(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
   VERIFY_VPCCBITSTREAM(atgh_address() == 0);
@@ -274,12 +284,19 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
   return stream;
 }
 
-auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccParameterSet &vps,
-                               uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                               const AtlasFrameParameterSetRBSP &afps,
+auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                               const VpccParameterSet &vps,
+                               const vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                               const vector<AtlasFrameParameterSetRBSP> &afpsV,
                                const AtlasTileGroupHeader &atgh, const PatchDataUnit *previous)
     -> PatchDataUnit {
   auto x = PatchDataUnit{};
+
+  VERIFY_VPCCBITSTREAM(atgh.atgh_atlas_frame_parameter_set_id() < afpsV.size());
+  const auto &afps = afpsV[atgh.atgh_atlas_frame_parameter_set_id()];
+
+  VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
+  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
   const auto pdu_projection_id_num_bits =
       vps.overridePduProjectionIdNumBits()
@@ -310,7 +327,8 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccParameterSet
   x.pdu_3d_pos_x(uint32_t(bitstream.readBits(afps.afps_3d_pos_x_bit_count())));
   x.pdu_3d_pos_y(uint32_t(bitstream.readBits(afps.afps_3d_pos_y_bit_count())));
 
-  const auto &gi = vps.geometry_information(atlasId);
+  VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
+  const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
   const auto pdu_3d_pos_min_z_num_bits = gi.gi_geometry_3d_coordinates_bitdepth() -
                                          atgh.atgh_pos_min_z_quantizer() +
@@ -337,11 +355,18 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccParameterSet
   return x;
 }
 
-void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccParameterSet &vps,
-                             uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                             const AtlasFrameParameterSetRBSP &afps,
+void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                             const VpccParameterSet &vps,
+                             const vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                             const vector<AtlasFrameParameterSetRBSP> &afpsV,
                              const AtlasTileGroupHeader &atgh,
                              const PatchDataUnit *previous) const {
+  VERIFY_VPCCBITSTREAM(atgh.atgh_atlas_frame_parameter_set_id() < afpsV.size());
+  const auto &afps = afpsV[atgh.atgh_atlas_frame_parameter_set_id()];
+
+  VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
+  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
+
   const auto pdu_projection_id_num_bits =
       vps.overridePduProjectionIdNumBits()
           ? *vps.overridePduProjectionIdNumBits()
@@ -378,7 +403,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccParameterSet 
   bitstream.writeBits(pdu_3d_pos_x(), afps.afps_3d_pos_x_bit_count());
   bitstream.writeBits(pdu_3d_pos_y(), afps.afps_3d_pos_y_bit_count());
 
-  const auto &gi = vps.geometry_information(atlasId);
+  VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
+  const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
   const auto pdu_3d_pos_min_z_num_bits = gi.gi_geometry_3d_coordinates_bitdepth() -
                                          atgh.atgh_pos_min_z_quantizer() +
@@ -439,35 +465,35 @@ auto PatchInformationData::operator!=(const PatchInformationData &other) const n
   return !operator==(other);
 }
 
-auto PatchInformationData::decodeFrom(Common::InputBitstream &bitstream, AtghType atghType,
-                                      AtgduPatchMode patchMode, const VpccParameterSet &vps,
-                                      uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                                      const AtlasFrameParameterSetRBSP &afps,
-                                      const AtlasTileGroupHeader &atgh,
+auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                                      const VpccParameterSet &vps,
+                                      const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                      const vector<AtlasFrameParameterSetRBSP> &afps,
+                                      const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
                                       const PatchDataUnit *previous) -> PatchInformationData {
-  if (atghType == AtghType::I_TILE_GRP) {
+  if (atgh.atgh_type() == AtghType::I_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::I_INTRA);
     return PatchInformationData{
-        PatchDataUnit::decodeFrom(bitstream, vps, atlasId, asps, afps, atgh, previous)};
+        PatchDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, atgh, previous)};
   }
-  if (atghType == AtghType::SKIP_TILE_GRP) {
+  if (atgh.atgh_type() == AtghType::SKIP_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::P_SKIP);
     return PatchInformationData{SkipPatchDataUnit::decodeFrom(bitstream)};
   }
   VPCCBITSTREAM_ERROR("Unknown or unsupported tile group/patch mode combination");
 }
 
-void PatchInformationData::encodeTo(Common::OutputBitstream &bitstream, AtghType atghType,
-                                    AtgduPatchMode patchMode, const VpccParameterSet &vps,
-                                    uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                                    const AtlasFrameParameterSetRBSP &afps,
-                                    const AtlasTileGroupHeader &atgh,
+void PatchInformationData::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                                    const VpccParameterSet &vps,
+                                    const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                    const vector<AtlasFrameParameterSetRBSP> &afps,
+                                    const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
                                     const PatchDataUnit *previous) const {
-  if (atghType == AtghType::I_TILE_GRP) {
+  if (atgh.atgh_type() == AtghType::I_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::I_INTRA);
-    return patch_data_unit().encodeTo(bitstream, vps, atlasId, asps, afps, atgh, previous);
+    return patch_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atgh, previous);
   }
-  if (atghType == AtghType::SKIP_TILE_GRP) {
+  if (atgh.atgh_type() == AtghType::SKIP_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::P_SKIP);
     return skip_patch_data_unit().encodeTo(bitstream);
   }
@@ -507,23 +533,23 @@ auto AtlasTileGroupDataUnit::operator!=(const AtlasTileGroupDataUnit &other) con
   return !operator==(other);
 }
 
-auto AtlasTileGroupDataUnit::decodeFrom(Common::InputBitstream &bitstream, AtghType atghType,
-                                        const VpccParameterSet &vps, uint8_t atlasId,
-                                        const AtlasSequenceParameterSetRBSP &asps,
-                                        const AtlasFrameParameterSetRBSP &afps,
+auto AtlasTileGroupDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                                        const VpccParameterSet &vps,
+                                        const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                        const vector<AtlasFrameParameterSetRBSP> &afps,
                                         const AtlasTileGroupHeader &atgh)
     -> AtlasTileGroupDataUnit {
-  VERIFY_VPCCBITSTREAM(atghType == AtghType::I_TILE_GRP || atghType == AtghType::P_TILE_GRP);
-  VERIFY_MIVBITSTREAM(atghType == AtghType::I_TILE_GRP);
+  VERIFY_VPCCBITSTREAM(atgh.atgh_type() == AtghType::I_TILE_GRP ||
+                       atgh.atgh_type() == AtghType::P_TILE_GRP);
+  VERIFY_MIVBITSTREAM(atgh.atgh_type() == AtghType::I_TILE_GRP);
 
   auto x = AtlasTileGroupDataUnit::Vector{};
   const PatchDataUnit *previous = nullptr;
   auto patch_mode = AtgduPatchMode(bitstream.getUExpGolomb());
 
   while (patch_mode != AtgduPatchMode::I_END) {
-    x.emplace_back(patch_mode,
-                   PatchInformationData::decodeFrom(bitstream, atghType, patch_mode, vps, atlasId,
-                                                    asps, afps, atgh, previous));
+    x.emplace_back(patch_mode, PatchInformationData::decodeFrom(bitstream, vuh, vps, asps, afps,
+                                                                atgh, patch_mode, previous));
     VERIFY_MIVBITSTREAM(patch_mode == AtgduPatchMode::I_INTRA);
     previous = &x.back().second.patch_data_unit();
     patch_mode = AtgduPatchMode(bitstream.getUExpGolomb());
@@ -533,21 +559,21 @@ auto AtlasTileGroupDataUnit::decodeFrom(Common::InputBitstream &bitstream, AtghT
   return AtlasTileGroupDataUnit{x};
 }
 
-void AtlasTileGroupDataUnit::encodeTo(Common::OutputBitstream &bitstream, AtghType atghType,
-                                      const VpccParameterSet &vps, uint8_t atlasId,
-                                      const AtlasSequenceParameterSetRBSP &asps,
-                                      const AtlasFrameParameterSetRBSP &afps,
+void AtlasTileGroupDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                                      const VpccParameterSet &vps,
+                                      const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                      const vector<AtlasFrameParameterSetRBSP> &afps,
                                       const AtlasTileGroupHeader &atgh) const {
-  VERIFY_VPCCBITSTREAM(atghType == AtghType::I_TILE_GRP || atghType == AtghType::P_TILE_GRP);
-  VERIFY_MIVBITSTREAM(atghType == AtghType::I_TILE_GRP);
+  VERIFY_VPCCBITSTREAM(atgh.atgh_type() == AtghType::I_TILE_GRP ||
+                       atgh.atgh_type() == AtghType::P_TILE_GRP);
+  VERIFY_MIVBITSTREAM(atgh.atgh_type() == AtghType::I_TILE_GRP);
 
   const PatchDataUnit *previous = nullptr;
 
   visit([&](const auto /* p */, const AtgduPatchMode patch_mode,
             const PatchInformationData &patch_information_data) {
     bitstream.putUExpGolomb(int(patch_mode));
-    patch_information_data.encodeTo(bitstream, atghType, patch_mode, vps, atlasId, asps, afps, atgh,
-                                    previous);
+    patch_information_data.encodeTo(bitstream, vuh, vps, asps, afps, atgh, patch_mode, previous);
     if (patch_mode == AtgduPatchMode::I_INTRA) {
       previous = &patch_information_data.patch_data_unit();
     }
@@ -571,39 +597,35 @@ auto operator<<(ostream &stream, const AtlasTileGroupLayerRBSP &x) -> ostream & 
   return stream;
 }
 
-auto AtlasTileGroupLayerRBSP::decodeFrom(istream &stream, const VpccParameterSet &vps,
-                                         uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                                         const AtlasFrameParameterSetRBSP &afps,
-                                         const AtlasTileGroupHeader &atgh)
+auto AtlasTileGroupLayerRBSP::decodeFrom(istream &stream, const VpccUnitHeader &vuh,
+                                         const VpccParameterSet &vps,
+                                         const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                         const vector<AtlasFrameParameterSetRBSP> &afps)
     -> AtlasTileGroupLayerRBSP {
   InputBitstream bitstream{stream};
 
-  const auto header = AtlasTileGroupHeader::decodeFrom(bitstream, asps, afps);
+  const auto atgh = AtlasTileGroupHeader::decodeFrom(bitstream, asps, afps);
+  auto atgl = AtlasTileGroupLayerRBSP{atgh};
 
-  if (header.atgh_type() == AtghType::SKIP_TILE_GRP) {
-    bitstream.rbspTrailingBits();
-    return AtlasTileGroupLayerRBSP{header};
+  if (atgh.atgh_type() != AtghType::SKIP_TILE_GRP) {
+    atgl = {atgh, AtlasTileGroupDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, atgh)};
   }
 
-  const auto unit = AtlasTileGroupDataUnit::decodeFrom(bitstream, header.atgh_type(), vps, atlasId,
-                                                       asps, afps, atgh);
-
   bitstream.rbspTrailingBits();
-
-  return {header, unit};
+  return atgl;
 }
 
-void AtlasTileGroupLayerRBSP::encodeTo(ostream &stream, const VpccParameterSet &vps,
-                                       uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
-                                       const AtlasFrameParameterSetRBSP &afps,
-                                       const AtlasTileGroupHeader &atgh) const {
+void AtlasTileGroupLayerRBSP::encodeTo(ostream &stream, const VpccUnitHeader &vuh,
+                                       const VpccParameterSet &vps,
+                                       const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                       const vector<AtlasFrameParameterSetRBSP> &afps) const {
   OutputBitstream bitstream{stream};
 
-  atlas_tile_group_header().encodeTo(bitstream, asps, afps);
+  const auto &atgh = atlas_tile_group_header();
+  atgh.encodeTo(bitstream, asps, afps);
 
-  if (atlas_tile_group_header().atgh_type() != AtghType::SKIP_TILE_GRP) {
-    atlas_tile_group_data_unit().encodeTo(bitstream, atlas_tile_group_header().atgh_type(), vps,
-                                          atlasId, asps, afps, atgh);
+  if (atgh.atgh_type() != AtghType::SKIP_TILE_GRP) {
+    atlas_tile_group_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atgh);
   }
 
   bitstream.rbspTrailingBits();

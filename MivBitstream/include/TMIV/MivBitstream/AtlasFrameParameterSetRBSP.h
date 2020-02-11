@@ -96,10 +96,11 @@ public:
   auto operator!=(const AtlasFrameParameterSetRBSP &other) const noexcept -> bool;
 
   static auto decodeFrom(std::istream &stream,
-                         const std::vector<AtlasSequenceParameterSetRBSP> &asps)
+                         const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
       -> AtlasFrameParameterSetRBSP;
 
-  void encodeTo(std::ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &asps) const;
+  void encodeTo(std::ostream &stream,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const;
 
 private:
   std::uint8_t m_afps_atlas_frame_parameter_set_id;

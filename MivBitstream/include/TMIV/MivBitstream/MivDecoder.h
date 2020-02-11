@@ -134,9 +134,9 @@ private:
   SampleStreamVpccHeader m_ssvh;
 
   struct Atlas {
-    std::vector<AtlasSequenceParameterSetRBSP> asps;
-    std::vector<AtlasFrameParameterSetRBSP> afps;
-    std::vector<AdaptationParameterSetRBSP> aps;
+    std::vector<AtlasSequenceParameterSetRBSP> aspsV;
+    std::vector<AtlasFrameParameterSetRBSP> afpsV;
+    std::vector<AdaptationParameterSetRBSP> apsV;
     AtlasTileGroupLayerRBSP atgl;
   };
 
@@ -144,6 +144,9 @@ private:
     std::vector<Atlas> atlas;
     std::optional<Atlas> specialAtlas;
   };
+
+  std::vector<VpccParameterSet> m_vpsV;
+  std::vector<Sequence> m_sequenceV;
 
   static auto sampleStreamVpccHeader(std::istream &) -> SampleStreamVpccHeader;
 
@@ -168,9 +171,6 @@ private:
   auto specialAtlas(const VpccUnitHeader &vuh) -> Atlas &;
   auto asps(const VpccUnitHeader &vuh) const -> const std::vector<AtlasSequenceParameterSetRBSP> &;
   auto afps(const VpccUnitHeader &vuh) const -> const std::vector<AtlasFrameParameterSetRBSP> &;
-
-  std::vector<VpccParameterSet> m_vps;
-  std::vector<Sequence> m_sequence;
 };
 } // namespace TMIV::MivBitstream
 

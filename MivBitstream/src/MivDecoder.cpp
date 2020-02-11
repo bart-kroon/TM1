@@ -48,7 +48,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-MivDecoder::MivDecoder(std::istream &stream)
+MivDecoder::MivDecoder(istream &stream)
     : m_stream{stream}, m_ssvh{sampleStreamVpccHeader(stream)} {}
 
 auto MivDecoder::decodeVpccUnit() -> bool {
@@ -57,7 +57,7 @@ auto MivDecoder::decodeVpccUnit() -> bool {
   VERIFY_VPCCBITSTREAM(m_stream.good());
 
   istringstream substream{ssvu.ssvu_vpcc_unit()};
-  const auto vu = VpccUnit::decodeFrom(substream, m_vps, ssvu.ssvu_vpcc_unit_size());
+  const auto vu = VpccUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_vpcc_unit_size());
   visit([this, &vu](const auto &payload) { onVpccPayload(vu.vpcc_unit_header(), payload); },
         vu.vpcc_payload().payload());
 
@@ -72,19 +72,19 @@ void MivDecoder::decode() {
 }
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader & /* vuh */,
-                               const std::monostate & /* payload */) {
+                               const monostate & /* payload */) {
   VPCCBITSTREAM_ERROR("V-PCC payload of unknown type");
 }
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader & /*vuh*/, const VpccParameterSet &vps) {
   const auto id = vps.vps_vpcc_parameter_set_id();
-  while (m_vps.size() <= id) {
-    m_vps.emplace_back();
-    m_sequence.emplace_back();
+  while (m_vpsV.size() <= id) {
+    m_vpsV.emplace_back();
+    m_sequenceV.emplace_back();
   }
-  m_vps[id] = vps;
-  m_sequence[id] = Sequence{};
-  m_sequence[id].atlas.resize(vps.vps_atlas_count());
+  m_vpsV[id] = vps;
+  m_sequenceV[id] = Sequence{};
+  m_sequenceV[id].atlas.resize(vps.vps_atlas_count());
 }
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad) {
@@ -94,7 +94,7 @@ void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstrea
 }
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader & /*vuh*/, const VideoSubBitstream & /*vd*/) {
-  // TODO(BK): Implement
+  cout << "WARNING: Ignoring video sub bitstreams in this version of TMIV\n";
 }
 
 void MivDecoder::onNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
@@ -158,20 +158,20 @@ void MivDecoder::onAtgl(
 
 void MivDecoder::onAsps(const VpccUnitHeader &vuh, const NalUnitHeader & /* nuh */,
                         AtlasSequenceParameterSetRBSP asps) {
-  auto &atlas_ = atlas(vuh);
-  while (atlas_.asps.size() <= asps.asps_atlas_sequence_parameter_set_id()) {
-    atlas_.asps.emplace_back();
+  auto &x = atlas(vuh);
+  while (x.aspsV.size() <= asps.asps_atlas_sequence_parameter_set_id()) {
+    x.aspsV.emplace_back();
   }
-  atlas_.asps[asps.asps_atlas_sequence_parameter_set_id()] = move(asps);
+  x.aspsV[asps.asps_atlas_sequence_parameter_set_id()] = move(asps);
 }
 
 void MivDecoder::onAfps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
                         AtlasFrameParameterSetRBSP afps) {
-  auto &atlas_ = atlas(vuh);
-  while (atlas_.afps.size() <= afps.afps_atlas_frame_parameter_set_id()) {
-    atlas_.afps.emplace_back();
+  auto &x = atlas(vuh);
+  while (x.afpsV.size() <= afps.afps_atlas_frame_parameter_set_id()) {
+    x.afpsV.emplace_back();
   }
-  atlas_.afps[afps.afps_atlas_frame_parameter_set_id()] = afps;
+  x.afpsV[afps.afps_atlas_frame_parameter_set_id()] = afps;
 }
 
 void MivDecoder::onAud(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
@@ -282,66 +282,66 @@ void MivDecoder::decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu) 
 }
 
 auto MivDecoder::sequence(const VpccUnitHeader &vuh) const -> const Sequence & {
-  VERIFY_VPCCBITSTREAM(vuh.vuh_vpcc_parameter_set_id() < m_vps.size());
-  return m_sequence[vuh.vuh_vpcc_parameter_set_id()];
+  VERIFY_VPCCBITSTREAM(vuh.vuh_vpcc_parameter_set_id() < m_vpsV.size());
+  return m_sequenceV[vuh.vuh_vpcc_parameter_set_id()];
 }
 
 auto MivDecoder::sequence(const VpccUnitHeader &vuh) -> Sequence & {
-  VERIFY_VPCCBITSTREAM(vuh.vuh_vpcc_parameter_set_id() < m_vps.size());
-  return m_sequence[vuh.vuh_vpcc_parameter_set_id()];
+  VERIFY_VPCCBITSTREAM(vuh.vuh_vpcc_parameter_set_id() < m_vpsV.size());
+  return m_sequenceV[vuh.vuh_vpcc_parameter_set_id()];
 }
 
 auto MivDecoder::atlas(const VpccUnitHeader &vuh) const -> const Atlas & {
-  const auto &sequence_ = sequence(vuh);
-
   if (vuh.vuh_atlas_id() == specialAtlasId) {
     return specialAtlas(vuh);
   }
 
-  VERIFY_VPCCBITSTREAM(vuh.vuh_atlas_id() < sequence_.atlas.size());
-  return sequence_.atlas[vuh.vuh_atlas_id()];
+  const auto &x = sequence(vuh);
+
+  VERIFY_VPCCBITSTREAM(vuh.vuh_atlas_id() < x.atlas.size());
+  return x.atlas[vuh.vuh_atlas_id()];
 }
 
 auto MivDecoder::atlas(const VpccUnitHeader &vuh) -> Atlas & {
-  auto &sequence_ = sequence(vuh);
-
   if (vuh.vuh_atlas_id() == specialAtlasId) {
     return specialAtlas(vuh);
   }
 
-  VERIFY_VPCCBITSTREAM(vuh.vuh_atlas_id() < sequence_.atlas.size());
-  return sequence_.atlas[vuh.vuh_atlas_id()];
+  auto &x = sequence(vuh);
+
+  VERIFY_VPCCBITSTREAM(vuh.vuh_atlas_id() < x.atlas.size());
+  return x.atlas[vuh.vuh_atlas_id()];
 }
 
 auto MivDecoder::specialAtlas(const VpccUnitHeader &vuh) const -> const Atlas & {
-  const auto &sequence_ = sequence(vuh);
+  const auto &x = sequence(vuh);
 
-  VERIFY_MIVBITSTREAM(sequence_.specialAtlas.has_value());
-  return *sequence_.specialAtlas;
+  VERIFY_MIVBITSTREAM(x.specialAtlas.has_value());
+  return *x.specialAtlas;
 }
 
 auto MivDecoder::specialAtlas(const VpccUnitHeader &vuh) -> Atlas & {
-  auto &sequence_ = sequence(vuh);
+  auto &x = sequence(vuh);
 
-  VERIFY_MIVBITSTREAM(sequence_.specialAtlas.has_value());
-  return *sequence_.specialAtlas;
+  VERIFY_MIVBITSTREAM(x.specialAtlas.has_value());
+  return *x.specialAtlas;
 }
 
 auto MivDecoder::asps(const VpccUnitHeader &vuh) const
-    -> const std::vector<AtlasSequenceParameterSetRBSP> & {
-  auto &atlas_ = atlas(vuh);
-  if (atlas_.asps.empty()) {
-    return specialAtlas(vuh).asps;
+    -> const vector<AtlasSequenceParameterSetRBSP> & {
+  auto &x = atlas(vuh);
+  if (x.aspsV.empty()) {
+    return specialAtlas(vuh).aspsV;
   }
-  return atlas_.asps;
+  return x.aspsV;
 }
 
 auto MivDecoder::afps(const VpccUnitHeader &vuh) const
-    -> const std::vector<AtlasFrameParameterSetRBSP> & {
-  auto &atlas_ = atlas(vuh);
-  if (atlas_.afps.empty()) {
-    return specialAtlas(vuh).afps;
+    -> const vector<AtlasFrameParameterSetRBSP> & {
+  auto &x = atlas(vuh);
+  if (x.afpsV.empty()) {
+    return specialAtlas(vuh).afpsV;
   }
-  return atlas_.afps;
+  return x.afpsV;
 }
 } // namespace TMIV::MivBitstream

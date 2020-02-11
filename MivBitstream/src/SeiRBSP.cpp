@@ -61,7 +61,7 @@ auto SeiMessage::decodeFrom(Common::InputBitstream &bitstream) -> SeiMessage {
   return {};
 }
 
-void SeiMessage::encodeTo(Common::OutputBitstream &bitstream) const {
+void SeiMessage::encodeTo(Common::OutputBitstream &bitstream) {
   // TODO(BK): Implement
   bitstream.putFlag(false);
 }

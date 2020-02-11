@@ -49,7 +49,7 @@ public:
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> SeiMessage;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  static void encodeTo(Common::OutputBitstream &bitstream);
 };
 
 // 23090-5: sei_rbsp()

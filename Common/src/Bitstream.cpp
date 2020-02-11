@@ -128,6 +128,51 @@ void InputBitstream::rbspTrailingBits() {
   byteAlign();
 }
 
+auto InputBitstream::moreData() -> bool {
+  verify(m_stream.good() && !m_stream.eof());
+
+  if (m_size > 0) {
+    return true;
+  }
+  m_stream.peek();
+  auto result = !m_stream.eof();
+  m_stream.clear();
+  return result;
+}
+
+auto InputBitstream::moreRbspData() -> bool {
+  // Return false if there is no more data.
+  if (!moreData()) {
+    return false;
+  }
+
+  // Store bitstream state.
+  const auto streamPos = m_stream.tellg();
+  const auto size = m_size;
+  const auto buffer = m_buffer;
+
+  // Skip first bit. It may be part of a RBSP or a rbsp_one_stop_bit.
+  getFlag();
+
+  while (moreData()) {
+    if (getFlag()) {
+      // We found a one bit beyond the first bit. Restore bitstream state and return true.
+      m_stream.seekg(streamPos);
+      m_stream.clear();
+      m_size = size;
+      m_buffer = buffer;
+      return true;
+    }
+  }
+
+  // We did not found a one bit beyond the first bit. Restore bitstream state and return false.
+  m_stream.seekg(streamPos);
+  m_stream.clear();
+  m_size = size;
+  m_buffer = buffer;
+  return false;
+}
+
 void InputBitstream::reset() {
   m_size = 0;
   m_buffer = 0;

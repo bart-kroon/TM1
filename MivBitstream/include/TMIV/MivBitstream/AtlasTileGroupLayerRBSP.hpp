@@ -87,6 +87,20 @@ constexpr auto AtlasTileGroupHeader::operator!=(const AtlasTileGroupHeader &othe
   return !operator==(other);
 }
 
+constexpr auto SkipPatchDataUnit::operator==(const SkipPatchDataUnit & /* other */) const noexcept {
+  return true;
+}
+constexpr auto SkipPatchDataUnit::operator!=(const SkipPatchDataUnit & /* other */) const noexcept {
+  return false;
+}
+
+inline auto SkipPatchDataUnit::decodeFrom(Common::InputBitstream & /* bitstream */)
+    -> SkipPatchDataUnit {
+  return {};
+}
+
+inline void SkipPatchDataUnit::encodeTo(Common::OutputBitstream & /* bitstream */) const {}
+
 constexpr auto PatchDataUnit::pdu_2d_pos_x() const noexcept { return m_pdu_2d_pos_x; }
 
 constexpr auto PatchDataUnit::pdu_2d_pos_y() const noexcept { return m_pdu_2d_pos_y; }
@@ -197,15 +211,13 @@ constexpr auto AtlasTileGroupLayerRBSP::atlas_tile_group_header() const noexcept
   return m_atlas_tile_group_header;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return true;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return false;
 }
 } // namespace TMIV::MivBitstream

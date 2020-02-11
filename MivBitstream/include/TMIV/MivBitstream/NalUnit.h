@@ -66,8 +66,11 @@ enum class NalUnitType : std::uint8_t {
   NAL_EOS,
   NAL_EOB,
   NAL_FD,
-  NAL_PREFIX_SEI,
-  NAL_SUFFIX_SEI
+  NAL_PREFIX_NSEI,
+  NAL_SUFFIX_NSEI,
+  NAL_PREFIX_ESEI,
+  NAL_SUFFIX_ESEI,
+  NAL_ACPS
 };
 
 auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream &;

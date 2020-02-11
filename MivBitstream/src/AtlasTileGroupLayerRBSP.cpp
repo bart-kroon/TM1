@@ -41,7 +41,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, AtghType x) -> std::ostream & {
+auto operator<<(ostream &stream, AtghType x) -> ostream & {
   switch (x) {
   case AtghType::P_TILE_GRP:
     return stream << "P_TILE_GRP";
@@ -54,7 +54,7 @@ auto operator<<(std::ostream &stream, AtghType x) -> std::ostream & {
   }
 }
 
-auto operator<<(std::ostream &stream, FlexiblePatchOrientation x) -> std::ostream & {
+auto operator<<(ostream &stream, FlexiblePatchOrientation x) -> ostream & {
   switch (x) {
   case FlexiblePatchOrientation::FPO_NULL:
     return stream << "FPO_NULL";
@@ -77,7 +77,7 @@ auto operator<<(std::ostream &stream, FlexiblePatchOrientation x) -> std::ostrea
   }
 }
 
-auto printTo(std::ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> std::ostream & {
+auto printTo(ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> ostream & {
   switch (atgh_type) {
   case AtghType::I_TILE_GRP:
     switch (x) {
@@ -123,24 +123,24 @@ auto printTo(std::ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> std:
   }
 }
 
-auto AtlasTileGroupHeader::atgh_patch_size_x_info_quantizer() const noexcept -> std::uint8_t {
+auto AtlasTileGroupHeader::atgh_patch_size_x_info_quantizer() const noexcept -> uint8_t {
   VERIFY_VPCCBITSTREAM(atgh_type() != AtghType::SKIP_TILE_GRP);
   return m_atgh_patch_size_x_info_quantizer;
 }
 
-auto AtlasTileGroupHeader::atgh_patch_size_y_info_quantizer() const noexcept -> std::uint8_t {
+auto AtlasTileGroupHeader::atgh_patch_size_y_info_quantizer() const noexcept -> uint8_t {
   VERIFY_VPCCBITSTREAM(atgh_type() != AtghType::SKIP_TILE_GRP);
   return m_atgh_patch_size_y_info_quantizer;
 }
 
-auto AtlasTileGroupHeader::atgh_patch_size_x_info_quantizer(const std::uint8_t value) noexcept
+auto AtlasTileGroupHeader::atgh_patch_size_x_info_quantizer(const uint8_t value) noexcept
     -> AtlasTileGroupHeader & {
   VERIFY_VPCCBITSTREAM(atgh_type() != AtghType::SKIP_TILE_GRP);
   m_atgh_patch_size_x_info_quantizer = value;
   return *this;
 }
 
-auto AtlasTileGroupHeader::atgh_patch_size_y_info_quantizer(const std::uint8_t value) noexcept
+auto AtlasTileGroupHeader::atgh_patch_size_y_info_quantizer(const uint8_t value) noexcept
     -> AtlasTileGroupHeader & {
   VERIFY_VPCCBITSTREAM(atgh_type() != AtghType::SKIP_TILE_GRP);
   m_atgh_patch_size_y_info_quantizer = value;
@@ -254,7 +254,9 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   bitstream.byteAlign();
 }
 
-auto PatchDataUnit::printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream & {
+auto operator<<(ostream &stream, const SkipPatchDataUnit & /* x */) -> ostream & { return stream; }
+
+auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
   stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << "\npdu_2d_pos_y( "
          << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_size_x( " << patchIdx
          << " )=" << pdu_2d_size_x() << "\npdu_2d_size_y( " << patchIdx << " )=" << pdu_2d_size_y()
@@ -421,8 +423,7 @@ auto PatchInformationData::patch_data_unit() const noexcept -> const PatchDataUn
   return *get_if<PatchDataUnit>(&m_data);
 }
 
-auto PatchInformationData::printTo(std::ostream &stream, std::size_t patchIdx) const
-    -> std::ostream & {
+auto PatchInformationData::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
   visit(overload([&](const monostate & /* unused */) { stream << "[unknown]\n"; },
                  [&](const SkipPatchDataUnit &x) { stream << x; },
                  [&](const PatchDataUnit &x) { x.printTo(stream, patchIdx); }),
@@ -473,23 +474,22 @@ void PatchInformationData::encodeTo(Common::OutputBitstream &bitstream, AtghType
   VPCCBITSTREAM_ERROR("Unknown or unsupported tile group/patch mode combination");
 }
 
-auto AtlasTileGroupDataUnit::atgduTotalNumberOfPatches() const noexcept -> std::size_t {
+auto AtlasTileGroupDataUnit::atgduTotalNumberOfPatches() const noexcept -> size_t {
   return m_vector.size();
 }
 
-auto AtlasTileGroupDataUnit::atgdu_patch_mode(std::size_t p) const -> AtgduPatchMode {
+auto AtlasTileGroupDataUnit::atgdu_patch_mode(size_t p) const -> AtgduPatchMode {
   VERIFY_VPCCBITSTREAM(p < m_vector.size());
   return m_vector[p].first;
 }
 
-auto AtlasTileGroupDataUnit::patch_information_data(std::size_t p) const
+auto AtlasTileGroupDataUnit::patch_information_data(size_t p) const
     -> const PatchInformationData & {
   VERIFY_VPCCBITSTREAM(p < m_vector.size());
   return m_vector[p].second;
 }
 
-auto AtlasTileGroupDataUnit::printTo(std::ostream &stream, AtghType atgh_type) const
-    -> std::ostream & {
+auto AtlasTileGroupDataUnit::printTo(ostream &stream, AtghType atgh_type) const -> ostream & {
   visit([&](const auto p, const AtgduPatchMode patch_mode,
             const PatchInformationData &patch_information_data) {
     stream << "atgdu_patch_mode[ " << p << " ]=";
@@ -594,8 +594,7 @@ auto AtlasTileGroupLayerRBSP::decodeFrom(istream &stream, const VpccParameterSet
 }
 
 void AtlasTileGroupLayerRBSP::encodeTo(ostream &stream, const VpccParameterSet &vps,
-                                       std::uint8_t atlasId,
-                                       const AtlasSequenceParameterSetRBSP &asps,
+                                       uint8_t atlasId, const AtlasSequenceParameterSetRBSP &asps,
                                        const AtlasFrameParameterSetRBSP &afps,
                                        const AtlasTileGroupHeader &atgh) const {
   OutputBitstream bitstream{stream};

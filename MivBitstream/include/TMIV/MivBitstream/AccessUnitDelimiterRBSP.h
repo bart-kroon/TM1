@@ -31,27 +31,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#ifndef _TMIV_MIVBITSTREAM_ACCESSUNITDELIMITERRBSP_H_
+#define _TMIV_MIVBITSTREAM_ACCESSUNITDELIMITERRBSP_H_
 
-#include <iosfwd>
+#include <TMIV/Common/Bitstream.h>
 
 namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
+// 23090-5: aframe_type
+enum class AframeType { I, P_and_I, SKIP_P_and_I, SKIP };
+std::ostream &operator<<(std::ostream &, AframeType);
+
+// 23090-5: access_unit_delimiter_rbsp()
+class AccessUnitDelimiterRBSP {
 public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
-  }
+  AccessUnitDelimiterRBSP() = default;
+  explicit constexpr AccessUnitDelimiterRBSP(AframeType aframe_type);
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
+  constexpr auto aframe_type() const noexcept;
+  constexpr auto aframe_type(AframeType value) noexcept;
 
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
+  friend auto operator<<(std::ostream &stream, const AccessUnitDelimiterRBSP &x) -> std::ostream &;
 
-  void encodeTo(std::ostream & /* stream */) const {}
+  constexpr auto operator==(const AccessUnitDelimiterRBSP &other) const noexcept;
+  constexpr auto operator!=(const AccessUnitDelimiterRBSP &other) const noexcept;
+
+  static auto decodeFrom(std::istream &stream) -> AccessUnitDelimiterRBSP;
+
+  void encodeTo(std::ostream &stream) const;
+
+private:
+  AframeType m_aframe_type{};
 };
 } // namespace TMIV::MivBitstream
+
+#include "AccessUnitDelimiterRBSP.hpp"
 
 #endif

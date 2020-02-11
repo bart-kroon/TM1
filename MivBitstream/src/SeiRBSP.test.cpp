@@ -31,27 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#include "test.h"
 
-#include <iosfwd>
+#include <TMIV/MivBitstream/SeiRBSP.h>
 
-namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
-public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
+using namespace TMIV::MivBitstream;
+
+TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
+  auto x = SeiRBSP{};
+
+  REQUIRE(toString(x).empty());
+  
+  SECTION("Example 1") {
+    x.messages().emplace_back();
+    x.messages().emplace_back();
+
+    REQUIRE(toString(x).empty());
+    REQUIRE(byteCodingTest(x, 1));
   }
-
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
-
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
-
-  void encodeTo(std::ostream & /* stream */) const {}
-};
-} // namespace TMIV::MivBitstream
-
-#endif
+}

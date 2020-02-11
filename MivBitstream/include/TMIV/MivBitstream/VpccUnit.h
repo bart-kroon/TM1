@@ -49,6 +49,8 @@ enum class VuhUnitType : std::uint8_t { VPCC_VPS, VPCC_AD, VPCC_OVD, VPCC_GVD, V
 
 auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream &;
 
+constexpr uint8_t specialAtlasId = 0x3F;
+
 // 23090-5: vpcc_unit_header()
 class VpccUnitHeader {
 public:

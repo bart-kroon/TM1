@@ -63,9 +63,10 @@ public:
   auto getUExpGolomb() -> std::uint_least64_t;
   void byteAlign();
   void rbspTrailingBits();
+  auto moreData() -> bool;
+  auto moreRbspData() -> bool;
   void reset();
 
-private:
   std::istream &m_stream;
   std::uint_least64_t m_buffer{};
   unsigned m_size{};

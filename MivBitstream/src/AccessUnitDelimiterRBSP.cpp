@@ -31,27 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 
-#include <iosfwd>
+#include "verify.h"
+
+using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
-public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
+std::ostream &operator<<(std::ostream &stream, AframeType x) {
+  switch (x) {
+  case AframeType::I:
+    return stream << "I_TILE_GRP";
+  case AframeType::P_and_I:
+    return stream << "P_TILE_GRP and I_TILE_GRP";
+  case AframeType::SKIP_P_and_I:
+    return stream << "SKIP_TILE_GRP, P_TILE_GRP and I_TILE_GRP";
+  case AframeType::SKIP:
+    return stream << "SKIP_TILE_GRP";
+  default:
+    return stream << "[unknown:" << int(x) << "]";
   }
+}
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
+auto operator<<(std::ostream &stream, const AccessUnitDelimiterRBSP &x) -> std::ostream & {
+  return stream << "aframe_type=" << x.aframe_type() << '\n';
+}
 
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
+auto AccessUnitDelimiterRBSP::decodeFrom(std::istream &stream) -> AccessUnitDelimiterRBSP {
+  InputBitstream bitstream{stream};
 
-  void encodeTo(std::ostream & /* stream */) const {}
-};
+  auto aframe_type = AframeType(bitstream.readBits(3));
+  VERIFY_VPCCBITSTREAM(AframeType::I <= aframe_type && aframe_type <= AframeType::SKIP);
+
+  bitstream.rbspTrailingBits();
+
+  return AccessUnitDelimiterRBSP{aframe_type};
+}
+
+void AccessUnitDelimiterRBSP::encodeTo(std::ostream &stream) const {
+  VERIFY_VPCCBITSTREAM(AframeType::I <= aframe_type() && aframe_type() <= AframeType::SKIP);
+
+  OutputBitstream bitstream{stream};
+  bitstream.writeBits(unsigned(aframe_type()), 3);
+
+  bitstream.rbspTrailingBits();
+}
 } // namespace TMIV::MivBitstream
-
-#endif

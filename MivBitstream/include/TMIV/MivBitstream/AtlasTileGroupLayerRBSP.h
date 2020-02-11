@@ -37,7 +37,6 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/EmptySyntaxStructure.h>
 #include <TMIV/MivBitstream/VpccParameterSet.h>
 
 #include <cstdint>
@@ -122,7 +121,17 @@ private:
 };
 
 // 23090-5: skip_patch_data_unit(patchIdx)
-class SkipPatchDataUnit : public EmptySyntaxStructure<SkipPatchDataUnit> {};
+class SkipPatchDataUnit {
+public:
+  friend auto operator<<(std::ostream &stream, const SkipPatchDataUnit &x) -> std::ostream&;
+
+  constexpr auto operator==(const SkipPatchDataUnit &other) const noexcept;
+  constexpr auto operator!=(const SkipPatchDataUnit &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> SkipPatchDataUnit;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+};
 
 // 23090-5: patch_data_unit(patchIdx)
 class PatchDataUnit {

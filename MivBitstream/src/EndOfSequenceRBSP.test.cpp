@@ -31,27 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#include "test.h"
 
-#include <iosfwd>
+#include <TMIV/MivBitstream/EndOfSequenceRBSP.h>
 
-namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
-public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
-  }
+using namespace TMIV::MivBitstream;
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
+TEST_CASE("end_of_sequence_rbsp", "[End of Sequence RBSP]") {
+  const auto x = EndOfSequenceRBSP{};
 
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
-
-  void encodeTo(std::ostream & /* stream */) const {}
-};
-} // namespace TMIV::MivBitstream
-
-#endif
+  REQUIRE(toString(x).empty());
+  REQUIRE(byteCodingTest(x, 1));
+}

@@ -31,26 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#ifndef _TMIV_MIVBITSTREAM_SEIRBSP_H_
+#define _TMIV_MIVBITSTREAM_SEIRBSP_H_
 
-#include <iosfwd>
+#include <TMIV/Common/Bitstream.h>
+
+#include <vector>
 
 namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
+// 23090-5: sei_message()
+class SeiMessage {
 public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
-  }
+  friend auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream &;
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
+  auto operator==(const SeiMessage &other) const noexcept -> bool;
+  auto operator!=(const SeiMessage &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> SeiMessage;
 
-  void encodeTo(std::ostream & /* stream */) const {}
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+};
+
+// 23090-5: sei_rbsp()
+class SeiRBSP {
+public:
+  SeiRBSP() = default;
+  explicit SeiRBSP(std::vector<SeiMessage> messages);
+
+  constexpr const auto &messages() const noexcept { return m_messages; }
+  constexpr auto &messages() noexcept { return m_messages; }
+
+  friend auto operator<<(std::ostream &stream, const SeiRBSP &x) -> std::ostream &;
+
+  auto operator==(const SeiRBSP &other) const noexcept -> bool;
+  auto operator!=(const SeiRBSP &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream) -> SeiRBSP;
+
+  void encodeTo(std::ostream &stream) const;
+
+private:
+  std::vector<SeiMessage> m_messages;
 };
 } // namespace TMIV::MivBitstream
 

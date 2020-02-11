@@ -31,26 +31,26 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#ifndef _TMIV_MIVBITSTREAM_ENDOFSEQUENCERBSP_H_
+#define _TMIV_MIVBITSTREAM_ENDOFSEQUENCERBSP_H_
 
 #include <iosfwd>
 
 namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
+// 23090-5: end_of_sequence_rbsp()
+class EndOfSequenceRBSP {
 public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
+  friend auto operator<<(std::ostream &stream, const EndOfSequenceRBSP & /* x */)
       -> std::ostream & {
     return stream;
   }
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
+  constexpr auto operator==(const EndOfSequenceRBSP & /* other */) const noexcept { return true; }
+  constexpr auto operator!=(const EndOfSequenceRBSP & /* other */) const noexcept { return false; }
 
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
+  static auto decodeFrom(std::istream &stream) -> EndOfSequenceRBSP;
 
-  void encodeTo(std::ostream & /* stream */) const {}
+  void encodeTo(std::ostream &stream) const;
 };
 } // namespace TMIV::MivBitstream
 

@@ -31,29 +31,76 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_EMPTYSYNTAXSTRUCTURE_H_
-#define _TMIV_MIVBITSTREAM_EMPTYSYNTAXSTRUCTURE_H_
+#include <TMIV/MivBitstream/SeiRBSP.h>
 
 #include <TMIV/Common/Bitstream.h>
 
-#include <iosfwd>
+#include "verify.h"
+
+using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-template <typename Derived> class EmptySyntaxStructure {
-public:
-  friend auto operator<<(std::ostream &stream, const Derived & /* x */) -> std::ostream & {
-    return stream;
+auto operator<<(std::ostream &stream, const SeiMessage & /* x */) -> std::ostream & {
+  // TODO(BK): Implement
+  return stream;
+}
+
+auto SeiMessage::operator==(const SeiMessage & /* other */) const noexcept -> bool {
+  // TODO(BK): Implement
+  return true;
+}
+
+auto SeiMessage::operator!=(const SeiMessage &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto SeiMessage::decodeFrom(Common::InputBitstream &bitstream) -> SeiMessage {
+  // TODO(BK): Implement
+  bitstream.getFlag();
+  return {};
+}
+
+void SeiMessage::encodeTo(Common::OutputBitstream &bitstream) const {
+  // TODO(BK): Implement
+  bitstream.putFlag(false);
+}
+
+SeiRBSP::SeiRBSP(vector<SeiMessage> messages) : m_messages{move(messages)} {}
+
+auto operator<<(ostream &stream, const SeiRBSP &x) -> ostream & {
+  for (const auto &x : x.messages()) {
+    stream << x;
   }
+  return stream;
+}
 
-  constexpr auto operator==(const Derived & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const Derived & /* other */) const noexcept { return false; }
+auto SeiRBSP::operator==(const SeiRBSP &other) const noexcept -> bool {
+  return messages() == other.messages();
+}
 
-  static auto decodeFrom(Common::InputBitstream & /* bitstream */) -> Derived { return {}; }
-  static auto decodeFrom(std::istream & /* stream */) -> Derived { return {}; }
+auto SeiRBSP::operator!=(const SeiRBSP &other) const noexcept -> bool { return !operator==(other); }
 
-  void encodeTo(Common::OutputBitstream & /* bitstream */) const {}
-  void encodeTo(std::ostream & /* stream */) const {}
-};
+auto SeiRBSP::decodeFrom(istream &stream) -> SeiRBSP {
+  auto messages = vector<SeiMessage>{};
+  InputBitstream bitstream{stream};
+
+  do {
+    messages.push_back(SeiMessage::decodeFrom(bitstream));
+  } while (bitstream.moreRbspData());
+  bitstream.rbspTrailingBits();
+
+  return SeiRBSP{messages};
+}
+
+void SeiRBSP::encodeTo(ostream &stream) const {
+  OutputBitstream bitstream{stream};
+
+  VERIFY_MIVBITSTREAM(!messages().empty());
+
+  for (const auto &x : messages()) {
+    x.encodeTo(bitstream);
+  }
+  bitstream.rbspTrailingBits();
+}
 } // namespace TMIV::MivBitstream
-
-#endif

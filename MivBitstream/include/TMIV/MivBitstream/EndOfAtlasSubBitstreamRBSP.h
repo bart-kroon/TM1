@@ -31,26 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#ifndef _TMIV_MIVBITSTREAM_ENDOFATLASSUBBITSTREAMRBSP_H_
+#define _TMIV_MIVBITSTREAM_ENDOFATLASSUBBITSTREAMRBSP_H_
 
 #include <iosfwd>
 
 namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
+// 23090-5: end_of_atlas_sub_bitstream_rbsp()
+class EndOfAtlasSubBitstreamRBSP {
 public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
+  friend auto operator<<(std::ostream &stream, const EndOfAtlasSubBitstreamRBSP & /* x */)
       -> std::ostream & {
     return stream;
   }
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
+  constexpr auto operator==(const EndOfAtlasSubBitstreamRBSP & /* other */) const noexcept {
+    return true;
+  }
+  constexpr auto operator!=(const EndOfAtlasSubBitstreamRBSP & /* other */) const noexcept {
+    return false;
+  }
 
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
+  static auto decodeFrom(std::istream &stream) -> EndOfAtlasSubBitstreamRBSP;
 
-  void encodeTo(std::ostream & /* stream */) const {}
+  void encodeTo(std::ostream &stream) const;
 };
 } // namespace TMIV::MivBitstream
 

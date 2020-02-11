@@ -31,27 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#include "test.h"
 
-#include <iosfwd>
+#include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 
-namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
-public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
+using namespace TMIV::MivBitstream;
+
+TEST_CASE("access_unit_delimiter_rbsp", "[Access Unit Delimiter RBSP]") {
+  auto x = AccessUnitDelimiterRBSP{};
+
+  REQUIRE(toString(x) == R"(aframe_type=I_TILE_GRP
+)");
+  REQUIRE(byteCodingTest(x, 1));
+
+  SECTION("Example 1") {
+    x.aframe_type(AframeType::SKIP_P_and_I);
+
+    REQUIRE(toString(x) == R"(aframe_type=SKIP_TILE_GRP, P_TILE_GRP and I_TILE_GRP
+)");
+
+    REQUIRE(byteCodingTest(x, 1));
   }
-
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
-
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
-
-  void encodeTo(std::ostream & /* stream */) const {}
-};
-} // namespace TMIV::MivBitstream
-
-#endif
+}

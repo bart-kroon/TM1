@@ -31,27 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
-#define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
+#include <TMIV/MivBitstream/EndOfAtlasSubBitstreamRBSP.h>
 
-#include <iosfwd>
+#include <TMIV/Common/Bitstream.h>
+
+using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-// 23090-5: video_sub_bitstream()
-class VideoSubBitstream {
-public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
-  }
+auto EndOfAtlasSubBitstreamRBSP::decodeFrom(istream &stream) -> EndOfAtlasSubBitstreamRBSP {
+  InputBitstream bitstream{stream};
+  bitstream.rbspTrailingBits();
+  return {};
+}
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
-
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
-
-  void encodeTo(std::ostream & /* stream */) const {}
-};
+void EndOfAtlasSubBitstreamRBSP::encodeTo(ostream &stream) const {
+  OutputBitstream bitstream{stream};
+  bitstream.rbspTrailingBits();
+}
 } // namespace TMIV::MivBitstream
-
-#endif

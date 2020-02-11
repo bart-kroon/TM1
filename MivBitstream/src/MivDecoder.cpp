@@ -66,8 +66,9 @@ auto MivDecoder::decodeVpccUnit() -> bool {
 }
 
 void MivDecoder::decode() {
-  while (decodeVpccUnit())
+  while (decodeVpccUnit()) {
     ;
+  }
 }
 
 void MivDecoder::onVpccPayload(const VpccUnitHeader & /* vuh */,
@@ -75,7 +76,7 @@ void MivDecoder::onVpccPayload(const VpccUnitHeader & /* vuh */,
   MIVBITSTREAM_ERROR("V-PCC payload of unknown type");
 }
 
-void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps) {
+void MivDecoder::onVpccPayload(const VpccUnitHeader & /*vuh*/, const VpccParameterSet &vps) {
   const auto id = vps.vps_vpcc_parameter_set_id();
   while (m_vps.size() <= id) {
     m_vps.emplace_back();
@@ -92,7 +93,7 @@ void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstrea
   }
 }
 
-void MivDecoder::onVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd) {
+void MivDecoder::onVpccPayload(const VpccUnitHeader & /*vuh*/, const VideoSubBitstream & /*vd*/) {
   if (m_mode == Mode::MIV) {
     VERIFY_MIVBITSTREAM("TMIV does not yet support video sub bitstreams");
   }
@@ -146,7 +147,7 @@ void MivDecoder::onNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
   }
 }
 
-void MivDecoder::onUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
+void MivDecoder::onUnknownNalUnit(const VpccUnitHeader & /*vuh*/, const NalUnit &nu) {
   cout << "WARNING: Ignoring NAL unit of unknown type " << nu.nal_unit_header().nal_unit_type()
        << '\n';
 }
@@ -165,13 +166,13 @@ void MivDecoder::onAsps(const VpccUnitHeader &vuh, const NalUnitHeader & /* nuh 
   atlas_.asps[asps.asps_atlas_sequence_parameter_set_id()] = move(asps);
 }
 
-void MivDecoder::onAfps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+void MivDecoder::onAfps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
                         AtlasFrameParameterSetRBSP afps) {
   auto &atlas_ = atlas(vuh);
   while (atlas_.afps.size() <= afps.afps_atlas_frame_parameter_set_id()) {
     atlas_.afps.emplace_back();
   }
-  atlas_.afps[afps.afps_atlas_frame_parameter_set_id()] = move(afps);
+  atlas_.afps[afps.afps_atlas_frame_parameter_set_id()] = afps;
 }
 
 void MivDecoder::onAud(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,

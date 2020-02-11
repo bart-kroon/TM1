@@ -45,7 +45,7 @@ auto EndOfAtlasSubBitstreamRBSP::decodeFrom(istream &stream) -> EndOfAtlasSubBit
   return {};
 }
 
-void EndOfAtlasSubBitstreamRBSP::encodeTo(ostream &stream) const {
+void EndOfAtlasSubBitstreamRBSP::encodeTo(ostream &stream) {
   OutputBitstream bitstream{stream};
   bitstream.rbspTrailingBits();
 }

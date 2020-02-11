@@ -45,7 +45,7 @@ auto EndOfSequenceRBSP::decodeFrom(istream &stream) -> EndOfSequenceRBSP {
   return {};
 }
 
-void EndOfSequenceRBSP::encodeTo(ostream &stream) const {
+void EndOfSequenceRBSP::encodeTo(ostream &stream) {
   OutputBitstream bitstream{stream};
   bitstream.rbspTrailingBits();
 }

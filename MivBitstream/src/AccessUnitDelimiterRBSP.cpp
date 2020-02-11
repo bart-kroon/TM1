@@ -39,7 +39,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-std::ostream &operator<<(std::ostream &stream, AframeType x) {
+auto operator<<(std::ostream &stream, AframeType x) -> std::ostream & {
   switch (x) {
   case AframeType::I:
     return stream << "I_TILE_GRP";

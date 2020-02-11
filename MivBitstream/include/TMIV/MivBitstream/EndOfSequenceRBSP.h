@@ -50,7 +50,7 @@ public:
 
   static auto decodeFrom(std::istream &stream) -> EndOfSequenceRBSP;
 
-  void encodeTo(std::ostream &stream) const;
+  static void encodeTo(std::ostream &stream);
 };
 } // namespace TMIV::MivBitstream
 

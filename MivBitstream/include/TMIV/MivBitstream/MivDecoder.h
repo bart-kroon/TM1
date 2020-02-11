@@ -155,7 +155,7 @@ private:
   void decodeVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodeEos(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodeEob(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeFd(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void decodeFd(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);

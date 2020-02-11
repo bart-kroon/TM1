@@ -54,7 +54,7 @@ public:
 
   static auto decodeFrom(std::istream &stream) -> EndOfAtlasSubBitstreamRBSP;
 
-  void encodeTo(std::ostream &stream) const;
+  static void encodeTo(std::ostream &stream);
 };
 } // namespace TMIV::MivBitstream
 

@@ -169,6 +169,8 @@ public:
       if (!neighourhood.empty()) {
 
         std::vector<std::uint16_t> childIdList;
+		
+		childIdList.reserve(neighourhood.size());
 
         for (const auto &link : neighourhood) {
           childIdList.emplace_back(static_cast<std::uint16_t>(link.node()));

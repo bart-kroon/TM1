@@ -34,49 +34,11 @@
 #ifndef _TMIV_MIVBITSTREAM_ATLASSUBBITSTREAM_H_
 #define _TMIV_MIVBITSTREAM_ATLASSUBBITSTREAM_H_
 
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/NalSampleStream.h>
-
-#include <optional>
 
 namespace TMIV::MivBitstream {
 // 23090-5: atlas_sub_bitstream()
-class AtlasSubBitstream {
-public:
-  AtlasSubBitstream() = default;
-  explicit AtlasSubBitstream(const NalSampleStream &nss) : m_nss{nss} {}
-  explicit AtlasSubBitstream(const SampleStreamNalHeader &ssnh)
-      : AtlasSubBitstream{NalSampleStream{ssnh}} {}
-  AtlasSubBitstream(const AtlasSubBitstream &) = default;
-  AtlasSubBitstream(AtlasSubBitstream &&) = default;
-  AtlasSubBitstream &operator=(const AtlasSubBitstream &) = default;
-  AtlasSubBitstream &operator=(AtlasSubBitstream &&) = default;
-  virtual ~AtlasSubBitstream() = default;
-
-  const auto &nal_sample_stream() const noexcept;
-  const auto &atlas_sequence_parameter_sets() const noexcept { return m_asps; }
-  const auto &atlas_frame_parameter_sets() const noexcept { return m_afps; }
-
-  friend auto operator<<(std::ostream &stream, const AtlasSubBitstream &x) -> std::ostream &;
-
-  auto operator==(const AtlasSubBitstream &other) const noexcept -> bool;
-  auto operator!=(const AtlasSubBitstream &other) const noexcept -> bool;
-
-  static auto decodeFrom(std::istream &stream) -> AtlasSubBitstream;
-  void encodeTo(std::ostream &stream) const;
-
-protected:
-  virtual void decodeNalUnit(const NalUnit &nal_unit);
-
-private:
-  void decodeAsps(const NalUnit &nal_unit);
-  void decodeAfps(const NalUnit &nal_unit);
-
-  std::optional<NalSampleStream> m_nss;
-  std::vector<AtlasSequenceParameterSetRBSP> m_asps;
-  std::vector<AtlasFrameParameterSetRBSP> m_afps;
-};
+using AtlasSubBitstream = NalSampleStream;
 } // namespace TMIV::MivBitstream
 
 #endif

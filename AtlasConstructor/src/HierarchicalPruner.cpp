@@ -164,15 +164,15 @@ public:
 
     for (auto camId = 0U; camId < viewParamsList.size(); camId++) {
 
-      const auto &neighourhood = pruningGraphExport.getNeighbourhood(camId);
+      const auto &neighbourhood = pruningGraphExport.getNeighbourhood(camId);
 
-      if (!neighourhood.empty()) {
+      if (!neighbourhood.empty()) {
 
         std::vector<std::uint16_t> childIdList;
-		
-		childIdList.reserve(neighourhood.size());
 
-        for (const auto &link : neighourhood) {
+        childIdList.reserve(neighbourhood.size());
+
+        for (const auto &link : neighbourhood) {
           childIdList.emplace_back(static_cast<std::uint16_t>(link.node()));
         }
 

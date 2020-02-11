@@ -123,7 +123,7 @@ struct ViewParams {
 
   // In specification: depth_occ_map_threshold_default[ v ]
   //
-  // Do not set within the encoder! Use encoder.hasOccupancy instead. 
+  // Do not set within the encoder! Use encoder.hasOccupancy instead.
   // The DepthOccupancy component determines this threshold.
   uint16_t depthOccMapThreshold{};
 
@@ -131,7 +131,10 @@ struct ViewParams {
   // In specification: depth_start_default[ v ]
   std::optional<uint16_t> depthStart{};
 
-  // Not part of the bitstream. Improve screen output.
+  // In specification: pruning_children[ v ]
+  std::optional<std::vector<uint16_t>> pruningChildren{};
+
+  // Not in the specification. Just to improve screen output
   std::string name{};
 
   // Not part of the bitstream. Does the depth map have invalid/non-occupied?

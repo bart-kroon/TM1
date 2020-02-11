@@ -76,6 +76,9 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_outIvSequenceParams = m_inIvSequenceParams;
   m_isBasicView = move(isBasicView);
 
+  // Register pruning relation
+  m_pruner->registerPruningRelation(m_outIvSequenceParams, m_isBasicView);
+
   // Turn on occupancy coding for partial views
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {
     if (!m_isBasicView[viewId]) {
@@ -112,8 +115,7 @@ void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUn
 
 void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Pruning
-  MaskList masks =
-      m_pruner->prune(m_inIvSequenceParams.viewParamsList, transportViews, m_isBasicView);
+  MaskList masks = m_pruner->prune(m_inIvSequenceParams, transportViews, m_isBasicView);
 
   const auto frame = m_viewBuffer.size();
 

@@ -71,8 +71,7 @@ void MivDecoder::decode() {
   }
 }
 
-void MivDecoder::onVpccPayload(const VpccUnitHeader & /* vuh */,
-                               const monostate & /* payload */) {
+void MivDecoder::onVpccPayload(const VpccUnitHeader & /* vuh */, const monostate & /* payload */) {
   VPCCBITSTREAM_ERROR("V-PCC payload of unknown type");
 }
 

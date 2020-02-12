@@ -40,8 +40,6 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
-#include <TMIV/MivBitstream/EndOfAtlasSubBitstreamRBSP.h>
-#include <TMIV/MivBitstream/EndOfSequenceRBSP.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
 #include <TMIV/MivBitstream/VpccParameterSet.h>
@@ -111,11 +109,10 @@ protected:
                          AccessUnitDelimiterRBSP aud);
 
   // This function is called when an end of sequence (EOS) has been decoded.
-  virtual void onEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, EndOfSequenceRBSP eos);
+  virtual void onEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
 
   // This function is called when an end of atlas sub bitstream (EOB) has been decoded.
-  virtual void onEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                     EndOfAtlasSubBitstreamRBSP eob);
+  virtual void onEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
 
   // This function is called when a prefix non-essential SEI has been decoded.
   virtual void onPrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);

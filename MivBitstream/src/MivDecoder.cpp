@@ -183,35 +183,28 @@ void MivDecoder::onVpccAud(const VpccUnitHeader & /* vuh */, const NalUnitHeader
   // TODO(BK): Implement
 }
 
-void MivDecoder::onEos(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                       EndOfSequenceRBSP /* eos */) {
+void MivDecoder::onEos(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */) {
   // TODO(BK): Implement
 }
 
-void MivDecoder::onEob(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                       EndOfAtlasSubBitstreamRBSP /* eob */) {
+void MivDecoder::onEob(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */) {
   // TODO(BK): Implement
 }
 
-void MivDecoder::onPrefixNSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
-  // TODO(BK): Implement
+void MivDecoder::onPrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+  cout << "Prefix non-essential SEI:\n" << vuh << nuh << sei;
 }
 
-void MivDecoder::onSuffixNSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
-  // TODO(BK): Implement
+void MivDecoder::onSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+  cout << "Suffix non-essential SEI:\n" << vuh << nuh << sei;
 }
 
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
-void MivDecoder::onPrefixESei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
-  // TODO(BK): Implement
+void MivDecoder::onPrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+  cout << "Prefix essential SEI:\n" << vuh << nuh << sei;
 }
 
-void MivDecoder::onSuffixESei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                              SeiRBSP /* sei */) { // NOLINT(performance-unnecessary-value-param)
-  // TODO(BK): Implement
+void MivDecoder::onSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
+  cout << "Suffix essential SEI:\n" << vuh << nuh << sei;
 }
 
 auto MivDecoder::sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHeader {
@@ -253,13 +246,11 @@ void MivDecoder::decodeVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu) {
 }
 
 void MivDecoder::decodeEos(const VpccUnitHeader &vuh, const NalUnit &nu) {
-  istringstream stream{nu.rbsp()};
-  onEos(vuh, nu.nal_unit_header(), EndOfSequenceRBSP::decodeFrom(stream));
+  onEos(vuh, nu.nal_unit_header());
 }
 
 void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnit &nu) {
-  istringstream stream{nu.rbsp()};
-  onEob(vuh, nu.nal_unit_header(), EndOfAtlasSubBitstreamRBSP::decodeFrom(stream));
+  onEob(vuh, nu.nal_unit_header());
 }
 
 void MivDecoder::decodeFd(const VpccUnitHeader & /* vuh */, const NalUnit & /* nu */) {

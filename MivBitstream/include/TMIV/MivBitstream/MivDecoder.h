@@ -47,10 +47,11 @@
 #include <TMIV/MivBitstream/VpccUnit.h>
 
 #include <array>
+#include <functional>
 
 namespace TMIV::MivBitstream {
 class MivDecoder {
-public:
+public: // Integration testing
   enum Mode {
     MIV, // Parse a 3VC bitstream with MIV extension
     TMC2 // Parse a bitstream that was produced by TMC2
@@ -60,73 +61,82 @@ public:
   // testing purposes.
   static const Mode mode;
 
+public: // Decoder interface
   // Construct a MivDecoder and read the sample stream V-PCC header
   explicit MivDecoder(std::istream &stream);
 
   // Decode the next V-PCC unit
+  //
+  // Register listeners to obtain output. The decoding is stopped prematurely when any of the
+  // listeners returns false.
   auto decodeVpccUnit() -> bool;
 
-  // Decode everything
+  // Decode (remainder of) V-PCC sample bitstream
+  //
+  // Register listeners to obtain output. The decoding is stopped prematurely when any of the
+  // listeners returns false.
   void decode();
 
-protected:
-  // This function is called when a V-PCC unit of unknown type has been decoded.
-  virtual void onVpccPayload(const VpccUnitHeader &vuh, const std::monostate &payload);
+public: // Callback signatures
+  // Callback that will be called when a VPS is decoded.
+  using SequenceListener = std::function<bool(const VpccParameterSet &)>;
 
-  // This function is called when a V-PCC parameter set (VPS) has been decoded.
-  virtual void onVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps);
+  // Callback that will be called when an ATGL is decoded with atgh_type == I_TILE_GRP.
+  using AtlasFrameListener = std::function<bool(
+      const VpccUnitHeader &, const VpccParameterSet &, const AtlasSequenceParameterSetRBSP &,
+      const AtlasFrameParameterSetRBSP &, const AtlasTileGroupLayerRBSP &)>;
 
-  // This function is called when an atlas sub bitstream V-PCC unit has been decoded.
-  virtual void onVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad);
+  // Callback that will be called when an ATGL is decoded with atgh_type == SKIP_TILE_GRP.
+  using SkipAtlasFrameListener = std::function<bool(const VpccUnitHeader &)>;
 
-  // This function is called when a video sub bitstream V-PCC unit has been decoded.
-  virtual void onVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd);
+public: // Callback registrations
+  std::vector<SequenceListener> onSequence;
+  std::vector<AtlasFrameListener> onAtlasFrame;
+  std::vector<SkipAtlasFrameListener> onSkipAtlasFrame;
 
-  // This function is called for each decoded nal unit.
-  virtual void onNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
+private: // Decoder output
+  void outputSequence(const VpccParameterSet &vuh);
+  void outputAtlasFrame(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                        AtlasTileGroupLayerRBSP atgl);
+  void outputSkipAtlasFrame(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                            AtlasTileGroupLayerRBSP atgl);
 
-  // This function is called for each decoded nal unit of unknown type.
-  virtual void onUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
-
-  // This function is called when an atlas tile group layer (ATGL) has been decoded.
-  virtual void onAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                      AtlasTileGroupLayerRBSP atgl);
-
-  // This function is called when an atlas sequence parameter set (ASPS) has been decoded.
-  virtual void onAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                      AtlasSequenceParameterSetRBSP asps);
-
-  // This function is called when an atlas sequence parameter set (ASPS) has been decoded.
-  virtual void onAfps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                      AtlasFrameParameterSetRBSP afps);
-
-  // This function is called when an access unit delimiter (AUD) has been decoded.
-  virtual void onAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+private: // Decoding processes
+  void decodeVpccPayload(const VpccUnitHeader &vuh, const std::monostate &payload);
+  void decodeVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps);
+  void decodeVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad);
+  void decodeVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd);
+  void decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void decodeUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                  AtlasTileGroupLayerRBSP atgl);
+  void decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                  AtlasSequenceParameterSetRBSP asps);
+  void decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                  AtlasFrameParameterSetRBSP afps);
+  void decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, AccessUnitDelimiterRBSP aud);
+  void decodeVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                      AccessUnitDelimiterRBSP aud);
+  void decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
+  void decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
+  void decodeFd(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
+  void decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
+  void decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
+  void decodePrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
+  void decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
 
-  // This function is called when a V-PCC access unit delimiter (V-PCC AUD) has been decoded.
-  virtual void onVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                         AccessUnitDelimiterRBSP aud);
+private: // Parsers
+  void parseAtgl(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseAfps(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseAud(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parsePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
 
-  // This function is called when an end of sequence (EOS) has been decoded.
-  virtual void onEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-
-  // This function is called when an end of atlas sub bitstream (EOB) has been decoded.
-  virtual void onEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-
-  // This function is called when a prefix non-essential SEI has been decoded.
-  virtual void onPrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
-
-  // This function is called when a suffix non-essential SEI has been decoded.
-  virtual void onSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
-
-  // This function is called when a prefix essential SEI has been decoded.
-  virtual void onPrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
-
-  // This function is called when aa suffix essential SEI has been decoded.
-  virtual void onSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
-
-private:
+private: // Internal decoder state
   std::istream &m_stream;
   SampleStreamVpccHeader m_ssvh;
 
@@ -145,21 +155,9 @@ private:
   std::vector<VpccParameterSet> m_vpsV;
   std::vector<Sequence> m_sequenceV;
 
-  static auto sampleStreamVpccHeader(std::istream &) -> SampleStreamVpccHeader;
+  bool m_stop{};
 
-  void decodeAcl(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeAfps(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeAud(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeEos(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeEob(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void decodeFd(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
-
+private: // Access internal decoder state
   auto vps(const VpccUnitHeader &vuh) const -> const VpccParameterSet &;
   auto sequence(const VpccUnitHeader &vuh) const -> const Sequence &;
   auto sequence(const VpccUnitHeader &vuh) -> Sequence &;

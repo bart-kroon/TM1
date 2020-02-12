@@ -31,7 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define CATCH_CONFIG_MAIN
 #include "test.h"
 
 #include <TMIV/MivBitstream/NalSampleStreamFormat.h>

@@ -226,6 +226,12 @@ auto MivDecoder::sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHead
   return SampleStreamVpccHeader::decodeFrom(stream);
 }
 
+void MivDecoder::decodeAcl(const VpccUnitHeader &vuh, const NalUnit &nu) {
+  istringstream stream{nu.rbsp()};
+  onAtgl(vuh, nu.nal_unit_header(),
+         AtlasTileGroupLayerRBSP::decodeFrom(stream, vuh, vps(vuh), aspsV(vuh), afpsV(vuh)));
+}
+
 void MivDecoder::decodeAsps(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   onAsps(vuh, nu.nal_unit_header(), AtlasSequenceParameterSetRBSP::decodeFrom(stream));
@@ -233,7 +239,7 @@ void MivDecoder::decodeAsps(const VpccUnitHeader &vuh, const NalUnit &nu) {
 
 void MivDecoder::decodeAfps(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  onAfps(vuh, nu.nal_unit_header(), AtlasFrameParameterSetRBSP::decodeFrom(stream, asps(vuh)));
+  onAfps(vuh, nu.nal_unit_header(), AtlasFrameParameterSetRBSP::decodeFrom(stream, aspsV(vuh)));
 }
 
 void MivDecoder::decodeAud(const VpccUnitHeader &vuh, const NalUnit &nu) {
@@ -278,6 +284,11 @@ void MivDecoder::decodePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu) 
 void MivDecoder::decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   onSuffixESei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
+}
+
+auto MivDecoder::vps(const VpccUnitHeader &vuh) const -> const VpccParameterSet & {
+  VERIFY_VPCCBITSTREAM(vuh.vuh_vpcc_parameter_set_id() < m_vpsV.size());
+  return m_vpsV[vuh.vuh_vpcc_parameter_set_id()];
 }
 
 auto MivDecoder::sequence(const VpccUnitHeader &vuh) const -> const Sequence & {
@@ -326,7 +337,7 @@ auto MivDecoder::specialAtlas(const VpccUnitHeader &vuh) -> Atlas & {
   return *x.specialAtlas;
 }
 
-auto MivDecoder::asps(const VpccUnitHeader &vuh) const
+auto MivDecoder::aspsV(const VpccUnitHeader &vuh) const
     -> const vector<AtlasSequenceParameterSetRBSP> & {
   auto &x = atlas(vuh);
   if (x.aspsV.empty()) {
@@ -335,7 +346,7 @@ auto MivDecoder::asps(const VpccUnitHeader &vuh) const
   return x.aspsV;
 }
 
-auto MivDecoder::afps(const VpccUnitHeader &vuh) const
+auto MivDecoder::afpsV(const VpccUnitHeader &vuh) const
     -> const vector<AtlasFrameParameterSetRBSP> & {
   auto &x = atlas(vuh);
   if (x.afpsV.empty()) {

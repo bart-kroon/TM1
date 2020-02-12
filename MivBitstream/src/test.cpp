@@ -31,18 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#define CATCH_CONFIG_MAIN
 #include "test.h"
 
 #include <TMIV/MivBitstream/MivDecoder.h>
 
-#include <sstream>
-
-using namespace std;
-using namespace TMIV::MivBitstream;
-
-TEST_CASE("MivDecoder", "[MIV decoder]") {
-  SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
-    MivDecoder decoder{stream};
-  }
+namespace TMIV::MivBitstream {
+const MivDecoder::Mode MivDecoder::mode = Mode::MIV;
 }

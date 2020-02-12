@@ -94,6 +94,7 @@ if (CMAKE_TESTING_ENABLED)
 		"src/NalSampleStreamFormat.test.cpp"
 		"src/NalUnit.test.cpp"		
 		"src/SeiRBSP.test.cpp"
+		"src/test.cpp"
 		"src/test.h"	
 		"src/VpccParameterSet.test.cpp"
 		"src/VpccUnit.test.cpp"

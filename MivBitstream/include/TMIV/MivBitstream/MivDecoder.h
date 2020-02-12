@@ -163,14 +163,15 @@ private:
   void decodePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
 
+  auto vps(const VpccUnitHeader &vuh) const -> const VpccParameterSet &;
   auto sequence(const VpccUnitHeader &vuh) const -> const Sequence &;
   auto sequence(const VpccUnitHeader &vuh) -> Sequence &;
   auto atlas(const VpccUnitHeader &vuh) const -> const Atlas &;
   auto atlas(const VpccUnitHeader &vuh) -> Atlas &;
   auto specialAtlas(const VpccUnitHeader &vuh) const -> const Atlas &;
   auto specialAtlas(const VpccUnitHeader &vuh) -> Atlas &;
-  auto asps(const VpccUnitHeader &vuh) const -> const std::vector<AtlasSequenceParameterSetRBSP> &;
-  auto afps(const VpccUnitHeader &vuh) const -> const std::vector<AtlasFrameParameterSetRBSP> &;
+  auto aspsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasSequenceParameterSetRBSP> &;
+  auto afpsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasFrameParameterSetRBSP> &;
 };
 } // namespace TMIV::MivBitstream
 

@@ -116,8 +116,7 @@ auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, c
                   const vector<string> &viewNames = {}, bool downscaleDepth = false)
     -> MVDFrame<FORMAT> {
 
-  cout << "Loading " << what << " frame " << frameIndex << " Downscale = " << downscaleDepth
-       << endl;
+  cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());

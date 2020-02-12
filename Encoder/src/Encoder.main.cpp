@@ -126,7 +126,7 @@ private:
       auto atlas = m_encoder->popAtlas();
 
       if (m_downscale_depth) {
-        atlas = DownScaleAtlasDepth(atlas);
+        atlas = downScaleAtlasDepth(atlas);
       }
 
       saveAtlas(json(), i, atlas);
@@ -141,7 +141,7 @@ private:
     }
   }
 
-  static auto MaxPool2x2(const Mat1w &depth) -> Mat1w {
+  static auto maxPool2x2(const Mat1w &depth) -> Mat1w {
     auto w = depth.width() / 2U;
     auto h = depth.height() / 2U;
 
@@ -163,7 +163,7 @@ private:
     return depthD2;
   }
 
-  static auto DownScaleAtlasDepth(const MVD10Frame &atlas) -> MVD10Frame {
+  static auto downScaleAtlasDepth(const MVD10Frame &atlas) -> MVD10Frame {
     TMIV::Common::MVD10Frame atlasOut(atlas.size());
 
     for (auto i = 0U; i < atlas.size(); ++i) {
@@ -171,7 +171,7 @@ private:
       atlasOut[i].first = atlas[i].first;
 
       // downscale depth using max-of-4 operation
-      auto depthD2 = MaxPool2x2(atlas[i].second.getPlane(0));
+      auto depthD2 = maxPool2x2(atlas[i].second.getPlane(0));
       atlasOut[i].second.resize(int(depthD2.width()), int(depthD2.height()));
       atlasOut[i].second.getPlane(0) = depthD2;
     }

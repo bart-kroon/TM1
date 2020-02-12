@@ -53,11 +53,15 @@ MivDecoder::MivDecoder(istream &stream)
 
 auto MivDecoder::decodeVpccUnit() -> bool {
   VERIFY_VPCCBITSTREAM(m_stream.good());
+  const auto first = m_stream.tellg();
   const auto ssvu = SampleStreamVpccUnit::decodeFrom(m_stream, m_ssvh);
   VERIFY_VPCCBITSTREAM(m_stream.good());
+  const auto last = m_stream.tellg();
+  cout << "Sample stream V-PCC unit at [" << first << ", " << last << ") bytes:" << ssvu;
 
   istringstream substream{ssvu.ssvu_vpcc_unit()};
   const auto vu = VpccUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_vpcc_unit_size());
+  cout << vu.vpcc_unit_header();
   visit([this, &vu](const auto &payload) { onVpccPayload(vu.vpcc_unit_header(), payload); },
         vu.vpcc_payload().payload());
 
@@ -97,6 +101,13 @@ void MivDecoder::onVpccPayload(const VpccUnitHeader & /*vuh*/, const VideoSubBit
 }
 
 void MivDecoder::onNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
+  cout << nu.nal_unit_header();
+
+  if (nu.nal_unit_header().nal_layer_id() != 0) {
+    cout << "WARNING: Ignoring NAL unit with nal_layer_id != 0\n";
+    return;
+  }
+
   switch (nu.nal_unit_header().nal_unit_type()) {
   case NalUnitType::NAL_TRAIL:
   case NalUnitType::NAL_TSA:
@@ -155,8 +166,10 @@ void MivDecoder::onAtgl(
   // TODO(BK): Implement
 }
 
-void MivDecoder::onAsps(const VpccUnitHeader &vuh, const NalUnitHeader & /* nuh */,
+void MivDecoder::onAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                         AtlasSequenceParameterSetRBSP asps) {
+  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0);
+
   auto &x = atlas(vuh);
   while (x.aspsV.size() <= asps.asps_atlas_sequence_parameter_set_id()) {
     x.aspsV.emplace_back();
@@ -173,18 +186,25 @@ void MivDecoder::onAfps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nuh*/
   x.afpsV[afps.afps_atlas_frame_parameter_set_id()] = afps;
 }
 
-void MivDecoder::onAud(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                       AccessUnitDelimiterRBSP /* aud */) {
-  // TODO(BK): Implement
+void MivDecoder::onAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                       AccessUnitDelimiterRBSP aud) {
+  // There is no normative decoding process associated with the access unit delimiter. Print to
+  // prove that we have decoded this NAL unit.
+  cout << "Access unit delimiter:\n" << vuh << nuh << aud;
 }
 
-void MivDecoder::onVpccAud(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                           AccessUnitDelimiterRBSP /* aud */) {
-  // TODO(BK): Implement
+void MivDecoder::onVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                           AccessUnitDelimiterRBSP aud) {
+  // There is no normative decoding process associated with the access unit delimiter. Print to
+  // prove that we have decoded this NAL unit.
+  cout << "V-PCC access unit delimiter:\n" << vuh << nuh << aud;
 }
 
-void MivDecoder::onEos(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */) {
-  // TODO(BK): Implement
+void MivDecoder::onEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
+  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0);
+
+  // The next NAL unit when present will be an IRAP access unit.
+  sequence(vuh) = {};
 }
 
 void MivDecoder::onEob(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */) {
@@ -192,19 +212,25 @@ void MivDecoder::onEob(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /
 }
 
 void MivDecoder::onPrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
-  cout << "Prefix non-essential SEI:\n" << vuh << nuh << sei;
+  // Print to prove that we have decoded this NAL unit
+  cout << "Prefix non-essential supplemental enhancement information (NSEI):\n"
+       << vuh << nuh << sei;
 }
 
 void MivDecoder::onSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
-  cout << "Suffix non-essential SEI:\n" << vuh << nuh << sei;
+  // Print to prove that we have decoded this NAL unit
+  cout << "Suffix non-essential supplemental enhancement information (NSEI):\n"
+       << vuh << nuh << sei;
 }
 
 void MivDecoder::onPrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
-  cout << "Prefix essential SEI:\n" << vuh << nuh << sei;
+  // Print to prove that we have decoded this NAL unit
+  cout << "Prefix essential supplemental enhancement information (ESEI):\n" << vuh << nuh << sei;
 }
 
 void MivDecoder::onSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei) {
-  cout << "Suffix essential SEI:\n" << vuh << nuh << sei;
+  // Print to prove that we have decoded this NAL unit
+  cout << "Suffix essential supplemental enhancement information (ESEI):\n" << vuh << nuh << sei;
 }
 
 auto MivDecoder::sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHeader {

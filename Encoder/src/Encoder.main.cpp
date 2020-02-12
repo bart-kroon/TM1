@@ -82,8 +82,10 @@ public:
   void run() override {
     auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
-    sourceSequenceParams.depthLowQualityFlag = m_depthQualityAssessor->isLowDepthQuality(
-        sourceSequenceParams, loadSourceFrame(json(), m_viewSizes, 0));
+    if (!json().optional("depthLowQualityFlag")) {
+      sourceSequenceParams.depthLowQualityFlag = m_depthQualityAssessor->isLowDepthQuality(
+          sourceSequenceParams, loadSourceFrame(json(), m_viewSizes, 0));
+    }
     cout << "\nSource sequence parameters:\n" << sourceSequenceParams;
 
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);

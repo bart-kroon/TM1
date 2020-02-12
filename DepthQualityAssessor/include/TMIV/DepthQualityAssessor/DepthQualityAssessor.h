@@ -51,7 +51,8 @@ public:
                          const Common::MVD16Frame &sourceViews) -> bool override;
 
 private:
-  float m_blendingFactor{0.01F};
+  float m_blendingFactor{0.03F};
+  float m_maxOutlierRatio{0.001F};
 };
 } // namespace TMIV::DepthQualityAssessor
 

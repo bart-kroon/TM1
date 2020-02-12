@@ -35,6 +35,7 @@
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 #include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
+#include <iostream>
 
 using namespace TMIV::Common;
 using namespace TMIV::Renderer;
@@ -44,29 +45,38 @@ namespace TMIV::DepthQualityAssessor {
 
 namespace {
 template <typename MAT>
-auto textureGather(const MAT &m, const Vec2f &p) -> stack::Vec4<typename MAT::value_type> {
-  stack::Vec4<typename MAT::value_type> fetchedValues;
+auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> std::vector<typename MAT::value_type> {
+  std::vector<typename MAT::value_type> fetchedValues;
+
+  const int N = 1;
 
   int w_last = static_cast<int>(m.width()) - 1;
   int h_last = static_cast<int>(m.height()) - 1;
 
-  int x0 = clamp(ifloor(p.x() - 0.5F), 0, w_last);
-  int y0 = clamp(ifloor(p.y() - 0.5F), 0, h_last);
+  int xc = clamp(ifloor(p.x() + 0.5F), 0, w_last);
+  int yc = clamp(ifloor(p.y() + 0.5F), 0, h_last);
 
-  int x1 = std::min(x0 + 1, w_last);
-  int y1 = std::min(y0 + 1, h_last);
+  int x0 = std::max(0, xc - N);
+  int y0 = std::max(0, yc - N);
 
-  fetchedValues[0] = m(y1, x0);
-  fetchedValues[1] = m(y1, x1);
-  fetchedValues[2] = m(y0, x1);
-  fetchedValues[3] = m(y0, x0);
+  int x1 = std::min(xc + N, w_last);
+  int y1 = std::min(yc + N, h_last);
+
+  fetchedValues.reserve((x1 - x0 + 1) * (y1 - y0 + 1));
+
+  for (int y = y0; y <= y1; y++) {
+    for (int x = x0; x <= x1; x++) {
+      fetchedValues.emplace_back(m(y, x));
+    }
+  }
 
   return fetchedValues;
 }
 
 template <typename SourceProjectionType>
 auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
-                       const Common::MVD16Frame &sourceViews, float blendingFactor) -> bool {
+                       const Common::MVD16Frame &sourceViews, float blendingFactor,
+                       float maxOutlierRatio) -> bool {
   typename ProjectionHelper<SourceProjectionType>::List sourceHelperList{
       ivSequenceParams.viewParamsList};
 
@@ -93,7 +103,7 @@ auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
 
     Mat<Vec3f> sourceUnprojection({sourceDepthExpanded.height(), sourceDepthExpanded.width()});
 
-    parallel_for(sourceDepthExpanded.width(), sourceDepthExpanded.height(),
+    parallel_for(sourceUnprojection.width(), sourceUnprojection.height(),
                  [&](std::size_t y, std::size_t x) {
                    float z = sourceDepthExpanded(y, x);
                    if (sourceHelper.isValidDepth(z)) {
@@ -109,8 +119,6 @@ auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
   }
 
   // Repojection for outlier detection
-  std::atomic<bool> lowDepthQualityFlag = false;
-
   for (std::size_t firstId = 0; firstId < sourceHelperList.size(); firstId++) {
 
     const auto &firstHelper = sourceHelperList[firstId];
@@ -121,6 +129,7 @@ auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
       if (firstId != secondId) {
 
         const auto &secondUnprojection = sourceUnprojectionList[secondId];
+        std::atomic<std::size_t> outliers = 0U;
 
         parallel_for(secondUnprojection.width(), secondUnprojection.height(),
                      [&](std::size_t y, std::size_t x) {
@@ -129,34 +138,44 @@ auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
                        if (!std::isnan(P.x())) {
                          auto p = firstHelper.doProjection(P);
 
-                         if (isValidDepth(p.second) && firstHelper.isInsideViewport(p.first)) {
+                         if (firstHelper.isValidDepth(p.second) &&
+                             firstHelper.isStrictlyInsideViewport(p.first)) {
 
-                           auto zOnFirst = textureGather(firstDepth, p.first);
+                           auto zOnFirst = textureNeighbourhood(firstDepth, p.first);
 
                            if (std::all_of(zOnFirst.begin(), zOnFirst.end(), [&](float z) {
                                  return (!std::isnan(z) && (p.second < z * (1.F - blendingFactor)));
                                })) {
-
-                             lowDepthQualityFlag = true;
+                             outliers++;
                            }
                          }
                        }
                      });
 
-        if (lowDepthQualityFlag) {
-          break;
+        float outlierRatio =
+            static_cast<float>(outliers) /
+            static_cast<float>(secondUnprojection.width() * secondUnprojection.height());
+
+        if (maxOutlierRatio < outlierRatio) {
+			std::cout << "DepthQualityAssessor -> Threshold exceeded (" << outlierRatio * 100.F << "%)" << std::endl;
+          return true;
         }
       }
     }
+
+    std::cout << "DepthQualityAssessor -> View #" << firstId << " done !" << std::endl;
   }
 
-  return lowDepthQualityFlag;
+  std::cout << "DepthQualityAssessor -> OK" << std::endl;
+  
+  return false;
 }
 } // namespace
 
 DepthQualityAssessor::DepthQualityAssessor(const Common::Json & /*unused*/,
                                            const Common::Json &componentNode) {
   m_blendingFactor = componentNode.require("blendingFactor").asFloat();
+  m_maxOutlierRatio = componentNode.require("maxOutlierRatio").asFloat();
 }
 
 auto DepthQualityAssessor::isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
@@ -166,7 +185,7 @@ auto DepthQualityAssessor::isLowDepthQuality(const Metadata::IvSequenceParams &i
         using SourceProjectionType = std::decay_t<decltype(sourceProjection)>;
 
         return TMIV::DepthQualityAssessor::isLowDepthQuality<SourceProjectionType>(
-            ivSequenceParams, sourceViews, m_blendingFactor);
+            ivSequenceParams, sourceViews, m_blendingFactor, m_maxOutlierRatio);
       },
       ivSequenceParams.viewParamsList[0].projection);
 }

@@ -72,6 +72,12 @@ auto ProjectionHelper<Projection>::doUnprojection(const Common::Vec2f &p, float 
 }
 
 template <typename Projection>
+auto ProjectionHelper<Projection>::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {
+  return ((0.5F <= p.x()) && (p.x() <= (m_viewParams.size.x() - 0.5F))) &&
+         ((0.5F <= p.y()) && (p.y() <= (m_viewParams.size.y() - 0.5F)));
+}
+
+template <typename Projection>
 auto ProjectionHelper<Projection>::isInsideViewport(const Common::Vec2f &p) const -> bool {
   return ((-0.5F <= p.x()) && (p.x() <= (m_viewParams.size.x() + 0.5F))) &&
          ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.size.y() + 0.5F)));

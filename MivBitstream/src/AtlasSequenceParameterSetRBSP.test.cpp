@@ -98,7 +98,8 @@ asps_extension_present_flag=false
   SECTION("Example 1") {
     x.asps_frame_width(1)
         .asps_frame_height(1)
-        .asps_num_ref_atlas_frame_lists_in_asps(2);
+        .asps_num_ref_atlas_frame_lists_in_asps(2)
+		.asps_extension_present_flag(true);
 
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=0
 asps_frame_width=1
@@ -123,7 +124,9 @@ asps_eom_patch_enabled_flag=false
 asps_point_local_reconstruction_enabled_flag=false
 asps_map_count_minus1=0
 asps_vui_parameters_present_flag=false
-asps_extension_present_flag=false
+asps_extension_present_flag=true
+asps_miv_extension_present_flag=false
+asps_extension2_present_flag=false
 )");
 
     REQUIRE(byteCodingTest(x, 8));
@@ -145,7 +148,9 @@ asps_extension_present_flag=false
         .asps_remove_duplicate_point_enabled_flag(true)
         .asps_patch_precedence_order_flag(true)
         .asps_patch_size_quantizer_present_flag(true)
-        .asps_map_count_minus1(1);
+        .asps_map_count_minus1(1)
+		.asps_extension_present_flag(true)
+		.asps_miv_extension_present_flag(true);
 
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=15
 asps_frame_width=65535
@@ -169,7 +174,9 @@ asps_eom_patch_enabled_flag=false
 asps_point_local_reconstruction_enabled_flag=false
 asps_map_count_minus1=1
 asps_vui_parameters_present_flag=false
-asps_extension_present_flag=false
+asps_extension_present_flag=true
+asps_miv_extension_present_flag=true
+asps_extension2_present_flag=false
 )");
 
     REQUIRE(byteCodingTest(x, 12));

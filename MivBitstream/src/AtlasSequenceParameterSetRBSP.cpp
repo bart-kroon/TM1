@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
+#include <TMIV/MivBitstream/MivDecoder.h>
+
 #include "verify.h"
 #include <TMIV/Common/Bitstream.h>
 
@@ -178,8 +180,13 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
          << "\nasps_map_count_minus1=" << int(x.m_asps_map_count_minus1)
          << "\nasps_vui_parameters_present_flag=" << boolalpha
          << x.m_asps_vui_parameters_present_flag << "\nasps_extension_present_flag=" << boolalpha
-         << x.m_asps_extension_present_flag << '\n';
-  return stream;
+         << x.m_asps_extension_present_flag;
+  if (x.m_asps_extension_present_flag) {
+    stream << "\nasps_miv_extension_present_flag=" << boolalpha
+           << x.m_asps_miv_extension_present_flag << "\nasps_extension2_present_flag=" << boolalpha
+           << x.m_asps_extension2_present_flag;
+  }
+  return stream << '\n';
 }
 
 auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRBSP &other) const
@@ -214,7 +221,9 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
              other.m_asps_point_local_reconstruction_enabled_flag &&
          m_asps_map_count_minus1 == other.m_asps_map_count_minus1 &&
          m_asps_vui_parameters_present_flag == other.m_asps_vui_parameters_present_flag &&
-         m_asps_extension_present_flag == other.m_asps_extension_present_flag;
+         m_asps_extension_present_flag == other.m_asps_extension_present_flag &&
+         m_asps_miv_extension_present_flag == other.m_asps_miv_extension_present_flag &&
+         m_asps_extension2_present_flag == other.m_asps_extension2_present_flag;
 }
 
 auto AtlasSequenceParameterSetRBSP::operator!=(const AtlasSequenceParameterSetRBSP &other) const
@@ -286,7 +295,18 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   VERIFY_MIVBITSTREAM(!x.asps_vui_parameters_present_flag());
 
   x.asps_extension_present_flag(bitstream.getFlag());
-  VERIFY_MIVBITSTREAM(!x.asps_extension_present_flag());
+
+  if (MivDecoder::mode == MivDecoder::Mode::MIV) {
+    const auto asps_extension_bit_equal_to_one = x.asps_extension_present_flag();
+    VERIFY_MIVBITSTREAM(asps_extension_bit_equal_to_one);
+
+    x.asps_miv_extension_present_flag(bitstream.getFlag());
+
+    x.asps_extension2_present_flag(bitstream.getFlag());
+    VERIFY_MIVBITSTREAM(!x.asps_extension2_present_flag());
+  } else {
+    VERIFY_VPCCBITSTREAM(!x.asps_extension_present_flag());
+  }
 
   bitstream.rbspTrailingBits();
 
@@ -353,8 +373,14 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   VERIFY_MIVBITSTREAM(!asps_vui_parameters_present_flag());
   bitstream.putFlag(asps_vui_parameters_present_flag());
 
-  VERIFY_MIVBITSTREAM(!asps_extension_present_flag());
+  VERIFY_MIVBITSTREAM(asps_extension_present_flag());
   bitstream.putFlag(asps_extension_present_flag());
+
+  VERIFY_MIVBITSTREAM(asps_extension_present_flag());
+  bitstream.putFlag(asps_miv_extension_present_flag());
+
+  VERIFY_MIVBITSTREAM(!asps_extension2_present_flag());
+  bitstream.putFlag(asps_extension2_present_flag());
 
   bitstream.rbspTrailingBits();
 }

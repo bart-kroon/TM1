@@ -130,6 +130,14 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_present_flag() cons
   return m_asps_extension_present_flag;
 }
 
+constexpr auto AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag() const noexcept {
+  return m_asps_miv_extension_present_flag;
+}
+
+constexpr auto AtlasSequenceParameterSetRBSP::asps_extension2_present_flag() const noexcept {
+  return m_asps_extension2_present_flag;
+}
+
 constexpr auto &AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(
     const std::uint8_t value) noexcept {
   m_asps_atlas_sequence_parameter_set_id = value;
@@ -238,7 +246,8 @@ constexpr auto &AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_e
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_map_count_minus1(const std::uint8_t value) noexcept {
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_map_count_minus1(const std::uint8_t value) noexcept {
   m_asps_map_count_minus1 = value;
   return *this;
 }
@@ -252,6 +261,18 @@ AtlasSequenceParameterSetRBSP::asps_vui_parameters_present_flag(const bool value
 constexpr auto &
 AtlasSequenceParameterSetRBSP::asps_extension_present_flag(const bool value) noexcept {
   m_asps_extension_present_flag = value;
+  return *this;
+}
+
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag(const bool value) noexcept {
+  m_asps_miv_extension_present_flag = value;
+  return *this;
+}
+
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_extension2_present_flag(const bool value) noexcept {
+  m_asps_extension2_present_flag = value;
   return *this;
 }
 } // namespace TMIV::MivBitstream

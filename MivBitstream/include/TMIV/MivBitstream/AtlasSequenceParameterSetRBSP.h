@@ -95,7 +95,9 @@ public:
   constexpr auto asps_point_local_reconstruction_enabled_flag() const noexcept;
   constexpr auto asps_map_count_minus1() const noexcept;
   constexpr auto asps_vui_parameters_present_flag() const noexcept;
-  constexpr auto asps_extension_present_flag() const noexcept;
+  constexpr auto asps_extension_present_flag() const noexcept; // 23090-5 only
+  constexpr auto asps_miv_extension_present_flag() const noexcept;
+  constexpr auto asps_extension2_present_flag() const noexcept;
 
   constexpr auto &asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept;
   constexpr auto &asps_frame_width(const std::uint16_t value) noexcept;
@@ -122,7 +124,9 @@ public:
   constexpr auto &asps_point_local_reconstruction_enabled_flag(const bool value) noexcept;
   constexpr auto &asps_map_count_minus1(const std::uint8_t value) noexcept;
   constexpr auto &asps_vui_parameters_present_flag(const bool value) noexcept;
-  constexpr auto &asps_extension_present_flag(const bool value) noexcept;
+  constexpr auto &asps_extension_present_flag(const bool value) noexcept; // 23090-5 only
+  constexpr auto &asps_miv_extension_present_flag(const bool value) noexcept;
+  constexpr auto &asps_extension2_present_flag(const bool value) noexcept;
 
   [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) -> RefListStruct &;
 
@@ -160,6 +164,8 @@ private:
   std::uint8_t m_asps_map_count_minus1{};
   bool m_asps_vui_parameters_present_flag{};
   bool m_asps_extension_present_flag{};
+  bool m_asps_miv_extension_present_flag{};
+  bool m_asps_extension2_present_flag{};
 };
 } // namespace TMIV::MivBitstream
 

@@ -49,7 +49,7 @@ TEST_CASE("atlas_frame_parameter_set_rbsp", "[Atlas Frame Parameter Set RBSP]") 
   REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=0
 afps_atlas_sequence_parameter_set_id=0
 afti_single_tile_in_atlas_frame_flag=true
-afps_num_ref_idx_default_active=0
+afps_num_ref_idx_default_active_minus1=0
 afps_additional_lt_afoc_lsb_len=0
 afps_2d_pos_x_bit_count=0
 afps_2d_pos_y_bit_count=0
@@ -65,8 +65,7 @@ afps_extension_present_flag=false
   SECTION("Example 1") {
     const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
 
-    x.afps_num_ref_idx_default_active(1)
-        .afps_2d_pos_x_bit_count(1)
+    x.afps_2d_pos_x_bit_count(1)
         .afps_2d_pos_y_bit_count(1)
         .afps_3d_pos_x_bit_count(1)
         .afps_3d_pos_y_bit_count(1);
@@ -74,7 +73,7 @@ afps_extension_present_flag=false
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=0
 afps_atlas_sequence_parameter_set_id=0
 afti_single_tile_in_atlas_frame_flag=true
-afps_num_ref_idx_default_active=1
+afps_num_ref_idx_default_active_minus1=0
 afps_additional_lt_afoc_lsb_len=0
 afps_2d_pos_x_bit_count=1
 afps_2d_pos_y_bit_count=1
@@ -97,7 +96,7 @@ afps_extension_present_flag=false
 
     x.afps_atlas_frame_parameter_set_id(63)
         .afps_atlas_sequence_parameter_set_id(1)
-        .afps_num_ref_idx_default_active(14)
+        .afps_num_ref_idx_default_active_minus1(14)
         .afps_additional_lt_afoc_lsb_len(25)
         .afps_2d_pos_x_bit_count(16)
         .afps_2d_pos_y_bit_count(16)
@@ -105,12 +104,12 @@ afps_extension_present_flag=false
         .afps_3d_pos_y_bit_count(32)
         .afps_lod_bit_count(31)
         .afps_raw_3d_pos_bit_count_explicit_mode_flag(true)
-		.afps_fixed_camera_model_flag(true);
+        .afps_fixed_camera_model_flag(true);
 
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
 afps_atlas_sequence_parameter_set_id=1
 afti_single_tile_in_atlas_frame_flag=true
-afps_num_ref_idx_default_active=14
+afps_num_ref_idx_default_active_minus1=14
 afps_additional_lt_afoc_lsb_len=25
 afps_2d_pos_x_bit_count=16
 afps_2d_pos_y_bit_count=16

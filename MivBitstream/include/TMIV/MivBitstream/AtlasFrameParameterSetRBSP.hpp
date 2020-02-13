@@ -48,8 +48,8 @@ constexpr auto AtlasFrameParameterSetRBSP::atlas_frame_tile_information() const 
   return m_atlas_frame_tile_information;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active() const noexcept {
-  return m_afps_num_ref_idx_default_active;
+constexpr auto AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1() const noexcept {
+  return m_afps_num_ref_idx_default_active_minus1;
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_additional_lt_afoc_lsb_len() const noexcept {
@@ -112,8 +112,8 @@ constexpr auto &AtlasFrameParameterSetRBSP::atlas_frame_tile_information(
 }
 
 constexpr auto &
-AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active(const std::uint8_t value) noexcept {
-  m_afps_num_ref_idx_default_active = value;
+AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1(const std::uint8_t value) noexcept {
+  m_afps_num_ref_idx_default_active_minus1 = value;
   return *this;
 }
 

@@ -91,8 +91,8 @@ auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream
                 << int(x.afps_atlas_frame_parameter_set_id())
                 << "\nafps_atlas_sequence_parameter_set_id="
                 << int(x.afps_atlas_sequence_parameter_set_id()) << "\n"
-                << x.atlas_frame_tile_information()
-                << "\nafps_num_ref_idx_default_active=" << int(x.afps_num_ref_idx_default_active())
+                << x.atlas_frame_tile_information() << "\nafps_num_ref_idx_default_active_minus1="
+                << int(x.afps_num_ref_idx_default_active_minus1())
                 << "\nafps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len())
                 << "\nafps_2d_pos_x_bit_count=" << int(x.afps_2d_pos_x_bit_count())
                 << "\nafps_2d_pos_y_bit_count=" << int(x.afps_2d_pos_y_bit_count())
@@ -113,7 +113,8 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
   return afps_atlas_frame_parameter_set_id() == other.afps_atlas_frame_parameter_set_id() &&
          afps_atlas_sequence_parameter_set_id() == other.afps_atlas_sequence_parameter_set_id() &&
          atlas_frame_tile_information() == other.atlas_frame_tile_information() &&
-         afps_num_ref_idx_default_active() == other.afps_num_ref_idx_default_active() &&
+         afps_num_ref_idx_default_active_minus1() ==
+             other.afps_num_ref_idx_default_active_minus1() &&
          afps_additional_lt_afoc_lsb_len() == other.afps_additional_lt_afoc_lsb_len() &&
          afps_2d_pos_x_bit_count() == other.afps_2d_pos_x_bit_count() &&
          afps_2d_pos_y_bit_count() == other.afps_2d_pos_y_bit_count() &&
@@ -149,8 +150,8 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
 
-  x.afps_num_ref_idx_default_active(uint8_t(bitstream.getUExpGolomb() + 1));
-  VERIFY_VPCCBITSTREAM(x.afps_num_ref_idx_default_active() <= 15);
+  x.afps_num_ref_idx_default_active_minus1(uint8_t(bitstream.getUExpGolomb()));
+  VERIFY_VPCCBITSTREAM(x.afps_num_ref_idx_default_active_minus1() <= 14);
 
   x.afps_additional_lt_afoc_lsb_len(uint8_t(bitstream.getUExpGolomb()));
   VERIFY_VPCCBITSTREAM(x.afps_additional_lt_afoc_lsb_len() <=
@@ -192,9 +193,8 @@ void AtlasFrameParameterSetRBSP::encodeTo(
 
   atlas_frame_tile_information().encodeTo(bitstream);
 
-  VERIFY_VPCCBITSTREAM(1 <= afps_num_ref_idx_default_active() &&
-                       afps_num_ref_idx_default_active() <= 15);
-  bitstream.putUExpGolomb(afps_num_ref_idx_default_active() - 1);
+  VERIFY_VPCCBITSTREAM(afps_num_ref_idx_default_active_minus1() <= 14);
+  bitstream.putUExpGolomb(afps_num_ref_idx_default_active_minus1());
 
   VERIFY_VPCCBITSTREAM(afps_additional_lt_afoc_lsb_len() <=
                        32 - asps.asps_log2_max_atlas_frame_order_cnt_lsb());

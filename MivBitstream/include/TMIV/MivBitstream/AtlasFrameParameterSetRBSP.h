@@ -67,7 +67,7 @@ public:
   constexpr auto afps_atlas_frame_parameter_set_id() const noexcept;
   constexpr auto afps_atlas_sequence_parameter_set_id() const noexcept;
   constexpr auto atlas_frame_tile_information() const noexcept;
-  constexpr auto afps_num_ref_idx_default_active() const noexcept;
+  constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
   constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
   constexpr auto afps_2d_pos_x_bit_count() const noexcept;
   constexpr auto afps_2d_pos_y_bit_count() const noexcept;
@@ -82,7 +82,7 @@ public:
   constexpr auto &afps_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept;
   constexpr auto &afps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept;
   constexpr auto &atlas_frame_tile_information(const AtlasFrameTileInformation &value) noexcept;
-  constexpr auto &afps_num_ref_idx_default_active(const std::uint8_t value) noexcept;
+  constexpr auto &afps_num_ref_idx_default_active_minus1(const std::uint8_t value) noexcept;
   constexpr auto &afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept;
   constexpr auto &afps_2d_pos_x_bit_count(const std::uint8_t value) noexcept;
   constexpr auto &afps_2d_pos_y_bit_count(const std::uint8_t value) noexcept;
@@ -108,7 +108,7 @@ private:
   std::uint8_t m_afps_atlas_frame_parameter_set_id;
   std::uint8_t m_afps_atlas_sequence_parameter_set_id;
   AtlasFrameTileInformation m_atlas_frame_tile_information;
-  std::uint8_t m_afps_num_ref_idx_default_active;
+  std::uint8_t m_afps_num_ref_idx_default_active_minus1;
   std::uint8_t m_afps_additional_lt_afoc_lsb_len;
   std::uint8_t m_afps_2d_pos_x_bit_count;
   std::uint8_t m_afps_2d_pos_y_bit_count;

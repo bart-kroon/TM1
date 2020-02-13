@@ -58,7 +58,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cn
   return m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1() const noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1() const
+    noexcept {
   return m_asps_max_dec_atlas_frame_buffering_minus1;
 }
 
@@ -104,9 +105,12 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_patch_size_quantizer_present_
   return m_asps_patch_size_quantizer_present_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_enhanced_occupancy_map_for_depth_flag() const
-    noexcept {
-  return m_asps_enhanced_occupancy_map_for_depth_flag;
+constexpr auto AtlasSequenceParameterSetRBSP::asps_raw_patch_enabled_flag() const noexcept {
+  return m_asps_raw_patch_enabled_flag;
+}
+
+constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag() const noexcept {
+  return m_asps_eom_patch_enabled_flag;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag() const
@@ -174,8 +178,8 @@ AtlasSequenceParameterSetRBSP::asps_use_eight_orientations_flag(const bool value
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag(
-    const bool value) noexcept {
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag(const bool value) noexcept {
   m_asps_extended_projection_enabled_flag = value;
   return *this;
 }
@@ -216,9 +220,15 @@ AtlasSequenceParameterSetRBSP::asps_patch_size_quantizer_present_flag(const bool
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_enhanced_occupancy_map_for_depth_flag(
-    const bool value) noexcept {
-  m_asps_enhanced_occupancy_map_for_depth_flag = value;
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_raw_patch_enabled_flag(const bool value) noexcept {
+  m_asps_raw_patch_enabled_flag = value;
+  return *this;
+}
+
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag(const bool value) noexcept {
+  m_asps_eom_patch_enabled_flag = value;
   return *this;
 }
 

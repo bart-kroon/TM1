@@ -89,7 +89,8 @@ public:
   constexpr auto asps_pixel_deinterleaving_flag() const noexcept;
   constexpr auto asps_patch_precedence_order_flag() const noexcept;
   constexpr auto asps_patch_size_quantizer_present_flag() const noexcept;
-  constexpr auto asps_enhanced_occupancy_map_for_depth_flag() const noexcept;
+  constexpr auto asps_raw_patch_enabled_flag() const noexcept;
+  constexpr auto asps_eom_patch_enabled_flag() const noexcept;
   constexpr auto asps_point_local_reconstruction_enabled_flag() const noexcept;
   constexpr auto asps_map_count() const noexcept;
   constexpr auto asps_vui_parameters_present_flag() const noexcept;
@@ -113,7 +114,8 @@ public:
   constexpr auto &asps_pixel_deinterleaving_flag(const bool value) noexcept;
   constexpr auto &asps_patch_precedence_order_flag(const bool value) noexcept;
   constexpr auto &asps_patch_size_quantizer_present_flag(const bool value) noexcept;
-  constexpr auto &asps_enhanced_occupancy_map_for_depth_flag(const bool value) noexcept;
+  constexpr auto &asps_raw_patch_enabled_flag(const bool value) noexcept;
+  constexpr auto &asps_eom_patch_enabled_flag(const bool value) noexcept;
   constexpr auto &asps_point_local_reconstruction_enabled_flag(const bool value) noexcept;
   constexpr auto &asps_map_count(const std::uint8_t value) noexcept;
   constexpr auto &asps_vui_parameters_present_flag(const bool value) noexcept;
@@ -148,7 +150,8 @@ private:
   bool m_asps_pixel_deinterleaving_flag{};
   bool m_asps_patch_precedence_order_flag{};
   bool m_asps_patch_size_quantizer_present_flag{};
-  bool m_asps_enhanced_occupancy_map_for_depth_flag{};
+  bool m_asps_raw_patch_enabled_flag{};
+  bool m_asps_eom_patch_enabled_flag{};
   bool m_asps_point_local_reconstruction_enabled_flag{};
   std::uint8_t m_asps_map_count{};
   bool m_asps_vui_parameters_present_flag{};

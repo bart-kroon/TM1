@@ -158,8 +158,8 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
                 << x.m_asps_patch_precedence_order_flag
                 << "\nasps_patch_size_quantizer_present_flag=" << boolalpha
                 << x.m_asps_patch_size_quantizer_present_flag
-                << "\nasps_enhanced_occupancy_map_for_depth_flag=" << boolalpha
-                << x.m_asps_enhanced_occupancy_map_for_depth_flag
+                << "\nasps_raw_patch_enabled_flag=" << boolalpha << x.m_asps_raw_patch_enabled_flag
+                << "\nasps_eom_patch_enabled_flag=" << boolalpha << x.m_asps_eom_patch_enabled_flag
                 << "\nasps_point_local_reconstruction_enabled_flag=" << boolalpha
                 << x.m_asps_point_local_reconstruction_enabled_flag
                 << "\nasps_map_count=" << int(x.m_asps_map_count)
@@ -194,8 +194,8 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
          m_asps_patch_precedence_order_flag == other.m_asps_patch_precedence_order_flag &&
          m_asps_patch_size_quantizer_present_flag ==
              other.m_asps_patch_size_quantizer_present_flag &&
-         m_asps_enhanced_occupancy_map_for_depth_flag ==
-             other.m_asps_enhanced_occupancy_map_for_depth_flag &&
+         m_asps_raw_patch_enabled_flag == other.m_asps_raw_patch_enabled_flag &&
+         m_asps_eom_patch_enabled_flag == other.m_asps_eom_patch_enabled_flag &&
          m_asps_point_local_reconstruction_enabled_flag ==
              other.m_asps_point_local_reconstruction_enabled_flag &&
          m_asps_map_count == other.m_asps_map_count &&
@@ -252,8 +252,11 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   x.asps_patch_precedence_order_flag(bitstream.getFlag());
   x.asps_patch_size_quantizer_present_flag(bitstream.getFlag());
 
-  x.asps_enhanced_occupancy_map_for_depth_flag(bitstream.getFlag());
-  VERIFY_MIVBITSTREAM(!x.asps_enhanced_occupancy_map_for_depth_flag());
+  x.asps_raw_patch_enabled_flag(bitstream.getFlag());
+  VERIFY_MIVBITSTREAM(!x.asps_raw_patch_enabled_flag());
+
+  x.asps_eom_patch_enabled_flag(bitstream.getFlag());
+  VERIFY_MIVBITSTREAM(!x.asps_eom_patch_enabled_flag());
 
   x.asps_point_local_reconstruction_enabled_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.asps_point_local_reconstruction_enabled_flag());
@@ -313,8 +316,11 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   bitstream.putFlag(asps_patch_precedence_order_flag());
   bitstream.putFlag(asps_patch_size_quantizer_present_flag());
 
-  VERIFY_MIVBITSTREAM(!asps_enhanced_occupancy_map_for_depth_flag());
-  bitstream.putFlag(asps_enhanced_occupancy_map_for_depth_flag());
+  VERIFY_MIVBITSTREAM(!asps_raw_patch_enabled_flag());
+  bitstream.putFlag(asps_raw_patch_enabled_flag());
+
+  VERIFY_MIVBITSTREAM(!asps_eom_patch_enabled_flag());
+  bitstream.putFlag(asps_eom_patch_enabled_flag());
 
   VERIFY_MIVBITSTREAM(!asps_point_local_reconstruction_enabled_flag());
   bitstream.putFlag(asps_point_local_reconstruction_enabled_flag());

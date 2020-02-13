@@ -75,7 +75,7 @@ TEST_CASE("atlas_sequence_parameter_set_rbsp", "[Atlas Sequence Parameter Set RB
 asps_frame_width=0
 asps_frame_height=0
 asps_log2_patch_packing_block_size=0
-asps_log2_max_atlas_frame_order_cnt_lsb=0
+asps_log2_max_atlas_frame_order_cnt_lsb_minus4=0
 asps_max_dec_atlas_frame_buffering=0
 asps_long_term_ref_atlas_frames_flag=false
 asps_num_ref_atlas_frame_lists_in_asps=0
@@ -97,7 +97,6 @@ asps_extension_present_flag=false
   SECTION("Example 1") {
     x.asps_frame_width(1)
         .asps_frame_height(1)
-        .asps_log2_max_atlas_frame_order_cnt_lsb(4)
         .asps_num_ref_atlas_frame_lists_in_asps(2)
         .asps_max_dec_atlas_frame_buffering(1)
         .asps_map_count(1);
@@ -106,7 +105,7 @@ asps_extension_present_flag=false
 asps_frame_width=1
 asps_frame_height=1
 asps_log2_patch_packing_block_size=0
-asps_log2_max_atlas_frame_order_cnt_lsb=4
+asps_log2_max_atlas_frame_order_cnt_lsb_minus4=0
 asps_max_dec_atlas_frame_buffering=1
 asps_long_term_ref_atlas_frames_flag=false
 asps_num_ref_atlas_frame_lists_in_asps=2
@@ -135,7 +134,7 @@ asps_extension_present_flag=false
         .asps_frame_width(0xFFFF)
         .asps_frame_height(0xFFFF)
         .asps_log2_patch_packing_block_size(7)
-        .asps_log2_max_atlas_frame_order_cnt_lsb(16)
+        .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(12)
         .asps_max_dec_atlas_frame_buffering(42)
         .asps_long_term_ref_atlas_frames_flag(true)
         .asps_use_eight_orientations_flag(true)
@@ -151,7 +150,7 @@ asps_extension_present_flag=false
 asps_frame_width=65535
 asps_frame_height=65535
 asps_log2_patch_packing_block_size=7
-asps_log2_max_atlas_frame_order_cnt_lsb=16
+asps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
 asps_max_dec_atlas_frame_buffering=42
 asps_long_term_ref_atlas_frames_flag=true
 asps_num_ref_atlas_frame_lists_in_asps=0

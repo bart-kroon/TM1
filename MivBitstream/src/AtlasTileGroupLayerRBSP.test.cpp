@@ -65,7 +65,7 @@ atgh_type=SKIP_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
 )");
 
-    REQUIRE(bitCodingTest(x, 8, aspsV, afpsV));
+    REQUIRE(bitCodingTest(x, 16, aspsV, afpsV));
   }
 
   SECTION("Example 2") {
@@ -86,7 +86,7 @@ atgh_patch_size_x_info_quantizer=6
 atgh_patch_size_y_info_quantizer=5
 )");
 
-    REQUIRE(bitCodingTest(x, 16, aspsV, afpsV));
+    REQUIRE(bitCodingTest(x, 24, aspsV, afpsV));
   }
 }
 
@@ -341,7 +341,7 @@ atgh_address=0
 atgh_type=SKIP_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
 )");
-    REQUIRE(byteCodingTest(x, 2, vuh, vps, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 3, vuh, vps, aspsV, afpsV));
   }
 
   SECTION("I_TILE_GRP") {
@@ -413,6 +413,6 @@ pdu_3d_pos_min_z( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 20, vuh, vps, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 21, vuh, vps, aspsV, afpsV));
   }
 }

@@ -155,7 +155,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
 
   x.afps_additional_lt_afoc_lsb_len(uint8_t(bitstream.getUExpGolomb()));
   VERIFY_VPCCBITSTREAM(x.afps_additional_lt_afoc_lsb_len() <=
-                       32 - asps.asps_log2_max_atlas_frame_order_cnt_lsb());
+                       32 - (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
   VERIFY_VPCCBITSTREAM(asps.asps_long_term_ref_atlas_frames_flag() ||
                        x.afps_additional_lt_afoc_lsb_len() == 0);
 
@@ -197,7 +197,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.putUExpGolomb(afps_num_ref_idx_default_active_minus1());
 
   VERIFY_VPCCBITSTREAM(afps_additional_lt_afoc_lsb_len() <=
-                       32 - asps.asps_log2_max_atlas_frame_order_cnt_lsb());
+                       32 - (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
   VERIFY_VPCCBITSTREAM(asps.asps_long_term_ref_atlas_frames_flag() ||
                        afps_additional_lt_afoc_lsb_len() == 0);
   bitstream.putUExpGolomb(afps_additional_lt_afoc_lsb_len());

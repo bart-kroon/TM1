@@ -193,7 +193,7 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
                       x.atgh_type() == AtghType::SKIP_TILE_GRP);
 
   x.atgh_atlas_frm_order_cnt_lsb(
-      uint8_t(bitstream.readBits(asps.asps_log2_max_atlas_frame_order_cnt_lsb())));
+      uint8_t(bitstream.readBits(asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4)));
 
   // Only intra coding (for now)
   VERIFY_MIVBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() == 1);
@@ -252,7 +252,7 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   bitstream.putUExpGolomb(unsigned(atgh_type()));
 
   bitstream.writeBits(atgh_atlas_frm_order_cnt_lsb(),
-                      asps.asps_log2_max_atlas_frame_order_cnt_lsb());
+                      asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);
 
   VERIFY_MIVBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() == 1);
   constexpr auto atgh_ref_atlas_frame_list_sps_flag = true;

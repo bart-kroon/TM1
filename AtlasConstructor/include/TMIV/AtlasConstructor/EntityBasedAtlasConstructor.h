@@ -65,15 +65,10 @@ public:
 private:
   static Common::MVD16Frame entitySeparator(const Common::MVD16Frame &transportViews,
                                             uint16_t entityId);
-  //static Common::TextureDepth16Frame entitySeparatorView(const Common::TextureDepth16Frame &view, uint16_t entityId);
   static std::vector<Common::Frame<Common::YUV420P16>> yuvSampler(const Common::EntityMapList &in);
-  //static void mergeViews(Common::MVD16Frame &entityMergedViews, Common::MVD16Frame transportEntityViews);
   static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
- // void updateEntityMasks(Common::EntityMapList &entityMasks, const Common::MaskList &masks, uint16_t entityId);
   void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
-  //void swap0(Common::EntityMapList &entityMasks);
- // static auto setView(const Common::TextureDepth16Frame &view, const Common::EntityMap &entityMask, int entityId) -> Common::TextureDepth16Frame;
   void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::TextureDepth16Frame &views,
                          Common::MVD16Frame &atlas);
 
@@ -91,12 +86,8 @@ private:
   std::deque<Common::MVD16Frame> m_atlasBuffer;
   int m_fIndex{0};
   std::vector<Common::MaskList> m_aggregatedEntityMask;
-  //std::vector<Common::EntityMapList> m_entityMasksBuffer;
-  //std::vector<Common::MVD16Frame> m_entityLayers;
-  //std::vector<std::vector<Common::MVD16Frame>> m_entityLayersBuffer;
   unsigned m_maxEntities{};
-  //int m_frameInGOPIndex{0};
-};
+  };
 } // namespace TMIV::AtlasConstructor
 
 #endif

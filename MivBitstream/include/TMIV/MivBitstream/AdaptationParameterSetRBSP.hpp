@@ -32,34 +32,17 @@
  */
 
 #ifndef _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
-#define _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
-
-#include <TMIV/Common/Bitstream.h>
-
-#include <iosfwd>
+#error "Include the .h, not the .hpp"
+#endif
 
 namespace TMIV::MivBitstream {
-// 23090-12: adapation_parameter_set_rbsp
-class AdaptationParameterSetRBSP {
-public:
-  constexpr auto aps_adaptation_parameter_set_id() const noexcept;
-  constexpr auto &aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept;
+constexpr auto AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id() const noexcept {
+  return m_aps_adaptation_parameter_set_id;
+}
 
-  friend auto operator<<(std::ostream &stream, const AdaptationParameterSetRBSP &x)
-      -> std::ostream &;
-
-  auto operator==(const AdaptationParameterSetRBSP &) const noexcept -> bool;
-  auto operator!=(const AdaptationParameterSetRBSP &) const noexcept -> bool;
-
-  static auto decodeFrom(std::istream &stream) -> AdaptationParameterSetRBSP;
-
-  static void encodeTo(std::ostream &stream);
-
-private:
-  std::uint8_t m_aps_adaptation_parameter_set_id{};
-};
+constexpr auto &
+AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept {
+  m_aps_adaptation_parameter_set_id = value;
+  return *this;
+}
 } // namespace TMIV::MivBitstream
-
-#include "AdaptationParameterSetRBSP.hpp"
-
-#endif

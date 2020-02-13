@@ -70,7 +70,7 @@ enum class NalUnitType : std::uint8_t {
   NAL_SUFFIX_NSEI,
   NAL_PREFIX_ESEI,
   NAL_SUFFIX_ESEI,
-  NAL_ACPS
+  NAL_APS
 };
 
 auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream &;

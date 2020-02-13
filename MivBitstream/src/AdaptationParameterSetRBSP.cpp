@@ -32,3 +32,31 @@
  */
 
 #include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
+
+#include "verify.h"
+
+namespace TMIV::MivBitstream {
+auto operator<<(std::ostream &stream, const AdaptationParameterSetRBSP &x) -> std::ostream & {
+  return stream << "aps_adaptation_parameter_set_id=" << int(x.aps_adaptation_parameter_set_id());
+}
+
+auto AdaptationParameterSetRBSP::operator==(const AdaptationParameterSetRBSP &other) const noexcept
+    -> bool {
+  return aps_adaptation_parameter_set_id() == other.aps_adaptation_parameter_set_id();
+}
+
+auto AdaptationParameterSetRBSP::operator!=(const AdaptationParameterSetRBSP &other) const noexcept
+    -> bool {
+  return !operator==(other);
+}
+
+auto AdaptationParameterSetRBSP::decodeFrom(std::istream & /* stream */)
+    -> AdaptationParameterSetRBSP {
+  MIVBITSTREAM_ERROR("Implement");
+  return {};
+}
+
+void AdaptationParameterSetRBSP::encodeTo(std::ostream & /* stream */) {
+  MIVBITSTREAM_ERROR("Implement");
+}
+} // namespace TMIV::MivBitstream

@@ -53,10 +53,10 @@
 
 namespace TMIV::MivBitstream {
 struct AtlasAccessUnit {
-  const AtlasSequenceParameterSetRBSP *asps = nullptr;
-  const AtlasFrameParameterSetRBSP *afps = nullptr;
-  const AtlasTileGroupLayerRBSP *atgl = nullptr;
-
+  AtlasSequenceParameterSetRBSP asps;
+  AtlasFrameParameterSetRBSP afps;
+  AdaptationParameterSetRBSP aps;
+  AtlasTileGroupLayerRBSP atgl;
   Common::Depth10Frame geoFrame;
   Common::Texture444Frame attrFrame;
 
@@ -135,6 +135,8 @@ private: // Decoding processes
                   AtlasSequenceParameterSetRBSP asps);
   void decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                   AtlasFrameParameterSetRBSP afps);
+  void decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                 AdaptationParameterSetRBSP afps);
   void decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, AccessUnitDelimiterRBSP aud);
   void decodeVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                      AccessUnitDelimiterRBSP aud);
@@ -147,9 +149,10 @@ private: // Decoding processes
   void decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
 
 private: // Parsers
-  void parseAtgl(const VpccUnitHeader &vuh, const NalUnit &nu);
   void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
   void parseAfps(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseAps(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void parseAtgl(const VpccUnitHeader &vuh, const NalUnit &nu);
   void parseAud(const VpccUnitHeader &vuh, const NalUnit &nu);
   void parseVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu);
   void parsePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
@@ -167,8 +170,7 @@ private: // Internal decoder state
     std::vector<AtlasSequenceParameterSetRBSP> aspsV;
     std::vector<AtlasFrameParameterSetRBSP> afpsV;
     std::vector<AdaptationParameterSetRBSP> apsV;
-    std::optional<AtlasTileGroupLayerRBSP> atgl;
-    std::int32_t frameId{-1}; // picture order count
+    std::vector<AtlasTileGroupLayerRBSP> atgl;
   };
 
   struct Sequence {
@@ -192,6 +194,7 @@ private: // Access internal decoder state
   auto specialAtlas(const VpccUnitHeader &vuh) -> Atlas &;
   auto aspsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasSequenceParameterSetRBSP> &;
   auto afpsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasFrameParameterSetRBSP> &;
+  auto apsV(const VpccUnitHeader &vuh) const -> const std::vector<AdaptationParameterSetRBSP> &;
 };
 } // namespace TMIV::MivBitstream
 

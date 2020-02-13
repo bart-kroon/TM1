@@ -112,14 +112,20 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
 
   for (uint8_t atlasId = 0; atlasId < au.atlas.size(); ++atlasId) {
     auto &atlas = sequence_.atlas[atlasId];
-    assert(atlas.atgl.has_value());
-    assert(atlas.frameId >= sequence_.frameId);
+    assert(!atlas.atgl.empty());
 
     auto &aau = au.atlas[atlasId];
-    aau.atgl = &*atlas.atgl;
-    const auto &atgh = aau.atgl->atlas_tile_group_header();
-    aau.afps = &atlas.afpsV[atgh.atgh_atlas_frame_parameter_set_id()];
-    aau.asps = &atlas.aspsV[aau.afps->afps_atlas_sequence_parameter_set_id()];
+    aau.atgl = atlas.atgl.front();
+    atlas.atgl.erase(atlas.atgl.begin());
+    const auto &atgh = aau.atgl.atlas_tile_group_header();
+
+    aau.afps = atlas.afpsV[atgh.atgh_atlas_frame_parameter_set_id()];
+
+    aau.asps = atlas.aspsV[aau.afps.afps_atlas_sequence_parameter_set_id()];
+
+    VERIFY_MIVBITSTREAM(!aau.afps.afps_fixed_camera_model_flag());
+    aau.aps = atlas.apsV[atgh.atgh_adaptation_parameter_set_id()];
+
     aau.geoFrame = m_geoFrameServer(atlasId, sequence_.frameId);
     aau.attrFrame = m_attrFrameServer(atlasId, sequence_.frameId);
   }
@@ -137,7 +143,7 @@ auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
   }
   const auto &sequence_ = sequence(vuh);
   return all_of(cbegin(sequence_.atlas), cend(sequence_.atlas),
-                [=](const Atlas &atlas) { return atlas.frameId > sequence_.frameId; });
+                [=](const Atlas &atlas) { return !atlas.atgl.empty(); });
 }
 
 // Decoding processes //////////////////////////////////////////////////////////////////////////////
@@ -209,6 +215,8 @@ void MivDecoder::decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
     return parsePrefixESei(vuh, nu);
   case NalUnitType::NAL_SUFFIX_ESEI:
     return parseSuffixESei(vuh, nu);
+  case NalUnitType::NAL_APS:
+    return parseAps(vuh, nu);
   default:
     return decodeUnknownNalUnit(vuh, nu);
   }
@@ -227,15 +235,14 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
   if (NalUnitType::NAL_TRAIL <= nuh.nal_unit_type() &&
       nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() > 0 && atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
-    VERIFY_VPCCBITSTREAM(x.atgl.has_value());
-    ++x.frameId;
+    VERIFY_VPCCBITSTREAM(!x.atgl.empty());
+    x.atgl.push_back(x.atgl.back());
   }
 
   if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
       nuh.nal_unit_type() < NalUnitType::NAL_ASPS) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0 && atgh.atgh_type() == AtghType::I_TILE_GRP);
-    x.atgl = atgl;
-    ++x.frameId;
+    x.atgl.push_back(atgl);
   }
 
   if (haveFrame(vuh)) {
@@ -263,6 +270,15 @@ void MivDecoder::decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader & /*n
     x.afpsV.emplace_back();
   }
   x.afpsV[afps.afps_atlas_frame_parameter_set_id()] = afps;
+}
+
+void MivDecoder::decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
+                           AdaptationParameterSetRBSP aps) {
+  auto &x = atlas(vuh);
+  while (x.apsV.size() <= aps.aps_adaptation_parameter_set_id()) {
+    x.apsV.emplace_back();
+  }
+  x.apsV[aps.aps_adaptation_parameter_set_id()] = aps;
 }
 
 void MivDecoder::decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
@@ -328,12 +344,6 @@ void MivDecoder::decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader
 
 // Parsers /////////////////////////////////////////////////////////////////////////////////////////
 
-void MivDecoder::parseAtgl(const VpccUnitHeader &vuh, const NalUnit &nu) {
-  istringstream stream{nu.rbsp()};
-  decodeAtgl(vuh, nu.nal_unit_header(),
-             AtlasTileGroupLayerRBSP::decodeFrom(stream, vuh, vps(vuh), aspsV(vuh), afpsV(vuh)));
-}
-
 void MivDecoder::parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   decodeAsps(vuh, nu.nal_unit_header(), AtlasSequenceParameterSetRBSP::decodeFrom(stream));
@@ -342,6 +352,17 @@ void MivDecoder::parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu) {
 void MivDecoder::parseAfps(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   decodeAfps(vuh, nu.nal_unit_header(), AtlasFrameParameterSetRBSP::decodeFrom(stream, aspsV(vuh)));
+}
+
+void MivDecoder::parseAps(const VpccUnitHeader &vuh, const NalUnit &nu) {
+  istringstream stream{nu.rbsp()};
+  decodeAps(vuh, nu.nal_unit_header(), AdaptationParameterSetRBSP::decodeFrom(stream));
+}
+
+void MivDecoder::parseAtgl(const VpccUnitHeader &vuh, const NalUnit &nu) {
+  istringstream stream{nu.rbsp()};
+  decodeAtgl(vuh, nu.nal_unit_header(),
+             AtlasTileGroupLayerRBSP::decodeFrom(stream, vuh, vps(vuh), aspsV(vuh), afpsV(vuh)));
 }
 
 void MivDecoder::parseAud(const VpccUnitHeader &vuh, const NalUnit &nu) {

@@ -105,6 +105,8 @@ auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
     return stream << "NAL_PREFIX_ESEI";
   case NalUnitType::NAL_SUFFIX_ESEI:
     return stream << "NAL_SUFFIX_ESEI";
+  case NalUnitType::NAL_APS:
+    return stream << "NAL_APS";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }

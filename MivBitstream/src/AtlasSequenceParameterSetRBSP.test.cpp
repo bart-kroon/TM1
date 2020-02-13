@@ -80,7 +80,7 @@ asps_max_dec_atlas_frame_buffering_minus1=0
 asps_long_term_ref_atlas_frames_flag=false
 asps_num_ref_atlas_frame_lists_in_asps=0
 asps_use_eight_orientations_flag=false
-asps_45degree_projection_patch_present_flag=false
+asps_extended_projection_enabled_flag=false
 asps_normal_axis_limits_quantization_enabled_flag=false
 asps_normal_axis_max_delta_value_enabled_flag=false
 asps_remove_duplicate_point_enabled_flag=false
@@ -111,7 +111,7 @@ asps_num_ref_atlas_frame_lists_in_asps=2
 num_ref_entries( 0 )=0
 num_ref_entries( 1 )=0
 asps_use_eight_orientations_flag=false
-asps_45degree_projection_patch_present_flag=false
+asps_extended_projection_enabled_flag=false
 asps_normal_axis_limits_quantization_enabled_flag=false
 asps_normal_axis_max_delta_value_enabled_flag=false
 asps_remove_duplicate_point_enabled_flag=false
@@ -137,7 +137,7 @@ asps_extension_present_flag=false
         .asps_max_dec_atlas_frame_buffering_minus1(41)
         .asps_long_term_ref_atlas_frames_flag(true)
         .asps_use_eight_orientations_flag(true)
-        .asps_45degree_projection_patch_present_flag(true)
+        .asps_extended_projection_enabled_flag(true)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_remove_duplicate_point_enabled_flag(true)
@@ -154,7 +154,7 @@ asps_max_dec_atlas_frame_buffering_minus1=41
 asps_long_term_ref_atlas_frames_flag=true
 asps_num_ref_atlas_frame_lists_in_asps=0
 asps_use_eight_orientations_flag=true
-asps_45degree_projection_patch_present_flag=true
+asps_extended_projection_enabled_flag=true
 asps_normal_axis_limits_quantization_enabled_flag=true
 asps_normal_axis_max_delta_value_enabled_flag=true
 asps_remove_duplicate_point_enabled_flag=true

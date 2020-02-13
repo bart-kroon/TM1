@@ -316,7 +316,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   const auto pdu_projection_id_num_bits =
       vps.overridePduProjectionIdNumBits()
           ? *vps.overridePduProjectionIdNumBits()
-          : (asps.asps_45degree_projection_patch_present_flag() ? 5U : 3U);
+          : (asps.asps_extended_projection_enabled_flag() ? 5U : 3U);
   x.pdu_projection_id(uint16_t(bitstream.readBits(pdu_projection_id_num_bits)));
 
   x.pdu_2d_pos_x(uint32_t(bitstream.readBits(afps.afps_2d_pos_x_bit_count())));
@@ -382,7 +382,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   const auto pdu_projection_id_num_bits =
       vps.overridePduProjectionIdNumBits()
           ? *vps.overridePduProjectionIdNumBits()
-          : asps.asps_45degree_projection_patch_present_flag() ? 5U : 3U;
+          : asps.asps_extended_projection_enabled_flag() ? 5U : 3U;
   VERIFY_VPCCBITSTREAM((pdu_projection_id() >> pdu_projection_id_num_bits) == 0);
   bitstream.writeBits(pdu_projection_id(), pdu_projection_id_num_bits);
 

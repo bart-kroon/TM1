@@ -134,7 +134,8 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
          << "\nasps_log2_patch_packing_block_size=" << int(x.m_asps_log2_patch_packing_block_size)
          << "\nasps_log2_max_atlas_frame_order_cnt_lsb_minus4="
          << int(x.m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4)
-         << "\nasps_max_dec_atlas_frame_buffering_minus1=" << x.m_asps_max_dec_atlas_frame_buffering_minus1
+         << "\nasps_max_dec_atlas_frame_buffering_minus1="
+         << x.m_asps_max_dec_atlas_frame_buffering_minus1
          << "\nasps_long_term_ref_atlas_frames_flag=" << boolalpha
          << x.m_asps_long_term_ref_atlas_frames_flag << "\nasps_num_ref_atlas_frame_lists_in_asps="
          << int(x.asps_num_ref_atlas_frame_lists_in_asps()) << '\n';
@@ -143,8 +144,8 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
   }
   return stream << "asps_use_eight_orientations_flag=" << boolalpha
                 << x.m_asps_use_eight_orientations_flag
-                << "\nasps_45degree_projection_patch_present_flag=" << boolalpha
-                << x.m_asps_45degree_projection_patch_present_flag
+                << "\nasps_extended_projection_enabled_flag=" << boolalpha
+                << x.m_asps_extended_projection_enabled_flag
                 << "\nasps_normal_axis_limits_quantization_enabled_flag=" << boolalpha
                 << x.m_asps_normal_axis_limits_quantization_enabled_flag
                 << "\nasps_normal_axis_max_delta_value_enabled_flag=" << boolalpha
@@ -176,13 +177,13 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
          m_asps_log2_patch_packing_block_size == other.m_asps_log2_patch_packing_block_size &&
          m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 ==
              other.m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 &&
-         m_asps_max_dec_atlas_frame_buffering_minus1 == other.m_asps_max_dec_atlas_frame_buffering_minus1 &&
+         m_asps_max_dec_atlas_frame_buffering_minus1 ==
+             other.m_asps_max_dec_atlas_frame_buffering_minus1 &&
          m_asps_long_term_ref_atlas_frames_flag == other.m_asps_long_term_ref_atlas_frames_flag &&
          asps_num_ref_atlas_frame_lists_in_asps() ==
              other.asps_num_ref_atlas_frame_lists_in_asps() &&
          m_asps_use_eight_orientations_flag == other.m_asps_use_eight_orientations_flag &&
-         m_asps_45degree_projection_patch_present_flag ==
-             other.m_asps_45degree_projection_patch_present_flag &&
+         m_asps_extended_projection_enabled_flag == other.m_asps_extended_projection_enabled_flag &&
          m_asps_normal_axis_limits_quantization_enabled_flag ==
              other.m_asps_normal_axis_limits_quantization_enabled_flag &&
          m_asps_normal_axis_max_delta_value_enabled_flag ==
@@ -240,7 +241,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   }
 
   x.asps_use_eight_orientations_flag(bitstream.getFlag());
-  x.asps_45degree_projection_patch_present_flag(bitstream.getFlag());
+  x.asps_extended_projection_enabled_flag(bitstream.getFlag());
   x.asps_normal_axis_limits_quantization_enabled_flag(bitstream.getFlag());
   x.asps_normal_axis_max_delta_value_enabled_flag(bitstream.getFlag());
   x.asps_remove_duplicate_point_enabled_flag(bitstream.getFlag());
@@ -301,7 +302,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   }
 
   bitstream.putFlag(asps_use_eight_orientations_flag());
-  bitstream.putFlag(asps_45degree_projection_patch_present_flag());
+  bitstream.putFlag(asps_extended_projection_enabled_flag());
   bitstream.putFlag(asps_normal_axis_limits_quantization_enabled_flag());
   bitstream.putFlag(asps_normal_axis_max_delta_value_enabled_flag());
   bitstream.putFlag(asps_remove_duplicate_point_enabled_flag());

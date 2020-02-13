@@ -71,9 +71,9 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_use_eight_orientations_flag()
   return m_asps_use_eight_orientations_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_45degree_projection_patch_present_flag() const
+constexpr auto AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag() const
     noexcept {
-  return m_asps_45degree_projection_patch_present_flag;
+  return m_asps_extended_projection_enabled_flag;
 }
 
 constexpr auto
@@ -174,9 +174,9 @@ AtlasSequenceParameterSetRBSP::asps_use_eight_orientations_flag(const bool value
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_45degree_projection_patch_present_flag(
+constexpr auto &AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag(
     const bool value) noexcept {
-  m_asps_45degree_projection_patch_present_flag = value;
+  m_asps_extended_projection_enabled_flag = value;
   return *this;
 }
 

@@ -54,6 +54,12 @@ AtlasTileGroupHeader::atgh_atlas_frame_parameter_set_id(const std::uint8_t value
   return *this;
 }
 
+constexpr auto &
+AtlasTileGroupHeader::atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept {
+  m_atgh_adaptation_parameter_set_id = value;
+  return *this;
+}
+
 constexpr auto &AtlasTileGroupHeader::atgh_address(const std::uint8_t value) noexcept {
   m_atgh_address = value;
   return *this;
@@ -211,15 +217,13 @@ constexpr auto AtlasTileGroupLayerRBSP::atlas_tile_group_header() const noexcept
   return m_atlas_tile_group_header;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return true;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return false;
 }
 } // namespace TMIV::MivBitstream

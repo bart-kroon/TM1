@@ -42,6 +42,7 @@ TEST_CASE("atlas_tile_group_header", "[Atlas Tile Group Layer RBSP]") {
   aspsV.front().asps_num_ref_atlas_frame_lists_in_asps(1).asps_log2_patch_packing_block_size(7);
 
   auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
+  afpsV.front().afps_fixed_camera_model_flag(true);
 
   auto x = AtlasTileGroupHeader{};
   x.atgh_patch_size_x_info_quantizer(aspsV.front().asps_log2_patch_packing_block_size())
@@ -69,12 +70,15 @@ atgh_atlas_frm_order_cnt_lsb=0
 
   SECTION("Example 2") {
     aspsV.front().asps_patch_size_quantizer_present_flag(true);
+    afpsV.front().afps_fixed_camera_model_flag(false);
 
     x.atgh_type(AtghType::I_TILE_GRP)
         .atgh_patch_size_x_info_quantizer(6)
-        .atgh_patch_size_y_info_quantizer(5);
+        .atgh_patch_size_y_info_quantizer(5)
+        .atgh_adaptation_parameter_set_id(4);
 
     REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
+atgh_adaptation_parameter_set_id=4
 atgh_address=0
 atgh_type=I_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
@@ -324,7 +328,10 @@ TEST_CASE("atlas_tile_group_layer_rbsp", "[Atlas Tile Group Layer RBSP]") {
         .asps_num_ref_atlas_frame_lists_in_asps(1);
 
     auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-    afpsV.front().afps_2d_pos_x_bit_count(12).afps_2d_pos_y_bit_count(11);
+    afpsV.front()
+        .afps_2d_pos_x_bit_count(12)
+        .afps_2d_pos_y_bit_count(11)
+        .afps_fixed_camera_model_flag(true);
 
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::SKIP_TILE_GRP);
@@ -356,6 +363,7 @@ atgh_atlas_frm_order_cnt_lsb=0
 
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::I_TILE_GRP);
+	atgh.atgh_adaptation_parameter_set_id(0);
 
     auto pdu1 = PatchDataUnit{};
     pdu1.pdu_2d_size_x(10).pdu_2d_size_y(20);
@@ -370,6 +378,7 @@ atgh_atlas_frm_order_cnt_lsb=0
         std::pair{AtgduPatchMode::I_INTRA, PatchInformationData{pdu3}}};
 
     REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
+atgh_adaptation_parameter_set_id=0
 atgh_address=0
 atgh_type=I_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0

@@ -83,6 +83,7 @@ auto printTo(std::ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> std:
 class AtlasTileGroupHeader {
 public:
   constexpr auto atgh_atlas_frame_parameter_set_id() const noexcept;
+  auto atgh_adaptation_parameter_set_id() const noexcept -> std::uint8_t;
   constexpr auto atgh_address() const noexcept;
   constexpr auto atgh_type() const noexcept;
   constexpr auto atgh_atlas_frm_order_cnt_lsb() const noexcept;
@@ -92,6 +93,7 @@ public:
   constexpr auto atgh_pos_max_z_quantizer() const noexcept { return std::uint8_t(0); }
 
   constexpr auto &atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept;
+  constexpr auto &atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept;
   constexpr auto &atgh_address(const std::uint8_t value) noexcept;
   constexpr auto &atgh_type(const AtghType value) noexcept;
   constexpr auto &atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept;
@@ -116,6 +118,7 @@ public:
 
 private:
   std::uint8_t m_atgh_atlas_frame_parameter_set_id{};
+  std::optional<std::uint8_t> m_atgh_adaptation_parameter_set_id{};
   std::uint8_t m_atgh_address{};
   AtghType m_atgh_type{};
   std::uint8_t m_atgh_atlas_frm_order_cnt_lsb{};

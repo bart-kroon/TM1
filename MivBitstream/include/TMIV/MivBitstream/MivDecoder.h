@@ -46,10 +46,29 @@
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>
 
+#include <TMIV/Common/Frame.h>
+
 #include <array>
 #include <functional>
 
 namespace TMIV::MivBitstream {
+struct AtlasAccessUnit {
+  const AtlasSequenceParameterSetRBSP *asps = nullptr;
+  const AtlasFrameParameterSetRBSP *afps = nullptr;
+  const AtlasTileGroupLayerRBSP *atgl = nullptr;
+
+  Common::Depth10Frame geoFrame;
+  Common::Texture444Frame attrFrame;
+
+  // TODO(BK): BlockToPatchMap
+};
+
+struct AccessUnit {
+  const VpccParameterSet *vps = nullptr;
+  std::vector<AtlasAccessUnit> atlas;
+  std::uint32_t frameId{};
+};
+
 class MivDecoder {
 public: // Integration testing
   enum Mode {
@@ -61,9 +80,19 @@ public: // Integration testing
   // testing purposes.
   static const Mode mode;
 
+public: // Frame servers
+  using GeoFrameServer =
+      std::function<Common::Depth10Frame(std::uint8_t atlasId, std::uint32_t frameId)>;
+  using AttrFrameServer =
+      std::function<Common::Texture444Frame(std::uint8_t atlasId, std::uint32_t frameId)>;
+
 public: // Decoder interface
   // Construct a MivDecoder and read the sample stream V-PCC header
-  explicit MivDecoder(std::istream &stream);
+  //
+  // This version of TMIV does not implement video data sub bitstreams so we need to smuggle in
+  // those frames using a callback.  The attribute server will return empty frames if there is no
+  // attribute. There is only one attribute and that is texture.
+  MivDecoder(std::istream &stream, GeoFrameServer geoFrameServer, AttrFrameServer attrFrameServer);
 
   // Decode the next V-PCC unit
   //
@@ -81,25 +110,17 @@ public: // Callback signatures
   // Callback that will be called when a VPS is decoded.
   using SequenceListener = std::function<bool(const VpccParameterSet &)>;
 
-  // Callback that will be called when an ATGL is decoded with atgh_type == I_TILE_GRP.
-  using AtlasFrameListener = std::function<bool(
-      const VpccUnitHeader &, const VpccParameterSet &, const AtlasSequenceParameterSetRBSP &,
-      const AtlasFrameParameterSetRBSP &, const AtlasTileGroupLayerRBSP &)>;
-
-  // Callback that will be called when an ATGL is decoded with atgh_type == SKIP_TILE_GRP.
-  using SkipAtlasFrameListener = std::function<bool(const VpccUnitHeader &)>;
+  // Callback that will be called when an access unit (frame) is decoded.
+  using FrameListener = std::function<bool(const AccessUnit &)>;
 
 public: // Callback registrations
   std::vector<SequenceListener> onSequence;
-  std::vector<AtlasFrameListener> onAtlasFrame;
-  std::vector<SkipAtlasFrameListener> onSkipAtlasFrame;
+  std::vector<FrameListener> onFrame;
 
 private: // Decoder output
   void outputSequence(const VpccParameterSet &vuh);
-  void outputAtlasFrame(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                        AtlasTileGroupLayerRBSP atgl);
-  void outputSkipAtlasFrame(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                            AtlasTileGroupLayerRBSP atgl);
+  void outputFrame(const VpccUnitHeader &vuh);
+  auto haveFrame(const VpccUnitHeader &vuh) const -> bool;
 
 private: // Decoding processes
   void decodeVpccPayload(const VpccUnitHeader &vuh, const std::monostate &payload);
@@ -138,18 +159,22 @@ private: // Parsers
 
 private: // Internal decoder state
   std::istream &m_stream;
+  GeoFrameServer m_geoFrameServer;
+  AttrFrameServer m_attrFrameServer;
   SampleStreamVpccHeader m_ssvh;
 
   struct Atlas {
     std::vector<AtlasSequenceParameterSetRBSP> aspsV;
     std::vector<AtlasFrameParameterSetRBSP> afpsV;
     std::vector<AdaptationParameterSetRBSP> apsV;
-    AtlasTileGroupLayerRBSP atgl;
+    std::optional<AtlasTileGroupLayerRBSP> atgl;
+    std::int32_t frameId{-1}; // picture order count
   };
 
   struct Sequence {
     std::vector<Atlas> atlas;
     std::optional<Atlas> specialAtlas;
+    std::int32_t frameId{-1}; // picture order count
   };
 
   std::vector<VpccParameterSet> m_vpsV;

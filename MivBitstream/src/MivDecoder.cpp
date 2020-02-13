@@ -36,6 +36,7 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
 
+#include <cassert>
 #include <istream>
 #include <sstream>
 #include <variant>
@@ -62,8 +63,10 @@ auto sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHeader {
 
 // Decoder interface ///////////////////////////////////////////////////////////////////////////////
 
-MivDecoder::MivDecoder(istream &stream)
-    : m_stream{stream}, m_ssvh{sampleStreamVpccHeader(stream)} {}
+MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
+                       AttrFrameServer attrFrameServer)
+    : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)},
+      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{sampleStreamVpccHeader(stream)} {}
 
 auto MivDecoder::decodeVpccUnit() -> bool {
   VERIFY_VPCCBITSTREAM(m_stream.good());
@@ -98,25 +101,43 @@ void MivDecoder::outputSequence(const VpccParameterSet &vps) {
   }
 }
 
-void MivDecoder::outputAtlasFrame(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  AtlasTileGroupLayerRBSP atgl) {
-  const auto &afps = afpsV(vuh)[atgl.atlas_tile_group_header().atgh_atlas_frame_parameter_set_id()];
-  const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];
+void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
+  assert(haveFrame(vuh));
+  AccessUnit au;
+  au.vps = &vps(vuh);
 
-  for (const auto &x : onAtlasFrame) {
-    if (!x(vuh, vps(vuh), asps, afps, atgl)) {
+  auto &sequence_ = sequence(vuh);
+  au.frameId = ++sequence_.frameId;
+  au.atlas.resize(sequence_.atlas.size());
+
+  for (uint8_t atlasId = 0; atlasId < au.atlas.size(); ++atlasId) {
+    auto &atlas = sequence_.atlas[atlasId];
+    assert(atlas.atgl.has_value());
+    assert(atlas.frameId >= sequence_.frameId);
+
+    auto &aau = au.atlas[atlasId];
+    aau.atgl = &*atlas.atgl;
+    const auto &atgh = aau.atgl->atlas_tile_group_header();
+    aau.afps = &atlas.afpsV[atgh.atgh_atlas_frame_parameter_set_id()];
+    aau.asps = &atlas.aspsV[aau.afps->afps_atlas_sequence_parameter_set_id()];
+    aau.geoFrame = m_geoFrameServer(atlasId, sequence_.frameId);
+    aau.attrFrame = m_attrFrameServer(atlasId, sequence_.frameId);
+  }
+
+  for (const auto &x : onFrame) {
+    if (!x(au)) {
       m_stop = true;
     }
   }
 }
 
-void MivDecoder::outputSkipAtlasFrame(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                      AtlasTileGroupLayerRBSP atgl) {
-  for (const auto &x : onSkipAtlasFrame) {
-    if (!x(vuh)) {
-      m_stop = true;
-    }
+auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
+  if (mode == Mode::TMC2) {
+    return false;
   }
+  const auto &sequence_ = sequence(vuh);
+  return all_of(cbegin(sequence_.atlas), cend(sequence_.atlas),
+                [=](const Atlas &atlas) { return atlas.frameId > sequence_.frameId; });
 }
 
 // Decoding processes //////////////////////////////////////////////////////////////////////////////
@@ -128,13 +149,16 @@ void MivDecoder::decodeVpccPayload(const VpccUnitHeader & /* vuh */,
 
 void MivDecoder::decodeVpccPayload(const VpccUnitHeader & /*vuh*/, const VpccParameterSet &vps) {
   const auto id = vps.vps_vpcc_parameter_set_id();
+
   while (m_vpsV.size() <= id) {
     m_vpsV.emplace_back();
     m_sequenceV.emplace_back();
   }
+
   m_vpsV[id] = vps;
   m_sequenceV[id] = Sequence{};
   m_sequenceV[id].atlas.resize(vps.vps_atlas_count());
+
   outputSequence(vps);
 }
 
@@ -198,17 +222,24 @@ void MivDecoder::decodeUnknownNalUnit(const VpccUnitHeader & /*vuh*/, const NalU
 void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                             AtlasTileGroupLayerRBSP atgl) {
   const auto &atgh = atgl.atlas_tile_group_header();
+  auto &x = atlas(vuh);
 
   if (NalUnitType::NAL_TRAIL <= nuh.nal_unit_type() &&
       nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() > 0 && atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
-    return outputSkipAtlasFrame(vuh, nuh, atgl);
+    VERIFY_VPCCBITSTREAM(x.atgl.has_value());
+    ++x.frameId;
   }
 
   if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
       nuh.nal_unit_type() < NalUnitType::NAL_ASPS) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0 && atgh.atgh_type() == AtghType::I_TILE_GRP);
-    return outputAtlasFrame(vuh, nuh, atgl);
+    x.atgl = atgl;
+    ++x.frameId;
+  }
+
+  if (haveFrame(vuh)) {
+    outputFrame(vuh);
   }
 }
 

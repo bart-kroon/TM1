@@ -38,11 +38,28 @@
 #include <sstream>
 
 using namespace std;
+using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 TEST_CASE("MivDecoder", "[MIV decoder]") {
   SECTION("Construction") {
     istringstream stream{"Invalid bitsream"};
-    MivDecoder decoder{stream};
+
+    const auto geoFrameServer = [](auto, auto) { return Depth10Frame{}; };
+    const auto attrFrameServer = [](auto, auto) { return Texture444Frame{}; };
+
+    MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
+
+    SECTION("Callbacks") {
+      decoder.onSequence.push_back([](const VpccParameterSet &vps) {
+        cout << "Sequence:\n" << vps;
+        return true;
+      });
+
+      decoder.onFrame.push_back([](const AccessUnit &au) {
+        cout << "Frame " << au.frameId << '\n';
+        return true;
+      });
+    }
   }
 }

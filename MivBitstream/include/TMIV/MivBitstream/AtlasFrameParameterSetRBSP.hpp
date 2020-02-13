@@ -85,6 +85,10 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mo
   return m_afps_raw_3d_pos_bit_count_explicit_mode_flag;
 }
 
+constexpr auto AtlasFrameParameterSetRBSP::afps_fixed_camera_model_flag() const noexcept {
+  return m_afps_fixed_camera_model_flag;
+}
+
 constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag() const noexcept {
   return m_afps_extension_present_flag;
 }
@@ -157,6 +161,12 @@ AtlasFrameParameterSetRBSP::afps_override_eom_for_depth_flag(const bool value) n
 constexpr auto &AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag(
     const bool value) noexcept {
   m_afps_raw_3d_pos_bit_count_explicit_mode_flag = value;
+  return *this;
+}
+
+constexpr auto &
+AtlasFrameParameterSetRBSP::afps_fixed_camera_model_flag(const bool value) noexcept {
+  m_afps_fixed_camera_model_flag = value;
   return *this;
 }
 

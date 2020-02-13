@@ -41,7 +41,6 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::MivBitstream {
 template <typename PDU> MivPatchUnit<PDU>::MivPatchUnit(PDU &pdu) noexcept : m_pdu{pdu} {
   VERIFY_MIVBITSTREAM(!pdu.pdu_3d_pos_delta_max_z());
-  VERIFY_MIVBITSTREAM(!pdu.pdu_lod());
 }
 
 template <typename PDU> auto MivPatchUnit<PDU>::patchSizeInAtlas() const -> Common::Vec2i {

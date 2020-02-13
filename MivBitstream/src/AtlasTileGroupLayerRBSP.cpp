@@ -296,9 +296,6 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
   }
   stream << "pdu_projection_id( " << patchIdx << " )=" << pdu_projection_id()
          << "\npdu_orientation_index( " << patchIdx << " )=" << pdu_orientation_index() << '\n';
-  if (pdu_lod()) {
-    stream << "pdu_lod( " << patchIdx << " )=" << *pdu_lod() << '\n';
-  }
   return stream;
 }
 
@@ -364,10 +361,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   x.pdu_orientation_index(
       FlexiblePatchOrientation(bitstream.readBits(pdu_orientation_index_num_bits)));
 
-  if (afps.afps_lod_bit_count() > 0) {
-    x.pdu_lod({uint32_t(bitstream.readBits(afps.afps_lod_bit_count()))});
-  }
-
+  VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
 
   return x;
@@ -448,12 +442,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
     bitstream.writeBits(unsigned(pdu_orientation_index()), 1);
   }
 
-  VERIFY_VPCCBITSTREAM(!pdu_lod() == (afps.afps_lod_bit_count() == 0));
-  if (afps.afps_lod_bit_count() > 0) {
-    VERIFY_VPCCBITSTREAM((*pdu_lod() >> afps.afps_lod_bit_count()) == 0);
-    bitstream.writeBits(*pdu_lod(), afps.afps_lod_bit_count());
-  }
-
+  VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
 }
 

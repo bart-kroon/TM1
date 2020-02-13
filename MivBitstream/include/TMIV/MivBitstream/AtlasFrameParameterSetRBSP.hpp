@@ -72,8 +72,8 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_3d_pos_y_bit_count() const noexc
   return m_afps_3d_pos_y_bit_count;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_lod_bit_count() const noexcept {
-  return m_afps_lod_bit_count;
+constexpr auto AtlasFrameParameterSetRBSP::afps_lod_mode_enabled_flag() const noexcept {
+  return m_afps_lod_enabled_flag;
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_override_eom_for_depth_flag() const noexcept {
@@ -147,8 +147,8 @@ AtlasFrameParameterSetRBSP::afps_3d_pos_y_bit_count(const std::uint8_t value) no
   return *this;
 }
 
-constexpr auto &AtlasFrameParameterSetRBSP::afps_lod_bit_count(const std::uint8_t value) noexcept {
-  m_afps_lod_bit_count = value;
+constexpr auto &AtlasFrameParameterSetRBSP::afps_lod_mode_enabled_flag(const bool value) noexcept {
+  m_afps_lod_enabled_flag = value;
   return *this;
 }
 

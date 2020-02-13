@@ -98,7 +98,7 @@ auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream
                 << "\nafps_2d_pos_y_bit_count=" << int(x.afps_2d_pos_y_bit_count())
                 << "\nafps_3d_pos_x_bit_count=" << int(x.afps_3d_pos_x_bit_count())
                 << "\nafps_3d_pos_y_bit_count=" << int(x.afps_3d_pos_y_bit_count())
-                << "\nafps_lod_bit_count=" << int(x.afps_lod_bit_count())
+                << "\nafps_lod_mode_enabled_flag=" << boolalpha << x.afps_lod_mode_enabled_flag()
                 << "\nafps_override_eom_for_depth_flag=" << boolalpha
                 << x.afps_override_eom_for_depth_flag()
                 << "\nafps_raw_3d_pos_bit_count_explicit_mode_flag=" << boolalpha
@@ -120,7 +120,7 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
          afps_2d_pos_y_bit_count() == other.afps_2d_pos_y_bit_count() &&
          afps_3d_pos_x_bit_count() == other.afps_3d_pos_x_bit_count() &&
          afps_3d_pos_y_bit_count() == other.afps_3d_pos_y_bit_count() &&
-         afps_lod_bit_count() == other.afps_lod_bit_count() &&
+         afps_lod_mode_enabled_flag() == other.afps_lod_mode_enabled_flag() &&
          afps_override_eom_for_depth_flag() == other.afps_override_eom_for_depth_flag() &&
          afps_override_eom_for_depth_flag() == other.afps_override_eom_for_depth_flag() &&
          afps_raw_3d_pos_bit_count_explicit_mode_flag() ==
@@ -163,7 +163,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   x.afps_2d_pos_y_bit_count(uint8_t(bitstream.readBits(4) + 1));
   x.afps_3d_pos_x_bit_count(uint8_t(bitstream.readBits(5) + 1));
   x.afps_3d_pos_y_bit_count(uint8_t(bitstream.readBits(5) + 1));
-  x.afps_lod_bit_count(uint8_t(bitstream.readBits(5)));
+  x.afps_lod_mode_enabled_flag(bitstream.getFlag());
 
   x.afps_override_eom_for_depth_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.afps_override_eom_for_depth_flag());
@@ -214,8 +214,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   VERIFY_VPCCBITSTREAM(1 <= afps_3d_pos_y_bit_count() && afps_3d_pos_y_bit_count() <= 32);
   bitstream.writeBits(afps_3d_pos_y_bit_count() - 1, 5);
 
-  VERIFY_VPCCBITSTREAM(afps_lod_bit_count() <= 31);
-  bitstream.writeBits(afps_lod_bit_count(), 5);
+  bitstream.putFlag(afps_lod_mode_enabled_flag());
 
   VERIFY_MIVBITSTREAM(!afps_override_eom_for_depth_flag());
   bitstream.putFlag(afps_override_eom_for_depth_flag());

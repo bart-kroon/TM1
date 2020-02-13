@@ -131,8 +131,6 @@ constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
 }
 
-constexpr auto PatchDataUnit::pdu_lod() const noexcept { return m_pdu_lod; }
-
 constexpr auto &PatchDataUnit::pdu_2d_pos_x(const std::uint32_t value) noexcept {
   m_pdu_2d_pos_x = value;
   return *this;
@@ -185,11 +183,6 @@ PatchDataUnit::pdu_orientation_index(const FlexiblePatchOrientation value) noexc
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_lod(const std::optional<std::uint32_t> value) noexcept {
-  m_pdu_lod = value;
-  return *this;
-}
-
 constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexcept {
   return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
          pdu_2d_size_x() == other.pdu_2d_size_x() && pdu_2d_size_y() == other.pdu_2d_size_y() &&
@@ -197,7 +190,7 @@ constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexc
          pdu_3d_pos_min_z() == other.pdu_3d_pos_min_z() &&
          pdu_3d_pos_delta_max_z() == other.pdu_3d_pos_delta_max_z() &&
          pdu_projection_id() == other.pdu_projection_id() &&
-         pdu_orientation_index() == other.pdu_orientation_index() && pdu_lod() == other.pdu_lod();
+         pdu_orientation_index() == other.pdu_orientation_index();
 }
 
 constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexcept {

@@ -55,7 +55,7 @@ afps_2d_pos_x_bit_count=0
 afps_2d_pos_y_bit_count=0
 afps_3d_pos_x_bit_count=0
 afps_3d_pos_y_bit_count=0
-afps_lod_bit_count=0
+afps_lod_mode_enabled_flag=false
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_fixed_camera_model_flag=false
@@ -79,14 +79,14 @@ afps_2d_pos_x_bit_count=1
 afps_2d_pos_y_bit_count=1
 afps_3d_pos_x_bit_count=1
 afps_3d_pos_y_bit_count=1
-afps_lod_bit_count=0
+afps_lod_mode_enabled_flag=false
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_fixed_camera_model_flag=false
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 5, aspsV));
+    REQUIRE(byteCodingTest(x, 4, aspsV));
   }
 
   SECTION("Example 2") {
@@ -102,7 +102,7 @@ afps_extension_present_flag=false
         .afps_2d_pos_y_bit_count(16)
         .afps_3d_pos_x_bit_count(32)
         .afps_3d_pos_y_bit_count(32)
-        .afps_lod_bit_count(31)
+        .afps_lod_mode_enabled_flag(true)
         .afps_raw_3d_pos_bit_count_explicit_mode_flag(true)
         .afps_fixed_camera_model_flag(true);
 
@@ -115,7 +115,7 @@ afps_2d_pos_x_bit_count=16
 afps_2d_pos_y_bit_count=16
 afps_3d_pos_x_bit_count=32
 afps_3d_pos_y_bit_count=32
-afps_lod_bit_count=31
+afps_lod_mode_enabled_flag=true
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=true
 afps_fixed_camera_model_flag=true

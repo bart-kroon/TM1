@@ -194,7 +194,6 @@ private: // Access internal decoder state
   auto specialAtlas(const VpccUnitHeader &vuh) -> Atlas &;
   auto aspsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasSequenceParameterSetRBSP> &;
   auto afpsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasFrameParameterSetRBSP> &;
-  auto apsV(const VpccUnitHeader &vuh) const -> const std::vector<AdaptationParameterSetRBSP> &;
 };
 } // namespace TMIV::MivBitstream
 

@@ -73,7 +73,7 @@ public:
   constexpr auto afps_2d_pos_y_bit_count() const noexcept;
   constexpr auto afps_3d_pos_x_bit_count() const noexcept;
   constexpr auto afps_3d_pos_y_bit_count() const noexcept;
-  constexpr auto afps_lod_bit_count() const noexcept;
+  constexpr auto afps_lod_mode_enabled_flag() const noexcept;
   constexpr auto afps_override_eom_for_depth_flag() const noexcept;
   constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept;
   constexpr auto afps_fixed_camera_model_flag() const noexcept;
@@ -88,7 +88,7 @@ public:
   constexpr auto &afps_2d_pos_y_bit_count(const std::uint8_t value) noexcept;
   constexpr auto &afps_3d_pos_x_bit_count(const std::uint8_t value) noexcept;
   constexpr auto &afps_3d_pos_y_bit_count(const std::uint8_t value) noexcept;
-  constexpr auto &afps_lod_bit_count(const std::uint8_t value) noexcept;
+  constexpr auto &afps_lod_mode_enabled_flag(const bool value) noexcept;
   constexpr auto &afps_override_eom_for_depth_flag(const bool value) noexcept;
   constexpr auto &afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept;
   constexpr auto &afps_fixed_camera_model_flag(const bool value) noexcept;
@@ -114,7 +114,7 @@ private:
   std::uint8_t m_afps_2d_pos_y_bit_count;
   std::uint8_t m_afps_3d_pos_x_bit_count;
   std::uint8_t m_afps_3d_pos_y_bit_count;
-  std::uint8_t m_afps_lod_bit_count;
+  bool m_afps_lod_enabled_flag;
   bool m_afps_override_eom_for_depth_flag;
   bool m_afps_raw_3d_pos_bit_count_explicit_mode_flag;
   bool m_afps_fixed_camera_model_flag;

@@ -134,7 +134,7 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
          << "\nasps_log2_patch_packing_block_size=" << int(x.m_asps_log2_patch_packing_block_size)
          << "\nasps_log2_max_atlas_frame_order_cnt_lsb_minus4="
          << int(x.m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4)
-         << "\nasps_max_dec_atlas_frame_buffering=" << x.m_asps_max_dec_atlas_frame_buffering
+         << "\nasps_max_dec_atlas_frame_buffering_minus1=" << x.m_asps_max_dec_atlas_frame_buffering_minus1
          << "\nasps_long_term_ref_atlas_frames_flag=" << boolalpha
          << x.m_asps_long_term_ref_atlas_frames_flag << "\nasps_num_ref_atlas_frame_lists_in_asps="
          << int(x.asps_num_ref_atlas_frame_lists_in_asps()) << '\n';
@@ -176,7 +176,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
          m_asps_log2_patch_packing_block_size == other.m_asps_log2_patch_packing_block_size &&
          m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 ==
              other.m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 &&
-         m_asps_max_dec_atlas_frame_buffering == other.m_asps_max_dec_atlas_frame_buffering &&
+         m_asps_max_dec_atlas_frame_buffering_minus1 == other.m_asps_max_dec_atlas_frame_buffering_minus1 &&
          m_asps_long_term_ref_atlas_frames_flag == other.m_asps_long_term_ref_atlas_frames_flag &&
          asps_num_ref_atlas_frame_lists_in_asps() ==
              other.asps_num_ref_atlas_frame_lists_in_asps() &&
@@ -228,7 +228,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4(uint8_t(bitstream.getUExpGolomb()));
   VERIFY_VPCCBITSTREAM(x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() <= 12);
 
-  x.asps_max_dec_atlas_frame_buffering(uint8_t(bitstream.getUExpGolomb() + 1));
+  x.asps_max_dec_atlas_frame_buffering_minus1(uint8_t(bitstream.getUExpGolomb()));
 
   x.asps_long_term_ref_atlas_frames_flag(bitstream.getFlag());
 
@@ -289,8 +289,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   VERIFY_VPCCBITSTREAM(asps_log2_max_atlas_frame_order_cnt_lsb_minus4() <= 12);
   bitstream.putUExpGolomb(asps_log2_max_atlas_frame_order_cnt_lsb_minus4());
 
-  VERIFY_VPCCBITSTREAM(1 <= asps_max_dec_atlas_frame_buffering());
-  bitstream.putUExpGolomb(asps_max_dec_atlas_frame_buffering() - 1);
+  bitstream.putUExpGolomb(asps_max_dec_atlas_frame_buffering_minus1());
 
   bitstream.putFlag(asps_long_term_ref_atlas_frames_flag());
 

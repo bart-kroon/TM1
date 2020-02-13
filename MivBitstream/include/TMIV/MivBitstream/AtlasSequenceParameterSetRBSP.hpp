@@ -58,8 +58,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cn
   return m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering() const noexcept {
-  return m_asps_max_dec_atlas_frame_buffering;
+constexpr auto AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1() const noexcept {
+  return m_asps_max_dec_atlas_frame_buffering_minus1;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_long_term_ref_atlas_frames_flag() const
@@ -156,9 +156,9 @@ constexpr auto &AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_c
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering(
+constexpr auto &AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1(
     const std::uint8_t value) noexcept {
-  m_asps_max_dec_atlas_frame_buffering = value;
+  m_asps_max_dec_atlas_frame_buffering_minus1 = value;
   return *this;
 }
 

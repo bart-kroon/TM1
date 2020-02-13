@@ -83,6 +83,7 @@ public:
   auto ref_list_struct(std::uint8_t rlsIdx) const -> const RefListStruct &;
   constexpr auto asps_use_eight_orientations_flag() const noexcept;
   constexpr auto asps_extended_projection_enabled_flag() const noexcept;
+  auto asps_max_projections_minus1() const noexcept -> unsigned;
   constexpr auto asps_normal_axis_limits_quantization_enabled_flag() const noexcept;
   constexpr auto asps_normal_axis_max_delta_value_enabled_flag() const noexcept;
   constexpr auto asps_remove_duplicate_point_enabled_flag() const noexcept;
@@ -108,6 +109,8 @@ public:
   auto ref_list_struct(std::uint8_t rlsIdx, RefListStruct value) -> AtlasSequenceParameterSetRBSP &;
   constexpr auto &asps_use_eight_orientations_flag(const bool value) noexcept;
   constexpr auto &asps_extended_projection_enabled_flag(const bool value) noexcept;
+  auto asps_max_projections_minus1(const unsigned value) noexcept
+      -> AtlasSequenceParameterSetRBSP &;
   constexpr auto &asps_normal_axis_limits_quantization_enabled_flag(const bool value) noexcept;
   constexpr auto &asps_normal_axis_max_delta_value_enabled_flag(const bool value) noexcept;
   constexpr auto &asps_remove_duplicate_point_enabled_flag(const bool value) noexcept;
@@ -144,6 +147,7 @@ private:
   std::vector<RefListStruct> m_ref_list_structs;
   bool m_asps_use_eight_orientations_flag{};
   bool m_asps_extended_projection_enabled_flag{};
+  std::optional<unsigned> m_asps_max_projections_minus1{};
   bool m_asps_normal_axis_limits_quantization_enabled_flag{};
   bool m_asps_normal_axis_max_delta_value_enabled_flag{};
   bool m_asps_remove_duplicate_point_enabled_flag{};

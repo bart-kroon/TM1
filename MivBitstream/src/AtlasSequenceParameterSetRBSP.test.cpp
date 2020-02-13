@@ -139,6 +139,7 @@ asps_extension_present_flag=false
         .asps_long_term_ref_atlas_frames_flag(true)
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
+		.asps_max_projections_minus1(33)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_remove_duplicate_point_enabled_flag(true)
@@ -156,6 +157,7 @@ asps_long_term_ref_atlas_frames_flag=true
 asps_num_ref_atlas_frame_lists_in_asps=0
 asps_use_eight_orientations_flag=true
 asps_extended_projection_enabled_flag=true
+asps_max_projections_minus1=33
 asps_normal_axis_limits_quantization_enabled_flag=true
 asps_normal_axis_max_delta_value_enabled_flag=true
 asps_remove_duplicate_point_enabled_flag=true
@@ -170,6 +172,6 @@ asps_vui_parameters_present_flag=false
 asps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 11));
+    REQUIRE(byteCodingTest(x, 12));
   }
 }

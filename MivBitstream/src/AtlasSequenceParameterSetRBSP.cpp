@@ -127,6 +127,18 @@ auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) -> RefListSt
   return m_ref_list_structs[rlsIdx];
 }
 
+auto AtlasSequenceParameterSetRBSP::asps_max_projections_minus1() const noexcept -> unsigned {
+  VERIFY_VPCCBITSTREAM(asps_extended_projection_enabled_flag());
+  return *m_asps_max_projections_minus1;
+}
+
+auto AtlasSequenceParameterSetRBSP::asps_max_projections_minus1(const unsigned value) noexcept
+    -> AtlasSequenceParameterSetRBSP & {
+  VERIFY_VPCCBITSTREAM(asps_extended_projection_enabled_flag());
+  m_asps_max_projections_minus1 = value;
+  return *this;
+}
+
 auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostream & {
   stream << "asps_atlas_sequence_parameter_set_id=" << int(x.m_asps_atlas_sequence_parameter_set_id)
          << "\nasps_frame_width=" << x.m_asps_frame_width
@@ -142,31 +154,32 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
   for (int rlsIdx = 0; rlsIdx < x.asps_num_ref_atlas_frame_lists_in_asps(); ++rlsIdx) {
     x.ref_list_struct(rlsIdx).printTo(stream, rlsIdx);
   }
-  return stream << "asps_use_eight_orientations_flag=" << boolalpha
-                << x.m_asps_use_eight_orientations_flag
-                << "\nasps_extended_projection_enabled_flag=" << boolalpha
-                << x.m_asps_extended_projection_enabled_flag
-                << "\nasps_normal_axis_limits_quantization_enabled_flag=" << boolalpha
-                << x.m_asps_normal_axis_limits_quantization_enabled_flag
-                << "\nasps_normal_axis_max_delta_value_enabled_flag=" << boolalpha
-                << x.m_asps_normal_axis_max_delta_value_enabled_flag
-                << "\nasps_remove_duplicate_point_enabled_flag=" << boolalpha
-                << x.m_asps_remove_duplicate_point_enabled_flag
-                << "\nasps_pixel_deinterleaving_flag=" << boolalpha
-                << x.m_asps_pixel_deinterleaving_flag
-                << "\nasps_patch_precedence_order_flag=" << boolalpha
-                << x.m_asps_patch_precedence_order_flag
-                << "\nasps_patch_size_quantizer_present_flag=" << boolalpha
-                << x.m_asps_patch_size_quantizer_present_flag
-                << "\nasps_raw_patch_enabled_flag=" << boolalpha << x.m_asps_raw_patch_enabled_flag
-                << "\nasps_eom_patch_enabled_flag=" << boolalpha << x.m_asps_eom_patch_enabled_flag
-                << "\nasps_point_local_reconstruction_enabled_flag=" << boolalpha
-                << x.m_asps_point_local_reconstruction_enabled_flag
-                << "\nasps_map_count_minus1=" << int(x.m_asps_map_count_minus1)
-                << "\nasps_vui_parameters_present_flag=" << boolalpha
-                << x.m_asps_vui_parameters_present_flag
-                << "\nasps_extension_present_flag=" << boolalpha << x.m_asps_extension_present_flag
-                << '\n';
+  stream << "asps_use_eight_orientations_flag=" << boolalpha << x.m_asps_use_eight_orientations_flag
+         << "\nasps_extended_projection_enabled_flag=" << boolalpha
+         << x.m_asps_extended_projection_enabled_flag;
+  if (x.asps_extended_projection_enabled_flag()) {
+    stream << "\nasps_max_projections_minus1=" << x.asps_max_projections_minus1();
+  }
+  stream << "\nasps_normal_axis_limits_quantization_enabled_flag=" << boolalpha
+         << x.m_asps_normal_axis_limits_quantization_enabled_flag
+         << "\nasps_normal_axis_max_delta_value_enabled_flag=" << boolalpha
+         << x.m_asps_normal_axis_max_delta_value_enabled_flag
+         << "\nasps_remove_duplicate_point_enabled_flag=" << boolalpha
+         << x.m_asps_remove_duplicate_point_enabled_flag
+         << "\nasps_pixel_deinterleaving_flag=" << boolalpha << x.m_asps_pixel_deinterleaving_flag
+         << "\nasps_patch_precedence_order_flag=" << boolalpha
+         << x.m_asps_patch_precedence_order_flag
+         << "\nasps_patch_size_quantizer_present_flag=" << boolalpha
+         << x.m_asps_patch_size_quantizer_present_flag
+         << "\nasps_raw_patch_enabled_flag=" << boolalpha << x.m_asps_raw_patch_enabled_flag
+         << "\nasps_eom_patch_enabled_flag=" << boolalpha << x.m_asps_eom_patch_enabled_flag
+         << "\nasps_point_local_reconstruction_enabled_flag=" << boolalpha
+         << x.m_asps_point_local_reconstruction_enabled_flag
+         << "\nasps_map_count_minus1=" << int(x.m_asps_map_count_minus1)
+         << "\nasps_vui_parameters_present_flag=" << boolalpha
+         << x.m_asps_vui_parameters_present_flag << "\nasps_extension_present_flag=" << boolalpha
+         << x.m_asps_extension_present_flag << '\n';
+  return stream;
 }
 
 auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRBSP &other) const
@@ -184,6 +197,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
              other.asps_num_ref_atlas_frame_lists_in_asps() &&
          m_asps_use_eight_orientations_flag == other.m_asps_use_eight_orientations_flag &&
          m_asps_extended_projection_enabled_flag == other.m_asps_extended_projection_enabled_flag &&
+         m_asps_max_projections_minus1 == other.m_asps_max_projections_minus1 &&
          m_asps_normal_axis_limits_quantization_enabled_flag ==
              other.m_asps_normal_axis_limits_quantization_enabled_flag &&
          m_asps_normal_axis_max_delta_value_enabled_flag ==
@@ -241,7 +255,12 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   }
 
   x.asps_use_eight_orientations_flag(bitstream.getFlag());
+
   x.asps_extended_projection_enabled_flag(bitstream.getFlag());
+  if (x.asps_extended_projection_enabled_flag()) {
+    x.asps_max_projections_minus1(unsigned(bitstream.getUExpGolomb()));
+  }
+
   x.asps_normal_axis_limits_quantization_enabled_flag(bitstream.getFlag());
   x.asps_normal_axis_max_delta_value_enabled_flag(bitstream.getFlag());
   x.asps_remove_duplicate_point_enabled_flag(bitstream.getFlag());
@@ -304,7 +323,12 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   }
 
   bitstream.putFlag(asps_use_eight_orientations_flag());
+
   bitstream.putFlag(asps_extended_projection_enabled_flag());
+  if (asps_extended_projection_enabled_flag()) {
+    bitstream.putUExpGolomb(asps_max_projections_minus1());
+  }
+
   bitstream.putFlag(asps_normal_axis_limits_quantization_enabled_flag());
   bitstream.putFlag(asps_normal_axis_max_delta_value_enabled_flag());
   bitstream.putFlag(asps_remove_duplicate_point_enabled_flag());

@@ -162,7 +162,7 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
                 << "\nasps_eom_patch_enabled_flag=" << boolalpha << x.m_asps_eom_patch_enabled_flag
                 << "\nasps_point_local_reconstruction_enabled_flag=" << boolalpha
                 << x.m_asps_point_local_reconstruction_enabled_flag
-                << "\nasps_map_count=" << int(x.m_asps_map_count)
+                << "\nasps_map_count_minus1=" << int(x.m_asps_map_count_minus1)
                 << "\nasps_vui_parameters_present_flag=" << boolalpha
                 << x.m_asps_vui_parameters_present_flag
                 << "\nasps_extension_present_flag=" << boolalpha << x.m_asps_extension_present_flag
@@ -198,7 +198,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
          m_asps_eom_patch_enabled_flag == other.m_asps_eom_patch_enabled_flag &&
          m_asps_point_local_reconstruction_enabled_flag ==
              other.m_asps_point_local_reconstruction_enabled_flag &&
-         m_asps_map_count == other.m_asps_map_count &&
+         m_asps_map_count_minus1 == other.m_asps_map_count_minus1 &&
          m_asps_vui_parameters_present_flag == other.m_asps_vui_parameters_present_flag &&
          m_asps_extension_present_flag == other.m_asps_extension_present_flag;
 }
@@ -261,8 +261,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   x.asps_point_local_reconstruction_enabled_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.asps_point_local_reconstruction_enabled_flag());
 
-  x.asps_map_count(uint8_t(bitstream.readBits(4) + 1));
-  // TODO(BK): Check somewhere else that asps_map_count == vps_map_count
+  x.asps_map_count_minus1(uint8_t(bitstream.readBits(4)));
 
   x.asps_vui_parameters_present_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.asps_vui_parameters_present_flag());
@@ -325,8 +324,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
   VERIFY_MIVBITSTREAM(!asps_point_local_reconstruction_enabled_flag());
   bitstream.putFlag(asps_point_local_reconstruction_enabled_flag());
 
-  VERIFY_VPCCBITSTREAM(1 <= asps_map_count());
-  bitstream.writeBits(asps_map_count() - 1, 4);
+  bitstream.writeBits(asps_map_count_minus1(), 4);
 
   VERIFY_MIVBITSTREAM(!asps_vui_parameters_present_flag());
   bitstream.putFlag(asps_vui_parameters_present_flag());

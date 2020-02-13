@@ -118,8 +118,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_en
   return m_asps_point_local_reconstruction_enabled_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_map_count() const noexcept {
-  return m_asps_map_count;
+constexpr auto AtlasSequenceParameterSetRBSP::asps_map_count_minus1() const noexcept {
+  return m_asps_map_count_minus1;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_vui_parameters_present_flag() const noexcept {
@@ -238,8 +238,8 @@ constexpr auto &AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_e
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_map_count(const std::uint8_t value) noexcept {
-  m_asps_map_count = value;
+constexpr auto &AtlasSequenceParameterSetRBSP::asps_map_count_minus1(const std::uint8_t value) noexcept {
+  m_asps_map_count_minus1 = value;
   return *this;
 }
 

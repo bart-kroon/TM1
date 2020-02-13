@@ -72,8 +72,8 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
   }
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
-  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, depthOccMapThreshold "
-         << viewParams.depthOccMapThreshold;
+  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, hasOccupancy " << boolalpha
+         << viewParams.hasOccupancy << ", depthOccMapThreshold " << viewParams.depthOccMapThreshold;
 
   if (viewParams.depthStart) {
     stream << ", depthStart " << *viewParams.depthStart;
@@ -83,6 +83,15 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
          << format("[%6.3f, %6.3f, %6.3f] m, ", viewParams.position.x(), viewParams.position.y(),
                    viewParams.position.z())
          << viewParams.rotation << " deg";
+
+  if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
+    stream << ", pruningChildren [ ";
+    for (auto childId : *viewParams.pruningChildren) {
+      stream << childId << " ";
+    }
+    stream << "]";
+  }
+
   return stream;
 }
 
@@ -111,7 +120,7 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   parameters.normDispRange.x() = depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F;
   parameters.normDispRange.y() = depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F;
   if (auto subnode = node.optional("HasInvalidDepth"); subnode) {
-    parameters.depthOccMapThreshold = subnode.asBool() ? 1 : 0;
+    parameters.hasOccupancy = subnode.asBool();
   }
 
   auto proj = node.require("Projection").asString();
@@ -231,6 +240,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
       viewParams->normDispRange.x() = bitstream.getFloat32();
       viewParams->normDispRange.y() = bitstream.getFloat32();
       viewParams->depthOccMapThreshold = uint16_t(bitstream.readBits(depthOccMapThresholdNumBits));
+      viewParams->hasOccupancy = viewParams->depthOccMapThreshold > 0;
 
       if (const auto depthStartDefaultPresentFlag = bitstream.getFlag();
           depthStartDefaultPresentFlag) {
@@ -239,6 +249,23 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
     } else {
       viewParams->normDispRange = viewParamsList.front().normDispRange;
       viewParams->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
+      viewParams->hasOccupancy = viewParamsList.front().hasOccupancy;
+    }
+  }
+
+  const auto pruningGraphParamsPresentFlag = bitstream.getFlag();
+
+  if (pruningGraphParamsPresentFlag) {
+    for (auto &viewParams : viewParamsList) {
+      bool isLeaf = bitstream.getFlag();
+      if (!isLeaf) {
+        std::vector<std::uint16_t> childIdList(bitstream.getUVar(viewParamsList.size() - 1) + 1);
+
+        for (auto &childId : childIdList) {
+          childId = static_cast<std::uint16_t>(bitstream.getUVar(viewParamsList.size()));
+        }
+        viewParams.pruningChildren = std::move(childIdList);
+      }
     }
   }
 
@@ -303,6 +330,30 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
 
     if (depthQuantizationParamsEqualFlag) {
       break;
+    }
+  }
+
+  bool pruningGraphParamsPresentFlag = std::any_of(begin(), end(), [](const auto &viewParams) {
+    return (viewParams.pruningChildren && !viewParams.pruningChildren->empty());
+  });
+
+  bitstream.putFlag(pruningGraphParamsPresentFlag);
+
+  if (pruningGraphParamsPresentFlag) {
+    for (const auto &viewParams : *this) {
+      if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
+
+        bitstream.putFlag(false);
+
+        const auto &childIdList = *viewParams.pruningChildren;
+        bitstream.putUVar(childIdList.size() - 1, size() - 1);
+
+        for (const auto &childId : childIdList) {
+          bitstream.putUVar(childId, size());
+        }
+      } else {
+        bitstream.putFlag(true);
+      }
     }
   }
 }

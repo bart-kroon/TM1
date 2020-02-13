@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Thread.h>
 #include <TMIV/Common/Transformation.h>
-#include <TMIV/Renderer/Engine.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -139,5 +138,58 @@ auto unprojectVertex(Vec2f position, float depth, const ViewParams &viewParams) 
         return engine.unprojectVertex(position, depth);
       },
       viewParams.projection);
+}
+
+auto projectVertex(const Common::Vec3f &position, const Metadata::ViewParams &viewParams)
+    -> std::pair<Common::Vec2f, float> {
+  return visit(
+      [&](const auto &projection) {
+        Engine<decay_t<decltype(projection)>> engine{viewParams};
+        auto imageVertexDescriptor = engine.projectVertex(SceneVertexDescriptor{position, 0.F});
+        return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
+      },
+      viewParams.projection);
+}
+
+template <> auto ProjectionHelper<ErpParams>::getAngularResolution() const -> float {
+  auto nbPixel = static_cast<float>(m_viewParams.size.x() * m_viewParams.size.y());
+  const auto &erpParams = std::get<ErpParams>(m_viewParams.projection);
+
+  float DT = radperdeg * (erpParams.phiRange[1] - erpParams.phiRange[0]);
+  float DS =
+      std::sin(radperdeg * erpParams.thetaRange[1]) - std::sin(radperdeg * erpParams.thetaRange[0]);
+
+  return nbPixel / (DS * DT);
+}
+
+template <> auto ProjectionHelper<PerspectiveParams>::getAngularResolution() const -> float {
+  auto nbPixel = static_cast<float>(m_viewParams.size.x() * m_viewParams.size.y());
+  const auto &perspectiveParams = std::get<PerspectiveParams>(m_viewParams.projection);
+
+  float projectionFocalLength = (perspectiveParams.focal.x() + perspectiveParams.focal.y()) / 2.F;
+  auto w = static_cast<float>(m_viewParams.size.x());
+  auto h = static_cast<float>(m_viewParams.size.y());
+
+  float omega =
+      4.F * std::atan(nbPixel / (2.F * projectionFocalLength *
+                                 std::sqrt(4.F * sqr(projectionFocalLength) + (w * w + h * h))));
+
+  return nbPixel / omega;
+}
+
+template <> auto ProjectionHelper<ErpParams>::getRadialRange() const -> Vec2f {
+  return {1.F / m_viewParams.normDispRange[1], 1.F / m_viewParams.normDispRange[0]};
+}
+
+template <> auto ProjectionHelper<PerspectiveParams>::getRadialRange() const -> Vec2f {
+  const auto &perspectiveParams = std::get<PerspectiveParams>(m_viewParams.projection);
+
+  float x = (static_cast<float>(m_viewParams.size.x()) - perspectiveParams.center.x()) /
+            perspectiveParams.focal.x();
+  float y = (static_cast<float>(m_viewParams.size.y()) - perspectiveParams.center.y()) /
+            perspectiveParams.focal.y();
+
+  return {1.F / m_viewParams.normDispRange[1],
+          norm(Vec3f{x, y, 1.F}) / m_viewParams.normDispRange[0]};
 }
 } // namespace TMIV::Renderer

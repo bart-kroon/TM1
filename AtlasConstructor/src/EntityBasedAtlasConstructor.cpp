@@ -79,10 +79,19 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
   }
 
   // Copy sequence parameters + Basic view ids
-  m_ivSequenceParams = move(ivSequenceParams);
+  m_inIvSequenceParams = move(ivSequenceParams);
+  m_outIvSequenceParams = m_inIvSequenceParams;
   m_isBasicView = move(isBasicView);
 
-  return m_ivSequenceParams;
+  // Register pruning relation
+  m_pruner->registerPruningRelation(m_outIvSequenceParams, m_isBasicView);
+
+  // Turn on occupancy coding for all views
+  for (auto &x : m_outIvSequenceParams.viewParamsList) {
+    x.hasOccupancy = true;
+  }
+
+  return m_outIvSequenceParams;
 }
 
 void EntityBasedAtlasConstructor::prepareAccessUnit(
@@ -210,8 +219,8 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
 
     mergedMasks.push_back(move(entityMergedMask));
   }
-  
-  SizeVector m_viewSizes = m_ivSequenceParams.viewParamsList.viewSizes();
+
+  SizeVector m_viewSizes = m_inIvSequenceParams.viewParamsList.viewSizes();
 
   for (auto entityId = m_EntityEncRange[0]; entityId < m_EntityEncRange[1]; entityId++) {
     cout << "Processing entity " << entityId << '\n';
@@ -220,7 +229,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
     transportEntityViews = entitySeparator(transportViews, entityId);
 
     // Pruning
-    masks = m_pruner->prune(m_ivSequenceParams.viewParamsList, transportEntityViews, m_isBasicView);
+    masks = m_pruner->prune(m_inIvSequenceParams, transportEntityViews, m_isBasicView);
 
     // updating the pruned basic masks for entities and filter other masks.
     updateMasks(transportEntityViews, masks);
@@ -238,7 +247,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
 }
 
 auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
-  m_maxEntities = m_ivSequenceParams.maxEntities;
+  m_maxEntities = m_inIvSequenceParams.maxEntities;
 
   // Aggregated mask
   m_aggregator->completeAccessUnit();
@@ -309,6 +318,9 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
   int xM = patch.posInView.x();
   int yM = patch.posInView.y();
 
+  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.viewId];
+  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.viewId];
+
   for (int dy = 0; dy < h; dy++) {
     for (int dx = 0; dx < w; dx++) {
       // get position
@@ -324,9 +336,13 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
         }
       }
+
       // Depth
-      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
-          depthViewMap.getPlane(0)(pView.y(), pView.x());
+      auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
+      if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy) {
+        depth = 1; // Avoid marking valid depth as invalid
+      }
+      depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
     }
   }
 }

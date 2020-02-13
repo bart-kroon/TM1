@@ -8,9 +8,11 @@ add_library(RendererLib
     "src/MultipassRenderer.cpp"
     "src/GroupBasedRenderer.cpp"
 	"src/Inpainter.cpp"
+	"src/SubBlockCuller.cpp"
 	"src/Synthesizer.cpp"
 	"src/ViewingSpaceController.cpp"
 	"src/reprojectPoints.cpp"
+	"src/ViewWeightingSynthesizer.cpp"
 	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
@@ -19,10 +21,13 @@ add_library(RendererLib
     "include/TMIV/Renderer/Renderer.h"
     "include/TMIV/Renderer/MultipassRenderer.h"
     "include/TMIV/Renderer/GroupBasedRenderer.h"
+	"include/TMIV/Renderer/SubBlockCuller.h"
+	"include/TMIV/Renderer/ICuller.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"
 	"include/TMIV/Renderer/ViewingSpaceController.h"
 	"include/TMIV/Renderer/reprojectPoints.h"
+	"include/TMIV/Renderer/reprojectPoints.hpp"
 	"include/TMIV/Renderer/Engine.h"
 	"include/TMIV/Renderer/Engine_ERP.hpp"
 	"include/TMIV/Renderer/Engine_Perspective.hpp"
@@ -31,6 +36,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/Rasterizer.h"
 	"include/TMIV/Renderer/Rasterizer.hpp"
 	"include/TMIV/Renderer/AccumulatingPixel.h"
+	"include/TMIV/Renderer/ViewWeightingSynthesizer.h"
 	)
 
 add_library(TMIV::RendererLib

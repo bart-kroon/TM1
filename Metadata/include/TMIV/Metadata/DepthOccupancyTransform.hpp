@@ -43,14 +43,19 @@ namespace impl {
 constexpr auto minNormDisp = 1e-3F; // 1 kilometer
 } // namespace impl
 
-inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams)
-    : m_threshold{viewParams.depthOccMapThreshold} {}
+inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
+  m_threshold = viewParams.depthOccMapThreshold;
+  if (m_threshold == 0 && viewParams.hasOccupancy) {
+    m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
+  }
+}
 
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
-                                              const AtlasParameters &atlasParams)
-    : OccupancyTransform{viewParams} {
-  if (atlasParams.depthOccMapThreshold) {
-    m_threshold = *atlasParams.depthOccMapThreshold;
+                                              const AtlasParameters &atlasParams) {
+  m_threshold = atlasParams.depthOccMapThreshold ? *atlasParams.depthOccMapThreshold
+                                                 : viewParams.depthOccMapThreshold;
+  if (m_threshold == 0 && viewParams.hasOccupancy) {
+    m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }
 }
 
@@ -100,6 +105,13 @@ auto DepthTransform<bits>::expandDepth(const Common::Depth16Frame &frame) const
 }
 
 template <unsigned bits>
+auto DepthTransform<bits>::expandDepth(const Common::Depth10Frame &frame) const
+    -> Common::Mat<float> {
+  static_assert(bits == 10);
+  return expandDepth(frame.getPlane(0));
+}
+
+template <unsigned bits>
 auto DepthTransform<bits>::quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t {
   if (x > 0.F) {
     const auto level = (x - m_normDispRange[0]) / (m_normDispRange[1] - m_normDispRange[0]);
@@ -109,10 +121,11 @@ auto DepthTransform<bits>::quantizeNormDisp(float x, uint16_t minLevel) const ->
 }
 
 template <unsigned bits>
+template <typename DepthFrame>
 auto DepthTransform<bits>::quantizeNormDisp(const Common::Mat<float> &matrix,
-                                            uint16_t minLevel) const -> Common::Depth16Frame {
-  static_assert(bits == 16);
-  auto frame = Common::Depth16Frame{int(matrix.width()), int(matrix.height())};
+                                            uint16_t minLevel) const -> DepthFrame {
+  static_assert(bits == DepthFrame::getBitDepth());
+  auto frame = DepthFrame{int(matrix.width()), int(matrix.height())};
   std::transform(std::begin(matrix), std::end(matrix), std::begin(frame.getPlane(0)),
                  [=](float x) { return quantizeNormDisp(x, minLevel); });
   return frame;

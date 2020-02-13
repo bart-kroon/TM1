@@ -51,6 +51,8 @@ public:
             const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
   void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks);
 
+  int getAlignment() override;
+
 private:
   auto setMask(int viewId, int entityId) -> Common::Mask;
 

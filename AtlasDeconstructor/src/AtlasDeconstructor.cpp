@@ -44,17 +44,14 @@ using namespace TMIV::Metadata;
 
 namespace TMIV::AtlasDeconstructor {
 
-
-AtlasDeconstructor::AtlasDeconstructor(const Json & rootNode, const Json & componentNode) 
-{
+AtlasDeconstructor::AtlasDeconstructor(const Json &rootNode, const Json &componentNode) {
   if (auto subnode = componentNode.optional("EntityDecodeRange")) {
     m_entityDecodeRange = subnode.asIntVector<2>();
   }
-  
+
   if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
     m_downscale_depth = node.asBool();
   }
-
 }
 
 auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
@@ -65,13 +62,11 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
+  for (const auto &sz : atlasParamsList.atlasSizes) {
 
+    auto w = m_downscale_depth ? sz.x() / 2 : sz.x();
+    auto h = m_downscale_depth ? sz.y() / 2 : sz.y();
 
-  for ( const auto & sz : atlasParamsList.atlasSizes) {
-    
-    auto w = m_downscale_depth ? sz.x()/2 : sz.x();
-    auto h = m_downscale_depth ? sz.y()/2 : sz.y();
-            
     PatchIdMap patchMap(w, h);
     fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
     patchMapList.push_back(move(patchMap));
@@ -196,5 +191,4 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   return frame;
 }
-
 } // namespace TMIV::AtlasDeconstructor

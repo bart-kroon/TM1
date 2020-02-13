@@ -113,18 +113,21 @@ void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) 
 template <typename FORMAT>
 auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
                   const char *directory, const char *texturePathFmt, const char *depthPathFmt,
-                  const vector<string> &viewNames = {}, bool downscaleDepth = false) -> MVDFrame<FORMAT> {
-  
-  cout << "Loading " << what << " frame " << frameIndex << " Downscale = " << downscaleDepth << endl;
+                  const vector<string> &viewNames = {}, bool downscaleDepth = false)
+    -> MVDFrame<FORMAT> {
+
+  cout << "Loading " << what << " frame " << frameIndex << " Downscale = " << downscaleDepth
+       << endl;
 
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());
 
-  for (size_t i = 0; i < sizes.size(); ++i) 
-  {
+  for (size_t i = 0; i < sizes.size(); ++i) {
     auto sizeDepthMap = sizes[i];
-    if (downscaleDepth) sizeDepthMap /= 2;
-    
+    if (downscaleDepth) {
+      sizeDepthMap /= 2;
+    }
+
     result.emplace_back(readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i,
                                                          viewNames.empty() ? "" : viewNames[i]),
                                              frameIndex, sizes[i]),
@@ -301,12 +304,12 @@ void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame
 }
 
 auto loadAtlas(const Json &config, const SizeVector &atlasSize, int frameIndex) -> MVD10Frame {
-  
+
   auto node = config.optional("depthDownScaleFlag");
   bool downscaleDepth = node && node.asBool();
 
   return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
-    "AtlasTexturePathFmt", "AtlasDepthPathFmt", {}, downscaleDepth);
+                                 "AtlasTexturePathFmt", "AtlasDepthPathFmt", {}, downscaleDepth);
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
@@ -359,9 +362,8 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 
   ViewParams &result = viewParamsVector.front();
 
-  // Override hasInvalidDepth parameter to be true because view synthesis may result in invalid
-  // depth values
-  result.depthOccMapThreshold = 1;
+  // The result may have invalid depth values
+  result.hasOccupancy = true;
 
   if (auto nodeOutputCameraPoseTrace = config.optional("PoseTracePath")) {
     string poseTracePath = getFullPath(config, "SourceDirectory", "PoseTracePath");

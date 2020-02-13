@@ -65,7 +65,7 @@ namespace {
 struct MultipassRendererHelper {
   vector<unsigned> selectedViewsPass;
   vector<unsigned> patchesViewId;
-  
+
   auto filterMaps(uint16_t i) const -> uint16_t {
     if (i != unusedPatchId && contains(selectedViewsPass, patchesViewId[i])) {
       return i;
@@ -175,14 +175,15 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
   // Merging
   auto viewport = viewportPass[m_numberOfPasses - 1];
   for (auto passId = m_numberOfPasses - 1; passId > 0; passId--) {
-    for (size_t i = 0; i < viewport.first.getPlane(0).size(); i++) { 
+    for (size_t i = 0; i < viewport.first.getPlane(0).size(); i++) {
       if (viewportPass[passId - 1].second.getPlane(0)[i] != 0) {
         // Always copy from the lower pass synthesis results if there is content there.
         viewport.second.getPlane(0)[i] = viewportPass[passId - 1].second.getPlane(0)[i];
-        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++)
+        for (int planeId = 0; planeId < viewport.first.getNumberOfPlanes(); planeId++) {
           viewport.first.getPlane(planeId)[i] = viewportPass[passId - 1].first.getPlane(planeId)[i];
+        }
       }
-	}
+    }
   }
 
   m_inpainter->inplaceInpaint(viewport, target);

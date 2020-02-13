@@ -53,6 +53,20 @@ template <typename T1, typename T2, typename... Tn> struct same_type<T1, T2, Tn.
 };
 template <typename... Tn>
 using SameTypeChecker = typename std::enable_if<same_type<Tn...>::value>::type;
+
+// NOLINTNEXTLINE
+#define has_type_helper(TYPE)                                                                      \
+  template <typename T> struct has_type__##TYPE {                                                  \
+  private:                                                                                         \
+    using yes = std::uint8_t;                                                                      \
+    using no = std::uint16_t;                                                                      \
+    template <class U> static auto test(typename U::TYPE *) -> yes;                                \
+    template <class U> static auto test(...) -> no;                                                \
+                                                                                                   \
+  public:                                                                                          \
+    static const bool value = sizeof(test<T>(0)) == sizeof(yes);                                   \
+  };                                                                                               \
+  template <typename T> using has_##TYPE = has_type__##TYPE<T>
 } // namespace TMIV::Common
 
 #endif

@@ -40,6 +40,8 @@
 #include <istream>
 
 namespace TMIV::Common {
+auto ceilLog2(uint_least64_t range) -> unsigned;
+
 class InputBitstream {
 public:
   explicit InputBitstream(std::istream &stream) : m_stream{stream} {}

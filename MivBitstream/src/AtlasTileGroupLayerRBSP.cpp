@@ -313,10 +313,9 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
   const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
-  const auto pdu_projection_id_num_bits =
-      vps.overridePduProjectionIdNumBits()
-          ? *vps.overridePduProjectionIdNumBits()
-          : (asps.asps_extended_projection_enabled_flag() ? 5U : 3U);
+  const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
+                                              ? ceilLog2(asps.asps_max_projections_minus1() + 1)
+                                              : 3U;
   x.pdu_projection_id(uint16_t(bitstream.readBits(pdu_projection_id_num_bits)));
 
   x.pdu_2d_pos_x(uint32_t(bitstream.readBits(afps.afps_2d_pos_x_bit_count())));
@@ -379,10 +378,9 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
   const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
-  const auto pdu_projection_id_num_bits =
-      vps.overridePduProjectionIdNumBits()
-          ? *vps.overridePduProjectionIdNumBits()
-          : asps.asps_extended_projection_enabled_flag() ? 5U : 3U;
+  const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
+                                              ? ceilLog2(asps.asps_max_projections_minus1() + 1)
+                                              : 3U;
   VERIFY_VPCCBITSTREAM((pdu_projection_id() >> pdu_projection_id_num_bits) == 0);
   bitstream.writeBits(pdu_projection_id(), pdu_projection_id_num_bits);
 

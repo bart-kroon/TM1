@@ -517,11 +517,8 @@ auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
     x.geometry_information(j).printTo(stream, j);
     x.attribute_information(j).printTo(stream, j);
   }
-  stream << "vps_extension_present_flag=" << boolalpha << x.vps_extension_present_flag() << '\n';
-  if (x.overridePduProjectionIdNumBits()) {
-    stream << "overridePduProjectionIdNumBits=" << *x.overridePduProjectionIdNumBits() << '\n';
-  }
-  return stream;
+  return stream << "vps_extension_present_flag=" << boolalpha << x.vps_extension_present_flag()
+                << '\n';
 }
 
 auto VpccParameterSet::operator==(const VpccParameterSet &other) const noexcept -> bool {

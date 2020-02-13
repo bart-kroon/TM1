@@ -117,7 +117,6 @@ TEST_CASE("Transcode from TMIV 3.0 to proposal", "[MIV Bitstream]") {
   }
 
   auto mps = MivParameterSet{vps, msp};
-  mps.updateOverridePduProjectionIdNumBits();
   ostringstream osubstream;
   cout << "\nmiv_parameter_set():\n" << mps;
   mps.encodeTo(osubstream);

@@ -183,7 +183,6 @@ TEST_CASE("vpcc_parameter_set", "[VPCC Parameter Set]") {
     vps.occupancy_information(0).oi_occupancy_nominal_2d_bitdepth(1);
     vps.geometry_information(0).gi_geometry_nominal_2d_bitdepth(1);
     vps.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(1);
-    vps.overridePduProjectionIdNumBits(13);
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -206,7 +205,6 @@ gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bitdepth( 0 )=1
 ai_attribute_count( 0 )=0
 vps_extension_present_flag=false
-overridePduProjectionIdNumBits=13
 )");
 
     REQUIRE(byteCodingTest(vps, 20));

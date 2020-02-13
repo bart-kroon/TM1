@@ -183,14 +183,4 @@ constexpr auto &VpccParameterSet::vps_extension_present_flag(bool value) noexcep
 }
 
 constexpr auto &VpccParameterSet::profile_tier_level() noexcept { return m_profile_tier_level; }
-
-constexpr auto VpccParameterSet::overridePduProjectionIdNumBits() const noexcept {
-  return m_overridePduProjectionIdNumBits;
-}
-
-constexpr auto &
-VpccParameterSet::overridePduProjectionIdNumBits(std::optional<unsigned> value) noexcept {
-  m_overridePduProjectionIdNumBits = value;
-  return *this;
-}
 } // namespace TMIV::MivBitstream

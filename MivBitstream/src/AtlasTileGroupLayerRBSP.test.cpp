@@ -129,12 +129,13 @@ pdu_orientation_index( 101 )=FPO_NULL
   REQUIRE(bitCodingTest(x, 29, vuh, vps, aspsV, afpsV, atgh, previous));
 
   SECTION("Example") {
-    vps.overridePduProjectionIdNumBits(9);
     vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_3d_coordinates_bitdepth(10);
 
     aspsV.front()
         .asps_use_eight_orientations_flag(true)
-        .asps_normal_axis_max_delta_value_enabled_flag(true);
+        .asps_normal_axis_max_delta_value_enabled_flag(true)
+		.asps_extended_projection_enabled_flag(true)
+		.asps_max_projections_minus1(511);
 
     afpsV.front().afps_3d_pos_x_bit_count(11).afps_3d_pos_y_bit_count(15);
 

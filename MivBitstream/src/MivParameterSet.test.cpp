@@ -154,7 +154,6 @@ msp_extension_present_flag=false
       x.geometry_information(0).gi_geometry_nominal_2d_bitdepth(1);
       x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(1);
       x.miv_sequence_params().view_params_list(ViewParamsList{{vp}});
-      x.updateOverridePduProjectionIdNumBits();
 
       REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -177,7 +176,6 @@ gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bitdepth( 0 )=1
 ai_attribute_count( 0 )=0
 vps_extension_present_flag=true
-overridePduProjectionIdNumBits=0
 miv_sequence_params_present_flag=vps_extension_present_flag
 msp_profile_idc=Basic
 msp_depth_params_num_bits=10

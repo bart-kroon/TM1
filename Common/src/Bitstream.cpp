@@ -86,8 +86,7 @@ auto InputBitstream::getFloat32() -> float {
   return value;
 }
 
-namespace {
-auto numBits(uint_least64_t range) -> unsigned {
+auto ceilLog2(uint_least64_t range) -> unsigned {
   if (range == 0) {
     return 0;
   }
@@ -99,10 +98,9 @@ auto numBits(uint_least64_t range) -> unsigned {
   }
   return bits;
 }
-} // namespace
 
 auto InputBitstream::getUVar(uint_least64_t range) -> uint_least64_t {
-  auto value = readBits(numBits(range));
+  auto value = readBits(ceilLog2(range));
   verify(!value || value < range);
   return value;
 }
@@ -197,11 +195,11 @@ void OutputBitstream::writeBits(uint_least64_t value, unsigned bits) {
 
 void OutputBitstream::putUVar(uint_least64_t value, uint_least64_t range) {
   verify(!value || value < range);
-  return writeBits(value, numBits(range));
+  return writeBits(value, ceilLog2(range));
 }
 
 void OutputBitstream::putUExpGolomb(uint_least64_t value) {
-  auto bits = numBits(value + 2) - 1;
+  auto bits = ceilLog2(value + 2) - 1;
   for (auto i = 0U; i < bits; ++i) {
     putFlag(true);
   }

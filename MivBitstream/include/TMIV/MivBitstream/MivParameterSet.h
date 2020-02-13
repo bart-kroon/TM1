@@ -109,17 +109,12 @@ public:
   auto miv_sequence_params_present_flag(bool value) noexcept -> MivParameterSet &;
   auto miv_sequence_params(MivSequenceParams value) noexcept -> MivParameterSet &;
 
-  // When changing the view_params_list through this function, call
-  // updateOverridePduProjectionIdNumBits.
   auto miv_sequence_params() noexcept -> MivSequenceParams &;
 
   friend auto operator<<(std::ostream &stream, const MivParameterSet &x) -> std::ostream &;
 
   auto operator==(const MivParameterSet &other) const noexcept -> bool;
   auto operator!=(const MivParameterSet &other) const noexcept -> bool;
-
-  auto updateOverridePduProjectionIdNumBits() noexcept -> MivParameterSet &;
-  auto pduProjectionIdNumBits() const noexcept -> unsigned;
 
   static auto decodeFrom(std::istream &stream, ExtensionDecoder extDecoder = noDecoderExtension)
       -> MivParameterSet;

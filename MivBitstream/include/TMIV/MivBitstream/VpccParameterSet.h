@@ -263,14 +263,6 @@ public:
   void encodeTo(std::ostream &stream,
                 const ExtensionEncoder &extEncoder = &noEncoderExtension) const;
 
-  // Get hook for an extension (MivBitstream) to specify the bit depth of the pdu_projection_id
-  // syntax element
-  constexpr auto overridePduProjectionIdNumBits() const noexcept;
-
-  // Set hook for an extension (MivBitstream) to specify the bit depth of the pdu_projection_id
-  // syntax element
-  constexpr auto &overridePduProjectionIdNumBits(std::optional<unsigned> value) noexcept;
-
 private:
   struct VpsAtlas {
     std::uint16_t vps_frame_width{};
@@ -284,9 +276,8 @@ private:
 
   ProfileTierLevel m_profile_tier_level;
   std::uint8_t m_vps_vpcc_parameter_set_id{};
-  std::vector<VpsAtlas> m_vps_atlases; // 23090-5: vps_atlas_count_minus1
+  std::vector<VpsAtlas> m_vps_atlases;
   bool m_vps_extension_present_flag{};
-  std::optional<unsigned> m_overridePduProjectionIdNumBits;
 };
 } // namespace TMIV::MivBitstream
 

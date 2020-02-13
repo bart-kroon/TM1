@@ -205,15 +205,6 @@ auto MivParameterSet::operator!=(const MivParameterSet &other) const noexcept ->
   return !operator==(other);
 }
 
-auto MivParameterSet::updateOverridePduProjectionIdNumBits() noexcept -> MivParameterSet & {
-  VpccParameterSet::overridePduProjectionIdNumBits(pduProjectionIdNumBits());
-  return *this;
-}
-
-auto MivParameterSet::pduProjectionIdNumBits() const noexcept -> unsigned {
-  return iceil(log2(miv_sequence_params().view_params_list().size()));
-}
-
 auto MivParameterSet::decodeFrom(std::istream &stream, ExtensionDecoder extDecoder)
     -> MivParameterSet {
   auto msp = optional<MivSequenceParams>{};
@@ -229,13 +220,10 @@ auto MivParameterSet::decodeFrom(std::istream &stream, ExtensionDecoder extDecod
   }
 
   auto mps = MivParameterSet{vps, *msp};
-  mps.updateOverridePduProjectionIdNumBits();
   return mps;
 }
 
 void MivParameterSet::encodeTo(std::ostream &stream, ExtensionEncoder extEncoder) const {
-  VERIFY_MIVBITSTREAM(pduProjectionIdNumBits() ==
-                      VpccParameterSet::overridePduProjectionIdNumBits());
   VpccParameterSet::encodeTo(stream, [&](OutputBitstream &bitstream) {
     miv_sequence_params().encodeTo(bitstream);
     if (miv_sequence_params().msp_extension_present_flag()) {

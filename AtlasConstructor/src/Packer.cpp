@@ -114,6 +114,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       clusteringMap.push_back(move(clusteringOutput.second));
     }
   }
+  if (m_maxEntities > 1)
+	cout << "clusteringMap size = " << clusteringMap.size() << endl;
 
   // Packing
   AtlasParamsVector atlasParamsVector;
@@ -139,7 +141,10 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   std::vector<Cluster> out;
   for (const auto &cluster : clusterList) {
-    cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_alignment, m_minPatchSize);
+    if (m_maxEntities > 1)
+      out.push_back(move(cluster));
+    else
+      cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_alignment, m_minPatchSize);
   }
 
   for (const auto &cluster : out) {
@@ -205,19 +210,23 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       }
 
       if (!packed) {
-
+        if (m_maxEntities > 1) {
+          cout << "Spliting patch " << pIndex << endl;
+        }
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 
         if (m_minPatchSize * m_minPatchSize <= cc.first.getArea()) {
           // modification to align the imin,jmin to even values to help renderer
           Cluster c = Cluster::align(cc.first, 2);
           clusterToPack.push(c);
+          clusteringMap_Index.push_back(clusteringMap_viewId);
         }
 
         if (m_minPatchSize * m_minPatchSize <= cc.second.getArea()) {
           // modification to align the imin,jmin to even values to help renderer
           Cluster c = Cluster::align(cc.second, 2);
           clusterToPack.push(c);
+          clusteringMap_Index.push_back(clusteringMap_viewId);
         }
       }
     }

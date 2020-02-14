@@ -54,8 +54,6 @@ public:
   int getAlignment() override;
 
 private:
-  auto setMask(int viewId, int entityId) -> Common::Mask;
-
   int m_alignment{};
   int m_minPatchSize{};
   int m_overlap{};

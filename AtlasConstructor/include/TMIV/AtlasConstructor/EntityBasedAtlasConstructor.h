@@ -41,10 +41,12 @@
 #include <TMIV/AtlasConstructor/IPruner.h>
 #include <TMIV/Common/Json.h>
 
+#include <bitset>
 #include <deque>
 #include <memory>
 
 namespace TMIV::AtlasConstructor {
+
 class EntityBasedAtlasConstructor : public IAtlasConstructor {
 public:
   EntityBasedAtlasConstructor(const Common::Json & /*rootNode*/,
@@ -75,7 +77,6 @@ private:
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
   Common::Vec2i m_EntityEncRange;
-  Common::Json m_rootNode;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
@@ -85,7 +86,6 @@ private:
   Metadata::IvSequenceParams m_outIvSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
-  int m_fIndex{0};
   std::vector<Common::MaskList> m_aggregatedEntityMask;
   unsigned m_maxEntities{};
   };

@@ -35,6 +35,8 @@
 
 #include "Cluster.h"
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Metadata/DepthOccupancyTransform.h>
+
 #include <cassert>
 #include <iostream>
 
@@ -55,9 +57,6 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
   // Single atlas size
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
-  // Keep the config info to load the EntityMaps
-  m_rootNode = rootNode;
-
   // Read the entity encoding range
   m_EntityEncRange = componentNode.require("EntityEncodeRange").asIntVector<2>();
 
@@ -71,7 +70,6 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
 auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams,
                                                   vector<bool> isBasicView)
     -> const IvSequenceParams & {
-
   // Construct at least the basic views
   if (ivSequenceParams.maxEntities == 1) {
     m_nbAtlas =
@@ -85,7 +83,7 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
 
   // Register pruning relation
   m_pruner->registerPruningRelation(m_outIvSequenceParams, m_isBasicView);
-
+  
   // Turn on occupancy coding for all views
   for (auto &x : m_outIvSequenceParams.viewParamsList) {
     x.hasOccupancy = true;
@@ -243,7 +241,6 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Aggregation
   m_viewBuffer.push_back(move(transportViews));
   m_aggregator->pushMask(mergedMasks);
-  m_fIndex++;
 }
 
 auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {

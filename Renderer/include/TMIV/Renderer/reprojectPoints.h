@@ -131,6 +131,7 @@ public:
   auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
   auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;
   auto doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f;
+  auto isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool;
   auto isInsideViewport(const Common::Vec2f &p) const -> bool;
   bool isValidDepth(float d) const;
   auto getAngularResolution() const -> float;

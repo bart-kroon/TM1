@@ -460,6 +460,12 @@ class EncoderConfiguration(DecoderConfiguration):
 	def omafV1CompatibleFlag(self):
 		# Just to do something slightly more interesting than False
 		return self.seqId == 'A' or self.seqId == 'C'
+	
+	def depthQualityAssessor(self):
+		return {
+			'blendingFactor': 0.03,
+			'maxOutlierRatio': 0.001
+		}
 
 	def pruner(self):
 		config = self.synthesizer()
@@ -544,10 +550,6 @@ class EncoderConfiguration(DecoderConfiguration):
 			'DepthOccupancy': self.depthOccupancy()
 		}
 
-	def depthLowQualityFlag(self):
-	    # TODO(BK): Automatically determine this flag (issue 134)
-	    return True
-
 	def numGroups(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':
@@ -560,7 +562,6 @@ class EncoderConfiguration(DecoderConfiguration):
 		config = DecoderConfiguration.parameters(self)
 		config.update({
 			'depthDownScaleFlag': True if self.depthScale > 1 else False,
-			'depthLowQualityFlag': self.depthLowQualityFlag(),
 			'numGroups': self.numGroups(),
 			'maxEntities': self.maxEntities(),
 			'reconstruct': False,
@@ -571,7 +572,9 @@ class EncoderConfiguration(DecoderConfiguration):
 			'SourceCameraNames': self.sourceCameraNames(),
 			'OmafV1CompatibleFlag': self.omafV1CompatibleFlag(),
 			'EncoderMethod': 'GroupBasedEncoder',
-			'GroupBasedEncoder': self.encoder()
+			'GroupBasedEncoder': self.encoder(),
+			'DepthQualityAssessorMethod': 'DepthQualityAssessor',
+			'DepthQualityAssessor': self.depthQualityAssessor()
 		})
 		if self.anchorId == 'E17' or self.anchorId == 'E97':
 		    config.update({

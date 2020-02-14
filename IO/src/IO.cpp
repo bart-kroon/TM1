@@ -204,7 +204,10 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   const auto viewParamsList = ViewParamsList::loadFromJson(
       Json{stream}.require("cameras"), config.require("SourceCameraNames").asStringVector());
 
-  const auto depthLowQualityFlag = config.require("depthLowQualityFlag").asBool();
+  auto depthLowQualityFlag = false;
+  if (auto node = config.optional("depthLowQualityFlag")) {
+    depthLowQualityFlag = node.asBool();
+  }
 
   const auto numGroups = config.require("numGroups").asInt();
   if (numGroups < 1) {

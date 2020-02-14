@@ -31,23 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/GroupBasedEncoder.h>
+#ifndef _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
+#define _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
 
-#include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
-#include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
-#include "../../DepthQualityAssessor/src/DepthQualityAssessor.reg.hpp"
-#include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
+#include <TMIV/Metadata/IvSequenceParams.h>
 
-#include <TMIV/Common/Factory.h>
+namespace TMIV::DepthQualityAssessor {
+class IDepthQualityAssessor {
+public:
+  IDepthQualityAssessor() = default;
+  IDepthQualityAssessor(const IDepthQualityAssessor &) = delete;
+  IDepthQualityAssessor(IDepthQualityAssessor &&) = default;
+  IDepthQualityAssessor &operator=(const IDepthQualityAssessor &) = delete;
+  IDepthQualityAssessor &operator=(IDepthQualityAssessor &&) = default;
+  virtual ~IDepthQualityAssessor() = default;
 
-namespace TMIV::Encoder {
-inline void registerComponents() {
-  TMIV::ViewOptimizer::registerComponents();
-  TMIV::AtlasConstructor::registerComponents();
-  TMIV::DepthOccupancy::registerComponents();
-  TMIV::DepthQualityAssessor::registerComponents();
+  virtual auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
+                                 const Common::MVD16Frame &sourceViews) -> bool = 0;
+};
+} // namespace TMIV::DepthQualityAssessor
 
-  Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
-  Common::Factory<IEncoder>::getInstance().registerAs<GroupBasedEncoder>("GroupBasedEncoder");
-}
-} // namespace TMIV::Encoder
+#endif

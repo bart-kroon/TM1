@@ -31,23 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/GroupBasedEncoder.h>
-
-#include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
-#include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
-#include "../../DepthQualityAssessor/src/DepthQualityAssessor.reg.hpp"
-#include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
-
 #include <TMIV/Common/Factory.h>
+#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 
-namespace TMIV::Encoder {
+namespace TMIV::DepthQualityAssessor {
 inline void registerComponents() {
-  TMIV::ViewOptimizer::registerComponents();
-  TMIV::AtlasConstructor::registerComponents();
-  TMIV::DepthOccupancy::registerComponents();
-  TMIV::DepthQualityAssessor::registerComponents();
-
-  Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
-  Common::Factory<IEncoder>::getInstance().registerAs<GroupBasedEncoder>("GroupBasedEncoder");
+  Factory<IDepthQualityAssessor>::getInstance().registerAs<DepthQualityAssessor>(
+      "DepthQualityAssessor");
 }
-} // namespace TMIV::Encoder
+} // namespace TMIV::DepthQualityAssessor

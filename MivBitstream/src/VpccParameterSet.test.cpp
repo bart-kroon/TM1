@@ -198,6 +198,7 @@ ptl_profile_pcc_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 vps_vpcc_parameter_set_id=0
+vps_miv_mode_flag=false
 vps_atlas_count=1
 vps_frame_width( 0 )=1920
 vps_frame_height( 0 )=1080
@@ -221,6 +222,6 @@ msp_max_entities_minus1=20
 vps_miv_sequence_vui_params_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(vps, 24));
+    REQUIRE(byteCodingTest(vps, 25));
   }
 }

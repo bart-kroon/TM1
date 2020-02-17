@@ -209,6 +209,8 @@ constexpr auto VpccParameterSet::vps_vpcc_parameter_set_id() const noexcept {
   return m_vps_vpcc_parameter_set_id;
 }
 
+constexpr auto VpccParameterSet::vps_miv_mode_flag() const noexcept { return m_vps_miv_mode_flag; }
+
 constexpr auto VpccParameterSet::vps_extension_present_flag() const noexcept {
   return m_vps_extension_present_flag;
 }
@@ -220,6 +222,11 @@ constexpr auto &VpccParameterSet::profile_tier_level(ProfileTierLevel value) noe
 
 constexpr auto &VpccParameterSet::vps_vpcc_parameter_set_id(std::uint8_t value) noexcept {
   m_vps_vpcc_parameter_set_id = value;
+  return *this;
+}
+
+constexpr auto &VpccParameterSet::vps_miv_mode_flag(const bool value) noexcept {
+  m_vps_miv_mode_flag = value;
   return *this;
 }
 

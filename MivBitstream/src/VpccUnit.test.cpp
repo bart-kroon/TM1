@@ -40,11 +40,11 @@ using namespace TMIV::MivBitstream;
 namespace examples {
 auto vps() {
   auto x = VpccParameterSet{};
+  x.vps_miv_mode_flag(true);
   x.vps_atlas_count(1);
   x.vps_frame_width(0, 640);
   x.vps_frame_height(0, 480);
   x.vps_map_count(0, 1);
-  x.occupancy_information(0).oi_occupancy_nominal_2d_bitdepth(8);
   x.geometry_information(0).gi_geometry_nominal_2d_bitdepth(9);
   x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(11);
   x.vps_extension_present_flag(true);
@@ -199,15 +199,12 @@ ptl_profile_pcc_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 vps_vpcc_parameter_set_id=0
+vps_miv_mode_flag=true
 vps_atlas_count=1
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
 vps_map_count( 0 )=1
 vps_raw_patch_enabled_flag( 0 )=false
-oi_occupancy_codec_id( 0 )=0
-oi_lossy_occupancy_map_compression_threshold( 0 )=0
-oi_occupancy_nominal_2d_bitdepth( 0 )=8
-oi_occupancy_MSB_align_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth( 0 )=9
 gi_geometry_MSB_align_flag( 0 )=false
@@ -217,7 +214,7 @@ vps_extension_present_flag=true
 vps_miv_extension_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 21, vuh));
+    REQUIRE(byteCodingTest(x, 19, vuh));
   }
 
   SECTION("AD") {
@@ -261,7 +258,7 @@ vps_miv_extension_flag=false
 TEST_CASE("vpcc_unit", "[VPCC Unit]") {
   SECTION("Example 1") {
     const auto vpses = std::vector<VpccParameterSet>{};
-    auto vps = examples::vps();
+    const auto vps = examples::vps();
     const auto x = VpccUnit{VpccUnitHeader{VuhUnitType::VPCC_VPS}, vps};
 
     REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_VPS
@@ -271,15 +268,12 @@ ptl_profile_pcc_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 vps_vpcc_parameter_set_id=0
+vps_miv_mode_flag=true
 vps_atlas_count=1
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
 vps_map_count( 0 )=1
 vps_raw_patch_enabled_flag( 0 )=false
-oi_occupancy_codec_id( 0 )=0
-oi_lossy_occupancy_map_compression_threshold( 0 )=0
-oi_occupancy_nominal_2d_bitdepth( 0 )=8
-oi_occupancy_MSB_align_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth( 0 )=9
 gi_geometry_MSB_align_flag( 0 )=false
@@ -289,7 +283,7 @@ vps_extension_present_flag=true
 vps_miv_extension_flag=false
 )");
 
-    REQUIRE(unitCodingTest(x, 25, vpses));
+    REQUIRE(unitCodingTest(x, 23, vpses));
   }
 
   SECTION("Example 2") {

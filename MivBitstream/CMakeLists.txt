@@ -10,8 +10,6 @@ add_library(MivBitstreamLib
 	"src/IvAccessUnitParams.cpp"	
 	"src/MivDecoder.cpp"
 	"src/MivEncoder.cpp"
-	"src/MivParameterSet.cpp"
-	"src/MivPatchUnit.cpp"
 	"src/NalSampleStreamFormat.cpp"
 	"src/NalUnit.cpp"
 	"src/NalSampleStream.cpp"
@@ -38,10 +36,6 @@ add_library(MivBitstreamLib
 	"include/TMIV/MivBitstream/IvAccessUnitParams.h"
 	"include/TMIV/MivBitstream/MivDecoder.h"
 	"include/TMIV/MivBitstream/MivEncoder.h"
-	"include/TMIV/MivBitstream/MivParameterSet.h"
-	"include/TMIV/MivBitstream/MivParameterSet.hpp"
-	"include/TMIV/MivBitstream/MivPatchUnit.h"
-	"include/TMIV/MivBitstream/MivPatchUnit.hpp"
 	"include/TMIV/MivBitstream/NalSampleStreamFormat.h"
 	"include/TMIV/MivBitstream/NalUnit.h"
 	"include/TMIV/MivBitstream/NalSampleStream.h"
@@ -83,8 +77,6 @@ if (CMAKE_TESTING_ENABLED)
 		"src/AtlasTileGroupLayerRBSP.test.cpp"
 		"src/MivDecoder.test.cpp"
 		"src/MivEncoder.test.cpp"
-		"src/MivParameterSet.test.cpp"
-		"src/MivPatchUnit.test.cpp"
 		"src/NalSampleStreamFormat.test.cpp"
 		"src/NalUnit.test.cpp"		
 		"src/SeiRBSP.test.cpp"
@@ -100,15 +92,6 @@ if (CMAKE_TESTING_ENABLED)
 			TMIV::MivBitstreamLib)
 
 	catch_discover_tests(MivBitstreamTest)
-
-	add_executable(MivBitstreamSpikes
-		"src/MivBitstream.spikes.cpp")
-
-	target_link_libraries(MivBitstreamSpikes
-		PRIVATE
-			Catch2::Catch2
-			TMIV::MivBitstreamLib
-			TMIV::IOLib)
 
 	add_executable(VpccBitstreamSpikes
 		"src/VpccBitstream.spikes.cpp")

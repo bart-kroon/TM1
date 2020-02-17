@@ -211,7 +211,7 @@ vps_extension_present_flag=true
 vps_miv_extension_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 19, vuh));
+    REQUIRE(byteCodingTest(x, 20, vuh));
   }
 
   SECTION("AD") {
@@ -280,7 +280,7 @@ vps_extension_present_flag=true
 vps_miv_extension_flag=false
 )");
 
-    REQUIRE(unitCodingTest(x, 23, vpses));
+    REQUIRE(unitCodingTest(x, 24, vpses));
   }
 
   SECTION("Example 2") {

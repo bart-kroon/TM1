@@ -669,7 +669,8 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
     VERIFY_MIVBITSTREAM(x.vps_extension_present_flag());
 
     const auto vps_extension_length_minus1 = bitstream.getUExpGolomb();
-    const auto extensionEnd = uint_least64_t(bitstream.tellg()) + vps_extension_length_minus1 + 1;
+    const auto extensionEnd =
+        uint_least64_t(bitstream.tellg()) + 8 * (vps_extension_length_minus1 + 1);
 
     x.vps_miv_extension_flag(bitstream.getFlag());
 
@@ -685,6 +686,7 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
     while (uint_least64_t(bitstream.tellg()) < extensionEnd) {
       bitstream.getFlag(); // vps_miv_extension_data_flag
     }
+    VERIFY_MIVBITSTREAM(bitstream.tellg() == extensionEnd);
   }
 
   bitstream.byteAlign();
@@ -748,12 +750,17 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
     ostringstream stream;
     OutputBitstream bitstream{stream};
     encodeExtension(bitstream);
-    return unsigned(bitstream.tellp()) - 1;
+    return (unsigned(bitstream.tellp()) - 1U) / 8U;
   }();
 
   bitstream.putUExpGolomb(vps_extension_length_minus1);
-  const auto extensionEnd = uint_least64_t(bitstream.tellp()) + vps_extension_length_minus1 + 1;
+  const auto extensionEnd =
+      uint_least64_t(bitstream.tellp()) + 8 * (vps_extension_length_minus1 + 1);
   encodeExtension(bitstream);
+
+  while (uint_least64_t(bitstream.tellp()) < extensionEnd) {
+    bitstream.putFlag(false);
+  }
   VERIFY_MIVBITSTREAM(bitstream.tellp() == extensionEnd);
 
   bitstream.byteAlign();

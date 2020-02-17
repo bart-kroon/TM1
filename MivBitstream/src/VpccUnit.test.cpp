@@ -44,7 +44,7 @@ auto vps() {
   x.vps_frame_width(0, 640);
   x.vps_frame_height(0, 480);
   x.geometry_information(0).gi_geometry_nominal_2d_bitdepth_minus1(8);
-  x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(11);
+  x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth_minus1(10);
   x.vps_extension_present_flag(true);
   return x;
 }
@@ -57,7 +57,7 @@ auto vpses() {
     x.vps_frame_height(j, 480);
     x.occupancy_information(j).oi_occupancy_nominal_2d_bitdepth_minus1(7);
     x.geometry_information(j).gi_geometry_nominal_2d_bitdepth_minus1(8);
-    x.geometry_information(j).gi_geometry_3d_coordinates_bitdepth(11);
+    x.geometry_information(j).gi_geometry_3d_coordinates_bitdepth_minus1(10);
     x.attribute_information(j).ai_attribute_count(4);
   }
   return std::vector<VpccParameterSet>{3, x};
@@ -205,7 +205,7 @@ vps_auxiliary_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth( 0 )=11
+gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
 ai_attribute_count( 0 )=0
 vps_extension_present_flag=true
 vps_miv_extension_flag=false
@@ -274,7 +274,7 @@ vps_auxiliary_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth( 0 )=11
+gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
 ai_attribute_count( 0 )=0
 vps_extension_present_flag=true
 vps_miv_extension_flag=false

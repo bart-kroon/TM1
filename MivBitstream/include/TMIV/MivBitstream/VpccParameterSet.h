@@ -140,12 +140,12 @@ public:
   constexpr auto gi_geometry_codec_id() const noexcept;
   constexpr auto gi_geometry_nominal_2d_bitdepth_minus1() const noexcept;
   constexpr auto gi_geometry_MSB_align_flag() const noexcept;
-  constexpr auto gi_geometry_3d_coordinates_bitdepth() const noexcept;
+  constexpr auto gi_geometry_3d_coordinates_bitdepth_minus1() const noexcept;
 
   constexpr auto &gi_geometry_codec_id(std::uint8_t value) noexcept;
   constexpr auto &gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept;
   constexpr auto &gi_geometry_MSB_align_flag(bool value) noexcept;
-  constexpr auto &gi_geometry_3d_coordinates_bitdepth(std::uint8_t value) noexcept;
+  constexpr auto &gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept;
 
   auto printTo(std::ostream &stream, std::uint8_t atlasId) const -> std::ostream &;
 
@@ -162,7 +162,7 @@ private:
   std::uint8_t m_gi_geometry_codec_id;
   std::uint8_t m_gi_geometry_nominal_2d_bitdepth_minus1;
   bool m_gi_geometry_MSB_align_flag;
-  std::uint8_t m_gi_geometry_3d_coordinates_bitdepth;
+  std::uint8_t m_gi_geometry_3d_coordinates_bitdepth_minus1;
 };
 
 // 23090-5: attribute_information( atlasId )

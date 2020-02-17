@@ -130,8 +130,8 @@ constexpr auto GeometryInformation::gi_geometry_MSB_align_flag() const noexcept 
   return m_gi_geometry_MSB_align_flag;
 }
 
-constexpr auto GeometryInformation::gi_geometry_3d_coordinates_bitdepth() const noexcept {
-  return m_gi_geometry_3d_coordinates_bitdepth;
+constexpr auto GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1() const noexcept {
+  return m_gi_geometry_3d_coordinates_bitdepth_minus1;
 }
 
 constexpr auto &GeometryInformation::gi_geometry_codec_id(std::uint8_t value) noexcept {
@@ -150,8 +150,8 @@ constexpr auto &GeometryInformation::gi_geometry_MSB_align_flag(bool value) noex
 }
 
 constexpr auto &
-GeometryInformation::gi_geometry_3d_coordinates_bitdepth(std::uint8_t value) noexcept {
-  m_gi_geometry_3d_coordinates_bitdepth = value;
+GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept {
+  m_gi_geometry_3d_coordinates_bitdepth_minus1 = value;
   return *this;
 }
 

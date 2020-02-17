@@ -125,10 +125,10 @@ pdu_projection_id( 101 )=0
 pdu_orientation_index( 101 )=FPO_NULL
 )");
 
-  REQUIRE(bitCodingTest(x, 29, vuh, vps, aspsV, afpsV, atgh, previous));
+  REQUIRE(bitCodingTest(x, 31, vuh, vps, aspsV, afpsV, atgh, previous));
 
   SECTION("Example") {
-    vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_3d_coordinates_bitdepth(10);
+    vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_3d_coordinates_bitdepth_minus1(9);
 
     aspsV.front()
         .asps_use_eight_orientations_flag(true)
@@ -216,7 +216,7 @@ pdu_3d_pos_min_z( 99 )=0
 pdu_projection_id( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
 )");
-    REQUIRE(bitCodingTest(x, 29, vuh, vps, aspsV, afpsV, atgh, patchMode, previous));
+    REQUIRE(bitCodingTest(x, 31, vuh, vps, aspsV, afpsV, atgh, patchMode, previous));
   }
 }
 
@@ -306,7 +306,7 @@ pdu_orientation_index( 1 )=FPO_NULL
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::I_TILE_GRP);
 
-    REQUIRE(bitCodingTest(x, 72, vuh, vps, aspsV, afpsV, atgh));
+    REQUIRE(bitCodingTest(x, 80, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 
@@ -409,6 +409,6 @@ pdu_3d_pos_min_z( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 21, vuh, vps, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 22, vuh, vps, aspsV, afpsV));
   }
 }

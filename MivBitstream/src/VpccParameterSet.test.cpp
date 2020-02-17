@@ -100,12 +100,11 @@ TEST_CASE("geometry_information", "[VPCC Parameter Set]") {
   vps.vps_auxiliary_video_present_flag(atlasId, false);
 
   auto x = GeometryInformation{};
-  x.gi_geometry_3d_coordinates_bitdepth(1);
 
   REQUIRE(toString(x, 0) == R"(gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=0
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth( 0 )=1
+gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=0
 )");
 
   REQUIRE(bitCodingTest(x, 19, vps, atlasId));
@@ -114,12 +113,12 @@ gi_geometry_3d_coordinates_bitdepth( 0 )=1
     x.gi_geometry_codec_id(255)
         .gi_geometry_nominal_2d_bitdepth_minus1(31)
         .gi_geometry_MSB_align_flag(true)
-        .gi_geometry_3d_coordinates_bitdepth(32);
+        .gi_geometry_3d_coordinates_bitdepth_minus1(31);
 
     REQUIRE(toString(x, 0) == R"(gi_geometry_codec_id( 0 )=255
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=31
 gi_geometry_MSB_align_flag( 0 )=true
-gi_geometry_3d_coordinates_bitdepth( 0 )=32
+gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=31
 )");
 
     REQUIRE(bitCodingTest(x, 19, vps, atlasId));
@@ -173,7 +172,6 @@ TEST_CASE("vpcc_parameter_set", "[VPCC Parameter Set]") {
   SECTION("Example 1") {
     vps.vps_frame_width(0, 1920);
     vps.vps_frame_height(0, 1080);
-    vps.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(1);
     vps.vps_extension_present_flag(true);
     vps.vps_miv_extension_flag(true);
     vps.miv_sequence_params()
@@ -202,7 +200,7 @@ oi_occupancy_MSB_align_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=0
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth( 0 )=1
+gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=0
 ai_attribute_count( 0 )=0
 vps_extension_present_flag=true
 vps_miv_extension_flag=true

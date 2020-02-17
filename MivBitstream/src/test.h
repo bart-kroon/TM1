@@ -47,10 +47,10 @@ template <typename Type, typename... Args>
 auto byteCodingTest(const Type &reference, int size, Args &&... args) -> bool {
   std::stringstream stream;
   reference.encodeTo(stream, args...);
-  REQUIRE(stream.tellp() == size);
+  REQUIRE(size == stream.tellp());
 
   const auto actual = Type::decodeFrom(stream, std::forward<Args>(args)...);
-  REQUIRE(stream.tellg() == size);
+  REQUIRE(size == stream.tellg());
 
   return actual == reference;
 }

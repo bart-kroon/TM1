@@ -169,7 +169,8 @@ auto OccupancyInformation::operator==(const OccupancyInformation &other) const n
   return oi_occupancy_codec_id() == other.oi_occupancy_codec_id() &&
          oi_lossy_occupancy_map_compression_threshold() ==
              other.oi_lossy_occupancy_map_compression_threshold() &&
-         oi_occupancy_nominal_2d_bitdepth_minus1() == other.oi_occupancy_nominal_2d_bitdepth_minus1() &&
+         oi_occupancy_nominal_2d_bitdepth_minus1() ==
+             other.oi_occupancy_nominal_2d_bitdepth_minus1() &&
          oi_occupancy_MSB_align_flag() == other.oi_occupancy_MSB_align_flag();
 }
 
@@ -198,15 +199,18 @@ auto GeometryInformation::printTo(ostream &stream, uint8_t atlasId) const -> ost
                 << "\ngi_geometry_nominal_2d_bitdepth_minus1( " << int(atlasId)
                 << " )=" << int(gi_geometry_nominal_2d_bitdepth_minus1())
                 << "\ngi_geometry_MSB_align_flag( " << int(atlasId) << " )=" << boolalpha
-                << gi_geometry_MSB_align_flag() << "\ngi_geometry_3d_coordinates_bitdepth( "
-                << int(atlasId) << " )=" << int(gi_geometry_3d_coordinates_bitdepth()) << '\n';
+                << gi_geometry_MSB_align_flag() << "\ngi_geometry_3d_coordinates_bitdepth_minus1( "
+                << int(atlasId) << " )=" << int(gi_geometry_3d_coordinates_bitdepth_minus1())
+                << '\n';
 }
 
 auto GeometryInformation::operator==(const GeometryInformation &other) const noexcept -> bool {
   return gi_geometry_codec_id() == other.gi_geometry_codec_id() &&
-         gi_geometry_nominal_2d_bitdepth_minus1() == other.gi_geometry_nominal_2d_bitdepth_minus1() &&
+         gi_geometry_nominal_2d_bitdepth_minus1() ==
+             other.gi_geometry_nominal_2d_bitdepth_minus1() &&
          gi_geometry_MSB_align_flag() == other.gi_geometry_MSB_align_flag() &&
-         gi_geometry_3d_coordinates_bitdepth() == other.gi_geometry_3d_coordinates_bitdepth();
+         gi_geometry_3d_coordinates_bitdepth_minus1() ==
+             other.gi_geometry_3d_coordinates_bitdepth_minus1();
 }
 
 auto GeometryInformation::operator!=(const GeometryInformation &other) const noexcept -> bool {
@@ -219,7 +223,7 @@ auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const VpccParame
   x.gi_geometry_codec_id(bitstream.getUint8());
   x.gi_geometry_nominal_2d_bitdepth_minus1(uint8_t(bitstream.readBits(5)));
   x.gi_geometry_MSB_align_flag(bitstream.getFlag());
-  x.gi_geometry_3d_coordinates_bitdepth(uint8_t(bitstream.readBits(5) + 1));
+  x.gi_geometry_3d_coordinates_bitdepth_minus1(uint8_t(bitstream.readBits(5)));
   VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
   return x;
 }
@@ -229,10 +233,7 @@ void GeometryInformation::encodeTo(OutputBitstream &bitstream, const VpccParamet
   bitstream.putUint8(gi_geometry_codec_id());
   bitstream.writeBits(gi_geometry_nominal_2d_bitdepth_minus1(), 5);
   bitstream.putFlag(gi_geometry_MSB_align_flag());
-
-  VERIFY_VPCCBITSTREAM(1 <= gi_geometry_3d_coordinates_bitdepth());
-  bitstream.writeBits(gi_geometry_3d_coordinates_bitdepth() - 1, 5);
-
+  bitstream.writeBits(gi_geometry_3d_coordinates_bitdepth_minus1(), 5);
   VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
 }
 

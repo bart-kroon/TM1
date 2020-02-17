@@ -344,15 +344,13 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
-  const auto pdu_3d_pos_min_z_num_bits = gi.gi_geometry_3d_coordinates_bitdepth() -
-                                         atgh.atgh_pos_min_z_quantizer() +
-                                         int(x.pdu_projection_id() > 5);
+  const auto pdu_3d_pos_min_z_num_bits =
+      gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_min_z_quantizer() + 2;
   x.pdu_3d_pos_min_z(uint32_t(bitstream.readBits(pdu_3d_pos_min_z_num_bits)));
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto pdu_3d_pos_max_z_num_bits = gi.gi_geometry_3d_coordinates_bitdepth() -
-                                           atgh.atgh_pos_max_z_quantizer() +
-                                           int(x.pdu_projection_id() > 5);
+    const auto pdu_3d_pos_max_z_num_bits =
+        gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_max_z_quantizer() + 2;
     x.pdu_3d_pos_delta_max_z({uint32_t(bitstream.readBits(pdu_3d_pos_max_z_num_bits))});
   }
 
@@ -416,18 +414,16 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
-  const auto pdu_3d_pos_min_z_num_bits = gi.gi_geometry_3d_coordinates_bitdepth() -
-                                         atgh.atgh_pos_min_z_quantizer() +
-                                         int(pdu_projection_id() > 5);
+  const auto pdu_3d_pos_min_z_num_bits =
+      gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_min_z_quantizer() + 2;
   VERIFY_VPCCBITSTREAM((pdu_3d_pos_min_z() >> pdu_3d_pos_min_z_num_bits) == 0);
   bitstream.writeBits(pdu_3d_pos_min_z(), pdu_3d_pos_min_z_num_bits);
 
   VERIFY_VPCCBITSTREAM(!pdu_3d_pos_delta_max_z() ==
                        !asps.asps_normal_axis_max_delta_value_enabled_flag());
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto pdu_3d_pos_max_z_num_bits = gi.gi_geometry_3d_coordinates_bitdepth() -
-                                           atgh.atgh_pos_max_z_quantizer() +
-                                           int(pdu_projection_id() > 5);
+    const auto pdu_3d_pos_max_z_num_bits =
+        gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_max_z_quantizer() + 2;
     VERIFY_VPCCBITSTREAM((*pdu_3d_pos_delta_max_z() >> pdu_3d_pos_max_z_num_bits) == 0);
     bitstream.writeBits(*pdu_3d_pos_delta_max_z(), pdu_3d_pos_max_z_num_bits);
   }

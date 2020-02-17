@@ -288,8 +288,8 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
   stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << "\npdu_2d_pos_y( "
          << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_delta_size_x( " << patchIdx
          << " )=" << pdu_2d_delta_size_x() << "\npdu_2d_delta_size_y( " << patchIdx
-         << " )=" << pdu_2d_delta_size_y() << "\npdu_3d_pos_x( " << patchIdx
-         << " )=" << pdu_3d_pos_x() << "\npdu_3d_pos_y( " << patchIdx << " )=" << pdu_3d_pos_y()
+         << " )=" << pdu_2d_delta_size_y() << "\npdu_view_pos_x( " << patchIdx
+         << " )=" << pdu_view_pos_x() << "\npdu_view_pos_y( " << patchIdx << " )=" << pdu_view_pos_y()
          << "\npdu_3d_pos_min_z( " << patchIdx << " )=" << pdu_3d_pos_min_z() << '\n';
   if (pdu_3d_pos_delta_max_z()) {
     stream << "pdu_3d_pos_delta_max_z( " << patchIdx << " )=" << *pdu_3d_pos_delta_max_z() << '\n';
@@ -325,8 +325,8 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
 
   x.pdu_2d_delta_size_x(int32_t(bitstream.getSExpGolomb()));
   x.pdu_2d_delta_size_y(int32_t(bitstream.getSExpGolomb()));
-  x.pdu_3d_pos_x(uint32_t(bitstream.readBits(afps.afps_3d_pos_x_bit_count_minus1() + 1)));
-  x.pdu_3d_pos_y(uint32_t(bitstream.readBits(afps.afps_3d_pos_y_bit_count_minus1() + 1)));
+  x.pdu_view_pos_x(uint32_t(bitstream.readBits(afps.afps_3d_pos_x_bit_count_minus1() + 1)));
+  x.pdu_view_pos_y(uint32_t(bitstream.readBits(afps.afps_3d_pos_y_bit_count_minus1() + 1)));
 
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
@@ -372,8 +372,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   bitstream.writeBits(pdu_2d_pos_y(), afps.afps_2d_pos_y_bit_count_minus1() + 1);
   bitstream.putSExpGolomb(pdu_2d_delta_size_x());
   bitstream.putSExpGolomb(pdu_2d_delta_size_y());
-  bitstream.writeBits(pdu_3d_pos_x(), afps.afps_3d_pos_x_bit_count_minus1() + 1);
-  bitstream.writeBits(pdu_3d_pos_y(), afps.afps_3d_pos_y_bit_count_minus1() + 1);
+  bitstream.writeBits(pdu_view_pos_x(), afps.afps_3d_pos_x_bit_count_minus1() + 1);
+  bitstream.writeBits(pdu_view_pos_y(), afps.afps_3d_pos_y_bit_count_minus1() + 1);
 
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());

@@ -115,9 +115,9 @@ constexpr auto PatchDataUnit::pdu_2d_delta_size_x() const noexcept { return m_pd
 
 constexpr auto PatchDataUnit::pdu_2d_delta_size_y() const noexcept { return m_pdu_2d_delta_size_y; }
 
-constexpr auto PatchDataUnit::pdu_3d_pos_x() const noexcept { return m_pdu_3d_pos_x; }
+constexpr auto PatchDataUnit::pdu_view_pos_x() const noexcept { return m_pdu_view_pos_x; }
 
-constexpr auto PatchDataUnit::pdu_3d_pos_y() const noexcept { return m_pdu_3d_pos_y; }
+constexpr auto PatchDataUnit::pdu_view_pos_y() const noexcept { return m_pdu_view_pos_y; }
 
 constexpr auto PatchDataUnit::pdu_3d_pos_min_z() const noexcept { return m_pdu_3d_pos_min_z; }
 
@@ -151,13 +151,13 @@ constexpr auto &PatchDataUnit::pdu_2d_delta_size_y(const std::int32_t value) noe
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_3d_pos_x(const std::uint32_t value) noexcept {
-  m_pdu_3d_pos_x = value;
+constexpr auto &PatchDataUnit::pdu_view_pos_x(const std::uint32_t value) noexcept {
+  m_pdu_view_pos_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_3d_pos_y(const std::uint32_t value) noexcept {
-  m_pdu_3d_pos_y = value;
+constexpr auto &PatchDataUnit::pdu_view_pos_y(const std::uint32_t value) noexcept {
+  m_pdu_view_pos_y = value;
   return *this;
 }
 
@@ -187,7 +187,7 @@ constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexc
   return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
          pdu_2d_delta_size_x() == other.pdu_2d_delta_size_x() &&
          pdu_2d_delta_size_y() == other.pdu_2d_delta_size_y() &&
-         pdu_3d_pos_x() == other.pdu_3d_pos_x() && pdu_3d_pos_y() == other.pdu_3d_pos_y() &&
+         pdu_view_pos_x() == other.pdu_view_pos_x() && pdu_view_pos_y() == other.pdu_view_pos_y() &&
          pdu_3d_pos_min_z() == other.pdu_3d_pos_min_z() &&
          pdu_3d_pos_delta_max_z() == other.pdu_3d_pos_delta_max_z() &&
          pdu_projection_id() == other.pdu_projection_id() &&

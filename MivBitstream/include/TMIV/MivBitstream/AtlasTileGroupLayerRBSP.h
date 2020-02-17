@@ -146,8 +146,8 @@ public:
   constexpr auto pdu_2d_pos_y() const noexcept;
   constexpr auto pdu_2d_delta_size_x() const noexcept;
   constexpr auto pdu_2d_delta_size_y() const noexcept;
-  constexpr auto pdu_3d_pos_x() const noexcept;
-  constexpr auto pdu_3d_pos_y() const noexcept;
+  constexpr auto pdu_view_pos_x() const noexcept;
+  constexpr auto pdu_view_pos_y() const noexcept;
   constexpr auto pdu_3d_pos_min_z() const noexcept;
   constexpr auto pdu_3d_pos_delta_max_z() const noexcept;
   constexpr auto pdu_projection_id() const noexcept;
@@ -157,8 +157,8 @@ public:
   constexpr auto &pdu_2d_pos_y(const std::uint32_t value) noexcept;
   constexpr auto &pdu_2d_delta_size_x(const std::int32_t value) noexcept;
   constexpr auto &pdu_2d_delta_size_y(const std::int32_t value) noexcept;
-  constexpr auto &pdu_3d_pos_x(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_3d_pos_y(const std::uint32_t value) noexcept;
+  constexpr auto &pdu_view_pos_x(const std::uint32_t value) noexcept;
+  constexpr auto &pdu_view_pos_y(const std::uint32_t value) noexcept;
   constexpr auto &pdu_3d_pos_min_z(const std::uint32_t value) noexcept;
   constexpr auto &pdu_3d_pos_delta_max_z(const std::optional<std::uint32_t> value) noexcept;
   constexpr auto &pdu_projection_id(const std::uint16_t value) noexcept;
@@ -186,8 +186,8 @@ private:
   std::uint32_t m_pdu_2d_pos_y{};
   std::int32_t m_pdu_2d_delta_size_x{};
   std::int32_t m_pdu_2d_delta_size_y{};
-  std::uint32_t m_pdu_3d_pos_x{};
-  std::uint32_t m_pdu_3d_pos_y{};
+  std::uint32_t m_pdu_view_pos_x{};
+  std::uint32_t m_pdu_view_pos_y{};
   std::uint32_t m_pdu_3d_pos_min_z{};
   std::optional<std::uint32_t> m_pdu_3d_pos_delta_max_z;
   std::uint16_t m_pdu_projection_id{};

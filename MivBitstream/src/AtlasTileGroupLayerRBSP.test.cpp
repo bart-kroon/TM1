@@ -116,8 +116,8 @@ TEST_CASE("patch_data_unit", "[Atlas Tile Group Layer RBSP]") {
 pdu_2d_pos_y( 101 )=0
 pdu_2d_delta_size_x( 101 )=1
 pdu_2d_delta_size_y( 101 )=1
-pdu_3d_pos_x( 101 )=0
-pdu_3d_pos_y( 101 )=0
+pdu_view_pos_x( 101 )=0
+pdu_view_pos_y( 101 )=0
 pdu_3d_pos_min_z( 101 )=0
 pdu_projection_id( 101 )=0
 pdu_orientation_index( 101 )=FPO_NULL
@@ -140,8 +140,8 @@ pdu_orientation_index( 101 )=FPO_NULL
         .pdu_2d_pos_y(57)
         .pdu_2d_delta_size_x(1234)
         .pdu_2d_delta_size_y(1002)
-        .pdu_3d_pos_x(1234)
-        .pdu_3d_pos_y(21345)
+        .pdu_view_pos_x(1234)
+        .pdu_view_pos_y(21345)
         .pdu_3d_pos_min_z(623)
         .pdu_3d_pos_delta_max_z(789)
         .pdu_projection_id(300)
@@ -151,8 +151,8 @@ pdu_orientation_index( 101 )=FPO_NULL
 pdu_2d_pos_y( 102 )=57
 pdu_2d_delta_size_x( 102 )=1234
 pdu_2d_delta_size_y( 102 )=1002
-pdu_3d_pos_x( 102 )=1234
-pdu_3d_pos_y( 102 )=21345
+pdu_view_pos_x( 102 )=1234
+pdu_view_pos_y( 102 )=21345
 pdu_3d_pos_min_z( 102 )=623
 pdu_3d_pos_delta_max_z( 102 )=789
 pdu_projection_id( 102 )=300
@@ -202,8 +202,8 @@ TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
 pdu_2d_pos_y( 99 )=0
 pdu_2d_delta_size_x( 99 )=1
 pdu_2d_delta_size_y( 99 )=1
-pdu_3d_pos_x( 99 )=0
-pdu_3d_pos_y( 99 )=0
+pdu_view_pos_x( 99 )=0
+pdu_view_pos_y( 99 )=0
 pdu_3d_pos_min_z( 99 )=0
 pdu_projection_id( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
@@ -245,8 +245,8 @@ pdu_2d_pos_x( 2 )=0
 pdu_2d_pos_y( 2 )=0
 pdu_2d_delta_size_x( 2 )=0
 pdu_2d_delta_size_y( 2 )=0
-pdu_3d_pos_x( 2 )=0
-pdu_3d_pos_y( 2 )=0
+pdu_view_pos_x( 2 )=0
+pdu_view_pos_y( 2 )=0
 pdu_3d_pos_min_z( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
@@ -267,8 +267,8 @@ pdu_2d_pos_x( 0 )=0
 pdu_2d_pos_y( 0 )=0
 pdu_2d_delta_size_x( 0 )=1
 pdu_2d_delta_size_y( 0 )=1
-pdu_3d_pos_x( 0 )=0
-pdu_3d_pos_y( 0 )=0
+pdu_view_pos_x( 0 )=0
+pdu_view_pos_y( 0 )=0
 pdu_3d_pos_min_z( 0 )=0
 pdu_projection_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
@@ -277,8 +277,8 @@ pdu_2d_pos_x( 1 )=0
 pdu_2d_pos_y( 1 )=0
 pdu_2d_delta_size_x( 1 )=1
 pdu_2d_delta_size_y( 1 )=1
-pdu_3d_pos_x( 1 )=0
-pdu_3d_pos_y( 1 )=0
+pdu_view_pos_x( 1 )=0
+pdu_view_pos_y( 1 )=0
 pdu_3d_pos_min_z( 1 )=0
 pdu_projection_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
@@ -375,8 +375,8 @@ pdu_2d_pos_x( 0 )=0
 pdu_2d_pos_y( 0 )=0
 pdu_2d_delta_size_x( 0 )=10
 pdu_2d_delta_size_y( 0 )=20
-pdu_3d_pos_x( 0 )=0
-pdu_3d_pos_y( 0 )=0
+pdu_view_pos_x( 0 )=0
+pdu_view_pos_y( 0 )=0
 pdu_3d_pos_min_z( 0 )=0
 pdu_projection_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
@@ -385,8 +385,8 @@ pdu_2d_pos_x( 1 )=0
 pdu_2d_pos_y( 1 )=0
 pdu_2d_delta_size_x( 1 )=30
 pdu_2d_delta_size_y( 1 )=40
-pdu_3d_pos_x( 1 )=0
-pdu_3d_pos_y( 1 )=0
+pdu_view_pos_x( 1 )=0
+pdu_view_pos_y( 1 )=0
 pdu_3d_pos_min_z( 1 )=0
 pdu_projection_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
@@ -395,8 +395,8 @@ pdu_2d_pos_x( 2 )=0
 pdu_2d_pos_y( 2 )=0
 pdu_2d_delta_size_x( 2 )=50
 pdu_2d_delta_size_y( 2 )=60
-pdu_3d_pos_x( 2 )=0
-pdu_3d_pos_y( 2 )=0
+pdu_view_pos_x( 2 )=0
+pdu_view_pos_y( 2 )=0
 pdu_3d_pos_min_z( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL

@@ -110,14 +110,12 @@ TEST_CASE("patch_data_unit", "[Atlas Tile Group Layer RBSP]") {
   const auto atgh = AtlasTileGroupHeader{};
 
   auto x = PatchDataUnit{};
-  x.pdu_2d_size_x(1).pdu_2d_size_y(1);
-
-  const auto previous = &x;
+  x.pdu_2d_delta_size_x(1).pdu_2d_delta_size_y(1);
 
   REQUIRE(toString(x, 101) == R"(pdu_2d_pos_x( 101 )=0
 pdu_2d_pos_y( 101 )=0
-pdu_2d_size_x( 101 )=1
-pdu_2d_size_y( 101 )=1
+pdu_2d_delta_size_x( 101 )=1
+pdu_2d_delta_size_y( 101 )=1
 pdu_3d_pos_x( 101 )=0
 pdu_3d_pos_y( 101 )=0
 pdu_3d_pos_min_z( 101 )=0
@@ -125,7 +123,7 @@ pdu_projection_id( 101 )=0
 pdu_orientation_index( 101 )=FPO_NULL
 )");
 
-  REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, atgh, previous));
+  REQUIRE(bitCodingTest(x, 37, vuh, vps, aspsV, afpsV, atgh));
 
   SECTION("Example") {
     vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_3d_coordinates_bitdepth_minus1(9);
@@ -133,19 +131,15 @@ pdu_orientation_index( 101 )=FPO_NULL
     aspsV.front()
         .asps_use_eight_orientations_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
-		.asps_extended_projection_enabled_flag(true)
-		.asps_max_projections_minus1(511);
+        .asps_extended_projection_enabled_flag(true)
+        .asps_max_projections_minus1(511);
 
     afpsV.front().afps_3d_pos_x_bit_count_minus1(10).afps_3d_pos_y_bit_count_minus1(14);
 
-    auto previous = PatchDataUnit{};
-    previous.pdu_2d_size_x(10).pdu_2d_size_y(12);
-    const auto pointer = &previous;
-
     x.pdu_2d_pos_x(34)
         .pdu_2d_pos_y(57)
-        .pdu_2d_size_x(1234)
-        .pdu_2d_size_y(1002)
+        .pdu_2d_delta_size_x(1234)
+        .pdu_2d_delta_size_y(1002)
         .pdu_3d_pos_x(1234)
         .pdu_3d_pos_y(21345)
         .pdu_3d_pos_min_z(623)
@@ -155,8 +149,8 @@ pdu_orientation_index( 101 )=FPO_NULL
 
     REQUIRE(toString(x, 102) == R"(pdu_2d_pos_x( 102 )=34
 pdu_2d_pos_y( 102 )=57
-pdu_2d_size_x( 102 )=1234
-pdu_2d_size_y( 102 )=1002
+pdu_2d_delta_size_x( 102 )=1234
+pdu_2d_delta_size_y( 102 )=1002
 pdu_3d_pos_x( 102 )=1234
 pdu_3d_pos_y( 102 )=21345
 pdu_3d_pos_min_z( 102 )=623
@@ -165,7 +159,7 @@ pdu_projection_id( 102 )=300
 pdu_orientation_index( 102 )=FPO_MROT180
 )");
 
-    REQUIRE(bitCodingTest(x, 123, vuh, vps, aspsV, afpsV, atgh, pointer));
+    REQUIRE(bitCodingTest(x, 127, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 
@@ -181,9 +175,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
   afpsV.front().afps_2d_pos_x_bit_count_minus1(11).afps_2d_pos_y_bit_count_minus1(10);
 
   auto pdu = PatchDataUnit{};
-  pdu.pdu_2d_size_x(1).pdu_2d_size_y(1);
-
-  const auto previous = &pdu;
+  pdu.pdu_2d_delta_size_x(1).pdu_2d_delta_size_y(1);
 
   auto x = PatchInformationData{};
 
@@ -197,7 +189,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
     x = PatchInformationData{SkipPatchDataUnit{}};
 
     REQUIRE(toString(x, 88).empty());
-    REQUIRE(bitCodingTest(x, 0, vuh, vps, aspsV, afpsV, atgh, patchMode, previous));
+    REQUIRE(bitCodingTest(x, 0, vuh, vps, aspsV, afpsV, atgh, patchMode));
   }
 
   SECTION("Example patch_data_unit") {
@@ -208,15 +200,15 @@ TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
 
     REQUIRE(toString(x, 99) == R"(pdu_2d_pos_x( 99 )=0
 pdu_2d_pos_y( 99 )=0
-pdu_2d_size_x( 99 )=1
-pdu_2d_size_y( 99 )=1
+pdu_2d_delta_size_x( 99 )=1
+pdu_2d_delta_size_y( 99 )=1
 pdu_3d_pos_x( 99 )=0
 pdu_3d_pos_y( 99 )=0
 pdu_3d_pos_min_z( 99 )=0
 pdu_projection_id( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
 )");
-    REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, atgh, patchMode, previous));
+    REQUIRE(bitCodingTest(x, 37, vuh, vps, aspsV, afpsV, atgh, patchMode));
   }
 }
 
@@ -251,8 +243,8 @@ atgdu_patch_mode[ 1 ]=P_SKIP
 atgdu_patch_mode[ 2 ]=P_INTRA
 pdu_2d_pos_x( 2 )=0
 pdu_2d_pos_y( 2 )=0
-pdu_2d_size_x( 2 )=0
-pdu_2d_size_y( 2 )=0
+pdu_2d_delta_size_x( 2 )=0
+pdu_2d_delta_size_y( 2 )=0
 pdu_3d_pos_x( 2 )=0
 pdu_3d_pos_y( 2 )=0
 pdu_3d_pos_min_z( 2 )=0
@@ -264,7 +256,7 @@ atgdu_patch_mode[ 3 ]=P_SKIP
 
   SECTION("I_TILE_GRP") {
     auto pdu = PatchDataUnit{};
-    pdu.pdu_2d_size_x(1).pdu_2d_size_y(1);
+    pdu.pdu_2d_delta_size_x(1).pdu_2d_delta_size_y(1);
 
     auto vec = AtlasTileGroupDataUnit::Vector{{AtgduPatchMode::I_INTRA, PatchInformationData{pdu}},
                                               {AtgduPatchMode::I_INTRA, PatchInformationData{pdu}}};
@@ -273,8 +265,8 @@ atgdu_patch_mode[ 3 ]=P_SKIP
     REQUIRE(toString(x, AtghType::I_TILE_GRP) == R"(atgdu_patch_mode[ 0 ]=I_INTRA
 pdu_2d_pos_x( 0 )=0
 pdu_2d_pos_y( 0 )=0
-pdu_2d_size_x( 0 )=1
-pdu_2d_size_y( 0 )=1
+pdu_2d_delta_size_x( 0 )=1
+pdu_2d_delta_size_y( 0 )=1
 pdu_3d_pos_x( 0 )=0
 pdu_3d_pos_y( 0 )=0
 pdu_3d_pos_min_z( 0 )=0
@@ -283,8 +275,8 @@ pdu_orientation_index( 0 )=FPO_NULL
 atgdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
 pdu_2d_pos_y( 1 )=0
-pdu_2d_size_x( 1 )=1
-pdu_2d_size_y( 1 )=1
+pdu_2d_delta_size_x( 1 )=1
+pdu_2d_delta_size_y( 1 )=1
 pdu_3d_pos_x( 1 )=0
 pdu_3d_pos_y( 1 )=0
 pdu_3d_pos_min_z( 1 )=0
@@ -306,7 +298,7 @@ pdu_orientation_index( 1 )=FPO_NULL
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::I_TILE_GRP);
 
-    REQUIRE(bitCodingTest(x, 80, vuh, vps, aspsV, afpsV, atgh));
+    REQUIRE(bitCodingTest(x, 88, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 
@@ -360,11 +352,11 @@ atgh_atlas_frm_order_cnt_lsb=0
     atgh.atgh_adaptation_parameter_set_id(0);
 
     auto pdu1 = PatchDataUnit{};
-    pdu1.pdu_2d_size_x(10).pdu_2d_size_y(20);
+    pdu1.pdu_2d_delta_size_x(10).pdu_2d_delta_size_y(20);
     auto pdu2 = PatchDataUnit{};
-    pdu2.pdu_2d_size_x(30).pdu_2d_size_y(40);
+    pdu2.pdu_2d_delta_size_x(30).pdu_2d_delta_size_y(40);
     auto pdu3 = PatchDataUnit{};
-    pdu3.pdu_2d_size_x(50).pdu_2d_size_y(60);
+    pdu3.pdu_2d_delta_size_x(50).pdu_2d_delta_size_y(60);
 
     const auto x = AtlasTileGroupLayerRBSP{
         atgh, std::in_place, std::pair{AtgduPatchMode::I_INTRA, PatchInformationData{pdu1}},
@@ -381,8 +373,8 @@ atgh_patch_size_y_info_quantizer=0
 atgdu_patch_mode[ 0 ]=I_INTRA
 pdu_2d_pos_x( 0 )=0
 pdu_2d_pos_y( 0 )=0
-pdu_2d_size_x( 0 )=10
-pdu_2d_size_y( 0 )=20
+pdu_2d_delta_size_x( 0 )=10
+pdu_2d_delta_size_y( 0 )=20
 pdu_3d_pos_x( 0 )=0
 pdu_3d_pos_y( 0 )=0
 pdu_3d_pos_min_z( 0 )=0
@@ -391,8 +383,8 @@ pdu_orientation_index( 0 )=FPO_NULL
 atgdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
 pdu_2d_pos_y( 1 )=0
-pdu_2d_size_x( 1 )=30
-pdu_2d_size_y( 1 )=40
+pdu_2d_delta_size_x( 1 )=30
+pdu_2d_delta_size_y( 1 )=40
 pdu_3d_pos_x( 1 )=0
 pdu_3d_pos_y( 1 )=0
 pdu_3d_pos_min_z( 1 )=0
@@ -401,14 +393,14 @@ pdu_orientation_index( 1 )=FPO_NULL
 atgdu_patch_mode[ 2 ]=I_INTRA
 pdu_2d_pos_x( 2 )=0
 pdu_2d_pos_y( 2 )=0
-pdu_2d_size_x( 2 )=50
-pdu_2d_size_y( 2 )=60
+pdu_2d_delta_size_x( 2 )=50
+pdu_2d_delta_size_y( 2 )=60
 pdu_3d_pos_x( 2 )=0
 pdu_3d_pos_y( 2 )=0
 pdu_3d_pos_min_z( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 23, vuh, vps, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 25, vuh, vps, aspsV, afpsV));
   }
 }

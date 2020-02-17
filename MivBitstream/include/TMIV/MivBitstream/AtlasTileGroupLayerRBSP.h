@@ -139,13 +139,13 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 };
 
-// 23090-5: patch_data_unit(patchIdx)
+// 23090-12: patch_data_unit(patchIdx)
 class PatchDataUnit {
 public:
   constexpr auto pdu_2d_pos_x() const noexcept;
   constexpr auto pdu_2d_pos_y() const noexcept;
-  constexpr auto pdu_2d_size_x() const noexcept;
-  constexpr auto pdu_2d_size_y() const noexcept;
+  constexpr auto pdu_2d_delta_size_x() const noexcept;
+  constexpr auto pdu_2d_delta_size_y() const noexcept;
   constexpr auto pdu_3d_pos_x() const noexcept;
   constexpr auto pdu_3d_pos_y() const noexcept;
   constexpr auto pdu_3d_pos_min_z() const noexcept;
@@ -155,8 +155,8 @@ public:
 
   constexpr auto &pdu_2d_pos_x(const std::uint32_t value) noexcept;
   constexpr auto &pdu_2d_pos_y(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_2d_size_x(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_2d_size_y(const std::uint32_t value) noexcept;
+  constexpr auto &pdu_2d_delta_size_x(const std::int32_t value) noexcept;
+  constexpr auto &pdu_2d_delta_size_y(const std::int32_t value) noexcept;
   constexpr auto &pdu_3d_pos_x(const std::uint32_t value) noexcept;
   constexpr auto &pdu_3d_pos_y(const std::uint32_t value) noexcept;
   constexpr auto &pdu_3d_pos_min_z(const std::uint32_t value) noexcept;
@@ -173,20 +173,19 @@ public:
                          const VpccParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
-                         const AtlasTileGroupHeader &atgh, const PatchDataUnit *previous)
-      -> PatchDataUnit;
+                         const AtlasTileGroupHeader &atgh) -> PatchDataUnit;
 
   void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
                 const VpccParameterSet &vps,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
-                const AtlasTileGroupHeader &atgh, const PatchDataUnit *previous) const;
+                const AtlasTileGroupHeader &atgh) const;
 
 private:
   std::uint32_t m_pdu_2d_pos_x{};
   std::uint32_t m_pdu_2d_pos_y{};
-  std::uint32_t m_pdu_2d_size_x{};
-  std::uint32_t m_pdu_2d_size_y{};
+  std::int32_t m_pdu_2d_delta_size_x{};
+  std::int32_t m_pdu_2d_delta_size_y{};
   std::uint32_t m_pdu_3d_pos_x{};
   std::uint32_t m_pdu_3d_pos_y{};
   std::uint32_t m_pdu_3d_pos_min_z{};
@@ -219,15 +218,14 @@ public:
                          const VpccParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
-                         const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
-                         const PatchDataUnit *previous) -> PatchInformationData;
+                         const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode)
+      -> PatchInformationData;
 
   void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
                 const VpccParameterSet &vps,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
-                const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
-                const PatchDataUnit *previous) const;
+                const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode) const;
 
 private:
   Data m_data;

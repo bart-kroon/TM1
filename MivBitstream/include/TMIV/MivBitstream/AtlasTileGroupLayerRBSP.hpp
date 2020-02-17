@@ -111,9 +111,9 @@ constexpr auto PatchDataUnit::pdu_2d_pos_x() const noexcept { return m_pdu_2d_po
 
 constexpr auto PatchDataUnit::pdu_2d_pos_y() const noexcept { return m_pdu_2d_pos_y; }
 
-constexpr auto PatchDataUnit::pdu_2d_size_x() const noexcept { return m_pdu_2d_size_x; }
+constexpr auto PatchDataUnit::pdu_2d_delta_size_x() const noexcept { return m_pdu_2d_delta_size_x; }
 
-constexpr auto PatchDataUnit::pdu_2d_size_y() const noexcept { return m_pdu_2d_size_y; }
+constexpr auto PatchDataUnit::pdu_2d_delta_size_y() const noexcept { return m_pdu_2d_delta_size_y; }
 
 constexpr auto PatchDataUnit::pdu_3d_pos_x() const noexcept { return m_pdu_3d_pos_x; }
 
@@ -141,13 +141,13 @@ constexpr auto &PatchDataUnit::pdu_2d_pos_y(const std::uint32_t value) noexcept 
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_size_x(const std::uint32_t value) noexcept {
-  m_pdu_2d_size_x = value;
+constexpr auto &PatchDataUnit::pdu_2d_delta_size_x(const std::int32_t value) noexcept {
+  m_pdu_2d_delta_size_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_size_y(const std::uint32_t value) noexcept {
-  m_pdu_2d_size_y = value;
+constexpr auto &PatchDataUnit::pdu_2d_delta_size_y(const std::int32_t value) noexcept {
+  m_pdu_2d_delta_size_y = value;
   return *this;
 }
 
@@ -185,7 +185,8 @@ PatchDataUnit::pdu_orientation_index(const FlexiblePatchOrientation value) noexc
 
 constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexcept {
   return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
-         pdu_2d_size_x() == other.pdu_2d_size_x() && pdu_2d_size_y() == other.pdu_2d_size_y() &&
+         pdu_2d_delta_size_x() == other.pdu_2d_delta_size_x() &&
+         pdu_2d_delta_size_y() == other.pdu_2d_delta_size_y() &&
          pdu_3d_pos_x() == other.pdu_3d_pos_x() && pdu_3d_pos_y() == other.pdu_3d_pos_y() &&
          pdu_3d_pos_min_z() == other.pdu_3d_pos_min_z() &&
          pdu_3d_pos_delta_max_z() == other.pdu_3d_pos_delta_max_z() &&

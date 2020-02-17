@@ -286,11 +286,11 @@ auto operator<<(ostream &stream, const SkipPatchDataUnit & /* x */) -> ostream &
 
 auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
   stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << "\npdu_2d_pos_y( "
-         << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_size_x( " << patchIdx
-         << " )=" << pdu_2d_size_x() << "\npdu_2d_size_y( " << patchIdx << " )=" << pdu_2d_size_y()
-         << "\npdu_3d_pos_x( " << patchIdx << " )=" << pdu_3d_pos_x() << "\npdu_3d_pos_y( "
-         << patchIdx << " )=" << pdu_3d_pos_y() << "\npdu_3d_pos_min_z( " << patchIdx
-         << " )=" << pdu_3d_pos_min_z() << '\n';
+         << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_delta_size_x( " << patchIdx
+         << " )=" << pdu_2d_delta_size_x() << "\npdu_2d_delta_size_y( " << patchIdx
+         << " )=" << pdu_2d_delta_size_y() << "\npdu_3d_pos_x( " << patchIdx
+         << " )=" << pdu_3d_pos_x() << "\npdu_3d_pos_y( " << patchIdx << " )=" << pdu_3d_pos_y()
+         << "\npdu_3d_pos_min_z( " << patchIdx << " )=" << pdu_3d_pos_min_z() << '\n';
   if (pdu_3d_pos_delta_max_z()) {
     stream << "pdu_3d_pos_delta_max_z( " << patchIdx << " )=" << *pdu_3d_pos_delta_max_z() << '\n';
   }
@@ -303,8 +303,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
                                const VpccParameterSet &vps,
                                const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                const vector<AtlasFrameParameterSetRBSP> &afpsV,
-                               const AtlasTileGroupHeader &atgh, const PatchDataUnit *previous)
-    -> PatchDataUnit {
+                               const AtlasTileGroupHeader &atgh) -> PatchDataUnit {
   auto x = PatchDataUnit{};
 
   VERIFY_VPCCBITSTREAM(atgh.atgh_atlas_frame_parameter_set_id() < afpsV.size());
@@ -324,20 +323,8 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_x() < asps.asps_frame_width());
   VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_y() < asps.asps_frame_height());
 
-  if (previous != nullptr) {
-    x.pdu_2d_size_x(uint32_t(bitstream.getUExpGolomb() + previous->pdu_2d_size_x()));
-    x.pdu_2d_size_y(uint32_t(bitstream.getUExpGolomb() + previous->pdu_2d_size_y()));
-  } else {
-    x.pdu_2d_size_x(uint32_t(bitstream.getUExpGolomb()));
-    x.pdu_2d_size_y(uint32_t(bitstream.getUExpGolomb()));
-
-    VERIFY_VPCCBITSTREAM(0 < x.pdu_2d_size_x());
-    VERIFY_VPCCBITSTREAM(0 < x.pdu_2d_size_y());
-  }
-
-  VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_x() + x.pdu_2d_size_x() <= asps.asps_frame_width());
-  VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_y() + x.pdu_2d_size_y() <= asps.asps_frame_height());
-
+  x.pdu_2d_delta_size_x(int32_t(bitstream.getSExpGolomb()));
+  x.pdu_2d_delta_size_y(int32_t(bitstream.getSExpGolomb()));
   x.pdu_3d_pos_x(uint32_t(bitstream.readBits(afps.afps_3d_pos_x_bit_count_minus1() + 1)));
   x.pdu_3d_pos_y(uint32_t(bitstream.readBits(afps.afps_3d_pos_y_bit_count_minus1() + 1)));
 
@@ -368,8 +355,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
                              const VpccParameterSet &vps,
                              const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                              const vector<AtlasFrameParameterSetRBSP> &afpsV,
-                             const AtlasTileGroupHeader &atgh,
-                             const PatchDataUnit *previous) const {
+                             const AtlasTileGroupHeader &atgh) const {
   VERIFY_VPCCBITSTREAM(atgh.atgh_atlas_frame_parameter_set_id() < afpsV.size());
   const auto &afps = afpsV[atgh.atgh_atlas_frame_parameter_set_id()];
 
@@ -382,26 +368,10 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   VERIFY_VPCCBITSTREAM((pdu_projection_id() >> pdu_projection_id_num_bits) == 0);
   bitstream.writeBits(pdu_projection_id(), pdu_projection_id_num_bits);
 
-  VERIFY_VPCCBITSTREAM(pdu_2d_pos_x() + pdu_2d_size_x() <= asps.asps_frame_width());
-  VERIFY_VPCCBITSTREAM(pdu_2d_pos_y() + pdu_2d_size_y() <= asps.asps_frame_height());
-
   bitstream.writeBits(pdu_2d_pos_x(), afps.afps_2d_pos_x_bit_count_minus1() + 1);
   bitstream.writeBits(pdu_2d_pos_y(), afps.afps_2d_pos_y_bit_count_minus1() + 1);
-
-  if (previous != nullptr) {
-    VERIFY_VPCCBITSTREAM(previous->pdu_2d_size_x() <= pdu_2d_size_x());
-    VERIFY_VPCCBITSTREAM(previous->pdu_2d_size_y() <= pdu_2d_size_y());
-
-    bitstream.putUExpGolomb(pdu_2d_size_x() - previous->pdu_2d_size_x());
-    bitstream.putUExpGolomb(pdu_2d_size_y() - previous->pdu_2d_size_y());
-  } else {
-    VERIFY_VPCCBITSTREAM(0 < pdu_2d_size_x());
-    VERIFY_VPCCBITSTREAM(0 < pdu_2d_size_y());
-
-    bitstream.putUExpGolomb(pdu_2d_size_x());
-    bitstream.putUExpGolomb(pdu_2d_size_y());
-  }
-
+  bitstream.putSExpGolomb(pdu_2d_delta_size_x());
+  bitstream.putSExpGolomb(pdu_2d_delta_size_y());
   bitstream.writeBits(pdu_3d_pos_x(), afps.afps_3d_pos_x_bit_count_minus1() + 1);
   bitstream.writeBits(pdu_3d_pos_y(), afps.afps_3d_pos_y_bit_count_minus1() + 1);
 
@@ -464,12 +434,11 @@ auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const VpccUnitH
                                       const VpccParameterSet &vps,
                                       const vector<AtlasSequenceParameterSetRBSP> &asps,
                                       const vector<AtlasFrameParameterSetRBSP> &afps,
-                                      const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
-                                      const PatchDataUnit *previous) -> PatchInformationData {
+                                      const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode)
+    -> PatchInformationData {
   if (atgh.atgh_type() == AtghType::I_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::I_INTRA);
-    return PatchInformationData{
-        PatchDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, atgh, previous)};
+    return PatchInformationData{PatchDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, atgh)};
   }
   if (atgh.atgh_type() == AtghType::SKIP_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::P_SKIP);
@@ -482,11 +451,11 @@ void PatchInformationData::encodeTo(OutputBitstream &bitstream, const VpccUnitHe
                                     const VpccParameterSet &vps,
                                     const vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const vector<AtlasFrameParameterSetRBSP> &afps,
-                                    const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode,
-                                    const PatchDataUnit *previous) const {
+                                    const AtlasTileGroupHeader &atgh,
+                                    AtgduPatchMode patchMode) const {
   if (atgh.atgh_type() == AtghType::I_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::I_INTRA);
-    return patch_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atgh, previous);
+    return patch_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atgh);
   }
   if (atgh.atgh_type() == AtghType::SKIP_TILE_GRP) {
     VERIFY_VPCCBITSTREAM(patchMode == AtgduPatchMode::P_SKIP);
@@ -539,14 +508,12 @@ auto AtlasTileGroupDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUni
   VERIFY_MIVBITSTREAM(atgh.atgh_type() == AtghType::I_TILE_GRP);
 
   auto x = AtlasTileGroupDataUnit::Vector{};
-  const PatchDataUnit *previous = nullptr;
   auto patch_mode = AtgduPatchMode(bitstream.getUExpGolomb());
 
   while (patch_mode != AtgduPatchMode::I_END) {
     x.emplace_back(patch_mode, PatchInformationData::decodeFrom(bitstream, vuh, vps, asps, afps,
-                                                                atgh, patch_mode, previous));
+                                                                atgh, patch_mode));
     VERIFY_MIVBITSTREAM(patch_mode == AtgduPatchMode::I_INTRA);
-    previous = &x.back().second.patch_data_unit();
     patch_mode = AtgduPatchMode(bitstream.getUExpGolomb());
   }
 
@@ -563,15 +530,10 @@ void AtlasTileGroupDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnit
                        atgh.atgh_type() == AtghType::P_TILE_GRP);
   VERIFY_MIVBITSTREAM(atgh.atgh_type() == AtghType::I_TILE_GRP);
 
-  const PatchDataUnit *previous = nullptr;
-
   visit([&](const auto /* p */, const AtgduPatchMode patch_mode,
             const PatchInformationData &patch_information_data) {
     bitstream.putUExpGolomb(int(patch_mode));
-    patch_information_data.encodeTo(bitstream, vuh, vps, asps, afps, atgh, patch_mode, previous);
-    if (patch_mode == AtgduPatchMode::I_INTRA) {
-      previous = &patch_information_data.patch_data_unit();
-    }
+    patch_information_data.encodeTo(bitstream, vuh, vps, asps, afps, atgh, patch_mode);
   });
 
   bitstream.putUExpGolomb(int(AtgduPatchMode::I_END));

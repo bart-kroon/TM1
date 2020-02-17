@@ -122,8 +122,8 @@ constexpr auto GeometryInformation::gi_geometry_codec_id() const noexcept {
   return m_gi_geometry_codec_id;
 }
 
-constexpr auto GeometryInformation::gi_geometry_nominal_2d_bitdepth() const noexcept {
-  return m_gi_geometry_nominal_2d_bitdepth;
+constexpr auto GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1() const noexcept {
+  return m_gi_geometry_nominal_2d_bitdepth_minus1;
 }
 
 constexpr auto GeometryInformation::gi_geometry_MSB_align_flag() const noexcept {
@@ -139,8 +139,8 @@ constexpr auto &GeometryInformation::gi_geometry_codec_id(std::uint8_t value) no
   return *this;
 }
 
-constexpr auto &GeometryInformation::gi_geometry_nominal_2d_bitdepth(std::uint8_t value) noexcept {
-  m_gi_geometry_nominal_2d_bitdepth = value;
+constexpr auto &GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept {
+  m_gi_geometry_nominal_2d_bitdepth_minus1 = value;
   return *this;
 }
 

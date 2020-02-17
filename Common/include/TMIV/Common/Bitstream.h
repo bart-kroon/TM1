@@ -63,6 +63,7 @@ public:
   auto getFloat32() -> float;
   auto getUVar(std::uint_least64_t range) -> std::uint_least64_t;
   auto getUExpGolomb() -> std::uint_least64_t;
+  auto getSExpGolomb() -> std::int_least64_t;
   void byteAlign();
   void rbspTrailingBits();
   auto moreData() -> bool;
@@ -95,6 +96,7 @@ public:
   void putFloat32(float value);
   void putUVar(std::uint_least64_t value, std::uint_least64_t range);
   void putUExpGolomb(std::uint_least64_t value);
+  void putSExpGolomb(std::int_least64_t value);
   void byteAlign();
   void rbspTrailingBits();
 

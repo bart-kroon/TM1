@@ -114,6 +114,12 @@ auto InputBitstream::getUExpGolomb() -> uint_least64_t {
   return mask + readBits(leadingBits);
 }
 
+auto InputBitstream::getSExpGolomb() -> int_least64_t {
+  const auto codeNum = getUExpGolomb();
+  const auto absValue = int_least64_t((codeNum + 1) / 2);
+  return (codeNum & 1) == 1 ? absValue : -absValue;
+}
+
 void InputBitstream::byteAlign() {
   if (readBits(m_size % 8) != 0) {
     throw runtime_error("Non-zero bit in byte alignment");
@@ -206,6 +212,10 @@ void OutputBitstream::putUExpGolomb(uint_least64_t value) {
   putFlag(false);
   auto mask = (uint_least64_t{1} << bits) - 1;
   writeBits(value - mask, bits);
+}
+
+void OutputBitstream::putSExpGolomb(int_least64_t value) {
+  putUExpGolomb((uint_least64_t(abs(value)) << 1U) - uint_least64_t(value > 0));
 }
 
 void OutputBitstream::putFloat16(Common::Half value) { putUint16(value.encode()); }

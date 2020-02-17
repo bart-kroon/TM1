@@ -123,6 +123,19 @@ TEST_CASE("Bitstream primitives") {
     }
   }
 
+  SECTION("se(v)") {
+    const auto referenceSequence =
+        std::array<std::int_least64_t, 7>{-123, 4, -400, 0, 1, -3, 0x123456789ABC};
+    for (auto reference : referenceSequence) {
+      obitstream.putSExpGolomb(reference);
+    }
+    obitstream.byteAlign();
+    for (auto reference : referenceSequence) {
+      auto actual = ibitstream.getSExpGolomb();
+      REQUIRE(actual == reference);
+    }
+  }
+
   SECTION("rbsp_trailing_bits") {
     for (int prefix = 0; prefix < 8; ++prefix) {
       for (int i = 0; i < prefix; ++i) {

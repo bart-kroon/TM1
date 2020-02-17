@@ -219,7 +219,7 @@ auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const VpccParame
   x.gi_geometry_nominal_2d_bitdepth(uint8_t(bitstream.readBits(5) + 1));
   x.gi_geometry_MSB_align_flag(bitstream.getFlag());
   x.gi_geometry_3d_coordinates_bitdepth(uint8_t(bitstream.readBits(5) + 1));
-  VERIFY_MIVBITSTREAM(!vps.vps_raw_patch_enabled_flag(atlasId));
+  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
   return x;
 }
 
@@ -235,7 +235,7 @@ void GeometryInformation::encodeTo(OutputBitstream &bitstream, const VpccParamet
   VERIFY_VPCCBITSTREAM(1 <= gi_geometry_3d_coordinates_bitdepth());
   bitstream.writeBits(gi_geometry_3d_coordinates_bitdepth() - 1, 5);
 
-  VERIFY_MIVBITSTREAM(!vps.vps_raw_patch_enabled_flag(atlasId));
+  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
 }
 
 auto AttributeInformation::ai_attribute_count() const noexcept -> uint8_t {
@@ -456,9 +456,9 @@ auto VpccParameterSet::attribute_information(std::uint8_t atlasId) const
   return m_vps_atlases[atlasId].attribute_information;
 }
 
-auto VpccParameterSet::vps_raw_patch_enabled_flag(std::uint8_t atlasId) const -> bool {
+auto VpccParameterSet::vps_auxiliary_video_present_flag(std::uint8_t atlasId) const -> bool {
   VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
-  return m_vps_atlases[atlasId].vps_raw_patch_enabled_flag;
+  return m_vps_atlases[atlasId].vps_auxiliary_video_present_flag;
 }
 
 auto VpccParameterSet::vps_miv_extension_flag() const noexcept -> bool {
@@ -523,10 +523,10 @@ auto VpccParameterSet::attribute_information(std::uint8_t atlasId, AttributeInfo
   return *this;
 }
 
-auto VpccParameterSet::vps_raw_patch_enabled_flag(std::uint8_t atlasId, bool value)
+auto VpccParameterSet::vps_auxiliary_video_present_flag(std::uint8_t atlasId, bool value)
     -> VpccParameterSet & {
   VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
-  m_vps_atlases[atlasId].vps_raw_patch_enabled_flag = value;
+  m_vps_atlases[atlasId].vps_auxiliary_video_present_flag = value;
   return *this;
 }
 
@@ -575,8 +575,8 @@ auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
     stream << "vps_frame_width( " << j << " )=" << x.vps_frame_width(j);
     stream << "\nvps_frame_height( " << j << " )=" << x.vps_frame_height(j);
     stream << "\nvps_map_count_minus1( " << j << " )=" << int(x.vps_map_count_minus1(j));
-    stream << "\nvps_raw_patch_enabled_flag( " << j << " )=" << boolalpha
-           << x.vps_raw_patch_enabled_flag(j) << '\n';
+    stream << "\nvps_auxiliary_video_present_flag( " << j << " )=" << boolalpha
+           << x.vps_auxiliary_video_present_flag(j) << '\n';
     if (!x.vps_miv_mode_flag()) {
       x.occupancy_information(j).printTo(stream, j);
     }
@@ -613,7 +613,7 @@ auto VpccParameterSet::operator==(const VpccParameterSet &other) const noexcept 
     if (vps_frame_width(j) != other.vps_frame_width(j) ||
         vps_frame_height(j) != other.vps_frame_height(j) ||
         vps_map_count_minus1(j) != other.vps_map_count_minus1(j) ||
-        vps_raw_patch_enabled_flag(j) != other.vps_raw_patch_enabled_flag(j) ||
+        vps_auxiliary_video_present_flag(j) != other.vps_auxiliary_video_present_flag(j) ||
         (!vps_miv_mode_flag() && occupancy_information(j) != other.occupancy_information(j)) ||
         geometry_information(j) != other.geometry_information(j) ||
         attribute_information(j) != other.attribute_information(j)) {
@@ -653,8 +653,8 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
       VERIFY_MIVBITSTREAM(!vps_multiple_map_streams_present_flag);
     }
 
-    x.vps_raw_patch_enabled_flag(j, bitstream.getFlag());
-    VERIFY_MIVBITSTREAM(!x.vps_raw_patch_enabled_flag(j));
+    x.vps_auxiliary_video_present_flag(j, bitstream.getFlag());
+    VERIFY_MIVBITSTREAM(!x.vps_auxiliary_video_present_flag(j));
 
     if (!x.vps_miv_mode_flag()) {
       x.occupancy_information(j, OccupancyInformation::decodeFrom(bitstream));
@@ -717,8 +717,8 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
     VERIFY_MIVBITSTREAM(vps_map_count_minus1(j) == 0);
     bitstream.writeBits(vps_map_count_minus1(j), 4);
 
-    VERIFY_MIVBITSTREAM(!vps_raw_patch_enabled_flag(j));
-    bitstream.putFlag(vps_raw_patch_enabled_flag(j));
+    VERIFY_MIVBITSTREAM(!vps_auxiliary_video_present_flag(j));
+    bitstream.putFlag(vps_auxiliary_video_present_flag(j));
 
     if (!vps_miv_mode_flag()) {
       occupancy_information(j).encodeTo(bitstream);

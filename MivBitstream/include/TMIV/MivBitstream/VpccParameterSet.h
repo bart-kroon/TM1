@@ -251,7 +251,7 @@ public:
   auto occupancy_information(std::uint8_t atlasId) const -> const OccupancyInformation &;
   auto geometry_information(std::uint8_t atlasId) const -> const GeometryInformation &;
   auto attribute_information(std::uint8_t atlasId) const -> const AttributeInformation &;
-  auto vps_raw_patch_enabled_flag(std::uint8_t atlasId) const -> bool;
+  auto vps_auxiliary_video_present_flag(std::uint8_t atlasId) const -> bool;
   constexpr auto vps_extension_present_flag() const noexcept; // Only 23090-5
   auto vps_miv_extension_flag() const noexcept -> bool;
   auto miv_sequence_params() const noexcept -> const MivSequenceParams &;
@@ -269,7 +269,7 @@ public:
   auto geometry_information(std::uint8_t atlasId, GeometryInformation value) -> VpccParameterSet &;
   auto attribute_information(std::uint8_t atlasId, AttributeInformation value)
       -> VpccParameterSet &;
-  auto vps_raw_patch_enabled_flag(std::uint8_t atlasId, bool value) -> VpccParameterSet &;
+  auto vps_auxiliary_video_present_flag(std::uint8_t atlasId, bool value) -> VpccParameterSet &;
   constexpr auto &vps_extension_present_flag(bool value) noexcept; // Only 23090-5
   auto vps_miv_extension_flag(bool value) noexcept -> VpccParameterSet &;
   auto vps_miv_sequence_vui_params_present_flag(bool value) noexcept -> VpccParameterSet &;
@@ -297,7 +297,7 @@ private:
     OccupancyInformation occupancy_information;
     GeometryInformation geometry_information;
     AttributeInformation attribute_information;
-    bool vps_raw_patch_enabled_flag{};
+    bool vps_auxiliary_video_present_flag{};
   };
 
   ProfileTierLevel m_profile_tier_level;

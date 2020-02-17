@@ -98,7 +98,7 @@ oi_occupancy_MSB_align_flag( 4 )=true
 TEST_CASE("geometry_information", "[VPCC Parameter Set]") {
   auto vps = VpccParameterSet{};
   const auto atlasId = uint8_t(0);
-  vps.vps_raw_patch_enabled_flag(atlasId, false);
+  vps.vps_auxiliary_video_present_flag(atlasId, false);
 
   auto x = GeometryInformation{};
   x.gi_geometry_nominal_2d_bitdepth(1);
@@ -198,7 +198,7 @@ vps_atlas_count_minus1=0
 vps_frame_width( 0 )=1920
 vps_frame_height( 0 )=1080
 vps_map_count_minus1( 0 )=0
-vps_raw_patch_enabled_flag( 0 )=false
+vps_auxiliary_video_present_flag( 0 )=false
 oi_occupancy_codec_id( 0 )=0
 oi_lossy_occupancy_map_compression_threshold( 0 )=0
 oi_occupancy_nominal_2d_bitdepth( 0 )=1

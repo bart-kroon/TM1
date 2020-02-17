@@ -209,23 +209,54 @@ private:
   bool m_ai_attribute_MSB_align_flag{};
 };
 
+// 23090-12: miv_sequence_params()
+//
+// TODO(BK): Check that all syntax structures have unit tests
+class MivSequenceParams {
+public:
+  constexpr auto msp_depth_low_quality_flag() const noexcept;
+  constexpr auto msp_geometry_scale_enabled_flag() const noexcept;
+  constexpr auto msp_num_groups_minus1() const noexcept;
+  constexpr auto msp_max_entities_minus1() const noexcept;
+
+  constexpr auto &msp_depth_low_quality_flag(const bool value) noexcept;
+  constexpr auto &msp_geometry_scale_enabled_flag(const bool value) noexcept;
+  constexpr auto &msp_num_groups_minus1(const unsigned value) noexcept;
+  constexpr auto &msp_max_entities_minus1(const unsigned value) noexcept;
+
+  friend auto operator<<(std::ostream &stream, const MivSequenceParams &x) -> std::ostream &;
+
+  constexpr auto operator==(const MivSequenceParams &other) const noexcept;
+  constexpr auto operator!=(const MivSequenceParams &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivSequenceParams;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  bool m_msp_depth_low_quality_flag;
+  bool m_msp_geometry_scale_enabled_flag;
+  unsigned m_msp_num_groups_minus1;
+  unsigned m_msp_max_entities_minus1;
+};
+
 // 23090-5: vpcc_parameter_set()
 class VpccParameterSet {
 public:
   constexpr auto profile_tier_level() const noexcept;
   constexpr auto vps_vpcc_parameter_set_id() const noexcept;
-  [[nodiscard]] auto vps_atlas_count() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto vps_frame_width(std::uint8_t atlasId) const -> std::uint16_t;
-  [[nodiscard]] auto vps_frame_height(std::uint8_t atlasId) const -> std::uint16_t;
-  [[nodiscard]] auto vps_map_count(std::uint8_t atlasId) const -> std::uint8_t;
-  [[nodiscard]] auto occupancy_information(std::uint8_t atlasId) const
-      -> const OccupancyInformation &;
-  [[nodiscard]] auto geometry_information(std::uint8_t atlasId) const
-      -> const GeometryInformation &;
-  [[nodiscard]] auto attribute_information(std::uint8_t atlasId) const
-      -> const AttributeInformation &;
-  [[nodiscard]] auto vps_raw_patch_enabled_flag(std::uint8_t atlasId) const -> bool;
-  constexpr auto vps_extension_present_flag() const noexcept;
+  auto vps_atlas_count() const noexcept -> std::uint8_t;
+  auto vps_frame_width(std::uint8_t atlasId) const -> std::uint16_t;
+  auto vps_frame_height(std::uint8_t atlasId) const -> std::uint16_t;
+  auto vps_map_count(std::uint8_t atlasId) const -> std::uint8_t;
+  auto occupancy_information(std::uint8_t atlasId) const -> const OccupancyInformation &;
+  auto geometry_information(std::uint8_t atlasId) const -> const GeometryInformation &;
+  auto attribute_information(std::uint8_t atlasId) const -> const AttributeInformation &;
+  auto vps_raw_patch_enabled_flag(std::uint8_t atlasId) const -> bool;
+  constexpr auto vps_extension_present_flag() const noexcept; // Only 23090-5
+  auto vps_miv_extension_flag() const noexcept -> bool;
+  auto miv_sequence_params() const noexcept -> const MivSequenceParams &;
+  auto vps_miv_sequence_vui_params_present_flag() const noexcept -> bool;
 
   constexpr auto &profile_tier_level(ProfileTierLevel value) noexcept;
   constexpr auto &vps_vpcc_parameter_set_id(std::uint8_t value) noexcept;
@@ -239,29 +270,24 @@ public:
   auto attribute_information(std::uint8_t atlasId, AttributeInformation value)
       -> VpccParameterSet &;
   auto vps_raw_patch_enabled_flag(std::uint8_t atlasId, bool value) -> VpccParameterSet &;
-  constexpr auto &vps_extension_present_flag(bool value) noexcept;
+  constexpr auto &vps_extension_present_flag(bool value) noexcept; // Only 23090-5
+  auto vps_miv_extension_flag(bool value) noexcept -> VpccParameterSet &;
+  auto vps_miv_sequence_vui_params_present_flag(bool value) noexcept -> VpccParameterSet &;
 
   constexpr auto &profile_tier_level() noexcept;
   [[nodiscard]] auto occupancy_information(std::uint8_t atlasId) -> OccupancyInformation &;
   [[nodiscard]] auto geometry_information(std::uint8_t atlasId) -> GeometryInformation &;
   [[nodiscard]] auto attribute_information(std::uint8_t atlasId) -> AttributeInformation &;
+  [[nodiscard]] auto miv_sequence_params() noexcept -> MivSequenceParams &;
 
   friend auto operator<<(std::ostream &stream, const VpccParameterSet &x) -> std::ostream &;
 
   auto operator==(const VpccParameterSet &other) const noexcept -> bool;
   auto operator!=(const VpccParameterSet &other) const noexcept -> bool;
 
-  using ExtensionDecoder = std::function<void(Common::InputBitstream &)>;
-  using ExtensionEncoder = std::function<void(Common::OutputBitstream &)>;
-  static void noDecoderExtension(Common::InputBitstream &);
-  static void noEncoderExtension(Common::OutputBitstream &);
+  static auto decodeFrom(std::istream &stream) -> VpccParameterSet;
 
-  static auto decodeFrom(std::istream &stream,
-                         const ExtensionDecoder &extDecoder = &noDecoderExtension)
-      -> VpccParameterSet;
-
-  void encodeTo(std::ostream &stream,
-                const ExtensionEncoder &extEncoder = &noEncoderExtension) const;
+  void encodeTo(std::ostream &stream) const;
 
 private:
   struct VpsAtlas {
@@ -278,6 +304,9 @@ private:
   std::uint8_t m_vps_vpcc_parameter_set_id{};
   std::vector<VpsAtlas> m_vps_atlases;
   bool m_vps_extension_present_flag{};
+  bool m_vps_miv_extension_flag{};
+  std::optional<MivSequenceParams> m_miv_sequence_params;
+  std::optional<bool> m_vps_miv_sequence_vui_params_present_flag;
 };
 } // namespace TMIV::MivBitstream
 

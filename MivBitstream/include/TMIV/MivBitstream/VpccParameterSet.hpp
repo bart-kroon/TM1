@@ -155,6 +155,52 @@ GeometryInformation::gi_geometry_3d_coordinates_bitdepth(std::uint8_t value) noe
   return *this;
 }
 
+constexpr auto MivSequenceParams::msp_depth_low_quality_flag() const noexcept {
+  return m_msp_depth_low_quality_flag;
+}
+
+constexpr auto MivSequenceParams::msp_geometry_scale_enabled_flag() const noexcept {
+  return m_msp_geometry_scale_enabled_flag;
+}
+
+constexpr auto MivSequenceParams::msp_num_groups_minus1() const noexcept {
+  return m_msp_num_groups_minus1;
+}
+
+constexpr auto MivSequenceParams::msp_max_entities_minus1() const noexcept {
+  return m_msp_max_entities_minus1;
+}
+
+constexpr auto &MivSequenceParams::msp_depth_low_quality_flag(const bool value) noexcept {
+  m_msp_depth_low_quality_flag = value;
+  return *this;
+}
+
+constexpr auto &MivSequenceParams::msp_geometry_scale_enabled_flag(const bool value) noexcept {
+  m_msp_geometry_scale_enabled_flag = value;
+  return *this;
+}
+
+constexpr auto &MivSequenceParams::msp_num_groups_minus1(const unsigned value) noexcept {
+  m_msp_num_groups_minus1 = value;
+  return *this;
+}
+constexpr auto &MivSequenceParams::msp_max_entities_minus1(const unsigned value) noexcept {
+  m_msp_max_entities_minus1 = value;
+  return *this;
+}
+
+constexpr auto MivSequenceParams::operator==(const MivSequenceParams &other) const noexcept {
+  return msp_depth_low_quality_flag() == other.msp_depth_low_quality_flag() &&
+         msp_geometry_scale_enabled_flag() == other.msp_geometry_scale_enabled_flag() &&
+         msp_num_groups_minus1() == other.msp_num_groups_minus1() &&
+         msp_max_entities_minus1() == other.msp_max_entities_minus1();
+}
+
+constexpr auto MivSequenceParams::operator!=(const MivSequenceParams &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto VpccParameterSet::profile_tier_level() const noexcept {
   return m_profile_tier_level;
 }

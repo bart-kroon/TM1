@@ -47,6 +47,7 @@ auto vps() {
   x.occupancy_information(0).oi_occupancy_nominal_2d_bitdepth(8);
   x.geometry_information(0).gi_geometry_nominal_2d_bitdepth(9);
   x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(11);
+  x.vps_extension_present_flag(true);
   return x;
 }
 
@@ -212,10 +213,11 @@ gi_geometry_nominal_2d_bitdepth( 0 )=9
 gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bitdepth( 0 )=11
 ai_attribute_count( 0 )=0
-vps_extension_present_flag=false
+vps_extension_present_flag=true
+vps_miv_extension_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 20, vuh));
+    REQUIRE(byteCodingTest(x, 21, vuh));
   }
 
   SECTION("AD") {
@@ -259,7 +261,7 @@ vps_extension_present_flag=false
 TEST_CASE("vpcc_unit", "[VPCC Unit]") {
   SECTION("Example 1") {
     const auto vpses = std::vector<VpccParameterSet>{};
-    const auto vps = examples::vps();
+    auto vps = examples::vps();
     const auto x = VpccUnit{VpccUnitHeader{VuhUnitType::VPCC_VPS}, vps};
 
     REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_VPS
@@ -283,10 +285,11 @@ gi_geometry_nominal_2d_bitdepth( 0 )=9
 gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bitdepth( 0 )=11
 ai_attribute_count( 0 )=0
-vps_extension_present_flag=false
+vps_extension_present_flag=true
+vps_miv_extension_flag=false
 )");
 
-    REQUIRE(unitCodingTest(x, 24, vpses));
+    REQUIRE(unitCodingTest(x, 25, vpses));
   }
 
   SECTION("Example 2") {

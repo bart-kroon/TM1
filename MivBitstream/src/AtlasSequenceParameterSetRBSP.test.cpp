@@ -96,10 +96,14 @@ asps_extension_present_flag=false
 )");
 
   SECTION("Example 1") {
+    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
+    auto vps = VpccParameterSet{};
+    vps.vps_atlas_count(1).vps_frame_width(0, 1).vps_frame_height(0, 1);
+
     x.asps_frame_width(1)
         .asps_frame_height(1)
         .asps_num_ref_atlas_frame_lists_in_asps(2)
-		.asps_extension_present_flag(true);
+        .asps_extension_present_flag(true);
 
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=0
 asps_frame_width=1
@@ -129,10 +133,21 @@ asps_miv_extension_present_flag=false
 asps_extension2_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 8));
+    REQUIRE(byteCodingTest(x, 8, vuh, vps));
   }
 
   SECTION("Example 2") {
+    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
+    auto vps = VpccParameterSet{};
+    vps.vps_atlas_count(1)
+        .vps_frame_width(0, 0xFFFF)
+        .vps_frame_height(0, 0xFFFF)
+        .vps_extension_present_flag(true)
+        .vps_miv_extension_flag(true)
+        .miv_sequence_params()
+        .msp_geometry_scale_enabled_flag(true)
+        .msp_num_groups_minus1(10);
+
     x.asps_atlas_sequence_parameter_set_id(15)
         .asps_frame_width(0xFFFF)
         .asps_frame_height(0xFFFF)
@@ -142,15 +157,22 @@ asps_extension2_present_flag=false
         .asps_long_term_ref_atlas_frames_flag(true)
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
-		.asps_max_projections_minus1(33)
+        .asps_max_projections_minus1(33)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_remove_duplicate_point_enabled_flag(true)
         .asps_patch_precedence_order_flag(true)
         .asps_patch_size_quantizer_present_flag(true)
         .asps_map_count_minus1(1)
-		.asps_extension_present_flag(true)
-		.asps_miv_extension_present_flag(true);
+        .asps_extension_present_flag(true)
+        .asps_miv_extension_present_flag(true)
+        .miv_atlas_sequence_params()
+        .masp_auxiliary_atlas_flag(true)
+        .masp_depth_occ_map_threshold_flag(true)
+        .masp_omaf_v1_compatible_flag(true)
+        .masp_geometry_frame_width_minus1(300)
+        .masp_geometry_frame_height_minus1(100)
+        .masp_group_id(3);
 
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=15
 asps_frame_width=65535
@@ -176,9 +198,15 @@ asps_map_count_minus1=1
 asps_vui_parameters_present_flag=false
 asps_extension_present_flag=true
 asps_miv_extension_present_flag=true
+masp_omaf_v1_compatible_flag=true
+masp_group_id=3
+masp_auxiliary_atlas_flag=true
+masp_depth_occ_map_threshold_flag=true
+masp_geometry_frame_width_minus1=300
+masp_geometry_frame_height_minus1=100
 asps_extension2_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 12));
+    REQUIRE(byteCodingTest(x, 17, vuh, vps));
   }
 }

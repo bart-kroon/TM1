@@ -348,7 +348,8 @@ void MivDecoder::decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader
 
 void MivDecoder::parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodeAsps(vuh, nu.nal_unit_header(), AtlasSequenceParameterSetRBSP::decodeFrom(stream));
+  decodeAsps(vuh, nu.nal_unit_header(),
+             AtlasSequenceParameterSetRBSP::decodeFrom(stream, vuh, vps(vuh)));
 }
 
 void MivDecoder::parseAfps(const VpccUnitHeader &vuh, const NalUnit &nu) {

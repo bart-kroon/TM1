@@ -36,6 +36,62 @@
 #endif
 
 namespace TMIV::MivBitstream {
+constexpr auto MivAtlasSequenceParams::masp_group_id() const noexcept { return m_masp_group_id; }
+
+constexpr auto MivAtlasSequenceParams::masp_auxiliary_atlas_flag() const noexcept {
+  return m_masp_auxiliary_atlas_flag;
+}
+
+constexpr auto MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag() const noexcept {
+  return m_masp_depth_occ_map_threshold_flag;
+}
+
+constexpr auto &MivAtlasSequenceParams::masp_group_id(const unsigned value) noexcept {
+  m_masp_group_id = value;
+  return *this;
+}
+
+constexpr auto &MivAtlasSequenceParams::masp_auxiliary_atlas_flag(const bool value) noexcept {
+  m_masp_auxiliary_atlas_flag = value;
+  return *this;
+}
+
+constexpr auto &MivAtlasSequenceParams::masp_omaf_v1_compatible_flag(const bool value) noexcept {
+  m_masp_omaf_v1_compatible_flag = value;
+  return *this;
+}
+
+constexpr auto &
+MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag(const bool value) noexcept {
+  m_masp_depth_occ_map_threshold_flag = value;
+  return *this;
+}
+
+constexpr auto &
+MivAtlasSequenceParams::masp_geometry_frame_width_minus1(const uint16_t value) noexcept {
+  m_masp_geometry_frame_width_minus1 = value;
+  return *this;
+}
+
+constexpr auto &
+MivAtlasSequenceParams::masp_geometry_frame_height_minus1(const uint16_t value) noexcept {
+  m_masp_geometry_frame_height_minus1 = value;
+  return *this;
+}
+
+constexpr auto MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &other) const noexcept {
+  return m_masp_omaf_v1_compatible_flag == other.m_masp_omaf_v1_compatible_flag &&
+         masp_group_id() == other.masp_group_id() &&
+         masp_auxiliary_atlas_flag() == other.masp_auxiliary_atlas_flag() &&
+         masp_depth_occ_map_threshold_flag() == other.masp_depth_occ_map_threshold_flag() &&
+         m_masp_geometry_frame_width_minus1 == other.m_masp_geometry_frame_width_minus1 &&
+         m_masp_geometry_frame_height_minus1 == other.m_masp_geometry_frame_height_minus1;
+}
+
+constexpr auto MivAtlasSequenceParams::operator!=(const MivAtlasSequenceParams &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id() const
     noexcept {
   return m_asps_atlas_sequence_parameter_set_id;
@@ -138,38 +194,36 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_extension2_present_flag() con
   return m_asps_extension2_present_flag;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(
-    const std::uint8_t value) noexcept {
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept {
   m_asps_atlas_sequence_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_frame_width(const std::uint16_t value) noexcept {
+constexpr auto &AtlasSequenceParameterSetRBSP::asps_frame_width(const uint16_t value) noexcept {
   m_asps_frame_width = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_frame_height(const std::uint16_t value) noexcept {
+constexpr auto &AtlasSequenceParameterSetRBSP::asps_frame_height(const uint16_t value) noexcept {
   m_asps_frame_height = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size(
-    const std::uint8_t value) noexcept {
+constexpr auto &
+AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size(const uint8_t value) noexcept {
   m_asps_log2_patch_packing_block_size = value;
   return *this;
 }
 
 constexpr auto &AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4(
-    const std::uint8_t value) noexcept {
+    const uint8_t value) noexcept {
   m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
 }
 
 constexpr auto &AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1(
-    const std::uint8_t value) noexcept {
+    const uint8_t value) noexcept {
   m_asps_max_dec_atlas_frame_buffering_minus1 = value;
   return *this;
 }
@@ -246,8 +300,7 @@ constexpr auto &AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_e
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_map_count_minus1(const std::uint8_t value) noexcept {
+constexpr auto &AtlasSequenceParameterSetRBSP::asps_map_count_minus1(const uint8_t value) noexcept {
   m_asps_map_count_minus1 = value;
   return *this;
 }

@@ -101,6 +101,70 @@ void RefListStruct::encodeTo(OutputBitstream &bitstream,
   }
 }
 
+auto MivAtlasSequenceParams::masp_omaf_v1_compatible_flag() const noexcept {
+  VERIFY_MIVBITSTREAM(m_masp_omaf_v1_compatible_flag.has_value());
+  return *m_masp_omaf_v1_compatible_flag;
+}
+
+auto MivAtlasSequenceParams::masp_geometry_frame_width_minus1() const noexcept {
+  VERIFY_MIVBITSTREAM(m_masp_geometry_frame_width_minus1.has_value());
+  return *m_masp_geometry_frame_width_minus1;
+}
+
+auto MivAtlasSequenceParams::masp_geometry_frame_height_minus1() const noexcept {
+  VERIFY_MIVBITSTREAM(m_masp_geometry_frame_height_minus1.has_value());
+  return *m_masp_geometry_frame_height_minus1;
+}
+
+auto operator<<(ostream &stream, const MivAtlasSequenceParams &x) -> ostream & {
+  if (x.m_masp_omaf_v1_compatible_flag) {
+    stream << "masp_omaf_v1_compatible_flag=" << x.masp_omaf_v1_compatible_flag() << '\n';
+  }
+  stream << "masp_group_id=" << x.masp_group_id() << "\nmasp_auxiliary_atlas_flag=" << boolalpha
+         << x.masp_auxiliary_atlas_flag() << "\nmasp_depth_occ_map_threshold_flag=" << boolalpha
+         << x.masp_depth_occ_map_threshold_flag() << '\n';
+  if (x.m_masp_geometry_frame_width_minus1 && x.m_masp_geometry_frame_height_minus1) {
+    stream << "masp_geometry_frame_width_minus1=" << x.masp_geometry_frame_width_minus1()
+           << "\nmasp_geometry_frame_height_minus1=" << x.masp_geometry_frame_height_minus1()
+           << '\n';
+  }
+  return stream;
+}
+
+auto MivAtlasSequenceParams::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                                        const VpccParameterSet &vps) -> MivAtlasSequenceParams {
+  auto x = MivAtlasSequenceParams{};
+  if (vuh.vuh_atlas_id() == 0) {
+    x.masp_omaf_v1_compatible_flag(bitstream.getFlag());
+  }
+  x.masp_group_id(
+      unsigned(bitstream.getUVar(vps.miv_sequence_params().msp_num_groups_minus1() + 1)));
+  x.masp_auxiliary_atlas_flag(bitstream.getFlag());
+  x.masp_depth_occ_map_threshold_flag(bitstream.getFlag());
+  if (vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
+    x.masp_geometry_frame_width_minus1(
+        uint16_t(bitstream.getUVar(vps.vps_frame_width(vuh.vuh_atlas_id()))));
+    x.masp_geometry_frame_height_minus1(
+        uint16_t(bitstream.getUVar(vps.vps_frame_height(vuh.vuh_atlas_id()))));
+  }
+  return x;
+}
+
+void MivAtlasSequenceParams::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                                      const VpccParameterSet &vps) const {
+  if (vuh.vuh_atlas_id() == 0) {
+    bitstream.putFlag(masp_omaf_v1_compatible_flag());
+  }
+  bitstream.putUVar(masp_group_id(), vps.miv_sequence_params().msp_num_groups_minus1() + 1);
+  bitstream.putFlag(masp_auxiliary_atlas_flag());
+  bitstream.putFlag(masp_depth_occ_map_threshold_flag());
+  if (vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
+    bitstream.putUVar(masp_geometry_frame_width_minus1(), vps.vps_frame_width(vuh.vuh_atlas_id()));
+    bitstream.putUVar(masp_geometry_frame_height_minus1(),
+                      vps.vps_frame_height(vuh.vuh_atlas_id()));
+  }
+}
+
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps() const noexcept
     -> uint8_t {
   return uint8_t(m_ref_list_structs.size());
@@ -109,6 +173,12 @@ auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps() con
 auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) const -> const RefListStruct & {
   VERIFY_VPCCBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
   return m_ref_list_structs[rlsIdx];
+}
+
+auto AtlasSequenceParameterSetRBSP::miv_atlas_sequence_params() const noexcept
+    -> const MivAtlasSequenceParams & {
+  VERIFY_MIVBITSTREAM(m_miv_atlas_sequence_params.has_value());
+  return *m_miv_atlas_sequence_params;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const size_t value)
@@ -120,7 +190,7 @@ auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const
 auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx, RefListStruct value)
     -> AtlasSequenceParameterSetRBSP & {
   VERIFY_VPCCBITSTREAM(rlsIdx < asps_num_ref_atlas_frame_lists_in_asps());
-  m_ref_list_structs[rlsIdx] = std::move(value);
+  m_ref_list_structs[rlsIdx] = move(value);
   return *this;
 }
 
@@ -141,52 +211,72 @@ auto AtlasSequenceParameterSetRBSP::asps_max_projections_minus1(const unsigned v
   return *this;
 }
 
+auto AtlasSequenceParameterSetRBSP::miv_atlas_sequence_params() noexcept
+    -> MivAtlasSequenceParams & {
+  VERIFY_MIVBITSTREAM(asps_miv_extension_present_flag());
+  if (!m_miv_atlas_sequence_params) {
+    m_miv_atlas_sequence_params = MivAtlasSequenceParams{};
+  }
+  return *m_miv_atlas_sequence_params;
+}
+
 auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostream & {
-  stream << "asps_atlas_sequence_parameter_set_id=" << int(x.m_asps_atlas_sequence_parameter_set_id)
-         << "\nasps_frame_width=" << x.m_asps_frame_width
-         << "\nasps_frame_height=" << x.m_asps_frame_height
-         << "\nasps_log2_patch_packing_block_size=" << int(x.m_asps_log2_patch_packing_block_size)
+  stream << "asps_atlas_sequence_parameter_set_id=" << int(x.asps_atlas_sequence_parameter_set_id())
+         << "\nasps_frame_width=" << x.asps_frame_width()
+         << "\nasps_frame_height=" << x.asps_frame_height()
+         << "\nasps_log2_patch_packing_block_size=" << int(x.asps_log2_patch_packing_block_size())
          << "\nasps_log2_max_atlas_frame_order_cnt_lsb_minus4="
-         << int(x.m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4)
+         << int(x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4())
          << "\nasps_max_dec_atlas_frame_buffering_minus1="
-         << x.m_asps_max_dec_atlas_frame_buffering_minus1
+         << x.asps_max_dec_atlas_frame_buffering_minus1()
          << "\nasps_long_term_ref_atlas_frames_flag=" << boolalpha
-         << x.m_asps_long_term_ref_atlas_frames_flag << "\nasps_num_ref_atlas_frame_lists_in_asps="
+         << x.asps_long_term_ref_atlas_frames_flag() << "\nasps_num_ref_atlas_frame_lists_in_asps="
          << int(x.asps_num_ref_atlas_frame_lists_in_asps()) << '\n';
+
   for (int rlsIdx = 0; rlsIdx < x.asps_num_ref_atlas_frame_lists_in_asps(); ++rlsIdx) {
     x.ref_list_struct(rlsIdx).printTo(stream, rlsIdx);
   }
-  stream << "asps_use_eight_orientations_flag=" << boolalpha << x.m_asps_use_eight_orientations_flag
+
+  stream << "asps_use_eight_orientations_flag=" << boolalpha << x.asps_use_eight_orientations_flag()
          << "\nasps_extended_projection_enabled_flag=" << boolalpha
-         << x.m_asps_extended_projection_enabled_flag;
+         << x.asps_extended_projection_enabled_flag() << '\n';
+
   if (x.asps_extended_projection_enabled_flag()) {
-    stream << "\nasps_max_projections_minus1=" << x.asps_max_projections_minus1();
+    stream << "asps_max_projections_minus1=" << x.asps_max_projections_minus1() << '\n';
   }
-  stream << "\nasps_normal_axis_limits_quantization_enabled_flag=" << boolalpha
-         << x.m_asps_normal_axis_limits_quantization_enabled_flag
+
+  stream << "asps_normal_axis_limits_quantization_enabled_flag=" << boolalpha
+         << x.asps_normal_axis_limits_quantization_enabled_flag()
          << "\nasps_normal_axis_max_delta_value_enabled_flag=" << boolalpha
-         << x.m_asps_normal_axis_max_delta_value_enabled_flag
+         << x.asps_normal_axis_max_delta_value_enabled_flag()
          << "\nasps_remove_duplicate_point_enabled_flag=" << boolalpha
-         << x.m_asps_remove_duplicate_point_enabled_flag
-         << "\nasps_pixel_deinterleaving_flag=" << boolalpha << x.m_asps_pixel_deinterleaving_flag
+         << x.asps_remove_duplicate_point_enabled_flag()
+         << "\nasps_pixel_deinterleaving_flag=" << boolalpha << x.asps_pixel_deinterleaving_flag()
          << "\nasps_patch_precedence_order_flag=" << boolalpha
-         << x.m_asps_patch_precedence_order_flag
+         << x.asps_patch_precedence_order_flag()
          << "\nasps_patch_size_quantizer_present_flag=" << boolalpha
-         << x.m_asps_patch_size_quantizer_present_flag
-         << "\nasps_raw_patch_enabled_flag=" << boolalpha << x.m_asps_raw_patch_enabled_flag
-         << "\nasps_eom_patch_enabled_flag=" << boolalpha << x.m_asps_eom_patch_enabled_flag
+         << x.asps_patch_size_quantizer_present_flag()
+         << "\nasps_raw_patch_enabled_flag=" << boolalpha << x.asps_raw_patch_enabled_flag()
+         << "\nasps_eom_patch_enabled_flag=" << boolalpha << x.asps_eom_patch_enabled_flag()
          << "\nasps_point_local_reconstruction_enabled_flag=" << boolalpha
-         << x.m_asps_point_local_reconstruction_enabled_flag
-         << "\nasps_map_count_minus1=" << int(x.m_asps_map_count_minus1)
+         << x.asps_point_local_reconstruction_enabled_flag()
+         << "\nasps_map_count_minus1=" << int(x.asps_map_count_minus1())
          << "\nasps_vui_parameters_present_flag=" << boolalpha
-         << x.m_asps_vui_parameters_present_flag << "\nasps_extension_present_flag=" << boolalpha
-         << x.m_asps_extension_present_flag;
-  if (x.m_asps_extension_present_flag) {
-    stream << "\nasps_miv_extension_present_flag=" << boolalpha
-           << x.m_asps_miv_extension_present_flag << "\nasps_extension2_present_flag=" << boolalpha
-           << x.m_asps_extension2_present_flag;
+         << x.asps_vui_parameters_present_flag() << "\nasps_extension_present_flag=" << boolalpha
+         << x.asps_extension_present_flag() << '\n';
+
+  if (x.asps_extension_present_flag()) {
+    stream << "asps_miv_extension_present_flag=" << boolalpha << x.asps_miv_extension_present_flag()
+           << '\n';
+
+    if (x.asps_miv_extension_present_flag()) {
+      stream << x.miv_atlas_sequence_params();
+    }
+
+    stream << "asps_extension2_present_flag=" << boolalpha << x.asps_extension2_present_flag()
+           << '\n';
   }
-  return stream << '\n';
+  return stream;
 }
 
 auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRBSP &other) const
@@ -231,7 +321,9 @@ auto AtlasSequenceParameterSetRBSP::operator!=(const AtlasSequenceParameterSetRB
   return !operator==(other);
 }
 
-auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequenceParameterSetRBSP {
+auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHeader &vuh,
+                                               const VpccParameterSet &vps)
+    -> AtlasSequenceParameterSetRBSP {
   auto x = AtlasSequenceParameterSetRBSP{};
   InputBitstream bitstream{stream};
 
@@ -239,12 +331,10 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   VERIFY_VPCCBITSTREAM(x.asps_atlas_sequence_parameter_set_id() <= 15);
 
   x.asps_frame_width(bitstream.getUint16());
-  VERIFY_VPCCBITSTREAM(0 < x.asps_frame_width());
-  // TODO(BK): Check somewhere else that asps_frame_width == vps_frame_width
+  VERIFY_VPCCBITSTREAM(vps.vps_frame_width(vuh.vuh_atlas_id()) == x.asps_frame_width());
 
   x.asps_frame_height(bitstream.getUint16());
-  VERIFY_VPCCBITSTREAM(0 < x.asps_frame_height());
-  // TODO(BK): Check somewhere else that asps_frame_height == vps_frame_height
+  VERIFY_VPCCBITSTREAM(vps.vps_frame_height(vuh.vuh_atlas_id()) == x.asps_frame_height());
 
   x.asps_log2_patch_packing_block_size(uint8_t(bitstream.readBits(3)));
   VERIFY_VPCCBITSTREAM(x.asps_log2_patch_packing_block_size() <= 7);
@@ -302,6 +392,10 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
 
     x.asps_miv_extension_present_flag(bitstream.getFlag());
 
+    if (x.asps_miv_extension_present_flag()) {
+      x.miv_atlas_sequence_params() = MivAtlasSequenceParams::decodeFrom(bitstream, vuh, vps);
+    }
+
     x.asps_extension2_present_flag(bitstream.getFlag());
     VERIFY_MIVBITSTREAM(!x.asps_extension2_present_flag());
   } else {
@@ -313,16 +407,17 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream) -> AtlasSequence
   return x;
 }
 
-void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
+void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const VpccUnitHeader &vuh,
+                                             const VpccParameterSet &vps) const {
   OutputBitstream bitstream{stream};
 
   VERIFY_VPCCBITSTREAM(asps_atlas_sequence_parameter_set_id() <= 15);
   bitstream.putUExpGolomb(asps_atlas_sequence_parameter_set_id());
 
-  VERIFY_VPCCBITSTREAM(0 < asps_frame_width());
+  VERIFY_VPCCBITSTREAM(asps_frame_width() == vps.vps_frame_width(vuh.vuh_atlas_id()));
   bitstream.putUint16(asps_frame_width());
 
-  VERIFY_VPCCBITSTREAM(0 < asps_frame_height());
+  VERIFY_VPCCBITSTREAM(asps_frame_height() == vps.vps_frame_height(vuh.vuh_atlas_id()));
   bitstream.putUint16(asps_frame_height());
 
   VERIFY_VPCCBITSTREAM(asps_log2_patch_packing_block_size() <= 7);
@@ -378,6 +473,10 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream) const {
 
   VERIFY_MIVBITSTREAM(asps_extension_present_flag());
   bitstream.putFlag(asps_miv_extension_present_flag());
+
+  if (asps_miv_extension_present_flag()) {
+    miv_atlas_sequence_params().encodeTo(bitstream, vuh, vps);
+  }
 
   VERIFY_MIVBITSTREAM(!asps_extension2_present_flag());
   bitstream.putFlag(asps_extension2_present_flag());

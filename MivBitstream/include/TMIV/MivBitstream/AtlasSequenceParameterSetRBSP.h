@@ -34,6 +34,9 @@
 #ifndef _TMIV_MIVBITSTREAM_ATLASSEQUENCEPARAMETERSETRBSP_H_
 #define _TMIV_MIVBITSTREAM_ATLASSEQUENCEPARAMETERSETRBSP_H_
 
+#include <TMIV/MivBitstream/VpccParameterSet.h>
+#include <TMIV/MivBitstream/VpccUnit.h>
+
 #include <TMIV/Common/Bitstream.h>
 
 #include <cstdint>
@@ -69,6 +72,43 @@ private:
   std::vector<std::int16_t> m_deltaAfocSt;
 };
 
+// 23090-12: miv_atlas_sequence_params( vuh_atlas_id )
+class MivAtlasSequenceParams {
+public:
+  auto masp_omaf_v1_compatible_flag() const noexcept;
+  constexpr auto masp_group_id() const noexcept;
+  constexpr auto masp_auxiliary_atlas_flag() const noexcept;
+  constexpr auto masp_depth_occ_map_threshold_flag() const noexcept;
+  auto masp_geometry_frame_width_minus1() const noexcept;
+  auto masp_geometry_frame_height_minus1() const noexcept;
+
+  constexpr auto &masp_omaf_v1_compatible_flag(const bool value) noexcept;
+  constexpr auto &masp_group_id(const unsigned value) noexcept;
+  constexpr auto &masp_auxiliary_atlas_flag(const bool value) noexcept;
+  constexpr auto &masp_depth_occ_map_threshold_flag(const bool value) noexcept;
+  constexpr auto &masp_geometry_frame_width_minus1(const std::uint16_t value) noexcept;
+  constexpr auto &masp_geometry_frame_height_minus1(const std::uint16_t value) noexcept;
+
+  friend auto operator<<(std::ostream &stream, const MivAtlasSequenceParams &) -> std::ostream &;
+
+  constexpr auto operator==(const MivAtlasSequenceParams &other) const noexcept;
+  constexpr auto operator!=(const MivAtlasSequenceParams &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccUnitHeader &vuh,
+                         const VpccParameterSet &vps) -> MivAtlasSequenceParams;
+
+  void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
+                const VpccParameterSet &vps) const;
+
+private:
+  std::optional<bool> m_masp_omaf_v1_compatible_flag;
+  unsigned m_masp_group_id;
+  bool m_masp_auxiliary_atlas_flag;
+  bool m_masp_depth_occ_map_threshold_flag;
+  std::optional<std::uint16_t> m_masp_geometry_frame_width_minus1;
+  std::optional<std::uint16_t> m_masp_geometry_frame_height_minus1;
+};
+
 // 23090-12: atlas_sequence_parameter_set_rbsp()
 class AtlasSequenceParameterSetRBSP {
 public:
@@ -97,6 +137,7 @@ public:
   constexpr auto asps_vui_parameters_present_flag() const noexcept;
   constexpr auto asps_extension_present_flag() const noexcept; // 23090-5 only
   constexpr auto asps_miv_extension_present_flag() const noexcept;
+  auto miv_atlas_sequence_params() const noexcept -> const MivAtlasSequenceParams &;
   constexpr auto asps_extension2_present_flag() const noexcept;
 
   constexpr auto &asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept;
@@ -129,6 +170,7 @@ public:
   constexpr auto &asps_extension2_present_flag(const bool value) noexcept;
 
   [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) -> RefListStruct &;
+  [[nodiscard]] auto miv_atlas_sequence_params() noexcept -> MivAtlasSequenceParams &;
 
   friend auto operator<<(std::ostream &stream, const AtlasSequenceParameterSetRBSP &x)
       -> std::ostream &;
@@ -136,9 +178,10 @@ public:
   auto operator==(const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool;
   auto operator!=(const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream) -> AtlasSequenceParameterSetRBSP;
+  static auto decodeFrom(std::istream &stream, const VpccUnitHeader &vuh,
+                         const VpccParameterSet &vps) -> AtlasSequenceParameterSetRBSP;
 
-  void encodeTo(std::ostream &stream) const;
+  void encodeTo(std::ostream &stream, const VpccUnitHeader &vuh, const VpccParameterSet &vps) const;
 
 private:
   std::uint8_t m_asps_atlas_sequence_parameter_set_id{};
@@ -165,6 +208,7 @@ private:
   bool m_asps_vui_parameters_present_flag{};
   bool m_asps_extension_present_flag{};
   bool m_asps_miv_extension_present_flag{};
+  std::optional<MivAtlasSequenceParams> m_miv_atlas_sequence_params;
   bool m_asps_extension2_present_flag{};
 };
 } // namespace TMIV::MivBitstream

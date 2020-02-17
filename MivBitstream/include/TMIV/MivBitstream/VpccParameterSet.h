@@ -210,8 +210,6 @@ private:
 };
 
 // 23090-12: miv_sequence_params()
-//
-// TODO(BK): Check that all syntax structures have unit tests
 class MivSequenceParams {
 public:
   constexpr auto msp_depth_low_quality_flag() const noexcept;

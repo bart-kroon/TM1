@@ -119,11 +119,7 @@ constexpr auto PatchDataUnit::pdu_view_pos_x() const noexcept { return m_pdu_vie
 
 constexpr auto PatchDataUnit::pdu_view_pos_y() const noexcept { return m_pdu_view_pos_y; }
 
-constexpr auto PatchDataUnit::pdu_3d_pos_min_z() const noexcept { return m_pdu_3d_pos_min_z; }
-
-constexpr auto PatchDataUnit::pdu_3d_pos_delta_max_z() const noexcept {
-  return m_pdu_3d_pos_delta_max_z;
-}
+constexpr auto PatchDataUnit::pdu_depth_start() const noexcept { return m_pdu_depth_start; }
 
 constexpr auto PatchDataUnit::pdu_projection_id() const noexcept { return m_pdu_projection_id; }
 
@@ -161,14 +157,13 @@ constexpr auto &PatchDataUnit::pdu_view_pos_y(const std::uint32_t value) noexcep
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_3d_pos_min_z(const std::uint32_t value) noexcept {
-  m_pdu_3d_pos_min_z = value;
+constexpr auto &PatchDataUnit::pdu_depth_start(const std::uint32_t value) noexcept {
+  m_pdu_depth_start = value;
   return *this;
 }
 
-constexpr auto &
-PatchDataUnit::pdu_3d_pos_delta_max_z(const std::optional<std::uint32_t> value) noexcept {
-  m_pdu_3d_pos_delta_max_z = value;
+constexpr auto &PatchDataUnit::pdu_depth_end(const std::uint32_t value) noexcept {
+  m_pdu_depth_end = value;
   return *this;
 }
 
@@ -188,8 +183,7 @@ constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexc
          pdu_2d_delta_size_x() == other.pdu_2d_delta_size_x() &&
          pdu_2d_delta_size_y() == other.pdu_2d_delta_size_y() &&
          pdu_view_pos_x() == other.pdu_view_pos_x() && pdu_view_pos_y() == other.pdu_view_pos_y() &&
-         pdu_3d_pos_min_z() == other.pdu_3d_pos_min_z() &&
-         pdu_3d_pos_delta_max_z() == other.pdu_3d_pos_delta_max_z() &&
+         pdu_depth_start() == other.pdu_depth_start() && m_pdu_depth_end == other.m_pdu_depth_end &&
          pdu_projection_id() == other.pdu_projection_id() &&
          pdu_orientation_index() == other.pdu_orientation_index();
 }

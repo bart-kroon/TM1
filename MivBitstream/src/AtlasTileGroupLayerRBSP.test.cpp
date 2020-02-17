@@ -118,7 +118,7 @@ pdu_2d_delta_size_x( 101 )=1
 pdu_2d_delta_size_y( 101 )=1
 pdu_view_pos_x( 101 )=0
 pdu_view_pos_y( 101 )=0
-pdu_3d_pos_min_z( 101 )=0
+pdu_depth_start( 101 )=0
 pdu_projection_id( 101 )=0
 pdu_orientation_index( 101 )=FPO_NULL
 )");
@@ -142,8 +142,8 @@ pdu_orientation_index( 101 )=FPO_NULL
         .pdu_2d_delta_size_y(1002)
         .pdu_view_pos_x(1234)
         .pdu_view_pos_y(21345)
-        .pdu_3d_pos_min_z(623)
-        .pdu_3d_pos_delta_max_z(789)
+        .pdu_depth_start(623)
+        .pdu_depth_end(789)
         .pdu_projection_id(300)
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180);
 
@@ -153,8 +153,8 @@ pdu_2d_delta_size_x( 102 )=1234
 pdu_2d_delta_size_y( 102 )=1002
 pdu_view_pos_x( 102 )=1234
 pdu_view_pos_y( 102 )=21345
-pdu_3d_pos_min_z( 102 )=623
-pdu_3d_pos_delta_max_z( 102 )=789
+pdu_depth_start( 102 )=623
+pdu_depth_end( 102 )=789
 pdu_projection_id( 102 )=300
 pdu_orientation_index( 102 )=FPO_MROT180
 )");
@@ -204,7 +204,7 @@ pdu_2d_delta_size_x( 99 )=1
 pdu_2d_delta_size_y( 99 )=1
 pdu_view_pos_x( 99 )=0
 pdu_view_pos_y( 99 )=0
-pdu_3d_pos_min_z( 99 )=0
+pdu_depth_start( 99 )=0
 pdu_projection_id( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
 )");
@@ -247,7 +247,7 @@ pdu_2d_delta_size_x( 2 )=0
 pdu_2d_delta_size_y( 2 )=0
 pdu_view_pos_x( 2 )=0
 pdu_view_pos_y( 2 )=0
-pdu_3d_pos_min_z( 2 )=0
+pdu_depth_start( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 atgdu_patch_mode[ 3 ]=P_SKIP
@@ -269,7 +269,7 @@ pdu_2d_delta_size_x( 0 )=1
 pdu_2d_delta_size_y( 0 )=1
 pdu_view_pos_x( 0 )=0
 pdu_view_pos_y( 0 )=0
-pdu_3d_pos_min_z( 0 )=0
+pdu_depth_start( 0 )=0
 pdu_projection_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 atgdu_patch_mode[ 1 ]=I_INTRA
@@ -279,7 +279,7 @@ pdu_2d_delta_size_x( 1 )=1
 pdu_2d_delta_size_y( 1 )=1
 pdu_view_pos_x( 1 )=0
 pdu_view_pos_y( 1 )=0
-pdu_3d_pos_min_z( 1 )=0
+pdu_depth_start( 1 )=0
 pdu_projection_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
 )");
@@ -377,7 +377,7 @@ pdu_2d_delta_size_x( 0 )=10
 pdu_2d_delta_size_y( 0 )=20
 pdu_view_pos_x( 0 )=0
 pdu_view_pos_y( 0 )=0
-pdu_3d_pos_min_z( 0 )=0
+pdu_depth_start( 0 )=0
 pdu_projection_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 atgdu_patch_mode[ 1 ]=I_INTRA
@@ -387,7 +387,7 @@ pdu_2d_delta_size_x( 1 )=30
 pdu_2d_delta_size_y( 1 )=40
 pdu_view_pos_x( 1 )=0
 pdu_view_pos_y( 1 )=0
-pdu_3d_pos_min_z( 1 )=0
+pdu_depth_start( 1 )=0
 pdu_projection_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
 atgdu_patch_mode[ 2 ]=I_INTRA
@@ -397,7 +397,7 @@ pdu_2d_delta_size_x( 2 )=50
 pdu_2d_delta_size_y( 2 )=60
 pdu_view_pos_x( 2 )=0
 pdu_view_pos_y( 2 )=0
-pdu_3d_pos_min_z( 2 )=0
+pdu_depth_start( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 )");

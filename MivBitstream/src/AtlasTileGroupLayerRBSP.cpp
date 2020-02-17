@@ -284,15 +284,21 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
 
 auto operator<<(ostream &stream, const SkipPatchDataUnit & /* x */) -> ostream & { return stream; }
 
+auto PatchDataUnit::pdu_depth_end() const noexcept -> uint32_t {
+  VERIFY_VPCCBITSTREAM(m_pdu_depth_end.has_value());
+  return *m_pdu_depth_end;
+}
+
 auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
   stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << "\npdu_2d_pos_y( "
          << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_delta_size_x( " << patchIdx
          << " )=" << pdu_2d_delta_size_x() << "\npdu_2d_delta_size_y( " << patchIdx
          << " )=" << pdu_2d_delta_size_y() << "\npdu_view_pos_x( " << patchIdx
-         << " )=" << pdu_view_pos_x() << "\npdu_view_pos_y( " << patchIdx << " )=" << pdu_view_pos_y()
-         << "\npdu_3d_pos_min_z( " << patchIdx << " )=" << pdu_3d_pos_min_z() << '\n';
-  if (pdu_3d_pos_delta_max_z()) {
-    stream << "pdu_3d_pos_delta_max_z( " << patchIdx << " )=" << *pdu_3d_pos_delta_max_z() << '\n';
+         << " )=" << pdu_view_pos_x() << "\npdu_view_pos_y( " << patchIdx
+         << " )=" << pdu_view_pos_y() << "\npdu_depth_start( " << patchIdx
+         << " )=" << pdu_depth_start() << '\n';
+  if (m_pdu_depth_end) {
+    stream << "pdu_depth_end( " << patchIdx << " )=" << pdu_depth_end() << '\n';
   }
   stream << "pdu_projection_id( " << patchIdx << " )=" << pdu_projection_id()
          << "\npdu_orientation_index( " << patchIdx << " )=" << pdu_orientation_index() << '\n';
@@ -331,14 +337,14 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
-  const auto pdu_3d_pos_min_z_num_bits =
+  const auto pdu_depth_start_num_bits =
       gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_min_z_quantizer() + 2;
-  x.pdu_3d_pos_min_z(uint32_t(bitstream.readBits(pdu_3d_pos_min_z_num_bits)));
+  x.pdu_depth_start(uint32_t(bitstream.readBits(pdu_depth_start_num_bits)));
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto pdu_3d_pos_max_z_num_bits =
+    const auto pdu_depth_end_num_bits =
         gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_max_z_quantizer() + 2;
-    x.pdu_3d_pos_delta_max_z({uint32_t(bitstream.readBits(pdu_3d_pos_max_z_num_bits))});
+    x.pdu_depth_end({uint32_t(bitstream.readBits(pdu_depth_end_num_bits))});
   }
 
   const auto pdu_orientation_index_num_bits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
@@ -378,18 +384,14 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
-  const auto pdu_3d_pos_min_z_num_bits =
+  const auto pdu_depth_start_num_bits =
       gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_min_z_quantizer() + 2;
-  VERIFY_VPCCBITSTREAM((pdu_3d_pos_min_z() >> pdu_3d_pos_min_z_num_bits) == 0);
-  bitstream.writeBits(pdu_3d_pos_min_z(), pdu_3d_pos_min_z_num_bits);
+  bitstream.writeBits(pdu_depth_start(), pdu_depth_start_num_bits);
 
-  VERIFY_VPCCBITSTREAM(!pdu_3d_pos_delta_max_z() ==
-                       !asps.asps_normal_axis_max_delta_value_enabled_flag());
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto pdu_3d_pos_max_z_num_bits =
+    const auto pdu_depth_end_num_bits =
         gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_max_z_quantizer() + 2;
-    VERIFY_VPCCBITSTREAM((*pdu_3d_pos_delta_max_z() >> pdu_3d_pos_max_z_num_bits) == 0);
-    bitstream.writeBits(*pdu_3d_pos_delta_max_z(), pdu_3d_pos_max_z_num_bits);
+    bitstream.writeBits(pdu_depth_end(), pdu_depth_end_num_bits);
   }
 
   if (asps.asps_use_eight_orientations_flag()) {

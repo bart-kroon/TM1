@@ -256,9 +256,10 @@ auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId) co
   return m_ai_attributes[attributeId].ai_attribute_dimension_minus1;
 }
 
-auto AttributeInformation::ai_attribute_nominal_2d_bitdepth(uint8_t attributeId) const -> uint8_t {
+auto AttributeInformation::ai_attribute_nominal_2d_bitdepth_minus1(uint8_t attributeId) const
+    -> uint8_t {
   VERIFY_VPCCBITSTREAM(attributeId < ai_attribute_count());
-  return m_ai_attributes[attributeId].ai_attribute_nominal_2d_bitdepth;
+  return m_ai_attributes[attributeId].ai_attribute_nominal_2d_bitdepth_minus1;
 }
 
 auto AttributeInformation::ai_attribute_MSB_align_flag() const noexcept -> bool {
@@ -292,10 +293,11 @@ auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId, ui
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_nominal_2d_bitdepth(uint8_t attributeId, uint8_t value)
+auto AttributeInformation::ai_attribute_nominal_2d_bitdepth_minus1(uint8_t attributeId,
+                                                                   uint8_t value)
     -> AttributeInformation & {
   VERIFY_VPCCBITSTREAM(attributeId < ai_attribute_count());
-  m_ai_attributes[attributeId].ai_attribute_nominal_2d_bitdepth = value;
+  m_ai_attributes[attributeId].ai_attribute_nominal_2d_bitdepth_minus1 = value;
   return *this;
 }
 
@@ -318,8 +320,8 @@ auto AttributeInformation::printTo(ostream &stream, uint8_t atlasId) const -> os
            << ", " << i << " )=" << int(ai_attribute_codec_id(i))
            << "\nai_attribute_dimension_minus1( " << int(atlasId) << ", " << i
            << " )=" << int(ai_attribute_dimension_minus1(i))
-           << "\nai_attribute_nominal_2d_bitdepth( " << int(atlasId) << ", " << i
-           << " )=" << int(ai_attribute_nominal_2d_bitdepth(i));
+           << "\nai_attribute_nominal_2d_bitdepth_minus1( " << int(atlasId) << ", " << i
+           << " )=" << int(ai_attribute_nominal_2d_bitdepth_minus1(i));
   }
   return stream << '\n';
 }
@@ -338,7 +340,8 @@ auto AttributeInformation::operator==(const AttributeInformation &other) const n
     if (ai_attribute_type_id(i) != other.ai_attribute_type_id(i) ||
         ai_attribute_codec_id(i) != other.ai_attribute_codec_id(i) ||
         ai_attribute_dimension_minus1(i) != other.ai_attribute_dimension_minus1(i) ||
-        ai_attribute_nominal_2d_bitdepth(i) != other.ai_attribute_nominal_2d_bitdepth(i)) {
+        ai_attribute_nominal_2d_bitdepth_minus1(i) !=
+            other.ai_attribute_nominal_2d_bitdepth_minus1(i)) {
       return false;
     }
   }
@@ -361,7 +364,7 @@ auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const VpccParam
     const auto ai_attribute_dimension_partitions_minus1 = bitstream.readBits(6);
     VERIFY_MIVBITSTREAM(ai_attribute_dimension_partitions_minus1 == 0);
 
-    x.ai_attribute_nominal_2d_bitdepth(i, uint8_t(bitstream.readBits(5) + 1));
+    x.ai_attribute_nominal_2d_bitdepth_minus1(i, uint8_t(bitstream.readBits(5)));
   }
   if (0 < x.ai_attribute_count()) {
     x.ai_attribute_MSB_align_flag(bitstream.getFlag());
@@ -387,9 +390,8 @@ void AttributeInformation::encodeTo(OutputBitstream &bitstream, const VpccParame
     constexpr auto ai_attribute_dimension_partitions_minus1 = 0;
     bitstream.writeBits(ai_attribute_dimension_partitions_minus1, 6);
 
-    VERIFY_VPCCBITSTREAM(1 <= ai_attribute_nominal_2d_bitdepth(i) &&
-                         ai_attribute_nominal_2d_bitdepth(i) <= 32);
-    bitstream.writeBits(ai_attribute_nominal_2d_bitdepth(i) - 1, 5);
+    VERIFY_VPCCBITSTREAM(ai_attribute_nominal_2d_bitdepth_minus1(i) < 32);
+    bitstream.writeBits(ai_attribute_nominal_2d_bitdepth_minus1(i), 5);
   }
   bitstream.putFlag(ai_attribute_MSB_align_flag());
 }

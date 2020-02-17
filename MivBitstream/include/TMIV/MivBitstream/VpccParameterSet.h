@@ -171,7 +171,7 @@ public:
   auto ai_attribute_count() const noexcept -> std::uint8_t;
   auto ai_attribute_type_id(std::uint8_t attributeId) const -> AiAttributeTypeId;
   auto ai_attribute_codec_id(std::uint8_t attributeId) const -> std::uint8_t;
-  auto ai_attribute_dimension(std::uint8_t attributeId) const -> std::uint8_t;
+  auto ai_attribute_dimension_minus1(std::uint8_t attributeId) const -> std::uint8_t;
   auto ai_attribute_nominal_2d_bitdepth(std::uint8_t attributeId) const -> std::uint8_t;
   auto ai_attribute_MSB_align_flag() const noexcept -> bool;
 
@@ -180,7 +180,7 @@ public:
       -> AttributeInformation &;
   auto ai_attribute_codec_id(std::uint8_t attributeId, std::uint8_t value)
       -> AttributeInformation &;
-  auto ai_attribute_dimension(std::uint8_t attributeId, std::uint8_t value)
+  auto ai_attribute_dimension_minus1(std::uint8_t attributeId, std::uint8_t value)
       -> AttributeInformation &;
   auto ai_attribute_nominal_2d_bitdepth(std::uint8_t attributeId, std::uint8_t value)
       -> AttributeInformation &;
@@ -201,7 +201,7 @@ private:
   struct AiAttribute {
     AiAttributeTypeId ai_attribute_type_id{};
     std::uint8_t ai_attribute_codec_id{};
-    std::uint8_t ai_attribute_dimension{};
+    std::uint8_t ai_attribute_dimension_minus1{};
     std::uint8_t ai_attribute_nominal_2d_bitdepth{};
   };
 

@@ -36,10 +36,15 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
+#include <TMIV/MivBitstream/MivDecoder.h>
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>
 
 #include <fstream>
+
+namespace TMIV::MivBitstream {
+const MivDecoder::Mode MivDecoder::mode = Mode::TMC2;
+}
 
 using namespace std;
 using namespace TMIV::Common;

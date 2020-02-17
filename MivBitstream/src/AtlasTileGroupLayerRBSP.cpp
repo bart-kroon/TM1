@@ -296,6 +296,11 @@ auto PatchDataUnit::pdu_entity_id() const noexcept -> unsigned {
   return *m_pdu_entity_id;
 }
 
+auto PatchDataUnit::pdu_depth_occ_map_threshold() const noexcept -> uint32_t {
+  VERIFY_MIVBITSTREAM(m_pdu_depth_occ_map_threshold.has_value());
+  return *m_pdu_depth_occ_map_threshold;
+}
+
 auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
   stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << "\npdu_2d_pos_y( "
          << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_delta_size_x( " << patchIdx
@@ -311,6 +316,10 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
          << "\npdu_orientation_index( " << patchIdx << " )=" << pdu_orientation_index() << '\n';
   if (m_pdu_entity_id) {
     stream << "pdu_entity_id( " << patchIdx << " )=" << pdu_entity_id() << '\n';
+  }
+  if (m_pdu_depth_occ_map_threshold) {
+    stream << "pdu_depth_occ_map_threshold( " << patchIdx << " )=" << pdu_depth_occ_map_threshold()
+           << '\n';
   }
   return stream;
 }
@@ -369,6 +378,11 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
       x.pdu_entity_id(unsigned(bitstream.getUExpGolomb()));
       VERIFY_MIVBITSTREAM(x.pdu_entity_id() <= vps.miv_sequence_params().msp_max_entities_minus1());
     }
+    if (asps.asps_miv_extension_present_flag() &&
+        asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
+      // TODO(BK): pdu_depth_occ_map_threshold bit count is wrong in WD4 d24
+      x.pdu_depth_occ_map_threshold(uint32_t(bitstream.readBits(10)));
+    }
   }
   return x;
 }
@@ -425,6 +439,11 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
     if (vps.miv_sequence_params().msp_max_entities_minus1() > 0) {
       VERIFY_MIVBITSTREAM(pdu_entity_id() <= vps.miv_sequence_params().msp_max_entities_minus1());
       bitstream.putUExpGolomb(pdu_entity_id());
+    }
+    if (asps.asps_miv_extension_present_flag() &&
+        asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
+      // TODO(BK): pdu_depth_occ_map_threshold bit count is wrong in WD4 d24
+      bitstream.writeBits(pdu_depth_occ_map_threshold(), 10);
     }
   }
 }

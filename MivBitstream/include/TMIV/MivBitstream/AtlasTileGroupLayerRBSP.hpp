@@ -183,6 +183,11 @@ constexpr auto &PatchDataUnit::pdu_entity_id(const unsigned value) noexcept {
   return *this;
 }
 
+constexpr auto &PatchDataUnit::pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept {
+  m_pdu_depth_occ_map_threshold = value;
+  return *this;
+}
+
 constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexcept {
   return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
          pdu_2d_delta_size_x() == other.pdu_2d_delta_size_x() &&
@@ -190,7 +195,9 @@ constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexc
          pdu_view_pos_x() == other.pdu_view_pos_x() && pdu_view_pos_y() == other.pdu_view_pos_y() &&
          pdu_depth_start() == other.pdu_depth_start() && m_pdu_depth_end == other.m_pdu_depth_end &&
          pdu_projection_id() == other.pdu_projection_id() &&
-         pdu_orientation_index() == other.pdu_orientation_index();
+         pdu_orientation_index() == other.pdu_orientation_index() &&
+         m_pdu_entity_id == other.m_pdu_entity_id &&
+         m_pdu_depth_occ_map_threshold == other.m_pdu_depth_occ_map_threshold;
 }
 
 constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexcept {

@@ -134,7 +134,11 @@ pdu_orientation_index( 101 )=FPO_NULL
         .asps_use_eight_orientations_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)
-        .asps_max_projections_minus1(511);
+        .asps_max_projections_minus1(511)
+        .asps_extension_present_flag(true)
+        .asps_miv_extension_present_flag(true)
+        .miv_atlas_sequence_params()
+        .masp_depth_occ_map_threshold_flag(true);
 
     afpsV.front().afps_3d_pos_x_bit_count_minus1(10).afps_3d_pos_y_bit_count_minus1(14);
 
@@ -148,7 +152,8 @@ pdu_orientation_index( 101 )=FPO_NULL
         .pdu_depth_end(789)
         .pdu_projection_id(300)
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
-        .pdu_entity_id(35);
+        .pdu_entity_id(35)
+        .pdu_depth_occ_map_threshold(600);
 
     REQUIRE(toString(x, 102) == R"(pdu_2d_pos_x( 102 )=34
 pdu_2d_pos_y( 102 )=57
@@ -161,9 +166,10 @@ pdu_depth_end( 102 )=789
 pdu_projection_id( 102 )=300
 pdu_orientation_index( 102 )=FPO_MROT180
 pdu_entity_id( 102 )=35
+pdu_depth_occ_map_threshold( 102 )=600
 )");
 
-    REQUIRE(bitCodingTest(x, 138, vuh, vps, aspsV, afpsV, atgh));
+    REQUIRE(bitCodingTest(x, 148, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 

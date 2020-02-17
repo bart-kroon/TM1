@@ -55,7 +55,7 @@ auto vpses() {
   for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     x.vps_frame_width(j, 640);
     x.vps_frame_height(j, 480);
-    x.occupancy_information(j).oi_occupancy_nominal_2d_bitdepth(8);
+    x.occupancy_information(j).oi_occupancy_nominal_2d_bitdepth_minus1(7);
     x.geometry_information(j).gi_geometry_nominal_2d_bitdepth(9);
     x.geometry_information(j).gi_geometry_3d_coordinates_bitdepth(11);
     x.attribute_information(j).ai_attribute_count(4);

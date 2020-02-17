@@ -88,8 +88,8 @@ constexpr auto OccupancyInformation::oi_lossy_occupancy_map_compression_threshol
   return m_oi_lossy_occupancy_map_compression_threshold;
 }
 
-constexpr auto OccupancyInformation::oi_occupancy_nominal_2d_bitdepth() const noexcept {
-  return m_oi_occupancy_nominal_2d_bitdepth;
+constexpr auto OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1() const noexcept {
+  return m_oi_occupancy_nominal_2d_bitdepth_minus1;
 }
 
 constexpr auto OccupancyInformation::oi_occupancy_MSB_align_flag() const noexcept {
@@ -108,8 +108,8 @@ OccupancyInformation::oi_lossy_occupancy_map_compression_threshold(std::uint8_t 
 }
 
 constexpr auto &
-OccupancyInformation::oi_occupancy_nominal_2d_bitdepth(std::uint8_t value) noexcept {
-  m_oi_occupancy_nominal_2d_bitdepth = value;
+OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept {
+  m_oi_occupancy_nominal_2d_bitdepth_minus1 = value;
   return *this;
 }
 

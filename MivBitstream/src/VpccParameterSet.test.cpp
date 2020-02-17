@@ -69,11 +69,10 @@ ptl_level_idc=Level 2.0
 
 TEST_CASE("occupancy_information", "[VPCC Parameter Set]") {
   auto x = OccupancyInformation{};
-  x.oi_occupancy_nominal_2d_bitdepth(1);
 
   REQUIRE(toString(x, 3) == R"(oi_occupancy_codec_id( 3 )=0
 oi_lossy_occupancy_map_compression_threshold( 3 )=0
-oi_occupancy_nominal_2d_bitdepth( 3 )=1
+oi_occupancy_nominal_2d_bitdepth_minus1( 3 )=0
 oi_occupancy_MSB_align_flag( 3 )=false
 )");
 
@@ -82,12 +81,12 @@ oi_occupancy_MSB_align_flag( 3 )=false
   SECTION("Example") {
     x.oi_occupancy_codec_id(255)
         .oi_lossy_occupancy_map_compression_threshold(255)
-        .oi_occupancy_nominal_2d_bitdepth(32)
+        .oi_occupancy_nominal_2d_bitdepth_minus1(31)
         .oi_occupancy_MSB_align_flag(true);
 
     REQUIRE(toString(x, 4) == R"(oi_occupancy_codec_id( 4 )=255
 oi_lossy_occupancy_map_compression_threshold( 4 )=255
-oi_occupancy_nominal_2d_bitdepth( 4 )=32
+oi_occupancy_nominal_2d_bitdepth_minus1( 4 )=31
 oi_occupancy_MSB_align_flag( 4 )=true
 )");
 
@@ -175,7 +174,6 @@ TEST_CASE("vpcc_parameter_set", "[VPCC Parameter Set]") {
   SECTION("Example 1") {
     vps.vps_frame_width(0, 1920);
     vps.vps_frame_height(0, 1080);
-    vps.occupancy_information(0).oi_occupancy_nominal_2d_bitdepth(1);
     vps.geometry_information(0).gi_geometry_nominal_2d_bitdepth(1);
     vps.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(1);
     vps.vps_extension_present_flag(true);
@@ -201,7 +199,7 @@ vps_map_count_minus1( 0 )=0
 vps_auxiliary_video_present_flag( 0 )=false
 oi_occupancy_codec_id( 0 )=0
 oi_lossy_occupancy_map_compression_threshold( 0 )=0
-oi_occupancy_nominal_2d_bitdepth( 0 )=1
+oi_occupancy_nominal_2d_bitdepth_minus1( 0 )=0
 oi_occupancy_MSB_align_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth( 0 )=1

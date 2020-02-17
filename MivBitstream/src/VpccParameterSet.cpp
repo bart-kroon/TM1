@@ -159,8 +159,8 @@ auto OccupancyInformation::printTo(ostream &stream, uint8_t atlasId) const -> os
                 << " )=" << int(oi_occupancy_codec_id())
                 << "\noi_lossy_occupancy_map_compression_threshold( " << int(atlasId)
                 << " )=" << int(oi_lossy_occupancy_map_compression_threshold())
-                << "\noi_occupancy_nominal_2d_bitdepth( " << int(atlasId)
-                << " )=" << int(oi_occupancy_nominal_2d_bitdepth())
+                << "\noi_occupancy_nominal_2d_bitdepth_minus1( " << int(atlasId)
+                << " )=" << int(oi_occupancy_nominal_2d_bitdepth_minus1())
                 << "\noi_occupancy_MSB_align_flag( " << int(atlasId) << " )=" << boolalpha
                 << oi_occupancy_MSB_align_flag() << '\n';
 }
@@ -169,7 +169,7 @@ auto OccupancyInformation::operator==(const OccupancyInformation &other) const n
   return oi_occupancy_codec_id() == other.oi_occupancy_codec_id() &&
          oi_lossy_occupancy_map_compression_threshold() ==
              other.oi_lossy_occupancy_map_compression_threshold() &&
-         oi_occupancy_nominal_2d_bitdepth() == other.oi_occupancy_nominal_2d_bitdepth() &&
+         oi_occupancy_nominal_2d_bitdepth_minus1() == other.oi_occupancy_nominal_2d_bitdepth_minus1() &&
          oi_occupancy_MSB_align_flag() == other.oi_occupancy_MSB_align_flag();
 }
 
@@ -181,7 +181,7 @@ auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInf
   auto x = OccupancyInformation{};
   x.oi_occupancy_codec_id(bitstream.getUint8());
   x.oi_lossy_occupancy_map_compression_threshold(bitstream.getUint8());
-  x.oi_occupancy_nominal_2d_bitdepth(uint8_t(bitstream.readBits(5) + 1));
+  x.oi_occupancy_nominal_2d_bitdepth_minus1(uint8_t(bitstream.readBits(5)));
   x.oi_occupancy_MSB_align_flag(bitstream.getFlag());
   return x;
 }
@@ -189,10 +189,7 @@ auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInf
 void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint8(oi_occupancy_codec_id());
   bitstream.putUint8(oi_lossy_occupancy_map_compression_threshold());
-
-  VERIFY_VPCCBITSTREAM(1 <= oi_occupancy_nominal_2d_bitdepth());
-  bitstream.writeBits(oi_occupancy_nominal_2d_bitdepth() - 1, 5);
-
+  bitstream.writeBits(oi_occupancy_nominal_2d_bitdepth_minus1(), 5);
   bitstream.putFlag(oi_occupancy_MSB_align_flag());
 }
 

@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
 
+#include <TMIV/MivBitstream/MivDecoder.h>
+
 #include <TMIV/Common/Common.h>
 
 #include "verify.h"
@@ -289,6 +291,11 @@ auto PatchDataUnit::pdu_depth_end() const noexcept -> uint32_t {
   return *m_pdu_depth_end;
 }
 
+auto PatchDataUnit::pdu_entity_id() const noexcept -> unsigned {
+  VERIFY_MIVBITSTREAM(m_pdu_entity_id.has_value());
+  return *m_pdu_entity_id;
+}
+
 auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
   stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << "\npdu_2d_pos_y( "
          << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_delta_size_x( " << patchIdx
@@ -302,6 +309,9 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
   }
   stream << "pdu_projection_id( " << patchIdx << " )=" << pdu_projection_id()
          << "\npdu_orientation_index( " << patchIdx << " )=" << pdu_orientation_index() << '\n';
+  if (m_pdu_entity_id) {
+    stream << "pdu_entity_id( " << patchIdx << " )=" << pdu_entity_id() << '\n';
+  }
   return stream;
 }
 
@@ -354,6 +364,12 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
 
+  if (MivDecoder::mode == MivDecoder::Mode::MIV && vps.vps_miv_extension_flag()) {
+    if (vps.miv_sequence_params().msp_max_entities_minus1() > 0) {
+      x.pdu_entity_id(unsigned(bitstream.getUExpGolomb()));
+      VERIFY_MIVBITSTREAM(x.pdu_entity_id() <= vps.miv_sequence_params().msp_max_entities_minus1());
+    }
+  }
   return x;
 }
 
@@ -404,6 +420,13 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
 
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
+
+  if (vps.vps_miv_extension_flag()) {
+    if (vps.miv_sequence_params().msp_max_entities_minus1() > 0) {
+      VERIFY_MIVBITSTREAM(pdu_entity_id() <= vps.miv_sequence_params().msp_max_entities_minus1());
+      bitstream.putUExpGolomb(pdu_entity_id());
+    }
+  }
 }
 
 auto PatchInformationData::skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit & {

@@ -100,6 +100,7 @@ TEST_CASE("patch_data_unit", "[Atlas Tile Group Layer RBSP]") {
   const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
   auto vps = VpccParameterSet{};
+  vps.vps_extension_present_flag(true);
 
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -127,6 +128,7 @@ pdu_orientation_index( 101 )=FPO_NULL
 
   SECTION("Example") {
     vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_3d_coordinates_bitdepth_minus1(9);
+    vps.vps_miv_extension_flag(true).miv_sequence_params().msp_max_entities_minus1(100);
 
     aspsV.front()
         .asps_use_eight_orientations_flag(true)
@@ -145,7 +147,8 @@ pdu_orientation_index( 101 )=FPO_NULL
         .pdu_depth_start(623)
         .pdu_depth_end(789)
         .pdu_projection_id(300)
-        .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180);
+        .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
+        .pdu_entity_id(35);
 
     REQUIRE(toString(x, 102) == R"(pdu_2d_pos_x( 102 )=34
 pdu_2d_pos_y( 102 )=57
@@ -157,16 +160,18 @@ pdu_depth_start( 102 )=623
 pdu_depth_end( 102 )=789
 pdu_projection_id( 102 )=300
 pdu_orientation_index( 102 )=FPO_MROT180
+pdu_entity_id( 102 )=35
 )");
 
-    REQUIRE(bitCodingTest(x, 127, vuh, vps, aspsV, afpsV, atgh));
+    REQUIRE(bitCodingTest(x, 138, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 
 TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
   const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
-  const auto vps = VpccParameterSet{};
+  auto vps = VpccParameterSet{};
+  vps.vps_extension_present_flag(true);
 
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -287,7 +292,7 @@ pdu_orientation_index( 1 )=FPO_NULL
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
     auto vps = VpccParameterSet{};
-    vps.vps_atlas_count_minus1(1);
+    vps.vps_atlas_count_minus1(1).vps_extension_present_flag(true);
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -336,7 +341,8 @@ atgh_atlas_frm_order_cnt_lsb=0
   SECTION("I_TILE_GRP") {
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
-    const auto vps = VpccParameterSet{};
+    auto vps = VpccParameterSet{};
+    vps.vps_extension_present_flag(true);
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()

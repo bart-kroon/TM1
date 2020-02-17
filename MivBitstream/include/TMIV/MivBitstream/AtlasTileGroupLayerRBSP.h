@@ -152,6 +152,7 @@ public:
   auto pdu_depth_end() const noexcept -> std::uint32_t;
   constexpr auto pdu_projection_id() const noexcept;
   constexpr auto pdu_orientation_index() const noexcept;
+  auto pdu_entity_id() const noexcept -> unsigned;
 
   constexpr auto &pdu_2d_pos_x(const std::uint32_t value) noexcept;
   constexpr auto &pdu_2d_pos_y(const std::uint32_t value) noexcept;
@@ -163,6 +164,7 @@ public:
   constexpr auto &pdu_depth_end(const std::uint32_t value) noexcept;
   constexpr auto &pdu_projection_id(const std::uint16_t value) noexcept;
   constexpr auto &pdu_orientation_index(const FlexiblePatchOrientation value) noexcept;
+  constexpr auto &pdu_entity_id(const unsigned value) noexcept;
 
   auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
 
@@ -192,6 +194,7 @@ private:
   std::optional<std::uint32_t> m_pdu_depth_end;
   std::uint16_t m_pdu_projection_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
+  std::optional<unsigned> m_pdu_entity_id;
 };
 
 // 23090-5: patch_information_data()

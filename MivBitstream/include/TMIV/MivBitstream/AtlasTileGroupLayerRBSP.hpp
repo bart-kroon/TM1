@@ -178,6 +178,11 @@ PatchDataUnit::pdu_orientation_index(const FlexiblePatchOrientation value) noexc
   return *this;
 }
 
+constexpr auto &PatchDataUnit::pdu_entity_id(const unsigned value) noexcept {
+  m_pdu_entity_id = value;
+  return *this;
+}
+
 constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexcept {
   return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
          pdu_2d_delta_size_x() == other.pdu_2d_delta_size_x() &&

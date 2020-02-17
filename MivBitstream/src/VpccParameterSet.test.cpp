@@ -97,7 +97,6 @@ oi_occupancy_MSB_align_flag( 4 )=true
 
 TEST_CASE("geometry_information", "[VPCC Parameter Set]") {
   auto vps = VpccParameterSet{};
-  vps.vps_atlas_count(1);
   const auto atlasId = uint8_t(0);
   vps.vps_raw_patch_enabled_flag(atlasId, false);
 
@@ -131,7 +130,7 @@ gi_geometry_3d_coordinates_bitdepth( 0 )=32
 
 TEST_CASE("attribute_information", "[VPCC Parameter Set]") {
   auto vps = VpccParameterSet{};
-  vps.vps_atlas_count(2);
+  vps.vps_atlas_count_minus1(1);
   vps.vps_map_count(0, 1);
   vps.vps_map_count(1, 1);
   const auto atlasId = 1;
@@ -176,7 +175,6 @@ TEST_CASE("vpcc_parameter_set", "[VPCC Parameter Set]") {
   auto vps = VpccParameterSet{};
 
   SECTION("Example 1") {
-    vps.vps_atlas_count(1);
     vps.vps_frame_width(0, 1920);
     vps.vps_frame_height(0, 1080);
     vps.vps_map_count(0, 1);
@@ -199,7 +197,7 @@ ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 vps_vpcc_parameter_set_id=0
 vps_miv_mode_flag=false
-vps_atlas_count=1
+vps_atlas_count_minus1=0
 vps_frame_width( 0 )=1920
 vps_frame_height( 0 )=1080
 vps_map_count( 0 )=1

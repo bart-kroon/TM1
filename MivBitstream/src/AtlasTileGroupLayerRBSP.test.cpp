@@ -100,7 +100,6 @@ TEST_CASE("patch_data_unit", "[Atlas Tile Group Layer RBSP]") {
   const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
   auto vps = VpccParameterSet{};
-  vps.vps_atlas_count(1);
 
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -173,8 +172,7 @@ pdu_orientation_index( 102 )=FPO_MROT180
 TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
   const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
-  auto vps = VpccParameterSet{};
-  vps.vps_atlas_count(1);
+  const auto vps = VpccParameterSet{};
 
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -232,8 +230,7 @@ TEST_CASE("atlas_tile_group_data_unit", "[Atlas Tile Group Layer RBSP]") {
     const auto x = AtlasTileGroupDataUnit{};
     REQUIRE(toString(x, atgh.atgh_type()).empty());
 
-    auto vps = VpccParameterSet{};
-    vps.vps_atlas_count(1);
+    const auto vps = VpccParameterSet{};
 
     const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
@@ -298,7 +295,7 @@ pdu_orientation_index( 1 )=FPO_NULL
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
     auto vps = VpccParameterSet{};
-    vps.vps_atlas_count(1);
+    vps.vps_atlas_count_minus1(1);
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -317,8 +314,7 @@ TEST_CASE("atlas_tile_group_layer_rbsp", "[Atlas Tile Group Layer RBSP]") {
   SECTION("SKIP_TILE_GRP") {
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
-    auto vps = VpccParameterSet{};
-    vps.vps_atlas_count(1);
+    const auto vps = VpccParameterSet{};
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()
@@ -348,8 +344,7 @@ atgh_atlas_frm_order_cnt_lsb=0
   SECTION("I_TILE_GRP") {
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
 
-    auto vps = VpccParameterSet{};
-    vps.vps_atlas_count(1);
+    const auto vps = VpccParameterSet{};
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()

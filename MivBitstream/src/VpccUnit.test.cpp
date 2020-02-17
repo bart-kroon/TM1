@@ -41,7 +41,6 @@ namespace examples {
 auto vps() {
   auto x = VpccParameterSet{};
   x.vps_miv_mode_flag(true);
-  x.vps_atlas_count(1);
   x.vps_frame_width(0, 640);
   x.vps_frame_height(0, 480);
   x.vps_map_count(0, 1);
@@ -53,8 +52,8 @@ auto vps() {
 
 auto vpses() {
   auto x = VpccParameterSet{};
-  x.vps_atlas_count(3);
-  for (int j = 0; j < x.vps_atlas_count(); ++j) {
+  x.vps_atlas_count_minus1(2);
+  for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     x.vps_frame_width(j, 640);
     x.vps_frame_height(j, 480);
     x.vps_map_count(j, 1);
@@ -200,7 +199,7 @@ ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 vps_vpcc_parameter_set_id=0
 vps_miv_mode_flag=true
-vps_atlas_count=1
+vps_atlas_count_minus1=0
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
 vps_map_count( 0 )=1
@@ -269,7 +268,7 @@ ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 vps_vpcc_parameter_set_id=0
 vps_miv_mode_flag=true
-vps_atlas_count=1
+vps_atlas_count_minus1=0
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
 vps_map_count( 0 )=1

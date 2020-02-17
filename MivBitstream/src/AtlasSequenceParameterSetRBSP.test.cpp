@@ -98,7 +98,7 @@ asps_extension_present_flag=false
   SECTION("Example 1") {
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
     auto vps = VpccParameterSet{};
-    vps.vps_atlas_count(1).vps_frame_width(0, 1).vps_frame_height(0, 1);
+    vps.vps_frame_width(0, 1).vps_frame_height(0, 1);
 
     x.asps_frame_width(1)
         .asps_frame_height(1)
@@ -139,8 +139,7 @@ asps_extension2_present_flag=false
   SECTION("Example 2") {
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
     auto vps = VpccParameterSet{};
-    vps.vps_atlas_count(1)
-        .vps_frame_width(0, 0xFFFF)
+    vps.vps_frame_width(0, 0xFFFF)
         .vps_frame_height(0, 0xFFFF)
         .vps_extension_present_flag(true)
         .vps_miv_extension_flag(true)

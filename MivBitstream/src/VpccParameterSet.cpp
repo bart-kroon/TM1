@@ -418,45 +418,46 @@ void MivSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(msp_max_entities_minus1());
 }
 
-auto VpccParameterSet::vps_atlas_count() const noexcept -> std::uint8_t {
-  return uint8_t(m_vps_atlases.size());
+auto VpccParameterSet::vps_atlas_count_minus1() const noexcept -> std::uint8_t {
+  VERIFY_VPCCBITSTREAM(!m_vps_atlases.empty());
+  return uint8_t(m_vps_atlases.size() - 1U);
 }
 
 auto VpccParameterSet::vps_frame_width(std::uint8_t atlasId) const -> std::uint16_t {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].vps_frame_width;
 }
 
 auto VpccParameterSet::vps_frame_height(std::uint8_t atlasId) const -> std::uint16_t {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].vps_frame_height;
 }
 
 auto VpccParameterSet::vps_map_count(std::uint8_t atlasId) const -> std::uint8_t {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].vps_map_count;
 }
 
 auto VpccParameterSet::occupancy_information(std::uint8_t atlasId) const
     -> const OccupancyInformation & {
-  VERIFY_VPCCBITSTREAM(!vps_miv_mode_flag() && atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(!vps_miv_mode_flag() && atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].occupancy_information;
 }
 
 auto VpccParameterSet::geometry_information(std::uint8_t atlasId) const
     -> const GeometryInformation & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].geometry_information;
 }
 
 auto VpccParameterSet::attribute_information(std::uint8_t atlasId) const
     -> const AttributeInformation & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].attribute_information;
 }
 
 auto VpccParameterSet::vps_raw_patch_enabled_flag(std::uint8_t atlasId) const -> bool {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].vps_raw_patch_enabled_flag;
 }
 
@@ -475,56 +476,56 @@ auto VpccParameterSet::vps_miv_sequence_vui_params_present_flag() const noexcept
   return *m_vps_miv_sequence_vui_params_present_flag;
 }
 
-auto VpccParameterSet::vps_atlas_count(std::uint8_t value) -> VpccParameterSet & {
-  m_vps_atlases.resize(value);
+auto VpccParameterSet::vps_atlas_count_minus1(std::uint8_t value) -> VpccParameterSet & {
+  m_vps_atlases.resize(value + 1U);
   return *this;
 }
 
 auto VpccParameterSet::vps_frame_width(std::uint8_t atlasId, std::uint16_t value)
     -> VpccParameterSet & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   m_vps_atlases[atlasId].vps_frame_width = value;
   return *this;
 }
 
 auto VpccParameterSet::vps_frame_height(std::uint8_t atlasId, std::uint16_t value)
     -> VpccParameterSet & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   m_vps_atlases[atlasId].vps_frame_height = value;
   return *this;
 }
 
 auto VpccParameterSet::vps_map_count(std::uint8_t atlasId, std::uint8_t value)
     -> VpccParameterSet & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   m_vps_atlases[atlasId].vps_map_count = value;
   return *this;
 }
 
 auto VpccParameterSet::occupancy_information(std::uint8_t atlasId, OccupancyInformation value)
     -> VpccParameterSet & {
-  VERIFY_VPCCBITSTREAM(!vps_miv_mode_flag() && atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(!vps_miv_mode_flag() && atlasId <= vps_atlas_count_minus1());
   m_vps_atlases[atlasId].occupancy_information = value;
   return *this;
 }
 
 auto VpccParameterSet::geometry_information(std::uint8_t atlasId, GeometryInformation value)
     -> VpccParameterSet & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   m_vps_atlases[atlasId].geometry_information = value;
   return *this;
 }
 
 auto VpccParameterSet::attribute_information(std::uint8_t atlasId, AttributeInformation value)
     -> VpccParameterSet & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   m_vps_atlases[atlasId].attribute_information = move(value);
   return *this;
 }
 
 auto VpccParameterSet::vps_raw_patch_enabled_flag(std::uint8_t atlasId, bool value)
     -> VpccParameterSet & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   m_vps_atlases[atlasId].vps_raw_patch_enabled_flag = value;
   return *this;
 }
@@ -543,17 +544,17 @@ auto VpccParameterSet::vps_miv_sequence_vui_params_present_flag(bool value) noex
 }
 
 auto VpccParameterSet::occupancy_information(std::uint8_t atlasId) -> OccupancyInformation & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].occupancy_information;
 }
 
 auto VpccParameterSet::geometry_information(std::uint8_t atlasId) -> GeometryInformation & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].geometry_information;
 }
 
 auto VpccParameterSet::attribute_information(std::uint8_t atlasId) -> AttributeInformation & {
-  VERIFY_VPCCBITSTREAM(atlasId < vps_atlas_count());
+  VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
   return m_vps_atlases[atlasId].attribute_information;
 }
 
@@ -569,8 +570,8 @@ auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
   stream << x.profile_tier_level()
          << "vps_vpcc_parameter_set_id=" << int(x.vps_vpcc_parameter_set_id())
          << "\nvps_miv_mode_flag=" << boolalpha << x.vps_miv_mode_flag()
-         << "\nvps_atlas_count=" << int(x.vps_atlas_count()) << '\n';
-  for (int j = 0; j < x.vps_atlas_count(); ++j) {
+         << "\nvps_atlas_count_minus1=" << int(x.vps_atlas_count_minus1()) << '\n';
+  for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     stream << "vps_frame_width( " << j << " )=" << x.vps_frame_width(j);
     stream << "\nvps_frame_height( " << j << " )=" << x.vps_frame_height(j);
     stream << "\nvps_map_count( " << j << " )=" << int(x.vps_map_count(j));
@@ -600,7 +601,7 @@ auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
 auto VpccParameterSet::operator==(const VpccParameterSet &other) const noexcept -> bool {
   if (profile_tier_level() != other.profile_tier_level() ||
       vps_miv_mode_flag() != other.vps_miv_mode_flag() ||
-      vps_atlas_count() != other.vps_atlas_count() ||
+      vps_atlas_count_minus1() != other.vps_atlas_count_minus1() ||
       vps_extension_present_flag() != other.vps_extension_present_flag() ||
       vps_miv_extension_flag() != other.vps_miv_extension_flag() ||
       m_miv_sequence_params != other.m_miv_sequence_params ||
@@ -608,7 +609,7 @@ auto VpccParameterSet::operator==(const VpccParameterSet &other) const noexcept 
           other.m_vps_miv_sequence_vui_params_present_flag) {
     return false;
   }
-  for (int j = 0; j < vps_atlas_count(); ++j) {
+  for (int j = 0; j <= vps_atlas_count_minus1(); ++j) {
     if (vps_frame_width(j) != other.vps_frame_width(j) ||
         vps_frame_height(j) != other.vps_frame_height(j) ||
         vps_map_count(j) != other.vps_map_count(j) ||
@@ -639,9 +640,9 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
   const auto vps_reserved_zero_7bits = bitstream.readBits(7);
   VERIFY_VPCCBITSTREAM(vps_reserved_zero_7bits == 0);
 
-  x.vps_atlas_count(uint8_t(bitstream.readBits(6) + 1));
+  x.vps_atlas_count_minus1(uint8_t(bitstream.readBits(6)));
 
-  for (int j = 0; j < x.vps_atlas_count(); ++j) {
+  for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     x.vps_frame_width(j, bitstream.getUint16());
     x.vps_frame_height(j, bitstream.getUint16());
 
@@ -700,10 +701,10 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
   bitstream.putFlag(vps_miv_mode_flag());
   bitstream.writeBits(0, 7);
 
-  VERIFY_VPCCBITSTREAM(1 <= vps_atlas_count() && vps_atlas_count() <= 64);
-  bitstream.writeBits(vps_atlas_count() - 1, 6);
+  VERIFY_VPCCBITSTREAM(vps_atlas_count_minus1() < 64);
+  bitstream.writeBits(vps_atlas_count_minus1(), 6);
 
-  for (int j = 0; j < vps_atlas_count(); ++j) {
+  for (int j = 0; j <= vps_atlas_count_minus1(); ++j) {
     VERIFY_VPCCBITSTREAM(1 <= vps_frame_width(j));
     bitstream.putUint16(vps_frame_width(j));
 

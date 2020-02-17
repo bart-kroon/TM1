@@ -163,7 +163,7 @@ void MivDecoder::decodeVpccPayload(const VpccUnitHeader & /*vuh*/, const VpccPar
 
   m_vpsV[id] = vps;
   m_sequenceV[id] = Sequence{};
-  m_sequenceV[id].atlas.resize(vps.vps_atlas_count());
+  m_sequenceV[id].atlas.resize(vps.vps_atlas_count_minus1() + 1U);
 
   outputSequence(vps);
 }

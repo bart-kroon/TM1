@@ -244,7 +244,7 @@ public:
   constexpr auto profile_tier_level() const noexcept;
   constexpr auto vps_vpcc_parameter_set_id() const noexcept;
   constexpr auto vps_miv_mode_flag() const noexcept;
-  auto vps_atlas_count() const noexcept -> std::uint8_t;
+  auto vps_atlas_count_minus1() const noexcept -> std::uint8_t;
   auto vps_frame_width(std::uint8_t atlasId) const -> std::uint16_t;
   auto vps_frame_height(std::uint8_t atlasId) const -> std::uint16_t;
   auto vps_map_count(std::uint8_t atlasId) const -> std::uint8_t;
@@ -260,7 +260,7 @@ public:
   constexpr auto &profile_tier_level(ProfileTierLevel value) noexcept;
   constexpr auto &vps_vpcc_parameter_set_id(std::uint8_t value) noexcept;
   constexpr auto &vps_miv_mode_flag(const bool value) noexcept;
-  auto vps_atlas_count(std::uint8_t value) -> VpccParameterSet &;
+  auto vps_atlas_count_minus1(std::uint8_t value) -> VpccParameterSet &;
   auto vps_frame_width(std::uint8_t atlasId, std::uint16_t value) -> VpccParameterSet &;
   auto vps_frame_height(std::uint8_t atlasId, std::uint16_t value) -> VpccParameterSet &;
   auto vps_map_count(std::uint8_t atlasId, std::uint8_t value) -> VpccParameterSet &;
@@ -303,7 +303,7 @@ private:
   ProfileTierLevel m_profile_tier_level;
   std::uint8_t m_vps_vpcc_parameter_set_id{};
   bool m_vps_miv_mode_flag{};
-  std::vector<VpsAtlas> m_vps_atlases;
+  std::vector<VpsAtlas> m_vps_atlases{VpsAtlas{}};
   bool m_vps_extension_present_flag{};
   bool m_vps_miv_extension_flag{};
   std::optional<MivSequenceParams> m_miv_sequence_params;

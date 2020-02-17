@@ -62,6 +62,8 @@ auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & 
     return stream << "Basic";
   case PtlProfilePccToolsetIdc::Extended:
     return stream << "Extended";
+  case PtlProfilePccToolsetIdc::MIV_Main:
+    return stream << "MIV Main";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }
@@ -86,6 +88,8 @@ auto operator<<(ostream &stream, const PtlLevelIdc &x) -> ostream & {
     return stream << "Level 1.0";
   case PtlLevelIdc::Level_2_0:
     return stream << "Level 2.0";
+  case PtlLevelIdc::Level_3_0:
+    return stream << "Level 3.0";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }

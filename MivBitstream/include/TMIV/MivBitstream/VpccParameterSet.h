@@ -52,9 +52,9 @@ enum class PtlProfileCodecGroupIdc : std::uint8_t {
   MP4RA
 };
 
-enum class PtlProfilePccToolsetIdc : std::uint8_t { Basic, Extended };
-enum class PtlProfileReconstructionIdc : std::uint8_t { Rec0, Rec1, Unconstrained };
-enum class PtlLevelIdc : std::uint8_t { Level_1_0 = 30, Level_2_0 = 60 };
+enum class PtlProfilePccToolsetIdc : std::uint8_t { Basic, Extended, MIV_Main = 64 };
+enum class PtlProfileReconstructionIdc : std::uint8_t { Rec0, Rec1, Unconstrained, MIV_Main = 64 };
+enum class PtlLevelIdc : std::uint8_t { Level_1_0 = 30, Level_2_0 = 60, Level_3_0 = 90 };
 
 enum class AiAttributeTypeId : std::uint8_t {
   ATTR_TEXTURE,

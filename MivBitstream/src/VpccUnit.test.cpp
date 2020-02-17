@@ -43,7 +43,6 @@ auto vps() {
   x.vps_miv_mode_flag(true);
   x.vps_frame_width(0, 640);
   x.vps_frame_height(0, 480);
-  x.vps_map_count(0, 1);
   x.geometry_information(0).gi_geometry_nominal_2d_bitdepth(9);
   x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(11);
   x.vps_extension_present_flag(true);
@@ -56,7 +55,6 @@ auto vpses() {
   for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     x.vps_frame_width(j, 640);
     x.vps_frame_height(j, 480);
-    x.vps_map_count(j, 1);
     x.occupancy_information(j).oi_occupancy_nominal_2d_bitdepth(8);
     x.geometry_information(j).gi_geometry_nominal_2d_bitdepth(9);
     x.geometry_information(j).gi_geometry_3d_coordinates_bitdepth(11);
@@ -202,7 +200,7 @@ vps_miv_mode_flag=true
 vps_atlas_count_minus1=0
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
-vps_map_count( 0 )=1
+vps_map_count_minus1( 0 )=0
 vps_raw_patch_enabled_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth( 0 )=9
@@ -271,7 +269,7 @@ vps_miv_mode_flag=true
 vps_atlas_count_minus1=0
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
-vps_map_count( 0 )=1
+vps_map_count_minus1( 0 )=0
 vps_raw_patch_enabled_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth( 0 )=9

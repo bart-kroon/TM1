@@ -131,8 +131,6 @@ gi_geometry_3d_coordinates_bitdepth( 0 )=32
 TEST_CASE("attribute_information", "[VPCC Parameter Set]") {
   auto vps = VpccParameterSet{};
   vps.vps_atlas_count_minus1(1);
-  vps.vps_map_count(0, 1);
-  vps.vps_map_count(1, 1);
   const auto atlasId = 1;
 
   SECTION("No attributes") {
@@ -177,7 +175,6 @@ TEST_CASE("vpcc_parameter_set", "[VPCC Parameter Set]") {
   SECTION("Example 1") {
     vps.vps_frame_width(0, 1920);
     vps.vps_frame_height(0, 1080);
-    vps.vps_map_count(0, 1);
     vps.occupancy_information(0).oi_occupancy_nominal_2d_bitdepth(1);
     vps.geometry_information(0).gi_geometry_nominal_2d_bitdepth(1);
     vps.geometry_information(0).gi_geometry_3d_coordinates_bitdepth(1);
@@ -200,7 +197,7 @@ vps_miv_mode_flag=false
 vps_atlas_count_minus1=0
 vps_frame_width( 0 )=1920
 vps_frame_height( 0 )=1080
-vps_map_count( 0 )=1
+vps_map_count_minus1( 0 )=0
 vps_raw_patch_enabled_flag( 0 )=false
 oi_occupancy_codec_id( 0 )=0
 oi_lossy_occupancy_map_compression_threshold( 0 )=0

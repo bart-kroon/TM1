@@ -255,8 +255,6 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
 void MivDecoder::decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                             AtlasSequenceParameterSetRBSP asps) {
   VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0);
-  VERIFY_VPCCBITSTREAM(vps(vuh).vps_map_count(vuh.vuh_atlas_id()) - 1 ==
-                       asps.asps_map_count_minus1());
 
   auto &x = atlas(vuh);
   while (x.aspsV.size() <= asps.asps_atlas_sequence_parameter_set_id()) {

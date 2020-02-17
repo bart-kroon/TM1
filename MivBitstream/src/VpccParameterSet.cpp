@@ -379,7 +379,7 @@ void AttributeInformation::encodeTo(OutputBitstream &bitstream, const VpccParame
     bitstream.writeBits(unsigned(ai_attribute_type_id(i)), 4);
     bitstream.writeBits(ai_attribute_codec_id(i), 8);
 
-    VERIFY_MIVBITSTREAM(vps.vps_map_count(atlasId) == 1);
+    VERIFY_MIVBITSTREAM(vps.vps_map_count_minus1(atlasId) == 0);
 
     VERIFY_VPCCBITSTREAM(1 <= ai_attribute_dimension(i) && ai_attribute_dimension(i) <= 64);
     bitstream.writeBits(ai_attribute_dimension(i) - 1, 6);
@@ -433,9 +433,9 @@ auto VpccParameterSet::vps_frame_height(std::uint8_t atlasId) const -> std::uint
   return m_vps_atlases[atlasId].vps_frame_height;
 }
 
-auto VpccParameterSet::vps_map_count(std::uint8_t atlasId) const -> std::uint8_t {
+auto VpccParameterSet::vps_map_count_minus1(std::uint8_t atlasId) const -> std::uint8_t {
   VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
-  return m_vps_atlases[atlasId].vps_map_count;
+  return m_vps_atlases[atlasId].vps_map_count_minus1;
 }
 
 auto VpccParameterSet::occupancy_information(std::uint8_t atlasId) const
@@ -495,10 +495,10 @@ auto VpccParameterSet::vps_frame_height(std::uint8_t atlasId, std::uint16_t valu
   return *this;
 }
 
-auto VpccParameterSet::vps_map_count(std::uint8_t atlasId, std::uint8_t value)
+auto VpccParameterSet::vps_map_count_minus1(std::uint8_t atlasId, std::uint8_t value)
     -> VpccParameterSet & {
   VERIFY_VPCCBITSTREAM(atlasId <= vps_atlas_count_minus1());
-  m_vps_atlases[atlasId].vps_map_count = value;
+  m_vps_atlases[atlasId].vps_map_count_minus1 = value;
   return *this;
 }
 
@@ -574,7 +574,7 @@ auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
   for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     stream << "vps_frame_width( " << j << " )=" << x.vps_frame_width(j);
     stream << "\nvps_frame_height( " << j << " )=" << x.vps_frame_height(j);
-    stream << "\nvps_map_count( " << j << " )=" << int(x.vps_map_count(j));
+    stream << "\nvps_map_count_minus1( " << j << " )=" << int(x.vps_map_count_minus1(j));
     stream << "\nvps_raw_patch_enabled_flag( " << j << " )=" << boolalpha
            << x.vps_raw_patch_enabled_flag(j) << '\n';
     if (!x.vps_miv_mode_flag()) {
@@ -612,7 +612,7 @@ auto VpccParameterSet::operator==(const VpccParameterSet &other) const noexcept 
   for (int j = 0; j <= vps_atlas_count_minus1(); ++j) {
     if (vps_frame_width(j) != other.vps_frame_width(j) ||
         vps_frame_height(j) != other.vps_frame_height(j) ||
-        vps_map_count(j) != other.vps_map_count(j) ||
+        vps_map_count_minus1(j) != other.vps_map_count_minus1(j) ||
         vps_raw_patch_enabled_flag(j) != other.vps_raw_patch_enabled_flag(j) ||
         (!vps_miv_mode_flag() && occupancy_information(j) != other.occupancy_information(j)) ||
         geometry_information(j) != other.geometry_information(j) ||
@@ -646,9 +646,9 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
     x.vps_frame_width(j, bitstream.getUint16());
     x.vps_frame_height(j, bitstream.getUint16());
 
-    x.vps_map_count(j, uint8_t(bitstream.readBits(4) + 1));
+    x.vps_map_count_minus1(j, uint8_t(bitstream.readBits(4)));
 
-    if (x.vps_map_count(j) > 1) {
+    if (x.vps_map_count_minus1(j) > 0) {
       const auto vps_multiple_map_streams_present_flag = bitstream.getFlag();
       VERIFY_MIVBITSTREAM(!vps_multiple_map_streams_present_flag);
     }
@@ -711,9 +711,9 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
     VERIFY_VPCCBITSTREAM(1 <= vps_frame_height(j));
     bitstream.putUint16(vps_frame_height(j));
 
-    VERIFY_VPCCBITSTREAM(1 <= vps_map_count(j) && vps_map_count(j) <= 16);
-    VERIFY_MIVBITSTREAM(vps_map_count(j) == 1);
-    bitstream.writeBits(vps_map_count(j) - 1, 4);
+    VERIFY_VPCCBITSTREAM(vps_map_count_minus1(j) < 16);
+    VERIFY_MIVBITSTREAM(vps_map_count_minus1(j) == 0);
+    bitstream.writeBits(vps_map_count_minus1(j), 4);
 
     VERIFY_MIVBITSTREAM(!vps_raw_patch_enabled_flag(j));
     bitstream.putFlag(vps_raw_patch_enabled_flag(j));

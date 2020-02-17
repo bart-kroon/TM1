@@ -380,6 +380,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
   VERIFY_MIVBITSTREAM(!x.asps_point_local_reconstruction_enabled_flag());
 
   x.asps_map_count_minus1(uint8_t(bitstream.readBits(4)));
+  VERIFY_VPCCBITSTREAM(x.asps_map_count_minus1() == vps.vps_map_count_minus1(vuh.vuh_atlas_id()));
 
   x.asps_vui_parameters_present_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.asps_vui_parameters_present_flag());
@@ -463,6 +464,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const VpccUnitHead
   VERIFY_MIVBITSTREAM(!asps_point_local_reconstruction_enabled_flag());
   bitstream.putFlag(asps_point_local_reconstruction_enabled_flag());
 
+  VERIFY_VPCCBITSTREAM(asps_map_count_minus1() == vps.vps_map_count_minus1(vuh.vuh_atlas_id()));
   bitstream.writeBits(asps_map_count_minus1(), 4);
 
   VERIFY_MIVBITSTREAM(!asps_vui_parameters_present_flag());

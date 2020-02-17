@@ -141,6 +141,7 @@ asps_extension2_present_flag=false
     auto vps = VpccParameterSet{};
     vps.vps_frame_width(0, 0xFFFF)
         .vps_frame_height(0, 0xFFFF)
+		.vps_map_count_minus1(0, 1)
         .vps_extension_present_flag(true)
         .vps_miv_extension_flag(true)
         .miv_sequence_params()

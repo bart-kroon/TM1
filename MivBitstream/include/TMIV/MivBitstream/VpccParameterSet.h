@@ -247,7 +247,7 @@ public:
   auto vps_atlas_count_minus1() const noexcept -> std::uint8_t;
   auto vps_frame_width(std::uint8_t atlasId) const -> std::uint16_t;
   auto vps_frame_height(std::uint8_t atlasId) const -> std::uint16_t;
-  auto vps_map_count(std::uint8_t atlasId) const -> std::uint8_t;
+  auto vps_map_count_minus1(std::uint8_t atlasId) const -> std::uint8_t;
   auto occupancy_information(std::uint8_t atlasId) const -> const OccupancyInformation &;
   auto geometry_information(std::uint8_t atlasId) const -> const GeometryInformation &;
   auto attribute_information(std::uint8_t atlasId) const -> const AttributeInformation &;
@@ -263,7 +263,7 @@ public:
   auto vps_atlas_count_minus1(std::uint8_t value) -> VpccParameterSet &;
   auto vps_frame_width(std::uint8_t atlasId, std::uint16_t value) -> VpccParameterSet &;
   auto vps_frame_height(std::uint8_t atlasId, std::uint16_t value) -> VpccParameterSet &;
-  auto vps_map_count(std::uint8_t atlasId, std::uint8_t value) -> VpccParameterSet &;
+  auto vps_map_count_minus1(std::uint8_t atlasId, std::uint8_t value) -> VpccParameterSet &;
   auto occupancy_information(std::uint8_t atlasId, OccupancyInformation value)
       -> VpccParameterSet &;
   auto geometry_information(std::uint8_t atlasId, GeometryInformation value) -> VpccParameterSet &;
@@ -293,7 +293,7 @@ private:
   struct VpsAtlas {
     std::uint16_t vps_frame_width{};
     std::uint16_t vps_frame_height{};
-    std::uint8_t vps_map_count{};
+    std::uint8_t vps_map_count_minus1{};
     OccupancyInformation occupancy_information;
     GeometryInformation geometry_information;
     AttributeInformation attribute_information;

@@ -215,16 +215,16 @@ auto VpccUnitHeader::decodeFrom(istream &stream, const vector<VpccParameterSet> 
     VERIFY_MIVBITSTREAM(x.vuh_attribute_dimension_index() == 0);
 
     x.vuh_map_index(uint8_t(bitstream.readBits(4)));
-    VERIFY_VPCCBITSTREAM(x.vuh_map_index() <
-                         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count(x.vuh_atlas_id()));
+    VERIFY_VPCCBITSTREAM(x.vuh_map_index() <=
+                         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
 
     x.vuh_raw_video_flag(bitstream.getFlag());
     VERIFY_MIVBITSTREAM(!x.vuh_raw_video_flag());
 
   } else if (x.vuh_unit_type() == VuhUnitType::VPCC_GVD) {
     x.vuh_map_index(uint8_t(bitstream.readBits(4)));
-    VERIFY_VPCCBITSTREAM(x.vuh_map_index() <
-                         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count(x.vuh_atlas_id()));
+    VERIFY_VPCCBITSTREAM(x.vuh_map_index() <=
+                         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
 
     x.vuh_raw_video_flag(bitstream.getFlag());
     VERIFY_MIVBITSTREAM(!x.vuh_raw_video_flag());
@@ -265,8 +265,8 @@ void VpccUnitHeader::encodeTo(ostream &stream, const vector<VpccParameterSet> &v
     VERIFY_MIVBITSTREAM(vuh_attribute_dimension_index() == 0);
     bitstream.writeBits(vuh_attribute_dimension_index(), 5);
 
-    VERIFY_VPCCBITSTREAM(vuh_map_index() <
-                         vpses[vuh_vpcc_parameter_set_id()].vps_map_count(vuh_atlas_id()));
+    VERIFY_VPCCBITSTREAM(vuh_map_index() <=
+                         vpses[vuh_vpcc_parameter_set_id()].vps_map_count_minus1(vuh_atlas_id()));
     VERIFY_VPCCBITSTREAM(vuh_map_index() <= 15);
     bitstream.writeBits(vuh_map_index(), 4);
 
@@ -274,8 +274,8 @@ void VpccUnitHeader::encodeTo(ostream &stream, const vector<VpccParameterSet> &v
     bitstream.putFlag(vuh_raw_video_flag());
 
   } else if (vuh_unit_type() == VuhUnitType::VPCC_GVD) {
-    VERIFY_VPCCBITSTREAM(vuh_map_index() <
-                         vpses[vuh_vpcc_parameter_set_id()].vps_map_count(vuh_atlas_id()));
+    VERIFY_VPCCBITSTREAM(vuh_map_index() <=
+                         vpses[vuh_vpcc_parameter_set_id()].vps_map_count_minus1(vuh_atlas_id()));
     VERIFY_VPCCBITSTREAM(vuh_map_index() <= 15);
     bitstream.writeBits(vuh_map_index(), 4);
 

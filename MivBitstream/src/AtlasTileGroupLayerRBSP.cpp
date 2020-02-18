@@ -312,8 +312,8 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
   if (m_pdu_depth_end) {
     stream << "pdu_depth_end( " << patchIdx << " )=" << pdu_depth_end() << '\n';
   }
-  stream << "pdu_projection_id( " << patchIdx << " )=" << pdu_projection_id()
-         << "\npdu_orientation_index( " << patchIdx << " )=" << pdu_orientation_index() << '\n';
+  stream << "pdu_view_id( " << patchIdx << " )=" << pdu_view_id() << "\npdu_orientation_index( "
+         << patchIdx << " )=" << pdu_orientation_index() << '\n';
   if (m_pdu_entity_id) {
     stream << "pdu_entity_id( " << patchIdx << " )=" << pdu_entity_id() << '\n';
   }
@@ -340,7 +340,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
                                               ? ceilLog2(asps.asps_max_projections_minus1() + 1)
                                               : 3U;
-  x.pdu_projection_id(uint16_t(bitstream.readBits(pdu_projection_id_num_bits)));
+  x.pdu_view_id(uint16_t(bitstream.readBits(pdu_projection_id_num_bits)));
 
   x.pdu_2d_pos_x(uint32_t(bitstream.readBits(afps.afps_2d_pos_x_bit_count_minus1() + 1)));
   x.pdu_2d_pos_y(uint32_t(bitstream.readBits(afps.afps_2d_pos_y_bit_count_minus1() + 1)));
@@ -401,8 +401,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
                                               ? ceilLog2(asps.asps_max_projections_minus1() + 1)
                                               : 3U;
-  VERIFY_VPCCBITSTREAM((pdu_projection_id() >> pdu_projection_id_num_bits) == 0);
-  bitstream.writeBits(pdu_projection_id(), pdu_projection_id_num_bits);
+  VERIFY_VPCCBITSTREAM((pdu_view_id() >> pdu_projection_id_num_bits) == 0);
+  bitstream.writeBits(pdu_view_id(), pdu_projection_id_num_bits);
 
   bitstream.writeBits(pdu_2d_pos_x(), afps.afps_2d_pos_x_bit_count_minus1() + 1);
   bitstream.writeBits(pdu_2d_pos_y(), afps.afps_2d_pos_y_bit_count_minus1() + 1);

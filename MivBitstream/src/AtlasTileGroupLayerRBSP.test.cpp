@@ -120,7 +120,7 @@ pdu_2d_delta_size_y( 101 )=1
 pdu_view_pos_x( 101 )=0
 pdu_view_pos_y( 101 )=0
 pdu_depth_start( 101 )=0
-pdu_projection_id( 101 )=0
+pdu_view_id( 101 )=0
 pdu_orientation_index( 101 )=FPO_NULL
 )");
 
@@ -150,7 +150,7 @@ pdu_orientation_index( 101 )=FPO_NULL
         .pdu_view_pos_y(21345)
         .pdu_depth_start(623)
         .pdu_depth_end(789)
-        .pdu_projection_id(300)
+        .pdu_view_id(300)
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
         .pdu_entity_id(35)
         .pdu_depth_occ_map_threshold(600);
@@ -163,7 +163,7 @@ pdu_view_pos_x( 102 )=1234
 pdu_view_pos_y( 102 )=21345
 pdu_depth_start( 102 )=623
 pdu_depth_end( 102 )=789
-pdu_projection_id( 102 )=300
+pdu_view_id( 102 )=300
 pdu_orientation_index( 102 )=FPO_MROT180
 pdu_entity_id( 102 )=35
 pdu_depth_occ_map_threshold( 102 )=600
@@ -216,7 +216,7 @@ pdu_2d_delta_size_y( 99 )=1
 pdu_view_pos_x( 99 )=0
 pdu_view_pos_y( 99 )=0
 pdu_depth_start( 99 )=0
-pdu_projection_id( 99 )=0
+pdu_view_id( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
 )");
     REQUIRE(bitCodingTest(x, 37, vuh, vps, aspsV, afpsV, atgh, patchMode));
@@ -259,7 +259,7 @@ pdu_2d_delta_size_y( 2 )=0
 pdu_view_pos_x( 2 )=0
 pdu_view_pos_y( 2 )=0
 pdu_depth_start( 2 )=0
-pdu_projection_id( 2 )=0
+pdu_view_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 atgdu_patch_mode[ 3 ]=P_SKIP
 )");
@@ -281,7 +281,7 @@ pdu_2d_delta_size_y( 0 )=1
 pdu_view_pos_x( 0 )=0
 pdu_view_pos_y( 0 )=0
 pdu_depth_start( 0 )=0
-pdu_projection_id( 0 )=0
+pdu_view_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 atgdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
@@ -291,7 +291,7 @@ pdu_2d_delta_size_y( 1 )=1
 pdu_view_pos_x( 1 )=0
 pdu_view_pos_y( 1 )=0
 pdu_depth_start( 1 )=0
-pdu_projection_id( 1 )=0
+pdu_view_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
 )");
 
@@ -390,7 +390,7 @@ pdu_2d_delta_size_y( 0 )=20
 pdu_view_pos_x( 0 )=0
 pdu_view_pos_y( 0 )=0
 pdu_depth_start( 0 )=0
-pdu_projection_id( 0 )=0
+pdu_view_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 atgdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
@@ -400,7 +400,7 @@ pdu_2d_delta_size_y( 1 )=40
 pdu_view_pos_x( 1 )=0
 pdu_view_pos_y( 1 )=0
 pdu_depth_start( 1 )=0
-pdu_projection_id( 1 )=0
+pdu_view_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
 atgdu_patch_mode[ 2 ]=I_INTRA
 pdu_2d_pos_x( 2 )=0
@@ -410,7 +410,7 @@ pdu_2d_delta_size_y( 2 )=60
 pdu_view_pos_x( 2 )=0
 pdu_view_pos_y( 2 )=0
 pdu_depth_start( 2 )=0
-pdu_projection_id( 2 )=0
+pdu_view_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 )");
     REQUIRE(byteCodingTest(x, 25, vuh, vps, aspsV, afpsV));

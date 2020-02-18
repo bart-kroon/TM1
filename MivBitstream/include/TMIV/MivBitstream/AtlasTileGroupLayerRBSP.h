@@ -150,7 +150,7 @@ public:
   constexpr auto pdu_view_pos_y() const noexcept;
   constexpr auto pdu_depth_start() const noexcept;
   auto pdu_depth_end() const noexcept -> std::uint32_t;
-  constexpr auto pdu_projection_id() const noexcept;
+  constexpr auto pdu_view_id() const noexcept;
   constexpr auto pdu_orientation_index() const noexcept;
   auto pdu_entity_id() const noexcept -> unsigned;
   auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
@@ -163,7 +163,7 @@ public:
   constexpr auto &pdu_view_pos_y(const std::uint32_t value) noexcept;
   constexpr auto &pdu_depth_start(const std::uint32_t value) noexcept;
   constexpr auto &pdu_depth_end(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_projection_id(const std::uint16_t value) noexcept;
+  constexpr auto &pdu_view_id(const std::uint16_t value) noexcept;
   constexpr auto &pdu_orientation_index(const FlexiblePatchOrientation value) noexcept;
   constexpr auto &pdu_entity_id(const unsigned value) noexcept;
   constexpr auto &pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept;

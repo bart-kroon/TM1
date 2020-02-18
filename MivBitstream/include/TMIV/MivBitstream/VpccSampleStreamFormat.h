@@ -42,16 +42,16 @@ namespace TMIV::MivBitstream {
 // 23090-5: sample_stream_vpcc_header()
 class SampleStreamVpccHeader {
 public:
-  explicit SampleStreamVpccHeader(int ssvh_unit_size_precision_bytes);
+  explicit SampleStreamVpccHeader(std::uint8_t ssvh_unit_size_precision_bytes_minus1);
 
-  constexpr auto ssvh_unit_size_precision_bytes() const noexcept {
-    return m_ssvh_unit_size_precision_bytes;
+  constexpr auto ssvh_unit_size_precision_bytes_minus1() const noexcept {
+    return m_ssvh_unit_size_precision_bytes_minus1;
   }
 
   friend auto operator<<(std::ostream &stream, const SampleStreamVpccHeader &x) -> std::ostream &;
 
   constexpr auto operator==(const SampleStreamVpccHeader &other) const noexcept -> bool {
-    return m_ssvh_unit_size_precision_bytes == other.m_ssvh_unit_size_precision_bytes;
+    return ssvh_unit_size_precision_bytes_minus1() == other.ssvh_unit_size_precision_bytes_minus1();
   }
 
   constexpr auto operator!=(const SampleStreamVpccHeader &other) const noexcept -> bool {
@@ -63,7 +63,7 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  std::uint8_t m_ssvh_unit_size_precision_bytes;
+  std::uint8_t m_ssvh_unit_size_precision_bytes_minus1;
 };
 
 // 23090-5: sample_stream_vpcc_unit()

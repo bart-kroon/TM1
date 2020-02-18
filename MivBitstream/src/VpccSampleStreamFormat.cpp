@@ -42,25 +42,25 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-SampleStreamVpccHeader::SampleStreamVpccHeader(int ssvh_unit_size_precision_bytes)
-    : m_ssvh_unit_size_precision_bytes{uint8_t(ssvh_unit_size_precision_bytes)} {
-  VERIFY_VPCCBITSTREAM(0 < ssvh_unit_size_precision_bytes && ssvh_unit_size_precision_bytes <= 8);
+SampleStreamVpccHeader::SampleStreamVpccHeader(uint8_t ssvh_unit_size_precision_bytes_minus1)
+    : m_ssvh_unit_size_precision_bytes_minus1{ssvh_unit_size_precision_bytes_minus1} {
+  VERIFY_VPCCBITSTREAM(ssvh_unit_size_precision_bytes_minus1 < 8);
 }
 
 auto operator<<(ostream &stream, const SampleStreamVpccHeader &x) -> ostream & {
-  return stream << "ssvh_unit_size_precision_bytes=" << int(x.ssvh_unit_size_precision_bytes())
-                << '\n';
+  return stream << "ssvh_unit_size_precision_bytes_minus1="
+                << int(x.ssvh_unit_size_precision_bytes_minus1()) << '\n';
 }
 
 auto SampleStreamVpccHeader::decodeFrom(istream &stream) -> SampleStreamVpccHeader {
   InputBitstream bitstream{stream};
-  const auto ssvh_unit_size_precision_bytes_minus1 = bitstream.readBits(3);
-  return SampleStreamVpccHeader{int(ssvh_unit_size_precision_bytes_minus1 + 1)};
+  const auto ssvh_unit_size_precision_bytes_minus1 = uint8_t(bitstream.readBits(3));
+  return SampleStreamVpccHeader{ssvh_unit_size_precision_bytes_minus1};
 }
 
 void SampleStreamVpccHeader::encodeTo(ostream &stream) const {
   OutputBitstream bitstream{stream};
-  bitstream.writeBits(m_ssvh_unit_size_precision_bytes - 1, 3);
+  bitstream.writeBits(m_ssvh_unit_size_precision_bytes_minus1, 3);
 }
 
 SampleStreamVpccUnit::SampleStreamVpccUnit(string ssvu_vpcc_unit)
@@ -80,12 +80,13 @@ auto SampleStreamVpccUnit::operator!=(const SampleStreamVpccUnit &other) const n
 
 auto SampleStreamVpccUnit::decodeFrom(istream &stream, const SampleStreamVpccHeader &header)
     -> SampleStreamVpccUnit {
-  const auto ssvu_vpcc_unit_size = readBytes(stream, header.ssvh_unit_size_precision_bytes());
+  const auto ssvu_vpcc_unit_size =
+      readBytes(stream, header.ssvh_unit_size_precision_bytes_minus1() + 1);
   return SampleStreamVpccUnit{readString(stream, size_t(ssvu_vpcc_unit_size))};
 }
 
 void SampleStreamVpccUnit::encodeTo(ostream &stream, const SampleStreamVpccHeader &header) const {
-  writeBytes(stream, m_ssvu_vpcc_unit.size(), header.ssvh_unit_size_precision_bytes());
+  writeBytes(stream, m_ssvu_vpcc_unit.size(), header.ssvh_unit_size_precision_bytes_minus1() + 1);
   stream.write(m_ssvu_vpcc_unit.data(), m_ssvu_vpcc_unit.size());
 }
 } // namespace TMIV::MivBitstream

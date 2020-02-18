@@ -40,9 +40,77 @@ constexpr auto AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id() con
   return m_aps_adaptation_parameter_set_id;
 }
 
+constexpr auto AdaptationParameterSetRBSP::aps_miv_view_params_list_present_flag() const noexcept {
+  return m_aps_miv_view_params_list_present_flag;
+}
+
 constexpr auto &
 AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept {
   m_aps_adaptation_parameter_set_id = value;
   return *this;
+}
+
+constexpr auto &
+AdaptationParameterSetRBSP::aps_miv_view_params_list_present_flag(const bool value) noexcept {
+  m_aps_miv_view_params_list_present_flag = value;
+  return *this;
+}
+
+constexpr auto AdaptationParameterSetRBSP::aps_miv_view_params_list_update_mode(
+    const MvplUpdateMode value) noexcept {
+  m_aps_miv_view_params_list_update_mode = value;
+  return *this;
+}
+
+constexpr auto AdaptationParameterSetRBSP::miv_view_params_list() noexcept -> MivViewParamsList & {
+  if (!m_miv_view_params_list) {
+    m_miv_view_params_list = MivViewParamsList{};
+  }
+  return *m_miv_view_params_list;
+}
+
+constexpr auto AdaptationParameterSetRBSP::miv_view_params_update_extrinsics() noexcept
+    -> MivViewParamsUpdateExtrinsics & {
+  if (!m_miv_view_params_update_extrinsics) {
+    m_miv_view_params_update_extrinsics = MivViewParamsUpdateExtrinsics{};
+  }
+  return *m_miv_view_params_update_extrinsics;
+}
+
+constexpr auto AdaptationParameterSetRBSP::miv_view_params_update_intrinsics() noexcept
+    -> MivViewParamsUpdateIntrinsics & {
+  if (!m_miv_view_params_update_intrinsics) {
+    m_miv_view_params_update_intrinsics = MivViewParamsUpdateIntrinsics{};
+  }
+  return *m_miv_view_params_update_intrinsics;
+}
+
+constexpr auto AdaptationParameterSetRBSP::operator==(const AdaptationParameterSetRBSP &other) const
+    noexcept {
+  if (aps_adaptation_parameter_set_id() != other.aps_adaptation_parameter_set_id() ||
+      aps_miv_view_params_list_present_flag() != other.aps_miv_view_params_list_present_flag()) {
+    return false;
+  }
+  if (!aps_miv_view_params_list_present_flag()) {
+    return true;
+  }
+  switch (aps_miv_view_params_list_update_mode()) {
+  case MvplUpdateMode::VPL_INITLIST:
+    return miv_view_params_list() == other.miv_view_params_list();
+  case MvplUpdateMode::VPL_UPD_EXT:
+    return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics();
+  case MvplUpdateMode::VPL_UPD_INT:
+    return miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
+  case MvplUpdateMode::VPL_EXT_INT:
+    return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics() &&
+           miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
+  default:
+    return false;
+  }
+}
+
+constexpr auto AdaptationParameterSetRBSP::operator!=(const AdaptationParameterSetRBSP &other) const
+    noexcept {
+  return !operator==(other);
 }
 } // namespace TMIV::MivBitstream

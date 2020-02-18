@@ -35,28 +35,138 @@
 
 #include "verify.h"
 
+using namespace std;
+using namespace TMIV::Common;
+
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, const AdaptationParameterSetRBSP &x) -> std::ostream & {
-  return stream << "aps_adaptation_parameter_set_id=" << int(x.aps_adaptation_parameter_set_id());
+auto operator<<(ostream &stream, const MvplUpdateMode &x) -> ostream & {
+  switch (x) {
+  case MvplUpdateMode::VPL_INITLIST:
+    return stream << "VPL_INITLIST";
+  case MvplUpdateMode::VPL_UPD_EXT:
+    return stream << "VPL_UPD_EXT";
+  case MvplUpdateMode::VPL_UPD_INT:
+    return stream << "VPL_UPD_INT";
+  case MvplUpdateMode::VPL_EXT_INT:
+    return stream << "VPL_EXT_INT";
+  default:
+    MIVBITSTREAM_ERROR("Unknown update mode");
+  }
 }
 
-auto AdaptationParameterSetRBSP::operator==(const AdaptationParameterSetRBSP &other) const noexcept
-    -> bool {
-  return aps_adaptation_parameter_set_id() == other.aps_adaptation_parameter_set_id();
+auto AdaptationParameterSetRBSP::aps_miv_view_params_list_update_mode() const noexcept
+    -> MvplUpdateMode {
+  VERIFY_MIVBITSTREAM(m_aps_miv_view_params_list_update_mode.has_value());
+  return *m_aps_miv_view_params_list_update_mode;
 }
 
-auto AdaptationParameterSetRBSP::operator!=(const AdaptationParameterSetRBSP &other) const noexcept
-    -> bool {
-  return !operator==(other);
+auto AdaptationParameterSetRBSP::miv_view_params_list() const noexcept
+    -> const MivViewParamsList & {
+  VERIFY_MIVBITSTREAM(m_miv_view_params_list.has_value());
+  return *m_miv_view_params_list;
 }
 
-auto AdaptationParameterSetRBSP::decodeFrom(std::istream & /* stream */)
-    -> AdaptationParameterSetRBSP {
-  MIVBITSTREAM_ERROR("Implement");
-  return {};
+auto AdaptationParameterSetRBSP::miv_view_params_update_extrinsics() const noexcept
+    -> const MivViewParamsUpdateExtrinsics & {
+  VERIFY_MIVBITSTREAM(m_miv_view_params_update_extrinsics.has_value());
+  return *m_miv_view_params_update_extrinsics;
 }
 
-void AdaptationParameterSetRBSP::encodeTo(std::ostream & /* stream */) {
-  MIVBITSTREAM_ERROR("Implement");
+auto AdaptationParameterSetRBSP::miv_view_params_update_intrinsics() const noexcept
+    -> const MivViewParamsUpdateIntrinsics & {
+  VERIFY_MIVBITSTREAM(m_miv_view_params_update_intrinsics.has_value());
+  return *m_miv_view_params_update_intrinsics;
+}
+
+auto operator<<(ostream &stream, const AdaptationParameterSetRBSP &x) -> ostream & {
+  stream << "aps_adaptation_parameter_set_id=" << int(x.aps_adaptation_parameter_set_id())
+         << "\naps_camera_params_present_flag=" << boolalpha << x.aps_camera_params_present_flag()
+         << "\naps_miv_view_params_list_present_flag=" << boolalpha
+         << x.aps_miv_view_params_list_present_flag() << '\n';
+
+  if (x.aps_miv_view_params_list_present_flag()) {
+    stream << "aps_miv_view_params_list_update_mode=" << x.aps_miv_view_params_list_update_mode()
+           << '\n';
+    stream << x.miv_view_params_list();
+    stream << x.miv_view_params_update_extrinsics();
+    stream << x.miv_view_params_update_intrinsics();
+  }
+
+  stream << "aps_extension2_flag=" << boolalpha << x.aps_extension2_flag() << '\n';
+  return stream;
+}
+
+auto AdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AdaptationParameterSetRBSP {
+  InputBitstream bitstream{stream};
+
+  auto x = AdaptationParameterSetRBSP{};
+
+  x.aps_adaptation_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
+
+  const auto aps_camera_params_present_flag = bitstream.getFlag();
+  VERIFY_MIVBITSTREAM(!aps_camera_params_present_flag);
+
+  const auto aps_extension_bit_equal_to_one = bitstream.getFlag();
+  VERIFY_MIVBITSTREAM(aps_extension_bit_equal_to_one);
+
+  x.aps_miv_view_params_list_present_flag(bitstream.getFlag());
+
+  if (x.aps_miv_view_params_list_present_flag()) {
+    x.aps_miv_view_params_list_update_mode(MvplUpdateMode(bitstream.readBits(2)));
+
+    switch (x.aps_miv_view_params_list_update_mode()) {
+    case MvplUpdateMode::VPL_INITLIST:
+      x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream);
+      break;
+    case MvplUpdateMode::VPL_UPD_EXT:
+      x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
+      break;
+    case MvplUpdateMode::VPL_UPD_INT:
+      x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
+      break;
+    case MvplUpdateMode::VPL_EXT_INT:
+      x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
+      x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
+      break;
+    }
+  }
+  return x;
+}
+
+void AdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
+  OutputBitstream bitstream{stream};
+
+  bitstream.putUExpGolomb(aps_adaptation_parameter_set_id());
+
+  VERIFY_MIVBITSTREAM(!aps_camera_params_present_flag());
+  bitstream.putFlag(aps_camera_params_present_flag());
+
+  constexpr auto aps_extension_bit_equal_to_one = true;
+  bitstream.putFlag(aps_extension_bit_equal_to_one);
+
+  bitstream.putFlag(aps_miv_view_params_list_present_flag());
+
+  if (aps_miv_view_params_list_present_flag()) {
+    bitstream.writeBits(uint_least64_t(aps_miv_view_params_list_update_mode()), 2);
+    switch (aps_miv_view_params_list_update_mode()) {
+    case MvplUpdateMode::VPL_INITLIST:
+      miv_view_params_list().encodeTo(bitstream);
+      break;
+    case MvplUpdateMode::VPL_UPD_EXT:
+      miv_view_params_update_extrinsics().encodeTo(bitstream);
+      break;
+    case MvplUpdateMode::VPL_UPD_INT:
+      miv_view_params_update_intrinsics().encodeTo(bitstream);
+      break;
+    case MvplUpdateMode::VPL_EXT_INT:
+      miv_view_params_update_extrinsics().encodeTo(bitstream);
+      miv_view_params_update_intrinsics().encodeTo(bitstream);
+      break;
+    }
+  }
+
+  VERIFY_MIVBITSTREAM(!aps_extension2_flag());
+  bitstream.putFlag(aps_extension2_flag());
+  bitstream.rbspTrailingBits();
 }
 } // namespace TMIV::MivBitstream

@@ -44,16 +44,36 @@ namespace TMIV::MivBitstream {
 // 23090-12: camera_extrinsics()
 class CameraExtrinsics {
 public:
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
-    return stream;
-  }
+  constexpr auto ce_view_pos_x() const noexcept;
+  constexpr auto ce_view_pos_y() const noexcept;
+  constexpr auto ce_view_pos_z() const noexcept;
+  constexpr auto ce_view_quat_x() const noexcept;
+  constexpr auto ce_view_quat_y() const noexcept;
+  constexpr auto ce_view_quat_z() const noexcept;
 
-  constexpr auto operator==(const CameraExtrinsics &) const noexcept { return true; }
-  constexpr auto operator!=(const CameraExtrinsics &) const noexcept { return false; }
+  constexpr auto &ce_view_pos_x(const float value) noexcept;
+  constexpr auto &ce_view_pos_y(const float value) noexcept;
+  constexpr auto &ce_view_pos_z(const float value) noexcept;
+  constexpr auto &ce_view_quat_x(const float value) noexcept;
+  constexpr auto &ce_view_quat_y(const float value) noexcept;
+  constexpr auto &ce_view_quat_z(const float value) noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> CameraExtrinsics { return {}; }
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const {}
+  constexpr auto operator==(const CameraExtrinsics &) const noexcept;
+  constexpr auto operator!=(const CameraExtrinsics &) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> CameraExtrinsics;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  float m_ce_view_pos_x;
+  float m_ce_view_pos_y;
+  float m_ce_view_pos_z;
+  float m_ce_view_quat_x;
+  float m_ce_view_quat_y;
+  float m_ce_view_quat_z;
 };
 
 // 23090-12: camera_intrinsics()

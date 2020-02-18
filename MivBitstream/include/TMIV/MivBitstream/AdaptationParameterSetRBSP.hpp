@@ -36,6 +36,58 @@
 #endif
 
 namespace TMIV::MivBitstream {
+constexpr auto CameraExtrinsics::ce_view_pos_x() const noexcept { return m_ce_view_pos_x; }
+
+constexpr auto CameraExtrinsics::ce_view_pos_y() const noexcept { return m_ce_view_pos_y; }
+
+constexpr auto CameraExtrinsics::ce_view_pos_z() const noexcept { return m_ce_view_pos_z; }
+
+constexpr auto CameraExtrinsics::ce_view_quat_x() const noexcept { return m_ce_view_quat_x; }
+
+constexpr auto CameraExtrinsics::ce_view_quat_y() const noexcept { return m_ce_view_quat_y; }
+
+constexpr auto CameraExtrinsics::ce_view_quat_z() const noexcept { return m_ce_view_quat_z; }
+
+constexpr auto &CameraExtrinsics::ce_view_pos_x(const float value) noexcept {
+  m_ce_view_pos_x = value;
+  return *this;
+}
+
+constexpr auto &CameraExtrinsics::ce_view_pos_y(const float value) noexcept {
+  m_ce_view_pos_y = value;
+  return *this;
+}
+
+constexpr auto &CameraExtrinsics::ce_view_pos_z(const float value) noexcept {
+  m_ce_view_pos_z = value;
+  return *this;
+}
+
+constexpr auto &CameraExtrinsics::ce_view_quat_x(const float value) noexcept {
+  m_ce_view_quat_x = value;
+  return *this;
+}
+
+constexpr auto &CameraExtrinsics::ce_view_quat_y(const float value) noexcept {
+  m_ce_view_quat_y = value;
+  return *this;
+}
+
+constexpr auto &CameraExtrinsics::ce_view_quat_z(const float value) noexcept {
+  m_ce_view_quat_z = value;
+  return *this;
+}
+
+constexpr auto CameraExtrinsics::operator==(const CameraExtrinsics &other) const noexcept {
+  return ce_view_pos_x() == other.ce_view_pos_x() && ce_view_pos_y() == other.ce_view_pos_y() &&
+         ce_view_pos_z() == other.ce_view_pos_z() && ce_view_quat_x() == other.ce_view_quat_x() &&
+         ce_view_quat_y() == other.ce_view_quat_y() && ce_view_quat_z() == other.ce_view_quat_z();
+}
+
+constexpr auto CameraExtrinsics::operator!=(const CameraExtrinsics &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto DepthQuantization::dq_quantization_law() const noexcept { return uint8_t(0); }
 
 constexpr auto DepthQuantization::dq_norm_disp_low() const noexcept { return m_dq_norm_disp_low; }

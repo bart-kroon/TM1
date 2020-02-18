@@ -37,6 +37,39 @@
 
 using namespace TMIV::MivBitstream;
 
+TEST_CASE("camera_extrinsics", "[Adaptation Parameter Set RBSP]") {
+  auto x = CameraExtrinsics{};
+
+  REQUIRE(toString(x, 1) == R"(ce_view_pos_x[ 1 ]=0
+ce_view_pos_y[ 1 ]=0
+ce_view_pos_z[ 1 ]=0
+ce_view_quat_x[ 1 ]=0
+ce_view_quat_y[ 1 ]=0
+ce_view_quat_z[ 1 ]=0
+)");
+
+  REQUIRE(bitCodingTest(x, 192));
+
+  SECTION("Example") {
+    x.ce_view_pos_x(3.F)
+        .ce_view_pos_y(1.F)
+        .ce_view_pos_z(4.F)
+        .ce_view_quat_x(5.F)
+        .ce_view_quat_y(9.F)
+        .ce_view_quat_z(14.F);
+
+    REQUIRE(toString(x, 1) == R"(ce_view_pos_x[ 1 ]=3
+ce_view_pos_y[ 1 ]=1
+ce_view_pos_z[ 1 ]=4
+ce_view_quat_x[ 1 ]=5
+ce_view_quat_y[ 1 ]=9
+ce_view_quat_z[ 1 ]=14
+)");
+
+    REQUIRE(bitCodingTest(x, 192));
+  }
+}
+
 TEST_CASE("depth_quantization", "[Adaptation Parameter Set RBSP]") {
   auto x = DepthQuantization{};
 
@@ -98,6 +131,12 @@ TEST_CASE("miv_view_params_list", "[Adaptation Parameter Set RBSP]") {
         .mvp_pruning_graph_params_present_flag(false);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
+ce_view_quat_x[ 0 ]=0
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=0
 mvp_intrinsic_params_equal_flag=false
 mvp_depth_quantization_params_equal_flag=false
 dq_quantization_law[ 0 ]=0
@@ -107,7 +146,7 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 101));
+    REQUIRE(bitCodingTest(x, 293));
   }
 
   SECTION("Example 2") {
@@ -117,6 +156,24 @@ mvp_pruning_graph_params_present_flag=false
         .mvp_pruning_graph_params_present_flag(true);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
+ce_view_quat_x[ 0 ]=0
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=0
+ce_view_pos_x[ 1 ]=0
+ce_view_pos_y[ 1 ]=0
+ce_view_pos_z[ 1 ]=0
+ce_view_quat_x[ 1 ]=0
+ce_view_quat_y[ 1 ]=0
+ce_view_quat_z[ 1 ]=0
+ce_view_pos_x[ 2 ]=0
+ce_view_pos_y[ 2 ]=0
+ce_view_pos_z[ 2 ]=0
+ce_view_quat_x[ 2 ]=0
+ce_view_quat_y[ 2 ]=0
+ce_view_quat_z[ 2 ]=0
 mvp_intrinsic_params_equal_flag=true
 mvp_depth_quantization_params_equal_flag=true
 dq_quantization_law[ 0 ]=0
@@ -129,7 +186,7 @@ pc_is_leaf_flag[ 1 ]=true
 pc_is_leaf_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 104));
+    REQUIRE(bitCodingTest(x, 680));
   }
 }
 
@@ -160,6 +217,24 @@ aps_camera_params_present_flag=false
 aps_miv_view_params_list_present_flag=true
 aps_miv_view_params_list_update_mode=VPL_INITLIST
 mvp_num_views_minus1=2
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
+ce_view_quat_x[ 0 ]=0
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=0
+ce_view_pos_x[ 1 ]=0
+ce_view_pos_y[ 1 ]=0
+ce_view_pos_z[ 1 ]=0
+ce_view_quat_x[ 1 ]=0
+ce_view_quat_y[ 1 ]=0
+ce_view_quat_z[ 1 ]=0
+ce_view_pos_x[ 2 ]=0
+ce_view_pos_y[ 2 ]=0
+ce_view_pos_z[ 2 ]=0
+ce_view_quat_x[ 2 ]=0
+ce_view_quat_y[ 2 ]=0
+ce_view_quat_z[ 2 ]=0
 mvp_intrinsic_params_equal_flag=true
 mvp_depth_quantization_params_equal_flag=true
 dq_quantization_law[ 0 ]=0
@@ -173,6 +248,6 @@ pc_is_leaf_flag[ 2 ]=true
 aps_extension2_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 16));
+    REQUIRE(byteCodingTest(x, 88));
   }
 }

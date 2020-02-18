@@ -54,6 +54,38 @@ auto operator<<(ostream &stream, const MvplUpdateMode &x) -> ostream & {
   }
 }
 
+auto CameraExtrinsics::printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+  stream << "ce_view_pos_x[ " << viewId << " ]=" << ce_view_pos_x() << '\n';
+  stream << "ce_view_pos_y[ " << viewId << " ]=" << ce_view_pos_y() << '\n';
+  stream << "ce_view_pos_z[ " << viewId << " ]=" << ce_view_pos_z() << '\n';
+  stream << "ce_view_quat_x[ " << viewId << " ]=" << ce_view_quat_x() << '\n';
+  stream << "ce_view_quat_y[ " << viewId << " ]=" << ce_view_quat_y() << '\n';
+  stream << "ce_view_quat_z[ " << viewId << " ]=" << ce_view_quat_z() << '\n';
+  return stream;
+}
+
+auto CameraExtrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraExtrinsics {
+  auto x = CameraExtrinsics{};
+
+  x.ce_view_pos_x(bitstream.getFloat32());
+  x.ce_view_pos_y(bitstream.getFloat32());
+  x.ce_view_pos_z(bitstream.getFloat32());
+  x.ce_view_quat_x(bitstream.getFloat32());
+  x.ce_view_quat_y(bitstream.getFloat32());
+  x.ce_view_quat_z(bitstream.getFloat32());
+
+  return x;
+}
+
+void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putFloat32(ce_view_pos_x());
+  bitstream.putFloat32(ce_view_pos_y());
+  bitstream.putFloat32(ce_view_pos_z());
+  bitstream.putFloat32(ce_view_quat_x());
+  bitstream.putFloat32(ce_view_quat_y());
+  bitstream.putFloat32(ce_view_quat_z());
+}
+
 auto DepthQuantization::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
   stream << "dq_quantization_law[ " << viewId << " ]=" << int(dq_quantization_law())

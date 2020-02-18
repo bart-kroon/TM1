@@ -101,16 +101,25 @@ private:
 // 23090-12: pruning_children()
 class PruningChildren {
 public:
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
-    return stream;
-  }
+  PruningChildren() = default;
+  explicit PruningChildren(std::vector<std::uint16_t> pc_child_id);
 
-  constexpr auto operator==(const PruningChildren &) const noexcept { return true; }
-  constexpr auto operator!=(const PruningChildren &) const noexcept { return false; }
+  auto pc_is_leaf_flag() const noexcept -> bool;
+  auto pc_num_children_minus1() const noexcept -> std::uint16_t;
+  auto pc_child_id(std::uint16_t i) const noexcept -> std::uint16_t;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> PruningChildren { return {}; }
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const {}
+  auto operator==(const PruningChildren &) const noexcept -> bool;
+  auto operator!=(const PruningChildren &) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream, std::uint16_t mvp_num_views_minus1)
+      -> PruningChildren;
+
+  void encodeTo(Common::OutputBitstream &bitstream, std::uint16_t mvp_num_views_minus1) const;
+
+private:
+  std::vector<std::uint16_t> m_pc_child_id;
 };
 
 // 23090-12: miv_view_params_list()

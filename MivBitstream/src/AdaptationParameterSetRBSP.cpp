@@ -88,6 +88,66 @@ void DepthQuantization::encodeTo(OutputBitstream &bitstream) const {
   bitstream.writeBits(dq_depth_occ_map_threshold_default(), 10);
 }
 
+PruningChildren::PruningChildren(vector<uint16_t> pc_child_id) : m_pc_child_id{move(pc_child_id)} {}
+
+auto PruningChildren::pc_is_leaf_flag() const noexcept -> bool { return m_pc_child_id.empty(); }
+
+auto PruningChildren::pc_num_children_minus1() const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(!pc_is_leaf_flag());
+  return uint16_t(m_pc_child_id.size() - 1);
+}
+
+auto PruningChildren::pc_child_id(uint16_t i) const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(i < m_pc_child_id.size());
+  return m_pc_child_id[i];
+}
+
+auto PruningChildren::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+  stream << "pc_is_leaf_flag[ " << viewId << " ]=" << boolalpha << pc_is_leaf_flag() << '\n';
+  if (!pc_is_leaf_flag()) {
+    stream << "pc_num_children_minus1[ " << viewId << " ]=" << pc_num_children_minus1() << '\n';
+    for (auto i = 0; i <= pc_num_children_minus1(); ++i) {
+      stream << "pc_child_id[ " << viewId << " ][ " << i << " ]=" << pc_child_id(i) << '\n';
+    }
+  }
+  return stream;
+}
+
+auto PruningChildren::operator==(const PruningChildren &other) const noexcept -> bool {
+  return m_pc_child_id == other.m_pc_child_id;
+}
+
+auto PruningChildren::operator!=(const PruningChildren &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto PruningChildren::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_views_minus1)
+    -> PruningChildren {
+  const auto pc_is_leaf_flag = bitstream.getFlag();
+  if (pc_is_leaf_flag) {
+    return {};
+  }
+
+  const auto pc_num_children_minus1 = bitstream.getUVar(mvp_num_views_minus1 + 1);
+  auto x = vector<uint16_t>(pc_num_children_minus1 + 1);
+
+  for (size_t i = 0; i < x.size(); ++i) {
+    x[i] = uint16_t(bitstream.getUVar(mvp_num_views_minus1 + 1));
+  }
+
+  return PruningChildren{x};
+}
+
+void PruningChildren::encodeTo(OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const {
+  bitstream.putFlag(pc_is_leaf_flag());
+  if (!pc_is_leaf_flag()) {
+    bitstream.putUVar(pc_num_children_minus1(), mvp_num_views_minus1 + 1);
+    for (uint16_t i = 0; i <= pc_num_children_minus1(); ++i) {
+      bitstream.putUVar(pc_child_id(i), mvp_num_views_minus1 + 1);
+    }
+  }
+}
+
 auto MivViewParamsList::mvp_num_views_minus1() const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(!m_camera_extrinsics.empty());
   return uint16_t(m_camera_extrinsics.size() - 1);
@@ -254,7 +314,7 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream) -> MivViewParamsLi
 
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.pruning_children(v) = PruningChildren::decodeFrom(bitstream);
+      x.pruning_children(v) = PruningChildren::decodeFrom(bitstream, x.mvp_num_views_minus1());
     }
   }
   return x;
@@ -291,7 +351,7 @@ void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
 
   if (mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      pruning_children(v).encodeTo(bitstream);
+      pruning_children(v).encodeTo(bitstream, mvp_num_views_minus1());
     }
   }
 }

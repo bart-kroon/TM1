@@ -204,7 +204,8 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
       Json{stream}.require("cameras"), config.require("SourceCameraNames").asStringVector());
 
   auto depthLowQualityFlag = false;
-  if (auto node = config.optional("depthLowQualityFlag")) {
+  if (config.isPresent("depthLowQualityFlag")) {
+    auto node = config.optional("depthLowQualityFlag");
     depthLowQualityFlag = node.asBool();
   }
 

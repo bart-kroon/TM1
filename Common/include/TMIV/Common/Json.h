@@ -64,6 +64,7 @@ public:
   Type type() const;
   Json optional(std::string const &key) const;
   Json require(std::string const &key) const;
+  bool isPresent(std::string const &key) const;
 
   // Index into an array
   Json at(size_t index) const;

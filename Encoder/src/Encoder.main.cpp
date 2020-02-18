@@ -82,7 +82,7 @@ public:
   void run() override {
     auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
-    if (!json().optional("depthLowQualityFlag")) {
+    if (!json().isPresent("depthLowQualityFlag")) {
       sourceSequenceParams.depthLowQualityFlag = m_depthQualityAssessor->isLowDepthQuality(
           sourceSequenceParams, loadSourceFrame(json(), m_viewSizes, 0));
     }

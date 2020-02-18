@@ -74,16 +74,28 @@ public:
 // 23090-12: depth_quantization()
 class DepthQuantization {
 public:
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
-    return stream;
-  }
+  constexpr auto dq_quantization_law() const noexcept;
+  constexpr auto dq_norm_disp_low() const noexcept;
+  constexpr auto dq_norm_disp_high() const noexcept;
+  constexpr auto dq_depth_occ_map_threshold_default() const noexcept;
 
-  constexpr auto operator==(const DepthQuantization &) const noexcept { return true; }
-  constexpr auto operator!=(const DepthQuantization &) const noexcept { return false; }
+  constexpr auto &dq_norm_disp_low(const float value) noexcept;
+  constexpr auto &dq_norm_disp_high(const float value) noexcept;
+  constexpr auto &dq_depth_occ_map_threshold_default(const std::uint32_t value) noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization { return {}; }
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const {}
+  constexpr auto operator==(const DepthQuantization &) const noexcept;
+  constexpr auto operator!=(const DepthQuantization &) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  float m_dq_norm_disp_low;
+  float m_dq_norm_disp_high;
+  std::uint32_t m_dq_depth_occ_map_threshold_default;
 };
 
 // 23090-12: pruning_children()

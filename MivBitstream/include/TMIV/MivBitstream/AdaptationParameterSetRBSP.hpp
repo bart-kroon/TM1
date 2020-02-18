@@ -36,6 +36,42 @@
 #endif
 
 namespace TMIV::MivBitstream {
+constexpr auto DepthQuantization::dq_quantization_law() const noexcept { return uint8_t(0); }
+
+constexpr auto DepthQuantization::dq_norm_disp_low() const noexcept { return m_dq_norm_disp_low; }
+
+constexpr auto DepthQuantization::dq_norm_disp_high() const noexcept { return m_dq_norm_disp_high; }
+
+constexpr auto DepthQuantization::dq_depth_occ_map_threshold_default() const noexcept {
+  return m_dq_depth_occ_map_threshold_default;
+}
+
+constexpr auto &DepthQuantization::dq_norm_disp_low(const float value) noexcept {
+  m_dq_norm_disp_low = value;
+  return *this;
+}
+
+constexpr auto &DepthQuantization::dq_norm_disp_high(const float value) noexcept {
+  m_dq_norm_disp_high = value;
+  return *this;
+}
+
+constexpr auto &
+DepthQuantization::dq_depth_occ_map_threshold_default(const std::uint32_t value) noexcept {
+  m_dq_depth_occ_map_threshold_default = value;
+  return *this;
+}
+
+constexpr auto DepthQuantization::operator==(const DepthQuantization &other) const noexcept {
+  return dq_norm_disp_low() == other.dq_norm_disp_low() &&
+         dq_norm_disp_high() == other.dq_norm_disp_high() &&
+         dq_depth_occ_map_threshold_default() == other.dq_depth_occ_map_threshold_default();
+}
+
+constexpr auto DepthQuantization::operator!=(const DepthQuantization &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto MivViewParamsList::mvp_intrinsic_params_equal_flag() const noexcept {
   return m_mvp_intrinsic_params_equal_flag;
 }

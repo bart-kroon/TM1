@@ -37,6 +37,32 @@
 
 using namespace TMIV::MivBitstream;
 
+TEST_CASE("depth_quantization", "[Adaptation Parameter Set RBSP]") {
+  auto x = DepthQuantization{};
+
+  REQUIRE(toString(x, 7) == R"(dq_quantization_law[ 7 ]=0
+dq_norm_disp_low[ 7 ]=0
+dq_norm_disp_high[ 7 ]=0
+dq_depth_occ_map_threshold_default[ 7 ]=0
+)");
+
+  REQUIRE(bitCodingTest(x, 82));
+
+  SECTION("Example 2") {
+    x.dq_norm_disp_low(0.02F);
+    x.dq_norm_disp_high(2.F);
+    x.dq_depth_occ_map_threshold_default(200);
+
+    REQUIRE(toString(x, 2) == R"(dq_quantization_law[ 2 ]=0
+dq_norm_disp_low[ 2 ]=0.02
+dq_norm_disp_high[ 2 ]=2
+dq_depth_occ_map_threshold_default[ 2 ]=200
+)");
+
+    REQUIRE(bitCodingTest(x, 82));
+  }
+}
+
 TEST_CASE("miv_view_params_list", "[Adaptation Parameter Set RBSP]") {
   auto x = MivViewParamsList{};
 
@@ -49,10 +75,14 @@ TEST_CASE("miv_view_params_list", "[Adaptation Parameter Set RBSP]") {
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
 mvp_intrinsic_params_equal_flag=false
 mvp_depth_quantization_params_equal_flag=false
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=0
+dq_norm_disp_high[ 0 ]=0
+dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 19));
+    REQUIRE(bitCodingTest(x, 101));
   }
 
   SECTION("Example 2") {
@@ -64,10 +94,14 @@ mvp_pruning_graph_params_present_flag=false
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
 mvp_intrinsic_params_equal_flag=true
 mvp_depth_quantization_params_equal_flag=true
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=0
+dq_norm_disp_high[ 0 ]=0
+dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
 )");
 
-    REQUIRE(bitCodingTest(x, 19));
+    REQUIRE(bitCodingTest(x, 101));
   }
 }
 
@@ -100,10 +134,14 @@ aps_miv_view_params_list_update_mode=VPL_INITLIST
 mvp_num_views_minus1=2
 mvp_intrinsic_params_equal_flag=true
 mvp_depth_quantization_params_equal_flag=true
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=0
+dq_norm_disp_high[ 0 ]=0
+dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
 aps_extension2_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 5));
+    REQUIRE(byteCodingTest(x, 16));
   }
 }

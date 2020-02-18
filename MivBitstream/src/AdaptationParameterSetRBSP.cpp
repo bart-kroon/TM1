@@ -54,6 +54,40 @@ auto operator<<(ostream &stream, const MvplUpdateMode &x) -> ostream & {
   }
 }
 
+auto DepthQuantization::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+  VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
+  stream << "dq_quantization_law[ " << viewId << " ]=" << int(dq_quantization_law())
+         << "\ndq_norm_disp_low[ " << viewId << " ]=" << dq_norm_disp_low()
+         << "\ndq_norm_disp_high[ " << viewId << " ]=" << dq_norm_disp_high()
+         << "\ndq_depth_occ_map_threshold_default[ " << viewId
+         << " ]=" << dq_depth_occ_map_threshold_default() << '\n';
+  return stream;
+}
+
+auto DepthQuantization::decodeFrom(InputBitstream &bitstream) -> DepthQuantization {
+  auto x = DepthQuantization{};
+
+  const auto dq_quantization_law = bitstream.getUint8();
+  VERIFY_MIVBITSTREAM(dq_quantization_law == 0);
+
+  x.dq_norm_disp_low(bitstream.getFloat32());
+  x.dq_norm_disp_high(bitstream.getFloat32());
+
+  // TODO(BK): dq_depth_occ_map_threshold_default bit count is missing in WD4 d25
+  x.dq_depth_occ_map_threshold_default(uint32_t(bitstream.readBits(10)));
+
+  return x;
+}
+
+void DepthQuantization::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.putUint8(dq_quantization_law());
+  bitstream.putFloat32(dq_norm_disp_low());
+  bitstream.putFloat32(dq_norm_disp_high());
+
+  // TODO(BK): dq_depth_occ_map_threshold_default bit count is missing in WD4 d25
+  bitstream.writeBits(dq_depth_occ_map_threshold_default(), 10);
+}
+
 auto MivViewParamsList::mvp_num_views_minus1() const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(!m_camera_extrinsics.empty());
   return uint16_t(m_camera_extrinsics.size() - 1);
@@ -187,7 +221,7 @@ auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcep
   return !operator==(other);
 }
 
-auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsList {
+auto MivViewParamsList::decodeFrom(InputBitstream &bitstream) -> MivViewParamsList {
   auto x = MivViewParamsList{};
 
   x.mvp_num_views_minus1(bitstream.getUint16());
@@ -226,7 +260,7 @@ auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream) -> MivView
   return x;
 }
 
-void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream) const {
+void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint16(mvp_num_views_minus1());
 
   for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
@@ -386,6 +420,11 @@ auto AdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AdaptationParame
       break;
     }
   }
+
+  const auto aps_extension2_flag = bitstream.getFlag();
+  VERIFY_MIVBITSTREAM(!aps_extension2_flag);
+  bitstream.rbspTrailingBits();
+
   return x;
 }
 

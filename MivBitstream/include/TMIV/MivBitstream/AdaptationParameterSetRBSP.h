@@ -38,22 +38,126 @@
 
 #include <iosfwd>
 #include <optional>
+#include <vector>
 
 namespace TMIV::MivBitstream {
-// 23090-12: miv_view_params_list
-class MivViewParamsList {
+// 23090-12: camera_extrinsics()
+class CameraExtrinsics {
 public:
-  friend auto operator<<(std::ostream &stream, const MivViewParamsList & /* x */)
-      -> std::ostream & {
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
     return stream;
   }
 
-  constexpr auto operator==(const MivViewParamsList &) const noexcept { return true; }
-  constexpr auto operator!=(const MivViewParamsList &) const noexcept { return false; }
+  constexpr auto operator==(const CameraExtrinsics &) const noexcept { return true; }
+  constexpr auto operator!=(const CameraExtrinsics &) const noexcept { return false; }
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsList { return {}; }
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> CameraExtrinsics { return {}; }
 
   void encodeTo(Common::OutputBitstream &bitstream) const {}
+};
+
+// 23090-12: camera_intrinsics()
+class CameraIntrinsics {
+public:
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+    return stream;
+  }
+
+  constexpr auto operator==(const CameraIntrinsics &) const noexcept { return true; }
+  constexpr auto operator!=(const CameraIntrinsics &) const noexcept { return false; }
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> CameraIntrinsics { return {}; }
+
+  void encodeTo(Common::OutputBitstream &bitstream) const {}
+};
+
+// 23090-12: depth_quantization()
+class DepthQuantization {
+public:
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+    return stream;
+  }
+
+  constexpr auto operator==(const DepthQuantization &) const noexcept { return true; }
+  constexpr auto operator!=(const DepthQuantization &) const noexcept { return false; }
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization { return {}; }
+
+  void encodeTo(Common::OutputBitstream &bitstream) const {}
+};
+
+// 23090-12: pruning_children()
+class PruningChildren {
+public:
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+    return stream;
+  }
+
+  constexpr auto operator==(const PruningChildren &) const noexcept { return true; }
+  constexpr auto operator!=(const PruningChildren &) const noexcept { return false; }
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> PruningChildren { return {}; }
+
+  void encodeTo(Common::OutputBitstream &bitstream) const {}
+};
+
+// 23090-12: miv_view_params_list()
+class MivViewParamsList {
+public:
+  auto mvp_num_views_minus1() const noexcept -> std::uint16_t;
+  constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
+  constexpr auto mvp_depth_quantization_params_equal_flag() const noexcept;
+  constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
+
+  // Return camera extrinsics for the specified view ID.
+  auto camera_extrinsics(const std::uint16_t viewId) const noexcept -> const CameraExtrinsics &;
+
+  // Return camera intrinsics for the specified view ID. The mvp_intrinsic_params_equal_flag()
+  // case is handled for convenience.
+  auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept -> const CameraIntrinsics &;
+
+  // Return depth quantization for the specified view ID. The
+  // mvp_depth_quantization_params_equal_flag() case is handled for convenience.
+  auto depth_quantization(std::uint16_t viewId = 0) const noexcept -> const DepthQuantization &;
+
+  auto pruning_children(const std::uint16_t viewId) const noexcept -> const PruningChildren &;
+
+  // Calling this function will allocate the camera extrinsics list
+  auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
+
+  // Calling this function will allocate the camera intrinsics list
+  auto mvp_intrinsic_params_equal_flag(const bool value) noexcept -> MivViewParamsList &;
+
+  // Calling this function will allocate the depth quantization list
+  auto mvp_depth_quantization_params_equal_flag(const bool value) noexcept -> MivViewParamsList &;
+
+  // Calling this function will allocate the pruning graph list
+  auto mvp_pruning_graph_params_present_flag(const bool value) noexcept -> MivViewParamsList &;
+
+  [[nodiscard]] auto camera_extrinsics(const std::uint16_t viewId) noexcept -> CameraExtrinsics &;
+  [[nodiscard]] auto camera_intrinsics(const std::uint16_t viewId = 0) noexcept
+      -> CameraIntrinsics &;
+  [[nodiscard]] auto depth_quantization(const std::uint16_t viewId = 0) noexcept
+      -> DepthQuantization &;
+  [[nodiscard]] auto pruning_children(const std::uint16_t viewId) noexcept -> PruningChildren &;
+
+  friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
+
+  auto operator==(const MivViewParamsList &) const noexcept -> bool;
+  auto operator!=(const MivViewParamsList &) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsList;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  std::vector<CameraExtrinsics> m_camera_extrinsics;
+  bool m_mvp_intrinsic_params_equal_flag{};
+  std::vector<CameraIntrinsics> m_camera_intrinsics;
+  bool m_mvp_depth_quantization_params_equal_flag{};
+  std::vector<DepthQuantization> m_depth_quantization;
+  bool m_mvp_pruning_graph_params_present_flag{};
+  std::vector<PruningChildren> m_pruning_children;
 };
 
 // 23090-12: miv_view_params_update_extrinsics
@@ -114,7 +218,8 @@ public:
 
   constexpr auto &aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept;
   constexpr auto &aps_miv_view_params_list_present_flag(const bool value) noexcept;
-  constexpr auto aps_miv_view_params_list_update_mode(const MvplUpdateMode value) noexcept;
+  auto aps_miv_view_params_list_update_mode(const MvplUpdateMode value) noexcept
+      -> AdaptationParameterSetRBSP &;
   [[nodiscard]] constexpr auto miv_view_params_list() noexcept -> MivViewParamsList &;
   [[nodiscard]] constexpr auto miv_view_params_update_extrinsics() noexcept
       -> MivViewParamsUpdateExtrinsics &;
@@ -124,8 +229,8 @@ public:
   friend auto operator<<(std::ostream &stream, const AdaptationParameterSetRBSP &x)
       -> std::ostream &;
 
-  constexpr auto operator==(const AdaptationParameterSetRBSP &) const noexcept;
-  constexpr auto operator!=(const AdaptationParameterSetRBSP &) const noexcept;
+  auto operator==(const AdaptationParameterSetRBSP &) const noexcept -> bool;
+  auto operator!=(const AdaptationParameterSetRBSP &) const noexcept -> bool;
 
   static auto decodeFrom(std::istream &stream) -> AdaptationParameterSetRBSP;
 
@@ -134,7 +239,7 @@ public:
 private:
   std::uint8_t m_aps_adaptation_parameter_set_id{};
   bool m_aps_miv_view_params_list_present_flag{};
-  std::optional<MvplUpdateMode> m_aps_miv_view_params_list_update_mode{};
+  std::optional<MvplUpdateMode> m_aps_miv_view_params_list_update_mode;
   std::optional<MivViewParamsList> m_miv_view_params_list;
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;

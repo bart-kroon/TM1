@@ -37,6 +37,40 @@
 
 using namespace TMIV::MivBitstream;
 
+TEST_CASE("miv_view_params_list", "[Adaptation Parameter Set RBSP]") {
+  auto x = MivViewParamsList{};
+
+  SECTION("Example 1") {
+    x.mvp_num_views_minus1(0)
+        .mvp_intrinsic_params_equal_flag(false)
+        .mvp_depth_quantization_params_equal_flag(false)
+        .mvp_pruning_graph_params_present_flag(false);
+
+    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_intrinsic_params_equal_flag=false
+mvp_depth_quantization_params_equal_flag=false
+mvp_pruning_graph_params_present_flag=false
+)");
+
+    REQUIRE(bitCodingTest(x, 19));
+  }
+
+  SECTION("Example 2") {
+    x.mvp_num_views_minus1(2)
+        .mvp_intrinsic_params_equal_flag(true)
+        .mvp_depth_quantization_params_equal_flag(true)
+        .mvp_pruning_graph_params_present_flag(true);
+
+    REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
+mvp_intrinsic_params_equal_flag=true
+mvp_depth_quantization_params_equal_flag=true
+mvp_pruning_graph_params_present_flag=true
+)");
+
+    REQUIRE(bitCodingTest(x, 19));
+  }
+}
+
 TEST_CASE("adaptation_parameter_set_rbsp", "[Adaptation Parameter Set RBSP]") {
   auto x = AdaptationParameterSetRBSP{};
 
@@ -46,14 +80,30 @@ aps_miv_view_params_list_present_flag=false
 aps_extension2_flag=false
 )");
 
-  SECTION("Example 1") { REQUIRE(byteCodingTest(x, 1)); }
+  REQUIRE(byteCodingTest(x, 1));
 
-  SECTION("Example 2") {
+  SECTION("Example 1") {
     x.aps_adaptation_parameter_set_id(63);
     x.aps_miv_view_params_list_present_flag(true);
     x.aps_miv_view_params_list_update_mode(MvplUpdateMode::VPL_INITLIST);
     x.miv_view_params_list() = MivViewParamsList{};
+    x.miv_view_params_list()
+        .mvp_num_views_minus1(2)
+        .mvp_intrinsic_params_equal_flag(true)
+        .mvp_depth_quantization_params_equal_flag(true)
+        .mvp_pruning_graph_params_present_flag(true);
 
-    REQUIRE(byteCodingTest(x, 3));
+    REQUIRE(toString(x) == R"(aps_adaptation_parameter_set_id=63
+aps_camera_params_present_flag=false
+aps_miv_view_params_list_present_flag=true
+aps_miv_view_params_list_update_mode=VPL_INITLIST
+mvp_num_views_minus1=2
+mvp_intrinsic_params_equal_flag=true
+mvp_depth_quantization_params_equal_flag=true
+mvp_pruning_graph_params_present_flag=true
+aps_extension2_flag=false
+)");
+
+    REQUIRE(byteCodingTest(x, 5));
   }
 }

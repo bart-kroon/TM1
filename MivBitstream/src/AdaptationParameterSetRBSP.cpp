@@ -54,6 +54,220 @@ auto operator<<(ostream &stream, const MvplUpdateMode &x) -> ostream & {
   }
 }
 
+auto MivViewParamsList::mvp_num_views_minus1() const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(!m_camera_extrinsics.empty());
+  return uint16_t(m_camera_extrinsics.size() - 1);
+}
+
+auto MivViewParamsList::camera_extrinsics(const uint16_t viewId) const noexcept
+    -> const CameraExtrinsics & {
+  VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
+  return m_camera_extrinsics[viewId];
+}
+
+auto MivViewParamsList::camera_intrinsics(uint16_t viewId) const noexcept
+    -> const CameraIntrinsics & {
+  if (mvp_intrinsic_params_equal_flag()) {
+    viewId = 0; // Convenience
+  }
+  VERIFY_MIVBITSTREAM(viewId < m_camera_intrinsics.size());
+  return m_camera_intrinsics[viewId];
+}
+
+auto MivViewParamsList::depth_quantization(uint16_t viewId) const noexcept
+    -> const DepthQuantization & {
+  if (mvp_depth_quantization_params_equal_flag()) {
+    viewId = 0; // Convenience
+  }
+  VERIFY_MIVBITSTREAM(viewId < m_depth_quantization.size());
+  return m_depth_quantization[viewId];
+}
+
+auto MivViewParamsList::pruning_children(const uint16_t viewId) const noexcept
+    -> const PruningChildren & {
+  VERIFY_MIVBITSTREAM(mvp_pruning_graph_params_present_flag());
+  VERIFY_MIVBITSTREAM(viewId < m_pruning_children.size());
+  return m_pruning_children[viewId];
+}
+
+auto MivViewParamsList::mvp_num_views_minus1(const uint16_t value) noexcept -> MivViewParamsList & {
+  m_camera_extrinsics.resize(value + 1);
+  return *this;
+}
+
+auto MivViewParamsList::mvp_intrinsic_params_equal_flag(const bool value) noexcept
+    -> MivViewParamsList & {
+  m_mvp_intrinsic_params_equal_flag = value;
+  m_camera_intrinsics.resize(value ? 1U : m_camera_extrinsics.size());
+  return *this;
+}
+
+auto MivViewParamsList::mvp_depth_quantization_params_equal_flag(const bool value) noexcept
+    -> MivViewParamsList & {
+  m_mvp_depth_quantization_params_equal_flag = value;
+  m_depth_quantization.resize(value ? 1U : m_camera_extrinsics.size());
+  return *this;
+}
+
+auto MivViewParamsList::mvp_pruning_graph_params_present_flag(const bool value) noexcept
+    -> MivViewParamsList & {
+  m_mvp_pruning_graph_params_present_flag = value;
+  m_pruning_children.resize(value ? m_camera_extrinsics.size() : 0U);
+  return *this;
+}
+
+auto MivViewParamsList::camera_extrinsics(const uint16_t viewId) noexcept -> CameraExtrinsics & {
+  VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
+  return m_camera_extrinsics[viewId];
+}
+
+auto MivViewParamsList::camera_intrinsics(const uint16_t viewId) noexcept -> CameraIntrinsics & {
+  VERIFY_MIVBITSTREAM(viewId < m_camera_intrinsics.size());
+  return m_camera_intrinsics[viewId];
+}
+
+auto MivViewParamsList::depth_quantization(const uint16_t viewId) noexcept -> DepthQuantization & {
+  VERIFY_MIVBITSTREAM(viewId < m_depth_quantization.size());
+  return m_depth_quantization[viewId];
+}
+
+auto MivViewParamsList::pruning_children(const uint16_t viewId) noexcept -> PruningChildren & {
+  VERIFY_MIVBITSTREAM(viewId < m_pruning_children.size());
+  return m_pruning_children[viewId];
+}
+
+auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
+  stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
+  for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+    x.camera_extrinsics(v).printTo(stream, v);
+  }
+
+  stream << "mvp_intrinsic_params_equal_flag=" << boolalpha << x.mvp_intrinsic_params_equal_flag()
+         << '\n';
+  if (x.mvp_intrinsic_params_equal_flag()) {
+    x.camera_intrinsics(0).printTo(stream, 0);
+  } else {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.camera_intrinsics(v).printTo(stream, v);
+    }
+  }
+
+  stream << "mvp_depth_quantization_params_equal_flag=" << boolalpha
+         << x.mvp_depth_quantization_params_equal_flag() << '\n';
+  if (x.mvp_depth_quantization_params_equal_flag()) {
+    x.depth_quantization(0).printTo(stream, 0);
+  } else {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.depth_quantization(v).printTo(stream, v);
+    }
+  }
+
+  stream << "mvp_pruning_graph_params_present_flag=" << boolalpha
+         << x.mvp_pruning_graph_params_present_flag() << '\n';
+  if (x.mvp_pruning_graph_params_present_flag()) {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.pruning_children(v).printTo(stream, v);
+    }
+  }
+  return stream;
+}
+
+auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcept -> bool {
+  return m_camera_extrinsics == other.m_camera_extrinsics &&
+         m_mvp_intrinsic_params_equal_flag == other.m_mvp_intrinsic_params_equal_flag &&
+         m_camera_intrinsics == other.m_camera_intrinsics &&
+         m_mvp_depth_quantization_params_equal_flag ==
+             other.m_mvp_depth_quantization_params_equal_flag &&
+         m_depth_quantization == other.m_depth_quantization &&
+         m_mvp_pruning_graph_params_present_flag == other.m_mvp_pruning_graph_params_present_flag &&
+         m_pruning_children == other.m_pruning_children;
+}
+
+auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsList {
+  auto x = MivViewParamsList{};
+
+  x.mvp_num_views_minus1(bitstream.getUint16());
+
+  for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+    x.camera_extrinsics(v) = CameraExtrinsics::decodeFrom(bitstream);
+  }
+
+  x.mvp_intrinsic_params_equal_flag(bitstream.getFlag());
+
+  if (x.mvp_intrinsic_params_equal_flag()) {
+    x.camera_intrinsics() = CameraIntrinsics::decodeFrom(bitstream);
+  } else {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.camera_intrinsics(v) = CameraIntrinsics::decodeFrom(bitstream);
+    }
+  }
+
+  x.mvp_depth_quantization_params_equal_flag(bitstream.getFlag());
+
+  if (x.mvp_depth_quantization_params_equal_flag()) {
+    x.depth_quantization() = DepthQuantization::decodeFrom(bitstream);
+  } else {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.depth_quantization(v) = DepthQuantization::decodeFrom(bitstream);
+    }
+  }
+
+  x.mvp_pruning_graph_params_present_flag(bitstream.getFlag());
+
+  if (x.mvp_pruning_graph_params_present_flag()) {
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
+      x.pruning_children(v) = PruningChildren::decodeFrom(bitstream);
+    }
+  }
+  return x;
+}
+
+void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putUint16(mvp_num_views_minus1());
+
+  for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+    camera_extrinsics(v).encodeTo(bitstream);
+  }
+
+  bitstream.putFlag(mvp_intrinsic_params_equal_flag());
+
+  if (mvp_intrinsic_params_equal_flag()) {
+    camera_intrinsics().encodeTo(bitstream);
+  } else {
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+      camera_intrinsics(v).encodeTo(bitstream);
+    }
+  }
+
+  bitstream.putFlag(mvp_depth_quantization_params_equal_flag());
+
+  if (mvp_depth_quantization_params_equal_flag()) {
+    depth_quantization().encodeTo(bitstream);
+  } else {
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+      depth_quantization(v).encodeTo(bitstream);
+    }
+  }
+
+  bitstream.putFlag(mvp_pruning_graph_params_present_flag());
+
+  if (mvp_pruning_graph_params_present_flag()) {
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
+      pruning_children(v).encodeTo(bitstream);
+    }
+  }
+}
+
+auto AdaptationParameterSetRBSP::aps_miv_view_params_list_update_mode(
+    const MvplUpdateMode value) noexcept -> AdaptationParameterSetRBSP & {
+  m_aps_miv_view_params_list_update_mode = value;
+  return *this;
+}
+
 auto AdaptationParameterSetRBSP::aps_miv_view_params_list_update_mode() const noexcept
     -> MvplUpdateMode {
   VERIFY_MIVBITSTREAM(m_aps_miv_view_params_list_update_mode.has_value());
@@ -87,13 +301,55 @@ auto operator<<(ostream &stream, const AdaptationParameterSetRBSP &x) -> ostream
   if (x.aps_miv_view_params_list_present_flag()) {
     stream << "aps_miv_view_params_list_update_mode=" << x.aps_miv_view_params_list_update_mode()
            << '\n';
-    stream << x.miv_view_params_list();
-    stream << x.miv_view_params_update_extrinsics();
-    stream << x.miv_view_params_update_intrinsics();
+    switch (x.aps_miv_view_params_list_update_mode()) {
+    case MvplUpdateMode::VPL_INITLIST:
+      stream << x.miv_view_params_list();
+      break;
+    case MvplUpdateMode::VPL_UPD_EXT:
+      stream << x.miv_view_params_update_extrinsics();
+      break;
+    case MvplUpdateMode::VPL_UPD_INT:
+      stream << x.miv_view_params_update_intrinsics();
+      break;
+    case MvplUpdateMode::VPL_EXT_INT:
+      stream << x.miv_view_params_update_extrinsics();
+      stream << x.miv_view_params_update_intrinsics();
+      break;
+    default:
+      MIVBITSTREAM_ERROR("Unknown update mode");
+    }
   }
-
   stream << "aps_extension2_flag=" << boolalpha << x.aps_extension2_flag() << '\n';
   return stream;
+}
+
+auto AdaptationParameterSetRBSP::operator==(const AdaptationParameterSetRBSP &other) const noexcept
+    -> bool {
+  if (aps_adaptation_parameter_set_id() != other.aps_adaptation_parameter_set_id() ||
+      aps_miv_view_params_list_present_flag() != other.aps_miv_view_params_list_present_flag()) {
+    return false;
+  }
+  if (!aps_miv_view_params_list_present_flag()) {
+    return true;
+  }
+  switch (aps_miv_view_params_list_update_mode()) {
+  case MvplUpdateMode::VPL_INITLIST:
+    return miv_view_params_list() == other.miv_view_params_list();
+  case MvplUpdateMode::VPL_UPD_EXT:
+    return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics();
+  case MvplUpdateMode::VPL_UPD_INT:
+    return miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
+  case MvplUpdateMode::VPL_EXT_INT:
+    return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics() &&
+           miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
+  default:
+    MIVBITSTREAM_ERROR("Unknown update mode");
+  }
+}
+
+auto AdaptationParameterSetRBSP::operator!=(const AdaptationParameterSetRBSP &other) const noexcept
+    -> bool {
+  return !operator==(other);
 }
 
 auto AdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AdaptationParameterSetRBSP {

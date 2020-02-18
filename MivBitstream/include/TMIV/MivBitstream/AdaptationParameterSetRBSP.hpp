@@ -36,6 +36,101 @@
 #endif
 
 namespace TMIV::MivBitstream {
+constexpr auto CameraIntrinsics::ci_cam_type() const noexcept { return m_ci_cam_type; }
+
+constexpr auto CameraIntrinsics::ci_projection_plane_width_minus1() const noexcept {
+  return m_ci_projection_plane_width_minus1;
+}
+
+constexpr auto CameraIntrinsics::ci_projection_plane_height_minus1() const noexcept {
+  return m_ci_projection_plane_height_minus1;
+}
+
+constexpr auto &CameraIntrinsics::ci_cam_type(const CiCamType value) noexcept {
+  m_ci_cam_type = value;
+  return *this;
+}
+
+constexpr auto &
+CameraIntrinsics::ci_projection_plane_width_minus1(const std::uint16_t value) noexcept {
+  m_ci_projection_plane_width_minus1 = value;
+  return *this;
+}
+
+constexpr auto &
+CameraIntrinsics::ci_projection_plane_height_minus1(const std::uint16_t value) noexcept {
+  m_ci_projection_plane_height_minus1 = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_erp_phi_min(const float value) noexcept {
+  m_ci_erp_phi_min = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_erp_phi_max(const float value) noexcept {
+  m_ci_erp_phi_max = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_erp_theta_min(const float value) noexcept {
+  m_ci_erp_theta_min = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_erp_theta_max(const float value) noexcept {
+  m_ci_erp_theta_max = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_perspective_focal_hor(const float value) noexcept {
+  m_ci_perspective_focal_hor = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_perspective_focal_ver(const float value) noexcept {
+  m_ci_perspective_focal_ver = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_perspective_center_hor(const float value) noexcept {
+  m_ci_perspective_center_hor = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_perspective_center_ver(const float value) noexcept {
+  m_ci_perspective_center_ver = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_ortho_width(const float value) noexcept {
+  m_ci_ortho_width = value;
+  return *this;
+}
+
+constexpr auto &CameraIntrinsics::ci_ortho_height(const float value) noexcept {
+  m_ci_ortho_height = value;
+  return *this;
+}
+
+constexpr auto CameraIntrinsics::operator==(const CameraIntrinsics &other) const noexcept {
+  return ci_cam_type() == other.ci_cam_type() &&
+         ci_projection_plane_width_minus1() == other.ci_projection_plane_width_minus1() &&
+         ci_projection_plane_height_minus1() == other.ci_projection_plane_height_minus1() &&
+         m_ci_erp_phi_min == other.m_ci_erp_phi_min && m_ci_erp_phi_max == other.m_ci_erp_phi_max &&
+         m_ci_erp_theta_min == other.m_ci_erp_theta_min &&
+         m_ci_erp_theta_max == other.m_ci_erp_theta_max &&
+         m_ci_perspective_focal_hor == other.m_ci_perspective_focal_hor &&
+         m_ci_perspective_focal_ver == other.m_ci_perspective_focal_ver &&
+         m_ci_perspective_center_hor == other.m_ci_perspective_center_hor &&
+         m_ci_perspective_center_ver == other.m_ci_perspective_center_ver &&
+         m_ci_ortho_width == other.m_ci_ortho_width && m_ci_ortho_height == other.m_ci_ortho_height;
+}
+
+constexpr auto CameraIntrinsics::operator!=(const CameraIntrinsics &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto CameraExtrinsics::ce_view_pos_x() const noexcept { return m_ce_view_pos_x; }
 
 constexpr auto CameraExtrinsics::ce_view_pos_y() const noexcept { return m_ce_view_pos_y; }

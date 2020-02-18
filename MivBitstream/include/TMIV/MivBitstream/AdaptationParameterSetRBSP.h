@@ -76,19 +76,66 @@ private:
   float m_ce_view_quat_z;
 };
 
+// 23090-12: ci_cam_type
+enum class CiCamType : std::uint8_t { equirectangular, perspective, orthographic };
+auto operator<<(std::ostream &, const CiCamType) -> std::ostream &;
+
 // 23090-12: camera_intrinsics()
 class CameraIntrinsics {
 public:
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
-    return stream;
-  }
+  constexpr auto ci_cam_type() const noexcept;
+  constexpr auto ci_projection_plane_width_minus1() const noexcept;
+  constexpr auto ci_projection_plane_height_minus1() const noexcept;
 
-  constexpr auto operator==(const CameraIntrinsics &) const noexcept { return true; }
-  constexpr auto operator!=(const CameraIntrinsics &) const noexcept { return false; }
+  auto ci_erp_phi_min() const noexcept -> float;
+  auto ci_erp_phi_max() const noexcept -> float;
+  auto ci_erp_theta_min() const noexcept -> float;
+  auto ci_erp_theta_max() const noexcept -> float;
+  auto ci_perspective_focal_hor() const noexcept -> float;
+  auto ci_perspective_focal_ver() const noexcept -> float;
+  auto ci_perspective_center_hor() const noexcept -> float;
+  auto ci_perspective_center_ver() const noexcept -> float;
+  auto ci_ortho_width() const noexcept -> float;
+  auto ci_ortho_height() const noexcept -> float;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> CameraIntrinsics { return {}; }
+  constexpr auto &ci_cam_type(const CiCamType value) noexcept;
+  constexpr auto &ci_projection_plane_width_minus1(const std::uint16_t value) noexcept;
+  constexpr auto &ci_projection_plane_height_minus1(const std::uint16_t value) noexcept;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const {}
+  constexpr auto &ci_erp_phi_min(const float value) noexcept;
+  constexpr auto &ci_erp_phi_max(const float value) noexcept;
+  constexpr auto &ci_erp_theta_min(const float value) noexcept;
+  constexpr auto &ci_erp_theta_max(const float value) noexcept;
+  constexpr auto &ci_perspective_focal_hor(const float value) noexcept;
+  constexpr auto &ci_perspective_focal_ver(const float value) noexcept;
+  constexpr auto &ci_perspective_center_hor(const float value) noexcept;
+  constexpr auto &ci_perspective_center_ver(const float value) noexcept;
+  constexpr auto &ci_ortho_width(const float value) noexcept;
+  constexpr auto &ci_ortho_height(const float value) noexcept;
+
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
+
+  constexpr auto operator==(const CameraIntrinsics &) const noexcept;
+  constexpr auto operator!=(const CameraIntrinsics &) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> CameraIntrinsics;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  CiCamType m_ci_cam_type;
+  std::uint16_t m_ci_projection_plane_width_minus1;
+  std::uint16_t m_ci_projection_plane_height_minus1;
+  std::optional<float> m_ci_erp_phi_min;
+  std::optional<float> m_ci_erp_phi_max;
+  std::optional<float> m_ci_erp_theta_min;
+  std::optional<float> m_ci_erp_theta_max;
+  std::optional<float> m_ci_perspective_focal_hor;
+  std::optional<float> m_ci_perspective_focal_ver;
+  std::optional<float> m_ci_perspective_center_hor;
+  std::optional<float> m_ci_perspective_center_ver;
+  std::optional<float> m_ci_ortho_width;
+  std::optional<float> m_ci_ortho_height;
 };
 
 // 23090-12: depth_quantization()
@@ -243,7 +290,7 @@ public:
 
 // 23090-12: ap_miv_view_params_list_update_mode
 enum class MvplUpdateMode : std::uint8_t { VPL_INITLIST, VPL_UPD_EXT, VPL_UPD_INT, VPL_EXT_INT };
-auto operator<<(std::ostream &stream, const MvplUpdateMode &x) -> std::ostream &;
+auto operator<<(std::ostream &stream, const MvplUpdateMode x) -> std::ostream &;
 
 // 23090-12: adapation_parameter_set_rbsp
 class AdaptationParameterSetRBSP {

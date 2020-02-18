@@ -37,6 +37,67 @@
 
 using namespace TMIV::MivBitstream;
 
+TEST_CASE("camera_intrinsics", "[Adaptation Parameter Set RBSP]") {
+  auto x = CameraIntrinsics{};
+
+  SECTION("equirectangular") {
+    x.ci_cam_type(CiCamType::equirectangular)
+        .ci_erp_phi_min(-2.F)
+        .ci_erp_phi_max(2.F)
+        .ci_erp_theta_min(-1.F)
+        .ci_erp_theta_max(1.F);
+
+    REQUIRE(toString(x, 1) == R"(ci_cam_type[ 1 ]=equirectangular
+ci_projection_plane_width_minus1[ 1 ]=0
+ci_projection_plane_height_minus1[ 1 ]=0
+ci_erp_phi_min[ 1 ]=-2
+ci_erp_phi_max[ 1 ]=2
+ci_erp_theta_min[ 1 ]=-1
+ci_erp_theta_max[ 1 ]=1
+)");
+
+    REQUIRE(bitCodingTest(x, 168));
+  }
+
+  SECTION("perspective") {
+    x.ci_cam_type(CiCamType::perspective)
+        .ci_projection_plane_width_minus1(19)
+        .ci_projection_plane_height_minus1(9)
+        .ci_perspective_focal_hor(50.F)
+        .ci_perspective_focal_ver(25.F)
+        .ci_perspective_center_hor(10.F)
+        .ci_perspective_center_ver(5.F);
+
+    REQUIRE(toString(x, 1) == R"(ci_cam_type[ 1 ]=perspective
+ci_projection_plane_width_minus1[ 1 ]=19
+ci_projection_plane_height_minus1[ 1 ]=9
+ci_perspective_focal_hor[ 1 ]=50
+ci_perspective_focal_ver[ 1 ]=25
+ci_perspective_center_hor[ 1 ]=10
+ci_perspective_center_ver[ 1 ]=5
+)");
+
+    REQUIRE(bitCodingTest(x, 168));
+  }
+
+  SECTION("orthographic") {
+    x.ci_cam_type(CiCamType::orthographic)
+        .ci_projection_plane_width_minus1(1023)
+        .ci_projection_plane_height_minus1(767)
+        .ci_ortho_width(100.F)
+        .ci_ortho_height(50.F);
+
+    REQUIRE(toString(x, 1) == R"(ci_cam_type[ 1 ]=orthographic
+ci_projection_plane_width_minus1[ 1 ]=1023
+ci_projection_plane_height_minus1[ 1 ]=767
+ci_ortho_width[ 1 ]=100
+ci_ortho_height[ 1 ]=50
+)");
+
+    REQUIRE(bitCodingTest(x, 104));
+  }
+}
+
 TEST_CASE("camera_extrinsics", "[Adaptation Parameter Set RBSP]") {
   auto x = CameraExtrinsics{};
 
@@ -129,6 +190,10 @@ TEST_CASE("miv_view_params_list", "[Adaptation Parameter Set RBSP]") {
         .mvp_intrinsic_params_equal_flag(false)
         .mvp_depth_quantization_params_equal_flag(false)
         .mvp_pruning_graph_params_present_flag(false);
+    x.camera_intrinsics(0)
+        .ci_cam_type(CiCamType::orthographic)
+        .ci_ortho_width(4.F)
+        .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
 ce_view_pos_x[ 0 ]=0
@@ -138,6 +203,11 @@ ce_view_quat_x[ 0 ]=0
 ce_view_quat_y[ 0 ]=0
 ce_view_quat_z[ 0 ]=0
 mvp_intrinsic_params_equal_flag=false
+ci_cam_type[ 0 ]=orthographic
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_ortho_width[ 0 ]=4
+ci_ortho_height[ 0 ]=3
 mvp_depth_quantization_params_equal_flag=false
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=0
@@ -146,7 +216,7 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 293));
+    REQUIRE(bitCodingTest(x, 397));
   }
 
   SECTION("Example 2") {
@@ -154,6 +224,10 @@ mvp_pruning_graph_params_present_flag=false
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true);
+    x.camera_intrinsics(0)
+        .ci_cam_type(CiCamType::orthographic)
+        .ci_ortho_width(4.F)
+        .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
 ce_view_pos_x[ 0 ]=0
@@ -175,6 +249,11 @@ ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
 mvp_intrinsic_params_equal_flag=true
+ci_cam_type[ 0 ]=orthographic
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_ortho_width[ 0 ]=4
+ci_ortho_height[ 0 ]=3
 mvp_depth_quantization_params_equal_flag=true
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=0
@@ -186,7 +265,7 @@ pc_is_leaf_flag[ 1 ]=true
 pc_is_leaf_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 680));
+    REQUIRE(bitCodingTest(x, 784));
   }
 }
 
@@ -210,7 +289,11 @@ aps_extension2_flag=false
         .mvp_num_views_minus1(2)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
-        .mvp_pruning_graph_params_present_flag(true);
+        .mvp_pruning_graph_params_present_flag(true)
+        .camera_intrinsics(0)
+        .ci_cam_type(CiCamType::orthographic)
+        .ci_ortho_width(4.F)
+        .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(aps_adaptation_parameter_set_id=63
 aps_camera_params_present_flag=false
@@ -236,6 +319,11 @@ ce_view_quat_x[ 2 ]=0
 ce_view_quat_y[ 2 ]=0
 ce_view_quat_z[ 2 ]=0
 mvp_intrinsic_params_equal_flag=true
+ci_cam_type[ 0 ]=orthographic
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_ortho_width[ 0 ]=4
+ci_ortho_height[ 0 ]=3
 mvp_depth_quantization_params_equal_flag=true
 dq_quantization_law[ 0 ]=0
 dq_norm_disp_low[ 0 ]=0
@@ -248,6 +336,6 @@ pc_is_leaf_flag[ 2 ]=true
 aps_extension2_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 88));
+    REQUIRE(byteCodingTest(x, 101));
   }
 }

@@ -39,7 +39,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const MvplUpdateMode &x) -> ostream & {
+auto operator<<(ostream &stream, const MvplUpdateMode x) -> ostream & {
   switch (x) {
   case MvplUpdateMode::VPL_INITLIST:
     return stream << "VPL_INITLIST";
@@ -53,8 +53,176 @@ auto operator<<(ostream &stream, const MvplUpdateMode &x) -> ostream & {
     MIVBITSTREAM_ERROR("Unknown update mode");
   }
 }
+auto operator<<(ostream &stream, const CiCamType x) -> ostream & {
+  switch (x) {
+  case CiCamType::equirectangular:
+    return stream << "equirectangular";
+  case CiCamType::perspective:
+    return stream << "perspective";
+  case CiCamType::orthographic:
+    return stream << "orthographic";
+  default:
+    MIVBITSTREAM_ERROR("Unknown cam type");
+  }
+}
 
-auto CameraExtrinsics::printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+auto CameraIntrinsics::ci_erp_phi_min() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
+  VERIFY_MIVBITSTREAM(m_ci_erp_phi_min.has_value());
+  return *m_ci_erp_phi_min;
+}
+
+auto CameraIntrinsics::ci_erp_phi_max() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
+  VERIFY_MIVBITSTREAM(m_ci_erp_phi_max.has_value());
+  return *m_ci_erp_phi_max;
+}
+
+auto CameraIntrinsics::ci_erp_theta_min() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
+  VERIFY_MIVBITSTREAM(m_ci_erp_theta_min.has_value());
+  return *m_ci_erp_theta_min;
+}
+
+auto CameraIntrinsics::ci_erp_theta_max() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
+  VERIFY_MIVBITSTREAM(m_ci_erp_theta_max.has_value());
+  return *m_ci_erp_theta_max;
+}
+
+auto CameraIntrinsics::ci_perspective_focal_hor() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
+  VERIFY_MIVBITSTREAM(m_ci_perspective_focal_hor.has_value());
+  return *m_ci_perspective_focal_hor;
+}
+
+auto CameraIntrinsics::ci_perspective_focal_ver() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
+  VERIFY_MIVBITSTREAM(m_ci_perspective_focal_ver.has_value());
+  return *m_ci_perspective_focal_ver;
+}
+
+auto CameraIntrinsics::ci_perspective_center_hor() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
+  VERIFY_MIVBITSTREAM(m_ci_perspective_center_hor.has_value());
+  return *m_ci_perspective_center_hor;
+}
+
+auto CameraIntrinsics::ci_perspective_center_ver() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::perspective);
+  VERIFY_MIVBITSTREAM(m_ci_perspective_center_ver.has_value());
+  return *m_ci_perspective_center_ver;
+}
+
+auto CameraIntrinsics::ci_ortho_width() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::orthographic);
+  VERIFY_MIVBITSTREAM(m_ci_ortho_width.has_value());
+  return *m_ci_ortho_width;
+}
+
+auto CameraIntrinsics::ci_ortho_height() const noexcept -> float {
+  VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::orthographic);
+  VERIFY_MIVBITSTREAM(m_ci_ortho_height.has_value());
+  return *m_ci_ortho_height;
+}
+
+auto CameraIntrinsics::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+  stream << "ci_cam_type[ " << viewId << " ]=" << ci_cam_type() << '\n';
+  stream << "ci_projection_plane_width_minus1[ " << viewId
+         << " ]=" << ci_projection_plane_width_minus1() << '\n';
+  stream << "ci_projection_plane_height_minus1[ " << viewId
+         << " ]=" << ci_projection_plane_height_minus1() << '\n';
+
+  switch (ci_cam_type()) {
+  case CiCamType::equirectangular:
+    stream << "ci_erp_phi_min[ " << viewId << " ]=" << ci_erp_phi_min() << '\n';
+    stream << "ci_erp_phi_max[ " << viewId << " ]=" << ci_erp_phi_max() << '\n';
+    stream << "ci_erp_theta_min[ " << viewId << " ]=" << ci_erp_theta_min() << '\n';
+    stream << "ci_erp_theta_max[ " << viewId << " ]=" << ci_erp_theta_max() << '\n';
+    return stream;
+
+  case CiCamType::perspective:
+    stream << "ci_perspective_focal_hor[ " << viewId << " ]=" << ci_perspective_focal_hor() << '\n';
+    stream << "ci_perspective_focal_ver[ " << viewId << " ]=" << ci_perspective_focal_ver() << '\n';
+    stream << "ci_perspective_center_hor[ " << viewId << " ]=" << ci_perspective_center_hor()
+           << '\n';
+    stream << "ci_perspective_center_ver[ " << viewId << " ]=" << ci_perspective_center_ver()
+           << '\n';
+    return stream;
+
+  case CiCamType::orthographic:
+    stream << "ci_ortho_width[ " << viewId << " ]=" << ci_ortho_width() << '\n';
+    stream << "ci_ortho_height[ " << viewId << " ]=" << ci_ortho_height() << '\n';
+    return stream;
+
+  default:
+    MIVBITSTREAM_ERROR("Unknown cam type");
+  }
+}
+
+auto CameraIntrinsics::decodeFrom(InputBitstream &bitstream) -> CameraIntrinsics {
+  auto x = CameraIntrinsics{};
+
+  x.ci_cam_type(CiCamType(bitstream.getUint8()));
+  x.ci_projection_plane_width_minus1(bitstream.getUint16());
+  x.ci_projection_plane_height_minus1(bitstream.getUint16());
+
+  switch (x.ci_cam_type()) {
+  case CiCamType::equirectangular:
+    x.ci_erp_phi_min(bitstream.getFloat32());
+    x.ci_erp_phi_max(bitstream.getFloat32());
+    x.ci_erp_theta_min(bitstream.getFloat32());
+    x.ci_erp_theta_max(bitstream.getFloat32());
+    return x;
+
+  case CiCamType::perspective:
+    x.ci_perspective_focal_hor(bitstream.getFloat32());
+    x.ci_perspective_focal_ver(bitstream.getFloat32());
+    x.ci_perspective_center_hor(bitstream.getFloat32());
+    x.ci_perspective_center_ver(bitstream.getFloat32());
+    return x;
+
+  case CiCamType::orthographic:
+    x.ci_ortho_width(bitstream.getFloat32());
+    x.ci_ortho_height(bitstream.getFloat32());
+    return x;
+
+  default:
+    MIVBITSTREAM_ERROR("Unknown cam type");
+  }
+}
+
+void CameraIntrinsics::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.putUint8(uint8_t(ci_cam_type()));
+  bitstream.putUint16(ci_projection_plane_width_minus1());
+  bitstream.putUint16(ci_projection_plane_height_minus1());
+
+  switch (ci_cam_type()) {
+  case CiCamType::equirectangular:
+    bitstream.putFloat32(ci_erp_phi_min());
+    bitstream.putFloat32(ci_erp_phi_max());
+    bitstream.putFloat32(ci_erp_theta_min());
+    bitstream.putFloat32(ci_erp_theta_max());
+    return;
+
+  case CiCamType::perspective:
+    bitstream.putFloat32(ci_perspective_focal_hor());
+    bitstream.putFloat32(ci_perspective_focal_ver());
+    bitstream.putFloat32(ci_perspective_center_hor());
+    bitstream.putFloat32(ci_perspective_center_ver());
+    return;
+
+  case CiCamType::orthographic:
+    bitstream.putFloat32(ci_ortho_width());
+    bitstream.putFloat32(ci_ortho_height());
+    return;
+
+  default:
+    MIVBITSTREAM_ERROR("Unknown cam type");
+  }
+}
+
+auto CameraExtrinsics::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
   stream << "ce_view_pos_x[ " << viewId << " ]=" << ce_view_pos_x() << '\n';
   stream << "ce_view_pos_y[ " << viewId << " ]=" << ce_view_pos_y() << '\n';
   stream << "ce_view_pos_z[ " << viewId << " ]=" << ce_view_pos_z() << '\n';
@@ -64,7 +232,7 @@ auto CameraExtrinsics::printTo(std::ostream &stream, std::uint16_t viewId) const
   return stream;
 }
 
-auto CameraExtrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraExtrinsics {
+auto CameraExtrinsics::decodeFrom(InputBitstream &bitstream) -> CameraExtrinsics {
   auto x = CameraExtrinsics{};
 
   x.ce_view_pos_x(bitstream.getFloat32());
@@ -77,7 +245,7 @@ auto CameraExtrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraEx
   return x;
 }
 
-void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
+void CameraExtrinsics::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFloat32(ce_view_pos_x());
   bitstream.putFloat32(ce_view_pos_y());
   bitstream.putFloat32(ce_view_pos_z());

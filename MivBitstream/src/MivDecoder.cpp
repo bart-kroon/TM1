@@ -234,14 +234,16 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
 
   if (NalUnitType::NAL_TRAIL <= nuh.nal_unit_type() &&
       nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP) {
-    VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() > 0 && atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
+    VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 > 0 &&
+                         atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
     VERIFY_VPCCBITSTREAM(!x.atgl.empty());
     x.atgl.push_back(x.atgl.back());
   }
 
   if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
       nuh.nal_unit_type() < NalUnitType::NAL_ASPS) {
-    VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0 && atgh.atgh_type() == AtghType::I_TILE_GRP);
+    VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 &&
+                         atgh.atgh_type() == AtghType::I_TILE_GRP);
     x.atgl.push_back(atgl);
   }
 
@@ -254,7 +256,7 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
 
 void MivDecoder::decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                             AtlasSequenceParameterSetRBSP asps) {
-  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0);
+  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
 
   auto &x = atlas(vuh);
   while (x.aspsV.size() <= asps.asps_atlas_sequence_parameter_set_id()) {
@@ -296,14 +298,14 @@ void MivDecoder::decodeVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &n
 }
 
 void MivDecoder::decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
-  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0);
+  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
 
   // The next NAL unit when present will be an IRAP access unit. Clear state.
   sequence(vuh) = {};
 }
 
 void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
-  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id() == 0);
+  VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
 
   // TODO(BK): It is unclear what to do with this NAL unit. There could be another V-PCC unit with
   // atlas data. Does that one have to start with a new ASPS? My guess is that it does.

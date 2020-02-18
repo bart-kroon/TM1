@@ -78,17 +78,17 @@ auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream &;
 // 23090-5: nal_unit_header()
 class NalUnitHeader {
 public:
-  NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id);
+  NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id_plus1);
 
   constexpr auto nal_unit_type() const noexcept { return m_nal_unit_type; }
   constexpr auto nal_layer_id() const noexcept { return m_nal_layer_id; }
-  constexpr auto nal_temporal_id() const noexcept { return m_nal_temporal_id; }
+  constexpr auto nal_temporal_id_plus1() const noexcept { return m_nal_temporal_id_plus1; }
 
   friend auto operator<<(std::ostream &stream, const NalUnitHeader &x) -> std::ostream &;
 
   constexpr auto operator==(const NalUnitHeader &other) const noexcept -> bool {
     return m_nal_unit_type == other.m_nal_unit_type && m_nal_layer_id == other.m_nal_layer_id &&
-           m_nal_temporal_id == other.m_nal_temporal_id;
+           m_nal_temporal_id_plus1 == other.m_nal_temporal_id_plus1;
   }
 
   constexpr auto operator!=(const NalUnitHeader &other) const noexcept -> bool {
@@ -102,7 +102,7 @@ public:
 private:
   NalUnitType m_nal_unit_type;
   std::uint8_t m_nal_layer_id;
-  std::uint8_t m_nal_temporal_id;
+  std::uint8_t m_nal_temporal_id_plus1;
 };
 
 // 23090-5: nal_unit(NumBytesInNalUnit)

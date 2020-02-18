@@ -39,38 +39,38 @@ using namespace TMIV::MivBitstream;
 
 TEST_CASE("nal_unit_header", "[NAL unit]") {
   SECTION("Example 1") {
-    const auto nal_unit_header = NalUnitHeader{NalUnitType::NAL_EOS, 0, 3};
+    const auto nal_unit_header = NalUnitHeader{NalUnitType::NAL_EOS, 0, 4};
 
     REQUIRE(toString(nal_unit_header) ==
             R"(nal_unit_type=NAL_EOS
 nal_layer_id=0
-nal_temporal_id=3
+nal_temporal_id_plus1=4
 )");
 
     REQUIRE(byteCodingTest(nal_unit_header, 2));
   }
 
   SECTION("Example 2") {
-    const auto nal_unit_header = NalUnitHeader{NalUnitType::NAL_BLA_W_LP, 2, 1};
+    const auto nal_unit_header = NalUnitHeader{NalUnitType::NAL_BLA_W_LP, 2, 2};
 
     REQUIRE(byteCodingTest(nal_unit_header, 2));
 
     REQUIRE(toString(nal_unit_header) ==
             R"(nal_unit_type=NAL_BLA_W_LP
 nal_layer_id=2
-nal_temporal_id=1
+nal_temporal_id_plus1=2
 )");
   }
 }
 
 TEST_CASE("nal_unit", "[NAL unit]") {
   SECTION("Example 1") {
-    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_EOS, 0, 0}, {}};
+    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_EOS, 0, 1}, {}};
 
     REQUIRE(toString(nal_unit) ==
             R"(nal_unit_type=NAL_EOS
 nal_layer_id=0
-nal_temporal_id=0
+nal_temporal_id_plus1=1
 NumBytesInRbsp=0
 )");
 
@@ -78,12 +78,12 @@ NumBytesInRbsp=0
   }
 
   SECTION("Example 2") {
-    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_RADL, 1, 2}, "payload"};
+    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_RADL, 1, 3}, "payload"};
 
     REQUIRE(toString(nal_unit) ==
             R"(nal_unit_type=NAL_RADL
 nal_layer_id=1
-nal_temporal_id=2
+nal_temporal_id_plus1=3
 NumBytesInRbsp=7
 )");
 

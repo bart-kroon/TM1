@@ -112,17 +112,17 @@ auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
   }
 }
 
-NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id)
+NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id_plus1)
     : m_nal_unit_type{nal_unit_type}, m_nal_layer_id{uint8_t(nal_layer_id)},
-      m_nal_temporal_id{uint8_t(nal_temporal_id)} {
+      m_nal_temporal_id_plus1{uint8_t(nal_temporal_id_plus1)} {
   VERIFY_VPCCBITSTREAM(0 <= nal_layer_id && nal_layer_id <= 63);
-  VERIFY_VPCCBITSTREAM(0 <= nal_temporal_id && nal_temporal_id <= 6);
+  VERIFY_VPCCBITSTREAM(0 < nal_temporal_id_plus1 && nal_temporal_id_plus1 <= 7);
 }
 
 auto operator<<(ostream &stream, const NalUnitHeader &x) -> ostream & {
   return stream << "nal_unit_type=" << x.m_nal_unit_type
                 << "\nnal_layer_id=" << int(x.m_nal_layer_id)
-                << "\nnal_temporal_id=" << int(x.m_nal_temporal_id) << '\n';
+                << "\nnal_temporal_id_plus1=" << int(x.m_nal_temporal_id_plus1) << '\n';
 }
 
 auto NalUnitHeader::decodeFrom(istream &stream) -> NalUnitHeader {
@@ -133,8 +133,7 @@ auto NalUnitHeader::decodeFrom(istream &stream) -> NalUnitHeader {
   const auto nal_layer_id = bitstream.readBits(6);
   const auto nal_temporal_id_plus1 = bitstream.readBits(3);
   VERIFY_VPCCBITSTREAM(nal_temporal_id_plus1 > 0);
-  return NalUnitHeader{NalUnitType(nal_unit_type), int(nal_layer_id),
-                       int(nal_temporal_id_plus1) - 1};
+  return NalUnitHeader{NalUnitType(nal_unit_type), int(nal_layer_id), int(nal_temporal_id_plus1)};
 }
 
 void NalUnitHeader::encodeTo(ostream &stream) const {
@@ -142,7 +141,7 @@ void NalUnitHeader::encodeTo(ostream &stream) const {
   bitstream.putFlag(false);
   bitstream.writeBits(unsigned(m_nal_unit_type), 6);
   bitstream.writeBits(m_nal_layer_id, 6);
-  bitstream.writeBits(m_nal_temporal_id + 1, 3);
+  bitstream.writeBits(m_nal_temporal_id_plus1, 3);
 }
 
 NalUnit::NalUnit(const NalUnitHeader &nal_unit_header, string rbsp)

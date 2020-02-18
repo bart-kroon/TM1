@@ -39,21 +39,21 @@ using namespace TMIV::MivBitstream;
 
 TEST_CASE("sample_stream_nal_header", "[NAL sample stream format]") {
   const auto sample_stream_nal_header =
-      std::array{SampleStreamNalHeader{1}, SampleStreamNalHeader{8}};
+      std::array{SampleStreamNalHeader{0}, SampleStreamNalHeader{7}};
 
   SECTION("encodeTo/decodeFrom") {
     REQUIRE(byteCodingTest(sample_stream_nal_header[0], 1));
     REQUIRE(byteCodingTest(sample_stream_nal_header[1], 1));
   }
   SECTION("operator <<") {
-    REQUIRE(toString(sample_stream_nal_header[0]) == "ssnh_unit_size_precision_bytes=1\n");
-    REQUIRE(toString(sample_stream_nal_header[1]) == "ssnh_unit_size_precision_bytes=8\n");
+    REQUIRE(toString(sample_stream_nal_header[0]) == "ssnh_unit_size_precision_bytes_minus1=0\n");
+    REQUIRE(toString(sample_stream_nal_header[1]) == "ssnh_unit_size_precision_bytes_minus1=7\n");
   }
 }
 
 TEST_CASE("sample_stream_nal_unit", "[NAL sample stream format]") {
   const auto sample_stream_nal_header =
-      std::array{SampleStreamNalHeader{1}, SampleStreamNalHeader{8}};
+      std::array{SampleStreamNalHeader{0}, SampleStreamNalHeader{7}};
   const auto sample_stream_nal_unit =
       std::array{SampleStreamNalUnit{"Hello, World!"}, SampleStreamNalUnit{std::string(3, '\0')}};
 
@@ -76,7 +76,7 @@ TEST_CASE("sample_stream_nal_unit", "[NAL sample stream format]") {
 }
 
 TEST_CASE("NAL sample stream format", "[NAL sample stream format]") {
-  const auto header = SampleStreamNalHeader{1};
+  const auto header = SampleStreamNalHeader{0};
   const auto units = std::array{SampleStreamNalUnit{"Test"}, SampleStreamNalUnit{"having"},
                                 SampleStreamNalUnit{"multiple units"}};
   const auto bytes_ = std::array<char, 29>{"\x0\x4Test\x6having\xEmultiple units"};

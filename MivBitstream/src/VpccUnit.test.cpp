@@ -216,9 +216,9 @@ vps_miv_extension_flag=false
 
   SECTION("AD") {
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
-    const auto x = VpccPayload{AtlasSubBitstream{SampleStreamNalHeader{5}}};
+    const auto x = VpccPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
 
-    REQUIRE(toString(x) == R"(ssnh_unit_size_precision_bytes=5
+    REQUIRE(toString(x) == R"(ssnh_unit_size_precision_bytes_minus1=4
 )");
 
     REQUIRE(byteCodingTest(x, 1, vuh));

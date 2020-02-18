@@ -42,16 +42,16 @@ namespace TMIV::MivBitstream {
 // 23090-5: sample_stream_nal_header()
 class SampleStreamNalHeader {
 public:
-  explicit SampleStreamNalHeader(int ssnh_unit_size_precision_bytes);
+  explicit SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1);
 
-  constexpr auto ssnh_unit_size_precision_bytes() const noexcept {
-    return m_ssnh_unit_size_precision_bytes;
+  constexpr auto ssnh_unit_size_precision_bytes_minus1() const noexcept {
+    return m_ssnh_unit_size_precision_bytes_minus1;
   }
 
   friend auto operator<<(std::ostream &stream, const SampleStreamNalHeader &x) -> std::ostream &;
 
   constexpr auto operator==(const SampleStreamNalHeader &other) const noexcept -> bool {
-    return m_ssnh_unit_size_precision_bytes == other.m_ssnh_unit_size_precision_bytes;
+    return ssnh_unit_size_precision_bytes_minus1() == other.ssnh_unit_size_precision_bytes_minus1();
   }
 
   constexpr auto operator!=(const SampleStreamNalHeader &other) const noexcept -> bool {
@@ -63,7 +63,7 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  std::uint8_t m_ssnh_unit_size_precision_bytes;
+  std::uint8_t m_ssnh_unit_size_precision_bytes_minus1;
 };
 
 // 23090-5: sample_stream_nal_unit()

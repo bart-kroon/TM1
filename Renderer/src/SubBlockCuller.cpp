@@ -128,8 +128,8 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
       xy_v_ymin = i[1];
     }
   }
-  return !(xy_v_xmin > target.size.x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
-           xy_v_ymin > target.size.y() ||
+  return !(xy_v_xmin > target.projectionPlaneSize.x() || xy_v_xmax < 0 || xy_v_ymax < 0 ||
+           xy_v_ymin > target.projectionPlaneSize.y() ||
            (xy_v_xmin != xy_v_xmin && xy_v_xmax != xy_v_xmax && xy_v_ymin != xy_v_ymin &&
             xy_v_ymax != xy_v_ymax));
 }
@@ -163,9 +163,9 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     // If patch is as large as source view
     if (atlasParamsList[id].patchSizeInView.x() ==
-            viewParamsList[atlasParamsList[id].viewId].size.x() &&
+            viewParamsList[atlasParamsList[id].viewId].projectionPlaneSize.x() &&
         atlasParamsList[id].patchSizeInView.y() ==
-            viewParamsList[atlasParamsList[id].viewId].size.y()) {
+            viewParamsList[atlasParamsList[id].viewId].projectionPlaneSize.y()) {
 
       // size of sub-block is fixed now.
       Vec2i blocksizes = {128, 128};

@@ -362,6 +362,13 @@ auto PruningChildren::pc_child_id(uint16_t i) const noexcept -> uint16_t {
   return m_pc_child_id[i];
 }
 
+auto PruningChildren::pc_child_id(std::uint16_t i, std::uint16_t value) noexcept
+    -> PruningChildren & {
+  VERIFY_MIVBITSTREAM(i < m_pc_child_id.size());
+  m_pc_child_id[i] = value;
+  return *this;
+}
+
 auto PruningChildren::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
   stream << "pc_is_leaf_flag[ " << viewId << " ]=" << boolalpha << pc_is_leaf_flag() << '\n';
   if (!pc_is_leaf_flag()) {

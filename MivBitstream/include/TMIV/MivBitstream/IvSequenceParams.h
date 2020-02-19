@@ -85,9 +85,7 @@ struct PerspectiveParams {
 using ProjectionParams = std::variant<ErpParams, PerspectiveParams>;
 
 struct ViewParams {
-  // In specification: projection_plane_width_minus1[ v ]
-  // In specification: projection_plane_height_minus1[ v ]
-  Common::Vec2i size{};
+  Common::Vec2i projectionPlaneSize{};
 
   CameraExtrinsics ce;
 

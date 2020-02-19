@@ -56,7 +56,7 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
   if (!viewParams.name.empty()) {
     stream << "(" << setw(3) << viewParams.name << "), ";
   }
-  stream << viewParams.size << ", ";
+  stream << viewParams.projectionPlaneSize << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
   stream << ", norm. disp in [" << viewParams.dq.dq_norm_disp_low() << ", "
          << viewParams.dq.dq_norm_disp_high() << "] m^-1, hasOccupancy " << boolalpha
@@ -88,13 +88,14 @@ auto PerspectiveParams::operator==(const PerspectiveParams &other) const -> bool
 }
 
 auto ViewParams::operator==(const ViewParams &other) const -> bool {
-  return size == other.size && ce == other.ce && projection == other.projection && dq == other.dq;
+  return projectionPlaneSize == other.projectionPlaneSize && ce == other.ce &&
+         projection == other.projection && dq == other.dq;
 }
 
 auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   ViewParams parameters;
   parameters.name = node.require("Name").asString();
-  parameters.size = node.require("Resolution").asIntVector<2>();
+  parameters.projectionPlaneSize = node.require("Resolution").asIntVector<2>();
   parameters.ce.position(node.require("Position").asFloatVector<3>());
   parameters.ce.eulerAngles(radperdeg * node.require("Rotation").asFloatVector<3>());
   const auto depthRange = node.require("Depth_range").asFloatVector<2>();
@@ -142,7 +143,7 @@ auto ViewParamsList::viewSizes() const -> SizeVector {
   SizeVector sizes;
   sizes.reserve(size());
   transform(begin(), end(), back_inserter(sizes),
-            [](const ViewParams &viewParams) { return viewParams.size; });
+            [](const ViewParams &viewParams) { return viewParams.projectionPlaneSize; });
   return sizes;
 }
 
@@ -193,8 +194,8 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
   for (auto viewParams = viewParamsList.begin(); viewParams != viewParamsList.end(); ++viewParams) {
     if (viewParams == viewParamsList.begin() || !intrinsicParamsEqualFlag) {
       auto camType = bitstream.getUint8();
-      viewParams->size.x() = bitstream.getUint16() + 1;
-      viewParams->size.y() = bitstream.getUint16() + 1;
+      viewParams->projectionPlaneSize.x() = bitstream.getUint16() + 1;
+      viewParams->projectionPlaneSize.y() = bitstream.getUint16() + 1;
 
       VERIFY_MIVBITSTREAM(camType < 2);
       switch (camType) {
@@ -208,7 +209,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
         abort();
       }
     } else {
-      viewParams->size = viewParamsList.front().size;
+      viewParams->projectionPlaneSize = viewParamsList.front().projectionPlaneSize;
       viewParams->projection = viewParamsList.front().projection;
     }
   }
@@ -282,9 +283,10 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
 
   for (const auto &viewParams : *this) {
     bitstream.putUint8(uint8_t(viewParams.projection.index()));
-    VERIFY_MIVBITSTREAM(viewParams.size.x() >= 1 && viewParams.size.y() >= 1);
-    bitstream.putUint16(uint16_t(viewParams.size.x() - 1));
-    bitstream.putUint16(uint16_t(viewParams.size.y() - 1));
+    VERIFY_MIVBITSTREAM(viewParams.projectionPlaneSize.x() >= 1 &&
+                        viewParams.projectionPlaneSize.y() >= 1);
+    bitstream.putUint16(uint16_t(viewParams.projectionPlaneSize.x() - 1));
+    bitstream.putUint16(uint16_t(viewParams.projectionPlaneSize.y() - 1));
     visit([&](const auto &x) { x.encodeTo(bitstream); }, viewParams.projection);
     if (intrinsicParamsEqualFlag) {
       break;

@@ -206,7 +206,8 @@ private:
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_masks),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto mask = Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()};
+                auto mask = Frame<YUV400P8>{viewParams.projectionPlaneSize.x(),
+                                            viewParams.projectionPlaneSize.y()};
                 transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
                           begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
@@ -221,7 +222,8 @@ private:
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_status),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto status = Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()};
+                auto status = Frame<YUV400P8>{viewParams.projectionPlaneSize.x(),
+                                              viewParams.projectionPlaneSize.y()};
                 transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
                           begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
@@ -237,9 +239,9 @@ private:
     for (size_t i = 0; i < m_ivSequenceParams.viewParamsList.size(); ++i) {
       if (!m_isBasicView[i]) {
         const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i].dq};
-        m_synthesizers.emplace_back(
-            make_unique<IncrementalSynthesizer>(m_config, m_ivSequenceParams.viewParamsList[i].size,
-                                                i, depthTransform.expandDepth(views[i].second)));
+        m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
+            m_config, m_ivSequenceParams.viewParamsList[i].projectionPlaneSize, i,
+            depthTransform.expandDepth(views[i].second)));
       }
     }
   }

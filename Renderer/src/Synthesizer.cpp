@@ -182,7 +182,8 @@ public:
                    float compensation) const -> Rasterizer<Vec3f> {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
-        {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching}, target.size};
+        {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
+        target.projectionPlaneSize};
 
     // Pipeline mesh generation and rasterization
     future<void> runner = async(launch::deferred, []() {});
@@ -222,14 +223,14 @@ public:
                      },
                      [&](const PerspectiveParams &projection) {
                        return degperrad * 2 *
-                              atan(viewParams.size.x() / (2 * projection.focal.x()));
+                              atan(viewParams.projectionPlaneSize.x() / (2 * projection.focal.x()));
                      }),
                  viewParams.projection);
   }
 
   // Resolution in px^2/deg^2
   static auto resolution(const ViewParams &viewParams) -> float {
-    return square(viewParams.size.x() / xFoV(viewParams));
+    return square(viewParams.projectionPlaneSize.x() / xFoV(viewParams));
   }
 
   static auto resolutionRatio(const ViewParamsVector &viewParamsVector, const ViewParams &target)
@@ -246,12 +247,12 @@ public:
                    const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
                    const ViewParams &target) const -> Texture444Depth16Frame {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-        atlases.size(), target,
-        [&](size_t i, const ViewParams &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, viewParamsVector, target);
-        },
-        resolutionRatio(viewParamsVector, target));
+    auto rasterizer = rasterFrame(atlases.size(), target,
+                                  [&](size_t i, const ViewParams &target) {
+                                    return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
+                                                          viewParamsVector, target);
+                                  },
+                                  resolutionRatio(viewParamsVector, target));
     const auto depthTransform = DepthTransform<16>{target.dq};
     auto frame = Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
                                         depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};

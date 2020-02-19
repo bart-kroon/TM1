@@ -97,8 +97,8 @@ void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAcce
 
   for (size_t c = 0; c < numOfCam; c++) {
     Mat<bitset<maxIntraPeriod>> nonAggMask;
-    int H = m_inIvSequenceParams.viewParamsList[c].size.y();
-    int W = m_inIvSequenceParams.viewParamsList[c].size.x();
+    int H = m_inIvSequenceParams.viewParamsList[c].projectionPlaneSize.y();
+    int W = m_inIvSequenceParams.viewParamsList[c].projectionPlaneSize.x();
 
     nonAggMask.resize(H, W);
     for (int h = 0; h < H; h++) {

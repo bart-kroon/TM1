@@ -55,7 +55,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
         auto &attributes = std::get<2>(mesh);
 
         Engine<decay_t<decltype(projection)>> engine{viewParams};
-        const auto size = viewParams.size;
+        const auto size = viewParams.projectionPlaneSize;
         const auto numPixels = size.x() * size.y();
 
         const auto &Y = view.first.getPlane(0);

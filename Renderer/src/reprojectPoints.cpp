@@ -45,7 +45,7 @@ constexpr auto halfPixel = 0.5F;
 
 auto imagePositions(const ViewParams &viewParams) -> Mat<Vec2f> {
   Mat<Vec2f> result;
-  result.resize(viewParams.size.y(), viewParams.size.x());
+  result.resize(viewParams.projectionPlaneSize.y(), viewParams.projectionPlaneSize.x());
   for (unsigned i = 0; i != result.height(); ++i) {
     for (unsigned j = 0; j != result.width(); ++j) {
       result(i, j) = {float(j) + halfPixel, float(i) + halfPixel};
@@ -152,7 +152,8 @@ auto projectVertex(const Common::Vec3f &position, const MivBitstream::ViewParams
 }
 
 template <> auto ProjectionHelper<ErpParams>::getAngularResolution() const -> float {
-  auto nbPixel = static_cast<float>(m_viewParams.size.x() * m_viewParams.size.y());
+  auto nbPixel = static_cast<float>(m_viewParams.projectionPlaneSize.x() *
+                                    m_viewParams.projectionPlaneSize.y());
   const auto &erpParams = std::get<ErpParams>(m_viewParams.projection);
 
   float DT = radperdeg * (erpParams.phiRange[1] - erpParams.phiRange[0]);
@@ -163,12 +164,13 @@ template <> auto ProjectionHelper<ErpParams>::getAngularResolution() const -> fl
 }
 
 template <> auto ProjectionHelper<PerspectiveParams>::getAngularResolution() const -> float {
-  auto nbPixel = static_cast<float>(m_viewParams.size.x() * m_viewParams.size.y());
+  auto nbPixel = static_cast<float>(m_viewParams.projectionPlaneSize.x() *
+                                    m_viewParams.projectionPlaneSize.y());
   const auto &perspectiveParams = std::get<PerspectiveParams>(m_viewParams.projection);
 
   float projectionFocalLength = (perspectiveParams.focal.x() + perspectiveParams.focal.y()) / 2.F;
-  auto w = static_cast<float>(m_viewParams.size.x());
-  auto h = static_cast<float>(m_viewParams.size.y());
+  auto w = static_cast<float>(m_viewParams.projectionPlaneSize.x());
+  auto h = static_cast<float>(m_viewParams.projectionPlaneSize.y());
 
   float omega =
       4.F * std::atan(nbPixel / (2.F * projectionFocalLength *
@@ -184,10 +186,12 @@ template <> auto ProjectionHelper<ErpParams>::getRadialRange() const -> Vec2f {
 template <> auto ProjectionHelper<PerspectiveParams>::getRadialRange() const -> Vec2f {
   const auto &perspectiveParams = std::get<PerspectiveParams>(m_viewParams.projection);
 
-  float x = (static_cast<float>(m_viewParams.size.x()) - perspectiveParams.center.x()) /
-            perspectiveParams.focal.x();
-  float y = (static_cast<float>(m_viewParams.size.y()) - perspectiveParams.center.y()) /
-            perspectiveParams.focal.y();
+  float x =
+      (static_cast<float>(m_viewParams.projectionPlaneSize.x()) - perspectiveParams.center.x()) /
+      perspectiveParams.focal.x();
+  float y =
+      (static_cast<float>(m_viewParams.projectionPlaneSize.y()) - perspectiveParams.center.y()) /
+      perspectiveParams.focal.y();
 
   return {1.F / m_viewParams.dq.dq_norm_disp_high(),
           norm(Vec3f{x, y, 1.F}) / m_viewParams.dq.dq_norm_disp_low()};

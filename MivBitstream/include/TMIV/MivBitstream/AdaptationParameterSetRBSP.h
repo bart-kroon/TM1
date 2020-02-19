@@ -184,6 +184,8 @@ public:
   auto pc_num_children_minus1() const noexcept -> std::uint16_t;
   auto pc_child_id(std::uint16_t i) const noexcept -> std::uint16_t;
 
+  auto pc_child_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningChildren&;
+
   auto begin() const noexcept { return m_pc_child_id.begin(); }
   auto end() const noexcept { return m_pc_child_id.end(); }
 

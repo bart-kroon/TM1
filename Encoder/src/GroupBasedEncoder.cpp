@@ -274,10 +274,9 @@ auto GroupBasedEncoder::mergeSequenceParams(
 
     // Merging pruning graphs
     for (auto &viewParams : perGroupViewParamsList) {
-
-      if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
-        for (auto &childId : *viewParams.pruningChildren) {
-          childId += pruningOffsetId;
+      if (viewParams.pc && !viewParams.pc->pc_is_leaf_flag()) {
+        for (uint16_t i = 0; i <= viewParams.pc->pc_num_children_minus1(); ++i) {
+          viewParams.pc->pc_child_id(i, viewParams.pc->pc_child_id(i) + pruningOffsetId);
         }
       }
     }

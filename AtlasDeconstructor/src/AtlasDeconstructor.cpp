@@ -130,8 +130,8 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
   MVD10Frame frame;
 
   for (const auto &cam : viewParamsVector) {
-    TextureFrame tex(cam.size.x(), cam.size.y());
-    Depth10Frame depth(cam.size.x(), cam.size.y());
+    TextureFrame tex(cam.projectionPlaneSize.x(), cam.projectionPlaneSize.y());
+    Depth10Frame depth(cam.projectionPlaneSize.x(), cam.projectionPlaneSize.y());
     tex.fillNeutral();
     frame.push_back(TextureDepth10Frame{move(tex), move(depth)});
   }

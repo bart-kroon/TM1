@@ -41,8 +41,6 @@
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
-#include <iostream>
-
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;

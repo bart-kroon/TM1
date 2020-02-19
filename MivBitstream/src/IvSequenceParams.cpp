@@ -160,9 +160,11 @@ IvSequenceParams::IvSequenceParams() {
   vps.vps_miv_mode_flag(true).vps_extension_present_flag(true).vps_miv_extension_flag(true);
 }
 
-auto &IvSequenceParams::msp() const noexcept { return vps.miv_sequence_params(); }
+auto IvSequenceParams::msp() const noexcept -> const MivSequenceParams & {
+  return vps.miv_sequence_params();
+}
 
-auto &IvSequenceParams::msp() noexcept { return vps.miv_sequence_params(); }
+auto IvSequenceParams::msp() noexcept -> MivSequenceParams & { return vps.miv_sequence_params(); }
 
 auto operator<<(ostream &stream, const IvSequenceParams &x) -> ostream & {
   stream << x.vps;

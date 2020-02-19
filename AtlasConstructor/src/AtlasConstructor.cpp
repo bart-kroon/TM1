@@ -90,7 +90,6 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
 }
 
 void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
-  assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
 
   const auto numOfCam = m_inIvSequenceParams.viewParamsList.size();
@@ -150,10 +149,9 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   cout << "Aggregated luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
   // Packing
-  assert(m_ivAccessUnitParams.atlasParamsList);
-  m_ivAccessUnitParams.atlasParamsList->atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
-  m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
-      m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
+  m_ivAccessUnitParams.atlasParamsList.atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
+  m_ivAccessUnitParams.atlasParamsList.setAtlasParamsVector(m_packer->pack(
+      m_ivAccessUnitParams.atlasParamsList.atlasSizes, aggregatedMask, m_isBasicView));
 
   // Atlas construction
   int frame = 0;
@@ -167,7 +165,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
       atlasList.push_back(move(atlas));
     }
 
-    for (const auto &patch : *m_ivAccessUnitParams.atlasParamsList) {
+    for (const auto &patch : m_ivAccessUnitParams.atlasParamsList) {
       writePatchInAtlas(patch, views, atlasList, frame);
     }
 

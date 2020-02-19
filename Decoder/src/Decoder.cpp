@@ -85,7 +85,7 @@ auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList
 
 auto Decoder::recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame {
   return m_atlasDeconstructor->recoverPrunedView(atlas, m_ivSequenceParams.viewParamsList,
-                                                 *m_ivAccessUnitParams.atlasParamsList);
+                                                 m_ivAccessUnitParams.atlasParamsList);
 }
 
 } // namespace TMIV::Decoder

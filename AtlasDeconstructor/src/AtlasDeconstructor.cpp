@@ -58,9 +58,8 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
                                        const IvAccessUnitParams &ivAccessUnitParams,
                                        const MVD10Frame &frame) -> PatchIdMapList {
   PatchIdMapList patchMapList;
-  assert(ivAccessUnitParams.atlasParamsList);
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
+  const auto &atlasParamsList = ivAccessUnitParams.atlasParamsList;
 
   for (const auto &sz : atlasParamsList.atlasSizes) {
 

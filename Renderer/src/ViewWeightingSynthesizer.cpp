@@ -186,16 +186,16 @@ public:
     //######################################################################################
     // 1) Deconstruction
     recoverPrunedSource<MVD, sourceCamType>(atlasList, ivSequenceParams,
-                                            *ivAccessUnitParams.atlasParamsList, sourceHelperList);
+                                            ivAccessUnitParams.atlasParamsList, sourceHelperList);
 
     //######################################################################################
     // 2) Reprojection
-    reprojectPrunedSource<sourceCamType, targetCamType>(maps, *ivAccessUnitParams.atlasParamsList,
+    reprojectPrunedSource<sourceCamType, targetCamType>(maps, ivAccessUnitParams.atlasParamsList,
                                                         sourceHelperList, targetHelper);
 
     //######################################################################################
     // 3) Warping
-    warpPrunedSource<targetCamType>(*ivAccessUnitParams.atlasParamsList, targetHelper);
+    warpPrunedSource<targetCamType>(ivAccessUnitParams.atlasParamsList, targetHelper);
 
     //######################################################################################
     // 4) Weight recovery

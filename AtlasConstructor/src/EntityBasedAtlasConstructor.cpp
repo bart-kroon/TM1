@@ -96,7 +96,6 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
 
 void EntityBasedAtlasConstructor::prepareAccessUnit(
     MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
-  assert(ivAccessUnitParams.atlasParamsList);
   m_ivAccessUnitParams = ivAccessUnitParams;
   m_viewBuffer.clear();
   m_aggregatedEntityMask.clear();
@@ -347,11 +346,10 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   cout << "Aggregated luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
   // Packing
-  assert(m_ivAccessUnitParams.atlasParamsList);
-  m_ivAccessUnitParams.atlasParamsList->atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
+  m_ivAccessUnitParams.atlasParamsList.atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
   m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
-  m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
-      m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
+  m_ivAccessUnitParams.atlasParamsList.setAtlasParamsVector(m_packer->pack(
+      m_ivAccessUnitParams.atlasParamsList.atlasSizes, aggregatedMask, m_isBasicView));
 
   // Atlas construction
   m_frameInGOPIndex = 0;
@@ -371,7 +369,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
       atlasList.push_back(move(atlas));
     }
 
-    for (const auto &patch : *m_ivAccessUnitParams.atlasParamsList) {
+    for (const auto &patch : m_ivAccessUnitParams.atlasParamsList) {
       writePatchInAtlas(patch, views, atlasList);
     }
 

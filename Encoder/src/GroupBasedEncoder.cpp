@@ -300,7 +300,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
 
   // Independent metadata should work automatically. Just assume it is the same across groups.
   m_ivAccessUnitParams = *perGroupParams.front();
-  auto &atlasParamsList = *m_ivAccessUnitParams.atlasParamsList;
+  auto &atlasParamsList = m_ivAccessUnitParams.atlasParamsList;
   atlasParamsList.clear();
   atlasParamsList.groupIds = vector<unsigned>{};
   atlasParamsList.atlasSizes.clear();
@@ -313,19 +313,19 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
     const auto &groupParams = *perGroupParams[groupId];
 
     // Copy patches in group order
-    for (auto patch : *groupParams.atlasParamsList) {
+    for (auto patch : groupParams.atlasParamsList) {
       patch.atlasId += uint16_t(firstAtlasId);
       patch.viewId += uint16_t(firstViewId);
       atlasParamsList.push_back(patch);
     }
 
     // Copy atlas sizes in group order
-    copy(begin(groupParams.atlasParamsList->atlasSizes),
-         end(groupParams.atlasParamsList->atlasSizes), back_inserter(atlasParamsList.atlasSizes));
+    copy(begin(groupParams.atlasParamsList.atlasSizes),
+         end(groupParams.atlasParamsList.atlasSizes), back_inserter(atlasParamsList.atlasSizes));
 
     // Copy depthOccupancyParamsPresentFlags in group order
-    copy(begin(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
-         end(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
+    copy(begin(groupParams.atlasParamsList.depthOccupancyParamsPresentFlags),
+         end(groupParams.atlasParamsList.depthOccupancyParamsPresentFlags),
          back_inserter(atlasParamsList.depthOccupancyParamsPresentFlags));
 
     // Assign group ID's
@@ -334,7 +334,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
     }
 
     // Renumber atlases and views
-    firstAtlasId += groupParams.atlasParamsList->atlasSizes.size();
+    firstAtlasId += groupParams.atlasParamsList.atlasSizes.size();
     firstViewId += m_perGroupSequenceParams[groupId]->viewParamsList.size();
   }
 

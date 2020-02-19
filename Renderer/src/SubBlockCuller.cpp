@@ -49,8 +49,7 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-static auto affineParameterList(const ViewParamsList &viewParamsList,
-                                const ViewParams &target) {
+static auto affineParameterList(const ViewParamsList &viewParamsList, const ViewParams &target) {
   vector<pair<Mat3x3f, Vec3f>> result;
   result.reserve(viewParamsList.size());
   transform(
@@ -154,7 +153,7 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
                                       const ViewParams &target) -> PatchIdMapList {
   PatchIdMapList updatedpatchMapList = maps;
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
+  const auto &atlasParamsList = ivAccessUnitParams.atlasParamsList;
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     // If patch is as large as source view

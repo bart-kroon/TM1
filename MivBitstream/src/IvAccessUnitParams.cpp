@@ -64,13 +64,6 @@ auto AtlasParameters::operator==(const AtlasParameters &other) const -> bool {
          depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
 }
 
-AtlasParamsList::AtlasParamsList(AtlasParamsVector atlasParameters, bool omafV1CompatibleFlag_,
-                                 optional<vector<unsigned>> groupIds_, SizeVector atlasSizes_,
-                                 vector<bool> depthOccupancyParamsPresentFlags_)
-    : AtlasParamsVector{move(atlasParameters)}, omafV1CompatibleFlag{omafV1CompatibleFlag_},
-      groupIds{move(groupIds_)}, atlasSizes{move(atlasSizes_)},
-      depthOccupancyParamsPresentFlags{move(depthOccupancyParamsPresentFlags_)} {}
-
 auto AtlasParamsList::operator==(const AtlasParamsList &other) const -> bool {
   return equal(begin(), end(), other.begin(), other.end()) &&
          omafV1CompatibleFlag == other.omafV1CompatibleFlag && groupIds == other.groupIds &&
@@ -123,148 +116,6 @@ void assignAt(Vector &vector, size_t position, Value &&value) {
   vector[position] = forward<Value>(value);
 }
 } // namespace
-
-auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
-                                 const IvSequenceParams &ivSequenceParams) -> AtlasParamsList {
-  auto atlasParamsList = AtlasParamsList{};
-  auto numAtlases = bitstream.getUExpGolomb() + 1;
-  atlasParamsList.omafV1CompatibleFlag = bitstream.getFlag();
-
-  if (ivSequenceParams.msp().msp_num_groups_minus1() > 0) {
-    atlasParamsList.groupIds = vector<unsigned>(numAtlases, 0U);
-  }
-
-  while (numAtlases-- > 0) {
-    AtlasParameters patch;
-    patch.atlasId = bitstream.getUint8();
-
-    if (ivSequenceParams.msp().msp_num_groups_minus1() > 0) {
-      assignAt(*atlasParamsList.groupIds, patch.atlasId,
-               unsigned(bitstream.getUVar(ivSequenceParams.msp().msp_num_groups_minus1() + 1)));
-    }
-
-    auto numPatches = bitstream.getUint16() + 1;
-
-    auto atlasSize = Vec2i{};
-    atlasSize.x() = bitstream.getUint16() + 1;
-    atlasSize.y() = bitstream.getUint16() + 1;
-    assignAt(atlasParamsList.atlasSizes, patch.atlasId, atlasSize);
-    assignAt(atlasParamsList.depthOccupancyParamsPresentFlags, patch.atlasId, bitstream.getFlag());
-
-    while (numPatches-- > 0) {
-      patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
-      const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].ci.projectionPlaneSize();
-
-      if (ivSequenceParams.msp().msp_max_entities_minus1() > 0) {
-        patch.entityId =
-            unsigned(bitstream.getUVar(ivSequenceParams.msp().msp_max_entities_minus1() + 1));
-      }
-
-      patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
-      patch.patchSizeInView.y() = int(bitstream.getUVar(viewSize.y()) + 1);
-      patch.posInAtlas.x() = int(bitstream.getUVar(atlasSize.x()));
-      patch.posInAtlas.y() = int(bitstream.getUVar(atlasSize.y()));
-      patch.posInView.x() = int(bitstream.getUVar(viewSize.x()));
-      patch.posInView.y() = int(bitstream.getUVar(viewSize.y()));
-      patch.rotation = PatchRotation(bitstream.readBits(3));
-
-      if (atlasParamsList.depthOccupancyParamsPresentFlags[patch.atlasId]) {
-        if (const bool depthThresholdPresentFlag = bitstream.getFlag(); depthThresholdPresentFlag) {
-          patch.depthOccMapThreshold = uint16_t(bitstream.readBits(10));
-        }
-
-        if (const bool depthStartPresentFlag = bitstream.getFlag(); depthStartPresentFlag) {
-          patch.depthStart = uint16_t(bitstream.readBits(10));
-        }
-      }
-
-      VERIFY_MIVBITSTREAM(patch.posInView.x() + patch.patchSizeInView.x() <= viewSize.x());
-      VERIFY_MIVBITSTREAM(patch.posInView.y() + patch.patchSizeInView.y() <= viewSize.y());
-      VERIFY_MIVBITSTREAM(patch.posInAtlas.x() + patch.patchSizeInAtlas().x() <= atlasSize.x());
-      VERIFY_MIVBITSTREAM(patch.posInAtlas.y() + patch.patchSizeInAtlas().y() <= atlasSize.y());
-
-      atlasParamsList.push_back(patch);
-    }
-  }
-  return atlasParamsList;
-}
-
-void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
-                               const IvSequenceParams &ivSequenceParams) const {
-  VERIFY_MIVBITSTREAM(atlasSizes.size() == depthOccupancyParamsPresentFlags.size());
-
-  // Count patches per atlas ID
-  auto atlasIds = map<uint8_t, uint_least16_t>{};
-  for (const auto &patch : *this) {
-    ++atlasIds.insert({patch.atlasId, 0}).first->second;
-  }
-
-  VERIFY_MIVBITSTREAM(!atlasIds.empty());
-  bitstream.putUExpGolomb(atlasIds.size() - 1);
-  bitstream.putFlag(omafV1CompatibleFlag);
-
-  for (auto [atlasId, numPatches] : atlasIds) {
-    VERIFY_MIVBITSTREAM(numPatches > 0 && numPatches - 1 <= UINT16_MAX);
-    VERIFY_MIVBITSTREAM(atlasId < atlasSizes.size());
-    const auto atlasSize = atlasSizes[atlasId];
-
-    bitstream.putUint8(atlasId);
-
-    if (ivSequenceParams.msp().msp_num_groups_minus1() > 0) {
-      VERIFY_MIVBITSTREAM(groupIds);
-      const auto &groupIds_ = *groupIds;
-      bitstream.putUVar(groupIds_[atlasId], ivSequenceParams.msp().msp_num_groups_minus1() + 1);
-    }
-
-    bitstream.putUint16(uint16_t(numPatches - 1));
-    VERIFY_MIVBITSTREAM(atlasSize.x() >= 1 && atlasSize.y() >= 1);
-    bitstream.putUint16(atlasSize.x() - 1);
-    bitstream.putUint16(atlasSize.y() - 1);
-    bitstream.putFlag(depthOccupancyParamsPresentFlags[atlasId]);
-
-    for (const auto &patch : *this) {
-      if (patch.atlasId == atlasId) {
-        const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].ci.projectionPlaneSize();
-
-        VERIFY_MIVBITSTREAM(0 < patch.patchSizeInView.x() && 0 < patch.patchSizeInView.y());
-        VERIFY_MIVBITSTREAM(0 <= patch.posInView.x() && 0 <= patch.posInView.y());
-        VERIFY_MIVBITSTREAM(patch.posInView.x() + patch.patchSizeInView.x() <= viewSize.x());
-        VERIFY_MIVBITSTREAM(patch.posInView.y() + patch.patchSizeInView.y() <= viewSize.y());
-        VERIFY_MIVBITSTREAM(patch.posInAtlas.x() + patch.patchSizeInAtlas().x() <= atlasSize.x());
-        VERIFY_MIVBITSTREAM(patch.posInAtlas.y() + patch.patchSizeInAtlas().y() <= atlasSize.y());
-
-        bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
-
-        if (ivSequenceParams.msp().msp_max_entities_minus1() > 0) {
-          VERIFY_MIVBITSTREAM(patch.entityId);
-          bitstream.putUVar(*patch.entityId, ivSequenceParams.msp().msp_max_entities_minus1() + 1);
-        }
-
-        bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());
-        bitstream.putUVar(patch.patchSizeInView.y() - 1, viewSize.y());
-        bitstream.putUVar(patch.posInAtlas.x(), atlasSize.x());
-        bitstream.putUVar(patch.posInAtlas.y(), atlasSize.y());
-        bitstream.putUVar(patch.posInView.x(), viewSize.x());
-        bitstream.putUVar(patch.posInView.y(), viewSize.y());
-        bitstream.writeBits(unsigned(patch.rotation), 3);
-
-        if (depthOccupancyParamsPresentFlags[patch.atlasId]) {
-          bitstream.putFlag(!!patch.depthOccMapThreshold);
-          if (patch.depthOccMapThreshold) {
-            bitstream.writeBits(*patch.depthOccMapThreshold, 10);
-          }
-
-          bitstream.putFlag(!!patch.depthStart);
-          if (patch.depthStart) {
-            bitstream.writeBits(*patch.depthStart, 10);
-          }
-        } else {
-          VERIFY_MIVBITSTREAM(!patch.depthOccMapThreshold && !patch.depthStart);
-        }
-      }
-    }
-  }
-}
 
 auto viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) -> Vec2i {
   int w = patch.patchSizeInView.x();
@@ -331,35 +182,10 @@ auto atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) -> Vec2i {
 }
 
 auto operator<<(ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) -> ostream & {
-  if (const auto &x = ivAccessUnitParams.atlasParamsList) {
-    return stream << *x;
-  }
-  return stream << "No atlas parameters list\n";
+  return stream << ivAccessUnitParams.atlasParamsList;
 }
 
 auto IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const -> bool {
   return atlasParamsList == other.atlasParamsList;
-}
-
-auto IvAccessUnitParams::decodeFrom(InputBitstream &bitstream,
-                                    const IvSequenceParams &ivSequenceParams)
-    -> IvAccessUnitParams {
-  auto ivsAccessUnitParams = IvAccessUnitParams{};
-  const auto atlasParamsPresentFlag = bitstream.getFlag();
-  if (atlasParamsPresentFlag) {
-    ivsAccessUnitParams.atlasParamsList = AtlasParamsList::decodeFrom(bitstream, ivSequenceParams);
-  }
-  const auto ivsAupExtensionPresentFlag = bitstream.getFlag();
-  cout << "ivs_aup_extension_present_flag=" << boolalpha << ivsAupExtensionPresentFlag << '\n';
-  return ivsAccessUnitParams;
-}
-
-void IvAccessUnitParams::encodeTo(OutputBitstream &bitstream,
-                                  const IvSequenceParams &ivSequenceParams) const {
-  bitstream.putFlag(!!atlasParamsList);
-  if (atlasParamsList) {
-    atlasParamsList->encodeTo(bitstream, ivSequenceParams);
-  }
-  bitstream.putFlag(false);
 }
 } // namespace TMIV::MivBitstream

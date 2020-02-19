@@ -63,8 +63,7 @@ public:
   auto operator=(Impl &&) -> Impl & = delete;
   ~Impl() = default;
 
-  static auto affineParameterList(const ViewParamsList &viewParamsList,
-                                  const ViewParams &target) {
+  static auto affineParameterList(const ViewParamsList &viewParamsList, const ViewParams &target) {
     vector<pair<Mat3x3f, Vec3f>> result;
     result.reserve(viewParamsList.size());
     transform(
@@ -74,8 +73,8 @@ public:
   }
 
   static auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                            const AtlasParamsVector &patches,
-                            const ViewParamsList &viewParamsList, const ViewParams &target) {
+                            const AtlasParamsVector &patches, const ViewParamsList &viewParamsList,
+                            const ViewParams &target) {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
     const auto cols = int(ids.width());
@@ -167,8 +166,8 @@ public:
   }
 
   static auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                             const AtlasParamsVector &patches,
-                             const ViewParamsList &viewParamsList, const ViewParams &target) {
+                             const AtlasParamsVector &patches, const ViewParamsList &viewParamsList,
+                             const ViewParams &target) {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
     assert(int(ids.width()) == atlas.first.getWidth());
@@ -281,8 +280,7 @@ auto Synthesizer::renderFrame(const Common::MVD10Frame &atlas, const Common::Pat
                               const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
                               const MivBitstream::ViewParams &target) const
     -> Common::Texture444Depth16Frame {
-  assert(ivAccessUnitParams.atlasParamsList);
-  return m_impl->renderFrame(atlas, maps, *ivAccessUnitParams.atlasParamsList,
+  return m_impl->renderFrame(atlas, maps, ivAccessUnitParams.atlasParamsList,
                              ivSequenceParams.viewParamsList, target);
 }
 } // namespace TMIV::Renderer

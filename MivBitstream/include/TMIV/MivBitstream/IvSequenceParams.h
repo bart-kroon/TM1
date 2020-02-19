@@ -92,8 +92,8 @@ struct IvSequenceParams {
   std::optional<ViewingSpace> viewingSpace{};
 
   // Convenience function to access the MIV sequence params
-  auto &msp() const noexcept;
-  auto &msp() noexcept;
+  auto msp() const noexcept -> const MivSequenceParams &;
+  auto msp() noexcept -> MivSequenceParams &;
 
   friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &x);
   bool operator==(const IvSequenceParams &other) const;

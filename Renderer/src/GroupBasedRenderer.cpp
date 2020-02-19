@@ -130,16 +130,14 @@ auto GroupBasedRenderer::filterPatchIdMapList(GroupIdMask groupIdMask,
                                               PatchIdMapList patchIdMapList,
                                               const IvAccessUnitParams &ivAccessUnitParams)
     -> PatchIdMapList {
-  assert(ivAccessUnitParams.atlasParamsList);
-
   // No grouping, no filtering
-  if (!ivAccessUnitParams.atlasParamsList->groupIds) {
+  if (!ivAccessUnitParams.atlasParamsList.groupIds) {
     assert(groupIdMask == 1);
     return patchIdMapList;
   }
 
   // Filter out atlases that belong to a group that is not selected for this pass
-  const auto &groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
+  const auto &groupIds = *ivAccessUnitParams.atlasParamsList.groupIds;
   for (size_t atlasId = 0; atlasId < patchIdMapList.size(); ++atlasId) {
     if (!groupIdMask.test(groupIds[atlasId])) {
       fill(patchIdMapList[atlasId].getPlane(0).begin(), patchIdMapList[atlasId].getPlane(0).end(),
@@ -154,8 +152,7 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
                                        const IvAccessUnitParams &ivAccessUnitParams,
                                        const ViewParams &target) -> Priority {
   // No grouping, no priority
-  assert(ivAccessUnitParams.atlasParamsList);
-  if (!ivAccessUnitParams.atlasParamsList->groupIds) {
+  if (!ivAccessUnitParams.atlasParamsList.groupIds) {
     assert(groupId == 0);
     return {};
   }
@@ -163,8 +160,8 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
   // Enumerate the views that occur in this group (in arbitrary order)
   vector<unsigned> viewIds;
   viewIds.reserve(ivSequenceParams.viewParamsList.size());
-  const auto &groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
-  for (const auto &patch : *ivAccessUnitParams.atlasParamsList) {
+  const auto &groupIds = *ivAccessUnitParams.atlasParamsList.groupIds;
+  for (const auto &patch : ivAccessUnitParams.atlasParamsList) {
     if (groupId == groupIds[patch.atlasId] && !contains(viewIds, patch.viewId)) {
       viewIds.push_back(patch.viewId);
     }

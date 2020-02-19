@@ -81,10 +81,8 @@ auto DepthOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequ
 auto DepthOccupancy::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
     -> const MivBitstream::IvAccessUnitParams & {
   m_accessUnitParams = accessUnitParams;
-  if (m_accessUnitParams.atlasParamsList) {
-    m_accessUnitParams.atlasParamsList->depthOccupancyParamsPresentFlags =
-        vector<bool>(m_accessUnitParams.atlasParamsList->atlasSizes.size(), false);
-  }
+  m_accessUnitParams.atlasParamsList.depthOccupancyParamsPresentFlags =
+      vector<bool>(m_accessUnitParams.atlasParamsList.atlasSizes.size(), false);
   return m_accessUnitParams;
 }
 
@@ -97,7 +95,7 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
                             Depth10Frame{inAtlas.second.getWidth(), inAtlas.second.getHeight()});
   }
 
-  for (const auto &patch : *m_accessUnitParams.atlasParamsList) {
+  for (const auto &patch : m_accessUnitParams.atlasParamsList) {
     const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.viewId];
     const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.viewId];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};

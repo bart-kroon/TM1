@@ -106,7 +106,7 @@ public:
       cout << "Target viewport:\n";
       viewportParams.printTo(cout, 0);
 
-      const auto &atlasSizes = m_metadataReader.ivAccessUnitParams().atlasParamsList->atlasSizes;
+      const auto &atlasSizes = m_metadataReader.ivAccessUnitParams().atlasParamsList.atlasSizes;
       const auto viewport =
           m_decoder->decodeFrame(IO::loadAtlas(json(), atlasSizes, inputFrame), viewportParams);
       IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});

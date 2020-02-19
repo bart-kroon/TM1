@@ -56,12 +56,7 @@ void IvMetadataReader::readIvSequenceParams() {
 }
 
 void IvMetadataReader::readIvAccessUnitParams() {
-  const auto currentAtlasParamsList = m_ivAccessUnitParams.atlasParamsList;
-  m_ivAccessUnitParams = IvAccessUnitParams::decodeFrom(m_bitstream, m_ivSequenceParams);
-  if (!m_ivAccessUnitParams.atlasParamsList) {
-    m_ivAccessUnitParams.atlasParamsList = currentAtlasParamsList.value();
-  }
-  // TODO(BK): Partial atlas information? (With only some atlas_id's present.)
+  // TODO(BK): Implement
 }
 
 auto IvMetadataReader::readAccessUnit(int accessUnit) -> bool {

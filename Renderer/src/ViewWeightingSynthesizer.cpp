@@ -754,7 +754,7 @@ private:
     auto hasPruningRelation =
         std::any_of(sourceHelperList.begin(), sourceHelperList.end(), [](const auto &helper) {
           const auto &viewParams = helper.getViewParams();
-          return viewParams.pruningChildren && !viewParams.pruningChildren->empty();
+          return viewParams.pc && !viewParams.pc->pc_is_leaf_flag();
         });
 
     // Weight recovery
@@ -775,8 +775,8 @@ private:
       for (std::size_t nodeId = 0; nodeId < sourceHelperList.size(); nodeId++) {
         const auto &viewParams = sourceHelperList[nodeId].getViewParams();
 
-        if (viewParams.pruningChildren) {
-          for (auto childId : *viewParams.pruningChildren) {
+        if (viewParams.pc) {
+          for (auto childId : *viewParams.pc) {
             pruningGraph.connect(nodeId, static_cast<std::size_t>(childId), 1.F,
                                  LinkType::Directed);
           }

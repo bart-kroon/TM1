@@ -68,9 +68,9 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
                    viewParams.ce.ce_view_pos_z(), viewParams.ce.ce_view_quat_x(),
                    viewParams.ce.ce_view_quat_y(), viewParams.ce.ce_view_quat_z());
 
-  if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
+  if (viewParams.pc && !viewParams.pc->pc_is_leaf_flag()) {
     stream << ", pruningChildren [ ";
-    for (auto childId : *viewParams.pruningChildren) {
+    for (auto childId : *viewParams.pc) {
       stream << childId << " ";
     }
     stream << "]";
@@ -241,7 +241,7 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
         for (auto &childId : childIdList) {
           childId = static_cast<std::uint16_t>(bitstream.getUVar(viewParamsList.size()));
         }
-        viewParams.pruningChildren = std::move(childIdList);
+        viewParams.pc = PruningChildren{std::move(childIdList)};
       }
     }
   }
@@ -307,21 +307,18 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
   }
 
   bool pruningGraphParamsPresentFlag = std::any_of(begin(), end(), [](const auto &viewParams) {
-    return (viewParams.pruningChildren && !viewParams.pruningChildren->empty());
+    return viewParams.pc && !viewParams.pc->pc_is_leaf_flag();
   });
 
   bitstream.putFlag(pruningGraphParamsPresentFlag);
 
   if (pruningGraphParamsPresentFlag) {
     for (const auto &viewParams : *this) {
-      if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
-
+      if (viewParams.pc && !viewParams.pc->pc_is_leaf_flag()) {
         bitstream.putFlag(false);
+        bitstream.putUVar(viewParams.pc->pc_num_children_minus1(), size() - 1);
 
-        const auto &childIdList = *viewParams.pruningChildren;
-        bitstream.putUVar(childIdList.size() - 1, size() - 1);
-
-        for (const auto &childId : childIdList) {
+        for (const auto &childId : *viewParams.pc) {
           bitstream.putUVar(childId, size());
         }
       } else {

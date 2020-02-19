@@ -388,7 +388,7 @@ auto PruningChildren::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_vie
     return {};
   }
 
-  const auto pc_num_children_minus1 = bitstream.getUVar(mvp_num_views_minus1 + 1);
+  const auto pc_num_children_minus1 = bitstream.getUVar(mvp_num_views_minus1);
   auto x = vector<uint16_t>(pc_num_children_minus1 + 1);
 
   for (size_t i = 0; i < x.size(); ++i) {
@@ -401,7 +401,7 @@ auto PruningChildren::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_vie
 void PruningChildren::encodeTo(OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const {
   bitstream.putFlag(pc_is_leaf_flag());
   if (!pc_is_leaf_flag()) {
-    bitstream.putUVar(pc_num_children_minus1(), mvp_num_views_minus1 + 1);
+    bitstream.putUVar(pc_num_children_minus1(), mvp_num_views_minus1);
     for (uint16_t i = 0; i <= pc_num_children_minus1(); ++i) {
       bitstream.putUVar(pc_child_id(i), mvp_num_views_minus1 + 1);
     }

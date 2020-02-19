@@ -176,7 +176,7 @@ public:
           childIdList.emplace_back(static_cast<std::uint16_t>(link.node()));
         }
 
-        viewParamsList[camId].pruningChildren = std::move(childIdList);
+        viewParamsList[camId].pc = PruningChildren{std::move(childIdList)};
       }
     }
   }

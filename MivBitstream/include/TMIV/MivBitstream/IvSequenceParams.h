@@ -97,9 +97,7 @@ struct ViewParams {
   auto perspective() const -> const PerspectiveParams &;
 
   DepthQuantization dq;
-
-  // In specification: pruning_children[ v ]
-  std::optional<std::vector<uint16_t>> pruningChildren{};
+  std::optional<PruningChildren> pc;
 
   // Not in the specification. Just to improve screen output
   std::string name{};

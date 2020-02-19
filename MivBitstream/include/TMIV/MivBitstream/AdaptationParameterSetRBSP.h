@@ -184,6 +184,9 @@ public:
   auto pc_num_children_minus1() const noexcept -> std::uint16_t;
   auto pc_child_id(std::uint16_t i) const noexcept -> std::uint16_t;
 
+  auto begin() const noexcept { return m_pc_child_id.begin(); }
+  auto end() const noexcept { return m_pc_child_id.end(); }
+
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
   auto operator==(const PruningChildren &) const noexcept -> bool;

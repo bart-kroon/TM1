@@ -44,7 +44,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto ViewParams::printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream & {
+auto ViewParams::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
   if (!name.empty()) {
     stream << "name[ " << viewId << " ]=\"" << name << "\"  # informative\n";
   }
@@ -118,6 +118,9 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   return x;
 }
 
+ViewParamsList::ViewParamsList(vector<ViewParams> viewParamsList)
+    : vector<ViewParams>{move(viewParamsList)} {}
+
 auto ViewParamsList::viewSizes() const -> SizeVector {
   SizeVector sizes;
   sizes.reserve(size());
@@ -153,9 +156,16 @@ auto ViewParamsList::loadFromJson(const Json &node, const vector<string> &names)
   return result;
 }
 
-auto operator<<(std::ostream &stream, const IvSequenceParams &x) -> std::ostream & {
+IvSequenceParams::IvSequenceParams() {
+  vps.vps_miv_mode_flag(true).vps_extension_present_flag(true).vps_miv_extension_flag(true);
+}
+
+auto &IvSequenceParams::msp() const noexcept { return vps.miv_sequence_params(); }
+
+auto &IvSequenceParams::msp() noexcept { return vps.miv_sequence_params(); }
+
+auto operator<<(ostream &stream, const IvSequenceParams &x) -> ostream & {
   stream << x.vps;
-  stream << "view_params_list()=\n";
   stream << x.viewParamsList;
 
   if (x.viewingSpace) {

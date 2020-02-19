@@ -70,12 +70,7 @@ struct ViewParams {
 // Data type that corresponds to camera_params_list of specification
 struct ViewParamsList : public std::vector<ViewParams> {
   ViewParamsList() = default;
-  explicit ViewParamsList(std::vector<ViewParams> cameraParameters)
-      : std::vector<ViewParams>{std::move(cameraParameters)} {}
-  ViewParamsList(const ViewParamsList &) = default;
-  ViewParamsList(ViewParamsList &&) = default;
-  ViewParamsList &operator=(const ViewParamsList &) = default;
-  ViewParamsList &operator=(ViewParamsList &&) = default;
+  explicit ViewParamsList(std::vector<ViewParams> viewParamsList);
 
   // Size of each view as a vector
   auto viewSizes() const -> Common::SizeVector;
@@ -90,24 +85,15 @@ struct ViewParamsList : public std::vector<ViewParams> {
 };
 
 struct IvSequenceParams {
-  IvSequenceParams() {
-    vps.vps_miv_mode_flag(true).vps_extension_present_flag(true).vps_miv_extension_flag(true);
-  }
+  IvSequenceParams();
 
   VpccParameterSet vps;
-
-  // Convenience function to access the MIV sequence params
-  auto &msp() const noexcept { return vps.miv_sequence_params(); }
-
-  // Convenience function to access the MIV sequence params
-  auto &msp() noexcept { return vps.miv_sequence_params(); }
-
-  // In specification: view_params_list( )
   ViewParamsList viewParamsList;
-
-  // In specification: viewing_space_present_flag
-  // In specification: viewing_space( )
   std::optional<ViewingSpace> viewingSpace{};
+
+  // Convenience function to access the MIV sequence params
+  auto &msp() const noexcept;
+  auto &msp() noexcept;
 
   friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &x);
   bool operator==(const IvSequenceParams &other) const;

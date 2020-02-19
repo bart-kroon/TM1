@@ -63,30 +63,30 @@ public:
   auto operator=(Impl &&) -> Impl & = delete;
   ~Impl() = default;
 
-  static auto affineParameterList(const ViewParamsVector &viewParamsVector,
+  static auto affineParameterList(const ViewParamsList &viewParamsList,
                                   const ViewParams &target) {
     vector<pair<Mat3x3f, Vec3f>> result;
-    result.reserve(viewParamsVector.size());
+    result.reserve(viewParamsList.size());
     transform(
-        begin(viewParamsVector), end(viewParamsVector), back_inserter(result),
+        begin(viewParamsList), end(viewParamsList), back_inserter(result),
         [&target](const ViewParams &viewParams) { return affineParameters(viewParams, target); });
     return result;
   }
 
   static auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                             const AtlasParamsVector &patches,
-                            const ViewParamsVector &viewParamsVector, const ViewParams &target) {
+                            const ViewParamsList &viewParamsList, const ViewParams &target) {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
     const auto cols = int(ids.width());
     result.reserve(rows * cols);
 
-    auto R_t = affineParameterList(viewParamsVector, target);
+    auto R_t = affineParameterList(viewParamsList, target);
 
     vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(patches.size());
     for (const auto &patch : patches) {
-      depthTransform.emplace_back(viewParamsVector[patch.viewId].dq, patch);
+      depthTransform.emplace_back(viewParamsList[patch.viewId].dq, patch);
     }
 
     auto i_ids = begin(ids);
@@ -105,8 +105,8 @@ public:
         // Look up metadata
         assert(patchId < patches.size());
         const auto &patch = patches[patchId];
-        assert(patch.viewId < viewParamsVector.size());
-        const auto &viewParams = viewParamsVector[patch.viewId];
+        assert(patch.viewId < viewParamsList.size());
+        const auto &viewParams = viewParamsList[patch.viewId];
 
         // Look up depth value and affine parameters
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
@@ -168,12 +168,12 @@ public:
 
   static auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
                              const AtlasParamsVector &patches,
-                             const ViewParamsVector &viewParamsVector, const ViewParams &target) {
+                             const ViewParamsList &viewParamsList, const ViewParams &target) {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
     assert(int(ids.width()) == atlas.first.getWidth());
     assert(int(ids.width()) == atlas.second.getWidth());
-    return tuple{atlasVertices(atlas, ids, patches, viewParamsVector, target), atlasTriangles(ids),
+    return tuple{atlasVertices(atlas, ids, patches, viewParamsList, target), atlasTriangles(ids),
                  tuple{atlasColors(atlas)}};
   }
 
@@ -230,26 +230,26 @@ public:
     return square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
-  static auto resolutionRatio(const ViewParamsVector &viewParamsVector, const ViewParams &target)
+  static auto resolutionRatio(const ViewParamsList &viewParamsList, const ViewParams &target)
       -> float {
     const auto sourceResolution =
-        accumulate(begin(viewParamsVector), end(viewParamsVector), 0.F,
+        accumulate(begin(viewParamsList), end(viewParamsList), 0.F,
                    [&](float average, const ViewParams &viewParams) {
-                     return average + resolution(viewParams) / viewParamsVector.size();
+                     return average + resolution(viewParams) / viewParamsList.size();
                    });
     return resolution(target) / sourceResolution;
   }
 
   auto renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
-                   const AtlasParamsVector &patches, const ViewParamsVector &viewParamsVector,
+                   const AtlasParamsVector &patches, const ViewParamsList &viewParamsList,
                    const ViewParams &target) const -> Texture444Depth16Frame {
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(atlases.size(), target,
                                   [&](size_t i, const ViewParams &target) {
                                     return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
-                                                          viewParamsVector, target);
+                                                          viewParamsList, target);
                                   },
-                                  resolutionRatio(viewParamsVector, target));
+                                  resolutionRatio(viewParamsList, target));
     const auto depthTransform = DepthTransform<16>{target.dq};
     auto frame = Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
                                         depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};

@@ -53,7 +53,7 @@ public:
                      const Common::MVD10Frame &frame) -> Common::PatchIdMapList override;
 
   auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                         const MivBitstream::ViewParamsVector &viewParamsVector,
+                         const MivBitstream::ViewParamsList &viewParamsList,
                          const MivBitstream::AtlasParamsVector &atlasParamsVector)
       -> Common::MVD10Frame override;
 
@@ -62,7 +62,7 @@ private:
   void writePatchIdInMap(const MivBitstream::AtlasParameters &patch,
                          Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
                          const Common::MVD10Frame &frame,
-                         const MivBitstream::ViewParamsVector &viewParamsVector);
+                         const MivBitstream::ViewParamsList &viewParamsList);
   bool m_downscale_depth = false;
 };
 } // namespace TMIV::AtlasDeconstructor

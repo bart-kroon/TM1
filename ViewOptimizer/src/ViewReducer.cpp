@@ -55,15 +55,15 @@ ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
 auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output {
 
-  const auto &viewParamsVector = ivSequenceParams.viewParamsList;
-  m_isBasicView.assign(viewParamsVector.size(), false);
+  const auto &viewParamsList = ivSequenceParams.viewParamsList;
+  m_isBasicView.assign(viewParamsList.size(), false);
 
   // choose 9 degree as quantization step of angle between view i and view j.
   const float degree_step = radperdeg * 9;
   // choose 64 as quantization step of FOV.
   const float FOV_step = (45 * radperdeg) / 4;
 
-  size_t nbCameras = viewParamsVector.size();
+  size_t nbCameras = viewParamsList.size();
 
   // search the largest angle between two views i,j
   vector<pair<size_t, size_t>> cameras_id_pair;
@@ -76,7 +76,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
   size_t id_j;
 
   // Early termination: if any view is full-ERP, choose this view
-  for (auto &viewParams : viewParamsVector) {
+  for (auto &viewParams : viewParamsList) {
     const auto &ci = viewParams.ci;
     if (ci.ci_cam_type() == CiCamType::equirectangular) {
       if (abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min() - fullCycle) < 1e-6F) {
@@ -97,11 +97,11 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
         // TODO(BK): Reimplement angle comparison with quaternions
 #if false
         auto temp_angle = size_t(
-            acos(sin(viewParamsVector[id_1].rotation[1] * radperdeg) *
-                     sin(viewParamsVector[id_2].rotation[1] * radperdeg) +
-                 cos(viewParamsVector[id_1].rotation[1] * radperdeg) *
-                     cos(viewParamsVector[id_2].rotation[1] * radperdeg) *
-                     cos((viewParamsVector[id_1].rotation[0] - viewParamsVector[id_2].rotation[0]) *
+            acos(sin(viewParamsList[id_1].rotation[1] * radperdeg) *
+                     sin(viewParamsList[id_2].rotation[1] * radperdeg) +
+                 cos(viewParamsList[id_1].rotation[1] * radperdeg) *
+                     cos(viewParamsList[id_2].rotation[1] * radperdeg) *
+                     cos((viewParamsList[id_1].rotation[0] - viewParamsList[id_2].rotation[0]) *
                          radperdeg)) /
             degree_step);
 #else
@@ -126,7 +126,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_2 = cameras_id_pair[id].second;
 
       temp_FOV = static_cast<size_t>(
-          (calculateFOV(viewParamsVector[id_1]) + calculateFOV(viewParamsVector[id_2])) / FOV_step);
+          (calculateFOV(viewParamsList[id_1]) + calculateFOV(viewParamsList[id_2])) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -147,7 +147,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_1 = cameras_id_pair[id].first;
       size_t id_2 = cameras_id_pair[id].second;
 
-      temp_distance = calculateDistance(viewParamsVector[id_1], viewParamsVector[id_2]);
+      temp_distance = calculateDistance(viewParamsList[id_1], viewParamsList[id_2]);
       if (temp_distance > max_distance) {
         max_distance = temp_distance;
         max_num = 1;
@@ -167,8 +167,8 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_2 = id.second;
 
       // TODO(BK): This must be a mistake. Why only the x-coordinate?
-      temp_distance = abs(viewParamsVector[id_1].ce.ce_view_pos_x() -
-                          viewParamsVector[id_2].ce.ce_view_pos_x());
+      temp_distance = abs(viewParamsList[id_1].ce.ce_view_pos_x() -
+                          viewParamsList[id_2].ce.ce_view_pos_x());
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
         camera_id_pair = id;
@@ -179,11 +179,11 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     id_i = camera_id_pair.first;
     id_j = camera_id_pair.second;
     float overlapping = 0;
-    overlapping = calculateOverlapping(viewParamsVector[id_i], viewParamsVector[id_j]);
+    overlapping = calculateOverlapping(viewParamsList[id_i], viewParamsList[id_j]);
 
     // Decide whether the number is one or multiple
-    isoneview = overlapping >= overlapThreshold * min(calculateFOV(viewParamsVector[id_i]),
-                                                      calculateFOV(viewParamsVector[id_j]));
+    isoneview = overlapping >= overlapThreshold * min(calculateFOV(viewParamsList[id_i]),
+                                                      calculateFOV(viewParamsList[id_j]));
   }
 
   // Just select 1 view which has the shortest distance to center
@@ -194,7 +194,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     int id_center = 0;
     float distance = numeric_limits<float>::max();
 
-    for (auto &viewParams : viewParamsVector) {
+    for (auto &viewParams : viewParamsList) {
       x_center += viewParams.ce.ce_view_pos_x();
       y_center += viewParams.ce.ce_view_pos_y();
       z_center += viewParams.ce.ce_view_pos_z();
@@ -209,7 +209,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     for (size_t id = 0; id < nbCameras; id++) {
       size_t temp_FOV = 0;
 
-      temp_FOV = static_cast<size_t>(calculateFOV(viewParamsVector[id]) / FOV_step);
+      temp_FOV = static_cast<size_t>(calculateFOV(viewParamsList[id]) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -221,9 +221,9 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     }
     // Search views which have the least diatance to center
     for (auto i : camera_id) {
-      float temp_distance = sqrt(square(viewParamsVector[i].ce.ce_view_pos_x() - x_center) +
-                                 square(viewParamsVector[i].ce.ce_view_pos_y() - y_center) +
-                                 square(viewParamsVector[i].ce.ce_view_pos_z() - z_center));
+      float temp_distance = sqrt(square(viewParamsList[i].ce.ce_view_pos_x() - x_center) +
+                                 square(viewParamsList[i].ce.ce_view_pos_y() - y_center) +
+                                 square(viewParamsList[i].ce.ce_view_pos_z() - z_center));
       if (temp_distance < distance) {
         id_center = int(i);
         distance = temp_distance;

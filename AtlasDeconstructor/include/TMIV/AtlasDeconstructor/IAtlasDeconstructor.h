@@ -53,7 +53,7 @@ public:
                              const Common::MVD10Frame &frame) -> Common::PatchIdMapList = 0;
 
   virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                                 const MivBitstream::ViewParamsVector &viewParamsVector,
+                                 const MivBitstream::ViewParamsList &viewParamsList,
                                  const MivBitstream::AtlasParamsVector &atlasParamsVector)
       -> Common::MVD10Frame = 0;
 };

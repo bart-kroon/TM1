@@ -63,17 +63,15 @@ struct ViewParams {
 
   // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
   //
-  // The parameter is a an item of the viewParamsVector node (a JSON object).
+  // The parameter is a an item of the viewParamsList node (a JSON object).
   static ViewParams loadFromJson(const Common::Json &node);
 };
 
-using ViewParamsVector = std::vector<ViewParams>;
-
 // Data type that corresponds to camera_params_list of specification
-struct ViewParamsList : public ViewParamsVector {
+struct ViewParamsList : public std::vector<ViewParams> {
   ViewParamsList() = default;
-  explicit ViewParamsList(ViewParamsVector cameraParameters)
-      : ViewParamsVector{std::move(cameraParameters)} {}
+  explicit ViewParamsList(std::vector<ViewParams> cameraParameters)
+      : std::vector<ViewParams>{std::move(cameraParameters)} {}
   ViewParamsList(const ViewParamsList &) = default;
   ViewParamsList(ViewParamsList &&) = default;
   ViewParamsList &operator=(const ViewParamsList &) = default;
@@ -82,14 +80,11 @@ struct ViewParamsList : public ViewParamsVector {
   // Size of each view as a vector
   auto viewSizes() const -> Common::SizeVector;
 
-  friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &viewParamsVector);
+  friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &viewParamsList);
   bool operator==(const ViewParamsList &other) const;
   bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
 
   // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
-  // with viewParamsVector specified by name, in that order
-  //
-  // The first parameter is the viewParamsVector node (a JSON array).
   static ViewParamsList loadFromJson(const Common::Json &node,
                                      const std::vector<std::string> &names);
 };

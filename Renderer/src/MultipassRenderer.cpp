@@ -73,14 +73,14 @@ struct MultipassRendererHelper {
     return unusedPatchId;
   }
 
-  static auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target)
+  static auto sortViews(const ViewParamsList &viewParamsList, const ViewParams &target)
       -> vector<size_t> {
     vector<float> distance;
     vector<float> angle;
     vector<float> angleWeight;
 
-    for (size_t i = 0; i < viewParamsVector.size(); ++i) {
-      const auto &source = viewParamsVector[i];
+    for (size_t i = 0; i < viewParamsList.size(); ++i) {
+      const auto &source = viewParamsList[i];
       distance.push_back(norm(source.ce.position() - target.ce.position()));
 
       // Compute Angle between the camera and target in degree unit
@@ -107,8 +107,8 @@ struct MultipassRendererHelper {
       angleWeight.push_back(1.F - abs(angle[i]) / halfCycle);
     }
 
-    // Find the sorted viewParamsVector indices
-    vector<size_t> sortedCamerasId(viewParamsVector.size());
+    // Find the sorted viewParamsList indices
+    vector<size_t> sortedCamerasId(viewParamsList.size());
     iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0);
     sort(sortedCamerasId.begin(), sortedCamerasId.end(),
          [&distance, &angleWeight](size_t i1, size_t i2) {

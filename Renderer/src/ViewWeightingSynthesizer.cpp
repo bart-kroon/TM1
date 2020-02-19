@@ -360,7 +360,7 @@ private:
     }
   }
   template <typename MVD>
-  auto recoverPrunedViewAndMask(const MVD &atlas, const ViewParamsVector &viewParamsVector,
+  auto recoverPrunedViewAndMask(const MVD &atlas, const ViewParamsList &viewParamsList,
                                 const AtlasParamsVector &atlasParamsVector)
       -> std::pair<MVD, MaskList> {
 
@@ -371,7 +371,7 @@ private:
     MVD frame;
     MaskList maskList;
 
-    for (const auto &cam : viewParamsVector) {
+    for (const auto &cam : viewParamsList) {
       TextureFrame tex(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
       DepthFrame depth(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
       tex.fillNeutral();
@@ -387,7 +387,7 @@ private:
 
     for (auto iter = atlasParamsVector.rbegin(); iter != atlasParamsVector.rend(); ++iter) {
       const auto &patch = *iter;
-      const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
+      const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
 
       auto &currentAtlas = atlas_pruned[patch.atlasId];
       auto &currentView = frame[patch.viewId];

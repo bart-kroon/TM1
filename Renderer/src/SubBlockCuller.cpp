@@ -49,17 +49,17 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-static auto affineParameterList(const ViewParamsVector &viewParamsVector,
+static auto affineParameterList(const ViewParamsList &viewParamsList,
                                 const ViewParams &target) {
   vector<pair<Mat3x3f, Vec3f>> result;
-  result.reserve(viewParamsVector.size());
+  result.reserve(viewParamsList.size());
   transform(
-      begin(viewParamsVector), end(viewParamsVector), back_inserter(result),
+      begin(viewParamsList), end(viewParamsList), back_inserter(result),
       [&target](const ViewParams &viewParams) { return affineParameters(viewParams, target); });
   return result;
 }
 
-auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
+auto choosePatch(const AtlasParameters &patch, const ViewParamsList &cameras,
                  const ViewParams &target) -> bool {
   const auto &camera = cameras[patch.viewId];
   auto R_t = affineParameterList(cameras, target);

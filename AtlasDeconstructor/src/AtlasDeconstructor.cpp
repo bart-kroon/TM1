@@ -93,7 +93,7 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
                                            PatchIdMapList &patchMapList, uint16_t patchId,
                                            const MVD10Frame &frame,
-                                           const ViewParamsVector &viewParamsVector) {
+                                           const ViewParamsList &viewParamsList) {
   auto &patchMap = patchMapList[patch.atlasId];
   auto &depthMap = frame[patch.atlasId].second.getPlane(0);
 
@@ -104,7 +104,7 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   int yMin = q0.y();
   int yLast = q0.y() + sizeInAtlas.y();
 
-  const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
+  const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
 
   if (m_downscale_depth) {
     yMin /= 2;
@@ -123,13 +123,13 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 }
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
-                                           const ViewParamsVector &viewParamsVector,
+                                           const ViewParamsList &viewParamsList,
                                            const AtlasParamsVector &atlasParamsVector)
     -> MVD10Frame {
   // Initialization
   MVD10Frame frame;
 
-  for (const auto &cam : viewParamsVector) {
+  for (const auto &cam : viewParamsList) {
     TextureFrame tex(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
     Depth10Frame depth(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
     tex.fillNeutral();
@@ -141,7 +141,7 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   for (auto iter = atlasParamsVector.rbegin(); iter != atlasParamsVector.rend(); ++iter) {
     const auto &patch = *iter;
-    const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
+    const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
 
     auto &currentAtlas = atlas_pruned[patch.atlasId];
     auto &currentView = frame[patch.viewId];

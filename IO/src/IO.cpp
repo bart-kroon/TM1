@@ -354,14 +354,14 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 
   auto outputviewName = config.require("OutputCameraName").asString();
 
-  auto viewParamsVector =
+  auto viewParamsList =
       ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputviewName});
 
-  if (viewParamsVector.empty()) {
+  if (viewParamsList.empty()) {
     throw runtime_error("Unknown OutputCameraName " + outputviewName);
   }
 
-  ViewParams &result = viewParamsVector.front();
+  ViewParams &result = viewParamsList.front();
 
   // The result may have invalid depth values
   result.hasOccupancy = true;

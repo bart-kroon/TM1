@@ -215,20 +215,17 @@ public:
     return rasterizer;
   }
 
-  // Field of view in deg
+  // Field of view [rad]
   static auto xFoV(const ViewParams &viewParams) -> float {
-    return visit(overload(
-                     [](const ErpParams &projection) {
-                       return abs(projection.phiRange[1] - projection.phiRange[0]);
-                     },
-                     [&](const PerspectiveParams &projection) {
-                       return degperrad * 2 *
-                              atan(viewParams.ci.projectionPlaneSize().x() / (2 * projection.focal.x()));
-                     }),
-                 viewParams.projection);
+    const auto &ci = viewParams.ci;
+    return ci.dispatch(overload(
+        [&](Equirectangular) { return abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()); },
+        [&](Perspective) {
+          return 2.F * atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
+        }));
   }
 
-  // Resolution in px^2/deg^2
+  // Resolution in px^2/rad^2
   static auto resolution(const ViewParams &viewParams) -> float {
     return square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }

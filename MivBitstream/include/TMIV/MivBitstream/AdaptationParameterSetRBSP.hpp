@@ -113,6 +113,20 @@ constexpr auto &CameraIntrinsics::ci_ortho_height(const float value) noexcept {
   return *this;
 }
 
+template <typename F> decltype(auto) CameraIntrinsics::dispatch(F f) const {
+  switch (ci_cam_type()) {
+  case CiCamType::equirectangular:
+    return f(Equirectangular{});
+  case CiCamType::perspective:
+    return f(Perspective{});
+  case CiCamType::orthographic:
+    // TODO(BK): Implement orthographic rendering engine
+    abort();
+  default:
+    abort();
+  }
+}
+
 constexpr auto CameraIntrinsics::operator==(const CameraIntrinsics &other) const noexcept {
   return ci_cam_type() == other.ci_cam_type() &&
          ci_projection_plane_width_minus1() == other.ci_projection_plane_width_minus1() &&

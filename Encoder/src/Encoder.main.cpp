@@ -148,7 +148,8 @@ private:
       if (m_reconstructor) {
         const auto viewportParams = loadViewportMetadata(json(), i);
         const auto viewport = m_reconstructor->decodeFrame(atlas, viewportParams);
-        cout << "Reconstruction: " << viewportParams << '\n';
+        cout << "Reconstruction:\n";
+        viewportParams.printTo(cout, 0);
 
         saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
       }

@@ -33,6 +33,8 @@
 
 #include <TMIV/Renderer/Inpainter.h>
 
+#include <TMIV/Common/Common.h>
+
 #include <cmath>
 
 using namespace std;
@@ -415,8 +417,9 @@ template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &
 
   fillVerticalCracks(yuvd);
 
-  if (auto projection = get_if<ErpParams>(&meta.projection)) {
-    double angleRange = (projection->phiRange[1] - projection->phiRange[0]) / M_2PI;
+  if (meta.ci.ci_cam_type() == CiCamType::equirectangular) {
+    // TODO(BK): Bug? ERP used be in degrees but the "/ M_2PI"  was already there
+    const auto angleRange = (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / fullCycle;
     inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, angleRange);
   }
 

@@ -131,15 +131,15 @@ public:
     }
   }
 
-  template <typename ProjectionType>
+  template <CiCamType camType>
   void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
                                const std::vector<bool> &isBasicView) {
 
     auto &viewParamsList = ivSequenceParams.viewParamsList;
-    typename ProjectionHelper<ProjectionType>::List cameraHelperList{viewParamsList};
+    typename ProjectionHelper<camType>::List cameraHelperList{viewParamsList};
 
     // Overlapping matrix
-    auto overlappingMatrix = computeOverlappingMatrix<ProjectionType>(cameraHelperList);
+    auto overlappingMatrix = computeOverlappingMatrix<camType>(cameraHelperList);
 
     // Pruning order
     computePruningOrder(overlappingMatrix, isBasicView);
@@ -410,13 +410,9 @@ HierarchicalPruner::~HierarchicalPruner() = default;
 
 void HierarchicalPruner::registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
                                                  const std::vector<bool> &isBasicView) {
-  return std::visit(
-      [&](const auto &projection) {
-        using ProjectionType = std::decay_t<decltype(projection)>;
-
-        return m_impl->registerPruningRelation<ProjectionType>(ivSequenceParams, isBasicView);
-      },
-      ivSequenceParams.viewParamsList[0].projection);
+  return ivSequenceParams.viewParamsList.front().ci.dispatch([&](auto camType) {
+    return m_impl->registerPruningRelation<camType>(ivSequenceParams, isBasicView);
+  });
 }
 
 auto HierarchicalPruner::prune(const MivBitstream::IvSequenceParams &ivSequenceParams,

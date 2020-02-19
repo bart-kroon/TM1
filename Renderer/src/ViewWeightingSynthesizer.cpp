@@ -168,45 +168,43 @@ public:
     m_overloadFactor = overloadFactor;
     m_filteringPass = filteringPass;
   }
-  template <typename SourceProjectionType, typename TargetProjectionType, typename MVD>
+  template <CiCamType sourceCamType, CiCamType targetCamType, typename MVD>
   auto renderFrame(const MVD &atlasList, const PatchIdMapList &maps,
                    const MivBitstream::IvSequenceParams &ivSequenceParams,
                    const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
                    const MivBitstream::ViewParams &targetCamera) -> Common::Texture444Depth16Frame {
-
-    typename ProjectionHelper<SourceProjectionType>::List sourceHelperList{
+    typename ProjectionHelper<sourceCamType>::List sourceHelperList{
         ivSequenceParams.viewParamsList};
-    ProjectionHelper<TargetProjectionType> targetHelper{targetCamera};
+    ProjectionHelper<targetCamType> targetHelper{targetCamera};
 
     //######################################################################################
     // 0) Initialization
-    computeCameraWeight<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
-    computeCameraVisibility<SourceProjectionType, TargetProjectionType>(sourceHelperList,
-                                                                        targetHelper);
-    computeAngularDistortionPerSource<SourceProjectionType>(sourceHelperList);
+    computeCameraWeight<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
+    computeCameraVisibility<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
+    computeAngularDistortionPerSource<sourceCamType>(sourceHelperList);
 
     //######################################################################################
     // 1) Deconstruction
-    recoverPrunedSource<MVD, SourceProjectionType>(
-        atlasList, ivSequenceParams, *ivAccessUnitParams.atlasParamsList, sourceHelperList);
+    recoverPrunedSource<MVD, sourceCamType>(atlasList, ivSequenceParams,
+                                            *ivAccessUnitParams.atlasParamsList, sourceHelperList);
 
     //######################################################################################
     // 2) Reprojection
-    reprojectPrunedSource<SourceProjectionType, TargetProjectionType>(
-        maps, *ivAccessUnitParams.atlasParamsList, sourceHelperList, targetHelper);
+    reprojectPrunedSource<sourceCamType, targetCamType>(maps, *ivAccessUnitParams.atlasParamsList,
+                                                        sourceHelperList, targetHelper);
 
     //######################################################################################
     // 3) Warping
-    warpPrunedSource<TargetProjectionType>(*ivAccessUnitParams.atlasParamsList, targetHelper);
+    warpPrunedSource<targetCamType>(*ivAccessUnitParams.atlasParamsList, targetHelper);
 
     //######################################################################################
     // 4) Weight recovery
-    recoverPrunedWeight<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
+    recoverPrunedWeight<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
 
     //######################################################################################
     // 5) Selection
-    selectViewportDepth<TargetProjectionType>(!ivSequenceParams.msp().msp_depth_low_quality_flag(),
-                                              targetHelper);
+    selectViewportDepth<targetCamType>(!ivSequenceParams.msp().msp_depth_low_quality_flag(),
+                                       targetHelper);
 
     //######################################################################################
     // 6) Filtering
@@ -214,7 +212,7 @@ public:
 
     //######################################################################################
     // 7) Shading
-    computeShadingMap<SourceProjectionType, TargetProjectionType>(sourceHelperList, targetHelper);
+    computeShadingMap<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
 
     //######################################################################################
     // 8) Output
@@ -238,10 +236,9 @@ public:
   }
 
 private:
-  template <typename SourceProjectionType, typename TargetProjectionType>
-  void
-  computeCameraWeight(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
-                      const ProjectionHelper<TargetProjectionType> &targetHelper) {
+  template <CiCamType sourceCamType, CiCamType targetCamType>
+  void computeCameraWeight(const typename ProjectionHelper<sourceCamType>::List &sourceHelperList,
+                           const ProjectionHelper<targetCamType> &targetHelper) {
 
     auto isTridimensional = [&]() -> bool {
       constexpr auto epsilon = 1e-2F;
@@ -300,10 +297,10 @@ private:
       m_cameraWeight = {1.F};
     }
   }
-  template <typename SourceProjectionType, typename TargetProjectionType>
-  void computeCameraVisibility(
-      const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
-      const ProjectionHelper<TargetProjectionType> &targetHelper) {
+  template <CiCamType sourceCamType, CiCamType targetCamType>
+  void
+  computeCameraVisibility(const typename ProjectionHelper<sourceCamType>::List &sourceHelperList,
+                          const ProjectionHelper<targetCamType> &targetHelper) {
     const unsigned N = 4;
     const Vec2f depthRange = {0.5F, 10.F};
 
@@ -317,7 +314,8 @@ private:
       float px = x * static_cast<float>(targetHelper.getViewParams().ci.projectionPlaneSize().x());
 
       for (unsigned j = 0; j < N; j++) {
-        float py = y * static_cast<float>(targetHelper.getViewParams().ci.projectionPlaneSize().y());
+        float py =
+            y * static_cast<float>(targetHelper.getViewParams().ci.projectionPlaneSize().y());
 
         pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.x()));
         pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.y()));
@@ -347,9 +345,9 @@ private:
       m_cameraVisibility.emplace_back(0 < K);
     }
   }
-  template <typename SourceProjectionType>
+  template <CiCamType sourceCamType>
   void computeAngularDistortionPerSource(
-      const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList) {
+      const typename ProjectionHelper<sourceCamType>::List &sourceHelperList) {
 
     m_cameraDistortion.resize(sourceHelperList.size(), 0.F);
 
@@ -443,11 +441,10 @@ private:
     return {frame, maskList};
   }
 
-  template <typename MVD, typename SourceProjectionType>
-  void recoverPrunedSource(
-      const MVD &atlasList, const IvSequenceParams &ivSequenceParams,
-      const AtlasParamsList &atlasParamsList,
-      const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList) {
+  template <typename MVD, CiCamType sourceCamType>
+  void recoverPrunedSource(const MVD &atlasList, const IvSequenceParams &ivSequenceParams,
+                           const AtlasParamsList &atlasParamsList,
+                           const typename ProjectionHelper<sourceCamType>::List &sourceHelperList) {
 
     using TextureDepthFrame = typename MVD::value_type;
     using DepthFrame = typename TextureDepthFrame::second_type;
@@ -480,11 +477,11 @@ private:
                      });
     }
   }
-  template <typename SourceProjectionType, typename TargetProjectionType>
-  void reprojectPrunedSource(
-      const PatchIdMapList &patchIdMapList, const AtlasParamsList &atlasParamsList,
-      const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
-      const ProjectionHelper<TargetProjectionType> &targetHelper) {
+  template <CiCamType sourceCamType, CiCamType targetCamType>
+  void reprojectPrunedSource(const PatchIdMapList &patchIdMapList,
+                             const AtlasParamsList &atlasParamsList,
+                             const typename ProjectionHelper<sourceCamType>::List &sourceHelperList,
+                             const ProjectionHelper<targetCamType> &targetHelper) {
 
     m_sourceUnprojection.resize(m_sourceDepth.size());
     m_sourceReprojection.resize(m_sourceDepth.size());
@@ -545,9 +542,9 @@ private:
       }
     }
   }
-  template <typename TargetProjectionType>
+  template <CiCamType targetCamType>
   void warpPrunedSource(const AtlasParamsList &atlasParamsList,
-                        const ProjectionHelper<TargetProjectionType> &targetHelper) {
+                        const ProjectionHelper<targetCamType> &targetHelper) {
 
     struct Splat {
       Vec2f center{};
@@ -702,8 +699,9 @@ private:
     for (std::size_t viewId = 0; viewId < m_sourceDepth.size(); viewId++) {
       if (m_cameraVisibility[viewId]) {
 
-        m_viewportUnprojection[viewId].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
-                                              targetHelper.getViewParams().ci.projectionPlaneSize().x());
+        m_viewportUnprojection[viewId].resize(
+            targetHelper.getViewParams().ci.projectionPlaneSize().y(),
+            targetHelper.getViewParams().ci.projectionPlaneSize().x());
         std::fill(m_viewportUnprojection[viewId].begin(), m_viewportUnprojection[viewId].end(),
                   Vec3f{Common::NaN, Common::NaN, Common::NaN});
 
@@ -745,10 +743,10 @@ private:
       }
     });
   }
-  template <typename SourceProjectionType, typename TargetProjectionType>
-  void
-  recoverPrunedWeight(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
-                      const ProjectionHelper<TargetProjectionType> &targetHelper) {
+
+  template <CiCamType sourceCamType, CiCamType targetCamType>
+  void recoverPrunedWeight(const typename ProjectionHelper<sourceCamType>::List &sourceHelperList,
+                           const ProjectionHelper<targetCamType> &targetHelper) {
 
     // Retrieve pruning information
     auto hasPruningRelation =
@@ -791,7 +789,8 @@ private:
       // Recovery
       parallel_for(
           targetHelper.getViewParams().ci.projectionPlaneSize().x(),
-          targetHelper.getViewParams().ci.projectionPlaneSize().y(), [&](std::size_t y, std::size_t x) {
+          targetHelper.getViewParams().ci.projectionPlaneSize().y(),
+          [&](std::size_t y, std::size_t x) {
             for (auto prunedNodeId : pruningOrderId) {
 
               if (m_cameraVisibility[prunedNodeId]) {
@@ -880,9 +879,8 @@ private:
           });
     }
   }
-  template <typename SourceProjectionType, typename TargetProjectionType>
-  void selectViewportDepth(bool trustDepth,
-                           const ProjectionHelper<TargetProjectionType> &targetHelper) {
+  template <CiCamType sourceCamType, CiCamType targetCamType>
+  void selectViewportDepth(bool trustDepth, const ProjectionHelper<targetCamType> &targetHelper) {
 
     m_viewportVisibility.resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                                 targetHelper.getViewParams().ci.projectionPlaneSize().x());
@@ -977,10 +975,9 @@ private:
       std::swap(firstWrapper, secondWrapper);
     }
   }
-  template <typename SourceProjectionType, typename TargetProjectionType>
-  void
-  computeShadingMap(const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList,
-                    const ProjectionHelper<TargetProjectionType> &targetHelper) {
+  template <CiCamType sourceCamType, CiCamType targetCamType>
+  void computeShadingMap(const typename ProjectionHelper<sourceCamType>::List &sourceHelperList,
+                         const ProjectionHelper<targetCamType> &targetHelper) {
 
     auto isProneToGhosting = [&](unsigned sourceId, const std::pair<Vec2f, float> &p,
                                  const Vec3f &OP) -> bool {
@@ -1122,14 +1119,11 @@ auto ViewWeightingSynthesizer::renderFrame(
     const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
     const MivBitstream::ViewParams &target) const -> Common::Texture444Depth16Frame {
 
-  return std::visit(
-      [&](const auto &sourceProjection, const auto &targetProjection) {
-        using SourceProjectionType = std::decay_t<decltype(sourceProjection)>;
-        using TargetProjectionType = std::decay_t<decltype(targetProjection)>;
-
-        return m_impl->renderFrame<SourceProjectionType, TargetProjectionType>(
-            atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
-      },
-      ivSequenceParams.viewParamsList[0].projection, target.projection);
+  return ivSequenceParams.viewParamsList.front().ci.dispatch([&](auto sourceCamType) {
+    return target.ci.dispatch([&](auto targetCamType) {
+      return m_impl->renderFrame<sourceCamType.value, targetCamType>(atlas, maps, ivSequenceParams,
+                                                                     ivAccessUnitParams, target);
+    });
+  });
 }
 } // namespace TMIV::Renderer

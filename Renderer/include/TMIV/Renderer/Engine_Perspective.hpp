@@ -38,17 +38,22 @@
 #include <TMIV/Common/Common.h>
 
 namespace TMIV::Renderer {
-template <> struct Engine<MivBitstream::PerspectiveParams> {
-  const Common::Vec2f f;
-  const Common::Vec2f p;
+template <> struct Engine<MivBitstream::CiCamType::perspective> {
+  const float f_x;
+  const float f_y;
+  const float c_x;
+  const float c_y;
 
   explicit Engine(const MivBitstream::ViewParams &viewParams)
-      : f{viewParams.perspective().focal}, p{viewParams.perspective().center} {}
+      : f_x{viewParams.ci.ci_perspective_focal_hor()},
+        f_y{viewParams.ci.ci_perspective_focal_ver()},
+        c_x{viewParams.ci.ci_perspective_center_hor()},
+        c_y{viewParams.ci.ci_perspective_center_ver()} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
     if (depth > 0.F) {
-      return {depth, -(depth / f.x()) * (uv.x() - p.x()), -(depth / f.y()) * (uv.y() - p.y())};
+      return {depth, -(depth / f_x) * (uv.x() - c_x), -(depth / f_y) * (uv.y() - c_y)};
     }
     return {Common::NaN, Common::NaN, Common::NaN};
   }
@@ -56,8 +61,8 @@ template <> struct Engine<MivBitstream::PerspectiveParams> {
   // Projection equation
   auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
     if (v.position.x() > 0.F) {
-      auto uv = Common::Vec2f{-f.x() * v.position.y() / v.position.x() + p.x(),
-                              -f.y() * v.position.z() / v.position.x() + p.y()};
+      auto uv = Common::Vec2f{-f_x * v.position.y() / v.position.x() + c_x,
+                              -f_y * v.position.z() / v.position.x() + c_y};
       return {uv, v.position.x(), v.rayAngle};
     }
     return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};

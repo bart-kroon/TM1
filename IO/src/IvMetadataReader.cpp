@@ -52,7 +52,7 @@ IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirecto
 }
 
 void IvMetadataReader::readIvSequenceParams() {
-  m_ivSequenceParams = IvSequenceParams::decodeFrom(m_bitstream);
+  // TODO(BK): Implement
 }
 
 void IvMetadataReader::readIvAccessUnitParams() {

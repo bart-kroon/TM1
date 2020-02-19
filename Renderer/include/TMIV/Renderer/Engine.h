@@ -61,7 +61,11 @@ struct ImageVertexDescriptor {
 using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
 
 // The rendering engine is the part that is specalized per projection type
-template <typename Projection> struct Engine {};
+//
+// TODO(BK): Move the projection-specific calculations into the Engine specializations. Currently
+// there is quite some duplicate code between different components. This complicates implementation
+// of new projection types.
+template <MivBitstream::CiCamType camType> struct Engine {};
 } // namespace TMIV::Renderer
 
 #include "Engine_ERP.hpp"
@@ -76,12 +80,10 @@ namespace TMIV::Renderer {
 template <typename... T>
 auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
              std::tuple<std::vector<T>...> attributes, const MivBitstream::ViewParams &target) {
-  return visit(
-      [&](auto const &x) {
-        Engine<std::decay_t<decltype(x)>> engine{target};
-        return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
-      },
-      target.projection);
+  return target.ci.dispatch([&](auto camType) {
+    Engine<camType> engine{target};
+    return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
+  });
 }
 } // namespace TMIV::Renderer
 

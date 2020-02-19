@@ -89,6 +89,10 @@ private:
 enum class CiCamType : std::uint8_t { equirectangular, perspective, orthographic };
 auto operator<<(std::ostream &, const CiCamType) -> std::ostream &;
 
+using Equirectangular = std::integral_constant<CiCamType, CiCamType::equirectangular>;
+using Perspective = std::integral_constant<CiCamType, CiCamType::perspective>;
+using Orthographic = std::integral_constant<CiCamType, CiCamType::orthographic>;
+
 // 23090-12: camera_intrinsics()
 class CameraIntrinsics {
 public:
@@ -122,8 +126,11 @@ public:
   constexpr auto &ci_ortho_width(const float value) noexcept;
   constexpr auto &ci_ortho_height(const float value) noexcept;
 
-  // Convenience function to help the transition
   auto projectionPlaneSize() const -> Common::Vec2i;
+
+  // Wrap the ci_cam_type in an integral constant and pass a value of that type to the unary
+  // function f. This allows to template on the camera projection type.
+  template <typename F> decltype(auto) dispatch(F f) const;
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
@@ -217,8 +224,8 @@ public:
   // Return camera extrinsics for the specified view ID.
   auto camera_extrinsics(const std::uint16_t viewId) const noexcept -> const CameraExtrinsics &;
 
-  // Return camera intrinsics for the specified view ID. The mvp_intrinsic_params_equal_flag()
-  // case is handled for convenience.
+  // Return camera intrinsics for the specified view ID. The
+  // mvp_intrinsic_params_equal_flag() case is handled for convenience.
   auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept -> const CameraIntrinsics &;
 
   // Return depth quantization for the specified view ID. The

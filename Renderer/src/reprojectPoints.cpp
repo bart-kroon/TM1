@@ -57,19 +57,15 @@ auto imagePositions(const ViewParams &viewParams) -> Mat<Vec2f> {
 auto unprojectPoints(const ViewParams &viewParams, const Mat<Vec2f> &positions,
                      const Mat<float> &depth) -> Mat<Vec3f> {
   assert(positions.sizes() == depth.sizes());
+  return viewParams.ci.dispatch([&](auto camType) {
+    Engine<camType.value> engine{viewParams};
+    Mat<Vec3f> points{positions.sizes()};
 
-  return visit(
-      [&](const auto &projection) {
-        Engine<decay_t<decltype(projection)>> engine{viewParams};
-        Mat<Vec3f> points{positions.sizes()};
+    parallel_for(points.size(),
+                 [&](size_t id) { points[id] = engine.unprojectVertex(positions[id], depth[id]); });
 
-        parallel_for(points.size(), [&](size_t id) {
-          points[id] = engine.unprojectVertex(positions[id], depth[id]);
-        });
-
-        return points;
-      },
-      viewParams.projection);
+    return points;
+  });
 }
 
 auto changeReferenceFrame(const ViewParams &viewParams, const ViewParams &target,
@@ -84,22 +80,20 @@ auto changeReferenceFrame(const ViewParams &viewParams, const ViewParams &target
 
 auto projectPoints(const ViewParams &viewParams, const Mat<Vec3f> &points)
     -> pair<Mat<Vec2f>, Mat<float>> {
-  return visit(
-      [&](const auto &projection) {
-        Engine<decay_t<decltype(projection)>> engine{viewParams};
+  return viewParams.ci.dispatch([&](auto camType) {
+    Engine<camType.value> engine{viewParams};
 
-        Mat<Vec2f> positions{points.sizes()};
-        Mat<float> depth{points.sizes()};
+    Mat<Vec2f> positions{points.sizes()};
+    Mat<float> depth{points.sizes()};
 
-        parallel_for(points.size(), [&](size_t id) {
-          ImageVertexDescriptor v = engine.projectVertex({points[id], 0.F});
-          positions[id] = v.position;
-          depth[id] = v.depth;
-        });
+    parallel_for(points.size(), [&](size_t id) {
+      ImageVertexDescriptor v = engine.projectVertex({points[id], 0.F});
+      positions[id] = v.position;
+      depth[id] = v.depth;
+    });
 
-        return pair{positions, depth};
-      },
-      viewParams.projection);
+    return pair{positions, depth};
+  });
 }
 
 auto reprojectPoints(const ViewParams &viewParams, const ViewParams &target,
@@ -132,46 +126,38 @@ auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
 }
 
 auto unprojectVertex(Vec2f position, float depth, const ViewParams &viewParams) -> Vec3f {
-  return visit(
-      [&](const auto &projection) {
-        Engine<decay_t<decltype(projection)>> engine{viewParams};
-        return engine.unprojectVertex(position, depth);
-      },
-      viewParams.projection);
+  return viewParams.ci.dispatch([&](auto camType) {
+    Engine<camType> engine{viewParams};
+    return engine.unprojectVertex(position, depth);
+  });
 }
 
 auto projectVertex(const Common::Vec3f &position, const MivBitstream::ViewParams &viewParams)
     -> std::pair<Common::Vec2f, float> {
-  return visit(
-      [&](const auto &projection) {
-        Engine<decay_t<decltype(projection)>> engine{viewParams};
-        auto imageVertexDescriptor = engine.projectVertex(SceneVertexDescriptor{position, 0.F});
-        return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
-      },
-      viewParams.projection);
+  return viewParams.ci.dispatch([&](auto camType) {
+    Engine<camType> engine{viewParams};
+    auto imageVertexDescriptor = engine.projectVertex(SceneVertexDescriptor{position, 0.F});
+    return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
+  });
 }
 
-template <> auto ProjectionHelper<ErpParams>::getAngularResolution() const -> float {
-  auto nbPixel = static_cast<float>(m_viewParams.ci.projectionPlaneSize().x() *
-                                    m_viewParams.ci.projectionPlaneSize().y());
-  const auto &erpParams = std::get<ErpParams>(m_viewParams.projection);
-
-  float DT = radperdeg * (erpParams.phiRange[1] - erpParams.phiRange[0]);
-  float DS =
-      std::sin(radperdeg * erpParams.thetaRange[1]) - std::sin(radperdeg * erpParams.thetaRange[0]);
+template <>
+auto ProjectionHelper<CiCamType::equirectangular>::getAngularResolution() const -> float {
+  auto &ci = m_viewParams.ci;
+  auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+  float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
+  float DS = std::sin(ci.ci_erp_theta_max()) - std::sin(ci.ci_erp_theta_min());
 
   return nbPixel / (DS * DT);
 }
 
-template <> auto ProjectionHelper<PerspectiveParams>::getAngularResolution() const -> float {
-  auto nbPixel = static_cast<float>(m_viewParams.ci.projectionPlaneSize().x() *
-                                    m_viewParams.ci.projectionPlaneSize().y());
-  const auto &perspectiveParams = std::get<PerspectiveParams>(m_viewParams.projection);
-
-  float projectionFocalLength = (perspectiveParams.focal.x() + perspectiveParams.focal.y()) / 2.F;
-  auto w = static_cast<float>(m_viewParams.ci.projectionPlaneSize().x());
-  auto h = static_cast<float>(m_viewParams.ci.projectionPlaneSize().y());
-
+template <> auto ProjectionHelper<CiCamType::perspective>::getAngularResolution() const -> float {
+  auto &ci = m_viewParams.ci;
+  auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+  const auto projectionFocalLength =
+      (ci.ci_perspective_focal_hor() + ci.ci_perspective_focal_ver()) / 2.F;
+  auto w = static_cast<float>(ci.projectionPlaneSize().x());
+  auto h = static_cast<float>(ci.projectionPlaneSize().y());
   float omega =
       4.F * std::atan(nbPixel / (2.F * projectionFocalLength *
                                  std::sqrt(4.F * sqr(projectionFocalLength) + (w * w + h * h))));
@@ -179,19 +165,18 @@ template <> auto ProjectionHelper<PerspectiveParams>::getAngularResolution() con
   return nbPixel / omega;
 }
 
-template <> auto ProjectionHelper<ErpParams>::getRadialRange() const -> Vec2f {
+template <> auto ProjectionHelper<CiCamType::equirectangular>::getRadialRange() const -> Vec2f {
   return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
 }
 
-template <> auto ProjectionHelper<PerspectiveParams>::getRadialRange() const -> Vec2f {
-  const auto &perspectiveParams = std::get<PerspectiveParams>(m_viewParams.projection);
-
-  float x =
-      (static_cast<float>(m_viewParams.ci.projectionPlaneSize().x()) - perspectiveParams.center.x()) /
-      perspectiveParams.focal.x();
-  float y =
-      (static_cast<float>(m_viewParams.ci.projectionPlaneSize().y()) - perspectiveParams.center.y()) /
-      perspectiveParams.focal.y();
+template <> auto ProjectionHelper<CiCamType::perspective>::getRadialRange() const -> Vec2f {
+  const auto &ci = m_viewParams.ci;
+  float x = (static_cast<float>(m_viewParams.ci.projectionPlaneSize().x()) -
+             ci.ci_perspective_center_hor()) /
+            ci.ci_perspective_focal_hor();
+  float y = (static_cast<float>(m_viewParams.ci.projectionPlaneSize().y()) -
+             ci.ci_perspective_center_ver()) /
+            ci.ci_perspective_focal_ver();
 
   return {1.F / m_viewParams.dq.dq_norm_disp_high(),
           norm(Vec3f{x, y, 1.F}) / m_viewParams.dq.dq_norm_disp_low()};

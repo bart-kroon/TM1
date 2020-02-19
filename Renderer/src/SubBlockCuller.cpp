@@ -87,12 +87,10 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
     SceneVertexDescriptor v;
     v.position = xyz;
     v.rayAngle = rayAngle;
-    auto pix = visit(
-        [&](auto const &x) {
-          Engine<std::decay_t<decltype(x)>> engine{target};
-          return engine.projectVertex(v);
-        },
-        target.projection);
+    auto pix = target.ci.dispatch([&](auto camType) {
+      Engine<camType> engine{target};
+      return engine.projectVertex(v);
+    });
     xy_v[i] = pix.position;
   }
   for (int i = 0; i < 4; i++) {
@@ -101,12 +99,10 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsVector &cameras,
     SceneVertexDescriptor v;
     v.position = xyz;
     v.rayAngle = rayAngle;
-    auto pix = visit(
-        [&](auto const &x) {
-          Engine<std::decay_t<decltype(x)>> engine{target};
-          return engine.projectVertex(v);
-        },
-        target.projection);
+    auto pix = target.ci.dispatch([&](auto camType) {
+      Engine<camType> engine{target};
+      return engine.projectVertex(v);
+    });
     // wangbin modify
     xy_v[i + 4] = pix.position;
   }

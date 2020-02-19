@@ -36,6 +36,7 @@
 
 #include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/MivDecoder.h>
 
 using namespace std;
@@ -53,14 +54,17 @@ SCENARIO("Depth/occupancy coding") {
   CameraIntrinsics ci;
   ci.ci_projection_plane_width_minus1(1919);
   ci.ci_projection_plane_height_minus1(1079);
+  ci.ci_cam_type(CiCamType::equirectangular);
+  ci.ci_erp_phi_min(-halfCycle);
+  ci.ci_erp_phi_max(halfCycle);
+  ci.ci_erp_theta_min(-quarterCycle);
+  ci.ci_erp_theta_max(quarterCycle);
 
   DepthQuantization dq;
   dq.dq_norm_disp_low(0.2F);
   dq.dq_norm_disp_high(2.2F);
-
   GIVEN("View parameters without invalid depth") {
-    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    const auto sourceViewParams = ViewParams{ci, {}, projection, dq};
+    const auto sourceViewParams = ViewParams{ci, {}, dq};
     auto sourceSequenceParams = IvSequenceParams{};
     sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
@@ -74,17 +78,8 @@ SCENARIO("Depth/occupancy coding") {
   }
 
   GIVEN("View parameters with invalid depth") {
-    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
+    auto sourceViewParams = ViewParams{ci, {}, dq};
 
-    CameraIntrinsics ci;
-    ci.ci_projection_plane_width_minus1(1919);
-    ci.ci_projection_plane_height_minus1(1079);
-
-    DepthQuantization dq;
-    dq.dq_norm_disp_low(0.2F);
-    dq.dq_norm_disp_high(2.2F);
-
-    auto sourceViewParams = ViewParams{ci, {}, projection, dq};
     sourceViewParams.hasOccupancy = true;
     auto sourceSeqParams = IvSequenceParams{};
     sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
@@ -101,12 +96,11 @@ SCENARIO("Depth/occupancy coding") {
           // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
           const auto twoT = float(2 * T);
 
-          DepthQuantization dq;
-          dq.dq_norm_disp_low(0.2F - twoT * 2.F / (1023.F - twoT));
-          dq.dq_norm_disp_high(2.2F);
-          dq.dq_depth_occ_map_threshold_default(T);
+          auto refViewParams = sourceViewParams;
+          refViewParams.dq.dq_depth_occ_map_threshold_default(T)
+              .dq_norm_disp_low(0.2F - twoT * 2.F / (1023.F - twoT))
+              .dq_norm_disp_high(2.2F);
 
-          const auto refViewParams = ViewParams{ci, {}, projection, dq};
           REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
         }
       }

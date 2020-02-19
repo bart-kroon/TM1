@@ -54,6 +54,11 @@ auto makeFullERPCamera() {
   CameraIntrinsics ci;
   ci.ci_projection_plane_width_minus1(9);
   ci.ci_projection_plane_height_minus1(4);
+  ci.ci_cam_type(CiCamType::equirectangular);
+  ci.ci_erp_phi_min(-halfCycle);
+  ci.ci_erp_phi_max(halfCycle);
+  ci.ci_erp_theta_min(-quarterCycle);
+  ci.ci_erp_theta_max(quarterCycle);
 
   CameraExtrinsics ce;
   ce.ce_view_pos_x(1.F);
@@ -66,7 +71,7 @@ auto makeFullERPCamera() {
   dq.dq_norm_disp_low(1.F);
   dq.dq_norm_disp_high(10.F);
 
-  return ViewParams{ci, ce, ErpParams{{-180.F, 180.F}, {-90.F, 90.F}}, dq};
+  return ViewParams{ci, ce, dq};
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {

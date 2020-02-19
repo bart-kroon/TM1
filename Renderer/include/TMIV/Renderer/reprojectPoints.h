@@ -107,7 +107,7 @@ inline bool isValidDepth(float d) { return (0.F < d); }
 using PointCloud = std::vector<Common::Vec3f>;
 using PointCloudList = std::vector<PointCloud>;
 
-template <typename Projection> class ProjectionHelper {
+template <MivBitstream::CiCamType camType> class ProjectionHelper {
 public:
   class List : public std::vector<ProjectionHelper> {
   public:
@@ -120,7 +120,7 @@ public:
 
 private:
   const MivBitstream::ViewParams &m_viewParams;
-  Engine<Projection> m_engine;
+  Engine<camType> m_engine;
   Common::Mat3x3f m_rotationMatrix;
 
 public:
@@ -144,19 +144,18 @@ public:
   auto getPointCloud(unsigned N = 8) const -> PointCloud;
 };
 
-template <typename SourceProjectionType>
-auto getPointCloudList(
-    const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList, unsigned N = 16)
-    -> PointCloudList;
+template <MivBitstream::CiCamType camType>
+auto getPointCloudList(const typename ProjectionHelper<camType>::List &sourceHelperList,
+                       unsigned N = 16) -> PointCloudList;
 
-template <typename ProjectionType>
-auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList,
+template <MivBitstream::CiCamType camType>
+auto getOverlapping(const typename ProjectionHelper<camType>::List &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float;
 
-template <typename ProjectionType>
+template <MivBitstream::CiCamType camType>
 static auto
-computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList)
+computeOverlappingMatrix(const typename ProjectionHelper<camType>::List &sourceHelperList)
     -> Common::Mat<float>;
 
 } // namespace TMIV::Renderer

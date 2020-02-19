@@ -33,68 +33,69 @@
 
 namespace TMIV::Renderer {
 
-template <typename Projection>
-ProjectionHelper<Projection>::List::List(const MivBitstream::ViewParamsList &viewParamsList) {
+template <MivBitstream::CiCamType camType>
+ProjectionHelper<camType>::List::List(const MivBitstream::ViewParamsList &viewParamsList) {
   for (const auto &viewParams : viewParamsList) {
     this->emplace_back(viewParams);
   }
 }
 
-template <typename Projection>
-ProjectionHelper<Projection>::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
+template <MivBitstream::CiCamType camType>
+ProjectionHelper<camType>::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
     : m_viewParams{viewParams}, m_engine{viewParams}, m_rotationMatrix{
                                                           viewParams.ce.rotationMatrix()} {}
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::getViewingDirection() const -> Common::Vec3f {
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::getViewingDirection() const -> Common::Vec3f {
   return m_rotationMatrix * Common::Vec3f{1.F, 0.F, 0.F};
 }
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
   return transpose(m_rotationMatrix) * (P - m_viewParams.position());
 }
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::doProjection(const Common::Vec3f &P) const
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::doProjection(const Common::Vec3f &P) const
     -> std::pair<Common::Vec2f, float> {
   Common::Vec3f Q = transpose(m_rotationMatrix) * (P - m_viewParams.ce.position());
   auto imageVertexDescriptor = m_engine.projectVertex(SceneVertexDescriptor{Q, 0.F});
   return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
 }
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::doUnprojection(const Common::Vec2f &p, float d) const
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::doUnprojection(const Common::Vec2f &p, float d) const
     -> Common::Vec3f {
   auto P = m_engine.unprojectVertex(p, d);
   return (m_rotationMatrix * P + m_viewParams.ce.position());
 }
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {
   return ((0.5F <= p.x()) && (p.x() <= (m_viewParams.ci.projectionPlaneSize().x() - 0.5F))) &&
          ((0.5F <= p.y()) && (p.y() <= (m_viewParams.ci.projectionPlaneSize().y() - 0.5F)));
 }
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::isInsideViewport(const Common::Vec2f &p) const -> bool {
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::isInsideViewport(const Common::Vec2f &p) const -> bool {
   return ((-0.5F <= p.x()) && (p.x() <= (m_viewParams.ci.projectionPlaneSize().x() + 0.5F))) &&
          ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.ci.projectionPlaneSize().y() + 0.5F)));
 }
 
-template <typename Projection> bool ProjectionHelper<Projection>::isValidDepth(float d) const {
+template <MivBitstream::CiCamType camType>
+bool ProjectionHelper<camType>::isValidDepth(float d) const {
   static constexpr auto far = 999.999F;
   return (TMIV::Renderer::isValidDepth(d) && (m_viewParams.dq.dq_norm_disp_low() <= (1.F / d)) &&
           (d < far));
 }
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::getDepthRange() const -> Common::Vec2f {
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::getDepthRange() const -> Common::Vec2f {
   return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
 }
 
-template <typename Projection>
-auto ProjectionHelper<Projection>::getPointCloud(unsigned N) const -> PointCloud {
+template <MivBitstream::CiCamType camType>
+auto ProjectionHelper<camType>::getPointCloud(unsigned N) const -> PointCloud {
   PointCloud pointCloud;
   float step = 1.F / static_cast<float>(N - 1U);
   auto depthRange = getDepthRange();
@@ -126,9 +127,8 @@ auto ProjectionHelper<Projection>::getPointCloud(unsigned N) const -> PointCloud
   return pointCloud;
 }
 
-template <typename SourceProjectionType>
-auto getPointCloudList(
-    const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList, unsigned N)
+template <MivBitstream::CiCamType camType>
+auto getPointCloudList(const typename ProjectionHelper<camType>::List &sourceHelperList, unsigned N)
     -> PointCloudList {
   PointCloudList pointCloudList;
 
@@ -139,13 +139,13 @@ auto getPointCloudList(
   return pointCloudList;
 }
 
-template <typename ProjectionType>
-auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList,
+template <MivBitstream::CiCamType camType>
+auto getOverlapping(const typename ProjectionHelper<camType>::List &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float {
   std::size_t N = 0;
 
-  const ProjectionHelper<ProjectionType> &secondHelper = sourceHelperList[secondId];
+  const ProjectionHelper<camType> &secondHelper = sourceHelperList[secondId];
   const PointCloud &firstPointCloud = pointCloudList[firstId];
 
   for (const auto &P : firstPointCloud) {
@@ -160,12 +160,12 @@ auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourc
   return static_cast<float>(N) / static_cast<float>(firstPointCloud.size());
 }
 
-template <typename ProjectionType>
+template <MivBitstream::CiCamType camType>
 static auto
-computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList)
+computeOverlappingMatrix(const typename ProjectionHelper<camType>::List &sourceHelperList)
     -> Common::Mat<float> {
 
-  auto pointCloudList = getPointCloudList<ProjectionType>(sourceHelperList, 16);
+  auto pointCloudList = getPointCloudList<camType>(sourceHelperList, 16);
   std::size_t K = sourceHelperList.size();
   Common::Mat<float> overlappingMatrix({K, K});
 
@@ -173,8 +173,7 @@ computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &
     for (std::size_t j = 0; j < K; j++) {
 
       if (i != j) {
-        overlappingMatrix(i, j) =
-            getOverlapping<ProjectionType>(sourceHelperList, pointCloudList, i, j);
+        overlappingMatrix(i, j) = getOverlapping<camType>(sourceHelperList, pointCloudList, i, j);
       } else {
         overlappingMatrix(i, j) = 1.F;
       }

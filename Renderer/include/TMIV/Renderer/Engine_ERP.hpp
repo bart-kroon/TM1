@@ -41,7 +41,7 @@
 #include <cmath>
 
 namespace TMIV::Renderer {
-template <> struct Engine<MivBitstream::ErpParams> {
+template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   const float phi0;
   const float theta0;
   const float dphi_du;
@@ -53,23 +53,21 @@ template <> struct Engine<MivBitstream::ErpParams> {
 
   explicit Engine(const MivBitstream::ViewParams &viewParams)
       : // Precomputed values used in te unprojection equation
-        phi0{Common::radperdeg * viewParams.erp().phiRange[1]},
-        theta0{Common::radperdeg * viewParams.erp().thetaRange[1]},
-        dphi_du{-Common::radperdeg * (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0]) /
+        phi0{viewParams.ci.ci_erp_phi_max()}, theta0{viewParams.ci.ci_erp_theta_max()},
+        dphi_du{-(viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min()) /
                 viewParams.ci.projectionPlaneSize().x()},
-        dtheta_dv{-Common::radperdeg *
-                  (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0]) /
+        dtheta_dv{-(viewParams.ci.ci_erp_theta_max() - viewParams.ci.ci_erp_theta_min()) /
                   viewParams.ci.projectionPlaneSize().y()},
 
         // Precomputed values used in the projection equation
-        u0{viewParams.ci.projectionPlaneSize().x() * viewParams.erp().phiRange[1] /
-           (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0])},
-        v0{viewParams.ci.projectionPlaneSize().y() * viewParams.erp().thetaRange[1] /
-           (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0])},
-        du_dphi{-Common::degperrad * viewParams.ci.projectionPlaneSize().x() /
-                (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0])},
-        dv_dtheta{-Common::degperrad * viewParams.ci.projectionPlaneSize().y() /
-                  (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0])} {}
+        u0{viewParams.ci.projectionPlaneSize().x() * viewParams.ci.ci_erp_phi_max() /
+           (viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min())},
+        v0{viewParams.ci.projectionPlaneSize().y() * viewParams.ci.ci_erp_theta_max() /
+           (viewParams.ci.ci_erp_theta_max() - viewParams.ci.ci_erp_theta_min())},
+        du_dphi{-viewParams.ci.projectionPlaneSize().x() /
+                (viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min())},
+        dv_dtheta{-viewParams.ci.projectionPlaneSize().y() /
+                  (viewParams.ci.ci_erp_theta_max() - viewParams.ci.ci_erp_theta_min())} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

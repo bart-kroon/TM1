@@ -77,9 +77,10 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
 
   // Early termination: if any view is full-ERP, choose this view
   for (auto &viewParams : viewParamsVector) {
-    if (auto projection = get_if<ErpParams>(&viewParams.projection)) {
-      if (abs(projection->phiRange[0] - projection->phiRange[1]) == fullCycle) {
-        if (abs(projection->thetaRange[0] - projection->thetaRange[1]) == halfCycle) {
+    const auto &ci = viewParams.ci;
+    if (ci.ci_cam_type() == CiCamType::equirectangular) {
+      if (abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min() - fullCycle) < 1e-6F) {
+        if (abs(ci.ci_erp_theta_max() - ci.ci_erp_theta_min() - halfCycle) < 1e-6F) {
           isoneview = true;
           break;
         }
@@ -241,24 +242,21 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
 }
 
 auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {
-  return visit(overload(
-                   [](const ErpParams &projection) {
-                     return abs(projection.phiRange[0] - projection.phiRange[1]) * radperdeg *
-                            (abs(sin(projection.thetaRange[0] * radperdeg) -
-                                 sin(projection.thetaRange[1] * radperdeg)));
-                   },
-                   [&](const PerspectiveParams &projection) {
-                     return abs(
-                         4 * atan(viewParams.ci.projectionPlaneSize().x() / (2 * projection.focal[0])) *
-                         sin(atan(viewParams.ci.projectionPlaneSize().y() / (2 * projection.focal[1]))));
-                   }),
-               viewParams.projection);
+  const auto &ci = viewParams.ci;
+  return ci.dispatch(overload(
+      [&](Equirectangular) {
+        return abs(ci.ci_erp_phi_min() - ci.ci_erp_phi_max()) *
+               abs(sin(ci.ci_erp_theta_min()) - sin(ci.ci_erp_theta_max()));
+      },
+      [&](Perspective) {
+        return abs(4 * atan(ci.projectionPlaneSize().x() / (2.F * ci.ci_perspective_focal_hor())) *
+                   sin(atan(ci.projectionPlaneSize().y() / (2.F * ci.ci_perspective_focal_ver()))));
+      }));
 }
 auto ViewReducer::calculateDistance(ViewParams camera_1, ViewParams camera_2) -> float {
   return norm(camera_1.ce.position() - camera_2.ce.position());
 }
 auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera_to) -> float {
-
   float overlapping = 0.0F;
   float weight_all = 0.0F;
   float weight_overlapped = 0.0F;
@@ -268,7 +266,8 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
   depth.resize(camera_from.ci.projectionPlaneSize().y(), camera_from.ci.projectionPlaneSize().x());
 
   Mat<int> isoverlap;
-  isoverlap.resize(camera_from.ci.projectionPlaneSize().y(), camera_from.ci.projectionPlaneSize().x());
+  isoverlap.resize(camera_from.ci.projectionPlaneSize().y(),
+                   camera_from.ci.projectionPlaneSize().x());
   const auto depthTransform = DepthTransform<16>{camera_from.dq};
   const float middleDepth =
       sqrtf(depthTransform.expandDepth(1) * depthTransform.expandDepth(UINT16_MAX));
@@ -297,18 +296,16 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
 
   for (unsigned i = 0; i != isoverlap.height(); ++i) {
     for (unsigned j = 0; j != isoverlap.width(); ++j) {
-      const float weight =
-          visit(overload(
-                    [&](const ErpParams &projection) { // calculate weight of each pixel in sphere
-                      float angle = (projection.thetaRange[1] +
-                                     (float(i) + halfPixel) *
-                                         (projection.thetaRange[0] - projection.thetaRange[1]) /
-                                         isoverlap.height()) *
-                                    radperdeg;
-                      return cos(angle);
-                    },
-                    [](const PerspectiveParams & /* unused */) { return 1.F; }),
-                camera_from.projection);
+      const auto &ci = camera_from.ci;
+      const float weight = ci.dispatch(overload(
+          [&](Equirectangular) { // calculate weight of each pixel in sphere
+            float angle =
+                (ci.ci_erp_theta_max() + (float(i) + halfPixel) *
+                                             (ci.ci_erp_theta_min() - ci.ci_erp_theta_max()) /
+                                             isoverlap.height());
+            return cos(angle);
+          },
+          [](Perspective) { return 1.F; }));
       weight_all += weight;
       if (isoverlap(i, j) != 0) {
         weight_overlapped += weight;

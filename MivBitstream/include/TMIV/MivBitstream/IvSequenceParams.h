@@ -45,54 +45,9 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-using Common::InputBitstream;
-using Common::OutputBitstream;
-
-struct ErpParams {
-  // In specification: erp_phi_min[ v ]
-  // In specification: erp_phi_max[ v ]
-  Common::Vec2f phiRange{};
-
-  // In specification: erp_theta_min[ v ]
-  // In specification: erp_theta_max[ v ]
-  Common::Vec2f thetaRange{};
-
-  friend std::ostream &operator<<(std::ostream &stream, const ErpParams &);
-  bool operator==(const ErpParams &) const;
-  bool operator!=(const ErpParams &other) const { return !operator==(other); }
-
-  static auto decodeFrom(InputBitstream &) -> ErpParams;
-  void encodeTo(OutputBitstream &) const;
-};
-
-struct PerspectiveParams {
-  // In specification: perspective_focal_hor[ v ]
-  // In specification: perspective_focal_ver[ v ]
-  Common::Vec2f focal{};
-
-  // In specification: perspective_center_hor[ v ]
-  // In specification: perspective_center_ver[ v ]
-  Common::Vec2f center{};
-
-  friend std::ostream &operator<<(std::ostream &stream, const PerspectiveParams &);
-  bool operator==(const PerspectiveParams &) const;
-  bool operator!=(const PerspectiveParams &other) const { return !operator==(other); }
-
-  static auto decodeFrom(InputBitstream &) -> PerspectiveParams;
-  void encodeTo(OutputBitstream &) const;
-};
-
-using ProjectionParams = std::variant<ErpParams, PerspectiveParams>;
-
 struct ViewParams {
   CameraIntrinsics ci;
   CameraExtrinsics ce;
-
-  // In specification: cam_type[ v ]
-  ProjectionParams projection{};
-  auto erp() const -> const ErpParams &;
-  auto perspective() const -> const PerspectiveParams &;
-
   DepthQuantization dq;
   std::optional<PruningChildren> pc;
 
@@ -102,7 +57,7 @@ struct ViewParams {
   // Not part of the bitstream. Does the depth map have invalid/non-occupied?
   bool hasOccupancy{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const ViewParams &viewParams);
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
   bool operator==(const ViewParams &other) const;
   bool operator!=(const ViewParams &other) const { return !operator==(other); }
 
@@ -124,21 +79,12 @@ struct ViewParamsList : public ViewParamsVector {
   ViewParamsList &operator=(const ViewParamsList &) = default;
   ViewParamsList &operator=(ViewParamsList &&) = default;
 
-  // In specification: intrinsic_params_equal_flag
-  bool areIntrinsicParamsEqual() const;
-
-  // In specification: depth_quantization_params_equal_flag
-  bool areDepthQuantizationParamsEqual() const;
-
   // Size of each view as a vector
   auto viewSizes() const -> Common::SizeVector;
 
   friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &viewParamsVector);
   bool operator==(const ViewParamsList &other) const;
   bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
-
-  static auto decodeFrom(InputBitstream &, unsigned depthOccMapThresholdNumBits) -> ViewParamsList;
-  void encodeTo(OutputBitstream &, unsigned depthOccMapThresholdNumBits) const;
 
   // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
   // with viewParamsVector specified by name, in that order
@@ -171,20 +117,7 @@ struct IvSequenceParams {
   friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &x);
   bool operator==(const IvSequenceParams &other) const;
   bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }
-
-  static auto decodeFrom(InputBitstream &) -> IvSequenceParams;
-  void encodeTo(OutputBitstream &) const;
 };
-
-inline auto ViewParams::erp() const -> const ErpParams & {
-  assert(std::holds_alternative<ErpParams>(projection));
-  return *std::get_if<ErpParams>(&projection);
-}
-
-inline auto ViewParams::perspective() const -> const PerspectiveParams & {
-  assert(std::holds_alternative<PerspectiveParams>(projection));
-  return *std::get_if<PerspectiveParams>(&projection);
-}
 } // namespace TMIV::MivBitstream
 
 #endif

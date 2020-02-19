@@ -103,7 +103,8 @@ public:
       }
 
       const auto viewportParams = IO::loadViewportMetadata(json(), outputFrame);
-      cout << "Target viewport: " << viewportParams << "\n";
+      cout << "Target viewport:\n";
+      viewportParams.printTo(cout, 0);
 
       const auto &atlasSizes = m_metadataReader.ivAccessUnitParams().atlasParamsList->atlasSizes;
       const auto viewport =

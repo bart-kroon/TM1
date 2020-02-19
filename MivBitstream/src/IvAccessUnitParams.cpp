@@ -130,7 +130,7 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
   auto numAtlases = bitstream.getUExpGolomb() + 1;
   atlasParamsList.omafV1CompatibleFlag = bitstream.getFlag();
 
-  if (ivSequenceParams.numGroups > 1) {
+  if (ivSequenceParams.msp().msp_num_groups_minus1() > 0) {
     atlasParamsList.groupIds = vector<unsigned>(numAtlases, 0U);
   }
 
@@ -138,9 +138,9 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
     AtlasParameters patch;
     patch.atlasId = bitstream.getUint8();
 
-    if (ivSequenceParams.numGroups > 1) {
+    if (ivSequenceParams.msp().msp_num_groups_minus1() > 0) {
       assignAt(*atlasParamsList.groupIds, patch.atlasId,
-               unsigned(bitstream.getUVar(ivSequenceParams.numGroups)));
+               unsigned(bitstream.getUVar(ivSequenceParams.msp().msp_num_groups_minus1() + 1)));
     }
 
     auto numPatches = bitstream.getUint16() + 1;
@@ -155,8 +155,9 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
       patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
       const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].size;
 
-      if (ivSequenceParams.maxEntities > 1) {
-        patch.entityId = unsigned(bitstream.getUVar(ivSequenceParams.maxEntities));
+      if (ivSequenceParams.msp().msp_max_entities_minus1() > 0) {
+        patch.entityId =
+            unsigned(bitstream.getUVar(ivSequenceParams.msp().msp_max_entities_minus1() + 1));
       }
 
       patch.patchSizeInView.x() = int(bitstream.getUVar(viewSize.x()) + 1);
@@ -169,15 +170,11 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
 
       if (atlasParamsList.depthOccupancyParamsPresentFlags[patch.atlasId]) {
         if (const bool depthThresholdPresentFlag = bitstream.getFlag(); depthThresholdPresentFlag) {
-          VERIFY_MIVBITSTREAM(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
-          patch.depthOccMapThreshold =
-              uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
+          patch.depthOccMapThreshold = uint16_t(bitstream.readBits(10));
         }
 
         if (const bool depthStartPresentFlag = bitstream.getFlag(); depthStartPresentFlag) {
-          VERIFY_MIVBITSTREAM(ivSequenceParams.depthOccMapThresholdNumBits <= 16);
-          patch.depthStart =
-              uint16_t(bitstream.readBits(ivSequenceParams.depthOccMapThresholdNumBits));
+          patch.depthStart = uint16_t(bitstream.readBits(10));
         }
       }
 
@@ -213,10 +210,10 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
 
     bitstream.putUint8(atlasId);
 
-    if (ivSequenceParams.numGroups > 1) {
+    if (ivSequenceParams.msp().msp_num_groups_minus1() > 0) {
       VERIFY_MIVBITSTREAM(groupIds);
       const auto &groupIds_ = *groupIds;
-      bitstream.putUVar(groupIds_[atlasId], ivSequenceParams.numGroups);
+      bitstream.putUVar(groupIds_[atlasId], ivSequenceParams.msp().msp_num_groups_minus1() + 1);
     }
 
     bitstream.putUint16(uint16_t(numPatches - 1));
@@ -238,9 +235,9 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
 
         bitstream.putUVar(patch.viewId, ivSequenceParams.viewParamsList.size());
 
-        if (ivSequenceParams.maxEntities > 1) {
+        if (ivSequenceParams.msp().msp_max_entities_minus1() > 0) {
           VERIFY_MIVBITSTREAM(patch.entityId);
-          bitstream.putUVar(*patch.entityId, ivSequenceParams.maxEntities);
+          bitstream.putUVar(*patch.entityId, ivSequenceParams.msp().msp_max_entities_minus1() + 1);
         }
 
         bitstream.putUVar(patch.patchSizeInView.x() - 1, viewSize.x());
@@ -254,13 +251,12 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
         if (depthOccupancyParamsPresentFlags[patch.atlasId]) {
           bitstream.putFlag(!!patch.depthOccMapThreshold);
           if (patch.depthOccMapThreshold) {
-            bitstream.writeBits(*patch.depthOccMapThreshold,
-                                ivSequenceParams.depthOccMapThresholdNumBits);
+            bitstream.writeBits(*patch.depthOccMapThreshold, 10);
           }
 
           bitstream.putFlag(!!patch.depthStart);
           if (patch.depthStart) {
-            bitstream.writeBits(*patch.depthStart, ivSequenceParams.depthOccMapThresholdNumBits);
+            bitstream.writeBits(*patch.depthStart, 10);
           }
         } else {
           VERIFY_MIVBITSTREAM(!patch.depthOccMapThreshold && !patch.depthStart);

@@ -34,32 +34,18 @@
 #ifndef _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 #define _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 
+#include <TMIV/MivBitstream/ViewingSpace.h>
+#include <TMIV/MivBitstream/VpccParameterSet.h>
+
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
 
-#include <cassert>
-#include <cstdint>
-#include <iosfwd>
-#include <optional>
 #include <utility>
 #include <variant>
-#include <vector>
 
 namespace TMIV::MivBitstream {
 using Common::InputBitstream;
 using Common::OutputBitstream;
-
-// In specification: ivs_profile_tier_level( )
-struct IvsProfileTierLevel {
-  friend std::ostream &operator<<(std::ostream &stream,
-                                  const IvsProfileTierLevel &viewParamsVector);
-  bool operator==(const IvsProfileTierLevel &other) const;
-  bool operator!=(const IvsProfileTierLevel &other) const { return !operator==(other); }
-
-  static auto decodeFrom(InputBitstream &) -> IvsProfileTierLevel;
-  void encodeTo(OutputBitstream &) const;
-};
 
 struct ErpParams {
   // In specification: erp_phi_min[ v ]
@@ -187,29 +173,26 @@ struct ViewParamsList : public ViewParamsVector {
 };
 
 struct IvSequenceParams {
-  // In specification: ivs_profile_tier_level( )
-  IvsProfileTierLevel ivsProfileTierLevel;
+  IvSequenceParams() {
+    vps.vps_miv_mode_flag(true).vps_extension_present_flag(true).vps_miv_extension_flag(true);
+  }
+
+  VpccParameterSet vps;
+
+  // Convenience function to access the MIV sequence params
+  auto &msp() const noexcept { return vps.miv_sequence_params(); }
+
+  // Convenience function to access the MIV sequence params
+  auto &msp() noexcept { return vps.miv_sequence_params(); }
 
   // In specification: view_params_list( )
   ViewParamsList viewParamsList;
-
-  // In specification: depth_low_quality_flag
-  bool depthLowQualityFlag{};
-
-  // In specification: num_groups_minus1
-  unsigned numGroups{1};
-
-  // In specification: max_entities_minus1
-  unsigned maxEntities{1};
-
-  // In specification: depth_occ_map_threshold_num_bits_minus8
-  unsigned depthOccMapThresholdNumBits{10};
 
   // In specification: viewing_space_present_flag
   // In specification: viewing_space( )
   std::optional<ViewingSpace> viewingSpace{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams);
+  friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &x);
   bool operator==(const IvSequenceParams &other) const;
   bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }
 

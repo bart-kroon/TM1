@@ -36,10 +36,16 @@
 
 #include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
+#include <TMIV/MivBitstream/MivDecoder.h>
+
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::DepthOccupancy;
+
+namespace TMIV::MivBitstream {
+const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
+}
 
 SCENARIO("Depth/occupancy coding") {
   DepthOccupancy depthOccupancy{37};
@@ -47,7 +53,8 @@ SCENARIO("Depth/occupancy coding") {
   GIVEN("View parameters without invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
     const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
-    const auto sourceSequenceParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
+    auto sourceSequenceParams = IvSequenceParams{};
+    sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedSequenceParams = depthOccupancy.transformSequenceParams(sourceSequenceParams);
@@ -62,7 +69,8 @@ SCENARIO("Depth/occupancy coding") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
     auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
     sourceViewParams.hasOccupancy = true;
-    const auto sourceSeqParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
+    auto sourceSeqParams = IvSequenceParams{};
+    sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams = depthOccupancy.transformSequenceParams(sourceSeqParams);

@@ -37,6 +37,7 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
+#include <TMIV/MivBitstream/MivDecoder.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <iostream>
@@ -44,6 +45,10 @@
 
 using namespace std;
 using namespace TMIV::Common;
+
+namespace TMIV::MivBitstream {
+const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
+}
 
 namespace TMIV::Decoder {
 class Application : public Common::Application {

@@ -191,6 +191,8 @@ auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
 } // namespace
 
 auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
+  auto x = IvSequenceParams{};
+
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   ifstream stream{viewPath};
@@ -198,35 +200,31 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     throw runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
 
-  const auto ivsProfileTierLevel = IvsProfileTierLevel{};
-
-  const auto viewParamsList = ViewParamsList::loadFromJson(
+  x.viewParamsList = ViewParamsList::loadFromJson(
       Json{stream}.require("cameras"), config.require("SourceCameraNames").asStringVector());
 
-  auto depthLowQualityFlag = false;
   if (config.isPresent("depthLowQualityFlag")) {
     auto node = config.optional("depthLowQualityFlag");
-    depthLowQualityFlag = node.asBool();
+    x.msp().msp_depth_low_quality_flag(node.asBool());
   }
 
-  const auto numGroups = config.require("numGroups").asInt();
+  const auto numGroups = unsigned(config.require("numGroups").asInt());
   if (numGroups < 1) {
     throw runtime_error("Require numGroups >= 1");
   }
+  x.msp().msp_num_groups_minus1(numGroups - 1U);
 
-  const auto maxEntities = config.require("maxEntities").asInt();
+  const auto maxEntities = unsigned(config.require("maxEntities").asInt());
   if (maxEntities < 1) {
     throw runtime_error("Require maxEntities >= 1");
   }
-
-  IvSequenceParams params = {ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
-                             unsigned(numGroups), unsigned(maxEntities)};
+  x.msp().msp_max_entities_minus1(maxEntities - 1U);
 
   if (auto subnode = config.optional("ViewingSpace"); subnode) {
-    params.viewingSpace = ViewingSpace::loadFromJson(subnode);
+    x.viewingSpace = ViewingSpace::loadFromJson(subnode);
   }
 
-  return params;
+  return x;
 }
 
 auto loadSourceIvAccessUnitParams(const Json &config) -> MivBitstream::IvAccessUnitParams {

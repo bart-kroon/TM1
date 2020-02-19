@@ -57,7 +57,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
                                      const IvSequenceParams &ivSequenceParams,
                                      const IvAccessUnitParams &ivAccessUnitParams,
                                      const ViewParams &target) const -> Texture444Depth16Frame {
-  if (ivSequenceParams.numGroups >= GroupIdMask{}.size()) {
+  if (ivSequenceParams.msp().msp_num_groups_minus1() + 1 >= GroupIdMask{}.size()) {
     throw runtime_error("This decoder implementation is limited to a maximum number of groups");
   }
 
@@ -65,9 +65,10 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   const auto groupIdPass = groupRenderOrder(ivSequenceParams, ivAccessUnitParams, target);
 
   // Render all passes
-  auto viewportPass = vector<Texture444Depth16Frame>(ivSequenceParams.numGroups);
+  auto viewportPass =
+      vector<Texture444Depth16Frame>(ivSequenceParams.msp().msp_num_groups_minus1() + 1);
   auto groupIdMask = GroupIdMask{};
-  for (size_t pass = 0; pass < ivSequenceParams.numGroups; ++pass) {
+  for (size_t pass = 0; pass <= ivSequenceParams.msp().msp_num_groups_minus1(); ++pass) {
     groupIdMask.set(groupIdPass[pass]);
     viewportPass[pass] = renderPass(groupIdMask, atlases, patchIdMapList, ivSequenceParams,
                                     ivAccessUnitParams, target);
@@ -75,13 +76,14 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
 
   // Merge passes
   auto viewport = move(viewportPass.back());
-  for (auto pass = ivSequenceParams.numGroups - 1; pass > 0; --pass) {
+  for (auto pass = ivSequenceParams.msp().msp_num_groups_minus1(); pass > 0; --pass) {
     inplaceMerge(viewport, viewportPass[pass - 1],
-                 ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::foreground);
+                 ivSequenceParams.msp().msp_depth_low_quality_flag() ? MergeMode::lowPass
+                                                                     : MergeMode::foreground);
   }
 
   // Inpainting
-  if (ivSequenceParams.maxEntities == 1) {
+  if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
     m_inpainter->inplaceInpaint(viewport, target);
   }
 
@@ -101,7 +103,7 @@ auto GroupBasedRenderer::groupRenderOrder(
   auto result = vector<unsigned>();
 
   // Build array of group priorities
-  for (unsigned groupId = 0; groupId < ivSequenceParams.numGroups; ++groupId) {
+  for (unsigned groupId = 0; groupId <= ivSequenceParams.msp().msp_num_groups_minus1(); ++groupId) {
     groupPriorities.push_back(groupPriority(groupId, ivSequenceParams, ivAccessUnitParams, target));
     result.push_back(groupId);
   }

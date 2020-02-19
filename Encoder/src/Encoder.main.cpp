@@ -39,6 +39,7 @@
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataWriter.h>
+#include <TMIV/MivBitstream/MivDecoder.h>
 
 #include <iostream>
 
@@ -50,6 +51,10 @@ using namespace TMIV::Decoder;
 using namespace TMIV::DepthQualityAssessor;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
+
+namespace TMIV::MivBitstream {
+const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
+}
 
 namespace TMIV::Encoder {
 class Application : public Common::Application {
@@ -83,8 +88,9 @@ public:
     auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
     if (!json().isPresent("depthLowQualityFlag")) {
-      sourceSequenceParams.depthLowQualityFlag = m_depthQualityAssessor->isLowDepthQuality(
-          sourceSequenceParams, loadSourceFrame(json(), m_viewSizes, 0));
+      sourceSequenceParams.msp().msp_depth_low_quality_flag(
+          m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
+                                                    loadSourceFrame(json(), m_viewSizes, 0)));
     }
     cout << "\nSource sequence parameters:\n" << sourceSequenceParams;
 

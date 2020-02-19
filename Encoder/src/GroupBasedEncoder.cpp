@@ -104,7 +104,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
   auto grouping = Grouping{};
 
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto numGroups = ivSequenceParams.numGroups;
+  const auto numGroups = ivSequenceParams.msp().msp_num_groups_minus1() + 1;
 
   // Compute axial ranges and find the dominant one
   auto Tx = vector<float>{};

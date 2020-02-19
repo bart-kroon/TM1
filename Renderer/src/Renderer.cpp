@@ -53,7 +53,7 @@ auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
   auto viewport =
       m_synthesizer->renderFrame(atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
 
-  if (ivSequenceParams.maxEntities == 1) {
+  if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
     m_inpainter->inplaceInpaint(viewport, target);
   }
 

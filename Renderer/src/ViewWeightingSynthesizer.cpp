@@ -205,7 +205,8 @@ public:
 
     //######################################################################################
     // 5) Selection
-    selectViewportDepth<TargetProjectionType>(!ivSequenceParams.depthLowQualityFlag, targetHelper);
+    selectViewportDepth<TargetProjectionType>(!ivSequenceParams.msp().msp_depth_low_quality_flag(),
+                                              targetHelper);
 
     //######################################################################################
     // 6) Filtering

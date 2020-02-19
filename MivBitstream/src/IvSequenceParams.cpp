@@ -44,20 +44,6 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, const IvsProfileTierLevel & /* unused */) -> std::ostream & {
-  return stream << "{}";
-}
-
-auto IvsProfileTierLevel::operator==(const IvsProfileTierLevel & /* unused */) const -> bool {
-  return true;
-}
-
-auto IvsProfileTierLevel::decodeFrom(InputBitstream & /* unused */) -> IvsProfileTierLevel {
-  return {};
-}
-
-void IvsProfileTierLevel::encodeTo(OutputBitstream & /* unused */) const {}
-
 auto operator<<(ostream &stream, const ErpParams &projection) -> ostream & {
   return stream << "ERP " << projection.phiRange << " x " << projection.thetaRange << " deg";
 }
@@ -374,18 +360,13 @@ auto ViewParamsList::loadFromJson(const Json &node, const vector<string> &names)
   return result;
 }
 
-auto operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams) -> std::ostream & {
-  stream << "ivs_profile_tier_level()=" << ivSequenceParams.ivsProfileTierLevel << '\n';
-  stream << "depth_low_quality_flag=" << boolalpha << ivSequenceParams.depthLowQualityFlag << '\n';
-  stream << "num_groups=" << ivSequenceParams.numGroups << '\n';
-  stream << "max_entities=" << ivSequenceParams.maxEntities << '\n';
-  stream << "depth_occ_map_threshold_num_bits=" << ivSequenceParams.depthOccMapThresholdNumBits
-         << '\n';
+auto operator<<(std::ostream &stream, const IvSequenceParams &x) -> std::ostream & {
+  stream << x.vps;
   stream << "view_params_list()=\n";
-  stream << ivSequenceParams.viewParamsList;
+  stream << x.viewParamsList;
 
-  if (ivSequenceParams.viewingSpace) {
-    stream << "viewing_space()=\n" << *ivSequenceParams.viewingSpace;
+  if (x.viewingSpace) {
+    stream << "viewing_space()=\n" << *x.viewingSpace;
   } else {
     stream << "No viewing space present\n";
   }
@@ -394,21 +375,18 @@ auto operator<<(std::ostream &stream, const IvSequenceParams &ivSequenceParams) 
 }
 
 auto IvSequenceParams::operator==(const IvSequenceParams &other) const -> bool {
-  return ivsProfileTierLevel == other.ivsProfileTierLevel &&
-         viewParamsList == other.viewParamsList &&
-         depthLowQualityFlag == other.depthLowQualityFlag && numGroups == other.numGroups &&
-         maxEntities == other.maxEntities &&
-         depthOccMapThresholdNumBits == other.depthOccMapThresholdNumBits &&
+  return vps == other.vps && viewParamsList == other.viewParamsList &&
          viewingSpace == other.viewingSpace;
 }
 
 auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams {
-  const auto ivsProfileTierLevel = IvsProfileTierLevel::decodeFrom(bitstream);
-  const auto depthOccMapThresholdNumBits = unsigned(8 + bitstream.readBits(4));
-  const auto viewParamsList = ViewParamsList::decodeFrom(bitstream, depthOccMapThresholdNumBits);
-  const auto depthLowQualityFlag = bitstream.getFlag();
-  const auto numGroups = unsigned(1 + bitstream.getUExpGolomb());
-  const auto maxEntities = unsigned(1 + bitstream.getUExpGolomb());
+  auto x = IvSequenceParams{};
+
+  x.viewParamsList = ViewParamsList::decodeFrom(bitstream, 10);
+
+  x.msp().msp_depth_low_quality_flag(bitstream.getFlag());
+  x.msp().msp_num_groups_minus1(unsigned(bitstream.getUExpGolomb()));
+  x.msp().msp_max_entities_minus1(unsigned(bitstream.getUExpGolomb()));
 
   auto viewingSpace = optional<ViewingSpace>{};
   if (const auto viewingSpacePresentFlag = bitstream.getFlag(); viewingSpacePresentFlag) {
@@ -417,21 +395,15 @@ auto IvSequenceParams::decodeFrom(InputBitstream &bitstream) -> IvSequenceParams
 
   const auto ivsSpExtensionPresentFlag = bitstream.getFlag();
   cout << "ivs_sp_extension_present_flag=" << boolalpha << ivsSpExtensionPresentFlag << '\n';
-  return IvSequenceParams{ivsProfileTierLevel, viewParamsList, depthLowQualityFlag,
-                          numGroups,           maxEntities,    depthOccMapThresholdNumBits,
-                          viewingSpace};
+
+  return x;
 }
 
 void IvSequenceParams::encodeTo(OutputBitstream &bitstream) const {
-  ivsProfileTierLevel.encodeTo(bitstream);
-  bitstream.writeBits(depthOccMapThresholdNumBits - 8, 4);
-  viewParamsList.encodeTo(bitstream, depthOccMapThresholdNumBits);
-  bitstream.putFlag(depthLowQualityFlag);
-  VERIFY_MIVBITSTREAM(numGroups >= 1);
-  bitstream.putUExpGolomb(numGroups - 1);
-  VERIFY_MIVBITSTREAM(maxEntities >= 1);
-  bitstream.putUExpGolomb(maxEntities - 1);
-  VERIFY_MIVBITSTREAM(depthOccMapThresholdNumBits >= 8);
+  viewParamsList.encodeTo(bitstream, 10);
+  bitstream.putFlag(msp().msp_depth_low_quality_flag());
+  bitstream.putUExpGolomb(msp().msp_num_groups_minus1());
+  bitstream.putUExpGolomb(msp().msp_max_entities_minus1());
 
   bitstream.putFlag(!!viewingSpace);
   if (viewingSpace) {

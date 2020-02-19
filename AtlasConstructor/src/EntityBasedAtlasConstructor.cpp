@@ -73,7 +73,7 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
     -> const IvSequenceParams & {
 
   // Construct at least the basic views
-  if (ivSequenceParams.maxEntities == 1) {
+  if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
     m_nbAtlas =
         max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
   }
@@ -183,7 +183,8 @@ void EntityBasedAtlasConstructor::updateMasks(const MVD16Frame &views, MaskList 
 void EntityBasedAtlasConstructor::updateEntityMasks(EntityMapList &entityMasks,
                                                     const MaskList &masks, uint16_t entityId) {
   if (entityId == 0) {
-    entityId = m_inIvSequenceParams.maxEntities; // to avoid getting lost with the initalized 0s
+    entityId = m_inIvSequenceParams.msp().msp_max_entities_minus1() +
+               1; // to avoid getting lost with the initalized 0s
   }
   for (size_t viewId = 0; viewId < entityMasks.size(); viewId++) {
     vector<int> Indices(entityMasks[viewId].getPlane(0).size());
@@ -206,7 +207,7 @@ void EntityBasedAtlasConstructor::swap0(EntityMapList &entityMasks) {
       }
     });
     std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-      if (entityMask.getPlane(0)[i] == m_inIvSequenceParams.maxEntities) {
+      if (entityMask.getPlane(0)[i] == m_inIvSequenceParams.msp().msp_max_entities_minus1() + 1) {
         entityMask.getPlane(0)[i] = uint16_t(0);
       }
     });
@@ -327,7 +328,7 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
 }
 
 auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
-  m_maxEntities = m_inIvSequenceParams.maxEntities;
+  m_maxEntities = m_inIvSequenceParams.msp().msp_max_entities_minus1() + 1;
 
   // Aggregated mask
   m_aggregator->completeAccessUnit();

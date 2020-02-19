@@ -84,13 +84,13 @@ auto ProjectionHelper<Projection>::isInsideViewport(const Common::Vec2f &p) cons
 
 template <typename Projection> bool ProjectionHelper<Projection>::isValidDepth(float d) const {
   static constexpr auto far = 999.999F;
-  return (TMIV::Renderer::isValidDepth(d) && (m_viewParams.normDispRange[0] <= (1.F / d)) &&
+  return (TMIV::Renderer::isValidDepth(d) && (m_viewParams.dq.dq_norm_disp_low() <= (1.F / d)) &&
           (d < far));
 }
 
 template <typename Projection>
 auto ProjectionHelper<Projection>::getDepthRange() const -> Common::Vec2f {
-  return {1.F / m_viewParams.normDispRange[1], 1.F / m_viewParams.normDispRange[0]};
+  return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
 }
 
 template <typename Projection>

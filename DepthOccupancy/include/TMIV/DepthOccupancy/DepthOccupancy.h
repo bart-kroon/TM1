@@ -54,8 +54,8 @@ public:
   DepthOccupancy &operator=(DepthOccupancy &&) = default;
   ~DepthOccupancy() override = default;
 
-  // No change when useOccupancy() is false. Otherwise set depthOccMapThreshold
-  // to depthOccMapThresholdIfSet and adjust normDispRange.
+  // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
+  // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
   auto transformSequenceParams(MivBitstream::IvSequenceParams)
       -> const MivBitstream::IvSequenceParams & override;
 

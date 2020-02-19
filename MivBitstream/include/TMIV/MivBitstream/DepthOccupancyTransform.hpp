@@ -44,7 +44,7 @@ constexpr auto minNormDisp = 1e-3F; // 1 kilometer
 } // namespace impl
 
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
-  m_threshold = viewParams.depthOccMapThreshold;
+  m_threshold = viewParams.dq.dq_depth_occ_map_threshold_default();
   if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }
@@ -52,8 +52,9 @@ inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
 
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
                                               const AtlasParameters &atlasParams) {
-  m_threshold = atlasParams.depthOccMapThreshold ? *atlasParams.depthOccMapThreshold
-                                                 : viewParams.depthOccMapThreshold;
+  m_threshold = atlasParams.depthOccMapThreshold
+                    ? *atlasParams.depthOccMapThreshold
+                    : viewParams.dq.dq_depth_occ_map_threshold_default();
   if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
   }
@@ -62,17 +63,13 @@ inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
 inline auto OccupancyTransform::occupant(uint16_t x) const -> bool { return x >= m_threshold; }
 
 template <unsigned bits>
-DepthTransform<bits>::DepthTransform(const ViewParams &viewParams)
-    : m_normDispRange{viewParams.normDispRange} {
-  if (viewParams.depthStart) {
-    m_depthStart = *viewParams.depthStart;
-  }
-}
+DepthTransform<bits>::DepthTransform(const DepthQuantization &dq)
+    : m_normDispLow{dq.dq_norm_disp_low()}, m_normDispHigh{dq.dq_norm_disp_high()} {}
 
 template <unsigned bits>
-DepthTransform<bits>::DepthTransform(const ViewParams &viewParams,
+DepthTransform<bits>::DepthTransform(const DepthQuantization &dq,
                                      const AtlasParameters &atlasParams)
-    : DepthTransform{viewParams} {
+    : DepthTransform{dq} {
   if (atlasParams.depthStart) {
     m_depthStart = *atlasParams.depthStart;
   }
@@ -80,8 +77,7 @@ DepthTransform<bits>::DepthTransform(const ViewParams &viewParams,
 
 template <unsigned bits> auto DepthTransform<bits>::expandNormDisp(uint16_t x) const -> float {
   const auto level = Common::expandValue<bits>(std::max(m_depthStart, x));
-  return std::max(impl::minNormDisp,
-                  m_normDispRange[0] + (m_normDispRange[1] - m_normDispRange[0]) * level);
+  return std::max(impl::minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
 }
 
 template <unsigned bits> auto DepthTransform<bits>::expandDepth(uint16_t x) const -> float {
@@ -114,7 +110,7 @@ auto DepthTransform<bits>::expandDepth(const Common::Depth10Frame &frame) const
 template <unsigned bits>
 auto DepthTransform<bits>::quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t {
   if (x > 0.F) {
-    const auto level = (x - m_normDispRange[0]) / (m_normDispRange[1] - m_normDispRange[0]);
+    const auto level = (x - m_normDispLow) / (m_normDispHigh - m_normDispLow);
     return std::max(minLevel, Common::quantizeValue<bits>(level));
   }
   return 0;

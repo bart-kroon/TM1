@@ -60,10 +60,10 @@ private:
 template <unsigned bits> class DepthTransform {
 public:
   // Constructor for per-view depth transform signalling (source)
-  explicit DepthTransform(const ViewParams &viewParams);
+  explicit DepthTransform(const DepthQuantization &dq);
 
   // Constructor for per-view depth transform signalling (codec)
-  DepthTransform(const ViewParams &viewParams, const AtlasParameters &atlasParams);
+  DepthTransform(const DepthQuantization &dq, const AtlasParameters &atlasParams);
 
   // Expand a level to normalized disparity [m^-1]
   //
@@ -99,7 +99,8 @@ public:
   auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const -> DepthFrame;
 
 private:
-  const Common::Vec2f m_normDispRange;
+  const float m_normDispLow;
+  const float m_normDispHigh;
   uint16_t m_depthStart{};
 };
 } // namespace TMIV::MivBitstream

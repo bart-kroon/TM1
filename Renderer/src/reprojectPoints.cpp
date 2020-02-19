@@ -178,7 +178,7 @@ template <> auto ProjectionHelper<PerspectiveParams>::getAngularResolution() con
 }
 
 template <> auto ProjectionHelper<ErpParams>::getRadialRange() const -> Vec2f {
-  return {1.F / m_viewParams.normDispRange[1], 1.F / m_viewParams.normDispRange[0]};
+  return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
 }
 
 template <> auto ProjectionHelper<PerspectiveParams>::getRadialRange() const -> Vec2f {
@@ -189,7 +189,7 @@ template <> auto ProjectionHelper<PerspectiveParams>::getRadialRange() const -> 
   float y = (static_cast<float>(m_viewParams.size.y()) - perspectiveParams.center.y()) /
             perspectiveParams.focal.y();
 
-  return {1.F / m_viewParams.normDispRange[1],
-          norm(Vec3f{x, y, 1.F}) / m_viewParams.normDispRange[0]};
+  return {1.F / m_viewParams.dq.dq_norm_disp_high(),
+          norm(Vec3f{x, y, 1.F}) / m_viewParams.dq.dq_norm_disp_low()};
 }
 } // namespace TMIV::Renderer

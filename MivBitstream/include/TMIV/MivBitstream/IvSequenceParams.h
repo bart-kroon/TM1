@@ -96,19 +96,7 @@ struct ViewParams {
   auto erp() const -> const ErpParams &;
   auto perspective() const -> const PerspectiveParams &;
 
-  // In specification: norm_disp_low[ v ]
-  // In specification: norm_disp_high[ v ]
-  Common::Vec2f normDispRange{};
-
-  // In specification: depth_occ_map_threshold_default[ v ]
-  //
-  // Do not set within the encoder! Use encoder.hasOccupancy instead.
-  // The DepthOccupancy component determines this threshold.
-  uint16_t depthOccMapThreshold{};
-
-  // In specification: depth_start_default_present_flag[ v ]
-  // In specification: depth_start_default[ v ]
-  std::optional<uint16_t> depthStart{};
+  DepthQuantization dq;
 
   // In specification: pruning_children[ v ]
   std::optional<std::vector<uint16_t>> pruningChildren{};

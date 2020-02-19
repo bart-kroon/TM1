@@ -93,7 +93,7 @@ auto isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
     const auto occupancyTransform = OccupancyTransform{sourceHelper.getViewParams()};
 
     auto sourceDepthExpanded =
-        DepthTransform<16>{sourceHelper.getViewParams()}.expandDepth(sourceViews[viewId].second);
+        DepthTransform<16>{sourceHelper.getViewParams().dq}.expandDepth(sourceViews[viewId].second);
 
     std::transform(sourceViews[viewId].second.getPlane(0).begin(),
                    sourceViews[viewId].second.getPlane(0).end(), sourceDepthExpanded.begin(),

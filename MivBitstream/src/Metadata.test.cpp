@@ -410,7 +410,7 @@ TEST_CASE("DepthTransform") {
   SECTION("View without depth start") {
     const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {-1.F, 4.F}, 100, {}};
     const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, {}, {}};
-    const auto transform = DepthTransform<12>{viewParams, atlasParams};
+    const auto transform = DepthTransform<12>{viewParams.dq, atlasParams};
 
     REQUIRE(transform.expandNormDisp(0) > 0.F);
     REQUIRE(transform.expandNormDisp(1500) == -1.F + 5.F * 1500.F / 4095.F);
@@ -424,7 +424,7 @@ TEST_CASE("DepthTransform") {
   SECTION("Quantize normalized disparity") {
     const auto viewParams = ViewParams{{1920, 1080}, {}, {}, ErpParams{}, {-1.F, 4.F}, 100, 46};
     const auto atlasParams = AtlasParameters{3, 2, {}, {}, {}, {}, {}, 33, 75};
-    const auto transform = DepthTransform<13>{viewParams, atlasParams};
+    const auto transform = DepthTransform<13>{viewParams.dq, atlasParams};
 
     REQUIRE(transform.quantizeNormDisp(0.F, 0) == 0);
     REQUIRE(transform.quantizeNormDisp(-0.1F, 0) == 0);

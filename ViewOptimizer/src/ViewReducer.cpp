@@ -268,7 +268,7 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
 
   Mat<int> isoverlap;
   isoverlap.resize(camera_from.size.y(), camera_from.size.x());
-  const auto depthTransform = DepthTransform<16>{camera_from};
+  const auto depthTransform = DepthTransform<16>{camera_from.dq};
   const float middleDepth =
       sqrtf(depthTransform.expandDepth(1) * depthTransform.expandDepth(UINT16_MAX));
 

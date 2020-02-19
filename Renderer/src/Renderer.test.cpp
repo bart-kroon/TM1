@@ -58,11 +58,15 @@ auto makeFullERPCamera() {
   ce.ce_view_quat_y(0.02F);
   ce.ce_view_quat_z(-0.5F);
 
+  DepthQuantization dq;
+  dq.dq_norm_disp_low(1.F);
+  dq.dq_norm_disp_high(10.F);
+
   return ViewParams{{10, 5},                   // size
                     ce,                        // pose
                     ErpParams{{-180.F, 180.F}, // phi range
                               {-90.F, 90.F}},  // theta range
-                    {1.F, 10.F}};              // depth range
+                    dq};                       // depth range
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {

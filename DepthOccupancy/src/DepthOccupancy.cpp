@@ -65,12 +65,13 @@ auto DepthOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequ
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
     if (x.hasOccupancy) {
-      x.depthOccMapThreshold = m_depthOccMapThresholdIfSet; // =T
+      x.dq.dq_depth_occ_map_threshold_default(m_depthOccMapThresholdIfSet); // =T
       const auto nearLevel = 1023.F;
       const auto farLevel = float(2 * m_depthOccMapThresholdIfSet);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
-      x.normDispRange[0] +=
-          (0.F - farLevel) / (nearLevel - farLevel) * (x.normDispRange[1] - x.normDispRange[0]);
+      x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
+                            (0.F - farLevel) / (nearLevel - farLevel) *
+                                (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
     }
   }
 
@@ -103,8 +104,8 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
 #ifndef NDEBUG
     const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
 #endif
-    const auto inDepthTransform = DepthTransform<16>{inViewParams};
-    const auto outDepthTransform = DepthTransform<10>{outViewParams, patch};
+    const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
+    const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
 
     const auto patchSizeInAtlas = patch.patchSizeInAtlas();
 

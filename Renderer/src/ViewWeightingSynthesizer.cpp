@@ -225,14 +225,14 @@ public:
           m_viewportColor[i] = Vec3f{};
         } else {
           m_viewportVisibility[i] =
-              std::clamp(1.F / m_viewportVisibility[i], targetCamera.normDispRange.x(),
-                         targetCamera.normDispRange.y());
+              std::clamp(1.F / m_viewportVisibility[i], targetCamera.dq.dq_norm_disp_low(),
+                         targetCamera.dq.dq_norm_disp_high());
         }
       }
     }
 
     return {quantizeTexture(m_viewportColor),
-            DepthTransform<16>{targetCamera}.quantizeNormDisp(m_viewportVisibility, 1)};
+            DepthTransform<16>{targetCamera.dq}.quantizeNormDisp(m_viewportVisibility, 1)};
 
     return Common::Texture444Depth16Frame{};
   }
@@ -469,8 +469,9 @@ private:
 
       m_sourceColor.emplace_back(expandTexture(prunedViews[sourceId].first));
 
-      m_sourceDepth.emplace_back(DepthTransform<DepthFrame::getBitDepth()>{viewParams}.expandDepth(
-          prunedViews[sourceId].second));
+      m_sourceDepth.emplace_back(
+          DepthTransform<DepthFrame::getBitDepth()>{viewParams.dq}.expandDepth(
+              prunedViews[sourceId].second));
 
       std::transform(prunedMasks[sourceId].getPlane(0).begin(),
                      prunedMasks[sourceId].getPlane(0).end(), m_sourceDepth.back().begin(),

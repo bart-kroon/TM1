@@ -58,12 +58,10 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
   }
   stream << viewParams.size << ", ";
   visit([&](const auto &x) { stream << x; }, viewParams.projection);
-  stream << ", norm. disp in " << viewParams.normDispRange << " m^-1, hasOccupancy " << boolalpha
-         << viewParams.hasOccupancy << ", depthOccMapThreshold " << viewParams.depthOccMapThreshold;
-
-  if (viewParams.depthStart) {
-    stream << ", depthStart " << *viewParams.depthStart;
-  }
+  stream << ", norm. disp in [" << viewParams.dq.dq_norm_disp_low() << ", "
+         << viewParams.dq.dq_norm_disp_high() << "] m^-1, hasOccupancy " << boolalpha
+         << viewParams.hasOccupancy << ", depthOccMapThreshold "
+         << viewParams.dq.dq_depth_occ_map_threshold_default();
 
   stream << format(", pose [%6.3f, %6.3f, %6.3f] m, [%6.3f, %6.3f, %6.3f] rad",
                    viewParams.ce.ce_view_pos_x(), viewParams.ce.ce_view_pos_y(),
@@ -90,9 +88,7 @@ auto PerspectiveParams::operator==(const PerspectiveParams &other) const -> bool
 }
 
 auto ViewParams::operator==(const ViewParams &other) const -> bool {
-  return size == other.size && ce == other.ce && projection == other.projection &&
-         normDispRange == other.normDispRange &&
-         depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
+  return size == other.size && ce == other.ce && projection == other.projection && dq == other.dq;
 }
 
 auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
@@ -103,8 +99,8 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   parameters.ce.eulerAngles(radperdeg * node.require("Rotation").asFloatVector<3>());
   const auto depthRange = node.require("Depth_range").asFloatVector<2>();
   constexpr auto kilometer = 1000.F;
-  parameters.normDispRange.x() = depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F;
-  parameters.normDispRange.y() = depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F;
+  parameters.dq.dq_norm_disp_low(depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F);
+  parameters.dq.dq_norm_disp_high(depthRange.x() < kilometer ? 1.F / depthRange.x() : 0.F);
   if (auto subnode = node.optional("HasInvalidDepth"); subnode) {
     parameters.hasOccupancy = subnode.asBool();
   }
@@ -134,7 +130,7 @@ auto ViewParamsList::areIntrinsicParamsEqual() const -> bool {
 
 auto ViewParamsList::areDepthQuantizationParamsEqual() const -> bool {
   for (auto i = begin() + 1; i < end(); ++i) {
-    if (front().normDispRange != i->normDispRange) {
+    if (front().dq != i->dq) {
       return false;
     }
   }
@@ -223,18 +219,13 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
     if (viewParams == viewParamsList.begin() || !depthQuantizationParamsEqualFlag) {
       const auto quantizationLaw = bitstream.getUint8();
       VERIFY_MIVBITSTREAM(quantizationLaw == 0);
-      viewParams->normDispRange.x() = bitstream.getFloat32();
-      viewParams->normDispRange.y() = bitstream.getFloat32();
-      viewParams->depthOccMapThreshold = uint16_t(bitstream.readBits(depthOccMapThresholdNumBits));
-      viewParams->hasOccupancy = viewParams->depthOccMapThreshold > 0;
-
-      if (const auto depthStartDefaultPresentFlag = bitstream.getFlag();
-          depthStartDefaultPresentFlag) {
-        viewParams->depthStart = uint16_t(bitstream.readBits(depthOccMapThresholdNumBits));
-      }
+      viewParams->dq.dq_norm_disp_low(bitstream.getFloat32());
+      viewParams->dq.dq_norm_disp_high(bitstream.getFloat32());
+      viewParams->dq.dq_depth_occ_map_threshold_default(
+          uint16_t(bitstream.readBits(depthOccMapThresholdNumBits)));
+      viewParams->hasOccupancy = viewParams->dq.dq_depth_occ_map_threshold_default() > 0;
     } else {
-      viewParams->normDispRange = viewParamsList.front().normDispRange;
-      viewParams->depthOccMapThreshold = viewParamsList.front().depthOccMapThreshold;
+      viewParams->dq = viewParamsList.front().dq;
       viewParams->hasOccupancy = viewParamsList.front().hasOccupancy;
     }
   }
@@ -305,14 +296,10 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
 
   for (const auto &viewParams : *this) {
     bitstream.putUint8(0); // quantization_law
-    bitstream.putFloat32(viewParams.normDispRange.x());
-    bitstream.putFloat32(viewParams.normDispRange.y());
-    bitstream.writeBits(viewParams.depthOccMapThreshold, depthOccMapThresholdNumBits);
-
-    bitstream.putFlag(!!viewParams.depthStart);
-    if (viewParams.depthStart) {
-      bitstream.writeBits(*viewParams.depthStart, depthOccMapThresholdNumBits);
-    }
+    bitstream.putFloat32(viewParams.dq.dq_norm_disp_low());
+    bitstream.putFloat32(viewParams.dq.dq_norm_disp_high());
+    bitstream.writeBits(viewParams.dq.dq_depth_occ_map_threshold_default(),
+                        depthOccMapThresholdNumBits);
 
     if (depthQuantizationParamsEqualFlag) {
       break;

@@ -50,9 +50,13 @@ const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
 SCENARIO("Depth/occupancy coding") {
   DepthOccupancy depthOccupancy{37};
 
+  DepthQuantization dq;
+  dq.dq_norm_disp_low(0.2F);
+  dq.dq_norm_disp_high(2.2F);
+
   GIVEN("View parameters without invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, {0.2F, 2.2F}, 0};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, dq};
     auto sourceSequenceParams = IvSequenceParams{};
     sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
@@ -67,7 +71,12 @@ SCENARIO("Depth/occupancy coding") {
 
   GIVEN("View parameters with invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, {0.2F, 2.2F}, 0};
+
+    DepthQuantization dq;
+    dq.dq_norm_disp_low(0.2F);
+    dq.dq_norm_disp_high(2.2F);
+
+    auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, dq};
     sourceViewParams.hasOccupancy = true;
     auto sourceSeqParams = IvSequenceParams{};
     sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
@@ -77,14 +86,19 @@ SCENARIO("Depth/occupancy coding") {
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
       THEN("depthOccMapThreshold (T) >> 0") {
-        const auto T = codedViewParams.depthOccMapThreshold;
+        const auto T = codedViewParams.dq.dq_depth_occ_map_threshold_default();
         REQUIRE(T >= 8);
 
         THEN("Coded level 2T matches with source level 0") {
           // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
           const auto twoT = float(2 * T);
-          const auto refViewParams = ViewParams{
-              {1920, 1080}, {}, projection, {0.2F - twoT * 2.F / (1023.F - twoT), 2.2F}, T};
+
+          DepthQuantization dq;
+          dq.dq_norm_disp_low(0.2F - twoT * 2.F / (1023.F - twoT));
+          dq.dq_norm_disp_high(2.2F);
+          dq.dq_depth_occ_map_threshold_default(T);
+
+          const auto refViewParams = ViewParams{{1920, 1080}, {}, projection, dq};
           REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
         }
       }

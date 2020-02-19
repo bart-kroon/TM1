@@ -86,7 +86,7 @@ public:
     vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(patches.size());
     for (const auto &patch : patches) {
-      depthTransform.emplace_back(viewParamsVector[patch.viewId], patch);
+      depthTransform.emplace_back(viewParamsVector[patch.viewId].dq, patch);
     }
 
     auto i_ids = begin(ids);
@@ -252,7 +252,7 @@ public:
           return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, viewParamsVector, target);
         },
         resolutionRatio(viewParamsVector, target));
-    const auto depthTransform = DepthTransform<16>{target};
+    const auto depthTransform = DepthTransform<16>{target.dq};
     auto frame = Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
                                         depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
     frame.first.filIInvalidWithNeutral(frame.second);

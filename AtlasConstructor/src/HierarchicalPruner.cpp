@@ -236,7 +236,7 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_ivSequenceParams.viewParamsList.size(); ++i) {
       if (!m_isBasicView[i]) {
-        const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i]};
+        const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i].dq};
         m_synthesizers.emplace_back(
             make_unique<IncrementalSynthesizer>(m_config, m_ivSequenceParams.viewParamsList[i].size,
                                                 i, depthTransform.expandDepth(views[i].second)));

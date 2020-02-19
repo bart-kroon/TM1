@@ -249,8 +249,8 @@ auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {
                    },
                    [&](const PerspectiveParams &projection) {
                      return abs(
-                         4 * atan(viewParams.projectionPlaneSize[0] / (2 * projection.focal[0])) *
-                         sin(atan(viewParams.projectionPlaneSize[1] / (2 * projection.focal[1]))));
+                         4 * atan(viewParams.ci.projectionPlaneSize().x() / (2 * projection.focal[0])) *
+                         sin(atan(viewParams.ci.projectionPlaneSize().y() / (2 * projection.focal[1]))));
                    }),
                viewParams.projection);
 }
@@ -265,10 +265,10 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
 
   Mat<Vec2f> gridMapToProject = imagePositions(camera_from);
   Mat<float> depth;
-  depth.resize(camera_from.projectionPlaneSize.y(), camera_from.projectionPlaneSize.x());
+  depth.resize(camera_from.ci.projectionPlaneSize().y(), camera_from.ci.projectionPlaneSize().x());
 
   Mat<int> isoverlap;
-  isoverlap.resize(camera_from.projectionPlaneSize.y(), camera_from.projectionPlaneSize.x());
+  isoverlap.resize(camera_from.ci.projectionPlaneSize().y(), camera_from.ci.projectionPlaneSize().x());
   const auto depthTransform = DepthTransform<16>{camera_from.dq};
   const float middleDepth =
       sqrtf(depthTransform.expandDepth(1) * depthTransform.expandDepth(UINT16_MAX));
@@ -281,8 +281,8 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
   }
   auto ptsOncamera_to = reprojectPoints(camera_from, camera_to, gridMapToProject, depth);
 
-  int lastXPruned = camera_to.projectionPlaneSize.x() - 1;
-  int lastYPruned = camera_to.projectionPlaneSize.y() - 1;
+  int lastXPruned = camera_to.ci.projectionPlaneSize().x() - 1;
+  int lastYPruned = camera_to.ci.projectionPlaneSize().y() - 1;
 
   for (unsigned i = 0; i != depth.height(); ++i) {
     for (unsigned j = 0; j != depth.width(); ++j) {

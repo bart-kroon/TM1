@@ -183,7 +183,7 @@ public:
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
-        target.projectionPlaneSize};
+        target.ci.projectionPlaneSize()};
 
     // Pipeline mesh generation and rasterization
     future<void> runner = async(launch::deferred, []() {});
@@ -223,14 +223,14 @@ public:
                      },
                      [&](const PerspectiveParams &projection) {
                        return degperrad * 2 *
-                              atan(viewParams.projectionPlaneSize.x() / (2 * projection.focal.x()));
+                              atan(viewParams.ci.projectionPlaneSize().x() / (2 * projection.focal.x()));
                      }),
                  viewParams.projection);
   }
 
   // Resolution in px^2/deg^2
   static auto resolution(const ViewParams &viewParams) -> float {
-    return square(viewParams.projectionPlaneSize.x() / xFoV(viewParams));
+    return square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
   static auto resolutionRatio(const ViewParamsVector &viewParamsVector, const ViewParams &target)

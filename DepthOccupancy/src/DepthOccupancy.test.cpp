@@ -50,13 +50,17 @@ const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
 SCENARIO("Depth/occupancy coding") {
   DepthOccupancy depthOccupancy{37};
 
+  CameraIntrinsics ci;
+  ci.ci_projection_plane_width_minus1(1919);
+  ci.ci_projection_plane_height_minus1(1079);
+
   DepthQuantization dq;
   dq.dq_norm_disp_low(0.2F);
   dq.dq_norm_disp_high(2.2F);
 
   GIVEN("View parameters without invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, dq};
+    const auto sourceViewParams = ViewParams{ci, {}, projection, dq};
     auto sourceSequenceParams = IvSequenceParams{};
     sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
@@ -72,11 +76,15 @@ SCENARIO("Depth/occupancy coding") {
   GIVEN("View parameters with invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
 
+    CameraIntrinsics ci;
+    ci.ci_projection_plane_width_minus1(1919);
+    ci.ci_projection_plane_height_minus1(1079);
+
     DepthQuantization dq;
     dq.dq_norm_disp_low(0.2F);
     dq.dq_norm_disp_high(2.2F);
 
-    auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, dq};
+    auto sourceViewParams = ViewParams{ci, {}, projection, dq};
     sourceViewParams.hasOccupancy = true;
     auto sourceSeqParams = IvSequenceParams{};
     sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
@@ -98,7 +106,7 @@ SCENARIO("Depth/occupancy coding") {
           dq.dq_norm_disp_high(2.2F);
           dq.dq_depth_occ_map_threshold_default(T);
 
-          const auto refViewParams = ViewParams{{1920, 1080}, {}, projection, dq};
+          const auto refViewParams = ViewParams{ci, {}, projection, dq};
           REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
         }
       }

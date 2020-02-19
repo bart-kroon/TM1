@@ -51,6 +51,10 @@ using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
+  CameraIntrinsics ci;
+  ci.ci_projection_plane_width_minus1(9);
+  ci.ci_projection_plane_height_minus1(4);
+
   CameraExtrinsics ce;
   ce.ce_view_pos_x(1.F);
   ce.ce_view_pos_z(-1.F);
@@ -62,11 +66,7 @@ auto makeFullERPCamera() {
   dq.dq_norm_disp_low(1.F);
   dq.dq_norm_disp_high(10.F);
 
-  return ViewParams{{10, 5},                   // size
-                    ce,                        // pose
-                    ErpParams{{-180.F, 180.F}, // phi range
-                              {-90.F, 90.F}},  // theta range
-                    dq};                       // depth range
+  return ViewParams{ci, ce, ErpParams{{-180.F, 180.F}, {-90.F, 90.F}}, dq};
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {

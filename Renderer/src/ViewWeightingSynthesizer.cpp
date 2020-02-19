@@ -314,10 +314,10 @@ private:
     for (unsigned i = 0; i < N; i++) {
       float y = 0.F;
 
-      float px = x * static_cast<float>(targetHelper.getViewParams().projectionPlaneSize.x());
+      float px = x * static_cast<float>(targetHelper.getViewParams().ci.projectionPlaneSize().x());
 
       for (unsigned j = 0; j < N; j++) {
-        float py = y * static_cast<float>(targetHelper.getViewParams().projectionPlaneSize.y());
+        float py = y * static_cast<float>(targetHelper.getViewParams().ci.projectionPlaneSize().y());
 
         pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.x()));
         pointCloud.push_back(targetHelper.doUnprojection({px, py}, depthRange.y()));
@@ -374,12 +374,12 @@ private:
     MaskList maskList;
 
     for (const auto &cam : viewParamsVector) {
-      TextureFrame tex(cam.projectionPlaneSize.x(), cam.projectionPlaneSize.y());
-      DepthFrame depth(cam.projectionPlaneSize.x(), cam.projectionPlaneSize.y());
+      TextureFrame tex(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
+      DepthFrame depth(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
       tex.fillNeutral();
       frame.push_back(TextureDepthFrame{std::move(tex), std::move(depth)});
 
-      Mask mask(cam.projectionPlaneSize.x(), cam.projectionPlaneSize.y());
+      Mask mask(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
       std::fill(mask.getPlane(0).begin(), mask.getPlane(0).end(), 0);
       maskList.push_back(std::move(mask));
     }
@@ -702,13 +702,13 @@ private:
     for (std::size_t viewId = 0; viewId < m_sourceDepth.size(); viewId++) {
       if (m_cameraVisibility[viewId]) {
 
-        m_viewportUnprojection[viewId].resize(targetHelper.getViewParams().projectionPlaneSize.y(),
-                                              targetHelper.getViewParams().projectionPlaneSize.x());
+        m_viewportUnprojection[viewId].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
+                                              targetHelper.getViewParams().ci.projectionPlaneSize().x());
         std::fill(m_viewportUnprojection[viewId].begin(), m_viewportUnprojection[viewId].end(),
                   Vec3f{Common::NaN, Common::NaN, Common::NaN});
 
-        m_viewportDepth[viewId].resize(targetHelper.getViewParams().projectionPlaneSize.y(),
-                                       targetHelper.getViewParams().projectionPlaneSize.x());
+        m_viewportDepth[viewId].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
+                                       targetHelper.getViewParams().ci.projectionPlaneSize().x());
         std::fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), Common::NaN);
       }
     }
@@ -790,8 +790,8 @@ private:
 
       // Recovery
       parallel_for(
-          targetHelper.getViewParams().projectionPlaneSize.x(),
-          targetHelper.getViewParams().projectionPlaneSize.y(), [&](std::size_t y, std::size_t x) {
+          targetHelper.getViewParams().ci.projectionPlaneSize().x(),
+          targetHelper.getViewParams().ci.projectionPlaneSize().y(), [&](std::size_t y, std::size_t x) {
             for (auto prunedNodeId : pruningOrderId) {
 
               if (m_cameraVisibility[prunedNodeId]) {
@@ -884,8 +884,8 @@ private:
   void selectViewportDepth(bool trustDepth,
                            const ProjectionHelper<TargetProjectionType> &targetHelper) {
 
-    m_viewportVisibility.resize(targetHelper.getViewParams().projectionPlaneSize.y(),
-                                targetHelper.getViewParams().projectionPlaneSize.x());
+    m_viewportVisibility.resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
+                                targetHelper.getViewParams().ci.projectionPlaneSize().x());
 
     parallel_for(m_viewportVisibility.width(), m_viewportVisibility.height(),
                  [&](std::size_t y, std::size_t x) {
@@ -1022,8 +1022,8 @@ private:
     int w_last = static_cast<int>(m_viewportVisibility.width()) - 1;
     int h_last = static_cast<int>(m_viewportVisibility.height()) - 1;
 
-    m_viewportColor.resize(targetHelper.getViewParams().projectionPlaneSize.y(),
-                           targetHelper.getViewParams().projectionPlaneSize.x());
+    m_viewportColor.resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
+                           targetHelper.getViewParams().ci.projectionPlaneSize().x());
 
     parallel_for(
         m_viewportVisibility.width(), m_viewportVisibility.height(),

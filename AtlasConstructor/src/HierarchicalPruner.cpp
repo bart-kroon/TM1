@@ -206,8 +206,8 @@ private:
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_masks),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto mask = Frame<YUV400P8>{viewParams.projectionPlaneSize.x(),
-                                            viewParams.projectionPlaneSize.y()};
+                auto mask = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
+                                            viewParams.ci.projectionPlaneSize().y()};
                 transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
                           begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
@@ -222,8 +222,8 @@ private:
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_status),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto status = Frame<YUV400P8>{viewParams.projectionPlaneSize.x(),
-                                              viewParams.projectionPlaneSize.y()};
+                auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
+                                              viewParams.ci.projectionPlaneSize().y()};
                 transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
                           begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
@@ -240,7 +240,7 @@ private:
       if (!m_isBasicView[i]) {
         const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i].dq};
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
-            m_config, m_ivSequenceParams.viewParamsList[i].projectionPlaneSize, i,
+            m_config, m_ivSequenceParams.viewParamsList[i].ci.projectionPlaneSize(), i,
             depthTransform.expandDepth(views[i].second)));
       }
     }

@@ -153,7 +153,7 @@ auto AtlasParamsList::decodeFrom(InputBitstream &bitstream,
 
     while (numPatches-- > 0) {
       patch.viewId = uint16_t(bitstream.getUVar(ivSequenceParams.viewParamsList.size()));
-      const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].projectionPlaneSize;
+      const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].ci.projectionPlaneSize();
 
       if (ivSequenceParams.msp().msp_max_entities_minus1() > 0) {
         patch.entityId =
@@ -224,7 +224,7 @@ void AtlasParamsList::encodeTo(OutputBitstream &bitstream,
 
     for (const auto &patch : *this) {
       if (patch.atlasId == atlasId) {
-        const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].projectionPlaneSize;
+        const auto viewSize = ivSequenceParams.viewParamsList[patch.viewId].ci.projectionPlaneSize();
 
         VERIFY_MIVBITSTREAM(0 < patch.patchSizeInView.x() && 0 < patch.patchSizeInView.y());
         VERIFY_MIVBITSTREAM(0 <= patch.posInView.x() && 0 <= patch.posInView.y());

@@ -68,6 +68,10 @@ auto operator<<(ostream &stream, const CiCamType x) -> ostream & {
   }
 }
 
+auto CameraIntrinsics::projectionPlaneSize() const -> Vec2i {
+  return {ci_projection_plane_width_minus1() + 1, ci_projection_plane_height_minus1() + 1};
+}
+
 auto CameraIntrinsics::ci_erp_phi_min() const noexcept -> float {
   VERIFY_MIVBITSTREAM(ci_cam_type() == CiCamType::equirectangular);
   VERIFY_MIVBITSTREAM(m_ci_erp_phi_min.has_value());

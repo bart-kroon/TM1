@@ -56,19 +56,19 @@ template <> struct Engine<MivBitstream::ErpParams> {
         phi0{Common::radperdeg * viewParams.erp().phiRange[1]},
         theta0{Common::radperdeg * viewParams.erp().thetaRange[1]},
         dphi_du{-Common::radperdeg * (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0]) /
-                viewParams.projectionPlaneSize.x()},
+                viewParams.ci.projectionPlaneSize().x()},
         dtheta_dv{-Common::radperdeg *
                   (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0]) /
-                  viewParams.projectionPlaneSize.y()},
+                  viewParams.ci.projectionPlaneSize().y()},
 
         // Precomputed values used in the projection equation
-        u0{viewParams.projectionPlaneSize.x() * viewParams.erp().phiRange[1] /
+        u0{viewParams.ci.projectionPlaneSize().x() * viewParams.erp().phiRange[1] /
            (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0])},
-        v0{viewParams.projectionPlaneSize.y() * viewParams.erp().thetaRange[1] /
+        v0{viewParams.ci.projectionPlaneSize().y() * viewParams.erp().thetaRange[1] /
            (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0])},
-        du_dphi{-Common::degperrad * viewParams.projectionPlaneSize.x() /
+        du_dphi{-Common::degperrad * viewParams.ci.projectionPlaneSize().x() /
                 (viewParams.erp().phiRange[1] - viewParams.erp().phiRange[0])},
-        dv_dtheta{-Common::degperrad * viewParams.projectionPlaneSize.y() /
+        dv_dtheta{-Common::degperrad * viewParams.ci.projectionPlaneSize().y() /
                   (viewParams.erp().thetaRange[1] - viewParams.erp().thetaRange[0])} {}
 
   // Unprojection equation

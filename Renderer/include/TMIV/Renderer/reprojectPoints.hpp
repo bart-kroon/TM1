@@ -72,14 +72,14 @@ auto ProjectionHelper<Projection>::doUnprojection(const Common::Vec2f &p, float 
 
 template <typename Projection>
 auto ProjectionHelper<Projection>::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {
-  return ((0.5F <= p.x()) && (p.x() <= (m_viewParams.projectionPlaneSize.x() - 0.5F))) &&
-         ((0.5F <= p.y()) && (p.y() <= (m_viewParams.projectionPlaneSize.y() - 0.5F)));
+  return ((0.5F <= p.x()) && (p.x() <= (m_viewParams.ci.projectionPlaneSize().x() - 0.5F))) &&
+         ((0.5F <= p.y()) && (p.y() <= (m_viewParams.ci.projectionPlaneSize().y() - 0.5F)));
 }
 
 template <typename Projection>
 auto ProjectionHelper<Projection>::isInsideViewport(const Common::Vec2f &p) const -> bool {
-  return ((-0.5F <= p.x()) && (p.x() <= (m_viewParams.projectionPlaneSize.x() + 0.5F))) &&
-         ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.projectionPlaneSize.y() + 0.5F)));
+  return ((-0.5F <= p.x()) && (p.x() <= (m_viewParams.ci.projectionPlaneSize().x() + 0.5F))) &&
+         ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.ci.projectionPlaneSize().y() + 0.5F)));
 }
 
 template <typename Projection> bool ProjectionHelper<Projection>::isValidDepth(float d) const {
@@ -104,12 +104,12 @@ auto ProjectionHelper<Projection>::getPointCloud(unsigned N) const -> PointCloud
   for (unsigned i = 0U; i < N; i++) {
     float y = 0.F;
 
-    float px = x * static_cast<float>(m_viewParams.projectionPlaneSize[0]);
+    float px = x * static_cast<float>(m_viewParams.ci.projectionPlaneSize().x());
 
     for (unsigned j = 0U; j < N; j++) {
       float d = depthRange.x();
 
-      float py = y * static_cast<float>(m_viewParams.projectionPlaneSize[1]);
+      float py = y * static_cast<float>(m_viewParams.ci.projectionPlaneSize().x());
 
       for (unsigned k = 0U; k < N; k++) {
         pointCloud.emplace_back(doUnprojection({px, py}, d));

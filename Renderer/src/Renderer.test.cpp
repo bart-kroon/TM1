@@ -51,9 +51,15 @@ using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
+  CameraExtrinsics ce;
+  ce.ce_view_pos_x(1.F);
+  ce.ce_view_pos_z(-1.F);
+  ce.ce_view_quat_x(0.01F);
+  ce.ce_view_quat_y(0.02F);
+  ce.ce_view_quat_z(-0.5F);
+
   return ViewParams{{10, 5},                   // size
-                    {1.F, 0.F, -1.F},          // position
-                    {1.F, 2.F, -0.5F},         // orientation
+                    ce,                        // pose
                     ErpParams{{-180.F, 180.F}, // phi range
                               {-90.F, 90.F}},  // theta range
                     {1.F, 10.F}};              // depth range
@@ -61,8 +67,19 @@ auto makeFullERPCamera() {
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
   const ViewParams neutral{};
-  const ViewParams translated{{}, {1.F, 2.F, 3.F}};
-  const ViewParams rotated{{}, {}, {100.F, 30.F, -30.F}};
+
+  CameraExtrinsics ce1;
+  ce1.ce_view_pos_x(1.F);
+  ce1.ce_view_pos_y(2.F);
+  ce1.ce_view_pos_z(3.F);
+  const ViewParams translated{{}, ce1};
+
+  CameraExtrinsics ce2;
+  ce2.ce_view_quat_x(0.1F);
+  ce2.ce_view_quat_y(0.3F);
+  ce2.ce_view_quat_z(-0.3F);
+  const ViewParams rotated{{}, ce2};
+
   SECTION("trivial") {
     auto R_t = affineParameters(neutral, neutral);
     REQUIRE(R_t.first == Mat3x3f::eye());
@@ -71,7 +88,7 @@ TEST_CASE("Changing the reference frame", "[Render engine]") {
   SECTION("translation") {
     auto R_t = affineParameters(neutral, translated);
     REQUIRE(R_t.first == Mat3x3f::eye());
-    REQUIRE(R_t.second == -translated.position);
+    REQUIRE(R_t.second == -translated.ce.position());
   }
   SECTION("rotation") {
     auto R_t = affineParameters(neutral, rotated);

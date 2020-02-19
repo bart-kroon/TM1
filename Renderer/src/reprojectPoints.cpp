@@ -121,10 +121,10 @@ auto calculateRayAngles(const ViewParams &viewParams, const ViewParams &target,
 
 auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
     -> pair<Mat3x3f, Vec3f> {
-  const auto R1 = EulerAnglesToRotationMatrix(EulerAngles(viewParams.rotation));
-  const auto R2 = EulerAnglesToRotationMatrix(EulerAngles(target.rotation));
-  const auto &t1 = viewParams.position;
-  const auto &t2 = target.position;
+  const auto R1 = viewParams.ce.rotationMatrix();
+  const auto R2 = target.ce.rotationMatrix();
+  const auto &t1 = viewParams.ce.position();
+  const auto &t2 = target.ce.position();
 
   const auto R = transpose(R2) * R1;
   const auto t = transpose(R2) * (t1 - t2);

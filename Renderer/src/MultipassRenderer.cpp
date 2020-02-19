@@ -81,10 +81,12 @@ struct MultipassRendererHelper {
 
     for (size_t i = 0; i < viewParamsVector.size(); ++i) {
       const auto &source = viewParamsVector[i];
-      distance.push_back(norm(source.position - target.position));
+      distance.push_back(norm(source.ce.position() - target.ce.position()));
 
       // Compute Angle between the camera and target in degree unit
-      const auto yaw_target = target.rotation[0] * radperdeg;
+  // TODO(BK): Reimplement angle comparison with quaternions
+#if false
+	  const auto yaw_target = target.rotation[0] * radperdeg;
       const auto yaw_source = source.rotation[0] * radperdeg;
       const auto pitch_target = target.rotation[1] * radperdeg;
       const auto pitch_source = source.rotation[1] * radperdeg;
@@ -96,6 +98,9 @@ struct MultipassRendererHelper {
       if (angle[i] > halfCycle) {
         angle[i] -= fullCycle;
       }
+#else
+	  angle.push_back(0.F);
+#endif
 
       // Introduce AngleWeight as a simple triangle function (with value of 1 when
       // angle is 0 & value of 0 when angle is 180)

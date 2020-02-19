@@ -249,7 +249,8 @@ private:
       Mat3x3f N;
 
       for (const auto &helper : sourceHelperList) {
-        M += matprod(helper.getViewParams().position, 'N', helper.getViewParams().position, 'T', N);
+        M += matprod(helper.getViewParams().ce.position(), 'N',
+                     helper.getViewParams().ce.position(), 'T', N);
       }
 
       return (epsilon < det(M));
@@ -534,7 +535,7 @@ private:
                       m_sourceUnprojection[viewId](y, x) = P;
                       m_sourceReprojection[viewId](y, x) = p;
                       m_sourceRayDirection[viewId](y, x) =
-                          unit(P - targetHelper.getViewParams().position);
+                          unit(P - targetHelper.getViewParams().ce.position());
                     }
                   }
                 }

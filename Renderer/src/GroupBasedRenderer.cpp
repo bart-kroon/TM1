@@ -188,9 +188,11 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
 
 auto GroupBasedRenderer::viewPriority(const ViewParams &source, const ViewParams &target)
     -> Priority {
-  const auto distance = norm(source.position - target.position);
+  const auto distance = norm(source.ce.position() - target.ce.position());
 
   // Compute angle between the camera and target in degree unit
+  // TODO(BK): Reimplement angle comparison with quaternions
+#if false
   const auto yaw_target = target.rotation[0] * radperdeg;
   const auto yaw_source = source.rotation[0] * radperdeg;
   const auto pitch_target = target.rotation[1] * radperdeg;
@@ -203,6 +205,9 @@ auto GroupBasedRenderer::viewPriority(const ViewParams &source, const ViewParams
   if (angle > halfCycle) {
     angle -= fullCycle;
   }
+#else
+  auto angle = 0.F;
+#endif
 
   // Introduce angleWeight as a simple triangle function (with value of 1 when
   // angle is 0 & value of 0 when angle is 180)

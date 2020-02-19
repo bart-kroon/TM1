@@ -111,9 +111,9 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
   auto Ty = vector<float>{};
   auto Tz = vector<float>{};
   for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
-    Tx.push_back(viewParamsList[camIndex].position[0]);
-    Ty.push_back(viewParamsList[camIndex].position[1]);
-    Tz.push_back(viewParamsList[camIndex].position[2]);
+    Tx.push_back(viewParamsList[camIndex].ce.ce_view_pos_x());
+    Ty.push_back(viewParamsList[camIndex].ce.ce_view_pos_y());
+    Tz.push_back(viewParamsList[camIndex].ce.ce_view_pos_z());
   }
 
   const float xMax = *std::max_element(Tx.begin(), Tx.end());
@@ -165,7 +165,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
       auto distance = vector<float>();
       distance.reserve(viewsPool.size());
       for (const auto &viewParams : viewsPool) {
-        distance.push_back(norm(viewParams.position - T0));
+        distance.push_back(norm(viewParams.ce.position() - T0));
       }
 
       // ascending order
@@ -184,9 +184,9 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
       camerasOutGroup.clear();
       for (size_t camIndex = numViewsPerGroup[gIndex]; camIndex < viewsPool.size(); camIndex++) {
         camerasOutGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
-        Tx.push_back(viewsPool[sortedCamerasId[camIndex]].position[0]);
-        Ty.push_back(viewsPool[sortedCamerasId[camIndex]].position[1]);
-        Tz.push_back(viewsPool[sortedCamerasId[camIndex]].position[2]);
+        Tx.push_back(viewsPool[sortedCamerasId[camIndex]].ce.ce_view_pos_x());
+        Ty.push_back(viewsPool[sortedCamerasId[camIndex]].ce.ce_view_pos_y());
+        Tz.push_back(viewsPool[sortedCamerasId[camIndex]].ce.ce_view_pos_z());
       }
 
       cout << "Views selected for group " << gIndex << ": ";

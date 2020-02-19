@@ -34,6 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 #define _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 
+#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/MivBitstream/VpccParameterSet.h>
 
@@ -88,15 +89,7 @@ struct ViewParams {
   // In specification: projection_plane_height_minus1[ v ]
   Common::Vec2i size{};
 
-  // In specification: cam_pos_x[ v ]
-  // In specification: cam_pos_y[ v ]
-  // In specification: cam_pos_z[ v ]
-  Common::Vec3f position{};
-
-  // In specification: cam_yaw[ v ]
-  // In specification: cam_pitch[ v ]
-  // In specification: cam_roll[ v ]
-  Common::Vec3f rotation{};
+  CameraExtrinsics ce;
 
   // In specification: cam_type[ v ]
   ProjectionParams projection{};

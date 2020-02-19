@@ -42,9 +42,8 @@ ProjectionHelper<Projection>::List::List(const MivBitstream::ViewParamsList &vie
 
 template <typename Projection>
 ProjectionHelper<Projection>::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
-    : m_viewParams{viewParams}, m_engine{viewParams},
-      m_rotationMatrix{
-          Common::EulerAnglesToRotationMatrix(Common::EulerAngles{viewParams.rotation})} {}
+    : m_viewParams{viewParams}, m_engine{viewParams}, m_rotationMatrix{
+                                                          viewParams.ce.rotationMatrix()} {}
 
 template <typename Projection>
 auto ProjectionHelper<Projection>::getViewingDirection() const -> Common::Vec3f {
@@ -53,13 +52,13 @@ auto ProjectionHelper<Projection>::getViewingDirection() const -> Common::Vec3f 
 
 template <typename Projection>
 auto ProjectionHelper<Projection>::changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
-  return transpose(m_rotationMatrix) * (P - m_viewParams.position);
+  return transpose(m_rotationMatrix) * (P - m_viewParams.position());
 }
 
 template <typename Projection>
 auto ProjectionHelper<Projection>::doProjection(const Common::Vec3f &P) const
     -> std::pair<Common::Vec2f, float> {
-  Common::Vec3f Q = transpose(m_rotationMatrix) * (P - m_viewParams.position);
+  Common::Vec3f Q = transpose(m_rotationMatrix) * (P - m_viewParams.ce.position());
   auto imageVertexDescriptor = m_engine.projectVertex(SceneVertexDescriptor{Q, 0.F});
   return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
 }
@@ -68,7 +67,7 @@ template <typename Projection>
 auto ProjectionHelper<Projection>::doUnprojection(const Common::Vec2f &p, float d) const
     -> Common::Vec3f {
   auto P = m_engine.unprojectVertex(p, d);
-  return (m_rotationMatrix * P + m_viewParams.position);
+  return (m_rotationMatrix * P + m_viewParams.ce.position());
 }
 
 template <typename Projection>

@@ -65,10 +65,10 @@ auto operator<<(ostream &stream, const ViewParams &viewParams) -> ostream & {
     stream << ", depthStart " << *viewParams.depthStart;
   }
 
-  stream << ", pose "
-         << format("[%6.3f, %6.3f, %6.3f] m, ", viewParams.position.x(), viewParams.position.y(),
-                   viewParams.position.z())
-         << viewParams.rotation << " deg";
+  stream << format(", pose [%6.3f, %6.3f, %6.3f] m, [%6.3f, %6.3f, %6.3f] rad",
+                   viewParams.ce.ce_view_pos_x(), viewParams.ce.ce_view_pos_y(),
+                   viewParams.ce.ce_view_pos_z(), viewParams.ce.ce_view_quat_x(),
+                   viewParams.ce.ce_view_quat_y(), viewParams.ce.ce_view_quat_z());
 
   if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
     stream << ", pruningChildren [ ";
@@ -90,8 +90,8 @@ auto PerspectiveParams::operator==(const PerspectiveParams &other) const -> bool
 }
 
 auto ViewParams::operator==(const ViewParams &other) const -> bool {
-  return size == other.size && position == other.position && rotation == other.rotation &&
-         projection == other.projection && normDispRange == other.normDispRange &&
+  return size == other.size && ce == other.ce && projection == other.projection &&
+         normDispRange == other.normDispRange &&
          depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
 }
 
@@ -99,8 +99,8 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   ViewParams parameters;
   parameters.name = node.require("Name").asString();
   parameters.size = node.require("Resolution").asIntVector<2>();
-  parameters.position = node.require("Position").asFloatVector<3>();
-  parameters.rotation = node.require("Rotation").asFloatVector<3>();
+  parameters.ce.position(node.require("Position").asFloatVector<3>());
+  parameters.ce.eulerAngles(node.require("Rotation").asFloatVector<3>());
   const auto depthRange = node.require("Depth_range").asFloatVector<2>();
   constexpr auto kilometer = 1000.F;
   parameters.normDispRange.x() = depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F;
@@ -184,12 +184,12 @@ auto ViewParamsList::decodeFrom(InputBitstream &bitstream, unsigned depthOccMapT
   auto viewParamsList = ViewParamsList{ViewParamsVector(bitstream.getUint16() + 1)};
 
   for (auto &cameraParams : viewParamsList) {
-    cameraParams.position.x() = bitstream.getFloat32();
-    cameraParams.position.y() = bitstream.getFloat32();
-    cameraParams.position.z() = bitstream.getFloat32();
-    cameraParams.rotation.x() = bitstream.getFloat32();
-    cameraParams.rotation.y() = bitstream.getFloat32();
-    cameraParams.rotation.z() = bitstream.getFloat32();
+    cameraParams.ce.ce_view_pos_x(bitstream.getFloat32());
+    cameraParams.ce.ce_view_pos_y(bitstream.getFloat32());
+    cameraParams.ce.ce_view_pos_z(bitstream.getFloat32());
+    cameraParams.ce.ce_view_quat_x(bitstream.getFloat32());
+    cameraParams.ce.ce_view_quat_y(bitstream.getFloat32());
+    cameraParams.ce.ce_view_quat_z(bitstream.getFloat32());
   }
 
   const auto intrinsicParamsEqualFlag = bitstream.getFlag();
@@ -278,12 +278,12 @@ void ViewParamsList::encodeTo(OutputBitstream &bitstream,
   bitstream.putUint16(uint16_t(size() - 1));
 
   for (const auto &viewParams : *this) {
-    bitstream.putFloat32(viewParams.position.x());
-    bitstream.putFloat32(viewParams.position.y());
-    bitstream.putFloat32(viewParams.position.z());
-    bitstream.putFloat32(viewParams.rotation.x());
-    bitstream.putFloat32(viewParams.rotation.y());
-    bitstream.putFloat32(viewParams.rotation.z());
+    bitstream.putFloat32(viewParams.ce.ce_view_pos_x());
+    bitstream.putFloat32(viewParams.ce.ce_view_pos_y());
+    bitstream.putFloat32(viewParams.ce.ce_view_pos_z());
+    bitstream.putFloat32(viewParams.ce.ce_view_quat_x());
+    bitstream.putFloat32(viewParams.ce.ce_view_quat_y());
+    bitstream.putFloat32(viewParams.ce.ce_view_quat_z());
   }
 
   const auto intrinsicParamsEqualFlag = areIntrinsicParamsEqual();

@@ -35,6 +35,8 @@
 #define _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Matrix.h>
+#include <TMIV/Common/Vector.h>
 
 #include <iosfwd>
 #include <optional>
@@ -58,6 +60,13 @@ public:
   constexpr auto &ce_view_quat_y(const float value) noexcept;
   constexpr auto &ce_view_quat_z(const float value) noexcept;
 
+  auto position() const noexcept -> Common::Vec3f;
+  auto qW() const noexcept -> float;
+  auto rotationMatrix() const noexcept -> Common::Mat3x3f;
+
+  auto position(Common::Vec3f) noexcept -> CameraExtrinsics &;
+  auto eulerAngles(Common::Vec3f) noexcept -> CameraExtrinsics &;
+
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
   constexpr auto operator==(const CameraExtrinsics &) const noexcept;
@@ -68,12 +77,12 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  float m_ce_view_pos_x;
-  float m_ce_view_pos_y;
-  float m_ce_view_pos_z;
-  float m_ce_view_quat_x;
-  float m_ce_view_quat_y;
-  float m_ce_view_quat_z;
+  float m_ce_view_pos_x{};
+  float m_ce_view_pos_y{};
+  float m_ce_view_pos_z{};
+  float m_ce_view_quat_x{};
+  float m_ce_view_quat_y{};
+  float m_ce_view_quat_z{};
 };
 
 // 23090-12: ci_cam_type
@@ -124,8 +133,8 @@ public:
 
 private:
   CiCamType m_ci_cam_type;
-  std::uint16_t m_ci_projection_plane_width_minus1;
-  std::uint16_t m_ci_projection_plane_height_minus1;
+  std::uint16_t m_ci_projection_plane_width_minus1{};
+  std::uint16_t m_ci_projection_plane_height_minus1{};
   std::optional<float> m_ci_erp_phi_min;
   std::optional<float> m_ci_erp_phi_max;
   std::optional<float> m_ci_erp_theta_min;

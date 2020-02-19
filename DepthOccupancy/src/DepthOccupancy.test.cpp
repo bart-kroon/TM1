@@ -52,7 +52,7 @@ SCENARIO("Depth/occupancy coding") {
 
   GIVEN("View parameters without invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
+    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, {0.2F, 2.2F}, 0};
     auto sourceSequenceParams = IvSequenceParams{};
     sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
@@ -67,7 +67,7 @@ SCENARIO("Depth/occupancy coding") {
 
   GIVEN("View parameters with invalid depth") {
     const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
+    auto sourceViewParams = ViewParams{{1920, 1080}, {}, projection, {0.2F, 2.2F}, 0};
     sourceViewParams.hasOccupancy = true;
     auto sourceSeqParams = IvSequenceParams{};
     sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
@@ -84,7 +84,7 @@ SCENARIO("Depth/occupancy coding") {
           // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
           const auto twoT = float(2 * T);
           const auto refViewParams = ViewParams{
-              {1920, 1080}, {}, {}, projection, {0.2F - twoT * 2.F / (1023.F - twoT), 2.2F}, T};
+              {1920, 1080}, {}, projection, {0.2F - twoT * 2.F / (1023.F - twoT), 2.2F}, T};
           REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
         }
       }

@@ -93,6 +93,8 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     for (size_t id_1 = 0; id_1 < nbCameras - 1; id_1++) {
       for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
         // Sphere distance function
+        // TODO(BK): Reimplement angle comparison with quaternions
+#if false
         auto temp_angle = size_t(
             acos(sin(viewParamsVector[id_1].rotation[1] * radperdeg) *
                      sin(viewParamsVector[id_2].rotation[1] * radperdeg) +
@@ -101,6 +103,9 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
                      cos((viewParamsVector[id_1].rotation[0] - viewParamsVector[id_2].rotation[0]) *
                          radperdeg)) /
             degree_step);
+#else
+        auto temp_angle = 0;
+#endif
 
         if (temp_angle > max_angle) {
           cameras_id_pair.clear();
@@ -160,7 +165,9 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_1 = id.first;
       size_t id_2 = id.second;
 
-      temp_distance = abs(viewParamsVector[id_1].position[0] - viewParamsVector[id_2].position[0]);
+      // TODO(BK): This must be a mistake. Why only the x-coordinate?
+      temp_distance = abs(viewParamsVector[id_1].ce.ce_view_pos_x() -
+                          viewParamsVector[id_2].ce.ce_view_pos_x());
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
         camera_id_pair = id;
@@ -187,9 +194,9 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     float distance = numeric_limits<float>::max();
 
     for (auto &viewParams : viewParamsVector) {
-      x_center += viewParams.position[0];
-      y_center += viewParams.position[1];
-      z_center += viewParams.position[2];
+      x_center += viewParams.ce.ce_view_pos_x();
+      y_center += viewParams.ce.ce_view_pos_y();
+      z_center += viewParams.ce.ce_view_pos_z();
     }
     x_center /= nbCameras;
     y_center /= nbCameras;
@@ -213,9 +220,9 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     }
     // Search views which have the least diatance to center
     for (auto i : camera_id) {
-      float temp_distance = sqrt(square(viewParamsVector[i].position[0] - x_center) +
-                                 square(viewParamsVector[i].position[1] - y_center) +
-                                 square(viewParamsVector[i].position[2] - z_center));
+      float temp_distance = sqrt(square(viewParamsVector[i].ce.ce_view_pos_x() - x_center) +
+                                 square(viewParamsVector[i].ce.ce_view_pos_y() - y_center) +
+                                 square(viewParamsVector[i].ce.ce_view_pos_z() - z_center));
       if (temp_distance < distance) {
         id_center = int(i);
         distance = temp_distance;
@@ -247,9 +254,7 @@ auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {
                viewParams.projection);
 }
 auto ViewReducer::calculateDistance(ViewParams camera_1, ViewParams camera_2) -> float {
-  return sqrt(square(camera_1.position[0] - camera_2.position[0]) +
-              square(camera_1.position[1] - camera_2.position[1]) +
-              square(camera_1.position[2] - camera_2.position[2]));
+  return norm(camera_1.ce.position() - camera_2.ce.position());
 }
 auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera_to) -> float {
 

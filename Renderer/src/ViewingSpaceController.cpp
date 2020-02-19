@@ -54,9 +54,9 @@ auto computeIndex(const ViewParams &metadata, const IvSequenceParams &ivSequence
     TMIV::MivBitstream::ViewingSpace vs = ivSequenceParams.viewingSpace.value();
 
     TMIV::ViewingSpace::ViewingParams vp;
-    vp.viewPosition = metadata.position;
-    vp.yaw = metadata.rotation.x();
-    vp.pitch = metadata.rotation.y();
+    vp.viewPosition = metadata.ce.position();
+    // TODO(BK): Switch to quaternions in 4.1.
+
     index = TMIV::ViewingSpace::ViewingSpaceEvaluator::computeInclusion(vs, vp);
   }
 

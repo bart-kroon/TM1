@@ -100,7 +100,7 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   parameters.name = node.require("Name").asString();
   parameters.size = node.require("Resolution").asIntVector<2>();
   parameters.ce.position(node.require("Position").asFloatVector<3>());
-  parameters.ce.eulerAngles(node.require("Rotation").asFloatVector<3>());
+  parameters.ce.eulerAngles(radperdeg * node.require("Rotation").asFloatVector<3>());
   const auto depthRange = node.require("Depth_range").asFloatVector<2>();
   constexpr auto kilometer = 1000.F;
   parameters.normDispRange.x() = depthRange.y() < kilometer ? 1.F / depthRange.y() : 0.F;

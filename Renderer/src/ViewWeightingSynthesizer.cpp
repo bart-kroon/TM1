@@ -387,10 +387,10 @@ private:
 
     for (auto iter = patchParamsVector.rbegin(); iter != patchParamsVector.rend(); ++iter) {
       const auto &patch = *iter;
-      const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
+      const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId], patch};
 
       auto &currentAtlas = atlas_pruned[patch.atlasId];
-      auto &currentView = frame[patch.viewId];
+      auto &currentView = frame[patch.pduViewId];
 
       auto &textureAtlasMap = currentAtlas.first;
       auto &depthAtlasMap = currentAtlas.second;
@@ -398,7 +398,7 @@ private:
       auto &textureViewMap = currentView.first;
       auto &depthViewMap = currentView.second;
 
-      auto &mask = maskList[patch.viewId];
+      auto &mask = maskList[patch.pduViewId];
 
       const auto sizeInAtlas = patch.patchSizeInAtlas();
       int wP = sizeInAtlas.x();
@@ -515,7 +515,7 @@ private:
 
               if (patchId != unusedPatchId) {
                 const auto &patch = atlasParamsList[patchId];
-                auto viewId = patch.viewId;
+                auto viewId = patch.pduViewId;
 
                 if (m_cameraVisibility[viewId]) {
                   auto posInView = atlasToView({static_cast<int>(X), static_cast<int>(Y)}, patch);
@@ -717,7 +717,7 @@ private:
       auto viewId = static_cast<unsigned>(visibleSourceId[id]);
 
       for (const auto &patch : atlasParamsList) {
-        if (patch.viewId == visibleSourceId[id]) {
+        if (patch.pduViewId == visibleSourceId[id]) {
           int x0 = patch.posInView.x();
           int x1 = x0 + patch.patchSizeInView.x();
 

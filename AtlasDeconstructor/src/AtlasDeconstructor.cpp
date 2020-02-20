@@ -77,7 +77,7 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   }
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
-    assert(atlasParamsList[id].viewId < viewParamsList.size());
+    assert(atlasParamsList[id].pduViewId < viewParamsList.size());
     if (ivSequenceParams.msp().msp_max_entities_minus1() == 0 ||
         (atlasParamsList[id].entityId >= m_entityDecodeRange[0] &&
          atlasParamsList[id].entityId < m_entityDecodeRange[1])) {
@@ -102,7 +102,7 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParams &patch, PatchIdMapL
   int yMin = q0.y();
   int yLast = q0.y() + sizeInAtlas.y();
 
-  const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
+  const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId], patch};
 
   if (m_downscale_depth) {
     yMin /= 2;
@@ -139,10 +139,10 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   for (auto iter = patchParamsVector.rbegin(); iter != patchParamsVector.rend(); ++iter) {
     const auto &patch = *iter;
-    const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
+    const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId], patch};
 
     auto &currentAtlas = atlas_pruned[patch.atlasId];
-    auto &currentView = frame[patch.viewId];
+    auto &currentView = frame[patch.pduViewId];
 
     auto &textureAtlasMap = currentAtlas.first;
     auto &depthAtlasMap = currentAtlas.second;

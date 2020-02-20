@@ -420,10 +420,10 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
 
   TextureDepth16Frame currentView;
   if (m_maxEntities > 1) {
-    currentView = setView(views[patch.viewId], m_entityMasksBuffer[m_frameInGOPIndex][patch.viewId],
+    currentView = setView(views[patch.pduViewId], m_entityMasksBuffer[m_frameInGOPIndex][patch.pduViewId],
                           *patch.entityId);
   } else {
-    currentView = views[patch.viewId];
+    currentView = views[patch.pduViewId];
   }
 
   auto &textureAtlasMap = currentAtlas.first;
@@ -436,8 +436,8 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
   int xM = patch.posInView.x();
   int yM = patch.posInView.y();
 
-  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.viewId];
-  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.viewId];
+  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId];
+  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId];
 
   for (int dy = 0; dy < h; dy++) {
     for (int dx = 0; dx < w; dx++) {

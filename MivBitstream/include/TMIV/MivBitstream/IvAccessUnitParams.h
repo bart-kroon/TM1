@@ -50,16 +50,16 @@ namespace TMIV::MivBitstream {
 // in-memory use because of the delta coding and quantization of some of the fields.
 struct PatchParams {
   // TODO(BK): Have a PatchParamsVector per atlas
-  uint8_t atlasId{};
+  std::uint8_t atlasId{};
 
-  unsigned viewId{};
-  std::optional<uint16_t> entityId{};
+  std::uint16_t pduViewId{};
+  std::optional<std::uint16_t> entityId{};
   Common::Vec2i patchSizeInView;
   Common::Vec2i posInView;
   Common::Vec2i posInAtlas;
   FlexiblePatchOrientation rotation{};
-  std::optional<uint16_t> depthOccMapThreshold;
-  std::optional<uint16_t> depthStart;
+  std::optional<std::uint16_t> depthOccMapThreshold;
+  std::optional<std::uint16_t> depthStart;
 
   // Is the patch rotated such that width and height swap?
   bool isRotated() const;

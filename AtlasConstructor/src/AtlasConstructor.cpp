@@ -186,7 +186,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
                                          MVD16Frame &atlas, int frame) {
 
   auto &currentAtlas = atlas[patch.atlasId];
-  const auto &currentView = views[patch.viewId];
+  const auto &currentView = views[patch.pduViewId];
 
   auto &textureAtlasMap = currentAtlas.first;
   auto &depthAtlasMap = currentAtlas.second;
@@ -200,8 +200,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
 
   int alignment = m_packer->getAlignment();
 
-  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.viewId];
-  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.viewId];
+  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId];
+  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId];
 
   for (int dyAligned = 0; dyAligned < h; dyAligned += alignment) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += alignment) {
@@ -215,7 +215,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patch.viewId](dy + yM, dx + xM)[frame]) {
+          if (m_nonAggregatedMask[patch.pduViewId](dy + yM, dx + xM)[frame]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

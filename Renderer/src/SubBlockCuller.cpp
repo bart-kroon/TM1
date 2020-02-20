@@ -60,10 +60,10 @@ static auto affineParameterList(const ViewParamsList &viewParamsList, const View
 
 auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras,
                  const ViewParams &target) -> bool {
-  const auto &camera = cameras[patch.viewId];
+  const auto &camera = cameras[patch.pduViewId];
   auto R_t = affineParameterList(cameras, target);
-  const auto &R = R_t[patch.viewId].first;
-  const auto &t = R_t[patch.viewId].second;
+  const auto &R = R_t[patch.pduViewId].first;
+  const auto &t = R_t[patch.pduViewId].second;
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
@@ -158,9 +158,9 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     // If patch is as large as source view
     if (atlasParamsList[id].patchSizeInView.x() ==
-            viewParamsList[atlasParamsList[id].viewId].ci.projectionPlaneSize().x() &&
+            viewParamsList[atlasParamsList[id].pduViewId].ci.projectionPlaneSize().x() &&
         atlasParamsList[id].patchSizeInView.y() ==
-            viewParamsList[atlasParamsList[id].viewId].ci.projectionPlaneSize().y()) {
+            viewParamsList[atlasParamsList[id].pduViewId].ci.projectionPlaneSize().y()) {
 
       // size of sub-block is fixed now.
       Vec2i blocksizes = {128, 128};

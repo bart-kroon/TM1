@@ -141,7 +141,7 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
   }
 
   for (const auto &patch : atlasParamsList) {
-    helper.patchesViewId.push_back(patch.viewId);
+    helper.patchesViewId.push_back(patch.pduViewId);
   }
 
   // Ordering views based on their distance & angle to target view

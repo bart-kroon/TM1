@@ -402,7 +402,7 @@ auto PruningChildren::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_vie
   const auto pc_num_children_minus1 = bitstream.getUVar(mvp_num_views_minus1);
   auto x = vector<uint16_t>(pc_num_children_minus1 + 1);
 
-  for (unsigned short &i : x) {
+  for (uint16_t &i : x) {
     i = uint16_t(bitstream.getUVar(mvp_num_views_minus1 + 1));
   }
 

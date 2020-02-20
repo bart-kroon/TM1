@@ -49,13 +49,14 @@ IvMetadataWriter::IvMetadataWriter(const Json &config, const string &baseDirecto
     what << "Failed to open metadata file " << m_path;
     throw runtime_error(what.str());
   }
+  m_encoder = make_unique<MivEncoder>(m_stream);
 }
 
-void IvMetadataWriter::writeIvSequenceParams(IvSequenceParams ivSequenceParams) {
-  // TODO(BK): Implement
+void IvMetadataWriter::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
+  m_encoder->writeIvSequenceParams(ivSequenceParams);
 }
 
-void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitParams) {
-  // TODO(BK): Implement
+void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
+  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams);
 }
 } // namespace TMIV::IO

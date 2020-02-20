@@ -34,6 +34,34 @@
 #ifndef _TMIV_MIVBITSTREAM_MIVENCODER_H_
 #define _TMIV_MIVBITSTREAM_MIVENCODER_H_
 
-namespace TMIV::MivBitstream {}
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/NalSampleStreamFormat.h>
+#include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
+
+namespace TMIV::MivBitstream {
+class MivEncoder {
+public:
+  MivEncoder(std::ostream &stream);
+
+  void writeIvSequenceParams(const IvSequenceParams &);
+  void writeIvAccessUnitParams(const IvAccessUnitParams &);
+
+private:
+  template <typename Payload> void writeVpccUnit(VuhUnitType vuh, uint8_t vai, Payload &&payload);
+  template <typename Payload, typename... Args>
+  void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload,
+                    Args &&... args) const;
+
+  auto specialAtlasSubBitstream(const IvSequenceParams &) const -> AtlasSubBitstream;
+  auto adaptationParameterSet(const IvSequenceParams &) const -> AdaptationParameterSetRBSP;
+
+  std::ostream &m_stream;
+  SampleStreamVpccHeader m_ssvh{2};
+  std::vector<VpccParameterSet> m_vps;
+  SampleStreamNalHeader m_ssnh{2};
+  bool m_writeNonAcl{true};
+};
+} // namespace TMIV::MivBitstream
 
 #endif

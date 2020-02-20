@@ -30,3 +30,76 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#include <TMIV/MivBitstream/MivEncoder.h>
+
+#include <iostream>
+#include <sstream>
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::MivBitstream {
+
+MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
+  cout << m_ssvh;
+  m_ssvh.encodeTo(m_stream);
+}
+
+void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
+  m_vps = {ivSequenceParams.vps};
+  writeVpccUnit(VuhUnitType::VPCC_VPS, 0, ivSequenceParams.vps);
+  writeVpccUnit(VuhUnitType::VPCC_AD, specialAtlasId, specialAtlasSubBitstream(ivSequenceParams));
+}
+
+void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
+  // TODO....
+
+  m_writeNonAcl = false;
+}
+
+template <typename Payload>
+void MivEncoder::writeVpccUnit(VuhUnitType vuh_unit_type, uint8_t vuh_atlas_id, Payload &&payload) {
+  auto vuh = VpccUnitHeader{vuh_unit_type};
+  vuh.vuh_atlas_id(vuh_atlas_id);
+
+  const auto vu = VpccUnit{vuh, forward<Payload>(payload)};
+
+  ostringstream substream;
+  vu.encodeTo(substream, m_vps);
+
+  const auto ssvu = SampleStreamVpccUnit{substream.str()};
+  ssvu.encodeTo(m_stream, m_ssvh);
+  cout << ssvu << vu;
+}
+
+template <typename Payload, typename... Args>
+void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload,
+                              Args &&... args) const {
+  ostringstream substream1;
+  payload.encodeTo(substream1, forward<Args>(args)...);
+
+  const auto nu = NalUnit{nuh, substream1.str()};
+
+  ostringstream substream2;
+  nu.encodeTo(substream2);
+
+  const auto ssnu = SampleStreamNalUnit{substream2.str()};
+  ssnu.encodeTo(m_stream, m_ssnh);
+  cout << ssnu << nu;
+}
+
+auto MivEncoder::specialAtlasSubBitstream(const IvSequenceParams &ivSequenceParams) const
+    -> AtlasSubBitstream {
+  auto asb = AtlasSubBitstream{m_ssnh};
+  writeNalUnit(asb, NalUnitHeader{NalUnitType::NAL_APS, 0, 1},
+               adaptationParameterSet(ivSequenceParams));
+  return asb;
+}
+
+auto MivEncoder::adaptationParameterSet(const IvSequenceParams &ivSequenceParams) const
+    -> AdaptationParameterSetRBSP {
+  // TODO: Convert viewParamsList to APS
+  return {};
+}
+} // namespace TMIV::MivBitstream

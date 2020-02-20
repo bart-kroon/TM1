@@ -34,9 +34,7 @@
 #ifndef _TMIV_IO_IVMETADATAWRITER_H_
 #define _TMIV_IO_IVMETADATAWRITER_H_
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/MivEncoder.h>
 
 #include <fstream>
 
@@ -46,15 +44,13 @@ public:
   IvMetadataWriter(const Common::Json &config, const std::string &baseDirectoryField,
                    const std::string &fileNameField);
 
-  void writeIvSequenceParams(MivBitstream::IvSequenceParams);
-  void writeIvAccessUnitParams(MivBitstream::IvAccessUnitParams);
+  void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
+  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &);
 
 private:
   std::string m_path;
   std::ofstream m_stream;
-  Common::OutputBitstream m_bitstream{m_stream};
-  MivBitstream::IvSequenceParams m_ivSequenceParams;
-  MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
+  std::unique_ptr<MivBitstream::MivEncoder> m_encoder;
 };
 } // namespace TMIV::IO
 

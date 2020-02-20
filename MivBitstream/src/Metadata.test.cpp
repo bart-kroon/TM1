@@ -276,15 +276,15 @@ const auto ivSequenceParams =
                            12,   // num depth occupancy bits
                            viewingSpace[0]}};
 
-const auto atlasParamsList = array{
-    AtlasParamsList{
+const auto patchParamsList = array{
+    PatchParamsList{
         {AtlasParameters{
             0, 0, {}, {100, 50}, {5, 4}, {34, 22}, FlexiblePatchOrientation::FPO_MROT90, {}, {}}},
         true,           // omaf v1 compatible flags
         {},             // no group ID's
         {{1920, 1080}}, // atlas sizes
         {false}},       // depth occ. params present flags
-    AtlasParamsList{
+    PatchParamsList{
         {AtlasParameters{
              0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, FlexiblePatchOrientation::FPO_MROT90, {}, {}},
          AtlasParameters{0,
@@ -311,7 +311,7 @@ const auto atlasParamsList = array{
         {true, false, true}}};                // namespace examples
 
 const auto ivAccessUnitParams =
-    array{IvAccessUnitParams{}, IvAccessUnitParams{{atlasParamsList[1]}}};
+    array{IvAccessUnitParams{}, IvAccessUnitParams{{patchParamsList[1]}}};
 } // namespace examples
 
 namespace {
@@ -365,8 +365,8 @@ TEST_CASE("Metadata bitstreams") {
   }
 
   SECTION("atlas_params_list") {
-    REQUIRE(codingTest(examples::atlasParamsList[0], 17, examples::ivSequenceParams[0]));
-    REQUIRE(codingTest(examples::atlasParamsList[1], 47, examples::ivSequenceParams[1]));
+    REQUIRE(codingTest(examples::patchParamsList[0], 17, examples::ivSequenceParams[0]));
+    REQUIRE(codingTest(examples::patchParamsList[1], 47, examples::ivSequenceParams[1]));
   }
 
   SECTION("iv_access_unit_params") {

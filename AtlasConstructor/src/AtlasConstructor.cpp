@@ -149,9 +149,12 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   cout << "Aggregated luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
   // Packing
-  m_ivAccessUnitParams.atlasParamsList.atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
-  m_ivAccessUnitParams.atlasParamsList.setAtlasParamsVector(m_packer->pack(
-      m_ivAccessUnitParams.atlasParamsList.atlasSizes, aggregatedMask, m_isBasicView));
+  m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
+  for (auto &atlas : m_ivAccessUnitParams.atlas) {
+    atlas.asps.asps_frame_width(m_atlasSize.x()).asps_frame_height(m_atlasSize.y());
+  }
+  m_ivAccessUnitParams.patchParamsList =
+      m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 
   // Atlas construction
   int frame = 0;
@@ -165,7 +168,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
       atlasList.push_back(move(atlas));
     }
 
-    for (const auto &patch : m_ivAccessUnitParams.atlasParamsList) {
+    for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
       writePatchInAtlas(patch, views, atlasList, frame);
     }
 

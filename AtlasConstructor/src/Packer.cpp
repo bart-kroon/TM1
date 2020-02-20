@@ -77,7 +77,7 @@ auto Packer::setMask(int viewId, int entityId) -> Mask {
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
-                  const vector<bool> &isBasicView) -> PatchParamsVector {
+                  const vector<bool> &isBasicView) -> PatchParamsList {
   // Check atlas size
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % m_alignment) != 0) || ((sz.y() % m_alignment) != 0)) {
@@ -121,7 +121,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   }
 
   // Packing
-  PatchParamsVector atlasParamsVector;
+  PatchParamsList atlasParamsVector;
   vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 

@@ -128,7 +128,7 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
                                     const ViewParams &target) const -> Texture444Depth16Frame {
   MultipassRendererHelper helper;
 
-  const auto &atlasParamsList = ivAccessUnitParams.atlasParamsList;
+  const auto &patchParamsList = ivAccessUnitParams.patchParamsList;
 
   // Initalize mapsPass by unusedPatchId
   auto mapsPass = vector<PatchIdMapList>(m_numberOfPasses);
@@ -140,7 +140,7 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     }
   }
 
-  for (const auto &patch : atlasParamsList) {
+  for (const auto &patch : patchParamsList) {
     helper.patchesViewId.push_back(patch.pduViewId());
   }
 

@@ -186,16 +186,16 @@ public:
     //######################################################################################
     // 1) Deconstruction
     recoverPrunedSource<MVD, sourceCamType>(atlasList, ivSequenceParams,
-                                            ivAccessUnitParams.atlasParamsList, sourceHelperList);
+                                            ivAccessUnitParams.patchParamsList, sourceHelperList);
 
     //######################################################################################
     // 2) Reprojection
-    reprojectPrunedSource<sourceCamType, targetCamType>(maps, ivAccessUnitParams.atlasParamsList,
+    reprojectPrunedSource<sourceCamType, targetCamType>(maps, ivAccessUnitParams.patchParamsList,
                                                         sourceHelperList, targetHelper);
 
     //######################################################################################
     // 3) Warping
-    warpPrunedSource<targetCamType>(ivAccessUnitParams.atlasParamsList, targetHelper);
+    warpPrunedSource<targetCamType>(ivAccessUnitParams.patchParamsList, targetHelper);
 
     //######################################################################################
     // 4) Weight recovery
@@ -361,7 +361,7 @@ private:
   }
   template <typename MVD>
   auto recoverPrunedViewAndMask(const MVD &atlas, const ViewParamsList &viewParamsList,
-                                const PatchParamsVector patchParamsVector)
+                                const PatchParamsList patchParamsVector)
       -> std::pair<MVD, MaskList> {
 
     using TextureDepthFrame = typename MVD::value_type;
@@ -443,7 +443,7 @@ private:
 
   template <typename MVD, CiCamType sourceCamType>
   void recoverPrunedSource(const MVD &atlasList, const IvSequenceParams &ivSequenceParams,
-                           const AtlasParamsList &atlasParamsList,
+                           const PatchParamsList &patchParamsList,
                            const typename ProjectionHelper<sourceCamType>::List &sourceHelperList) {
 
     using TextureDepthFrame = typename MVD::value_type;
@@ -451,7 +451,7 @@ private:
 
     // Recover pruned views
     auto prunedViewsAndMask =
-        recoverPrunedViewAndMask(atlasList, ivSequenceParams.viewParamsList, atlasParamsList);
+        recoverPrunedViewAndMask(atlasList, ivSequenceParams.viewParamsList, patchParamsList);
 
     const auto &prunedViews = prunedViewsAndMask.first;
     const auto &prunedMasks = prunedViewsAndMask.second;
@@ -479,7 +479,7 @@ private:
   }
   template <CiCamType sourceCamType, CiCamType targetCamType>
   void reprojectPrunedSource(const PatchIdMapList &patchIdMapList,
-                             const AtlasParamsList &atlasParamsList,
+                             const PatchParamsList &patchParamsList,
                              const typename ProjectionHelper<sourceCamType>::List &sourceHelperList,
                              const ProjectionHelper<targetCamType> &targetHelper) {
 
@@ -514,7 +514,7 @@ private:
               auto patchId = patchIdMap.getPlane(0)(Y, X);
 
               if (patchId != unusedPatchId) {
-                const auto &patch = atlasParamsList[patchId];
+                const auto &patch = patchParamsList[patchId];
                 auto viewId = patch.pduViewId();
 
                 if (m_cameraVisibility[viewId]) {
@@ -543,7 +543,7 @@ private:
     }
   }
   template <CiCamType targetCamType>
-  void warpPrunedSource(const AtlasParamsList &atlasParamsList,
+  void warpPrunedSource(const PatchParamsList &patchParamsList,
                         const ProjectionHelper<targetCamType> &targetHelper) {
 
     struct Splat {
@@ -716,7 +716,7 @@ private:
     parallel_for(visibleSourceId.size(), [&](std::size_t id) {
       auto viewId = static_cast<unsigned>(visibleSourceId[id]);
 
-      for (const auto &patch : atlasParamsList) {
+      for (const auto &patch : patchParamsList) {
         if (patch.pduViewId() == visibleSourceId[id]) {
           int x0 = patch.pduViewPos().x();
           int x1 = x0 + patch.pduViewSize().x();

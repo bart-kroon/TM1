@@ -133,7 +133,7 @@ auto baseview_divide(const PatchParams &patch, Vec2i blocksizes) {
   int blocknums_w = patch.pduViewSize().x() / blocksizes.x();
   int blocknums_h = patch.pduViewSize().y() / blocksizes.y();
   int blocknums_all = blocknums_w * blocknums_h;
-  PatchParamsVector subblock(blocknums_all, patch);
+  PatchParamsList subblock(blocknums_all, patch);
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
       subblock[i * blocknums_w + j].pduViewSize().x() = blocksizes.x();
@@ -153,26 +153,26 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
                                       const ViewParams &target) -> PatchIdMapList {
   PatchIdMapList updatedpatchMapList = maps;
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto &atlasParamsList = ivAccessUnitParams.atlasParamsList;
+  const auto &patchParamsList = ivAccessUnitParams.patchParamsList;
 
-  for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
+  for (size_t id = 0U; id < patchParamsList.size(); ++id) {
     // If patch is as large as source view
-    if (atlasParamsList[id].pduViewSize().x() ==
-            viewParamsList[atlasParamsList[id].pduViewId()].ci.projectionPlaneSize().x() &&
-        atlasParamsList[id].pduViewSize().y() ==
-            viewParamsList[atlasParamsList[id].pduViewId()].ci.projectionPlaneSize().y()) {
+    if (patchParamsList[id].pduViewSize().x() ==
+            viewParamsList[patchParamsList[id].pduViewId()].ci.projectionPlaneSize().x() &&
+        patchParamsList[id].pduViewSize().y() ==
+            viewParamsList[patchParamsList[id].pduViewId()].ci.projectionPlaneSize().y()) {
 
       // size of sub-block is fixed now.
       Vec2i blocksizes = {128, 128};
-      PatchParamsVector blocks = baseview_divide(atlasParamsList[id], blocksizes);
+      PatchParamsList blocks = baseview_divide(patchParamsList[id], blocksizes);
       for (const auto &block : blocks) {
         if (!choosePatch(block, viewParamsList, target)) {
           erasePatchIdInMap(block, updatedpatchMapList, static_cast<uint16_t>(id));
         }
       }
     } else {
-      if (!choosePatch(atlasParamsList[id], viewParamsList, target)) {
-        erasePatchIdInMap(atlasParamsList[id], updatedpatchMapList, static_cast<uint16_t>(id));
+      if (!choosePatch(patchParamsList[id], viewParamsList, target)) {
+        erasePatchIdInMap(patchParamsList[id], updatedpatchMapList, static_cast<uint16_t>(id));
       }
     }
   }

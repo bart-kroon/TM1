@@ -346,10 +346,13 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   cout << "Aggregated luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
   // Packing
-  m_ivAccessUnitParams.atlasParamsList.atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
+  m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
+  for (auto &atlas : m_ivAccessUnitParams.atlas) {
+    atlas.asps.asps_frame_width(m_atlasSize.x()).asps_frame_height(m_atlasSize.y());
+  }
   m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
-  m_ivAccessUnitParams.atlasParamsList.setAtlasParamsVector(m_packer->pack(
-      m_ivAccessUnitParams.atlasParamsList.atlasSizes, aggregatedMask, m_isBasicView));
+  m_ivAccessUnitParams.patchParamsList =
+      m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 
   // Atlas construction
   m_frameInGOPIndex = 0;
@@ -369,7 +372,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
       atlasList.push_back(move(atlas));
     }
 
-    for (const auto &patch : m_ivAccessUnitParams.atlasParamsList) {
+    for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
       writePatchInAtlas(patch, views, atlasList);
     }
 
@@ -420,10 +423,11 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
 
   TextureDepth16Frame currentView;
   if (m_maxEntities > 1) {
-    currentView = setView(views[patch.pduViewId], m_entityMasksBuffer[m_frameInGOPIndex][patch.pduViewId],
-                          *patch.pduEntityId);
+    currentView =
+        setView(views[patch.pduViewId()], m_entityMasksBuffer[m_frameInGOPIndex][patch.pduViewId()],
+                *patch.pduEntityId());
   } else {
-    currentView = views[patch.pduViewId];
+    currentView = views[patch.pduViewId()];
   }
 
   auto &textureAtlasMap = currentAtlas.first;
@@ -431,13 +435,13 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
 
   const auto &textureViewMap = currentView.first;
   const auto &depthViewMap = currentView.second;
-  int w = patch.patchSizeInView.x();
-  int h = patch.patchSizeInView.y();
-  int xM = patch.pduViewPos.x();
-  int yM = patch.pduViewPos.y();
+  int w = patch.pduViewSize().x();
+  int h = patch.pduViewSize().y();
+  int xM = patch.pduViewPos().x();
+  int yM = patch.pduViewPos().y();
 
-  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId];
-  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId];
+  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId()];
+  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId()];
 
   for (int dy = 0; dy < h; dy++) {
     for (int dx = 0; dx < w; dx++) {

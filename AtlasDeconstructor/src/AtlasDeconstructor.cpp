@@ -59,10 +59,9 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
                                        const MVD10Frame &frame) -> PatchIdMapList {
   PatchIdMapList patchMapList;
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto &atlasParamsList = ivAccessUnitParams.atlasParamsList;
+  const auto &patchParamsList = ivAccessUnitParams.patchParamsList;
 
-  for (const auto &sz : atlasParamsList.atlasSizes) {
-
+  for (const auto &sz : ivAccessUnitParams.atlasSizes()) {
     auto w = m_downscale_depth ? sz.x() / 2 : sz.x();
     auto h = m_downscale_depth ? sz.y() / 2 : sz.y();
 
@@ -76,12 +75,12 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
          << m_entityDecodeRange[0] << ", " << m_entityDecodeRange[1] << ")\n";
   }
 
-  for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
-    assert(atlasParamsList[id].pduViewId() < viewParamsList.size());
+  for (size_t id = 0U; id < patchParamsList.size(); ++id) {
+    assert(patchParamsList[id].pduViewId() < viewParamsList.size());
     if (ivSequenceParams.msp().msp_max_entities_minus1() == 0 ||
-        (atlasParamsList[id].pduEntityId() >= m_entityDecodeRange[0] &&
-         atlasParamsList[id].pduEntityId() < m_entityDecodeRange[1])) {
-      writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
+        (patchParamsList[id].pduEntityId() >= m_entityDecodeRange[0] &&
+         patchParamsList[id].pduEntityId() < m_entityDecodeRange[1])) {
+      writePatchIdInMap(patchParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
                         viewParamsList);
     }
   }
@@ -122,7 +121,7 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParams &patch, PatchIdMapL
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                                            const ViewParamsList &viewParamsList,
-                                           const PatchParamsVector &patchParamsVector)
+                                           const PatchParamsList &patchParamsVector)
     -> MVD10Frame {
   // Initialization
   MVD10Frame frame;

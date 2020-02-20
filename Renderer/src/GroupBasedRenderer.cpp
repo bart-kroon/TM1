@@ -130,16 +130,10 @@ auto GroupBasedRenderer::filterPatchIdMapList(GroupIdMask groupIdMask,
                                               PatchIdMapList patchIdMapList,
                                               const IvAccessUnitParams &ivAccessUnitParams)
     -> PatchIdMapList {
-  // No grouping, no filtering
-  if (!ivAccessUnitParams.atlasParamsList.groupIds) {
-    assert(groupIdMask == 1);
-    return patchIdMapList;
-  }
-
   // Filter out atlases that belong to a group that is not selected for this pass
-  const auto &groupIds = *ivAccessUnitParams.atlasParamsList.groupIds;
   for (size_t atlasId = 0; atlasId < patchIdMapList.size(); ++atlasId) {
-    if (!groupIdMask.test(groupIds[atlasId])) {
+    if (!groupIdMask.test(
+            ivAccessUnitParams.atlas[atlasId].asps.miv_atlas_sequence_params().masp_group_id())) {
       fill(patchIdMapList[atlasId].getPlane(0).begin(), patchIdMapList[atlasId].getPlane(0).end(),
            unusedPatchId);
     }
@@ -151,18 +145,14 @@ auto GroupBasedRenderer::filterPatchIdMapList(GroupIdMask groupIdMask,
 auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams &ivSequenceParams,
                                        const IvAccessUnitParams &ivAccessUnitParams,
                                        const ViewParams &target) -> Priority {
-  // No grouping, no priority
-  if (!ivAccessUnitParams.atlasParamsList.groupIds) {
-    assert(groupId == 0);
-    return {};
-  }
-
   // Enumerate the views that occur in this group (in arbitrary order)
   vector<unsigned> viewIds;
   viewIds.reserve(ivSequenceParams.viewParamsList.size());
-  const auto &groupIds = *ivAccessUnitParams.atlasParamsList.groupIds;
-  for (const auto &patch : ivAccessUnitParams.atlasParamsList) {
-    if (groupId == groupIds[patch.vuhAtlasId] && !contains(viewIds, patch.pduViewId())) {
+  for (const auto &patch : ivAccessUnitParams.patchParamsList) {
+    if (groupId == ivAccessUnitParams.atlas[patch.vuhAtlasId]
+                       .asps.miv_atlas_sequence_params()
+                       .masp_group_id() &&
+        !contains(viewIds, patch.pduViewId())) {
       viewIds.push_back(patch.pduViewId());
     }
   }

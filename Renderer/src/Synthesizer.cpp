@@ -73,7 +73,7 @@ public:
   }
 
   static auto atlasVertices(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                            const PatchParamsVector &patches, const ViewParamsList &viewParamsList,
+                            const PatchParamsList &patches, const ViewParamsList &viewParamsList,
                             const ViewParams &target) {
     SceneVertexDescriptorList result;
     const auto rows = int(ids.height());
@@ -166,7 +166,7 @@ public:
   }
 
   static auto unprojectAtlas(const TextureDepth10Frame &atlas, const Mat<uint16_t> &ids,
-                             const PatchParamsVector &patches, const ViewParamsList &viewParamsList,
+                             const PatchParamsList &patches, const ViewParamsList &viewParamsList,
                              const ViewParams &target) {
     assert(int(ids.height()) == atlas.first.getHeight());
     assert(int(ids.height()) == atlas.second.getHeight());
@@ -240,7 +240,7 @@ public:
   }
 
   auto renderFrame(const MVD10Frame &atlases, const PatchIdMapList &ids,
-                   const PatchParamsVector &patches, const ViewParamsList &viewParamsList,
+                   const PatchParamsList &patches, const ViewParamsList &viewParamsList,
                    const ViewParams &target) const -> Texture444Depth16Frame {
     assert(atlases.size() == ids.size());
     auto rasterizer = rasterFrame(atlases.size(), target,
@@ -280,7 +280,7 @@ auto Synthesizer::renderFrame(const Common::MVD10Frame &atlas, const Common::Pat
                               const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
                               const MivBitstream::ViewParams &target) const
     -> Common::Texture444Depth16Frame {
-  return m_impl->renderFrame(atlas, maps, ivAccessUnitParams.atlasParamsList,
+  return m_impl->renderFrame(atlas, maps, ivAccessUnitParams.patchParamsList,
                              ivSequenceParams.viewParamsList, target);
 }
 } // namespace TMIV::Renderer

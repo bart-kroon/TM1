@@ -54,7 +54,7 @@ public:
 
   virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
                                  const MivBitstream::ViewParamsList &viewParamsList,
-                                 const MivBitstream::PatchParamsVector &atlasParamsVector)
+                                 const MivBitstream::PatchParamsList &atlasParamsVector)
       -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::AtlasDeconstructor

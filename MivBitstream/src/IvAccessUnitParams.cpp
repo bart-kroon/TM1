@@ -45,43 +45,14 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto AtlasParamsList::operator==(const AtlasParamsList &other) const -> bool {
-  return equal(begin(), end(), other.begin(), other.end()) && groupIds == other.groupIds &&
-         atlasSizes == other.atlasSizes &&
-         depthOccupancyParamsPresentFlags == other.depthOccupancyParamsPresentFlags;
-}
+auto IvAccessUnitParams::atlasSizes() const -> SizeVector {
+  auto x = SizeVector{};
+  x.reserve(atlas.size());
 
-auto operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) -> ostream & {
-  stream << "num_patches=" << atlasParamsList.size() << '\n';
+  transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
+    return Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
+  });
 
-  if (atlasParamsList.groupIds) {
-    stream << "groupIds={";
-    auto sep = "";
-    for (auto &groupId : *atlasParamsList.groupIds) {
-      stream << sep << groupId;
-      sep = ", ";
-    }
-    stream << "}\n";
-  } else {
-    stream << "No group ID's\n";
-  }
-
-  stream << "atlas_size[]={";
-  auto sep = "";
-  for (auto &atlasSize : atlasParamsList.atlasSizes) {
-    stream << sep << atlasSize;
-    sep = ", ";
-  }
-  stream << "}\n";
-
-  stream << "depth_occ_params_present_flag[]={";
-  sep = "";
-  for (auto depthOccupancyParamsPresentFlag : atlasParamsList.depthOccupancyParamsPresentFlags) {
-    stream << sep << depthOccupancyParamsPresentFlag;
-    sep = ", ";
-  }
-  stream << "}\n";
-
-  return stream << '\n';
+  return x;
 }
 } // namespace TMIV::MivBitstream

@@ -49,7 +49,7 @@ namespace TMIV::MivBitstream {
 // PatchParams is the in-memory representation of PatchDataUnit (PDU). The PDU is not suitable for
 // in-memory use because of the delta coding and quantization of some of the fields.
 struct PatchParams {
-  // TODO(BK): Have a PatchParamsVector per atlas
+  // TODO(BK): Have a PatchParamsList per atlas
   std::uint8_t vuhAtlasId{};
 
   auto pdu2dPos() const noexcept;
@@ -92,19 +92,7 @@ private:
   std::optional<std::uint16_t> m_pduDepthOccMapThreshold;
 };
 
-using PatchParamsVector = std::vector<PatchParams>;
-
-struct AtlasParamsList : public PatchParamsVector {
-  std::optional<std::vector<unsigned>> groupIds;
-  Common::SizeVector atlasSizes;
-  std::vector<bool> depthOccupancyParamsPresentFlags;
-
-  void setAtlasParamsVector(PatchParamsVector x) { PatchParamsVector::operator=(move(x)); }
-
-  friend std::ostream &operator<<(std::ostream &, const AtlasParamsList &);
-  bool operator==(const AtlasParamsList &other) const;
-  bool operator!=(const AtlasParamsList &other) const { return !operator==(other); }
-};
+using PatchParamsList = std::vector<PatchParams>;
 
 // Pixel position conversion from atlas to/from view
 Common::Vec2i viewToAtlas(Common::Vec2i viewPosition, const PatchParams &patch);
@@ -122,10 +110,13 @@ struct AtlasAccessUnitParams {
 };
 
 struct IvAccessUnitParams {
-  // TODO(BK): Have a PatchParamsVector per atlas
-  AtlasParamsList atlasParamsList;
+  // TODO(BK): Have a PatchParamsList per atlas
+  PatchParamsList patchParamsList;
 
   std::vector<AtlasAccessUnitParams> atlas;
+
+  // Convenience function to help the transition
+  auto atlasSizes() const -> Common::SizeVector;
 
   friend std::ostream &operator<<(std::ostream &, const IvAccessUnitParams &);
   bool operator==(const IvAccessUnitParams &other) const;

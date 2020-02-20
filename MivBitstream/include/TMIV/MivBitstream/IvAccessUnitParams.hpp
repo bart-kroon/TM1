@@ -200,7 +200,7 @@ inline auto atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch) -
   }
 }
 
-AtlasAccessUnitParams::AtlasAccessUnitParams() {
+inline AtlasAccessUnitParams::AtlasAccessUnitParams() {
   asps.asps_extension_present_flag(true).asps_miv_extension_present_flag(true);
 }
 
@@ -217,11 +217,11 @@ inline auto operator<<(std::ostream &stream, const IvAccessUnitParams &x) -> std
   for (auto &atlas : x.atlas) {
     stream << atlas.asps;
   }
-  stream << x.atlasParamsList;
+  stream << "Total number of patches: " << x.patchParamsList.size() << '\n';
   return stream;
 }
 
 inline auto IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const -> bool {
-  return atlas == other.atlas && atlasParamsList == other.atlasParamsList;
+  return atlas == other.atlas && patchParamsList == other.patchParamsList;
 }
 } // namespace TMIV::MivBitstream

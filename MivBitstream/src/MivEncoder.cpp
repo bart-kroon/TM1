@@ -224,7 +224,9 @@ auto MivEncoder::skipAtlasTileGroupLayer() -> AtlasTileGroupLayerRBSP {
 template <typename Payload>
 void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
   auto vuh = VpccUnitHeader{vut};
-  vuh.vuh_atlas_id(vai);
+  if (vai != 0) {
+    vuh.vuh_atlas_id(vai);
+  }
 
   const auto vu = VpccUnit{vuh, forward<Payload>(payload)};
 

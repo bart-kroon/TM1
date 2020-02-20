@@ -63,7 +63,7 @@ auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return vuhAtlasId == other.vuhAtlasId && pduViewId == other.pduViewId && pduEntityId == other.pduEntityId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
          posInAtlas == other.posInAtlas && rotation == other.rotation &&
-         depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;
+         pduDepthOccMapThreshold == other.pduDepthOccMapThreshold && pduDepthStart == other.pduDepthStart;
 }
 
 auto AtlasParamsList::operator==(const AtlasParamsList &other) const -> bool {

@@ -88,7 +88,7 @@ SCENARIO("Depth/occupancy coding") {
       const auto codedSeqParams = depthOccupancy.transformSequenceParams(sourceSeqParams);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
-      THEN("depthOccMapThreshold (T) >> 0") {
+      THEN("pduDepthOccMapThreshold (T) >> 0") {
         const auto T = codedViewParams.dq.dq_depth_occ_map_threshold_default();
         REQUIRE(T >= 8);
 

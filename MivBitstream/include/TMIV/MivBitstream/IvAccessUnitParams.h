@@ -58,8 +58,8 @@ struct PatchParams {
   Common::Vec2i posInView;
   Common::Vec2i posInAtlas;
   FlexiblePatchOrientation rotation{};
-  std::optional<std::uint16_t> depthOccMapThreshold;
-  std::optional<std::uint16_t> depthStart;
+  std::optional<std::uint16_t> pduDepthOccMapThreshold;
+  std::optional<std::uint16_t> pduDepthStart;
 
   // Is the patch rotated such that width and height swap?
   bool isRotated() const;

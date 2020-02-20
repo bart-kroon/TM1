@@ -71,9 +71,14 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_nbAtlas =
       max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
 
-  // Copy sequence parameters + Basic view ids
   m_inIvSequenceParams = move(ivSequenceParams);
-  m_outIvSequenceParams = m_inIvSequenceParams;
+
+  // Create IVS with VPS with right number of atlases but copy other parts from input IVS
+  m_outIvSequenceParams = IvSequenceParams{SizeVector(m_nbAtlas, m_atlasSize)};
+  m_outIvSequenceParams.msp() = m_inIvSequenceParams.msp();
+  m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
+  m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;
+
   m_isBasicView = move(isBasicView);
 
   // Register pruning relation

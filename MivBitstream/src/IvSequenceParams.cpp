@@ -156,11 +156,33 @@ auto ViewParamsList::loadFromJson(const Json &node, const vector<string> &names)
   return result;
 }
 
-IvSequenceParams::IvSequenceParams() {
+IvSequenceParams::IvSequenceParams() : IvSequenceParams{SizeVector{{0xFFFF, 0xFFFF}}} {}
+
+IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes) {
   vps.vps_miv_mode_flag(true)
       .vps_extension_present_flag(true)
       .vps_miv_extension_flag(true)
       .vps_miv_sequence_vui_params_present_flag(false);
+
+  vps.profile_tier_level()
+      .ptl_level_idc(PtlLevelIdc::Level_3_0)
+      .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
+      .ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
+      .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
+
+  VERIFY_MIVBITSTREAM(!atlasSizes.empty());
+  vps.vps_atlas_count_minus1(atlasSizes.size() - 1);
+
+  for (size_t atlasId = 0; atlasId < atlasSizes.size(); ++atlasId) {
+    const auto a = uint8_t(atlasId);
+    vps.vps_frame_width(a, atlasSizes[atlasId].x()).vps_frame_height(a, atlasSizes[atlasId].y());
+    vps.geometry_information(a).gi_geometry_nominal_2d_bitdepth_minus1(9);
+    vps.attribute_information(a)
+        .ai_attribute_count(1)
+        .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
+        .ai_attribute_dimension_minus1(0, 2)
+        .ai_attribute_nominal_2d_bitdepth_minus1(0, 9);
+  }
 }
 
 auto IvSequenceParams::msp() const noexcept -> const MivSequenceParams & {

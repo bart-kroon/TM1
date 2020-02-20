@@ -86,6 +86,7 @@ struct ViewParamsList : public std::vector<ViewParams> {
 
 struct IvSequenceParams {
   IvSequenceParams();
+  explicit IvSequenceParams(const Common::SizeVector &atlasSizes);
 
   VpccParameterSet vps;
   ViewParamsList viewParamsList;

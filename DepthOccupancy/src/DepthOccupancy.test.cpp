@@ -51,20 +51,17 @@ const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
 SCENARIO("Depth/occupancy coding") {
   DepthOccupancy depthOccupancy{37};
 
-  CameraIntrinsics ci;
-  ci.ci_projection_plane_width_minus1(1919);
-  ci.ci_projection_plane_height_minus1(1079);
-  ci.ci_cam_type(CiCamType::equirectangular);
-  ci.ci_erp_phi_min(-halfCycle);
-  ci.ci_erp_phi_max(halfCycle);
-  ci.ci_erp_theta_min(-quarterCycle);
-  ci.ci_erp_theta_max(quarterCycle);
+  auto sourceViewParams = ViewParams{};
+  sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
+      .ci_projection_plane_height_minus1(1079)
+      .ci_cam_type(CiCamType::equirectangular)
+      .ci_erp_phi_min(-halfCycle)
+      .ci_erp_phi_max(halfCycle)
+      .ci_erp_theta_min(-quarterCycle)
+      .ci_erp_theta_max(quarterCycle);
+  sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
 
-  DepthQuantization dq{};
-  dq.dq_norm_disp_low(0.2F);
-  dq.dq_norm_disp_high(2.2F);
   GIVEN("View parameters without invalid depth") {
-    const auto sourceViewParams = ViewParams{ci, {}, dq};
     auto sourceSequenceParams = IvSequenceParams{};
     sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
@@ -78,8 +75,6 @@ SCENARIO("Depth/occupancy coding") {
   }
 
   GIVEN("View parameters with invalid depth") {
-    auto sourceViewParams = ViewParams{ci, {}, dq};
-
     sourceViewParams.hasOccupancy = true;
     auto sourceSeqParams = IvSequenceParams{};
     sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};

@@ -110,7 +110,7 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
   au.frameId = ++sequence_.frameId;
   au.atlas.resize(sequence_.atlas.size());
 
-  for (uint8_t atlasId = 0; atlasId < au.atlas.size(); ++atlasId) {
+  for (size_t atlasId = 0; atlasId < au.atlas.size(); ++atlasId) {
     auto &atlas = sequence_.atlas[atlasId];
     assert(!atlas.atgl.empty());
 
@@ -126,8 +126,8 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
     VERIFY_MIVBITSTREAM(!aau.afps.afps_fixed_camera_model_flag());
     aau.aps = atlas.apsV[atgh.atgh_adaptation_parameter_set_id()];
 
-    aau.geoFrame = m_geoFrameServer(atlasId, sequence_.frameId);
-    aau.attrFrame = m_attrFrameServer(atlasId, sequence_.frameId);
+    aau.geoFrame = m_geoFrameServer(uint8_t(atlasId), sequence_.frameId);
+    aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId);
   }
 
   for (const auto &x : onFrame) {

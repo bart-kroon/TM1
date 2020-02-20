@@ -688,7 +688,7 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
     while (uint_least64_t(bitstream.tellg()) < extensionEnd) {
       bitstream.getFlag(); // vps_miv_extension_data_flag
     }
-    VERIFY_MIVBITSTREAM(bitstream.tellg() == extensionEnd);
+    VERIFY_MIVBITSTREAM(uint_least64_t(bitstream.tellg()) == extensionEnd);
   }
 
   bitstream.byteAlign();
@@ -763,7 +763,7 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
   while (uint_least64_t(bitstream.tellp()) < extensionEnd) {
     bitstream.putFlag(false);
   }
-  VERIFY_MIVBITSTREAM(bitstream.tellp() == extensionEnd);
+  VERIFY_MIVBITSTREAM(uint_least64_t(bitstream.tellp()) == extensionEnd);
 
   bitstream.byteAlign();
 }

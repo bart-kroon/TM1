@@ -130,8 +130,8 @@ auto ViewParamsList::viewSizes() const -> SizeVector {
 }
 
 auto operator<<(ostream &stream, const ViewParamsList &viewParamsList) -> ostream & {
-  for (uint16_t viewId = 0; viewId < viewParamsList.size(); ++viewId) {
-    viewParamsList[viewId].printTo(stream, viewId);
+  for (size_t viewId = 0; viewId < viewParamsList.size(); ++viewId) {
+    viewParamsList[viewId].printTo(stream, uint16_t(viewId));
   }
   return stream;
 }

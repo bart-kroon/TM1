@@ -200,12 +200,28 @@ inline auto atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch) -
   }
 }
 
-inline auto operator<<(std::ostream &stream, const IvAccessUnitParams &ivAccessUnitParams)
-    -> std::ostream & {
-  return stream << ivAccessUnitParams.atlasParamsList;
+AtlasAccessUnitParams::AtlasAccessUnitParams() {
+  asps.asps_extension_present_flag(true).asps_miv_extension_present_flag(true);
+}
+
+inline auto operator<<(std::ostream &stream, const AtlasAccessUnitParams &x) -> std::ostream & {
+  stream << x.asps << x.afps;
+  return stream;
+}
+
+inline auto AtlasAccessUnitParams::operator==(const AtlasAccessUnitParams &other) const -> bool {
+  return asps == other.asps && afps == other.afps;
+}
+
+inline auto operator<<(std::ostream &stream, const IvAccessUnitParams &x) -> std::ostream & {
+  for (auto &atlas : x.atlas) {
+    stream << atlas.asps;
+  }
+  stream << x.atlasParamsList;
+  return stream;
 }
 
 inline auto IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const -> bool {
-  return atlasParamsList == other.atlasParamsList;
+  return atlas == other.atlas && atlasParamsList == other.atlasParamsList;
 }
 } // namespace TMIV::MivBitstream

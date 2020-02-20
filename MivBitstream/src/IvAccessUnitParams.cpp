@@ -46,15 +46,13 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto AtlasParamsList::operator==(const AtlasParamsList &other) const -> bool {
-  return equal(begin(), end(), other.begin(), other.end()) &&
-         omafV1CompatibleFlag == other.omafV1CompatibleFlag && groupIds == other.groupIds &&
+  return equal(begin(), end(), other.begin(), other.end()) && groupIds == other.groupIds &&
          atlasSizes == other.atlasSizes &&
          depthOccupancyParamsPresentFlags == other.depthOccupancyParamsPresentFlags;
 }
 
 auto operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) -> ostream & {
   stream << "num_patches=" << atlasParamsList.size() << '\n';
-  stream << "omaf_v1_compatible_flag=" << boolalpha << atlasParamsList.omafV1CompatibleFlag << '\n';
 
   if (atlasParamsList.groupIds) {
     stream << "groupIds={";

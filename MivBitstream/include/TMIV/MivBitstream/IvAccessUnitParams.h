@@ -95,7 +95,6 @@ private:
 using PatchParamsVector = std::vector<PatchParams>;
 
 struct AtlasParamsList : public PatchParamsVector {
-  bool omafV1CompatibleFlag{};
   std::optional<std::vector<unsigned>> groupIds;
   Common::SizeVector atlasSizes;
   std::vector<bool> depthOccupancyParamsPresentFlags;
@@ -112,7 +111,14 @@ Common::Vec2i viewToAtlas(Common::Vec2i viewPosition, const PatchParams &patch);
 Common::Vec2i atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch);
 
 struct AtlasAccessUnitParams {
-	
+  AtlasAccessUnitParams();
+
+  AtlasSequenceParameterSetRBSP asps;
+  AtlasFrameParameterSetRBSP afps;
+
+  friend std::ostream &operator<<(std::ostream &, const AtlasAccessUnitParams &);
+  bool operator==(const AtlasAccessUnitParams &other) const;
+  bool operator!=(const AtlasAccessUnitParams &other) const { return !operator==(other); }
 };
 
 struct IvAccessUnitParams {

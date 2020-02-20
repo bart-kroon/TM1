@@ -179,20 +179,20 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           p.pduViewId = static_cast<uint16_t>(cluster.getViewId());
           p.patchSizeInView = {align(cluster.width(), m_alignment),
                                align(cluster.height(), m_alignment)};
-          p.posInView = {cluster.jmin(), cluster.imin()};
-          p.posInAtlas = {packerOutput.x(), packerOutput.y()};
+          p.pduViewPos = {cluster.jmin(), cluster.imin()};
+          p.pdu2dPos = {packerOutput.x(), packerOutput.y()};
 
           // TODO(BK): When using only two rotations, use FPO_SWAP and FPO_NULL to save bits
           p.pduOrientationIndex = packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
                                                 : FlexiblePatchOrientation::FPO_NULL;
 
           auto patchOverflow =
-              (p.posInView + p.patchSizeInView) - masks[cluster.getViewId()].getSize();
+              (p.pduViewPos + p.patchSizeInView) - masks[cluster.getViewId()].getSize();
           if (patchOverflow.x() > 0) {
-            p.posInView.x() -= patchOverflow.x();
+            p.pduViewPos.x() -= patchOverflow.x();
           }
           if (patchOverflow.y() > 0) {
-            p.posInView.y() -= patchOverflow.y();
+            p.pduViewPos.y() -= patchOverflow.y();
           }
 
           if (m_maxEntities > 1) {

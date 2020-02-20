@@ -61,8 +61,8 @@ auto PatchParams::patchSizeInAtlas() const -> Vec2i {
 
 auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return vuhAtlasId == other.vuhAtlasId && pduViewId == other.pduViewId && pduEntityId == other.pduEntityId &&
-         patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
-         posInAtlas == other.posInAtlas && pduOrientationIndex == other.pduOrientationIndex &&
+         patchSizeInView == other.patchSizeInView && pduViewPos == other.pduViewPos &&
+         pdu2dPos == other.pdu2dPos && pduOrientationIndex == other.pduOrientationIndex &&
          pduDepthOccMapThreshold == other.pduDepthOccMapThreshold && pduDepthStart == other.pduDepthStart;
 }
 
@@ -122,10 +122,10 @@ void assignAt(Vector &vector, size_t position, Value &&value) {
 auto viewToAtlas(Vec2i viewPosition, const PatchParams &patch) -> Vec2i {
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
-  int xM = patch.posInView.x();
-  int yM = patch.posInView.y();
-  int xP = patch.posInAtlas.x();
-  int yP = patch.posInAtlas.y();
+  int xM = patch.pduViewPos.x();
+  int yM = patch.pduViewPos.y();
+  int xP = patch.pdu2dPos.x();
+  int yP = patch.pdu2dPos.y();
   int x = viewPosition.x();
   int y = viewPosition.y();
 
@@ -154,10 +154,10 @@ auto viewToAtlas(Vec2i viewPosition, const PatchParams &patch) -> Vec2i {
 auto atlasToView(Vec2i atlasPosition, const PatchParams &patch) -> Vec2i {
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
-  int xM = patch.posInView.x();
-  int yM = patch.posInView.y();
-  int xP = patch.posInAtlas.x();
-  int yP = patch.posInAtlas.y();
+  int xM = patch.pduViewPos.x();
+  int yM = patch.pduViewPos.y();
+  int xP = patch.pdu2dPos.x();
+  int yP = patch.pdu2dPos.y();
   int x = atlasPosition.x();
   int y = atlasPosition.y();
 

@@ -52,14 +52,15 @@ struct PatchParams {
   // TODO(BK): Have a PatchParamsVector per atlas
   std::uint8_t vuhAtlasId{};
 
-  std::uint16_t pduViewId{};
-  std::optional<std::uint16_t> pduEntityId{};
+  Common::Vec2i pdu2dPos;
   Common::Vec2i patchSizeInView;
-  Common::Vec2i posInView;
-  Common::Vec2i posInAtlas;
-  FlexiblePatchOrientation pduOrientationIndex{};
-  std::optional<std::uint16_t> pduDepthOccMapThreshold;
+  Common::Vec2i pduViewPos;
   std::optional<std::uint16_t> pduDepthStart;
+  std::optional<std::uint16_t> pduDepthEnd;
+  std::uint16_t pduViewId{};
+  FlexiblePatchOrientation pduOrientationIndex{};
+  std::optional<std::uint16_t> pduEntityId{};
+  std::optional<std::uint16_t> pduDepthOccMapThreshold;
 
   // Is the patch rotated such that width and height swap?
   bool isRotated() const;

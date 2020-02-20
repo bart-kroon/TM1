@@ -193,7 +193,7 @@ private:
   std::uint32_t m_pdu_view_pos_y{};
   std::uint32_t m_pdu_depth_start{};
   std::optional<std::uint32_t> m_pdu_depth_end;
-  std::uint16_t m_pdu_projection_id{};
+  std::uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
   std::optional<unsigned> m_pdu_entity_id;
   std::optional<std::uint32_t> m_pdu_depth_occ_map_threshold;

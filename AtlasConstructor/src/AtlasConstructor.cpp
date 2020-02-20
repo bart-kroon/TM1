@@ -195,8 +195,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
   const auto &depthViewMap = currentView.second;
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
-  int xM = patch.posInView.x();
-  int yM = patch.posInView.y();
+  int xM = patch.pduViewPos.x();
+  int yM = patch.pduViewPos.y();
 
   int alignment = m_packer->getAlignment();
 

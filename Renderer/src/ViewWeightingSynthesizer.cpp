@@ -403,8 +403,8 @@ private:
       const auto sizeInAtlas = patch.patchSizeInAtlas();
       int wP = sizeInAtlas.x();
       int hP = sizeInAtlas.y();
-      int xP = patch.posInAtlas.x();
-      int yP = patch.posInAtlas.y();
+      int xP = patch.pdu2dPos.x();
+      int yP = patch.pdu2dPos.y();
 
       for (int dy = 0; dy < hP; dy++) {
         for (int dx = 0; dx < wP; dx++) {
@@ -518,10 +518,10 @@ private:
                 auto viewId = patch.pduViewId;
 
                 if (m_cameraVisibility[viewId]) {
-                  auto posInView = atlasToView({static_cast<int>(X), static_cast<int>(Y)}, patch);
+                  auto pduViewPos = atlasToView({static_cast<int>(X), static_cast<int>(Y)}, patch);
 
-                  int x = posInView.x();
-                  int y = posInView.y();
+                  int x = pduViewPos.x();
+                  int y = pduViewPos.y();
                   float z = m_sourceDepth[viewId](y, x);
 
                   if (sourceHelperList[viewId].isValidDepth(z)) {
@@ -718,10 +718,10 @@ private:
 
       for (const auto &patch : atlasParamsList) {
         if (patch.pduViewId == visibleSourceId[id]) {
-          int x0 = patch.posInView.x();
+          int x0 = patch.pduViewPos.x();
           int x1 = x0 + patch.patchSizeInView.x();
 
-          int y0 = patch.posInView.y();
+          int y0 = patch.pduViewPos.y();
           int y1 = y0 + patch.patchSizeInView.y();
 
           for (int y = y0; y < y1; y++) {

@@ -433,8 +433,8 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
   const auto &depthViewMap = currentView.second;
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
-  int xM = patch.posInView.x();
-  int yM = patch.posInView.y();
+  int xM = patch.pduViewPos.x();
+  int yM = patch.pduViewPos.y();
 
   const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId];
   const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId];

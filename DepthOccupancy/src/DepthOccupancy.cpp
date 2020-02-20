@@ -109,8 +109,8 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
 
     for (int i = 0; i < patchSizeInAtlas.y(); ++i) {
       for (int j = 0; j < patchSizeInAtlas.x(); ++j) {
-        const int n = i + patch.posInAtlas.y();
-        const int m = j + patch.posInAtlas.x();
+        const int n = i + patch.pdu2dPos.y();
+        const int m = j + patch.pdu2dPos.x();
 
         const auto inLevel = inAtlases[patch.vuhAtlasId].second.getPlane(0)(n, m);
 

@@ -69,7 +69,7 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras,
   auto xy_v = array<Vec2f, 8>{};
   const auto w = static_cast<float>(patch.patchSizeInView.x());
   const auto h = static_cast<float>(patch.patchSizeInView.y());
-  uv[0] = Vec2f(patch.posInView);
+  uv[0] = Vec2f(patch.pduViewPos);
   uv[1] = uv[0] + Vec2f{w, 0};
   uv[2] = uv[0] + Vec2f{0, h};
   uv[3] = uv[0] + Vec2f{w, h};
@@ -138,10 +138,10 @@ auto baseview_divide(const PatchParams &patch, Vec2i blocksizes) {
     for (int j = 0; j < blocknums_w; j++) {
       subblock[i * blocknums_w + j].patchSizeInView.x() = blocksizes.x();
       subblock[i * blocknums_w + j].patchSizeInView.y() = blocksizes.y();
-      subblock[i * blocknums_w + j].posInView.x() = patch.posInView.x() + j * blocksizes.x();
-      subblock[i * blocknums_w + j].posInView.y() = patch.posInView.y() + i * blocksizes.y();
-      subblock[i * blocknums_w + j].posInAtlas.x() = patch.posInAtlas.x() + j * blocksizes.x();
-      subblock[i * blocknums_w + j].posInAtlas.y() = patch.posInAtlas.x() + i * blocksizes.y();
+      subblock[i * blocknums_w + j].pduViewPos.x() = patch.pduViewPos.x() + j * blocksizes.x();
+      subblock[i * blocknums_w + j].pduViewPos.y() = patch.pduViewPos.y() + i * blocksizes.y();
+      subblock[i * blocknums_w + j].pdu2dPos.x() = patch.pdu2dPos.x() + j * blocksizes.x();
+      subblock[i * blocknums_w + j].pdu2dPos.y() = patch.pdu2dPos.x() + i * blocksizes.y();
     }
   }
   return subblock;
@@ -183,7 +183,7 @@ void SubBlockCuller::erasePatchIdInMap(const PatchParams &patch, PatchIdMapList 
                                        uint16_t patchId) {
   auto &patchMap = patchMapList[patch.vuhAtlasId];
 
-  const Vec2i &q0 = patch.posInAtlas;
+  const Vec2i &q0 = patch.pdu2dPos;
   const auto sizeInAtlas = patch.patchSizeInAtlas();
   int xMin = q0.x();
   int xLast = q0.x() + sizeInAtlas.x();

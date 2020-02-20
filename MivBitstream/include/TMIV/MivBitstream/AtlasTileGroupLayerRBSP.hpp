@@ -121,7 +121,7 @@ constexpr auto PatchDataUnit::pdu_view_pos_y() const noexcept { return m_pdu_vie
 
 constexpr auto PatchDataUnit::pdu_depth_start() const noexcept { return m_pdu_depth_start; }
 
-constexpr auto PatchDataUnit::pdu_view_id() const noexcept { return m_pdu_projection_id; }
+constexpr auto PatchDataUnit::pdu_view_id() const noexcept { return m_pdu_view_id; }
 
 constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
@@ -168,7 +168,7 @@ constexpr auto &PatchDataUnit::pdu_depth_end(const std::uint32_t value) noexcept
 }
 
 constexpr auto &PatchDataUnit::pdu_view_id(const std::uint16_t value) noexcept {
-  m_pdu_projection_id = value;
+  m_pdu_view_id = value;
   return *this;
 }
 

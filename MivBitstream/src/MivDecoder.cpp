@@ -79,8 +79,8 @@ auto MivDecoder::decodeVpccUnit() -> bool {
   istringstream substream{ssvu.ssvu_vpcc_unit()};
   const auto vu = VpccUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_vpcc_unit_size());
   cout << vu.vpcc_unit_header();
-  visit([this, &vu](const auto &payload) { decodeVpccPayload(vu.vpcc_unit_header(), payload); },
-        vu.vpcc_payload().payload());
+
+  decodeVpccPayload(vu.vpcc_unit_header(), vu.vpcc_payload().payload());
 
   m_stream.peek();
   return !m_stream.eof();
@@ -148,32 +148,41 @@ auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
 
 // Decoding processes //////////////////////////////////////////////////////////////////////////////
 
-template <typename Payload>
-void MivDecoder::decodeVpccPayload(const VpccUnitHeader &vuh, const Payload &payload) {
-  if constexpr (is_same_v<Payload, VpccParameterSet>) {
-    const auto id = payload.vps_vpcc_parameter_set_id();
+void MivDecoder::decodeVpccPayload(const VpccUnitHeader &vuh, const VpccPayload::Payload &payload) {
+  switch (vuh.vuh_unit_type()) {
+  case VuhUnitType::VPCC_VPS:
+    return decodeVps(vuh, get<VpccParameterSet>(payload));
+  case VuhUnitType::VPCC_AD:
+    return decodeAsb(vuh, get<AtlasSubBitstream>(payload));
+  case VuhUnitType::VPCC_AVD:
+  case VuhUnitType::VPCC_GVD:
+  case VuhUnitType::VPCC_OVD:
+    cout << "WARNING: Ignoring video sub bitstreams in this version of "
+            "TMIV\n";
+    return;
+  default:
+    VPCCBITSTREAM_ERROR("V-PCC unit of unknown type");
+  }
+}
 
-    while (m_vpsV.size() <= id) {
-      m_vpsV.emplace_back();
-      m_sequenceV.emplace_back();
-    }
+void MivDecoder::decodeVps(const VpccUnitHeader &vuh, const VpccParameterSet &vps) {
+  const auto id = vps.vps_vpcc_parameter_set_id();
 
-    m_vpsV[id] = payload;
-    m_sequenceV[id] = Sequence{};
-    m_sequenceV[id].atlas.resize(payload.vps_atlas_count_minus1() + 1U);
+  while (m_vpsV.size() <= id) {
+    m_vpsV.emplace_back();
+    m_sequenceV.emplace_back();
+  }
 
-    outputSequence(payload);
+  m_vpsV[id] = vps;
+  m_sequenceV[id] = Sequence{};
+  m_sequenceV[id].atlas.resize(vps.vps_atlas_count_minus1() + 1U);
 
-  } else if constexpr (is_same_v<Payload, AtlasSubBitstream>) {
-    for (const auto &nu : payload.nal_units()) {
-      decodeNalUnit(vuh, nu);
-    }
+  outputSequence(vps);
+}
 
-  } else if constexpr (is_same_v<Payload, VideoSubBitstream>) {
-    cout << "WARNING: Ignoring video sub bitstreams in this version of TMIV\n";
-
-  } else {
-    VPCCBITSTREAM_ERROR("V-PCC payload of unknown type");
+void MivDecoder::decodeAsb(const VpccUnitHeader &vuh, const AtlasSubBitstream &asb) {
+  for (const auto &nu : asb.nal_units()) {
+    decodeNalUnit(vuh, nu);
   }
 }
 

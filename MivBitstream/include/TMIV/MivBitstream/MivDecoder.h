@@ -123,10 +123,13 @@ private: // Decoder output
   auto haveFrame(const VpccUnitHeader &vuh) const -> bool;
 
 private: // Decoding processes
-  template <typename Payload>
-  void decodeVpccPayload(const VpccUnitHeader &vuh, const Payload &payload);
+  void decodeVpccPayload(const VpccUnitHeader &vuh, const VpccPayload::Payload &payload);
+  void decodeVps(const VpccUnitHeader &vuh, const VpccParameterSet& vps);
+  void decodeAsb(const VpccUnitHeader &vuh, const AtlasSubBitstream& asb);
+
   void decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
   static void decodeUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
+
   void decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                   const AtlasTileGroupLayerRBSP &atgl);
   void decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,

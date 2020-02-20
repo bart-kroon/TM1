@@ -166,8 +166,9 @@ public:
 
       const auto &neighbourhood = pruningGraphExport.getNeighbourhood(camId);
 
-      if (!neighbourhood.empty()) {
-
+      if (neighbourhood.empty()) {
+        viewParamsList[camId].pc = PruningChildren{};
+      } else {
         std::vector<std::uint16_t> childIdList;
 
         childIdList.reserve(neighbourhood.size());

@@ -51,44 +51,38 @@ using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
-  CameraIntrinsics ci;
-  ci.ci_projection_plane_width_minus1(9);
-  ci.ci_projection_plane_height_minus1(4);
-  ci.ci_cam_type(CiCamType::equirectangular);
-  ci.ci_erp_phi_min(-halfCycle);
-  ci.ci_erp_phi_max(halfCycle);
-  ci.ci_erp_theta_min(-quarterCycle);
-  ci.ci_erp_theta_max(quarterCycle);
+auto x = ViewParams{};
 
-  CameraExtrinsics ce;
-  ce.ce_view_pos_x(1.F);
-  ce.ce_view_pos_z(-1.F);
-  ce.ce_view_quat_x(0.01F);
-  ce.ce_view_quat_y(0.02F);
-  ce.ce_view_quat_z(-0.5F);
+  x.ci.ci_projection_plane_width_minus1(9)
+   .ci_projection_plane_height_minus1(4)
+   .ci_cam_type(CiCamType::equirectangular)
+   .ci_erp_phi_min(-halfCycle)
+   .ci_erp_phi_max(halfCycle)
+   .ci_erp_theta_min(-quarterCycle)
+   .ci_erp_theta_max(quarterCycle);
+  x.ce.ce_view_pos_x(1.F)
+   .ce_view_pos_z(-1.F)
+   .ce_view_quat_x(0.01F)
+   .ce_view_quat_y(0.02F)
+   .ce_view_quat_z(-0.5F);
+  x.dq.dq_norm_disp_low(1.F).dq_norm_disp_high(10.F);
 
-  DepthQuantization dq;
-  dq.dq_norm_disp_low(1.F);
-  dq.dq_norm_disp_high(10.F);
-
-  return ViewParams{ci, ce, dq};
+  return x;
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
   const ViewParams neutral{};
-
-  CameraExtrinsics ce1;
-  ce1.ce_view_pos_x(1.F);
-  ce1.ce_view_pos_y(2.F);
-  ce1.ce_view_pos_z(3.F);
-  const ViewParams translated{{}, ce1};
-
-  CameraExtrinsics ce2;
-  ce2.ce_view_quat_x(0.1F);
-  ce2.ce_view_quat_y(0.3F);
-  ce2.ce_view_quat_z(-0.3F);
-  const ViewParams rotated{{}, ce2};
-
+  
+  auto translated = neutral;
+  translated.ce.ce_view_pos_x(1.F)
+    .ce_view_pos_y(2.F)
+    .ce_view_pos_z(3.F);
+    
+  auto rotated = neutral;
+  rotated.ce.ce_view_quat_x(0.1F)
+    .ce_view_quat_y(0.3F)
+    .ce_view_quat_z(-0.3F);
+  
   SECTION("trivial") {
     auto R_t = affineParameters(neutral, neutral);
     REQUIRE(R_t.first == Mat3x3f::eye());

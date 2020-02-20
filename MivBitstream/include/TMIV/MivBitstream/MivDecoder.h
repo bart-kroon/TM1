@@ -123,10 +123,8 @@ private: // Decoder output
   auto haveFrame(const VpccUnitHeader &vuh) const -> bool;
 
 private: // Decoding processes
-  static void decodeVpccPayload(const VpccUnitHeader &vuh, const std::monostate &payload);
-  void decodeVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps);
-  void decodeVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad);
-  static void decodeVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd);
+  template <typename Payload>
+  void decodeVpccPayload(const VpccUnitHeader &vuh, const Payload &payload);
   void decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
   static void decodeUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,

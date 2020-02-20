@@ -148,35 +148,33 @@ auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
 
 // Decoding processes //////////////////////////////////////////////////////////////////////////////
 
-void MivDecoder::decodeVpccPayload(const VpccUnitHeader & /* vuh */,
-                                   const monostate & /* payload */) {
-  VPCCBITSTREAM_ERROR("V-PCC payload of unknown type");
-}
+template <typename Payload>
+void MivDecoder::decodeVpccPayload(const VpccUnitHeader &vuh, const Payload &payload) {
+  if constexpr (is_same_v<Payload, VpccParameterSet>) {
+    const auto id = payload.vps_vpcc_parameter_set_id();
 
-void MivDecoder::decodeVpccPayload(const VpccUnitHeader & /*vuh*/, const VpccParameterSet &vps) {
-  const auto id = vps.vps_vpcc_parameter_set_id();
+    while (m_vpsV.size() <= id) {
+      m_vpsV.emplace_back();
+      m_sequenceV.emplace_back();
+    }
 
-  while (m_vpsV.size() <= id) {
-    m_vpsV.emplace_back();
-    m_sequenceV.emplace_back();
+    m_vpsV[id] = payload;
+    m_sequenceV[id] = Sequence{};
+    m_sequenceV[id].atlas.resize(payload.vps_atlas_count_minus1() + 1U);
+
+    outputSequence(payload);
+
+  } else if constexpr (is_same_v<Payload, AtlasSubBitstream>) {
+    for (const auto &nu : payload.nal_units()) {
+      decodeNalUnit(vuh, nu);
+    }
+
+  } else if constexpr (is_same_v<Payload, VideoSubBitstream>) {
+    cout << "WARNING: Ignoring video sub bitstreams in this version of TMIV\n";
+
+  } else {
+    VPCCBITSTREAM_ERROR("V-PCC payload of unknown type");
   }
-
-  m_vpsV[id] = vps;
-  m_sequenceV[id] = Sequence{};
-  m_sequenceV[id].atlas.resize(vps.vps_atlas_count_minus1() + 1U);
-
-  outputSequence(vps);
-}
-
-void MivDecoder::decodeVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad) {
-  for (const auto &nu : ad.nal_units()) {
-    decodeNalUnit(vuh, nu);
-  }
-}
-
-void MivDecoder::decodeVpccPayload(const VpccUnitHeader & /*vuh*/,
-                                   const VideoSubBitstream & /*vd*/) {
-  cout << "WARNING: Ignoring video sub bitstreams in this version of TMIV\n";
 }
 
 void MivDecoder::decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {

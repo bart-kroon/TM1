@@ -51,11 +51,12 @@ TEST_CASE("TestPatchRotationAndFlipTransforms") {
   patch.patchSizeInView = {10, 5};
   patch.posInView = {0, 0};
   patch.posInAtlas = {10, 20};
-  patch.rotation = PatchRotation::none;
+  patch.rotation = FlexiblePatchOrientation::FPO_NULL;
 
-  auto rotations = {PatchRotation::none,   PatchRotation::rot270,  PatchRotation::rot180,
-                    PatchRotation::rot90,  PatchRotation::mrot180, PatchRotation::swap,
-                    PatchRotation::mirror, PatchRotation::mrot90};
+  auto rotations = {FlexiblePatchOrientation::FPO_NULL,    FlexiblePatchOrientation::FPO_ROT270,
+                    FlexiblePatchOrientation::FPO_ROT180,  FlexiblePatchOrientation::FPO_ROT90,
+                    FlexiblePatchOrientation::FPO_MROT180, FlexiblePatchOrientation::FPO_SWAP,
+                    FlexiblePatchOrientation::FPO_MIRROR,  FlexiblePatchOrientation::FPO_MROT90};
 
   SECTION("EvaluateTransformationOf_TopLeft") {
     Vec2i posInViewEncode = {0, 0};
@@ -277,16 +278,33 @@ const auto ivSequenceParams =
 
 const auto atlasParamsList = array{
     AtlasParamsList{
-        {AtlasParameters{0, 0, {}, {100, 50}, {5, 4}, {34, 22}, PatchRotation::mrot90, {}, {}}},
+        {AtlasParameters{
+            0, 0, {}, {100, 50}, {5, 4}, {34, 22}, FlexiblePatchOrientation::FPO_MROT90, {}, {}}},
         true,           // omaf v1 compatible flags
         {},             // no group ID's
         {{1920, 1080}}, // atlas sizes
         {false}},       // depth occ. params present flags
     AtlasParamsList{
-        {AtlasParameters{0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, PatchRotation::mrot90, {}, {}},
-         AtlasParameters{0, 1, {1}, {100, 40}, {5, 4}, {34, 22}, PatchRotation::mrot180, {64}, {}},
-         AtlasParameters{
-             2, 1, {1}, {100, 30}, {500, 400}, {340, 220}, PatchRotation::rot180, {}, {128}}},
+        {AtlasParameters{
+             0, 0, {0}, {4096, 2048}, {0, 0}, {0, 0}, FlexiblePatchOrientation::FPO_MROT90, {}, {}},
+         AtlasParameters{0,
+                         1,
+                         {1},
+                         {100, 40},
+                         {5, 4},
+                         {34, 22},
+                         FlexiblePatchOrientation::FPO_MROT180,
+                         {64},
+                         {}},
+         AtlasParameters{2,
+                         1,
+                         {1},
+                         {100, 30},
+                         {500, 400},
+                         {340, 220},
+                         FlexiblePatchOrientation::FPO_ROT180,
+                         {},
+                         {128}}},
         true,                                 // omaf v1 compatible flag
         {{1, 0, 1}},                          // group ID's,
         {{2048, 4096}, {0, 0}, {2048, 1088}}, // atlas sizes

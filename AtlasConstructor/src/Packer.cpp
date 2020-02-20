@@ -181,7 +181,10 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                                align(cluster.height(), m_alignment)};
           p.posInView = {cluster.jmin(), cluster.imin()};
           p.posInAtlas = {packerOutput.x(), packerOutput.y()};
-          p.rotation = packerOutput.isRotated() ? PatchRotation::rot270 : PatchRotation::none;
+
+          // TODO(BK): When using only two rotations, use FPO_SWAP and FPO_NULL to save bits
+          p.rotation = packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
+                                                : FlexiblePatchOrientation::FPO_NULL;
 
           auto patchOverflow =
               (p.posInView + p.patchSizeInView) - masks[cluster.getViewId()].getSize();

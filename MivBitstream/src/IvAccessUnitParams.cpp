@@ -46,8 +46,10 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto AtlasParameters::isRotated() const -> bool {
-  return rotation == PatchRotation::rot90 || rotation == PatchRotation::swap ||
-         rotation == PatchRotation::rot270 || rotation == PatchRotation::mrot90;
+  return rotation == FlexiblePatchOrientation::FPO_ROT90 ||
+         rotation == FlexiblePatchOrientation::FPO_SWAP ||
+         rotation == FlexiblePatchOrientation::FPO_ROT270 ||
+         rotation == FlexiblePatchOrientation::FPO_MROT90;
 }
 
 auto AtlasParameters::patchSizeInAtlas() const -> Vec2i {
@@ -128,21 +130,21 @@ auto viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) -> Vec2i {
   int y = viewPosition.y();
 
   switch (patch.rotation) {
-  case PatchRotation::none: // (x, y)
+  case FlexiblePatchOrientation::FPO_NULL: // (x, y)
     return {x - xM + xP, y - yM + yP};
-  case PatchRotation::swap: // (y, x)
+  case FlexiblePatchOrientation::FPO_SWAP: // (y, x)
     return {y - yM + xP, x - xM + yP};
-  case PatchRotation::rot90: // (-y, x)
+  case FlexiblePatchOrientation::FPO_ROT90: // (-y, x)
     return {-y + yM + xP + h - 1, x - xM + yP};
-  case PatchRotation::rot180: // (-x, -y)
+  case FlexiblePatchOrientation::FPO_ROT180: // (-x, -y)
     return {-x + xM + xP + w - 1, -y + yM + yP + h - 1};
-  case PatchRotation::rot270: // (y, -x)
+  case FlexiblePatchOrientation::FPO_ROT270: // (y, -x)
     return {y - yM + xP, -x + xM + yP + w - 1};
-  case PatchRotation::mirror: // (-x, y)
+  case FlexiblePatchOrientation::FPO_MIRROR: // (-x, y)
     return {-x + xM + xP + w - 1, y - yM + yP};
-  case PatchRotation::mrot90: // (-y, -x)
+  case FlexiblePatchOrientation::FPO_MROT90: // (-y, -x)
     return {-y + yM + xP + h - 1, -x + xM + yP + w - 1};
-  case PatchRotation::mrot180: // (x, -y)
+  case FlexiblePatchOrientation::FPO_MROT180: // (x, -y)
     return {x - xM + xP, -y + yM + yP + h - 1};
   default:
     abort();
@@ -160,21 +162,21 @@ auto atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) -> Vec2i {
   int y = atlasPosition.y();
 
   switch (patch.rotation) {
-  case PatchRotation::none: // (x, y)
+  case FlexiblePatchOrientation::FPO_NULL: // (x, y)
     return {x - xP + xM, y - yP + yM};
-  case PatchRotation::swap: // (y, x)
+  case FlexiblePatchOrientation::FPO_SWAP: // (y, x)
     return {y - yP + xM, x - xP + yM};
-  case PatchRotation::rot90: // (y, -x)
+  case FlexiblePatchOrientation::FPO_ROT90: // (y, -x)
     return {y - yP + xM, -x + xP + yM + h - 1};
-  case PatchRotation::rot180: // (-x, -y)
+  case FlexiblePatchOrientation::FPO_ROT180: // (-x, -y)
     return {-x + xP + xM + w - 1, -y + yP + yM + h - 1};
-  case PatchRotation::rot270: // (-y, x)
+  case FlexiblePatchOrientation::FPO_ROT270: // (-y, x)
     return {-y + yP + xM + w - 1, x - xP + yM};
-  case PatchRotation::mirror: // (-x, y)
+  case FlexiblePatchOrientation::FPO_MIRROR: // (-x, y)
     return {-x + xP + xM + w - 1, y - yP + yM};
-  case PatchRotation::mrot90: // (-y, -x)
+  case FlexiblePatchOrientation::FPO_MROT90: // (-y, -x)
     return {-y + yP + xM + w - 1, -x + xP + yM + h - 1};
-  case PatchRotation::mrot180: // (x, -y)
+  case FlexiblePatchOrientation::FPO_MROT180: // (x, -y)
     return {x - xP + xM, -y + yP + yM + h - 1};
   default:
     abort();

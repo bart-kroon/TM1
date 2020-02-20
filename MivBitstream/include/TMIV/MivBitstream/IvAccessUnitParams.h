@@ -34,9 +34,11 @@
 #ifndef _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
 #define _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
 
+#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
+
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Vector.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 #include <cstdint>
 #include <iosfwd>
@@ -44,11 +46,6 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-using Common::InputBitstream;
-using Common::OutputBitstream;
-
-enum class PatchRotation { none, swap, rot90, rot180, rot270, mirror, mrot90, mrot180 };
-
 struct AtlasParameters {
   uint8_t atlasId{};
   unsigned viewId{};
@@ -56,7 +53,7 @@ struct AtlasParameters {
   Common::Vec2i patchSizeInView;
   Common::Vec2i posInView;
   Common::Vec2i posInAtlas;
-  PatchRotation rotation{};
+  FlexiblePatchOrientation rotation{};
   std::optional<uint16_t> depthOccMapThreshold;
   std::optional<uint16_t> depthStart;
 

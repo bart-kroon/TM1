@@ -49,7 +49,6 @@
 namespace TMIV::MivBitstream {
 enum class AtghType : std::uint8_t { P_TILE_GRP, I_TILE_GRP, SKIP_TILE_GRP };
 
-// compatible with PatchRotation but keeping this separate for now
 enum class FlexiblePatchOrientation : std::uint8_t {
   FPO_NULL,
   FPO_SWAP,

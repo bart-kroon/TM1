@@ -157,7 +157,10 @@ auto ViewParamsList::loadFromJson(const Json &node, const vector<string> &names)
 }
 
 IvSequenceParams::IvSequenceParams() {
-  vps.vps_miv_mode_flag(true).vps_extension_present_flag(true).vps_miv_extension_flag(true);
+  vps.vps_miv_mode_flag(true)
+      .vps_extension_present_flag(true)
+      .vps_miv_extension_flag(true)
+      .vps_miv_sequence_vui_params_present_flag(false);
 }
 
 auto IvSequenceParams::msp() const noexcept -> const MivSequenceParams & {

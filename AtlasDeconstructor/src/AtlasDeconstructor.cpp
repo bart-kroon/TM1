@@ -96,7 +96,7 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParams &patch, PatchIdMapL
   auto &depthMap = frame[patch.vuhAtlasId].second.getPlane(0);
 
   const Vec2i &q0 = patch.pdu2dPos();
-  const auto sizeInAtlas = patch.patchSizeInAtlas();
+  const auto sizeInAtlas = patch.pdu2dSize();
   int xMin = q0.x();
   int xLast = q0.x() + sizeInAtlas.x();
   int yMin = q0.y();
@@ -150,7 +150,7 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     auto &textureViewMap = currentView.first;
     auto &depthViewMap = currentView.second;
 
-    const auto sizeInAtlas = patch.patchSizeInAtlas();
+    const auto sizeInAtlas = patch.pdu2dSize();
     int wP = sizeInAtlas.x();
     int hP = sizeInAtlas.y();
     int xP = patch.pdu2dPos().x();

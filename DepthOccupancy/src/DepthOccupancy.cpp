@@ -105,7 +105,7 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
     const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
     const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
 
-    const auto patchSizeInAtlas = patch.patchSizeInAtlas();
+    const auto patchSizeInAtlas = patch.pdu2dSize();
 
     for (int i = 0; i < patchSizeInAtlas.y(); ++i) {
       for (int j = 0; j < patchSizeInAtlas.x(); ++j) {

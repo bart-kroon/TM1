@@ -53,8 +53,9 @@ struct PatchParams {
   std::uint8_t vuhAtlasId{};
 
   auto pdu2dPos() const noexcept;
-  auto patchSizeInView() const noexcept;
+  auto pdu2dSize() const noexcept;
   auto pduViewPos() const noexcept;
+  auto pduViewSize() const noexcept;
   auto pduDepthStart() const noexcept;
   auto pduDepthEnd() const noexcept;
   auto pduViewId() const noexcept;
@@ -63,7 +64,8 @@ struct PatchParams {
   auto pduDepthOccMapThreshold() const noexcept;
 
   auto pdu2dPos(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto patchSizeInView(const Common::Vec2i value) noexcept -> PatchParams &;
+  auto pdu2dSize(const Common::Vec2i value) noexcept -> PatchParams &;
+  auto pduViewSize(const Common::Vec2i value) noexcept -> PatchParams &;
   auto pduViewPos(const Common::Vec2i value) noexcept -> PatchParams &;
   auto pduDepthStart(const std::uint16_t value) noexcept -> PatchParams &;
   auto pduDepthEnd(const std::uint16_t value) noexcept -> PatchParams &;
@@ -75,15 +77,12 @@ struct PatchParams {
   // Is the patch rotated such that width and height swap?
   bool isRotated() const;
 
-  // Return the size of the patch taking into account rotations
-  auto patchSizeInAtlas() const -> Common::Vec2i;
-
   bool operator==(const PatchParams &other) const;
   bool operator!=(const PatchParams &other) const { return !operator==(other); };
 
 private:
   Common::Vec2i m_pdu2dPos;
-  Common::Vec2i m_patchSizeInView;
+  Common::Vec2i m_pdu2dSize;
   Common::Vec2i m_pduViewPos;
   std::optional<std::uint16_t> m_pduDepthStart;
   std::optional<std::uint16_t> m_pduDepthEnd;

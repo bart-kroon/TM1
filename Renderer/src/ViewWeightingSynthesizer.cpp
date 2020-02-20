@@ -400,7 +400,7 @@ private:
 
       auto &mask = maskList[patch.pduViewId()];
 
-      const auto sizeInAtlas = patch.patchSizeInAtlas();
+      const auto sizeInAtlas = patch.pdu2dSize();
       int wP = sizeInAtlas.x();
       int hP = sizeInAtlas.y();
       int xP = patch.pdu2dPos().x();
@@ -719,10 +719,10 @@ private:
       for (const auto &patch : atlasParamsList) {
         if (patch.pduViewId() == visibleSourceId[id]) {
           int x0 = patch.pduViewPos().x();
-          int x1 = x0 + patch.patchSizeInView().x();
+          int x1 = x0 + patch.pduViewSize().x();
 
           int y0 = patch.pduViewPos().y();
-          int y1 = y0 + patch.patchSizeInView().y();
+          int y1 = y0 + patch.pduViewSize().y();
 
           for (int y = y0; y < y1; y++) {
             for (int x = x0; x < x1; x++) {

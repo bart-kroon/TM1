@@ -178,7 +178,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           p.vuhAtlasId = static_cast<uint8_t>(atlasId);
 
           p.pduViewId(static_cast<uint16_t>(cluster.getViewId()))
-              .patchSizeInView(
+              .pduViewSize(
                   {align(cluster.width(), m_alignment), align(cluster.height(), m_alignment)})
               .pduViewPos({cluster.jmin(), cluster.imin()})
               .pdu2dPos({packerOutput.x(), packerOutput.y()});
@@ -188,7 +188,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                                                          : FlexiblePatchOrientation::FPO_NULL);
 
           auto patchOverflow =
-              (p.pduViewPos() + p.patchSizeInView()) - masks[cluster.getViewId()].getSize();
+              (p.pduViewPos() + p.pduViewSize()) - masks[cluster.getViewId()].getSize();
           if (patchOverflow.x() > 0) {
             p.pduViewPos({p.pduViewPos().x() - patchOverflow.x(), p.pduViewPos().y()});
           }

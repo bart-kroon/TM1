@@ -67,8 +67,8 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
-  const auto w = static_cast<float>(patch.patchSizeInView().x());
-  const auto h = static_cast<float>(patch.patchSizeInView().y());
+  const auto w = static_cast<float>(patch.pduViewSize().x());
+  const auto h = static_cast<float>(patch.pduViewSize().y());
   uv[0] = Vec2f(patch.pduViewPos());
   uv[1] = uv[0] + Vec2f{w, 0};
   uv[2] = uv[0] + Vec2f{0, h};
@@ -130,14 +130,14 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
 }
 
 auto baseview_divide(const PatchParams &patch, Vec2i blocksizes) {
-  int blocknums_w = patch.patchSizeInView().x() / blocksizes.x();
-  int blocknums_h = patch.patchSizeInView().y() / blocksizes.y();
+  int blocknums_w = patch.pduViewSize().x() / blocksizes.x();
+  int blocknums_h = patch.pduViewSize().y() / blocksizes.y();
   int blocknums_all = blocknums_w * blocknums_h;
   PatchParamsVector subblock(blocknums_all, patch);
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
-      subblock[i * blocknums_w + j].patchSizeInView().x() = blocksizes.x();
-      subblock[i * blocknums_w + j].patchSizeInView().y() = blocksizes.y();
+      subblock[i * blocknums_w + j].pduViewSize().x() = blocksizes.x();
+      subblock[i * blocknums_w + j].pduViewSize().y() = blocksizes.y();
       subblock[i * blocknums_w + j].pduViewPos().x() = patch.pduViewPos().x() + j * blocksizes.x();
       subblock[i * blocknums_w + j].pduViewPos().y() = patch.pduViewPos().y() + i * blocksizes.y();
       subblock[i * blocknums_w + j].pdu2dPos().x() = patch.pdu2dPos().x() + j * blocksizes.x();
@@ -157,9 +157,9 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     // If patch is as large as source view
-    if (atlasParamsList[id].patchSizeInView().x() ==
+    if (atlasParamsList[id].pduViewSize().x() ==
             viewParamsList[atlasParamsList[id].pduViewId()].ci.projectionPlaneSize().x() &&
-        atlasParamsList[id].patchSizeInView().y() ==
+        atlasParamsList[id].pduViewSize().y() ==
             viewParamsList[atlasParamsList[id].pduViewId()].ci.projectionPlaneSize().y()) {
 
       // size of sub-block is fixed now.
@@ -184,7 +184,7 @@ void SubBlockCuller::erasePatchIdInMap(const PatchParams &patch, PatchIdMapList 
   auto &patchMap = patchMapList[patch.vuhAtlasId];
 
   const Vec2i &q0 = patch.pdu2dPos();
-  const auto sizeInAtlas = patch.patchSizeInAtlas();
+  const auto sizeInAtlas = patch.pdu2dSize();
   int xMin = q0.x();
   int xLast = q0.x() + sizeInAtlas.x();
   int yMin = q0.y();

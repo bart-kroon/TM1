@@ -38,7 +38,14 @@
 namespace TMIV::MivBitstream {
 inline auto PatchParams::pdu2dPos() const noexcept { return m_pdu2dPos; }
 
-inline auto PatchParams::patchSizeInView() const noexcept { return m_patchSizeInView; }
+inline auto PatchParams::pdu2dSize() const noexcept { return m_pdu2dSize; }
+
+inline auto PatchParams::pduViewSize() const noexcept {
+  if (isRotated()) {
+    return Common::Vec2i{m_pdu2dSize.y(), m_pdu2dSize.x()};
+  }
+  return m_pdu2dSize;
+}
 
 inline auto PatchParams::pduViewPos() const noexcept { return m_pduViewPos; }
 
@@ -60,35 +67,53 @@ inline auto PatchParams::pdu2dPos(const Common::Vec2i value) noexcept -> PatchPa
   m_pdu2dPos = value;
   return *this;
 }
-inline auto PatchParams::patchSizeInView(const Common::Vec2i value) noexcept -> PatchParams & {
-  m_patchSizeInView = value;
+
+inline auto PatchParams::pdu2dSize(const Common::Vec2i value) noexcept -> PatchParams & {
+  m_pdu2dSize = value;
   return *this;
 }
+
 inline auto PatchParams::pduViewPos(const Common::Vec2i value) noexcept -> PatchParams & {
   m_pduViewPos = value;
   return *this;
 }
+
+inline auto PatchParams::pduViewSize(const Common::Vec2i value) noexcept -> PatchParams & {
+  if (isRotated()) {
+    m_pdu2dSize.x() = value.y();
+    m_pdu2dSize.y() = value.x();
+  } else {
+    m_pdu2dSize = value;
+  }
+  return *this;
+}
+
 inline auto PatchParams::pduDepthStart(const std::uint16_t value) noexcept -> PatchParams & {
   m_pduDepthStart = value;
   return *this;
 }
+
 inline auto PatchParams::pduDepthEnd(const std::uint16_t value) noexcept -> PatchParams & {
   m_pduDepthEnd = value;
   return *this;
 }
+
 inline auto PatchParams::pduViewId(const std::uint16_t value) noexcept -> PatchParams & {
   m_pduViewId = value;
   return *this;
 }
+
 inline auto PatchParams::pduOrientationIndex(const FlexiblePatchOrientation value) noexcept
     -> PatchParams & {
   m_pduOrientationIndex = value;
   return *this;
 }
+
 inline auto PatchParams::pduEntityId(const std::uint16_t value) noexcept -> PatchParams & {
   m_pduEntityId = value;
   return *this;
 }
+
 inline auto PatchParams::pduDepthOccMapThreshold(const std::uint16_t value) noexcept
     -> PatchParams & {
   m_pduDepthOccMapThreshold = value;
@@ -102,16 +127,9 @@ inline auto PatchParams::isRotated() const -> bool {
          pduOrientationIndex() == FlexiblePatchOrientation::FPO_MROT90;
 }
 
-inline auto PatchParams::patchSizeInAtlas() const -> Common::Vec2i {
-  if (isRotated()) {
-    return {patchSizeInView().y(), patchSizeInView().x()};
-  }
-  return patchSizeInView();
-}
-
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return vuhAtlasId == other.vuhAtlasId && pduViewId() == other.pduViewId() &&
-         pduEntityId() == other.pduEntityId() && patchSizeInView() == other.patchSizeInView() &&
+         pduEntityId() == other.pduEntityId() && pduViewSize() == other.pduViewSize() &&
          pduViewPos() == other.pduViewPos() && pdu2dPos() == other.pdu2dPos() &&
          pduOrientationIndex() == other.pduOrientationIndex() &&
          pduDepthOccMapThreshold() == other.pduDepthOccMapThreshold() &&
@@ -119,8 +137,8 @@ inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
 }
 
 inline auto viewToAtlas(Common::Vec2i viewPosition, const PatchParams &patch) -> Common::Vec2i {
-  int w = patch.patchSizeInView().x();
-  int h = patch.patchSizeInView().y();
+  int w = patch.pduViewSize().x();
+  int h = patch.pduViewSize().y();
   int xM = patch.pduViewPos().x();
   int yM = patch.pduViewPos().y();
   int xP = patch.pdu2dPos().x();
@@ -151,8 +169,8 @@ inline auto viewToAtlas(Common::Vec2i viewPosition, const PatchParams &patch) ->
 }
 
 inline auto atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch) -> Common::Vec2i {
-  int w = patch.patchSizeInView().x();
-  int h = patch.patchSizeInView().y();
+  int w = patch.pduViewSize().x();
+  int h = patch.pduViewSize().y();
   int xM = patch.pduViewPos().x();
   int yM = patch.pduViewPos().y();
   int xP = patch.pdu2dPos().x();

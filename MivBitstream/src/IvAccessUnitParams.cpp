@@ -45,27 +45,6 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto PatchParams::isRotated() const -> bool {
-  return pduOrientationIndex == FlexiblePatchOrientation::FPO_ROT90 ||
-         pduOrientationIndex == FlexiblePatchOrientation::FPO_SWAP ||
-         pduOrientationIndex == FlexiblePatchOrientation::FPO_ROT270 ||
-         pduOrientationIndex == FlexiblePatchOrientation::FPO_MROT90;
-}
-
-auto PatchParams::patchSizeInAtlas() const -> Vec2i {
-  if (isRotated()) {
-    return {patchSizeInView.y(), patchSizeInView.x()};
-  }
-  return patchSizeInView;
-}
-
-auto PatchParams::operator==(const PatchParams &other) const -> bool {
-  return vuhAtlasId == other.vuhAtlasId && pduViewId == other.pduViewId && pduEntityId == other.pduEntityId &&
-         patchSizeInView == other.patchSizeInView && pduViewPos == other.pduViewPos &&
-         pdu2dPos == other.pdu2dPos && pduOrientationIndex == other.pduOrientationIndex &&
-         pduDepthOccMapThreshold == other.pduDepthOccMapThreshold && pduDepthStart == other.pduDepthStart;
-}
-
 auto AtlasParamsList::operator==(const AtlasParamsList &other) const -> bool {
   return equal(begin(), end(), other.begin(), other.end()) &&
          omafV1CompatibleFlag == other.omafV1CompatibleFlag && groupIds == other.groupIds &&
@@ -106,88 +85,5 @@ auto operator<<(ostream &stream, const AtlasParamsList &atlasParamsList) -> ostr
   stream << "}\n";
 
   return stream << '\n';
-}
-
-namespace {
-// Use vector<T> as a map<size_t, T>
-template <typename Vector, typename Value>
-void assignAt(Vector &vector, size_t position, Value &&value) {
-  while (vector.size() <= position) {
-    vector.emplace_back();
-  }
-  vector[position] = forward<Value>(value);
-}
-} // namespace
-
-auto viewToAtlas(Vec2i viewPosition, const PatchParams &patch) -> Vec2i {
-  int w = patch.patchSizeInView.x();
-  int h = patch.patchSizeInView.y();
-  int xM = patch.pduViewPos.x();
-  int yM = patch.pduViewPos.y();
-  int xP = patch.pdu2dPos.x();
-  int yP = patch.pdu2dPos.y();
-  int x = viewPosition.x();
-  int y = viewPosition.y();
-
-  switch (patch.pduOrientationIndex) {
-  case FlexiblePatchOrientation::FPO_NULL: // (x, y)
-    return {x - xM + xP, y - yM + yP};
-  case FlexiblePatchOrientation::FPO_SWAP: // (y, x)
-    return {y - yM + xP, x - xM + yP};
-  case FlexiblePatchOrientation::FPO_ROT90: // (-y, x)
-    return {-y + yM + xP + h - 1, x - xM + yP};
-  case FlexiblePatchOrientation::FPO_ROT180: // (-x, -y)
-    return {-x + xM + xP + w - 1, -y + yM + yP + h - 1};
-  case FlexiblePatchOrientation::FPO_ROT270: // (y, -x)
-    return {y - yM + xP, -x + xM + yP + w - 1};
-  case FlexiblePatchOrientation::FPO_MIRROR: // (-x, y)
-    return {-x + xM + xP + w - 1, y - yM + yP};
-  case FlexiblePatchOrientation::FPO_MROT90: // (-y, -x)
-    return {-y + yM + xP + h - 1, -x + xM + yP + w - 1};
-  case FlexiblePatchOrientation::FPO_MROT180: // (x, -y)
-    return {x - xM + xP, -y + yM + yP + h - 1};
-  default:
-    abort();
-  }
-}
-
-auto atlasToView(Vec2i atlasPosition, const PatchParams &patch) -> Vec2i {
-  int w = patch.patchSizeInView.x();
-  int h = patch.patchSizeInView.y();
-  int xM = patch.pduViewPos.x();
-  int yM = patch.pduViewPos.y();
-  int xP = patch.pdu2dPos.x();
-  int yP = patch.pdu2dPos.y();
-  int x = atlasPosition.x();
-  int y = atlasPosition.y();
-
-  switch (patch.pduOrientationIndex) {
-  case FlexiblePatchOrientation::FPO_NULL: // (x, y)
-    return {x - xP + xM, y - yP + yM};
-  case FlexiblePatchOrientation::FPO_SWAP: // (y, x)
-    return {y - yP + xM, x - xP + yM};
-  case FlexiblePatchOrientation::FPO_ROT90: // (y, -x)
-    return {y - yP + xM, -x + xP + yM + h - 1};
-  case FlexiblePatchOrientation::FPO_ROT180: // (-x, -y)
-    return {-x + xP + xM + w - 1, -y + yP + yM + h - 1};
-  case FlexiblePatchOrientation::FPO_ROT270: // (-y, x)
-    return {-y + yP + xM + w - 1, x - xP + yM};
-  case FlexiblePatchOrientation::FPO_MIRROR: // (-x, y)
-    return {-x + xP + xM + w - 1, y - yP + yM};
-  case FlexiblePatchOrientation::FPO_MROT90: // (-y, -x)
-    return {-y + yP + xM + w - 1, -x + xP + yM + h - 1};
-  case FlexiblePatchOrientation::FPO_MROT180: // (x, -y)
-    return {x - xP + xM, -y + yP + yM + h - 1};
-  default:
-    abort();
-  }
-}
-
-auto operator<<(ostream &stream, const IvAccessUnitParams &ivAccessUnitParams) -> ostream & {
-  return stream << ivAccessUnitParams.atlasParamsList;
-}
-
-auto IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const -> bool {
-  return atlasParamsList == other.atlasParamsList;
 }
 } // namespace TMIV::MivBitstream

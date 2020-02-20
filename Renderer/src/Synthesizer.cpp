@@ -85,7 +85,7 @@ public:
     vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(patches.size());
     for (const auto &patch : patches) {
-      depthTransform.emplace_back(viewParamsList[patch.pduViewId].dq, patch);
+      depthTransform.emplace_back(viewParamsList[patch.pduViewId()].dq, patch);
     }
 
     auto i_ids = begin(ids);
@@ -104,8 +104,8 @@ public:
         // Look up metadata
         assert(patchId < patches.size());
         const auto &patch = patches[patchId];
-        assert(patch.pduViewId < viewParamsList.size());
-        const auto &viewParams = viewParamsList[patch.pduViewId];
+        assert(patch.pduViewId() < viewParamsList.size());
+        const auto &viewParams = viewParamsList[patch.pduViewId()];
 
         // Look up depth value and affine parameters
         const auto uv = Vec2f(atlasToView({j_atlas, i_atlas}, patch));
@@ -113,8 +113,8 @@ public:
 
         const auto d = depthTransform[patchId].expandDepth(level);
         assert(d > 0.F && isfinite(d));
-        const auto &R = R_t[patch.pduViewId].first;
-        const auto &t = R_t[patch.pduViewId].second;
+        const auto &R = R_t[patch.pduViewId()].first;
+        const auto &t = R_t[patch.pduViewId()].second;
 
         // Reproject and calculate ray angle
         const auto xyz = R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams) + t;

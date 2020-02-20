@@ -58,18 +58,18 @@ static auto affineParameterList(const ViewParamsList &viewParamsList, const View
   return result;
 }
 
-auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras,
-                 const ViewParams &target) -> bool {
-  const auto &camera = cameras[patch.pduViewId];
+auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const ViewParams &target)
+    -> bool {
+  const auto &camera = cameras[patch.pduViewId()];
   auto R_t = affineParameterList(cameras, target);
-  const auto &R = R_t[patch.pduViewId].first;
-  const auto &t = R_t[patch.pduViewId].second;
+  const auto &R = R_t[patch.pduViewId()].first;
+  const auto &t = R_t[patch.pduViewId()].second;
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
-  const auto w = static_cast<float>(patch.patchSizeInView.x());
-  const auto h = static_cast<float>(patch.patchSizeInView.y());
-  uv[0] = Vec2f(patch.pduViewPos);
+  const auto w = static_cast<float>(patch.patchSizeInView().x());
+  const auto h = static_cast<float>(patch.patchSizeInView().y());
+  uv[0] = Vec2f(patch.pduViewPos());
   uv[1] = uv[0] + Vec2f{w, 0};
   uv[2] = uv[0] + Vec2f{0, h};
   uv[3] = uv[0] + Vec2f{w, h};
@@ -130,18 +130,18 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras,
 }
 
 auto baseview_divide(const PatchParams &patch, Vec2i blocksizes) {
-  int blocknums_w = patch.patchSizeInView.x() / blocksizes.x();
-  int blocknums_h = patch.patchSizeInView.y() / blocksizes.y();
+  int blocknums_w = patch.patchSizeInView().x() / blocksizes.x();
+  int blocknums_h = patch.patchSizeInView().y() / blocksizes.y();
   int blocknums_all = blocknums_w * blocknums_h;
   PatchParamsVector subblock(blocknums_all, patch);
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
-      subblock[i * blocknums_w + j].patchSizeInView.x() = blocksizes.x();
-      subblock[i * blocknums_w + j].patchSizeInView.y() = blocksizes.y();
-      subblock[i * blocknums_w + j].pduViewPos.x() = patch.pduViewPos.x() + j * blocksizes.x();
-      subblock[i * blocknums_w + j].pduViewPos.y() = patch.pduViewPos.y() + i * blocksizes.y();
-      subblock[i * blocknums_w + j].pdu2dPos.x() = patch.pdu2dPos.x() + j * blocksizes.x();
-      subblock[i * blocknums_w + j].pdu2dPos.y() = patch.pdu2dPos.x() + i * blocksizes.y();
+      subblock[i * blocknums_w + j].patchSizeInView().x() = blocksizes.x();
+      subblock[i * blocknums_w + j].patchSizeInView().y() = blocksizes.y();
+      subblock[i * blocknums_w + j].pduViewPos().x() = patch.pduViewPos().x() + j * blocksizes.x();
+      subblock[i * blocknums_w + j].pduViewPos().y() = patch.pduViewPos().y() + i * blocksizes.y();
+      subblock[i * blocknums_w + j].pdu2dPos().x() = patch.pdu2dPos().x() + j * blocksizes.x();
+      subblock[i * blocknums_w + j].pdu2dPos().y() = patch.pdu2dPos().x() + i * blocksizes.y();
     }
   }
   return subblock;
@@ -157,10 +157,10 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     // If patch is as large as source view
-    if (atlasParamsList[id].patchSizeInView.x() ==
-            viewParamsList[atlasParamsList[id].pduViewId].ci.projectionPlaneSize().x() &&
-        atlasParamsList[id].patchSizeInView.y() ==
-            viewParamsList[atlasParamsList[id].pduViewId].ci.projectionPlaneSize().y()) {
+    if (atlasParamsList[id].patchSizeInView().x() ==
+            viewParamsList[atlasParamsList[id].pduViewId()].ci.projectionPlaneSize().x() &&
+        atlasParamsList[id].patchSizeInView().y() ==
+            viewParamsList[atlasParamsList[id].pduViewId()].ci.projectionPlaneSize().y()) {
 
       // size of sub-block is fixed now.
       Vec2i blocksizes = {128, 128};
@@ -183,7 +183,7 @@ void SubBlockCuller::erasePatchIdInMap(const PatchParams &patch, PatchIdMapList 
                                        uint16_t patchId) {
   auto &patchMap = patchMapList[patch.vuhAtlasId];
 
-  const Vec2i &q0 = patch.pdu2dPos;
+  const Vec2i &q0 = patch.pdu2dPos();
   const auto sizeInAtlas = patch.patchSizeInAtlas();
   int xMin = q0.x();
   int xLast = q0.x() + sizeInAtlas.x();

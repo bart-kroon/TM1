@@ -387,10 +387,10 @@ private:
 
     for (auto iter = patchParamsVector.rbegin(); iter != patchParamsVector.rend(); ++iter) {
       const auto &patch = *iter;
-      const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId], patch};
+      const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId()], patch};
 
       auto &currentAtlas = atlas_pruned[patch.vuhAtlasId];
-      auto &currentView = frame[patch.pduViewId];
+      auto &currentView = frame[patch.pduViewId()];
 
       auto &textureAtlasMap = currentAtlas.first;
       auto &depthAtlasMap = currentAtlas.second;
@@ -398,13 +398,13 @@ private:
       auto &textureViewMap = currentView.first;
       auto &depthViewMap = currentView.second;
 
-      auto &mask = maskList[patch.pduViewId];
+      auto &mask = maskList[patch.pduViewId()];
 
       const auto sizeInAtlas = patch.patchSizeInAtlas();
       int wP = sizeInAtlas.x();
       int hP = sizeInAtlas.y();
-      int xP = patch.pdu2dPos.x();
-      int yP = patch.pdu2dPos.y();
+      int xP = patch.pdu2dPos().x();
+      int yP = patch.pdu2dPos().y();
 
       for (int dy = 0; dy < hP; dy++) {
         for (int dx = 0; dx < wP; dx++) {
@@ -515,7 +515,7 @@ private:
 
               if (patchId != unusedPatchId) {
                 const auto &patch = atlasParamsList[patchId];
-                auto viewId = patch.pduViewId;
+                auto viewId = patch.pduViewId();
 
                 if (m_cameraVisibility[viewId]) {
                   auto pduViewPos = atlasToView({static_cast<int>(X), static_cast<int>(Y)}, patch);
@@ -717,12 +717,12 @@ private:
       auto viewId = static_cast<unsigned>(visibleSourceId[id]);
 
       for (const auto &patch : atlasParamsList) {
-        if (patch.pduViewId == visibleSourceId[id]) {
-          int x0 = patch.pduViewPos.x();
-          int x1 = x0 + patch.patchSizeInView.x();
+        if (patch.pduViewId() == visibleSourceId[id]) {
+          int x0 = patch.pduViewPos().x();
+          int x1 = x0 + patch.patchSizeInView().x();
 
-          int y0 = patch.pduViewPos.y();
-          int y1 = y0 + patch.patchSizeInView.y();
+          int y0 = patch.pduViewPos().y();
+          int y1 = y0 + patch.patchSizeInView().y();
 
           for (int y = y0; y < y1; y++) {
             for (int x = x0; x < x1; x++) {

@@ -315,13 +315,13 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
     // Copy patches in group order
     for (auto patch : groupParams.atlasParamsList) {
       patch.vuhAtlasId += uint16_t(firstAtlasId);
-      patch.pduViewId += uint16_t(firstViewId);
+      patch.pduViewId(patch.pduViewId() + uint16_t(firstViewId));
       atlasParamsList.push_back(patch);
     }
 
     // Copy atlas sizes in group order
-    copy(begin(groupParams.atlasParamsList.atlasSizes),
-         end(groupParams.atlasParamsList.atlasSizes), back_inserter(atlasParamsList.atlasSizes));
+    copy(begin(groupParams.atlasParamsList.atlasSizes), end(groupParams.atlasParamsList.atlasSizes),
+         back_inserter(atlasParamsList.atlasSizes));
 
     // Copy depthOccupancyParamsPresentFlags in group order
     copy(begin(groupParams.atlasParamsList.depthOccupancyParamsPresentFlags),

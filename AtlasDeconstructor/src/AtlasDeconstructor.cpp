@@ -77,10 +77,10 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   }
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
-    assert(atlasParamsList[id].pduViewId < viewParamsList.size());
+    assert(atlasParamsList[id].pduViewId() < viewParamsList.size());
     if (ivSequenceParams.msp().msp_max_entities_minus1() == 0 ||
-        (atlasParamsList[id].pduEntityId >= m_entityDecodeRange[0] &&
-         atlasParamsList[id].pduEntityId < m_entityDecodeRange[1])) {
+        (atlasParamsList[id].pduEntityId() >= m_entityDecodeRange[0] &&
+         atlasParamsList[id].pduEntityId() < m_entityDecodeRange[1])) {
       writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
                         viewParamsList);
     }
@@ -95,14 +95,14 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParams &patch, PatchIdMapL
   auto &patchMap = patchMapList[patch.vuhAtlasId];
   auto &depthMap = frame[patch.vuhAtlasId].second.getPlane(0);
 
-  const Vec2i &q0 = patch.pdu2dPos;
+  const Vec2i &q0 = patch.pdu2dPos();
   const auto sizeInAtlas = patch.patchSizeInAtlas();
   int xMin = q0.x();
   int xLast = q0.x() + sizeInAtlas.x();
   int yMin = q0.y();
   int yLast = q0.y() + sizeInAtlas.y();
 
-  const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId], patch};
+  const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId()], patch};
 
   if (m_downscale_depth) {
     yMin /= 2;
@@ -139,10 +139,10 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
 
   for (auto iter = patchParamsVector.rbegin(); iter != patchParamsVector.rend(); ++iter) {
     const auto &patch = *iter;
-    const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId], patch};
+    const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId()], patch};
 
     auto &currentAtlas = atlas_pruned[patch.vuhAtlasId];
-    auto &currentView = frame[patch.pduViewId];
+    auto &currentView = frame[patch.pduViewId()];
 
     auto &textureAtlasMap = currentAtlas.first;
     auto &depthAtlasMap = currentAtlas.second;
@@ -153,8 +153,8 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
     const auto sizeInAtlas = patch.patchSizeInAtlas();
     int wP = sizeInAtlas.x();
     int hP = sizeInAtlas.y();
-    int xP = patch.pdu2dPos.x();
-    int yP = patch.pdu2dPos.y();
+    int xP = patch.pdu2dPos().x();
+    int yP = patch.pdu2dPos().y();
 
     for (int dy = 0; dy < hP; dy++) {
       for (int dx = 0; dx < wP; dx++) {

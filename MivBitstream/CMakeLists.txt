@@ -35,6 +35,7 @@ add_library(MivBitstreamLib
 	"include/TMIV/MivBitstream/DepthOccupancyTransform.hpp"
 	"include/TMIV/MivBitstream/IvSequenceParams.h"
 	"include/TMIV/MivBitstream/IvAccessUnitParams.h"
+	"include/TMIV/MivBitstream/IvAccessUnitParams.hpp"
 	"include/TMIV/MivBitstream/MivDecoder.h"
 	"include/TMIV/MivBitstream/MivEncoder.h"
 	"include/TMIV/MivBitstream/NalSampleStreamFormat.h"

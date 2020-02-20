@@ -162,8 +162,8 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams 
   viewIds.reserve(ivSequenceParams.viewParamsList.size());
   const auto &groupIds = *ivAccessUnitParams.atlasParamsList.groupIds;
   for (const auto &patch : ivAccessUnitParams.atlasParamsList) {
-    if (groupId == groupIds[patch.vuhAtlasId] && !contains(viewIds, patch.pduViewId)) {
-      viewIds.push_back(patch.pduViewId);
+    if (groupId == groupIds[patch.vuhAtlasId] && !contains(viewIds, patch.pduViewId())) {
+      viewIds.push_back(patch.pduViewId());
     }
   }
 

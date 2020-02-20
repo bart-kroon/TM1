@@ -176,30 +176,32 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           PatchParams p;
 
           p.vuhAtlasId = static_cast<uint8_t>(atlasId);
-          p.pduViewId = static_cast<uint16_t>(cluster.getViewId());
-          p.patchSizeInView = {align(cluster.width(), m_alignment),
-                               align(cluster.height(), m_alignment)};
-          p.pduViewPos = {cluster.jmin(), cluster.imin()};
-          p.pdu2dPos = {packerOutput.x(), packerOutput.y()};
+
+          p.pduViewId(static_cast<uint16_t>(cluster.getViewId()))
+              .patchSizeInView(
+                  {align(cluster.width(), m_alignment), align(cluster.height(), m_alignment)})
+              .pduViewPos({cluster.jmin(), cluster.imin()})
+              .pdu2dPos({packerOutput.x(), packerOutput.y()});
 
           // TODO(BK): When using only two rotations, use FPO_SWAP and FPO_NULL to save bits
-          p.pduOrientationIndex = packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
-                                                : FlexiblePatchOrientation::FPO_NULL;
+          p.pduOrientationIndex(packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
+                                                         : FlexiblePatchOrientation::FPO_NULL);
 
           auto patchOverflow =
-              (p.pduViewPos + p.patchSizeInView) - masks[cluster.getViewId()].getSize();
+              (p.pduViewPos() + p.patchSizeInView()) - masks[cluster.getViewId()].getSize();
           if (patchOverflow.x() > 0) {
-            p.pduViewPos.x() -= patchOverflow.x();
+            p.pduViewPos({p.pduViewPos().x() - patchOverflow.x(), p.pduViewPos().y()});
           }
           if (patchOverflow.y() > 0) {
-            p.pduViewPos.y() -= patchOverflow.y();
+            p.pduViewPos({p.pduViewPos().x(), p.pduViewPos().y() - patchOverflow.y()});
           }
 
           if (m_maxEntities > 1) {
-            p.pduEntityId = cluster.getEntityId();
-            cout << "Packing patch " << patchId << " of entity " << *p.pduEntityId << " from view "
-                 << p.pduViewId << " with #active pixels " << cluster.getNumActivePixels()
-                 << " in atlas " << static_cast<int>(p.vuhAtlasId) << endl;
+            p.pduEntityId(cluster.getEntityId());
+            cout << "Packing patch " << patchId << " of entity " << *p.pduEntityId()
+                 << " from view " << p.pduViewId() << " with #active pixels "
+                 << cluster.getNumActivePixels() << " in atlas " << static_cast<int>(p.vuhAtlasId)
+                 << endl;
           }
 
           atlasParamsVector.push_back(p);

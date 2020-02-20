@@ -96,8 +96,8 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
   }
 
   for (const auto &patch : m_accessUnitParams.atlasParamsList) {
-    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.pduViewId];
-    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.pduViewId];
+    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.pduViewId()];
+    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.pduViewId()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
 #ifndef NDEBUG
     const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
@@ -109,8 +109,8 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
 
     for (int i = 0; i < patchSizeInAtlas.y(); ++i) {
       for (int j = 0; j < patchSizeInAtlas.x(); ++j) {
-        const int n = i + patch.pdu2dPos.y();
-        const int m = j + patch.pdu2dPos.x();
+        const int n = i + patch.pdu2dPos().y();
+        const int m = j + patch.pdu2dPos().x();
 
         const auto inLevel = inAtlases[patch.vuhAtlasId].second.getPlane(0)(n, m);
 

@@ -51,20 +51,20 @@ using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
-auto x = ViewParams{};
+  auto x = ViewParams{};
 
   x.ci.ci_projection_plane_width_minus1(9)
-   .ci_projection_plane_height_minus1(4)
-   .ci_cam_type(CiCamType::equirectangular)
-   .ci_erp_phi_min(-halfCycle)
-   .ci_erp_phi_max(halfCycle)
-   .ci_erp_theta_min(-quarterCycle)
-   .ci_erp_theta_max(quarterCycle);
+      .ci_projection_plane_height_minus1(4)
+      .ci_cam_type(CiCamType::equirectangular)
+      .ci_erp_phi_min(-halfCycle)
+      .ci_erp_phi_max(halfCycle)
+      .ci_erp_theta_min(-quarterCycle)
+      .ci_erp_theta_max(quarterCycle);
   x.ce.ce_view_pos_x(1.F)
-   .ce_view_pos_z(-1.F)
-   .ce_view_quat_x(0.01F)
-   .ce_view_quat_y(0.02F)
-   .ce_view_quat_z(-0.5F);
+      .ce_view_pos_z(-1.F)
+      .ce_view_quat_x(0.01F)
+      .ce_view_quat_y(0.02F)
+      .ce_view_quat_z(-0.5F);
   x.dq.dq_norm_disp_low(1.F).dq_norm_disp_high(10.F);
 
   return x;
@@ -72,17 +72,13 @@ auto x = ViewParams{};
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
   const ViewParams neutral{};
-  
+
   auto translated = neutral;
-  translated.ce.ce_view_pos_x(1.F)
-    .ce_view_pos_y(2.F)
-    .ce_view_pos_z(3.F);
-    
+  translated.ce.ce_view_pos_x(1.F).ce_view_pos_y(2.F).ce_view_pos_z(3.F);
+
   auto rotated = neutral;
-  rotated.ce.ce_view_quat_x(0.1F)
-    .ce_view_quat_y(0.3F)
-    .ce_view_quat_z(-0.3F);
-  
+  rotated.ce.ce_view_quat_x(0.1F).ce_view_quat_y(0.3F).ce_view_quat_z(-0.3F);
+
   SECTION("trivial") {
     auto R_t = affineParameters(neutral, neutral);
     REQUIRE(R_t.first == Mat3x3f::eye());

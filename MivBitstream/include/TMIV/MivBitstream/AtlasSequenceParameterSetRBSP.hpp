@@ -79,7 +79,8 @@ MivAtlasSequenceParams::masp_geometry_frame_height_minus1(const uint16_t value) 
   return *this;
 }
 
-constexpr auto MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &other) const noexcept {
+constexpr auto MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &other) const
+    noexcept {
   return m_masp_omaf_v1_compatible_flag == other.m_masp_omaf_v1_compatible_flag &&
          masp_group_id() == other.masp_group_id() &&
          masp_auxiliary_atlas_flag() == other.masp_auxiliary_atlas_flag() &&
@@ -88,7 +89,8 @@ constexpr auto MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &
          m_masp_geometry_frame_height_minus1 == other.m_masp_geometry_frame_height_minus1;
 }
 
-constexpr auto MivAtlasSequenceParams::operator!=(const MivAtlasSequenceParams &other) const noexcept {
+constexpr auto MivAtlasSequenceParams::operator!=(const MivAtlasSequenceParams &other) const
+    noexcept {
   return !operator==(other);
 }
 

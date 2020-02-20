@@ -215,16 +215,18 @@ auto VpccUnitHeader::decodeFrom(istream &stream, const vector<VpccParameterSet> 
     VERIFY_MIVBITSTREAM(x.vuh_attribute_dimension_index() == 0);
 
     x.vuh_map_index(uint8_t(bitstream.readBits(4)));
-    VERIFY_VPCCBITSTREAM(x.vuh_map_index() <=
-                         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
+    VERIFY_VPCCBITSTREAM(
+        x.vuh_map_index() <=
+        vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
 
     x.vuh_raw_video_flag(bitstream.getFlag());
     VERIFY_MIVBITSTREAM(!x.vuh_raw_video_flag());
 
   } else if (x.vuh_unit_type() == VuhUnitType::VPCC_GVD) {
     x.vuh_map_index(uint8_t(bitstream.readBits(4)));
-    VERIFY_VPCCBITSTREAM(x.vuh_map_index() <=
-                         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
+    VERIFY_VPCCBITSTREAM(
+        x.vuh_map_index() <=
+        vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
 
     x.vuh_raw_video_flag(bitstream.getFlag());
     VERIFY_MIVBITSTREAM(!x.vuh_raw_video_flag());

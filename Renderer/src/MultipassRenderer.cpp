@@ -84,7 +84,7 @@ struct MultipassRendererHelper {
       distance.push_back(norm(source.ce.position() - target.ce.position()));
 
       // Compute Angle between the camera and target in degree unit
-  // TODO(BK): Reimplement angle comparison with quaternions
+      // TODO(BK): Reimplement angle comparison with quaternions
 #if false
 	  const auto yaw_target = target.rotation[0] * radperdeg;
       const auto yaw_source = source.rotation[0] * radperdeg;
@@ -99,7 +99,7 @@ struct MultipassRendererHelper {
         angle[i] -= fullCycle;
       }
 #else
-	  angle.push_back(0.F);
+      angle.push_back(0.F);
 #endif
 
       // Introduce AngleWeight as a simple triangle function (with value of 1 when

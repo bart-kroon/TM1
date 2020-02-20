@@ -111,8 +111,8 @@ constexpr auto &AtlasFrameParameterSetRBSP::atlas_frame_tile_information(
   return *this;
 }
 
-constexpr auto &
-AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1(const std::uint8_t value) noexcept {
+constexpr auto &AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1(
+    const std::uint8_t value) noexcept {
   m_afps_num_ref_idx_default_active_minus1 = value;
   return *this;
 }

@@ -243,12 +243,12 @@ public:
                    const PatchParamsList &patches, const ViewParamsList &viewParamsList,
                    const ViewParams &target) const -> Texture444Depth16Frame {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(atlases.size(), target,
-                                  [&](size_t i, const ViewParams &target) {
-                                    return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
-                                                          viewParamsList, target);
-                                  },
-                                  resolutionRatio(viewParamsList, target));
+    auto rasterizer = rasterFrame(
+        atlases.size(), target,
+        [&](size_t i, const ViewParams &target) {
+          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, viewParamsList, target);
+        },
+        resolutionRatio(viewParamsList, target));
     const auto depthTransform = DepthTransform<16>{target.dq};
     auto frame = Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
                                         depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};

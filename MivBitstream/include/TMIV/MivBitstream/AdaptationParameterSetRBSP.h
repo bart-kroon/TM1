@@ -285,11 +285,12 @@ public:
   constexpr auto operator==(const MivViewParamsUpdateExtrinsics &) const noexcept { return true; }
   constexpr auto operator!=(const MivViewParamsUpdateExtrinsics &) const noexcept { return false; }
 
-  static auto decodeFrom(Common::InputBitstream &/* bitstream */) -> MivViewParamsUpdateExtrinsics {
+  static auto decodeFrom(Common::InputBitstream & /* bitstream */)
+      -> MivViewParamsUpdateExtrinsics {
     return {};
   }
 
-  void encodeTo(Common::OutputBitstream &/* bitstream */) const {}
+  void encodeTo(Common::OutputBitstream & /* bitstream */) const {}
 };
 
 // 23090-12: miv_view_params_update_intrinsics
@@ -305,11 +306,12 @@ public:
   constexpr auto operator==(const MivViewParamsUpdateIntrinsics &) const noexcept { return true; }
   constexpr auto operator!=(const MivViewParamsUpdateIntrinsics &) const noexcept { return false; }
 
-  static auto decodeFrom(Common::InputBitstream &/* bitstream */) -> MivViewParamsUpdateIntrinsics {
+  static auto decodeFrom(Common::InputBitstream & /* bitstream */)
+      -> MivViewParamsUpdateIntrinsics {
     return {};
   }
 
-  void encodeTo(Common::OutputBitstream &/* bitstream */) const {}
+  void encodeTo(Common::OutputBitstream & /* bitstream */) const {}
 };
 
 // 23090-12: ap_miv_view_params_list_update_mode

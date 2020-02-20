@@ -124,8 +124,8 @@ private: // Decoder output
 
 private: // Decoding processes
   void decodeVpccPayload(const VpccUnitHeader &vuh, const VpccPayload::Payload &payload);
-  void decodeVps(const VpccUnitHeader &vuh, const VpccParameterSet& vps);
-  void decodeAsb(const VpccUnitHeader &vuh, const AtlasSubBitstream& asb);
+  void decodeVps(const VpccUnitHeader &vuh, const VpccParameterSet &vps);
+  void decodeAsb(const VpccUnitHeader &vuh, const AtlasSubBitstream &asb);
 
   void decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
   static void decodeUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);

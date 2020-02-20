@@ -121,8 +121,7 @@ void AtlasDeconstructor::writePatchIdInMap(const PatchParams &patch, PatchIdMapL
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                                            const ViewParamsList &viewParamsList,
-                                           const PatchParamsList &patchParamsVector)
-    -> MVD10Frame {
+                                           const PatchParamsList &patchParamsVector) -> MVD10Frame {
   // Initialization
   MVD10Frame frame;
 

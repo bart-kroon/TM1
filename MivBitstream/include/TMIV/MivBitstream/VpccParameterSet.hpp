@@ -139,7 +139,8 @@ constexpr auto &GeometryInformation::gi_geometry_codec_id(std::uint8_t value) no
   return *this;
 }
 
-constexpr auto &GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept {
+constexpr auto &
+GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept {
   m_gi_geometry_nominal_2d_bitdepth_minus1 = value;
   return *this;
 }

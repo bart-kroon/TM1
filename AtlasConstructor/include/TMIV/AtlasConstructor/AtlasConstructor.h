@@ -68,8 +68,8 @@ public:
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
-  void writePatchInAtlas(const MivBitstream::PatchParams &patch,
-                         const Common::MVD16Frame &views, Common::MVD16Frame &atlas, int frame);
+  void writePatchInAtlas(const MivBitstream::PatchParams &patch, const Common::MVD16Frame &views,
+                         Common::MVD16Frame &atlas, int frame);
 
 private:
   std::size_t m_nbAtlas{};

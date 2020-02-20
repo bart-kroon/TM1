@@ -183,7 +183,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           p.posInAtlas = {packerOutput.x(), packerOutput.y()};
 
           // TODO(BK): When using only two rotations, use FPO_SWAP and FPO_NULL to save bits
-          p.rotation = packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
+          p.pduOrientationIndex = packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
                                                 : FlexiblePatchOrientation::FPO_NULL;
 
           auto patchOverflow =

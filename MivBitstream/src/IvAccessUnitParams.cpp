@@ -46,10 +46,10 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto PatchParams::isRotated() const -> bool {
-  return rotation == FlexiblePatchOrientation::FPO_ROT90 ||
-         rotation == FlexiblePatchOrientation::FPO_SWAP ||
-         rotation == FlexiblePatchOrientation::FPO_ROT270 ||
-         rotation == FlexiblePatchOrientation::FPO_MROT90;
+  return pduOrientationIndex == FlexiblePatchOrientation::FPO_ROT90 ||
+         pduOrientationIndex == FlexiblePatchOrientation::FPO_SWAP ||
+         pduOrientationIndex == FlexiblePatchOrientation::FPO_ROT270 ||
+         pduOrientationIndex == FlexiblePatchOrientation::FPO_MROT90;
 }
 
 auto PatchParams::patchSizeInAtlas() const -> Vec2i {
@@ -62,7 +62,7 @@ auto PatchParams::patchSizeInAtlas() const -> Vec2i {
 auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return vuhAtlasId == other.vuhAtlasId && pduViewId == other.pduViewId && pduEntityId == other.pduEntityId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
-         posInAtlas == other.posInAtlas && rotation == other.rotation &&
+         posInAtlas == other.posInAtlas && pduOrientationIndex == other.pduOrientationIndex &&
          pduDepthOccMapThreshold == other.pduDepthOccMapThreshold && pduDepthStart == other.pduDepthStart;
 }
 
@@ -129,7 +129,7 @@ auto viewToAtlas(Vec2i viewPosition, const PatchParams &patch) -> Vec2i {
   int x = viewPosition.x();
   int y = viewPosition.y();
 
-  switch (patch.rotation) {
+  switch (patch.pduOrientationIndex) {
   case FlexiblePatchOrientation::FPO_NULL: // (x, y)
     return {x - xM + xP, y - yM + yP};
   case FlexiblePatchOrientation::FPO_SWAP: // (y, x)
@@ -161,7 +161,7 @@ auto atlasToView(Vec2i atlasPosition, const PatchParams &patch) -> Vec2i {
   int x = atlasPosition.x();
   int y = atlasPosition.y();
 
-  switch (patch.rotation) {
+  switch (patch.pduOrientationIndex) {
   case FlexiblePatchOrientation::FPO_NULL: // (x, y)
     return {x - xP + xM, y - yP + yM};
   case FlexiblePatchOrientation::FPO_SWAP: // (y, x)

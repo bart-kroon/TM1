@@ -57,7 +57,7 @@ struct PatchParams {
   Common::Vec2i patchSizeInView;
   Common::Vec2i posInView;
   Common::Vec2i posInAtlas;
-  FlexiblePatchOrientation rotation{};
+  FlexiblePatchOrientation pduOrientationIndex{};
   std::optional<std::uint16_t> pduDepthOccMapThreshold;
   std::optional<std::uint16_t> pduDepthStart;
 

@@ -52,7 +52,7 @@ auto ProjectionHelper<camType>::getViewingDirection() const -> Common::Vec3f {
 
 template <MivBitstream::CiCamType camType>
 auto ProjectionHelper<camType>::changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
-  return transpose(m_rotationMatrix) * (P - m_viewParams.position());
+  return transpose(m_rotationMatrix) * (P - m_viewParams.ce.position());
 }
 
 template <MivBitstream::CiCamType camType>

@@ -154,7 +154,7 @@ auto MivEncoder::adaptationParameterSet() const -> AdaptationParameterSetRBSP {
       mvp.depth_quantization(viewId) = vp.dq;
     }
 
-    VERIFY_MIVBITSTREAM(vp.pc.has_value() == mvp.mvp_depth_quantization_params_equal_flag());
+    VERIFY_MIVBITSTREAM(vp.pc.has_value() == mvp.mvp_pruning_graph_params_present_flag());
     if (vp.pc.has_value()) {
       mvp.pruning_children(viewId) = *vp.pc;
     }

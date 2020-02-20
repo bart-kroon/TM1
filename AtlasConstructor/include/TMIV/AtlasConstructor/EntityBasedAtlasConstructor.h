@@ -77,7 +77,7 @@ private:
   void swap0(Common::EntityMapList &entityMasks);
   static auto setView(Common::TextureDepth16Frame view, const Common::EntityMap &entityMask,
                       int entityId) -> Common::TextureDepth16Frame;
-  void writePatchInAtlas(const MivBitstream::AtlasParameters &patch,
+  void writePatchInAtlas(const MivBitstream::PatchParams &patch,
                          const Common::MVD16Frame &views, Common::MVD16Frame &atlas);
 
   std::size_t m_nbAtlas{};

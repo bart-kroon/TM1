@@ -58,7 +58,7 @@ static auto affineParameterList(const ViewParamsList &viewParamsList, const View
   return result;
 }
 
-auto choosePatch(const AtlasParameters &patch, const ViewParamsList &cameras,
+auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras,
                  const ViewParams &target) -> bool {
   const auto &camera = cameras[patch.viewId];
   auto R_t = affineParameterList(cameras, target);
@@ -129,11 +129,11 @@ auto choosePatch(const AtlasParameters &patch, const ViewParamsList &cameras,
             xy_v_ymax != xy_v_ymax));
 }
 
-auto baseview_divide(const AtlasParameters &patch, Vec2i blocksizes) {
+auto baseview_divide(const PatchParams &patch, Vec2i blocksizes) {
   int blocknums_w = patch.patchSizeInView.x() / blocksizes.x();
   int blocknums_h = patch.patchSizeInView.y() / blocksizes.y();
   int blocknums_all = blocknums_w * blocknums_h;
-  AtlasParamsVector subblock(blocknums_all, patch);
+  PatchParamsVector subblock(blocknums_all, patch);
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
       subblock[i * blocknums_w + j].patchSizeInView.x() = blocksizes.x();
@@ -164,7 +164,7 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
 
       // size of sub-block is fixed now.
       Vec2i blocksizes = {128, 128};
-      AtlasParamsVector blocks = baseview_divide(atlasParamsList[id], blocksizes);
+      PatchParamsVector blocks = baseview_divide(atlasParamsList[id], blocksizes);
       for (const auto &block : blocks) {
         if (!choosePatch(block, viewParamsList, target)) {
           erasePatchIdInMap(block, updatedpatchMapList, static_cast<uint16_t>(id));
@@ -179,7 +179,7 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
   return updatedpatchMapList;
 }
 
-void SubBlockCuller::erasePatchIdInMap(const AtlasParameters &patch, PatchIdMapList &patchMapList,
+void SubBlockCuller::erasePatchIdInMap(const PatchParams &patch, PatchIdMapList &patchMapList,
                                        uint16_t patchId) {
   auto &patchMap = patchMapList[patch.atlasId];
 

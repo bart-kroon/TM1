@@ -182,7 +182,7 @@ auto AtlasConstructor::popAtlas() -> MVD16Frame {
   return atlas;
 }
 
-void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views,
+void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Frame &views,
                                          MVD16Frame &atlas, int frame) {
 
   auto &currentAtlas = atlas[patch.atlasId];

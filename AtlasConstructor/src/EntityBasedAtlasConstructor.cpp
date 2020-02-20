@@ -414,7 +414,7 @@ auto EntityBasedAtlasConstructor::setView(TextureDepth16Frame view, const Entity
   return entityView;
 }
 
-void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch,
+void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
                                                     const MVD16Frame &views, MVD16Frame &atlas) {
   auto &currentAtlas = atlas[patch.atlasId];
 

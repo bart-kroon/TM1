@@ -361,7 +361,7 @@ private:
   }
   template <typename MVD>
   auto recoverPrunedViewAndMask(const MVD &atlas, const ViewParamsList &viewParamsList,
-                                const AtlasParamsVector &atlasParamsVector)
+                                const PatchParamsVector patchParamsVector)
       -> std::pair<MVD, MaskList> {
 
     using TextureDepthFrame = typename MVD::value_type;
@@ -385,7 +385,7 @@ private:
     // Process patches
     auto atlas_pruned = atlas;
 
-    for (auto iter = atlasParamsVector.rbegin(); iter != atlasParamsVector.rend(); ++iter) {
+    for (auto iter = patchParamsVector.rbegin(); iter != patchParamsVector.rend(); ++iter) {
       const auto &patch = *iter;
       const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
 

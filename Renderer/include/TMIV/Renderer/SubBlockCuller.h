@@ -54,7 +54,7 @@ public:
                         const MivBitstream::ViewParams &target) -> Common::PatchIdMapList override;
 
 private:
-  static void erasePatchIdInMap(const MivBitstream::AtlasParameters &patch,
+  static void erasePatchIdInMap(const MivBitstream::PatchParams &patch,
                                 Common::PatchIdMapList &patchMapList, std::uint16_t patchId);
 };
 } // namespace TMIV::Renderer

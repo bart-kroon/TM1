@@ -34,8 +34,8 @@
 #ifndef _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
 #define _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
 
-#include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Vector.h>
@@ -46,8 +46,12 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-struct AtlasParameters {
+// PatchParams is the in-memory representation of PatchDataUnit (PDU). The PDU is not suitable for
+// in-memory use because of the delta coding and quantization of some of the fields.
+struct PatchParams {
+  // TODO(BK): Have a PatchParamsVector per atlas
   uint8_t atlasId{};
+
   unsigned viewId{};
   std::optional<uint16_t> entityId{};
   Common::Vec2i patchSizeInView;
@@ -63,19 +67,19 @@ struct AtlasParameters {
   // Return the size of the patch taking into account rotations
   auto patchSizeInAtlas() const -> Common::Vec2i;
 
-  bool operator==(const AtlasParameters &other) const;
-  bool operator!=(const AtlasParameters &other) const { return !operator==(other); };
+  bool operator==(const PatchParams &other) const;
+  bool operator!=(const PatchParams &other) const { return !operator==(other); };
 };
 
-using AtlasParamsVector = std::vector<AtlasParameters>;
+using PatchParamsVector = std::vector<PatchParams>;
 
-struct AtlasParamsList : public AtlasParamsVector {
+struct AtlasParamsList : public PatchParamsVector {
   bool omafV1CompatibleFlag{};
   std::optional<std::vector<unsigned>> groupIds;
   Common::SizeVector atlasSizes;
   std::vector<bool> depthOccupancyParamsPresentFlags;
 
-  void setAtlasParamsVector(AtlasParamsVector x) { AtlasParamsVector::operator=(move(x)); }
+  void setAtlasParamsVector(PatchParamsVector x) { PatchParamsVector::operator=(move(x)); }
 
   friend std::ostream &operator<<(std::ostream &, const AtlasParamsList &);
   bool operator==(const AtlasParamsList &other) const;
@@ -83,8 +87,8 @@ struct AtlasParamsList : public AtlasParamsVector {
 };
 
 // Pixel position conversion from atlas to/from view
-Common::Vec2i viewToAtlas(Common::Vec2i viewPosition, const AtlasParameters &patch);
-Common::Vec2i atlasToView(Common::Vec2i atlasPosition, const AtlasParameters &patch);
+Common::Vec2i viewToAtlas(Common::Vec2i viewPosition, const PatchParams &patch);
+Common::Vec2i atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch);
 
 struct IvAccessUnitParams {
   AtlasParamsList atlasParamsList;

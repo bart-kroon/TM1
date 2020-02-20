@@ -45,21 +45,21 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto AtlasParameters::isRotated() const -> bool {
+auto PatchParams::isRotated() const -> bool {
   return rotation == FlexiblePatchOrientation::FPO_ROT90 ||
          rotation == FlexiblePatchOrientation::FPO_SWAP ||
          rotation == FlexiblePatchOrientation::FPO_ROT270 ||
          rotation == FlexiblePatchOrientation::FPO_MROT90;
 }
 
-auto AtlasParameters::patchSizeInAtlas() const -> Vec2i {
+auto PatchParams::patchSizeInAtlas() const -> Vec2i {
   if (isRotated()) {
     return {patchSizeInView.y(), patchSizeInView.x()};
   }
   return patchSizeInView;
 }
 
-auto AtlasParameters::operator==(const AtlasParameters &other) const -> bool {
+auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return atlasId == other.atlasId && viewId == other.viewId && entityId == other.entityId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
          posInAtlas == other.posInAtlas && rotation == other.rotation &&
@@ -119,7 +119,7 @@ void assignAt(Vector &vector, size_t position, Value &&value) {
 }
 } // namespace
 
-auto viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) -> Vec2i {
+auto viewToAtlas(Vec2i viewPosition, const PatchParams &patch) -> Vec2i {
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
   int xM = patch.posInView.x();
@@ -151,7 +151,7 @@ auto viewToAtlas(Vec2i viewPosition, const AtlasParameters &patch) -> Vec2i {
   }
 }
 
-auto atlasToView(Vec2i atlasPosition, const AtlasParameters &patch) -> Vec2i {
+auto atlasToView(Vec2i atlasPosition, const PatchParams &patch) -> Vec2i {
   int w = patch.patchSizeInView.x();
   int h = patch.patchSizeInView.y();
   int xM = patch.posInView.x();

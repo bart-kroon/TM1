@@ -47,7 +47,7 @@ public:
   explicit OccupancyTransform(const ViewParams &viewParams);
 
   // Constructor for per-patch occupancy threshold signalling (codec)
-  OccupancyTransform(const ViewParams &viewParams, const AtlasParameters &atlasParams);
+  OccupancyTransform(const ViewParams &viewParams, const PatchParams &patch);
 
   // Does x indicate "occupied/valid"?
   auto occupant(uint16_t x) const -> bool;
@@ -63,7 +63,7 @@ public:
   explicit DepthTransform(const DepthQuantization &dq);
 
   // Constructor for per-view depth transform signalling (codec)
-  DepthTransform(const DepthQuantization &dq, const AtlasParameters &atlasParams);
+  DepthTransform(const DepthQuantization &dq, const PatchParams &patch);
 
   // Expand a level to normalized disparity [m^-1]
   //

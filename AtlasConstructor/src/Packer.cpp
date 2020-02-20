@@ -77,7 +77,7 @@ auto Packer::setMask(int viewId, int entityId) -> Mask {
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
-                  const vector<bool> &isBasicView) -> AtlasParamsVector {
+                  const vector<bool> &isBasicView) -> PatchParamsVector {
   // Check atlas size
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % m_alignment) != 0) || ((sz.y() % m_alignment) != 0)) {
@@ -121,7 +121,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   }
 
   // Packing
-  AtlasParamsVector atlasParamsVector;
+  PatchParamsVector atlasParamsVector;
   vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 
@@ -173,7 +173,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         MaxRectPiP &packer = packerList[atlasId];
 
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
-          AtlasParameters p;
+          PatchParams p;
 
           p.atlasId = static_cast<uint8_t>(atlasId);
           p.viewId = static_cast<uint8_t>(cluster.getViewId());

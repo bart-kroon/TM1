@@ -89,9 +89,8 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   return patchMapList;
 }
 
-void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
-                                           PatchIdMapList &patchMapList, uint16_t patchId,
-                                           const MVD10Frame &frame,
+void AtlasDeconstructor::writePatchIdInMap(const PatchParams &patch, PatchIdMapList &patchMapList,
+                                           uint16_t patchId, const MVD10Frame &frame,
                                            const ViewParamsList &viewParamsList) {
   auto &patchMap = patchMapList[patch.atlasId];
   auto &depthMap = frame[patch.atlasId].second.getPlane(0);
@@ -123,7 +122,7 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 
 auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
                                            const ViewParamsList &viewParamsList,
-                                           const AtlasParamsVector &atlasParamsVector)
+                                           const PatchParamsVector &patchParamsVector)
     -> MVD10Frame {
   // Initialization
   MVD10Frame frame;
@@ -138,7 +137,7 @@ auto AtlasDeconstructor::recoverPrunedView(const MVD10Frame &atlas,
   // Process patches
   MVD10Frame atlas_pruned = atlas;
 
-  for (auto iter = atlasParamsVector.rbegin(); iter != atlasParamsVector.rend(); ++iter) {
+  for (auto iter = patchParamsVector.rbegin(); iter != patchParamsVector.rend(); ++iter) {
     const auto &patch = *iter;
     const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.viewId], patch};
 

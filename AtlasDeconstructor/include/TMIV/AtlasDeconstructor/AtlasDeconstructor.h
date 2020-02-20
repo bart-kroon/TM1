@@ -54,12 +54,12 @@ public:
 
   auto recoverPrunedView(const Common::MVD10Frame &atlas,
                          const MivBitstream::ViewParamsList &viewParamsList,
-                         const MivBitstream::AtlasParamsVector &atlasParamsVector)
+                         const MivBitstream::PatchParamsVector &atlasParamsVector)
       -> Common::MVD10Frame override;
 
 private:
   Common::Vec2i m_entityDecodeRange;
-  void writePatchIdInMap(const MivBitstream::AtlasParameters &patch,
+  void writePatchIdInMap(const MivBitstream::PatchParams &patch,
                          Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
                          const Common::MVD10Frame &frame,
                          const MivBitstream::ViewParamsList &viewParamsList);

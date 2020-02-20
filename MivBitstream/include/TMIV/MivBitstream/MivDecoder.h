@@ -158,12 +158,12 @@ private: // Parsers
   void parseAfps(const VpccUnitHeader &vuh, const NalUnit &nu);
   void parseAps(const VpccUnitHeader &vuh, const NalUnit &nu);
   void parseAtgl(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parseAud(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parseVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parsePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parseSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void parseAud(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void parseVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void parsePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void parseSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
 
 private: // Internal decoder state
   std::istream &m_stream;

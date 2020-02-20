@@ -79,7 +79,7 @@ auto MivDecoder::decodeVpccUnit() -> bool {
   istringstream substream{ssvu.ssvu_vpcc_unit()};
   const auto vu = VpccUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_vpcc_unit_size());
   cout << vu.vpcc_unit_header();
-  visit([this, &vu](const auto &payload) { decodeVpccPayload(vu.vpcc_unit_header(), payload); },
+  visit([&vu](const auto &payload) { decodeVpccPayload(vu.vpcc_unit_header(), payload); },
         vu.vpcc_payload().payload());
 
   m_stream.peek();

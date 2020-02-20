@@ -237,7 +237,7 @@ void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) 
 }
 
 template <typename Payload, typename... Args>
-void MivEncoder::writeNalUnit(AtlasSubBitstream & /*asb*/, NalUnitHeader nuh, Payload &&payload,
+void MivEncoder::writeNalUnit(AtlasSubBitstream & asb, NalUnitHeader nuh, Payload &&payload,
                               Args &&... args) const {
   ostringstream substream1;
   payload.encodeTo(substream1, forward<Args>(args)...);

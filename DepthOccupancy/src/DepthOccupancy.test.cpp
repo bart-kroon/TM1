@@ -60,7 +60,7 @@ SCENARIO("Depth/occupancy coding") {
   ci.ci_erp_theta_min(-quarterCycle);
   ci.ci_erp_theta_max(quarterCycle);
 
-  DepthQuantization dq;
+  DepthQuantization dq{};
   dq.dq_norm_disp_low(0.2F);
   dq.dq_norm_disp_high(2.2F);
   GIVEN("View parameters without invalid depth") {

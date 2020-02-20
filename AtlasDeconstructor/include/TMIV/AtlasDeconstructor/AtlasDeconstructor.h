@@ -54,7 +54,7 @@ public:
 
   auto recoverPrunedView(const Common::MVD10Frame &atlas,
                          const MivBitstream::ViewParamsList &viewParamsList,
-                         const MivBitstream::PatchParamsList &atlasParamsVector)
+                         const MivBitstream::PatchParamsList &patchParamsVector)
       -> Common::MVD10Frame override;
 
 private:

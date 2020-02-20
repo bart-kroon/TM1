@@ -54,7 +54,7 @@ private:
 
   auto adaptationParameterSet() const -> AdaptationParameterSetRBSP;
   auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLayerRBSP;
-  auto skipAtlasTileGroupLayer() const -> AtlasTileGroupLayerRBSP;
+  static auto skipAtlasTileGroupLayer() -> AtlasTileGroupLayerRBSP;
 
   template <typename Payload>
   void writeVpccUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);

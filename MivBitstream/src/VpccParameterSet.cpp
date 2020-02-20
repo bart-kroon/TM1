@@ -748,7 +748,7 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
     }
   };
 
-  const auto vps_extension_length_minus1 = [this, encodeExtension]() {
+  const auto vps_extension_length_minus1 = [encodeExtension]() {
     ostringstream stream;
     OutputBitstream bitstream{stream};
     encodeExtension(bitstream);

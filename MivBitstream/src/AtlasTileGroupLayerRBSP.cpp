@@ -363,7 +363,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto pdu_depth_end_num_bits =
         gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_max_z_quantizer() + 2;
-    x.pdu_depth_end({uint32_t(bitstream.readBits(pdu_depth_end_num_bits))});
+    x.pdu_depth_end(uint32_t(bitstream.readBits(pdu_depth_end_num_bits)));
   }
 
   const auto pdu_orientation_index_num_bits = asps.asps_use_eight_orientations_flag() ? 3 : 1;

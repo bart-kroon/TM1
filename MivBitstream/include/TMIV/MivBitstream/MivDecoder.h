@@ -118,35 +118,40 @@ public: // Callback registrations
   std::vector<FrameListener> onFrame;
 
 private: // Decoder output
-  void outputSequence(const VpccParameterSet &vuh);
+  void outputSequence(const VpccParameterSet &vps);
   void outputFrame(const VpccUnitHeader &vuh);
   auto haveFrame(const VpccUnitHeader &vuh) const -> bool;
 
 private: // Decoding processes
-  void decodeVpccPayload(const VpccUnitHeader &vuh, const std::monostate &payload);
+  static void decodeVpccPayload(const VpccUnitHeader &vuh, const std::monostate &payload);
   void decodeVpccPayload(const VpccUnitHeader &vuh, const VpccParameterSet &vps);
   void decodeVpccPayload(const VpccUnitHeader &vuh, const AtlasSubBitstream &ad);
-  void decodeVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd);
+  static void decodeVpccPayload(const VpccUnitHeader &vuh, const VideoSubBitstream &vd);
   void decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void decodeUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void decodeUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
   void decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                  AtlasTileGroupLayerRBSP atgl);
+                  const AtlasTileGroupLayerRBSP &atgl);
   void decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                   AtlasSequenceParameterSetRBSP asps);
   void decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                   AtlasFrameParameterSetRBSP afps);
   void decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                 AdaptationParameterSetRBSP afps);
-  void decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, AccessUnitDelimiterRBSP aud);
-  void decodeVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                     AccessUnitDelimiterRBSP aud);
+                 const AdaptationParameterSetRBSP &aps);
+  static void decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                        AccessUnitDelimiterRBSP aud);
+  static void decodeVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                            AccessUnitDelimiterRBSP aud);
   void decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
   void decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-  void decodeFd(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-  void decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
-  void decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
-  void decodePrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
-  void decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, SeiRBSP sei);
+  static void decodeFd(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
+  static void decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                               const SeiRBSP &sei);
+  static void decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                               const SeiRBSP &sei);
+  static void decodePrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                               const SeiRBSP &sei);
+  static void decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                               const SeiRBSP &sei);
 
 private: // Parsers
   void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);

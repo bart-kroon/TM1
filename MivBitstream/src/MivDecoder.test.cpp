@@ -45,18 +45,18 @@ TEST_CASE("MivDecoder", "[MIV decoder]") {
   SECTION("Construction") {
     istringstream stream{"Invalid bitsream"};
 
-    const auto geoFrameServer = [](auto, auto) { return Depth10Frame{}; };
-    const auto attrFrameServer = [](auto, auto) { return Texture444Frame{}; };
+    const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/) { return Depth10Frame{}; };
+    const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/) { return Texture444Frame{}; };
 
     MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
 
     SECTION("Callbacks") {
-      decoder.onSequence.push_back([](const VpccParameterSet &vps) {
+      decoder.onSequence.emplace_back([](const VpccParameterSet &vps) {
         cout << "Sequence:\n" << vps;
         return true;
       });
 
-      decoder.onFrame.push_back([](const AccessUnit &au) {
+      decoder.onFrame.emplace_back([](const AccessUnit &au) {
         cout << "Frame " << au.frameId << '\n';
         return true;
       });

@@ -228,7 +228,7 @@ void MivDecoder::decodeUnknownNalUnit(const VpccUnitHeader & /*vuh*/, const NalU
 }
 
 void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                            AtlasTileGroupLayerRBSP atgl) {
+                            const AtlasTileGroupLayerRBSP &atgl) {
   const auto &atgh = atgl.atlas_tile_group_header();
   auto &x = atlas(vuh);
 
@@ -275,7 +275,7 @@ void MivDecoder::decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader & /*n
 }
 
 void MivDecoder::decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
-                           AdaptationParameterSetRBSP aps) {
+                           const AdaptationParameterSetRBSP &aps) {
   auto &x = atlas(vuh);
   while (x.apsV.size() <= aps.aps_adaptation_parameter_set_id()) {
     x.apsV.emplace_back();
@@ -319,27 +319,27 @@ void MivDecoder::decodeFd(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
 }
 
 void MivDecoder::decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  SeiRBSP sei) {
+                                  const SeiRBSP &sei) {
   // Print to prove that we have decoded this NAL unit
   cout << "Prefix non-essential supplemental enhancement information (NSEI):\n"
        << vuh << nuh << sei;
 }
 
 void MivDecoder::decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  SeiRBSP sei) {
+                                  const SeiRBSP &sei) {
   // Print to prove that we have decoded this NAL unit
   cout << "Suffix non-essential supplemental enhancement information (NSEI):\n"
        << vuh << nuh << sei;
 }
 
 void MivDecoder::decodePrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  SeiRBSP sei) {
+                                  const SeiRBSP &sei) {
   // Print to prove that we have decoded this NAL unit
   cout << "Prefix essential supplemental enhancement information (ESEI):\n" << vuh << nuh << sei;
 }
 
 void MivDecoder::decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  SeiRBSP sei) {
+                                  const SeiRBSP &sei) {
   // Print to prove that we have decoded this NAL unit
   cout << "Suffix essential supplemental enhancement information (ESEI):\n" << vuh << nuh << sei;
 }

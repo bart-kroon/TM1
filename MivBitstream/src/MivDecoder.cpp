@@ -165,7 +165,7 @@ void MivDecoder::decodeVpccPayload(const VpccUnitHeader &vuh, const VpccPayload:
   }
 }
 
-void MivDecoder::decodeVps(const VpccUnitHeader &vuh, const VpccParameterSet &vps) {
+void MivDecoder::decodeVps(const VpccUnitHeader &/* vuh */, const VpccParameterSet &vps) {
   const auto id = vps.vps_vpcc_parameter_set_id();
 
   while (m_vpsV.size() <= id) {

@@ -243,12 +243,8 @@ void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload
   payload.encodeTo(substream1, forward<Args>(args)...);
 
   const auto nu = NalUnit{nuh, substream1.str()};
+  cout << nu;
 
-  ostringstream substream2;
-  nu.encodeTo(substream2);
-
-  const auto ssnu = SampleStreamNalUnit{substream2.str()};
-  ssnu.encodeTo(m_stream, m_ssnh);
-  cout << ssnu << nu;
+  asb.nal_units().push_back(nu);
 }
 } // namespace TMIV::MivBitstream

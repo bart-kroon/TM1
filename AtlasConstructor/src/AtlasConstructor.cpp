@@ -152,6 +152,12 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
   for (auto &atlas : m_ivAccessUnitParams.atlas) {
     atlas.asps.asps_frame_width(m_atlasSize.x()).asps_frame_height(m_atlasSize.y());
+
+    // Record patch alignment -> asps_log2_patch_packing_block_size
+    while (m_packer->getAlignment() % (2 << atlas.asps.asps_log2_patch_packing_block_size()) == 0) {
+      atlas.asps.asps_log2_patch_packing_block_size(
+          atlas.asps.asps_log2_patch_packing_block_size() + 1);
+    }
   }
   m_ivAccessUnitParams.patchParamsList =
       m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);

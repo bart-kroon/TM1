@@ -45,7 +45,7 @@ public:
                    const std::string &fileNameField);
 
   void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
-  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &);
+  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
 
 private:
   std::string m_path;

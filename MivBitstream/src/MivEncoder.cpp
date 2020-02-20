@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/MivEncoder.h>
 
+#include "verify.h"
+
 #include <iostream>
 #include <sstream>
 
@@ -47,26 +49,187 @@ MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
 }
 
 void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
-  m_vps = {ivSequenceParams.vps};
-  writeVpccUnit(VuhUnitType::VPCC_VPS, 0, ivSequenceParams.vps);
-  writeVpccUnit(VuhUnitType::VPCC_AD, specialAtlasId, specialAtlasSubBitstream(ivSequenceParams));
+  m_ivs = ivSequenceParams;
+
+  writeVpccUnit(VuhUnitType::VPCC_VPS, 0, m_ivs.vps);
+  writeVpccUnit(VuhUnitType::VPCC_AD, specialAtlasId, specialAtlasSubBitstream());
 }
 
-void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
-  // TODO....
+void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
+                                         int intraPeriodFrameCount) {
+  m_ivau = ivAccessUnitParams;
+
+  if (m_writeNonAcl) {
+    for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
+      writeVpccUnit(VuhUnitType::VPCC_AD, vai, nonAclAtlasSubBitstream(vai));
+    }
+  }
+
+  for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
+    writeVpccUnit(VuhUnitType::VPCC_AD, vai, aclAtlasSubBitstream(vai, intraPeriodFrameCount));
+  }
 
   m_writeNonAcl = false;
 }
 
+namespace {
+const auto nuhAps = NalUnitHeader{NalUnitType::NAL_APS, 0, 1};
+const auto nuhAsps = NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1};
+const auto nuhAfps = NalUnitHeader{NalUnitType::NAL_AFPS, 0, 1};
+const auto nuhIdr = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
+const auto nuhCra = NalUnitHeader{NalUnitType::NAL_CRA, 0, 1};
+const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP, 0, 1};
+} // namespace
+
+auto MivEncoder::specialAtlasSubBitstream() const -> AtlasSubBitstream {
+  auto asb = AtlasSubBitstream{m_ssnh};
+  writeNalUnit(asb, nuhAps, adaptationParameterSet());
+  return asb;
+}
+
+auto MivEncoder::nonAclAtlasSubBitstream(std::uint8_t vai) const -> AtlasSubBitstream {
+  auto asb = AtlasSubBitstream{m_ssnh};
+
+  auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
+  vuh.vuh_atlas_id(vai);
+
+  const auto &aau = m_ivau.atlas[vai];
+
+  writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_ivs.vps);
+  writeNalUnit(asb, nuhAfps, aau.afps, vector<AtlasSequenceParameterSetRBSP>{aau.asps});
+  return asb;
+}
+
+auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) const
+    -> AtlasSubBitstream {
+  auto asb = AtlasSubBitstream{m_ssnh};
+
+  auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
+  vuh.vuh_atlas_id(vai);
+
+  const auto &aau = m_ivau.atlas[vai];
+  const auto aspsV = vector<AtlasSequenceParameterSetRBSP>{aau.asps};
+  const auto afpsV = vector<AtlasFrameParameterSetRBSP>{aau.afps};
+
+  const auto nuh = m_writeNonAcl ? nuhIdr : nuhCra;
+  writeNalUnit(asb, nuh, atlasTileGroupLayer(vai), vuh, m_ivs.vps, aspsV, afpsV);
+
+  for (int frameId = 1; frameId < intraPeriodFrameCount; ++frameId) {
+    writeNalUnit(asb, nuhSkip, skipAtlasTileGroupLayer(), vuh, m_ivs.vps, aspsV, afpsV);
+  }
+
+  return asb;
+}
+
+auto MivEncoder::adaptationParameterSet() const -> AdaptationParameterSetRBSP {
+  auto x = AdaptationParameterSetRBSP{};
+
+  const auto &vpl = m_ivs.viewParamsList;
+
+  auto &mvp = x.aps_miv_view_params_list_present_flag(true)
+                  .aps_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
+                  .miv_view_params_list();
+
+  VERIFY_MIVBITSTREAM(!vpl.empty());
+  mvp.mvp_num_views_minus1(uint16_t(vpl.size() - 1));
+
+  mvp.mvp_intrinsic_params_equal_flag(
+      all_of(vpl.begin(), vpl.end(), [&vpl](const auto &x) { return x.ci == vpl.front().ci; }));
+
+  mvp.mvp_depth_quantization_params_equal_flag(
+      all_of(vpl.begin(), vpl.end(), [&vpl](const auto &x) { return x.dq == vpl.front().dq; }));
+
+  mvp.mvp_pruning_graph_params_present_flag(vpl.front().pc.has_value());
+
+  for (uint16_t viewId = 0; viewId <= mvp.mvp_num_views_minus1(); ++viewId) {
+    const auto &vp = vpl[viewId];
+
+    mvp.camera_extrinsics(viewId) = vp.ce;
+
+    if (viewId == 0 || !mvp.mvp_intrinsic_params_equal_flag()) {
+      mvp.camera_intrinsics(viewId) = vp.ci;
+    }
+
+    if (viewId == 0 || !mvp.mvp_depth_quantization_params_equal_flag()) {
+      mvp.depth_quantization(viewId) = vp.dq;
+    }
+
+    VERIFY_MIVBITSTREAM(vp.pc.has_value() == mvp.mvp_depth_quantization_params_equal_flag());
+    if (vp.pc.has_value()) {
+      mvp.pruning_children(viewId) = *vp.pc;
+    }
+  }
+
+  return x;
+}
+
+auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLayerRBSP {
+  auto patchData = AtlasTileGroupDataUnit::Vector{};
+  patchData.reserve(m_ivau.patchParamsList.size());
+
+  const auto &aau = m_ivau.atlas[vai];
+
+  auto n = 1 << aau.asps.asps_log2_patch_packing_block_size();
+  int32_t size_x = 0;
+  int32_t size_y = 0;
+
+  for (auto &pp : m_ivau.patchParamsList) {
+    if (pp.vuhAtlasId == vai) {
+      auto pdu = PatchDataUnit{};
+
+      VERIFY_MIVBITSTREAM(pp.pdu2dPos().x() % n == 0);
+      VERIFY_MIVBITSTREAM(pp.pdu2dPos().y() % n == 0);
+      pdu.pdu_2d_pos_x(pp.pdu2dPos().x() / n);
+      pdu.pdu_2d_pos_y(pp.pdu2dPos().y() / n);
+
+      VERIFY_MIVBITSTREAM(pp.pdu2dSize().x() % n == 0);
+      VERIFY_MIVBITSTREAM(pp.pdu2dSize().y() % n == 0);
+      pdu.pdu_2d_delta_size_x((pp.pdu2dSize().x() - size_x) / n);
+      pdu.pdu_2d_delta_size_x((pp.pdu2dSize().y() - size_y) / n);
+      size_x = pp.pdu2dSize().x();
+      size_y = pp.pdu2dSize().y();
+
+      pdu.pdu_view_pos_x(pp.pduViewPos().x());
+      pdu.pdu_view_pos_y(pp.pduViewPos().y());
+
+      pdu.pdu_depth_start(pp.pduDepthStart());
+      if (pp.pduDepthEnd()) {
+        pdu.pdu_depth_end(*pp.pduDepthEnd());
+      }
+
+      pdu.pdu_orientation_index(pp.pduOrientationIndex());
+
+      if (pp.pduEntityId()) {
+        pdu.pdu_entity_id(*pp.pduEntityId());
+      }
+
+      if (pp.pduDepthOccMapThreshold()) {
+        pdu.pdu_depth_occ_map_threshold(*pp.pduDepthOccMapThreshold());
+      }
+
+      patchData.emplace_back(AtgduPatchMode::I_INTRA, pdu);
+    }
+  }
+
+  return AtlasTileGroupLayerRBSP{aau.atgh, AtlasTileGroupDataUnit{patchData}};
+}
+
+auto MivEncoder::skipAtlasTileGroupLayer() const -> AtlasTileGroupLayerRBSP {
+  auto atgh = AtlasTileGroupHeader{};
+  atgh.atgh_type(AtghType::SKIP_TILE_GRP);
+
+  return AtlasTileGroupLayerRBSP{atgh};
+}
+
 template <typename Payload>
-void MivEncoder::writeVpccUnit(VuhUnitType vuh_unit_type, uint8_t vuh_atlas_id, Payload &&payload) {
-  auto vuh = VpccUnitHeader{vuh_unit_type};
-  vuh.vuh_atlas_id(vuh_atlas_id);
+void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
+  auto vuh = VpccUnitHeader{vut};
+  vuh.vuh_atlas_id(vai);
 
   const auto vu = VpccUnit{vuh, forward<Payload>(payload)};
 
   ostringstream substream;
-  vu.encodeTo(substream, m_vps);
+  vu.encodeTo(substream, {m_ivs.vps});
 
   const auto ssvu = SampleStreamVpccUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
@@ -87,19 +250,5 @@ void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload
   const auto ssnu = SampleStreamNalUnit{substream2.str()};
   ssnu.encodeTo(m_stream, m_ssnh);
   cout << ssnu << nu;
-}
-
-auto MivEncoder::specialAtlasSubBitstream(const IvSequenceParams &ivSequenceParams) const
-    -> AtlasSubBitstream {
-  auto asb = AtlasSubBitstream{m_ssnh};
-  writeNalUnit(asb, NalUnitHeader{NalUnitType::NAL_APS, 0, 1},
-               adaptationParameterSet(ivSequenceParams));
-  return asb;
-}
-
-auto MivEncoder::adaptationParameterSet(const IvSequenceParams &ivSequenceParams) const
-    -> AdaptationParameterSetRBSP {
-  // TODO: Convert viewParamsList to APS
-  return {};
 }
 } // namespace TMIV::MivBitstream

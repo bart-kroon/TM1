@@ -56,7 +56,8 @@ void IvMetadataWriter::writeIvSequenceParams(const IvSequenceParams &ivSequenceP
   m_encoder->writeIvSequenceParams(ivSequenceParams);
 }
 
-void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
-  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams);
+void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
+                                               int intraPeriodFrameCount) {
+  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams, intraPeriodFrameCount);
 }
 } // namespace TMIV::IO

@@ -202,15 +202,16 @@ inline auto atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch) -
 
 inline AtlasAccessUnitParams::AtlasAccessUnitParams() {
   asps.asps_extension_present_flag(true).asps_miv_extension_present_flag(true);
+  atgh.atgh_type(AtghType::I_TILE_GRP);
 }
 
 inline auto operator<<(std::ostream &stream, const AtlasAccessUnitParams &x) -> std::ostream & {
-  stream << x.asps << x.afps;
+  stream << x.asps << x.afps << x.atgh;
   return stream;
 }
 
 inline auto AtlasAccessUnitParams::operator==(const AtlasAccessUnitParams &other) const -> bool {
-  return asps == other.asps && afps == other.afps;
+  return asps == other.asps && afps == other.afps && atgh == other.atgh;
 }
 
 inline auto operator<<(std::ostream &stream, const IvAccessUnitParams &x) -> std::ostream & {

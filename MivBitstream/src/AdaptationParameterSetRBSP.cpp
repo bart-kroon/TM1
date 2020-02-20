@@ -41,15 +41,15 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const MvplUpdateMode x) -> ostream & {
+auto operator<<(ostream &stream, const MvpUpdateMode x) -> ostream & {
   switch (x) {
-  case MvplUpdateMode::VPL_INITLIST:
+  case MvpUpdateMode::VPL_INITLIST:
     return stream << "VPL_INITLIST";
-  case MvplUpdateMode::VPL_UPD_EXT:
+  case MvpUpdateMode::VPL_UPD_EXT:
     return stream << "VPL_UPD_EXT";
-  case MvplUpdateMode::VPL_UPD_INT:
+  case MvpUpdateMode::VPL_UPD_INT:
     return stream << "VPL_UPD_INT";
-  case MvplUpdateMode::VPL_EXT_INT:
+  case MvpUpdateMode::VPL_EXT_INT:
     return stream << "VPL_EXT_INT";
   default:
     MIVBITSTREAM_ERROR("Unknown update mode");
@@ -628,13 +628,13 @@ void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
 }
 
 auto AdaptationParameterSetRBSP::aps_miv_view_params_list_update_mode(
-    const MvplUpdateMode value) noexcept -> AdaptationParameterSetRBSP & {
+    const MvpUpdateMode value) noexcept -> AdaptationParameterSetRBSP & {
   m_aps_miv_view_params_list_update_mode = value;
   return *this;
 }
 
 auto AdaptationParameterSetRBSP::aps_miv_view_params_list_update_mode() const noexcept
-    -> MvplUpdateMode {
+    -> MvpUpdateMode {
   VERIFY_MIVBITSTREAM(m_aps_miv_view_params_list_update_mode.has_value());
   return *m_aps_miv_view_params_list_update_mode;
 }
@@ -667,16 +667,16 @@ auto operator<<(ostream &stream, const AdaptationParameterSetRBSP &x) -> ostream
     stream << "aps_miv_view_params_list_update_mode=" << x.aps_miv_view_params_list_update_mode()
            << '\n';
     switch (x.aps_miv_view_params_list_update_mode()) {
-    case MvplUpdateMode::VPL_INITLIST:
+    case MvpUpdateMode::VPL_INITLIST:
       stream << x.miv_view_params_list();
       break;
-    case MvplUpdateMode::VPL_UPD_EXT:
+    case MvpUpdateMode::VPL_UPD_EXT:
       stream << x.miv_view_params_update_extrinsics();
       break;
-    case MvplUpdateMode::VPL_UPD_INT:
+    case MvpUpdateMode::VPL_UPD_INT:
       stream << x.miv_view_params_update_intrinsics();
       break;
-    case MvplUpdateMode::VPL_EXT_INT:
+    case MvpUpdateMode::VPL_EXT_INT:
       stream << x.miv_view_params_update_extrinsics();
       stream << x.miv_view_params_update_intrinsics();
       break;
@@ -698,13 +698,13 @@ auto AdaptationParameterSetRBSP::operator==(const AdaptationParameterSetRBSP &ot
     return true;
   }
   switch (aps_miv_view_params_list_update_mode()) {
-  case MvplUpdateMode::VPL_INITLIST:
+  case MvpUpdateMode::VPL_INITLIST:
     return miv_view_params_list() == other.miv_view_params_list();
-  case MvplUpdateMode::VPL_UPD_EXT:
+  case MvpUpdateMode::VPL_UPD_EXT:
     return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics();
-  case MvplUpdateMode::VPL_UPD_INT:
+  case MvpUpdateMode::VPL_UPD_INT:
     return miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
-  case MvplUpdateMode::VPL_EXT_INT:
+  case MvpUpdateMode::VPL_EXT_INT:
     return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics() &&
            miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
   default:
@@ -733,19 +733,19 @@ auto AdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AdaptationParame
   x.aps_miv_view_params_list_present_flag(bitstream.getFlag());
 
   if (x.aps_miv_view_params_list_present_flag()) {
-    x.aps_miv_view_params_list_update_mode(MvplUpdateMode(bitstream.readBits(2)));
+    x.aps_miv_view_params_list_update_mode(MvpUpdateMode(bitstream.readBits(2)));
 
     switch (x.aps_miv_view_params_list_update_mode()) {
-    case MvplUpdateMode::VPL_INITLIST:
+    case MvpUpdateMode::VPL_INITLIST:
       x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream);
       break;
-    case MvplUpdateMode::VPL_UPD_EXT:
+    case MvpUpdateMode::VPL_UPD_EXT:
       x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
       break;
-    case MvplUpdateMode::VPL_UPD_INT:
+    case MvpUpdateMode::VPL_UPD_INT:
       x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
       break;
-    case MvplUpdateMode::VPL_EXT_INT:
+    case MvpUpdateMode::VPL_EXT_INT:
       x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
       x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
       break;
@@ -775,16 +775,16 @@ void AdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
   if (aps_miv_view_params_list_present_flag()) {
     bitstream.writeBits(uint_least64_t(aps_miv_view_params_list_update_mode()), 2);
     switch (aps_miv_view_params_list_update_mode()) {
-    case MvplUpdateMode::VPL_INITLIST:
+    case MvpUpdateMode::VPL_INITLIST:
       miv_view_params_list().encodeTo(bitstream);
       break;
-    case MvplUpdateMode::VPL_UPD_EXT:
+    case MvpUpdateMode::VPL_UPD_EXT:
       miv_view_params_update_extrinsics().encodeTo(bitstream);
       break;
-    case MvplUpdateMode::VPL_UPD_INT:
+    case MvpUpdateMode::VPL_UPD_INT:
       miv_view_params_update_intrinsics().encodeTo(bitstream);
       break;
-    case MvplUpdateMode::VPL_EXT_INT:
+    case MvpUpdateMode::VPL_EXT_INT:
       miv_view_params_update_extrinsics().encodeTo(bitstream);
       miv_view_params_update_intrinsics().encodeTo(bitstream);
       break;

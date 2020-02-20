@@ -120,7 +120,7 @@ private:
     const auto codedAccessUnitParams = m_encoder->completeAccessUnit();
     cout << "\nCoded access unit parameters:\n" << codedAccessUnitParams;
 
-    m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams);
+    m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams, lastFrame - firstFrame);
 
     if (m_reconstructor) {
       m_reconstructor->updateAccessUnitParams(codedAccessUnitParams);

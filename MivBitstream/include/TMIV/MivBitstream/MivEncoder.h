@@ -45,21 +45,28 @@ public:
   MivEncoder(std::ostream &stream);
 
   void writeIvSequenceParams(const IvSequenceParams &);
-  void writeIvAccessUnitParams(const IvAccessUnitParams &);
+  void writeIvAccessUnitParams(const IvAccessUnitParams &, int intraPeriodFrameCount);
 
 private:
-  template <typename Payload> void writeVpccUnit(VuhUnitType vuh, uint8_t vai, Payload &&payload);
+  auto specialAtlasSubBitstream() const -> AtlasSubBitstream;
+  auto nonAclAtlasSubBitstream(std::uint8_t vai) const -> AtlasSubBitstream;
+  auto aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) const -> AtlasSubBitstream;
+
+  auto adaptationParameterSet() const -> AdaptationParameterSetRBSP;
+  auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLayerRBSP;
+  auto skipAtlasTileGroupLayer() const -> AtlasTileGroupLayerRBSP;
+
+  template <typename Payload>
+  void writeVpccUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);
   template <typename Payload, typename... Args>
   void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload,
                     Args &&... args) const;
 
-  auto specialAtlasSubBitstream(const IvSequenceParams &) const -> AtlasSubBitstream;
-  auto adaptationParameterSet(const IvSequenceParams &) const -> AdaptationParameterSetRBSP;
-
   std::ostream &m_stream;
   SampleStreamVpccHeader m_ssvh{2};
-  std::vector<VpccParameterSet> m_vps;
   SampleStreamNalHeader m_ssnh{2};
+  IvSequenceParams m_ivs;
+  IvAccessUnitParams m_ivau;
   bool m_writeNonAcl{true};
 };
 } // namespace TMIV::MivBitstream

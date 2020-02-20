@@ -283,7 +283,7 @@ aps_extension2_flag=false
   SECTION("Example 1") {
     x.aps_adaptation_parameter_set_id(63);
     x.aps_miv_view_params_list_present_flag(true);
-    x.aps_miv_view_params_list_update_mode(MvplUpdateMode::VPL_INITLIST);
+    x.aps_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST);
     x.miv_view_params_list() = MivViewParamsList{};
     x.miv_view_params_list()
         .mvp_num_views_minus1(2)

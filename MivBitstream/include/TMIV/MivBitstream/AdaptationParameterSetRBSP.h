@@ -313,8 +313,8 @@ public:
 };
 
 // 23090-12: ap_miv_view_params_list_update_mode
-enum class MvplUpdateMode : std::uint8_t { VPL_INITLIST, VPL_UPD_EXT, VPL_UPD_INT, VPL_EXT_INT };
-auto operator<<(std::ostream &stream, const MvplUpdateMode x) -> std::ostream &;
+enum class MvpUpdateMode : std::uint8_t { VPL_INITLIST, VPL_UPD_EXT, VPL_UPD_INT, VPL_EXT_INT };
+auto operator<<(std::ostream &stream, const MvpUpdateMode x) -> std::ostream &;
 
 // 23090-12: adapation_parameter_set_rbsp
 class AdaptationParameterSetRBSP {
@@ -322,7 +322,7 @@ public:
   constexpr auto aps_adaptation_parameter_set_id() const noexcept;
   constexpr auto aps_camera_params_present_flag() const noexcept { return false; }
   constexpr auto aps_miv_view_params_list_present_flag() const noexcept;
-  auto aps_miv_view_params_list_update_mode() const noexcept -> MvplUpdateMode;
+  auto aps_miv_view_params_list_update_mode() const noexcept -> MvpUpdateMode;
   auto miv_view_params_list() const noexcept -> const MivViewParamsList &;
   auto miv_view_params_update_extrinsics() const noexcept -> const MivViewParamsUpdateExtrinsics &;
   auto miv_view_params_update_intrinsics() const noexcept -> const MivViewParamsUpdateIntrinsics &;
@@ -330,7 +330,7 @@ public:
 
   constexpr auto &aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept;
   constexpr auto &aps_miv_view_params_list_present_flag(const bool value) noexcept;
-  auto aps_miv_view_params_list_update_mode(const MvplUpdateMode value) noexcept
+  auto aps_miv_view_params_list_update_mode(const MvpUpdateMode value) noexcept
       -> AdaptationParameterSetRBSP &;
   [[nodiscard]] constexpr auto miv_view_params_list() noexcept -> MivViewParamsList &;
   [[nodiscard]] constexpr auto miv_view_params_update_extrinsics() noexcept
@@ -351,7 +351,7 @@ public:
 private:
   std::uint8_t m_aps_adaptation_parameter_set_id{};
   bool m_aps_miv_view_params_list_present_flag{};
-  std::optional<MvplUpdateMode> m_aps_miv_view_params_list_update_mode;
+  std::optional<MvpUpdateMode> m_aps_miv_view_params_list_update_mode;
   std::optional<MivViewParamsList> m_miv_view_params_list;
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;

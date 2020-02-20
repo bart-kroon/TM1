@@ -84,7 +84,7 @@ private:
   Common::Vec2i m_pdu2dPos;
   Common::Vec2i m_pdu2dSize;
   Common::Vec2i m_pduViewPos;
-  std::optional<std::uint16_t> m_pduDepthStart;
+  std::uint16_t m_pduDepthStart;
   std::optional<std::uint16_t> m_pduDepthEnd;
   std::uint16_t m_pduViewId{};
   FlexiblePatchOrientation m_pduOrientationIndex{};
@@ -103,6 +103,7 @@ struct AtlasAccessUnitParams {
 
   AtlasSequenceParameterSetRBSP asps;
   AtlasFrameParameterSetRBSP afps;
+  AtlasTileGroupHeader atgh;
 
   friend std::ostream &operator<<(std::ostream &, const AtlasAccessUnitParams &);
   bool operator==(const AtlasAccessUnitParams &other) const;

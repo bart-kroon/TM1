@@ -111,8 +111,15 @@ struct AtlasParamsList : public PatchParamsVector {
 Common::Vec2i viewToAtlas(Common::Vec2i viewPosition, const PatchParams &patch);
 Common::Vec2i atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch);
 
+struct AtlasAccessUnitParams {
+	
+};
+
 struct IvAccessUnitParams {
+  // TODO(BK): Have a PatchParamsVector per atlas
   AtlasParamsList atlasParamsList;
+
+  std::vector<AtlasAccessUnitParams> atlas;
 
   friend std::ostream &operator<<(std::ostream &, const IvAccessUnitParams &);
   bool operator==(const IvAccessUnitParams &other) const;

@@ -242,22 +242,24 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
   return {std::move(ivSequenceParams), m_isBasicView};
 }
 
-auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {
+auto ViewReducer::calculateFOV(const ViewParams &viewParams) -> float {
   const auto &ci = viewParams.ci;
   return ci.dispatch(overload(
-      [&](Equirectangular) {
+      [&](Equirectangular /*unused*/) {
         return abs(ci.ci_erp_phi_min() - ci.ci_erp_phi_max()) *
                abs(sin(ci.ci_erp_theta_min()) - sin(ci.ci_erp_theta_max()));
       },
-      [&](Perspective) {
+      [&](Perspective /*unused*/) {
         return abs(4 * atan(ci.projectionPlaneSize().x() / (2.F * ci.ci_perspective_focal_hor())) *
                    sin(atan(ci.projectionPlaneSize().y() / (2.F * ci.ci_perspective_focal_ver()))));
       }));
 }
-auto ViewReducer::calculateDistance(ViewParams camera_1, ViewParams camera_2) -> float {
+auto ViewReducer::calculateDistance(const ViewParams &camera_1, const ViewParams &camera_2)
+    -> float {
   return norm(camera_1.ce.position() - camera_2.ce.position());
 }
-auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera_to) -> float {
+auto ViewReducer::calculateOverlapping(const ViewParams &camera_from, const ViewParams &camera_to)
+    -> float {
   float overlapping = 0.0F;
   float weight_all = 0.0F;
   float weight_overlapped = 0.0F;
@@ -299,14 +301,14 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
     for (unsigned j = 0; j != isoverlap.width(); ++j) {
       const auto &ci = camera_from.ci;
       const float weight = ci.dispatch(overload(
-          [&](Equirectangular) { // calculate weight of each pixel in sphere
+          [&](Equirectangular /*unused*/) { // calculate weight of each pixel in sphere
             float angle =
                 (ci.ci_erp_theta_max() + (float(i) + halfPixel) *
                                              (ci.ci_erp_theta_min() - ci.ci_erp_theta_max()) /
                                              isoverlap.height());
             return cos(angle);
           },
-          [](Perspective) { return 1.F; }));
+          [](Perspective /*unused*/) { return 1.F; }));
       weight_all += weight;
       if (isoverlap(i, j) != 0) {
         weight_overlapped += weight;

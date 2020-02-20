@@ -389,7 +389,7 @@ private:
       const auto &patch = *iter;
       const auto occupancyTransform = OccupancyTransform{viewParamsList[patch.pduViewId], patch};
 
-      auto &currentAtlas = atlas_pruned[patch.atlasId];
+      auto &currentAtlas = atlas_pruned[patch.vuhAtlasId];
       auto &currentView = frame[patch.pduViewId];
 
       auto &textureAtlasMap = currentAtlas.first;

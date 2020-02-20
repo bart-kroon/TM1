@@ -112,14 +112,14 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
         const int n = i + patch.posInAtlas.y();
         const int m = j + patch.posInAtlas.x();
 
-        const auto inLevel = inAtlases[patch.atlasId].second.getPlane(0)(n, m);
+        const auto inLevel = inAtlases[patch.vuhAtlasId].second.getPlane(0)(n, m);
 
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
           assert(outOccupancyTransform.occupant(outLevel));
 
-          outAtlases[patch.atlasId].second.getPlane(0)(n, m) = outLevel;
+          outAtlases[patch.vuhAtlasId].second.getPlane(0)(n, m) = outLevel;
         }
       }
     }

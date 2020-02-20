@@ -314,7 +314,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
 
     // Copy patches in group order
     for (auto patch : groupParams.atlasParamsList) {
-      patch.atlasId += uint16_t(firstAtlasId);
+      patch.vuhAtlasId += uint16_t(firstAtlasId);
       patch.pduViewId += uint16_t(firstViewId);
       atlasParamsList.push_back(patch);
     }

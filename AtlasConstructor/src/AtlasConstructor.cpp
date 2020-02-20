@@ -185,7 +185,7 @@ auto AtlasConstructor::popAtlas() -> MVD16Frame {
 void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Frame &views,
                                          MVD16Frame &atlas, int frame) {
 
-  auto &currentAtlas = atlas[patch.atlasId];
+  auto &currentAtlas = atlas[patch.vuhAtlasId];
   const auto &currentView = views[patch.pduViewId];
 
   auto &textureAtlasMap = currentAtlas.first;

@@ -50,7 +50,7 @@ namespace TMIV::MivBitstream {
 // in-memory use because of the delta coding and quantization of some of the fields.
 struct PatchParams {
   // TODO(BK): Have a PatchParamsVector per atlas
-  std::uint8_t atlasId{};
+  std::uint8_t vuhAtlasId{};
 
   std::uint16_t pduViewId{};
   std::optional<std::uint16_t> pduEntityId{};

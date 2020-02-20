@@ -181,7 +181,7 @@ auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchI
 
 void SubBlockCuller::erasePatchIdInMap(const PatchParams &patch, PatchIdMapList &patchMapList,
                                        uint16_t patchId) {
-  auto &patchMap = patchMapList[patch.atlasId];
+  auto &patchMap = patchMapList[patch.vuhAtlasId];
 
   const Vec2i &q0 = patch.posInAtlas;
   const auto sizeInAtlas = patch.patchSizeInAtlas();

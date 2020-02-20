@@ -60,7 +60,7 @@ auto PatchParams::patchSizeInAtlas() const -> Vec2i {
 }
 
 auto PatchParams::operator==(const PatchParams &other) const -> bool {
-  return atlasId == other.atlasId && pduViewId == other.pduViewId && pduEntityId == other.pduEntityId &&
+  return vuhAtlasId == other.vuhAtlasId && pduViewId == other.pduViewId && pduEntityId == other.pduEntityId &&
          patchSizeInView == other.patchSizeInView && posInView == other.posInView &&
          posInAtlas == other.posInAtlas && rotation == other.rotation &&
          depthOccMapThreshold == other.depthOccMapThreshold && depthStart == other.depthStart;

@@ -179,9 +179,9 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  float m_dq_norm_disp_low;
-  float m_dq_norm_disp_high;
-  std::uint32_t m_dq_depth_occ_map_threshold_default;
+  float m_dq_norm_disp_low{};
+  float m_dq_norm_disp_high{};
+  std::uint32_t m_dq_depth_occ_map_threshold_default{};
 };
 
 // 23090-12: pruning_children()

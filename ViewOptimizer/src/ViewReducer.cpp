@@ -58,8 +58,6 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
   m_isBasicView.assign(viewParamsList.size(), false);
 
-  // choose 9 degree as quantization step of angle between view i and view j.
-  const float degree_step = radperdeg * 9;
   // choose 64 as quantization step of FOV.
   const float FOV_step = (45 * radperdeg) / 4;
 
@@ -96,7 +94,10 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
         // Sphere distance function
         // TODO(BK): Reimplement angle comparison with quaternions
 #if false
-        auto temp_angle = size_t(
+			// choose 9 degree as quantization step of angle between view i and view j.
+			const float degree_step = radperdeg * 9;
+
+			auto temp_angle = size_t(
             acos(sin(viewParamsList[id_1].rotation[1] * radperdeg) *
                      sin(viewParamsList[id_2].rotation[1] * radperdeg) +
                  cos(viewParamsList[id_1].rotation[1] * radperdeg) *
@@ -105,7 +106,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
                          radperdeg)) /
             degree_step);
 #else
-        auto temp_angle = 0;
+        size_t temp_angle = 0;
 #endif
 
         if (temp_angle > max_angle) {
@@ -167,8 +168,8 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_2 = id.second;
 
       // TODO(BK): This must be a mistake. Why only the x-coordinate?
-      temp_distance = abs(viewParamsList[id_1].ce.ce_view_pos_x() -
-                          viewParamsList[id_2].ce.ce_view_pos_x());
+      temp_distance =
+          abs(viewParamsList[id_1].ce.ce_view_pos_x() - viewParamsList[id_2].ce.ce_view_pos_x());
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
         camera_id_pair = id;

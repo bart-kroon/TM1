@@ -50,6 +50,7 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
       m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)},
       m_culler{Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode)},
       m_depthUpscaler(rootNode, componentNode) {
+  // TODO(BK): Use HLS for depth upscaling
   if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
     m_downscale_depth = node.asBool();
   }

@@ -53,7 +53,7 @@ struct PatchParams {
   std::uint8_t atlasId{};
 
   std::uint16_t pduViewId{};
-  std::optional<std::uint16_t> entityId{};
+  std::optional<std::uint16_t> pduEntityId{};
   Common::Vec2i patchSizeInView;
   Common::Vec2i posInView;
   Common::Vec2i posInAtlas;

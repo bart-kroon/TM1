@@ -153,7 +153,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     clusterToPack.push(c);
   }
 
-  int pIndex = 0;
+  int patchId = 0;
   int clusteringMap_viewId;
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
@@ -196,14 +196,14 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           }
 
           if (m_maxEntities > 1) {
-            p.entityId = cluster.getEntityId();
-            cout << "Packing patch " << pIndex << " of entity " << *p.entityId << " from view "
+            p.pduEntityId = cluster.getEntityId();
+            cout << "Packing patch " << patchId << " of entity " << *p.pduEntityId << " from view "
                  << p.pduViewId << " with #active pixels " << cluster.getNumActivePixels()
                  << " in atlas " << static_cast<int>(p.atlasId) << endl;
           }
 
           atlasParamsVector.push_back(p);
-          pIndex++;
+          patchId++;
 
           packed = true;
           break;

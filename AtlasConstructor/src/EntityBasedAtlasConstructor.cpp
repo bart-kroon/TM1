@@ -421,7 +421,7 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
   TextureDepth16Frame currentView;
   if (m_maxEntities > 1) {
     currentView = setView(views[patch.pduViewId], m_entityMasksBuffer[m_frameInGOPIndex][patch.pduViewId],
-                          *patch.entityId);
+                          *patch.pduEntityId);
   } else {
     currentView = views[patch.pduViewId];
   }

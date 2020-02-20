@@ -79,8 +79,8 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     assert(atlasParamsList[id].pduViewId < viewParamsList.size());
     if (ivSequenceParams.msp().msp_max_entities_minus1() == 0 ||
-        (atlasParamsList[id].entityId >= m_entityDecodeRange[0] &&
-         atlasParamsList[id].entityId < m_entityDecodeRange[1])) {
+        (atlasParamsList[id].pduEntityId >= m_entityDecodeRange[0] &&
+         atlasParamsList[id].pduEntityId < m_entityDecodeRange[1])) {
       writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
                         viewParamsList);
     }

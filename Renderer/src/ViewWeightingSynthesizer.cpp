@@ -361,7 +361,7 @@ private:
   }
   template <typename MVD>
   auto recoverPrunedViewAndMask(const MVD &atlas, const ViewParamsList &viewParamsList,
-                                const PatchParamsList patchParamsVector)
+                                const PatchParamsList &patchParamsVector)
       -> std::pair<MVD, MaskList> {
 
     using TextureDepthFrame = typename MVD::value_type;

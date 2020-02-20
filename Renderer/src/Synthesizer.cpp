@@ -218,8 +218,8 @@ public:
   static auto xFoV(const ViewParams &viewParams) -> float {
     const auto &ci = viewParams.ci;
     return ci.dispatch(overload(
-        [&](Equirectangular) { return abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()); },
-        [&](Perspective) {
+        [&](Equirectangular /*unused*/) { return abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()); },
+        [&](Perspective /*unused*/) {
           return 2.F * atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
         }));
   }

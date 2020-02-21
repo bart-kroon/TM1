@@ -652,7 +652,9 @@ auto DepthUpscalerAtlas::upsampleDepthAndOccupancyMapMVD(
     auto &depth = atlasOut[i].second.getPlane(0);
     auto &labels = mapsOut[i].getPlane(0);
 
-    std::tie(depth, labels) = upscaler(depthD2, labelsD2, yuv);
+    labels = upscaleNearest(labelsD2);
+    depth  = upscaler(depthD2, yuv);
+    //std::tie(depth, labels) = upscaler(depthD2, labelsD2, yuv);
   }
 
   return std::pair{atlasOut, mapsOut};

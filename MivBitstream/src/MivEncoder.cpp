@@ -236,8 +236,8 @@ void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) 
 
   const auto ssvu = SampleStreamVpccUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
-  cout << "\n\n--- V-PCC unit " << string(100 - 19, '-') << '\n'
-       << ssvu << vu << string(100, '-') << "\n\n";
+  cout << "\n\n=== V-PCC unit " << string(100 - 19, '=') << '\n'
+       << ssvu << vu << string(100, '=') << "\n\n";
 
   m_stream.flush();
 }
@@ -249,7 +249,8 @@ void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload
   payload.encodeTo(substream1, forward<Args>(args)...);
 
   const auto nu = NalUnit{nuh, substream1.str()};
-  cout << nu;
+  cout << "\n\n--- NAL unit " << string(100 - 17, '-') << '\n'
+       << nu << payload << string(100, '-') << "\n\n";
 
   asb.nal_units().push_back(nu);
 }

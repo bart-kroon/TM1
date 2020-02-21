@@ -92,11 +92,13 @@ public:
           m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
-    cout << "\nSource sequence parameters:\n" << sourceSequenceParams;
+
+	// TODO(BK): We need a Logger. This is to get the log files somewhat readable.
+    cout << "\n::: Source sequence parameters " << string(100 - 31, ':') << '\n'
+         << sourceSequenceParams << string(100, ':') << "\n\n";
 
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
-    cout << "\nCoded sequence parameters:\n" << codedSequenceParams;
 
     if (m_reconstructor) {
       m_reconstructor->updateSequenceParams(codedSequenceParams);
@@ -114,11 +116,12 @@ private:
 
     const auto sourceAccessUnitParams = loadSourceIvAccessUnitParams(json());
     m_encoder->prepareAccessUnit(sourceAccessUnitParams);
-    cout << "\nSource access unit parameters:\n" << sourceAccessUnitParams;
+
+    cout << "\n::: Source access unit parameters " << string(100 - 34, ':') << '\n'
+         << sourceAccessUnitParams << string(100, ':') << "\n\n";
 
     pushFrames(firstFrame, lastFrame);
     const auto codedAccessUnitParams = m_encoder->completeAccessUnit();
-    cout << "\nCoded access unit parameters:\n" << codedAccessUnitParams;
 
     m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams, lastFrame - firstFrame);
 

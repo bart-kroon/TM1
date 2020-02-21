@@ -79,7 +79,7 @@ const auto nuhAsps = NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1};
 const auto nuhAfps = NalUnitHeader{NalUnitType::NAL_AFPS, 0, 1};
 const auto nuhIdr = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
 const auto nuhCra = NalUnitHeader{NalUnitType::NAL_CRA, 0, 1};
-const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP, 0, 1};
+const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP, 0, 2};
 } // namespace
 
 auto MivEncoder::specialAtlasSubBitstream() const -> AtlasSubBitstream {

@@ -46,6 +46,7 @@ namespace TMIV::MivBitstream {
 MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
   cout << m_ssvh;
   m_ssvh.encodeTo(m_stream);
+  m_stream.flush();
 }
 
 void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
@@ -236,6 +237,8 @@ void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) 
   const auto ssvu = SampleStreamVpccUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
   cout << ssvu << vu;
+
+  m_stream.flush();
 }
 
 template <typename Payload, typename... Args>

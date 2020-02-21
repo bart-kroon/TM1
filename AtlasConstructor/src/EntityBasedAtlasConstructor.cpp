@@ -371,6 +371,10 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
                                         atlas.asps.asps_log2_patch_packing_block_size())
         .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
                                         atlas.asps.asps_log2_patch_packing_block_size());
+
+    // Set ATGH parameters
+    atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+    atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
 
   m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);

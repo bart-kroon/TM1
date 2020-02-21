@@ -353,8 +353,19 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   // Packing
   m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
   for (auto &atlas : m_ivAccessUnitParams.atlas) {
-    atlas.asps.asps_frame_width(m_atlasSize.x()).asps_frame_height(m_atlasSize.y());
+    // Set ASPS parameters
+    atlas.asps.asps_frame_width(m_atlasSize.x())
+        .asps_frame_height(m_atlasSize.y())
+        .asps_extended_projection_enabled_flag(true)
+        .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
+
+    // Record patch alignment -> asps_log2_patch_packing_block_size
+    while (m_packer->getAlignment() % (2 << atlas.asps.asps_log2_patch_packing_block_size()) == 0) {
+      atlas.asps.asps_log2_patch_packing_block_size(
+          atlas.asps.asps_log2_patch_packing_block_size() + 1);
+    }
   }
+
   m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   m_ivAccessUnitParams.patchParamsList =
       m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);

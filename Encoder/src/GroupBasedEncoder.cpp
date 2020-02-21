@@ -317,6 +317,12 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
     }
   }
 
+  // Modify bit depth of pdu_view_id
+  for (auto &atlas : m_ivAccessUnitParams.atlas) {
+    atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_projections_minus1(
+        uint16_t(m_ivSequenceParams.viewParamsList.size() - 1));
+  }
+
   const auto atlasSizes = m_ivAccessUnitParams.atlasSizes();
 
   // Renumber atlas and view ID's

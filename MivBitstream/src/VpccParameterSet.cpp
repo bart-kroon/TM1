@@ -77,6 +77,8 @@ auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostrea
     return stream << "Rec1";
   case PtlProfileReconstructionIdc::Unconstrained:
     return stream << "Unconstrained";
+  case PtlProfileReconstructionIdc::MIV_Main:
+    return stream << "MIV Main";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }

@@ -372,6 +372,16 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
         .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
                                         atlas.asps.asps_log2_patch_packing_block_size());
 
+    const auto maxViewSize =
+        transform_reduce(begin(m_outIvSequenceParams.viewParamsList),
+                         end(m_outIvSequenceParams.viewParamsList), Vec2i{},
+                         [](auto a, auto b) {
+                           return Vec2i{max(a.x(), b.x()), max(a.y(), b.y())};
+                         },
+                         [](const auto &vp) { return vp.ci.projectionPlaneSize(); });
+    atlas.afps.afps_3d_pos_x_bit_count_minus1(ceilLog2(maxViewSize.x()) - 1);
+    atlas.afps.afps_3d_pos_y_bit_count_minus1(ceilLog2(maxViewSize.y()) - 1);
+
     // Set ATGH parameters
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());

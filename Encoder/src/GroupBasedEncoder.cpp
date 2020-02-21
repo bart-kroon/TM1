@@ -65,13 +65,13 @@ auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
 }
 
 void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams) {
-  for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
+  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
     m_encoders[groupId].prepareAccessUnit(ivAccessUnitParams);
   }
 }
 
 void GroupBasedEncoder::pushFrame(MVD16Frame views) {
-  for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
+  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
     cout << "Processing group " << groupId << ":\n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
@@ -99,8 +99,7 @@ auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
   return result;
 }
 
-auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivSequenceParams)
-    -> Grouping {
+auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams) -> Grouping {
   auto grouping = Grouping{};
 
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
@@ -116,12 +115,12 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
     Tz.push_back(viewParamsList[camIndex].ce.ce_view_pos_z());
   }
 
-  const float xMax = *std::max_element(Tx.begin(), Tx.end());
-  const float xMin = *std::min_element(Tx.begin(), Tx.end());
-  const float yMax = *std::max_element(Ty.begin(), Ty.end());
-  const float yMin = *std::min_element(Ty.begin(), Ty.end());
-  const float zMax = *std::max_element(Tz.begin(), Tz.end());
-  const float zMin = *std::min_element(Tz.begin(), Tz.end());
+  const float xMax = *max_element(Tx.begin(), Tx.end());
+  const float xMin = *min_element(Tx.begin(), Tx.end());
+  const float yMax = *max_element(Ty.begin(), Ty.end());
+  const float yMin = *min_element(Ty.begin(), Ty.end());
+  const float zMax = *max_element(Tz.begin(), Tz.end());
+  const float zMin = *min_element(Tz.begin(), Tz.end());
 
   const float xRange = xMax - xMin;
   const float yRange = yMax - yMin;
@@ -135,7 +134,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
   }
 
   // Select views per group
-  auto viewsPool = vector<MivBitstream::ViewParams>{};
+  auto viewsPool = vector<ViewParams>{};
   auto viewsLabels = vector<uint8_t>{};
   auto viewsInGroup = vector<uint8_t>{};
   auto numViewsPerGroup = vector<int>{};
@@ -147,18 +146,18 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
     viewsInGroup.clear();
-    auto camerasInGroup = MivBitstream::ViewParamsList{};
-    auto camerasOutGroup = MivBitstream::ViewParamsList{};
+    auto camerasInGroup = ViewParamsList{};
+    auto camerasOutGroup = ViewParamsList{};
     if (gIndex < numGroups - 1) {
-      numViewsPerGroup.push_back(int(std::floor(viewParamsList.size() / numGroups)));
-      std::int64_t maxElementIndex;
+      numViewsPerGroup.push_back(int(floor(viewParamsList.size() / numGroups)));
+      int64_t maxElementIndex;
 
       if (dominantAxis == 0) {
-        maxElementIndex = std::max_element(Tx.begin(), Tx.end()) - Tx.begin();
+        maxElementIndex = max_element(Tx.begin(), Tx.end()) - Tx.begin();
       } else if (dominantAxis == 1) {
-        maxElementIndex = std::max_element(Ty.begin(), Ty.end()) - Ty.begin();
+        maxElementIndex = max_element(Ty.begin(), Ty.end()) - Ty.begin();
       } else {
-        maxElementIndex = std::max_element(Tz.begin(), Tz.end()) - Tz.begin();
+        maxElementIndex = max_element(Tz.begin(), Tz.end()) - Tz.begin();
       }
 
       const auto T0 = Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
@@ -206,9 +205,8 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::IvSequenceParams &ivS
 
       viewsPool = camerasOutGroup;
     } else {
-      numViewsPerGroup.push_back(
-          int((viewParamsList.size() -
-               (numGroups - 1) * std::floor(viewParamsList.size() / numGroups))));
+      numViewsPerGroup.push_back(int(
+          (viewParamsList.size() - (numGroups - 1) * floor(viewParamsList.size() / numGroups))));
 
       camerasInGroup.clear();
       copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
@@ -259,33 +257,35 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
   return result;
 }
 
-auto GroupBasedEncoder::mergeSequenceParams(
-    const std::vector<const MivBitstream::IvSequenceParams *> &perGroupParams)
-    -> const MivBitstream::IvSequenceParams & {
-  // Independent metadata should work automatically. Just assume it is the same across groups.
+auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams *> &perGroupParams)
+    -> const IvSequenceParams & {
+  // Start with first group
   m_ivSequenceParams = *perGroupParams.front();
-  m_ivSequenceParams.viewParamsList.clear();
+  assert(m_ivSequenceParams.msp().msp_num_groups_minus1() + 1 == perGroupParams.size());
 
-  // Copy view parameters in group order
-  std::uint16_t pruningOffsetId = 0;
+  // Merge V-PCC parameter sets
+  vector<const VpccParameterSet *> vps(perGroupParams.size());
+  transform(begin(perGroupParams), end(perGroupParams), begin(vps),
+            [](const auto &ivs) { return &ivs->vps; });
+  m_ivSequenceParams.vps = merge(vps);
 
-  for (auto groupParams : perGroupParams) {
-    auto perGroupViewParamsList = groupParams->viewParamsList;
+  // For each other group
+  for (auto ivs = begin(perGroupParams) + 1; ivs != end(perGroupParams); ++ivs) {
+    // Merge view parameters
+    transform(begin((*ivs)->viewParamsList), end((*ivs)->viewParamsList),
+              back_inserter(m_ivSequenceParams.viewParamsList),
+              [viewIdOffset = uint16_t(m_ivSequenceParams.viewParamsList.size())](ViewParams vp) {
+                // Merging pruning graphs
+                if (vp.pc && !vp.pc->pc_is_leaf_flag()) {
+                  for (uint16_t i = 0; i <= vp.pc->pc_num_children_minus1(); ++i) {
+                    vp.pc->pc_child_id(i, vp.pc->pc_child_id(i) + viewIdOffset);
+                  }
+                }
+                return vp;
+              });
 
-    // Merging pruning graphs
-    for (auto &viewParams : perGroupViewParamsList) {
-      if (viewParams.pc && !viewParams.pc->pc_is_leaf_flag()) {
-        for (uint16_t i = 0; i <= viewParams.pc->pc_num_children_minus1(); ++i) {
-          viewParams.pc->pc_child_id(i, viewParams.pc->pc_child_id(i) + pruningOffsetId);
-        }
-      }
-    }
-
-    pruningOffsetId += static_cast<std::uint16_t>(perGroupViewParamsList.size());
-
-    // Merging viewParamsList
-    copy(begin(perGroupViewParamsList), end(perGroupViewParamsList),
-         back_inserter(m_ivSequenceParams.viewParamsList));
+    // Merge viewing space
+    assert(m_ivSequenceParams.viewingSpace == (*ivs)->viewingSpace);
   }
 
   // Keep around for mergeAccessUnitParams
@@ -295,8 +295,7 @@ auto GroupBasedEncoder::mergeSequenceParams(
 }
 
 auto GroupBasedEncoder::mergeAccessUnitParams(
-    const std::vector<const MivBitstream::IvAccessUnitParams *> &perGroupParams)
-    -> const MivBitstream::IvAccessUnitParams & {
+    const vector<const IvAccessUnitParams *> &perGroupParams) -> const IvAccessUnitParams & {
   // No state at this level
   m_ivAccessUnitParams = {};
 

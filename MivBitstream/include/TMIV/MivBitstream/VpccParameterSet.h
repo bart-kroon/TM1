@@ -289,6 +289,8 @@ public:
 
   void encodeTo(std::ostream &stream) const;
 
+  friend auto merge(const std::vector<const VpccParameterSet *> &vps) -> VpccParameterSet;
+
 private:
   struct VpsAtlas {
     std::uint16_t vps_frame_width{};

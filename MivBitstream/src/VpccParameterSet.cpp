@@ -767,4 +767,31 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
 
   bitstream.byteAlign();
 }
+
+auto merge(const vector<const VpccParameterSet *> &vps) -> VpccParameterSet {
+  VERIFY_MIVBITSTREAM(!vps.empty());
+  auto x = *vps.front();
+
+  VERIFY_MIVBITSTREAM(x.miv_sequence_params().msp_num_groups_minus1() + 1 == vps.size());
+
+  for (auto i = begin(vps) + 1; i != end(vps); ++i) {
+    const auto &y = **i;
+    VERIFY_MIVBITSTREAM(x.profile_tier_level() == y.profile_tier_level());
+    VERIFY_MIVBITSTREAM(x.vps_vpcc_parameter_set_id() == y.vps_vpcc_parameter_set_id());
+    VERIFY_MIVBITSTREAM(x.vps_miv_mode_flag() == y.vps_miv_mode_flag());
+
+    x.m_vps_atlases.insert(x.m_vps_atlases.end(), begin(y.m_vps_atlases), end(y.m_vps_atlases));
+
+    VERIFY_MIVBITSTREAM(x.vps_extension_present_flag() && y.vps_extension_present_flag());
+    VERIFY_MIVBITSTREAM(x.vps_miv_extension_flag() == y.vps_miv_extension_flag());
+
+    if (x.vps_miv_extension_flag()) {
+      VERIFY_MIVBITSTREAM(x.miv_sequence_params() == y.miv_sequence_params());
+      VERIFY_MIVBITSTREAM(!x.vps_miv_sequence_vui_params_present_flag() &&
+                          !y.vps_miv_sequence_vui_params_present_flag()); // Not yet implemented
+    }
+  }
+  return x;
+}
+
 } // namespace TMIV::MivBitstream

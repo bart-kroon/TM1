@@ -364,6 +364,10 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
       atlas.asps.asps_log2_patch_packing_block_size(
           atlas.asps.asps_log2_patch_packing_block_size() + 1);
     }
+
+    // Set AFPS parameters
+    atlas.afps.afps_2d_pos_x_bit_count_minus1((m_atlasSize.x() - 1) / m_packer->getAlignment());
+    atlas.afps.afps_2d_pos_y_bit_count_minus1((m_atlasSize.y() - 1) / m_packer->getAlignment());
   }
 
   m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);

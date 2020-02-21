@@ -234,7 +234,6 @@ auto loadSourceIvAccessUnitParams(const Json &config) -> IvAccessUnitParams {
   x.atlas.front()
 	  .asps.asps_use_eight_orientations_flag(true)
       .asps_extension_present_flag(true)
-	  .asps_extended_projection_enabled_flag(true)
       .asps_miv_extension_present_flag(true)
       .miv_atlas_sequence_params()
       .masp_omaf_v1_compatible_flag(config.require("OmafV1CompatibleFlag").asBool());

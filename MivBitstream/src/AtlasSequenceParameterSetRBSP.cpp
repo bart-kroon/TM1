@@ -201,6 +201,7 @@ auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) -> RefListSt
 
 auto AtlasSequenceParameterSetRBSP::asps_max_projections_minus1() const noexcept -> unsigned {
   VERIFY_VPCCBITSTREAM(asps_extended_projection_enabled_flag());
+  VERIFY_VPCCBITSTREAM(m_asps_max_projections_minus1.has_value());
   return *m_asps_max_projections_minus1;
 }
 

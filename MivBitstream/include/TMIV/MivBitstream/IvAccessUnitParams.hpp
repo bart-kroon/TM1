@@ -204,6 +204,7 @@ inline AtlasAccessUnitParams::AtlasAccessUnitParams() {
   asps.asps_extension_present_flag(true).asps_miv_extension_present_flag(true);
   afps.afps_fixed_camera_model_flag(false);
   atgh.atgh_type(AtghType::I_TILE_GRP);
+  atgh.atgh_adaptation_parameter_set_id(0);
 }
 
 inline auto operator<<(std::ostream &stream, const AtlasAccessUnitParams &x) -> std::ostream & {

@@ -31,66 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_JSON_H_
-#define _TMIV_COMMON_JSON_H_
+#ifndef _TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSOR_H_
+#define _TMIV_DEPTHQUALITYASSESSOR_DEPTHQUALITYASSESSOR_H_
 
-#include <TMIV/Common/Vector.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 
-#include <iosfwd>
-#include <memory>
-#include <string>
-#include <vector>
-
-namespace TMIV::Common {
-namespace impl {
-struct Value;
-struct Object;
-} // namespace impl
-
-class Json {
+namespace TMIV::DepthQualityAssessor {
+class DepthQualityAssessor : public IDepthQualityAssessor {
 public:
-  enum class Type { number, string, array, object, boolean, null };
+  DepthQualityAssessor(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  DepthQualityAssessor(const DepthQualityAssessor &) = delete;
+  DepthQualityAssessor(DepthQualityAssessor &&) = default;
+  DepthQualityAssessor &operator=(const DepthQualityAssessor &) = delete;
+  DepthQualityAssessor &operator=(DepthQualityAssessor &&) = default;
+  ~DepthQualityAssessor() override = default;
 
-  // Initialize as a null node
-  Json();
-
-  // Initialize from an input stream
-  explicit Json(std::istream &stream);
-
-  // For a Json of type Object specify another Json of Type Object that
-  // overrides this one for all keys
-  void setOverrides(const Json &overrides);
-
-  Type type() const;
-  Json optional(std::string const &key) const;
-  Json require(std::string const &key) const;
-  bool isPresent(std::string const &key) const;
-
-  // Index into an array
-  Json at(size_t index) const;
-
-  // Return the number of elements in an object or array
-  size_t size() const;
-
-  double asDouble() const;
-  float asFloat() const;
-  int asInt() const;
-  std::string const &asString() const;
-  bool asBool() const;
-  auto asStringVector() const -> std::vector<std::string>;
-  template <stack::size_type M> auto asIntVector() const -> stack::Vector<int, M>;
-  template <stack::size_type M> auto asFloatVector() const -> stack::Vector<float, M>;
-
-  // Anything apart from false and null is true
-  explicit operator bool() const;
+  auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
+                         const Common::MVD16Frame &sourceViews) -> bool override;
 
 private:
-  explicit Json(std::shared_ptr<impl::Value> value);
-
-  std::shared_ptr<impl::Value> m_value;
+  float m_blendingFactor{0.03F};
+  float m_maxOutlierRatio{0.001F};
 };
-} // namespace TMIV::Common
-
-#include "Json.hpp"
+} // namespace TMIV::DepthQualityAssessor
 
 #endif

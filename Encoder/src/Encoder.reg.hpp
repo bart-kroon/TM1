@@ -35,6 +35,7 @@
 
 #include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
 #include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
+#include "../../DepthQualityAssessor/src/DepthQualityAssessor.reg.hpp"
 #include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
 
 #include <TMIV/Common/Factory.h>
@@ -44,6 +45,7 @@ inline void registerComponents() {
   TMIV::ViewOptimizer::registerComponents();
   TMIV::AtlasConstructor::registerComponents();
   TMIV::DepthOccupancy::registerComponents();
+  TMIV::DepthQualityAssessor::registerComponents();
 
   Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
   Common::Factory<IEncoder>::getInstance().registerAs<GroupBasedEncoder>("GroupBasedEncoder");

@@ -116,8 +116,7 @@ auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, c
                   const vector<string> &viewNames = {}, bool downscaleDepth = false)
     -> MVDFrame<FORMAT> {
 
-  cout << "Loading " << what << " frame " << frameIndex << " Downscale = " << downscaleDepth
-       << endl;
+  cout << "Loading " << what << " frame " << frameIndex << endl;
 
   MVDFrame<FORMAT> result;
   result.reserve(sizes.size());
@@ -204,7 +203,11 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   const auto viewParamsList = ViewParamsList::loadFromJson(
       Json{stream}.require("cameras"), config.require("SourceCameraNames").asStringVector());
 
-  const auto depthLowQualityFlag = config.require("depthLowQualityFlag").asBool();
+  auto depthLowQualityFlag = false;
+  if (config.isPresent("depthLowQualityFlag")) {
+    auto node = config.optional("depthLowQualityFlag");
+    depthLowQualityFlag = node.asBool();
+  }
 
   const auto numGroups = config.require("numGroups").asInt();
   if (numGroups < 1) {

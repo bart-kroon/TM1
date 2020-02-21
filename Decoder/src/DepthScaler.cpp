@@ -43,7 +43,7 @@ struct Size {
   int height;
 };
 
-template <class MatType> auto GetSize(const MatType &mat) {
+template <class MatType> auto getSize(const MatType &mat) {
   return Size{int(mat.width()), int(mat.height())};
 }
 
@@ -64,7 +64,7 @@ template <class T> auto createMat(const Size &size) {
 
 template <class T>
 void copyMat(const TMIV::Common::heap::Matrix<T> &from, TMIV::Common::heap::Matrix<T> &to) {
-  if (!(GetSize(from) == GetSize(to))) {
+  if (!(getSize(from) == getSize(to))) {
     to.resize(from.height(), from.width());
   }
 
@@ -72,7 +72,7 @@ void copyMat(const TMIV::Common::heap::Matrix<T> &from, TMIV::Common::heap::Matr
 }
 
 template <class T> auto cloneMat(const TMIV::Common::heap::Matrix<T> &from) {
-  auto to = createMat<T>(GetSize(from));
+  auto to = createMat<T>(getSize(from));
   copyMat(from, to);
   return to;
 }
@@ -91,8 +91,8 @@ template <class T1, class T2> auto countValue(const Mat_<T1> &mat, const T2 &cmp
 
 template <class T, class F>
 auto matCombine(const Mat_<T> &matA, const Mat_<T> &matB, F func) -> Mat_<T> {
-  auto size = GetSize(matA);
-  assert(GetSize(matB) == size);
+  auto size = getSize(matA);
+  assert(getSize(matB) == size);
   auto matR = createMat<T>(size);
 
   auto a = matA.begin();
@@ -198,7 +198,7 @@ template <typename Range> auto meanColorDistance(const Vec3w &color, const Range
 
 auto findForegroundEdges(const Mat1w &depth) -> Mat1b {
   using Vec4i = TMIV::Common::stack::Vec4<int>;
-  auto size = GetSize(depth);
+  auto size = getSize(depth);
   Mat1b edgeMask = createMat<unsigned char>(size);
   auto kernelPoints = getNeighborhood3x3();
   for (int i = 1; i < size.height - 1; ++i) {
@@ -215,7 +215,7 @@ auto findForegroundEdges(const Mat1w &depth) -> Mat1b {
 }
 
 auto findRegionBoundaries(const Mat1w &regionLabels) -> Mat1b {
-  auto size = GetSize(regionLabels);
+  auto size = getSize(regionLabels);
   Mat1b boundaryMask = createMat<unsigned char>(size);
   auto kernelPoints = getNeighborhood5();
   for (int i = 1; i < size.height - 1; ++i) {
@@ -237,7 +237,7 @@ auto findForegroundEdges(const Mat1w &depth, const Mat1w &regionLabels) -> Mat1b
 
 auto erodeMasked(const Mat1w &depth, const Mat1b &mask) -> Mat1w {
   auto depthOut = cloneMat(depth);
-  auto size = GetSize(depth);
+  auto size = getSize(depth);
   auto kernelPoints = getNeighborhood3x3();
   for (int i = 1; i < size.height - 1; ++i) {
     for (int j = 1; j < size.width - 1; ++j) {
@@ -252,27 +252,6 @@ auto erodeMasked(const Mat1w &depth, const Mat1b &mask) -> Mat1w {
   return depthOut;
 }
 
-auto erodeMasked(const Mat1w &depth, const Mat1w &regionLabels, const Mat1b &mask)
-    -> std::pair<Mat1w, Mat1w> {
-  auto depthOut = cloneMat(depth);
-  auto regionLabelsOut = cloneMat(regionLabels);
-  auto size = GetSize(depth);
-  assert(size == GetSize(regionLabels));
-  auto kernelPoints = getNeighborhood3x3();
-  for (int i = 1; i < size.height - 1; ++i) {
-    for (int j = 1; j < size.width - 1; ++j) {
-      if (mask(i, j) != 0) {
-        const auto depthSamples = sampleKernel(depth, Vec2i{j, i}, kernelPoints);
-        const auto labelSamples = sampleKernel(regionLabels, Vec2i{j, i}, kernelPoints);
-        const auto maskSamples = sampleKernel(mask, Vec2i{j, i}, kernelPoints);
-        auto [depthEroded, labelEroded] = minMasked(depthSamples, labelSamples, maskSamples);
-        depthOut(i, j) = depthEroded;
-        regionLabelsOut(i, j) = labelEroded;
-      }
-    }
-  }
-  return std::pair{depthOut, regionLabelsOut};
-}
 
 DepthMapAlignerColorBased::DepthMapAlignerColorBased(int depthEdgeMagnitudeTh,
                                                      float minForegroundConfidence)
@@ -339,7 +318,7 @@ auto DepthMapAlignerColorBased::colorConfidenceAt(const Mat3w &yuv, const Mat1w 
 auto DepthMapAlignerColorBased::operator()(const Mat3w &yuv, const Mat1w &depth,
                                            const Mat1b &edgeMagnitudes) -> Mat1w {
   const int numIterations = 1;
-  auto size = GetSize(depth);
+  auto size = getSize(depth);
   auto depthIter = cloneMat(depth);
   for (int iter = 0; iter < numIterations; iter++) {
     m_markers = createMat<uchar>(size);
@@ -358,88 +337,9 @@ auto DepthMapAlignerColorBased::operator()(const Mat3w &yuv, const Mat1w &depth,
   return depthIter;
 }
 
-auto DepthMapAlignerColorBased::colorConfidence(const std::vector<ushort> &depthValues,
-                                                const std::vector<Vec3w> &colorValues,
-                                                const std::vector<uchar> &edgeMagnitudes,
-                                                const std::vector<ushort> &regionLabels) -> float {
-  const auto N = depthValues.size();
-  assert(N == colorValues.size());
-  assert(N == edgeMagnitudes.size());
 
-  const int depthCentral = depthValues[0];
-  const int depthLow = depthCentral - m_depthEdgeMagnitudeTh;
-  const int depthHigh = depthCentral + m_depthEdgeMagnitudeTh;
-  const auto colorCentral = colorValues[0];
-  auto regionCentral = regionLabels[0];
 
-  // split colors samples in kernel in foreground and background
-  // exclude the (uncertain) depth edges and pixels beyond foreground
-  std::vector<Vec3w> colorsFG;
-  std::vector<Vec3w> colorsBG;
-  for (auto i = 1U; i < N; ++i) {
-    if (edgeMagnitudes[i] < m_depthEdgeMagnitudeTh && depthValues[i] < depthHigh &&
-        regionLabels[i] == regionCentral) {
-      if (depthValues[i] > depthLow) {
-        colorsFG.push_back(colorValues[i]);
-      } else {
-        colorsBG.push_back(colorValues[i]);
-      }
-    }
-  }
 
-  // make the groups of equal size
-  int groupSize = int(std::min(colorsFG.size(), colorsBG.size()));
-
-  float foregroundColorConfidence = 1.F;
-  if (groupSize > 0) {
-    colorsFG.resize(groupSize);
-    colorsBG.resize(groupSize);
-    auto meanDistanceBG = meanColorDistance(colorCentral, colorsBG);
-    auto meanDistanceFG = meanColorDistance(colorCentral, colorsFG);
-
-    // the confidence the edge belongs to foreground
-    if (meanDistanceFG + meanDistanceBG > 0.F) {
-      foregroundColorConfidence = meanDistanceBG / (meanDistanceFG + meanDistanceBG);
-    }
-  }
-
-  return foregroundColorConfidence;
-}
-
-auto DepthMapAlignerColorBased::colorConfidenceAt(const Mat3w &yuv, const Mat1w &depth,
-                                                  const Mat1b &edgeMagnitudes, const Mat1w &regions,
-                                                  const Vec2i &loc) -> float {
-  auto depths = sampleKernel(depth, loc, m_kernelPoints);
-  auto colors = sampleKernel(yuv, loc, m_kernelPoints);
-  auto edges = sampleKernel(edgeMagnitudes, loc, m_kernelPoints);
-  auto labels = sampleKernel(regions, loc, m_kernelPoints);
-
-  return colorConfidence(depths, colors, edges, labels);
-}
-
-auto DepthMapAlignerColorBased::operator()(const Mat3w &yuv, const Mat1w &depth,
-                                           const Mat1b &edgeMagnitudes, const Mat1w &regions)
-    -> std::pair<Mat1w, Mat1w> {
-  auto size = GetSize(depth);
-  auto depthOut = cloneMat(depth);
-  auto regionsOut = cloneMat(regions);
-
-  m_markers = createMat<uchar>(size);
-  for (int i = m_B; i < size.height - m_B; ++i) {
-    for (int j = m_B; j < size.width - m_B; ++j) {
-      if (edgeMagnitudes(i, j) >= m_depthEdgeMagnitudeTh) {
-        auto foregroundConfidence = colorConfidenceAt(yuv, depth, edgeMagnitudes, regions, {j, i});
-        if (foregroundConfidence < m_minForegroundConfidence) {
-          m_markers(i, j) = 255;
-        }
-      }
-    }
-  }
-
-  std::tie(depthOut, regionsOut) = erodeMasked(depthOut, regions, m_markers);
-
-  return std::pair(depthOut, regionsOut);
-}
 
 DepthMapAlignerCurvatureBased::DepthMapAlignerCurvatureBased(int depthEdgeMagnitudeTh,
                                                              int maxCurvature)
@@ -469,7 +369,7 @@ auto DepthMapAlignerCurvatureBased::curvatureAt(const Mat1w &depth, const Vec2i 
 
 auto DepthMapAlignerCurvatureBased::operator()(const Mat1w &depth, const Mat1b &edgeMagnitudes)
     -> Mat1w {
-  auto size = GetSize(depth);
+  auto size = getSize(depth);
   auto depthOut = cloneMat(depth);
 
   m_markers = createMat<uchar>(size);
@@ -489,59 +389,10 @@ auto DepthMapAlignerCurvatureBased::operator()(const Mat1w &depth, const Mat1b &
   return depthOut;
 }
 
-auto DepthMapAlignerCurvatureBased::curvature(const std::vector<ushort> &depthValues,
-                                              const std::vector<ushort> &regionLabels) -> int {
-  const int depthCentral = depthValues[0];
-  const int depthLow = depthCentral - m_depthEdgeMagnitudeTh;
-  auto regionCentral = regionLabels[0];
 
-  int depthCurvature3x3 = 0;
-  for (auto i = 1U; i < depthValues.size(); ++i) {
-    // only allow curvature when full kernel is within region
-    if (regionLabels[i] != regionCentral) {
-      return 0;
-    }
-
-    if (int(depthValues[i]) < depthLow) {
-      depthCurvature3x3++;
-    }
-  }
-  return depthCurvature3x3;
-}
-
-auto DepthMapAlignerCurvatureBased::curvatureAt(const Mat1w &depth, const Mat1w &regions,
-                                                const Vec2i &loc) -> int {
-  auto depths = sampleKernel(depth, loc, kernelPoints);
-  auto labels = sampleKernel(regions, loc, kernelPoints);
-
-  return curvature(depths, labels);
-}
-
-auto DepthMapAlignerCurvatureBased::operator()(const Mat1w &depth, const Mat1b &edgeMagnitudes,
-                                               const Mat1w &regions) -> std::pair<Mat1w, Mat1w> {
-  auto size = GetSize(depth);
-  auto depthOut = cloneMat(depth);
-  auto regionsOut = cloneMat(regions);
-
-  m_markers = createMat<uchar>(size);
-  for (int i = m_B; i < size.height - m_B; ++i) {
-    for (int j = m_B; j < size.width - m_B; ++j) {
-      if (edgeMagnitudes(i, j) >= m_depthEdgeMagnitudeTh) {
-        auto curvature = curvatureAt(depth, regions, {j, i});
-        if (curvature >= m_maxCurvature) {
-          m_markers(i, j) = 255;
-        }
-      }
-    }
-  }
-
-  std::tie(depthOut, regionsOut) = erodeMasked(depth, regions, m_markers);
-
-  return std::pair(depthOut, regionsOut);
-}
 
 auto upscaleNearest(const Mat1w &depth) -> Mat1w {
-  auto size = GetSize(depth);
+  auto size = getSize(depth);
   auto sizeU2 = size * 2;
 
   Mat1w depthU2 = createMat<ushort>(sizeU2);
@@ -564,7 +415,7 @@ auto yuv420_To_Mat3w(const TMIV::Common::Frame<TMIV::Common::YUV420P10> &frame) 
   const auto &U = frame.getPlane(1);
   const auto &V = frame.getPlane(2);
 
-  auto size = GetSize(Y);
+  auto size = getSize(Y);
   auto yuv = createMat<Vec3w>(size);
   for (int i = 0; i < size.height; ++i) {
     for (int j = 0; j < size.width; ++j) {
@@ -582,7 +433,7 @@ DepthUpscaler::DepthUpscaler(int depthEdgeMagnitudeTh, float minForegroundConfid
 
 auto DepthUpscaler::operator()(const Mat1w &depthD2, const Mat3w &yuv) -> Mat1w {
   m_depthUpscaled = upscaleNearest(depthD2);
-  assert(GetSize(m_depthUpscaled) == GetSize(yuv));
+  assert(getSize(m_depthUpscaled) == getSize(yuv));
 
   // Erode based on color alignment
   m_edgeMagnitudes1 = findForegroundEdges(m_depthUpscaled);
@@ -599,20 +450,19 @@ auto DepthUpscaler::operator()(const Mat1w &depthD2, const Mat1w &regionsD2, con
     -> std::pair<Mat1w, Mat1w> {
   m_depthUpscaled = upscaleNearest(depthD2);
   m_regionsUpscaled = upscaleNearest(regionsD2);
-  assert(GetSize(m_depthUpscaled) == GetSize(yuv));
-  assert(GetSize(m_regionsUpscaled) == GetSize(yuv));
+  assert(getSize(m_depthUpscaled) == getSize(yuv));
+  assert(getSize(m_regionsUpscaled) == getSize(yuv));
 
   // Erode based on color alignment
   m_edgeMagnitudes1 = findForegroundEdges(m_depthUpscaled, m_regionsUpscaled);
-  std::tie(m_depthColorAligned, m_regionsColorAligned) =
-      m_alignerColor(yuv, m_depthUpscaled, m_edgeMagnitudes1, m_regionsUpscaled);
+  
+  m_depthColorAligned = m_alignerColor(yuv, m_depthUpscaled, m_edgeMagnitudes1);
 
   // Erode based on (fg) curvature
-  m_edgeMagnitudes2 = findForegroundEdges(m_depthColorAligned, m_regionsColorAligned);
-  std::tie(m_depthCurvatureAligned, m_regionsCurvatureAligned) =
-      m_alignerCurvature(m_depthColorAligned, m_edgeMagnitudes2, m_regionsColorAligned);
+  m_edgeMagnitudes2 = findForegroundEdges(m_depthColorAligned, m_regionsUpscaled);
+  m_depthCurvatureAligned = m_alignerCurvature(m_depthColorAligned, m_edgeMagnitudes2);
 
-  return std::pair(m_depthCurvatureAligned, m_regionsCurvatureAligned);
+  return std::pair(m_depthCurvatureAligned, m_regionsUpscaled);
 }
 
 DepthUpscalerAtlas::DepthUpscalerAtlas(const Common::Json & /*rootNode*/,

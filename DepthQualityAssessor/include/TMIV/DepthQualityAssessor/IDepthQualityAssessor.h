@@ -31,66 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_JSON_H_
-#define _TMIV_COMMON_JSON_H_
+#ifndef _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
+#define _TMIV_DEPTHQUALITYASSESSOR_IDEPTHQUALITYASSESSOR_H_
 
-#include <TMIV/Common/Vector.h>
+#include <TMIV/Metadata/IvSequenceParams.h>
 
-#include <iosfwd>
-#include <memory>
-#include <string>
-#include <vector>
-
-namespace TMIV::Common {
-namespace impl {
-struct Value;
-struct Object;
-} // namespace impl
-
-class Json {
+namespace TMIV::DepthQualityAssessor {
+class IDepthQualityAssessor {
 public:
-  enum class Type { number, string, array, object, boolean, null };
+  IDepthQualityAssessor() = default;
+  IDepthQualityAssessor(const IDepthQualityAssessor &) = delete;
+  IDepthQualityAssessor(IDepthQualityAssessor &&) = default;
+  IDepthQualityAssessor &operator=(const IDepthQualityAssessor &) = delete;
+  IDepthQualityAssessor &operator=(IDepthQualityAssessor &&) = default;
+  virtual ~IDepthQualityAssessor() = default;
 
-  // Initialize as a null node
-  Json();
-
-  // Initialize from an input stream
-  explicit Json(std::istream &stream);
-
-  // For a Json of type Object specify another Json of Type Object that
-  // overrides this one for all keys
-  void setOverrides(const Json &overrides);
-
-  Type type() const;
-  Json optional(std::string const &key) const;
-  Json require(std::string const &key) const;
-  bool isPresent(std::string const &key) const;
-
-  // Index into an array
-  Json at(size_t index) const;
-
-  // Return the number of elements in an object or array
-  size_t size() const;
-
-  double asDouble() const;
-  float asFloat() const;
-  int asInt() const;
-  std::string const &asString() const;
-  bool asBool() const;
-  auto asStringVector() const -> std::vector<std::string>;
-  template <stack::size_type M> auto asIntVector() const -> stack::Vector<int, M>;
-  template <stack::size_type M> auto asFloatVector() const -> stack::Vector<float, M>;
-
-  // Anything apart from false and null is true
-  explicit operator bool() const;
-
-private:
-  explicit Json(std::shared_ptr<impl::Value> value);
-
-  std::shared_ptr<impl::Value> m_value;
+  virtual auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
+                                 const Common::MVD16Frame &sourceViews) -> bool = 0;
 };
-} // namespace TMIV::Common
-
-#include "Json.hpp"
+} // namespace TMIV::DepthQualityAssessor
 
 #endif

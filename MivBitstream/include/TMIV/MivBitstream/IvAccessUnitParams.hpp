@@ -218,7 +218,7 @@ inline auto AtlasAccessUnitParams::operator==(const AtlasAccessUnitParams &other
 
 inline auto operator<<(std::ostream &stream, const IvAccessUnitParams &x) -> std::ostream & {
   for (auto &atlas : x.atlas) {
-    stream << atlas.asps;
+    stream << atlas.asps << atlas.afps << atlas.atgh;
   }
   stream << "Total number of patches: " << x.patchParamsList.size() << '\n';
   return stream;

@@ -186,7 +186,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
       VERIFY_MIVBITSTREAM(pp.pdu2dSize().x() % n == 0);
       VERIFY_MIVBITSTREAM(pp.pdu2dSize().y() % n == 0);
       pdu.pdu_2d_delta_size_x((pp.pdu2dSize().x() - size_x) / n);
-      pdu.pdu_2d_delta_size_x((pp.pdu2dSize().y() - size_y) / n);
+      pdu.pdu_2d_delta_size_y((pp.pdu2dSize().y() - size_y) / n);
       size_x = pp.pdu2dSize().x();
       size_y = pp.pdu2dSize().y();
 

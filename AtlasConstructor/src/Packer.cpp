@@ -115,7 +115,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     }
   }
   if (m_maxEntities > 1)
-	cout << "clusteringMap size = " << clusteringMap.size() << endl;
+    cout << "clusteringMap size = " << clusteringMap.size()
+         << " with total # clusters = " << clusteringMap_Index.size() << endl;
 
   // Packing
   AtlasParamsVector atlasParamsVector;
@@ -130,9 +131,6 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   auto comp = [&](const Cluster &p1, const Cluster &p2) -> bool {
     if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
       return isBasicView[p2.getViewId()];
-    }
-    if (m_maxEntities > 1) {
-      return p1.getNumActivePixels() < p2.getNumActivePixels();
     }
     return p1.getArea() < p2.getArea();
   };
@@ -150,11 +148,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   for (const auto &cluster : out) {
     // modification to align the imin,jmin to even values to help renderer
     Cluster c = Cluster::align(cluster, 2);
-    if (c.getNumActivePixels()==0)
-      cout << "Skipping patch of clusterID "<<c.getClusterId()<< " and size " << c.width() << "x" << c.height() << " from view "
-           << c.getViewId() << " and entity " << c.getEntityId() << endl;
-    else
-		clusterToPack.push(c);
+    clusterToPack.push(c);
   }
 
   int pIndex = 0;
@@ -197,7 +191,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           if (m_maxEntities > 1) {
             p.entityId = cluster.getEntityId();
             cout << "Packing patch " << pIndex << " of entity " << *p.entityId << " from view "
-                 << p.viewId << " with #active pixels " << cluster.getNumActivePixels()
+                 << p.viewId << " area " << cluster.getArea()
                  << " in atlas " << static_cast<int>(p.atlasId) << endl;
           }
 
@@ -211,7 +205,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
       if (!packed) {
         if (m_maxEntities > 1) {
-          cout << "Spliting patch " << pIndex << endl;
+          cout << "Spliting cluster " << cluster.getClusterId() << endl;
         }
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 
@@ -230,8 +224,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         }
       }
     }
-
-    clusterToPack.pop();
+    
+	clusterToPack.pop();
   }
 
   return atlasParamsVector;

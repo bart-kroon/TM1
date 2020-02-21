@@ -236,7 +236,8 @@ void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) 
 
   const auto ssvu = SampleStreamVpccUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
-  cout << ssvu << vu;
+  cout << "\n\n--- V-PCC unit " << string(100 - 19, '-') << '\n'
+       << ssvu << vu << string(100, '-') << "\n\n";
 
   m_stream.flush();
 }

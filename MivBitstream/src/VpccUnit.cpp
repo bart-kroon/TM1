@@ -203,7 +203,8 @@ auto VpccUnitHeader::decodeFrom(istream &stream, const vector<VpccParameterSet> 
 
     x.vuh_atlas_id(uint8_t(bitstream.readBits(6)));
     VERIFY_VPCCBITSTREAM(x.vuh_atlas_id() <=
-                         vpses[x.vuh_vpcc_parameter_set_id()].vps_atlas_count_minus1());
+                             vpses[x.vuh_vpcc_parameter_set_id()].vps_atlas_count_minus1() ||
+                         x.vuh_atlas_id() == specialAtlasId);
   }
   if (x.vuh_unit_type() == VuhUnitType::VPCC_AVD) {
     x.vuh_attribute_index(uint8_t(bitstream.readBits(7)));
@@ -253,7 +254,8 @@ void VpccUnitHeader::encodeTo(ostream &stream, const vector<VpccParameterSet> &v
     bitstream.writeBits(vuh_vpcc_parameter_set_id(), 4);
 
     VERIFY_VPCCBITSTREAM(vuh_atlas_id() <=
-                         vpses[vuh_vpcc_parameter_set_id()].vps_atlas_count_minus1());
+                             vpses[vuh_vpcc_parameter_set_id()].vps_atlas_count_minus1() ||
+                         vuh_atlas_id() == specialAtlasId);
     VERIFY_VPCCBITSTREAM(vuh_atlas_id() <= 63);
     bitstream.writeBits(vuh_atlas_id(), 6);
   }

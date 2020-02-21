@@ -126,10 +126,10 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  std::uint8_t m_oi_occupancy_codec_id;
-  std::uint8_t m_oi_lossy_occupancy_map_compression_threshold;
-  std::uint8_t m_oi_occupancy_nominal_2d_bitdepth_minus1;
-  bool m_oi_occupancy_MSB_align_flag;
+  std::uint8_t m_oi_occupancy_codec_id{};
+  std::uint8_t m_oi_lossy_occupancy_map_compression_threshold{};
+  std::uint8_t m_oi_occupancy_nominal_2d_bitdepth_minus1{};
+  bool m_oi_occupancy_MSB_align_flag{};
 };
 
 class VpccParameterSet;
@@ -159,10 +159,10 @@ public:
                 uint8_t atlasId) const;
 
 private:
-  std::uint8_t m_gi_geometry_codec_id;
-  std::uint8_t m_gi_geometry_nominal_2d_bitdepth_minus1;
-  bool m_gi_geometry_MSB_align_flag;
-  std::uint8_t m_gi_geometry_3d_coordinates_bitdepth_minus1;
+  std::uint8_t m_gi_geometry_codec_id{};
+  std::uint8_t m_gi_geometry_nominal_2d_bitdepth_minus1{};
+  bool m_gi_geometry_MSB_align_flag{};
+  std::uint8_t m_gi_geometry_3d_coordinates_bitdepth_minus1{};
 };
 
 // 23090-5: attribute_information( atlasId )
@@ -232,10 +232,10 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  bool m_msp_depth_low_quality_flag;
-  bool m_msp_geometry_scale_enabled_flag;
-  unsigned m_msp_num_groups_minus1;
-  unsigned m_msp_max_entities_minus1;
+  bool m_msp_depth_low_quality_flag{};
+  bool m_msp_geometry_scale_enabled_flag{};
+  unsigned m_msp_num_groups_minus1{};
+  unsigned m_msp_max_entities_minus1{};
 };
 
 // 23090-5: vpcc_parameter_set()

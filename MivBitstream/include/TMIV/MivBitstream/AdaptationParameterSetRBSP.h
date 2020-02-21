@@ -142,7 +142,7 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  CiCamType m_ci_cam_type;
+  CiCamType m_ci_cam_type{};
   std::uint16_t m_ci_projection_plane_width_minus1{};
   std::uint16_t m_ci_projection_plane_height_minus1{};
   std::optional<float> m_ci_erp_phi_min;

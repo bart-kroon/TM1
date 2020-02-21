@@ -53,7 +53,7 @@ public:
   auto occupant(uint16_t x) const -> bool;
 
 private:
-  uint16_t m_threshold;
+  uint16_t m_threshold{};
 };
 
 // Extract the depth transform for the specified view [and patch]

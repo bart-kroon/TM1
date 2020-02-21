@@ -101,8 +101,8 @@ public:
 
 private:
   NalUnitType m_nal_unit_type;
-  std::uint8_t m_nal_layer_id;
-  std::uint8_t m_nal_temporal_id_plus1;
+  std::uint8_t m_nal_layer_id{};
+  std::uint8_t m_nal_temporal_id_plus1{};
 };
 
 // 23090-5: nal_unit(NumBytesInNalUnit)

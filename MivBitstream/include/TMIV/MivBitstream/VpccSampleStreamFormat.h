@@ -63,7 +63,7 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  std::uint8_t m_ssvh_unit_size_precision_bytes_minus1;
+  std::uint8_t m_ssvh_unit_size_precision_bytes_minus1{};
 };
 
 // 23090-5: sample_stream_vpcc_unit()

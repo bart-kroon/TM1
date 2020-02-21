@@ -102,9 +102,9 @@ public:
 
 private:
   std::optional<bool> m_masp_omaf_v1_compatible_flag;
-  unsigned m_masp_group_id;
-  bool m_masp_auxiliary_atlas_flag;
-  bool m_masp_depth_occ_map_threshold_flag;
+  unsigned m_masp_group_id{};
+  bool m_masp_auxiliary_atlas_flag{};
+  bool m_masp_depth_occ_map_threshold_flag{};
   std::optional<std::uint16_t> m_masp_geometry_frame_width_minus1;
   std::optional<std::uint16_t> m_masp_geometry_frame_height_minus1;
 };

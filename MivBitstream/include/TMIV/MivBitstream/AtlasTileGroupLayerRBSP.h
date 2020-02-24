@@ -57,7 +57,8 @@ enum class FlexiblePatchOrientation : std::uint8_t {
   FPO_ROT270,
   FPO_MIRROR,
   FPO_MROT90,
-  FPO_MROT180
+  FPO_MROT180,
+  FPO_INVALID = UINT8_MAX
 };
 
 enum class AtgduPatchMode : std::uint8_t {

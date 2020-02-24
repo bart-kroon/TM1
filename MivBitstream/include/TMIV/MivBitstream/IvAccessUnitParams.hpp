@@ -120,13 +120,6 @@ inline auto PatchParams::pduDepthOccMapThreshold(const std::uint16_t value) noex
   return *this;
 }
 
-inline auto PatchParams::isRotated() const -> bool {
-  return pduOrientationIndex() == FlexiblePatchOrientation::FPO_ROT90 ||
-         pduOrientationIndex() == FlexiblePatchOrientation::FPO_SWAP ||
-         pduOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270 ||
-         pduOrientationIndex() == FlexiblePatchOrientation::FPO_MROT90;
-}
-
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
   return vuhAtlasId == other.vuhAtlasId && pduViewId() == other.pduViewId() &&
          pduEntityId() == other.pduEntityId() && pduViewSize() == other.pduViewSize() &&

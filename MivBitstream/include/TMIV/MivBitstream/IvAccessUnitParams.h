@@ -87,7 +87,7 @@ private:
   std::uint16_t m_pduDepthStart{};
   std::optional<std::uint16_t> m_pduDepthEnd;
   std::uint16_t m_pduViewId{};
-  FlexiblePatchOrientation m_pduOrientationIndex{};
+  FlexiblePatchOrientation m_pduOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<std::uint16_t> m_pduEntityId;
   std::optional<std::uint16_t> m_pduDepthOccMapThreshold;
 };

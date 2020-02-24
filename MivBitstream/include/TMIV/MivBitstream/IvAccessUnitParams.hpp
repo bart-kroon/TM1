@@ -38,14 +38,14 @@
 namespace TMIV::MivBitstream {
 inline auto PatchParams::pdu2dPos() const noexcept { return m_pdu2dPos; }
 
-inline auto PatchParams::pdu2dSize() const noexcept { return m_pdu2dSize; }
-
-inline auto PatchParams::pduViewSize() const noexcept {
+inline auto PatchParams::pdu2dSize() const noexcept {
   if (isRotated()) {
-    return Common::Vec2i{m_pdu2dSize.y(), m_pdu2dSize.x()};
+    return Common::Vec2i{m_pduViewSize.y(), m_pduViewSize.x()};
   }
-  return m_pdu2dSize;
+  return m_pduViewSize;
 }
+
+inline auto PatchParams::pduViewSize() const noexcept { return m_pduViewSize; }
 
 inline auto PatchParams::pduViewPos() const noexcept { return m_pduViewPos; }
 
@@ -69,7 +69,12 @@ inline auto PatchParams::pdu2dPos(const Common::Vec2i value) noexcept -> PatchPa
 }
 
 inline auto PatchParams::pdu2dSize(const Common::Vec2i value) noexcept -> PatchParams & {
-  m_pdu2dSize = value;
+  if (isRotated()) {
+    m_pduViewSize.x() = value.y();
+    m_pduViewSize.y() = value.x();
+  } else {
+    m_pduViewSize = value;
+  }
   return *this;
 }
 
@@ -79,12 +84,7 @@ inline auto PatchParams::pduViewPos(const Common::Vec2i value) noexcept -> Patch
 }
 
 inline auto PatchParams::pduViewSize(const Common::Vec2i value) noexcept -> PatchParams & {
-  if (isRotated()) {
-    m_pdu2dSize.x() = value.y();
-    m_pdu2dSize.y() = value.x();
-  } else {
-    m_pdu2dSize = value;
-  }
+  m_pduViewSize = value;
   return *this;
 }
 

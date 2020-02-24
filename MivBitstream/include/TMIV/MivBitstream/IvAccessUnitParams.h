@@ -82,7 +82,7 @@ struct PatchParams {
 
 private:
   Common::Vec2i m_pdu2dPos;
-  Common::Vec2i m_pdu2dSize;
+  Common::Vec2i m_pduViewSize;
   Common::Vec2i m_pduViewPos;
   std::uint16_t m_pduDepthStart{};
   std::optional<std::uint16_t> m_pduDepthEnd;

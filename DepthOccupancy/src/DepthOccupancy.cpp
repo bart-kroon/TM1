@@ -103,14 +103,14 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
     const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
     const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
 
-    for (int i = 0; i < patch.pdu2dSize().y(); ++i) {
-      for (int j = 0; j < patch.pdu2dSize().x(); ++j) {
-        const int n = i + patch.pdu2dPos().y();
-        const int m = j + patch.pdu2dPos().x();
+    for (auto i = 0; i < patch.pdu2dSize().y(); ++i) {
+      for (auto j = 0; j < patch.pdu2dSize().x(); ++j) {
+        const auto n = i + patch.pdu2dPos().y();
+        const auto m = j + patch.pdu2dPos().x();
 
         const auto &plane = inAtlases[patch.vuhAtlasId].second.getPlane(0);
 
-        if (n < 0 || n >= plane.height() || m < 0 || m >= plane.width()) {
+        if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
           // TODO(BK): Remove the printing
           cout << "DeptOccupancy: Error in patch list:\n";
           cout << "  pdu2dPos = " << patch.pdu2dPos() << '\n';

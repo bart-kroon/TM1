@@ -103,14 +103,24 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
     const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
     const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
 
-    const auto patchSizeInAtlas = patch.pdu2dSize();
-
-    for (int i = 0; i < patchSizeInAtlas.y(); ++i) {
-      for (int j = 0; j < patchSizeInAtlas.x(); ++j) {
+    for (int i = 0; i < patch.pdu2dSize().y(); ++i) {
+      for (int j = 0; j < patch.pdu2dSize().x(); ++j) {
         const int n = i + patch.pdu2dPos().y();
         const int m = j + patch.pdu2dPos().x();
 
-        const auto inLevel = inAtlases[patch.vuhAtlasId].second.getPlane(0)(n, m);
+        const auto &plane = inAtlases[patch.vuhAtlasId].second.getPlane(0);
+
+        if (n < 0 || n >= plane.height() || m < 0 || m >= plane.width()) {
+          // TODO(BK): Remove the printing
+          cout << "DeptOccupancy: Error in patch list:\n";
+          cout << "  pdu2dPos = " << patch.pdu2dPos() << '\n';
+          cout << "  pdu2dSize = " << patch.pdu2dSize() << '\n';
+          cout << "  vuhAtlasId = " << patch.vuhAtlasId << '\n';
+          cout << "  atlas size is " << plane.height() << " x " << plane.width() << '\n';
+          abort();
+        }
+
+        const auto inLevel = plane(n, m);
 
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);

@@ -199,6 +199,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
       }
 
       pdu.pdu_orientation_index(pp.pduOrientationIndex());
+	  pdu.pdu_view_id(pp.pduViewId());
 
       if (pp.pduEntityId()) {
         pdu.pdu_entity_id(*pp.pduEntityId());

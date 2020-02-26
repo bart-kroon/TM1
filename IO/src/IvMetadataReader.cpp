@@ -35,41 +35,35 @@
 
 #include <TMIV/IO/IO.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
 IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirectoryField,
-                                   const string &fileNameField) {
-  m_path = getFullPath(config, baseDirectoryField, fileNameField);
+                                   const string &fileNameField)
+    : m_config{config}, m_path{getFullPath(config, baseDirectoryField, fileNameField)},
+      m_stream{m_path, ios::binary}, m_decoder{m_stream, geoFrameServer(), attrFrameServer()} {
   m_stream.open(m_path, ios::binary);
-  if (!m_stream.good()) {
-    ostringstream what;
-    what << "Failed to open metadata file " << m_path;
-    throw runtime_error(what.str());
-  }
 }
 
-void IvMetadataReader::readIvSequenceParams() {
-  // TODO(BK): Implement
+auto IvMetadataReader::geoFrameServer() -> MivDecoder::GeoFrameServer {
+  return [this](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+    const auto path = getFullPath(m_config, "OutputDirectory", "AtlasDepthPathFmt", atlasId);
+    cout << "Loading geometry video data: atlasId = " << int(atlasId) << ", frameId = " << frameId
+         << ", frameSize = " << frameSize << " (YUV 4:2:0 --> YUV 4:0:0)\n";
+    return readFrame<YUV400P10>(path, frameId, frameSize);
+  };
 }
 
-void IvMetadataReader::readIvAccessUnitParams() {
-  // TODO(BK): Implement
-}
-
-auto IvMetadataReader::readAccessUnit(int accessUnit) -> bool {
-  if (m_accessUnit == accessUnit) {
-    return false;
-  }
-  m_accessUnit = accessUnit;
-  m_bitstream.reset();
-  m_stream.seekg(0);
-  readIvSequenceParams();
-  for (int i = 0; i <= accessUnit; ++i) {
-    readIvAccessUnitParams();
-  }
-  return true;
+auto IvMetadataReader::attrFrameServer() -> MivDecoder::AttrFrameServer {
+  return [this](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+    const auto path = getFullPath(m_config, "OutputDirectory", "AtlasTexturePathFmt", atlasId);
+    cout << "Loading attribute video data: atlasId = " << int(atlasId) << ", frameId = " << frameId
+         << ", frameSize = " << frameSize << " (YUV 4:2:0 --> YUV 4:4:4)\n";
+    return yuv444p(readFrame<YUV420P10>(path, frameId, frameSize));
+  };
 }
 } // namespace TMIV::IO

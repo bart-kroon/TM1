@@ -34,9 +34,8 @@
 #ifndef _TMIV_IO_IVMETADATAREADER_H_
 #define _TMIV_IO_IVMETADATAREADER_H_
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/MivDecoder.h>
 
 #include <fstream>
 
@@ -46,30 +45,17 @@ public:
   IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
                    const std::string &fileNameField);
 
-  void readIvSequenceParams();
-  void readIvAccessUnitParams();
-  bool readAccessUnit(int accessUnit);
-
-  auto ivSequenceParams() const -> const MivBitstream::IvSequenceParams &;
-  auto ivAccessUnitParams() const -> const MivBitstream::IvAccessUnitParams &;
+  constexpr auto &decoder() noexcept { return m_decoder; }
 
 private:
+  auto geoFrameServer() -> MivBitstream::MivDecoder::GeoFrameServer;
+  auto attrFrameServer() -> MivBitstream::MivDecoder::AttrFrameServer;
+
+  const Common::Json &m_config;
   std::string m_path;
   std::ifstream m_stream;
-  Common::InputBitstream m_bitstream{m_stream};
-  MivBitstream::IvSequenceParams m_ivSequenceParams;
-  MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
-  int m_accessUnit{-1};
+  MivBitstream::MivDecoder m_decoder;
 };
-
-inline auto IvMetadataReader::ivSequenceParams() const -> const MivBitstream::IvSequenceParams & {
-  return m_ivSequenceParams;
-}
-
-inline auto IvMetadataReader::ivAccessUnitParams() const
-    -> const MivBitstream::IvAccessUnitParams & {
-  return m_ivAccessUnitParams;
-}
 
 } // namespace TMIV::IO
 

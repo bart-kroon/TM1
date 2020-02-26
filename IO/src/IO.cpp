@@ -67,7 +67,6 @@ auto getFullPath(const Json &config, const string &baseDirectoryField, const str
   return baseDirectory + fileName;
 }
 
-namespace {
 template <typename FORMAT>
 auto readFrame(const string &path, int frameIndex, Vec2i resolution) -> Frame<FORMAT> {
   Frame<FORMAT> result(resolution.x(), resolution.y());
@@ -87,6 +86,7 @@ auto readFrame(const string &path, int frameIndex, Vec2i resolution) -> Frame<FO
   return result;
 }
 
+namespace {
 template <typename FORMAT> void padChroma(ostream &stream, int bytes) {
   constexpr auto fillValue = neutralColor<FORMAT>();
   const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
@@ -97,6 +97,7 @@ template <typename FORMAT> void padChroma(ostream &stream, int bytes) {
 
 template <typename FORMAT>
 void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) {
+  // TODO(BK): Enable random write access (seekp)
   ofstream stream(path, (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary);
   if (!stream.good()) {
     throw runtime_error("Failed to open file for writing: " + path);
@@ -232,7 +233,7 @@ auto loadSourceIvAccessUnitParams(const Json &config) -> IvAccessUnitParams {
 
   x.atlas.emplace_back();
   x.atlas.front()
-	  .asps.asps_use_eight_orientations_flag(true)
+      .asps.asps_use_eight_orientations_flag(true)
       .asps_extension_present_flag(true)
       .asps_miv_extension_present_flag(true)
       .miv_atlas_sequence_params()
@@ -316,15 +317,6 @@ void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame
                "PrunedViewDepthPathFmt");
 }
 
-auto loadAtlas(const Json &config, const SizeVector &atlasSize, int frameIndex) -> MVD10Frame {
-
-  auto node = config.optional("depthDownScaleFlag");
-  bool downscaleDepth = node && node.asBool();
-
-  return loadMVDFrame<YUV400P10>(config, atlasSize, frameIndex, "atlas", "OutputDirectory",
-                                 "AtlasTexturePathFmt", "AtlasDepthPathFmt", {}, downscaleDepth);
-}
-
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   saveMVDFrame(config, frameIndex, frame, "atlas", "OutputDirectory", "AtlasTexturePathFmt",
                "AtlasDepthPathFmt");
@@ -398,9 +390,11 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame &frame) {
   cout << "Saving viewport frame " << frameIndex << '\n';
 
-  string texturePath = getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
-                                   config.require("OutputCameraName").asString());
-  writeFrame(texturePath, frame.first, frameIndex);
+  if (config.optional("OutputTexturePath")) {
+    string texturePath = getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
+                                     config.require("OutputCameraName").asString());
+    writeFrame(texturePath, frame.first, frameIndex);
+  }
 
   if (config.optional("OutputDepthPath")) {
     string depthPath = getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,

@@ -66,8 +66,6 @@ Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::Siz
 void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
-auto loadAtlas(const Common::Json &config, const Common::SizeVector &atlasSize, int frameIndex)
-    -> Common::MVD10Frame;
 
 void savePatchIdMaps(const Common::Json &config, int frameIndex,
                      const Common::PatchIdMapList &maps);
@@ -79,6 +77,10 @@ void saveViewport(const Common::Json &config, int frameIndex,
 // Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
 // encoded stream, then regular values are returned else mirrored indices are computed.
 int getExtendedIndex(const Common::Json &config, int frameIndex);
+
+template <typename FORMAT>
+auto readFrame(const std::string &path, int frameIndex, Common::Vec2i resolution)
+    -> Common::Frame<FORMAT>;
 } // namespace TMIV::IO
 
 #endif

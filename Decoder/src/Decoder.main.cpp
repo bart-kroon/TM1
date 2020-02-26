@@ -41,10 +41,12 @@
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <iostream>
+#include <map>
 #include <memory>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::MivBitstream {
 const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
@@ -53,82 +55,85 @@ const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
 namespace TMIV::Decoder {
 class Application : public Common::Application {
 private:
-  unique_ptr<IDecoder> m_decoder;
-  int m_numberOfFrames;
-  int m_intraPeriod;
   IO::IvMetadataReader m_metadataReader;
+  unique_ptr<IDecoder> m_decoder;
+  multimap<int, int> m_inputToOutputFramesMap;
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Decoder", move(argv)}, m_metadataReader{json(), "OutputDirectory",
-                                                                     "AtlasMetadataPath"} {
-    m_decoder = create<IDecoder>("Decoder");
-    m_numberOfFrames = json().require("numberOfFrames").asInt();
-    m_intraPeriod = json().require("intraPeriod").asInt();
+      : Common::Application{"Decoder", move(argv)},                       // Load configuration
+        m_metadataReader{json(), "OutputDirectory", "AtlasMetadataPath"}, // Read MIV bitstream
+        m_decoder{create<IDecoder>("Decoder")},                           // Decoder/renderer
+        m_inputToOutputFramesMap{mapInputToOutputFrames(json())} {        // Handle pose traces
 
-    if (auto subnode = json().optional("extraNumberOfFrames")) {
-      m_numberOfFrames += subnode.asInt();
+    m_metadataReader.decoder().onSequence.emplace_back(
+        [this](const VpccParameterSet & /* vps */) { cout << "New sequence\n"; });
+
+    m_metadataReader.decoder().onFrame.emplace_back([this](const AccessUnit &au) {
+      auto outputFrames = m_inputToOutputFramesMap.equal_range(au.frameId);
+
+      for (auto outputFrame = outputFrames.first; outputFrame != outputFrames.second;
+           ++outputFrame) {
+
+        renderDecodedFrame(au, outputFrame->second);
+      }
+      return true;
+    });
+  }
+
+  void run() override { m_metadataReader.decoder().decode(); }
+
+private:
+  void renderDecodedFrame(const AccessUnit &au, int outputFrame) {
+    cout << "Rendering input frame " << au.frameId << " to output frame " << outputFrame
+         << ", with target viewport:\n";
+    const auto viewportParams = IO::loadViewportMetadata(json(), outputFrame);
+    viewportParams.printTo(cout, 0);
+
+    const auto viewport = m_decoder->decodeFrame(au, viewportParams);
+
+    IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
+
+    if (json().optional("AtlasPatchOccupancyMapFmt")) {
+      std::cout << "Dumping patch ID maps to disk" << std::endl;
+      auto patchMapIdList = m_decoder->getPatchIdMapList(au);
+      IO::savePatchIdMaps(json(), outputFrame, patchMapIdList);
+    }
+
+    if (json().optional("PrunedViewTexturePathFmt") && json().optional("PrunedViewDepthPathFmt")) {
+      std::cout << "Dumping recovered pruned views to disk" << std::endl;
+      auto recoveredTransportView = m_decoder->recoverPrunedView(au);
+      IO::savePrunedFrame(json(), outputFrame, recoveredTransportView);
     }
   }
 
-  void run() override {
-    m_metadataReader.readIvSequenceParams();
-    auto ivSequenceParams = m_metadataReader.ivSequenceParams();
-    {
-      if (auto subnode = json().optional("ViewingSpace"); subnode) {
-        cout << "Overriding viewing space from JSON" << endl;
-        ivSequenceParams.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode);
-      }
-    }
-    m_decoder->updateSequenceParams(ivSequenceParams);
-    cout << "Decoded sequence parameters:\n" << ivSequenceParams;
+  static auto mapInputToOutputFrames(const Json &config) -> multimap<int, int> {
+    auto x = multimap<int, int>{};
 
-    int firstOutputFrame = 0;
-    int outputFrameStep = 1;
-    if (auto subnode = json().optional("firstOutputFrame"); subnode) {
+    const auto numberOfFrames = config.require("numberOfFrames").asInt();
+    auto extraFrames = 0;
+    auto firstOutputFrame = 0;
+    auto outputFrameStep = 1;
+
+    if (auto subnode = config.optional("extraNumberOfFrames"); subnode) {
+      extraFrames = subnode.asInt();
+    }
+
+    if (auto subnode = config.optional("firstOutputFrame"); subnode) {
       firstOutputFrame = subnode.asInt();
     }
-    if (auto subnode = json().optional("outputFrameStep"); subnode) {
+
+    if (auto subnode = config.optional("outputFrameStep"); subnode) {
       outputFrameStep = subnode.asInt();
     }
-    for (int outputFrame = firstOutputFrame; outputFrame < m_numberOfFrames;
+
+    for (int outputFrame = firstOutputFrame; outputFrame < numberOfFrames;
          outputFrame += outputFrameStep) {
-      auto inputFrame = IO::getExtendedIndex(json(), outputFrame);
-      cout << "\nDECODE INPUT FRAME " << inputFrame << " TO OUTPUT FRAME " << outputFrame
-           << ":\n\n";
-
-      if (m_metadataReader.readAccessUnit(inputFrame / m_intraPeriod)) {
-        cout << "\nDecoded access unit parameters:\n" << m_metadataReader.ivAccessUnitParams();
-        m_decoder->updateAccessUnitParams(m_metadataReader.ivAccessUnitParams());
-      }
-
-      const auto viewportParams = IO::loadViewportMetadata(json(), outputFrame);
-      cout << "Target viewport:\n";
-      viewportParams.printTo(cout, 0);
-
-      const auto atlasSizes = m_metadataReader.ivAccessUnitParams().atlasSizes();
-      const auto viewport =
-          m_decoder->decodeFrame(IO::loadAtlas(json(), atlasSizes, inputFrame), viewportParams);
-      IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
-
-      //////////////////////////////////////////////////////////////////////////////////////
-      // dumping intermediate results to disk
-      if (auto subnode = json().optional("AtlasPatchOccupancyMapFmt")) {
-        std::cout << "Dumping patch map Id list to disk" << std::endl;
-        auto patchMapIdList =
-            m_decoder->getPatchIdMapList(IO::loadAtlas(json(), atlasSizes, inputFrame));
-        IO::savePatchIdMaps(json(), outputFrame, patchMapIdList);
-      };
-      if (auto subnode1 = json().optional("PrunedViewTexturePathFmt")) {
-        if (auto subnode2 = json().optional("PrunedViewDepthPathFmt")) {
-          std::cout << "Dumping recovered pruned views to disk" << std::endl;
-          auto recoveredTransportView =
-              m_decoder->recoverPrunedView(IO::loadAtlas(json(), atlasSizes, inputFrame));
-          IO::savePrunedFrame(json(), outputFrame, recoveredTransportView);
-        }
-      }
-      //////////////////////////////////////////////////////////////////////////////////////
+      auto inputFrame = IO::getExtendedIndex(config, outputFrame);
+      x.emplace(inputFrame, outputFrame);
     }
+
+    return x;
   }
 };
 } // namespace TMIV::Decoder

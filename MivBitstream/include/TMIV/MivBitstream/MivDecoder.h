@@ -81,10 +81,10 @@ public: // Integration testing
   static const Mode mode;
 
 public: // Frame servers
-  using GeoFrameServer =
-      std::function<Common::Depth10Frame(std::uint8_t atlasId, std::uint32_t frameId)>;
-  using AttrFrameServer =
-      std::function<Common::Texture444Frame(std::uint8_t atlasId, std::uint32_t frameId)>;
+  using GeoFrameServer = std::function<Common::Depth10Frame(
+      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+  using AttrFrameServer = std::function<Common::Texture444Frame(
+      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
 
 public: // Decoder interface
   // Construct a MivDecoder and read the sample stream V-PCC header

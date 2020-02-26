@@ -59,6 +59,22 @@ template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> F
 
   return result;
 }
+
+template <class TO, class FROM> auto yuv444p_impl(const Frame<FROM> &frame) -> Frame<TO> {
+  assert(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
+
+  auto result = Frame<TO>{frame.getWidth(), frame.getHeight()};
+
+  for (int i = 0; i < frame.getHeight(); ++i) {
+    for (int j = 0; j < frame.getWidth(); ++j) {
+      result.getPlane(0)(i, j) = frame.getPlane(0)(i, j);
+      result.getPlane(0)(i, j) = frame.getPlane(0)(i / 2, j / 2);
+      result.getPlane(0)(i, j) = frame.getPlane(0)(i / 2, j / 2);
+    }
+  }
+
+  return result;
+}
 } // namespace
 
 auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8> {
@@ -71,5 +87,17 @@ auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10> {
 
 auto yuv420p(const Frame<YUV444P16> &frame) -> Frame<YUV420P16> {
   return yuv420p_impl<YUV420P16>(frame);
+}
+
+auto yuv444p(const Frame<YUV420P8> &frame) -> Frame<YUV444P8> {
+  return yuv444p_impl<YUV444P8>(frame);
+}
+
+auto yuv444p(const Frame<YUV420P10> &frame) -> Frame<YUV444P10> {
+  return yuv444p_impl<YUV444P10>(frame);
+}
+
+auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16> {
+  return yuv444p_impl<YUV444P16>(frame);
 }
 } // namespace TMIV::Common

@@ -135,9 +135,13 @@ public:
   static constexpr auto neutralColor() { return detail::PixelFormatHelper<FORMAT>::neutralColor(); }
 };
 
-Frame<YUV420P8> yuv420p(const Frame<YUV444P8> &frame);
-Frame<YUV420P10> yuv420p(const Frame<YUV444P10> &frame);
-Frame<YUV420P16> yuv420p(const Frame<YUV444P16> &frame);
+auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8>;
+auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10>;
+auto yuv420p(const Frame<YUV444P16> &frame) -> Frame<YUV420P16>;
+
+auto yuv444p(const Frame<YUV420P8> &frame) -> Frame<YUV444P8>;
+auto yuv444p(const Frame<YUV420P10> &frame) -> Frame<YUV444P10>;
+auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16>;
 } // namespace TMIV::Common
 
 #include "Frame.hpp"

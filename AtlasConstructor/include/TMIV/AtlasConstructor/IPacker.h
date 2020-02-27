@@ -51,7 +51,7 @@ public:
 
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
                     const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector = 0;
-  virtual void updateAggregatedEntityMasks(const Common::EntityMapList &entityMasks) = 0;
+  virtual void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

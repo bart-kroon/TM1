@@ -62,6 +62,7 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
+  m_maxEntities = ivSequenceParams.maxEntities;
   for (const auto &sz : atlasParamsList.atlasSizes) {
 
     auto w = m_downscale_depth ? sz.x() / 2 : sz.x();
@@ -72,19 +73,15 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
     patchMapList.push_back(move(patchMap));
   }
 
-  if (ivSequenceParams.maxEntities > 1) {
+  if (m_maxEntities > 1) {
     cout << "Entity-Based Atlas Deconstructor is applied for EntityDecodeRange [ "
          << m_entityDecodeRange[0] << ", " << m_entityDecodeRange[1] << ")\n";
   }
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
     assert(atlasParamsList[id].viewId < viewParamsList.size());
-    if (ivSequenceParams.maxEntities == 1 ||
-        (atlasParamsList[id].entityId >= m_entityDecodeRange[0] &&
-         atlasParamsList[id].entityId < m_entityDecodeRange[1])) {
-      writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                        viewParamsList);
-    }
+    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
+                      viewParamsList);
   }
 
   return patchMapList;
@@ -116,7 +113,11 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {
       if (occupancyTransform.occupant(depthMap(y, x))) {
-        patchMap.getPlane(0)(y, x) = patchId;
+        if (m_maxEntities == 1 ||
+            (patch.entityId >= m_entityDecodeRange[0] && patch.entityId < m_entityDecodeRange[1])) {
+          patchMap.getPlane(0)(y, x) = patchId;
+        } else
+          patchMap.getPlane(0)(y, x) = unusedPatchId;
       }
     }
   }

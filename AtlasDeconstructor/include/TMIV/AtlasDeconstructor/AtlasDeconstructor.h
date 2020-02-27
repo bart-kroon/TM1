@@ -64,6 +64,7 @@ private:
                          const Common::MVD10Frame &frame,
                          const Metadata::ViewParamsVector &viewParamsVector);
   bool m_downscale_depth = false;
+  std::uint16_t m_maxEntities = 1;
 };
 } // namespace TMIV::AtlasDeconstructor
 

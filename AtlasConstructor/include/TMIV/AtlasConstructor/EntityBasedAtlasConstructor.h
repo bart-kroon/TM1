@@ -41,10 +41,12 @@
 #include <TMIV/AtlasConstructor/IPruner.h>
 #include <TMIV/Common/Json.h>
 
+#include <bitset>
 #include <deque>
 #include <memory>
 
 namespace TMIV::AtlasConstructor {
+
 class EntityBasedAtlasConstructor : public IAtlasConstructor {
 public:
   EntityBasedAtlasConstructor(const Common::Json & /*rootNode*/,
@@ -63,26 +65,18 @@ public:
   auto popAtlas() -> Common::MVD16Frame override;
 
 private:
-  static Common::MVD16Frame entitySeparator(Common::MVD16Frame transportViews,
-                                            Common::EntityMapList entityMaps, uint16_t entityId);
+  static Common::MVD16Frame entitySeparator(const Common::MVD16Frame &transportViews,
+                                            uint16_t entityId);
   static std::vector<Common::Frame<Common::YUV420P16>> yuvSampler(const Common::EntityMapList &in);
-  static void mergeViews(Common::MVD16Frame &entityMergedViews,
-                         Common::MVD16Frame transportEntityViews);
   static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
-  void updateEntityMasks(Common::EntityMapList &entityMasks, const Common::MaskList &masks,
-                         uint16_t entityId);
-  void aggregateEntityMasks(Common::EntityMapList &entityMasks);
-  void swap0(Common::EntityMapList &entityMasks);
-  static auto setView(Common::TextureDepth16Frame view, const Common::EntityMap &entityMask,
-                      int entityId) -> Common::TextureDepth16Frame;
-  void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
+  void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
+  void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::TextureDepth16Frame &views,
                          Common::MVD16Frame &atlas);
 
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
   Common::Vec2i m_EntityEncRange;
-  Common::Json m_rootNode;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
@@ -92,12 +86,9 @@ private:
   Metadata::IvSequenceParams m_outIvSequenceParams;
   Metadata::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
-  int m_fIndex{0};
-  Common::EntityMapList m_aggregatedEntityMask;
-  std::vector<Common::EntityMapList> m_entityMasksBuffer;
+  std::vector<Common::MaskList> m_aggregatedEntityMask;
   unsigned m_maxEntities{};
-  int m_frameInGOPIndex{0};
-};
+  };
 } // namespace TMIV::AtlasConstructor
 
 #endif

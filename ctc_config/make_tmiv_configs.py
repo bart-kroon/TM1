@@ -275,16 +275,6 @@ class DecoderConfiguration:
 		return 'Renderer'
 
 	def renderer(self):
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			config = {
-				'SynthesizerMethod': 'Synthesizer',
-				'Synthesizer': self.synthesizer(),
-				'InpainterMethod': 'Inpainter',
-				'Inpainter': {},
-				'ViewingSpaceControllerMethod': 'ViewingSpaceController',
-				'ViewingSpaceController': {}
-			}
-			return config
 		config = {
 			'SynthesizerMethod': 'ViewWeightingSynthesizer',
 			'ViewWeightingSynthesizer': self.ViewWeightingSynthesizer(),

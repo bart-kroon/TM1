@@ -81,9 +81,7 @@ auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
   }
 
   // Inpainting
-  if (ivSequenceParams.maxEntities == 1) {
     m_inpainter->inplaceInpaint(viewport, target);
-  }
 
   // fading to grey with respect to viewing space
   if (ivSequenceParams.viewingSpace) {

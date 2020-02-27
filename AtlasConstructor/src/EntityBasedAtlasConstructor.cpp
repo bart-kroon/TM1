@@ -170,13 +170,6 @@ auto EntityBasedAtlasConstructor::entitySeparator(const MVD16Frame &transportVie
     TextureDepth16Frame entityView = {
         TextureFrame(transportView.first.getWidth(), transportView.first.getHeight()),
         Depth16Frame(transportView.second.getWidth(), transportView.second.getHeight())};
-
-    for (auto &p : entityView.first.getPlanes()) {
-      fill(p.begin(), p.end(), neutralChroma);
-    }
-
-    fill(entityView.second.getPlane(0).begin(), entityView.second.getPlane(0).end(), uint16_t(0));
-
     entityViews.push_back(move(entityView));
   }
   EntityMapList entityMaps;
@@ -336,7 +329,7 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const AtlasParameters &patch
 
       // Depth
       auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
-      if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy) {
+      if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy && m_maxEntities==1) {
         depth = 1; // Avoid marking valid depth as invalid
       }
       depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;

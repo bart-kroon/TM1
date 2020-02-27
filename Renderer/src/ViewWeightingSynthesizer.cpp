@@ -230,10 +230,12 @@ public:
       }
     }
 
-    return {quantizeTexture(m_viewportColor),
-            DepthTransform<16>{targetCamera}.quantizeNormDisp(m_viewportVisibility, 1)};
+    const auto depthTransform = DepthTransform<16>{targetCamera};
+    auto frame = Texture444Depth16Frame{quantizeTexture(m_viewportColor),
+                                        depthTransform.quantizeNormDisp(m_viewportVisibility, 1)};
+    frame.first.filIInvalidWithNeutral(frame.second);
+    return frame;
 
-    return Common::Texture444Depth16Frame{};
   }
 
 private:

@@ -71,9 +71,10 @@ auto unprojectPoints(const ViewParams &viewParams, const Mat<Vec2f> &positions,
 auto changeReferenceFrame(const ViewParams &viewParams, const ViewParams &target,
                           const Mat<Vec3f> &points) -> Mat<Vec3f> {
   Mat<Vec3f> result(points.sizes());
-  const auto R_t = affineParameters(viewParams, target);
+  const auto r_t = affineParameters(viewParams, target);
 
-  parallel_for(points.size(), [&](size_t id) { result[id] = R_t.first * points[id] + R_t.second; });
+  parallel_for(points.size(),
+               [&](size_t id) { result[id] = rotate(points[id], r_t.first) + r_t.second; });
 
   return result;
 }
@@ -107,22 +108,22 @@ auto reprojectPoints(const ViewParams &viewParams, const ViewParams &target,
 auto calculateRayAngles(const ViewParams &viewParams, const ViewParams &target,
                         const Mat<Vec3f> &points) -> Mat<float> {
   Mat<float> result(points.sizes());
-  const auto R_t = affineParameters(viewParams, target);
+  const auto r_t = affineParameters(viewParams, target);
   transform(begin(points), end(points), begin(result),
-            [t = R_t.second](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
+            [t = r_t.second](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
   return result;
 }
 
 auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
-    -> pair<Mat3x3f, Vec3f> {
-  const auto R1 = viewParams.ce.rotationMatrix();
-  const auto R2 = target.ce.rotationMatrix();
-  const auto &t1 = viewParams.ce.position();
-  const auto &t2 = target.ce.position();
+    -> pair<QuatF, Vec3f> {
+  const auto r1 = viewParams.ce.rotation();
+  const auto r2 = target.ce.rotation();
+  const auto t1 = viewParams.ce.position();
+  const auto t2 = target.ce.position();
 
-  const auto R = transpose(R2) * R1;
-  const auto t = transpose(R2) * (t1 - t2);
-  return {R, t};
+  const auto r = conj(r2) * r1;
+  const auto t = rotate(t1 - t2, r2);
+  return {r, t};
 }
 
 auto unprojectVertex(Vec2f position, float depth, const ViewParams &viewParams) -> Vec3f {

@@ -34,7 +34,7 @@
 #ifndef _TMIV_RENDERER_REPROJECTPOINTS_H_
 #define _TMIV_RENDERER_REPROJECTPOINTS_H_
 
-#include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/Transformation.h>
 #include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/Renderer/Engine.h>
@@ -84,7 +84,7 @@ auto calculateRayAngles(const MivBitstream::ViewParams &viewParams,
 // camera to the target camera
 auto affineParameters(const MivBitstream::ViewParams &viewParams,
                       const MivBitstream::ViewParams &target)
-    -> std::pair<Common::Mat3x3f, Common::Vec3f>;
+    -> std::pair<Common::QuatF, Common::Vec3f>;
 
 // Unproject a pixel from a source frame to scene coordinates in the reference
 // frame of the target camera.
@@ -121,7 +121,7 @@ public:
 private:
   const MivBitstream::ViewParams &m_viewParams;
   Engine<camType> m_engine;
-  Common::Mat3x3f m_rotationMatrix;
+  Common::QuatF m_rotation;
 
 public:
   ProjectionHelper(const MivBitstream::ViewParams &viewParams);

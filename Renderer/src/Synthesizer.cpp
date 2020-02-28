@@ -64,7 +64,7 @@ public:
   ~Impl() = default;
 
   static auto affineParameterList(const ViewParamsList &viewParamsList, const ViewParams &target) {
-    vector<pair<Mat3x3f, Vec3f>> result;
+    vector<pair<QuatF, Vec3f>> result;
     result.reserve(viewParamsList.size());
     transform(
         begin(viewParamsList), end(viewParamsList), back_inserter(result),
@@ -80,7 +80,7 @@ public:
     const auto cols = int(ids.width());
     result.reserve(rows * cols);
 
-    auto R_t = affineParameterList(viewParamsList, target);
+    auto r_t = affineParameterList(viewParamsList, target);
 
     vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(patches.size());
@@ -113,11 +113,11 @@ public:
 
         const auto d = depthTransform[patchId].expandDepth(level);
         assert(d > 0.F && isfinite(d));
-        const auto &R = R_t[patch.pduViewId()].first;
-        const auto &t = R_t[patch.pduViewId()].second;
+        const auto &r = r_t[patch.pduViewId()].first;
+        const auto &t = r_t[patch.pduViewId()].second;
 
         // Reproject and calculate ray angle
-        const auto xyz = R * unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams) + t;
+        const auto xyz = rotate(unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams), r) + t;
         const auto rayAngle = angle(xyz, xyz - t);
         result.push_back({xyz, rayAngle});
       }
@@ -243,12 +243,12 @@ public:
                    const PatchParamsList &patches, const ViewParamsList &viewParamsList,
                    const ViewParams &target) const -> Texture444Depth16Frame {
     assert(atlases.size() == ids.size());
-    auto rasterizer = rasterFrame(
-        atlases.size(), target,
-        [&](size_t i, const ViewParams &target) {
-          return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches, viewParamsList, target);
-        },
-        resolutionRatio(viewParamsList, target));
+    auto rasterizer = rasterFrame(atlases.size(), target,
+                                  [&](size_t i, const ViewParams &target) {
+                                    return unprojectAtlas(atlases[i], ids[i].getPlane(0), patches,
+                                                          viewParamsList, target);
+                                  },
+                                  resolutionRatio(viewParamsList, target));
     const auto depthTransform = DepthTransform<16>{target.dq};
     auto frame = Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
                                         depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};

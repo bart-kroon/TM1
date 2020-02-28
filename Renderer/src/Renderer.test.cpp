@@ -80,19 +80,19 @@ TEST_CASE("Changing the reference frame", "[Render engine]") {
   rotated.ce.ce_view_quat_x(0.1F).ce_view_quat_y(0.3F).ce_view_quat_z(-0.3F);
 
   SECTION("trivial") {
-    auto R_t = affineParameters(neutral, neutral);
-    REQUIRE(R_t.first == Mat3x3f::eye());
-    REQUIRE(R_t.second == Vec3f::zeros());
+    auto r_t = affineParameters(neutral, neutral);
+    REQUIRE(r_t.first == QuatF{0.F, 0.F, 0.F, 1.F});
+    REQUIRE(r_t.second == Vec3f::zeros());
   }
   SECTION("translation") {
-    auto R_t = affineParameters(neutral, translated);
-    REQUIRE(R_t.first == Mat3x3f::eye());
-    REQUIRE(R_t.second == -translated.ce.position());
+    auto r_t = affineParameters(neutral, translated);
+    REQUIRE(r_t.first == QuatF{0.F, 0.F, 0.F, 1.F});
+    REQUIRE(r_t.second == -translated.ce.position());
   }
   SECTION("rotation") {
-    auto R_t = affineParameters(neutral, rotated);
-    REQUIRE(none_of(begin(R_t.first), end(R_t.first), [](auto x) { return x == 0.F; }));
-    REQUIRE(R_t.second == Vec3f::zeros());
+    auto r_t = affineParameters(neutral, rotated);
+    REQUIRE(none_of(begin(r_t.first), end(r_t.first), [](auto x) { return x == 0.F; }));
+    REQUIRE(r_t.second == Vec3f::zeros());
   }
 }
 

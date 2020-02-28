@@ -232,33 +232,13 @@ auto CameraExtrinsics::position() const noexcept -> Vec3f {
   return {ce_view_pos_x(), ce_view_pos_y(), ce_view_pos_z()};
 }
 
-auto CameraExtrinsics::qW() const noexcept -> float {
+auto CameraExtrinsics::rotation() const noexcept -> QuatF {
   const auto x = ce_view_quat_x();
   const auto y = ce_view_quat_y();
   const auto z = ce_view_quat_z();
-  return sqrt(max(0.F, 1.F - x * x - y * y - z * z));
-}
+  const auto w = sqrt(max(0.F, 1.F - x * x - y * y - z * z));
 
-// TODO(BK): Unit test
-auto CameraExtrinsics::rotationMatrix() const noexcept -> Mat3x3f {
-  Mat3x3f R;
-
-  const auto w = qW();
-  const auto x = ce_view_quat_x();
-  const auto y = ce_view_quat_y();
-  const auto z = ce_view_quat_z();
-
-  R(0, 0) = 1.F - 2.F * (y * y + z * z);
-  R(0, 1) = 2.F * (x * y - z * w);
-  R(0, 2) = 2.F * (x * z + y * w);
-  R(1, 0) = 2.F * (x * y + z * w);
-  R(1, 1) = 1.F - 2.F * (x * x + z * z);
-  R(1, 2) = 2.F * (y * z - x * w);
-  R(2, 0) = 2.F * (x * z - y * w);
-  R(2, 1) = 2.F * (y * z + x * w);
-  R(2, 2) = 1.F - 2.F * (x * x + y * y);
-
-  return R;
+  return {x, y, z, w};
 }
 
 auto CameraExtrinsics::position(Vec3f r) noexcept -> CameraExtrinsics & {
@@ -268,21 +248,11 @@ auto CameraExtrinsics::position(Vec3f r) noexcept -> CameraExtrinsics & {
   return *this;
 }
 
-// TODO(BK): Unit test
-auto CameraExtrinsics::eulerAngles(Common::Vec3f ypr) noexcept -> CameraExtrinsics & {
-  // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-
-  const auto cy = cos(ypr[0] / 2);
-  const auto sy = sin(ypr[0] / 2);
-  const auto cp = cos(ypr[1] / 2);
-  const auto sp = sin(ypr[1] / 2);
-  const auto cr = cos(ypr[2] / 2);
-  const auto sr = sin(ypr[2] / 2);
-
-  ce_view_quat_x(cy * cp * sr - sy * sp * cr);
-  ce_view_quat_y(sy * cp * sr + cy * sp * cr);
-  ce_view_quat_z(sy * cp * cr - cy * sp * sr);
-
+auto CameraExtrinsics::rotation(QuatF q) noexcept -> CameraExtrinsics & {
+  VERIFY_MIVBITSTREAM(normalized(q));
+  ce_view_quat_x(q.x());
+  ce_view_quat_y(q.y());
+  ce_view_quat_z(q.z());
   return *this;
 }
 

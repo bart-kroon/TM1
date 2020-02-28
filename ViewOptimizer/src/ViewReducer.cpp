@@ -92,28 +92,18 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     for (size_t id_1 = 0; id_1 < nbCameras - 1; id_1++) {
       for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
         // Sphere distance function
-        // TODO(BK): Reimplement angle comparison with quaternions
-#if false
-			// choose 9 degree as quantization step of angle between view i and view j.
-			const float degree_step = radperdeg * 9;
+        // choose 9 degree as quantization step of angle between view i and view j.
+        const float angleStep = radperdeg * 9.F;
 
-			auto temp_angle = size_t(
-            acos(sin(viewParamsList[id_1].rotation[1] * radperdeg) *
-                     sin(viewParamsList[id_2].rotation[1] * radperdeg) +
-                 cos(viewParamsList[id_1].rotation[1] * radperdeg) *
-                     cos(viewParamsList[id_2].rotation[1] * radperdeg) *
-                     cos((viewParamsList[id_1].rotation[0] - viewParamsList[id_2].rotation[0]) *
-                         radperdeg)) /
-            degree_step);
-#else
-        size_t temp_angle = 0;
-#endif
+        const auto v1 = rotate(Vec3f{1.F, 0.F, 0.F}, viewParamsList[id_1].ce.rotation());
+        const auto v2 = rotate(Vec3f{1.F, 0.F, 0.F}, viewParamsList[id_2].ce.rotation());
+        const auto angle = size_t(acos(dot(v1, v2)) / angleStep);
 
-        if (temp_angle > max_angle) {
+        if (angle > max_angle) {
           cameras_id_pair.clear();
           cameras_id_pair.emplace_back(id_1, id_2);
-          max_angle = temp_angle;
-        } else if (temp_angle == max_angle) {
+          max_angle = angle;
+        } else if (angle == max_angle) {
           cameras_id_pair.emplace_back(id_1, id_2);
         }
       }

@@ -50,7 +50,7 @@ namespace TMIV::Renderer {
 SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
 static auto affineParameterList(const ViewParamsList &viewParamsList, const ViewParams &target) {
-  vector<pair<Mat3x3f, Vec3f>> result;
+  vector<pair<QuatF, Vec3f>> result;
   result.reserve(viewParamsList.size());
   transform(
       begin(viewParamsList), end(viewParamsList), back_inserter(result),
@@ -61,9 +61,9 @@ static auto affineParameterList(const ViewParamsList &viewParamsList, const View
 auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const ViewParams &target)
     -> bool {
   const auto &camera = cameras[patch.pduViewId()];
-  auto R_t = affineParameterList(cameras, target);
-  const auto &R = R_t[patch.pduViewId()].first;
-  const auto &t = R_t[patch.pduViewId()].second;
+  auto r_t = affineParameterList(cameras, target);
+  const auto &r = r_t[patch.pduViewId()].first;
+  const auto &t = r_t[patch.pduViewId()].second;
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
@@ -81,7 +81,7 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
       1.F / max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_high());
 
   for (int i = 0; i < 4; i++) {
-    const auto xyz = R * unprojectVertex(uv[i], patch_dep_near, camera) + t;
+    const auto xyz = rotate(unprojectVertex(uv[i], patch_dep_near, camera), r) + t;
     const auto rayAngle = angle(xyz, xyz - t);
     SceneVertexDescriptor v;
     v.position = xyz;
@@ -93,7 +93,7 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
     xy_v[i] = pix.position;
   }
   for (int i = 0; i < 4; i++) {
-    const auto xyz = R * unprojectVertex(uv[i], patch_dep_far, camera) + t;
+    const auto xyz = rotate(unprojectVertex(uv[i], patch_dep_far, camera), r) + t;
     const auto rayAngle = angle(xyz, xyz - t);
     SceneVertexDescriptor v;
     v.position = xyz;

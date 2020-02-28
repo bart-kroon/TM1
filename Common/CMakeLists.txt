@@ -29,6 +29,7 @@ add_library(CommonLib
 	"include/TMIV/Common/Matrix.h"
 	"include/TMIV/Common/Array.h"
 	"include/TMIV/Common/Graph.h"
+	"include/TMIV/Common/Quaternion.h"
 	)
 
 add_library(TMIV::CommonLib
@@ -55,6 +56,7 @@ install(
 if (CMAKE_TESTING_ENABLED)
 	add_executable(CommonTest
 		"src/Bitstream.test.cpp"
+		"src/Quaternion.test.cpp"
 		"src/Common.test.cpp")
 
 	target_link_libraries(CommonTest

@@ -42,23 +42,22 @@ ProjectionHelper<camType>::List::List(const MivBitstream::ViewParamsList &viewPa
 
 template <MivBitstream::CiCamType camType>
 ProjectionHelper<camType>::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
-    : m_viewParams{viewParams}, m_engine{viewParams}, m_rotationMatrix{
-                                                          viewParams.ce.rotationMatrix()} {}
+    : m_viewParams{viewParams}, m_engine{viewParams}, m_rotation{viewParams.ce.rotation()} {}
 
 template <MivBitstream::CiCamType camType>
 auto ProjectionHelper<camType>::getViewingDirection() const -> Common::Vec3f {
-  return m_rotationMatrix * Common::Vec3f{1.F, 0.F, 0.F};
+  return rotate(Common::Vec3f{1.F, 0.F, 0.F}, m_rotation);
 }
 
 template <MivBitstream::CiCamType camType>
 auto ProjectionHelper<camType>::changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
-  return transpose(m_rotationMatrix) * (P - m_viewParams.ce.position());
+  return rotate(P - m_viewParams.ce.position(), conj(m_rotation));
 }
 
 template <MivBitstream::CiCamType camType>
 auto ProjectionHelper<camType>::doProjection(const Common::Vec3f &P) const
     -> std::pair<Common::Vec2f, float> {
-  Common::Vec3f Q = transpose(m_rotationMatrix) * (P - m_viewParams.ce.position());
+  Common::Vec3f Q = changeFrame(P);
   auto imageVertexDescriptor = m_engine.projectVertex(SceneVertexDescriptor{Q, 0.F});
   return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
 }
@@ -67,7 +66,7 @@ template <MivBitstream::CiCamType camType>
 auto ProjectionHelper<camType>::doUnprojection(const Common::Vec2f &p, float d) const
     -> Common::Vec3f {
   auto P = m_engine.unprojectVertex(p, d);
-  return (m_rotationMatrix * P + m_viewParams.ce.position());
+  return rotate(P, m_rotation) + m_viewParams.ce.position();
 }
 
 template <MivBitstream::CiCamType camType>

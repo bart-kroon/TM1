@@ -381,7 +381,7 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
     auto pose = loadPoseFromCSV(stream, frameIndex);
 
     result.ce.position(result.ce.position() + pose.position);
-    result.ce.eulerAngles(radperdeg * pose.rotation);
+    result.ce.rotation(euler2quat(radperdeg * pose.rotation));
   }
 
   return result;

@@ -124,11 +124,11 @@ auto project(const SceneVertexDescriptorList &vertices, const ViewParams &viewPa
   return target.ci.dispatch([&](auto camType) {
     ImageVertexDescriptorList result;
     Engine<camType.value> engine{target};
-    const auto [R, t] = affineParameters(viewParams, target);
+    const auto [r, t] = affineParameters(viewParams, target);
     result.reserve(result.size());
     transform(begin(vertices), end(vertices), back_inserter(result),
-              [&engine, R = R, t = t](SceneVertexDescriptor v) {
-                const auto p = R * v.position + t;
+              [&engine, r = r, t = t](SceneVertexDescriptor v) {
+                const auto p = rotate(v.position, r) + t;
                 return engine.projectVertex({p, angle(p, p - t)});
               });
     return result;

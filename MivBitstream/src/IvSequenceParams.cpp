@@ -75,7 +75,7 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   x.ci.ci_projection_plane_height_minus1(resolution.y() - 1);
 
   x.ce.position(node.require("Position").asFloatVector<3>());
-  x.ce.eulerAngles(radperdeg * node.require("Rotation").asFloatVector<3>());
+  x.ce.rotation(euler2quat(radperdeg * node.require("Rotation").asFloatVector<3>()));
 
   const auto depthRange = node.require("Depth_range").asFloatVector<2>();
   constexpr auto kilometer = 1000.F;

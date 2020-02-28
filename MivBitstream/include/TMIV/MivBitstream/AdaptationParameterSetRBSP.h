@@ -37,6 +37,7 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Vector.h>
+#include <TMIV/Common/Quaternion.h>
 
 #include <iosfwd>
 #include <optional>
@@ -61,11 +62,10 @@ public:
   constexpr auto &ce_view_quat_z(const float value) noexcept;
 
   auto position() const noexcept -> Common::Vec3f;
-  auto qW() const noexcept -> float;
-  auto rotationMatrix() const noexcept -> Common::Mat3x3f;
+  auto rotation() const noexcept -> Common::QuatF;
 
   auto position(Common::Vec3f) noexcept -> CameraExtrinsics &;
-  auto eulerAngles(Common::Vec3f) noexcept -> CameraExtrinsics &;
+  auto rotation(Common::QuatF) noexcept -> CameraExtrinsics &;
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 

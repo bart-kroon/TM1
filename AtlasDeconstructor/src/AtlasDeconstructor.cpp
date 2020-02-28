@@ -59,7 +59,6 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
                                        const MVD10Frame &frame) -> PatchIdMapList {
   PatchIdMapList patchMapList;
   assert(ivAccessUnitParams.atlasParamsList);
-  const auto &viewParamsList = ivSequenceParams.viewParamsList;
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
   m_maxEntities = ivSequenceParams.maxEntities;
@@ -79,9 +78,7 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   }
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
-    assert(atlasParamsList[id].viewId < viewParamsList.size());
-    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                      viewParamsList);
+    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame );
   }
 
   return patchMapList;
@@ -89,10 +86,8 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
                                            PatchIdMapList &patchMapList, uint16_t patchId,
-                                           const MVD10Frame &frame,
-                                           const ViewParamsVector &viewParamsVector) {
+                                           const MVD10Frame &frame ) {
   auto &patchMap = patchMapList[patch.atlasId];
-  auto &depthMap = frame[patch.atlasId].second.getPlane(0);
 
   const Vec2i &q0 = patch.posInAtlas;
   const auto sizeInAtlas = patch.patchSizeInAtlas();

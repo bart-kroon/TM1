@@ -61,8 +61,7 @@ private:
   Common::Vec2i m_entityDecodeRange;
   void writePatchIdInMap(const Metadata::AtlasParameters &patch,
                          Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
-                         const Common::MVD10Frame &frame,
-                         const Metadata::ViewParamsVector &viewParamsVector);
+                         const Common::MVD10Frame &frame);
   bool m_downscale_depth = false;
   std::uint16_t m_maxEntities = 1;
 };

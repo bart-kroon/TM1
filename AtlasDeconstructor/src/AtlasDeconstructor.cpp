@@ -101,8 +101,6 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   int yMin = q0.y();
   int yLast = q0.y() + sizeInAtlas.y();
 
-  const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
-
   if (m_downscale_depth) {
     yMin /= 2;
     yLast /= 2;
@@ -112,13 +110,9 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {
-      if (occupancyTransform.occupant(depthMap(y, x))) {
-        if (m_maxEntities == 1 ||
-            (patch.entityId >= m_entityDecodeRange[0] && patch.entityId < m_entityDecodeRange[1])) {
+        if (m_maxEntities == 1 || (patch.entityId >= m_entityDecodeRange[0] && patch.entityId < m_entityDecodeRange[1])) {
           patchMap.getPlane(0)(y, x) = patchId;
-        } else
-          patchMap.getPlane(0)(y, x) = unusedPatchId;
-      }
+        }
     }
   }
 }

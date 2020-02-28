@@ -279,9 +279,9 @@ auto CameraExtrinsics::eulerAngles(Common::Vec3f ypr) noexcept -> CameraExtrinsi
   const auto cr = cos(ypr[2] / 2);
   const auto sr = sin(ypr[2] / 2);
 
-  ce_view_quat_x(sy * cp * cr - cy * sp * sr);
-  ce_view_quat_y(cy * sp * cr + sy * cp * sr);
-  ce_view_quat_z(cy * cp * sr - sy * sp * cr);
+  ce_view_quat_x(cy * cp * sr - sy * sp * cr);
+  ce_view_quat_y(sy * cp * sr + cy * sp * cr);
+  ce_view_quat_z(sy * cp * cr - cy * sp * sr);
 
   return *this;
 }

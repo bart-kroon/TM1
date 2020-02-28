@@ -70,7 +70,7 @@ public:
       -> Common::Texture444Depth16Frame override;
 
   // getters for intermediate results dumping to disk
-  auto getPatchIdMapList(const Common::MVD10Frame &atlas) const -> Common::PatchIdMapList override;
+  auto getPatchIdMapList() const -> Common::PatchIdMapList override;
   auto recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame override;
 };
 } // namespace TMIV::Decoder

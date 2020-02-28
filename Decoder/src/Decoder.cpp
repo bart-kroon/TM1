@@ -79,7 +79,7 @@ auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
                                  target);
 }
 
-auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList {
+auto Decoder::getPatchIdMapList() const -> PatchIdMapList {
   return m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams);
 }
 

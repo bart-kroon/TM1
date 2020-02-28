@@ -55,8 +55,7 @@ AtlasDeconstructor::AtlasDeconstructor(const Json &rootNode, const Json &compone
 }
 
 auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
-                                       const IvAccessUnitParams &ivAccessUnitParams,
-                                       const MVD10Frame &frame) -> PatchIdMapList {
+                                       const IvAccessUnitParams &ivAccessUnitParams ) -> PatchIdMapList {
   PatchIdMapList patchMapList;
   assert(ivAccessUnitParams.atlasParamsList);
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
@@ -78,15 +77,14 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   }
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
-    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame );
+    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id) );
   }
 
   return patchMapList;
 }
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
-                                           PatchIdMapList &patchMapList, uint16_t patchId,
-                                           const MVD10Frame &frame ) {
+                                           PatchIdMapList &patchMapList, uint16_t patchId ) {
   auto &patchMap = patchMapList[patch.atlasId];
 
   const Vec2i &q0 = patch.posInAtlas;

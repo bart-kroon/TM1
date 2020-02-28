@@ -49,8 +49,7 @@ public:
   ~AtlasDeconstructor() override = default;
 
   auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
-                     const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                     const Common::MVD10Frame &frame) -> Common::PatchIdMapList override;
+                     const Metadata::IvAccessUnitParams &ivAccessUnitParams) -> Common::PatchIdMapList override;
 
   auto recoverPrunedView(const Common::MVD10Frame &atlas,
                          const Metadata::ViewParamsVector &viewParamsVector,
@@ -60,8 +59,7 @@ public:
 private:
   Common::Vec2i m_entityDecodeRange;
   void writePatchIdInMap(const Metadata::AtlasParameters &patch,
-                         Common::PatchIdMapList &patchMapList, std::uint16_t patchId,
-                         const Common::MVD10Frame &frame);
+                         Common::PatchIdMapList &patchMapList, std::uint16_t patchId);
   bool m_downscale_depth = false;
   std::uint16_t m_maxEntities = 1;
 };

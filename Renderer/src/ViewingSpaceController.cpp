@@ -46,20 +46,12 @@ namespace TMIV::Renderer {
 
 namespace {
 
-auto computeIndex(const ViewParams &metadata, const IvSequenceParams &ivSequenceParams) -> float {
-  float index = 1.F;
+auto computeIndex(const ViewParams &metadata, const MivBitstream::ViewingSpace &vs) -> float {
+  TMIV::ViewingSpace::ViewingParams vp;
+  vp.viewPosition = metadata.ce.position();
+  // TODO(BK): Switch to quaternions in 4.1.
 
-  if (ivSequenceParams.viewingSpace) {
-
-    TMIV::MivBitstream::ViewingSpace vs = ivSequenceParams.viewingSpace.value();
-
-    TMIV::ViewingSpace::ViewingParams vp;
-    vp.viewPosition = metadata.ce.position();
-    // TODO(BK): Switch to quaternions in 4.1.
-
-    index = TMIV::ViewingSpace::ViewingSpaceEvaluator::computeInclusion(vs, vp);
-  }
-
+  auto index = TMIV::ViewingSpace::ViewingSpaceEvaluator::computeInclusion(vs, vp);
   std::cout << "viewing space inclusion index: " << index << std::endl;
 
   return index;
@@ -126,28 +118,18 @@ void inplaceFading_impl(YUVD &yuvd, const ViewParams & /* unused */, float index
 } // namespace
 
 ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/,
-                                               const Json & /*componentNode*/) {
-  // should we do something here ?
+                                               const Json & /*componentNode*/) {}
+
+void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport,
+                                           const ViewParams &viewportParams,
+                                           const MivBitstream::ViewingSpace &viewingSpace) const {
+  inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));
 }
 
-void ViewingSpaceController::inplaceFading(
-    Texture444Depth10Frame &viewport, const ViewParams &metadata,
-    const MivBitstream::IvSequenceParams &ivSequenceParams) const {
-  // 1) computeIndex function call
-  float index = computeIndex(metadata, ivSequenceParams);
-
-  // 2) fading function call
-  inplaceFading_impl(viewport, metadata, index);
-}
-
-void ViewingSpaceController::inplaceFading(
-    Texture444Depth16Frame &viewport, const ViewParams &metadata,
-    const MivBitstream::IvSequenceParams &ivSequenceParams) const {
-  // 1) computeIndex function call
-  float index = computeIndex(metadata, ivSequenceParams);
-
-  // 2) fading function call
-  inplaceFading_impl(viewport, metadata, index);
+void ViewingSpaceController::inplaceFading(Texture444Depth16Frame &viewport,
+                                           const ViewParams &viewportParams,
+                                           const MivBitstream::ViewingSpace &viewingSpace) const {
+  inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));
 }
 
 } // namespace TMIV::Renderer

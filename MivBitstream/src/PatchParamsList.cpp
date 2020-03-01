@@ -31,13 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/AtlasDeconstructor/AtlasDeconstructor.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
 
-#include <TMIV/Common/Factory.h>
+#include <algorithm>
 
-namespace TMIV::AtlasDeconstructor {
-inline void registerComponents() {
-  Common::Factory<IAtlasDeconstructor>::getInstance().registerAs<AtlasDeconstructor>(
-      "AtlasDeconstructor");
+#include "verify.h"
+
+using namespace std;
+using namespace TMIV::Common;
+
+namespace TMIV::MivBitstream {
+auto PatchParams::isRotated() const -> bool {
+  VERIFY_MIVBITSTREAM(pduOrientationIndex() != FlexiblePatchOrientation::FPO_INVALID);
+
+  return pduOrientationIndex() == FlexiblePatchOrientation::FPO_ROT90 ||
+         pduOrientationIndex() == FlexiblePatchOrientation::FPO_SWAP ||
+         pduOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270 ||
+         pduOrientationIndex() == FlexiblePatchOrientation::FPO_MROT90;
 }
-} // namespace TMIV::AtlasDeconstructor
+} // namespace TMIV::MivBitstream

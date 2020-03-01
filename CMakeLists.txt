@@ -21,8 +21,8 @@ endif()
 include(GNUInstallDirs)
 
 foreach(subdir
-		Common MivBitstream IO Image
-		ViewOptimizer AtlasConstructor AtlasDeconstructor DepthOccupancy Renderer ViewingSpace
+		Common MivBitstream IO
+		ViewOptimizer AtlasConstructor DepthOccupancy Renderer ViewingSpace
 		Encoder Decoder DepthQualityAssessor)
 	add_subdirectory(${subdir})
 endforeach()

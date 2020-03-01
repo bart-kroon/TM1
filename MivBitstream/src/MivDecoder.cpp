@@ -112,22 +112,21 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
 
   for (size_t atlasId = 0; atlasId < au.atlas.size(); ++atlasId) {
     auto &atlas = sequence_.atlas[atlasId];
-    assert(!atlas.atgl.empty());
-
     auto &aau = au.atlas[atlasId];
-    aau.atgl = atlas.atgl.front();
-    atlas.atgl.erase(atlas.atgl.begin());
-    const auto &atgh = aau.atgl.atlas_tile_group_header();
+    assert(!atlas.frames.empty());
 
-    aau.afps = atlas.afpsV[atgh.atgh_atlas_frame_parameter_set_id()];
-
+    aau.atgh = atlas.frames.front()->atgh;
+    aau.afps = atlas.afpsV[aau.atgh.atgh_atlas_frame_parameter_set_id()];
     aau.asps = atlas.aspsV[aau.afps.afps_atlas_sequence_parameter_set_id()];
 
-    VERIFY_MIVBITSTREAM(!aau.afps.afps_fixed_camera_model_flag());
-    aau.aps = atlas.apsV[atgh.atgh_adaptation_parameter_set_id()];
+    aau.viewParamsList = atlas.frames.front()->viewParamsList;
+    aau.patchParamsList = atlas.frames.front()->patchParamsList;
+    aau.blockToPatchMap = atlas.frames.front()->blockToPatchMap;
 
-    aau.geoFrame = m_geoFrameServer(uint8_t(atlasId), sequence_.frameId);
-    aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId);
+    aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
+    aau.decGeoFrame = m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
+
+    atlas.frames.erase(atlas.frames.begin());
   }
 
   for (const auto &x : onFrame) {
@@ -143,7 +142,7 @@ auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
   }
   const auto &sequence_ = sequence(vuh);
   return all_of(cbegin(sequence_.atlas), cend(sequence_.atlas),
-                [=](const Atlas &atlas) { return !atlas.atgl.empty(); });
+                [=](const Atlas &atlas) { return !atlas.frames.empty(); });
 }
 
 // Decoding processes //////////////////////////////////////////////////////////////////////////////
@@ -243,15 +242,37 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
       nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 > 0 &&
                          atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
-    VERIFY_VPCCBITSTREAM(!x.atgl.empty());
-    x.atgl.push_back(x.atgl.back());
+    VERIFY_VPCCBITSTREAM(!x.frames.empty());
+    VERIFY_VPCCBITSTREAM(x.frames.front()->atgh.atgh_atlas_frame_parameter_set_id() ==
+                         atgh.atgh_atlas_frame_parameter_set_id());
+    VERIFY_VPCCBITSTREAM(x.frames.front()->atgh.atgh_adaptation_parameter_set_id() ==
+                         atgh.atgh_adaptation_parameter_set_id());
+
+    // Shallow copy of the atlas frame
+    x.frames.push_back(x.frames.back());
   }
 
   if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
       nuh.nal_unit_type() < NalUnitType::NAL_ASPS) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 &&
                          atgh.atgh_type() == AtghType::I_TILE_GRP);
-    x.atgl.push_back(atgl);
+
+    auto frame = make_shared<Atlas::Frame>();
+    frame->atgh = atgh;
+
+    const auto &aps = apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
+    const auto &mvpl = aps.miv_view_params_list();
+
+    frame->viewParamsList = decodeMvpl(mvpl);
+
+    const auto &afps = afpsV(vuh)[atgh.atgh_atlas_frame_parameter_set_id()];
+    const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];
+    const auto &atgdu = atgl.atlas_tile_group_data_unit();
+
+    frame->patchParamsList = decodeAtgdu(atgdu, asps);
+    frame->blockToPatchMap = decodeBlockToPatchMap(atgdu, asps);
+
+    x.frames.push_back(frame);
   }
 
   if (haveFrame(vuh)) {
@@ -259,7 +280,73 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
   }
 }
 
-// Decoding processes //////////////////////////////////////////////////////////////////////////////
+auto MivDecoder::decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList {
+  auto x = vector<ViewParams>(mvpl.mvp_num_views_minus1() + 1);
+
+  for (uint16_t viewId = 0; viewId <= mvpl.mvp_num_views_minus1(); ++viewId) {
+    x[viewId].ce = mvpl.camera_extrinsics(viewId);
+    x[viewId].ci = mvpl.camera_intrinsics(viewId);
+    x[viewId].dq = mvpl.depth_quantization(viewId);
+
+    if (mvpl.mvp_pruning_graph_params_present_flag()) {
+      x[viewId].pc = mvpl.pruning_children(viewId);
+    }
+  }
+  return ViewParamsList{x};
+}
+
+auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
+                             const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList {
+  auto x = vector<PatchParams>(atgdu.atgduTotalNumberOfPatches());
+  auto pdu2dSize = Vec2i{};
+  const auto n = 1 << asps.asps_log2_patch_packing_block_size();
+
+  atgdu.visit([&](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
+    auto &pdu = pid.patch_data_unit();
+
+    x[p].pduOrientationIndex(pdu.pdu_orientation_index());
+    x[p].pdu2dPos(n * Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()});
+    pdu2dSize += n * Vec2i{pdu.pdu_2d_delta_size_x(), pdu.pdu_2d_delta_size_y()};
+    x[p].pdu2dSize(pdu2dSize);
+    x[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
+    x[p].pduDepthStart(pdu.pdu_depth_start());
+    x[p].pduViewId(pdu.pdu_view_id());
+
+    if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+      x[p].pduDepthEnd(pdu.pdu_depth_end());
+    }
+
+    x[p].pduEntityId(pdu.pdu_entity_id());
+
+    if (asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
+      x[p].pduDepthOccMapThreshold(pdu.pdu_depth_occ_map_threshold());
+    }
+  });
+  return x;
+}
+
+auto MivDecoder::decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
+                                       const AtlasSequenceParameterSetRBSP &asps)
+    -> Common::BlockToPatchMap {
+  auto result = BlockToPatchMap{asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
+                           asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
+  fill(begin(result.getPlane(0)), end(result.getPlane(0)), unusedPatchId);
+  auto pdu2dSize = Vec2i{};
+
+  atgdu.visit([&](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
+    auto &pdu = pid.patch_data_unit();
+    pdu2dSize += Vec2i{pdu.pdu_2d_delta_size_x(), pdu.pdu_2d_delta_size_y()};
+    const auto first = Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()};
+    const auto last = first + pdu2dSize;
+
+    for (int y = first.y(); y < last.y(); ++y) {
+      for (int x = first.x(); x < last.y(); ++x) {
+        result.getPlane(0)(y, x) = uint16_t(p);
+      }
+    }
+  });
+  return result;
+}
 
 void MivDecoder::decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                             AtlasSequenceParameterSetRBSP asps) {
@@ -474,5 +561,14 @@ auto MivDecoder::afpsV(const VpccUnitHeader &vuh) const
     return specialAtlas(vuh).afpsV;
   }
   return x.afpsV;
+}
+
+auto MivDecoder::apsV(const VpccUnitHeader &vuh) const
+    -> const vector<AdaptationParameterSetRBSP> & {
+  auto &x = atlas(vuh);
+  if (x.apsV.empty()) {
+    return specialAtlas(vuh).apsV;
+  }
+  return x.apsV;
 }
 } // namespace TMIV::MivBitstream

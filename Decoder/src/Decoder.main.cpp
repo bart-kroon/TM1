@@ -37,7 +37,6 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
-#include <TMIV/MivBitstream/MivDecoder.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <iostream>
@@ -57,25 +56,19 @@ class Application : public Common::Application {
 private:
   IO::IvMetadataReader m_metadataReader;
   unique_ptr<IDecoder> m_decoder;
-  multimap<int, int> m_inputToOutputFramesMap;
+  multimap<int, int> m_inputToOutputFrameIdMap;
 
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"Decoder", move(argv)},                       // Load configuration
         m_metadataReader{json(), "OutputDirectory", "AtlasMetadataPath"}, // Read MIV bitstream
         m_decoder{create<IDecoder>("Decoder")},                           // Decoder/renderer
-        m_inputToOutputFramesMap{mapInputToOutputFrames(json())} {        // Handle pose traces
+        m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {       // Handle pose traces
 
-    m_metadataReader.decoder().onSequence.emplace_back(
-        [this](const VpccParameterSet & /* vps */) { cout << "New sequence\n"; });
-
-    m_metadataReader.decoder().onFrame.emplace_back([this](const AccessUnit &au) {
-      auto outputFrames = m_inputToOutputFramesMap.equal_range(au.frameId);
-
-      for (auto outputFrame = outputFrames.first; outputFrame != outputFrames.second;
-           ++outputFrame) {
-
-        renderDecodedFrame(au, outputFrame->second);
+    m_metadataReader.decoder().onFrame.emplace_back([this](const AccessUnit &frame) {
+      auto range = m_inputToOutputFrameIdMap.equal_range(frame.frameId);
+      for (auto i = range.first; i != range.second; ++i) {
+        renderDecodedFrame(frame, i->second);
       }
       return true;
     });
@@ -84,26 +77,19 @@ public:
   void run() override { m_metadataReader.decoder().decode(); }
 
 private:
-  void renderDecodedFrame(const AccessUnit &au, int outputFrame) {
-    cout << "Rendering input frame " << au.frameId << " to output frame " << outputFrame
+  void renderDecodedFrame(const AccessUnit &frame, int outputFrameId) {
+    cout << "Rendering input frame " << frame.frameId << " to output frame " << outputFrameId
          << ", with target viewport:\n";
-    const auto viewportParams = IO::loadViewportMetadata(json(), outputFrame);
+    const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);
     viewportParams.printTo(cout, 0);
 
-    const auto viewport = m_decoder->decodeFrame(au, viewportParams);
+    const auto viewport = m_decoder->decodeFrame(frame, viewportParams);
 
-    IO::saveViewport(json(), outputFrame, {yuv420p(viewport.first), viewport.second});
+    IO::saveViewport(json(), outputFrameId, {yuv420p(viewport.first), viewport.second});
 
     if (json().optional("AtlasPatchOccupancyMapFmt")) {
       std::cout << "Dumping patch ID maps to disk" << std::endl;
-      auto patchMapIdList = m_decoder->getPatchIdMapList(au);
-      IO::savePatchIdMaps(json(), outputFrame, patchMapIdList);
-    }
-
-    if (json().optional("PrunedViewTexturePathFmt") && json().optional("PrunedViewDepthPathFmt")) {
-      std::cout << "Dumping recovered pruned views to disk" << std::endl;
-      auto recoveredTransportView = m_decoder->recoverPrunedView(au);
-      IO::savePrunedFrame(json(), outputFrame, recoveredTransportView);
+      IO::saveBlockToPatchMaps(json(), outputFrameId, frame);
     }
   }
 

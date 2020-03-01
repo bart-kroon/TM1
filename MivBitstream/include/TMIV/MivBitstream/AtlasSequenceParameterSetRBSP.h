@@ -79,8 +79,8 @@ public:
   constexpr auto masp_group_id() const noexcept;
   constexpr auto masp_auxiliary_atlas_flag() const noexcept;
   constexpr auto masp_depth_occ_map_threshold_flag() const noexcept;
-  auto masp_geometry_frame_width_minus1() const noexcept;
-  auto masp_geometry_frame_height_minus1() const noexcept;
+  auto masp_geometry_frame_width_minus1() const noexcept -> uint16_t;
+  auto masp_geometry_frame_height_minus1() const noexcept -> uint16_t;
 
   constexpr auto &masp_omaf_v1_compatible_flag(const bool value) noexcept;
   constexpr auto &masp_group_id(const unsigned value) noexcept;

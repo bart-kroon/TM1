@@ -484,7 +484,7 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
     for (int dx = 0; dx < w; dx++) {
       // get position
       Vec2i pView = {xM + dx, yM + dy};
-      Vec2i pAtlas = viewToAtlas(pView, patch);
+      Vec2i pAtlas = patch.viewToAtlas(pView);
       // Y
       textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
           textureViewMap.getPlane(0)(pView.y(), pView.x());

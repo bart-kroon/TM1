@@ -66,7 +66,6 @@ private:
   bool m_downscale_depth = false;
   IvMetadataWriter m_metadataWriter;
   SizeVector m_viewSizes;
-  unique_ptr<IDecoder> m_reconstructor;
 
 public:
   explicit Application(vector<const char *> argv)
@@ -76,9 +75,6 @@ public:
     m_numberOfFrames = json().require("numberOfFrames").asInt();
     m_intraPeriod = json().require("intraPeriod").asInt();
 
-    if (auto node = json().optional("reconstruct"); node && node.asBool()) {
-      m_reconstructor = create<IDecoder>("Decoder");
-    }
     if (auto node = json().optional("depthDownScaleFlag"); node) {
       m_downscale_depth = node.asBool();
     }
@@ -100,10 +96,6 @@ public:
 
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
-
-    if (m_reconstructor) {
-      m_reconstructor->updateSequenceParams(codedSequenceParams);
-    }
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -127,11 +119,7 @@ private:
 
     m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams, lastFrame - firstFrame);
 
-    if (m_reconstructor) {
-      m_reconstructor->updateAccessUnitParams(codedAccessUnitParams);
-    }
-
-    popAtlases(firstFrame, lastFrame);
+	popAtlases(firstFrame, lastFrame);
   }
 
   void pushFrames(int firstFrame, int lastFrame) {
@@ -149,15 +137,6 @@ private:
       }
 
       saveAtlas(json(), i, atlas);
-
-      if (m_reconstructor) {
-        const auto viewportParams = loadViewportMetadata(json(), i);
-        const auto viewport = m_reconstructor->decodeFrame(atlas, viewportParams);
-        cout << "Reconstruction:\n";
-        viewportParams.printTo(cout, 0);
-
-        saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
-      }
     }
   }
 

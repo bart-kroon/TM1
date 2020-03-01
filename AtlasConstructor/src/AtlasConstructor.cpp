@@ -268,7 +268,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
         for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
 
           Vec2i pView = {xM + dx, yM + dy};
-          Vec2i pAtlas = viewToAtlas(pView, patch);
+          Vec2i pAtlas = patch.viewToAtlas(pView);
 
           if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
               pAtlas.y() >= textureAtlasMap.getHeight() ||

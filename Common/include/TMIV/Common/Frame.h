@@ -98,6 +98,8 @@ public:
   }
   ~Frame() = default;
 
+  auto empty() const noexcept -> bool { return getWidth() == 0 && getHeight() == 0; }
+
   void resize(int w, int h);
 
   std::array<plane_type, nb_plane> &getPlanes() { return m_planes; }
@@ -152,7 +154,8 @@ using Texture444Frame = Frame<YUV444P10>; // The renderer uses 4:4:4 internally
 using Depth10Frame = Frame<YUV400P10>;    // Decoder side
 using Depth16Frame = Frame<YUV400P16>;    // Encoder side
 using Mask = Frame<YUV400P8>;
-using PatchIdMap = Frame<YUV400P16>;
+using BlockToPatchMap = Frame<YUV400P16>;
+const auto unusedPatchId = std::uint16_t(65535);
 using EntityMap = Frame<YUV400P16>;
 
 // TODO(BK): Rename struct and data members after TMIV-4.0alpha1 milestone
@@ -179,9 +182,14 @@ template <typename FORMAT> using MVDFrame = std::vector<TextureDepthFrame<FORMAT
 using MVD10Frame = MVDFrame<YUV400P10>;
 using MVD16Frame = MVDFrame<YUV400P16>;
 using MaskList = std::vector<Mask>;
-using PatchIdMapList = std::vector<PatchIdMap>;
 
-const auto unusedPatchId = std::uint16_t(65535);
+// Expand a YUV 4:4:4 10-bit texture to packed 4:4:4 32-bit float texture with
+// linear transfer and nearest interpolation for chroma
+auto expandTexture(const Common::Frame<Common::YUV444P10> &inYuv) -> Common::Mat<Common::Vec3f>;
+
+// Quantize a packed 4:4:4 32-bit float texture as YUV 4:4:4 10-bit texture with
+// linear transfer and area interpolation for chroma
+auto quantizeTexture(const Common::Mat<Common::Vec3f> &in) -> Common::Frame<Common::YUV444P10>;
 } // namespace TMIV::Common
 
 #endif

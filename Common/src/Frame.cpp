@@ -33,6 +33,8 @@
 
 #include <TMIV/Common/Frame.h>
 
+#include <TMIV/Common/Common.h>
+
 #include <cassert>
 
 using namespace std;
@@ -99,5 +101,40 @@ auto yuv444p(const Frame<YUV420P10> &frame) -> Frame<YUV444P10> {
 
 auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16> {
   return yuv444p_impl<YUV444P16>(frame);
+}
+
+auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f> {
+  auto &Y = inYuv.getPlane(0);
+  auto &U = inYuv.getPlane(1);
+  auto &V = inYuv.getPlane(2);
+  Mat<Vec3f> out(inYuv.getPlane(0).sizes());
+  const auto width = Y.width();
+  const auto height = Y.height();
+  constexpr auto bitDepth = 10U;
+
+  for (unsigned i = 0; i != height; ++i) {
+    for (unsigned j = 0; j != width; ++j) {
+      out(i, j) = Vec3f{expandValue<bitDepth>(Y(i, j)), expandValue<bitDepth>(U(i, j)),
+                        expandValue<bitDepth>(V(i, j))};
+    }
+  }
+  return out;
+}
+
+auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
+  Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
+  const auto width = in.width();
+  const auto height = in.height();
+
+  for (int k = 0; k < 3; ++k) {
+    for (unsigned i = 0; i != height; ++i) {
+      for (unsigned j = 0; j != width; ++j) {
+        constexpr auto bitDepth = 10U;
+        outYuv.getPlane(k)(i, j) = quantizeValue<bitDepth>(in(i, j)[k]);
+      }
+    }
+  }
+
+  return outYuv;
 }
 } // namespace TMIV::Common

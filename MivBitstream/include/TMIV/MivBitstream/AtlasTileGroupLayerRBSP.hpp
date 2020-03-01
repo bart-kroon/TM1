@@ -127,32 +127,32 @@ constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_pos_x(const std::uint32_t value) noexcept {
+constexpr auto &PatchDataUnit::pdu_2d_pos_x(const int value) noexcept {
   m_pdu_2d_pos_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_pos_y(const std::uint32_t value) noexcept {
+constexpr auto &PatchDataUnit::pdu_2d_pos_y(const int value) noexcept {
   m_pdu_2d_pos_y = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_delta_size_x(const std::int32_t value) noexcept {
+constexpr auto &PatchDataUnit::pdu_2d_delta_size_x(const int value) noexcept {
   m_pdu_2d_delta_size_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_delta_size_y(const std::int32_t value) noexcept {
+constexpr auto &PatchDataUnit::pdu_2d_delta_size_y(const int value) noexcept {
   m_pdu_2d_delta_size_y = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_view_pos_x(const std::uint32_t value) noexcept {
+constexpr auto &PatchDataUnit::pdu_view_pos_x(const int value) noexcept {
   m_pdu_view_pos_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_view_pos_y(const std::uint32_t value) noexcept {
+constexpr auto &PatchDataUnit::pdu_view_pos_y(const int value) noexcept {
   m_pdu_view_pos_y = value;
   return *this;
 }
@@ -217,15 +217,13 @@ constexpr auto AtlasTileGroupLayerRBSP::atlas_tile_group_header() const noexcept
   return m_atlas_tile_group_header;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return true;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return false;
 }
 } // namespace TMIV::MivBitstream

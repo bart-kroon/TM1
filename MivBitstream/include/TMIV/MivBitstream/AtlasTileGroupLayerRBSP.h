@@ -155,12 +155,12 @@ public:
   auto pdu_entity_id() const noexcept -> unsigned;
   auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
 
-  constexpr auto &pdu_2d_pos_x(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_2d_pos_y(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_2d_delta_size_x(const std::int32_t value) noexcept;
-  constexpr auto &pdu_2d_delta_size_y(const std::int32_t value) noexcept;
-  constexpr auto &pdu_view_pos_x(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_view_pos_y(const std::uint32_t value) noexcept;
+  constexpr auto &pdu_2d_pos_x(const int value) noexcept;
+  constexpr auto &pdu_2d_pos_y(const int value) noexcept;
+  constexpr auto &pdu_2d_delta_size_x(const int value) noexcept;
+  constexpr auto &pdu_2d_delta_size_y(const int value) noexcept;
+  constexpr auto &pdu_view_pos_x(const int value) noexcept;
+  constexpr auto &pdu_view_pos_y(const int value) noexcept;
   constexpr auto &pdu_depth_start(const std::uint32_t value) noexcept;
   constexpr auto &pdu_depth_end(const std::uint32_t value) noexcept;
   constexpr auto &pdu_view_id(const std::uint16_t value) noexcept;
@@ -186,12 +186,12 @@ public:
                 const AtlasTileGroupHeader &atgh) const;
 
 private:
-  std::uint32_t m_pdu_2d_pos_x{};
-  std::uint32_t m_pdu_2d_pos_y{};
-  std::int32_t m_pdu_2d_delta_size_x{};
-  std::int32_t m_pdu_2d_delta_size_y{};
-  std::uint32_t m_pdu_view_pos_x{};
-  std::uint32_t m_pdu_view_pos_y{};
+  int m_pdu_2d_pos_x{};
+  int m_pdu_2d_pos_y{};
+  int m_pdu_2d_delta_size_x{};
+  int m_pdu_2d_delta_size_y{};
+  int m_pdu_view_pos_x{};
+  int m_pdu_view_pos_y{};
   std::uint32_t m_pdu_depth_start{};
   std::optional<std::uint32_t> m_pdu_depth_end;
   std::uint16_t m_pdu_view_id{};

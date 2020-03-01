@@ -129,69 +129,59 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
             xy_v_ymax != xy_v_ymax));
 }
 
-auto baseview_divide(const PatchParams &patch, Vec2i blocksizes) {
-  int blocknums_w = patch.pduViewSize().x() / blocksizes.x();
-  int blocknums_h = patch.pduViewSize().y() / blocksizes.y();
+auto divideInBlocks(const PatchParams &patch, Vec2i blockSize) {
+  int blocknums_w = patch.pduViewSize().x() / blockSize.x();
+  int blocknums_h = patch.pduViewSize().y() / blockSize.y();
   int blocknums_all = blocknums_w * blocknums_h;
   PatchParamsList subblock(blocknums_all, patch);
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
-      subblock[i * blocknums_w + j].pduViewSize().x() = blocksizes.x();
-      subblock[i * blocknums_w + j].pduViewSize().y() = blocksizes.y();
-      subblock[i * blocknums_w + j].pduViewPos().x() = patch.pduViewPos().x() + j * blocksizes.x();
-      subblock[i * blocknums_w + j].pduViewPos().y() = patch.pduViewPos().y() + i * blocksizes.y();
-      subblock[i * blocknums_w + j].pdu2dPos().x() = patch.pdu2dPos().x() + j * blocksizes.x();
-      subblock[i * blocknums_w + j].pdu2dPos().y() = patch.pdu2dPos().x() + i * blocksizes.y();
+      subblock[i * blocknums_w + j].pduViewSize().x() = blockSize.x();
+      subblock[i * blocknums_w + j].pduViewSize().y() = blockSize.y();
+      subblock[i * blocknums_w + j].pduViewPos().x() = patch.pduViewPos().x() + j * blockSize.x();
+      subblock[i * blocknums_w + j].pduViewPos().y() = patch.pduViewPos().y() + i * blockSize.y();
+      subblock[i * blocknums_w + j].pdu2dPos().x() = patch.pdu2dPos().x() + j * blockSize.x();
+      subblock[i * blocknums_w + j].pdu2dPos().y() = patch.pdu2dPos().x() + i * blockSize.y();
     }
   }
   return subblock;
 }
 
-auto SubBlockCuller::updatePatchIdmap(const MVD10Frame & /*atlas*/, const PatchIdMapList &maps,
-                                      const IvSequenceParams &ivSequenceParams,
-                                      const IvAccessUnitParams &ivAccessUnitParams,
-                                      const ViewParams &target) -> PatchIdMapList {
-  PatchIdMapList updatedpatchMapList = maps;
-  const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto &patchParamsList = ivAccessUnitParams.patchParamsList;
+auto SubBlockCuller::filterBlockToPatchMap(const AtlasAccessUnit &atlas,
+                                           const ViewParams &viewportParams) -> BlockToPatchMap {
+  auto result = atlas.blockToPatchMap;
 
-  for (size_t id = 0U; id < patchParamsList.size(); ++id) {
-    // If patch is as large as source view
-    if (patchParamsList[id].pduViewSize().x() ==
-            viewParamsList[patchParamsList[id].pduViewId()].ci.projectionPlaneSize().x() &&
-        patchParamsList[id].pduViewSize().y() ==
-            viewParamsList[patchParamsList[id].pduViewId()].ci.projectionPlaneSize().y()) {
+  for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {
+    auto &patch = atlas.patchParamsList[patchIdx];
+    auto &view = atlas.viewParamsList[patch.pduViewId()];
 
-      // size of sub-block is fixed now.
-      Vec2i blocksizes = {128, 128};
-      PatchParamsList blocks = baseview_divide(patchParamsList[id], blocksizes);
-      for (const auto &block : blocks) {
-        if (!choosePatch(block, viewParamsList, target)) {
-          erasePatchIdInMap(block, updatedpatchMapList, static_cast<uint16_t>(id));
+    if (patch.pduViewSize() == view.ci.projectionPlaneSize()) {
+      // The size of the sub-block is fixed for now
+      const auto blockSize = Vec2i{128, 128};
+
+      for (const auto &block : divideInBlocks(patch, blockSize)) {
+        if (!choosePatch(block, atlas.viewParamsList, viewportParams)) {
+          inplaceErasePatch(result, block, uint16_t(patchIdx), atlas.asps);
         }
       }
     } else {
-      if (!choosePatch(patchParamsList[id], viewParamsList, target)) {
-        erasePatchIdInMap(patchParamsList[id], updatedpatchMapList, static_cast<uint16_t>(id));
+      if (!choosePatch(patch, atlas.viewParamsList, viewportParams)) {
+        inplaceErasePatch(result, patch, uint16_t(patchIdx), atlas.asps);
       }
     }
   }
-  return updatedpatchMapList;
+  return result;
 }
 
-void SubBlockCuller::erasePatchIdInMap(const PatchParams &patch, PatchIdMapList &patchMapList,
-                                       uint16_t patchId) {
-  auto &patchMap = patchMapList[patch.vuhAtlasId];
+void SubBlockCuller::inplaceErasePatch(BlockToPatchMap &patchMap, const PatchParams &patch,
+                                       uint16_t patchId,
+                                       const AtlasSequenceParameterSetRBSP &asps) {
+  const auto n = 1 << asps.asps_log2_patch_packing_block_size();
+  const auto first = patch.pdu2dPos() / n;
+  const auto last = first + patch.pdu2dSize() / n;
 
-  const Vec2i &q0 = patch.pdu2dPos();
-  const auto sizeInAtlas = patch.pdu2dSize();
-  int xMin = q0.x();
-  int xLast = q0.x() + sizeInAtlas.x();
-  int yMin = q0.y();
-  int yLast = q0.y() + sizeInAtlas.y();
-
-  for (auto y = yMin; y < yLast; y++) {
-    for (auto x = xMin; x < xLast; x++) {
+  for (auto y = first.y(); y < last.y(); ++y) {
+    for (auto x = first.x(); x < last.x(); ++x) {
       if (patchMap.getPlane(0)(y, x) == patchId) {
         patchMap.getPlane(0)(y, x) = unusedPatchId;
       }

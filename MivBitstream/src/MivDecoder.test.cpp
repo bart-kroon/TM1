@@ -45,8 +45,12 @@ TEST_CASE("MivDecoder", "[MIV decoder]") {
   SECTION("Construction") {
     istringstream stream{"Invalid bitsream"};
 
-    const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/) { return Depth10Frame{}; };
-    const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/) { return Texture444Frame{}; };
+    const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
+      return Depth10Frame{};
+    };
+    const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
+      return Texture444Frame{};
+    };
 
     MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
 

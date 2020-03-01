@@ -36,6 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/IvAccessUnitParams.h>
 #include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
@@ -67,8 +68,8 @@ void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::M
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
-void savePatchIdMaps(const Common::Json &config, int frameIndex,
-                     const Common::PatchIdMapList &maps);
+void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
+                          const MivBitstream::AccessUnit &frame);
 
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBitstream::ViewParams;
 void saveViewport(const Common::Json &config, int frameIndex,

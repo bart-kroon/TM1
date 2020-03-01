@@ -34,24 +34,25 @@
 #ifndef _TMIV_DECODER_DEPTHSCALER_H_
 #define _TMIV_DECODER_DEPTHSCALER_H_
 
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <numeric>
 #include <vector>
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
-
 namespace TMIV::Decoder {
 using uchar = unsigned char;
 using ushort = unsigned short;
 
-using TMIV::Common::Vec2i;
-using TMIV::Common::Vec3f;
-using TMIV::Common::Vec3w;
+using Common::Vec2i;
+using Common::Vec3f;
+using Common::Vec3w;
 
-template <class T> using Mat_ = TMIV::Common::heap::Matrix<T>;
+template <class T> using Mat_ = Common::heap::Matrix<T>;
 using Mat1w = Mat_<uint16_t>;
 using Mat3w = Mat_<Vec3w>;
 using Mat1b = Mat_<uint8_t>;
@@ -124,13 +125,14 @@ private:
   Mat1w m_regionsUpscaled, m_regionsColorAligned, m_regionsCurvatureAligned;
 };
 
+// TODO(BK): Rename to GeometryUpscaler
 class DepthUpscalerAtlas {
 public:
   DepthUpscalerAtlas(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
-  auto upsampleDepthAndOccupancyMapMVD(const TMIV::Common::MVD10Frame &atlas,
-                                       const TMIV::Common::PatchIdMapList &maps) const
-      -> std::pair<TMIV::Common::MVD10Frame, TMIV::Common::PatchIdMapList>;
+  auto upsampleDepthAndOccupancyMapMVD(const Common::MVD10Frame &atlas,
+                                       const Common::PatchIdMapList &maps) const
+      -> std::pair<Common::MVD10Frame, Common::PatchIdMapList>;
 
 private:
   int m_depthEdgeMagnitudeTh = 11;
@@ -138,6 +140,7 @@ private:
   int m_maxCurvature = 4;
 };
 
+auto scaleGeometry(const MivBitstream::AtlasAccessUnit &aau) -> Common::Depth10Frame;
 } // namespace TMIV::Decoder
 
 #endif

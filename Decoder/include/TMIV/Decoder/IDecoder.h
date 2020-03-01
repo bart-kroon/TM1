@@ -35,7 +35,8 @@
 #define _TMIV_DECODER_IDECODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Decoder {
 class IDecoder {
@@ -48,15 +49,9 @@ public:
   virtual ~IDecoder() = default;
 
   // Render a decoded frame to a target viewport
-  virtual auto decodeFrame(const MivBitstream::AccessUnit &au,
-                           const MivBitstream::ViewParams &target) const
+  virtual auto decodeFrame(MivBitstream::AccessUnit frame,
+                           const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame = 0;
-
-  // getters for intermediate results dumping to disk
-  virtual auto getPatchIdMapList(const MivBitstream::AccessUnit &au) const
-      -> Common::PatchIdMapList = 0;
-  virtual auto recoverPrunedView(const MivBitstream::AccessUnit &au) const
-      -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::Decoder
 

@@ -33,14 +33,12 @@
 
 #include <TMIV/Decoder/Decoder.h>
 
-#include "../../AtlasDeconstructor/src/AtlasDeconstructor.reg.hpp"
 #include "../../Renderer/src/Renderer.reg.hpp"
 
 #include <TMIV/Common/Factory.h>
 
 namespace TMIV::Decoder {
 inline void registerComponents() {
-  TMIV::AtlasDeconstructor::registerComponents();
   TMIV::Renderer::registerComponents();
 
   Common::Factory<IDecoder>::getInstance().registerAs<Decoder>("Decoder");

@@ -33,27 +33,12 @@
 
 #include <TMIV/MivBitstream/IvAccessUnitParams.h>
 
-#include <TMIV/Common/Bitstream.h>
-
 #include <algorithm>
-#include <iostream>
-#include <map>
-
-#include "verify.h"
 
 using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto PatchParams::isRotated() const -> bool {
-  VERIFY_MIVBITSTREAM(pduOrientationIndex() != FlexiblePatchOrientation::FPO_INVALID);
-
-  return pduOrientationIndex() == FlexiblePatchOrientation::FPO_ROT90 ||
-         pduOrientationIndex() == FlexiblePatchOrientation::FPO_SWAP ||
-         pduOrientationIndex() == FlexiblePatchOrientation::FPO_ROT270 ||
-         pduOrientationIndex() == FlexiblePatchOrientation::FPO_MROT90;
-}
-
 auto IvAccessUnitParams::atlasSizes() const -> SizeVector {
   auto x = SizeVector{};
   x.reserve(atlas.size());

@@ -31,46 +31,53 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Image/Image.h>
+#ifndef _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
+#define _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
 
-#include <TMIV/Common/Common.h>
+#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
 
-using namespace std;
-using namespace TMIV::Common;
+#include <TMIV/Common/Json.h>
+#include <TMIV/Common/Vector.h>
 
-namespace TMIV::Image {
-auto expandTexture(const Frame<YUV420P10> &inYuv) -> Mat<Vec3f> {
-  auto &Y = inYuv.getPlane(0);
-  auto &U = inYuv.getPlane(1);
-  auto &V = inYuv.getPlane(2);
-  Mat<Vec3f> out(inYuv.getPlane(0).sizes());
-  const auto width = Y.width();
-  const auto height = Y.height();
-  constexpr auto bitDepth = 10U;
+namespace TMIV::MivBitstream {
+struct ViewParams {
+  CameraIntrinsics ci;
+  CameraExtrinsics ce;
+  DepthQuantization dq;
+  std::optional<PruningChildren> pc;
 
-  for (unsigned i = 0; i != height; ++i) {
-    for (unsigned j = 0; j != width; ++j) {
-      out(i, j) = Vec3f{expandValue<bitDepth>(Y(i, j)), expandValue<bitDepth>(U(i / 2, j / 2)),
-                        expandValue<bitDepth>(V(i / 2, j / 2))};
-    }
-  }
-  return out;
-}
+  // Not in the specification. Just to improve screen output
+  std::string name{};
 
-auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
-  Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
-  const auto width = in.width();
-  const auto height = in.height();
+  // Not part of the bitstream. Does the depth map have invalid/non-occupied?
+  bool hasOccupancy{};
 
-  for (int k = 0; k < 3; ++k) {
-    for (unsigned i = 0; i != height; ++i) {
-      for (unsigned j = 0; j != width; ++j) {
-        constexpr auto bitDepth = 10U;
-        outYuv.getPlane(k)(i, j) = quantizeValue<bitDepth>(in(i, j)[k]);
-      }
-    }
-  }
+  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
+  bool operator==(const ViewParams &other) const;
+  bool operator!=(const ViewParams &other) const { return !operator==(other); }
 
-  return outYuv;
-}
-} // namespace TMIV::Image
+  // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
+  //
+  // The parameter is a an item of the viewParamsList node (a JSON object).
+  static ViewParams loadFromJson(const Common::Json &node);
+};
+
+// Data type that corresponds to camera_params_list of specification
+struct ViewParamsList : public std::vector<ViewParams> {
+  ViewParamsList() = default;
+  explicit ViewParamsList(std::vector<ViewParams> viewParamsList);
+
+  // Size of each view as a vector
+  auto viewSizes() const -> Common::SizeVector;
+
+  friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &viewParamsList);
+  bool operator==(const ViewParamsList &other) const;
+  bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
+
+  // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
+  static ViewParamsList loadFromJson(const Common::Json &node,
+                                     const std::vector<std::string> &names);
+};
+} // namespace TMIV::MivBitstream
+
+#endif

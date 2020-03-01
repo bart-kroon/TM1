@@ -35,7 +35,6 @@
 #include <TMIV/Common/Graph.h>
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Common/Thread.h>
-#include <TMIV/Image/Image.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Engine.h>
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
@@ -44,7 +43,6 @@
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Image;
 
 namespace TMIV::Renderer {
 ////////////////////////////////////////////////////////////////////////////////

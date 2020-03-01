@@ -35,69 +35,9 @@
 #define _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
 
 #include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
-
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Common/Vector.h>
-
-#include <cstdint>
-#include <iosfwd>
-#include <optional>
-#include <vector>
+#include <TMIV/MivBitstream/PatchParamsList.h>
 
 namespace TMIV::MivBitstream {
-// PatchParams is the in-memory representation of PatchDataUnit (PDU). The PDU is not suitable for
-// in-memory use because of the delta coding and quantization of some of the fields.
-struct PatchParams {
-  // TODO(BK): Have a PatchParamsList per atlas
-  std::uint8_t vuhAtlasId{};
-
-  auto pdu2dPos() const noexcept;
-  auto pdu2dSize() const noexcept;
-  auto pduViewPos() const noexcept;
-  auto pduViewSize() const noexcept;
-  auto pduDepthStart() const noexcept;
-  auto pduDepthEnd() const noexcept;
-  auto pduViewId() const noexcept;
-  auto pduOrientationIndex() const noexcept;
-  auto pduEntityId() const noexcept;
-  auto pduDepthOccMapThreshold() const noexcept;
-
-  auto pdu2dPos(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pdu2dSize(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pduViewSize(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pduViewPos(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pduDepthStart(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduDepthEnd(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduViewId(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduOrientationIndex(const FlexiblePatchOrientation value) noexcept -> PatchParams &;
-  auto pduEntityId(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduDepthOccMapThreshold(const std::uint16_t value) noexcept -> PatchParams &;
-
-  // Is the patch rotated such that width and height swap?
-  bool isRotated() const;
-
-  bool operator==(const PatchParams &other) const;
-  bool operator!=(const PatchParams &other) const { return !operator==(other); };
-
-private:
-  Common::Vec2i m_pdu2dPos;
-  Common::Vec2i m_pduViewSize;
-  Common::Vec2i m_pduViewPos;
-  std::uint16_t m_pduDepthStart{};
-  std::optional<std::uint16_t> m_pduDepthEnd;
-  std::uint16_t m_pduViewId{};
-  FlexiblePatchOrientation m_pduOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
-  std::optional<std::uint16_t> m_pduEntityId;
-  std::optional<std::uint16_t> m_pduDepthOccMapThreshold;
-};
-
-using PatchParamsList = std::vector<PatchParams>;
-
-// Pixel position conversion from atlas to/from view
-Common::Vec2i viewToAtlas(Common::Vec2i viewPosition, const PatchParams &patch);
-Common::Vec2i atlasToView(Common::Vec2i atlasPosition, const PatchParams &patch);
-
 struct AtlasAccessUnitParams {
   AtlasAccessUnitParams();
 

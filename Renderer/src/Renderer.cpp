@@ -31,8 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
 #include <TMIV/Renderer/Renderer.h>
+
+#include <TMIV/Common/Factory.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -46,20 +47,16 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
       m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
           "ViewingSpaceController", rootNode, componentNode)} {}
 
-auto Renderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                           const IvSequenceParams &ivSequenceParams,
-                           const IvAccessUnitParams &ivAccessUnitParams,
-                           const ViewParams &target) const -> Texture444Depth16Frame {
-  auto viewport =
-      m_synthesizer->renderFrame(atlas, maps, ivSequenceParams, ivAccessUnitParams, target);
+auto Renderer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
+    -> Texture444Depth16Frame {
+  auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
 
-  if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
-    m_inpainter->inplaceInpaint(viewport, target);
+  if (frame.vps->miv_sequence_params().msp_max_entities_minus1() == 0) {
+    m_inpainter->inplaceInpaint(viewport, viewportParams);
   }
 
-  // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace) {
-    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  if (frame.vs) {
+    m_viewingSpaceController->inplaceFading(viewport, viewportParams, *frame.vs);
   }
 
   return viewport;

@@ -342,16 +342,16 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
                                               : 3U;
   x.pdu_view_id(uint16_t(bitstream.readBits(pdu_projection_id_num_bits)));
 
-  x.pdu_2d_pos_x(uint32_t(bitstream.readBits(afps.afps_2d_pos_x_bit_count_minus1() + 1)));
-  x.pdu_2d_pos_y(uint32_t(bitstream.readBits(afps.afps_2d_pos_y_bit_count_minus1() + 1)));
+  x.pdu_2d_pos_x(int(bitstream.readBits(afps.afps_2d_pos_x_bit_count_minus1() + 1)));
+  x.pdu_2d_pos_y(int(bitstream.readBits(afps.afps_2d_pos_y_bit_count_minus1() + 1)));
 
   VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_x() < asps.asps_frame_width());
   VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_y() < asps.asps_frame_height());
 
-  x.pdu_2d_delta_size_x(int32_t(bitstream.getSExpGolomb()));
-  x.pdu_2d_delta_size_y(int32_t(bitstream.getSExpGolomb()));
-  x.pdu_view_pos_x(uint32_t(bitstream.readBits(afps.afps_3d_pos_x_bit_count_minus1() + 1)));
-  x.pdu_view_pos_y(uint32_t(bitstream.readBits(afps.afps_3d_pos_y_bit_count_minus1() + 1)));
+  x.pdu_2d_delta_size_x(int(bitstream.getSExpGolomb()));
+  x.pdu_2d_delta_size_y(int(bitstream.getSExpGolomb()));
+  x.pdu_view_pos_x(int(bitstream.readBits(afps.afps_3d_pos_x_bit_count_minus1() + 1)));
+  x.pdu_view_pos_y(int(bitstream.readBits(afps.afps_3d_pos_y_bit_count_minus1() + 1)));
 
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
@@ -375,7 +375,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
 
   if (MivDecoder::mode == MivDecoder::Mode::MIV && vps.vps_miv_extension_flag()) {
     if (vps.miv_sequence_params().msp_max_entities_minus1() > 0) {
-      x.pdu_entity_id(unsigned(bitstream.getUExpGolomb()));
+      x.pdu_entity_id(unsigned(bitstream.getUExpGolomb())); // TODO(BK): u(v)
       VERIFY_MIVBITSTREAM(x.pdu_entity_id() <= vps.miv_sequence_params().msp_max_entities_minus1());
     }
     if (asps.asps_miv_extension_present_flag() &&

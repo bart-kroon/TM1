@@ -31,29 +31,59 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
-#define _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
+#ifndef _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
+#define _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
 
+#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/MivBitstream/VpccParameterSet.h>
 
+#include <TMIV/Common/Frame.h>
+
 namespace TMIV::MivBitstream {
-struct IvSequenceParams {
-  IvSequenceParams();
-  explicit IvSequenceParams(const Common::SizeVector &atlasSizes);
+struct AtlasAccessUnit {
+  AtlasSequenceParameterSetRBSP asps;
+  AtlasFrameParameterSetRBSP afps;
+  AtlasTileGroupHeader atgh;
+  Common::Depth10Frame decGeoFrame;
+  Common::Depth10Frame geoFrame;
+  Common::Texture444Frame attrFrame;
 
-  VpccParameterSet vps;
+  Common::BlockToPatchMap blockToPatchMap;
   ViewParamsList viewParamsList;
-  std::optional<ViewingSpace> viewingSpace{};
+  PatchParamsList patchParamsList;
 
-  // Convenience function to access the MIV sequence params
-  auto msp() const noexcept -> const MivSequenceParams &;
-  auto msp() noexcept -> MivSequenceParams &;
+  // Nominal atlas frame size
+  auto frameSize() const noexcept {
+    return Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
+  }
 
-  friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &x);
-  bool operator==(const IvSequenceParams &other) const;
-  bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }
+  // Geometry frame size
+  auto decGeoFrameSize(const VpccParameterSet &vps) const noexcept {
+    if (!vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
+      return frameSize();
+    }
+    return Common::Vec2i{asps.miv_atlas_sequence_params().masp_geometry_frame_width_minus1() + 1,
+                         asps.miv_atlas_sequence_params().masp_geometry_frame_height_minus1() + 1};
+  }
+
+  // Index into the block to patch map using nominal atlas coordinates
+  auto patchId(unsigned row, unsigned column) const -> uint16_t {
+    const auto k = asps.asps_log2_patch_packing_block_size();
+    return blockToPatchMap.getPlane(0)(row >> k, column >> k);
+  }
+};
+
+struct AccessUnit {
+  const VpccParameterSet *vps = nullptr;
+  std::vector<AtlasAccessUnit> atlas;
+  std::uint32_t frameId{};
+  std::optional<ViewingSpace> vs;
 };
 } // namespace TMIV::MivBitstream
 

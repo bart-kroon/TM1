@@ -55,10 +55,8 @@ public:
   Renderer &operator=(Renderer &&) = default;
   ~Renderer() override = default;
 
-  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const MivBitstream::IvSequenceParams &ivSequenceParams,
-                   const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
-                   const MivBitstream::ViewParams &target) const
+  auto renderFrame(const MivBitstream::AccessUnit &frame,
+                   const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 };
 } // namespace TMIV::Renderer

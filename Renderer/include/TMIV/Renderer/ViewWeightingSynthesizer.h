@@ -52,10 +52,9 @@ public:
   ViewWeightingSynthesizer &operator=(ViewWeightingSynthesizer &&) = default;
   ~ViewWeightingSynthesizer() override;
 
-  auto renderFrame(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                   const MivBitstream::IvSequenceParams &ivSequenceParams,
-                   const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
-                   const MivBitstream::ViewParams &target) const
+  // Render from a texture atlas to a viewport
+  auto renderFrame(const MivBitstream::AccessUnit &frame,
+                   const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 };
 } // namespace TMIV::Renderer

@@ -34,15 +34,11 @@
 #ifndef _TMIV_MIVBITSTREAM_MIVDECODER_H_
 #define _TMIV_MIVBITSTREAM_MIVDECODER_H_
 
+#include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
-#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
-#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>
 
@@ -52,23 +48,6 @@
 #include <functional>
 
 namespace TMIV::MivBitstream {
-struct AtlasAccessUnit {
-  AtlasSequenceParameterSetRBSP asps;
-  AtlasFrameParameterSetRBSP afps;
-  AdaptationParameterSetRBSP aps;
-  AtlasTileGroupLayerRBSP atgl;
-  Common::Depth10Frame geoFrame;
-  Common::Texture444Frame attrFrame;
-
-  // TODO(BK): BlockToPatchMap
-};
-
-struct AccessUnit {
-  const VpccParameterSet *vps = nullptr;
-  std::vector<AtlasAccessUnit> atlas;
-  std::uint32_t frameId{};
-};
-
 class MivDecoder {
 public: // Integration testing
   enum Mode {
@@ -132,6 +111,12 @@ private: // Decoding processes
 
   void decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                   const AtlasTileGroupLayerRBSP &atgl);
+  static auto decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList;
+  static auto decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
+                          const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList;
+  static auto decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
+                                    const AtlasSequenceParameterSetRBSP &asps)
+      -> Common::BlockToPatchMap;
   void decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                   AtlasSequenceParameterSetRBSP asps);
   void decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
@@ -176,7 +161,15 @@ private: // Internal decoder state
     std::vector<AtlasSequenceParameterSetRBSP> aspsV;
     std::vector<AtlasFrameParameterSetRBSP> afpsV;
     std::vector<AdaptationParameterSetRBSP> apsV;
-    std::vector<AtlasTileGroupLayerRBSP> atgl;
+
+    struct Frame {
+      AtlasTileGroupHeader atgh;
+      ViewParamsList viewParamsList;
+      PatchParamsList patchParamsList;
+      Common::BlockToPatchMap blockToPatchMap;
+    };
+
+    std::vector<std::shared_ptr<Frame>> frames;
   };
 
   struct Sequence {
@@ -200,6 +193,7 @@ private: // Access internal decoder state
   auto specialAtlas(const VpccUnitHeader &vuh) -> Atlas &;
   auto aspsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasSequenceParameterSetRBSP> &;
   auto afpsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasFrameParameterSetRBSP> &;
+  auto apsV(const VpccUnitHeader &vuh) const -> const std::vector<AdaptationParameterSetRBSP> &;
 };
 } // namespace TMIV::MivBitstream
 

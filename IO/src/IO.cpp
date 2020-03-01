@@ -322,28 +322,13 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
                "AtlasDepthPathFmt");
 }
 
-auto loadPatchIdMaps(const Json &config, const SizeVector &atlasSize, int frameIndex)
-    -> PatchIdMapList {
-  cout << "Loading patchIdMap frame " << frameIndex << '\n';
+void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &frame) {
+  cout << "Saving block to patch map for frame " << frameIndex << '\n';
 
-  PatchIdMapList result;
-
-  for (size_t id = 0; id < atlasSize.size(); ++id) {
-    string texturePath = getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
-    auto textureFrame = readFrame<YUV400P16>(texturePath, frameIndex, atlasSize[id]);
-
-    result.push_back(move(textureFrame));
-  }
-
-  return result;
-}
-
-void savePatchIdMaps(const Json &config, int frameIndex, const PatchIdMapList &maps) {
-  cout << "Saving patchIdMap frame " << frameIndex << '\n';
-
-  for (size_t id = 0; id < maps.size(); ++id) {
-    string texturePath = getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", id);
-    writeFrame(texturePath, maps[id], frameIndex);
+  for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
+    string texturePath =
+        getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", atlasId);
+    writeFrame(texturePath, frame.atlas[atlasId].blockToPatchMap, frameIndex);
   }
 }
 

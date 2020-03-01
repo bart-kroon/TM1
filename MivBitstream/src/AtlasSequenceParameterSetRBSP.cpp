@@ -106,12 +106,12 @@ auto MivAtlasSequenceParams::masp_omaf_v1_compatible_flag() const noexcept {
   return *m_masp_omaf_v1_compatible_flag;
 }
 
-auto MivAtlasSequenceParams::masp_geometry_frame_width_minus1() const noexcept {
+auto MivAtlasSequenceParams::masp_geometry_frame_width_minus1() const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(m_masp_geometry_frame_width_minus1.has_value());
   return *m_masp_geometry_frame_width_minus1;
 }
 
-auto MivAtlasSequenceParams::masp_geometry_frame_height_minus1() const noexcept {
+auto MivAtlasSequenceParams::masp_geometry_frame_height_minus1() const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(m_masp_geometry_frame_height_minus1.has_value());
   return *m_masp_geometry_frame_height_minus1;
 }

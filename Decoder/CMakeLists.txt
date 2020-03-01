@@ -13,7 +13,6 @@ add_library(TMIV::DecoderLib
 
 target_link_libraries(DecoderLib
 	PUBLIC
-		TMIV::AtlasDeconstructorLib
 		TMIV::RendererLib)
 
 target_include_directories(DecoderLib

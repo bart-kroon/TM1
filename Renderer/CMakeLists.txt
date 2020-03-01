@@ -46,7 +46,6 @@ target_link_libraries(RendererLib
 	PUBLIC
 		TMIV::CommonLib
 		TMIV::MivBitstreamLib
-		TMIV::ImageLib
 		TMIV::ViewingSpaceLib
 	PRIVATE
 		Threads::Threads

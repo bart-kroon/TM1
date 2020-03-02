@@ -133,7 +133,7 @@ auto EntityBasedAtlasConstructor::yuvSampler(const EntityMapList &in) -> vector<
 
 void EntityBasedAtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList masks) {
   for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
-    for (auto i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
+    for (size_t i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
       if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
         mergedMasks[viewId].getPlane(0)[i] = masks[viewId].getPlane(0)[i];
       }
@@ -143,7 +143,7 @@ void EntityBasedAtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList mas
 
 void EntityBasedAtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
-    for (auto i = 0; i < masks[viewId].getPlane(0).size(); i++) {
+    for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].first.getPlane(0)[i] == neutralChroma) &&
           (views[viewId].second.getPlane(0)[i] == uint16_t(0))) {
         masks[viewId].getPlane(0)[i] = uint8_t(0);
@@ -153,7 +153,7 @@ void EntityBasedAtlasConstructor::updateMasks(const MVD16Frame &views, MaskList 
 }
 
 void EntityBasedAtlasConstructor::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) {
-  if (m_aggregatedEntityMask.size() < m_EntityEncRange[1] - m_EntityEncRange[0]) {
+  if (int(m_aggregatedEntityMask.size()) < m_EntityEncRange[1] - m_EntityEncRange[0]) {
     m_aggregatedEntityMask.push_back(Masks);
   } else {
     for (size_t i = 0; i < Masks.size(); i++) {
@@ -315,7 +315,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
       const auto &view = views[patch.pduViewId()];
       MVD16Frame tempViews;
-      tempViews.push_back(move(view));
+      tempViews.push_back(view);
       const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
       writePatchInAtlas(patch, entityViews[0], atlasList);
     }

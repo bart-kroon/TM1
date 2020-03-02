@@ -142,7 +142,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   std::vector<Cluster> out;
   for (const auto &cluster : clusterList) {
     if (m_maxEntities > 1) {
-      out.push_back(move(cluster));
+      out.push_back(cluster);
     } else {
       cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_alignment, m_minPatchSize);
     }

@@ -72,7 +72,7 @@ private:
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
   void writePatchInAtlas(const MivBitstream::PatchParams &patch,
-                         const Common::TextureDepth16Frame &views, Common::MVD16Frame &atlas);
+                         const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas);
 
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;

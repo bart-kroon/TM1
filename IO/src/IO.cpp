@@ -86,6 +86,8 @@ auto readFrame(const string &path, int frameIndex, Vec2i resolution) -> Frame<FO
   return result;
 }
 
+template auto readFrame(const string &, int, Vec2i) -> Frame<YUV400P10>;
+
 namespace {
 template <typename FORMAT> void padChroma(ostream &stream, int bytes) {
   constexpr auto fillValue = neutralColor<FORMAT>();

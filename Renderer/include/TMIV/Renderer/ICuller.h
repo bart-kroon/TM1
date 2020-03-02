@@ -48,10 +48,18 @@ public:
   ICuller &operator=(ICuller &&) = default;
   virtual ~ICuller() = default;
 
-  // Do sub-block culling and update the PatchIdMap
+  // Do culling and update the block to patch map for a single atlas
   virtual auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
-                                     const MivBitstream::ViewParams &viewportParams)
+                                     const MivBitstream::ViewParams &viewportParams) const
       -> Common::BlockToPatchMap = 0;
+
+  // Do culling and update the block to patch maps for all atlases
+  auto inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame,
+                                     const MivBitstream::ViewParams &viewportParams) const {
+    for (auto &atlas : frame.atlas) {
+      atlas.blockToPatchMap = filterBlockToPatchMap(atlas, viewportParams);
+    }
+  }
 };
 } // namespace TMIV::Renderer
 

@@ -148,7 +148,8 @@ auto divideInBlocks(const PatchParams &patch, Vec2i blockSize) {
 }
 
 auto SubBlockCuller::filterBlockToPatchMap(const AtlasAccessUnit &atlas,
-                                           const ViewParams &viewportParams) -> BlockToPatchMap {
+                                           const ViewParams &viewportParams) const
+    -> BlockToPatchMap {
   auto result = atlas.blockToPatchMap;
 
   for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {

@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 add_library(DecoderLib
     "src/Decoder.cpp"
 	"src/Decoder.reg.hpp"
-	"src/DepthScaler.cpp"
+	"src/GeometryScaler.cpp"
 	"include/TMIV/Decoder/IDecoder.h"
 	"include/TMIV/Decoder/Decoder.h"
-	"include/TMIV/Decoder/DepthScaler.h")
+	"include/TMIV/Decoder/GeometryScaler.h")
 
 add_library(TMIV::DecoderLib
 	ALIAS DecoderLib)

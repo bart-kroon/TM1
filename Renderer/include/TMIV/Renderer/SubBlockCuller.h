@@ -49,7 +49,7 @@ public:
 
   // Do sub-block culling and update the PatchIdMap
   auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
-                             const MivBitstream::ViewParams &viewportParams)
+                             const MivBitstream::ViewParams &viewportParams) const
       -> Common::BlockToPatchMap override;
 
 private:

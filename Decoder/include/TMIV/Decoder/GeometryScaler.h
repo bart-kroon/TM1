@@ -31,27 +31,32 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
+#ifndef _TMIV_DECODER_GEOMETRYSCALER_H_
+#define _TMIV_DECODER_GEOMETRYSCALER_H_
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/GeometryScaler.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
+#include <algorithm>
+#include <cassert>
+#include <iostream>
+#include <numeric>
+#include <vector>
 
 namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode} {
-  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
-}
+class GeometryScaler {
+public:
+  GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
-auto Decoder::decodeFrame(AccessUnit frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  m_geometryScaler.inplaceScale(frame);
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  return m_renderer->renderFrame(frame, viewportParams);
-}
+  auto scale(const MivBitstream::AtlasAccessUnit &atlas) const -> Common::Depth10Frame;
+  void inplaceScale(MivBitstream::AccessUnit& frame) const;
+
+private:
+  int m_depthEdgeMagnitudeTh{};
+  float m_minForegroundConfidence{};
+  int m_maxCurvature{};
+};
 } // namespace TMIV::Decoder
+
+#endif

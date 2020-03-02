@@ -93,10 +93,6 @@ auto sampleKernel(const Texture444Frame &attrFrame, const Vec2i &loc,
   return samples;
 }
 
-inline auto onImage(const Vec2i &sz, const Vec2i &pt) -> bool {
-  return pt[0] >= 0 && pt[0] < sz.x() && pt[1] >= 0 && pt[1] < sz.y();
-}
-
 auto minMasked(const vector<uint16_t> &values, const vector<uint8_t> &mask) {
   auto minValue = values[0]; // original foreground value
   assert(mask[0] != 0);
@@ -109,28 +105,6 @@ auto minMasked(const vector<uint16_t> &values, const vector<uint8_t> &mask) {
   }
 
   return minValue;
-}
-
-auto minMasked(const vector<uint16_t> &values, const vector<uint16_t> &labels,
-               const vector<uint8_t> &mask) {
-  auto minValue = values[0]; // original foreground value
-  auto minLabel = labels[0];
-  assert(mask[0] != 0);
-
-  auto m = mask.begin();
-  auto l = labels.begin();
-  for (const auto &v : values) {
-    if (*m == 0) {
-      if (v < minValue) {
-        minValue = v;
-        minLabel = *l;
-      }
-    }
-    m++;
-    l++;
-  }
-
-  return pair{minValue, minLabel};
 }
 
 inline auto colorDistance(const Vec3w &a, const Vec3w &b) {

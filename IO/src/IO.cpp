@@ -241,8 +241,6 @@ auto loadSourceIvAccessUnitParams(const Json &config) -> IvAccessUnitParams {
       .miv_atlas_sequence_params()
       .masp_omaf_v1_compatible_flag(config.require("OmafV1CompatibleFlag").asBool());
 
-  // TODO(BK): Check that masp_omaf_v1_compatible_flag does not get lost
-
   return x;
 }
 

@@ -111,12 +111,6 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
         const auto &plane = inAtlases[patch.vuhAtlasId].depth.getPlane(0);
 
         if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
-          // TODO(BK): Remove the printing
-          cout << "DeptOccupancy: Error in patch list:\n";
-          cout << "  pdu2dPos = " << patch.pdu2dPos() << '\n';
-          cout << "  pdu2dSize = " << patch.pdu2dSize() << '\n';
-          cout << "  vuhAtlasId = " << patch.vuhAtlasId << '\n';
-          cout << "  atlas size is " << plane.height() << " x " << plane.width() << '\n';
           abort();
         }
 

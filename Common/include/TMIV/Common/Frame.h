@@ -158,19 +158,17 @@ using BlockToPatchMap = Frame<YUV400P16>;
 const auto unusedPatchId = std::uint16_t(65535);
 using EntityMap = Frame<YUV400P16>;
 
-// TODO(BK): Rename struct and data members after TMIV-4.0alpha1 milestone
 template <typename FORMAT> struct TextureDepthFrame {
-
   using first_type = TextureFrame;
   using second_type = Frame<FORMAT>;
 
-  TextureFrame first;
-  Frame<FORMAT> second;
+  TextureFrame texture;
+  Frame<FORMAT> depth;
   EntityMap entities{};
 
   TextureDepthFrame() = default;
   TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)
-      : first{std::move(texture_)}, second{std::move(depth_)} {}
+      : texture{std::move(texture_)}, depth{std::move(depth_)} {}
 };
 using TextureDepth10Frame = TextureDepthFrame<YUV400P10>;
 using TextureDepth16Frame = TextureDepthFrame<YUV400P16>;

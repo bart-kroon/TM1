@@ -124,8 +124,8 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
   const auto frame = m_viewBuffer.size();
 
   for (size_t view = 0; view < masks.size(); ++view) {
-    int H = transportViews[view].first.getHeight();
-    int W = transportViews[view].first.getWidth();
+    int H = transportViews[view].texture.getHeight();
+    int W = transportViews[view].texture.getWidth();
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
         if (masks[view].getPlane(0)(h, w) != 0) {
@@ -201,7 +201,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
-      atlas.first.fillNeutral();
+      atlas.texture.fillNeutral();
       atlasList.push_back(move(atlas));
     }
 
@@ -228,11 +228,11 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
   auto &currentAtlas = atlas[patch.vuhAtlasId];
   const auto &currentView = views[patch.pduViewId()];
 
-  auto &textureAtlasMap = currentAtlas.first;
-  auto &depthAtlasMap = currentAtlas.second;
+  auto &textureAtlasMap = currentAtlas.texture;
+  auto &depthAtlasMap = currentAtlas.depth;
 
-  const auto &textureViewMap = currentView.first;
-  const auto &depthViewMap = currentView.second;
+  const auto &textureViewMap = currentView.texture;
+  const auto &depthViewMap = currentView.depth;
   int w = patch.pduViewSize().x();
   int h = patch.pduViewSize().y();
   int xM = patch.pduViewPos().x();

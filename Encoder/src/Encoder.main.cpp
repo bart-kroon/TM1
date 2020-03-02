@@ -167,12 +167,12 @@ private:
 
     for (auto i = 0U; i < atlas.size(); ++i) {
       // copy texture
-      atlasOut[i].first = atlas[i].first;
+      atlasOut[i].texture = atlas[i].texture;
 
       // downscale depth using max-of-4 operation
-      auto depthD2 = maxPool2x2(atlas[i].second.getPlane(0));
-      atlasOut[i].second.resize(int(depthD2.width()), int(depthD2.height()));
-      atlasOut[i].second.getPlane(0) = depthD2;
+      auto depthD2 = maxPool2x2(atlas[i].depth.getPlane(0));
+      atlasOut[i].depth.resize(int(depthD2.width()), int(depthD2.height()));
+      atlasOut[i].depth.getPlane(0) = depthD2;
     }
 
     return atlasOut;

@@ -89,8 +89,8 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
   outAtlases.reserve(inAtlases.size());
 
   for (auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.first,
-                            Depth10Frame{inAtlas.second.getWidth(), inAtlas.second.getHeight()});
+    outAtlases.emplace_back(inAtlas.texture,
+                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }
 
   for (const auto &patch : m_accessUnitParams.patchParamsList) {
@@ -108,7 +108,7 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
         const auto n = i + patch.pdu2dPos().y();
         const auto m = j + patch.pdu2dPos().x();
 
-        const auto &plane = inAtlases[patch.vuhAtlasId].second.getPlane(0);
+        const auto &plane = inAtlases[patch.vuhAtlasId].depth.getPlane(0);
 
         if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
           // TODO(BK): Remove the printing
@@ -127,7 +127,7 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
           assert(outOccupancyTransform.occupant(outLevel));
 
-          outAtlases[patch.vuhAtlasId].second.getPlane(0)(n, m) = outLevel;
+          outAtlases[patch.vuhAtlasId].depth.getPlane(0)(n, m) = outLevel;
         }
       }
     }

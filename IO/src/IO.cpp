@@ -148,8 +148,8 @@ void saveMVDFrame(const Json &config, int frameIndex, const MVDFrame<FORMAT> &fr
   cout << "Saving " << what << " frame " << frameIndex << endl;
 
   for (size_t i = 0; i < frame.size(); ++i) {
-    writeFrame(getFullPath(config, directory, texturePathFmt, i), frame[i].first, frameIndex);
-    writeFrame(getFullPath(config, directory, depthPathFmt, i), frame[i].second, frameIndex);
+    writeFrame(getFullPath(config, directory, texturePathFmt, i), frame[i].texture, frameIndex);
+    writeFrame(getFullPath(config, directory, depthPathFmt, i), frame[i].depth, frameIndex);
   }
 }
 
@@ -263,9 +263,9 @@ auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes,
   transform(cbegin(frame), cend(frame), back_inserter(frame16),
             [bits](const TextureDepthFrame<FORMAT> &view) {
               auto view16 = TextureDepth16Frame{
-                  move(view.first), Depth16Frame{view.second.getWidth(), view.second.getHeight()}};
-              transform(begin(view.second.getPlane(0)), end(view.second.getPlane(0)),
-                        begin(view16.second.getPlane(0)), [bits](unsigned x) {
+                  move(view.texture), Depth16Frame{view.depth.getWidth(), view.depth.getHeight()}};
+              transform(begin(view.depth.getPlane(0)), end(view.depth.getPlane(0)),
+                        begin(view16.depth.getPlane(0)), [bits](unsigned x) {
                           const auto x_max = maxLevel(bits);
                           assert(0 <= x && x <= x_max);
                           const auto y = (0xFFFF * x + x_max / 2) / x_max;
@@ -380,13 +380,13 @@ void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame 
   if (config.optional("OutputTexturePath")) {
     string texturePath = getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
                                      config.require("OutputCameraName").asString());
-    writeFrame(texturePath, frame.first, frameIndex);
+    writeFrame(texturePath, frame.texture, frameIndex);
   }
 
   if (config.optional("OutputDepthPath")) {
     string depthPath = getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,
                                    config.require("OutputCameraName").asString());
-    writeFrame(depthPath, frame.second, frameIndex);
+    writeFrame(depthPath, frame.depth, frameIndex);
   }
 }
 

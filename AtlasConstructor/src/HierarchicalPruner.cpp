@@ -209,7 +209,7 @@ private:
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
                 auto mask = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
                                             viewParams.ci.projectionPlaneSize().y()};
-                transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
+                transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
                             // excluded from the pruning mask
@@ -225,7 +225,7 @@ private:
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
                 auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
                                               viewParams.ci.projectionPlaneSize().y()};
-                transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
+                transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
                             // freezed from pruning
@@ -242,7 +242,7 @@ private:
         const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i].dq};
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
             m_config, m_ivSequenceParams.viewParamsList[i].ci.projectionPlaneSize(), i,
-            depthTransform.expandDepth(views[i].second)));
+            depthTransform.expandDepth(views[i].depth)));
       }
     }
   }
@@ -300,7 +300,7 @@ private:
     const auto flags = cout.setf(ios::fixed, ios::floatfield);
     cout << setw(2) << index << " (" << setw(3) << m_ivSequenceParams.viewParamsList[index].name
          << "): " << ivertices.size() << " vertices ("
-         << 100. * double(ivertices.size()) / (view.first.getWidth() * view.first.getHeight())
+         << 100. * double(ivertices.size()) / (view.texture.getWidth() * view.texture.getHeight())
          << "% of full view)\n";
     cout.precision(prec);
     cout.setf(flags);

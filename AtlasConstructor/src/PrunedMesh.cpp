@@ -57,10 +57,10 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
     const auto size = viewParams.ci.projectionPlaneSize();
     const auto numPixels = size.x() * size.y();
 
-    const auto &Y = view.first.getPlane(0);
-    const auto &U = view.first.getPlane(1);
-    const auto &V = view.first.getPlane(2);
-    const auto &D = view.second.getPlane(0);
+    const auto &Y = view.texture.getPlane(0);
+    const auto &U = view.texture.getPlane(1);
+    const auto &V = view.texture.getPlane(2);
+    const auto &D = view.depth.getPlane(0);
 
     assert(vertices.empty());
     vertices.reserve(numPixels);

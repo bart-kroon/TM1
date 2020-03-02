@@ -68,16 +68,6 @@ public:
                          const Vec2i &loc) -> float;
   auto operator()(const Mat3w &yuv, const Mat1w &depth, const Mat1b &edgeMagnitudes) -> Mat1w;
 
-  // variant that handles texture atlas
-  auto colorConfidence(const std::vector<ushort> &depthValues,
-                       const std::vector<Vec3w> &colorValues,
-                       const std::vector<uchar> &edgeMagnitudes,
-                       const std::vector<ushort> &regionLabels) -> float;
-  auto colorConfidenceAt(const Mat3w &yuv, const Mat1w &depth, const Mat1b &edgeMagnitudes,
-                         const Mat1w &regions, const Vec2i &loc) -> float;
-  auto operator()(const Mat3w &yuv, const Mat1w &depth, const Mat1b &edgeMagnitudes,
-                  const Mat1w &regions) -> std::pair<Mat1w, Mat1w>;
-
 private:
   int m_depthEdgeMagnitudeTh = 11;
   float m_minForegroundConfidence = 0.4F;
@@ -93,13 +83,6 @@ public:
   auto curvature(const std::vector<ushort> &depthValues) -> int;
   auto curvatureAt(const Mat1w &depth, const Vec2i &loc) -> int;
   auto operator()(const Mat1w &depth, const Mat1b &edgeMagnitudes) -> Mat1w;
-
-  // variant that handles texture atlas
-  auto curvature(const std::vector<ushort> &depthValues, const std::vector<ushort> &regionLabels)
-      -> int;
-  auto curvatureAt(const Mat1w &depth, const Mat1w &regions, const Vec2i &loc) -> int;
-  auto operator()(const Mat1w &depth, const Mat1b &edgeMagnitudes, const Mat1w &regions)
-      -> std::pair<Mat1w, Mat1w>;
 
 private:
   int m_depthEdgeMagnitudeTh = 11;

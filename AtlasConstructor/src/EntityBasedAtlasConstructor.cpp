@@ -35,6 +35,8 @@
 
 #include "Cluster.h"
 #include <TMIV/Common/Factory.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+
 #include <cassert>
 #include <iostream>
 
@@ -55,9 +57,6 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
   // Single atlas size
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
-  // Keep the config info to load the EntityMaps
-  m_rootNode = rootNode;
-
   // Read the entity encoding range
   m_EntityEncRange = componentNode.require("EntityEncodeRange").asIntVector<2>();
 
@@ -71,7 +70,6 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
 auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams,
                                                   vector<bool> isBasicView)
     -> const IvSequenceParams & {
-
   // Construct at least the basic views
   if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
     m_nbAtlas =
@@ -104,7 +102,6 @@ void EntityBasedAtlasConstructor::prepareAccessUnit(
   m_ivAccessUnitParams = ivAccessUnitParams;
   m_viewBuffer.clear();
   m_aggregatedEntityMask.clear();
-  m_entityMasksBuffer.clear();
   m_aggregator->prepareAccessUnit();
 }
 
@@ -134,120 +131,54 @@ auto EntityBasedAtlasConstructor::yuvSampler(const EntityMapList &in) -> vector<
   return outYuvAll;
 }
 
-void EntityBasedAtlasConstructor::mergeViews(MVD16Frame &mergedViews,
-                                             MVD16Frame transportEntityViews) {
-  for (size_t viewId = 0; viewId < mergedViews.size(); viewId++) {
-    for (int planeId = 0; planeId < 3; planeId++) {
-      vector<int> Indices(transportEntityViews[viewId].first.getPlane(planeId).size());
-      std::iota(Indices.begin(), Indices.end(), 0);
-      std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-        if (transportEntityViews[viewId].first.getPlane(planeId)[i] != neutralChroma) {
-          mergedViews[viewId].first.getPlane(planeId)[i] =
-              transportEntityViews[viewId].first.getPlane(planeId)[i];
-        }
-      });
-    }
-
-    vector<int> Indices(transportEntityViews[viewId].second.getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-      if (transportEntityViews[viewId].second.getPlane(0)[i] != uint16_t(0)) {
-        mergedViews[viewId].second.getPlane(0)[i] =
-            transportEntityViews[viewId].second.getPlane(0)[i];
-      }
-    });
-  }
-}
-
 void EntityBasedAtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList masks) {
   for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
-    vector<int> Indices(mergedMasks[viewId].getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
       if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
         mergedMasks[viewId].getPlane(0)[i] = masks[viewId].getPlane(0)[i];
       }
-    });
+    }
   }
 }
 
 void EntityBasedAtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
-    vector<int> Indices(masks[viewId].getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
+    for (auto i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].first.getPlane(0)[i] == neutralChroma) &&
           (views[viewId].second.getPlane(0)[i] == uint16_t(0))) {
         masks[viewId].getPlane(0)[i] = uint8_t(0);
       }
-    });
+    }
   }
 }
 
-void EntityBasedAtlasConstructor::updateEntityMasks(EntityMapList &entityMasks,
-                                                    const MaskList &masks, uint16_t entityId) {
-  if (entityId == 0) {
-    entityId = m_inIvSequenceParams.msp().msp_max_entities_minus1() +
-               1; // to avoid getting lost with the initalized 0s
-  }
-  for (size_t viewId = 0; viewId < entityMasks.size(); viewId++) {
-    vector<int> Indices(entityMasks[viewId].getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-      if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
-        entityMasks[viewId].getPlane(0)[i] = entityId;
-      }
-    });
-  }
-}
-
-void EntityBasedAtlasConstructor::swap0(EntityMapList &entityMasks) {
-  for (auto &entityMask : entityMasks) {
-    vector<int> Indices(entityMask.getPlane(0).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-      if (entityMask.getPlane(0)[i] == uint8_t(0)) {
-        entityMask.getPlane(0)[i] = unusedPatchId;
-      }
-    });
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-      if (entityMask.getPlane(0)[i] == m_inIvSequenceParams.msp().msp_max_entities_minus1() + 1) {
-        entityMask.getPlane(0)[i] = uint16_t(0);
-      }
-    });
-  }
-}
-
-void EntityBasedAtlasConstructor::aggregateEntityMasks(EntityMapList &entityMasks) {
-  if (m_aggregatedEntityMask.empty()) {
-    m_aggregatedEntityMask = entityMasks;
+void EntityBasedAtlasConstructor::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) {
+  if (m_aggregatedEntityMask.size() < m_EntityEncRange[1] - m_EntityEncRange[0]) {
+    m_aggregatedEntityMask.push_back(Masks);
   } else {
-    for (size_t i = 0; i < entityMasks.size(); i++) {
-      transform(m_aggregatedEntityMask[i].getPlane(0).begin(),
-                m_aggregatedEntityMask[i].getPlane(0).end(), entityMasks[i].getPlane(0).begin(),
-                m_aggregatedEntityMask[i].getPlane(0).begin(),
+    for (size_t i = 0; i < Masks.size(); i++) {
+      transform(m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).begin(),
+                m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).end(),
+                Masks[i].getPlane(0).begin(),
+                m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).begin(),
                 [](auto v1, auto v2) { return max(v1, v2); });
     }
   }
 }
 
-auto EntityBasedAtlasConstructor::entitySeparator(MVD16Frame transportViews,
-                                                  EntityMapList entityMaps, uint16_t entityId)
-    -> MVD16Frame {
+auto EntityBasedAtlasConstructor::entitySeparator(const MVD16Frame &transportViews,
+                                                  uint16_t entityId) -> MVD16Frame {
   // Initalize entityViews
   MVD16Frame entityViews;
   for (auto &transportView : transportViews) {
     TextureDepth16Frame entityView = {
         TextureFrame(transportView.first.getWidth(), transportView.first.getHeight()),
         Depth16Frame(transportView.second.getWidth(), transportView.second.getHeight())};
-
-    for (auto &p : entityView.first.getPlanes()) {
-      fill(p.begin(), p.end(), neutralChroma);
-    }
-
-    fill(entityView.second.getPlane(0).begin(), entityView.second.getPlane(0).end(), uint16_t(0));
-
     entityViews.push_back(move(entityView));
+  }
+  EntityMapList entityMaps;
+  for (const auto &transportView : transportViews) {
+    entityMaps.push_back(transportView.entities);
   }
 
   auto entityMapsYUV = yuvSampler(entityMaps);
@@ -274,42 +205,23 @@ auto EntityBasedAtlasConstructor::entitySeparator(MVD16Frame transportViews,
 void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
   // Initalization
   MVD16Frame transportEntityViews;
-  MVD16Frame mergedViews;
   MaskList masks;
   MaskList mergedMasks;
-  EntityMapList entityMasks;
   for (auto &transportView : transportViews) {
-    TextureDepth16Frame entityMergedView = {
-        TextureFrame(transportView.first.getWidth(), transportView.first.getHeight()),
-        Depth16Frame(transportView.second.getWidth(), transportView.second.getHeight())};
     Mask entityMergedMask(transportView.first.getWidth(), transportView.first.getHeight());
-    EntityMap entityMask(transportView.first.getWidth(), transportView.first.getHeight());
-    for (auto &p : entityMergedView.first.getPlanes()) {
-      fill(p.begin(), p.end(), neutralChroma);
-    }
-    fill(entityMergedView.second.getPlane(0).begin(), entityMergedView.second.getPlane(0).end(),
-         uint16_t(0));
+
     fill(entityMergedMask.getPlane(0).begin(), entityMergedMask.getPlane(0).end(), uint8_t(0));
-    fill(entityMask.getPlane(0).begin(), entityMask.getPlane(0).end(), uint16_t(0));
 
-    mergedViews.push_back(move(entityMergedView));
     mergedMasks.push_back(move(entityMergedMask));
-    entityMasks.push_back(move(entityMask));
   }
 
-  // Entity Maps Loader
   SizeVector m_viewSizes = m_inIvSequenceParams.viewParamsList.viewSizes();
-
-  EntityMapList entityMaps;
-  for (const auto &transportView : transportViews) {
-    entityMaps.push_back(transportView.entities);
-  }
 
   for (auto entityId = m_EntityEncRange[0]; entityId < m_EntityEncRange[1]; entityId++) {
     cout << "Processing entity " << entityId << '\n';
 
     // Entity Separator
-    transportEntityViews = entitySeparator(transportViews, entityMaps, entityId);
+    transportEntityViews = entitySeparator(transportViews, entityId);
 
     // Pruning
     masks = m_pruner->prune(m_inIvSequenceParams, transportEntityViews, m_isBasicView);
@@ -317,18 +229,15 @@ void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
     // updating the pruned basic masks for entities and filter other masks.
     updateMasks(transportEntityViews, masks);
 
-    // Entity Masking and Merging (Tracking entityIds after pruning)
-    updateEntityMasks(entityMasks, masks, entityId);
-    mergeViews(mergedViews, transportEntityViews);
+    // Aggregate Entity Masks
+    aggregateEntityMasks(masks, entityId);
+
+    // Entity Mask Merging
     mergeMasks(mergedMasks, masks);
   }
   // Aggregation
-  m_viewBuffer.push_back(move(mergedViews));
+  m_viewBuffer.push_back(move(transportViews));
   m_aggregator->pushMask(mergedMasks);
-  aggregateEntityMasks(entityMasks);
-  m_entityMasksBuffer.push_back(move(entityMasks));
-
-  m_fIndex++;
 }
 
 auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
@@ -337,10 +246,6 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   // Aggregated mask
   m_aggregator->completeAccessUnit();
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
-  swap0(m_aggregatedEntityMask);
-  for (auto &i : m_entityMasksBuffer) {
-    swap0(i);
-  }
 
   // Print statistics the same way the HierarchicalPruner does
   auto sumValues = 0.;
@@ -392,7 +297,6 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
       m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 
   // Atlas construction
-  m_frameInGOPIndex = 0;
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
 
@@ -408,13 +312,14 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
 
       atlasList.push_back(move(atlas));
     }
-
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
-      writePatchInAtlas(patch, views, atlasList);
+      const auto &view = views[patch.pduViewId()];
+      MVD16Frame tempViews;
+      tempViews.push_back(move(view));
+      const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
+      writePatchInAtlas(patch, entityViews[0], atlasList);
     }
-
     m_atlasBuffer.push_back(move(atlasList));
-    m_frameInGOPIndex++;
   }
 
   return m_ivAccessUnitParams;
@@ -426,46 +331,10 @@ auto EntityBasedAtlasConstructor::popAtlas() -> MVD16Frame {
   return atlas;
 }
 
-auto EntityBasedAtlasConstructor::setView(TextureDepth16Frame view, const EntityMap &entityMask,
-                                          int entityId) -> TextureDepth16Frame {
-  TextureDepth16Frame entityView = {TextureFrame(view.first.getWidth(), view.first.getHeight()),
-                                    Depth16Frame(view.second.getWidth(), view.second.getHeight())};
-  for (auto &p : entityView.first.getPlanes()) {
-    fill(p.begin(), p.end(), neutralChroma);
-  }
-  fill(entityView.second.getPlane(0).begin(), entityView.second.getPlane(0).end(), uint16_t(0));
-
-  EntityMapList entityMasks;
-  entityMasks.push_back(entityMask);
-  auto entityMasksYUV = yuvSampler(entityMasks);
-  for (int planeId = 0; planeId < 3; planeId++) {
-    vector<int> Indices(view.first.getPlane(planeId).size());
-    std::iota(Indices.begin(), Indices.end(), 0);
-    std::for_each(Indices.begin(), Indices.end(), [&](auto i) {
-      if (entityMasksYUV[0].getPlane(planeId)[i] == entityId) {
-        entityView.first.getPlane(planeId)[i] = view.first.getPlane(planeId)[i];
-        if (planeId == 0) {
-          entityView.second.getPlane(0)[i] = view.second.getPlane(0)[i];
-        }
-      }
-    });
-  }
-
-  return entityView;
-}
-
 void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
-                                                    const MVD16Frame &views, MVD16Frame &atlas) {
+                                                    const TextureDepth16Frame &currentView,
+                                                    MVD16Frame &atlas) {
   auto &currentAtlas = atlas[patch.vuhAtlasId];
-
-  TextureDepth16Frame currentView;
-  if (m_maxEntities > 1) {
-    currentView =
-        setView(views[patch.pduViewId()], m_entityMasksBuffer[m_frameInGOPIndex][patch.pduViewId()],
-                *patch.pduEntityId());
-  } else {
-    currentView = views[patch.pduViewId()];
-  }
 
   auto &textureAtlasMap = currentAtlas.first;
   auto &depthAtlasMap = currentAtlas.second;
@@ -498,7 +367,8 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
 
       // Depth
       auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
-      if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy) {
+      if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
+          m_maxEntities == 1) {
         depth = 1; // Avoid marking valid depth as invalid
       }
       depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;

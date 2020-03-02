@@ -227,10 +227,11 @@ public:
       }
     }
 
-    return {quantizeTexture(m_viewportColor),
-            DepthTransform<16>{targetCamera.dq}.quantizeNormDisp(m_viewportVisibility, 1)};
-
-    return Common::Texture444Depth16Frame{};
+    auto frame = Texture444Depth16Frame{
+        quantizeTexture(m_viewportColor),
+        DepthTransform<16>{targetCamera.dq}.quantizeNormDisp(m_viewportVisibility, 1)};
+    frame.first.filIInvalidWithNeutral(frame.second);
+    return frame;
   }
 
 private:

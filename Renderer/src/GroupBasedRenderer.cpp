@@ -114,12 +114,11 @@ auto GroupBasedRenderer::groupRenderOrder(const AccessUnit &frame, const ViewPar
 auto GroupBasedRenderer::renderPass(GroupIdMask groupIdMask, const AccessUnit &frame,
                                     const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
-  return m_synthesizer->renderFrame(filterFrame(groupIdMask, frame, viewportParams),
-                                    viewportParams);
+  return m_synthesizer->renderFrame(filterFrame(groupIdMask, frame), viewportParams);
 }
 
-auto GroupBasedRenderer::filterFrame(GroupIdMask groupIdMask, AccessUnit frame,
-                                     const ViewParams &viewportParams) -> MivBitstream::AccessUnit {
+auto GroupBasedRenderer::filterFrame(GroupIdMask groupIdMask, AccessUnit frame)
+    -> MivBitstream::AccessUnit {
   for (auto &atlas : frame.atlas) {
     const auto &masp = atlas.asps.miv_atlas_sequence_params();
     if (!groupIdMask.test(masp.masp_group_id())) {

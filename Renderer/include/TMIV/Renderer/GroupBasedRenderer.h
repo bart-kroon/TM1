@@ -76,8 +76,7 @@ private:
       -> std::vector<unsigned>;
 
   // Filter the frame keeping only patches with a group within the mask
-  static auto filterFrame(GroupIdMask groupIdMask, MivBitstream::AccessUnit frame,
-                          const MivBitstream::ViewParams &viewportParams)
+  static auto filterFrame(GroupIdMask groupIdMask, MivBitstream::AccessUnit frame)
       -> MivBitstream::AccessUnit;
 
   struct Priority {

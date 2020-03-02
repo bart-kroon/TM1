@@ -277,15 +277,16 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
         .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
                                         atlas.asps.asps_log2_patch_packing_block_size());
 
-    const auto maxViewSize =
-        transform_reduce(begin(m_outIvSequenceParams.viewParamsList),
-                         end(m_outIvSequenceParams.viewParamsList), Vec2i{},
-                         [](auto a, auto b) {
-                           return Vec2i{max(a.x(), b.x()), max(a.y(), b.y())};
-                         },
-                         [](const auto &vp) { return vp.ci.projectionPlaneSize(); });
-    atlas.afps.afps_3d_pos_x_bit_count_minus1(ceilLog2(maxViewSize.x()) - 1);
-    atlas.afps.afps_3d_pos_y_bit_count_minus1(ceilLog2(maxViewSize.y()) - 1);
+    uint16_t maxProjectionPlaneWidthMinus1 = 0;
+    uint16_t maxProjectionPlaneHeightMinus1 = 0;
+    for (auto & vp : m_outIvSequenceParams.viewParamsList) {
+      maxProjectionPlaneWidthMinus1 =
+        max(maxProjectionPlaneWidthMinus1, vp.ci.ci_projection_plane_width_minus1());
+      maxProjectionPlaneHeightMinus1 =
+        max(maxProjectionPlaneHeightMinus1, vp.ci.ci_projection_plane_height_minus1());
+    }
+    atlas.afps.afps_3d_pos_x_bit_count_minus1(ceilLog2(maxProjectionPlaneWidthMinus1 + 1) - 1);
+    atlas.afps.afps_3d_pos_y_bit_count_minus1(ceilLog2(maxProjectionPlaneHeightMinus1 + 1) - 1);
 
     // Set ATGH parameters
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());

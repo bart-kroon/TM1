@@ -56,6 +56,13 @@ public:
   auto renderFrame(const MivBitstream::AccessUnit &frame,
                    const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
+
+private:
+  auto renderFrame(const std::vector<Common::Texture444Depth10Frame> &atlas,
+                   const std::vector<Common::BlockToPatchMap> &maps,
+                   const MivBitstream::IvSequenceParams &ivSequenceParams,
+                   const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
+                   const MivBitstream::ViewParams &target) const -> Common::Texture444Depth16Frame;
 };
 } // namespace TMIV::Renderer
 

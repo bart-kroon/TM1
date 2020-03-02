@@ -167,7 +167,7 @@ public:
     m_filteringPass = filteringPass;
   }
   template <CiCamType sourceCamType, CiCamType targetCamType, typename MVD>
-  auto renderFrame(const MVD &atlasList, const PatchIdMapList &maps,
+  auto renderFrame(const MVD &atlasList, const std::vector<Common::BlockToPatchMap> &maps,
                    const MivBitstream::IvSequenceParams &ivSequenceParams,
                    const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
                    const MivBitstream::ViewParams &targetCamera) -> Common::Texture444Depth16Frame {
@@ -371,7 +371,7 @@ private:
     MaskList maskList;
 
     for (const auto &cam : viewParamsList) {
-      TextureFrame tex(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
+      Texture444Frame tex(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
       DepthFrame depth(cam.ci.projectionPlaneSize().x(), cam.ci.projectionPlaneSize().y());
       tex.fillNeutral();
       frame.push_back(TextureDepthFrame{std::move(tex), std::move(depth)});
@@ -409,7 +409,7 @@ private:
         for (int dx = 0; dx < wP; dx++) {
           // get position
           Vec2i pAtlas = {xP + dx, yP + dy};
-          Vec2i pView = atlasToView(pAtlas, patch);
+          Vec2i pView = patch.atlasToView(pAtlas);
           // Y
           if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
             textureViewMap.getPlane(0)(pView.y(), pView.x()) =
@@ -420,9 +420,10 @@ private:
           if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
             for (int p = 1; p < 3; p++) {
               if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-                textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
-                    textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-                textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 0x200;
+                textureViewMap.getPlane(p)(pView.y(), pView.x()) =
+                    textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x());
+                textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x()) =
+                    Texture444Frame::neutralColor();
               }
             }
           }
@@ -477,7 +478,7 @@ private:
     }
   }
   template <CiCamType sourceCamType, CiCamType targetCamType>
-  void reprojectPrunedSource(const PatchIdMapList &patchIdMapList,
+  void reprojectPrunedSource(const std::vector<Common::BlockToPatchMap> &patchIdMapList,
                              const PatchParamsList &patchParamsList,
                              const typename ProjectionHelper<sourceCamType>::List &sourceHelperList,
                              const ProjectionHelper<targetCamType> &targetHelper) {
@@ -517,7 +518,7 @@ private:
                 auto viewId = patch.pduViewId();
 
                 if (m_cameraVisibility[viewId]) {
-                  auto pduViewPos = atlasToView({static_cast<int>(X), static_cast<int>(Y)}, patch);
+                  auto pduViewPos = patch.atlasToView({static_cast<int>(X), static_cast<int>(Y)});
 
                   int x = pduViewPos.x();
                   int y = pduViewPos.y();
@@ -1112,8 +1113,44 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
+auto ViewWeightingSynthesizer::renderFrame(const AccessUnit &frame,
+                                           const ViewParams &viewportParams) const
+    -> Texture444Depth16Frame {
+  // TODO(BK): Too much work to convert this entire source file
+
+  auto ivSequenceParams = IvSequenceParams{};
+  ivSequenceParams.vps = *frame.vps;
+  ivSequenceParams.viewParamsList = frame.atlas.front().viewParamsList;
+
+  auto ivAccessUnitParams = IvAccessUnitParams{};
+  for (auto &atlas : frame.atlas) {
+    ivAccessUnitParams.atlas.emplace_back();
+    ivAccessUnitParams.atlas.back().afps = atlas.afps;
+    ivAccessUnitParams.atlas.back().asps = atlas.asps;
+    ivAccessUnitParams.atlas.back().atgh = atlas.atgh;
+    ivAccessUnitParams.patchParamsList.insert(ivAccessUnitParams.patchParamsList.end(),
+                                              atlas.patchParamsList.begin(),
+                                              atlas.patchParamsList.end());
+  }
+
+  auto maps = std::vector<BlockToPatchMap>{};
+  for (auto &atlas : frame.atlas) {
+    maps.push_back(atlas.blockToPatchMap);
+  }
+
+  auto data = std::vector<Texture444Depth10Frame>{};
+  for (auto &atlas : frame.atlas) {
+    data.emplace_back();
+    data.back().first = atlas.attrFrame;
+    data.back().second = atlas.geoFrame;
+  }
+
+  return renderFrame(data, maps, ivSequenceParams, ivAccessUnitParams, viewportParams);
+}
+
 auto ViewWeightingSynthesizer::renderFrame(
-    const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
+    const std::vector<Texture444Depth10Frame> &atlas,
+    const std::vector<Common::BlockToPatchMap> &maps,
     const MivBitstream::IvSequenceParams &ivSequenceParams,
     const MivBitstream::IvAccessUnitParams &ivAccessUnitParams,
     const MivBitstream::ViewParams &target) const -> Common::Texture444Depth16Frame {

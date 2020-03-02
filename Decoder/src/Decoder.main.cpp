@@ -114,7 +114,7 @@ private:
       outputFrameStep = subnode.asInt();
     }
 
-    for (int outputFrame = firstOutputFrame; outputFrame < numberOfFrames;
+    for (int outputFrame = firstOutputFrame; outputFrame < numberOfFrames + extraFrames;
          outputFrame += outputFrameStep) {
       auto inputFrame = IO::getExtendedIndex(config, outputFrame);
       x.emplace(inputFrame, outputFrame);

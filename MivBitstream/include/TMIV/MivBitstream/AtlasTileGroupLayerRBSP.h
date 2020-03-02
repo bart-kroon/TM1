@@ -140,11 +140,13 @@ public:
 };
 
 // 23090-12: patch_data_unit(patchIdx)
+//
+// TODO(BK): Remove _delta and remove PatchParams
 class PatchDataUnit {
 public:
   constexpr auto pdu_2d_pos_x() const noexcept;
   constexpr auto pdu_2d_pos_y() const noexcept;
-  constexpr auto pdu_2d_delta_size_x() const noexcept;
+  constexpr auto pdu_2d_delta_size_x() const noexcept; 
   constexpr auto pdu_2d_delta_size_y() const noexcept;
   constexpr auto pdu_view_pos_x() const noexcept;
   constexpr auto pdu_view_pos_y() const noexcept;

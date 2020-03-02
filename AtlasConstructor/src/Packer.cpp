@@ -96,8 +96,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
              back_inserter(clusterList));
         clusteringMap.push_back(move(clusteringOutput.second));
 
-        for (int i = 0; i < clusteringOutput.first.size(); i++)
+        for (size_t i = 0; i < clusteringOutput.first.size(); i++) {
           clusteringMapIndex.push_back(index);
+        }
 
         if (!clusteringOutput.first.empty()) {
           cout << "entity " << entityId << " from view " << viewId << " results in "

@@ -596,7 +596,7 @@ auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
       stream << x.miv_sequence_params();
       stream << "vps_miv_sequence_vui_params_present_flag=" << boolalpha
              << x.vps_miv_sequence_vui_params_present_flag() << '\n';
-      // TODO(BK): miv_vui_parameters
+      // TODO(BK): Implement miv_vui_parameters
     }
   }
   return stream;

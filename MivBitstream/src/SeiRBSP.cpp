@@ -42,12 +42,12 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const SeiMessage & /* x */) -> std::ostream & {
-  // TODO(BK): Implement
+  // TODO(BK): Implement SeiRBSP
   return stream;
 }
 
 auto SeiMessage::operator==(const SeiMessage & /* other */) const noexcept -> bool {
-  // TODO(BK): Implement
+  // TODO(BK): Implement SeiRBSP
   return true;
 }
 
@@ -56,13 +56,13 @@ auto SeiMessage::operator!=(const SeiMessage &other) const noexcept -> bool {
 }
 
 auto SeiMessage::decodeFrom(Common::InputBitstream &bitstream) -> SeiMessage {
-  // TODO(BK): Implement
+  // TODO(BK): Implement SeiRBSP
   bitstream.getFlag();
   return {};
 }
 
 void SeiMessage::encodeTo(Common::OutputBitstream &bitstream) {
-  // TODO(BK): Implement
+  // TODO(BK): Implement SeiRBSP
   bitstream.putFlag(false);
 }
 

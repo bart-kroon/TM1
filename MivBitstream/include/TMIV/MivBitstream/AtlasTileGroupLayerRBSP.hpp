@@ -131,6 +131,8 @@ constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
 }
 
+constexpr auto PatchDataUnit::pdu_entity_id() const noexcept { return m_pdu_entity_id; }
+
 constexpr auto &PatchDataUnit::pdu_2d_pos_x(const std::uint16_t value) noexcept {
   m_pdu_2d_pos_x = value;
   return *this;
@@ -221,15 +223,13 @@ constexpr auto AtlasTileGroupLayerRBSP::atlas_tile_group_header() const noexcept
   return m_atlas_tile_group_header;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return true;
 }
 
-constexpr auto
-AtlasTileGroupLayerRBSP::operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
-    -> bool {
+constexpr auto AtlasTileGroupLayerRBSP::
+operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
   return false;
 }
 } // namespace TMIV::MivBitstream

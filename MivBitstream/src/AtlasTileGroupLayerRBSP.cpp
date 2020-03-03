@@ -291,11 +291,6 @@ auto PatchDataUnit::pdu_depth_end() const noexcept -> uint32_t {
   return *m_pdu_depth_end;
 }
 
-auto PatchDataUnit::pdu_entity_id() const noexcept -> unsigned {
-  VERIFY_MIVBITSTREAM(m_pdu_entity_id.has_value());
-  return *m_pdu_entity_id;
-}
-
 auto PatchDataUnit::pdu_depth_occ_map_threshold() const noexcept -> uint32_t {
   VERIFY_MIVBITSTREAM(m_pdu_depth_occ_map_threshold.has_value());
   return *m_pdu_depth_occ_map_threshold;
@@ -314,9 +309,7 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
   }
   stream << "pdu_view_id( " << patchIdx << " )=" << pdu_view_id() << "\npdu_orientation_index( "
          << patchIdx << " )=" << pdu_orientation_index() << '\n';
-  if (m_pdu_entity_id) {
-    stream << "pdu_entity_id( " << patchIdx << " )=" << pdu_entity_id() << '\n';
-  }
+  stream << "pdu_entity_id( " << patchIdx << " )=" << pdu_entity_id() << '\n';
   if (m_pdu_depth_occ_map_threshold) {
     stream << "pdu_depth_occ_map_threshold( " << patchIdx << " )=" << pdu_depth_occ_map_threshold()
            << '\n';

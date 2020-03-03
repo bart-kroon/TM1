@@ -121,6 +121,7 @@ pdu_view_pos_y( 101 )=0
 pdu_depth_start( 101 )=0
 pdu_view_id( 101 )=0
 pdu_orientation_index( 101 )=FPO_NULL
+pdu_entity_id( 101 )=0
 )");
 
   REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, atgh));
@@ -218,6 +219,7 @@ pdu_view_pos_y( 99 )=0
 pdu_depth_start( 99 )=0
 pdu_view_id( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
+pdu_entity_id( 99 )=0
 )");
     REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, atgh, patchMode));
   }
@@ -261,6 +263,7 @@ pdu_view_pos_y( 2 )=0
 pdu_depth_start( 2 )=0
 pdu_view_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
+pdu_entity_id( 2 )=0
 atgdu_patch_mode[ 3 ]=P_SKIP
 )");
   }
@@ -282,6 +285,7 @@ pdu_view_pos_y( 0 )=0
 pdu_depth_start( 0 )=0
 pdu_view_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
+pdu_entity_id( 0 )=0
 atgdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
 pdu_2d_pos_y( 1 )=0
@@ -292,6 +296,7 @@ pdu_view_pos_y( 1 )=0
 pdu_depth_start( 1 )=0
 pdu_view_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
+pdu_entity_id( 1 )=0
 )");
 
     const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
@@ -391,6 +396,7 @@ pdu_view_pos_y( 0 )=0
 pdu_depth_start( 0 )=0
 pdu_view_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
+pdu_entity_id( 0 )=0
 atgdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
 pdu_2d_pos_y( 1 )=0
@@ -401,6 +407,7 @@ pdu_view_pos_y( 1 )=0
 pdu_depth_start( 1 )=0
 pdu_view_id( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
+pdu_entity_id( 1 )=0
 atgdu_patch_mode[ 2 ]=I_INTRA
 pdu_2d_pos_x( 2 )=0
 pdu_2d_pos_y( 2 )=0
@@ -411,6 +418,7 @@ pdu_view_pos_y( 2 )=0
 pdu_depth_start( 2 )=0
 pdu_view_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
+pdu_entity_id( 2 )=0
 )");
     REQUIRE(byteCodingTest(x, 24, vuh, vps, aspsV, afpsV));
   }

@@ -152,7 +152,7 @@ public:
   auto pdu_depth_end() const noexcept -> std::uint32_t;
   constexpr auto pdu_view_id() const noexcept;
   constexpr auto pdu_orientation_index() const noexcept;
-  auto pdu_entity_id() const noexcept -> unsigned;
+  constexpr auto pdu_entity_id() const noexcept;
   auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
 
   constexpr auto &pdu_2d_pos_x(const std::uint16_t value) noexcept;
@@ -196,7 +196,7 @@ private:
   std::optional<std::uint32_t> m_pdu_depth_end;
   std::uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
-  std::optional<unsigned> m_pdu_entity_id;
+  unsigned m_pdu_entity_id{};
   std::optional<std::uint32_t> m_pdu_depth_occ_map_threshold;
 };
 

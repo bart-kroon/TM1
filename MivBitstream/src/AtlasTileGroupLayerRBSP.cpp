@@ -380,8 +380,9 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
     }
     if (asps.asps_miv_extension_present_flag() &&
         asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
-      // TODO(BK): pdu_depth_occ_map_threshold bit count is wrong in WD4 d24
-      x.pdu_depth_occ_map_threshold(bitstream.readBits<uint32_t>(10));
+      const auto depth_occ_map_threshold_num_bits =
+          vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_nominal_2d_bitdepth_minus1() + 1;
+      x.pdu_depth_occ_map_threshold(bitstream.readBits<uint32_t>(depth_occ_map_threshold_num_bits));
     }
   }
   return x;
@@ -442,8 +443,9 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
     }
     if (asps.asps_miv_extension_present_flag() &&
         asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
-      // TODO(BK): pdu_depth_occ_map_threshold bit count is wrong in WD4 d24
-      bitstream.writeBits(pdu_depth_occ_map_threshold(), 10);
+      const auto depth_occ_map_threshold_num_bits =
+          vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_nominal_2d_bitdepth_minus1() + 1;
+      bitstream.writeBits(pdu_depth_occ_map_threshold(), depth_occ_map_threshold_num_bits);
     }
   }
 }

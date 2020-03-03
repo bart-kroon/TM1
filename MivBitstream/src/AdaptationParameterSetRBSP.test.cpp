@@ -140,7 +140,7 @@ dq_norm_disp_high[ 7 ]=0
 dq_depth_occ_map_threshold_default[ 7 ]=0
 )");
 
-  REQUIRE(bitCodingTest(x, 82));
+  REQUIRE(bitCodingTest(x, 73));
 
   SECTION("Example 2") {
     x.dq_norm_disp_low(0.02F);
@@ -153,7 +153,7 @@ dq_norm_disp_high[ 2 ]=2
 dq_depth_occ_map_threshold_default[ 2 ]=200
 )");
 
-    REQUIRE(bitCodingTest(x, 82));
+    REQUIRE(bitCodingTest(x, 87));
   }
 }
 
@@ -216,7 +216,7 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 397));
+    REQUIRE(bitCodingTest(x, 388));
   }
 
   SECTION("Example 2") {
@@ -265,7 +265,7 @@ pc_is_leaf_flag[ 1 ]=true
 pc_is_leaf_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 784));
+    REQUIRE(bitCodingTest(x, 775));
   }
 }
 
@@ -336,6 +336,6 @@ pc_is_leaf_flag[ 2 ]=true
 aps_extension2_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 101));
+    REQUIRE(byteCodingTest(x, 100));
   }
 }

@@ -126,7 +126,9 @@ pdu_orientation_index( 101 )=FPO_NULL
   REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, atgh));
 
   SECTION("Example") {
-    vps.geometry_information(vuh.vuh_atlas_id()).gi_geometry_3d_coordinates_bitdepth_minus1(9);
+    vps.geometry_information(vuh.vuh_atlas_id())
+        .gi_geometry_3d_coordinates_bitdepth_minus1(9)
+        .gi_geometry_nominal_2d_bitdepth_minus1(9);
     vps.vps_miv_extension_flag(true).miv_sequence_params().msp_max_entities_minus1(100);
 
     aspsV.front()

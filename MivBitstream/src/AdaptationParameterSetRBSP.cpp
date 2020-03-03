@@ -307,8 +307,7 @@ auto DepthQuantization::decodeFrom(InputBitstream &bitstream) -> DepthQuantizati
   x.dq_norm_disp_low(bitstream.getFloat32());
   x.dq_norm_disp_high(bitstream.getFloat32());
 
-  // TODO(BK): dq_depth_occ_map_threshold_default bit count is missing in WD4 d25
-  x.dq_depth_occ_map_threshold_default(bitstream.readBits<uint32_t>(10));
+  x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
 
   return x;
 }
@@ -318,8 +317,7 @@ void DepthQuantization::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFloat32(dq_norm_disp_low());
   bitstream.putFloat32(dq_norm_disp_high());
 
-  // TODO(BK): dq_depth_occ_map_threshold_default bit count is missing in WD4 d25
-  bitstream.writeBits(dq_depth_occ_map_threshold_default(), 10);
+  bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
 }
 
 PruningChildren::PruningChildren(vector<uint16_t> pc_child_id) : m_pc_child_id{move(pc_child_id)} {}

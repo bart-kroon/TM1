@@ -47,7 +47,6 @@ using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 namespace TMIV::ViewOptimizer {
-// TODO(BK): Expose hidden parameter
 constexpr auto overlapThreshold = 0.5;
 constexpr auto halfPixel = 0.5F;
 

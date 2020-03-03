@@ -70,11 +70,13 @@ template <unsigned bits>
 DepthTransform<bits>::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams)
     : DepthTransform{dq} {
   m_depthStart = patchParams.pduDepthStart();
-  // TODO(BK): Implement pduDepthEnd
+  if (patchParams.pduDepthEnd()) {
+    m_depthEnd = patchParams.pduDepthEnd();
+  }
 }
 
 template <unsigned bits> auto DepthTransform<bits>::expandNormDisp(uint16_t x) const -> float {
-  const auto level = Common::expandValue<bits>(std::max(m_depthStart, x));
+  const auto level = Common::expandValue<bits>(std::clamp(x, m_depthStart, m_depthEnd));
   return std::max(impl::minNormDisp, m_normDispLow + (m_normDispHigh - m_normDispLow) * level);
 }
 

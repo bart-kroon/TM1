@@ -102,6 +102,7 @@ private:
   const float m_normDispLow;
   const float m_normDispHigh;
   uint16_t m_depthStart{};
+  uint16_t m_depthEnd{UINT16_MAX};
 };
 } // namespace TMIV::MivBitstream
 

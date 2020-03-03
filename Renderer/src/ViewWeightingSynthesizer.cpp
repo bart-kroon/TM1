@@ -1116,11 +1116,17 @@ ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 auto ViewWeightingSynthesizer::renderFrame(const AccessUnit &frame,
                                            const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
-  // TODO(BK): Too much work to convert this entire source file
-
   auto ivSequenceParams = IvSequenceParams{};
   ivSequenceParams.vps = *frame.vps;
   ivSequenceParams.viewParamsList = frame.atlas.front().viewParamsList;
+
+  for (auto &atlas : frame.atlas) {
+    if (atlas.viewParamsList != ivSequenceParams.viewParamsList) {
+      throw std::runtime_error(
+          "The ViewWeightingSynthesizer requires that all atlases share the same "
+          "view parameters list");
+    }
+  }
 
   auto ivAccessUnitParams = IvAccessUnitParams{};
   for (auto &atlas : frame.atlas) {

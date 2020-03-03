@@ -170,25 +170,25 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
 
   const auto &aau = m_ivau.atlas[vai];
 
-  auto n = 1 << aau.asps.asps_log2_patch_packing_block_size();
-  int32_t size_x = 0;
-  int32_t size_y = 0;
+  const auto k = aau.asps.asps_log2_patch_packing_block_size();
 
   for (auto &pp : m_ivau.patchParamsList) {
     if (pp.vuhAtlasId == vai) {
       auto pdu = PatchDataUnit{};
 
-      VERIFY_MIVBITSTREAM(pp.pdu2dPos().x() % n == 0);
-      VERIFY_MIVBITSTREAM(pp.pdu2dPos().y() % n == 0);
-      pdu.pdu_2d_pos_x(pp.pdu2dPos().x() / n);
-      pdu.pdu_2d_pos_y(pp.pdu2dPos().y() / n);
+      VERIFY_MIVBITSTREAM(0 <= pp.pdu2dPos().x() && pp.pdu2dPos().x() <= UINT16_MAX);
+      VERIFY_MIVBITSTREAM(0 <= pp.pdu2dPos().y() && pp.pdu2dPos().y() <= UINT16_MAX);
+      VERIFY_MIVBITSTREAM(pp.pdu2dPos().x() % (1 << k) == 0);
+      VERIFY_MIVBITSTREAM(pp.pdu2dPos().y() % (1 << k) == 0);
+      pdu.pdu_2d_pos_x(uint16_t(pp.pdu2dPos().x()) >> k);
+      pdu.pdu_2d_pos_y(uint16_t(pp.pdu2dPos().y()) >> k);
 
-      VERIFY_MIVBITSTREAM(pp.pdu2dSize().x() % n == 0);
-      VERIFY_MIVBITSTREAM(pp.pdu2dSize().y() % n == 0);
-      pdu.pdu_2d_delta_size_x((pp.pdu2dSize().x() - size_x) / n);
-      pdu.pdu_2d_delta_size_y((pp.pdu2dSize().y() - size_y) / n);
-      size_x = pp.pdu2dSize().x();
-      size_y = pp.pdu2dSize().y();
+      VERIFY_MIVBITSTREAM(0 < pp.pdu2dSize().x() && pp.pdu2dSize().x() <= UINT16_MAX + 1);
+      VERIFY_MIVBITSTREAM(0 < pp.pdu2dSize().y() && pp.pdu2dSize().y() <= UINT16_MAX + 1);
+      VERIFY_MIVBITSTREAM(pp.pdu2dSize().x() % (1 << k) == 0);
+      VERIFY_MIVBITSTREAM(pp.pdu2dSize().y() % (1 << k) == 0);
+      pdu.pdu_2d_size_x_minus1(uint16_t(pp.pdu2dSize().x() - 1) >> k);
+      pdu.pdu_2d_size_y_minus1(uint16_t(pp.pdu2dSize().y() - 1) >> k);
 
       pdu.pdu_view_pos_x(pp.pduViewPos().x());
       pdu.pdu_view_pos_y(pp.pduViewPos().y());
@@ -199,7 +199,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
       }
 
       pdu.pdu_orientation_index(pp.pduOrientationIndex());
-	  pdu.pdu_view_id(pp.pduViewId());
+      pdu.pdu_view_id(pp.pduViewId());
 
       if (pp.pduEntityId()) {
         pdu.pdu_entity_id(*pp.pduEntityId());

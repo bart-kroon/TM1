@@ -124,7 +124,8 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
     aau.blockToPatchMap = atlas.frames.front()->blockToPatchMap;
 
     aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
-    aau.decGeoFrame = m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
+    aau.decGeoFrame =
+        m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
 
     atlas.frames.erase(atlas.frames.begin());
   }
@@ -298,16 +299,15 @@ auto MivDecoder::decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList {
 auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
                              const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList {
   auto x = vector<PatchParams>(atgdu.atgduTotalNumberOfPatches());
-  auto pdu2dSize = Vec2i{};
-  const auto n = 1 << asps.asps_log2_patch_packing_block_size();
 
   atgdu.visit([&](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
     auto &pdu = pid.patch_data_unit();
+    const auto k = asps.asps_log2_patch_packing_block_size();
 
     x[p].pduOrientationIndex(pdu.pdu_orientation_index());
-    x[p].pdu2dPos(n * Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()});
-    pdu2dSize += n * Vec2i{pdu.pdu_2d_delta_size_x(), pdu.pdu_2d_delta_size_y()};
-    x[p].pdu2dSize(pdu2dSize);
+    x[p].pdu2dPos({int(pdu.pdu_2d_pos_x() << k), int(pdu.pdu_2d_pos_y() << k)});
+    x[p].pdu2dSize(
+        {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     x[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
     x[p].pduDepthStart(pdu.pdu_depth_start());
     x[p].pduViewId(pdu.pdu_view_id());
@@ -328,19 +328,18 @@ auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
 auto MivDecoder::decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
                                        const AtlasSequenceParameterSetRBSP &asps)
     -> Common::BlockToPatchMap {
-  auto result = BlockToPatchMap{asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
-                           asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
+  auto result =
+      BlockToPatchMap{asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
+                      asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
   fill(begin(result.getPlane(0)), end(result.getPlane(0)), unusedPatchId);
-  auto pdu2dSize = Vec2i{};
 
-  atgdu.visit([&](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
+  atgdu.visit([&result](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
     auto &pdu = pid.patch_data_unit();
-    pdu2dSize += Vec2i{pdu.pdu_2d_delta_size_x(), pdu.pdu_2d_delta_size_y()};
     const auto first = Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()};
-    const auto last = first + pdu2dSize;
+    const auto last = first + Vec2i{pdu.pdu_2d_size_x_minus1(), pdu.pdu_2d_size_y_minus1()};
 
-    for (int y = first.y(); y < last.y(); ++y) {
-      for (int x = first.x(); x < last.y(); ++x) {
+    for (int y = first.y(); y <= last.y(); ++y) {
+      for (int x = first.x(); x <= last.x(); ++x) {
         result.getPlane(0)(y, x) = uint16_t(p);
       }
     }

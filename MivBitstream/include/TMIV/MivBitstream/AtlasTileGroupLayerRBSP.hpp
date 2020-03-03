@@ -111,9 +111,13 @@ constexpr auto PatchDataUnit::pdu_2d_pos_x() const noexcept { return m_pdu_2d_po
 
 constexpr auto PatchDataUnit::pdu_2d_pos_y() const noexcept { return m_pdu_2d_pos_y; }
 
-constexpr auto PatchDataUnit::pdu_2d_delta_size_x() const noexcept { return m_pdu_2d_delta_size_x; }
+constexpr auto PatchDataUnit::pdu_2d_size_x_minus1() const noexcept {
+  return m_pdu_2d_size_x_minus1;
+}
 
-constexpr auto PatchDataUnit::pdu_2d_delta_size_y() const noexcept { return m_pdu_2d_delta_size_y; }
+constexpr auto PatchDataUnit::pdu_2d_size_y_minus1() const noexcept {
+  return m_pdu_2d_size_y_minus1;
+}
 
 constexpr auto PatchDataUnit::pdu_view_pos_x() const noexcept { return m_pdu_view_pos_x; }
 
@@ -127,32 +131,32 @@ constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_pos_x(const int value) noexcept {
+constexpr auto &PatchDataUnit::pdu_2d_pos_x(const std::uint16_t value) noexcept {
   m_pdu_2d_pos_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_pos_y(const int value) noexcept {
+constexpr auto &PatchDataUnit::pdu_2d_pos_y(const std::uint16_t value) noexcept {
   m_pdu_2d_pos_y = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_delta_size_x(const int value) noexcept {
-  m_pdu_2d_delta_size_x = value;
+constexpr auto &PatchDataUnit::pdu_2d_size_x_minus1(const std::uint16_t value) noexcept {
+  m_pdu_2d_size_x_minus1 = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_delta_size_y(const int value) noexcept {
-  m_pdu_2d_delta_size_y = value;
+constexpr auto &PatchDataUnit::pdu_2d_size_y_minus1(const std::uint16_t value) noexcept {
+  m_pdu_2d_size_y_minus1 = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_view_pos_x(const int value) noexcept {
+constexpr auto &PatchDataUnit::pdu_view_pos_x(const std::uint16_t value) noexcept {
   m_pdu_view_pos_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_view_pos_y(const int value) noexcept {
+constexpr auto &PatchDataUnit::pdu_view_pos_y(const std::uint16_t value) noexcept {
   m_pdu_view_pos_y = value;
   return *this;
 }
@@ -190,8 +194,8 @@ constexpr auto &PatchDataUnit::pdu_depth_occ_map_threshold(const std::uint32_t v
 
 constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexcept {
   return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
-         pdu_2d_delta_size_x() == other.pdu_2d_delta_size_x() &&
-         pdu_2d_delta_size_y() == other.pdu_2d_delta_size_y() &&
+         pdu_2d_size_x_minus1() == other.pdu_2d_size_x_minus1() &&
+         pdu_2d_size_y_minus1() == other.pdu_2d_size_y_minus1() &&
          pdu_view_pos_x() == other.pdu_view_pos_x() && pdu_view_pos_y() == other.pdu_view_pos_y() &&
          pdu_depth_start() == other.pdu_depth_start() && m_pdu_depth_end == other.m_pdu_depth_end &&
          pdu_view_id() == other.pdu_view_id() &&

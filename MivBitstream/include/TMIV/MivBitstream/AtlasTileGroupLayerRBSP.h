@@ -140,14 +140,12 @@ public:
 };
 
 // 23090-12: patch_data_unit(patchIdx)
-//
-// TODO(BK): Remove _delta and remove PatchParams
 class PatchDataUnit {
 public:
   constexpr auto pdu_2d_pos_x() const noexcept;
   constexpr auto pdu_2d_pos_y() const noexcept;
-  constexpr auto pdu_2d_delta_size_x() const noexcept; 
-  constexpr auto pdu_2d_delta_size_y() const noexcept;
+  constexpr auto pdu_2d_size_x_minus1() const noexcept;
+  constexpr auto pdu_2d_size_y_minus1() const noexcept;
   constexpr auto pdu_view_pos_x() const noexcept;
   constexpr auto pdu_view_pos_y() const noexcept;
   constexpr auto pdu_depth_start() const noexcept;
@@ -157,12 +155,12 @@ public:
   auto pdu_entity_id() const noexcept -> unsigned;
   auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
 
-  constexpr auto &pdu_2d_pos_x(const int value) noexcept;
-  constexpr auto &pdu_2d_pos_y(const int value) noexcept;
-  constexpr auto &pdu_2d_delta_size_x(const int value) noexcept;
-  constexpr auto &pdu_2d_delta_size_y(const int value) noexcept;
-  constexpr auto &pdu_view_pos_x(const int value) noexcept;
-  constexpr auto &pdu_view_pos_y(const int value) noexcept;
+  constexpr auto &pdu_2d_pos_x(const std::uint16_t value) noexcept;
+  constexpr auto &pdu_2d_pos_y(const std::uint16_t value) noexcept;
+  constexpr auto &pdu_2d_size_x_minus1(const std::uint16_t value) noexcept;
+  constexpr auto &pdu_2d_size_y_minus1(const std::uint16_t value) noexcept;
+  constexpr auto &pdu_view_pos_x(const std::uint16_t value) noexcept;
+  constexpr auto &pdu_view_pos_y(const std::uint16_t value) noexcept;
   constexpr auto &pdu_depth_start(const std::uint32_t value) noexcept;
   constexpr auto &pdu_depth_end(const std::uint32_t value) noexcept;
   constexpr auto &pdu_view_id(const std::uint16_t value) noexcept;
@@ -188,12 +186,12 @@ public:
                 const AtlasTileGroupHeader &atgh) const;
 
 private:
-  int m_pdu_2d_pos_x{};
-  int m_pdu_2d_pos_y{};
-  int m_pdu_2d_delta_size_x{};
-  int m_pdu_2d_delta_size_y{};
-  int m_pdu_view_pos_x{};
-  int m_pdu_view_pos_y{};
+  std::uint16_t m_pdu_2d_pos_x{};
+  std::uint16_t m_pdu_2d_pos_y{};
+  std::uint16_t m_pdu_2d_size_x_minus1{};
+  std::uint16_t m_pdu_2d_size_y_minus1{};
+  std::uint16_t m_pdu_view_pos_x{};
+  std::uint16_t m_pdu_view_pos_y{};
   std::uint32_t m_pdu_depth_start{};
   std::optional<std::uint32_t> m_pdu_depth_end;
   std::uint16_t m_pdu_view_id{};

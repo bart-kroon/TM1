@@ -303,9 +303,9 @@ auto PatchDataUnit::pdu_depth_occ_map_threshold() const noexcept -> uint32_t {
 
 auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
   stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << "\npdu_2d_pos_y( "
-         << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_delta_size_x( " << patchIdx
-         << " )=" << pdu_2d_delta_size_x() << "\npdu_2d_delta_size_y( " << patchIdx
-         << " )=" << pdu_2d_delta_size_y() << "\npdu_view_pos_x( " << patchIdx
+         << patchIdx << " )=" << pdu_2d_pos_y() << "\npdu_2d_size_x_minus1( " << patchIdx
+         << " )=" << pdu_2d_size_x_minus1() << "\npdu_2d_size_y_minus1( " << patchIdx
+         << " )=" << pdu_2d_size_y_minus1() << "\npdu_view_pos_x( " << patchIdx
          << " )=" << pdu_view_pos_x() << "\npdu_view_pos_y( " << patchIdx
          << " )=" << pdu_view_pos_y() << "\npdu_depth_start( " << patchIdx
          << " )=" << pdu_depth_start() << '\n';
@@ -342,16 +342,16 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
                                               : 3U;
   x.pdu_view_id(uint16_t(bitstream.readBits(pdu_projection_id_num_bits)));
 
-  x.pdu_2d_pos_x(int(bitstream.readBits(afps.afps_2d_pos_x_bit_count_minus1() + 1)));
-  x.pdu_2d_pos_y(int(bitstream.readBits(afps.afps_2d_pos_y_bit_count_minus1() + 1)));
+  x.pdu_2d_pos_x(uint16_t(bitstream.readBits(afps.afps_2d_pos_x_bit_count_minus1() + 1)));
+  x.pdu_2d_pos_y(uint16_t(bitstream.readBits(afps.afps_2d_pos_y_bit_count_minus1() + 1)));
 
   VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_x() < asps.asps_frame_width());
   VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_y() < asps.asps_frame_height());
 
-  x.pdu_2d_delta_size_x(int(bitstream.getSExpGolomb()));
-  x.pdu_2d_delta_size_y(int(bitstream.getSExpGolomb()));
-  x.pdu_view_pos_x(int(bitstream.readBits(afps.afps_3d_pos_x_bit_count_minus1() + 1)));
-  x.pdu_view_pos_y(int(bitstream.readBits(afps.afps_3d_pos_y_bit_count_minus1() + 1)));
+  x.pdu_2d_size_x_minus1(uint16_t(bitstream.getUExpGolomb()));
+  x.pdu_2d_size_y_minus1(uint16_t(bitstream.getUExpGolomb()));
+  x.pdu_view_pos_x(uint16_t(bitstream.readBits(afps.afps_3d_pos_x_bit_count_minus1() + 1)));
+  x.pdu_view_pos_y(uint16_t(bitstream.readBits(afps.afps_3d_pos_y_bit_count_minus1() + 1)));
 
   VERIFY_VPCCBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::VPCC_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
@@ -406,8 +406,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
 
   bitstream.writeBits(pdu_2d_pos_x(), afps.afps_2d_pos_x_bit_count_minus1() + 1);
   bitstream.writeBits(pdu_2d_pos_y(), afps.afps_2d_pos_y_bit_count_minus1() + 1);
-  bitstream.putSExpGolomb(pdu_2d_delta_size_x());
-  bitstream.putSExpGolomb(pdu_2d_delta_size_y());
+  bitstream.putUExpGolomb(pdu_2d_size_x_minus1());
+  bitstream.putUExpGolomb(pdu_2d_size_y_minus1());
   bitstream.writeBits(pdu_view_pos_x(), afps.afps_3d_pos_x_bit_count_minus1() + 1);
   bitstream.writeBits(pdu_view_pos_y(), afps.afps_3d_pos_y_bit_count_minus1() + 1);
 

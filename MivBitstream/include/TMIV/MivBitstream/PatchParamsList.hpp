@@ -130,14 +130,14 @@ inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
 }
 
 inline auto PatchParams::viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i {
-  int w = pduViewSize().x();
-  int h = pduViewSize().y();
-  int xM = pduViewPos().x();
-  int yM = pduViewPos().y();
-  int xP = pdu2dPos().x();
-  int yP = pdu2dPos().y();
-  int x = viewPosition.x();
-  int y = viewPosition.y();
+  auto w = pduViewSize().x();
+  auto h = pduViewSize().y();
+  auto xM = pduViewPos().x();
+  auto yM = pduViewPos().y();
+  auto xP = pdu2dPos().x();
+  auto yP = pdu2dPos().y();
+  auto x = viewPosition.x();
+  auto y = viewPosition.y();
 
   switch (pduOrientationIndex()) {
   case FlexiblePatchOrientation::FPO_NULL: // (x, y)
@@ -162,14 +162,14 @@ inline auto PatchParams::viewToAtlas(Common::Vec2i viewPosition) const -> Common
 }
 
 inline auto PatchParams::atlasToView(Common::Vec2i atlasPosition) const -> Common::Vec2i {
-  int w = pduViewSize().x();
-  int h = pduViewSize().y();
-  int xM = pduViewPos().x();
-  int yM = pduViewPos().y();
-  int xP = pdu2dPos().x();
-  int yP = pdu2dPos().y();
-  int x = atlasPosition.x();
-  int y = atlasPosition.y();
+  auto w = pduViewSize().x();
+  auto h = pduViewSize().y();
+  auto xM = pduViewPos().x();
+  auto yM = pduViewPos().y();
+  auto xP = pdu2dPos().x();
+  auto yP = pdu2dPos().y();
+  auto x = atlasPosition.x();
+  auto y = atlasPosition.y();
 
   switch (pduOrientationIndex()) {
   case FlexiblePatchOrientation::FPO_NULL: // (x, y)

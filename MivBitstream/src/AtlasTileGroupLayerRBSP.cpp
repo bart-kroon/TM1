@@ -374,10 +374,9 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
 
   if (MivDecoder::mode == MivDecoder::Mode::MIV && vps.vps_miv_extension_flag()) {
-    if (vps.miv_sequence_params().msp_max_entities_minus1() > 0) {
-      x.pdu_entity_id(bitstream.getUExpGolomb<unsigned>()); // TODO(BK): u(v)
-      VERIFY_MIVBITSTREAM(x.pdu_entity_id() <= vps.miv_sequence_params().msp_max_entities_minus1());
-    }
+    x.pdu_entity_id(
+        bitstream.getUVar<unsigned>(vps.miv_sequence_params().msp_max_entities_minus1() + 1));
+
     if (asps.asps_miv_extension_present_flag() &&
         asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
       const auto depth_occ_map_threshold_num_bits =
@@ -437,10 +436,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
 
   if (vps.vps_miv_extension_flag()) {
-    if (vps.miv_sequence_params().msp_max_entities_minus1() > 0) {
-      VERIFY_MIVBITSTREAM(pdu_entity_id() <= vps.miv_sequence_params().msp_max_entities_minus1());
-      bitstream.putUExpGolomb(pdu_entity_id());
-    }
+    bitstream.putUVar(pdu_entity_id(), vps.miv_sequence_params().msp_max_entities_minus1() + 1);
+
     if (asps.asps_miv_extension_present_flag() &&
         asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
       const auto depth_occ_map_threshold_num_bits =

@@ -170,7 +170,7 @@ pdu_entity_id( 102 )=35
 pdu_depth_occ_map_threshold( 102 )=600
 )");
 
-    REQUIRE(bitCodingTest(x, 144, vuh, vps, aspsV, afpsV, atgh));
+    REQUIRE(bitCodingTest(x, 140, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 

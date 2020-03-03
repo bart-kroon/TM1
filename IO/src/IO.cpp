@@ -99,11 +99,12 @@ template <typename FORMAT> void padChroma(ostream &stream, int bytes) {
 
 template <typename FORMAT>
 void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) {
-  // TODO(BK): Enable random write access (seekp)
-  ofstream stream(path, (frameIndex == 0 ? ios::trunc : ios::app) | ios::binary);
+  ofstream stream(path, ios::app | ios::binary);
   if (!stream.good()) {
     throw runtime_error("Failed to open file for writing: " + path);
   }
+
+  stream.seekp(int64_t(frameIndex) * frame.getDiskSize());
 
   frame.dump(stream);
   padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());

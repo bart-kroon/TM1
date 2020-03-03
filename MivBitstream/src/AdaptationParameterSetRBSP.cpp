@@ -308,7 +308,7 @@ auto DepthQuantization::decodeFrom(InputBitstream &bitstream) -> DepthQuantizati
   x.dq_norm_disp_high(bitstream.getFloat32());
 
   // TODO(BK): dq_depth_occ_map_threshold_default bit count is missing in WD4 d25
-  x.dq_depth_occ_map_threshold_default(uint32_t(bitstream.readBits(10)));
+  x.dq_depth_occ_map_threshold_default(bitstream.readBits<uint32_t>(10));
 
   return x;
 }
@@ -369,11 +369,11 @@ auto PruningChildren::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_vie
     return {};
   }
 
-  const auto pc_num_children_minus1 = bitstream.getUVar(mvp_num_views_minus1);
+  const auto pc_num_children_minus1 = bitstream.getUVar<size_t>(mvp_num_views_minus1);
   auto x = vector<uint16_t>(pc_num_children_minus1 + 1);
 
   for (uint16_t &i : x) {
-    i = uint16_t(bitstream.getUVar(mvp_num_views_minus1 + 1));
+    i = bitstream.getUVar<uint16_t>(mvp_num_views_minus1 + 1);
   }
 
   return PruningChildren{x};
@@ -692,7 +692,7 @@ auto AdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AdaptationParame
 
   auto x = AdaptationParameterSetRBSP{};
 
-  x.aps_adaptation_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
+  x.aps_adaptation_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
 
   const auto aps_camera_params_present_flag = bitstream.getFlag();
   VERIFY_MIVBITSTREAM(!aps_camera_params_present_flag);
@@ -703,7 +703,7 @@ auto AdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AdaptationParame
   x.aps_miv_view_params_list_present_flag(bitstream.getFlag());
 
   if (x.aps_miv_view_params_list_present_flag()) {
-    x.aps_miv_view_params_list_update_mode(MvpUpdateMode(bitstream.readBits(2)));
+    x.aps_miv_view_params_list_update_mode(bitstream.readBits<MvpUpdateMode>(2));
 
     switch (x.aps_miv_view_params_list_update_mode()) {
     case MvpUpdateMode::VPL_INITLIST:
@@ -743,7 +743,7 @@ void AdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
   bitstream.putFlag(aps_miv_view_params_list_present_flag());
 
   if (aps_miv_view_params_list_present_flag()) {
-    bitstream.writeBits(uint_least64_t(aps_miv_view_params_list_update_mode()), 2);
+    bitstream.writeBits(aps_miv_view_params_list_update_mode(), 2);
     switch (aps_miv_view_params_list_update_mode()) {
     case MvpUpdateMode::VPL_INITLIST:
       miv_view_params_list().encodeTo(bitstream);

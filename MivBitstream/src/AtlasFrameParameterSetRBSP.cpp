@@ -59,20 +59,17 @@ auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFr
   const auto afti_uniform_tile_spacing_flag = bitstream.getFlag();
   VERIFY_MIVBITSTREAM(!afti_uniform_tile_spacing_flag);
 
-  const auto afti_num_tile_columns = bitstream.getUExpGolomb() + 1;
-  VERIFY_MIVBITSTREAM(afti_num_tile_columns == 1);
+  const auto afti_num_tile_columns_minus1 = bitstream.getUExpGolomb<size_t>();
+  VERIFY_MIVBITSTREAM(afti_num_tile_columns_minus1 == 0);
 
-  const auto afti_num_tile_rows = bitstream.getUExpGolomb() + 1;
-  VERIFY_MIVBITSTREAM(afti_num_tile_rows == 1);
-
-  const auto numTilesInAtlasFrame = afti_num_tile_columns * afti_num_tile_rows;
-  VERIFY_MIVBITSTREAM(numTilesInAtlasFrame == 1);
+  const auto afti_num_tile_rows_minus1 = bitstream.getUExpGolomb<size_t>();
+  VERIFY_MIVBITSTREAM(afti_num_tile_rows_minus1 == 0);
 
   const auto afti_single_tile_per_tile_group_flag = bitstream.getFlag();
 
   if (!afti_single_tile_per_tile_group_flag) {
-    const auto afti_num_tile_groups_in_atlas_frame = bitstream.getUExpGolomb() + 1;
-    VERIFY_MIVBITSTREAM(afti_num_tile_groups_in_atlas_frame == 1);
+    const auto afti_num_tile_groups_in_atlas_frame_minus1 = bitstream.getUExpGolomb<size_t>();
+    VERIFY_MIVBITSTREAM(afti_num_tile_groups_in_atlas_frame_minus1 == 0);
   }
 
   const auto afti_signalled_tile_group_id_flag = bitstream.getFlag();
@@ -140,29 +137,29 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   auto x = AtlasFrameParameterSetRBSP{};
   InputBitstream bitstream{stream};
 
-  x.afps_atlas_frame_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
+  x.afps_atlas_frame_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.afps_atlas_frame_parameter_set_id() <= 63);
 
-  x.afps_atlas_sequence_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
+  x.afps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.afps_atlas_sequence_parameter_set_id() <= 15);
   VERIFY_VPCCBITSTREAM(x.afps_atlas_sequence_parameter_set_id() < aspsV.size());
   const auto &asps = aspsV[x.afps_atlas_sequence_parameter_set_id()];
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
 
-  x.afps_num_ref_idx_default_active_minus1(uint8_t(bitstream.getUExpGolomb()));
+  x.afps_num_ref_idx_default_active_minus1(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.afps_num_ref_idx_default_active_minus1() <= 14);
 
-  x.afps_additional_lt_afoc_lsb_len(uint8_t(bitstream.getUExpGolomb()));
+  x.afps_additional_lt_afoc_lsb_len(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.afps_additional_lt_afoc_lsb_len() <=
                        32 - (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
   VERIFY_VPCCBITSTREAM(asps.asps_long_term_ref_atlas_frames_flag() ||
                        x.afps_additional_lt_afoc_lsb_len() == 0);
 
-  x.afps_2d_pos_x_bit_count_minus1(uint8_t(bitstream.readBits(4)));
-  x.afps_2d_pos_y_bit_count_minus1(uint8_t(bitstream.readBits(4)));
-  x.afps_3d_pos_x_bit_count_minus1(uint8_t(bitstream.readBits(5)));
-  x.afps_3d_pos_y_bit_count_minus1(uint8_t(bitstream.readBits(5)));
+  x.afps_2d_pos_x_bit_count_minus1(bitstream.readBits<uint8_t>((4)));
+  x.afps_2d_pos_y_bit_count_minus1(bitstream.readBits<uint8_t>((4)));
+  x.afps_3d_pos_x_bit_count_minus1(bitstream.readBits<uint8_t>((5)));
+  x.afps_3d_pos_y_bit_count_minus1(bitstream.readBits<uint8_t>((5)));
   x.afps_lod_mode_enabled_flag(bitstream.getFlag());
 
   x.afps_override_eom_for_depth_flag(bitstream.getFlag());

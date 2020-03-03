@@ -10,6 +10,7 @@ add_library(CommonLib
 	"src/Transformation.cpp"
 	"src/Graph.cpp"
 	"include/TMIV/Common/Bitstream.h"
+	"include/TMIV/Common/Bitstream.hpp"
 	"include/TMIV/Common/Bytestream.h"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Common.hpp"

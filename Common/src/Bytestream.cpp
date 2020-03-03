@@ -39,7 +39,7 @@ using namespace std;
 
 namespace {
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define verify(condition) (void)(!!(condition) || verifyFailed(#condition, __FILE__, __LINE__))
+#define VERIFY_BITSTREAM(condition) (void)(!!(condition) || verifyFailed(#condition, __FILE__, __LINE__))
 
 auto verifyFailed(char const *condition, char const *file, int line) -> bool {
   cerr << "Failed to encode/decode byte stream: " << condition << " [" << file << "@" << line
@@ -50,15 +50,15 @@ auto verifyFailed(char const *condition, char const *file, int line) -> bool {
 } // namespace
 
 namespace TMIV::Common {
-auto readBytes(istream &stream, size_t bytes) -> uint_least64_t {
-  verify(bytes <= 8);
-  auto result = uint_least64_t{0};
+auto readBytes(istream &stream, size_t bytes) -> uint64_t {
+  VERIFY_BITSTREAM(bytes <= 8);
+  auto result = uint64_t{0};
   while (bytes-- > 0) {
     char buffer;
     stream.get(buffer);
     result = (result << 8) | uint8_t(buffer);
   }
-  verify(stream.good());
+  VERIFY_BITSTREAM(stream.good());
   return result;
 }
 
@@ -70,19 +70,19 @@ auto getUint64(istream &stream) -> uint64_t { return uint64_t(readBytes(stream, 
 auto readString(istream &stream, size_t bytes) -> string {
   auto result = string(bytes, '\0');
   stream.read(result.data(), bytes);
-  verify(stream.good());
+  VERIFY_BITSTREAM(stream.good());
   return result;
 }
 
-void writeBytes(ostream &stream, uint_least64_t value, size_t bytes) {
-  verify(bytes <= 8);
+void writeBytes(ostream &stream, uint64_t value, size_t bytes) {
+  VERIFY_BITSTREAM(bytes <= 8);
   if (bytes > 1) {
     writeBytes(stream, value >> 8, bytes - 1);
   }
   if (bytes > 0) {
     stream.put(char(value));
   }
-  verify(stream.good());
+  VERIFY_BITSTREAM(stream.good());
 }
 
 void putUint8(ostream &stream, uint8_t value) { writeBytes(stream, value, 1); }
@@ -92,6 +92,6 @@ void putUint64(ostream &stream, uint8_t value) { writeBytes(stream, value, 8); }
 
 void writeString(ostream &stream, const string &buffer) {
   stream.write(buffer.data(), buffer.size());
-  verify(stream.good());
+  VERIFY_BITSTREAM(stream.good());
 }
 } // namespace TMIV::Common

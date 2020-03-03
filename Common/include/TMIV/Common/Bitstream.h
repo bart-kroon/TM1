@@ -38,9 +38,11 @@
 
 #include <cstdint>
 #include <istream>
+#include <limits>
+#include <type_traits>
 
 namespace TMIV::Common {
-auto ceilLog2(uint_least64_t range) -> unsigned;
+auto ceilLog2(std::uint64_t range) -> unsigned;
 
 class InputBitstream {
 public:
@@ -54,16 +56,21 @@ public:
   // Input bit position indicator
   auto tellg() const -> std::streampos;
 
-  auto readBits(unsigned bits) -> std::uint_least64_t;
-  bool getFlag() { return readBits(1) > 0; }
-  auto getUint8() -> std::uint8_t { return std::uint8_t(readBits(8)); }
-  auto getUint16() -> std::uint16_t { return std::uint16_t(readBits(16)); }
-  auto getUint32() -> std::uint32_t { return std::uint32_t(readBits(32)); }
+  template <typename Integer> auto readBits(unsigned bits) -> Integer;
+
+  bool getFlag() { return readBits<std::uint8_t>(1) > 0; }
+  auto getUint8() { return readBits<std::uint8_t>(8); }
+  auto getUint16() { return readBits<std::uint16_t>(16); }
+  auto getUint32() { return readBits<std::uint32_t>(32); }
   auto getFloat16() -> Common::Half;
   auto getFloat32() -> float;
-  auto getUVar(std::uint_least64_t range) -> std::uint_least64_t;
-  auto getUExpGolomb() -> std::uint_least64_t;
-  auto getSExpGolomb() -> std::int_least64_t;
+
+  template <typename Integer> auto getUVar(std::uint64_t range) -> Integer;
+
+  template <typename Integer> auto getUExpGolomb() -> Integer;
+
+  template <typename Integer> auto getSExpGolomb() -> Integer;
+
   void byteAlign();
   void rbspTrailingBits();
   auto moreData() -> bool;
@@ -71,7 +78,7 @@ public:
   void reset();
 
   std::istream &m_stream;
-  std::uint_least64_t m_buffer{};
+  std::uint64_t m_buffer{};
   unsigned m_size{};
 };
 
@@ -87,8 +94,7 @@ public:
   // Output bit position indicator
   auto tellp() const -> std::streampos;
 
-  template <typename Integer, typename = std::enable_if<std::is_integral_v<Integer>>>
-  void writeBits(const Integer &value, unsigned bits);
+  template <typename Integer> void writeBits(const Integer &value, unsigned bits);
 
   void putFlag(bool value) { writeBits(int(value), 1); }
   void putUint8(std::uint8_t value) { writeBits(value, 8); }
@@ -97,26 +103,26 @@ public:
   void putFloat16(Common::Half value);
   void putFloat32(float value);
 
-  template <typename Integer, typename = std::enable_if<std::is_integral_v<Integer>>>
-  void putUVar(const Integer &value, std::uint_least64_t range);
+  template <typename Integer> void putUVar(const Integer &value, std::uint64_t range);
 
-  template <typename Integer, typename = std::enable_if<std::is_integral_v<Integer>>>
-  void putUExpGolomb(const Integer &value);
+  template <typename Integer> void putUExpGolomb(const Integer &value);
 
-  void putSExpGolomb(std::int_least64_t value);
+  void putSExpGolomb(std::int64_t value);
 
   void byteAlign();
   void rbspTrailingBits();
 
 private:
-  void writeBits_(std::uint_least64_t value, unsigned bits);
-  void putUVar_(std::uint_least64_t value, std::uint_least64_t range);
-  void putUExpGolomb_(std::uint_least64_t value);
+  void writeBits_(std::uint64_t value, unsigned bits);
+  void putUVar_(std::uint64_t value, std::uint64_t range);
+  void putUExpGolomb_(std::uint64_t value);
 
   std::ostream &m_stream;
-  std::uint_least64_t m_buffer{};
+  std::uint64_t m_buffer{};
   unsigned m_size{};
 };
 } // namespace TMIV::Common
+
+#include "Bitstream.hpp"
 
 #endif

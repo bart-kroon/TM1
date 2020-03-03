@@ -194,28 +194,28 @@ auto VpccUnitHeader::operator!=(const VpccUnitHeader &other) const noexcept -> b
 auto VpccUnitHeader::decodeFrom(istream &stream, const vector<VpccParameterSet> &vpses)
     -> VpccUnitHeader {
   InputBitstream bitstream{stream};
-  auto x = VpccUnitHeader{VuhUnitType(bitstream.readBits(5))};
+  auto x = VpccUnitHeader{bitstream.readBits<VuhUnitType>(5)};
 
   if (x.vuh_unit_type() == VuhUnitType::VPCC_AVD || x.vuh_unit_type() == VuhUnitType::VPCC_GVD ||
       x.vuh_unit_type() == VuhUnitType::VPCC_OVD || x.vuh_unit_type() == VuhUnitType::VPCC_AD) {
-    x.vuh_vpcc_parameter_set_id(uint8_t(bitstream.readBits(4)));
+    x.vuh_vpcc_parameter_set_id(bitstream.readBits<uint8_t>(4));
     VERIFY_VPCCBITSTREAM(x.vuh_vpcc_parameter_set_id() < vpses.size());
 
-    x.vuh_atlas_id(uint8_t(bitstream.readBits(6)));
+    x.vuh_atlas_id(bitstream.readBits<uint8_t>(6));
     VERIFY_VPCCBITSTREAM(x.vuh_atlas_id() <=
                              vpses[x.vuh_vpcc_parameter_set_id()].vps_atlas_count_minus1() ||
                          x.vuh_atlas_id() == specialAtlasId);
   }
   if (x.vuh_unit_type() == VuhUnitType::VPCC_AVD) {
-    x.vuh_attribute_index(uint8_t(bitstream.readBits(7)));
+    x.vuh_attribute_index(bitstream.readBits<uint8_t>(7));
     VERIFY_VPCCBITSTREAM(x.vuh_attribute_index() < vpses[x.vuh_vpcc_parameter_set_id()]
                                                        .attribute_information(x.vuh_atlas_id())
                                                        .ai_attribute_count());
 
-    x.vuh_attribute_dimension_index(uint8_t(bitstream.readBits(5)));
+    x.vuh_attribute_dimension_index(bitstream.readBits<uint8_t>(5));
     VERIFY_MIVBITSTREAM(x.vuh_attribute_dimension_index() == 0);
 
-    x.vuh_map_index(uint8_t(bitstream.readBits(4)));
+    x.vuh_map_index(bitstream.readBits<uint8_t>(4));
     VERIFY_VPCCBITSTREAM(
         x.vuh_map_index() <=
         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
@@ -224,7 +224,7 @@ auto VpccUnitHeader::decodeFrom(istream &stream, const vector<VpccParameterSet> 
     VERIFY_MIVBITSTREAM(!x.vuh_raw_video_flag());
 
   } else if (x.vuh_unit_type() == VuhUnitType::VPCC_GVD) {
-    x.vuh_map_index(uint8_t(bitstream.readBits(4)));
+    x.vuh_map_index(bitstream.readBits<uint8_t>(4));
     VERIFY_VPCCBITSTREAM(
         x.vuh_map_index() <=
         vpses[x.vuh_vpcc_parameter_set_id()].vps_map_count_minus1(x.vuh_atlas_id()));
@@ -232,12 +232,12 @@ auto VpccUnitHeader::decodeFrom(istream &stream, const vector<VpccParameterSet> 
     x.vuh_raw_video_flag(bitstream.getFlag());
     VERIFY_MIVBITSTREAM(!x.vuh_raw_video_flag());
 
-    bitstream.readBits(12);
+    bitstream.readBits<uint16_t>(12);
   } else if (x.vuh_unit_type() == VuhUnitType::VPCC_OVD ||
              x.vuh_unit_type() == VuhUnitType::VPCC_AD) {
-    bitstream.readBits(17);
+    bitstream.readBits<uint32_t>(17);
   } else {
-    bitstream.readBits(27);
+    bitstream.readBits<uint32_t>(27);
   }
 
   return x;
@@ -245,7 +245,7 @@ auto VpccUnitHeader::decodeFrom(istream &stream, const vector<VpccParameterSet> 
 
 void VpccUnitHeader::encodeTo(ostream &stream, const vector<VpccParameterSet> &vpses) const {
   OutputBitstream bitstream{stream};
-  bitstream.writeBits(unsigned(vuh_unit_type()), 5);
+  bitstream.writeBits(vuh_unit_type(), 5);
 
   if (vuh_unit_type() == VuhUnitType::VPCC_AVD || vuh_unit_type() == VuhUnitType::VPCC_GVD ||
       vuh_unit_type() == VuhUnitType::VPCC_OVD || vuh_unit_type() == VuhUnitType::VPCC_AD) {

@@ -39,38 +39,14 @@
 
 using namespace std;
 
-namespace {
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define verify(condition) (void)(!!(condition) || verifyFailed(#condition, __FILE__, __LINE__))
-
+namespace TMIV::Common {
 auto verifyFailed(char const *condition, char const *file, int line) -> bool {
   cerr << "Failed to encode/decode bitstream: " << condition << " [" << file << "@" << line << endl;
   abort();
   return false;
 }
-} // namespace
-
-namespace TMIV::Common {
-using uchar = make_unsigned_t<istream::char_type>;
-constexpr unsigned charBits = numeric_limits<uchar>::digits;
 
 auto InputBitstream::tellg() const -> streampos { return m_stream.tellg() * charBits - m_size; }
-
-auto InputBitstream::readBits(unsigned bits) -> uint_least64_t {
-  while (m_size < bits) {
-    verify(m_size + charBits <= numeric_limits<uint_least64_t>::digits);
-    verify(m_stream.good());
-
-    const auto value = m_stream.get();
-    m_buffer = (m_buffer << charBits) | uchar(value);
-    m_size += charBits;
-  }
-
-  m_size -= bits;
-  auto value = m_buffer >> m_size;
-  m_buffer &= (1 << m_size) - 1;
-  return value;
-}
 
 auto InputBitstream::getFloat16() -> Common::Half {
   using Common::Half;
@@ -84,7 +60,7 @@ auto InputBitstream::getFloat32() -> float {
   return value;
 }
 
-auto ceilLog2(uint_least64_t range) -> unsigned {
+auto ceilLog2(uint64_t range) -> unsigned {
   if (range == 0) {
     return 0;
   }
@@ -97,41 +73,20 @@ auto ceilLog2(uint_least64_t range) -> unsigned {
   return bits;
 }
 
-auto InputBitstream::getUVar(uint_least64_t range) -> uint_least64_t {
-  auto value = readBits(ceilLog2(range));
-  verify(!value || value < range);
-  return value;
-}
-
-auto InputBitstream::getUExpGolomb() -> uint_least64_t {
-  auto leadingBits = 0U;
-  while (getFlag()) {
-    ++leadingBits;
-  }
-  auto mask = (uint_least64_t{1} << leadingBits) - 1;
-  return mask + readBits(leadingBits);
-}
-
-auto InputBitstream::getSExpGolomb() -> int_least64_t {
-  const auto codeNum = getUExpGolomb();
-  const auto absValue = int_least64_t((codeNum + 1) / 2);
-  return (codeNum & 1) == 1 ? absValue : -absValue;
-}
-
 void InputBitstream::byteAlign() {
-  if (readBits(m_size % 8) != 0) {
+  if (readBits<uint8_t>(m_size % 8) != 0) {
     throw runtime_error("Non-zero bit in byte alignment");
   }
 }
 
 void InputBitstream::rbspTrailingBits() {
   const auto rbsp_stop_one_bit = getFlag();
-  verify(rbsp_stop_one_bit);
+  VERIFY_BITSTREAM(rbsp_stop_one_bit);
   byteAlign();
 }
 
 auto InputBitstream::moreData() -> bool {
-  verify(m_stream.good() && !m_stream.eof());
+  VERIFY_BITSTREAM(m_stream.good() && !m_stream.eof());
 
   if (m_size > 0) {
     return true;
@@ -182,26 +137,9 @@ void InputBitstream::reset() {
 
 auto OutputBitstream::tellp() const -> streampos { return charBits * m_stream.tellp() + m_size; }
 
-template <typename Integer, typename>
-void OutputBitstream::writeBits(const Integer &value, unsigned bits) {
-  if constexpr (std::is_signed_v<Integer>) {
-    verify(value >= 0);
-  }
-  writeBits_(make_unsigned_t<Integer>(value), bits);
-}
-
-template void OutputBitstream::writeBits(const uint8_t &, unsigned);
-template void OutputBitstream::writeBits(const uint16_t &, unsigned);
-template void OutputBitstream::writeBits(const uint32_t &, unsigned);
-template void OutputBitstream::writeBits(const uint64_t &, unsigned);
-template void OutputBitstream::writeBits(const int8_t &, unsigned);
-template void OutputBitstream::writeBits(const int16_t &, unsigned);
-template void OutputBitstream::writeBits(const int32_t &, unsigned);
-template void OutputBitstream::writeBits(const int64_t &, unsigned);
-
-void OutputBitstream::writeBits_(uint_least64_t value, unsigned bits) {
-  verify((value >> bits) == 0);
-  verify(m_size + bits <= numeric_limits<uint_least64_t>::digits);
+void OutputBitstream::writeBits_(uint64_t value, unsigned bits) {
+  VERIFY_BITSTREAM((value >> bits) == 0);
+  VERIFY_BITSTREAM(m_size + bits <= numeric_limits<uint64_t>::digits);
 
   m_buffer = (m_buffer << bits) | value;
   m_size += bits;
@@ -212,56 +150,23 @@ void OutputBitstream::writeBits_(uint_least64_t value, unsigned bits) {
   }
 }
 
-template <typename Integer, typename>
-void OutputBitstream::putUVar(const Integer &value, uint_least64_t range) {
-  if constexpr (is_signed_v<Integer>) {
-    verify(value >= 0);
-  }
-  putUVar_(make_unsigned_t<Integer>(value), range);
-}
-
-template void OutputBitstream::putUVar(const uint8_t &, uint_least64_t);
-template void OutputBitstream::putUVar(const uint16_t &, uint_least64_t);
-template void OutputBitstream::putUVar(const uint32_t &, uint_least64_t);
-template void OutputBitstream::putUVar(const uint64_t &, uint_least64_t);
-template void OutputBitstream::putUVar(const int8_t &, uint_least64_t);
-template void OutputBitstream::putUVar(const int16_t &, uint_least64_t);
-template void OutputBitstream::putUVar(const int32_t &, uint_least64_t);
-template void OutputBitstream::putUVar(const int64_t &, uint_least64_t);
-
-void OutputBitstream::putUVar_(uint_least64_t value, uint_least64_t range) {
-  verify(!value || value < range);
+void OutputBitstream::putUVar_(uint64_t value, uint64_t range) {
+  VERIFY_BITSTREAM(!value || value < range);
   return writeBits(value, ceilLog2(range));
 }
 
-template <typename Integer, typename> void OutputBitstream::putUExpGolomb(const Integer &value) {
-  if constexpr (is_signed_v<Integer>) {
-    verify(value >= 0);
-  }
-  putUExpGolomb_(make_unsigned_t<Integer>(value));
-}
-
-template void OutputBitstream::putUExpGolomb(const uint8_t &);
-template void OutputBitstream::putUExpGolomb(const uint16_t &);
-template void OutputBitstream::putUExpGolomb(const uint32_t &);
-template void OutputBitstream::putUExpGolomb(const uint64_t &);
-template void OutputBitstream::putUExpGolomb(const int8_t &);
-template void OutputBitstream::putUExpGolomb(const int16_t &);
-template void OutputBitstream::putUExpGolomb(const int32_t &);
-template void OutputBitstream::putUExpGolomb(const int64_t &);
-
-void OutputBitstream::putUExpGolomb_(uint_least64_t value) {
+void OutputBitstream::putUExpGolomb_(uint64_t value) {
   auto bits = ceilLog2(value + 2) - 1;
   for (auto i = 0U; i < bits; ++i) {
     putFlag(true);
   }
   putFlag(false);
-  auto mask = (uint_least64_t{1} << bits) - 1;
+  auto mask = (uint64_t{1} << bits) - 1;
   writeBits(value - mask, bits);
 }
 
-void OutputBitstream::putSExpGolomb(int_least64_t value) {
-  putUExpGolomb((uint_least64_t(abs(value)) << 1U) - uint_least64_t(value > 0));
+void OutputBitstream::putSExpGolomb(int64_t value) {
+  putUExpGolomb((uint64_t(abs(value)) << 1U) - uint64_t(value > 0));
 }
 
 void OutputBitstream::putFloat16(Common::Half value) { putUint16(value.encode()); }

@@ -54,8 +54,8 @@ auto operator<<(ostream &stream, const SampleStreamNalHeader &x) -> ostream & {
 
 auto SampleStreamNalHeader::decodeFrom(istream &stream) -> SampleStreamNalHeader {
   InputBitstream bitstream{stream};
-  const auto ssnh_unit_size_precision_bytes_minus1 = bitstream.readBits(3);
-  return SampleStreamNalHeader{int(ssnh_unit_size_precision_bytes_minus1)};
+  const auto ssnh_unit_size_precision_bytes_minus1 = bitstream.readBits<int>(3);
+  return SampleStreamNalHeader{ssnh_unit_size_precision_bytes_minus1};
 }
 
 void SampleStreamNalHeader::encodeTo(ostream &stream) const {

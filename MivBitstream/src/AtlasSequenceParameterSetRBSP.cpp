@@ -73,10 +73,10 @@ auto RefListStruct::operator!=(const RefListStruct &other) const noexcept -> boo
 auto RefListStruct::decodeFrom(InputBitstream &bitstream, const AtlasSequenceParameterSetRBSP &asps)
     -> RefListStruct {
   VERIFY_MIVBITSTREAM(!asps.asps_long_term_ref_atlas_frames_flag());
-  auto deltaAfocSt = vector<int16_t>(bitstream.getUExpGolomb(), 0);
+  auto deltaAfocSt = vector<int16_t>(bitstream.getUExpGolomb<size_t>(), 0);
 
   for (auto &x : deltaAfocSt) {
-    const auto abs_delta_afoc_st = int(bitstream.getUExpGolomb());
+    const auto abs_delta_afoc_st = bitstream.getUExpGolomb<int>();
     VERIFY_VPCCBITSTREAM(0 <= abs_delta_afoc_st && abs_delta_afoc_st <= INT16_MAX);
 
     if (abs_delta_afoc_st != 0) {
@@ -138,14 +138,14 @@ auto MivAtlasSequenceParams::decodeFrom(InputBitstream &bitstream, const VpccUni
     x.masp_omaf_v1_compatible_flag(bitstream.getFlag());
   }
   x.masp_group_id(
-      unsigned(bitstream.getUVar(vps.miv_sequence_params().msp_num_groups_minus1() + 1)));
+      bitstream.getUVar<unsigned>(vps.miv_sequence_params().msp_num_groups_minus1() + 1));
   x.masp_auxiliary_atlas_flag(bitstream.getFlag());
   x.masp_depth_occ_map_threshold_flag(bitstream.getFlag());
   if (vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
     x.masp_geometry_frame_width_minus1(
-        uint16_t(bitstream.getUVar(vps.vps_frame_width(vuh.vuh_atlas_id()))));
+        bitstream.getUVar<uint16_t>(vps.vps_frame_width(vuh.vuh_atlas_id())));
     x.masp_geometry_frame_height_minus1(
-        uint16_t(bitstream.getUVar(vps.vps_frame_height(vuh.vuh_atlas_id()))));
+        bitstream.getUVar<uint16_t>(vps.vps_frame_height(vuh.vuh_atlas_id())));
   }
   return x;
 }
@@ -328,7 +328,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
   auto x = AtlasSequenceParameterSetRBSP{};
   InputBitstream bitstream{stream};
 
-  x.asps_atlas_sequence_parameter_set_id(uint8_t(bitstream.getUExpGolomb()));
+  x.asps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.asps_atlas_sequence_parameter_set_id() <= 15);
 
   x.asps_frame_width(bitstream.getUint16());
@@ -337,17 +337,17 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
   x.asps_frame_height(bitstream.getUint16());
   VERIFY_VPCCBITSTREAM(vps.vps_frame_height(vuh.vuh_atlas_id()) == x.asps_frame_height());
 
-  x.asps_log2_patch_packing_block_size(uint8_t(bitstream.readBits(3)));
+  x.asps_log2_patch_packing_block_size(bitstream.readBits<uint8_t>(3));
   VERIFY_VPCCBITSTREAM(x.asps_log2_patch_packing_block_size() <= 7);
 
-  x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4(uint8_t(bitstream.getUExpGolomb()));
+  x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() <= 12);
 
-  x.asps_max_dec_atlas_frame_buffering_minus1(uint8_t(bitstream.getUExpGolomb()));
+  x.asps_max_dec_atlas_frame_buffering_minus1(bitstream.getUExpGolomb<uint8_t>());
 
   x.asps_long_term_ref_atlas_frames_flag(bitstream.getFlag());
 
-  x.asps_num_ref_atlas_frame_lists_in_asps(bitstream.getUExpGolomb());
+  x.asps_num_ref_atlas_frame_lists_in_asps(bitstream.getUExpGolomb<size_t>());
   VERIFY_VPCCBITSTREAM(x.asps_num_ref_atlas_frame_lists_in_asps() <= 64);
 
   for (int rlsIdx = 0; rlsIdx < x.asps_num_ref_atlas_frame_lists_in_asps(); ++rlsIdx) {
@@ -358,7 +358,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
 
   x.asps_extended_projection_enabled_flag(bitstream.getFlag());
   if (x.asps_extended_projection_enabled_flag()) {
-    x.asps_max_projections_minus1(unsigned(bitstream.getUExpGolomb()));
+    x.asps_max_projections_minus1(bitstream.getUExpGolomb<unsigned>());
   }
 
   x.asps_normal_axis_limits_quantization_enabled_flag(bitstream.getFlag());
@@ -380,7 +380,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
   x.asps_point_local_reconstruction_enabled_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.asps_point_local_reconstruction_enabled_flag());
 
-  x.asps_map_count_minus1(uint8_t(bitstream.readBits(4)));
+  x.asps_map_count_minus1(bitstream.readBits<uint8_t>(4));
   VERIFY_VPCCBITSTREAM(x.asps_map_count_minus1() == vps.vps_map_count_minus1(vuh.vuh_atlas_id()));
 
   x.asps_vui_parameters_present_flag(bitstream.getFlag());

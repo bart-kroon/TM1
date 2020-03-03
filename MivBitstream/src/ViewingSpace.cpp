@@ -59,10 +59,10 @@ auto ViewingSpace::operator==(const ViewingSpace &other) const -> bool {
 
 auto ViewingSpace::decodeFrom(InputBitstream &stream) -> ViewingSpace {
   ViewingSpace vs;
-  size_t numShapes = stream.getUExpGolomb() + 1;
+  auto numShapes = stream.getUExpGolomb<size_t>() + 1;
   vs.elementaryShapes.reserve(numShapes);
   for (size_t i = 0; i < numShapes; ++i) {
-    const auto op = ElementaryShapeOperation(stream.readBits(2));
+    const auto op = stream.readBits<ElementaryShapeOperation>(2);
     const auto shape = ElementaryShape::decodeFrom(stream);
     vs.elementaryShapes.emplace_back(op, shape);
   }
@@ -73,7 +73,7 @@ void ViewingSpace::encodeTo(OutputBitstream &stream) const {
   VERIFY_MIVBITSTREAM(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
   for (const auto &shape : elementaryShapes) {
-    stream.writeBits(uint_least64_t(shape.first), 2);
+    stream.writeBits(shape.first, 2);
     shape.second.encodeTo(stream);
   }
 }
@@ -95,15 +95,15 @@ auto ElementaryShape::operator==(const ElementaryShape &other) const -> bool {
 
 auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
   ElementaryShape elementaryShape;
-  const auto numPrimitives = stream.readBits(8) + 1;
-  elementaryShape.primitiveOperation = PrimitiveShapeOperation(stream.readBits(1));
+  const auto numPrimitives = stream.readBits<size_t>(8) + 1;
+  elementaryShape.primitiveOperation = stream.readBits<PrimitiveShapeOperation>(1);
   const auto guardBandPresent = stream.getFlag();
   const auto orientationPresent = stream.getFlag();
   const auto directionConstraintPresent = stream.getFlag();
   elementaryShape.primitives.reserve(numPrimitives);
   for (size_t i = 0; i < numPrimitives; ++i) {
     PrimitiveShape primitiveShape;
-    const auto shapeType = PrimitiveShapeType(stream.readBits(2));
+    const auto shapeType = stream.readBits<PrimitiveShapeType>(2);
     switch (shapeType) {
     case PrimitiveShapeType::cuboid:
       primitiveShape.primitive = Cuboid::decodeFrom(stream);
@@ -156,12 +156,12 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
     }
   }
   stream.writeBits(primitives.size() - 1, 8);
-  stream.writeBits(unsigned(primitiveOperation), 1);
+  stream.writeBits(primitiveOperation, 1);
   stream.putFlag(guardBandPresent);
   stream.putFlag(orientationPresent);
   stream.putFlag(directionConstraintPresent);
   for (const auto &p : primitives) {
-    stream.writeBits(unsigned(p.shapeType()), 2);
+    stream.writeBits(p.shapeType(), 2);
     visit([&](const auto &x) { x.encodeTo(stream); }, p.primitive);
     if (guardBandPresent) {
       stream.putFloat16(Half(p.guardBandSize.value_or(0.F)));

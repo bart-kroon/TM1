@@ -105,33 +105,33 @@ TEST_CASE("Bitstream primitives") {
     }
     obitstream.byteAlign();
     for (auto [reference, range] : referenceSequence) {
-      auto actual = ibitstream.getUVar(range);
+      auto actual = ibitstream.getUVar<int>(range);
       REQUIRE(actual == reference);
     }
   }
 
   SECTION("ue(v)") {
     const auto referenceSequence =
-        std::array<std::uint_least64_t, 7>{123, 4, 400, 0, 1, 3, 0x123456789ABC};
+        std::array<std::uint64_t, 7>{123, 4, 400, 0, 1, 3, 0x123456789ABC};
     for (auto reference : referenceSequence) {
       obitstream.putUExpGolomb(reference);
     }
     obitstream.byteAlign();
     for (auto reference : referenceSequence) {
-      auto actual = ibitstream.getUExpGolomb();
+      auto actual = ibitstream.getUExpGolomb<uint64_t>();
       REQUIRE(actual == reference);
     }
   }
 
   SECTION("se(v)") {
     const auto referenceSequence =
-        std::array<std::int_least64_t, 7>{-123, 4, -400, 0, 1, -3, 0x123456789ABC};
+        std::array<std::int64_t, 7>{-123, 4, -400, 0, 1, -3, 0x123456789ABC};
     for (auto reference : referenceSequence) {
       obitstream.putSExpGolomb(reference);
     }
     obitstream.byteAlign();
     for (auto reference : referenceSequence) {
-      auto actual = ibitstream.getSExpGolomb();
+      auto actual = ibitstream.getSExpGolomb<int64_t>();
       REQUIRE(actual == reference);
     }
   }

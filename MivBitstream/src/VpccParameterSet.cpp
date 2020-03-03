@@ -139,21 +139,21 @@ auto ProfileTierLevel::operator!=(const ProfileTierLevel &other) const noexcept 
 auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel {
   auto x = ProfileTierLevel{};
   x.ptl_tier_flag(bitstream.getFlag());
-  x.ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc(bitstream.readBits(7)));
-  x.ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc(bitstream.getUint8()));
-  x.ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc(bitstream.getUint8()));
+  x.ptl_profile_codec_group_idc(bitstream.readBits<PtlProfileCodecGroupIdc>(7));
+  x.ptl_profile_pcc_toolset_idc(bitstream.readBits<PtlProfilePccToolsetIdc>(8));
+  x.ptl_profile_reconstruction_idc(bitstream.readBits<PtlProfileReconstructionIdc>(8));
   bitstream.getUint32();
-  x.ptl_level_idc(PtlLevelIdc(bitstream.getUint8()));
+  x.ptl_level_idc(bitstream.readBits<PtlLevelIdc>(8));
   return x;
 }
 
 void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(ptl_tier_flag());
-  bitstream.writeBits(unsigned(ptl_profile_codec_group_idc()), 7);
-  bitstream.putUint8(uint8_t(ptl_profile_pcc_toolset_idc()));
-  bitstream.putUint8(uint8_t(ptl_profile_reconstruction_idc()));
+  bitstream.writeBits(ptl_profile_codec_group_idc(), 7);
+  bitstream.writeBits(ptl_profile_pcc_toolset_idc(), 8);
+  bitstream.writeBits(ptl_profile_reconstruction_idc(), 8);
   bitstream.putUint32(0);
-  bitstream.putUint8(uint8_t(ptl_level_idc()));
+  bitstream.writeBits(ptl_level_idc(), 8);
 }
 
 auto OccupancyInformation::printTo(ostream &stream, uint8_t atlasId) const -> ostream & {
@@ -184,7 +184,7 @@ auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInf
   auto x = OccupancyInformation{};
   x.oi_occupancy_codec_id(bitstream.getUint8());
   x.oi_lossy_occupancy_map_compression_threshold(bitstream.getUint8());
-  x.oi_occupancy_nominal_2d_bitdepth_minus1(uint8_t(bitstream.readBits(5)));
+  x.oi_occupancy_nominal_2d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
   x.oi_occupancy_MSB_align_flag(bitstream.getFlag());
   return x;
 }
@@ -223,9 +223,9 @@ auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const VpccParame
                                      uint8_t atlasId) -> GeometryInformation {
   auto x = GeometryInformation{};
   x.gi_geometry_codec_id(bitstream.getUint8());
-  x.gi_geometry_nominal_2d_bitdepth_minus1(uint8_t(bitstream.readBits(5)));
+  x.gi_geometry_nominal_2d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
   x.gi_geometry_MSB_align_flag(bitstream.getFlag());
-  x.gi_geometry_3d_coordinates_bitdepth_minus1(uint8_t(bitstream.readBits(5)));
+  x.gi_geometry_3d_coordinates_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
   VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
   return x;
 }
@@ -357,16 +357,16 @@ auto AttributeInformation::operator!=(const AttributeInformation &other) const n
 auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const VpccParameterSet & /*vps*/,
                                       uint8_t /*atlasId*/) -> AttributeInformation {
   auto x = AttributeInformation{};
-  x.ai_attribute_count(uint8_t(bitstream.readBits(7)));
+  x.ai_attribute_count(bitstream.readBits<uint8_t>(7));
   for (auto i = 0; i < x.ai_attribute_count(); ++i) {
-    x.ai_attribute_type_id(i, AiAttributeTypeId(bitstream.readBits(4)));
-    x.ai_attribute_codec_id(i, uint8_t(bitstream.readBits(8)));
-    x.ai_attribute_dimension_minus1(i, uint8_t(bitstream.readBits(6)));
+    x.ai_attribute_type_id(i, bitstream.readBits<AiAttributeTypeId>(4));
+    x.ai_attribute_codec_id(i, bitstream.getUint8());
+    x.ai_attribute_dimension_minus1(i, bitstream.readBits<uint8_t>(6));
 
-    const auto ai_attribute_dimension_partitions_minus1 = bitstream.readBits(6);
+    const auto ai_attribute_dimension_partitions_minus1 = bitstream.readBits<uint8_t>(6);
     VERIFY_MIVBITSTREAM(ai_attribute_dimension_partitions_minus1 == 0);
 
-    x.ai_attribute_nominal_2d_bitdepth_minus1(i, uint8_t(bitstream.readBits(5)));
+    x.ai_attribute_nominal_2d_bitdepth_minus1(i, bitstream.readBits<uint8_t>(5));
   }
   if (0 < x.ai_attribute_count()) {
     x.ai_attribute_MSB_align_flag(bitstream.getFlag());
@@ -381,7 +381,7 @@ void AttributeInformation::encodeTo(OutputBitstream &bitstream, const VpccParame
     return;
   }
   for (auto i = 0; i < ai_attribute_count(); ++i) {
-    bitstream.writeBits(unsigned(ai_attribute_type_id(i)), 4);
+    bitstream.writeBits(ai_attribute_type_id(i), 4);
     bitstream.writeBits(ai_attribute_codec_id(i), 8);
 
     VERIFY_MIVBITSTREAM(vps.vps_map_count_minus1(atlasId) == 0);
@@ -410,8 +410,8 @@ auto MivSequenceParams::decodeFrom(InputBitstream &bitstream) -> MivSequencePara
   auto x = MivSequenceParams{};
   x.msp_depth_low_quality_flag(bitstream.getFlag());
   x.msp_geometry_scale_enabled_flag(bitstream.getFlag());
-  x.msp_num_groups_minus1(unsigned(bitstream.getUExpGolomb()));
-  x.msp_max_entities_minus1(unsigned(bitstream.getUExpGolomb()));
+  x.msp_num_groups_minus1(bitstream.getUExpGolomb<unsigned>());
+  x.msp_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
   return x;
 }
 
@@ -636,21 +636,21 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
   InputBitstream bitstream{stream};
 
   x.profile_tier_level(ProfileTierLevel::decodeFrom(bitstream));
-  x.vps_vpcc_parameter_set_id(uint8_t(bitstream.readBits(4)));
+  x.vps_vpcc_parameter_set_id(bitstream.readBits<uint8_t>(4));
 
   x.vps_miv_mode_flag(bitstream.getFlag());
   VERIFY_VPCCBITSTREAM(MivDecoder::mode == MivDecoder::Mode::MIV || !x.vps_miv_mode_flag());
 
-  const auto vps_reserved_zero_7bits = bitstream.readBits(7);
+  const auto vps_reserved_zero_7bits = bitstream.readBits<uint8_t>(7);
   VERIFY_VPCCBITSTREAM(vps_reserved_zero_7bits == 0);
 
-  x.vps_atlas_count_minus1(uint8_t(bitstream.readBits(6)));
+  x.vps_atlas_count_minus1(bitstream.readBits<uint8_t>(6));
 
   for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     x.vps_frame_width(j, bitstream.getUint16());
     x.vps_frame_height(j, bitstream.getUint16());
 
-    x.vps_map_count_minus1(j, uint8_t(bitstream.readBits(4)));
+    x.vps_map_count_minus1(j, bitstream.readBits<uint8_t>(4));
 
     if (x.vps_map_count_minus1(j) > 0) {
       const auto vps_multiple_map_streams_present_flag = bitstream.getFlag();
@@ -672,9 +672,8 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
   if (MivDecoder::mode == MivDecoder::Mode::MIV) {
     VERIFY_MIVBITSTREAM(x.vps_extension_present_flag());
 
-    const auto vps_extension_length_minus1 = bitstream.getUExpGolomb();
-    const auto extensionEnd =
-        uint_least64_t(bitstream.tellg()) + 8 * (vps_extension_length_minus1 + 1);
+    const auto vps_extension_length_minus1 = bitstream.getUExpGolomb<size_t>();
+    const auto extensionEnd = size_t(bitstream.tellg()) + 8 * (vps_extension_length_minus1 + 1);
 
     x.vps_miv_extension_flag(bitstream.getFlag());
 
@@ -687,10 +686,10 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
       }
     }
 
-    while (uint_least64_t(bitstream.tellg()) < extensionEnd) {
+    while (size_t(bitstream.tellg()) < extensionEnd) {
       bitstream.getFlag(); // vps_miv_extension_data_flag
     }
-    VERIFY_MIVBITSTREAM(uint_least64_t(bitstream.tellg()) == extensionEnd);
+    VERIFY_MIVBITSTREAM(size_t(bitstream.tellg()) == extensionEnd);
   }
 
   bitstream.byteAlign();
@@ -758,14 +757,13 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
   }();
 
   bitstream.putUExpGolomb(vps_extension_length_minus1);
-  const auto extensionEnd =
-      uint_least64_t(bitstream.tellp()) + 8 * (vps_extension_length_minus1 + 1);
+  const auto extensionEnd = uint64_t(bitstream.tellp()) + 8 * (vps_extension_length_minus1 + 1);
   encodeExtension(bitstream);
 
-  while (uint_least64_t(bitstream.tellp()) < extensionEnd) {
+  while (uint64_t(bitstream.tellp()) < extensionEnd) {
     bitstream.putFlag(false);
   }
-  VERIFY_MIVBITSTREAM(uint_least64_t(bitstream.tellp()) == extensionEnd);
+  VERIFY_MIVBITSTREAM(uint64_t(bitstream.tellp()) == extensionEnd);
 
   bitstream.byteAlign();
 }

@@ -54,7 +54,7 @@ auto operator<<(ostream &stream, const SampleStreamVpccHeader &x) -> ostream & {
 
 auto SampleStreamVpccHeader::decodeFrom(istream &stream) -> SampleStreamVpccHeader {
   InputBitstream bitstream{stream};
-  const auto ssvh_unit_size_precision_bytes_minus1 = uint8_t(bitstream.readBits(3));
+  const auto ssvh_unit_size_precision_bytes_minus1 = bitstream.readBits<uint8_t>(3);
   return SampleStreamVpccHeader{ssvh_unit_size_precision_bytes_minus1};
 }
 

@@ -129,17 +129,17 @@ auto NalUnitHeader::decodeFrom(istream &stream) -> NalUnitHeader {
   InputBitstream bitstream{stream};
   const auto nal_forbidden_zero_bit = bitstream.getFlag();
   VERIFY_VPCCBITSTREAM(!nal_forbidden_zero_bit);
-  const auto nal_unit_type = bitstream.readBits(6);
-  const auto nal_layer_id = bitstream.readBits(6);
-  const auto nal_temporal_id_plus1 = bitstream.readBits(3);
+  const auto nal_unit_type = bitstream.readBits<NalUnitType>(6);
+  const auto nal_layer_id = bitstream.readBits<int>(6);
+  const auto nal_temporal_id_plus1 = bitstream.readBits<int>(3);
   VERIFY_VPCCBITSTREAM(nal_temporal_id_plus1 > 0);
-  return NalUnitHeader{NalUnitType(nal_unit_type), int(nal_layer_id), int(nal_temporal_id_plus1)};
+  return NalUnitHeader{nal_unit_type, nal_layer_id, nal_temporal_id_plus1};
 }
 
 void NalUnitHeader::encodeTo(ostream &stream) const {
   OutputBitstream bitstream{stream};
   bitstream.putFlag(false);
-  bitstream.writeBits(unsigned(m_nal_unit_type), 6);
+  bitstream.writeBits(m_nal_unit_type, 6);
   bitstream.writeBits(m_nal_layer_id, 6);
   bitstream.writeBits(m_nal_temporal_id_plus1, 3);
 }

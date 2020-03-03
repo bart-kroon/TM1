@@ -36,8 +36,8 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Matrix.h>
-#include <TMIV/Common/Vector.h>
 #include <TMIV/Common/Quaternion.h>
+#include <TMIV/Common/Vector.h>
 
 #include <iosfwd>
 #include <optional>

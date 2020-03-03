@@ -118,7 +118,7 @@ private:
 
     m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams, lastFrame - firstFrame);
 
-	popAtlases(firstFrame, lastFrame);
+    popAtlases(firstFrame, lastFrame);
   }
 
   void pushFrames(int firstFrame, int lastFrame) {

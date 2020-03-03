@@ -177,11 +177,11 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 
     uint16_t maxProjectionPlaneWidthMinus1 = 0;
     uint16_t maxProjectionPlaneHeightMinus1 = 0;
-    for (auto & vp : m_outIvSequenceParams.viewParamsList) {
+    for (auto &vp : m_outIvSequenceParams.viewParamsList) {
       maxProjectionPlaneWidthMinus1 =
-        max(maxProjectionPlaneWidthMinus1, vp.ci.ci_projection_plane_width_minus1());
+          max(maxProjectionPlaneWidthMinus1, vp.ci.ci_projection_plane_width_minus1());
       maxProjectionPlaneHeightMinus1 =
-        max(maxProjectionPlaneHeightMinus1, vp.ci.ci_projection_plane_height_minus1());
+          max(maxProjectionPlaneHeightMinus1, vp.ci.ci_projection_plane_height_minus1());
     }
     atlas.afps.afps_3d_pos_x_bit_count_minus1(ceilLog2(maxProjectionPlaneWidthMinus1 + 1) - 1);
     atlas.afps.afps_3d_pos_y_bit_count_minus1(ceilLog2(maxProjectionPlaneHeightMinus1 + 1) - 1);

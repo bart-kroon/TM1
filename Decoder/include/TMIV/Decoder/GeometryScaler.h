@@ -50,7 +50,7 @@ public:
   GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
   auto scale(const MivBitstream::AtlasAccessUnit &atlas) const -> Common::Depth10Frame;
-  void inplaceScale(MivBitstream::AccessUnit& frame) const;
+  void inplaceScale(MivBitstream::AccessUnit &frame) const;
 
 private:
   int m_depthEdgeMagnitudeTh{};

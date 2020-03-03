@@ -182,7 +182,6 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
               .pduViewPos({cluster.jmin(), cluster.imin()})
               .pdu2dPos({packerOutput.x(), packerOutput.y()});
 
-          // TODO(BK): When using only two rotations, use FPO_SWAP and FPO_NULL to save bits
           p.pduOrientationIndex(packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
                                                          : FlexiblePatchOrientation::FPO_NULL);
 

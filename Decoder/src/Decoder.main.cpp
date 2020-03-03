@@ -52,7 +52,6 @@ const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
 }
 
 namespace TMIV::Decoder {
-// TODO(BK): Move more logic from here into TMIV::Decoder::Decoder
 class Application : public Common::Application {
 private:
   IO::IvMetadataReader m_metadataReader;

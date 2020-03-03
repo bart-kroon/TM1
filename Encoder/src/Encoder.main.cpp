@@ -89,7 +89,6 @@ public:
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
 
-    // TODO(BK): We need a Logger. This is to get the log files somewhat readable.
     cout << "\n::: Source sequence parameters " << string(100 - 31, ':')
          << "\nNOTE: Only some of the fields are filled in at this point.\n"
          << sourceSequenceParams << string(100, ':') << "\n\n";

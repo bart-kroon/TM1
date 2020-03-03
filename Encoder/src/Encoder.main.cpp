@@ -89,10 +89,6 @@ public:
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
 
-    cout << "\n::: Source sequence parameters " << string(100 - 31, ':')
-         << "\nNOTE: Only some of the fields are filled in at this point.\n"
-         << sourceSequenceParams << string(100, ':') << "\n\n";
-
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
 
@@ -108,10 +104,6 @@ private:
 
     const auto sourceAccessUnitParams = loadSourceIvAccessUnitParams(json());
     m_encoder->prepareAccessUnit(sourceAccessUnitParams);
-
-    cout << "\n::: Source access unit parameters " << string(100 - 34, ':')
-         << "\nNOTE: Only some of the fields are filled in at this point.\n"
-         << sourceAccessUnitParams << string(100, ':') << "\n\n";
 
     pushFrames(firstFrame, lastFrame);
     const auto codedAccessUnitParams = m_encoder->completeAccessUnit();

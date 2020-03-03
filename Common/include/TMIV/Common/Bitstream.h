@@ -87,20 +87,32 @@ public:
   // Output bit position indicator
   auto tellp() const -> std::streampos;
 
-  void writeBits(std::uint_least64_t value, unsigned bits);
+  template <typename Integer, typename = std::enable_if<std::is_integral_v<Integer>>>
+  void writeBits(const Integer &value, unsigned bits);
+
   void putFlag(bool value) { writeBits(int(value), 1); }
   void putUint8(std::uint8_t value) { writeBits(value, 8); }
   void putUint16(std::uint16_t value) { writeBits(value, 16); }
   void putUint32(std::uint32_t value) { writeBits(value, 32); }
   void putFloat16(Common::Half value);
   void putFloat32(float value);
-  void putUVar(std::uint_least64_t value, std::uint_least64_t range);
-  void putUExpGolomb(std::uint_least64_t value);
+
+  template <typename Integer, typename = std::enable_if<std::is_integral_v<Integer>>>
+  void putUVar(const Integer &value, std::uint_least64_t range);
+
+  template <typename Integer, typename = std::enable_if<std::is_integral_v<Integer>>>
+  void putUExpGolomb(const Integer &value);
+
   void putSExpGolomb(std::int_least64_t value);
+
   void byteAlign();
   void rbspTrailingBits();
 
 private:
+  void writeBits_(std::uint_least64_t value, unsigned bits);
+  void putUVar_(std::uint_least64_t value, std::uint_least64_t range);
+  void putUExpGolomb_(std::uint_least64_t value);
+
   std::ostream &m_stream;
   std::uint_least64_t m_buffer{};
   unsigned m_size{};

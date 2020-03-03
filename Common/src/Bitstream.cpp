@@ -54,9 +54,7 @@ namespace TMIV::Common {
 using uchar = make_unsigned_t<istream::char_type>;
 constexpr unsigned charBits = numeric_limits<uchar>::digits;
 
-auto InputBitstream::tellg() const -> std::streampos {
-  return m_stream.tellg() * charBits - m_size;
-}
+auto InputBitstream::tellg() const -> streampos { return m_stream.tellg() * charBits - m_size; }
 
 auto InputBitstream::readBits(unsigned bits) -> uint_least64_t {
   while (m_size < bits) {
@@ -182,11 +180,26 @@ void InputBitstream::reset() {
   m_buffer = 0;
 }
 
-auto OutputBitstream::tellp() const -> std::streampos {
-  return charBits * m_stream.tellp() + m_size;
+auto OutputBitstream::tellp() const -> streampos { return charBits * m_stream.tellp() + m_size; }
+
+template <typename Integer, typename>
+void OutputBitstream::writeBits(const Integer &value, unsigned bits) {
+  if constexpr (std::is_signed_v<Integer>) {
+    verify(value >= 0);
+  }
+  writeBits_(make_unsigned_t<Integer>(value), bits);
 }
 
-void OutputBitstream::writeBits(uint_least64_t value, unsigned bits) {
+template void OutputBitstream::writeBits(const uint8_t &, unsigned);
+template void OutputBitstream::writeBits(const uint16_t &, unsigned);
+template void OutputBitstream::writeBits(const uint32_t &, unsigned);
+template void OutputBitstream::writeBits(const uint64_t &, unsigned);
+template void OutputBitstream::writeBits(const int8_t &, unsigned);
+template void OutputBitstream::writeBits(const int16_t &, unsigned);
+template void OutputBitstream::writeBits(const int32_t &, unsigned);
+template void OutputBitstream::writeBits(const int64_t &, unsigned);
+
+void OutputBitstream::writeBits_(uint_least64_t value, unsigned bits) {
   verify((value >> bits) == 0);
   verify(m_size + bits <= numeric_limits<uint_least64_t>::digits);
 
@@ -199,12 +212,45 @@ void OutputBitstream::writeBits(uint_least64_t value, unsigned bits) {
   }
 }
 
-void OutputBitstream::putUVar(uint_least64_t value, uint_least64_t range) {
+template <typename Integer, typename>
+void OutputBitstream::putUVar(const Integer &value, uint_least64_t range) {
+  if constexpr (is_signed_v<Integer>) {
+    verify(value >= 0);
+  }
+  putUVar_(make_unsigned_t<Integer>(value), range);
+}
+
+template void OutputBitstream::putUVar(const uint8_t &, uint_least64_t);
+template void OutputBitstream::putUVar(const uint16_t &, uint_least64_t);
+template void OutputBitstream::putUVar(const uint32_t &, uint_least64_t);
+template void OutputBitstream::putUVar(const uint64_t &, uint_least64_t);
+template void OutputBitstream::putUVar(const int8_t &, uint_least64_t);
+template void OutputBitstream::putUVar(const int16_t &, uint_least64_t);
+template void OutputBitstream::putUVar(const int32_t &, uint_least64_t);
+template void OutputBitstream::putUVar(const int64_t &, uint_least64_t);
+
+void OutputBitstream::putUVar_(uint_least64_t value, uint_least64_t range) {
   verify(!value || value < range);
   return writeBits(value, ceilLog2(range));
 }
 
-void OutputBitstream::putUExpGolomb(uint_least64_t value) {
+template <typename Integer, typename> void OutputBitstream::putUExpGolomb(const Integer &value) {
+  if constexpr (is_signed_v<Integer>) {
+    verify(value >= 0);
+  }
+  putUExpGolomb_(make_unsigned_t<Integer>(value));
+}
+
+template void OutputBitstream::putUExpGolomb(const uint8_t &);
+template void OutputBitstream::putUExpGolomb(const uint16_t &);
+template void OutputBitstream::putUExpGolomb(const uint32_t &);
+template void OutputBitstream::putUExpGolomb(const uint64_t &);
+template void OutputBitstream::putUExpGolomb(const int8_t &);
+template void OutputBitstream::putUExpGolomb(const int16_t &);
+template void OutputBitstream::putUExpGolomb(const int32_t &);
+template void OutputBitstream::putUExpGolomb(const int64_t &);
+
+void OutputBitstream::putUExpGolomb_(uint_least64_t value) {
   auto bits = ceilLog2(value + 2) - 1;
   for (auto i = 0U; i < bits; ++i) {
     putFlag(true);

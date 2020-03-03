@@ -71,7 +71,7 @@ DepthTransform<bits>::DepthTransform(const DepthQuantization &dq, const PatchPar
     : DepthTransform{dq} {
   m_depthStart = patchParams.pduDepthStart();
   if (patchParams.pduDepthEnd()) {
-    m_depthEnd = patchParams.pduDepthEnd();
+    m_depthEnd = *patchParams.pduDepthEnd();
   }
 }
 

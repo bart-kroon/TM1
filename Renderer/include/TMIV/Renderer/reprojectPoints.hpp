@@ -109,7 +109,7 @@ auto ProjectionHelper<camType>::getPointCloud(unsigned N) const -> PointCloud {
     for (unsigned j = 0U; j < N; j++) {
       float d = depthRange.x();
 
-      float py = y * static_cast<float>(m_viewParams.ci.projectionPlaneSize().x());
+      float py = y * static_cast<float>(m_viewParams.ci.projectionPlaneSize().y());
 
       for (unsigned k = 0U; k < N; k++) {
         pointCloud.emplace_back(doUnprojection({px, py}, d));

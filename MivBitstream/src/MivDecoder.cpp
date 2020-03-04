@@ -245,14 +245,14 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
       nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 > 0 &&
                          atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
-    VERIFY_VPCCBITSTREAM(!x.frames.empty());
-    VERIFY_VPCCBITSTREAM(x.frames.front()->atgh.atgh_atlas_frame_parameter_set_id() ==
+    VERIFY_VPCCBITSTREAM(x.intraFrame);
+    VERIFY_VPCCBITSTREAM(x.intraFrame->atgh.atgh_atlas_frame_parameter_set_id() ==
                          atgh.atgh_atlas_frame_parameter_set_id());
-    VERIFY_VPCCBITSTREAM(x.frames.front()->atgh.atgh_adaptation_parameter_set_id() ==
+    VERIFY_VPCCBITSTREAM(x.intraFrame->atgh.atgh_adaptation_parameter_set_id() ==
                          atgh.atgh_adaptation_parameter_set_id());
 
-    // Shallow copy of the atlas frame
-    x.frames.push_back(x.frames.back());
+    // Shallow copy of the intra atlas frame
+    x.frames.push_back(x.intraFrame);
   }
 
   if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
@@ -276,6 +276,7 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     frame->blockToPatchMap = decodeBlockToPatchMap(atgdu, asps);
 
     x.frames.push_back(frame);
+	x.intraFrame = frame;
   }
 
   if (haveFrame(vuh)) {

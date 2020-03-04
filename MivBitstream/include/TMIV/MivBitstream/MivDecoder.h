@@ -170,6 +170,8 @@ private: // Internal decoder state
     };
 
     std::vector<std::shared_ptr<Frame>> frames;
+
+	std::shared_ptr<Frame> intraFrame;
   };
 
   struct Sequence {

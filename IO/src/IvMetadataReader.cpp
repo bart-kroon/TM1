@@ -45,9 +45,7 @@ namespace TMIV::IO {
 IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirectoryField,
                                    const string &fileNameField)
     : m_config{config}, m_path{getFullPath(config, baseDirectoryField, fileNameField)},
-      m_stream{m_path, ios::binary}, m_decoder{m_stream, geoFrameServer(), attrFrameServer()} {
-  m_stream.open(m_path, ios::binary);
-}
+      m_stream{m_path, ios::binary}, m_decoder{m_stream, geoFrameServer(), attrFrameServer()} {}
 
 auto IvMetadataReader::geoFrameServer() -> MivDecoder::GeoFrameServer {
   return [this](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {

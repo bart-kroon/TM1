@@ -45,7 +45,7 @@ public:
   IvMetadataReader(const Common::Json &config, const std::string &baseDirectoryField,
                    const std::string &fileNameField);
 
-  constexpr auto &decoder() noexcept { return m_decoder; }
+  auto &decoder() noexcept { return *m_decoder; }
 
 private:
   auto geoFrameServer() -> MivBitstream::MivDecoder::GeoFrameServer;
@@ -54,7 +54,7 @@ private:
   const Common::Json &m_config;
   std::string m_path;
   std::ifstream m_stream;
-  MivBitstream::MivDecoder m_decoder;
+  std::unique_ptr<MivBitstream::MivDecoder> m_decoder;
 };
 
 } // namespace TMIV::IO

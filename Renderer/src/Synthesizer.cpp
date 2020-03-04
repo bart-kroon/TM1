@@ -106,6 +106,12 @@ public:
         assert(atlas.geoFrame.getSize() == atlas.frameSize());
         auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
 
+        const auto occupancyTransform = OccupancyTransform{viewParams, patch};
+        if (!occupancyTransform.occupant(level)) {
+          result.emplace_back();
+          continue;
+        }
+
         const auto d = depthTransform[patchId].expandDepth(level);
         assert(d > 0.F && isfinite(d));
         const auto &r = r_t[patch.pduViewId()].first;

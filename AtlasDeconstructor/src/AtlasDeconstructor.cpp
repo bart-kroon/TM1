@@ -55,11 +55,9 @@ AtlasDeconstructor::AtlasDeconstructor(const Json &rootNode, const Json &compone
 }
 
 auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
-                                       const IvAccessUnitParams &ivAccessUnitParams,
-                                       const MVD10Frame &frame) -> PatchIdMapList {
+                                       const IvAccessUnitParams &ivAccessUnitParams ) -> PatchIdMapList {
   PatchIdMapList patchMapList;
   assert(ivAccessUnitParams.atlasParamsList);
-  const auto &viewParamsList = ivSequenceParams.viewParamsList;
   const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
 
   m_maxEntities = ivSequenceParams.maxEntities;
@@ -79,20 +77,15 @@ auto AtlasDeconstructor::getPatchIdMap(const IvSequenceParams &ivSequenceParams,
   }
 
   for (size_t id = 0U; id < atlasParamsList.size(); ++id) {
-    assert(atlasParamsList[id].viewId < viewParamsList.size());
-    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id), frame,
-                      viewParamsList);
+    writePatchIdInMap(atlasParamsList[id], patchMapList, static_cast<uint16_t>(id) );
   }
 
   return patchMapList;
 }
 
 void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
-                                           PatchIdMapList &patchMapList, uint16_t patchId,
-                                           const MVD10Frame &frame,
-                                           const ViewParamsVector &viewParamsVector) {
+                                           PatchIdMapList &patchMapList, uint16_t patchId ) {
   auto &patchMap = patchMapList[patch.atlasId];
-  auto &depthMap = frame[patch.atlasId].second.getPlane(0);
 
   const Vec2i &q0 = patch.posInAtlas;
   const auto sizeInAtlas = patch.patchSizeInAtlas();
@@ -100,8 +93,6 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
   int xLast = q0.x() + sizeInAtlas.x();
   int yMin = q0.y();
   int yLast = q0.y() + sizeInAtlas.y();
-
-  const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
 
   if (m_downscale_depth) {
     yMin /= 2;
@@ -112,13 +103,9 @@ void AtlasDeconstructor::writePatchIdInMap(const AtlasParameters &patch,
 
   for (auto y = yMin; y < yLast; y++) {
     for (auto x = xMin; x < xLast; x++) {
-      if (occupancyTransform.occupant(depthMap(y, x))) {
-        if (m_maxEntities == 1 ||
-            (patch.entityId >= m_entityDecodeRange[0] && patch.entityId < m_entityDecodeRange[1])) {
+        if (m_maxEntities == 1 || (patch.entityId >= m_entityDecodeRange[0] && patch.entityId < m_entityDecodeRange[1])) {
           patchMap.getPlane(0)(y, x) = patchId;
-        } else
-          patchMap.getPlane(0)(y, x) = unusedPatchId;
-      }
+        }
     }
   }
 }

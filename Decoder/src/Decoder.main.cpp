@@ -110,7 +110,7 @@ public:
       if (auto subnode = json().optional("AtlasPatchOccupancyMapFmt")) {
         std::cout << "Dumping patch map Id list to disk" << std::endl;
         auto patchMapIdList =
-            m_decoder->getPatchIdMapList(IO::loadAtlas(json(), atlasSizes, inputFrame));
+            m_decoder->getPatchIdMapList();
         IO::savePatchIdMaps(json(), outputFrame, patchMapIdList);
       };
       if (auto subnode1 = json().optional("PrunedViewTexturePathFmt")) {

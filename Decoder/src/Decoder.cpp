@@ -66,7 +66,7 @@ void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitPa
 auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
     -> Texture444Depth16Frame {
   auto patchIdMaps =
-      m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas);
+      m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams);
 
   if (m_downscale_depth) {
     tie(atlas, patchIdMaps) = m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
@@ -79,8 +79,8 @@ auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
                                  target);
 }
 
-auto Decoder::getPatchIdMapList(const MVD10Frame &atlas) const -> PatchIdMapList {
-  return m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams, atlas);
+auto Decoder::getPatchIdMapList() const -> PatchIdMapList {
+  return m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams);
 }
 
 auto Decoder::recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame {

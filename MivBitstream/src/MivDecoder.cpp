@@ -260,23 +260,34 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 &&
                          atgh.atgh_type() == AtghType::I_TILE_GRP);
 
+    cout << string(100, '=') << '\n';
+    cout << atgh;
+
     auto frame = make_shared<Atlas::Frame>();
     frame->atgh = atgh;
 
     const auto &aps = apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
+    cout << aps;
     const auto &mvpl = aps.miv_view_params_list();
 
     frame->viewParamsList = decodeMvpl(mvpl);
 
     const auto &afps = afpsV(vuh)[atgh.atgh_atlas_frame_parameter_set_id()];
+    cout << afps;
+
     const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];
+    cout << asps;
+
     const auto &atgdu = atgl.atlas_tile_group_data_unit();
+    cout << atgl;
 
     frame->patchParamsList = decodeAtgdu(atgdu, asps);
     frame->blockToPatchMap = decodeBlockToPatchMap(atgdu, asps);
 
+    cout << string(100, '=');
+
     x.frames.push_back(frame);
-	x.intraFrame = frame;
+    x.intraFrame = frame;
   }
 
   if (haveFrame(vuh)) {

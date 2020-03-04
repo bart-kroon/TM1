@@ -174,7 +174,7 @@ private: // Internal decoder state
 
   struct Sequence {
     std::vector<Atlas> atlas;
-    std::optional<Atlas> specialAtlas;
+    Atlas specialAtlas;
     std::int32_t frameId{-1}; // picture order count
   };
 

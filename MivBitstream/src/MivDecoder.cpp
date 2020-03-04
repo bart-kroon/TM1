@@ -533,17 +533,11 @@ auto MivDecoder::atlas(const VpccUnitHeader &vuh) -> Atlas & {
 }
 
 auto MivDecoder::specialAtlas(const VpccUnitHeader &vuh) const -> const Atlas & {
-  const auto &x = sequence(vuh);
-
-  VERIFY_MIVBITSTREAM(x.specialAtlas.has_value());
-  return *x.specialAtlas;
+  return sequence(vuh).specialAtlas;
 }
 
 auto MivDecoder::specialAtlas(const VpccUnitHeader &vuh) -> Atlas & {
-  auto &x = sequence(vuh);
-
-  VERIFY_MIVBITSTREAM(x.specialAtlas.has_value());
-  return *x.specialAtlas;
+  return sequence(vuh).specialAtlas;
 }
 
 auto MivDecoder::aspsV(const VpccUnitHeader &vuh) const

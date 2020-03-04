@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -226,6 +227,14 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     m_isBasicView[camera_id_pair.first] = true;
     m_isBasicView[camera_id_pair.second] = true;
   }
+
+  cout << "\nBasic view(s):";
+  for (size_t i = 0; i < m_isBasicView.size(); ++i) {
+    if (m_isBasicView[i]) {
+      cout << ' ' << ivSequenceParams.viewParamsList[i].name;
+    }
+  }
+  cout << '\n';
 
   // Output
   return {std::move(ivSequenceParams), m_isBasicView};

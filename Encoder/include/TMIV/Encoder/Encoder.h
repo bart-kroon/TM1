@@ -62,6 +62,8 @@ private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
   std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
+  const MivBitstream::IvSequenceParams *m_ivsp{};
+  const MivBitstream::IvAccessUnitParams *m_ivaup{};
 };
 } // namespace TMIV::Encoder
 

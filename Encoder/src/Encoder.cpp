@@ -35,8 +35,6 @@
 
 #include <TMIV/Common/Factory.h>
 
-#include <iostream>
-
 using namespace std;
 using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
@@ -56,18 +54,10 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
 
 auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
     -> const MivBitstream::IvSequenceParams & {
-  auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
-
-  cout << "\nBasic view(s):";
-  for (size_t i = 0; i < optimized.second.size(); ++i) {
-    if (optimized.second[i]) {
-      cout << ' ' << ivSequenceParams.viewParamsList[i].name;
-    }
-  }
-  cout << '\n';
-
-  return m_depthOccupancy->transformSequenceParams(
-      m_atlasConstructor->prepareSequence(std::move(optimized.first), std::move(optimized.second)));
+  const auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+  m_ivsp = &m_depthOccupancy->transformSequenceParams(
+      m_atlasConstructor->prepareSequence(move(optimal.first), move(optimal.second)));
+  return *m_ivsp;
 }
 
 void Encoder::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
@@ -75,15 +65,56 @@ void Encoder::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitPar
 }
 
 void Encoder::pushFrame(Common::MVD16Frame views) {
-  auto optimized = m_viewOptimizer->optimizeFrame(move(views));
-  return m_atlasConstructor->pushFrame(optimized);
+  return m_atlasConstructor->pushFrame(m_viewOptimizer->optimizeFrame(move(views)));
 }
 
 auto Encoder::completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & {
-  return m_depthOccupancy->transformAccessUnitParams(m_atlasConstructor->completeAccessUnit());
+  m_ivaup = &m_depthOccupancy->transformAccessUnitParams(m_atlasConstructor->completeAccessUnit());
+  return *m_ivaup;
 }
 
+namespace {
+// TODO(BK): Move geometry downscaling into a new component
+auto maxPoolDownscaleGeometry(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
+  auto result = Depth10Frame{frameSize.x(), frameSize.y()};
+
+  for (int y = 0; y < frameSize.y(); ++y) {
+    const int i1 = y * frame.getHeight() / frameSize.y();
+    const int i2 = (y + 1) * frame.getHeight() / frameSize.y();
+
+    for (int x = 0; x < frameSize.x(); ++x) {
+      const int j1 = x * frame.getWidth() / frameSize.x();
+      const int j2 = (x + 1) * frame.getWidth() / frameSize.x();
+
+      auto maximum = uint16_t{};
+
+      for (int i = i1; i < i2; ++i) {
+        for (int j = j1; j < j2; ++j) {
+          maximum = std::max(maximum, frame.getPlane(0)(i, j));
+        }
+      }
+
+      result.getPlane(0)(y, x) = maximum;
+    }
+  }
+
+  return frame;
+}
+} // namespace
+
 auto Encoder::popAtlas() -> Common::MVD10Frame {
-  return m_depthOccupancy->transformAtlases(m_atlasConstructor->popAtlas());
+  auto frame = m_depthOccupancy->transformAtlases(m_atlasConstructor->popAtlas());
+
+  // Geometry scaling
+  if (m_ivsp->msp().msp_geometry_scale_enabled_flag()) {
+    for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
+      const auto &masp = m_ivaup->atlas[atlasId].asps.miv_atlas_sequence_params();
+      auto frameSize = Vec2i{masp.masp_geometry_frame_width_minus1() + 1,
+                             masp.masp_geometry_frame_height_minus1() + 1};
+      frame[atlasId].depth = maxPoolDownscaleGeometry(frame[atlasId].depth, frameSize);
+    }
+  }
+
+  return frame;
 }
 } // namespace TMIV::Encoder

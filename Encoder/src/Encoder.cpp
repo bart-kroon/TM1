@@ -58,12 +58,10 @@ auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
     -> const MivBitstream::IvSequenceParams & {
   auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
 
-  cout << "\nBasic view(s): ";
-  auto sep = "";
+  cout << "\nBasic view(s):";
   for (size_t i = 0; i < optimized.second.size(); ++i) {
     if (optimized.second[i]) {
-      cout << sep << i;
-      sep = ", ";
+      cout << ' ' << ivSequenceParams.viewParamsList[i].name;
     }
   }
   cout << '\n';

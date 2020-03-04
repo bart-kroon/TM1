@@ -66,7 +66,9 @@ auto sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHeader {
 MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
                        AttrFrameServer attrFrameServer)
     : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)},
-      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{sampleStreamVpccHeader(stream)} {}
+      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{sampleStreamVpccHeader(stream)} {
+  cout << m_ssvh;
+}
 
 auto MivDecoder::decodeVpccUnit() -> bool {
   VERIFY_VPCCBITSTREAM(m_stream.good());

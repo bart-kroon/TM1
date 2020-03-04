@@ -31,39 +31,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#ifndef _TMIV_ENCODER_GEOMETRYDOWNSCALER_H_
+#define _TMIV_ENCODER_GEOMETRYDOWNSCALER_H_
 
-#include <TMIV/Encoder/IEncoder.h>
-
-#include <TMIV/AtlasConstructor/IAtlasConstructor.h>
-#include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::Encoder {
-class Encoder : public IEncoder {
+class GeometryDownscaler {
 public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  Encoder &operator=(const Encoder &) = delete;
-  Encoder &operator=(Encoder &&) = default;
-  ~Encoder() override = default;
+  GeometryDownscaler(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
+  auto transformSequenceParams(MivBitstream::IvSequenceParams)
+      -> const MivBitstream::IvSequenceParams &;
+  auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
+      -> const MivBitstream::IvAccessUnitParams &;
+  auto transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame;
 
 private:
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
-  std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
-  GeometryDownscaler m_geometryDownscaler;
+  bool m_geometryScaleEnabledFlag{};
+  MivBitstream::IvSequenceParams m_ivSequenceParams;
+  MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
 };
 } // namespace TMIV::Encoder
 

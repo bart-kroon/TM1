@@ -163,9 +163,18 @@ class TestConfiguration:
 
 	def allSourceCameraNames(self):
 		return list(map(lambda x: self.viewNameFormat().format(x + self.firstSourceView()), range(0, self.numberOfSourceViews())))
+		
+	def parameters(self):
+		return {
+			'numberOfFrames': self.numberOfFrames(),
+			'SourceDirectory': self.sourceDirectory(),
+			'SourceCameraParameters': self.sourceCameraParameters(),
+			'AtlasTexturePathFmt': self.atlasTexturePathFmt(),
+			'AtlasDepthPathFmt': self.atlasDepthPathFmt(),
+			'AtlasMetadataPath': self.atlasMetadataPath()
+		}
 
 	def saveTmivJson(self):	
-		print(self.path())
 		os.makedirs(os.path.dirname(self.path()), exist_ok = True)
 		with open(self.path(), 'w') as stream:
 			json.dump(self.parameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
@@ -174,6 +183,7 @@ class TestConfiguration:
 class DecoderConfiguration(TestConfiguration):
 	def __init__(self, sourceDir, anchorId, seqId, testPoint):
 		TestConfiguration.__init__(self, sourceDir, anchorId, seqId, testPoint)
+		print("Decoder configuration: {} S{} {}".format(anchorId, seqId, testPoint))
 
 	def outputTexturePath(self):
 		return '{}_S{}_{}_Tt_{}_%dx%d_yuv420p10le.yuv'.format(
@@ -212,13 +222,8 @@ class DecoderConfiguration(TestConfiguration):
 		return os.path.realpath('{}/pose_traces/{}'.format(self.configPath(), self.poseTraceBasename()))
 
 	def parameters(self):
-		config = {
-			'numberOfFrames': self.numberOfFrames(),
-			'SourceDirectory': self.sourceDirectory(),
-			'SourceCameraParameters': self.sourceCameraParameters(),
-			'AtlasTexturePathFmt': self.atlasTexturePathFmt(),
-			'AtlasDepthPathFmt': self.atlasDepthPathFmt(),
-			'AtlasMetadataPath': self.atlasMetadataPath(),
+		config = TestConfiguration.parameters(self)
+		config.update({
 			'OutputDirectory': self.outputDirectory(),
 			'OutputTexturePath': self.outputTexturePath(),
 			'OutputCameraName': self.outputCameraName,
@@ -233,7 +238,7 @@ class DecoderConfiguration(TestConfiguration):
 				'maxCurvature': 5,
 				'minForegroundConfidence': 0.5
 			}
-		}
+		})
 		if self.outputCameraName[0] == 'p':
 			config['OutputCameraName'] = 'viewport'
 			config['PoseTracePath'] = self.poseTracePath()
@@ -290,7 +295,6 @@ class DecoderConfiguration(TestConfiguration):
 		return config
 
 	def saveWspsnrJson(self):
-		print(self.wspsnrPath())
 		with open(self.wspsnrPath(), 'w') as stream:
 			json.dump(self.wspsnrParameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
 			stream.write('\n')
@@ -313,6 +317,7 @@ class DecoderConfiguration(TestConfiguration):
 class EncoderConfiguration(TestConfiguration):
 	def __init__(self, sourceDir, anchorId, seqId):
 		TestConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
+		print("Encoder configuration: {} S{}".format(anchorId, seqId))
 
 	def sourceCameraNames(self):
 		if self.anchorId == 'V17':
@@ -519,24 +524,22 @@ class EncoderConfiguration(TestConfiguration):
 		return 1
 
 	def parameters(self):
-		config = {
-			'numberOfFrames': self.numberOfFrames(),
-			'AtlasTexturePathFmt': self.atlasTexturePathFmt(),
-			'AtlasDepthPathFmt': self.atlasDepthPathFmt(),
-			'AtlasMetadataPath': self.atlasMetadataPath(),
+		config = TestConfiguration.parameters(self)
+		config.update({
 			'numGroups': self.numGroups(),
 			'maxEntities': self.maxEntities(),
 			'startFrame': self.startFrame(),
+			'intraPeriod': self.intraPeriod(),
+			'SourceCameraNames': self.sourceCameraNames(),
 			'SourceTexturePathFmt': self.sourceTexturePathFmt(),
 			'SourceDepthPathFmt': self.sourceDepthPathFmt(),
 			'SourceDepthBitDepth': self.sourceDepthBitDepth(),
-			'SourceCameraNames': self.sourceCameraNames(),
 			'OmafV1CompatibleFlag': self.omafV1CompatibleFlag(),
 			'EncoderMethod': 'GroupBasedEncoder',
 			'GroupBasedEncoder': self.encoder(),
 			'DepthQualityAssessorMethod': 'DepthQualityAssessor',
 			'DepthQualityAssessor': self.depthQualityAssessor()
-		}
+		})
 		if self.anchorId == 'E17' or self.anchorId == 'E97':
 		    config.update({
 			    'SourceEntityPathFmt': self.sourceEntityPathFmt(),
@@ -549,7 +552,6 @@ class EncoderConfiguration(TestConfiguration):
 
 	def saveHmCfg(self, component, scale):
 		path = '{0}/S{2}/HM_{0}_{1}_S{2}.cfg'.format(self.anchorId, component, self.seqId)
-		print(path)
 		with open(path, 'w') as stream:
 			stream.write('InputBitDepth: 10\n')
 			stream.write('InputChromaFormat: 420\n')

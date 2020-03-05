@@ -70,8 +70,8 @@ template <class TO, class FROM> auto yuv444p_impl(const Frame<FROM> &frame) -> F
   for (int i = 0; i < frame.getHeight(); ++i) {
     for (int j = 0; j < frame.getWidth(); ++j) {
       result.getPlane(0)(i, j) = frame.getPlane(0)(i, j);
-      result.getPlane(0)(i, j) = frame.getPlane(0)(i / 2, j / 2);
-      result.getPlane(0)(i, j) = frame.getPlane(0)(i / 2, j / 2);
+      result.getPlane(1)(i, j) = frame.getPlane(1)(i / 2, j / 2);
+      result.getPlane(2)(i, j) = frame.getPlane(2)(i / 2, j / 2);
     }
   }
 

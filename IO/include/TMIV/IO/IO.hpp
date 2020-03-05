@@ -104,7 +104,8 @@ void writeFrame(const Common::Json &config, const std::string &fileNameField,
                                 std::forward<Args>(args)..., frame.getWidth(), frame.getHeight());
   std::cout << "Writing frame " << frameIndex << " to " << path << "\n";
 
-  std::ofstream stream(path, std::ios::app | std::ios::binary);
+  std::fstream stream(path, frameIndex == 0 ? std::ios::out | std::ios::binary
+                                            : std::ios::in | std::ios::out | std::ios::binary);
   if (!stream.good()) {
     throw std::runtime_error("Failed to open file for writing");
   }

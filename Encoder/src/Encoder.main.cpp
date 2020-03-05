@@ -61,17 +61,16 @@ class Application : public Common::Application {
 private:
   unique_ptr<IEncoder> m_encoder;
   unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
+  IvMetadataWriter m_metadataWriter;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  IvMetadataWriter m_metadataWriter;
   SizeVector m_viewSizes;
 
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
         m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")},
-        m_metadataWriter{json()},
-        m_numberOfFrames{json().require("numberOfFrames").asInt()},
+        m_metadataWriter{json()}, m_numberOfFrames{json().require("numberOfFrames").asInt()},
         m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {

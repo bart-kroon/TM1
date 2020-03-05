@@ -22,6 +22,7 @@ add_library(RendererLib
     "include/TMIV/Renderer/MultipassRenderer.h"
     "include/TMIV/Renderer/GroupBasedRenderer.h"
 	"include/TMIV/Renderer/SubBlockCuller.h"
+	"include/TMIV/Renderer/NoCuller.h"
 	"include/TMIV/Renderer/ICuller.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"

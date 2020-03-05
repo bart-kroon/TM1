@@ -343,7 +343,7 @@ public:
         m_alignerCurvature(depthEdgeMagnitudeTh, maxCurvature) {}
 
   auto operator()(const AtlasAccessUnit &atlas) -> Depth10Frame {
-    auto geoFrame = Depth10Frame{};
+    auto geoFrame = Depth10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
 
     // Upscale with nearest neighbor interpolation to nominal atlas resolution
     const auto depthUpscaled = upscaleNearest(atlas.decGeoFrame.getPlane(0), atlas.frameSize());

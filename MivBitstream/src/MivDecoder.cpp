@@ -392,7 +392,7 @@ void MivDecoder::decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nu
   x.apsV[aps.aps_adaptation_parameter_set_id()] = aps;
 }
 
-void MivDecoder::decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+void MivDecoder::decodeAud(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
                            AccessUnitDelimiterRBSP aud) {
   cout << aud;
 }
@@ -412,7 +412,7 @@ void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) 
   sequence(vuh) = {};
 }
 
-void MivDecoder::decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+void MivDecoder::decodeSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
                            const SeiRBSP &sei) {
   cout << sei;
 }

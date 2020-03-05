@@ -42,11 +42,7 @@ using namespace std;
 
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, const NalSampleStream &x) -> ostream & {
-  stream << x.sample_stream_nal_header();
-  for (const auto &nal_unit : x.nal_units()) {
-    stream << nal_unit;
-  }
-  return stream;
+  return stream << x.sample_stream_nal_header();
 }
 
 auto NalSampleStream::operator==(const NalSampleStream &other) const noexcept -> bool {

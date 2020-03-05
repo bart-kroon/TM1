@@ -44,7 +44,10 @@ using namespace TMIV::Common;
 namespace TMIV::MivBitstream {
 
 MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
-  cout << m_ssvh;
+  cout << "=== Sample stream V-PCC header " << string(100 - 31, '=') << '\n'
+       << m_ssvh << string(100, '=') << "\n"
+       << endl;
+
   m_ssvh.encodeTo(m_stream);
   m_stream.flush();
 }

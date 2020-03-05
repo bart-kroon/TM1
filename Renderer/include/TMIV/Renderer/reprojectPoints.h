@@ -145,17 +145,19 @@ public:
 };
 
 template <MivBitstream::CiCamType camType>
-auto getPointCloudList(const typename ProjectionHelper<camType>::List &sourceHelperList,
-                       unsigned N = 16) -> PointCloudList;
+using ProjectionHelperList = typename ProjectionHelper<camType>::List;
 
 template <MivBitstream::CiCamType camType>
-auto getOverlapping(const typename ProjectionHelper<camType>::List &sourceHelperList,
+auto getPointCloudList(const ProjectionHelperList<camType> &sourceHelperList, unsigned N = 16)
+    -> PointCloudList;
+
+template <MivBitstream::CiCamType camType>
+auto getOverlapping(const ProjectionHelperList<camType> &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float;
 
 template <MivBitstream::CiCamType camType>
-static auto
-computeOverlappingMatrix(const typename ProjectionHelper<camType>::List &sourceHelperList)
+static auto computeOverlappingMatrix(const ProjectionHelperList<camType> &sourceHelperList)
     -> Common::Mat<float>;
 
 } // namespace TMIV::Renderer

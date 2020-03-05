@@ -78,7 +78,7 @@ template <CiCamType camType>
 auto isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
                        const MVD16Frame &sourceViews, float blendingFactor, float maxOutlierRatio)
     -> bool {
-  typename ProjectionHelper<camType>::List sourceHelperList{ivSequenceParams.viewParamsList};
+  const auto sourceHelperList = ProjectionHelperList<camType>{ivSequenceParams.viewParamsList};
 
   // Expand depth
   vector<Mat<float>> sourceDepthExpandedList;

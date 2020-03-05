@@ -42,33 +42,24 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
-IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirectoryField,
-                                   const string &fileNameField)
-    : m_config{config}, m_path{getFullPath(config, baseDirectoryField, fileNameField)},
-      m_stream{m_path, ios::binary} {
+auto bitstreamPath(const Json &config) -> string;
+
+IvMetadataReader::IvMetadataReader(const Json &config)
+    : m_stream{bitstreamPath(config), ios::binary} {
   if (!m_stream.good()) {
     ostringstream what;
-    what << "Failed to open \"" << m_path << "\" for reading";
+    what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
     throw runtime_error(what.str());
   }
-  m_decoder = make_unique<MivDecoder>(m_stream, geoFrameServer(), attrFrameServer());
-}
-
-auto IvMetadataReader::geoFrameServer() -> MivDecoder::GeoFrameServer {
-  return [this](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-    const auto path = getFullPath(m_config, "OutputDirectory", "AtlasDepthPathFmt", atlasId);
-    cout << "Loading geometry video data: atlasId = " << int(atlasId) << ", frameId = " << frameId
-         << ", frameSize = " << frameSize << " (YUV 4:2:0 --> YUV 4:0:0)\n";
-    return readFrame<YUV400P10>(path, frameId, frameSize);
-  };
-}
-
-auto IvMetadataReader::attrFrameServer() -> MivDecoder::AttrFrameServer {
-  return [this](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-    const auto path = getFullPath(m_config, "OutputDirectory", "AtlasTexturePathFmt", atlasId);
-    cout << "Loading attribute video data: atlasId = " << int(atlasId) << ", frameId = " << frameId
-         << ", frameSize = " << frameSize << " (YUV 4:2:0 --> YUV 4:4:4)\n";
-    return yuv444p(readFrame<YUV420P10>(path, frameId, frameSize));
-  };
+  m_decoder = make_unique<MivDecoder>(
+      m_stream,
+      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+        return readFrame<YUV400P10>(config, "OutputDirectory", "AtlasDepthPathFmt", frameId,
+                                    frameSize, atlasId);
+      },
+      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+        return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AtlasTexturePathFmt",
+                                            frameId, frameSize, atlasId));
+      });
 }
 } // namespace TMIV::IO

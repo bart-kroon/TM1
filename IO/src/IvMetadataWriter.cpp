@@ -40,13 +40,15 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
-IvMetadataWriter::IvMetadataWriter(const Json &config, const string &baseDirectoryField,
-                                   const string &fileNameField) {
-  m_path = getFullPath(config, baseDirectoryField, fileNameField);
-  m_stream.open(m_path, ios::binary);
+auto bitstreamPath(const Json &config) -> string {
+  return getFullPath(config, "OutputDirectory", "AtlasMetadataPath");
+}
+
+IvMetadataWriter::IvMetadataWriter(const Json &config)
+    : m_stream{bitstreamPath(config), ios::binary} {
   if (!m_stream.good()) {
     ostringstream what;
-    what << "Failed to open metadata file " << m_path;
+    what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
     throw runtime_error(what.str());
   }
   m_encoder = make_unique<MivEncoder>(m_stream);

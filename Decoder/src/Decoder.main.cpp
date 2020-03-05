@@ -60,10 +60,10 @@ private:
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Decoder", move(argv)},                       // Load configuration
-        m_metadataReader{json(), "OutputDirectory", "AtlasMetadataPath"}, // Read MIV bitstream
-        m_decoder{create<IDecoder>("Decoder")},                           // Decoder/renderer
-        m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {       // Handle pose traces
+      : Common::Application{"Decoder", move(argv)},                 // Load configuration
+        m_metadataReader{json()},                                   // Read MIV bitstream
+        m_decoder{create<IDecoder>("Decoder")},                     // Decoder/renderer
+        m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} { // Handle pose traces
 
     m_metadataReader.decoder().onFrame.emplace_back([this](const AccessUnit &frame) {
       auto range = m_inputToOutputFrameIdMap.equal_range(frame.frameId);
@@ -93,6 +93,15 @@ private:
     }
   }
 
+  // Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
+  // encoded stream, then regular values are returned else mirrored indices are computed.
+  static auto getExtendedIndex(const Json &config, int frameIndex) -> int {
+    int numberOfFrames = config.require("numberOfFrames").asInt();
+    int frameGroupId = frameIndex / numberOfFrames;
+    int frameRelativeId = frameIndex % numberOfFrames;
+    return (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
+  }
+
   static auto mapInputToOutputFrames(const Json &config) -> multimap<int, int> {
     auto x = multimap<int, int>{};
 
@@ -115,7 +124,7 @@ private:
 
     for (int outputFrame = firstOutputFrame; outputFrame < numberOfFrames + extraFrames;
          outputFrame += outputFrameStep) {
-      auto inputFrame = IO::getExtendedIndex(config, outputFrame);
+      const auto inputFrame = getExtendedIndex(config, outputFrame);
       x.emplace(inputFrame, outputFrame);
     }
 

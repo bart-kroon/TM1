@@ -41,14 +41,12 @@
 namespace TMIV::IO {
 class IvMetadataWriter {
 public:
-  IvMetadataWriter(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+  explicit IvMetadataWriter(const Common::Json &config);
 
   void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
   void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
 
 private:
-  std::string m_path;
   std::ofstream m_stream;
   std::unique_ptr<MivBitstream::MivEncoder> m_encoder;
 };

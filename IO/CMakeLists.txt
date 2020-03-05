@@ -5,6 +5,7 @@ add_library(IOLib
 	"src/IvMetadataReader.cpp"
 	"src/IvMetadataWriter.cpp"
 	"include/TMIV/IO/IO.h"
+	"include/TMIV/IO/IO.hpp"
 	"include/TMIV/IO/IvMetadataReader.h"
 	"include/TMIV/IO/IvMetadataWriter.h"
 	)

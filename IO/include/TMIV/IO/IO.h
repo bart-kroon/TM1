@@ -39,17 +39,12 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/IvAccessUnitParams.h>
 #include <TMIV/MivBitstream/IvSequenceParams.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 // Functions for file I/O
 //
 // Frame indices are zero-based and relative to the StartFrame parameter.
 // These functions will print something short to screen.
 namespace TMIV::IO {
-std::string getFullPath(const Common::Json &config, const std::string &baseDirectoryField,
-                        const std::string &fileNameField, size_t viewId = 0,
-                        const std::string &viewName = "");
-
 // Load sequence metadata from the configuration files. It is up to the Encoder to comply (or
 // ignore) fields such as num_groups. The in-memory metadata representation has to be complete
 // only after IEncoder.
@@ -64,8 +59,6 @@ auto loadSourceIvAccessUnitParams(const Common::Json &config) -> MivBitstream::I
 Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
                                    int frameIndex);
 
-void savePrunedFrame(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
-
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
 void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
@@ -74,14 +67,8 @@ void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBitstream::ViewParams;
 void saveViewport(const Common::Json &config, int frameIndex,
                   const Common::TextureDepth16Frame &frame);
-
-// Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
-// encoded stream, then regular values are returned else mirrored indices are computed.
-int getExtendedIndex(const Common::Json &config, int frameIndex);
-
-template <typename FORMAT>
-auto readFrame(const std::string &path, int frameIndex, Common::Vec2i resolution)
-    -> Common::Frame<FORMAT>;
 } // namespace TMIV::IO
+
+#include "IO.hpp"
 
 #endif

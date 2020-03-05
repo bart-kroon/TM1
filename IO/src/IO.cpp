@@ -33,10 +33,7 @@
 
 #include <TMIV/IO/IO.h>
 
-#include <TMIV/Common/Common.h>
-
 #include <cassert>
-#include <fstream>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -47,153 +44,6 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
-auto getFullPath(const Json &config, const string &baseDirectoryField, const string &fileNameField,
-                 size_t viewId, const string &viewName) -> string {
-  string baseDirectory;
-  string fileName =
-      viewName.empty() ? format(config.require(fileNameField).asString().c_str(), viewId)
-                       : format(config.require(fileNameField).asString().c_str(), viewName.c_str());
-
-  // Detect absolute paths for /POSIX, \Windows and C:\Windows
-  if ((!fileName.empty() && (fileName.front() == '/' || fileName.front() == '\\')) ||
-      (fileName.size() >= 2 && fileName[1] == ':')) {
-    return fileName;
-  }
-
-  if (auto subnode = config.optional(baseDirectoryField)) {
-    baseDirectory = subnode.asString() + "/";
-  }
-
-  return baseDirectory + fileName;
-}
-
-template <typename FORMAT>
-auto readFrame(const string &path, int frameIndex, Vec2i resolution) -> Frame<FORMAT> {
-  Frame<FORMAT> result(resolution.x(), resolution.y());
-  ifstream stream{path, ifstream::binary};
-
-  if (!stream.good()) {
-    throw runtime_error("Failed to open file: " + path);
-  }
-
-  stream.seekg(streampos(frameIndex) * result.getDiskSize());
-  result.read(stream);
-
-  if (!stream.good()) {
-    throw runtime_error("Failed to read from file: " + path);
-  }
-
-  return result;
-}
-
-template auto readFrame(const string &, int, Vec2i) -> Frame<YUV400P10>;
-
-namespace {
-template <typename FORMAT> void padChroma(ostream &stream, int bytes) {
-  constexpr auto fillValue = neutralColor<FORMAT>();
-  const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
-  auto buffer = std::vector<char>(bytes);
-  memcpy(buffer.data(), padding.data(), buffer.size());
-  stream.write(buffer.data(), buffer.size());
-}
-
-template <typename FORMAT>
-void writeFrame(const string &path, const Frame<FORMAT> &frame, int frameIndex) {
-  ofstream stream(path, ios::app | ios::binary);
-  if (!stream.good()) {
-    throw runtime_error("Failed to open file for writing: " + path);
-  }
-
-  stream.seekp(int64_t(frameIndex) * frame.getDiskSize());
-
-  frame.dump(stream);
-  padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());
-
-  if (!stream.good()) {
-    throw runtime_error("Failed to write to file: " + path);
-  }
-}
-
-template <typename FORMAT>
-auto loadMVDFrame(const Json &config, const SizeVector &sizes, int frameIndex, const char *what,
-                  const char *directory, const char *texturePathFmt, const char *depthPathFmt,
-                  const vector<string> &viewNames = {}, bool downscaleDepth = false)
-    -> MVDFrame<FORMAT> {
-
-  cout << "Loading " << what << " frame " << frameIndex << endl;
-
-  MVDFrame<FORMAT> result;
-  result.reserve(sizes.size());
-
-  for (size_t i = 0; i < sizes.size(); ++i) {
-    auto sizeDepthMap = sizes[i];
-    if (downscaleDepth) {
-      sizeDepthMap /= 2;
-    }
-
-    result.emplace_back(readFrame<YUV420P10>(getFullPath(config, directory, texturePathFmt, i,
-                                                         viewNames.empty() ? "" : viewNames[i]),
-                                             frameIndex, sizes[i]),
-                        readFrame<FORMAT>(getFullPath(config, directory, depthPathFmt, i,
-                                                      viewNames.empty() ? "" : viewNames[i]),
-                                          frameIndex, sizeDepthMap));
-  }
-
-  return result;
-}
-
-template <typename FORMAT>
-void saveMVDFrame(const Json &config, int frameIndex, const MVDFrame<FORMAT> &frame,
-                  const char *what, const char *directory, const char *texturePathFmt,
-                  const char *depthPathFmt) {
-  cout << "Saving " << what << " frame " << frameIndex << endl;
-
-  for (size_t i = 0; i < frame.size(); ++i) {
-    writeFrame(getFullPath(config, directory, texturePathFmt, i), frame[i].texture, frameIndex);
-    writeFrame(getFullPath(config, directory, depthPathFmt, i), frame[i].depth, frameIndex);
-  }
-}
-
-struct Pose {
-  Vec3f position;
-  Vec3f rotation;
-};
-
-auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
-  string line;
-  getline(stream, line);
-
-  regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
-  if (!regex_match(line, re_header)) {
-    throw runtime_error("Format error in the pose trace header");
-  }
-
-  int currentFrameIndex = 0;
-  regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
-  regex re_empty("\\s*");
-  bool trailing_empty_lines = false;
-
-  while (getline(stream, line)) {
-    smatch match;
-    if (!trailing_empty_lines && regex_match(line, match, re_row)) {
-
-      if (currentFrameIndex == frameIndex) {
-        return {Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
-                Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};
-      }
-      { currentFrameIndex++; }
-    } else if (regex_match(line, re_empty)) {
-      trailing_empty_lines = true;
-    } else {
-      throw runtime_error("Format error in a pose trace row");
-    }
-  }
-
-  throw runtime_error("Unable to load required frame index " + to_string(frameIndex));
-}
-
-} // namespace
-
 auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   auto x = IvSequenceParams{};
 
@@ -246,96 +96,155 @@ auto loadSourceIvAccessUnitParams(const Json &config) -> IvAccessUnitParams {
 }
 
 namespace {
+auto loadSourceTexture(const Json &config, const Vec2i &size, const string &viewName,
+                       int frameIndex) {
+  return readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex, size,
+                              viewName.c_str());
+}
+
 template <typename FORMAT>
-auto loadSourceFrame_impl(int bits, const Json &config, const SizeVector &sizes, int frameIndex)
-    -> MVD16Frame {
-  const auto sourceFrameIndex = frameIndex + config.require("startFrame").asInt();
-  const auto viewNames = config.require("SourceCameraNames").asStringVector();
+auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, string viewName,
+                      int frameIndex) {
+  auto depth16 = Depth16Frame{size.x(), size.y()};
 
-  const auto frame =
-      loadMVDFrame<FORMAT>(config, sizes, sourceFrameIndex, "source", "SourceDirectory",
-                           "SourceTexturePathFmt", "SourceDepthPathFmt", viewNames);
+  const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceDepthPathFmt", frameIndex,
+                                       size, viewName.c_str());
 
-  auto frame16 = MVD16Frame{};
-  frame16.reserve(frame.size());
-
-  transform(cbegin(frame), cend(frame), back_inserter(frame16),
-            [bits](const TextureDepthFrame<FORMAT> &view) {
-              auto view16 = TextureDepth16Frame{
-                  move(view.texture), Depth16Frame{view.depth.getWidth(), view.depth.getHeight()}};
-              transform(begin(view.depth.getPlane(0)), end(view.depth.getPlane(0)),
-                        begin(view16.depth.getPlane(0)), [bits](unsigned x) {
-                          const auto x_max = maxLevel(bits);
-                          assert(0 <= x && x <= x_max);
-                          const auto y = (0xFFFF * x + x_max / 2) / x_max;
-                          assert(0 <= y && y <= UINT16_MAX);
-                          return uint16_t(y);
-                        });
-              return view16;
+  transform(begin(depth.getPlane(0)), end(depth.getPlane(0)), begin(depth16.getPlane(0)),
+            [bits](unsigned x) {
+              const auto x_max = maxLevel(bits);
+              assert(0 <= x && x <= x_max);
+              const auto y = (0xFFFF * x + x_max / 2) / x_max;
+              assert(0 <= y && y <= UINT16_MAX);
+              return uint16_t(y);
             });
 
-  if (config.optional("SourceEntityBitDepth")) {
-    const auto entityBits = config.require("SourceEntityBitDepth").asInt();
-    cout << "Loading entity map list for frame " << sourceFrameIndex << endl;
-
-    for (size_t i = 0; i < frame.size(); ++i) {
-      frame16[i].entities.resize(sizes[i].x(), sizes[i].y());
-      if (1 <= entityBits && entityBits <= 8) {
-        const auto entities = readFrame<YUV400P8>(
-            getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
-            sourceFrameIndex, sizes[i]);
-        copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
-             begin(frame16[i].entities.getPlane(0)));
-      } else if (9 <= entityBits && entityBits <= 16) {
-        const auto entities = readFrame<YUV400P16>(
-            getFullPath(config, "SourceDirectory", "SourceEntityPathFmt", i, viewNames[i]),
-            sourceFrameIndex, sizes[i]);
-        copy(cbegin(entities.getPlane(0)), cend(entities.getPlane(0)),
-             begin(frame16[i].entities.getPlane(0)));
-      } else {
-        throw runtime_error("Invalid SourceEntityBitDepth");
-      }
-    }
-  }
-
-  return frame16;
+  return depth16;
 }
-} // namespace
 
-auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex) -> MVD16Frame {
+auto loadSourceDepth(const Json &config, const Vec2i &size, const string &viewName,
+                     int frameIndex) {
   const auto bits = config.require("SourceDepthBitDepth").asInt();
+
   if (0 < bits && bits <= 8) {
-    return loadSourceFrame_impl<YUV400P8>(bits, config, sizes, frameIndex);
+    return loadSourceDepth_<YUV400P8>(bits, config, size, viewName, frameIndex);
   }
   if (8 < bits && bits <= 16) {
-    return loadSourceFrame_impl<YUV400P16>(bits, config, sizes, frameIndex);
+    return loadSourceDepth_<YUV400P16>(bits, config, size, viewName, frameIndex);
   }
   throw runtime_error("Invalid SourceDepthBitDepth");
 }
 
-void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &frame) {
-  saveMVDFrame(config, frameIndex, frame, "pruned", "OutputDirectory", "PrunedViewTexturePathFmt",
-               "PrunedViewDepthPathFmt");
+template <typename FORMAT>
+auto loadSourceEntities_(const Json &config, const Vec2i size, const string &viewName,
+                         int frameIndex) {
+  auto entities16 = EntityMap{size.x(), size.y()};
+
+  const auto entities = readFrame<FORMAT>(config, "SourceDirectory", "SourceEntityPathFmt",
+                                          frameIndex, size, viewName.c_str());
+
+  copy(entities.getPlane(0).begin(), entities.getPlane(0).end(), entities16.getPlane(0).begin());
+
+  return entities16;
+}
+
+auto loadSourceEntities(const Json &config, const Vec2i size, const string &viewName,
+                        int frameIndex) {
+  if (auto node = config.optional("SourceEntityBitDepth"); node) {
+    const auto bits = node.asInt();
+    cout << "Loading entity map list for frame " << frameIndex << endl;
+
+    if (0 < bits && bits <= 8) {
+      return loadSourceEntities_<YUV400P8>(config, size, viewName, frameIndex);
+    }
+    if (8 < bits && bits <= 16) {
+      return loadSourceEntities_<YUV400P16>(config, size, viewName, frameIndex);
+    }
+    throw runtime_error("Invalid SourceEntityBitDepth");
+  }
+  return EntityMap{};
+}
+} // namespace
+
+auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex) -> MVD16Frame {
+  auto frame = MVD16Frame(sizes.size());
+
+  frameIndex += config.require("startFrame").asInt();
+  cout << "Loading source frame " << frameIndex << endl;
+
+  const auto viewNames = config.require("SourceCameraNames").asStringVector();
+  assert(viewNames.size() == sizes.size());
+
+  for (size_t viewId = 0; viewId < frame.size(); ++viewId) {
+    auto &view = frame[viewId];
+    view.texture = loadSourceTexture(config, sizes[viewId], viewNames[viewId], frameIndex);
+    view.depth = loadSourceDepth(config, sizes[viewId], viewNames[viewId], frameIndex);
+    view.entities = loadSourceEntities(config, sizes[viewId], viewNames[viewId], frameIndex);
+  }
+
+  return frame;
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
-  saveMVDFrame(config, frameIndex, frame, "atlas", "OutputDirectory", "AtlasTexturePathFmt",
-               "AtlasDepthPathFmt");
+  cout << "Saving atlas frame " << frameIndex << endl;
+
+  for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
+    writeFrame(config, "AtlasTexturePathFmt", frame[atlasId].texture, frameIndex, atlasId);
+    writeFrame(config, "AtlasDepthPathFmt", frame[atlasId].depth, frameIndex, atlasId);
+  }
 }
 
 void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &frame) {
   cout << "Saving block to patch map for frame " << frameIndex << '\n';
 
   for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
-    string texturePath =
-        getFullPath(config, "OutputDirectory", "AtlasPatchOccupancyMapFmt", atlasId);
-    writeFrame(texturePath, frame.atlas[atlasId].blockToPatchMap, frameIndex);
+    writeFrame(config, "AtlasPatchOccupancyMapFmt", frame.atlas[atlasId].blockToPatchMap,
+               frameIndex, atlasId);
   }
 }
 
-auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
+namespace {
+struct Pose {
+  Vec3f position;
+  Vec3f rotation;
+};
 
-  string cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
+  string line;
+  getline(stream, line);
+
+  regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
+  if (!regex_match(line, re_header)) {
+    throw runtime_error("Format error in the pose trace header");
+  }
+
+  int currentFrameIndex = 0;
+  regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+  regex re_empty("\\s*");
+  bool trailing_empty_lines = false;
+
+  while (getline(stream, line)) {
+    smatch match;
+    if (!trailing_empty_lines && regex_match(line, match, re_row)) {
+
+      if (currentFrameIndex == frameIndex) {
+        return {Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
+                Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};
+      }
+      { currentFrameIndex++; }
+    } else if (regex_match(line, re_empty)) {
+      trailing_empty_lines = true;
+    } else {
+      throw runtime_error("Format error in a pose trace row");
+    }
+  }
+
+  throw runtime_error("Unable to load required frame index " + to_string(frameIndex));
+}
+} // namespace
+
+auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
+  const auto cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   ifstream stream{cameraPath};
   if (!stream.good()) {
@@ -377,22 +286,12 @@ void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame 
   cout << "Saving viewport frame " << frameIndex << '\n';
 
   if (config.optional("OutputTexturePath")) {
-    string texturePath = getFullPath(config, "OutputDirectory", "OutputTexturePath", 0,
-                                     config.require("OutputCameraName").asString());
-    writeFrame(texturePath, frame.texture, frameIndex);
+    writeFrame(config, "OutputTexturePath", frame.texture, frameIndex,
+               config.require("OutputCameraName").asString().c_str());
   }
-
   if (config.optional("OutputDepthPath")) {
-    string depthPath = getFullPath(config, "OutputDirectory", "OutputDepthPath", 0,
-                                   config.require("OutputCameraName").asString());
-    writeFrame(depthPath, frame.depth, frameIndex);
+    writeFrame(config, "OutputDepthPath", frame.depth, frameIndex,
+               config.require("OutputCameraName").asString().c_str());
   }
-}
-
-auto getExtendedIndex(const Json &config, int frameIndex) -> int {
-  int numberOfFrames = config.require("numberOfFrames").asInt();
-  int frameGroupId = frameIndex / numberOfFrames;
-  int frameRelativeId = frameIndex % numberOfFrames;
-  return (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
 }
 } // namespace TMIV::IO

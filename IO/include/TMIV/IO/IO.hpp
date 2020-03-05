@@ -65,7 +65,8 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
                Args &&... args) -> Common::Frame<FORMAT> {
   auto result = Common::Frame<FORMAT>(resolution.x(), resolution.y());
 
-  const auto path = getFullPath(config, baseDirectoryField, fileNameField, forward<Args>(args)...);
+  const auto path =
+      getFullPath(config, baseDirectoryField, fileNameField, std::forward<Args>(args)...);
 
   std::ifstream stream{path, std::ios::binary};
 
@@ -96,8 +97,8 @@ template <typename FORMAT> void padChroma(std::ostream &stream, int bytes) {
 template <typename FORMAT, typename... Args>
 void writeFrame(const Common::Json &config, const std::string &fileNameField,
                 const Common::Frame<FORMAT> &frame, int frameIndex, Args &&... args) {
-  const auto path = getFullPath(config, "OutputDirectory", fileNameField, forward<Args>(args)...,
-                                frame.getWidth(), frame.getHeight());
+  const auto path = getFullPath(config, "OutputDirectory", fileNameField,
+                                std::forward<Args>(args)..., frame.getWidth(), frame.getHeight());
 
   std::ofstream stream(path, std::ios::app | std::ios::binary);
   if (!stream.good()) {

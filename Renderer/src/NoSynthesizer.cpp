@@ -31,33 +31,48 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
-#include <TMIV/Renderer/NoCuller.h>
-#include <TMIV/Renderer/NoInpainter.h>
 #include <TMIV/Renderer/NoSynthesizer.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/SubBlockCuller.h>
-#include <TMIV/Renderer/Synthesizer.h>
-#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
-#include <TMIV/Renderer/ViewingSpaceController.h>
+
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
-inline void registerComponents() {
-  Common::Factory<ICuller>::getInstance().registerAs<SubBlockCuller>("SubBlockCuller");
-  Common::Factory<ICuller>::getInstance().registerAs<NoCuller>("NoCuller");
-  Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<NoSynthesizer>("NoSynthesizer");
-  Common::Factory<IViewingSpaceController>::getInstance().registerAs<ViewingSpaceController>(
-      "ViewingSpaceController");
-  Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<GroupBasedRenderer>("GroupBasedRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<ViewWeightingSynthesizer>(
-      "ViewWeightingSynthesizer");
+NoSynthesizer::NoSynthesizer(const Json & /*unused*/, const Json & /*componentNode*/) {}
+
+auto NoSynthesizer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
+    -> Texture444Depth16Frame {
+  auto viewport = Texture444Depth16Frame{
+      Texture444Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+                      viewportParams.ci.ci_projection_plane_height_minus1() + 1},
+      Depth16Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+                   viewportParams.ci.ci_projection_plane_height_minus1() + 1}};
+
+  assert(!frame.atlas.empty());
+  const auto &atlas = frame.atlas.front();
+
+  assert(atlas.attrFrame.getSize() == atlas.frameSize());
+  assert(atlas.geoFrame.getSize() == atlas.frameSize());
+
+  const auto rows = min<int>(viewportParams.ci.ci_projection_plane_height_minus1() + 1,
+                             atlas.asps.asps_frame_height());
+  const auto cols = min<int>(viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+                             atlas.asps.asps_frame_width());
+
+  cout << "NoSynthesizer: " << rows << " x " << cols << '\n';
+
+  for (int y = 0; y < rows; ++y) {
+    for (int x = 0; x < cols; ++x) {
+      for (int d = 0; d < 3; ++d) {
+        viewport.first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(y, x);
+      }
+      viewport.second.getPlane(0)(y, x) = uint16_t(atlas.geoFrame.getPlane(0)(y, x) * 64);
+    }
+  }
+
+  return viewport;
 }
 } // namespace TMIV::Renderer

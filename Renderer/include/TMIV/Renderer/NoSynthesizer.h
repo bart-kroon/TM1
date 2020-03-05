@@ -31,33 +31,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
-#include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
-#include <TMIV/Renderer/NoCuller.h>
-#include <TMIV/Renderer/NoInpainter.h>
-#include <TMIV/Renderer/NoSynthesizer.h>
-#include <TMIV/Renderer/Renderer.h>
-#include <TMIV/Renderer/SubBlockCuller.h>
-#include <TMIV/Renderer/Synthesizer.h>
-#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
-#include <TMIV/Renderer/ViewingSpaceController.h>
+#ifndef _TMIV_RENDERER_NOSYNTHESIZER_H_
+#define _TMIV_RENDERER_NOSYNTHESIZER_H_
+
+#include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {
-inline void registerComponents() {
-  Common::Factory<ICuller>::getInstance().registerAs<SubBlockCuller>("SubBlockCuller");
-  Common::Factory<ICuller>::getInstance().registerAs<NoCuller>("NoCuller");
-  Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<NoSynthesizer>("NoSynthesizer");
-  Common::Factory<IViewingSpaceController>::getInstance().registerAs<ViewingSpaceController>(
-      "ViewingSpaceController");
-  Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<GroupBasedRenderer>("GroupBasedRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<ViewWeightingSynthesizer>(
-      "ViewWeightingSynthesizer");
-}
+// Copy pixels without synthesis for testing purposes
+class NoSynthesizer : public ISynthesizer {
+public:
+  NoSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+
+  auto renderFrame(const MivBitstream::AccessUnit &frame,
+                   const MivBitstream::ViewParams &viewportParams) const
+      -> Common::Texture444Depth16Frame override;
+};
 } // namespace TMIV::Renderer
+
+#endif

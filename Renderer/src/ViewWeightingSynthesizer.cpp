@@ -390,15 +390,12 @@ private:
             }
 
             // UV
-            if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-              for (int p = 1; p < 3; p++) {
-                if (occupancyTransform.occupant(
-                        depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-                  textureViewMap.getPlane(p)(pView.y(), pView.x()) =
-                      textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x());
-                  textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x()) =
-                      Texture444Frame::neutralColor();
-                }
+            for (int p = 1; p < 3; p++) {
+              if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
+                textureViewMap.getPlane(p)(pView.y(), pView.x()) =
+                    textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x());
+                textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x()) =
+                    Texture444Frame::neutralColor();
               }
             }
 

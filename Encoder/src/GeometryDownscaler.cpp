@@ -95,7 +95,7 @@ auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
     }
   }
 
-  return frame;
+  return result;
 }
 } // namespace
 
@@ -103,8 +103,8 @@ auto GeometryDownscaler::transformFrame(MVD10Frame frame) -> MVD10Frame {
   if (m_ivSequenceParams.msp().msp_geometry_scale_enabled_flag()) {
     for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
       const auto &masp = m_ivAccessUnitParams.atlas[atlasId].asps.miv_atlas_sequence_params();
-      auto frameSize = Vec2i{masp.masp_geometry_frame_width_minus1() + 1,
-                             masp.masp_geometry_frame_height_minus1() + 1};
+      const auto frameSize = Vec2i{masp.masp_geometry_frame_width_minus1() + 1,
+                                   masp.masp_geometry_frame_height_minus1() + 1};
       frame[atlasId].depth = maxPool(frame[atlasId].depth, frameSize);
     }
   }

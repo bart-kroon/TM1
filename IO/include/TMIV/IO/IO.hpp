@@ -66,20 +66,21 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
                Args &&... args) -> Common::Frame<FORMAT> {
   auto result = Common::Frame<FORMAT>(resolution.x(), resolution.y());
 
-  const auto path =
-      getFullPath(config, baseDirectoryField, fileNameField, std::forward<Args>(args)...);
+  const auto path = getFullPath(config, baseDirectoryField, fileNameField,
+                                std::forward<Args>(args)..., resolution.x(), resolution.y());
 
+  cout << "Reading frame " << frameIndex << " from \"" << path << "\"\n";
   std::ifstream stream{path, std::ios::binary};
 
   if (!stream.good()) {
-    throw std::runtime_error("Failed to open file: " + path);
+    throw std::runtime_error("Failed to open file");
   }
 
   stream.seekg(std::streampos(frameIndex) * result.getDiskSize());
   result.read(stream);
 
   if (!stream.good()) {
-    throw std::runtime_error("Failed to read from file: " + path);
+    throw std::runtime_error("Failed to read from file");
   }
 
   return result;
@@ -100,10 +101,11 @@ void writeFrame(const Common::Json &config, const std::string &fileNameField,
                 const Common::Frame<FORMAT> &frame, int frameIndex, Args &&... args) {
   const auto path = getFullPath(config, "OutputDirectory", fileNameField,
                                 std::forward<Args>(args)..., frame.getWidth(), frame.getHeight());
+  cout << "Writing frame " << frameIndex << " to \"" << path << "\"\n";
 
   std::ofstream stream(path, std::ios::app | std::ios::binary);
   if (!stream.good()) {
-    throw std::runtime_error("Failed to open file for writing: " + path);
+    throw std::runtime_error("Failed to open file for writing");
   }
 
   stream.seekp(int64_t(frameIndex) * frame.getDiskSize());
@@ -112,7 +114,7 @@ void writeFrame(const Common::Json &config, const std::string &fileNameField,
   padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());
 
   if (!stream.good()) {
-    throw std::runtime_error("Failed to write to file: " + path);
+    throw std::runtime_error("Failed to write to file");
   }
 }
 } // namespace TMIV::IO

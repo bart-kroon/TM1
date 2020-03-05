@@ -152,8 +152,6 @@ auto loadSourceEntities(const Json &config, const Vec2i size, const string &view
                         int frameIndex) {
   if (auto node = config.optional("SourceEntityBitDepth"); node) {
     const auto bits = node.asInt();
-    cout << "Loading entity map list for frame " << frameIndex << endl;
-
     if (0 < bits && bits <= 8) {
       return loadSourceEntities_<YUV400P8>(config, size, viewName, frameIndex);
     }
@@ -170,7 +168,6 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
   auto frame = MVD16Frame(sizes.size());
 
   frameIndex += config.require("startFrame").asInt();
-  cout << "Loading source frame " << frameIndex << endl;
 
   const auto viewNames = config.require("SourceCameraNames").asStringVector();
   assert(viewNames.size() == sizes.size());
@@ -186,8 +183,6 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
 }
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
-  cout << "Saving atlas frame " << frameIndex << endl;
-
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
     writeFrame(config, "AtlasTexturePathFmt", frame[atlasId].texture, frameIndex, atlasId);
     writeFrame(config, "AtlasDepthPathFmt", frame[atlasId].depth, frameIndex, atlasId);
@@ -195,8 +190,6 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
 }
 
 void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &frame) {
-  cout << "Saving block to patch map for frame " << frameIndex << '\n';
-
   for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
     writeFrame(config, "AtlasPatchOccupancyMapFmt", frame.atlas[atlasId].blockToPatchMap,
                frameIndex, atlasId);
@@ -283,8 +276,6 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 }
 
 void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame &frame) {
-  cout << "Saving viewport frame " << frameIndex << '\n';
-
   if (config.optional("OutputTexturePath")) {
     writeFrame(config, "OutputTexturePath", frame.texture, frameIndex,
                config.require("OutputCameraName").asString().c_str());

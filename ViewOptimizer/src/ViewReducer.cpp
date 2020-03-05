@@ -228,7 +228,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     m_isBasicView[camera_id_pair.second] = true;
   }
 
-  cout << "\nBasic view(s):";
+  cout << "Basic view(s):";
   for (size_t i = 0; i < m_isBasicView.size(); ++i) {
     if (m_isBasicView[i]) {
       cout << ' ' << ivSequenceParams.viewParamsList[i].name;

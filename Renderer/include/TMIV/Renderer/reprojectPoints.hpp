@@ -32,7 +32,6 @@
  */
 
 namespace TMIV::Renderer {
-
 template <MivBitstream::CiCamType camType>
 ProjectionHelper<camType>::List::List(const MivBitstream::ViewParamsList &viewParamsList) {
   for (const auto &viewParams : viewParamsList) {
@@ -127,7 +126,7 @@ auto ProjectionHelper<camType>::getPointCloud(unsigned N) const -> PointCloud {
 }
 
 template <MivBitstream::CiCamType camType>
-auto getPointCloudList(const typename ProjectionHelper<camType>::List &sourceHelperList, unsigned N)
+auto getPointCloudList(const ProjectionHelperList<camType> &sourceHelperList, unsigned N)
     -> PointCloudList {
   PointCloudList pointCloudList;
 
@@ -139,7 +138,7 @@ auto getPointCloudList(const typename ProjectionHelper<camType>::List &sourceHel
 }
 
 template <MivBitstream::CiCamType camType>
-auto getOverlapping(const typename ProjectionHelper<camType>::List &sourceHelperList,
+auto getOverlapping(const ProjectionHelperList<camType> &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float {
   std::size_t N = 0;
@@ -148,7 +147,6 @@ auto getOverlapping(const typename ProjectionHelper<camType>::List &sourceHelper
   const PointCloud &firstPointCloud = pointCloudList[firstId];
 
   for (const auto &P : firstPointCloud) {
-
     auto p = secondHelper.doProjection(P);
 
     if (isValidDepth(p.second) && secondHelper.isInsideViewport(p.first)) {
@@ -160,17 +158,14 @@ auto getOverlapping(const typename ProjectionHelper<camType>::List &sourceHelper
 }
 
 template <MivBitstream::CiCamType camType>
-static auto
-computeOverlappingMatrix(const typename ProjectionHelper<camType>::List &sourceHelperList)
+static auto computeOverlappingMatrix(const ProjectionHelperList<camType> &sourceHelperList)
     -> Common::Mat<float> {
-
   auto pointCloudList = getPointCloudList<camType>(sourceHelperList, 16);
   std::size_t K = sourceHelperList.size();
   Common::Mat<float> overlappingMatrix({K, K});
 
   for (std::size_t i = 0; i < K; i++) {
     for (std::size_t j = 0; j < K; j++) {
-
       if (i != j) {
         overlappingMatrix(i, j) = getOverlapping<camType>(sourceHelperList, pointCloudList, i, j);
       } else {

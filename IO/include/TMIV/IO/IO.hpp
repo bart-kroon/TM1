@@ -39,6 +39,7 @@
 
 #include <cstring>
 #include <fstream>
+#include <iostream>
 
 namespace TMIV::IO {
 template <typename... Args>

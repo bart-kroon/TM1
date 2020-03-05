@@ -125,18 +125,9 @@ private: // Decoding processes
                  const AdaptationParameterSetRBSP &aps);
   static void decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                         AccessUnitDelimiterRBSP aud);
-  static void decodeVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                            AccessUnitDelimiterRBSP aud);
   void decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
   void decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-  static void decodeFd(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-  static void decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                               const SeiRBSP &sei);
-  static void decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                               const SeiRBSP &sei);
-  static void decodePrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                               const SeiRBSP &sei);
-  static void decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  static void decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                                const SeiRBSP &sei);
 
 private: // Parsers

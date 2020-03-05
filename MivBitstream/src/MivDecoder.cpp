@@ -67,22 +67,31 @@ MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
                        AttrFrameServer attrFrameServer)
     : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)},
       m_attrFrameServer{move(attrFrameServer)}, m_ssvh{sampleStreamVpccHeader(stream)} {
-  cout << m_ssvh;
+  cout << "=== Sample stream V-PCC header " << string(100 - 31, '=') << '\n'
+       << m_ssvh << string(100, '=') << "\n"
+       << endl;
 }
 
 auto MivDecoder::decodeVpccUnit() -> bool {
+  cout << "\n=== V-PCC unit " << string(100 - 15, '=') << '\n';
   VERIFY_VPCCBITSTREAM(m_stream.good());
-  const auto first = m_stream.tellg();
+
   const auto ssvu = SampleStreamVpccUnit::decodeFrom(m_stream, m_ssvh);
   VERIFY_VPCCBITSTREAM(m_stream.good());
-  const auto last = m_stream.tellg();
-  cout << "Sample stream V-PCC unit at [" << first << ", " << last << ") bytes:" << ssvu;
 
   istringstream substream{ssvu.ssvu_vpcc_unit()};
   const auto vu = VpccUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_vpcc_unit_size());
-  cout << vu.vpcc_unit_header();
+  cout << vu;
 
-  decodeVpccPayload(vu.vpcc_unit_header(), vu.vpcc_payload().payload());
+  const auto &vuh = vu.vpcc_unit_header();
+  decodeVpccPayload(vuh, vu.vpcc_payload().payload());
+  cout << string(100, '=') << "\n" << endl;
+
+  if (vuh.vuh_unit_type() == VuhUnitType::VPCC_AD) {
+    while (haveFrame(vuh)) {
+      outputFrame(vuh);
+    }
+  }
 
   m_stream.peek();
   return !m_stream.eof();
@@ -189,7 +198,7 @@ void MivDecoder::decodeAsb(const VpccUnitHeader &vuh, const AtlasSubBitstream &a
 }
 
 void MivDecoder::decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
-  cout << nu.nal_unit_header();
+  cout << "--- NAL unit " << string(100 - 13, '-') << '\n' << nu;
 
   if (nu.nal_unit_header().nal_layer_id() != 0) {
     cout << "WARNING: Ignoring NAL unit with nal_layer_id != 0\n";
@@ -215,7 +224,7 @@ void MivDecoder::decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
   case NalUnitType::NAL_EOB:
     return decodeEob(vuh, nu.nal_unit_header());
   case NalUnitType::NAL_FD:
-    return decodeFd(vuh, nu.nal_unit_header());
+    return;
   case NalUnitType::NAL_PREFIX_NSEI:
     return parsePrefixNSei(vuh, nu);
   case NalUnitType::NAL_SUFFIX_NSEI:
@@ -238,6 +247,8 @@ void MivDecoder::decodeUnknownNalUnit(const VpccUnitHeader & /*vuh*/, const NalU
 
 void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                             const AtlasTileGroupLayerRBSP &atgl) {
+  cout << atgl;
+
   const auto &atgh = atgl.atlas_tile_group_header();
   auto &x = atlas(vuh);
 
@@ -260,38 +271,23 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 &&
                          atgh.atgh_type() == AtghType::I_TILE_GRP);
 
-    cout << string(100, '=') << '\n';
-    cout << atgh;
-
     auto frame = make_shared<Atlas::Frame>();
     frame->atgh = atgh;
 
     const auto &aps = apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
-    cout << aps;
     const auto &mvpl = aps.miv_view_params_list();
 
     frame->viewParamsList = decodeMvpl(mvpl);
 
     const auto &afps = afpsV(vuh)[atgh.atgh_atlas_frame_parameter_set_id()];
-    cout << afps;
-
     const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];
-    cout << asps;
-
     const auto &atgdu = atgl.atlas_tile_group_data_unit();
-    cout << atgl;
 
     frame->patchParamsList = decodeAtgdu(atgdu, asps);
     frame->blockToPatchMap = decodeBlockToPatchMap(atgdu, asps);
 
-    cout << string(100, '=');
-
     x.frames.push_back(frame);
     x.intraFrame = frame;
-  }
-
-  if (haveFrame(vuh)) {
-    outputFrame(vuh);
   }
 }
 
@@ -365,6 +361,8 @@ void MivDecoder::decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                             AtlasSequenceParameterSetRBSP asps) {
   VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
 
+  cout << asps;
+
   auto &x = atlas(vuh);
   while (x.aspsV.size() <= asps.asps_atlas_sequence_parameter_set_id()) {
     x.aspsV.emplace_back();
@@ -374,6 +372,8 @@ void MivDecoder::decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
 
 void MivDecoder::decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
                             AtlasFrameParameterSetRBSP afps) {
+  cout << afps;
+
   auto &x = atlas(vuh);
   while (x.afpsV.size() <= afps.afps_atlas_frame_parameter_set_id()) {
     x.afpsV.emplace_back();
@@ -383,6 +383,8 @@ void MivDecoder::decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader & /*n
 
 void MivDecoder::decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
                            const AdaptationParameterSetRBSP &aps) {
+  cout << aps;
+
   auto &x = atlas(vuh);
   while (x.apsV.size() <= aps.aps_adaptation_parameter_set_id()) {
     x.apsV.emplace_back();
@@ -392,16 +394,7 @@ void MivDecoder::decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader & /*nu
 
 void MivDecoder::decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                            AccessUnitDelimiterRBSP aud) {
-  // There is no normative decoding process associated with the access unit delimiter. Print to
-  // prove that we have decoded this NAL unit.
-  cout << "Access unit delimiter:\n" << vuh << nuh << aud;
-}
-
-void MivDecoder::decodeVpccAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                               AccessUnitDelimiterRBSP aud) {
-  // There is no normative decoding process associated with the access unit delimiter. Print to
-  // prove that we have decoded this NAL unit.
-  cout << "V-PCC access unit delimiter:\n" << vuh << nuh << aud;
+  cout << aud;
 }
 
 void MivDecoder::decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
@@ -419,36 +412,9 @@ void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) 
   sequence(vuh) = {};
 }
 
-void MivDecoder::decodeFd(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
-  // There is no normative decoding process associated with the access unit delimiter. Print to
-  // prove that we have parsed this NAL unit header.
-  cout << "Ignoring filler data:\n" << vuh << nuh;
-}
-
-void MivDecoder::decodePrefixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  const SeiRBSP &sei) {
-  // Print to prove that we have decoded this NAL unit
-  cout << "Prefix non-essential supplemental enhancement information (NSEI):\n"
-       << vuh << nuh << sei;
-}
-
-void MivDecoder::decodeSuffixNSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  const SeiRBSP &sei) {
-  // Print to prove that we have decoded this NAL unit
-  cout << "Suffix non-essential supplemental enhancement information (NSEI):\n"
-       << vuh << nuh << sei;
-}
-
-void MivDecoder::decodePrefixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  const SeiRBSP &sei) {
-  // Print to prove that we have decoded this NAL unit
-  cout << "Prefix essential supplemental enhancement information (ESEI):\n" << vuh << nuh << sei;
-}
-
-void MivDecoder::decodeSuffixESei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  const SeiRBSP &sei) {
-  // Print to prove that we have decoded this NAL unit
-  cout << "Suffix essential supplemental enhancement information (ESEI):\n" << vuh << nuh << sei;
+void MivDecoder::decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                           const SeiRBSP &sei) {
+  cout << sei;
 }
 
 // Parsers /////////////////////////////////////////////////////////////////////////////////////////
@@ -482,27 +448,27 @@ void MivDecoder::parseAud(const VpccUnitHeader &vuh, const NalUnit &nu) {
 
 void MivDecoder::parseVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodeVpccAud(vuh, nu.nal_unit_header(), AccessUnitDelimiterRBSP::decodeFrom(stream));
+  decodeAud(vuh, nu.nal_unit_header(), AccessUnitDelimiterRBSP::decodeFrom(stream));
 }
 
 void MivDecoder::parsePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodePrefixNSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
+  decodeSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
 }
 
 void MivDecoder::parseSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodeSuffixNSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
+  decodeSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
 }
 
 void MivDecoder::parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodePrefixESei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
+  decodeSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
 }
 
 void MivDecoder::parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodeSuffixESei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
+  decodeSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
 }
 
 // Access internal decoder state ///////////////////////////////////////////////////////////////////

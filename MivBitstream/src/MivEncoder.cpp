@@ -82,13 +82,13 @@ const auto nuhCra = NalUnitHeader{NalUnitType::NAL_CRA, 0, 1};
 const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP, 0, 2};
 } // namespace
 
-auto MivEncoder::specialAtlasSubBitstream() const -> AtlasSubBitstream {
+auto MivEncoder::specialAtlasSubBitstream() -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
   writeNalUnit(asb, nuhAps, adaptationParameterSet());
   return asb;
 }
 
-auto MivEncoder::nonAclAtlasSubBitstream(std::uint8_t vai) const -> AtlasSubBitstream {
+auto MivEncoder::nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
   auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
@@ -101,7 +101,7 @@ auto MivEncoder::nonAclAtlasSubBitstream(std::uint8_t vai) const -> AtlasSubBits
   return asb;
 }
 
-auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) const
+auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount)
     -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
@@ -229,7 +229,6 @@ void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) 
   if (vai != 0) {
     vuh.vuh_atlas_id(vai);
   }
-
   const auto vu = VpccUnit{vuh, forward<Payload>(payload)};
 
   ostringstream substream;
@@ -237,22 +236,20 @@ void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) 
 
   const auto ssvu = SampleStreamVpccUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
-  cout << "\n\n=== V-PCC unit " << string(100 - 15, '=') << '\n'
-       << ssvu << vu << string(100, '=') << "\n\n";
+  cout << "\n\n=== V-PCC unit " << string(100 - 15, '=') << ssvu << vu << '\n'
+       << m_nalUnitLog.str() << string(100, '=') << "\n"
+       << endl;
 
-  m_stream.flush();
+  m_nalUnitLog.str("");
 }
 
 template <typename Payload, typename... Args>
 void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload,
-                              Args &&... args) const {
+                              Args &&... args) {
   ostringstream substream1;
   payload.encodeTo(substream1, forward<Args>(args)...);
-
-  const auto nu = NalUnit{nuh, substream1.str()};
-  cout << "\n\n--- NAL unit " << string(100 - 13, '-') << '\n'
-       << nu << payload << string(100, '-') << "\n\n";
-
-  asb.nal_units().push_back(nu);
+  asb.nal_units().emplace_back(nuh, substream1.str());
+  m_nalUnitLog << "--- NAL unit " << string(100 - 13, '-') << '\n'
+               << asb.nal_units().back() << payload;
 }
 } // namespace TMIV::MivBitstream

@@ -39,6 +39,8 @@
 #include <TMIV/MivBitstream/NalSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 
+#include <sstream>
+
 namespace TMIV::MivBitstream {
 class MivEncoder {
 public:
@@ -48,9 +50,9 @@ public:
   void writeIvAccessUnitParams(const IvAccessUnitParams &, int intraPeriodFrameCount);
 
 private:
-  auto specialAtlasSubBitstream() const -> AtlasSubBitstream;
-  auto nonAclAtlasSubBitstream(std::uint8_t vai) const -> AtlasSubBitstream;
-  auto aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) const -> AtlasSubBitstream;
+  auto specialAtlasSubBitstream() -> AtlasSubBitstream;
+  auto nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
+  auto aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) -> AtlasSubBitstream;
 
   auto adaptationParameterSet() const -> AdaptationParameterSetRBSP;
   auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLayerRBSP;
@@ -59,8 +61,7 @@ private:
   template <typename Payload>
   void writeVpccUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);
   template <typename Payload, typename... Args>
-  void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload,
-                    Args &&... args) const;
+  void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload, Args &&... args);
 
   std::ostream &m_stream;
   SampleStreamVpccHeader m_ssvh{2};
@@ -68,6 +69,7 @@ private:
   IvSequenceParams m_ivs;
   IvAccessUnitParams m_ivau;
   bool m_writeNonAcl{true};
+  std::ostringstream m_nalUnitLog;
 };
 } // namespace TMIV::MivBitstream
 

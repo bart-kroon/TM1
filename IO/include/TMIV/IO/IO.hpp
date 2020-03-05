@@ -37,6 +37,7 @@
 
 #include <TMIV/Common/Common.h>
 
+#include <cstring>
 #include <fstream>
 
 namespace TMIV::IO {
@@ -74,7 +75,7 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
     throw std::runtime_error("Failed to open file: " + path);
   }
 
-  stream.seekg(streampos(frameIndex) * result.getDiskSize());
+  stream.seekg(std::streampos(frameIndex) * result.getDiskSize());
   result.read(stream);
 
   if (!stream.good()) {

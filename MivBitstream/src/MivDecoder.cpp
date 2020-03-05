@@ -77,6 +77,7 @@ auto MivDecoder::decodeVpccUnit() -> bool {
   VERIFY_VPCCBITSTREAM(m_stream.good());
 
   const auto ssvu = SampleStreamVpccUnit::decodeFrom(m_stream, m_ssvh);
+  cout << ssvu;
   VERIFY_VPCCBITSTREAM(m_stream.good());
 
   istringstream substream{ssvu.ssvu_vpcc_unit()};

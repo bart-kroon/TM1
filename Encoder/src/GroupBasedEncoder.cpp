@@ -312,7 +312,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
       if (m_ivAccessUnitParams.atlas.size() > 1) {
         m_ivAccessUnitParams.atlas.back()
             .asps.miv_atlas_sequence_params()
-            .masp_depth_occ_map_threshold_flag(false);
+            .reset_masp_omaf_v1_compatible_flag();
       }
     }
   }

@@ -61,6 +61,11 @@ constexpr auto &MivAtlasSequenceParams::masp_omaf_v1_compatible_flag(const bool 
   return *this;
 }
 
+constexpr auto &MivAtlasSequenceParams::reset_masp_omaf_v1_compatible_flag() noexcept {
+  m_masp_omaf_v1_compatible_flag = {};
+  return *this;
+}
+
 constexpr auto &
 MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag(const bool value) noexcept {
   m_masp_depth_occ_map_threshold_flag = value;

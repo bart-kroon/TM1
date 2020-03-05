@@ -277,12 +277,10 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 
 void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame &frame) {
   if (config.optional("OutputTexturePath")) {
-    writeFrame(config, "OutputTexturePath", frame.texture, frameIndex,
-               config.require("OutputCameraName").asString().c_str());
+    writeFrame(config, "OutputTexturePath", frame.texture, frameIndex);
   }
   if (config.optional("OutputDepthPath")) {
-    writeFrame(config, "OutputDepthPath", frame.depth, frameIndex,
-               config.require("OutputCameraName").asString().c_str());
+    writeFrame(config, "OutputDepthPath", frame.depth, frameIndex);
   }
 }
 } // namespace TMIV::IO

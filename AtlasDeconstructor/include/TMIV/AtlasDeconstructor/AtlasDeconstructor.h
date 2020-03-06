@@ -54,7 +54,9 @@ public:
   auto recoverPrunedView(const Common::MVD10Frame &atlas,
                          const Metadata::ViewParamsVector &viewParamsVector,
                          const Metadata::AtlasParamsVector &atlasParamsVector)
-      -> Common::MVD10Frame override;
+      -> Common::MVD10Frame override {
+    return Common::MVD10Frame{};
+  };
 
 private:
   Common::Vec2i m_entityDecodeRange;

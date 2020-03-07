@@ -46,7 +46,7 @@ template <typename... Args>
 auto getFullPath(const Common::Json &config, const std::string &baseDirectoryField,
                  const std::string &fileNameField, Args &&... args) -> std::string {
   std::string baseDirectory;
-  auto fileName = Common::format(config.require(fileNameField).asString().c_str(), args...);
+  auto fileName = Common::format(config.require(fileNameField).asString(), args...);
 
   // Detect absolute paths for /POSIX, \Windows and C:\Windows
   if ((!fileName.empty() && (fileName.front() == '/' || fileName.front() == '\\')) ||

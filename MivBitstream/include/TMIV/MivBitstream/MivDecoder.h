@@ -127,8 +127,7 @@ private: // Decoding processes
                         AccessUnitDelimiterRBSP aud);
   void decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
   void decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-  static void decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                               const SeiRBSP &sei);
+  static void decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, const SeiRBSP &sei);
 
 private: // Parsers
   void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
@@ -162,7 +161,7 @@ private: // Internal decoder state
 
     std::vector<std::shared_ptr<Frame>> frames;
 
-	std::shared_ptr<Frame> intraFrame;
+    std::shared_ptr<Frame> intraFrame;
   };
 
   struct Sequence {

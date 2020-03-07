@@ -273,4 +273,12 @@ TEST_CASE("quantizeValue", "[quantize_and_expand]") {
   REQUIRE(quantizeValue<10>(inf) == 1023U);
   REQUIRE(quantizeValue<10>(1e20F) == 1023U);
 }
+
+TEST_CASE("format", "[format string]") {
+  REQUIRE(format("Hello, World!") == "Hello, World!");
+  REQUIRE(format("Hello, World!", 42) == "Hello, World!");
+  REQUIRE(format("Hello, {}", "World!") == "Hello, World!");
+  REQUIRE(format("The {} is {}{}", "answer", 42, '.') == "The answer is 42.");
+  REQUIRE(format("{:02} {:03} {:04} {:05}", 4, 30, "xyz", 22) == "04 030 0xyz 00022");
+}
 } // namespace TMIV::Common

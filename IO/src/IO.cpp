@@ -99,16 +99,16 @@ namespace {
 auto loadSourceTexture(const Json &config, const Vec2i &size, const string &viewName,
                        int frameIndex) {
   return readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex, size,
-                              viewName.c_str());
+                              viewName);
 }
 
 template <typename FORMAT>
-auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, string viewName,
+auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const string &viewName,
                       int frameIndex) {
   auto depth16 = Depth16Frame{size.x(), size.y()};
 
   const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceDepthPathFmt", frameIndex,
-                                       size, viewName.c_str());
+                                       size, viewName);
 
   transform(begin(depth.getPlane(0)), end(depth.getPlane(0)), begin(depth16.getPlane(0)),
             [bits](unsigned x) {
@@ -141,7 +141,7 @@ auto loadSourceEntities_(const Json &config, const Vec2i size, const string &vie
   auto entities16 = EntityMap{size.x(), size.y()};
 
   const auto entities = readFrame<FORMAT>(config, "SourceDirectory", "SourceEntityPathFmt",
-                                          frameIndex, size, viewName.c_str());
+                                          frameIndex, size, viewName);
 
   copy(entities.getPlane(0).begin(), entities.getPlane(0).end(), entities16.getPlane(0).begin());
 
@@ -184,15 +184,15 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
-    writeFrame(config, "AtlasTexturePathFmt", frame[atlasId].texture, frameIndex, atlasId);
-    writeFrame(config, "AtlasDepthPathFmt", frame[atlasId].depth, frameIndex, atlasId);
+    writeFrame(config, "AtlasTexturePathFmt", frame[atlasId].texture, frameIndex, int(atlasId));
+    writeFrame(config, "AtlasDepthPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
   }
 }
 
 void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &frame) {
   for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
     writeFrame(config, "AtlasPatchOccupancyMapFmt", frame.atlas[atlasId].blockToPatchMap,
-               frameIndex, atlasId);
+               frameIndex, int(atlasId));
   }
 }
 

@@ -223,13 +223,15 @@ constexpr auto AtlasTileGroupLayerRBSP::atlas_tile_group_header() const noexcept
   return m_atlas_tile_group_header;
 }
 
-constexpr auto AtlasTileGroupLayerRBSP::
-operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
+constexpr auto
+AtlasTileGroupLayerRBSP::operator==(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
+    -> bool {
   return true;
 }
 
-constexpr auto AtlasTileGroupLayerRBSP::
-operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept -> bool {
+constexpr auto
+AtlasTileGroupLayerRBSP::operator!=(const AtlasTileGroupLayerRBSP & /* other */) const noexcept
+    -> bool {
   return false;
 }
 } // namespace TMIV::MivBitstream

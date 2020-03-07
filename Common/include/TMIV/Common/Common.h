@@ -40,11 +40,15 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <sstream>
 #include <string>
 
 namespace TMIV::Common {
-// Format a string using printf syntax
-template <class... Args> std::string format(char const *fmt, Args &&... args);
+// Type safe string formatting using a limited subset of
+// https://docs.python.org/3/library/string.html format string syntax
+//
+// Please see the test case in Common.test.cpp for examples of supported use.
+template <typename... Args> auto format(const std::string &fmt, Args &&... args) -> std::string;
 
 constexpr auto radperdeg{0.01745329251994329576923690768489F};
 constexpr auto degperrad{57.295779513082320876798154814092F};

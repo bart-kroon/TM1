@@ -123,10 +123,10 @@ class TestConfiguration:
 		return self.sequenceJsonPath()
 
 	def atlasTexturePathFmt(self):
-		return 'ATL_S{}_{}_Tt_c%02d_%dx%d_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
+		return 'ATL_S{}_{}_Tt_c{{:02}}_{{}}x{{}}_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
 
 	def atlasDepthPathFmt(self):
-		return 'ATL_S{}_{}_Td_c%02d_%dx%d_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
+		return 'ATL_S{}_{}_Td_c{{:02}}_{{}}x{{}}_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
 		
 	def atlasMetadataPath(self):
 		return 'ATL_S{}_{}_Tm_c00.bit'.format(self.seqId, self.testPoint)
@@ -186,7 +186,7 @@ class DecoderConfiguration(TestConfiguration):
 		print("Decoder configuration: {} S{} {}".format(anchorId, seqId, testPoint))
 
 	def outputTexturePath(self):
-		return '{}_S{}_{}_Tt_{}_%dx%d_yuv420p10le.yuv'.format(
+		return '{}_S{}_{}_Tt_{}_{{}}x{{}}_yuv420p10le.yuv'.format(
 			self.anchorId, self.seqId, self.testPoint, self.outputCameraName)
 
 	def ViewWeightingSynthesizer(self):
@@ -400,7 +400,7 @@ class EncoderConfiguration(TestConfiguration):
 		return 'ViewReducer'
 
 	def sourceTexturePathFmt(self):
-		return '%s_texture_%dx%d_yuv420p10le.yuv'
+		return '{}_texture_{}x{}_yuv420p10le.yuv'
 
 	def sourceDepthBitDepth(self):
 		return self.firstSourceCamera()['BitDepthDepth']
@@ -413,13 +413,13 @@ class EncoderConfiguration(TestConfiguration):
 		}[self.sourceDepthBitDepth()]
 	
 	def sourceDepthPathFmt(self):
-		return '%s_depth_%dx%d_{}.yuv'.format(self.sourceDepthVideoFormat())
+		return '{{}}_depth_{{}}x{{}}_{}.yuv'.format(self.sourceDepthVideoFormat())
 		
 	def sourceEntityBitDepth(self):
 		return 8
 
 	def sourceEntityPathFmt(self):
-		return '%s_entity_{}x{}_yuv420p.yuv'.format(self.viewWidth(), self.viewHeight())
+		return '{}_entity_{}x{}_yuv420p.yuv'
 
 	def omafV1CompatibleFlag(self):
 		# Just to do something slightly more interesting than False

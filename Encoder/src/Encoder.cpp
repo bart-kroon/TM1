@@ -43,9 +43,9 @@ using namespace TMIV::ViewOptimizer;
 using namespace TMIV::DepthOccupancy;
 
 namespace TMIV::Encoder {
-const auto &viewOptimizers() { return Factory<IViewOptimizer>::getInstance(); }
-const auto &atlasConstructors() { return Factory<IAtlasConstructor>::getInstance(); }
-const auto &depthOccupancies() { return Factory<IDepthOccupancy>::getInstance(); }
+auto viewOptimizers() -> const auto & { return Factory<IViewOptimizer>::getInstance(); }
+auto atlasConstructors() -> const auto & { return Factory<IAtlasConstructor>::getInstance(); }
+auto depthOccupancies() -> const auto & { return Factory<IDepthOccupancy>::getInstance(); }
 
 Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     : m_viewOptimizer{viewOptimizers().create("ViewOptimizer", rootNode, componentNode)},
@@ -55,7 +55,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
 
 auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
     -> const MivBitstream::IvSequenceParams & {
-  const auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+  auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
   return m_geometryDownscaler.transformSequenceParams(m_depthOccupancy->transformSequenceParams(
       m_atlasConstructor->prepareSequence(move(optimal.first), move(optimal.second))));
 }

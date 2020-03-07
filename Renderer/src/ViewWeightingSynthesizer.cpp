@@ -341,7 +341,7 @@ private:
       }
     }
   }
-  auto recoverPrunedViewAndMask(const AccessUnit &frame) {
+  static auto recoverPrunedViewAndMask(const AccessUnit &frame) {
     // Initialization
     auto prunedView = vector<Texture444Depth10Frame>{};
     auto prunedMasks = MaskList{};

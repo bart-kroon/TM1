@@ -55,11 +55,11 @@ IvMetadataReader::IvMetadataReader(const Json &config)
       m_stream,
       [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
         return readFrame<YUV400P10>(config, "OutputDirectory", "AtlasDepthPathFmt", frameId,
-                                    frameSize, atlasId);
+                                    frameSize, int(atlasId));
       },
       [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
         return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AtlasTexturePathFmt",
-                                            frameId, frameSize, atlasId));
+                                            frameId, frameSize, int(atlasId)));
       });
 }
 } // namespace TMIV::IO

@@ -36,11 +36,6 @@ import json
 import os
 import sys
 
-def checkAlignment(size):
-	if size % 8 != 0:
-		raise 'The frame size {} is not aligned'.format(size)
-	return size
-
 class TestConfiguration:
 	def __init__(self, sourceDir, anchorId, seqId, testPoint):
 		self.__sourceDir = sourceDir
@@ -270,7 +265,7 @@ class DecoderConfiguration(TestConfiguration):
 		for camera in self.sequenceParams['cameras']:
 			if camera['Name'] == target:
 				return camera
-		raise 'Could not find output camera in sequence configuration'
+		raise RuntimeError('Could not find output camera in sequence configuration')
 
 	def wspsnrParameters(self):
 		camera = self.outputCamera()
@@ -354,7 +349,7 @@ class EncoderConfiguration(TestConfiguration):
 		for camera in self.sequenceParams['cameras']:
 			if camera['Name'] == self.firstSourceCameraName():
 				return camera
-		raise 'Could not find first source camera in sequence configuration'
+		raise RuntimeError('Could not find first source camera in sequence configuration')
 
 	def viewWidth(self):
 		return self.firstSourceCamera()['Resolution'][0]
@@ -368,31 +363,39 @@ class EncoderConfiguration(TestConfiguration):
 			return 2
 		return 1
 
+	def alignment(self):
+		return 8
+
+	def checkAlignment(self, size):
+		if size % self.alignment() != 0:
+			raise RuntimeError('The frame size {} is not aligned to {}'.format(size, self.alignment()))
+		return size
+
 	def atlasWidth(self):
-		return checkAlignment(self.viewWidth())
+		return self.checkAlignment(self.viewWidth())
 
 	def atlasHeight(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
-			return checkAlignment({
+			return self.checkAlignment({
 				'A': 4096,
 				'B': 2736,
 				'C': 2048,
 				'D': 2736,
-				'E': 1456,
-				'J': 1456,
+				'E': 1472,
+				'J': 1472,
 				'L': 2912,
-				'N': 2736,
+				'N': 2752,
 				'P': 2912,
 				'U': 2912,
 				'T': 2912
 			}[self.seqId])
-		return checkAlignment(self.viewHeight())
+		return self.checkAlignment(self.viewHeight())
 
 	def geometryWidth(self):
-		return checkAlignment(self.atlasWidth() // geometryDownscaleFactor())
+		return self.checkAlignment(self.atlasWidth() // self.geometryDownscaleFactor())
 
 	def geometryHeight(self):
-		return checkAlignment(self.atlasHeight() // geometryDownscaleFactor())
+		return self.checkAlignment(self.atlasHeight() // self.geometryDownscaleFactor())
 
 	def viewOptimizerMethod(self):
 		if self.anchorId == 'V17' or self.anchorId == 'R17' or self.anchorId == 'R97':
@@ -450,7 +453,7 @@ class EncoderConfiguration(TestConfiguration):
 
 	def packer(self):
 		return {
-			'Alignment': 8,
+			'Alignment': self.alignment(),
 			'MinPatchSize': 16,
 			'Overlap': 1,
 			'PiP': 1

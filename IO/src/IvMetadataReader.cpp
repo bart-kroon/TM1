@@ -54,11 +54,11 @@ IvMetadataReader::IvMetadataReader(const Json &config)
   m_decoder = make_unique<MivDecoder>(
       m_stream,
       [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-        return readFrame<YUV400P10>(config, "OutputDirectory", "AtlasDepthPathFmt", frameId,
+        return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
                                     frameSize, int(atlasId));
       },
       [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-        return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AtlasTexturePathFmt",
+        return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
                                             frameId, frameSize, int(atlasId)));
       });
 }

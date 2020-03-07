@@ -184,8 +184,9 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
-    writeFrame(config, "AtlasTexturePathFmt", frame[atlasId].texture, frameIndex, int(atlasId));
-    writeFrame(config, "AtlasDepthPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
+    writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex,
+               int(atlasId));
+    writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
   }
 }
 

@@ -122,10 +122,10 @@ class TestConfiguration:
 			return '{}.json'.format(self.seqName())	
 		return self.sequenceJsonPath()
 
-	def atlasTexturePathFmt(self):
+	def attributeVideoDataPathFmt(self):
 		return 'ATL_S{}_{}_Tt_c{{:02}}_{{}}x{{}}_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
 
-	def atlasDepthPathFmt(self):
+	def geometryVideoDataPathFmt(self):
 		return 'ATL_S{}_{}_Td_c{{:02}}_{{}}x{{}}_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
 		
 	def atlasMetadataPath(self):
@@ -169,8 +169,8 @@ class TestConfiguration:
 			'numberOfFrames': self.numberOfFrames(),
 			'SourceDirectory': self.sourceDirectory(),
 			'SourceCameraParameters': self.sourceCameraParameters(),
-			'AtlasTexturePathFmt': self.atlasTexturePathFmt(),
-			'AtlasDepthPathFmt': self.atlasDepthPathFmt(),
+			'AttributeVideoDataPathFmt': self.attributeVideoDataPathFmt(),
+			'GeometryVideoDataPathFmt': self.geometryVideoDataPathFmt(),
 			'AtlasMetadataPath': self.atlasMetadataPath()
 		}
 

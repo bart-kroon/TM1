@@ -51,10 +51,6 @@ public:
   virtual auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
                              const Metadata::IvAccessUnitParams &ivAccessUnitParams) -> Common::PatchIdMapList = 0;
 
-  virtual auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                                 const Metadata::ViewParamsVector &viewParamsVector,
-                                 const Metadata::AtlasParamsVector &atlasParamsVector)
-      -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::AtlasDeconstructor
 

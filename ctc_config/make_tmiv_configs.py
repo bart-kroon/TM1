@@ -378,9 +378,9 @@ class EncoderConfiguration(TestConfiguration):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			return self.checkAlignment({
 				'A': 4096,
-				'B': 2736,
+				'B': 2752,
 				'C': 2048,
-				'D': 2736,
+				'D': 2752,
 				'E': 1472,
 				'J': 1472,
 				'L': 2912,

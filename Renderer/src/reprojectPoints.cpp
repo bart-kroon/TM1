@@ -122,7 +122,7 @@ auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
   const auto t2 = target.ce.position();
 
   const auto r = conj(r2) * r1;
-  const auto t = rotate(t1 - t2, r2);
+  const auto t = rotate(t1 - t2, conj(r2));
   return {r, t};
 }
 

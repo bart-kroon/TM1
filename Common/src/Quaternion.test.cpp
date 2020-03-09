@@ -105,6 +105,18 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
                  QuatD{sqrt(0.5), 0., sqrt(0.5), 0.}) < eps);
   }
 
+  SECTION("Convert Euler angles to quaternion (2)") {
+    const auto yaw_rad = -0.4764713951;
+    const auto pitch_rad = 0.0344346480;
+    const auto roll_rad = 0.0204419943;
+    const auto quat = euler2quat(Vec3d{yaw_rad, pitch_rad, roll_rad});
+
+    REQUIRE(quat.x() == Approx(0.0139933465964437));
+    REQUIRE(quat.y() == Approx(0.0143176961628196));
+    REQUIRE(quat.z() == Approx(-0.2361122181516230));
+    REQUIRE(quat.w() == Approx(0.9715195367398130));
+  }
+
   SECTION("Convert quaternion to rotation matrix") {
     REQUIRE(rotationMatrix(u) == Mat3x3f::eye());
 

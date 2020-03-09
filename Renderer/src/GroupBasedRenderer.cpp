@@ -161,9 +161,7 @@ auto GroupBasedRenderer::viewPriority(const ViewParams &view1, const ViewParams 
   const auto distance = norm(view1.ce.position() - view2.ce.position());
 
   // Compute angle between the camera and target
-  const auto v1 = rotate(Vec3f{1.F, 0.F, 0.F}, view1.ce.rotation());
-  const auto v2 = rotate(Vec3f{1.F, 0.F, 0.F}, view2.ce.rotation());
-  const auto angle = acos(dot(v1, v2));
+  const auto angle = greatCircleDistance(view1.ce.rotation(), view2.ce.rotation());
 
   // Introduce angleWeight as a simple triangle function (with value of 1 when
   // angle is 0 & value of 0 when angle is 180)

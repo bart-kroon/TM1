@@ -83,9 +83,7 @@ struct MultipassRendererHelper {
       distance.push_back(norm(source.ce.position() - target.ce.position()));
 
       // Compute angle between the camera and target
-      const auto v1 = rotate(Vec3f{1.F, 0.F, 0.F}, source.ce.rotation());
-      const auto v2 = rotate(Vec3f{1.F, 0.F, 0.F}, target.ce.rotation());
-      angle.push_back(acos(dot(v1, v2)));
+      angle.push_back(greatCircleDistance(source.ce.rotation(), target.ce.rotation()));
 
       // Introduce AngleWeight as a simple triangle function (with value of 1 when
       // angle is 0 & value of 0 when angle is 180)

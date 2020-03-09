@@ -131,6 +131,24 @@ template <typename T> auto rotationMatrix(const Quaternion<T> &q) {
                           two * (q.y() * q.z() + q.x() * q.w()),        // R_zy
                           one - two * (q.x() * q.x() + q.y() * q.y())}; // R_zz
 }
+
+// Great-circle distance (aka orthodromic distance)
+//
+// https://en.wikipedia.org/wiki/Great-circle_distance
+template <typename T1, typename T2>
+auto greatCircleDistance(const Quaternion<T1> &q1, const Quaternion<T2> &q2) {
+  using std::abs;
+  using std::acos;
+  using std::atan;
+
+  using R = decltype(T1() * T2());
+  const auto forward = stack::Vec3<R>{R(1), R(0), R(0)};
+  const auto v1 = rotate(forward, q1);
+  const auto v2 = rotate(forward, q2);
+  const auto dot12 = dot(v1, v2);
+  const auto cross12 = norm(cross(v1, v2));
+  return dot12 > cross12 ? atan(cross12 / dot12) : acos(dot12);
+}
 } // namespace TMIV::Common
 
 #endif

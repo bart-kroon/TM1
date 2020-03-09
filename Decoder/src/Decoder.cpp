@@ -34,6 +34,7 @@
 #include <TMIV/Decoder/Decoder.h>
 
 #include <TMIV/Common/Factory.h>
+#include<TMIV/Renderer/RecoverPrunedViews.h>
 
 #include <cassert>
 
@@ -84,7 +85,15 @@ auto Decoder::getPatchIdMapList() const -> PatchIdMapList {
 }
 
 auto Decoder::recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame {
-  return m_atlasDeconstructor->recoverPrunedView(atlas, m_ivSequenceParams.viewParamsList,
+  auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams);
+
+  MVD10Frame atlas_upscaled = atlas;
+
+  if (m_downscale_depth) {
+    tie(atlas_upscaled, patchIdMaps) =
+        m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
+  }
+  return recoverPrunedViews(atlas_upscaled, m_ivSequenceParams.viewParamsList,
                                                  *m_ivAccessUnitParams.atlasParamsList);
 }
 

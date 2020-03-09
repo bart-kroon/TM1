@@ -51,12 +51,7 @@ public:
   auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
                      const Metadata::IvAccessUnitParams &ivAccessUnitParams) -> Common::PatchIdMapList override;
 
-  auto recoverPrunedView(const Common::MVD10Frame &atlas,
-                         const Metadata::ViewParamsVector &viewParamsVector,
-                         const Metadata::AtlasParamsVector &atlasParamsVector)
-      -> Common::MVD10Frame override;
-
-private:
+ private:
   Common::Vec2i m_entityDecodeRange;
   void writePatchIdInMap(const Metadata::AtlasParameters &patch,
                          Common::PatchIdMapList &patchMapList, std::uint16_t patchId);

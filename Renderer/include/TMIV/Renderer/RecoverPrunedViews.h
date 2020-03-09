@@ -31,27 +31,21 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ATLASDECONSTRUCTOR_IATLASDECONSTRUCTOR_H_
-#define _TMIV_ATLASDECONSTRUCTOR_IATLASDECONSTRUCTOR_H_
+#ifndef _TMIV_RENDERER_RECOVERPRUNEDVIEWS_H_
+#define _TMIV_RENDERER_RECOVERPRUNEDVIEWS_H_
+
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Metadata/IvAccessUnitParams.h>
 #include <TMIV/Metadata/IvSequenceParams.h>
 
-namespace TMIV::AtlasDeconstructor {
-class IAtlasDeconstructor {
-public:
-  IAtlasDeconstructor() = default;
-  IAtlasDeconstructor(const IAtlasDeconstructor &) = delete;
-  IAtlasDeconstructor(IAtlasDeconstructor &&) = default;
-  IAtlasDeconstructor &operator=(const IAtlasDeconstructor &) = delete;
-  IAtlasDeconstructor &operator=(IAtlasDeconstructor &&) = default;
-  virtual ~IAtlasDeconstructor() = default;
+namespace TMIV::Renderer {
 
-  virtual auto getPatchIdMap(const Metadata::IvSequenceParams &ivSequenceParams,
-                             const Metadata::IvAccessUnitParams &ivAccessUnitParams) -> Common::PatchIdMapList = 0;
+auto recoverPrunedViews(const Common::MVD10Frame &atlas,
+                        const Metadata::ViewParamsVector &viewParamsVector,
+                        const Metadata::AtlasParamsVector &atlasParamsVector) -> Common::MVD10Frame;
 
-};
-} // namespace TMIV::AtlasDeconstructor
+
+} // namespace TMIV::Renderer
 
 #endif

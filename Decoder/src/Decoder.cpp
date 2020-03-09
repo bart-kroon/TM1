@@ -93,7 +93,7 @@ auto Decoder::recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common
     tie(atlas_upscaled, patchIdMaps) =
         m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
   }
-  return RecoverPrunedViews(atlas_upscaled, m_ivSequenceParams.viewParamsList,
+  return recoverPrunedViews(atlas_upscaled, m_ivSequenceParams.viewParamsList,
                                                  *m_ivAccessUnitParams.atlasParamsList);
 }
 

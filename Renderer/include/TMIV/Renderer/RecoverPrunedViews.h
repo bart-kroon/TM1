@@ -41,7 +41,7 @@
 
 namespace TMIV::Renderer {
 
-auto RecoverPrunedViews(const Common::MVD10Frame &atlas,
+auto recoverPrunedViews(const Common::MVD10Frame &atlas,
                         const Metadata::ViewParamsVector &viewParamsVector,
                         const Metadata::AtlasParamsVector &atlasParamsVector) -> Common::MVD10Frame;
 

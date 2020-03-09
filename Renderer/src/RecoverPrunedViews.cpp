@@ -96,7 +96,7 @@ auto recoverPrunedViews(const Common::MVD10Frame &atlas,
             if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
               textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
                   textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = 0x200;
+              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = TextureFrame::neutralColor();
             }
           }
         }

@@ -38,6 +38,7 @@
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataReader.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
+#include <TMIV/Renderer/RecoverPrunedViews.h>
 
 #include <iostream>
 #include <map>
@@ -88,8 +89,13 @@ private:
     IO::saveViewport(json(), outputFrameId, {yuv420p(viewport.first), viewport.second});
 
     if (json().optional("AtlasPatchOccupancyMapFmt")) {
-      std::cout << "Dumping patch ID maps to disk" << std::endl;
+      cout << "Dumping patch ID maps to disk" << endl;
       IO::saveBlockToPatchMaps(json(), outputFrameId, frame);
+    }
+
+    if (json().optional("PrunedViewTexturePathFmt") && json().optional("PrunedViewDepthPathFmt")) {
+      cout << "Dumping recovered pruned views to disk" << endl;
+      IO::savePrunedFrame(json(), outputFrameId, Renderer::recoverPrunedViews(frame));
     }
   }
 

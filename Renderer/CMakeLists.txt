@@ -14,6 +14,7 @@ add_library(RendererLib
 	"src/reprojectPoints.cpp"
 	"src/ViewWeightingSynthesizer.cpp"
 	"src/NoSynthesizer.cpp"
+	"src/RecoverPrunedViews.cpp"
 	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
 	"include/TMIV/Renderer/IInpainter.h"
@@ -40,6 +41,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/AccumulatingPixel.h"
 	"include/TMIV/Renderer/ViewWeightingSynthesizer.h"
 	"include/TMIV/Renderer/NoSynthesizer.h"
+	"include/TMIV/Renderer/RecoverPrunedViews.h"
 	)
 
 add_library(TMIV::RendererLib

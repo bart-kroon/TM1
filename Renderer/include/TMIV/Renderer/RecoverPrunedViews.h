@@ -31,46 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_IO_IO_H_
-#define _TMIV_IO_IO_H_
+#ifndef _TMIV_RENDERER_RECOVERPRUNEDVIEWS_H_
+#define _TMIV_RENDERER_RECOVERPRUNEDVIEWS_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
 
-// Functions for file I/O
-//
-// Frame indices are zero-based and relative to the StartFrame parameter.
-// These functions will print something short to screen.
-namespace TMIV::IO {
-// Load sequence metadata from the configuration files. It is up to the Encoder to comply (or
-// ignore) fields such as num_groups. The in-memory metadata representation has to be complete
-// only after IEncoder.
-auto loadSourceIvSequenceParams(const Common::Json &config) -> MivBitstream::IvSequenceParams;
+namespace TMIV::Renderer {
+auto recoverPrunedViews(const MivBitstream::AccessUnit &frame) -> Common::MVD10Frame;
 
-// Load access unit metadata from the configuration files. It is up to the Encoder to comply (or
-// ignore) fields such as omaf_v1_compatible_flag. The in-memory metadata representation has to be
-// complete only after IEncoder.
-auto loadSourceIvAccessUnitParams(const Common::Json &config) -> MivBitstream::IvAccessUnitParams;
-
-// Loads a source frame including entity maps when applicable
-Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
-                                   int frameIndex);
-
-void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
-
-void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
-                          const MivBitstream::AccessUnit &frame);
-void savePrunedFrame(const Common::Json &config, int frameIndex,
-                     const Common::MVD10Frame &prunedViews);
-
-auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBitstream::ViewParams;
-void saveViewport(const Common::Json &config, int frameIndex,
-                  const Common::TextureDepth16Frame &frame);
-} // namespace TMIV::IO
-
-#include "IO.hpp"
+auto recoverPrunedViewAndMask(const MivBitstream::AccessUnit &frame)
+    -> std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>;
+} // namespace TMIV::Renderer
 
 #endif

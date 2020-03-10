@@ -31,13 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
+
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Graph.h>
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/Common/Thread.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Engine.h>
-#include <TMIV/Renderer/ViewWeightingSynthesizer.h>
+#include <TMIV/Renderer/RecoverPrunedViews.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
@@ -340,78 +342,6 @@ private:
                                    2. / pps2ppd(sourceHelperList[viewId].getAngularResolution())));
       }
     }
-  }
-  static auto recoverPrunedViewAndMask(const AccessUnit &frame) {
-    // Initialization
-    auto prunedView = vector<Texture444Depth10Frame>{};
-    auto prunedMasks = MaskList{};
-    const auto &viewParamsList = frame.atlas.front().viewParamsList;
-
-    for (const auto &viewParams : viewParamsList) {
-      const auto size = viewParams.ci.projectionPlaneSize();
-      prunedView.emplace_back(Texture444Frame{size.x(), size.y()},
-                              Depth10Frame{size.x(), size.y()});
-      prunedView.back().first.fillNeutral();
-      prunedMasks.emplace_back(size.x(), size.y());
-      prunedMasks.back().fillZero();
-    }
-
-    // Process patches
-    for (const auto &atlas : frame.atlas) {
-      for (const auto &patchParams : atlas.patchParamsList) {
-        const auto occupancyTransform =
-            OccupancyTransform{viewParamsList[patchParams.pduViewId()], patchParams};
-
-        auto textureAtlasMap = atlas.attrFrame; // copy
-        auto depthAtlasMap = atlas.geoFrame;    // copy
-
-        auto &currentView = prunedView[patchParams.pduViewId()];
-        auto &textureViewMap = currentView.first;
-        auto &depthViewMap = currentView.second;
-
-        auto &mask = prunedMasks[patchParams.pduViewId()];
-
-        const int wP = patchParams.pdu2dSize().x();
-        const int hP = patchParams.pdu2dSize().y();
-        const int xP = patchParams.pdu2dPos().x();
-        const int yP = patchParams.pdu2dPos().y();
-
-        for (int dy = 0; dy < hP; dy++) {
-          for (int dx = 0; dx < wP; dx++) {
-            // get position
-            const auto pAtlas = Vec2i{xP + dx, yP + dy};
-            const auto pView = patchParams.atlasToView(pAtlas);
-
-            // Y
-            if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-              textureViewMap.getPlane(0)(pView.y(), pView.x()) =
-                  textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-              textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-            }
-
-            // UV
-            for (int p = 1; p < 3; p++) {
-              if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-                textureViewMap.getPlane(p)(pView.y(), pView.x()) =
-                    textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x());
-                textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x()) =
-                    Texture444Frame::neutralColor();
-              }
-            }
-
-            // Depth
-            if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-              depthViewMap.getPlane(0)(pView.y(), pView.x()) =
-                  depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-              depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-              mask.getPlane(0)(pView.y(), pView.x()) = 255U;
-            }
-          }
-        }
-      }
-    }
-
-    return pair{prunedView, prunedMasks};
   }
 
   template <CiCamType sourceCamType>

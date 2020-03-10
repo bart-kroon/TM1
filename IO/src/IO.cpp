@@ -197,6 +197,14 @@ void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &
   }
 }
 
+void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &prunedViews) {
+  for (size_t viewId = 0; viewId < prunedViews.size(); ++viewId) {
+    const auto &view = prunedViews[viewId];
+    IO::writeFrame(config, "PrunedViewTexturePathFmt", view.texture, frameIndex, viewId);
+    IO::writeFrame(config, "PrunedViewDepthPathFmt", view.depth, frameIndex, viewId);
+  }
+}
+
 namespace {
 struct Pose {
   Vec3f position;

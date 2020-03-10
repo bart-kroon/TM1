@@ -61,12 +61,13 @@ public:
   auto operator=(Impl &&) -> Impl & = delete;
   ~Impl() = default;
 
-  static auto affineParameterList(const ViewParamsList &viewParamsList, const ViewParams &target) {
-    vector<pair<QuatF, Vec3f>> result;
+  static auto affineTransformList(const ViewParamsList &viewParamsList,
+                                  const CameraExtrinsics &target) {
+    vector<AffineTransform> result;
     result.reserve(viewParamsList.size());
-    transform(
-        begin(viewParamsList), end(viewParamsList), back_inserter(result),
-        [&target](const ViewParams &viewParams) { return affineParameters(viewParams, target); });
+    for (auto &source : viewParamsList) {
+      result.emplace_back(source.ce, target);
+    }
     return result;
   }
 
@@ -76,7 +77,7 @@ public:
     const auto cols = atlas.frameSize().x();
     result.reserve(rows * cols);
 
-    auto r_t = affineParameterList(atlas.viewParamsList, viewportParams);
+    const auto transformList = affineTransformList(atlas.viewParamsList, viewportParams.ce);
 
     vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());
@@ -114,12 +115,11 @@ public:
 
         const auto d = depthTransform[patchId].expandDepth(level);
         assert(d > 0.F && isfinite(d));
-        const auto &r = r_t[patch.pduViewId()].first;
-        const auto &t = r_t[patch.pduViewId()].second;
 
         // Reproject and calculate ray angle
-        const auto xyz = rotate(unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams), r) + t;
-        const auto rayAngle = angle(xyz, xyz - t);
+        const auto &R_t = transformList[patch.pduViewId()];
+        const auto xyz = R_t(unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams.ci));
+        const auto rayAngle = angle(xyz, xyz - R_t.translation());
         result.push_back({xyz, rayAngle});
       }
     }
@@ -188,7 +188,7 @@ public:
     for (auto &atlas : frame.atlas) {
       // Generate a reprojected mesh
       auto [vertices, triangles, attributes] = unprojectAtlas(atlas, viewportParams);
-      auto mesh = project(move(vertices), move(triangles), move(attributes), viewportParams);
+      auto mesh = project(move(vertices), move(triangles), move(attributes), viewportParams.ci);
 
       // Compensate for resolution difference between source and target view
       for (auto &triangle : get<1>(mesh)) {

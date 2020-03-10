@@ -53,7 +53,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
     auto &triangles = std::get<1>(mesh);
     auto &attributes = std::get<2>(mesh);
 
-    Engine<camType> engine{viewParams};
+    Engine<camType> engine{viewParams.ci};
     const auto size = viewParams.ci.projectionPlaneSize();
     const auto numPixels = size.x() * size.y();
 
@@ -119,26 +119,25 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
   });
 }
 
-auto project(const SceneVertexDescriptorList &vertices, const ViewParams &viewParams,
+auto project(const SceneVertexDescriptorList &vertices, const ViewParams &source,
              const ViewParams &target) -> ImageVertexDescriptorList {
   return target.ci.dispatch([&](auto camType) {
     ImageVertexDescriptorList result;
-    Engine<camType.value> engine{target};
-    const auto [r, t] = affineParameters(viewParams, target);
+    Engine<camType.value> engine{target.ci};
+    const auto R_t = AffineTransform{source.ce, target.ce};
     result.reserve(result.size());
-    transform(begin(vertices), end(vertices), back_inserter(result),
-              [&engine, r = r, t = t](SceneVertexDescriptor v) {
-                const auto p = rotate(v.position, r) + t;
-                return engine.projectVertex({p, angle(p, p - t)});
-              });
+    transform(begin(vertices), end(vertices), back_inserter(result), [&](SceneVertexDescriptor v) {
+      const auto p = R_t(v.position);
+      return engine.projectVertex({p, angle(p, p - R_t.translation())});
+    });
     return result;
   });
 }
 
-void weightedSphere(const ViewParams &target, const ImageVertexDescriptorList &vertices,
+void weightedSphere(const CameraIntrinsics &ci, const ImageVertexDescriptorList &vertices,
                     TriangleDescriptorList &triangles) {
-  if (target.ci.ci_cam_type() == CiCamType::equirectangular) {
-    Engine<CiCamType::equirectangular> engine{target};
+  if (ci.ci_cam_type() == CiCamType::equirectangular) {
+    Engine<CiCamType::equirectangular> engine{ci};
     for (auto &triangle : triangles) {
       auto v = 0.F;
       for (auto index : triangle.indices) {

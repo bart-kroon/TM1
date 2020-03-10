@@ -308,7 +308,7 @@ private:
     for (auto &s : m_synthesizers) {
       auto overtices = project(ivertices, m_ivSequenceParams.viewParamsList[index],
                                m_ivSequenceParams.viewParamsList[s->index]);
-      weightedSphere(m_ivSequenceParams.viewParamsList[s->index], overtices, triangles);
+      weightedSphere(m_ivSequenceParams.viewParamsList[s->index].ci, overtices, triangles);
       s->rasterizer.submit(overtices, attributes, triangles);
       s->rasterizer.run();
       updateMask(*s);

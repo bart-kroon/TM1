@@ -43,9 +43,9 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 constexpr auto halfPixel = 0.5F;
 
-auto imagePositions(const ViewParams &viewParams) -> Mat<Vec2f> {
+auto imagePositions(const CameraIntrinsics &ci) -> Mat<Vec2f> {
   Mat<Vec2f> result;
-  result.resize(viewParams.ci.projectionPlaneSize().y(), viewParams.ci.projectionPlaneSize().x());
+  result.resize(ci.projectionPlaneSize().y(), ci.projectionPlaneSize().x());
   for (unsigned i = 0; i != result.height(); ++i) {
     for (unsigned j = 0; j != result.width(); ++j) {
       result(i, j) = {float(j) + halfPixel, float(i) + halfPixel};
@@ -54,11 +54,11 @@ auto imagePositions(const ViewParams &viewParams) -> Mat<Vec2f> {
   return result;
 }
 
-auto unprojectPoints(const ViewParams &viewParams, const Mat<Vec2f> &positions,
+auto unprojectPoints(const CameraIntrinsics &ci, const Mat<Vec2f> &positions,
                      const Mat<float> &depth) -> Mat<Vec3f> {
   assert(positions.sizes() == depth.sizes());
-  return viewParams.ci.dispatch([&](auto camType) {
-    Engine<camType.value> engine{viewParams};
+  return ci.dispatch([&](auto camType) {
+    Engine<camType.value> engine{ci};
     Mat<Vec3f> points{positions.sizes()};
 
     parallel_for(points.size(),
@@ -68,21 +68,19 @@ auto unprojectPoints(const ViewParams &viewParams, const Mat<Vec2f> &positions,
   });
 }
 
-auto changeReferenceFrame(const ViewParams &viewParams, const ViewParams &target,
+auto changeReferenceFrame(const CameraExtrinsics &source, const CameraExtrinsics &target,
                           const Mat<Vec3f> &points) -> Mat<Vec3f> {
   Mat<Vec3f> result(points.sizes());
-  const auto r_t = affineParameters(viewParams, target);
+  const auto R_t = AffineTransform{source, target};
 
-  parallel_for(points.size(),
-               [&](size_t id) { result[id] = rotate(points[id], r_t.first) + r_t.second; });
-
+  parallel_for(points.size(), [&](size_t id) { result[id] = R_t(points[id]); });
   return result;
 }
 
-auto projectPoints(const ViewParams &viewParams, const Mat<Vec3f> &points)
+auto projectPoints(const CameraIntrinsics &ci, const Mat<Vec3f> &points)
     -> pair<Mat<Vec2f>, Mat<float>> {
-  return viewParams.ci.dispatch([&](auto camType) {
-    Engine<camType.value> engine{viewParams};
+  return ci.dispatch([&](auto camType) {
+    Engine<camType.value> engine{ci};
 
     Mat<Vec2f> positions{points.sizes()};
     Mat<float> depth{points.sizes()};
@@ -97,48 +95,50 @@ auto projectPoints(const ViewParams &viewParams, const Mat<Vec3f> &points)
   });
 }
 
-auto reprojectPoints(const ViewParams &viewParams, const ViewParams &target,
+auto reprojectPoints(const ViewParams &source, const ViewParams &target,
                      const Mat<Vec2f> &positions, const Mat<float> &depth)
     -> pair<Mat<Vec2f>, Mat<float>> {
-  auto points = unprojectPoints(viewParams, positions, depth);
-  points = changeReferenceFrame(viewParams, target, points);
-  return projectPoints(target, points);
+  auto points = unprojectPoints(source.ci, positions, depth);
+  points = changeReferenceFrame(source.ce, target.ce, points);
+  return projectPoints(target.ci, points);
 }
 
-auto calculateRayAngles(const ViewParams &viewParams, const ViewParams &target,
+auto calculateRayAngles(const CameraExtrinsics &source, const CameraExtrinsics &target,
                         const Mat<Vec3f> &points) -> Mat<float> {
   Mat<float> result(points.sizes());
-  const auto r_t = affineParameters(viewParams, target);
+  const auto t = AffineTransform(source, target).translation();
   transform(begin(points), end(points), begin(result),
-            [t = r_t.second](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
+            [t](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
   return result;
 }
 
-auto affineParameters(const ViewParams &viewParams, const ViewParams &target)
-    -> pair<QuatF, Vec3f> {
-  const auto r1 = viewParams.ce.rotation();
-  const auto r2 = target.ce.rotation();
-  const auto t1 = viewParams.ce.position();
-  const auto t2 = target.ce.position();
+AffineTransform::AffineTransform(const CameraExtrinsics &source, const CameraExtrinsics &target) {
+  const auto r1 = QuatD(source.rotation());
+  const auto r2 = QuatD(target.rotation());
+  const auto t1 = Vec3d(source.position());
+  const auto t2 = Vec3d(target.position());
 
   const auto r = conj(r2) * r1;
   const auto t = rotate(t1 - t2, conj(r2));
-  return {r, t};
+
+  m_R = Mat3x3f(rotationMatrix(r));
+  m_t = Vec3f(t);
 }
 
-auto unprojectVertex(Vec2f position, float depth, const ViewParams &viewParams) -> Vec3f {
-  return viewParams.ci.dispatch([&](auto camType) {
-    Engine<camType> engine{viewParams};
+auto AffineTransform::operator()(Vec3f x) const -> Vec3f { return m_R * x + m_t; }
+
+auto unprojectVertex(Vec2f position, float depth, const CameraIntrinsics &ci) -> Vec3f {
+  return ci.dispatch([&](auto camType) {
+    Engine<camType> engine{ci};
     return engine.unprojectVertex(position, depth);
   });
 }
 
-auto projectVertex(const Common::Vec3f &position, const MivBitstream::ViewParams &viewParams)
-    -> std::pair<Common::Vec2f, float> {
-  return viewParams.ci.dispatch([&](auto camType) {
-    Engine<camType> engine{viewParams};
+auto projectVertex(const Vec3f &position, const CameraIntrinsics &ci) -> pair<Vec2f, float> {
+  return ci.dispatch([&](auto camType) {
+    Engine<camType> engine{ci};
     auto imageVertexDescriptor = engine.projectVertex(SceneVertexDescriptor{position, 0.F});
-    return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
+    return make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
   });
 }
 
@@ -147,7 +147,7 @@ auto ProjectionHelper<CiCamType::equirectangular>::getAngularResolution() const 
   auto &ci = m_viewParams.ci;
   auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
   float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
-  float DS = std::sin(ci.ci_erp_theta_max()) - std::sin(ci.ci_erp_theta_min());
+  float DS = sin(ci.ci_erp_theta_max()) - sin(ci.ci_erp_theta_min());
 
   return nbPixel / (DS * DT);
 }
@@ -159,9 +159,8 @@ template <> auto ProjectionHelper<CiCamType::perspective>::getAngularResolution(
       (ci.ci_perspective_focal_hor() + ci.ci_perspective_focal_ver()) / 2.F;
   auto w = static_cast<float>(ci.projectionPlaneSize().x());
   auto h = static_cast<float>(ci.projectionPlaneSize().y());
-  float omega =
-      4.F * std::atan(nbPixel / (2.F * projectionFocalLength *
-                                 std::sqrt(4.F * sqr(projectionFocalLength) + (w * w + h * h))));
+  float omega = 4.F * atan(nbPixel / (2.F * projectionFocalLength *
+                                      sqrt(4.F * sqr(projectionFocalLength) + (w * w + h * h))));
 
   return nbPixel / omega;
 }

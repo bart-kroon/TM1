@@ -44,11 +44,9 @@ template <> struct Engine<MivBitstream::CiCamType::perspective> {
   const float c_x;
   const float c_y;
 
-  explicit Engine(const MivBitstream::ViewParams &viewParams)
-      : f_x{viewParams.ci.ci_perspective_focal_hor()},
-        f_y{viewParams.ci.ci_perspective_focal_ver()},
-        c_x{viewParams.ci.ci_perspective_center_hor()},
-        c_y{viewParams.ci.ci_perspective_center_ver()} {}
+  explicit Engine(const MivBitstream::CameraIntrinsics &ci)
+      : f_x{ci.ci_perspective_focal_hor()}, f_y{ci.ci_perspective_focal_ver()},
+        c_x{ci.ci_perspective_center_hor()}, c_y{ci.ci_perspective_center_ver()} {}
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

@@ -41,7 +41,7 @@ ProjectionHelper<camType>::List::List(const MivBitstream::ViewParamsList &viewPa
 
 template <MivBitstream::CiCamType camType>
 ProjectionHelper<camType>::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
-    : m_viewParams{viewParams}, m_engine{viewParams}, m_rotation{viewParams.ce.rotation()} {}
+    : m_viewParams{viewParams}, m_engine{viewParams.ci}, m_rotation{viewParams.ce.rotation()} {}
 
 template <MivBitstream::CiCamType camType>
 auto ProjectionHelper<camType>::getViewingDirection() const -> Common::Vec3f {

@@ -261,7 +261,7 @@ auto ViewReducer::calculateOverlapping(const ViewParams &camera_from, const View
   float weight_all = 0.0F;
   float weight_overlapped = 0.0F;
 
-  Mat<Vec2f> gridMapToProject = imagePositions(camera_from);
+  Mat<Vec2f> gridMapToProject = imagePositions(camera_from.ci);
   Mat<float> depth;
   depth.resize(camera_from.ci.projectionPlaneSize().y(), camera_from.ci.projectionPlaneSize().x());
 

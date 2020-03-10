@@ -41,26 +41,26 @@
 
 namespace TMIV::Renderer {
 // Create a grid of positions indicating the center of each of the pixels
-auto imagePositions(const MivBitstream::ViewParams &viewParams) -> Common::Mat<Common::Vec2f>;
+auto imagePositions(const MivBitstream::CameraIntrinsics &ci) -> Common::Mat<Common::Vec2f>;
 
 // OMAF Referential: x forward, y left, z up
 // Image plane: u right, v down
 
 // Unproject points: From image positions to world positions (with the camera as
 // reference frame)
-auto unprojectPoints(const MivBitstream::ViewParams &viewParams,
+auto unprojectPoints(const MivBitstream::CameraIntrinsics &ci,
                      const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> Common::Mat<Common::Vec3f>;
 
 // Change the reference frame from one to another camera (merging extrinsic
 // parameters)
-auto changeReferenceFrame(const MivBitstream::ViewParams &viewParams,
-                          const MivBitstream::ViewParams &target,
+auto changeReferenceFrame(const MivBitstream::CameraExtrinsics &source,
+                          const MivBitstream::CameraExtrinsics &target,
                           const Common::Mat<Common::Vec3f> &points) -> Common::Mat<Common::Vec3f>;
 
 // Project points: From world positions (with the camera as reference frame)
 // to image positions
-auto projectPoints(const MivBitstream::ViewParams &viewParams,
+auto projectPoints(const MivBitstream::CameraIntrinsics &ci,
                    const Common::Mat<Common::Vec3f> &points)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
@@ -68,38 +68,48 @@ auto projectPoints(const MivBitstream::ViewParams &viewParams,
 //  1) Unproject to world points in the reference frame of the first camera
 //  2) Change the reference frame from the first to the second camera
 //  3) Project to image points
-auto reprojectPoints(const MivBitstream::ViewParams &viewParams,
-                     const MivBitstream::ViewParams &target,
+auto reprojectPoints(const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target,
                      const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Calculate ray angles between input and output camera. Units are radians.
 //
 // The points should be in the target frame of reference.
-auto calculateRayAngles(const MivBitstream::ViewParams &viewParams,
-                        const MivBitstream::ViewParams &target,
+auto calculateRayAngles(const MivBitstream::CameraExtrinsics &source,
+                        const MivBitstream::CameraExtrinsics &target,
                         const Common::Mat<Common::Vec3f> &points) -> Common::Mat<float>;
 
-// Return (R, T) such that x -> Rx + t changes reference frame from the source
-// camera to the target camera
-auto affineParameters(const MivBitstream::ViewParams &viewParams,
-                      const MivBitstream::ViewParams &target)
-    -> std::pair<Common::QuatF, Common::Vec3f>;
+// Change the reference frame from a source camera to a target camera
+//
+// This corresponds to the affine transformation: x -> Rx + t with rotation matrix R and translation
+// vector t.
+class AffineTransform {
+public:
+  AffineTransform(const MivBitstream::CameraExtrinsics &source,
+                  const MivBitstream::CameraExtrinsics &target);
+
+  auto &translation() const { return m_t; }
+  auto operator()(Common::Vec3f x) const -> Common::Vec3f;
+
+private:
+  Common::Mat3x3f m_R;
+  Common::Vec3f m_t;
+};
 
 // Unproject a pixel from a source frame to scene coordinates in the reference
 // frame of the target camera.
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto unprojectVertex(Common::Vec2f position, float depth,
-                     const MivBitstream::ViewParams &viewParams) -> Common::Vec3f;
+auto unprojectVertex(Common::Vec2f position, float depth, const MivBitstream::CameraIntrinsics &ci)
+    -> Common::Vec3f;
 
 // Project point: From world position (with the camera as reference frame)
 // to image position
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto projectVertex(const Common::Vec3f &position, const MivBitstream::ViewParams &viewParams)
+auto projectVertex(const Common::Vec3f &position, const MivBitstream::CameraIntrinsics &ci)
     -> std::pair<Common::Vec2f, float>;
 
 inline bool isValidDepth(float d) { return (0.F < d); }

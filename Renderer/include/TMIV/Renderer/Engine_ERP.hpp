@@ -51,23 +51,20 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   const float du_dphi;
   const float dv_dtheta;
 
-  explicit Engine(const MivBitstream::ViewParams &viewParams)
+  explicit Engine(const MivBitstream::CameraIntrinsics &ci)
       : // Precomputed values used in te unprojection equation
-        phi0{viewParams.ci.ci_erp_phi_max()}, theta0{viewParams.ci.ci_erp_theta_max()},
-        dphi_du{-(viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min()) /
-                viewParams.ci.projectionPlaneSize().x()},
-        dtheta_dv{-(viewParams.ci.ci_erp_theta_max() - viewParams.ci.ci_erp_theta_min()) /
-                  viewParams.ci.projectionPlaneSize().y()},
+        phi0{ci.ci_erp_phi_max()}, theta0{ci.ci_erp_theta_max()},
+        dphi_du{-(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()) / ci.projectionPlaneSize().x()},
+        dtheta_dv{-(ci.ci_erp_theta_max() - ci.ci_erp_theta_min()) / ci.projectionPlaneSize().y()},
 
         // Precomputed values used in the projection equation
-        u0{viewParams.ci.projectionPlaneSize().x() * viewParams.ci.ci_erp_phi_max() /
-           (viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min())},
-        v0{viewParams.ci.projectionPlaneSize().y() * viewParams.ci.ci_erp_theta_max() /
-           (viewParams.ci.ci_erp_theta_max() - viewParams.ci.ci_erp_theta_min())},
-        du_dphi{-viewParams.ci.projectionPlaneSize().x() /
-                (viewParams.ci.ci_erp_phi_max() - viewParams.ci.ci_erp_phi_min())},
-        dv_dtheta{-viewParams.ci.projectionPlaneSize().y() /
-                  (viewParams.ci.ci_erp_theta_max() - viewParams.ci.ci_erp_theta_min())} {}
+        u0{ci.projectionPlaneSize().x() * ci.ci_erp_phi_max() /
+           (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())},
+        v0{ci.projectionPlaneSize().y() * ci.ci_erp_theta_max() /
+           (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())},
+        du_dphi{-ci.projectionPlaneSize().x() / (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())},
+        dv_dtheta{-ci.projectionPlaneSize().y() / (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())} {
+  }
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

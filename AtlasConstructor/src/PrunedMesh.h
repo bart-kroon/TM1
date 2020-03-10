@@ -48,12 +48,12 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
 
 // Change reference frame and project vertices
 auto project(const Renderer::SceneVertexDescriptorList &vertices,
-             const MivBitstream::ViewParams &viewParams, const MivBitstream::ViewParams &target)
+             const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target)
     -> Renderer::ImageVertexDescriptorList;
 
 // Weighted sphere compensation of stretching as performed by
 // Engine<ErpParams>::project
-void weightedSphere(const MivBitstream::ViewParams &target,
+void weightedSphere(const MivBitstream::CameraIntrinsics &ci,
                     const Renderer::ImageVertexDescriptorList &vertices,
                     Renderer::TriangleDescriptorList &triangles);
 } // namespace TMIV::AtlasConstructor

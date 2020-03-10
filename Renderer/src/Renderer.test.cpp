@@ -71,28 +71,44 @@ auto makeFullERPCamera() {
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
-  const ViewParams neutral{};
+  const auto neutral = CameraExtrinsics{};
 
   auto translated = neutral;
-  translated.ce.ce_view_pos_x(1.F).ce_view_pos_y(2.F).ce_view_pos_z(3.F);
+  translated.ce_view_pos_x(1.F).ce_view_pos_y(2.F).ce_view_pos_z(3.F);
 
   auto rotated = neutral;
-  rotated.ce.ce_view_quat_x(0.1F).ce_view_quat_y(0.3F).ce_view_quat_z(-0.3F);
+  rotated.ce_view_quat_x(0.1F).ce_view_quat_y(0.3F).ce_view_quat_z(-0.3F);
 
-  SECTION("trivial") {
-    auto r_t = affineParameters(neutral, neutral);
-    REQUIRE(r_t.first == QuatF{0.F, 0.F, 0.F, 1.F});
-    REQUIRE(r_t.second == Vec3f::zeros());
-  }
-  SECTION("translation") {
-    auto r_t = affineParameters(neutral, translated);
-    REQUIRE(r_t.first == QuatF{0.F, 0.F, 0.F, 1.F});
-    REQUIRE(r_t.second == -translated.ce.position());
-  }
-  SECTION("rotation") {
-    auto r_t = affineParameters(neutral, rotated);
-    REQUIRE(none_of(begin(r_t.first), end(r_t.first), [](auto x) { return x == 0.F; }));
-    REQUIRE(r_t.second == Vec3f::zeros());
+  SECTION("Construction") {
+    auto nn = AffineTransform(neutral, neutral);
+    auto nt = AffineTransform(neutral, translated);
+    auto tn = AffineTransform(translated, neutral);
+    auto nr = AffineTransform(neutral, rotated);
+    auto rn = AffineTransform(rotated, neutral);
+
+    SECTION("Translation") {
+      REQUIRE(nn.translation() == Vec3f{});
+      REQUIRE(nt.translation() == -translated.position());
+      REQUIRE(tn.translation() == translated.position());
+      REQUIRE(nr.translation() == Vec3f{});
+      REQUIRE(rn.translation() == Vec3f{});
+    }
+
+    SECTION("Transformation") {
+      for (const auto x : {Vec3f{}, Vec3f{1.F, 2.F, 3.F}, Vec3f{-1.F, 0.3F, 0.4F}}) {
+        REQUIRE(nn(x) == x);
+        REQUIRE(nt(x) == x - translated.position());
+        REQUIRE(tn(x) == x + translated.position());
+
+        const auto nr_x_ref = rotate(x, conj(rotated.rotation()));
+        const auto rn_x_ref = rotate(x, rotated.rotation());
+
+        for (int d = 0; d < 3; ++d) {
+          REQUIRE(nr(x)[d] == Approx(nr_x_ref[d]));
+          REQUIRE(rn(x)[d] == Approx(rn_x_ref[d]));
+        }
+      }
+    }
   }
 }
 
@@ -184,7 +200,7 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
     fill(begin(depth), end(depth), 2.F);
 
     WHEN("Calculating image positions") {
-      auto positions = imagePositions(viewParams);
+      auto positions = imagePositions(viewParams.ci);
 
       THEN("The image positions should be at the pixel centers") {
         REQUIRE(positions(4, 7).x() == 7.5F);

@@ -49,21 +49,10 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-static auto affineParameterList(const ViewParamsList &viewParamsList, const ViewParams &target) {
-  vector<pair<QuatF, Vec3f>> result;
-  result.reserve(viewParamsList.size());
-  transform(
-      begin(viewParamsList), end(viewParamsList), back_inserter(result),
-      [&target](const ViewParams &viewParams) { return affineParameters(viewParams, target); });
-  return result;
-}
-
 auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const ViewParams &target)
     -> bool {
   const auto &camera = cameras[patch.pduViewId()];
-  auto r_t = affineParameterList(cameras, target);
-  const auto &r = r_t[patch.pduViewId()].first;
-  const auto &t = r_t[patch.pduViewId()].second;
+  const auto R_t = AffineTransform(cameras[patch.pduViewId()].ce, target.ce);
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
@@ -81,25 +70,25 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
       1.F / max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_high());
 
   for (int i = 0; i < 4; i++) {
-    const auto xyz = rotate(unprojectVertex(uv[i], patch_dep_near, camera), r) + t;
-    const auto rayAngle = angle(xyz, xyz - t);
+    const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_near, camera.ci));
+    const auto rayAngle = angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
     v.position = xyz;
     v.rayAngle = rayAngle;
     auto pix = target.ci.dispatch([&](auto camType) {
-      Engine<camType> engine{target};
+      Engine<camType> engine{target.ci};
       return engine.projectVertex(v);
     });
     xy_v[i] = pix.position;
   }
   for (int i = 0; i < 4; i++) {
-    const auto xyz = rotate(unprojectVertex(uv[i], patch_dep_far, camera), r) + t;
-    const auto rayAngle = angle(xyz, xyz - t);
+    const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_far, camera.ci));
+    const auto rayAngle = angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
     v.position = xyz;
     v.rayAngle = rayAngle;
     auto pix = target.ci.dispatch([&](auto camType) {
-      Engine<camType> engine{target};
+      Engine<camType> engine{target.ci};
       return engine.projectVertex(v);
     });
     // wangbin modify

@@ -164,6 +164,7 @@ class TestConfiguration:
 			'numberOfFrames': self.numberOfFrames(),
 			'SourceDirectory': self.sourceDirectory(),
 			'SourceCameraParameters': self.sourceCameraParameters(),
+			'OutputDirectory': self.outputDirectory(),
 			'AttributeVideoDataPathFmt': self.attributeVideoDataPathFmt(),
 			'GeometryVideoDataPathFmt': self.geometryVideoDataPathFmt(),
 			'AtlasMetadataPath': self.atlasMetadataPath()
@@ -219,7 +220,6 @@ class DecoderConfiguration(TestConfiguration):
 	def parameters(self):
 		config = TestConfiguration.parameters(self)
 		config.update({
-			'OutputDirectory': self.outputDirectory(),
 			'OutputTexturePath': self.outputTexturePath(),
 			'OutputCameraName': self.outputCameraName,
 			'DecoderMethod': 'Decoder',

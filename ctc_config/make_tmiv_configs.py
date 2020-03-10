@@ -269,14 +269,16 @@ class DecoderConfiguration(TestConfiguration):
 
 	def wspsnrParameters(self):
 		camera = self.outputCamera()
+		x = camera['Resolution'][0]
+		y = camera['Resolution'][1]
 		config = {
 			"Version": "2.0",
 			"Projection": camera['Projection'],
 			"Original_file_path": self.originalFilePath(camera),
-			"Reconstructed_file_path": self.outputTexturePath(),
+			"Reconstructed_file_path": self.outputTexturePath().format(x, y),
 			"ColorSpace": "YUV420",
-			"Video_width": camera['Resolution'][0],
-			"Video_height": camera['Resolution'][1],
+			"Video_width": x,
+			"Video_height": y,
 			"BitDepth": 10,
 			"Start_frame_of_original_file": self.startFrame(),
 			"NumberOfFrames": self.numberOfFrames(),

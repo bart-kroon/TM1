@@ -261,7 +261,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
     // Set ASPS parameters
     atlas.asps.asps_frame_width(m_atlasSize.x())
         .asps_frame_height(m_atlasSize.y())
-		.asps_use_eight_orientations_flag(true)
+        .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
 

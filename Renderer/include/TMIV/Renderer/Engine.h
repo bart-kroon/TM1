@@ -79,7 +79,8 @@ namespace TMIV::Renderer {
 // projection. The interface allows for culling and splitting triangles.
 template <typename... T>
 auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
-             std::tuple<std::vector<T>...> attributes, const MivBitstream::CameraIntrinsics &target) {
+             std::tuple<std::vector<T>...> attributes,
+             const MivBitstream::CameraIntrinsics &target) {
   return target.dispatch([&](auto camType) {
     Engine<camType> engine{target};
     return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));

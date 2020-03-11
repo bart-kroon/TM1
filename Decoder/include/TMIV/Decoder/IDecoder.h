@@ -49,7 +49,9 @@ public:
   virtual ~IDecoder() = default;
 
   // Render a decoded frame to a target viewport
-  virtual auto decodeFrame(MivBitstream::AccessUnit frame,
+  //
+  // The AccessUnit may be filtered in-place
+  virtual auto decodeFrame(MivBitstream::AccessUnit &frame,
                            const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame = 0;
 };

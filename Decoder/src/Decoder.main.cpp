@@ -78,7 +78,7 @@ public:
   void run() override { m_metadataReader.decoder().decode(); }
 
 private:
-  void renderDecodedFrame(const AccessUnit &frame, int outputFrameId) {
+  void renderDecodedFrame(AccessUnit frame, int outputFrameId) {
     cout << "Rendering input frame " << frame.frameId << " to output frame " << outputFrameId
          << ", with target viewport:\n";
     const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);

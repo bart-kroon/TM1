@@ -56,7 +56,7 @@ public:
   Decoder &operator=(Decoder &&) = default;
   ~Decoder() override = default;
 
-  auto decodeFrame(MivBitstream::AccessUnit frame,
+  auto decodeFrame(MivBitstream::AccessUnit &frame,
                    const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 };

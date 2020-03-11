@@ -48,7 +48,7 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
   m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
 }
 
-auto Decoder::decodeFrame(AccessUnit frame, const ViewParams &viewportParams) const
+auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   m_geometryScaler.inplaceScale(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);

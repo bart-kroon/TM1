@@ -197,11 +197,20 @@ void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &
   }
 }
 
-void savePrunedFrame(const Json &config, int frameIndex, const MVD10Frame &prunedViews) {
-  for (size_t viewId = 0; viewId < prunedViews.size(); ++viewId) {
-    const auto &view = prunedViews[viewId];
-    IO::writeFrame(config, "PrunedViewTexturePathFmt", view.texture, frameIndex, viewId);
-    IO::writeFrame(config, "PrunedViewDepthPathFmt", view.depth, frameIndex, viewId);
+void savePrunedFrame(const Json &config, int frameIndex,
+                     const pair<vector<Texture444Depth10Frame>, MaskList> &prunedViewsAndMasks) {
+  for (size_t viewId = 0; viewId < prunedViewsAndMasks.first.size(); ++viewId) {
+    const auto &view = prunedViewsAndMasks.first[viewId];
+    if (config.optional("PrunedViewTexturePathFmt")) {
+      IO::writeFrame(config, "PrunedViewTexturePathFmt", view.first, frameIndex, viewId);
+    }
+    if (config.optional("PrunedViewDepthPathFmt")) {
+      IO::writeFrame(config, "PrunedViewDepthPathFmt", view.second, frameIndex, viewId);
+    }
+    if (config.optional("PrunedViewMaskPathFmt")) {
+      const auto &mask = prunedViewsAndMasks.second[viewId];
+      IO::writeFrame(config, "PrunedViewMaskPathFmt", mask, frameIndex, viewId);
+    }
   }
 }
 

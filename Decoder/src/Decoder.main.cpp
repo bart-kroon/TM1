@@ -93,9 +93,11 @@ private:
       IO::saveBlockToPatchMaps(json(), outputFrameId, frame);
     }
 
-    if (json().optional("PrunedViewTexturePathFmt") && json().optional("PrunedViewDepthPathFmt")) {
+    if (json().optional("PrunedViewTexturePathFmt")    // format: yuv444p10
+        || json().optional("PrunedViewDepthPathFmt")   // format: yuv420p10
+        || json().optional("PrunedViewMaskPathFmt")) { // format: yuv420p
       cout << "Dumping recovered pruned views to disk" << endl;
-      IO::savePrunedFrame(json(), outputFrameId, Renderer::recoverPrunedViews(frame));
+      IO::savePrunedFrame(json(), outputFrameId, Renderer::recoverPrunedViewAndMask(frame));
     }
   }
 

@@ -42,16 +42,6 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
-auto recoverPrunedViews(const AccessUnit &frame) -> MVD10Frame {
-  const auto prunedViews444 = recoverPrunedViewAndMask(frame).first;
-  auto prunedViews420 = MVD10Frame(prunedViews444.size());
-  transform(begin(prunedViews444), end(prunedViews444), begin(prunedViews420),
-            [](const Texture444Depth10Frame &x) {
-              return TextureDepth10Frame{yuv420p(x.first), x.second};
-            });
-  return prunedViews420;
-}
-
 auto recoverPrunedViewAndMask(const AccessUnit &frame)
     -> pair<vector<Texture444Depth10Frame>, MaskList> {
   // Initialization

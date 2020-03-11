@@ -64,7 +64,8 @@ void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Fr
 void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
                           const MivBitstream::AccessUnit &frame);
 void savePrunedFrame(const Common::Json &config, int frameIndex,
-                     const Common::MVD10Frame &prunedViews);
+                     const std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>
+                         &prunedViewsAndMasks);
 
 auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBitstream::ViewParams;
 void saveViewport(const Common::Json &config, int frameIndex,

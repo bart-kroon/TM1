@@ -71,7 +71,8 @@ public:
       for (auto i = range.first; i != range.second; ++i) {
         renderDecodedFrame(frame, i->second);
       }
-      return true;
+      return m_inputToOutputFrameIdMap.upper_bound(frame.frameId) !=
+             m_inputToOutputFrameIdMap.end();
     });
   }
 

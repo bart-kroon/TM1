@@ -91,6 +91,9 @@ auto MivDecoder::decodeVpccUnit() -> bool {
   if (vuh.vuh_unit_type() == VuhUnitType::VPCC_AD) {
     while (haveFrame(vuh)) {
       outputFrame(vuh);
+      if (m_stop) {
+        return false;
+      }
     }
   }
 
@@ -114,7 +117,7 @@ void MivDecoder::outputSequence(const VpccParameterSet &vps) {
 }
 
 void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
-  assert(haveFrame(vuh));
+  assert(haveFrame(vuh) && !m_stop);
   AccessUnit au;
   au.vps = &vps(vuh);
 

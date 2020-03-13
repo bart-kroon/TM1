@@ -119,18 +119,21 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
 }
 
 auto divideInBlocks(const PatchParams &patch, Vec2i blockSize) {
+  assert(patch.pduOrientationIndex() == FlexiblePatchOrientation::FPO_NULL);
+
   int blocknums_w = patch.pduViewSize().x() / blockSize.x();
   int blocknums_h = patch.pduViewSize().y() / blockSize.y();
   int blocknums_all = blocknums_w * blocknums_h;
   PatchParamsList subblock(blocknums_all, patch);
+
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
-      subblock[i * blocknums_w + j].pduViewSize().x() = blockSize.x();
-      subblock[i * blocknums_w + j].pduViewSize().y() = blockSize.y();
-      subblock[i * blocknums_w + j].pduViewPos().x() = patch.pduViewPos().x() + j * blockSize.x();
-      subblock[i * blocknums_w + j].pduViewPos().y() = patch.pduViewPos().y() + i * blockSize.y();
-      subblock[i * blocknums_w + j].pdu2dPos().x() = patch.pdu2dPos().x() + j * blockSize.x();
-      subblock[i * blocknums_w + j].pdu2dPos().y() = patch.pdu2dPos().x() + i * blockSize.y();
+      const auto offset = Vec2i{j * blockSize.x(), i * blockSize.y()};
+
+      auto &b = subblock[i * blocknums_w + j];
+      b.pduViewSize(blockSize);
+      b.pduViewPos(b.pduViewPos() + offset);
+      b.pdu2dPos(b.pdu2dPos() + offset);
     }
   }
   return subblock;

@@ -54,6 +54,22 @@ public:
                                 const Metadata::IvAccessUnitParams &ivAccessUnitParams,
                                 const Metadata::ViewParams &target) -> Common::PatchIdMapList = 0;
 };
+
+class NoCuller : public ICuller {
+public:
+  NoCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/) {}
+  NoCuller(const NoCuller &) = delete;
+  NoCuller(NoCuller &&) = default;
+  NoCuller &operator=(const NoCuller &) = delete;
+  NoCuller &operator=(NoCuller &&) = default;
+  ~NoCuller() override = default;
+
+  // Do sub-block culling and update the PatchIdMap
+  auto updatePatchIdmap(const Common::MVD10Frame &/*unused*/, const Common::PatchIdMapList &maps,
+                                const Metadata::IvSequenceParams &/*unused*/,
+                                const Metadata::IvAccessUnitParams &/*unused*/,
+                                const Metadata::ViewParams &/*unused*/) -> Common::PatchIdMapList { return maps; }
+};
 } // namespace TMIV::Renderer
 
 #endif

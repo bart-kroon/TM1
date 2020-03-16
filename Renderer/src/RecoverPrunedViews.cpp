@@ -36,17 +36,22 @@
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
+// NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
+// patch ordering anymore.
 auto recoverPrunedViewAndMask(const AccessUnit &frame)
     -> pair<vector<Texture444Depth10Frame>, MaskList> {
   // Initialization
   auto prunedView = vector<Texture444Depth10Frame>{};
   auto prunedMasks = MaskList{};
+
+  // TODO(BK): Address the view numbering assumption
   const auto &viewParamsList = frame.atlas.front().viewParamsList;
 
   for (const auto &viewParams : viewParamsList) {
@@ -57,56 +62,42 @@ auto recoverPrunedViewAndMask(const AccessUnit &frame)
     prunedMasks.back().fillZero();
   }
 
-  // Process patches
+  // For each pixel in each atlas
   for (const auto &atlas : frame.atlas) {
-    for (const auto &patchParams : atlas.patchParamsList) {
-      const auto occupancyTransform =
-          OccupancyTransform{viewParamsList[patchParams.pduViewId()], patchParams};
-
-      auto textureAtlasMap = atlas.attrFrame; // copy
-      auto depthAtlasMap = atlas.geoFrame;    // copy
-
-      auto &currentView = prunedView[patchParams.pduViewId()];
-      auto &textureViewMap = currentView.first;
-      auto &depthViewMap = currentView.second;
-
-      auto &mask = prunedMasks[patchParams.pduViewId()];
-
-      const int wP = patchParams.pdu2dSize().x();
-      const int hP = patchParams.pdu2dSize().y();
-      const int xP = patchParams.pdu2dPos().x();
-      const int yP = patchParams.pdu2dPos().y();
-
-      for (int dy = 0; dy < hP; dy++) {
-        for (int dx = 0; dx < wP; dx++) {
-          // get position
-          const auto pAtlas = Vec2i{xP + dx, yP + dy};
-          const auto pView = patchParams.atlasToView(pAtlas);
-
-          // Y
-          if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-            textureViewMap.getPlane(0)(pView.y(), pView.x()) =
-                textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-            textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-          }
-
-          // UV
-          for (int p = 1; p < 3; p++) {
-            if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-              textureViewMap.getPlane(p)(pView.y(), pView.x()) =
-                  textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x());
-              textureAtlasMap.getPlane(p)(pAtlas.y(), pAtlas.x()) = Texture444Frame::neutralColor();
-            }
-          }
-
-          // Depth
-          if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-            depthViewMap.getPlane(0)(pView.y(), pView.x()) =
-                depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-            mask.getPlane(0)(pView.y(), pView.x()) = 255U;
-          }
+    for (int i = 0; i < atlas.asps.asps_frame_height(); ++i) {
+      for (int j = 0; j < atlas.asps.asps_frame_width(); ++j) {
+        // Fetch patch ID
+        const auto patchId = atlas.patchId(i, j);
+        if (patchId == unusedPatchId) {
+          continue;
         }
+
+        // Index patch and view parameters
+        const auto &patchParams = atlas.patchParamsList[patchId];
+        const auto viewId = patchParams.pduViewId();
+        const auto &viewParams = atlas.viewParamsList[viewId];
+
+        // Test for occupancy
+        const auto occupancyTransform = OccupancyTransform{viewParams, patchParams};
+        if (!occupancyTransform.occupant(atlas.geoFrame.getPlane(0)(i, j))) {
+          continue;
+        }
+
+        // Map to view position
+        const auto viewPos = patchParams.atlasToView({j, i});
+        const auto x = viewPos.x();
+        const auto y = viewPos.y();
+
+        // Copy geometry
+        prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+
+        // Copy attributes
+        for (int d = 0; d < 3; ++d) {
+          prunedView[viewId].first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(i, j);
+        }
+
+        // Set mask
+        prunedMasks[viewId].getPlane(0)(y, x) = UINT8_MAX;
       }
     }
   }

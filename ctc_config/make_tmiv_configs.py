@@ -75,7 +75,7 @@ class TestConfiguration:
 			'A': 23,
 			'B': 100,
 			'C': 0,
-			'D': 10,
+			'D': 40,
 			'E': 135,
 			'J': 0,
 			'L': 30,

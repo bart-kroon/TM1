@@ -92,7 +92,7 @@ public:
       encodeAccessUnit(i, lastFrame);
     }
 
-    const auto maxLumaSamplesPerFrame = double(m_encoder->maxLumaSamplesPerFrame());
+    const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
     cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
   }
 

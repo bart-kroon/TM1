@@ -99,6 +99,11 @@ auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
   return result;
 }
 
+auto GroupBasedEncoder::maxLumaSamplesPerFrame() const -> size_t {
+  return transform_reduce(m_encoders.begin(), m_encoders.end(), size_t{}, plus<>{},
+                          [](const auto &x) { return x.maxLumaSamplesPerFrame(); });
+}
+
 auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams) -> Grouping {
   auto grouping = Grouping{};
 

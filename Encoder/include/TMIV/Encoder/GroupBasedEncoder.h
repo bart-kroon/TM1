@@ -64,6 +64,9 @@ public:
   // Pop atlases from each group and merge them into a single array
   auto popAtlas() -> Common::MVD10Frame override;
 
+  // Maximum aggregated luma samples per frame all groups combined
+  auto maxLumaSamplesPerFrame() const -> std::size_t override;
+
 protected:
   // A grouping as an array of groupId-viewId pairs
   using Grouping = std::vector<std::pair<std::size_t, std::size_t>>;

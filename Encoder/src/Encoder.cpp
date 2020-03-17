@@ -77,4 +77,8 @@ auto Encoder::popAtlas() -> Common::MVD10Frame {
   return m_geometryDownscaler.transformFrame(
       m_depthOccupancy->transformAtlases(m_atlasConstructor->popAtlas()));
 }
+
+auto Encoder::maxLumaSamplesPerFrame() const -> size_t {
+  return m_atlasConstructor->maxLumaSamplesPerFrame();
+}
 } // namespace TMIV::Encoder

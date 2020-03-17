@@ -55,6 +55,7 @@ public:
   virtual void pushFrame(Common::MVD16Frame transportViews) = 0;
   virtual auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
+  virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

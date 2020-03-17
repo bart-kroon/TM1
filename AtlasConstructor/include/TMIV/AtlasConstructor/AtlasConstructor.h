@@ -64,6 +64,7 @@ public:
   void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
+  auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
@@ -83,6 +84,7 @@ private:
   MivBitstream::IvSequenceParams m_outIvSequenceParams;
   MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
+  std::size_t m_maxLumaSamplesPerFrame{};
 };
 } // namespace TMIV::AtlasConstructor
 

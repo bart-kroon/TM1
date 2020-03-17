@@ -5,6 +5,7 @@ add_library(IOLib
 	"src/IvMetadataReader.cpp"
 	"src/IvMetadataWriter.cpp"
 	"include/TMIV/IO/IO.h"
+	"include/TMIV/IO/IO.hpp"
 	"include/TMIV/IO/IvMetadataReader.h"
 	"include/TMIV/IO/IvMetadataWriter.h"
 	)
@@ -15,9 +16,8 @@ add_library(TMIV::IOLib
 target_link_libraries(IOLib
 	PUBLIC
 		TMIV::CommonLib
-		TMIV::MetadataLib
-		TMIV::ViewOptimizerLib
-		TMIV::ImageLib)
+		TMIV::MivBitstreamLib
+		TMIV::ViewOptimizerLib)
 
 target_include_directories(IOLib
 	PUBLIC

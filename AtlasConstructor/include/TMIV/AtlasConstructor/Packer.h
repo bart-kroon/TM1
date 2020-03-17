@@ -48,8 +48,8 @@ public:
   ~Packer() override = default;
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-            const std::vector<bool> &isBasicView) -> Metadata::AtlasParamsVector override;
-  void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks);
+            const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList override;
+  void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
 
   int getAlignment() override;
 

@@ -53,15 +53,6 @@ template <typename T> T rad2deg(T x) { return x * static_cast<T>(180. / M_PI); }
 template <typename T> T sqr(T val) { return val * val; }
 template <typename T> T cube(T val) { return val * val * val; }
 template <typename T> int sgn(T val) { return int(T(0) < val) - int(val < T(0)); }
-template <typename T> T clamp(T val, T min, T max) {
-  if (val < min) {
-    return min;
-  }
-  if (max < val) {
-    return max;
-  }
-  return val;
-}
 template <typename T> bool inRange(T val, T min, T max) { return ((min <= val) && (val <= max)); }
 template <typename T> T is_zero(T val) {
   using std::abs;

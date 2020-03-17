@@ -39,7 +39,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &componentNode) {
@@ -65,13 +65,13 @@ auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
 }
 
 void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams) {
-  for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
+  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
     m_encoders[groupId].prepareAccessUnit(ivAccessUnitParams);
   }
 }
 
 void GroupBasedEncoder::pushFrame(MVD16Frame views) {
-  for (std::size_t groupId = 0; groupId != numGroups(); ++groupId) {
+  for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
     cout << "Processing group " << groupId << ":\n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
@@ -99,29 +99,28 @@ auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
   return result;
 }
 
-auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSequenceParams)
-    -> Grouping {
+auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams) -> Grouping {
   auto grouping = Grouping{};
 
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto numGroups = ivSequenceParams.numGroups;
+  const auto numGroups = ivSequenceParams.msp().msp_num_groups_minus1() + 1;
 
   // Compute axial ranges and find the dominant one
   auto Tx = vector<float>{};
   auto Ty = vector<float>{};
   auto Tz = vector<float>{};
   for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
-    Tx.push_back(viewParamsList[camIndex].position[0]);
-    Ty.push_back(viewParamsList[camIndex].position[1]);
-    Tz.push_back(viewParamsList[camIndex].position[2]);
+    Tx.push_back(viewParamsList[camIndex].ce.ce_view_pos_x());
+    Ty.push_back(viewParamsList[camIndex].ce.ce_view_pos_y());
+    Tz.push_back(viewParamsList[camIndex].ce.ce_view_pos_z());
   }
 
-  const float xMax = *std::max_element(Tx.begin(), Tx.end());
-  const float xMin = *std::min_element(Tx.begin(), Tx.end());
-  const float yMax = *std::max_element(Ty.begin(), Ty.end());
-  const float yMin = *std::min_element(Ty.begin(), Ty.end());
-  const float zMax = *std::max_element(Tz.begin(), Tz.end());
-  const float zMin = *std::min_element(Tz.begin(), Tz.end());
+  const float xMax = *max_element(Tx.begin(), Tx.end());
+  const float xMin = *min_element(Tx.begin(), Tx.end());
+  const float yMax = *max_element(Ty.begin(), Ty.end());
+  const float yMin = *min_element(Ty.begin(), Ty.end());
+  const float zMax = *max_element(Tz.begin(), Tz.end());
+  const float zMin = *min_element(Tz.begin(), Tz.end());
 
   const float xRange = xMax - xMin;
   const float yRange = yMax - yMin;
@@ -135,7 +134,7 @@ auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSeque
   }
 
   // Select views per group
-  auto viewsPool = vector<Metadata::ViewParams>{};
+  auto viewsPool = vector<ViewParams>{};
   auto viewsLabels = vector<uint8_t>{};
   auto viewsInGroup = vector<uint8_t>{};
   auto numViewsPerGroup = vector<int>{};
@@ -147,25 +146,25 @@ auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSeque
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
     viewsInGroup.clear();
-    auto camerasInGroup = Metadata::ViewParamsList{};
-    auto camerasOutGroup = Metadata::ViewParamsList{};
+    auto camerasInGroup = ViewParamsList{};
+    auto camerasOutGroup = ViewParamsList{};
     if (gIndex < numGroups - 1) {
-      numViewsPerGroup.push_back(int(std::floor(viewParamsList.size() / numGroups)));
-      std::int64_t maxElementIndex;
+      numViewsPerGroup.push_back(int(floor(viewParamsList.size() / numGroups)));
+      int64_t maxElementIndex;
 
       if (dominantAxis == 0) {
-        maxElementIndex = std::max_element(Tx.begin(), Tx.end()) - Tx.begin();
+        maxElementIndex = max_element(Tx.begin(), Tx.end()) - Tx.begin();
       } else if (dominantAxis == 1) {
-        maxElementIndex = std::max_element(Ty.begin(), Ty.end()) - Ty.begin();
+        maxElementIndex = max_element(Ty.begin(), Ty.end()) - Ty.begin();
       } else {
-        maxElementIndex = std::max_element(Tz.begin(), Tz.end()) - Tz.begin();
+        maxElementIndex = max_element(Tz.begin(), Tz.end()) - Tz.begin();
       }
 
       const auto T0 = Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
       auto distance = vector<float>();
       distance.reserve(viewsPool.size());
       for (const auto &viewParams : viewsPool) {
-        distance.push_back(norm(viewParams.position - T0));
+        distance.push_back(norm(viewParams.ce.position() - T0));
       }
 
       // ascending order
@@ -184,9 +183,9 @@ auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSeque
       camerasOutGroup.clear();
       for (size_t camIndex = numViewsPerGroup[gIndex]; camIndex < viewsPool.size(); camIndex++) {
         camerasOutGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
-        Tx.push_back(viewsPool[sortedCamerasId[camIndex]].position[0]);
-        Ty.push_back(viewsPool[sortedCamerasId[camIndex]].position[1]);
-        Tz.push_back(viewsPool[sortedCamerasId[camIndex]].position[2]);
+        Tx.push_back(viewsPool[sortedCamerasId[camIndex]].ce.ce_view_pos_x());
+        Ty.push_back(viewsPool[sortedCamerasId[camIndex]].ce.ce_view_pos_y());
+        Tz.push_back(viewsPool[sortedCamerasId[camIndex]].ce.ce_view_pos_z());
       }
 
       cout << "Views selected for group " << gIndex << ": ";
@@ -206,9 +205,8 @@ auto GroupBasedEncoder::sourceSplitter(const Metadata::IvSequenceParams &ivSeque
 
       viewsPool = camerasOutGroup;
     } else {
-      numViewsPerGroup.push_back(
-          int((viewParamsList.size() -
-               (numGroups - 1) * std::floor(viewParamsList.size() / numGroups))));
+      numViewsPerGroup.push_back(int(
+          (viewParamsList.size() - (numGroups - 1) * floor(viewParamsList.size() / numGroups))));
 
       camerasInGroup.clear();
       copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
@@ -259,34 +257,35 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
   return result;
 }
 
-auto GroupBasedEncoder::mergeSequenceParams(
-    const std::vector<const Metadata::IvSequenceParams *> &perGroupParams)
-    -> const Metadata::IvSequenceParams & {
-  // Independent metadata should work automatically. Just assume it is the same across groups.
+auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams *> &perGroupParams)
+    -> const IvSequenceParams & {
+  // Start with first group
   m_ivSequenceParams = *perGroupParams.front();
-  m_ivSequenceParams.viewParamsList.clear();
+  assert(m_ivSequenceParams.msp().msp_num_groups_minus1() + 1 == perGroupParams.size());
 
-  // Copy view parameters in group order
-  std::uint16_t pruningOffsetId = 0;
+  // Merge V-PCC parameter sets
+  vector<const VpccParameterSet *> vps(perGroupParams.size());
+  transform(begin(perGroupParams), end(perGroupParams), begin(vps),
+            [](const auto &ivs) { return &ivs->vps; });
+  m_ivSequenceParams.vps = merge(vps);
 
-  for (auto groupParams : perGroupParams) {
-    auto perGroupViewParamsList = groupParams->viewParamsList;
+  // For each other group
+  for (auto ivs = begin(perGroupParams) + 1; ivs != end(perGroupParams); ++ivs) {
+    // Merge view parameters
+    transform(begin((*ivs)->viewParamsList), end((*ivs)->viewParamsList),
+              back_inserter(m_ivSequenceParams.viewParamsList),
+              [viewIdOffset = uint16_t(m_ivSequenceParams.viewParamsList.size())](ViewParams vp) {
+                // Merging pruning graphs
+                if (vp.pc && !vp.pc->pc_is_leaf_flag()) {
+                  for (uint16_t i = 0; i <= vp.pc->pc_num_children_minus1(); ++i) {
+                    vp.pc->pc_child_id(i, vp.pc->pc_child_id(i) + viewIdOffset);
+                  }
+                }
+                return vp;
+              });
 
-    // Merging pruning graphs
-    for (auto &viewParams : perGroupViewParamsList) {
-
-      if (viewParams.pruningChildren && !viewParams.pruningChildren->empty()) {
-        for (auto &childId : *viewParams.pruningChildren) {
-          childId += pruningOffsetId;
-        }
-      }
-    }
-
-    pruningOffsetId += static_cast<std::uint16_t>(perGroupViewParamsList.size());
-
-    // Merging viewParamsList
-    copy(begin(perGroupViewParamsList), end(perGroupViewParamsList),
-         back_inserter(m_ivSequenceParams.viewParamsList));
+    // Merge viewing space
+    assert(m_ivSequenceParams.viewingSpace == (*ivs)->viewingSpace);
   }
 
   // Keep around for mergeAccessUnitParams
@@ -296,47 +295,51 @@ auto GroupBasedEncoder::mergeSequenceParams(
 }
 
 auto GroupBasedEncoder::mergeAccessUnitParams(
-    const std::vector<const Metadata::IvAccessUnitParams *> &perGroupParams)
-    -> const Metadata::IvAccessUnitParams & {
+    const vector<const IvAccessUnitParams *> &perGroupParams) -> const IvAccessUnitParams & {
+  // No state at this level
+  m_ivAccessUnitParams = {};
 
-  // Independent metadata should work automatically. Just assume it is the same across groups.
-  m_ivAccessUnitParams = *perGroupParams.front();
-  auto &atlasParamsList = *m_ivAccessUnitParams.atlasParamsList;
-  atlasParamsList.clear();
-  atlasParamsList.groupIds = vector<unsigned>{};
-  atlasParamsList.atlasSizes.clear();
-  atlasParamsList.depthOccupancyParamsPresentFlags.clear();
+  // Concatenate atlas access unit parameters
+  for (size_t groupId = 0; groupId < perGroupParams.size(); ++groupId) {
+    for (auto &atlas : perGroupParams[groupId]->atlas) {
+      m_ivAccessUnitParams.atlas.push_back(atlas);
 
-  size_t firstAtlasId = 0;
-  size_t firstViewId = 0;
+      // Set masp_group_id
+      m_ivAccessUnitParams.atlas.back().asps.miv_atlas_sequence_params().masp_group_id(
+          unsigned(groupId));
 
-  for (size_t groupId = 0; groupId < numGroups(); ++groupId) {
-    const auto &groupParams = *perGroupParams[groupId];
-
-    // Copy patches in group order
-    for (auto patch : *groupParams.atlasParamsList) {
-      patch.atlasId += uint16_t(firstAtlasId);
-      patch.viewId += uint16_t(firstViewId);
-      atlasParamsList.push_back(patch);
+      // Unset masp_depth_occ_map_threshold_flag for vai > 0
+      if (m_ivAccessUnitParams.atlas.size() > 1) {
+        m_ivAccessUnitParams.atlas.back()
+            .asps.miv_atlas_sequence_params()
+            .reset_masp_omaf_v1_compatible_flag();
+      }
     }
+  }
 
-    // Copy atlas sizes in group order
-    copy(begin(groupParams.atlasParamsList->atlasSizes),
-         end(groupParams.atlasParamsList->atlasSizes), back_inserter(atlasParamsList.atlasSizes));
+  // Modify bit depth of pdu_view_id
+  for (auto &atlas : m_ivAccessUnitParams.atlas) {
+    atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_projections_minus1(
+        uint16_t(m_ivSequenceParams.viewParamsList.size() - 1));
+  }
 
-    // Copy depthOccupancyParamsPresentFlags in group order
-    copy(begin(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
-         end(groupParams.atlasParamsList->depthOccupancyParamsPresentFlags),
-         back_inserter(atlasParamsList.depthOccupancyParamsPresentFlags));
+  const auto atlasSizes = m_ivAccessUnitParams.atlasSizes();
 
-    // Assign group ID's
-    while (atlasParamsList.groupIds->size() < atlasParamsList.atlasSizes.size()) {
-      atlasParamsList.groupIds->push_back(unsigned(groupId));
+  // Renumber atlas and view ID's
+  uint16_t atlasIdOffset = 0;
+  uint16_t viewIdOffset = 0;
+
+  for (size_t groupId = 0; groupId < perGroupParams.size(); ++groupId) {
+    // Copy patches in group order
+    for (const auto &patch : perGroupParams[groupId]->patchParamsList) {
+      m_ivAccessUnitParams.patchParamsList.push_back(patch);
+      m_ivAccessUnitParams.patchParamsList.back().vuhAtlasId += atlasIdOffset;
+      m_ivAccessUnitParams.patchParamsList.back().pduViewId(patch.pduViewId() + viewIdOffset);
     }
 
     // Renumber atlases and views
-    firstAtlasId += groupParams.atlasParamsList->atlasSizes.size();
-    firstViewId += m_perGroupSequenceParams[groupId]->viewParamsList.size();
+    atlasIdOffset += uint16_t(perGroupParams[groupId]->atlas.size());
+    viewIdOffset += uint16_t(m_perGroupSequenceParams[groupId]->viewParamsList.size());
   }
 
   return m_ivAccessUnitParams;

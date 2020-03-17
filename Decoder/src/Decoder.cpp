@@ -34,67 +34,24 @@
 #include <TMIV/Decoder/Decoder.h>
 
 #include <TMIV/Common/Factory.h>
-#include<TMIV/Renderer/RecoverPrunedViews.h>
-
-#include <cassert>
+#include <TMIV/Decoder/GeometryScaler.h>
 
 using namespace std;
-using namespace TMIV::AtlasDeconstructor;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 namespace TMIV::Decoder {
 Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_atlasDeconstructor{Factory<IAtlasDeconstructor>::getInstance().create(
-          "AtlasDeconstructor", rootNode, componentNode)},
-      m_renderer{Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode)},
-      m_culler{Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode)},
-      m_depthUpscaler(rootNode, componentNode) {
-  if (auto node = rootNode.optional("depthDownScaleFlag"); node) {
-    m_downscale_depth = node.asBool();
-  }
+    : m_geometryScaler{rootNode, componentNode} {
+  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
+  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
 }
 
-void Decoder::updateSequenceParams(Metadata::IvSequenceParams ivSequenceParams) {
-  m_ivSequenceParams = move(ivSequenceParams);
-}
-
-void Decoder::updateAccessUnitParams(Metadata::IvAccessUnitParams ivAccessUnitParams) {
-  m_ivAccessUnitParams = move(ivAccessUnitParams);
-}
-
-auto Decoder::decodeFrame(MVD10Frame atlas, const ViewParams &target) const
+auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
-  auto patchIdMaps =
-      m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams);
-
-  if (m_downscale_depth) {
-    tie(atlas, patchIdMaps) = m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
-  }
-
-  patchIdMaps = m_culler->updatePatchIdmap(atlas, patchIdMaps, m_ivSequenceParams,
-                                           m_ivAccessUnitParams, target);
-
-  return m_renderer->renderFrame(atlas, patchIdMaps, m_ivSequenceParams, m_ivAccessUnitParams,
-                                 target);
+  m_geometryScaler.inplaceScale(frame);
+  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
+  return m_renderer->renderFrame(frame, viewportParams);
 }
-
-auto Decoder::getPatchIdMapList() const -> PatchIdMapList {
-  return m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams);
-}
-
-auto Decoder::recoverPrunedView(const Common::MVD10Frame &atlas) const -> Common::MVD10Frame {
-  auto patchIdMaps = m_atlasDeconstructor->getPatchIdMap(m_ivSequenceParams, m_ivAccessUnitParams);
-
-  MVD10Frame atlas_upscaled = atlas;
-
-  if (m_downscale_depth) {
-    tie(atlas_upscaled, patchIdMaps) =
-        m_depthUpscaler.upsampleDepthAndOccupancyMapMVD(atlas, patchIdMaps);
-  }
-  return recoverPrunedViews(atlas_upscaled, m_ivSequenceParams.viewParamsList,
-                                                 *m_ivAccessUnitParams.atlasParamsList);
-}
-
 } // namespace TMIV::Decoder

@@ -39,62 +39,53 @@
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataWriter.h>
+#include <TMIV/MivBitstream/MivDecoder.h>
 
 #include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::IO;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Decoder;
 using namespace TMIV::DepthQualityAssessor;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
+
+namespace TMIV::MivBitstream {
+const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
+}
 
 namespace TMIV::Encoder {
 class Application : public Common::Application {
 private:
   unique_ptr<IEncoder> m_encoder;
   unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
+  IvMetadataWriter m_metadataWriter;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  bool m_downscale_depth = false;
-  IvMetadataWriter m_metadataWriter;
   SizeVector m_viewSizes;
-  unique_ptr<IDecoder> m_reconstructor;
 
 public:
   explicit Application(vector<const char *> argv)
       : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
         m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")},
-        m_metadataWriter{json(), "OutputDirectory", "AtlasMetadataPath"} {
-    m_numberOfFrames = json().require("numberOfFrames").asInt();
-    m_intraPeriod = json().require("intraPeriod").asInt();
-
-    if (auto node = json().optional("reconstruct"); node && node.asBool()) {
-      m_reconstructor = create<IDecoder>("Decoder");
-    }
-    if (auto node = json().optional("depthDownScaleFlag"); node) {
-      m_downscale_depth = node.asBool();
-    }
-  }
+        m_metadataWriter{json()}, m_numberOfFrames{json().require("numberOfFrames").asInt()},
+        m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
     auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
+
+    // TODO(BK): Move depth quality assessment to the Encoder library
     if (!json().isPresent("depthLowQualityFlag")) {
-      sourceSequenceParams.depthLowQualityFlag = m_depthQualityAssessor->isLowDepthQuality(
-          sourceSequenceParams, loadSourceFrame(json(), m_viewSizes, 0));
+      sourceSequenceParams.msp().msp_depth_low_quality_flag(
+          m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
+                                                    loadSourceFrame(json(), m_viewSizes, 0)));
     }
-    cout << "\nSource sequence parameters:\n" << sourceSequenceParams;
 
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
-    cout << "\nCoded sequence parameters:\n" << codedSequenceParams;
-
-    if (m_reconstructor) {
-      m_reconstructor->updateSequenceParams(codedSequenceParams);
-    }
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -105,21 +96,10 @@ public:
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-
-    const auto sourceAccessUnitParams = loadSourceIvAccessUnitParams(json());
-    m_encoder->prepareAccessUnit(sourceAccessUnitParams);
-    cout << "\nSource access unit parameters:\n" << sourceAccessUnitParams;
-
+    m_encoder->prepareAccessUnit(loadSourceIvAccessUnitParams(json()));
     pushFrames(firstFrame, lastFrame);
-    const auto codedAccessUnitParams = m_encoder->completeAccessUnit();
-    cout << "\nCoded access unit parameters:\n" << codedAccessUnitParams;
-
-    m_metadataWriter.writeIvAccessUnitParams(codedAccessUnitParams);
-
-    if (m_reconstructor) {
-      m_reconstructor->updateAccessUnitParams(codedAccessUnitParams);
-    }
-
+    m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit(),
+                                             lastFrame - firstFrame);
     popAtlases(firstFrame, lastFrame);
   }
 
@@ -131,60 +111,8 @@ private:
 
   void popAtlases(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      auto atlas = m_encoder->popAtlas();
-
-      if (m_downscale_depth) {
-        atlas = downScaleAtlasDepth(atlas);
-      }
-
-      saveAtlas(json(), i, atlas);
-
-      if (m_reconstructor) {
-        const auto viewportParams = loadViewportMetadata(json(), i);
-        const auto viewport = m_reconstructor->decodeFrame(atlas, viewportParams);
-        cout << "Reconstruction: " << viewportParams << '\n';
-
-        saveViewport(json(), i, {yuv420p(viewport.first), viewport.second});
-      }
+      saveAtlas(json(), i, m_encoder->popAtlas());
     }
-  }
-
-  static auto maxPool2x2(const Mat1w &depth) -> Mat1w {
-    auto w = depth.width() / 2U;
-    auto h = depth.height() / 2U;
-
-    Mat1w depthD2;
-    depthD2.resize(h, w);
-
-    for (auto i = 0U; i < h; ++i) {
-      for (auto j = 0U; j < w; ++j) {
-        auto d0 = depth(2 * i, 2 * j);
-        auto d1 = depth(2 * i, 2 * j + 1);
-        auto d2 = depth(2 * i + 1, 2 * j);
-        auto d3 = depth(2 * i + 1, 2 * j + 1);
-
-        // assume high levels indicate foreground
-        depthD2(i, j) = std::max(d0, std::max(d1, std::max(d2, d3)));
-      }
-    }
-
-    return depthD2;
-  }
-
-  static auto downScaleAtlasDepth(const MVD10Frame &atlas) -> MVD10Frame {
-    TMIV::Common::MVD10Frame atlasOut(atlas.size());
-
-    for (auto i = 0U; i < atlas.size(); ++i) {
-      // copy texture
-      atlasOut[i].first = atlas[i].first;
-
-      // downscale depth using max-of-4 operation
-      auto depthD2 = maxPool2x2(atlas[i].second.getPlane(0));
-      atlasOut[i].second.resize(int(depthD2.width()), int(depthD2.height()));
-      atlasOut[i].second.getPlane(0) = depthD2;
-    }
-
-    return atlasOut;
   }
 };
 } // namespace TMIV::Encoder

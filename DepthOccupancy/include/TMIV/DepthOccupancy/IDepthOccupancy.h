@@ -35,8 +35,8 @@
 #define _TMIV_DEPTHOCCUPANCY_IDEPTHOCCUPANCY_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::DepthOccupancy {
 class IDepthOccupancy {
@@ -48,10 +48,10 @@ public:
   IDepthOccupancy &operator=(IDepthOccupancy &&) = default;
   virtual ~IDepthOccupancy() = default;
 
-  virtual auto transformSequenceParams(Metadata::IvSequenceParams)
-      -> const Metadata::IvSequenceParams & = 0;
-  virtual auto transformAccessUnitParams(Metadata::IvAccessUnitParams)
-      -> const Metadata::IvAccessUnitParams & = 0;
+  virtual auto transformSequenceParams(MivBitstream::IvSequenceParams)
+      -> const MivBitstream::IvSequenceParams & = 0;
+  virtual auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
+      -> const MivBitstream::IvAccessUnitParams & = 0;
   virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::DepthOccupancy

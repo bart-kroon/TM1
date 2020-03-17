@@ -35,57 +35,46 @@
 
 #include <TMIV/Common/Factory.h>
 
-#include <iostream>
-
 using namespace std;
 using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::ViewOptimizer;
 using namespace TMIV::DepthOccupancy;
 
 namespace TMIV::Encoder {
-Encoder::Encoder(const Json &rootNode, const Json &componentNode) {
-  m_viewOptimizer =
-      Factory<IViewOptimizer>::getInstance().create("ViewOptimizer", rootNode, componentNode);
-  m_atlasConstructor =
-      Factory<IAtlasConstructor>::getInstance().create("AtlasConstructor", rootNode, componentNode);
-  m_depthOccupancy =
-      Factory<IDepthOccupancy>::getInstance().create("DepthOccupancy", rootNode, componentNode);
+auto viewOptimizers() -> const auto & { return Factory<IViewOptimizer>::getInstance(); }
+auto atlasConstructors() -> const auto & { return Factory<IAtlasConstructor>::getInstance(); }
+auto depthOccupancies() -> const auto & { return Factory<IDepthOccupancy>::getInstance(); }
+
+Encoder::Encoder(const Json &rootNode, const Json &componentNode)
+    : m_viewOptimizer{viewOptimizers().create("ViewOptimizer", rootNode, componentNode)},
+      m_atlasConstructor{atlasConstructors().create("AtlasConstructor", rootNode, componentNode)},
+      m_depthOccupancy{depthOccupancies().create("DepthOccupancy", rootNode, componentNode)},
+      m_geometryDownscaler{rootNode, componentNode} {}
+
+auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+    -> const MivBitstream::IvSequenceParams & {
+  auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+  return m_geometryDownscaler.transformSequenceParams(m_depthOccupancy->transformSequenceParams(
+      m_atlasConstructor->prepareSequence(move(optimal.first), move(optimal.second))));
 }
 
-auto Encoder::prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
-    -> const Metadata::IvSequenceParams & {
-  auto optimized = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
-
-  cout << "\nBasic view(s): ";
-  auto sep = "";
-  for (size_t i = 0; i < optimized.second.size(); ++i) {
-    if (optimized.second[i]) {
-      cout << sep << i;
-      sep = ", ";
-    }
-  }
-  cout << '\n';
-
-  return m_depthOccupancy->transformSequenceParams(
-      m_atlasConstructor->prepareSequence(std::move(optimized.first), std::move(optimized.second)));
-}
-
-void Encoder::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
+void Encoder::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   m_atlasConstructor->prepareAccessUnit(move(ivAccessUnitParams));
 }
 
 void Encoder::pushFrame(Common::MVD16Frame views) {
-  auto optimized = m_viewOptimizer->optimizeFrame(move(views));
-  return m_atlasConstructor->pushFrame(optimized);
+  return m_atlasConstructor->pushFrame(m_viewOptimizer->optimizeFrame(move(views)));
 }
 
-auto Encoder::completeAccessUnit() -> const Metadata::IvAccessUnitParams & {
-  return m_depthOccupancy->transformAccessUnitParams(m_atlasConstructor->completeAccessUnit());
+auto Encoder::completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & {
+  return m_geometryDownscaler.transformAccessUnitParams(
+      m_depthOccupancy->transformAccessUnitParams(m_atlasConstructor->completeAccessUnit()));
 }
 
 auto Encoder::popAtlas() -> Common::MVD10Frame {
-  return m_depthOccupancy->transformAtlases(m_atlasConstructor->popAtlas());
+  return m_geometryDownscaler.transformFrame(
+      m_depthOccupancy->transformAtlases(m_atlasConstructor->popAtlas()));
 }
 } // namespace TMIV::Encoder

@@ -36,18 +36,34 @@
 
 #include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
+#include <TMIV/Common/Common.h>
+#include <TMIV/MivBitstream/MivDecoder.h>
+
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::DepthOccupancy;
+
+namespace TMIV::MivBitstream {
+const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
+}
 
 SCENARIO("Depth/occupancy coding") {
   DepthOccupancy depthOccupancy{37};
 
+  auto sourceViewParams = ViewParams{};
+  sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
+      .ci_projection_plane_height_minus1(1079)
+      .ci_cam_type(CiCamType::equirectangular)
+      .ci_erp_phi_min(-halfCycle)
+      .ci_erp_phi_max(halfCycle)
+      .ci_erp_theta_min(-quarterCycle)
+      .ci_erp_theta_max(quarterCycle);
+  sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
+
   GIVEN("View parameters without invalid depth") {
-    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    const auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
-    const auto sourceSequenceParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
+    auto sourceSequenceParams = IvSequenceParams{};
+    sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedSequenceParams = depthOccupancy.transformSequenceParams(sourceSequenceParams);
@@ -59,24 +75,27 @@ SCENARIO("Depth/occupancy coding") {
   }
 
   GIVEN("View parameters with invalid depth") {
-    const auto projection = ErpParams{{-180.F, 180.F}, {-90.F, 90.F}};
-    auto sourceViewParams = ViewParams{{1920, 1080}, {}, {}, projection, {0.2F, 2.2F}, 0};
     sourceViewParams.hasOccupancy = true;
-    const auto sourceSeqParams = IvSequenceParams{{}, ViewParamsList{{sourceViewParams}}};
+    auto sourceSeqParams = IvSequenceParams{};
+    sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams = depthOccupancy.transformSequenceParams(sourceSeqParams);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
-      THEN("depthOccMapThreshold (T) >> 0") {
-        const auto T = codedViewParams.depthOccMapThreshold;
+      THEN("pduDepthOccMapThreshold (T) >> 0") {
+        const auto T = codedViewParams.dq.dq_depth_occ_map_threshold_default();
         REQUIRE(T >= 8);
 
         THEN("Coded level 2T matches with source level 0") {
           // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
           const auto twoT = float(2 * T);
-          const auto refViewParams = ViewParams{
-              {1920, 1080}, {}, {}, projection, {0.2F - twoT * 2.F / (1023.F - twoT), 2.2F}, T};
+
+          auto refViewParams = sourceViewParams;
+          refViewParams.dq.dq_depth_occ_map_threshold_default(T)
+              .dq_norm_disp_low(0.2F - twoT * 2.F / (1023.F - twoT))
+              .dq_norm_disp_high(2.2F);
+
           REQUIRE(codedSeqParams.viewParamsList.front() == refViewParams);
         }
       }

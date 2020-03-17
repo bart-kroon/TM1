@@ -31,86 +31,77 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
 
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
-
-auto recoverPrunedViews(const Common::MVD10Frame &atlas,
-                    const Metadata::ViewParamsVector &viewParamsVector,
-                    const Metadata::AtlasParamsVector &atlasParamsVector)
--> Common::MVD10Frame {
-
+// NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
+// patch ordering anymore.
+auto recoverPrunedViewAndMask(const AccessUnit &frame)
+    -> pair<vector<Texture444Depth10Frame>, MaskList> {
   // Initialization
-  MVD10Frame frame;
+  auto prunedView = vector<Texture444Depth10Frame>{};
+  auto prunedMasks = MaskList{};
 
-  for (const auto &cam : viewParamsVector) {
-    TextureFrame tex(cam.size.x(), cam.size.y());
-    Depth10Frame depth(cam.size.x(), cam.size.y());
-    tex.fillNeutral();
-    depth.fillZero(); 
-    frame.push_back(TextureDepth10Frame{std::move(tex), std::move(depth)});
+  // TODO(BK): Address the view numbering assumption
+  const auto &viewParamsList = frame.atlas.front().viewParamsList;
+
+  for (const auto &viewParams : viewParamsList) {
+    const auto size = viewParams.ci.projectionPlaneSize();
+    prunedView.emplace_back(Texture444Frame{size.x(), size.y()}, Depth10Frame{size.x(), size.y()});
+    prunedView.back().first.fillNeutral();
+    prunedMasks.emplace_back(size.x(), size.y());
+    prunedMasks.back().fillZero();
   }
 
-  // Process patches
-  MVD10Frame atlas_pruned = atlas;
-
-  for (auto iter = atlasParamsVector.rbegin(); iter != atlasParamsVector.rend(); ++iter) {
-    const auto &patch = *iter;
-    const auto occupancyTransform = OccupancyTransform{viewParamsVector[patch.viewId], patch};
-
-    auto &currentAtlas = atlas_pruned[patch.atlasId];
-    auto &currentView = frame[patch.viewId];
-
-    auto &textureAtlasMap = currentAtlas.first;
-    auto &depthAtlasMap = currentAtlas.second;
-
-    auto &textureViewMap = currentView.first;
-    auto &depthViewMap = currentView.second;
-
-    const auto sizeInAtlas = patch.patchSizeInAtlas();
-    int wP = sizeInAtlas.x();
-    int hP = sizeInAtlas.y();
-    int xP = patch.posInAtlas.x();
-    int yP = patch.posInAtlas.y();
-
-    for (int dy = 0; dy < hP; dy++) {
-      for (int dx = 0; dx < wP; dx++) {
-        // get position
-        Vec2i pAtlas = {xP + dx, yP + dy};
-        Vec2i pView = atlasToView(pAtlas, patch);
-        // Y
-        if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-          textureViewMap.getPlane(0)(pView.y(), pView.x()) =
-              textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-          textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+  // For each pixel in each atlas
+  for (const auto &atlas : frame.atlas) {
+    for (int i = 0; i < atlas.asps.asps_frame_height(); ++i) {
+      for (int j = 0; j < atlas.asps.asps_frame_width(); ++j) {
+        // Fetch patch ID
+        const auto patchId = atlas.patchId(i, j);
+        if (patchId == unusedPatchId) {
+          continue;
         }
-        // UV
-        if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
-          for (int p = 1; p < 3; p++) {
-            if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-              textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2) =
-                  textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2);
-              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) = TextureFrame::neutralColor();
-            }
-          }
+
+        // Index patch and view parameters
+        const auto &patchParams = atlas.patchParamsList[patchId];
+        const auto viewId = patchParams.pduViewId();
+        const auto &viewParams = atlas.viewParamsList[viewId];
+
+        // Test for occupancy
+        const auto occupancyTransform = OccupancyTransform{viewParams, patchParams};
+        if (!occupancyTransform.occupant(atlas.geoFrame.getPlane(0)(i, j))) {
+          continue;
         }
-        // Depth
-        if (occupancyTransform.occupant(depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()))) {
-          depthViewMap.getPlane(0)(pView.y(), pView.x()) =
-              depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x());
-          depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+
+        // Map to view position
+        const auto viewPos = patchParams.atlasToView({j, i});
+        const auto x = viewPos.x();
+        const auto y = viewPos.y();
+
+        // Copy geometry
+        prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+
+        // Copy attributes
+        for (int d = 0; d < 3; ++d) {
+          prunedView[viewId].first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(i, j);
         }
+
+        // Set mask
+        prunedMasks[viewId].getPlane(0)(y, x) = UINT8_MAX;
       }
     }
   }
 
-  return frame;
+  return pair{prunedView, prunedMasks};
 }
-
 } // namespace TMIV::Renderer

@@ -41,7 +41,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &componentNode) {
@@ -52,55 +52,54 @@ GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &compone
       "ViewingSpaceController", rootNode, componentNode);
 }
 
-auto GroupBasedRenderer::renderFrame(const MVD10Frame &atlases,
-                                     const PatchIdMapList &patchIdMapList,
-                                     const IvSequenceParams &ivSequenceParams,
-                                     const IvAccessUnitParams &ivAccessUnitParams,
-                                     const ViewParams &target) const -> Texture444Depth16Frame {
-  if (ivSequenceParams.numGroups >= GroupIdMask{}.size()) {
+auto GroupBasedRenderer::renderFrame(const AccessUnit &frame,
+                                     const ViewParams &viewportParams) const
+    -> Texture444Depth16Frame {
+  const auto &msp = frame.vps->miv_sequence_params();
+  if (msp.msp_num_groups_minus1() >= GroupIdMask{}.size()) {
     throw runtime_error("This decoder implementation is limited to a maximum number of groups");
   }
 
   // Determine group render order
-  const auto groupIdPass = groupRenderOrder(ivSequenceParams, ivAccessUnitParams, target);
+  const auto groupIdPass = groupRenderOrder(frame, viewportParams);
 
   // Render all passes
-  auto viewportPass = vector<Texture444Depth16Frame>(ivSequenceParams.numGroups);
+  auto viewportPass = vector<Texture444Depth16Frame>(msp.msp_num_groups_minus1() + 1);
   auto groupIdMask = GroupIdMask{};
-  for (size_t pass = 0; pass < ivSequenceParams.numGroups; ++pass) {
+  for (size_t pass = 0; pass <= msp.msp_num_groups_minus1(); ++pass) {
     groupIdMask.set(groupIdPass[pass]);
-    viewportPass[pass] = renderPass(groupIdMask, atlases, patchIdMapList, ivSequenceParams,
-                                    ivAccessUnitParams, target);
+    viewportPass[pass] = renderPass(groupIdMask, frame, viewportParams);
   }
 
   // Merge passes
   auto viewport = move(viewportPass.back());
-  for (auto pass = ivSequenceParams.numGroups - 1; pass > 0; --pass) {
+  for (auto pass = msp.msp_num_groups_minus1(); pass > 0; --pass) {
     inplaceMerge(viewport, viewportPass[pass - 1],
-                 ivSequenceParams.depthLowQualityFlag ? MergeMode::lowPass : MergeMode::foreground);
+                 msp.msp_depth_low_quality_flag() ? MergeMode::lowPass : MergeMode::foreground);
   }
 
   // Inpainting
-    m_inpainter->inplaceInpaint(viewport, target);
+  if (msp.msp_max_entities_minus1() == 0) {
+    m_inpainter->inplaceInpaint(viewport, viewportParams);
+  }
 
-  // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace) {
-    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  // Viewing space handling
+  if (frame.vs) {
+    m_viewingSpaceController->inplaceFading(viewport, viewportParams, *frame.vs);
   }
 
   return viewport;
 }
 
-auto GroupBasedRenderer::groupRenderOrder(const Metadata::IvSequenceParams &ivSequenceParams,
-                                          const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                                          const Metadata::ViewParams &target)
+auto GroupBasedRenderer::groupRenderOrder(const AccessUnit &frame, const ViewParams &viewportParams)
     -> std::vector<unsigned> {
+  auto &msp = frame.vps->miv_sequence_params();
   auto groupPriorities = vector<Priority>();
   auto result = vector<unsigned>();
 
   // Build array of group priorities
-  for (unsigned groupId = 0; groupId < ivSequenceParams.numGroups; ++groupId) {
-    groupPriorities.push_back(groupPriority(groupId, ivSequenceParams, ivAccessUnitParams, target));
+  for (unsigned groupId = 0; groupId <= msp.msp_num_groups_minus1(); ++groupId) {
+    groupPriorities.push_back(groupPriority(groupId, frame, viewportParams));
     result.push_back(groupId);
   }
 
@@ -112,97 +111,61 @@ auto GroupBasedRenderer::groupRenderOrder(const Metadata::IvSequenceParams &ivSe
   return result;
 }
 
-auto GroupBasedRenderer::renderPass(GroupIdMask groupIdMask, const MVD10Frame &atlases,
-                                    const PatchIdMapList &patchIdMapList,
-                                    const IvSequenceParams &ivSequenceParams,
-                                    const IvAccessUnitParams &ivAccessUnitParams,
-                                    const ViewParams &target) const -> Texture444Depth16Frame {
-  return m_synthesizer->renderFrame(
-      atlases, filterPatchIdMapList(groupIdMask, patchIdMapList, ivAccessUnitParams),
-      ivSequenceParams, ivAccessUnitParams, target);
+auto GroupBasedRenderer::renderPass(GroupIdMask groupIdMask, const AccessUnit &frame,
+                                    const ViewParams &viewportParams) const
+    -> Texture444Depth16Frame {
+  return m_synthesizer->renderFrame(filterFrame(groupIdMask, frame), viewportParams);
 }
 
-auto GroupBasedRenderer::filterPatchIdMapList(GroupIdMask groupIdMask,
-                                              PatchIdMapList patchIdMapList,
-                                              const IvAccessUnitParams &ivAccessUnitParams)
-    -> PatchIdMapList {
-  assert(ivAccessUnitParams.atlasParamsList);
-
-  // No grouping, no filtering
-  if (!ivAccessUnitParams.atlasParamsList->groupIds) {
-    assert(groupIdMask == 1);
-    return patchIdMapList;
-  }
-
-  // Filter out atlases that belong to a group that is not selected for this pass
-  const auto &groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
-  for (size_t atlasId = 0; atlasId < patchIdMapList.size(); ++atlasId) {
-    if (!groupIdMask.test(groupIds[atlasId])) {
-      fill(patchIdMapList[atlasId].getPlane(0).begin(), patchIdMapList[atlasId].getPlane(0).end(),
+auto GroupBasedRenderer::filterFrame(GroupIdMask groupIdMask, AccessUnit frame)
+    -> MivBitstream::AccessUnit {
+  for (auto &atlas : frame.atlas) {
+    const auto &masp = atlas.asps.miv_atlas_sequence_params();
+    if (!groupIdMask.test(masp.masp_group_id())) {
+      fill(atlas.blockToPatchMap.getPlane(0).begin(), atlas.blockToPatchMap.getPlane(0).end(),
            unusedPatchId);
     }
   }
-
-  return patchIdMapList;
+  return frame;
 }
 
-auto GroupBasedRenderer::groupPriority(unsigned groupId, const IvSequenceParams &ivSequenceParams,
-                                       const IvAccessUnitParams &ivAccessUnitParams,
-                                       const ViewParams &target) -> Priority {
-  // No grouping, no priority
-  assert(ivAccessUnitParams.atlasParamsList);
-  if (!ivAccessUnitParams.atlasParamsList->groupIds) {
-    assert(groupId == 0);
-    return {};
-  }
+auto GroupBasedRenderer::groupPriority(unsigned groupId, const AccessUnit &frame,
+                                       const ViewParams &viewportParams) -> Priority {
+  auto result = optional<Priority>{};
 
-  // Enumerate the views that occur in this group (in arbitrary order)
-  vector<unsigned> viewIds;
-  viewIds.reserve(ivSequenceParams.viewParamsList.size());
-  const auto &groupIds = *ivAccessUnitParams.atlasParamsList->groupIds;
-  for (const auto &patch : *ivAccessUnitParams.atlasParamsList) {
-    if (groupId == groupIds[patch.atlasId] && !contains(viewIds, patch.viewId)) {
-      viewIds.push_back(patch.viewId);
+  // For each atlas in this group
+  for (auto &atlas : frame.atlas) {
+    if (groupId == atlas.asps.miv_atlas_sequence_params().masp_group_id()) {
+      // Once for each referenced view
+      vector<bool> once(atlas.viewParamsList.size(), false);
+      for (auto &patch : atlas.patchParamsList) {
+        if (!once[patch.pduViewId()]) {
+          once[patch.pduViewId()] = true;
+          const auto &viewParams = atlas.viewParamsList[patch.pduViewId()];
+
+          // Find the view with the highest priority (i.e. closest to the target view)
+          const auto priority = viewPriority(viewParams, viewportParams);
+          if (!result || priority < *result) {
+            result = priority;
+          }
+        }
+      }
     }
   }
 
-  // Do something in case there are no patches
-  if (viewIds.empty()) {
-    return {};
-  }
-
-  // Find the view with the highest priority (i.e. the view within the group that is closest to the
-  // target view)
-  const auto highest = *min_element(begin(viewIds), end(viewIds), [&](unsigned i, unsigned j) {
-    return viewPriority(ivSequenceParams.viewParamsList[i], target) <
-           viewPriority(ivSequenceParams.viewParamsList[j], target);
-  });
-
-  // Return that priority
-  return viewPriority(ivSequenceParams.viewParamsList[highest], target);
+  return result ? *result : Priority{};
 }
 
-auto GroupBasedRenderer::viewPriority(const ViewParams &source, const ViewParams &target)
+auto GroupBasedRenderer::viewPriority(const ViewParams &view1, const ViewParams &view2)
     -> Priority {
-  const auto distance = norm(source.position - target.position);
+  const auto distance = norm(view1.ce.position() - view2.ce.position());
 
-  // Compute angle between the camera and target in degree unit
-  const auto yaw_target = target.rotation[0] * radperdeg;
-  const auto yaw_source = source.rotation[0] * radperdeg;
-  const auto pitch_target = target.rotation[1] * radperdeg;
-  const auto pitch_source = source.rotation[1] * radperdeg;
-  auto angle =
-      degperrad * acos(sin(pitch_source) * sin(pitch_target) +
-                       cos(pitch_source) * cos(pitch_target) * cos(yaw_source - yaw_target));
-
-  // to assure angle is ranging from -180 to 180 degree
-  if (angle > halfCycle) {
-    angle -= fullCycle;
-  }
+  // Compute angle between the camera and target
+  const auto angle = greatCircleDistance(view1.ce.rotation(), view2.ce.rotation());
 
   // Introduce angleWeight as a simple triangle function (with value of 1 when
   // angle is 0 & value of 0 when angle is 180)
-  const auto angleWeight = (1.F - abs(angle) / halfCycle);
+  const auto angleWeight = 1.F - angle / halfCycle;
 
   return {distance, angleWeight};
 }

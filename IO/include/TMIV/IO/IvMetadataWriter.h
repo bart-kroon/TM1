@@ -34,27 +34,21 @@
 #ifndef _TMIV_IO_IVMETADATAWRITER_H_
 #define _TMIV_IO_IVMETADATAWRITER_H_
 
-#include <TMIV/Metadata/Bitstream.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/MivEncoder.h>
 
 #include <fstream>
 
 namespace TMIV::IO {
 class IvMetadataWriter {
 public:
-  IvMetadataWriter(const Common::Json &config, const std::string &baseDirectoryField,
-                   const std::string &fileNameField);
+  explicit IvMetadataWriter(const Common::Json &config);
 
-  void writeIvSequenceParams(Metadata::IvSequenceParams);
-  void writeIvAccessUnitParams(Metadata::IvAccessUnitParams);
+  void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
+  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
 
 private:
-  std::string m_path;
   std::ofstream m_stream;
-  Metadata::OutputBitstream m_bitstream{m_stream};
-  Metadata::IvSequenceParams m_ivSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
+  std::unique_ptr<MivBitstream::MivEncoder> m_encoder;
 };
 } // namespace TMIV::IO
 

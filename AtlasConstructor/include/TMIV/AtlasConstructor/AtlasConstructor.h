@@ -57,17 +57,18 @@ public:
   AtlasConstructor &operator=(AtlasConstructor &&) = default;
   ~AtlasConstructor() override = default;
 
-  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams, std::vector<bool> isBasicView)
-      -> const Metadata::IvSequenceParams & override;
-  void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
+  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
+                       std::vector<bool> isBasicView)
+      -> const MivBitstream::IvSequenceParams & override;
+  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame transportViews) override;
-  auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
+  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
 
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
-  void writePatchInAtlas(const Metadata::AtlasParameters &patch, const Common::MVD16Frame &views,
+  void writePatchInAtlas(const MivBitstream::PatchParams &patch, const Common::MVD16Frame &views,
                          Common::MVD16Frame &atlas, int frame);
 
 private:
@@ -78,9 +79,9 @@ private:
   std::unique_ptr<IPacker> m_packer;
   std::vector<bool> m_isBasicView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
-  Metadata::IvSequenceParams m_inIvSequenceParams;
-  Metadata::IvSequenceParams m_outIvSequenceParams;
-  Metadata::IvAccessUnitParams m_ivAccessUnitParams;
+  MivBitstream::IvSequenceParams m_inIvSequenceParams;
+  MivBitstream::IvSequenceParams m_outIvSequenceParams;
+  MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
 };
 } // namespace TMIV::AtlasConstructor

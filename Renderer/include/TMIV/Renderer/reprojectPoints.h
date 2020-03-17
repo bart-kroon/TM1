@@ -34,60 +34,74 @@
 #ifndef _TMIV_RENDERER_REPROJECTPOINTS_H_
 #define _TMIV_RENDERER_REPROJECTPOINTS_H_
 
-#include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/Transformation.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/Renderer/Engine.h>
 
 namespace TMIV::Renderer {
 // Create a grid of positions indicating the center of each of the pixels
-auto imagePositions(const Metadata::ViewParams &viewParams) -> Common::Mat<Common::Vec2f>;
+auto imagePositions(const MivBitstream::CameraIntrinsics &ci) -> Common::Mat<Common::Vec2f>;
 
 // OMAF Referential: x forward, y left, z up
 // Image plane: u right, v down
 
 // Unproject points: From image positions to world positions (with the camera as
 // reference frame)
-auto unprojectPoints(const Metadata::ViewParams &viewParams,
+auto unprojectPoints(const MivBitstream::CameraIntrinsics &ci,
                      const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> Common::Mat<Common::Vec3f>;
 
 // Change the reference frame from one to another camera (merging extrinsic
 // parameters)
-auto changeReferenceFrame(const Metadata::ViewParams &viewParams,
-                          const Metadata::ViewParams &target,
+auto changeReferenceFrame(const MivBitstream::CameraExtrinsics &source,
+                          const MivBitstream::CameraExtrinsics &target,
                           const Common::Mat<Common::Vec3f> &points) -> Common::Mat<Common::Vec3f>;
 
 // Project points: From world positions (with the camera as reference frame)
 // to image positions
-auto projectPoints(const Metadata::ViewParams &viewParams, const Common::Mat<Common::Vec3f> &points)
+auto projectPoints(const MivBitstream::CameraIntrinsics &ci,
+                   const Common::Mat<Common::Vec3f> &points)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Reproject points by combining above three steps:
 //  1) Unproject to world points in the reference frame of the first camera
 //  2) Change the reference frame from the first to the second camera
 //  3) Project to image points
-auto reprojectPoints(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target,
+auto reprojectPoints(const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target,
                      const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
     -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>>;
 
 // Calculate ray angles between input and output camera. Units are radians.
 //
 // The points should be in the target frame of reference.
-auto calculateRayAngles(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target,
+auto calculateRayAngles(const MivBitstream::CameraExtrinsics &source,
+                        const MivBitstream::CameraExtrinsics &target,
                         const Common::Mat<Common::Vec3f> &points) -> Common::Mat<float>;
 
-// Return (R, T) such that x -> Rx + t changes reference frame from the source
-// camera to the target camera
-auto affineParameters(const Metadata::ViewParams &viewParams, const Metadata::ViewParams &target)
-    -> std::pair<Common::Mat3x3f, Common::Vec3f>;
+// Change the reference frame from a source camera to a target camera
+//
+// This corresponds to the affine transformation: x -> Rx + t with rotation matrix R and translation
+// vector t.
+class AffineTransform {
+public:
+  AffineTransform(const MivBitstream::CameraExtrinsics &source,
+                  const MivBitstream::CameraExtrinsics &target);
+
+  auto &translation() const { return m_t; }
+  auto operator()(Common::Vec3f x) const -> Common::Vec3f;
+
+private:
+  Common::Mat3x3f m_R;
+  Common::Vec3f m_t;
+};
 
 // Unproject a pixel from a source frame to scene coordinates in the reference
 // frame of the target camera.
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewParams &viewParams)
+auto unprojectVertex(Common::Vec2f position, float depth, const MivBitstream::CameraIntrinsics &ci)
     -> Common::Vec3f;
 
 // Project point: From world position (with the camera as reference frame)
@@ -95,7 +109,7 @@ auto unprojectVertex(Common::Vec2f position, float depth, const Metadata::ViewPa
 //
 // This method is less efficient because of the switch on projection type, but
 // suitable for rendering directly from an atlas.
-auto projectVertex(const Common::Vec3f &position, const Metadata::ViewParams &viewParams)
+auto projectVertex(const Common::Vec3f &position, const MivBitstream::CameraIntrinsics &ci)
     -> std::pair<Common::Vec2f, float>;
 
 inline bool isValidDepth(float d) { return (0.F < d); }
@@ -103,11 +117,11 @@ inline bool isValidDepth(float d) { return (0.F < d); }
 using PointCloud = std::vector<Common::Vec3f>;
 using PointCloudList = std::vector<PointCloud>;
 
-template <typename Projection> class ProjectionHelper {
+template <MivBitstream::CiCamType camType> class ProjectionHelper {
 public:
   class List : public std::vector<ProjectionHelper> {
   public:
-    List(const Metadata::ViewParamsList &viewParamsList);
+    List(const MivBitstream::ViewParamsList &viewParamsList);
     List(const List &) = default;
     List(List &&) = default;
     auto operator=(const List &) -> List & = default;
@@ -115,18 +129,18 @@ public:
   };
 
 private:
-  const Metadata::ViewParams &m_viewParams;
-  Engine<Projection> m_engine;
-  Common::Mat3x3f m_rotationMatrix;
+  const MivBitstream::ViewParams &m_viewParams;
+  Engine<camType> m_engine;
+  Common::QuatF m_rotation;
 
 public:
-  ProjectionHelper(const Metadata::ViewParams &viewParams);
+  ProjectionHelper(const MivBitstream::ViewParams &viewParams);
   ProjectionHelper(const ProjectionHelper &) = default;
   ProjectionHelper(ProjectionHelper &&) = default;
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = default;
   auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
-  auto getViewParams() const -> const Metadata::ViewParams & { return m_viewParams; }
-  auto getViewingPosition() const -> const Common::Vec3f & { return m_viewParams.position; }
+  auto getViewParams() const -> const MivBitstream::ViewParams & { return m_viewParams; }
+  auto getViewingPosition() const -> Common::Vec3f { return m_viewParams.ce.position(); }
   auto getViewingDirection() const -> Common::Vec3f;
   auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
   auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;
@@ -140,19 +154,20 @@ public:
   auto getPointCloud(unsigned N = 8) const -> PointCloud;
 };
 
-template <typename SourceProjectionType>
-auto getPointCloudList(
-    const typename ProjectionHelper<SourceProjectionType>::List &sourceHelperList, unsigned N = 16)
+template <MivBitstream::CiCamType camType>
+using ProjectionHelperList = typename ProjectionHelper<camType>::List;
+
+template <MivBitstream::CiCamType camType>
+auto getPointCloudList(const ProjectionHelperList<camType> &sourceHelperList, unsigned N = 16)
     -> PointCloudList;
 
-template <typename ProjectionType>
-auto getOverlapping(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList,
+template <MivBitstream::CiCamType camType>
+auto getOverlapping(const ProjectionHelperList<camType> &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float;
 
-template <typename ProjectionType>
-static auto
-computeOverlappingMatrix(const typename ProjectionHelper<ProjectionType>::List &sourceHelperList)
+template <MivBitstream::CiCamType camType>
+static auto computeOverlappingMatrix(const ProjectionHelperList<camType> &sourceHelperList)
     -> Common::Mat<float>;
 
 } // namespace TMIV::Renderer

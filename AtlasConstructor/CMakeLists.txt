@@ -29,7 +29,7 @@ add_library(TMIV::AtlasConstructorLib
 
 target_link_libraries(AtlasConstructorLib
 	PUBLIC
-		TMIV::MetadataLib
+		TMIV::MivBitstreamLib
 		TMIV::RendererLib)
 
 target_include_directories(AtlasConstructorLib

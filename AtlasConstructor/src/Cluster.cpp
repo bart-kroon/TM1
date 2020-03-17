@@ -527,7 +527,7 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
     }
   }
   c1.numActivePixels_ = (c.numActivePixels_ * c1.filling_) / c.filling_; // Approximation
-  c2.numActivePixels_ = c.numActivePixels_ - c1.numActivePixels_; // Approximation
+  c2.numActivePixels_ = c.numActivePixels_ - c1.numActivePixels_;        // Approximation
   return pair<Cluster, Cluster>(c1, c2);
 }
 

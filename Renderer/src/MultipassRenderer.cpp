@@ -41,7 +41,7 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &componentNode) {
@@ -61,7 +61,6 @@ MultipassRenderer::MultipassRenderer(const Json &rootNode, const Json &component
 }
 
 namespace {
-
 struct MultipassRendererHelper {
   vector<unsigned> selectedViewsPass;
   vector<unsigned> patchesViewId;
@@ -73,37 +72,26 @@ struct MultipassRendererHelper {
     return unusedPatchId;
   }
 
-  static auto sortViews(const ViewParamsVector &viewParamsVector, const ViewParams &target)
+  static auto sortViews(const ViewParamsList &viewParamsList, const ViewParams &target)
       -> vector<size_t> {
     vector<float> distance;
     vector<float> angle;
     vector<float> angleWeight;
 
-    for (size_t i = 0; i < viewParamsVector.size(); ++i) {
-      const auto &source = viewParamsVector[i];
-      distance.push_back(norm(source.position - target.position));
+    for (size_t i = 0; i < viewParamsList.size(); ++i) {
+      const auto &source = viewParamsList[i];
+      distance.push_back(norm(source.ce.position() - target.ce.position()));
 
-      // Compute Angle between the camera and target in degree unit
-      const auto yaw_target = target.rotation[0] * radperdeg;
-      const auto yaw_source = source.rotation[0] * radperdeg;
-      const auto pitch_target = target.rotation[1] * radperdeg;
-      const auto pitch_source = source.rotation[1] * radperdeg;
-      angle.push_back(degperrad *
-                      acos(sin(pitch_source) * sin(pitch_target) +
-                           cos(pitch_source) * cos(pitch_target) * cos(yaw_source - yaw_target)));
-
-      // to assure angle is ranging from -180 to 180 degree
-      if (angle[i] > halfCycle) {
-        angle[i] -= fullCycle;
-      }
+      // Compute angle between the camera and target
+      angle.push_back(greatCircleDistance(source.ce.rotation(), target.ce.rotation()));
 
       // Introduce AngleWeight as a simple triangle function (with value of 1 when
       // angle is 0 & value of 0 when angle is 180)
-      angleWeight.push_back(1.F - abs(angle[i]) / halfCycle);
+      angleWeight.push_back(1.F - angle[i] / halfCycle);
     }
 
-    // Find the sorted viewParamsVector indices
-    vector<size_t> sortedCamerasId(viewParamsVector.size());
+    // Find the sorted viewParamsList indices
+    vector<size_t> sortedCamerasId(viewParamsList.size());
     iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0);
     sort(sortedCamerasId.begin(), sortedCamerasId.end(),
          [&distance, &angleWeight](size_t i1, size_t i2) {
@@ -117,38 +105,37 @@ struct MultipassRendererHelper {
 };
 } // namespace
 
-auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapList &maps,
-                                    const IvSequenceParams &ivSequenceParams,
-                                    const IvAccessUnitParams &ivAccessUnitParams,
-                                    const ViewParams &target) const -> Texture444Depth16Frame {
+auto MultipassRenderer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
+    -> Texture444Depth16Frame {
   MultipassRendererHelper helper;
+  auto &viewParamsList = frame.atlas.front().viewParamsList;
 
-  assert(ivAccessUnitParams.atlasParamsList);
-  const auto &atlasParamsList = *ivAccessUnitParams.atlasParamsList;
+  // Filter out all patches across all atlases
+  auto framePass = frame;
+  for (auto &atlas : framePass.atlas) {
+    fill(atlas.blockToPatchMap.getPlane(0).begin(), atlas.blockToPatchMap.getPlane(0).end(),
+         unusedPatchId);
 
-  // Initalize mapsPass by unusedPatchId
-  auto mapsPass = vector<PatchIdMapList>(m_numberOfPasses);
-  for (auto &pass : mapsPass) {
-    for (const auto &patchIds : maps) {
-      PatchIdMap patchMap(patchIds.getWidth(), patchIds.getHeight());
-      fill(patchMap.getPlane(0).begin(), patchMap.getPlane(0).end(), unusedPatchId);
-      pass.push_back(patchMap);
+    // Precondition: all atlases use the same view parameters list
+    if (atlas.viewParamsList != viewParamsList) {
+      throw runtime_error(
+          "The MultipassRenderer requires that all atlases share the same view parameters list");
+    }
+
+    for (const auto &patch : atlas.patchParamsList) {
+      helper.patchesViewId.push_back(patch.pduViewId());
     }
   }
 
-  for (const auto &patch : atlasParamsList) {
-    helper.patchesViewId.push_back(patch.viewId);
-  }
-
   // Ordering views based on their distance & angle to target view
-  const auto sortedCamerasId = helper.sortViews(ivSequenceParams.viewParamsList, target);
+  const auto sortedCamerasId = helper.sortViews(viewParamsList, viewportParams);
 
   // Produce the individual pass synthesis results
   auto viewportPass = vector<Texture444Depth16Frame>(m_numberOfPasses);
   for (size_t passId = 0; passId < m_numberOfPasses; passId++) {
     // Find the selected views for a given pass
     helper.selectedViewsPass.clear();
-    for (size_t i = 0; i < ivSequenceParams.viewParamsList.size(); ++i) {
+    for (size_t i = 0; i < viewParamsList.size(); ++i) {
       if (i < m_numberOfViewsPerPass[passId]) {
         helper.selectedViewsPass.push_back(unsigned(sortedCamerasId[i]));
       }
@@ -160,16 +147,16 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     }
     cout << "\n";
 
-    // Update the Occupancy Map to be used in the Pass
-    for (size_t atlasId = 0; atlasId < maps.size(); ++atlasId) {
-      transform(maps[atlasId].getPlane(0).begin(), maps[atlasId].getPlane(0).end(),
-                mapsPass[passId][atlasId].getPlane(0).begin(),
+    // Update the block to patch map to be used in this pass
+    for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
+      transform(frame.atlas[atlasId].blockToPatchMap.getPlane(0).begin(),
+                frame.atlas[atlasId].blockToPatchMap.getPlane(0).end(),
+                framePass.atlas[atlasId].blockToPatchMap.getPlane(0).begin(),
                 [&helper](auto i) { return helper.filterMaps(i); });
     }
 
     // Synthesis per pass
-    viewportPass[passId] = m_synthesizer->renderFrame(atlas, mapsPass[passId], ivSequenceParams,
-                                                      ivAccessUnitParams, target);
+    viewportPass[passId] = m_synthesizer->renderFrame(framePass, viewportParams);
   }
 
   // Merging
@@ -186,11 +173,12 @@ auto MultipassRenderer::renderFrame(const MVD10Frame &atlas, const PatchIdMapLis
     }
   }
 
-  m_inpainter->inplaceInpaint(viewport, target);
+  if (frame.vps->miv_sequence_params().msp_max_entities_minus1() == 0) {
+    m_inpainter->inplaceInpaint(viewport, viewportParams);
+  }
 
-  // fading to grey with respect to viewing space
-  if (ivSequenceParams.viewingSpace) {
-    m_viewingSpaceController->inplaceFading(viewport, target, ivSequenceParams);
+  if (frame.vs) {
+    m_viewingSpaceController->inplaceFading(viewport, viewportParams, *frame.vs);
   }
 
   return viewport;

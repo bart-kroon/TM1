@@ -33,6 +33,8 @@
 
 #include <TMIV/Common/Frame.h>
 
+#include <TMIV/Common/Common.h>
+
 #include <cassert>
 
 using namespace std;
@@ -59,6 +61,22 @@ template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> F
 
   return result;
 }
+
+template <class TO, class FROM> auto yuv444p_impl(const Frame<FROM> &frame) -> Frame<TO> {
+  assert(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
+
+  auto result = Frame<TO>{frame.getWidth(), frame.getHeight()};
+
+  for (int i = 0; i < frame.getHeight(); ++i) {
+    for (int j = 0; j < frame.getWidth(); ++j) {
+      result.getPlane(0)(i, j) = frame.getPlane(0)(i, j);
+      result.getPlane(1)(i, j) = frame.getPlane(1)(i / 2, j / 2);
+      result.getPlane(2)(i, j) = frame.getPlane(2)(i / 2, j / 2);
+    }
+  }
+
+  return result;
+}
 } // namespace
 
 auto yuv420p(const Frame<YUV444P8> &frame) -> Frame<YUV420P8> {
@@ -71,5 +89,52 @@ auto yuv420p(const Frame<YUV444P10> &frame) -> Frame<YUV420P10> {
 
 auto yuv420p(const Frame<YUV444P16> &frame) -> Frame<YUV420P16> {
   return yuv420p_impl<YUV420P16>(frame);
+}
+
+auto yuv444p(const Frame<YUV420P8> &frame) -> Frame<YUV444P8> {
+  return yuv444p_impl<YUV444P8>(frame);
+}
+
+auto yuv444p(const Frame<YUV420P10> &frame) -> Frame<YUV444P10> {
+  return yuv444p_impl<YUV444P10>(frame);
+}
+
+auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16> {
+  return yuv444p_impl<YUV444P16>(frame);
+}
+
+auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f> {
+  auto &Y = inYuv.getPlane(0);
+  auto &U = inYuv.getPlane(1);
+  auto &V = inYuv.getPlane(2);
+  Mat<Vec3f> out(inYuv.getPlane(0).sizes());
+  const auto width = Y.width();
+  const auto height = Y.height();
+  constexpr auto bitDepth = 10U;
+
+  for (unsigned i = 0; i != height; ++i) {
+    for (unsigned j = 0; j != width; ++j) {
+      out(i, j) = Vec3f{expandValue<bitDepth>(Y(i, j)), expandValue<bitDepth>(U(i, j)),
+                        expandValue<bitDepth>(V(i, j))};
+    }
+  }
+  return out;
+}
+
+auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
+  Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
+  const auto width = in.width();
+  const auto height = in.height();
+
+  for (int k = 0; k < 3; ++k) {
+    for (unsigned i = 0; i != height; ++i) {
+      for (unsigned j = 0; j != width; ++j) {
+        constexpr auto bitDepth = 10U;
+        outYuv.getPlane(k)(i, j) = quantizeValue<bitDepth>(in(i, j)[k]);
+      }
+    }
+  }
+
+  return outYuv;
 }
 } // namespace TMIV::Common

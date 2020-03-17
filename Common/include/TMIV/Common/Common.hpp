@@ -35,16 +35,95 @@
 #error "Include the .h instead of the .hpp."
 #endif
 
+#include <cassert>
+#include <iomanip>
+#include <iostream>
+#include <optional>
+#include <stdexcept>
 #include <vector>
 
 namespace TMIV::Common {
-template <class... Args> inline std::string format(char const *fmt, Args &&... args) {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-  auto chars = snprintf(nullptr, 0, fmt, std::forward<Args>(args)...);
-  std::vector<char> buffer(chars + 1);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-  snprintf(buffer.data(), chars + 1, fmt, std::forward<Args>(args)...);
-  return {buffer.begin(), buffer.end() - 1};
+namespace detail {
+inline auto findReplacementField(const std::string &fmt, size_t pos)
+    -> std::optional<std::pair<std::size_t, std::size_t>> {
+  const auto open = fmt.find('{', pos);
+  if (open == std::string::npos) {
+    return {};
+  }
+
+  const auto close = fmt.find('}', open + 1);
+  if (close == std::string::npos) {
+    std::ostringstream what;
+    what << "Missing '}' in format(fmt, ...) with fmt=\"" << fmt << '"';
+    throw std::runtime_error(what.str());
+  }
+
+  return std::pair{open, close + 1};
+}
+
+// Extend as needed. So far the format function is only used for filename patterns with names, ID's
+// and frame sizes. A more complete implementation of formatReplacementField<Arg> could use
+// std::regex to parse the field.
+template <typename Arg>
+void formatReplacementField(std::ostream &stream, const std::string &field, Arg &&arg) {
+  using namespace std::string_literals;
+  const auto fill = stream.fill('0');
+  if (field == "{}"s) {
+    stream << std::forward<Arg>(arg);
+  } else if (field == "{:02}"s) {
+    stream << std::setw(2) << std::forward<Arg>(arg);
+  } else if (field == "{:03}"s) { // enough for fixed width printing of uint8_t
+    stream << std::setw(3) << std::forward<Arg>(arg);
+  } else if (field == "{:04}"s) {
+    stream << std::setw(4) << std::forward<Arg>(arg);
+  } else if (field == "{:05}"s) { // enough for fixed width printing of uint16_t
+    stream << std::setw(5) << std::forward<Arg>(arg);
+  } else {
+    std::ostringstream what;
+    what << "Incorrect or unsupported replacement field " << field;
+    throw std::runtime_error(what.str());
+  }
+  stream.fill(fill);
+}
+
+inline void format(std::ostream &stream, const std::string &fmt, size_t pos) {
+  if (findReplacementField(fmt, pos)) {
+    std::ostringstream what;
+    what << "Not enough arguments provided to format(fmt, ...) with fmt=\"" << fmt << '"';
+    throw std::runtime_error(what.str());
+  }
+
+  for (; pos < fmt.size(); ++pos) {
+    stream.put(fmt[pos]);
+  }
+}
+
+template <typename Arg0, typename... Args>
+void format(std::ostream &stream, const std::string &fmt, size_t pos, Arg0 &&arg0,
+            Args &&... args) {
+  const auto f = findReplacementField(fmt, pos);
+
+  if (!f) {
+    stream << fmt.substr(pos);
+    return;
+  }
+
+  assert(pos <= f->first && f->first < f->second && f->second <= fmt.size());
+
+  for (; pos < f->first; ++pos) {
+    stream.put(fmt[pos]);
+  }
+
+  formatReplacementField(stream, fmt.substr(f->first, f->second - f->first),
+                         std::forward<Arg0>(arg0));
+  format(stream, fmt, f->second, std::forward<Args>(args)...);
+}
+} // namespace detail
+
+template <typename... Args> auto format(const std::string &fmt, Args &&... args) -> std::string {
+  std::ostringstream stream;
+  detail::format(stream, fmt, 0, std::forward<Args>(args)...);
+  return stream.str();
 }
 
 inline constexpr unsigned maxLevel(unsigned bits) { return (1U << bits) - 1U; }

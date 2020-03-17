@@ -33,14 +33,14 @@
 
 #include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <iostream>
 #include <stdexcept>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::DepthOccupancy {
 DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThresholdIfSet)
@@ -58,32 +58,29 @@ DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThresholdIfSet)
 DepthOccupancy::DepthOccupancy(const Json & /*unused*/, const Json &nodeConfig)
     : DepthOccupancy{uint16_t(nodeConfig.require("depthOccMapThresholdIfSet").asInt())} {}
 
-auto DepthOccupancy::transformSequenceParams(Metadata::IvSequenceParams sequenceParams)
-    -> const Metadata::IvSequenceParams & {
+auto DepthOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
+    -> const MivBitstream::IvSequenceParams & {
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
     if (x.hasOccupancy) {
-      x.depthOccMapThreshold = m_depthOccMapThresholdIfSet; // =T
+      x.dq.dq_depth_occ_map_threshold_default(m_depthOccMapThresholdIfSet); // =T
       const auto nearLevel = 1023.F;
       const auto farLevel = float(2 * m_depthOccMapThresholdIfSet);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
-      x.normDispRange[0] +=
-          (0.F - farLevel) / (nearLevel - farLevel) * (x.normDispRange[1] - x.normDispRange[0]);
+      x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
+                            (0.F - farLevel) / (nearLevel - farLevel) *
+                                (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
     }
   }
 
   return m_outSequenceParams;
 }
 
-auto DepthOccupancy::transformAccessUnitParams(Metadata::IvAccessUnitParams accessUnitParams)
-    -> const Metadata::IvAccessUnitParams & {
+auto DepthOccupancy::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
+    -> const MivBitstream::IvAccessUnitParams & {
   m_accessUnitParams = accessUnitParams;
-  if (m_accessUnitParams.atlasParamsList) {
-    m_accessUnitParams.atlasParamsList->depthOccupancyParamsPresentFlags =
-        vector<bool>(m_accessUnitParams.atlasParamsList->atlasSizes.size(), false);
-  }
   return m_accessUnitParams;
 }
 
@@ -92,35 +89,39 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
   outAtlases.reserve(inAtlases.size());
 
   for (auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.first,
-                            Depth10Frame{inAtlas.second.getWidth(), inAtlas.second.getHeight()});
+    outAtlases.emplace_back(inAtlas.texture,
+                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }
 
-  for (const auto &patch : *m_accessUnitParams.atlasParamsList) {
-    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.viewId];
-    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.viewId];
+  for (const auto &patch : m_accessUnitParams.patchParamsList) {
+    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.pduViewId()];
+    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.pduViewId()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
 #ifndef NDEBUG
     const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
 #endif
-    const auto inDepthTransform = DepthTransform<16>{inViewParams};
-    const auto outDepthTransform = DepthTransform<10>{outViewParams, patch};
+    const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
+    const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
 
-    const auto patchSizeInAtlas = patch.patchSizeInAtlas();
+    for (auto i = 0; i < patch.pdu2dSize().y(); ++i) {
+      for (auto j = 0; j < patch.pdu2dSize().x(); ++j) {
+        const auto n = i + patch.pdu2dPos().y();
+        const auto m = j + patch.pdu2dPos().x();
 
-    for (int i = 0; i < patchSizeInAtlas.y(); ++i) {
-      for (int j = 0; j < patchSizeInAtlas.x(); ++j) {
-        const int n = i + patch.posInAtlas.y();
-        const int m = j + patch.posInAtlas.x();
+        const auto &plane = inAtlases[patch.vuhAtlasId].depth.getPlane(0);
 
-        const auto inLevel = inAtlases[patch.atlasId].second.getPlane(0)(n, m);
+        if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
+          abort();
+        }
+
+        const auto inLevel = plane(n, m);
 
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
           assert(outOccupancyTransform.occupant(outLevel));
 
-          outAtlases[patch.atlasId].second.getPlane(0)(n, m) = outLevel;
+          outAtlases[patch.vuhAtlasId].depth.getPlane(0)(n, m) = outLevel;
         }
       }
     }

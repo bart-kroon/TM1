@@ -47,36 +47,68 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 auto makeFullERPCamera() {
-  return ViewParams{{10, 5},                   // size
-                    {1.F, 0.F, -1.F},          // position
-                    {1.F, 2.F, -0.5F},         // orientation
-                    ErpParams{{-180.F, 180.F}, // phi range
-                              {-90.F, 90.F}},  // theta range
-                    {1.F, 10.F}};              // depth range
+  auto x = ViewParams{};
+
+  x.ci.ci_projection_plane_width_minus1(9)
+      .ci_projection_plane_height_minus1(4)
+      .ci_cam_type(CiCamType::equirectangular)
+      .ci_erp_phi_min(-halfCycle)
+      .ci_erp_phi_max(halfCycle)
+      .ci_erp_theta_min(-quarterCycle)
+      .ci_erp_theta_max(quarterCycle);
+  x.ce.ce_view_pos_x(1.F)
+      .ce_view_pos_z(-1.F)
+      .ce_view_quat_x(0.01F)
+      .ce_view_quat_y(0.02F)
+      .ce_view_quat_z(-0.5F);
+  x.dq.dq_norm_disp_low(1.F).dq_norm_disp_high(10.F);
+
+  return x;
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
-  const ViewParams neutral{};
-  const ViewParams translated{{}, {1.F, 2.F, 3.F}};
-  const ViewParams rotated{{}, {}, {100.F, 30.F, -30.F}};
-  SECTION("trivial") {
-    auto R_t = affineParameters(neutral, neutral);
-    REQUIRE(R_t.first == Mat3x3f::eye());
-    REQUIRE(R_t.second == Vec3f::zeros());
-  }
-  SECTION("translation") {
-    auto R_t = affineParameters(neutral, translated);
-    REQUIRE(R_t.first == Mat3x3f::eye());
-    REQUIRE(R_t.second == -translated.position);
-  }
-  SECTION("rotation") {
-    auto R_t = affineParameters(neutral, rotated);
-    REQUIRE(none_of(begin(R_t.first), end(R_t.first), [](auto x) { return x == 0.F; }));
-    REQUIRE(R_t.second == Vec3f::zeros());
+  const auto neutral = CameraExtrinsics{};
+
+  auto translated = neutral;
+  translated.ce_view_pos_x(1.F).ce_view_pos_y(2.F).ce_view_pos_z(3.F);
+
+  auto rotated = neutral;
+  rotated.ce_view_quat_x(0.1F).ce_view_quat_y(0.3F).ce_view_quat_z(-0.3F);
+
+  SECTION("Construction") {
+    auto nn = AffineTransform(neutral, neutral);
+    auto nt = AffineTransform(neutral, translated);
+    auto tn = AffineTransform(translated, neutral);
+    auto nr = AffineTransform(neutral, rotated);
+    auto rn = AffineTransform(rotated, neutral);
+
+    SECTION("Translation") {
+      REQUIRE(nn.translation() == Vec3f{});
+      REQUIRE(nt.translation() == -translated.position());
+      REQUIRE(tn.translation() == translated.position());
+      REQUIRE(nr.translation() == Vec3f{});
+      REQUIRE(rn.translation() == Vec3f{});
+    }
+
+    SECTION("Transformation") {
+      for (const auto x : {Vec3f{}, Vec3f{1.F, 2.F, 3.F}, Vec3f{-1.F, 0.3F, 0.4F}}) {
+        REQUIRE(nn(x) == x);
+        REQUIRE(nt(x) == x - translated.position());
+        REQUIRE(tn(x) == x + translated.position());
+
+        const auto nr_x_ref = rotate(x, conj(rotated.rotation()));
+        const auto rn_x_ref = rotate(x, rotated.rotation());
+
+        for (int d = 0; d < 3; ++d) {
+          REQUIRE(nr(x)[d] == Approx(nr_x_ref[d]));
+          REQUIRE(rn(x)[d] == Approx(rn_x_ref[d]));
+        }
+      }
+    }
   }
 }
 
@@ -168,7 +200,7 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
     fill(begin(depth), end(depth), 2.F);
 
     WHEN("Calculating image positions") {
-      auto positions = imagePositions(viewParams);
+      auto positions = imagePositions(viewParams.ci);
 
       THEN("The image positions should be at the pixel centers") {
         REQUIRE(positions(4, 7).x() == 7.5F);

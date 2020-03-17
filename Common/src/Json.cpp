@@ -282,12 +282,9 @@ auto Json::require(string const &key) const -> Json {
   throw runtime_error(stream.str());
 }
 
-auto Json::isPresent(string const &key)const -> bool {
+auto Json::isPresent(string const &key) const -> bool {
   auto node = optional(key);
-  if (node.type() != Type::null) {
-    return true;
-  }
-  return false;
+  return node.type() != Type::null;
 }
 
 auto Json::at(size_t index) const -> Json {

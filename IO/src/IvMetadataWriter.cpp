@@ -37,32 +37,29 @@
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
-IvMetadataWriter::IvMetadataWriter(const Json &config, const string &baseDirectoryField,
-                                   const string &fileNameField) {
-  m_path = getFullPath(config, baseDirectoryField, fileNameField);
-  m_stream.open(m_path, ios::binary);
+auto bitstreamPath(const Json &config) -> string {
+  return getFullPath(config, "OutputDirectory", "AtlasMetadataPath");
+}
+
+IvMetadataWriter::IvMetadataWriter(const Json &config)
+    : m_stream{bitstreamPath(config), ios::binary} {
   if (!m_stream.good()) {
     ostringstream what;
-    what << "Failed to open metadata file " << m_path;
+    what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
     throw runtime_error(what.str());
   }
+  m_encoder = make_unique<MivEncoder>(m_stream);
 }
 
-void IvMetadataWriter::writeIvSequenceParams(IvSequenceParams ivSequenceParams) {
-  m_ivSequenceParams = move(ivSequenceParams);
-  m_ivSequenceParams.encodeTo(m_bitstream);
+void IvMetadataWriter::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
+  m_encoder->writeIvSequenceParams(ivSequenceParams);
 }
 
-void IvMetadataWriter::writeIvAccessUnitParams(IvAccessUnitParams ivAccessUnitParams) {
-  const bool skipAtlasParamsList =
-      m_ivAccessUnitParams.atlasParamsList == ivAccessUnitParams.atlasParamsList;
-  m_ivAccessUnitParams = ivAccessUnitParams;
-  if (skipAtlasParamsList) {
-    ivAccessUnitParams.atlasParamsList.reset();
-  }
-  ivAccessUnitParams.encodeTo(m_bitstream, m_ivSequenceParams);
+void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
+                                               int intraPeriodFrameCount) {
+  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams, intraPeriodFrameCount);
 }
 } // namespace TMIV::IO

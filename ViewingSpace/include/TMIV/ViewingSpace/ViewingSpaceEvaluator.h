@@ -34,7 +34,7 @@
 #ifndef _TMIV_VIEWINGSPACE_VIEWINGSPACEEVALUATOR_H_
 #define _TMIV_VIEWINGSPACE_VIEWINGSPACEEVALUATOR_H_
 
-#include <TMIV/Metadata/ViewingSpace.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 
 namespace TMIV::ViewingSpace {
 
@@ -49,7 +49,7 @@ class ViewingSpaceEvaluator {
   ViewingSpaceEvaluator() = delete;
 
 public:
-  static auto computeInclusion(const Metadata::ViewingSpace &viewingSpace,
+  static auto computeInclusion(const MivBitstream::ViewingSpace &viewingSpace,
                                const ViewingParams &viewingParams) -> float;
 };
 

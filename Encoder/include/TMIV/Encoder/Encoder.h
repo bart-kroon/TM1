@@ -39,6 +39,7 @@
 #include <TMIV/AtlasConstructor/IAtlasConstructor.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/DepthOccupancy/IDepthOccupancy.h>
+#include <TMIV/Encoder/GeometryDownscaler.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 namespace TMIV::Encoder {
@@ -51,17 +52,18 @@ public:
   Encoder &operator=(Encoder &&) = default;
   ~Encoder() override = default;
 
-  auto prepareSequence(Metadata::IvSequenceParams ivSequenceParams)
-      -> const Metadata::IvSequenceParams & override;
-  void prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) override;
+  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+      -> const MivBitstream::IvSequenceParams & override;
+  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
   void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const Metadata::IvAccessUnitParams & override;
+  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
 
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<AtlasConstructor::IAtlasConstructor> m_atlasConstructor;
   std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
+  GeometryDownscaler m_geometryDownscaler;
 };
 } // namespace TMIV::Encoder
 

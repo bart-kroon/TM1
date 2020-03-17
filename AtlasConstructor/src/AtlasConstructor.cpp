@@ -35,14 +35,14 @@
 
 #include "Cluster.h"
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 #include <cassert>
 #include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::AtlasConstructor {
 AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
@@ -71,9 +71,14 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_nbAtlas =
       max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
 
-  // Copy sequence parameters + Basic view ids
   m_inIvSequenceParams = move(ivSequenceParams);
-  m_outIvSequenceParams = m_inIvSequenceParams;
+
+  // Create IVS with VPS with right number of atlases but copy other parts from input IVS
+  m_outIvSequenceParams = IvSequenceParams{SizeVector(m_nbAtlas, m_atlasSize)};
+  m_outIvSequenceParams.msp() = m_inIvSequenceParams.msp();
+  m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
+  m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;
+
   m_isBasicView = move(isBasicView);
 
   // Register pruning relation
@@ -89,16 +94,15 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   return m_outIvSequenceParams;
 }
 
-void AtlasConstructor::prepareAccessUnit(Metadata::IvAccessUnitParams ivAccessUnitParams) {
-  assert(ivAccessUnitParams.atlasParamsList);
+void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   m_ivAccessUnitParams = ivAccessUnitParams;
 
   const auto numOfCam = m_inIvSequenceParams.viewParamsList.size();
 
   for (size_t c = 0; c < numOfCam; c++) {
     Mat<bitset<maxIntraPeriod>> nonAggMask;
-    int H = m_inIvSequenceParams.viewParamsList[c].size.y();
-    int W = m_inIvSequenceParams.viewParamsList[c].size.x();
+    int H = m_inIvSequenceParams.viewParamsList[c].ci.projectionPlaneSize().y();
+    int W = m_inIvSequenceParams.viewParamsList[c].ci.projectionPlaneSize().x();
 
     nonAggMask.resize(H, W);
     for (int h = 0; h < H; h++) {
@@ -120,8 +124,8 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
   const auto frame = m_viewBuffer.size();
 
   for (size_t view = 0; view < masks.size(); ++view) {
-    int H = transportViews[view].first.getHeight();
-    int W = transportViews[view].first.getWidth();
+    int H = transportViews[view].texture.getHeight();
+    int W = transportViews[view].texture.getWidth();
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
         if (masks[view].getPlane(0)(h, w) != 0) {
@@ -150,10 +154,45 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   cout << "Aggregated luma samples per frame is " << lumaSamplesPerFrame << "M\n";
 
   // Packing
-  assert(m_ivAccessUnitParams.atlasParamsList);
-  m_ivAccessUnitParams.atlasParamsList->atlasSizes = SizeVector(m_nbAtlas, m_atlasSize);
-  m_ivAccessUnitParams.atlasParamsList->setAtlasParamsVector(m_packer->pack(
-      m_ivAccessUnitParams.atlasParamsList->atlasSizes, aggregatedMask, m_isBasicView));
+  m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
+  for (auto &atlas : m_ivAccessUnitParams.atlas) {
+    // Set ASPS parameters
+    atlas.asps.asps_frame_width(m_atlasSize.x())
+        .asps_frame_height(m_atlasSize.y())
+        .asps_use_eight_orientations_flag(true)
+        .asps_extended_projection_enabled_flag(true)
+        .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
+
+    // Record patch alignment -> asps_log2_patch_packing_block_size
+    while (m_packer->getAlignment() % (2 << atlas.asps.asps_log2_patch_packing_block_size()) == 0) {
+      atlas.asps.asps_log2_patch_packing_block_size(
+          atlas.asps.asps_log2_patch_packing_block_size() + 1);
+    }
+
+    // Set AFPS parameters
+    atlas.afps
+        .afps_2d_pos_x_bit_count_minus1(ceilLog2(m_atlasSize.x()) -
+                                        atlas.asps.asps_log2_patch_packing_block_size() - 1)
+        .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
+                                        atlas.asps.asps_log2_patch_packing_block_size() - 1);
+
+    uint16_t maxProjectionPlaneWidthMinus1 = 0;
+    uint16_t maxProjectionPlaneHeightMinus1 = 0;
+    for (auto &vp : m_outIvSequenceParams.viewParamsList) {
+      maxProjectionPlaneWidthMinus1 =
+          max(maxProjectionPlaneWidthMinus1, vp.ci.ci_projection_plane_width_minus1());
+      maxProjectionPlaneHeightMinus1 =
+          max(maxProjectionPlaneHeightMinus1, vp.ci.ci_projection_plane_height_minus1());
+    }
+    atlas.afps.afps_3d_pos_x_bit_count_minus1(ceilLog2(maxProjectionPlaneWidthMinus1 + 1) - 1);
+    atlas.afps.afps_3d_pos_y_bit_count_minus1(ceilLog2(maxProjectionPlaneHeightMinus1 + 1) - 1);
+
+    // Set ATGH parameters
+    atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+    atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+  }
+  m_ivAccessUnitParams.patchParamsList =
+      m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 
   // Atlas construction
   int frame = 0;
@@ -163,11 +202,11 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
-      atlas.first.fillNeutral();
+      atlas.texture.fillNeutral();
       atlasList.push_back(move(atlas));
     }
 
-    for (const auto &patch : *m_ivAccessUnitParams.atlasParamsList) {
+    for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
       writePatchInAtlas(patch, views, atlasList, frame);
     }
 
@@ -184,26 +223,26 @@ auto AtlasConstructor::popAtlas() -> MVD16Frame {
   return atlas;
 }
 
-void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD16Frame &views,
+void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Frame &views,
                                          MVD16Frame &atlas, int frame) {
 
-  auto &currentAtlas = atlas[patch.atlasId];
-  const auto &currentView = views[patch.viewId];
+  auto &currentAtlas = atlas[patch.vuhAtlasId];
+  const auto &currentView = views[patch.pduViewId()];
 
-  auto &textureAtlasMap = currentAtlas.first;
-  auto &depthAtlasMap = currentAtlas.second;
+  auto &textureAtlasMap = currentAtlas.texture;
+  auto &depthAtlasMap = currentAtlas.depth;
 
-  const auto &textureViewMap = currentView.first;
-  const auto &depthViewMap = currentView.second;
-  int w = patch.patchSizeInView.x();
-  int h = patch.patchSizeInView.y();
-  int xM = patch.posInView.x();
-  int yM = patch.posInView.y();
+  const auto &textureViewMap = currentView.texture;
+  const auto &depthViewMap = currentView.depth;
+  int w = patch.pduViewSize().x();
+  int h = patch.pduViewSize().y();
+  int xM = patch.pduViewPos().x();
+  int yM = patch.pduViewPos().y();
 
   int alignment = m_packer->getAlignment();
 
-  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.viewId];
-  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.viewId];
+  const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId()];
+  const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId()];
 
   for (int dyAligned = 0; dyAligned < h; dyAligned += alignment) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += alignment) {
@@ -217,7 +256,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patch.viewId](dy + yM, dx + xM)[frame]) {
+          if (m_nonAggregatedMask[patch.pduViewId()](dy + yM, dx + xM)[frame]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }
@@ -231,7 +270,7 @@ void AtlasConstructor::writePatchInAtlas(const AtlasParameters &patch, const MVD
         for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
 
           Vec2i pView = {xM + dx, yM + dy};
-          Vec2i pAtlas = viewToAtlas(pView, patch);
+          Vec2i pAtlas = patch.viewToAtlas(pView);
 
           if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
               pAtlas.y() >= textureAtlasMap.getHeight() ||

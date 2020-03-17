@@ -35,7 +35,7 @@
 
 #include "PrunedMesh.h"
 #include <TMIV/Common/Graph.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Rasterizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
@@ -49,7 +49,7 @@
 
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 using namespace std;
 
@@ -131,15 +131,15 @@ public:
     }
   }
 
-  template <typename ProjectionType>
-  void registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams,
+  template <CiCamType camType>
+  void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
                                const std::vector<bool> &isBasicView) {
 
     auto &viewParamsList = ivSequenceParams.viewParamsList;
-    typename ProjectionHelper<ProjectionType>::List cameraHelperList{viewParamsList};
+    typename ProjectionHelper<camType>::List cameraHelperList{viewParamsList};
 
     // Overlapping matrix
-    auto overlappingMatrix = computeOverlappingMatrix<ProjectionType>(cameraHelperList);
+    auto overlappingMatrix = computeOverlappingMatrix<camType>(cameraHelperList);
 
     // Pruning order
     computePruningOrder(overlappingMatrix, isBasicView);
@@ -166,8 +166,9 @@ public:
 
       const auto &neighbourhood = pruningGraphExport.getNeighbourhood(camId);
 
-      if (!neighbourhood.empty()) {
-
+      if (neighbourhood.empty()) {
+        viewParamsList[camId].pc = PruningChildren{};
+      } else {
         std::vector<std::uint16_t> childIdList;
 
         childIdList.reserve(neighbourhood.size());
@@ -176,12 +177,12 @@ public:
           childIdList.emplace_back(static_cast<std::uint16_t>(link.node()));
         }
 
-        viewParamsList[camId].pruningChildren = std::move(childIdList);
+        viewParamsList[camId].pc = PruningChildren{std::move(childIdList)};
       }
     }
   }
 
-  auto prune(const Metadata::IvSequenceParams &ivSequenceParams, const MVD16Frame &views,
+  auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams, const MVD16Frame &views,
              const vector<bool> &isBasicView) -> MaskList {
 
     m_ivSequenceParams = ivSequenceParams;
@@ -206,8 +207,9 @@ private:
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_masks),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto mask = Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()};
-                transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
+                auto mask = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
+                                            viewParams.ci.projectionPlaneSize().y()};
+                transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
                             // excluded from the pruning mask
@@ -221,8 +223,9 @@ private:
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_status),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto status = Frame<YUV400P8>{viewParams.size.x(), viewParams.size.y()};
-                transform(cbegin(view.second.getPlane(0)), cend(view.second.getPlane(0)),
+                auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
+                                              viewParams.ci.projectionPlaneSize().y()};
+                transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
                             // freezed from pruning
@@ -236,10 +239,10 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_ivSequenceParams.viewParamsList.size(); ++i) {
       if (!m_isBasicView[i]) {
-        const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i]};
-        m_synthesizers.emplace_back(
-            make_unique<IncrementalSynthesizer>(m_config, m_ivSequenceParams.viewParamsList[i].size,
-                                                i, depthTransform.expandDepth(views[i].second)));
+        const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i].dq};
+        m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
+            m_config, m_ivSequenceParams.viewParamsList[i].ci.projectionPlaneSize(), i,
+            depthTransform.expandDepth(views[i].depth)));
       }
     }
   }
@@ -297,7 +300,7 @@ private:
     const auto flags = cout.setf(ios::fixed, ios::floatfield);
     cout << setw(2) << index << " (" << setw(3) << m_ivSequenceParams.viewParamsList[index].name
          << "): " << ivertices.size() << " vertices ("
-         << 100. * double(ivertices.size()) / (view.first.getWidth() * view.first.getHeight())
+         << 100. * double(ivertices.size()) / (view.texture.getWidth() * view.texture.getHeight())
          << "% of full view)\n";
     cout.precision(prec);
     cout.setf(flags);
@@ -305,7 +308,7 @@ private:
     for (auto &s : m_synthesizers) {
       auto overtices = project(ivertices, m_ivSequenceParams.viewParamsList[index],
                                m_ivSequenceParams.viewParamsList[s->index]);
-      weightedSphere(m_ivSequenceParams.viewParamsList[s->index], overtices, triangles);
+      weightedSphere(m_ivSequenceParams.viewParamsList[s->index].ci, overtices, triangles);
       s->rasterizer.submit(overtices, attributes, triangles);
       s->rasterizer.run();
       updateMask(*s);
@@ -376,7 +379,7 @@ private:
           if (*k != 0) {
             *i = 0;
           }
-        } else if (m_ivSequenceParams.depthLowQualityFlag && (depthError < 0.F)) {
+        } else if (m_ivSequenceParams.msp().msp_depth_low_quality_flag() && (depthError < 0.F)) {
           if (*k != 0) {
             *k = 0;
             *i = 255;
@@ -406,18 +409,14 @@ HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &no
 
 HierarchicalPruner::~HierarchicalPruner() = default;
 
-void HierarchicalPruner::registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams,
+void HierarchicalPruner::registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
                                                  const std::vector<bool> &isBasicView) {
-  return std::visit(
-      [&](const auto &projection) {
-        using ProjectionType = std::decay_t<decltype(projection)>;
-
-        return m_impl->registerPruningRelation<ProjectionType>(ivSequenceParams, isBasicView);
-      },
-      ivSequenceParams.viewParamsList[0].projection);
+  return ivSequenceParams.viewParamsList.front().ci.dispatch([&](auto camType) {
+    return m_impl->registerPruningRelation<camType>(ivSequenceParams, isBasicView);
+  });
 }
 
-auto HierarchicalPruner::prune(const Metadata::IvSequenceParams &ivSequenceParams,
+auto HierarchicalPruner::prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
                                const Common::MVD16Frame &views,
                                const std::vector<bool> &isBasicView) -> Common::MaskList {
   return m_impl->prune(ivSequenceParams, views, isBasicView);

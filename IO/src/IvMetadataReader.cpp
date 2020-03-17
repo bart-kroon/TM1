@@ -35,46 +35,31 @@
 
 #include <TMIV/IO/IO.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
-IvMetadataReader::IvMetadataReader(const Json &config, const string &baseDirectoryField,
-                                   const string &fileNameField) {
-  m_path = getFullPath(config, baseDirectoryField, fileNameField);
-  m_stream.open(m_path, ios::binary);
+auto bitstreamPath(const Json &config) -> string;
+
+IvMetadataReader::IvMetadataReader(const Json &config)
+    : m_stream{bitstreamPath(config), ios::binary} {
   if (!m_stream.good()) {
     ostringstream what;
-    what << "Failed to open metadata file " << m_path;
+    what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
     throw runtime_error(what.str());
   }
-}
-
-void IvMetadataReader::readIvSequenceParams() {
-  m_ivSequenceParams = IvSequenceParams::decodeFrom(m_bitstream);
-}
-
-void IvMetadataReader::readIvAccessUnitParams() {
-  const auto currentAtlasParamsList = m_ivAccessUnitParams.atlasParamsList;
-  m_ivAccessUnitParams = IvAccessUnitParams::decodeFrom(m_bitstream, m_ivSequenceParams);
-  if (!m_ivAccessUnitParams.atlasParamsList) {
-    m_ivAccessUnitParams.atlasParamsList = currentAtlasParamsList.value();
-  }
-  // TODO(BK): Partial atlas information? (With only some atlas_id's present.)
-}
-
-auto IvMetadataReader::readAccessUnit(int accessUnit) -> bool {
-  if (m_accessUnit == accessUnit) {
-    return false;
-  }
-  m_accessUnit = accessUnit;
-  m_bitstream.reset();
-  m_stream.seekg(0);
-  readIvSequenceParams();
-  for (int i = 0; i <= accessUnit; ++i) {
-    readIvAccessUnitParams();
-  }
-  return true;
+  m_decoder = make_unique<MivDecoder>(
+      m_stream,
+      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+        return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
+                                    frameSize, int(atlasId));
+      },
+      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+        return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
+                                            frameId, frameSize, int(atlasId)));
+      });
 }
 } // namespace TMIV::IO

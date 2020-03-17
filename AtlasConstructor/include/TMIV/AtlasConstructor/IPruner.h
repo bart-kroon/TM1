@@ -35,7 +35,7 @@
 #define _TMIV_ATLASCONSTRUCTOR_IPRUNER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::AtlasConstructor {
 class IPruner {
@@ -47,9 +47,9 @@ public:
   IPruner &operator=(IPruner &&) = default;
   virtual ~IPruner() = default;
 
-  virtual void registerPruningRelation(Metadata::IvSequenceParams &ivSequenceParams,
+  virtual void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
                                        const std::vector<bool> &isBasicView) = 0;
-  virtual auto prune(const Metadata::IvSequenceParams &ivSequenceParams,
+  virtual auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
                      const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
       -> Common::MaskList = 0;
 };

@@ -48,7 +48,7 @@ public:
   NoViewOptimizer &operator=(NoViewOptimizer &&) = default;
   ~NoViewOptimizer() override = default;
 
-  auto optimizeSequence(Metadata::IvSequenceParams ivSequenceParams) -> Output override {
+  auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output override {
     std::vector<bool> isBasicView(ivSequenceParams.viewParamsList.size(), true);
     return {std::move(ivSequenceParams), std::move(isBasicView)};
   }

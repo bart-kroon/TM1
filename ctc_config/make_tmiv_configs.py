@@ -36,26 +36,31 @@ import json
 import os
 import sys
 
-# Roundup resolution such that a downscaled resolution is still macroblock aligned
-def ResolutionAlignMacroblock(resolution, scale):
-	macroblock = 16
-	macroblockScaled = macroblock * scale
-	
-	remainder = resolution % macroblockScaled
-	if remainder == 0:
-		return resolution
-	else:
-		return resolution + macroblockScaled - remainder
-
-class DecoderConfiguration:
-	def __init__(self, sourceDir, anchorId, seqId, testPoint, depthScale):
-		self.sourceDir = sourceDir
-		self.anchorId = anchorId
-		self.seqId = seqId
-		self.testPoint = testPoint
-		self.depthScale = depthScale
+class TestConfiguration:
+	def __init__(self, sourceDir, anchorId, seqId, testPoint):
+		self.__sourceDir = sourceDir
+		self.__anchorId = anchorId
+		self.__seqId = seqId
+		self.__testPoint = testPoint
+		
 		with open(self.sequenceJsonPath(), 'r') as stream:			
 			self.sequenceParams = json.load(stream)
+
+	@property
+	def sourceDir(self):
+		return self.__sourceDir
+
+	@property
+	def anchorId(self):
+		return self.__anchorId
+
+	@property
+	def seqId(self):
+		return self.__seqId
+
+	@property
+	def testPoint(self):
+		return self.__testPoint
 
 	def ctcArchive(self):
 		return self.sourceDir == '.'
@@ -65,11 +70,20 @@ class DecoderConfiguration:
 			return 97
 		return 17
 
-	def intraPeriod(self):
-		return 32
-
-	def sourceDirectory(self):
-		return self.sourceDir.format(self.seqId, self.seqName())
+	def startFrame(self):
+		return {
+			'A': 23,
+			'B': 100,
+			'C': 0,
+			'D': 10,
+			'E': 135,
+			'J': 0,
+			'L': 30,
+			'N': 60,
+			'P': 0,
+			'U': 0,
+			'T': 0
+		}[self.seqId]		
 
 	def seqName(self):
 		return {
@@ -86,94 +100,28 @@ class DecoderConfiguration:
 			'T': 'PoznanHall'
 		}[self.seqId]
 
-	def sourceCameraParameters(self):
-		if self.ctcArchive():
-			return '{}.json'.format(self.seqName())	
-		return self.sequenceJsonPath()
-
 	def configPath(self):
 		x = os.path.dirname(sys.argv[0])
 		if len(x) > 0:
 			return x
 		return '.'
 
+	def sourceDirectory(self):
+		return self.sourceDir.format(self.seqId, self.seqName())
+
 	def sequenceJsonPath(self):
 		return os.path.realpath('{}/sequences/{}.json'.format(self.configPath(), self.seqName()))
 
-	def firstSourceCamera(self):
-		for camera in self.sequenceParams['cameras']:
-			if camera['Name'] == self.firstSourceCameraName():
-				return camera
-		raise 'Could not find first source camera in sequence configuration'
+	def sourceCameraParameters(self):
+		if self.ctcArchive():
+			return '{}.json'.format(self.seqName())	
+		return self.sequenceJsonPath()
 
-	def viewWidth(self):
-		return self.firstSourceCamera()['Resolution'][0]
+	def attributeVideoDataPathFmt(self):
+		return 'ATL_S{}_{}_Tt_c{{:02}}_{{}}x{{}}_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
 
-	def viewHeight(self):
-		return self.firstSourceCamera()['Resolution'][1]
-
-	def atlasWidth(self):
-		return self.viewWidth()
-
-	def atlasHeight(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
-			h = {
-				'A': 4096,
-				'B': 2736,
-				'C': 2048,
-				'D': 2736,
-				'E': 1456,
-				'J': 1456,
-				'L': 2912,
-				'N': 2736,
-				'P': 2912,
-				'U': 2912,
-				'T': 2912
-			}[self.seqId]
-		else:
-			h = self.viewHeight()
-		return ResolutionAlignMacroblock(h, self.depthScale)
-		
-
-	def viewportWidth(self):
-		if self.outputCameraName()[0] == 'p':
-			return {
-				'A': 2048,
-				'B': 2048,
-				'C': 2048,
-				'D': 1920,
-				'E': 1920,
-				'J': 1920,
-				'L': 1920,
-				'N': 2048,
-				'P': 1920,
-				'U': 1920,
-				'T': 1920
-			}[self.seqId]
-		return self.viewWidth()
-
-	def viewportHeight(self):
-		if self.outputCameraName()[0] == 'p':
-			return {
-				'A': 2048,
-				'B': 2048,
-				'C': 2048,
-				'D': 1080,
-				'E': 1080,
-				'J': 1080,
-				'L': 1080,
-				'N': 2048,
-				'P': 1080,
-				'U': 1080,
-				'T': 1080
-			}[self.seqId]
-		return self.viewHeight()
-
-	def atlasTexturePathFmt(self):
-		return 'ATL_S{}_{}_Tt_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.testPoint, self.atlasWidth(), self.atlasHeight())
-
-	def atlasDepthPathFmt(self):
-		return 'ATL_S{}_{}_Td_c%02d_{}x{}_yuv420p10le.yuv'.format(self.seqId, self.testPoint, self.atlasWidth()//self.depthScale, self.atlasHeight()//self.depthScale)
+	def geometryVideoDataPathFmt(self):
+		return 'ATL_S{}_{}_Td_c{{:02}}_{{}}x{{}}_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
 		
 	def atlasMetadataPath(self):
 		return 'ATL_S{}_{}_Tm_c00.bit'.format(self.seqId, self.testPoint)
@@ -182,31 +130,6 @@ class DecoderConfiguration:
 		if self.ctcArchive():
 			return '.'
 		return os.path.realpath(os.path.dirname(self.path()))
-
-	def outputTexturePath(self):
-		return '{}_S{}_{}_Tt_{}_{}x{}_yuv420p10le.yuv'.format(
-			self.anchorId, self.seqId, self.testPoint, self.outputCameraName(), self.viewportWidth(), self.viewportHeight())
-
-	def outputCameraName(self):
-		return self.viewNameFormat().format(1)
-
-	def synthesizer(self):
-		return {
-			'rayAngleParameter': 10,
-			'depthParameter': 50,
-			'stretchingParameter': 3,
-			'maxStretching': 5
-		}
-	
-	def ViewWeightingSynthesizer(self):
-		return {
-			'angularScaling': 1.5,
-			'blendingFactor': 0.03,
-			'filteringPass': 1,
-			'minimalWeight': 2.5,
-			'overloadFactor': 2.0,
-			'stretchFactor': 100.0
-		}
 
 	def numberOfSourceViews(self):
 		return {
@@ -235,6 +158,163 @@ class DecoderConfiguration:
 
 	def allSourceCameraNames(self):
 		return list(map(lambda x: self.viewNameFormat().format(x + self.firstSourceView()), range(0, self.numberOfSourceViews())))
+		
+	def parameters(self):
+		return {
+			'numberOfFrames': self.numberOfFrames(),
+			'SourceDirectory': self.sourceDirectory(),
+			'SourceCameraParameters': self.sourceCameraParameters(),
+			'OutputDirectory': self.outputDirectory(),
+			'AttributeVideoDataPathFmt': self.attributeVideoDataPathFmt(),
+			'GeometryVideoDataPathFmt': self.geometryVideoDataPathFmt(),
+			'AtlasMetadataPath': self.atlasMetadataPath()
+		}
+
+	def saveTmivJson(self):	
+		os.makedirs(os.path.dirname(self.path()), exist_ok = True)
+		with open(self.path(), 'w') as stream:
+			json.dump(self.parameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
+			stream.write('\n')
+
+class DecoderConfiguration(TestConfiguration):
+	def __init__(self, sourceDir, anchorId, seqId, testPoint):
+		TestConfiguration.__init__(self, sourceDir, anchorId, seqId, testPoint)
+		print("Decoder configuration: {} S{} {}".format(anchorId, seqId, testPoint))
+
+	def outputTexturePath(self):
+		return '{}_S{}_{}_Tt_{}_{{}}x{{}}_yuv420p10le.yuv'.format(
+			self.anchorId, self.seqId, self.testPoint, self.outputCameraName)
+
+	def ViewWeightingSynthesizer(self):
+		return {
+			'angularScaling': 1.5,
+			'blendingFactor': 0.03,
+			'filteringPass': 1,
+			'minimalWeight': 2.5,
+			'overloadFactor': 2.0,
+			'stretchFactor': 100.0
+		}
+	
+	def rendererMethod(self):
+		return 'Renderer'
+
+	def renderer(self):
+		config = {
+			'SynthesizerMethod': 'ViewWeightingSynthesizer',
+			'ViewWeightingSynthesizer': self.ViewWeightingSynthesizer(),
+			'InpainterMethod': 'Inpainter',
+			'Inpainter': {},
+			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
+			'ViewingSpaceController': {}
+		}
+		return config
+
+	def poseTraceBasename(self):
+		return '{}{}.csv'.format(self.seqId, self.outputCameraName)
+
+	def poseTracePath(self):
+		if self.ctcArchive():
+			return self.poseTraceBasename()
+		return os.path.realpath('{}/pose_traces/{}'.format(self.configPath(), self.poseTraceBasename()))
+
+	def parameters(self):
+		config = TestConfiguration.parameters(self)
+		config.update({
+			'OutputTexturePath': self.outputTexturePath(),
+			'OutputCameraName': self.outputCameraName,
+			'DecoderMethod': 'Decoder',
+			'Decoder': {
+				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
+				'CullerMethod': 'SubBlockCuller',
+				'SubBlockCuller': {},
+				'RendererMethod': self.rendererMethod(),
+				self.rendererMethod(): self.renderer(),
+				'depthEdgeMagnitudeTh': 10,
+				'maxCurvature': 5,
+				'minForegroundConfidence': 0.5
+			}
+		})
+		if self.outputCameraName[0] == 'p':
+			config['OutputCameraName'] = 'viewport'
+			config['PoseTracePath'] = self.poseTracePath()
+			if self.anchorId == 'A97' or self.anchorId == 'R97' or self.anchorId == 'E97':
+				config['extraNumberOfFrames'] = 300 - 97
+		return config
+
+	def testPointUnlessR0(self):
+		if self.testPoint == 'R0':
+			return '.'
+		return self.testPoint
+
+	def path(self):
+		return '{0}/S{1}/{2}/TMIV_{0}_S{1}_{3}_{4}.json'.format(
+			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName)
+
+	def wspsnrPath(self):
+		return '{0}/S{1}/{2}/WSPSNR_{0}_S{1}_{3}_{4}.json'.format(
+			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName)
+
+	def originalFilePath(self, camera):
+		path = '{}_texture_{}x{}_yuv420p10le.yuv'.format(camera['Name'], camera['Resolution'][0], camera['Resolution'][1])
+		if self.sourceDirectory() == '.':
+			return path
+		return os.path.join(self.sourceDirectory(), path)
+
+	def outputCamera(self):
+		target = self.outputCameraName
+		for camera in self.sequenceParams['cameras']:
+			if camera['Name'] == target:
+				return camera
+		raise RuntimeError('Could not find output camera in sequence configuration')
+
+	def wspsnrParameters(self):
+		camera = self.outputCamera()
+		x = camera['Resolution'][0]
+		y = camera['Resolution'][1]
+		config = {
+			"Version": "2.0",
+			"Projection": camera['Projection'],
+			"Original_file_path": self.originalFilePath(camera),
+			"Reconstructed_file_path": self.outputTexturePath().format(x, y),
+			"ColorSpace": "YUV420",
+			"Video_width": x,
+			"Video_height": y,
+			"BitDepth": 10,
+			"Start_frame_of_original_file": self.startFrame(),
+			"NumberOfFrames": self.numberOfFrames(),
+			"Peak_value_of_10bits": 1020
+		}
+		if camera['Projection'] == 'Equirectangular':
+			config.update({
+				'Longitude_range_of_ERP': camera['Hor_range'][1] - camera['Hor_range'][0],
+				'Latitude_range_of_ERP': camera['Ver_range'][1] - camera['Ver_range'][0]
+			})
+		return config
+
+	def saveWspsnrJson(self):
+		with open(self.wspsnrPath(), 'w') as stream:
+			json.dump(self.wspsnrParameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
+			stream.write('\n')
+
+	def saveTmivJson(self):
+		for v in self.allTargetCameraNames():
+			self.outputCameraName = v
+			TestConfiguration.saveTmivJson(self)
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'V17' or self.anchorId == 'E97' or self.anchorId == 'E17':
+			for v in self.allSourceCameraNames():
+				self.outputCameraName = v
+				self.saveWspsnrJson()
+
+	def allTargetCameraNames(self):
+		poseTraces = ['p01', 'p02', 'p03']
+		if self.anchorId == 'R97' or self.anchorId == 'R17':
+			return poseTraces
+		return self.allSourceCameraNames() + poseTraces
+	
+class EncoderConfiguration(TestConfiguration):
+	def __init__(self, sourceDir, anchorId, seqId):
+		TestConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0')
+		print("Encoder configuration: {} S{}".format(anchorId, seqId))
 
 	def sourceCameraNames(self):
 		if self.anchorId == 'V17':
@@ -253,9 +333,6 @@ class DecoderConfiguration:
 			}[self.seqId]
 		return self.allSourceCameraNames()
 
-	def firstSourceCameraName(self):
-		return self.viewNameFormat().format(self.firstSourceView())
-
 	def numberOfCodedSourceViews(self):
 		return len(self.sourceCameraNames())
 
@@ -263,172 +340,64 @@ class DecoderConfiguration:
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 25
 		return 1
-		
-	def atlasDeconstructor(self):
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return {
-				"EntityDecodeRange": [0, self.maxEntities()]
-			}
-		return {}
 
-	def rendererMethod(self):
-		return 'Renderer'
+	def intraPeriod(self):
+		return 32
 
-	def renderer(self):
-		config = {
-			'SynthesizerMethod': 'ViewWeightingSynthesizer',
-			'ViewWeightingSynthesizer': self.ViewWeightingSynthesizer(),
-			'InpainterMethod': 'Inpainter',
-			'Inpainter': {},
-			'ViewingSpaceControllerMethod': 'ViewingSpaceController',
-			'ViewingSpaceController': {}
-		}
-		return config
+	def firstSourceCameraName(self):
+		return self.viewNameFormat().format(self.firstSourceView())
 
-	def poseTraceBasename(self):
-		return '{}{}.csv'.format(self.seqId, self.outputCameraName())
-
-	def poseTracePath(self):
-		if self.ctcArchive():
-			return self.poseTraceBasename()
-		return os.path.realpath('{}/pose_traces/{}'.format(self.configPath(), self.poseTraceBasename()))
-
-	def parameters(self):
-		config = {
-			'depthDownScaleFlag': True if self.depthScale > 1 else False,
-			'numberOfFrames': self.numberOfFrames(),
-			'intraPeriod': self.intraPeriod(),
-			'SourceDirectory': self.sourceDirectory(),
-			'SourceCameraParameters': self.sourceCameraParameters(),
-			'AtlasTexturePathFmt': self.atlasTexturePathFmt(),
-			'AtlasDepthPathFmt': self.atlasDepthPathFmt(),
-			'AtlasMetadataPath': self.atlasMetadataPath(),
-			'OutputDirectory': self.outputDirectory(),
-			'OutputTexturePath': self.outputTexturePath(),
-			'OutputCameraName': self.outputCameraName(),
-			'DecoderMethod': 'Decoder',
-			'Decoder': {
-				'AtlasDeconstructorMethod': 'AtlasDeconstructor',
-				'AtlasDeconstructor': self.atlasDeconstructor(),
-				'CullerMethod': 'SubBlockCuller',
-				'SubBlockCuller': {},
-				'RendererMethod': self.rendererMethod(),
-				self.rendererMethod(): self.renderer(),
-				"depthEdgeMagnitudeTh": 10,
-				"maxCurvature": 5,
-				"minForegroundConfidence": 0.5
-			}
-		}
-		if self.outputCameraName()[0] == 'p':
-			config['OutputCameraName'] = 'viewport'
-			config['PoseTracePath'] = self.poseTracePath()
-			if self.anchorId == 'A97' or self.anchorId == 'R97' or self.anchorId == 'E97':
-				config['extraNumberOfFrames'] = 300 - 97
-		return config
-
-	def testPointUnlessR0(self):
-		if self.testPoint == 'R0':
-			return '.'
-		return self.testPoint
-
-	def path(self):
-		return '{0}/S{1}/{2}/TMIV_{0}_S{1}_{3}_{4}.json'.format(
-			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName())
-
-	def startFrame(self):
-		# TODO(BK): Decide on startFrame for 17-frame anchors
-		return {
-			'A': 23,
-			'B': 100,
-			'C': 0,
-			'D': 10,
-			'E': 135,
-			'J': 0,
-			'L': 30,
-			'N': 60,
-			'P': 0,
-			'U': 0,
-			'T': 0
-		}[self.seqId]		
-
-	def outputCamera(self):
-		target = self.outputCameraName()
+	def firstSourceCamera(self):
 		for camera in self.sequenceParams['cameras']:
-			if camera['Name'] == target:
+			if camera['Name'] == self.firstSourceCameraName():
 				return camera
-		raise 'Could not find output camera in sequence configuration'
+		raise RuntimeError('Could not find first source camera in sequence configuration')
 
-	def saveTmivJson(self):	
-		print(self.path())
-		os.makedirs(os.path.dirname(self.path()), exist_ok = True)
-		with open(self.path(), 'w') as stream:
-			json.dump(self.parameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
-			stream.write('\n')
+	def viewWidth(self):
+		return self.firstSourceCamera()['Resolution'][0]
 
-	def wspsnrPath(self):
-		return '{0}/S{1}/{2}/WSPSNR_{0}_S{1}_{3}_{4}.json'.format(
-			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName())
+	def viewHeight(self):
+		return self.firstSourceCamera()['Resolution'][1]
 
-	def originalFilePath(self, camera):
-		path = '{}_texture_{}x{}_yuv420p10le.yuv'.format(camera['Name'], camera['Resolution'][0], camera['Resolution'][1])
-		if self.sourceDirectory() == '.':
-			return path
-		return os.path.join(self.sourceDirectory(), path)
 
-	def wspsnrParameters(self):
-		camera = self.outputCamera()
-		config = {
-			"Version": "2.0",
-			"Projection": camera['Projection'],
-			"Original_file_path": self.originalFilePath(camera),
-			"Reconstructed_file_path": self.outputTexturePath(),
-			"ColorSpace": "YUV420",
-			"Video_width": camera['Resolution'][0],
-			"Video_height": camera['Resolution'][1],
-			"BitDepth": 10,
-			"Start_frame_of_original_file": self.startFrame(),
-			"NumberOfFrames": self.numberOfFrames(),
-			"Peak_value_of_10bits": 1020
-		}
-		if camera['Projection'] == 'Equirectangular':
-			config.update({
-				'Longitude_range_of_ERP': camera['Hor_range'][1] - camera['Hor_range'][0],
-				'Latitude_range_of_ERP': camera['Ver_range'][1] - camera['Ver_range'][0]
-			})
-		return config
+	def geometryDownscaleFactor(self):
+		if self.anchorId == 'A97' or self.anchorId == 'A17':
+			return 2
+		return 1
 
-	def saveWspsnrJson(self):
-		print(self.wspsnrPath())
-		with open(self.wspsnrPath(), 'w') as stream:
-			json.dump(self.wspsnrParameters(), stream, indent=4, sort_keys=True, separators=(',', ': '))
-			stream.write('\n')
+	def alignment(self):
+		return 8
 
-# Iterate over target views and pose traces
-class AllDecoderConfigurations(DecoderConfiguration):
-	def saveTmivJson(self):
-		for v in self.allTargetCameraNames():
-			self.overrideOutputCameraName = v
-			DecoderConfiguration.saveTmivJson(self)
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'V17' or self.anchorId == 'E97' or self.anchorId == 'E17':
-			for v in self.allSourceCameraNames():
-				self.overrideOutputCameraName = v
-				self.saveWspsnrJson()
+	def checkAlignment(self, size):
+		if size % self.alignment() != 0:
+			raise RuntimeError('The frame size {} is not aligned to {}'.format(size, self.alignment()))
+		return size
 
-	def outputCameraName(self):
-		return self.overrideOutputCameraName
+	def atlasWidth(self):
+		return self.checkAlignment(self.viewWidth())
 
-	def allTargetCameraNames(self):
-		poseTraces = ['p01', 'p02', 'p03']
-		if self.anchorId == 'R97' or self.anchorId == 'R17':
-			return poseTraces
-		return self.allSourceCameraNames() + poseTraces
-	
-class EncoderConfiguration(DecoderConfiguration):
-	def __init__(self, sourceDir, anchorId, seqId, depthScale):
-		DecoderConfiguration.__init__(self, sourceDir, anchorId, seqId, 'R0', depthScale)
-		self.anchorId = anchorId
-		self.seqId = seqId
-		self.depthScale = depthScale
+	def atlasHeight(self):
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
+			return self.checkAlignment({
+				'A': 4096,
+				'B': 2752,
+				'C': 2048,
+				'D': 2752,
+				'E': 1472,
+				'J': 1472,
+				'L': 2912,
+				'N': 2752,
+				'P': 2912,
+				'U': 2912,
+				'T': 2912
+			}[self.seqId])
+		return self.checkAlignment(self.viewHeight())
+
+	def geometryWidth(self):
+		return self.checkAlignment(self.atlasWidth() // self.geometryDownscaleFactor())
+
+	def geometryHeight(self):
+		return self.checkAlignment(self.atlasHeight() // self.geometryDownscaleFactor())
 
 	def viewOptimizerMethod(self):
 		if self.anchorId == 'V17' or self.anchorId == 'R17' or self.anchorId == 'R97':
@@ -436,7 +405,7 @@ class EncoderConfiguration(DecoderConfiguration):
 		return 'ViewReducer'
 
 	def sourceTexturePathFmt(self):
-		return '%s_texture_{}x{}_yuv420p10le.yuv'.format(self.viewWidth(), self.viewHeight())
+		return '{}_texture_{}x{}_yuv420p10le.yuv'
 
 	def sourceDepthBitDepth(self):
 		return self.firstSourceCamera()['BitDepthDepth']
@@ -449,13 +418,13 @@ class EncoderConfiguration(DecoderConfiguration):
 		}[self.sourceDepthBitDepth()]
 	
 	def sourceDepthPathFmt(self):
-		return '%s_depth_{}x{}_{}.yuv'.format(self.viewWidth(), self.viewHeight(), self.sourceDepthVideoFormat())
+		return '{{}}_depth_{{}}x{{}}_{}.yuv'.format(self.sourceDepthVideoFormat())
 		
 	def sourceEntityBitDepth(self):
 		return 8
 
 	def sourceEntityPathFmt(self):
-		return '%s_entity_{}x{}_yuv420p.yuv'.format(self.viewWidth(), self.viewHeight())
+		return '{}_entity_{}x{}_yuv420p.yuv'
 
 	def omafV1CompatibleFlag(self):
 		# Just to do something slightly more interesting than False
@@ -467,6 +436,14 @@ class EncoderConfiguration(DecoderConfiguration):
 			'maxOutlierRatio': 0.001
 		}
 
+	def synthesizer(self):
+		return {
+			'rayAngleParameter': 10,
+			'depthParameter': 50,
+			'stretchingParameter': 3,
+			'maxStretching': 5
+		}
+	
 	def pruner(self):
 		config = self.synthesizer()
 		config.update({
@@ -478,7 +455,7 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def packer(self):
 		return {
-			'Alignment': 8,
+			'Alignment': self.alignment(),
 			'MinPatchSize': 16,
 			'Overlap': 1,
 			'PiP': 1
@@ -541,7 +518,8 @@ class EncoderConfiguration(DecoderConfiguration):
 			'AtlasConstructorMethod': self.atlasConstructorMethod(),
 			self.atlasConstructorMethod(): self.atlasConstructor(),
 			'DepthOccupancyMethod': 'DepthOccupancy',
-			'DepthOccupancy': self.depthOccupancy()
+			'DepthOccupancy': self.depthOccupancy(),
+			'geometryScaleEnabledFlag': self.geometryDownscaleFactor() > 1
 		}
 
 	def numGroups(self):
@@ -551,19 +529,16 @@ class EncoderConfiguration(DecoderConfiguration):
 		return 1
 
 	def parameters(self):
-		# The encoder configuration includes the decoder configuration for testing.
-		# Enabling reconstruction will run the decoder while encoding.
-		config = DecoderConfiguration.parameters(self)
+		config = TestConfiguration.parameters(self)
 		config.update({
-			'depthDownScaleFlag': True if self.depthScale > 1 else False,
 			'numGroups': self.numGroups(),
 			'maxEntities': self.maxEntities(),
-			'reconstruct': False,
 			'startFrame': self.startFrame(),
+			'intraPeriod': self.intraPeriod(),
+			'SourceCameraNames': self.sourceCameraNames(),
 			'SourceTexturePathFmt': self.sourceTexturePathFmt(),
 			'SourceDepthPathFmt': self.sourceDepthPathFmt(),
 			'SourceDepthBitDepth': self.sourceDepthBitDepth(),
-			'SourceCameraNames': self.sourceCameraNames(),
 			'OmafV1CompatibleFlag': self.omafV1CompatibleFlag(),
 			'EncoderMethod': 'GroupBasedEncoder',
 			'GroupBasedEncoder': self.encoder(),
@@ -582,7 +557,6 @@ class EncoderConfiguration(DecoderConfiguration):
 
 	def saveHmCfg(self, component, scale):
 		path = '{0}/S{2}/HM_{0}_{1}_S{2}.cfg'.format(self.anchorId, component, self.seqId)
-		print(path)
 		with open(path, 'w') as stream:
 			stream.write('InputBitDepth: 10\n')
 			stream.write('InputChromaFormat: 420\n')
@@ -594,20 +568,20 @@ class EncoderConfiguration(DecoderConfiguration):
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('Level: 5.2\n')
 
-def generate(anchorIds, seqIds, testPoints, depthScale):
+def generate(anchorIds, seqIds, testPoints):
 	for anchorId in anchorIds:
 		for seqId in seqIds:
-			config = EncoderConfiguration(sourceDir, anchorId, seqId, depthScale)
+			config = EncoderConfiguration(sourceDir, anchorId, seqId)
 			config.saveTmivJson()
 			if len(testPoints) > 1:
 				config.saveHmCfg('Tt', 1)
-				config.saveHmCfg('Td', depthScale)
+				config.saveHmCfg('Td', config.geometryDownscaleFactor())
 
 
 	for testPoint in testPoints:
 		for anchorId in anchorIds:
 			for seqId in seqIds:
-				config = AllDecoderConfigurations(sourceDir, anchorId, seqId, testPoint, depthScale)
+				config = DecoderConfiguration(sourceDir, anchorId, seqId, testPoint)
 				config.saveTmivJson()
 
 if __name__ == '__main__':
@@ -625,7 +599,6 @@ if __name__ == '__main__':
 		print('The script should be run from the root of the output directory structure.')
 		exit(1)
 
-	depthScale = 2
 	sourceDir = '.'
 	if len(sys.argv) == 2:
 		sourceDir = sys.argv[1]
@@ -633,6 +606,6 @@ if __name__ == '__main__':
 	allSeqIds = ['A', 'B', 'C', 'D', 'E', 'J', 'L', 'N','P', 'U', 'T']
 	allTestPoints = ['R0', 'QP1', 'QP2', 'QP3', 'QP4', 'QP5']	
 
-	generate(['R17', 'R97'], allSeqIds, ['R0'], 1)
-	generate(['A17', 'A97', 'V17'], allSeqIds, allTestPoints, depthScale)
-	generate(['E17', 'E97'], ['B'], allTestPoints, depthScale)
+	generate(['R17', 'R97'], allSeqIds, ['R0'])
+	generate(['A17', 'A97', 'V17'], allSeqIds, allTestPoints)
+	generate(['E17', 'E97'], ['B'], allTestPoints)

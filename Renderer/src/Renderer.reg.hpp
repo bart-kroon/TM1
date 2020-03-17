@@ -35,7 +35,9 @@
 #include <TMIV/Renderer/GroupBasedRenderer.h>
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
+#include <TMIV/Renderer/NoCuller.h>
 #include <TMIV/Renderer/NoInpainter.h>
+#include <TMIV/Renderer/NoSynthesizer.h>
 #include <TMIV/Renderer/Renderer.h>
 #include <TMIV/Renderer/SubBlockCuller.h>
 #include <TMIV/Renderer/Synthesizer.h>
@@ -49,6 +51,7 @@ inline void registerComponents() {
   Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
   Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
   Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
+  Common::Factory<ISynthesizer>::getInstance().registerAs<NoSynthesizer>("NoSynthesizer");
   Common::Factory<IViewingSpaceController>::getInstance().registerAs<ViewingSpaceController>(
       "ViewingSpaceController");
   Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");

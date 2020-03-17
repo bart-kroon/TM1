@@ -34,20 +34,20 @@
 #include <TMIV/ViewOptimizer/ViewReducer.h>
 
 #include <TMIV/Common/Common.h>
-#include <TMIV/Metadata/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::Metadata;
+using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
 
 namespace TMIV::ViewOptimizer {
-// TODO(BK): Expose hidden parameter
 constexpr auto overlapThreshold = 0.5;
 constexpr auto halfPixel = 0.5F;
 
@@ -55,15 +55,13 @@ ViewReducer::ViewReducer(const Json & /*unused*/, const Json & /*unused*/) {}
 
 auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output {
 
-  const auto &viewParamsVector = ivSequenceParams.viewParamsList;
-  m_isBasicView.assign(viewParamsVector.size(), false);
+  const auto &viewParamsList = ivSequenceParams.viewParamsList;
+  m_isBasicView.assign(viewParamsList.size(), false);
 
-  // choose 9 degree as quantization step of angle between view i and view j.
-  const float degree_step = radperdeg * 9;
   // choose 64 as quantization step of FOV.
   const float FOV_step = (45 * radperdeg) / 4;
 
-  size_t nbCameras = viewParamsVector.size();
+  size_t nbCameras = viewParamsList.size();
 
   // search the largest angle between two views i,j
   vector<pair<size_t, size_t>> cameras_id_pair;
@@ -76,10 +74,11 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
   size_t id_j;
 
   // Early termination: if any view is full-ERP, choose this view
-  for (auto &viewParams : viewParamsVector) {
-    if (auto projection = get_if<ErpParams>(&viewParams.projection)) {
-      if (abs(projection->phiRange[0] - projection->phiRange[1]) == fullCycle) {
-        if (abs(projection->thetaRange[0] - projection->thetaRange[1]) == halfCycle) {
+  for (auto &viewParams : viewParamsList) {
+    const auto &ci = viewParams.ci;
+    if (ci.ci_cam_type() == CiCamType::equirectangular) {
+      if (abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min() - fullCycle) < 1e-6F) {
+        if (abs(ci.ci_erp_theta_max() - ci.ci_erp_theta_min() - halfCycle) < 1e-6F) {
           isoneview = true;
           break;
         }
@@ -92,15 +91,12 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
   if (!isoneview) {
     for (size_t id_1 = 0; id_1 < nbCameras - 1; id_1++) {
       for (size_t id_2 = id_1 + 1; id_2 < nbCameras; id_2++) {
-        // Sphere distance function
-        auto temp_angle = size_t(
-            acos(sin(viewParamsVector[id_1].rotation[1] * radperdeg) *
-                     sin(viewParamsVector[id_2].rotation[1] * radperdeg) +
-                 cos(viewParamsVector[id_1].rotation[1] * radperdeg) *
-                     cos(viewParamsVector[id_2].rotation[1] * radperdeg) *
-                     cos((viewParamsVector[id_1].rotation[0] - viewParamsVector[id_2].rotation[0]) *
-                         radperdeg)) /
-            degree_step);
+        // choose 9 degree as quantization step of angle between view i and view j.
+        const float angleStep = radperdeg * 8.99F;
+
+        const auto angle = greatCircleDistance(viewParamsList[id_1].ce.rotation(),
+                                               viewParamsList[id_2].ce.rotation());
+        const auto temp_angle = size_t(angle / angleStep);
 
         if (temp_angle > max_angle) {
           cameras_id_pair.clear();
@@ -120,7 +116,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_2 = cameras_id_pair[id].second;
 
       temp_FOV = static_cast<size_t>(
-          (calculateFOV(viewParamsVector[id_1]) + calculateFOV(viewParamsVector[id_2])) / FOV_step);
+          (calculateFOV(viewParamsList[id_1]) + calculateFOV(viewParamsList[id_2])) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -141,7 +137,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_1 = cameras_id_pair[id].first;
       size_t id_2 = cameras_id_pair[id].second;
 
-      temp_distance = calculateDistance(viewParamsVector[id_1], viewParamsVector[id_2]);
+      temp_distance = calculateDistance(viewParamsList[id_1], viewParamsList[id_2]);
       if (temp_distance > max_distance) {
         max_distance = temp_distance;
         max_num = 1;
@@ -160,7 +156,9 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_1 = id.first;
       size_t id_2 = id.second;
 
-      temp_distance = abs(viewParamsVector[id_1].position[0] - viewParamsVector[id_2].position[0]);
+      // TODO(BK): This must be a mistake. Why only the x-coordinate?
+      temp_distance =
+          abs(viewParamsList[id_1].ce.ce_view_pos_x() - viewParamsList[id_2].ce.ce_view_pos_x());
       if (temp_distance < min_distance) {
         min_distance = temp_distance;
         camera_id_pair = id;
@@ -171,11 +169,11 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     id_i = camera_id_pair.first;
     id_j = camera_id_pair.second;
     float overlapping = 0;
-    overlapping = calculateOverlapping(viewParamsVector[id_i], viewParamsVector[id_j]);
+    overlapping = calculateOverlapping(viewParamsList[id_i], viewParamsList[id_j]);
 
     // Decide whether the number is one or multiple
-    isoneview = overlapping >= overlapThreshold * min(calculateFOV(viewParamsVector[id_i]),
-                                                      calculateFOV(viewParamsVector[id_j]));
+    isoneview = overlapping >= overlapThreshold * min(calculateFOV(viewParamsList[id_i]),
+                                                      calculateFOV(viewParamsList[id_j]));
   }
 
   // Just select 1 view which has the shortest distance to center
@@ -186,10 +184,10 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     int id_center = 0;
     float distance = numeric_limits<float>::max();
 
-    for (auto &viewParams : viewParamsVector) {
-      x_center += viewParams.position[0];
-      y_center += viewParams.position[1];
-      z_center += viewParams.position[2];
+    for (auto &viewParams : viewParamsList) {
+      x_center += viewParams.ce.ce_view_pos_x();
+      y_center += viewParams.ce.ce_view_pos_y();
+      z_center += viewParams.ce.ce_view_pos_z();
     }
     x_center /= nbCameras;
     y_center /= nbCameras;
@@ -201,7 +199,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     for (size_t id = 0; id < nbCameras; id++) {
       size_t temp_FOV = 0;
 
-      temp_FOV = static_cast<size_t>(calculateFOV(viewParamsVector[id]) / FOV_step);
+      temp_FOV = static_cast<size_t>(calculateFOV(viewParamsList[id]) / FOV_step);
 
       if (temp_FOV > max_FOV) {
         max_FOV = temp_FOV;
@@ -213,9 +211,9 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     }
     // Search views which have the least diatance to center
     for (auto i : camera_id) {
-      float temp_distance = sqrt(square(viewParamsVector[i].position[0] - x_center) +
-                                 square(viewParamsVector[i].position[1] - y_center) +
-                                 square(viewParamsVector[i].position[2] - z_center));
+      float temp_distance = sqrt(square(viewParamsList[i].ce.ce_view_pos_x() - x_center) +
+                                 square(viewParamsList[i].ce.ce_view_pos_y() - y_center) +
+                                 square(viewParamsList[i].ce.ce_view_pos_z() - z_center));
       if (temp_distance < distance) {
         id_center = int(i);
         distance = temp_distance;
@@ -229,41 +227,48 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     m_isBasicView[camera_id_pair.second] = true;
   }
 
+  cout << "Basic view(s):";
+  for (size_t i = 0; i < m_isBasicView.size(); ++i) {
+    if (m_isBasicView[i]) {
+      cout << ' ' << ivSequenceParams.viewParamsList[i].name;
+    }
+  }
+  cout << '\n';
+
   // Output
   return {std::move(ivSequenceParams), m_isBasicView};
 }
 
-auto ViewReducer::calculateFOV(ViewParams viewParams) -> float {
-  return visit(overload(
-                   [](const ErpParams &projection) {
-                     return abs(projection.phiRange[0] - projection.phiRange[1]) * radperdeg *
-                            (abs(sin(projection.thetaRange[0] * radperdeg) -
-                                 sin(projection.thetaRange[1] * radperdeg)));
-                   },
-                   [&](const PerspectiveParams &projection) {
-                     return abs(4 * atan(viewParams.size[0] / (2 * projection.focal[0])) *
-                                sin(atan(viewParams.size[1] / (2 * projection.focal[1]))));
-                   }),
-               viewParams.projection);
+auto ViewReducer::calculateFOV(const ViewParams &viewParams) -> float {
+  const auto &ci = viewParams.ci;
+  return ci.dispatch(overload(
+      [&](Equirectangular /*unused*/) {
+        return abs(ci.ci_erp_phi_min() - ci.ci_erp_phi_max()) *
+               abs(sin(ci.ci_erp_theta_min()) - sin(ci.ci_erp_theta_max()));
+      },
+      [&](Perspective /*unused*/) {
+        return abs(4 * atan(ci.projectionPlaneSize().x() / (2.F * ci.ci_perspective_focal_hor())) *
+                   sin(atan(ci.projectionPlaneSize().y() / (2.F * ci.ci_perspective_focal_ver()))));
+      }));
 }
-auto ViewReducer::calculateDistance(ViewParams camera_1, ViewParams camera_2) -> float {
-  return sqrt(square(camera_1.position[0] - camera_2.position[0]) +
-              square(camera_1.position[1] - camera_2.position[1]) +
-              square(camera_1.position[2] - camera_2.position[2]));
+auto ViewReducer::calculateDistance(const ViewParams &camera_1, const ViewParams &camera_2)
+    -> float {
+  return norm(camera_1.ce.position() - camera_2.ce.position());
 }
-auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera_to) -> float {
-
+auto ViewReducer::calculateOverlapping(const ViewParams &camera_from, const ViewParams &camera_to)
+    -> float {
   float overlapping = 0.0F;
   float weight_all = 0.0F;
   float weight_overlapped = 0.0F;
 
-  Mat<Vec2f> gridMapToProject = imagePositions(camera_from);
+  Mat<Vec2f> gridMapToProject = imagePositions(camera_from.ci);
   Mat<float> depth;
-  depth.resize(camera_from.size.y(), camera_from.size.x());
+  depth.resize(camera_from.ci.projectionPlaneSize().y(), camera_from.ci.projectionPlaneSize().x());
 
   Mat<int> isoverlap;
-  isoverlap.resize(camera_from.size.y(), camera_from.size.x());
-  const auto depthTransform = DepthTransform<16>{camera_from};
+  isoverlap.resize(camera_from.ci.projectionPlaneSize().y(),
+                   camera_from.ci.projectionPlaneSize().x());
+  const auto depthTransform = DepthTransform<16>{camera_from.dq};
   const float middleDepth =
       sqrtf(depthTransform.expandDepth(1) * depthTransform.expandDepth(UINT16_MAX));
 
@@ -275,8 +280,8 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
   }
   auto ptsOncamera_to = reprojectPoints(camera_from, camera_to, gridMapToProject, depth);
 
-  int lastXPruned = camera_to.size.x() - 1;
-  int lastYPruned = camera_to.size.y() - 1;
+  int lastXPruned = camera_to.ci.projectionPlaneSize().x() - 1;
+  int lastYPruned = camera_to.ci.projectionPlaneSize().y() - 1;
 
   for (unsigned i = 0; i != depth.height(); ++i) {
     for (unsigned j = 0; j != depth.width(); ++j) {
@@ -291,18 +296,16 @@ auto ViewReducer::calculateOverlapping(ViewParams camera_from, ViewParams camera
 
   for (unsigned i = 0; i != isoverlap.height(); ++i) {
     for (unsigned j = 0; j != isoverlap.width(); ++j) {
-      const float weight =
-          visit(overload(
-                    [&](const ErpParams &projection) { // calculate weight of each pixel in sphere
-                      float angle = (projection.thetaRange[1] +
-                                     (float(i) + halfPixel) *
-                                         (projection.thetaRange[0] - projection.thetaRange[1]) /
-                                         isoverlap.height()) *
-                                    radperdeg;
-                      return cos(angle);
-                    },
-                    [](const PerspectiveParams & /* unused */) { return 1.F; }),
-                camera_from.projection);
+      const auto &ci = camera_from.ci;
+      const float weight = ci.dispatch(overload(
+          [&](Equirectangular /*unused*/) { // calculate weight of each pixel in sphere
+            float angle =
+                (ci.ci_erp_theta_max() + (float(i) + halfPixel) *
+                                             (ci.ci_erp_theta_min() - ci.ci_erp_theta_max()) /
+                                             isoverlap.height());
+            return cos(angle);
+          },
+          [](Perspective /*unused*/) { return 1.F; }));
       weight_all += weight;
       if (isoverlap(i, j) != 0) {
         weight_overlapped += weight;

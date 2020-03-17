@@ -175,31 +175,6 @@ TEST_CASE("Parsing the command-line", "[Application]") {
     FakeApplication app{"Fake", {"command", "-p", "Color", "green", "-p", "Color", "red"}};
     REQUIRE(app.json().require("Color").asString() == "red");
   }
-
-  SECTION("Load a Json") {
-    FakeApplication app{"Fake", {"command", "-c", "Common/test/CommonTest.json"}};
-    REQUIRE(app.json().require("intraPeriod").asInt() == 32);
-  }
-
-  SECTION("Load a Json and add a parameters") {
-    FakeApplication app{
-        "Fake", {"command", "-c", "Common/test/CommonTest.json", "-p", "continent", "Africa"}};
-    REQUIRE(app.json().require("continent").asString() == "Africa");
-  }
-
-  SECTION("Load a Json and override a parameter") {
-    FakeApplication app{"Fake",
-                        {"command", "-c", "Common/test/CommonTest.json", "-p", "intraPeriod", "8"}};
-    REQUIRE(app.json().require("intraPeriod").asInt() == 8);
-  }
-
-  SECTION("Load a Json, override a parameter and add a parameter") {
-    FakeApplication app{"Fake",
-                        {"command", "-c", "Common/test/CommonTest.json", "-p", "intraPeriod", "8",
-                         "-p", "continent", "Africa"}};
-    REQUIRE(app.json().require("intraPeriod").asInt() == 8);
-    REQUIRE(app.json().require("continent").asString() == "Africa");
-  }
 }
 
 TEST_CASE("Converting floating point to integer") {
@@ -297,5 +272,13 @@ TEST_CASE("quantizeValue", "[quantize_and_expand]") {
   REQUIRE(quantizeValue<10>(NaN) == 0U);
   REQUIRE(quantizeValue<10>(inf) == 1023U);
   REQUIRE(quantizeValue<10>(1e20F) == 1023U);
+}
+
+TEST_CASE("format", "[format string]") {
+  REQUIRE(format("Hello, World!") == "Hello, World!");
+  REQUIRE(format("Hello, World!", 42) == "Hello, World!");
+  REQUIRE(format("Hello, {}", "World!") == "Hello, World!");
+  REQUIRE(format("The {} is {}{}", "answer", 42, '.') == "The answer is 42.");
+  REQUIRE(format("{:02} {:03} {:04} {:05}", 4, 30, "xyz", 22) == "04 030 0xyz 00022");
 }
 } // namespace TMIV::Common

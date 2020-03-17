@@ -47,7 +47,7 @@ public:
   DepthQualityAssessor &operator=(DepthQualityAssessor &&) = default;
   ~DepthQualityAssessor() override = default;
 
-  auto isLowDepthQuality(const Metadata::IvSequenceParams &ivSequenceParams,
+  auto isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
                          const Common::MVD16Frame &sourceViews) -> bool override;
 
 private:

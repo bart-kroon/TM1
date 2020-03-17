@@ -36,7 +36,7 @@
 
 #include <TMIV/Common/Transformation.h>
 #include <TMIV/Common/Vector.h>
-#include <TMIV/Metadata/ViewingSpace.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 
 namespace TMIV::ViewingSpace {
 
@@ -83,19 +83,19 @@ struct SignedDistance {
 };
 
 //! \brief Compute signed distance between a point and a rotated cuboid primitive.
-auto signedDistance(const Metadata::Cuboid &cuboid, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::EulerAngles &rotation,
                     const Common::Vec3f &point) -> SignedDistance;
 
 //! \brief Compute signed distance between a point and a rotated spheroid primitive.
-auto signedDistance(const Metadata::Spheroid &spheroid, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Spheroid &spheroid, const Common::EulerAngles &rotation,
                     const Common::Vec3f &point) -> SignedDistance;
 
 //! \brief Compute signed distance between a point and a rotated half-space primitive.
-auto signedDistance(const Metadata::Halfspace &halfspace, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Halfspace &halfspace, const Common::EulerAngles &rotation,
                     const Common::Vec3f &point) -> SignedDistance;
 
 //! \brief Compute signed distance between a point and a PrimitiveShape.
-auto signedDistance(const Metadata::PrimitiveShape &shape, const Common::Vec3f &point)
+auto signedDistance(const MivBitstream::PrimitiveShape &shape, const Common::Vec3f &point)
     -> SignedDistance;
 
 } // namespace TMIV::ViewingSpace

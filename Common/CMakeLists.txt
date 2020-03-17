@@ -2,11 +2,16 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(CommonLib
 	"src/Application.cpp"
+	"src/Bitstream.cpp"
+	"src/Bytestream.cpp"
 	"src/Json.cpp"
 	"src/Half.cpp"
 	"src/Frame.cpp"
 	"src/Transformation.cpp"
 	"src/Graph.cpp"
+	"include/TMIV/Common/Bitstream.h"
+	"include/TMIV/Common/Bitstream.hpp"
+	"include/TMIV/Common/Bytestream.h"
 	"include/TMIV/Common/Common.h"
 	"include/TMIV/Common/Common.hpp"
 	"include/TMIV/Common/Application.h"
@@ -25,6 +30,7 @@ add_library(CommonLib
 	"include/TMIV/Common/Matrix.h"
 	"include/TMIV/Common/Array.h"
 	"include/TMIV/Common/Graph.h"
+	"include/TMIV/Common/Quaternion.h"
 	)
 
 add_library(TMIV::CommonLib
@@ -49,12 +55,15 @@ install(
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (CMAKE_TESTING_ENABLED)
-	add_executable(CommonTest "src/Common.test.cpp")
+	add_executable(CommonTest
+		"src/Bitstream.test.cpp"
+		"src/Quaternion.test.cpp"
+		"src/Common.test.cpp")
 
 	target_link_libraries(CommonTest
 		PRIVATE
 			Catch2::Catch2
 			TMIV::CommonLib)
 
-	catch_discover_tests(CommonTest WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..)
+	catch_discover_tests(CommonTest)
 endif()

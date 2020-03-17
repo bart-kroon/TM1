@@ -57,31 +57,27 @@ public:
   GroupBasedRenderer &operator=(GroupBasedRenderer &&) = default;
   ~GroupBasedRenderer() override = default;
 
-  auto renderFrame(const Common::MVD10Frame &atlases, const Common::PatchIdMapList &patchIdMapList,
-                   const Metadata::IvSequenceParams &ivSequenceParams,
-                   const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                   const Metadata::ViewParams &target) const
+  // Render from a texture atlas to a viewport
+  auto renderFrame(const MivBitstream::AccessUnit &frame,
+                   const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 
 private:
   using GroupIdMask = std::bitset<32>;
 
   // Render multiple groups
-  auto renderPass(GroupIdMask groupIdMask, const Common::MVD10Frame &atlases,
-                  const Common::PatchIdMapList &patchIdMapList,
-                  const Metadata::IvSequenceParams &ivSequenceParams,
-                  const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                  const Metadata::ViewParams &target) const -> Common::Texture444Depth16Frame;
+  auto renderPass(GroupIdMask groupIdMask, const MivBitstream::AccessUnit &frame,
+                  const MivBitstream::ViewParams &viewportParams) const
+      -> Common::Texture444Depth16Frame;
 
   // Determine group render order (multipass rendering)
-  static auto groupRenderOrder(const Metadata::IvSequenceParams &ivSequenceParams,
-                               const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                               const Metadata::ViewParams &target) -> std::vector<unsigned>;
+  static auto groupRenderOrder(const MivBitstream::AccessUnit &frame,
+                               const MivBitstream::ViewParams &viewportParams)
+      -> std::vector<unsigned>;
 
-  // Filter the patch id map list for groups included in the mask
-  static auto filterPatchIdMapList(GroupIdMask groupIdMask, Common::PatchIdMapList patchIdMapList,
-                                   const Metadata::IvAccessUnitParams &ivAccessUnitParams)
-      -> Common::PatchIdMapList;
+  // Filter the frame keeping only patches with a group within the mask
+  static auto filterFrame(GroupIdMask groupIdMask, MivBitstream::AccessUnit frame)
+      -> MivBitstream::AccessUnit;
 
   struct Priority {
     float distance;
@@ -91,13 +87,12 @@ private:
   };
 
   // Determine the priority of a group
-  static auto groupPriority(unsigned groupId, const Metadata::IvSequenceParams &ivSequenceParams,
-                            const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                            const Metadata::ViewParams &target) -> Priority;
+  static auto groupPriority(unsigned groupId, const MivBitstream::AccessUnit &frame,
+                            const MivBitstream::ViewParams &viewportParams) -> Priority;
 
   // Determine the priority of a view
-  static auto viewPriority(const Metadata::ViewParams &source, const Metadata::ViewParams &target)
-      -> Priority;
+  static auto viewPriority(const MivBitstream::ViewParams &view1,
+                           const MivBitstream::ViewParams &view2) -> Priority;
 
   enum class MergeMode {
     inpaint = 0,   // let the inpainter fill

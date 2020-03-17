@@ -13,6 +13,7 @@ add_library(RendererLib
 	"src/ViewingSpaceController.cpp"
 	"src/reprojectPoints.cpp"
 	"src/ViewWeightingSynthesizer.cpp"
+	"src/NoSynthesizer.cpp"
 	"src/RecoverPrunedViews.cpp"
 	"src/Renderer.reg.hpp"
 	"include/TMIV/Renderer/IRenderer.h"
@@ -23,6 +24,7 @@ add_library(RendererLib
     "include/TMIV/Renderer/MultipassRenderer.h"
     "include/TMIV/Renderer/GroupBasedRenderer.h"
 	"include/TMIV/Renderer/SubBlockCuller.h"
+	"include/TMIV/Renderer/NoCuller.h"
 	"include/TMIV/Renderer/ICuller.h"
 	"include/TMIV/Renderer/Inpainter.h"
 	"include/TMIV/Renderer/Synthesizer.h"
@@ -38,6 +40,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/Rasterizer.hpp"
 	"include/TMIV/Renderer/AccumulatingPixel.h"
 	"include/TMIV/Renderer/ViewWeightingSynthesizer.h"
+	"include/TMIV/Renderer/NoSynthesizer.h"
 	"include/TMIV/Renderer/RecoverPrunedViews.h"
 	)
 
@@ -47,8 +50,7 @@ add_library(TMIV::RendererLib
 target_link_libraries(RendererLib
 	PUBLIC
 		TMIV::CommonLib
-		TMIV::MetadataLib
-		TMIV::ImageLib
+		TMIV::MivBitstreamLib
 		TMIV::ViewingSpaceLib
 	PRIVATE
 		Threads::Threads

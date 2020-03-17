@@ -35,8 +35,8 @@
 #define _TMIV_RENDERER_ICULLER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/Metadata/IvAccessUnitParams.h>
-#include <TMIV/Metadata/IvSequenceParams.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Renderer {
 class ICuller {
@@ -48,11 +48,18 @@ public:
   ICuller &operator=(ICuller &&) = default;
   virtual ~ICuller() = default;
 
-  // Do sub-block culling and update the PatchIdMap
-  virtual auto updatePatchIdmap(const Common::MVD10Frame &atlas, const Common::PatchIdMapList &maps,
-                                const Metadata::IvSequenceParams &ivSequenceParams,
-                                const Metadata::IvAccessUnitParams &ivAccessUnitParams,
-                                const Metadata::ViewParams &target) -> Common::PatchIdMapList = 0;
+  // Do culling and update the block to patch map for a single atlas
+  virtual auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
+                                     const MivBitstream::ViewParams &viewportParams) const
+      -> Common::BlockToPatchMap = 0;
+
+  // Do culling and update the block to patch maps for all atlases
+  auto inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame,
+                                     const MivBitstream::ViewParams &viewportParams) const {
+    for (auto &atlas : frame.atlas) {
+      atlas.blockToPatchMap = filterBlockToPatchMap(atlas, viewportParams);
+    }
+  }
 };
 
 class NoCuller : public ICuller {

@@ -12,7 +12,7 @@ add_library(TMIV::ViewingSpaceLib
 
 target_link_libraries(ViewingSpaceLib
 	PUBLIC
-		TMIV::MetadataLib)
+		TMIV::MivBitstreamLib)
 
 target_include_directories(ViewingSpaceLib
 	PUBLIC

@@ -248,12 +248,11 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
 
   // Print statistics the same way the HierarchicalPruner does
-  const auto lumaSamplesPerFrame = transform_reduce(
-      aggregatedMask.begin(), aggregatedMask.end(), size_t{}, plus<>{}, [](const auto &mask) {
-        return 2 * count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
-                            [](auto x) { return x > 0; });
+  const auto lumaSamplesPerFrame = accumulate(
+      aggregatedMask.begin(), aggregatedMask.end(), size_t{}, [](size_t sum, const auto &mask) {
+        return sum + 2 * count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
+                                  [](auto x) { return x > 0; });
       });
-
   cout << "Aggregated luma samples per frame is " << (1e-6 * lumaSamplesPerFrame) << "M\n";
   m_maxLumaSamplesPerFrame = max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 

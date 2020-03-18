@@ -416,9 +416,29 @@ void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) 
   sequence(vuh) = {};
 }
 
-void MivDecoder::decodeSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+void MivDecoder::decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                            const SeiRBSP &sei) {
-  cout << sei;
+  for (auto &message : sei.messages()) {
+    decodeSeiMessage(vuh, nuh, message);
+  }
+}
+
+void MivDecoder::decodeSeiMessage(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                                  const SeiMessage &message) {
+  cout << message;
+
+  switch (message.payloadType()) {
+  case PayloadType::viewing_space_handling:
+    return parseViewingSpaceHandlingSei(vuh, nuh, message);
+  default:
+    cout << "WARNING: Ignoring SEI message\n";
+  }
+}
+
+void MivDecoder::decodeViewingSpaceHandling(const VpccUnitHeader & /* vuh */,
+                                            const NalUnitHeader & /* nuh */,
+                                            const ViewingSpaceHandling &vh) {
+  cout << vh;
 }
 
 // Parsers /////////////////////////////////////////////////////////////////////////////////////////
@@ -473,6 +493,13 @@ void MivDecoder::parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu) {
 void MivDecoder::parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   decodeSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
+}
+
+void MivDecoder::parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                                              const SeiMessage &message) {
+  istringstream stream{message.payload()};
+  InputBitstream bitstream{stream};
+  decodeViewingSpaceHandling(vuh, nuh, ViewingSpaceHandling::decodeFrom(bitstream));
 }
 
 // Access internal decoder state ///////////////////////////////////////////////////////////////////

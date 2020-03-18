@@ -91,6 +91,9 @@ public:
       int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
       encodeAccessUnit(i, lastFrame);
     }
+
+    const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
+    cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
   }
 
 private:

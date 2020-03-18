@@ -58,6 +58,7 @@ public:
   void pushFrame(Common::MVD16Frame views) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
+  auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
 private:
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;

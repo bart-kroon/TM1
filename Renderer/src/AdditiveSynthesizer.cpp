@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Renderer/Synthesizer.h>
+#include <TMIV/Renderer/AdditiveSynthesizer.h>
 
 #include <TMIV/Common/LinAlg.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
@@ -49,7 +49,7 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
-class Synthesizer::Impl {
+class AdditiveSynthesizer::Impl {
 public:
   Impl(float rayAngleParam, float depthParam, float stretchingParam, float maxStretching)
       : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
@@ -260,19 +260,20 @@ private:
   float m_maxStretching;
 }; // namespace TMIV::Renderer
 
-Synthesizer::Synthesizer(const Json & /*rootNode*/, const Json &componentNode)
+AdditiveSynthesizer::AdditiveSynthesizer(const Json & /*rootNode*/, const Json &componentNode)
     : m_impl(new Impl(componentNode.require("rayAngleParameter").asFloat(),
                       componentNode.require("depthParameter").asFloat(),
                       componentNode.require("stretchingParameter").asFloat(),
                       componentNode.require("maxStretching").asFloat())) {}
 
-Synthesizer::Synthesizer(float rayAngleParam, float depthParam, float stretchingParam,
-                         float maxStretching)
+AdditiveSynthesizer::AdditiveSynthesizer(float rayAngleParam, float depthParam,
+                                         float stretchingParam, float maxStretching)
     : m_impl(new Impl(rayAngleParam, depthParam, stretchingParam, maxStretching)) {}
 
-Synthesizer::~Synthesizer() = default;
+AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
-auto Synthesizer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
+auto AdditiveSynthesizer::renderFrame(const AccessUnit &frame,
+                                      const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);
 }

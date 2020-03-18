@@ -37,6 +37,26 @@
 
 using namespace TMIV::MivBitstream;
 
+TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
+  REQUIRE(toString(PayloadType::viewing_space_handling) == "viewing_space_handling");
+  REQUIRE(toString(PayloadType(42)) == "reserved_sei_message (42)");
+}
+
+TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
+  const auto x = SeiMessage{};
+  REQUIRE(toString(x) == R"(payloadType=buffering_period
+payloadSize=0
+)");
+  REQUIRE(byteCodingTest(x, 2));
+
+  SECTION("Example 1") {
+    const auto y = SeiMessage{PayloadType::time_code, "Tick tock"};
+    REQUIRE(toString(y) == R"(payloadType=time_code
+payloadSize=9
+)");
+  }
+}
+
 TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
   auto x = SeiRBSP{};
 
@@ -44,9 +64,37 @@ TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
 
   SECTION("Example 1") {
     x.messages().emplace_back();
-    x.messages().emplace_back();
+    x.messages().emplace_back(PayloadType::sei_manifest, "Manifest");
 
-    REQUIRE(toString(x).empty());
-    REQUIRE(byteCodingTest(x, 1));
+    REQUIRE(toString(x) == R"(payloadType=buffering_period
+payloadSize=0
+payloadType=sei_manifest
+payloadSize=8
+)");
+    REQUIRE(byteCodingTest(x, 13));
+  }
+
+  SECTION("Example 2") {
+    x.messages().emplace_back(PayloadType::filler_payload, std::string(1000, 'x'));
+    x.messages().emplace_back(PayloadType::filler_payload, std::string(254, 'a'));
+    x.messages().emplace_back(PayloadType::filler_payload, std::string(255, 'b'));
+    x.messages().emplace_back(PayloadType::filler_payload, std::string(256, 'c'));
+    x.messages().emplace_back(PayloadType::filler_payload, std::string(257, 'd'));
+    x.messages().emplace_back(PayloadType::user_data_unregistered, "Unregistered");
+
+    REQUIRE(toString(x) == R"(payloadType=filler_payload
+payloadSize=1000
+payloadType=filler_payload
+payloadSize=254
+payloadType=filler_payload
+payloadSize=255
+payloadType=filler_payload
+payloadSize=256
+payloadType=filler_payload
+payloadSize=257
+payloadType=user_data_unregistered
+payloadSize=12
+)");
+    REQUIRE(byteCodingTest(x, 2053));
   }
 }

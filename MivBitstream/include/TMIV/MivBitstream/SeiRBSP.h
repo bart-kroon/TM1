@@ -39,17 +39,55 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
+enum class PayloadType {
+  buffering_period,
+  atlas_frame_timing,
+  filler_payload,
+  user_data_registered_itu_t_t35,
+  user_data_unregistered,
+  recovery_point,
+  no_display,
+  time_code,
+  regional_nesting,
+  sei_manifest,
+  sei_prefix_indication,
+  geometry_transformation_params,
+  attribute_transformation_params,
+  active_sub_bitstreams,
+  component_codec_mapping,
+  volumetric_tiling_info,
+  presentation_information,
+  geometry_smoothing,
+  attribute_smoothing,
+  viewing_space = 64,
+  rec_viewport,
+  viewing_space_handling
+};
+
+auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;
+
 // 23090-5: sei_message()
 class SeiMessage {
 public:
+  SeiMessage() = default;
+  SeiMessage(PayloadType pt, std::string payload);
+
+  auto payloadType() const noexcept -> PayloadType;
+  auto payloadSize() const noexcept -> std::size_t;
+  auto payload() const noexcept -> const std::string&;
+
   friend auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream &;
 
   auto operator==(const SeiMessage &other) const noexcept -> bool;
   auto operator!=(const SeiMessage &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> SeiMessage;
+  static auto decodeFrom(std::istream &stream) -> SeiMessage;
 
-  static void encodeTo(Common::OutputBitstream &bitstream);
+  void encodeTo(std::ostream &stream) const;
+
+private:
+  PayloadType m_payloadType;
+  std::string m_payload;
 };
 
 // 23090-5: sei_rbsp()

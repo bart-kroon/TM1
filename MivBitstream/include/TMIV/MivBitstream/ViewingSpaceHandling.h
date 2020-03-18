@@ -36,14 +36,14 @@
 
 #include <TMIV/Common/Bitstream.h>
 
+#include <vector>
+
 namespace TMIV::MivBitstream {
 // 23090-12: Viewing space handling device classes
 enum class VhDeviceClass : std::uint8_t { VHDC_ALL, VHDC_HMD, VHDC_PHONE, VHDC_ASD };
-std::ostream &operator<<(std::ostream &, VhDeviceClass);
 
 // 23090-12: Viewing space handling application classes
 enum class VhApplicationClass : std::uint8_t { VHAC_ALL, VHAC_AR, VHAC_VR, VHAC_WEB, VHAC_SD };
-std::ostream &operator<<(std::ostream &, VhApplicationClass);
 
 // 23090-12: Viewing space handling method
 enum class VhMethod : std::uint8_t {
@@ -55,21 +55,43 @@ enum class VhMethod : std::uint8_t {
   VHM_STRETCH,
   VHM_ROTATE
 };
-std::ostream &operator<<(std::ostream &, VhMethod);
 
-// 23090-5: access_unit_delimiter_rbsp()
+auto operator<<(std::ostream &, VhDeviceClass) -> std::ostream &;
+auto operator<<(std::ostream &, VhApplicationClass) -> std::ostream &;
+auto operator<<(std::ostream &, VhMethod) -> std::ostream &;
+
+struct HandlingOption {
+  VhDeviceClass vs_handling_device_class;
+  VhApplicationClass vs_handling_application_class;
+  VhMethod vs_handling_method;
+
+  auto operator==(const HandlingOption &other) const noexcept -> bool;
+  auto operator!=(const HandlingOption &other) const noexcept -> bool;
+};
+using HandlingOptionList = std::vector<HandlingOption>;
+
+// 23090-12: viewing_space_handling()
 class ViewingSpaceHandling {
 public:
+  ViewingSpaceHandling() = default;
+  explicit ViewingSpaceHandling(HandlingOptionList);
+
+  auto vs_handling_options_count() const noexcept -> std::size_t;
+  auto vs_handling_device_class(size_t h) const noexcept -> VhDeviceClass;
+  auto vs_handling_application_class(size_t h) const noexcept -> VhApplicationClass;
+  auto vs_handling_method(size_t h) const noexcept -> VhMethod;
+
   friend auto operator<<(std::ostream &stream, const ViewingSpaceHandling &x) -> std::ostream &;
 
-  constexpr auto operator==(const ViewingSpaceHandling &other) const noexcept;
-  constexpr auto operator!=(const ViewingSpaceHandling &other) const noexcept;
+  auto operator==(const ViewingSpaceHandling &other) const noexcept -> bool;
+  auto operator!=(const ViewingSpaceHandling &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &stream) -> ViewingSpaceHandling;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> ViewingSpaceHandling;
 
-  void encodeTo(Common::OutputBitstream &stream) const;
+  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  HandlingOptionList m_handlingOptionList;
 };
 } // namespace TMIV::MivBitstream
 

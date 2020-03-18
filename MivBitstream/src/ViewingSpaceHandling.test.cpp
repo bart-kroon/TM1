@@ -36,3 +36,42 @@
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
 using namespace TMIV::MivBitstream;
+
+TEST_CASE("viewing_space_handling", "[Viewing space handling SEI payload syntax]") {
+  SECTION("Null example") {
+    const auto x = ViewingSpaceHandling{};
+    REQUIRE(toString(x) == R"(vs_handling_options_count=0
+)");
+    REQUIRE(bitCodingTest(x, 1));
+  }
+
+  SECTION("Example 1") {
+    const auto x = ViewingSpaceHandling{
+        {{VhDeviceClass::VHDC_ALL, VhApplicationClass::VHAC_ALL, VhMethod::VHM_FADE}}};
+    REQUIRE(toString(x) == R"(vs_handling_options_count=1
+vs_handling_device_class( 0 )=VHDC_ALL
+vs_handling_application_class( 0 )=VHAC_ALL
+vs_handling_method( 0 )=VHM_FADE
+)");
+    REQUIRE(bitCodingTest(x, 21));
+  }
+
+  SECTION("Example 2") {
+    const auto x = ViewingSpaceHandling{
+        {{VhDeviceClass::VHDC_PHONE, VhApplicationClass::VHAC_ALL, VhMethod::VHM_ROTATE},
+         {VhDeviceClass::VHDC_ALL, VhApplicationClass::VHAC_SD, VhMethod::VHM_NULL},
+         {VhDeviceClass::VHDC_ALL, VhApplicationClass::VHAC_ALL, VhMethod::VHM_EXTRAP}}};
+    REQUIRE(toString(x) == R"(vs_handling_options_count=3
+vs_handling_device_class( 0 )=VHDC_PHONE
+vs_handling_application_class( 0 )=VHAC_ALL
+vs_handling_method( 0 )=VHM_ROTATE
+vs_handling_device_class( 1 )=VHDC_ALL
+vs_handling_application_class( 1 )=VHAC_SD
+vs_handling_method( 1 )=VHM_NULL
+vs_handling_device_class( 2 )=VHDC_ALL
+vs_handling_application_class( 2 )=VHAC_ALL
+vs_handling_method( 2 )=VHM_EXTRAP
+)");
+    REQUIRE(bitCodingTest(x, 59));
+  }
+}

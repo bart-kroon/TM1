@@ -39,7 +39,6 @@
 #include <TMIV/Renderer/Inpainter.h>
 #include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Rasterizer.h>
-#include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>

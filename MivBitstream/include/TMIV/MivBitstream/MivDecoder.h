@@ -39,6 +39,7 @@
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
+#include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>
 
@@ -128,6 +129,10 @@ private: // Decoding processes
   void decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
   void decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
   static void decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, const SeiRBSP &sei);
+  static void decodeSeiMessage(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                               const SeiMessage &message);
+  static void decodeViewingSpaceHandling(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                                         const ViewingSpaceHandling &vh);
 
 private: // Parsers
   void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
@@ -140,6 +145,8 @@ private: // Parsers
   static void parseSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
   static void parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
   static void parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
+  static void parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                                           const SeiMessage &message);
 
 private: // Internal decoder state
   std::istream &m_stream;

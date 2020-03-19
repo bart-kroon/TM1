@@ -37,7 +37,7 @@
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 #include <TMIV/AtlasConstructor/Packer.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Renderer/Synthesizer.h>
+#include <TMIV/Renderer/AdditiveSynthesizer.h>
 
 namespace TMIV::AtlasConstructor {
 inline void registerComponents() {

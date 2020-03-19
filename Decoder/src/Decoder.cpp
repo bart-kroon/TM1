@@ -48,8 +48,21 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
   m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
 }
 
+namespace {
+void checkRestrictions(const AccessUnit &frame) {
+  if (frame.vps->vps_miv_extension_flag() &&
+      frame.vps->vps_miv_sequence_vui_params_present_flag() &&
+      !frame.vps->miv_vui_params().coordinate_axis_system_params().isOmafCas()) {
+    throw runtime_error(
+        "The VUI indicates that a coordinate axis system other than that of OMAF is used. The TMIV "
+        "decoder/renderer is not yet able to convert between coordinate axis systems.");
+  }
+}
+} // namespace
+
 auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
+  checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
   return m_renderer->renderFrame(frame, viewportParams);

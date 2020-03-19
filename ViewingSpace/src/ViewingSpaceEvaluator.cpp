@@ -236,15 +236,15 @@ auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f cent
   }
 
   // rotation
-  Vec3f rota = a.rotation.value_or(Vec3f({0, 0, 0}));
-  Vec3f rotb = b.rotation.value_or(Vec3f({0, 0, 0}));
+  const auto rota = a.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F});
+  const auto rotb = b.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F});
   output.rotation = (1. - w) * rota + w * rotb;
 #ifdef _VERBOSE
   std::cout << "  rotation = " << output.rotation.value() << std::endl;
 #endif
   // guard band size
-  float gba = a.guardBandSize.value_or(0.F);
-  float gbb = b.guardBandSize.value_or(0.F);
+  const float gba = a.guardBandSize.value_or(0.F);
+  const float gbb = b.guardBandSize.value_or(0.F);
   output.guardBandSize = (1.F - w) * gba + w * gbb;
 #ifdef _VERBOSE
   std::cout << "  guard band = " << output.guardBandSize.value() << std::endl;
@@ -259,8 +259,8 @@ auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f cent
             << " - range = " << output.viewingDirectionConstraint.value().pitchRange << std::endl;
 #endif
   // directional guard band size
-  float vgba = a.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
-  float vgbb = b.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
+  const float vgba = a.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
+  const float vgbb = b.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
   output.viewingDirectionConstraint.value().guardBandDirectionSize = (1.F - w) * vgba + w * vgbb;
 #ifdef _VERBOSE
   std::cout << "  viewing direction guard band = "

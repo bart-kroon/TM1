@@ -34,6 +34,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/ViewingSpace/SignedDistance.h>
 #include <TMIV/ViewingSpace/ViewingSpaceEvaluator.h>
 
@@ -48,47 +49,50 @@ TEST_CASE("Signed distance functions") {
   }
   const Cuboid cuboid{{1.F, 2.F, 3.F}, {11.F, 13.F, 17.F}};
   const Spheroid spheroid{{5.F, 4.F, 3.F}, {2.F, 3.F, 4.F}};
+  const QuatF noRotation{0.F, 0.F, 0.F, 1.F};
   SECTION("Cuboid") {
-    REQUIRE(signedDistance(cuboid, {}, cuboid.center).isInside());
-    REQUIRE(signedDistance(cuboid, {}, cuboid.center + 0.49F * cuboid.size).isInside());
-    REQUIRE(
-        signedDistance(cuboid, EulerAngles({180.F, 0.F, 0.F}), cuboid.center - 0.49F * cuboid.size)
-            .isInside());
-    REQUIRE(signedDistance(cuboid, {}, cuboid.center + 0.51F * cuboid.size).isOutside());
-    REQUIRE(signedDistance(cuboid, EulerAngles({180.F, 180.F, 180.F}),
+    REQUIRE(signedDistance(cuboid, noRotation, cuboid.center).isInside());
+    REQUIRE(signedDistance(cuboid, noRotation, cuboid.center + 0.49F * cuboid.size).isInside());
+    REQUIRE(signedDistance(cuboid, euler2quat(radperdeg * Vec3f({180.F, 0.F, 0.F})),
+                           cuboid.center - 0.49F * cuboid.size)
+                .isInside());
+    REQUIRE(signedDistance(cuboid, noRotation, cuboid.center + 0.51F * cuboid.size).isOutside());
+    REQUIRE(signedDistance(cuboid, euler2quat(radperdeg * Vec3f({180.F, 180.F, 180.F})),
                            cuboid.center - 0.51F * cuboid.size)
                 .isOutside());
   }
   SECTION("Spheroid") {
-    REQUIRE(signedDistance(spheroid, {}, spheroid.center).isInside());
-    REQUIRE(signedDistance(spheroid, {},
+    REQUIRE(signedDistance(spheroid, noRotation, spheroid.center).isInside());
+    REQUIRE(signedDistance(spheroid, noRotation,
                            spheroid.center + Vec3f({0.49F * spheroid.radius.x(), 0.F, 0.F}))
                 .isInside());
-    REQUIRE(signedDistance(spheroid, EulerAngles({0.F, 90.F, 0.F}),
+    REQUIRE(signedDistance(spheroid, euler2quat(radperdeg * Vec3f({0.F, 90.F, 0.F})),
                            spheroid.center + Vec3f({0.F, 0.99F * spheroid.radius.y(), 0.F}))
                 .isInside());
-    REQUIRE(signedDistance(spheroid, EulerAngles({0.F, 90.F, 0.F}),
+    REQUIRE(signedDistance(spheroid, euler2quat(radperdeg * Vec3f({0.F, 90.F, 0.F})),
                            spheroid.center + Vec3f({0.F, 1.01F * spheroid.radius.y(), 0.F}))
                 .isOutside());
-    REQUIRE(signedDistance(spheroid, {}, spheroid.center + 1.01F * spheroid.radius).isOutside());
-    REQUIRE(signedDistance(spheroid, {}, spheroid.center - 1.01F * spheroid.radius).isOutside());
+    REQUIRE(signedDistance(spheroid, noRotation, spheroid.center + 1.01F * spheroid.radius)
+                .isOutside());
+    REQUIRE(signedDistance(spheroid, noRotation, spheroid.center - 1.01F * spheroid.radius)
+                .isOutside());
   }
   SECTION("Halfspace") {
     const Halfspace hs1({{1.F, 0.F, 0.F}, 10.F});
-    REQUIRE(signedDistance(hs1, {}, Vec3f({9.F, 10.F, 1.0e6F})).isInside());
-    REQUIRE(signedDistance(hs1, {}, Vec3f({11.F, -100.F, 0.F})).isOutside());
+    REQUIRE(signedDistance(hs1, noRotation, Vec3f({9.F, 10.F, 1.0e6F})).isInside());
+    REQUIRE(signedDistance(hs1, noRotation, Vec3f({11.F, -100.F, 0.F})).isOutside());
     const Halfspace hs2({{0.F, 0.707F, -0.707F}, 0.F});
-    REQUIRE(signedDistance(hs1, {}, 0.99F * hs1.distance * hs1.normal).isInside());
-    REQUIRE(signedDistance(hs2, {}, -0.1F * hs2.normal).isInside());
-    REQUIRE(signedDistance(hs1, {}, 1.01F * hs1.distance * hs1.normal).isOutside());
-    REQUIRE(signedDistance(hs2, {}, 0.1F * hs2.normal).isOutside());
+    REQUIRE(signedDistance(hs1, noRotation, 0.99F * hs1.distance * hs1.normal).isInside());
+    REQUIRE(signedDistance(hs2, noRotation, -0.1F * hs2.normal).isInside());
+    REQUIRE(signedDistance(hs1, noRotation, 1.01F * hs1.distance * hs1.normal).isOutside());
+    REQUIRE(signedDistance(hs2, noRotation, 0.1F * hs2.normal).isOutside());
   }
 
   SECTION("Addition, subtraction, and intersection") {
     {
       const auto point = cuboid.center - 0.49F * cuboid.size;
-      const auto sd1 = signedDistance(cuboid, {}, point);
-      const auto sd2 = signedDistance(spheroid, {}, point);
+      const auto sd1 = signedDistance(cuboid, noRotation, point);
+      const auto sd2 = signedDistance(spheroid, noRotation, point);
       REQUIRE(sd1.isInside());
       REQUIRE(sd2.isOutside());
       REQUIRE((sd1 + sd2).isInside());
@@ -99,8 +103,8 @@ TEST_CASE("Signed distance functions") {
     }
     {
       const auto point = spheroid.center;
-      const auto sd1 = signedDistance(cuboid, {}, point);
-      const auto sd2 = signedDistance(spheroid, {}, point);
+      const auto sd1 = signedDistance(cuboid, noRotation, point);
+      const auto sd2 = signedDistance(spheroid, noRotation, point);
       REQUIRE(sd1.isInside());
       REQUIRE(sd2.isInside());
       REQUIRE((sd1 + sd2).isInside());

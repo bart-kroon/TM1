@@ -34,6 +34,7 @@
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Half.h>
 
 #include "verify.h"
@@ -43,6 +44,7 @@ using namespace std;
 namespace TMIV::MivBitstream {
 using Common::Half;
 using Common::Json;
+using Common::QuatF;
 
 auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
   stream << "Viewing space:" << endl;
@@ -121,10 +123,11 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
       primitiveShape.guardBandSize = stream.getFloat16();
     }
     if (orientationPresent) {
-      primitiveShape.rotation = Common::Vec3f();
+      primitiveShape.rotation = QuatF();
       primitiveShape.rotation.value().x() = stream.getFloat16();
       primitiveShape.rotation.value().y() = stream.getFloat16();
       primitiveShape.rotation.value().z() = stream.getFloat16();
+      primitiveShape.rotation.value().w() = std::sqrt(1.F - norm2(primitiveShape.rotation.value()));
     }
     if (directionConstraintPresent) {
       auto vdc = PrimitiveShape::ViewingDirectionConstraint();
@@ -167,7 +170,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       stream.putFloat16(Half(p.guardBandSize.value_or(0.F)));
     }
     if (orientationPresent) {
-      const Common::Vec3f r = p.rotation.value_or(Common::Vec3f());
+      const QuatF r = p.rotation.value();
       stream.putFloat16(Half(r.x()));
       stream.putFloat16(Half(r.y()));
       stream.putFloat16(Half(r.z()));
@@ -221,8 +224,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   return true;
 }
 
-auto PrimitiveShape::ViewingDirectionConstraint::operator==(
-    const ViewingDirectionConstraint &other) const -> bool {
+auto PrimitiveShape::ViewingDirectionConstraint::
+operator==(const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }
@@ -411,7 +414,7 @@ auto PrimitiveShape::loadFromJson(const Json &node) -> PrimitiveShape {
     primitiveShape.guardBandSize = subnode.asFloat();
   }
   if (auto subnode = node.optional("Rotation"); subnode) {
-    primitiveShape.rotation = subnode.asFloatVector<3>();
+    primitiveShape.rotation = Common::euler2quat(Common::radperdeg * subnode.asFloatVector<3>());
   }
   if (auto subnode = node.optional("ViewingDirectionConstraint"); subnode) {
     primitiveShape.viewingDirectionConstraint = PrimitiveShape::ViewingDirectionConstraint();

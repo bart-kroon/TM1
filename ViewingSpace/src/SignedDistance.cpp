@@ -33,24 +33,24 @@
 
 #include <TMIV/ViewingSpace/SignedDistance.h>
 
+#include <TMIV/Common/LinAlg.h>
+
 namespace TMIV::ViewingSpace {
 
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
-auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::QuatF &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
   using namespace Common;
-  const auto rotationMatrix = transpose(EulerAnglesToRotationMatrix(rotation));
-  const auto p = rotationMatrix * (point - cuboid.center);
+  const auto p = rotate(point - cuboid.center, conj(rotation));
   const auto q = abs(p) - 0.5F * cuboid.size;
   return SignedDistance(norm(max(q, 0.F)) + std::min(std::max(q.x(), std::max(q.y(), q.z())), 0.F));
 }
 
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
-auto signedDistance(const MivBitstream::Spheroid &spheroid, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Spheroid &spheroid, const Common::QuatF &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
   using namespace Common;
-  const auto rotationMatrix = transpose(EulerAnglesToRotationMatrix(rotation));
-  const auto p = rotationMatrix * (point - spheroid.center);
+  const auto p = rotate(point - spheroid.center, conj(rotation));
   const auto r = spheroid.radius;
   const auto r2 = Vec3f({r.x() * r.x(), r.y() * r.y(), r.z() * r.z()});
   float k0 = norm(Vec3f({p.x() / r.x(), p.y() / r.y(), p.z() / r.z()}));
@@ -61,17 +61,16 @@ auto signedDistance(const MivBitstream::Spheroid &spheroid, const Common::EulerA
   return SignedDistance(k0 * (k0 - 1.0F) / k1);
 }
 
-auto signedDistance(const MivBitstream::Halfspace &halfspace, const Common::EulerAngles &rotation,
+auto signedDistance(const MivBitstream::Halfspace &halfspace, const Common::QuatF &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
-  const auto rotationMatrix = transpose(EulerAnglesToRotationMatrix(rotation));
-  const auto p = rotationMatrix * point;
+  const auto p = rotate(point, conj(rotation));
   return SignedDistance(dot(halfspace.normal, p) - halfspace.distance);
 }
 
 auto signedDistance(const MivBitstream::PrimitiveShape &shape, const Common::Vec3f &point)
     -> SignedDistance {
   using namespace Common;
-  const EulerAngles rotation = EulerAngles(shape.rotation.value_or(Vec3f()));
+  const auto rotation = shape.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F});
   return std::visit([&](auto &&s) { return signedDistance(s, rotation, point); }, shape.primitive);
 }
 

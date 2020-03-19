@@ -39,34 +39,42 @@ namespace TMIV::MivBitstream {
 constexpr auto CoordinateAxisSystemParams::cas_forward_axis() const noexcept {
   return m_cas_forward_axis;
 }
+
 constexpr auto CoordinateAxisSystemParams::cas_delta_left_axis_minus1() const noexcept {
   return m_cas_delta_left_axis_minus1;
-};
+}
+
 constexpr auto CoordinateAxisSystemParams::cas_forward_sign() const noexcept {
   return m_cas_forward_sign;
 }
+
 constexpr auto CoordinateAxisSystemParams::cas_left_sign() const noexcept {
   return m_cas_left_sign;
 }
-constexpr auto CoordinateAxisSystemParams::cas_up_sign() const noexcept { return m_cas_up_sign; };
+
+constexpr auto CoordinateAxisSystemParams::cas_up_sign() const noexcept { return m_cas_up_sign; }
 
 constexpr auto &CoordinateAxisSystemParams::cas_forward_axis(std::uint8_t value) noexcept {
   m_cas_forward_axis = value;
   return *this;
 }
+
 constexpr auto &
 CoordinateAxisSystemParams::cas_delta_left_axis_minus1(std::uint8_t value) noexcept {
   m_cas_delta_left_axis_minus1 = value;
   return *this;
 }
+
 constexpr auto &CoordinateAxisSystemParams::cas_forward_sign(bool value) noexcept {
   m_cas_forward_sign = value;
   return *this;
 }
+
 constexpr auto &CoordinateAxisSystemParams::cas_left_sign(bool value) noexcept {
   m_cas_left_sign = value;
   return *this;
 }
+
 constexpr auto &CoordinateAxisSystemParams::cas_up_sign(bool value) noexcept {
   m_cas_up_sign = value;
   return *this;

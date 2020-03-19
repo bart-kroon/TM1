@@ -45,6 +45,8 @@ auto getUint16(std::istream &stream) -> uint16_t;
 auto getUint32(std::istream &stream) -> uint32_t;
 auto getUint64(std::istream &stream) -> uint64_t;
 auto readString(std::istream &stream, size_t bytes) -> std::string;
+auto moreRbspData(std::istream &stream) -> bool;
+void rbspTrailingBits(std::istream &stream);
 
 void writeBytes(std::ostream &stream, uint64_t value, size_t bytes);
 void putUint8(std::ostream &stream, uint8_t value);
@@ -52,6 +54,7 @@ void putUint16(std::ostream &stream, uint8_t value);
 void putUint32(std::ostream &stream, uint8_t value);
 void putUint64(std::ostream &stream, uint8_t value);
 void writeString(std::ostream &stream, const std::string &buffer);
+void rbspTrailingBits(std::ostream &stream);
 } // namespace TMIV::Common
 
 #endif

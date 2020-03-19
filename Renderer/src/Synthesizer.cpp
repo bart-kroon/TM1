@@ -150,8 +150,8 @@ public:
     for (int i = 1; i < rows; ++i) {
       for (int j = 1; j < cols; ++j) {
         const auto tl = Vec2i{j - 1, i - 1};
-        const auto tr = Vec2i{j - 1, i};
-        const auto bl = Vec2i{j, i - 1};
+        const auto tr = Vec2i{j, i - 1};
+        const auto bl = Vec2i{j - 1, i};
         const auto br = Vec2i{j, i};
         addTriangle(tl, tr, br);
         addTriangle(tl, br, bl);

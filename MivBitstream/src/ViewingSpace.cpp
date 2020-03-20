@@ -34,6 +34,7 @@
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Common.h>
 #include <TMIV/Common/Half.h>
 
 #include "verify.h"
@@ -43,8 +44,28 @@ using namespace std;
 namespace TMIV::MivBitstream {
 using Common::Half;
 using Common::Json;
+using Common::QuatF;
 
-auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
+static auto decodeRotation(InputBitstream &stream) -> QuatF {
+  QuatF q;
+  q.x() = stream.getFloat16();
+  q.y() = stream.getFloat16();
+  q.z() = stream.getFloat16();
+  q.w() = 0.F;
+  q.w() = std::sqrt(1.F - norm2(q));
+  return q;
+}
+
+static void encodeRotation(const QuatF &q, OutputBitstream &stream) {
+  assert(normalized(q));
+  stream.putFloat16(Half(q.x()));
+  stream.putFloat16(Half(q.y()));
+  stream.putFloat16(Half(q.z()));
+}
+
+auto operator<<(std::ostream &stream,
+                                                  const ViewingSpace &viewingSpace)
+    -> std::ostream & {
   stream << "Viewing space:" << endl;
   for (const auto &s : viewingSpace.elementaryShapes) {
     stream << (s.first == ElementaryShapeOperation::add ? "add " : "subtract ");
@@ -121,19 +142,15 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream) -> ElementaryShape {
       primitiveShape.guardBandSize = stream.getFloat16();
     }
     if (orientationPresent) {
-      primitiveShape.rotation = Common::Vec3f();
-      primitiveShape.rotation.value().x() = stream.getFloat16();
-      primitiveShape.rotation.value().y() = stream.getFloat16();
-      primitiveShape.rotation.value().z() = stream.getFloat16();
+      primitiveShape.rotation = decodeRotation(stream);
     }
     if (directionConstraintPresent) {
       auto vdc = PrimitiveShape::ViewingDirectionConstraint();
       if (guardBandPresent) {
         vdc.guardBandDirectionSize = stream.getFloat16();
       }
-      vdc.yawCenter = stream.getFloat16();
+      vdc.directionRotation = decodeRotation(stream);
       vdc.yawRange = stream.getFloat16();
-      vdc.pitchCenter = stream.getFloat16();
       vdc.pitchRange = stream.getFloat16();
       primitiveShape.viewingDirectionConstraint = vdc;
     }
@@ -167,10 +184,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       stream.putFloat16(Half(p.guardBandSize.value_or(0.F)));
     }
     if (orientationPresent) {
-      const Common::Vec3f r = p.rotation.value_or(Common::Vec3f());
-      stream.putFloat16(Half(r.x()));
-      stream.putFloat16(Half(r.y()));
-      stream.putFloat16(Half(r.z()));
+      encodeRotation(p.rotation.value(), stream);
     }
     if (directionConstraintPresent) {
       const auto vdc =
@@ -178,9 +192,8 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       if (guardBandPresent) {
         stream.putFloat16(Half(vdc.guardBandDirectionSize.value_or(0.F)));
       }
-      stream.putFloat16(Half(vdc.yawCenter));
+      encodeRotation(vdc.directionRotation, stream);
       stream.putFloat16(Half(vdc.yawRange));
-      stream.putFloat16(Half(vdc.pitchCenter));
       stream.putFloat16(Half(vdc.pitchRange));
     }
   }
@@ -196,7 +209,7 @@ auto operator<<(std::ostream &stream, const PrimitiveShape &shape) -> std::ostre
   }
   if (shape.viewingDirectionConstraint.has_value()) {
     const auto &vdc = shape.viewingDirectionConstraint.value();
-    stream << " yaw " << vdc.yawCenter << "+/-" << 0.5F * vdc.yawRange << " pitch "
+    stream << " direction rotation " << vdc.directionRotation << " yaw range " << vdc.yawRange << " pitch range "
            << vdc.pitchRange << "+/-" << 0.5F * vdc.pitchRange;
     if (vdc.guardBandDirectionSize.has_value()) {
       stream << " guardband " << vdc.guardBandDirectionSize.value();
@@ -221,12 +234,12 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   return true;
 }
 
-auto PrimitiveShape::ViewingDirectionConstraint::operator==(
-    const ViewingDirectionConstraint &other) const -> bool {
+auto PrimitiveShape::ViewingDirectionConstraint::
+operator==(const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }
-  if (yawCenter != other.yawCenter || pitchCenter != other.pitchCenter) {
+  if (directionRotation != other.directionRotation) {
     return false;
   }
   if (yawRange != other.yawRange || pitchRange != other.pitchRange) {
@@ -358,7 +371,7 @@ auto ViewingSpace::loadFromJson(const Json &node) -> ViewingSpace {
         primitive.guardBandSize = 0.F;
       }
       if (rotationPresent && !primitive.rotation.has_value()) {
-        primitive.rotation = Common::Vec3f();
+        primitive.rotation = QuatF();
       }
       if (directionConstraintPresent) {
         if (!primitive.viewingDirectionConstraint.has_value()) {
@@ -411,7 +424,7 @@ auto PrimitiveShape::loadFromJson(const Json &node) -> PrimitiveShape {
     primitiveShape.guardBandSize = subnode.asFloat();
   }
   if (auto subnode = node.optional("Rotation"); subnode) {
-    primitiveShape.rotation = subnode.asFloatVector<3>();
+    primitiveShape.rotation = Common::euler2quat(Common::radperdeg * subnode.asFloatVector<3>());
   }
   if (auto subnode = node.optional("ViewingDirectionConstraint"); subnode) {
     primitiveShape.viewingDirectionConstraint = PrimitiveShape::ViewingDirectionConstraint();
@@ -419,12 +432,12 @@ auto PrimitiveShape::loadFromJson(const Json &node) -> PrimitiveShape {
       primitiveShape.viewingDirectionConstraint.value().guardBandDirectionSize =
           subsubnode.asFloat();
     }
-    primitiveShape.viewingDirectionConstraint.value().yawCenter =
-        subnode.require("YawCenter").asFloat();
+	const float directionYaw = subnode.require("YawCenter").asFloat();
+    const float directionPitch = subnode.require("PitchCenter").asFloat();
+        primitiveShape.viewingDirectionConstraint.value().directionRotation =
+            Common::euler2quat(Common::radperdeg * Common::Vec3f{directionYaw, directionPitch, 0.F});
     primitiveShape.viewingDirectionConstraint.value().yawRange =
         subnode.require("YawRange").asFloat();
-    primitiveShape.viewingDirectionConstraint.value().pitchCenter =
-        subnode.require("PitchCenter").asFloat();
     primitiveShape.viewingDirectionConstraint.value().pitchRange =
         subnode.require("PitchRange").asFloat();
   }

@@ -36,6 +36,7 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/Common/Quaternion.h>
 #include <TMIV/Common/Vector.h>
 
 #include <iosfwd>
@@ -180,10 +181,10 @@ struct PrimitiveShape {
   std::optional<float> guardBandSize{};
 
   // In specification: primitive_orientation_present_flag[ e ]
-  // In specification: primitive_shape_yaw[ e ]
-  // In specification: primitive_shape_pitch[ e ]
-  // In specification: primitive_shape_roll[ e ]
-  std::optional<Common::Vec3f> rotation{};
+  // In specification: primitive_shape_quat_x[ e ][ s ]
+  // In specification: primitive_shape_quat_y[ e ][ s ]
+  // In specification: primitive_shape_quat_z[ e ][ s ]
+  std::optional<Common::QuatF> rotation{};
 
   // In specification: viewing_direction_constraint_present_flag[ e ]
   // In specification: guard_band_present_flag[ e ]
@@ -194,9 +195,8 @@ struct PrimitiveShape {
   // In specification: primitive_shape_viewing_direction_pitch_range[ e ]
   struct ViewingDirectionConstraint {
     std::optional<float> guardBandDirectionSize{};
-    float yawCenter{};
+    Common::QuatF directionRotation{0.F, 0.F, 0.F, 1.F};
     float yawRange{360.f};
-    float pitchCenter{};
     float pitchRange{180.f};
 
     bool operator==(const ViewingDirectionConstraint &other) const;

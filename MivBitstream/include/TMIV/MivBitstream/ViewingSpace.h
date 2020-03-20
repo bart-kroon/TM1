@@ -195,9 +195,8 @@ struct PrimitiveShape {
   // In specification: primitive_shape_viewing_direction_pitch_range[ e ]
   struct ViewingDirectionConstraint {
     std::optional<float> guardBandDirectionSize{};
-    float yawCenter{};
+    Common::QuatF directionRotation{0.F, 0.F, 0.F, 1.F};
     float yawRange{360.f};
-    float pitchCenter{};
     float pitchRange{180.f};
 
     bool operator==(const ViewingDirectionConstraint &other) const;

@@ -49,7 +49,7 @@ namespace {
 auto computeIndex(const ViewParams &metadata, const MivBitstream::ViewingSpace &vs) -> float {
   TMIV::ViewingSpace::ViewingParams vp;
   vp.viewPosition = metadata.ce.position();
-  // TODO(BK): Switch ViewingSpace to quaternions and use ce.rotation()
+  vp.viewRotation = metadata.ce.rotation();
 
   auto index = TMIV::ViewingSpace::ViewingSpaceEvaluator::computeInclusion(vs, vp);
   std::cout << "viewing space inclusion index: " << index << std::endl;

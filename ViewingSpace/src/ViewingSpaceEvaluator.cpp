@@ -33,6 +33,7 @@
 
 #include <TMIV/ViewingSpace/ViewingSpaceEvaluator.h>
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/ViewingSpace/SignedDistance.h>
 
 #define _VERBOSE
@@ -51,6 +52,21 @@ struct ViewingSpaceEvaluation {
   SignedDistance sdGuardBand;
   std::optional<DirectionConstraint> directionConstraint;
 };
+
+struct ViewingDirection {
+  float yaw, pitch;
+};
+
+static auto viewingDirection(const QuatF &rotation) -> ViewingDirection {
+  assert(normalized(rotation));
+  static const Vec3f forwardAxis{1.F, 0.F, 0.F};
+  const auto directionVector = rotate(forwardAxis, rotation);
+
+  ViewingDirection d;
+  d.yaw = degperrad * std::atan2(directionVector.y(), directionVector.x());
+  d.pitch = degperrad * std::acos(-directionVector.z());
+  return d;
+}
 
 static auto yawDelta(const float b, const float a) -> float {
   float d = b - a;
@@ -71,8 +87,6 @@ static auto blend(const std::optional<DirectionConstraint> &ao,
   }
   const auto &a = ao.value_or(DirectionConstraint());
   const auto &b = bo.value_or(DirectionConstraint());
-  assert(a.pitchCenter >= -90.F && a.pitchCenter <= 90.F);
-  assert(b.pitchCenter >= -90.F && b.pitchCenter <= 90.F);
   assert(s >= 0.F && s <= 1.F);
 
   const float sa = 1.F - s;
@@ -80,14 +94,15 @@ static auto blend(const std::optional<DirectionConstraint> &ao,
 
   DirectionConstraint result;
   if (!ao.has_value()) {
-    result.yawCenter = b.yawCenter;
-    result.pitchCenter = b.pitchCenter;
+    result.directionRotation = b.directionRotation;
   } else if (!bo.has_value()) {
-    result.yawCenter = a.yawCenter;
-    result.pitchCenter = a.pitchCenter;
+    result.directionRotation = a.directionRotation;
   } else {
-    result.yawCenter = a.yawCenter + s * yawDelta(b.yawCenter, a.yawCenter);
-    result.pitchCenter = sa * a.pitchCenter + sb * b.pitchCenter;
+    // choose the closer of the two quaternions leading to the same orientation so we avoid >180
+    // degree rotations
+    const auto d = dot(a.directionRotation, b.directionRotation);
+    result.directionRotation =
+        sa * a.directionRotation + (d >= 0.F ? sb : -sb) * b.directionRotation;
   }
   result.yawRange = sa * a.yawRange + sb * b.yawRange;
   result.pitchRange = sa * a.pitchRange + sb * b.pitchRange;
@@ -253,10 +268,11 @@ auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f cent
   output.viewingDirectionConstraint =
       blend(a.viewingDirectionConstraint.value(), b.viewingDirectionConstraint.value(), w);
 #ifdef _VERBOSE
-  std::cout << "  yaw: center = " << output.viewingDirectionConstraint.value().yawCenter
-            << " - range = " << output.viewingDirectionConstraint.value().yawRange << std::endl;
-  std::cout << "  pitch: center = " << output.viewingDirectionConstraint.value().pitchCenter
-            << " - range = " << output.viewingDirectionConstraint.value().pitchRange << std::endl;
+  std::cout << "  direction rotation = "
+            << output.viewingDirectionConstraint.value().directionRotation << std::endl
+            << "  yaw range = " << output.viewingDirectionConstraint.value().yawRange << std::endl
+            << "  pitch range = " << output.viewingDirectionConstraint.value().pitchRange
+            << std::endl;
 #endif
   // directional guard band size
   const float vgba = a.viewingDirectionConstraint.value().guardBandDirectionSize.value_or(0.F);
@@ -414,13 +430,20 @@ auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &v
                                          weight / accumulatedDirectionWeight);
     }
   }
+  if (global.directionConstraint.has_value()) {
+    global.directionConstraint.value().directionRotation =
+        normalize(global.directionConstraint.value().directionRotation);
+  }
 
   const auto &dc = global.directionConstraint.value_or(DirectionConstraint());
 
+  const auto dcd = viewingDirection(dc.directionRotation);
+  const auto vpd = viewingDirection(viewingParams.viewRotation);
+
   const float kPosition = distanceInclusion(global.sdBoundary, global.sdGuardBand);
-  const float kYaw = angleInclusion(yawDelta(dc.yawCenter, viewingParams.yaw), dc.yawRange,
-                                    dc.guardBandDirectionSize.value_or(0.F));
-  const float kPitch = angleInclusion(viewingParams.pitch - dc.pitchCenter, dc.pitchRange,
+  const float kYaw = angleInclusion(yawDelta(dcd.yaw, vpd.yaw),
+                                    dc.yawRange, dc.guardBandDirectionSize.value_or(0.F));
+  const float kPitch = angleInclusion(vpd.pitch - dcd.pitch, dc.pitchRange,
                                       dc.guardBandDirectionSize.value_or(0.F));
   const float result = kPosition * kYaw * kPitch;
 

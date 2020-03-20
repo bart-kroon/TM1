@@ -51,7 +51,6 @@ auto recoverPrunedViewAndMask(const AccessUnit &frame)
   auto prunedView = vector<Texture444Depth10Frame>{};
   auto prunedMasks = MaskList{};
 
-  // TODO(BK): Address the view numbering assumption
   const auto &viewParamsList = frame.atlas.front().viewParamsList;
 
   for (const auto &viewParams : viewParamsList) {

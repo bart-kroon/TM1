@@ -61,10 +61,6 @@ struct ImageVertexDescriptor {
 using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
 
 // The rendering engine is the part that is specalized per projection type
-//
-// TODO(BK): Move the projection-specific calculations into the Engine specializations. Currently
-// there is quite some duplicate code between different components. This complicates implementation
-// of new projection types.
 template <MivBitstream::CiCamType camType> struct Engine {};
 } // namespace TMIV::Renderer
 

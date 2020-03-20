@@ -156,7 +156,6 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
       size_t id_1 = id.first;
       size_t id_2 = id.second;
 
-      // TODO(BK): This must be a mistake. Why only the x-coordinate?
       temp_distance =
           abs(viewParamsList[id_1].ce.ce_view_pos_x() - viewParamsList[id_2].ce.ce_view_pos_x());
       if (temp_distance < min_distance) {

@@ -77,7 +77,6 @@ public:
     auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
 
-    // TODO(BK): Move depth quality assessment to the Encoder library
     if (!json().isPresent("depthLowQualityFlag")) {
       sourceSequenceParams.msp().msp_depth_low_quality_flag(
           m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,

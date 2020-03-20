@@ -273,8 +273,6 @@ private:
 };
 
 // 23090-12: miv_view_params_update_extrinsics
-//
-// TODO(BK): Implement view parameter updates
 class MivViewParamsUpdateExtrinsics {
 public:
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateExtrinsics & /* x */)
@@ -294,8 +292,6 @@ public:
 };
 
 // 23090-12: miv_view_params_update_intrinsics
-//
-// TODO(BK): Implement view parameter updates
 class MivViewParamsUpdateIntrinsics {
 public:
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateIntrinsics & /* x */)

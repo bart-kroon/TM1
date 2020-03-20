@@ -419,9 +419,6 @@ void MivDecoder::decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) 
 
 void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
   VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
-
-  // TODO(BK): It is unclear what to do with this NAL unit. There could be another V-PCC unit with
-  // atlas data. Does that one have to start with a new ASPS? My guess is that it does.
   sequence(vuh) = {};
 }
 

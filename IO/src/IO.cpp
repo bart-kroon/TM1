@@ -44,8 +44,14 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
+namespace {
+// The TMIV encoder always loads texture (and may use it internally) but attribute video data (AVD)
+// is an optional output in MIV WD4.
+auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
+} // namespace
+
 auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
-  auto x = IvSequenceParams{};
+  auto x = IvSequenceParams{haveTexture(config)};
 
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -184,8 +190,10 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
 
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
-    writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex,
-               int(atlasId));
+    if (haveTexture(config)) {
+      writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex,
+                 int(atlasId));
+    }
     writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
   }
 }

@@ -138,7 +138,16 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
     aau.patchParamsList = atlas.frames.front()->patchParamsList;
     aau.blockToPatchMap = atlas.frames.front()->blockToPatchMap;
 
-    aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
+    if (au.vps->attribute_information(uint8_t(atlasId)).ai_attribute_count() >= 1 &&
+        au.vps->attribute_information(uint8_t(atlasId)).ai_attribute_type_id(0) ==
+            AiAttributeTypeId::ATTR_TEXTURE) {
+      aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
+    } else {
+      aau.attrFrame.resize(aau.asps.asps_frame_width(), aau.asps.asps_frame_height());
+      aau.attrFrame.fillNeutral();
+	  VERIFY_MIVBITSTREAM(aau.decGeoFrameSize(*au.vps) == aau.frameSize());
+    }
+
     aau.decGeoFrame =
         m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
 

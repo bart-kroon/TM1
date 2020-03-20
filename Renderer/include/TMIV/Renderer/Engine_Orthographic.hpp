@@ -51,20 +51,13 @@ template <> struct Engine<MivBitstream::CiCamType::orthographic> {
 
   // Unprojection equation
   auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
-    if (depth > 0.F) {
-      return {depth, ow * (uv.x() / ppw - 0.5F), oh * (uv.y() / pph - 0.5F)};
-    }
-    return {Common::NaN, Common::NaN, Common::NaN};
+    return {depth, ow * (uv.x() / ppw - 0.5F), oh * (uv.y() / pph - 0.5F)};
   }
 
   // Projection equation
   auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
-    if (v.position.x() > 0.F) {
-      const auto uv =
-          Common::Vec2f{ppw * (0.5F + v.position.y() / ow), pph * (0.5F + v.position.z() / oh)};
-      return {uv, v.position.x(), v.rayAngle};
-    }
-    return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};
+    return {Common::Vec2f{ppw * (0.5F + v.position.y() / ow), pph * (0.5F + v.position.z() / oh)},
+            v.position.x(), v.rayAngle};
   }
 
   // Project mesh to target view

@@ -33,68 +33,45 @@
 
 #include "test.h"
 
-#include <TMIV/MivBitstream/SeiRBSP.h>
+#include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
 using namespace TMIV::MivBitstream;
 
-TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
-  REQUIRE(toString(PayloadType::viewing_space_handling) == "viewing_space_handling");
-  REQUIRE(toString(PayloadType(42)) == "reserved_sei_message (42)");
-}
-
-TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
-  const auto x = SeiMessage{};
-  REQUIRE(toString(x) == R"(payloadType=buffering_period
-payloadSize=0
+TEST_CASE("viewing_space_handling", "[Viewing space handling SEI payload syntax]") {
+  SECTION("Null example") {
+    const auto x = ViewingSpaceHandling{};
+    REQUIRE(toString(x) == R"(vs_handling_options_count=0
 )");
-  REQUIRE(byteCodingTest(x, 2));
-
-  SECTION("Example 1") {
-    const auto y = SeiMessage{PayloadType::time_code, "Tick tock"};
-    REQUIRE(toString(y) == R"(payloadType=time_code
-payloadSize=9
-)");
+    REQUIRE(bitCodingTest(x, 1));
   }
-}
-
-TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
-  auto x = SeiRBSP{};
-
-  REQUIRE(toString(x).empty());
 
   SECTION("Example 1") {
-    x.messages().emplace_back();
-    x.messages().emplace_back(PayloadType::sei_manifest, "Manifest");
-
-    REQUIRE(toString(x) == R"(payloadType=buffering_period
-payloadSize=0
-payloadType=sei_manifest
-payloadSize=8
+    const auto x = ViewingSpaceHandling{
+        {{VhDeviceClass::VHDC_ALL, VhApplicationClass::VHAC_ALL, VhMethod::VHM_FADE}}};
+    REQUIRE(toString(x) == R"(vs_handling_options_count=1
+vs_handling_device_class( 0 )=VHDC_ALL
+vs_handling_application_class( 0 )=VHAC_ALL
+vs_handling_method( 0 )=VHM_FADE
 )");
-    REQUIRE(byteCodingTest(x, 13));
+    REQUIRE(bitCodingTest(x, 21));
   }
 
   SECTION("Example 2") {
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(1000, 'x'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(254, 'a'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(255, 'b'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(256, 'c'));
-    x.messages().emplace_back(PayloadType::filler_payload, std::string(257, 'd'));
-    x.messages().emplace_back(PayloadType::user_data_unregistered, "Unregistered");
-
-    REQUIRE(toString(x) == R"(payloadType=filler_payload
-payloadSize=1000
-payloadType=filler_payload
-payloadSize=254
-payloadType=filler_payload
-payloadSize=255
-payloadType=filler_payload
-payloadSize=256
-payloadType=filler_payload
-payloadSize=257
-payloadType=user_data_unregistered
-payloadSize=12
+    const auto x = ViewingSpaceHandling{
+        {{VhDeviceClass::VHDC_PHONE, VhApplicationClass::VHAC_ALL, VhMethod::VHM_ROTATE},
+         {VhDeviceClass::VHDC_ALL, VhApplicationClass::VHAC_SD, VhMethod::VHM_NULL},
+         {VhDeviceClass::VHDC_ALL, VhApplicationClass::VHAC_ALL, VhMethod::VHM_EXTRAP}}};
+    REQUIRE(toString(x) == R"(vs_handling_options_count=3
+vs_handling_device_class( 0 )=VHDC_PHONE
+vs_handling_application_class( 0 )=VHAC_ALL
+vs_handling_method( 0 )=VHM_ROTATE
+vs_handling_device_class( 1 )=VHDC_ALL
+vs_handling_application_class( 1 )=VHAC_SD
+vs_handling_method( 1 )=VHM_NULL
+vs_handling_device_class( 2 )=VHDC_ALL
+vs_handling_application_class( 2 )=VHAC_ALL
+vs_handling_method( 2 )=VHM_EXTRAP
 )");
-    REQUIRE(byteCodingTest(x, 2053));
+    REQUIRE(bitCodingTest(x, 59));
   }
 }

@@ -220,11 +220,7 @@ public:
         [&](Perspective /*unused*/) {
           return 2.F * atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
         },
-        [&](Orthographic /*unused*/) {
-          const auto focalDistance =
-              2.F / (viewParams.dq.dq_norm_disp_low() + viewParams.dq.dq_norm_disp_high());
-          return 2.F * atan(ci.ci_ortho_width() / (2.F * focalDistance));
-        }));
+        [&](Orthographic /*unused*/) { return halfCycle; }));
   }
 
   // Resolution in px^2/rad^2

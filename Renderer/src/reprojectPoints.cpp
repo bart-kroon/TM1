@@ -168,13 +168,7 @@ template <> auto ProjectionHelper<CiCamType::perspective>::getAngularResolution(
 template <> auto ProjectionHelper<CiCamType::orthographic>::getAngularResolution() const -> float {
   auto &ci = m_viewParams.ci;
   auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
-  const auto focalDistance =
-      2.F / (m_viewParams.dq.dq_norm_disp_low() + m_viewParams.dq.dq_norm_disp_high());
-  auto orthoDiag = hypot(ci.ci_ortho_width(), ci.ci_ortho_height());
-  float omega =
-      4.F * atan(nbPixel / (2.F * focalDistance * sqrt(4.F * sqr(focalDistance) + orthoDiag)));
-
-  return nbPixel / omega;
+  return nbPixel / hemiSphere;
 }
 
 template <> auto ProjectionHelper<CiCamType::equirectangular>::getRadialRange() const -> Vec2f {

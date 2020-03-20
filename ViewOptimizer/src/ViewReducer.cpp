@@ -250,12 +250,7 @@ auto ViewReducer::calculateFOV(const ViewParams &viewParams) -> float {
         return abs(4 * atan(ci.projectionPlaneSize().x() / (2.F * ci.ci_perspective_focal_hor())) *
                    sin(atan(ci.projectionPlaneSize().y() / (2.F * ci.ci_perspective_focal_ver()))));
       },
-      [&](Orthographic /*unused*/) {
-        const auto focalDistance =
-            2.F / (viewParams.dq.dq_norm_disp_low() + viewParams.dq.dq_norm_disp_high());
-        return abs(4 * atan(ci.ci_ortho_width()) / (2.F * focalDistance)) *
-               sin(atan(ci.ci_ortho_height() / (2.F * focalDistance)));
-      }));
+      [&](Orthographic /*unused*/) { return hemiSphere; }));
 }
 auto ViewReducer::calculateDistance(const ViewParams &camera_1, const ViewParams &camera_2)
     -> float {

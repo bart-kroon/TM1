@@ -145,7 +145,7 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
     } else {
       aau.attrFrame.resize(aau.asps.asps_frame_width(), aau.asps.asps_frame_height());
       aau.attrFrame.fillNeutral();
-	  VERIFY_MIVBITSTREAM(aau.decGeoFrameSize(*au.vps) == aau.frameSize());
+      VERIFY_MIVBITSTREAM(aau.decGeoFrameSize(*au.vps) == aau.frameSize());
     }
 
     aau.decGeoFrame =

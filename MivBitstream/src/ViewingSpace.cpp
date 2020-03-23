@@ -63,7 +63,7 @@ static void encodeRotation(const QuatF &q, OutputBitstream &stream) {
   stream.putFloat16(Half(q.z()));
 }
 
-static bool equalRotation(const QuatF &a, const QuatF &b) {
+static auto equalRotation(const QuatF &a, const QuatF &b) -> bool {
   assert(normalized(a, 1.0E-3F) && normalized(b, 1.0E-3F));
   const float d = dot(a, b);
   return d > 0.9999F;

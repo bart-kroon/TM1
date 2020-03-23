@@ -62,7 +62,7 @@ static auto viewingDirection(const QuatF &rotation) -> ViewingDirection {
   static const Vec3f forwardAxis{1.F, 0.F, 0.F};
   const auto directionVector = rotate(forwardAxis, rotation);
 
-  ViewingDirection d;
+  ViewingDirection d{};
   d.yaw = degperrad * std::atan2(directionVector.y(), directionVector.x());
   d.pitch = degperrad * std::acos(-directionVector.z());
   return d;

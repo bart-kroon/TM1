@@ -92,6 +92,7 @@ if (CMAKE_TESTING_ENABLED)
 		"src/SeiRBSP.test.cpp"
 		"src/test.cpp"
 		"src/test.h"
+		"src/ViewingSpace.test.cpp"
 		"src/ViewingSpaceHandling.test.cpp"
 		"src/VpccParameterSet.test.cpp"
 		"src/VpccUnit.test.cpp"

@@ -33,6 +33,7 @@
 
 #include "test.h"
 
+#include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 using namespace std;
@@ -40,6 +41,18 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace examples {
+
+inline auto deg2HalfQuat(const float yawDeg, const float pitchDeg, const float rollDeg = 0.F)
+    -> QuatF {
+  QuatF q = euler2quat(radperdeg * Vec3f{yawDeg, pitchDeg, rollDeg});
+  q.x() = Half(q.x());
+  q.y() = Half(q.y());
+  q.z() = Half(q.z());
+  q.w() = 0.F;
+  q.w() = Half(std::sqrt(1.F - norm2(q)));
+  return q;
+};
+
 const auto viewingSpace = array{
     ViewingSpace{
         {{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
@@ -56,31 +69,31 @@ const auto viewingSpace = array{
                    ElementaryShape{{PrimitiveShape{Halfspace{{}, {}}, {}, {}, {}}}}}}},
     ViewingSpace{{{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
                                                       Cuboid{{}, {}},
-                                                      1.F,                     // guard band size
-                                                      Vec3f{30.F, 60.F, 90.F}, // orientation
+                                                      1.F, // guard band size
+                                                      deg2HalfQuat(30.F, 60.F, 90.F), // orientation
                                                       {} // viewing direction constraint
                                                   }}}}}},
-    ViewingSpace{{{ElementaryShapeOperation::add,
-                   ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
-                                                   {},
-                                                   {},
-                                                   PrimitiveShape::ViewingDirectionConstraint{
-                                                       {},
-                                                       90.F, // yaw_center
-                                                       30.F, // yaw_range,
-                                                       45.F, // pitch_center
-                                                       60.F  // pitch_range
-                                                   }}}}}}},
+    ViewingSpace{
+        {{ElementaryShapeOperation::add,
+          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}},
+                                          {},
+                                          {},
+                                          PrimitiveShape::ViewingDirectionConstraint{
+                                              {},
+                                              deg2HalfQuat(90.F, 45.F), // viewing_direction
+                                              30.F,                     // yaw_range,
+                                              60.F                      // pitch_range
+                                          }}}}}}},
     ViewingSpace{
         {{ElementaryShapeOperation::intersect,
-          ElementaryShape{{PrimitiveShape{Cuboid{{}, {}}, 1.F, Vec3f{30.F, 45.F, 60.F},
-                                          PrimitiveShape::ViewingDirectionConstraint{
-                                              15.F, // guard_band_direction_size
-                                              90.F, // yaw_center
-                                              30.F, // yaw_range,
-                                              45.F, // pitch_center
-                                              60.F  // pitch_range
-                                          }}}}},
+          ElementaryShape{
+              {PrimitiveShape{Cuboid{{}, {}}, 1.F, euler2quat(radperdeg *Vec3f{30.F, 45.F, 60.F}),
+                              PrimitiveShape::ViewingDirectionConstraint{
+                                  15.F,                          // guard_band_direction_size
+                                  deg2HalfQuat(90.F, 45.F, 0.F), // viewing_direction
+                                  30.F,                          // yaw_range,
+                                  60.F                           // pitch_range
+                              }}}}},
          {ElementaryShapeOperation::subtract,
           ElementaryShape{{PrimitiveShape{Cuboid{{-1.F, 0.F, 1.F}, {1.F, 2.F, 3.F}}, {}, {}, {}},
                            PrimitiveShape{Spheroid{{-2.F, 2.F, 2.F}, {3.F, 2.F, 1.F}}, {}, {}, {}},
@@ -114,8 +127,8 @@ TEST_CASE("Viewing space coding") {
   REQUIRE(bitCodingTest(examples::viewingSpace[0], 113));
   REQUIRE(bitCodingTest(examples::viewingSpace[1], 195));
   REQUIRE(bitCodingTest(examples::viewingSpace[2], 177));
-  REQUIRE(bitCodingTest(examples::viewingSpace[3], 177));
-  REQUIRE(bitCodingTest(examples::viewingSpace[4], 535));
+  REQUIRE(bitCodingTest(examples::viewingSpace[3], 193));
+  REQUIRE(bitCodingTest(examples::viewingSpace[4], 551));
 }
 
 TEST_CASE("Viewing space JSON") {

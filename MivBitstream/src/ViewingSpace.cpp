@@ -57,10 +57,16 @@ static auto decodeRotation(InputBitstream &stream) -> QuatF {
 }
 
 static void encodeRotation(const QuatF &q, OutputBitstream &stream) {
-  assert(normalized(q));
+  assert(normalized(q, 1.0E-3F));
   stream.putFloat16(Half(q.x()));
   stream.putFloat16(Half(q.y()));
   stream.putFloat16(Half(q.z()));
+}
+
+static bool equalRotation(const QuatF &a, const QuatF &b) {
+  assert(normalized(a, 1.0E-3F) && normalized(b, 1.0E-3F));
+  const float d = dot(a, b);
+  return d > 0.9999F;
 }
 
 auto operator<<(std::ostream &stream,
@@ -225,7 +231,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   if (guardBandSize != other.guardBandSize) {
     return false;
   }
-  if (rotation != other.rotation) {
+  if (!equalRotation(rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F}),
+                     other.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F}))) {
     return false;
   }
   if (viewingDirectionConstraint != other.viewingDirectionConstraint) {
@@ -239,7 +246,7 @@ operator==(const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }
-  if (directionRotation != other.directionRotation) {
+  if (!equalRotation(directionRotation, other.directionRotation)) {
     return false;
   }
   if (yawRange != other.yawRange || pitchRange != other.pitchRange) {

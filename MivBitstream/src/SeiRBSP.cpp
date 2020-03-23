@@ -35,6 +35,10 @@
 
 #include <TMIV/Common/Bytestream.h>
 
+#include <utility>
+
+#include <utility>
+
 #include "verify.h"
 
 using namespace std;
@@ -92,7 +96,8 @@ auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
   }
 }
 
-SeiMessage::SeiMessage(PayloadType pt, string payload) : m_payloadType{pt}, m_payload{payload} {}
+SeiMessage::SeiMessage(PayloadType pt, string payload)
+    : m_payloadType{pt}, m_payload{std::move(std::move(payload))} {}
 
 auto SeiMessage::payloadType() const noexcept -> PayloadType { return m_payloadType; }
 

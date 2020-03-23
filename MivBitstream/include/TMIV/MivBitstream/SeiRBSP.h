@@ -74,7 +74,7 @@ public:
 
   auto payloadType() const noexcept -> PayloadType;
   auto payloadSize() const noexcept -> std::size_t;
-  auto payload() const noexcept -> const std::string&;
+  auto payload() const noexcept -> const std::string &;
 
   friend auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream &;
 

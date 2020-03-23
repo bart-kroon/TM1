@@ -35,7 +35,6 @@
 #define _TMIV_RENDERER_REPROJECTPOINTS_H_
 
 #include <TMIV/Common/Quaternion.h>
-#include <TMIV/Common/Transformation.h>
 #include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/Renderer/Engine.h>
 

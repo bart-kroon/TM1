@@ -145,12 +145,12 @@ TEST_CASE("Viewing space evaluation") {
   SECTION("Direction guard band") {
     const ViewingSpace vs2 = {{{ElementaryShapeOperation::add, ElementaryShape{{spheroid}}}}};
     const Vec3f pos = {1.F, 1.F, 1.F};
-    const float outside = ViewingSpaceEvaluator::computeInclusion(
-        vs2, {{pos}, euler2quat(radperdeg * Vec3f{40.F, 0.F, 0.F})});
-    const float inside = ViewingSpaceEvaluator::computeInclusion(
-        vs2, {{pos}, euler2quat(radperdeg * Vec3f{90.F, -30.F, 0.F})});
-    const float guardband = ViewingSpaceEvaluator::computeInclusion(
-        vs2, {{pos}, euler2quat(radperdeg * Vec3f{50.F, -50.F, 0.F})});
+    const auto vpOutside = ViewingParams{{pos}, euler2quat(radperdeg * Vec3f{40.F, 0.F, 0.F})};
+    const float outside = ViewingSpaceEvaluator::computeInclusion(vs2, vpOutside);
+    const auto vpInside = ViewingParams{{pos}, euler2quat(radperdeg * Vec3f{90.F, -30.F, 0.F})};
+    const float inside = ViewingSpaceEvaluator::computeInclusion(vs2, vpInside);
+    const auto vpGuardband = ViewingParams{{pos}, euler2quat(radperdeg * Vec3f{50.F, -50.F, 0.F})};
+    const float guardband = ViewingSpaceEvaluator::computeInclusion(vs2, vpGuardband);
     REQUIRE(inside == 1.F);
     REQUIRE(guardband > 0.F);
     REQUIRE(guardband < 1.F);

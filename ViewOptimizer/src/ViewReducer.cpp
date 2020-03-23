@@ -248,7 +248,8 @@ auto ViewReducer::calculateFOV(const ViewParams &viewParams) -> float {
       [&](Perspective /*unused*/) {
         return abs(4 * atan(ci.projectionPlaneSize().x() / (2.F * ci.ci_perspective_focal_hor())) *
                    sin(atan(ci.projectionPlaneSize().y() / (2.F * ci.ci_perspective_focal_ver()))));
-      }));
+      },
+      [&](Orthographic /*unused*/) { return hemiSphere; }));
 }
 auto ViewReducer::calculateDistance(const ViewParams &camera_1, const ViewParams &camera_2)
     -> float {
@@ -304,7 +305,8 @@ auto ViewReducer::calculateOverlapping(const ViewParams &camera_from, const View
                                              isoverlap.height());
             return cos(angle);
           },
-          [](Perspective /*unused*/) { return 1.F; }));
+          [](Perspective /*unused*/) { return 1.F; },
+          [](Orthographic /* unused*/) { return 1.F; }));
       weight_all += weight;
       if (isoverlap(i, j) != 0) {
         weight_overlapped += weight;

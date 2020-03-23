@@ -179,7 +179,10 @@ TEST_CASE("vpcc_parameter_set", "[VPCC Parameter Set]") {
         .msp_geometry_scale_enabled_flag(true)
         .msp_num_groups_minus1(3)
         .msp_max_entities_minus1(20);
-    vps.vps_miv_sequence_vui_params_present_flag(false);
+    vps.vps_miv_sequence_vui_params_present_flag(true)
+        .miv_vui_params()
+        .coordinate_axis_system_params()
+        .cas_forward_axis(2);
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -208,7 +211,12 @@ msp_depth_low_quality_flag=true
 msp_geometry_scale_enabled_flag=true
 msp_num_groups_minus1=3
 msp_max_entities_minus1=20
-vps_miv_sequence_vui_params_present_flag=false
+vps_miv_sequence_vui_params_present_flag=true
+cas_forward_axis=2
+cas_delta_left_axis_minus1=0
+cas_forward_sign=true
+cas_left_sign=true
+cas_up_sign=true
 )");
 
     REQUIRE(byteCodingTest(vps, 25));

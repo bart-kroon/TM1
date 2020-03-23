@@ -164,6 +164,12 @@ template <> auto ProjectionHelper<CiCamType::perspective>::getAngularResolution(
   return nbPixel / omega;
 }
 
+template <> auto ProjectionHelper<CiCamType::orthographic>::getAngularResolution() const -> float {
+  auto &ci = m_viewParams.ci;
+  auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+  return nbPixel / hemiSphere;
+}
+
 template <> auto ProjectionHelper<CiCamType::equirectangular>::getRadialRange() const -> Vec2f {
   return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
 }
@@ -179,5 +185,9 @@ template <> auto ProjectionHelper<CiCamType::perspective>::getRadialRange() cons
 
   return {1.F / m_viewParams.dq.dq_norm_disp_high(),
           norm(Vec3f{x, y, 1.F}) / m_viewParams.dq.dq_norm_disp_low()};
+}
+
+template <> auto ProjectionHelper<CiCamType::orthographic>::getRadialRange() const -> Vec2f {
+  return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
 }
 } // namespace TMIV::Renderer

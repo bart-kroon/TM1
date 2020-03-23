@@ -478,3 +478,37 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
     }
   }
 }
+
+TEST_CASE("Engine<orthographic>", "[Render engine]") {
+  const auto engine = []() {
+    auto ci = CameraIntrinsics{};
+    ci.ci_cam_type(CiCamType::orthographic)
+        .ci_projection_plane_width_minus1(999)
+        .ci_projection_plane_height_minus1(499)
+        .ci_ortho_width(5.F)   // dy/du = 0.005
+        .ci_ortho_height(2.F); // dz/dv = 0.004
+    return Engine<CiCamType::orthographic>{ci};
+  }();
+
+  const auto refPoints = array{Vec3f{}, Vec3f{1.F, 2.F, 3.F}, Vec3f{-6.F, -2.5F, 7.F}};
+  const auto refPositions = array{Vec2f{500.F, 250.F}, Vec2f{900.F, 1000.F}, Vec2f{0.F, 2000.F}};
+  const auto refDepth = array{0.F, 1.F, -6.F};
+
+  SECTION("unprojectVertex") {
+    for (size_t i = 0; i < refPoints.size(); ++i) {
+      REQUIRE(engine.unprojectVertex(refPositions[i], refDepth[i]).x() == Approx(refPoints[i].x()));
+      REQUIRE(engine.unprojectVertex(refPositions[i], refDepth[i]).y() == Approx(refPoints[i].y()));
+      REQUIRE(engine.unprojectVertex(refPositions[i], refDepth[i]).z() == Approx(refPoints[i].z()));
+    }
+  }
+
+  SECTION("projectVertex") {
+    for (size_t i = 0; i < refPoints.size(); ++i) {
+      REQUIRE(engine.projectVertex(SceneVertexDescriptor{refPoints[i], 0.F}).depth == refDepth[i]);
+      REQUIRE(engine.projectVertex(SceneVertexDescriptor{refPoints[i], 0.F}).position.x() ==
+              Approx(refPositions[i].x()));
+      REQUIRE(engine.projectVertex(SceneVertexDescriptor{refPoints[i], 0.F}).position.y() ==
+              Approx(refPositions[i].y()));
+    }
+  }
+}

@@ -34,6 +34,7 @@ add_library(RendererLib
 	"include/TMIV/Renderer/Engine.h"
 	"include/TMIV/Renderer/Engine_ERP.hpp"
 	"include/TMIV/Renderer/Engine_Perspective.hpp"
+	"include/TMIV/Renderer/Engine_Orthographic.hpp"
 	"include/TMIV/Renderer/blend.h"
 	"include/TMIV/Renderer/blend.hpp"
 	"include/TMIV/Renderer/Rasterizer.h"

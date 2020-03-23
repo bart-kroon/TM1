@@ -42,9 +42,9 @@ using namespace std;
 namespace {
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_BYTESTREAM(condition)                                                               \
-  (void)(!!(condition) || verifyFailed(#condition, __FILE__, __LINE__))
+  (void)(!!(condition) || verifyBytestreamFailed(#condition, __FILE__, __LINE__))
 
-auto verifyFailed(char const *condition, char const *file, int line) -> bool {
+auto verifyBytestreamFailed(char const *condition, char const *file, int line) -> bool {
   cerr << "Failed to encode/decode byte stream: " << condition << " [" << file << "@" << line
        << endl;
   abort();

@@ -31,40 +31,45 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
+#ifndef _TMIV_RENDERER_ENGINE_H_
+#error "Include the .h, not the .hpp"
+#endif
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/GeometryScaler.h>
+#include <TMIV/Common/Common.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
+namespace TMIV::Renderer {
+template <> struct Engine<MivBitstream::CiCamType::orthographic> {
+  const float ow;
+  const float oh;
+  const float ppw;
+  const float pph;
 
-namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode} {
-  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
-}
+  explicit Engine(const MivBitstream::CameraIntrinsics &ci)
+      : ow{ci.ci_ortho_width()}, oh{ci.ci_ortho_height()},
+        ppw{float(ci.ci_projection_plane_width_minus1() + 1)},
+        pph{float(ci.ci_projection_plane_height_minus1() + 1)} {}
 
-namespace {
-void checkRestrictions(const AccessUnit &frame) {
-  if (frame.vps->vps_miv_extension_flag() &&
-      frame.vps->vps_miv_sequence_vui_params_present_flag() &&
-      !frame.vps->miv_vui_params().coordinate_axis_system_params().isOmafCas()) {
-    throw runtime_error(
-        "The VUI indicates that a coordinate axis system other than that of OMAF is used. The TMIV "
-        "decoder/renderer is not yet able to convert between coordinate axis systems.");
+  // Unprojection equation
+  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
+    return {depth, ow * (uv.x() / ppw - 0.5F), oh * (uv.y() / pph - 0.5F)};
   }
-}
-} // namespace
 
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  checkRestrictions(frame);
-  m_geometryScaler.inplaceScale(frame);
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  return m_renderer->renderFrame(frame, viewportParams);
-}
-} // namespace TMIV::Decoder
+  // Projection equation
+  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
+    return {Common::Vec2f{ppw * (0.5F + v.position.y() / ow), pph * (0.5F + v.position.z() / oh)},
+            v.position.x(), v.rayAngle};
+  }
+
+  // Project mesh to target view
+  template <typename... T>
+  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
+               std::tuple<std::vector<T>...> attributes) {
+    ImageVertexDescriptorList imageVertices;
+    imageVertices.reserve(sceneVertices.size());
+    for (const SceneVertexDescriptor &v : sceneVertices) {
+      imageVertices.push_back(projectVertex(v));
+    }
+    return std::tuple{move(imageVertices), triangles, attributes};
+  }
+};
+} // namespace TMIV::Renderer

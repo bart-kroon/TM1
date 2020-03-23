@@ -120,8 +120,7 @@ template <typename F> decltype(auto) CameraIntrinsics::dispatch(F f) const {
   case CiCamType::perspective:
     return f(Perspective{});
   case CiCamType::orthographic:
-    // TODO(BK): Implement orthographic rendering engine
-    abort();
+    return f(Orthographic{});
   default:
     abort();
   }

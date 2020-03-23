@@ -40,7 +40,7 @@
 using namespace std;
 
 namespace TMIV::Common {
-auto verifyFailed(char const *condition, char const *file, int line) -> bool {
+auto verifyBitstreamFailed(char const *condition, char const *file, int line) -> bool {
   cerr << "Failed to encode/decode bitstream: " << condition << " [" << file << "@" << line << endl;
   abort();
   return false;

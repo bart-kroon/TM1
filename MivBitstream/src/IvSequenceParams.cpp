@@ -48,7 +48,9 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
   vps.vps_miv_mode_flag(true)
       .vps_extension_present_flag(true)
       .vps_miv_extension_flag(true)
-      .vps_miv_sequence_vui_params_present_flag(false);
+      .vps_miv_sequence_vui_params_present_flag(true)
+      .miv_vui_params()
+      .coordinate_axis_system_params() = CoordinateAxisSystemParams{};
 
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_0)

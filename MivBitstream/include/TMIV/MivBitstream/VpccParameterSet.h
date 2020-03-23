@@ -34,6 +34,8 @@
 #ifndef _TMIV_MIVBITSTREAM_VPCCPARAMETERSET_H_
 #define _TMIV_MIVBITSTREAM_VPCCPARAMETERSET_H_
 
+#include <TMIV/MivBitstream/MivVuiParams.h>
+
 #include <TMIV/Common/Bitstream.h>
 
 #include <cstdint>
@@ -256,6 +258,7 @@ public:
   auto vps_miv_extension_flag() const noexcept -> bool;
   auto miv_sequence_params() const noexcept -> const MivSequenceParams &;
   auto vps_miv_sequence_vui_params_present_flag() const noexcept -> bool;
+  auto miv_vui_params() const noexcept -> const MivVuiParams &;
 
   constexpr auto &profile_tier_level(ProfileTierLevel value) noexcept;
   constexpr auto &vps_vpcc_parameter_set_id(std::uint8_t value) noexcept;
@@ -279,6 +282,7 @@ public:
   [[nodiscard]] auto geometry_information(std::uint8_t atlasId) -> GeometryInformation &;
   [[nodiscard]] auto attribute_information(std::uint8_t atlasId) -> AttributeInformation &;
   [[nodiscard]] auto miv_sequence_params() noexcept -> MivSequenceParams &;
+  [[nodiscard]] auto miv_vui_params() noexcept -> MivVuiParams &;
 
   friend auto operator<<(std::ostream &stream, const VpccParameterSet &x) -> std::ostream &;
 
@@ -310,6 +314,7 @@ private:
   bool m_vps_miv_extension_flag{};
   std::optional<MivSequenceParams> m_miv_sequence_params;
   std::optional<bool> m_vps_miv_sequence_vui_params_present_flag;
+  std::optional<MivVuiParams> m_miv_vui_params;
 };
 } // namespace TMIV::MivBitstream
 

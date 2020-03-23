@@ -37,8 +37,6 @@
 
 #include <utility>
 
-#include <utility>
-
 #include "verify.h"
 
 using namespace std;

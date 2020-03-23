@@ -31,12 +31,59 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/ViewingSpace.h>
+#include <TMIV/MivBitstream/RecommendedViewport.h>
 
-#include <TMIV/Common/Bitstream.h>
+#include "verify.h"
 
 using namespace std;
+using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
+auto operator<<(ostream &stream, const RecommendedViewport &x) -> ostream & {
+  /*
+	stream << "vs_handling_options_count=" << x.vs_handling_options_count() << '\n';
 
+  for (size_t h = 0; h < x.vs_handling_options_count(); ++h) {
+    stream << "vs_handling_device_class( " << h << " )=" << x.vs_handling_device_class(h) << '\n';
+    stream << "vs_handling_application_class( " << h << " )=" << x.vs_handling_application_class(h)
+           << '\n';
+    stream << "vs_handling_method( " << h << " )=" << x.vs_handling_method(h) << '\n';
+  }
+  */
+  return stream;
+}
+
+auto RecommendedViewport::operator==(const RecommendedViewport &other) const noexcept -> bool {
+  //return m_handlingOptionList == other.m_handlingOptionList;
+  return true;
+}
+
+auto RecommendedViewport::operator!=(const RecommendedViewport &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto RecommendedViewport::decodeFrom(InputBitstream &bitstream) -> RecommendedViewport {
+  /*
+	auto x = HandlingOptionList(bitstream.getUExpGolomb<size_t>());
+
+  for (auto &el : x) {
+    el.vs_handling_device_class = bitstream.readBits<VhDeviceClass>(6);
+    el.vs_handling_application_class = bitstream.readBits<VhApplicationClass>(6);
+    el.vs_handling_method = bitstream.readBits<VhMethod>(6);
+  }
+  */
+  return RecommendedViewport{};
+}
+
+void RecommendedViewport::encodeTo(OutputBitstream &bitstream) const {
+  /*
+	bitstream.putUExpGolomb(vs_handling_options_count());
+
+  for (size_t h = 0; h < vs_handling_options_count(); ++h) {
+    bitstream.writeBits(vs_handling_device_class(h), 6);
+    bitstream.writeBits(vs_handling_application_class(h), 6);
+    bitstream.writeBits(vs_handling_method(h), 6);
+  }
+  */
+}
 } // namespace TMIV::MivBitstream

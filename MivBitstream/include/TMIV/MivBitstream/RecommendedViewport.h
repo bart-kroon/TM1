@@ -39,6 +39,23 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
+// 23090-12: rec_viewport()
+class RecommendedViewport {
+public:
+  RecommendedViewport() = default;
 
+  friend auto operator<<(std::ostream &stream, const RecommendedViewport &x) -> std::ostream &;
+
+  auto operator==(const RecommendedViewport &other) const noexcept -> bool;
+  auto operator!=(const RecommendedViewport &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> RecommendedViewport;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+
+};
 } // namespace TMIV::MivBitstream
+
 #endif

@@ -32,57 +32,44 @@
  */
 
 #ifndef _TMIV_RENDERER_ENGINE_H_
-#define _TMIV_RENDERER_ENGINE_H_
-
-#include <TMIV/Common/LinAlg.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
-
-namespace TMIV::Renderer {
-struct SceneVertexDescriptor {
-  Common::Vec3f position; // m, scene point in target reference frame
-  float rayAngle{};       // rad, ray angle from: cos a = <v, w>/|v||w|
-};
-
-using SceneVertexDescriptorList = std::vector<SceneVertexDescriptor>;
-
-struct TriangleDescriptor {
-  std::array<int, 3> indices; // indices into vertex lists
-  float area;                 // px�, area before unprojection
-};
-
-using TriangleDescriptorList = std::vector<TriangleDescriptor>;
-
-struct ImageVertexDescriptor {
-  Common::Vec2f position; // px, position in image (x right, y down)
-  float depth{};          // m, depth as defined in the target projection
-  float rayAngle{};       // rad, ray angle from: cos a = <v, w>/|v||w|
-};
-
-using ImageVertexDescriptorList = std::vector<ImageVertexDescriptor>;
-
-// The rendering engine is the part that is specalized per projection type
-template <MivBitstream::CiCamType camType> struct Engine {};
-} // namespace TMIV::Renderer
-
-#include "Engine_ERP.hpp"
-#include "Engine_Perspective.hpp"
-#include "Engine_Orthographic.hpp"
-
-namespace TMIV::Renderer {
-// Project the data that is already in the reference frame of the
-// target camera.
-//
-// This method is designed to allow for specialization per target camera
-// projection. The interface allows for culling and splitting triangles.
-template <typename... T>
-auto project(SceneVertexDescriptorList vertices, TriangleDescriptorList triangles,
-             std::tuple<std::vector<T>...> attributes,
-             const MivBitstream::CameraIntrinsics &target) {
-  return target.dispatch([&](auto camType) {
-    Engine<camType> engine{target};
-    return engine.project(std::move(vertices), std::move(triangles), std::move(attributes));
-  });
-}
-} // namespace TMIV::Renderer
-
+#error "Include the .h, not the .hpp"
 #endif
+
+#include <TMIV/Common/Common.h>
+
+namespace TMIV::Renderer {
+template <> struct Engine<MivBitstream::CiCamType::orthographic> {
+  const float ow;
+  const float oh;
+  const float ppw;
+  const float pph;
+
+  explicit Engine(const MivBitstream::CameraIntrinsics &ci)
+      : ow{ci.ci_ortho_width()}, oh{ci.ci_ortho_height()},
+        ppw{float(ci.ci_projection_plane_width_minus1() + 1)},
+        pph{float(ci.ci_projection_plane_height_minus1() + 1)} {}
+
+  // Unprojection equation
+  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
+    return {depth, ow * (uv.x() / ppw - 0.5F), oh * (uv.y() / pph - 0.5F)};
+  }
+
+  // Projection equation
+  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
+    return {Common::Vec2f{ppw * (0.5F + v.position.y() / ow), pph * (0.5F + v.position.z() / oh)},
+            v.position.x(), v.rayAngle};
+  }
+
+  // Project mesh to target view
+  template <typename... T>
+  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
+               std::tuple<std::vector<T>...> attributes) {
+    ImageVertexDescriptorList imageVertices;
+    imageVertices.reserve(sceneVertices.size());
+    for (const SceneVertexDescriptor &v : sceneVertices) {
+      imageVertices.push_back(projectVertex(v));
+    }
+    return std::tuple{move(imageVertices), triangles, attributes};
+  }
+};
+} // namespace TMIV::Renderer

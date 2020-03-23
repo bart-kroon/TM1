@@ -219,7 +219,8 @@ public:
         [&](Equirectangular /*unused*/) { return abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()); },
         [&](Perspective /*unused*/) {
           return 2.F * atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
-        }));
+        },
+        [&](Orthographic /*unused*/) { return halfCycle; }));
   }
 
   // Resolution in px^2/rad^2

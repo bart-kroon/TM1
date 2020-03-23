@@ -73,8 +73,14 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
 
   m_inIvSequenceParams = move(ivSequenceParams);
 
+  // Do we also have texture or only geometry?
+  assert(m_inIvSequenceParams.vps.vps_atlas_count_minus1() == 0);
+  const auto &ai = m_inIvSequenceParams.vps.attribute_information(0);
+  auto const haveTexture =
+      ai.ai_attribute_count() >= 1 && ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
+
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_outIvSequenceParams = IvSequenceParams{SizeVector(m_nbAtlas, m_atlasSize)};
+  m_outIvSequenceParams = IvSequenceParams{SizeVector(m_nbAtlas, m_atlasSize), haveTexture};
   m_outIvSequenceParams.msp() = m_inIvSequenceParams.msp();
   m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
   m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;

@@ -39,9 +39,12 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-IvSequenceParams::IvSequenceParams() : IvSequenceParams{SizeVector{{0xFFFF, 0xFFFF}}} {}
+IvSequenceParams::IvSequenceParams() : IvSequenceParams{false} {}
 
-IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes) {
+IvSequenceParams::IvSequenceParams(bool haveTexture)
+    : IvSequenceParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture} {}
+
+IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTexture) {
   vps.vps_miv_mode_flag(true)
       .vps_extension_present_flag(true)
       .vps_miv_extension_flag(true)
@@ -60,11 +63,14 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes) {
     const auto a = uint8_t(atlasId);
     vps.vps_frame_width(a, atlasSizes[atlasId].x()).vps_frame_height(a, atlasSizes[atlasId].y());
     vps.geometry_information(a).gi_geometry_nominal_2d_bitdepth_minus1(9);
-    vps.attribute_information(a)
-        .ai_attribute_count(1)
-        .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
-        .ai_attribute_dimension_minus1(0, 2)
-        .ai_attribute_nominal_2d_bitdepth_minus1(0, 9);
+
+    if (haveTexture) {
+      vps.attribute_information(a)
+          .ai_attribute_count(1)
+          .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
+          .ai_attribute_dimension_minus1(0, 2)
+          .ai_attribute_nominal_2d_bitdepth_minus1(0, 9);
+    }
   }
 }
 

@@ -31,22 +31,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_SYNTHESIZER_H_
-#define _TMIV_RENDERER_SYNTHESIZER_H_
+#ifndef _TMIV_RENDERER_ADDITIVESYNTHESIZER_H_
+#define _TMIV_RENDERER_ADDITIVESYNTHESIZER_H_
 
 #include <TMIV/Renderer/ISynthesizer.h>
 
 namespace TMIV::Renderer {
-// TODO(BK): Rename this class
-class Synthesizer : public ISynthesizer {
+class AdditiveSynthesizer : public ISynthesizer {
 public:
-  Synthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
-  Synthesizer(float rayAngleParam, float depthParam, float stretchingParam, float maxStretching);
-  Synthesizer(const Synthesizer &) = delete;
-  Synthesizer(Synthesizer &&) = default;
-  Synthesizer &operator=(const Synthesizer &) = delete;
-  Synthesizer &operator=(Synthesizer &&) = default;
-  ~Synthesizer() override;
+  AdditiveSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  AdditiveSynthesizer(float rayAngleParam, float depthParam, float stretchingParam,
+                      float maxStretching);
+  AdditiveSynthesizer(const AdditiveSynthesizer &) = delete;
+  AdditiveSynthesizer(AdditiveSynthesizer &&) = default;
+  AdditiveSynthesizer &operator=(const AdditiveSynthesizer &) = delete;
+  AdditiveSynthesizer &operator=(AdditiveSynthesizer &&) = default;
+  ~AdditiveSynthesizer() override;
 
   // Render from a texture atlas to a viewport
   auto renderFrame(const MivBitstream::AccessUnit &frame,

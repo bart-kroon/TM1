@@ -192,7 +192,7 @@ template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
 
 template <typename YUVD>
 void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold,
-                                const double &angleRange) {
+                                const double &fullOmniRangePercentage) {
 
   auto &Y = yuvd.first.getPlane(0);
   auto &D = yuvd.second.getPlane(0);
@@ -234,8 +234,8 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
 
       auto oldW = w - width2;
       auto tmpH = sqrt(height * h - h * h);
-      if (tmpH / height2 > angleRange) {
-        tmpH = height2 * angleRange;
+      if (tmpH / height2 > fullOmniRangePercentage) {
+        tmpH = height2 * fullOmniRangePercentage;
       }
       auto newW = oldW * tmpH / height2;
       newW += width2;
@@ -418,9 +418,8 @@ template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &
   fillVerticalCracks(yuvd);
 
   if (meta.ci.ci_cam_type() == CiCamType::equirectangular) {
-    // TODO(BK): Bug? ERP used be in degrees but the "/ M_2PI"  was already there
-    const auto angleRange = (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / fullCycle;
-    inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, angleRange);
+    const auto fullOmniRangePercentage = (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / fullCycle;
+    inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, fullOmniRangePercentage);
   }
 
   inpaintPerspectiveView(yuvd, DepthBlendingThreshold);

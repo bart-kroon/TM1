@@ -33,13 +33,15 @@
 
 #include <TMIV/Common/Bytestream.h>
 
+#include <TMIV/Common/Bitstream.h>
+
 #include <iostream>
 
 using namespace std;
 
 namespace {
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define VERIFY_BITSTREAM(condition)                                                                \
+#define VERIFY_BYTESTREAM(condition)                                                               \
   (void)(!!(condition) || verifyFailed(#condition, __FILE__, __LINE__))
 
 auto verifyFailed(char const *condition, char const *file, int line) -> bool {
@@ -52,14 +54,14 @@ auto verifyFailed(char const *condition, char const *file, int line) -> bool {
 
 namespace TMIV::Common {
 auto readBytes(istream &stream, size_t bytes) -> uint64_t {
-  VERIFY_BITSTREAM(bytes <= 8);
+  VERIFY_BYTESTREAM(bytes <= 8);
   auto result = uint64_t{0};
   while (bytes-- > 0) {
     char buffer;
     stream.get(buffer);
     result = (result << 8) | uint8_t(buffer);
   }
-  VERIFY_BITSTREAM(stream.good());
+  VERIFY_BYTESTREAM(stream.good());
   return result;
 }
 
@@ -71,19 +73,29 @@ auto getUint64(istream &stream) -> uint64_t { return uint64_t(readBytes(stream, 
 auto readString(istream &stream, size_t bytes) -> string {
   auto result = string(bytes, '\0');
   stream.read(result.data(), bytes);
-  VERIFY_BITSTREAM(stream.good());
+  VERIFY_BYTESTREAM(stream.good());
   return result;
 }
 
+auto moreRbspData(istream &stream) -> bool {
+  InputBitstream bitstream{stream};
+  return bitstream.moreRbspData();
+}
+
+void rbspTrailingBits(istream &stream) {
+  InputBitstream bitstream{stream};
+  bitstream.rbspTrailingBits();
+}
+
 void writeBytes(ostream &stream, uint64_t value, size_t bytes) {
-  VERIFY_BITSTREAM(bytes <= 8);
+  VERIFY_BYTESTREAM(bytes <= 8);
   if (bytes > 1) {
     writeBytes(stream, value >> 8, bytes - 1);
   }
   if (bytes > 0) {
     stream.put(char(value));
   }
-  VERIFY_BITSTREAM(stream.good());
+  VERIFY_BYTESTREAM(stream.good());
 }
 
 void putUint8(ostream &stream, uint8_t value) { writeBytes(stream, value, 1); }
@@ -93,6 +105,11 @@ void putUint64(ostream &stream, uint8_t value) { writeBytes(stream, value, 8); }
 
 void writeString(ostream &stream, const string &buffer) {
   stream.write(buffer.data(), buffer.size());
-  VERIFY_BITSTREAM(stream.good());
+  VERIFY_BYTESTREAM(stream.good());
+}
+
+void rbspTrailingBits(ostream &stream) {
+  OutputBitstream bitstream{stream};
+  bitstream.rbspTrailingBits();
 }
 } // namespace TMIV::Common

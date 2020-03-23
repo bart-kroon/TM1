@@ -41,7 +41,8 @@
 namespace TMIV::MivBitstream {
 struct IvSequenceParams {
   IvSequenceParams();
-  explicit IvSequenceParams(const Common::SizeVector &atlasSizes);
+  explicit IvSequenceParams(bool haveTexture);
+  IvSequenceParams(const Common::SizeVector &atlasSizes, bool haveTexture);
 
   VpccParameterSet vps;
   ViewParamsList viewParamsList;

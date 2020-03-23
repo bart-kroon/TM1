@@ -39,7 +39,6 @@
 #include <iostream>
 
 #include "TMIV/Renderer/Engine.h"
-#include <TMIV/Renderer/Synthesizer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 using namespace std;

@@ -51,7 +51,6 @@ struct AtlasAccessUnitParams {
 };
 
 struct IvAccessUnitParams {
-  // TODO(BK): Have a PatchParamsList per atlas
   PatchParamsList patchParamsList;
 
   std::vector<AtlasAccessUnitParams> atlas;

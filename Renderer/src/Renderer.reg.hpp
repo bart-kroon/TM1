@@ -40,7 +40,7 @@
 #include <TMIV/Renderer/NoSynthesizer.h>
 #include <TMIV/Renderer/Renderer.h>
 #include <TMIV/Renderer/SubBlockCuller.h>
-#include <TMIV/Renderer/Synthesizer.h>
+#include <TMIV/Renderer/AdditiveSynthesizer.h>
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Renderer/ViewingSpaceController.h>
 
@@ -50,7 +50,7 @@ inline void registerComponents() {
   Common::Factory<ICuller>::getInstance().registerAs<NoCuller>("NoCuller");
   Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
   Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<Synthesizer>("Synthesizer");
+  Common::Factory<ISynthesizer>::getInstance().registerAs<AdditiveSynthesizer>("AdditiveSynthesizer");
   Common::Factory<ISynthesizer>::getInstance().registerAs<NoSynthesizer>("NoSynthesizer");
   Common::Factory<IViewingSpaceController>::getInstance().registerAs<ViewingSpaceController>(
       "ViewingSpaceController");

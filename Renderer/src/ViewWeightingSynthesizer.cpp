@@ -978,7 +978,6 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
 namespace {
-// TODO(BK): Remove these limitations of the ViewWeightingSynthesizer
 auto checkLimitations(const AccessUnit &frame) {
   const auto &viewParamsList = frame.atlas.front().viewParamsList;
 

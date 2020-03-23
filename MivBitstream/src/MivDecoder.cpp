@@ -138,7 +138,16 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
     aau.patchParamsList = atlas.frames.front()->patchParamsList;
     aau.blockToPatchMap = atlas.frames.front()->blockToPatchMap;
 
-    aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
+    if (au.vps->attribute_information(uint8_t(atlasId)).ai_attribute_count() >= 1 &&
+        au.vps->attribute_information(uint8_t(atlasId)).ai_attribute_type_id(0) ==
+            AiAttributeTypeId::ATTR_TEXTURE) {
+      aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
+    } else {
+      aau.attrFrame.resize(aau.asps.asps_frame_width(), aau.asps.asps_frame_height());
+      aau.attrFrame.fillNeutral();
+	  VERIFY_MIVBITSTREAM(aau.decGeoFrameSize(*au.vps) == aau.frameSize());
+    }
+
     aau.decGeoFrame =
         m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
 
@@ -410,15 +419,32 @@ void MivDecoder::decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) 
 
 void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) {
   VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
-
-  // TODO(BK): It is unclear what to do with this NAL unit. There could be another V-PCC unit with
-  // atlas data. Does that one have to start with a new ASPS? My guess is that it does.
   sequence(vuh) = {};
 }
 
-void MivDecoder::decodeSei(const VpccUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
+void MivDecoder::decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                            const SeiRBSP &sei) {
-  cout << sei;
+  for (auto &message : sei.messages()) {
+    decodeSeiMessage(vuh, nuh, message);
+  }
+}
+
+void MivDecoder::decodeSeiMessage(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                                  const SeiMessage &message) {
+  cout << message;
+
+  switch (message.payloadType()) {
+  case PayloadType::viewing_space_handling:
+    return parseViewingSpaceHandlingSei(vuh, nuh, message);
+  default:
+    cout << "WARNING: Ignoring SEI message\n";
+  }
+}
+
+void MivDecoder::decodeViewingSpaceHandling(const VpccUnitHeader & /* vuh */,
+                                            const NalUnitHeader & /* nuh */,
+                                            const ViewingSpaceHandling &vh) {
+  cout << vh;
 }
 
 // Parsers /////////////////////////////////////////////////////////////////////////////////////////
@@ -473,6 +499,13 @@ void MivDecoder::parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu) {
 void MivDecoder::parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   decodeSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
+}
+
+void MivDecoder::parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                                              const SeiMessage &message) {
+  istringstream stream{message.payload()};
+  InputBitstream bitstream{stream};
+  decodeViewingSpaceHandling(vuh, nuh, ViewingSpaceHandling::decodeFrom(bitstream));
 }
 
 // Access internal decoder state ///////////////////////////////////////////////////////////////////

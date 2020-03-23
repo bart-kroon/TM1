@@ -31,40 +31,62 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
+#include "test.h"
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/GeometryScaler.h>
+#include <TMIV/MivBitstream/MivVuiParams.h>
 
-using namespace std;
-using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
-
-namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode} {
-  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
-}
 
 namespace {
-void checkRestrictions(const AccessUnit &frame) {
-  if (frame.vps->vps_miv_extension_flag() &&
-      frame.vps->vps_miv_sequence_vui_params_present_flag() &&
-      !frame.vps->miv_vui_params().coordinate_axis_system_params().isOmafCas()) {
-    throw runtime_error(
-        "The VUI indicates that a coordinate axis system other than that of OMAF is used. The TMIV "
-        "decoder/renderer is not yet able to convert between coordinate axis systems.");
-  }
+constexpr auto openGlCas() noexcept {
+  auto x = CoordinateAxisSystemParams{};
+  x.cas_forward_axis(2);           // -z points forward
+  x.cas_delta_left_axis_minus1(0); // -x points left
+  x.cas_forward_sign(false);       // z points back
+  x.cas_left_sign(false);          // x points right
+  x.cas_up_sign(false);            // y points down
+  return x;
 }
 } // namespace
 
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  checkRestrictions(frame);
-  m_geometryScaler.inplaceScale(frame);
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  return m_renderer->renderFrame(frame, viewportParams);
+TEST_CASE("coordinate_axis_system_params", "[MIV VUI Params]") {
+  SECTION("Default construction (OMAF CAS)") {
+    constexpr auto x = CoordinateAxisSystemParams{};
+
+    // Default construction corresponds to the OMAF coordinate axis system
+    static_assert(x.isOmafCas());
+
+    REQUIRE(toString(x) == R"(cas_forward_axis=0
+cas_delta_left_axis_minus1=0
+cas_forward_sign=true
+cas_left_sign=true
+cas_up_sign=true
+)");
+
+    REQUIRE(bitCodingTest(x, 6));
+  }
+
+  SECTION("Custom initialization") {
+    constexpr auto x = openGlCas();
+
+    // OpenGL uses a different convention than OMAF
+    static_assert(!x.isOmafCas());
+
+    REQUIRE(toString(x) == R"(cas_forward_axis=2
+cas_delta_left_axis_minus1=0
+cas_forward_sign=false
+cas_left_sign=false
+cas_up_sign=false
+)");
+
+    REQUIRE(bitCodingTest(x, 6));
+  }
 }
-} // namespace TMIV::Decoder
+
+TEST_CASE("miv_vui_params", "[MIV VUI Params]") {
+  SECTION("Default construction") {
+    constexpr auto x = MivVuiParams{};
+    REQUIRE(toString(x) == toString(CoordinateAxisSystemParams{}));
+    REQUIRE(bitCodingTest(x, 6));
+  }
+}

@@ -418,7 +418,8 @@ template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &
   fillVerticalCracks(yuvd);
 
   if (meta.ci.ci_cam_type() == CiCamType::equirectangular) {
-    const auto fullOmniRangePercentage = (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / fullCycle;
+    const auto fullOmniRangePercentage =
+        (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / fullCycle;
     inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, fullOmniRangePercentage);
   }
 

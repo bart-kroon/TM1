@@ -480,6 +480,11 @@ auto VpccParameterSet::vps_miv_sequence_vui_params_present_flag() const noexcept
   return *m_vps_miv_sequence_vui_params_present_flag;
 }
 
+auto VpccParameterSet::miv_vui_params() const noexcept -> const MivVuiParams & {
+  VERIFY_MIVBITSTREAM(m_miv_vui_params.has_value());
+  return *m_miv_vui_params;
+}
+
 auto VpccParameterSet::vps_atlas_count_minus1(std::uint8_t value) -> VpccParameterSet & {
   m_vps_atlases.resize(value + 1U);
   return *this;
@@ -570,6 +575,14 @@ auto VpccParameterSet::miv_sequence_params() noexcept -> MivSequenceParams & {
   return *m_miv_sequence_params;
 }
 
+auto VpccParameterSet::miv_vui_params() noexcept -> MivVuiParams & {
+  VERIFY_MIVBITSTREAM(vps_miv_sequence_vui_params_present_flag());
+  if (!m_miv_vui_params) {
+    m_miv_vui_params = MivVuiParams{};
+  }
+  return *m_miv_vui_params;
+}
+
 auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
   stream << x.profile_tier_level()
          << "vps_vpcc_parameter_set_id=" << int(x.vps_vpcc_parameter_set_id())
@@ -596,7 +609,9 @@ auto operator<<(ostream &stream, const VpccParameterSet &x) -> ostream & {
       stream << x.miv_sequence_params();
       stream << "vps_miv_sequence_vui_params_present_flag=" << boolalpha
              << x.vps_miv_sequence_vui_params_present_flag() << '\n';
-      // TODO(BK): Implement miv_vui_parameters
+      if (x.vps_miv_sequence_vui_params_present_flag()) {
+        stream << x.miv_vui_params();
+      }
     }
   }
   return stream;
@@ -610,7 +625,8 @@ auto VpccParameterSet::operator==(const VpccParameterSet &other) const noexcept 
       vps_miv_extension_flag() != other.vps_miv_extension_flag() ||
       m_miv_sequence_params != other.m_miv_sequence_params ||
       m_vps_miv_sequence_vui_params_present_flag !=
-          other.m_vps_miv_sequence_vui_params_present_flag) {
+          other.m_vps_miv_sequence_vui_params_present_flag ||
+      m_miv_vui_params != other.m_miv_vui_params) {
     return false;
   }
   for (int j = 0; j <= vps_atlas_count_minus1(); ++j) {
@@ -682,7 +698,7 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
       x.vps_miv_sequence_vui_params_present_flag(bitstream.getFlag());
 
       if (x.vps_miv_sequence_vui_params_present_flag()) {
-        MIVBITSTREAM_ERROR("miv_vui_parameters not yet implemented");
+        x.miv_vui_params() = MivVuiParams::decodeFrom(bitstream);
       }
     }
 
@@ -744,7 +760,7 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
       bitstream.putFlag(vps_miv_sequence_vui_params_present_flag());
 
       if (vps_miv_sequence_vui_params_present_flag()) {
-        MIVBITSTREAM_ERROR("miv_vui_parameters not yet implemented");
+        miv_vui_params().encodeTo(bitstream);
       }
     }
   };
@@ -787,8 +803,11 @@ auto merge(const vector<const VpccParameterSet *> &vps) -> VpccParameterSet {
 
     if (x.vps_miv_extension_flag()) {
       VERIFY_MIVBITSTREAM(x.miv_sequence_params() == y.miv_sequence_params());
-      VERIFY_MIVBITSTREAM(!x.vps_miv_sequence_vui_params_present_flag() &&
-                          !y.vps_miv_sequence_vui_params_present_flag()); // Not yet implemented
+      VERIFY_MIVBITSTREAM(x.vps_miv_sequence_vui_params_present_flag() ==
+                          y.vps_miv_sequence_vui_params_present_flag());
+      if (x.vps_miv_sequence_vui_params_present_flag()) {
+        VERIFY_MIVBITSTREAM(x.miv_vui_params() == y.miv_vui_params());
+      }
     }
   }
   return x;

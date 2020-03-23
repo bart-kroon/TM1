@@ -31,40 +31,52 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
-
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/GeometryScaler.h>
+#include <TMIV/MivBitstream/MivVuiParams.h>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
 
-namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode} {
-  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
+namespace TMIV::MivBitstream {
+auto operator<<(ostream &stream, const CoordinateAxisSystemParams &x) -> ostream & {
+  stream << "cas_forward_axis=" << int(x.cas_forward_axis()) << '\n';
+  stream << "cas_delta_left_axis_minus1=" << int(x.cas_delta_left_axis_minus1()) << '\n';
+  stream << "cas_forward_sign=" << boolalpha << x.cas_forward_sign() << '\n';
+  stream << "cas_left_sign=" << boolalpha << x.cas_left_sign() << '\n';
+  stream << "cas_up_sign=" << boolalpha << x.cas_up_sign() << '\n';
+  return stream;
 }
 
-namespace {
-void checkRestrictions(const AccessUnit &frame) {
-  if (frame.vps->vps_miv_extension_flag() &&
-      frame.vps->vps_miv_sequence_vui_params_present_flag() &&
-      !frame.vps->miv_vui_params().coordinate_axis_system_params().isOmafCas()) {
-    throw runtime_error(
-        "The VUI indicates that a coordinate axis system other than that of OMAF is used. The TMIV "
-        "decoder/renderer is not yet able to convert between coordinate axis systems.");
-  }
-}
-} // namespace
+auto CoordinateAxisSystemParams::decodeFrom(InputBitstream &bitstream)
+    -> CoordinateAxisSystemParams {
+  auto x = CoordinateAxisSystemParams{};
 
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  checkRestrictions(frame);
-  m_geometryScaler.inplaceScale(frame);
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  return m_renderer->renderFrame(frame, viewportParams);
+  x.cas_forward_axis(bitstream.readBits<uint8_t>(2))
+      .cas_delta_left_axis_minus1(bitstream.readBits<uint8_t>(1))
+      .cas_forward_sign(bitstream.getFlag())
+      .cas_left_sign(bitstream.getFlag())
+      .cas_up_sign(bitstream.getFlag());
+
+  return x;
 }
-} // namespace TMIV::Decoder
+
+void CoordinateAxisSystemParams::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.writeBits(cas_forward_axis(), 2);
+  bitstream.writeBits(cas_delta_left_axis_minus1(), 1);
+  bitstream.putFlag(cas_forward_sign());
+  bitstream.putFlag(cas_left_sign());
+  bitstream.putFlag(cas_up_sign());
+}
+
+auto operator<<(ostream &stream, const MivVuiParams &x) -> ostream & {
+  return stream << x.coordinate_axis_system_params();
+}
+
+auto MivVuiParams::decodeFrom(InputBitstream &bitstream) -> MivVuiParams {
+  const auto cas = CoordinateAxisSystemParams::decodeFrom(bitstream);
+  return MivVuiParams{cas};
+}
+
+void MivVuiParams::encodeTo(OutputBitstream &bitstream) const {
+  coordinate_axis_system_params().encodeTo(bitstream);
+}
+} // namespace TMIV::MivBitstream

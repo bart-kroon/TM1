@@ -441,10 +441,10 @@ auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &v
   const auto vpd = viewingDirection(viewingParams.viewRotation);
 
   const float kPosition = distanceInclusion(global.sdBoundary, global.sdGuardBand);
-  const float kYaw = angleInclusion(yawDelta(dcd.yaw, vpd.yaw),
-                                    dc.yawRange, dc.guardBandDirectionSize.value_or(0.F));
-  const float kPitch = angleInclusion(vpd.pitch - dcd.pitch, dc.pitchRange,
-                                      dc.guardBandDirectionSize.value_or(0.F));
+  const float kYaw = angleInclusion(yawDelta(dcd.yaw, vpd.yaw), dc.yawRange,
+                                    dc.guardBandDirectionSize.value_or(0.F));
+  const float kPitch =
+      angleInclusion(vpd.pitch - dcd.pitch, dc.pitchRange, dc.guardBandDirectionSize.value_or(0.F));
   const float result = kPosition * kYaw * kPitch;
 
 #ifdef _VERBOSE

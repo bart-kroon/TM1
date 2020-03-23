@@ -69,9 +69,7 @@ static auto equalRotation(const QuatF &a, const QuatF &b) -> bool {
   return d > 0.9999F;
 }
 
-auto operator<<(std::ostream &stream,
-                                                  const ViewingSpace &viewingSpace)
-    -> std::ostream & {
+auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
   stream << "Viewing space:" << endl;
   for (const auto &s : viewingSpace.elementaryShapes) {
     stream << (s.first == ElementaryShapeOperation::add ? "add " : "subtract ");
@@ -215,8 +213,8 @@ auto operator<<(std::ostream &stream, const PrimitiveShape &shape) -> std::ostre
   }
   if (shape.viewingDirectionConstraint.has_value()) {
     const auto &vdc = shape.viewingDirectionConstraint.value();
-    stream << " direction rotation " << vdc.directionRotation << " yaw range " << vdc.yawRange << " pitch range "
-           << vdc.pitchRange << "+/-" << 0.5F * vdc.pitchRange;
+    stream << " direction rotation " << vdc.directionRotation << " yaw range " << vdc.yawRange
+           << " pitch range " << vdc.pitchRange << "+/-" << 0.5F * vdc.pitchRange;
     if (vdc.guardBandDirectionSize.has_value()) {
       stream << " guardband " << vdc.guardBandDirectionSize.value();
     }
@@ -241,8 +239,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   return true;
 }
 
-auto PrimitiveShape::ViewingDirectionConstraint::
-operator==(const ViewingDirectionConstraint &other) const -> bool {
+auto PrimitiveShape::ViewingDirectionConstraint::operator==(
+    const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }
@@ -439,10 +437,10 @@ auto PrimitiveShape::loadFromJson(const Json &node) -> PrimitiveShape {
       primitiveShape.viewingDirectionConstraint.value().guardBandDirectionSize =
           subsubnode.asFloat();
     }
-	const float directionYaw = subnode.require("YawCenter").asFloat();
+    const float directionYaw = subnode.require("YawCenter").asFloat();
     const float directionPitch = subnode.require("PitchCenter").asFloat();
-        primitiveShape.viewingDirectionConstraint.value().directionRotation =
-            Common::euler2quat(Common::radperdeg * Common::Vec3f{directionYaw, directionPitch, 0.F});
+    primitiveShape.viewingDirectionConstraint.value().directionRotation =
+        Common::euler2quat(Common::radperdeg * Common::Vec3f{directionYaw, directionPitch, 0.F});
     primitiveShape.viewingDirectionConstraint.value().yawRange =
         subnode.require("YawRange").asFloat();
     primitiveShape.viewingDirectionConstraint.value().pitchRange =

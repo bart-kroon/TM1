@@ -40,21 +40,25 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, const RecommendedViewport &x) -> ostream & {
+  uint16_t seiId = x.m_rec_viewport_id;
   stream << "rec_viewport_id=" << x.m_rec_viewport_id << '\n';
-  stream << "rec_viewport_cancel_flag=" << x.m_rec_viewport_cancel_flag << '\n';
+  stream << "rec_viewport_cancel_flag( " << seiId << " )=" << x.m_rec_viewport_cancel_flag << '\n';
   if (!x.m_rec_viewport_cancel_flag) {
-    stream << "rec_viewport_persistence_flag=" << x.m_rec_viewport_persistence_flag << '\n';
-    stream << "rec_viewport_center_view_flag=" << x.m_rec_viewport_center_view_flag << '\n';
+    stream << "rec_viewport_persistence_flag( " << seiId << " )="
+           << x.m_rec_viewport_persistence_flag << '\n';
+    stream << "rec_viewport_center_view_flag( " << seiId
+           << " )=" << x.m_rec_viewport_center_view_flag << '\n';
     if (!x.m_rec_viewport_center_view_flag)
-      stream << "rec_viewport_left_view_flag=" << x.m_rec_viewport_left_view_flag << '\n';
-    stream << "rec_viewport_pos_x=" << x.m_rec_viewport_pos_x << '\n';
-    stream << "rec_viewport_pos_y=" << x.m_rec_viewport_pos_y << '\n';
-    stream << "rec_viewport_pos_z=" << x.m_rec_viewport_pos_z << '\n';
-    stream << "rec_viewport_quat_x=" << x.m_rec_viewport_quat_x << '\n';
-    stream << "rec_viewport_quat_y=" << x.m_rec_viewport_quat_y << '\n';
-    stream << "rec_viewport_quat_z=" << x.m_rec_viewport_quat_z << '\n';
-    stream << "rec_viewport_hor_range=" << x.m_rec_viewport_hor_range << '\n';
-    stream << "rec_viewport_ver_range=" << x.m_rec_viewport_ver_range << '\n';
+      stream << "rec_viewport_left_view_flag( " << seiId << " )=" << x.m_rec_viewport_left_view_flag
+             << '\n';
+    stream << "rec_viewport_pos_x( " << seiId << " )=" << x.m_rec_viewport_pos_x << '\n';
+    stream << "rec_viewport_pos_y( " << seiId << " )=" << x.m_rec_viewport_pos_y << '\n';
+    stream << "rec_viewport_pos_z( " << seiId << " )=" << x.m_rec_viewport_pos_z << '\n';
+    stream << "rec_viewport_quat_x( " << seiId << " )=" << x.m_rec_viewport_quat_x << '\n';
+    stream << "rec_viewport_quat_y( " << seiId << " )=" << x.m_rec_viewport_quat_y << '\n';
+    stream << "rec_viewport_quat_z( " << seiId << " )=" << x.m_rec_viewport_quat_z << '\n';
+    stream << "rec_viewport_hor_range( " << seiId << " )=" << x.m_rec_viewport_hor_range << '\n';
+    stream << "rec_viewport_ver_range( " << seiId << " )=" << x.m_rec_viewport_ver_range << '\n';
   }
   return stream;
 }

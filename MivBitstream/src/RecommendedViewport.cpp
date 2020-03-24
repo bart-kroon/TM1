@@ -40,50 +40,98 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, const RecommendedViewport &x) -> ostream & {
-  /*
-	stream << "vs_handling_options_count=" << x.vs_handling_options_count() << '\n';
-
-  for (size_t h = 0; h < x.vs_handling_options_count(); ++h) {
-    stream << "vs_handling_device_class( " << h << " )=" << x.vs_handling_device_class(h) << '\n';
-    stream << "vs_handling_application_class( " << h << " )=" << x.vs_handling_application_class(h)
-           << '\n';
-    stream << "vs_handling_method( " << h << " )=" << x.vs_handling_method(h) << '\n';
+  stream << "rec_viewport_id=" << x.m_rec_viewport_id << '\n';
+  stream << "rec_viewport_cancel_flag=" << x.m_rec_viewport_cancel_flag << '\n';
+  if (!x.m_rec_viewport_cancel_flag) {
+    stream << "rec_viewport_persistence_flag=" << x.m_rec_viewport_persistence_flag << '\n';
+    stream << "rec_viewport_center_view_flag=" << x.m_rec_viewport_center_view_flag << '\n';
+    if (!x.m_rec_viewport_center_view_flag)
+      stream << "rec_viewport_left_view_flag=" << x.m_rec_viewport_left_view_flag << '\n';
+    stream << "rec_viewport_pos_x=" << x.m_rec_viewport_pos_x << '\n';
+    stream << "rec_viewport_pos_y=" << x.m_rec_viewport_pos_y << '\n';
+    stream << "rec_viewport_pos_z=" << x.m_rec_viewport_pos_z << '\n';
+    stream << "rec_viewport_quat_x=" << x.m_rec_viewport_quat_x << '\n';
+    stream << "rec_viewport_quat_y=" << x.m_rec_viewport_quat_y << '\n';
+    stream << "rec_viewport_quat_z=" << x.m_rec_viewport_quat_z << '\n';
+    stream << "rec_viewport_hor_range=" << x.m_rec_viewport_hor_range << '\n';
+    stream << "rec_viewport_ver_range=" << x.m_rec_viewport_ver_range << '\n';
   }
-  */
   return stream;
 }
 
 auto RecommendedViewport::operator==(const RecommendedViewport &other) const noexcept -> bool {
-  //return m_handlingOptionList == other.m_handlingOptionList;
-  return true;
+  if (this->m_rec_viewport_id == other.m_rec_viewport_id &&
+      this->m_rec_viewport_cancel_flag == other.m_rec_viewport_cancel_flag &&
+      this->m_rec_viewport_persistence_flag == other.m_rec_viewport_persistence_flag &&
+      this->m_rec_viewport_center_view_flag == other.m_rec_viewport_center_view_flag &&
+      this->m_rec_viewport_left_view_flag == other.m_rec_viewport_left_view_flag &&
+      this->m_rec_viewport_pos_x == other.m_rec_viewport_pos_x &&
+      this->m_rec_viewport_pos_y == other.m_rec_viewport_pos_y &&
+      this->m_rec_viewport_pos_z == other.m_rec_viewport_pos_z &&
+      this->m_rec_viewport_quat_x == other.m_rec_viewport_quat_x &&
+      this->m_rec_viewport_quat_y == other.m_rec_viewport_quat_y &&
+      this->m_rec_viewport_quat_z == other.m_rec_viewport_quat_z &&
+      this->m_rec_viewport_hor_range == other.m_rec_viewport_hor_range &&
+      this->m_rec_viewport_ver_range == other.m_rec_viewport_ver_range)
+    return true;
+  else
+    return false;
 }
 
 auto RecommendedViewport::operator!=(const RecommendedViewport &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto RecommendedViewport::decodeFrom(InputBitstream &bitstream) -> RecommendedViewport {
-  /*
-	auto x = HandlingOptionList(bitstream.getUExpGolomb<size_t>());
+auto RecommendedViewport::rec_viewport_sei_size() const noexcept -> size_t {
+  size_t SeiSize = sizeof(this->m_rec_viewport_id) + sizeof(this->m_rec_viewport_cancel_flag) +
+                   sizeof(this->m_rec_viewport_persistence_flag) +
+                   sizeof(this->m_rec_viewport_center_view_flag) +
+                   sizeof(this->m_rec_viewport_left_view_flag) +
+                   sizeof(this->m_rec_viewport_pos_x) + sizeof(this->m_rec_viewport_pos_y) +
+                   sizeof(this->m_rec_viewport_pos_z) + sizeof(this->m_rec_viewport_quat_x) +
+                   sizeof(this->m_rec_viewport_quat_y) + sizeof(this->m_rec_viewport_quat_z) +
+                   sizeof(this->m_rec_viewport_hor_range) + sizeof(m_rec_viewport_ver_range);
+  return SeiSize;
+}
 
-  for (auto &el : x) {
-    el.vs_handling_device_class = bitstream.readBits<VhDeviceClass>(6);
-    el.vs_handling_application_class = bitstream.readBits<VhApplicationClass>(6);
-    el.vs_handling_method = bitstream.readBits<VhMethod>(6);
+auto RecommendedViewport::decodeFrom(InputBitstream &bitstream) -> RecommendedViewport {
+  RecommendedViewport x = RecommendedViewport();
+  x.m_rec_viewport_id = bitstream.readBits<uint16_t>(10);
+  x.m_rec_viewport_cancel_flag = bitstream.getFlag();
+  if (!x.m_rec_viewport_cancel_flag) {
+    x.m_rec_viewport_persistence_flag = bitstream.getFlag();
+    x.m_rec_viewport_center_view_flag = bitstream.getFlag();
+    if (!x.m_rec_viewport_center_view_flag)
+      x.m_rec_viewport_left_view_flag = bitstream.getFlag();
+    x.m_rec_viewport_pos_x = bitstream.getFloat32();
+    x.m_rec_viewport_pos_y = bitstream.getFloat32();
+    x.m_rec_viewport_pos_z = bitstream.getFloat32();
+    x.m_rec_viewport_quat_x = bitstream.getFloat32();
+    x.m_rec_viewport_quat_y = bitstream.getFloat32();
+    x.m_rec_viewport_quat_z = bitstream.getFloat32();
+    x.m_rec_viewport_hor_range = bitstream.getFloat32();
+    x.m_rec_viewport_ver_range = bitstream.getFloat32();
   }
-  */
-  return RecommendedViewport{};
+  return x;
 }
 
 void RecommendedViewport::encodeTo(OutputBitstream &bitstream) const {
-  /*
-	bitstream.putUExpGolomb(vs_handling_options_count());
-
-  for (size_t h = 0; h < vs_handling_options_count(); ++h) {
-    bitstream.writeBits(vs_handling_device_class(h), 6);
-    bitstream.writeBits(vs_handling_application_class(h), 6);
-    bitstream.writeBits(vs_handling_method(h), 6);
+  bitstream.putUExpGolomb(rec_viewport_sei_size());
+  bitstream.writeBits(m_rec_viewport_id, 10);
+  bitstream.putFlag(m_rec_viewport_cancel_flag);
+  if (!m_rec_viewport_cancel_flag) {
+    bitstream.putFlag(m_rec_viewport_persistence_flag);
+    bitstream.putFlag(m_rec_viewport_center_view_flag);
+    if (!m_rec_viewport_center_view_flag)
+      bitstream.putFlag(m_rec_viewport_left_view_flag);
+    bitstream.putFloat32(m_rec_viewport_pos_x);
+    bitstream.putFloat32(m_rec_viewport_pos_y);
+    bitstream.putFloat32(m_rec_viewport_pos_z);
+    bitstream.putFloat32(m_rec_viewport_quat_x);
+    bitstream.putFloat32(m_rec_viewport_quat_y);
+    bitstream.putFloat32(m_rec_viewport_quat_z);
+    bitstream.putFloat32(m_rec_viewport_hor_range);
+    bitstream.putFloat32(m_rec_viewport_ver_range);
   }
-  */
 }
 } // namespace TMIV::MivBitstream

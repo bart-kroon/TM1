@@ -39,10 +39,14 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
+//struct RecommendedViewportParams {};
+
 // 23090-12: rec_viewport()
 class RecommendedViewport {
 public:
   RecommendedViewport() = default;
+
+  auto rec_viewport_sei_size() const noexcept -> std::size_t;
 
   friend auto operator<<(std::ostream &stream, const RecommendedViewport &x) -> std::ostream &;
 
@@ -54,7 +58,20 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-
+  //RecommendedViewportParams m_RecommendedViewportParams;
+  std::uint16_t m_rec_viewport_id{};
+  bool m_rec_viewport_cancel_flag{};
+  bool m_rec_viewport_persistence_flag{};
+  bool m_rec_viewport_center_view_flag{};
+  bool m_rec_viewport_left_view_flag{};
+  float m_rec_viewport_pos_x{};
+  float m_rec_viewport_pos_y{};
+  float m_rec_viewport_pos_z{};
+  float m_rec_viewport_quat_x{};
+  float m_rec_viewport_quat_y{};
+  float m_rec_viewport_quat_z{};
+  float m_rec_viewport_hor_range{};
+  float m_rec_viewport_ver_range{};
 };
 } // namespace TMIV::MivBitstream
 

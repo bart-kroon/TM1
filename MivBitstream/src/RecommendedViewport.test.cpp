@@ -38,15 +38,23 @@
 using namespace TMIV::MivBitstream;
 
 TEST_CASE("rec_viewport", "[Recommended Viewport SEI payload syntax]") {
-  SECTION("Null example") {
+ 
+  SECTION("Null example") { // Should be dealt with at the encoder, so it skips the whole rec_viewport if null
+    const auto x = RecommendedViewport{};
+    REQUIRE(toString(x) == R"()");
+    REQUIRE(bitCodingTest(x, 0));
+  }
+  
+  SECTION("Example 1") {
     const auto x = RecommendedViewport{{0, 1}};
     REQUIRE(toString(x) == R"(rec_viewport_id=0
-rec_viewport_cancel_flag( 0 )=1)");
+rec_viewport_cancel_flag( 0 )=1
+)");
     REQUIRE(bitCodingTest(x, 11));
   }
-
-  SECTION("Example 1") {
-    const auto x = RecommendedViewport{{1, 0, 0, 0, 1, 0.2, 1.45, -0.79, -0.91, 0, 1.2, 90, 60.4}};
+  
+  SECTION("Example 2") {
+    const auto x = RecommendedViewport{{1, 0, 0, 0, 1, 0.2f, 1.45f, -0.79f, -0.91f, 0.0f, 1.2f, 90.0f, 60.4f}};
     REQUIRE(toString(x) == R"(rec_viewport_id=1
 rec_viewport_cancel_flag( 1 )=0
 rec_viewport_persistence_flag( 1 )=0
@@ -63,27 +71,6 @@ rec_viewport_ver_range( 1 )=60.4
 )");
     REQUIRE(bitCodingTest(x, 270));
   }
-
-  SECTION("Example 2") {
-    const auto x =
-        RecommendedViewport{{0, 1}, {1, 0, 0, 0, 1, 0.2, 1.45, -0.79, -0.91, 0, 1.2, 90, 60.4}};
-    // TO Do
-    REQUIRE(toString(x) == R"(rec_viewport_id=0
-rec_viewport_cancel_flag( 0 )=1
-rec_viewport_id=1
-rec_viewport_cancel_flag( 1 )=0
-rec_viewport_persistence_flag( 1 )=0
-rec_viewport_center_view_flag( 1 )=0
-rec_viewport_left_view_flag( 1 )=1
-rec_viewport_pos_x( 1 )=0.2
-rec_viewport_pos_y( 1 )=1.45
-rec_viewport_pos_z( 1 )=-0.79
-rec_viewport_quat_x( 1 )=-0.91
-rec_viewport_quat_y( 1 )=0
-rec_viewport_quat_z( 1 )=1.2
-rec_viewport_hor_range( 1 )=90
-rec_viewport_ver_range( 1 )=60.4
-)");
-    REQUIRE(bitCodingTest(x, 281));
-  }
+  
 }
+

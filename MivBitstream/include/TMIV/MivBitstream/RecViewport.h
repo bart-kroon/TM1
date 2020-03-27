@@ -39,30 +39,36 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-struct RecViewportParams {
-  std::uint16_t rec_viewport_id{};
-  bool rec_viewport_cancel_flag{};
-  std::optional<bool> rec_viewport_persistence_flag{};
-  std::optional<bool> rec_viewport_center_view_flag{};
-  std::optional<bool> rec_viewport_left_view_flag{};
-  std::optional<float> rec_viewport_pos_x{};
-  std::optional<float> rec_viewport_pos_y{};
-  std::optional<float> rec_viewport_pos_z{};
-  std::optional<float> rec_viewport_quat_x{};
-  std::optional<float> rec_viewport_quat_y{};
-  std::optional<float> rec_viewport_quat_z{};
-  std::optional<float> rec_viewport_hor_range{};
-  std::optional<float> rec_viewport_ver_range{};
-
-  auto operator==(const RecViewportParams &other) const noexcept -> bool;
-  auto operator!=(const RecViewportParams &other) const noexcept -> bool;
-};
-
 // 23090-12: rec_viewport()
 class RecViewport {
 public:
-  RecViewport() = default;
-  explicit RecViewport(RecViewportParams);
+  auto rec_viewport_id() const noexcept;
+  auto rec_viewport_cancel_flag() const noexcept;
+  auto rec_viewport_persistence_flag() const noexcept;
+  auto rec_viewport_center_view_flag() const noexcept;
+  auto rec_viewport_left_view_flag() const noexcept;
+  auto rec_viewport_pos_x() const noexcept;
+  auto rec_viewport_pos_y() const noexcept;
+  auto rec_viewport_pos_z() const noexcept;
+  auto rec_viewport_quat_x() const noexcept;
+  auto rec_viewport_quat_y() const noexcept;
+  auto rec_viewport_quat_z() const noexcept;
+  auto rec_viewport_hor_range() const noexcept;
+  auto rec_viewport_ver_range() const noexcept;
+
+  constexpr auto &rec_viewport_id(const std::uint16_t value) noexcept;
+  constexpr auto &rec_viewport_cancel_flag(const bool value) noexcept;
+  constexpr auto &rec_viewport_persistence_flag(const bool value) noexcept;
+  constexpr auto &rec_viewport_center_view_flag(const bool value) noexcept;
+  constexpr auto &rec_viewport_left_view_flag(const bool value) noexcept;
+  constexpr auto &rec_viewport_pos_x(const float value) noexcept;
+  constexpr auto &rec_viewport_pos_y(const float value) noexcept;
+  constexpr auto &rec_viewport_pos_z(const float value) noexcept;
+  constexpr auto &rec_viewport_quat_x(const float value) noexcept;
+  constexpr auto &rec_viewport_quat_y(const float value) noexcept;
+  constexpr auto &rec_viewport_quat_z(const float value) noexcept;
+  constexpr auto &rec_viewport_hor_range(const float value) noexcept;
+  constexpr auto &rec_viewport_ver_range(const float value) noexcept;
 
   friend auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream &;
 
@@ -74,7 +80,19 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  RecViewportParams m_RecViewportParams;
+  std::uint16_t m_rec_viewport_id{};
+  bool m_rec_viewport_cancel_flag{};
+  std::optional<bool> m_rec_viewport_persistence_flag{};
+  std::optional<bool> m_rec_viewport_center_view_flag{};
+  std::optional<bool> m_rec_viewport_left_view_flag{};
+  std::optional<float> m_rec_viewport_pos_x{};
+  std::optional<float> m_rec_viewport_pos_y{};
+  std::optional<float> m_rec_viewport_pos_z{};
+  std::optional<float> m_rec_viewport_quat_x{};
+  std::optional<float> m_rec_viewport_quat_y{};
+  std::optional<float> m_rec_viewport_quat_z{};
+  std::optional<float> m_rec_viewport_hor_range{};
+  std::optional<float> m_rec_viewport_ver_range{};
 };
 } // namespace TMIV::MivBitstream
 

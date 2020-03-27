@@ -39,127 +39,193 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto RecViewportParams::operator==(const RecViewportParams &other) const noexcept -> bool {
-  if (this->rec_viewport_id == other.rec_viewport_id &&
-      this->rec_viewport_cancel_flag == other.rec_viewport_cancel_flag &&
-      this->rec_viewport_persistence_flag == other.rec_viewport_persistence_flag &&
-      this->rec_viewport_center_view_flag == other.rec_viewport_center_view_flag &&
-      this->rec_viewport_left_view_flag == other.rec_viewport_left_view_flag &&
-      this->rec_viewport_pos_x == other.rec_viewport_pos_x &&
-      this->rec_viewport_pos_y == other.rec_viewport_pos_y &&
-      this->rec_viewport_pos_z == other.rec_viewport_pos_z &&
-      this->rec_viewport_quat_x == other.rec_viewport_quat_x &&
-      this->rec_viewport_quat_y == other.rec_viewport_quat_y &&
-      this->rec_viewport_quat_z == other.rec_viewport_quat_z &&
-      this->rec_viewport_hor_range == other.rec_viewport_hor_range &&
-      this->rec_viewport_ver_range == other.rec_viewport_ver_range)
+// Getters
+auto RecViewport::rec_viewport_id() const noexcept { return m_rec_viewport_id; }
+auto RecViewport::rec_viewport_cancel_flag() const noexcept { return m_rec_viewport_cancel_flag; }
+auto RecViewport::rec_viewport_persistence_flag() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_persistence_flag.has_value());
+  return *m_rec_viewport_persistence_flag;
+}
+auto RecViewport::rec_viewport_center_view_flag() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_center_view_flag.has_value());
+  return *m_rec_viewport_center_view_flag;
+}
+auto RecViewport::rec_viewport_left_view_flag() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_left_view_flag.has_value());
+  return *m_rec_viewport_left_view_flag;
+}
+auto RecViewport::rec_viewport_pos_x() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_pos_x.has_value());
+  return *m_rec_viewport_pos_x;
+}
+auto RecViewport::rec_viewport_pos_y() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_pos_y.has_value());
+  return *m_rec_viewport_pos_y;
+}
+auto RecViewport::rec_viewport_pos_z() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_pos_z.has_value());
+  return *m_rec_viewport_pos_z;
+}
+auto RecViewport::rec_viewport_quat_x() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_quat_x.has_value());
+  return *m_rec_viewport_quat_x;
+}
+auto RecViewport::rec_viewport_quat_y() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_quat_y.has_value());
+  return *m_rec_viewport_quat_y;
+}
+auto RecViewport::rec_viewport_quat_z() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_quat_z.has_value());
+  return *m_rec_viewport_quat_z;
+}
+auto RecViewport::rec_viewport_hor_range() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_hor_range.has_value());
+  return *m_rec_viewport_hor_range;
+}
+auto RecViewport::rec_viewport_ver_range() const noexcept {
+  VERIFY_MIVBITSTREAM(m_rec_viewport_ver_range.has_value());
+  return *m_rec_viewport_ver_range;
+}
+// Setters
+constexpr auto &RecViewport::rec_viewport_id(const std::uint16_t value) noexcept {
+  m_rec_viewport_id = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_cancel_flag(const bool value) noexcept {
+  m_rec_viewport_cancel_flag = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_persistence_flag(const bool value) noexcept {
+  m_rec_viewport_persistence_flag = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_center_view_flag(const bool value) noexcept {
+  m_rec_viewport_center_view_flag = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_left_view_flag(const bool value) noexcept {
+  m_rec_viewport_left_view_flag = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_pos_x(const float value) noexcept {
+  m_rec_viewport_pos_x = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_pos_y(const float value) noexcept {
+  m_rec_viewport_pos_y = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_pos_z(const float value) noexcept {
+  m_rec_viewport_pos_z = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_quat_x(const float value) noexcept {
+  m_rec_viewport_quat_x = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_quat_y(const float value) noexcept {
+  m_rec_viewport_quat_y = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_quat_z(const float value) noexcept {
+  m_rec_viewport_quat_z = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_hor_range(const float value) noexcept {
+  m_rec_viewport_hor_range = value;
+  return *this;
+}
+constexpr auto &RecViewport::rec_viewport_ver_range(const float value) noexcept {
+  m_rec_viewport_ver_range = value;
+  return *this;
+}
+// functions
+auto RecViewport::operator==(const RecViewport &other) const noexcept -> bool {
+  if (this->rec_viewport_id() == other.rec_viewport_id() &&
+      this->rec_viewport_cancel_flag() == other.rec_viewport_cancel_flag() &&
+      this->rec_viewport_persistence_flag() == other.rec_viewport_persistence_flag() &&
+      this->rec_viewport_center_view_flag() == other.rec_viewport_center_view_flag() &&
+      this->rec_viewport_left_view_flag() == other.rec_viewport_left_view_flag() &&
+      this->rec_viewport_pos_x() == other.rec_viewport_pos_x() &&
+      this->rec_viewport_pos_y() == other.rec_viewport_pos_y() &&
+      this->rec_viewport_pos_z() == other.rec_viewport_pos_z() &&
+      this->rec_viewport_quat_x() == other.rec_viewport_quat_x() &&
+      this->rec_viewport_quat_y() == other.rec_viewport_quat_y() &&
+      this->rec_viewport_quat_z() == other.rec_viewport_quat_z() &&
+      this->rec_viewport_hor_range() == other.rec_viewport_hor_range() &&
+      this->rec_viewport_ver_range() == other.rec_viewport_ver_range())
     return true;
   else
     return false;
-}
-
-auto RecViewportParams::operator!=(const RecViewportParams &other) const noexcept -> bool {
-  return !operator==(other);
-}
-
-RecViewport::RecViewport(RecViewportParams value) : m_RecViewportParams{move(value)} {}
-
-auto operator<<(ostream &stream, const RecViewport &y) -> ostream & {
-  RecViewportParams x = y.m_RecViewportParams;
-  uint16_t seiId = x.rec_viewport_id;
-  stream << "rec_viewport_id=" << x.rec_viewport_id << '\n';
-  stream << "rec_viewport_cancel_flag( " << seiId << " )=" << x.rec_viewport_cancel_flag << '\n';
-  if (!x.rec_viewport_cancel_flag) {
-    if (x.rec_viewport_persistence_flag.has_value())
-      stream << "rec_viewport_persistence_flag( " << seiId
-             << " )=" << *x.rec_viewport_persistence_flag << '\n';
-    if (x.rec_viewport_center_view_flag.has_value()) {
-      stream << "rec_viewport_center_view_flag( " << seiId
-             << " )=" << *x.rec_viewport_center_view_flag << '\n';
-      if ((!*x.rec_viewport_center_view_flag) && x.rec_viewport_left_view_flag.has_value())
-        stream << "rec_viewport_left_view_flag( " << seiId
-               << " )=" << *x.rec_viewport_left_view_flag << '\n';
-    }
-    if (x.rec_viewport_pos_x.has_value())
-      stream << "rec_viewport_pos_x( " << seiId << " )=" << *x.rec_viewport_pos_x << '\n';
-    if (x.rec_viewport_pos_y.has_value())
-      stream << "rec_viewport_pos_y( " << seiId << " )=" << *x.rec_viewport_pos_y << '\n';
-    if (x.rec_viewport_pos_z.has_value())
-      stream << "rec_viewport_pos_z( " << seiId << " )=" << *x.rec_viewport_pos_z << '\n';
-    if (x.rec_viewport_quat_x.has_value())
-      stream << "rec_viewport_quat_x( " << seiId << " )=" << *x.rec_viewport_quat_x << '\n';
-    if (x.rec_viewport_quat_y.has_value())
-      stream << "rec_viewport_quat_y( " << seiId << " )=" << *x.rec_viewport_quat_y << '\n';
-    if (x.rec_viewport_quat_z.has_value())
-      stream << "rec_viewport_quat_z( " << seiId << " )=" << *x.rec_viewport_quat_z << '\n';
-    if (x.rec_viewport_hor_range.has_value())
-      stream << "rec_viewport_hor_range( " << seiId << " )=" << *x.rec_viewport_hor_range << '\n';
-    if (x.rec_viewport_ver_range.has_value())
-      stream << "rec_viewport_ver_range( " << seiId << " )=" << *x.rec_viewport_ver_range << '\n';
-  }
-  return stream;
-}
-
-auto RecViewport::operator==(const RecViewport &other) const noexcept -> bool {
-  return m_RecViewportParams == other.m_RecViewportParams;
 }
 
 auto RecViewport::operator!=(const RecViewport &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto RecViewport::decodeFrom(InputBitstream &bitstream) -> RecViewport {
-  RecViewportParams x = RecViewportParams();
-  x.rec_viewport_id = bitstream.readBits<uint16_t>(10);
-  x.rec_viewport_cancel_flag = bitstream.getFlag();
-  if (!x.rec_viewport_cancel_flag) {
-    x.rec_viewport_persistence_flag = bitstream.getFlag();
-    x.rec_viewport_center_view_flag = bitstream.getFlag();
-    if (!*x.rec_viewport_center_view_flag)
-      x.rec_viewport_left_view_flag = bitstream.getFlag();
-    x.rec_viewport_pos_x = bitstream.getFloat32();
-    x.rec_viewport_pos_y = bitstream.getFloat32();
-    x.rec_viewport_pos_z = bitstream.getFloat32();
-    x.rec_viewport_quat_x = bitstream.getFloat32();
-    x.rec_viewport_quat_y = bitstream.getFloat32();
-    x.rec_viewport_quat_z = bitstream.getFloat32();
-    x.rec_viewport_hor_range = bitstream.getFloat32();
-    x.rec_viewport_ver_range = bitstream.getFloat32();
+auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {
+  uint16_t seiId = x.rec_viewport_id();
+  stream << "rec_viewport_id=" << x.rec_viewport_id() << '\n';
+  stream << "rec_viewport_cancel_flag( " << seiId << " )=" << x.rec_viewport_cancel_flag() << '\n';
+  if (!x.rec_viewport_cancel_flag()) {
+      stream << "rec_viewport_persistence_flag( " << seiId
+             << " )=" << x.rec_viewport_persistence_flag() << '\n';
+      stream << "rec_viewport_center_view_flag( " << seiId
+             << " )=" << x.rec_viewport_center_view_flag() << '\n';
+      if (!x.rec_viewport_center_view_flag())
+        stream << "rec_viewport_left_view_flag( " << seiId
+               << " )=" << x.rec_viewport_left_view_flag() << '\n';
+      stream << "rec_viewport_pos_x( " << seiId << " )=" << x.rec_viewport_pos_x() << '\n';
+      stream << "rec_viewport_pos_y( " << seiId << " )=" << x.rec_viewport_pos_y() << '\n';
+      stream << "rec_viewport_pos_z( " << seiId << " )=" << x.rec_viewport_pos_z() << '\n';
+      stream << "rec_viewport_quat_x( " << seiId << " )=" << x.rec_viewport_quat_x() << '\n';
+      stream << "rec_viewport_quat_y( " << seiId << " )=" << x.rec_viewport_quat_y() << '\n';
+      stream << "rec_viewport_quat_z( " << seiId << " )=" << x.rec_viewport_quat_z() << '\n';
+      stream << "rec_viewport_hor_range( " << seiId << " )=" << x.rec_viewport_hor_range() << '\n';
+      stream << "rec_viewport_ver_range( " << seiId << " )=" << x.rec_viewport_ver_range() << '\n';
   }
-  RecViewport y = RecViewport();
-  y.m_RecViewportParams = x;
-  return y;
+  return stream;
+}
+
+auto RecViewport::decodeFrom(InputBitstream &bitstream) -> RecViewport {
+  RecViewport x = RecViewport();
+  x.rec_viewport_id(bitstream.readBits<uint16_t>(10));
+  x.rec_viewport_cancel_flag(bitstream.getFlag());
+  if (!x.rec_viewport_cancel_flag()) {
+    x.rec_viewport_persistence_flag(bitstream.getFlag());
+    x.rec_viewport_center_view_flag(bitstream.getFlag());
+    if (!x.rec_viewport_center_view_flag())
+      x.rec_viewport_left_view_flag(bitstream.getFlag());
+    x.rec_viewport_pos_x(bitstream.getFloat32());
+    x.rec_viewport_pos_y(bitstream.getFloat32());
+    x.rec_viewport_pos_z(bitstream.getFloat32());
+    x.rec_viewport_quat_x(bitstream.getFloat32());
+    x.rec_viewport_quat_y(bitstream.getFloat32());
+    x.rec_viewport_quat_z(bitstream.getFloat32());
+    x.rec_viewport_hor_range(bitstream.getFloat32());
+    x.rec_viewport_ver_range(bitstream.getFloat32());
+  }
+  return x;
 }
 
 void RecViewport::encodeTo(OutputBitstream &bitstream) const {
-  bitstream.writeBits(m_RecViewportParams.rec_viewport_id, 10);
-  bitstream.putFlag(m_RecViewportParams.rec_viewport_cancel_flag);
-  if (!m_RecViewportParams.rec_viewport_cancel_flag) {
-    if (m_RecViewportParams.rec_viewport_persistence_flag.has_value() &&
-        m_RecViewportParams.rec_viewport_center_view_flag.has_value() &&
-        m_RecViewportParams.rec_viewport_pos_x.has_value() &&
-        m_RecViewportParams.rec_viewport_pos_y.has_value() &&
-        m_RecViewportParams.rec_viewport_pos_z.has_value() &&
-        m_RecViewportParams.rec_viewport_quat_x.has_value() &&
-        m_RecViewportParams.rec_viewport_quat_y.has_value() &&
-        m_RecViewportParams.rec_viewport_quat_z.has_value() &&
-        m_RecViewportParams.rec_viewport_hor_range.has_value() &&
-        m_RecViewportParams.rec_viewport_ver_range.has_value()) {
-      bitstream.putFlag(*m_RecViewportParams.rec_viewport_persistence_flag);
-      bitstream.putFlag(*m_RecViewportParams.rec_viewport_center_view_flag);
-      if (!*m_RecViewportParams.rec_viewport_center_view_flag) {
-        if (m_RecViewportParams.rec_viewport_left_view_flag.has_value())
-          bitstream.putFlag(*m_RecViewportParams.rec_viewport_left_view_flag);
-      }
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_pos_x);
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_pos_y);
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_pos_z);
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_quat_x);
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_quat_y);
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_quat_z);
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_hor_range);
-      bitstream.putFloat32(*m_RecViewportParams.rec_viewport_ver_range);
+  bitstream.writeBits(rec_viewport_id(), 10);
+  bitstream.putFlag(rec_viewport_cancel_flag());
+  if (!rec_viewport_cancel_flag()) {
+    bitstream.putFlag(rec_viewport_persistence_flag());
+    bitstream.putFlag(rec_viewport_center_view_flag());
+    if (!rec_viewport_center_view_flag()) {
+      if (rec_viewport_left_view_flag())
+        bitstream.putFlag(rec_viewport_left_view_flag());
     }
+    bitstream.putFloat32(rec_viewport_pos_x());
+    bitstream.putFloat32(rec_viewport_pos_y());
+    bitstream.putFloat32(rec_viewport_pos_z());
+    bitstream.putFloat32(rec_viewport_quat_x());
+    bitstream.putFloat32(rec_viewport_quat_y());
+    bitstream.putFloat32(rec_viewport_quat_z());
+    bitstream.putFloat32(rec_viewport_hor_range());
+    bitstream.putFloat32(rec_viewport_ver_range());
   }
 }
 } // namespace TMIV::MivBitstream

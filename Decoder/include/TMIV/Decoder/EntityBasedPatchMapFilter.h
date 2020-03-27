@@ -31,37 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_DECODER_H_
-#define _TMIV_DECODER_DECODER_H_
+#ifndef _TMIV_DECODER_ENTITYBASEDPATCHMAPFILTER_H_
+#define _TMIV_DECODER_ENTITYBASEDPATCHMAPFILTER_H_
 
-#include <TMIV/Decoder/IDecoder.h>
-
+#include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/GeometryScaler.h>
-#include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
-#include <TMIV/Renderer/ICuller.h>
-#include <TMIV/Renderer/IRenderer.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
+
 
 namespace TMIV::Decoder {
-class Decoder : public IDecoder {
-private:
-  GeometryScaler m_geometryScaler;
-  EntityBasedPatchMapFilter m_entityBasedPatchMapFilter;
-  std::unique_ptr<Renderer::ICuller> m_culler;
-  std::unique_ptr<Renderer::IRenderer> m_renderer;
-
+class EntityBasedPatchMapFilter {
 public:
-  Decoder(const Common::Json &rootNode, const Common::Json & /* componentNode */);
-  Decoder(const Decoder &) = delete;
-  Decoder(Decoder &&) = default;
-  Decoder &operator=(const Decoder &) = delete;
-  Decoder &operator=(Decoder &&) = default;
-  ~Decoder() override = default;
-
-  auto decodeFrame(MivBitstream::AccessUnit &frame,
-                   const MivBitstream::ViewParams &viewportParams) const
-      -> Common::Texture444Depth16Frame override;
+  EntityBasedPatchMapFilter(const Common::Json & rootNode, const Common::Json &componentNode);
+  
+  // Update the PatchIdMap with respect to entities
+  void inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame) const;
+  
+private:
+  Common::Vec2i m_entityDecodeRange;
+  bool m_entity_filtering{false};  
+  
 };
-} // namespace TMIV::Decoder
+} // namespace TMIV::Renderer
 
 #endif

@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2020, ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,37 +31,44 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_DECODER_H_
-#define _TMIV_DECODER_DECODER_H_
-
-#include <TMIV/Decoder/IDecoder.h>
-
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
-#include <TMIV/Renderer/ICuller.h>
-#include <TMIV/Renderer/IRenderer.h>
+
+#include <cassert>
+#include <iostream>
+
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
-class Decoder : public IDecoder {
-private:
-  GeometryScaler m_geometryScaler;
-  EntityBasedPatchMapFilter m_entityBasedPatchMapFilter;
-  std::unique_ptr<Renderer::ICuller> m_culler;
-  std::unique_ptr<Renderer::IRenderer> m_renderer;
+EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json &rootNode,
+                                                     const Json &componentNode) {
+  m_entity_filtering = false;
+  if (auto subnode = componentNode.optional("EntityDecodeRange")) {
+    m_entityDecodeRange = subnode.asIntVector<2>();
+    m_entity_filtering = true;  
+  }
+}
 
-public:
-  Decoder(const Common::Json &rootNode, const Common::Json & /* componentNode */);
-  Decoder(const Decoder &) = delete;
-  Decoder(Decoder &&) = default;
-  Decoder &operator=(const Decoder &) = delete;
-  Decoder &operator=(Decoder &&) = default;
-  ~Decoder() override = default;
+void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
+    MivBitstream::AccessUnit &frame) const {
 
-  auto decodeFrame(MivBitstream::AccessUnit &frame,
-                   const MivBitstream::ViewParams &viewportParams) const
-      -> Common::Texture444Depth16Frame override;
-};
+  if (m_entity_filtering && 0<frame.vps->miv_sequence_params().msp_max_entities_minus1()) {
+    for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
+      Vec2i sz = frame.atlas[atlasId].blockToPatchMap.getSize();
+      for (int y = 0; y < sz[1]; y++) {
+        for (int x = 0; x < sz[0]; x++) {
+          uint16_t patchId = frame.atlas[atlasId].blockToPatchMap.getPlane(0)(y, x);
+          if (patchId != unusedPatchId) {            
+            int EntityId = (int)*frame.atlas[atlasId].patchParamsList[patchId].pduEntityId();
+            if (EntityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= EntityId)
+              frame.atlas[atlasId].blockToPatchMap.getPlane(0)(y, x) = unusedPatchId;
+          }
+        }
+      }
+    }
+  }
+
+}
+
 } // namespace TMIV::Decoder
-
-#endif

@@ -43,7 +43,8 @@ using namespace TMIV::Renderer;
 
 namespace TMIV::Decoder {
 Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode} {
+    : m_geometryScaler{rootNode, componentNode}, m_entityBasedPatchMapFilter{rootNode,
+                                                                             componentNode} {
   m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
   m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
 }
@@ -64,6 +65,7 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
     -> Texture444Depth16Frame {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
+  m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
   return m_renderer->renderFrame(frame, viewportParams);
 }

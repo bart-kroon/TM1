@@ -194,7 +194,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
       }
 
       cout << "Views selected for group " << gIndex << ": ";
-      auto sep = "";
+      const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
         cout << sep << unsigned(viewsLabels[sortedCamerasId[i]]);
         viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
@@ -217,7 +217,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
       copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
 
       cout << "Views selected for group " << gIndex << ": ";
-      auto sep = "";
+      const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
         cout << sep << unsigned(viewsLabels[i]);
         viewsInGroup.push_back(viewsLabels[i]);
@@ -306,7 +306,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
 
   // Concatenate atlas access unit parameters
   for (size_t groupId = 0; groupId < perGroupParams.size(); ++groupId) {
-    for (auto &atlas : perGroupParams[groupId]->atlas) {
+    for (const auto &atlas : perGroupParams[groupId]->atlas) {
       m_ivAccessUnitParams.atlas.push_back(atlas);
 
       // Set masp_group_id

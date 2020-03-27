@@ -108,7 +108,7 @@ struct MultipassRendererHelper {
 auto MultipassRenderer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   MultipassRendererHelper helper;
-  auto &viewParamsList = frame.atlas.front().viewParamsList;
+  const auto &viewParamsList = frame.atlas.front().viewParamsList;
 
   // Filter out all patches across all atlases
   auto framePass = frame;

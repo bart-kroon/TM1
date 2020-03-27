@@ -93,7 +93,7 @@ auto GroupBasedRenderer::renderFrame(const AccessUnit &frame,
 
 auto GroupBasedRenderer::groupRenderOrder(const AccessUnit &frame, const ViewParams &viewportParams)
     -> std::vector<unsigned> {
-  auto &msp = frame.vps->miv_sequence_params();
+  const auto &msp = frame.vps->miv_sequence_params();
   auto groupPriorities = vector<Priority>();
   auto result = vector<unsigned>();
 
@@ -134,11 +134,11 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const AccessUnit &frame
   auto result = optional<Priority>{};
 
   // For each atlas in this group
-  for (auto &atlas : frame.atlas) {
+  for (const auto &atlas : frame.atlas) {
     if (groupId == atlas.asps.miv_atlas_sequence_params().masp_group_id()) {
       // Once for each referenced view
       vector<bool> once(atlas.viewParamsList.size(), false);
-      for (auto &patch : atlas.patchParamsList) {
+      for (const auto &patch : atlas.patchParamsList) {
         if (!once[patch.pduViewId()]) {
           once[patch.pduViewId()] = true;
           const auto &viewParams = atlas.viewParamsList[patch.pduViewId()];

@@ -1052,7 +1052,7 @@ public:
 
     this->reshape(sz);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto data = reinterpret_cast<const T *>(that.data());
+    const auto *data = reinterpret_cast<const T *>(that.data());
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     m_data = const_cast<T *>(data);
 

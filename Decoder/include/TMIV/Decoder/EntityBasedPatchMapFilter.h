@@ -38,20 +38,18 @@
 #include <TMIV/Common/Json.h>
 #include <TMIV/MivBitstream/AccessUnit.h>
 
-
 namespace TMIV::Decoder {
 class EntityBasedPatchMapFilter {
 public:
-  EntityBasedPatchMapFilter(const Common::Json & rootNode, const Common::Json &componentNode);
-  
+  EntityBasedPatchMapFilter(const Common::Json &rootNode, const Common::Json &componentNode);
+
   // Update the PatchIdMap with respect to entities
   void inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame) const;
-  
+
 private:
   Common::Vec2i m_entityDecodeRange;
-  bool m_entity_filtering{false};  
-  
+  bool m_entity_filtering{false};
 };
-} // namespace TMIV::Renderer
+} // namespace TMIV::Decoder
 
 #endif

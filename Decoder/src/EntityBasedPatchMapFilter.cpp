@@ -41,34 +41,33 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
-EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json &rootNode,
+EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json & /*rootNode*/,
                                                      const Json &componentNode) {
   m_entity_filtering = false;
   if (auto subnode = componentNode.optional("EntityDecodeRange")) {
     m_entityDecodeRange = subnode.asIntVector<2>();
-    m_entity_filtering = true;  
+    m_entity_filtering = true;
   }
 }
 
 void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
     MivBitstream::AccessUnit &frame) const {
-
-  if (m_entity_filtering && 0<frame.vps->miv_sequence_params().msp_max_entities_minus1()) {
-    for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
-      Vec2i sz = frame.atlas[atlasId].blockToPatchMap.getSize();
+  if (m_entity_filtering && 0 < frame.vps->miv_sequence_params().msp_max_entities_minus1()) {
+    for (auto &atla : frame.atlas) {
+      Vec2i sz = atla.blockToPatchMap.getSize();
       for (int y = 0; y < sz[1]; y++) {
         for (int x = 0; x < sz[0]; x++) {
-          uint16_t patchId = frame.atlas[atlasId].blockToPatchMap.getPlane(0)(y, x);
-          if (patchId != unusedPatchId) {            
-            int EntityId = (int)*frame.atlas[atlasId].patchParamsList[patchId].pduEntityId();
-            if (EntityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= EntityId)
-              frame.atlas[atlasId].blockToPatchMap.getPlane(0)(y, x) = unusedPatchId;
+          uint16_t patchId = atla.blockToPatchMap.getPlane(0)(y, x);
+          if (patchId != unusedPatchId) {
+            int EntityId = static_cast<int>(*atla.patchParamsList[patchId].pduEntityId());
+            if (EntityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= EntityId) {
+              atla.blockToPatchMap.getPlane(0)(y, x) = unusedPatchId;
+            }
           }
         }
       }
     }
   }
-
 }
 
 } // namespace TMIV::Decoder

@@ -80,9 +80,9 @@ class NalUnitHeader {
 public:
   NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id_plus1);
 
-  constexpr auto nal_unit_type() const noexcept { return m_nal_unit_type; }
-  constexpr auto nal_layer_id() const noexcept { return m_nal_layer_id; }
-  constexpr auto nal_temporal_id_plus1() const noexcept { return m_nal_temporal_id_plus1; }
+  [[nodiscard]] constexpr auto nal_unit_type() const noexcept { return m_nal_unit_type; }
+  [[nodiscard]] constexpr auto nal_layer_id() const noexcept { return m_nal_layer_id; }
+  [[nodiscard]] constexpr auto nal_temporal_id_plus1() const noexcept { return m_nal_temporal_id_plus1; }
 
   friend auto operator<<(std::ostream &stream, const NalUnitHeader &x) -> std::ostream &;
 
@@ -110,11 +110,11 @@ class NalUnit {
 public:
   NalUnit(const NalUnitHeader &nal_unit_header, std::string rbsp);
 
-  constexpr auto nal_unit_header() const noexcept -> auto & { return m_nal_unit_header; }
-  constexpr auto rbsp() const noexcept -> auto & { return m_rbsp; }
+  [[nodiscard]] constexpr auto nal_unit_header() const noexcept -> auto & { return m_nal_unit_header; }
+  [[nodiscard]] constexpr auto rbsp() const noexcept -> auto & { return m_rbsp; }
 
   // The size of the NAL unit in bytes w/o zero byte padding
-  auto size() const noexcept { return 2 + m_rbsp.size(); }
+  [[nodiscard]] auto size() const noexcept { return 2 + m_rbsp.size(); }
 
   friend auto operator<<(std::ostream &stream, const NalUnit &x) -> std::ostream &;
 

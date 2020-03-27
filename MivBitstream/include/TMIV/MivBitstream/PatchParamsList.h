@@ -49,16 +49,16 @@ namespace TMIV::MivBitstream {
 struct PatchParams {
   std::uint8_t vuhAtlasId{};
 
-  auto pdu2dPos() const noexcept;
-  auto pdu2dSize() const noexcept;
-  auto pduViewPos() const noexcept;
-  auto pduViewSize() const noexcept;
-  auto pduDepthStart() const noexcept;
-  auto pduDepthEnd() const noexcept;
-  auto pduViewId() const noexcept;
-  auto pduOrientationIndex() const noexcept;
-  auto pduEntityId() const noexcept;
-  auto pduDepthOccMapThreshold() const noexcept;
+  [[nodiscard]] auto pdu2dPos() const noexcept;
+  [[nodiscard]] auto pdu2dSize() const noexcept;
+  [[nodiscard]] auto pduViewPos() const noexcept;
+  [[nodiscard]] auto pduViewSize() const noexcept;
+  [[nodiscard]] auto pduDepthStart() const noexcept;
+  [[nodiscard]] auto pduDepthEnd() const noexcept;
+  [[nodiscard]] auto pduViewId() const noexcept;
+  [[nodiscard]] auto pduOrientationIndex() const noexcept;
+  [[nodiscard]] auto pduEntityId() const noexcept;
+  [[nodiscard]] auto pduDepthOccMapThreshold() const noexcept;
 
   auto pdu2dPos(const Common::Vec2i value) noexcept -> PatchParams &;
   auto pdu2dSize(const Common::Vec2i value) noexcept -> PatchParams &;
@@ -72,11 +72,11 @@ struct PatchParams {
   auto pduDepthOccMapThreshold(const std::uint16_t value) noexcept -> PatchParams &;
 
   // Is the patch rotated such that width and height swap?
-  auto isRotated() const -> bool;
+  [[nodiscard]] auto isRotated() const -> bool;
 
   // Pixel position conversion from atlas to/from view
-  auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;
-  auto atlasToView(Common::Vec2i atlasPosition) const -> Common::Vec2i;
+  [[nodiscard]] auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;
+  [[nodiscard]] auto atlasToView(Common::Vec2i atlasPosition) const -> Common::Vec2i;
 
   auto operator==(const PatchParams &other) const -> bool;
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };

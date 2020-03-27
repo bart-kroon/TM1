@@ -74,7 +74,7 @@ public:
   // small there will be virtually no difference in practice. However when
   // depth interpolation has to be more accurate, it is possible to
   // specify the depth map as an attribute.
-  auto depth() const -> Common::Mat<float>;
+  [[nodiscard]] auto depth() const -> Common::Mat<float>;
 
   // Output the normalized disparity map (in diopters)
   //
@@ -82,10 +82,10 @@ public:
   // small there will be virtually no difference in practice. However when
   // depth interpolation has to be more accurate, it is possible to
   // specify the depth map as an attribute.
-  auto normDisp() const -> Common::Mat<float>;
+  [[nodiscard]] auto normDisp() const -> Common::Mat<float>;
 
   // Output the quality estimate (in a.u.)
-  auto normWeight() const -> Common::Mat<float>;
+  [[nodiscard]] auto normWeight() const -> Common::Mat<float>;
 
   // Output attribute map I (e.g. color)
   template <size_t I> auto attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>>;
@@ -103,7 +103,7 @@ private:
     const int i2{};
     const int cols{};
 
-    constexpr auto rows() const -> int { return i2 - i1; }
+    [[nodiscard]] constexpr auto rows() const -> int { return i2 - i1; }
 
     // Batches of triangles to be processed
     std::vector<TriangleDescriptorList> batches;

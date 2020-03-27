@@ -171,7 +171,7 @@ template <typename... T> auto Rasterizer<T...>::normWeight() const -> Common::Ma
 
 template <typename... T>
 template <size_t I>
-auto Rasterizer<T...>::attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>> {
+[[nodiscard]] auto Rasterizer<T...>::attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>> {
   Common::Mat<std::tuple_element_t<I, Attributes>> matrix(m_size);
   auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {

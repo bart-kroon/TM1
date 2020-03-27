@@ -53,9 +53,9 @@ public:
       m_y = y;
       m_isRotated = isRotated;
     }
-    auto x() const -> int { return m_x; }
-    auto y() const -> int { return m_y; }
-    auto isRotated() const -> bool { return m_isRotated; }
+    [[nodiscard]] auto x() const -> int { return m_x; }
+    [[nodiscard]] auto y() const -> int { return m_y; }
+    [[nodiscard]] auto isRotated() const -> bool { return m_isRotated; }
   };
   using OccupancyMap = TMIV::Common::Mat<std::uint8_t>;
 
@@ -70,17 +70,17 @@ private:
   public:
     Rectangle() = default;
     Rectangle(int x0, int y0, int x1, int y1) : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
-    auto left() const -> int { return m_x0; }
-    auto right() const -> int { return m_x1; }
-    auto bottom() const -> int { return m_y0; }
-    auto top() const -> int { return m_y1; }
-    auto width() const -> int { return (m_x1 - m_x0 + 1); }
-    auto height() const -> int { return (m_y1 - m_y0 + 1); }
-    auto split(int w, int h) const -> std::vector<Rectangle>;
-    auto remove(const Rectangle &r) const -> std::vector<Rectangle>;
-    auto isInside(const Rectangle &r) const -> bool;
-    auto getShortSideFitScore(int w, int h) const -> float;
-    auto getArea() const -> int { return (width() * height()); }
+    [[nodiscard]] auto left() const -> int { return m_x0; }
+    [[nodiscard]] auto right() const -> int { return m_x1; }
+    [[nodiscard]] auto bottom() const -> int { return m_y0; }
+    [[nodiscard]] auto top() const -> int { return m_y1; }
+    [[nodiscard]] auto width() const -> int { return (m_x1 - m_x0 + 1); }
+    [[nodiscard]] auto height() const -> int { return (m_y1 - m_y0 + 1); }
+    [[nodiscard]] auto split(int w, int h) const -> std::vector<Rectangle>;
+    [[nodiscard]] auto remove(const Rectangle &r) const -> std::vector<Rectangle>;
+    [[nodiscard]] auto isInside(const Rectangle &r) const -> bool;
+    [[nodiscard]] auto getShortSideFitScore(int w, int h) const -> float;
+    [[nodiscard]] auto getArea() const -> int { return (width() * height()); }
   };
 
 protected:

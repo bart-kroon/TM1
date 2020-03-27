@@ -68,7 +68,7 @@ public:
   }
 
   // Use configuration JSON to create a component/module
-  auto create(const std::string &name, const Json &rootNode, const Json &componentNode) const
+  [[nodiscard]] auto create(const std::string &name, const Json &rootNode, const Json &componentNode) const
       -> Object {
     auto method = componentNode.require(name + "Method").asString();
 

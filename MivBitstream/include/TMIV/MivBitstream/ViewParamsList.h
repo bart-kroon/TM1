@@ -68,7 +68,7 @@ struct ViewParamsList : public std::vector<ViewParams> {
   explicit ViewParamsList(std::vector<ViewParams> viewParamsList);
 
   // Size of each view as a vector
-  auto viewSizes() const -> Common::SizeVector;
+  [[nodiscard]] auto viewSizes() const -> Common::SizeVector;
 
   friend auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList)
       -> std::ostream &;

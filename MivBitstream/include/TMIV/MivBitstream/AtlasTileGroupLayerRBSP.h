@@ -82,15 +82,15 @@ auto printTo(std::ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> std:
 // 23090-5: atlas_tile_group_header()
 class AtlasTileGroupHeader {
 public:
-  constexpr auto atgh_atlas_frame_parameter_set_id() const noexcept;
-  auto atgh_adaptation_parameter_set_id() const noexcept -> std::uint8_t;
-  constexpr auto atgh_address() const noexcept;
-  constexpr auto atgh_type() const noexcept;
-  constexpr auto atgh_atlas_frm_order_cnt_lsb() const noexcept;
-  auto atgh_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
-  auto atgh_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
-  constexpr auto atgh_pos_min_z_quantizer() const noexcept { return std::uint8_t(0); }
-  constexpr auto atgh_pos_max_z_quantizer() const noexcept { return std::uint8_t(0); }
+  [[nodiscard]] constexpr auto atgh_atlas_frame_parameter_set_id() const noexcept;
+  [[nodiscard]] auto atgh_adaptation_parameter_set_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] constexpr auto atgh_address() const noexcept;
+  [[nodiscard]] constexpr auto atgh_type() const noexcept;
+  [[nodiscard]] constexpr auto atgh_atlas_frm_order_cnt_lsb() const noexcept;
+  [[nodiscard]] auto atgh_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto atgh_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
+  [[nodiscard]] constexpr auto atgh_pos_min_z_quantizer() const noexcept { return std::uint8_t(0); }
+  [[nodiscard]] constexpr auto atgh_pos_max_z_quantizer() const noexcept { return std::uint8_t(0); }
 
   constexpr auto atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
@@ -142,18 +142,18 @@ public:
 // 23090-12: patch_data_unit(patchIdx)
 class PatchDataUnit {
 public:
-  constexpr auto pdu_2d_pos_x() const noexcept;
-  constexpr auto pdu_2d_pos_y() const noexcept;
-  constexpr auto pdu_2d_size_x_minus1() const noexcept;
-  constexpr auto pdu_2d_size_y_minus1() const noexcept;
-  constexpr auto pdu_view_pos_x() const noexcept;
-  constexpr auto pdu_view_pos_y() const noexcept;
-  constexpr auto pdu_depth_start() const noexcept;
-  auto pdu_depth_end() const noexcept -> std::uint32_t;
-  constexpr auto pdu_view_id() const noexcept;
-  constexpr auto pdu_orientation_index() const noexcept;
-  constexpr auto pdu_entity_id() const noexcept;
-  auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
+  [[nodiscard]] constexpr auto pdu_2d_pos_x() const noexcept;
+  [[nodiscard]] constexpr auto pdu_2d_pos_y() const noexcept;
+  [[nodiscard]] constexpr auto pdu_2d_size_x_minus1() const noexcept;
+  [[nodiscard]] constexpr auto pdu_2d_size_y_minus1() const noexcept;
+  [[nodiscard]] constexpr auto pdu_view_pos_x() const noexcept;
+  [[nodiscard]] constexpr auto pdu_view_pos_y() const noexcept;
+  [[nodiscard]] constexpr auto pdu_depth_start() const noexcept;
+  [[nodiscard]] auto pdu_depth_end() const noexcept -> std::uint32_t;
+  [[nodiscard]] constexpr auto pdu_view_id() const noexcept;
+  [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
+  [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
+  [[nodiscard]] auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
 
   constexpr auto pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_2d_pos_y(const std::uint16_t value) noexcept -> auto &;
@@ -210,10 +210,10 @@ public:
   template <typename Value>
   constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
 
-  constexpr auto data() const noexcept -> auto &;
+  [[nodiscard]] constexpr auto data() const noexcept -> auto &;
 
-  auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
-  auto patch_data_unit() const noexcept -> const PatchDataUnit &;
+  [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
+  [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
 
   auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
 
@@ -247,9 +247,9 @@ public:
   template <typename... Args>
   explicit AtlasTileGroupDataUnit(Args &&... args) : m_vector{std::forward<Args>(args)...} {}
 
-  auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
-  auto atgdu_patch_mode(std::size_t p) const -> AtgduPatchMode;
-  auto patch_information_data(std::size_t p) const -> const PatchInformationData &;
+  [[nodiscard]] auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
+  [[nodiscard]] auto atgdu_patch_mode(std::size_t p) const -> AtgduPatchMode;
+  [[nodiscard]] auto patch_information_data(std::size_t p) const -> const PatchInformationData &;
 
   // Visit all elements in the atlas tile group data unit in ascending order. The expected signature
   // of the visitor is: void(std::size_t p, AtgduPatchMode, const PatchInformationData &)
@@ -292,8 +292,8 @@ public:
       : m_atlas_tile_group_header{header}, m_atlas_tile_group_data_unit{
                                                in_place, std::forward<AtgduArgs>(args)...} {}
 
-  constexpr auto atlas_tile_group_header() const noexcept -> const AtlasTileGroupHeader &;
-  auto atlas_tile_group_data_unit() const noexcept -> const AtlasTileGroupDataUnit &;
+  [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept -> const AtlasTileGroupHeader &;
+  [[nodiscard]] auto atlas_tile_group_data_unit() const noexcept -> const AtlasTileGroupDataUnit &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileGroupLayerRBSP &x) -> std::ostream &;
 

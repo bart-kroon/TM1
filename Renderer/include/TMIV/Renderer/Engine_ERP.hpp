@@ -67,7 +67,7 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   }
 
   // Unprojection equation
-  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
+  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
     using std::cos;
     using std::sin;
     const float phi = phi0 + dphi_du * uv.x();
@@ -76,7 +76,7 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   }
 
   // Projection equation
-  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
+  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
     using std::asin;
     using std::atan2;
     const auto radius = norm(v.position);

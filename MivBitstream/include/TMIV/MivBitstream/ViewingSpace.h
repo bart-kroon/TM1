@@ -174,7 +174,7 @@ struct PrimitiveShape {
   // In specification: halfspace_primitive( e, s )
   std::variant<Cuboid, Spheroid, Halfspace> primitive;
 
-  auto shapeType() const -> PrimitiveShapeType;
+  [[nodiscard]] auto shapeType() const -> PrimitiveShapeType;
 
   // In specification: guard_band_present_flag[ e ]
   // In specification: guard_band_size[ e ]

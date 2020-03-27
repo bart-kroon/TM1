@@ -48,7 +48,7 @@ public:
   friend auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x)
       -> std::ostream &;
 
-  constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept { return true; }
+  [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept { return true; }
 
   auto operator==(const AtlasFrameTileInformation &) const noexcept -> bool { return true; }
   auto operator!=(const AtlasFrameTileInformation &) const noexcept -> bool { return false; }
@@ -64,20 +64,20 @@ public:
   friend auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x)
       -> std::ostream &;
 
-  constexpr auto afps_atlas_frame_parameter_set_id() const noexcept;
-  constexpr auto afps_atlas_sequence_parameter_set_id() const noexcept;
-  constexpr auto atlas_frame_tile_information() const noexcept;
-  constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
-  constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
-  constexpr auto afps_2d_pos_x_bit_count_minus1() const noexcept;
-  constexpr auto afps_2d_pos_y_bit_count_minus1() const noexcept;
-  constexpr auto afps_3d_pos_x_bit_count_minus1() const noexcept;
-  constexpr auto afps_3d_pos_y_bit_count_minus1() const noexcept;
-  constexpr auto afps_lod_mode_enabled_flag() const noexcept;
-  constexpr auto afps_override_eom_for_depth_flag() const noexcept;
-  constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept;
-  constexpr auto afps_fixed_camera_model_flag() const noexcept;
-  constexpr auto afps_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_atlas_frame_parameter_set_id() const noexcept;
+  [[nodiscard]] constexpr auto afps_atlas_sequence_parameter_set_id() const noexcept;
+  [[nodiscard]] constexpr auto atlas_frame_tile_information() const noexcept;
+  [[nodiscard]] constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
+  [[nodiscard]] constexpr auto afps_2d_pos_x_bit_count_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afps_2d_pos_y_bit_count_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afps_3d_pos_x_bit_count_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afps_3d_pos_y_bit_count_minus1() const noexcept;
+  [[nodiscard]] constexpr auto afps_lod_mode_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_override_eom_for_depth_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_fixed_camera_model_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_extension_present_flag() const noexcept;
 
   constexpr auto afps_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;

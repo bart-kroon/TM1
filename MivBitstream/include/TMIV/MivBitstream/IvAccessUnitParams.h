@@ -56,7 +56,7 @@ struct IvAccessUnitParams {
   std::vector<AtlasAccessUnitParams> atlas;
 
   // Convenience function to help the transition
-  auto atlasSizes() const -> Common::SizeVector;
+  [[nodiscard]] auto atlasSizes() const -> Common::SizeVector;
 
   friend auto operator<<(std::ostream &, const IvAccessUnitParams &) -> std::ostream &;
   auto operator==(const IvAccessUnitParams &other) const -> bool;

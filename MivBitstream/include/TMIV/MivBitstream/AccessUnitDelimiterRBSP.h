@@ -47,7 +47,7 @@ public:
   AccessUnitDelimiterRBSP() = default;
   explicit constexpr AccessUnitDelimiterRBSP(AframeType aframe_type);
 
-  constexpr auto aframe_type() const noexcept;
+  [[nodiscard]] constexpr auto aframe_type() const noexcept;
   constexpr auto aframe_type(AframeType value) noexcept;
 
   friend auto operator<<(std::ostream &stream, const AccessUnitDelimiterRBSP &x) -> std::ostream &;

@@ -18,8 +18,8 @@ private:
 
 public:
   Link(NodeId n, T w) : m_node(n), m_weight(w) {}
-  auto node() const -> NodeId { return m_node; }
-  auto weight() const -> T { return m_weight; }
+  [[nodiscard]] auto node() const -> NodeId { return m_node; }
+  [[nodiscard]] auto weight() const -> T { return m_weight; }
 };
 
 template <typename T> class Edge {
@@ -29,7 +29,7 @@ private:
 
 public:
   Edge(NodeId i, NodeId j, T w) : m_nodes({i, j}), m_weight(w) {}
-  auto nodes() const -> const std::pair<NodeId, NodeId> & { return m_nodes; }
+  [[nodiscard]] auto nodes() const -> const std::pair<NodeId, NodeId> & { return m_nodes; }
   auto weight() const -> T { return m_weight; }
 };
 
@@ -39,11 +39,11 @@ public:
 
 public:
   //! \brief  Return the number of nodes of the graph.
-  virtual auto getNumberOfNodes() const -> std::size_t = 0;
+  [[nodiscard]] virtual auto getNumberOfNodes() const -> std::size_t = 0;
   //! \brief  Return the number of neighbours of node.
-  virtual auto getNeighbourhoodSize(NodeId node) const -> std::size_t = 0;
+  [[nodiscard]] virtual auto getNeighbourhoodSize(NodeId node) const -> std::size_t = 0;
   //! \brief  Return the #id neighbour of node.
-  virtual auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> = 0;
+  [[nodiscard]] virtual auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> = 0;
 };
 
 namespace BuiltIn {
@@ -58,14 +58,14 @@ private:
 public:
   explicit Sparse(std::size_t nb_nodes = 0) : m_link{nb_nodes} {}
   void addNode() { m_link.emplace_back({}); }
-  auto getNumberOfNodes() const -> std::size_t override { return m_link.size(); }
-  auto getNeighbourhoodSize(NodeId node) const -> std::size_t override {
+  [[nodiscard]] auto getNumberOfNodes() const -> std::size_t override { return m_link.size(); }
+  [[nodiscard]] auto getNeighbourhoodSize(NodeId node) const -> std::size_t override {
     return m_link[node].size();
   }
-  auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> override {
+  [[nodiscard]] auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> override {
     return m_link[node][id];
   }
-  auto getNeighbourhood(NodeId id) const -> const std::vector<Link<T>> & { return m_link[id]; }
+  [[nodiscard]] auto getNeighbourhood(NodeId id) const -> const std::vector<Link<T>> & { return m_link[id]; }
   //! \brief Connect vertices node and other and specify the connection weight.
   void connect(NodeId node, NodeId other, T weight, LinkType type) {
     m_link[node].push_back(Link<T>(other, weight));
@@ -90,8 +90,8 @@ private:
 public:
   Dense(Mat<T> weight) : m_weight(std::move(weight)) {}
   auto getWeightMatrix() const -> const Mat<T> & { return m_weight; }
-  auto getNumberOfNodes() const -> std::size_t override { return m_weight.m(); }
-  auto getNeighbourhoodSize(NodeId /*unused*/) const -> std::size_t override {
+  [[nodiscard]] auto getNumberOfNodes() const -> std::size_t override { return m_weight.m(); }
+  [[nodiscard]] auto getNeighbourhoodSize(NodeId /*unused*/) const -> std::size_t override {
     return m_weight.m();
   }
   auto getNeighbour(NodeId node, NodeId id) const -> Link<T> override {

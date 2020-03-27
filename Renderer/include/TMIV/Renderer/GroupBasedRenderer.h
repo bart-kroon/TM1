@@ -58,7 +58,7 @@ public:
   ~GroupBasedRenderer() override = default;
 
   // Render from a texture atlas to a viewport
-  auto renderFrame(const MivBitstream::AccessUnit &frame,
+  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
                    const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 
@@ -66,7 +66,7 @@ private:
   using GroupIdMask = std::bitset<32>;
 
   // Render multiple groups
-  auto renderPass(GroupIdMask groupIdMask, const MivBitstream::AccessUnit &frame,
+  [[nodiscard]] auto renderPass(GroupIdMask groupIdMask, const MivBitstream::AccessUnit &frame,
                   const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame;
 

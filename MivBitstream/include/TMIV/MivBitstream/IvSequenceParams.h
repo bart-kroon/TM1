@@ -49,7 +49,7 @@ struct IvSequenceParams {
   std::optional<ViewingSpace> viewingSpace{};
 
   // Convenience function to access the MIV sequence params
-  auto msp() const noexcept -> const MivSequenceParams &;
+  [[nodiscard]] auto msp() const noexcept -> const MivSequenceParams &;
   auto msp() noexcept -> MivSequenceParams &;
 
   friend auto operator<<(std::ostream &stream, const IvSequenceParams &x) -> std::ostream &;

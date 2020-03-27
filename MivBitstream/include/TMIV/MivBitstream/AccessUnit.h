@@ -59,12 +59,12 @@ struct AtlasAccessUnit {
   PatchParamsList patchParamsList;
 
   // Nominal atlas frame size
-  auto frameSize() const noexcept {
+  [[nodiscard]] auto frameSize() const noexcept {
     return Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
   }
 
   // Geometry frame size
-  auto decGeoFrameSize(const VpccParameterSet &vps) const noexcept {
+  [[nodiscard]] auto decGeoFrameSize(const VpccParameterSet &vps) const noexcept {
     if (!vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
       return frameSize();
     }
@@ -73,7 +73,7 @@ struct AtlasAccessUnit {
   }
 
   // Index into the block to patch map using nominal atlas coordinates
-  auto patchId(unsigned row, unsigned column) const -> uint16_t {
+  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t {
     const auto k = asps.asps_log2_patch_packing_block_size();
     return blockToPatchMap.getPlane(0)(row >> k, column >> k);
   }

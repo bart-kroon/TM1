@@ -175,7 +175,7 @@ public:
                  tuple{atlasColors(atlas)}};
   }
 
-  auto rasterFrame(const AccessUnit &frame, const ViewParams &viewportParams,
+  [[nodiscard]] auto rasterFrame(const AccessUnit &frame, const ViewParams &viewportParams,
                    float compensation) const -> Rasterizer<Vec3f> {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
@@ -241,7 +241,7 @@ public:
     return float(resolution(viewportParams) * count / sum);
   }
 
-  auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
+  [[nodiscard]] auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
       -> Texture444Depth16Frame {
     auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
 

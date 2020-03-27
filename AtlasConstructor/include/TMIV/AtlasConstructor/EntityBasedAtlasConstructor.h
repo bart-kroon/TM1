@@ -63,7 +63,7 @@ public:
   void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
-  auto maxLumaSamplesPerFrame() const -> std::size_t override;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
 private:
   static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)

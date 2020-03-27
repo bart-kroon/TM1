@@ -49,7 +49,7 @@ public:
   virtual void prepareAccessUnit() = 0;
   virtual void pushMask(const Common::MaskList &mask) = 0;
   virtual void completeAccessUnit() = 0;
-  virtual auto getAggregatedMask() const -> const Common::MaskList & = 0;
+  [[nodiscard]] virtual auto getAggregatedMask() const -> const Common::MaskList & = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

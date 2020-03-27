@@ -51,7 +51,7 @@ public:
   void prepareAccessUnit() override;
   void pushMask(const Common::MaskList &mask) override;
   void completeAccessUnit() override {}
-  auto getAggregatedMask() const -> const Common::MaskList & override;
+  [[nodiscard]] auto getAggregatedMask() const -> const Common::MaskList & override;
 
 private:
   Common::MaskList m_aggregatedMask;

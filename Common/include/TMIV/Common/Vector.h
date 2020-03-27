@@ -65,49 +65,49 @@ public:
     return *this;
   }
   //! \brief Returns the number of rows of the matrix.
-  constexpr auto m() const -> size_type { return A::size(0); }
+  [[nodiscard]] constexpr auto m() const -> size_type { return A::size(0); }
   //! \brief Returns the number of columns of the matrix.
-  constexpr auto n() const -> size_type { return 1; }
+  [[nodiscard]] constexpr auto n() const -> size_type { return 1; }
   //! \brief Overloaded resize operator.
   using A::resize;
   void resize(size_type a, size_type /*unused*/ = 1) { A::resize({a}); }
   //! \brief Returns an iterator to the first element of the ith row.
-  auto row_begin(size_type i) const -> const_row_iterator {
+  [[nodiscard]] auto row_begin(size_type i) const -> const_row_iterator {
     return const_row_iterator(A::data() + i);
   }
   auto row_begin(size_type i) -> row_iterator { return row_iterator(A::data() + i); }
   //! \brief Returns a const iterator to the first element of the ith row.
-  auto crow_begin(size_type i) const -> const_row_iterator {
+  [[nodiscard]] auto crow_begin(size_type i) const -> const_row_iterator {
     return const_row_iterator(A::data() + i);
   }
   //! \brief Returns an iterator to the first element after the end of the ith
   //! row.
-  auto row_end(size_type i) const -> const_row_iterator {
+  [[nodiscard]] auto row_end(size_type i) const -> const_row_iterator {
     return const_row_iterator(A::data() + (i + 1));
   }
   auto row_end(size_type i) -> row_iterator { return row_iterator(A::data() + (i + 1)); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! ith row.
-  auto crow_end(size_type i) const -> const_row_iterator {
+  [[nodiscard]] auto crow_end(size_type i) const -> const_row_iterator {
     return const_row_iterator(A::data() + (i + 1));
   }
   //! \brief Returns an iterator to the first element of the jth column.
-  auto col_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::begin(); }
+  [[nodiscard]] auto col_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::begin(); }
   auto col_begin(size_type /*unused*/ = 0) -> column_iterator { return A::begin(); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  auto ccol_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cbegin(); }
+  [[nodiscard]] auto ccol_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cbegin(); }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  auto col_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::end(); }
+  [[nodiscard]] auto col_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::end(); }
   auto col_end(size_type /*unused*/ = 0) -> column_iterator { return A::end(); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  auto ccol_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cend(); }
+  [[nodiscard]] auto ccol_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cend(); }
   //! \brief Getters.
-  auto x() const -> typename A::value_type { return A::operator[](0); }
-  auto y() const -> typename A::value_type { return A::operator[](1); }
-  auto z() const -> typename A::value_type { return A::operator[](2); }
-  auto w() const -> typename A::value_type { return A::operator[](3); }
+  [[nodiscard]] auto x() const -> typename A::value_type { return A::operator[](0); }
+  [[nodiscard]] auto y() const -> typename A::value_type { return A::operator[](1); }
+  [[nodiscard]] auto z() const -> typename A::value_type { return A::operator[](2); }
+  [[nodiscard]] auto w() const -> typename A::value_type { return A::operator[](3); }
   auto x() -> typename A::value_type & { return A::operator[](0); }
   auto y() -> typename A::value_type & { return A::operator[](1); }
   auto z() -> typename A::value_type & { return A::operator[](2); }

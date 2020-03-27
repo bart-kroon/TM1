@@ -72,9 +72,9 @@ public:
   SeiMessage() = default;
   SeiMessage(PayloadType pt, std::string payload);
 
-  auto payloadType() const noexcept -> PayloadType;
-  auto payloadSize() const noexcept -> std::size_t;
-  auto payload() const noexcept -> const std::string &;
+  [[nodiscard]] auto payloadType() const noexcept -> PayloadType;
+  [[nodiscard]] auto payloadSize() const noexcept -> std::size_t;
+  [[nodiscard]] auto payload() const noexcept -> const std::string &;
 
   friend auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream &;
 
@@ -96,7 +96,7 @@ public:
   SeiRBSP() = default;
   explicit SeiRBSP(std::vector<SeiMessage> messages);
 
-  constexpr auto messages() const noexcept -> const auto & { return m_messages; }
+  [[nodiscard]] constexpr auto messages() const noexcept -> const auto & { return m_messages; }
   constexpr auto messages() noexcept -> auto & { return m_messages; }
 
   friend auto operator<<(std::ostream &stream, const SeiRBSP &x) -> std::ostream &;

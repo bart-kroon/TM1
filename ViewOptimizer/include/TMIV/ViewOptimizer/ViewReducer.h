@@ -54,7 +54,7 @@ public:
 
   auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output override;
 
-  auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
     return views;
   }
 

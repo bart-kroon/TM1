@@ -68,63 +68,63 @@ public:
     return *this;
   }
   //! \brief Returns the number of rows of the matrix.
-  auto m() const -> size_type { return A::size(0); }
+  [[nodiscard]] auto m() const -> size_type { return A::size(0); }
   //! \brief Returns the number of columns of the matrix.
-  auto n() const -> size_type { return A::size(1); }
+  [[nodiscard]] auto n() const -> size_type { return A::size(1); }
   //! \brief Returns the number of rows of the matrix.
-  auto height() const -> size_type { return A::size(0); }
+  [[nodiscard]] auto height() const -> size_type { return A::size(0); }
   //! \brief Returns the number of columns of the matrix.
-  auto width() const -> size_type { return A::size(1); }
+  [[nodiscard]] auto width() const -> size_type { return A::size(1); }
   //! \brief Returns the leading dimension of the matrix.
-  auto lda() const -> size_type { return A::size(1); }
+  [[nodiscard]] auto lda() const -> size_type { return A::size(1); }
   //! \brief Overloaded resize operator.
   using A::resize;
   void resize(size_type a, size_type b) { A::resize({a, b}); }
   //! \brief Returns an iterator to the first element of the ith row.
-  auto row_begin(size_type i) const -> const_row_iterator { return A::template dim_begin<1>(i); }
+  [[nodiscard]] auto row_begin(size_type i) const -> const_row_iterator { return A::template dim_begin<1>(i); }
   auto row_begin(size_type i) -> row_iterator { return A::template dim_begin<1>(i); }
   //! \brief Returns a const iterator to the first element of the ith row.
-  auto crow_begin(size_type i) const -> const_row_iterator { return A::template cdim_begin<1>(i); }
+  [[nodiscard]] auto crow_begin(size_type i) const -> const_row_iterator { return A::template cdim_begin<1>(i); }
   //! \brief Returns an iterator to the first element after the end of the ith
   //! row.
-  auto row_end(size_type i) const -> const_row_iterator { return A::template dim_end<1>(i); }
+  [[nodiscard]] auto row_end(size_type i) const -> const_row_iterator { return A::template dim_end<1>(i); }
   auto row_end(size_type i) -> row_iterator { return A::template dim_end<1>(i); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! ith row.
-  auto crow_end(size_type i) const -> const_row_iterator { return A::template cdim_end<1>(i); }
+  [[nodiscard]] auto crow_end(size_type i) const -> const_row_iterator { return A::template cdim_end<1>(i); }
   //! \brief Returns an iterator to the first element of the jth column.
-  auto col_begin(size_type j) const -> const_column_iterator { return A::template dim_begin<0>(j); }
+  [[nodiscard]] auto col_begin(size_type j) const -> const_column_iterator { return A::template dim_begin<0>(j); }
   auto col_begin(size_type j) -> column_iterator { return A::template dim_begin<0>(j); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  auto ccol_begin(size_type j) const -> const_column_iterator {
+  [[nodiscard]] auto ccol_begin(size_type j) const -> const_column_iterator {
     return A::template cdim_begin<0>(j);
   }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  auto col_end(size_type j) const -> const_column_iterator { return A::template dim_end<0>(j); }
+  [[nodiscard]] auto col_end(size_type j) const -> const_column_iterator { return A::template dim_end<0>(j); }
   auto col_end(size_type j) -> column_iterator { return A::template dim_end<0>(j); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  auto ccol_end(size_type j) const -> const_column_iterator { return A::template cdim_end<0>(j); }
+  [[nodiscard]] auto ccol_end(size_type j) const -> const_column_iterator { return A::template cdim_end<0>(j); }
   //! \brief Returns true if the matrix is a row.
-  auto isRow() const -> bool { return (m() == 1); }
+  [[nodiscard]] auto isRow() const -> bool { return (m() == 1); }
   //! \brief Returns true if the matrix is a column.
-  auto isColumn() const -> bool { return (n() == 1); }
+  [[nodiscard]] auto isColumn() const -> bool { return (n() == 1); }
   //! \brief Returns true if the matrix is symmetric.
-  auto isSymmetric() const -> bool {
+  [[nodiscard]] auto isSymmetric() const -> bool {
     return (A::getProperty() == Matrix::Property::Symmetric) ||
            (A::getProperty() == Matrix::Property::Positive);
   }
   //! \brief Returns true if the matrix is hermitian.
-  auto isHermitian() const -> bool { return (A::getProperty() == Matrix::Property::Hermitian); }
+  [[nodiscard]] auto isHermitian() const -> bool { return (A::getProperty() == Matrix::Property::Hermitian); }
   //! \brief Returns true if the matrix is positive.
-  auto isPositive() const -> bool { return (A::getProperty() == Matrix::Property::Positive); }
+  [[nodiscard]] auto isPositive() const -> bool { return (A::getProperty() == Matrix::Property::Positive); }
   //! \brief Returns true if the matrix is lower.
-  auto isLower() const -> bool { return (A::getProperty() == Matrix::Property::Lower); }
+  [[nodiscard]] auto isLower() const -> bool { return (A::getProperty() == Matrix::Property::Lower); }
   //! \brief Returns true if the matrix is upper.
-  auto isUpper() const -> bool { return (A::getProperty() == Matrix::Property::Upper); }
+  [[nodiscard]] auto isUpper() const -> bool { return (A::getProperty() == Matrix::Property::Upper); }
   //! \brief Returns true if the matrix is triangular.
-  auto isTriangular() const -> bool {
+  [[nodiscard]] auto isTriangular() const -> bool {
     return (A::getProperty() == Matrix::Property::Lower) ||
            (A::getProperty() == Matrix::Property::Upper);
   }

@@ -53,7 +53,7 @@ public:
     return {std::move(ivSequenceParams), std::move(isBasicView)};
   }
 
-  auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
     return views;
   }
 };

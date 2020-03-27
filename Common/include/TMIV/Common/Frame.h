@@ -98,22 +98,22 @@ public:
   }
   ~Frame() = default;
 
-  auto empty() const noexcept -> bool { return getWidth() == 0 && getHeight() == 0; }
+  [[nodiscard]] auto empty() const noexcept -> bool { return getWidth() == 0 && getHeight() == 0; }
 
   void resize(int w, int h);
 
   auto getPlanes() -> std::array<plane_type, nb_plane> & { return m_planes; }
-  auto getPlanes() const -> const std::array<plane_type, nb_plane> & { return m_planes; }
+  [[nodiscard]] auto getPlanes() const -> const std::array<plane_type, nb_plane> & { return m_planes; }
 
-  auto getPlane(int id) const -> const plane_type & { return m_planes[id]; }
+  [[nodiscard]] auto getPlane(int id) const -> const plane_type & { return m_planes[id]; }
   auto getPlane(int id) -> plane_type & { return m_planes[id]; }
-  auto getWidth() const -> int { return m_width; }
-  auto getHeight() const -> int { return m_height; }
-  auto getSize() const -> Vec2i { return Vec2i{m_width, m_height}; }
-  auto getMemorySize() const -> int {
+  [[nodiscard]] auto getWidth() const -> int { return m_width; }
+  [[nodiscard]] auto getHeight() const -> int { return m_height; }
+  [[nodiscard]] auto getSize() const -> Vec2i { return Vec2i{m_width, m_height}; }
+  [[nodiscard]] auto getMemorySize() const -> int {
     return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
   }
-  auto getDiskSize() const -> int {
+  [[nodiscard]] auto getDiskSize() const -> int {
     return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
   }
   static constexpr auto getNumberOfPlanes() -> int { return nb_plane; }

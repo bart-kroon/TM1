@@ -54,7 +54,7 @@ public:
   ~InputBitstream() = default;
 
   // Input bit position indicator
-  auto tellg() const -> std::streampos;
+  [[nodiscard]] auto tellg() const -> std::streampos;
 
   template <typename Integer> auto readBits(unsigned bits) -> Integer;
 
@@ -92,7 +92,7 @@ public:
   ~OutputBitstream() { byteAlign(); };
 
   // Output bit position indicator
-  auto tellp() const -> std::streampos;
+  [[nodiscard]] auto tellp() const -> std::streampos;
 
   template <typename Integer> void writeBits(const Integer &value, unsigned bits);
 

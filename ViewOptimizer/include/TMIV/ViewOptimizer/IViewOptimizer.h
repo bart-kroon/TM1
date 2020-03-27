@@ -53,7 +53,7 @@ public:
   virtual auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output = 0;
 
   // Optimize a frame in the intra period
-  virtual auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame = 0;
+  [[nodiscard]] virtual auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

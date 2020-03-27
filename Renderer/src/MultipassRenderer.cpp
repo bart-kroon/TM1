@@ -65,7 +65,7 @@ struct MultipassRendererHelper {
   vector<unsigned> selectedViewsPass;
   vector<unsigned> patchesViewId;
 
-  auto filterMaps(uint16_t i) const -> uint16_t {
+  [[nodiscard]] auto filterMaps(uint16_t i) const -> uint16_t {
     if (i != unusedPatchId && contains(selectedViewsPass, patchesViewId[i])) {
       return i;
     }

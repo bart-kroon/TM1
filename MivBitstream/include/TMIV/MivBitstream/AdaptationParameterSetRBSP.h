@@ -47,12 +47,12 @@ namespace TMIV::MivBitstream {
 // 23090-12: camera_extrinsics()
 class CameraExtrinsics {
 public:
-  constexpr auto ce_view_pos_x() const noexcept;
-  constexpr auto ce_view_pos_y() const noexcept;
-  constexpr auto ce_view_pos_z() const noexcept;
-  constexpr auto ce_view_quat_x() const noexcept;
-  constexpr auto ce_view_quat_y() const noexcept;
-  constexpr auto ce_view_quat_z() const noexcept;
+  [[nodiscard]] constexpr auto ce_view_pos_x() const noexcept;
+  [[nodiscard]] constexpr auto ce_view_pos_y() const noexcept;
+  [[nodiscard]] constexpr auto ce_view_pos_z() const noexcept;
+  [[nodiscard]] constexpr auto ce_view_quat_x() const noexcept;
+  [[nodiscard]] constexpr auto ce_view_quat_y() const noexcept;
+  [[nodiscard]] constexpr auto ce_view_quat_z() const noexcept;
 
   constexpr auto ce_view_pos_x(const float value) noexcept -> auto &;
   constexpr auto ce_view_pos_y(const float value) noexcept -> auto &;
@@ -61,8 +61,8 @@ public:
   constexpr auto ce_view_quat_y(const float value) noexcept -> auto &;
   constexpr auto ce_view_quat_z(const float value) noexcept -> auto &;
 
-  auto position() const noexcept -> Common::Vec3f;
-  auto rotation() const noexcept -> Common::QuatF;
+  [[nodiscard]] auto position() const noexcept -> Common::Vec3f;
+  [[nodiscard]] auto rotation() const noexcept -> Common::QuatF;
 
   auto position(Common::Vec3f) noexcept -> CameraExtrinsics &;
   auto rotation(Common::QuatF) noexcept -> CameraExtrinsics &;
@@ -96,20 +96,20 @@ using Orthographic = std::integral_constant<CiCamType, CiCamType::orthographic>;
 // 23090-12: camera_intrinsics()
 class CameraIntrinsics {
 public:
-  constexpr auto ci_cam_type() const noexcept;
-  constexpr auto ci_projection_plane_width_minus1() const noexcept;
-  constexpr auto ci_projection_plane_height_minus1() const noexcept;
+  [[nodiscard]] constexpr auto ci_cam_type() const noexcept;
+  [[nodiscard]] constexpr auto ci_projection_plane_width_minus1() const noexcept;
+  [[nodiscard]] constexpr auto ci_projection_plane_height_minus1() const noexcept;
 
-  auto ci_erp_phi_min() const noexcept -> float;
-  auto ci_erp_phi_max() const noexcept -> float;
-  auto ci_erp_theta_min() const noexcept -> float;
-  auto ci_erp_theta_max() const noexcept -> float;
-  auto ci_perspective_focal_hor() const noexcept -> float;
-  auto ci_perspective_focal_ver() const noexcept -> float;
-  auto ci_perspective_center_hor() const noexcept -> float;
-  auto ci_perspective_center_ver() const noexcept -> float;
-  auto ci_ortho_width() const noexcept -> float;
-  auto ci_ortho_height() const noexcept -> float;
+  [[nodiscard]] auto ci_erp_phi_min() const noexcept -> float;
+  [[nodiscard]] auto ci_erp_phi_max() const noexcept -> float;
+  [[nodiscard]] auto ci_erp_theta_min() const noexcept -> float;
+  [[nodiscard]] auto ci_erp_theta_max() const noexcept -> float;
+  [[nodiscard]] auto ci_perspective_focal_hor() const noexcept -> float;
+  [[nodiscard]] auto ci_perspective_focal_ver() const noexcept -> float;
+  [[nodiscard]] auto ci_perspective_center_hor() const noexcept -> float;
+  [[nodiscard]] auto ci_perspective_center_ver() const noexcept -> float;
+  [[nodiscard]] auto ci_ortho_width() const noexcept -> float;
+  [[nodiscard]] auto ci_ortho_height() const noexcept -> float;
 
   constexpr auto ci_cam_type(const CiCamType value) noexcept -> auto &;
   constexpr auto ci_projection_plane_width_minus1(const std::uint16_t value) noexcept -> auto &;
@@ -126,7 +126,7 @@ public:
   constexpr auto ci_ortho_width(const float value) noexcept -> auto &;
   constexpr auto ci_ortho_height(const float value) noexcept -> auto &;
 
-  auto projectionPlaneSize() const -> Common::Vec2i;
+  [[nodiscard]] auto projectionPlaneSize() const -> Common::Vec2i;
 
   // Wrap the ci_cam_type in an integral constant and pass a value of that type to the unary
   // function f. This allows to template on the camera projection type.
@@ -160,10 +160,10 @@ private:
 // 23090-12: depth_quantization()
 class DepthQuantization {
 public:
-  constexpr auto dq_quantization_law() const noexcept;
-  constexpr auto dq_norm_disp_low() const noexcept;
-  constexpr auto dq_norm_disp_high() const noexcept;
-  constexpr auto dq_depth_occ_map_threshold_default() const noexcept;
+  [[nodiscard]] constexpr auto dq_quantization_law() const noexcept;
+  [[nodiscard]] constexpr auto dq_norm_disp_low() const noexcept;
+  [[nodiscard]] constexpr auto dq_norm_disp_high() const noexcept;
+  [[nodiscard]] constexpr auto dq_depth_occ_map_threshold_default() const noexcept;
 
   constexpr auto dq_norm_disp_low(const float value) noexcept -> auto &;
   constexpr auto dq_norm_disp_high(const float value) noexcept -> auto &;
@@ -190,14 +190,14 @@ public:
   PruningChildren() = default;
   explicit PruningChildren(std::vector<std::uint16_t> pc_child_id);
 
-  auto pc_is_leaf_flag() const noexcept -> bool;
-  auto pc_num_children_minus1() const noexcept -> std::uint16_t;
-  auto pc_child_id(std::uint16_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pc_is_leaf_flag() const noexcept -> bool;
+  [[nodiscard]] auto pc_num_children_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pc_child_id(std::uint16_t i) const noexcept -> std::uint16_t;
 
   auto pc_child_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningChildren &;
 
-  auto begin() const noexcept { return m_pc_child_id.begin(); }
-  auto end() const noexcept { return m_pc_child_id.end(); }
+  [[nodiscard]] auto begin() const noexcept { return m_pc_child_id.begin(); }
+  [[nodiscard]] auto end() const noexcept { return m_pc_child_id.end(); }
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
@@ -216,23 +216,23 @@ private:
 // 23090-12: miv_view_params_list()
 class MivViewParamsList {
 public:
-  auto mvp_num_views_minus1() const noexcept -> std::uint16_t;
-  constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
-  constexpr auto mvp_depth_quantization_params_equal_flag() const noexcept;
-  constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
+  [[nodiscard]] auto mvp_num_views_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
+  [[nodiscard]] constexpr auto mvp_depth_quantization_params_equal_flag() const noexcept;
+  [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
 
   // Return camera extrinsics for the specified view ID.
-  auto camera_extrinsics(const std::uint16_t viewId) const noexcept -> const CameraExtrinsics &;
+  [[nodiscard]] auto camera_extrinsics(const std::uint16_t viewId) const noexcept -> const CameraExtrinsics &;
 
   // Return camera intrinsics for the specified view ID. The
   // mvp_intrinsic_params_equal_flag() case is handled for convenience.
-  auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept -> const CameraIntrinsics &;
+  [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept -> const CameraIntrinsics &;
 
   // Return depth quantization for the specified view ID. The
   // mvp_depth_quantization_params_equal_flag() case is handled for convenience.
-  auto depth_quantization(std::uint16_t viewId = 0) const noexcept -> const DepthQuantization &;
+  [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const noexcept -> const DepthQuantization &;
 
-  auto pruning_children(const std::uint16_t viewId) const noexcept -> const PruningChildren &;
+  [[nodiscard]] auto pruning_children(const std::uint16_t viewId) const noexcept -> const PruningChildren &;
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
@@ -317,14 +317,14 @@ auto operator<<(std::ostream &stream, const MvpUpdateMode x) -> std::ostream &;
 // 23090-12: adapation_parameter_set_rbsp
 class AdaptationParameterSetRBSP {
 public:
-  constexpr auto aps_adaptation_parameter_set_id() const noexcept;
-  constexpr auto aps_camera_params_present_flag() const noexcept { return false; }
-  constexpr auto aps_miv_view_params_list_present_flag() const noexcept;
-  auto aps_miv_view_params_list_update_mode() const noexcept -> MvpUpdateMode;
-  auto miv_view_params_list() const noexcept -> const MivViewParamsList &;
-  auto miv_view_params_update_extrinsics() const noexcept -> const MivViewParamsUpdateExtrinsics &;
-  auto miv_view_params_update_intrinsics() const noexcept -> const MivViewParamsUpdateIntrinsics &;
-  constexpr auto aps_extension2_flag() const noexcept { return false; }
+  [[nodiscard]] constexpr auto aps_adaptation_parameter_set_id() const noexcept;
+  [[nodiscard]] constexpr auto aps_camera_params_present_flag() const noexcept { return false; }
+  [[nodiscard]] constexpr auto aps_miv_view_params_list_present_flag() const noexcept;
+  [[nodiscard]] auto aps_miv_view_params_list_update_mode() const noexcept -> MvpUpdateMode;
+  [[nodiscard]] auto miv_view_params_list() const noexcept -> const MivViewParamsList &;
+  [[nodiscard]] auto miv_view_params_update_extrinsics() const noexcept -> const MivViewParamsUpdateExtrinsics &;
+  [[nodiscard]] auto miv_view_params_update_intrinsics() const noexcept -> const MivViewParamsUpdateIntrinsics &;
+  [[nodiscard]] constexpr auto aps_extension2_flag() const noexcept { return false; }
 
   constexpr auto aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto aps_miv_view_params_list_present_flag(const bool value) noexcept -> auto &;

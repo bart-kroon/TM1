@@ -68,20 +68,20 @@ public:
   ~Cluster() = default;
 
   void push(int i, int j);
-  auto getViewId() const -> int { return viewId_; }
-  auto getClusterId() const -> int { return clusterId_; }
-  auto getEntityId() const -> int { return entityId_; }
-  auto getNumActivePixels() const -> int { return numActivePixels_; }
-  auto imin() const -> int { return imin_; }
-  auto jmin() const -> int { return jmin_; }
-  auto imax() const -> int { return imax_; }
-  auto jmax() const -> int { return jmax_; }
-  auto getFilling() const -> int { return filling_; }
-  auto width() const -> int { return (jmax_ - jmin_ + 1); }
-  auto height() const -> int { return (imax_ - imin_ + 1); }
-  auto getArea() const -> int { return width() * height(); }
-  auto getMinSize() const -> int { return std::min(width(), height()); }
-  auto split(const ClusteringMap &clusteringMap, int overlap) const -> std::pair<Cluster, Cluster>;
+  [[nodiscard]] auto getViewId() const -> int { return viewId_; }
+  [[nodiscard]] auto getClusterId() const -> int { return clusterId_; }
+  [[nodiscard]] auto getEntityId() const -> int { return entityId_; }
+  [[nodiscard]] auto getNumActivePixels() const -> int { return numActivePixels_; }
+  [[nodiscard]] auto imin() const -> int { return imin_; }
+  [[nodiscard]] auto jmin() const -> int { return jmin_; }
+  [[nodiscard]] auto imax() const -> int { return imax_; }
+  [[nodiscard]] auto jmax() const -> int { return jmax_; }
+  [[nodiscard]] auto getFilling() const -> int { return filling_; }
+  [[nodiscard]] auto width() const -> int { return (jmax_ - jmin_ + 1); }
+  [[nodiscard]] auto height() const -> int { return (imax_ - imin_ + 1); }
+  [[nodiscard]] auto getArea() const -> int { return width() * height(); }
+  [[nodiscard]] auto getMinSize() const -> int { return std::min(width(), height()); }
+  [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int overlap) const -> std::pair<Cluster, Cluster>;
 
   auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                              int alignment, int minPatchSize,

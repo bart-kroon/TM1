@@ -437,7 +437,7 @@ void MivDecoder::decodeSeiMessage(const VpccUnitHeader &vuh, const NalUnitHeader
   case PayloadType::viewing_space_handling:
     return parseViewingSpaceHandlingSei(vuh, nuh, message);
   case PayloadType::rec_viewport:
-    return parseRecommendedViewportSei(vuh, nuh, message);
+    return parseRecViewportSei(vuh, nuh, message);
   default:
     cout << "WARNING: Ignoring SEI message\n";
   }
@@ -449,9 +449,9 @@ void MivDecoder::decodeViewingSpaceHandling(const VpccUnitHeader & /* vuh */,
   cout << vh;
 }
 
-void MivDecoder::decodeRecommendedViewport(const VpccUnitHeader & /* vuh */,
+void MivDecoder::decodeRecViewport(const VpccUnitHeader & /* vuh */,
                                             const NalUnitHeader & /* nuh */,
-                                            const RecommendedViewport &vh) {
+                                            const RecViewport &vh) {
   cout << vh;
 }
 
@@ -516,11 +516,11 @@ void MivDecoder::parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const N
   decodeViewingSpaceHandling(vuh, nuh, ViewingSpaceHandling::decodeFrom(bitstream));
 }
 
-void MivDecoder::parseRecommendedViewportSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+void MivDecoder::parseRecViewportSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                                               const SeiMessage &message) {
   istringstream stream{message.payload()};
   InputBitstream bitstream{stream};
-  decodeRecommendedViewport(vuh, nuh, RecommendedViewport::decodeFrom(bitstream));
+  decodeRecViewport(vuh, nuh, RecViewport::decodeFrom(bitstream));
 }
 
 // Access internal decoder state ///////////////////////////////////////////////////////////////////

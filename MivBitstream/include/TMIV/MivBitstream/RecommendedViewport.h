@@ -35,49 +35,46 @@
 #define _TMIV_MIVBITSTREAM_RECOMMENDEDVIEWPORT_H_
 
 #include <TMIV/Common/Bitstream.h>
-
+#include <optional>
 #include <vector>
 
 namespace TMIV::MivBitstream {
-struct RecommendedViewportParams {
-  std::uint16_t m_rec_viewport_id{};
-  bool m_rec_viewport_cancel_flag{};
-  bool m_rec_viewport_persistence_flag{};
-  bool m_rec_viewport_center_view_flag{};
-  bool m_rec_viewport_left_view_flag{};
-  float m_rec_viewport_pos_x{};
-  float m_rec_viewport_pos_y{};
-  float m_rec_viewport_pos_z{};
-  float m_rec_viewport_quat_x{};
-  float m_rec_viewport_quat_y{};
-  float m_rec_viewport_quat_z{};
-  float m_rec_viewport_hor_range{};
-  float m_rec_viewport_ver_range{};
+struct RecViewportParams {
+  std::uint16_t rec_viewport_id{};
+  bool rec_viewport_cancel_flag{};
+  std::optional<bool> rec_viewport_persistence_flag{};
+  std::optional<bool> rec_viewport_center_view_flag{};
+  std::optional<bool> rec_viewport_left_view_flag{};
+  std::optional<float> rec_viewport_pos_x{};
+  std::optional<float> rec_viewport_pos_y{};
+  std::optional<float> rec_viewport_pos_z{};
+  std::optional<float> rec_viewport_quat_x{};
+  std::optional<float> rec_viewport_quat_y{};
+  std::optional<float> rec_viewport_quat_z{};
+  std::optional<float> rec_viewport_hor_range{};
+  std::optional<float> rec_viewport_ver_range{};
 
-  auto operator==(const RecommendedViewportParams &other) const noexcept -> bool;
-  auto operator!=(const RecommendedViewportParams &other) const noexcept -> bool;
+  auto operator==(const RecViewportParams &other) const noexcept -> bool;
+  auto operator!=(const RecViewportParams &other) const noexcept -> bool;
 };
 
 // 23090-12: rec_viewport()
-class RecommendedViewport {
+class RecViewport {
 public:
-  RecommendedViewport() = default;
-  explicit RecommendedViewport(RecommendedViewportParams);
+  RecViewport() = default;
+  explicit RecViewport(RecViewportParams);
 
-  friend auto operator<<(std::ostream &stream, const RecommendedViewport &x) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream &;
 
-  auto operator==(const RecommendedViewport &other) const noexcept -> bool;
-  auto operator!=(const RecommendedViewport &other) const noexcept -> bool;
+  auto operator==(const RecViewport &other) const noexcept -> bool;
+  auto operator!=(const RecViewport &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> RecommendedViewport;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> RecViewport;
 
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
-  static auto isNullStream(const RecommendedViewportParams &x) -> bool;
-
 private:
-  RecommendedViewportParams m_RecommendedViewportParams;
-  
+  RecViewportParams m_RecViewportParams;
 };
 } // namespace TMIV::MivBitstream
 

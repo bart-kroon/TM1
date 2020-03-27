@@ -38,28 +38,22 @@
 using namespace TMIV::MivBitstream;
 
 TEST_CASE("rec_viewport", "[Recommended Viewport SEI payload syntax]") {
- 
-  SECTION("Null example") { // Should be dealt with at the encoder, so it skips the whole rec_viewport if null
-    const auto x = RecommendedViewport{};
-    REQUIRE(toString(x) == R"()");
-    REQUIRE(bitCodingTest(x, 0));
-  }
-  
+
   SECTION("Example 1") {
-    const auto x = RecommendedViewport{{0, 1}};
+    const auto x = RecViewport{{0, 1}};
     REQUIRE(toString(x) == R"(rec_viewport_id=0
 rec_viewport_cancel_flag( 0 )=1
 )");
     REQUIRE(bitCodingTest(x, 11));
   }
-  
+
   SECTION("Example 2") {
-    const auto x = RecommendedViewport{{1, 0, 0, 0, 1, 0.2f, 1.45f, -0.79f, -0.91f, 0.0f, 1.2f, 90.0f, 60.4f}};
+    const auto x =
+        RecViewport{{1, 0, 0, 1, {}, 0.2f, 1.45f, -0.79f, -0.91f, 0.0f, 1.2f, 90.0f, 60.4f}};
     REQUIRE(toString(x) == R"(rec_viewport_id=1
 rec_viewport_cancel_flag( 1 )=0
 rec_viewport_persistence_flag( 1 )=0
-rec_viewport_center_view_flag( 1 )=0
-rec_viewport_left_view_flag( 1 )=1
+rec_viewport_center_view_flag( 1 )=1
 rec_viewport_pos_x( 1 )=0.2
 rec_viewport_pos_y( 1 )=1.45
 rec_viewport_pos_z( 1 )=-0.79
@@ -69,8 +63,26 @@ rec_viewport_quat_z( 1 )=1.2
 rec_viewport_hor_range( 1 )=90
 rec_viewport_ver_range( 1 )=60.4
 )");
+    REQUIRE(bitCodingTest(x, 269));
+  }
+
+  SECTION("Example 3") {
+    const auto x =
+        RecViewport{{2, 0, 0, 0, 1, 0.2f, 1.45f, -0.79f, -0.91f, 0.0f, 1.2f, 90.0f, 60.4f}};
+    REQUIRE(toString(x) == R"(rec_viewport_id=2
+rec_viewport_cancel_flag( 2 )=0
+rec_viewport_persistence_flag( 2 )=0
+rec_viewport_center_view_flag( 2 )=0
+rec_viewport_left_view_flag( 2 )=1
+rec_viewport_pos_x( 2 )=0.2
+rec_viewport_pos_y( 2 )=1.45
+rec_viewport_pos_z( 2 )=-0.79
+rec_viewport_quat_x( 2 )=-0.91
+rec_viewport_quat_y( 2 )=0
+rec_viewport_quat_z( 2 )=1.2
+rec_viewport_hor_range( 2 )=90
+rec_viewport_ver_range( 2 )=60.4
+)");
     REQUIRE(bitCodingTest(x, 270));
   }
-  
 }
-

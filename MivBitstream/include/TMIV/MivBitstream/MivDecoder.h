@@ -134,8 +134,8 @@ private: // Decoding processes
                                const SeiMessage &message);
   static void decodeViewingSpaceHandling(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                                          const ViewingSpaceHandling &vh);
-  static void decodeRecommendedViewport(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                         const RecommendedViewport &vh);
+  static void decodeRecViewport(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+                                         const RecViewport &vh);
 
 private: // Parsers
   void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
@@ -150,7 +150,7 @@ private: // Parsers
   static void parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
   static void parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                                            const SeiMessage &message);
-  static void parseRecommendedViewportSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  static void parseRecViewportSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                                           const SeiMessage &message);
 
 private: // Internal decoder state

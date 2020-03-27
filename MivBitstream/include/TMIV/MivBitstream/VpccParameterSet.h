@@ -82,11 +82,12 @@ public:
   constexpr auto ptl_profile_reconstruction_idc() const noexcept;
   constexpr auto ptl_level_idc() const noexcept;
 
-  constexpr auto &ptl_tier_flag(bool value) noexcept;
-  constexpr auto &ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc value) noexcept;
-  constexpr auto &ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc value) noexcept;
-  constexpr auto &ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept;
-  constexpr auto &ptl_level_idc(PtlLevelIdc value) noexcept;
+  constexpr auto ptl_tier_flag(bool value) noexcept -> auto &;
+  constexpr auto ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc value) noexcept -> auto &;
+  constexpr auto ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc value) noexcept -> auto &;
+  constexpr auto ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept
+      -> auto &;
+  constexpr auto ptl_level_idc(PtlLevelIdc value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const ProfileTierLevel &x) -> std::ostream &;
 
@@ -113,10 +114,11 @@ public:
   constexpr auto oi_occupancy_nominal_2d_bitdepth_minus1() const noexcept;
   constexpr auto oi_occupancy_MSB_align_flag() const noexcept;
 
-  constexpr auto &oi_occupancy_codec_id(std::uint8_t value) noexcept;
-  constexpr auto &oi_lossy_occupancy_map_compression_threshold(std::uint8_t value) noexcept;
-  constexpr auto &oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept;
-  constexpr auto &oi_occupancy_MSB_align_flag(bool value) noexcept;
+  constexpr auto oi_occupancy_codec_id(std::uint8_t value) noexcept -> auto &;
+  constexpr auto oi_lossy_occupancy_map_compression_threshold(std::uint8_t value) noexcept
+      -> auto &;
+  constexpr auto oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto oi_occupancy_MSB_align_flag(bool value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::uint8_t atlasId) const -> std::ostream &;
 
@@ -144,10 +146,10 @@ public:
   constexpr auto gi_geometry_MSB_align_flag() const noexcept;
   constexpr auto gi_geometry_3d_coordinates_bitdepth_minus1() const noexcept;
 
-  constexpr auto &gi_geometry_codec_id(std::uint8_t value) noexcept;
-  constexpr auto &gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept;
-  constexpr auto &gi_geometry_MSB_align_flag(bool value) noexcept;
-  constexpr auto &gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept;
+  constexpr auto gi_geometry_codec_id(std::uint8_t value) noexcept -> auto &;
+  constexpr auto gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto gi_geometry_MSB_align_flag(bool value) noexcept -> auto &;
+  constexpr auto gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::uint8_t atlasId) const -> std::ostream &;
 
@@ -219,10 +221,10 @@ public:
   constexpr auto msp_num_groups_minus1() const noexcept;
   constexpr auto msp_max_entities_minus1() const noexcept;
 
-  constexpr auto &msp_depth_low_quality_flag(const bool value) noexcept;
-  constexpr auto &msp_geometry_scale_enabled_flag(const bool value) noexcept;
-  constexpr auto &msp_num_groups_minus1(const unsigned value) noexcept;
-  constexpr auto &msp_max_entities_minus1(const unsigned value) noexcept;
+  constexpr auto msp_depth_low_quality_flag(const bool value) noexcept -> auto &;
+  constexpr auto msp_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto msp_num_groups_minus1(const unsigned value) noexcept -> auto &;
+  constexpr auto msp_max_entities_minus1(const unsigned value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const MivSequenceParams &x) -> std::ostream &;
 
@@ -260,9 +262,9 @@ public:
   auto vps_miv_sequence_vui_params_present_flag() const noexcept -> bool;
   auto miv_vui_params() const noexcept -> const MivVuiParams &;
 
-  constexpr auto &profile_tier_level(ProfileTierLevel value) noexcept;
-  constexpr auto &vps_vpcc_parameter_set_id(std::uint8_t value) noexcept;
-  constexpr auto &vps_miv_mode_flag(const bool value) noexcept;
+  constexpr auto profile_tier_level(ProfileTierLevel value) noexcept -> auto &;
+  constexpr auto vps_vpcc_parameter_set_id(std::uint8_t value) noexcept -> auto &;
+  constexpr auto vps_miv_mode_flag(const bool value) noexcept -> auto &;
   auto vps_atlas_count_minus1(std::uint8_t value) -> VpccParameterSet &;
   auto vps_frame_width(std::uint8_t atlasId, std::uint16_t value) -> VpccParameterSet &;
   auto vps_frame_height(std::uint8_t atlasId, std::uint16_t value) -> VpccParameterSet &;
@@ -273,11 +275,11 @@ public:
   auto attribute_information(std::uint8_t atlasId, AttributeInformation value)
       -> VpccParameterSet &;
   auto vps_auxiliary_video_present_flag(std::uint8_t atlasId, bool value) -> VpccParameterSet &;
-  constexpr auto &vps_extension_present_flag(bool value) noexcept; // Only 23090-5
+  constexpr auto vps_extension_present_flag(bool value) noexcept -> auto &; // Only 23090-5
   auto vps_miv_extension_flag(bool value) noexcept -> VpccParameterSet &;
   auto vps_miv_sequence_vui_params_present_flag(bool value) noexcept -> VpccParameterSet &;
 
-  constexpr auto &profile_tier_level() noexcept;
+  constexpr auto profile_tier_level() noexcept -> auto &;
   [[nodiscard]] auto occupancy_information(std::uint8_t atlasId) -> OccupancyInformation &;
   [[nodiscard]] auto geometry_information(std::uint8_t atlasId) -> GeometryInformation &;
   [[nodiscard]] auto attribute_information(std::uint8_t atlasId) -> AttributeInformation &;

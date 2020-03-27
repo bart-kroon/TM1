@@ -50,8 +50,8 @@ public:
   DepthOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   DepthOccupancy(const DepthOccupancy &) = default;
   DepthOccupancy(DepthOccupancy &&) = default;
-  DepthOccupancy &operator=(const DepthOccupancy &) = default;
-  DepthOccupancy &operator=(DepthOccupancy &&) = default;
+  auto operator=(const DepthOccupancy &) -> DepthOccupancy & = default;
+  auto operator=(DepthOccupancy &&) -> DepthOccupancy & = default;
   ~DepthOccupancy() override = default;
 
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold

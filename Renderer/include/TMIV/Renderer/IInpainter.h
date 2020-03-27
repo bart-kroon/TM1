@@ -43,8 +43,8 @@ public:
   IInpainter() = default;
   IInpainter(const IInpainter &) = delete;
   IInpainter(IInpainter &&) = default;
-  IInpainter &operator=(const IInpainter &) = delete;
-  IInpainter &operator=(IInpainter &&) = default;
+  auto operator=(const IInpainter &) -> IInpainter & = delete;
+  auto operator=(IInpainter &&) -> IInpainter & = default;
   virtual ~IInpainter() = default;
 
   // Inpainting after decoder-side synthesis

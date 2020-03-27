@@ -92,11 +92,11 @@ public:
   constexpr auto atgh_pos_min_z_quantizer() const noexcept { return std::uint8_t(0); }
   constexpr auto atgh_pos_max_z_quantizer() const noexcept { return std::uint8_t(0); }
 
-  constexpr auto &atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept;
-  constexpr auto &atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept;
-  constexpr auto &atgh_address(const std::uint8_t value) noexcept;
-  constexpr auto &atgh_type(const AtghType value) noexcept;
-  constexpr auto &atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept;
+  constexpr auto atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto atgh_address(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto atgh_type(const AtghType value) noexcept -> auto &;
+  constexpr auto atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept -> auto &;
   auto atgh_patch_size_x_info_quantizer(const std::uint8_t value) noexcept
       -> AtlasTileGroupHeader &;
   auto atgh_patch_size_y_info_quantizer(const std::uint8_t value) noexcept
@@ -155,18 +155,18 @@ public:
   constexpr auto pdu_entity_id() const noexcept;
   auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
 
-  constexpr auto &pdu_2d_pos_x(const std::uint16_t value) noexcept;
-  constexpr auto &pdu_2d_pos_y(const std::uint16_t value) noexcept;
-  constexpr auto &pdu_2d_size_x_minus1(const std::uint16_t value) noexcept;
-  constexpr auto &pdu_2d_size_y_minus1(const std::uint16_t value) noexcept;
-  constexpr auto &pdu_view_pos_x(const std::uint16_t value) noexcept;
-  constexpr auto &pdu_view_pos_y(const std::uint16_t value) noexcept;
-  constexpr auto &pdu_depth_start(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_depth_end(const std::uint32_t value) noexcept;
-  constexpr auto &pdu_view_id(const std::uint16_t value) noexcept;
-  constexpr auto &pdu_orientation_index(const FlexiblePatchOrientation value) noexcept;
-  constexpr auto &pdu_entity_id(const unsigned value) noexcept;
-  constexpr auto &pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept;
+  constexpr auto pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_pos_y(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_x_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_y_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_view_pos_x(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_view_pos_y(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_depth_start(const std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_depth_end(const std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_view_id(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_orientation_index(const FlexiblePatchOrientation value) noexcept -> auto &;
+  constexpr auto pdu_entity_id(const unsigned value) noexcept -> auto &;
+  constexpr auto pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
 
@@ -210,7 +210,7 @@ public:
   template <typename Value>
   constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
 
-  constexpr auto &data() const noexcept;
+  constexpr auto data() const noexcept -> auto &;
 
   auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   auto patch_data_unit() const noexcept -> const PatchDataUnit &;

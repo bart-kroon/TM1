@@ -61,22 +61,22 @@ public:
   // overrides this one for all keys
   void setOverrides(const Json &overrides);
 
-  Type type() const;
-  Json optional(std::string const &key) const;
-  Json require(std::string const &key) const;
-  bool isPresent(std::string const &key) const;
+  auto type() const -> Type;
+  auto optional(std::string const &key) const -> Json;
+  auto require(std::string const &key) const -> Json;
+  auto isPresent(std::string const &key) const -> bool;
 
   // Index into an array
-  Json at(size_t index) const;
+  auto at(size_t index) const -> Json;
 
   // Return the number of elements in an object or array
-  size_t size() const;
+  auto size() const -> size_t;
 
-  double asDouble() const;
-  float asFloat() const;
-  int asInt() const;
-  std::string const &asString() const;
-  bool asBool() const;
+  auto asDouble() const -> double;
+  auto asFloat() const -> float;
+  auto asInt() const -> int;
+  auto asString() const -> std::string const &;
+  auto asBool() const -> bool;
   auto asStringVector() const -> std::vector<std::string>;
   template <stack::size_type M> auto asIntVector() const -> stack::Vector<int, M>;
   template <stack::size_type M> auto asFloatVector() const -> stack::Vector<float, M>;

@@ -43,15 +43,15 @@ public:
   Packer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
   Packer(const Packer &) = delete;
   Packer(Packer &&) = default;
-  Packer &operator=(const Packer &) = delete;
-  Packer &operator=(Packer &&) = default;
+  auto operator=(const Packer &) -> Packer & = delete;
+  auto operator=(Packer &&) -> Packer & = default;
   ~Packer() override = default;
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
             const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList override;
   void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
 
-  int getAlignment() override;
+  auto getAlignment() -> int override;
 
 private:
   int m_alignment{};

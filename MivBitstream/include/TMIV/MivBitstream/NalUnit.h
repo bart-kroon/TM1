@@ -110,8 +110,8 @@ class NalUnit {
 public:
   NalUnit(const NalUnitHeader &nal_unit_header, std::string rbsp);
 
-  constexpr auto &nal_unit_header() const noexcept { return m_nal_unit_header; }
-  constexpr auto &rbsp() const noexcept { return m_rbsp; }
+  constexpr auto nal_unit_header() const noexcept -> auto & { return m_nal_unit_header; }
+  constexpr auto rbsp() const noexcept -> auto & { return m_rbsp; }
 
   // The size of the NAL unit in bytes w/o zero byte padding
   auto size() const noexcept { return 2 + m_rbsp.size(); }

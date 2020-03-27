@@ -53,8 +53,8 @@ public:
   AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   AtlasConstructor(const AtlasConstructor &) = delete;
   AtlasConstructor(AtlasConstructor &&) = default;
-  AtlasConstructor &operator=(const AtlasConstructor &) = delete;
-  AtlasConstructor &operator=(AtlasConstructor &&) = default;
+  auto operator=(const AtlasConstructor &) -> AtlasConstructor & = delete;
+  auto operator=(AtlasConstructor &&) -> AtlasConstructor & = default;
   ~AtlasConstructor() override = default;
 
   auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,

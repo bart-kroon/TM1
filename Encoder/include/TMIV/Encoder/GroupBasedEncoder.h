@@ -44,8 +44,8 @@ public:
 
   GroupBasedEncoder(const GroupBasedEncoder &) = delete;
   GroupBasedEncoder(GroupBasedEncoder &&) = default;
-  GroupBasedEncoder &operator=(const GroupBasedEncoder &) = delete;
-  GroupBasedEncoder &operator=(GroupBasedEncoder &&) = default;
+  auto operator=(const GroupBasedEncoder &) -> GroupBasedEncoder & = delete;
+  auto operator=(GroupBasedEncoder &&) -> GroupBasedEncoder & = default;
   ~GroupBasedEncoder() override = default;
 
   // Let each per-group encoder prepare the sequence and merge the metadata

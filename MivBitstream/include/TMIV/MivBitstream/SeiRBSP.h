@@ -96,8 +96,8 @@ public:
   SeiRBSP() = default;
   explicit SeiRBSP(std::vector<SeiMessage> messages);
 
-  constexpr const auto &messages() const noexcept { return m_messages; }
-  constexpr auto &messages() noexcept { return m_messages; }
+  constexpr auto messages() const noexcept -> const auto & { return m_messages; }
+  constexpr auto messages() noexcept -> auto & { return m_messages; }
 
   friend auto operator<<(std::ostream &stream, const SeiRBSP &x) -> std::ostream &;
 

@@ -42,8 +42,8 @@ public:
   IAggregator() = default;
   IAggregator(const IAggregator &) = delete;
   IAggregator(IAggregator &&) = default;
-  IAggregator &operator=(const IAggregator &) = delete;
-  IAggregator &operator=(IAggregator &&) = default;
+  auto operator=(const IAggregator &) -> IAggregator & = delete;
+  auto operator=(IAggregator &&) -> IAggregator & = default;
   virtual ~IAggregator() = default;
 
   virtual void prepareAccessUnit() = 0;

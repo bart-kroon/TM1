@@ -65,8 +65,8 @@ template <MivBitstream::CiCamType camType> struct Engine {};
 } // namespace TMIV::Renderer
 
 #include "Engine_ERP.hpp"
-#include "Engine_Perspective.hpp"
 #include "Engine_Orthographic.hpp"
+#include "Engine_Perspective.hpp"
 
 namespace TMIV::Renderer {
 // Project the data that is already in the reference frame of the

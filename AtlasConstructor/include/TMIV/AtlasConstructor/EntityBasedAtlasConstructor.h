@@ -52,8 +52,8 @@ public:
                               const Common::Json & /*componentNode*/);
   EntityBasedAtlasConstructor(const EntityBasedAtlasConstructor &) = delete;
   EntityBasedAtlasConstructor(EntityBasedAtlasConstructor &&) = default;
-  EntityBasedAtlasConstructor &operator=(const EntityBasedAtlasConstructor &) = delete;
-  EntityBasedAtlasConstructor &operator=(EntityBasedAtlasConstructor &&) = default;
+  auto operator=(const EntityBasedAtlasConstructor &) -> EntityBasedAtlasConstructor & = delete;
+  auto operator=(EntityBasedAtlasConstructor &&) -> EntityBasedAtlasConstructor & = default;
   ~EntityBasedAtlasConstructor() override = default;
 
   auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
@@ -66,9 +66,10 @@ public:
   auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
 private:
-  static Common::MVD16Frame entitySeparator(const Common::MVD16Frame &transportViews,
-                                            uint16_t entityId);
-  static std::vector<Common::Frame<Common::YUV420P16>> yuvSampler(const Common::EntityMapList &in);
+  static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
+      -> Common::MVD16Frame;
+  static auto yuvSampler(const Common::EntityMapList &in)
+      -> std::vector<Common::Frame<Common::YUV420P16>>;
   static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);

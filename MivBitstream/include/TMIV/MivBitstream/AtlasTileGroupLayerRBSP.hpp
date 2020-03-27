@@ -48,30 +48,32 @@ constexpr auto AtlasTileGroupHeader::atgh_atlas_frm_order_cnt_lsb() const noexce
   return m_atgh_atlas_frm_order_cnt_lsb;
 }
 
-constexpr auto &
-AtlasTileGroupHeader::atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept {
+constexpr auto
+AtlasTileGroupHeader::atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept
+    -> auto & {
   m_atgh_atlas_frame_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto &
-AtlasTileGroupHeader::atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept {
+constexpr auto
+AtlasTileGroupHeader::atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept
+    -> auto & {
   m_atgh_adaptation_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto &AtlasTileGroupHeader::atgh_address(const std::uint8_t value) noexcept {
+constexpr auto AtlasTileGroupHeader::atgh_address(const std::uint8_t value) noexcept -> auto & {
   m_atgh_address = value;
   return *this;
 }
 
-constexpr auto &AtlasTileGroupHeader::atgh_type(const AtghType value) noexcept {
+constexpr auto AtlasTileGroupHeader::atgh_type(const AtghType value) noexcept -> auto & {
   m_atgh_type = value;
   return *this;
 }
 
-constexpr auto &
-AtlasTileGroupHeader::atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept {
+constexpr auto AtlasTileGroupHeader::atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept
+    -> auto & {
   m_atgh_atlas_frm_order_cnt_lsb = value;
   return *this;
 }
@@ -133,63 +135,64 @@ constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
 
 constexpr auto PatchDataUnit::pdu_entity_id() const noexcept { return m_pdu_entity_id; }
 
-constexpr auto &PatchDataUnit::pdu_2d_pos_x(const std::uint16_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto & {
   m_pdu_2d_pos_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_pos_y(const std::uint16_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_2d_pos_y(const std::uint16_t value) noexcept -> auto & {
   m_pdu_2d_pos_y = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_size_x_minus1(const std::uint16_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_2d_size_x_minus1(const std::uint16_t value) noexcept -> auto & {
   m_pdu_2d_size_x_minus1 = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_2d_size_y_minus1(const std::uint16_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_2d_size_y_minus1(const std::uint16_t value) noexcept -> auto & {
   m_pdu_2d_size_y_minus1 = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_view_pos_x(const std::uint16_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_view_pos_x(const std::uint16_t value) noexcept -> auto & {
   m_pdu_view_pos_x = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_view_pos_y(const std::uint16_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_view_pos_y(const std::uint16_t value) noexcept -> auto & {
   m_pdu_view_pos_y = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_depth_start(const std::uint32_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_depth_start(const std::uint32_t value) noexcept -> auto & {
   m_pdu_depth_start = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_depth_end(const std::uint32_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_depth_end(const std::uint32_t value) noexcept -> auto & {
   m_pdu_depth_end = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_view_id(const std::uint16_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_view_id(const std::uint16_t value) noexcept -> auto & {
   m_pdu_view_id = value;
   return *this;
 }
 
-constexpr auto &
-PatchDataUnit::pdu_orientation_index(const FlexiblePatchOrientation value) noexcept {
+constexpr auto PatchDataUnit::pdu_orientation_index(const FlexiblePatchOrientation value) noexcept
+    -> auto & {
   m_pdu_orientation_index = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_entity_id(const unsigned value) noexcept {
+constexpr auto PatchDataUnit::pdu_entity_id(const unsigned value) noexcept -> auto & {
   m_pdu_entity_id = value;
   return *this;
 }
 
-constexpr auto &PatchDataUnit::pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept {
+constexpr auto PatchDataUnit::pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept
+    -> auto & {
   m_pdu_depth_occ_map_threshold = value;
   return *this;
 }
@@ -210,7 +213,7 @@ constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexc
   return !operator==(other);
 }
 
-constexpr auto &PatchInformationData::data() const noexcept { return m_data; }
+constexpr auto PatchInformationData::data() const noexcept -> auto & { return m_data; }
 
 template <typename Visitor> void AtlasTileGroupDataUnit::visit(Visitor &&visitor) const {
   for (std::size_t p = 0; p < m_vector.size(); ++p) {

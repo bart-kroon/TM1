@@ -44,10 +44,10 @@ class NalSampleStream {
 public:
   explicit NalSampleStream(const SampleStreamNalHeader &ssnh) : m_ssnh{ssnh} {}
 
-  constexpr auto &sample_stream_nal_header() const noexcept { return m_ssnh; }
-  constexpr auto &sample_stream_nal_header() noexcept { return m_ssnh; }
-  constexpr auto &nal_units() const noexcept { return m_nal_units; }
-  constexpr auto &nal_units() noexcept { return m_nal_units; }
+  constexpr auto sample_stream_nal_header() const noexcept -> auto & { return m_ssnh; }
+  constexpr auto sample_stream_nal_header() noexcept -> auto & { return m_ssnh; }
+  constexpr auto nal_units() const noexcept -> auto & { return m_nal_units; }
+  constexpr auto nal_units() noexcept -> auto & { return m_nal_units; }
 
   friend auto operator<<(std::ostream &stream, const NalSampleStream &x) -> std::ostream &;
 

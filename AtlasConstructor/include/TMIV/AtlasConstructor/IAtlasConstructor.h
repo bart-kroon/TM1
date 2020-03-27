@@ -44,8 +44,8 @@ public:
   IAtlasConstructor() = default;
   IAtlasConstructor(const IAtlasConstructor &) = delete;
   IAtlasConstructor(IAtlasConstructor &&) = default;
-  IAtlasConstructor &operator=(const IAtlasConstructor &) = delete;
-  IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
+  auto operator=(const IAtlasConstructor &) -> IAtlasConstructor & = delete;
+  auto operator=(IAtlasConstructor &&) -> IAtlasConstructor & = default;
   virtual ~IAtlasConstructor() = default;
 
   virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,

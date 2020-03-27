@@ -53,8 +53,8 @@ public:
   GroupBasedRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   GroupBasedRenderer(const GroupBasedRenderer &) = delete;
   GroupBasedRenderer(GroupBasedRenderer &&) = default;
-  GroupBasedRenderer &operator=(const GroupBasedRenderer &) = delete;
-  GroupBasedRenderer &operator=(GroupBasedRenderer &&) = default;
+  auto operator=(const GroupBasedRenderer &) -> GroupBasedRenderer & = delete;
+  auto operator=(GroupBasedRenderer &&) -> GroupBasedRenderer & = default;
   ~GroupBasedRenderer() override = default;
 
   // Render from a texture atlas to a viewport

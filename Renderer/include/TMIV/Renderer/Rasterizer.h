@@ -103,7 +103,7 @@ private:
     const int i2{};
     const int cols{};
 
-    constexpr int rows() const { return i2 - i1; }
+    constexpr auto rows() const -> int { return i2 - i1; }
 
     // Batches of triangles to be processed
     std::vector<TriangleDescriptorList> batches;

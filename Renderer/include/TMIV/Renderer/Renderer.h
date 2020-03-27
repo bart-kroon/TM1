@@ -51,8 +51,8 @@ public:
   Renderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   Renderer(const Renderer &) = delete;
   Renderer(Renderer &&) = default;
-  Renderer &operator=(const Renderer &) = delete;
-  Renderer &operator=(Renderer &&) = default;
+  auto operator=(const Renderer &) -> Renderer & = delete;
+  auto operator=(Renderer &&) -> Renderer & = default;
   ~Renderer() override = default;
 
   auto renderFrame(const MivBitstream::AccessUnit &frame,

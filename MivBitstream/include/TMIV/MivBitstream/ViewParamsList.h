@@ -53,13 +53,13 @@ struct ViewParams {
   bool hasOccupancy{};
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
-  bool operator==(const ViewParams &other) const;
-  bool operator!=(const ViewParams &other) const { return !operator==(other); }
+  auto operator==(const ViewParams &other) const -> bool;
+  auto operator!=(const ViewParams &other) const -> bool { return !operator==(other); }
 
   // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
   //
   // The parameter is a an item of the viewParamsList node (a JSON object).
-  static ViewParams loadFromJson(const Common::Json &node);
+  static auto loadFromJson(const Common::Json &node) -> ViewParams;
 };
 
 // Data type that corresponds to camera_params_list of specification
@@ -70,13 +70,14 @@ struct ViewParamsList : public std::vector<ViewParams> {
   // Size of each view as a vector
   auto viewSizes() const -> Common::SizeVector;
 
-  friend std::ostream &operator<<(std::ostream &stream, const ViewParamsList &viewParamsList);
-  bool operator==(const ViewParamsList &other) const;
-  bool operator!=(const ViewParamsList &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList)
+      -> std::ostream &;
+  auto operator==(const ViewParamsList &other) const -> bool;
+  auto operator!=(const ViewParamsList &other) const -> bool { return !operator==(other); }
 
   // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
-  static ViewParamsList loadFromJson(const Common::Json &node,
-                                     const std::vector<std::string> &names);
+  static auto loadFromJson(const Common::Json &node, const std::vector<std::string> &names)
+      -> ViewParamsList;
 };
 } // namespace TMIV::MivBitstream
 

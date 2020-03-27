@@ -54,12 +54,12 @@ public:
   constexpr auto ce_view_quat_y() const noexcept;
   constexpr auto ce_view_quat_z() const noexcept;
 
-  constexpr auto &ce_view_pos_x(const float value) noexcept;
-  constexpr auto &ce_view_pos_y(const float value) noexcept;
-  constexpr auto &ce_view_pos_z(const float value) noexcept;
-  constexpr auto &ce_view_quat_x(const float value) noexcept;
-  constexpr auto &ce_view_quat_y(const float value) noexcept;
-  constexpr auto &ce_view_quat_z(const float value) noexcept;
+  constexpr auto ce_view_pos_x(const float value) noexcept -> auto &;
+  constexpr auto ce_view_pos_y(const float value) noexcept -> auto &;
+  constexpr auto ce_view_pos_z(const float value) noexcept -> auto &;
+  constexpr auto ce_view_quat_x(const float value) noexcept -> auto &;
+  constexpr auto ce_view_quat_y(const float value) noexcept -> auto &;
+  constexpr auto ce_view_quat_z(const float value) noexcept -> auto &;
 
   auto position() const noexcept -> Common::Vec3f;
   auto rotation() const noexcept -> Common::QuatF;
@@ -111,20 +111,20 @@ public:
   auto ci_ortho_width() const noexcept -> float;
   auto ci_ortho_height() const noexcept -> float;
 
-  constexpr auto &ci_cam_type(const CiCamType value) noexcept;
-  constexpr auto &ci_projection_plane_width_minus1(const std::uint16_t value) noexcept;
-  constexpr auto &ci_projection_plane_height_minus1(const std::uint16_t value) noexcept;
+  constexpr auto ci_cam_type(const CiCamType value) noexcept -> auto &;
+  constexpr auto ci_projection_plane_width_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto ci_projection_plane_height_minus1(const std::uint16_t value) noexcept -> auto &;
 
-  constexpr auto &ci_erp_phi_min(const float value) noexcept;
-  constexpr auto &ci_erp_phi_max(const float value) noexcept;
-  constexpr auto &ci_erp_theta_min(const float value) noexcept;
-  constexpr auto &ci_erp_theta_max(const float value) noexcept;
-  constexpr auto &ci_perspective_focal_hor(const float value) noexcept;
-  constexpr auto &ci_perspective_focal_ver(const float value) noexcept;
-  constexpr auto &ci_perspective_center_hor(const float value) noexcept;
-  constexpr auto &ci_perspective_center_ver(const float value) noexcept;
-  constexpr auto &ci_ortho_width(const float value) noexcept;
-  constexpr auto &ci_ortho_height(const float value) noexcept;
+  constexpr auto ci_erp_phi_min(const float value) noexcept -> auto &;
+  constexpr auto ci_erp_phi_max(const float value) noexcept -> auto &;
+  constexpr auto ci_erp_theta_min(const float value) noexcept -> auto &;
+  constexpr auto ci_erp_theta_max(const float value) noexcept -> auto &;
+  constexpr auto ci_perspective_focal_hor(const float value) noexcept -> auto &;
+  constexpr auto ci_perspective_focal_ver(const float value) noexcept -> auto &;
+  constexpr auto ci_perspective_center_hor(const float value) noexcept -> auto &;
+  constexpr auto ci_perspective_center_ver(const float value) noexcept -> auto &;
+  constexpr auto ci_ortho_width(const float value) noexcept -> auto &;
+  constexpr auto ci_ortho_height(const float value) noexcept -> auto &;
 
   auto projectionPlaneSize() const -> Common::Vec2i;
 
@@ -165,9 +165,9 @@ public:
   constexpr auto dq_norm_disp_high() const noexcept;
   constexpr auto dq_depth_occ_map_threshold_default() const noexcept;
 
-  constexpr auto &dq_norm_disp_low(const float value) noexcept;
-  constexpr auto &dq_norm_disp_high(const float value) noexcept;
-  constexpr auto &dq_depth_occ_map_threshold_default(const std::uint32_t value) noexcept;
+  constexpr auto dq_norm_disp_low(const float value) noexcept -> auto &;
+  constexpr auto dq_norm_disp_high(const float value) noexcept -> auto &;
+  constexpr auto dq_depth_occ_map_threshold_default(const std::uint32_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
@@ -326,8 +326,8 @@ public:
   auto miv_view_params_update_intrinsics() const noexcept -> const MivViewParamsUpdateIntrinsics &;
   constexpr auto aps_extension2_flag() const noexcept { return false; }
 
-  constexpr auto &aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept;
-  constexpr auto &aps_miv_view_params_list_present_flag(const bool value) noexcept;
+  constexpr auto aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto aps_miv_view_params_list_present_flag(const bool value) noexcept -> auto &;
   auto aps_miv_view_params_list_update_mode(const MvpUpdateMode value) noexcept
       -> AdaptationParameterSetRBSP &;
   [[nodiscard]] constexpr auto miv_view_params_list() noexcept -> MivViewParamsList &;

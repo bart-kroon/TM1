@@ -43,8 +43,8 @@ public:
   SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   SubBlockCuller(const SubBlockCuller &) = delete;
   SubBlockCuller(SubBlockCuller &&) = default;
-  SubBlockCuller &operator=(const SubBlockCuller &) = delete;
-  SubBlockCuller &operator=(SubBlockCuller &&) = default;
+  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
+  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
   ~SubBlockCuller() override = default;
 
   // Do sub-block culling and update the PatchIdMap

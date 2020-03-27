@@ -72,7 +72,7 @@ public:
   explicit SampleStreamVpccUnit(std::string ssvu_vpcc_unit);
 
   auto ssvu_vpcc_unit_size() const noexcept { return m_ssvu_vpcc_unit.size(); }
-  const auto &ssvu_vpcc_unit() const noexcept { return m_ssvu_vpcc_unit; }
+  auto ssvu_vpcc_unit() const noexcept -> const auto & { return m_ssvu_vpcc_unit; }
 
   friend auto operator<<(std::ostream &stream, const SampleStreamVpccUnit &x) -> std::ostream &;
 

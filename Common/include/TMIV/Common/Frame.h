@@ -85,8 +85,8 @@ public:
     that.m_width = 0;
     that.m_height = 0;
   }
-  Frame &operator=(const Frame &) = default;
-  Frame &operator=(Frame &&that) noexcept {
+  auto operator=(const Frame &) -> Frame & = default;
+  auto operator=(Frame &&that) noexcept -> Frame & {
     m_width = that.m_width;
     m_height = that.m_height;
     m_planes = std::move(that.m_planes);
@@ -102,22 +102,22 @@ public:
 
   void resize(int w, int h);
 
-  std::array<plane_type, nb_plane> &getPlanes() { return m_planes; }
-  const std::array<plane_type, nb_plane> &getPlanes() const { return m_planes; }
+  auto getPlanes() -> std::array<plane_type, nb_plane> & { return m_planes; }
+  auto getPlanes() const -> const std::array<plane_type, nb_plane> & { return m_planes; }
 
-  const plane_type &getPlane(int id) const { return m_planes[id]; }
-  plane_type &getPlane(int id) { return m_planes[id]; }
-  int getWidth() const { return m_width; }
-  int getHeight() const { return m_height; }
-  Vec2i getSize() const { return Vec2i{m_width, m_height}; }
-  int getMemorySize() const {
+  auto getPlane(int id) const -> const plane_type & { return m_planes[id]; }
+  auto getPlane(int id) -> plane_type & { return m_planes[id]; }
+  auto getWidth() const -> int { return m_width; }
+  auto getHeight() const -> int { return m_height; }
+  auto getSize() const -> Vec2i { return Vec2i{m_width, m_height}; }
+  auto getMemorySize() const -> int {
     return detail::PixelFormatHelper<FORMAT>::getMemorySize(m_width, m_height);
   }
-  int getDiskSize() const {
+  auto getDiskSize() const -> int {
     return detail::PixelFormatHelper<FORMAT>::getDiskSize(m_width, m_height);
   }
-  static constexpr int getNumberOfPlanes() { return nb_plane; }
-  static constexpr int getBitDepth() { return bitDepth; }
+  static constexpr auto getNumberOfPlanes() -> int { return nb_plane; }
+  static constexpr auto getBitDepth() -> int { return bitDepth; }
 
   void read(std::istream &is, bool vFlip = false);
   void dump(std::ostream &os, bool vFlip = false) const;

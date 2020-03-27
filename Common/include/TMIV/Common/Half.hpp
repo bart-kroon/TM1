@@ -73,7 +73,7 @@ inline Half::Half(float value) {
   }
 }
 
-inline Half Half::decode(uint16_t code) {
+inline auto Half::decode(uint16_t code) -> Half {
   Half result;
   if ((code & 0x7FFFU) != 0 && ((code & 0x7C00U) == 0 || (code & 0x7C00U) == 0x7C00)) {
     throw HalfError(code);

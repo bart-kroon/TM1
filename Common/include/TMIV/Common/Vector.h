@@ -56,54 +56,62 @@ public:
   explicit VectorInterface(const A &a) : A(a) {}
   explicit VectorInterface(A &&a) : A(std::move(a)) {}
   using A::operator=;
-  VectorInterface &operator=(const A &a) {
+  auto operator=(const A &a) -> VectorInterface & {
     A::operator=(a);
     return *this;
   }
-  VectorInterface &operator=(A &&a) {
+  auto operator=(A &&a) -> VectorInterface & {
     A::operator=(std::move(a));
     return *this;
   }
   //! \brief Returns the number of rows of the matrix.
-  constexpr size_type m() const { return A::size(0); }
+  constexpr auto m() const -> size_type { return A::size(0); }
   //! \brief Returns the number of columns of the matrix.
-  constexpr size_type n() const { return 1; }
+  constexpr auto n() const -> size_type { return 1; }
   //! \brief Overloaded resize operator.
   using A::resize;
   void resize(size_type a, size_type /*unused*/ = 1) { A::resize({a}); }
   //! \brief Returns an iterator to the first element of the ith row.
-  const_row_iterator row_begin(size_type i) const { return const_row_iterator(A::data() + i); }
-  row_iterator row_begin(size_type i) { return row_iterator(A::data() + i); }
+  auto row_begin(size_type i) const -> const_row_iterator {
+    return const_row_iterator(A::data() + i);
+  }
+  auto row_begin(size_type i) -> row_iterator { return row_iterator(A::data() + i); }
   //! \brief Returns a const iterator to the first element of the ith row.
-  const_row_iterator crow_begin(size_type i) const { return const_row_iterator(A::data() + i); }
+  auto crow_begin(size_type i) const -> const_row_iterator {
+    return const_row_iterator(A::data() + i);
+  }
   //! \brief Returns an iterator to the first element after the end of the ith
   //! row.
-  const_row_iterator row_end(size_type i) const { return const_row_iterator(A::data() + (i + 1)); }
-  row_iterator row_end(size_type i) { return row_iterator(A::data() + (i + 1)); }
+  auto row_end(size_type i) const -> const_row_iterator {
+    return const_row_iterator(A::data() + (i + 1));
+  }
+  auto row_end(size_type i) -> row_iterator { return row_iterator(A::data() + (i + 1)); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! ith row.
-  const_row_iterator crow_end(size_type i) const { return const_row_iterator(A::data() + (i + 1)); }
+  auto crow_end(size_type i) const -> const_row_iterator {
+    return const_row_iterator(A::data() + (i + 1));
+  }
   //! \brief Returns an iterator to the first element of the jth column.
-  const_column_iterator col_begin(size_type /*unused*/ = 0) const { return A::begin(); }
-  column_iterator col_begin(size_type /*unused*/ = 0) { return A::begin(); }
+  auto col_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::begin(); }
+  auto col_begin(size_type /*unused*/ = 0) -> column_iterator { return A::begin(); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  const_column_iterator ccol_begin(size_type /*unused*/ = 0) const { return A::cbegin(); }
+  auto ccol_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cbegin(); }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  const_column_iterator col_end(size_type /*unused*/ = 0) const { return A::end(); }
-  column_iterator col_end(size_type /*unused*/ = 0) { return A::end(); }
+  auto col_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::end(); }
+  auto col_end(size_type /*unused*/ = 0) -> column_iterator { return A::end(); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  const_column_iterator ccol_end(size_type /*unused*/ = 0) const { return A::cend(); }
+  auto ccol_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cend(); }
   //! \brief Getters.
-  typename A::value_type x() const { return A::operator[](0); }
-  typename A::value_type y() const { return A::operator[](1); }
-  typename A::value_type z() const { return A::operator[](2); }
-  typename A::value_type w() const { return A::operator[](3); }
-  typename A::value_type &x() { return A::operator[](0); }
-  typename A::value_type &y() { return A::operator[](1); }
-  typename A::value_type &z() { return A::operator[](2); }
-  typename A::value_type &w() { return A::operator[](3); }
+  auto x() const -> typename A::value_type { return A::operator[](0); }
+  auto y() const -> typename A::value_type { return A::operator[](1); }
+  auto z() const -> typename A::value_type { return A::operator[](2); }
+  auto w() const -> typename A::value_type { return A::operator[](3); }
+  auto x() -> typename A::value_type & { return A::operator[](0); }
+  auto y() -> typename A::value_type & { return A::operator[](1); }
+  auto z() -> typename A::value_type & { return A::operator[](2); }
+  auto w() -> typename A::value_type & { return A::operator[](3); }
 };
 
 namespace stack {
@@ -117,7 +125,7 @@ template <typename T> using Vec6 = Vector<T, 6>;
 
 // Stream out
 template <typename T, size_type M>
-std::ostream &operator<<(std::ostream &stream, const Vector<T, M> &v) {
+auto operator<<(std::ostream &stream, const Vector<T, M> &v) -> std::ostream & {
   const char *sep = "[";
   for (const auto &x : v) {
     stream << sep << x;
@@ -128,7 +136,7 @@ std::ostream &operator<<(std::ostream &stream, const Vector<T, M> &v) {
 
 //! \brief Returns the cross-product of a and b.
 template <typename T, typename U>
-Vec3<decltype(T(0) * U(0))> cross(const Vec3<T> &a, const Vec3<U> &b) {
+auto cross(const Vec3<T> &a, const Vec3<U> &b) -> Vec3<decltype(T(0) * U(0))> {
   Vec3<decltype(T(0) * U(0))> out;
 
   out[0] = a[1] * b[2] - a[2] * b[1];
@@ -147,7 +155,7 @@ decltype(T(0) * U(0) * V(0)) triple(const Vec3<T> &a, const Vec3<U> &b, const Ve
 //! \brief Returns the solid angle captured by the 3 vertices given as
 //! parameters
 template <typename T, typename U, typename V>
-double solid(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) {
+auto solid(const Vec3<T> &a, const Vec3<U> &b, const Vec3<V> &c) -> double {
   using std::abs;
   using std::atan;
   double na = norm(a), nb = norm(b), nc = norm(c);
@@ -232,7 +240,7 @@ template <typename V> auto norm_inf(const V &v) {
 }
 //! \brief Returns v / ||v|| and optionally ||v||.
 template <typename V, typename U = decltype(std::abs(std::declval<typename V::value_type>()))>
-V unit(const V &v, U *n = nullptr) {
+auto unit(const V &v, U *n = nullptr) -> V {
   U m = norm(v);
   if (n) {
     *n = m;
@@ -241,7 +249,7 @@ V unit(const V &v, U *n = nullptr) {
 }
 //! \brief Normalizes v and optionally returns ||v||.
 template <typename V, typename U = decltype(std::abs(std::declval<typename V::value_type>()))>
-V &normalize(V &v, U *n = nullptr) {
+auto normalize(V &v, U *n = nullptr) -> V & {
   U m = norm(v);
   if (n) {
     *n = m;

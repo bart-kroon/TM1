@@ -72,14 +72,14 @@ struct PatchParams {
   auto pduDepthOccMapThreshold(const std::uint16_t value) noexcept -> PatchParams &;
 
   // Is the patch rotated such that width and height swap?
-  bool isRotated() const;
+  auto isRotated() const -> bool;
 
   // Pixel position conversion from atlas to/from view
   auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;
   auto atlasToView(Common::Vec2i atlasPosition) const -> Common::Vec2i;
 
-  bool operator==(const PatchParams &other) const;
-  bool operator!=(const PatchParams &other) const { return !operator==(other); };
+  auto operator==(const PatchParams &other) const -> bool;
+  auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };
 
 private:
   Common::Vec2i m_pdu2dPos;

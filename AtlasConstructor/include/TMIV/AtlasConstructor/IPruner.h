@@ -43,8 +43,8 @@ public:
   IPruner() = default;
   IPruner(const IPruner &) = delete;
   IPruner(IPruner &&) = default;
-  IPruner &operator=(const IPruner &) = delete;
-  IPruner &operator=(IPruner &&) = default;
+  auto operator=(const IPruner &) -> IPruner & = delete;
+  auto operator=(IPruner &&) -> IPruner & = default;
   virtual ~IPruner() = default;
 
   virtual void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,

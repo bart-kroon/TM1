@@ -43,8 +43,8 @@ public:
   IViewOptimizer() = default;
   IViewOptimizer(const IViewOptimizer &) = default;
   IViewOptimizer(IViewOptimizer &&) = default;
-  IViewOptimizer &operator=(const IViewOptimizer &) = default;
-  IViewOptimizer &operator=(IViewOptimizer &&) = default;
+  auto operator=(const IViewOptimizer &) -> IViewOptimizer & = default;
+  auto operator=(IViewOptimizer &&) -> IViewOptimizer & = default;
   virtual ~IViewOptimizer() = default;
 
   using Output = std::pair<MivBitstream::IvSequenceParams, std::vector<bool>>;

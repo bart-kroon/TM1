@@ -59,74 +59,76 @@ public:
   explicit MatrixInterface(const A &a) : A(a) {}
   explicit MatrixInterface(A &&a) : A(std::move(a)) {}
   using A::operator=;
-  MatrixInterface &operator=(const A &a) {
+  auto operator=(const A &a) -> MatrixInterface & {
     A::operator=(a);
     return *this;
   }
-  MatrixInterface &operator=(A &&a) {
+  auto operator=(A &&a) -> MatrixInterface & {
     A::operator=(std::move(a));
     return *this;
   }
   //! \brief Returns the number of rows of the matrix.
-  size_type m() const { return A::size(0); }
+  auto m() const -> size_type { return A::size(0); }
   //! \brief Returns the number of columns of the matrix.
-  size_type n() const { return A::size(1); }
+  auto n() const -> size_type { return A::size(1); }
   //! \brief Returns the number of rows of the matrix.
-  size_type height() const { return A::size(0); }
+  auto height() const -> size_type { return A::size(0); }
   //! \brief Returns the number of columns of the matrix.
-  size_type width() const { return A::size(1); }
+  auto width() const -> size_type { return A::size(1); }
   //! \brief Returns the leading dimension of the matrix.
-  size_type lda() const { return A::size(1); }
+  auto lda() const -> size_type { return A::size(1); }
   //! \brief Overloaded resize operator.
   using A::resize;
   void resize(size_type a, size_type b) { A::resize({a, b}); }
   //! \brief Returns an iterator to the first element of the ith row.
-  const_row_iterator row_begin(size_type i) const { return A::template dim_begin<1>(i); }
-  row_iterator row_begin(size_type i) { return A::template dim_begin<1>(i); }
+  auto row_begin(size_type i) const -> const_row_iterator { return A::template dim_begin<1>(i); }
+  auto row_begin(size_type i) -> row_iterator { return A::template dim_begin<1>(i); }
   //! \brief Returns a const iterator to the first element of the ith row.
-  const_row_iterator crow_begin(size_type i) const { return A::template cdim_begin<1>(i); }
+  auto crow_begin(size_type i) const -> const_row_iterator { return A::template cdim_begin<1>(i); }
   //! \brief Returns an iterator to the first element after the end of the ith
   //! row.
-  const_row_iterator row_end(size_type i) const { return A::template dim_end<1>(i); }
-  row_iterator row_end(size_type i) { return A::template dim_end<1>(i); }
+  auto row_end(size_type i) const -> const_row_iterator { return A::template dim_end<1>(i); }
+  auto row_end(size_type i) -> row_iterator { return A::template dim_end<1>(i); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! ith row.
-  const_row_iterator crow_end(size_type i) const { return A::template cdim_end<1>(i); }
+  auto crow_end(size_type i) const -> const_row_iterator { return A::template cdim_end<1>(i); }
   //! \brief Returns an iterator to the first element of the jth column.
-  const_column_iterator col_begin(size_type j) const { return A::template dim_begin<0>(j); }
-  column_iterator col_begin(size_type j) { return A::template dim_begin<0>(j); }
+  auto col_begin(size_type j) const -> const_column_iterator { return A::template dim_begin<0>(j); }
+  auto col_begin(size_type j) -> column_iterator { return A::template dim_begin<0>(j); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  const_column_iterator ccol_begin(size_type j) const { return A::template cdim_begin<0>(j); }
+  auto ccol_begin(size_type j) const -> const_column_iterator {
+    return A::template cdim_begin<0>(j);
+  }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  const_column_iterator col_end(size_type j) const { return A::template dim_end<0>(j); }
-  column_iterator col_end(size_type j) { return A::template dim_end<0>(j); }
+  auto col_end(size_type j) const -> const_column_iterator { return A::template dim_end<0>(j); }
+  auto col_end(size_type j) -> column_iterator { return A::template dim_end<0>(j); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  const_column_iterator ccol_end(size_type j) const { return A::template cdim_end<0>(j); }
+  auto ccol_end(size_type j) const -> const_column_iterator { return A::template cdim_end<0>(j); }
   //! \brief Returns true if the matrix is a row.
-  bool isRow() const { return (m() == 1); }
+  auto isRow() const -> bool { return (m() == 1); }
   //! \brief Returns true if the matrix is a column.
-  bool isColumn() const { return (n() == 1); }
+  auto isColumn() const -> bool { return (n() == 1); }
   //! \brief Returns true if the matrix is symmetric.
-  bool isSymmetric() const {
+  auto isSymmetric() const -> bool {
     return (A::getProperty() == Matrix::Property::Symmetric) ||
            (A::getProperty() == Matrix::Property::Positive);
   }
   //! \brief Returns true if the matrix is hermitian.
-  bool isHermitian() const { return (A::getProperty() == Matrix::Property::Hermitian); }
+  auto isHermitian() const -> bool { return (A::getProperty() == Matrix::Property::Hermitian); }
   //! \brief Returns true if the matrix is positive.
-  bool isPositive() const { return (A::getProperty() == Matrix::Property::Positive); }
+  auto isPositive() const -> bool { return (A::getProperty() == Matrix::Property::Positive); }
   //! \brief Returns true if the matrix is lower.
-  bool isLower() const { return (A::getProperty() == Matrix::Property::Lower); }
+  auto isLower() const -> bool { return (A::getProperty() == Matrix::Property::Lower); }
   //! \brief Returns true if the matrix is upper.
-  bool isUpper() const { return (A::getProperty() == Matrix::Property::Upper); }
+  auto isUpper() const -> bool { return (A::getProperty() == Matrix::Property::Upper); }
   //! \brief Returns true if the matrix is triangular.
-  bool isTriangular() const {
+  auto isTriangular() const -> bool {
     return (A::getProperty() == Matrix::Property::Lower) ||
            (A::getProperty() == Matrix::Property::Upper);
   }
-  static MatrixInterface diag(const std::vector<typename A::value_type> &v) {
+  static auto diag(const std::vector<typename A::value_type> &v) -> MatrixInterface {
     MatrixInterface out;
 
     out.resize(v.size(), v.size());
@@ -165,11 +167,11 @@ template <typename T> using Mat = heap::Matrix<T>;
 
 //! \brief Returns the type of the transpose of the matrix given as input.
 template <typename T, Array::size_type M, Array::size_type N>
-stack::Matrix<T, N, M> transpose_type(stack::Matrix<T, M, N>);
-template <typename T> heap::Matrix<T> transpose_type(heap::Matrix<T>);
+auto transpose_type(stack::Matrix<T, M, N>) -> stack::Matrix<T, N, M>;
+template <typename T> auto transpose_type(heap::Matrix<T>) -> heap::Matrix<T>;
 
 //! \brief Returns the transpose of the matrix given as input.
-template <typename Mat1, typename Mat2> Mat2 &transpose(const Mat1 &in, Mat2 &out) {
+template <typename Mat1, typename Mat2> auto transpose(const Mat1 &in, Mat2 &out) -> Mat2 & {
   out.resize({in.n(), in.m()});
 
   if (in.isRow() || in.isColumn() || in.isSymmetric()) {
@@ -189,7 +191,7 @@ template <typename Mat> decltype(transpose_type(Mat())) transpose(const Mat &m) 
 }
 
 //! \brief Computes and returns the adjoint of the matrix a.
-template <typename Mat1, typename Mat2> Mat2 &adjoint(const Mat1 &in, Mat2 &out) {
+template <typename Mat1, typename Mat2> auto adjoint(const Mat1 &in, Mat2 &out) -> Mat2 & {
   out.resize({in.n(), in.m()});
 
   if (in.isRow() || in.isColumn()) {
@@ -255,13 +257,13 @@ template <typename Mat> void hermitianize(Mat &A, char mode = 'L') {
 }
 
 //! \brief Computes and returns the trace of the matrix a.
-template <typename Mat> typename Mat::value_type trace(const Mat &a) {
+template <typename Mat> auto trace(const Mat &a) -> typename Mat::value_type {
   return std::accumulate(a.diag_begin(), a.diag_end(), typename Mat::value_type(0));
 }
 
 //! \brief Constructs a block matrix from the matrices given as input.
 template <typename Mat1, typename Mat2>
-Mat2 &block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) {
+auto block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) -> Mat2 & {
   // Number of rows
   Array::size_type m0 = 0;
   for (auto iter = L.begin(); iter != L.end(); iter++) {
@@ -297,7 +299,8 @@ Mat2 &block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) {
 }
 
 template <typename Mat>
-heap::Matrix<typename Mat::value_type> block(std::initializer_list<std::initializer_list<Mat>> L) {
+auto block(std::initializer_list<std::initializer_list<Mat>> L)
+    -> heap::Matrix<typename Mat::value_type> {
   heap::Matrix<typename Mat::value_type> out;
   block(L, out);
   return out;
@@ -305,7 +308,7 @@ heap::Matrix<typename Mat::value_type> block(std::initializer_list<std::initiali
 
 //! \brief Replicates and tiles matrix a according to the dimension vector dim.
 template <typename Mat1, typename Mat2>
-Mat2 &repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a, Mat2 &out) {
+auto repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a, Mat2 &out) -> Mat2 & {
   out.resize({dim[0] * a.m(), dim[1] * a.n()});
 
   for (Array::size_type i = 0, i0 = 0; i < dim[0]; i++, i0 += a.m()) {
@@ -320,8 +323,8 @@ Mat2 &repmat(const std::array<Array::size_type, 2> &dim, const Mat1 &a, Mat2 &ou
 }
 
 template <typename Mat>
-heap::Matrix<typename Mat::value_type> repmat(const std::array<Array::size_type, 2> &dim,
-                                              const Mat &a) {
+auto repmat(const std::array<Array::size_type, 2> &dim, const Mat &a)
+    -> heap::Matrix<typename Mat::value_type> {
   heap::Matrix<typename Mat::value_type> out;
   repmat(dim, a, out);
   return out;

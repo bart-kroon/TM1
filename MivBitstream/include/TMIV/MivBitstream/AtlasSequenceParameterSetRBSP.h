@@ -82,13 +82,13 @@ public:
   auto masp_geometry_frame_width_minus1() const noexcept -> uint16_t;
   auto masp_geometry_frame_height_minus1() const noexcept -> uint16_t;
 
-  constexpr auto &masp_omaf_v1_compatible_flag(const bool value) noexcept;
-  constexpr auto &reset_masp_omaf_v1_compatible_flag() noexcept;
-  constexpr auto &masp_group_id(const unsigned value) noexcept;
-  constexpr auto &masp_auxiliary_atlas_flag(const bool value) noexcept;
-  constexpr auto &masp_depth_occ_map_threshold_flag(const bool value) noexcept;
-  constexpr auto &masp_geometry_frame_width_minus1(const std::uint16_t value) noexcept;
-  constexpr auto &masp_geometry_frame_height_minus1(const std::uint16_t value) noexcept;
+  constexpr auto masp_omaf_v1_compatible_flag(const bool value) noexcept -> auto &;
+  constexpr auto reset_masp_omaf_v1_compatible_flag() noexcept -> auto &;
+  constexpr auto masp_group_id(const unsigned value) noexcept -> auto &;
+  constexpr auto masp_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
+  constexpr auto masp_depth_occ_map_threshold_flag(const bool value) noexcept -> auto &;
+  constexpr auto masp_geometry_frame_width_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto masp_geometry_frame_height_minus1(const std::uint16_t value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const MivAtlasSequenceParams &) -> std::ostream &;
 
@@ -141,34 +141,37 @@ public:
   auto miv_atlas_sequence_params() const noexcept -> const MivAtlasSequenceParams &;
   constexpr auto asps_extension2_present_flag() const noexcept;
 
-  constexpr auto &asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept;
-  constexpr auto &asps_frame_width(const std::uint16_t value) noexcept;
-  constexpr auto &asps_frame_height(const std::uint16_t value) noexcept;
-  constexpr auto &asps_log2_patch_packing_block_size(const std::uint8_t value) noexcept;
-  constexpr auto &asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept;
-  constexpr auto &asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept;
-  constexpr auto &asps_long_term_ref_atlas_frames_flag(const bool value) noexcept;
+  constexpr auto asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_frame_width(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_frame_height(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_log2_patch_packing_block_size(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
+      -> auto &;
+  constexpr auto asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept
+      -> auto &;
+  constexpr auto asps_long_term_ref_atlas_frames_flag(const bool value) noexcept -> auto &;
   auto asps_num_ref_atlas_frame_lists_in_asps(const std::size_t value)
       -> AtlasSequenceParameterSetRBSP &;
   auto ref_list_struct(std::uint8_t rlsIdx, RefListStruct value) -> AtlasSequenceParameterSetRBSP &;
-  constexpr auto &asps_use_eight_orientations_flag(const bool value) noexcept;
-  constexpr auto &asps_extended_projection_enabled_flag(const bool value) noexcept;
+  constexpr auto asps_use_eight_orientations_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_extended_projection_enabled_flag(const bool value) noexcept -> auto &;
   auto asps_max_projections_minus1(const unsigned value) noexcept
       -> AtlasSequenceParameterSetRBSP &;
-  constexpr auto &asps_normal_axis_limits_quantization_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_normal_axis_max_delta_value_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_remove_duplicate_point_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_pixel_deinterleaving_flag(const bool value) noexcept;
-  constexpr auto &asps_patch_precedence_order_flag(const bool value) noexcept;
-  constexpr auto &asps_patch_size_quantizer_present_flag(const bool value) noexcept;
-  constexpr auto &asps_raw_patch_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_eom_patch_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_point_local_reconstruction_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_map_count_minus1(const std::uint8_t value) noexcept;
-  constexpr auto &asps_vui_parameters_present_flag(const bool value) noexcept;
-  constexpr auto &asps_extension_present_flag(const bool value) noexcept; // 23090-5 only
-  constexpr auto &asps_miv_extension_present_flag(const bool value) noexcept;
-  constexpr auto &asps_extension2_present_flag(const bool value) noexcept;
+  constexpr auto asps_normal_axis_limits_quantization_enabled_flag(const bool value) noexcept
+      -> auto &;
+  constexpr auto asps_normal_axis_max_delta_value_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_remove_duplicate_point_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_pixel_deinterleaving_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_patch_precedence_order_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_patch_size_quantizer_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_raw_patch_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_eom_patch_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_point_local_reconstruction_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_map_count_minus1(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_vui_parameters_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_extension_present_flag(const bool value) noexcept -> auto &; // 23090-5 only
+  constexpr auto asps_miv_extension_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_extension2_present_flag(const bool value) noexcept -> auto &;
 
   [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) -> RefListStruct &;
   [[nodiscard]] auto miv_atlas_sequence_params() noexcept -> MivAtlasSequenceParams &;

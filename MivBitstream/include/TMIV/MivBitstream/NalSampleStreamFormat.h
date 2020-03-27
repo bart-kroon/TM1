@@ -72,7 +72,7 @@ public:
   explicit SampleStreamNalUnit(std::string ssnu_nal_unit);
 
   auto ssnu_nal_unit_size() const noexcept { return m_ssnu_nal_unit.size(); }
-  const auto &ssnu_nal_unit() const noexcept { return m_ssnu_nal_unit; }
+  auto ssnu_nal_unit() const noexcept -> const auto & { return m_ssnu_nal_unit; }
 
   friend auto operator<<(std::ostream &stream, const SampleStreamNalUnit &x) -> std::ostream &;
 

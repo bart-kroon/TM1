@@ -87,7 +87,7 @@ public:
   AffineTransform(const MivBitstream::CameraExtrinsics &source,
                   const MivBitstream::CameraExtrinsics &target);
 
-  auto &translation() const { return m_t; }
+  auto translation() const -> auto & { return m_t; }
   auto operator()(Common::Vec3f x) const -> Common::Vec3f;
 
 private:
@@ -111,7 +111,7 @@ auto unprojectVertex(Common::Vec2f position, float depth, const MivBitstream::Ca
 auto projectVertex(const Common::Vec3f &position, const MivBitstream::CameraIntrinsics &ci)
     -> std::pair<Common::Vec2f, float>;
 
-inline bool isValidDepth(float d) { return (0.F < d); }
+inline auto isValidDepth(float d) -> bool { return (0.F < d); }
 
 using PointCloud = std::vector<Common::Vec3f>;
 using PointCloudList = std::vector<PointCloud>;
@@ -146,7 +146,7 @@ public:
   auto doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f;
   auto isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool;
   auto isInsideViewport(const Common::Vec2f &p) const -> bool;
-  bool isValidDepth(float d) const;
+  auto isValidDepth(float d) const -> bool;
   auto getAngularResolution() const -> float;
   auto getDepthRange() const -> Common::Vec2f;
   auto getRadialRange() const -> Common::Vec2f;

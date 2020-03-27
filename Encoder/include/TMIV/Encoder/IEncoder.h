@@ -44,8 +44,8 @@ public:
   IEncoder() = default;
   IEncoder(const IEncoder &) = delete;
   IEncoder(IEncoder &&) = default;
-  IEncoder &operator=(const IEncoder &) = delete;
-  IEncoder &operator=(IEncoder &&) = default;
+  auto operator=(const IEncoder &) -> IEncoder & = delete;
+  auto operator=(IEncoder &&) -> IEncoder & = default;
   virtual ~IEncoder() = default;
 
   virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)

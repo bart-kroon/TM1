@@ -52,30 +52,31 @@ constexpr auto ProfileTierLevel::ptl_profile_reconstruction_idc() const noexcept
 
 constexpr auto ProfileTierLevel::ptl_level_idc() const noexcept { return m_ptl_level_idc; }
 
-constexpr auto &ProfileTierLevel::ptl_tier_flag(bool value) noexcept {
+constexpr auto ProfileTierLevel::ptl_tier_flag(bool value) noexcept -> auto & {
   m_ptl_tier_flag = value;
   return *this;
 }
 
-constexpr auto &
-ProfileTierLevel::ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc value) noexcept {
+constexpr auto ProfileTierLevel::ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc value) noexcept
+    -> auto & {
   m_ptl_profile_codec_group_idc = value;
   return *this;
 }
 
-constexpr auto &
-ProfileTierLevel::ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc value) noexcept {
+constexpr auto ProfileTierLevel::ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc value) noexcept
+    -> auto & {
   m_ptl_profile_pcc_toolset_idc = value;
   return *this;
 }
 
-constexpr auto &
-ProfileTierLevel::ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept {
+constexpr auto
+ProfileTierLevel::ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept
+    -> auto & {
   m_ptl_profile_reconstruction_idc = value;
   return *this;
 }
 
-constexpr auto &ProfileTierLevel::ptl_level_idc(PtlLevelIdc value) noexcept {
+constexpr auto ProfileTierLevel::ptl_level_idc(PtlLevelIdc value) noexcept -> auto & {
   m_ptl_level_idc = value;
   return *this;
 }
@@ -96,24 +97,26 @@ constexpr auto OccupancyInformation::oi_occupancy_MSB_align_flag() const noexcep
   return m_oi_occupancy_MSB_align_flag;
 }
 
-constexpr auto &OccupancyInformation::oi_occupancy_codec_id(std::uint8_t value) noexcept {
+constexpr auto OccupancyInformation::oi_occupancy_codec_id(std::uint8_t value) noexcept -> auto & {
   m_oi_occupancy_codec_id = value;
   return *this;
 }
 
-constexpr auto &
-OccupancyInformation::oi_lossy_occupancy_map_compression_threshold(std::uint8_t value) noexcept {
+constexpr auto
+OccupancyInformation::oi_lossy_occupancy_map_compression_threshold(std::uint8_t value) noexcept
+    -> auto & {
   m_oi_lossy_occupancy_map_compression_threshold = value;
   return *this;
 }
 
-constexpr auto &
-OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept {
+constexpr auto
+OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept
+    -> auto & {
   m_oi_occupancy_nominal_2d_bitdepth_minus1 = value;
   return *this;
 }
 
-constexpr auto &OccupancyInformation::oi_occupancy_MSB_align_flag(bool value) noexcept {
+constexpr auto OccupancyInformation::oi_occupancy_MSB_align_flag(bool value) noexcept -> auto & {
   m_oi_occupancy_MSB_align_flag = value;
   return *this;
 }
@@ -134,24 +137,25 @@ constexpr auto GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1()
   return m_gi_geometry_3d_coordinates_bitdepth_minus1;
 }
 
-constexpr auto &GeometryInformation::gi_geometry_codec_id(std::uint8_t value) noexcept {
+constexpr auto GeometryInformation::gi_geometry_codec_id(std::uint8_t value) noexcept -> auto & {
   m_gi_geometry_codec_id = value;
   return *this;
 }
 
-constexpr auto &
-GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept {
+constexpr auto
+GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept -> auto & {
   m_gi_geometry_nominal_2d_bitdepth_minus1 = value;
   return *this;
 }
 
-constexpr auto &GeometryInformation::gi_geometry_MSB_align_flag(bool value) noexcept {
+constexpr auto GeometryInformation::gi_geometry_MSB_align_flag(bool value) noexcept -> auto & {
   m_gi_geometry_MSB_align_flag = value;
   return *this;
 }
 
-constexpr auto &
-GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept {
+constexpr auto
+GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept
+    -> auto & {
   m_gi_geometry_3d_coordinates_bitdepth_minus1 = value;
   return *this;
 }
@@ -172,21 +176,22 @@ constexpr auto MivSequenceParams::msp_max_entities_minus1() const noexcept {
   return m_msp_max_entities_minus1;
 }
 
-constexpr auto &MivSequenceParams::msp_depth_low_quality_flag(const bool value) noexcept {
+constexpr auto MivSequenceParams::msp_depth_low_quality_flag(const bool value) noexcept -> auto & {
   m_msp_depth_low_quality_flag = value;
   return *this;
 }
 
-constexpr auto &MivSequenceParams::msp_geometry_scale_enabled_flag(const bool value) noexcept {
+constexpr auto MivSequenceParams::msp_geometry_scale_enabled_flag(const bool value) noexcept
+    -> auto & {
   m_msp_geometry_scale_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &MivSequenceParams::msp_num_groups_minus1(const unsigned value) noexcept {
+constexpr auto MivSequenceParams::msp_num_groups_minus1(const unsigned value) noexcept -> auto & {
   m_msp_num_groups_minus1 = value;
   return *this;
 }
-constexpr auto &MivSequenceParams::msp_max_entities_minus1(const unsigned value) noexcept {
+constexpr auto MivSequenceParams::msp_max_entities_minus1(const unsigned value) noexcept -> auto & {
   m_msp_max_entities_minus1 = value;
   return *this;
 }
@@ -216,25 +221,27 @@ constexpr auto VpccParameterSet::vps_extension_present_flag() const noexcept {
   return m_vps_extension_present_flag;
 }
 
-constexpr auto &VpccParameterSet::profile_tier_level(ProfileTierLevel value) noexcept {
+constexpr auto VpccParameterSet::profile_tier_level(ProfileTierLevel value) noexcept -> auto & {
   m_profile_tier_level = value;
   return *this;
 }
 
-constexpr auto &VpccParameterSet::vps_vpcc_parameter_set_id(std::uint8_t value) noexcept {
+constexpr auto VpccParameterSet::vps_vpcc_parameter_set_id(std::uint8_t value) noexcept -> auto & {
   m_vps_vpcc_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto &VpccParameterSet::vps_miv_mode_flag(const bool value) noexcept {
+constexpr auto VpccParameterSet::vps_miv_mode_flag(const bool value) noexcept -> auto & {
   m_vps_miv_mode_flag = value;
   return *this;
 }
 
-constexpr auto &VpccParameterSet::vps_extension_present_flag(bool value) noexcept {
+constexpr auto VpccParameterSet::vps_extension_present_flag(bool value) noexcept -> auto & {
   m_vps_extension_present_flag = value;
   return *this;
 }
 
-constexpr auto &VpccParameterSet::profile_tier_level() noexcept { return m_profile_tier_level; }
+constexpr auto VpccParameterSet::profile_tier_level() noexcept -> auto & {
+  return m_profile_tier_level;
+}
 } // namespace TMIV::MivBitstream

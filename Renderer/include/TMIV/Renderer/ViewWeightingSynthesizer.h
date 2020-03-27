@@ -48,8 +48,8 @@ public:
                            float blendingFactor, float overloadFactor, int filteringPass);
   ViewWeightingSynthesizer(const ViewWeightingSynthesizer &) = delete;
   ViewWeightingSynthesizer(ViewWeightingSynthesizer &&) = default;
-  ViewWeightingSynthesizer &operator=(const ViewWeightingSynthesizer &) = delete;
-  ViewWeightingSynthesizer &operator=(ViewWeightingSynthesizer &&) = default;
+  auto operator=(const ViewWeightingSynthesizer &) -> ViewWeightingSynthesizer & = delete;
+  auto operator=(ViewWeightingSynthesizer &&) -> ViewWeightingSynthesizer & = default;
   ~ViewWeightingSynthesizer() override;
 
   // Render from a texture atlas to a viewport

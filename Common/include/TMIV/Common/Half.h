@@ -47,7 +47,7 @@ public:
 
   /*implicit*/ operator float() const;
 
-  static Half decode(uint16_t code);
+  static auto decode(uint16_t code) -> Half;
   auto encode() const -> uint16_t;
 
 private:

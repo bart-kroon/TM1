@@ -44,8 +44,8 @@ public:
   Aggregator(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   Aggregator(const Aggregator &) = delete;
   Aggregator(Aggregator &&) = default;
-  Aggregator &operator=(const Aggregator &) = delete;
-  Aggregator &operator=(Aggregator &&) = default;
+  auto operator=(const Aggregator &) -> Aggregator & = delete;
+  auto operator=(Aggregator &&) -> Aggregator & = default;
   ~Aggregator() override = default;
 
   void prepareAccessUnit() override;

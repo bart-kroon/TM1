@@ -43,8 +43,8 @@ public:
   NoInpainter(const Common::Json & /* rootNode */, const Common::Json & /* componentNode */) {}
   NoInpainter(const NoInpainter &) = delete;
   NoInpainter(NoInpainter &&) = default;
-  NoInpainter &operator=(const NoInpainter &) = delete;
-  NoInpainter &operator=(NoInpainter &&) = default;
+  auto operator=(const NoInpainter &) -> NoInpainter & = delete;
+  auto operator=(NoInpainter &&) -> NoInpainter & = default;
   ~NoInpainter() override = default;
 
   void inplaceInpaint(Common::Texture444Depth10Frame & /* viewport */,

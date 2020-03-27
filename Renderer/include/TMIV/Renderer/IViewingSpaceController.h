@@ -43,8 +43,8 @@ public:
   IViewingSpaceController() = default;
   IViewingSpaceController(const IViewingSpaceController &) = delete;
   IViewingSpaceController(IViewingSpaceController &&) = default;
-  IViewingSpaceController &operator=(const IViewingSpaceController &) = delete;
-  IViewingSpaceController &operator=(IViewingSpaceController &&) = default;
+  auto operator=(const IViewingSpaceController &) -> IViewingSpaceController & = delete;
+  auto operator=(IViewingSpaceController &&) -> IViewingSpaceController & = default;
   virtual ~IViewingSpaceController() = default;
 
   // Viewing space fading

@@ -44,8 +44,8 @@ public:
   ICuller() = default;
   ICuller(const ICuller &) = delete;
   ICuller(ICuller &&) = default;
-  ICuller &operator=(const ICuller &) = delete;
-  ICuller &operator=(ICuller &&) = default;
+  auto operator=(const ICuller &) -> ICuller & = delete;
+  auto operator=(ICuller &&) -> ICuller & = default;
   virtual ~ICuller() = default;
 
   // Do culling and update the block to patch map for a single atlas

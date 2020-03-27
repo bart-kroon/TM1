@@ -101,7 +101,7 @@ public:
   template <typename Value>
   constexpr explicit VpccPayload(Value &&value) : m_payload{std::forward<Value>(value)} {}
 
-  constexpr auto &payload() const noexcept { return m_payload; }
+  constexpr auto payload() const noexcept -> auto & { return m_payload; }
 
   auto vpcc_parameter_set() const noexcept -> const VpccParameterSet &;
   auto atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream &;
@@ -127,8 +127,8 @@ public:
   VpccUnit(const VpccUnitHeader &vpcc_unit_header, Payload &&payload)
       : m_vpcc_unit_header{vpcc_unit_header}, m_vpcc_payload{std::forward<Payload>(payload)} {}
 
-  constexpr auto &vpcc_unit_header() const noexcept { return m_vpcc_unit_header; }
-  constexpr auto &vpcc_payload() const noexcept { return m_vpcc_payload; }
+  constexpr auto vpcc_unit_header() const noexcept -> auto & { return m_vpcc_unit_header; }
+  constexpr auto vpcc_payload() const noexcept -> auto & { return m_vpcc_payload; }
 
   friend auto operator<<(std::ostream &stream, const VpccUnit &x) -> std::ostream &;
 

@@ -81,7 +81,7 @@ auto ProjectionHelper<camType>::isInsideViewport(const Common::Vec2f &p) const -
 }
 
 template <MivBitstream::CiCamType camType>
-bool ProjectionHelper<camType>::isValidDepth(float d) const {
+auto ProjectionHelper<camType>::isValidDepth(float d) const -> bool {
   static constexpr auto far = 999.999F;
   return (TMIV::Renderer::isValidDepth(d) && (m_viewParams.dq.dq_norm_disp_low() <= (1.F / d)) &&
           (d < far));

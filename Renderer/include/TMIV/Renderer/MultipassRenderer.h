@@ -54,8 +54,8 @@ public:
   MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   MultipassRenderer(const MultipassRenderer &) = delete;
   MultipassRenderer(MultipassRenderer &&) = default;
-  MultipassRenderer &operator=(const MultipassRenderer &) = delete;
-  MultipassRenderer &operator=(MultipassRenderer &&) = default;
+  auto operator=(const MultipassRenderer &) -> MultipassRenderer & = delete;
+  auto operator=(MultipassRenderer &&) -> MultipassRenderer & = default;
   ~MultipassRenderer() override = default;
 
   // Render from a texture atlas to a viewport

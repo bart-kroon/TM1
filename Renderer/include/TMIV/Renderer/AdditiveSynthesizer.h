@@ -44,8 +44,8 @@ public:
                       float maxStretching);
   AdditiveSynthesizer(const AdditiveSynthesizer &) = delete;
   AdditiveSynthesizer(AdditiveSynthesizer &&) = default;
-  AdditiveSynthesizer &operator=(const AdditiveSynthesizer &) = delete;
-  AdditiveSynthesizer &operator=(AdditiveSynthesizer &&) = default;
+  auto operator=(const AdditiveSynthesizer &) -> AdditiveSynthesizer & = delete;
+  auto operator=(AdditiveSynthesizer &&) -> AdditiveSynthesizer & = default;
   ~AdditiveSynthesizer() override;
 
   // Render from a texture atlas to a viewport

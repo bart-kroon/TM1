@@ -43,8 +43,8 @@ public:
   DepthQualityAssessor(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
   DepthQualityAssessor(const DepthQualityAssessor &) = delete;
   DepthQualityAssessor(DepthQualityAssessor &&) = default;
-  DepthQualityAssessor &operator=(const DepthQualityAssessor &) = delete;
-  DepthQualityAssessor &operator=(DepthQualityAssessor &&) = default;
+  auto operator=(const DepthQualityAssessor &) -> DepthQualityAssessor & = delete;
+  auto operator=(DepthQualityAssessor &&) -> DepthQualityAssessor & = default;
   ~DepthQualityAssessor() override = default;
 
   auto isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,

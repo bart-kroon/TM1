@@ -48,8 +48,8 @@ public:
   Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   Encoder(const Encoder &) = delete;
   Encoder(Encoder &&) = default;
-  Encoder &operator=(const Encoder &) = delete;
-  Encoder &operator=(Encoder &&) = default;
+  auto operator=(const Encoder &) -> Encoder & = delete;
+  auto operator=(Encoder &&) -> Encoder & = default;
   ~Encoder() override = default;
 
   auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)

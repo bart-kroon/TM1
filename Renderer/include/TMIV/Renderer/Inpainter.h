@@ -43,8 +43,8 @@ public:
   Inpainter(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   Inpainter(const Inpainter &) = delete;
   Inpainter(Inpainter &&) = default;
-  Inpainter &operator=(const Inpainter &) = delete;
-  Inpainter &operator=(Inpainter &&) = default;
+  auto operator=(const Inpainter &) -> Inpainter & = delete;
+  auto operator=(Inpainter &&) -> Inpainter & = default;
   ~Inpainter() override = default;
 
   void inplaceInpaint(Common::Texture444Depth10Frame &viewport,

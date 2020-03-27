@@ -43,24 +43,24 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Decoder {
 EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json & /*rootNode*/,
                                                      const Json &componentNode) {
-  m_entity_filtering = false;
+  m_entityFiltering = false;
   if (auto subnode = componentNode.optional("EntityDecodeRange")) {
     m_entityDecodeRange = subnode.asIntVector<2>();
-    m_entity_filtering = true;
+    m_entityFiltering = true;
   }
 }
 
 void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
     MivBitstream::AccessUnit &frame) const {
-  if (m_entity_filtering && 0 < frame.vps->miv_sequence_params().msp_max_entities_minus1()) {
+  if (m_entityFiltering && 0 < frame.vps->miv_sequence_params().msp_max_entities_minus1()) {
     for (auto &atla : frame.atlas) {
       Vec2i sz = atla.blockToPatchMap.getSize();
       for (int y = 0; y < sz[1]; y++) {
         for (int x = 0; x < sz[0]; x++) {
           uint16_t patchId = atla.blockToPatchMap.getPlane(0)(y, x);
           if (patchId != unusedPatchId) {
-            int EntityId = static_cast<int>(*atla.patchParamsList[patchId].pduEntityId());
-            if (EntityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= EntityId) {
+            auto entityId = static_cast<int>(*atla.patchParamsList[patchId].pduEntityId());
+            if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
               atla.blockToPatchMap.getPlane(0)(y, x) = unusedPatchId;
             }
           }

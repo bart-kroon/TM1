@@ -48,7 +48,7 @@ public:
 
 private:
   Common::Vec2i m_entityDecodeRange;
-  bool m_entity_filtering{false};
+  bool m_entityFiltering{false};
 };
 } // namespace TMIV::Decoder
 

@@ -279,7 +279,7 @@ auto block(std::initializer_list<std::initializer_list<Mat1>> L, Mat2 &out) -> M
   out.resize({m0, n0});
 
   // Building
-  Array::size_type i0 = 0, j0;
+  Array::size_type i0 = 0, j0 = 0;
 
   for (auto iter1 = L.begin(); iter1 != L.end(); iter1++) {
     j0 = 0;

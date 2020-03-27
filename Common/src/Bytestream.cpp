@@ -57,7 +57,7 @@ auto readBytes(istream &stream, size_t bytes) -> uint64_t {
   VERIFY_BYTESTREAM(bytes <= 8);
   auto result = uint64_t{0};
   while (bytes-- > 0) {
-    char buffer;
+    char buffer = 0;
     stream.get(buffer);
     result = (result << 8) | uint8_t(buffer);
   }

@@ -155,7 +155,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   }
 
   int patchId = 0;
-  int clusteringMap_viewId;
+  int clusteringMap_viewId = 0;
   while (!clusterToPack.empty()) {
     const Cluster &cluster = clusterToPack.top();
 

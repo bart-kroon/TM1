@@ -155,7 +155,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
     auto camerasOutGroup = ViewParamsList{};
     if (gIndex < numGroups - 1) {
       numViewsPerGroup.push_back(int(floor(viewParamsList.size() / numGroups)));
-      int64_t maxElementIndex;
+      int64_t maxElementIndex = 0;
 
       if (dominantAxis == 0) {
         maxElementIndex = max_element(Tx.begin(), Tx.end()) - Tx.begin();

@@ -71,12 +71,12 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
       bool use1 = false;
       bool use2 = false;
 
-      int w0;
-      int h0;
-      int w1;
-      int h1;
-      int w2;
-      int h2;
+      int w0 = 0;
+      int h0 = 0;
+      int w1 = 0;
+      int h1 = 0;
+      int w2 = 0;
+      int h2 = 0;
 
       if (inpaintingType == 2) { // omnidirectional
         bool pointExistsInCassini = mapERP2Cassini(h, w) != -1;

@@ -70,8 +70,8 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
   // Decide whether number of high priority list is one
   bool isoneview = false;
 
-  size_t id_i;
-  size_t id_j;
+  size_t id_i = 0;
+  size_t id_j = 0;
 
   // Early termination: if any view is full-ERP, choose this view
   for (const auto &viewParams : viewParamsList) {

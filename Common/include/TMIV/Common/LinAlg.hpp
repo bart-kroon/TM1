@@ -533,7 +533,7 @@ template <typename T> auto det(shallow::Matrix<T> A, int *info) -> T {
 } // namespace detail
 
 template <typename MAT> auto det(const MAT &A, int *info) -> typename MAT::value_type {
-  int information;
+  int information = 0;
   typename MAT::value_type out = 0;
 
   if (A.isPositive()) {

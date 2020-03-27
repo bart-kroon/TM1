@@ -39,7 +39,7 @@
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
-#include <TMIV/MivBitstream/RecommendedViewport.h>
+#include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>

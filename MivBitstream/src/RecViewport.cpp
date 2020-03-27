@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/RecommendedViewport.h>
+#include <TMIV/MivBitstream/RecViewport.h>
 
 #include "verify.h"
 

@@ -33,11 +33,11 @@
 
 #include "test.h"
 
-#include <TMIV/MivBitstream/RecommendedViewport.h>
+#include <TMIV/MivBitstream/RecViewport.h>
 
 using namespace TMIV::MivBitstream;
 
-TEST_CASE("rec_viewport", "[Recommended Viewport SEI payload syntax]") {
+TEST_CASE("rec_viewport", "[Rec Viewport SEI payload syntax]") {
 
   SECTION("Example 1") {
     const auto x = RecViewport{{0, 1}};

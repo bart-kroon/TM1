@@ -4,9 +4,11 @@ add_library(DecoderLib
     "src/Decoder.cpp"
 	"src/Decoder.reg.hpp"
 	"src/GeometryScaler.cpp"
+	"src/EntityBasedPatchMapFilter.cpp"
 	"include/TMIV/Decoder/IDecoder.h"
 	"include/TMIV/Decoder/Decoder.h"
-	"include/TMIV/Decoder/GeometryScaler.h")
+	"include/TMIV/Decoder/GeometryScaler.h"
+	"include/TMIV/Decoder/EntityBasedPatchMapFilter.h")
 
 add_library(TMIV::DecoderLib
 	ALIAS DecoderLib)

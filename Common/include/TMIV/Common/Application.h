@@ -50,7 +50,7 @@ public:
   auto operator=(Application &&other) -> Application & = default;
   virtual ~Application() = default;
   void startTime();
-  void printTime();
+  void printTime() const;
   virtual void run() = 0;
 
 protected:

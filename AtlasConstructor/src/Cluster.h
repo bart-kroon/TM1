@@ -81,7 +81,8 @@ public:
   [[nodiscard]] auto height() const -> int { return (imax_ - imin_ + 1); }
   [[nodiscard]] auto getArea() const -> int { return width() * height(); }
   [[nodiscard]] auto getMinSize() const -> int { return std::min(width(), height()); }
-  [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int overlap) const -> std::pair<Cluster, Cluster>;
+  [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int overlap) const
+      -> std::pair<Cluster, Cluster>;
 
   auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                              int alignment, int minPatchSize,

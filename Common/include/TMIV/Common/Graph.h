@@ -65,7 +65,9 @@ public:
   [[nodiscard]] auto getNeighbour(NodeId node, std::size_t id) const -> Link<T> override {
     return m_link[node][id];
   }
-  [[nodiscard]] auto getNeighbourhood(NodeId id) const -> const std::vector<Link<T>> & { return m_link[id]; }
+  [[nodiscard]] auto getNeighbourhood(NodeId id) const -> const std::vector<Link<T>> & {
+    return m_link[id];
+  }
   //! \brief Connect vertices node and other and specify the connection weight.
   void connect(NodeId node, NodeId other, T weight, LinkType type) {
     m_link[node].push_back(Link<T>(other, weight));

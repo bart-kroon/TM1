@@ -240,7 +240,7 @@ auto GroupBasedEncoder::splitSequenceParams(size_t groupId,
   result.viewParamsList.clear();
 
   // Only include the views that are part of this group
-  for (const auto& [groupId_, viewId] : m_grouping) {
+  for (const auto &[groupId_, viewId] : m_grouping) {
     if (groupId_ == groupId) {
       result.viewParamsList.push_back(ivSequenceParams.viewParamsList[viewId]);
     }
@@ -253,7 +253,7 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
   auto result = MVD16Frame{};
 
   // Only include the views that are part of this group
-  for (const auto& [groupId_, viewId] : m_grouping) {
+  for (const auto &[groupId_, viewId] : m_grouping) {
     if (groupId_ == groupId) {
       result.push_back(views[viewId]);
     }

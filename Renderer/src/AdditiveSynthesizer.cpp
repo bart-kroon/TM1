@@ -176,7 +176,7 @@ public:
   }
 
   [[nodiscard]] auto rasterFrame(const AccessUnit &frame, const ViewParams &viewportParams,
-                   float compensation) const -> Rasterizer<Vec3f> {
+                                 float compensation) const -> Rasterizer<Vec3f> {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},

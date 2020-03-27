@@ -357,7 +357,7 @@ public:
   static constexpr auto diag_step() -> size_type {
     return step(1) + _Array<D - 1, T, N, I...>::diag_step();
   }
-  template <typename... J> [[nodiscard]] auto get(size_type first, J... next) const -> T {
+  template <typename... J>[[nodiscard]] auto get(size_type first, J... next) const -> T {
     return m_v[first].get(next...);
   }
   template <typename... J> auto get(size_type first, J... next) -> T & {
@@ -861,7 +861,8 @@ public:
   [[nodiscard]] auto cend() const -> const_iterator { return const_iterator(data() + size()); }
   //! \brief Returns an iterator along the Kth dimension to the first element of
   //! the hyperplane defined by next.
-  template <size_type K, typename... I> [[nodiscard]] auto dim_begin(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_begin(I... next) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(data() + offset<K>(0, next...), m_step[K + 1]);
   }
@@ -876,7 +877,8 @@ public:
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
   //! after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> [[nodiscard]] auto dim_end(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_end(I... next) const -> const_dim_iterator {
     return const_dim_iterator(data() + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
   template <size_type K, typename... I> auto dim_end(I... next) -> dim_iterator {
@@ -984,7 +986,8 @@ public:
   }
 
 protected:
-  template <size_type K> [[nodiscard]] auto offset(size_type i, size_type first = 0) const -> size_type {
+  template <size_type K>
+  [[nodiscard]] auto offset(size_type i, size_type first = 0) const -> size_type {
     return (i == K) ? first : first * m_step[i + 1];
   }
   template <size_type K, typename... I>
@@ -993,7 +996,8 @@ protected:
                     : first * m_step[i + 1] + offset<K>(i + 1, next...);
   }
   [[nodiscard]] auto pos(size_type /*unused*/, size_type first) const -> size_type { return first; }
-  template <typename... I> [[nodiscard]] auto pos(size_type i, size_type first, I... next) const -> size_type {
+  template <typename... I>
+  [[nodiscard]] auto pos(size_type i, size_type first, I... next) const -> size_type {
     return first * m_step[i] + pos(i + 1, next...);
   }
 };
@@ -1187,7 +1191,8 @@ public:
   [[nodiscard]] auto cend() const -> const_iterator { return const_iterator(m_data + size()); }
   //! \brief Returns an iterator along the Kth dimension to the first element of
   //! the hyperplane defined by next.
-  template <size_type K, typename... I> [[nodiscard]] auto dim_begin(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_begin(I... next) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(m_data + offset<K>(0, next...), m_step[K + 1]);
   }
@@ -1202,7 +1207,8 @@ public:
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
   //! after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> [[nodiscard]] auto dim_end(I... next) const -> const_dim_iterator {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_end(I... next) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(m_data + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
@@ -1297,7 +1303,8 @@ public:
   }
 
 protected:
-  template <size_type K> [[nodiscard]] auto offset(size_type i, size_type first = 0) const -> size_type {
+  template <size_type K>
+  [[nodiscard]] auto offset(size_type i, size_type first = 0) const -> size_type {
     return (i == K) ? first : first * m_step[i + 1];
   }
   template <size_type K, typename... I>
@@ -1306,7 +1313,8 @@ protected:
                     : first * m_step[i + 1] + offset<K>(i + 1, next...);
   }
   [[nodiscard]] auto pos(size_type /*unused*/, size_type first) const -> size_type { return first; }
-  template <typename... I> [[nodiscard]] auto pos(size_type i, size_type first, I... next) const -> size_type {
+  template <typename... I>
+  [[nodiscard]] auto pos(size_type i, size_type first, I... next) const -> size_type {
     return first * m_step[i] + pos(i + 1, next...);
   }
 };

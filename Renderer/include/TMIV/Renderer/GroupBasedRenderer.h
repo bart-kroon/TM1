@@ -59,7 +59,7 @@ public:
 
   // Render from a texture atlas to a viewport
   [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::ViewParams &viewportParams) const
+                                 const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 
 private:
@@ -67,7 +67,7 @@ private:
 
   // Render multiple groups
   [[nodiscard]] auto renderPass(GroupIdMask groupIdMask, const MivBitstream::AccessUnit &frame,
-                  const MivBitstream::ViewParams &viewportParams) const
+                                const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame;
 
   // Determine group render order (multipass rendering)

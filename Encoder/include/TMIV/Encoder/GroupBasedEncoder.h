@@ -76,8 +76,8 @@ protected:
 
 protected:
   // Split per-group sequence parameters
-  [[nodiscard]] virtual auto splitSequenceParams(size_t groupId,
-                                   const MivBitstream::IvSequenceParams &ivSequenceParams) const
+  [[nodiscard]] virtual auto
+  splitSequenceParams(size_t groupId, const MivBitstream::IvSequenceParams &ivSequenceParams) const
       -> MivBitstream::IvSequenceParams;
 
   // Split per-group views

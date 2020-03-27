@@ -76,7 +76,8 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   }
 
   // Projection equation
-  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
+  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor const {
     using std::asin;
     using std::atan2;
     const auto radius = norm(v.position);

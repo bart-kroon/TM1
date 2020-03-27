@@ -92,17 +92,25 @@ public:
     return const_row_iterator(A::data() + (i + 1));
   }
   //! \brief Returns an iterator to the first element of the jth column.
-  [[nodiscard]] auto col_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::begin(); }
+  [[nodiscard]] auto col_begin(size_type /*unused*/ = 0) const -> const_column_iterator {
+    return A::begin();
+  }
   auto col_begin(size_type /*unused*/ = 0) -> column_iterator { return A::begin(); }
   //! \brief Returns a const iterator to the first element of the jth column.
-  [[nodiscard]] auto ccol_begin(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cbegin(); }
+  [[nodiscard]] auto ccol_begin(size_type /*unused*/ = 0) const -> const_column_iterator {
+    return A::cbegin();
+  }
   //! \brief Returns an iterator to the first element after the end of the jth
   //! column.
-  [[nodiscard]] auto col_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::end(); }
+  [[nodiscard]] auto col_end(size_type /*unused*/ = 0) const -> const_column_iterator {
+    return A::end();
+  }
   auto col_end(size_type /*unused*/ = 0) -> column_iterator { return A::end(); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! jth column.
-  [[nodiscard]] auto ccol_end(size_type /*unused*/ = 0) const -> const_column_iterator { return A::cend(); }
+  [[nodiscard]] auto ccol_end(size_type /*unused*/ = 0) const -> const_column_iterator {
+    return A::cend();
+  }
   //! \brief Getters.
   [[nodiscard]] auto x() const -> typename A::value_type { return A::operator[](0); }
   [[nodiscard]] auto y() const -> typename A::value_type { return A::operator[](1); }

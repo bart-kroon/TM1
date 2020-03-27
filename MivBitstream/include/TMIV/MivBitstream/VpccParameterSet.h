@@ -176,7 +176,8 @@ public:
   [[nodiscard]] auto ai_attribute_type_id(std::uint8_t attributeId) const -> AiAttributeTypeId;
   [[nodiscard]] auto ai_attribute_codec_id(std::uint8_t attributeId) const -> std::uint8_t;
   [[nodiscard]] auto ai_attribute_dimension_minus1(std::uint8_t attributeId) const -> std::uint8_t;
-  [[nodiscard]] auto ai_attribute_nominal_2d_bitdepth_minus1(std::uint8_t attributeId) const -> std::uint8_t;
+  [[nodiscard]] auto ai_attribute_nominal_2d_bitdepth_minus1(std::uint8_t attributeId) const
+      -> std::uint8_t;
   [[nodiscard]] auto ai_attribute_MSB_align_flag() const noexcept -> bool;
 
   auto ai_attribute_count(std::uint8_t value) -> AttributeInformation &;
@@ -252,9 +253,12 @@ public:
   [[nodiscard]] auto vps_frame_width(std::uint8_t atlasId) const -> std::uint16_t;
   [[nodiscard]] auto vps_frame_height(std::uint8_t atlasId) const -> std::uint16_t;
   [[nodiscard]] auto vps_map_count_minus1(std::uint8_t atlasId) const -> std::uint8_t;
-  [[nodiscard]] auto occupancy_information(std::uint8_t atlasId) const -> const OccupancyInformation &;
-  [[nodiscard]] auto geometry_information(std::uint8_t atlasId) const -> const GeometryInformation &;
-  [[nodiscard]] auto attribute_information(std::uint8_t atlasId) const -> const AttributeInformation &;
+  [[nodiscard]] auto occupancy_information(std::uint8_t atlasId) const
+      -> const OccupancyInformation &;
+  [[nodiscard]] auto geometry_information(std::uint8_t atlasId) const
+      -> const GeometryInformation &;
+  [[nodiscard]] auto attribute_information(std::uint8_t atlasId) const
+      -> const AttributeInformation &;
   [[nodiscard]] auto vps_auxiliary_video_present_flag(std::uint8_t atlasId) const -> bool;
   [[nodiscard]] constexpr auto vps_extension_present_flag() const noexcept; // Only 23090-5
   [[nodiscard]] auto vps_miv_extension_flag() const noexcept -> bool;

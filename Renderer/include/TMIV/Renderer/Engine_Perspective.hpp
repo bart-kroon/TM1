@@ -57,7 +57,8 @@ template <> struct Engine<MivBitstream::CiCamType::perspective> {
   }
 
   // Projection equation
-  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
+  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor const {
     if (v.position.x() > 0.F) {
       auto uv = Common::Vec2f{-f_x * v.position.y() / v.position.x() + c_x,
                               -f_y * v.position.z() / v.position.x() + c_y};

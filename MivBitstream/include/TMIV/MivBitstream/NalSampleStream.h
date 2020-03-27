@@ -44,7 +44,9 @@ class NalSampleStream {
 public:
   explicit NalSampleStream(const SampleStreamNalHeader &ssnh) : m_ssnh{ssnh} {}
 
-  [[nodiscard]] constexpr auto sample_stream_nal_header() const noexcept -> auto & { return m_ssnh; }
+  [[nodiscard]] constexpr auto sample_stream_nal_header() const noexcept -> auto & {
+    return m_ssnh;
+  }
   constexpr auto sample_stream_nal_header() noexcept -> auto & { return m_ssnh; }
   [[nodiscard]] constexpr auto nal_units() const noexcept -> auto & { return m_nal_units; }
   constexpr auto nal_units() noexcept -> auto & { return m_nal_units; }

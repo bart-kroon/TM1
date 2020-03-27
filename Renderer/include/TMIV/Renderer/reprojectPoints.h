@@ -138,8 +138,12 @@ public:
   ProjectionHelper(ProjectionHelper &&) = default;
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = default;
   auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
-  [[nodiscard]] auto getViewParams() const -> const MivBitstream::ViewParams & { return m_viewParams; }
-  [[nodiscard]] auto getViewingPosition() const -> Common::Vec3f { return m_viewParams.ce.position(); }
+  [[nodiscard]] auto getViewParams() const -> const MivBitstream::ViewParams & {
+    return m_viewParams;
+  }
+  [[nodiscard]] auto getViewingPosition() const -> Common::Vec3f {
+    return m_viewParams.ce.position();
+  }
   [[nodiscard]] auto getViewingDirection() const -> Common::Vec3f;
   [[nodiscard]] auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
   [[nodiscard]] auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;

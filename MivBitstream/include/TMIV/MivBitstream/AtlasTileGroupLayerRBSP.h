@@ -292,7 +292,8 @@ public:
       : m_atlas_tile_group_header{header}, m_atlas_tile_group_data_unit{
                                                in_place, std::forward<AtgduArgs>(args)...} {}
 
-  [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept -> const AtlasTileGroupHeader &;
+  [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
+      -> const AtlasTileGroupHeader &;
   [[nodiscard]] auto atlas_tile_group_data_unit() const noexcept -> const AtlasTileGroupDataUnit &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileGroupLayerRBSP &x) -> std::ostream &;

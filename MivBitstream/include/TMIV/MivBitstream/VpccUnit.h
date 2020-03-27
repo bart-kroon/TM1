@@ -127,7 +127,9 @@ public:
   VpccUnit(const VpccUnitHeader &vpcc_unit_header, Payload &&payload)
       : m_vpcc_unit_header{vpcc_unit_header}, m_vpcc_payload{std::forward<Payload>(payload)} {}
 
-  [[nodiscard]] constexpr auto vpcc_unit_header() const noexcept -> auto & { return m_vpcc_unit_header; }
+  [[nodiscard]] constexpr auto vpcc_unit_header() const noexcept -> auto & {
+    return m_vpcc_unit_header;
+  }
   [[nodiscard]] constexpr auto vpcc_payload() const noexcept -> auto & { return m_vpcc_payload; }
 
   friend auto operator<<(std::ostream &stream, const VpccUnit &x) -> std::ostream &;

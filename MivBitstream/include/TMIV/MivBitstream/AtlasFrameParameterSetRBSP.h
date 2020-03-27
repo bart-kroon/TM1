@@ -48,7 +48,9 @@ public:
   friend auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x)
       -> std::ostream &;
 
-  [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept { return true; }
+  [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept {
+    return true;
+  }
 
   auto operator==(const AtlasFrameTileInformation &) const noexcept -> bool { return true; }
   auto operator!=(const AtlasFrameTileInformation &) const noexcept -> bool { return false; }

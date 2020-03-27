@@ -222,17 +222,21 @@ public:
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
 
   // Return camera extrinsics for the specified view ID.
-  [[nodiscard]] auto camera_extrinsics(const std::uint16_t viewId) const noexcept -> const CameraExtrinsics &;
+  [[nodiscard]] auto camera_extrinsics(const std::uint16_t viewId) const noexcept
+      -> const CameraExtrinsics &;
 
   // Return camera intrinsics for the specified view ID. The
   // mvp_intrinsic_params_equal_flag() case is handled for convenience.
-  [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept -> const CameraIntrinsics &;
+  [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept
+      -> const CameraIntrinsics &;
 
   // Return depth quantization for the specified view ID. The
   // mvp_depth_quantization_params_equal_flag() case is handled for convenience.
-  [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const noexcept -> const DepthQuantization &;
+  [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const noexcept
+      -> const DepthQuantization &;
 
-  [[nodiscard]] auto pruning_children(const std::uint16_t viewId) const noexcept -> const PruningChildren &;
+  [[nodiscard]] auto pruning_children(const std::uint16_t viewId) const noexcept
+      -> const PruningChildren &;
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
@@ -322,8 +326,10 @@ public:
   [[nodiscard]] constexpr auto aps_miv_view_params_list_present_flag() const noexcept;
   [[nodiscard]] auto aps_miv_view_params_list_update_mode() const noexcept -> MvpUpdateMode;
   [[nodiscard]] auto miv_view_params_list() const noexcept -> const MivViewParamsList &;
-  [[nodiscard]] auto miv_view_params_update_extrinsics() const noexcept -> const MivViewParamsUpdateExtrinsics &;
-  [[nodiscard]] auto miv_view_params_update_intrinsics() const noexcept -> const MivViewParamsUpdateIntrinsics &;
+  [[nodiscard]] auto miv_view_params_update_extrinsics() const noexcept
+      -> const MivViewParamsUpdateExtrinsics &;
+  [[nodiscard]] auto miv_view_params_update_intrinsics() const noexcept
+      -> const MivViewParamsUpdateIntrinsics &;
   [[nodiscard]] constexpr auto aps_extension2_flag() const noexcept { return false; }
 
   constexpr auto aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;

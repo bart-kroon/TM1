@@ -142,8 +142,8 @@ public:
         maxStretching{maxStretching_} {}
 
   // Construct a pixel accumulator from a single synthesized pixel
-  [[nodiscard]] auto construct(Attributes attributes, float normDisp, float rayAngle, float stretching) const
-      -> Accumulator {
+  [[nodiscard]] auto construct(Attributes attributes, float normDisp, float rayAngle,
+                               float stretching) const -> Accumulator {
     assert(normDisp >= 0.F);
     return {attributes, rayAngleWeight(rayAngle) * stretchingWeight(stretching), normDisp,
             stretching};
@@ -151,8 +151,8 @@ public:
 
 private:
   // Blend two pixels with known blending weights
-  [[nodiscard]] auto blendAccumulators(float w_a, const Accumulator &a, float w_b, const Accumulator &b) const
-      -> Accumulator {
+  [[nodiscard]] auto blendAccumulators(float w_a, const Accumulator &a, float w_b,
+                                       const Accumulator &b) const -> Accumulator {
     const float normDisp = blendValues(w_a, a.normDisp, w_b, b.normDisp);
     const float normWeight = a.normWeight * normDispWeight(a.normDisp - normDisp) +
                              b.normWeight * normDispWeight(b.normDisp - normDisp);
@@ -213,11 +213,15 @@ public:
 
   // Calculate the weight of a pixel based on cosine of the ray
   // angle between input and virtual ray only
-  [[nodiscard]] auto rayAngleWeight(float rayAngle) const -> float { return std::exp(-rayAngleParam * rayAngle); }
+  [[nodiscard]] auto rayAngleWeight(float rayAngle) const -> float {
+    return std::exp(-rayAngleParam * rayAngle);
+  }
 
   // Calculate the weight of a pixel based on normalized disparity
   // (diopters) only
-  [[nodiscard]] auto normDispWeight(float normDisp) const -> float { return std::exp(depthParam * normDisp); }
+  [[nodiscard]] auto normDispWeight(float normDisp) const -> float {
+    return std::exp(depthParam * normDisp);
+  }
 
   // Calculate the weight of a pixel based on stretching only
   [[nodiscard]] auto stretchingWeight(float stretching) const -> float {

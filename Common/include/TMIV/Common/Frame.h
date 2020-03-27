@@ -103,7 +103,9 @@ public:
   void resize(int w, int h);
 
   auto getPlanes() -> std::array<plane_type, nb_plane> & { return m_planes; }
-  [[nodiscard]] auto getPlanes() const -> const std::array<plane_type, nb_plane> & { return m_planes; }
+  [[nodiscard]] auto getPlanes() const -> const std::array<plane_type, nb_plane> & {
+    return m_planes;
+  }
 
   [[nodiscard]] auto getPlane(int id) const -> const plane_type & { return m_planes[id]; }
   auto getPlane(int id) -> plane_type & { return m_planes[id]; }

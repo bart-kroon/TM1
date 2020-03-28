@@ -141,26 +141,101 @@ constexpr auto &RecViewport::rec_viewport_ver_range(const float value) noexcept 
 }
 // functions
 auto RecViewport::operator==(const RecViewport &other) const noexcept -> bool {
-  if (this->rec_viewport_id() == other.rec_viewport_id() &&
-      this->rec_viewport_cancel_flag() == other.rec_viewport_cancel_flag() &&
-      this->rec_viewport_persistence_flag() == other.rec_viewport_persistence_flag() &&
-      this->rec_viewport_center_view_flag() == other.rec_viewport_center_view_flag() &&
-      this->rec_viewport_left_view_flag() == other.rec_viewport_left_view_flag() &&
-      this->rec_viewport_pos_x() == other.rec_viewport_pos_x() &&
-      this->rec_viewport_pos_y() == other.rec_viewport_pos_y() &&
-      this->rec_viewport_pos_z() == other.rec_viewport_pos_z() &&
-      this->rec_viewport_quat_x() == other.rec_viewport_quat_x() &&
-      this->rec_viewport_quat_y() == other.rec_viewport_quat_y() &&
-      this->rec_viewport_quat_z() == other.rec_viewport_quat_z() &&
-      this->rec_viewport_hor_range() == other.rec_viewport_hor_range() &&
-      this->rec_viewport_ver_range() == other.rec_viewport_ver_range())
-    return true;
-  else
-    return false;
+  bool Equal = true;
+
+  if (rec_viewport_id() != other.rec_viewport_id() ||
+      rec_viewport_cancel_flag() != other.rec_viewport_cancel_flag())
+    Equal = false;
+
+  if (m_rec_viewport_persistence_flag.has_value())
+    if (rec_viewport_persistence_flag() != other.rec_viewport_persistence_flag())
+      Equal = false;
+
+  if (m_rec_viewport_center_view_flag.has_value())
+    if (rec_viewport_persistence_flag() != other.rec_viewport_persistence_flag())
+      Equal = false;
+
+  if (m_rec_viewport_left_view_flag.has_value())
+    if (rec_viewport_left_view_flag() != other.rec_viewport_left_view_flag())
+      Equal = false;
+
+  if (m_rec_viewport_pos_x.has_value())
+    if (rec_viewport_pos_x() != other.rec_viewport_pos_x())
+      Equal = false;
+
+  if (m_rec_viewport_pos_y.has_value())
+    if (rec_viewport_pos_y() != other.rec_viewport_pos_y())
+      Equal = false;
+
+  if (m_rec_viewport_pos_z.has_value())
+    if (rec_viewport_pos_z() != other.rec_viewport_pos_z())
+      Equal = false;
+
+  if (m_rec_viewport_quat_x.has_value())
+    if (rec_viewport_quat_x() != other.rec_viewport_quat_x())
+      Equal = false;
+
+  if (m_rec_viewport_quat_y.has_value())
+    if (rec_viewport_quat_y() != other.rec_viewport_quat_y())
+      Equal = false;
+
+  if (m_rec_viewport_quat_z.has_value())
+    if (rec_viewport_quat_z() != other.rec_viewport_quat_z())
+      Equal = false;
+
+  if (m_rec_viewport_hor_range.has_value())
+    if (rec_viewport_hor_range() != other.rec_viewport_hor_range())
+      Equal = false;
+
+  if (m_rec_viewport_ver_range.has_value())
+    if (rec_viewport_ver_range() != other.rec_viewport_ver_range())
+      Equal = false;
+
+  return Equal;
 }
 
 auto RecViewport::operator!=(const RecViewport &other) const noexcept -> bool {
   return !operator==(other);
+}
+
+RecViewport::RecViewport(uint16_t value1, bool value2) {
+  rec_viewport_id(value1);
+  rec_viewport_cancel_flag(value2);
+}
+
+RecViewport::RecViewport(uint16_t value1, bool value2, bool value3, bool value4, float value5,
+                         float value6, float value7, float value8, float value9, float value10,
+                         float value11, float value12) {
+  rec_viewport_id(value1);
+  rec_viewport_cancel_flag(value2);
+  rec_viewport_persistence_flag(value3);
+  rec_viewport_center_view_flag(value4);
+  rec_viewport_pos_x(value5);
+  rec_viewport_pos_y(value6);
+  rec_viewport_pos_z(value7);
+  rec_viewport_quat_x(value8);
+  rec_viewport_quat_y(value9);
+  rec_viewport_quat_z(value10);
+  rec_viewport_hor_range(value11);
+  rec_viewport_ver_range(value12);
+}
+
+RecViewport::RecViewport(uint16_t value1, bool value2, bool value3, bool value4, bool value5,
+                         float value6, float value7, float value8, float value9, float value10,
+                         float value11, float value12, float value13) {
+  rec_viewport_id(value1);
+  rec_viewport_cancel_flag(value2);
+  rec_viewport_persistence_flag(value3);
+  rec_viewport_center_view_flag(value4);
+  rec_viewport_left_view_flag(value5);
+  rec_viewport_pos_x(value6);
+  rec_viewport_pos_y(value7);
+  rec_viewport_pos_z(value8);
+  rec_viewport_quat_x(value9);
+  rec_viewport_quat_y(value10);
+  rec_viewport_quat_z(value11);
+  rec_viewport_hor_range(value12);
+  rec_viewport_ver_range(value13);
 }
 
 auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {
@@ -168,21 +243,21 @@ auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {
   stream << "rec_viewport_id=" << x.rec_viewport_id() << '\n';
   stream << "rec_viewport_cancel_flag( " << seiId << " )=" << x.rec_viewport_cancel_flag() << '\n';
   if (!x.rec_viewport_cancel_flag()) {
-      stream << "rec_viewport_persistence_flag( " << seiId
-             << " )=" << x.rec_viewport_persistence_flag() << '\n';
-      stream << "rec_viewport_center_view_flag( " << seiId
-             << " )=" << x.rec_viewport_center_view_flag() << '\n';
-      if (!x.rec_viewport_center_view_flag())
-        stream << "rec_viewport_left_view_flag( " << seiId
-               << " )=" << x.rec_viewport_left_view_flag() << '\n';
-      stream << "rec_viewport_pos_x( " << seiId << " )=" << x.rec_viewport_pos_x() << '\n';
-      stream << "rec_viewport_pos_y( " << seiId << " )=" << x.rec_viewport_pos_y() << '\n';
-      stream << "rec_viewport_pos_z( " << seiId << " )=" << x.rec_viewport_pos_z() << '\n';
-      stream << "rec_viewport_quat_x( " << seiId << " )=" << x.rec_viewport_quat_x() << '\n';
-      stream << "rec_viewport_quat_y( " << seiId << " )=" << x.rec_viewport_quat_y() << '\n';
-      stream << "rec_viewport_quat_z( " << seiId << " )=" << x.rec_viewport_quat_z() << '\n';
-      stream << "rec_viewport_hor_range( " << seiId << " )=" << x.rec_viewport_hor_range() << '\n';
-      stream << "rec_viewport_ver_range( " << seiId << " )=" << x.rec_viewport_ver_range() << '\n';
+    stream << "rec_viewport_persistence_flag( " << seiId
+           << " )=" << x.rec_viewport_persistence_flag() << '\n';
+    stream << "rec_viewport_center_view_flag( " << seiId
+           << " )=" << x.rec_viewport_center_view_flag() << '\n';
+    if (!x.rec_viewport_center_view_flag())
+      stream << "rec_viewport_left_view_flag( " << seiId << " )=" << x.rec_viewport_left_view_flag()
+             << '\n';
+    stream << "rec_viewport_pos_x( " << seiId << " )=" << x.rec_viewport_pos_x() << '\n';
+    stream << "rec_viewport_pos_y( " << seiId << " )=" << x.rec_viewport_pos_y() << '\n';
+    stream << "rec_viewport_pos_z( " << seiId << " )=" << x.rec_viewport_pos_z() << '\n';
+    stream << "rec_viewport_quat_x( " << seiId << " )=" << x.rec_viewport_quat_x() << '\n';
+    stream << "rec_viewport_quat_y( " << seiId << " )=" << x.rec_viewport_quat_y() << '\n';
+    stream << "rec_viewport_quat_z( " << seiId << " )=" << x.rec_viewport_quat_z() << '\n';
+    stream << "rec_viewport_hor_range( " << seiId << " )=" << x.rec_viewport_hor_range() << '\n';
+    stream << "rec_viewport_ver_range( " << seiId << " )=" << x.rec_viewport_ver_range() << '\n';
   }
   return stream;
 }

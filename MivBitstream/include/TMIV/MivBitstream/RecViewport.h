@@ -70,6 +70,13 @@ public:
   constexpr auto &rec_viewport_hor_range(const float value) noexcept;
   constexpr auto &rec_viewport_ver_range(const float value) noexcept;
 
+  RecViewport() = default;
+  explicit RecViewport(std::uint16_t, bool);
+  explicit RecViewport(std::uint16_t, bool, bool, bool, float, float, float, float, float, float,
+                       float, float);
+  explicit RecViewport(std::uint16_t, bool, bool, bool, bool, float, float, float, float, float,
+                       float, float, float);
+
   friend auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream &;
 
   auto operator==(const RecViewport &other) const noexcept -> bool;

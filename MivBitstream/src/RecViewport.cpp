@@ -101,57 +101,27 @@ auto RecViewport::rec_viewport_ver_range() const noexcept -> float {
 }
 
 auto RecViewport::operator==(const RecViewport &other) const noexcept -> bool {
-  bool Equal = true;
-
   if (rec_viewport_id() != other.rec_viewport_id() ||
-      rec_viewport_cancel_flag() != other.rec_viewport_cancel_flag())
-    Equal = false;
-
-  if (m_rec_viewport_persistence_flag.has_value())
-    if (rec_viewport_persistence_flag() != other.rec_viewport_persistence_flag())
-      Equal = false;
-
-  if (m_rec_viewport_center_view_flag.has_value())
-    if (rec_viewport_persistence_flag() != other.rec_viewport_persistence_flag())
-      Equal = false;
-
-  if (m_rec_viewport_left_view_flag.has_value())
-    if (rec_viewport_left_view_flag() != other.rec_viewport_left_view_flag())
-      Equal = false;
-
-  if (m_rec_viewport_pos_x.has_value())
-    if (rec_viewport_pos_x() != other.rec_viewport_pos_x())
-      Equal = false;
-
-  if (m_rec_viewport_pos_y.has_value())
-    if (rec_viewport_pos_y() != other.rec_viewport_pos_y())
-      Equal = false;
-
-  if (m_rec_viewport_pos_z.has_value())
-    if (rec_viewport_pos_z() != other.rec_viewport_pos_z())
-      Equal = false;
-
-  if (m_rec_viewport_quat_x.has_value())
-    if (rec_viewport_quat_x() != other.rec_viewport_quat_x())
-      Equal = false;
-
-  if (m_rec_viewport_quat_y.has_value())
-    if (rec_viewport_quat_y() != other.rec_viewport_quat_y())
-      Equal = false;
-
-  if (m_rec_viewport_quat_z.has_value())
-    if (rec_viewport_quat_z() != other.rec_viewport_quat_z())
-      Equal = false;
-
-  if (m_rec_viewport_hor_range.has_value())
-    if (rec_viewport_hor_range() != other.rec_viewport_hor_range())
-      Equal = false;
-
-  if (m_rec_viewport_ver_range.has_value())
-    if (rec_viewport_ver_range() != other.rec_viewport_ver_range())
-      Equal = false;
-
-  return Equal;
+      rec_viewport_cancel_flag() != other.rec_viewport_cancel_flag()) {
+    return false;
+  }
+  if (rec_viewport_cancel_flag()) {
+    return true;
+  }
+  if (rec_viewport_persistence_flag() != other.rec_viewport_persistence_flag() ||
+      rec_viewport_persistence_flag() != other.rec_viewport_persistence_flag() ||
+      rec_viewport_pos_x() != other.rec_viewport_pos_x() ||
+      rec_viewport_pos_y() != other.rec_viewport_pos_y() ||
+      rec_viewport_pos_z() != other.rec_viewport_pos_z() ||
+      rec_viewport_quat_x() != other.rec_viewport_quat_x() ||
+      rec_viewport_quat_y() != other.rec_viewport_quat_y() ||
+      rec_viewport_quat_z() != other.rec_viewport_quat_z() ||
+      rec_viewport_hor_range() != other.rec_viewport_hor_range() ||
+      rec_viewport_ver_range() != other.rec_viewport_ver_range()) {
+    return false;
+  }
+  return rec_viewport_center_view_flag() ||
+         rec_viewport_left_view_flag() == other.rec_viewport_left_view_flag();
 }
 
 auto RecViewport::operator!=(const RecViewport &other) const noexcept -> bool {

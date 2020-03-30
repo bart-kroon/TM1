@@ -45,19 +45,19 @@ public:
   RecViewport() = default;
   explicit RecViewport(std::uint16_t viewportId, bool cancelFlag = true);
 
-  auto rec_viewport_id() const noexcept;
-  auto rec_viewport_cancel_flag() const noexcept;
-  auto rec_viewport_persistence_flag() const noexcept;
-  auto rec_viewport_center_view_flag() const noexcept;
-  auto rec_viewport_left_view_flag() const noexcept;
-  auto rec_viewport_pos_x() const noexcept;
-  auto rec_viewport_pos_y() const noexcept;
-  auto rec_viewport_pos_z() const noexcept;
-  auto rec_viewport_quat_x() const noexcept;
-  auto rec_viewport_quat_y() const noexcept;
-  auto rec_viewport_quat_z() const noexcept;
-  auto rec_viewport_hor_range() const noexcept;
-  auto rec_viewport_ver_range() const noexcept;
+  auto rec_viewport_id() const noexcept -> std::uint16_t;
+  auto rec_viewport_cancel_flag() const noexcept -> bool;
+  auto rec_viewport_persistence_flag() const noexcept -> bool;
+  auto rec_viewport_center_view_flag() const noexcept -> bool;
+  auto rec_viewport_left_view_flag() const noexcept -> bool;
+  auto rec_viewport_pos_x() const noexcept -> float;
+  auto rec_viewport_pos_y() const noexcept -> float;
+  auto rec_viewport_pos_z() const noexcept -> float;
+  auto rec_viewport_quat_x() const noexcept -> float;
+  auto rec_viewport_quat_y() const noexcept -> float;
+  auto rec_viewport_quat_z() const noexcept -> float;
+  auto rec_viewport_hor_range() const noexcept -> float;
+  auto rec_viewport_ver_range() const noexcept -> float;
 
   constexpr auto &rec_viewport_id(const std::uint16_t value) noexcept;
   constexpr auto &rec_viewport_cancel_flag(const bool value) noexcept;

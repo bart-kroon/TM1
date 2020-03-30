@@ -280,8 +280,8 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
   return stream;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRBSP &other) const
-    noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator==(
+    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
   return m_asps_atlas_sequence_parameter_set_id == other.m_asps_atlas_sequence_parameter_set_id &&
          m_asps_frame_width == other.m_asps_frame_width &&
          m_asps_frame_height == other.m_asps_frame_height &&
@@ -317,8 +317,8 @@ auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRB
          m_asps_extension2_present_flag == other.m_asps_extension2_present_flag;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator!=(const AtlasSequenceParameterSetRBSP &other) const
-    noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator!=(
+    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
   return !operator==(other);
 }
 

@@ -44,8 +44,8 @@ public:
   IAtlasConstructor() = default;
   IAtlasConstructor(const IAtlasConstructor &) = delete;
   IAtlasConstructor(IAtlasConstructor &&) = default;
-  IAtlasConstructor &operator=(const IAtlasConstructor &) = delete;
-  IAtlasConstructor &operator=(IAtlasConstructor &&) = default;
+  auto operator=(const IAtlasConstructor &) -> IAtlasConstructor & = delete;
+  auto operator=(IAtlasConstructor &&) -> IAtlasConstructor & = default;
   virtual ~IAtlasConstructor() = default;
 
   virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
@@ -55,7 +55,7 @@ public:
   virtual void pushFrame(Common::MVD16Frame transportViews) = 0;
   virtual auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD16Frame = 0;
-  virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
+  [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

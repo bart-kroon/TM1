@@ -43,13 +43,13 @@ public:
   IRenderer() = default;
   IRenderer(const IRenderer &) = delete;
   IRenderer(IRenderer &&) = default;
-  IRenderer &operator=(const IRenderer &) = delete;
-  IRenderer &operator=(IRenderer &&) = default;
+  auto operator=(const IRenderer &) -> IRenderer & = delete;
+  auto operator=(IRenderer &&) -> IRenderer & = default;
   virtual ~IRenderer() = default;
 
   // Render from a texture atlas to a viewport
-  virtual auto renderFrame(const MivBitstream::AccessUnit &frame,
-                           const MivBitstream::ViewParams &viewportParams) const
+  [[nodiscard]] virtual auto renderFrame(const MivBitstream::AccessUnit &frame,
+                                         const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame = 0;
 };
 } // namespace TMIV::Renderer

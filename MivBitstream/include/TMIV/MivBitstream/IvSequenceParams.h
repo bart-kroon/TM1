@@ -49,12 +49,12 @@ struct IvSequenceParams {
   std::optional<ViewingSpace> viewingSpace{};
 
   // Convenience function to access the MIV sequence params
-  auto msp() const noexcept -> const MivSequenceParams &;
+  [[nodiscard]] auto msp() const noexcept -> const MivSequenceParams &;
   auto msp() noexcept -> MivSequenceParams &;
 
-  friend std::ostream &operator<<(std::ostream &stream, const IvSequenceParams &x);
-  bool operator==(const IvSequenceParams &other) const;
-  bool operator!=(const IvSequenceParams &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const IvSequenceParams &x) -> std::ostream &;
+  auto operator==(const IvSequenceParams &other) const -> bool;
+  auto operator!=(const IvSequenceParams &other) const -> bool { return !operator==(other); }
 };
 } // namespace TMIV::MivBitstream
 

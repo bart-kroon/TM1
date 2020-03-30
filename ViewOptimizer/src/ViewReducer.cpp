@@ -70,11 +70,11 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
   // Decide whether number of high priority list is one
   bool isoneview = false;
 
-  size_t id_i;
-  size_t id_j;
+  size_t id_i = 0;
+  size_t id_j = 0;
 
   // Early termination: if any view is full-ERP, choose this view
-  for (auto &viewParams : viewParamsList) {
+  for (const auto &viewParams : viewParamsList) {
     const auto &ci = viewParams.ci;
     if (ci.ci_cam_type() == CiCamType::equirectangular) {
       if (abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min() - fullCycle) < 1e-6F) {
@@ -183,7 +183,7 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
     int id_center = 0;
     float distance = numeric_limits<float>::max();
 
-    for (auto &viewParams : viewParamsList) {
+    for (const auto &viewParams : viewParamsList) {
       x_center += viewParams.ce.ce_view_pos_x();
       y_center += viewParams.ce.ce_view_pos_y();
       z_center += viewParams.ce.ce_view_pos_z();

@@ -42,14 +42,14 @@ public:
   IAggregator() = default;
   IAggregator(const IAggregator &) = delete;
   IAggregator(IAggregator &&) = default;
-  IAggregator &operator=(const IAggregator &) = delete;
-  IAggregator &operator=(IAggregator &&) = default;
+  auto operator=(const IAggregator &) -> IAggregator & = delete;
+  auto operator=(IAggregator &&) -> IAggregator & = default;
   virtual ~IAggregator() = default;
 
   virtual void prepareAccessUnit() = 0;
   virtual void pushMask(const Common::MaskList &mask) = 0;
   virtual void completeAccessUnit() = 0;
-  virtual auto getAggregatedMask() const -> const Common::MaskList & = 0;
+  [[nodiscard]] virtual auto getAggregatedMask() const -> const Common::MaskList & = 0;
 };
 } // namespace TMIV::AtlasConstructor
 

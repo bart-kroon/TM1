@@ -56,14 +56,14 @@ class VpccUnitHeader {
 public:
   explicit VpccUnitHeader(VuhUnitType vuh_unit_type) : m_vuh_unit_type{vuh_unit_type} {}
 
-  constexpr auto vuh_unit_type() const noexcept { return m_vuh_unit_type; }
+  [[nodiscard]] constexpr auto vuh_unit_type() const noexcept { return m_vuh_unit_type; }
 
-  auto vuh_vpcc_parameter_set_id() const noexcept -> std::uint8_t;
-  auto vuh_atlas_id() const noexcept -> std::uint8_t;
-  auto vuh_attribute_index() const noexcept -> std::uint8_t;
-  auto vuh_attribute_dimension_index() const noexcept -> std::uint8_t;
-  auto vuh_map_index() const noexcept -> std::uint8_t;
-  auto vuh_raw_video_flag() const noexcept -> bool;
+  [[nodiscard]] auto vuh_vpcc_parameter_set_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto vuh_atlas_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto vuh_attribute_index() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto vuh_attribute_dimension_index() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto vuh_map_index() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto vuh_raw_video_flag() const noexcept -> bool;
 
   auto vuh_vpcc_parameter_set_id(const std::uint8_t value) noexcept -> VpccUnitHeader &;
   auto vuh_atlas_id(const std::uint8_t value) noexcept -> VpccUnitHeader &;
@@ -101,11 +101,11 @@ public:
   template <typename Value>
   constexpr explicit VpccPayload(Value &&value) : m_payload{std::forward<Value>(value)} {}
 
-  constexpr auto &payload() const noexcept { return m_payload; }
+  [[nodiscard]] constexpr auto payload() const noexcept -> auto & { return m_payload; }
 
-  auto vpcc_parameter_set() const noexcept -> const VpccParameterSet &;
-  auto atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream &;
-  auto video_sub_bitstream() const noexcept -> const VideoSubBitstream &;
+  [[nodiscard]] auto vpcc_parameter_set() const noexcept -> const VpccParameterSet &;
+  [[nodiscard]] auto atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream &;
+  [[nodiscard]] auto video_sub_bitstream() const noexcept -> const VideoSubBitstream &;
 
   friend auto operator<<(std::ostream &stream, const VpccPayload &x) -> std::ostream &;
 
@@ -127,8 +127,10 @@ public:
   VpccUnit(const VpccUnitHeader &vpcc_unit_header, Payload &&payload)
       : m_vpcc_unit_header{vpcc_unit_header}, m_vpcc_payload{std::forward<Payload>(payload)} {}
 
-  constexpr auto &vpcc_unit_header() const noexcept { return m_vpcc_unit_header; }
-  constexpr auto &vpcc_payload() const noexcept { return m_vpcc_payload; }
+  [[nodiscard]] constexpr auto vpcc_unit_header() const noexcept -> auto & {
+    return m_vpcc_unit_header;
+  }
+  [[nodiscard]] constexpr auto vpcc_payload() const noexcept -> auto & { return m_vpcc_payload; }
 
   friend auto operator<<(std::ostream &stream, const VpccUnit &x) -> std::ostream &;
 

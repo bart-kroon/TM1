@@ -63,42 +63,43 @@ public:
   Cluster(int viewId, int clusterId, int entityId);
   Cluster(const Cluster &) = default;
   Cluster(Cluster &&) = default;
-  Cluster &operator=(const Cluster &) = default;
-  Cluster &operator=(Cluster &&) = default;
+  auto operator=(const Cluster &) -> Cluster & = default;
+  auto operator=(Cluster &&) -> Cluster & = default;
   ~Cluster() = default;
 
   void push(int i, int j);
-  int getViewId() const { return viewId_; }
-  int getClusterId() const { return clusterId_; }
-  int getEntityId() const { return entityId_; }
-  int getNumActivePixels() const { return numActivePixels_; }
-  int imin() const { return imin_; }
-  int jmin() const { return jmin_; }
-  int imax() const { return imax_; }
-  int jmax() const { return jmax_; }
-  int getFilling() const { return filling_; }
-  int width() const { return (jmax_ - jmin_ + 1); }
-  int height() const { return (imax_ - imin_ + 1); }
-  int getArea() const { return width() * height(); }
-  int getMinSize() const { return std::min(width(), height()); }
-  std::pair<Cluster, Cluster> split(const ClusteringMap &clusteringMap, int overlap) const;
+  [[nodiscard]] auto getViewId() const -> int { return viewId_; }
+  [[nodiscard]] auto getClusterId() const -> int { return clusterId_; }
+  [[nodiscard]] auto getEntityId() const -> int { return entityId_; }
+  [[nodiscard]] auto getNumActivePixels() const -> int { return numActivePixels_; }
+  [[nodiscard]] auto imin() const -> int { return imin_; }
+  [[nodiscard]] auto jmin() const -> int { return jmin_; }
+  [[nodiscard]] auto imax() const -> int { return imax_; }
+  [[nodiscard]] auto jmax() const -> int { return jmax_; }
+  [[nodiscard]] auto getFilling() const -> int { return filling_; }
+  [[nodiscard]] auto width() const -> int { return (jmax_ - jmin_ + 1); }
+  [[nodiscard]] auto height() const -> int { return (imax_ - imin_ + 1); }
+  [[nodiscard]] auto getArea() const -> int { return width() * height(); }
+  [[nodiscard]] auto getMinSize() const -> int { return std::min(width(), height()); }
+  [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int overlap) const
+      -> std::pair<Cluster, Cluster>;
 
-  bool splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+  auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                              int alignment, int minPatchSize,
                              const std::array<std::deque<int>, 2> &min_h_agg,
-                             const std::array<std::deque<int>, 2> &max_h_agg) const;
-  bool splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             const std::array<std::deque<int>, 2> &max_h_agg) const -> bool;
+  auto splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                                int alignment, int minPatchSize,
                                const std::array<std::deque<int>, 2> &min_w_agg,
-                               const std::array<std::deque<int>, 2> &max_w_agg) const;
-  bool splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                             int alignment, int minPatchSize) const;
-  bool splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                               int alignment, int minPatchSize) const;
-  std::vector<Cluster> recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
-                                      int alignment, int minPatchSize) const;
+                               const std::array<std::deque<int>, 2> &max_w_agg) const -> bool;
+  auto splitCPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                             int alignment, int minPatchSize) const -> bool;
+  auto splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
+                               int alignment, int minPatchSize) const -> bool;
+  auto recursiveSplit(const ClusteringMap &clusteringMap, std::vector<Cluster> &out, int alignment,
+                      int minPatchSize) const -> std::vector<Cluster>;
 
-  static Cluster Empty() {
+  static auto Empty() -> Cluster {
     Cluster out;
     out.imin_ = 0;
     out.imax_ = 0;
@@ -106,12 +107,11 @@ public:
     out.jmax_ = 0;
     return out;
   }
-  static Cluster setEntityId(Cluster &c, int entityId);
-  static Cluster align(const Cluster &c, int alignment);
-  static Cluster merge(const Cluster &c1, const Cluster &c2);
-  static std::pair<ClusterList, ClusteringMap> retrieve(int viewId, const Common::Mask &maskMap,
-                                                        int firstClusterId = 0,
-                                                        bool shouldNotBeSplit = false);
+  static auto setEntityId(Cluster &c, int entityId) -> Cluster;
+  static auto align(const Cluster &c, int alignment) -> Cluster;
+  static auto merge(const Cluster &c1, const Cluster &c2) -> Cluster;
+  static auto retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId = 0,
+                       bool shouldNotBeSplit = false) -> std::pair<ClusterList, ClusteringMap>;
 };
 
 } // namespace TMIV::AtlasConstructor

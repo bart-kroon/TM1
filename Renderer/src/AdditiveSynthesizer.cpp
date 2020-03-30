@@ -65,7 +65,7 @@ public:
                                   const CameraExtrinsics &target) {
     vector<AffineTransform> result;
     result.reserve(viewParamsList.size());
-    for (auto &source : viewParamsList) {
+    for (const auto &source : viewParamsList) {
       result.emplace_back(source.ce, target);
     }
     return result;
@@ -175,8 +175,8 @@ public:
                  tuple{atlasColors(atlas)}};
   }
 
-  auto rasterFrame(const AccessUnit &frame, const ViewParams &viewportParams,
-                   float compensation) const -> Rasterizer<Vec3f> {
+  [[nodiscard]] auto rasterFrame(const AccessUnit &frame, const ViewParams &viewportParams,
+                                 float compensation) const -> Rasterizer<Vec3f> {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
@@ -185,7 +185,7 @@ public:
     // Pipeline mesh generation and rasterization
     future<void> runner = async(launch::deferred, []() {});
 
-    for (auto &atlas : frame.atlas) {
+    for (const auto &atlas : frame.atlas) {
       // Generate a reprojected mesh
       auto [vertices, triangles, attributes] = unprojectAtlas(atlas, viewportParams);
       auto mesh = project(move(vertices), move(triangles), move(attributes), viewportParams.ci);
@@ -232,8 +232,8 @@ public:
     auto sum = 0.;
     auto count = 0;
 
-    for (auto &atlas : frame.atlas) {
-      for (auto &viewParams : atlas.viewParamsList) {
+    for (const auto &atlas : frame.atlas) {
+      for (const auto &viewParams : atlas.viewParamsList) {
         sum += resolution(viewParams);
         ++count;
       }
@@ -241,7 +241,7 @@ public:
     return float(resolution(viewportParams) * count / sum);
   }
 
-  auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
+  [[nodiscard]] auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
       -> Texture444Depth16Frame {
     auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
 

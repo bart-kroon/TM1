@@ -51,7 +51,7 @@ inline auto deg2HalfQuat(const float yawDeg, const float pitchDeg, const float r
   q.w() = 0.F;
   q.w() = Half(std::sqrt(1.F - norm2(q)));
   return q;
-};
+}
 
 const auto viewingSpace = array{
     ViewingSpace{

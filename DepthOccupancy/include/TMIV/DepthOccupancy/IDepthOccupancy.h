@@ -44,8 +44,8 @@ public:
   IDepthOccupancy() = default;
   IDepthOccupancy(const IDepthOccupancy &) = default;
   IDepthOccupancy(IDepthOccupancy &&) = default;
-  IDepthOccupancy &operator=(const IDepthOccupancy &) = default;
-  IDepthOccupancy &operator=(IDepthOccupancy &&) = default;
+  auto operator=(const IDepthOccupancy &) -> IDepthOccupancy & = default;
+  auto operator=(IDepthOccupancy &&) -> IDepthOccupancy & = default;
   virtual ~IDepthOccupancy() = default;
 
   virtual auto transformSequenceParams(MivBitstream::IvSequenceParams)

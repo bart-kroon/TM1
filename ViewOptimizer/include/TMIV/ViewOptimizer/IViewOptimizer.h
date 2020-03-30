@@ -43,8 +43,8 @@ public:
   IViewOptimizer() = default;
   IViewOptimizer(const IViewOptimizer &) = default;
   IViewOptimizer(IViewOptimizer &&) = default;
-  IViewOptimizer &operator=(const IViewOptimizer &) = default;
-  IViewOptimizer &operator=(IViewOptimizer &&) = default;
+  auto operator=(const IViewOptimizer &) -> IViewOptimizer & = default;
+  auto operator=(IViewOptimizer &&) -> IViewOptimizer & = default;
   virtual ~IViewOptimizer() = default;
 
   using Output = std::pair<MivBitstream::IvSequenceParams, std::vector<bool>>;
@@ -53,7 +53,8 @@ public:
   virtual auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output = 0;
 
   // Optimize a frame in the intra period
-  virtual auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame = 0;
+  [[nodiscard]] virtual auto optimizeFrame(Common::MVD16Frame views) const
+      -> Common::MVD16Frame = 0;
 };
 } // namespace TMIV::ViewOptimizer
 

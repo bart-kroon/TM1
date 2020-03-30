@@ -104,9 +104,9 @@ auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16> {
 }
 
 auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f> {
-  auto &Y = inYuv.getPlane(0);
-  auto &U = inYuv.getPlane(1);
-  auto &V = inYuv.getPlane(2);
+  const auto &Y = inYuv.getPlane(0);
+  const auto &U = inYuv.getPlane(1);
+  const auto &V = inYuv.getPlane(2);
   Mat<Vec3f> out(inYuv.getPlane(0).sizes());
   const auto width = Y.width();
   const auto height = Y.height();

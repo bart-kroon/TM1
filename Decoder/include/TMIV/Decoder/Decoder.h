@@ -54,8 +54,8 @@ public:
   Decoder(const Common::Json &rootNode, const Common::Json & /* componentNode */);
   Decoder(const Decoder &) = delete;
   Decoder(Decoder &&) = default;
-  Decoder &operator=(const Decoder &) = delete;
-  Decoder &operator=(Decoder &&) = default;
+  auto operator=(const Decoder &) -> Decoder & = delete;
+  auto operator=(Decoder &&) -> Decoder & = default;
   ~Decoder() override = default;
 
   auto decodeFrame(MivBitstream::AccessUnit &frame,

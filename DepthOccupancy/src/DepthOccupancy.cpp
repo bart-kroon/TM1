@@ -88,7 +88,7 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
   auto outAtlases = MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
-  for (auto &inAtlas : inAtlases) {
+  for (const auto &inAtlas : inAtlases) {
     outAtlases.emplace_back(inAtlas.texture,
                             Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }

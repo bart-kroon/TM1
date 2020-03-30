@@ -77,9 +77,9 @@ struct ViewingSpace {
   // In specification: elementary_shape[ e ]
   ElementaryShapeVector elementaryShapes;
 
-  friend std::ostream &operator<<(std::ostream &stream, const ViewingSpace &viewingSpace);
-  bool operator==(const ViewingSpace &other) const;
-  bool operator!=(const ViewingSpace &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream &;
+  auto operator==(const ViewingSpace &other) const -> bool;
+  auto operator!=(const ViewingSpace &other) const -> bool { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> ViewingSpace;
   void encodeTo(OutputBitstream &) const;
@@ -98,9 +98,9 @@ struct ElementaryShape {
   // In specification: primitive_shape_operation[ e ]
   PrimitiveShapeOperation primitiveOperation{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const ElementaryShape &shape);
-  bool operator==(const ElementaryShape &other) const;
-  bool operator!=(const ElementaryShape &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const ElementaryShape &shape) -> std::ostream &;
+  auto operator==(const ElementaryShape &other) const -> bool;
+  auto operator!=(const ElementaryShape &other) const -> bool { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> ElementaryShape;
   void encodeTo(OutputBitstream &) const;
@@ -119,9 +119,9 @@ struct Cuboid {
   // In specification: size_z[e][s]
   Common::Vec3f size{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const Cuboid &cuboid);
-  bool operator==(const Cuboid &other) const;
-  bool operator!=(const Cuboid &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const Cuboid &cuboid) -> std::ostream &;
+  auto operator==(const Cuboid &other) const -> bool;
+  auto operator!=(const Cuboid &other) const -> bool { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> Cuboid;
   void encodeTo(OutputBitstream &) const;
@@ -138,9 +138,9 @@ struct Spheroid {
   // In specification: radius[e][s]
   Common::Vec3f radius{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const Spheroid &spheroid);
-  bool operator==(const Spheroid &other) const;
-  bool operator!=(const Spheroid &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const Spheroid &spheroid) -> std::ostream &;
+  auto operator==(const Spheroid &other) const -> bool;
+  auto operator!=(const Spheroid &other) const -> bool { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> Spheroid;
   void encodeTo(OutputBitstream &) const;
@@ -157,9 +157,9 @@ struct Halfspace {
   // In specification: distance[e][s]
   float distance{};
 
-  friend std::ostream &operator<<(std::ostream &stream, const Halfspace &halfspace);
-  bool operator==(const Halfspace &other) const;
-  bool operator!=(const Halfspace &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const Halfspace &halfspace) -> std::ostream &;
+  auto operator==(const Halfspace &other) const -> bool;
+  auto operator!=(const Halfspace &other) const -> bool { return !operator==(other); }
 
   static auto decodeFrom(InputBitstream &) -> Halfspace;
   void encodeTo(OutputBitstream &) const;
@@ -174,7 +174,7 @@ struct PrimitiveShape {
   // In specification: halfspace_primitive( e, s )
   std::variant<Cuboid, Spheroid, Halfspace> primitive;
 
-  auto shapeType() const -> PrimitiveShapeType;
+  [[nodiscard]] auto shapeType() const -> PrimitiveShapeType;
 
   // In specification: guard_band_present_flag[ e ]
   // In specification: guard_band_size[ e ]
@@ -199,14 +199,16 @@ struct PrimitiveShape {
     float yawRange{360.f};
     float pitchRange{180.f};
 
-    bool operator==(const ViewingDirectionConstraint &other) const;
-    bool operator!=(const ViewingDirectionConstraint &other) const { return !operator==(other); }
+    auto operator==(const ViewingDirectionConstraint &other) const -> bool;
+    auto operator!=(const ViewingDirectionConstraint &other) const -> bool {
+      return !operator==(other);
+    }
   };
   std::optional<ViewingDirectionConstraint> viewingDirectionConstraint;
 
-  friend std::ostream &operator<<(std::ostream &stream, const PrimitiveShape &shape);
-  bool operator==(const PrimitiveShape &other) const;
-  bool operator!=(const PrimitiveShape &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const PrimitiveShape &shape) -> std::ostream &;
+  auto operator==(const PrimitiveShape &other) const -> bool;
+  auto operator!=(const PrimitiveShape &other) const -> bool { return !operator==(other); }
 
   static auto loadFromJson(const Common::Json &node) -> PrimitiveShape;
 };

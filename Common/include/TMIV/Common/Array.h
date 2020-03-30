@@ -64,95 +64,96 @@ public:
   const_iterator(const const_iterator &iter) = default;
   const_iterator(const_iterator &&iter) noexcept = default;
   ~const_iterator() = default;
-  const_iterator &operator=(const const_iterator &rhs) = default;
-  const_iterator &operator=(const_iterator &&rhs) noexcept = default;
-  bool operator==(const const_iterator &rhs) const { return m_p == rhs.m_p; }
-  bool operator!=(const const_iterator &rhs) const { return m_p != rhs.m_p; }
-  const T &operator*() const { return *m_p; }
-  const T *operator->() const { return m_p; }
-  const_iterator &operator++() {
+  auto operator=(const const_iterator &rhs) -> const_iterator & = default;
+  auto operator=(const_iterator &&rhs) noexcept -> const_iterator & = default;
+  auto operator==(const const_iterator &rhs) const -> bool { return m_p == rhs.m_p; }
+  auto operator!=(const const_iterator &rhs) const -> bool { return m_p != rhs.m_p; }
+  auto operator*() const -> const T & { return *m_p; }
+  auto operator->() const -> const T * { return m_p; }
+  auto operator++() -> const_iterator & {
     ++m_p; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return *this;
   }
-  const_iterator operator++(int) {
+  auto operator++(int) -> const_iterator {
     const_iterator tmp(*this);
     operator++();
     return tmp;
   }
-  const_iterator &operator--() {
+  auto operator--() -> const_iterator & {
     --m_p;
     return *this;
   }
-  const_iterator operator--(int) {
+  auto operator--(int) -> const_iterator {
     const_iterator tmp(*this);
     operator--();
     return tmp;
   }
-  const_iterator operator+(std::ptrdiff_t n) const { return const_iterator(m_p + n); }
-  const_iterator &operator+=(std::ptrdiff_t n) {
+  auto operator+(std::ptrdiff_t n) const -> const_iterator { return const_iterator(m_p + n); }
+  auto operator+=(std::ptrdiff_t n) -> const_iterator & {
     m_p += n;
     return *this;
   }
-  std::ptrdiff_t operator-(const const_iterator &iter) const { return m_p - iter.m_p; }
-  const_iterator operator-(std::ptrdiff_t n) const { return const_iterator(m_p - n); }
-  const_iterator &operator-=(std::ptrdiff_t n) {
+  auto operator-(const const_iterator &iter) const -> std::ptrdiff_t { return m_p - iter.m_p; }
+  auto operator-(std::ptrdiff_t n) const -> const_iterator { return const_iterator(m_p - n); }
+  auto operator-=(std::ptrdiff_t n) -> const_iterator & {
     m_p -= n;
     return *this;
   }
-  const T &operator[](std::ptrdiff_t n) const {
+  auto operator[](std::ptrdiff_t n) const -> const T & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_p[n];
   }
-  bool operator<(const const_iterator &rhs) const { return m_p < rhs.m_p; }
-  bool operator<=(const const_iterator &rhs) const { return m_p <= rhs.m_p; }
-  bool operator>(const const_iterator &rhs) const { return m_p > rhs.m_p; }
-  bool operator>=(const const_iterator &rhs) const { return m_p >= rhs.m_p; }
+  auto operator<(const const_iterator &rhs) const -> bool { return m_p < rhs.m_p; }
+  auto operator<=(const const_iterator &rhs) const -> bool { return m_p <= rhs.m_p; }
+  auto operator>(const const_iterator &rhs) const -> bool { return m_p > rhs.m_p; }
+  auto operator>=(const const_iterator &rhs) const -> bool { return m_p >= rhs.m_p; }
   void swap(const_iterator &a, const_iterator &b) { std::swap(a, b); }
 };
 
-template <typename T> const_iterator<T> operator+(std::ptrdiff_t n, const const_iterator<T> &rhs) {
+template <typename T>
+auto operator+(std::ptrdiff_t n, const const_iterator<T> &rhs) -> const_iterator<T> {
   return rhs + n;
 }
 
 template <typename T> class iterator : public const_iterator<T> {
 public:
   explicit iterator(T *x = nullptr) : const_iterator<T>(x) {}
-  T &operator*() { return *this->m_p; }
-  T *operator->() { return this->m_p; }
-  iterator &operator++() {
+  auto operator*() -> T & { return *this->m_p; }
+  auto operator->() -> T * { return this->m_p; }
+  auto operator++() -> iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     ++this->m_p;
     return *this;
   }
-  iterator operator++(int) {
+  auto operator++(int) -> iterator {
     iterator tmp(*this);
     operator++();
     return tmp;
   }
-  iterator &operator--() {
+  auto operator--() -> iterator & {
     --this->m_p;
     return *this;
   }
-  iterator operator--(int) {
+  auto operator--(int) -> iterator {
     iterator tmp(*this);
     operator--();
     return tmp;
   }
-  iterator operator+(std::ptrdiff_t n) const { return iterator(this->m_p + n); }
-  iterator &operator+=(std::ptrdiff_t n) {
+  auto operator+(std::ptrdiff_t n) const -> iterator { return iterator(this->m_p + n); }
+  auto operator+=(std::ptrdiff_t n) -> iterator & {
     this->m_p += n;
     return *this;
   }
-  std::ptrdiff_t operator-(const iterator &iter) const { return this->m_p - iter.m_p; }
-  iterator operator-(std::ptrdiff_t n) const { return iterator(this->m_p - n); }
-  iterator &operator-=(std::ptrdiff_t n) {
+  auto operator-(const iterator &iter) const -> std::ptrdiff_t { return this->m_p - iter.m_p; }
+  auto operator-(std::ptrdiff_t n) const -> iterator { return iterator(this->m_p - n); }
+  auto operator-=(std::ptrdiff_t n) -> iterator & {
     this->m_p -= n;
     return *this;
   }
-  T &operator[](std::ptrdiff_t n) { return (this->m_p)[n]; }
+  auto operator[](std::ptrdiff_t n) -> T & { return (this->m_p)[n]; }
 };
 
-template <typename T> iterator<T> operator+(std::ptrdiff_t n, const iterator<T> &rhs) {
+template <typename T> auto operator+(std::ptrdiff_t n, const iterator<T> &rhs) -> iterator<T> {
   return rhs + n;
 }
 
@@ -175,114 +176,115 @@ public:
   const_dim_iterator(const const_dim_iterator &iter) = default;
   const_dim_iterator(const_dim_iterator &&iter) noexcept = default;
   ~const_dim_iterator() = default;
-  std::ptrdiff_t n() const { return m_step; }
-  const_dim_iterator &operator=(const const_dim_iterator &rhs) = default;
-  const_dim_iterator &operator=(const_dim_iterator &&rhs) noexcept = default;
-  bool operator==(const const_dim_iterator &rhs) const { return m_p == rhs.m_p; }
-  bool operator!=(const const_dim_iterator &rhs) const { return m_p != rhs.m_p; }
-  const T &operator*() const { return *m_p; }
-  const T *operator->() const { return m_p; }
-  const_dim_iterator &operator++() {
+  [[nodiscard]] auto n() const -> std::ptrdiff_t { return m_step; }
+  auto operator=(const const_dim_iterator &rhs) -> const_dim_iterator & = default;
+  auto operator=(const_dim_iterator &&rhs) noexcept -> const_dim_iterator & = default;
+  auto operator==(const const_dim_iterator &rhs) const -> bool { return m_p == rhs.m_p; }
+  auto operator!=(const const_dim_iterator &rhs) const -> bool { return m_p != rhs.m_p; }
+  auto operator*() const -> const T & { return *m_p; }
+  auto operator->() const -> const T * { return m_p; }
+  auto operator++() -> const_dim_iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     m_p += m_step;
     return *this;
   }
-  const_dim_iterator operator++(int) {
+  auto operator++(int) -> const_dim_iterator {
     const_dim_iterator out(*this);
     operator++();
     return out;
   }
-  const_dim_iterator &operator--() {
+  auto operator--() -> const_dim_iterator & {
     m_p -= m_step;
     return *this;
   }
-  const_dim_iterator operator--(int) {
+  auto operator--(int) -> const_dim_iterator {
     const_dim_iterator out(*this);
     operator--();
     return out;
   }
-  const_dim_iterator operator+(std::ptrdiff_t a) const {
+  auto operator+(std::ptrdiff_t a) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(m_p + a * m_step, this->m_step);
   }
-  const_dim_iterator &operator+=(std::ptrdiff_t a) {
+  auto operator+=(std::ptrdiff_t a) -> const_dim_iterator & {
     m_p += (a * m_step);
     return *this;
   }
-  std::ptrdiff_t operator-(const const_dim_iterator &iter) const {
+  auto operator-(const const_dim_iterator &iter) const -> std::ptrdiff_t {
     return (m_p - iter.m_p) / m_step;
   }
-  const_dim_iterator operator-(std::ptrdiff_t a) const {
+  auto operator-(std::ptrdiff_t a) const -> const_dim_iterator {
     return const_dim_iterator(m_p - a * m_step, this->m_step);
   }
-  const_dim_iterator &operator-=(std::ptrdiff_t a) {
+  auto operator-=(std::ptrdiff_t a) -> const_dim_iterator & {
     m_p -= (a * m_step);
     return *this;
   }
-  const T &operator[](std::ptrdiff_t a) const { return m_p[a * m_step]; }
-  bool operator<(const const_dim_iterator &rhs) const { return m_p < rhs.m_p; }
-  bool operator<=(const const_dim_iterator &rhs) const { return m_p <= rhs.m_p; }
-  bool operator>(const const_dim_iterator &rhs) const { return m_p > rhs.m_p; }
-  bool operator>=(const const_dim_iterator &rhs) const { return m_p >= rhs.m_p; }
+  auto operator[](std::ptrdiff_t a) const -> const T & { return m_p[a * m_step]; }
+  auto operator<(const const_dim_iterator &rhs) const -> bool { return m_p < rhs.m_p; }
+  auto operator<=(const const_dim_iterator &rhs) const -> bool { return m_p <= rhs.m_p; }
+  auto operator>(const const_dim_iterator &rhs) const -> bool { return m_p > rhs.m_p; }
+  auto operator>=(const const_dim_iterator &rhs) const -> bool { return m_p >= rhs.m_p; }
   void swap(const_dim_iterator &a, const_dim_iterator &b) { std::swap(a, b); }
 };
 
 template <typename T>
-const_dim_iterator<T> operator+(std::ptrdiff_t a, const const_dim_iterator<T> &rhs) {
+auto operator+(std::ptrdiff_t a, const const_dim_iterator<T> &rhs) -> const_dim_iterator<T> {
   return rhs + a;
 }
 
 template <typename T> class dim_iterator : public const_dim_iterator<T> {
 public:
   explicit dim_iterator(T *x = nullptr, std::ptrdiff_t s = 0) : const_dim_iterator<T>(x, s) {}
-  T &operator*() { return *this->m_p; }
-  T *operator->() { return this->m_p; }
-  dim_iterator &operator++() {
+  auto operator*() -> T & { return *this->m_p; }
+  auto operator->() -> T * { return this->m_p; }
+  auto operator++() -> dim_iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     this->m_p += this->m_step;
     return *this;
   }
-  dim_iterator operator++(int) {
+  auto operator++(int) -> dim_iterator {
     dim_iterator out(*this);
     operator++();
     return out;
   }
-  dim_iterator &operator--() {
+  auto operator--() -> dim_iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     this->m_p -= this->m_step;
     return *this;
   }
-  dim_iterator operator--(int) {
+  auto operator--(int) -> dim_iterator {
     dim_iterator out(*this);
     operator--();
     return out;
   }
-  dim_iterator operator+(std::ptrdiff_t a) const {
+  auto operator+(std::ptrdiff_t a) const -> dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return dim_iterator(this->m_p + (a * this->m_step), this->m_step);
   }
-  dim_iterator &operator+=(std::ptrdiff_t a) {
+  auto operator+=(std::ptrdiff_t a) -> dim_iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     this->m_p += (a * this->m_step);
     return *this;
   }
-  std::ptrdiff_t operator-(const dim_iterator &iter) const {
+  auto operator-(const dim_iterator &iter) const -> std::ptrdiff_t {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return (this->m_p - iter.m_p) / this->m_step;
   }
-  dim_iterator operator-(std::ptrdiff_t a) const {
+  auto operator-(std::ptrdiff_t a) const -> dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return dim_iterator(this->m_p - a * this->m_step, this->m_step);
   }
-  dim_iterator &operator-=(std::ptrdiff_t a) {
+  auto operator-=(std::ptrdiff_t a) -> dim_iterator & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     this->m_p -= (a * this->m_step);
     return *this;
   }
-  T &operator[](std::ptrdiff_t a) { return this->m_p[a * this->m_step]; }
+  auto operator[](std::ptrdiff_t a) -> T & { return this->m_p[a * this->m_step]; }
 };
 
-template <typename T> dim_iterator<T> operator+(std::ptrdiff_t a, const dim_iterator<T> &rhs) {
+template <typename T>
+auto operator+(std::ptrdiff_t a, const dim_iterator<T> &rhs) -> dim_iterator<T> {
   return rhs + a;
 }
 
@@ -299,20 +301,21 @@ protected:
   std::array<T, M> m_v{};
 
 public:
-  static constexpr size_type size(size_type /*unused*/) { return M; }
+  static constexpr auto size(size_type /*unused*/) -> size_type { return M; }
   static void sizes(size_type *iter) { *iter = M; }
-  static constexpr size_type size() { return M; }
-  static constexpr size_type min_size() { return M; }
-  T *data() { return m_v.data(); }
-  const T *data() const { return m_v.data(); }
+  static constexpr auto size() -> size_type { return M; }
+  static constexpr auto min_size() -> size_type { return M; }
+  auto data() -> T * { return m_v.data(); }
+  [[nodiscard]] auto data() const -> const T * { return m_v.data(); }
   template <size_type K>
-  static constexpr size_type offset(size_type i, size_type first = 0, size_type second = 0) {
+  static constexpr auto offset(size_type i, size_type first = 0, size_type second = 0)
+      -> size_type {
     return (i == K) ? second : first;
   }
-  static constexpr size_type step(size_type i) { return i != 0U ? 1 : M; }
-  static constexpr size_type diag_step() { return 1; }
-  T get(size_type first) const { return m_v[first]; }
-  T &get(size_type first) { return m_v[first]; }
+  static constexpr auto step(size_type i) -> size_type { return i != 0U ? 1 : M; }
+  static constexpr auto diag_step() -> size_type { return 1; }
+  [[nodiscard]] auto get(size_type first) const -> T { return m_v[first]; }
+  auto get(size_type first) -> T & { return m_v[first]; }
 };
 
 template <size_type D, typename T, size_type M, size_type N, size_type... I>
@@ -321,7 +324,7 @@ protected:
   std::array<_Array<D - 1, T, N, I...>, M> m_v;
 
 public:
-  static constexpr size_type size(size_type i) {
+  static constexpr auto size(size_type i) -> size_type {
     return i != 0U ? _Array<D - 1, T, N, I...>::size(i - 1) : M;
   }
   static void sizes(size_type *iter) {
@@ -329,33 +332,37 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     _Array<D - 1, T, N, I...>::sizes(++iter);
   }
-  static constexpr size_type size() { return M * _Array<D - 1, T, N, I...>::size(); }
-  static size_type min_size() { return (std::min)(M, _Array<D - 1, T, N, I...>::min_size()); }
-  T *data() {
+  static constexpr auto size() -> size_type { return M * _Array<D - 1, T, N, I...>::size(); }
+  static auto min_size() -> size_type {
+    return (std::min)(M, _Array<D - 1, T, N, I...>::min_size());
+  }
+  auto data() -> T * {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     return reinterpret_cast<T *>(m_v.data());
   }
-  const T *data() const {
+  [[nodiscard]] auto data() const -> const T * {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     return reinterpret_cast<const T *>(m_v.data());
   }
   template <size_type K, typename... J>
-  static constexpr size_type offset(size_type i, size_type first, J... next) {
+  static constexpr auto offset(size_type i, size_type first, J... next) -> size_type {
     return (i == K) ? _Array<D - 1, T, N, I...>::template offset<K>(i + 1, first, next...)
                     : first * _Array<D - 1, T, N, I...>::size() +
                           _Array<D - 1, T, N, I...>::template offset<K>(i + 1, next...);
   }
-  static constexpr size_type step(size_type i) {
+  static constexpr auto step(size_type i) -> size_type {
     return i != 0U ? _Array<D - 1, T, N, I...>::step(i - 1)
                    : M * _Array<D - 1, T, N, I...>::step(i);
   }
-  static constexpr size_type diag_step() {
+  static constexpr auto diag_step() -> size_type {
     return step(1) + _Array<D - 1, T, N, I...>::diag_step();
   }
-  template <typename... J> T get(size_type first, J... next) const {
+  template <typename... J>[[nodiscard]] auto get(size_type first, J... next) const -> T {
     return m_v[first].get(next...);
   }
-  template <typename... J> T &get(size_type first, J... next) { return m_v[first].get(next...); }
+  template <typename... J> auto get(size_type first, J... next) -> T & {
+    return m_v[first].get(next...);
+  }
 };
 
 template <typename T, size_type... I> class Array {
@@ -382,7 +389,7 @@ protected:
 
   public:
     Helper() { _Array<sizeof...(I), T, I...>::sizes(m_sizes.data()); };
-    const tuple_type &sizes() const { return m_sizes; }
+    [[nodiscard]] auto sizes() const -> const tuple_type & { return m_sizes; }
   };
 
 protected:
@@ -411,18 +418,18 @@ public:
   //! \brief Move constructor.
   Array(container_type &&that) noexcept = default;
   //! \brief Copy assignment.
-  Array &operator=(const Array &that) = default;
-  Array &operator=(T t) {
+  auto operator=(const Array &that) -> Array & = default;
+  auto operator=(T t) -> Array & {
     std::fill(begin(), end(), t);
     return *this;
   }
-  Array &operator=(std::initializer_list<T> v) {
+  auto operator=(std::initializer_list<T> v) -> Array & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::copy(v.begin(), v.begin() + size(), begin());
     return *this;
   }
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  Array &operator=(const OTHER &that) {
+  auto operator=(const OTHER &that) -> Array & {
 #ifndef NDEBUG
     size_t i = 0;
     for (; i < dim() && i < that.dim(); ++i) {
@@ -439,11 +446,15 @@ public:
     return *this;
   }
   //! \brief Move assignment.
-  Array &operator=(Array &&that) noexcept = default;
+  auto operator=(Array &&that) noexcept -> Array & = default;
   //! \brief Equal operator.
-  bool operator==(const Array &that) const { return std::equal(begin(), end(), that.begin()); }
+  auto operator==(const Array &that) const -> bool {
+    return std::equal(begin(), end(), that.begin());
+  }
   //! \brief Different operator.
-  bool operator!=(const Array &that) const { return !std::equal(begin(), end(), that.begin()); }
+  auto operator!=(const Array &that) const -> bool {
+    return !std::equal(begin(), end(), that.begin());
+  }
   //! \brief Swap operator.
   void swap(Array &that) { std::swap(m_v, that.m_v); }
   //! \brief Resize operator.
@@ -451,65 +462,67 @@ public:
   //! \brief Reshape operator.
   void reshape(const tuple_type & /*unused*/) {}
   //! \brief Returns the array dimension.
-  static constexpr size_type dim() { return sizeof...(I); }
+  static constexpr auto dim() -> size_type { return sizeof...(I); }
   //! \brief Returns the array size along the i-th dimension.
-  static constexpr size_type size(size_type i) { return _Array<sizeof...(I), T, I...>::size(i); }
+  static constexpr auto size(size_type i) -> size_type {
+    return _Array<sizeof...(I), T, I...>::size(i);
+  }
   //! \brief Returns the array sizes.
-  static const tuple_type &sizes() {
+  static auto sizes() -> const tuple_type & {
     return m_helper.sizes();
   } // tuple_type out; _Array<sizeof...(I), T, I...>::sizes(out.data()); return
     // out; }
   //! \brief Returns the array total length
-  static constexpr size_type size() { return _Array<sizeof...(I), T, I...>::size(); }
+  static constexpr auto size() -> size_type { return _Array<sizeof...(I), T, I...>::size(); }
   //! \brief Returns the gap between 2 consecutive elements on the ith
   //! dimension.
-  static constexpr size_type step(size_type i) {
+  static constexpr auto step(size_type i) -> size_type {
     return _Array<sizeof...(I), T, I...>::step(i + 1);
   }
   //! \brief Returns true if the array is empty.
-  static constexpr bool empty() { return (size() == 0); }
+  static constexpr auto empty() -> bool { return (size() == 0); }
   //! \brief Data access, returns a pointer to the first element of the array.
-  T *data() { return m_v.data(); }
-  const T *data() const { return m_v.data(); }
+  auto data() -> T * { return m_v.data(); }
+  [[nodiscard]] auto data() const -> const T * { return m_v.data(); }
   //! \brief [] operator, returns the kth element of the array viewed as a one
   //! dimensional array.
-  T operator[](size_type k) const {
+  auto operator[](size_type k) const -> T {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return data()[k];
   }
-  T &operator[](size_type k) {
+  auto operator[](size_type k) -> T & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return data()[k];
   }
   //! \brief Return the property of the array
-  int getProperty() const { return -1; }
+  [[nodiscard]] auto getProperty() const -> int { return -1; }
   //! \brief Returns an iterator to the first element of the array.
-  iterator begin() { return iterator(data()); }
-  const_iterator begin() const { return const_iterator(data()); }
+  auto begin() -> iterator { return iterator(data()); }
+  [[nodiscard]] auto begin() const -> const_iterator { return const_iterator(data()); }
   //! \brief Returns a const iterator to the first element of the array.
-  const_iterator cbegin() const { return const_iterator(data()); }
+  [[nodiscard]] auto cbegin() const -> const_iterator { return const_iterator(data()); }
   //! \brief Returns an iterator to the first element after the end of the
   //! array.
-  iterator end() {
+  auto end() -> iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return iterator(data() + size());
   }
-  const_iterator end() const {
+  [[nodiscard]] auto end() const -> const_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_iterator(data() + size());
   }
   //! \brief Returns a const iterator to the first element after the end of the
   //! array.
-  const_iterator cend() const { return const_iterator(data() + size()); }
+  [[nodiscard]] auto cend() const -> const_iterator { return const_iterator(data() + size()); }
   //! \brief Returns an iterator along the Kth dimension to the first element of
   //! the hyperplane defined by next.
-  template <size_type K, typename... J> const_dim_iterator dim_begin(J... next) const {
+  template <size_type K, typename... J> auto dim_begin(J... next) const -> const_dim_iterator {
     return const_dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
         _Array<sizeof...(I), T, I...>::step(K + 1));
   }
-  template <size_type K, typename... J> dim_iterator dim_begin(J... next) {
+  template <size_type K, typename... J> auto dim_begin(J... next) -> dim_iterator {
     return dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
@@ -517,14 +530,14 @@ public:
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element of the hyperplane defined by next.
-  template <size_type K, typename... J> const_dim_iterator cdim_begin(J... next) const {
+  template <size_type K, typename... J> auto cdim_begin(J... next) const -> const_dim_iterator {
     return const_dim_iterator(data() +
                                   _Array<sizeof...(I), T, I...>::template offset<K>(0, next...),
                               _Array<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
   //! after the end of the hyperplane defined by next.
-  template <size_type K, typename... J> const_dim_iterator dim_end(J... next) const {
+  template <size_type K, typename... J> auto dim_end(J... next) const -> const_dim_iterator {
     return const_dim_iterator(
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...) +
@@ -533,99 +546,99 @@ public:
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         _Array<sizeof...(I), T, I...>::step(K + 1));
   }
-  template <size_type K, typename... J> dim_iterator dim_end(J... next) {
+  template <size_type K, typename... J> auto dim_end(J... next) -> dim_iterator {
     return dim_iterator(data() + _Array<sizeof...(I), T, I...>::template offset<K>(0, next...) +
                             _Array<sizeof...(I), T, I...>::step(K),
                         _Array<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element after the end of the hyperplane defined by next.
-  template <size_type K, typename... J> const_dim_iterator cdim_end(J... next) const {
+  template <size_type K, typename... J> auto cdim_end(J... next) const -> const_dim_iterator {
     return const_dim_iterator(data() + _Array<sizeof...(I), T, I...>::template offset<K>(next...) +
                                   _Array<sizeof...(I), T, I...>::step(K),
                               _Array<sizeof...(I), T, I...>::step(K + 1));
   }
   //! \brief Returns an iterator to the first diagonal element.
-  const_diag_iterator diag_begin() const {
+  [[nodiscard]] auto diag_begin() const -> const_diag_iterator {
     return const_diag_iterator(data(), _Array<sizeof...(I), T, I...>::diag_step());
   }
-  diag_iterator diag_begin() {
+  auto diag_begin() -> diag_iterator {
     return diag_iterator(data(), _Array<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns a const iterator to the first diagonal element.
-  const_diag_iterator cdiag_begin() const {
+  [[nodiscard]] auto cdiag_begin() const -> const_diag_iterator {
     return const_diag_iterator(data(), _Array<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns an iterator to the first element afer the last diagonal
   //! element.
-  const_diag_iterator diag_end() const {
+  [[nodiscard]] auto diag_end() const -> const_diag_iterator {
     return const_diag_iterator(data() + _Array<sizeof...(I), T, I...>::min_size() *
                                             _Array<sizeof...(I), T, I...>::diag_step(),
                                _Array<sizeof...(I), T, I...>::diag_step());
   }
-  diag_iterator diag_end() {
+  auto diag_end() -> diag_iterator {
     return diag_iterator(data() + _Array<sizeof...(I), T, I...>::min_size() *
                                       _Array<sizeof...(I), T, I...>::diag_step(),
                          _Array<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns a const iterator to the first element afer the last
   //! diagonal element.
-  const_diag_iterator cdiag_end() const {
+  [[nodiscard]] auto cdiag_end() const -> const_diag_iterator {
     return const_diag_iterator(data() + _Array<sizeof...(I), T, I...>::min_size() *
                                             _Array<sizeof...(I), T, I...>::diag_step(),
                                _Array<sizeof...(I), T, I...>::diag_step());
   }
   //! \brief Returns m(i, j, k, ...)
-  template <typename... J> T operator()(J... idx) const { return m_v.get(idx...); }
-  template <typename... J> T &operator()(J... idx) { return m_v.get(idx...); }
+  template <typename... J> auto operator()(J... idx) const -> T { return m_v.get(idx...); }
+  template <typename... J> auto operator()(J... idx) -> T & { return m_v.get(idx...); }
   //! \brief Unary - operator.
-  container_type operator-() const {
+  auto operator-() const -> container_type {
     container_type v;
     std::transform(begin(), end(), v.begin(), [](T x) { return -x; });
     return v;
   }
   //! \brief += scalar operator.
-  container_type &operator+=(T v) {
+  auto operator+=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a += v; });
     return *this;
   }
   //! \brief -= scalar operator.
-  container_type &operator-=(T v) {
+  auto operator-=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a -= v; });
     return *this;
   }
   //! \brief /= scalar operator.
-  container_type &operator/=(T v) {
+  auto operator/=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a /= v; });
     return *this;
   }
   //! \brief *= scalar operator.
-  container_type &operator*=(T v) {
+  auto operator*=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a *= v; });
     return *this;
   }
   //! \brief += operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  container_type &operator+=(const OTHER &that) {
+  auto operator+=(const OTHER &that) -> container_type & {
     std::transform(begin(), end(), that.begin(), begin(),
                    [](T v1, typename OTHER::value_type v2) { return (v1 + v2); });
     return *this;
   }
   //! \brief += operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  container_type &operator-=(const OTHER &that) {
+  auto operator-=(const OTHER &that) -> container_type & {
     std::transform(begin(), end(), that.begin(), begin(),
                    [](T v1, typename OTHER::value_type v2) { return (v1 - v2); });
     return *this;
   }
   //! \brief Return array filled with 0
-  static container_type zeros() {
+  static auto zeros() -> container_type {
     container_type out;
     std::fill(out.begin(), out.end(), T{0});
     return out;
   }
   //! \brief Return array with diagonal filled with 1
-  static container_type eye() {
+  static auto eye() -> container_type {
     container_type out;
 
     std::fill(out.begin(), out.end(), T{0});
@@ -633,7 +646,7 @@ public:
 
     return out;
   }
-  template <typename OTHER> static container_type from(const OTHER &other) {
+  template <typename OTHER> static auto from(const OTHER &other) -> container_type {
     container_type out;
     std::transform(other.begin(), other.end(), out.begin(), [](auto v) { return T(v); });
     return out;
@@ -714,9 +727,9 @@ public:
     that.m_property = -1;
   }
   //! \brief Copy assignment.
-  Array &operator=(const Array &that) = default;
+  auto operator=(const Array &that) -> Array & = default;
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  Array &operator=(const OTHER &that) {
+  auto operator=(const OTHER &that) -> Array & {
     tuple_type sz;
 
     std::copy(that.sizes().begin(), that.sizes().end(), sz.begin());
@@ -729,12 +742,12 @@ public:
 
     return *this;
   }
-  Array &operator=(T v) {
+  auto operator=(T v) -> Array & {
     std::fill(begin(), end(), v);
     return *this;
   }
   //! \brief Move assignment.
-  Array &operator=(Array &&that) noexcept {
+  auto operator=(Array &&that) noexcept -> Array & {
     m_size = that.m_size;
     m_step = that.m_step;
     m_v = std::move(that.m_v);
@@ -747,12 +760,12 @@ public:
     return *this;
   }
   //! \brief Equal operator.
-  bool operator==(const Array &that) const {
+  auto operator==(const Array &that) const -> bool {
     return (std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) &&
             std::equal(begin(), end(), that.begin()));
   }
   //! \brief Different operator.
-  bool operator!=(const Array &that) const {
+  auto operator!=(const Array &that) const -> bool {
     return (!std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) ||
             !std::equal(begin(), end(), that.begin()));
   }
@@ -803,165 +816,167 @@ public:
     });
   }
   //! \brief Returns the array dimension.
-  static constexpr size_type dim() { return D; }
+  static constexpr auto dim() -> size_type { return D; }
   //! \brief Returns the array size along the i-th dimension.
-  size_type size(size_type i) const { return m_size[i]; }
+  [[nodiscard]] auto size(size_type i) const -> size_type { return m_size[i]; }
   //! \brief Returns the array sizes.
-  const tuple_type &sizes() const { return m_size; }
+  [[nodiscard]] auto sizes() const -> const tuple_type & { return m_size; }
   //! \brief Returns the array total length.
-  size_type size() const { return m_step.front(); }
+  [[nodiscard]] auto size() const -> size_type { return m_step.front(); }
   //! \brief Returns the gap between 2 consecutive elements on the ith
   //! dimension.
-  size_type step(size_type i) const { return m_step[i + 1]; }
+  [[nodiscard]] auto step(size_type i) const -> size_type { return m_step[i + 1]; }
   //! \brief Returns the array steps
-  const std::array<size_type, D + 1> &steps() const { return m_step; }
+  [[nodiscard]] auto steps() const -> const std::array<size_type, D + 1> & { return m_step; }
   //! \brief Returns true if the array is empty.
-  bool empty() const { return (size() == 0); }
+  [[nodiscard]] auto empty() const -> bool { return (size() == 0); }
   //! \brief Data access, returns a pointer to the first element of the array.
-  T *data() { return m_v.data(); }
-  const T *data() const { return m_v.data(); }
+  auto data() -> T * { return m_v.data(); }
+  [[nodiscard]] auto data() const -> const T * { return m_v.data(); }
   //! \brief [] operator, returns the kth element of the array viewed as a one
   //! dimensional array.
-  T operator[](size_type k) const { return m_v[k]; }
-  T &operator[](size_type k) { return m_v[k]; }
+  auto operator[](size_type k) const -> T { return m_v[k]; }
+  auto operator[](size_type k) -> T & { return m_v[k]; }
   //! \brief Return the property of the array
-  int getProperty() const { return m_property; }
+  [[nodiscard]] auto getProperty() const -> int { return m_property; }
   // \brief Set the property of the array
   void setProperty(int v) { m_property = v; }
   //! \brief Returns an iterator to the first element of the array.
-  iterator begin() { return iterator(data()); }
-  const_iterator begin() const { return const_iterator(data()); }
+  auto begin() -> iterator { return iterator(data()); }
+  [[nodiscard]] auto begin() const -> const_iterator { return const_iterator(data()); }
   //! \brief Returns a const iterator to the first element of the array.
-  const_iterator cbegin() const { return const_iterator(data()); }
+  [[nodiscard]] auto cbegin() const -> const_iterator { return const_iterator(data()); }
   //! \brief Returns an iterator to the first element after the end of the
   //! array.
-  iterator end() {
+  auto end() -> iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return iterator(data() + size());
   }
-  const_iterator end() const {
+  [[nodiscard]] auto end() const -> const_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_iterator(data() + size());
   }
   //! \brief Returns a const iterator to the first element after the end of the
   //! array.
-  const_iterator cend() const { return const_iterator(data() + size()); }
+  [[nodiscard]] auto cend() const -> const_iterator { return const_iterator(data() + size()); }
   //! \brief Returns an iterator along the Kth dimension to the first element of
   //! the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator dim_begin(I... next) const {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_begin(I... next) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(data() + offset<K>(0, next...), m_step[K + 1]);
   }
-  template <size_type K, typename... I> dim_iterator dim_begin(I... next) {
+  template <size_type K, typename... I> auto dim_begin(I... next) -> dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return dim_iterator(data() + offset<K>(0, next...), m_step[K + 1]);
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element of the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator cdim_begin(I... next) const {
+  template <size_type K, typename... I> auto cdim_begin(I... next) const -> const_dim_iterator {
     return const_dim_iterator(data() + offset<K>(0, next...), m_step[K + 1]);
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
   //! after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator dim_end(I... next) const {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_end(I... next) const -> const_dim_iterator {
     return const_dim_iterator(data() + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
-  template <size_type K, typename... I> dim_iterator dim_end(I... next) {
+  template <size_type K, typename... I> auto dim_end(I... next) -> dim_iterator {
     return dim_iterator(data() + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator cdim_end(I... next) const {
+  template <size_type K, typename... I> auto cdim_end(I... next) const -> const_dim_iterator {
     return const_dim_iterator(data() + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
   //! \brief Returns an iterator to the first diagonal element.
-  const_diag_iterator diag_begin() const {
+  [[nodiscard]] auto diag_begin() const -> const_diag_iterator {
     return const_diag_iterator(data(),
                                std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
   }
-  diag_iterator diag_begin() {
+  auto diag_begin() -> diag_iterator {
     return diag_iterator(data(), std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
   }
   //! \brief Returns a const iterator to the first diagonal element.
-  const_diag_iterator cdiag_begin() const {
+  [[nodiscard]] auto cdiag_begin() const -> const_diag_iterator {
     return const_diag_iterator(data(),
                                std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
   }
   //! \brief Returns an iterator to the first element afer the last diagonal
   //! element.
-  const_diag_iterator diag_end() const {
+  [[nodiscard]] auto diag_end() const -> const_diag_iterator {
     size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0));
     return const_diag_iterator(data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
-  diag_iterator diag_end() {
+  auto diag_end() -> diag_iterator {
     size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_type(0));
     return diag_iterator(data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   //! \brief Returns a const iterator to the first element afer the last
   //! diagonal element.
-  const_diag_iterator cdiag_end() const {
+  [[nodiscard]] auto cdiag_end() const -> const_diag_iterator {
     size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0));
     return const_diag_iterator(data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   //! \brief Returns m(i, j, k, ...)
-  template <typename... I> T operator()(size_type first, I... next) const {
+  template <typename... I> auto operator()(size_type first, I... next) const -> T {
     return m_v[pos(1, first, next...)];
   }
-  template <typename... I> T &operator()(size_type first, I... next) {
+  template <typename... I> auto operator()(size_type first, I... next) -> T & {
     return m_v[pos(1, first, next...)];
   }
   //! \brief Returns distance of m(i, j, k, ...) from m(0, 0, 0, ...)
-  template <typename... I> size_type distance(size_type first, I... next) const {
+  template <typename... I> auto distance(size_type first, I... next) const -> size_type {
     return pos(1, first, next...);
   }
   //! \brief Unary - operator.
-  Array operator-() const {
+  auto operator-() const -> Array {
     Array v(sizes());
     std::transform(begin(), end(), v.begin(), [](T x) { return -x; });
     return v;
   }
   //! \brief += scalar operator.
-  Array &operator+=(T v) {
+  auto operator+=(T v) -> Array & {
     std::for_each(begin(), end(), [v](T &a) { a += v; });
     return *this;
   }
   //! \brief -= scalar operator.
-  Array &operator-=(T v) {
+  auto operator-=(T v) -> Array & {
     std::for_each(begin(), end(), [v](T &a) { a -= v; });
     return *this;
   }
   //! \brief /= scalar operator.
-  Array &operator/=(T v) {
+  auto operator/=(T v) -> Array & {
     std::for_each(begin(), end(), [v](T &a) { a /= v; });
     return *this;
   }
   //! \brief *= scalar operator.
-  Array &operator*=(T v) {
+  auto operator*=(T v) -> Array & {
     std::for_each(begin(), end(), [v](T &a) { a *= v; });
     return *this;
   }
   //! \brief += operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  Array &operator+=(const OTHER &that) {
+  auto operator+=(const OTHER &that) -> Array & {
     std::transform(begin(), end(), that.begin(), begin(),
                    [](T v1, typename OTHER::value_type v2) { return (v1 + v2); });
     return *this;
   }
   //! \brief -= operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  Array &operator-=(const OTHER &that) {
+  auto operator-=(const OTHER &that) -> Array & {
     std::transform(begin(), end(), that.begin(), begin(),
                    [](T v1, typename OTHER::value_type v2) { return (v1 - v2); });
     return *this;
   }
   //! \brief Return array filled with 0
-  static Array zeros(const tuple_type &sz) {
+  static auto zeros(const tuple_type &sz) -> Array {
     Array out(sz);
     std::fill(out.begin(), out.end(), 0);
     return out;
   }
   //! \brief Return array with diagonal filled with 1
-  static Array eye(const tuple_type &sz) {
+  static auto eye(const tuple_type &sz) -> Array {
     Array out(sz);
 
     std::fill(out.begin(), out.end(), T{0});
@@ -971,16 +986,18 @@ public:
   }
 
 protected:
-  template <size_type K> size_type offset(size_type i, size_type first = 0) const {
+  template <size_type K>
+  [[nodiscard]] auto offset(size_type i, size_type first = 0) const -> size_type {
     return (i == K) ? first : first * m_step[i + 1];
   }
   template <size_type K, typename... I>
-  size_type offset(size_type i, size_type first, I... next) const {
+  [[nodiscard]] auto offset(size_type i, size_type first, I... next) const -> size_type {
     return (i == K) ? offset<K>(i + 1, first, next...)
                     : first * m_step[i + 1] + offset<K>(i + 1, next...);
   }
-  size_type pos(size_type /*unused*/, size_type first) const { return first; }
-  template <typename... I> size_type pos(size_type i, size_type first, I... next) const {
+  [[nodiscard]] auto pos(size_type /*unused*/, size_type first) const -> size_type { return first; }
+  template <typename... I>
+  [[nodiscard]] auto pos(size_type i, size_type first, I... next) const -> size_type {
     return first * m_step[i] + pos(i + 1, next...);
   }
 };
@@ -1039,7 +1056,7 @@ public:
 
     this->reshape(sz);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto data = reinterpret_cast<const T *>(that.data());
+    const auto *data = reinterpret_cast<const T *>(that.data());
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     m_data = const_cast<T *>(data);
 
@@ -1058,9 +1075,9 @@ public:
     that.m_property = -1;
   }
   //! \brief Copy assignment.
-  Array &operator=(const Array &that) = default;
+  auto operator=(const Array &that) -> Array & = default;
   template <typename OTHER, class = typename OTHER::dim_iterator>
-  Array &operator=(const OTHER &that) {
+  auto operator=(const OTHER &that) -> Array & {
     if (size() == that.size()) {
       tuple_type sz;
 
@@ -1075,12 +1092,12 @@ public:
 
     return *this;
   }
-  Array &operator=(T v) {
+  auto operator=(T v) -> Array & {
     std::fill(begin(), end(), v);
     return *this;
   }
   //! \brief Move assignment.
-  Array &operator=(Array &&that) noexcept {
+  auto operator=(Array &&that) noexcept -> Array & {
     m_size = that.m_size;
     m_step = that.m_step;
     m_data = that.m_data;
@@ -1094,12 +1111,12 @@ public:
     return *this;
   }
   //! \brief Equal operator.
-  bool operator==(const Array &that) const {
+  auto operator==(const Array &that) const -> bool {
     return (std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) &&
             std::equal(begin(), end(), that.begin()));
   }
   //! \brief Different operator.
-  bool operator!=(const Array &that) const {
+  auto operator!=(const Array &that) const -> bool {
     return (!std::equal(m_size.begin(), m_size.end(), that.m_size.begin()) ||
             !std::equal(begin(), end(), that.begin()));
   }
@@ -1131,169 +1148,173 @@ public:
     });
   }
   //! \brief Returns the array dimension.
-  static constexpr size_type dim() { return D; }
+  static constexpr auto dim() -> size_type { return D; }
   //! \brief Returns the array size along the i-th dimension.
-  size_type size(size_type i) const { return m_size[i]; }
+  [[nodiscard]] auto size(size_type i) const -> size_type { return m_size[i]; }
   //! \brief Returns the array sizes.
-  const tuple_type &sizes() const { return m_size; }
+  [[nodiscard]] auto sizes() const -> const tuple_type & { return m_size; }
   //! \brief Returns the array total length.
-  size_type size() const { return m_step.front(); }
+  [[nodiscard]] auto size() const -> size_type { return m_step.front(); }
   //! \brief Returns the gap between 2 consecutive elements on the ith
   //! dimension.
-  size_type step(size_type i) const { return m_step[i + 1]; }
+  [[nodiscard]] auto step(size_type i) const -> size_type { return m_step[i + 1]; }
   //! \brief Returns true if the array is empty.
-  bool empty() const { return (size() == 0); }
+  [[nodiscard]] auto empty() const -> bool { return (size() == 0); }
   //! \brief Data access, returns a pointer to the first element of the array.
-  T *data() { return m_data; }
-  const T *data() const { return m_data; }
+  auto data() -> T * { return m_data; }
+  [[nodiscard]] auto data() const -> const T * { return m_data; }
   //! \brief [] operator, returns the kth element of the array viewed as a one
   //! dimensional array.
-  T operator[](int k) const {
+  auto operator[](int k) const -> T {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_data[k];
   }
-  T &operator[](int k) {
+  auto operator[](int k) -> T & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_data[k];
   }
   //! \brief Return the property of the array
-  int getProperty() const { return m_property; }
+  [[nodiscard]] auto getProperty() const -> int { return m_property; }
   // \brief Set the property of the array
   void setProperty(int v) { m_property = v; }
   //! \brief Returns an iterator to the first element of the array.
-  iterator begin() { return iterator(m_data); }
-  const_iterator begin() const { return const_iterator(m_data); }
+  auto begin() -> iterator { return iterator(m_data); }
+  [[nodiscard]] auto begin() const -> const_iterator { return const_iterator(m_data); }
   //! \brief Returns a const iterator to the first element of the array.
-  const_iterator cbegin() const { return const_iterator(m_data); }
+  [[nodiscard]] auto cbegin() const -> const_iterator { return const_iterator(m_data); }
   //! \brief Returns an iterator to the first element after the end of the
   //! array.
-  iterator end() { return iterator(m_data + size()); }
-  const_iterator end() const { return const_iterator(m_data + size()); }
+  auto end() -> iterator { return iterator(m_data + size()); }
+  [[nodiscard]] auto end() const -> const_iterator { return const_iterator(m_data + size()); }
   //! \brief Returns a const iterator to the first element after the end of the
   //! array.
-  const_iterator cend() const { return const_iterator(m_data + size()); }
+  [[nodiscard]] auto cend() const -> const_iterator { return const_iterator(m_data + size()); }
   //! \brief Returns an iterator along the Kth dimension to the first element of
   //! the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator dim_begin(I... next) const {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_begin(I... next) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(m_data + offset<K>(0, next...), m_step[K + 1]);
   }
-  template <size_type K, typename... I> dim_iterator dim_begin(I... next) {
+  template <size_type K, typename... I> auto dim_begin(I... next) -> dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return dim_iterator(m_data + offset<K>(0, next...), m_step[K + 1]);
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element of the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator cdim_begin(I... next) const {
+  template <size_type K, typename... I> auto cdim_begin(I... next) const -> const_dim_iterator {
     return const_dim_iterator(m_data + offset<K>(0, next...), m_step[K + 1]);
   }
   //! \brief Returns an iterator along the Kth dimension to the first element
   //! after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator dim_end(I... next) const {
+  template <size_type K, typename... I>
+  [[nodiscard]] auto dim_end(I... next) const -> const_dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return const_dim_iterator(m_data + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
-  template <size_type K, typename... I> dim_iterator dim_end(I... next) {
+  template <size_type K, typename... I> auto dim_end(I... next) -> dim_iterator {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return dim_iterator(m_data + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
   //! \brief Returns a const iterator along the Kth dimension to the first
   //! element after the end of the hyperplane defined by next.
-  template <size_type K, typename... I> const_dim_iterator cdim_end(I... next) const {
+  template <size_type K, typename... I> auto cdim_end(I... next) const -> const_dim_iterator {
     return const_dim_iterator(m_data + offset<K>(0, next...) + m_step[K], m_step[K + 1]);
   }
   //! \brief Returns an iterator to the first diagonal element.
-  const_diag_iterator diag_begin() const {
+  [[nodiscard]] auto diag_begin() const -> const_diag_iterator {
     return const_diag_iterator(m_data, std::accumulate(m_step.begin() + 1, m_step.end(), 0));
   }
-  diag_iterator diag_begin() {
+  auto diag_begin() -> diag_iterator {
     return diag_iterator(m_data, std::accumulate(m_step.begin() + 1, m_step.end(), 0));
   }
   //! \brief Returns a const iterator to the first diagonal element.
-  const_diag_iterator cdiag_begin() const {
+  [[nodiscard]] auto cdiag_begin() const -> const_diag_iterator {
     return const_diag_iterator(m_data, std::accumulate(m_step.begin() + 1, m_step.end(), 0));
   }
   //! \brief Returns an iterator to the first element afer the last diagonal
   //! element.
-  const_diag_iterator diag_end() const {
+  [[nodiscard]] auto diag_end() const -> const_diag_iterator {
     size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), 0);
     return const_diag_iterator(m_data + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
-  diag_iterator diag_end() {
+  auto diag_end() -> diag_iterator {
     size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), 0);
     return diag_iterator(m_data + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   //! \brief Returns a const iterator to the first element afer the last
   //! diagonal element.
-  const_diag_iterator cdiag_end() const {
+  [[nodiscard]] auto cdiag_end() const -> const_diag_iterator {
     size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), 0);
     return const_diag_iterator(m_data + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   //! \brief Returns m(i, j, k, ...)
-  template <typename... I> T operator()(size_type first, I... next) const {
+  template <typename... I> auto operator()(size_type first, I... next) const -> T {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_data[pos(1, first, next...)];
   }
-  template <typename... I> T &operator()(size_type first, I... next) {
+  template <typename... I> auto operator()(size_type first, I... next) -> T & {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     return m_data[pos(1, first, next...)];
   }
   //! \brief Returns distance of m(i, j, k, ...) from m(0, 0, 0, ...)
-  template <typename... I> size_type distance(size_type first, I... next) const {
+  template <typename... I> auto distance(size_type first, I... next) const -> size_type {
     return pos(1, first, next...);
   }
   //! \brief Unary - operator.
-  container_type operator-() const {
+  auto operator-() const -> container_type {
     container_type v(sizes());
     std::transform(begin(), end(), v.begin(), [](T x) { return -x; });
     return v;
   }
   //! \brief += scalar operator.
-  container_type &operator+=(T v) {
+  auto operator+=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a += v; });
     return *this;
   }
   //! \brief -= scalar operator.
-  container_type &operator-=(T v) {
+  auto operator-=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a -= v; });
     return *this;
   }
   //! \brief /= scalar operator.
-  container_type &operator/=(T v) {
+  auto operator/=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a /= v; });
     return *this;
   }
   //! \brief *= scalar operator.
-  container_type &operator*=(T v) {
+  auto operator*=(T v) -> container_type & {
     std::for_each(begin(), end(), [v](T &a) { a *= v; });
     return *this;
   }
   //! \brief += operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  container_type &operator+=(const OTHER &that) {
+  auto operator+=(const OTHER &that) -> container_type & {
     std::transform(begin(), end(), that.begin(), begin(),
                    [](T v1, typename OTHER::value_type v2) { return (v1 + v2); });
     return *this;
   }
   //! \brief -= operator.
   template <typename OTHER, class = typename OTHER::const_iterator>
-  container_type &operator-=(const OTHER &that) {
+  auto operator-=(const OTHER &that) -> container_type & {
     std::transform(begin(), end(), that.begin(), begin(),
                    [](T v1, typename OTHER::value_type v2) { return (v1 - v2); });
     return *this;
   }
 
 protected:
-  template <size_type K> size_type offset(size_type i, size_type first = 0) const {
+  template <size_type K>
+  [[nodiscard]] auto offset(size_type i, size_type first = 0) const -> size_type {
     return (i == K) ? first : first * m_step[i + 1];
   }
   template <size_type K, typename... I>
-  size_type offset(size_type i, size_type first, I... next) const {
+  [[nodiscard]] auto offset(size_type i, size_type first, I... next) const -> size_type {
     return (i == K) ? offset<K>(i + 1, first, next...)
                     : first * m_step[i + 1] + offset<K>(i + 1, next...);
   }
-  size_type pos(size_type /*unused*/, size_type first) const { return first; }
-  template <typename... I> size_type pos(size_type i, size_type first, I... next) const {
+  [[nodiscard]] auto pos(size_type /*unused*/, size_type first) const -> size_type { return first; }
+  template <typename... I>
+  [[nodiscard]] auto pos(size_type i, size_type first, I... next) const -> size_type {
     return first * m_step[i] + pos(i + 1, next...);
   }
 };
@@ -1304,7 +1325,7 @@ protected:
 
 //! \brief Send the array a to the stream os.
 template <typename A, class = typename A::dim_iterator>
-std::ostream &operator<<(std::ostream &os, const A &a) {
+auto operator<<(std::ostream &os, const A &a) -> std::ostream & {
   typename A::size_type step = a.size(a.dim() - 1);
   typename A::const_iterator iter, iter1 = a.begin(), iter2 = a.end();
 
@@ -1320,7 +1341,7 @@ std::ostream &operator<<(std::ostream &os, const A &a) {
 
 //! \brief Load the array a from the stream is.
 template <typename A, class = typename A::dim_iterator>
-std::istream &operator>>(std::istream &is, A &a) {
+auto operator>>(std::istream &is, A &a) -> std::istream & {
   for (auto &e : a) {
     is >> e;
   }
@@ -1328,7 +1349,7 @@ std::istream &operator>>(std::istream &is, A &a) {
 }
 
 //! \brief Return true if a1 and a2 have the same size.
-template <typename A1, typename A2> bool same_size(const A1 &a1, const A2 &a2) {
+template <typename A1, typename A2> auto same_size(const A1 &a1, const A2 &a2) -> bool {
   if (a1.dim() != a2.dim()) {
     return false;
   }
@@ -1347,28 +1368,26 @@ template <typename A1, typename U, typename A2, class = typename A1::dim_iterato
           class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void add(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
-  std::transform(
-      m.begin(), m.end(),
-      out.begin(), [u](typename A1::value_type v) -> typename A2::value_type { return (v + u); });
+  std::transform(m.begin(), m.end(), out.begin(),
+                 [u](typename A1::value_type v) -> typename A2::value_type { return (v + u); });
 }
 template <typename A1, typename U, typename A2, class = typename A1::dim_iterator,
           class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void add(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
-  std::transform(
-      m.begin(), m.end(),
-      out.begin(), [u](typename A1::value_type v) -> typename A2::value_type { return (u + v); });
+  std::transform(m.begin(), m.end(), out.begin(),
+                 [u](typename A1::value_type v) -> typename A2::value_type { return (u + v); });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-typename A1::template promoted_type<U> operator+(const A1 &m, U u) {
+auto operator+(const A1 &m, U u) -> typename A1::template promoted_type<U> {
   typename A1::template promoted_type<U> out;
   add(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-typename A1::template promoted_type<U> operator+(U u, const A1 &m) {
+auto operator+(U u, const A1 &m) -> typename A1::template promoted_type<U> {
   typename A1::template promoted_type<U> out;
   add(u, m, out);
   return out;
@@ -1379,28 +1398,26 @@ template <typename A1, typename U, typename A2, class = typename A1::dim_iterato
           class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void sub(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
-  std::transform(
-      m.begin(), m.end(),
-      out.begin(), [u](typename A1::value_type v) -> typename A2::value_type { return (v - u); });
+  std::transform(m.begin(), m.end(), out.begin(),
+                 [u](typename A1::value_type v) -> typename A2::value_type { return (v - u); });
 }
 template <typename A1, typename U, typename A2, class = typename A1::dim_iterator,
           class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void sub(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
-  std::transform(
-      m.begin(), m.end(),
-      out.begin(), [u](typename A1::value_type v) -> typename A2::value_type { return (u - v); });
+  std::transform(m.begin(), m.end(), out.begin(),
+                 [u](typename A1::value_type v) -> typename A2::value_type { return (u - v); });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-typename A1::template promoted_type<U> operator-(const A1 &m, U u) {
+auto operator-(const A1 &m, U u) -> typename A1::template promoted_type<U> {
   typename A1::template promoted_type<U> out;
   sub(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-typename A1::template promoted_type<U> operator-(U u, const A1 &m) {
+auto operator-(U u, const A1 &m) -> typename A1::template promoted_type<U> {
   typename A1::template promoted_type<U> out;
   sub(u, m, out);
   return out;
@@ -1411,28 +1428,26 @@ template <typename A1, typename U, typename A2, class = typename A1::dim_iterato
           class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void mult(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
-  std::transform(
-      m.begin(), m.end(),
-      out.begin(), [u](typename A1::value_type v) -> typename A2::value_type { return (v * u); });
+  std::transform(m.begin(), m.end(), out.begin(),
+                 [u](typename A1::value_type v) -> typename A2::value_type { return (v * u); });
 }
 template <typename A1, typename U, typename A2, class = typename A1::dim_iterator,
           class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void mult(U u, const A1 &m, A2 &out) {
   out.resize(m.sizes());
-  std::transform(
-      m.begin(), m.end(),
-      out.begin(), [u](typename A1::value_type v) -> typename A2::value_type { return (u * v); });
+  std::transform(m.begin(), m.end(), out.begin(),
+                 [u](typename A1::value_type v) -> typename A2::value_type { return (u * v); });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-typename A1::template promoted_type<U> operator*(const A1 &m, U u) {
+auto operator*(const A1 &m, U u) -> typename A1::template promoted_type<U> {
   typename A1::template promoted_type<U> out;
   mult(m, u, out);
   return out;
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-typename A1::template promoted_type<U> operator*(U u, const A1 &m) {
+auto operator*(U u, const A1 &m) -> typename A1::template promoted_type<U> {
   typename A1::template promoted_type<U> out;
   mult(u, m, out);
   return out;
@@ -1443,13 +1458,12 @@ template <typename A1, typename U, typename A2, class = typename A1::dim_iterato
           class = typename TMIV::Common::NumericChecker<U>, class = typename A2::dim_iterator>
 void div(const A1 &m, U u, A2 &out) {
   out.resize(m.sizes());
-  std::transform(
-      m.begin(), m.end(),
-      out.begin(), [u](typename A1::value_type v) -> typename A2::value_type { return (v / u); });
+  std::transform(m.begin(), m.end(), out.begin(),
+                 [u](typename A1::value_type v) -> typename A2::value_type { return (v / u); });
 }
 template <typename A1, typename U, class = typename A1::diag_iterator,
           class = typename TMIV::Common::NumericChecker<U>>
-typename A1::template promoted_type<U> operator/(const A1 &m, U u) {
+auto operator/(const A1 &m, U u) -> typename A1::template promoted_type<U> {
   typename A1::template promoted_type<U> out;
   div(m, u, out);
   return out;
@@ -1460,14 +1474,14 @@ template <typename A1, typename A2, typename A3, class = typename A1::dim_iterat
           class = typename A2::dim_iterator, class = typename A3::dim_iterator>
 void add(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 + v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 + v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-typename A1::template promoted_type<typename A2::value_type> operator+(const A1 &m1, const A2 &m2) {
+auto operator+(const A1 &m1, const A2 &m2) ->
+    typename A1::template promoted_type<typename A2::value_type> {
   typename A1::template promoted_type<typename A2::value_type> out;
   add(m1, m2, out);
   return out;
@@ -1478,14 +1492,14 @@ template <typename A1, typename A2, typename A3, class = typename A1::dim_iterat
           class = typename A2::dim_iterator, class = typename A3::dim_iterator>
 void sub(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 - v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 - v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-typename A1::template promoted_type<typename A2::value_type> operator-(const A1 &m1, const A2 &m2) {
+auto operator-(const A1 &m1, const A2 &m2) ->
+    typename A1::template promoted_type<typename A2::value_type> {
   typename A1::template promoted_type<typename A2::value_type> out;
   sub(m1, m2, out);
   return out;
@@ -1496,14 +1510,14 @@ template <typename A1, typename A2, typename A3, class = typename A1::dim_iterat
           class = typename A2::dim_iterator, class = typename A3::dim_iterator>
 void mult(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 * v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 * v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-typename A1::template promoted_type<typename A2::value_type> mult(const A1 &m1, const A2 &m2) {
+auto mult(const A1 &m1, const A2 &m2) ->
+    typename A1::template promoted_type<typename A2::value_type> {
   typename A1::template promoted_type<typename A2::value_type> out;
   mult(m1, m2, out);
   return out;
@@ -1514,14 +1528,14 @@ template <typename A1, typename A2, typename A3, class = typename A1::dim_iterat
           class = typename A2::dim_iterator, class = typename A3::dim_iterator>
 void div(const A1 &m1, const A2 &m2, A3 &out) {
   out.resize(m1.sizes());
-  std::transform(
-      m1.begin(), m1.end(), m2.begin(), out.begin(),
-      [](typename A1::value_type v1, typename A2::value_type v2) ->
-      typename A3::value_type { return v1 / v2; });
+  std::transform(m1.begin(), m1.end(), m2.begin(), out.begin(),
+                 [](typename A1::value_type v1, typename A2::value_type v2) ->
+                 typename A3::value_type { return v1 / v2; });
 }
 template <typename A1, typename A2, class = typename A1::dim_iterator,
           class = typename A2::dim_iterator>
-typename A1::template promoted_type<typename A2::value_type> div(const A1 &m1, const A2 &m2) {
+auto div(const A1 &m1, const A2 &m2) ->
+    typename A1::template promoted_type<typename A2::value_type> {
   typename A1::template promoted_type<typename A2::value_type> out;
   div(m1, m2, out);
   return out;

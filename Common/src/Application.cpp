@@ -53,7 +53,7 @@ Application::Application(const char *tool, vector<const char *> argv) : m_startT
     if (argv.empty()) {
       throw runtime_error("Missing a command-line argument");
     }
-    auto result = argv.front();
+    const auto *result = argv.front();
     argv.erase(argv.begin());
     return result;
   };
@@ -61,12 +61,12 @@ Application::Application(const char *tool, vector<const char *> argv) : m_startT
   take();
 
   while (!argv.empty()) {
-    auto option = take();
+    const auto *option = take();
     if (configFileOption == option) {
       add_file(take());
     } else if (parameterOption == option) {
-      auto arg1 = take();
-      auto arg2 = take();
+      const auto *arg1 = take();
+      const auto *arg2 = take();
       add_parameter(arg1, arg2);
     } else if (helpOption == option) {
       m_json.reset();
@@ -126,7 +126,7 @@ void Application::add_stream(istream &stream) {
 
 void Application::startTime() { m_startTime = clock(); }
 
-void Application::printTime() {
+void Application::printTime() const {
   auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;
   cout << endl << "Total Time: " << fixed << setprecision(3) << executeTime << " sec." << endl;
 }

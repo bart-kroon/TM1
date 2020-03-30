@@ -45,9 +45,9 @@ struct AtlasAccessUnitParams {
   AtlasFrameParameterSetRBSP afps;
   AtlasTileGroupHeader atgh;
 
-  friend std::ostream &operator<<(std::ostream &, const AtlasAccessUnitParams &);
-  bool operator==(const AtlasAccessUnitParams &other) const;
-  bool operator!=(const AtlasAccessUnitParams &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &, const AtlasAccessUnitParams &) -> std::ostream &;
+  auto operator==(const AtlasAccessUnitParams &other) const -> bool;
+  auto operator!=(const AtlasAccessUnitParams &other) const -> bool { return !operator==(other); }
 };
 
 struct IvAccessUnitParams {
@@ -56,11 +56,11 @@ struct IvAccessUnitParams {
   std::vector<AtlasAccessUnitParams> atlas;
 
   // Convenience function to help the transition
-  auto atlasSizes() const -> Common::SizeVector;
+  [[nodiscard]] auto atlasSizes() const -> Common::SizeVector;
 
-  friend std::ostream &operator<<(std::ostream &, const IvAccessUnitParams &);
-  bool operator==(const IvAccessUnitParams &other) const;
-  bool operator!=(const IvAccessUnitParams &other) const { return !operator==(other); }
+  friend auto operator<<(std::ostream &, const IvAccessUnitParams &) -> std::ostream &;
+  auto operator==(const IvAccessUnitParams &other) const -> bool;
+  auto operator!=(const IvAccessUnitParams &other) const -> bool { return !operator==(other); }
 };
 } // namespace TMIV::MivBitstream
 

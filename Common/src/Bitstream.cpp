@@ -37,6 +37,8 @@
 #include <iostream>
 #include <limits>
 
+#include <cmath>
+
 using namespace std;
 
 namespace TMIV::Common {
@@ -55,7 +57,7 @@ auto InputBitstream::getFloat16() -> Common::Half {
 
 auto InputBitstream::getFloat32() -> float {
   uint32_t code = getUint32();
-  float value;
+  float value = NAN;
   memcpy(&value, &code, 4);
   return value;
 }
@@ -172,7 +174,7 @@ void OutputBitstream::putSExpGolomb(int64_t value) {
 void OutputBitstream::putFloat16(Common::Half value) { putUint16(value.encode()); }
 
 void OutputBitstream::putFloat32(float value) {
-  uint32_t code;
+  uint32_t code = 0;
   memcpy(&code, &value, 4);
   putUint32(code);
 }

@@ -53,21 +53,21 @@ public:
   GroupBasedRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   GroupBasedRenderer(const GroupBasedRenderer &) = delete;
   GroupBasedRenderer(GroupBasedRenderer &&) = default;
-  GroupBasedRenderer &operator=(const GroupBasedRenderer &) = delete;
-  GroupBasedRenderer &operator=(GroupBasedRenderer &&) = default;
+  auto operator=(const GroupBasedRenderer &) -> GroupBasedRenderer & = delete;
+  auto operator=(GroupBasedRenderer &&) -> GroupBasedRenderer & = default;
   ~GroupBasedRenderer() override = default;
 
   // Render from a texture atlas to a viewport
-  auto renderFrame(const MivBitstream::AccessUnit &frame,
-                   const MivBitstream::ViewParams &viewportParams) const
+  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
+                                 const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 
 private:
   using GroupIdMask = std::bitset<32>;
 
   // Render multiple groups
-  auto renderPass(GroupIdMask groupIdMask, const MivBitstream::AccessUnit &frame,
-                  const MivBitstream::ViewParams &viewportParams) const
+  [[nodiscard]] auto renderPass(GroupIdMask groupIdMask, const MivBitstream::AccessUnit &frame,
+                                const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame;
 
   // Determine group render order (multipass rendering)

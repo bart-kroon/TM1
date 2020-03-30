@@ -61,9 +61,9 @@ constexpr auto hemiSphere{2.F * pi};    // sr
 constexpr auto NaN{std::numeric_limits<float>::quiet_NaN()};
 constexpr auto inf{std::numeric_limits<float>::infinity()};
 
-template <typename Float> int ifloor(Float x) { return static_cast<int>(std::floor(x)); }
+template <typename Float> auto ifloor(Float x) -> int { return static_cast<int>(std::floor(x)); }
 
-template <typename Float> int iceil(Float x) { return static_cast<int>(std::ceil(x)); }
+template <typename Float> auto iceil(Float x) -> int { return static_cast<int>(std::ceil(x)); }
 
 template <typename Float> auto square(Float x) { return x * x; }
 
@@ -78,13 +78,13 @@ auto overload(Ts &&... values) -> Overload<std::remove_reference_t<Ts>...> {
 }
 
 // The maximum level for an unsigned integer of the specified number of bits
-constexpr unsigned maxLevel(unsigned bits);
+constexpr auto maxLevel(unsigned bits) -> unsigned;
 
 // Expand an integral value to floating-point using a linear transfer function
-template <unsigned bits> float expandValue(uint16_t x);
+template <unsigned bits> auto expandValue(uint16_t x) -> float;
 
 // Quantize a value using a linear transfer function
-template <unsigned bits> uint16_t quantizeValue(float x);
+template <unsigned bits> auto quantizeValue(float x) -> uint16_t;
 
 // Does a collection contain a specified value?
 template <typename Collection, typename Value>

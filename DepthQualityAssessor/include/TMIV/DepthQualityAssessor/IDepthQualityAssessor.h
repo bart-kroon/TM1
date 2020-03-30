@@ -42,8 +42,8 @@ public:
   IDepthQualityAssessor() = default;
   IDepthQualityAssessor(const IDepthQualityAssessor &) = delete;
   IDepthQualityAssessor(IDepthQualityAssessor &&) = default;
-  IDepthQualityAssessor &operator=(const IDepthQualityAssessor &) = delete;
-  IDepthQualityAssessor &operator=(IDepthQualityAssessor &&) = default;
+  auto operator=(const IDepthQualityAssessor &) -> IDepthQualityAssessor & = delete;
+  auto operator=(IDepthQualityAssessor &&) -> IDepthQualityAssessor & = default;
   virtual ~IDepthQualityAssessor() = default;
 
   virtual auto isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,

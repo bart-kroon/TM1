@@ -143,7 +143,7 @@ auto projectVertex(const Vec3f &position, const CameraIntrinsics &ci) -> pair<Ve
 
 template <>
 auto ProjectionHelper<CiCamType::equirectangular>::getAngularResolution() const -> float {
-  auto &ci = m_viewParams.ci;
+  const auto &ci = m_viewParams.ci;
   auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
   float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
   float DS = sin(ci.ci_erp_theta_max()) - sin(ci.ci_erp_theta_min());
@@ -152,7 +152,7 @@ auto ProjectionHelper<CiCamType::equirectangular>::getAngularResolution() const 
 }
 
 template <> auto ProjectionHelper<CiCamType::perspective>::getAngularResolution() const -> float {
-  auto &ci = m_viewParams.ci;
+  const auto &ci = m_viewParams.ci;
   auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
   const auto projectionFocalLength =
       (ci.ci_perspective_focal_hor() + ci.ci_perspective_focal_ver()) / 2.F;
@@ -165,7 +165,7 @@ template <> auto ProjectionHelper<CiCamType::perspective>::getAngularResolution(
 }
 
 template <> auto ProjectionHelper<CiCamType::orthographic>::getAngularResolution() const -> float {
-  auto &ci = m_viewParams.ci;
+  const auto &ci = m_viewParams.ci;
   auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
   return nbPixel / hemiSphere;
 }

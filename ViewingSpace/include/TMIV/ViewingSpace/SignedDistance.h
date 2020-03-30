@@ -78,8 +78,8 @@ struct SignedDistance {
     return *this;
   }
 
-  auto isInside() const -> bool { return value < 0.f; }
-  auto isOutside() const -> bool { return !isInside(); }
+  [[nodiscard]] auto isInside() const -> bool { return value < 0.f; }
+  [[nodiscard]] auto isOutside() const -> bool { return !isInside(); }
 };
 
 //! \brief Compute signed distance between a point and a rotated cuboid primitive.

@@ -40,19 +40,19 @@ namespace TMIV::MivBitstream {
 // 23090-12: coordinate_axis_system_params()
 class CoordinateAxisSystemParams {
 public:
-  constexpr auto cas_forward_axis() const noexcept;
-  constexpr auto cas_delta_left_axis_minus1() const noexcept;
-  constexpr auto cas_forward_sign() const noexcept;
-  constexpr auto cas_left_sign() const noexcept;
-  constexpr auto cas_up_sign() const noexcept;
+  [[nodiscard]] constexpr auto cas_forward_axis() const noexcept;
+  [[nodiscard]] constexpr auto cas_delta_left_axis_minus1() const noexcept;
+  [[nodiscard]] constexpr auto cas_forward_sign() const noexcept;
+  [[nodiscard]] constexpr auto cas_left_sign() const noexcept;
+  [[nodiscard]] constexpr auto cas_up_sign() const noexcept;
 
-  constexpr auto &cas_forward_axis(std::uint8_t value) noexcept;
-  constexpr auto &cas_delta_left_axis_minus1(std::uint8_t value) noexcept;
-  constexpr auto &cas_forward_sign(bool value) noexcept;
-  constexpr auto &cas_left_sign(bool value) noexcept;
-  constexpr auto &cas_up_sign(bool value) noexcept;
+  constexpr auto cas_forward_axis(std::uint8_t value) noexcept -> auto &;
+  constexpr auto cas_delta_left_axis_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto cas_forward_sign(bool value) noexcept -> auto &;
+  constexpr auto cas_left_sign(bool value) noexcept -> auto &;
+  constexpr auto cas_up_sign(bool value) noexcept -> auto &;
 
-  constexpr auto isOmafCas() const noexcept;
+  [[nodiscard]] constexpr auto isOmafCas() const noexcept;
 
   friend auto operator<<(std::ostream &stream, const CoordinateAxisSystemParams &x)
       -> std::ostream &;
@@ -78,8 +78,8 @@ public:
   constexpr MivVuiParams() = default;
   explicit constexpr MivVuiParams(const CoordinateAxisSystemParams &cas) : m_cas{cas} {}
 
-  constexpr auto &coordinate_axis_system_params() const noexcept;
-  constexpr auto &coordinate_axis_system_params() noexcept;
+  [[nodiscard]] constexpr auto coordinate_axis_system_params() const noexcept -> auto &;
+  constexpr auto coordinate_axis_system_params() noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const MivVuiParams &x) -> std::ostream &;
 

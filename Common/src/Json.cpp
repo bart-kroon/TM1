@@ -250,7 +250,7 @@ Json::Json(istream &stream) {
 
 void Json::setOverrides(const Json &overrides) {
   if (type() == Type::object && overrides.type() == Type::object) {
-    for (auto &kvp : dynamic_cast<const impl::Object &>(*overrides.m_value).value) {
+    for (const auto &kvp : dynamic_cast<const impl::Object &>(*overrides.m_value).value) {
       dynamic_cast<impl::Object &>(*m_value).value[kvp.first] = kvp.second;
     }
   } else {

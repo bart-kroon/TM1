@@ -49,16 +49,16 @@ public:
   explicit InputBitstream(std::istream &stream) : m_stream{stream} {}
   InputBitstream(const InputBitstream &) = delete;
   InputBitstream(InputBitstream &&) = default;
-  InputBitstream &operator=(const InputBitstream &) = delete;
-  InputBitstream &operator=(InputBitstream &&) = delete;
+  auto operator=(const InputBitstream &) -> InputBitstream & = delete;
+  auto operator=(InputBitstream &&) -> InputBitstream & = delete;
   ~InputBitstream() = default;
 
   // Input bit position indicator
-  auto tellg() const -> std::streampos;
+  [[nodiscard]] auto tellg() const -> std::streampos;
 
   template <typename Integer> auto readBits(unsigned bits) -> Integer;
 
-  bool getFlag() { return readBits<std::uint8_t>(1) > 0; }
+  auto getFlag() -> bool { return readBits<std::uint8_t>(1) > 0; }
   auto getUint8() { return readBits<std::uint8_t>(8); }
   auto getUint16() { return readBits<std::uint16_t>(16); }
   auto getUint32() { return readBits<std::uint32_t>(32); }
@@ -87,12 +87,12 @@ public:
   explicit OutputBitstream(std::ostream &stream) : m_stream{stream} {}
   OutputBitstream(const OutputBitstream &) = delete;
   OutputBitstream(OutputBitstream &&) = default;
-  OutputBitstream &operator=(const OutputBitstream &) = delete;
-  OutputBitstream &operator=(OutputBitstream &&) = delete;
+  auto operator=(const OutputBitstream &) -> OutputBitstream & = delete;
+  auto operator=(OutputBitstream &&) -> OutputBitstream & = delete;
   ~OutputBitstream() { byteAlign(); };
 
   // Output bit position indicator
-  auto tellp() const -> std::streampos;
+  [[nodiscard]] auto tellp() const -> std::streampos;
 
   template <typename Integer> void writeBits(const Integer &value, unsigned bits);
 

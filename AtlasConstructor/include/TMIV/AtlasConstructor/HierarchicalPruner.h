@@ -45,8 +45,8 @@ public:
   HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
   HierarchicalPruner(const HierarchicalPruner &) = delete;
   HierarchicalPruner(HierarchicalPruner &&) = delete;
-  HierarchicalPruner &operator=(const HierarchicalPruner &) = delete;
-  HierarchicalPruner &operator=(HierarchicalPruner &&) = delete;
+  auto operator=(const HierarchicalPruner &) -> HierarchicalPruner & = delete;
+  auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
   ~HierarchicalPruner() override;
 
   void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,

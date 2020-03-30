@@ -100,7 +100,7 @@ public: // Callback registrations
 private: // Decoder output
   void outputSequence(const VpccParameterSet &vps);
   void outputFrame(const VpccUnitHeader &vuh);
-  auto haveFrame(const VpccUnitHeader &vuh) const -> bool;
+  [[nodiscard]] auto haveFrame(const VpccUnitHeader &vuh) const -> bool;
 
 private: // Decoding processes
   void decodeVpccPayload(const VpccUnitHeader &vuh, const VpccPayload::Payload &payload);
@@ -183,16 +183,19 @@ private: // Internal decoder state
   bool m_stop{};
 
 private: // Access internal decoder state
-  auto vps(const VpccUnitHeader &vuh) const -> const VpccParameterSet &;
-  auto sequence(const VpccUnitHeader &vuh) const -> const Sequence &;
+  [[nodiscard]] auto vps(const VpccUnitHeader &vuh) const -> const VpccParameterSet &;
+  [[nodiscard]] auto sequence(const VpccUnitHeader &vuh) const -> const Sequence &;
   auto sequence(const VpccUnitHeader &vuh) -> Sequence &;
-  auto atlas(const VpccUnitHeader &vuh) const -> const Atlas &;
+  [[nodiscard]] auto atlas(const VpccUnitHeader &vuh) const -> const Atlas &;
   auto atlas(const VpccUnitHeader &vuh) -> Atlas &;
-  auto specialAtlas(const VpccUnitHeader &vuh) const -> const Atlas &;
+  [[nodiscard]] auto specialAtlas(const VpccUnitHeader &vuh) const -> const Atlas &;
   auto specialAtlas(const VpccUnitHeader &vuh) -> Atlas &;
-  auto aspsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasSequenceParameterSetRBSP> &;
-  auto afpsV(const VpccUnitHeader &vuh) const -> const std::vector<AtlasFrameParameterSetRBSP> &;
-  auto apsV(const VpccUnitHeader &vuh) const -> const std::vector<AdaptationParameterSetRBSP> &;
+  [[nodiscard]] auto aspsV(const VpccUnitHeader &vuh) const
+      -> const std::vector<AtlasSequenceParameterSetRBSP> &;
+  [[nodiscard]] auto afpsV(const VpccUnitHeader &vuh) const
+      -> const std::vector<AtlasFrameParameterSetRBSP> &;
+  [[nodiscard]] auto apsV(const VpccUnitHeader &vuh) const
+      -> const std::vector<AdaptationParameterSetRBSP> &;
 };
 } // namespace TMIV::MivBitstream
 

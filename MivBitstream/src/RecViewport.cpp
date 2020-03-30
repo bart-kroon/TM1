@@ -239,25 +239,21 @@ RecViewport::RecViewport(uint16_t value1, bool value2, bool value3, bool value4,
 }
 
 auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {
-  uint16_t seiId = x.rec_viewport_id();
   stream << "rec_viewport_id=" << x.rec_viewport_id() << '\n';
-  stream << "rec_viewport_cancel_flag( " << seiId << " )=" << x.rec_viewport_cancel_flag() << '\n';
+  stream << "rec_viewport_cancel_flag=" << x.rec_viewport_cancel_flag() << '\n';
   if (!x.rec_viewport_cancel_flag()) {
-    stream << "rec_viewport_persistence_flag( " << seiId
-           << " )=" << x.rec_viewport_persistence_flag() << '\n';
-    stream << "rec_viewport_center_view_flag( " << seiId
-           << " )=" << x.rec_viewport_center_view_flag() << '\n';
+    stream << "rec_viewport_persistence_flag=" << x.rec_viewport_persistence_flag() << '\n';
+    stream << "rec_viewport_center_view_flag=" << x.rec_viewport_center_view_flag() << '\n';
     if (!x.rec_viewport_center_view_flag())
-      stream << "rec_viewport_left_view_flag( " << seiId << " )=" << x.rec_viewport_left_view_flag()
-             << '\n';
-    stream << "rec_viewport_pos_x( " << seiId << " )=" << x.rec_viewport_pos_x() << '\n';
-    stream << "rec_viewport_pos_y( " << seiId << " )=" << x.rec_viewport_pos_y() << '\n';
-    stream << "rec_viewport_pos_z( " << seiId << " )=" << x.rec_viewport_pos_z() << '\n';
-    stream << "rec_viewport_quat_x( " << seiId << " )=" << x.rec_viewport_quat_x() << '\n';
-    stream << "rec_viewport_quat_y( " << seiId << " )=" << x.rec_viewport_quat_y() << '\n';
-    stream << "rec_viewport_quat_z( " << seiId << " )=" << x.rec_viewport_quat_z() << '\n';
-    stream << "rec_viewport_hor_range( " << seiId << " )=" << x.rec_viewport_hor_range() << '\n';
-    stream << "rec_viewport_ver_range( " << seiId << " )=" << x.rec_viewport_ver_range() << '\n';
+      stream << "rec_viewport_left_view_flag=" << x.rec_viewport_left_view_flag() << '\n';
+    stream << "rec_viewport_pos_x=" << x.rec_viewport_pos_x() << '\n';
+    stream << "rec_viewport_pos_y=" << x.rec_viewport_pos_y() << '\n';
+    stream << "rec_viewport_pos_z=" << x.rec_viewport_pos_z() << '\n';
+    stream << "rec_viewport_quat_x=" << x.rec_viewport_quat_x() << '\n';
+    stream << "rec_viewport_quat_y=" << x.rec_viewport_quat_y() << '\n';
+    stream << "rec_viewport_quat_z=" << x.rec_viewport_quat_z() << '\n';
+    stream << "rec_viewport_hor_range=" << x.rec_viewport_hor_range() << '\n';
+    stream << "rec_viewport_ver_range=" << x.rec_viewport_ver_range() << '\n';
   }
   return stream;
 }

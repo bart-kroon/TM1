@@ -42,6 +42,9 @@ namespace TMIV::MivBitstream {
 // 23090-12: rec_viewport()
 class RecViewport {
 public:
+  RecViewport() = default;
+  explicit RecViewport(std::uint16_t viewportId, bool cancelFlag = true);
+
   auto rec_viewport_id() const noexcept;
   auto rec_viewport_cancel_flag() const noexcept;
   auto rec_viewport_persistence_flag() const noexcept;
@@ -70,13 +73,6 @@ public:
   constexpr auto &rec_viewport_hor_range(const float value) noexcept;
   constexpr auto &rec_viewport_ver_range(const float value) noexcept;
 
-  RecViewport() = default;
-  explicit RecViewport(std::uint16_t, bool);
-  explicit RecViewport(std::uint16_t, bool, bool, bool, float, float, float, float, float, float,
-                       float, float);
-  explicit RecViewport(std::uint16_t, bool, bool, bool, bool, float, float, float, float, float,
-                       float, float, float);
-
   friend auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream &;
 
   auto operator==(const RecViewport &other) const noexcept -> bool;
@@ -102,5 +98,7 @@ private:
   std::optional<float> m_rec_viewport_ver_range{};
 };
 } // namespace TMIV::MivBitstream
+
+#include "RecViewport.hpp"
 
 #endif

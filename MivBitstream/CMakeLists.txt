@@ -51,6 +51,7 @@ add_library(MivBitstreamLib
 	"include/TMIV/MivBitstream/NalSampleStream.h"
 	"include/TMIV/MivBitstream/PatchParamsList.h"
 	"include/TMIV/MivBitstream/RecViewport.h"
+	"include/TMIV/MivBitstream/RecViewport.hpp"
 	"include/TMIV/MivBitstream/SeiRBSP.h"
 	"include/TMIV/MivBitstream/ViewingSpace.h"
 	"include/TMIV/MivBitstream/ViewingSpaceHandling.h"

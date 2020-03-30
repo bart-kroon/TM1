@@ -39,107 +39,65 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-// Getters
 auto RecViewport::rec_viewport_id() const noexcept { return m_rec_viewport_id; }
+
 auto RecViewport::rec_viewport_cancel_flag() const noexcept { return m_rec_viewport_cancel_flag; }
+
 auto RecViewport::rec_viewport_persistence_flag() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_persistence_flag.has_value());
   return *m_rec_viewport_persistence_flag;
 }
+
 auto RecViewport::rec_viewport_center_view_flag() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_center_view_flag.has_value());
   return *m_rec_viewport_center_view_flag;
 }
+
 auto RecViewport::rec_viewport_left_view_flag() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_left_view_flag.has_value());
   return *m_rec_viewport_left_view_flag;
 }
+
 auto RecViewport::rec_viewport_pos_x() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_pos_x.has_value());
   return *m_rec_viewport_pos_x;
 }
+
 auto RecViewport::rec_viewport_pos_y() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_pos_y.has_value());
   return *m_rec_viewport_pos_y;
 }
+
 auto RecViewport::rec_viewport_pos_z() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_pos_z.has_value());
   return *m_rec_viewport_pos_z;
 }
+
 auto RecViewport::rec_viewport_quat_x() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_quat_x.has_value());
   return *m_rec_viewport_quat_x;
 }
+
 auto RecViewport::rec_viewport_quat_y() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_quat_y.has_value());
   return *m_rec_viewport_quat_y;
 }
+
 auto RecViewport::rec_viewport_quat_z() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_quat_z.has_value());
   return *m_rec_viewport_quat_z;
 }
+
 auto RecViewport::rec_viewport_hor_range() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_hor_range.has_value());
   return *m_rec_viewport_hor_range;
 }
+
 auto RecViewport::rec_viewport_ver_range() const noexcept {
   VERIFY_MIVBITSTREAM(m_rec_viewport_ver_range.has_value());
   return *m_rec_viewport_ver_range;
 }
-// Setters
-constexpr auto &RecViewport::rec_viewport_id(const std::uint16_t value) noexcept {
-  m_rec_viewport_id = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_cancel_flag(const bool value) noexcept {
-  m_rec_viewport_cancel_flag = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_persistence_flag(const bool value) noexcept {
-  m_rec_viewport_persistence_flag = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_center_view_flag(const bool value) noexcept {
-  m_rec_viewport_center_view_flag = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_left_view_flag(const bool value) noexcept {
-  m_rec_viewport_left_view_flag = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_pos_x(const float value) noexcept {
-  m_rec_viewport_pos_x = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_pos_y(const float value) noexcept {
-  m_rec_viewport_pos_y = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_pos_z(const float value) noexcept {
-  m_rec_viewport_pos_z = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_quat_x(const float value) noexcept {
-  m_rec_viewport_quat_x = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_quat_y(const float value) noexcept {
-  m_rec_viewport_quat_y = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_quat_z(const float value) noexcept {
-  m_rec_viewport_quat_z = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_hor_range(const float value) noexcept {
-  m_rec_viewport_hor_range = value;
-  return *this;
-}
-constexpr auto &RecViewport::rec_viewport_ver_range(const float value) noexcept {
-  m_rec_viewport_ver_range = value;
-  return *this;
-}
-// functions
+
 auto RecViewport::operator==(const RecViewport &other) const noexcept -> bool {
   bool Equal = true;
 
@@ -201,41 +159,6 @@ auto RecViewport::operator!=(const RecViewport &other) const noexcept -> bool {
 RecViewport::RecViewport(uint16_t value1, bool value2) {
   rec_viewport_id(value1);
   rec_viewport_cancel_flag(value2);
-}
-
-RecViewport::RecViewport(uint16_t value1, bool value2, bool value3, bool value4, float value5,
-                         float value6, float value7, float value8, float value9, float value10,
-                         float value11, float value12) {
-  rec_viewport_id(value1);
-  rec_viewport_cancel_flag(value2);
-  rec_viewport_persistence_flag(value3);
-  rec_viewport_center_view_flag(value4);
-  rec_viewport_pos_x(value5);
-  rec_viewport_pos_y(value6);
-  rec_viewport_pos_z(value7);
-  rec_viewport_quat_x(value8);
-  rec_viewport_quat_y(value9);
-  rec_viewport_quat_z(value10);
-  rec_viewport_hor_range(value11);
-  rec_viewport_ver_range(value12);
-}
-
-RecViewport::RecViewport(uint16_t value1, bool value2, bool value3, bool value4, bool value5,
-                         float value6, float value7, float value8, float value9, float value10,
-                         float value11, float value12, float value13) {
-  rec_viewport_id(value1);
-  rec_viewport_cancel_flag(value2);
-  rec_viewport_persistence_flag(value3);
-  rec_viewport_center_view_flag(value4);
-  rec_viewport_left_view_flag(value5);
-  rec_viewport_pos_x(value6);
-  rec_viewport_pos_y(value7);
-  rec_viewport_pos_z(value8);
-  rec_viewport_quat_x(value9);
-  rec_viewport_quat_y(value10);
-  rec_viewport_quat_z(value11);
-  rec_viewport_hor_range(value12);
-  rec_viewport_ver_range(value13);
 }
 
 auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {

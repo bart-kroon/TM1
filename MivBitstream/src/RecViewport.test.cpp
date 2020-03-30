@@ -48,7 +48,19 @@ rec_viewport_cancel_flag=1
   }
 
   SECTION("Example 2") {
-    const auto x = RecViewport{1, 0, 0, 1, 0.2f, 1.45f, -0.79f, -0.91f, 0.0f, 1.2f, 90.0f, 60.4f};
+    auto x = RecViewport{};
+    x.rec_viewport_id(1)
+        .rec_viewport_cancel_flag(0)
+        .rec_viewport_persistence_flag(0)
+        .rec_viewport_center_view_flag(1)
+        .rec_viewport_pos_x(0.2F)
+        .rec_viewport_pos_y(1.45F)
+        .rec_viewport_pos_z(-0.79F)
+        .rec_viewport_quat_x(-0.91F)
+        .rec_viewport_quat_y(0.F)
+        .rec_viewport_quat_z(1.2F)
+        .rec_viewport_hor_range(90.F)
+        .rec_viewport_ver_range(60.4F);
     REQUIRE(toString(x) == R"(rec_viewport_id=1
 rec_viewport_cancel_flag=0
 rec_viewport_persistence_flag=0
@@ -66,8 +78,20 @@ rec_viewport_ver_range=60.4
   }
 
   SECTION("Example 3") {
-    const auto x =
-        RecViewport{2, 0, 0, 0, 1, 0.2f, 1.45f, -0.79f, -0.91f, 0.0f, 1.2f, 90.0f, 60.4f};
+    auto x = RecViewport{};
+    x.rec_viewport_id(2)
+        .rec_viewport_cancel_flag(0)
+        .rec_viewport_persistence_flag(0)
+        .rec_viewport_center_view_flag(0)
+        .rec_viewport_left_view_flag(1)
+        .rec_viewport_pos_x(0.2F)
+        .rec_viewport_pos_y(1.45F)
+        .rec_viewport_pos_z(-0.79F)
+        .rec_viewport_quat_x(-0.91F)
+        .rec_viewport_quat_y(0.F)
+        .rec_viewport_quat_z(1.2F)
+        .rec_viewport_hor_range(90.F)
+        .rec_viewport_ver_range(60.4F);
     REQUIRE(toString(x) == R"(rec_viewport_id=2
 rec_viewport_cancel_flag=0
 rec_viewport_persistence_flag=0

@@ -43,13 +43,13 @@ public:
   SubBlockCuller(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   SubBlockCuller(const SubBlockCuller &) = delete;
   SubBlockCuller(SubBlockCuller &&) = default;
-  SubBlockCuller &operator=(const SubBlockCuller &) = delete;
-  SubBlockCuller &operator=(SubBlockCuller &&) = default;
+  auto operator=(const SubBlockCuller &) -> SubBlockCuller & = delete;
+  auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
   ~SubBlockCuller() override = default;
 
   // Do sub-block culling and update the PatchIdMap
-  auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
-                             const MivBitstream::ViewParams &viewportParams) const
+  [[nodiscard]] auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
+                                           const MivBitstream::ViewParams &viewportParams) const
       -> Common::BlockToPatchMap override;
 
 private:

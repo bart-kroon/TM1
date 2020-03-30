@@ -61,23 +61,23 @@ public:
   // overrides this one for all keys
   void setOverrides(const Json &overrides);
 
-  Type type() const;
-  Json optional(std::string const &key) const;
-  Json require(std::string const &key) const;
-  bool isPresent(std::string const &key) const;
+  [[nodiscard]] auto type() const -> Type;
+  [[nodiscard]] auto optional(std::string const &key) const -> Json;
+  [[nodiscard]] auto require(std::string const &key) const -> Json;
+  [[nodiscard]] auto isPresent(std::string const &key) const -> bool;
 
   // Index into an array
-  Json at(size_t index) const;
+  [[nodiscard]] auto at(size_t index) const -> Json;
 
   // Return the number of elements in an object or array
-  size_t size() const;
+  [[nodiscard]] auto size() const -> size_t;
 
-  double asDouble() const;
-  float asFloat() const;
-  int asInt() const;
-  std::string const &asString() const;
-  bool asBool() const;
-  auto asStringVector() const -> std::vector<std::string>;
+  [[nodiscard]] auto asDouble() const -> double;
+  [[nodiscard]] auto asFloat() const -> float;
+  [[nodiscard]] auto asInt() const -> int;
+  [[nodiscard]] auto asString() const -> std::string const &;
+  [[nodiscard]] auto asBool() const -> bool;
+  [[nodiscard]] auto asStringVector() const -> std::vector<std::string>;
   template <stack::size_type M> auto asIntVector() const -> stack::Vector<int, M>;
   template <stack::size_type M> auto asFloatVector() const -> stack::Vector<float, M>;
 

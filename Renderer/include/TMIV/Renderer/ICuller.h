@@ -44,13 +44,14 @@ public:
   ICuller() = default;
   ICuller(const ICuller &) = delete;
   ICuller(ICuller &&) = default;
-  ICuller &operator=(const ICuller &) = delete;
-  ICuller &operator=(ICuller &&) = default;
+  auto operator=(const ICuller &) -> ICuller & = delete;
+  auto operator=(ICuller &&) -> ICuller & = default;
   virtual ~ICuller() = default;
 
   // Do culling and update the block to patch map for a single atlas
-  virtual auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
-                                     const MivBitstream::ViewParams &viewportParams) const
+  [[nodiscard]] virtual auto
+  filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
+                        const MivBitstream::ViewParams &viewportParams) const
       -> Common::BlockToPatchMap = 0;
 
   // Do culling and update the block to patch maps for all atlases

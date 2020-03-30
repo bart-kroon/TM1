@@ -44,8 +44,8 @@ public:
   IDecoder() = default;
   IDecoder(const IDecoder &) = delete;
   IDecoder(IDecoder &&) = default;
-  IDecoder &operator=(const IDecoder &) = delete;
-  IDecoder &operator=(IDecoder &&) = default;
+  auto operator=(const IDecoder &) -> IDecoder & = delete;
+  auto operator=(IDecoder &&) -> IDecoder & = default;
   virtual ~IDecoder() = default;
 
   // Render a decoded frame to a target viewport

@@ -48,7 +48,7 @@ namespace detail {
 // avoids having too many triangles in multiple strips
 //
 // Example: 8 hyper cores, 2048 rows ==> 128 strips of 16 rows each
-inline int numStrips(int rows) {
+inline auto numStrips(int rows) -> int {
   const double hw = std::thread::hardware_concurrency();
   const int maximum = (rows + 3) / 4;
   if (maximum <= hw) {
@@ -171,7 +171,8 @@ template <typename... T> auto Rasterizer<T...>::normWeight() const -> Common::Ma
 
 template <typename... T>
 template <size_t I>
-auto Rasterizer<T...>::attribute() const -> Common::Mat<std::tuple_element_t<I, Attributes>> {
+[[nodiscard]] auto Rasterizer<T...>::attribute() const
+    -> Common::Mat<std::tuple_element_t<I, Attributes>> {
   Common::Mat<std::tuple_element_t<I, Attributes>> matrix(m_size);
   auto i_matrix = std::begin(matrix);
   visit([&i_matrix](const Value &x) {
@@ -233,15 +234,15 @@ constexpr const auto eps = intfp{1};
 constexpr const auto one = eps << bits;
 constexpr const auto half = one / intfp{2};
 
-inline intfp fixed(float x) {
+inline auto fixed(float x) -> intfp {
   using std::ldexp;
   using TMIV::Common::ifloor;
   return static_cast<intfp>(ifloor(0.5F + ldexp(x, bits)));
 }
-inline Vec2fp fixed(Common::Vec2f v) { return {fixed(v.x()), fixed(v.y())}; }
-inline intfp fixed(int x) { return static_cast<intfp>(x) << bits; }
-inline int fpfloor(intfp x) { return static_cast<int>(x >> bits); }
-inline int fpceil(intfp x) { return fpfloor(x + one - eps); }
+inline auto fixed(Common::Vec2f v) -> Vec2fp { return {fixed(v.x()), fixed(v.y())}; }
+inline auto fixed(int x) -> intfp { return static_cast<intfp>(x) << bits; }
+inline auto fpfloor(intfp x) -> int { return static_cast<int>(x >> bits); }
+inline auto fpceil(intfp x) -> int { return fpfloor(x + one - eps); }
 } // namespace fixed_point
 
 template <typename... T>

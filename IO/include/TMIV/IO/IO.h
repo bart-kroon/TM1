@@ -56,8 +56,8 @@ auto loadSourceIvSequenceParams(const Common::Json &config) -> MivBitstream::IvS
 auto loadSourceIvAccessUnitParams(const Common::Json &config) -> MivBitstream::IvAccessUnitParams;
 
 // Loads a source frame including entity maps when applicable
-Common::MVD16Frame loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes,
-                                   int frameIndex);
+auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes, int frameIndex)
+    -> Common::MVD16Frame;
 
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 

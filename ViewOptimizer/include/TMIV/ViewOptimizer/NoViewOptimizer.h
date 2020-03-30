@@ -44,8 +44,8 @@ public:
   NoViewOptimizer(const Common::Json & /*unused*/, const Common::Json & /*unused*/) {}
   NoViewOptimizer(const NoViewOptimizer &) = default;
   NoViewOptimizer(NoViewOptimizer &&) = default;
-  NoViewOptimizer &operator=(const NoViewOptimizer &) = default;
-  NoViewOptimizer &operator=(NoViewOptimizer &&) = default;
+  auto operator=(const NoViewOptimizer &) -> NoViewOptimizer & = default;
+  auto operator=(NoViewOptimizer &&) -> NoViewOptimizer & = default;
   ~NoViewOptimizer() override = default;
 
   auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output override {
@@ -53,7 +53,7 @@ public:
     return {std::move(ivSequenceParams), std::move(isBasicView)};
   }
 
-  auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
     return views;
   }
 };

@@ -31,32 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Transformation.h>
+#ifndef _TMIV_DECODER_ENTITYBASEDPATCHMAPFILTER_H_
+#define _TMIV_DECODER_ENTITYBASEDPATCHMAPFILTER_H_
 
-namespace TMIV::Common {
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Common/Json.h>
+#include <TMIV/MivBitstream/AccessUnit.h>
 
-auto rotationMatrixFromRotationAroundX(float rx) -> Common::Mat3x3f {
-  using std::cos;
-  using std::sin;
-  return Common::Mat3x3f{1.F, 0.F, 0.F, 0.F, cos(rx), -sin(rx), 0.F, sin(rx), cos(rx)};
-}
+namespace TMIV::Decoder {
+class EntityBasedPatchMapFilter {
+public:
+  EntityBasedPatchMapFilter(const Common::Json &rootNode, const Common::Json &componentNode);
 
-auto rotationMatrixFromRotationAroundY(float ry) -> Common::Mat3x3f {
-  using std::cos;
-  using std::sin;
-  return Common::Mat3x3f{cos(ry), 0.F, sin(ry), 0.F, 1.F, 0.F, -sin(ry), 0.F, cos(ry)};
-}
+  // Update the PatchIdMap with respect to entities
+  void inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame) const;
 
-auto rotationMatrixFromRotationAroundZ(float rz) -> Common::Mat3x3f {
-  using std::cos;
-  using std::sin;
-  return Mat3x3f{cos(rz), -sin(rz), 0.F, sin(rz), cos(rz), 0.F, 0.F, 0.F, 1.F};
-}
+private:
+  Common::Vec2i m_entityDecodeRange;
+  bool m_entityFiltering{false};
+};
+} // namespace TMIV::Decoder
 
-auto EulerAnglesToRotationMatrix(Common::EulerAngles rotation) -> Common::Mat3x3f {
-  return rotationMatrixFromRotationAroundZ(Common::radperdeg * rotation.value[0]) *
-         rotationMatrixFromRotationAroundY(Common::radperdeg * rotation.value[1]) *
-         rotationMatrixFromRotationAroundX(Common::radperdeg * rotation.value[2]);
-}
-
-} // namespace TMIV::Common
+#endif

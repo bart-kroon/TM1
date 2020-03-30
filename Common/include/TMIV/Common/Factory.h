@@ -57,18 +57,19 @@ private:
 public:
   Factory(const Factory &) = delete;
   Factory(Factory &&) = delete;
-  Factory &operator=(const Factory &) = delete;
-  Factory &operator=(Factory &&) = delete;
+  auto operator=(const Factory &) -> Factory & = delete;
+  auto operator=(Factory &&) -> Factory & = delete;
   ~Factory() = default;
 
   // Return the singleton
-  static Factory &getInstance() {
+  static auto getInstance() -> Factory & {
     static Factory instance;
     return instance;
   }
 
   // Use configuration JSON to create a component/module
-  Object create(const std::string &name, const Json &rootNode, const Json &componentNode) const {
+  [[nodiscard]] auto create(const std::string &name, const Json &rootNode,
+                            const Json &componentNode) const -> Object {
     auto method = componentNode.require(name + "Method").asString();
 
     if (m_creators.count(method) == 0) {

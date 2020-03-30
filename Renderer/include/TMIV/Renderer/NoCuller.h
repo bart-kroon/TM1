@@ -41,8 +41,9 @@ class NoCuller : public ICuller {
 public:
   NoCuller(const Common::Json & /* unused */, const Common::Json & /* unused */) {}
 
-  auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
-                             const MivBitstream::ViewParams & /* viewportParams */) const
+  [[nodiscard]] auto
+  filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
+                        const MivBitstream::ViewParams & /* viewportParams */) const
       -> Common::BlockToPatchMap override {
     return atlas.blockToPatchMap;
   }

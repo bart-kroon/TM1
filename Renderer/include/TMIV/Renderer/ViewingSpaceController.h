@@ -43,8 +43,8 @@ public:
   ViewingSpaceController(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   ViewingSpaceController(const ViewingSpaceController &) = delete;
   ViewingSpaceController(ViewingSpaceController &&) = default;
-  ViewingSpaceController &operator=(const ViewingSpaceController &) = delete;
-  ViewingSpaceController &operator=(ViewingSpaceController &&) = default;
+  auto operator=(const ViewingSpaceController &) -> ViewingSpaceController & = delete;
+  auto operator=(ViewingSpaceController &&) -> ViewingSpaceController & = default;
   ~ViewingSpaceController() override = default;
 
   void inplaceFading(Common::Texture444Depth10Frame &viewport,

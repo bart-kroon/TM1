@@ -118,7 +118,7 @@ TEST_CASE("Parse V-PCC sample stream", "[VPCC Unit]") {
     const auto vp = VpccPayload::decodeFrom(substream, vuh);
     cout << vp;
 
-    if (auto vps = get_if<VpccParameterSet>(&vp.payload()); vps != nullptr) {
+    if (const auto *vps = get_if<VpccParameterSet>(&vp.payload()); vps != nullptr) {
       while (vps->vps_vpcc_parameter_set_id() >= vpses.size()) {
         vpses.emplace_back();
       }

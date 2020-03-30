@@ -65,7 +65,7 @@ struct MultipassRendererHelper {
   vector<unsigned> selectedViewsPass;
   vector<unsigned> patchesViewId;
 
-  auto filterMaps(uint16_t i) const -> uint16_t {
+  [[nodiscard]] auto filterMaps(uint16_t i) const -> uint16_t {
     if (i != unusedPatchId && contains(selectedViewsPass, patchesViewId[i])) {
       return i;
     }
@@ -108,7 +108,7 @@ struct MultipassRendererHelper {
 auto MultipassRenderer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   MultipassRendererHelper helper;
-  auto &viewParamsList = frame.atlas.front().viewParamsList;
+  const auto &viewParamsList = frame.atlas.front().viewParamsList;
 
   // Filter out all patches across all atlases
   auto framePass = frame;

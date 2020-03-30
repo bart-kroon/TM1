@@ -121,7 +121,7 @@ auto SeiMessage::operator!=(const SeiMessage &other) const noexcept -> bool {
 namespace {
 auto decodeSeiHeaderValue(istream &stream) -> size_t {
   size_t value = 0;
-  uint8_t sm_payload_type_byte;
+  uint8_t sm_payload_type_byte = 0;
   do {
     sm_payload_type_byte = getUint8(stream);
     value += sm_payload_type_byte;

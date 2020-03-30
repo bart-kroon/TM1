@@ -53,8 +53,8 @@ public:
   AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   AtlasConstructor(const AtlasConstructor &) = delete;
   AtlasConstructor(AtlasConstructor &&) = default;
-  AtlasConstructor &operator=(const AtlasConstructor &) = delete;
-  AtlasConstructor &operator=(AtlasConstructor &&) = default;
+  auto operator=(const AtlasConstructor &) -> AtlasConstructor & = delete;
+  auto operator=(AtlasConstructor &&) -> AtlasConstructor & = default;
   ~AtlasConstructor() override = default;
 
   auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
@@ -64,7 +64,7 @@ public:
   void pushFrame(Common::MVD16Frame transportViews) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD16Frame override;
-  auto maxLumaSamplesPerFrame() const -> std::size_t override;
+  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 

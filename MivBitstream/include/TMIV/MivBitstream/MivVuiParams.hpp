@@ -54,28 +54,28 @@ constexpr auto CoordinateAxisSystemParams::cas_left_sign() const noexcept {
 
 constexpr auto CoordinateAxisSystemParams::cas_up_sign() const noexcept { return m_cas_up_sign; }
 
-constexpr auto &CoordinateAxisSystemParams::cas_forward_axis(std::uint8_t value) noexcept {
+constexpr auto CoordinateAxisSystemParams::cas_forward_axis(std::uint8_t value) noexcept -> auto & {
   m_cas_forward_axis = value;
   return *this;
 }
 
-constexpr auto &
-CoordinateAxisSystemParams::cas_delta_left_axis_minus1(std::uint8_t value) noexcept {
+constexpr auto CoordinateAxisSystemParams::cas_delta_left_axis_minus1(std::uint8_t value) noexcept
+    -> auto & {
   m_cas_delta_left_axis_minus1 = value;
   return *this;
 }
 
-constexpr auto &CoordinateAxisSystemParams::cas_forward_sign(bool value) noexcept {
+constexpr auto CoordinateAxisSystemParams::cas_forward_sign(bool value) noexcept -> auto & {
   m_cas_forward_sign = value;
   return *this;
 }
 
-constexpr auto &CoordinateAxisSystemParams::cas_left_sign(bool value) noexcept {
+constexpr auto CoordinateAxisSystemParams::cas_left_sign(bool value) noexcept -> auto & {
   m_cas_left_sign = value;
   return *this;
 }
 
-constexpr auto &CoordinateAxisSystemParams::cas_up_sign(bool value) noexcept {
+constexpr auto CoordinateAxisSystemParams::cas_up_sign(bool value) noexcept -> auto & {
   m_cas_up_sign = value;
   return *this;
 }
@@ -85,22 +85,24 @@ constexpr auto CoordinateAxisSystemParams::isOmafCas() const noexcept {
          cas_left_sign() && cas_up_sign();
 }
 
-constexpr auto CoordinateAxisSystemParams::operator==(const CoordinateAxisSystemParams &other) const
-    noexcept {
+constexpr auto
+CoordinateAxisSystemParams::operator==(const CoordinateAxisSystemParams &other) const noexcept {
   return cas_forward_axis() == other.cas_forward_axis() &&
          cas_delta_left_axis_minus1() == other.cas_delta_left_axis_minus1() &&
          cas_forward_sign() == other.cas_forward_sign() &&
          cas_left_sign() == other.cas_left_sign() && cas_up_sign() == other.cas_up_sign();
 }
 
-constexpr auto CoordinateAxisSystemParams::operator!=(const CoordinateAxisSystemParams &other) const
-    noexcept {
+constexpr auto
+CoordinateAxisSystemParams::operator!=(const CoordinateAxisSystemParams &other) const noexcept {
   return !operator==(other);
 }
 
-constexpr auto &MivVuiParams::coordinate_axis_system_params() const noexcept { return m_cas; }
+constexpr auto MivVuiParams::coordinate_axis_system_params() const noexcept -> auto & {
+  return m_cas;
+}
 
-constexpr auto &MivVuiParams::coordinate_axis_system_params() noexcept { return m_cas; }
+constexpr auto MivVuiParams::coordinate_axis_system_params() noexcept -> auto & { return m_cas; }
 
 constexpr auto MivVuiParams::operator==(const MivVuiParams &other) const noexcept {
   return coordinate_axis_system_params() == other.coordinate_axis_system_params();

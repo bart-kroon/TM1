@@ -47,18 +47,20 @@ constexpr double M_2PI = M_PI * 2.0;
 constexpr double M_4PI = M_PI * 4.0;
 constexpr double M_PI2 = M_PI / 2.0;
 
-template <typename T> T deg2rad(T x) { return x * static_cast<T>(M_PI / 180.); }
-template <typename T> T rad2deg(T x) { return x * static_cast<T>(180. / M_PI); }
+template <typename T> auto deg2rad(T x) -> T { return x * static_cast<T>(M_PI / 180.); }
+template <typename T> auto rad2deg(T x) -> T { return x * static_cast<T>(180. / M_PI); }
 
-template <typename T> T sqr(T val) { return val * val; }
-template <typename T> T cube(T val) { return val * val * val; }
-template <typename T> int sgn(T val) { return int(T(0) < val) - int(val < T(0)); }
-template <typename T> bool inRange(T val, T min, T max) { return ((min <= val) && (val <= max)); }
-template <typename T> T is_zero(T val) {
+template <typename T> auto sqr(T val) -> T { return val * val; }
+template <typename T> auto cube(T val) -> T { return val * val * val; }
+template <typename T> auto sgn(T val) -> int { return int(T(0) < val) - int(val < T(0)); }
+template <typename T> auto inRange(T val, T min, T max) -> bool {
+  return ((min <= val) && (val <= max));
+}
+template <typename T> auto is_zero(T val) -> T {
   using std::abs;
   return (abs(val) < std::numeric_limits<T>::epsilon());
 }
-inline double squash(double a) {
+inline auto squash(double a) -> double {
   while (M_PI < a) {
     a -= M_2PI;
   }
@@ -67,7 +69,7 @@ inline double squash(double a) {
   }
   return a;
 }
-inline int ipow(int base, int exp) {
+inline auto ipow(int base, int exp) -> int {
   int result = 1;
   for (;;) {
     if ((exp % 2) != 0) {
@@ -82,27 +84,31 @@ inline int ipow(int base, int exp) {
   return result;
 }
 
-inline int gcd(int a, int b) { return (b == 0) ? a : gcd(b, a % b); }
-inline int lcm(int a, int b) { return std::abs(a * b) / gcd(a, b); }
+inline auto gcd(int a, int b) -> int { return (b == 0) ? a : gcd(b, a % b); }
+inline auto lcm(int a, int b) -> int { return std::abs(a * b) / gcd(a, b); }
 
-template <typename T> inline T ppd2pps(T ppd) { return sqr(ppd * static_cast<T>(180. / M_PI)); }
+template <typename T> inline auto ppd2pps(T ppd) -> T {
+  return sqr(ppd * static_cast<T>(180. / M_PI));
+}
 
-template <typename T> T pps2ppd(T pps) { return std::sqrt(pps) * static_cast<T>(M_PI / 180.); }
+template <typename T> auto pps2ppd(T pps) -> T {
+  return std::sqrt(pps) * static_cast<T>(M_PI / 180.);
+}
 
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value,
                                   int>::type = 0>
-T conjugate(T v) {
+auto conjugate(T v) -> T {
   return v;
 }
 template <typename T,
           typename std::enable_if<!(std::is_integral<T>::value || std::is_floating_point<T>::value),
                                   int>::type = 0>
-T conjugate(T v) {
+auto conjugate(T v) -> T {
   return std::conj(v);
 }
 
-template <typename T> T align(T value, T alignment) {
+template <typename T> auto align(T value, T alignment) -> T {
   T misalignment = value % alignment;
   return (misalignment != 0) ? (value + (alignment - misalignment)) : value;
 }

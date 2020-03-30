@@ -44,7 +44,7 @@ class IvMetadataReader {
 public:
   explicit IvMetadataReader(const Common::Json &config);
 
-  auto &decoder() noexcept { return *m_decoder; }
+  auto decoder() noexcept -> auto & { return *m_decoder; }
 
 private:
   std::ifstream m_stream;

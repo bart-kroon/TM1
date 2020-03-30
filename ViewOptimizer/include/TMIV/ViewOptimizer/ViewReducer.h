@@ -48,13 +48,13 @@ public:
   ViewReducer(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   ViewReducer(const ViewReducer &) = default;
   ViewReducer(ViewReducer &&) = default;
-  ViewReducer &operator=(const ViewReducer &) = default;
-  ViewReducer &operator=(ViewReducer &&) = default;
+  auto operator=(const ViewReducer &) -> ViewReducer & = default;
+  auto operator=(ViewReducer &&) -> ViewReducer & = default;
   ~ViewReducer() override = default;
 
   auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output override;
 
-  auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
     return views;
   }
 

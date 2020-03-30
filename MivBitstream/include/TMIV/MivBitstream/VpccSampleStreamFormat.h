@@ -44,7 +44,7 @@ class SampleStreamVpccHeader {
 public:
   explicit SampleStreamVpccHeader(std::uint8_t ssvh_unit_size_precision_bytes_minus1);
 
-  constexpr auto ssvh_unit_size_precision_bytes_minus1() const noexcept {
+  [[nodiscard]] constexpr auto ssvh_unit_size_precision_bytes_minus1() const noexcept {
     return m_ssvh_unit_size_precision_bytes_minus1;
   }
 
@@ -71,8 +71,8 @@ class SampleStreamVpccUnit {
 public:
   explicit SampleStreamVpccUnit(std::string ssvu_vpcc_unit);
 
-  auto ssvu_vpcc_unit_size() const noexcept { return m_ssvu_vpcc_unit.size(); }
-  const auto &ssvu_vpcc_unit() const noexcept { return m_ssvu_vpcc_unit; }
+  [[nodiscard]] auto ssvu_vpcc_unit_size() const noexcept { return m_ssvu_vpcc_unit.size(); }
+  [[nodiscard]] auto ssvu_vpcc_unit() const noexcept -> const auto & { return m_ssvu_vpcc_unit; }
 
   friend auto operator<<(std::ostream &stream, const SampleStreamVpccUnit &x) -> std::ostream &;
 

@@ -46,46 +46,48 @@ constexpr auto MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag() const
   return m_masp_depth_occ_map_threshold_flag;
 }
 
-constexpr auto &MivAtlasSequenceParams::masp_group_id(const unsigned value) noexcept {
+constexpr auto MivAtlasSequenceParams::masp_group_id(const unsigned value) noexcept -> auto & {
   m_masp_group_id = value;
   return *this;
 }
 
-constexpr auto &MivAtlasSequenceParams::masp_auxiliary_atlas_flag(const bool value) noexcept {
+constexpr auto MivAtlasSequenceParams::masp_auxiliary_atlas_flag(const bool value) noexcept
+    -> auto & {
   m_masp_auxiliary_atlas_flag = value;
   return *this;
 }
 
-constexpr auto &MivAtlasSequenceParams::masp_omaf_v1_compatible_flag(const bool value) noexcept {
+constexpr auto MivAtlasSequenceParams::masp_omaf_v1_compatible_flag(const bool value) noexcept
+    -> auto & {
   m_masp_omaf_v1_compatible_flag = value;
   return *this;
 }
 
-constexpr auto &MivAtlasSequenceParams::reset_masp_omaf_v1_compatible_flag() noexcept {
+constexpr auto MivAtlasSequenceParams::reset_masp_omaf_v1_compatible_flag() noexcept -> auto & {
   m_masp_omaf_v1_compatible_flag = {};
   return *this;
 }
 
-constexpr auto &
-MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag(const bool value) noexcept {
+constexpr auto MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag(const bool value) noexcept
+    -> auto & {
   m_masp_depth_occ_map_threshold_flag = value;
   return *this;
 }
 
-constexpr auto &
-MivAtlasSequenceParams::masp_geometry_frame_width_minus1(const uint16_t value) noexcept {
+constexpr auto
+MivAtlasSequenceParams::masp_geometry_frame_width_minus1(const uint16_t value) noexcept -> auto & {
   m_masp_geometry_frame_width_minus1 = value;
   return *this;
 }
 
-constexpr auto &
-MivAtlasSequenceParams::masp_geometry_frame_height_minus1(const uint16_t value) noexcept {
+constexpr auto
+MivAtlasSequenceParams::masp_geometry_frame_height_minus1(const uint16_t value) noexcept -> auto & {
   m_masp_geometry_frame_height_minus1 = value;
   return *this;
 }
 
-constexpr auto MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &other) const
-    noexcept {
+constexpr auto
+MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &other) const noexcept {
   return m_masp_omaf_v1_compatible_flag == other.m_masp_omaf_v1_compatible_flag &&
          masp_group_id() == other.masp_group_id() &&
          masp_auxiliary_atlas_flag() == other.masp_auxiliary_atlas_flag() &&
@@ -94,13 +96,13 @@ constexpr auto MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &
          m_masp_geometry_frame_height_minus1 == other.m_masp_geometry_frame_height_minus1;
 }
 
-constexpr auto MivAtlasSequenceParams::operator!=(const MivAtlasSequenceParams &other) const
-    noexcept {
+constexpr auto
+MivAtlasSequenceParams::operator!=(const MivAtlasSequenceParams &other) const noexcept {
   return !operator==(other);
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id() const noexcept {
   return m_asps_atlas_sequence_parameter_set_id;
 }
 
@@ -116,18 +118,18 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size
   return m_asps_log2_patch_packing_block_size;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4() const noexcept {
   return m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1() const noexcept {
   return m_asps_max_dec_atlas_frame_buffering_minus1;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_long_term_ref_atlas_frames_flag() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_long_term_ref_atlas_frames_flag() const noexcept {
   return m_asps_long_term_ref_atlas_frames_flag;
 }
 
@@ -135,8 +137,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_use_eight_orientations_flag()
   return m_asps_use_eight_orientations_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag() const noexcept {
   return m_asps_extended_projection_enabled_flag;
 }
 
@@ -145,13 +147,13 @@ AtlasSequenceParameterSetRBSP::asps_normal_axis_limits_quantization_enabled_flag
   return m_asps_normal_axis_limits_quantization_enabled_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_normal_axis_max_delta_value_enabled_flag() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_normal_axis_max_delta_value_enabled_flag() const noexcept {
   return m_asps_normal_axis_max_delta_value_enabled_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_remove_duplicate_point_enabled_flag() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_remove_duplicate_point_enabled_flag() const noexcept {
   return m_asps_remove_duplicate_point_enabled_flag;
 }
 
@@ -163,8 +165,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_patch_precedence_order_flag()
   return m_asps_patch_precedence_order_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_patch_size_quantizer_present_flag() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_patch_size_quantizer_present_flag() const noexcept {
   return m_asps_patch_size_quantizer_present_flag;
 }
 
@@ -176,8 +178,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag() cons
   return m_asps_eom_patch_enabled_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag() const
-    noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag() const noexcept {
   return m_asps_point_local_reconstruction_enabled_flag;
 }
 
@@ -201,137 +203,150 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_extension2_present_flag() con
   return m_asps_extension2_present_flag;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_atlas_sequence_parameter_set_id(const uint8_t value) noexcept
+    -> auto & {
   m_asps_atlas_sequence_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_frame_width(const uint16_t value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_width(const uint16_t value) noexcept
+    -> auto & {
   m_asps_frame_width = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_frame_height(const uint16_t value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height(const uint16_t value) noexcept
+    -> auto & {
   m_asps_frame_height = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size(const uint8_t value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size(const uint8_t value) noexcept
+    -> auto & {
   m_asps_log2_patch_packing_block_size = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4(
-    const uint8_t value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4(
+    const uint8_t value) noexcept -> auto & {
   m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1(
-    const uint8_t value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1(
+    const uint8_t value) noexcept -> auto & {
   m_asps_max_dec_atlas_frame_buffering_minus1 = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_long_term_ref_atlas_frames_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_long_term_ref_atlas_frames_flag(const bool value) noexcept
+    -> auto & {
   m_asps_long_term_ref_atlas_frames_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_use_eight_orientations_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_use_eight_orientations_flag(const bool value) noexcept
+    -> auto & {
   m_asps_use_eight_orientations_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag(const bool value) noexcept
+    -> auto & {
   m_asps_extended_projection_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_normal_axis_limits_quantization_enabled_flag(
-    const bool value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_normal_axis_limits_quantization_enabled_flag(
+    const bool value) noexcept -> auto & {
   m_asps_normal_axis_limits_quantization_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_normal_axis_max_delta_value_enabled_flag(
-    const bool value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_normal_axis_max_delta_value_enabled_flag(
+    const bool value) noexcept -> auto & {
   m_asps_normal_axis_max_delta_value_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_remove_duplicate_point_enabled_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_remove_duplicate_point_enabled_flag(const bool value) noexcept
+    -> auto & {
   m_asps_remove_duplicate_point_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_pixel_deinterleaving_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_pixel_deinterleaving_flag(const bool value) noexcept -> auto & {
   m_asps_pixel_deinterleaving_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_patch_precedence_order_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_patch_precedence_order_flag(const bool value) noexcept
+    -> auto & {
   m_asps_patch_precedence_order_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_patch_size_quantizer_present_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_patch_size_quantizer_present_flag(const bool value) noexcept
+    -> auto & {
   m_asps_patch_size_quantizer_present_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_raw_patch_enabled_flag(const bool value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_raw_patch_enabled_flag(const bool value) noexcept
+    -> auto & {
   m_asps_raw_patch_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag(const bool value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag(const bool value) noexcept
+    -> auto & {
   m_asps_eom_patch_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag(
-    const bool value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag(
+    const bool value) noexcept -> auto & {
   m_asps_point_local_reconstruction_enabled_flag = value;
   return *this;
 }
 
-constexpr auto &AtlasSequenceParameterSetRBSP::asps_map_count_minus1(const uint8_t value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_map_count_minus1(const uint8_t value) noexcept
+    -> auto & {
   m_asps_map_count_minus1 = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_vui_parameters_present_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_vui_parameters_present_flag(const bool value) noexcept
+    -> auto & {
   m_asps_vui_parameters_present_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_extension_present_flag(const bool value) noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_present_flag(const bool value) noexcept
+    -> auto & {
   m_asps_extension_present_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag(const bool value) noexcept
+    -> auto & {
   m_asps_miv_extension_present_flag = value;
   return *this;
 }
 
-constexpr auto &
-AtlasSequenceParameterSetRBSP::asps_extension2_present_flag(const bool value) noexcept {
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_extension2_present_flag(const bool value) noexcept -> auto & {
   m_asps_extension2_present_flag = value;
   return *this;
 }

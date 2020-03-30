@@ -176,7 +176,7 @@ auto EntityBasedAtlasConstructor::entitySeparator(const MVD16Frame &transportVie
                                                   uint16_t entityId) -> MVD16Frame {
   // Initalize entityViews
   MVD16Frame entityViews;
-  for (auto &transportView : transportViews) {
+  for (const auto &transportView : transportViews) {
     TextureDepth16Frame entityView = {
         TextureFrame(transportView.texture.getWidth(), transportView.texture.getHeight()),
         Depth16Frame(transportView.depth.getWidth(), transportView.depth.getHeight())};

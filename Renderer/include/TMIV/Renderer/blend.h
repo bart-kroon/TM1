@@ -36,10 +36,10 @@
 
 namespace TMIV::Renderer {
 // Blend two arithmetic tensors of fixed size
-template <typename T> static T blendValues(float w_a, T a, float w_b, T b);
+template <typename T> static auto blendValues(float w_a, T a, float w_b, T b) -> T;
 
 // Blend three arithmetic tensors of fixed size
-template <typename T> T blendValues(float w_a, T a, float w_b, T b, float w_c, T c);
+template <typename T> auto blendValues(float w_a, T a, float w_b, T b, float w_c, T c) -> T;
 
 // Blend the attributes of two pixels
 template <typename T0, typename... T>

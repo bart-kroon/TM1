@@ -175,7 +175,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
 
   const auto k = aau.asps.asps_log2_patch_packing_block_size();
 
-  for (auto &pp : m_ivau.patchParamsList) {
+  for (const auto &pp : m_ivau.patchParamsList) {
     if (pp.vuhAtlasId == vai) {
       auto pdu = PatchDataUnit{};
 

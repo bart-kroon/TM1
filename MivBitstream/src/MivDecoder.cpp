@@ -324,7 +324,7 @@ auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
   auto x = vector<PatchParams>(atgdu.atgduTotalNumberOfPatches());
 
   atgdu.visit([&](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
-    auto &pdu = pid.patch_data_unit();
+    const auto &pdu = pid.patch_data_unit();
     const auto k = asps.asps_log2_patch_packing_block_size();
 
     x[p].pduOrientationIndex(pdu.pdu_orientation_index());
@@ -357,7 +357,7 @@ auto MivDecoder::decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
   fill(begin(result.getPlane(0)), end(result.getPlane(0)), unusedPatchId);
 
   atgdu.visit([&result](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
-    auto &pdu = pid.patch_data_unit();
+    const auto &pdu = pid.patch_data_unit();
     const auto first = Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()};
     const auto last = first + Vec2i{pdu.pdu_2d_size_x_minus1(), pdu.pdu_2d_size_y_minus1()};
 
@@ -424,7 +424,7 @@ void MivDecoder::decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh) 
 
 void MivDecoder::decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                            const SeiRBSP &sei) {
-  for (auto &message : sei.messages()) {
+  for (const auto &message : sei.messages()) {
     decodeSeiMessage(vuh, nuh, message);
   }
 }
@@ -572,7 +572,7 @@ auto MivDecoder::specialAtlas(const VpccUnitHeader &vuh) -> Atlas & {
 
 auto MivDecoder::aspsV(const VpccUnitHeader &vuh) const
     -> const vector<AtlasSequenceParameterSetRBSP> & {
-  auto &x = atlas(vuh);
+  const auto &x = atlas(vuh);
   if (x.aspsV.empty()) {
     return specialAtlas(vuh).aspsV;
   }
@@ -581,7 +581,7 @@ auto MivDecoder::aspsV(const VpccUnitHeader &vuh) const
 
 auto MivDecoder::afpsV(const VpccUnitHeader &vuh) const
     -> const vector<AtlasFrameParameterSetRBSP> & {
-  auto &x = atlas(vuh);
+  const auto &x = atlas(vuh);
   if (x.afpsV.empty()) {
     return specialAtlas(vuh).afpsV;
   }
@@ -590,7 +590,7 @@ auto MivDecoder::afpsV(const VpccUnitHeader &vuh) const
 
 auto MivDecoder::apsV(const VpccUnitHeader &vuh) const
     -> const vector<AdaptationParameterSetRBSP> & {
-  auto &x = atlas(vuh);
+  const auto &x = atlas(vuh);
   if (x.apsV.empty()) {
     return specialAtlas(vuh).apsV;
   }

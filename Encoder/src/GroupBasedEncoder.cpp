@@ -155,7 +155,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
     auto camerasOutGroup = ViewParamsList{};
     if (gIndex < numGroups - 1) {
       numViewsPerGroup.push_back(int(floor(viewParamsList.size() / numGroups)));
-      int64_t maxElementIndex;
+      int64_t maxElementIndex = 0;
 
       if (dominantAxis == 0) {
         maxElementIndex = max_element(Tx.begin(), Tx.end()) - Tx.begin();
@@ -194,7 +194,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
       }
 
       cout << "Views selected for group " << gIndex << ": ";
-      auto sep = "";
+      const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
         cout << sep << unsigned(viewsLabels[sortedCamerasId[i]]);
         viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
@@ -217,7 +217,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
       copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
 
       cout << "Views selected for group " << gIndex << ": ";
-      auto sep = "";
+      const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
         cout << sep << unsigned(viewsLabels[i]);
         viewsInGroup.push_back(viewsLabels[i]);
@@ -240,7 +240,7 @@ auto GroupBasedEncoder::splitSequenceParams(size_t groupId,
   result.viewParamsList.clear();
 
   // Only include the views that are part of this group
-  for (const auto [groupId_, viewId] : m_grouping) {
+  for (const auto &[groupId_, viewId] : m_grouping) {
     if (groupId_ == groupId) {
       result.viewParamsList.push_back(ivSequenceParams.viewParamsList[viewId]);
     }
@@ -253,7 +253,7 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
   auto result = MVD16Frame{};
 
   // Only include the views that are part of this group
-  for (const auto [groupId_, viewId] : m_grouping) {
+  for (const auto &[groupId_, viewId] : m_grouping) {
     if (groupId_ == groupId) {
       result.push_back(views[viewId]);
     }
@@ -306,7 +306,7 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
 
   // Concatenate atlas access unit parameters
   for (size_t groupId = 0; groupId < perGroupParams.size(); ++groupId) {
-    for (auto &atlas : perGroupParams[groupId]->atlas) {
+    for (const auto &atlas : perGroupParams[groupId]->atlas) {
       m_ivAccessUnitParams.atlas.push_back(atlas);
 
       // Set masp_group_id

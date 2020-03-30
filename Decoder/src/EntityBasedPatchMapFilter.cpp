@@ -3,7 +3,7 @@
  * and contributor rights, including patent rights, and no such rights are
  * granted under this license.
  *
- * Copyright (c) 2010-2020, ISO/IEC
+ * Copyright (c) 2010-2019, ISO/IEC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,26 +31,43 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_COMMON_TRANSFORMATION_H_
-#define _TMIV_COMMON_TRANSFORMATION_H_
+#include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
 
-#include "Common.h"
-#include "LinAlg.h"
+#include <cassert>
+#include <iostream>
 
-namespace TMIV::Common {
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::MivBitstream;
 
-struct EulerAngles {
-  Common::Vec3f value{};
-  EulerAngles() = default;
-  explicit EulerAngles(const Common::Vec3f &eulerAngles) : value(eulerAngles) {}
-};
+namespace TMIV::Decoder {
+EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json & /*rootNode*/,
+                                                     const Json &componentNode) {
+  m_entityFiltering = false;
+  if (auto subnode = componentNode.optional("EntityDecodeRange")) {
+    m_entityDecodeRange = subnode.asIntVector<2>();
+    m_entityFiltering = true;
+  }
+}
 
-auto rotationMatrixFromRotationAroundX(float rx) -> Common::Mat3x3f;
-auto rotationMatrixFromRotationAroundY(float ry) -> Common::Mat3x3f;
-auto rotationMatrixFromRotationAroundZ(float rz) -> Common::Mat3x3f;
+void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
+    MivBitstream::AccessUnit &frame) const {
+  if (m_entityFiltering && 0 < frame.vps->miv_sequence_params().msp_max_entities_minus1()) {
+    for (auto &atla : frame.atlas) {
+      Vec2i sz = atla.blockToPatchMap.getSize();
+      for (int y = 0; y < sz[1]; y++) {
+        for (int x = 0; x < sz[0]; x++) {
+          uint16_t patchId = atla.blockToPatchMap.getPlane(0)(y, x);
+          if (patchId != unusedPatchId) {
+            auto entityId = static_cast<int>(*atla.patchParamsList[patchId].pduEntityId());
+            if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
+              atla.blockToPatchMap.getPlane(0)(y, x) = unusedPatchId;
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
-auto EulerAnglesToRotationMatrix(Common::EulerAngles rotation) -> Common::Mat3x3f;
-
-} // namespace TMIV::Common
-
-#endif
+} // namespace TMIV::Decoder

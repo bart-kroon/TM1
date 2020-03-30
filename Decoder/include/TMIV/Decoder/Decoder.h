@@ -38,6 +38,7 @@
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/GeometryScaler.h>
+#include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
 #include <TMIV/Renderer/ICuller.h>
 #include <TMIV/Renderer/IRenderer.h>
 
@@ -45,6 +46,7 @@ namespace TMIV::Decoder {
 class Decoder : public IDecoder {
 private:
   GeometryScaler m_geometryScaler;
+  EntityBasedPatchMapFilter m_entityBasedPatchMapFilter;
   std::unique_ptr<Renderer::ICuller> m_culler;
   std::unique_ptr<Renderer::IRenderer> m_renderer;
 
@@ -52,8 +54,8 @@ public:
   Decoder(const Common::Json &rootNode, const Common::Json & /* componentNode */);
   Decoder(const Decoder &) = delete;
   Decoder(Decoder &&) = default;
-  Decoder &operator=(const Decoder &) = delete;
-  Decoder &operator=(Decoder &&) = default;
+  auto operator=(const Decoder &) -> Decoder & = delete;
+  auto operator=(Decoder &&) -> Decoder & = default;
   ~Decoder() override = default;
 
   auto decodeFrame(MivBitstream::AccessUnit &frame,

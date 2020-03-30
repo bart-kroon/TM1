@@ -46,18 +46,18 @@ public:
 
   Application(const Application &other) = delete;
   Application(Application &&other) = default;
-  Application &operator=(const Application &other) = delete;
-  Application &operator=(Application &&other) = default;
+  auto operator=(const Application &other) -> Application & = delete;
+  auto operator=(Application &&other) -> Application & = default;
   virtual ~Application() = default;
   void startTime();
-  void printTime();
+  void printTime() const;
   virtual void run() = 0;
 
 protected:
-  const Json &json() const;
+  [[nodiscard]] auto json() const -> const Json &;
 
   // Use the configuration file with a factory to create a component/module
-  template <class Interface, typename... Args> auto create(Args &&... next) const {
+  template <class Interface, typename... Args>[[nodiscard]] auto create(Args &&... next) const {
     auto result = getComponentParentAndName(json(), std::forward<Args>(next)...);
     return Factory<Interface>::getInstance().create(std::move(result.second), json(), result.first);
   }
@@ -66,14 +66,15 @@ private:
   void add_file(const std::string &path);
   void add_parameter(const std::string &key, std::string value);
   void add_stream(std::istream &stream);
-  std::pair<Json, std::string> getComponentParentAndName(const Json &node,
-                                                         const std::string &name) const {
+  [[nodiscard]] auto getComponentParentAndName(const Json &node, const std::string &name) const
+      -> std::pair<Json, std::string> {
     return {node, name};
   }
 
   template <typename... Args>
-  std::pair<Json, std::string> getComponentParentAndName(const Json &node, const std::string &first,
-                                                         Args &&... next) const {
+  [[nodiscard]] auto getComponentParentAndName(const Json &node, const std::string &first,
+                                               Args &&... next) const
+      -> std::pair<Json, std::string> {
     return getComponentParentAndName(node.require(node.require(first + "Method").asString()),
                                      std::forward<Args>(next)...);
   }

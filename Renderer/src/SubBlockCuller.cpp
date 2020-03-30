@@ -144,8 +144,8 @@ auto SubBlockCuller::filterBlockToPatchMap(const AtlasAccessUnit &atlas,
   auto result = atlas.blockToPatchMap;
 
   for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {
-    auto &patch = atlas.patchParamsList[patchIdx];
-    auto &view = atlas.viewParamsList[patch.pduViewId()];
+    const auto &patch = atlas.patchParamsList[patchIdx];
+    const auto &view = atlas.viewParamsList[patch.pduViewId()];
 
     if (patch.pduViewSize() == view.ci.projectionPlaneSize()) {
       // The size of the sub-block is fixed for now

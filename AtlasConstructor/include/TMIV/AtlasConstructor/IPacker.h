@@ -43,11 +43,11 @@ public:
   IPacker() = default;
   IPacker(const IPacker &) = delete;
   IPacker(IPacker &&) = default;
-  IPacker &operator=(const IPacker &) = delete;
-  IPacker &operator=(IPacker &&) = default;
+  auto operator=(const IPacker &) -> IPacker & = delete;
+  auto operator=(IPacker &&) -> IPacker & = default;
   virtual ~IPacker() = default;
 
-  virtual int getAlignment() = 0;
+  virtual auto getAlignment() -> int = 0;
 
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
                     const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList = 0;

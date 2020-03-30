@@ -46,69 +46,69 @@ constexpr auto CameraIntrinsics::ci_projection_plane_height_minus1() const noexc
   return m_ci_projection_plane_height_minus1;
 }
 
-constexpr auto &CameraIntrinsics::ci_cam_type(const CiCamType value) noexcept {
+constexpr auto CameraIntrinsics::ci_cam_type(const CiCamType value) noexcept -> auto & {
   m_ci_cam_type = value;
   return *this;
 }
 
-constexpr auto &
-CameraIntrinsics::ci_projection_plane_width_minus1(const std::uint16_t value) noexcept {
+constexpr auto
+CameraIntrinsics::ci_projection_plane_width_minus1(const std::uint16_t value) noexcept -> auto & {
   m_ci_projection_plane_width_minus1 = value;
   return *this;
 }
 
-constexpr auto &
-CameraIntrinsics::ci_projection_plane_height_minus1(const std::uint16_t value) noexcept {
+constexpr auto
+CameraIntrinsics::ci_projection_plane_height_minus1(const std::uint16_t value) noexcept -> auto & {
   m_ci_projection_plane_height_minus1 = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_erp_phi_min(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_erp_phi_min(const float value) noexcept -> auto & {
   m_ci_erp_phi_min = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_erp_phi_max(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_erp_phi_max(const float value) noexcept -> auto & {
   m_ci_erp_phi_max = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_erp_theta_min(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_erp_theta_min(const float value) noexcept -> auto & {
   m_ci_erp_theta_min = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_erp_theta_max(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_erp_theta_max(const float value) noexcept -> auto & {
   m_ci_erp_theta_max = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_perspective_focal_hor(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_perspective_focal_hor(const float value) noexcept -> auto & {
   m_ci_perspective_focal_hor = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_perspective_focal_ver(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_perspective_focal_ver(const float value) noexcept -> auto & {
   m_ci_perspective_focal_ver = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_perspective_center_hor(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_perspective_center_hor(const float value) noexcept -> auto & {
   m_ci_perspective_center_hor = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_perspective_center_ver(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_perspective_center_ver(const float value) noexcept -> auto & {
   m_ci_perspective_center_ver = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_ortho_width(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_ortho_width(const float value) noexcept -> auto & {
   m_ci_ortho_width = value;
   return *this;
 }
 
-constexpr auto &CameraIntrinsics::ci_ortho_height(const float value) noexcept {
+constexpr auto CameraIntrinsics::ci_ortho_height(const float value) noexcept -> auto & {
   m_ci_ortho_height = value;
   return *this;
 }
@@ -156,32 +156,32 @@ constexpr auto CameraExtrinsics::ce_view_quat_y() const noexcept { return m_ce_v
 
 constexpr auto CameraExtrinsics::ce_view_quat_z() const noexcept { return m_ce_view_quat_z; }
 
-constexpr auto &CameraExtrinsics::ce_view_pos_x(const float value) noexcept {
+constexpr auto CameraExtrinsics::ce_view_pos_x(const float value) noexcept -> auto & {
   m_ce_view_pos_x = value;
   return *this;
 }
 
-constexpr auto &CameraExtrinsics::ce_view_pos_y(const float value) noexcept {
+constexpr auto CameraExtrinsics::ce_view_pos_y(const float value) noexcept -> auto & {
   m_ce_view_pos_y = value;
   return *this;
 }
 
-constexpr auto &CameraExtrinsics::ce_view_pos_z(const float value) noexcept {
+constexpr auto CameraExtrinsics::ce_view_pos_z(const float value) noexcept -> auto & {
   m_ce_view_pos_z = value;
   return *this;
 }
 
-constexpr auto &CameraExtrinsics::ce_view_quat_x(const float value) noexcept {
+constexpr auto CameraExtrinsics::ce_view_quat_x(const float value) noexcept -> auto & {
   m_ce_view_quat_x = value;
   return *this;
 }
 
-constexpr auto &CameraExtrinsics::ce_view_quat_y(const float value) noexcept {
+constexpr auto CameraExtrinsics::ce_view_quat_y(const float value) noexcept -> auto & {
   m_ce_view_quat_y = value;
   return *this;
 }
 
-constexpr auto &CameraExtrinsics::ce_view_quat_z(const float value) noexcept {
+constexpr auto CameraExtrinsics::ce_view_quat_z(const float value) noexcept -> auto & {
   m_ce_view_quat_z = value;
   return *this;
 }
@@ -206,18 +206,19 @@ constexpr auto DepthQuantization::dq_depth_occ_map_threshold_default() const noe
   return m_dq_depth_occ_map_threshold_default;
 }
 
-constexpr auto &DepthQuantization::dq_norm_disp_low(const float value) noexcept {
+constexpr auto DepthQuantization::dq_norm_disp_low(const float value) noexcept -> auto & {
   m_dq_norm_disp_low = value;
   return *this;
 }
 
-constexpr auto &DepthQuantization::dq_norm_disp_high(const float value) noexcept {
+constexpr auto DepthQuantization::dq_norm_disp_high(const float value) noexcept -> auto & {
   m_dq_norm_disp_high = value;
   return *this;
 }
 
-constexpr auto &
-DepthQuantization::dq_depth_occ_map_threshold_default(const std::uint32_t value) noexcept {
+constexpr auto
+DepthQuantization::dq_depth_occ_map_threshold_default(const std::uint32_t value) noexcept
+    -> auto & {
   m_dq_depth_occ_map_threshold_default = value;
   return *this;
 }
@@ -252,14 +253,16 @@ constexpr auto AdaptationParameterSetRBSP::aps_miv_view_params_list_present_flag
   return m_aps_miv_view_params_list_present_flag;
 }
 
-constexpr auto &
-AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept {
+constexpr auto
+AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept
+    -> auto & {
   m_aps_adaptation_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto &
-AdaptationParameterSetRBSP::aps_miv_view_params_list_present_flag(const bool value) noexcept {
+constexpr auto
+AdaptationParameterSetRBSP::aps_miv_view_params_list_present_flag(const bool value) noexcept
+    -> auto & {
   m_aps_miv_view_params_list_present_flag = value;
   return *this;
 }

@@ -50,12 +50,13 @@ template <> struct Engine<MivBitstream::CiCamType::orthographic> {
         pph{float(ci.ci_projection_plane_height_minus1() + 1)} {}
 
   // Unprojection equation
-  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
+  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
     return {depth, ow * (uv.x() / ppw - 0.5F), oh * (uv.y() / pph - 0.5F)};
   }
 
   // Projection equation
-  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const {
+  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor const {
     return {Common::Vec2f{ppw * (0.5F + v.position.y() / ow), pph * (0.5F + v.position.z() / oh)},
             v.position.x(), v.rayAngle};
   }

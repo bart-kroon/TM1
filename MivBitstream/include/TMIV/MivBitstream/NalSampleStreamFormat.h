@@ -44,7 +44,7 @@ class SampleStreamNalHeader {
 public:
   explicit SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1);
 
-  constexpr auto ssnh_unit_size_precision_bytes_minus1() const noexcept {
+  [[nodiscard]] constexpr auto ssnh_unit_size_precision_bytes_minus1() const noexcept {
     return m_ssnh_unit_size_precision_bytes_minus1;
   }
 
@@ -71,8 +71,8 @@ class SampleStreamNalUnit {
 public:
   explicit SampleStreamNalUnit(std::string ssnu_nal_unit);
 
-  auto ssnu_nal_unit_size() const noexcept { return m_ssnu_nal_unit.size(); }
-  const auto &ssnu_nal_unit() const noexcept { return m_ssnu_nal_unit; }
+  [[nodiscard]] auto ssnu_nal_unit_size() const noexcept { return m_ssnu_nal_unit.size(); }
+  [[nodiscard]] auto ssnu_nal_unit() const noexcept -> const auto & { return m_ssnu_nal_unit; }
 
   friend auto operator<<(std::ostream &stream, const SampleStreamNalUnit &x) -> std::ostream &;
 

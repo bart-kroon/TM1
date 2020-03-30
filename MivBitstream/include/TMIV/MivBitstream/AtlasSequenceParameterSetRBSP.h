@@ -54,8 +54,8 @@ public:
   RefListStruct() = default;
   explicit RefListStruct(std::vector<std::int16_t> deltaAfocSt);
 
-  auto num_ref_entries() const noexcept -> std::size_t;
-  auto deltaAfocSt(std::size_t i) const noexcept -> std::int16_t;
+  [[nodiscard]] auto num_ref_entries() const noexcept -> std::size_t;
+  [[nodiscard]] auto deltaAfocSt(std::size_t i) const noexcept -> std::int16_t;
 
   auto printTo(std::ostream &stream, std::uint8_t rlsIdx) const -> std::ostream &;
 
@@ -75,20 +75,20 @@ private:
 // 23090-12: miv_atlas_sequence_params( vuh_atlas_id )
 class MivAtlasSequenceParams {
 public:
-  auto masp_omaf_v1_compatible_flag() const noexcept;
-  constexpr auto masp_group_id() const noexcept;
-  constexpr auto masp_auxiliary_atlas_flag() const noexcept;
-  constexpr auto masp_depth_occ_map_threshold_flag() const noexcept;
-  auto masp_geometry_frame_width_minus1() const noexcept -> uint16_t;
-  auto masp_geometry_frame_height_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto masp_omaf_v1_compatible_flag() const noexcept;
+  [[nodiscard]] constexpr auto masp_group_id() const noexcept;
+  [[nodiscard]] constexpr auto masp_auxiliary_atlas_flag() const noexcept;
+  [[nodiscard]] constexpr auto masp_depth_occ_map_threshold_flag() const noexcept;
+  [[nodiscard]] auto masp_geometry_frame_width_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto masp_geometry_frame_height_minus1() const noexcept -> uint16_t;
 
-  constexpr auto &masp_omaf_v1_compatible_flag(const bool value) noexcept;
-  constexpr auto &reset_masp_omaf_v1_compatible_flag() noexcept;
-  constexpr auto &masp_group_id(const unsigned value) noexcept;
-  constexpr auto &masp_auxiliary_atlas_flag(const bool value) noexcept;
-  constexpr auto &masp_depth_occ_map_threshold_flag(const bool value) noexcept;
-  constexpr auto &masp_geometry_frame_width_minus1(const std::uint16_t value) noexcept;
-  constexpr auto &masp_geometry_frame_height_minus1(const std::uint16_t value) noexcept;
+  constexpr auto masp_omaf_v1_compatible_flag(const bool value) noexcept -> auto &;
+  constexpr auto reset_masp_omaf_v1_compatible_flag() noexcept -> auto &;
+  constexpr auto masp_group_id(const unsigned value) noexcept -> auto &;
+  constexpr auto masp_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
+  constexpr auto masp_depth_occ_map_threshold_flag(const bool value) noexcept -> auto &;
+  constexpr auto masp_geometry_frame_width_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto masp_geometry_frame_height_minus1(const std::uint16_t value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const MivAtlasSequenceParams &) -> std::ostream &;
 
@@ -113,62 +113,65 @@ private:
 // 23090-12: atlas_sequence_parameter_set_rbsp()
 class AtlasSequenceParameterSetRBSP {
 public:
-  constexpr auto asps_atlas_sequence_parameter_set_id() const noexcept;
-  constexpr auto asps_frame_width() const noexcept;
-  constexpr auto asps_frame_height() const noexcept;
-  constexpr auto asps_log2_patch_packing_block_size() const noexcept;
-  constexpr auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4() const noexcept;
-  constexpr auto asps_max_dec_atlas_frame_buffering_minus1() const noexcept;
-  constexpr auto asps_long_term_ref_atlas_frames_flag() const noexcept;
-  auto asps_num_ref_atlas_frame_lists_in_asps() const noexcept -> std::uint8_t;
-  auto ref_list_struct(std::uint8_t rlsIdx) const -> const RefListStruct &;
-  constexpr auto asps_use_eight_orientations_flag() const noexcept;
-  constexpr auto asps_extended_projection_enabled_flag() const noexcept;
-  auto asps_max_projections_minus1() const noexcept -> unsigned;
-  constexpr auto asps_normal_axis_limits_quantization_enabled_flag() const noexcept;
-  constexpr auto asps_normal_axis_max_delta_value_enabled_flag() const noexcept;
-  constexpr auto asps_remove_duplicate_point_enabled_flag() const noexcept;
-  constexpr auto asps_pixel_deinterleaving_flag() const noexcept;
-  constexpr auto asps_patch_precedence_order_flag() const noexcept;
-  constexpr auto asps_patch_size_quantizer_present_flag() const noexcept;
-  constexpr auto asps_raw_patch_enabled_flag() const noexcept;
-  constexpr auto asps_eom_patch_enabled_flag() const noexcept;
-  constexpr auto asps_point_local_reconstruction_enabled_flag() const noexcept;
-  constexpr auto asps_map_count_minus1() const noexcept;
-  constexpr auto asps_vui_parameters_present_flag() const noexcept;
-  constexpr auto asps_extension_present_flag() const noexcept; // 23090-5 only
-  constexpr auto asps_miv_extension_present_flag() const noexcept;
-  auto miv_atlas_sequence_params() const noexcept -> const MivAtlasSequenceParams &;
-  constexpr auto asps_extension2_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_atlas_sequence_parameter_set_id() const noexcept;
+  [[nodiscard]] constexpr auto asps_frame_width() const noexcept;
+  [[nodiscard]] constexpr auto asps_frame_height() const noexcept;
+  [[nodiscard]] constexpr auto asps_log2_patch_packing_block_size() const noexcept;
+  [[nodiscard]] constexpr auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4() const noexcept;
+  [[nodiscard]] constexpr auto asps_max_dec_atlas_frame_buffering_minus1() const noexcept;
+  [[nodiscard]] constexpr auto asps_long_term_ref_atlas_frames_flag() const noexcept;
+  [[nodiscard]] auto asps_num_ref_atlas_frame_lists_in_asps() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) const -> const RefListStruct &;
+  [[nodiscard]] constexpr auto asps_use_eight_orientations_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_extended_projection_enabled_flag() const noexcept;
+  [[nodiscard]] auto asps_max_projections_minus1() const noexcept -> unsigned;
+  [[nodiscard]] constexpr auto asps_normal_axis_limits_quantization_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_normal_axis_max_delta_value_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_remove_duplicate_point_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_pixel_deinterleaving_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_patch_precedence_order_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_patch_size_quantizer_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_raw_patch_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_eom_patch_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_point_local_reconstruction_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_map_count_minus1() const noexcept;
+  [[nodiscard]] constexpr auto asps_vui_parameters_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_extension_present_flag() const noexcept; // 23090-5 only
+  [[nodiscard]] constexpr auto asps_miv_extension_present_flag() const noexcept;
+  [[nodiscard]] auto miv_atlas_sequence_params() const noexcept -> const MivAtlasSequenceParams &;
+  [[nodiscard]] constexpr auto asps_extension2_present_flag() const noexcept;
 
-  constexpr auto &asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept;
-  constexpr auto &asps_frame_width(const std::uint16_t value) noexcept;
-  constexpr auto &asps_frame_height(const std::uint16_t value) noexcept;
-  constexpr auto &asps_log2_patch_packing_block_size(const std::uint8_t value) noexcept;
-  constexpr auto &asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept;
-  constexpr auto &asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept;
-  constexpr auto &asps_long_term_ref_atlas_frames_flag(const bool value) noexcept;
+  constexpr auto asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_frame_width(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_frame_height(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_log2_patch_packing_block_size(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
+      -> auto &;
+  constexpr auto asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept
+      -> auto &;
+  constexpr auto asps_long_term_ref_atlas_frames_flag(const bool value) noexcept -> auto &;
   auto asps_num_ref_atlas_frame_lists_in_asps(const std::size_t value)
       -> AtlasSequenceParameterSetRBSP &;
   auto ref_list_struct(std::uint8_t rlsIdx, RefListStruct value) -> AtlasSequenceParameterSetRBSP &;
-  constexpr auto &asps_use_eight_orientations_flag(const bool value) noexcept;
-  constexpr auto &asps_extended_projection_enabled_flag(const bool value) noexcept;
+  constexpr auto asps_use_eight_orientations_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_extended_projection_enabled_flag(const bool value) noexcept -> auto &;
   auto asps_max_projections_minus1(const unsigned value) noexcept
       -> AtlasSequenceParameterSetRBSP &;
-  constexpr auto &asps_normal_axis_limits_quantization_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_normal_axis_max_delta_value_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_remove_duplicate_point_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_pixel_deinterleaving_flag(const bool value) noexcept;
-  constexpr auto &asps_patch_precedence_order_flag(const bool value) noexcept;
-  constexpr auto &asps_patch_size_quantizer_present_flag(const bool value) noexcept;
-  constexpr auto &asps_raw_patch_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_eom_patch_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_point_local_reconstruction_enabled_flag(const bool value) noexcept;
-  constexpr auto &asps_map_count_minus1(const std::uint8_t value) noexcept;
-  constexpr auto &asps_vui_parameters_present_flag(const bool value) noexcept;
-  constexpr auto &asps_extension_present_flag(const bool value) noexcept; // 23090-5 only
-  constexpr auto &asps_miv_extension_present_flag(const bool value) noexcept;
-  constexpr auto &asps_extension2_present_flag(const bool value) noexcept;
+  constexpr auto asps_normal_axis_limits_quantization_enabled_flag(const bool value) noexcept
+      -> auto &;
+  constexpr auto asps_normal_axis_max_delta_value_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_remove_duplicate_point_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_pixel_deinterleaving_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_patch_precedence_order_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_patch_size_quantizer_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_raw_patch_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_eom_patch_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_point_local_reconstruction_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_map_count_minus1(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_vui_parameters_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_extension_present_flag(const bool value) noexcept -> auto &; // 23090-5 only
+  constexpr auto asps_miv_extension_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_extension2_present_flag(const bool value) noexcept -> auto &;
 
   [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) -> RefListStruct &;
   [[nodiscard]] auto miv_atlas_sequence_params() noexcept -> MivAtlasSequenceParams &;

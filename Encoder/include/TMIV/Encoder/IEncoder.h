@@ -44,8 +44,8 @@ public:
   IEncoder() = default;
   IEncoder(const IEncoder &) = delete;
   IEncoder(IEncoder &&) = default;
-  IEncoder &operator=(const IEncoder &) = delete;
-  IEncoder &operator=(IEncoder &&) = default;
+  auto operator=(const IEncoder &) -> IEncoder & = delete;
+  auto operator=(IEncoder &&) -> IEncoder & = default;
   virtual ~IEncoder() = default;
 
   virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
@@ -54,7 +54,7 @@ public:
   virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD10Frame = 0;
-  virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
+  [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
 };
 } // namespace TMIV::Encoder
 

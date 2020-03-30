@@ -45,13 +45,13 @@ constexpr auto AccessUnitDelimiterRBSP::aframe_type(AframeType value) noexcept {
   m_aframe_type = value;
 }
 
-constexpr auto AccessUnitDelimiterRBSP::operator==(const AccessUnitDelimiterRBSP &other) const
-    noexcept {
+constexpr auto
+AccessUnitDelimiterRBSP::operator==(const AccessUnitDelimiterRBSP &other) const noexcept {
   return aframe_type() == other.aframe_type();
 }
 
-constexpr auto AccessUnitDelimiterRBSP::operator!=(const AccessUnitDelimiterRBSP &other) const
-    noexcept {
+constexpr auto
+AccessUnitDelimiterRBSP::operator!=(const AccessUnitDelimiterRBSP &other) const noexcept {
   return !operator==(other);
 }
 } // namespace TMIV::MivBitstream

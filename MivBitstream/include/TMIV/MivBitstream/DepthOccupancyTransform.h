@@ -50,7 +50,7 @@ public:
   OccupancyTransform(const ViewParams &viewParams, const PatchParams &patch);
 
   // Does x indicate "occupied/valid"?
-  auto occupant(uint16_t x) const -> bool;
+  [[nodiscard]] auto occupant(uint16_t x) const -> bool;
 
 private:
   uint16_t m_threshold{};
@@ -68,29 +68,29 @@ public:
   // Expand a level to normalized disparity [m^-1]
   //
   // The level is assumed to be a depth level (instead of "non-occupied/invalid")
-  auto expandNormDisp(uint16_t x) const -> float;
+  [[nodiscard]] auto expandNormDisp(uint16_t x) const -> float;
 
   // Expand a level to depth [m]
   //
   // The level is assumed to be a depth level (instead of "non-occupied/invalid")
-  auto expandDepth(uint16_t x) const -> float;
+  [[nodiscard]] auto expandDepth(uint16_t x) const -> float;
 
   // Expand a matrix of levels to depth [m]
   //
   // See also expandDepth(uint16_t)
-  auto expandDepth(const Common::Mat<uint16_t> &matrix) const -> Common::Mat<float>;
+  [[nodiscard]] auto expandDepth(const Common::Mat<uint16_t> &matrix) const -> Common::Mat<float>;
 
   // Expand a frame of levels to depth [m]
   //
   // See also expandDepth(uint16_t)
-  auto expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float>;
-  auto expandDepth(const Common::Depth10Frame &frame) const -> Common::Mat<float>;
+  [[nodiscard]] auto expandDepth(const Common::Depth16Frame &frame) const -> Common::Mat<float>;
+  [[nodiscard]] auto expandDepth(const Common::Depth10Frame &frame) const -> Common::Mat<float>;
 
   // Quantize normalized disparity [m^-1] to a level
   //
   // Invalid depth values are set to zero
   // Valid depth values are clamped to minLevel
-  auto quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t;
+  [[nodiscard]] auto quantizeNormDisp(float x, uint16_t minLevel) const -> uint16_t;
 
   // Quantize a matrix of normalized disparities [m^-1] to a Depth16Frame
   //

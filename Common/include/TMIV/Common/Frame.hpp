@@ -43,10 +43,10 @@ template <> struct PixelFormatHelper<YUV400P8> {
   static constexpr int nb_plane = 1;
   static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
-  static constexpr int getMemorySize(int W, int H) { return (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return (W * H) * 3 / 2; }
-  static constexpr int getPlaneWidth(int /*unused*/, int W) { return W; }
-  static constexpr int getPlaneHeight(int /*unused*/, int H) { return H; }
+  static constexpr auto getMemorySize(int W, int H) -> int { return (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return (W * H) * 3 / 2; }
+  static constexpr auto getPlaneWidth(int /*unused*/, int W) -> int { return W; }
+  static constexpr auto getPlaneHeight(int /*unused*/, int H) -> int { return H; }
   static constexpr auto neutralColor() -> std::uint8_t { return 0x80; }
 };
 
@@ -54,10 +54,10 @@ template <> struct PixelFormatHelper<YUV400P10> {
   static constexpr int nb_plane = 1;
   static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
-  static constexpr int getMemorySize(int W, int H) { return 2 * (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getPlaneWidth(int /*unused*/, int W) { return W; }
-  static constexpr int getPlaneHeight(int /*unused*/, int H) { return H; }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 2 * (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getPlaneWidth(int /*unused*/, int W) -> int { return W; }
+  static constexpr auto getPlaneHeight(int /*unused*/, int H) -> int { return H; }
   static constexpr auto neutralColor() -> std::uint16_t { return 0x200; }
 };
 
@@ -65,10 +65,10 @@ template <> struct PixelFormatHelper<YUV400P16> {
   static constexpr int nb_plane = 1;
   static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
-  static constexpr int getMemorySize(int W, int H) { return 2 * (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getPlaneWidth(int /*unused*/, int W) { return W; }
-  static constexpr int getPlaneHeight(int /*unused*/, int H) { return H; }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 2 * (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getPlaneWidth(int /*unused*/, int W) -> int { return W; }
+  static constexpr auto getPlaneHeight(int /*unused*/, int H) -> int { return H; }
   static constexpr auto neutralColor() -> std::uint16_t { return 0x8000; }
 };
 
@@ -76,10 +76,10 @@ template <> struct PixelFormatHelper<YUV420P8> {
   static constexpr int nb_plane = 3;
   static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
-  static constexpr int getMemorySize(int W, int H) { return 3 * (W * H) / 2; }
-  static constexpr int getDiskSize(int W, int H) { return 3 * (W * H) / 2; }
-  static constexpr int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
-  static constexpr int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H) / 2; }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H) / 2; }
+  static constexpr auto getPlaneWidth(int id, int W) -> int { return (id == 0) ? W : (W / 2); }
+  static constexpr auto getPlaneHeight(int id, int H) -> int { return (id == 0) ? H : (H / 2); }
   static constexpr auto neutralColor() -> std::uint8_t { return 0x80; }
 };
 
@@ -87,10 +87,10 @@ template <> struct PixelFormatHelper<YUV420P10> {
   static constexpr int nb_plane = 3;
   static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
-  static constexpr int getMemorySize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
-  static constexpr int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getPlaneWidth(int id, int W) -> int { return (id == 0) ? W : (W / 2); }
+  static constexpr auto getPlaneHeight(int id, int H) -> int { return (id == 0) ? H : (H / 2); }
   static constexpr auto neutralColor() -> std::uint16_t { return 0x200; }
 };
 
@@ -98,10 +98,10 @@ template <> struct PixelFormatHelper<YUV420P16> {
   static constexpr int nb_plane = 3;
   static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
-  static constexpr int getMemorySize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getPlaneWidth(int id, int W) { return (id == 0) ? W : (W / 2); }
-  static constexpr int getPlaneHeight(int id, int H) { return (id == 0) ? H : (H / 2); }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getPlaneWidth(int id, int W) -> int { return (id == 0) ? W : (W / 2); }
+  static constexpr auto getPlaneHeight(int id, int H) -> int { return (id == 0) ? H : (H / 2); }
   static constexpr auto neutralColor() -> std::uint16_t { return 0x8000; }
 };
 
@@ -109,10 +109,10 @@ template <> struct PixelFormatHelper<YUV444P8> {
   static constexpr int nb_plane = 3;
   static constexpr auto bitDepth = 8U;
   using base_type = std::uint8_t;
-  static constexpr int getMemorySize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return 3 * (W * H); }
-  static constexpr int getPlaneWidth(int /*id*/, int W) { return W; }
-  static constexpr int getPlaneHeight(int /*id*/, int H) { return H; }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 3 * (W * H); }
+  static constexpr auto getPlaneWidth(int /*id*/, int W) -> int { return W; }
+  static constexpr auto getPlaneHeight(int /*id*/, int H) -> int { return H; }
   static constexpr auto neutralColor() -> std::uint8_t { return 0x80; }
 };
 
@@ -120,10 +120,10 @@ template <> struct PixelFormatHelper<YUV444P10> {
   static constexpr int nb_plane = 3;
   static constexpr auto bitDepth = 10U;
   using base_type = std::uint16_t;
-  static constexpr int getMemorySize(int W, int H) { return 6 * (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return 6 * (W * H); }
-  static constexpr int getPlaneWidth(int /*id*/, int W) { return W; }
-  static constexpr int getPlaneHeight(int /*id*/, int H) { return H; }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 6 * (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 6 * (W * H); }
+  static constexpr auto getPlaneWidth(int /*id*/, int W) -> int { return W; }
+  static constexpr auto getPlaneHeight(int /*id*/, int H) -> int { return H; }
   static constexpr auto neutralColor() -> std::uint16_t { return 0x200; }
 };
 
@@ -131,10 +131,10 @@ template <> struct PixelFormatHelper<YUV444P16> {
   static constexpr int nb_plane = 3;
   static constexpr auto bitDepth = 16U;
   using base_type = std::uint16_t;
-  static constexpr int getMemorySize(int W, int H) { return 6 * (W * H); }
-  static constexpr int getDiskSize(int W, int H) { return 6 * (W * H); }
-  static constexpr int getPlaneWidth(int /*id*/, int W) { return W; }
-  static constexpr int getPlaneHeight(int /*id*/, int H) { return H; }
+  static constexpr auto getMemorySize(int W, int H) -> int { return 6 * (W * H); }
+  static constexpr auto getDiskSize(int W, int H) -> int { return 6 * (W * H); }
+  static constexpr auto getPlaneWidth(int /*id*/, int W) -> int { return W; }
+  static constexpr auto getPlaneHeight(int /*id*/, int H) -> int { return H; }
   static constexpr auto neutralColor() -> std::uint16_t { return 0x8000; }
 };
 } // namespace detail

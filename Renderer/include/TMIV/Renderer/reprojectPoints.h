@@ -35,7 +35,6 @@
 #define _TMIV_RENDERER_REPROJECTPOINTS_H_
 
 #include <TMIV/Common/Quaternion.h>
-#include <TMIV/Common/Transformation.h>
 #include <TMIV/MivBitstream/IvSequenceParams.h>
 #include <TMIV/Renderer/Engine.h>
 
@@ -88,7 +87,7 @@ public:
   AffineTransform(const MivBitstream::CameraExtrinsics &source,
                   const MivBitstream::CameraExtrinsics &target);
 
-  auto &translation() const { return m_t; }
+  [[nodiscard]] auto translation() const -> auto & { return m_t; }
   auto operator()(Common::Vec3f x) const -> Common::Vec3f;
 
 private:
@@ -112,7 +111,7 @@ auto unprojectVertex(Common::Vec2f position, float depth, const MivBitstream::Ca
 auto projectVertex(const Common::Vec3f &position, const MivBitstream::CameraIntrinsics &ci)
     -> std::pair<Common::Vec2f, float>;
 
-inline bool isValidDepth(float d) { return (0.F < d); }
+inline auto isValidDepth(float d) -> bool { return (0.F < d); }
 
 using PointCloud = std::vector<Common::Vec3f>;
 using PointCloudList = std::vector<PointCloud>;
@@ -139,19 +138,23 @@ public:
   ProjectionHelper(ProjectionHelper &&) = default;
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = default;
   auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
-  auto getViewParams() const -> const MivBitstream::ViewParams & { return m_viewParams; }
-  auto getViewingPosition() const -> Common::Vec3f { return m_viewParams.ce.position(); }
-  auto getViewingDirection() const -> Common::Vec3f;
-  auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
-  auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;
-  auto doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f;
-  auto isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool;
-  auto isInsideViewport(const Common::Vec2f &p) const -> bool;
-  bool isValidDepth(float d) const;
-  auto getAngularResolution() const -> float;
-  auto getDepthRange() const -> Common::Vec2f;
-  auto getRadialRange() const -> Common::Vec2f;
-  auto getPointCloud(unsigned N = 8) const -> PointCloud;
+  [[nodiscard]] auto getViewParams() const -> const MivBitstream::ViewParams & {
+    return m_viewParams;
+  }
+  [[nodiscard]] auto getViewingPosition() const -> Common::Vec3f {
+    return m_viewParams.ce.position();
+  }
+  [[nodiscard]] auto getViewingDirection() const -> Common::Vec3f;
+  [[nodiscard]] auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
+  [[nodiscard]] auto doProjection(const Common::Vec3f &P) const -> std::pair<Common::Vec2f, float>;
+  [[nodiscard]] auto doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f;
+  [[nodiscard]] auto isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool;
+  [[nodiscard]] auto isInsideViewport(const Common::Vec2f &p) const -> bool;
+  [[nodiscard]] auto isValidDepth(float d) const -> bool;
+  [[nodiscard]] auto getAngularResolution() const -> float;
+  [[nodiscard]] auto getDepthRange() const -> Common::Vec2f;
+  [[nodiscard]] auto getRadialRange() const -> Common::Vec2f;
+  [[nodiscard]] auto getPointCloud(unsigned N = 8) const -> PointCloud;
 };
 
 template <MivBitstream::CiCamType camType>

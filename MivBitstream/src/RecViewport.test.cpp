@@ -40,9 +40,9 @@ using namespace TMIV::MivBitstream;
 TEST_CASE("rec_viewport", "[Rec Viewport SEI payload syntax]") {
 
   SECTION("Example 1") {
-    RecViewport x = RecViewport{0, 1};
+    RecViewport x = RecViewport{0, true};
     REQUIRE(toString(x) == R"(rec_viewport_id=0
-rec_viewport_cancel_flag=1
+rec_viewport_cancel_flag=true
 )");
     REQUIRE(bitCodingTest(x, 11));
   }
@@ -50,9 +50,9 @@ rec_viewport_cancel_flag=1
   SECTION("Example 2") {
     auto x = RecViewport{};
     x.rec_viewport_id(1)
-        .rec_viewport_cancel_flag(0)
-        .rec_viewport_persistence_flag(0)
-        .rec_viewport_center_view_flag(1)
+        .rec_viewport_cancel_flag(false)
+        .rec_viewport_persistence_flag(false)
+        .rec_viewport_center_view_flag(true)
         .rec_viewport_pos_x(0.2F)
         .rec_viewport_pos_y(1.45F)
         .rec_viewport_pos_z(-0.79F)
@@ -62,9 +62,9 @@ rec_viewport_cancel_flag=1
         .rec_viewport_hor_range(90.F)
         .rec_viewport_ver_range(60.4F);
     REQUIRE(toString(x) == R"(rec_viewport_id=1
-rec_viewport_cancel_flag=0
-rec_viewport_persistence_flag=0
-rec_viewport_center_view_flag=1
+rec_viewport_cancel_flag=false
+rec_viewport_persistence_flag=false
+rec_viewport_center_view_flag=true
 rec_viewport_pos_x=0.2
 rec_viewport_pos_y=1.45
 rec_viewport_pos_z=-0.79
@@ -80,10 +80,10 @@ rec_viewport_ver_range=60.4
   SECTION("Example 3") {
     auto x = RecViewport{};
     x.rec_viewport_id(2)
-        .rec_viewport_cancel_flag(0)
-        .rec_viewport_persistence_flag(0)
-        .rec_viewport_center_view_flag(0)
-        .rec_viewport_left_view_flag(1)
+        .rec_viewport_cancel_flag(false)
+        .rec_viewport_persistence_flag(false)
+        .rec_viewport_center_view_flag(false)
+        .rec_viewport_left_view_flag(true)
         .rec_viewport_pos_x(0.2F)
         .rec_viewport_pos_y(1.45F)
         .rec_viewport_pos_z(-0.79F)
@@ -93,10 +93,10 @@ rec_viewport_ver_range=60.4
         .rec_viewport_hor_range(90.F)
         .rec_viewport_ver_range(60.4F);
     REQUIRE(toString(x) == R"(rec_viewport_id=2
-rec_viewport_cancel_flag=0
-rec_viewport_persistence_flag=0
-rec_viewport_center_view_flag=0
-rec_viewport_left_view_flag=1
+rec_viewport_cancel_flag=false
+rec_viewport_persistence_flag=false
+rec_viewport_center_view_flag=false
+rec_viewport_left_view_flag=true
 rec_viewport_pos_x=0.2
 rec_viewport_pos_y=1.45
 rec_viewport_pos_z=-0.79

@@ -163,10 +163,12 @@ RecViewport::RecViewport(uint16_t value1, bool value2) {
 
 auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {
   stream << "rec_viewport_id=" << x.rec_viewport_id() << '\n';
-  stream << "rec_viewport_cancel_flag=" << x.rec_viewport_cancel_flag() << '\n';
+  stream << "rec_viewport_cancel_flag=" << boolalpha << x.rec_viewport_cancel_flag() << '\n';
   if (!x.rec_viewport_cancel_flag()) {
-    stream << "rec_viewport_persistence_flag=" << x.rec_viewport_persistence_flag() << '\n';
-    stream << "rec_viewport_center_view_flag=" << x.rec_viewport_center_view_flag() << '\n';
+    stream << "rec_viewport_persistence_flag=" << boolalpha << x.rec_viewport_persistence_flag()
+           << '\n';
+    stream << "rec_viewport_center_view_flag=" << boolalpha << x.rec_viewport_center_view_flag()
+           << '\n';
     if (!x.rec_viewport_center_view_flag())
       stream << "rec_viewport_left_view_flag=" << x.rec_viewport_left_view_flag() << '\n';
     stream << "rec_viewport_pos_x=" << x.rec_viewport_pos_x() << '\n';

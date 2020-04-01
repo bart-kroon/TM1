@@ -193,13 +193,12 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   m_maxLumaSamplesPerFrame = max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 
   // Set atlas parameters
-  const auto numAtlases = m_outIvSequenceParams.vps.vps_atlas_count_minus1() + 1;
-  m_ivAccessUnitParams.atlas.resize(numAtlases);
+  m_ivAccessUnitParams.atlas.resize(m_outIvSequenceParams.vps.vps_atlas_count_minus1() + 1);
 
-  for (uint8_t atlasId = 0; atlasId <= numAtlases; ++atlasId) {
-    auto &atlas = m_ivAccessUnitParams.atlas[atlasId];
-    const auto frameWidth = m_outIvSequenceParams.vps.vps_frame_width(atlasId);
-    const auto frameHeight = m_outIvSequenceParams.vps.vps_frame_height(atlasId);
+  for (uint8_t i = 0; i <= m_outIvSequenceParams.vps.vps_atlas_count_minus1(); ++i) {
+    auto &atlas = m_ivAccessUnitParams.atlas[i];
+    const auto frameWidth = m_outIvSequenceParams.vps.vps_frame_width(i);
+    const auto frameHeight = m_outIvSequenceParams.vps.vps_frame_height(i);
 
     // Set ASPS parameters
     atlas.asps.asps_frame_width(frameWidth)

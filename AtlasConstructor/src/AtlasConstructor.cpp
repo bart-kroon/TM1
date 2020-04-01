@@ -51,26 +51,50 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", rootNode, componentNode);
   m_packer = Factory<IPacker>::getInstance().create("Packer", rootNode, componentNode);
 
-  // Single atlas size
-  m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
+  // Parameters
+  const auto numGroups = rootNode.require("numGroups").asInt();
+  m_blockSize = rootNode.require("blockSize").asInt();
+  const auto maxAtlasWidth = rootNode.require("maxAtlasWidth").asInt();
+  const auto maxAtlasHeight = rootNode.require("maxAtlasHeight").asInt();
+  const auto maxLumaSamplesPerFrame = rootNode.require("maxLumaSamplesPerFrame").asInt();
 
-  // The number of atlases is determined by the specified maximum number of luma
-  // samples per frame (texture and depth combined)
-  int maxLumaSamplesPerFrame = componentNode.require("MaxLumaSamplesPerFrame").asInt();
-  const auto lumaSamplesPerAtlas = 2 * m_atlasSize.x() * m_atlasSize.y();
-  m_nbAtlas = size_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
+  // Derived parameters
+  m_maxBlocksPerAtlas = maxLumaSamplesPerFrame / (2 * numGroups * sqr(m_blockSize));
+  m_maxAtlasGridWidth = maxAtlasWidth / m_blockSize;
+  m_maxAtlasGridHeight = maxAtlasHeight / m_blockSize;
 
   if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 }
 
+// Calculate atlas frame sizes [MPEG/M52994]
+auto AtlasConstructor::calculateNominalAtlasFrameSizes(const IvSequenceParams &ivSequenceParams,
+                                                       const std::vector<bool> &isBasicView) const
+    -> SizeVector {
+  if (m_maxBlocksPerAtlas == 0) {
+    // No luma sample count restriction: one atlas per transport view
+    auto x = SizeVector(ivSequenceParams.viewParamsList.size());
+    transform(cbegin(ivSequenceParams.viewParamsList), cend(ivSequenceParams.viewParamsList),
+              begin(x), [this](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
+    return x;
+  }
+
+  // Calculate the height of the tallest view
+  const int maxViewGridHeight = accumulate(
+      cbegin(ivSequenceParams.viewParamsList), cend(ivSequenceParams.viewParamsList), 0,
+      [this](int x, const ViewParams &vp) {
+        return max(x, (vp.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
+      });
+
+  // Make the atlas as wide as allowed but still high enough to fit the tallest basic view
+  const auto atlasGridWidth = min(m_maxAtlasGridWidth, m_maxBlocksPerAtlas / maxViewGridHeight);
+  const auto atlasGridHeight = m_maxBlocksPerAtlas / atlasGridWidth;
+  return {Vec2i{int(atlasGridWidth * m_blockSize), int(atlasGridHeight * m_blockSize)}};
+}
+
 auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
     -> const IvSequenceParams & {
-  // Construct at least the basic views
-  m_nbAtlas =
-      max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
-
   m_inIvSequenceParams = move(ivSequenceParams);
 
   // Do we also have texture or only geometry?
@@ -79,8 +103,16 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   auto const haveTexture =
       ai.ai_attribute_count() >= 1 && ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 
+  // Calculate nominal atlas frame sizes
+  cout << "Nominal atlas frame sizes: { ";
+  const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_inIvSequenceParams, m_isBasicView);
+  for (auto &size : atlasFrameSizes) {
+    cout << ' ' << size;
+  }
+  cout << " }\n";
+
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_outIvSequenceParams = IvSequenceParams{SizeVector(m_nbAtlas, m_atlasSize), haveTexture};
+  m_outIvSequenceParams = IvSequenceParams{atlasFrameSizes, haveTexture};
   m_outIvSequenceParams.msp() = m_inIvSequenceParams.msp();
   m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
   m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;
@@ -160,28 +192,26 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   cout << "Aggregated luma samples per frame is " << (1e-6 * lumaSamplesPerFrame) << "M\n";
   m_maxLumaSamplesPerFrame = max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 
-  // Packing
-  m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
-  for (auto &atlas : m_ivAccessUnitParams.atlas) {
+  // Set atlas parameters
+  const auto numAtlases = m_outIvSequenceParams.vps.vps_atlas_count_minus1() + 1;
+  m_ivAccessUnitParams.atlas.resize(numAtlases);
+
+  for (uint8_t atlasId = 0; atlasId <= numAtlases; ++atlasId) {
+    auto &atlas = m_ivAccessUnitParams.atlas[atlasId];
+    const auto frameWidth = m_outIvSequenceParams.vps.vps_frame_width(atlasId);
+    const auto frameHeight = m_outIvSequenceParams.vps.vps_frame_height(atlasId);
+
     // Set ASPS parameters
-    atlas.asps.asps_frame_width(m_atlasSize.x())
-        .asps_frame_height(m_atlasSize.y())
+    atlas.asps.asps_frame_width(frameWidth)
+        .asps_frame_height(frameHeight)
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
-        .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
-
-    // Record patch alignment -> asps_log2_patch_packing_block_size
-    while (m_packer->getAlignment() % (2 << atlas.asps.asps_log2_patch_packing_block_size()) == 0) {
-      atlas.asps.asps_log2_patch_packing_block_size(
-          atlas.asps.asps_log2_patch_packing_block_size() + 1);
-    }
+        .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1))
+        .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
 
     // Set AFPS parameters
-    atlas.afps
-        .afps_2d_pos_x_bit_count_minus1(ceilLog2(m_atlasSize.x()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size() - 1)
-        .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size() - 1);
+    atlas.afps.afps_2d_pos_x_bit_count_minus1(ceilLog2(frameWidth / m_blockSize) - 1)
+        .afps_2d_pos_y_bit_count_minus1(ceilLog2(frameHeight / m_blockSize) - 1);
 
     uint16_t maxProjectionPlaneWidthMinus1 = 0;
     uint16_t maxProjectionPlaneHeightMinus1 = 0;
@@ -198,6 +228,8 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
+
+  // Packing
   m_ivAccessUnitParams.patchParamsList =
       m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 
@@ -206,11 +238,11 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
 
-    for (size_t i = 0; i < m_nbAtlas; ++i) {
-      TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
-                                   Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
-      atlas.texture.fillNeutral();
-      atlasList.push_back(move(atlas));
+    for (const auto &atlas : m_ivAccessUnitParams.atlas) {
+      auto texture = TextureFrame(atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height());
+      auto depth = Depth16Frame(atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height());
+      texture.fillNeutral();
+      atlasList.emplace_back(move(texture), move(depth));
     }
 
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
@@ -248,20 +280,18 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
   int xM = patch.pduViewPos().x();
   int yM = patch.pduViewPos().y();
 
-  int alignment = m_packer->getAlignment();
-
   const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId()];
   const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId()];
 
-  for (int dyAligned = 0; dyAligned < h; dyAligned += alignment) {
-    for (int dxAligned = 0; dxAligned < w; dxAligned += alignment) {
+  for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
+    for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
 
       bool isAggregatedMaskBlockNonEmpty = false;
-      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
+      for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         if (dy + yM >= textureViewMap.getHeight() || dy + yM < 0) {
           continue;
         }
-        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
+        for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
@@ -275,8 +305,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
         }
       }
 
-      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
-        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
+      for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
+        for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
 
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patch.viewToAtlas(pView);

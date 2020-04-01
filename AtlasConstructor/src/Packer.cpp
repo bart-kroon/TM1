@@ -44,7 +44,7 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::AtlasConstructor {
 
 Packer::Packer(const Json &rootNode, const Json &componentNode) {
-  m_alignment = componentNode.require("Alignment").asInt();
+  m_blockSize = rootNode.require("blockSize").asInt();
   m_minPatchSize = componentNode.require("MinPatchSize").asInt();
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
@@ -57,8 +57,6 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
-auto Packer::getAlignment() -> int { return m_alignment; }
-
 void Packer::updateAggregatedEntityMasks(const vector<MaskList> &entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
@@ -69,7 +67,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
                   const vector<bool> &isBasicView) -> PatchParamsList {
   // Check atlas size
   for (const auto &sz : atlasSizes) {
-    if (((sz.x() % m_alignment) != 0) || ((sz.y() % m_alignment) != 0)) {
+    if (((sz.x() % m_blockSize) != 0) || ((sz.y() % m_blockSize) != 0)) {
       throw std::runtime_error("Atlas size should be a multiple of aligment");
     }
   }
@@ -127,7 +125,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   packerList.reserve(atlasSizes.size());
   for (const auto &sz : atlasSizes) {
-    packerList.emplace_back(sz.x(), sz.y(), m_alignment, m_pip);
+    packerList.emplace_back(sz.x(), sz.y(), m_blockSize, m_pip);
   }
 
   auto comp = [&](const Cluster &p1, const Cluster &p2) -> bool {
@@ -144,7 +142,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (m_maxEntities > 1) {
       out.push_back(cluster);
     } else {
-      cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_alignment, m_minPatchSize);
+      cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_blockSize, m_minPatchSize);
     }
   }
 
@@ -178,7 +176,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
           p.pduViewId(static_cast<uint16_t>(cluster.getViewId()))
               .pduViewSize(
-                  {align(cluster.width(), m_alignment), align(cluster.height(), m_alignment)})
+                  {align(cluster.width(), m_blockSize), align(cluster.height(), m_blockSize)})
               .pduViewPos({cluster.jmin(), cluster.imin()})
               .pdu2dPos({packerOutput.x(), packerOutput.y()});
 

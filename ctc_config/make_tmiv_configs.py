@@ -365,40 +365,6 @@ class EncoderConfiguration(TestConfiguration):
 			return 2
 		return 1
 
-	def alignment(self):
-		return 8
-
-	def checkAlignment(self, size):
-		if size % self.alignment() != 0:
-			raise RuntimeError('The frame size {} is not aligned to {}'.format(size, self.alignment()))
-		return size
-
-	def atlasWidth(self):
-		return self.checkAlignment(self.viewWidth())
-
-	def atlasHeight(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
-			return self.checkAlignment({
-				'A': 4096,
-				'B': 2752,
-				'C': 2048,
-				'D': 2752,
-				'E': 1472,
-				'J': 1472,
-				'L': 2912,
-				'N': 2752,
-				'P': 2912,
-				'U': 2912,
-				'T': 2912
-			}[self.seqId])
-		return self.checkAlignment(self.viewHeight())
-
-	def geometryWidth(self):
-		return self.checkAlignment(self.atlasWidth() // self.geometryDownscaleFactor())
-
-	def geometryHeight(self):
-		return self.checkAlignment(self.atlasHeight() // self.geometryDownscaleFactor())
-
 	def viewOptimizerMethod(self):
 		if self.anchorId == 'V17' or self.anchorId == 'R17' or self.anchorId == 'R97':
 			return 'NoViewOptimizer'
@@ -455,34 +421,25 @@ class EncoderConfiguration(TestConfiguration):
 
 	def packer(self):
 		return {
-			'Alignment': self.alignment(),
 			'MinPatchSize': 16,
 			'Overlap': 1,
 			'PiP': 1
 		}
 
-	def lumaSamplesPerView(self):
-		return 2 * self.atlasWidth() * self.atlasHeight()
+	def blockSize(self):
+		return 8
+
+	def maxAtlasWidth(self):
+		return 4096
+
+	def maxAtlasHeight(self):
+		return 4096
 
 	def maxLumaSamplesPerFrame(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17':
-			return {
-				'A': 1,
-				'B': 3,
-				'C': 2,
-				'D': 1,
-				'E': 2,
-				'J': 2,
-				'L': 1,
-				'N': 3,
-				'P': 1,
-				'U': 1,
-				'T': 1
-			}[self.seqId] * self.lumaSamplesPerView()
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return 4 * self.lumaSamplesPerView()
+		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
+			return 2 ** 25
 		return 0
-		
+
 	def atlasConstructorMethod(self):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 'EntityBasedAtlasConstructor'
@@ -495,12 +452,7 @@ class EncoderConfiguration(TestConfiguration):
 			'AggregatorMethod': 'Aggregator',
 			'Aggregator': {},
 			'PackerMethod': 'Packer',
-			'Packer': self.packer(),
-			'AtlasResolution': [
-				self.atlasWidth(),
-				self.atlasHeight()
-			],
-			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
+			'Packer': self.packer()
 		}
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			config['EntityEncodeRange'] = [0, self.maxEntities()]
@@ -535,6 +487,10 @@ class EncoderConfiguration(TestConfiguration):
 			'maxEntities': self.maxEntities(),
 			'startFrame': self.startFrame(),
 			'intraPeriod': self.intraPeriod(),
+			'blockSize': self.blockSize(),
+			'maxAtlasWidth': self.maxAtlasWidth(),
+			'maxAtlasHeight': self.maxAtlasHeight(),
+			'maxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame(),
 			'SourceCameraNames': self.sourceCameraNames(),
 			'SourceTexturePathFmt': self.sourceTexturePathFmt(),
 			'SourceDepthPathFmt': self.sourceDepthPathFmt(),
@@ -557,13 +513,26 @@ class EncoderConfiguration(TestConfiguration):
 
 	def saveHmCfg(self, component, scale):
 		path = '{0}/S{2}/HM_{0}_{1}_S{2}.cfg'.format(self.anchorId, component, self.seqId)
+
+		# This is an optimistic version of the calculation within TMIV
+		if self.anchorId == 'A17' or self.anchorId == 'A97' or self.anchorId == 'E17' or self.anchorId == 'E97':
+			N = self.blockSize()
+			maxBlocksPerAtlas = self.maxLumaSamplesPerFrame() // (2 * self.numGroups() * N * N)
+			atlasBlockWidth = self.maxAtlasWidth() // N
+			atlasBlockHeight = maxBlocksPerAtlas // atlasBlockWidth
+			atlasWidth = atlasBlockWidth * N
+			atlasHeight = atlasBlockHeight * N
+		else:
+			atlasWidth = self.viewWidth()
+			atlasHeight = self.viewHeight()		
+
 		with open(path, 'w') as stream:
 			stream.write('InputBitDepth: 10\n')
 			stream.write('InputChromaFormat: 420\n')
 			stream.write('FrameRate: 30\n')
 			stream.write('FrameSkip: 0\n')
-			stream.write('SourceWidth: {}\n'.format(self.atlasWidth()//scale))
-			stream.write('SourceHeight: {}\n'.format(self.atlasHeight()//scale))
+			stream.write('SourceWidth: {}\n'.format(atlasWidth//scale))
+			stream.write('SourceHeight: {}\n'.format(atlasHeight//scale))
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('Level: 5.2\n')

@@ -69,12 +69,17 @@ public:
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
+  auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams,
+                          const std::vector<bool> &isBasicView) const -> Common::SizeVector;
+
   void writePatchInAtlas(const MivBitstream::PatchParams &patch, const Common::MVD16Frame &views,
                          Common::MVD16Frame &atlas, int frame);
 
 private:
-  std::size_t m_nbAtlas{};
-  Common::Vec2i m_atlasSize;
+  int m_blockSize{};
+  int m_maxBlocksPerAtlas{};
+  int m_maxAtlasGridWidth{};
+  int m_maxAtlasGridHeight{};
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;

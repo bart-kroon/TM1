@@ -54,6 +54,11 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
   m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", rootNode, componentNode);
   m_packer = Factory<IPacker>::getInstance().create("Packer", rootNode, componentNode);
 
+  // NOTE(M52994): This change is because IPacker::getAlignment has been removed but apart from that
+  // the EntityBasedAtlasConstructor has not been updated. It does not match anymore with the
+  // current make_tmiv_configs.py
+  m_blockSize = rootNode.require("blockSize").asInt();
+
   // Single atlas size
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
@@ -273,7 +278,7 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
         .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
 
     // Record patch alignment -> asps_log2_patch_packing_block_size
-    while (m_packer->getAlignment() % (2 << atlas.asps.asps_log2_patch_packing_block_size()) == 0) {
+    while (m_blockSize % (2 << atlas.asps.asps_log2_patch_packing_block_size()) == 0) {
       atlas.asps.asps_log2_patch_packing_block_size(
           atlas.asps.asps_log2_patch_packing_block_size() + 1);
     }

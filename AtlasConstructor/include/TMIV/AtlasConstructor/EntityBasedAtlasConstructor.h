@@ -76,6 +76,7 @@ private:
   void writePatchInAtlas(const MivBitstream::PatchParams &patch,
                          const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas);
 
+  int m_blockSize{};
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
   Common::Vec2i m_EntityEncRange;

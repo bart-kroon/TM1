@@ -69,8 +69,8 @@ public:
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
-  auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams,
-                          const std::vector<bool> &isBasicView) const -> Common::SizeVector;
+  auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+      -> Common::SizeVector;
 
   void writePatchInAtlas(const MivBitstream::PatchParams &patch, const Common::MVD16Frame &views,
                          Common::MVD16Frame &atlas, int frame);

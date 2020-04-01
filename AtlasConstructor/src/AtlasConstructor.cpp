@@ -69,14 +69,13 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
 }
 
 // Calculate atlas frame sizes [MPEG/M52994]
-auto AtlasConstructor::calculateNominalAtlasFrameSizes(const IvSequenceParams &ivSequenceParams,
-                                                       const std::vector<bool> &isBasicView) const
-    -> SizeVector {
+auto AtlasConstructor::calculateNominalAtlasFrameSizes(
+    const IvSequenceParams &ivSequenceParams) const -> SizeVector {
   if (m_maxBlocksPerAtlas == 0) {
     // No luma sample count restriction: one atlas per transport view
     auto x = SizeVector(ivSequenceParams.viewParamsList.size());
     transform(cbegin(ivSequenceParams.viewParamsList), cend(ivSequenceParams.viewParamsList),
-              begin(x), [this](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
+              begin(x), [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
     return x;
   }
 
@@ -105,7 +104,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
 
   // Calculate nominal atlas frame sizes
   cout << "Nominal atlas frame sizes: { ";
-  const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_inIvSequenceParams, m_isBasicView);
+  const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_inIvSequenceParams);
   for (auto &size : atlasFrameSizes) {
     cout << ' ' << size;
   }

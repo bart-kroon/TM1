@@ -88,7 +88,7 @@ auto AtlasConstructor::calculateNominalAtlasFrameSizes(
 
   // Make the atlas as wide as allowed but still high enough to fit the tallest basic view
   const auto atlasGridWidth = min(m_maxAtlasGridWidth, m_maxBlocksPerAtlas / maxViewGridHeight);
-  const auto atlasGridHeight = m_maxBlocksPerAtlas / atlasGridWidth;
+  const auto atlasGridHeight = min(m_maxAtlasGridHeight, m_maxBlocksPerAtlas / atlasGridWidth);
   return {Vec2i{int(atlasGridWidth * m_blockSize), int(atlasGridHeight * m_blockSize)}};
 }
 

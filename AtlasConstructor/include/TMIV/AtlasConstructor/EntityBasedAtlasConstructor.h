@@ -46,6 +46,8 @@
 #include <memory>
 
 namespace TMIV::AtlasConstructor {
+constexpr auto maxIntraPeriod0 = uint8_t(32);
+
 class EntityBasedAtlasConstructor : public IAtlasConstructor {
 public:
   EntityBasedAtlasConstructor(const Common::Json & /*rootNode*/,
@@ -65,6 +67,8 @@ public:
   auto popAtlas() -> Common::MVD16Frame override;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
+  std::vector<Common::Mat<std::bitset<maxIntraPeriod0>>> m_nonAggregatedMask;
+
 private:
   static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
       -> Common::MVD16Frame;
@@ -74,7 +78,8 @@ private:
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
   void writePatchInAtlas(const MivBitstream::PatchParams &patch,
-                         const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas);
+                         const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas,
+                         int frame);
 
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;

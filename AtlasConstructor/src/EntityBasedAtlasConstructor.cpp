@@ -57,14 +57,19 @@ EntityBasedAtlasConstructor::EntityBasedAtlasConstructor(const Json &rootNode,
   // Single atlas size
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
-  // Read the entity encoding range
-  m_EntityEncRange = componentNode.require("EntityEncodeRange").asIntVector<2>();
+  // Read the entity encoding range if exisited
+  if (auto subnode = componentNode.optional("EntityEncodeRange"))
+    m_EntityEncRange = subnode.asIntVector<2>();
 
   // The number of atlases is determined by the specified maximum number of luma
   // samples per frame (texture and depth combined)
   int maxLumaSamplesPerFrame = componentNode.require("MaxLumaSamplesPerFrame").asInt();
   const auto lumaSamplesPerAtlas = 2 * m_atlasSize.x() * m_atlasSize.y();
   m_nbAtlas = size_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
+
+  if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod0) {
+    throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
+  }
 }
 
 auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams,
@@ -95,9 +100,15 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
   // Register pruning relation
   m_pruner->registerPruningRelation(m_outIvSequenceParams, m_isBasicView);
 
-  // Turn on occupancy coding for all views
-  for (auto &x : m_outIvSequenceParams.viewParamsList) {
-    x.hasOccupancy = true;
+  // Read max_entities
+  m_maxEntities = m_outIvSequenceParams.msp().msp_max_entities_minus1() + 1;
+
+  // Turn on occupancy coding for all views (if msp_max_entities_minus1>0) otherwise for partial
+  // views only
+  for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {
+    if (!m_isBasicView[viewId] || m_maxEntities > 1) {
+      m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
+    }
   }
 
   return m_outIvSequenceParams;
@@ -106,6 +117,23 @@ auto EntityBasedAtlasConstructor::prepareSequence(IvSequenceParams ivSequencePar
 void EntityBasedAtlasConstructor::prepareAccessUnit(
     MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   m_ivAccessUnitParams = ivAccessUnitParams;
+
+  const auto numOfCam = m_inIvSequenceParams.viewParamsList.size();
+
+  for (size_t c = 0; c < numOfCam; c++) {
+    Mat<bitset<maxIntraPeriod0>> nonAggMask;
+    int H = m_inIvSequenceParams.viewParamsList[c].ci.projectionPlaneSize().y();
+    int W = m_inIvSequenceParams.viewParamsList[c].ci.projectionPlaneSize().x();
+
+    nonAggMask.resize(H, W);
+    for (int h = 0; h < H; h++) {
+      for (int w = 0; w < W; w++) {
+        nonAggMask(h, w) = 0;
+      }
+    }
+    m_nonAggregatedMask.push_back(nonAggMask);
+  }
+
   m_viewBuffer.clear();
   m_aggregatedEntityMask.clear();
   m_aggregator->prepareAccessUnit();
@@ -209,46 +237,62 @@ auto EntityBasedAtlasConstructor::entitySeparator(const MVD16Frame &transportVie
 }
 
 void EntityBasedAtlasConstructor::pushFrame(MVD16Frame transportViews) {
-  // Initalization
-  MVD16Frame transportEntityViews;
-  MaskList masks;
   MaskList mergedMasks;
-  for (auto &transportView : transportViews) {
-    Mask entityMergedMask(transportView.texture.getWidth(), transportView.texture.getHeight());
+  if (m_maxEntities > 1) {
+    // Initalization
+    MVD16Frame transportEntityViews;
+    MaskList masks;
+    for (auto &transportView : transportViews) {
+      Mask entityMergedMask(transportView.texture.getWidth(), transportView.texture.getHeight());
 
-    fill(entityMergedMask.getPlane(0).begin(), entityMergedMask.getPlane(0).end(), uint8_t(0));
+      fill(entityMergedMask.getPlane(0).begin(), entityMergedMask.getPlane(0).end(), uint8_t(0));
 
-    mergedMasks.push_back(move(entityMergedMask));
+      mergedMasks.push_back(move(entityMergedMask));
+    }
+
+    SizeVector m_viewSizes = m_inIvSequenceParams.viewParamsList.viewSizes();
+
+    for (auto entityId = m_EntityEncRange[0]; entityId < m_EntityEncRange[1]; entityId++) {
+      cout << "Processing entity " << entityId << '\n';
+
+      // Entity Separator
+      transportEntityViews = entitySeparator(transportViews, entityId);
+
+      // Pruning
+      masks = m_pruner->prune(m_inIvSequenceParams, transportEntityViews, m_isBasicView);
+
+      // updating the pruned basic masks for entities and filter other masks.
+      updateMasks(transportEntityViews, masks);
+
+      // Aggregate Entity Masks
+      aggregateEntityMasks(masks, entityId);
+
+      // Entity Mask Merging
+      mergeMasks(mergedMasks, masks);
+    }
+  } else {
+    mergedMasks = m_pruner->prune(m_inIvSequenceParams, transportViews, m_isBasicView);
   }
 
-  SizeVector m_viewSizes = m_inIvSequenceParams.viewParamsList.viewSizes();
+  const auto frame = m_viewBuffer.size();
+  for (size_t view = 0; view < mergedMasks.size(); ++view) {
+    int H = transportViews[view].texture.getHeight();
+    int W = transportViews[view].texture.getWidth();
+    for (int h = 0; h < H; h++) {
+      for (int w = 0; w < W; w++) {
+        if (mergedMasks[view].getPlane(0)(h, w) != 0) {
+          m_nonAggregatedMask[view](h, w)[frame] = true;
+        }
+      } // w
+    }   // h
+  }     // view
 
-  for (auto entityId = m_EntityEncRange[0]; entityId < m_EntityEncRange[1]; entityId++) {
-    cout << "Processing entity " << entityId << '\n';
-
-    // Entity Separator
-    transportEntityViews = entitySeparator(transportViews, entityId);
-
-    // Pruning
-    masks = m_pruner->prune(m_inIvSequenceParams, transportEntityViews, m_isBasicView);
-
-    // updating the pruned basic masks for entities and filter other masks.
-    updateMasks(transportEntityViews, masks);
-
-    // Aggregate Entity Masks
-    aggregateEntityMasks(masks, entityId);
-
-    // Entity Mask Merging
-    mergeMasks(mergedMasks, masks);
-  }
   // Aggregation
   m_viewBuffer.push_back(move(transportViews));
   m_aggregator->pushMask(mergedMasks);
 }
 
 auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
-  m_maxEntities = m_inIvSequenceParams.msp().msp_max_entities_minus1() + 1;
-
   // Aggregated mask
   m_aggregator->completeAccessUnit();
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
@@ -300,35 +344,36 @@ auto EntityBasedAtlasConstructor::completeAccessUnit() -> const IvAccessUnitPara
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
-
-  m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
+  if (m_maxEntities > 1)
+    m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   m_ivAccessUnitParams.patchParamsList =
       m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 
   // Atlas construction
+  int frame = 0;
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
 
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
-
-      for (auto &p : atlas.texture.getPlanes()) {
-        fill(p.begin(), p.end(), neutralChroma);
-      }
-
-      fill(atlas.depth.getPlane(0).begin(), atlas.depth.getPlane(0).end(), uint16_t(0));
-
+      atlas.texture.fillNeutral();
+      atlas.depth.fillZero();
       atlasList.push_back(move(atlas));
     }
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
       const auto &view = views[patch.pduViewId()];
-      MVD16Frame tempViews;
-      tempViews.push_back(view);
-      const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
-      writePatchInAtlas(patch, entityViews[0], atlasList);
+      if (m_maxEntities > 1) {
+        MVD16Frame tempViews;
+        tempViews.push_back(view);
+        const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
+        writePatchInAtlas(patch, entityViews[0], atlasList, frame);
+      } else {
+        writePatchInAtlas(patch, view, atlasList, frame);
+      }
     }
     m_atlasBuffer.push_back(move(atlasList));
+    frame++;
   }
 
   return m_ivAccessUnitParams;
@@ -346,7 +391,7 @@ auto EntityBasedAtlasConstructor::maxLumaSamplesPerFrame() const -> size_t {
 
 void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
                                                     const TextureDepth16Frame &currentView,
-                                                    MVD16Frame &atlas) {
+                                                    MVD16Frame &atlas, int frame) {
   auto &currentAtlas = atlas[patch.vuhAtlasId];
 
   auto &textureAtlasMap = currentAtlas.texture;
@@ -359,9 +404,74 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
   int xM = patch.pduViewPos().x();
   int yM = patch.pduViewPos().y();
 
+  int alignment = m_packer->getAlignment();
+
   const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId()];
   const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId()];
 
+  for (int dyAligned = 0; dyAligned < h; dyAligned += alignment) {
+    for (int dxAligned = 0; dxAligned < w; dxAligned += alignment) {
+
+      bool isAggregatedMaskBlockNonEmpty = false;
+      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
+        if (dy + yM >= textureViewMap.getHeight() || dy + yM < 0) {
+          continue;
+        }
+        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
+          if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
+            continue;
+          }
+          if (m_nonAggregatedMask[patch.pduViewId()](dy + yM, dx + xM)[frame]) {
+            isAggregatedMaskBlockNonEmpty = true;
+            break;
+          }
+        }
+        if (isAggregatedMaskBlockNonEmpty) {
+          break;
+        }
+      }
+
+      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
+        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
+
+          Vec2i pView = {xM + dx, yM + dy};
+          Vec2i pAtlas = patch.viewToAtlas(pView);
+
+          if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
+              pAtlas.y() >= textureAtlasMap.getHeight() ||
+              pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||
+              pAtlas.y() < 0 || pAtlas.x() < 0) {
+            continue;
+          }
+
+          if (!isAggregatedMaskBlockNonEmpty) {
+            depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+            continue;
+          }
+
+          // Y
+          textureAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) =
+              textureViewMap.getPlane(0)(pView.y(), pView.x());
+          // UV
+          if ((pView.x() % 2) == 0 && (pView.y() % 2) == 0) {
+            for (int p = 1; p < 3; ++p) {
+              textureAtlasMap.getPlane(p)(pAtlas.y() / 2, pAtlas.x() / 2) =
+                  textureViewMap.getPlane(p)(pView.y() / 2, pView.x() / 2);
+            }
+          }
+
+          // Depth
+          auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
+          if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
+              m_maxEntities == 1) {
+            depth = 1; // Avoid marking valid depth as invalid
+          }
+          depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
+        }
+      }
+    }
+  }
+  /*
   for (int dy = 0; dy < h; dy++) {
     for (int dx = 0; dx < w; dx++) {
       // get position
@@ -387,5 +497,6 @@ void EntityBasedAtlasConstructor::writePatchInAtlas(const PatchParams &patch,
       depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
     }
   }
+  */
 }
 } // namespace TMIV::AtlasConstructor

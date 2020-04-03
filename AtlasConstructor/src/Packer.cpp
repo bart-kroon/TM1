@@ -51,7 +51,7 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   m_maxEntities = rootNode.require("maxEntities").asInt();
   if (m_maxEntities > 1) {
     m_EntityEncodeRange = rootNode.require("GroupBasedEncoder")
-                              .require("EntityBasedAtlasConstructor")
+                              .require("AtlasConstructor")
                               .require("EntityEncodeRange")
                               .asIntVector<2>();
   }

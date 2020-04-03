@@ -37,9 +37,9 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
-#include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>
@@ -135,7 +135,7 @@ private: // Decoding processes
   static void decodeViewingSpaceHandling(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                                          const ViewingSpaceHandling &vh);
   static void decodeRecViewport(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                         const RecViewport &vh);
+                                const RecViewport &vh);
 
 private: // Parsers
   void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
@@ -151,7 +151,7 @@ private: // Parsers
   static void parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                                            const SeiMessage &message);
   static void parseRecViewportSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                          const SeiMessage &message);
+                                  const SeiMessage &message);
 
 private: // Internal decoder state
   std::istream &m_stream;

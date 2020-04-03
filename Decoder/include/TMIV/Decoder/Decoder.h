@@ -37,8 +37,8 @@
 #include <TMIV/Decoder/IDecoder.h>
 
 #include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
+#include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Renderer/ICuller.h>
 #include <TMIV/Renderer/IRenderer.h>
 

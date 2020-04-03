@@ -450,8 +450,7 @@ void MivDecoder::decodeViewingSpaceHandling(const VpccUnitHeader & /* vuh */,
 }
 
 void MivDecoder::decodeRecViewport(const VpccUnitHeader & /* vuh */,
-                                            const NalUnitHeader & /* nuh */,
-                                            const RecViewport &vh) {
+                                   const NalUnitHeader & /* nuh */, const RecViewport &vh) {
   cout << vh;
 }
 
@@ -517,7 +516,7 @@ void MivDecoder::parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const N
 }
 
 void MivDecoder::parseRecViewportSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                                              const SeiMessage &message) {
+                                     const SeiMessage &message) {
   istringstream stream{message.payload()};
   InputBitstream bitstream{stream};
   decodeRecViewport(vuh, nuh, RecViewport::decodeFrom(bitstream));

@@ -141,8 +141,9 @@ auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {
            << '\n';
     stream << "rec_viewport_center_view_flag=" << boolalpha << x.rec_viewport_center_view_flag()
            << '\n';
-    if (!x.rec_viewport_center_view_flag())
+    if (!x.rec_viewport_center_view_flag()) {
       stream << "rec_viewport_left_view_flag=" << x.rec_viewport_left_view_flag() << '\n';
+    }
     stream << "rec_viewport_pos_x=" << x.rec_viewport_pos_x() << '\n';
     stream << "rec_viewport_pos_y=" << x.rec_viewport_pos_y() << '\n';
     stream << "rec_viewport_pos_z=" << x.rec_viewport_pos_z() << '\n';
@@ -162,8 +163,9 @@ auto RecViewport::decodeFrom(InputBitstream &bitstream) -> RecViewport {
   if (!x.rec_viewport_cancel_flag()) {
     x.rec_viewport_persistence_flag(bitstream.getFlag());
     x.rec_viewport_center_view_flag(bitstream.getFlag());
-    if (!x.rec_viewport_center_view_flag())
+    if (!x.rec_viewport_center_view_flag()) {
       x.rec_viewport_left_view_flag(bitstream.getFlag());
+    }
     x.rec_viewport_pos_x(bitstream.getFloat32());
     x.rec_viewport_pos_y(bitstream.getFloat32());
     x.rec_viewport_pos_z(bitstream.getFloat32());
@@ -183,8 +185,9 @@ void RecViewport::encodeTo(OutputBitstream &bitstream) const {
     bitstream.putFlag(rec_viewport_persistence_flag());
     bitstream.putFlag(rec_viewport_center_view_flag());
     if (!rec_viewport_center_view_flag()) {
-      if (rec_viewport_left_view_flag())
+      if (rec_viewport_left_view_flag()) {
         bitstream.putFlag(rec_viewport_left_view_flag());
+      }
     }
     bitstream.putFloat32(rec_viewport_pos_x());
     bitstream.putFloat32(rec_viewport_pos_y());

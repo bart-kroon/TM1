@@ -484,8 +484,6 @@ class EncoderConfiguration(TestConfiguration):
 		return 0
 		
 	def atlasConstructorMethod(self):
-		if self.anchorId == 'E97' or self.anchorId == 'E17':
-			return 'EntityBasedAtlasConstructor'
 		return 'AtlasConstructor'
 
 	def atlasConstructor(self):

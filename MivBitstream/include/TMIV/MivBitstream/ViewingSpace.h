@@ -215,12 +215,15 @@ struct PrimitiveShape {
 
 inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {
   assert(primitive.index() != std::variant_npos);
-  if (std::holds_alternative<Cuboid>(primitive))
+  if (std::holds_alternative<Cuboid>(primitive)) {
     return PrimitiveShapeType::cuboid;
-  if (std::holds_alternative<Spheroid>(primitive))
+  }
+  if (std::holds_alternative<Spheroid>(primitive)) {
     return PrimitiveShapeType::spheroid;
-  if (std::holds_alternative<Halfspace>(primitive))
+  }
+  if (std::holds_alternative<Halfspace>(primitive)) {
     return PrimitiveShapeType::halfspace;
+  }
   abort();
 }
 

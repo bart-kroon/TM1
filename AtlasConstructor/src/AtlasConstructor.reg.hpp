@@ -33,7 +33,6 @@
 
 #include <TMIV/AtlasConstructor/Aggregator.h>
 #include <TMIV/AtlasConstructor/AtlasConstructor.h>
-#include <TMIV/AtlasConstructor/EntityBasedAtlasConstructor.h>
 #include <TMIV/AtlasConstructor/HierarchicalPruner.h>
 #include <TMIV/AtlasConstructor/Packer.h>
 #include <TMIV/Common/Factory.h>
@@ -42,8 +41,6 @@
 namespace TMIV::AtlasConstructor {
 inline void registerComponents() {
   Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
-  Factory<IAtlasConstructor>::getInstance().registerAs<EntityBasedAtlasConstructor>(
-      "EntityBasedAtlasConstructor");
   Factory<IPruner>::getInstance().registerAs<HierarchicalPruner>("HierarchicalPruner");
   Factory<IAggregator>::getInstance().registerAs<Aggregator>("Aggregator");
   Factory<IPacker>::getInstance().registerAs<Packer>("Packer");

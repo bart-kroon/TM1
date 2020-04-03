@@ -484,7 +484,7 @@ class EncoderConfiguration(TestConfiguration):
 		return 0
 		
 	def atlasConstructorMethod(self):
-		return 'EntityBasedAtlasConstructor'
+		return 'AtlasConstructor'
 
 	def atlasConstructor(self):
 		config = {

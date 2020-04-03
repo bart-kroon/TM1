@@ -45,7 +45,10 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::AtlasConstructor {
-AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
+constexpr auto neutralChroma = TextureFrame::neutralColor();
+
+AtlasConstructor::AtlasConstructor(const Json &rootNode,
+                                                         const Json &componentNode) {
   // Components
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", rootNode, componentNode);
   m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", rootNode, componentNode);
@@ -53,6 +56,10 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
 
   // Single atlas size
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
+
+  // Read the entity encoding range if exisited
+  if (auto subnode = componentNode.optional("EntityEncodeRange"))
+    m_EntityEncRange = subnode.asIntVector<2>();
 
   // The number of atlases is determined by the specified maximum number of luma
   // samples per frame (texture and depth combined)
@@ -65,11 +72,14 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   }
 }
 
-auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
+auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams,
+                                                  vector<bool> isBasicView)
     -> const IvSequenceParams & {
   // Construct at least the basic views
-  m_nbAtlas =
-      max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
+  if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
+    m_nbAtlas =
+        max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
+  }
 
   m_inIvSequenceParams = move(ivSequenceParams);
 
@@ -90,9 +100,13 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   // Register pruning relation
   m_pruner->registerPruningRelation(m_outIvSequenceParams, m_isBasicView);
 
-  // Turn on occupancy coding for partial views
+  // Read max_entities
+  m_maxEntities = m_outIvSequenceParams.msp().msp_max_entities_minus1() + 1;
+
+  // Turn on occupancy coding for all views (if msp_max_entities_minus1>0) otherwise for partial
+  // views only
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {
-    if (!m_isBasicView[viewId]) {
+    if (!m_isBasicView[viewId] || m_maxEntities > 1) {
       m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
   }
@@ -100,7 +114,8 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   return m_outIvSequenceParams;
 }
 
-void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
+void AtlasConstructor::prepareAccessUnit(
+    MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   m_ivAccessUnitParams = ivAccessUnitParams;
 
   const auto numOfCam = m_inIvSequenceParams.viewParamsList.size();
@@ -120,21 +135,152 @@ void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAcce
   }
 
   m_viewBuffer.clear();
+  m_aggregatedEntityMask.clear();
   m_aggregator->prepareAccessUnit();
 }
 
+auto AtlasConstructor::yuvSampler(const EntityMapList &in) -> vector<Frame<YUV420P16>> {
+  vector<Frame<YUV420P16>> outYuvAll;
+  for (const auto &viewId : in) {
+    Frame<YUV420P16> outYuv(int(viewId.getWidth()), int(viewId.getHeight()));
+    const auto width = viewId.getWidth();
+    const auto height = viewId.getHeight();
+    int step = 1;
+    for (int k = 0; k < 3; ++k) {
+      if (k != 0) {
+        step = 2;
+      }
+      int rowIndex = 0;
+      for (int i = 0; i != height; i = i + step) {
+        int colIndex = 0;
+        for (int j = 0; j != width; j = j + step) {
+          outYuv.getPlane(k)(rowIndex, colIndex) = viewId.getPlane(0)(i, j);
+          colIndex++;
+        }
+        rowIndex++;
+      }
+    }
+    outYuvAll.push_back(outYuv);
+  }
+  return outYuvAll;
+}
+
+void AtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList masks) {
+  for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
+    for (size_t i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
+      if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
+        mergedMasks[viewId].getPlane(0)[i] = masks[viewId].getPlane(0)[i];
+      }
+    }
+  }
+}
+
+void AtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
+  for (size_t viewId = 0; viewId < views.size(); viewId++) {
+    for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
+      if ((views[viewId].texture.getPlane(0)[i] == neutralChroma) &&
+          (views[viewId].depth.getPlane(0)[i] == uint16_t(0))) {
+        masks[viewId].getPlane(0)[i] = uint8_t(0);
+      }
+    }
+  }
+}
+
+void AtlasConstructor::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) {
+  if (int(m_aggregatedEntityMask.size()) < m_EntityEncRange[1] - m_EntityEncRange[0]) {
+    m_aggregatedEntityMask.push_back(Masks);
+  } else {
+    for (size_t i = 0; i < Masks.size(); i++) {
+      transform(m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).begin(),
+                m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).end(),
+                Masks[i].getPlane(0).begin(),
+                m_aggregatedEntityMask[entityId - m_EntityEncRange[0]][i].getPlane(0).begin(),
+                [](auto v1, auto v2) { return max(v1, v2); });
+    }
+  }
+}
+
+auto AtlasConstructor::entitySeparator(const MVD16Frame &transportViews,
+                                                  uint16_t entityId) -> MVD16Frame {
+  // Initalize entityViews
+  MVD16Frame entityViews;
+  for (const auto &transportView : transportViews) {
+    TextureDepth16Frame entityView = {
+        TextureFrame(transportView.texture.getWidth(), transportView.texture.getHeight()),
+        Depth16Frame(transportView.depth.getWidth(), transportView.depth.getHeight())};
+    entityViews.push_back(move(entityView));
+  }
+  EntityMapList entityMaps;
+  for (const auto &transportView : transportViews) {
+    entityMaps.push_back(transportView.entities);
+  }
+
+  auto entityMapsYUV = yuvSampler(entityMaps);
+
+  for (size_t viewId = 0; viewId < transportViews.size(); viewId++) {
+    for (int planeId = 0; planeId < transportViews[viewId].texture.getNumberOfPlanes();
+         planeId++) {                                                          //
+      std::transform(transportViews[viewId].texture.getPlane(planeId).begin(), // i's
+                     transportViews[viewId].texture.getPlane(planeId).end(),   //
+                     entityMapsYUV[viewId].getPlane(planeId).begin(),          // j's
+                     entityViews[viewId].texture.getPlane(planeId).begin(),    // result
+                     [=](auto i, auto j) { return (j == entityId) ? i : neutralChroma; });
+    }
+    std::transform(transportViews[viewId].depth.getPlane(0).begin(), // i's
+                   transportViews[viewId].depth.getPlane(0).end(),   //
+                   entityMaps[viewId].getPlane(0).begin(),           // j's
+                   entityViews[viewId].depth.getPlane(0).begin(),    // result
+                   [=](auto i, auto j) { return (j == entityId) ? i : uint16_t(0); });
+  }
+
+  return entityViews;
+}
+
 void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
-  // Pruning
-  MaskList masks = m_pruner->prune(m_inIvSequenceParams, transportViews, m_isBasicView);
+  MaskList mergedMasks;
+  if (m_maxEntities > 1) {
+    // Initalization
+    MVD16Frame transportEntityViews;
+    MaskList masks;
+    for (auto &transportView : transportViews) {
+      Mask entityMergedMask(transportView.texture.getWidth(), transportView.texture.getHeight());
+
+      fill(entityMergedMask.getPlane(0).begin(), entityMergedMask.getPlane(0).end(), uint8_t(0));
+
+      mergedMasks.push_back(move(entityMergedMask));
+    }
+
+    SizeVector m_viewSizes = m_inIvSequenceParams.viewParamsList.viewSizes();
+
+    for (auto entityId = m_EntityEncRange[0]; entityId < m_EntityEncRange[1]; entityId++) {
+      cout << "Processing entity " << entityId << '\n';
+
+      // Entity Separator
+      transportEntityViews = entitySeparator(transportViews, entityId);
+
+      // Pruning
+      masks = m_pruner->prune(m_inIvSequenceParams, transportEntityViews, m_isBasicView);
+
+      // updating the pruned basic masks for entities and filter other masks.
+      updateMasks(transportEntityViews, masks);
+
+      // Aggregate Entity Masks
+      aggregateEntityMasks(masks, entityId);
+
+      // Entity Mask Merging
+      mergeMasks(mergedMasks, masks);
+    }
+  } else {
+    mergedMasks = m_pruner->prune(m_inIvSequenceParams, transportViews, m_isBasicView);
+  }
 
   const auto frame = m_viewBuffer.size();
-
-  for (size_t view = 0; view < masks.size(); ++view) {
+  for (size_t view = 0; view < mergedMasks.size(); ++view) {
     int H = transportViews[view].texture.getHeight();
     int W = transportViews[view].texture.getWidth();
     for (int h = 0; h < H; h++) {
       for (int w = 0; w < W; w++) {
-        if (masks[view].getPlane(0)(h, w) != 0) {
+        if (mergedMasks[view].getPlane(0)(h, w) != 0) {
           m_nonAggregatedMask[view](h, w)[frame] = true;
         }
       } // w
@@ -143,7 +289,7 @@ void AtlasConstructor::pushFrame(MVD16Frame transportViews) {
 
   // Aggregation
   m_viewBuffer.push_back(move(transportViews));
-  m_aggregator->pushMask(masks);
+  m_aggregator->pushMask(mergedMasks);
 }
 
 auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
@@ -179,9 +325,9 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     // Set AFPS parameters
     atlas.afps
         .afps_2d_pos_x_bit_count_minus1(ceilLog2(m_atlasSize.x()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size() - 1)
+                                        atlas.asps.asps_log2_patch_packing_block_size())
         .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size() - 1);
+                                        atlas.asps.asps_log2_patch_packing_block_size());
 
     uint16_t maxProjectionPlaneWidthMinus1 = 0;
     uint16_t maxProjectionPlaneHeightMinus1 = 0;
@@ -198,6 +344,8 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
+  if (m_maxEntities > 1)
+    m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   m_ivAccessUnitParams.patchParamsList =
       m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 
@@ -210,13 +358,20 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
       TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                                    Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
       atlas.texture.fillNeutral();
+      atlas.depth.fillZero();
       atlasList.push_back(move(atlas));
     }
-
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
-      writePatchInAtlas(patch, views, atlasList, frame);
+      const auto &view = views[patch.pduViewId()];
+      if (m_maxEntities > 1) {
+        MVD16Frame tempViews;
+        tempViews.push_back(view);
+        const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
+        writePatchInAtlas(patch, entityViews[0], atlasList, frame);
+      } else {
+        writePatchInAtlas(patch, view, atlasList, frame);
+      }
     }
-
     m_atlasBuffer.push_back(move(atlasList));
     frame++;
   }
@@ -230,13 +385,14 @@ auto AtlasConstructor::popAtlas() -> MVD16Frame {
   return atlas;
 }
 
-auto AtlasConstructor::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
+auto AtlasConstructor::maxLumaSamplesPerFrame() const -> size_t {
+  return m_maxLumaSamplesPerFrame;
+}
 
-void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Frame &views,
-                                         MVD16Frame &atlas, int frame) {
-
+void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
+                                                    const TextureDepth16Frame &currentView,
+                                                    MVD16Frame &atlas, int frame) {
   auto &currentAtlas = atlas[patch.vuhAtlasId];
-  const auto &currentView = views[patch.pduViewId()];
 
   auto &textureAtlasMap = currentAtlas.texture;
   auto &depthAtlasMap = currentAtlas.depth;
@@ -306,7 +462,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Fr
 
           // Depth
           auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
-          if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy) {
+          if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
+              m_maxEntities == 1) {
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;

@@ -50,7 +50,8 @@ constexpr auto maxIntraPeriod = uint8_t(32);
 
 class AtlasConstructor : public IAtlasConstructor {
 public:
-  AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+  AtlasConstructor(const Common::Json & /*rootNode*/,
+                              const Common::Json & /*componentNode*/);
   AtlasConstructor(const AtlasConstructor &) = delete;
   AtlasConstructor(AtlasConstructor &&) = default;
   auto operator=(const AtlasConstructor &) -> AtlasConstructor & = delete;
@@ -69,12 +70,20 @@ public:
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
-  void writePatchInAtlas(const MivBitstream::PatchParams &patch, const Common::MVD16Frame &views,
-                         Common::MVD16Frame &atlas, int frame);
+  static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
+      -> Common::MVD16Frame;
+  static auto yuvSampler(const Common::EntityMapList &in)
+      -> std::vector<Common::Frame<Common::YUV420P16>>;
+  static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
+  static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
+  void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
+  void writePatchInAtlas(const MivBitstream::PatchParams &patch,
+                         const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas,
+                         int frame);
 
-private:
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
+  Common::Vec2i m_EntityEncRange;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;
@@ -84,6 +93,8 @@ private:
   MivBitstream::IvSequenceParams m_outIvSequenceParams;
   MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
+  std::vector<Common::MaskList> m_aggregatedEntityMask;
+  unsigned m_maxEntities{};
   std::size_t m_maxLumaSamplesPerFrame{};
 };
 } // namespace TMIV::AtlasConstructor

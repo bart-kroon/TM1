@@ -322,9 +322,9 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     // Set AFPS parameters
     atlas.afps
         .afps_2d_pos_x_bit_count_minus1(ceilLog2(m_atlasSize.x()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size())
+                                        atlas.asps.asps_log2_patch_packing_block_size() - 1)
         .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size());
+                                        atlas.asps.asps_log2_patch_packing_block_size() - 1);
 
     uint16_t maxProjectionPlaneWidthMinus1 = 0;
     uint16_t maxProjectionPlaneHeightMinus1 = 0;

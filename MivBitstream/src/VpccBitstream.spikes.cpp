@@ -40,6 +40,7 @@
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>
 
+#include <filesystem>
 #include <fstream>
 
 namespace TMIV::MivBitstream {
@@ -49,8 +50,6 @@ const MivDecoder::Mode MivDecoder::mode = Mode::TMC2;
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-
-const auto bitstreamPath = "C://Data//longdress_vox10_GOF0.vpcc";
 
 // Copied from PCCBitstream::readHeader (not in the specification)
 const uint32_t PCCTMC2ContainerMagicNumber = 23021981;
@@ -83,10 +82,7 @@ auto dumpVpccUnitPayload(streampos position, const SampleStreamVpccUnit &ssvu,
   file.write(payload.data(), payload.size());
 }
 
-TEST_CASE("Parse V-PCC sample stream", "[VPCC Unit]") {
-  ifstream stream{bitstreamPath, ios::binary};
-  REQUIRE(stream.good());
-
+void parseAndDemux(istream &stream) {
   stream.seekg(0, ios::end);
   const auto filesize = stream.tellg();
   cout << "[ 0 ]: File size is " << filesize << " bytes\n";
@@ -128,4 +124,20 @@ TEST_CASE("Parse V-PCC sample stream", "[VPCC Unit]") {
   }
 
   cout << "[ " << stream.tellg() << " ].\n";
+}
+
+auto testDataDir() { return filesystem::path(__FILE__).parent_path().parent_path() / "test"; }
+
+TEST_CASE("longdress_5frames_RA", "[Parse V-PCC bitstream]") {
+  const auto bitstreamPath = testDataDir() / "longdress_5frames_RA" / "longdress_vox10_GOF0.bin";
+  cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
+  ifstream stream{bitstreamPath, ios::binary};
+  parseAndDemux(stream);
+}
+
+TEST_CASE("longdress_5frames_AI", "[Parse V-PCC bitstream]") {
+  const auto bitstreamPath = testDataDir() / "longdress_5frames_AI" / "longdress_vox10_GOF0.bin";
+  cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
+  ifstream stream{bitstreamPath, ios::binary};
+  parseAndDemux(stream);
 }

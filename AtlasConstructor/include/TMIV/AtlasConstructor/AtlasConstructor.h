@@ -50,8 +50,7 @@ constexpr auto maxIntraPeriod = uint8_t(32);
 
 class AtlasConstructor : public IAtlasConstructor {
 public:
-  AtlasConstructor(const Common::Json & /*rootNode*/,
-                              const Common::Json & /*componentNode*/);
+  AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   AtlasConstructor(const AtlasConstructor &) = delete;
   AtlasConstructor(AtlasConstructor &&) = default;
   auto operator=(const AtlasConstructor &) -> AtlasConstructor & = delete;

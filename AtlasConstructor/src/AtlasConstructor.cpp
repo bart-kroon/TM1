@@ -47,8 +47,7 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::AtlasConstructor {
 constexpr auto neutralChroma = TextureFrame::neutralColor();
 
-AtlasConstructor::AtlasConstructor(const Json &rootNode,
-                                                         const Json &componentNode) {
+AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
   // Components
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", rootNode, componentNode);
   m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", rootNode, componentNode);
@@ -72,8 +71,7 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode,
   }
 }
 
-auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams,
-                                                  vector<bool> isBasicView)
+auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
     -> const IvSequenceParams & {
   // Construct at least the basic views
   if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
@@ -114,8 +112,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams,
   return m_outIvSequenceParams;
 }
 
-void AtlasConstructor::prepareAccessUnit(
-    MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
+void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
   m_ivAccessUnitParams = ivAccessUnitParams;
 
   const auto numOfCam = m_inIvSequenceParams.viewParamsList.size();
@@ -200,8 +197,8 @@ void AtlasConstructor::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) 
   }
 }
 
-auto AtlasConstructor::entitySeparator(const MVD16Frame &transportViews,
-                                                  uint16_t entityId) -> MVD16Frame {
+auto AtlasConstructor::entitySeparator(const MVD16Frame &transportViews, uint16_t entityId)
+    -> MVD16Frame {
   // Initalize entityViews
   MVD16Frame entityViews;
   for (const auto &transportView : transportViews) {
@@ -385,13 +382,11 @@ auto AtlasConstructor::popAtlas() -> MVD16Frame {
   return atlas;
 }
 
-auto AtlasConstructor::maxLumaSamplesPerFrame() const -> size_t {
-  return m_maxLumaSamplesPerFrame;
-}
+auto AtlasConstructor::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
 
 void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
-                                                    const TextureDepth16Frame &currentView,
-                                                    MVD16Frame &atlas, int frame) {
+                                         const TextureDepth16Frame &currentView, MVD16Frame &atlas,
+                                         int frame) {
   auto &currentAtlas = atlas[patch.vuhAtlasId];
 
   auto &textureAtlasMap = currentAtlas.texture;

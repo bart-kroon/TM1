@@ -57,8 +57,9 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
 
   // Read the entity encoding range if exisited
-  if (auto subnode = componentNode.optional("EntityEncodeRange"))
+  if (auto subnode = componentNode.optional("EntityEncodeRange")) {
     m_EntityEncRange = subnode.asIntVector<2>();
+  }
 
   // The number of atlases is determined by the specified maximum number of luma
   // samples per frame (texture and depth combined)
@@ -341,8 +342,9 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
-  if (m_maxEntities > 1)
+  if (m_maxEntities > 1) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
+  }
   m_ivAccessUnitParams.patchParamsList =
       m_packer->pack(m_ivAccessUnitParams.atlasSizes(), aggregatedMask, m_isBasicView);
 

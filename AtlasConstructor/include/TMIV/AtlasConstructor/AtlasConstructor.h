@@ -71,15 +71,19 @@ public:
 private:
   auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
       -> Common::SizeVector;
+  auto calculateViewGridSize(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+      -> Common::Vec2i;
 
   void writePatchInAtlas(const MivBitstream::PatchParams &patch, const Common::MVD16Frame &views,
                          Common::MVD16Frame &atlas, int frame);
 
 private:
   int m_blockSize{};
+  double m_maxBlockRate{};
   int m_maxBlocksPerAtlas{};
-  int m_maxAtlasGridWidth{};
-  int m_maxAtlasGridHeight{};
+  int m_maxAtlases{};
+  int m_geometryScaleEnabledFlag{};
+
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;
   std::unique_ptr<IPacker> m_packer;

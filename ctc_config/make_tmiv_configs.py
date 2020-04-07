@@ -429,17 +429,39 @@ class EncoderConfiguration(TestConfiguration):
 	def blockSize(self):
 		return 8
 
-	def maxAtlasWidth(self):
-		return 4096
-
-	def maxAtlasHeight(self):
-		return 4096
-
-	def maxLumaSamplesPerFrame(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
-			return 2 ** 25
+	def noLimit(self):
 		return 0
 
+	def hevcLevel(self):
+		return {
+			'A17': 5.2,
+			'A97': 5.2,
+			'E17': 5.2,
+			'E97': 5.2,
+			'V17': self.noLimit(),
+			'R17': self.noLimit(),
+			'R97': self.noLimit()
+		}[self.anchorId]
+
+	def maxLumaSampleRate(self):
+		if self.hevcLevel() >= 5:
+			return 1069547520.
+		if self.hevcLevel() >= 6:
+			return 4278190080.
+		return self.noLimit()
+
+	def maxLumaPictureSize(self):
+		if self.hevcLevel() >= 5:
+			return 8912896
+		if self.hevcLevel() >= 6:
+			return 35651584
+		return self.noLimit()
+
+	def maxAtlases(self):
+		if self.hevcLevel() > 0:
+			return 2 # two geometry, two texture
+		return 0
+	
 	def atlasConstructorMethod(self):
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 'EntityBasedAtlasConstructor'
@@ -470,8 +492,7 @@ class EncoderConfiguration(TestConfiguration):
 			'AtlasConstructorMethod': self.atlasConstructorMethod(),
 			self.atlasConstructorMethod(): self.atlasConstructor(),
 			'DepthOccupancyMethod': 'DepthOccupancy',
-			'DepthOccupancy': self.depthOccupancy(),
-			'geometryScaleEnabledFlag': self.geometryDownscaleFactor() > 1
+			'DepthOccupancy': self.depthOccupancy()
 		}
 
 	def numGroups(self):
@@ -488,9 +509,10 @@ class EncoderConfiguration(TestConfiguration):
 			'startFrame': self.startFrame(),
 			'intraPeriod': self.intraPeriod(),
 			'blockSize': self.blockSize(),
-			'maxAtlasWidth': self.maxAtlasWidth(),
-			'maxAtlasHeight': self.maxAtlasHeight(),
-			'maxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame(),
+			'maxLumaSampleRate': self.maxLumaSampleRate(),
+			'maxLumaPictureSize': self.maxLumaPictureSize(),
+			'maxAtlases': self.maxAtlases(),
+			'geometryScaleEnabledFlag': self.geometryDownscaleFactor() > 1,
 			'SourceCameraNames': self.sourceCameraNames(),
 			'SourceTexturePathFmt': self.sourceTexturePathFmt(),
 			'SourceDepthPathFmt': self.sourceDepthPathFmt(),
@@ -514,25 +536,11 @@ class EncoderConfiguration(TestConfiguration):
 	def saveHmCfg(self, component, scale):
 		path = '{0}/S{2}/HM_{0}_{1}_S{2}.cfg'.format(self.anchorId, component, self.seqId)
 
-		# This is an optimistic version of the calculation within TMIV
-		if self.anchorId == 'A17' or self.anchorId == 'A97' or self.anchorId == 'E17' or self.anchorId == 'E97':
-			N = self.blockSize()
-			maxBlocksPerAtlas = self.maxLumaSamplesPerFrame() // (2 * self.numGroups() * N * N)
-			atlasBlockWidth = self.maxAtlasWidth() // N
-			atlasBlockHeight = maxBlocksPerAtlas // atlasBlockWidth
-			atlasWidth = atlasBlockWidth * N
-			atlasHeight = atlasBlockHeight * N
-		else:
-			atlasWidth = self.viewWidth()
-			atlasHeight = self.viewHeight()		
-
 		with open(path, 'w') as stream:
 			stream.write('InputBitDepth: 10\n')
 			stream.write('InputChromaFormat: 420\n')
 			stream.write('FrameRate: 30\n')
 			stream.write('FrameSkip: 0\n')
-			stream.write('SourceWidth: {}\n'.format(atlasWidth//scale))
-			stream.write('SourceHeight: {}\n'.format(atlasHeight//scale))
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('Level: 5.2\n')

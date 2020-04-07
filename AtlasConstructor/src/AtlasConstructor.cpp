@@ -45,6 +45,14 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::AtlasConstructor {
+namespace {
+void runtimeCheck(bool cond, const char *what) {
+  if (!cond) {
+    throw runtime_error(what);
+  }
+}
+} // namespace
+
 AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
   // Components
   m_pruner = Factory<IPruner>::getInstance().create("Pruner", rootNode, componentNode);
@@ -54,42 +62,79 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   // Parameters
   const auto numGroups = rootNode.require("numGroups").asInt();
   m_blockSize = rootNode.require("blockSize").asInt();
-  const auto maxAtlasWidth = rootNode.require("maxAtlasWidth").asInt();
-  const auto maxAtlasHeight = rootNode.require("maxAtlasHeight").asInt();
-  const auto maxLumaSamplesPerFrame = rootNode.require("maxLumaSamplesPerFrame").asInt();
+  const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
+  const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
+  m_maxAtlases = rootNode.require("maxAtlases").asInt();
+  m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
 
-  // Derived parameters
-  m_maxBlocksPerAtlas = maxLumaSamplesPerFrame / (2 * numGroups * sqr(m_blockSize));
-  m_maxAtlasGridWidth = maxAtlasWidth / m_blockSize;
-  m_maxAtlasGridHeight = maxAtlasHeight / m_blockSize;
+  // Check parameters
+  runtimeCheck(1 <= numGroups, "numGroups should be at least one");
+  runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
+  runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
+  runtimeCheck(1 <= m_maxAtlases, "maxAtlases should be at least one.");
+
+  // Translate parameters to concrete constraints
+  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
+  m_maxBlockRate = maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * sqr(m_blockSize));
+  m_maxBlocksPerAtlas = maxLumaPictureSize / sqr(m_blockSize);
 
   if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 }
 
-// Calculate atlas frame sizes [MPEG/M52994]
+// Calculate atlas frame sizes [MPEG/M52994 v2]
 auto AtlasConstructor::calculateNominalAtlasFrameSizes(
     const IvSequenceParams &ivSequenceParams) const -> SizeVector {
-  if (m_maxBlocksPerAtlas == 0) {
-    // No luma sample count restriction: one atlas per transport view
-    auto x = SizeVector(ivSequenceParams.viewParamsList.size());
+  if (m_maxBlockRate == 0) {
+    // No constraints: one atlas per transport view
+    auto result = SizeVector(ivSequenceParams.viewParamsList.size());
     transform(cbegin(ivSequenceParams.viewParamsList), cend(ivSequenceParams.viewParamsList),
-              begin(x), [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
-    return x;
+              begin(result), [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
+    return result;
   }
 
-  // Calculate the height of the tallest view
-  const int maxViewGridHeight = accumulate(
-      cbegin(ivSequenceParams.viewParamsList), cend(ivSequenceParams.viewParamsList), 0,
-      [this](int x, const ViewParams &vp) {
-        return max(x, (vp.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
-      });
+  // Translate block rate into a maximum number of blocks
+  const auto maxBlocks = int(m_maxBlockRate / ivSequenceParams.frameRate);
 
-  // Make the atlas as wide as allowed but still high enough to fit the tallest basic view
-  const auto atlasGridWidth = min(m_maxAtlasGridWidth, m_maxBlocksPerAtlas / maxViewGridHeight);
-  const auto atlasGridHeight = min(m_maxAtlasGridHeight, m_maxBlocksPerAtlas / atlasGridWidth);
-  return {Vec2i{int(atlasGridWidth * m_blockSize), int(atlasGridHeight * m_blockSize)}};
+  // Calculate the number of atlases
+  auto numAtlases = (maxBlocks + m_maxBlocksPerAtlas - 1) / m_maxBlocksPerAtlas;
+  if (numAtlases > m_maxAtlases) {
+    cout << "The maxAtlases constraint is a limiting factor.\n";
+    numAtlases = m_maxAtlases;
+  }
+
+  // Calculate the number of blocks per atlas
+  auto maxBlocksPerAtlas = maxBlocks / numAtlases;
+  if (maxBlocksPerAtlas > m_maxBlocksPerAtlas) {
+    cout << "The maxLumaPictureSize constraint is a limiting factor.\n";
+    maxBlocksPerAtlas = m_maxBlocksPerAtlas;
+  }
+
+  // Take the smallest reasonable width
+  const auto viewGridSize = calculateViewGridSize(ivSequenceParams);
+  const auto atlasGridWidth = viewGridSize.x();
+  const auto atlasGridHeight = maxBlocksPerAtlas / atlasGridWidth;
+
+  // Warn if the aspect ratio is outside of HEVC limits (unlikely)
+  if (atlasGridWidth * 8 < atlasGridHeight || atlasGridHeight * 8 < atlasGridWidth) {
+    cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
+  }
+
+  return SizeVector(numAtlases, {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
+}
+
+auto AtlasConstructor::calculateViewGridSize(const IvSequenceParams &ivSequenceParams) const
+    -> Vec2i {
+  int x{};
+  int y{};
+
+  for (const auto &viewParams : ivSequenceParams.viewParamsList) {
+    x = max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_blockSize) / m_blockSize);
+    y = max(y, (viewParams.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
+  }
+
+  return {x, y};
 }
 
 auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
@@ -103,8 +148,8 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
       ai.ai_attribute_count() >= 1 && ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 
   // Calculate nominal atlas frame sizes
-  cout << "Nominal atlas frame sizes: { ";
   const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_inIvSequenceParams);
+  cout << "Nominal atlas frame sizes: { ";
   for (auto &size : atlasFrameSizes) {
     cout << ' ' << size;
   }
@@ -115,6 +160,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_outIvSequenceParams.msp() = m_inIvSequenceParams.msp();
   m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
   m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;
+  m_outIvSequenceParams.frameRate = m_inIvSequenceParams.frameRate;
 
   m_isBasicView = move(isBasicView);
 
@@ -264,7 +310,6 @@ auto AtlasConstructor::maxLumaSamplesPerFrame() const -> size_t { return m_maxLu
 
 void AtlasConstructor::writePatchInAtlas(const PatchParams &patch, const MVD16Frame &views,
                                          MVD16Frame &atlas, int frame) {
-
   auto &currentAtlas = atlas[patch.vuhAtlasId];
   const auto &currentView = views[patch.pduViewId()];
 

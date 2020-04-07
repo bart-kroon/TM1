@@ -47,6 +47,7 @@ struct IvSequenceParams {
   VpccParameterSet vps;
   ViewParamsList viewParamsList;
   std::optional<ViewingSpace> viewingSpace{};
+  double frameRate{};
 
   // Convenience function to access the MIV sequence params
   [[nodiscard]] auto msp() const noexcept -> const MivSequenceParams &;

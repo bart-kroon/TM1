@@ -56,10 +56,17 @@ IvMetadataWriter::IvMetadataWriter(const Json &config)
 
 void IvMetadataWriter::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
   m_encoder->writeIvSequenceParams(ivSequenceParams);
+  m_frameRate = ivSequenceParams.frameRate;
 }
 
 void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
                                                int intraPeriodFrameCount) {
   m_encoder->writeIvAccessUnitParams(ivAccessUnitParams, intraPeriodFrameCount);
+  m_bytesWritten = m_stream.tellp();
+}
+
+void IvMetadataWriter::reportSummary(std::ostream &out) const {
+  auto bitrate = 8e-3 * double(m_bytesWritten) / m_frameRate;
+  out << "Total bitrate is " << bitrate << " kbps\n";
 }
 } // namespace TMIV::IO

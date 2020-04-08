@@ -141,3 +141,27 @@ TEST_CASE("longdress_5frames_AI", "[Parse V-PCC bitstream]") {
   ifstream stream{bitstreamPath, ios::binary};
   parseAndDemux(stream);
 }
+
+TEST_CASE("longdress_5frames_RA with MivDecoder", "[MivDecoder]") {
+  const auto bitstreamPath = testDataDir() / "longdress_5frames_RA" / "longdress_vox10_GOF0.bin";
+  cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
+  ifstream stream{bitstreamPath, ios::binary};
+
+  const auto geoFrameServer = [](uint8_t atlasId, uint32_t frameId,
+                                 Vec2i frameSize) -> Depth10Frame {
+    cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+         << ", frameSize=" << frameSize << '\n';
+    return Depth10Frame{frameSize.x(), frameSize.y()};
+  };
+
+  const auto attrFrameServer = [](uint8_t atlasId, uint32_t frameId,
+                                  Vec2i frameSize) -> Texture444Frame {
+    cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+         << ", frameSize=" << frameSize << '\n';
+    return Texture444Frame{frameSize.x(), frameSize.y()};
+  };
+
+  auto decoder = MivDecoder{stream, geoFrameServer, attrFrameServer};
+
+  decoder.decode();
+}

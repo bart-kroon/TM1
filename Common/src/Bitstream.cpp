@@ -160,9 +160,9 @@ void OutputBitstream::putUVar_(uint64_t value, uint64_t range) {
 void OutputBitstream::putUExpGolomb_(uint64_t value) {
   auto bits = ceilLog2(value + 2) - 1;
   for (auto i = 0U; i < bits; ++i) {
-    putFlag(true);
+    putFlag(false);
   }
-  putFlag(false);
+  putFlag(true);
   auto mask = (uint64_t{1} << bits) - 1;
   writeBits(value - mask, bits);
 }

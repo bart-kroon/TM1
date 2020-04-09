@@ -31,41 +31,35 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#ifndef _TMIV_ATLASCONSTRUCTOR_HIERARCHICAL_PRUNER_H_
+#define _TMIV_ATLASCONSTRUCTOR_HIERARCHICAL_PRUNER_H_
 
-#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/Pruner/IPruner.h>
 
 #include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/IAtlasConstructor.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-namespace TMIV::Encoder {
-class Encoder : public IEncoder {
+#include <memory>
+
+namespace TMIV::Pruner {
+class HierarchicalPruner : public IPruner {
 public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder() override = default;
+  HierarchicalPruner(const Common::Json &rootConfig, const Common::Json &nodeConfig);
+  HierarchicalPruner(const HierarchicalPruner &) = delete;
+  HierarchicalPruner(HierarchicalPruner &&) = delete;
+  auto operator=(const HierarchicalPruner &) -> HierarchicalPruner & = delete;
+  auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
+  ~HierarchicalPruner() override;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
+  void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
+                               const std::vector<bool> &isBasicView) override;
+  auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
+             const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
+      -> Common::MaskList override;
 
 private:
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
-  std::unique_ptr<IAtlasConstructor> m_atlasConstructor;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
-  GeometryDownscaler m_geometryDownscaler;
+  class Impl;
+  const std::unique_ptr<Impl> m_impl;
 };
-} // namespace TMIV::Encoder
+} // namespace TMIV::Pruner
 
 #endif

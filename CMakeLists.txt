@@ -22,7 +22,7 @@ include(GNUInstallDirs)
 
 foreach(subdir
 		Common MivBitstream IO
-		ViewOptimizer AtlasConstructor DepthOccupancy Renderer ViewingSpace
+		ViewOptimizer Pruner Aggregator Packer DepthOccupancy Renderer ViewingSpace
 		Encoder Decoder DepthQualityAssessor)
 	add_subdirectory(${subdir})
 endforeach()

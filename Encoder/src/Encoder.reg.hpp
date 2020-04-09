@@ -31,11 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Encoder/AtlasConstructor.h>
+#include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Encoder/GroupBasedEncoder.h>
 
-#include "../../AtlasConstructor/src/AtlasConstructor.reg.hpp"
+#include "../../Aggregator/src/Aggregator.reg.hpp"
 #include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
 #include "../../DepthQualityAssessor/src/DepthQualityAssessor.reg.hpp"
+#include "../../Packer/src/Packer.reg.hpp"
+#include "../../Pruner/src/Pruner.reg.hpp"
 #include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
 
 #include <TMIV/Common/Factory.h>
@@ -43,11 +47,14 @@
 namespace TMIV::Encoder {
 inline void registerComponents() {
   TMIV::ViewOptimizer::registerComponents();
-  TMIV::AtlasConstructor::registerComponents();
+  TMIV::Pruner::registerComponents();
+  TMIV::Packer::registerComponents();
+  TMIV::Aggregator::registerComponents();
   TMIV::DepthOccupancy::registerComponents();
   TMIV::DepthQualityAssessor::registerComponents();
 
   Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
   Common::Factory<IEncoder>::getInstance().registerAs<GroupBasedEncoder>("GroupBasedEncoder");
+  Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
 }
 } // namespace TMIV::Encoder

@@ -31,41 +31,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#ifndef _TMIV_PACKER_PACKER_H_
+#define _TMIV_PACKER_PACKER_H_
 
-#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/Packer/IPacker.h>
 
 #include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/IAtlasConstructor.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-namespace TMIV::Encoder {
-class Encoder : public IEncoder {
+namespace TMIV::Packer {
+class Packer : public IPacker {
 public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder() override = default;
+  Packer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/);
+  Packer(const Packer &) = delete;
+  Packer(Packer &&) = default;
+  auto operator=(const Packer &) -> Packer & = delete;
+  auto operator=(Packer &&) -> Packer & = default;
+  ~Packer() override = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
+  auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
+            const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList override;
+  void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
+
+  auto getAlignment() -> int override;
 
 private:
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
-  std::unique_ptr<IAtlasConstructor> m_atlasConstructor;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
-  GeometryDownscaler m_geometryDownscaler;
+  int m_alignment{};
+  int m_minPatchSize{};
+  int m_overlap{};
+  bool m_pip{};
+  int m_maxEntities{1};
+  std::vector<Common::MaskList> m_aggregatedEntityMasks{};
+  Common::Vec2i m_EntityEncodeRange;
 };
-} // namespace TMIV::Encoder
+
+} // namespace TMIV::Packer
 
 #endif

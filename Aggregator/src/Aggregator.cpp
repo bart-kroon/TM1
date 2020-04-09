@@ -31,41 +31,26 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#include <TMIV/Aggregator/Aggregator.h>
 
-#include <TMIV/Encoder/IEncoder.h>
+using namespace std;
+using namespace TMIV::Common;
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/IAtlasConstructor.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+namespace TMIV::Aggregator {
+Aggregator::Aggregator(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-namespace TMIV::Encoder {
-class Encoder : public IEncoder {
-public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder() override = default;
+void Aggregator::prepareAccessUnit() { m_aggregatedMask.clear(); }
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
+void Aggregator::pushMask(const MaskList &mask) {
+  if (m_aggregatedMask.empty()) {
+    m_aggregatedMask = mask;
+  } else {
+    for (size_t i = 0; i < mask.size(); i++) {
+      transform(m_aggregatedMask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).end(),
+                mask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).begin(),
+                [](uint8_t v1, uint8_t v2) { return max(v1, v2); });
+    }
+  }
+}
 
-private:
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
-  std::unique_ptr<IAtlasConstructor> m_atlasConstructor;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
-  GeometryDownscaler m_geometryDownscaler;
-};
-} // namespace TMIV::Encoder
-
-#endif
+} // namespace TMIV::Aggregator

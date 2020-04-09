@@ -31,41 +31,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#ifndef _TMIV_PACKER_IPACKER_H_
+#define _TMIV_PACKER_IPACKER_H_
 
-#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/IAtlasConstructor.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
-
-namespace TMIV::Encoder {
-class Encoder : public IEncoder {
+namespace TMIV::Packer {
+class IPacker {
 public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder() override = default;
+  IPacker() = default;
+  IPacker(const IPacker &) = delete;
+  IPacker(IPacker &&) = default;
+  auto operator=(const IPacker &) -> IPacker & = delete;
+  auto operator=(IPacker &&) -> IPacker & = default;
+  virtual ~IPacker() = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
+  virtual auto getAlignment() -> int = 0;
 
-private:
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
-  std::unique_ptr<IAtlasConstructor> m_atlasConstructor;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
-  GeometryDownscaler m_geometryDownscaler;
+  virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
+                    const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList = 0;
+  virtual void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) = 0;
 };
-} // namespace TMIV::Encoder
+} // namespace TMIV::Packer
 
 #endif

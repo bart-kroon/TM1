@@ -31,40 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#ifndef _TMIV_ENCODER_IATLASCONSTRUCTOR_H_
+#define _TMIV_ENCODER_IATLASCONSTRUCTOR_H_
 
-#include <TMIV/Encoder/IEncoder.h>
-
-#include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/IAtlasConstructor.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
 namespace TMIV::Encoder {
-class Encoder : public IEncoder {
+class IAtlasConstructor {
 public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder() override = default;
+  IAtlasConstructor() = default;
+  IAtlasConstructor(const IAtlasConstructor &) = delete;
+  IAtlasConstructor(IAtlasConstructor &&) = default;
+  auto operator=(const IAtlasConstructor &) -> IAtlasConstructor & = delete;
+  auto operator=(IAtlasConstructor &&) -> IAtlasConstructor & = default;
+  virtual ~IAtlasConstructor() = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
-
-private:
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
-  std::unique_ptr<IAtlasConstructor> m_atlasConstructor;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
-  GeometryDownscaler m_geometryDownscaler;
+  virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
+                               std::vector<bool> isBasicView)
+      -> const MivBitstream::IvSequenceParams & = 0;
+  virtual void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) = 0;
+  virtual void pushFrame(Common::MVD16Frame transportViews) = 0;
+  virtual auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & = 0;
+  virtual auto popAtlas() -> Common::MVD16Frame = 0;
+  [[nodiscard]] virtual auto maxLumaSamplesPerFrame() const -> std::size_t = 0;
 };
 } // namespace TMIV::Encoder
 

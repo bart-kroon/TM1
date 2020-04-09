@@ -31,41 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ENCODER_H_
-#define _TMIV_ENCODER_ENCODER_H_
+#ifndef _TMIV_PRUNER_PRUNED_MESH_H_
+#define _TMIV_PRUNER_PRUNED_MESH_H_
 
-#include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Renderer/Engine.h>
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
-#include <TMIV/Encoder/GeometryDownscaler.h>
-#include <TMIV/Encoder/IAtlasConstructor.h>
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+namespace TMIV::Pruner {
+// Unproject a pruned (masked) view, resulting in a mesh in the reference
+// frame of the source view
+auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
+                         const MivBitstream::ViewParams &viewParams,
+                         const Common::Mat<std::uint8_t> &mask)
+    -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
+                  std::vector<Common::Vec3f>>;
 
-namespace TMIV::Encoder {
-class Encoder : public IEncoder {
-public:
-  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  Encoder(const Encoder &) = delete;
-  Encoder(Encoder &&) = default;
-  auto operator=(const Encoder &) -> Encoder & = delete;
-  auto operator=(Encoder &&) -> Encoder & = default;
-  ~Encoder() override = default;
+// Change reference frame and project vertices
+auto project(const Renderer::SceneVertexDescriptorList &vertices,
+             const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target)
+    -> Renderer::ImageVertexDescriptorList;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame views) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD10Frame override;
-  [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
-
-private:
-  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
-  std::unique_ptr<IAtlasConstructor> m_atlasConstructor;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
-  GeometryDownscaler m_geometryDownscaler;
-};
-} // namespace TMIV::Encoder
+// Weighted sphere compensation of stretching as performed by
+// Engine<ErpParams>::project
+void weightedSphere(const MivBitstream::CameraIntrinsics &ci,
+                    const Renderer::ImageVertexDescriptorList &vertices,
+                    Renderer::TriangleDescriptorList &triangles);
+} // namespace TMIV::Pruner
 
 #endif

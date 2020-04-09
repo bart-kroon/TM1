@@ -36,7 +36,6 @@
 #include <TMIV/Common/Factory.h>
 
 using namespace std;
-using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::ViewOptimizer;

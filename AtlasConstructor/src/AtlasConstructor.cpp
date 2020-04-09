@@ -73,10 +73,10 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
   runtimeCheck(numGroups <= maxAtlases, "There should be at least one attlas per group");
   if (maxLumaSampleRate == 0) {
-    runtimeCheck(maxLumaPictureSize == 0 && m_maxAtlases == 0,
+    runtimeCheck(maxLumaPictureSize == 0 && maxAtlases == 0,
                  "Either specify all constraints or none");
   } else {
-    runtimeCheck(maxLumaPictureSize > 0 && m_maxAtlases > 0,
+    runtimeCheck(maxLumaPictureSize > 0 && maxAtlases > 0,
                  "Either specify all constraints or none");
   }
 

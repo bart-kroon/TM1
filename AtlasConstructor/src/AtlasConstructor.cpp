@@ -71,13 +71,13 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");
   runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
   runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
-  runtimeCheck(numGroups <= maxAtlases, "There should be at least one attlas per group");
   if (maxLumaSampleRate == 0) {
     runtimeCheck(maxLumaPictureSize == 0 && maxAtlases == 0,
                  "Either specify all constraints or none");
   } else {
     runtimeCheck(maxLumaPictureSize > 0 && maxAtlases > 0,
                  "Either specify all constraints or none");
+    runtimeCheck(numGroups <= maxAtlases, "There should be at least one atlas per group");
   }
 
   // Translate parameters to concrete constraints

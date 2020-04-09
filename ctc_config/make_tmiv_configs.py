@@ -498,7 +498,7 @@ class EncoderConfiguration(TestConfiguration):
 	def numGroups(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':
-				return 3
+				return 2
 		return 1
 
 	def parameters(self):

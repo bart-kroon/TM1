@@ -64,13 +64,14 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_blockSize = rootNode.require("blockSize").asInt();
   const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
   const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
-  m_maxAtlases = rootNode.require("maxAtlases").asInt();
+  const auto maxAtlases = rootNode.require("maxAtlases").asInt();
   m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
 
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");
   runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
   runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
+  runtimeCheck(numGroups <= maxAtlases, "There should be at least one attlas per group");
   if (maxLumaSampleRate == 0) {
     runtimeCheck(maxLumaPictureSize == 0 && m_maxAtlases == 0,
                  "Either specify all constraints or none");
@@ -83,6 +84,7 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
   m_maxBlockRate = maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * sqr(m_blockSize));
   m_maxBlocksPerAtlas = maxLumaPictureSize / sqr(m_blockSize);
+  m_maxAtlases = maxAtlases / numGroups;
 
   if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");

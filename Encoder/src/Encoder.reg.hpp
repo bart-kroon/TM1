@@ -31,7 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/AtlasConstructor.h>
 #include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Encoder/GroupBasedEncoder.h>
 
@@ -55,6 +54,5 @@ inline void registerComponents() {
 
   Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
   Common::Factory<IEncoder>::getInstance().registerAs<GroupBasedEncoder>("GroupBasedEncoder");
-  Factory<IAtlasConstructor>::getInstance().registerAs<AtlasConstructor>("AtlasConstructor");
 }
 } // namespace TMIV::Encoder

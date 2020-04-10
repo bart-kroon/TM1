@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(EncoderLib
-	"src/AtlasConstructor.cpp"
+	"src/Encoder.cpp"
 	"src/GroupBasedEncoder.cpp"
     "src/GeometryDownscaler.cpp"
 	"src/Encoder.reg.hpp"
 	"include/TMIV/Encoder/IEncoder.h"
+	"include/TMIV/Encoder/Encoder.h"
 	"include/TMIV/Encoder/GroupBasedEncoder.h"
 	"include/TMIV/Encoder/GeometryDownscaler.h"
-	"include/TMIV/Encoder/AtlasConstructor.h"
 	)
 
 add_library(TMIV::EncoderLib
@@ -35,7 +35,6 @@ add_executable(Encoder
 target_link_libraries(Encoder
 	PRIVATE
 		TMIV::EncoderLib
-		TMIV::DecoderLib
 		TMIV::IOLib)
 
 install(

@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/IDecoder.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
 #include <TMIV/IO/IvMetadataWriter.h>
@@ -47,7 +46,6 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::IO;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Decoder;
 using namespace TMIV::DepthQualityAssessor;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
@@ -119,13 +117,11 @@ private:
 };
 } // namespace TMIV::Encoder
 
-#include "../../Decoder/src/Decoder.reg.hpp"
 #include "Encoder.reg.hpp"
 
 auto main(int argc, char *argv[]) -> int {
   try {
     TMIV::Encoder::registerComponents();
-    TMIV::Decoder::registerComponents();
     TMIV::Encoder::Application app{{argv, argv + argc}};
     app.startTime();
     app.run();

@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_ENCODER_ATLASCONSTRUCTOR_H_
-#define _TMIV_ENCODER_ATLASCONSTRUCTOR_H_
+#ifndef _TMIV_ENCODER_ENCODER_H_
+#define _TMIV_ENCODER_ENCODER_H_
 
 #include <TMIV/Aggregator/IAggregator.h>
 #include <TMIV/Common/Json.h>
@@ -48,14 +48,14 @@
 #include <memory>
 
 namespace TMIV::Encoder {
-class AtlasConstructor : public IEncoder {
+class Encoder : public IEncoder {
 public:
-  AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  AtlasConstructor(const AtlasConstructor &) = delete;
-  AtlasConstructor(AtlasConstructor &&) = default;
-  auto operator=(const AtlasConstructor &) -> AtlasConstructor & = delete;
-  auto operator=(AtlasConstructor &&) -> AtlasConstructor & = default;
-  ~AtlasConstructor() override = default;
+  Encoder(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
+  Encoder(const Encoder &) = delete;
+  Encoder(Encoder &&) = default;
+  auto operator=(const Encoder &) -> Encoder & = delete;
+  auto operator=(Encoder &&) -> Encoder & = default;
+  ~Encoder() override = default;
 
   auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
       -> const MivBitstream::IvSequenceParams & override;

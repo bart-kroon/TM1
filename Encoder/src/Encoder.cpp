@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/AtlasConstructor.h>
+#include <TMIV/Encoder/Encoder.h>
 
 #include <TMIV/Common/Factory.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
@@ -61,7 +61,7 @@ auto create(const char *name, const Json &rootNode, const Json &componentNode) {
 constexpr auto neutralChroma = TextureFrame::neutralColor();
 } // namespace
 
-AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode)
+Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     : m_viewOptimizer{create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
     , m_pruner{create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}
@@ -87,8 +87,7 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   }
 }
 
-auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams)
-    -> const IvSequenceParams & {
+auto Encoder::prepareSequence(IvSequenceParams ivSequenceParams) -> const IvSequenceParams & {
   // Transform source to transport view sequence parameters
   tie(m_inIvSequenceParams, m_isBasicView) =
       m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
@@ -126,7 +125,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams)
       m_depthOccupancy->transformSequenceParams(m_outIvSequenceParams));
 }
 
-void AtlasConstructor::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams) {
+void Encoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams) {
   m_ivAccessUnitParams = move(ivAccessUnitParams);
 
   const auto numOfCam = m_inIvSequenceParams.viewParamsList.size();
@@ -150,7 +149,7 @@ void AtlasConstructor::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams) 
   m_aggregator->prepareAccessUnit();
 }
 
-auto AtlasConstructor::yuvSampler(const EntityMapList &in) -> vector<Frame<YUV420P16>> {
+auto Encoder::yuvSampler(const EntityMapList &in) -> vector<Frame<YUV420P16>> {
   vector<Frame<YUV420P16>> outYuvAll;
   for (const auto &viewId : in) {
     Frame<YUV420P16> outYuv(int(viewId.getWidth()), int(viewId.getHeight()));
@@ -176,7 +175,7 @@ auto AtlasConstructor::yuvSampler(const EntityMapList &in) -> vector<Frame<YUV42
   return outYuvAll;
 }
 
-void AtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList masks) {
+void Encoder::mergeMasks(MaskList &mergedMasks, MaskList masks) {
   for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
     for (size_t i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
       if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
@@ -186,7 +185,7 @@ void AtlasConstructor::mergeMasks(MaskList &mergedMasks, MaskList masks) {
   }
 }
 
-void AtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
+void Encoder::updateMasks(const MVD16Frame &views, MaskList &masks) {
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
     for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].texture.getPlane(0)[i] == neutralChroma) &&
@@ -197,7 +196,7 @@ void AtlasConstructor::updateMasks(const MVD16Frame &views, MaskList &masks) {
   }
 }
 
-void AtlasConstructor::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) {
+void Encoder::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) {
   if (int(m_aggregatedEntityMask.size()) < m_EntityEncRange[1] - m_EntityEncRange[0]) {
     m_aggregatedEntityMask.push_back(Masks);
   } else {
@@ -211,8 +210,7 @@ void AtlasConstructor::aggregateEntityMasks(MaskList &Masks, uint16_t entityId) 
   }
 }
 
-auto AtlasConstructor::entitySeparator(const MVD16Frame &transportViews, uint16_t entityId)
-    -> MVD16Frame {
+auto Encoder::entitySeparator(const MVD16Frame &transportViews, uint16_t entityId) -> MVD16Frame {
   // Initalize entityViews
   MVD16Frame entityViews;
   for (const auto &transportView : transportViews) {
@@ -247,7 +245,7 @@ auto AtlasConstructor::entitySeparator(const MVD16Frame &transportViews, uint16_
   return entityViews;
 }
 
-void AtlasConstructor::pushFrame(MVD16Frame sourceViews) {
+void Encoder::pushFrame(MVD16Frame sourceViews) {
   const auto transportViews = m_viewOptimizer->optimizeFrame(move(sourceViews));
 
   MaskList mergedMasks;
@@ -305,7 +303,7 @@ void AtlasConstructor::pushFrame(MVD16Frame sourceViews) {
   m_aggregator->pushMask(mergedMasks);
 }
 
-auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
+auto Encoder::completeAccessUnit() -> const IvAccessUnitParams & {
   // Aggregated mask
   m_aggregator->completeAccessUnit();
   const MaskList &aggregatedMask = m_aggregator->getAggregatedMask();
@@ -394,18 +392,17 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
       m_depthOccupancy->transformAccessUnitParams(m_ivAccessUnitParams));
 }
 
-auto AtlasConstructor::popAtlas() -> MVD10Frame {
+auto Encoder::popAtlas() -> MVD10Frame {
   auto atlas = m_geometryDownscaler.transformFrame(
       m_depthOccupancy->transformAtlases(m_atlasBuffer.front()));
   m_atlasBuffer.pop_front();
   return atlas;
 }
 
-auto AtlasConstructor::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
+auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
 
-void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
-                                         const TextureDepth16Frame &currentView, MVD16Frame &atlas,
-                                         int frame) {
+void Encoder::writePatchInAtlas(const PatchParams &patch, const TextureDepth16Frame &currentView,
+                                MVD16Frame &atlas, int frame) {
   auto &currentAtlas = atlas[patch.vuhAtlasId];
 
   auto &textureAtlasMap = currentAtlas.texture;

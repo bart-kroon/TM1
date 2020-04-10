@@ -113,12 +113,14 @@ if (CMAKE_TESTING_ENABLED)
 
 	catch_discover_tests(MivBitstreamTest)
 
-	add_executable(VpccBitstreamSpikes
-		"src/VpccBitstream.spikes.cpp")
+	add_executable(VpccBitstreamTest
+		"src/VpccBitstream.test.cpp")
 
-	target_link_libraries(VpccBitstreamSpikes
+	target_link_libraries(VpccBitstreamTest
 		PRIVATE
 			Catch2::Catch2
 			TMIV::MivBitstreamLib
 			TMIV::IOLib)
+
+	catch_discover_tests(VpccBitstreamTest)
 endif()

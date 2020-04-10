@@ -481,13 +481,12 @@ class EncoderConfiguration(TestConfiguration):
 			}[self.seqId] * self.lumaSamplesPerView()
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 4 * self.lumaSamplesPerView()
-		return 0
-		
-	def atlasConstructorMethod(self):
-		return 'AtlasConstructor'
+		return 0	
 
-	def atlasConstructor(self):
+	def encoder(self):
 		config = {
+			'ViewOptimizerMethod': self.viewOptimizerMethod(),
+			self.viewOptimizerMethod(): {},
 			'PrunerMethod': 'HierarchicalPruner',
 			'HierarchicalPruner': self.pruner(),
 			'AggregatorMethod': 'Aggregator',
@@ -498,7 +497,10 @@ class EncoderConfiguration(TestConfiguration):
 				self.atlasWidth(),
 				self.atlasHeight()
 			],
-			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
+			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame(),
+			'DepthOccupancyMethod': 'DepthOccupancy',
+			'DepthOccupancy': self.depthOccupancy(),
+			'geometryScaleEnabledFlag': self.geometryDownscaleFactor() > 1
 		}
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			config['EntityEncodeRange'] = [0, self.maxEntities()]
@@ -508,18 +510,7 @@ class EncoderConfiguration(TestConfiguration):
 		return {
 			'depthOccMapThresholdIfSet': 64
 		}
-
-	def encoder(self):
-		return {
-			'ViewOptimizerMethod': self.viewOptimizerMethod(),
-			self.viewOptimizerMethod(): {},
-			'AtlasConstructorMethod': self.atlasConstructorMethod(),
-			self.atlasConstructorMethod(): self.atlasConstructor(),
-			'DepthOccupancyMethod': 'DepthOccupancy',
-			'DepthOccupancy': self.depthOccupancy(),
-			'geometryScaleEnabledFlag': self.geometryDownscaleFactor() > 1
-		}
-
+	
 	def numGroups(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
 			if self.firstSourceCamera()['Projection'] == 'Perspective':

@@ -68,10 +68,8 @@ private:
 
   public:
     Rectangle() = default;
-    Rectangle(int x0, int y0, int x1, int y1)
-        : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1){}[[nodiscard]] auto left() const -> int {
-      return m_x0;
-    }
+    Rectangle(int x0, int y0, int x1, int y1) : m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1) {}
+    [[nodiscard]] auto left() const -> int { return m_x0; }
     [[nodiscard]] auto right() const -> int { return m_x1; }
     [[nodiscard]] auto bottom() const -> int { return m_y0; }
     [[nodiscard]] auto top() const -> int { return m_y1; }

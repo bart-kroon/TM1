@@ -81,11 +81,11 @@ private:
 
 public:
   explicit Impl(const Json &nodeConfig)
-      : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()},
-        m_maxStretching{nodeConfig.require("maxStretching").asFloat()},
-        m_erode{nodeConfig.require("erode").asInt()},
-        m_dilate{nodeConfig.require("dilate").asInt()},
-        m_config{nodeConfig.require("rayAngleParameter").asFloat(),
+      : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()}
+      , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
+      , m_erode{nodeConfig.require("erode").asInt()}
+      , m_dilate{nodeConfig.require("dilate").asInt()}
+      , m_config{nodeConfig.require("rayAngleParameter").asFloat(),
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 

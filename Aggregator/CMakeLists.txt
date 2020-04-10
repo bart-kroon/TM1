@@ -12,7 +12,7 @@ add_library(TMIV::AggregatorLib
 
 target_link_libraries(AggregatorLib
 	PUBLIC
-		TMIV::MivBitstreamLib)
+		TMIV::CommonLib)
 
 target_include_directories(AggregatorLib
 	PUBLIC

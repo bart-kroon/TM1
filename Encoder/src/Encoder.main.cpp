@@ -66,10 +66,12 @@ private:
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
-        m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")},
-        m_metadataWriter{json()}, m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+      : Common::Application{"Encoder", move(argv)}
+      , m_encoder{create<IEncoder>("Encoder")}
+      , m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")}
+      , m_metadataWriter{json()}
+      , m_numberOfFrames{json().require("numberOfFrames").asInt()}
+      , m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
     auto sourceSequenceParams = loadSourceIvSequenceParams(json());

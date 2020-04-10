@@ -119,6 +119,5 @@ if (CMAKE_TESTING_ENABLED)
 	target_link_libraries(VpccBitstreamSpikes
 		PRIVATE
 			Catch2::Catch2
-			TMIV::MivBitstreamLib
 			TMIV::IOLib)
 endif()

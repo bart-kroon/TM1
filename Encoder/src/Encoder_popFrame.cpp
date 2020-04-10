@@ -31,54 +31,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_ENGINE_H_
-#error "Include the .h, not the .hpp"
-#endif
+#include <TMIV/Encoder/Encoder.h>
 
-#include <TMIV/Common/Common.h>
+using namespace std;
+using namespace TMIV::Common;
 
-namespace TMIV::Renderer {
-template <> struct Engine<MivBitstream::CiCamType::perspective> {
-  const float f_x;
-  const float f_y;
-  const float c_x;
-  const float c_y;
-
-  explicit Engine(const MivBitstream::CameraIntrinsics &ci)
-      : f_x{ci.ci_perspective_focal_hor()}
-      , f_y{ci.ci_perspective_focal_ver()}
-      , c_x{ci.ci_perspective_center_hor()}
-      , c_y{ci.ci_perspective_center_ver()} {}
-
-  // Unprojection equation
-  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
-    if (depth > 0.F) {
-      return {depth, -(depth / f_x) * (uv.x() - c_x), -(depth / f_y) * (uv.y() - c_y)};
-    }
-    return {Common::NaN, Common::NaN, Common::NaN};
-  }
-
-  // Projection equation
-  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
-      -> ImageVertexDescriptor const {
-    if (v.position.x() > 0.F) {
-      auto uv = Common::Vec2f{-f_x * v.position.y() / v.position.x() + c_x,
-                              -f_y * v.position.z() / v.position.x() + c_y};
-      return {uv, v.position.x(), v.rayAngle};
-    }
-    return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};
-  }
-
-  // Project mesh to target view
-  template <typename... T>
-  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
-               std::tuple<std::vector<T>...> attributes) {
-    ImageVertexDescriptorList imageVertices;
-    imageVertices.reserve(sceneVertices.size());
-    for (const SceneVertexDescriptor &v : sceneVertices) {
-      imageVertices.push_back(projectVertex(v));
-    }
-    return std::tuple{move(imageVertices), triangles, attributes};
-  }
-};
-} // namespace TMIV::Renderer
+namespace TMIV::Encoder {
+auto Encoder::popAtlas() -> MVD10Frame {
+  auto atlas = m_geometryDownscaler.transformFrame(
+      m_depthOccupancy->transformAtlases(m_videoFrameBuffer.front()));
+  m_videoFrameBuffer.pop_front();
+  return atlas;
+}
+} // namespace TMIV::Encoder

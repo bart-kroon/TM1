@@ -12,7 +12,6 @@ add_library(TMIV::DepthQualityAssessorLib
 
 target_link_libraries(DepthQualityAssessorLib
 	PUBLIC
-		TMIV::MivBitstreamLib
 		TMIV::RendererLib)
 
 target_include_directories(DepthQualityAssessorLib

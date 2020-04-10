@@ -65,8 +65,10 @@ auto sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHeader {
 
 MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
                        AttrFrameServer attrFrameServer)
-    : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)},
-      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{sampleStreamVpccHeader(stream)} {
+    : m_stream{stream}
+    , m_geoFrameServer{move(geoFrameServer)}
+    , m_attrFrameServer{move(attrFrameServer)}
+    , m_ssvh{sampleStreamVpccHeader(stream)} {
   cout << "=== Sample stream V-PCC header " << string(100 - 31, '=') << '\n'
        << m_ssvh << string(100, '=') << "\n"
        << endl;

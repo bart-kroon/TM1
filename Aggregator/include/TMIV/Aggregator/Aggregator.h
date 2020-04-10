@@ -32,7 +32,7 @@
  */
 
 #ifndef _TMIV_AGGREGATOR_AGGREGATOR_H_
-#define _TMIV_AGGREGATPR_AGGREGATOR_H_
+#define _TMIV_AGGREGATOR_AGGREGATOR_H_
 
 #include <TMIV/Aggregator/IAggregator.h>
 
@@ -50,8 +50,8 @@ public:
 
   void prepareAccessUnit() override;
   void pushMask(const Common::MaskList &mask) override;
-  void completeAccessUnit() override{}[[nodiscard]] auto getAggregatedMask() const
-      -> const Common::MaskList & override;
+  void completeAccessUnit() override {}
+  [[nodiscard]] auto getAggregatedMask() const -> const Common::MaskList & override;
 
 private:
   Common::MaskList m_aggregatedMask;

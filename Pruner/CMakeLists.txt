@@ -14,7 +14,6 @@ add_library(TMIV::PrunerLib
 
 target_link_libraries(PrunerLib
 	PUBLIC
-		TMIV::MivBitstreamLib
 		TMIV::RendererLib)
 
 target_include_directories(PrunerLib

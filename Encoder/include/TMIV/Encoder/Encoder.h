@@ -57,26 +57,43 @@ public:
   auto operator=(Encoder &&) -> Encoder & = default;
   ~Encoder() override = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+  auto prepareSequence(MivBitstream::IvSequenceParams sourceIvs)
       -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
+  void prepareAccessUnit(MivBitstream::IvAccessUnitParams sourceIvau) override;
   void pushFrame(Common::MVD16Frame sourceViews) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
-private:
+private: // Encoder_prepareSequence.cpp
+  auto haveTexture() const -> bool;
+  void enableOccupancyPerView();
+
+private: // Encoder_prepareAccessUnit.cpp
+  void resetNonAggregatedMask();
+
+private: // Encoder_pushFrame.cpp
+  void pushSingleEntityFrame(Common::MVD16Frame sourceViews);
+  void updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
+                               const Common::MaskList &masks);
+  void pushMultiEntityFrame(Common::MVD16Frame sourceViews);
   static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
       -> Common::MVD16Frame;
   static auto yuvSampler(const Common::EntityMapList &in)
       -> std::vector<Common::Frame<Common::YUV420P16>>;
-  static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
+  static void mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks);
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
-  void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
-  void writePatchInAtlas(const MivBitstream::PatchParams &patch,
-                         const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas,
-                         int frame);
+  void aggregateEntityMasks(Common::MaskList &masks, std::uint16_t entityId);
 
+private: // Encoder_completeAccessUnit.cpp
+  void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
+  void completeIvau();
+  void constructVideoFrames();
+  void writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
+                         const Common::TextureDepth16Frame &view, Common::MVD16Frame &atlas,
+                         int frameId);
+
+  // Encoder sub-components
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
@@ -84,19 +101,27 @@ private:
   std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
   GeometryDownscaler m_geometryDownscaler;
 
+  // Encoder parameters
   std::size_t m_nbAtlas{};
   Common::Vec2i m_atlasSize;
-  Common::Vec2i m_EntityEncRange;
+  Common::Vec2i m_entityEncRange;
+
+  // View-optimized encoder input
+  MivBitstream::IvSequenceParams m_transportIvs;
   std::vector<bool> m_isBasicView;
-  std::vector<Common::MVD16Frame> m_viewBuffer;
-  MivBitstream::IvSequenceParams m_inIvSequenceParams;
-  MivBitstream::IvSequenceParams m_outIvSequenceParams;
-  MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
-  std::deque<Common::MVD16Frame> m_atlasBuffer;
+  std::vector<Common::MVD16Frame> m_transportViews;
+
+  // Encoder output (ready for HM)
+  MivBitstream::IvSequenceParams m_ivs;
+  MivBitstream::IvAccessUnitParams m_ivau;
+  std::deque<Common::MVD16Frame> m_videoFrameBuffer;
+
+  // Mask aggregation state
+  static constexpr auto maxIntraPeriod = 32;
+  using NonAggregatedMask = Common::Mat<std::bitset<maxIntraPeriod>>;
+  std::vector<NonAggregatedMask> m_nonAggregatedMask;
   std::vector<Common::MaskList> m_aggregatedEntityMask;
   std::size_t m_maxLumaSamplesPerFrame{};
-  static constexpr auto maxIntraPeriod = 32;
-  std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 };
 } // namespace TMIV::Encoder
 

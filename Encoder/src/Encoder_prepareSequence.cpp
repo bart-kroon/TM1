@@ -31,42 +31,54 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
+#include <TMIV/Encoder/Encoder.h>
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/GeometryScaler.h>
+#include <cassert>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
 
-namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode}
-    , m_entityBasedPatchMapFilter{rootNode, componentNode} {
-  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
+namespace TMIV::Encoder {
+auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequenceParams & {
+  // Transform source to transport view sequence parameters
+  tie(m_transportIvs, m_isBasicView) = m_viewOptimizer->optimizeSequence(move(sourceIvs));
+
+  // Construct at least the basic views
+  if (m_transportIvs.msp().msp_max_entities_minus1() == 0) {
+    m_nbAtlas = max(static_cast<size_t>(count(m_isBasicView.begin(), m_isBasicView.end(), true)),
+                    m_nbAtlas);
+  }
+
+  // Create IVS with VPS with right number of atlases but copy other parts from input IVS
+  m_ivs = IvSequenceParams{SizeVector(m_nbAtlas, m_atlasSize), haveTexture()};
+  m_ivs.msp() = m_transportIvs.msp();
+  m_ivs.viewParamsList = m_transportIvs.viewParamsList;
+  m_ivs.viewingSpace = m_transportIvs.viewingSpace;
+
+  // Register pruning relation
+  m_pruner->registerPruningRelation(m_ivs, m_isBasicView);
+
+  // Turn on occupancy coding per view
+  enableOccupancyPerView();
+
+  // Further transform sequence parameters: geometry downscaling and depth/occupancy coding
+  return m_geometryDownscaler.transformSequenceParams(
+      m_depthOccupancy->transformSequenceParams(m_ivs));
 }
 
-namespace {
-void checkRestrictions(const AccessUnit &frame) {
-  if (frame.vps->vps_miv_extension_flag() &&
-      frame.vps->vps_miv_sequence_vui_params_present_flag() &&
-      !frame.vps->miv_vui_params().coordinate_axis_system_params().isOmafCas()) {
-    throw runtime_error(
-        "The VUI indicates that a coordinate axis system other than that of OMAF is used. The TMIV "
-        "decoder/renderer is not yet able to convert between coordinate axis systems.");
+auto Encoder::haveTexture() const -> bool {
+  assert(m_transportIvs.vps.vps_atlas_count_minus1() == 0);
+  const auto &ai = m_transportIvs.vps.attribute_information(0);
+  return ai.ai_attribute_count() >= 1 &&
+         ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
+}
+
+void Encoder::enableOccupancyPerView() {
+  for (size_t viewId = 0; viewId < m_ivs.viewParamsList.size(); ++viewId) {
+    if (!m_isBasicView[viewId] || m_ivs.msp().msp_max_entities_minus1() > 0) {
+      m_ivs.viewParamsList[viewId].hasOccupancy = true;
+    }
   }
 }
-} // namespace
-
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  checkRestrictions(frame);
-  m_geometryScaler.inplaceScale(frame);
-  m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  return m_renderer->renderFrame(frame, viewportParams);
-}
-} // namespace TMIV::Decoder
+} // namespace TMIV::Encoder

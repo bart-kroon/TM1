@@ -34,21 +34,21 @@
 #ifndef _TMIV_ENCODER_ATLASCONSTRUCTOR_H_
 #define _TMIV_ENCODER_ATLASCONSTRUCTOR_H_
 
-#include <TMIV/Encoder/IAtlasConstructor.h>
-
 #include <TMIV/Aggregator/IAggregator.h>
 #include <TMIV/Common/Json.h>
+#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
+#include <TMIV/Encoder/GeometryDownscaler.h>
+#include <TMIV/Encoder/IEncoder.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 #include <bitset>
 #include <deque>
 #include <memory>
 
 namespace TMIV::Encoder {
-constexpr auto maxIntraPeriod = uint8_t(32);
-
-class AtlasConstructor : public IAtlasConstructor {
+class AtlasConstructor : public IEncoder {
 public:
   AtlasConstructor(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
   AtlasConstructor(const AtlasConstructor &) = delete;
@@ -57,16 +57,13 @@ public:
   auto operator=(AtlasConstructor &&) -> AtlasConstructor & = default;
   ~AtlasConstructor() override = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
-                       std::vector<bool> isBasicView)
+  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
       -> const MivBitstream::IvSequenceParams & override;
   void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
-  void pushFrame(Common::MVD16Frame transportViews) override;
+  void pushFrame(Common::MVD16Frame sourceViews) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
-  auto popAtlas() -> Common::MVD16Frame override;
+  auto popAtlas() -> Common::MVD10Frame override;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
-
-  std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
   static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
@@ -80,12 +77,16 @@ private:
                          const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas,
                          int frame);
 
-  std::size_t m_nbAtlas{};
-  Common::Vec2i m_atlasSize;
-  Common::Vec2i m_EntityEncRange;
+  std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
   std::unique_ptr<Packer::IPacker> m_packer;
+  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
+  GeometryDownscaler m_geometryDownscaler;
+
+  std::size_t m_nbAtlas{};
+  Common::Vec2i m_atlasSize;
+  Common::Vec2i m_EntityEncRange;
   std::vector<bool> m_isBasicView;
   std::vector<Common::MVD16Frame> m_viewBuffer;
   MivBitstream::IvSequenceParams m_inIvSequenceParams;
@@ -93,8 +94,9 @@ private:
   MivBitstream::IvAccessUnitParams m_ivAccessUnitParams;
   std::deque<Common::MVD16Frame> m_atlasBuffer;
   std::vector<Common::MaskList> m_aggregatedEntityMask;
-  unsigned m_maxEntities{};
   std::size_t m_maxLumaSamplesPerFrame{};
+  static constexpr auto maxIntraPeriod = 32;
+  std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 };
 } // namespace TMIV::Encoder
 

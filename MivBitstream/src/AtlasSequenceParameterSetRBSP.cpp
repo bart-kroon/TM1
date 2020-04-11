@@ -371,10 +371,8 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
   x.asps_patch_precedence_order_flag(bitstream.getFlag());
   x.asps_patch_size_quantizer_present_flag(bitstream.getFlag());
 
-  if (MivDecoder::mode != MivDecoder::Mode::TMC2) {
-    x.asps_raw_patch_enabled_flag(bitstream.getFlag());
-    VERIFY_MIVBITSTREAM(!x.asps_raw_patch_enabled_flag());
-  }
+  x.asps_raw_patch_enabled_flag(bitstream.getFlag());
+  VERIFY_MIVBITSTREAM(!x.asps_raw_patch_enabled_flag());
 
   x.asps_eom_patch_enabled_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.asps_eom_patch_enabled_flag());

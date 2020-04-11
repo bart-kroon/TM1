@@ -55,7 +55,7 @@
 
 // Checks against TMC2 bitstream when TMC2 deviates from ISO/IEC 23090-5
 //
-// See also MivDecoder::mode
+// See also MivDecoderMode
 #define VERIFY_TMC2BITSTREAM(condition)                                                            \
   static_cast<void>(                                                                               \
       (!!(condition) || (::TMIV::MivBitstream::tmc2Error(#condition, __FILE__, __LINE__), false)))

@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/MivDecoder.h>
 
+#include <TMIV/MivBitstream/MivDecoderMode.h>
+
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
 
@@ -148,7 +150,7 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
 }
 
 auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
-  if (mode == Mode::TMC2) {
+  if (mode == MivDecoderMode::TMC2) {
     return false;
   }
   const auto &sequence_ = sequence(vuh);

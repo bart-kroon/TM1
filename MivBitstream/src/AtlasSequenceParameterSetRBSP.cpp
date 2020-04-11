@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 #include "verify.h"
 #include <TMIV/Common/Bitstream.h>
@@ -388,7 +388,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
 
   x.asps_extension_present_flag(bitstream.getFlag());
 
-  if (MivDecoder::mode == MivDecoder::Mode::MIV) {
+  if (mode == MivDecoderMode::MIV) {
     const auto asps_extension_bit_equal_to_one = x.asps_extension_present_flag();
     VERIFY_MIVBITSTREAM(asps_extension_bit_equal_to_one);
 

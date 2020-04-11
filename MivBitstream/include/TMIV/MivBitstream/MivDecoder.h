@@ -51,16 +51,6 @@
 
 namespace TMIV::MivBitstream {
 class MivDecoder {
-public: // Integration testing
-  enum Mode {
-    MIV, // Parse a 3VC bitstream with MIV extension
-    TMC2 // Parse a bitstream that was produced by TMC2
-  };
-
-  // The mode varies per executable. The MIV decoder mode is normally MIV. The other modes are for
-  // testing purposes.
-  static const Mode mode;
-
 public: // Frame servers
   using GeoFrameServer = std::function<Common::Depth10Frame(
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;

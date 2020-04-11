@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/VpccParameterSet.h>
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 #include "verify.h"
 
@@ -655,7 +655,7 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
   x.vps_vpcc_parameter_set_id(bitstream.readBits<uint8_t>(4));
 
   x.vps_miv_mode_flag(bitstream.getFlag());
-  VERIFY_VPCCBITSTREAM(MivDecoder::mode == MivDecoder::Mode::MIV || !x.vps_miv_mode_flag());
+  VERIFY_VPCCBITSTREAM(mode == MivDecoderMode::MIV || !x.vps_miv_mode_flag());
 
   const auto vps_reserved_zero_7bits = bitstream.readBits<uint8_t>(7);
   VERIFY_VPCCBITSTREAM(vps_reserved_zero_7bits == 0);
@@ -685,7 +685,7 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
 
   x.vps_extension_present_flag(bitstream.getFlag());
 
-  if (MivDecoder::mode == MivDecoder::Mode::MIV) {
+  if (mode == MivDecoderMode::MIV) {
     VERIFY_MIVBITSTREAM(x.vps_extension_present_flag());
 
     const auto vps_extension_length_minus1 = bitstream.getUExpGolomb<size_t>();

@@ -31,11 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define CATCH_CONFIG_MAIN
-#include "test.h"
-
-#include <TMIV/MivBitstream/MivDecoderMode.h>
+#ifndef _TMIV_MIVBITSTREAM_MIVDECODERMODE_H_
+#define _TMIV_MIVBITSTREAM_MIVDECODERMODE_H_
 
 namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
+enum class MivDecoderMode {
+  MIV, // Parse a 3VC bitstream with MIV extension
+  TMC2 // Parse a bitstream that was produced by TMC2
+};
+
+// The mode varies per executable. The MIV decoder mode is normally MIV. The other modes are for
+// testing purposes.
+extern const MivDecoderMode mode;
+} // namespace TMIV::MivBitstream
+
+#endif

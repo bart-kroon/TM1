@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 #include <TMIV/Common/Common.h>
 
@@ -386,7 +386,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
 
-  if (MivDecoder::mode == MivDecoder::Mode::MIV && vps.vps_miv_extension_flag()) {
+  if (mode == MivDecoderMode::MIV && vps.vps_miv_extension_flag()) {
     x.pdu_entity_id(
         bitstream.getUVar<unsigned>(vps.miv_sequence_params().msp_max_entities_minus1() + 1));
 

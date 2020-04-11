@@ -221,7 +221,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
 
 auto MivEncoder::skipAtlasTileGroupLayer() -> AtlasTileGroupLayerRBSP {
   auto atgh = AtlasTileGroupHeader{};
-  atgh.atgh_type(AtghType::SKIP_TILE_GRP).atgh_adaptation_parameter_set_id(0);
+  atgh.atgh_type(AtghType::SKIP_TILE_GRP);
 
   return AtlasTileGroupLayerRBSP{atgh};
 }

@@ -40,6 +40,10 @@ constexpr auto AtlasTileGroupHeader::atgh_atlas_frame_parameter_set_id() const n
   return m_atgh_atlas_frame_parameter_set_id;
 }
 
+constexpr auto AtlasTileGroupHeader::atgh_adaptation_parameter_set_id() const noexcept {
+  return m_atgh_adaptation_parameter_set_id;
+}
+
 constexpr auto AtlasTileGroupHeader::atgh_address() const noexcept { return m_atgh_address; }
 
 constexpr auto AtlasTileGroupHeader::atgh_type() const noexcept { return m_atgh_type; }

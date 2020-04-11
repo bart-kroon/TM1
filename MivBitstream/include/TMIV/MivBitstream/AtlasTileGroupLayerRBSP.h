@@ -83,7 +83,7 @@ auto printTo(std::ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> std:
 class AtlasTileGroupHeader {
 public:
   [[nodiscard]] constexpr auto atgh_atlas_frame_parameter_set_id() const noexcept;
-  [[nodiscard]] auto atgh_adaptation_parameter_set_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] constexpr auto atgh_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto atgh_address() const noexcept;
   [[nodiscard]] constexpr auto atgh_type() const noexcept;
   [[nodiscard]] auto atgh_atlas_output_flag() const noexcept -> bool;
@@ -120,7 +120,7 @@ public:
 
 private:
   std::uint8_t m_atgh_atlas_frame_parameter_set_id{};
-  std::optional<std::uint8_t> m_atgh_adaptation_parameter_set_id{};
+  std::uint8_t m_atgh_adaptation_parameter_set_id{};
   std::uint8_t m_atgh_address{};
   AtghType m_atgh_type{};
   std::optional<bool> m_atgh_atlas_output_flag{};

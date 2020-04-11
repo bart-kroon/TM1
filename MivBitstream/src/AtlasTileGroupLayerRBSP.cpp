@@ -125,11 +125,6 @@ auto printTo(ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> ostream &
   }
 }
 
-auto AtlasTileGroupHeader::atgh_adaptation_parameter_set_id() const noexcept -> uint8_t {
-  VERIFY_VPCCBITSTREAM(m_atgh_adaptation_parameter_set_id.has_value());
-  return *m_atgh_adaptation_parameter_set_id;
-}
-
 auto AtlasTileGroupHeader::atgh_atlas_output_flag() const noexcept -> bool {
   VERIFY_VPCCBITSTREAM(m_atgh_atlas_output_flag.has_value());
   return *m_atgh_atlas_output_flag;
@@ -162,10 +157,8 @@ auto AtlasTileGroupHeader::atgh_patch_size_y_info_quantizer(const uint8_t value)
 auto operator<<(ostream &stream, const AtlasTileGroupHeader &x) -> ostream & {
   stream << "atgh_atlas_frame_parameter_set_id=" << int(x.atgh_atlas_frame_parameter_set_id())
          << '\n';
-  if (x.m_atgh_adaptation_parameter_set_id) {
-    stream << "atgh_adaptation_parameter_set_id=" << int(*x.m_atgh_adaptation_parameter_set_id)
-           << '\n';
-  }
+  stream << "atgh_adaptation_parameter_set_id=" << int(x.m_atgh_adaptation_parameter_set_id)
+         << '\n';
   stream << "atgh_address=" << int(x.atgh_address()) << '\n';
   stream << "atgh_type=" << x.atgh_type() << '\n';
   if (x.m_atgh_atlas_output_flag) {
@@ -195,9 +188,7 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
   VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
   const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
-  if (!afps.afps_fixed_camera_model_flag()) {
-    x.atgh_adaptation_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
-  }
+  x.atgh_adaptation_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
 
   VERIFY_MIVBITSTREAM(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
   x.atgh_address(0);
@@ -256,11 +247,7 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
   const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
-  if (afps.afps_fixed_camera_model_flag()) {
-    VERIFY_VPCCBITSTREAM(!m_atgh_adaptation_parameter_set_id.has_value());
-  } else {
-    bitstream.putUExpGolomb(atgh_adaptation_parameter_set_id());
-  }
+  bitstream.putUExpGolomb(atgh_adaptation_parameter_set_id());
 
   VERIFY_MIVBITSTREAM(afps.atlas_frame_tile_information().afti_single_tile_in_atlas_frame_flag());
   VERIFY_VPCCBITSTREAM(atgh_address() == 0);

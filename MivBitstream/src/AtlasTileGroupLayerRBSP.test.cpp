@@ -49,6 +49,7 @@ TEST_CASE("atlas_tile_group_header", "[Atlas Tile Group Layer RBSP]") {
       .atgh_patch_size_y_info_quantizer(aspsV.front().asps_log2_patch_packing_block_size());
 
   REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
+atgh_adaptation_parameter_set_id=0
 atgh_address=0
 atgh_type=P_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
@@ -60,6 +61,7 @@ atgh_patch_size_y_info_quantizer=7
     x.atgh_type(AtghType::SKIP_TILE_GRP);
 
     REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
+atgh_adaptation_parameter_set_id=0
 atgh_address=0
 atgh_type=SKIP_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
@@ -335,6 +337,7 @@ TEST_CASE("atlas_tile_group_layer_rbsp", "[Atlas Tile Group Layer RBSP]") {
     const auto x = AtlasTileGroupLayerRBSP{atgh};
 
     REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
+atgh_adaptation_parameter_set_id=0
 atgh_address=0
 atgh_type=SKIP_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
@@ -358,7 +361,6 @@ atgh_atlas_frm_order_cnt_lsb=0
 
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::I_TILE_GRP);
-    atgh.atgh_adaptation_parameter_set_id(0);
 
     auto pdu1 = PatchDataUnit{};
     pdu1.pdu_2d_size_x_minus1(10).pdu_2d_size_y_minus1(20);

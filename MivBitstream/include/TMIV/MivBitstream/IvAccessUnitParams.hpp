@@ -42,7 +42,6 @@ inline AtlasAccessUnitParams::AtlasAccessUnitParams() {
       .asps_num_ref_atlas_frame_lists_in_asps(1);
   afps.afps_fixed_camera_model_flag(false);
   atgh.atgh_type(AtghType::I_TILE_GRP);
-  atgh.atgh_adaptation_parameter_set_id(0);
 }
 
 inline auto operator<<(std::ostream &stream, const AtlasAccessUnitParams &x) -> std::ostream & {

@@ -145,5 +145,5 @@ TEST_CASE("Decode", "[V-PCC bitstream]") {
   cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
   auto decoder = MivDecoder{stream, geoFrameServer, attrFrameServer};
-  //  decoder.decode();
+  decoder.decode();
 }

@@ -654,14 +654,11 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
   x.profile_tier_level(ProfileTierLevel::decodeFrom(bitstream));
   x.vps_vpcc_parameter_set_id(bitstream.readBits<uint8_t>(4));
 
-  // TODO(TMC2#33): Add vps_reserved_zero_8bits
-  if (MivDecoder::mode != MivDecoder::Mode::TMC2) {
-    x.vps_miv_mode_flag(bitstream.getFlag());
-    VERIFY_VPCCBITSTREAM(MivDecoder::mode == MivDecoder::Mode::MIV || !x.vps_miv_mode_flag());
+  x.vps_miv_mode_flag(bitstream.getFlag());
+  VERIFY_VPCCBITSTREAM(MivDecoder::mode == MivDecoder::Mode::MIV || !x.vps_miv_mode_flag());
 
-    const auto vps_reserved_zero_7bits = bitstream.readBits<uint8_t>(7);
-    VERIFY_VPCCBITSTREAM(vps_reserved_zero_7bits == 0);
-  }
+  const auto vps_reserved_zero_7bits = bitstream.readBits<uint8_t>(7);
+  VERIFY_VPCCBITSTREAM(vps_reserved_zero_7bits == 0);
 
   x.vps_atlas_count_minus1(bitstream.readBits<uint8_t>(6));
 

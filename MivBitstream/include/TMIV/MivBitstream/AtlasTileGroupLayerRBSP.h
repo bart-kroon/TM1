@@ -301,8 +301,8 @@ public:
 
   friend auto operator<<(std::ostream &stream, const AtlasTileGroupLayerRBSP &x) -> std::ostream &;
 
-  constexpr auto operator==(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
-  constexpr auto operator!=(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
+  auto operator==(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
+  auto operator!=(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
 
   static auto decodeFrom(std::istream &stream, const VpccUnitHeader &vuh,
                          const VpccParameterSet &vps,

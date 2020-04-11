@@ -610,6 +610,17 @@ auto operator<<(ostream &stream, const AtlasTileGroupLayerRBSP &x) -> ostream & 
   return stream;
 }
 
+auto AtlasTileGroupLayerRBSP::operator==(const AtlasTileGroupLayerRBSP &other) const noexcept
+    -> bool {
+  return atlas_tile_group_header() == other.atlas_tile_group_header() &&
+         m_atlas_tile_group_data_unit == other.m_atlas_tile_group_data_unit;
+}
+
+auto AtlasTileGroupLayerRBSP::operator!=(const AtlasTileGroupLayerRBSP &other) const noexcept
+    -> bool {
+  return !operator==(other);
+}
+
 auto AtlasTileGroupLayerRBSP::decodeFrom(istream &stream, const VpccUnitHeader &vuh,
                                          const VpccParameterSet &vps,
                                          const vector<AtlasSequenceParameterSetRBSP> &asps,

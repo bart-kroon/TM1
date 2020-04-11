@@ -47,26 +47,12 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-namespace {
-auto sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHeader {
-  if (MivDecoder::mode == MivDecoder::Mode::TMC2) {
-    // Skip TMC2 header
-    const uint32_t PCCTMC2ContainerMagicNumber = 23021981;
-    const uint32_t PCCTMC2ContainerVersion = 1;
-    VERIFY_TMC2BITSTREAM(getUint32(stream) == PCCTMC2ContainerMagicNumber);
-    VERIFY_TMC2BITSTREAM(getUint32(stream) == PCCTMC2ContainerVersion);
-    VERIFY_TMC2BITSTREAM(getUint64(stream) == 0);
-  }
-  return SampleStreamVpccHeader::decodeFrom(stream);
-}
-} // namespace
-
 // Decoder interface ///////////////////////////////////////////////////////////////////////////////
 
 MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
                        AttrFrameServer attrFrameServer)
     : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)},
-      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{sampleStreamVpccHeader(stream)} {
+      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{SampleStreamVpccHeader::decodeFrom(stream)} {
   cout << "=== Sample stream V-PCC header " << string(100 - 31, '=') << '\n'
        << m_ssvh << string(100, '=') << "\n"
        << endl;

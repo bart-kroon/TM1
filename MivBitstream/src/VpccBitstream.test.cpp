@@ -51,10 +51,6 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
-// Copied from PCCBitstream::readHeader (not in the specification)
-const uint32_t PCCTMC2ContainerMagicNumber = 23021981;
-const uint32_t PCCTMC2ContainerVersion = 1;
-
 auto dumpVpccUnitPayload(streampos position, const SampleStreamVpccUnit &ssvu,
                          const VpccUnitHeader &vuh) {
   ostringstream path;
@@ -87,11 +83,6 @@ void demultiplex(istream &stream) {
   const auto filesize = stream.tellg();
   cout << "[ 0 ]: File size is " << filesize << " bytes\n";
   stream.seekg(0);
-
-  REQUIRE(getUint32(stream) == PCCTMC2ContainerMagicNumber);
-  REQUIRE(getUint32(stream) == PCCTMC2ContainerVersion);
-  const auto totalSize = getUint64(stream);
-  cout << "totalSize=" << totalSize << " (reported)\n";
 
   cout << "[ " << stream.tellg() << " ]: ";
   const auto ssvh = SampleStreamVpccHeader::decodeFrom(stream);

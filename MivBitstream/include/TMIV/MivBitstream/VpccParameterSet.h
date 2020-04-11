@@ -175,6 +175,8 @@ public:
   [[nodiscard]] auto ai_attribute_count() const noexcept -> std::uint8_t;
   [[nodiscard]] auto ai_attribute_type_id(std::uint8_t attributeId) const -> AiAttributeTypeId;
   [[nodiscard]] auto ai_attribute_codec_id(std::uint8_t attributeId) const -> std::uint8_t;
+  [[nodiscard]] auto
+  ai_attribute_map_absolute_coding_persistence_flag(std::uint8_t attributeId) const -> bool;
   [[nodiscard]] auto ai_attribute_dimension_minus1(std::uint8_t attributeId) const -> std::uint8_t;
   [[nodiscard]] auto ai_attribute_nominal_2d_bitdepth_minus1(std::uint8_t attributeId) const
       -> std::uint8_t;
@@ -184,6 +186,8 @@ public:
   auto ai_attribute_type_id(std::uint8_t attributeId, AiAttributeTypeId value)
       -> AttributeInformation &;
   auto ai_attribute_codec_id(std::uint8_t attributeId, std::uint8_t value)
+      -> AttributeInformation &;
+  auto ai_attribute_map_absolute_coding_persistence_flag(std::uint8_t attributeId, bool value)
       -> AttributeInformation &;
   auto ai_attribute_dimension_minus1(std::uint8_t attributeId, std::uint8_t value)
       -> AttributeInformation &;
@@ -206,6 +210,7 @@ private:
   struct AiAttribute {
     AiAttributeTypeId ai_attribute_type_id{};
     std::uint8_t ai_attribute_codec_id{};
+    std::optional<bool> ai_attribute_map_absolute_coding_persistence_flag{};
     std::uint8_t ai_attribute_dimension_minus1{};
     std::uint8_t ai_attribute_nominal_2d_bitdepth_minus1{};
     bool ai_attribute_MSB_align_flag{};

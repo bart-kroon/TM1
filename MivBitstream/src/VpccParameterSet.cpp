@@ -269,6 +269,14 @@ auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId) cons
   return m_ai_attributes[attributeId].ai_attribute_MSB_align_flag;
 }
 
+auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(
+    std::uint8_t attributeId) const -> bool {
+  VERIFY_VPCCBITSTREAM(attributeId < ai_attribute_count());
+  VERIFY_VPCCBITSTREAM(
+      m_ai_attributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag.has_value());
+  return *m_ai_attributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag;
+}
+
 auto AttributeInformation::ai_attribute_count(uint8_t value) -> AttributeInformation & {
   m_ai_attributes.resize(value);
   return *this;
@@ -285,6 +293,13 @@ auto AttributeInformation::ai_attribute_codec_id(uint8_t attributeId, uint8_t va
     -> AttributeInformation & {
   VERIFY_VPCCBITSTREAM(attributeId < ai_attribute_count());
   m_ai_attributes[attributeId].ai_attribute_codec_id = value;
+  return *this;
+}
+
+auto AttributeInformation::ai_attribute_map_absolute_coding_persistence_flag(
+    std::uint8_t attributeId, bool value) -> AttributeInformation & {
+  VERIFY_VPCCBITSTREAM(attributeId < ai_attribute_count());
+  m_ai_attributes[attributeId].ai_attribute_map_absolute_coding_persistence_flag = value;
   return *this;
 }
 
@@ -317,6 +332,11 @@ auto AttributeInformation::printTo(ostream &stream, uint8_t atlasId) const -> os
            << " )=" << ai_attribute_type_id(i) << '\n';
     stream << "ai_attribute_codec_id( " << int(atlasId) << ", " << i
            << " )=" << int(ai_attribute_codec_id(i)) << '\n';
+    if (m_ai_attributes[i].ai_attribute_map_absolute_coding_persistence_flag) {
+      stream << "ai_attribute_map_absolute_coding_persistence_flag( " << int(atlasId) << ", " << i
+             << " )=" << boolalpha
+             << *m_ai_attributes[i].ai_attribute_map_absolute_coding_persistence_flag << '\n';
+    }
     stream << "ai_attribute_dimension_minus1( " << int(atlasId) << ", " << i
            << " )=" << int(ai_attribute_dimension_minus1(i)) << '\n';
     stream << "ai_attribute_nominal_2d_bitdepth_minus1( " << int(atlasId) << ", " << i
@@ -335,6 +355,8 @@ auto AttributeInformation::operator==(const AttributeInformation &other) const n
   for (auto i = 0; i < ai_attribute_count(); ++i) {
     if (ai_attribute_type_id(i) != other.ai_attribute_type_id(i) ||
         ai_attribute_codec_id(i) != other.ai_attribute_codec_id(i) ||
+        m_ai_attributes[i].ai_attribute_map_absolute_coding_persistence_flag !=
+            other.m_ai_attributes[i].ai_attribute_map_absolute_coding_persistence_flag ||
         ai_attribute_dimension_minus1(i) != other.ai_attribute_dimension_minus1(i) ||
         ai_attribute_nominal_2d_bitdepth_minus1(i) !=
             other.ai_attribute_nominal_2d_bitdepth_minus1(i) ||
@@ -349,13 +371,20 @@ auto AttributeInformation::operator!=(const AttributeInformation &other) const n
   return !operator==(other);
 }
 
-auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const VpccParameterSet & /*vps*/,
-                                      uint8_t /*atlasId*/) -> AttributeInformation {
+auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const VpccParameterSet &vps,
+                                      uint8_t atlasId) -> AttributeInformation {
   auto x = AttributeInformation{};
   x.ai_attribute_count(bitstream.readBits<uint8_t>(7));
   for (auto i = 0; i < x.ai_attribute_count(); ++i) {
     x.ai_attribute_type_id(i, bitstream.readBits<AiAttributeTypeId>(4));
     x.ai_attribute_codec_id(i, bitstream.getUint8());
+
+    VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
+
+    if (vps.vps_map_count_minus1(atlasId) > 0) {
+      x.ai_attribute_map_absolute_coding_persistence_flag(i, bitstream.getFlag());
+    }
+
     x.ai_attribute_dimension_minus1(i, bitstream.readBits<uint8_t>(6));
 
     const auto ai_attribute_dimension_partitions_minus1 = bitstream.readBits<uint8_t>(6);

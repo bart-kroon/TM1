@@ -178,7 +178,7 @@ public:
   [[nodiscard]] auto ai_attribute_dimension_minus1(std::uint8_t attributeId) const -> std::uint8_t;
   [[nodiscard]] auto ai_attribute_nominal_2d_bitdepth_minus1(std::uint8_t attributeId) const
       -> std::uint8_t;
-  [[nodiscard]] auto ai_attribute_MSB_align_flag() const noexcept -> bool;
+  [[nodiscard]] auto ai_attribute_MSB_align_flag(std::uint8_t attributeId) const -> bool;
 
   auto ai_attribute_count(std::uint8_t value) -> AttributeInformation &;
   auto ai_attribute_type_id(std::uint8_t attributeId, AiAttributeTypeId value)
@@ -189,7 +189,7 @@ public:
       -> AttributeInformation &;
   auto ai_attribute_nominal_2d_bitdepth_minus1(std::uint8_t attributeId, std::uint8_t value)
       -> AttributeInformation &;
-  auto ai_attribute_MSB_align_flag(bool value) noexcept -> AttributeInformation &;
+  auto ai_attribute_MSB_align_flag(std::uint8_t attributeId, bool value) -> AttributeInformation &;
 
   auto printTo(std::ostream &stream, std::uint8_t atlasId) const -> std::ostream &;
 
@@ -208,10 +208,10 @@ private:
     std::uint8_t ai_attribute_codec_id{};
     std::uint8_t ai_attribute_dimension_minus1{};
     std::uint8_t ai_attribute_nominal_2d_bitdepth_minus1{};
+    bool ai_attribute_MSB_align_flag{};
   };
 
   std::vector<AiAttribute> m_ai_attributes; // 23090-5: ai_attribute_count
-  bool m_ai_attribute_MSB_align_flag{};
 };
 
 // 23090-12: miv_sequence_params()

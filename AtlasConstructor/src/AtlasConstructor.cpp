@@ -70,6 +70,11 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
+
+  // Read the external occupancy coding if exisited
+  if (auto subnode = componentNode.optional("ExternalOccupancyCoding")) {
+    m_ExternalOccupancyCoding = subnode.asBool();
+  }
 }
 
 auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
@@ -106,7 +111,8 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   // views only
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {
     if (!m_isBasicView[viewId] || m_maxEntities > 1) {
-      m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
+      if (!m_ExternalOccupancyCoding)
+		m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
   }
 

@@ -82,7 +82,7 @@ auto dumpVpccUnitPayload(streampos position, const SampleStreamVpccUnit &ssvu,
   file.write(payload.data(), payload.size());
 }
 
-void parseAndDemux(istream &stream) {
+void demultiplex(istream &stream) {
   stream.seekg(0, ios::end);
   const auto filesize = stream.tellg();
   cout << "[ 0 ]: File size is " << filesize << " bytes\n";
@@ -128,40 +128,33 @@ void parseAndDemux(istream &stream) {
 
 auto testDataDir() { return filesystem::path(__FILE__).parent_path().parent_path() / "test"; }
 
-TEST_CASE("longdress_5frames_RA", "[Parse V-PCC bitstream]") {
-  const auto bitstreamPath = testDataDir() / "longdress_5frames_RA" / "longdress_vox10_GOF0.bin";
+const auto testBitstreams =
+    array{testDataDir() / "longdress_5frames_RA" / "longdress_vox10_GOF0.bin",
+          testDataDir() / "longdress_5frames_AI" / "longdress_vox10_GOF0.bin"};
+
+TEST_CASE("Demultiplex", "[V-PCC bitstream]") {
+  const auto bitstreamPath = GENERATE(testBitstreams[0], testBitstreams[1]);
   cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
-  parseAndDemux(stream);
+  demultiplex(stream);
 }
 
-TEST_CASE("longdress_5frames_AI", "[Parse V-PCC bitstream]") {
-  const auto bitstreamPath = testDataDir() / "longdress_5frames_AI" / "longdress_vox10_GOF0.bin";
+auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth10Frame {
+  cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Depth10Frame{frameSize.x(), frameSize.y()};
+};
+
+auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {
+  cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Texture444Frame{frameSize.x(), frameSize.y()};
+};
+
+TEST_CASE("Decode", "[V-PCC bitstream]") {
+  const auto bitstreamPath = GENERATE(testBitstreams[0], testBitstreams[1]);
   cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
-  parseAndDemux(stream);
-}
-
-TEST_CASE("longdress_5frames_RA with MivDecoder", "[MivDecoder]") {
-  const auto bitstreamPath = testDataDir() / "longdress_5frames_RA" / "longdress_vox10_GOF0.bin";
-  cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
-  ifstream stream{bitstreamPath, ios::binary};
-
-  const auto geoFrameServer = [](uint8_t atlasId, uint32_t frameId,
-                                 Vec2i frameSize) -> Depth10Frame {
-    cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-         << ", frameSize=" << frameSize << '\n';
-    return Depth10Frame{frameSize.x(), frameSize.y()};
-  };
-
-  const auto attrFrameServer = [](uint8_t atlasId, uint32_t frameId,
-                                  Vec2i frameSize) -> Texture444Frame {
-    cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-         << ", frameSize=" << frameSize << '\n';
-    return Texture444Frame{frameSize.x(), frameSize.y()};
-  };
-
   auto decoder = MivDecoder{stream, geoFrameServer, attrFrameServer};
-
-  decoder.decode();
+  //  decoder.decode();
 }

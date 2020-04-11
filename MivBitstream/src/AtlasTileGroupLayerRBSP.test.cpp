@@ -41,8 +41,7 @@ TEST_CASE("atlas_tile_group_header", "[Atlas Tile Group Layer RBSP]") {
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_num_ref_atlas_frame_lists_in_asps(1).asps_log2_patch_packing_block_size(7);
 
-  auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-  afpsV.front().afps_fixed_camera_model_flag(true);
+  const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
   auto x = AtlasTileGroupHeader{};
   x.atgh_patch_size_x_info_quantizer(aspsV.front().asps_log2_patch_packing_block_size())
@@ -72,7 +71,6 @@ atgh_atlas_frm_order_cnt_lsb=0
 
   SECTION("Example 2") {
     aspsV.front().asps_patch_size_quantizer_present_flag(true);
-    afpsV.front().afps_fixed_camera_model_flag(false);
 
     x.atgh_type(AtghType::I_TILE_GRP)
         .atgh_patch_size_x_info_quantizer(6)
@@ -328,8 +326,7 @@ TEST_CASE("atlas_tile_group_layer_rbsp", "[Atlas Tile Group Layer RBSP]") {
         .asps_frame_height(2000)
         .asps_num_ref_atlas_frame_lists_in_asps(1);
 
-    auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-    afpsV.front().afps_fixed_camera_model_flag(true);
+    const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::SKIP_TILE_GRP);

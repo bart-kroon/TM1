@@ -40,7 +40,6 @@ inline AtlasAccessUnitParams::AtlasAccessUnitParams() {
   asps.asps_extension_present_flag(true)
       .asps_miv_extension_present_flag(true)
       .asps_num_ref_atlas_frame_lists_in_asps(1);
-  afps.afps_fixed_camera_model_flag(false);
   atgh.atgh_type(AtghType::I_TILE_GRP);
 }
 

@@ -39,7 +39,8 @@ using namespace TMIV::MivBitstream;
 
 TEST_CASE("atlas_frame_tile_information", "[Atlas Frame Parameter Set RBSP]") {
   const auto x = AtlasFrameTileInformation{};
-  REQUIRE(toString(x) == "afti_single_tile_in_atlas_frame_flag=true");
+  REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=true
+)");
   REQUIRE(bitCodingTest(x, 1));
 }
 
@@ -57,7 +58,6 @@ afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
-afps_fixed_camera_model_flag=false
 afps_extension_present_flag=false
 )");
 
@@ -75,7 +75,6 @@ afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
-afps_fixed_camera_model_flag=false
 afps_extension_present_flag=false
 )");
 
@@ -96,8 +95,7 @@ afps_extension_present_flag=false
         .afps_3d_pos_x_bit_count_minus1(31)
         .afps_3d_pos_y_bit_count_minus1(31)
         .afps_lod_mode_enabled_flag(true)
-        .afps_raw_3d_pos_bit_count_explicit_mode_flag(true)
-        .afps_fixed_camera_model_flag(true);
+        .afps_raw_3d_pos_bit_count_explicit_mode_flag(true);
 
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
 afps_atlas_sequence_parameter_set_id=1
@@ -110,7 +108,6 @@ afps_3d_pos_y_bit_count_minus1=31
 afps_lod_mode_enabled_flag=true
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=true
-afps_fixed_camera_model_flag=true
 afps_extension_present_flag=false
 )");
 

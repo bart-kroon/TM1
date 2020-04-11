@@ -77,7 +77,6 @@ public:
   [[nodiscard]] constexpr auto afps_lod_mode_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_override_eom_for_depth_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept;
-  [[nodiscard]] constexpr auto afps_fixed_camera_model_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_extension_present_flag() const noexcept;
 
   constexpr auto afps_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
@@ -93,7 +92,6 @@ public:
   constexpr auto afps_lod_mode_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_override_eom_for_depth_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept -> auto &;
-  constexpr auto afps_fixed_camera_model_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
 
   auto operator==(const AtlasFrameParameterSetRBSP &other) const noexcept -> bool;
@@ -118,7 +116,6 @@ private:
   bool m_afps_lod_enabled_flag{};
   bool m_afps_override_eom_for_depth_flag{};
   bool m_afps_raw_3d_pos_bit_count_explicit_mode_flag{};
-  bool m_afps_fixed_camera_model_flag{};
   bool m_afps_extension_present_flag{};
 };
 } // namespace TMIV::MivBitstream

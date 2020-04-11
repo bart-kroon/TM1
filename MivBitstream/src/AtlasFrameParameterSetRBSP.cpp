@@ -33,8 +33,10 @@
 
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 
-#include "verify.h"
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/MivDecoder.h>
+
+#include "verify.h"
 
 #include <ostream>
 
@@ -149,7 +151,8 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   x.afps_additional_lt_afoc_lsb_len(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.afps_additional_lt_afoc_lsb_len() <=
                        32 - (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
-  VERIFY_VPCCBITSTREAM(asps.asps_long_term_ref_atlas_frames_flag() ||
+  VERIFY_VPCCBITSTREAM(MivDecoder::mode == MivDecoder::Mode::TMC2 ||
+                       asps.asps_long_term_ref_atlas_frames_flag() ||
                        x.afps_additional_lt_afoc_lsb_len() == 0);
 
   x.afps_3d_pos_x_bit_count_minus1(bitstream.readBits<uint8_t>((5)));

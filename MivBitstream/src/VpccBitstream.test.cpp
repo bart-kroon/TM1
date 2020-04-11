@@ -128,12 +128,10 @@ void demultiplex(istream &stream) {
 
 auto testDataDir() { return filesystem::path(__FILE__).parent_path().parent_path() / "test"; }
 
-const auto testBitstreams =
-    array{testDataDir() / "longdress_5frames_RA" / "longdress_vox10_GOF0.bin",
-          testDataDir() / "longdress_5frames_AI" / "longdress_vox10_GOF0.bin"};
+const auto testBitstreams = array{testDataDir() / "longdress_1frame" / "longdress_vox10_GOF0.bin"};
 
 TEST_CASE("Demultiplex", "[V-PCC bitstream]") {
-  const auto bitstreamPath = GENERATE(testBitstreams[0], testBitstreams[1]);
+  const auto bitstreamPath = GENERATE(testBitstreams[0]);
   cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
   demultiplex(stream);
@@ -152,7 +150,7 @@ auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Text
 };
 
 TEST_CASE("Decode", "[V-PCC bitstream]") {
-  const auto bitstreamPath = GENERATE(testBitstreams[0], testBitstreams[1]);
+  const auto bitstreamPath = GENERATE(testBitstreams[0]);
   cout << "bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
   auto decoder = MivDecoder{stream, geoFrameServer, attrFrameServer};

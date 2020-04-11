@@ -90,7 +90,9 @@ auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream
                 << int(x.afps_atlas_frame_parameter_set_id())
                 << "\nafps_atlas_sequence_parameter_set_id="
                 << int(x.afps_atlas_sequence_parameter_set_id()) << "\n"
-                << x.atlas_frame_tile_information() << "\nafps_num_ref_idx_default_active_minus1="
+                << x.atlas_frame_tile_information()
+                << "\nafps_output_flag_present_flag=" << boolalpha
+                << x.afps_output_flag_present_flag() << "\nafps_num_ref_idx_default_active_minus1="
                 << int(x.afps_num_ref_idx_default_active_minus1())
                 << "\nafps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len())
                 << "\nafps_3d_pos_x_bit_count_minus1=" << int(x.afps_3d_pos_x_bit_count_minus1())
@@ -110,6 +112,7 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
   return afps_atlas_frame_parameter_set_id() == other.afps_atlas_frame_parameter_set_id() &&
          afps_atlas_sequence_parameter_set_id() == other.afps_atlas_sequence_parameter_set_id() &&
          atlas_frame_tile_information() == other.atlas_frame_tile_information() &&
+         afps_output_flag_present_flag() == other.afps_output_flag_present_flag() &&
          afps_num_ref_idx_default_active_minus1() ==
              other.afps_num_ref_idx_default_active_minus1() &&
          afps_additional_lt_afoc_lsb_len() == other.afps_additional_lt_afoc_lsb_len() &&
@@ -144,6 +147,8 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   const auto &asps = aspsV[x.afps_atlas_sequence_parameter_set_id()];
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
+
+  x.afps_output_flag_present_flag(bitstream.getFlag());
 
   x.afps_num_ref_idx_default_active_minus1(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.afps_num_ref_idx_default_active_minus1() <= 14);
@@ -186,6 +191,8 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   const auto &asps = aspsV[afps_atlas_sequence_parameter_set_id()];
 
   atlas_frame_tile_information().encodeTo(bitstream);
+
+  bitstream.putFlag(afps_output_flag_present_flag());
 
   VERIFY_VPCCBITSTREAM(afps_num_ref_idx_default_active_minus1() <= 14);
   bitstream.putUExpGolomb(afps_num_ref_idx_default_active_minus1());

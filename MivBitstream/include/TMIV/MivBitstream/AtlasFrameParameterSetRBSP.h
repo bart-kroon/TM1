@@ -69,6 +69,7 @@ public:
   [[nodiscard]] constexpr auto afps_atlas_frame_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto afps_atlas_sequence_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto atlas_frame_tile_information() const noexcept;
+  [[nodiscard]] constexpr auto afps_output_flag_present_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
   [[nodiscard]] constexpr auto afps_3d_pos_x_bit_count_minus1() const noexcept;
@@ -83,6 +84,7 @@ public:
   constexpr auto afps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto atlas_frame_tile_information(const AtlasFrameTileInformation &value) noexcept
       -> auto &;
+  constexpr auto afps_output_flag_present_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_num_ref_idx_default_active_minus1(const std::uint8_t value) noexcept
       -> auto &;
   constexpr auto afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept -> auto &;
@@ -108,6 +110,7 @@ private:
   std::uint8_t m_afps_atlas_frame_parameter_set_id{};
   std::uint8_t m_afps_atlas_sequence_parameter_set_id{};
   AtlasFrameTileInformation m_atlas_frame_tile_information;
+  bool m_afps_output_flag_present_flag{};
   std::uint8_t m_afps_num_ref_idx_default_active_minus1{};
   std::uint8_t m_afps_additional_lt_afoc_lsb_len{};
   std::uint8_t m_afps_3d_pos_x_bit_count_minus1{};

@@ -71,8 +71,6 @@ public:
   [[nodiscard]] constexpr auto atlas_frame_tile_information() const noexcept;
   [[nodiscard]] constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
-  [[nodiscard]] constexpr auto afps_2d_pos_x_bit_count_minus1() const noexcept;
-  [[nodiscard]] constexpr auto afps_2d_pos_y_bit_count_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_3d_pos_x_bit_count_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_3d_pos_y_bit_count_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_lod_mode_enabled_flag() const noexcept;
@@ -88,8 +86,6 @@ public:
   constexpr auto afps_num_ref_idx_default_active_minus1(const std::uint8_t value) noexcept
       -> auto &;
   constexpr auto afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto afps_2d_pos_x_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto afps_2d_pos_y_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_3d_pos_x_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_3d_pos_y_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_lod_mode_enabled_flag(const bool value) noexcept -> auto &;
@@ -114,8 +110,6 @@ private:
   AtlasFrameTileInformation m_atlas_frame_tile_information;
   std::uint8_t m_afps_num_ref_idx_default_active_minus1{};
   std::uint8_t m_afps_additional_lt_afoc_lsb_len{};
-  std::uint8_t m_afps_2d_pos_x_bit_count_minus1{};
-  std::uint8_t m_afps_2d_pos_y_bit_count_minus1{};
   std::uint8_t m_afps_3d_pos_x_bit_count_minus1{};
   std::uint8_t m_afps_3d_pos_y_bit_count_minus1{};
   bool m_afps_lod_enabled_flag{};

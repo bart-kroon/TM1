@@ -106,7 +106,6 @@ TEST_CASE("patch_data_unit", "[Atlas Tile Group Layer RBSP]") {
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
 
   auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-  afpsV.front().afps_2d_pos_x_bit_count_minus1(11).afps_2d_pos_y_bit_count_minus1(10);
 
   const auto atgh = AtlasTileGroupHeader{};
 
@@ -124,7 +123,7 @@ pdu_orientation_index( 101 )=FPO_NULL
 pdu_entity_id( 101 )=0
 )");
 
-  REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, atgh));
+  REQUIRE(bitCodingTest(x, 12, vuh, vps, aspsV, afpsV, atgh));
 
   SECTION("Example") {
     vps.geometry_information(vuh.vuh_atlas_id())
@@ -171,7 +170,7 @@ pdu_entity_id( 102 )=35
 pdu_depth_occ_map_threshold( 102 )=600
 )");
 
-    REQUIRE(bitCodingTest(x, 140, vuh, vps, aspsV, afpsV, atgh));
+    REQUIRE(bitCodingTest(x, 139, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 
@@ -184,8 +183,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Group Layer RBSP]") {
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
 
-  auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-  afpsV.front().afps_2d_pos_x_bit_count_minus1(11).afps_2d_pos_y_bit_count_minus1(10);
+  const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
   const auto pdu = PatchDataUnit{};
 
@@ -221,7 +219,7 @@ pdu_view_id( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
 pdu_entity_id( 99 )=0
 )");
-    REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, atgh, patchMode));
+    REQUIRE(bitCodingTest(x, 12, vuh, vps, aspsV, afpsV, atgh, patchMode));
   }
 }
 
@@ -307,13 +305,12 @@ pdu_entity_id( 1 )=0
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
 
-    auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-    afpsV.front().afps_2d_pos_x_bit_count_minus1(11).afps_2d_pos_y_bit_count_minus1(10);
+    const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::I_TILE_GRP);
 
-    REQUIRE(bitCodingTest(x, 80, vuh, vps, aspsV, afpsV, atgh));
+    REQUIRE(bitCodingTest(x, 40, vuh, vps, aspsV, afpsV, atgh));
   }
 }
 
@@ -330,10 +327,7 @@ TEST_CASE("atlas_tile_group_layer_rbsp", "[Atlas Tile Group Layer RBSP]") {
         .asps_num_ref_atlas_frame_lists_in_asps(1);
 
     auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-    afpsV.front()
-        .afps_2d_pos_x_bit_count_minus1(11)
-        .afps_2d_pos_y_bit_count_minus1(10)
-        .afps_fixed_camera_model_flag(true);
+    afpsV.front().afps_fixed_camera_model_flag(true);
 
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::SKIP_TILE_GRP);
@@ -360,8 +354,7 @@ atgh_atlas_frm_order_cnt_lsb=0
         .asps_frame_height(2000)
         .asps_num_ref_atlas_frame_lists_in_asps(1);
 
-    auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-    afpsV.front().afps_2d_pos_x_bit_count_minus1(11).afps_2d_pos_y_bit_count_minus1(10);
+    const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
     auto atgh = AtlasTileGroupHeader{};
     atgh.atgh_type(AtghType::I_TILE_GRP);
@@ -420,6 +413,6 @@ pdu_view_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 pdu_entity_id( 2 )=0
 )");
-    REQUIRE(byteCodingTest(x, 24, vuh, vps, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 16, vuh, vps, aspsV, afpsV));
   }
 }

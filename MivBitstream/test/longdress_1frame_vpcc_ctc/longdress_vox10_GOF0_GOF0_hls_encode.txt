@@ -153,18 +153,22 @@
 [    23 -  0]:   CodeUvlc:    0 
 [    23 -  0]:   CodU[ 0]:    0 
 [    23 -  1]:   CodU[ 1]:    0 
-[    23 -  2]:   CodU[ 1]:    0 
+[    23 -  2]:   CodU[ 1]:    1 
 [    23 -  3]:   CodeUvlc:    0 
-[    24 -  0]:   CodeUvlc:    4 
-[    24 -  5]:   CodU[ 5]:    0 
-[    25 -  2]:   CodU[ 5]:    0 
-[    25 -  3]:   CodU[ 1]:    0 
+[    23 -  4]:   CodeUvlc:    0 
+[    24 -  1]:   CodU[ 5]:    9 
+[    24 -  6]:   CodU[ 5]:    9 
+[    24 -  7]:   CodU[ 1]:    0 
+[    25 -  0]:   CodU[ 1]:    0 
+[    25 -  1]:   CodU[ 1]:    0 
+[    25 -  2]:   CodU[ 1]:    0 
+[    25 -  2]: rbspTrailingBits 
+[    25 -  3]:   CodU[ 1]:    1 
 [    25 -  4]:   CodU[ 1]:    0 
 [    25 -  5]:   CodU[ 1]:    0 
-[    25 -  6]:   CodU[ 1]:    1 
+[    25 -  6]:   CodU[ 1]:    0 
 [    25 -  7]:   CodU[ 1]:    0 
-[    25 -  7]: rbspTrailingBits 
-[    26 -  0]:   CodU[ 1]:    1 
+[    26 -  0]:   CodU[ 1]:    0 
 [    26 -  0]: nalu[33]:NAL_AFPS, nalSizePrecision:2, naluSize:6, sizeBitstream written: 26
 [    26 -  0]: sampleStreamNalUnit 
 [    26 -  0]: UnitSizePrecisionBytesMinus1 = 1 
@@ -218,8 +222,8 @@
 [    40 -  0]: atlasTileGroupHeader 
 [    40 -  1]:   CodeUvlc:    0 
 [    40 -  2]:   CodeUvlc:    0 
-[    40 -  3]:   CodU[ 1]:    0 
-[    40 -  6]:   CodeUvlc:    2 
+[    40 -  5]:   CodeUvlc:    2 
+[    40 -  6]:   CodU[ 1]:    0 
 [    41 -  6]:   CodU[ 8]:    0 
 [    41 -  6]:  AtlasFrameParameterSetId: 0
 [    41 -  6]:  AtlasSequenceParameterSetId: 0
@@ -266,7 +270,7 @@
 [    51 -  0]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [    51 -  1]:   CodU[ 1]:    0 
 [    51 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[    51 -  1]: Frame 0, Patch(0) => 2Dpos =    0    0 2Dsize =   22   55 3Dpos = 106 140 0 DeltaMaxZ = 3 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[    51 -  1]: Frame 0, Patch(0) => 2Dpos =    0    0 2Dsize =   22   55 3Dpos = 106 140 0 DeltaMaxZ = 3 Projection = 2 Orientation = 0 lod=(0) 0 0
  [    51 -  1]: patch 1 : 
 [    51 -  2]:   CodeUvlc:    0 
 [    51 -  2]: patchMode = 0 
@@ -289,7 +293,7 @@
 [    58 -  7]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [    59 -  0]:   CodU[ 1]:    1 
 [    59 -  0]: PointLocalReconstructionEnabledFlag = 0 
-[    59 -  0]: Frame 0, Patch(1) => 2Dpos =   14    0 2Dsize =   20   53 3Dpos = 134 20 11 DeltaMaxZ = 3 Projection = 5 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[    59 -  0]: Frame 0, Patch(1) => 2Dpos =   14    0 2Dsize =   20   53 3Dpos = 134 20 11 DeltaMaxZ = 3 Projection = 5 Orientation = 1 lod=(0) 0 0
  [    59 -  0]: patch 2 : 
 [    59 -  1]:   CodeUvlc:    0 
 [    59 -  1]: patchMode = 0 
@@ -312,7 +316,7 @@
 [    68 -  0]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [    68 -  1]:   CodU[ 1]:    1 
 [    68 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[    68 -  1]: Frame 0, Patch(2) => 2Dpos =   22   20 2Dsize =   18   52 3Dpos = 28 13 1 DeltaMaxZ = 4 Projection = 0 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[    68 -  1]: Frame 0, Patch(2) => 2Dpos =   22   20 2Dsize =   18   52 3Dpos = 28 13 1 DeltaMaxZ = 4 Projection = 0 Orientation = 1 lod=(0) 0 0
  [    68 -  1]: patch 3 : 
 [    68 -  2]:   CodeUvlc:    0 
 [    68 -  2]: patchMode = 0 
@@ -335,7 +339,7 @@
 [    77 -  5]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [    77 -  6]:   CodU[ 1]:    0 
 [    77 -  6]: PointLocalReconstructionEnabledFlag = 0 
-[    77 -  6]: Frame 0, Patch(3) => 2Dpos =   54   32 2Dsize =   18   38 3Dpos = 29 13 10 DeltaMaxZ = 3 Projection = 3 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[    77 -  6]: Frame 0, Patch(3) => 2Dpos =   54   32 2Dsize =   18   38 3Dpos = 29 13 10 DeltaMaxZ = 3 Projection = 3 Orientation = 0 lod=(0) 0 0
  [    77 -  6]: patch 4 : 
 [    77 -  7]:   CodeUvlc:    0 
 [    77 -  7]: patchMode = 0 
@@ -358,7 +362,7 @@
 [    83 -  6]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [    83 -  7]:   CodU[ 1]:    0 
 [    83 -  7]: PointLocalReconstructionEnabledFlag = 0 
-[    83 -  7]: Frame 0, Patch(4) => 2Dpos =    0    0 2Dsize =    4   14 3Dpos = 114 498 13 DeltaMaxZ = 2 Projection = 5 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[    83 -  7]: Frame 0, Patch(4) => 2Dpos =    0    0 2Dsize =    4   14 3Dpos = 114 498 13 DeltaMaxZ = 2 Projection = 5 Orientation = 0 lod=(0) 0 0
  [    83 -  7]: patch 5 : 
 [    84 -  0]:   CodeUvlc:    0 
 [    84 -  0]: patchMode = 0 
@@ -381,7 +385,7 @@
 [    91 -  3]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [    91 -  4]:   CodU[ 1]:    0 
 [    91 -  4]: PointLocalReconstructionEnabledFlag = 0 
-[    91 -  4]: Frame 0, Patch(5) => 2Dpos =   67    0 2Dsize =    6   12 3Dpos = 112 830 10 DeltaMaxZ = 3 Projection = 3 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[    91 -  4]: Frame 0, Patch(5) => 2Dpos =   67    0 2Dsize =    6   12 3Dpos = 112 830 10 DeltaMaxZ = 3 Projection = 3 Orientation = 0 lod=(0) 0 0
  [    91 -  4]: patch 6 : 
 [    91 -  5]:   CodeUvlc:    0 
 [    91 -  5]: patchMode = 0 
@@ -404,7 +408,7 @@
 [    99 -  0]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [    99 -  1]:   CodU[ 1]:    0 
 [    99 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[    99 -  1]: Frame 0, Patch(6) => 2Dpos =   73    0 2Dsize =    7   11 3Dpos = 103 847 3 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[    99 -  1]: Frame 0, Patch(6) => 2Dpos =   73    0 2Dsize =    7   11 3Dpos = 103 847 3 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(0) 0 0
  [    99 -  1]: patch 7 : 
 [    99 -  2]:   CodeUvlc:    0 
 [    99 -  2]: patchMode = 0 
@@ -427,7 +431,7 @@
 [   105 -  7]: PduProjectionId = 1 (ExtendedProjectionEnabledFlag = 0 ) 
 [   106 -  0]:   CodU[ 1]:    0 
 [   106 -  0]: PointLocalReconstructionEnabledFlag = 0 
-[   106 -  0]: Frame 0, Patch(7) => 2Dpos =   11    0 2Dsize =    9    5 3Dpos = 94 233 1 DeltaMaxZ = 2 Projection = 1 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   106 -  0]: Frame 0, Patch(7) => 2Dpos =   11    0 2Dsize =    9    5 3Dpos = 94 233 1 DeltaMaxZ = 2 Projection = 1 Orientation = 0 lod=(0) 0 0
  [   106 -  0]: patch 8 : 
 [   106 -  1]:   CodeUvlc:    0 
 [   106 -  1]: patchMode = 0 
@@ -450,7 +454,7 @@
 [   113 -  0]: PduProjectionId = 1 (ExtendedProjectionEnabledFlag = 0 ) 
 [   113 -  1]:   CodU[ 1]:    1 
 [   113 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[   113 -  1]: Frame 0, Patch(8) => 2Dpos =   20    0 2Dsize =    5    9 3Dpos = 118 310 9 DeltaMaxZ = 2 Projection = 1 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   113 -  1]: Frame 0, Patch(8) => 2Dpos =   20    0 2Dsize =    5    9 3Dpos = 118 310 9 DeltaMaxZ = 2 Projection = 1 Orientation = 1 lod=(0) 0 0
  [   113 -  1]: patch 9 : 
 [   113 -  2]:   CodeUvlc:    0 
 [   113 -  2]: patchMode = 0 
@@ -473,7 +477,7 @@
 [   120 -  1]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   120 -  2]:   CodU[ 1]:    1 
 [   120 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   120 -  2]: Frame 0, Patch(9) => 2Dpos =   29    0 2Dsize =    4    9 3Dpos = 118 662 8 DeltaMaxZ = 3 Projection = 3 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   120 -  2]: Frame 0, Patch(9) => 2Dpos =   29    0 2Dsize =    4    9 3Dpos = 118 662 8 DeltaMaxZ = 3 Projection = 3 Orientation = 1 lod=(0) 0 0
  [   120 -  2]: patch 10 : 
 [   120 -  3]:   CodeUvlc:    0 
 [   120 -  3]: patchMode = 0 
@@ -496,7 +500,7 @@
 [   126 -  4]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [   126 -  5]:   CodU[ 1]:    0 
 [   126 -  5]: PointLocalReconstructionEnabledFlag = 0 
-[   126 -  5]: Frame 0, Patch(10) => 2Dpos =    4    0 2Dsize =    3    9 3Dpos = 228 11 13 DeltaMaxZ = 2 Projection = 5 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   126 -  5]: Frame 0, Patch(10) => 2Dpos =    4    0 2Dsize =    3    9 3Dpos = 228 11 13 DeltaMaxZ = 2 Projection = 5 Orientation = 0 lod=(0) 0 0
  [   126 -  5]: patch 11 : 
 [   126 -  6]:   CodeUvlc:    0 
 [   126 -  6]: patchMode = 0 
@@ -519,7 +523,7 @@
 [   133 -  7]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   134 -  0]:   CodU[ 1]:    1 
 [   134 -  0]: PointLocalReconstructionEnabledFlag = 0 
-[   134 -  0]: Frame 0, Patch(11) => 2Dpos =   33    2 2Dsize =    2    9 3Dpos = 114 594 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   134 -  0]: Frame 0, Patch(11) => 2Dpos =   33    2 2Dsize =    2    9 3Dpos = 114 594 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(0) 0 0
  [   134 -  0]: patch 12 : 
 [   134 -  1]:   CodeUvlc:    0 
 [   134 -  1]: patchMode = 0 
@@ -542,7 +546,7 @@
 [   141 -  4]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   141 -  5]:   CodU[ 1]:    0 
 [   141 -  5]: PointLocalReconstructionEnabledFlag = 0 
-[   141 -  5]: Frame 0, Patch(12) => 2Dpos =   14    8 2Dsize =    4    8 3Dpos = 212 12 0 DeltaMaxZ = 2 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   141 -  5]: Frame 0, Patch(12) => 2Dpos =   14    8 2Dsize =    4    8 3Dpos = 212 12 0 DeltaMaxZ = 2 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   141 -  5]: patch 13 : 
 [   141 -  6]:   CodeUvlc:    0 
 [   141 -  6]: patchMode = 0 
@@ -565,7 +569,7 @@
 [   149 -  3]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [   149 -  4]:   CodU[ 1]:    0 
 [   149 -  4]: PointLocalReconstructionEnabledFlag = 0 
-[   149 -  4]: Frame 0, Patch(13) => 2Dpos =   29    9 2Dsize =    4    8 3Dpos = 212 856 12 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   149 -  4]: Frame 0, Patch(13) => 2Dpos =   29    9 2Dsize =    4    8 3Dpos = 212 856 12 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(0) 0 0
  [   149 -  4]: patch 14 : 
 [   149 -  5]:   CodeUvlc:    0 
 [   149 -  5]: patchMode = 0 
@@ -588,7 +592,7 @@
 [   156 -  6]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   156 -  7]:   CodU[ 1]:    0 
 [   156 -  7]: PointLocalReconstructionEnabledFlag = 0 
-[   156 -  7]: Frame 0, Patch(14) => 2Dpos =   18    9 2Dsize =    3    7 3Dpos = 35 586 12 DeltaMaxZ = 1 Projection = 3 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   156 -  7]: Frame 0, Patch(14) => 2Dpos =   18    9 2Dsize =    3    7 3Dpos = 35 586 12 DeltaMaxZ = 1 Projection = 3 Orientation = 0 lod=(0) 0 0
  [   156 -  7]: patch 15 : 
 [   157 -  0]:   CodeUvlc:    0 
 [   157 -  0]: patchMode = 0 
@@ -611,7 +615,7 @@
 [   164 -  3]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [   164 -  4]:   CodU[ 1]:    0 
 [   164 -  4]: PointLocalReconstructionEnabledFlag = 0 
-[   164 -  4]: Frame 0, Patch(15) => 2Dpos =   33    9 2Dsize =    3    6 3Dpos = 282 298 14 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   164 -  4]: Frame 0, Patch(15) => 2Dpos =   33    9 2Dsize =    3    6 3Dpos = 282 298 14 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(0) 0 0
  [   164 -  4]: patch 16 : 
 [   164 -  5]:   CodeUvlc:    0 
 [   164 -  5]: patchMode = 0 
@@ -634,7 +638,7 @@
 [   172 -  2]: PduProjectionId = 4 (ExtendedProjectionEnabledFlag = 0 ) 
 [   172 -  3]:   CodU[ 1]:    1 
 [   172 -  3]: PointLocalReconstructionEnabledFlag = 0 
-[   172 -  3]: Frame 0, Patch(16) => 2Dpos =   36    9 2Dsize =    5    4 3Dpos = 122 218 0 DeltaMaxZ = 1 Projection = 4 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   172 -  3]: Frame 0, Patch(16) => 2Dpos =   36    9 2Dsize =    5    4 3Dpos = 122 218 0 DeltaMaxZ = 1 Projection = 4 Orientation = 1 lod=(0) 0 0
  [   172 -  3]: patch 17 : 
 [   172 -  4]:   CodeUvlc:    0 
 [   172 -  4]: patchMode = 0 
@@ -657,7 +661,7 @@
 [   179 -  7]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [   180 -  0]:   CodU[ 1]:    0 
 [   180 -  0]: PointLocalReconstructionEnabledFlag = 0 
-[   180 -  0]: Frame 0, Patch(17) => 2Dpos =   40    9 2Dsize =    3    5 3Dpos = 294 150 13 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   180 -  0]: Frame 0, Patch(17) => 2Dpos =   40    9 2Dsize =    3    5 3Dpos = 294 150 13 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(0) 0 0
  [   180 -  0]: patch 18 : 
 [   180 -  1]:   CodeUvlc:    0 
 [   180 -  1]: patchMode = 0 
@@ -680,7 +684,7 @@
 [   187 -  2]: PduProjectionId = 4 (ExtendedProjectionEnabledFlag = 0 ) 
 [   187 -  3]:   CodU[ 1]:    0 
 [   187 -  3]: PointLocalReconstructionEnabledFlag = 0 
-[   187 -  3]: Frame 0, Patch(18) => 2Dpos =   21   10 2Dsize =    3    5 3Dpos = 108 137 2 DeltaMaxZ = 2 Projection = 4 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   187 -  3]: Frame 0, Patch(18) => 2Dpos =   21   10 2Dsize =    3    5 3Dpos = 108 137 2 DeltaMaxZ = 2 Projection = 4 Orientation = 0 lod=(0) 0 0
  [   187 -  3]: patch 19 : 
 [   187 -  4]:   CodeUvlc:    0 
 [   187 -  4]: patchMode = 0 
@@ -703,7 +707,7 @@
 [   194 -  1]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   194 -  2]:   CodU[ 1]:    1 
 [   194 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   194 -  2]: Frame 0, Patch(19) => 2Dpos =   38    0 2Dsize =    2    5 3Dpos = 116 378 10 DeltaMaxZ = 2 Projection = 3 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   194 -  2]: Frame 0, Patch(19) => 2Dpos =   38    0 2Dsize =    2    5 3Dpos = 116 378 10 DeltaMaxZ = 2 Projection = 3 Orientation = 1 lod=(0) 0 0
  [   194 -  2]: patch 20 : 
 [   194 -  3]:   CodeUvlc:    0 
 [   194 -  3]: patchMode = 0 
@@ -726,7 +730,7 @@
 [   201 -  4]: PduProjectionId = 1 (ExtendedProjectionEnabledFlag = 0 ) 
 [   201 -  5]:   CodU[ 1]:    1 
 [   201 -  5]: PointLocalReconstructionEnabledFlag = 0 
-[   201 -  5]: Frame 0, Patch(20) => 2Dpos =   24   10 2Dsize =    4    3 3Dpos = 93 238 0 DeltaMaxZ = 1 Projection = 1 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   201 -  5]: Frame 0, Patch(20) => 2Dpos =   24   10 2Dsize =    4    3 3Dpos = 93 238 0 DeltaMaxZ = 1 Projection = 1 Orientation = 1 lod=(0) 0 0
  [   201 -  5]: patch 21 : 
 [   201 -  6]:   CodeUvlc:    0 
 [   201 -  6]: patchMode = 0 
@@ -749,7 +753,7 @@
 [   209 -  3]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   209 -  4]:   CodU[ 1]:    0 
 [   209 -  4]: PointLocalReconstructionEnabledFlag = 0 
-[   209 -  4]: Frame 0, Patch(21) => 2Dpos =   64   10 2Dsize =    3    4 3Dpos = 213 42 3 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   209 -  4]: Frame 0, Patch(21) => 2Dpos =   64   10 2Dsize =    3    4 3Dpos = 213 42 3 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   209 -  4]: patch 22 : 
 [   209 -  5]:   CodeUvlc:    0 
 [   209 -  5]: patchMode = 0 
@@ -772,7 +776,7 @@
 [   217 -  2]: PduProjectionId = 4 (ExtendedProjectionEnabledFlag = 0 ) 
 [   217 -  3]:   CodU[ 1]:    0 
 [   217 -  3]: PointLocalReconstructionEnabledFlag = 0 
-[   217 -  3]: Frame 0, Patch(22) => 2Dpos =   72   10 2Dsize =    3    4 3Dpos = 105 279 2 DeltaMaxZ = 2 Projection = 4 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   217 -  3]: Frame 0, Patch(22) => 2Dpos =   72   10 2Dsize =    3    4 3Dpos = 105 279 2 DeltaMaxZ = 2 Projection = 4 Orientation = 0 lod=(0) 0 0
  [   217 -  3]: patch 23 : 
 [   217 -  4]:   CodeUvlc:    0 
 [   217 -  4]: patchMode = 0 
@@ -795,7 +799,7 @@
 [   224 -  1]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   224 -  2]:   CodU[ 1]:    1 
 [   224 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   224 -  2]: Frame 0, Patch(23) => 2Dpos =   49    0 2Dsize =    2    4 3Dpos = 114 446 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   224 -  2]: Frame 0, Patch(23) => 2Dpos =   49    0 2Dsize =    2    4 3Dpos = 114 446 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(0) 0 0
  [   224 -  2]: patch 24 : 
 [   224 -  3]:   CodeUvlc:    0 
 [   224 -  3]: patchMode = 0 
@@ -818,7 +822,7 @@
 [   230 -  0]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   230 -  1]:   CodU[ 1]:    0 
 [   230 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[   230 -  1]: Frame 0, Patch(24) => 2Dpos =    3    0 2Dsize =    1    4 3Dpos = 171 210 11 DeltaMaxZ = 1 Projection = 3 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   230 -  1]: Frame 0, Patch(24) => 2Dpos =    3    0 2Dsize =    1    4 3Dpos = 171 210 11 DeltaMaxZ = 1 Projection = 3 Orientation = 0 lod=(0) 0 0
  [   230 -  1]: patch 25 : 
 [   230 -  2]:   CodeUvlc:    0 
 [   230 -  2]: patchMode = 0 
@@ -841,7 +845,7 @@
 [   237 -  1]: PduProjectionId = 1 (ExtendedProjectionEnabledFlag = 0 ) 
 [   237 -  2]:   CodU[ 1]:    0 
 [   237 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   237 -  2]: Frame 0, Patch(25) => 2Dpos =   31    3 2Dsize =    3    3 3Dpos = 227 212 0 DeltaMaxZ = 1 Projection = 1 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   237 -  2]: Frame 0, Patch(25) => 2Dpos =   31    3 2Dsize =    3    3 3Dpos = 227 212 0 DeltaMaxZ = 1 Projection = 1 Orientation = 0 lod=(0) 0 0
  [   237 -  2]: patch 26 : 
 [   237 -  3]:   CodeUvlc:    0 
 [   237 -  3]: patchMode = 0 
@@ -864,7 +868,7 @@
 [   243 -  6]: PduProjectionId = 1 (ExtendedProjectionEnabledFlag = 0 ) 
 [   243 -  7]:   CodU[ 1]:    0 
 [   243 -  7]: PointLocalReconstructionEnabledFlag = 0 
-[   243 -  7]: Frame 0, Patch(26) => 2Dpos =   11    5 2Dsize =    3    3 3Dpos = 164 224 13 DeltaMaxZ = 1 Projection = 1 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   243 -  7]: Frame 0, Patch(26) => 2Dpos =   11    5 2Dsize =    3    3 3Dpos = 164 224 13 DeltaMaxZ = 1 Projection = 1 Orientation = 0 lod=(0) 0 0
  [   243 -  7]: patch 27 : 
 [   244 -  0]:   CodeUvlc:    0 
 [   244 -  0]: patchMode = 0 
@@ -887,7 +891,7 @@
 [   250 -  3]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   250 -  4]:   CodU[ 1]:    1 
 [   250 -  4]: PointLocalReconstructionEnabledFlag = 0 
-[   250 -  4]: Frame 0, Patch(27) => 2Dpos =   43    0 2Dsize =    2    3 3Dpos = 126 486 1 DeltaMaxZ = 1 Projection = 2 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   250 -  4]: Frame 0, Patch(27) => 2Dpos =   43    0 2Dsize =    2    3 3Dpos = 126 486 1 DeltaMaxZ = 1 Projection = 2 Orientation = 1 lod=(0) 0 0
  [   250 -  4]: patch 28 : 
 [   250 -  5]:   CodeUvlc:    0 
 [   250 -  5]: patchMode = 0 
@@ -910,7 +914,7 @@
 [   257 -  0]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   257 -  1]:   CodU[ 1]:    1 
 [   257 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[   257 -  1]: Frame 0, Patch(28) => 2Dpos =   53    0 2Dsize =    2    3 3Dpos = 242 154 0 DeltaMaxZ = 1 Projection = 2 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   257 -  1]: Frame 0, Patch(28) => 2Dpos =   53    0 2Dsize =    2    3 3Dpos = 242 154 0 DeltaMaxZ = 1 Projection = 2 Orientation = 1 lod=(0) 0 0
  [   257 -  1]: patch 29 : 
 [   257 -  2]:   CodeUvlc:    0 
 [   257 -  2]: patchMode = 0 
@@ -933,7 +937,7 @@
 [   263 -  7]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   264 -  0]:   CodU[ 1]:    1 
 [   264 -  0]: PointLocalReconstructionEnabledFlag = 0 
-[   264 -  0]: Frame 0, Patch(29) => 2Dpos =   65    0 2Dsize =    3    2 3Dpos = 127 893 11 DeltaMaxZ = 1 Projection = 3 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   264 -  0]: Frame 0, Patch(29) => 2Dpos =   65    0 2Dsize =    3    2 3Dpos = 127 893 11 DeltaMaxZ = 1 Projection = 3 Orientation = 1 lod=(0) 0 0
  [   264 -  0]: patch 30 : 
 [   264 -  1]:   CodeUvlc:    0 
 [   264 -  1]: patchMode = 0 
@@ -956,7 +960,7 @@
 [   269 -  6]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   269 -  7]:   CodU[ 1]:    1 
 [   269 -  7]: PointLocalReconstructionEnabledFlag = 0 
-[   269 -  7]: Frame 0, Patch(30) => 2Dpos =   11    0 2Dsize =    1    3 3Dpos = 165 146 11 DeltaMaxZ = 1 Projection = 3 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   269 -  7]: Frame 0, Patch(30) => 2Dpos =   11    0 2Dsize =    1    3 3Dpos = 165 146 11 DeltaMaxZ = 1 Projection = 3 Orientation = 1 lod=(0) 0 0
  [   269 -  7]: patch 31 : 
 [   270 -  0]:   CodeUvlc:    0 
 [   270 -  0]: patchMode = 0 
@@ -979,7 +983,7 @@
 [   276 -  1]: PduProjectionId = 1 (ExtendedProjectionEnabledFlag = 0 ) 
 [   276 -  2]:   CodU[ 1]:    1 
 [   276 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   276 -  2]: Frame 0, Patch(31) => 2Dpos =   46    0 2Dsize =    1    3 3Dpos = 142 360 9 DeltaMaxZ = 1 Projection = 1 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   276 -  2]: Frame 0, Patch(31) => 2Dpos =   46    0 2Dsize =    1    3 3Dpos = 142 360 9 DeltaMaxZ = 1 Projection = 1 Orientation = 1 lod=(0) 0 0
  [   276 -  2]: patch 32 : 
 [   276 -  3]:   CodeUvlc:    0 
 [   276 -  3]: patchMode = 0 
@@ -1002,7 +1006,7 @@
 [   283 -  0]: PduProjectionId = 1 (ExtendedProjectionEnabledFlag = 0 ) 
 [   283 -  1]:   CodU[ 1]:    0 
 [   283 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[   283 -  1]: Frame 0, Patch(32) => 2Dpos =   71    0 2Dsize =    2    2 3Dpos = 45 240 2 DeltaMaxZ = 1 Projection = 1 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   283 -  1]: Frame 0, Patch(32) => 2Dpos =   71    0 2Dsize =    2    2 3Dpos = 45 240 2 DeltaMaxZ = 1 Projection = 1 Orientation = 0 lod=(0) 0 0
  [   283 -  1]: patch 33 : 
 [   283 -  2]:   CodeUvlc:    0 
 [   283 -  2]: patchMode = 0 
@@ -1025,7 +1029,7 @@
 [   290 -  1]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   290 -  2]:   CodU[ 1]:    0 
 [   290 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   290 -  2]: Frame 0, Patch(33) => 2Dpos =   34    4 2Dsize =    2    2 3Dpos = 81 483 2 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   290 -  2]: Frame 0, Patch(33) => 2Dpos =   34    4 2Dsize =    2    2 3Dpos = 81 483 2 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(0) 0 0
  [   290 -  2]: patch 34 : 
 [   290 -  3]:   CodeUvlc:    0 
 [   290 -  3]: patchMode = 0 
@@ -1048,7 +1052,7 @@
 [   297 -  0]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   297 -  1]:   CodU[ 1]:    0 
 [   297 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[   297 -  1]: Frame 0, Patch(34) => 2Dpos =   12    8 2Dsize =    2    2 3Dpos = 118 452 2 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   297 -  1]: Frame 0, Patch(34) => 2Dpos =   12    8 2Dsize =    2    2 3Dpos = 118 452 2 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(0) 0 0
  [   297 -  1]: patch 35 : 
 [   297 -  2]:   CodeUvlc:    0 
 [   297 -  2]: patchMode = 0 
@@ -1071,7 +1075,7 @@
 [   303 -  3]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   303 -  4]:   CodU[ 1]:    1 
 [   303 -  4]: PointLocalReconstructionEnabledFlag = 0 
-[   303 -  4]: Frame 0, Patch(35) => 2Dpos =   41    0 2Dsize =    1    2 3Dpos = 93 423 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   303 -  4]: Frame 0, Patch(35) => 2Dpos =   41    0 2Dsize =    1    2 3Dpos = 93 423 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(0) 0 0
  [   303 -  4]: patch 36 : 
 [   303 -  5]:   CodeUvlc:    0 
 [   303 -  5]: patchMode = 0 
@@ -1094,7 +1098,7 @@
 [   309 -  6]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   309 -  7]:   CodU[ 1]:    1 
 [   309 -  7]: PointLocalReconstructionEnabledFlag = 0 
-[   309 -  7]: Frame 0, Patch(36) => 2Dpos =   56    0 2Dsize =    2    1 3Dpos = 94 481 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   309 -  7]: Frame 0, Patch(36) => 2Dpos =   56    0 2Dsize =    2    1 3Dpos = 94 481 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(0) 0 0
  [   309 -  7]: patch 37 : 
 [   310 -  0]:   CodeUvlc:    0 
 [   310 -  0]: patchMode = 0 
@@ -1117,7 +1121,7 @@
 [   316 -  1]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   316 -  2]:   CodU[ 1]:    1 
 [   316 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   316 -  2]: Frame 0, Patch(37) => 2Dpos =   57    0 2Dsize =    1    2 3Dpos = 118 550 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   316 -  2]: Frame 0, Patch(37) => 2Dpos =   57    0 2Dsize =    1    2 3Dpos = 118 550 2 DeltaMaxZ = 1 Projection = 0 Orientation = 1 lod=(0) 0 0
  [   316 -  2]: patch 38 : 
 [   316 -  3]:   CodeUvlc:    0 
 [   316 -  3]: patchMode = 0 
@@ -1140,7 +1144,7 @@
 [   322 -  4]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   322 -  5]:   CodU[ 1]:    0 
 [   322 -  5]: PointLocalReconstructionEnabledFlag = 0 
-[   322 -  5]: Frame 0, Patch(38) => 2Dpos =   59    0 2Dsize =    2    1 3Dpos = 243 594 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   322 -  5]: Frame 0, Patch(38) => 2Dpos =   59    0 2Dsize =    2    1 3Dpos = 243 594 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   322 -  5]: patch 39 : 
 [   322 -  6]:   CodeUvlc:    0 
 [   322 -  6]: patchMode = 0 
@@ -1163,7 +1167,7 @@
 [   329 -  1]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   329 -  2]:   CodU[ 1]:    0 
 [   329 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   329 -  2]: Frame 0, Patch(39) => 2Dpos =   38    1 2Dsize =    2    1 3Dpos = 111 919 3 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   329 -  2]: Frame 0, Patch(39) => 2Dpos =   38    1 2Dsize =    2    1 3Dpos = 111 919 3 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(0) 0 0
  [   329 -  2]: patch 40 : 
 [   329 -  3]:   CodeUvlc:    0 
 [   329 -  3]: patchMode = 0 
@@ -1186,7 +1190,7 @@
 [   335 -  6]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   335 -  7]:   CodU[ 1]:    0 
 [   335 -  7]: PointLocalReconstructionEnabledFlag = 0 
-[   335 -  7]: Frame 0, Patch(40) => 2Dpos =   54    1 2Dsize =    2    1 3Dpos = 230 933 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   335 -  7]: Frame 0, Patch(40) => 2Dpos =   54    1 2Dsize =    2    1 3Dpos = 230 933 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   335 -  7]: patch 41 : 
 [   336 -  0]:   CodeUvlc:    0 
 [   336 -  0]: patchMode = 0 
@@ -1209,7 +1213,7 @@
 [   341 -  5]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   341 -  6]:   CodU[ 1]:    1 
 [   341 -  6]: PointLocalReconstructionEnabledFlag = 0 
-[   341 -  6]: Frame 0, Patch(41) => 2Dpos =    6    2 2Dsize =    2    1 3Dpos = 234 942 1 DeltaMaxZ = 1 Projection = 2 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   341 -  6]: Frame 0, Patch(41) => 2Dpos =    6    2 2Dsize =    2    1 3Dpos = 234 942 1 DeltaMaxZ = 1 Projection = 2 Orientation = 1 lod=(0) 0 0
  [   341 -  6]: patch 42 : 
 [   341 -  7]:   CodeUvlc:    0 
 [   341 -  7]: patchMode = 0 
@@ -1232,7 +1236,7 @@
 [   348 -  2]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   348 -  3]:   CodU[ 1]:    1 
 [   348 -  3]: PointLocalReconstructionEnabledFlag = 0 
-[   348 -  3]: Frame 0, Patch(42) => 2Dpos =   40    2 2Dsize =    1    2 3Dpos = 168 503 11 DeltaMaxZ = 1 Projection = 3 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   348 -  3]: Frame 0, Patch(42) => 2Dpos =   40    2 2Dsize =    1    2 3Dpos = 168 503 11 DeltaMaxZ = 1 Projection = 3 Orientation = 1 lod=(0) 0 0
  [   348 -  3]: patch 43 : 
 [   348 -  4]:   CodeUvlc:    0 
 [   348 -  4]: patchMode = 0 
@@ -1255,7 +1259,7 @@
 [   354 -  7]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [   355 -  0]:   CodU[ 1]:    1 
 [   355 -  0]: PointLocalReconstructionEnabledFlag = 0 
-[   355 -  0]: Frame 0, Patch(43) => 2Dpos =   42    2 2Dsize =    1    2 3Dpos = 266 539 12 DeltaMaxZ = 1 Projection = 5 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   355 -  0]: Frame 0, Patch(43) => 2Dpos =   42    2 2Dsize =    1    2 3Dpos = 266 539 12 DeltaMaxZ = 1 Projection = 5 Orientation = 1 lod=(0) 0 0
  [   355 -  0]: patch 44 : 
 [   355 -  1]:   CodeUvlc:    0 
 [   355 -  1]: patchMode = 0 
@@ -1278,7 +1282,7 @@
 [   362 -  0]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [   362 -  1]:   CodU[ 1]:    0 
 [   362 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[   362 -  1]: Frame 0, Patch(44) => 2Dpos =   66    3 2Dsize =    1    2 3Dpos = 303 651 12 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   362 -  1]: Frame 0, Patch(44) => 2Dpos =   66    3 2Dsize =    1    2 3Dpos = 303 651 12 DeltaMaxZ = 1 Projection = 5 Orientation = 0 lod=(0) 0 0
  [   362 -  1]: patch 45 : 
 [   362 -  2]:   CodeUvlc:    0 
 [   362 -  2]: patchMode = 0 
@@ -1301,7 +1305,7 @@
 [   368 -  1]: PduProjectionId = 5 (ExtendedProjectionEnabledFlag = 0 ) 
 [   368 -  2]:   CodU[ 1]:    1 
 [   368 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   368 -  2]: Frame 0, Patch(45) => 2Dpos =    6    4 2Dsize =    2    1 3Dpos = 332 643 12 DeltaMaxZ = 2 Projection = 5 Orientation = 1 lod=(1967095021568) 459561500672 459561500672
+[   368 -  2]: Frame 0, Patch(45) => 2Dpos =    6    4 2Dsize =    2    1 3Dpos = 332 643 12 DeltaMaxZ = 2 Projection = 5 Orientation = 1 lod=(0) 0 0
  [   368 -  2]: patch 46 : 
 [   368 -  3]:   CodeUvlc:    0 
 [   368 -  3]: patchMode = 0 
@@ -1324,7 +1328,7 @@
 [   373 -  0]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   373 -  1]:   CodU[ 1]:    0 
 [   373 -  1]: PointLocalReconstructionEnabledFlag = 0 
-[   373 -  1]: Frame 0, Patch(46) => 2Dpos =    0    0 2Dsize =    1    1 3Dpos = 235 160 0 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   373 -  1]: Frame 0, Patch(46) => 2Dpos =    0    0 2Dsize =    1    1 3Dpos = 235 160 0 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   373 -  1]: patch 47 : 
 [   373 -  2]:   CodeUvlc:    0 
 [   373 -  2]: patchMode = 0 
@@ -1347,7 +1351,7 @@
 [   378 -  5]: PduProjectionId = 3 (ExtendedProjectionEnabledFlag = 0 ) 
 [   378 -  6]:   CodU[ 1]:    0 
 [   378 -  6]: PointLocalReconstructionEnabledFlag = 0 
-[   378 -  6]: Frame 0, Patch(47) => 2Dpos =    7    0 2Dsize =    1    1 3Dpos = 185 249 11 DeltaMaxZ = 1 Projection = 3 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   378 -  6]: Frame 0, Patch(47) => 2Dpos =    7    0 2Dsize =    1    1 3Dpos = 185 249 11 DeltaMaxZ = 1 Projection = 3 Orientation = 0 lod=(0) 0 0
  [   378 -  6]: patch 48 : 
 [   378 -  7]:   CodeUvlc:    0 
 [   378 -  7]: patchMode = 0 
@@ -1370,7 +1374,7 @@
 [   384 -  4]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   384 -  5]:   CodU[ 1]:    0 
 [   384 -  5]: PointLocalReconstructionEnabledFlag = 0 
-[   384 -  5]: Frame 0, Patch(48) => 2Dpos =   19    0 2Dsize =    1    1 3Dpos = 79 667 1 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   384 -  5]: Frame 0, Patch(48) => 2Dpos =   19    0 2Dsize =    1    1 3Dpos = 79 667 1 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(0) 0 0
  [   384 -  5]: patch 49 : 
 [   384 -  6]:   CodeUvlc:    0 
 [   384 -  6]: patchMode = 0 
@@ -1393,7 +1397,7 @@
 [   390 -  7]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   391 -  0]:   CodU[ 1]:    0 
 [   391 -  0]: PointLocalReconstructionEnabledFlag = 0 
-[   391 -  0]: Frame 0, Patch(49) => 2Dpos =   70    0 2Dsize =    1    1 3Dpos = 225 575 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   391 -  0]: Frame 0, Patch(49) => 2Dpos =   70    0 2Dsize =    1    1 3Dpos = 225 575 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   391 -  0]: patch 50 : 
 [   391 -  1]:   CodeUvlc:    0 
 [   391 -  1]: patchMode = 0 
@@ -1416,7 +1420,7 @@
 [   397 -  2]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   397 -  3]:   CodU[ 1]:    0 
 [   397 -  3]: PointLocalReconstructionEnabledFlag = 0 
-[   397 -  3]: Frame 0, Patch(50) => 2Dpos =   79    0 2Dsize =    1    1 3Dpos = 246 876 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   397 -  3]: Frame 0, Patch(50) => 2Dpos =   79    0 2Dsize =    1    1 3Dpos = 246 876 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   397 -  3]: patch 51 : 
 [   397 -  4]:   CodeUvlc:    0 
 [   397 -  4]: patchMode = 0 
@@ -1439,7 +1443,7 @@
 [   403 -  1]: PduProjectionId = 0 (ExtendedProjectionEnabledFlag = 0 ) 
 [   403 -  2]:   CodU[ 1]:    0 
 [   403 -  2]: PointLocalReconstructionEnabledFlag = 0 
-[   403 -  2]: Frame 0, Patch(51) => 2Dpos =    3    4 2Dsize =    1    1 3Dpos = 135 913 3 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   403 -  2]: Frame 0, Patch(51) => 2Dpos =    3    4 2Dsize =    1    1 3Dpos = 135 913 3 DeltaMaxZ = 1 Projection = 0 Orientation = 0 lod=(0) 0 0
  [   403 -  2]: patch 52 : 
 [   403 -  3]:   CodeUvlc:    0 
 [   403 -  3]: patchMode = 0 
@@ -1462,7 +1466,7 @@
 [   409 -  2]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   409 -  3]:   CodU[ 1]:    0 
 [   409 -  3]: PointLocalReconstructionEnabledFlag = 0 
-[   409 -  3]: Frame 0, Patch(52) => 2Dpos =   11    4 2Dsize =    1    1 3Dpos = 314 612 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   409 -  3]: Frame 0, Patch(52) => 2Dpos =   11    4 2Dsize =    1    1 3Dpos = 314 612 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   409 -  3]: patch 53 : 
 [   409 -  4]:   CodeUvlc:    0 
 [   409 -  4]: patchMode = 0 
@@ -1485,7 +1489,7 @@
 [   415 -  3]: PduProjectionId = 2 (ExtendedProjectionEnabledFlag = 0 ) 
 [   415 -  4]:   CodU[ 1]:    0 
 [   415 -  4]: PointLocalReconstructionEnabledFlag = 0 
-[   415 -  4]: Frame 0, Patch(53) => 2Dpos =   12    4 2Dsize =    1    1 3Dpos = 243 934 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(1967095021568) 459561500672 459561500672
+[   415 -  4]: Frame 0, Patch(53) => 2Dpos =   12    4 2Dsize =    1    1 3Dpos = 243 934 1 DeltaMaxZ = 1 Projection = 2 Orientation = 0 lod=(0) 0 0
  [   415 -  4]: patch 54 : 
 [   416 -  3]:   CodeUvlc:   14 
 [   416 -  3]: patchMode = 14 

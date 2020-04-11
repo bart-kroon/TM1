@@ -231,7 +231,7 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
     VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_pos_bit_count_explicit_mode_flag());
   }
 
-  bitstream.byteAlign();
+  bitstream.byteAlignment();
 
   return x;
 }
@@ -288,7 +288,7 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
     VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_pos_bit_count_explicit_mode_flag());
   }
 
-  bitstream.byteAlign();
+  bitstream.byteAlignment();
 }
 
 auto operator<<(ostream &stream, const SkipPatchDataUnit & /* x */) -> ostream & { return stream; }
@@ -560,7 +560,7 @@ auto AtlasTileGroupDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUni
     patch_mode = bitstream.getUExpGolomb<AtgduPatchMode>();
   }
 
-  bitstream.byteAlign();
+  bitstream.byteAlignment();
   return AtlasTileGroupDataUnit{x};
 }
 
@@ -580,7 +580,7 @@ void AtlasTileGroupDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnit
   });
 
   bitstream.putUExpGolomb(AtgduPatchMode::I_END);
-  bitstream.byteAlign();
+  bitstream.byteAlignment();
 }
 
 auto AtlasTileGroupLayerRBSP::atlas_tile_group_data_unit() const noexcept

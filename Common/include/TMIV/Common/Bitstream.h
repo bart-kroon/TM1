@@ -71,7 +71,9 @@ public:
 
   template <typename Integer> auto getSExpGolomb() -> Integer;
 
-  void byteAlign();
+  [[nodiscard]] auto byteAligned() const -> bool;
+  void byteAlignment();
+  void zeroAlign();
   void rbspTrailingBits();
   auto moreData() -> bool;
   auto moreRbspData() -> bool;
@@ -89,7 +91,7 @@ public:
   OutputBitstream(OutputBitstream &&) = default;
   auto operator=(const OutputBitstream &) -> OutputBitstream & = delete;
   auto operator=(OutputBitstream &&) -> OutputBitstream & = delete;
-  ~OutputBitstream() { byteAlign(); };
+  ~OutputBitstream() { zeroAlign(); }
 
   // Output bit position indicator
   [[nodiscard]] auto tellp() const -> std::streampos;
@@ -109,7 +111,9 @@ public:
 
   void putSExpGolomb(std::int64_t value);
 
-  void byteAlign();
+  [[nodiscard]] auto byteAligned() const -> bool;
+  void byteAlignment();
+  void zeroAlign();
   void rbspTrailingBits();
 
 private:

@@ -708,7 +708,7 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
     VERIFY_MIVBITSTREAM(size_t(bitstream.tellg()) == extensionEnd);
   }
 
-  bitstream.byteAlign();
+  bitstream.byteAlignment();
   return x;
 }
 
@@ -781,7 +781,7 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
   }
   VERIFY_MIVBITSTREAM(uint64_t(bitstream.tellp()) == extensionEnd);
 
-  bitstream.byteAlign();
+  bitstream.byteAlignment();
 }
 
 auto merge(const vector<const VpccParameterSet *> &vps) -> VpccParameterSet {

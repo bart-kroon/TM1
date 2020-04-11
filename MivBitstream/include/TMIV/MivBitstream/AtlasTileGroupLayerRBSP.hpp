@@ -72,6 +72,11 @@ constexpr auto AtlasTileGroupHeader::atgh_type(const AtghType value) noexcept ->
   return *this;
 }
 
+constexpr auto AtlasTileGroupHeader::atgh_atlas_output_flag(const bool value) noexcept -> auto & {
+  m_atgh_atlas_output_flag = value;
+  return *this;
+}
+
 constexpr auto AtlasTileGroupHeader::atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept
     -> auto & {
   m_atgh_atlas_frm_order_cnt_lsb = value;
@@ -81,6 +86,7 @@ constexpr auto AtlasTileGroupHeader::atgh_atlas_frm_order_cnt_lsb(const std::uin
 constexpr auto AtlasTileGroupHeader::operator==(const AtlasTileGroupHeader &other) const noexcept {
   if (atgh_atlas_frame_parameter_set_id() != other.atgh_atlas_frame_parameter_set_id() ||
       atgh_address() != other.atgh_address() || atgh_type() != other.atgh_type() ||
+      m_atgh_atlas_output_flag != other.m_atgh_atlas_output_flag ||
       atgh_atlas_frm_order_cnt_lsb() != other.atgh_atlas_frm_order_cnt_lsb()) {
     return false;
   }

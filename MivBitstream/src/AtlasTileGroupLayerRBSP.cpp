@@ -130,6 +130,11 @@ auto AtlasTileGroupHeader::atgh_adaptation_parameter_set_id() const noexcept -> 
   return *m_atgh_adaptation_parameter_set_id;
 }
 
+auto AtlasTileGroupHeader::atgh_atlas_output_flag() const noexcept -> bool {
+  VERIFY_VPCCBITSTREAM(m_atgh_atlas_output_flag.has_value());
+  return *m_atgh_atlas_output_flag;
+}
+
 auto AtlasTileGroupHeader::atgh_patch_size_x_info_quantizer() const noexcept -> uint8_t {
   VERIFY_VPCCBITSTREAM(atgh_type() != AtghType::SKIP_TILE_GRP);
   return m_atgh_patch_size_x_info_quantizer;
@@ -155,15 +160,22 @@ auto AtlasTileGroupHeader::atgh_patch_size_y_info_quantizer(const uint8_t value)
 }
 
 auto operator<<(ostream &stream, const AtlasTileGroupHeader &x) -> ostream & {
-  stream << "atgh_atlas_frame_parameter_set_id=" << int(x.atgh_atlas_frame_parameter_set_id());
+  stream << "atgh_atlas_frame_parameter_set_id=" << int(x.atgh_atlas_frame_parameter_set_id())
+         << '\n';
   if (x.m_atgh_adaptation_parameter_set_id) {
-    stream << "\natgh_adaptation_parameter_set_id=" << int(*x.m_atgh_adaptation_parameter_set_id);
+    stream << "atgh_adaptation_parameter_set_id=" << int(*x.m_atgh_adaptation_parameter_set_id)
+           << '\n';
   }
-  stream << "\natgh_address=" << int(x.atgh_address()) << "\natgh_type=" << x.atgh_type()
-         << "\natgh_atlas_frm_order_cnt_lsb=" << int(x.atgh_atlas_frm_order_cnt_lsb()) << '\n';
+  stream << "atgh_address=" << int(x.atgh_address()) << '\n';
+  stream << "atgh_type=" << x.atgh_type() << '\n';
+  if (x.m_atgh_atlas_output_flag) {
+    stream << "atgh_atlas_output_flag=" << boolalpha << *x.m_atgh_atlas_output_flag << '\n';
+  }
+  stream << "atgh_atlas_frm_order_cnt_lsb=" << int(x.atgh_atlas_frm_order_cnt_lsb()) << '\n';
   if (x.atgh_type() != AtghType::SKIP_TILE_GRP) {
     stream << "atgh_patch_size_x_info_quantizer=" << int(x.atgh_patch_size_x_info_quantizer())
-           << "\natgh_patch_size_y_info_quantizer=" << int(x.atgh_patch_size_y_info_quantizer())
+           << '\n';
+    stream << "atgh_patch_size_y_info_quantizer=" << int(x.atgh_patch_size_y_info_quantizer())
            << '\n';
   }
   return stream;
@@ -193,6 +205,10 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
   x.atgh_type(AtghType(bitstream.getUExpGolomb<uint8_t>()));
   VERIFY_MIVBITSTREAM(x.atgh_type() == AtghType::I_TILE_GRP ||
                       x.atgh_type() == AtghType::SKIP_TILE_GRP);
+
+  if (afps.afps_output_flag_present_flag()) {
+    x.atgh_atlas_output_flag(bitstream.getFlag());
+  }
 
   x.atgh_atlas_frm_order_cnt_lsb(
       bitstream.readBits<uint8_t>(asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
@@ -252,6 +268,10 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   VERIFY_MIVBITSTREAM(atgh_type() == AtghType::I_TILE_GRP ||
                       atgh_type() == AtghType::SKIP_TILE_GRP);
   bitstream.putUExpGolomb(atgh_type());
+
+  if (afps.afps_output_flag_present_flag()) {
+    bitstream.putFlag(atgh_atlas_output_flag());
+  }
 
   bitstream.writeBits(atgh_atlas_frm_order_cnt_lsb(),
                       asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);

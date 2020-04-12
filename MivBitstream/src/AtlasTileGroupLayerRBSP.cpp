@@ -212,8 +212,8 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
     x.atgh_ref_atlas_frame_list_sps_flag(bitstream.getFlag());
   }
 
-  VERIFY_MIVBITSTREAM(x.atgh_ref_atlas_frame_list_sps_flag());
-  VERIFY_MIVBITSTREAM(asps.ref_list_struct(0).num_ref_entries() == 0);
+  LIMITATION(x.atgh_ref_atlas_frame_list_sps_flag());
+  LIMITATION(asps.ref_list_struct(0).num_ref_entries() <= 1);
 
   if (x.atgh_type() != AtghType::SKIP_TILE_GRP) {
     VERIFY_MIVBITSTREAM(!asps.asps_normal_axis_limits_quantization_enabled_flag());

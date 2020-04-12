@@ -53,18 +53,17 @@
       (!!(condition) || (::TMIV::MivBitstream::mivError(#condition, __FILE__, __LINE__), false)))
 #define MIVBITSTREAM_ERROR(what) ::TMIV::MivBitstream::mivError(what, __FILE__, __LINE__)
 
-// Checks against TMC2 bitstream when TMC2 deviates from ISO/IEC 23090-5
-//
-// See also MivDecoderMode
-#define VERIFY_TMC2BITSTREAM(condition)                                                            \
+// Known limitation of the current implementation (not in line with ISO/IEC 23090-12)
+#define LIMITATION(condition)                                                                      \
   static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::MivBitstream::tmc2Error(#condition, __FILE__, __LINE__), false)))
-#define TMC2BITSTREAM_ERROR(what) ::TMIV::MivBitstream::tmc2Error(what, __FILE__, __LINE__)
+      (!!(condition) ||                                                                            \
+       (::TMIV::MivBitstream::notImplemented(#condition, __FILE__, __LINE__), false)))
+#define NOT_IMPLEMENTED(what) ::TMIV::MivBitstream::notImplemented(what, __FILE__, __LINE__)
 
 namespace TMIV::MivBitstream {
 [[noreturn]] void vpccError(char const *condition, char const *file, int line);
 [[noreturn]] void mivError(char const *condition, char const *file, int line);
-[[noreturn]] void tmc2Error(char const *condition, char const *file, int line);
+[[noreturn]] void notImplemented(char const *condition, char const *file, int line);
 } // namespace TMIV::MivBitstream
 
 #endif

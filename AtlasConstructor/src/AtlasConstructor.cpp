@@ -312,7 +312,9 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 
   // Packing
   m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
-  for (auto &atlas : m_ivAccessUnitParams.atlas) {
+  for (size_t atlasId = 0; atlasId < m_nbAtlas; ++atlasId) {
+    auto &atlas = m_ivAccessUnitParams.atlas[atlasId];
+
     // Set ASPS parameters
     atlas.asps.asps_frame_width(m_atlasSize.x())
         .asps_frame_height(m_atlasSize.y())
@@ -327,12 +329,6 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     }
 
     // Set AFPS parameters
-    atlas.afps
-        .afps_2d_pos_x_bit_count_minus1(ceilLog2(m_atlasSize.x()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size() - 1)
-        .afps_2d_pos_y_bit_count_minus1(ceilLog2(m_atlasSize.y()) -
-                                        atlas.asps.asps_log2_patch_packing_block_size() - 1);
-
     uint16_t maxProjectionPlaneWidthMinus1 = 0;
     uint16_t maxProjectionPlaneHeightMinus1 = 0;
     for (auto &vp : m_outIvSequenceParams.viewParamsList) {
@@ -345,6 +341,8 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     atlas.afps.afps_3d_pos_y_bit_count_minus1(ceilLog2(maxProjectionPlaneHeightMinus1 + 1) - 1);
 
     // Set ATGH parameters
+    const auto &gi = m_outIvSequenceParams.vps.geometry_information(atlasId);
+    atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 3);
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }

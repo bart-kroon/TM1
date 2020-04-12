@@ -37,24 +37,20 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
 #include <TMIV/MivBitstream/VpccUnit.h>
 
+#include <filesystem>
 #include <fstream>
 
 namespace TMIV::MivBitstream {
-const MivDecoder::Mode MivDecoder::mode = Mode::TMC2;
+const MivDecoderMode mode = MivDecoderMode::TMC2;
 }
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-
-const auto bitstreamPath = "C://Data//longdress_vox10_GOF0.vpcc";
-
-// Copied from PCCBitstream::readHeader (not in the specification)
-const uint32_t PCCTMC2ContainerMagicNumber = 23021981;
-const uint32_t PCCTMC2ContainerVersion = 1;
 
 auto dumpVpccUnitPayload(streampos position, const SampleStreamVpccUnit &ssvu,
                          const VpccUnitHeader &vuh) {
@@ -83,19 +79,11 @@ auto dumpVpccUnitPayload(streampos position, const SampleStreamVpccUnit &ssvu,
   file.write(payload.data(), payload.size());
 }
 
-TEST_CASE("Parse V-PCC sample stream", "[VPCC Unit]") {
-  ifstream stream{bitstreamPath, ios::binary};
-  REQUIRE(stream.good());
-
+void demultiplex(istream &stream) {
   stream.seekg(0, ios::end);
   const auto filesize = stream.tellg();
   cout << "[ 0 ]: File size is " << filesize << " bytes\n";
   stream.seekg(0);
-
-  REQUIRE(getUint32(stream) == PCCTMC2ContainerMagicNumber);
-  REQUIRE(getUint32(stream) == PCCTMC2ContainerVersion);
-  const auto totalSize = getUint64(stream);
-  cout << "totalSize=" << totalSize << " (reported)\n";
 
   cout << "[ " << stream.tellg() << " ]: ";
   const auto ssvh = SampleStreamVpccHeader::decodeFrom(stream);
@@ -128,4 +116,36 @@ TEST_CASE("Parse V-PCC sample stream", "[VPCC Unit]") {
   }
 
   cout << "[ " << stream.tellg() << " ].\n";
+}
+
+auto testDataDir() { return filesystem::path(__FILE__).parent_path().parent_path() / "test"; }
+
+const auto testBitstreams =
+    array{testDataDir() / "longdress_1frame_vpcc_ctc" / "longdress_vox10_GOF0.bin"};
+
+TEST_CASE("Demultiplex", "[V-PCC bitstream]") {
+  const auto bitstreamPath = GENERATE(testBitstreams[0]);
+  cout << "\n\nTEST_CASE Demultiplex: bitstreamPath=" << bitstreamPath.string() << '\n';
+  ifstream stream{bitstreamPath, ios::binary};
+  demultiplex(stream);
+}
+
+auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth10Frame {
+  cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Depth10Frame{frameSize.x(), frameSize.y()};
+};
+
+auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {
+  cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Texture444Frame{frameSize.x(), frameSize.y()};
+};
+
+TEST_CASE("Decode", "[V-PCC bitstream]") {
+  const auto bitstreamPath = GENERATE(testBitstreams[0]);
+  cout << "\n\nTEST_CASE Decode: bitstreamPath=" << bitstreamPath.string() << '\n';
+  ifstream stream{bitstreamPath, ios::binary};
+  auto decoder = MivDecoder{stream, geoFrameServer, attrFrameServer};
+  decoder.decode();
 }

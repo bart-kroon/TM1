@@ -44,7 +44,7 @@ TEST_CASE("Bitstream primitives") {
 
   SECTION("u(1)") {
     obitstream.putFlag(true);
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     const auto actual = ibitstream.getFlag();
     REQUIRE(actual);
   }
@@ -55,7 +55,7 @@ TEST_CASE("Bitstream primitives") {
     for (const auto bit : reference) {
       obitstream.putFlag(bit);
     }
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     REQUIRE(stream.tellp() == 3);
     for (const auto bit : reference) {
       const auto actual = ibitstream.getFlag();
@@ -67,7 +67,7 @@ TEST_CASE("Bitstream primitives") {
   SECTION("u(8)") {
     const auto reference = std::uint8_t(0x12);
     obitstream.putUint8(reference);
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     const auto actual = ibitstream.getUint8();
     REQUIRE(actual == reference);
   }
@@ -75,7 +75,7 @@ TEST_CASE("Bitstream primitives") {
   SECTION("u(16)") {
     const auto reference = std::uint16_t(0x1234);
     obitstream.putUint16(reference);
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     const auto actual = ibitstream.getUint16();
     REQUIRE(actual == reference);
   }
@@ -83,7 +83,7 @@ TEST_CASE("Bitstream primitives") {
   SECTION("u(32)") {
     const auto reference = std::uint32_t(0x12345678);
     obitstream.putUint32(reference);
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     const auto actual = ibitstream.getUint32();
     REQUIRE(actual == reference);
   }
@@ -91,7 +91,7 @@ TEST_CASE("Bitstream primitives") {
   SECTION("float32") {
     const auto reference = 1.F / 42.F;
     obitstream.putFloat32(reference);
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     const auto actual = ibitstream.getFloat32();
     REQUIRE(actual == reference);
   }
@@ -103,7 +103,7 @@ TEST_CASE("Bitstream primitives") {
     for (auto [reference, range] : referenceSequence) {
       obitstream.putUVar(reference, range);
     }
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     for (auto [reference, range] : referenceSequence) {
       auto actual = ibitstream.getUVar<int>(range);
       REQUIRE(actual == reference);
@@ -116,7 +116,7 @@ TEST_CASE("Bitstream primitives") {
     for (auto reference : referenceSequence) {
       obitstream.putUExpGolomb(reference);
     }
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     for (auto reference : referenceSequence) {
       auto actual = ibitstream.getUExpGolomb<uint64_t>();
       REQUIRE(actual == reference);
@@ -129,7 +129,7 @@ TEST_CASE("Bitstream primitives") {
     for (auto reference : referenceSequence) {
       obitstream.putSExpGolomb(reference);
     }
-    obitstream.byteAlign();
+    obitstream.zeroAlign();
     for (auto reference : referenceSequence) {
       auto actual = ibitstream.getSExpGolomb<int64_t>();
       REQUIRE(actual == reference);

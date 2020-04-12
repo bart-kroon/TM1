@@ -196,9 +196,13 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
       pdu.pdu_view_pos_x(pp.pduViewPos().x());
       pdu.pdu_view_pos_y(pp.pduViewPos().y());
 
-      pdu.pdu_depth_start(pp.pduDepthStart());
+      VERIFY_MIVBITSTREAM(pp.pduDepthStart() % (1 << aau.atgh.atgh_pos_min_z_quantizer()) == 0);
+      pdu.pdu_depth_start(pp.pduDepthStart() >> aau.atgh.atgh_pos_min_z_quantizer());
+
       if (pp.pduDepthEnd()) {
-        pdu.pdu_depth_end(*pp.pduDepthEnd());
+        const auto atgh_pos_delta_max_z_quantizer = aau.atgh.atgh_pos_delta_max_z_quantizer();
+        VERIFY_MIVBITSTREAM(*pp.pduDepthEnd() % (1 << atgh_pos_delta_max_z_quantizer) == 0);
+        pdu.pdu_depth_end(*pp.pduDepthEnd() >> atgh_pos_delta_max_z_quantizer);
       }
 
       pdu.pdu_orientation_index(pp.pduOrientationIndex());
@@ -221,7 +225,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
 
 auto MivEncoder::skipAtlasTileGroupLayer() -> AtlasTileGroupLayerRBSP {
   auto atgh = AtlasTileGroupHeader{};
-  atgh.atgh_type(AtghType::SKIP_TILE_GRP).atgh_adaptation_parameter_set_id(0);
+  atgh.atgh_type(AtghType::SKIP_TILE_GRP);
 
   return AtlasTileGroupLayerRBSP{atgh};
 }

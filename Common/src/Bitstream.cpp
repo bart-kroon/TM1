@@ -75,16 +75,32 @@ auto ceilLog2(uint64_t range) -> unsigned {
   return bits;
 }
 
-void InputBitstream::byteAlign() {
-  if (readBits<uint8_t>(m_size % 8) != 0) {
-    throw runtime_error("Non-zero bit in byte alignment");
+auto InputBitstream::byteAligned() const -> bool { return m_size % 8 == 0; }
+
+void InputBitstream::byteAlignment() {
+  const auto alignment_bit_equal_to_one = getFlag();
+  VERIFY_BITSTREAM(alignment_bit_equal_to_one);
+
+  while (!byteAligned()) {
+    const auto alignment_bit_equal_to_zero = getFlag();
+    VERIFY_BITSTREAM(!alignment_bit_equal_to_zero);
+  }
+}
+
+void InputBitstream::zeroAlign() {
+  while (!byteAligned()) {
+    VERIFY_BITSTREAM(!getFlag());
   }
 }
 
 void InputBitstream::rbspTrailingBits() {
   const auto rbsp_stop_one_bit = getFlag();
   VERIFY_BITSTREAM(rbsp_stop_one_bit);
-  byteAlign();
+
+  while (!byteAligned()) {
+    const auto rbsp_alignment_zero_bit = getFlag();
+    VERIFY_BITSTREAM(!rbsp_alignment_zero_bit);
+  }
 }
 
 auto InputBitstream::moreData() -> bool {
@@ -160,9 +176,9 @@ void OutputBitstream::putUVar_(uint64_t value, uint64_t range) {
 void OutputBitstream::putUExpGolomb_(uint64_t value) {
   auto bits = ceilLog2(value + 2) - 1;
   for (auto i = 0U; i < bits; ++i) {
-    putFlag(true);
+    putFlag(false);
   }
-  putFlag(false);
+  putFlag(true);
   auto mask = (uint64_t{1} << bits) - 1;
   writeBits(value - mask, bits);
 }
@@ -179,11 +195,31 @@ void OutputBitstream::putFloat32(float value) {
   putUint32(code);
 }
 
-void OutputBitstream::byteAlign() { writeBits(0, (1 + ~m_size) % 8); }
+auto OutputBitstream::byteAligned() const -> bool { return m_size % 8 == 0; }
+
+void OutputBitstream::byteAlignment() {
+  const auto alignment_bit_equal_to_one = true;
+  putFlag(alignment_bit_equal_to_one);
+
+  while (!byteAligned()) {
+    const auto alignment_bit_equal_to_zero = false;
+    putFlag(alignment_bit_equal_to_zero);
+  }
+}
+
+void OutputBitstream::zeroAlign() {
+  while (!byteAligned()) {
+    putFlag(false);
+  }
+}
 
 void OutputBitstream::rbspTrailingBits() {
   const auto rbsp_stop_one_bit = true;
   putFlag(rbsp_stop_one_bit);
-  byteAlign();
+
+  while (!byteAligned()) {
+    const auto rbsp_alignment_zero_bit = false;
+    putFlag(rbsp_alignment_zero_bit);
+  }
 }
 } // namespace TMIV::Common

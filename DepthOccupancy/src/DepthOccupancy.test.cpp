@@ -37,7 +37,7 @@
 #include <TMIV/DepthOccupancy/DepthOccupancy.h>
 
 #include <TMIV/Common/Common.h>
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -45,7 +45,7 @@ using namespace TMIV::MivBitstream;
 using namespace TMIV::DepthOccupancy;
 
 namespace TMIV::MivBitstream {
-const MivDecoder::Mode MivDecoder::mode = MivDecoder::Mode::MIV;
+const MivDecoderMode mode = MivDecoderMode::MIV;
 }
 
 SCENARIO("Depth/occupancy coding") {

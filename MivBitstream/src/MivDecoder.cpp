@@ -333,7 +333,8 @@ auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTil
 
     x[p].pduEntityId(pdu.pdu_entity_id());
 
-    if (asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
+    if (asps.asps_miv_extension_present_flag() &&
+        asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
       x[p].pduDepthOccMapThreshold(pdu.pdu_depth_occ_map_threshold());
     }
   });

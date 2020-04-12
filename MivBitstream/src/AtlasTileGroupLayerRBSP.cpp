@@ -165,6 +165,10 @@ auto operator<<(ostream &stream, const AtlasTileGroupHeader &x) -> ostream & {
     stream << "atgh_atlas_output_flag=" << boolalpha << *x.m_atgh_atlas_output_flag << '\n';
   }
   stream << "atgh_atlas_frm_order_cnt_lsb=" << int(x.atgh_atlas_frm_order_cnt_lsb()) << '\n';
+  if (x.m_atgh_ref_atlas_frame_list_sps_flag) {
+    stream << "atgh_ref_atlas_frame_list_sps_flag=" << boolalpha
+           << *x.m_atgh_ref_atlas_frame_list_sps_flag << '\n';
+  }
   if (x.atgh_type() != AtghType::SKIP_TILE_GRP) {
     stream << "atgh_patch_size_x_info_quantizer=" << int(x.atgh_patch_size_x_info_quantizer())
            << '\n';
@@ -204,10 +208,11 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
   x.atgh_atlas_frm_order_cnt_lsb(
       bitstream.readBits<uint8_t>(asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
 
-  // Only intra coding (for now)
-  VERIFY_MIVBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() == 1);
-  const auto atgh_ref_atlas_frame_list_sps_flag = bitstream.getFlag();
-  VERIFY_MIVBITSTREAM(atgh_ref_atlas_frame_list_sps_flag);
+  if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {
+    x.atgh_ref_atlas_frame_list_sps_flag(bitstream.getFlag());
+  }
+
+  VERIFY_MIVBITSTREAM(x.atgh_ref_atlas_frame_list_sps_flag());
   VERIFY_MIVBITSTREAM(asps.ref_list_struct(0).num_ref_entries() == 0);
 
   if (x.atgh_type() != AtghType::SKIP_TILE_GRP) {
@@ -263,9 +268,11 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   bitstream.writeBits(atgh_atlas_frm_order_cnt_lsb(),
                       asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);
 
-  VERIFY_MIVBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() == 1);
-  constexpr auto atgh_ref_atlas_frame_list_sps_flag = true;
-  bitstream.putFlag(atgh_ref_atlas_frame_list_sps_flag);
+  VERIFY_VPCCBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() > 0 ||
+                       !atgh_ref_atlas_frame_list_sps_flag());
+  if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {
+    bitstream.putFlag(atgh_ref_atlas_frame_list_sps_flag());
+  }
 
   if (atgh_type() != AtghType::SKIP_TILE_GRP) {
     VERIFY_MIVBITSTREAM(!asps.asps_normal_axis_limits_quantization_enabled_flag());

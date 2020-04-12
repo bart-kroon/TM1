@@ -57,13 +57,14 @@ atgh_patch_size_y_info_quantizer=7
 )");
 
   SECTION("Example 1") {
-    x.atgh_type(AtghType::SKIP_TILE_GRP);
+    x.atgh_type(AtghType::SKIP_TILE_GRP).atgh_ref_atlas_frame_list_sps_flag(true);
 
     REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
 atgh_adaptation_parameter_set_id=0
 atgh_address=0
 atgh_type=SKIP_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
+atgh_ref_atlas_frame_list_sps_flag=true
 )");
 
     REQUIRE(bitCodingTest(x, 16, aspsV, afpsV));
@@ -73,6 +74,7 @@ atgh_atlas_frm_order_cnt_lsb=0
     aspsV.front().asps_patch_size_quantizer_present_flag(true);
 
     x.atgh_type(AtghType::I_TILE_GRP)
+        .atgh_ref_atlas_frame_list_sps_flag(true)
         .atgh_patch_size_x_info_quantizer(6)
         .atgh_patch_size_y_info_quantizer(5)
         .atgh_adaptation_parameter_set_id(4);
@@ -82,6 +84,7 @@ atgh_adaptation_parameter_set_id=4
 atgh_address=0
 atgh_type=I_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
+atgh_ref_atlas_frame_list_sps_flag=true
 atgh_patch_size_x_info_quantizer=6
 atgh_patch_size_y_info_quantizer=5
 )");
@@ -329,7 +332,7 @@ TEST_CASE("atlas_tile_group_layer_rbsp", "[Atlas Tile Group Layer RBSP]") {
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
     auto atgh = AtlasTileGroupHeader{};
-    atgh.atgh_type(AtghType::SKIP_TILE_GRP);
+    atgh.atgh_type(AtghType::SKIP_TILE_GRP).atgh_ref_atlas_frame_list_sps_flag(true);
 
     const auto x = AtlasTileGroupLayerRBSP{atgh};
 
@@ -338,6 +341,7 @@ atgh_adaptation_parameter_set_id=0
 atgh_address=0
 atgh_type=SKIP_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
+atgh_ref_atlas_frame_list_sps_flag=true
 )");
     REQUIRE(byteCodingTest(x, 3, vuh, vps, aspsV, afpsV));
   }
@@ -357,7 +361,7 @@ atgh_atlas_frm_order_cnt_lsb=0
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
     auto atgh = AtlasTileGroupHeader{};
-    atgh.atgh_type(AtghType::I_TILE_GRP);
+    atgh.atgh_type(AtghType::I_TILE_GRP).atgh_ref_atlas_frame_list_sps_flag(true);
 
     auto pdu1 = PatchDataUnit{};
     pdu1.pdu_2d_size_x_minus1(10).pdu_2d_size_y_minus1(20);
@@ -376,6 +380,7 @@ atgh_adaptation_parameter_set_id=0
 atgh_address=0
 atgh_type=I_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
+atgh_ref_atlas_frame_list_sps_flag=true
 atgh_patch_size_x_info_quantizer=0
 atgh_patch_size_y_info_quantizer=0
 atgdu_patch_mode[ 0 ]=I_INTRA

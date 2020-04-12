@@ -88,6 +88,7 @@ public:
   [[nodiscard]] constexpr auto atgh_type() const noexcept;
   [[nodiscard]] auto atgh_atlas_output_flag() const noexcept -> bool;
   [[nodiscard]] constexpr auto atgh_atlas_frm_order_cnt_lsb() const noexcept;
+  [[nodiscard]] constexpr auto atgh_ref_atlas_frame_list_sps_flag() const noexcept;
   [[nodiscard]] auto atgh_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
   [[nodiscard]] auto atgh_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
   [[nodiscard]] constexpr auto atgh_pos_min_z_quantizer() const noexcept { return std::uint8_t(0); }
@@ -99,6 +100,7 @@ public:
   constexpr auto atgh_type(const AtghType value) noexcept -> auto &;
   constexpr auto atgh_atlas_output_flag(const bool value) noexcept -> auto &;
   constexpr auto atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto atgh_ref_atlas_frame_list_sps_flag(const bool value) noexcept -> auto &;
   auto atgh_patch_size_x_info_quantizer(const std::uint8_t value) noexcept
       -> AtlasTileGroupHeader &;
   auto atgh_patch_size_y_info_quantizer(const std::uint8_t value) noexcept
@@ -125,6 +127,7 @@ private:
   AtghType m_atgh_type{};
   std::optional<bool> m_atgh_atlas_output_flag{};
   std::uint8_t m_atgh_atlas_frm_order_cnt_lsb{};
+  std::optional<bool> m_atgh_ref_atlas_frame_list_sps_flag{};
   std::uint8_t m_atgh_patch_size_x_info_quantizer{};
   std::uint8_t m_atgh_patch_size_y_info_quantizer{};
 };

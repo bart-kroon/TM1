@@ -279,8 +279,10 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     const auto &aps =
         mode == MivDecoderMode::TMC2 ? noAps : apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
 
-    const auto &mvpl = aps.miv_view_params_list();
-    frame->viewParamsList = decodeMvpl(mvpl);
+    if (aps.aps_miv_view_params_list_present_flag()) {
+      const auto &mvpl = aps.miv_view_params_list();
+      frame->viewParamsList = decodeMvpl(mvpl);
+    }
 
     const auto &afps = afpsV(vuh)[atgh.atgh_atlas_frame_parameter_set_id()];
     const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];

@@ -207,13 +207,6 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
   x.atgh_type(AtghType(bitstream.getUExpGolomb<uint8_t>()));
   VERIFY_MIVBITSTREAM(x.atgh_type() == AtghType::I_TILE_GRP ||
                       x.atgh_type() == AtghType::SKIP_TILE_GRP);
-if (mode == MivDecoderMode::TMC2) {
-    if (x.atgh_type() == AtghType::I_TILE_GRP) {
-      x.atgh_type(AtghType::SKIP_TILE_GRP);
-    } else if (x.atgh_type() == AtghType::SKIP_TILE_GRP) {
-      x.atgh_type(AtghType::I_TILE_GRP);
-    }
-  }
 
   if (afps.afps_output_flag_present_flag()) {
     x.atgh_atlas_output_flag(bitstream.getFlag());

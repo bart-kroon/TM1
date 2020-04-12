@@ -176,13 +176,13 @@
 [    30 -  0]: atlasTileGroupHeader 
 [    30 -  1]:   CodeUvlc:    0 
 [    30 -  2]:   CodeUvlc:    0 
-[    30 -  5]:   CodeUvlc:    2 
+[    30 -  5]:   CodeUvlc:    1 
 [    30 -  6]:   CodU[ 1]:    0 
 [    31 -  6]:   CodU[ 8]:    0 
 [    31 -  6]:  AtlasFrameParameterSetId: 0
 [    31 -  6]:  AtlasSequenceParameterSetId: 0
 [    31 -  6]:  Address       0
-[    31 -  6]:  Type          2
+[    31 -  6]:  Type          1
 [    31 -  6]:  FrameOrderCnt 0
 [    31 -  7]:   CodU[ 1]:    1 
 [    31 -  7]:  rlsIdx 0 numLtrAtlasFrmEntries 0 
@@ -201,11 +201,11 @@
 [    33 -  7]:   CodU[ 1]:    0 
 [    34 -  0]:   CodU[ 1]:    0 
 [    34 -  0]: atlasTileGroupDataUnit 
-[    34 -  0]: atgh.getType()        = 2 
+[    34 -  0]: atgh.getType()        = 1 
 [    34 -  0]: patch 0 : 
 [    34 -  1]:   CodeUvlc:    0 
 [    34 -  1]: patchMode = 0 
-[    34 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[    34 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [    34 -  1]: patchDataUnit 
 [    34 -  2]:   CodeUvlc:    0 
 [    34 -  3]:   CodeUvlc:    0 
@@ -228,7 +228,7 @@
  [    41 -  1]: patch 1 : 
 [    41 -  2]:   CodeUvlc:    0 
 [    41 -  2]: patchMode = 0 
-[    41 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[    41 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [    41 -  2]: patchDataUnit 
 [    42 -  1]:   CodeUvlc:   14 
 [    42 -  2]:   CodeUvlc:    0 
@@ -251,7 +251,7 @@
  [    49 -  0]: patch 2 : 
 [    49 -  1]:   CodeUvlc:    0 
 [    49 -  1]: patchMode = 0 
-[    49 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[    49 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [    49 -  1]: patchDataUnit 
 [    50 -  2]:   CodeUvlc:   22 
 [    51 -  3]:   CodeUvlc:   20 
@@ -274,7 +274,7 @@
  [    58 -  1]: patch 3 : 
 [    58 -  2]:   CodeUvlc:    0 
 [    58 -  2]: patchMode = 0 
-[    58 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[    58 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [    58 -  2]: patchDataUnit 
 [    59 -  5]:   CodeUvlc:   54 
 [    61 -  0]:   CodeUvlc:   32 
@@ -297,7 +297,7 @@
  [    67 -  6]: patch 4 : 
 [    67 -  7]:   CodeUvlc:    0 
 [    67 -  7]: patchMode = 0 
-[    67 -  7]: patchInformationData: AtghType = 2 patchMode = 0 
+[    67 -  7]: patchInformationData: AtghType = 1 patchMode = 0 
 [    67 -  7]: patchDataUnit 
 [    68 -  0]:   CodeUvlc:    0 
 [    68 -  1]:   CodeUvlc:    0 
@@ -320,7 +320,7 @@
  [    73 -  7]: patch 5 : 
 [    74 -  0]:   CodeUvlc:    0 
 [    74 -  0]: patchMode = 0 
-[    74 -  0]: patchInformationData: AtghType = 2 patchMode = 0 
+[    74 -  0]: patchInformationData: AtghType = 1 patchMode = 0 
 [    74 -  0]: patchDataUnit 
 [    75 -  5]:   CodeUvlc:   67 
 [    75 -  6]:   CodeUvlc:    0 
@@ -343,7 +343,7 @@
  [    81 -  4]: patch 6 : 
 [    81 -  5]:   CodeUvlc:    0 
 [    81 -  5]: patchMode = 0 
-[    81 -  5]: patchInformationData: AtghType = 2 patchMode = 0 
+[    81 -  5]: patchInformationData: AtghType = 1 patchMode = 0 
 [    81 -  5]: patchDataUnit 
 [    83 -  2]:   CodeUvlc:   73 
 [    83 -  3]:   CodeUvlc:    0 
@@ -366,7 +366,7 @@
  [    89 -  1]: patch 7 : 
 [    89 -  2]:   CodeUvlc:    0 
 [    89 -  2]: patchMode = 0 
-[    89 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[    89 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [    89 -  2]: patchDataUnit 
 [    90 -  1]:   CodeUvlc:   11 
 [    90 -  2]:   CodeUvlc:    0 
@@ -389,7 +389,7 @@
  [    96 -  0]: patch 8 : 
 [    96 -  1]:   CodeUvlc:    0 
 [    96 -  1]: patchMode = 0 
-[    96 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[    96 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [    96 -  1]: patchDataUnit 
 [    97 -  2]:   CodeUvlc:   20 
 [    97 -  3]:   CodeUvlc:    0 
@@ -412,7 +412,7 @@
  [   103 -  1]: patch 9 : 
 [   103 -  2]:   CodeUvlc:    0 
 [   103 -  2]: patchMode = 0 
-[   103 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[   103 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [   103 -  2]: patchDataUnit 
 [   104 -  3]:   CodeUvlc:   29 
 [   104 -  4]:   CodeUvlc:    0 
@@ -435,7 +435,7 @@
  [   110 -  2]: patch 10 : 
 [   110 -  3]:   CodeUvlc:    0 
 [   110 -  3]: patchMode = 0 
-[   110 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   110 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   110 -  3]: patchDataUnit 
 [   111 -  0]:   CodeUvlc:    4 
 [   111 -  1]:   CodeUvlc:    0 
@@ -458,7 +458,7 @@
  [   116 -  5]: patch 11 : 
 [   116 -  6]:   CodeUvlc:    0 
 [   116 -  6]: patchMode = 0 
-[   116 -  6]: patchInformationData: AtghType = 2 patchMode = 0 
+[   116 -  6]: patchInformationData: AtghType = 1 patchMode = 0 
 [   116 -  6]: patchDataUnit 
 [   118 -  1]:   CodeUvlc:   33 
 [   118 -  4]:   CodeUvlc:    2 
@@ -481,7 +481,7 @@
  [   124 -  0]: patch 12 : 
 [   124 -  1]:   CodeUvlc:    0 
 [   124 -  1]: patchMode = 0 
-[   124 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[   124 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [   124 -  1]: patchDataUnit 
 [   125 -  0]:   CodeUvlc:   14 
 [   125 -  7]:   CodeUvlc:    8 
@@ -504,7 +504,7 @@
  [   131 -  5]: patch 13 : 
 [   131 -  6]:   CodeUvlc:    0 
 [   131 -  6]: patchMode = 0 
-[   131 -  6]: patchInformationData: AtghType = 2 patchMode = 0 
+[   131 -  6]: patchInformationData: AtghType = 1 patchMode = 0 
 [   131 -  6]: patchDataUnit 
 [   132 -  7]:   CodeUvlc:   29 
 [   133 -  6]:   CodeUvlc:    9 
@@ -527,7 +527,7 @@
  [   139 -  4]: patch 14 : 
 [   139 -  5]:   CodeUvlc:    0 
 [   139 -  5]: patchMode = 0 
-[   139 -  5]: patchInformationData: AtghType = 2 patchMode = 0 
+[   139 -  5]: patchInformationData: AtghType = 1 patchMode = 0 
 [   139 -  5]: patchDataUnit 
 [   140 -  6]:   CodeUvlc:   18 
 [   141 -  5]:   CodeUvlc:    9 
@@ -550,7 +550,7 @@
  [   146 -  7]: patch 15 : 
 [   147 -  0]:   CodeUvlc:    0 
 [   147 -  0]: patchMode = 0 
-[   147 -  0]: patchInformationData: AtghType = 2 patchMode = 0 
+[   147 -  0]: patchInformationData: AtghType = 1 patchMode = 0 
 [   147 -  0]: patchDataUnit 
 [   148 -  3]:   CodeUvlc:   33 
 [   149 -  2]:   CodeUvlc:    9 
@@ -573,7 +573,7 @@
  [   154 -  4]: patch 16 : 
 [   154 -  5]:   CodeUvlc:    0 
 [   154 -  5]: patchMode = 0 
-[   154 -  5]: patchInformationData: AtghType = 2 patchMode = 0 
+[   154 -  5]: patchInformationData: AtghType = 1 patchMode = 0 
 [   154 -  5]: patchDataUnit 
 [   156 -  0]:   CodeUvlc:   36 
 [   156 -  7]:   CodeUvlc:    9 
@@ -596,7 +596,7 @@
  [   162 -  3]: patch 17 : 
 [   162 -  4]:   CodeUvlc:    0 
 [   162 -  4]: patchMode = 0 
-[   162 -  4]: patchInformationData: AtghType = 2 patchMode = 0 
+[   162 -  4]: patchInformationData: AtghType = 1 patchMode = 0 
 [   162 -  4]: patchDataUnit 
 [   163 -  7]:   CodeUvlc:   40 
 [   164 -  6]:   CodeUvlc:    9 
@@ -619,7 +619,7 @@
  [   170 -  0]: patch 18 : 
 [   170 -  1]:   CodeUvlc:    0 
 [   170 -  1]: patchMode = 0 
-[   170 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[   170 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [   170 -  1]: patchDataUnit 
 [   171 -  2]:   CodeUvlc:   21 
 [   172 -  1]:   CodeUvlc:   10 
@@ -642,7 +642,7 @@
  [   177 -  3]: patch 19 : 
 [   177 -  4]:   CodeUvlc:    0 
 [   177 -  4]: patchMode = 0 
-[   177 -  4]: patchInformationData: AtghType = 2 patchMode = 0 
+[   177 -  4]: patchInformationData: AtghType = 1 patchMode = 0 
 [   177 -  4]: patchDataUnit 
 [   178 -  7]:   CodeUvlc:   38 
 [   179 -  0]:   CodeUvlc:    0 
@@ -665,7 +665,7 @@
  [   184 -  2]: patch 20 : 
 [   184 -  3]:   CodeUvlc:    0 
 [   184 -  3]: patchMode = 0 
-[   184 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   184 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   184 -  3]: patchDataUnit 
 [   185 -  4]:   CodeUvlc:   24 
 [   186 -  3]:   CodeUvlc:   10 
@@ -688,7 +688,7 @@
  [   191 -  5]: patch 21 : 
 [   191 -  6]:   CodeUvlc:    0 
 [   191 -  6]: patchMode = 0 
-[   191 -  6]: patchInformationData: AtghType = 2 patchMode = 0 
+[   191 -  6]: patchInformationData: AtghType = 1 patchMode = 0 
 [   191 -  6]: patchDataUnit 
 [   193 -  3]:   CodeUvlc:   64 
 [   194 -  2]:   CodeUvlc:   10 
@@ -711,7 +711,7 @@
  [   199 -  4]: patch 22 : 
 [   199 -  5]:   CodeUvlc:    0 
 [   199 -  5]: patchMode = 0 
-[   199 -  5]: patchInformationData: AtghType = 2 patchMode = 0 
+[   199 -  5]: patchInformationData: AtghType = 1 patchMode = 0 
 [   199 -  5]: patchDataUnit 
 [   201 -  2]:   CodeUvlc:   72 
 [   202 -  1]:   CodeUvlc:   10 
@@ -734,7 +734,7 @@
  [   207 -  3]: patch 23 : 
 [   207 -  4]:   CodeUvlc:    0 
 [   207 -  4]: patchMode = 0 
-[   207 -  4]: patchInformationData: AtghType = 2 patchMode = 0 
+[   207 -  4]: patchInformationData: AtghType = 1 patchMode = 0 
 [   207 -  4]: patchDataUnit 
 [   208 -  7]:   CodeUvlc:   49 
 [   209 -  0]:   CodeUvlc:    0 
@@ -757,7 +757,7 @@
  [   214 -  2]: patch 24 : 
 [   214 -  3]:   CodeUvlc:    0 
 [   214 -  3]: patchMode = 0 
-[   214 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   214 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   214 -  3]: patchDataUnit 
 [   215 -  0]:   CodeUvlc:    3 
 [   215 -  1]:   CodeUvlc:    0 
@@ -780,7 +780,7 @@
  [   220 -  1]: patch 25 : 
 [   220 -  2]:   CodeUvlc:    0 
 [   220 -  2]: patchMode = 0 
-[   220 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[   220 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [   220 -  2]: patchDataUnit 
 [   221 -  5]:   CodeUvlc:   31 
 [   222 -  2]:   CodeUvlc:    3 
@@ -803,7 +803,7 @@
  [   227 -  2]: patch 26 : 
 [   227 -  3]:   CodeUvlc:    0 
 [   227 -  3]: patchMode = 0 
-[   227 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   227 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   227 -  3]: patchDataUnit 
 [   228 -  2]:   CodeUvlc:   11 
 [   228 -  7]:   CodeUvlc:    5 
@@ -826,7 +826,7 @@
  [   233 -  7]: patch 27 : 
 [   234 -  0]:   CodeUvlc:    0 
 [   234 -  0]: patchMode = 0 
-[   234 -  0]: patchInformationData: AtghType = 2 patchMode = 0 
+[   234 -  0]: patchInformationData: AtghType = 1 patchMode = 0 
 [   234 -  0]: patchDataUnit 
 [   235 -  3]:   CodeUvlc:   43 
 [   235 -  4]:   CodeUvlc:    0 
@@ -849,7 +849,7 @@
  [   240 -  4]: patch 28 : 
 [   240 -  5]:   CodeUvlc:    0 
 [   240 -  5]: patchMode = 0 
-[   240 -  5]: patchInformationData: AtghType = 2 patchMode = 0 
+[   240 -  5]: patchInformationData: AtghType = 1 patchMode = 0 
 [   240 -  5]: patchDataUnit 
 [   242 -  0]:   CodeUvlc:   53 
 [   242 -  1]:   CodeUvlc:    0 
@@ -872,7 +872,7 @@
  [   247 -  1]: patch 29 : 
 [   247 -  2]:   CodeUvlc:    0 
 [   247 -  2]: patchMode = 0 
-[   247 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[   247 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [   247 -  2]: patchDataUnit 
 [   248 -  7]:   CodeUvlc:   65 
 [   249 -  0]:   CodeUvlc:    0 
@@ -895,7 +895,7 @@
  [   254 -  0]: patch 30 : 
 [   254 -  1]:   CodeUvlc:    0 
 [   254 -  1]: patchMode = 0 
-[   254 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[   254 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [   254 -  1]: patchDataUnit 
 [   255 -  0]:   CodeUvlc:   11 
 [   255 -  1]:   CodeUvlc:    0 
@@ -918,7 +918,7 @@
  [   259 -  7]: patch 31 : 
 [   260 -  0]:   CodeUvlc:    0 
 [   260 -  0]: patchMode = 0 
-[   260 -  0]: patchInformationData: AtghType = 2 patchMode = 0 
+[   260 -  0]: patchInformationData: AtghType = 1 patchMode = 0 
 [   260 -  0]: patchDataUnit 
 [   261 -  3]:   CodeUvlc:   46 
 [   261 -  4]:   CodeUvlc:    0 
@@ -941,7 +941,7 @@
  [   266 -  2]: patch 32 : 
 [   266 -  3]:   CodeUvlc:    0 
 [   266 -  3]: patchMode = 0 
-[   266 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   266 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   266 -  3]: patchDataUnit 
 [   268 -  0]:   CodeUvlc:   71 
 [   268 -  1]:   CodeUvlc:    0 
@@ -964,7 +964,7 @@
  [   273 -  1]: patch 33 : 
 [   273 -  2]:   CodeUvlc:    0 
 [   273 -  2]: patchMode = 0 
-[   273 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[   273 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [   273 -  2]: patchDataUnit 
 [   274 -  5]:   CodeUvlc:   34 
 [   275 -  2]:   CodeUvlc:    4 
@@ -987,7 +987,7 @@
  [   280 -  2]: patch 34 : 
 [   280 -  3]:   CodeUvlc:    0 
 [   280 -  3]: patchMode = 0 
-[   280 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   280 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   280 -  3]: patchDataUnit 
 [   281 -  2]:   CodeUvlc:   12 
 [   282 -  1]:   CodeUvlc:    8 
@@ -1010,7 +1010,7 @@
  [   287 -  1]: patch 35 : 
 [   287 -  2]:   CodeUvlc:    0 
 [   287 -  2]: patchMode = 0 
-[   287 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[   287 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [   287 -  2]: patchDataUnit 
 [   288 -  5]:   CodeUvlc:   41 
 [   288 -  6]:   CodeUvlc:    0 
@@ -1033,7 +1033,7 @@
  [   293 -  4]: patch 36 : 
 [   293 -  5]:   CodeUvlc:    0 
 [   293 -  5]: patchMode = 0 
-[   293 -  5]: patchInformationData: AtghType = 2 patchMode = 0 
+[   293 -  5]: patchInformationData: AtghType = 1 patchMode = 0 
 [   293 -  5]: patchDataUnit 
 [   295 -  0]:   CodeUvlc:   56 
 [   295 -  1]:   CodeUvlc:    0 
@@ -1056,7 +1056,7 @@
  [   299 -  7]: patch 37 : 
 [   300 -  0]:   CodeUvlc:    0 
 [   300 -  0]: patchMode = 0 
-[   300 -  0]: patchInformationData: AtghType = 2 patchMode = 0 
+[   300 -  0]: patchInformationData: AtghType = 1 patchMode = 0 
 [   300 -  0]: patchDataUnit 
 [   301 -  3]:   CodeUvlc:   57 
 [   301 -  4]:   CodeUvlc:    0 
@@ -1079,7 +1079,7 @@
  [   306 -  2]: patch 38 : 
 [   306 -  3]:   CodeUvlc:    0 
 [   306 -  3]: patchMode = 0 
-[   306 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   306 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   306 -  3]: patchDataUnit 
 [   307 -  6]:   CodeUvlc:   59 
 [   307 -  7]:   CodeUvlc:    0 
@@ -1102,7 +1102,7 @@
  [   312 -  5]: patch 39 : 
 [   312 -  6]:   CodeUvlc:    0 
 [   312 -  6]: patchMode = 0 
-[   312 -  6]: patchInformationData: AtghType = 2 patchMode = 0 
+[   312 -  6]: patchInformationData: AtghType = 1 patchMode = 0 
 [   312 -  6]: patchDataUnit 
 [   314 -  1]:   CodeUvlc:   38 
 [   314 -  4]:   CodeUvlc:    1 
@@ -1125,7 +1125,7 @@
  [   319 -  2]: patch 40 : 
 [   319 -  3]:   CodeUvlc:    0 
 [   319 -  3]: patchMode = 0 
-[   319 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   319 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   319 -  3]: patchDataUnit 
 [   320 -  6]:   CodeUvlc:   54 
 [   321 -  1]:   CodeUvlc:    1 
@@ -1148,7 +1148,7 @@
  [   325 -  7]: patch 41 : 
 [   326 -  0]:   CodeUvlc:    0 
 [   326 -  0]: patchMode = 0 
-[   326 -  0]: patchInformationData: AtghType = 2 patchMode = 0 
+[   326 -  0]: patchInformationData: AtghType = 1 patchMode = 0 
 [   326 -  0]: patchDataUnit 
 [   326 -  5]:   CodeUvlc:    6 
 [   327 -  0]:   CodeUvlc:    2 
@@ -1171,7 +1171,7 @@
  [   331 -  6]: patch 42 : 
 [   331 -  7]:   CodeUvlc:    0 
 [   331 -  7]: patchMode = 0 
-[   331 -  7]: patchInformationData: AtghType = 2 patchMode = 0 
+[   331 -  7]: patchInformationData: AtghType = 1 patchMode = 0 
 [   331 -  7]: patchDataUnit 
 [   333 -  2]:   CodeUvlc:   40 
 [   333 -  5]:   CodeUvlc:    2 
@@ -1194,7 +1194,7 @@
  [   338 -  3]: patch 43 : 
 [   338 -  4]:   CodeUvlc:    0 
 [   338 -  4]: patchMode = 0 
-[   338 -  4]: patchInformationData: AtghType = 2 patchMode = 0 
+[   338 -  4]: patchInformationData: AtghType = 1 patchMode = 0 
 [   338 -  4]: patchDataUnit 
 [   339 -  7]:   CodeUvlc:   42 
 [   340 -  2]:   CodeUvlc:    2 
@@ -1217,7 +1217,7 @@
  [   345 -  0]: patch 44 : 
 [   345 -  1]:   CodeUvlc:    0 
 [   345 -  1]: patchMode = 0 
-[   345 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[   345 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [   345 -  1]: patchDataUnit 
 [   346 -  6]:   CodeUvlc:   66 
 [   347 -  3]:   CodeUvlc:    3 
@@ -1240,7 +1240,7 @@
  [   352 -  1]: patch 45 : 
 [   352 -  2]:   CodeUvlc:    0 
 [   352 -  2]: patchMode = 0 
-[   352 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[   352 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [   352 -  2]: patchDataUnit 
 [   352 -  7]:   CodeUvlc:    6 
 [   353 -  4]:   CodeUvlc:    4 
@@ -1263,7 +1263,7 @@
  [   358 -  2]: patch 46 : 
 [   358 -  3]:   CodeUvlc:    0 
 [   358 -  3]: patchMode = 0 
-[   358 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   358 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   358 -  3]: patchDataUnit 
 [   358 -  4]:   CodeUvlc:    0 
 [   358 -  5]:   CodeUvlc:    0 
@@ -1286,7 +1286,7 @@
  [   363 -  1]: patch 47 : 
 [   363 -  2]:   CodeUvlc:    0 
 [   363 -  2]: patchMode = 0 
-[   363 -  2]: patchInformationData: AtghType = 2 patchMode = 0 
+[   363 -  2]: patchInformationData: AtghType = 1 patchMode = 0 
 [   363 -  2]: patchDataUnit 
 [   364 -  1]:   CodeUvlc:    7 
 [   364 -  2]:   CodeUvlc:    0 
@@ -1309,7 +1309,7 @@
  [   368 -  6]: patch 48 : 
 [   368 -  7]:   CodeUvlc:    0 
 [   368 -  7]: patchMode = 0 
-[   368 -  7]: patchInformationData: AtghType = 2 patchMode = 0 
+[   368 -  7]: patchInformationData: AtghType = 1 patchMode = 0 
 [   368 -  7]: patchDataUnit 
 [   370 -  0]:   CodeUvlc:   19 
 [   370 -  1]:   CodeUvlc:    0 
@@ -1332,7 +1332,7 @@
  [   374 -  5]: patch 49 : 
 [   374 -  6]:   CodeUvlc:    0 
 [   374 -  6]: patchMode = 0 
-[   374 -  6]: patchInformationData: AtghType = 2 patchMode = 0 
+[   374 -  6]: patchInformationData: AtghType = 1 patchMode = 0 
 [   374 -  6]: patchDataUnit 
 [   376 -  3]:   CodeUvlc:   70 
 [   376 -  4]:   CodeUvlc:    0 
@@ -1355,7 +1355,7 @@
  [   381 -  0]: patch 50 : 
 [   381 -  1]:   CodeUvlc:    0 
 [   381 -  1]: patchMode = 0 
-[   381 -  1]: patchInformationData: AtghType = 2 patchMode = 0 
+[   381 -  1]: patchInformationData: AtghType = 1 patchMode = 0 
 [   381 -  1]: patchDataUnit 
 [   382 -  6]:   CodeUvlc:   79 
 [   382 -  7]:   CodeUvlc:    0 
@@ -1378,7 +1378,7 @@
  [   387 -  3]: patch 51 : 
 [   387 -  4]:   CodeUvlc:    0 
 [   387 -  4]: patchMode = 0 
-[   387 -  4]: patchInformationData: AtghType = 2 patchMode = 0 
+[   387 -  4]: patchInformationData: AtghType = 1 patchMode = 0 
 [   387 -  4]: patchDataUnit 
 [   388 -  1]:   CodeUvlc:    3 
 [   388 -  6]:   CodeUvlc:    4 
@@ -1401,7 +1401,7 @@
  [   393 -  2]: patch 52 : 
 [   393 -  3]:   CodeUvlc:    0 
 [   393 -  3]: patchMode = 0 
-[   393 -  3]: patchInformationData: AtghType = 2 patchMode = 0 
+[   393 -  3]: patchInformationData: AtghType = 1 patchMode = 0 
 [   393 -  3]: patchDataUnit 
 [   394 -  2]:   CodeUvlc:   11 
 [   394 -  7]:   CodeUvlc:    4 
@@ -1424,7 +1424,7 @@
  [   399 -  3]: patch 53 : 
 [   399 -  4]:   CodeUvlc:    0 
 [   399 -  4]: patchMode = 0 
-[   399 -  4]: patchInformationData: AtghType = 2 patchMode = 0 
+[   399 -  4]: patchInformationData: AtghType = 1 patchMode = 0 
 [   399 -  4]: patchDataUnit 
 [   400 -  3]:   CodeUvlc:   12 
 [   401 -  0]:   CodeUvlc:    4 
@@ -1447,7 +1447,7 @@
  [   405 -  4]: patch 54 : 
 [   406 -  3]:   CodeUvlc:   14 
 [   406 -  3]: patchMode = 14 
-[   406 -  3]: patchInformationData: AtghType = 2 patchMode = 14 
+[   406 -  3]: patchInformationData: AtghType = 1 patchMode = 14 
 [   406 -  3]: atgdu.getPatchCount() including END = 55 
 [   406 -  3]: byteAlignment 
 [   406 -  4]:   CodU[ 1]:    1 

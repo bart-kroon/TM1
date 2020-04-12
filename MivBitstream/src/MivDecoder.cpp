@@ -253,8 +253,8 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
   const auto &atgh = atgl.atlas_tile_group_header();
   auto &x = atlas(vuh);
 
-  if (NalUnitType::NAL_TRAIL <= nuh.nal_unit_type() &&
-      nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP) {
+  if (mode != MivDecoderMode::TMC2 && (NalUnitType::NAL_TRAIL <= nuh.nal_unit_type() &&
+                                       nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP)) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 > 0 &&
                          atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
     VERIFY_VPCCBITSTREAM(x.intraFrame);
@@ -267,8 +267,8 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     x.frames.push_back(x.intraFrame);
   }
 
-  if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
-      nuh.nal_unit_type() < NalUnitType::NAL_ASPS) {
+  if (mode == MivDecoderMode::TMC2 || (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
+                                       nuh.nal_unit_type() < NalUnitType::NAL_ASPS)) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 &&
                          atgh.atgh_type() == AtghType::I_TILE_GRP);
 

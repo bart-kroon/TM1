@@ -357,11 +357,6 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
   VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
   const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
-  const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
-                                              ? ceilLog2(asps.asps_max_projections_minus1() + 1)
-                                              : 3U;
-  x.pdu_view_id(bitstream.readBits<uint16_t>(pdu_projection_id_num_bits));
-
   x.pdu_2d_pos_x(bitstream.getUExpGolomb<uint16_t>());
   VERIFY_VPCCBITSTREAM(x.pdu_2d_pos_x() < asps.asps_frame_width());
 
@@ -385,6 +380,11 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
         gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_delta_max_z_quantizer() + 2;
     x.pdu_depth_end(bitstream.readBits<uint32_t>(pdu_depth_end_num_bits));
   }
+
+  const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
+                                              ? ceilLog2(asps.asps_max_projections_minus1() + 1)
+                                              : 3U;
+  x.pdu_view_id(bitstream.readBits<uint16_t>(pdu_projection_id_num_bits));
 
   const auto pdu_orientation_index_num_bits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
   x.pdu_orientation_index(
@@ -418,12 +418,6 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
   VERIFY_VPCCBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
   const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
 
-  const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
-                                              ? ceilLog2(asps.asps_max_projections_minus1() + 1)
-                                              : 3U;
-  VERIFY_VPCCBITSTREAM((pdu_view_id() >> pdu_projection_id_num_bits) == 0);
-  bitstream.writeBits(pdu_view_id(), pdu_projection_id_num_bits);
-
   bitstream.putUExpGolomb(pdu_2d_pos_x());
   bitstream.putUExpGolomb(pdu_2d_pos_y());
   bitstream.putUExpGolomb(pdu_2d_size_x_minus1());
@@ -443,6 +437,12 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
         gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_delta_max_z_quantizer() + 2;
     bitstream.writeBits(pdu_depth_end(), pdu_depth_end_num_bits);
   }
+
+  const auto pdu_projection_id_num_bits = asps.asps_extended_projection_enabled_flag()
+                                              ? ceilLog2(asps.asps_max_projections_minus1() + 1)
+                                              : 3U;
+  VERIFY_VPCCBITSTREAM((pdu_view_id() >> pdu_projection_id_num_bits) == 0);
+  bitstream.writeBits(pdu_view_id(), pdu_projection_id_num_bits);
 
   if (asps.asps_use_eight_orientations_flag()) {
     bitstream.writeBits(pdu_orientation_index(), 3);

@@ -275,9 +275,11 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     auto frame = make_shared<Atlas::Frame>();
     frame->atgh = atgh;
 
-    const auto &aps = apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
-    const auto &mvpl = aps.miv_view_params_list();
+    const auto noAps = AdaptationParameterSetRBSP{};
+    const auto &aps =
+        mode == MivDecoderMode::TMC2 ? noAps : apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
 
+    const auto &mvpl = aps.miv_view_params_list();
     frame->viewParamsList = decodeMvpl(mvpl);
 
     const auto &afps = afpsV(vuh)[atgh.atgh_atlas_frame_parameter_set_id()];

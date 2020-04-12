@@ -170,6 +170,13 @@ auto operator<<(ostream &stream, const AtlasTileGroupHeader &x) -> ostream & {
            << *x.m_atgh_ref_atlas_frame_list_sps_flag << '\n';
   }
   if (x.atgh_type() != AtghType::SKIP_TILE_GRP) {
+    if (x.m_atgh_pos_min_z_quantizer) {
+      stream << "atgh_pos_min_z_quantizer=" << int(*x.m_atgh_pos_min_z_quantizer) << '\n';
+      if (x.m_atgh_pos_delta_max_z_quantizer) {
+        stream << "atgh_pos_delta_max_z_quantizer=" << int(*x.m_atgh_pos_delta_max_z_quantizer)
+               << '\n';
+      }
+    }
     stream << "atgh_patch_size_x_info_quantizer=" << int(x.atgh_patch_size_x_info_quantizer())
            << '\n';
     stream << "atgh_patch_size_y_info_quantizer=" << int(x.atgh_patch_size_y_info_quantizer())
@@ -216,10 +223,12 @@ auto AtlasTileGroupHeader::decodeFrom(InputBitstream &bitstream,
   LIMITATION(asps.ref_list_struct(0).num_ref_entries() <= 1);
 
   if (x.atgh_type() != AtghType::SKIP_TILE_GRP) {
-    VERIFY_MIVBITSTREAM(!asps.asps_normal_axis_limits_quantization_enabled_flag());
-    static_assert(x.atgh_pos_min_z_quantizer() == 0);
-    static_assert(x.atgh_pos_max_z_quantizer() == 0);
-
+    if (asps.asps_normal_axis_limits_quantization_enabled_flag()) {
+      x.atgh_pos_min_z_quantizer(bitstream.readBits<uint8_t>(5));
+      if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+        x.atgh_pos_delta_max_z_quantizer(bitstream.readBits<uint8_t>(5));
+      }
+    }
     if (asps.asps_patch_size_quantizer_present_flag()) {
       x.atgh_patch_size_x_info_quantizer(bitstream.readBits<uint8_t>(3));
       VERIFY_VPCCBITSTREAM(x.atgh_patch_size_x_info_quantizer() <=
@@ -275,8 +284,12 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   }
 
   if (atgh_type() != AtghType::SKIP_TILE_GRP) {
-    VERIFY_MIVBITSTREAM(!asps.asps_normal_axis_limits_quantization_enabled_flag());
-
+    if (asps.asps_normal_axis_limits_quantization_enabled_flag()) {
+      bitstream.writeBits(atgh_pos_min_z_quantizer(), 5);
+      if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+        bitstream.writeBits(atgh_pos_delta_max_z_quantizer(), 5);
+      }
+    }
     if (asps.asps_patch_size_quantizer_present_flag()) {
       VERIFY_VPCCBITSTREAM(atgh_patch_size_x_info_quantizer() <=
                            asps.asps_log2_patch_packing_block_size());
@@ -369,7 +382,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto pdu_depth_end_num_bits =
-        gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_max_z_quantizer() + 2;
+        gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_delta_max_z_quantizer() + 2;
     x.pdu_depth_end(bitstream.readBits<uint32_t>(pdu_depth_end_num_bits));
   }
 
@@ -427,7 +440,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto pdu_depth_end_num_bits =
-        gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_max_z_quantizer() + 2;
+        gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_delta_max_z_quantizer() + 2;
     bitstream.writeBits(pdu_depth_end(), pdu_depth_end_num_bits);
   }
 

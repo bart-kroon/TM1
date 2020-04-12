@@ -56,6 +56,14 @@ constexpr auto AtlasTileGroupHeader::atgh_ref_atlas_frame_list_sps_flag() const 
   return m_atgh_ref_atlas_frame_list_sps_flag.value_or(false);
 }
 
+constexpr auto AtlasTileGroupHeader::atgh_pos_min_z_quantizer() const noexcept {
+  return m_atgh_pos_min_z_quantizer.value_or(0);
+}
+
+constexpr auto AtlasTileGroupHeader::atgh_pos_delta_max_z_quantizer() const noexcept {
+  return m_atgh_pos_delta_max_z_quantizer.value_or(0);
+}
+
 constexpr auto
 AtlasTileGroupHeader::atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept
     -> auto & {
@@ -97,6 +105,18 @@ constexpr auto AtlasTileGroupHeader::atgh_ref_atlas_frame_list_sps_flag(const bo
   return *this;
 }
 
+constexpr auto AtlasTileGroupHeader::atgh_pos_min_z_quantizer(const std::uint8_t value) noexcept
+    -> auto & {
+  m_atgh_pos_min_z_quantizer = value;
+  return *this;
+}
+
+constexpr auto
+AtlasTileGroupHeader::atgh_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept -> auto & {
+  m_atgh_pos_delta_max_z_quantizer = value;
+  return *this;
+}
+
 constexpr auto AtlasTileGroupHeader::operator==(const AtlasTileGroupHeader &other) const noexcept {
   if (atgh_atlas_frame_parameter_set_id() != other.atgh_atlas_frame_parameter_set_id() ||
       atgh_address() != other.atgh_address() || atgh_type() != other.atgh_type() ||
@@ -108,7 +128,9 @@ constexpr auto AtlasTileGroupHeader::operator==(const AtlasTileGroupHeader &othe
   if (atgh_type() == AtghType::SKIP_TILE_GRP) {
     return true;
   }
-  return atgh_patch_size_x_info_quantizer() == other.atgh_patch_size_x_info_quantizer() &&
+  return atgh_pos_min_z_quantizer() == other.atgh_pos_min_z_quantizer() &&
+         atgh_pos_delta_max_z_quantizer() == other.atgh_pos_delta_max_z_quantizer() &&
+         atgh_patch_size_x_info_quantizer() == other.atgh_patch_size_x_info_quantizer() &&
          atgh_patch_size_y_info_quantizer() == other.atgh_patch_size_y_info_quantizer();
 }
 

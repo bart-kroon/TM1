@@ -104,7 +104,7 @@ private: // Decoding processes
   void decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
                   const AtlasTileGroupLayerRBSP &atgl);
   static auto decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList;
-  static auto decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
+  static auto decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTileGroupHeader &atgh,
                           const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList;
   static auto decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
                                     const AtlasSequenceParameterSetRBSP &asps)

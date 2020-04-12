@@ -284,7 +284,7 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];
     const auto &atgdu = atgl.atlas_tile_group_data_unit();
 
-    frame->patchParamsList = decodeAtgdu(atgdu, asps);
+    frame->patchParamsList = decodeAtgdu(atgdu, atgl.atlas_tile_group_header(), asps);
     frame->blockToPatchMap = decodeBlockToPatchMap(atgdu, asps);
 
     x.frames.push_back(frame);
@@ -307,7 +307,7 @@ auto MivDecoder::decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList {
   return ViewParamsList{x};
 }
 
-auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
+auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTileGroupHeader &atgh,
                              const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList {
   auto x = vector<PatchParams>(atgdu.atgduTotalNumberOfPatches());
 
@@ -320,11 +320,11 @@ auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
     x[p].pdu2dSize(
         {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     x[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
-    x[p].pduDepthStart(pdu.pdu_depth_start());
+    x[p].pduDepthStart(pdu.pdu_depth_start() << atgh.atgh_pos_min_z_quantizer());
     x[p].pduViewId(pdu.pdu_view_id());
 
     if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-      x[p].pduDepthEnd(pdu.pdu_depth_end());
+      x[p].pduDepthEnd(pdu.pdu_depth_end() << atgh.atgh_pos_delta_max_z_quantizer());
     }
 
     x[p].pduEntityId(pdu.pdu_entity_id());

@@ -71,13 +71,18 @@ atgh_ref_atlas_frame_list_sps_flag=true
   }
 
   SECTION("Example 2") {
-    aspsV.front().asps_patch_size_quantizer_present_flag(true);
+    aspsV.front()
+        .asps_patch_size_quantizer_present_flag(true)
+        .asps_normal_axis_limits_quantization_enabled_flag(true)
+        .asps_normal_axis_max_delta_value_enabled_flag(true);
 
     x.atgh_type(AtghType::I_TILE_GRP)
         .atgh_ref_atlas_frame_list_sps_flag(true)
         .atgh_patch_size_x_info_quantizer(6)
         .atgh_patch_size_y_info_quantizer(5)
-        .atgh_adaptation_parameter_set_id(4);
+        .atgh_adaptation_parameter_set_id(4)
+        .atgh_pos_min_z_quantizer(3)
+        .atgh_pos_delta_max_z_quantizer(7);
 
     REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
 atgh_adaptation_parameter_set_id=4
@@ -85,11 +90,13 @@ atgh_address=0
 atgh_type=I_TILE_GRP
 atgh_atlas_frm_order_cnt_lsb=0
 atgh_ref_atlas_frame_list_sps_flag=true
+atgh_pos_min_z_quantizer=3
+atgh_pos_delta_max_z_quantizer=7
 atgh_patch_size_x_info_quantizer=6
 atgh_patch_size_y_info_quantizer=5
 )");
 
-    REQUIRE(bitCodingTest(x, 24, aspsV, afpsV));
+    REQUIRE(bitCodingTest(x, 32, aspsV, afpsV));
   }
 }
 
@@ -418,5 +425,61 @@ pdu_orientation_index( 2 )=FPO_NULL
 pdu_entity_id( 2 )=0
 )");
     REQUIRE(byteCodingTest(x, 16, vuh, vps, aspsV, afpsV));
+  }
+
+  SECTION("I_TILE_GRP with quantizers") {
+    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
+
+    auto vps = VpccParameterSet{};
+    vps.vps_extension_present_flag(true)
+        .geometry_information(0)
+        .gi_geometry_3d_coordinates_bitdepth_minus1(10);
+
+    auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
+    aspsV.front()
+        .asps_frame_width(4000)
+        .asps_frame_height(2000)
+        .asps_num_ref_atlas_frame_lists_in_asps(1)
+        .asps_normal_axis_limits_quantization_enabled_flag(true)
+        .asps_normal_axis_max_delta_value_enabled_flag(true);
+
+    const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
+
+    auto atgh = AtlasTileGroupHeader{};
+    atgh.atgh_type(AtghType::I_TILE_GRP)
+        .atgh_ref_atlas_frame_list_sps_flag(true)
+        .atgh_pos_min_z_quantizer(7)
+        .atgh_pos_delta_max_z_quantizer(5);
+
+    auto pdu1 = PatchDataUnit{};
+    pdu1.pdu_2d_size_x_minus1(10).pdu_2d_size_y_minus1(20).pdu_depth_start(31).pdu_depth_end(127);
+
+    const auto x = AtlasTileGroupLayerRBSP{
+        atgh, std::in_place, std::pair{AtgduPatchMode::I_INTRA, PatchInformationData{pdu1}}};
+
+    REQUIRE(toString(x) == R"(atgh_atlas_frame_parameter_set_id=0
+atgh_adaptation_parameter_set_id=0
+atgh_address=0
+atgh_type=I_TILE_GRP
+atgh_atlas_frm_order_cnt_lsb=0
+atgh_ref_atlas_frame_list_sps_flag=true
+atgh_pos_min_z_quantizer=7
+atgh_pos_delta_max_z_quantizer=5
+atgh_patch_size_x_info_quantizer=0
+atgh_patch_size_y_info_quantizer=0
+atgdu_patch_mode[ 0 ]=I_INTRA
+pdu_2d_pos_x( 0 )=0
+pdu_2d_pos_y( 0 )=0
+pdu_2d_size_x_minus1( 0 )=10
+pdu_2d_size_y_minus1( 0 )=20
+pdu_view_pos_x( 0 )=0
+pdu_view_pos_y( 0 )=0
+pdu_depth_start( 0 )=31
+pdu_depth_end( 0 )=127
+pdu_view_id( 0 )=0
+pdu_orientation_index( 0 )=FPO_NULL
+pdu_entity_id( 0 )=0
+)");
+    REQUIRE(byteCodingTest(x, 10, vuh, vps, aspsV, afpsV));
   }
 }

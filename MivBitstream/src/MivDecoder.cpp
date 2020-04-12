@@ -150,9 +150,6 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
 }
 
 auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
-  if (mode == MivDecoderMode::TMC2) {
-    return false;
-  }
   const auto &sequence_ = sequence(vuh);
   return all_of(cbegin(sequence_.atlas), cend(sequence_.atlas),
                 [=](const Atlas &atlas) { return !atlas.frames.empty(); });

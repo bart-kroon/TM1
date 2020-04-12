@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(MivBitstreamLib
+	"src/AccessUnit.cpp"
 	"src/AccessUnitDelimiterRBSP.cpp"
 	"src/AdaptationParameterSetRBSP.cpp"
 	"src/AtlasFrameParameterSetRBSP.cpp"

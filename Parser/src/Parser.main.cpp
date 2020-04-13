@@ -34,6 +34,7 @@
 #include <TMIV/MivBitstream/MivDecoder.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -47,25 +48,26 @@ using namespace TMIV::MivBitstream;
 
 int main(int argc, char *argv[]) {
   try {
-    if (argc != 3 || strcmp(argv[1], "-b") != 0) {
+    const auto args = vector(argv, argv + argc);
+
+    if (args.size() != 3 || strcmp(args[1], "-b") != 0) {
       clog << "Usage: Parser -b BITSTREAM" << endl;
       return 1;
     }
 
-    ifstream stream{argv[2], ios::binary};
+    ifstream stream{args[2], ios::binary};
     if (!stream.good()) {
       clog << "Failed to open bitstream for reading" << endl;
       return 1;
     }
 
-    auto decoder = MivDecoder{
-        stream,
-        [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-          return Depth10Frame{frameSize.x(), frameSize.y()};
-        },
-        [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-          return Texture444Frame{frameSize.x(), frameSize.y()};
-        }};
+    auto decoder = MivDecoder{stream,
+                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+                                return Depth10Frame{frameSize.x(), frameSize.y()};
+                              },
+                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+                                return Texture444Frame{frameSize.x(), frameSize.y()};
+                              }};
     decoder.decode();
     return 0;
   } catch (runtime_error &e) {

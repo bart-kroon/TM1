@@ -48,11 +48,14 @@ TEST_CASE("MivDecoder", "[MIV decoder]") {
     const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
       return Depth10Frame{};
     };
+    const auto occFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
+      return Mask{};
+    };
     const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
       return Texture444Frame{};
     };
 
-    MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
+    MivDecoder decoder{stream, geoFrameServer, occFrameServer, attrFrameServer};
 
     SECTION("Callbacks") {
       decoder.onSequence.emplace_back([](const VpccParameterSet &vps) {

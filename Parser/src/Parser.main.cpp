@@ -66,6 +66,9 @@ auto main(int argc, char *argv[]) -> int {
                                 return Depth10Frame{frameSize.x(), frameSize.y()};
                               },
                               [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+                                return Mask{frameSize.x(), frameSize.y()};
+                              },
+                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
                                 return Texture444Frame{frameSize.x(), frameSize.y()};
                               }};
     decoder.decode();

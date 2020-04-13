@@ -136,6 +136,12 @@ auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth
   return Depth10Frame{frameSize.x(), frameSize.y()};
 }
 
+auto occFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Mask {
+  cout << "occFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Mask{frameSize.x(), frameSize.y()};
+}
+
 auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {
   cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
        << ", frameSize=" << frameSize << '\n';
@@ -146,6 +152,6 @@ TEST_CASE("Decode", "[V-PCC bitstream]") {
   const auto bitstreamPath = GENERATE(testBitstreams[0]);
   cout << "\n\nTEST_CASE Decode: bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
-  auto decoder = MivDecoder{stream, geoFrameServer, attrFrameServer};
+  auto decoder = MivDecoder{stream, geoFrameServer, occFrameServer, attrFrameServer};
   decoder.decode();
 }

@@ -52,8 +52,8 @@ namespace TMIV::MivBitstream {
 // Decoder interface ///////////////////////////////////////////////////////////////////////////////
 
 MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
-                       AttrFrameServer attrFrameServer)
-    : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)},
+                       OccFrameServer occFrameServer, AttrFrameServer attrFrameServer)
+    : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)}, m_occFrameServer{move(occFrameServer)},
       m_attrFrameServer{move(attrFrameServer)}, m_ssvh{SampleStreamVpccHeader::decodeFrom(stream)} {
   cout << "=== Sample stream V-PCC header " << string(100 - 31, '=') << '\n'
        << m_ssvh << string(100, '=') << "\n"
@@ -138,6 +138,9 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
 
     aau.decGeoFrame =
         m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
+
+	aau.occFrame =
+        m_occFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
 
     atlas.frames.erase(atlas.frames.begin());
   }

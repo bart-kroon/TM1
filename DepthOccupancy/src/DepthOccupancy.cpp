@@ -90,7 +90,8 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
 
   for (const auto &inAtlas : inAtlases) {
     outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
+                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
+                            inAtlas.occupancy);
   }
 
   for (const auto &patch : m_accessUnitParams.patchParamsList) {

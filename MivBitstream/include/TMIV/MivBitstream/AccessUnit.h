@@ -53,6 +53,7 @@ struct AtlasAccessUnit {
   Common::Depth10Frame decGeoFrame;
   Common::Depth10Frame geoFrame;
   Common::Texture444Frame attrFrame;
+  Common::Frame<Common::YUV400P8> occFrame;
 
   Common::BlockToPatchMap blockToPatchMap;
   ViewParamsList viewParamsList;

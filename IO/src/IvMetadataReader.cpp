@@ -58,6 +58,10 @@ IvMetadataReader::IvMetadataReader(const Json &config)
                                     frameSize, int(atlasId));
       },
       [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+        return readFrame<YUV400P8>(config, "OutputDirectory", "OccupancyVideoDataPathFmt", frameId,
+                                   frameSize, int(atlasId));
+      },
+      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
         return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
                                             frameId, frameSize, int(atlasId)));
       });

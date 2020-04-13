@@ -358,10 +358,18 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     MVD16Frame atlasList;
 
     for (size_t i = 0; i < m_nbAtlas; ++i) {
-      TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
-                                   Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
+      TextureDepth16Frame atlas;
+      if (m_ExternalOccupancyCoding)
+        atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
+                 Depth16Frame(m_atlasSize.x(), m_atlasSize.y()),
+                 Mask(m_atlasSize.x(), m_atlasSize.y())};
+      else
+        atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
+                 Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
       atlas.texture.fillNeutral();
       atlas.depth.fillZero();
+      if (m_ExternalOccupancyCoding)
+		  atlas.occupancy.fillZero();
       atlasList.push_back(move(atlas));
     }
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
@@ -397,6 +405,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
 
   auto &textureAtlasMap = currentAtlas.texture;
   auto &depthAtlasMap = currentAtlas.depth;
+  auto &occupancyAtlasMap = currentAtlas.occupancy;
 
   const auto &textureViewMap = currentView.texture;
   const auto &depthViewMap = currentView.depth;
@@ -447,6 +456,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
 
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+            if (m_ExternalOccupancyCoding)
+				occupancyAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
             continue;
           }
 
@@ -468,6 +479,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
+          if (depth > 0 && m_ExternalOccupancyCoding)
+            occupancyAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 255;
         }
       }
     }

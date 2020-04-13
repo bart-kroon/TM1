@@ -54,6 +54,8 @@ class MivDecoder {
 public: // Frame servers
   using GeoFrameServer = std::function<Common::Depth10Frame(
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+  using OccFrameServer = std::function<Common::Mask(std::uint8_t atlasId, std::uint32_t frameId,
+                                                    Common::Vec2i frameSize)>;
   using AttrFrameServer = std::function<Common::Texture444Frame(
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
 
@@ -61,9 +63,11 @@ public: // Decoder interface
   // Construct a MivDecoder and read the sample stream V-PCC header
   //
   // This version of TMIV does not implement video data sub bitstreams so we need to smuggle in
-  // those frames using a callback.  The attribute server will return empty frames if there is no
+  // those frames using a callback.  The occupancy server will return empty frames if there is no
+  // occupancy. The attribute server will return empty frames if there is no
   // attribute. There is only one attribute and that is texture.
-  MivDecoder(std::istream &stream, GeoFrameServer geoFrameServer, AttrFrameServer attrFrameServer);
+  MivDecoder(std::istream &stream, GeoFrameServer geoFrameServer, OccFrameServer occFrameServer,
+             AttrFrameServer attrFrameServer);
 
   // Decode the next V-PCC unit
   //
@@ -146,6 +150,7 @@ private: // Parsers
 private: // Internal decoder state
   std::istream &m_stream;
   GeoFrameServer m_geoFrameServer;
+  OccFrameServer m_occFrameServer;
   AttrFrameServer m_attrFrameServer;
   SampleStreamVpccHeader m_ssvh;
 

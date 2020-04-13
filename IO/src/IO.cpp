@@ -68,6 +68,13 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     x.msp().msp_depth_low_quality_flag(node.asBool());
   }
 
+  if (config.require("GroupBasedEncoder").require("AtlasConstructor").isPresent("ExternalOccupancyCoding")) {
+    auto node = config.require("GroupBasedEncoder")
+                    .require("AtlasConstructor")
+                    .optional("ExternalOccupancyCoding");
+    x.msp().msp_occupancy_subbitstream_present_flag(node.asBool());
+  }
+
   const auto numGroups = unsigned(config.require("numGroups").asInt());
   if (numGroups < 1) {
     throw runtime_error("Require numGroups >= 1");
@@ -195,6 +202,8 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
                  int(atlasId));
     }
     writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
+    if (frame[atlasId].occupancy.getHeight() != 0 && frame[atlasId].occupancy.getWidth()!=0)
+		writeFrame(config, "OccupancyVideoDataPathFmt", frame[atlasId].occupancy, frameIndex, int(atlasId));
   }
 }
 

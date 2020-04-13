@@ -167,10 +167,13 @@ template <typename FORMAT> struct TextureDepthFrame {
   TextureFrame texture;
   Frame<FORMAT> depth;
   EntityMap entities{};
+  Mask occupancy{};
 
   TextureDepthFrame() = default;
   TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)
       : texture{std::move(texture_)}, depth{std::move(depth_)} {}
+  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, Mask occupancy_)
+      : texture{std::move(texture_)}, depth{std::move(depth_)}, occupancy{std::move(occupancy_)} {}
 };
 using TextureDepth10Frame = TextureDepthFrame<YUV400P10>;
 using TextureDepth16Frame = TextureDepthFrame<YUV400P16>;

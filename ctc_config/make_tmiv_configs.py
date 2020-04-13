@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # The copyright in this software is being made available under the BSD
-# License, included below. This software may be subject to other third party
+# License, included below.  This software may be subject to other third party
 # and contributor rights, including patent rights, and no such rights are
 # granted under this license.
 #
@@ -23,7 +23,7 @@
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS'
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
 # BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 # SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -31,7 +31,6 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
 import json
 import os
 import sys
@@ -122,7 +121,10 @@ class TestConfiguration:
 
 	def geometryVideoDataPathFmt(self):
 		return 'ATL_S{}_{}_Td_c{{:02}}_{{}}x{{}}_yuv420p10le.yuv'.format(self.seqId, self.testPoint)
-		
+
+	def occupancyVideoDataPathFmt(self):
+		return 'ATL_S{}_{}_To_c{{:02}}_{{}}x{{}}_yuv420p.yuv'.format(self.seqId, self.testPoint)
+
 	def atlasMetadataPath(self):
 		return 'ATL_S{}_{}_Tm_c00.bit'.format(self.seqId, self.testPoint)
 
@@ -167,6 +169,7 @@ class TestConfiguration:
 			'OutputDirectory': self.outputDirectory(),
 			'AttributeVideoDataPathFmt': self.attributeVideoDataPathFmt(),
 			'GeometryVideoDataPathFmt': self.geometryVideoDataPathFmt(),
+			'OccupancyVideoDataPathFmt': self.occupancyVideoDataPathFmt(),
 			'AtlasMetadataPath': self.atlasMetadataPath()
 		}
 
@@ -182,8 +185,7 @@ class DecoderConfiguration(TestConfiguration):
 		print("Decoder configuration: {} S{} {}".format(anchorId, seqId, testPoint))
 
 	def outputTexturePath(self):
-		return '{}_S{}_{}_Tt_{}_{{}}x{{}}_yuv420p10le.yuv'.format(
-			self.anchorId, self.seqId, self.testPoint, self.outputCameraName)
+		return '{}_S{}_{}_Tt_{}_{{}}x{{}}_yuv420p10le.yuv'.format(self.anchorId, self.seqId, self.testPoint, self.outputCameraName)
 
 	def ViewWeightingSynthesizer(self):
 		return {
@@ -247,12 +249,10 @@ class DecoderConfiguration(TestConfiguration):
 		return self.testPoint
 
 	def path(self):
-		return '{0}/S{1}/{2}/TMIV_{0}_S{1}_{3}_{4}.json'.format(
-			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName)
+		return '{0}/S{1}/{2}/TMIV_{0}_S{1}_{3}_{4}.json'.format(self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName)
 
 	def wspsnrPath(self):
-		return '{0}/S{1}/{2}/WSPSNR_{0}_S{1}_{3}_{4}.json'.format(
-			self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName)
+		return '{0}/S{1}/{2}/WSPSNR_{0}_S{1}_{3}_{4}.json'.format(self.anchorId, self.seqId, self.testPointUnlessR0(), self.testPoint, self.outputCameraName)
 
 	def originalFilePath(self, camera):
 		path = '{}_texture_{}x{}_yuv420p10le.yuv'.format(camera['Name'], camera['Resolution'][0], camera['Resolution'][1])
@@ -319,17 +319,17 @@ class EncoderConfiguration(TestConfiguration):
 	def sourceCameraNames(self):
 		if self.anchorId == 'V17':
 			return {
-				'A': [ 'v0', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14' ],
-				'B': [ 'v0', 'v1', 'v4', 'v8', 'v11', 'v12', 'v13', 'v17' ],
-				'C': [ 'v1', 'v4', 'v5', 'v8', 'v9' ],
-				'D': [ 'v0', 'v3', 'v5', 'v6', 'v9', 'v10', 'v12', 'v15' ],
-				'E': [ 'v1', 'v3', 'v5', 'v7', 'v9', 'v11', 'v13' ],
-				'J': [ 'v00', 'v02', 'v04', 'v10', 'v12', 'v14', 'v20', 'v22', 'v24' ],
-				'L': [ 'v00', 'v02', 'v04', 'v06', 'v08' ],
-				'N': [ 'v0', 'v1', 'v3', 'v5', 'v7', 'v9' ],
-				'P': [ 'v0', 'v2', 'v4', 'v6', 'v8' ],
-				'U': [ 'v0', 'v2', 'v4', 'v6', 'v8' ],
-				'T': [ 'v0', 'v2', 'v4', 'v6', 'v8' ]
+				'A': ['v0', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14'],
+				'B': ['v0', 'v1', 'v4', 'v8', 'v11', 'v12', 'v13', 'v17'],
+				'C': ['v1', 'v4', 'v5', 'v8', 'v9'],
+				'D': ['v0', 'v3', 'v5', 'v6', 'v9', 'v10', 'v12', 'v15'],
+				'E': ['v1', 'v3', 'v5', 'v7', 'v9', 'v11', 'v13'],
+				'J': ['v00', 'v02', 'v04', 'v10', 'v12', 'v14', 'v20', 'v22', 'v24'],
+				'L': ['v00', 'v02', 'v04', 'v06', 'v08'],
+				'N': ['v0', 'v1', 'v3', 'v5', 'v7', 'v9'],
+				'P': ['v0', 'v2', 'v4', 'v6', 'v8'],
+				'U': ['v0', 'v2', 'v4', 'v6', 'v8'],
+				'T': ['v0', 'v2', 'v4', 'v6', 'v8']
 			}[self.seqId]
 		return self.allSourceCameraNames()
 
@@ -494,11 +494,10 @@ class EncoderConfiguration(TestConfiguration):
 			'Aggregator': {},
 			'PackerMethod': 'Packer',
 			'Packer': self.packer(),
-			'AtlasResolution': [
-				self.atlasWidth(),
-				self.atlasHeight()
-			],
-			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame()
+			'AtlasResolution': [self.atlasWidth(),
+				self.atlasHeight()],
+			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame(),
+			'ExternalOccupancyCoding': False
 		}
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			config['EntityEncodeRange'] = [0, self.maxEntities()]
@@ -560,8 +559,8 @@ class EncoderConfiguration(TestConfiguration):
 			stream.write('InputChromaFormat: 420\n')
 			stream.write('FrameRate: 30\n')
 			stream.write('FrameSkip: 0\n')
-			stream.write('SourceWidth: {}\n'.format(self.atlasWidth()//scale))
-			stream.write('SourceHeight: {}\n'.format(self.atlasHeight()//scale))
+			stream.write('SourceWidth: {}\n'.format(self.atlasWidth() // scale))
+			stream.write('SourceHeight: {}\n'.format(self.atlasHeight() // scale))
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('Level: 5.2\n')
@@ -584,7 +583,7 @@ def generate(anchorIds, seqIds, testPoints):
 
 if __name__ == '__main__':
 	if sys.version_info[0] < 3:
-		print ('Error: Python version < 3')
+		print('Error: Python version < 3')
 		exit(-1)
 
 	if len(sys.argv) > 2 or len(sys.argv) == 2 and sys.argv[1] == '--help':

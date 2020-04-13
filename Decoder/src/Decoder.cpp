@@ -67,6 +67,7 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
   m_geometryScaler.inplaceScale(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
+  // Occupancy Filtering: Basel ToDo
   return m_renderer->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Decoder

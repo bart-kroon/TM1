@@ -336,7 +336,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 
     // Set ATGH parameters
     const auto &gi = m_outIvSequenceParams.vps.geometry_information(atlasId);
-    atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 3);
+    atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }

@@ -93,6 +93,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_outIvSequenceParams.msp() = m_inIvSequenceParams.msp();
   m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
   m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;
+  setGiGeometry3dCoordinatesBitdepthMinus1();
 
   m_isBasicView = move(isBasicView);
 
@@ -111,6 +112,20 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   }
 
   return m_outIvSequenceParams;
+}
+
+void AtlasConstructor::setGiGeometry3dCoordinatesBitdepthMinus1() {
+  uint8_t numBitsMinus1 = 9; // Main 10
+  for (auto &vp : m_outIvSequenceParams.viewParamsList) {
+    const auto size = max(vp.ci.ci_projection_plane_width_minus1() + 1,
+                          vp.ci.ci_projection_plane_height_minus1() + 1);
+    numBitsMinus1 = max(numBitsMinus1, static_cast<uint8_t>(ceilLog2(size) - 1));
+  }
+  for (uint8_t atlasId = 0; atlasId <= m_outIvSequenceParams.vps.vps_atlas_count_minus1();
+       ++atlasId) {
+    m_outIvSequenceParams.vps.geometry_information(atlasId)
+        .gi_geometry_3d_coordinates_bitdepth_minus1(numBitsMinus1);
+  }
 }
 
 void AtlasConstructor::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
@@ -323,19 +338,11 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
     }
 
     // Set AFPS parameters
-    uint16_t maxProjectionPlaneWidthMinus1 = 0;
-    uint16_t maxProjectionPlaneHeightMinus1 = 0;
-    for (auto &vp : m_outIvSequenceParams.viewParamsList) {
-      maxProjectionPlaneWidthMinus1 =
-          max(maxProjectionPlaneWidthMinus1, vp.ci.ci_projection_plane_width_minus1());
-      maxProjectionPlaneHeightMinus1 =
-          max(maxProjectionPlaneHeightMinus1, vp.ci.ci_projection_plane_height_minus1());
-    }
-    atlas.afps.afps_3d_pos_x_bit_count_minus1(ceilLog2(maxProjectionPlaneWidthMinus1 + 1) - 1);
-    atlas.afps.afps_3d_pos_y_bit_count_minus1(ceilLog2(maxProjectionPlaneHeightMinus1 + 1) - 1);
+    const auto &gi = m_outIvSequenceParams.vps.geometry_information(uint8_t(atlasId));
+    atlas.afps.afps_3d_pos_x_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
+    atlas.afps.afps_3d_pos_y_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
 
     // Set ATGH parameters
-    const auto &gi = m_outIvSequenceParams.vps.geometry_information(atlasId);
     atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());

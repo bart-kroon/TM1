@@ -277,6 +277,9 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   bitstream.writeBits(atgh_atlas_frm_order_cnt_lsb(),
                       asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);
 
+  LIMITATION(atgh_ref_atlas_frame_list_sps_flag());
+  LIMITATION(asps.ref_list_struct(0).num_ref_entries() <= 1);
+
   VERIFY_VPCCBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() > 0 ||
                        !atgh_ref_atlas_frame_list_sps_flag());
   if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {

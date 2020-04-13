@@ -134,13 +134,13 @@ auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth
   cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
        << ", frameSize=" << frameSize << '\n';
   return Depth10Frame{frameSize.x(), frameSize.y()};
-};
+}
 
 auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {
   cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
        << ", frameSize=" << frameSize << '\n';
   return Texture444Frame{frameSize.x(), frameSize.y()};
-};
+}
 
 TEST_CASE("Decode", "[V-PCC bitstream]") {
   const auto bitstreamPath = GENERATE(testBitstreams[0]);

@@ -277,6 +277,9 @@ void AtlasTileGroupHeader::encodeTo(OutputBitstream &bitstream,
   bitstream.writeBits(atgh_atlas_frm_order_cnt_lsb(),
                       asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);
 
+  LIMITATION(atgh_ref_atlas_frame_list_sps_flag());
+  LIMITATION(asps.ref_list_struct(0).num_ref_entries() <= 1);
+
   VERIFY_VPCCBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() > 0 ||
                        !atgh_ref_atlas_frame_list_sps_flag());
   if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {
@@ -373,11 +376,13 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const VpccUnitHeader &
 
   const auto pdu_depth_start_num_bits =
       gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_min_z_quantizer() + 2;
+  VERIFY_VPCCBITSTREAM(pdu_depth_start_num_bits >= 0);
   x.pdu_depth_start(bitstream.readBits<uint32_t>(pdu_depth_start_num_bits));
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto pdu_depth_end_num_bits =
         gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_delta_max_z_quantizer() + 2;
+    VERIFY_VPCCBITSTREAM(pdu_depth_end_num_bits >= 0);
     x.pdu_depth_end(bitstream.readBits<uint32_t>(pdu_depth_end_num_bits));
   }
 
@@ -430,11 +435,13 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const VpccUnitHeader &v
 
   const auto pdu_depth_start_num_bits =
       gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_min_z_quantizer() + 2;
+  VERIFY_VPCCBITSTREAM(pdu_depth_start_num_bits >= 0);
   bitstream.writeBits(pdu_depth_start(), pdu_depth_start_num_bits);
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto pdu_depth_end_num_bits =
         gi.gi_geometry_3d_coordinates_bitdepth_minus1() - atgh.atgh_pos_delta_max_z_quantizer() + 2;
+    VERIFY_VPCCBITSTREAM(pdu_depth_end_num_bits >= 0);
     bitstream.writeBits(pdu_depth_end(), pdu_depth_end_num_bits);
   }
 

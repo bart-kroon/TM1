@@ -69,6 +69,7 @@ public:
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
+  void setGiGeometry3dCoordinatesBitdepthMinus1();
   static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
       -> Common::MVD16Frame;
   static auto yuvSampler(const Common::EntityMapList &in)

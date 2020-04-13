@@ -329,6 +329,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
         .asps_frame_height(m_atlasSize.y())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
+		.asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
 
     // Record patch alignment -> asps_log2_patch_packing_block_size

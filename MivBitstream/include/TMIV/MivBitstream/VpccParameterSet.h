@@ -226,12 +226,14 @@ public:
   [[nodiscard]] constexpr auto msp_geometry_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto msp_num_groups_minus1() const noexcept;
   [[nodiscard]] constexpr auto msp_max_entities_minus1() const noexcept;
+  [[nodiscard]] constexpr auto msp_fully_occupied_flag() const noexcept;
   [[nodiscard]] constexpr auto msp_occupancy_subbitstream_present_flag() const noexcept;
 
   constexpr auto msp_depth_low_quality_flag(const bool value) noexcept -> auto &;
   constexpr auto msp_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto msp_num_groups_minus1(const unsigned value) noexcept -> auto &;
   constexpr auto msp_max_entities_minus1(const unsigned value) noexcept -> auto &;
+  constexpr auto msp_fully_occupied_flag(const bool value) noexcept -> auto &;
   constexpr auto msp_occupancy_subbitstream_present_flag(const bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const MivSequenceParams &x) -> std::ostream &;
@@ -248,6 +250,7 @@ private:
   bool m_msp_geometry_scale_enabled_flag{};
   unsigned m_msp_num_groups_minus1{};
   unsigned m_msp_max_entities_minus1{};
+  bool m_msp_fully_occupied_flag{};
   bool m_msp_occupancy_subbitstream_present_flag{};
 };
 

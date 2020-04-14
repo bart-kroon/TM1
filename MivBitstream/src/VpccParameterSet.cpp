@@ -423,6 +423,7 @@ auto operator<<(ostream &stream, const MivSequenceParams &x) -> ostream & {
                 << x.msp_geometry_scale_enabled_flag()
                 << "\nmsp_num_groups_minus1=" << x.msp_num_groups_minus1()
                 << "\nmsp_max_entities_minus1=" << x.msp_max_entities_minus1()
+                << "\nmsp_fully_occupied_flag=" << boolalpha << x.msp_fully_occupied_flag()
                 << "\nmsp_occupancy_subbitstream_present_flag=" << boolalpha
                 << x.msp_occupancy_subbitstream_present_flag() << '\n';
 }
@@ -433,6 +434,7 @@ auto MivSequenceParams::decodeFrom(InputBitstream &bitstream) -> MivSequencePara
   x.msp_geometry_scale_enabled_flag(bitstream.getFlag());
   x.msp_num_groups_minus1(bitstream.getUExpGolomb<unsigned>());
   x.msp_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
+  x.msp_fully_occupied_flag(bitstream.getFlag());
   x.msp_occupancy_subbitstream_present_flag(bitstream.getFlag());
   return x;
 }
@@ -442,6 +444,7 @@ void MivSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(msp_geometry_scale_enabled_flag());
   bitstream.putUExpGolomb(msp_num_groups_minus1());
   bitstream.putUExpGolomb(msp_max_entities_minus1());
+  bitstream.putFlag(msp_fully_occupied_flag());
   bitstream.putFlag(msp_occupancy_subbitstream_present_flag());
 }
 

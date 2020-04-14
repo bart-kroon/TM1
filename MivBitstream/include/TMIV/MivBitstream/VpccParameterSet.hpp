@@ -176,6 +176,10 @@ constexpr auto MivSequenceParams::msp_max_entities_minus1() const noexcept {
   return m_msp_max_entities_minus1;
 }
 
+constexpr auto MivSequenceParams::msp_fully_occupied_flag() const noexcept {
+  return m_msp_fully_occupied_flag;
+}
+
 constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag() const noexcept {
   return m_msp_occupancy_subbitstream_present_flag;
 }
@@ -200,6 +204,12 @@ constexpr auto MivSequenceParams::msp_max_entities_minus1(const unsigned value) 
   return *this;
 }
 
+constexpr auto MivSequenceParams::msp_fully_occupied_flag(const bool value) noexcept
+    -> auto & {
+  m_msp_fully_occupied_flag = value;
+  return *this;
+}
+
 constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(const bool value) noexcept
     -> auto & {
   m_msp_occupancy_subbitstream_present_flag = value;
@@ -211,6 +221,7 @@ constexpr auto MivSequenceParams::operator==(const MivSequenceParams &other) con
          msp_geometry_scale_enabled_flag() == other.msp_geometry_scale_enabled_flag() &&
          msp_num_groups_minus1() == other.msp_num_groups_minus1() &&
          msp_max_entities_minus1() == other.msp_max_entities_minus1() &&
+         msp_fully_occupied_flag() == other.msp_fully_occupied_flag() &&
          msp_occupancy_subbitstream_present_flag() ==
              other.msp_occupancy_subbitstream_present_flag();
 }

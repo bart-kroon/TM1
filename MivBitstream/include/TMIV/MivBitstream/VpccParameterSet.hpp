@@ -176,11 +176,13 @@ constexpr auto MivSequenceParams::msp_max_entities_minus1() const noexcept {
   return m_msp_max_entities_minus1;
 }
 
-constexpr auto MivSequenceParams::msp_fully_occupied_flag() const noexcept {
+constexpr auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
+  //return m_msp_fully_occupied_flag[atlasIndex];
   return m_msp_fully_occupied_flag;
 }
 
-constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag() const noexcept {
+constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(uint8_t atlasIndex) const
+    noexcept {
   return m_msp_occupancy_subbitstream_present_flag;
 }
 
@@ -204,13 +206,20 @@ constexpr auto MivSequenceParams::msp_max_entities_minus1(const unsigned value) 
   return *this;
 }
 
-constexpr auto MivSequenceParams::msp_fully_occupied_flag(const bool value) noexcept
+constexpr void MivSequenceParams::allocateFlagVectors(std::uint8_t size) {
+  //  m_msp_fully_occupied_flag.resize(size);
+}
+	
+constexpr auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex,
+                                                         const bool value) noexcept
     -> auto & {
+//  m_msp_fully_occupied_flag[atlasIndex] = value;
   m_msp_fully_occupied_flag = value;
   return *this;
 }
 
-constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(const bool value) noexcept
+constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(
+    uint8_t atlasIndex, const bool value) noexcept
     -> auto & {
   m_msp_occupancy_subbitstream_present_flag = value;
   return *this;
@@ -221,9 +230,9 @@ constexpr auto MivSequenceParams::operator==(const MivSequenceParams &other) con
          msp_geometry_scale_enabled_flag() == other.msp_geometry_scale_enabled_flag() &&
          msp_num_groups_minus1() == other.msp_num_groups_minus1() &&
          msp_max_entities_minus1() == other.msp_max_entities_minus1() &&
-         msp_fully_occupied_flag() == other.msp_fully_occupied_flag() &&
-         msp_occupancy_subbitstream_present_flag() ==
-             other.msp_occupancy_subbitstream_present_flag();
+         msp_fully_occupied_flag(0) == other.msp_fully_occupied_flag(0) &&
+         msp_occupancy_subbitstream_present_flag(0) ==
+             other.msp_occupancy_subbitstream_present_flag(0);
 }
 
 constexpr auto MivSequenceParams::operator!=(const MivSequenceParams &other) const noexcept {

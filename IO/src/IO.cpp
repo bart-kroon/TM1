@@ -72,8 +72,8 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     auto node = config.require("GroupBasedEncoder")
                     .require("AtlasConstructor")
                     .optional("ExternalOccupancyCoding");
-    x.msp().msp_fully_occupied_flag(false);
-    x.msp().msp_occupancy_subbitstream_present_flag(node.asBool());
+    x.msp().msp_fully_occupied_flag(0, false);
+    x.msp().msp_occupancy_subbitstream_present_flag(0, node.asBool());
   }
 
   const auto numGroups = unsigned(config.require("numGroups").asInt());

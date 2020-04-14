@@ -436,6 +436,13 @@ auto MivSequenceParams::decodeFrom(InputBitstream &bitstream) -> MivSequencePara
   x.msp_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
   x.msp_fully_occupied_flag(0,bitstream.getFlag());
   x.msp_occupancy_subbitstream_present_flag(0,bitstream.getFlag());
+  /*
+  for (auto i = 0; i <= vps_atlas_count_minus1; i++) {
+    x.msp_fully_occupied_flag(i,bitstream.getFlag());
+    if (!x.msp_fully_occupied_flag(i))
+      x.msp_occupancy_subbitstream_present_flag(i,bitstream.getFlag());
+  }
+  */
   return x;
 }
 
@@ -446,6 +453,13 @@ void MivSequenceParams::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(msp_max_entities_minus1());
   bitstream.putFlag(msp_fully_occupied_flag(0));
   bitstream.putFlag(msp_occupancy_subbitstream_present_flag(0));
+  /*
+  for (auto i = 0; i < m_msp_fully_occupied_flag.size(); i++) {
+    bitstream.putFlag(msp_fully_occupied_flag(i));
+    if (!msp_fully_occupied_flag(i))
+      bitstream.putFlag(msp_occupancy_subbitstream_present_flag(i));
+  }
+  */
 }
 
 auto VpccParameterSet::vps_atlas_count_minus1() const noexcept -> uint8_t {

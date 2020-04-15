@@ -7,6 +7,7 @@ add_library(MivBitstreamLib
 	"src/AtlasFrameParameterSetRBSP.cpp"
 	"src/AtlasSequenceParameterSetRBSP.cpp"
 	"src/AtlasTileGroupLayerRBSP.cpp"
+	"src/BitrateReport.h"
 	"src/IvSequenceParams.cpp"
 	"src/IvAccessUnitParams.cpp"	
 	"src/MivDecoder.cpp"

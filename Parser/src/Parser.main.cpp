@@ -68,7 +68,10 @@ auto main(int argc, char *argv[]) -> int {
                               [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
                                 return Texture444Frame{frameSize.x(), frameSize.y()};
                               }};
+    decoder.enableBitrateReporting();
     decoder.decode();
+    ofstream bitrateReport{string(argv[2]) + ".csv"};
+    decoder.printBitrateReport(bitrateReport);
     return 0;
   } catch (runtime_error &e) {
     clog << e.what() << endl;

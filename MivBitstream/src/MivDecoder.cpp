@@ -43,6 +43,7 @@
 #include <sstream>
 #include <variant>
 
+#include "BitrateReport.h"
 #include "verify.h"
 
 using namespace std;
@@ -60,6 +61,8 @@ MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
        << endl;
 }
 
+MivDecoder::~MivDecoder() = default;
+
 auto MivDecoder::decodeVpccUnit() -> bool {
   cout << "\n=== V-PCC unit " << string(100 - 15, '=') << '\n';
   VERIFY_VPCCBITSTREAM(m_stream.good());
@@ -73,6 +76,11 @@ auto MivDecoder::decodeVpccUnit() -> bool {
   cout << vu;
 
   const auto &vuh = vu.vpcc_unit_header();
+
+  if (m_bitrateReport) {
+    m_bitrateReport->add(vuh, ssvu.ssvu_vpcc_unit_size());
+  }
+
   decodeVpccPayload(vuh, vu.vpcc_payload().payload());
   cout << string(100, '=') << "\n" << endl;
 
@@ -91,6 +99,17 @@ auto MivDecoder::decodeVpccUnit() -> bool {
 
 void MivDecoder::decode() {
   while (!m_stop && decodeVpccUnit()) {
+  }
+}
+
+void MivDecoder::enableBitrateReporting() {
+  assert(!m_bitrateReport);
+  m_bitrateReport = make_unique<BitrateReport>();
+}
+
+void MivDecoder::printBitrateReport(std::ostream &stream) const {
+  if (m_bitrateReport) {
+    m_bitrateReport->printTo(stream);
   }
 }
 
@@ -201,6 +220,10 @@ void MivDecoder::decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
   if (nu.nal_unit_header().nal_layer_id() != 0) {
     cout << "WARNING: Ignoring NAL unit with nal_layer_id != 0\n";
     return;
+  }
+
+  if (m_bitrateReport) {
+    m_bitrateReport->add(nu.nal_unit_header(), nu.size());
   }
 
   if (NalUnitType::NAL_TRAIL <= nu.nal_unit_header().nal_unit_type() &&

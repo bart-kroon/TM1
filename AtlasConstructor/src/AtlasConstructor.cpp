@@ -112,6 +112,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   // views only
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {
     if (!m_isBasicView[viewId] || m_maxEntities > 1) {
+      if (!m_ExternalOccupancyCoding)
 		m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
   }

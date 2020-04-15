@@ -112,11 +112,11 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   // views only
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {
     if (!m_isBasicView[viewId] || m_maxEntities > 1) {
-      if (!m_ExternalOccupancyCoding)
 		m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
   }
-
+  m_outIvSequenceParams.msp().allocateFlagVectors(
+      m_outIvSequenceParams.vps.vps_atlas_count_minus1() + 1);
   return m_outIvSequenceParams;
 }
 

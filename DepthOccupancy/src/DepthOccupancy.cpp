@@ -55,8 +55,20 @@ DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThresholdIfSet)
   }
 }
 
-DepthOccupancy::DepthOccupancy(const Json & /*unused*/, const Json &nodeConfig)
-    : DepthOccupancy{uint16_t(nodeConfig.require("depthOccMapThresholdIfSet").asInt())} {}
+DepthOccupancy::DepthOccupancy(const Json &rootNode, const Json &nodeConfig) {
+
+  m_depthOccMapThresholdIfSet= uint16_t(nodeConfig.require("depthOccMapThresholdIfSet").asInt());
+
+  if (rootNode.require("GroupBasedEncoder")
+          .require("AtlasConstructor")
+          .isPresent("ExternalOccupancyCoding")) {
+    bool m_ExternalOccupancyCoding = rootNode.require("GroupBasedEncoder")
+                    .require("AtlasConstructor")
+                    .optional("ExternalOccupancyCoding").asBool();
+    if (m_ExternalOccupancyCoding)
+      m_depthOccMapThresholdIfSet = 0; // Use full range for depth maps since external occupancy coding is chosen
+  }
+} // namespace TMIV::DepthOccupancy
 
 auto DepthOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
     -> const MivBitstream::IvSequenceParams & {

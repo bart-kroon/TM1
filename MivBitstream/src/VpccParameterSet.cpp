@@ -417,49 +417,46 @@ void AttributeInformation::encodeTo(OutputBitstream &bitstream, const VpccParame
   }
 }
 
-auto operator<<(ostream &stream, const MivSequenceParams &x) -> ostream & {
-  return stream << "msp_depth_low_quality_flag=" << boolalpha << x.msp_depth_low_quality_flag()
-                << "\nmsp_geometry_scale_enabled_flag=" << boolalpha
-                << x.msp_geometry_scale_enabled_flag()
-                << "\nmsp_num_groups_minus1=" << x.msp_num_groups_minus1()
-                << "\nmsp_max_entities_minus1=" << x.msp_max_entities_minus1()
-                << "\nmsp_fully_occupied_flag(0)=" << boolalpha << x.msp_fully_occupied_flag(0)
-                << "\nmsp_occupancy_subbitstream_present_flag(0)=" << boolalpha
-                << x.msp_occupancy_subbitstream_present_flag(0) << '\n';
+auto operator<<(ostream &stream, const MivSequenceParams &x)
+    -> ostream & {
+  stream << "msp_depth_low_quality_flag=" << boolalpha << x.msp_depth_low_quality_flag()
+         << "\nmsp_geometry_scale_enabled_flag=" << boolalpha << x.msp_geometry_scale_enabled_flag()
+         << "\nmsp_num_groups_minus1=" << x.msp_num_groups_minus1()
+         << "\nmsp_max_entities_minus1=" << x.msp_max_entities_minus1();
+  for (int j = 0; j < x.m_msp_fully_occupied_flag.size(); ++j) { 
+    stream << "\nmsp_fully_occupied_flag( " << int(j) << " )=" << boolalpha
+           << x.msp_fully_occupied_flag(j) << "\nmsp_occupancy_subbitstream_present_flag( "
+           << int(j) << " )=" << boolalpha << x.msp_occupancy_subbitstream_present_flag(j);
+  }
+  stream << '\n';
+  return stream;
 }
 
-auto MivSequenceParams::decodeFrom(InputBitstream &bitstream) -> MivSequenceParams {
+auto MivSequenceParams::decodeFrom(InputBitstream &bitstream, uint8_t vps_atlas_count_minus1)
+    -> MivSequenceParams {
   auto x = MivSequenceParams{};
   x.msp_depth_low_quality_flag(bitstream.getFlag());
   x.msp_geometry_scale_enabled_flag(bitstream.getFlag());
   x.msp_num_groups_minus1(bitstream.getUExpGolomb<unsigned>());
   x.msp_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
-  x.msp_fully_occupied_flag(0,bitstream.getFlag());
-  x.msp_occupancy_subbitstream_present_flag(0,bitstream.getFlag());
-  /*
   for (auto i = 0; i <= vps_atlas_count_minus1; i++) {
-    x.msp_fully_occupied_flag(i,bitstream.getFlag());
+    x.msp_fully_occupied_flag(i, bitstream.getFlag());
     if (!x.msp_fully_occupied_flag(i))
-      x.msp_occupancy_subbitstream_present_flag(i,bitstream.getFlag());
+      x.msp_occupancy_subbitstream_present_flag(i, bitstream.getFlag());
   }
-  */
   return x;
 }
 
-void MivSequenceParams::encodeTo(OutputBitstream &bitstream) const {
+void MivSequenceParams::encodeTo(OutputBitstream &bitstream, uint8_t vps_atlas_count_minus1) const {
   bitstream.putFlag(msp_depth_low_quality_flag());
   bitstream.putFlag(msp_geometry_scale_enabled_flag());
   bitstream.putUExpGolomb(msp_num_groups_minus1());
   bitstream.putUExpGolomb(msp_max_entities_minus1());
-  bitstream.putFlag(msp_fully_occupied_flag(0));
-  bitstream.putFlag(msp_occupancy_subbitstream_present_flag(0));
-  /*
-  for (auto i = 0; i < m_msp_fully_occupied_flag.size(); i++) {
+  for (auto i = 0; i <= vps_atlas_count_minus1; i++) {
     bitstream.putFlag(msp_fully_occupied_flag(i));
     if (!msp_fully_occupied_flag(i))
       bitstream.putFlag(msp_occupancy_subbitstream_present_flag(i));
   }
-  */
 }
 
 auto VpccParameterSet::vps_atlas_count_minus1() const noexcept -> uint8_t {
@@ -730,7 +727,8 @@ auto VpccParameterSet::decodeFrom(istream &stream) -> VpccParameterSet {
     x.vps_miv_extension_flag(bitstream.getFlag());
 
     if (x.vps_miv_extension_flag()) {
-      x.miv_sequence_params() = MivSequenceParams::decodeFrom(bitstream);
+      x.miv_sequence_params() =
+          MivSequenceParams::decodeFrom(bitstream, x.vps_atlas_count_minus1());
       x.vps_miv_sequence_vui_params_present_flag(bitstream.getFlag());
 
       if (x.vps_miv_sequence_vui_params_present_flag()) {
@@ -791,7 +789,7 @@ void VpccParameterSet::encodeTo(ostream &stream) const {
     bitstream.putFlag(vps_miv_extension_flag());
 
     if (vps_miv_extension_flag()) {
-      miv_sequence_params().encodeTo(bitstream);
+      miv_sequence_params().encodeTo(bitstream, vps_atlas_count_minus1());
 
       bitstream.putFlag(vps_miv_sequence_vui_params_present_flag());
 
@@ -839,6 +837,7 @@ auto merge(const vector<const VpccParameterSet *> &vps) -> VpccParameterSet {
 
     if (x.vps_miv_extension_flag()) {
       VERIFY_MIVBITSTREAM(x.miv_sequence_params() == y.miv_sequence_params());
+      // ToDo: Need to insert other groups msp_fully_occupied_flag & msp_occupancy_subbitstream_present_flag as well
       VERIFY_MIVBITSTREAM(x.vps_miv_sequence_vui_params_present_flag() ==
                           y.vps_miv_sequence_vui_params_present_flag());
       if (x.vps_miv_sequence_vui_params_present_flag()) {

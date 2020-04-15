@@ -176,14 +176,13 @@ constexpr auto MivSequenceParams::msp_max_entities_minus1() const noexcept {
   return m_msp_max_entities_minus1;
 }
 
-constexpr auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
-  //return m_msp_fully_occupied_flag[atlasIndex];
-  return m_msp_fully_occupied_flag;
+inline auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
+  return m_msp_fully_occupied_flag[atlasIndex];
 }
 
-constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(uint8_t atlasIndex) const
+inline auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(uint8_t atlasIndex) const
     noexcept {
-  return m_msp_occupancy_subbitstream_present_flag;
+  return m_msp_occupancy_subbitstream_present_flag[atlasIndex];
 }
 
 constexpr auto MivSequenceParams::msp_depth_low_quality_flag(const bool value) noexcept -> auto & {
@@ -206,22 +205,22 @@ constexpr auto MivSequenceParams::msp_max_entities_minus1(const unsigned value) 
   return *this;
 }
 
-constexpr void MivSequenceParams::allocateFlagVectors(std::uint8_t size) {
-  //  m_msp_fully_occupied_flag.resize(size);
+inline void MivSequenceParams::allocateFlagVectors(std::uint8_t size) {
+  m_msp_fully_occupied_flag.resize(size);
+  m_msp_occupancy_subbitstream_present_flag.resize(size);
 }
 	
-constexpr auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex,
+inline auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex,
                                                          const bool value) noexcept
     -> auto & {
-//  m_msp_fully_occupied_flag[atlasIndex] = value;
-  m_msp_fully_occupied_flag = value;
+  m_msp_fully_occupied_flag[atlasIndex] = value;
   return *this;
 }
 
-constexpr auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(
+inline auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(
     uint8_t atlasIndex, const bool value) noexcept
     -> auto & {
-  m_msp_occupancy_subbitstream_present_flag = value;
+  m_msp_occupancy_subbitstream_present_flag[atlasIndex] = value;
   return *this;
 }
 

@@ -226,39 +226,39 @@ public:
   [[nodiscard]] constexpr auto msp_geometry_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto msp_num_groups_minus1() const noexcept;
   [[nodiscard]] constexpr auto msp_max_entities_minus1() const noexcept;
-  [[nodiscard]] constexpr auto msp_fully_occupied_flag(std::uint8_t atlasIndex) const noexcept;
-  [[nodiscard]] constexpr auto
+  [[nodiscard]] inline auto msp_fully_occupied_flag(std::uint8_t atlasIndex) const noexcept;
+  [[nodiscard]] inline auto
   msp_occupancy_subbitstream_present_flag(std::uint8_t atlasIndex) const noexcept;
 
   constexpr auto msp_depth_low_quality_flag(const bool value) noexcept -> auto &;
   constexpr auto msp_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto msp_num_groups_minus1(const unsigned value) noexcept -> auto &;
   constexpr auto msp_max_entities_minus1(const unsigned value) noexcept -> auto &;
-  constexpr auto msp_fully_occupied_flag(std::uint8_t atlasIndex, const bool value) noexcept
+  inline auto msp_fully_occupied_flag(std::uint8_t atlasIndex, const bool value) noexcept
       -> auto &;
-  constexpr auto
+  inline auto
   msp_occupancy_subbitstream_present_flag(std::uint8_t atlasIndex, const bool value) noexcept
       -> auto &;
 
-  constexpr void allocateFlagVectors(std::uint8_t size);
+  inline void allocateFlagVectors(std::uint8_t size);
 
   friend auto operator<<(std::ostream &stream, const MivSequenceParams &x) -> std::ostream &;
 
   constexpr auto operator==(const MivSequenceParams &other) const noexcept;
   constexpr auto operator!=(const MivSequenceParams &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivSequenceParams;
+  static auto decodeFrom(Common::InputBitstream &bitstream, std::uint8_t vps_atlas_count_minus1)
+      -> MivSequenceParams;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, std::uint8_t vps_atlas_count_minus1) const;
 
 private:
   bool m_msp_depth_low_quality_flag{};
   bool m_msp_geometry_scale_enabled_flag{};
   unsigned m_msp_num_groups_minus1{};
   unsigned m_msp_max_entities_minus1{};
- // std::vector<bool> m_msp_fully_occupied_flag{};
-  bool m_msp_fully_occupied_flag{};
-  bool m_msp_occupancy_subbitstream_present_flag{};
+  std::vector<bool> m_msp_fully_occupied_flag{};
+  std::vector<bool> m_msp_occupancy_subbitstream_present_flag{};
 };
 
 // 23090-5: vpcc_parameter_set()

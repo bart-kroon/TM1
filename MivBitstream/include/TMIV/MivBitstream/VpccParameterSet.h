@@ -242,6 +242,8 @@ public:
 
   inline void allocateFlagVectors(std::uint8_t size);
 
+  inline void insertFlagVectors(const MivSequenceParams &other);
+
   friend auto operator<<(std::ostream &stream, const MivSequenceParams &x) -> std::ostream &;
 
   constexpr auto operator==(const MivSequenceParams &other) const noexcept;

@@ -837,7 +837,7 @@ auto merge(const vector<const VpccParameterSet *> &vps) -> VpccParameterSet {
 
     if (x.vps_miv_extension_flag()) {
       VERIFY_MIVBITSTREAM(x.miv_sequence_params() == y.miv_sequence_params());
-      // ToDo: Need to insert other groups msp_fully_occupied_flag & msp_occupancy_subbitstream_present_flag as well
+      x.miv_sequence_params().insertFlagVectors(y.miv_sequence_params());
       VERIFY_MIVBITSTREAM(x.vps_miv_sequence_vui_params_present_flag() ==
                           y.vps_miv_sequence_vui_params_present_flag());
       if (x.vps_miv_sequence_vui_params_present_flag()) {

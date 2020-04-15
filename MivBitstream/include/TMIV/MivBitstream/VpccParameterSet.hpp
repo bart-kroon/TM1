@@ -221,6 +221,8 @@ inline void MivSequenceParams::insertFlagVectors(const MivSequenceParams &other)
 inline auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex,
                                                          const bool value) noexcept
     -> auto & {
+  if (m_msp_fully_occupied_flag.size() < atlasIndex + 1 && atlasIndex < 64)
+    allocateFlagVectors(atlasIndex+1);
   m_msp_fully_occupied_flag[atlasIndex] = value;
   return *this;
 }
@@ -228,6 +230,8 @@ inline auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex,
 inline auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(
     uint8_t atlasIndex, const bool value) noexcept
     -> auto & {
+  if (m_msp_occupancy_subbitstream_present_flag.size() < atlasIndex + 1 && atlasIndex < 64)
+    allocateFlagVectors(atlasIndex + 1);
   m_msp_occupancy_subbitstream_present_flag[atlasIndex] = value;
   return *this;
 }

@@ -377,20 +377,6 @@ class EncoderConfiguration(TestConfiguration):
 		return self.checkAlignment(self.viewWidth())
 
 	def atlasHeight(self):
-		if self.anchorId == 'A97' or self.anchorId == 'A17' or self.anchorId == 'E97' or self.anchorId == 'E17':
-			return self.checkAlignment({
-				'A': 4096,
-				'B': 2752,
-				'C': 2048,
-				'D': 2752,
-				'E': 1472,
-				'J': 1472,
-				'L': 2912,
-				'N': 2752,
-				'P': 2912,
-				'U': 2912,
-				'T': 2912
-			}[self.seqId])
 		return self.checkAlignment(self.viewHeight())
 
 	def geometryWidth(self):
@@ -467,17 +453,17 @@ class EncoderConfiguration(TestConfiguration):
 	def maxLumaSamplesPerFrame(self):
 		if self.anchorId == 'A97' or self.anchorId == 'A17':
 			return {
-				'A': 1,
+				'A': 2,
 				'B': 3,
 				'C': 2,
-				'D': 1,
+				'D': 2,
 				'E': 2,
 				'J': 2,
-				'L': 1,
+				'L': 2,
 				'N': 3,
-				'P': 1,
-				'U': 1,
-				'T': 1
+				'P': 2,
+				'U': 2,
+				'T': 2
 			}[self.seqId] * self.lumaSamplesPerView()
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			return 4 * self.lumaSamplesPerView()
@@ -497,7 +483,7 @@ class EncoderConfiguration(TestConfiguration):
 			'AtlasResolution': [self.atlasWidth(),
 				self.atlasHeight()],
 			'MaxLumaSamplesPerFrame': self.maxLumaSamplesPerFrame(),
-			'ExternalOccupancyCoding': False
+			'ExternalOccupancyCoding': True
 		}
 		if self.anchorId == 'E97' or self.anchorId == 'E17':
 			config['EntityEncodeRange'] = [0, self.maxEntities()]

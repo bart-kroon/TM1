@@ -67,7 +67,20 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
   m_geometryScaler.inplaceScale(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  // Occupancy Filtering: Basel ToDo
+  // Occupancy Filtering: Basel ToDo 
+  //(for explicit occupancy with two levels 255 & 0, it does filtering such that pixels < 128 are set to zero)
+  // for embedded occupancy, it extracts occupancy first and apply thresholding such that pixels < threshold (e.g. 64) are set to zero. Also, it decompress the depth so it uses full range.
+  // it also sets all patchParams.pduDepthStart() to zero (to avoid expandNormDisp in DepthOccupancyTransform)
+  // optionally, it may filter BlockToPatchMap
+  // Renderer uses occupancy instead of depth to identify occupant pixels and no more expanding for depth.
+  for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
+    if (!frame.vps->miv_sequence_params().msp_occupancy_subbitstream_present_flag(i)) {
+      int occThreshold = 0;
+          transform(frame.atlas[i].geoFrame.getPlane(0).begin(),
+                frame.atlas[i].geoFrame.getPlane(0).end(), frame.atlas[i].occFrame.getPlane(0).begin(),
+                [&](auto depth) { return 0 < depth ? 255 : 0; });
+		  }
+  }
   return m_renderer->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Decoder

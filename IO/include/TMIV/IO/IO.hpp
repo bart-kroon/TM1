@@ -74,6 +74,10 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
   std::ifstream stream{path, std::ios::binary};
 
   if (!stream.good()) {
+    if (fileNameField== "OccupancyVideoDataPathFmt") {
+      cout << "No occupancy file available, assuming occupancy is embedded in depth\n";
+      return result; // Handling the case of embeded occupancy since not know ahead (occupancy signaling elements are not read yet)
+    }
     throw std::runtime_error("Failed to open file");
   }
 

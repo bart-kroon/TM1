@@ -56,6 +56,15 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
 auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
     -> const MivBitstream::IvSequenceParams & {
   auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
+  int index = 0;
+  for (auto i = 0; i < optimal.second.size(); i++)
+    if (optimal.second[i]) {
+      optimal.first.vps.miv_sequence_params().msp_fully_occupied_flag(
+          index, true); // assuming atlas size is equal to view size and basic views
+                        // are packed in atlases first
+      optimal.first.vps.miv_sequence_params().msp_occupancy_subbitstream_present_flag(index, false);
+      index++;
+    }
   return m_geometryDownscaler.transformSequenceParams(m_depthOccupancy->transformSequenceParams(
       m_atlasConstructor->prepareSequence(move(optimal.first), move(optimal.second))));
 }

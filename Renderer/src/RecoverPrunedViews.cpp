@@ -79,12 +79,7 @@ auto recoverPrunedViewAndMask(const AccessUnit &frame)
         // Test for occupancy
         if (atlas.occFrame.getPlane(0)(i, j)==0)
           continue;
-        /*
-        const auto occupancyTransform = OccupancyTransform{viewParams, patchParams};
-        if (!occupancyTransform.occupant(atlas.geoFrame.getPlane(0)(i, j))) {
-          continue;
-        }
-		*/
+        
         // Map to view position
         const auto viewPos = patchParams.atlasToView({j, i});
         const auto x = viewPos.x();

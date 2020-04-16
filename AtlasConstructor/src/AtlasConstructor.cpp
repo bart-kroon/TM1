@@ -369,7 +369,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas;
-      if (m_ExternalOccupancyCoding)
+      if (m_ExternalOccupancyCoding && !m_outIvSequenceParams.msp().msp_fully_occupied_flag(i))
         atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                  Depth16Frame(m_atlasSize.x(), m_atlasSize.y()),
                  Mask(m_atlasSize.x(), m_atlasSize.y())};
@@ -466,7 +466,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
 
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-            if (m_ExternalOccupancyCoding)
+            if (m_ExternalOccupancyCoding &&
+                !m_outIvSequenceParams.msp().msp_fully_occupied_flag(patch.vuhAtlasId))
 				occupancyAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
             continue;
           }
@@ -489,7 +490,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
-          if (depth > 0 && m_ExternalOccupancyCoding)
+          if (depth > 0 && m_ExternalOccupancyCoding &&
+              !m_outIvSequenceParams.msp().msp_fully_occupied_flag(patch.vuhAtlasId))
             occupancyAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 255;
         }
       }

@@ -68,7 +68,9 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     x.msp().msp_depth_low_quality_flag(node.asBool());
   }
 
-  if (config.require("GroupBasedEncoder").require("AtlasConstructor").isPresent("ExternalOccupancyCoding")) {
+  if (config.require("GroupBasedEncoder")
+          .require("AtlasConstructor")
+          .isPresent("ExternalOccupancyCoding")) {
     auto m_ExternalOccupancyCoding = config.require("GroupBasedEncoder")
                                          .require("AtlasConstructor")
                                          .optional("ExternalOccupancyCoding")
@@ -78,7 +80,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
                                                      // #atlases are not known ahead)
     for (auto i = 0; i < maxNumberOfAtlases; i++) {
       // initalized values here need to be revisited after generating atlases, hence should be
-      // written to bitstream after which is not the case now
+      // written to bitstream after
       x.msp().msp_fully_occupied_flag(i, false);
       x.msp().msp_occupancy_subbitstream_present_flag(i, m_ExternalOccupancyCoding);
     }
@@ -211,8 +213,9 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
                  int(atlasId));
     }
     writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
-    if (frame[atlasId].occupancy.getHeight() != 0 && frame[atlasId].occupancy.getWidth()!=0)
-		writeFrame(config, "OccupancyVideoDataPathFmt", frame[atlasId].occupancy, frameIndex, int(atlasId));
+    if (frame[atlasId].occupancy.getHeight() != 0 && frame[atlasId].occupancy.getWidth() != 0)
+      writeFrame(config, "OccupancyVideoDataPathFmt", frame[atlasId].occupancy, frameIndex,
+                 int(atlasId));
   }
 }
 

@@ -132,6 +132,9 @@ public:
   // Set all samples to the neutral color
   void fillNeutral();
 
+  // Set all samples to one
+  void fillOne();
+
   // Set invalid samples to the neutral color
   template <typename OTHER_FORMAT, typename = std::enable_if<std::is_same_v<FORMAT, YUV444P10>>>
   void filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth);

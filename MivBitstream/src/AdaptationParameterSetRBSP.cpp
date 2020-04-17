@@ -763,4 +763,161 @@ void AdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
   bitstream.putFlag(aps_extension2_flag());
   bitstream.rbspTrailingBits();
 }
+
+auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1() const noexcept
+    -> std::uint16_t {
+  return m_mvpue_num_view_updates_minus1;
+}
+
+auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const uint16_t i) const noexcept
+    -> std::uint16_t {
+  VERIFY_MIVBITSTREAM(i < m_mvpue_view_idx.size());
+  return m_mvpue_view_idx.at(i);
+}
+
+auto MivViewParamsUpdateExtrinsics::camera_extrinsics(const uint16_t i) const noexcept
+    -> const CameraExtrinsics & {
+  VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
+  return m_camera_extrinsics.at(i);
+}
+auto MivViewParamsUpdateExtrinsics::camera_extrinsics(const uint16_t i) noexcept
+    -> CameraExtrinsics & {
+  VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
+  return m_camera_extrinsics.at(i);
+}
+
+auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1(const uint16_t value) noexcept
+    -> MivViewParamsUpdateExtrinsics & {
+  m_mvpue_num_view_updates_minus1 = value;
+  m_mvpue_view_idx.resize(value + 1);
+  m_camera_extrinsics.resize(value + 1);
+  return *this;
+}
+auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const std::uint16_t i,
+                                                   const uint16_t value) noexcept
+    -> MivViewParamsUpdateExtrinsics & {
+  VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
+  m_mvpue_view_idx.at(i) = value;
+  return *this;
+}
+
+auto operator<<(ostream &stream, const MivViewParamsUpdateExtrinsics &x) -> ostream & {
+  stream << "mvpue_num_view_updates_minus1=" << x.mvpue_num_view_updates_minus1() << '\n';
+  for (uint16_t i = 0; i <= x.mvpue_num_view_updates_minus1(); ++i) {
+    stream << "mvpue_view_idx[ " << i << " ]=" << x.mvpue_view_idx(i) << '\n';
+    x.camera_extrinsics(i).printTo(stream, i);
+  }
+  return stream;
+}
+
+void MivViewParamsUpdateExtrinsics::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.putUint16(mvpue_num_view_updates_minus1());
+  for (uint16_t i = 0; i <= mvpue_num_view_updates_minus1(); ++i) {
+    bitstream.putUint16(mvpue_view_idx(i));
+    camera_extrinsics(i).encodeTo(bitstream);
+  }
+}
+
+auto MivViewParamsUpdateExtrinsics::decodeFrom(InputBitstream &bitstream)
+    -> MivViewParamsUpdateExtrinsics {
+  auto x = MivViewParamsUpdateExtrinsics{};
+  x.mvpue_num_view_updates_minus1(bitstream.getUint16());
+  for (uint16_t i = 0; i <= x.mvpue_num_view_updates_minus1(); ++i) {
+    x.mvpue_view_idx(i, bitstream.getUint16());
+    x.camera_extrinsics(i) = CameraExtrinsics::decodeFrom(bitstream);
+  }
+  return x;
+}
+
+auto MivViewParamsUpdateExtrinsics::operator==(
+    const MivViewParamsUpdateExtrinsics &other) const noexcept -> bool {
+  return m_mvpue_num_view_updates_minus1 == other.m_mvpue_num_view_updates_minus1 &&
+         std::equal(m_mvpue_view_idx.begin(), m_mvpue_view_idx.end(),
+                    other.m_mvpue_view_idx.begin()) &&
+         m_camera_extrinsics == other.m_camera_extrinsics;
+}
+
+auto MivViewParamsUpdateExtrinsics::operator!=(
+    const MivViewParamsUpdateExtrinsics &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto MivViewParamsUpdateIntrinsics::mvpue_num_view_updates_minus1() const noexcept
+    -> std::uint16_t {
+  return m_mvpue_num_view_updates_minus1;
+}
+
+auto MivViewParamsUpdateIntrinsics::mvpue_view_idx(const uint16_t i) const noexcept
+    -> std::uint16_t {
+  VERIFY_MIVBITSTREAM(i < m_mvpue_view_idx.size());
+  return m_mvpue_view_idx.at(i);
+}
+
+auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) const noexcept
+    -> const CameraIntrinsics & {
+  VERIFY_MIVBITSTREAM(i < m_camera_intrinsics.size());
+  return m_camera_intrinsics.at(i);
+}
+
+auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) noexcept
+    -> CameraIntrinsics & {
+  VERIFY_MIVBITSTREAM(i < m_camera_intrinsics.size());
+  return m_camera_intrinsics.at(i);
+}
+
+auto MivViewParamsUpdateIntrinsics::mvpue_num_view_updates_minus1(const uint16_t value) noexcept
+    -> MivViewParamsUpdateIntrinsics & {
+  m_mvpue_num_view_updates_minus1 = value;
+  m_mvpue_view_idx.resize(m_mvpue_num_view_updates_minus1 + 1);
+  m_camera_intrinsics.resize(m_mvpue_num_view_updates_minus1 + 1);
+  return *this;
+}
+auto MivViewParamsUpdateIntrinsics::mvpue_view_idx(const uint16_t i, const uint16_t value) noexcept
+    -> MivViewParamsUpdateIntrinsics & {
+  VERIFY_MIVBITSTREAM(i < m_mvpue_view_idx.size());
+  m_mvpue_view_idx.at(i) = value;
+  return *this;
+}
+
+auto operator<<(ostream &stream, const MivViewParamsUpdateIntrinsics &x) -> ostream & {
+  stream << "mvpue_num_view_updates_minus1=" << x.mvpue_num_view_updates_minus1() << '\n';
+  for (uint16_t i = 0; i <= x.mvpue_num_view_updates_minus1(); ++i) {
+    stream << "mvpue_view_idx[ " << i << " ]=" << x.mvpue_view_idx(i) << '\n';
+    x.camera_intrinsics(i).printTo(stream, i);
+  }
+  return stream;
+}
+
+void MivViewParamsUpdateIntrinsics::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.putUint16(mvpue_num_view_updates_minus1());
+  for (uint16_t i = 0; i <= mvpue_num_view_updates_minus1(); ++i) {
+    bitstream.putUint16(mvpue_view_idx(i));
+    camera_intrinsics(i).encodeTo(bitstream);
+  }
+}
+
+auto MivViewParamsUpdateIntrinsics::decodeFrom(InputBitstream &bitstream)
+    -> MivViewParamsUpdateIntrinsics {
+  auto x = MivViewParamsUpdateIntrinsics{};
+  x.mvpue_num_view_updates_minus1(bitstream.getUint16());
+  for (uint16_t i = 0; i <= x.mvpue_num_view_updates_minus1(); ++i) {
+    x.mvpue_view_idx(i, bitstream.getUint16());
+    x.camera_intrinsics(i) = CameraIntrinsics::decodeFrom(bitstream);
+  }
+  return x;
+}
+
+auto MivViewParamsUpdateIntrinsics::operator==(
+    const MivViewParamsUpdateIntrinsics &other) const noexcept -> bool {
+  return m_mvpue_num_view_updates_minus1 == other.m_mvpue_num_view_updates_minus1 &&
+         std::equal(m_mvpue_view_idx.begin(), m_mvpue_view_idx.end(),
+                    other.m_mvpue_view_idx.begin()) &&
+         m_camera_intrinsics == other.m_camera_intrinsics;
+}
+
+auto MivViewParamsUpdateIntrinsics::operator!=(
+    const MivViewParamsUpdateIntrinsics &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
 } // namespace TMIV::MivBitstream

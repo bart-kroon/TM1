@@ -339,3 +339,132 @@ aps_extension2_flag=false
     REQUIRE(byteCodingTest(x, 100));
   }
 }
+
+TEST_CASE("miv_view_params_update_Extrinsics", "[Adaptation Parameter Set RBSP]") {
+  auto x = MivViewParamsUpdateExtrinsics{};
+
+  SECTION("Example 1: Test with 1 update.") {
+    x.mvpue_num_view_updates_minus1(0);
+    x.mvpue_view_idx(0, 6)
+        .camera_extrinsics(0)
+        .ce_view_pos_x(3.F)
+        .ce_view_pos_y(1.F)
+        .ce_view_pos_z(4.F)
+        .ce_view_quat_x(5.F)
+        .ce_view_quat_y(9.F)
+        .ce_view_quat_z(14.F);
+
+    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=0
+mvpue_view_idx[ 0 ]=6
+ce_view_pos_x[ 0 ]=3
+ce_view_pos_y[ 0 ]=1
+ce_view_pos_z[ 0 ]=4
+ce_view_quat_x[ 0 ]=5
+ce_view_quat_y[ 0 ]=9
+ce_view_quat_z[ 0 ]=14
+)");
+
+    REQUIRE(bitCodingTest(x, 224));
+  }
+  SECTION("Example 1: Test with 2 update.") {
+    x.mvpue_num_view_updates_minus1(1);
+    x.mvpue_view_idx(0, 6)
+        .camera_extrinsics(0)
+        .ce_view_pos_x(3.F)
+        .ce_view_pos_y(1.F)
+        .ce_view_pos_z(4.F)
+        .ce_view_quat_x(5.F)
+        .ce_view_quat_y(9.F)
+        .ce_view_quat_z(14.F);
+    x.mvpue_view_idx(1, 3)
+        .camera_extrinsics(1)
+        .ce_view_pos_x(7.F)
+        .ce_view_pos_y(8.F)
+        .ce_view_pos_z(3.F)
+        .ce_view_quat_x(21.F)
+        .ce_view_quat_y(12.F)
+        .ce_view_quat_z(10.F);
+
+    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=1
+mvpue_view_idx[ 0 ]=6
+ce_view_pos_x[ 0 ]=3
+ce_view_pos_y[ 0 ]=1
+ce_view_pos_z[ 0 ]=4
+ce_view_quat_x[ 0 ]=5
+ce_view_quat_y[ 0 ]=9
+ce_view_quat_z[ 0 ]=14
+mvpue_view_idx[ 1 ]=3
+ce_view_pos_x[ 1 ]=7
+ce_view_pos_y[ 1 ]=8
+ce_view_pos_z[ 1 ]=3
+ce_view_quat_x[ 1 ]=21
+ce_view_quat_y[ 1 ]=12
+ce_view_quat_z[ 1 ]=10
+)");
+
+    REQUIRE(bitCodingTest(x, 432));
+  }
+}
+
+TEST_CASE("miv_view_params_update_intrinsics", "[Adaptation Parameter Set RBSP]") {
+  auto x = MivViewParamsUpdateIntrinsics{};
+
+  SECTION("Example 1: Test with 1 update.") {
+    x.mvpue_num_view_updates_minus1(0);
+    x.mvpue_view_idx(0, 6)
+        .camera_intrinsics(0)
+        .ci_cam_type(CiCamType::equirectangular)
+        .ci_erp_phi_min(-2.F)
+        .ci_erp_phi_max(2.F)
+        .ci_erp_theta_min(-1.F)
+        .ci_erp_theta_max(1.F);
+
+    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=0
+mvpue_view_idx[ 0 ]=6
+ci_cam_type[ 0 ]=equirectangular
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_erp_phi_min[ 0 ]=-2
+ci_erp_phi_max[ 0 ]=2
+ci_erp_theta_min[ 0 ]=-1
+ci_erp_theta_max[ 0 ]=1
+)");
+    REQUIRE(bitCodingTest(x, 200));
+  }
+
+  SECTION("Example 1: Test with 2 updates.") {
+    x.mvpue_num_view_updates_minus1(1);
+    x.mvpue_view_idx(0, 3)
+        .camera_intrinsics(0)
+        .ci_cam_type(CiCamType::equirectangular)
+        .ci_erp_phi_min(-90.F)
+        .ci_erp_phi_max(90.F)
+        .ci_erp_theta_min(-180.F)
+        .ci_erp_theta_max(90.F);
+    x.mvpue_view_idx(1, 12)
+        .camera_intrinsics(1)
+        .ci_cam_type(CiCamType::orthographic)
+        .ci_projection_plane_width_minus1(1023)
+        .ci_projection_plane_height_minus1(767)
+        .ci_ortho_width(100.F)
+        .ci_ortho_height(50.F);
+
+    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=1
+mvpue_view_idx[ 0 ]=3
+ci_cam_type[ 0 ]=equirectangular
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_erp_phi_min[ 0 ]=-90
+ci_erp_phi_max[ 0 ]=90
+ci_erp_theta_min[ 0 ]=-180
+ci_erp_theta_max[ 0 ]=90
+mvpue_view_idx[ 1 ]=12
+ci_cam_type[ 1 ]=orthographic
+ci_projection_plane_width_minus1[ 1 ]=1023
+ci_projection_plane_height_minus1[ 1 ]=767
+ci_ortho_width[ 1 ]=100
+ci_ortho_height[ 1 ]=50
+)");
+    REQUIRE(bitCodingTest(x, 320));
+  }
+}

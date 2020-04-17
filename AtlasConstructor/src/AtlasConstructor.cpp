@@ -369,16 +369,19 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas;
-      if (m_ExternalOccupancyCoding && !m_outIvSequenceParams.msp().msp_fully_occupied_flag(i))
+      if (m_ExternalOccupancyCoding && !m_outIvSequenceParams.msp().msp_fully_occupied_flag(uint8_t(i)))
         atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                  Depth16Frame(m_atlasSize.x(), m_atlasSize.y()),
-                 Mask(m_atlasSize.x(), m_atlasSize.y())};
+                 Mask(m_atlasSize.x() >>
+                          m_ivAccessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size(),
+                      m_atlasSize.y() >>
+                          m_ivAccessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size())};
       else
         atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                  Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
       atlas.texture.fillNeutral();
       atlas.depth.fillZero();
-      if (m_ExternalOccupancyCoding)
+      if (m_ExternalOccupancyCoding && !m_outIvSequenceParams.msp().msp_fully_occupied_flag(uint8_t(i)))
 		  atlas.occupancy.fillZero();
       atlasList.push_back(move(atlas));
     }
@@ -450,13 +453,21 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
           break;
         }
       }
-
+      int yOcc, xOcc = 0;
       for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
         for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
 
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patch.viewToAtlas(pView);
 
+		  yOcc = pAtlas.y() >> m_ivAccessUnitParams.atlas[patch.vuhAtlasId]
+                                   .asps.asps_log2_patch_packing_block_size();
+          xOcc = pAtlas.x() >> m_ivAccessUnitParams.atlas[patch.vuhAtlasId]
+                                   .asps.asps_log2_patch_packing_block_size();
+                  /*
+          cout << "Atlas(y,x)=(" << pAtlas.y() << ',' << pAtlas.x() << "), Occ(y,x)=(" << yOcc
+               << ',' << xOcc << ")\n";
+          */
           if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
               pAtlas.y() >= textureAtlasMap.getHeight() ||
               pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||
@@ -468,7 +479,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
             if (m_ExternalOccupancyCoding &&
                 !m_outIvSequenceParams.msp().msp_fully_occupied_flag(patch.vuhAtlasId))
-				occupancyAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+              occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 0;
             continue;
           }
 
@@ -492,7 +503,7 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
           if (depth > 0 && m_ExternalOccupancyCoding &&
               !m_outIvSequenceParams.msp().msp_fully_occupied_flag(patch.vuhAtlasId))
-            occupancyAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 255;
+            occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
         }
       }
     }

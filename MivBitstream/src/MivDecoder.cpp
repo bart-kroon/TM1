@@ -139,8 +139,8 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
     aau.decGeoFrame =
         m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
 
-	aau.occFrame =
-        m_occFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
+	aau.decOccFrame =
+        m_occFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decOccFrameSize(*au.vps));
 
     atlas.frames.erase(atlas.frames.begin());
   }

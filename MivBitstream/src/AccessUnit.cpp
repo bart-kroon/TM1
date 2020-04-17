@@ -49,6 +49,14 @@ auto AtlasAccessUnit::decGeoFrameSize(const VpccParameterSet &vps) const noexcep
   return frameSize();
 }
 
+auto AtlasAccessUnit::decOccFrameSize(const VpccParameterSet &vps) const noexcept -> Vec2i {
+  if (vps.vps_extension_present_flag() && vps.vps_miv_extension_flag()) {
+    return Vec2i{asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
+                 asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
+  }
+  return frameSize();
+}
+
 auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> uint16_t {
   const auto k = asps.asps_log2_patch_packing_block_size();
   return blockToPatchMap.getPlane(0)(row >> k, column >> k);

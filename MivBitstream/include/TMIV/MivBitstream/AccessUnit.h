@@ -53,6 +53,7 @@ struct AtlasAccessUnit {
   Common::Depth10Frame decGeoFrame;
   Common::Depth10Frame geoFrame;
   Common::Texture444Frame attrFrame;
+  Common::Frame<Common::YUV400P8> decOccFrame;
   Common::Frame<Common::YUV400P8> occFrame;
 
   Common::BlockToPatchMap blockToPatchMap;
@@ -64,6 +65,9 @@ struct AtlasAccessUnit {
 
   // Geometry frame size
   [[nodiscard]] auto decGeoFrameSize(const VpccParameterSet &vps) const noexcept -> Common::Vec2i;
+
+  // Occupancy frame size
+  [[nodiscard]] auto decOccFrameSize(const VpccParameterSet &vps) const noexcept -> Common::Vec2i;
 
   // Index into the block to patch map using nominal atlas coordinates
   [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;

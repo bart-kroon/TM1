@@ -4,7 +4,7 @@ project(
 	TMIV
 	DESCRIPTION "Test Model for Immersive Video"
 	VERSION 4.0.0
-	LANGUAGES CXX)
+	LANGUAGES C CXX)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -19,11 +19,22 @@ if (Catch2_FOUND)
 endif()
 
 include(GNUInstallDirs)
+include(CMake/hm.cmake)
 
 foreach(subdir
-		Common MivBitstream IO
-		ViewOptimizer AtlasConstructor DepthOccupancy Renderer ViewingSpace DepthQualityAssessor
-		Encoder Decoder Parser)
+		Common 
+		MivBitstream 
+		IO
+		ViewOptimizer
+		AtlasConstructor
+		DepthOccupancy
+		Renderer
+		ViewingSpace		
+		VideoDecoder
+		Encoder
+		Decoder
+		Parser
+		DepthQualityAssessor)
 	add_subdirectory(${subdir})
 endforeach()
 

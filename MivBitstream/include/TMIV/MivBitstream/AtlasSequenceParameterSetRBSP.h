@@ -79,6 +79,9 @@ public:
   [[nodiscard]] constexpr auto masp_group_id() const noexcept;
   [[nodiscard]] constexpr auto masp_auxiliary_atlas_flag() const noexcept;
   [[nodiscard]] constexpr auto masp_depth_occ_map_threshold_flag() const noexcept;
+  [[nodiscard]] constexpr auto masp_occupancy_scale_present_flag() const noexcept;
+  [[nodiscard]] auto masp_occupancy_scale_x_minus1() const noexcept -> uint8_t;
+  [[nodiscard]] auto masp_occupancy_scale_y_minus1() const noexcept -> uint8_t;
   [[nodiscard]] auto masp_geometry_frame_width_minus1() const noexcept -> uint16_t;
   [[nodiscard]] auto masp_geometry_frame_height_minus1() const noexcept -> uint16_t;
 
@@ -87,6 +90,9 @@ public:
   constexpr auto masp_group_id(const unsigned value) noexcept -> auto &;
   constexpr auto masp_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
   constexpr auto masp_depth_occ_map_threshold_flag(const bool value) noexcept -> auto &;
+  constexpr auto masp_occupancy_scale_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto masp_occupancy_scale_x_minus1(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto masp_occupancy_scale_y_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto masp_geometry_frame_width_minus1(const std::uint16_t value) noexcept -> auto &;
   constexpr auto masp_geometry_frame_height_minus1(const std::uint16_t value) noexcept -> auto &;
 
@@ -105,7 +111,10 @@ private:
   std::optional<bool> m_masp_omaf_v1_compatible_flag;
   unsigned m_masp_group_id{};
   bool m_masp_auxiliary_atlas_flag{};
-  bool m_masp_depth_occ_map_threshold_flag{};
+  std::optional<bool> m_masp_depth_occ_map_threshold_flag;
+  std::optional<bool> m_masp_occupancy_scale_present_flag;
+  std::optional<std::uint8_t> m_masp_occupancy_scale_x_minus1;
+  std::optional<std::uint8_t> m_masp_occupancy_scale_y_minus1;
   std::optional<std::uint16_t> m_masp_geometry_frame_width_minus1;
   std::optional<std::uint16_t> m_masp_geometry_frame_height_minus1;
 };

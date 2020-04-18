@@ -46,6 +46,10 @@ constexpr auto MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag() const
   return m_masp_depth_occ_map_threshold_flag;
 }
 
+constexpr auto MivAtlasSequenceParams::masp_occupancy_scale_present_flag() const noexcept {
+  return m_masp_occupancy_scale_present_flag;
+}
+
 constexpr auto MivAtlasSequenceParams::masp_group_id(const unsigned value) noexcept -> auto & {
   m_masp_group_id = value;
   return *this;
@@ -74,6 +78,24 @@ constexpr auto MivAtlasSequenceParams::masp_depth_occ_map_threshold_flag(const b
   return *this;
 }
 
+constexpr auto MivAtlasSequenceParams::masp_occupancy_scale_present_flag(const bool value) noexcept
+    -> auto & {
+  m_masp_occupancy_scale_present_flag = value;
+  return *this;
+}
+
+constexpr auto
+MivAtlasSequenceParams::masp_occupancy_scale_x_minus1(const uint8_t value) noexcept -> auto & {
+  m_masp_occupancy_scale_x_minus1 = value;
+  return *this;
+}
+
+constexpr auto MivAtlasSequenceParams::masp_occupancy_scale_y_minus1(const uint8_t value) noexcept
+    -> auto & {
+  m_masp_occupancy_scale_y_minus1 = value;
+  return *this;
+}
+
 constexpr auto
 MivAtlasSequenceParams::masp_geometry_frame_width_minus1(const uint16_t value) noexcept -> auto & {
   m_masp_geometry_frame_width_minus1 = value;
@@ -91,7 +113,10 @@ MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &other) const no
   return m_masp_omaf_v1_compatible_flag == other.m_masp_omaf_v1_compatible_flag &&
          masp_group_id() == other.masp_group_id() &&
          masp_auxiliary_atlas_flag() == other.masp_auxiliary_atlas_flag() &&
-         masp_depth_occ_map_threshold_flag() == other.masp_depth_occ_map_threshold_flag() &&
+         m_masp_depth_occ_map_threshold_flag == other.m_masp_depth_occ_map_threshold_flag &&
+         m_masp_occupancy_scale_present_flag == other.m_masp_occupancy_scale_present_flag &&
+         m_masp_occupancy_scale_x_minus1 == other.m_masp_occupancy_scale_x_minus1 &&
+         m_masp_occupancy_scale_y_minus1 == other.m_masp_occupancy_scale_y_minus1 &&
          m_masp_geometry_frame_width_minus1 == other.m_masp_geometry_frame_width_minus1 &&
          m_masp_geometry_frame_height_minus1 == other.m_masp_geometry_frame_height_minus1;
 }

@@ -355,6 +355,17 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 	atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+
+    // Set MASP occupancy scale parameters to generate occupancy maps of equal size to
+    // BlockToPatchMap
+    if (m_outIvSequenceParams.vps.miv_sequence_params().msp_occupancy_subbitstream_present_flag(
+            uint8_t(atlasId))) {
+      atlas.asps.miv_atlas_sequence_params().masp_occupancy_scale_present_flag(true);
+      atlas.asps.miv_atlas_sequence_params().masp_occupancy_scale_x_minus1(
+          uint8_t(pow(2, atlas.asps.asps_log2_patch_packing_block_size())) - 1);
+      atlas.asps.miv_atlas_sequence_params().masp_occupancy_scale_y_minus1(
+          uint8_t(pow(2, atlas.asps.asps_log2_patch_packing_block_size())) - 1);
+    }
   }
   if (m_maxEntities > 1) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);

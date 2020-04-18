@@ -106,6 +106,16 @@ auto MivAtlasSequenceParams::masp_omaf_v1_compatible_flag() const noexcept {
   return *m_masp_omaf_v1_compatible_flag;
 }
 
+auto MivAtlasSequenceParams::masp_occupancy_scale_x_minus1() const noexcept -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_masp_occupancy_scale_x_minus1.has_value());
+  return *m_masp_occupancy_scale_x_minus1;
+}
+
+auto MivAtlasSequenceParams::masp_occupancy_scale_y_minus1() const noexcept -> uint8_t {
+  VERIFY_MIVBITSTREAM(m_masp_occupancy_scale_y_minus1.has_value());
+  return *m_masp_occupancy_scale_y_minus1;
+}
+
 auto MivAtlasSequenceParams::masp_geometry_frame_width_minus1() const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(m_masp_geometry_frame_width_minus1.has_value());
   return *m_masp_geometry_frame_width_minus1;
@@ -121,10 +131,19 @@ auto operator<<(ostream &stream, const MivAtlasSequenceParams &x) -> ostream & {
     stream << "masp_omaf_v1_compatible_flag=" << x.masp_omaf_v1_compatible_flag() << '\n';
   }
   stream << "masp_group_id=" << x.masp_group_id() << "\nmasp_auxiliary_atlas_flag=" << boolalpha
-         << x.masp_auxiliary_atlas_flag() << "\nmasp_depth_occ_map_threshold_flag=" << boolalpha
-         << x.masp_depth_occ_map_threshold_flag() << '\n';
+         << x.masp_auxiliary_atlas_flag();
+  if (x.m_masp_depth_occ_map_threshold_flag)
+    stream << "\nmasp_depth_occ_map_threshold_flag=" << boolalpha
+           << *x.masp_depth_occ_map_threshold_flag();
+  if (x.m_masp_occupancy_scale_present_flag)
+    stream << "\nmasp_occupancy_scale_present_flag=" << boolalpha
+           << *x.masp_occupancy_scale_present_flag();
+  if (x.m_masp_occupancy_scale_x_minus1 && x.m_masp_occupancy_scale_y_minus1) {
+    stream << "\nmasp_occupancy_scale_x_minus1=" << (int) x.masp_occupancy_scale_x_minus1()
+           << "\nmasp_occupancy_scale_y_minus1=" << (int) x.masp_occupancy_scale_y_minus1();
+  }
   if (x.m_masp_geometry_frame_width_minus1 && x.m_masp_geometry_frame_height_minus1) {
-    stream << "masp_geometry_frame_width_minus1=" << x.masp_geometry_frame_width_minus1()
+    stream << "\nmasp_geometry_frame_width_minus1=" << x.masp_geometry_frame_width_minus1()
            << "\nmasp_geometry_frame_height_minus1=" << x.masp_geometry_frame_height_minus1()
            << '\n';
   }
@@ -140,7 +159,16 @@ auto MivAtlasSequenceParams::decodeFrom(InputBitstream &bitstream, const VpccUni
   x.masp_group_id(
       bitstream.getUVar<unsigned>(vps.miv_sequence_params().msp_num_groups_minus1() + 1));
   x.masp_auxiliary_atlas_flag(bitstream.getFlag());
-  x.masp_depth_occ_map_threshold_flag(bitstream.getFlag());
+  if (!vps.miv_sequence_params().msp_fully_occupied_flag(vuh.vuh_atlas_id()) &&
+      !vps.miv_sequence_params().msp_occupancy_subbitstream_present_flag(vuh.vuh_atlas_id()))
+	x.masp_depth_occ_map_threshold_flag(bitstream.getFlag());
+  else if (vps.miv_sequence_params().msp_occupancy_subbitstream_present_flag(vuh.vuh_atlas_id())) {
+    x.masp_occupancy_scale_present_flag(bitstream.getFlag());
+    if (x.masp_occupancy_scale_present_flag()) {
+      x.masp_occupancy_scale_x_minus1(bitstream.readBits<uint8_t>(4));
+      x.masp_occupancy_scale_y_minus1(bitstream.readBits<uint8_t>(4));
+	}
+  }
   if (vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
     x.masp_geometry_frame_width_minus1(
         bitstream.getUVar<uint16_t>(vps.vps_frame_width(vuh.vuh_atlas_id())));
@@ -157,7 +185,16 @@ void MivAtlasSequenceParams::encodeTo(OutputBitstream &bitstream, const VpccUnit
   }
   bitstream.putUVar(masp_group_id(), vps.miv_sequence_params().msp_num_groups_minus1() + 1);
   bitstream.putFlag(masp_auxiliary_atlas_flag());
-  bitstream.putFlag(masp_depth_occ_map_threshold_flag());
+  if (!vps.miv_sequence_params().msp_fully_occupied_flag(vuh.vuh_atlas_id()) &&
+      !vps.miv_sequence_params().msp_occupancy_subbitstream_present_flag(vuh.vuh_atlas_id()))
+	bitstream.putFlag(*masp_depth_occ_map_threshold_flag());
+  else if (vps.miv_sequence_params().msp_occupancy_subbitstream_present_flag(vuh.vuh_atlas_id())) {
+    bitstream.putFlag(*masp_occupancy_scale_present_flag());
+    if (masp_occupancy_scale_present_flag()) {
+      bitstream.writeBits(masp_occupancy_scale_x_minus1(), 4);
+      bitstream.writeBits(masp_occupancy_scale_y_minus1(), 4);
+    }
+  }
   if (vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
     bitstream.putUVar(masp_geometry_frame_width_minus1(), vps.vps_frame_width(vuh.vuh_atlas_id()));
     bitstream.putUVar(masp_geometry_frame_height_minus1(),

@@ -146,7 +146,9 @@ asps_extension2_present_flag=false
         .vps_miv_extension_flag(true)
         .miv_sequence_params()
         .msp_geometry_scale_enabled_flag(true)
-        .msp_num_groups_minus1(10);
+        .msp_num_groups_minus1(10)
+        .msp_fully_occupied_flag(15, false)
+        .msp_occupancy_subbitstream_present_flag(15, false);
 
     x.asps_atlas_sequence_parameter_set_id(15)
         .asps_frame_width(0xFFFF)
@@ -169,6 +171,7 @@ asps_extension2_present_flag=false
         .miv_atlas_sequence_params()
         .masp_auxiliary_atlas_flag(true)
         .masp_depth_occ_map_threshold_flag(true)
+        .masp_occupancy_scale_present_flag(false)
         .masp_omaf_v1_compatible_flag(true)
         .masp_geometry_frame_width_minus1(300)
         .masp_geometry_frame_height_minus1(100)
@@ -202,6 +205,7 @@ masp_omaf_v1_compatible_flag=true
 masp_group_id=3
 masp_auxiliary_atlas_flag=true
 masp_depth_occ_map_threshold_flag=true
+masp_occupancy_scale_present_flag=false
 masp_geometry_frame_width_minus1=300
 masp_geometry_frame_height_minus1=100
 asps_extension2_present_flag=false

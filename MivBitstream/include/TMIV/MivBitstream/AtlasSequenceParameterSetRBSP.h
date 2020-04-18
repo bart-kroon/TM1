@@ -111,7 +111,7 @@ private:
   std::optional<bool> m_masp_omaf_v1_compatible_flag;
   unsigned m_masp_group_id{};
   bool m_masp_auxiliary_atlas_flag{};
-  std::optional<bool> m_masp_depth_occ_map_threshold_flag;
+  bool m_masp_depth_occ_map_threshold_flag{};
   std::optional<bool> m_masp_occupancy_scale_present_flag;
   std::optional<std::uint8_t> m_masp_occupancy_scale_x_minus1;
   std::optional<std::uint8_t> m_masp_occupancy_scale_y_minus1;

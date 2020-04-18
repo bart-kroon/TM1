@@ -33,26 +33,78 @@
 
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
-#ifdef HAVE_HM
-#include <TMIV/VideoDecoder/HmVideoDecoder.h>
-#endif
+#include <TMIV/MivBitstream/MivDecoderMode.h>
+#include <TMIV/MivBitstream/VpccParameterSet.h>
+
+#include <fstream>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
+using namespace TMIV::VideoDecoder;
 
-namespace TMIV::VideoDecoder {
-IVideoDecoder::~IVideoDecoder() = default;
-
-auto IVideoDecoder::create(TMIV::MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
-    -> std::unique_ptr<IVideoDecoder> {
-#ifdef HAVE_HM
-  if (codecGroupIdc == PtlProfileCodecGroupIdc::HEVC_Main10) {
-    return make_unique<HmVideoDecoder>();
-  }
-#endif
-  ostringstream what;
-  what << "TMIV does not include a " << codecGroupIdc << " video decoder";
-  throw runtime_error(what.str());
+namespace TMIV::MivBitstream {
+const MivDecoderMode mode = MivDecoderMode::MIV;
 }
-} // namespace TMIV::VideoDecoder
+
+constexpr auto defaultCodecGroupIdc = PtlProfileCodecGroupIdc::HEVC_Main10;
+
+auto usage() -> int {
+  cout << "Usage: -b BITSTREAM -r RECONSTRUCTION [-c CODEC_GROUP_IDC]\n";
+  cout << '\n';
+  cout << "The default codec group IDC is " << int(defaultCodecGroupIdc) << " ("
+       << defaultCodecGroupIdc << ")\n";
+  cout << "The reconstructed output is in YUV 4:2:0 10le\n";
+  return 1;
+}
+
+auto main(int argc, char *argv[]) -> int {
+  auto args = vector(argv, argv + argc);
+  auto bitstreamPath = optional<string>{};
+  auto reconstructionPath = optional<string>{};
+  auto codecGroupIdc = optional<PtlProfileCodecGroupIdc>{};
+
+  args.erase(args.begin());
+
+  while (!args.empty()) {
+    if (args.size() == 1) {
+      return usage();
+    }
+    if (args.front() == "-b"s) {
+      bitstreamPath = args[1];
+      args.erase(args.begin(), args.begin() + 2);
+    } else if (args.front() == "-r"s) {
+      reconstructionPath = args[1];
+      args.erase(args.begin(), args.begin() + 2);
+    } else if (args.front() == "-c"s) {
+      codecGroupIdc = PtlProfileCodecGroupIdc(stoi(args[1]));
+      args.erase(args.begin(), args.begin() + 2);
+    } else {
+      return usage();
+    }
+  }
+
+  if (!bitstreamPath || !reconstructionPath) {
+    return usage();
+  }
+
+  if (codecGroupIdc) {
+    cout << "Codec group IDC is set to " << *codecGroupIdc << '\n';
+  } else {
+    codecGroupIdc = defaultCodecGroupIdc;
+  }
+
+  auto decoder = IVideoDecoder::create(*codecGroupIdc);
+
+  ifstream in{*bitstreamPath, ios::binary};
+  ofstream out{*reconstructionPath, ios::binary};
+
+  decoder->addFrameListener([&out](const AnyFrame &picture) {
+    auto frame = picture.as<YUV420P10>();
+    frame.dump(out);
+  });
+  decoder->decode(in);
+
+  return 0;
+}

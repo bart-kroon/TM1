@@ -43,12 +43,8 @@ using namespace TMIV::Common;
 
 namespace TMIV::VideoDecoder {
 class VideoServer::Impl {
-private:
-  using InternalFormat = YUV444P10;
-  using InternalFrame = Frame<InternalFormat>;
-
 public:
-  explicit Impl(unique_ptr<IVideoDecoder> decoder, string bitstream)
+  Impl(unique_ptr<IVideoDecoder> decoder, string bitstream)
       : m_decoder{move(decoder)}, m_bitstream{move(bitstream)}, m_thread{[this]() { decode(); }} {}
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;
@@ -60,13 +56,15 @@ public:
     m_thread.join();
   }
 
-  auto frameAs(YUV444P10 /* tag */) -> InternalFrame { return *getFrame(); }
-
-  auto frameAs(YUV400P10 /* tag */) -> Frame<YUV400P10> {
-    auto frame = getFrame();
-    auto result = Frame<YUV400P10>{frame->getWidth(), frame->getHeight()};
-    copy(cbegin(frame->getPlane(0)), cend(frame->getPlane(0)), begin(result.getPlane(0)));
-    return result;
+  auto getFrame() -> unique_ptr<AnyFrame> {
+    unique_lock<mutex> lock{m_mutex};
+    m_cv.wait(lock, [this] { return m_frame || m_hasStopped; });
+    if (m_hasStopped) {
+      return {};
+    }
+    auto frame = unique_ptr<AnyFrame>{};
+    swap(frame, m_frame);
+    return frame;
   }
 
 private:
@@ -74,7 +72,7 @@ private:
 
   void decode() {
     try {
-      m_decoder->addListener([this](const IDecodedPicture &picture) { return listen(picture); });
+      m_decoder->addFrameListener([this](const AnyFrame &picture) { return listen(picture); });
       m_decoder->decode(m_bitstream);
       m_hasStopped = true;
     } catch (Stop & /* unused */) {
@@ -85,26 +83,14 @@ private:
     }
   }
 
-  void listen(const IDecodedPicture &picture) {
+  void listen(const AnyFrame &picture) {
     unique_lock<mutex> lock{m_mutex};
     m_cv.wait(lock, [this] { return !m_frame || m_requestStop; });
     if (m_requestStop) {
       throw Stop{};
     }
-    // TODO: construct picture
-    m_frame.reset(new InternalFrame{});
+    m_frame.reset(new AnyFrame{picture});
   }
-
-  auto getFrame() -> unique_ptr<Frame<InternalFormat>> {
-    unique_lock<mutex> lock{m_mutex};
-    m_cv.wait(lock, [this] { return m_frame || m_hasStopped; });
-    if (m_hasStopped) {
-      throw runtime_error("The video sub bitstream is truncated");
-    }
-    auto frame = unique_ptr<InternalFrame>{};
-    swap(frame, m_frame);
-    return frame;
-  };
 
   unique_ptr<IVideoDecoder> m_decoder;
   istringstream m_bitstream;
@@ -113,7 +99,7 @@ private:
   condition_variable m_cv;
   bool m_requestStop{};
   bool m_hasStopped{};
-  unique_ptr<InternalFrame> m_frame{};
+  unique_ptr<AnyFrame> m_frame{};
 };
 
 VideoServer::VideoServer(std::unique_ptr<IVideoDecoder> decoder, string bitstream)
@@ -121,6 +107,5 @@ VideoServer::VideoServer(std::unique_ptr<IVideoDecoder> decoder, string bitstrea
 
 VideoServer::~VideoServer() = default;
 
-auto VideoServer::frameAs(YUV444P10 tag) -> Frame<YUV444P10> { return m_impl->frameAs(tag); }
-auto VideoServer::frameAs(YUV400P10 tag) -> Frame<YUV400P10> { return m_impl->frameAs(tag); }
+auto VideoServer::getFrame() -> unique_ptr<AnyFrame> { return m_impl->getFrame(); }
 } // namespace TMIV::VideoDecoder

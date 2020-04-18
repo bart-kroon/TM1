@@ -37,17 +37,20 @@
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
 namespace TMIV::VideoDecoder {
+// The VideoServer uses a thread to change from push to pull mechanism.
 class VideoServer {
 public:
-  VideoServer(std::unique_ptr<IVideoDecoder> decoder, std::string bitstream);
+  explicit VideoServer(std::unique_ptr<IVideoDecoder> decoder, std::string bitstream);
+  VideoServer(const VideoServer &) = delete;
+  VideoServer(VideoServer &&) = default;
+  VideoServer &operator=(const VideoServer &) = delete;
+  VideoServer &operator=(VideoServer &&) = default;
   ~VideoServer();
 
-  template <typename Format> auto frameAs() -> Common::Frame<Format> { return frameAs_(Format{}); }
+  // Get the next frame. If there are no more frames the result will be empty.
+  auto getFrame() -> std::unique_ptr<Common::AnyFrame>;
 
 private:
-  auto frameAs(Common::YUV444P10 tag) -> Common::Frame<Common::YUV444P10>;
-  auto frameAs(Common::YUV400P10 tag) -> Common::Frame<Common::YUV400P10>;
-
   class Impl;
   std::unique_ptr<Impl> m_impl;
 };

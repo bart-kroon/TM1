@@ -34,6 +34,10 @@
 #ifndef _TMIV_VIDEODECODER_HMVIDEODECODER_H_
 #define _TMIV_VIDEODECODER_HMVIDEODECODER_H_
 
+#ifndef HAVE_HM
+#error HM is disabled
+#endif
+
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
 #include <TMIV/Common/Json.h>
@@ -49,7 +53,7 @@ public:
   virtual ~HmVideoDecoder();
 
   void decode(std::istream &stream) override;
-  void addListener(Listener listener) override;
+  void addFrameListener(FrameListener listener) override;
 
 private:
   class Impl;

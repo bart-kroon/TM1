@@ -19,7 +19,8 @@ if (Catch2_FOUND)
 endif()
 
 include(GNUInstallDirs)
-include(CMake/hm.cmake)
+
+include(CMake/HM.cmake)
 
 foreach(subdir
 		Common 

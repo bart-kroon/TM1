@@ -42,11 +42,6 @@
 #include <memory>
 
 namespace TMIV::VideoDecoder {
-class IDecodedPicture {
-public:
-  virtual ~IDecodedPicture() = default;
-};
-
 class IVideoDecoder {
 public:
   virtual ~IVideoDecoder();
@@ -55,10 +50,10 @@ public:
   static auto create(TMIV::MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
       -> std::unique_ptr<IVideoDecoder>;
 
-  using Listener = std::function<void(const IDecodedPicture &)>;
+  using FrameListener = std::function<void(const Common::AnyFrame &)>;
 
   virtual void decode(std::istream &stream) = 0;
-  virtual void addListener(Listener listener) = 0;
+  virtual void addFrameListener(FrameListener listener) = 0;
 };
 } // namespace TMIV::VideoDecoder
 

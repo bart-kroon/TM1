@@ -43,19 +43,8 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::VideoDecoder {
-class HmPicture : public IDecodedPicture {
-public:
-  HmPicture(const TComPic &picture) : m_picture{picture} {}
-  HmPicture(const HmPicture &other) = delete;
-  HmPicture(HmPicture &&other) = delete;
-  HmPicture &operator=(const HmPicture &other) = delete;
-  HmPicture &operator=(HmPicture &&other) = delete;
-  ~HmPicture() = default;
-
-private:
-  const TComPic &m_picture;
-};
-
+// This implementation is based on TAppDec.cpp (HM 16.16) with all optional parameters locked to
+// default values and without fields.
 class HmVideoDecoder::Impl {
 public:
   void decode(std::istream &stream) {
@@ -116,6 +105,11 @@ public:
       }
 
       if (pcListPic) {
+        if (m_outputBitDepth.front() == 0) {
+          const auto &recon = pcListPic->front()->getPicSym()->getSPS().getBitDepths().recon;
+          copy(cbegin(recon), cend(recon), begin(m_outputBitDepth));
+        }
+
         if (bNewPicture) {
           xWriteOutput(*pcListPic, nalu.m_temporalId);
         }
@@ -148,7 +142,7 @@ public:
     m_cTDecTop.destroy();
   }
 
-  void addListener(Listener listener) { m_listeners.push_back(move(listener)); }
+  void addFrameListener(FrameListener listener) { m_frameListeners.push_back(move(listener)); }
 
 private:
   void xWriteOutput(TComList<TComPic *> &pcListPic, unsigned tId) {
@@ -205,35 +199,66 @@ private:
     m_iPOCLastDisplay = -MAX_INT;
   }
 
-  void xWritePicture(TComPic &pcPic) {
-    // Wrap TComPic to provide IPicture interface
-    const auto picture = HmPicture{pcPic};
+  auto anyFrame(TComPicYuv &comPicYuv) const -> AnyFrame {
+    auto x = AnyFrame{};
 
-    // Invoke all listeners
-    for (const auto &listener : m_listeners) {
-      listener(picture);
+    assert(comPicYuv.getNumberValidComponents() <= x.planes.size());
+
+    for (const auto componentId : {COMPONENT_Y, COMPONENT_Cb, COMPONENT_Cr}) {
+      if (componentId < comPicYuv.getNumberValidComponents()) {
+        const auto k = int(componentId);
+        const auto width = comPicYuv.getWidth(componentId);
+        const auto height = comPicYuv.getHeight(componentId);
+
+        x.bitdepth[k] = m_outputBitDepth[toChannelType(componentId)];
+        x.planes[k].resize(size_t(height), size_t(width));
+
+        const auto *row = comPicYuv.getBuf(componentId);
+
+        for (int i = 0; i < height; ++i) {
+          copy(row, row + width, x.planes[k].row_begin(i));
+          row += comPicYuv.getStride(componentId);
+        }
+      }
+    }
+
+    return x;
+  }
+
+  void xWritePicture(TComPic &comPic) {
+    if (!m_frameListeners.empty()) {
+      // Copy into AnyFrame
+      auto *comPicYuv = comPic.getPicYuvRec();
+      assert(comPicYuv);
+      const auto picture = anyFrame(*comPicYuv);
+
+      // Invoke all listeners
+      for (const auto &listener : m_frameListeners) {
+        listener(picture);
+      }
     }
 
     // update POC of display order
-    m_iPOCLastDisplay = pcPic.getPOC();
+    m_iPOCLastDisplay = comPic.getPOC();
 
-    // erase non-referenced picture in the reference picture list after display
-    if (!pcPic.getSlice(0)->isReferenced() && pcPic.getReconMark()) {
-      pcPic.setReconMark(false);
+    // erase non-referenced comPic in the reference comPic list after display
+    if (!comPic.getSlice(0)->isReferenced() && comPic.getReconMark()) {
+      comPic.setReconMark(false);
 
       // mark it should be extended later
-      pcPic.getPicYuvRec()->setBorderExtension(false);
+      comPic.getPicYuvRec()->setBorderExtension(false);
     }
 
-    pcPic.setOutputMark(false);
+    comPic.setOutputMark(false);
   }
 
   TDecTop m_cTDecTop{};
 
-  vector<Listener> m_listeners;
+  vector<FrameListener> m_frameListeners;
 
   int m_iPOCLastDisplay{-MAX_INT};
   int m_iSkipFrame{};
+  std::array<int, MAX_NUM_CHANNEL_TYPE> m_outputBitDepth{};
 }; // namespace TMIV::VideoDecoder
 
 HmVideoDecoder::HmVideoDecoder() : m_impl{new Impl{}} {}
@@ -242,5 +267,7 @@ HmVideoDecoder::~HmVideoDecoder() = default;
 
 void HmVideoDecoder::decode(std::istream &stream) { m_impl->decode(stream); }
 
-void HmVideoDecoder::addListener(Listener listener) { return m_impl->addListener(move(listener)); }
+void HmVideoDecoder::addFrameListener(FrameListener listener) {
+  return m_impl->addFrameListener(move(listener));
+}
 } // namespace TMIV::VideoDecoder

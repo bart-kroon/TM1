@@ -74,9 +74,11 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
   std::ifstream stream{path, std::ios::binary};
 
   if (!stream.good()) {
-    if (fileNameField== "OccupancyVideoDataPathFmt") {
-      cout << "No occupancy info, either the file is corrupted or msp_fully_occupied_flag = true or msp_occupancy_subbitstream_present_flag = false\n";
-      return result; // Handling the case of embeded occupancy since not know ahead (occupancy signaling elements are not read yet)
+    if (fileNameField == "OccupancyVideoDataPathFmt") {
+      std::cout << "No occupancy info, either the file is corrupted or msp_fully_occupied_flag = true "
+              "or msp_occupancy_subbitstream_present_flag = false\n";
+      return result; // Handling the case of embeded occupancy since not know ahead (occupancy
+                     // signaling elements are not read yet)
     }
     throw std::runtime_error("Failed to open file");
   }

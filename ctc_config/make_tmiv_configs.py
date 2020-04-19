@@ -365,6 +365,11 @@ class EncoderConfiguration(TestConfiguration):
 			return 2
 		return 1
 
+	def occupancyDownscaleFactor(self):
+		if self.anchorId == 'A97' or self.anchorId == 'A17':
+			return 8
+		return 1
+
 	def alignment(self):
 		return 8
 
@@ -541,7 +546,10 @@ class EncoderConfiguration(TestConfiguration):
 	def saveHmCfg(self, component, scale):
 		path = '{0}/S{2}/HM_{0}_{1}_S{2}.cfg'.format(self.anchorId, component, self.seqId)
 		with open(path, 'w') as stream:
-			stream.write('InputBitDepth: 10\n')
+			if component == 'To':
+				stream.write('InputBitDepth: 8\n')
+			if component == 'Tt' or component == 'Td':
+				stream.write('InputBitDepth: 10\n')
 			stream.write('InputChromaFormat: 420\n')
 			stream.write('FrameRate: 30\n')
 			stream.write('FrameSkip: 0\n')
@@ -549,6 +557,10 @@ class EncoderConfiguration(TestConfiguration):
 			stream.write('SourceHeight: {}\n'.format(self.atlasHeight() // scale))
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
+			stream.write('ConformanceWindowMode: 1\n')
+			if component == 'To': #for lossless coding, use -q 0 in addition
+				stream.write('TransquantBypassEnableFlag: 1\n')
+				stream.write('CUTransquantBypassFlagForce: 1\n')
 			stream.write('Level: 5.2\n')
 
 def generate(anchorIds, seqIds, testPoints):
@@ -559,6 +571,7 @@ def generate(anchorIds, seqIds, testPoints):
 			if len(testPoints) > 1:
 				config.saveHmCfg('Tt', 1)
 				config.saveHmCfg('Td', config.geometryDownscaleFactor())
+				config.saveHmCfg('To', config.occupancyDownscaleFactor())
 
 
 	for testPoint in testPoints:

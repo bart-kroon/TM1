@@ -83,20 +83,26 @@ auto printTo(std::ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> std:
 class AtlasTileGroupHeader {
 public:
   [[nodiscard]] constexpr auto atgh_atlas_frame_parameter_set_id() const noexcept;
-  [[nodiscard]] auto atgh_adaptation_parameter_set_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] constexpr auto atgh_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto atgh_address() const noexcept;
   [[nodiscard]] constexpr auto atgh_type() const noexcept;
+  [[nodiscard]] auto atgh_atlas_output_flag() const noexcept -> bool;
   [[nodiscard]] constexpr auto atgh_atlas_frm_order_cnt_lsb() const noexcept;
+  [[nodiscard]] constexpr auto atgh_ref_atlas_frame_list_sps_flag() const noexcept;
+  [[nodiscard]] constexpr auto atgh_pos_min_z_quantizer() const noexcept;
+  [[nodiscard]] constexpr auto atgh_pos_delta_max_z_quantizer() const noexcept;
   [[nodiscard]] auto atgh_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
   [[nodiscard]] auto atgh_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
-  [[nodiscard]] constexpr auto atgh_pos_min_z_quantizer() const noexcept { return std::uint8_t(0); }
-  [[nodiscard]] constexpr auto atgh_pos_max_z_quantizer() const noexcept { return std::uint8_t(0); }
 
   constexpr auto atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto atgh_address(const std::uint8_t value) noexcept -> auto &;
   constexpr auto atgh_type(const AtghType value) noexcept -> auto &;
+  constexpr auto atgh_atlas_output_flag(const bool value) noexcept -> auto &;
+  constexpr auto atgh_pos_min_z_quantizer(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto atgh_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept -> auto &;
   constexpr auto atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto atgh_ref_atlas_frame_list_sps_flag(const bool value) noexcept -> auto &;
   auto atgh_patch_size_x_info_quantizer(const std::uint8_t value) noexcept
       -> AtlasTileGroupHeader &;
   auto atgh_patch_size_y_info_quantizer(const std::uint8_t value) noexcept
@@ -118,10 +124,14 @@ public:
 
 private:
   std::uint8_t m_atgh_atlas_frame_parameter_set_id{};
-  std::optional<std::uint8_t> m_atgh_adaptation_parameter_set_id{};
+  std::uint8_t m_atgh_adaptation_parameter_set_id{};
   std::uint8_t m_atgh_address{};
   AtghType m_atgh_type{};
+  std::optional<bool> m_atgh_atlas_output_flag{};
   std::uint8_t m_atgh_atlas_frm_order_cnt_lsb{};
+  std::optional<bool> m_atgh_ref_atlas_frame_list_sps_flag{};
+  std::optional<std::uint8_t> m_atgh_pos_min_z_quantizer{};
+  std::optional<std::uint8_t> m_atgh_pos_delta_max_z_quantizer{};
   std::uint8_t m_atgh_patch_size_x_info_quantizer{};
   std::uint8_t m_atgh_patch_size_y_info_quantizer{};
 };
@@ -210,7 +220,7 @@ public:
   template <typename Value>
   constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
 
-  [[nodiscard]] constexpr auto data() const noexcept -> auto &;
+            [[nodiscard]] constexpr auto data() const noexcept -> auto &;
 
   [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
@@ -247,7 +257,7 @@ public:
   template <typename... Args>
   explicit AtlasTileGroupDataUnit(Args &&... args) : m_vector{std::forward<Args>(args)...} {}
 
-  [[nodiscard]] auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
+            [[nodiscard]] auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
   [[nodiscard]] auto atgdu_patch_mode(std::size_t p) const -> AtgduPatchMode;
   [[nodiscard]] auto patch_information_data(std::size_t p) const -> const PatchInformationData &;
 
@@ -292,14 +302,14 @@ public:
       : m_atlas_tile_group_header{header}, m_atlas_tile_group_data_unit{
                                                in_place, std::forward<AtgduArgs>(args)...} {}
 
-  [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
-      -> const AtlasTileGroupHeader &;
+            [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
+        -> const AtlasTileGroupHeader &;
   [[nodiscard]] auto atlas_tile_group_data_unit() const noexcept -> const AtlasTileGroupDataUnit &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileGroupLayerRBSP &x) -> std::ostream &;
 
-  constexpr auto operator==(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
-  constexpr auto operator!=(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
+  auto operator==(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
+  auto operator!=(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
 
   static auto decodeFrom(std::istream &stream, const VpccUnitHeader &vuh,
                          const VpccParameterSet &vps,

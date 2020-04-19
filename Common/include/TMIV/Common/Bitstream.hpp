@@ -69,7 +69,7 @@ template <typename Integer> auto InputBitstream::getUVar(uint64_t range) -> Inte
 
 template <typename Integer> auto InputBitstream::getUExpGolomb() -> Integer {
   auto leadingBits = 0U;
-  while (getFlag()) {
+  while (!getFlag()) {
     ++leadingBits;
   }
   const auto mask = (uint64_t{1} << leadingBits) - 1;

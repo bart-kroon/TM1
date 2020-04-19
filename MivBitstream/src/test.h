@@ -73,7 +73,7 @@ auto bitCodingTest(const Type &reference, int bitsize, Args &&... args) -> bool 
   TMIV::Common::OutputBitstream obitstream{stream};
   reference.encodeTo(obitstream, args...);
   REQUIRE(bitsize == obitstream.tellp());
-  obitstream.byteAlign();
+  obitstream.zeroAlign();
 
   TMIV::Common::InputBitstream ibitstream{stream};
   const auto actual = Type::decodeFrom(ibitstream, std::forward<Args>(args)...);

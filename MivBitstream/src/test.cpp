@@ -34,8 +34,8 @@
 #define CATCH_CONFIG_MAIN
 #include "test.h"
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 namespace TMIV::MivBitstream {
-const MivDecoder::Mode MivDecoder::mode = Mode::MIV;
+const MivDecoderMode mode = MivDecoderMode::MIV;
 }

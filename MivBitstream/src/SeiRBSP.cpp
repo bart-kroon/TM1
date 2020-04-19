@@ -34,6 +34,7 @@
 #include <TMIV/MivBitstream/SeiRBSP.h>
 
 #include <TMIV/Common/Bytestream.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 #include <utility>
 
@@ -175,7 +176,9 @@ auto SeiRBSP::decodeFrom(istream &stream) -> SeiRBSP {
   do {
     messages.push_back(SeiMessage::decodeFrom(stream));
   } while (moreRbspData(stream));
-  rbspTrailingBits(stream);
+  if (mode != MivDecoderMode::TMC2) {
+    rbspTrailingBits(stream);
+  }
 
   return SeiRBSP{messages};
 }

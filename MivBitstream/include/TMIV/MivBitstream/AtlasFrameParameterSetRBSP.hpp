@@ -48,20 +48,16 @@ constexpr auto AtlasFrameParameterSetRBSP::atlas_frame_tile_information() const 
   return m_atlas_frame_tile_information;
 }
 
+constexpr auto AtlasFrameParameterSetRBSP::afps_output_flag_present_flag() const noexcept {
+  return m_afps_output_flag_present_flag;
+}
+
 constexpr auto AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1() const noexcept {
   return m_afps_num_ref_idx_default_active_minus1;
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_additional_lt_afoc_lsb_len() const noexcept {
   return m_afps_additional_lt_afoc_lsb_len;
-}
-
-constexpr auto AtlasFrameParameterSetRBSP::afps_2d_pos_x_bit_count_minus1() const noexcept {
-  return m_afps_2d_pos_x_bit_count_minus1;
-}
-
-constexpr auto AtlasFrameParameterSetRBSP::afps_2d_pos_y_bit_count_minus1() const noexcept {
-  return m_afps_2d_pos_y_bit_count_minus1;
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_3d_pos_x_bit_count_minus1() const noexcept {
@@ -80,13 +76,9 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_override_eom_for_depth_flag() co
   return m_afps_override_eom_for_depth_flag;
 }
 
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept {
+constexpr auto AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag() const
+    noexcept {
   return m_afps_raw_3d_pos_bit_count_explicit_mode_flag;
-}
-
-constexpr auto AtlasFrameParameterSetRBSP::afps_fixed_camera_model_flag() const noexcept {
-  return m_afps_fixed_camera_model_flag;
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag() const noexcept {
@@ -113,6 +105,12 @@ constexpr auto AtlasFrameParameterSetRBSP::atlas_frame_tile_information(
   return *this;
 }
 
+constexpr auto AtlasFrameParameterSetRBSP::afps_output_flag_present_flag(const bool value) noexcept
+    -> auto & {
+  m_afps_output_flag_present_flag = value;
+  return *this;
+}
+
 constexpr auto AtlasFrameParameterSetRBSP::afps_num_ref_idx_default_active_minus1(
     const std::uint8_t value) noexcept -> auto & {
   m_afps_num_ref_idx_default_active_minus1 = value;
@@ -123,20 +121,6 @@ constexpr auto
 AtlasFrameParameterSetRBSP::afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept
     -> auto & {
   m_afps_additional_lt_afoc_lsb_len = value;
-  return *this;
-}
-
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_2d_pos_x_bit_count_minus1(const std::uint8_t value) noexcept
-    -> auto & {
-  m_afps_2d_pos_x_bit_count_minus1 = value;
-  return *this;
-}
-
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_2d_pos_y_bit_count_minus1(const std::uint8_t value) noexcept
-    -> auto & {
-  m_afps_2d_pos_y_bit_count_minus1 = value;
   return *this;
 }
 
@@ -170,12 +154,6 @@ constexpr auto
 AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept
     -> auto & {
   m_afps_raw_3d_pos_bit_count_explicit_mode_flag = value;
-  return *this;
-}
-
-constexpr auto AtlasFrameParameterSetRBSP::afps_fixed_camera_model_flag(const bool value) noexcept
-    -> auto & {
-  m_afps_fixed_camera_model_flag = value;
   return *this;
 }
 

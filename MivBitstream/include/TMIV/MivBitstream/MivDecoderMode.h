@@ -31,49 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
-#define _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
-
-#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
-#include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
-
-#include <TMIV/Common/Frame.h>
+#ifndef _TMIV_MIVBITSTREAM_MIVDECODERMODE_H_
+#define _TMIV_MIVBITSTREAM_MIVDECODERMODE_H_
 
 namespace TMIV::MivBitstream {
-struct AtlasAccessUnit {
-  AtlasSequenceParameterSetRBSP asps;
-  AtlasFrameParameterSetRBSP afps;
-  AtlasTileGroupHeader atgh;
-  Common::Depth10Frame decGeoFrame;
-  Common::Depth10Frame geoFrame;
-  Common::Texture444Frame attrFrame;
-
-  Common::BlockToPatchMap blockToPatchMap;
-  ViewParamsList viewParamsList;
-  PatchParamsList patchParamsList;
-
-  // Nominal atlas frame size
-  [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
-
-  // Geometry frame size
-  [[nodiscard]] auto decGeoFrameSize(const VpccParameterSet &vps) const noexcept -> Common::Vec2i;
-
-  // Index into the block to patch map using nominal atlas coordinates
-  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;
+enum class MivDecoderMode {
+  MIV, // Parse a 3VC bitstream with MIV extension
+  TMC2 // Parse a bitstream that was produced by TMC2
 };
 
-struct AccessUnit {
-  const VpccParameterSet *vps = nullptr;
-  std::vector<AtlasAccessUnit> atlas;
-  std::uint32_t frameId{};
-  std::optional<ViewingSpace> vs;
-};
+// The mode varies per executable. The MIV decoder mode is normally MIV. The other modes are for
+// testing purposes.
+extern const MivDecoderMode mode;
 } // namespace TMIV::MivBitstream
 
 #endif

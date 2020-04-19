@@ -31,49 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
-#define _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
+#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
-#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
-#include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
-
-#include <TMIV/Common/Frame.h>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 
 namespace TMIV::MivBitstream {
-struct AtlasAccessUnit {
-  AtlasSequenceParameterSetRBSP asps;
-  AtlasFrameParameterSetRBSP afps;
-  AtlasTileGroupHeader atgh;
-  Common::Depth10Frame decGeoFrame;
-  Common::Depth10Frame geoFrame;
-  Common::Texture444Frame attrFrame;
+const MivDecoderMode mode = MivDecoderMode::MIV;
+}
 
-  Common::BlockToPatchMap blockToPatchMap;
-  ViewParamsList viewParamsList;
-  PatchParamsList patchParamsList;
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::MivBitstream;
 
-  // Nominal atlas frame size
-  [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
+auto main(int argc, char *argv[]) -> int {
+  try {
+    const auto args = vector(argv, argv + argc);
 
-  // Geometry frame size
-  [[nodiscard]] auto decGeoFrameSize(const VpccParameterSet &vps) const noexcept -> Common::Vec2i;
+    if (args.size() != 3 || strcmp(args[1], "-b") != 0) {
+      clog << "Usage: Parser -b BITSTREAM" << endl;
+      return 1;
+    }
 
-  // Index into the block to patch map using nominal atlas coordinates
-  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;
-};
+    ifstream stream{args[2], ios::binary};
+    if (!stream.good()) {
+      clog << "Failed to open bitstream for reading" << endl;
+      return 1;
+    }
 
-struct AccessUnit {
-  const VpccParameterSet *vps = nullptr;
-  std::vector<AtlasAccessUnit> atlas;
-  std::uint32_t frameId{};
-  std::optional<ViewingSpace> vs;
-};
-} // namespace TMIV::MivBitstream
-
-#endif
+    auto decoder = MivDecoder{stream,
+                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+                                return Depth10Frame{frameSize.x(), frameSize.y()};
+                              },
+                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+                                return Texture444Frame{frameSize.x(), frameSize.y()};
+                              }};
+    decoder.decode();
+    return 0;
+  } catch (runtime_error &e) {
+    clog << e.what() << endl;
+    return 1;
+  }
+}

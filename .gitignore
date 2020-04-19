@@ -6,10 +6,3 @@ build.*
 install
 install.*
 Catch2
-Spikes
-ctc_config/__pycache__
-ctc_config/make_tmiv_configs.pyc
-*.yuv
-*.log
-*.json
-*.bat

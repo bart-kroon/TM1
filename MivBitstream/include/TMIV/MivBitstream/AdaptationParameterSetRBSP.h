@@ -279,39 +279,63 @@ private:
 // 23090-12: miv_view_params_update_extrinsics
 class MivViewParamsUpdateExtrinsics {
 public:
-  friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateExtrinsics & /* x */)
-      -> std::ostream & {
-    return stream;
-  }
+  [[nodiscard]] auto mvpue_num_view_updates_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto mvpue_view_idx(const std::uint16_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto camera_extrinsics(const std::uint16_t i) const noexcept
+      -> const CameraExtrinsics &;
+  [[nodiscard]] auto camera_extrinsics(const std::uint16_t i) noexcept -> CameraExtrinsics &;
 
-  constexpr auto operator==(const MivViewParamsUpdateExtrinsics &) const noexcept { return true; }
-  constexpr auto operator!=(const MivViewParamsUpdateExtrinsics &) const noexcept { return false; }
+  // Calling this function will allocate the camera extrinsic update list
+  auto mvpue_num_view_updates_minus1(const std::uint16_t value) noexcept
+      -> MivViewParamsUpdateExtrinsics &;
+  auto mvpue_view_idx(const std::uint16_t i, const std::uint16_t value) noexcept
+      -> MivViewParamsUpdateExtrinsics &;
 
-  static auto decodeFrom(Common::InputBitstream & /* bitstream */)
-      -> MivViewParamsUpdateExtrinsics {
-    return {};
-  }
+  friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateExtrinsics &x)
+      -> std::ostream &;
 
-  void encodeTo(Common::OutputBitstream & /* bitstream */) const {}
+  auto operator==(const MivViewParamsUpdateExtrinsics &) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateExtrinsics &) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateExtrinsics;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  uint16_t m_mvpue_num_view_updates_minus1{};
+  std::vector<uint16_t> m_mvpue_view_idx;
+  std::vector<CameraExtrinsics> m_camera_extrinsics;
 };
 
 // 23090-12: miv_view_params_update_intrinsics
 class MivViewParamsUpdateIntrinsics {
 public:
-  friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateIntrinsics & /* x */)
-      -> std::ostream & {
-    return stream;
-  }
+  [[nodiscard]] auto mvpue_num_view_updates_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto mvpue_view_idx(const std::uint16_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto camera_intrinsics(const std::uint16_t i) const noexcept
+      -> const CameraIntrinsics &;
+  [[nodiscard]] auto camera_intrinsics(const std::uint16_t i) noexcept -> CameraIntrinsics &;
 
-  constexpr auto operator==(const MivViewParamsUpdateIntrinsics &) const noexcept { return true; }
-  constexpr auto operator!=(const MivViewParamsUpdateIntrinsics &) const noexcept { return false; }
+  // Calling this function will allocate the camera intrinsics update list
+  auto mvpue_num_view_updates_minus1(const std::uint16_t value) noexcept
+      -> MivViewParamsUpdateIntrinsics &;
+  auto mvpue_view_idx(const uint16_t i, const std::uint16_t value) noexcept
+      -> MivViewParamsUpdateIntrinsics &;
 
-  static auto decodeFrom(Common::InputBitstream & /* bitstream */)
-      -> MivViewParamsUpdateIntrinsics {
-    return {};
-  }
+  friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateIntrinsics &x)
+      -> std::ostream &;
 
-  void encodeTo(Common::OutputBitstream & /* bitstream */) const {}
+  auto operator==(const MivViewParamsUpdateIntrinsics &) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateIntrinsics &) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateIntrinsics;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  uint16_t m_mvpue_num_view_updates_minus1{};
+  std::vector<uint16_t> m_mvpue_view_idx;
+  std::vector<CameraIntrinsics> m_camera_intrinsics;
 };
 
 // 23090-12: ap_miv_view_params_list_update_mode

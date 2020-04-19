@@ -80,13 +80,22 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
         frame.atlas[i].occFrame.fillOne();
       }
     } else {
+      // Account for padding in case done to the coded occupancy video
+      int origWidth =
+          frame.atlas[i].occFrame.getWidth() /
+          (frame.atlas[i].asps.miv_atlas_sequence_params().masp_occupancy_scale_x_minus1() + 1);
+      int origHeight =
+          frame.atlas[i].occFrame.getHeight() /
+          (frame.atlas[i].asps.miv_atlas_sequence_params().masp_occupancy_scale_y_minus1() + 1);
+      int xPad = origWidth % 2;
+      int yPad = origHeight % 2;
       // upscale Nearest Neighbor (External occupancy coding case)
       for (int yo = 0; yo < frame.atlas[i].occFrame.getHeight(); ++yo) {
         for (int xo = 0; xo < frame.atlas[i].occFrame.getWidth(); ++xo) {
           const auto xi =
-              xo * frame.atlas[i].decOccFrame.getWidth() / frame.atlas[i].occFrame.getWidth();
+              xo * (frame.atlas[i].decOccFrame.getWidth()-xPad) / frame.atlas[i].occFrame.getWidth();
           const auto yi =
-              yo * frame.atlas[i].decOccFrame.getHeight() / frame.atlas[i].occFrame.getHeight();
+              yo * (frame.atlas[i].decOccFrame.getHeight()-yPad) / frame.atlas[i].occFrame.getHeight();
           frame.atlas[i].occFrame.getPlane(0)(yo, xo) =
               frame.atlas[i].decOccFrame.getPlane(0)(yi, xi);
         }

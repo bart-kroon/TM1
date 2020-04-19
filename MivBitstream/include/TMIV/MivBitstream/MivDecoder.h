@@ -50,6 +50,8 @@
 #include <functional>
 
 namespace TMIV::MivBitstream {
+class BitrateReport;
+
 class MivDecoder {
 public: // Frame servers
   using GeoFrameServer = std::function<Common::Depth10Frame(
@@ -64,6 +66,7 @@ public: // Decoder interface
   // those frames using a callback.  The attribute server will return empty frames if there is no
   // attribute. There is only one attribute and that is texture.
   MivDecoder(std::istream &stream, GeoFrameServer geoFrameServer, AttrFrameServer attrFrameServer);
+  ~MivDecoder();
 
   // Decode the next V-PCC unit
   //
@@ -76,6 +79,10 @@ public: // Decoder interface
   // Register listeners to obtain output. The decoding is stopped prematurely when any of the
   // listeners returns false.
   void decode();
+
+  // Optional bitrate reporting
+  void enableBitrateReporting();
+  void printBitrateReport(std::ostream &stream) const;
 
 public: // Callback signatures
   // Callback that will be called when a VPS is decoded.
@@ -176,6 +183,9 @@ private: // Internal decoder state
   std::vector<Sequence> m_sequenceV;
 
   bool m_stop{};
+
+private: // Bitrate reporting (pimpl idiom)
+  std::unique_ptr<BitrateReport> m_bitrateReport;
 
 private: // Access internal decoder state
   [[nodiscard]] auto vps(const VpccUnitHeader &vuh) const -> const VpccParameterSet &;

@@ -545,6 +545,10 @@ class EncoderConfiguration(TestConfiguration):
 
 	def saveHmCfg(self, component, scale):
 		path = '{0}/S{2}/HM_{0}_{1}_S{2}.cfg'.format(self.anchorId, component, self.seqId)
+		videoWidth = self.atlasWidth() // scale
+		videoHeight = self.atlasHeight() // scale
+		videoWidth = videoWidth + videoWidth % 2
+		videoHeight = videoHeight + videoHeight % 2
 		with open(path, 'w') as stream:
 			if component == 'To':
 				stream.write('InputBitDepth: 8\n')
@@ -553,8 +557,8 @@ class EncoderConfiguration(TestConfiguration):
 			stream.write('InputChromaFormat: 420\n')
 			stream.write('FrameRate: 30\n')
 			stream.write('FrameSkip: 0\n')
-			stream.write('SourceWidth: {}\n'.format(self.atlasWidth() // scale))
-			stream.write('SourceHeight: {}\n'.format(self.atlasHeight() // scale))
+			stream.write('SourceWidth: {}\n'.format(videoWidth))
+			stream.write('SourceHeight: {}\n'.format(videoHeight))
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
 			stream.write('ConformanceWindowMode: 1\n')

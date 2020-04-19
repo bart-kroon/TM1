@@ -113,7 +113,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   for (size_t viewId = 0; viewId < m_outIvSequenceParams.viewParamsList.size(); ++viewId) {
     if (!m_isBasicView[viewId] || m_maxEntities > 1) {
       if (!m_ExternalOccupancyCoding)
-		m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
+        m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
   }
   m_outIvSequenceParams.msp().allocateFlagVectors(
@@ -336,7 +336,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
         .asps_frame_height(m_atlasSize.y())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
-		.asps_normal_axis_limits_quantization_enabled_flag(true)
+        .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
 
     // Record patch alignment -> asps_log2_patch_packing_block_size
@@ -352,7 +352,7 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 
     // Set ATGH parameters
     atlas.atgh.atgh_ref_atlas_frame_list_sps_flag(true);
-	atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
+    atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
 
@@ -380,20 +380,28 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
 
     for (size_t i = 0; i < m_nbAtlas; ++i) {
       TextureDepth16Frame atlas;
-      if (m_ExternalOccupancyCoding && !m_outIvSequenceParams.msp().msp_fully_occupied_flag(uint8_t(i)))
+      if (m_ExternalOccupancyCoding &&
+          !m_outIvSequenceParams.msp().msp_fully_occupied_flag(uint8_t(i))) {
+        int codedOccupancyWidth =
+            m_atlasSize.x() >>
+            m_ivAccessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+        int codedOccupancyHeight =
+            m_atlasSize.y() >>
+            m_ivAccessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+        // make sure coded occupancy maps are divisible by 2 for HM coding functionality
+        codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2; 
+        codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
         atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                  Depth16Frame(m_atlasSize.x(), m_atlasSize.y()),
-                 Mask(m_atlasSize.x() >>
-                          m_ivAccessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size(),
-                      m_atlasSize.y() >>
-                          m_ivAccessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size())};
-      else
+                 Mask(codedOccupancyWidth, codedOccupancyHeight)};
+      } else
         atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
                  Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
       atlas.texture.fillNeutral();
       atlas.depth.fillZero();
-      if (m_ExternalOccupancyCoding && !m_outIvSequenceParams.msp().msp_fully_occupied_flag(uint8_t(i)))
-		  atlas.occupancy.fillZero();
+      if (m_ExternalOccupancyCoding &&
+          !m_outIvSequenceParams.msp().msp_fully_occupied_flag(uint8_t(i)))
+        atlas.occupancy.fillZero();
       atlasList.push_back(move(atlas));
     }
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
@@ -471,14 +479,11 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patch.viewToAtlas(pView);
 
-		  yOcc = pAtlas.y() >> m_ivAccessUnitParams.atlas[patch.vuhAtlasId]
+          yOcc = pAtlas.y() >> m_ivAccessUnitParams.atlas[patch.vuhAtlasId]
                                    .asps.asps_log2_patch_packing_block_size();
           xOcc = pAtlas.x() >> m_ivAccessUnitParams.atlas[patch.vuhAtlasId]
                                    .asps.asps_log2_patch_packing_block_size();
-                  /*
-          cout << "Atlas(y,x)=(" << pAtlas.y() << ',' << pAtlas.x() << "), Occ(y,x)=(" << yOcc
-               << ',' << xOcc << ")\n";
-          */
+          
           if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
               pAtlas.y() >= textureAtlasMap.getHeight() ||
               pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||

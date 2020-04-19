@@ -69,8 +69,7 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
   // Occupancy extraction
   for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
-    frame.atlas[i].occFrame =
-        Mask{frame.atlas[i].geoFrame.getWidth(), frame.atlas[i].geoFrame.getHeight()};
+    frame.atlas[i].occFrame = Mask{frame.atlas[i].frameSize().x(), frame.atlas[i].frameSize().y()};
     if (!frame.vps->miv_sequence_params().msp_occupancy_subbitstream_present_flag(i)) {
       if (!frame.vps->miv_sequence_params().msp_fully_occupied_flag(i)) {
         transform(frame.atlas[i].geoFrame.getPlane(0).begin(),
@@ -81,14 +80,15 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
         frame.atlas[i].occFrame.fillOne();
       }
     } else {
-      // upscale Nearest (External occupancy coding case)
+      // upscale Nearest Neighbor (External occupancy coding case)
       for (int yo = 0; yo < frame.atlas[i].occFrame.getHeight(); ++yo) {
         for (int xo = 0; xo < frame.atlas[i].occFrame.getWidth(); ++xo) {
           const auto xi =
               xo * frame.atlas[i].decOccFrame.getWidth() / frame.atlas[i].occFrame.getWidth();
           const auto yi =
               yo * frame.atlas[i].decOccFrame.getHeight() / frame.atlas[i].occFrame.getHeight();
-          frame.atlas[i].occFrame.getPlane(0)(yo, xo) = frame.atlas[i].decOccFrame.getPlane(0)(yi, xi);
+          frame.atlas[i].occFrame.getPlane(0)(yo, xo) =
+              frame.atlas[i].decOccFrame.getPlane(0)(yi, xi);
         }
       }
     }

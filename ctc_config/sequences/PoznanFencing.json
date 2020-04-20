@@ -416,7 +416,7 @@
         "Converted_by": "VSRS_to_JSON.py"
     }, 
     "Version": "2.0", 
-    "Fps": 1, 
+    "Fps": 25, 
     "BoundingBox_center": [
         0, 
         0, 

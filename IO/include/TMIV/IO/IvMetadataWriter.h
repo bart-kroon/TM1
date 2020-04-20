@@ -45,10 +45,14 @@ public:
 
   void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
   void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
+  void reportSummary(std::ostream&) const;
 
 private:
   std::ofstream m_stream;
   std::unique_ptr<MivBitstream::MivEncoder> m_encoder;
+
+  double m_frameRate{};
+  std::streampos m_bytesWritten{};
 };
 } // namespace TMIV::IO
 

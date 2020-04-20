@@ -45,6 +45,14 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::AtlasConstructor {
+namespace {
+void runtimeCheck(bool cond, const char *what) {
+  if (!cond) {
+    throw runtime_error(what);
+  }
+}
+} // namespace
+
 constexpr auto neutralChroma = TextureFrame::neutralColor();
 
 AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNode) {
@@ -53,33 +61,99 @@ AtlasConstructor::AtlasConstructor(const Json &rootNode, const Json &componentNo
   m_aggregator = Factory<IAggregator>::getInstance().create("Aggregator", rootNode, componentNode);
   m_packer = Factory<IPacker>::getInstance().create("Packer", rootNode, componentNode);
 
-  // Single atlas size
-  m_atlasSize = componentNode.require("AtlasResolution").asIntVector<2>();
+  // Parameters
+  const auto numGroups = rootNode.require("numGroups").asInt();
+  m_blockSize = rootNode.require("blockSize").asInt();
+  const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
+  const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
+  const auto maxAtlases = rootNode.require("maxAtlases").asInt();
+  m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
+
+  // Check parameters
+  runtimeCheck(1 <= numGroups, "numGroups should be at least one");
+  runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
+  runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
+  if (maxLumaSampleRate == 0) {
+    runtimeCheck(maxLumaPictureSize == 0 && maxAtlases == 0,
+                 "Either specify all constraints or none");
+  } else {
+    runtimeCheck(maxLumaPictureSize > 0 && maxAtlases > 0,
+                 "Either specify all constraints or none");
+    runtimeCheck(numGroups <= maxAtlases, "There should be at least one atlas per group");
+  }
+
+  // Translate parameters to concrete constraints
+  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
+  m_maxBlockRate = maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * sqr(m_blockSize));
+  m_maxBlocksPerAtlas = maxLumaPictureSize / sqr(m_blockSize);
+  m_maxAtlases = maxAtlases / numGroups;
 
   // Read the entity encoding range if exisited
   if (auto subnode = componentNode.optional("EntityEncodeRange")) {
     m_EntityEncRange = subnode.asIntVector<2>();
   }
 
-  // The number of atlases is determined by the specified maximum number of luma
-  // samples per frame (texture and depth combined)
-  int maxLumaSamplesPerFrame = componentNode.require("MaxLumaSamplesPerFrame").asInt();
-  const auto lumaSamplesPerAtlas = 2 * m_atlasSize.x() * m_atlasSize.y();
-  m_nbAtlas = size_t(maxLumaSamplesPerFrame / lumaSamplesPerAtlas);
-
   if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 }
 
-auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
-    -> const IvSequenceParams & {
-  // Construct at least the basic views
-  if (ivSequenceParams.msp().msp_max_entities_minus1() == 0) {
-    m_nbAtlas =
-        max(static_cast<size_t>(count(isBasicView.begin(), isBasicView.end(), true)), m_nbAtlas);
+// Calculate atlas frame sizes [MPEG/M52994 v2]
+auto AtlasConstructor::calculateNominalAtlasFrameSizes(
+    const IvSequenceParams &ivSequenceParams) const -> SizeVector {
+  if (m_maxBlockRate == 0) {
+    // No constraints: one atlas per transport view
+    auto result = SizeVector(ivSequenceParams.viewParamsList.size());
+    transform(cbegin(ivSequenceParams.viewParamsList), cend(ivSequenceParams.viewParamsList),
+              begin(result), [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
+    return result;
   }
 
+  // Translate block rate into a maximum number of blocks
+  const auto maxBlocks = int(m_maxBlockRate / ivSequenceParams.frameRate);
+
+  // Calculate the number of atlases
+  auto numAtlases = (maxBlocks + m_maxBlocksPerAtlas - 1) / m_maxBlocksPerAtlas;
+  if (numAtlases > m_maxAtlases) {
+    cout << "The maxAtlases constraint is a limiting factor.\n";
+    numAtlases = m_maxAtlases;
+  }
+
+  // Calculate the number of blocks per atlas
+  auto maxBlocksPerAtlas = maxBlocks / numAtlases;
+  if (maxBlocksPerAtlas > m_maxBlocksPerAtlas) {
+    cout << "The maxLumaPictureSize constraint is a limiting factor.\n";
+    maxBlocksPerAtlas = m_maxBlocksPerAtlas;
+  }
+
+  // Take the smallest reasonable width
+  const auto viewGridSize = calculateViewGridSize(ivSequenceParams);
+  const auto atlasGridWidth = viewGridSize.x();
+  const auto atlasGridHeight = maxBlocksPerAtlas / atlasGridWidth;
+
+  // Warn if the aspect ratio is outside of HEVC limits (unlikely)
+  if (atlasGridWidth * 8 < atlasGridHeight || atlasGridHeight * 8 < atlasGridWidth) {
+    cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
+  }
+
+  return SizeVector(numAtlases, {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
+}
+
+auto AtlasConstructor::calculateViewGridSize(const IvSequenceParams &ivSequenceParams) const
+    -> Vec2i {
+  int x{};
+  int y{};
+
+  for (const auto &viewParams : ivSequenceParams.viewParamsList) {
+    x = max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_blockSize) / m_blockSize);
+    y = max(y, (viewParams.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
+  }
+
+  return {x, y};
+}
+
+auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector<bool> isBasicView)
+    -> const IvSequenceParams & {
   m_inIvSequenceParams = move(ivSequenceParams);
 
   // Do we also have texture or only geometry?
@@ -88,12 +162,20 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   auto const haveTexture =
       ai.ai_attribute_count() >= 1 && ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 
+  // Calculate nominal atlas frame sizes
+  const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_inIvSequenceParams);
+  cout << "Nominal atlas frame sizes: { ";
+  for (auto &size : atlasFrameSizes) {
+    cout << ' ' << size;
+  }
+  cout << " }\n";
+
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_outIvSequenceParams = IvSequenceParams{SizeVector(m_nbAtlas, m_atlasSize), haveTexture};
+  m_outIvSequenceParams = IvSequenceParams{atlasFrameSizes, haveTexture};
   m_outIvSequenceParams.msp() = m_inIvSequenceParams.msp();
   m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
   m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;
-  setGiGeometry3dCoordinatesBitdepthMinus1();
+  m_outIvSequenceParams.frameRate = m_inIvSequenceParams.frameRate;
 
   m_isBasicView = move(isBasicView);
 
@@ -319,24 +401,22 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   cout << "Aggregated luma samples per frame is " << (1e-6 * lumaSamplesPerFrame) << "M\n";
   m_maxLumaSamplesPerFrame = max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 
-  // Packing
-  m_ivAccessUnitParams.atlas.resize(m_nbAtlas);
-  for (size_t atlasId = 0; atlasId < m_nbAtlas; ++atlasId) {
-    auto &atlas = m_ivAccessUnitParams.atlas[atlasId];
+  // Set atlas parameters
+  m_ivAccessUnitParams.atlas.resize(m_outIvSequenceParams.vps.vps_atlas_count_minus1() + 1);
+
+  for (uint8_t i = 0; i <= m_outIvSequenceParams.vps.vps_atlas_count_minus1(); ++i) {
+    auto &atlas = m_ivAccessUnitParams.atlas[i];
+    const auto frameWidth = m_outIvSequenceParams.vps.vps_frame_width(i);
+    const auto frameHeight = m_outIvSequenceParams.vps.vps_frame_height(i);
 
     // Set ASPS parameters
-    atlas.asps.asps_frame_width(m_atlasSize.x())
-        .asps_frame_height(m_atlasSize.y())
+    atlas.asps.asps_frame_width(frameWidth)
+        .asps_frame_height(frameHeight)
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
 		.asps_normal_axis_limits_quantization_enabled_flag(true)
-        .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1));
-
-    // Record patch alignment -> asps_log2_patch_packing_block_size
-    while (m_packer->getAlignment() % (2 << atlas.asps.asps_log2_patch_packing_block_size()) == 0) {
-      atlas.asps.asps_log2_patch_packing_block_size(
-          atlas.asps.asps_log2_patch_packing_block_size() + 1);
-    }
+        .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1))
+        .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
 
     // Set AFPS parameters
     const auto &gi = m_outIvSequenceParams.vps.geometry_information(uint8_t(atlasId));
@@ -408,20 +488,18 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
   int xM = patch.pduViewPos().x();
   int yM = patch.pduViewPos().y();
 
-  int alignment = m_packer->getAlignment();
-
   const auto &inViewParams = m_inIvSequenceParams.viewParamsList[patch.pduViewId()];
   const auto &outViewParams = m_outIvSequenceParams.viewParamsList[patch.pduViewId()];
 
-  for (int dyAligned = 0; dyAligned < h; dyAligned += alignment) {
-    for (int dxAligned = 0; dxAligned < w; dxAligned += alignment) {
+  for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
+    for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
 
       bool isAggregatedMaskBlockNonEmpty = false;
-      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
+      for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         if (dy + yM >= textureViewMap.getHeight() || dy + yM < 0) {
           continue;
         }
-        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
+        for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
@@ -435,8 +513,8 @@ void AtlasConstructor::writePatchInAtlas(const PatchParams &patch,
         }
       }
 
-      for (int dy = dyAligned; dy < dyAligned + alignment; dy++) {
-        for (int dx = dxAligned; dx < dxAligned + alignment; dx++) {
+      for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
+        for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
 
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patch.viewToAtlas(pView);

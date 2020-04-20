@@ -59,9 +59,10 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   if (!stream.good()) {
     throw runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
+  const auto sequenceConfig = Json{stream};
 
   x.viewParamsList = ViewParamsList::loadFromJson(
-      Json{stream}.require("cameras"), config.require("SourceCameraNames").asStringVector());
+      sequenceConfig.require("cameras"), config.require("SourceCameraNames").asStringVector());
 
   if (config.isPresent("depthLowQualityFlag")) {
     auto node = config.optional("depthLowQualityFlag");
@@ -83,6 +84,8 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   if (auto subnode = config.optional("ViewingSpace"); subnode) {
     x.viewingSpace = ViewingSpace::loadFromJson(subnode);
   }
+
+  x.frameRate = sequenceConfig.require("Fps").asDouble();
 
   return x;
 }

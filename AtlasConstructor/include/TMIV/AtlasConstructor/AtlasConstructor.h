@@ -81,8 +81,9 @@ private:
   static void mergeMasks(Common::MaskList &entityMergedMasks, Common::MaskList masks);
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
-  void writePatchInAtlas(const MivBitstream::PatchParams &patch, const Common::MVD16Frame &views,
-                         Common::MVD16Frame &atlas, int frame);
+  void writePatchInAtlas(const MivBitstream::PatchParams &patch,
+                         const Common::TextureDepth16Frame &views, Common::MVD16Frame &atlas,
+                         int frame);
 
 private:
   int m_blockSize{};

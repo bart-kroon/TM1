@@ -414,18 +414,18 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
         .asps_frame_height(frameHeight)
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
-		.asps_normal_axis_limits_quantization_enabled_flag(true)
+        .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_max_projections_minus1(uint16_t(m_outIvSequenceParams.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
 
     // Set AFPS parameters
-    const auto &gi = m_outIvSequenceParams.vps.geometry_information(uint8_t(atlasId));
+    const auto &gi = m_outIvSequenceParams.vps.geometry_information(i);
     atlas.afps.afps_3d_pos_x_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
     atlas.afps.afps_3d_pos_y_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
 
     // Set ATGH parameters
     atlas.atgh.atgh_ref_atlas_frame_list_sps_flag(true);
-	atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
+    atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
     atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
@@ -440,16 +440,20 @@ auto AtlasConstructor::completeAccessUnit() -> const IvAccessUnitParams & {
   for (const auto &views : m_viewBuffer) {
     MVD16Frame atlasList;
 
-    for (size_t i = 0; i < m_nbAtlas; ++i) {
-      TextureDepth16Frame atlas = {TextureFrame(m_atlasSize.x(), m_atlasSize.y()),
-                                   Depth16Frame(m_atlasSize.x(), m_atlasSize.y())};
-      atlas.texture.fillNeutral();
-      atlas.depth.fillZero();
-      atlasList.push_back(move(atlas));
+    for (uint8_t i = 0; i <= m_outIvSequenceParams.vps.vps_atlas_count_minus1(); ++i) {
+      const auto frameWidth = m_outIvSequenceParams.vps.vps_frame_width(i);
+      const auto frameHeight = m_outIvSequenceParams.vps.vps_frame_height(i);
+      TextureDepth16Frame frame = {TextureFrame(frameWidth, frameHeight),
+                                   Depth16Frame(frameWidth, frameHeight)};
+      frame.texture.fillNeutral();
+      frame.depth.fillZero();
+      atlasList.push_back(move(frame));
     }
+
     for (const auto &patch : m_ivAccessUnitParams.patchParamsList) {
       const auto &view = views[patch.pduViewId()];
       if (m_maxEntities > 1) {
+        // TODO(BK): refactor entitySeparator to accept a single view
         MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());

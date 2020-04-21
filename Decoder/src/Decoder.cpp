@@ -31,10 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
-
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/Decoder.h>
 #include <TMIV/Decoder/GeometryScaler.h>
+#include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -59,23 +59,22 @@ void checkRestrictions(const AccessUnit &frame) {
         "decoder/renderer is not yet able to convert between coordinate axis systems.");
   }
 }
-} // namespace
 
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  checkRestrictions(frame);
-  m_geometryScaler.inplaceScale(frame);
-  m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  // Occupancy extraction
+void extractOccupancy(AccessUnit &frame) {
   for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
     frame.atlas[i].occFrame = Mask{frame.atlas[i].frameSize().x(), frame.atlas[i].frameSize().y()};
     if (!frame.vps->miv_sequence_params().msp_occupancy_subbitstream_present_flag(i)) {
       if (!frame.vps->miv_sequence_params().msp_fully_occupied_flag(i)) {
-        transform(frame.atlas[i].geoFrame.getPlane(0).begin(),
-                  frame.atlas[i].geoFrame.getPlane(0).end(),
-                  frame.atlas[i].occFrame.getPlane(0).begin(),
-                  [&](auto depth) { return 0 < depth ? 1 : 0; });
+        Vec2i sz = frame.atlas[i].blockToPatchMap.getSize();
+        for (auto y = 0; y < frame.atlas[i].frameSize().y(); y++)
+          for (auto x = 0; x < frame.atlas[i].frameSize().x(); x++) {
+            uint16_t patchId = frame.atlas[i].blockToPatchMap.getPlane(0)(y / sz[1], x / sz[0]);
+            const auto occupancyTransform = OccupancyTransform{
+                frame.atlas[i].viewParamsList[frame.atlas[i].patchParamsList[patchId].pduViewId()],
+                frame.atlas[i].patchParamsList[patchId]};
+            if (occupancyTransform.occupant(frame.atlas[i].geoFrame.getPlane(0)(y, x)))
+              frame.atlas[i].occFrame.getPlane(0)(y, x) = 1;
+          }
       } else {
         frame.atlas[i].occFrame.fillOne();
       }
@@ -92,16 +91,26 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
       // upscale Nearest Neighbor (External occupancy coding case)
       for (int yo = 0; yo < frame.atlas[i].occFrame.getHeight(); ++yo) {
         for (int xo = 0; xo < frame.atlas[i].occFrame.getWidth(); ++xo) {
-          const auto xi =
-              xo * (frame.atlas[i].decOccFrame.getWidth()-xPad) / frame.atlas[i].occFrame.getWidth();
-          const auto yi =
-              yo * (frame.atlas[i].decOccFrame.getHeight()-yPad) / frame.atlas[i].occFrame.getHeight();
+          const auto xi = xo * (frame.atlas[i].decOccFrame.getWidth() - xPad) /
+                          frame.atlas[i].occFrame.getWidth();
+          const auto yi = yo * (frame.atlas[i].decOccFrame.getHeight() - yPad) /
+                          frame.atlas[i].occFrame.getHeight();
           frame.atlas[i].occFrame.getPlane(0)(yo, xo) =
               frame.atlas[i].decOccFrame.getPlane(0)(yi, xi);
         }
       }
     }
   }
+}
+} // namespace
+
+auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
+    -> Texture444Depth16Frame {
+  checkRestrictions(frame);
+  m_geometryScaler.inplaceScale(frame);
+  m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
+  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
+  extractOccupancy(frame);
   return m_renderer->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Decoder

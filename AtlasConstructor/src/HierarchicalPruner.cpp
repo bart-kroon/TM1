@@ -135,7 +135,7 @@ public:
                                const std::vector<bool> &isBasicView) {
 
     auto &viewParamsList = ivSequenceParams.viewParamsList;
-    ProjectionHelper::List cameraHelperList{viewParamsList};
+    ProjectionHelperList cameraHelperList{viewParamsList};
 
     // Overlapping matrix
     auto overlappingMatrix = computeOverlappingMatrix(cameraHelperList);

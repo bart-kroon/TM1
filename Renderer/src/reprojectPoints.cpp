@@ -307,7 +307,7 @@ auto ProjectionHelper::getPointCloud(unsigned N) const -> PointCloud {
   return pointCloud;
 }
 
-auto getPointCloudList(const ProjectionHelper::List &sourceHelperList, unsigned N)
+auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N)
     -> PointCloudList {
   PointCloudList pointCloudList;
 
@@ -318,7 +318,7 @@ auto getPointCloudList(const ProjectionHelper::List &sourceHelperList, unsigned 
   return pointCloudList;
 }
 
-auto getOverlapping(const ProjectionHelper::List &sourceHelperList,
+auto getOverlapping(const ProjectionHelperList &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float {
   std::size_t N = 0;

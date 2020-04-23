@@ -62,21 +62,27 @@ void checkRestrictions(const AccessUnit &frame) {
 
 void extractOccupancy(AccessUnit &frame) {
   for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
-    frame.atlas[i].occFrame = Mask{frame.atlas[i].frameSize().x(), frame.atlas[i].frameSize().y()};
+    auto &atlas = frame.atlas[i];
+    atlas.occFrame = Mask{atlas.frameSize().x(), atlas.frameSize().y()};
     if (!frame.vps->miv_sequence_params().msp_occupancy_subbitstream_present_flag(i)) {
+      atlas.occFrame.fillOne();
       if (!frame.vps->miv_sequence_params().msp_fully_occupied_flag(i)) {
-        Vec2i sz = frame.atlas[i].blockToPatchMap.getSize();
-        for (auto y = 0; y < frame.atlas[i].frameSize().y(); y++)
-          for (auto x = 0; x < frame.atlas[i].frameSize().x(); x++) {
-            uint16_t patchId = frame.atlas[i].blockToPatchMap.getPlane(0)(y / sz[1], x / sz[0]);
-            const auto occupancyTransform = OccupancyTransform{
-                frame.atlas[i].viewParamsList[frame.atlas[i].patchParamsList[patchId].pduViewId()],
-                frame.atlas[i].patchParamsList[patchId]};
-            if (occupancyTransform.occupant(frame.atlas[i].geoFrame.getPlane(0)(y, x)))
+        // embedded occupancy case: Implementation assumes geoFrame (full size depth) is available
+        Vec2i sz = atlas.blockToPatchMap.getSize();
+        for (auto y = 0; y < atlas.frameSize().y(); y++)
+          for (auto x = 0; x < atlas.frameSize().x(); x++) {
+            uint16_t patchId = atlas.blockToPatchMap.getPlane(0)(y / sz[1], x / sz[0]);
+            if (patchId == 0xFFFF)
               frame.atlas[i].occFrame.getPlane(0)(y, x) = 1;
+            else {
+              const auto occupancyTransform = OccupancyTransform{
+                  frame.atlas[i]
+                      .viewParamsList[frame.atlas[i].patchParamsList[patchId].pduViewId()],
+                  frame.atlas[i].patchParamsList[patchId]};
+              if (!occupancyTransform.occupant(frame.atlas[i].geoFrame.getPlane(0)(y, x)))
+                frame.atlas[i].occFrame.getPlane(0)(y, x) = 0;
+            }
           }
-      } else {
-        frame.atlas[i].occFrame.fillOne();
       }
     } else {
       // Account for padding in case done to the coded occupancy video
@@ -108,9 +114,9 @@ auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) c
     -> Texture444Depth16Frame {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
+  extractOccupancy(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  extractOccupancy(frame);
   return m_renderer->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Decoder

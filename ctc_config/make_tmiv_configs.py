@@ -561,7 +561,7 @@ class EncoderConfiguration(TestConfiguration):
 			stream.write('SourceHeight: {}\n'.format(videoHeight))
 			stream.write('FramesToBeEncoded: {}\n'.format(self.numberOfFrames()))
 			stream.write('SEIDecodedPictureHash: 1\n')
-			stream.write('ConformanceWindowMode: 1\n')
+			stream.write('ConformanceWindowMode: 1\n') # Needed to avoid Min CU constraints
 			if component == 'To': #for lossless coding, use -q 0 in addition
 				stream.write('TransquantBypassEnableFlag: 1\n')
 				stream.write('CUTransquantBypassFlagForce: 1\n')

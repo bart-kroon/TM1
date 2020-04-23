@@ -179,7 +179,7 @@ DepthQualityAssessor::DepthQualityAssessor(const Json & /*unused*/, const Json &
 auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
                                              const MVD16Frame &sourceViews) -> bool {
 
-    return TMIV::DepthQualityAssessor::isLowDepthQuality(
-        ivSequenceParams, sourceViews, m_blendingFactor, m_maxOutlierRatio);
+  return TMIV::DepthQualityAssessor::isLowDepthQuality(ivSequenceParams, sourceViews,
+                                                       m_blendingFactor, m_maxOutlierRatio);
 }
 } // namespace TMIV::DepthQualityAssessor

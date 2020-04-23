@@ -193,8 +193,8 @@ public:
     recoverPrunedWeight(sourceHelperList, targetHelper);
 
     // 5) Selection
-    selectViewportDepth(
-        !frame.vps->miv_sequence_params().msp_depth_low_quality_flag(), targetHelper);
+    selectViewportDepth(!frame.vps->miv_sequence_params().msp_depth_low_quality_flag(),
+                        targetHelper);
 
     // 6) Filtering
     filterVisibilityMap();
@@ -327,8 +327,7 @@ private:
       m_cameraVisibility.emplace_back(0 < K);
     }
   }
-  void
-  computeAngularDistortionPerSource(const ProjectionHelperList &sourceHelperList) {
+  void computeAngularDistortionPerSource(const ProjectionHelperList &sourceHelperList) {
     m_cameraDistortion.resize(sourceHelperList.size(), 0.F);
 
     for (size_t viewId = 0; viewId < sourceHelperList.size(); viewId++) {
@@ -340,8 +339,7 @@ private:
     }
   }
 
-  void recoverPrunedSource(const AccessUnit &frame,
-                           const ProjectionHelperList &sourceHelperList) {
+  void recoverPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList) {
     // Recover pruned views
     const auto [prunedViews, prunedMasks] = recoverPrunedViewAndMask(frame);
 
@@ -361,8 +359,7 @@ private:
                 [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NaN; });
     }
   }
-  void reprojectPrunedSource(const AccessUnit &frame,
-                             const ProjectionHelperList &sourceHelperList,
+  void reprojectPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList,
                              const ProjectionHelper &targetHelper) {
     m_sourceUnprojection.resize(m_sourceDepth.size());
     m_sourceReprojection.resize(m_sourceDepth.size());
@@ -423,8 +420,7 @@ private:
     }
   }
 
-  void warpPrunedSource(const AccessUnit &frame,
-                        const ProjectionHelper &targetHelper) {
+  void warpPrunedSource(const AccessUnit &frame, const ProjectionHelper &targetHelper) {
     struct Splat {
       Vec2f center{};
       Vec2f firstAxis{};
@@ -984,6 +980,6 @@ auto ViewWeightingSynthesizer::renderFrame(const AccessUnit &frame,
     -> Texture444Depth16Frame {
   checkLimitations(frame);
 
-      return m_impl->renderFrame(frame, viewportParams);
+  return m_impl->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Renderer

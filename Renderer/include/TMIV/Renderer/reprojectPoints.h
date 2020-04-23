@@ -116,10 +116,8 @@ inline auto isValidDepth(float d) -> bool { return (0.F < d); }
 using PointCloud = std::vector<Common::Vec3f>;
 using PointCloudList = std::vector<PointCloud>;
 
-namespace MetaEngine
-{
-class Base
-{
+namespace MetaEngine {
+class Base {
 public:
   Base() = default;
   virtual ~Base() = default;
@@ -128,30 +126,32 @@ public:
   auto operator=(Base &&) -> Base & = default;
   auto operator=(const Base &) -> Base & = default;
   virtual auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f = 0;
-  virtual auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const = 0;
+  virtual auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor const = 0;
 };
 
-template<MivBitstream::CiCamType camType>
-class Variant: public Base, public Engine<camType>
-{
+template <MivBitstream::CiCamType camType> class Variant : public Base, public Engine<camType> {
 public:
   using engine_type = Engine<camType>;
 
 public:
-  using engine_type::Engine; 
+  using engine_type::Engine;
   using engine_type::operator=;
-  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f override { return engine_type::unprojectVertex(uv, depth); }
-  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const override { return engine_type::projectVertex(v); }
+  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f override {
+    return engine_type::unprojectVertex(uv, depth);
+  }
+  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const override {
+    return engine_type::projectVertex(v);
+  }
 };
 
 using Perspective = Variant<MivBitstream::CiCamType::perspective>;
 using Equirectangular = Variant<MivBitstream::CiCamType::equirectangular>;
 using Orthographic = Variant<MivBitstream::CiCamType::orthographic>;
 
-}
+} // namespace MetaEngine
 
-class ProjectionHelper
-{
+class ProjectionHelper {
 public:
   class List : public std::vector<ProjectionHelper> {
   public:
@@ -201,8 +201,7 @@ auto getOverlapping(const ProjectionHelperList &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float;
 
-auto computeOverlappingMatrix(const ProjectionHelperList &sourceHelperList)
-    -> Common::Mat<float>;
+auto computeOverlappingMatrix(const ProjectionHelperList &sourceHelperList) -> Common::Mat<float>;
 
 } // namespace TMIV::Renderer
 

@@ -74,11 +74,10 @@ auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> vector<typename MAT::
   return fetchedValues;
 }
 
-template <CiCamType camType>
 auto isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
                        const MVD16Frame &sourceViews, float blendingFactor, float maxOutlierRatio)
     -> bool {
-  const auto sourceHelperList = ProjectionHelperList<camType>{ivSequenceParams.viewParamsList};
+  const auto sourceHelperList = ProjectionHelperList{ivSequenceParams.viewParamsList};
 
   // Expand depth
   vector<Mat<float>> sourceDepthExpandedList;
@@ -179,9 +178,8 @@ DepthQualityAssessor::DepthQualityAssessor(const Json & /*unused*/, const Json &
 
 auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
                                              const MVD16Frame &sourceViews) -> bool {
-  return ivSequenceParams.viewParamsList.front().ci.dispatch([&](auto camType) -> bool {
-    return TMIV::DepthQualityAssessor::isLowDepthQuality<camType>(
-        ivSequenceParams, sourceViews, m_blendingFactor, m_maxOutlierRatio);
-  });
+
+  return TMIV::DepthQualityAssessor::isLowDepthQuality(ivSequenceParams, sourceViews,
+                                                       m_blendingFactor, m_maxOutlierRatio);
 }
 } // namespace TMIV::DepthQualityAssessor

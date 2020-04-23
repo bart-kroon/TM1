@@ -176,6 +176,7 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
   m_outIvSequenceParams.viewParamsList = m_inIvSequenceParams.viewParamsList;
   m_outIvSequenceParams.viewingSpace = m_inIvSequenceParams.viewingSpace;
   m_outIvSequenceParams.frameRate = m_inIvSequenceParams.frameRate;
+  setGiGeometry3dCoordinatesBitdepthMinus1();
 
   m_isBasicView = move(isBasicView);
 

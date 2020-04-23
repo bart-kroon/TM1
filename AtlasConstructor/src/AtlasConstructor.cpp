@@ -115,6 +115,9 @@ auto AtlasConstructor::prepareSequence(IvSequenceParams ivSequenceParams, vector
       if (!m_ExternalOccupancyCoding)
         m_outIvSequenceParams.viewParamsList[viewId].hasOccupancy = true;
     }
+    if (m_ExternalOccupancyCoding) {
+      m_outIvSequenceParams.viewParamsList[viewId].dq.dq_depth_occ_map_threshold_default(0);
+    }
   }
   m_outIvSequenceParams.msp().allocateFlagVectors(
       m_outIvSequenceParams.vps.vps_atlas_count_minus1() + 1);

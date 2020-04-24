@@ -51,7 +51,7 @@ const MivDecoderMode mode = MivDecoderMode::MIV;
 constexpr auto defaultCodecGroupIdc = PtlProfileCodecGroupIdc::HEVC_Main10;
 
 auto usage() -> int {
-  cout << "Usage: -b BITSTREAM -r RECONSTRUCTION [-c CODEC_GROUP_IDC]\n";
+  cout << "Usage: -b BITSTREAM -o RECONSTRUCTION [-c CODEC_GROUP_IDC]\n";
   cout << '\n';
   cout << "The default codec group IDC is " << int(defaultCodecGroupIdc) << " ("
        << defaultCodecGroupIdc << ")\n";
@@ -74,7 +74,7 @@ auto main(int argc, char *argv[]) -> int {
     if (args.front() == "-b"s) {
       bitstreamPath = args[1];
       args.erase(args.begin(), args.begin() + 2);
-    } else if (args.front() == "-r"s) {
+    } else if (args.front() == "-o"s) {
       reconstructionPath = args[1];
       args.erase(args.begin(), args.begin() + 2);
     } else if (args.front() == "-c"s) {
@@ -98,7 +98,18 @@ auto main(int argc, char *argv[]) -> int {
   auto decoder = IVideoDecoder::create(*codecGroupIdc);
 
   ifstream in{*bitstreamPath, ios::binary};
+
+  if (!in.good()) {
+    cout << "Failed to open bitstream \"" << *bitstreamPath << "\" for reading\n";
+    return 1;
+  }
+
   ofstream out{*reconstructionPath, ios::binary};
+
+  if (!out.good()) {
+    cout << "Failed to open reconstruction file \"" << *reconstructionPath << "\" for writing\n";
+    return 1;
+  }
 
   decoder->addFrameListener([&out](const AnyFrame &picture) {
     auto frame = picture.as<YUV420P10>();

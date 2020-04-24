@@ -213,7 +213,7 @@ private:
         x.bitdepth[k] = m_outputBitDepth[toChannelType(componentId)];
         x.planes[k].resize(size_t(height), size_t(width));
 
-        const auto *row = comPicYuv.getBuf(componentId);
+        const auto *row = comPicYuv.getAddr(componentId);
 
         for (int i = 0; i < height; ++i) {
           copy(row, row + width, x.planes[k].row_begin(i));

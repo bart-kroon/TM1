@@ -70,7 +70,7 @@ auto main(int argc, char *argv[]) -> int {
                               }};
     decoder.enableBitrateReporting();
     decoder.decode();
-    ofstream bitrateReport{string(argv[2]) + ".csv"};
+    ofstream bitrateReport{string(args[2]) + ".csv"};
     decoder.printBitrateReport(bitrateReport);
     return 0;
   } catch (runtime_error &e) {

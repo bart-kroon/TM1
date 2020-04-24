@@ -79,7 +79,7 @@ public:
       // call actual decoding function
       bool bNewPicture = false;
       if (nalu.getBitstream().getFifo().empty()) {
-        fprintf(stderr, "Warning: Attempt to decode an empty NAL unit\n");
+        cout << "Warning: Attempt to decode an empty NAL unit\n";
       } else {
         read(nalu);
         bNewPicture = m_cTDecTop.decode(nalu, m_iSkipFrame, m_iPOCLastDisplay);
@@ -191,7 +191,7 @@ private:
       }
       if (pcPic != nullptr) {
         pcPic->destroy();
-        delete pcPic;
+        delete pcPic; // NOLINT(cppcoreguidelines-owning-memory)
       }
     }
 
@@ -216,7 +216,9 @@ private:
         const auto *row = comPicYuv.getAddr(componentId);
 
         for (int i = 0; i < height; ++i) {
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
           copy(row, row + width, x.planes[k].row_begin(i));
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
           row += comPicYuv.getStride(componentId);
         }
       }

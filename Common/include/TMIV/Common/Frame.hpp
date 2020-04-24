@@ -217,7 +217,7 @@ template <typename FORMAT> AnyFrame::AnyFrame(const Frame<FORMAT> &frame) {
   const auto &inputPlanes = frame.getPlanes();
 
   for (size_t k = 0; k < inputPlanes.size(); ++k) {
-    std::copy(std::cbegin(inputPlanes[k]), std::cend(inputPlanes[k]), std::begin(m_planes[k]));
+    std::copy(std::cbegin(inputPlanes[k]), std::cend(inputPlanes[k]), std::begin(planes[k]));
     bitdepth[k] = frame.getBitDepth();
   }
 }
@@ -244,7 +244,7 @@ template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
           for (size_t j = 0; j < outputPlanes[k].width(); ++j) {
             const size_t m = j * planes[k].width() / outputPlanes[k].width();
             assert(planes[k](n, m) <= maxInputValue);
-			using base_type = Frame<FORMAT>::base_type;
+			using base_type = typename Frame<FORMAT>::base_type;
             outputPlanes[k](i, j) = static_cast<base_type>(
                 (planes[k](n, m) * maxOutputValue + maxInputValue / 2) / maxInputValue);
             assert(outputPlanes[k](i, j) <= maxOutputValue);

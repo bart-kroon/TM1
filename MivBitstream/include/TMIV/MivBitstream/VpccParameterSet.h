@@ -51,7 +51,8 @@ enum class PtlProfileCodecGroupIdc : std::uint8_t {
   AVC_Progressive_High,
   HEVC_Main10,
   HEVC444,
-  MP4RA
+  MP4RA,
+  count
 };
 
 enum class PtlProfilePccToolsetIdc : std::uint8_t { Basic, Extended, MIV_Main = 64 };

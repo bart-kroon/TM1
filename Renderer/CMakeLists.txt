@@ -30,7 +30,6 @@ add_library(RendererLib
 	"include/TMIV/Renderer/AdditiveSynthesizer.h"
 	"include/TMIV/Renderer/ViewingSpaceController.h"
 	"include/TMIV/Renderer/reprojectPoints.h"
-	"include/TMIV/Renderer/reprojectPoints.hpp"
 	"include/TMIV/Renderer/Engine.h"
 	"include/TMIV/Renderer/Engine_ERP.hpp"
 	"include/TMIV/Renderer/Engine_Perspective.hpp"

@@ -59,7 +59,7 @@ private:
   bool m_pip{};
   int m_maxEntities{1};
   std::vector<Common::MaskList> m_aggregatedEntityMasks{};
-  Common::Vec2i m_EntityEncodeRange;
+  Common::Vec2i m_entityEncodeRange;
 };
 
 } // namespace TMIV::Packer

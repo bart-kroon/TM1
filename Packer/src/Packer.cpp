@@ -51,10 +51,8 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   m_pip = componentNode.require("PiP").asInt() != 0;
   m_maxEntities = rootNode.require("maxEntities").asInt();
   if (m_maxEntities > 1) {
-    m_EntityEncodeRange = rootNode.require("GroupBasedEncoder")
-                              .require("AtlasConstructor")
-                              .require("EntityEncodeRange")
-                              .asIntVector<2>();
+    m_entityEncodeRange =
+        rootNode.require("GroupBasedEncoder").require("EntityEncodeRange").asIntVector<2>();
   }
 }
 
@@ -80,9 +78,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   int index = 0;
   for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
-      for (int entityId = m_EntityEncodeRange[0]; entityId < m_EntityEncodeRange[1]; entityId++) {
+      for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
         // Entity clustering
-        Mask mask = m_aggregatedEntityMasks[entityId - m_EntityEncodeRange[0]][viewId];
+        Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
 
         auto clusteringOutput = Cluster::retrieve(
             viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId]);

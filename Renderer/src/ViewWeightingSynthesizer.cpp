@@ -169,39 +169,38 @@ public:
     m_filteringPass = filteringPass;
   }
 
-  template <CiCamType sourceCamType, CiCamType targetCamType>
   auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams)
       -> Texture444Depth16Frame {
     const auto &viewParamsList = frame.atlas.front().viewParamsList;
-    const auto sourceHelperList = ProjectionHelperList<sourceCamType>{viewParamsList};
-    const auto targetHelper = ProjectionHelper<targetCamType>{viewportParams};
+    const auto sourceHelperList = ProjectionHelperList{viewParamsList};
+    const auto targetHelper = ProjectionHelper{viewportParams};
 
     // 0) Initialization
-    computeCameraWeight<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
-    computeCameraVisibility<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
-    computeAngularDistortionPerSource<sourceCamType>(sourceHelperList);
+    computeCameraWeight(sourceHelperList, targetHelper);
+    computeCameraVisibility(sourceHelperList, targetHelper);
+    computeAngularDistortionPerSource(sourceHelperList);
 
     // 1) Deconstruction
-    recoverPrunedSource<sourceCamType>(frame, sourceHelperList);
+    recoverPrunedSource(frame, sourceHelperList);
 
     // 2) Reprojection
-    reprojectPrunedSource<sourceCamType, targetCamType>(frame, sourceHelperList, targetHelper);
+    reprojectPrunedSource(frame, sourceHelperList, targetHelper);
 
     // 3) Warping
-    warpPrunedSource<targetCamType>(frame, targetHelper);
+    warpPrunedSource(frame, targetHelper);
 
     // 4) Weight recovery
-    recoverPrunedWeight<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
+    recoverPrunedWeight(sourceHelperList, targetHelper);
 
     // 5) Selection
-    selectViewportDepth<targetCamType>(
-        !frame.vps->miv_sequence_params().msp_depth_low_quality_flag(), targetHelper);
+    selectViewportDepth(!frame.vps->miv_sequence_params().msp_depth_low_quality_flag(),
+                        targetHelper);
 
     // 6) Filtering
     filterVisibilityMap();
 
     // 7) Shading
-    computeShadingMap<sourceCamType, targetCamType>(sourceHelperList, targetHelper);
+    computeShadingMap(sourceHelperList, targetHelper);
 
     // 8) Output
     for (size_t i = 0U; i < m_viewportColor.size(); i++) {
@@ -225,9 +224,8 @@ public:
   }
 
 private:
-  template <CiCamType sourceCamType, CiCamType targetCamType>
-  void computeCameraWeight(const ProjectionHelperList<sourceCamType> &sourceHelperList,
-                           const ProjectionHelper<targetCamType> &targetHelper) {
+  void computeCameraWeight(const ProjectionHelperList &sourceHelperList,
+                           const ProjectionHelper &targetHelper) {
     auto isTridimensional = [&]() -> bool {
       constexpr auto epsilon = 1e-2F;
       Mat3x3f M{Mat3x3f::zeros()};
@@ -284,9 +282,8 @@ private:
       m_cameraWeight = {1.F};
     }
   }
-  template <CiCamType sourceCamType, CiCamType targetCamType>
-  void computeCameraVisibility(const ProjectionHelperList<sourceCamType> &sourceHelperList,
-                               const ProjectionHelper<targetCamType> &targetHelper) {
+  void computeCameraVisibility(const ProjectionHelperList &sourceHelperList,
+                               const ProjectionHelper &targetHelper) {
     const unsigned N = 4;
     const Vec2f depthRange = {0.5F, 10.F};
 
@@ -330,9 +327,7 @@ private:
       m_cameraVisibility.emplace_back(0 < K);
     }
   }
-  template <CiCamType sourceCamType>
-  void
-  computeAngularDistortionPerSource(const ProjectionHelperList<sourceCamType> &sourceHelperList) {
+  void computeAngularDistortionPerSource(const ProjectionHelperList &sourceHelperList) {
     m_cameraDistortion.resize(sourceHelperList.size(), 0.F);
 
     for (size_t viewId = 0; viewId < sourceHelperList.size(); viewId++) {
@@ -344,9 +339,7 @@ private:
     }
   }
 
-  template <CiCamType sourceCamType>
-  void recoverPrunedSource(const AccessUnit &frame,
-                           const ProjectionHelperList<sourceCamType> &sourceHelperList) {
+  void recoverPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList) {
     // Recover pruned views
     const auto [prunedViews, prunedMasks] = recoverPrunedViewAndMask(frame);
 
@@ -366,11 +359,8 @@ private:
                 [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NaN; });
     }
   }
-
-  template <CiCamType sourceCamType, CiCamType targetCamType>
-  void reprojectPrunedSource(const AccessUnit &frame,
-                             const ProjectionHelperList<sourceCamType> &sourceHelperList,
-                             const ProjectionHelper<targetCamType> &targetHelper) {
+  void reprojectPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList,
+                             const ProjectionHelper &targetHelper) {
     m_sourceUnprojection.resize(m_sourceDepth.size());
     m_sourceReprojection.resize(m_sourceDepth.size());
     m_sourceRayDirection.resize(m_sourceDepth.size());
@@ -430,9 +420,7 @@ private:
     }
   }
 
-  template <CiCamType targetCamType>
-  void warpPrunedSource(const AccessUnit &frame,
-                        const ProjectionHelper<targetCamType> &targetHelper) {
+  void warpPrunedSource(const AccessUnit &frame, const ProjectionHelper &targetHelper) {
     struct Splat {
       Vec2f center{};
       Vec2f firstAxis{};
@@ -631,9 +619,8 @@ private:
     });
   }
 
-  template <CiCamType sourceCamType, CiCamType targetCamType>
-  void recoverPrunedWeight(const ProjectionHelperList<sourceCamType> &sourceHelperList,
-                           const ProjectionHelper<targetCamType> &targetHelper) {
+  void recoverPrunedWeight(const ProjectionHelperList &sourceHelperList,
+                           const ProjectionHelper &targetHelper) {
     // Retrieve pruning information
     auto hasPruningRelation =
         any_of(sourceHelperList.begin(), sourceHelperList.end(), [](const auto &helper) {
@@ -753,8 +740,7 @@ private:
           });
     }
   }
-  template <CiCamType sourceCamType, CiCamType targetCamType>
-  void selectViewportDepth(bool trustDepth, const ProjectionHelper<targetCamType> &targetHelper) {
+  void selectViewportDepth(bool trustDepth, const ProjectionHelper &targetHelper) {
     m_viewportVisibility.resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                                 targetHelper.getViewParams().ci.projectionPlaneSize().x());
 
@@ -845,9 +831,8 @@ private:
       swap(firstWrapper, secondWrapper);
     }
   }
-  template <CiCamType sourceCamType, CiCamType targetCamType>
-  void computeShadingMap(const ProjectionHelperList<sourceCamType> &sourceHelperList,
-                         const ProjectionHelper<targetCamType> &targetHelper) {
+  void computeShadingMap(const ProjectionHelperList &sourceHelperList,
+                         const ProjectionHelper &targetHelper) {
     auto isProneToGhosting = [&](unsigned sourceId, const pair<Vec2f, float> &p,
                                  const Vec3f &OP) -> bool {
       static const array<Vec2i, 4> offsetList = {Vec2i({1, 0}), Vec2i({-1, 0}), Vec2i({0, 1}),
@@ -987,13 +972,6 @@ auto checkLimitations(const AccessUnit &frame) {
                           "implemented for the ViewWeightingSynthesizer.");
     }
   }
-
-  for (size_t viewId = 1; viewId < viewParamsList.size(); ++viewId) {
-    if (viewParamsList.front().ci.ci_cam_type() != viewParamsList[viewId].ci.ci_cam_type()) {
-      throw runtime_error("Support for view parameter lists with different ci_cam_type values has "
-                          "not yet been implemented for the ViewWeightingSynthesizer.");
-    }
-  }
 }
 } // namespace
 
@@ -1002,10 +980,6 @@ auto ViewWeightingSynthesizer::renderFrame(const AccessUnit &frame,
     -> Texture444Depth16Frame {
   checkLimitations(frame);
 
-  return frame.atlas.front().viewParamsList.front().ci.dispatch([&](auto sourceCamType) {
-    return viewportParams.ci.dispatch([&](auto targetCamType) {
-      return m_impl->renderFrame<sourceCamType.value, targetCamType.value>(frame, viewportParams);
-    });
-  });
+  return m_impl->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Renderer

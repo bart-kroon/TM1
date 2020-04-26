@@ -141,53 +141,203 @@ auto projectVertex(const Vec3f &position, const CameraIntrinsics &ci) -> pair<Ve
   });
 }
 
-template <>
-auto ProjectionHelper<CiCamType::equirectangular>::getAngularResolution() const -> float {
-  const auto &ci = m_viewParams.ci;
-  auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
-  float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
-  float DS = sin(ci.ci_erp_theta_max()) - sin(ci.ci_erp_theta_min());
-
-  return nbPixel / (DS * DT);
+ProjectionHelper::List::List(const MivBitstream::ViewParamsList &viewParamsList) {
+  for (const auto &viewParams : viewParamsList) {
+    this->emplace_back(viewParams);
+  }
 }
 
-template <> auto ProjectionHelper<CiCamType::perspective>::getAngularResolution() const -> float {
-  const auto &ci = m_viewParams.ci;
-  auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
-  const auto projectionFocalLength =
-      (ci.ci_perspective_focal_hor() + ci.ci_perspective_focal_ver()) / 2.F;
-  auto w = static_cast<float>(ci.projectionPlaneSize().x());
-  auto h = static_cast<float>(ci.projectionPlaneSize().y());
-  float omega = 4.F * atan(nbPixel / (2.F * projectionFocalLength *
-                                      sqrt(4.F * sqr(projectionFocalLength) + (w * w + h * h))));
-
-  return nbPixel / omega;
+ProjectionHelper::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
+    : m_viewParams{viewParams}, m_rotation{viewParams.ce.rotation()} {
+  switch (viewParams.ci.ci_cam_type()) {
+  case CiCamType::equirectangular:
+    m_engine = std::make_unique<MetaEngine::Equirectangular>(viewParams.ci);
+    break;
+  case CiCamType::perspective:
+    m_engine = std::make_unique<MetaEngine::Perspective>(viewParams.ci);
+    break;
+  case CiCamType::orthographic:
+    m_engine = std::make_unique<MetaEngine::Orthographic>(viewParams.ci);
+    break;
+  default:
+    abort();
+  }
 }
 
-template <> auto ProjectionHelper<CiCamType::orthographic>::getAngularResolution() const -> float {
-  const auto &ci = m_viewParams.ci;
-  auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
-  return nbPixel / hemiSphere;
+auto ProjectionHelper::getViewingDirection() const -> Common::Vec3f {
+  return rotate(Common::Vec3f{1.F, 0.F, 0.F}, m_rotation);
 }
 
-template <> auto ProjectionHelper<CiCamType::equirectangular>::getRadialRange() const -> Vec2f {
+auto ProjectionHelper::changeFrame(const Common::Vec3f &P) const -> Common::Vec3f {
+  return rotate(P - m_viewParams.ce.position(), conj(m_rotation));
+}
+
+auto ProjectionHelper::doProjection(const Common::Vec3f &P) const
+    -> std::pair<Common::Vec2f, float> {
+  Common::Vec3f Q = changeFrame(P);
+  auto imageVertexDescriptor = m_engine->projectVertex(SceneVertexDescriptor{Q, 0.F});
+  return std::make_pair(imageVertexDescriptor.position, imageVertexDescriptor.depth);
+}
+
+auto ProjectionHelper::doUnprojection(const Common::Vec2f &p, float d) const -> Common::Vec3f {
+  auto P = m_engine->unprojectVertex(p, d);
+  return rotate(P, m_rotation) + m_viewParams.ce.position();
+}
+
+auto ProjectionHelper::isStrictlyInsideViewport(const Common::Vec2f &p) const -> bool {
+  return ((0.5F <= p.x()) && (p.x() <= (m_viewParams.ci.projectionPlaneSize().x() - 0.5F))) &&
+         ((0.5F <= p.y()) && (p.y() <= (m_viewParams.ci.projectionPlaneSize().y() - 0.5F)));
+}
+
+auto ProjectionHelper::isInsideViewport(const Common::Vec2f &p) const -> bool {
+  return ((-0.5F <= p.x()) && (p.x() <= (m_viewParams.ci.projectionPlaneSize().x() + 0.5F))) &&
+         ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.ci.projectionPlaneSize().y() + 0.5F)));
+}
+
+auto ProjectionHelper::isValidDepth(float d) const -> bool {
+  static constexpr auto far = 999.999F;
+  return (TMIV::Renderer::isValidDepth(d) && (m_viewParams.dq.dq_norm_disp_low() <= (1.F / d)) &&
+          (d < far));
+}
+
+auto ProjectionHelper::getAngularResolution() const -> float {
+  const auto &ci = m_viewParams.ci;
+
+  switch (ci.ci_cam_type()) {
+  case CiCamType::equirectangular: {
+    auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+    float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
+    float DS = sin(ci.ci_erp_theta_max()) - sin(ci.ci_erp_theta_min());
+
+    return nbPixel / (DS * DT);
+  }
+  case CiCamType::perspective: {
+    auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+    const auto projectionFocalLength =
+        (ci.ci_perspective_focal_hor() + ci.ci_perspective_focal_ver()) / 2.F;
+    auto w = static_cast<float>(ci.projectionPlaneSize().x());
+    auto h = static_cast<float>(ci.projectionPlaneSize().y());
+    float omega = 4.F * atan(nbPixel / (2.F * projectionFocalLength *
+                                        sqrt(4.F * sqr(projectionFocalLength) + (w * w + h * h))));
+
+    return nbPixel / omega;
+  }
+  case CiCamType::orthographic: {
+    auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
+    return nbPixel / hemiSphere;
+  }
+  default:
+    abort();
+  }
+}
+
+auto ProjectionHelper::getDepthRange() const -> Common::Vec2f {
   return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
 }
 
-template <> auto ProjectionHelper<CiCamType::perspective>::getRadialRange() const -> Vec2f {
-  const auto &ci = m_viewParams.ci;
-  float x = (static_cast<float>(m_viewParams.ci.projectionPlaneSize().x()) -
-             ci.ci_perspective_center_hor()) /
-            ci.ci_perspective_focal_hor();
-  float y = (static_cast<float>(m_viewParams.ci.projectionPlaneSize().y()) -
-             ci.ci_perspective_center_ver()) /
-            ci.ci_perspective_focal_ver();
+auto ProjectionHelper::getRadialRange() const -> Vec2f {
+  switch (m_viewParams.ci.ci_cam_type()) {
+  case CiCamType::equirectangular: {
+    return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
+  }
+  case CiCamType::perspective: {
+    const auto &ci = m_viewParams.ci;
+    float x = (static_cast<float>(m_viewParams.ci.projectionPlaneSize().x()) -
+               ci.ci_perspective_center_hor()) /
+              ci.ci_perspective_focal_hor();
+    float y = (static_cast<float>(m_viewParams.ci.projectionPlaneSize().y()) -
+               ci.ci_perspective_center_ver()) /
+              ci.ci_perspective_focal_ver();
 
-  return {1.F / m_viewParams.dq.dq_norm_disp_high(),
-          norm(Vec3f{x, y, 1.F}) / m_viewParams.dq.dq_norm_disp_low()};
+    return {1.F / m_viewParams.dq.dq_norm_disp_high(),
+            norm(Vec3f{x, y, 1.F}) / m_viewParams.dq.dq_norm_disp_low()};
+  }
+  case CiCamType::orthographic: {
+    return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
+  }
+  default:
+    abort();
+  }
 }
 
-template <> auto ProjectionHelper<CiCamType::orthographic>::getRadialRange() const -> Vec2f {
-  return {1.F / m_viewParams.dq.dq_norm_disp_high(), 1.F / m_viewParams.dq.dq_norm_disp_low()};
+auto ProjectionHelper::getPointCloud(unsigned N) const -> PointCloud {
+  PointCloud pointCloud;
+
+  float step = 1.F / static_cast<float>(N - 1U);
+  auto depthRange = getDepthRange();
+
+  float x = 0.F;
+
+  for (unsigned i = 0U; i < N; i++) {
+    float y = 0.F;
+
+    float px = x * static_cast<float>(m_viewParams.ci.projectionPlaneSize().x());
+
+    for (unsigned j = 0U; j < N; j++) {
+      float d = depthRange.x();
+
+      float py = y * static_cast<float>(m_viewParams.ci.projectionPlaneSize().y());
+
+      for (unsigned k = 0U; k < N; k++) {
+        pointCloud.emplace_back(doUnprojection({px, py}, d));
+
+        d += step * (depthRange.y() - depthRange.x());
+      }
+
+      y += step;
+    }
+
+    x += step;
+  }
+
+  return pointCloud;
 }
+
+auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N) -> PointCloudList {
+  PointCloudList pointCloudList;
+
+  for (const auto &helper : sourceHelperList) {
+    pointCloudList.emplace_back(helper.getPointCloud(N));
+  }
+
+  return pointCloudList;
+}
+
+auto getOverlapping(const ProjectionHelperList &sourceHelperList,
+                    const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
+    -> float {
+  std::size_t N = 0;
+
+  const ProjectionHelper &secondHelper = sourceHelperList[secondId];
+  const PointCloud &firstPointCloud = pointCloudList[firstId];
+
+  for (const auto &P : firstPointCloud) {
+    auto p = secondHelper.doProjection(P);
+
+    if (isValidDepth(p.second) && secondHelper.isInsideViewport(p.first)) {
+      N++;
+    }
+  }
+
+  return static_cast<float>(N) / static_cast<float>(firstPointCloud.size());
+}
+
+auto computeOverlappingMatrix(const ProjectionHelperList &sourceHelperList) -> Common::Mat<float> {
+  auto pointCloudList = getPointCloudList(sourceHelperList, 16);
+  std::size_t K = sourceHelperList.size();
+  Common::Mat<float> overlappingMatrix({K, K});
+
+  for (std::size_t i = 0; i < K; i++) {
+    for (std::size_t j = 0; j < K; j++) {
+      if (i != j) {
+        overlappingMatrix(i, j) = getOverlapping(sourceHelperList, pointCloudList, i, j);
+      } else {
+        overlappingMatrix(i, j) = 1.F;
+      }
+    }
+  }
+
+  return overlappingMatrix;
+}
+
 } // namespace TMIV::Renderer

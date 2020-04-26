@@ -27,7 +27,9 @@ foreach(subdir
 		MivBitstream 
 		IO
 		ViewOptimizer
-		AtlasConstructor
+		Pruner
+		Aggregator
+		Packer
 		DepthOccupancy
 		Renderer
 		ViewingSpace		

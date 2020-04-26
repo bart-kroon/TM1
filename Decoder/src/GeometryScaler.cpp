@@ -183,8 +183,9 @@ auto erodeMasked(const Mat<uint16_t> &depth, const Mat<uint8_t> &mask) -> Mat<ui
 class DepthMapAlignerColorBased {
 public:
   DepthMapAlignerColorBased(int depthEdgeMagnitudeTh, float minForegroundConfidence)
-      : m_depthEdgeMagnitudeTh{depthEdgeMagnitudeTh},
-        m_minForegroundConfidence{minForegroundConfidence}, m_kernelPoints{getNeighborhood5x5()} {}
+      : m_depthEdgeMagnitudeTh{depthEdgeMagnitudeTh}
+      , m_minForegroundConfidence{minForegroundConfidence}
+      , m_kernelPoints{getNeighborhood5x5()} {}
 
   [[nodiscard]] auto colorConfidence(const vector<uint16_t> &depthValues,
                                      const vector<Vec3w> &colorValues,
@@ -272,8 +273,9 @@ private:
 class DepthMapAlignerCurvatureBased {
 public:
   DepthMapAlignerCurvatureBased(int depthEdgeMagnitudeTh, int maxCurvature)
-      : m_depthEdgeMagnitudeTh(depthEdgeMagnitudeTh),
-        m_maxCurvature(maxCurvature), m_kernelPoints{getNeighborhood3x3()} {}
+      : m_depthEdgeMagnitudeTh(depthEdgeMagnitudeTh)
+      , m_maxCurvature(maxCurvature)
+      , m_kernelPoints{getNeighborhood3x3()} {}
 
   [[nodiscard]] auto curvature(const vector<uint16_t> &depthValues) const -> int {
     const int depthCentral = depthValues[0];
@@ -340,8 +342,8 @@ auto upscaleNearest(const Mat<uint16_t> &input, Vec2i outputSize) -> Mat<uint16_
 class DepthUpscaler {
 public:
   DepthUpscaler(int depthEdgeMagnitudeTh, float minForegroundConfidence, int maxCurvature)
-      : m_alignerColor(depthEdgeMagnitudeTh, minForegroundConfidence),
-        m_alignerCurvature(depthEdgeMagnitudeTh, maxCurvature) {}
+      : m_alignerColor(depthEdgeMagnitudeTh, minForegroundConfidence)
+      , m_alignerCurvature(depthEdgeMagnitudeTh, maxCurvature) {}
 
   auto operator()(const AtlasAccessUnit &atlas) -> Depth10Frame {
     auto geoFrame = Depth10Frame{atlas.frameSize().x(), atlas.frameSize().y()};

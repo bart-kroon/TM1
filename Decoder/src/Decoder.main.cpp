@@ -62,11 +62,10 @@ private:
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Decoder", move(argv)},                 // Load configuration
-        m_metadataReader{json()},                                   // Read MIV bitstream
-        m_decoder{create<IDecoder>("Decoder")},                     // Decoder/renderer
-        m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} { // Handle pose traces
-
+      : Common::Application{"Decoder", move(argv)}
+      , m_metadataReader{json()}
+      , m_decoder{create<IDecoder>("Decoder")}
+      , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {
     m_metadataReader.decoder().onFrame.emplace_back([this](const AccessUnit &frame) {
       auto range = m_inputToOutputFrameIdMap.equal_range(frame.frameId);
       for (auto i = range.first; i != range.second; ++i) {

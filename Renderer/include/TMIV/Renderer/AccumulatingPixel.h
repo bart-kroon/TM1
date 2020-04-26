@@ -56,8 +56,10 @@ template <typename... T> struct PixelAccumulator : private PixelAttributes<T...>
 
   PixelAccumulator(PixelAttributes<T...> attributes, float normWeight_, float normDisp_,
                    float stretching_)
-      : PixelAttributes<T...>{attributes}, normWeight{normWeight_}, normDisp{normDisp_},
-        stretching{stretching_} {
+      : PixelAttributes<T...>{attributes}
+      , normWeight{normWeight_}
+      , normDisp{normDisp_}
+      , stretching{stretching_} {
     assert(normWeight_ >= 0.F);
     assert(normDisp_ >= 0.F);
     assert(stretching_ > 0.F);
@@ -97,8 +99,10 @@ template <typename... T> struct PixelValue : private PixelAttributes<T...> {
 
   PixelValue(PixelAttributes<T...> attributes, float normDisp_, float normWeight_,
              float stretching_)
-      : PixelAttributes<T...>{attributes}, normDisp{normDisp_}, normWeight{normWeight_},
-        stretching{stretching_} {
+      : PixelAttributes<T...>{attributes}
+      , normDisp{normDisp_}
+      , normWeight{normWeight_}
+      , stretching{stretching_} {
     assert(normDisp_ >= 0.F);
     assert(normWeight_ >= 0.F);
     assert(stretching_ >= 0.F);
@@ -138,8 +142,10 @@ public:
 
   AccumulatingPixel(float rayAngleParam_, float depthParam_, float stretchingParam_,
                     float maxStretching_)
-      : rayAngleParam{rayAngleParam_}, depthParam{depthParam_}, stretchingParam{stretchingParam_},
-        maxStretching{maxStretching_} {}
+      : rayAngleParam{rayAngleParam_}
+      , depthParam{depthParam_}
+      , stretchingParam{stretchingParam_}
+      , maxStretching{maxStretching_} {}
 
   // Construct a pixel accumulator from a single synthesized pixel
   [[nodiscard]] auto construct(Attributes attributes, float normDisp, float rayAngle,

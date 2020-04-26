@@ -52,8 +52,10 @@ namespace TMIV::Renderer {
 class AdditiveSynthesizer::Impl {
 public:
   Impl(float rayAngleParam, float depthParam, float stretchingParam, float maxStretching)
-      : m_rayAngleParam{rayAngleParam}, m_depthParam{depthParam},
-        m_stretchingParam{stretchingParam}, m_maxStretching{maxStretching} {}
+      : m_rayAngleParam{rayAngleParam}
+      , m_depthParam{depthParam}
+      , m_stretchingParam{stretchingParam}
+      , m_maxStretching{maxStretching} {}
 
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;

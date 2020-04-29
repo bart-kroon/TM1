@@ -281,9 +281,9 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
               back_inserter(m_ivSequenceParams.viewParamsList),
               [viewIdOffset = uint16_t(m_ivSequenceParams.viewParamsList.size())](ViewParams vp) {
                 // Merging pruning graphs
-                if (vp.pc && !vp.pc->pc_is_leaf_flag()) {
-                  for (uint16_t i = 0; i <= vp.pc->pc_num_children_minus1(); ++i) {
-                    vp.pc->pc_child_id(i, vp.pc->pc_child_id(i) + viewIdOffset);
+                if (vp.pp && !vp.pp->pp_is_root_flag()) {
+                  for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
+                    vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
                   }
                 }
                 return vp;

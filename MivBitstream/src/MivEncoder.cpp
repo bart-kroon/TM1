@@ -143,7 +143,7 @@ auto MivEncoder::adaptationParameterSet() const -> AdaptationParameterSetRBSP {
   mvp.mvp_depth_quantization_params_equal_flag(
       all_of(vpl.begin(), vpl.end(), [&vpl](const auto &x) { return x.dq == vpl.front().dq; }));
 
-  mvp.mvp_pruning_graph_params_present_flag(vpl.front().pc.has_value());
+  mvp.mvp_pruning_graph_params_present_flag(vpl.front().pp.has_value());
 
   for (uint16_t viewId = 0; viewId <= mvp.mvp_num_views_minus1(); ++viewId) {
     const auto &vp = vpl[viewId];
@@ -158,9 +158,9 @@ auto MivEncoder::adaptationParameterSet() const -> AdaptationParameterSetRBSP {
       mvp.depth_quantization(viewId) = vp.dq;
     }
 
-    VERIFY_MIVBITSTREAM(vp.pc.has_value() == mvp.mvp_pruning_graph_params_present_flag());
-    if (vp.pc.has_value()) {
-      mvp.pruning_children(viewId) = *vp.pc;
+    VERIFY_MIVBITSTREAM(vp.pp.has_value() == mvp.mvp_pruning_graph_params_present_flag());
+    if (vp.pp.has_value()) {
+      mvp.pruning_parent(viewId) = *vp.pp;
     }
   }
 

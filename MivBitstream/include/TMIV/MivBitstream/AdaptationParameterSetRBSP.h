@@ -184,33 +184,33 @@ private:
   std::uint32_t m_dq_depth_occ_map_threshold_default{};
 };
 
-// 23090-12: pruning_children()
-class PruningChildren {
+// 23090-12: pruning_parent()
+class PruningParent {
 public:
-  PruningChildren() = default;
-  explicit PruningChildren(std::vector<std::uint16_t> pc_child_id);
+  PruningParent() = default;
+  explicit PruningParent(std::vector<std::uint16_t> pp_parent_id);
 
-  [[nodiscard]] auto pc_is_leaf_flag() const noexcept -> bool;
-  [[nodiscard]] auto pc_num_children_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto pc_child_id(std::uint16_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pp_is_root_flag() const noexcept -> bool;
+  [[nodiscard]] auto pp_num_parent_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pp_parent_id(std::uint16_t i) const noexcept -> std::uint16_t;
 
-  auto pc_child_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningChildren &;
+  auto pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningParent &;
 
-  [[nodiscard]] auto begin() const noexcept { return m_pc_child_id.begin(); }
-  [[nodiscard]] auto end() const noexcept { return m_pc_child_id.end(); }
+  [[nodiscard]] auto begin() const noexcept { return m_pp_parent_id.begin(); }
+  [[nodiscard]] auto end() const noexcept { return m_pp_parent_id.end(); }
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
-  auto operator==(const PruningChildren &) const noexcept -> bool;
-  auto operator!=(const PruningChildren &) const noexcept -> bool;
+  auto operator==(const PruningParent &) const noexcept -> bool;
+  auto operator!=(const PruningParent &) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream, std::uint16_t mvp_num_views_minus1)
-      -> PruningChildren;
+      -> PruningParent;
 
   void encodeTo(Common::OutputBitstream &bitstream, std::uint16_t mvp_num_views_minus1) const;
 
 private:
-  std::vector<std::uint16_t> m_pc_child_id;
+  std::vector<std::uint16_t> m_pp_parent_id;
 };
 
 // 23090-12: miv_view_params_list()
@@ -235,8 +235,8 @@ public:
   [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const noexcept
       -> const DepthQuantization &;
 
-  [[nodiscard]] auto pruning_children(const std::uint16_t viewId) const noexcept
-      -> const PruningChildren &;
+  [[nodiscard]] auto pruning_parent(const std::uint16_t viewId) const noexcept
+      -> const PruningParent &;
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
@@ -255,7 +255,7 @@ public:
       -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(const std::uint16_t viewId = 0) noexcept
       -> DepthQuantization &;
-  [[nodiscard]] auto pruning_children(const std::uint16_t viewId) noexcept -> PruningChildren &;
+  [[nodiscard]] auto pruning_parent(const std::uint16_t viewId) noexcept -> PruningParent &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 
@@ -273,7 +273,7 @@ private:
   bool m_mvp_depth_quantization_params_equal_flag{};
   std::vector<DepthQuantization> m_depth_quantization;
   bool m_mvp_pruning_graph_params_present_flag{};
-  std::vector<PruningChildren> m_pruning_children;
+  std::vector<PruningParent> m_pruning_parent;
 };
 
 // 23090-12: miv_view_params_update_extrinsics

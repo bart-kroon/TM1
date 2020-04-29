@@ -27,8 +27,7 @@ target_include_directories(EncoderLib
 
 add_executable(Encoder
 	"src/Encoder.main.cpp"
-	"../ctc_config/make_tmiv_configs.py"
-	"../ctc_config/qp_tuning_configs.py")
+	)
 
 target_link_libraries(Encoder
 	PRIVATE

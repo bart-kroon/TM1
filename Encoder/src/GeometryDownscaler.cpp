@@ -40,8 +40,8 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-GeometryDownscaler::GeometryDownscaler(const Json & /* rootNode */, const Json &componentNode)
-    : m_geometryScaleEnabledFlag{componentNode.require("geometryScaleEnabledFlag").asBool()} {}
+GeometryDownscaler::GeometryDownscaler(const Json &rootNode, const Json & /* componentNode */)
+    : m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").asBool()} {}
 
 auto GeometryDownscaler::transformSequenceParams(IvSequenceParams ivSequenceParams)
     -> const IvSequenceParams & {

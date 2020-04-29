@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(MivBitstreamLib
+	"src/AccessUnit.cpp"
 	"src/AccessUnitDelimiterRBSP.cpp"
 	"src/AdaptationParameterSetRBSP.cpp"
 	"src/AtlasFrameParameterSetRBSP.cpp"
 	"src/AtlasSequenceParameterSetRBSP.cpp"
 	"src/AtlasTileGroupLayerRBSP.cpp"
+	"src/BitrateReport.h"
 	"src/IvSequenceParams.cpp"
 	"src/IvAccessUnitParams.cpp"	
 	"src/MivDecoder.cpp"
@@ -113,12 +115,14 @@ if (CMAKE_TESTING_ENABLED)
 
 	catch_discover_tests(MivBitstreamTest)
 
-	add_executable(VpccBitstreamSpikes
-		"src/VpccBitstream.spikes.cpp")
+	add_executable(VpccBitstreamTest
+		"src/VpccBitstream.test.cpp")
 
-	target_link_libraries(VpccBitstreamSpikes
+	target_link_libraries(VpccBitstreamTest
 		PRIVATE
 			Catch2::Catch2
 			TMIV::MivBitstreamLib
 			TMIV::IOLib)
+
+	catch_discover_tests(VpccBitstreamTest)
 endif()

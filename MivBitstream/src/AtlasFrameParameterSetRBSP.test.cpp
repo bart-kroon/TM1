@@ -39,7 +39,8 @@ using namespace TMIV::MivBitstream;
 
 TEST_CASE("atlas_frame_tile_information", "[Atlas Frame Parameter Set RBSP]") {
   const auto x = AtlasFrameTileInformation{};
-  REQUIRE(toString(x) == "afti_single_tile_in_atlas_frame_flag=true");
+  REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=true
+)");
   REQUIRE(bitCodingTest(x, 1));
 }
 
@@ -49,16 +50,14 @@ TEST_CASE("atlas_frame_parameter_set_rbsp", "[Atlas Frame Parameter Set RBSP]") 
   REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=0
 afps_atlas_sequence_parameter_set_id=0
 afti_single_tile_in_atlas_frame_flag=true
+afps_output_flag_present_flag=false
 afps_num_ref_idx_default_active_minus1=0
 afps_additional_lt_afoc_lsb_len=0
-afps_2d_pos_x_bit_count_minus1=0
-afps_2d_pos_y_bit_count_minus1=0
 afps_3d_pos_x_bit_count_minus1=0
 afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
-afps_fixed_camera_model_flag=false
 afps_extension_present_flag=false
 )");
 
@@ -68,20 +67,18 @@ afps_extension_present_flag=false
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=0
 afps_atlas_sequence_parameter_set_id=0
 afti_single_tile_in_atlas_frame_flag=true
+afps_output_flag_present_flag=false
 afps_num_ref_idx_default_active_minus1=0
 afps_additional_lt_afoc_lsb_len=0
-afps_2d_pos_x_bit_count_minus1=0
-afps_2d_pos_y_bit_count_minus1=0
 afps_3d_pos_x_bit_count_minus1=0
 afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
-afps_fixed_camera_model_flag=false
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 4, aspsV));
+    REQUIRE(byteCodingTest(x, 3, aspsV));
   }
 
   SECTION("Example 2") {
@@ -92,32 +89,28 @@ afps_extension_present_flag=false
 
     x.afps_atlas_frame_parameter_set_id(63)
         .afps_atlas_sequence_parameter_set_id(1)
+        .afps_output_flag_present_flag(true)
         .afps_num_ref_idx_default_active_minus1(14)
         .afps_additional_lt_afoc_lsb_len(25)
-        .afps_2d_pos_x_bit_count_minus1(15)
-        .afps_2d_pos_y_bit_count_minus1(15)
         .afps_3d_pos_x_bit_count_minus1(31)
         .afps_3d_pos_y_bit_count_minus1(31)
         .afps_lod_mode_enabled_flag(true)
-        .afps_raw_3d_pos_bit_count_explicit_mode_flag(true)
-        .afps_fixed_camera_model_flag(true);
+        .afps_raw_3d_pos_bit_count_explicit_mode_flag(true);
 
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
 afps_atlas_sequence_parameter_set_id=1
 afti_single_tile_in_atlas_frame_flag=true
+afps_output_flag_present_flag=true
 afps_num_ref_idx_default_active_minus1=14
 afps_additional_lt_afoc_lsb_len=25
-afps_2d_pos_x_bit_count_minus1=15
-afps_2d_pos_y_bit_count_minus1=15
 afps_3d_pos_x_bit_count_minus1=31
 afps_3d_pos_y_bit_count_minus1=31
 afps_lod_mode_enabled_flag=true
 afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=true
-afps_fixed_camera_model_flag=true
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 8, aspsV));
+    REQUIRE(byteCodingTest(x, 7, aspsV));
   }
 }

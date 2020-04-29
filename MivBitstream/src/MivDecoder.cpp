@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/MivDecoder.h>
 
+#include <TMIV/MivBitstream/MivDecoderMode.h>
+
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
 
@@ -41,36 +43,25 @@
 #include <sstream>
 #include <variant>
 
+#include "BitrateReport.h"
 #include "verify.h"
 
 using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-namespace {
-auto sampleStreamVpccHeader(istream &stream) -> SampleStreamVpccHeader {
-  if (MivDecoder::mode == MivDecoder::Mode::TMC2) {
-    // Skip TMC2 header
-    const uint32_t PCCTMC2ContainerMagicNumber = 23021981;
-    const uint32_t PCCTMC2ContainerVersion = 1;
-    VERIFY_TMC2BITSTREAM(getUint32(stream) == PCCTMC2ContainerMagicNumber);
-    VERIFY_TMC2BITSTREAM(getUint32(stream) == PCCTMC2ContainerVersion);
-    VERIFY_TMC2BITSTREAM(getUint64(stream) == 0);
-  }
-  return SampleStreamVpccHeader::decodeFrom(stream);
-}
-} // namespace
-
 // Decoder interface ///////////////////////////////////////////////////////////////////////////////
 
 MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
                        AttrFrameServer attrFrameServer)
     : m_stream{stream}, m_geoFrameServer{move(geoFrameServer)},
-      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{sampleStreamVpccHeader(stream)} {
+      m_attrFrameServer{move(attrFrameServer)}, m_ssvh{SampleStreamVpccHeader::decodeFrom(stream)} {
   cout << "=== Sample stream V-PCC header " << string(100 - 31, '=') << '\n'
        << m_ssvh << string(100, '=') << "\n"
        << endl;
 }
+
+MivDecoder::~MivDecoder() = default;
 
 auto MivDecoder::decodeVpccUnit() -> bool {
   cout << "\n=== V-PCC unit " << string(100 - 15, '=') << '\n';
@@ -85,6 +76,11 @@ auto MivDecoder::decodeVpccUnit() -> bool {
   cout << vu;
 
   const auto &vuh = vu.vpcc_unit_header();
+
+  if (m_bitrateReport) {
+    m_bitrateReport->add(vuh, ssvu.ssvu_vpcc_unit_size());
+  }
+
   decodeVpccPayload(vuh, vu.vpcc_payload().payload());
   cout << string(100, '=') << "\n" << endl;
 
@@ -103,6 +99,17 @@ auto MivDecoder::decodeVpccUnit() -> bool {
 
 void MivDecoder::decode() {
   while (!m_stop && decodeVpccUnit()) {
+  }
+}
+
+void MivDecoder::enableBitrateReporting() {
+  assert(!m_bitrateReport);
+  m_bitrateReport = make_unique<BitrateReport>();
+}
+
+void MivDecoder::printBitrateReport(std::ostream &stream) const {
+  if (m_bitrateReport) {
+    m_bitrateReport->printTo(stream);
   }
 }
 
@@ -162,9 +169,6 @@ void MivDecoder::outputFrame(const VpccUnitHeader &vuh) {
 }
 
 auto MivDecoder::haveFrame(const VpccUnitHeader &vuh) const -> bool {
-  if (mode == Mode::TMC2) {
-    return false;
-  }
   const auto &sequence_ = sequence(vuh);
   return all_of(cbegin(sequence_.atlas), cend(sequence_.atlas),
                 [=](const Atlas &atlas) { return !atlas.frames.empty(); });
@@ -218,6 +222,10 @@ void MivDecoder::decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu) {
     return;
   }
 
+  if (m_bitrateReport) {
+    m_bitrateReport->add(nu.nal_unit_header(), nu.size());
+  }
+
   if (NalUnitType::NAL_TRAIL <= nu.nal_unit_header().nal_unit_type() &&
       nu.nal_unit_header().nal_unit_type() < NalUnitType::NAL_ASPS) {
     return parseAtgl(vuh, nu);
@@ -265,8 +273,8 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
   const auto &atgh = atgl.atlas_tile_group_header();
   auto &x = atlas(vuh);
 
-  if (NalUnitType::NAL_TRAIL <= nuh.nal_unit_type() &&
-      nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP) {
+  if (mode != MivDecoderMode::TMC2 && (NalUnitType::NAL_TRAIL <= nuh.nal_unit_type() &&
+                                       nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP)) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 > 0 &&
                          atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
     VERIFY_VPCCBITSTREAM(x.intraFrame);
@@ -279,24 +287,28 @@ void MivDecoder::decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
     x.frames.push_back(x.intraFrame);
   }
 
-  if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
-      nuh.nal_unit_type() < NalUnitType::NAL_ASPS) {
+  if (mode == MivDecoderMode::TMC2 || (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
+                                       nuh.nal_unit_type() < NalUnitType::NAL_ASPS)) {
     VERIFY_VPCCBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 &&
                          atgh.atgh_type() == AtghType::I_TILE_GRP);
 
     auto frame = make_shared<Atlas::Frame>();
     frame->atgh = atgh;
 
-    const auto &aps = apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
-    const auto &mvpl = aps.miv_view_params_list();
+    const auto noAps = AdaptationParameterSetRBSP{};
+    const auto &aps =
+        mode == MivDecoderMode::TMC2 ? noAps : apsV(vuh)[atgh.atgh_adaptation_parameter_set_id()];
 
-    frame->viewParamsList = decodeMvpl(mvpl);
+    if (aps.aps_miv_view_params_list_present_flag()) {
+      const auto &mvpl = aps.miv_view_params_list();
+      frame->viewParamsList = decodeMvpl(mvpl);
+    }
 
     const auto &afps = afpsV(vuh)[atgh.atgh_atlas_frame_parameter_set_id()];
     const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];
     const auto &atgdu = atgl.atlas_tile_group_data_unit();
 
-    frame->patchParamsList = decodeAtgdu(atgdu, asps);
+    frame->patchParamsList = decodeAtgdu(atgdu, atgl.atlas_tile_group_header(), asps);
     frame->blockToPatchMap = decodeBlockToPatchMap(atgdu, asps);
 
     x.frames.push_back(frame);
@@ -319,7 +331,7 @@ auto MivDecoder::decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList {
   return ViewParamsList{x};
 }
 
-auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
+auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTileGroupHeader &atgh,
                              const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList {
   auto x = vector<PatchParams>(atgdu.atgduTotalNumberOfPatches());
 
@@ -332,16 +344,17 @@ auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu,
     x[p].pdu2dSize(
         {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     x[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
-    x[p].pduDepthStart(pdu.pdu_depth_start());
+    x[p].pduDepthStart(pdu.pdu_depth_start() << atgh.atgh_pos_min_z_quantizer());
     x[p].pduViewId(pdu.pdu_view_id());
 
     if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-      x[p].pduDepthEnd(pdu.pdu_depth_end());
+      x[p].pduDepthEnd(pdu.pdu_depth_end() << atgh.atgh_pos_delta_max_z_quantizer());
     }
 
     x[p].pduEntityId(pdu.pdu_entity_id());
 
-    if (asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
+    if (asps.asps_miv_extension_present_flag() &&
+        asps.miv_atlas_sequence_params().masp_depth_occ_map_threshold_flag()) {
       x[p].pduDepthOccMapThreshold(pdu.pdu_depth_occ_map_threshold());
     }
   });

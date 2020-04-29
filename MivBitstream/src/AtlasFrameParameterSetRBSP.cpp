@@ -33,8 +33,10 @@
 
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 
-#include "verify.h"
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
+
+#include "verify.h"
 
 #include <ostream>
 
@@ -43,7 +45,7 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, const AtlasFrameTileInformation & /* unused */) -> ostream & {
-  return stream << "afti_single_tile_in_atlas_frame_flag=true";
+  return stream << "afti_single_tile_in_atlas_frame_flag=true\n";
 }
 
 auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFrameTileInformation {
@@ -84,25 +86,25 @@ void AtlasFrameTileInformation::encodeTo(OutputBitstream &bitstream) {
 }
 
 auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream & {
-  return stream << "afps_atlas_frame_parameter_set_id="
-                << int(x.afps_atlas_frame_parameter_set_id())
-                << "\nafps_atlas_sequence_parameter_set_id="
-                << int(x.afps_atlas_sequence_parameter_set_id()) << "\n"
-                << x.atlas_frame_tile_information() << "\nafps_num_ref_idx_default_active_minus1="
-                << int(x.afps_num_ref_idx_default_active_minus1())
-                << "\nafps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len())
-                << "\nafps_2d_pos_x_bit_count_minus1=" << int(x.afps_2d_pos_x_bit_count_minus1())
-                << "\nafps_2d_pos_y_bit_count_minus1=" << int(x.afps_2d_pos_y_bit_count_minus1())
-                << "\nafps_3d_pos_x_bit_count_minus1=" << int(x.afps_3d_pos_x_bit_count_minus1())
-                << "\nafps_3d_pos_y_bit_count_minus1=" << int(x.afps_3d_pos_y_bit_count_minus1())
-                << "\nafps_lod_mode_enabled_flag=" << boolalpha << x.afps_lod_mode_enabled_flag()
-                << "\nafps_override_eom_for_depth_flag=" << boolalpha
-                << x.afps_override_eom_for_depth_flag()
-                << "\nafps_raw_3d_pos_bit_count_explicit_mode_flag=" << boolalpha
-                << x.afps_raw_3d_pos_bit_count_explicit_mode_flag()
-                << "\nafps_fixed_camera_model_flag=" << boolalpha
-                << x.afps_fixed_camera_model_flag() << "\nafps_extension_present_flag=" << boolalpha
-                << x.afps_extension_present_flag() << '\n';
+  stream << "afps_atlas_frame_parameter_set_id=" << int(x.afps_atlas_frame_parameter_set_id())
+         << '\n';
+  stream << "afps_atlas_sequence_parameter_set_id=" << int(x.afps_atlas_sequence_parameter_set_id())
+         << '\n';
+  stream << x.atlas_frame_tile_information();
+  stream << "afps_output_flag_present_flag=" << boolalpha << x.afps_output_flag_present_flag()
+         << '\n';
+  stream << "afps_num_ref_idx_default_active_minus1="
+         << int(x.afps_num_ref_idx_default_active_minus1()) << '\n';
+  stream << "afps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len()) << '\n';
+  stream << "afps_3d_pos_x_bit_count_minus1=" << int(x.afps_3d_pos_x_bit_count_minus1()) << '\n';
+  stream << "afps_3d_pos_y_bit_count_minus1=" << int(x.afps_3d_pos_y_bit_count_minus1()) << '\n';
+  stream << "afps_lod_mode_enabled_flag=" << boolalpha << x.afps_lod_mode_enabled_flag() << '\n';
+  stream << "afps_override_eom_for_depth_flag=" << boolalpha << x.afps_override_eom_for_depth_flag()
+         << '\n';
+  stream << "afps_raw_3d_pos_bit_count_explicit_mode_flag=" << boolalpha
+         << x.afps_raw_3d_pos_bit_count_explicit_mode_flag() << '\n';
+  stream << "afps_extension_present_flag=" << boolalpha << x.afps_extension_present_flag() << '\n';
+  return stream;
 }
 
 auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &other) const noexcept
@@ -110,11 +112,10 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
   return afps_atlas_frame_parameter_set_id() == other.afps_atlas_frame_parameter_set_id() &&
          afps_atlas_sequence_parameter_set_id() == other.afps_atlas_sequence_parameter_set_id() &&
          atlas_frame_tile_information() == other.atlas_frame_tile_information() &&
+         afps_output_flag_present_flag() == other.afps_output_flag_present_flag() &&
          afps_num_ref_idx_default_active_minus1() ==
              other.afps_num_ref_idx_default_active_minus1() &&
          afps_additional_lt_afoc_lsb_len() == other.afps_additional_lt_afoc_lsb_len() &&
-         afps_2d_pos_x_bit_count_minus1() == other.afps_2d_pos_x_bit_count_minus1() &&
-         afps_2d_pos_y_bit_count_minus1() == other.afps_2d_pos_y_bit_count_minus1() &&
          afps_3d_pos_x_bit_count_minus1() == other.afps_3d_pos_x_bit_count_minus1() &&
          afps_3d_pos_y_bit_count_minus1() == other.afps_3d_pos_y_bit_count_minus1() &&
          afps_lod_mode_enabled_flag() == other.afps_lod_mode_enabled_flag() &&
@@ -122,7 +123,6 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
          afps_override_eom_for_depth_flag() == other.afps_override_eom_for_depth_flag() &&
          afps_raw_3d_pos_bit_count_explicit_mode_flag() ==
              other.afps_raw_3d_pos_bit_count_explicit_mode_flag() &&
-         afps_fixed_camera_model_flag() == other.afps_fixed_camera_model_flag() &&
          afps_extension_present_flag() == other.afps_extension_present_flag();
 }
 
@@ -147,6 +147,8 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
 
+  x.afps_output_flag_present_flag(bitstream.getFlag());
+
   x.afps_num_ref_idx_default_active_minus1(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_VPCCBITSTREAM(x.afps_num_ref_idx_default_active_minus1() <= 14);
 
@@ -156,8 +158,6 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   VERIFY_VPCCBITSTREAM(asps.asps_long_term_ref_atlas_frames_flag() ||
                        x.afps_additional_lt_afoc_lsb_len() == 0);
 
-  x.afps_2d_pos_x_bit_count_minus1(bitstream.readBits<uint8_t>((4)));
-  x.afps_2d_pos_y_bit_count_minus1(bitstream.readBits<uint8_t>((4)));
   x.afps_3d_pos_x_bit_count_minus1(bitstream.readBits<uint8_t>((5)));
   x.afps_3d_pos_y_bit_count_minus1(bitstream.readBits<uint8_t>((5)));
   x.afps_lod_mode_enabled_flag(bitstream.getFlag());
@@ -166,7 +166,6 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   VERIFY_MIVBITSTREAM(!x.afps_override_eom_for_depth_flag());
 
   x.afps_raw_3d_pos_bit_count_explicit_mode_flag(bitstream.getFlag());
-  x.afps_fixed_camera_model_flag(bitstream.getFlag());
 
   x.afps_extension_present_flag(bitstream.getFlag());
   VERIFY_MIVBITSTREAM(!x.afps_extension_present_flag());
@@ -190,6 +189,8 @@ void AtlasFrameParameterSetRBSP::encodeTo(
 
   atlas_frame_tile_information().encodeTo(bitstream);
 
+  bitstream.putFlag(afps_output_flag_present_flag());
+
   VERIFY_VPCCBITSTREAM(afps_num_ref_idx_default_active_minus1() <= 14);
   bitstream.putUExpGolomb(afps_num_ref_idx_default_active_minus1());
 
@@ -198,12 +199,6 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   VERIFY_VPCCBITSTREAM(asps.asps_long_term_ref_atlas_frames_flag() ||
                        afps_additional_lt_afoc_lsb_len() == 0);
   bitstream.putUExpGolomb(afps_additional_lt_afoc_lsb_len());
-
-  VERIFY_VPCCBITSTREAM(afps_2d_pos_x_bit_count_minus1() < 16);
-  bitstream.writeBits(afps_2d_pos_x_bit_count_minus1(), 4);
-
-  VERIFY_VPCCBITSTREAM(afps_2d_pos_y_bit_count_minus1() < 16);
-  bitstream.writeBits(afps_2d_pos_y_bit_count_minus1(), 4);
 
   VERIFY_VPCCBITSTREAM(afps_3d_pos_x_bit_count_minus1() < 32);
   bitstream.writeBits(afps_3d_pos_x_bit_count_minus1(), 5);
@@ -217,7 +212,6 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.putFlag(afps_override_eom_for_depth_flag());
 
   bitstream.putFlag(afps_raw_3d_pos_bit_count_explicit_mode_flag());
-  bitstream.putFlag(afps_fixed_camera_model_flag());
 
   VERIFY_MIVBITSTREAM(!afps_extension_present_flag());
   bitstream.putFlag(afps_extension_present_flag());

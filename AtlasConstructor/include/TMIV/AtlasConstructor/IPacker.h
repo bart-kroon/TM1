@@ -47,8 +47,6 @@ public:
   auto operator=(IPacker &&) -> IPacker & = default;
   virtual ~IPacker() = default;
 
-  virtual auto getAlignment() -> int = 0;
-
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
                     const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList = 0;
   virtual void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) = 0;

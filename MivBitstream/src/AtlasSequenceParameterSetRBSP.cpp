@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 #include "verify.h"
 #include <TMIV/Common/Bitstream.h>
@@ -281,7 +281,7 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
 }
 
 auto AtlasSequenceParameterSetRBSP::operator==(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+	const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
   return m_asps_atlas_sequence_parameter_set_id == other.m_asps_atlas_sequence_parameter_set_id &&
          m_asps_frame_width == other.m_asps_frame_width &&
          m_asps_frame_height == other.m_asps_frame_height &&
@@ -318,7 +318,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(
 }
 
 auto AtlasSequenceParameterSetRBSP::operator!=(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+	const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
   return !operator==(other);
 }
 
@@ -388,7 +388,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const VpccUnitHe
 
   x.asps_extension_present_flag(bitstream.getFlag());
 
-  if (MivDecoder::mode == MivDecoder::Mode::MIV) {
+  if (mode == MivDecoderMode::MIV) {
     const auto asps_extension_bit_equal_to_one = x.asps_extension_present_flag();
     VERIFY_MIVBITSTREAM(asps_extension_bit_equal_to_one);
 

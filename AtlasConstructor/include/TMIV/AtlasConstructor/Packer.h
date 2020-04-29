@@ -51,10 +51,8 @@ public:
             const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList override;
   void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
 
-  auto getAlignment() -> int override;
-
 private:
-  int m_alignment{};
+  int m_blockSize{};
   int m_minPatchSize{};
   int m_overlap{};
   bool m_pip{};

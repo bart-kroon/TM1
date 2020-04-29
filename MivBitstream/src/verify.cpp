@@ -49,8 +49,8 @@ namespace TMIV::MivBitstream {
   abort();
 }
 
-[[noreturn]] void tmc2Error(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode TMC2 bitstream: " << condition << " [" << file << "@" << line
+[[noreturn]] void notImplemented(char const *condition, char const *file, int line) {
+  cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file << "@" << line
        << '\n';
   abort();
 }

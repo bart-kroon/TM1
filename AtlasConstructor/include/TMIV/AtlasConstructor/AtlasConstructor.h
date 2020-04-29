@@ -69,6 +69,11 @@ public:
   std::vector<Common::Mat<std::bitset<maxIntraPeriod>>> m_nonAggregatedMask;
 
 private:
+  auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+      -> Common::SizeVector;
+  auto calculateViewGridSize(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+      -> Common::Vec2i;
+  void setGiGeometry3dCoordinatesBitdepthMinus1();
   static auto entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
       -> Common::MVD16Frame;
   static auto yuvSampler(const Common::EntityMapList &in)
@@ -77,11 +82,15 @@ private:
   static void updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks);
   void aggregateEntityMasks(Common::MaskList &Masks, std::uint16_t entityId);
   void writePatchInAtlas(const MivBitstream::PatchParams &patch,
-                         const Common::TextureDepth16Frame &currentView, Common::MVD16Frame &atlas,
+                         const Common::TextureDepth16Frame &views, Common::MVD16Frame &atlas,
                          int frame);
 
-  std::size_t m_nbAtlas{};
-  Common::Vec2i m_atlasSize;
+private:
+  int m_blockSize{};
+  double m_maxBlockRate{};
+  int m_maxBlocksPerAtlas{};
+  int m_maxAtlases{};
+  int m_geometryScaleEnabledFlag{};
   Common::Vec2i m_EntityEncRange;
   std::unique_ptr<IPruner> m_pruner;
   std::unique_ptr<IAggregator> m_aggregator;

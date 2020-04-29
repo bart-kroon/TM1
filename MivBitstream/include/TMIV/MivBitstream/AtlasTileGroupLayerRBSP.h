@@ -299,8 +299,8 @@ public:
   template <typename... AtgduArgs>
   AtlasTileGroupLayerRBSP(AtlasTileGroupHeader header, std::in_place_t in_place,
                           AtgduArgs &&... args)
-      : m_atlas_tile_group_header{header}, m_atlas_tile_group_data_unit{
-                                               in_place, std::forward<AtgduArgs>(args)...} {}
+      : m_atlas_tile_group_header{header}
+      , m_atlas_tile_group_data_unit{in_place, std::forward<AtgduArgs>(args)...} {}
 
             [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
         -> const AtlasTileGroupHeader &;

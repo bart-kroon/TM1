@@ -9,37 +9,32 @@
     "EncoderMethod": "GroupBasedEncoder",
     "GeometryVideoDataPathFmt": "ATL_SA_R0_Td_c{:02}_{}x{}_yuv420p10le.yuv",
     "GroupBasedEncoder": {
-        "AtlasConstructor": {
-            "Aggregator": {},
-            "AggregatorMethod": "Aggregator",
-            "HierarchicalPruner": {
-                "depthParameter": 50,
-                "dilate": 5,
-                "erode": 2,
-                "maxDepthError": 0.1,
-                "maxStretching": 5,
-                "rayAngleParameter": 10,
-                "stretchingParameter": 3
-            },
-            "Packer": {
-                "Alignment": 8,
-                "MinPatchSize": 16,
-                "Overlap": 1,
-                "PiP": 1
-            },
-            "PackerMethod": "Packer",
-            "PrunerMethod": "HierarchicalPruner"
-        },
-        "AtlasConstructorMethod": "AtlasConstructor",
+        "Aggregator": {},
+        "AggregatorMethod": "Aggregator",
         "DepthOccupancy": {
             "depthOccMapThresholdIfSet": 64
         },
         "DepthOccupancyMethod": "DepthOccupancy",
+        "HierarchicalPruner": {
+            "depthParameter": 50,
+            "dilate": 5,
+            "erode": 2,
+            "maxDepthError": 0.1,
+            "maxStretching": 5,
+            "rayAngleParameter": 10,
+            "stretchingParameter": 3
+        },
+        "Packer": {
+            "MinPatchSize": 16,
+            "Overlap": 1,
+            "PiP": 1
+        },
+        "PackerMethod": "Packer",
+        "PrunerMethod": "HierarchicalPruner",
         "ViewOptimizerMethod": "ViewReducer",
-        "ViewReducer": {},
-        "geometryScaleEnabledFlag": true
+        "ViewReducer": {}
     },
-    "OmafV1CompatibleFlag": true,
+    "OmafV1CompatibleFlag": false,
     "OutputDirectory": ".",
     "SourceCameraNames": [
         "v0",

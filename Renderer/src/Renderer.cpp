@@ -42,9 +42,9 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 Renderer::Renderer(const Json &rootNode, const Json &componentNode)
     : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)},
-      m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)},
-      m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
+                                                                componentNode)}
+    , m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)}
+    , m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
           "ViewingSpaceController", rootNode, componentNode)} {}
 
 auto Renderer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const

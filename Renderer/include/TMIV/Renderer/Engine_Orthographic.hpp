@@ -45,9 +45,10 @@ template <> struct Engine<MivBitstream::CiCamType::orthographic> {
   const float pph;
 
   explicit Engine(const MivBitstream::CameraIntrinsics &ci)
-      : ow{ci.ci_ortho_width()}, oh{ci.ci_ortho_height()},
-        ppw{float(ci.ci_projection_plane_width_minus1() + 1)},
-        pph{float(ci.ci_projection_plane_height_minus1() + 1)} {}
+      : ow{ci.ci_ortho_width()}
+      , oh{ci.ci_ortho_height()}
+      , ppw{float(ci.ci_projection_plane_width_minus1() + 1)}
+      , pph{float(ci.ci_projection_plane_height_minus1() + 1)} {}
 
   // Unprojection equation
   [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {

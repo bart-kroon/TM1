@@ -12,7 +12,6 @@ add_library(TMIV::DepthOccupancyLib
 
 target_link_libraries(DepthOccupancyLib
 	PUBLIC
-		TMIV::CommonLib
 		TMIV::MivBitstreamLib)
 
 target_include_directories(DepthOccupancyLib

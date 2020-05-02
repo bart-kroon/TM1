@@ -625,7 +625,7 @@ private:
     auto hasPruningRelation =
         any_of(sourceHelperList.begin(), sourceHelperList.end(), [](const auto &helper) {
           const auto &viewParams = helper.getViewParams();
-          return viewParams.pc && !viewParams.pc->pc_is_leaf_flag();
+          return viewParams.pp && !viewParams.pp->pp_is_root_flag();
         });
 
     // Weight recovery
@@ -645,14 +645,12 @@ private:
       for (size_t nodeId = 0; nodeId < sourceHelperList.size(); nodeId++) {
         const auto &viewParams = sourceHelperList[nodeId].getViewParams();
 
-        if (viewParams.pc) {
-          for (auto childId : *viewParams.pc) {
-            pruningGraph.connect(nodeId, static_cast<size_t>(childId), 1.F, LinkType::Directed);
+        if (viewParams.pp) {
+          for (auto parentId : *viewParams.pp) {
+            pruningGraph.connect(nodeId, static_cast<size_t>(parentId), 1.F, LinkType::Directed);
           }
         }
       }
-
-      pruningGraph = getReversedGraph(pruningGraph);
 
       // Pruning order
       auto pruningOrderId = getDescendingOrderId(pruningGraph);

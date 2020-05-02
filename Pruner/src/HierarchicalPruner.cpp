@@ -159,24 +159,22 @@ public:
     }
 
     // Pruning mask
-    auto pruningGraphExport = getReversedGraph(pruningGraph);
-
     for (auto camId = 0U; camId < viewParamsList.size(); camId++) {
 
-      const auto &neighbourhood = pruningGraphExport.getNeighbourhood(camId);
+      const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
 
       if (neighbourhood.empty()) {
-        viewParamsList[camId].pc = PruningChildren{};
+        viewParamsList[camId].pp = PruningParent{};
       } else {
-        std::vector<std::uint16_t> childIdList;
+        std::vector<std::uint16_t> parentIdList;
 
-        childIdList.reserve(neighbourhood.size());
+        parentIdList.reserve(neighbourhood.size());
 
         for (const auto &link : neighbourhood) {
-          childIdList.emplace_back(static_cast<std::uint16_t>(link.node()));
+          parentIdList.emplace_back(static_cast<std::uint16_t>(link.node()));
         }
 
-        viewParamsList[camId].pc = PruningChildren{std::move(childIdList)};
+        viewParamsList[camId].pp = PruningParent{std::move(parentIdList)};
       }
     }
   }

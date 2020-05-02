@@ -320,69 +320,69 @@ void DepthQuantization::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
 }
 
-PruningChildren::PruningChildren(vector<uint16_t> pc_child_id) : m_pc_child_id{move(pc_child_id)} {}
+PruningParent::PruningParent(vector<uint16_t> pp_parent_id) : m_pp_parent_id{move(pp_parent_id)} {}
 
-auto PruningChildren::pc_is_leaf_flag() const noexcept -> bool { return m_pc_child_id.empty(); }
+auto PruningParent::pp_is_root_flag() const noexcept -> bool { return m_pp_parent_id.empty(); }
 
-auto PruningChildren::pc_num_children_minus1() const noexcept -> uint16_t {
-  VERIFY_MIVBITSTREAM(!pc_is_leaf_flag());
-  return uint16_t(m_pc_child_id.size() - 1);
+auto PruningParent::pp_num_parent_minus1() const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(!pp_is_root_flag());
+  return uint16_t(m_pp_parent_id.size() - 1);
 }
 
-auto PruningChildren::pc_child_id(uint16_t i) const noexcept -> uint16_t {
-  VERIFY_MIVBITSTREAM(i < m_pc_child_id.size());
-  return m_pc_child_id[i];
+auto PruningParent::pp_parent_id(uint16_t i) const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(i < m_pp_parent_id.size());
+  return m_pp_parent_id[i];
 }
 
-auto PruningChildren::pc_child_id(std::uint16_t i, std::uint16_t value) noexcept
-    -> PruningChildren & {
-  VERIFY_MIVBITSTREAM(i < m_pc_child_id.size());
-  m_pc_child_id[i] = value;
+auto PruningParent::pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept
+    -> PruningParent & {
+  VERIFY_MIVBITSTREAM(i < m_pp_parent_id.size());
+  m_pp_parent_id[i] = value;
   return *this;
 }
 
-auto PruningChildren::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
-  stream << "pc_is_leaf_flag[ " << viewId << " ]=" << boolalpha << pc_is_leaf_flag() << '\n';
-  if (!pc_is_leaf_flag()) {
-    stream << "pc_num_children_minus1[ " << viewId << " ]=" << pc_num_children_minus1() << '\n';
-    for (auto i = 0; i <= pc_num_children_minus1(); ++i) {
-      stream << "pc_child_id[ " << viewId << " ][ " << i << " ]=" << pc_child_id(i) << '\n';
+auto PruningParent::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+  stream << "pp_is_root_flag[ " << viewId << " ]=" << boolalpha << pp_is_root_flag() << '\n';
+  if (!pp_is_root_flag()) {
+    stream << "pp_num_parent_minus1[ " << viewId << " ]=" << pp_num_parent_minus1() << '\n';
+    for (auto i = 0; i <= pp_num_parent_minus1(); ++i) {
+      stream << "pp_parent_id[ " << viewId << " ][ " << i << " ]=" << pp_parent_id(i) << '\n';
     }
   }
   return stream;
 }
 
-auto PruningChildren::operator==(const PruningChildren &other) const noexcept -> bool {
-  return m_pc_child_id == other.m_pc_child_id;
+auto PruningParent::operator==(const PruningParent &other) const noexcept -> bool {
+  return m_pp_parent_id == other.m_pp_parent_id;
 }
 
-auto PruningChildren::operator!=(const PruningChildren &other) const noexcept -> bool {
+auto PruningParent::operator!=(const PruningParent &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto PruningChildren::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_views_minus1)
-    -> PruningChildren {
-  const auto pc_is_leaf_flag = bitstream.getFlag();
-  if (pc_is_leaf_flag) {
+auto PruningParent::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_views_minus1)
+    -> PruningParent {
+  const auto pp_is_root_flag = bitstream.getFlag();
+  if (pp_is_root_flag) {
     return {};
   }
 
-  const auto pc_num_children_minus1 = bitstream.getUVar<size_t>(mvp_num_views_minus1);
-  auto x = vector<uint16_t>(pc_num_children_minus1 + 1);
+  const auto pp_num_parent_minus1 = bitstream.getUVar<size_t>(mvp_num_views_minus1);
+  auto x = vector<uint16_t>(pp_num_parent_minus1 + 1);
 
   for (uint16_t &i : x) {
     i = bitstream.getUVar<uint16_t>(mvp_num_views_minus1 + 1);
   }
 
-  return PruningChildren{x};
+  return PruningParent{x};
 }
 
-void PruningChildren::encodeTo(OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const {
-  bitstream.putFlag(pc_is_leaf_flag());
-  if (!pc_is_leaf_flag()) {
-    bitstream.putUVar(pc_num_children_minus1(), mvp_num_views_minus1);
-    for (uint16_t i = 0; i <= pc_num_children_minus1(); ++i) {
-      bitstream.putUVar(pc_child_id(i), mvp_num_views_minus1 + 1);
+void PruningParent::encodeTo(OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const {
+  bitstream.putFlag(pp_is_root_flag());
+  if (!pp_is_root_flag()) {
+    bitstream.putUVar(pp_num_parent_minus1(), mvp_num_views_minus1);
+    for (uint16_t i = 0; i <= pp_num_parent_minus1(); ++i) {
+      bitstream.putUVar(pp_parent_id(i), mvp_num_views_minus1 + 1);
     }
   }
 }
@@ -416,11 +416,11 @@ auto MivViewParamsList::depth_quantization(uint16_t viewId) const noexcept
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_children(const uint16_t viewId) const noexcept
-    -> const PruningChildren & {
+auto MivViewParamsList::pruning_parent(const uint16_t viewId) const noexcept
+    -> const PruningParent & {
   VERIFY_MIVBITSTREAM(mvp_pruning_graph_params_present_flag());
-  VERIFY_MIVBITSTREAM(viewId < m_pruning_children.size());
-  return m_pruning_children[viewId];
+  VERIFY_MIVBITSTREAM(viewId < m_pruning_parent.size());
+  return m_pruning_parent[viewId];
 }
 
 auto MivViewParamsList::mvp_num_views_minus1(const uint16_t value) noexcept -> MivViewParamsList & {
@@ -445,7 +445,7 @@ auto MivViewParamsList::mvp_depth_quantization_params_equal_flag(const bool valu
 auto MivViewParamsList::mvp_pruning_graph_params_present_flag(const bool value) noexcept
     -> MivViewParamsList & {
   m_mvp_pruning_graph_params_present_flag = value;
-  m_pruning_children.resize(value ? m_camera_extrinsics.size() : 0U);
+  m_pruning_parent.resize(value ? m_camera_extrinsics.size() : 0U);
   return *this;
 }
 
@@ -464,9 +464,9 @@ auto MivViewParamsList::depth_quantization(const uint16_t viewId) noexcept -> De
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_children(const uint16_t viewId) noexcept -> PruningChildren & {
-  VERIFY_MIVBITSTREAM(viewId < m_pruning_children.size());
-  return m_pruning_children[viewId];
+auto MivViewParamsList::pruning_parent(const uint16_t viewId) noexcept -> PruningParent & {
+  VERIFY_MIVBITSTREAM(viewId < m_pruning_parent.size());
+  return m_pruning_parent[viewId];
 }
 
 auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
@@ -499,7 +499,7 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
          << x.mvp_pruning_graph_params_present_flag() << '\n';
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.pruning_children(v).printTo(stream, v);
+      x.pruning_parent(v).printTo(stream, v);
     }
   }
   return stream;
@@ -513,7 +513,7 @@ auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcep
              other.m_mvp_depth_quantization_params_equal_flag &&
          m_depth_quantization == other.m_depth_quantization &&
          m_mvp_pruning_graph_params_present_flag == other.m_mvp_pruning_graph_params_present_flag &&
-         m_pruning_children == other.m_pruning_children;
+         m_pruning_parent == other.m_pruning_parent;
 }
 
 auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcept -> bool {
@@ -553,7 +553,7 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream) -> MivViewParamsLi
 
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.pruning_children(v) = PruningChildren::decodeFrom(bitstream, x.mvp_num_views_minus1());
+      x.pruning_parent(v) = PruningParent::decodeFrom(bitstream, x.mvp_num_views_minus1());
     }
   }
   return x;
@@ -590,7 +590,7 @@ void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
 
   if (mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      pruning_children(v).encodeTo(bitstream, mvp_num_views_minus1());
+      pruning_parent(v).encodeTo(bitstream, mvp_num_views_minus1());
     }
   }
 }

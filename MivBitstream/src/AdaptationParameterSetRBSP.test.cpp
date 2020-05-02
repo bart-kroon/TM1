@@ -157,10 +157,10 @@ dq_depth_occ_map_threshold_default[ 2 ]=200
   }
 }
 
-TEST_CASE("pruning_children", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("pruning_parent", "[Adaptation Parameter Set RBSP]") {
   SECTION("Example 1") {
-    const auto x = PruningChildren{};
-    REQUIRE(toString(x, 3) == R"(pc_is_leaf_flag[ 3 ]=true
+    const auto x = PruningParent{};
+    REQUIRE(toString(x, 3) == R"(pp_is_root_flag[ 3 ]=true
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
@@ -168,13 +168,13 @@ TEST_CASE("pruning_children", "[Adaptation Parameter Set RBSP]") {
   }
 
   SECTION("Example 2") {
-    const auto x = PruningChildren{{2, 3, 5, 8}};
-    REQUIRE(toString(x, 5) == R"(pc_is_leaf_flag[ 5 ]=false
-pc_num_children_minus1[ 5 ]=3
-pc_child_id[ 5 ][ 0 ]=2
-pc_child_id[ 5 ][ 1 ]=3
-pc_child_id[ 5 ][ 2 ]=5
-pc_child_id[ 5 ][ 3 ]=8
+    const auto x = PruningParent{{2, 3, 5, 8}};
+    REQUIRE(toString(x, 5) == R"(pp_is_root_flag[ 5 ]=false
+pp_num_parent_minus1[ 5 ]=3
+pp_parent_id[ 5 ][ 0 ]=2
+pp_parent_id[ 5 ][ 1 ]=3
+pp_parent_id[ 5 ][ 2 ]=5
+pp_parent_id[ 5 ][ 3 ]=8
 )");
 
     const uint16_t mvp_num_views_minus1 = 10;
@@ -260,9 +260,9 @@ dq_norm_disp_low[ 0 ]=0
 dq_norm_disp_high[ 0 ]=0
 dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
-pc_is_leaf_flag[ 0 ]=true
-pc_is_leaf_flag[ 1 ]=true
-pc_is_leaf_flag[ 2 ]=true
+pp_is_root_flag[ 0 ]=true
+pp_is_root_flag[ 1 ]=true
+pp_is_root_flag[ 2 ]=true
 )");
 
     REQUIRE(bitCodingTest(x, 775));
@@ -330,9 +330,9 @@ dq_norm_disp_low[ 0 ]=0
 dq_norm_disp_high[ 0 ]=0
 dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=true
-pc_is_leaf_flag[ 0 ]=true
-pc_is_leaf_flag[ 1 ]=true
-pc_is_leaf_flag[ 2 ]=true
+pp_is_root_flag[ 0 ]=true
+pp_is_root_flag[ 1 ]=true
+pp_is_root_flag[ 2 ]=true
 aps_extension2_flag=false
 )");
 

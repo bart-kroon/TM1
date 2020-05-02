@@ -327,7 +327,7 @@ auto MivDecoder::decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList {
     x[viewId].dq = mvpl.depth_quantization(viewId);
 
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
-      x[viewId].pc = mvpl.pruning_children(viewId);
+      x[viewId].pp = mvpl.pruning_parent(viewId);
     }
   }
   return ViewParamsList{x};

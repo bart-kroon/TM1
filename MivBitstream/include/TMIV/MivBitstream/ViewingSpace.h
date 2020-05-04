@@ -84,7 +84,7 @@ struct ViewingSpace {
   static auto decodeFrom(InputBitstream &) -> ViewingSpace;
   void encodeTo(OutputBitstream &) const;
 
-  static auto loadFromJson(const Common::Json &node) -> ViewingSpace;
+  static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ViewingSpace;
 };
 
 using PrimitiveShapeVector = std::vector<PrimitiveShape>;
@@ -98,6 +98,9 @@ struct ElementaryShape {
   // In specification: primitive_shape_operation[ e ]
   PrimitiveShapeOperation primitiveOperation{};
 
+  // In specification: es_camera_inferred_flag[ e ]
+  std::vector<int> inferringViews;
+
   friend auto operator<<(std::ostream &stream, const ElementaryShape &shape) -> std::ostream &;
   auto operator==(const ElementaryShape &other) const -> bool;
   auto operator!=(const ElementaryShape &other) const -> bool { return !operator==(other); }
@@ -105,7 +108,7 @@ struct ElementaryShape {
   static auto decodeFrom(InputBitstream &) -> ElementaryShape;
   void encodeTo(OutputBitstream &) const;
 
-  static auto loadFromJson(const Common::Json &node) -> ElementaryShape;
+  static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ElementaryShape;
 };
 
 // In specification: cuboid_primitive( e, s )
@@ -123,10 +126,10 @@ struct Cuboid {
   auto operator==(const Cuboid &other) const -> bool;
   auto operator!=(const Cuboid &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> Cuboid;
-  void encodeTo(OutputBitstream &) const;
+  static auto decodeFrom(InputBitstream &stream, bool cameraInferred) -> Cuboid;
+  void encodeTo(OutputBitstream &stream, bool cameraInferred) const;
 
-  static auto loadFromJson(const Common::Json &node) -> Cuboid;
+  static auto loadFromJson(const Common::Json &node, bool inferredView) -> Cuboid;
 };
 
 // In specification: sphere_primitive( e, s )
@@ -142,10 +145,10 @@ struct Spheroid {
   auto operator==(const Spheroid &other) const -> bool;
   auto operator!=(const Spheroid &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> Spheroid;
-  void encodeTo(OutputBitstream &) const;
+  static auto decodeFrom(InputBitstream &stream, bool cameraInferred) -> Spheroid;
+  void encodeTo(OutputBitstream &stream, bool cameraInferred) const;
 
-  static auto loadFromJson(const Common::Json &node) -> Spheroid;
+  static auto loadFromJson(const Common::Json &node, bool inferredView) -> Spheroid;
 };
 
 // In specification: halfspace_primitive( e, s )
@@ -161,10 +164,10 @@ struct Halfspace {
   auto operator==(const Halfspace &other) const -> bool;
   auto operator!=(const Halfspace &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &) -> Halfspace;
-  void encodeTo(OutputBitstream &) const;
+  static auto decodeFrom(InputBitstream &stream, bool inferredView) -> Halfspace;
+  void encodeTo(OutputBitstream &stream, bool inferredView) const;
 
-  static auto loadFromJson(const Common::Json &node) -> Halfspace;
+  static auto loadFromJson(const Common::Json &node, bool inferredView) -> Halfspace;
 };
 
 struct PrimitiveShape {
@@ -210,7 +213,7 @@ struct PrimitiveShape {
   auto operator==(const PrimitiveShape &other) const -> bool;
   auto operator!=(const PrimitiveShape &other) const -> bool { return !operator==(other); }
 
-  static auto loadFromJson(const Common::Json &node) -> PrimitiveShape;
+  static auto loadFromJson(const Common::Json &node, bool inferredView) -> PrimitiveShape;
 };
 
 inline auto PrimitiveShape::shapeType() const -> PrimitiveShapeType {

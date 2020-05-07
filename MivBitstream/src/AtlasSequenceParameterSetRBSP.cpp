@@ -132,7 +132,7 @@ auto operator<<(ostream &stream, const MivAtlasSequenceParams &x) -> ostream & {
   }
   stream << "masp_group_id=" << x.masp_group_id() << "\nmasp_auxiliary_atlas_flag=" << boolalpha
          << x.masp_auxiliary_atlas_flag();
-  if (x.m_masp_depth_occ_map_threshold_flag)
+ // if (x.m_masp_depth_occ_map_threshold_flag)
     stream << "\nmasp_depth_occ_map_threshold_flag=" << boolalpha
            << x.masp_depth_occ_map_threshold_flag();
   if (x.m_masp_occupancy_scale_present_flag)

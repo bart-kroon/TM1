@@ -197,8 +197,10 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
   stream.putFlag(cameraInferred);
   for (unsigned idx = 0; idx < primitives.size(); idx++) {
     const auto &p = primitives[idx];
-    if (cameraInferred)
+    if (cameraInferred) {
       stream.putUint16(static_cast<uint16_t>(inferringViews[idx]));
+
+}
     stream.writeBits(p.shapeType(), 2);
     visit([&](const auto &x) { x.encodeTo(stream, cameraInferred); }, p.primitive);
     if (guardBandPresent) {
@@ -215,8 +217,10 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       if (guardBandPresent) {
         stream.putFloat16(Half(vdc.guardBandDirectionSize.value_or(0.F)));
       }
-      if (cameraInferred)
+      if (cameraInferred) {
         encodeRotation(vdc.directionRotation, stream);
+
+}
       stream.putFloat16(Half(vdc.yawRange));
       stream.putFloat16(Half(vdc.pitchRange));
     }
@@ -449,11 +453,15 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
     for (auto v : views) {
       unsigned idx = 0;
       for (; idx < sourceCameraNames.size(); idx++) {
-        if (v == sourceCameraNames[idx])
+        if (v == sourceCameraNames[idx]) {
           break;
+
+}
       }
-      if (idx == sourceCameraNames.size())
+      if (idx == sourceCameraNames.size()) {
         throw runtime_error("Invalid inferred view in the metadata JSON file");
+
+}
       elementaryShape.inferringViews.push_back(idx);
     }
     inferredView = true;
@@ -471,9 +479,11 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
   }
 
   // check consistency
-  if (inferredView && (elementaryShape.primitives.size() != elementaryShape.inferringViews.size()))
+  if (inferredView && (elementaryShape.primitives.size() != elementaryShape.inferringViews.size())) {
     throw runtime_error(
         "Incompatible number of inferring views and primitive shapes in the metadata JSON file");
+
+}
 
   return elementaryShape;
 }
@@ -518,16 +528,20 @@ auto PrimitiveShape::loadFromJson(const Json &node, bool inferredView) -> Primit
 
 auto Cuboid::loadFromJson(const Json &node, bool inferredView) -> Cuboid {
   Cuboid cuboid;
-  if (!inferredView)
+  if (!inferredView) {
     cuboid.center = node.require("Center").asFloatVector<3>();
+
+}
   cuboid.size = node.require("Size").asFloatVector<3>();
   return cuboid;
 }
 
 auto Spheroid::loadFromJson(const Json &node, bool inferredView) -> Spheroid {
   Spheroid spheroid;
-  if (!inferredView)
+  if (!inferredView) {
     spheroid.center = node.require("Center").asFloatVector<3>();
+
+}
   spheroid.radius = node.require("Radius").asFloatVector<3>();
   return spheroid;
 }

@@ -139,8 +139,8 @@ void MivDecoder::outputFrame(const V3cUnitHeader &vuh) {
     auto &aau = au.atlas[atlasId];
     assert(!atlas.frames.empty());
 
-    aau.atgh = atlas.frames.front()->atgh;
-    aau.afps = atlas.afpsV[aau.atgh.atgh_atlas_frame_parameter_set_id()];
+    aau.ath = atlas.frames.front()->ath;
+    aau.afps = atlas.afpsV[aau.ath.ath_atlas_frame_parameter_set_id()];
     aau.asps = atlas.aspsV[aau.afps.afps_atlas_sequence_parameter_set_id()];
 
     aau.viewParamsList = atlas.frames.front()->viewParamsList;
@@ -237,7 +237,7 @@ void MivDecoder::decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu) {
 
   if (NalUnitType::NAL_TRAIL_N <= nu.nal_unit_header().nal_unit_type() &&
       nu.nal_unit_header().nal_unit_type() < NalUnitType::NAL_ASPS) {
-    return parseAtgl(vuh, nu);
+    return parseAtl(vuh, nu);
   }
 
   switch (nu.nal_unit_header().nal_unit_type()) {
@@ -277,22 +277,22 @@ void MivDecoder::decodeUnknownNalUnit(const V3cUnitHeader & /*vuh*/, const NalUn
        << '\n';
 }
 
-void MivDecoder::decodeAtgl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                            const AtlasTileGroupLayerRBSP &atgl) {
-  cout << atgl;
+void MivDecoder::decodeAtl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
+                           const AtlasTileLayerRBSP &atl) {
+  cout << atl;
 
-  const auto &atgh = atgl.atlas_tile_group_header();
+  const auto &ath = atl.atlas_tile_header();
   auto &x = atlas(vuh);
 
   if (mode != MivDecoderMode::TMC2 && (NalUnitType::NAL_TRAIL_N <= nuh.nal_unit_type() &&
                                        nuh.nal_unit_type() < NalUnitType::NAL_BLA_W_LP)) {
     VERIFY_V3CBITSTREAM(nuh.nal_temporal_id_plus1() - 1 > 0 &&
-                        atgh.atgh_type() == AtghType::SKIP_TILE_GRP);
+                        ath.ath_type() == AthType::SKIP_TILE);
     VERIFY_V3CBITSTREAM(x.intraFrame);
-    VERIFY_V3CBITSTREAM(x.intraFrame->atgh.atgh_atlas_frame_parameter_set_id() ==
-                        atgh.atgh_atlas_frame_parameter_set_id());
-    VERIFY_V3CBITSTREAM(x.intraFrame->atgh.atgh_atlas_adaptation_parameter_set_id() ==
-                        atgh.atgh_atlas_adaptation_parameter_set_id());
+    VERIFY_V3CBITSTREAM(x.intraFrame->ath.ath_atlas_frame_parameter_set_id() ==
+                        ath.ath_atlas_frame_parameter_set_id());
+    VERIFY_V3CBITSTREAM(x.intraFrame->ath.ath_atlas_adaptation_parameter_set_id() ==
+                        ath.ath_atlas_adaptation_parameter_set_id());
 
     // Shallow copy of the intra atlas frame
     x.frames.push_back(x.intraFrame);
@@ -300,16 +300,15 @@ void MivDecoder::decodeAtgl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
 
   if (mode == MivDecoderMode::TMC2 || (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
                                        nuh.nal_unit_type() < NalUnitType::NAL_ASPS)) {
-    VERIFY_V3CBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 &&
-                        atgh.atgh_type() == AtghType::I_TILE_GRP);
+    VERIFY_V3CBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0 && ath.ath_type() == AthType::I_TILE);
 
     auto frame = make_shared<Atlas::Frame>();
-    frame->atgh = atgh;
+    frame->ath = ath;
 
     const auto noAaps = AtlasAdaptationParameterSetRBSP{};
     const auto &aaps = mode == MivDecoderMode::TMC2
                            ? noAaps
-                           : aapsV(vuh)[atgh.atgh_atlas_adaptation_parameter_set_id()];
+                           : aapsV(vuh)[ath.ath_atlas_adaptation_parameter_set_id()];
 
     if (aaps.aaps_miv_extension_flag()) {
       const auto &aame = aaps.aaps_miv_extension();
@@ -317,12 +316,12 @@ void MivDecoder::decodeAtgl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
       frame->viewParamsList = decodeMvpl(mvpl);
     }
 
-    const auto &afps = afpsV(vuh)[atgh.atgh_atlas_frame_parameter_set_id()];
+    const auto &afps = afpsV(vuh)[ath.ath_atlas_frame_parameter_set_id()];
     const auto &asps = aspsV(vuh)[afps.afps_atlas_sequence_parameter_set_id()];
-    const auto &atgdu = atgl.atlas_tile_group_data_unit();
+    const auto &atdu = atl.atlas_tile_data_unit();
 
-    frame->patchParamsList = decodeAtgdu(atgdu, atgl.atlas_tile_group_header(), asps);
-    frame->blockToPatchMap = decodeBlockToPatchMap(atgdu, asps);
+    frame->patchParamsList = decodeAtdu(atdu, atl.atlas_tile_header(), asps);
+    frame->blockToPatchMap = decodeBlockToPatchMap(atdu, asps);
 
     x.frames.push_back(frame);
     x.intraFrame = frame;
@@ -344,11 +343,11 @@ auto MivDecoder::decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList {
   return ViewParamsList{x};
 }
 
-auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTileGroupHeader &atgh,
-                             const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList {
-  auto x = vector<PatchParams>(atgdu.atgduTotalNumberOfPatches());
+auto MivDecoder::decodeAtdu(const AtlasTileDataUnit &atdu, const AtlasTileHeader &ath,
+                            const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList {
+  auto x = vector<PatchParams>(atdu.atduTotalNumberOfPatches());
 
-  atgdu.visit([&](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
+  atdu.visit([&](size_t p, AtduPatchMode /* unused */, const PatchInformationData &pid) {
     const auto &pdu = pid.patch_data_unit();
     const auto k = asps.asps_log2_patch_packing_block_size();
 
@@ -357,11 +356,11 @@ auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTil
     x[p].pdu2dSize(
         {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     x[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
-    x[p].pduDepthStart(pdu.pdu_depth_start() << atgh.atgh_pos_min_z_quantizer());
+    x[p].pduDepthStart(pdu.pdu_depth_start() << ath.ath_pos_min_z_quantizer());
     x[p].pduViewId(pdu.pdu_projection_id());
 
     if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-      x[p].pduDepthEnd(pdu.pdu_depth_end() << atgh.atgh_pos_delta_max_z_quantizer());
+      x[p].pduDepthEnd(pdu.pdu_depth_end() << ath.ath_pos_delta_max_z_quantizer());
     }
     if (asps.asps_miv_extension_flag()) {
       x[p].pduEntityId(pdu.pdu_miv_extension().pdu_entity_id());
@@ -374,7 +373,7 @@ auto MivDecoder::decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTil
   return x;
 }
 
-auto MivDecoder::decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
+auto MivDecoder::decodeBlockToPatchMap(const AtlasTileDataUnit &atdu,
                                        const AtlasSequenceParameterSetRBSP &asps)
     -> Common::BlockToPatchMap {
   auto result =
@@ -382,7 +381,7 @@ auto MivDecoder::decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
                       asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
   fill(begin(result.getPlane(0)), end(result.getPlane(0)), unusedPatchId);
 
-  atgdu.visit([&result](size_t p, AtgduPatchMode /* unused */, const PatchInformationData &pid) {
+  atdu.visit([&result](size_t p, AtduPatchMode /* unused */, const PatchInformationData &pid) {
     const auto &pdu = pid.patch_data_unit();
     const auto first = Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()};
     const auto last = first + Vec2i{pdu.pdu_2d_size_x_minus1(), pdu.pdu_2d_size_y_minus1()};
@@ -516,10 +515,10 @@ void MivDecoder::parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu) {
   }
 }
 
-void MivDecoder::parseAtgl(const V3cUnitHeader &vuh, const NalUnit &nu) {
+void MivDecoder::parseAtl(const V3cUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodeAtgl(vuh, nu.nal_unit_header(),
-             AtlasTileGroupLayerRBSP::decodeFrom(stream, vuh, vps(vuh), aspsV(vuh), afpsV(vuh)));
+  decodeAtl(vuh, nu.nal_unit_header(),
+            AtlasTileLayerRBSP::decodeFrom(stream, vuh, vps(vuh), aspsV(vuh), afpsV(vuh)));
 }
 
 void MivDecoder::parseAud(const V3cUnitHeader &vuh, const NalUnit &nu) {

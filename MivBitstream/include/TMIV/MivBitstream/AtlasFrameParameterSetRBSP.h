@@ -46,18 +46,17 @@ namespace TMIV::MivBitstream {
 //
 // 23090-12 restrictions:
 //   * afti_single_tile_in_atlas_frame_flag == 1
-
+//   * asps_auxiliary_video_enabled_flag == 0
 class AtlasFrameTileInformation {
 public:
-  [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept {
-    return true;
-  }
+  [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept;
+  [[nodiscard]] constexpr auto afti_signalled_tile_id_flag() const noexcept;
 
   friend auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x)
       -> std::ostream &;
 
-  auto operator==(const AtlasFrameTileInformation &) const noexcept -> bool { return true; }
-  auto operator!=(const AtlasFrameTileInformation &) const noexcept -> bool { return false; }
+  constexpr auto operator==(const AtlasFrameTileInformation &) const noexcept;
+  constexpr auto operator!=(const AtlasFrameTileInformation &) const noexcept;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasFrameTileInformation;
 

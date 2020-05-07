@@ -109,12 +109,11 @@ private: // Decoding processes
   void decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void decodeUnknownNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
 
-  void decodeAtgl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                  const AtlasTileGroupLayerRBSP &atgl);
+  void decodeAtl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, const AtlasTileLayerRBSP &atl);
   static auto decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList;
-  static auto decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTileGroupHeader &atgh,
-                          const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList;
-  static auto decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
+  static auto decodeAtdu(const AtlasTileDataUnit &atdu, const AtlasTileHeader &ath,
+                         const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList;
+  static auto decodeBlockToPatchMap(const AtlasTileDataUnit &atdu,
                                     const AtlasSequenceParameterSetRBSP &asps)
       -> Common::BlockToPatchMap;
   void decodeAsps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
@@ -142,7 +141,7 @@ private: // Parsers
   void parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu);
-  void parseAtgl(const V3cUnitHeader &vuh, const NalUnit &nu);
+  void parseAtl(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseAud(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseV3cAud(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parsePrefixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
@@ -166,7 +165,7 @@ private: // Internal decoder state
     std::vector<AtlasAdaptationParameterSetRBSP> aapsV;
 
     struct Frame {
-      AtlasTileGroupHeader atgh;
+      AtlasTileHeader ath;
       ViewParamsList viewParamsList;
       PatchParamsList patchParamsList;
       Common::BlockToPatchMap blockToPatchMap;

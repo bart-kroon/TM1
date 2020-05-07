@@ -126,8 +126,8 @@ auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCoun
   return asb;
 }
 
-auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLayerRBSP {
-  auto patchData = AtlasTileGroupDataUnit::Vector{};
+auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP {
+  auto patchData = AtlasTileDataUnit::Vector{};
   patchData.reserve(m_ivau.patchParamsList.size());
 
   const auto &aau = m_ivau.atlas[vai];
@@ -155,13 +155,13 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
       pdu.pdu_view_pos_x(pp.pduViewPos().x());
       pdu.pdu_view_pos_y(pp.pduViewPos().y());
 
-      VERIFY_MIVBITSTREAM(pp.pduDepthStart() % (1 << aau.atgh.atgh_pos_min_z_quantizer()) == 0);
-      pdu.pdu_depth_start(pp.pduDepthStart() >> aau.atgh.atgh_pos_min_z_quantizer());
+      VERIFY_MIVBITSTREAM(pp.pduDepthStart() % (1 << aau.ath.ath_pos_min_z_quantizer()) == 0);
+      pdu.pdu_depth_start(pp.pduDepthStart() >> aau.ath.ath_pos_min_z_quantizer());
 
       if (pp.pduDepthEnd()) {
-        const auto atgh_pos_delta_max_z_quantizer = aau.atgh.atgh_pos_delta_max_z_quantizer();
-        VERIFY_MIVBITSTREAM(*pp.pduDepthEnd() % (1 << atgh_pos_delta_max_z_quantizer) == 0);
-        pdu.pdu_depth_end(*pp.pduDepthEnd() >> atgh_pos_delta_max_z_quantizer);
+        const auto ath_pos_delta_max_z_quantizer = aau.ath.ath_pos_delta_max_z_quantizer();
+        VERIFY_MIVBITSTREAM(*pp.pduDepthEnd() % (1 << ath_pos_delta_max_z_quantizer) == 0);
+        pdu.pdu_depth_end(*pp.pduDepthEnd() >> ath_pos_delta_max_z_quantizer);
       }
 
       pdu.pdu_orientation_index(pp.pduOrientationIndex());
@@ -173,18 +173,18 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
       if (pp.pduDepthOccMapThreshold()) {
         pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.pduDepthOccMapThreshold());
       }
-      patchData.emplace_back(AtgduPatchMode::I_INTRA, pdu);
+      patchData.emplace_back(AtduPatchMode::I_INTRA, pdu);
     }
   }
 
-  return AtlasTileGroupLayerRBSP{aau.atgh, AtlasTileGroupDataUnit{patchData}};
+  return AtlasTileLayerRBSP{aau.ath, AtlasTileDataUnit{patchData}};
 }
 
-auto MivEncoder::skipAtlasTileGroupLayer() -> AtlasTileGroupLayerRBSP {
-  auto atgh = AtlasTileGroupHeader{};
-  atgh.atgh_type(AtghType::SKIP_TILE_GRP).atgh_ref_atlas_frame_list_sps_flag(true);
+auto MivEncoder::skipAtlasTileGroupLayer() -> AtlasTileLayerRBSP {
+  auto ath = AtlasTileHeader{};
+  ath.ath_type(AthType::SKIP_TILE).ath_ref_atlas_frame_list_sps_flag(true);
 
-  return AtlasTileGroupLayerRBSP{atgh};
+  return AtlasTileLayerRBSP{ath};
 }
 
 template <typename Payload>

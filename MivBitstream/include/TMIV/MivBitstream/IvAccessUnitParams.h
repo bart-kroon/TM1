@@ -34,7 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
 #define _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
 
-#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
 
 namespace TMIV::MivBitstream {
@@ -43,7 +43,7 @@ struct AtlasAccessUnitParams {
 
   AtlasSequenceParameterSetRBSP asps;
   AtlasFrameParameterSetRBSP afps;
-  AtlasTileGroupHeader atgh;
+  AtlasTileHeader ath;
 
   // Convenience function to access the ASPS MIV extension
   [[nodiscard]] auto asme() const noexcept -> const AspsMivExtension &;

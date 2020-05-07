@@ -42,13 +42,13 @@ namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, AframeType x) -> std::ostream & {
   switch (x) {
   case AframeType::I:
-    return stream << "I_TILE_GRP";
+    return stream << "I_TILE";
   case AframeType::P_and_I:
-    return stream << "P_TILE_GRP and I_TILE_GRP";
+    return stream << "P_TILE and I_TILE";
   case AframeType::SKIP_P_and_I:
-    return stream << "SKIP_TILE_GRP, P_TILE_GRP and I_TILE_GRP";
+    return stream << "SKIP_TILE, P_TILE and I_TILE";
   case AframeType::SKIP:
-    return stream << "SKIP_TILE_GRP";
+    return stream << "SKIP_TILE";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }

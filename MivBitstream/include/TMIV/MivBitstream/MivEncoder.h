@@ -53,8 +53,8 @@ private:
   auto specialAtlasSubBitstream() -> AtlasSubBitstream;
   auto nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
   auto aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) -> AtlasSubBitstream;
-  auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLayerRBSP;
-  static auto skipAtlasTileGroupLayer() -> AtlasTileGroupLayerRBSP;
+  auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
+  static auto skipAtlasTileGroupLayer() -> AtlasTileLayerRBSP;
 
   template <typename Payload>
   void writeV3cUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);

@@ -131,7 +131,8 @@ struct Cuboid {
   auto operator==(const Cuboid &other) const -> bool;
   auto operator!=(const Cuboid &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c) -> Cuboid;
+  static auto decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
+      -> Cuboid;
   void encodeTo(OutputBitstream &stream, bool cameraInferred) const;
 
   static auto loadFromJson(const Common::Json &node, bool inferredView) -> Cuboid;

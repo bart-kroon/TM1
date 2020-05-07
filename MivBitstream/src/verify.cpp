@@ -50,8 +50,8 @@ namespace TMIV::MivBitstream {
 }
 
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line) {
-  cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file << "@" << line
-       << '\n';
+  cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file
+       << "@" << line << '\n';
   abort();
 }
 } // namespace TMIV::MivBitstream

@@ -76,8 +76,8 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_override_eom_for_depth_flag() co
   return m_afps_override_eom_for_depth_flag;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag() const
-    noexcept {
+constexpr auto
+AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept {
   return m_afps_raw_3d_pos_bit_count_explicit_mode_flag;
 }
 

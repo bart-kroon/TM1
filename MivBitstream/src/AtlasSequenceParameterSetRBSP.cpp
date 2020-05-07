@@ -281,7 +281,7 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
 }
 
 auto AtlasSequenceParameterSetRBSP::operator==(
-	const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
   return m_asps_atlas_sequence_parameter_set_id == other.m_asps_atlas_sequence_parameter_set_id &&
          m_asps_frame_width == other.m_asps_frame_width &&
          m_asps_frame_height == other.m_asps_frame_height &&
@@ -318,7 +318,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(
 }
 
 auto AtlasSequenceParameterSetRBSP::operator!=(
-	const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
   return !operator==(other);
 }
 

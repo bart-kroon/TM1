@@ -82,7 +82,9 @@ auto ViewingSpace::operator==(const ViewingSpace &other) const -> bool {
   return (elementaryShapes == other.elementaryShapes);
 }
 
-auto ViewingSpace::decodeFrom(InputBitstream &stream, const TMIV::MivBitstream::ViewParamsList &viewParamsList) -> ViewingSpace {
+auto ViewingSpace::decodeFrom(InputBitstream &stream,
+                              const TMIV::MivBitstream::ViewParamsList &viewParamsList)
+    -> ViewingSpace {
   ViewingSpace vs;
   auto numShapes = stream.getUExpGolomb<size_t>() + 1;
   vs.elementaryShapes.reserve(numShapes);
@@ -199,8 +201,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
     const auto &p = primitives[idx];
     if (cameraInferred) {
       stream.putUint16(static_cast<uint16_t>(inferringViews[idx]));
-
-}
+    }
     stream.writeBits(p.shapeType(), 2);
     visit([&](const auto &x) { x.encodeTo(stream, cameraInferred); }, p.primitive);
     if (guardBandPresent) {
@@ -219,8 +220,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       }
       if (cameraInferred) {
         encodeRotation(vdc.directionRotation, stream);
-
-}
+      }
       stream.putFloat16(Half(vdc.yawRange));
       stream.putFloat16(Half(vdc.pitchRange));
     }
@@ -286,10 +286,11 @@ auto Cuboid::operator==(const Cuboid &other) const -> bool {
   return center == other.center && size == other.size;
 }
 
-auto Cuboid::decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c) -> Cuboid {
+auto Cuboid::decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
+    -> Cuboid {
   Cuboid cuboid;
   if (cameraInferred) {
-    cuboid.center=c;
+    cuboid.center = c;
   } else {
     cuboid.center.x() = stream.getFloat16();
     cuboid.center.y() = stream.getFloat16();
@@ -455,13 +456,11 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
       for (; idx < sourceCameraNames.size(); idx++) {
         if (v == sourceCameraNames[idx]) {
           break;
-
-}
+        }
       }
       if (idx == sourceCameraNames.size()) {
         throw runtime_error("Invalid inferred view in the metadata JSON file");
-
-}
+      }
       elementaryShape.inferringViews.push_back(idx);
     }
     inferredView = true;
@@ -479,11 +478,11 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
   }
 
   // check consistency
-  if (inferredView && (elementaryShape.primitives.size() != elementaryShape.inferringViews.size())) {
+  if (inferredView &&
+      (elementaryShape.primitives.size() != elementaryShape.inferringViews.size())) {
     throw runtime_error(
         "Incompatible number of inferring views and primitive shapes in the metadata JSON file");
-
-}
+  }
 
   return elementaryShape;
 }
@@ -530,8 +529,7 @@ auto Cuboid::loadFromJson(const Json &node, bool inferredView) -> Cuboid {
   Cuboid cuboid;
   if (!inferredView) {
     cuboid.center = node.require("Center").asFloatVector<3>();
-
-}
+  }
   cuboid.size = node.require("Size").asFloatVector<3>();
   return cuboid;
 }
@@ -540,8 +538,7 @@ auto Spheroid::loadFromJson(const Json &node, bool inferredView) -> Spheroid {
   Spheroid spheroid;
   if (!inferredView) {
     spheroid.center = node.require("Center").asFloatVector<3>();
-
-}
+  }
   spheroid.radius = node.require("Radius").asFloatVector<3>();
   return spheroid;
 }

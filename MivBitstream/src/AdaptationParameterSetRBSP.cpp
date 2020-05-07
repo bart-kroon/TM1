@@ -334,8 +334,7 @@ auto PruningParent::pp_parent_id(uint16_t i) const noexcept -> uint16_t {
   return m_pp_parent_id[i];
 }
 
-auto PruningParent::pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept
-    -> PruningParent & {
+auto PruningParent::pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningParent & {
   VERIFY_MIVBITSTREAM(i < m_pp_parent_id.size());
   m_pp_parent_id[i] = value;
   return *this;

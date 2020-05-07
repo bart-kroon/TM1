@@ -93,7 +93,7 @@ public:
 
     const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
     cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
-	m_metadataWriter.reportSummary(cout);
+    m_metadataWriter.reportSummary(cout);
   }
 
 private:

@@ -220,7 +220,7 @@ public:
   template <typename Value>
   constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
 
-            [[nodiscard]] constexpr auto data() const noexcept -> auto &;
+  [[nodiscard]] constexpr auto data() const noexcept -> auto &;
 
   [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
@@ -257,7 +257,7 @@ public:
   template <typename... Args>
   explicit AtlasTileGroupDataUnit(Args &&... args) : m_vector{std::forward<Args>(args)...} {}
 
-            [[nodiscard]] auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
+  [[nodiscard]] auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
   [[nodiscard]] auto atgdu_patch_mode(std::size_t p) const -> AtgduPatchMode;
   [[nodiscard]] auto patch_information_data(std::size_t p) const -> const PatchInformationData &;
 
@@ -302,8 +302,8 @@ public:
       : m_atlas_tile_group_header{header}
       , m_atlas_tile_group_data_unit{in_place, std::forward<AtgduArgs>(args)...} {}
 
-            [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
-        -> const AtlasTileGroupHeader &;
+  [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
+      -> const AtlasTileGroupHeader &;
   [[nodiscard]] auto atlas_tile_group_data_unit() const noexcept -> const AtlasTileGroupDataUnit &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileGroupLayerRBSP &x) -> std::ostream &;

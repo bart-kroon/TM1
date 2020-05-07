@@ -451,7 +451,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
   const auto sourceCameraNames = (config.require("SourceCameraNames").asStringVector());
   if (auto subsubnode = node.optional("InferringViews"); subsubnode) {
     std::vector<std::string> views = subsubnode.asStringVector();
-    for (auto v : views) {
+    for (const auto &v : views) {
       unsigned idx = 0;
       for (; idx < sourceCameraNames.size(); idx++) {
         if (v == sourceCameraNames[idx]) {

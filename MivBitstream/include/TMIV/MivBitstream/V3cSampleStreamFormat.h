@@ -31,53 +31,61 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
-#define _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
+#ifndef _TMIV_MIVBITSTREAM_V3CSAMPLESTREAMFORMAT_H_
+#define _TMIV_MIVBITSTREAM_V3CSAMPLESTREAMFORMAT_H_
 
-#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
-
-#include <TMIV/Common/Json.h>
-#include <TMIV/Common/Vector.h>
+#include <cstdint>
+#include <iosfwd>
+#include <string>
 
 namespace TMIV::MivBitstream {
-struct ViewParams {
-  CameraIntrinsics ci;
-  CameraExtrinsics ce;
-  DepthQuantization dq;
-  std::optional<PruningParent> pp;
+// 23090-5: sample_stream_v3c_header()
+class SampleStreamV3cHeader {
+public:
+  explicit SampleStreamV3cHeader(std::uint8_t ssvh_unit_size_precision_bytes_minus1);
 
-  // Not in the specification. Just to improve screen output
-  std::string name{};
+  [[nodiscard]] constexpr auto ssvh_unit_size_precision_bytes_minus1() const noexcept {
+    return m_ssvh_unit_size_precision_bytes_minus1;
+  }
 
-  // Not part of the bitstream. Does the depth map have invalid/non-occupied?
-  bool hasOccupancy{};
+  friend auto operator<<(std::ostream &stream, const SampleStreamV3cHeader &x) -> std::ostream &;
 
-  auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
-  auto operator==(const ViewParams &other) const -> bool;
-  auto operator!=(const ViewParams &other) const -> bool { return !operator==(other); }
+  constexpr auto operator==(const SampleStreamV3cHeader &other) const noexcept -> bool {
+    return ssvh_unit_size_precision_bytes_minus1() == other.ssvh_unit_size_precision_bytes_minus1();
+  }
 
-  // Load a single (source) camera from a JSON metadata file (RVS 3.x format)
-  //
-  // The parameter is a an item of the viewParamsList node (a JSON object).
-  static auto loadFromJson(const Common::Json &node) -> ViewParams;
+  constexpr auto operator!=(const SampleStreamV3cHeader &other) const noexcept -> bool {
+    return !operator==(other);
+  }
+
+  static auto decodeFrom(std::istream &stream) -> SampleStreamV3cHeader;
+
+  void encodeTo(std::ostream &stream) const;
+
+private:
+  std::uint8_t m_ssvh_unit_size_precision_bytes_minus1{};
 };
 
-// Data type that corresponds to camera_params_list of specification
-struct ViewParamsList : public std::vector<ViewParams> {
-  ViewParamsList() = default;
-  explicit ViewParamsList(std::vector<ViewParams> viewParamsList);
+// 23090-5: sample_stream_v3c_unit()
+class SampleStreamV3cUnit {
+public:
+  explicit SampleStreamV3cUnit(std::string ssvu_v3c_unit);
 
-  // Size of each view as a vector
-  [[nodiscard]] auto viewSizes() const -> Common::SizeVector;
+  [[nodiscard]] auto ssvu_v3c_unit_size() const noexcept { return m_ssvu_v3c_unit.size(); }
+  [[nodiscard]] auto ssvu_v3c_unit() const noexcept -> const auto & { return m_ssvu_v3c_unit; }
 
-  friend auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList)
-      -> std::ostream &;
-  auto operator==(const ViewParamsList &other) const -> bool;
-  auto operator!=(const ViewParamsList &other) const -> bool { return !operator==(other); }
+  friend auto operator<<(std::ostream &stream, const SampleStreamV3cUnit &x) -> std::ostream &;
 
-  // Load (source) camera parameters from a JSON metadata file (RVS 3.x format)
-  static auto loadFromJson(const Common::Json &node, const std::vector<std::string> &names)
-      -> ViewParamsList;
+  auto operator==(const SampleStreamV3cUnit &other) const noexcept -> bool;
+  auto operator!=(const SampleStreamV3cUnit &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream, const SampleStreamV3cHeader &header)
+      -> SampleStreamV3cUnit;
+
+  void encodeTo(std::ostream &stream, const SampleStreamV3cHeader &header) const;
+
+private:
+  std::string m_ssvu_v3c_unit;
 };
 } // namespace TMIV::MivBitstream
 

@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VPCCPARAMETERSET_H_
+#ifndef _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 #error "Include the .h, not the .hpp"
 #endif
 
@@ -51,6 +51,14 @@ constexpr auto ProfileTierLevel::ptl_profile_reconstruction_idc() const noexcept
 }
 
 constexpr auto ProfileTierLevel::ptl_level_idc() const noexcept { return m_ptl_level_idc; }
+
+constexpr auto ProfileTierLevel::ptl_extended_sub_profile_flag() const noexcept {
+  return m_ptl_extended_sub_profile_flag;
+}
+
+constexpr auto ProfileTierLevel::ptl_tool_constraints_present_flag() const noexcept {
+  return m_ptl_tool_constraints_present_flag;
+}
 
 constexpr auto ProfileTierLevel::ptl_tier_flag(bool value) noexcept -> auto & {
   m_ptl_tier_flag = value;
@@ -78,6 +86,11 @@ ProfileTierLevel::ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc val
 
 constexpr auto ProfileTierLevel::ptl_level_idc(PtlLevelIdc value) noexcept -> auto & {
   m_ptl_level_idc = value;
+  return *this;
+}
+
+constexpr auto ProfileTierLevel::ptl_tool_constraints_present_flag(bool value) noexcept -> auto & {
+  m_ptl_tool_constraints_present_flag = value;
   return *this;
 }
 
@@ -160,88 +173,111 @@ GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t val
   return *this;
 }
 
-constexpr auto MivSequenceParams::msp_depth_low_quality_flag() const noexcept {
-  return m_msp_depth_low_quality_flag;
+constexpr decltype(auto) operator<<(std::ostream &stream, const VpsVpccExtension & /* x */) {
+  return stream;
 }
 
-constexpr auto MivSequenceParams::msp_geometry_scale_enabled_flag() const noexcept {
-  return m_msp_geometry_scale_enabled_flag;
+constexpr auto VpsVpccExtension::operator==(const VpsVpccExtension & /* other */) const noexcept {
+  return true;
+}
+constexpr auto VpsVpccExtension::operator!=(const VpsVpccExtension & /* other */) const noexcept {
+  return false;
 }
 
-constexpr auto MivSequenceParams::msp_num_groups_minus1() const noexcept {
-  return m_msp_num_groups_minus1;
+constexpr auto VpsVpccExtension::decodeFrom(Common::InputBitstream & /* bitstream */)
+    -> VpsVpccExtension {
+  return {};
 }
 
-constexpr auto MivSequenceParams::msp_max_entities_minus1() const noexcept {
-  return m_msp_max_entities_minus1;
+constexpr void VpsVpccExtension::encodeTo(Common::OutputBitstream & /* bitstream */) const {}
+
+constexpr auto VpsMivExtension::vme_depth_low_quality_flag() const noexcept {
+  return m_vme_depth_low_quality_flag;
 }
 
-constexpr auto MivSequenceParams::msp_depth_low_quality_flag(const bool value) noexcept -> auto & {
-  m_msp_depth_low_quality_flag = value;
+constexpr auto VpsMivExtension::vme_geometry_scale_enabled_flag() const noexcept {
+  return m_vme_geometry_scale_enabled_flag;
+}
+
+constexpr auto VpsMivExtension::vme_num_groups_minus1() const noexcept {
+  return m_vme_num_groups_minus1;
+}
+
+constexpr auto VpsMivExtension::vme_max_entities_minus1() const noexcept {
+  return m_vme_max_entities_minus1;
+}
+
+constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
+  return m_vme_vui_params_present_flag;
+}
+
+constexpr auto VpsMivExtension::vme_depth_low_quality_flag(const bool value) noexcept -> auto & {
+  m_vme_depth_low_quality_flag = value;
   return *this;
 }
 
-constexpr auto MivSequenceParams::msp_geometry_scale_enabled_flag(const bool value) noexcept
+constexpr auto VpsMivExtension::vme_geometry_scale_enabled_flag(const bool value) noexcept
     -> auto & {
-  m_msp_geometry_scale_enabled_flag = value;
+  m_vme_geometry_scale_enabled_flag = value;
   return *this;
 }
 
-constexpr auto MivSequenceParams::msp_num_groups_minus1(const unsigned value) noexcept -> auto & {
-  m_msp_num_groups_minus1 = value;
+constexpr auto VpsMivExtension::vme_num_groups_minus1(const unsigned value) noexcept -> auto & {
+  m_vme_num_groups_minus1 = value;
   return *this;
 }
-constexpr auto MivSequenceParams::msp_max_entities_minus1(const unsigned value) noexcept -> auto & {
-  m_msp_max_entities_minus1 = value;
+constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) noexcept -> auto & {
+  m_vme_max_entities_minus1 = value;
   return *this;
 }
 
-constexpr auto MivSequenceParams::operator==(const MivSequenceParams &other) const noexcept {
-  return msp_depth_low_quality_flag() == other.msp_depth_low_quality_flag() &&
-         msp_geometry_scale_enabled_flag() == other.msp_geometry_scale_enabled_flag() &&
-         msp_num_groups_minus1() == other.msp_num_groups_minus1() &&
-         msp_max_entities_minus1() == other.msp_max_entities_minus1();
+constexpr auto VpsMivExtension::vme_vui_params_present_flag(bool value) noexcept -> auto & {
+  m_vme_vui_params_present_flag = value;
+  return *this;
 }
 
-constexpr auto MivSequenceParams::operator!=(const MivSequenceParams &other) const noexcept {
+constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const noexcept {
+  return vme_depth_low_quality_flag() == other.vme_depth_low_quality_flag() &&
+         vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
+         vme_num_groups_minus1() == other.vme_num_groups_minus1() &&
+         vme_max_entities_minus1() == other.vme_max_entities_minus1();
+}
+
+constexpr auto VpsMivExtension::operator!=(const VpsMivExtension &other) const noexcept {
   return !operator==(other);
 }
 
-constexpr auto VpccParameterSet::profile_tier_level() const noexcept {
-  return m_profile_tier_level;
+constexpr auto V3cParameterSet::vps_v3c_parameter_set_id() const noexcept {
+  return m_vps_v3c_parameter_set_id;
 }
 
-constexpr auto VpccParameterSet::vps_vpcc_parameter_set_id() const noexcept {
-  return m_vps_vpcc_parameter_set_id;
-}
-
-constexpr auto VpccParameterSet::vps_miv_mode_flag() const noexcept { return m_vps_miv_mode_flag; }
-
-constexpr auto VpccParameterSet::vps_extension_present_flag() const noexcept {
+constexpr auto V3cParameterSet::vps_extension_present_flag() const noexcept {
   return m_vps_extension_present_flag;
 }
 
-constexpr auto VpccParameterSet::profile_tier_level(ProfileTierLevel value) noexcept -> auto & {
-  m_profile_tier_level = value;
+constexpr auto V3cParameterSet::vps_vpcc_extension_flag() const noexcept {
+  return m_vps_vpcc_extension_flag.value_or(false);
+}
+
+constexpr auto V3cParameterSet::vps_miv_extension_flag() const noexcept {
+  return m_vps_miv_extension_flag.value_or(false);
+}
+
+constexpr auto V3cParameterSet::vps_extension_6bits() const noexcept {
+  return m_vps_extension_6bits.value_or(0);
+}
+
+constexpr auto V3cParameterSet::vps_v3c_parameter_set_id(std::uint8_t value) noexcept -> auto & {
+  m_vps_v3c_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto VpccParameterSet::vps_vpcc_parameter_set_id(std::uint8_t value) noexcept -> auto & {
-  m_vps_vpcc_parameter_set_id = value;
-  return *this;
-}
-
-constexpr auto VpccParameterSet::vps_miv_mode_flag(const bool value) noexcept -> auto & {
-  m_vps_miv_mode_flag = value;
-  return *this;
-}
-
-constexpr auto VpccParameterSet::vps_extension_present_flag(bool value) noexcept -> auto & {
+constexpr auto V3cParameterSet::vps_extension_present_flag(bool value) noexcept -> auto & {
   m_vps_extension_present_flag = value;
   return *this;
 }
 
-constexpr auto VpccParameterSet::profile_tier_level() noexcept -> auto & {
+constexpr auto V3cParameterSet::profile_tier_level() noexcept -> auto & {
   return m_profile_tier_level;
 }
 } // namespace TMIV::MivBitstream

@@ -31,62 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VPCCSAMPLESTREAMFORMAT_H_
-#define _TMIV_MIVBITSTREAM_VPCCSAMPLESTREAMFORMAT_H_
+#ifndef _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
+#define _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
+
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+
+#include <TMIV/Common/Bitstream.h>
 
 #include <cstdint>
+#include <cstdlib>
 #include <iosfwd>
-#include <string>
 
 namespace TMIV::MivBitstream {
-// 23090-5: sample_stream_vpcc_header()
-class SampleStreamVpccHeader {
+// 23090-5: frame_order_count_rbsp( )
+class FrameOrderCountRBSP {
 public:
-  explicit SampleStreamVpccHeader(std::uint8_t ssvh_unit_size_precision_bytes_minus1);
+  FrameOrderCountRBSP() noexcept = default;
+  explicit constexpr FrameOrderCountRBSP(std::uint16_t frm_order_cnt_lsb) noexcept;
 
-  [[nodiscard]] constexpr auto ssvh_unit_size_precision_bytes_minus1() const noexcept {
-    return m_ssvh_unit_size_precision_bytes_minus1;
-  }
+  [[nodiscard]] constexpr auto frm_order_cnt_lsb() const noexcept;
 
-  friend auto operator<<(std::ostream &stream, const SampleStreamVpccHeader &x) -> std::ostream &;
+  constexpr auto frm_order_cnt_lsb(uint16_t value) noexcept -> auto &;
 
-  constexpr auto operator==(const SampleStreamVpccHeader &other) const noexcept -> bool {
-    return ssvh_unit_size_precision_bytes_minus1() == other.ssvh_unit_size_precision_bytes_minus1();
-  }
+  friend auto operator<<(std::ostream &stream, const FrameOrderCountRBSP &x) -> std::ostream &;
 
-  constexpr auto operator!=(const SampleStreamVpccHeader &other) const noexcept -> bool {
-    return !operator==(other);
-  }
+  constexpr auto operator==(const FrameOrderCountRBSP &other) const noexcept;
+  constexpr auto operator!=(const FrameOrderCountRBSP &other) const noexcept;
 
-  static auto decodeFrom(std::istream &stream) -> SampleStreamVpccHeader;
+  static auto decodeFrom(std::istream &stream, const AtlasAdaptationParameterSetRBSP &aaps)
+      -> FrameOrderCountRBSP;
+  static auto decodeFrom(std::istream &stream, const AtlasSequenceParameterSetRBSP &asps)
+      -> FrameOrderCountRBSP;
 
-  void encodeTo(std::ostream &stream) const;
+  void encodeTo(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &aaps) const;
+  void encodeTo(std::ostream &stream, const AtlasSequenceParameterSetRBSP &asps) const;
 
 private:
-  std::uint8_t m_ssvh_unit_size_precision_bytes_minus1{};
-};
-
-// 23090-5: sample_stream_vpcc_unit()
-class SampleStreamVpccUnit {
-public:
-  explicit SampleStreamVpccUnit(std::string ssvu_vpcc_unit);
-
-  [[nodiscard]] auto ssvu_vpcc_unit_size() const noexcept { return m_ssvu_vpcc_unit.size(); }
-  [[nodiscard]] auto ssvu_vpcc_unit() const noexcept -> const auto & { return m_ssvu_vpcc_unit; }
-
-  friend auto operator<<(std::ostream &stream, const SampleStreamVpccUnit &x) -> std::ostream &;
-
-  auto operator==(const SampleStreamVpccUnit &other) const noexcept -> bool;
-  auto operator!=(const SampleStreamVpccUnit &other) const noexcept -> bool;
-
-  static auto decodeFrom(std::istream &stream, const SampleStreamVpccHeader &header)
-      -> SampleStreamVpccUnit;
-
-  void encodeTo(std::ostream &stream, const SampleStreamVpccHeader &header) const;
-
-private:
-  std::string m_ssvu_vpcc_unit;
+  std::uint16_t m_frm_order_cnt_lsb{};
 };
 } // namespace TMIV::MivBitstream
+
+#include "FrameOrderCountRBSP.hpp"
 
 #endif

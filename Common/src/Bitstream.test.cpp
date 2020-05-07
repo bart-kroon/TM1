@@ -88,6 +88,16 @@ TEST_CASE("Bitstream primitives") {
     REQUIRE(actual == reference);
   }
 
+  SECTION("u(64)") {
+    const auto reference = UINT64_MAX - 3;
+    obitstream.putFlag(true);
+    obitstream.putUint64(reference);
+    obitstream.zeroAlign();
+    ibitstream.getFlag();
+    const auto actual = ibitstream.getUint64();
+    REQUIRE(actual == reference);
+  }
+
   SECTION("float32") {
     const auto reference = 1.F / 42.F;
     obitstream.putFloat32(reference);

@@ -61,7 +61,7 @@ auto operator<<(std::ostream &stream, const AccessUnitDelimiterRBSP &x) -> std::
 auto AccessUnitDelimiterRBSP::decodeFrom(std::istream &stream) -> AccessUnitDelimiterRBSP {
   InputBitstream bitstream{stream};
   auto aframe_type = bitstream.readBits<AframeType>(3);
-  VERIFY_VPCCBITSTREAM(AframeType::I <= aframe_type && aframe_type <= AframeType::SKIP);
+  VERIFY_V3CBITSTREAM(AframeType::I <= aframe_type && aframe_type <= AframeType::SKIP);
 
   bitstream.rbspTrailingBits();
 
@@ -69,7 +69,7 @@ auto AccessUnitDelimiterRBSP::decodeFrom(std::istream &stream) -> AccessUnitDeli
 }
 
 void AccessUnitDelimiterRBSP::encodeTo(std::ostream &stream) const {
-  VERIFY_VPCCBITSTREAM(AframeType::I <= aframe_type() && aframe_type() <= AframeType::SKIP);
+  VERIFY_V3CBITSTREAM(AframeType::I <= aframe_type() && aframe_type() <= AframeType::SKIP);
 
   OutputBitstream bitstream{stream};
   bitstream.writeBits(aframe_type(), 3);

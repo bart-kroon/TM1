@@ -34,7 +34,7 @@
 #include <TMIV/VideoDecoder/IVideoDecoder.h>
 
 #include <TMIV/MivBitstream/MivDecoderMode.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <fstream>
 #include <iostream>

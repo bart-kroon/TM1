@@ -56,7 +56,6 @@ afps_additional_lt_afoc_lsb_len=0
 afps_3d_pos_x_bit_count_minus1=0
 afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
-afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_extension_present_flag=false
 )");
@@ -73,7 +72,6 @@ afps_additional_lt_afoc_lsb_len=0
 afps_3d_pos_x_bit_count_minus1=0
 afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
-afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_extension_present_flag=false
 )");
@@ -95,7 +93,14 @@ afps_extension_present_flag=false
         .afps_3d_pos_x_bit_count_minus1(31)
         .afps_3d_pos_y_bit_count_minus1(31)
         .afps_lod_mode_enabled_flag(true)
-        .afps_raw_3d_pos_bit_count_explicit_mode_flag(true);
+        .afps_raw_3d_pos_bit_count_explicit_mode_flag(true)
+        .afps_extension_present_flag(true)
+        .afps_vpcc_extension_flag(true)
+        .afps_vpcc_extension({})
+        .afps_miv_extension_flag(true)
+        .afps_miv_extension({})
+        .afps_extension_6bits(63)
+        .afpsExtensionData({false, true});
 
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
 afps_atlas_sequence_parameter_set_id=1
@@ -106,11 +111,15 @@ afps_additional_lt_afoc_lsb_len=25
 afps_3d_pos_x_bit_count_minus1=31
 afps_3d_pos_y_bit_count_minus1=31
 afps_lod_mode_enabled_flag=true
-afps_override_eom_for_depth_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=true
-afps_extension_present_flag=false
+afps_extension_present_flag=true
+afps_vpcc_extension_flag=true
+afps_miv_extension_flag=true
+afps_extension_6bits=63
+afps_extension_data_flag=false
+afps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 7, aspsV));
+    REQUIRE(byteCodingTest(x, 8, aspsV));
   }
 }

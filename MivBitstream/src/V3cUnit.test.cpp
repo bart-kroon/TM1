@@ -33,16 +33,16 @@
 
 #include "test.h"
 
-#include <TMIV/MivBitstream/VpccUnit.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
 using namespace TMIV::MivBitstream;
 
 namespace examples {
 auto vps() {
-  auto x = VpccParameterSet{};
-  x.vps_miv_mode_flag(true);
+  auto x = V3cParameterSet{};
   x.vps_frame_width(0, 640);
   x.vps_frame_height(0, 480);
+  x.vps_geometry_video_present_flag(0, true);
   x.geometry_information(0).gi_geometry_nominal_2d_bitdepth_minus1(8);
   x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth_minus1(10);
   x.vps_extension_present_flag(true);
@@ -50,47 +50,50 @@ auto vps() {
 }
 
 auto vpses() {
-  auto x = VpccParameterSet{};
+  auto x = V3cParameterSet{};
   x.vps_atlas_count_minus1(2);
   for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
     x.vps_frame_width(j, 640);
     x.vps_frame_height(j, 480);
+    x.vps_occupancy_video_present_flag(j, true);
+    x.vps_geometry_video_present_flag(j, true);
+    x.vps_attribute_video_present_flag(j, true);
     x.occupancy_information(j).oi_occupancy_nominal_2d_bitdepth_minus1(7);
     x.geometry_information(j).gi_geometry_nominal_2d_bitdepth_minus1(8);
     x.geometry_information(j).gi_geometry_3d_coordinates_bitdepth_minus1(10);
     x.attribute_information(j).ai_attribute_count(4);
   }
-  return std::vector<VpccParameterSet>{3, x};
+  return std::vector<V3cParameterSet>{3, x};
 }
 } // namespace examples
 
-TEST_CASE("vpcc_unit_header", "[VPCC Unit]") {
+TEST_CASE("v3c_unit_header", "[V3C Unit]") {
   SECTION("VPS") {
-    const auto x = VpccUnitHeader{VuhUnitType::VPCC_VPS};
-    const auto vpses = std::vector<VpccParameterSet>{};
+    const auto x = V3cUnitHeader{VuhUnitType::V3C_VPS};
+    const auto vpses = std::vector<V3cParameterSet>{};
 
-    REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_VPS
+    REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 )");
 
     REQUIRE(byteCodingTest(x, 4, vpses));
   }
 
   SECTION("AD") {
-    auto x = VpccUnitHeader{VuhUnitType::VPCC_AD};
+    auto x = V3cUnitHeader{VuhUnitType::V3C_AD};
     const auto vpses = examples::vpses();
 
-    REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_AD
-vuh_vpcc_parameter_set_id=0
+    REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AD
+vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 )");
 
     REQUIRE(byteCodingTest(x, 4, vpses));
 
     SECTION("Example") {
-      x.vuh_vpcc_parameter_set_id(1).vuh_atlas_id(2);
+      x.vuh_v3c_parameter_set_id(1).vuh_atlas_id(2);
 
-      REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_AD
-vuh_vpcc_parameter_set_id=1
+      REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AD
+vuh_v3c_parameter_set_id=1
 vuh_atlas_id=2
 )");
 
@@ -99,21 +102,21 @@ vuh_atlas_id=2
   }
 
   SECTION("OVD") {
-    auto x = VpccUnitHeader{VuhUnitType::VPCC_OVD};
+    auto x = V3cUnitHeader{VuhUnitType::V3C_OVD};
     const auto vpses = examples::vpses();
 
-    REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_OVD
-vuh_vpcc_parameter_set_id=0
+    REQUIRE(toString(x) == R"(vuh_unit_type=V3C_OVD
+vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 )");
 
     REQUIRE(byteCodingTest(x, 4, vpses));
 
     SECTION("Example") {
-      x.vuh_vpcc_parameter_set_id(2).vuh_atlas_id(1);
+      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(1);
 
-      REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_OVD
-vuh_vpcc_parameter_set_id=2
+      REQUIRE(toString(x) == R"(vuh_unit_type=V3C_OVD
+vuh_v3c_parameter_set_id=2
 vuh_atlas_id=1
 )");
 
@@ -122,11 +125,11 @@ vuh_atlas_id=1
   }
 
   SECTION("GVD") {
-    auto x = VpccUnitHeader{VuhUnitType::VPCC_GVD};
+    auto x = V3cUnitHeader{VuhUnitType::V3C_GVD};
     const auto vpses = examples::vpses();
 
-    REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_GVD
-vuh_vpcc_parameter_set_id=0
+    REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
+vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 vuh_map_index=0
 vuh_raw_video_flag=false
@@ -135,10 +138,10 @@ vuh_raw_video_flag=false
     REQUIRE(byteCodingTest(x, 4, vpses));
 
     SECTION("Example") {
-      x.vuh_vpcc_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_raw_video_flag(false);
+      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_raw_video_flag(false);
 
-      REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_GVD
-vuh_vpcc_parameter_set_id=2
+      REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
+vuh_v3c_parameter_set_id=2
 vuh_atlas_id=0
 vuh_map_index=0
 vuh_raw_video_flag=false
@@ -149,11 +152,11 @@ vuh_raw_video_flag=false
   }
 
   SECTION("AVD") {
-    auto x = VpccUnitHeader{VuhUnitType::VPCC_AVD};
+    auto x = V3cUnitHeader{VuhUnitType::V3C_AVD};
     const auto vpses = examples::vpses();
 
-    REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_AVD
-vuh_vpcc_parameter_set_id=0
+    REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
+vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 vuh_attribute_index=0
 vuh_attribute_dimension_index=0
@@ -164,15 +167,15 @@ vuh_raw_video_flag=false
     REQUIRE(byteCodingTest(x, 4, vpses));
 
     SECTION("Example") {
-      x.vuh_vpcc_parameter_set_id(2)
+      x.vuh_v3c_parameter_set_id(2)
           .vuh_atlas_id(2)
           .vuh_attribute_index(3)
           .vuh_attribute_dimension_index(0)
           .vuh_map_index(0)
           .vuh_raw_video_flag(false);
 
-      REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_AVD
-vuh_vpcc_parameter_set_id=2
+      REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
+vuh_v3c_parameter_set_id=2
 vuh_atlas_id=2
 vuh_attribute_index=3
 vuh_attribute_dimension_index=0
@@ -185,38 +188,45 @@ vuh_raw_video_flag=false
   }
 }
 
-TEST_CASE("vpcc_unit_payload", "[VPCC Unit]") {
+TEST_CASE("v3c_unit_payload", "[V3C Unit]") {
   SECTION("VPS") {
-    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_VPS};
-    const auto x = VpccPayload{examples::vps()};
+    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_VPS};
+    const auto x = V3cPayload{examples::vps()};
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_pcc_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
-vps_vpcc_parameter_set_id=0
-vps_miv_mode_flag=true
+ptl_num_sub_profiles=0
+ptl_extended_sub_profile_flag=false
+ptl_tool_constraints_present_flag=false
+vps_v3c_parameter_set_id=0
 vps_atlas_count_minus1=0
+vps_atlas_id( 0 )=0
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
 vps_map_count_minus1( 0 )=0
 vps_auxiliary_video_present_flag( 0 )=false
+vps_occupancy_video_present_flag( 0 )=false
+vps_geometry_video_present_flag( 0 )=true
+vps_attribute_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
-ai_attribute_count( 0 )=0
 vps_extension_present_flag=true
+vps_vpcc_extension_flag=false
 vps_miv_extension_flag=false
+vps_extension_6bits=0
 )");
 
-    REQUIRE(byteCodingTest(x, 20, vuh));
+    REQUIRE(byteCodingTest(x, 21, vuh));
   }
 
   SECTION("AD") {
-    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
-    const auto x = VpccPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
+    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+    const auto x = V3cPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
 
     REQUIRE(toString(x) == R"(ssnh_unit_size_precision_bytes_minus1=4
 )");
@@ -225,8 +235,8 @@ vps_miv_extension_flag=false
   }
 
   SECTION("OVD") {
-    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_OVD};
-    const auto x = VpccPayload{VideoSubBitstream{}};
+    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
+    const auto x = V3cPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -234,8 +244,8 @@ vps_miv_extension_flag=false
   }
 
   SECTION("GVD") {
-    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_GVD};
-    const auto x = VpccPayload{VideoSubBitstream{}};
+    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
+    const auto x = V3cPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -243,8 +253,8 @@ vps_miv_extension_flag=false
   }
 
   SECTION("AVD") {
-    const auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AVD};
-    const auto x = VpccPayload{VideoSubBitstream{}};
+    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
+    const auto x = V3cPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -252,51 +262,58 @@ vps_miv_extension_flag=false
   }
 }
 
-TEST_CASE("vpcc_unit", "[VPCC Unit]") {
+TEST_CASE("v3c_unit", "[V3C Unit]") {
   SECTION("Example 1") {
-    const auto vpses = std::vector<VpccParameterSet>{};
+    const auto vpses = std::vector<V3cParameterSet>{};
     const auto vps = examples::vps();
-    const auto x = VpccUnit{VpccUnitHeader{VuhUnitType::VPCC_VPS}, vps};
+    const auto x = V3cUnit{V3cUnitHeader{VuhUnitType::V3C_VPS}, vps};
 
-    REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_VPS
+    REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_pcc_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
-vps_vpcc_parameter_set_id=0
-vps_miv_mode_flag=true
+ptl_num_sub_profiles=0
+ptl_extended_sub_profile_flag=false
+ptl_tool_constraints_present_flag=false
+vps_v3c_parameter_set_id=0
 vps_atlas_count_minus1=0
+vps_atlas_id( 0 )=0
 vps_frame_width( 0 )=640
 vps_frame_height( 0 )=480
 vps_map_count_minus1( 0 )=0
 vps_auxiliary_video_present_flag( 0 )=false
+vps_occupancy_video_present_flag( 0 )=false
+vps_geometry_video_present_flag( 0 )=true
+vps_attribute_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
-ai_attribute_count( 0 )=0
 vps_extension_present_flag=true
+vps_vpcc_extension_flag=false
 vps_miv_extension_flag=false
+vps_extension_6bits=0
 )");
 
-    REQUIRE(unitCodingTest(x, 24, vpses));
+    REQUIRE(unitCodingTest(x, 25, vpses));
   }
 
   SECTION("Example 2") {
     const auto vpses = examples::vpses();
-    auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AVD};
-    vuh.vuh_vpcc_parameter_set_id(2)
+    auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
+    vuh.vuh_v3c_parameter_set_id(2)
         .vuh_atlas_id(1)
         .vuh_attribute_index(2)
         .vuh_attribute_dimension_index(0)
         .vuh_map_index(0)
         .vuh_raw_video_flag(false);
 
-    const auto x = VpccUnit{vuh, VideoSubBitstream{}};
+    const auto x = V3cUnit{vuh, VideoSubBitstream{}};
 
-    REQUIRE(toString(x) == R"(vuh_unit_type=VPCC_AVD
-vuh_vpcc_parameter_set_id=2
+    REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
+vuh_v3c_parameter_set_id=2
 vuh_atlas_id=1
 vuh_attribute_index=2
 vuh_attribute_dimension_index=0

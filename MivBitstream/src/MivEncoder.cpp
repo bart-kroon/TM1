@@ -44,8 +44,8 @@ using namespace TMIV::Common;
 namespace TMIV::MivBitstream {
 
 MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
-  cout << "=== Sample stream V-PCC header " << string(100 - 31, '=') << '\n'
-       << m_ssvh << string(100, '=') << "\n"
+  cout << "=== Sample stream V3C header " << string(100 - 31, '=') << '\n'
+       << m_ssvh << string(100, '=') << '\n'
        << endl;
 
   m_ssvh.encodeTo(m_stream);
@@ -55,8 +55,8 @@ MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
 void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
   m_ivs = ivSequenceParams;
 
-  writeVpccUnit(VuhUnitType::VPCC_VPS, 0, m_ivs.vps);
-  writeVpccUnit(VuhUnitType::VPCC_AD, specialAtlasId, specialAtlasSubBitstream());
+  writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_ivs.vps);
+  writeV3cUnit(VuhUnitType::V3C_AD, specialAtlasId, specialAtlasSubBitstream());
 }
 
 void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
@@ -65,36 +65,37 @@ void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitP
 
   if (m_writeNonAcl) {
     for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
-      writeVpccUnit(VuhUnitType::VPCC_AD, vai, nonAclAtlasSubBitstream(vai));
+      writeV3cUnit(VuhUnitType::V3C_AD, vai, nonAclAtlasSubBitstream(vai));
     }
   }
 
   for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
-    writeVpccUnit(VuhUnitType::VPCC_AD, vai, aclAtlasSubBitstream(vai, intraPeriodFrameCount));
+    writeV3cUnit(VuhUnitType::V3C_AD, vai, aclAtlasSubBitstream(vai, intraPeriodFrameCount));
   }
 
   m_writeNonAcl = false;
 }
 
 namespace {
-const auto nuhAps = NalUnitHeader{NalUnitType::NAL_APS, 0, 1};
+const auto nuhAps = NalUnitHeader{NalUnitType::NAL_AAPS, 0, 1};
 const auto nuhAsps = NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1};
 const auto nuhAfps = NalUnitHeader{NalUnitType::NAL_AFPS, 0, 1};
 const auto nuhIdr = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
 const auto nuhCra = NalUnitHeader{NalUnitType::NAL_CRA, 0, 1};
-const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP, 0, 2};
+const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP_N, 0, 2};
 } // namespace
 
 auto MivEncoder::specialAtlasSubBitstream() -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
-  writeNalUnit(asb, nuhAps, adaptationParameterSet());
+  m_ivs.updateMvpl();
+  writeNalUnit(asb, nuhAps, m_ivs.aaps);
   return asb;
 }
 
 auto MivEncoder::nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
-  auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
+  auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
   vuh.vuh_atlas_id(vai);
 
   const auto &aau = m_ivau.atlas[vai];
@@ -108,7 +109,7 @@ auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCoun
     -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
-  auto vuh = VpccUnitHeader{VuhUnitType::VPCC_AD};
+  auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
   vuh.vuh_atlas_id(vai);
 
   const auto &aau = m_ivau.atlas[vai];
@@ -123,48 +124,6 @@ auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCoun
   }
 
   return asb;
-}
-
-auto MivEncoder::adaptationParameterSet() const -> AdaptationParameterSetRBSP {
-  auto x = AdaptationParameterSetRBSP{};
-
-  const auto &vpl = m_ivs.viewParamsList;
-
-  auto &mvp = x.aps_miv_view_params_list_present_flag(true)
-                  .aps_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
-                  .miv_view_params_list();
-
-  VERIFY_MIVBITSTREAM(!vpl.empty());
-  mvp.mvp_num_views_minus1(uint16_t(vpl.size() - 1));
-
-  mvp.mvp_intrinsic_params_equal_flag(
-      all_of(vpl.begin(), vpl.end(), [&vpl](const auto &x) { return x.ci == vpl.front().ci; }));
-
-  mvp.mvp_depth_quantization_params_equal_flag(
-      all_of(vpl.begin(), vpl.end(), [&vpl](const auto &x) { return x.dq == vpl.front().dq; }));
-
-  mvp.mvp_pruning_graph_params_present_flag(vpl.front().pp.has_value());
-
-  for (uint16_t viewId = 0; viewId <= mvp.mvp_num_views_minus1(); ++viewId) {
-    const auto &vp = vpl[viewId];
-
-    mvp.camera_extrinsics(viewId) = vp.ce;
-
-    if (viewId == 0 || !mvp.mvp_intrinsic_params_equal_flag()) {
-      mvp.camera_intrinsics(viewId) = vp.ci;
-    }
-
-    if (viewId == 0 || !mvp.mvp_depth_quantization_params_equal_flag()) {
-      mvp.depth_quantization(viewId) = vp.dq;
-    }
-
-    VERIFY_MIVBITSTREAM(vp.pp.has_value() == mvp.mvp_pruning_graph_params_present_flag());
-    if (vp.pp.has_value()) {
-      mvp.pruning_parent(viewId) = *vp.pp;
-    }
-  }
-
-  return x;
 }
 
 auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLayerRBSP {
@@ -206,16 +165,14 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileGroupLa
       }
 
       pdu.pdu_orientation_index(pp.pduOrientationIndex());
-      pdu.pdu_view_id(pp.pduViewId());
+      pdu.pdu_projection_id(pp.pduViewId());
 
       if (pp.pduEntityId()) {
-        pdu.pdu_entity_id(*pp.pduEntityId());
+        pdu.pdu_miv_extension().pdu_entity_id(*pp.pduEntityId());
       }
-
       if (pp.pduDepthOccMapThreshold()) {
-        pdu.pdu_depth_occ_map_threshold(*pp.pduDepthOccMapThreshold());
+        pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.pduDepthOccMapThreshold());
       }
-
       patchData.emplace_back(AtgduPatchMode::I_INTRA, pdu);
     }
   }
@@ -231,20 +188,20 @@ auto MivEncoder::skipAtlasTileGroupLayer() -> AtlasTileGroupLayerRBSP {
 }
 
 template <typename Payload>
-void MivEncoder::writeVpccUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
-  auto vuh = VpccUnitHeader{vut};
+void MivEncoder::writeV3cUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
+  auto vuh = V3cUnitHeader{vut};
   if (vai != 0) {
     vuh.vuh_atlas_id(vai);
   }
-  const auto vu = VpccUnit{vuh, forward<Payload>(payload)};
+  const auto vu = V3cUnit{vuh, forward<Payload>(payload)};
 
   ostringstream substream;
   vu.encodeTo(substream, {m_ivs.vps});
 
-  const auto ssvu = SampleStreamVpccUnit{substream.str()};
+  const auto ssvu = SampleStreamV3cUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
-  cout << "\n=== V-PCC unit " << string(100 - 15, '=') << '\n'
-       << ssvu << vu << m_nalUnitLog.str() << string(100, '=') << "\n"
+  cout << "\n=== V3C unit " << string(100 - 15, '=') << '\n'
+       << ssvu << vu << m_nalUnitLog.str() << string(100, '=') << '\n'
        << endl;
 
   m_nalUnitLog.str("");

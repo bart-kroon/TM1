@@ -55,7 +55,7 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_ivs = IvSequenceParams{atlasFrameSizes, haveTexture()};
-  m_ivs.msp() = m_transportIvs.msp();
+  m_ivs.vme() = m_transportIvs.vme();
   m_ivs.viewParamsList = m_transportIvs.viewParamsList;
   m_ivs.viewingSpace = m_transportIvs.viewingSpace;
   m_ivs.frameRate = m_transportIvs.frameRate;
@@ -147,7 +147,7 @@ auto Encoder::haveTexture() const -> bool {
 
 void Encoder::enableOccupancyPerView() {
   for (size_t viewId = 0; viewId < m_ivs.viewParamsList.size(); ++viewId) {
-    if (!m_isBasicView[viewId] || m_ivs.msp().msp_max_entities_minus1() > 0) {
+    if (!m_isBasicView[viewId] || m_ivs.vme().vme_max_entities_minus1() > 0) {
       m_ivs.viewParamsList[viewId].hasOccupancy = true;
     }
   }

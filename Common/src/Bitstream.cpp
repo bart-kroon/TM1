@@ -50,10 +50,13 @@ auto verifyBitstreamFailed(char const *condition, char const *file, int line) ->
 
 auto InputBitstream::tellg() const -> streampos { return m_stream.tellg() * charBits - m_size; }
 
-auto InputBitstream::getFloat16() -> Common::Half {
-  using Common::Half;
-  return Half::decode(getUint16());
+auto InputBitstream::getUint64() -> uint64_t {
+  const uint64_t msb = getUint32();
+  const uint64_t lsb = getUint32();
+  return (msb << 32) | lsb;
 }
+
+auto InputBitstream::getFloat16() -> Half { return Half::decode(getUint16()); }
 
 auto InputBitstream::getFloat32() -> float {
   uint32_t code = getUint32();
@@ -187,7 +190,12 @@ void OutputBitstream::putSExpGolomb(int64_t value) {
   putUExpGolomb((uint64_t(abs(value)) << 1U) - uint64_t(value > 0));
 }
 
-void OutputBitstream::putFloat16(Common::Half value) { putUint16(value.encode()); }
+void OutputBitstream::putUint64(uint64_t value) {
+  putUint32(uint32_t(value >> 32));
+  putUint32(uint32_t(value));
+}
+
+void OutputBitstream::putFloat16(Half value) { putUint16(value.encode()); }
 
 void OutputBitstream::putFloat32(float value) {
   uint32_t code = 0;

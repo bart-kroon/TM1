@@ -31,110 +31,109 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ATLASTILEGROUPLAYERRBSP_H_
+#ifndef _TMIV_MIVBITSTREAM_ATLASTILELAYERRBSP_H_
 #error "Include the .h, not the .hpp"
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto AtlasTileGroupHeader::atgh_atlas_frame_parameter_set_id() const noexcept {
-  return m_atgh_atlas_frame_parameter_set_id;
+constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id() const noexcept {
+  return m_ath_atlas_frame_parameter_set_id;
 }
 
-constexpr auto AtlasTileGroupHeader::atgh_adaptation_parameter_set_id() const noexcept {
-  return m_atgh_adaptation_parameter_set_id;
+constexpr auto AtlasTileHeader::ath_atlas_adaptation_parameter_set_id() const noexcept {
+  return m_ath_adaptation_parameter_set_id;
 }
 
-constexpr auto AtlasTileGroupHeader::atgh_address() const noexcept { return m_atgh_address; }
+constexpr auto AtlasTileHeader::ath_id() const noexcept { return m_ath_id; }
 
-constexpr auto AtlasTileGroupHeader::atgh_type() const noexcept { return m_atgh_type; }
+constexpr auto AtlasTileHeader::ath_type() const noexcept { return m_ath_type; }
 
-constexpr auto AtlasTileGroupHeader::atgh_atlas_frm_order_cnt_lsb() const noexcept {
-  return m_atgh_atlas_frm_order_cnt_lsb;
+constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb() const noexcept {
+  return m_ath_atlas_frm_order_cnt_lsb;
 }
 
-constexpr auto AtlasTileGroupHeader::atgh_ref_atlas_frame_list_sps_flag() const noexcept {
-  return m_atgh_ref_atlas_frame_list_sps_flag.value_or(false);
+constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag() const noexcept {
+  return m_ath_ref_atlas_frame_list_sps_flag.value_or(false);
 }
 
-constexpr auto AtlasTileGroupHeader::atgh_pos_min_z_quantizer() const noexcept {
-  return m_atgh_pos_min_z_quantizer.value_or(0);
+constexpr auto AtlasTileHeader::ath_pos_min_z_quantizer() const noexcept {
+  return m_ath_pos_min_z_quantizer.value_or(0);
 }
 
-constexpr auto AtlasTileGroupHeader::atgh_pos_delta_max_z_quantizer() const noexcept {
-  return m_atgh_pos_delta_max_z_quantizer.value_or(0);
+constexpr auto AtlasTileHeader::ath_pos_delta_max_z_quantizer() const noexcept {
+  return m_ath_pos_delta_max_z_quantizer.value_or(0);
 }
 
-constexpr auto
-AtlasTileGroupHeader::atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept
     -> auto & {
-  m_atgh_atlas_frame_parameter_set_id = value;
-  return *this;
-}
-
-constexpr auto
-AtlasTileGroupHeader::atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept
-    -> auto & {
-  m_atgh_adaptation_parameter_set_id = value;
-  return *this;
-}
-
-constexpr auto AtlasTileGroupHeader::atgh_address(const std::uint8_t value) noexcept -> auto & {
-  m_atgh_address = value;
-  return *this;
-}
-
-constexpr auto AtlasTileGroupHeader::atgh_type(const AtghType value) noexcept -> auto & {
-  m_atgh_type = value;
-  return *this;
-}
-
-constexpr auto AtlasTileGroupHeader::atgh_atlas_output_flag(const bool value) noexcept -> auto & {
-  m_atgh_atlas_output_flag = value;
-  return *this;
-}
-
-constexpr auto AtlasTileGroupHeader::atgh_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept
-    -> auto & {
-  m_atgh_atlas_frm_order_cnt_lsb = value;
-  return *this;
-}
-
-constexpr auto AtlasTileGroupHeader::atgh_ref_atlas_frame_list_sps_flag(const bool value) noexcept
-    -> auto & {
-  m_atgh_ref_atlas_frame_list_sps_flag = value;
-  return *this;
-}
-
-constexpr auto AtlasTileGroupHeader::atgh_pos_min_z_quantizer(const std::uint8_t value) noexcept
-    -> auto & {
-  m_atgh_pos_min_z_quantizer = value;
+  m_ath_atlas_frame_parameter_set_id = value;
   return *this;
 }
 
 constexpr auto
-AtlasTileGroupHeader::atgh_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept -> auto & {
-  m_atgh_pos_delta_max_z_quantizer = value;
+AtlasTileHeader::ath_atlas_adaptation_parameter_set_id(const std::uint8_t value) noexcept
+    -> auto & {
+  m_ath_adaptation_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto AtlasTileGroupHeader::operator==(const AtlasTileGroupHeader &other) const noexcept {
-  if (atgh_atlas_frame_parameter_set_id() != other.atgh_atlas_frame_parameter_set_id() ||
-      atgh_address() != other.atgh_address() || atgh_type() != other.atgh_type() ||
-      m_atgh_atlas_output_flag != other.m_atgh_atlas_output_flag ||
-      atgh_atlas_frm_order_cnt_lsb() != other.atgh_atlas_frm_order_cnt_lsb() ||
-      atgh_ref_atlas_frame_list_sps_flag() != other.atgh_ref_atlas_frame_list_sps_flag()) {
+constexpr auto AtlasTileHeader::ath_id(const std::uint8_t value) noexcept -> auto & {
+  m_ath_id = value;
+  return *this;
+}
+
+constexpr auto AtlasTileHeader::ath_type(const AthType value) noexcept -> auto & {
+  m_ath_type = value;
+  return *this;
+}
+
+constexpr auto AtlasTileHeader::ath_atlas_output_flag(const bool value) noexcept -> auto & {
+  m_ath_atlas_output_flag = value;
+  return *this;
+}
+
+constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept
+    -> auto & {
+  m_ath_atlas_frm_order_cnt_lsb = value;
+  return *this;
+}
+
+constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag(const bool value) noexcept
+    -> auto & {
+  m_ath_ref_atlas_frame_list_sps_flag = value;
+  return *this;
+}
+
+constexpr auto AtlasTileHeader::ath_pos_min_z_quantizer(const std::uint8_t value) noexcept
+    -> auto & {
+  m_ath_pos_min_z_quantizer = value;
+  return *this;
+}
+
+constexpr auto AtlasTileHeader::ath_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept
+    -> auto & {
+  m_ath_pos_delta_max_z_quantizer = value;
+  return *this;
+}
+
+constexpr auto AtlasTileHeader::operator==(const AtlasTileHeader &other) const noexcept {
+  if (ath_atlas_frame_parameter_set_id() != other.ath_atlas_frame_parameter_set_id() ||
+      ath_id() != other.ath_id() || ath_type() != other.ath_type() ||
+      m_ath_atlas_output_flag != other.m_ath_atlas_output_flag ||
+      ath_atlas_frm_order_cnt_lsb() != other.ath_atlas_frm_order_cnt_lsb() ||
+      ath_ref_atlas_frame_list_sps_flag() != other.ath_ref_atlas_frame_list_sps_flag()) {
     return false;
   }
-  if (atgh_type() == AtghType::SKIP_TILE_GRP) {
+  if (ath_type() == AthType::SKIP_TILE) {
     return true;
   }
-  return atgh_pos_min_z_quantizer() == other.atgh_pos_min_z_quantizer() &&
-         atgh_pos_delta_max_z_quantizer() == other.atgh_pos_delta_max_z_quantizer() &&
-         atgh_patch_size_x_info_quantizer() == other.atgh_patch_size_x_info_quantizer() &&
-         atgh_patch_size_y_info_quantizer() == other.atgh_patch_size_y_info_quantizer();
+  return ath_pos_min_z_quantizer() == other.ath_pos_min_z_quantizer() &&
+         ath_pos_delta_max_z_quantizer() == other.ath_pos_delta_max_z_quantizer() &&
+         ath_patch_size_x_info_quantizer() == other.ath_patch_size_x_info_quantizer() &&
+         ath_patch_size_y_info_quantizer() == other.ath_patch_size_y_info_quantizer();
 }
 
-constexpr auto AtlasTileGroupHeader::operator!=(const AtlasTileGroupHeader &other) const noexcept {
+constexpr auto AtlasTileHeader::operator!=(const AtlasTileHeader &other) const noexcept {
   return !operator==(other);
 }
 
@@ -151,6 +150,29 @@ inline auto SkipPatchDataUnit::decodeFrom(Common::InputBitstream & /* bitstream 
 }
 
 inline void SkipPatchDataUnit::encodeTo(Common::OutputBitstream & /* bitstream */) const {}
+
+constexpr auto PduMivExtension::pdu_entity_id() const noexcept {
+  return m_pdu_entity_id.value_or(0);
+}
+
+constexpr auto PduMivExtension::pdu_entity_id(std::uint32_t value) noexcept -> auto & {
+  m_pdu_entity_id = value;
+  return *this;
+}
+
+constexpr auto PduMivExtension::pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto & {
+  m_pdu_depth_occ_threshold = value;
+  return *this;
+}
+
+constexpr auto PduMivExtension::operator==(const PduMivExtension &other) const noexcept {
+  return pdu_entity_id() == other.pdu_entity_id() &&
+         m_pdu_depth_occ_threshold == other.m_pdu_depth_occ_threshold;
+}
+
+constexpr auto PduMivExtension::operator!=(const PduMivExtension &other) const noexcept {
+  return !operator==(other);
+}
 
 constexpr auto PatchDataUnit::pdu_2d_pos_x() const noexcept { return m_pdu_2d_pos_x; }
 
@@ -170,13 +192,15 @@ constexpr auto PatchDataUnit::pdu_view_pos_y() const noexcept { return m_pdu_vie
 
 constexpr auto PatchDataUnit::pdu_depth_start() const noexcept { return m_pdu_depth_start; }
 
-constexpr auto PatchDataUnit::pdu_view_id() const noexcept { return m_pdu_view_id; }
+constexpr auto PatchDataUnit::pdu_projection_id() const noexcept { return m_pdu_view_id; }
 
 constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
 }
 
-constexpr auto PatchDataUnit::pdu_entity_id() const noexcept { return m_pdu_entity_id; }
+constexpr auto PatchDataUnit::pdu_miv_extension() const noexcept -> PduMivExtension {
+  return m_pdu_miv_extension.value_or(PduMivExtension{});
+}
 
 constexpr auto PatchDataUnit::pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto & {
   m_pdu_2d_pos_x = value;
@@ -218,7 +242,7 @@ constexpr auto PatchDataUnit::pdu_depth_end(const std::uint32_t value) noexcept 
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_view_id(const std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_projection_id(const std::uint16_t value) noexcept -> auto & {
   m_pdu_view_id = value;
   return *this;
 }
@@ -229,15 +253,11 @@ constexpr auto PatchDataUnit::pdu_orientation_index(const FlexiblePatchOrientati
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_entity_id(const unsigned value) noexcept -> auto & {
-  m_pdu_entity_id = value;
-  return *this;
-}
-
-constexpr auto PatchDataUnit::pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept
-    -> auto & {
-  m_pdu_depth_occ_map_threshold = value;
-  return *this;
+constexpr auto PatchDataUnit::pdu_miv_extension() noexcept -> auto & {
+  if (!m_pdu_miv_extension) {
+    m_pdu_miv_extension = PduMivExtension{};
+  }
+  return *m_pdu_miv_extension;
 }
 
 constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexcept {
@@ -246,10 +266,9 @@ constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexc
          pdu_2d_size_y_minus1() == other.pdu_2d_size_y_minus1() &&
          pdu_view_pos_x() == other.pdu_view_pos_x() && pdu_view_pos_y() == other.pdu_view_pos_y() &&
          pdu_depth_start() == other.pdu_depth_start() && m_pdu_depth_end == other.m_pdu_depth_end &&
-         pdu_view_id() == other.pdu_view_id() &&
+         pdu_projection_id() == other.pdu_projection_id() &&
          pdu_orientation_index() == other.pdu_orientation_index() &&
-         m_pdu_entity_id == other.m_pdu_entity_id &&
-         m_pdu_depth_occ_map_threshold == other.m_pdu_depth_occ_map_threshold;
+         m_pdu_miv_extension == other.m_pdu_miv_extension;
 }
 
 constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexcept {
@@ -258,14 +277,13 @@ constexpr auto PatchDataUnit::operator!=(const PatchDataUnit &other) const noexc
 
 constexpr auto PatchInformationData::data() const noexcept -> auto & { return m_data; }
 
-template <typename Visitor> void AtlasTileGroupDataUnit::visit(Visitor &&visitor) const {
+template <typename Visitor> void AtlasTileDataUnit::visit(Visitor &&visitor) const {
   for (std::size_t p = 0; p < m_vector.size(); ++p) {
     visitor(p, m_vector[p].first, m_vector[p].second);
   }
 }
 
-constexpr auto AtlasTileGroupLayerRBSP::atlas_tile_group_header() const noexcept
-    -> const AtlasTileGroupHeader & {
-  return m_atlas_tile_group_header;
+constexpr auto AtlasTileLayerRBSP::atlas_tile_header() const noexcept -> const AtlasTileHeader & {
+  return m_atlas_tile_header;
 }
 } // namespace TMIV::MivBitstream

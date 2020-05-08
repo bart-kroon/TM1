@@ -31,12 +31,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_VPCCUNIT_H_
-#define _TMIV_MIVBITSTREAM_VPCCUNIT_H_
+#ifndef _TMIV_MIVBITSTREAM_V3CUNIT_H_
+#define _TMIV_MIVBITSTREAM_V3CUNIT_H_
 
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -45,46 +45,44 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-enum class VuhUnitType : std::uint8_t { VPCC_VPS, VPCC_AD, VPCC_OVD, VPCC_GVD, VPCC_AVD };
+enum class VuhUnitType : std::uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD };
 
 auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream &;
 
-constexpr uint8_t specialAtlasId = 0x3F;
-
-// 23090-5: vpcc_unit_header()
-class VpccUnitHeader {
+// 23090-5: v3c_unit_header()
+class V3cUnitHeader {
 public:
-  explicit VpccUnitHeader(VuhUnitType vuh_unit_type) : m_vuh_unit_type{vuh_unit_type} {}
+  explicit V3cUnitHeader(VuhUnitType vuh_unit_type) : m_vuh_unit_type{vuh_unit_type} {}
 
   [[nodiscard]] constexpr auto vuh_unit_type() const noexcept { return m_vuh_unit_type; }
 
-  [[nodiscard]] auto vuh_vpcc_parameter_set_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto vuh_v3c_parameter_set_id() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_atlas_id() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_attribute_index() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_attribute_dimension_index() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_map_index() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_raw_video_flag() const noexcept -> bool;
 
-  auto vuh_vpcc_parameter_set_id(const std::uint8_t value) noexcept -> VpccUnitHeader &;
-  auto vuh_atlas_id(const std::uint8_t value) noexcept -> VpccUnitHeader &;
-  auto vuh_attribute_index(const std::uint8_t value) noexcept -> VpccUnitHeader &;
-  auto vuh_attribute_dimension_index(const std::uint8_t value) noexcept -> VpccUnitHeader &;
-  auto vuh_map_index(const std::uint8_t value) noexcept -> VpccUnitHeader &;
-  auto vuh_raw_video_flag(const bool value) noexcept -> VpccUnitHeader &;
+  auto vuh_v3c_parameter_set_id(const std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_atlas_id(const std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_attribute_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_attribute_dimension_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_map_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_raw_video_flag(const bool value) noexcept -> V3cUnitHeader &;
 
-  friend auto operator<<(std::ostream &stream, const VpccUnitHeader &x) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const V3cUnitHeader &x) -> std::ostream &;
 
-  auto operator==(const VpccUnitHeader &other) const noexcept -> bool;
-  auto operator!=(const VpccUnitHeader &other) const noexcept -> bool;
+  auto operator==(const V3cUnitHeader &other) const noexcept -> bool;
+  auto operator!=(const V3cUnitHeader &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const std::vector<VpccParameterSet> &vpses)
-      -> VpccUnitHeader;
+  static auto decodeFrom(std::istream &stream, const std::vector<V3cParameterSet> &vpses)
+      -> V3cUnitHeader;
 
-  void encodeTo(std::ostream &stream, const std::vector<VpccParameterSet> &vpses) const;
+  void encodeTo(std::ostream &stream, const std::vector<V3cParameterSet> &vpses) const;
 
 private:
   const VuhUnitType m_vuh_unit_type;
-  std::uint8_t m_vuh_vpcc_parameter_set_id{};
+  std::uint8_t m_vuh_v3c_parameter_set_id{};
   std::uint8_t m_vuh_atlas_id{};
   std::uint8_t m_vuh_attribute_index{};
   std::uint8_t m_vuh_attribute_dimension_index{};
@@ -92,60 +90,60 @@ private:
   bool m_vuh_raw_video_flag{};
 };
 
-// 23090-5: vpcc_payload()
-class VpccPayload {
+// 23090-5: v3c_payload()
+class V3cPayload {
 public:
   using Payload =
-      std::variant<std::monostate, VpccParameterSet, AtlasSubBitstream, VideoSubBitstream>;
+      std::variant<std::monostate, V3cParameterSet, AtlasSubBitstream, VideoSubBitstream>;
 
   template <typename Value>
-  constexpr explicit VpccPayload(Value &&value) : m_payload{std::forward<Value>(value)} {}
+  constexpr explicit V3cPayload(Value &&value) : m_payload{std::forward<Value>(value)} {}
 
   [[nodiscard]] constexpr auto payload() const noexcept -> auto & { return m_payload; }
 
-  [[nodiscard]] auto vpcc_parameter_set() const noexcept -> const VpccParameterSet &;
+  [[nodiscard]] auto v3c_parameter_set() const noexcept -> const V3cParameterSet &;
   [[nodiscard]] auto atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream &;
   [[nodiscard]] auto video_sub_bitstream() const noexcept -> const VideoSubBitstream &;
 
-  friend auto operator<<(std::ostream &stream, const VpccPayload &x) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const V3cPayload &x) -> std::ostream &;
 
-  auto operator==(const VpccPayload &other) const noexcept -> bool;
-  auto operator!=(const VpccPayload &other) const noexcept -> bool;
+  auto operator==(const V3cPayload &other) const noexcept -> bool;
+  auto operator!=(const V3cPayload &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const VpccUnitHeader &vuh) -> VpccPayload;
+  static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh) -> V3cPayload;
 
-  void encodeTo(std::ostream &stream, const VpccUnitHeader &vuh) const;
+  void encodeTo(std::ostream &stream, const V3cUnitHeader &vuh) const;
 
 private:
   const Payload m_payload;
 };
 
-// 23090-5: vpcc_unit(NumBytesInVPCCUnit)
-class VpccUnit {
+// 23090-5: v3c_unit(NumBytesInV3CUnit)
+class V3cUnit {
 public:
   template <typename Payload>
-  VpccUnit(const VpccUnitHeader &vpcc_unit_header, Payload &&payload)
-      : m_vpcc_unit_header{vpcc_unit_header}, m_vpcc_payload{std::forward<Payload>(payload)} {}
+  V3cUnit(const V3cUnitHeader &v3c_unit_header, Payload &&payload)
+      : m_v3c_unit_header{v3c_unit_header}, m_v3c_payload{std::forward<Payload>(payload)} {}
 
-  [[nodiscard]] constexpr auto vpcc_unit_header() const noexcept -> auto & {
-    return m_vpcc_unit_header;
+  [[nodiscard]] constexpr auto v3c_unit_header() const noexcept -> auto & {
+    return m_v3c_unit_header;
   }
-  [[nodiscard]] constexpr auto vpcc_payload() const noexcept -> auto & { return m_vpcc_payload; }
+  [[nodiscard]] constexpr auto v3c_payload() const noexcept -> auto & { return m_v3c_payload; }
 
-  friend auto operator<<(std::ostream &stream, const VpccUnit &x) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const V3cUnit &x) -> std::ostream &;
 
-  auto operator==(const VpccUnit &other) const noexcept -> bool;
-  auto operator!=(const VpccUnit &other) const noexcept -> bool;
+  auto operator==(const V3cUnit &other) const noexcept -> bool;
+  auto operator!=(const V3cUnit &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const std::vector<VpccParameterSet> &vpses,
-                         std::size_t numBytesInVPCCUnit) -> VpccUnit;
+  static auto decodeFrom(std::istream &stream, const std::vector<V3cParameterSet> &vpses,
+                         std::size_t numBytesInV3CUnit) -> V3cUnit;
 
-  auto encodeTo(std::ostream &stream, const std::vector<VpccParameterSet> &vpses) const
+  auto encodeTo(std::ostream &stream, const std::vector<V3cParameterSet> &vpses) const
       -> std::size_t;
 
 private:
-  VpccUnitHeader m_vpcc_unit_header;
-  VpccPayload m_vpcc_payload;
+  V3cUnitHeader m_v3c_unit_header;
+  V3cPayload m_v3c_payload;
 };
 } // namespace TMIV::MivBitstream
 

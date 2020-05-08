@@ -40,7 +40,7 @@ namespace TMIV::VideoDecoder {
 // The VideoServer uses a thread to change from push to pull mechanism.
 class VideoServer {
 public:
-  explicit VideoServer(std::unique_ptr<IVideoDecoder> decoder, const std::string& bitstream);
+  explicit VideoServer(std::unique_ptr<IVideoDecoder> decoder, const std::string &bitstream);
   VideoServer(const VideoServer &) = delete;
   VideoServer(VideoServer &&) = default;
   VideoServer &operator=(const VideoServer &) = delete;

@@ -31,39 +31,60 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "test.h"
+#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
 
-#include <TMIV/MivBitstream/MivDecoder.h>
-
-#include <sstream>
+#include <ostream>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
-TEST_CASE("MivDecoder", "[MIV decoder]") {
-  SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
-
-    const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Depth10Frame{};
-    };
-    const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Texture444Frame{};
-    };
-
-    MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
-
-    SECTION("Callbacks") {
-      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
-        cout << "Sequence:\n" << vps;
-        return true;
-      });
-
-      decoder.onFrame.emplace_back([](const AccessUnit &au) {
-        cout << "Frame " << au.frameId << '\n';
-        return true;
-      });
-    }
-  }
+namespace TMIV::MivBitstream {
+auto operator<<(ostream &stream, const FrameOrderCountRBSP &x) -> ostream & {
+  stream << "frm_order_cnt_lsb=" << x.frm_order_cnt_lsb() << '\n';
+  return stream;
 }
+
+auto FrameOrderCountRBSP::decodeFrom(std::istream &stream,
+                                     const AtlasAdaptationParameterSetRBSP &aaps)
+    -> FrameOrderCountRBSP {
+  auto x = FrameOrderCountRBSP{};
+  InputBitstream bitstream{stream};
+
+  x.frm_order_cnt_lsb(
+      bitstream.readBits<uint16_t>(aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
+  bitstream.rbspTrailingBits();
+
+  return x;
+}
+
+auto FrameOrderCountRBSP::decodeFrom(std::istream &stream,
+                                     const AtlasSequenceParameterSetRBSP &asps)
+    -> FrameOrderCountRBSP {
+  auto x = FrameOrderCountRBSP{};
+  InputBitstream bitstream{stream};
+
+  x.frm_order_cnt_lsb(
+      bitstream.readBits<uint16_t>(asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
+  bitstream.rbspTrailingBits();
+
+  return x;
+}
+
+void FrameOrderCountRBSP::encodeTo(std::ostream &stream,
+                                   const AtlasAdaptationParameterSetRBSP &aaps) const {
+  OutputBitstream bitstream{stream};
+
+  bitstream.writeBits(frm_order_cnt_lsb(),
+                      aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);
+  bitstream.rbspTrailingBits();
+}
+
+void FrameOrderCountRBSP::encodeTo(std::ostream &stream,
+                                   const AtlasSequenceParameterSetRBSP &asps) const {
+  OutputBitstream bitstream{stream};
+
+  bitstream.writeBits(frm_order_cnt_lsb(),
+                      asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);
+  bitstream.rbspTrailingBits();
+}
+} // namespace TMIV::MivBitstream

@@ -145,7 +145,7 @@ auto MultipassRenderer::renderFrame(const AccessUnit &frame, const ViewParams &v
     for (auto i : helper.selectedViewsPass) {
       cout << "o" << i << ", ";
     }
-    cout << "\n";
+    cout << '\n';
 
     // Update the block to patch map to be used in this pass
     for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
@@ -173,7 +173,7 @@ auto MultipassRenderer::renderFrame(const AccessUnit &frame, const ViewParams &v
     }
   }
 
-  if (frame.vps->miv_sequence_params().msp_max_entities_minus1() == 0) {
+  if (frame.vps->vps_miv_extension().vme_max_entities_minus1() == 0) {
     m_inpainter->inplaceInpaint(viewport, viewportParams);
   }
 

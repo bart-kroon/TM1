@@ -50,11 +50,6 @@ namespace TMIV::IO {
 // only after IEncoder.
 auto loadSourceIvSequenceParams(const Common::Json &config) -> MivBitstream::IvSequenceParams;
 
-// Load access unit metadata from the configuration files. It is up to the Encoder to comply (or
-// ignore) fields such as omaf_v1_compatible_flag. The in-memory metadata representation has to be
-// complete only after IEncoder.
-auto loadSourceIvAccessUnitParams(const Common::Json &config) -> MivBitstream::IvAccessUnitParams;
-
 // Loads a source frame including entity maps when applicable
 auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes, int frameIndex)
     -> Common::MVD16Frame;

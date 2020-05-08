@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
+#ifndef _TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H_
 #error "Include the .h, not the .hpp"
 #endif
 
@@ -245,48 +245,72 @@ constexpr auto MivViewParamsList::mvp_pruning_graph_params_present_flag() const 
   return m_mvp_pruning_graph_params_present_flag;
 }
 
-constexpr auto AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id() const noexcept {
-  return m_aps_adaptation_parameter_set_id;
+constexpr auto AapsVpccExtension::operator==(const AapsVpccExtension & /* other */) const noexcept {
+  return true;
+}
+constexpr auto AapsVpccExtension::operator!=(const AapsVpccExtension & /* other */) const noexcept {
+  return false;
 }
 
-constexpr auto AdaptationParameterSetRBSP::aps_miv_view_params_list_present_flag() const noexcept {
-  return m_aps_miv_view_params_list_present_flag;
+constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag() const noexcept {
+  return m_aame_omaf_v1_compatible_flag;
 }
 
-constexpr auto
-AdaptationParameterSetRBSP::aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept
+constexpr auto AapsMivExtension::aame_miv_view_params_list_update_mode() const noexcept {
+  return m_aame_miv_view_params_list_update_mode;
+}
+
+constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag(bool value) noexcept -> auto & {
+  m_aame_omaf_v1_compatible_flag = value;
+  return *this;
+}
+
+constexpr auto AapsMivExtension::aame_miv_view_params_list_update_mode(MvpUpdateMode value) noexcept
     -> auto & {
-  m_aps_adaptation_parameter_set_id = value;
+  m_aame_miv_view_params_list_update_mode = value;
   return *this;
 }
 
 constexpr auto
-AdaptationParameterSetRBSP::aps_miv_view_params_list_present_flag(const bool value) noexcept
-    -> auto & {
-  m_aps_miv_view_params_list_present_flag = value;
+AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id() const noexcept {
+  return m_aaps_atlas_adaptation_parameter_set_id;
+}
+
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag() const noexcept {
+  return m_aaps_log2_max_afoc_present_flag;
+}
+
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_present_flag() const noexcept {
+  return m_aaps_extension_present_flag;
+}
+
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_flag() const noexcept {
+  return m_aaps_vpcc_extension_flag.value_or(false);
+}
+
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension_flag() const noexcept {
+  return m_aaps_miv_extension_flag.value_or(false);
+}
+
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_6bits() const noexcept {
+  return m_aaps_extension_6bits.value_or(0);
+}
+
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_atlas_adaptation_parameter_set_id(
+    const std::uint8_t value) noexcept -> auto & {
+  m_aaps_atlas_adaptation_parameter_set_id = value;
   return *this;
 }
 
-constexpr auto AdaptationParameterSetRBSP::miv_view_params_list() noexcept -> MivViewParamsList & {
-  if (!m_miv_view_params_list) {
-    m_miv_view_params_list = MivViewParamsList{};
-  }
-  return *m_miv_view_params_list;
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag(bool value) noexcept
+    -> auto & {
+  m_aaps_log2_max_afoc_present_flag = value;
+  return *this;
 }
 
-constexpr auto AdaptationParameterSetRBSP::miv_view_params_update_extrinsics() noexcept
-    -> MivViewParamsUpdateExtrinsics & {
-  if (!m_miv_view_params_update_extrinsics) {
-    m_miv_view_params_update_extrinsics = MivViewParamsUpdateExtrinsics{};
-  }
-  return *m_miv_view_params_update_extrinsics;
-}
-
-constexpr auto AdaptationParameterSetRBSP::miv_view_params_update_intrinsics() noexcept
-    -> MivViewParamsUpdateIntrinsics & {
-  if (!m_miv_view_params_update_intrinsics) {
-    m_miv_view_params_update_intrinsics = MivViewParamsUpdateIntrinsics{};
-  }
-  return *m_miv_view_params_update_intrinsics;
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_present_flag(bool value) noexcept
+    -> auto & {
+  m_aaps_extension_present_flag = value;
+  return *this;
 }
 } // namespace TMIV::MivBitstream

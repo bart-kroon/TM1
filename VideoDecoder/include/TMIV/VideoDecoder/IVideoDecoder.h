@@ -36,7 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 
-#include <TMIV/MivBitstream/VpccParameterSet.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <functional>
 #include <memory>

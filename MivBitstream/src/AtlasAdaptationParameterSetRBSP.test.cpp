@@ -33,11 +33,11 @@
 
 #include "test.h"
 
-#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 
 using namespace TMIV::MivBitstream;
 
-TEST_CASE("camera_intrinsics", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("camera_intrinsics", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = CameraIntrinsics{};
 
   SECTION("equirectangular") {
@@ -98,7 +98,7 @@ ci_ortho_height[ 1 ]=50
   }
 }
 
-TEST_CASE("camera_extrinsics", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("camera_extrinsics", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = CameraExtrinsics{};
 
   REQUIRE(toString(x, 1) == R"(ce_view_pos_x[ 1 ]=0
@@ -131,7 +131,7 @@ ce_view_quat_z[ 1 ]=14
   }
 }
 
-TEST_CASE("depth_quantization", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("depth_quantization", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = DepthQuantization{};
 
   REQUIRE(toString(x, 7) == R"(dq_quantization_law[ 7 ]=0
@@ -157,7 +157,7 @@ dq_depth_occ_map_threshold_default[ 2 ]=200
   }
 }
 
-TEST_CASE("pruning_parent", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("pruning_parent", "[Atlas Adaptation Parameter Set RBSP]") {
   SECTION("Example 1") {
     const auto x = PruningParent{};
     REQUIRE(toString(x, 3) == R"(pp_is_root_flag[ 3 ]=true
@@ -182,7 +182,7 @@ pp_parent_id[ 5 ][ 3 ]=8
   }
 }
 
-TEST_CASE("miv_view_params_list", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("miv_view_params_list", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = MivViewParamsList{};
 
   SECTION("Example 1") {
@@ -269,23 +269,29 @@ pp_is_root_flag[ 2 ]=true
   }
 }
 
-TEST_CASE("adaptation_parameter_set_rbsp", "[Adaptation Parameter Set RBSP]") {
-  auto x = AdaptationParameterSetRBSP{};
+TEST_CASE("atlas_adaptation_parameter_set_rbsp", "[Atlas Adaptation Parameter Set RBSP]") {
+  auto x = AtlasAdaptationParameterSetRBSP{};
 
-  REQUIRE(toString(x) == R"(aps_adaptation_parameter_set_id=0
-aps_camera_params_present_flag=false
-aps_miv_view_params_list_present_flag=false
-aps_extension2_flag=false
+  REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=0
+aaps_log2_max_afoc_present_flag=false
+aaps_extension_present_flag=false
 )");
 
   REQUIRE(byteCodingTest(x, 1));
 
   SECTION("Example 1") {
-    x.aps_adaptation_parameter_set_id(63);
-    x.aps_miv_view_params_list_present_flag(true);
-    x.aps_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST);
-    x.miv_view_params_list() = MivViewParamsList{};
-    x.miv_view_params_list()
+    x.aaps_atlas_adaptation_parameter_set_id(63)
+        .aaps_log2_max_afoc_present_flag(true)
+        .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(12)
+        .aaps_extension_present_flag(true)
+        .aaps_vpcc_extension_flag(true)
+        .aaps_vpcc_extension({})
+        .aaps_miv_extension_flag(true)
+        .aaps_extension_6bits(63)
+        .aapsExtensionData({true})
+        .aaps_miv_extension()
+        .aame_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
+        .miv_view_params_list()
         .mvp_num_views_minus1(2)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
@@ -295,10 +301,16 @@ aps_extension2_flag=false
         .ci_ortho_width(4.F)
         .ci_ortho_height(3.F);
 
-    REQUIRE(toString(x) == R"(aps_adaptation_parameter_set_id=63
-aps_camera_params_present_flag=false
-aps_miv_view_params_list_present_flag=true
-aps_miv_view_params_list_update_mode=VPL_INITLIST
+    REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=63
+aaps_log2_max_afoc_present_flag=true
+aaps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
+aaps_extension_present_flag=true
+aaps_vpcc_extension_flag=true
+aaps_miv_extension_flag=true
+aaps_extension_6bits=63
+aaps_vpcc_camera_parameters_present_flag=false
+aame_omaf_v1_compatible_flag=false
+aame_miv_view_params_list_update_mode=VPL_INITLIST
 mvp_num_views_minus1=2
 ce_view_pos_x[ 0 ]=0
 ce_view_pos_y[ 0 ]=0
@@ -333,14 +345,14 @@ mvp_pruning_graph_params_present_flag=true
 pp_is_root_flag[ 0 ]=true
 pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
-aps_extension2_flag=false
+aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 100));
+    REQUIRE(byteCodingTest(x, 102));
   }
 }
 
-TEST_CASE("miv_view_params_update_Extrinsics", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("miv_view_params_update_extrinsics", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = MivViewParamsUpdateExtrinsics{};
 
   SECTION("Example 1: Test with 1 update.") {
@@ -406,7 +418,7 @@ ce_view_quat_z[ 1 ]=10
   }
 }
 
-TEST_CASE("miv_view_params_update_intrinsics", "[Adaptation Parameter Set RBSP]") {
+TEST_CASE("miv_view_params_update_intrinsics", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = MivViewParamsUpdateIntrinsics{};
 
   SECTION("Example 1: Test with 1 update.") {

@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
+#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
@@ -42,51 +42,51 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-SampleStreamVpccHeader::SampleStreamVpccHeader(uint8_t ssvh_unit_size_precision_bytes_minus1)
+SampleStreamV3cHeader::SampleStreamV3cHeader(uint8_t ssvh_unit_size_precision_bytes_minus1)
     : m_ssvh_unit_size_precision_bytes_minus1{ssvh_unit_size_precision_bytes_minus1} {
-  VERIFY_VPCCBITSTREAM(ssvh_unit_size_precision_bytes_minus1 < 8);
+  VERIFY_V3CBITSTREAM(ssvh_unit_size_precision_bytes_minus1 < 8);
 }
 
-auto operator<<(ostream &stream, const SampleStreamVpccHeader &x) -> ostream & {
+auto operator<<(ostream &stream, const SampleStreamV3cHeader &x) -> ostream & {
   return stream << "ssvh_unit_size_precision_bytes_minus1="
                 << int(x.ssvh_unit_size_precision_bytes_minus1()) << '\n';
 }
 
-auto SampleStreamVpccHeader::decodeFrom(istream &stream) -> SampleStreamVpccHeader {
+auto SampleStreamV3cHeader::decodeFrom(istream &stream) -> SampleStreamV3cHeader {
   InputBitstream bitstream{stream};
   const auto ssvh_unit_size_precision_bytes_minus1 = bitstream.readBits<uint8_t>(3);
-  return SampleStreamVpccHeader{ssvh_unit_size_precision_bytes_minus1};
+  return SampleStreamV3cHeader{ssvh_unit_size_precision_bytes_minus1};
 }
 
-void SampleStreamVpccHeader::encodeTo(ostream &stream) const {
+void SampleStreamV3cHeader::encodeTo(ostream &stream) const {
   OutputBitstream bitstream{stream};
   bitstream.writeBits(m_ssvh_unit_size_precision_bytes_minus1, 3);
 }
 
-SampleStreamVpccUnit::SampleStreamVpccUnit(string ssvu_vpcc_unit)
-    : m_ssvu_vpcc_unit{move(ssvu_vpcc_unit)} {}
+SampleStreamV3cUnit::SampleStreamV3cUnit(string ssvu_v3c_unit)
+    : m_ssvu_v3c_unit{move(ssvu_v3c_unit)} {}
 
-auto operator<<(ostream &stream, const SampleStreamVpccUnit &x) -> ostream & {
-  return stream << "vpcc_unit(" << x.ssvu_vpcc_unit_size() << ")\n";
+auto operator<<(ostream &stream, const SampleStreamV3cUnit &x) -> ostream & {
+  return stream << "v3c_unit(" << x.ssvu_v3c_unit_size() << ")\n";
 }
 
-auto SampleStreamVpccUnit::operator==(const SampleStreamVpccUnit &other) const noexcept -> bool {
-  return m_ssvu_vpcc_unit == other.m_ssvu_vpcc_unit;
+auto SampleStreamV3cUnit::operator==(const SampleStreamV3cUnit &other) const noexcept -> bool {
+  return m_ssvu_v3c_unit == other.m_ssvu_v3c_unit;
 }
 
-auto SampleStreamVpccUnit::operator!=(const SampleStreamVpccUnit &other) const noexcept -> bool {
+auto SampleStreamV3cUnit::operator!=(const SampleStreamV3cUnit &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto SampleStreamVpccUnit::decodeFrom(istream &stream, const SampleStreamVpccHeader &header)
-    -> SampleStreamVpccUnit {
-  const auto ssvu_vpcc_unit_size =
+auto SampleStreamV3cUnit::decodeFrom(istream &stream, const SampleStreamV3cHeader &header)
+    -> SampleStreamV3cUnit {
+  const auto ssvu_v3c_unit_size =
       readBytes(stream, header.ssvh_unit_size_precision_bytes_minus1() + 1);
-  return SampleStreamVpccUnit{readString(stream, size_t(ssvu_vpcc_unit_size))};
+  return SampleStreamV3cUnit{readString(stream, size_t(ssvu_v3c_unit_size))};
 }
 
-void SampleStreamVpccUnit::encodeTo(ostream &stream, const SampleStreamVpccHeader &header) const {
-  writeBytes(stream, m_ssvu_vpcc_unit.size(), header.ssvh_unit_size_precision_bytes_minus1() + 1);
-  stream.write(m_ssvu_vpcc_unit.data(), m_ssvu_vpcc_unit.size());
+void SampleStreamV3cUnit::encodeTo(ostream &stream, const SampleStreamV3cHeader &header) const {
+  writeBytes(stream, m_ssvu_v3c_unit.size(), header.ssvh_unit_size_precision_bytes_minus1() + 1);
+  stream.write(m_ssvu_v3c_unit.data(), m_ssvu_v3c_unit.size());
 }
 } // namespace TMIV::MivBitstream

@@ -66,20 +66,20 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
 
   if (config.isPresent("depthLowQualityFlag")) {
     auto node = config.optional("depthLowQualityFlag");
-    x.msp().msp_depth_low_quality_flag(node.asBool());
+    x.vme().vme_depth_low_quality_flag(node.asBool());
   }
 
   const auto numGroups = unsigned(config.require("numGroups").asInt());
   if (numGroups < 1) {
     throw runtime_error("Require numGroups >= 1");
   }
-  x.msp().msp_num_groups_minus1(numGroups - 1U);
+  x.vme().vme_num_groups_minus1(numGroups - 1U);
 
   const auto maxEntities = unsigned(config.require("maxEntities").asInt());
   if (maxEntities < 1) {
     throw runtime_error("Require maxEntities >= 1");
   }
-  x.msp().msp_max_entities_minus1(maxEntities - 1U);
+  x.vme().vme_max_entities_minus1(maxEntities - 1U);
 
   if (auto subnode = config.optional("ViewingSpace"); subnode) {
     x.viewingSpace = ViewingSpace::loadFromJson(subnode);
@@ -87,20 +87,9 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
 
   x.frameRate = sequenceConfig.require("Fps").asDouble();
 
-  return x;
-}
-
-auto loadSourceIvAccessUnitParams(const Json &config) -> IvAccessUnitParams {
-  auto x = IvAccessUnitParams{};
-
-  x.atlas.emplace_back();
-  x.atlas.front()
-      .asps.asps_use_eight_orientations_flag(true)
-      .asps_extension_present_flag(true)
-      .asps_miv_extension_present_flag(true)
-      .miv_atlas_sequence_params()
-      .masp_omaf_v1_compatible_flag(config.require("OmafV1CompatibleFlag").asBool());
-
+  if (config.require("OmafV1CompatibleFlag").asBool()) {
+    x.aame().aame_omaf_v1_compatible_flag(true);
+  }
   return x;
 }
 

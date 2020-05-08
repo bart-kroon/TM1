@@ -172,7 +172,7 @@ public:
   ProjectionHelper(const ProjectionHelper &) = delete;
   ProjectionHelper(ProjectionHelper &&) = default;
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = delete;
-  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
+  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = delete;
   [[nodiscard]] auto getViewParams() const -> const MivBitstream::ViewParams & {
     return m_viewParams;
   }

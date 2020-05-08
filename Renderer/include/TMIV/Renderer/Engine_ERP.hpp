@@ -87,7 +87,7 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
 
   // Project mesh to target view
   template <typename... T>
-  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
+  auto project(const SceneVertexDescriptorList &sceneVertices, TriangleDescriptorList triangles,
                std::tuple<std::vector<T>...> attributes) {
     ImageVertexDescriptorList imageVertices;
     imageVertices.reserve(sceneVertices.size());

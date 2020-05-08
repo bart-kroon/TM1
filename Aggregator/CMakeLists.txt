@@ -1,29 +1,29 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(AggregatorLib
-	"src/Aggregator.cpp"
-	"src/Aggregator.reg.hpp"
-	"include/TMIV/Aggregator/IAggregator.h"
-	"include/TMIV/Aggregator/Aggregator.h"
-	)
+    "src/Aggregator.cpp"
+    "src/Aggregator.reg.hpp"
+    "include/TMIV/Aggregator/IAggregator.h"
+    "include/TMIV/Aggregator/Aggregator.h"
+    )
 
 add_library(TMIV::AggregatorLib
-	ALIAS AggregatorLib)
+    ALIAS AggregatorLib)
 
 target_link_libraries(AggregatorLib
-	PUBLIC
-		TMIV::CommonLib)
+    PUBLIC
+        TMIV::CommonLib)
 
 target_include_directories(AggregatorLib
-	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 install(
-	TARGETS
-		AggregatorLib
-	EXPORT TMIVTargets
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    TARGETS
+        AggregatorLib
+    EXPORT TMIVTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
-	DIRECTORY "include/"
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    DIRECTORY "include/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

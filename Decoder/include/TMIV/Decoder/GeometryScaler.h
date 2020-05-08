@@ -54,7 +54,7 @@ public:
   void inplaceScale(MivBitstream::AccessUnit &frame) const;
 
 private:
-  int m_depthEdgeMagnitudeTh{};
+  int m_geometryEdgeMagnitudeTh{};
   float m_minForegroundConfidence{};
   int m_maxCurvature{};
 };

@@ -59,7 +59,7 @@ IvMetadataReader::IvMetadataReader(const Json &config)
       },
       [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
         return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
-                                            frameId, frameSize, int(atlasId)));
+                                            frameId, frameSize, "T", int(atlasId)));
       });
 }
 } // namespace TMIV::IO

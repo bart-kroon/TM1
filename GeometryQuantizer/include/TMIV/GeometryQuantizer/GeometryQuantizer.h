@@ -31,29 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DEPTHOCCUPANCY_IDEPTHOCCUPANCY_H_
-#define _TMIV_DEPTHOCCUPANCY_IDEPTHOCCUPANCY_H_
+#ifndef _TMIV_GEOMETRYQUANTIZER_GEOMETRYQUANTIZER_H_
+#define _TMIV_GEOMETRYQUANTIZER_GEOMETRYQUANTIZER_H_
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/GeometryQuantizer/IGeometryQuantizer.h>
 
-namespace TMIV::DepthOccupancy {
-class IDepthOccupancy {
+#include <TMIV/Common/Json.h>
+
+namespace TMIV::GeometryQuantizer {
+class GeometryQuantizer : public IGeometryQuantizer {
 public:
-  IDepthOccupancy() = default;
-  IDepthOccupancy(const IDepthOccupancy &) = default;
-  IDepthOccupancy(IDepthOccupancy &&) = default;
-  auto operator=(const IDepthOccupancy &) -> IDepthOccupancy & = default;
-  auto operator=(IDepthOccupancy &&) -> IDepthOccupancy & = default;
-  virtual ~IDepthOccupancy() = default;
+  // Initialize with specified depthOccThresholdIfSet
+  //
+  // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
+  // will have the specified depthOccThresholdIfSet value.
+  explicit GeometryQuantizer(uint16_t depthOccThresholdIfSet);
 
-  virtual auto transformSequenceParams(MivBitstream::IvSequenceParams)
-      -> const MivBitstream::IvSequenceParams & = 0;
-  virtual auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
-      -> const MivBitstream::IvAccessUnitParams & = 0;
-  virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
+  GeometryQuantizer(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
+  GeometryQuantizer(const GeometryQuantizer &) = default;
+  GeometryQuantizer(GeometryQuantizer &&) = default;
+  auto operator=(const GeometryQuantizer &) -> GeometryQuantizer & = default;
+  auto operator=(GeometryQuantizer &&) -> GeometryQuantizer & = default;
+  ~GeometryQuantizer() override = default;
+
+  // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
+  // to depthOccThresholdIfSet and adjust the normalized disparity range.
+  auto transformSequenceParams(MivBitstream::IvSequenceParams)
+      -> const MivBitstream::IvSequenceParams & override;
+
+  // depthOccupancyParamsPresentFlags = zeros
+  auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
+      -> const MivBitstream::IvAccessUnitParams & override;
+
+  // Transform depth bit depth and range
+  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
+
+private:
+  uint16_t m_depthOccThresholdIfSet{};
+  MivBitstream::IvSequenceParams m_inSequenceParams;
+  MivBitstream::IvSequenceParams m_outSequenceParams;
+  MivBitstream::IvAccessUnitParams m_accessUnitParams;
 };
-} // namespace TMIV::DepthOccupancy
+} // namespace TMIV::GeometryQuantizer
 
 #endif

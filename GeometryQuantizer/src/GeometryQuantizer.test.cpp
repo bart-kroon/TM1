@@ -34,7 +34,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
-#include <TMIV/DepthOccupancy/DepthOccupancy.h>
+#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 
 #include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
@@ -42,14 +42,14 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::DepthOccupancy;
+using namespace TMIV::GeometryQuantizer;
 
 namespace TMIV::MivBitstream {
 const MivDecoderMode mode = MivDecoderMode::MIV;
 }
 
-SCENARIO("Depth/occupancy coding") {
-  DepthOccupancy depthOccupancy{37};
+SCENARIO("Geometry quantization") {
+  GeometryQuantizer depthOccupancy{37};
 
   auto sourceViewParams = ViewParams{};
   sourceViewParams.ci.ci_projection_plane_width_minus1(1919)

@@ -31,12 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthOccupancy/DepthOccupancy.h>
+#ifndef _TMIV_GEOMETRYQUANTIZER_IGEOMETRYQUANTIZER_H_
+#define _TMIV_GEOMETRYQUANTIZER_IGEOMETRYQUANTIZER_H_
 
-#include <TMIV/Common/Factory.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
 
-namespace TMIV::DepthOccupancy {
-inline void registerComponents() {
-  Common::Factory<IDepthOccupancy>::getInstance().registerAs<DepthOccupancy>("DepthOccupancy");
-}
-} // namespace TMIV::DepthOccupancy
+namespace TMIV::GeometryQuantizer {
+class IGeometryQuantizer {
+public:
+  IGeometryQuantizer() = default;
+  IGeometryQuantizer(const IGeometryQuantizer &) = default;
+  IGeometryQuantizer(IGeometryQuantizer &&) = default;
+  auto operator=(const IGeometryQuantizer &) -> IGeometryQuantizer & = default;
+  auto operator=(IGeometryQuantizer &&) -> IGeometryQuantizer & = default;
+  virtual ~IGeometryQuantizer() = default;
+
+  virtual auto transformSequenceParams(MivBitstream::IvSequenceParams)
+      -> const MivBitstream::IvSequenceParams & = 0;
+  virtual auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
+      -> const MivBitstream::IvAccessUnitParams & = 0;
+  virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
+};
+} // namespace TMIV::GeometryQuantizer
+
+#endif

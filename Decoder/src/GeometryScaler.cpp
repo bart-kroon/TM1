@@ -182,21 +182,22 @@ auto erodeMasked(const Mat<uint16_t> &depth, const Mat<uint8_t> &mask) -> Mat<ui
 
 class DepthMapAlignerColorBased {
 public:
-  DepthMapAlignerColorBased(int depthEdgeMagnitudeTh, float minForegroundConfidence)
-      : m_depthEdgeMagnitudeTh{depthEdgeMagnitudeTh}
+  DepthMapAlignerColorBased(int geometryEdgeMagnitudeTh, float minForegroundConfidence)
+      : m_geometryEdgeMagnitudeTh{geometryEdgeMagnitudeTh}
       , m_minForegroundConfidence{minForegroundConfidence}
       , m_kernelPoints{getNeighborhood5x5()} {}
 
-  [[nodiscard]] auto colorConfidence(const vector<uint16_t> &depthValues,
-                                     const vector<Vec3w> &colorValues,
-                                     const vector<uint8_t> &edgeMagnitudes) const -> float {
+            [[nodiscard]] auto colorConfidence(const vector<uint16_t> &depthValues,
+                                               const vector<Vec3w> &colorValues,
+                                               const vector<uint8_t> &edgeMagnitudes) const
+        -> float {
     const auto N = depthValues.size();
     assert(N == colorValues.size());
     assert(N == edgeMagnitudes.size());
 
     const int depthCentral = depthValues[0];
-    const int depthLow = depthCentral - m_depthEdgeMagnitudeTh;
-    const int depthHigh = depthCentral + m_depthEdgeMagnitudeTh;
+    const int depthLow = depthCentral - m_geometryEdgeMagnitudeTh;
+    const int depthHigh = depthCentral + m_geometryEdgeMagnitudeTh;
     const auto colorCentral = colorValues[0];
 
     // split colors samples in kernel in foreground and background
@@ -204,7 +205,7 @@ public:
     vector<Vec3w> colorsFG;
     vector<Vec3w> colorsBG;
     for (auto i = 1U; i < N; ++i) {
-      if (edgeMagnitudes[i] < m_depthEdgeMagnitudeTh && depthValues[i] < depthHigh) {
+      if (edgeMagnitudes[i] < m_geometryEdgeMagnitudeTh && depthValues[i] < depthHigh) {
         if (depthValues[i] > depthLow) {
           colorsFG.push_back(colorValues[i]);
         } else {
@@ -249,7 +250,7 @@ public:
       auto markers = Mat<uint8_t>{depth.sizes()};
       for (int i = m_B; i < int(depth.height()) - m_B; ++i) {
         for (int j = m_B; j < int(depth.width()) - m_B; ++j) {
-          if (edgeMagnitudes(i, j) >= m_depthEdgeMagnitudeTh) {
+          if (edgeMagnitudes(i, j) >= m_geometryEdgeMagnitudeTh) {
             auto foregroundConfidence =
                 colorConfidenceAt(attrFrame, depthIter, edgeMagnitudes, {j, i});
             if (foregroundConfidence < m_minForegroundConfidence) {
@@ -264,7 +265,7 @@ public:
   }
 
 private:
-  int m_depthEdgeMagnitudeTh;
+  int m_geometryEdgeMagnitudeTh;
   float m_minForegroundConfidence;
   vector<Vec2i> m_kernelPoints;
   int m_B = 2;
@@ -272,14 +273,14 @@ private:
 
 class DepthMapAlignerCurvatureBased {
 public:
-  DepthMapAlignerCurvatureBased(int depthEdgeMagnitudeTh, int maxCurvature)
-      : m_depthEdgeMagnitudeTh(depthEdgeMagnitudeTh)
+  DepthMapAlignerCurvatureBased(int geometryEdgeMagnitudeTh, int maxCurvature)
+      : m_geometryEdgeMagnitudeTh(geometryEdgeMagnitudeTh)
       , m_maxCurvature(maxCurvature)
       , m_kernelPoints{getNeighborhood3x3()} {}
 
-  [[nodiscard]] auto curvature(const vector<uint16_t> &depthValues) const -> int {
+            [[nodiscard]] auto curvature(const vector<uint16_t> &depthValues) const -> int {
     const int depthCentral = depthValues[0];
-    const int depthLow = depthCentral - m_depthEdgeMagnitudeTh;
+    const int depthLow = depthCentral - m_geometryEdgeMagnitudeTh;
 
     int depthCurvature3x3 = 0;
     for (auto i = 1U; i < depthValues.size(); ++i) {
@@ -303,7 +304,7 @@ public:
 
     for (int i = m_B; i < int(depth.height()) - m_B; ++i) {
       for (int j = m_B; j < int(depth.width()) - m_B; ++j) {
-        if (edgeMagnitudes(i, j) >= m_depthEdgeMagnitudeTh) {
+        if (edgeMagnitudes(i, j) >= m_geometryEdgeMagnitudeTh) {
           auto curvature = curvatureAt(depth, {j, i});
           if (curvature >= m_maxCurvature) {
             markers(i, j) = 255;
@@ -318,7 +319,7 @@ public:
   }
 
 private:
-  int m_depthEdgeMagnitudeTh = 11;
+  int m_geometryEdgeMagnitudeTh = 11;
   int m_maxCurvature = 6;
   vector<Vec2i> m_kernelPoints;
   int m_B = 1;
@@ -341,9 +342,9 @@ auto upscaleNearest(const Mat<uint16_t> &input, Vec2i outputSize) -> Mat<uint16_
 
 class DepthUpscaler {
 public:
-  DepthUpscaler(int depthEdgeMagnitudeTh, float minForegroundConfidence, int maxCurvature)
-      : m_alignerColor(depthEdgeMagnitudeTh, minForegroundConfidence)
-      , m_alignerCurvature(depthEdgeMagnitudeTh, maxCurvature) {}
+  DepthUpscaler(int geometryEdgeMagnitudeTh, float minForegroundConfidence, int maxCurvature)
+      : m_alignerColor(geometryEdgeMagnitudeTh, minForegroundConfidence)
+      , m_alignerCurvature(geometryEdgeMagnitudeTh, maxCurvature) {}
 
   auto operator()(const AtlasAccessUnit &atlas) -> Depth10Frame {
     auto geoFrame = Depth10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
@@ -370,13 +371,14 @@ private:
 } // namespace
 
 GeometryScaler::GeometryScaler(const Json & /*rootNode*/, const Json &componentNode) {
-  m_depthEdgeMagnitudeTh = componentNode.require("depthEdgeMagnitudeTh").asInt();
+  m_geometryEdgeMagnitudeTh = componentNode.require("geometryEdgeMagnitudeTh").asInt();
   m_maxCurvature = componentNode.require("maxCurvature").asInt();
   m_minForegroundConfidence = componentNode.require("minForegroundConfidence").asFloat();
 }
 
 auto GeometryScaler::scale(const AtlasAccessUnit &atlas) const -> Depth10Frame {
-  auto upscaler = DepthUpscaler{m_depthEdgeMagnitudeTh, m_minForegroundConfidence, m_maxCurvature};
+  auto upscaler =
+      DepthUpscaler{m_geometryEdgeMagnitudeTh, m_minForegroundConfidence, m_maxCurvature};
 
   return upscaler(atlas);
 }

@@ -31,13 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthOccupancy/DepthOccupancy.h>
-#include <TMIV/DepthOccupancy/ExplicitOccupancy.h>
-#include <TMIV/Common/Factory.h>
+#ifndef _TMIV_DEPTHOCCUPANCY_EXPLICITOCCUPANCY_H_
+#define _TMIV_DEPTHOCCUPANCY_EXPLICITOCCUPANCY_H_
+
+#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
+
+#include <TMIV/Common/Json.h>
 
 namespace TMIV::DepthOccupancy {
-inline void registerComponents() {
-  Common::Factory<IDepthOccupancy>::getInstance().registerAs<DepthOccupancy>("DepthOccupancy");
-  Common::Factory<IDepthOccupancy>::getInstance().registerAs<ExplicitOccupancy>("ExplicitOccupancy");
-}
+class ExplicitOccupancy : public IDepthOccupancy {
+public:
+  // Initialize with specified depthOccMapThresholdIfSet
+  //
+  // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
+  // will have the specified depthOccMapThresholdIfSet value.
+  //explicit ExplicitOccupancy(uint16_t depthOccMapThresholdIfSet);
+
+  ExplicitOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
+  ExplicitOccupancy(const ExplicitOccupancy &) = default;
+  ExplicitOccupancy(ExplicitOccupancy &&) = default;
+  auto operator=(const ExplicitOccupancy &) -> ExplicitOccupancy & = default;
+  auto operator=(ExplicitOccupancy &&) -> ExplicitOccupancy & = default;
+  ~ExplicitOccupancy() override = default;
+
+  // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
+  // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
+  auto transformSequenceParams(MivBitstream::IvSequenceParams)
+      -> const MivBitstream::IvSequenceParams & override;
+
+  // depthOccupancyParamsPresentFlags = zeros
+  auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
+      -> const MivBitstream::IvAccessUnitParams & override;
+
+  // Transform depth bit depth and range
+  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
+
+private:
+  // uint16_t m_depthOccMapThresholdIfSet{};
+  MivBitstream::IvSequenceParams m_inSequenceParams;
+  MivBitstream::IvSequenceParams m_outSequenceParams;
+  MivBitstream::IvAccessUnitParams m_accessUnitParams;
+};
 } // namespace TMIV::DepthOccupancy
+
+#endif

@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(DepthOccupancyLib
     "src/DepthOccupancy.cpp"
+	"src/ExplicitOccupancy.cpp"
 	"src/DepthOccupancy.reg.hpp"
 	"include/TMIV/DepthOccupancy/IDepthOccupancy.h"
 	"include/TMIV/DepthOccupancy/DepthOccupancy.h"
+	"include/TMIV/DepthOccupancy/ExplicitOccupancy.h"
 	)
 
 add_library(TMIV::DepthOccupancyLib

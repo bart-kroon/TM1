@@ -112,6 +112,7 @@ private: // Encoder_completeAccessUnit.cpp
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};
   int m_geometryScaleEnabledFlag{};
+  int m_dilationIter{};
   Common::Vec2i m_entityEncRange;
 
   // View-optimized encoder input

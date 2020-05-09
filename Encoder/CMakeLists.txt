@@ -41,10 +41,20 @@ target_link_libraries(Encoder
         TMIV::EncoderLib
         TMIV::IOLib)
 
+add_executable(Multiplexer
+    "src/Multiplexer.main.cpp"
+    )
+
+target_link_libraries(Multiplexer
+    PRIVATE
+        TMIV::MivBitstreamLib
+        TMIV::IOLib)
+
 install(
     TARGETS
         Encoder
         EncoderLib
+        Multiplexer
     EXPORT TMIVTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

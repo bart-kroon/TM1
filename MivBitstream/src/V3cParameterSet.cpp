@@ -118,6 +118,23 @@ auto operator<<(ostream &stream, const AiAttributeTypeId &x) -> ostream & {
   }
 }
 
+auto codeOf(AiAttributeTypeId typeId) -> char {
+  switch (typeId) {
+  case AiAttributeTypeId::ATTR_TEXTURE:
+    return 'T';
+  case AiAttributeTypeId::ATTR_MATERIAL_ID:
+    return 'M';
+  case AiAttributeTypeId::ATTR_TRANSPARENCY:
+    return 'A';
+  case AiAttributeTypeId::ATTR_REFLECTANCE:
+    return 'R';
+  case AiAttributeTypeId::ATTR_NORMAL:
+    return 'N';
+  default:
+    V3CBITSTREAM_ERROR("Unknown attribute type ID");
+  }
+}
+
 auto ProfileTierLevel::ptl_num_sub_profiles() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(m_subProfileIdcs.size() <= UINT8_MAX);
   return uint8_t(m_subProfileIdcs.size());

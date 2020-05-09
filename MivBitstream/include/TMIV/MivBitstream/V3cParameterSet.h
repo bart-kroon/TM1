@@ -74,6 +74,9 @@ auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> s
 auto operator<<(std::ostream &stream, const PtlLevelIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const AiAttributeTypeId &x) -> std::ostream &;
 
+// TMIV-internal filename convention
+auto codeOf(AiAttributeTypeId typeId) -> char;
+
 // 23090-5: profile_tier_level()
 //
 // Limitations of this implementation:

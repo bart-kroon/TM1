@@ -37,8 +37,8 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
-#include <TMIV/IO/IvMetadataWriter.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
+
+#include "IvMetadataWriter.h"
 
 #include <iostream>
 
@@ -50,11 +50,9 @@ using namespace TMIV::DepthQualityAssessor;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
-
 namespace TMIV::Encoder {
+void registerComponents();
+
 class Application : public Common::Application {
 private:
   unique_ptr<IEncoder> m_encoder;
@@ -119,8 +117,6 @@ private:
   }
 };
 } // namespace TMIV::Encoder
-
-#include "Encoder.reg.hpp"
 
 auto main(int argc, char *argv[]) -> int {
   try {

@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(DepthQualityAssessorLib
     "src/DepthQualityAssessor.cpp"
-    "src/DepthQualityAssessor.reg.hpp"
     "include/TMIV/DepthQualityAssessor/IDepthQualityAssessor.h"
     "include/TMIV/DepthQualityAssessor/DepthQualityAssessor.h"
     )

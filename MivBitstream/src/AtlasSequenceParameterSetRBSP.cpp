@@ -33,10 +33,9 @@
 
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
-#include <TMIV/MivBitstream/MivDecoderMode.h>
-
-#include "verify.h"
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
+#include <TMIV/MivBitstream/verify.h>
 
 #include <ostream>
 #include <utility>
@@ -339,8 +338,8 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
   return stream;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator==(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRBSP &other) const
+    noexcept -> bool {
   if (asps_atlas_sequence_parameter_set_id() != other.asps_atlas_sequence_parameter_set_id() ||
       asps_frame_width() != other.asps_frame_width() ||
       asps_frame_height() != other.asps_frame_height() ||
@@ -397,8 +396,8 @@ auto AtlasSequenceParameterSetRBSP::operator==(
   return true;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator!=(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator!=(const AtlasSequenceParameterSetRBSP &other) const
+    noexcept -> bool {
   return !operator==(other);
 }
 

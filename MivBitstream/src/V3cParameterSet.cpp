@@ -34,10 +34,9 @@
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <TMIV/MivBitstream/MivDecoderMode.h>
+#include <TMIV/MivBitstream/verify.h>
 
 #include <utility>
-
-#include "verify.h"
 
 using namespace std;
 using namespace TMIV::Common;

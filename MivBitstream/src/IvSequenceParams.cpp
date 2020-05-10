@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/IvSequenceParams.h>
 
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 using namespace std;
 using namespace TMIV::Common;

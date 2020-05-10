@@ -31,12 +31,42 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <TMIV/Aggregator/Aggregator.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
+#include <TMIV/Encoder/Encoder.h>
+#include <TMIV/Encoder/GroupBasedEncoder.h>
+#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
+#include <TMIV/Packer/Packer.h>
+#include <TMIV/Pruner/HierarchicalPruner.h>
+#include <TMIV/ViewOptimizer/NoViewOptimizer.h>
+#include <TMIV/ViewOptimizer/ViewReducer.h>
 
-namespace TMIV::DepthQualityAssessor {
-inline void registerComponents() {
-  Factory<IDepthQualityAssessor>::getInstance().registerAs<DepthQualityAssessor>(
-      "DepthQualityAssessor");
+namespace TMIV::Encoder {
+void registerComponents() {
+  using Common::Factory;
+
+  auto &aggregators = Factory<Aggregator::IAggregator>::getInstance();
+  aggregators.registerAs<Aggregator::Aggregator>("Aggregator");
+
+  auto &assesors = Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
+  assesors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
+
+  auto &encoders = Factory<IEncoder>::getInstance();
+  encoders.registerAs<Encoder>("Encoder");
+  encoders.registerAs<GroupBasedEncoder>("GroupBasedEncoder");
+
+  auto &geometryQuantizers = Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
+  geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
+
+  auto &packers = Factory<Packer::IPacker>::getInstance();
+  packers.registerAs<Packer::Packer>("Packer");
+
+  auto &pruners = Factory<Pruner::IPruner>::getInstance();
+  pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
+
+  auto &viewOptimizers = Factory<ViewOptimizer::IViewOptimizer>::getInstance();
+  viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
+  viewOptimizers.registerAs<ViewOptimizer::ViewReducer>("ViewReducer");
 }
-} // namespace TMIV::DepthQualityAssessor
+} // namespace TMIV::Encoder

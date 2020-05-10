@@ -138,7 +138,10 @@ public:
     }
 
     xFlushOutput(*pcListPic);
-    m_cTDecTop.deletePicBuffer();
+
+    // TODO(BK): It's either double delete or leaking memory. Easy to fix by putting a reference
+    //           count in initROM/destroyROM, but the intention was not to modify HM.
+    // m_cTDecTop.deletePicBuffer();
     m_cTDecTop.destroy();
   }
 

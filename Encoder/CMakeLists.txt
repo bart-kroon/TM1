@@ -9,11 +9,12 @@ add_library(EncoderLib
     "src/Encoder_popFrame.cpp"
     "src/GroupBasedEncoder.cpp"
     "src/GeometryDownscaler.cpp"
-    "src/Encoder.reg.hpp"
+    "src/MivEncoder.cpp"
     "include/TMIV/Encoder/IEncoder.h"
     "include/TMIV/Encoder/Encoder.h"
     "include/TMIV/Encoder/GroupBasedEncoder.h"
     "include/TMIV/Encoder/GeometryDownscaler.h"
+    "include/TMIV/Encoder/MivEncoder.h"
     )
 
 add_library(TMIV::EncoderLib
@@ -34,6 +35,9 @@ target_include_directories(EncoderLib
 
 add_executable(Encoder
     "src/Encoder.main.cpp"
+    "src/registerComponents.cpp"
+    "src/IvMetadataWriter.cpp"
+    "src/IvMetadataWriter.h"
     )
 
 target_link_libraries(Encoder

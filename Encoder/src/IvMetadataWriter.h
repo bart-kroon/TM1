@@ -31,10 +31,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Packer/Packer.h>
+#ifndef _TMIV_ENCODER_IVMETADATAWRITER_H_
+#define _TMIV_ENCODER_IVMETADATAWRITER_H_
 
-#include <TMIV/Common/Factory.h>
+#include <TMIV/Encoder/MivEncoder.h>
 
-namespace TMIV::Packer {
-inline void registerComponents() { Factory<IPacker>::getInstance().registerAs<Packer>("Packer"); }
-} // namespace TMIV::Packer
+#include <fstream>
+
+namespace TMIV::Encoder {
+class IvMetadataWriter {
+public:
+  explicit IvMetadataWriter(const Common::Json &config);
+
+  void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
+  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
+  void reportSummary(std::ostream &) const;
+
+private:
+  std::ofstream m_stream;
+  std::unique_ptr<Encoder::MivEncoder> m_encoder;
+
+  double m_frameRate{};
+  std::streampos m_bytesWritten{};
+};
+} // namespace TMIV::Encoder
+
+#endif

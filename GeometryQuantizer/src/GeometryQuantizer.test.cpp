@@ -44,10 +44,6 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::GeometryQuantizer;
 
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
-
 SCENARIO("Geometry quantization") {
   GeometryQuantizer depthOccupancy{37};
 

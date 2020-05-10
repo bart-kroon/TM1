@@ -33,7 +33,6 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/IO/IO.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
@@ -48,10 +47,6 @@ using namespace TMIV::IO;
 using namespace TMIV::MivBitstream;
 
 using std::filesystem::path;
-
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
 
 namespace TMIV::Encoder {
 class Multiplexer : public Common::Application {

@@ -32,6 +32,7 @@
  */
 
 #include <TMIV/Common/Factory.h>
+#include <TMIV/Decoder/Decoder.h>
 #include <TMIV/Renderer/AdditiveSynthesizer.h>
 #include <TMIV/Renderer/GroupBasedRenderer.h>
 #include <TMIV/Renderer/Inpainter.h>
@@ -44,21 +45,32 @@
 #include <TMIV/Renderer/ViewWeightingSynthesizer.h>
 #include <TMIV/Renderer/ViewingSpaceController.h>
 
-namespace TMIV::Renderer {
-inline void registerComponents() {
-  Common::Factory<ICuller>::getInstance().registerAs<SubBlockCuller>("SubBlockCuller");
-  Common::Factory<ICuller>::getInstance().registerAs<NoCuller>("NoCuller");
-  Common::Factory<IInpainter>::getInstance().registerAs<Inpainter>("Inpainter");
-  Common::Factory<IInpainter>::getInstance().registerAs<NoInpainter>("NoInpainter");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<AdditiveSynthesizer>(
-      "AdditiveSynthesizer");
-  Common::Factory<ISynthesizer>::getInstance().registerAs<NoSynthesizer>("NoSynthesizer");
-  Common::Factory<IViewingSpaceController>::getInstance().registerAs<ViewingSpaceController>(
-      "ViewingSpaceController");
-  Common::Factory<IRenderer>::getInstance().registerAs<Renderer>("Renderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<MultipassRenderer>("MultipassRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<GroupBasedRenderer>("GroupBasedRenderer");
-  Common::Factory<IRenderer>::getInstance().registerAs<ViewWeightingSynthesizer>(
-      "ViewWeightingSynthesizer");
+namespace TMIV::Decoder {
+void registerComponents() {
+  using Common::Factory;
+
+  auto &cullers = Factory<Renderer::ICuller>::getInstance();
+  cullers.registerAs<Renderer::NoCuller>("NoCuller");
+  cullers.registerAs<Renderer::SubBlockCuller>("SubBlockCuller");
+
+  auto &decoders = Factory<IDecoder>::getInstance();
+  decoders.registerAs<Decoder>("Decoder");
+
+  auto &inpainters = Factory<Renderer::IInpainter>::getInstance();
+  inpainters.registerAs<Renderer::Inpainter>("Inpainter");
+  inpainters.registerAs<Renderer::NoInpainter>("NoInpainter");
+
+  auto &renderers = Factory<Renderer::IRenderer>::getInstance();
+  renderers.registerAs<Renderer::GroupBasedRenderer>("GroupBasedRenderer");
+  renderers.registerAs<Renderer::Renderer>("Renderer");
+  renderers.registerAs<Renderer::MultipassRenderer>("MultipassRenderer");
+
+  auto &synthesizers = Factory<Renderer::ISynthesizer>::getInstance();
+  synthesizers.registerAs<Renderer::AdditiveSynthesizer>("AdditiveSynthesizer");
+  synthesizers.registerAs<Renderer::NoSynthesizer>("NoSynthesizer");
+  synthesizers.registerAs<Renderer::ViewWeightingSynthesizer>("ViewWeightingSynthesizer");
+
+  auto &viewingSpaceControllers = Common::Factory<Renderer::IViewingSpaceController>::getInstance();
+  viewingSpaceControllers.registerAs<Renderer::ViewingSpaceController>("ViewingSpaceController");
 }
-} // namespace TMIV::Renderer
+} // namespace TMIV::Decoder

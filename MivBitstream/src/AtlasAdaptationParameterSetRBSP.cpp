@@ -33,7 +33,7 @@
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 #include <cmath>
 

@@ -34,8 +34,7 @@
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 #include <TMIV/Common/Common.h>
-
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 #include <stdexcept>
 

@@ -31,9 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/MivEncoder.h>
+#include <TMIV/Encoder/MivEncoder.h>
 
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 #include <iostream>
 #include <sstream>
@@ -41,8 +41,7 @@
 using namespace std;
 using namespace TMIV::Common;
 
-namespace TMIV::MivBitstream {
-
+namespace TMIV::Encoder {
 MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
   cout << "=== Sample stream V3C header " << string(100 - 31, '=') << '\n'
        << m_ssvh << string(100, '=') << '\n'

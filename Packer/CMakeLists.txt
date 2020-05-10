@@ -6,7 +6,6 @@ add_library(PackerLib
     "src/MaxRectPiP.cpp"
     "src/MaxRectPiP.h"
     "src/Packer.cpp"
-    "src/Packer.reg.hpp"
     "include/TMIV/Packer/IPacker.h"
     "include/TMIV/Packer/Packer.h"
     )

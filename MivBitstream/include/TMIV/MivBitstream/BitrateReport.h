@@ -34,7 +34,8 @@
 #ifndef _TMIV_MIVBITSTREAM_BITRATEREPORT_H_
 #define _TMIV_MIVBITSTREAM_BITRATEREPORT_H_
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
+#include <TMIV/MivBitstream/NalUnit.h>
 
 #include <map>
 

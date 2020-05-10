@@ -31,33 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/MivDecoder.h>
-
-#include <TMIV/MivBitstream/MivDecoderMode.h>
+#include <TMIV/Decoder/MivDecoder.h>
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
+#include <TMIV/MivBitstream/BitrateReport.h>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 #include <cassert>
 #include <istream>
 #include <sstream>
+#include <thread>
 #include <variant>
 
-#include "BitrateReport.h"
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 using namespace std;
 using namespace TMIV::Common;
+using namespace TMIV::VideoDecoder;
 
-namespace TMIV::MivBitstream {
+namespace TMIV::Decoder {
 // Decoder interface ///////////////////////////////////////////////////////////////////////////////
 
-MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
-                       AttrFrameServer attrFrameServer)
-    : m_stream{stream}
-    , m_geoFrameServer{move(geoFrameServer)}
-    , m_attrFrameServer{move(attrFrameServer)}
-    , m_ssvh{SampleStreamV3cHeader::decodeFrom(stream)} {
+MivDecoder::MivDecoder(istream &stream)
+    : m_stream{stream}, m_ssvh{SampleStreamV3cHeader::decodeFrom(stream)} {
   cout << "=== Sample stream V3C header " << string(100 - 31, '=') << '\n'
        << m_ssvh << string(100, '=') << '\n'
        << endl;
@@ -65,42 +62,42 @@ MivDecoder::MivDecoder(istream &stream, GeoFrameServer geoFrameServer,
 
 MivDecoder::~MivDecoder() = default;
 
-auto MivDecoder::decodeV3cUnit() -> bool {
-  cout << "\n=== V3C unit " << string(100 - 15, '=') << '\n';
-  VERIFY_V3CBITSTREAM(m_stream.good());
+void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = move(value); }
 
-  const auto ssvu = SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
-  cout << ssvu;
-  VERIFY_V3CBITSTREAM(m_stream.good());
-
-  istringstream substream{ssvu.ssvu_v3c_unit()};
-  const auto vu = V3cUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_v3c_unit_size());
-  cout << vu;
-
-  const auto &vuh = vu.v3c_unit_header();
-
-  if (m_bitrateReport) {
-    m_bitrateReport->add(vuh, ssvu.ssvu_v3c_unit_size());
-  }
-
-  decodeV3cPayload(vuh, vu.v3c_payload().payload());
-  cout << string(100, '=') << '\n' << endl;
-
-  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
-    while (haveFrame(vuh)) {
-      outputFrame(vuh);
-      if (m_stop) {
-        return false;
-      }
-    }
-  }
-
-  m_stream.peek();
-  return !m_stream.eof();
-}
+void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = move(value); }
 
 void MivDecoder::decode() {
-  while (!m_stop && decodeV3cUnit()) {
+  while (!m_stop && !m_stream.eof()) {
+    cout << "\n=== V3C unit " << string(100 - 15, '=') << '\n';
+    VERIFY_V3CBITSTREAM(m_stream.good());
+
+    const auto ssvu = SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
+    cout << ssvu;
+    VERIFY_V3CBITSTREAM(m_stream.good());
+
+    istringstream substream{ssvu.ssvu_v3c_unit()};
+    const auto vu = V3cUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_v3c_unit_size());
+    cout << vu;
+
+    const auto &vuh = vu.v3c_unit_header();
+
+    if (m_bitrateReport) {
+      m_bitrateReport->add(vuh, ssvu.ssvu_v3c_unit_size());
+    }
+
+    decodeV3cPayload(vuh, vu.v3c_payload().payload());
+    cout << string(100, '=') << '\n' << endl;
+
+    if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
+      while (haveFrame(vuh)) {
+        outputFrame(vuh);
+        if (m_stop) {
+          return;
+        }
+      }
+    }
+
+    m_stream.peek();
   }
 }
 
@@ -134,9 +131,9 @@ void MivDecoder::outputFrame(const V3cUnitHeader &vuh) {
   au.frameId = ++sequence_.frameId;
   au.atlas.resize(sequence_.atlas.size());
 
-  for (size_t atlasId = 0; atlasId < au.atlas.size(); ++atlasId) {
-    auto &atlas = sequence_.atlas[atlasId];
-    auto &aau = au.atlas[atlasId];
+  for (size_t j = 0; j < au.atlas.size(); ++j) {
+    auto &atlas = sequence_.atlas[j];
+    auto &aau = au.atlas[j];
     assert(!atlas.frames.empty());
 
     aau.ath = atlas.frames.front()->ath;
@@ -147,18 +144,39 @@ void MivDecoder::outputFrame(const V3cUnitHeader &vuh) {
     aau.patchParamsList = atlas.frames.front()->patchParamsList;
     aau.blockToPatchMap = atlas.frames.front()->blockToPatchMap;
 
-    if (au.vps->attribute_information(uint8_t(atlasId)).ai_attribute_count() >= 1 &&
-        au.vps->attribute_information(uint8_t(atlasId)).ai_attribute_type_id(0) ==
+    if (au.vps->attribute_information(uint8_t(j)).ai_attribute_count() >= 1 &&
+        au.vps->attribute_information(uint8_t(j)).ai_attribute_type_id(0) ==
             AiAttributeTypeId::ATTR_TEXTURE) {
-      aau.attrFrame = m_attrFrameServer(uint8_t(atlasId), sequence_.frameId, aau.frameSize());
+      // Get a texture frame in-band or out-of-band
+      if (atlas.attrVideoServer) {
+        auto frame = atlas.attrVideoServer->getFrame();
+        VERIFY_MIVBITSTREAM(frame);
+        aau.attrFrame = frame->as<YUV444P10>();
+        atlas.attrVideoServer->wait();
+      } else if (m_attrFrameServer) {
+        aau.attrFrame = m_attrFrameServer(uint8_t(j), sequence_.frameId, aau.frameSize());
+      } else {
+        MIVBITSTREAM_ERROR("Out-of-band attribute video data but no frame server provided");
+      }
     } else {
+      // No texture: pass out a neutral gray frame
       aau.attrFrame.resize(aau.asps.asps_frame_width(), aau.asps.asps_frame_height());
       aau.attrFrame.fillNeutral();
       VERIFY_MIVBITSTREAM(aau.decGeoFrameSize(*au.vps) == aau.frameSize());
     }
 
-    aau.decGeoFrame =
-        m_geoFrameServer(uint8_t(atlasId), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
+    // Get a geometry frame in-band or out-of-band
+    if (atlas.geoVideoServer) {
+      auto frame = atlas.geoVideoServer->getFrame();
+      VERIFY_MIVBITSTREAM(frame);
+      aau.decGeoFrame = frame->as<YUV400P10>();
+      atlas.geoVideoServer->wait();
+    } else if (m_geoFrameServer) {
+      aau.decGeoFrame =
+          m_geoFrameServer(uint8_t(j), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
+    } else {
+      MIVBITSTREAM_ERROR("Out-of-band geometry video data but no frame server provided");
+    }
 
     atlas.frames.erase(atlas.frames.begin());
   }
@@ -215,6 +233,58 @@ void MivDecoder::decodeVps(const V3cUnitHeader & /* vuh */, const V3cParameterSe
   m_sequenceV[id].atlas.resize(vps.vps_atlas_count_minus1() + 1U);
 
   outputSequence(vps);
+
+  if (decodeVideoSubBitstreams(vps)) {
+    auto &seq = m_sequenceV[id];
+    const auto codecGroupIdc = vps.profile_tier_level().ptl_profile_codec_group_idc();
+
+    for (uint8_t j = 0; j <= vps.vps_atlas_count_minus1(); ++j) {
+      seq.atlas[j].geoVideoServer =
+          make_unique<VideoServer>(IVideoDecoder::create(codecGroupIdc), seq.atlas[j].geoVideoData);
+      seq.atlas[j].geoVideoServer->wait();
+
+      if (vps.vps_attribute_video_present_flag(j)) {
+        seq.atlas[j].attrVideoServer = make_unique<VideoServer>(
+            IVideoDecoder::create(codecGroupIdc), seq.atlas[j].attrVideoData);
+        seq.atlas[j].attrVideoServer->wait();
+      }
+    }
+  }
+}
+
+auto MivDecoder::decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool {
+  auto haveVideo = false;
+  const auto initialStreamPosition = m_stream.tellg();
+  m_stream.peek();
+
+  while (!m_stream.eof()) {
+    VERIFY_V3CBITSTREAM(m_stream.good());
+
+    const auto ssvu = SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
+    VERIFY_V3CBITSTREAM(m_stream.good());
+
+    istringstream substream{ssvu.ssvu_v3c_unit().substr(0, 4)};
+    const auto vuh = V3cUnitHeader::decodeFrom(substream, m_vpsV);
+
+    if (vuh.vuh_v3c_parameter_set_id() == vps.vps_v3c_parameter_set_id()) {
+      if (vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
+        haveVideo = true;
+        const auto j = vps.atlasIdxOf(vuh.vuh_atlas_id());
+        sequence(vuh).atlas[j].geoVideoData += ssvu.ssvu_v3c_unit().substr(4);
+      }
+      if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
+        haveVideo = true;
+        const auto j = vps.atlasIdxOf(vuh.vuh_atlas_id());
+        sequence(vuh).atlas[j].attrVideoData += ssvu.ssvu_v3c_unit().substr(4);
+      }
+    }
+
+    m_stream.peek();
+  }
+
+  m_stream.seekg(initialStreamPosition);
+  m_stream.clear();
+  return haveVideo;
 }
 
 void MivDecoder::decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb) {
@@ -587,8 +657,8 @@ auto MivDecoder::atlas(const V3cUnitHeader &vuh) const -> const Atlas & {
     return specialAtlas(vuh);
   }
   const auto &x = sequence(vuh);
-  const auto atlasIdx = vps(vuh).atlasIdxOf(vuh.vuh_atlas_id());
-  return x.atlas[atlasIdx];
+  const auto j = vps(vuh).atlasIdxOf(vuh.vuh_atlas_id());
+  return x.atlas[j];
 }
 
 auto MivDecoder::atlas(const V3cUnitHeader &vuh) -> Atlas & {
@@ -596,8 +666,8 @@ auto MivDecoder::atlas(const V3cUnitHeader &vuh) -> Atlas & {
     return specialAtlas(vuh);
   }
   auto &x = sequence(vuh);
-  const auto atlasIdx = vps(vuh).atlasIdxOf(vuh.vuh_atlas_id());
-  return x.atlas[atlasIdx];
+  const auto j = vps(vuh).atlasIdxOf(vuh.vuh_atlas_id());
+  return x.atlas[j];
 }
 
 auto MivDecoder::specialAtlas(const V3cUnitHeader &vuh) const -> const Atlas & {
@@ -634,4 +704,4 @@ auto MivDecoder::aapsV(const V3cUnitHeader &vuh) const
   }
   return x.aapsV;
 }
-} // namespace TMIV::MivBitstream
+} // namespace TMIV::Decoder

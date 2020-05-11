@@ -17,7 +17,7 @@
         "DepthOccupancyMethod": "DepthOccupancy",
         "EntityEncodeRange": [
             0,
-            25
+            6
         ],
         "HierarchicalPruner": {
             "depthParameter": 50,

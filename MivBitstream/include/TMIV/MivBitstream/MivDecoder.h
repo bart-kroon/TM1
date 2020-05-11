@@ -37,12 +37,13 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
 #include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
+#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
-#include <TMIV/MivBitstream/VpccSampleStreamFormat.h>
-#include <TMIV/MivBitstream/VpccUnit.h>
 
 #include <TMIV/Common/Frame.h>
 
@@ -60,7 +61,7 @@ public: // Frame servers
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
 
 public: // Decoder interface
-  // Construct a MivDecoder and read the sample stream V-PCC header
+  // Construct a MivDecoder and read the sample stream V3C header
   //
   // This version of TMIV does not implement video data sub bitstreams so we need to smuggle in
   // those frames using a callback.  The attribute server will return empty frames if there is no
@@ -68,13 +69,13 @@ public: // Decoder interface
   MivDecoder(std::istream &stream, GeoFrameServer geoFrameServer, AttrFrameServer attrFrameServer);
   ~MivDecoder();
 
-  // Decode the next V-PCC unit
+  // Decode the next V3C unit
   //
   // Register listeners to obtain output. The decoding is stopped prematurely when any of the
   // listeners returns false.
-  auto decodeVpccUnit() -> bool;
+  auto decodeV3cUnit() -> bool;
 
-  // Decode (remainder of) V-PCC sample bitstream
+  // Decode (remainder of) V3C sample bitstream
   //
   // Register listeners to obtain output. The decoding is stopped prematurely when any of the
   // listeners returns false.
@@ -86,7 +87,7 @@ public: // Decoder interface
 
 public: // Callback signatures
   // Callback that will be called when a VPS is decoded.
-  using SequenceListener = std::function<bool(const VpccParameterSet &)>;
+  using SequenceListener = std::function<bool(const V3cParameterSet &)>;
 
   // Callback that will be called when an access unit (frame) is decoded.
   using FrameListener = std::function<bool(const AccessUnit &)>;
@@ -96,19 +97,19 @@ public: // Callback registrations
   std::vector<FrameListener> onFrame;
 
 private: // Decoder output
-  void outputSequence(const VpccParameterSet &vps);
-  void outputFrame(const VpccUnitHeader &vuh);
-  [[nodiscard]] auto haveFrame(const VpccUnitHeader &vuh) const -> bool;
+  void outputSequence(const V3cParameterSet &vps);
+  void outputFrame(const V3cUnitHeader &vuh);
+  [[nodiscard]] auto haveFrame(const V3cUnitHeader &vuh) const -> bool;
 
 private: // Decoding processes
-  void decodeVpccPayload(const VpccUnitHeader &vuh, const VpccPayload::Payload &payload);
-  void decodeVps(const VpccUnitHeader &vuh, const VpccParameterSet &vps);
-  void decodeAsb(const VpccUnitHeader &vuh, const AtlasSubBitstream &asb);
+  void decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Payload &payload);
+  void decodeVps(const V3cUnitHeader &vuh, const V3cParameterSet &vps);
+  void decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb);
 
-  void decodeNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void decodeUnknownNalUnit(const VpccUnitHeader &vuh, const NalUnit &nu);
+  void decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void decodeUnknownNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
 
-  void decodeAtgl(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  void decodeAtgl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                   const AtlasTileGroupLayerRBSP &atgl);
   static auto decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList;
   static auto decodeAtgdu(const AtlasTileGroupDataUnit &atgdu, const AtlasTileGroupHeader &atgh,
@@ -116,50 +117,53 @@ private: // Decoding processes
   static auto decodeBlockToPatchMap(const AtlasTileGroupDataUnit &atgdu,
                                     const AtlasSequenceParameterSetRBSP &asps)
       -> Common::BlockToPatchMap;
-  void decodeAsps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  void decodeAsps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                   AtlasSequenceParameterSetRBSP asps);
-  void decodeAfps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                  AtlasFrameParameterSetRBSP afps);
-  void decodeAps(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
-                 const AdaptationParameterSetRBSP &aps);
-  static void decodeAud(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  void decodeAfps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
+                  const AtlasFrameParameterSetRBSP &afps);
+  void decodeAaps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
+                  const AtlasAdaptationParameterSetRBSP &aaps);
+  void decodeFoc(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
+                 const FrameOrderCountRBSP &foc);
+  static void decodeAud(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                         AccessUnitDelimiterRBSP aud);
-  void decodeEos(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-  void decodeEob(const VpccUnitHeader &vuh, const NalUnitHeader &nuh);
-  static void decodeSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh, const SeiRBSP &sei);
-  static void decodeSeiMessage(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  void decodeEos(const V3cUnitHeader &vuh, const NalUnitHeader &nuh);
+  void decodeEob(const V3cUnitHeader &vuh, const NalUnitHeader &nuh);
+  static void decodeSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, const SeiRBSP &sei);
+  static void decodeSeiMessage(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                const SeiMessage &message);
-  static void decodeViewingSpaceHandling(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  static void decodeViewingSpaceHandling(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                          const ViewingSpaceHandling &vh);
-  static void decodeRecViewport(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  static void decodeRecViewport(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                 const RecViewport &vh);
 
 private: // Parsers
-  void parseAsps(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parseAfps(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parseAps(const VpccUnitHeader &vuh, const NalUnit &nu);
-  void parseAtgl(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void parseAud(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void parseVpccAud(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void parsePrefixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void parseSuffixNSei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void parsePrefixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void parseSuffixESei(const VpccUnitHeader &vuh, const NalUnit &nu);
-  static void parseViewingSpaceHandlingSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  void parseAsps(const V3cUnitHeader &vuh, const NalUnit &nu);
+  void parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu);
+  void parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu);
+  void parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu);
+  void parseAtgl(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void parseAud(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void parseV3cAud(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void parsePrefixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void parseSuffixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void parsePrefixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void parseSuffixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
+  static void parseViewingSpaceHandlingSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                            const SeiMessage &message);
-  static void parseRecViewportSei(const VpccUnitHeader &vuh, const NalUnitHeader &nuh,
+  static void parseRecViewportSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                   const SeiMessage &message);
 
 private: // Internal decoder state
   std::istream &m_stream;
   GeoFrameServer m_geoFrameServer;
   AttrFrameServer m_attrFrameServer;
-  SampleStreamVpccHeader m_ssvh;
+  SampleStreamV3cHeader m_ssvh;
 
   struct Atlas {
     std::vector<AtlasSequenceParameterSetRBSP> aspsV;
     std::vector<AtlasFrameParameterSetRBSP> afpsV;
-    std::vector<AdaptationParameterSetRBSP> apsV;
+    std::vector<AtlasAdaptationParameterSetRBSP> aapsV;
 
     struct Frame {
       AtlasTileGroupHeader atgh;
@@ -179,7 +183,7 @@ private: // Internal decoder state
     std::int32_t frameId{-1}; // picture order count
   };
 
-  std::vector<VpccParameterSet> m_vpsV;
+  std::vector<V3cParameterSet> m_vpsV;
   std::vector<Sequence> m_sequenceV;
 
   bool m_stop{};
@@ -188,19 +192,19 @@ private: // Bitrate reporting (pimpl idiom)
   std::unique_ptr<BitrateReport> m_bitrateReport;
 
 private: // Access internal decoder state
-  [[nodiscard]] auto vps(const VpccUnitHeader &vuh) const -> const VpccParameterSet &;
-  [[nodiscard]] auto sequence(const VpccUnitHeader &vuh) const -> const Sequence &;
-  auto sequence(const VpccUnitHeader &vuh) -> Sequence &;
-  [[nodiscard]] auto atlas(const VpccUnitHeader &vuh) const -> const Atlas &;
-  auto atlas(const VpccUnitHeader &vuh) -> Atlas &;
-  [[nodiscard]] auto specialAtlas(const VpccUnitHeader &vuh) const -> const Atlas &;
-  auto specialAtlas(const VpccUnitHeader &vuh) -> Atlas &;
-  [[nodiscard]] auto aspsV(const VpccUnitHeader &vuh) const
+  [[nodiscard]] auto vps(const V3cUnitHeader &vuh) const -> const V3cParameterSet &;
+  [[nodiscard]] auto sequence(const V3cUnitHeader &vuh) const -> const Sequence &;
+  auto sequence(const V3cUnitHeader &vuh) -> Sequence &;
+  [[nodiscard]] auto atlas(const V3cUnitHeader &vuh) const -> const Atlas &;
+  auto atlas(const V3cUnitHeader &vuh) -> Atlas &;
+  [[nodiscard]] auto specialAtlas(const V3cUnitHeader &vuh) const -> const Atlas &;
+  auto specialAtlas(const V3cUnitHeader &vuh) -> Atlas &;
+  [[nodiscard]] auto aspsV(const V3cUnitHeader &vuh) const
       -> const std::vector<AtlasSequenceParameterSetRBSP> &;
-  [[nodiscard]] auto afpsV(const VpccUnitHeader &vuh) const
+  [[nodiscard]] auto afpsV(const V3cUnitHeader &vuh) const
       -> const std::vector<AtlasFrameParameterSetRBSP> &;
-  [[nodiscard]] auto apsV(const VpccUnitHeader &vuh) const
-      -> const std::vector<AdaptationParameterSetRBSP> &;
+  [[nodiscard]] auto aapsV(const V3cUnitHeader &vuh) const
+      -> const std::vector<AtlasAdaptationParameterSetRBSP> &;
 };
 } // namespace TMIV::MivBitstream
 

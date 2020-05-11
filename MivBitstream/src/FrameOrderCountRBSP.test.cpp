@@ -33,37 +33,26 @@
 
 #include "test.h"
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
 
-#include <sstream>
-
-using namespace std;
-using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
-TEST_CASE("MivDecoder", "[MIV decoder]") {
-  SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
+TEST_CASE("frame_order_count_rbsp", "[Frame Order Count RBSP]") {
+  auto x = FrameOrderCountRBSP{1437};
 
-    const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Depth10Frame{};
-    };
-    const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Texture444Frame{};
-    };
+  REQUIRE(toString(x) == R"(frm_order_cnt_lsb=1437
+)");
 
-    MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
+  SECTION("Regular atlas") {
+    auto asps = AtlasSequenceParameterSetRBSP{};
+    asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4(12);
+    REQUIRE(byteCodingTest(x, 3, asps));
+  }
 
-    SECTION("Callbacks") {
-      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
-        cout << "Sequence:\n" << vps;
-        return true;
-      });
-
-      decoder.onFrame.emplace_back([](const AccessUnit &au) {
-        cout << "Frame " << au.frameId << '\n';
-        return true;
-      });
-    }
+  SECTION("Special atlas") {
+    auto aaps = AtlasAdaptationParameterSetRBSP{};
+    aaps.aaps_log2_max_afoc_present_flag(true);
+    aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(11);
+    REQUIRE(byteCodingTest(x, 2, aaps));
   }
 }

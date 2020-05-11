@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
-#define _TMIV_MIVBITSTREAM_ADAPTATIONPARAMETERSETRBSP_H_
+#ifndef _TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H_
+#define _TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H_
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Matrix.h>
@@ -342,50 +342,112 @@ private:
 enum class MvpUpdateMode : std::uint8_t { VPL_INITLIST, VPL_UPD_EXT, VPL_UPD_INT, VPL_EXT_INT };
 auto operator<<(std::ostream &stream, const MvpUpdateMode x) -> std::ostream &;
 
-// 23090-12: adapation_parameter_set_rbsp
-class AdaptationParameterSetRBSP {
+// 23090-5: aaps_vpcc_extension( )
+//
+// Limitations of this implementation:
+//   * aaps_vpcc_camera_parameters_present_flag == 0
+class AapsVpccExtension {
 public:
-  [[nodiscard]] constexpr auto aps_adaptation_parameter_set_id() const noexcept;
-  [[nodiscard]] constexpr auto aps_camera_params_present_flag() const noexcept { return false; }
-  [[nodiscard]] constexpr auto aps_miv_view_params_list_present_flag() const noexcept;
-  [[nodiscard]] auto aps_miv_view_params_list_update_mode() const noexcept -> MvpUpdateMode;
+  friend auto operator<<(std::ostream &stream, const AapsVpccExtension &x) -> std::ostream &;
+
+  constexpr auto operator==(const AapsVpccExtension &other) const noexcept;
+  constexpr auto operator!=(const AapsVpccExtension &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> AapsVpccExtension;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+};
+
+// 23090-12: aaps_miv_extension( )
+class AapsMivExtension {
+public:
+  [[nodiscard]] constexpr auto aame_omaf_v1_compatible_flag() const noexcept;
+  [[nodiscard]] constexpr auto aame_miv_view_params_list_update_mode() const noexcept;
   [[nodiscard]] auto miv_view_params_list() const noexcept -> const MivViewParamsList &;
   [[nodiscard]] auto miv_view_params_update_extrinsics() const noexcept
       -> const MivViewParamsUpdateExtrinsics &;
   [[nodiscard]] auto miv_view_params_update_intrinsics() const noexcept
       -> const MivViewParamsUpdateIntrinsics &;
-  [[nodiscard]] constexpr auto aps_extension2_flag() const noexcept { return false; }
 
-  constexpr auto aps_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto aps_miv_view_params_list_present_flag(const bool value) noexcept -> auto &;
-  auto aps_miv_view_params_list_update_mode(const MvpUpdateMode value) noexcept
-      -> AdaptationParameterSetRBSP &;
-  [[nodiscard]] constexpr auto miv_view_params_list() noexcept -> MivViewParamsList &;
-  [[nodiscard]] constexpr auto miv_view_params_update_extrinsics() noexcept
+  constexpr auto aame_omaf_v1_compatible_flag(bool value) noexcept -> auto &;
+  constexpr auto aame_miv_view_params_list_update_mode(MvpUpdateMode value) noexcept -> auto &;
+  [[nodiscard]] auto miv_view_params_list() noexcept -> MivViewParamsList &;
+  [[nodiscard]] auto miv_view_params_update_extrinsics() noexcept
       -> MivViewParamsUpdateExtrinsics &;
-  [[nodiscard]] constexpr auto miv_view_params_update_intrinsics() noexcept
+  [[nodiscard]] auto miv_view_params_update_intrinsics() noexcept
       -> MivViewParamsUpdateIntrinsics &;
 
-  friend auto operator<<(std::ostream &stream, const AdaptationParameterSetRBSP &x)
-      -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const AapsMivExtension &x) -> std::ostream &;
 
-  auto operator==(const AdaptationParameterSetRBSP &) const noexcept -> bool;
-  auto operator!=(const AdaptationParameterSetRBSP &) const noexcept -> bool;
+  auto operator==(const AapsMivExtension &) const noexcept -> bool;
+  auto operator!=(const AapsMivExtension &) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream) -> AdaptationParameterSetRBSP;
+  static auto decodeFrom(Common::InputBitstream &stream) -> AapsMivExtension;
 
-  void encodeTo(std::ostream &stream) const;
+  void encodeTo(Common::OutputBitstream &stream) const;
 
 private:
-  std::uint8_t m_aps_adaptation_parameter_set_id{};
-  bool m_aps_miv_view_params_list_present_flag{};
-  std::optional<MvpUpdateMode> m_aps_miv_view_params_list_update_mode;
+  bool m_aame_omaf_v1_compatible_flag{};
+  MvpUpdateMode m_aame_miv_view_params_list_update_mode{};
   std::optional<MivViewParamsList> m_miv_view_params_list;
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;
 };
+
+// 23090-5: atlas_adapation_parameter_set_rbsp( )
+class AtlasAdaptationParameterSetRBSP {
+public:
+  [[nodiscard]] constexpr auto aaps_atlas_adaptation_parameter_set_id() const noexcept;
+  [[nodiscard]] constexpr auto aaps_log2_max_afoc_present_flag() const noexcept;
+  [[nodiscard]] auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const noexcept
+      -> std::uint8_t;
+  [[nodiscard]] constexpr auto aaps_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto aaps_vpcc_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto aaps_miv_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto aaps_extension_6bits() const noexcept;
+  [[nodiscard]] auto aaps_vpcc_extension() const noexcept -> const AapsVpccExtension &;
+  [[nodiscard]] auto aaps_miv_extension() const noexcept -> const AapsMivExtension &;
+  [[nodiscard]] auto aapsExtensionData() const noexcept -> const std::vector<bool> &;
+
+  constexpr auto aaps_atlas_adaptation_parameter_set_id(std::uint8_t value) noexcept -> auto &;
+  constexpr auto aaps_log2_max_afoc_present_flag(bool value) noexcept -> auto &;
+  auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(std::uint8_t value) noexcept
+      -> AtlasAdaptationParameterSetRBSP &;
+  constexpr auto aaps_extension_present_flag(bool value) noexcept -> auto &;
+  auto aaps_vpcc_extension_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  auto aaps_miv_extension_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  auto aaps_extension_6bits(std::uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  auto aaps_vpcc_extension(const AapsVpccExtension &value) noexcept
+      -> AtlasAdaptationParameterSetRBSP &;
+  auto aaps_miv_extension(AapsMivExtension value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  auto aapsExtensionData(std::vector<bool> value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+
+  [[nodiscard]] auto aaps_miv_extension() noexcept -> AapsMivExtension &;
+
+  friend auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x)
+      -> std::ostream &;
+
+  auto operator==(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
+  auto operator!=(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream) -> AtlasAdaptationParameterSetRBSP;
+
+  void encodeTo(std::ostream &stream) const;
+
+private:
+  std::uint8_t m_aaps_atlas_adaptation_parameter_set_id{};
+  bool m_aaps_log2_max_afoc_present_flag{};
+  std::optional<std::uint8_t> m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4{};
+  bool m_aaps_extension_present_flag{};
+  std::optional<bool> m_aaps_vpcc_extension_flag{};
+  std::optional<bool> m_aaps_miv_extension_flag{};
+  std::optional<std::uint8_t> m_aaps_extension_6bits{};
+  std::optional<AapsVpccExtension> m_aaps_vpcc_extension{};
+  std::optional<AapsMivExtension> m_aaps_miv_extension{};
+  std::optional<std::vector<bool>> m_aapsExtensionData{};
+};
 } // namespace TMIV::MivBitstream
 
-#include "AdaptationParameterSetRBSP.hpp"
+#include "AtlasAdaptationParameterSetRBSP.hpp"
 
 #endif

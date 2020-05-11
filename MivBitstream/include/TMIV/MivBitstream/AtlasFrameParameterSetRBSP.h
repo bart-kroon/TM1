@@ -42,15 +42,19 @@
 #include <iosfwd>
 
 namespace TMIV::MivBitstream {
-// 23090-5: atlas_frame_tile_information()
+// 23090-5: atlas_frame_tile_information( )
+//
+// 23090-12 restrictions:
+//   * afti_single_tile_in_atlas_frame_flag == 1
+
 class AtlasFrameTileInformation {
 public:
-  friend auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x)
-      -> std::ostream &;
-
   [[nodiscard]] constexpr auto afti_single_tile_in_atlas_frame_flag() const noexcept {
     return true;
   }
+
+  friend auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x)
+      -> std::ostream &;
 
   auto operator==(const AtlasFrameTileInformation &) const noexcept -> bool { return true; }
   auto operator!=(const AtlasFrameTileInformation &) const noexcept -> bool { return false; }
@@ -60,12 +64,35 @@ public:
   static void encodeTo(Common::OutputBitstream &stream);
 };
 
-// 23090-5: atlas_frame_parameter_set_rbsp()
+// 23090-5: afps_vpcc_extension( )
+class AfpsVpccExtension {
+public:
+  friend auto operator<<(std::ostream &stream, const AfpsVpccExtension &x) -> std::ostream &;
+
+  constexpr auto operator==(const AfpsVpccExtension &other) const noexcept;
+  constexpr auto operator!=(const AfpsVpccExtension &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> AfpsVpccExtension;
+
+  void encodeTo(Common::OutputBitstream &stream) const;
+};
+
+// 23090-12: afps_miv_extension( )
+class AfpsMivExtension {
+public:
+  friend auto operator<<(std::ostream &stream, const AfpsMivExtension &x) -> std::ostream &;
+
+  constexpr auto operator==(const AfpsMivExtension &other) const noexcept;
+  constexpr auto operator!=(const AfpsMivExtension &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> AfpsMivExtension;
+
+  void encodeTo(Common::OutputBitstream &stream) const;
+};
+
+// 23090-5: atlas_frame_parameter_set_rbsp( )
 class AtlasFrameParameterSetRBSP {
 public:
-  friend auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x)
-      -> std::ostream &;
-
   [[nodiscard]] constexpr auto afps_atlas_frame_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto afps_atlas_sequence_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto atlas_frame_tile_information() const noexcept;
@@ -75,9 +102,14 @@ public:
   [[nodiscard]] constexpr auto afps_3d_pos_x_bit_count_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_3d_pos_y_bit_count_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_lod_mode_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto afps_override_eom_for_depth_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_vpcc_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_miv_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_extension_6bits() const noexcept;
+  [[nodiscard]] auto afps_vpcc_extension() const noexcept -> AfpsVpccExtension;
+  [[nodiscard]] auto afps_miv_extension() const noexcept -> AfpsMivExtension;
+  [[nodiscard]] auto afpsExtensionData() const noexcept -> const std::vector<bool> &;
 
   constexpr auto afps_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
@@ -90,9 +122,17 @@ public:
   constexpr auto afps_3d_pos_x_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_3d_pos_y_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_lod_mode_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto afps_override_eom_for_depth_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
+  auto afps_vpcc_extension_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afps_miv_extension_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afps_extension_6bits(std::uint8_t value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afps_vpcc_extension(const AfpsVpccExtension &value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afps_miv_extension(const AfpsMivExtension &value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afpsExtensionData(std::vector<bool> value) noexcept -> AtlasFrameParameterSetRBSP &;
+
+  friend auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x)
+      -> std::ostream &;
 
   auto operator==(const AtlasFrameParameterSetRBSP &other) const noexcept -> bool;
   auto operator!=(const AtlasFrameParameterSetRBSP &other) const noexcept -> bool;
@@ -114,9 +154,14 @@ private:
   std::uint8_t m_afps_3d_pos_x_bit_count_minus1{};
   std::uint8_t m_afps_3d_pos_y_bit_count_minus1{};
   bool m_afps_lod_enabled_flag{};
-  bool m_afps_override_eom_for_depth_flag{};
   bool m_afps_raw_3d_pos_bit_count_explicit_mode_flag{};
   bool m_afps_extension_present_flag{};
+  std::optional<bool> m_afps_vpcc_extension_flag{};
+  std::optional<bool> m_afps_miv_extension_flag{};
+  std::optional<std::uint8_t> m_afps_extension_6bits{};
+  std::optional<AfpsVpccExtension> m_afve;
+  std::optional<AfpsMivExtension> m_afme;
+  std::optional<std::vector<bool>> m_afpsExtensionData;
 };
 } // namespace TMIV::MivBitstream
 

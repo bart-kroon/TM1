@@ -126,7 +126,7 @@ auto operator<<(std::ostream &os, const G &g) -> std::ostream & {
       os << "n" << l.node() << "[" << l.weight() << "] ";
     }
     if (i != (g.getNumberOfNodes() - 1)) {
-      os << "\n";
+      os << '\n';
     }
   }
 

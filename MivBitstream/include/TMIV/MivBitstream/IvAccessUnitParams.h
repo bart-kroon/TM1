@@ -45,6 +45,12 @@ struct AtlasAccessUnitParams {
   AtlasFrameParameterSetRBSP afps;
   AtlasTileGroupHeader atgh;
 
+  // Convenience function to access the ASPS MIV extension
+  [[nodiscard]] auto asme() const noexcept -> const AspsMivExtension &;
+
+  // Convenience function to create and access the ASPS MIV extension
+  [[nodiscard]] auto asme() noexcept -> AspsMivExtension &;
+
   friend auto operator<<(std::ostream &, const AtlasAccessUnitParams &) -> std::ostream &;
   auto operator==(const AtlasAccessUnitParams &other) const -> bool;
   auto operator!=(const AtlasAccessUnitParams &other) const -> bool { return !operator==(other); }

@@ -44,7 +44,7 @@ using namespace TMIV::Common;
 namespace TMIV::VideoDecoder {
 class VideoServer::Impl {
 public:
-  Impl(unique_ptr<IVideoDecoder> decoder, const string& bitstream)
+  Impl(unique_ptr<IVideoDecoder> decoder, const string &bitstream)
       : m_decoder{move(decoder)}, m_bitstream{bitstream}, m_thread{[this]() { decode(); }} {}
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;
@@ -102,7 +102,7 @@ private:
   unique_ptr<AnyFrame> m_frame{};
 };
 
-VideoServer::VideoServer(std::unique_ptr<IVideoDecoder> decoder, const string& bitstream)
+VideoServer::VideoServer(std::unique_ptr<IVideoDecoder> decoder, const string &bitstream)
     : m_impl{new Impl{move(decoder), bitstream}} {}
 
 VideoServer::~VideoServer() = default;

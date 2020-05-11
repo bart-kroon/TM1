@@ -37,8 +37,8 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
-#include <TMIV/MivBitstream/VpccUnit.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -79,11 +79,20 @@ auto operator<<(std::ostream &stream, AtghType x) -> std::ostream &;
 auto operator<<(std::ostream &stream, FlexiblePatchOrientation x) -> std::ostream &;
 auto printTo(std::ostream &stream, AtgduPatchMode x, AtghType atgh_type) -> std::ostream &;
 
-// 23090-5: atlas_tile_group_header()
+// 23090-5: atlas_tile_group_header( )
+//
+// 23090-12 restrictions:
+//   * asps_long_term_ref_atlas_frames_flag == 0
+//   * afps_raw_3d_pos_bit_count_explicit_mode_flag == 0
+//   * atgh_type in { I_TILE_GRP, SKIP_TILE_GRP }
+//
+// Limitations of the implementation:
+//   * asps_num_ref_atlas_frame_lists_in_asps == 1
+//   * atgh_ref_atlas_frame_list_sps_flag == 1
 class AtlasTileGroupHeader {
 public:
   [[nodiscard]] constexpr auto atgh_atlas_frame_parameter_set_id() const noexcept;
-  [[nodiscard]] constexpr auto atgh_adaptation_parameter_set_id() const noexcept;
+  [[nodiscard]] constexpr auto atgh_atlas_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto atgh_address() const noexcept;
   [[nodiscard]] constexpr auto atgh_type() const noexcept;
   [[nodiscard]] auto atgh_atlas_output_flag() const noexcept -> bool;
@@ -95,7 +104,8 @@ public:
   [[nodiscard]] auto atgh_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
 
   constexpr auto atgh_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto atgh_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto atgh_atlas_adaptation_parameter_set_id(const std::uint8_t value) noexcept
+      -> auto &;
   constexpr auto atgh_address(const std::uint8_t value) noexcept -> auto &;
   constexpr auto atgh_type(const AtghType value) noexcept -> auto &;
   constexpr auto atgh_atlas_output_flag(const bool value) noexcept -> auto &;
@@ -136,7 +146,7 @@ private:
   std::uint8_t m_atgh_patch_size_y_info_quantizer{};
 };
 
-// 23090-5: skip_patch_data_unit(patchIdx)
+// 23090-5: skip_patch_data_unit( patchIdx )
 class SkipPatchDataUnit {
 public:
   friend auto operator<<(std::ostream &stream, const SkipPatchDataUnit &x) -> std::ostream &;
@@ -149,7 +159,37 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 };
 
-// 23090-12: patch_data_unit(patchIdx)
+// 23090-12: pdu_miv_extension( patchIdx )
+class PduMivExtension {
+public:
+  [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
+  [[nodiscard]] auto pdu_depth_occ_threshold() const noexcept -> std::uint32_t;
+
+  constexpr auto pdu_entity_id(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto &;
+
+  auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
+
+  constexpr auto operator==(const PduMivExtension &other) const noexcept;
+  constexpr auto operator!=(const PduMivExtension &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
+                         const V3cParameterSet &vps, const AtlasSequenceParameterSetRBSP &asps)
+      -> PduMivExtension;
+
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
+                const V3cParameterSet &vps, const AtlasSequenceParameterSetRBSP &asps) const;
+
+private:
+  std::optional<std::uint32_t> m_pdu_entity_id;
+  std::optional<std::uint32_t> m_pdu_depth_occ_threshold;
+};
+
+// 23090-12: patch_data_unit( patchIdx )
+//
+// 23090-12 limitations:
+//   * afps_lod_mode_enabled_flag == 0
+//   * asps_point_local_reconstruction_enabled_flag == 0
 class PatchDataUnit {
 public:
   [[nodiscard]] constexpr auto pdu_2d_pos_x() const noexcept;
@@ -160,10 +200,9 @@ public:
   [[nodiscard]] constexpr auto pdu_view_pos_y() const noexcept;
   [[nodiscard]] constexpr auto pdu_depth_start() const noexcept;
   [[nodiscard]] auto pdu_depth_end() const noexcept -> std::uint32_t;
-  [[nodiscard]] constexpr auto pdu_view_id() const noexcept;
+  [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
-  [[nodiscard]] constexpr auto pdu_entity_id() const noexcept;
-  [[nodiscard]] auto pdu_depth_occ_map_threshold() const noexcept -> std::uint32_t;
+  [[nodiscard]] constexpr auto pdu_miv_extension() const noexcept -> PduMivExtension;
 
   constexpr auto pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_2d_pos_y(const std::uint16_t value) noexcept -> auto &;
@@ -173,24 +212,25 @@ public:
   constexpr auto pdu_view_pos_y(const std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_depth_start(const std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_depth_end(const std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_view_id(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_projection_id(const std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_orientation_index(const FlexiblePatchOrientation value) noexcept -> auto &;
-  constexpr auto pdu_entity_id(const unsigned value) noexcept -> auto &;
-  constexpr auto pdu_depth_occ_map_threshold(const std::uint32_t value) noexcept -> auto &;
+  auto pdu_miv_extension(const PduMivExtension &value) noexcept -> PatchDataUnit &;
+
+  [[nodiscard]] constexpr auto pdu_miv_extension() noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
 
   constexpr auto operator==(const PatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccUnitHeader &vuh,
-                         const VpccParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
+                         const V3cParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
                          const AtlasTileGroupHeader &atgh) -> PatchDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
-                const VpccParameterSet &vps,
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
+                const V3cParameterSet &vps,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
                 const AtlasTileGroupHeader &atgh) const;
@@ -206,11 +246,14 @@ private:
   std::optional<std::uint32_t> m_pdu_depth_end;
   std::uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
-  unsigned m_pdu_entity_id{};
-  std::optional<std::uint32_t> m_pdu_depth_occ_map_threshold;
+  std::optional<PduMivExtension> m_pdu_miv_extension;
 };
 
-// 23090-5: patch_information_data()
+// 23090-5: patch_information_data( )
+//
+// 23090-12 restrictions:
+//   * atgh_type in { I_TILE_GRP, SKIP_TILE_GRP }
+//   * patchMode in { I_INTRA, I_END }
 class PatchInformationData {
 public:
   using Data = std::variant<std::monostate, SkipPatchDataUnit, PatchDataUnit>;
@@ -220,7 +263,7 @@ public:
   template <typename Value>
   constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
 
-            [[nodiscard]] constexpr auto data() const noexcept -> auto &;
+  [[nodiscard]] constexpr auto data() const noexcept -> auto &;
 
   [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
@@ -230,16 +273,15 @@ public:
   auto operator==(const PatchInformationData &other) const noexcept -> bool;
   auto operator!=(const PatchInformationData &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccUnitHeader &vuh,
-                         const VpccParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
+                         const V3cParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                          const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode)
       -> PatchInformationData;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
-                const VpccParameterSet &vps,
-                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
+                const V3cParameterSet &vps, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                 const AtlasTileGroupHeader &atgh, AtgduPatchMode patchMode) const;
 
@@ -247,7 +289,7 @@ private:
   Data m_data;
 };
 
-// 23090-5: atlas_tile_group_data_unit()
+// 23090-5: atlas_tile_group_data_unit( )
 class AtlasTileGroupDataUnit {
 public:
   using Vector = std::vector<std::pair<AtgduPatchMode, PatchInformationData>>;
@@ -257,7 +299,7 @@ public:
   template <typename... Args>
   explicit AtlasTileGroupDataUnit(Args &&... args) : m_vector{std::forward<Args>(args)...} {}
 
-            [[nodiscard]] auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
+  [[nodiscard]] auto atgduTotalNumberOfPatches() const noexcept -> std::size_t;
   [[nodiscard]] auto atgdu_patch_mode(std::size_t p) const -> AtgduPatchMode;
   [[nodiscard]] auto patch_information_data(std::size_t p) const -> const PatchInformationData &;
 
@@ -270,15 +312,14 @@ public:
   auto operator==(const AtlasTileGroupDataUnit &other) const -> bool;
   auto operator!=(const AtlasTileGroupDataUnit &other) const -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const VpccUnitHeader &vuh,
-                         const VpccParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
+                         const V3cParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                          const AtlasTileGroupHeader &atgh) -> AtlasTileGroupDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const VpccUnitHeader &vuh,
-                const VpccParameterSet &vps,
-                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
+                const V3cParameterSet &vps, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                 const AtlasTileGroupHeader &atgh) const;
 
@@ -286,7 +327,7 @@ private:
   Vector m_vector;
 };
 
-// 23090-5: atlas_tile_group_layer_rbsp()
+// 23090-5: atlas_tile_group_layer_rbsp( )
 class AtlasTileGroupLayerRBSP {
 public:
   AtlasTileGroupLayerRBSP() = default;
@@ -302,8 +343,8 @@ public:
       : m_atlas_tile_group_header{header}
       , m_atlas_tile_group_data_unit{in_place, std::forward<AtgduArgs>(args)...} {}
 
-            [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
-        -> const AtlasTileGroupHeader &;
+  [[nodiscard]] constexpr auto atlas_tile_group_header() const noexcept
+      -> const AtlasTileGroupHeader &;
   [[nodiscard]] auto atlas_tile_group_data_unit() const noexcept -> const AtlasTileGroupDataUnit &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileGroupLayerRBSP &x) -> std::ostream &;
@@ -311,13 +352,12 @@ public:
   auto operator==(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
   auto operator!=(const AtlasTileGroupLayerRBSP &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const VpccUnitHeader &vuh,
-                         const VpccParameterSet &vps,
+  static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
       -> AtlasTileGroupLayerRBSP;
 
-  void encodeTo(std::ostream &stream, const VpccUnitHeader &vuh, const VpccParameterSet &vps,
+  void encodeTo(std::ostream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 

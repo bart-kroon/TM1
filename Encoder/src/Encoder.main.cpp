@@ -78,7 +78,7 @@ public:
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
 
     if (!json().isPresent("depthLowQualityFlag")) {
-      sourceSequenceParams.msp().msp_depth_low_quality_flag(
+      sourceSequenceParams.vme().vme_depth_low_quality_flag(
           m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
@@ -93,13 +93,13 @@ public:
 
     const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
     cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
-	m_metadataWriter.reportSummary(cout);
+    m_metadataWriter.reportSummary(cout);
   }
 
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_encoder->prepareAccessUnit(loadSourceIvAccessUnitParams(json()));
+    m_encoder->prepareAccessUnit({});
     pushFrames(firstFrame, lastFrame);
     m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit(),
                                              lastFrame - firstFrame);

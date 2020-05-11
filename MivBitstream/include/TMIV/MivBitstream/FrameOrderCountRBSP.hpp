@@ -31,39 +31,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "test.h"
+#ifndef _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
+#error "Include the .hpp, not the .h"
+#endif
 
-#include <TMIV/MivBitstream/MivDecoder.h>
+namespace TMIV::MivBitstream {
+constexpr FrameOrderCountRBSP::FrameOrderCountRBSP(std::uint16_t frm_order_cnt_lsb) noexcept
+    : m_frm_order_cnt_lsb{frm_order_cnt_lsb} {}
 
-#include <sstream>
-
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
-TEST_CASE("MivDecoder", "[MIV decoder]") {
-  SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
-
-    const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Depth10Frame{};
-    };
-    const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Texture444Frame{};
-    };
-
-    MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
-
-    SECTION("Callbacks") {
-      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
-        cout << "Sequence:\n" << vps;
-        return true;
-      });
-
-      decoder.onFrame.emplace_back([](const AccessUnit &au) {
-        cout << "Frame " << au.frameId << '\n';
-        return true;
-      });
-    }
-  }
+constexpr auto FrameOrderCountRBSP::frm_order_cnt_lsb() const noexcept {
+  return m_frm_order_cnt_lsb;
 }
+
+constexpr auto FrameOrderCountRBSP::frm_order_cnt_lsb(uint16_t value) noexcept -> auto & {
+  m_frm_order_cnt_lsb = value;
+  return *this;
+}
+
+constexpr auto FrameOrderCountRBSP::operator==(const FrameOrderCountRBSP &other) const noexcept {
+  return frm_order_cnt_lsb() == other.frm_order_cnt_lsb();
+}
+
+constexpr auto FrameOrderCountRBSP::operator!=(const FrameOrderCountRBSP &other) const noexcept {
+  return !operator==(other);
+}
+} // namespace TMIV::MivBitstream

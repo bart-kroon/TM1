@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 add_library(MivBitstreamLib
 	"src/AccessUnit.cpp"
 	"src/AccessUnitDelimiterRBSP.cpp"
-	"src/AdaptationParameterSetRBSP.cpp"
+	"src/AtlasAdaptationParameterSetRBSP.cpp"
 	"src/AtlasFrameParameterSetRBSP.cpp"
 	"src/AtlasSequenceParameterSetRBSP.cpp"
 	"src/AtlasTileGroupLayerRBSP.cpp"
 	"src/BitrateReport.h"
+	"src/FrameOrderCountRBSP.cpp"
 	"src/IvSequenceParams.cpp"
 	"src/IvAccessUnitParams.cpp"	
 	"src/MivDecoder.cpp"
@@ -24,14 +25,14 @@ add_library(MivBitstreamLib
 	"src/ViewingSpace.cpp"
 	"src/ViewingSpaceHandling.cpp"
 	"src/ViewParamsList.cpp"
-	"src/VpccParameterSet.cpp"
-	"src/VpccSampleStreamFormat.cpp"
-	"src/VpccUnit.cpp"
+	"src/V3cParameterSet.cpp"
+	"src/V3cSampleStreamFormat.cpp"
+	"src/V3cUnit.cpp"
 	"include/TMIV/MivBitstream/AccessUnit.h"
 	"include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.h"
 	"include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.hpp"
-	"include/TMIV/MivBitstream/AdaptationParameterSetRBSP.h"
-	"include/TMIV/MivBitstream/AdaptationParameterSetRBSP.hpp"
+	"include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h"
+	"include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.hpp"
 	"include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h"
 	"include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.hpp"
 	"include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h"
@@ -41,6 +42,8 @@ add_library(MivBitstreamLib
 	"include/TMIV/MivBitstream/AtlasTileGroupLayerRBSP.hpp"
 	"include/TMIV/MivBitstream/DepthOccupancyTransform.h"
 	"include/TMIV/MivBitstream/DepthOccupancyTransform.hpp"
+	"include/TMIV/MivBitstream/FrameOrderCountRBSP.h"
+	"include/TMIV/MivBitstream/FrameOrderCountRBSP.hpp"
 	"include/TMIV/MivBitstream/IvSequenceParams.h"
 	"include/TMIV/MivBitstream/IvAccessUnitParams.h"
 	"include/TMIV/MivBitstream/IvAccessUnitParams.hpp"
@@ -58,11 +61,11 @@ add_library(MivBitstreamLib
 	"include/TMIV/MivBitstream/ViewingSpace.h"
 	"include/TMIV/MivBitstream/ViewingSpaceHandling.h"
 	"include/TMIV/MivBitstream/ViewParamsList.h"
-	"include/TMIV/MivBitstream/VpccParameterSet.h"
-	"include/TMIV/MivBitstream/VpccParameterSet.hpp"
-	"include/TMIV/MivBitstream/VpccSampleStreamFormat.h"
-	"include/TMIV/MivBitstream/VpccUnit.h"
-	"include/TMIV/MivBitstream/VpccUnit.hpp"
+	"include/TMIV/MivBitstream/V3cParameterSet.h"
+	"include/TMIV/MivBitstream/V3cParameterSet.hpp"
+	"include/TMIV/MivBitstream/V3cSampleStreamFormat.h"
+	"include/TMIV/MivBitstream/V3cUnit.h"
+	"include/TMIV/MivBitstream/V3cUnit.hpp"
 	)
 
 add_library(TMIV::MivBitstreamLib
@@ -89,10 +92,11 @@ install(
 if (CMAKE_TESTING_ENABLED)
 	add_executable(MivBitstreamTest
 		"src/AccessUnitDelimiterRBSP.test.cpp"
-		"src/AdaptationParameterSetRBSP.test.cpp"
+		"src/AtlasAdaptationParameterSetRBSP.test.cpp"
 		"src/AtlasFrameParameterSetRBSP.test.cpp"
 		"src/AtlasSequenceParameterSetRBSP.test.cpp"
 		"src/AtlasTileGroupLayerRBSP.test.cpp"
+		"src/FrameOrderCountRBSP.test.cpp"
 		"src/MivDecoder.test.cpp"
 		"src/MivEncoder.test.cpp"
 		"src/MivVuiParams.test.cpp"
@@ -104,8 +108,8 @@ if (CMAKE_TESTING_ENABLED)
 		"src/test.h"
 		"src/ViewingSpace.test.cpp"
 		"src/ViewingSpaceHandling.test.cpp"
-		"src/VpccParameterSet.test.cpp"
-		"src/VpccUnit.test.cpp"
+		"src/V3cParameterSet.test.cpp"
+		"src/V3cUnit.test.cpp"
 		)
 
 	target_link_libraries(MivBitstreamTest
@@ -115,13 +119,13 @@ if (CMAKE_TESTING_ENABLED)
 
 	catch_discover_tests(MivBitstreamTest)
 
-	add_executable(VpccBitstreamTest
-		"src/VpccBitstream.test.cpp")
+	add_executable(V3cBitstreamTest
+		"src/V3cBitstream.test.cpp")
 
-	target_link_libraries(VpccBitstreamTest
+	target_link_libraries(V3cBitstreamTest
 		PRIVATE
 			Catch2::Catch2
 			TMIV::IOLib)
 
-	catch_discover_tests(VpccBitstreamTest)
+	catch_discover_tests(V3cBitstreamTest)
 endif()

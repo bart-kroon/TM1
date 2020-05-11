@@ -57,6 +57,7 @@ public:
 
   ~Impl() {
     m_requestStop = true;
+    m_cv.notify_all();
     m_thread.join();
   }
 

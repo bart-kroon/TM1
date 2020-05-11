@@ -36,6 +36,24 @@
 #endif
 
 namespace TMIV::MivBitstream {
+constexpr auto AtlasFrameTileInformation::afti_single_tile_in_atlas_frame_flag() const noexcept {
+  return true;
+}
+
+constexpr auto AtlasFrameTileInformation::afti_signalled_tile_id_flag() const noexcept {
+  return false;
+}
+
+constexpr auto AtlasFrameTileInformation::
+operator==(const AtlasFrameTileInformation & /* other */) const noexcept {
+  return true;
+}
+
+constexpr auto AtlasFrameTileInformation::
+operator!=(const AtlasFrameTileInformation & /* other */) const noexcept {
+  return false;
+}
+
 constexpr auto AfpsVpccExtension::operator==(const AfpsVpccExtension & /* other */) const noexcept {
   return true;
 }

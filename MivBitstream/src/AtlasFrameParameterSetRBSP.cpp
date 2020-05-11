@@ -44,38 +44,39 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const AtlasFrameTileInformation & /* unused */) -> ostream & {
-  return stream << "afti_single_tile_in_atlas_frame_flag=true\n";
+auto operator<<(ostream &stream, const AtlasFrameTileInformation &x) -> ostream & {
+  stream << "afti_single_tile_in_atlas_frame_flag=" << boolalpha
+         << x.afti_single_tile_in_atlas_frame_flag() << '\n';
+  stream << "afti_signalled_tile_id_flag=" << boolalpha << x.afti_signalled_tile_id_flag() << '\n';
+  return stream;
 }
 
 auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFrameTileInformation {
   const auto afti_single_tile_in_atlas_frame_flag = bitstream.getFlag();
+
   // NOTE(BK): The proposal is to restrict to afti_single_tile_in_atlas_frame_flag == 1, but for
   // sake of being able to parse the provided V3C bitstream, this implementation accepts more
-  // as long as there is only a single tile and tile group.
+  // as long as there is only a single partition and tile.
+  if (!afti_single_tile_in_atlas_frame_flag) {
+    const auto afti_uniform_partition_spacing_flag = bitstream.getFlag();
+    VERIFY_MIVBITSTREAM(!afti_uniform_partition_spacing_flag);
 
-  if (afti_single_tile_in_atlas_frame_flag) {
-    return {};
+    const auto afti_num_partition_columns_minus1 = bitstream.getUExpGolomb<size_t>();
+    VERIFY_MIVBITSTREAM(afti_num_partition_columns_minus1 == 0);
+
+    const auto afti_num_partition_rows_minus1 = bitstream.getUExpGolomb<size_t>();
+    VERIFY_MIVBITSTREAM(afti_num_partition_rows_minus1 == 0);
+
+    const auto afti_single_partition_per_tile_flag = bitstream.getFlag();
+
+    if (!afti_single_partition_per_tile_flag) {
+      const auto afti_num_tiles_in_atlas_frame_minus1 = bitstream.getUExpGolomb<size_t>();
+      VERIFY_MIVBITSTREAM(afti_num_tiles_in_atlas_frame_minus1 == 0);
+    }
   }
 
-  const auto afti_uniform_tile_spacing_flag = bitstream.getFlag();
-  VERIFY_MIVBITSTREAM(!afti_uniform_tile_spacing_flag);
-
-  const auto afti_num_tile_columns_minus1 = bitstream.getUExpGolomb<size_t>();
-  VERIFY_MIVBITSTREAM(afti_num_tile_columns_minus1 == 0);
-
-  const auto afti_num_tile_rows_minus1 = bitstream.getUExpGolomb<size_t>();
-  VERIFY_MIVBITSTREAM(afti_num_tile_rows_minus1 == 0);
-
-  const auto afti_single_tile_per_tile_group_flag = bitstream.getFlag();
-
-  if (!afti_single_tile_per_tile_group_flag) {
-    const auto afti_num_tile_groups_in_atlas_frame_minus1 = bitstream.getUExpGolomb<size_t>();
-    VERIFY_MIVBITSTREAM(afti_num_tile_groups_in_atlas_frame_minus1 == 0);
-  }
-
-  const auto afti_signalled_tile_group_id_flag = bitstream.getFlag();
-  VERIFY_MIVBITSTREAM(!afti_signalled_tile_group_id_flag);
+  const auto afti_signalled_tile_id_flag = bitstream.getFlag();
+  VERIFY_MIVBITSTREAM(!afti_signalled_tile_id_flag);
 
   return {};
 }
@@ -83,6 +84,9 @@ auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFr
 void AtlasFrameTileInformation::encodeTo(OutputBitstream &bitstream) {
   constexpr auto afti_single_tile_in_atlas_frame_flag = true;
   bitstream.putFlag(afti_single_tile_in_atlas_frame_flag);
+
+  const auto afti_signalled_tile_id_flag = false;
+  bitstream.putFlag(afti_signalled_tile_id_flag);
 }
 
 auto operator<<(ostream &stream, const AfpsVpccExtension & /* x */) -> ostream & { return stream; }

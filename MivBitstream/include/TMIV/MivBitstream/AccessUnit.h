@@ -37,7 +37,7 @@
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
@@ -49,7 +49,7 @@ namespace TMIV::MivBitstream {
 struct AtlasAccessUnit {
   AtlasSequenceParameterSetRBSP asps;
   AtlasFrameParameterSetRBSP afps;
-  AtlasTileGroupHeader atgh;
+  AtlasTileHeader ath;
   Common::Depth10Frame decGeoFrame;
   Common::Depth10Frame geoFrame;
   Common::Texture444Frame attrFrame;

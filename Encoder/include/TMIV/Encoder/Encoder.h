@@ -36,9 +36,9 @@
 
 #include <TMIV/Aggregator/IAggregator.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
 #include <TMIV/Encoder/GeometryDownscaler.h>
 #include <TMIV/Encoder/IEncoder.h>
+#include <TMIV/GeometryQuantizer/IGeometryQuantizer.h>
 #include <TMIV/Packer/IPacker.h>
 #include <TMIV/Pruner/IPruner.h>
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
@@ -103,7 +103,7 @@ private: // Encoder_completeAccessUnit.cpp
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
   std::unique_ptr<Packer::IPacker> m_packer;
-  std::unique_ptr<DepthOccupancy::IDepthOccupancy> m_depthOccupancy;
+  std::unique_ptr<GeometryQuantizer::IGeometryQuantizer> m_depthOccupancy;
   GeometryDownscaler m_geometryDownscaler;
 
   // Encoder parameters

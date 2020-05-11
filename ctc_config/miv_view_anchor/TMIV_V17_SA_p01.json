@@ -1,6 +1,6 @@
 {
-    "AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
-    "AttributeVideoDataPathFmt": "ATL_SA_R0_Tt_c{:02}_{}x{}_yuv420p10le.yuv",
+    "BitstreamPath": "ATL_SA.bit",
+    "AttributeVideoDataPathFmt": "ATL_SA_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
     "Decoder": {
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
         "CullerMethod": "SubBlockCuller",
@@ -21,15 +21,16 @@
         },
         "RendererMethod": "Renderer",
         "SubBlockCuller": {},
-        "depthEdgeMagnitudeTh": 10,
+        "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
         "minForegroundConfidence": 0.5
     },
     "DecoderMethod": "Decoder",
-    "GeometryVideoDataPathFmt": "ATL_SA_R0_Td_c{:02}_{}x{}_yuv420p10le.yuv",
-    "OutputCameraName": "v0",
+    "GeometryVideoDataPathFmt": "ATL_SA_TG_c{:02}_{}x{}_yuv420p10le.yuv",
+    "OutputCameraName": "viewport",
     "OutputDirectory": ".",
-    "OutputTexturePath": "V17_SA_R0_Tt_v0_{}x{}_yuv420p10le.yuv",
+    "OutputAttributePath": "V17_SA_T{}_p01_{}x{}_yuv420p10le.yuv",
+    "PoseTracePath": "Ap01.csv",
     "SourceCameraParameters": "ClassroomVideo.json",
     "SourceDirectory": ".",
     "numberOfFrames": 17

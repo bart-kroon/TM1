@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthOccupancy/DepthOccupancy.h>
+#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
@@ -42,32 +42,32 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
-namespace TMIV::DepthOccupancy {
-DepthOccupancy::DepthOccupancy(uint16_t depthOccMapThresholdIfSet)
-    : m_depthOccMapThresholdIfSet{depthOccMapThresholdIfSet} {
-  if (depthOccMapThresholdIfSet < 1) {
-    throw runtime_error("The depthOccMapThresholdIfSet parameter is only used when the encoder "
+namespace TMIV::GeometryQuantizer {
+GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
+    : m_depthOccThresholdIfSet{depthOccThresholdIfSet} {
+  if (depthOccThresholdIfSet < 1) {
+    throw runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
                         "needs to use occupancy. The value 0 is not allowed.");
   }
-  if (depthOccMapThresholdIfSet >= 500) {
-    throw runtime_error("The DepthOccupancy component takes a margin equal to the threshold, so "
+  if (depthOccThresholdIfSet >= 500) {
+    throw runtime_error("The GeometryQuantizer component takes a margin equal to the threshold, so "
                         "setting the threshold this high will make it impossible to encode depth.");
   }
 }
 
-DepthOccupancy::DepthOccupancy(const Json & /*unused*/, const Json &nodeConfig)
-    : DepthOccupancy{uint16_t(nodeConfig.require("depthOccMapThresholdIfSet").asInt())} {}
+GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeConfig)
+    : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
-auto DepthOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
+auto GeometryQuantizer::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
     -> const MivBitstream::IvSequenceParams & {
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
 
   for (auto &x : m_outSequenceParams.viewParamsList) {
     if (x.hasOccupancy) {
-      x.dq.dq_depth_occ_map_threshold_default(m_depthOccMapThresholdIfSet); // =T
+      x.dq.dq_depth_occ_map_threshold_default(m_depthOccThresholdIfSet); // =T
       const auto nearLevel = 1023.F;
-      const auto farLevel = float(2 * m_depthOccMapThresholdIfSet);
+      const auto farLevel = float(2 * m_depthOccThresholdIfSet);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
       x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
                             (0.F - farLevel) / (nearLevel - farLevel) *
@@ -78,13 +78,14 @@ auto DepthOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequ
   return m_outSequenceParams;
 }
 
-auto DepthOccupancy::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
+auto GeometryQuantizer::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
     -> const MivBitstream::IvAccessUnitParams & {
   m_accessUnitParams = accessUnitParams;
   return m_accessUnitParams;
 }
 
-auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame {
+auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
+    -> Common::MVD10Frame {
   auto outAtlases = MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
@@ -129,4 +130,4 @@ auto DepthOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases) -> Co
 
   return outAtlases;
 }
-} // namespace TMIV::DepthOccupancy
+} // namespace TMIV::GeometryQuantizer

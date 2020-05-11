@@ -31,47 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DEPTHOCCUPANCY_DEPTHOCCUPANCY_H_
-#define _TMIV_DEPTHOCCUPANCY_DEPTHOCCUPANCY_H_
+#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
+#include <TMIV/Common/Factory.h>
 
-#include <TMIV/Common/Json.h>
-
-namespace TMIV::DepthOccupancy {
-class DepthOccupancy : public IDepthOccupancy {
-public:
-  // Initialize with specified depthOccMapThresholdIfSet
-  //
-  // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
-  // will have the specified depthOccMapThresholdIfSet value.
-  explicit DepthOccupancy(uint16_t depthOccMapThresholdIfSet);
-
-  DepthOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  DepthOccupancy(const DepthOccupancy &) = default;
-  DepthOccupancy(DepthOccupancy &&) = default;
-  auto operator=(const DepthOccupancy &) -> DepthOccupancy & = default;
-  auto operator=(DepthOccupancy &&) -> DepthOccupancy & = default;
-  ~DepthOccupancy() override = default;
-
-  // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
-  // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
-  auto transformSequenceParams(MivBitstream::IvSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-
-  // depthOccupancyParamsPresentFlags = zeros
-  auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
-      -> const MivBitstream::IvAccessUnitParams & override;
-
-  // Transform depth bit depth and range
-  auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
-
-private:
-  uint16_t m_depthOccMapThresholdIfSet{};
-  MivBitstream::IvSequenceParams m_inSequenceParams;
-  MivBitstream::IvSequenceParams m_outSequenceParams;
-  MivBitstream::IvAccessUnitParams m_accessUnitParams;
-};
-} // namespace TMIV::DepthOccupancy
-
-#endif
+namespace TMIV::GeometryQuantizer {
+inline void registerComponents() {
+  Common::Factory<IGeometryQuantizer>::getInstance().registerAs<GeometryQuantizer>(
+      "GeometryQuantizer");
+}
+} // namespace TMIV::GeometryQuantizer

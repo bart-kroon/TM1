@@ -105,8 +105,8 @@ auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const str
                       int frameIndex) {
   auto depth16 = Depth16Frame{size.x(), size.y()};
 
-  const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceDepthPathFmt", frameIndex,
-                                       size, viewName);
+  const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceGeometryPathFmt",
+                                       frameIndex, size, viewName);
 
   transform(begin(depth.getPlane(0)), end(depth.getPlane(0)), begin(depth16.getPlane(0)),
             [bits](unsigned x) {
@@ -122,7 +122,7 @@ auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const str
 
 auto loadSourceDepth(const Json &config, const Vec2i &size, const string &viewName,
                      int frameIndex) {
-  const auto bits = config.require("SourceDepthBitDepth").asInt();
+  const auto bits = config.require("SourceGeometryBitDepth").asInt();
 
   if (0 < bits && bits <= 8) {
     return loadSourceDepth_<YUV400P8>(bits, config, size, viewName, frameIndex);
@@ -130,7 +130,7 @@ auto loadSourceDepth(const Json &config, const Vec2i &size, const string &viewNa
   if (8 < bits && bits <= 16) {
     return loadSourceDepth_<YUV400P16>(bits, config, size, viewName, frameIndex);
   }
-  throw runtime_error("Invalid SourceDepthBitDepth");
+  throw runtime_error("Invalid SourceGeometryBitDepth");
 }
 
 template <typename FORMAT>
@@ -183,7 +183,7 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
 void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
     if (haveTexture(config)) {
-      writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex,
+      writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex, "T",
                  int(atlasId));
     }
     writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
@@ -201,11 +201,11 @@ void savePrunedFrame(const Json &config, int frameIndex,
                      const pair<vector<Texture444Depth10Frame>, MaskList> &prunedViewsAndMasks) {
   for (size_t viewId = 0; viewId < prunedViewsAndMasks.first.size(); ++viewId) {
     const auto &view = prunedViewsAndMasks.first[viewId];
-    if (config.optional("PrunedViewTexturePathFmt")) {
-      IO::writeFrame(config, "PrunedViewTexturePathFmt", view.first, frameIndex, viewId);
+    if (config.optional("PrunedViewAttributePathFmt")) {
+      IO::writeFrame(config, "PrunedViewAttributePathFmt", view.first, frameIndex, "T", viewId);
     }
-    if (config.optional("PrunedViewDepthPathFmt")) {
-      IO::writeFrame(config, "PrunedViewDepthPathFmt", view.second, frameIndex, viewId);
+    if (config.optional("PrunedViewGeometryPathFmt")) {
+      IO::writeFrame(config, "PrunedViewGeometryPathFmt", view.second, frameIndex, viewId);
     }
     if (config.optional("PrunedViewMaskPathFmt")) {
       const auto &mask = prunedViewsAndMasks.second[viewId];
@@ -294,11 +294,11 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
 }
 
 void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame &frame) {
-  if (config.optional("OutputTexturePath")) {
-    writeFrame(config, "OutputTexturePath", frame.texture, frameIndex);
+  if (config.optional("OutputAttributePath")) {
+    writeFrame(config, "OutputAttributePath", frame.texture, frameIndex, "T");
   }
-  if (config.optional("OutputDepthPath")) {
-    writeFrame(config, "OutputDepthPath", frame.depth, frameIndex);
+  if (config.optional("OutputGeometryPath")) {
+    writeFrame(config, "OutputGeometryPath", frame.depth, frameIndex);
   }
 }
 } // namespace TMIV::IO

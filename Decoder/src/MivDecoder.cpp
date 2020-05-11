@@ -67,6 +67,16 @@ void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = mo
 void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = move(value); }
 
 void MivDecoder::decode() {
+  m_totalGeoVideoDecodingTime = 0.;
+  m_totalAttrVideoDecodingTime = 0.;
+
+  auto report = [this]() {
+    cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
+         << " s\n";
+    cout << "Total attribute video sub bitstream decoding time: " << m_totalAttrVideoDecodingTime
+         << " s\n";
+  };
+
   while (!m_stop && !m_stream.eof()) {
     cout << "\n=== V3C unit " << string(100 - 15, '=') << '\n';
     VERIFY_V3CBITSTREAM(m_stream.good());
@@ -92,6 +102,7 @@ void MivDecoder::decode() {
       while (haveFrame(vuh)) {
         outputFrame(vuh);
         if (m_stop) {
+          report();
           return;
         }
       }
@@ -99,6 +110,8 @@ void MivDecoder::decode() {
 
     m_stream.peek();
   }
+
+  report();
 }
 
 void MivDecoder::enableBitrateReporting() {
@@ -124,10 +137,22 @@ void MivDecoder::outputSequence(const V3cParameterSet &vps) {
 
 void MivDecoder::outputFrame(const V3cUnitHeader &vuh) {
   assert(haveFrame(vuh) && !m_stop);
-  AccessUnit au;
-  au.vps = &vps(vuh);
 
-  auto &sequence_ = sequence(vuh);
+  auto au = AccessUnit{};
+  au.vps = &vps(vuh);
+  outputAtlasData(au);
+  outputGeoVideoData(au);
+  outputAttrVideoData(au);
+
+  for (const auto &x : onFrame) {
+    if (!x(au)) {
+      m_stop = true;
+    }
+  }
+}
+
+void MivDecoder::outputAtlasData(AccessUnit &au) {
+  auto &sequence_ = m_sequenceV[au.vps->vps_v3c_parameter_set_id()];
   au.frameId = ++sequence_.frameId;
   au.atlas.resize(sequence_.atlas.size());
 
@@ -144,47 +169,7 @@ void MivDecoder::outputFrame(const V3cUnitHeader &vuh) {
     aau.patchParamsList = atlas.frames.front()->patchParamsList;
     aau.blockToPatchMap = atlas.frames.front()->blockToPatchMap;
 
-    if (au.vps->attribute_information(uint8_t(j)).ai_attribute_count() >= 1 &&
-        au.vps->attribute_information(uint8_t(j)).ai_attribute_type_id(0) ==
-            AiAttributeTypeId::ATTR_TEXTURE) {
-      // Get a texture frame in-band or out-of-band
-      if (atlas.attrVideoServer) {
-        auto frame = atlas.attrVideoServer->getFrame();
-        VERIFY_MIVBITSTREAM(frame);
-        aau.attrFrame = frame->as<YUV444P10>();
-        atlas.attrVideoServer->wait();
-      } else if (m_attrFrameServer) {
-        aau.attrFrame = m_attrFrameServer(uint8_t(j), sequence_.frameId, aau.frameSize());
-      } else {
-        MIVBITSTREAM_ERROR("Out-of-band attribute video data but no frame server provided");
-      }
-    } else {
-      // No texture: pass out a neutral gray frame
-      aau.attrFrame.resize(aau.asps.asps_frame_width(), aau.asps.asps_frame_height());
-      aau.attrFrame.fillNeutral();
-      VERIFY_MIVBITSTREAM(aau.decGeoFrameSize(*au.vps) == aau.frameSize());
-    }
-
-    // Get a geometry frame in-band or out-of-band
-    if (atlas.geoVideoServer) {
-      auto frame = atlas.geoVideoServer->getFrame();
-      VERIFY_MIVBITSTREAM(frame);
-      aau.decGeoFrame = frame->as<YUV400P10>();
-      atlas.geoVideoServer->wait();
-    } else if (m_geoFrameServer) {
-      aau.decGeoFrame =
-          m_geoFrameServer(uint8_t(j), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
-    } else {
-      MIVBITSTREAM_ERROR("Out-of-band geometry video data but no frame server provided");
-    }
-
     atlas.frames.erase(atlas.frames.begin());
-  }
-
-  for (const auto &x : onFrame) {
-    if (!x(au)) {
-      m_stop = true;
-    }
   }
 }
 
@@ -221,34 +206,20 @@ void MivDecoder::decodeVps(const V3cUnitHeader & /* vuh */, const V3cParameterSe
     LIMITATION(vps.vps_atlas_id(j) == j);
   }
 
-  const auto id = vps.vps_v3c_parameter_set_id();
-
-  while (m_vpsV.size() <= id) {
+  while (m_vpsV.size() <= vps.vps_v3c_parameter_set_id()) {
     m_vpsV.emplace_back();
     m_sequenceV.emplace_back();
   }
 
-  m_vpsV[id] = vps;
-  m_sequenceV[id] = Sequence{};
-  m_sequenceV[id].atlas.resize(vps.vps_atlas_count_minus1() + 1U);
+  m_vpsV[vps.vps_v3c_parameter_set_id()] = vps;
+  m_sequenceV[vps.vps_v3c_parameter_set_id()] = Sequence{};
+  m_sequenceV[vps.vps_v3c_parameter_set_id()].atlas.resize(vps.vps_atlas_count_minus1() + 1U);
 
   outputSequence(vps);
 
   if (decodeVideoSubBitstreams(vps)) {
-    auto &seq = m_sequenceV[id];
-    const auto codecGroupIdc = vps.profile_tier_level().ptl_profile_codec_group_idc();
-
-    for (uint8_t j = 0; j <= vps.vps_atlas_count_minus1(); ++j) {
-      seq.atlas[j].geoVideoServer =
-          make_unique<VideoServer>(IVideoDecoder::create(codecGroupIdc), seq.atlas[j].geoVideoData);
-      seq.atlas[j].geoVideoServer->wait();
-
-      if (vps.vps_attribute_video_present_flag(j)) {
-        seq.atlas[j].attrVideoServer = make_unique<VideoServer>(
-            IVideoDecoder::create(codecGroupIdc), seq.atlas[j].attrVideoData);
-        seq.atlas[j].attrVideoServer->wait();
-      }
-    }
+    startGeoVideoDecoders(vps);
+    startAttrVideoDecoders(vps);
   }
 }
 
@@ -285,6 +256,106 @@ auto MivDecoder::decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool {
   m_stream.seekg(initialStreamPosition);
   m_stream.clear();
   return haveVideo;
+}
+
+void MivDecoder::startGeoVideoDecoders(const V3cParameterSet &vps) {
+  auto &sequence_ = m_sequenceV[vps.vps_v3c_parameter_set_id()];
+  const auto codecGroupIdc = vps.profile_tier_level().ptl_profile_codec_group_idc();
+  const auto t0 = clock();
+
+  for (uint8_t j = 0; j <= vps.vps_atlas_count_minus1(); ++j) {
+    if (vps.vps_geometry_video_present_flag(j)) {
+      sequence_.atlas[j].geoVideoServer = make_unique<VideoServer>(
+          IVideoDecoder::create(codecGroupIdc), sequence_.atlas[j].geoVideoData);
+      sequence_.atlas[j].geoVideoServer->wait();
+    }
+  }
+
+  // Measure video decoding time
+  const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
+  cout << "Time taken for decoding all geometry video sub bitstreams, first frame: " << dt << " s\n";
+  m_totalGeoVideoDecodingTime += dt;
+}
+
+void MivDecoder::startAttrVideoDecoders(const V3cParameterSet &vps) {
+  auto &sequence_ = m_sequenceV[vps.vps_v3c_parameter_set_id()];
+  const auto codecGroupIdc = vps.profile_tier_level().ptl_profile_codec_group_idc();
+  const auto t0 = clock();
+
+  for (uint8_t j = 0; j <= vps.vps_atlas_count_minus1(); ++j) {
+    if (vps.vps_attribute_video_present_flag(j)) {
+      sequence_.atlas[j].attrVideoServer = make_unique<VideoServer>(
+          IVideoDecoder::create(codecGroupIdc), sequence_.atlas[j].attrVideoData);
+      sequence_.atlas[j].attrVideoServer->wait();
+    }
+  }
+
+  // Measure video decoding time
+  const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
+  cout << "Time taken for decoding all attribute video sub bitstreams, first frame: " << dt << " s\n";
+  m_totalAttrVideoDecodingTime += dt;
+}
+
+void MivDecoder::outputGeoVideoData(AccessUnit &au) {
+  auto &sequence_ = m_sequenceV[au.vps->vps_v3c_parameter_set_id()];
+  const auto t0 = clock();
+
+  for (size_t j = 0; j < au.atlas.size(); ++j) {
+    auto &aau = au.atlas[j];
+    auto &atlas_ = sequence_.atlas[j];
+
+    // Get a geometry frame in-band or out-of-band
+    if (atlas_.geoVideoServer) {
+      auto frame = atlas_.geoVideoServer->getFrame();
+      VERIFY_MIVBITSTREAM(frame);
+      aau.decGeoFrame = frame->as<YUV400P10>();
+      atlas_.geoVideoServer->wait();
+    } else if (m_geoFrameServer) {
+      aau.decGeoFrame =
+          m_geoFrameServer(uint8_t(j), sequence_.frameId, aau.decGeoFrameSize(*au.vps));
+    } else {
+      MIVBITSTREAM_ERROR("Out-of-band geometry video data but no frame server provided");
+    }
+  }
+
+  // Measure video decoding time
+  const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
+  cout << "Time taken for decoding all geometry video sub bitstreams, one frame: " << dt << " s\n";
+  m_totalGeoVideoDecodingTime += dt;
+}
+
+void MivDecoder::outputAttrVideoData(AccessUnit &au) {
+  auto &sequence_ = m_sequenceV[au.vps->vps_v3c_parameter_set_id()];
+  const auto t0 = clock();
+
+  for (size_t j = 0; j < au.atlas.size(); ++j) {
+    auto &atlas = sequence_.atlas[j];
+    auto &aau = au.atlas[j];
+
+    if (au.vps->vps_attribute_video_present_flag(uint8_t(j))) {
+      // Get a texture frame in-band or out-of-band
+      if (atlas.attrVideoServer) {
+        auto frame = atlas.attrVideoServer->getFrame();
+        VERIFY_MIVBITSTREAM(frame);
+        aau.attrFrame = frame->as<YUV444P10>();
+        atlas.attrVideoServer->wait();
+      } else if (m_attrFrameServer) {
+        aau.attrFrame = m_attrFrameServer(uint8_t(j), sequence_.frameId, aau.frameSize());
+      } else {
+        MIVBITSTREAM_ERROR("Out-of-band attribute video data but no frame server provided");
+      }
+    } else {
+      // No texture: pass out a neutral gray frame
+      aau.attrFrame.resize(aau.asps.asps_frame_width(), aau.asps.asps_frame_height());
+      aau.attrFrame.fillNeutral();
+      VERIFY_MIVBITSTREAM(aau.decGeoFrameSize(*au.vps) == aau.frameSize());
+    }
+  }
+
+  // Measure video decoding time
+  const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
+  cout << "Time taken for decoding all attribute video sub bitstreams, one frame: " << dt << " s\n";
+  m_totalAttrVideoDecodingTime += dt;
 }
 
 void MivDecoder::decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb) {

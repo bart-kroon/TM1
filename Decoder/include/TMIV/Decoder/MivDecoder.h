@@ -104,10 +104,15 @@ public: // Callback registrations
 private: // Decoder output
   void outputSequence(const V3cParameterSet &vps);
   void outputFrame(const V3cUnitHeader &vuh);
+  void outputAtlasData(AccessUnit& au);
   [[nodiscard]] auto haveFrame(const V3cUnitHeader &vuh) const -> bool;
 
 private: // Video deecoding processes
   auto decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool;
+  void startGeoVideoDecoders(const V3cParameterSet &vps);
+  void startAttrVideoDecoders(const V3cParameterSet &vps);
+  void outputGeoVideoData(AccessUnit &au);
+  void outputAttrVideoData(AccessUnit& au);
 
 private: // Decoding processes
   void decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Payload &payload);
@@ -199,6 +204,8 @@ private: // Internal decoder state
   std::vector<Sequence> m_sequenceV;
 
   bool m_stop{};
+  double m_totalGeoVideoDecodingTime{};
+  double m_totalAttrVideoDecodingTime{};
 
 private: // Bitrate reporting (pimpl idiom)
   std::unique_ptr<BitrateReport> m_bitrateReport;

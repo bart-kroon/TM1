@@ -163,7 +163,7 @@ public:
   };
 
 private:
-  const MivBitstream::ViewParams &m_viewParams;
+  std::reference_wrapper<const MivBitstream::ViewParams> m_viewParams;
   std::unique_ptr<MetaEngine::Base> m_engine;
   Common::QuatF m_rotation;
 
@@ -174,10 +174,10 @@ public:
   auto operator=(const ProjectionHelper &) -> ProjectionHelper & = delete;
   auto operator=(ProjectionHelper &&) -> ProjectionHelper & = delete;
   [[nodiscard]] auto getViewParams() const -> const MivBitstream::ViewParams & {
-    return m_viewParams;
+    return m_viewParams.get();
   }
   [[nodiscard]] auto getViewingPosition() const -> Common::Vec3f {
-    return m_viewParams.ce.position();
+    return m_viewParams.get().ce.position();
   }
   [[nodiscard]] auto getViewingDirection() const -> Common::Vec3f;
   [[nodiscard]] auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;

@@ -27,7 +27,8 @@
         "Packer": {
             "MinPatchSize": 16,
             "Overlap": 1,
-            "PiP": 1
+            "PiP": 1,
+            "dilate": 16
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",

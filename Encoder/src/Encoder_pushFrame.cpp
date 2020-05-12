@@ -59,8 +59,67 @@ void Encoder::pushSingleEntityFrame(MVD16Frame sourceViews) {
   m_aggregator->pushMask(masks);
 }
 
+namespace {
+// Atlas dilation
+// Visit all pixels
+template <typename F> void forPixels(array<size_t, 2> sizes, F f) {
+  for (int i = 0; i < int(sizes[0]); ++i) {
+    for (int j = 0; j < int(sizes[1]); ++j) {
+      f(i, j);
+    }
+  }
+}
+
+// Visit all pixel neighbors (in between 3 and 8)
+template <typename F> auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
+  const int n1 = max(0, i - 1);
+  const int n2 = min(int(sizes[0]), i + 2);
+  const int m1 = max(0, j - 1);
+  const int m2 = min(int(sizes[1]), j + 2);
+
+  for (int n = n1; n < n2; ++n) {
+    for (int m = m1; m < m2; ++m) {
+      if (!f(n, m)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+auto erode(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
+  Mat<uint8_t> result{mask.sizes()};
+  forPixels(mask.sizes(), [&](int i, int j) {
+    result(i, j) =
+        forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) > 0; }) ? 255
+                                                                                           : 0;
+  });
+  return result;
+}
+
+auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
+  Mat<uint8_t> result{mask.sizes()};
+  forPixels(mask.sizes(), [&](int i, int j) {
+    result(i, j) =
+        forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) == 0; }) ? 0
+                                                                                            : 255;
+  });
+  return result;
+}
+} // namespace
+
 void Encoder::updateNonAggregatedMask(const MVD16Frame &transportViews, const MaskList &masks) {
   const auto frameId = m_transportViews.size();
+  MaskList dilatedMasks = masks; // Atlas dilation
+
+  // Atlas dilation
+  if (m_ivs.vps.vps_miv_extension().vme_depth_low_quality_flag()) {
+    for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
+      for (int n = 0; n < m_dilationIter; ++n) {
+        dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));
+      }
+    }
+  }
 
   for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
     const auto height = transportViews[viewId].texture.getHeight();
@@ -68,7 +127,7 @@ void Encoder::updateNonAggregatedMask(const MVD16Frame &transportViews, const Ma
 
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
-        if (masks[viewId].getPlane(0)(i, j) != 0) {
+        if (dilatedMasks[viewId].getPlane(0)(i, j) != 0) {
           m_nonAggregatedMask[viewId](i, j)[frameId] = true;
         }
       }

@@ -78,6 +78,10 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   const auto maxAtlases = rootNode.require("maxAtlases").asInt();
   m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
 
+  if (auto node = componentNode.require("Packer").optional("dilate"); node) {
+    m_dilationIter = node.asInt();
+  }
+
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");
   runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");

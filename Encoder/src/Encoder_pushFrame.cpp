@@ -113,9 +113,11 @@ void Encoder::updateNonAggregatedMask(const MVD16Frame &transportViews, const Ma
   MaskList dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
-  for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
-    for (int n = 0; n < m_dilationIter; ++n) {
-      dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));
+  if (m_ivs.vps.vps_miv_extension().vme_depth_low_quality_flag()) {
+    for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
+      for (int n = 0; n < m_dilationIter; ++n) {
+        dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));
+      }
     }
   }
 

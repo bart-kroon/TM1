@@ -70,7 +70,7 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
   const auto path = getFullPath(config, baseDirectoryField, fileNameField,
                                 std::forward<Args>(args)..., resolution.x(), resolution.y());
 
-  std::cout << "Reading frame " << frameIndex << " from " << path << "\n";
+  std::cout << "Reading frame " << frameIndex << " from " << path << '\n';
   std::ifstream stream{path, std::ios::binary};
 
   if (!stream.good()) {
@@ -102,7 +102,7 @@ void writeFrame(const Common::Json &config, const std::string &fileNameField,
                 const Common::Frame<FORMAT> &frame, int frameIndex, Args &&... args) {
   const auto path = getFullPath(config, "OutputDirectory", fileNameField,
                                 std::forward<Args>(args)..., frame.getWidth(), frame.getHeight());
-  std::cout << "Writing frame " << frameIndex << " to " << path << "\n";
+  std::cout << "Writing frame " << frameIndex << " to " << path << '\n';
 
   std::fstream stream(path, frameIndex == 0 ? std::ios::out | std::ios::binary
                                             : std::ios::in | std::ios::out | std::ios::binary);

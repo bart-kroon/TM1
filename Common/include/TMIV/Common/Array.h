@@ -1332,7 +1332,7 @@ auto operator<<(std::ostream &os, const A &a) -> std::ostream & {
   for (iter = iter1; iter != iter2; iter += step) {
     std::for_each(iter, iter + step, [&os](typename A::value_type v) { os << v << " "; });
     if ((iter + step) != iter2) {
-      os << "\n";
+      os << '\n';
     }
   }
 

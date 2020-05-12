@@ -49,7 +49,7 @@ auto GeometryDownscaler::transformSequenceParams(IvSequenceParams ivSequencePara
 
   if (m_geometryScaleEnabledFlag) {
     m_ivSequenceParams.vps.vps_miv_extension_flag(true);
-    m_ivSequenceParams.msp().msp_geometry_scale_enabled_flag(true);
+    m_ivSequenceParams.vme().vme_geometry_scale_enabled_flag(true);
   }
 
   return m_ivSequenceParams;
@@ -61,10 +61,9 @@ auto GeometryDownscaler::transformAccessUnitParams(IvAccessUnitParams ivAccessUn
 
   if (m_geometryScaleEnabledFlag) {
     for (auto &atlas : m_ivAccessUnitParams.atlas) {
-      atlas.asps.asps_miv_extension_present_flag(true);
-      atlas.asps.miv_atlas_sequence_params()
-          .masp_geometry_frame_width_minus1(atlas.asps.asps_frame_width() / 2 - 1)
-          .masp_geometry_frame_height_minus1(atlas.asps.asps_frame_height() / 2 - 1);
+      atlas.asme()
+          .asme_geometry_frame_width_minus1(atlas.asps.asps_frame_width() / 2 - 1)
+          .asme_geometry_frame_height_minus1(atlas.asps.asps_frame_height() / 2 - 1);
     }
   }
 
@@ -100,11 +99,11 @@ auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
 } // namespace
 
 auto GeometryDownscaler::transformFrame(MVD10Frame frame) -> MVD10Frame {
-  if (m_ivSequenceParams.msp().msp_geometry_scale_enabled_flag()) {
+  if (m_ivSequenceParams.vme().vme_geometry_scale_enabled_flag()) {
     for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
-      const auto &masp = m_ivAccessUnitParams.atlas[atlasId].asps.miv_atlas_sequence_params();
-      const auto frameSize = Vec2i{masp.masp_geometry_frame_width_minus1() + 1,
-                                   masp.masp_geometry_frame_height_minus1() + 1};
+      const auto &asme = m_ivAccessUnitParams.atlas[atlasId].asps.asps_miv_extension();
+      const auto frameSize = Vec2i{asme.asme_geometry_frame_width_minus1() + 1,
+                                   asme.asme_geometry_frame_height_minus1() + 1};
       frame[atlasId].depth = maxPool(frame[atlasId].depth, frameSize);
     }
   }

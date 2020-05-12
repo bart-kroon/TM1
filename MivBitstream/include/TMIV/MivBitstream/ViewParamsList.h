@@ -34,7 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
 #define _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
 
-#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>

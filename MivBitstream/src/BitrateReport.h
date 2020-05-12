@@ -62,24 +62,24 @@ private:
 };
 
 struct CompareVuh {
-  auto operator()(const VpccUnitHeader &vuh1, const VpccUnitHeader &vuh2) const -> bool {
+  auto operator()(const V3cUnitHeader &vuh1, const V3cUnitHeader &vuh2) const -> bool {
     if (vuh1.vuh_unit_type() != vuh2.vuh_unit_type()) {
       return vuh1.vuh_unit_type() < vuh2.vuh_unit_type();
     }
-    if (vuh1.vuh_unit_type() == VuhUnitType::VPCC_VPS) {
+    if (vuh1.vuh_unit_type() == VuhUnitType::V3C_VPS) {
       return false;
     }
     if (vuh1.vuh_atlas_id() != vuh2.vuh_atlas_id()) {
       return vuh1.vuh_atlas_id() < vuh2.vuh_atlas_id();
     }
-    if (vuh1.vuh_unit_type() != VuhUnitType::VPCC_GVD &&
-        vuh1.vuh_unit_type() != VuhUnitType::VPCC_AVD) {
+    if (vuh1.vuh_unit_type() != VuhUnitType::V3C_GVD &&
+        vuh1.vuh_unit_type() != VuhUnitType::V3C_AVD) {
       return false;
     }
     if (vuh1.vuh_map_index() != vuh2.vuh_map_index()) {
       return vuh1.vuh_map_index() < vuh2.vuh_map_index();
     }
-    if (vuh1.vuh_unit_type() != VuhUnitType::VPCC_AVD) {
+    if (vuh1.vuh_unit_type() != VuhUnitType::V3C_AVD) {
       return false;
     }
     return vuh1.vuh_attribute_index() < vuh2.vuh_attribute_index();
@@ -105,17 +105,17 @@ public:
     for (const auto &[vuh, stats] : m_vuhStats) {
       stream << vuh.vuh_unit_type() << ',';
       switch (vuh.vuh_unit_type()) {
-      case VuhUnitType::VPCC_VPS:
+      case VuhUnitType::V3C_VPS:
         stream << ",,";
         break;
-      case VuhUnitType::VPCC_AD:
-      case VuhUnitType::VPCC_OVD:
+      case VuhUnitType::V3C_AD:
+      case VuhUnitType::V3C_OVD:
         stream << int(vuh.vuh_atlas_id()) << ",,";
         break;
-      case VuhUnitType::VPCC_GVD:
+      case VuhUnitType::V3C_GVD:
         stream << int(vuh.vuh_atlas_id()) << ',' << int(vuh.vuh_map_index()) << ',';
         break;
-      case VuhUnitType::VPCC_AVD:
+      case VuhUnitType::V3C_AVD:
         stream << int(vuh.vuh_atlas_id()) << ',' << int(vuh.vuh_map_index()) << ','
                << int(vuh.vuh_attribute_index());
         break;
@@ -134,11 +134,11 @@ public:
     }
   }
 
-  void add(const VpccUnitHeader &vuh, size_t size) { m_vuhStats[vuh] << size; }
+  void add(const V3cUnitHeader &vuh, size_t size) { m_vuhStats[vuh] << size; }
   auto add(const NalUnitHeader &nuh, size_t size) { m_nuhStats[nuh] << size; }
 
 private:
-  map<VpccUnitHeader, StatisticalVariable, CompareVuh> m_vuhStats;
+  map<V3cUnitHeader, StatisticalVariable, CompareVuh> m_vuhStats;
   map<NalUnitHeader, StatisticalVariable, CompareNuh> m_nuhStats;
 };
 } // namespace TMIV::MivBitstream

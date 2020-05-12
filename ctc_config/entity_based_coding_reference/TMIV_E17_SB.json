@@ -1,23 +1,23 @@
 {
-    "AtlasMetadataPath": "ATL_SB_R0_Tm_c00.bit",
-    "AttributeVideoDataPathFmt": "ATL_SB_R0_Tt_c{:02}_{}x{}_yuv420p10le.yuv",
+    "BitstreamPath": "ATL_SB.bit",
+    "AttributeVideoDataPathFmt": "ATL_SB_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "EncoderMethod": "GroupBasedEncoder",
-    "GeometryVideoDataPathFmt": "ATL_SB_R0_Td_c{:02}_{}x{}_yuv420p10le.yuv",
+    "GeometryVideoDataPathFmt": "ATL_SB_TG_c{:02}_{}x{}_yuv420p10le.yuv",
     "GroupBasedEncoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
-        "DepthOccupancy": {
-            "depthOccMapThresholdIfSet": 64
+        "GeometryQuantizer": {
+            "depthOccThresholdIfSet": 64
         },
-        "DepthOccupancyMethod": "DepthOccupancy",
+        "GeometryQuantizerMethod": "GeometryQuantizer",
         "EntityEncodeRange": [
             0,
-            25
+            6
         ],
         "HierarchicalPruner": {
             "depthParameter": 50,
@@ -67,8 +67,8 @@
         "v23"
     ],
     "SourceCameraParameters": "TechnicolorMuseum.json",
-    "SourceDepthBitDepth": 16,
-    "SourceDepthPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
+    "SourceGeometryBitDepth": 16,
+    "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",
     "SourceEntityBitDepth": 8,
     "SourceEntityPathFmt": "{}_entity_{}x{}_yuv420p.yuv",

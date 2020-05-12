@@ -37,24 +37,22 @@
 
 namespace TMIV::MivBitstream {
 inline AtlasAccessUnitParams::AtlasAccessUnitParams() {
-  asps.asps_extension_present_flag(true)
-      .asps_miv_extension_present_flag(true)
-      .asps_num_ref_atlas_frame_lists_in_asps(1);
-  atgh.atgh_type(AtghType::I_TILE_GRP);
+  asps.asps_num_ref_atlas_frame_lists_in_asps(1);
+  ath.ath_type(AthType::I_TILE);
 }
 
 inline auto operator<<(std::ostream &stream, const AtlasAccessUnitParams &x) -> std::ostream & {
-  stream << x.asps << x.afps << x.atgh;
+  stream << x.asps << x.afps << x.ath;
   return stream;
 }
 
 inline auto AtlasAccessUnitParams::operator==(const AtlasAccessUnitParams &other) const -> bool {
-  return asps == other.asps && afps == other.afps && atgh == other.atgh;
+  return asps == other.asps && afps == other.afps && ath == other.ath;
 }
 
 inline auto operator<<(std::ostream &stream, const IvAccessUnitParams &x) -> std::ostream & {
   for (const auto &atlas : x.atlas) {
-    stream << atlas.asps << atlas.afps << atlas.atgh;
+    stream << atlas.asps << atlas.afps << atlas.ath;
   }
   stream << "Total number of patches: " << x.patchParamsList.size() << '\n';
   return stream;

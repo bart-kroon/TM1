@@ -244,7 +244,7 @@ template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
           for (size_t j = 0; j < outputPlanes[k].width(); ++j) {
             const size_t m = j * planes[k].width() / outputPlanes[k].width();
             assert(planes[k](n, m) <= maxInputValue);
-			using base_type = typename Frame<FORMAT>::base_type;
+            using base_type = typename Frame<FORMAT>::base_type;
             outputPlanes[k](i, j) = static_cast<base_type>(
                 (planes[k](n, m) * maxOutputValue + maxInputValue / 2) / maxInputValue);
             assert(outputPlanes[k](i, j) <= maxOutputValue);

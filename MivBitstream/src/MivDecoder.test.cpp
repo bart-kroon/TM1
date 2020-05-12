@@ -55,7 +55,7 @@ TEST_CASE("MivDecoder", "[MIV decoder]") {
     MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
 
     SECTION("Callbacks") {
-      decoder.onSequence.emplace_back([](const VpccParameterSet &vps) {
+      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
         cout << "Sequence:\n" << vps;
         return true;
       });

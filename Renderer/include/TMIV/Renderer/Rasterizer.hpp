@@ -100,9 +100,9 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
 }
 
 template <typename... T>
-void Rasterizer<T...>::submit(ImageVertexDescriptorList vertices, AttributeMaps attributes,
+void Rasterizer<T...>::submit(const ImageVertexDescriptorList &vertices, AttributeMaps attributes,
                               const TriangleDescriptorList &triangles) {
-  m_batches.push_back(Batch{move(vertices), move(attributes)});
+  m_batches.push_back(Batch{vertices, move(attributes)});
   for (auto &strip : m_strips) {
     strip.batches.emplace_back();
   }

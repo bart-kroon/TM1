@@ -37,8 +37,8 @@
 using namespace std;
 
 namespace TMIV::MivBitstream {
-[[noreturn]] void vpccError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode V-PCC bitstream: " << condition << " [" << file << "@" << line
+[[noreturn]] void v3cError(char const *condition, char const *file, int line) {
+  cerr << "Failed to encode/decode V3C bitstream: " << condition << " [" << file << "@" << line
        << '\n';
   abort();
 }
@@ -50,8 +50,8 @@ namespace TMIV::MivBitstream {
 }
 
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line) {
-  cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file << "@" << line
-       << '\n';
+  cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file
+       << "@" << line << '\n';
   abort();
 }
 } // namespace TMIV::MivBitstream

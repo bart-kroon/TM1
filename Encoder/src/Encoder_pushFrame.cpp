@@ -59,9 +59,10 @@ void Encoder::pushSingleEntityFrame(MVD16Frame sourceViews) {
   m_aggregator->pushMask(masks);
 }
 
+namespace {
 // Atlas dilation
 // Visit all pixels
-template <typename F> static void forPixels(array<size_t, 2> sizes, F f) {
+template <typename F> void forPixels(array<size_t, 2> sizes, F f) {
   for (int i = 0; i < int(sizes[0]); ++i) {
     for (int j = 0; j < int(sizes[1]); ++j) {
       f(i, j);
@@ -70,7 +71,7 @@ template <typename F> static void forPixels(array<size_t, 2> sizes, F f) {
 }
 
 // Visit all pixel neighbors (in between 3 and 8)
-template <typename F> static auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
+template <typename F> auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
   const int n1 = max(0, i - 1);
   const int n2 = min(int(sizes[0]), i + 2);
   const int m1 = max(0, j - 1);
@@ -86,7 +87,7 @@ template <typename F> static auto forNeighbors(int i, int j, array<size_t, 2> si
   return true;
 }
 
-static auto erode(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
+auto erode(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
   Mat<uint8_t> result{mask.sizes()};
   forPixels(mask.sizes(), [&](int i, int j) {
     result(i, j) =
@@ -96,7 +97,7 @@ static auto erode(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
   return result;
 }
 
-static auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
+auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
   Mat<uint8_t> result{mask.sizes()};
   forPixels(mask.sizes(), [&](int i, int j) {
     result(i, j) =
@@ -105,6 +106,7 @@ static auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
   });
   return result;
 }
+} // namespace
 
 void Encoder::updateNonAggregatedMask(const MVD16Frame &transportViews, const MaskList &masks) {
   const auto frameId = m_transportViews.size();

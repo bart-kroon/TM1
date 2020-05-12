@@ -77,7 +77,10 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
   const auto maxAtlases = rootNode.require("maxAtlases").asInt();
   m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
-  m_dilationIter = componentNode.require("Packer").require("dilate").asInt();
+
+  if (auto node = componentNode.require("Packer").optional("dilate"); node) {
+    m_dilationIter = node.asInt();
+  }
 
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");

@@ -85,7 +85,8 @@ struct ViewingSpace {
 
   static auto decodeFrom(InputBitstream &stream,
                          const TMIV::MivBitstream::ViewParamsList &viewParamsList) -> ViewingSpace;
-  void encodeTo(OutputBitstream &) const;
+  void encodeTo(OutputBitstream &stream,
+                const TMIV::MivBitstream::ViewParamsList &viewParamsList) const;
 
   static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ViewingSpace;
 };
@@ -111,7 +112,7 @@ struct ElementaryShape {
   static auto decodeFrom(InputBitstream &stream,
                          const TMIV::MivBitstream::ViewParamsList &viewParamsList)
       -> ElementaryShape;
-  void encodeTo(OutputBitstream &) const;
+  void encodeTo(OutputBitstream &stream) const;
 
   static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ElementaryShape;
 };

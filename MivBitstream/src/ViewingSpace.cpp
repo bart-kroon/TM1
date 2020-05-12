@@ -96,7 +96,8 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream,
   return vs;
 }
 
-void ViewingSpace::encodeTo(OutputBitstream &stream) const {
+void ViewingSpace::encodeTo(OutputBitstream &stream,
+                            const TMIV::MivBitstream::ViewParamsList &viewParamsList) const {
   VERIFY_MIVBITSTREAM(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
   for (const auto &shape : elementaryShapes) {

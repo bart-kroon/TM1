@@ -34,6 +34,7 @@
 #include "test.h"
 
 #include <TMIV/Common/Common.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 using namespace std;
@@ -113,25 +114,40 @@ const auto viewingSpaceJson = array{
     "0,2.0,3.0]},{\"PrimitiveShapeType\":\"spheroid\",\"Center\":[-2.0,2.0,2.0],\"Radius\":[3.0,2."
     "0,1.0]},{\"PrimitiveShapeType\":\"halfspace\",\"Normal\":[3.0,3.0,3.0],\"Distance\":-1.0}],"
     "\"PrimitiveShapeOperation\":\"interpolate\"}}]}"};
+
+const auto configJson = array{"{\"SourceCameraNames\": [\"v0\",\"v1\",\"v2\"]}"};
+
+const auto /*TMIV::MivBitstream::ViewParamsList*/ viewParamsList =
+    TMIV::MivBitstream::ViewParamsList{std::vector<ViewParams>{
+        ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v0"},
+        ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v1"},
+        ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v2"}}
+};
+
 } // namespace examples
 
 namespace {
-template <typename Type> auto loadJson(const std::string &str) -> Type {
-  istringstream stream(str);
-  Json json(stream);
-  return Type::loadFromJson(json);
+template <typename Type>
+auto loadJson(const std::string &strNode, const std::string &strConfig) -> Type {
+  istringstream streamNode(strNode);
+  Json jsonNode(streamNode);
+  istringstream streamConfig(strConfig);
+  Json jsonConfig(streamConfig);
+  return Type::loadFromJson(jsonNode, jsonConfig);
 }
 } // namespace
 
 TEST_CASE("Viewing space coding") {
-  REQUIRE(bitCodingTest(examples::viewingSpace[0], 113));
-  REQUIRE(bitCodingTest(examples::viewingSpace[1], 195));
-  REQUIRE(bitCodingTest(examples::viewingSpace[2], 177));
-  REQUIRE(bitCodingTest(examples::viewingSpace[3], 193));
-  REQUIRE(bitCodingTest(examples::viewingSpace[4], 551));
+  REQUIRE(bitCodingTest(examples::viewingSpace[0], 113, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[1], 195, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[2], 177, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[3], 193, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[4], 551, examples::viewParamsList));
 }
 
 TEST_CASE("Viewing space JSON") {
-  REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[0]) == examples::viewingSpace[0]);
-  REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[1]) == examples::viewingSpace[4]);
+  REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[0], examples::configJson[0]) ==
+          examples::viewingSpace[0]);
+  REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[1], examples::configJson[0]) ==
+          examples::viewingSpace[4]);
 }

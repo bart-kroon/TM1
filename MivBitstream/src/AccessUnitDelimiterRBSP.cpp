@@ -42,13 +42,13 @@ namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, AframeType x) -> std::ostream & {
   switch (x) {
   case AframeType::I:
-    return stream << "I_TILE_GRP";
+    return stream << "I_TILE";
   case AframeType::P_and_I:
-    return stream << "P_TILE_GRP and I_TILE_GRP";
+    return stream << "P_TILE and I_TILE";
   case AframeType::SKIP_P_and_I:
-    return stream << "SKIP_TILE_GRP, P_TILE_GRP and I_TILE_GRP";
+    return stream << "SKIP_TILE, P_TILE and I_TILE";
   case AframeType::SKIP:
-    return stream << "SKIP_TILE_GRP";
+    return stream << "SKIP_TILE";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }
@@ -61,7 +61,7 @@ auto operator<<(std::ostream &stream, const AccessUnitDelimiterRBSP &x) -> std::
 auto AccessUnitDelimiterRBSP::decodeFrom(std::istream &stream) -> AccessUnitDelimiterRBSP {
   InputBitstream bitstream{stream};
   auto aframe_type = bitstream.readBits<AframeType>(3);
-  VERIFY_VPCCBITSTREAM(AframeType::I <= aframe_type && aframe_type <= AframeType::SKIP);
+  VERIFY_V3CBITSTREAM(AframeType::I <= aframe_type && aframe_type <= AframeType::SKIP);
 
   bitstream.rbspTrailingBits();
 
@@ -69,7 +69,7 @@ auto AccessUnitDelimiterRBSP::decodeFrom(std::istream &stream) -> AccessUnitDeli
 }
 
 void AccessUnitDelimiterRBSP::encodeTo(std::ostream &stream) const {
-  VERIFY_VPCCBITSTREAM(AframeType::I <= aframe_type() && aframe_type() <= AframeType::SKIP);
+  VERIFY_V3CBITSTREAM(AframeType::I <= aframe_type() && aframe_type() <= AframeType::SKIP);
 
   OutputBitstream bitstream{stream};
   bitstream.writeBits(aframe_type(), 3);

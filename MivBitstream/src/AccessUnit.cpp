@@ -40,11 +40,10 @@ auto AtlasAccessUnit::frameSize() const noexcept -> Vec2i {
   return Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
 }
 
-auto AtlasAccessUnit::decGeoFrameSize(const VpccParameterSet &vps) const noexcept -> Vec2i {
-  if (vps.vps_extension_present_flag() && vps.vps_miv_extension_flag() &&
-      vps.miv_sequence_params().msp_geometry_scale_enabled_flag()) {
-    return Vec2i{asps.miv_atlas_sequence_params().masp_geometry_frame_width_minus1() + 1,
-                 asps.miv_atlas_sequence_params().masp_geometry_frame_height_minus1() + 1};
+auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Vec2i {
+  if (vps.vps_miv_extension_flag() && vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
+    return Vec2i{asps.asps_miv_extension().asme_geometry_frame_width_minus1() + 1,
+                 asps.asps_miv_extension().asme_geometry_frame_height_minus1() + 1};
   }
   return frameSize();
 }

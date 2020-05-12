@@ -39,6 +39,14 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
+auto AtlasAccessUnitParams::asme() const noexcept -> const AspsMivExtension & {
+  return asps.asps_miv_extension();
+}
+
+auto AtlasAccessUnitParams::asme() noexcept -> AspsMivExtension & {
+  return asps.asps_extension_present_flag(true).asps_miv_extension_flag(true).asps_miv_extension();
+}
+
 auto IvAccessUnitParams::atlasSizes() const -> SizeVector {
   auto x = SizeVector{};
   x.reserve(atlas.size());

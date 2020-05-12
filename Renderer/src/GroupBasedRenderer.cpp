@@ -55,8 +55,8 @@ GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &compone
 auto GroupBasedRenderer::renderFrame(const AccessUnit &frame,
                                      const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
-  const auto &msp = frame.vps->miv_sequence_params();
-  if (msp.msp_num_groups_minus1() >= GroupIdMask{}.size()) {
+  const auto &vme = frame.vps->vps_miv_extension();
+  if (vme.vme_num_groups_minus1() >= GroupIdMask{}.size()) {
     throw runtime_error("This decoder implementation is limited to a maximum number of groups");
   }
 
@@ -64,22 +64,22 @@ auto GroupBasedRenderer::renderFrame(const AccessUnit &frame,
   const auto groupIdPass = groupRenderOrder(frame, viewportParams);
 
   // Render all passes
-  auto viewportPass = vector<Texture444Depth16Frame>(msp.msp_num_groups_minus1() + 1);
+  auto viewportPass = vector<Texture444Depth16Frame>(vme.vme_num_groups_minus1() + 1);
   auto groupIdMask = GroupIdMask{};
-  for (size_t pass = 0; pass <= msp.msp_num_groups_minus1(); ++pass) {
+  for (size_t pass = 0; pass <= vme.vme_num_groups_minus1(); ++pass) {
     groupIdMask.set(groupIdPass[pass]);
     viewportPass[pass] = renderPass(groupIdMask, frame, viewportParams);
   }
 
   // Merge passes
   auto viewport = move(viewportPass.back());
-  for (auto pass = msp.msp_num_groups_minus1(); pass > 0; --pass) {
+  for (auto pass = vme.vme_num_groups_minus1(); pass > 0; --pass) {
     inplaceMerge(viewport, viewportPass[pass - 1],
-                 msp.msp_depth_low_quality_flag() ? MergeMode::lowPass : MergeMode::foreground);
+                 vme.vme_depth_low_quality_flag() ? MergeMode::lowPass : MergeMode::foreground);
   }
 
   // Inpainting
-  if (msp.msp_max_entities_minus1() == 0) {
+  if (vme.vme_max_entities_minus1() == 0) {
     m_inpainter->inplaceInpaint(viewport, viewportParams);
   }
 
@@ -93,12 +93,12 @@ auto GroupBasedRenderer::renderFrame(const AccessUnit &frame,
 
 auto GroupBasedRenderer::groupRenderOrder(const AccessUnit &frame, const ViewParams &viewportParams)
     -> std::vector<unsigned> {
-  const auto &msp = frame.vps->miv_sequence_params();
+  const auto &vme = frame.vps->vps_miv_extension();
   auto groupPriorities = vector<Priority>();
   auto result = vector<unsigned>();
 
   // Build array of group priorities
-  for (unsigned groupId = 0; groupId <= msp.msp_num_groups_minus1(); ++groupId) {
+  for (unsigned groupId = 0; groupId <= vme.vme_num_groups_minus1(); ++groupId) {
     groupPriorities.push_back(groupPriority(groupId, frame, viewportParams));
     result.push_back(groupId);
   }
@@ -120,8 +120,8 @@ auto GroupBasedRenderer::renderPass(GroupIdMask groupIdMask, const AccessUnit &f
 auto GroupBasedRenderer::filterFrame(GroupIdMask groupIdMask, AccessUnit frame)
     -> MivBitstream::AccessUnit {
   for (auto &atlas : frame.atlas) {
-    const auto &masp = atlas.asps.miv_atlas_sequence_params();
-    if (!groupIdMask.test(masp.masp_group_id())) {
+    const auto &asme = atlas.asps.asps_miv_extension();
+    if (!groupIdMask.test(asme.asme_group_id())) {
       fill(atlas.blockToPatchMap.getPlane(0).begin(), atlas.blockToPatchMap.getPlane(0).end(),
            unusedPatchId);
     }
@@ -135,7 +135,7 @@ auto GroupBasedRenderer::groupPriority(unsigned groupId, const AccessUnit &frame
 
   // For each atlas in this group
   for (const auto &atlas : frame.atlas) {
-    if (groupId == atlas.asps.miv_atlas_sequence_params().masp_group_id()) {
+    if (groupId == atlas.asps.asps_miv_extension().asme_group_id()) {
       // Once for each referenced view
       vector<bool> once(atlas.viewParamsList.size(), false);
       for (const auto &patch : atlas.patchParamsList) {

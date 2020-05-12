@@ -41,7 +41,7 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
 auto bitstreamPath(const Json &config) -> string {
-  return getFullPath(config, "OutputDirectory", "AtlasMetadataPath");
+  return getFullPath(config, "OutputDirectory", "BitstreamPath");
 }
 
 IvMetadataWriter::IvMetadataWriter(const Json &config)

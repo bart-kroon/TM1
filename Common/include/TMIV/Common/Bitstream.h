@@ -62,6 +62,7 @@ public:
   auto getUint8() { return readBits<std::uint8_t>(8); }
   auto getUint16() { return readBits<std::uint16_t>(16); }
   auto getUint32() { return readBits<std::uint32_t>(32); }
+  auto getUint64() -> uint64_t;
   auto getFloat16() -> Common::Half;
   auto getFloat32() -> float;
 
@@ -102,6 +103,7 @@ public:
   void putUint8(std::uint8_t value) { writeBits(value, 8); }
   void putUint16(std::uint16_t value) { writeBits(value, 16); }
   void putUint32(std::uint32_t value) { writeBits(value, 32); }
+  void putUint64(std::uint64_t value);
   void putFloat16(Common::Half value);
   void putFloat32(float value);
 

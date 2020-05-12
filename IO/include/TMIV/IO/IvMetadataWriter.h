@@ -45,7 +45,7 @@ public:
 
   void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
   void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
-  void reportSummary(std::ostream&) const;
+  void reportSummary(std::ostream &) const;
 
 private:
   std::ofstream m_stream;

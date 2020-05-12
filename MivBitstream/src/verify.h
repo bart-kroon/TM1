@@ -37,13 +37,13 @@
 #include <cstdlib>
 #include <iostream>
 
-// Checks against (draft) ISO/IEC 23090-5 V-PCC specification
+// Checks against (draft) ISO/IEC 23090-5 V3C and V-PCC specification
 //
 // These checks do not relate to ISO/IEC 23090-12 extensions or restrictions.
-#define VERIFY_VPCCBITSTREAM(condition)                                                            \
+#define VERIFY_V3CBITSTREAM(condition)                                                             \
   static_cast<void>(                                                                               \
-      (!!(condition) || (::TMIV::MivBitstream::vpccError(#condition, __FILE__, __LINE__), false)))
-#define VPCCBITSTREAM_ERROR(what) ::TMIV::MivBitstream::vpccError(what, __FILE__, __LINE__)
+      (!!(condition) || (::TMIV::MivBitstream::v3cError(#condition, __FILE__, __LINE__), false)))
+#define V3CBITSTREAM_ERROR(what) ::TMIV::MivBitstream::v3cError(what, __FILE__, __LINE__)
 
 // Check against (draft) ISO/IEC 23090-12 MIV specification
 //
@@ -61,7 +61,7 @@
 #define NOT_IMPLEMENTED(what) ::TMIV::MivBitstream::notImplemented(what, __FILE__, __LINE__)
 
 namespace TMIV::MivBitstream {
-[[noreturn]] void vpccError(char const *condition, char const *file, int line);
+[[noreturn]] void v3cError(char const *condition, char const *file, int line);
 [[noreturn]] void mivError(char const *condition, char const *file, int line);
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line);
 } // namespace TMIV::MivBitstream

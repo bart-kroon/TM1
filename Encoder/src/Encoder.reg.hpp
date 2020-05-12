@@ -35,8 +35,8 @@
 #include <TMIV/Encoder/GroupBasedEncoder.h>
 
 #include "../../Aggregator/src/Aggregator.reg.hpp"
-#include "../../DepthOccupancy/src/DepthOccupancy.reg.hpp"
 #include "../../DepthQualityAssessor/src/DepthQualityAssessor.reg.hpp"
+#include "../../GeometryQuantizer/src/GeometryQuantizer.reg.hpp"
 #include "../../Packer/src/Packer.reg.hpp"
 #include "../../Pruner/src/Pruner.reg.hpp"
 #include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
@@ -49,7 +49,7 @@ inline void registerComponents() {
   TMIV::Pruner::registerComponents();
   TMIV::Packer::registerComponents();
   TMIV::Aggregator::registerComponents();
-  TMIV::DepthOccupancy::registerComponents();
+  TMIV::GeometryQuantizer::registerComponents();
   TMIV::DepthQualityAssessor::registerComponents();
 
   Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");

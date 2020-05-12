@@ -209,7 +209,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       stream.putFloat16(Half(p.guardBandSize.value_or(0.F)));
     }
     if (orientationPresent) {
-      if (cameraInferred) {
+      if (!cameraInferred) {
         encodeRotation(p.rotation.value(), stream);
       }
     }
@@ -219,7 +219,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       if (guardBandPresent) {
         stream.putFloat16(Half(vdc.guardBandDirectionSize.value_or(0.F)));
       }
-      if (cameraInferred) {
+      if (!cameraInferred) {
         encodeRotation(vdc.directionRotation, stream);
       }
       stream.putFloat16(Half(vdc.yawRange));

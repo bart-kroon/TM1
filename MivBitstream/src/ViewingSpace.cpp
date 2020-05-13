@@ -36,8 +36,7 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Common.h>
 #include <TMIV/Common/Half.h>
-
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 using namespace std;
 
@@ -239,8 +238,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   return true;
 }
 
-auto PrimitiveShape::ViewingDirectionConstraint::operator==(
-    const ViewingDirectionConstraint &other) const -> bool {
+auto PrimitiveShape::ViewingDirectionConstraint::
+operator==(const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }

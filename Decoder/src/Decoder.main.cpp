@@ -36,10 +36,10 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
-#include <TMIV/IO/IvMetadataReader.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
+
+#include "IvMetadataReader.h"
 
 #include <iostream>
 #include <map>
@@ -49,14 +49,12 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
-
 namespace TMIV::Decoder {
+void registerComponents();
+
 class Application : public Common::Application {
 private:
-  IO::IvMetadataReader m_metadataReader;
+  IvMetadataReader m_metadataReader;
   unique_ptr<IDecoder> m_decoder;
   multimap<int, int> m_inputToOutputFrameIdMap;
 
@@ -141,8 +139,6 @@ private:
   }
 };
 } // namespace TMIV::Decoder
-
-#include "Decoder.reg.hpp"
 
 auto main(int argc, char *argv[]) -> int {
   try {

@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(AggregatorLib
     "src/Aggregator.cpp"
-    "src/Aggregator.reg.hpp"
     "include/TMIV/Aggregator/IAggregator.h"
     "include/TMIV/Aggregator/Aggregator.h"
     )

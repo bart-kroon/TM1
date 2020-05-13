@@ -36,8 +36,7 @@
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/Common/Common.h>
-
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 using namespace std;
 using TMIV::Common::overload;

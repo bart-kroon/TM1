@@ -31,13 +31,37 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
+#include "IvMetadataReader.h"
 
-#include <TMIV/Common/Factory.h>
+#include <TMIV/IO/IO.h>
 
-namespace TMIV::GeometryQuantizer {
-inline void registerComponents() {
-  Common::Factory<IGeometryQuantizer>::getInstance().registerAs<GeometryQuantizer>(
-      "GeometryQuantizer");
+#include <iostream>
+
+using namespace std;
+using namespace TMIV::Common;
+using namespace TMIV::Decoder;
+using namespace TMIV::IO;
+
+namespace TMIV::Decoder {
+auto bitstreamPath(const Json &config) -> string {
+  return getFullPath(config, "OutputDirectory", "BitstreamPath");
 }
-} // namespace TMIV::GeometryQuantizer
+
+IvMetadataReader::IvMetadataReader(const Json &config)
+    : m_stream{bitstreamPath(config), ios::binary} {
+  if (!m_stream.good()) {
+    ostringstream what;
+    what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
+    throw runtime_error(what.str());
+  }
+  m_decoder = make_unique<MivDecoder>(m_stream);
+  m_decoder->setGeoFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+    return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
+                                frameSize, int(atlasId));
+  });
+  m_decoder->setAttrFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+    return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
+                                        frameId, frameSize, "T", int(atlasId)));
+  });
+}
+} // namespace TMIV::Decoder

@@ -87,16 +87,6 @@ template <typename F> auto forNeighbors(int i, int j, array<size_t, 2> sizes, F 
   return true;
 }
 
-auto erode(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
-  Mat<uint8_t> result{mask.sizes()};
-  forPixels(mask.sizes(), [&](int i, int j) {
-    result(i, j) =
-        forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) > 0; }) ? 255
-                                                                                           : 0;
-  });
-  return result;
-}
-
 auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
   Mat<uint8_t> result{mask.sizes()};
   forPixels(mask.sizes(), [&](int i, int j) {

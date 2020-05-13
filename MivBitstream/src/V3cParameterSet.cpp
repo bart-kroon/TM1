@@ -34,10 +34,9 @@
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
 #include <TMIV/MivBitstream/MivDecoderMode.h>
+#include <TMIV/MivBitstream/verify.h>
 
 #include <utility>
-
-#include "verify.h"
 
 using namespace std;
 using namespace TMIV::Common;
@@ -115,6 +114,23 @@ auto operator<<(ostream &stream, const AiAttributeTypeId &x) -> ostream & {
     return stream << "ATTR_UNSPECIFIED";
   default:
     return stream << "[unknown:" << int(x) << "]";
+  }
+}
+
+auto codeOf(AiAttributeTypeId typeId) -> char {
+  switch (typeId) {
+  case AiAttributeTypeId::ATTR_TEXTURE:
+    return 'T';
+  case AiAttributeTypeId::ATTR_MATERIAL_ID:
+    return 'M';
+  case AiAttributeTypeId::ATTR_TRANSPARENCY:
+    return 'A';
+  case AiAttributeTypeId::ATTR_REFLECTANCE:
+    return 'R';
+  case AiAttributeTypeId::ATTR_NORMAL:
+    return 'N';
+  default:
+    V3CBITSTREAM_ERROR("Unknown attribute type ID");
   }
 }
 

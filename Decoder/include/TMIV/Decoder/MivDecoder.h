@@ -31,12 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_MIVDECODER_H_
-#define _TMIV_MIVBITSTREAM_MIVDECODER_H_
+#ifndef _TMIV_DECODER_MIVDECODER_H_
+#define _TMIV_DECODER_MIVDECODER_H_
 
 #include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/BitrateReport.h>
 #include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
 #include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
@@ -44,38 +45,42 @@
 #include <TMIV/MivBitstream/V3cUnit.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
+#include <TMIV/VideoDecoder/VideoServer.h>
 
 #include <TMIV/Common/Frame.h>
 
 #include <array>
 #include <functional>
 
-namespace TMIV::MivBitstream {
-class BitrateReport;
+namespace TMIV::Decoder {
+using namespace MivBitstream;
 
 class MivDecoder {
-public: // Frame servers
-  using GeoFrameServer = std::function<Common::Depth10Frame(
-      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
-  using AttrFrameServer = std::function<Common::Texture444Frame(
-      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
-
 public: // Decoder interface
   // Construct a MivDecoder and read the sample stream V3C header
-  //
-  // This version of TMIV does not implement video data sub bitstreams so we need to smuggle in
-  // those frames using a callback.  The attribute server will return empty frames if there is no
-  // attribute. There is only one attribute and that is texture.
-  MivDecoder(std::istream &stream, GeoFrameServer geoFrameServer, AttrFrameServer attrFrameServer);
+  explicit MivDecoder(std::istream &stream);
+
   ~MivDecoder();
 
-  // Decode the next V3C unit
-  //
-  // Register listeners to obtain output. The decoding is stopped prematurely when any of the
-  // listeners returns false.
-  auto decodeV3cUnit() -> bool;
+  // Provide a frame server for out-of-band geometry video data (GVD). GVD video sub bitstreams
+  // within the bistreams take presedence.
+  using GeoFrameServer = std::function<Common::Depth10Frame(
+      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+  void setGeoFrameServer(GeoFrameServer value);
 
-  // Decode (remainder of) V3C sample bitstream
+  // Provide a frame server for out-of-band attribute video data (AVD). AVD video sub bitstreams
+  // within the bistreams take presedence.
+  //
+  // NOTE 1: There is no harm in setting an attribute frame server for a bitstream that does not
+  //          have any attributes, because the callback will never be invoked.
+  //
+  // NOTE 2: This version of the test model only supports zero or one attributes, and if there is an
+  //         attribute it has to be texture. This is evident from the AttrFrameServer signature.
+  using AttrFrameServer = std::function<Common::Texture444Frame(
+      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+  void setAttrFrameServer(AttrFrameServer value);
+
+  // Decode V3C sample bitstream
   //
   // Register listeners to obtain output. The decoding is stopped prematurely when any of the
   // listeners returns false.
@@ -99,7 +104,15 @@ public: // Callback registrations
 private: // Decoder output
   void outputSequence(const V3cParameterSet &vps);
   void outputFrame(const V3cUnitHeader &vuh);
+  void outputAtlasData(AccessUnit& au);
   [[nodiscard]] auto haveFrame(const V3cUnitHeader &vuh) const -> bool;
+
+private: // Video deecoding processes
+  auto decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool;
+  void startGeoVideoDecoders(const V3cParameterSet &vps);
+  void startAttrVideoDecoders(const V3cParameterSet &vps);
+  void outputGeoVideoData(AccessUnit &au);
+  void outputAttrVideoData(AccessUnit& au);
 
 private: // Decoding processes
   void decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Payload &payload);
@@ -174,6 +187,11 @@ private: // Internal decoder state
     std::vector<std::shared_ptr<Frame>> frames;
 
     std::shared_ptr<Frame> intraFrame;
+
+    std::string geoVideoData;
+    std::string attrVideoData;
+    std::unique_ptr<VideoDecoder::VideoServer> geoVideoServer;
+    std::unique_ptr<VideoDecoder::VideoServer> attrVideoServer;
   };
 
   struct Sequence {
@@ -186,6 +204,8 @@ private: // Internal decoder state
   std::vector<Sequence> m_sequenceV;
 
   bool m_stop{};
+  double m_totalGeoVideoDecodingTime{};
+  double m_totalAttrVideoDecodingTime{};
 
 private: // Bitrate reporting (pimpl idiom)
   std::unique_ptr<BitrateReport> m_bitrateReport;
@@ -205,6 +225,6 @@ private: // Access internal decoder state
   [[nodiscard]] auto aapsV(const V3cUnitHeader &vuh) const
       -> const std::vector<AtlasAdaptationParameterSetRBSP> &;
 };
-} // namespace TMIV::MivBitstream
+} // namespace TMIV::Decoder
 
 #endif

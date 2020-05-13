@@ -36,7 +36,7 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
-#include <TMIV/MivBitstream/MivDecoder.h>
+#include <TMIV/Decoder/MivDecoder.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
@@ -44,13 +44,9 @@
 #include <filesystem>
 #include <fstream>
 
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::TMC2;
-}
-
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
+using namespace TMIV::Decoder;
 
 auto dumpV3cUnitPayload(streampos position, const SampleStreamV3cUnit &ssvu,
                         const V3cUnitHeader &vuh) {
@@ -123,6 +119,8 @@ const auto testBitstreams =
     array{testDataDir() / "longdress_1frame_vpcc_ctc" / "longdress_vox10_GOF0.bin"};
 
 TEST_CASE("Demultiplex", "[V3C bitstream]") {
+  TMIV::MivBitstream::mode = MivDecoderMode::TMC2;
+
   const auto bitstreamPath = GENERATE(testBitstreams[0]);
   cout << "\n\nTEST_CASE Demultiplex: bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
@@ -143,10 +141,14 @@ auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Text
 }
 
 TEST_CASE("Decode", "[V3C bitstream]") {
+  TMIV::MivBitstream::mode = MivDecoderMode::TMC2;
+
   const auto bitstreamPath = GENERATE(testBitstreams[0]);
   cout << "\n\nTEST_CASE Decode: bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
-  auto decoder = MivDecoder{stream, geoFrameServer, attrFrameServer};
+  auto decoder = MivDecoder{stream};
+  decoder.setGeoFrameServer(geoFrameServer);
+  decoder.setAttrFrameServer(attrFrameServer);
   // TODO(BK): Need a bitstream that implements M53122
   // decoder.decode();
 }

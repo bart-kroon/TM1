@@ -35,8 +35,7 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
-
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 #include <ostream>
 

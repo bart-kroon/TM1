@@ -47,6 +47,9 @@ public:
   VideoServer &operator=(VideoServer &&) = default;
   ~VideoServer();
 
+  // Wait for the video server to block or stop
+  void wait();
+
   // Get the next frame. If there are no more frames the result will be empty.
   auto getFrame() -> std::unique_ptr<Common::AnyFrame>;
 

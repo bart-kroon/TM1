@@ -40,9 +40,8 @@ enum class MivDecoderMode {
   TMC2 // Parse a bitstream that was produced by TMC2
 };
 
-// The mode varies per executable. The MIV decoder mode is normally MIV. The other modes are for
-// testing purposes.
-extern const MivDecoderMode mode;
+// The MIV decoder mode is normally MIV. The other modes are for testing purposes.
+extern MivDecoderMode mode;
 } // namespace TMIV::MivBitstream
 
 #endif

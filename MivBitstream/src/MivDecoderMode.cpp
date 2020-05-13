@@ -31,44 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_MIVENCODER_H_
-#define _TMIV_MIVBITSTREAM_MIVENCODER_H_
-
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
-#include <TMIV/MivBitstream/NalSampleStreamFormat.h>
-#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
-
-#include <sstream>
+#include <TMIV/MivBitstream/MivDecoderMode.h>
 
 namespace TMIV::MivBitstream {
-class MivEncoder {
-public:
-  MivEncoder(std::ostream &stream);
-
-  void writeIvSequenceParams(const IvSequenceParams &);
-  void writeIvAccessUnitParams(const IvAccessUnitParams &, int intraPeriodFrameCount);
-
-private:
-  auto specialAtlasSubBitstream() -> AtlasSubBitstream;
-  auto nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
-  auto aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) -> AtlasSubBitstream;
-  auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
-  static auto skipAtlasTileGroupLayer() -> AtlasTileLayerRBSP;
-
-  template <typename Payload>
-  void writeV3cUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);
-  template <typename Payload, typename... Args>
-  void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload, Args &&... args);
-
-  std::ostream &m_stream;
-  SampleStreamV3cHeader m_ssvh{2};
-  SampleStreamNalHeader m_ssnh{2};
-  IvSequenceParams m_ivs;
-  IvAccessUnitParams m_ivau;
-  bool m_writeNonAcl{true};
-  std::ostringstream m_nalUnitLog;
-};
+MivDecoderMode mode = MivDecoderMode::MIV;
 } // namespace TMIV::MivBitstream
-
-#endif

@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(GeometryQuantizerLib
     "src/GeometryQuantizer.cpp"
-    "src/GeometryQuantizer.reg.hpp"
     "include/TMIV/GeometryQuantizer/IGeometryQuantizer.h"
     "include/TMIV/GeometryQuantizer/GeometryQuantizer.h"
     )

@@ -33,9 +33,9 @@
 
 #include <TMIV/MivBitstream/PatchParamsList.h>
 
-#include <algorithm>
+#include <TMIV/MivBitstream/verify.h>
 
-#include "verify.h"
+#include <algorithm>
 
 using namespace std;
 using namespace TMIV::Common;

@@ -31,39 +31,43 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "test.h"
+#include "IvMetadataWriter.h"
 
-#include <TMIV/MivBitstream/MivDecoder.h>
-
-#include <sstream>
+#include <TMIV/IO/IO.h>
 
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
+using namespace TMIV::Encoder;
+using namespace TMIV::IO;
 
-TEST_CASE("MivDecoder", "[MIV decoder]") {
-  SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
-
-    const auto geoFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Depth10Frame{};
-    };
-    const auto attrFrameServer = [](auto /*unused*/, auto /*unused*/, auto /*unused*/) {
-      return Texture444Frame{};
-    };
-
-    MivDecoder decoder{stream, geoFrameServer, attrFrameServer};
-
-    SECTION("Callbacks") {
-      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
-        cout << "Sequence:\n" << vps;
-        return true;
-      });
-
-      decoder.onFrame.emplace_back([](const AccessUnit &au) {
-        cout << "Frame " << au.frameId << '\n';
-        return true;
-      });
-    }
-  }
+namespace TMIV::Encoder {
+auto bitstreamPath(const Json &config) -> string {
+  return getFullPath(config, "OutputDirectory", "BitstreamPath");
 }
+
+IvMetadataWriter::IvMetadataWriter(const Json &config)
+    : m_stream{bitstreamPath(config), ios::binary} {
+  if (!m_stream.good()) {
+    ostringstream what;
+    what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
+    throw runtime_error(what.str());
+  }
+  m_encoder = make_unique<MivEncoder>(m_stream);
+}
+
+void IvMetadataWriter::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
+  m_encoder->writeIvSequenceParams(ivSequenceParams);
+  m_frameRate = ivSequenceParams.frameRate;
+}
+
+void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
+                                               int intraPeriodFrameCount) {
+  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams, intraPeriodFrameCount);
+  m_bytesWritten = m_stream.tellp();
+}
+
+void IvMetadataWriter::reportSummary(std::ostream &out) const {
+  auto bitrate = 8e-3 * double(m_bytesWritten) / m_frameRate;
+  out << "Total bitrate is " << bitrate << " kbps\n";
+}
+} // namespace TMIV::Encoder

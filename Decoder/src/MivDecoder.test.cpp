@@ -31,8 +31,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "test.h"
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
 
-#include <TMIV/MivBitstream/MivEncoder.h>
+#include <TMIV/Decoder/MivDecoder.h>
 
+#include <sstream>
+
+using namespace TMIV::Common;
+using namespace TMIV::Decoder;
 using namespace TMIV::MivBitstream;
+
+TEST_CASE("MivDecoder", "[MIV decoder]") {
+  SECTION("Construction") {
+    istringstream stream{"Invalid bitsream"};
+
+    auto decoder = MivDecoder{stream};
+
+    SECTION("Callbacks") {
+      decoder.setGeoFrameServer(
+          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Depth10Frame{}; });
+
+      decoder.setAttrFrameServer(
+          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Texture444Frame{}; });
+
+      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
+        cout << "Sequence:\n" << vps;
+        return true;
+      });
+
+      decoder.onFrame.emplace_back([](const AccessUnit &au) {
+        cout << "Frame " << au.frameId << '\n';
+        return true;
+      });
+    }
+  }
+}

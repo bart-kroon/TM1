@@ -15,7 +15,13 @@ add_library(VideoDecoderLib
     )
 
 add_library(TMIV::VideoDecoderLib ALIAS VideoDecoderLib)
-target_link_libraries(VideoDecoderLib PUBLIC TMIV::MivBitstreamLib)
+
+target_link_libraries(VideoDecoderLib
+    PUBLIC
+        TMIV::MivBitstreamLib
+    PRIVATE
+        Threads::Threads
+    )
 
 target_include_directories(
     VideoDecoderLib
@@ -25,6 +31,9 @@ if (HAVE_HM)
     target_link_libraries(VideoDecoderLib PRIVATE TMIV::TLibDecoder)
     target_compile_definitions(VideoDecoderLib PRIVATE HAVE_HM)
 endif()
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 install(
     TARGETS

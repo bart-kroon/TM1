@@ -1,6 +1,5 @@
 {
     "BitstreamPath": "ATL_SA.bit",
-    "AttributeVideoDataPathFmt": "ATL_SA_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
     "Decoder": {
         "AtlasDeconstructorMethod": "AtlasDeconstructor",
         "CullerMethod": "SubBlockCuller",
@@ -26,7 +25,6 @@
         "minForegroundConfidence": 0.5
     },
     "DecoderMethod": "Decoder",
-    "GeometryVideoDataPathFmt": "ATL_SA_TG_c{:02}_{}x{}_yuv420p10le.yuv",
     "OutputCameraName": "viewport",
     "OutputDirectory": ".",
     "OutputAttributePath": "A17_SA_T{}_p01_{}x{}_yuv420p10le.yuv",

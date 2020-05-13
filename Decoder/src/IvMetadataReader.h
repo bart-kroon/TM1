@@ -31,28 +31,26 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/Encoder/GroupBasedEncoder.h>
+#ifndef _TMIV_DECODER_IVMETADATAREADER_H_
+#define _TMIV_DECODER_IVMETADATAREADER_H_
 
-#include "../../Aggregator/src/Aggregator.reg.hpp"
-#include "../../DepthQualityAssessor/src/DepthQualityAssessor.reg.hpp"
-#include "../../GeometryQuantizer/src/GeometryQuantizer.reg.hpp"
-#include "../../Packer/src/Packer.reg.hpp"
-#include "../../Pruner/src/Pruner.reg.hpp"
-#include "../../ViewOptimizer/src/ViewOptimizer.reg.hpp"
+#include <TMIV/Common/Json.h>
+#include <TMIV/Decoder/MivDecoder.h>
 
-#include <TMIV/Common/Factory.h>
+#include <fstream>
 
-namespace TMIV::Encoder {
-inline void registerComponents() {
-  TMIV::ViewOptimizer::registerComponents();
-  TMIV::Pruner::registerComponents();
-  TMIV::Packer::registerComponents();
-  TMIV::Aggregator::registerComponents();
-  TMIV::GeometryQuantizer::registerComponents();
-  TMIV::DepthQualityAssessor::registerComponents();
+namespace TMIV::Decoder {
+class IvMetadataReader {
+public:
+  explicit IvMetadataReader(const Common::Json &config);
 
-  Common::Factory<IEncoder>::getInstance().registerAs<Encoder>("Encoder");
-  Common::Factory<IEncoder>::getInstance().registerAs<GroupBasedEncoder>("GroupBasedEncoder");
-}
-} // namespace TMIV::Encoder
+  auto decoder() noexcept -> auto & { return *m_decoder; }
+
+private:
+  std::ifstream m_stream;
+  std::unique_ptr<Decoder::MivDecoder> m_decoder;
+};
+
+} // namespace TMIV::Decoder
+
+#endif

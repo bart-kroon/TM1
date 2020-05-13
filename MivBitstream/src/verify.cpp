@@ -31,7 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
+
 #include <iostream>
 
 using namespace std;

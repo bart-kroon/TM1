@@ -15,7 +15,6 @@ add_library(RendererLib
     "src/ViewWeightingSynthesizer.cpp"
     "src/NoSynthesizer.cpp"
     "src/RecoverPrunedViews.cpp"
-    "src/Renderer.reg.hpp"
     "include/TMIV/Renderer/IRenderer.h"
     "include/TMIV/Renderer/IInpainter.h"
     "include/TMIV/Renderer/ISynthesizer.h"

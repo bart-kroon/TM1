@@ -7,12 +7,10 @@ add_library(MivBitstreamLib
     "src/AtlasFrameParameterSetRBSP.cpp"
     "src/AtlasSequenceParameterSetRBSP.cpp"
     "src/AtlasTileLayerRBSP.cpp"
-    "src/BitrateReport.h"
     "src/FrameOrderCountRBSP.cpp"
     "src/IvSequenceParams.cpp"
     "src/IvAccessUnitParams.cpp"
-    "src/MivDecoder.cpp"
-    "src/MivEncoder.cpp"
+    "src/MivDecoderMode.cpp"
     "src/MivVuiParams.cpp"
     "src/NalSampleStreamFormat.cpp"
     "src/NalUnit.cpp"
@@ -20,7 +18,6 @@ add_library(MivBitstreamLib
     "src/PatchParamsList.cpp"
     "src/RecViewport.cpp"
     "src/SeiRBSP.cpp"
-    "src/verify.h"
     "src/verify.cpp"
     "src/ViewingSpace.cpp"
     "src/ViewingSpaceHandling.cpp"
@@ -40,6 +37,7 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/AtlasSubBitstream.h"
     "include/TMIV/MivBitstream/AtlasTileLayerRBSP.h"
     "include/TMIV/MivBitstream/AtlasTileLayerRBSP.hpp"
+    "include/TMIV/MivBitstream/BitrateReport.h"
     "include/TMIV/MivBitstream/DepthOccupancyTransform.h"
     "include/TMIV/MivBitstream/DepthOccupancyTransform.hpp"
     "include/TMIV/MivBitstream/FrameOrderCountRBSP.h"
@@ -47,8 +45,6 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/IvSequenceParams.h"
     "include/TMIV/MivBitstream/IvAccessUnitParams.h"
     "include/TMIV/MivBitstream/IvAccessUnitParams.hpp"
-    "include/TMIV/MivBitstream/MivDecoder.h"
-    "include/TMIV/MivBitstream/MivEncoder.h"
     "include/TMIV/MivBitstream/MivVuiParams.h"
     "include/TMIV/MivBitstream/MivVuiParams.hpp"
     "include/TMIV/MivBitstream/NalSampleStreamFormat.h"
@@ -58,6 +54,7 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/RecViewport.h"
     "include/TMIV/MivBitstream/RecViewport.hpp"
     "include/TMIV/MivBitstream/SeiRBSP.h"
+    "include/TMIV/MivBitstream/verify.h"
     "include/TMIV/MivBitstream/ViewingSpace.h"
     "include/TMIV/MivBitstream/ViewingSpaceHandling.h"
     "include/TMIV/MivBitstream/ViewParamsList.h"
@@ -97,8 +94,6 @@ if (CMAKE_TESTING_ENABLED)
         "src/AtlasSequenceParameterSetRBSP.test.cpp"
         "src/AtlasTileLayerRBSP.test.cpp"
         "src/FrameOrderCountRBSP.test.cpp"
-        "src/MivDecoder.test.cpp"
-        "src/MivEncoder.test.cpp"
         "src/MivVuiParams.test.cpp"
         "src/NalSampleStreamFormat.test.cpp"
         "src/NalUnit.test.cpp"
@@ -118,14 +113,4 @@ if (CMAKE_TESTING_ENABLED)
             TMIV::MivBitstreamLib)
 
     catch_discover_tests(MivBitstreamTest)
-
-    add_executable(V3cBitstreamTest
-        "src/V3cBitstream.test.cpp")
-
-    target_link_libraries(V3cBitstreamTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::IOLib)
-
-    catch_discover_tests(V3cBitstreamTest)
 endif()

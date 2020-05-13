@@ -31,16 +31,46 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
+#ifndef _TMIV_ENCODER_MIVENCODER_H_
+#define _TMIV_ENCODER_MIVENCODER_H_
 
-#include "../../Renderer/src/Renderer.reg.hpp"
+#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/NalSampleStreamFormat.h>
+#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 
-#include <TMIV/Common/Factory.h>
+#include <sstream>
 
-namespace TMIV::Decoder {
-inline void registerComponents() {
-  TMIV::Renderer::registerComponents();
+namespace TMIV::Encoder {
+using namespace MivBitstream;
 
-  Common::Factory<IDecoder>::getInstance().registerAs<Decoder>("Decoder");
-}
-} // namespace TMIV::Decoder
+class MivEncoder {
+public:
+  MivEncoder(std::ostream &stream);
+
+  void writeIvSequenceParams(const IvSequenceParams &);
+  void writeIvAccessUnitParams(const IvAccessUnitParams &, int intraPeriodFrameCount);
+
+private:
+  auto specialAtlasSubBitstream() -> AtlasSubBitstream;
+  auto nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
+  auto aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) -> AtlasSubBitstream;
+  auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
+  static auto skipAtlasTileGroupLayer() -> AtlasTileLayerRBSP;
+
+  template <typename Payload>
+  void writeV3cUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);
+  template <typename Payload, typename... Args>
+  void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload, Args &&... args);
+
+  std::ostream &m_stream;
+  SampleStreamV3cHeader m_ssvh{2};
+  SampleStreamNalHeader m_ssnh{2};
+  IvSequenceParams m_ivs;
+  IvAccessUnitParams m_ivau;
+  bool m_writeNonAcl{true};
+  std::ostringstream m_nalUnitLog;
+};
+} // namespace TMIV::Encoder
+
+#endif

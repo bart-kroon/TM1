@@ -26,10 +26,11 @@
 		"EntityDecodeRange": [9, 11]
     },
     "DecoderMethod": "Decoder",
-    "OutputCameraName": "v0",
+    "OutputCameraName": "viewport",
     "OutputDirectory": ".",
-    "OutputAttributePath": "E17_SB_T{}_v0_{}x{}_yuv420p10le.yuv",
+    "OutputAttributePath": "E17_SB_T{}_p01_{}x{}_yuv420p10le.yuv",
+    "PoseTracePath": "Bp01.csv",
     "SourceCameraParameters": "TechnicolorMuseum.json",
     "SourceDirectory": ".",
-    "numberOfFrames": 17
+    "numberOfFrames": 3
 }

@@ -31,5 +31,5 @@
     "OutputAttributePath": "E17_SB_T{}_v0_{}x{}_yuv420p10le.yuv",
     "SourceCameraParameters": "TechnicolorMuseum.json",
     "SourceDirectory": ".",
-    "numberOfFrames": 17
+    "numberOfFrames": 3
 }

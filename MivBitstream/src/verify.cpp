@@ -31,14 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
+
 #include <iostream>
 
 using namespace std;
 
 namespace TMIV::MivBitstream {
-[[noreturn]] void vpccError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode V-PCC bitstream: " << condition << " [" << file << "@" << line
+[[noreturn]] void v3cError(char const *condition, char const *file, int line) {
+  cerr << "Failed to encode/decode V3C bitstream: " << condition << " [" << file << "@" << line
        << '\n';
   abort();
 }

@@ -43,7 +43,7 @@ using namespace TMIV::MivBitstream;
 
 // Encoder sub-component interfaces
 using TMIV::Aggregator::IAggregator;
-using TMIV::DepthOccupancy::IDepthOccupancy;
+using TMIV::GeometryQuantizer::IGeometryQuantizer;
 using TMIV::Packer::IPacker;
 using TMIV::Pruner::IPruner;
 using TMIV::ViewOptimizer::IViewOptimizer;
@@ -68,7 +68,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     , m_pruner{create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}
     , m_packer{create<IPacker>("Packer", rootNode, componentNode)}
-    , m_depthOccupancy{create<IDepthOccupancy>("DepthOccupancy", rootNode, componentNode)}
+    , m_depthOccupancy{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
     , m_geometryDownscaler{rootNode, componentNode} {
   // Parameters
   const auto numGroups = rootNode.require("numGroups").asInt();
@@ -77,6 +77,10 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
   const auto maxAtlases = rootNode.require("maxAtlases").asInt();
   m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
+
+  if (auto node = componentNode.require("Packer").optional("dilate"); node) {
+    m_dilationIter = node.asInt();
+  }
 
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");

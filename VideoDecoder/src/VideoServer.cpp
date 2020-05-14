@@ -33,7 +33,10 @@
 
 #include <TMIV/VideoDecoder/VideoServer.h>
 
+#include <TMIV/Common/Common.h>
+
 #include <condition_variable>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <thread>
@@ -46,6 +49,7 @@ class VideoServer::Impl {
 public:
   Impl(unique_ptr<IVideoDecoder> decoder, const string &bitstream)
       : m_decoder{move(decoder)}, m_bitstream{bitstream}, m_thread{[this]() { decode(); }} {}
+
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;
   auto operator=(const Impl &) -> Impl & = delete;
@@ -53,18 +57,25 @@ public:
 
   ~Impl() {
     m_requestStop = true;
+    m_cv.notify_all();
     m_thread.join();
+  }
+
+  void wait() {
+    unique_lock<mutex> lock{m_mutex};
+    m_cv.wait(lock, [this] { return m_frame || m_hasStopped; });
   }
 
   auto getFrame() -> unique_ptr<AnyFrame> {
     unique_lock<mutex> lock{m_mutex};
     m_cv.wait(lock, [this] { return m_frame || m_hasStopped; });
-    if (m_hasStopped) {
-      return {};
+    if (m_frame) {
+      auto frame = unique_ptr<AnyFrame>{};
+      swap(frame, m_frame);
+      m_cv.notify_all();
+      return frame;
     }
-    auto frame = unique_ptr<AnyFrame>{};
-    swap(frame, m_frame);
-    return frame;
+    return {};
   }
 
 private:
@@ -75,6 +86,7 @@ private:
       m_decoder->addFrameListener([this](const AnyFrame &picture) { return listen(picture); });
       m_decoder->decode(m_bitstream);
       m_hasStopped = true;
+      m_cv.notify_all();
     } catch (Stop & /* unused */) {
       m_hasStopped = true;
     } catch (exception &e) {
@@ -90,6 +102,7 @@ private:
       throw Stop{};
     }
     m_frame = make_unique<AnyFrame>(picture);
+    m_cv.notify_all();
   }
 
   unique_ptr<IVideoDecoder> m_decoder;
@@ -106,6 +119,8 @@ VideoServer::VideoServer(std::unique_ptr<IVideoDecoder> decoder, const string &b
     : m_impl{new Impl{move(decoder), bitstream}} {}
 
 VideoServer::~VideoServer() = default;
+
+void VideoServer::wait() { return m_impl->wait(); }
 
 auto VideoServer::getFrame() -> unique_ptr<AnyFrame> { return m_impl->getFrame(); }
 } // namespace TMIV::VideoDecoder

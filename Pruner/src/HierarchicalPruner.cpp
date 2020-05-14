@@ -376,7 +376,7 @@ private:
           if (*k != 0) {
             *i = 0;
           }
-        } else if (m_ivSequenceParams.msp().msp_depth_low_quality_flag() && (depthError < 0.F)) {
+        } else if (m_ivSequenceParams.vme().vme_depth_low_quality_flag() && (depthError < 0.F)) {
           if (*k != 0) {
             *k = 0;
             *i = 255;

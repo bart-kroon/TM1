@@ -47,7 +47,7 @@ auto Encoder::completeAccessUnit() -> const IvAccessUnitParams & {
   updateAggregationStatistics(aggregatedMask);
   completeIvau();
 
-  if (m_ivs.msp().msp_max_entities_minus1() > 0) {
+  if (m_ivs.vme().vme_max_entities_minus1() > 0) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
@@ -81,19 +81,25 @@ void Encoder::completeIvau() {
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
-        .asps_max_projections_minus1(uint16_t(m_ivs.viewParamsList.size() - 1))
+        .asps_max_number_projections_minus1(uint16_t(m_ivs.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
+
+    // Signalling pdu_entity_id requires ASME to be present
+    if (m_ivs.vps.vps_miv_extension_flag() && m_ivs.vme().vme_max_entities_minus1() > 0) {
+      // There is nothing entity-related in ASME so a reference is obtained but discarded
+      static_cast<void>(atlas.asme());
+    }
 
     // Set AFPS parameters
     const auto &gi = m_ivs.vps.geometry_information(i);
     atlas.afps.afps_3d_pos_x_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
     atlas.afps.afps_3d_pos_y_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
 
-    // Set ATGH parameters
-    atlas.atgh.atgh_ref_atlas_frame_list_sps_flag(true);
-    atlas.atgh.atgh_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
-    atlas.atgh.atgh_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
-    atlas.atgh.atgh_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+    // Set ATH parameters
+    atlas.ath.ath_ref_atlas_frame_list_sps_flag(true);
+    atlas.ath.ath_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
+    atlas.ath.ath_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+    atlas.ath.ath_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
 }
 
@@ -114,7 +120,7 @@ void Encoder::constructVideoFrames() {
 
     for (const auto &patch : m_ivau.patchParamsList) {
       const auto &view = views[patch.pduViewId()];
-      if (m_ivs.msp().msp_max_entities_minus1() > 0) {
+      if (m_ivs.vme().vme_max_entities_minus1() > 0) {
         MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
@@ -199,7 +205,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           // Depth
           auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
           if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
-              m_ivs.msp().msp_max_entities_minus1() == 0) {
+              m_ivs.vme().vme_max_entities_minus1() == 0) {
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;

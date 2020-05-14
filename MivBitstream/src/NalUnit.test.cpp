@@ -78,10 +78,10 @@ NumBytesInRbsp=0
   }
 
   SECTION("Example 2") {
-    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_RADL, 1, 3}, "payload"};
+    const auto nal_unit = NalUnit{NalUnitHeader{NalUnitType::NAL_RADL_R, 1, 3}, "payload"};
 
     REQUIRE(toString(nal_unit) ==
-            R"(nal_unit_type=NAL_RADL
+            R"(nal_unit_type=NAL_RADL_R
 nal_layer_id=1
 nal_temporal_id_plus1=3
 NumBytesInRbsp=7

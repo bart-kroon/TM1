@@ -1,20 +1,20 @@
 {
-    "AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
-    "AttributeVideoDataPathFmt": "ATL_SA_R0_Tt_c{:02}_{}x{}_yuv420p10le.yuv",
+    "BitstreamPath": "ATL_SA.bit",
+    "AttributeVideoDataPathFmt": "ATL_SA_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "EncoderMethod": "GroupBasedEncoder",
-    "GeometryVideoDataPathFmt": "ATL_SA_R0_Td_c{:02}_{}x{}_yuv420p10le.yuv",
+    "GeometryVideoDataPathFmt": "ATL_SA_TG_c{:02}_{}x{}_yuv420p10le.yuv",
     "GroupBasedEncoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
-        "DepthOccupancy": {
-            "depthOccMapThresholdIfSet": 64
+        "GeometryQuantizer": {
+            "depthOccThresholdIfSet": 64
         },
-        "DepthOccupancyMethod": "DepthOccupancy",
+        "GeometryQuantizerMethod": "GeometryQuantizer",
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,
@@ -27,7 +27,8 @@
         "Packer": {
             "MinPatchSize": 16,
             "Overlap": 1,
-            "PiP": 1
+            "PiP": 1,
+            "dilate": 16
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",
@@ -54,8 +55,8 @@
         "v14"
     ],
     "SourceCameraParameters": "ClassroomVideo.json",
-    "SourceDepthBitDepth": 16,
-    "SourceDepthPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
+    "SourceGeometryBitDepth": 16,
+    "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
     "blockSize": 8,

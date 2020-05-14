@@ -1,32 +1,28 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(IOLib
-	"src/IO.cpp"
-	"src/IvMetadataReader.cpp"
-	"src/IvMetadataWriter.cpp"
-	"include/TMIV/IO/IO.h"
-	"include/TMIV/IO/IO.hpp"
-	"include/TMIV/IO/IvMetadataReader.h"
-	"include/TMIV/IO/IvMetadataWriter.h"
-	)
+    "src/IO.cpp"
+    "include/TMIV/IO/IO.h"
+    "include/TMIV/IO/IO.hpp"
+    )
 
 add_library(TMIV::IOLib
-	ALIAS IOLib)
+    ALIAS IOLib)
 
 target_link_libraries(IOLib
-	PUBLIC
-		TMIV::MivBitstreamLib)
+    PUBLIC
+        TMIV::MivBitstreamLib)
 
 target_include_directories(IOLib
-	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 install(
-	TARGETS
-		IOLib
-	EXPORT TMIVTargets
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    TARGETS
+        IOLib
+    EXPORT TMIVTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
-	DIRECTORY "include/"
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    DIRECTORY "include/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

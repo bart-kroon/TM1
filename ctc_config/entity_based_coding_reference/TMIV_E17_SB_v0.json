@@ -22,7 +22,8 @@
         "SubBlockCuller": {},
         "geometryEdgeMagnitudeTh": 10,
         "maxCurvature": 5,
-        "minForegroundConfidence": 0.5
+        "minForegroundConfidence": 0.5,
+		"EntityDecodeRange": [9, 11]
     },
     "DecoderMethod": "Decoder",
     "OutputCameraName": "v0",

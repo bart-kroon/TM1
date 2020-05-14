@@ -163,7 +163,7 @@ const auto viewingSpaceJson = array{
     "       \"PrimitiveShapeOperation\":\"interpolate\","
     "       \"PrimitiveShapes\":[{"
     "           \"PrimitiveShapeType\":\"spheroid\","
-    "           \"Radius\":[0,0,0]}"
+    "           \"Radius\":[0,0,0]"
     "       }]"
     "   }"
     "}]}"};
@@ -195,16 +195,13 @@ TEST_CASE("Viewing space coding") {
    REQUIRE(bitCodingTest(examples::viewingSpace[2], 178, examples::viewParamsList));
    REQUIRE(bitCodingTest(examples::viewingSpace[3], 194, examples::viewParamsList));
    REQUIRE(bitCodingTest(examples::viewingSpace[4], 553, examples::viewParamsList));
-   //the two following tests pass BUT they do not pass anymore when at least one value among [center, radius, guardBandSize] takes a non-zero digit after comma !!!
    REQUIRE(bitCodingTest(examples::viewingSpace[5], 114, examples::viewParamsList));
    REQUIRE(bitCodingTest(examples::viewingSpace[6], 274, examples::viewParamsList));
-   //the following test for the inferred view does pass
    REQUIRE(bitCodingTest(examples::viewingSpace[7], 82, examples::viewParamsList));
 }
 
 TEST_CASE("Viewing space JSON") {
    REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[0], examples::configJson[0]) == examples::viewingSpace[0]);
    REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[1], examples::configJson[0]) == examples::viewingSpace[4]);
-   //// !!! the following test does not pass !!!
-   //REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[2], examples::configJson[0]) == examples::viewingSpace[7]);
+   REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[2], examples::configJson[0]) == examples::viewingSpace[7]);
 }

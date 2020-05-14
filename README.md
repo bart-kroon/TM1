@@ -121,7 +121,7 @@ figure is the CMake module dependency graph of TMIV 5.0. The most important
 executables are Encoder and Decoder. When enabled, the project also includes the
 HM executables TAppEncoder and TAppDecoder.
 
-![CMake module graph](/doc/module_graph.svg)
+![CMake module graph](doc/module_graph.png)
 
 Each module consists of one or more components. Most components derive from an
 interface and some interfaces have multiple alternative components. For instance,

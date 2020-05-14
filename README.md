@@ -114,6 +114,20 @@ HM_BUILD_TAPPDECODER and HM_BUILD¬_TAPPENCODER are selected, then the
 TAppDecoder and TAppEncoder tools respectively will also be installed to this
 directory. 
 
+## Structure of the test model
+
+This software consists of multiple executables and static libraries. Below
+figure is the CMake module dependency graph of TMIV 5.0. The most important
+executables are Encoder and Decoder. When enabled, the project also includes the
+HM executables TAppEncoder and TAppDecoder.
+
+![CMake module graph](/doc/module_graph.svg)
+
+Each module consists of one or more components. Most components derive from an
+interface and some interfaces have multiple alternative components. For instance,
+the ViewOptimizerLib includes an IViewOptimizer interface with NoViewOptimizer
+and ViewReducer components that implement that interface.
+
 ## Improving the test model
 
 Core experiments are expected to include the reference software as a subproject

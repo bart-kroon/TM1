@@ -114,6 +114,29 @@ HM_BUILD_TAPPDECODER and HM_BUILD¬_TAPPENCODER are selected, then the
 TAppDecoder and TAppEncoder tools respectively will also be installed to this
 directory. 
 
+## Instructions to run TMIV
+
+Template configuration files are available under ctc_config/ and test_configs/. The file names of
+and in template configuration files are examples.
+
+  * *best_reference* uses all source views without coding to achieve the best possible result
+  * *miv_anchor* is the MIV anchor with patches
+  * *miv_view_anchor* is the MIV view anchor which codes a subset of views completely
+  * *entity_based_coding_reference* is the (non-CTC) reference condition for entity-based coding
+  * *entity_based_coding_test* is for integration testing of entity-based coding
+
+Use the following steps to encode a bistream and render a viewport:
+
+ 1. Run TMIV encoder
+ 2. Run HM encoder on all video sub bitstreams
+ 3. Run TMIV multiplexer to form the output bitstream
+ 4. Run TMIV decoder to decode the bitstream and render a viewport
+
+Use the following steps for uncoded video (i.e. best_reference):
+
+ 1. Run TMIV encoder
+ 4. Run TMIV decoder to render a viewport
+
 ## Structure of the test model
 
 This software consists of multiple executables and static libraries. Below

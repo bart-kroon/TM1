@@ -165,7 +165,7 @@ const auto viewingSpaceJson = array{
     "   }"
     "}]}"};
 
-const auto configJson = array{"{\"SourceCameraNames\": [\"v00\",\"v01\",\"v02\"]}"};
+const auto configJson = array{R"({"SourceCameraNames": ["v00","v01","v02"]})"};
 
 const auto viewParamsList = TMIV::MivBitstream::ViewParamsList{std::vector<ViewParams>{
     ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v00"},

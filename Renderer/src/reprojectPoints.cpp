@@ -190,14 +190,15 @@ auto ProjectionHelper::isStrictlyInsideViewport(const Common::Vec2f &p) const ->
 }
 
 auto ProjectionHelper::isInsideViewport(const Common::Vec2f &p) const -> bool {
-  return ((-0.5F <= p.x()) && (p.x() <= (m_viewParams.get().ci.projectionPlaneSize().x() + 0.5F))) &&
+  return ((-0.5F <= p.x()) &&
+          (p.x() <= (m_viewParams.get().ci.projectionPlaneSize().x() + 0.5F))) &&
          ((-0.5F <= p.y()) && (p.y() <= (m_viewParams.get().ci.projectionPlaneSize().y() + 0.5F)));
 }
 
 auto ProjectionHelper::isValidDepth(float d) const -> bool {
   static constexpr auto far = 999.999F;
-  return (TMIV::Renderer::isValidDepth(d) && (m_viewParams.get().dq.dq_norm_disp_low() <= (1.F / d)) &&
-          (d < far));
+  return (TMIV::Renderer::isValidDepth(d) &&
+          (m_viewParams.get().dq.dq_norm_disp_low() <= (1.F / d)) && (d < far));
 }
 
 auto ProjectionHelper::getAngularResolution() const -> float {
@@ -232,13 +233,15 @@ auto ProjectionHelper::getAngularResolution() const -> float {
 }
 
 auto ProjectionHelper::getDepthRange() const -> Common::Vec2f {
-  return {1.F / m_viewParams.get().dq.dq_norm_disp_high(), 1.F / m_viewParams.get().dq.dq_norm_disp_low()};
+  return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
+          1.F / m_viewParams.get().dq.dq_norm_disp_low()};
 }
 
 auto ProjectionHelper::getRadialRange() const -> Vec2f {
   switch (m_viewParams.get().ci.ci_cam_type()) {
   case CiCamType::equirectangular: {
-    return {1.F / m_viewParams.get().dq.dq_norm_disp_high(), 1.F / m_viewParams.get().dq.dq_norm_disp_low()};
+    return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
+            1.F / m_viewParams.get().dq.dq_norm_disp_low()};
   }
   case CiCamType::perspective: {
     const auto &ci = m_viewParams.get().ci;
@@ -253,7 +256,8 @@ auto ProjectionHelper::getRadialRange() const -> Vec2f {
             norm(Vec3f{x, y, 1.F}) / m_viewParams.get().dq.dq_norm_disp_low()};
   }
   case CiCamType::orthographic: {
-    return {1.F / m_viewParams.get().dq.dq_norm_disp_high(), 1.F / m_viewParams.get().dq.dq_norm_disp_low()};
+    return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
+            1.F / m_viewParams.get().dq.dq_norm_disp_low()};
   }
   default:
     abort();

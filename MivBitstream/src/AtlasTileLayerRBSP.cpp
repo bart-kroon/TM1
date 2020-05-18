@@ -583,8 +583,7 @@ auto AtlasTileDataUnit::atdu_patch_mode(size_t p) const -> AtduPatchMode {
   return m_vector[p].first;
 }
 
-auto AtlasTileDataUnit::patch_information_data(size_t p) const
-    -> const PatchInformationData & {
+auto AtlasTileDataUnit::patch_information_data(size_t p) const -> const PatchInformationData & {
   VERIFY_V3CBITSTREAM(p < m_vector.size());
   return m_vector[p].second;
 }
@@ -608,10 +607,10 @@ auto AtlasTileDataUnit::operator!=(const AtlasTileDataUnit &other) const -> bool
 }
 
 auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                        const V3cParameterSet &vps,
-                                        const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                        const vector<AtlasFrameParameterSetRBSP> &afps,
-                                        const AtlasTileHeader &ath) -> AtlasTileDataUnit {
+                                   const V3cParameterSet &vps,
+                                   const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                   const vector<AtlasFrameParameterSetRBSP> &afps,
+                                   const AtlasTileHeader &ath) -> AtlasTileDataUnit {
   VERIFY_V3CBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::P_TILE);
   VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE);
 
@@ -630,10 +629,10 @@ auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeade
 }
 
 void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                      const V3cParameterSet &vps,
-                                      const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                      const vector<AtlasFrameParameterSetRBSP> &afps,
-                                      const AtlasTileHeader &ath) const {
+                                 const V3cParameterSet &vps,
+                                 const vector<AtlasSequenceParameterSetRBSP> &asps,
+                                 const vector<AtlasFrameParameterSetRBSP> &afps,
+                                 const AtlasTileHeader &ath) const {
   VERIFY_V3CBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::P_TILE);
   VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE);
 
@@ -647,8 +646,7 @@ void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader
   bitstream.byteAlignment();
 }
 
-auto AtlasTileLayerRBSP::atlas_tile_data_unit() const noexcept
-    -> const AtlasTileDataUnit & {
+auto AtlasTileLayerRBSP::atlas_tile_data_unit() const noexcept -> const AtlasTileDataUnit & {
   VERIFY_V3CBITSTREAM(m_atlas_tile_data_unit);
   return *m_atlas_tile_data_unit;
 }

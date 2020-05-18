@@ -104,7 +104,7 @@ public: // Callback registrations
 private: // Decoder output
   void outputSequence(const V3cParameterSet &vps);
   void outputFrame(const V3cUnitHeader &vuh);
-  void outputAtlasData(AccessUnit& au);
+  void outputAtlasData(AccessUnit &au);
   [[nodiscard]] auto haveFrame(const V3cUnitHeader &vuh) const -> bool;
 
 private: // Video deecoding processes
@@ -112,7 +112,7 @@ private: // Video deecoding processes
   void startGeoVideoDecoders(const V3cParameterSet &vps);
   void startAttrVideoDecoders(const V3cParameterSet &vps);
   void outputGeoVideoData(AccessUnit &au);
-  void outputAttrVideoData(AccessUnit& au);
+  void outputAttrVideoData(AccessUnit &au);
 
 private: // Decoding processes
   void decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Payload &payload);

@@ -82,7 +82,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   x.vme().vme_max_entities_minus1(maxEntities - 1U);
 
   if (auto subnode = config.optional("ViewingSpace"); subnode) {
-    x.viewingSpace = ViewingSpace::loadFromJson(subnode);
+    x.viewingSpace = ViewingSpace::loadFromJson(subnode, config);
   }
 
   x.frameRate = sequenceConfig.require("Fps").asDouble();

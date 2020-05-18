@@ -44,13 +44,13 @@ constexpr auto AtlasFrameTileInformation::afti_signalled_tile_id_flag() const no
   return false;
 }
 
-constexpr auto AtlasFrameTileInformation::
-operator==(const AtlasFrameTileInformation & /* other */) const noexcept {
+constexpr auto AtlasFrameTileInformation::operator==(
+    const AtlasFrameTileInformation & /* other */) const noexcept {
   return true;
 }
 
-constexpr auto AtlasFrameTileInformation::
-operator!=(const AtlasFrameTileInformation & /* other */) const noexcept {
+constexpr auto AtlasFrameTileInformation::operator!=(
+    const AtlasFrameTileInformation & /* other */) const noexcept {
   return false;
 }
 

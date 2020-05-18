@@ -257,10 +257,9 @@ public:
   PatchInformationData() = default;
 
   template <typename Value>
-  constexpr explicit PatchInformationData(Value &&value)
-      : m_data{std::forward<Value>(value)} {}
+  constexpr explicit PatchInformationData(Value &&value) : m_data{std::forward<Value>(value)} {}
 
-            [[nodiscard]] constexpr auto data() const noexcept -> auto &;
+  [[nodiscard]] constexpr auto data() const noexcept -> auto &;
 
   [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
@@ -294,10 +293,9 @@ public:
   AtlasTileDataUnit() = default;
 
   template <typename... Args>
-  explicit AtlasTileDataUnit(Args &&... args)
-      : m_vector{std::forward<Args>(args)...} {}
+  explicit AtlasTileDataUnit(Args &&... args) : m_vector{std::forward<Args>(args)...} {}
 
-            [[nodiscard]] auto atduTotalNumberOfPatches() const noexcept -> std::size_t;
+  [[nodiscard]] auto atduTotalNumberOfPatches() const noexcept -> std::size_t;
   [[nodiscard]] auto atdu_patch_mode(std::size_t p) const -> AtduPatchMode;
   [[nodiscard]] auto patch_information_data(std::size_t p) const -> const PatchInformationData &;
 
@@ -339,8 +337,7 @@ public:
       : m_atlas_tile_header{header}
       , m_atlas_tile_data_unit{in_place, std::forward<AtduArgs>(args)...} {}
 
-            [[nodiscard]] constexpr auto atlas_tile_header() const noexcept
-        -> const AtlasTileHeader &;
+  [[nodiscard]] constexpr auto atlas_tile_header() const noexcept -> const AtlasTileHeader &;
   [[nodiscard]] auto atlas_tile_data_unit() const noexcept -> const AtlasTileDataUnit &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileLayerRBSP &x) -> std::ostream &;

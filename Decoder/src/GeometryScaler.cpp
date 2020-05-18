@@ -187,10 +187,9 @@ public:
       , m_minForegroundConfidence{minForegroundConfidence}
       , m_kernelPoints{getNeighborhood5x5()} {}
 
-            [[nodiscard]] auto colorConfidence(const vector<uint16_t> &depthValues,
-                                               const vector<Vec3w> &colorValues,
-                                               const vector<uint8_t> &edgeMagnitudes) const
-        -> float {
+  [[nodiscard]] auto colorConfidence(const vector<uint16_t> &depthValues,
+                                     const vector<Vec3w> &colorValues,
+                                     const vector<uint8_t> &edgeMagnitudes) const -> float {
     const auto N = depthValues.size();
     assert(N == colorValues.size());
     assert(N == edgeMagnitudes.size());
@@ -278,7 +277,7 @@ public:
       , m_maxCurvature(maxCurvature)
       , m_kernelPoints{getNeighborhood3x3()} {}
 
-            [[nodiscard]] auto curvature(const vector<uint16_t> &depthValues) const -> int {
+  [[nodiscard]] auto curvature(const vector<uint16_t> &depthValues) const -> int {
     const int depthCentral = depthValues[0];
     const int depthLow = depthCentral - m_geometryEdgeMagnitudeTh;
 

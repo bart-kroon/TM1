@@ -196,9 +196,9 @@ private:
   void writeOutputBitstream() const {
     // Find size of largest unit
     const auto maxSize =
-        max_element(cbegin(m_units), cend(m_units),
-                    [](const string &a, const string &b) { return a.size() < b.size(); })
-            ->size();
+        max_element(cbegin(m_units), cend(m_units), [](const string &a, const string &b) {
+          return a.size() < b.size();
+        })->size();
 
     // Calculate how many bytes are needed to store that size
     auto precisionBytesMinus1 = uint8_t{};

@@ -96,7 +96,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream,
 }
 
 void ViewingSpace::encodeTo(OutputBitstream &stream,
-                            const TMIV::MivBitstream::ViewParamsList &/*viewParamsList*/) const {
+                            const TMIV::MivBitstream::ViewParamsList & /*viewParamsList*/) const {
   VERIFY_MIVBITSTREAM(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
   for (const auto &shape : elementaryShapes) {
@@ -263,8 +263,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   return true;
 }
 
-auto PrimitiveShape::ViewingDirectionConstraint::
-operator==(const ViewingDirectionConstraint &other) const -> bool {
+auto PrimitiveShape::ViewingDirectionConstraint::operator==(
+    const ViewingDirectionConstraint &other) const -> bool {
   if (guardBandDirectionSize != other.guardBandDirectionSize) {
     return false;
   }

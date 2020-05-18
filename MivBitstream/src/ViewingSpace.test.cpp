@@ -103,20 +103,19 @@ const auto viewingSpace = array{
                            PrimitiveShape{Halfspace{{3.F, 3.F, 3.F}, -1.F}, {}, {}, {}}},
                           PrimitiveShapeOperation::interpolate}}}},
 
-    ViewingSpace{{{ElementaryShapeOperation::add,
-                   ElementaryShape{
-                       {PrimitiveShape{Spheroid{{1.F, 2.F, 3.F}, {4.F, 5.F, 6.F}}, // primitive
-                                                   {},                            // guard band size
-                                                   {},                            // orientation
-                                                   {}}
-                       },
-                       {}}}}},
+    ViewingSpace{
+        {{ElementaryShapeOperation::add,
+          ElementaryShape{{PrimitiveShape{Spheroid{{1.F, 2.F, 3.F}, {4.F, 5.F, 6.F}}, // primitive
+                                          {}, // guard band size
+                                          {}, // orientation
+                                          {}}},
+                          {}}}}},
 
     ViewingSpace{
         {{ElementaryShapeOperation::add,
           ElementaryShape{
-              {PrimitiveShape{Spheroid{{1.F, 2.F, 3.F}, {4.F, 5.F, 6.F}}, // primitive
-                              15.F,                                            // guard band size
+              {PrimitiveShape{Spheroid{{1.F, 2.F, 3.F}, {4.F, 5.F, 6.F}},     // primitive
+                              15.F,                                           // guard band size
                               euler2quat(radperdeg *Vec3f{30.F, 45.F, 60.F}), // orientation
                               //{}}},
                               PrimitiveShape::ViewingDirectionConstraint{
@@ -129,15 +128,13 @@ const auto viewingSpace = array{
               PrimitiveShapeOperation::interpolate //, {{0}} // std::vector<int> inferringViews
           }}}},
 
-    ViewingSpace{
-        {{ElementaryShapeOperation::add,
-          ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, // primitive
-                                          {}, // guard band size
-                                          {}, // orientation
-                                          {}}},
-                          {},
-                          myInferringViews}}}}
-
+    ViewingSpace{{{ElementaryShapeOperation::add,
+                   ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, // primitive
+                                                   {},               // guard band size
+                                                   {},               // orientation
+                                                   {}}},
+                                   {},
+                                   myInferringViews}}}}
 
 };
 
@@ -170,11 +167,10 @@ const auto viewingSpaceJson = array{
 
 const auto configJson = array{"{\"SourceCameraNames\": [\"v00\",\"v01\",\"v02\"]}"};
 
-const auto viewParamsList =
-    TMIV::MivBitstream::ViewParamsList{std::vector<ViewParams>{
-        ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v00"},
-        ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v01"},
-        ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v02"}}};
+const auto viewParamsList = TMIV::MivBitstream::ViewParamsList{std::vector<ViewParams>{
+    ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v00"},
+    ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v01"},
+    ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v02"}}};
 
 } // namespace examples
 
@@ -190,18 +186,21 @@ auto loadJson(const std::string &strNode, const std::string &strConfig) -> Type 
 } // namespace
 
 TEST_CASE("Viewing space coding") {
-   REQUIRE(bitCodingTest(examples::viewingSpace[0], 114, examples::viewParamsList));
-   REQUIRE(bitCodingTest(examples::viewingSpace[1], 197, examples::viewParamsList));
-   REQUIRE(bitCodingTest(examples::viewingSpace[2], 178, examples::viewParamsList));
-   REQUIRE(bitCodingTest(examples::viewingSpace[3], 194, examples::viewParamsList));
-   REQUIRE(bitCodingTest(examples::viewingSpace[4], 553, examples::viewParamsList));
-   REQUIRE(bitCodingTest(examples::viewingSpace[5], 114, examples::viewParamsList));
-   REQUIRE(bitCodingTest(examples::viewingSpace[6], 274, examples::viewParamsList));
-   REQUIRE(bitCodingTest(examples::viewingSpace[7], 82, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[0], 114, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[1], 197, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[2], 178, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[3], 194, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[4], 553, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[5], 114, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[6], 274, examples::viewParamsList));
+  REQUIRE(bitCodingTest(examples::viewingSpace[7], 82, examples::viewParamsList));
 }
 
 TEST_CASE("Viewing space JSON") {
-   REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[0], examples::configJson[0]) == examples::viewingSpace[0]);
-   REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[1], examples::configJson[0]) == examples::viewingSpace[4]);
-   REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[2], examples::configJson[0]) == examples::viewingSpace[7]);
+  REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[0], examples::configJson[0]) ==
+          examples::viewingSpace[0]);
+  REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[1], examples::configJson[0]) ==
+          examples::viewingSpace[4]);
+  REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[2], examples::configJson[0]) ==
+          examples::viewingSpace[7]);
 }

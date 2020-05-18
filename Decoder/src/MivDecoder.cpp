@@ -273,7 +273,8 @@ void MivDecoder::startGeoVideoDecoders(const V3cParameterSet &vps) {
 
   // Measure video decoding time
   const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
-  cout << "Time taken for decoding all geometry video sub bitstreams, first frame: " << dt << " s\n";
+  cout << "Time taken for decoding all geometry video sub bitstreams, first frame: " << dt
+       << " s\n";
   m_totalGeoVideoDecodingTime += dt;
 }
 
@@ -292,7 +293,8 @@ void MivDecoder::startAttrVideoDecoders(const V3cParameterSet &vps) {
 
   // Measure video decoding time
   const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
-  cout << "Time taken for decoding all attribute video sub bitstreams, first frame: " << dt << " s\n";
+  cout << "Time taken for decoding all attribute video sub bitstreams, first frame: " << dt
+       << " s\n";
   m_totalAttrVideoDecodingTime += dt;
 }
 

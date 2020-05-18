@@ -215,4 +215,4 @@ void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload
   m_nalUnitLog << "--- NAL unit " << string(100 - 13, '-') << '\n'
                << asb.nal_units().back() << payload;
 }
-} // namespace TMIV::MivBitstream
+} // namespace TMIV::Encoder

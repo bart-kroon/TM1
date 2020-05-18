@@ -103,7 +103,7 @@ struct ElementaryShape {
   PrimitiveShapeOperation primitiveOperation{};
 
   // In specification: es_camera_inferred_flag[ e ]
-  std::vector<int> inferringViews;
+  std::vector<int> inferringViews{};
 
   friend auto operator<<(std::ostream &stream, const ElementaryShape &shape) -> std::ostream &;
   auto operator==(const ElementaryShape &other) const -> bool;

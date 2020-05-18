@@ -64,14 +64,12 @@ const auto viewingSpace = array{
                                                              {},             // orientation
                                                              {} // viewing direction constraint
                                                          }},
-                                                         {},
                                                          {}}}}},
     ViewingSpace{{{ElementaryShapeOperation::subtract,
                    ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, {}, {}, {}}},
-                                   PrimitiveShapeOperation::interpolate,
-                                   {}}},
+                                   PrimitiveShapeOperation::interpolate}},
                   {ElementaryShapeOperation::add,
-                   ElementaryShape{{PrimitiveShape{Halfspace{{}, {}}, {}, {}, {}}}, {}}}}},
+                   ElementaryShape{{PrimitiveShape{Halfspace{{}, {}}, {}, {}, {}}}}}}},
     ViewingSpace{{{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
                                                       Cuboid{{}, {}},
                                                       1.F, // guard band size
@@ -88,8 +86,7 @@ const auto viewingSpace = array{
                                               deg2HalfQuat(90.F, 45.F), // viewing_direction
                                               30.F,                     // yaw_range,
                                               60.F                      // pitch_range
-                                          }}},
-                          {}}}}},
+                                          }}}}}}},
     ViewingSpace{
         {{ElementaryShapeOperation::intersect,
           ElementaryShape{
@@ -99,14 +96,12 @@ const auto viewingSpace = array{
                                   deg2HalfQuat(90.F, 45.F, 0.F), // viewing_direction
                                   30.F,                          // yaw_range,
                                   60.F                           // pitch_range
-                              }}},
-              {}}},
+                              }}}}},
          {ElementaryShapeOperation::subtract,
           ElementaryShape{{PrimitiveShape{Cuboid{{-1.F, 0.F, 1.F}, {1.F, 2.F, 3.F}}, {}, {}, {}},
                            PrimitiveShape{Spheroid{{-2.F, 2.F, 2.F}, {3.F, 2.F, 1.F}}, {}, {}, {}},
                            PrimitiveShape{Halfspace{{3.F, 3.F, 3.F}, -1.F}, {}, {}, {}}},
-                          PrimitiveShapeOperation::interpolate,
-                          {}}}}},
+                          PrimitiveShapeOperation::interpolate}}}},
 
     ViewingSpace{
         {{ElementaryShapeOperation::add,
@@ -114,7 +109,6 @@ const auto viewingSpace = array{
                                           {}, // guard band size
                                           {}, // orientation
                                           {}}},
-                          {},
                           {}}}}},
 
     ViewingSpace{
@@ -131,8 +125,7 @@ const auto viewingSpace = array{
                                   30.F,                              // yaw_range,
                                   60.F                               // pitch_range
                               }}},
-              PrimitiveShapeOperation::interpolate,
-              {}}}}},
+              PrimitiveShapeOperation::interpolate}}}},
 
     ViewingSpace{{{ElementaryShapeOperation::add,
                    ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, // primitive

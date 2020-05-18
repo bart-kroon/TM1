@@ -96,7 +96,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream,
 }
 
 void ViewingSpace::encodeTo(OutputBitstream &stream,
-                            const TMIV::MivBitstream::ViewParamsList &viewParamsList) const {
+                            const TMIV::MivBitstream::ViewParamsList &/*viewParamsList*/) const {
   VERIFY_MIVBITSTREAM(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
   for (const auto &shape : elementaryShapes) {
@@ -367,7 +367,7 @@ auto Halfspace::decodeFrom(InputBitstream &stream) -> Halfspace {
   return plane;
 }
 
-void Halfspace::encodeTo(OutputBitstream &stream, bool cameraInferred) const {
+void Halfspace::encodeTo(OutputBitstream &stream, bool /*cameraInferred*/) const {
   stream.putFloat16(Half(normal.x()));
   stream.putFloat16(Half(normal.y()));
   stream.putFloat16(Half(normal.z()));

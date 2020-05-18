@@ -39,6 +39,7 @@
 #include <cassert>
 #include <filesystem>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 
 using namespace std;
@@ -67,28 +68,29 @@ public:
   }
 
   void run() override {
-    openOutputBitstream();
+    // Decode V3C units and VPS
+    readIntermediateBitstream();
 
-    // Decode VPS & copy to output bitstream
-    processIntermediateBitstream();
-
-    // Append all video sub bitstreams.
-    for (uint8_t j = 0; j <= m_vps->vps_atlas_count_minus1(); ++j) {
+    // Append all video sub bitstreams
+    for (uint8_t j = 0; j <= m_vps.vps_atlas_count_minus1(); ++j) {
       checkRestrictions(j);
-      if (m_vps->vps_geometry_video_present_flag(j)) {
-        appendGvd(m_vps->vps_atlas_id(j));
+
+      if (m_vps.vps_geometry_video_present_flag(j)) {
+        appendGvd(m_vps.vps_atlas_id(j));
       }
-      if (m_vps->vps_occupancy_video_present_flag(j)) {
-        appendOvd(m_vps->vps_atlas_id(j));
+      if (m_vps.vps_occupancy_video_present_flag(j)) {
+        appendOvd(m_vps.vps_atlas_id(j));
       }
-      if (m_vps->vps_attribute_video_present_flag(j)) {
-        const auto &ai = m_vps->attribute_information(j);
+      if (m_vps.vps_attribute_video_present_flag(j)) {
+        const auto &ai = m_vps.attribute_information(j);
         for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
           const auto type = ai.ai_attribute_type_id(i);
-          appendAvd(m_vps->vps_atlas_id(j), i, type);
+          appendAvd(m_vps.vps_atlas_id(j), i, type);
         }
       }
     }
+
+    writeOutputBitstream();
   }
 
 private:
@@ -107,56 +109,55 @@ private:
     }
   }
 
-  void openOutputBitstream() {
-    m_outStream.open(m_outputBitstreamPath, ios::binary);
-    if (!m_outStream.good()) {
-      throw runtime_error(
-          format("Failed to open intermediate bitstream ({}) for reading.", m_outputBitstreamPath));
-    }
-  }
-
-  void processIntermediateBitstream() {
-    ifstream inStream{m_intermediateBitstreamPath, ios::binary};
-    if (!inStream.good()) {
+  void readIntermediateBitstream() {
+    ifstream stream{m_intermediateBitstreamPath, ios::binary};
+    if (!stream.good()) {
       throw runtime_error(format("Failed to open intermediate bitstream ({}) for reading.",
                                  m_intermediateBitstreamPath));
     }
 
-    // This version of this multiplexer just puts the video sub bitstreams to the end. There is no
-    // interleaving of V3C units. Copy the intermediate bitstream to the output bitstream.
-    m_outStream << inStream.rdbuf();
+    // Decode SSVH
+    const auto ssvh = SampleStreamV3cHeader::decodeFrom(stream);
 
-    // Decode the VPS to learn which video sub bitstreams have to be appended.
-    inStream.seekg(0);
-    m_vps = decodeVps(inStream);
-    cout << *m_vps;
-    cout << "Appended " << m_intermediateBitstreamPath << '\n';
-  }
+    // Decode first V3C unit, which has to contain the VPS
+    const auto ssvu0 = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
 
-  auto decodeVps(istream &stream) -> V3cParameterSet {
-    m_ssvh = SampleStreamV3cHeader::decodeFrom(stream);
-    const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, *m_ssvh);
-    istringstream substream{ssvu.ssvu_v3c_unit()};
+    // Decode the VPS
+    istringstream substream{ssvu0.ssvu_v3c_unit()};
     const auto vpses = vector<V3cParameterSet>{};
     const auto vuh = V3cUnitHeader::decodeFrom(substream, vpses);
     if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
       throw runtime_error("the first V3C unit has to be the VPS");
     }
-    return V3cParameterSet::decodeFrom(substream);
+    m_vps = V3cParameterSet::decodeFrom(substream);
+    cout << m_vps;
+
+    // Append the first V3C unit
+    m_units.push_back(ssvu0.ssvu_v3c_unit());
+
+    // Append the remaining V3C units
+    while (!stream.eof()) {
+      const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+      m_units.push_back(ssvu.ssvu_v3c_unit());
+      stream.peek();
+    }
+
+    cout << "Appended " << m_intermediateBitstreamPath << " with a total of " << m_units.size()
+         << " V3C units including the VPS\n";
   }
 
   void checkRestrictions(uint8_t atlasIdx) const {
-    if (m_vps->vps_map_count_minus1(atlasIdx) > 0) {
+    if (m_vps.vps_map_count_minus1(atlasIdx) > 0) {
       throw runtime_error("Having multiple maps is not supported.");
     }
-    if (m_vps->vps_auxiliary_video_present_flag(atlasIdx)) {
+    if (m_vps.vps_auxiliary_video_present_flag(atlasIdx)) {
       throw runtime_error("Auxiliary video is not supported.");
     }
   }
 
   void appendGvd(uint8_t atlasId) {
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
-    vuh.vuh_v3c_parameter_set_id(m_vps->vps_v3c_parameter_set_id());
+    vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     appendSubBitstream(vuh, format(m_gvdSubBitstreamPathFmt, int(atlasId)));
   }
@@ -164,14 +165,14 @@ private:
   void appendOvd(uint8_t atlasId) {
     cout << "WARNING: OVD support is untested\n";
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
-    vuh.vuh_v3c_parameter_set_id(m_vps->vps_v3c_parameter_set_id());
+    vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     appendSubBitstream(vuh, format(*m_ovdSubBitstreamPathFmt, int(atlasId)));
   }
 
   void appendAvd(int atlasId, uint8_t attributeIdx, AiAttributeTypeId typeId) {
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
-    vuh.vuh_v3c_parameter_set_id(m_vps->vps_v3c_parameter_set_id());
+    vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     vuh.vuh_attribute_index(attributeIdx);
     appendSubBitstream(vuh, format(*m_avdSubBitstreamPathFmt, codeOf(typeId), int(atlasId)));
@@ -184,13 +185,44 @@ private:
           format("Failed to open sub bitstream ({}) for reading", subBitstreamPath));
     }
     ostringstream substream;
-    const auto vpses = vector<V3cParameterSet>{*m_vps};
+    const auto vpses = vector<V3cParameterSet>{m_vps};
     vuh.encodeTo(substream, vpses);
     substream << inStream.rdbuf();
 
-    auto ssvu = SampleStreamV3cUnit{substream.str()};
-    ssvu.encodeTo(m_outStream, *m_ssvh);
     cout << "Appended " << subBitstreamPath << '\n';
+    m_units.push_back(substream.str());
+  }
+
+  void writeOutputBitstream() const {
+    // Find size of largest unit
+    const auto maxSize =
+        max_element(cbegin(m_units), cend(m_units),
+                    [](const string &a, const string &b) { return a.size() < b.size(); })
+            ->size();
+
+    // Calculate how many bytes are needed to store that size
+    auto precisionBytesMinus1 = uint8_t{};
+    while (maxSize >= uint64_t(1) << 8 * (precisionBytesMinus1 + 1)) {
+      ++precisionBytesMinus1;
+    }
+
+    // Write the sample stream header
+    ofstream stream{m_outputBitstreamPath, ios::binary};
+    const auto ssvh = SampleStreamV3cHeader{precisionBytesMinus1};
+    ssvh.encodeTo(stream);
+    cout << '\n' << ssvh;
+
+    // Write the units
+    for (const auto &unit : m_units) {
+      const auto ssvu = SampleStreamV3cUnit{unit};
+      ssvu.encodeTo(stream, ssvh);
+      cout << '\n' << ssvu;
+
+      // Print the V3C unit header (for fun, why not)
+      istringstream stream{unit};
+      const auto vuh = V3cUnitHeader::decodeFrom(stream, {m_vps});
+      cout << vuh;
+    }
   }
 
   path m_intermediateBitstreamPath;
@@ -199,9 +231,8 @@ private:
   optional<string> m_avdSubBitstreamPathFmt;
   optional<string> m_ovdSubBitstreamPathFmt;
 
-  ofstream m_outStream;
-  optional<SampleStreamV3cHeader> m_ssvh;
-  optional<V3cParameterSet> m_vps;
+  V3cParameterSet m_vps;
+  vector<string> m_units;
 };
 } // namespace TMIV::Encoder
 

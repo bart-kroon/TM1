@@ -3,7 +3,7 @@
     "ColorSpace": "YUV420",
     "Latitude_range_of_ERP": 180,
     "Longitude_range_of_ERP": 180,
-    "NumberOfFrames": 17,
+    "NumberOfFrames": 3,
     "Original_file_path": "v0_texture_2048x2048_yuv420p10le.yuv",
     "Peak_value_of_10bits": 1020,
     "Projection": "Equirectangular",

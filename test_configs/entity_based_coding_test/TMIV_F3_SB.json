@@ -16,8 +16,8 @@
         },
         "GeometryQuantizerMethod": "GeometryQuantizer",
         "EntityEncodeRange": [
-            8,
-            16
+            0,
+            25
         ],
         "HierarchicalPruner": {
             "depthParameter": 50,
@@ -52,7 +52,20 @@
         "v8",
         "v9",
         "v10",
-        "v11"
+        "v11",
+        "v12",
+        "v13",
+        "v14",
+        "v15",
+        "v16",
+        "v17",
+        "v18",
+        "v19",
+        "v20",
+        "v21",
+        "v22",
+        "v23",
+        "v24"
     ],
     "SourceCameraParameters": "TechnicolorMuseum.json",
     "SourceGeometryBitDepth": 16,
@@ -63,12 +76,12 @@
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
     "blockSize": 8,
     "geometryScaleEnabledFlag": false,
-    "intraPeriod": 32,
+    "intraPeriod": 2,
     "maxAtlases": 2,
     "maxEntities": 25,
     "maxLumaSampleRate": 1069547520.0,
     "maxLumaPictureSize": 8912896,
     "numGroups": 1,
-    "numberOfFrames": 17,
+    "numberOfFrames": 3,
     "startFrame": 100
 }

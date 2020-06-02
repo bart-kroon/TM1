@@ -83,6 +83,11 @@ auto Encoder::calculateNominalAtlasFrameSizes(const IvSequenceParams &ivSequence
     return result;
   }
 
+  if (!m_overrideAtlasFrameSizes.empty()) {
+    cout << "WARNING: When overriding nominal atlas frame sizes, constraints are not checked.\n";
+    return m_overrideAtlasFrameSizes;
+  }
+
   // Translate block rate into a maximum number of blocks
   const auto maxBlocks = int(m_maxBlockRate / ivSequenceParams.frameRate);
 

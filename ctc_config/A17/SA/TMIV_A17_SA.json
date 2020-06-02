@@ -1,0 +1,78 @@
+{
+    "AtlasMetadataPath": "ATL_SA_R0_Tm_c00.bit",
+    "AttributeVideoDataPathFmt": "ATL_SA_R0_Tt_c{:02}_{}x{}_yuv420p10le.yuv",
+    "DepthQualityAssessor": {
+        "blendingFactor": 0.03,
+        "maxOutlierRatio": 0.001
+    },
+    "DepthQualityAssessorMethod": "DepthQualityAssessor",
+    "EncoderMethod": "GroupBasedEncoder",
+    "GeometryVideoDataPathFmt": "ATL_SA_R0_Td_c{:02}_{}x{}_yuv420p10le.yuv",
+    "GroupBasedEncoder": {
+        "AtlasConstructor": {
+            "Aggregator": {},
+            "AggregatorMethod": "Aggregator",
+            "AtlasResolution": [
+                4096,
+                2048
+            ],
+            "ExternalOccupancyCoding": true,
+            "HierarchicalPruner": {
+                "depthParameter": 50,
+                "dilate": 5,
+                "erode": 2,
+                "maxDepthError": 0.1,
+                "maxStretching": 5,
+                "rayAngleParameter": 10,
+                "stretchingParameter": 3
+            },
+            "MaxLumaSamplesPerFrame": 33554432,
+            "Packer": {
+                "Alignment": 8,
+                "MinPatchSize": 16,
+                "Overlap": 1,
+                "PiP": 1
+            },
+            "PackerMethod": "Packer",
+            "PrunerMethod": "HierarchicalPruner"
+        },
+        "AtlasConstructorMethod": "AtlasConstructor",
+        "DepthOccupancy": {
+            "depthOccMapThresholdIfSet": 64
+        },
+        "DepthOccupancyMethod": "DepthOccupancy",
+        "ViewOptimizerMethod": "ViewReducer",
+        "ViewReducer": {},
+        "geometryScaleEnabledFlag": true
+    },
+    "OccupancyVideoDataPathFmt": "ATL_SA_R0_To_c{:02}_{}x{}_yuv420p.yuv",
+    "OmafV1CompatibleFlag": true,
+    "OutputDirectory": ".",
+    "SourceCameraNames": [
+        "v0",
+        "v1",
+        "v2",
+        "v3",
+        "v4",
+        "v5",
+        "v6",
+        "v7",
+        "v8",
+        "v9",
+        "v10",
+        "v11",
+        "v12",
+        "v13",
+        "v14"
+    ],
+    "SourceCameraParameters": "ClassroomVideo.json",
+    "SourceDepthBitDepth": 16,
+    "SourceDepthPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
+    "SourceDirectory": ".",
+    "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
+    "intraPeriod": 32,
+    "maxEntities": 1,
+    "numGroups": 1,
+    "numberOfFrames": 17,
+    "startFrame": 23
+}

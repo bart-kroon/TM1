@@ -34,7 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
 #define _TMIV_MIVBITSTREAM_VIEWPARAMSLIST_H_
 
-#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Common/Vector.h>
@@ -44,7 +44,7 @@ struct ViewParams {
   CameraIntrinsics ci;
   CameraExtrinsics ce;
   DepthQuantization dq;
-  std::optional<PruningChildren> pc;
+  std::optional<PruningParent> pp;
 
   // Not in the specification. Just to improve screen output
   std::string name{};

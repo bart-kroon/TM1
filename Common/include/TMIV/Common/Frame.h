@@ -41,6 +41,7 @@
 #include <cstdint>
 #include <istream>
 #include <ostream>
+#include <variant>
 
 namespace TMIV::Common {
 class YUV400P8 {};
@@ -149,6 +150,23 @@ auto yuv420p(const Frame<YUV444P16> &frame) -> Frame<YUV420P16>;
 auto yuv444p(const Frame<YUV420P8> &frame) -> Frame<YUV444P8>;
 auto yuv444p(const Frame<YUV420P10> &frame) -> Frame<YUV444P10>;
 auto yuv444p(const Frame<YUV420P16> &frame) -> Frame<YUV444P16>;
+
+// A type that can carry a large variation of possible frame types
+//
+// TODO(BK): Consider using AnyFrame for IO library
+struct AnyFrame {
+  AnyFrame() = default;
+
+  // Convert from any specific format
+  template <typename FORMAT> explicit AnyFrame(const Frame<FORMAT> &frame);
+
+  // Convert to any specific format
+  template <typename FORMAT> auto as() const -> Frame<FORMAT>;
+
+  static constexpr int maxPlanes = 4;
+  std::array<Mat<uint32_t>, maxPlanes> planes{};
+  std::array<uint8_t, maxPlanes> bitdepth{};
+};
 } // namespace TMIV::Common
 
 #include "Frame.hpp"

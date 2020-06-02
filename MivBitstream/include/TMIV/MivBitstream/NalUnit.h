@@ -41,13 +41,19 @@
 
 namespace TMIV::MivBitstream {
 enum class NalUnitType : std::uint8_t {
-  NAL_TRAIL,
-  NAL_TSA,
-  NAL_STSA,
-  NAL_RADL,
-  NAL_RASL,
-  NAL_SKIP,
-  NAL_BLA_W_LP = 10,
+  NAL_TRAIL_N,
+  NAL_TRAIL_R,
+  NAL_TSA_N,
+  NAL_TSA_R,
+  NAL_STSA_N,
+  NAL_STSA_R,
+  NAL_RADL_N,
+  NAL_RADL_R,
+  NAL_RASL_N,
+  NAL_RASL_R,
+  NAL_SKIP_N,
+  NAL_SKIP_R,
+  NAL_BLA_W_LP = 16,
   NAL_BLA_W_RADL,
   NAL_BLA_N_LP,
   NAL_GBLA_W_LP,
@@ -59,10 +65,10 @@ enum class NalUnitType : std::uint8_t {
   NAL_GIDR_N_LP,
   NAL_CRA,
   NAL_GCRA,
-  NAL_ASPS = 32,
+  NAL_ASPS = 36,
   NAL_AFPS,
   NAL_AUD,
-  NAL_VPCC_AUD,
+  NAL_V3C_AUD,
   NAL_EOS,
   NAL_EOB,
   NAL_FD,
@@ -70,7 +76,8 @@ enum class NalUnitType : std::uint8_t {
   NAL_SUFFIX_NSEI,
   NAL_PREFIX_ESEI,
   NAL_SUFFIX_ESEI,
-  NAL_APS
+  NAL_AAPS,
+  NAL_FOC
 };
 
 auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream &;

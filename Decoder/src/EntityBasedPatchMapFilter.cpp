@@ -52,7 +52,7 @@ EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json & /*rootNode*/,
 
 void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(
     MivBitstream::AccessUnit &frame) const {
-  if (m_entityFiltering && 0 < frame.vps->miv_sequence_params().msp_max_entities_minus1()) {
+  if (m_entityFiltering && 0 < frame.vps->vps_miv_extension().vme_max_entities_minus1()) {
     for (auto &atla : frame.atlas) {
       Vec2i sz = atla.blockToPatchMap.getSize();
       for (int y = 0; y < sz[1]; y++) {

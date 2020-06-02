@@ -60,7 +60,7 @@ public:
   //
   // The batch is stored within the Rasterizer for later processing.
   // Multiple batches may be submitted sequentially.
-  void submit(ImageVertexDescriptorList vertices, AttributeMaps attributes,
+  void submit(const ImageVertexDescriptorList &vertices, AttributeMaps attributes,
               const TriangleDescriptorList &triangles);
 
   // Raster all submitted batches

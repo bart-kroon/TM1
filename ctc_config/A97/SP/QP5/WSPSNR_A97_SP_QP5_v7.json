@@ -1,0 +1,13 @@
+{
+    "BitDepth": 10,
+    "ColorSpace": "YUV420",
+    "NumberOfFrames": 97,
+    "Original_file_path": "v7_texture_1920x1088_yuv420p10le.yuv",
+    "Peak_value_of_10bits": 1020,
+    "Projection": "Perspective",
+    "Reconstructed_file_path": "A97_SP_QP5_Tt_v7_1920x1088_yuv420p10le.yuv",
+    "Start_frame_of_original_file": 0,
+    "Version": "2.0",
+    "Video_height": 1088,
+    "Video_width": 1920
+}

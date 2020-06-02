@@ -35,8 +35,7 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
-
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 #include <algorithm>
 #include <utility>
@@ -47,18 +46,30 @@ using namespace TMIV::Common;
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
   switch (x) {
-  case NalUnitType::NAL_TRAIL:
-    return stream << "NAL_TRAIL";
-  case NalUnitType::NAL_TSA:
-    return stream << "NAL_TSA";
-  case NalUnitType::NAL_STSA:
-    return stream << "NAL_STSA";
-  case NalUnitType::NAL_RADL:
-    return stream << "NAL_RADL";
-  case NalUnitType::NAL_RASL:
-    return stream << "NAL_RASL";
-  case NalUnitType::NAL_SKIP:
-    return stream << "NAL_SKIP";
+  case NalUnitType::NAL_TRAIL_N:
+    return stream << "NAL_TRAIL_N";
+  case NalUnitType::NAL_TRAIL_R:
+    return stream << "NAL_TRAIL_R";
+  case NalUnitType::NAL_TSA_N:
+    return stream << "NAL_TSA_N";
+  case NalUnitType::NAL_TSA_R:
+    return stream << "NAL_TSA_R";
+  case NalUnitType::NAL_STSA_N:
+    return stream << "NAL_STSA_N";
+  case NalUnitType::NAL_STSA_R:
+    return stream << "NAL_STSA_R";
+  case NalUnitType::NAL_RADL_N:
+    return stream << "NAL_RADL_N";
+  case NalUnitType::NAL_RADL_R:
+    return stream << "NAL_RADL_R";
+  case NalUnitType::NAL_RASL_N:
+    return stream << "NAL_RASL_N";
+  case NalUnitType::NAL_RASL_R:
+    return stream << "NAL_RASL_R";
+  case NalUnitType::NAL_SKIP_N:
+    return stream << "NAL_SKIP_N";
+  case NalUnitType::NAL_SKIP_R:
+    return stream << "NAL_SKIP_R";
   case NalUnitType::NAL_BLA_W_LP:
     return stream << "NAL_BLA_W_LP";
   case NalUnitType::NAL_BLA_W_RADL:
@@ -89,8 +100,8 @@ auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
     return stream << "NAL_AFPS";
   case NalUnitType::NAL_AUD:
     return stream << "NAL_AUD";
-  case NalUnitType::NAL_VPCC_AUD:
-    return stream << "NAL_VPCC_AUD";
+  case NalUnitType::NAL_V3C_AUD:
+    return stream << "NAL_V3C_AUD";
   case NalUnitType::NAL_EOS:
     return stream << "NAL_EOS";
   case NalUnitType::NAL_EOB:
@@ -105,18 +116,21 @@ auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
     return stream << "NAL_PREFIX_ESEI";
   case NalUnitType::NAL_SUFFIX_ESEI:
     return stream << "NAL_SUFFIX_ESEI";
-  case NalUnitType::NAL_APS:
-    return stream << "NAL_APS";
+  case NalUnitType::NAL_AAPS:
+    return stream << "NAL_AAPS";
+  case NalUnitType::NAL_FOC:
+    return stream << "NAL_FOC";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }
 }
 
 NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id_plus1)
-    : m_nal_unit_type{nal_unit_type}, m_nal_layer_id{uint8_t(nal_layer_id)},
-      m_nal_temporal_id_plus1{uint8_t(nal_temporal_id_plus1)} {
-  VERIFY_VPCCBITSTREAM(0 <= nal_layer_id && nal_layer_id <= 63);
-  VERIFY_VPCCBITSTREAM(0 < nal_temporal_id_plus1 && nal_temporal_id_plus1 <= 7);
+    : m_nal_unit_type{nal_unit_type}
+    , m_nal_layer_id{uint8_t(nal_layer_id)}
+    , m_nal_temporal_id_plus1{uint8_t(nal_temporal_id_plus1)} {
+  VERIFY_V3CBITSTREAM(0 <= nal_layer_id && nal_layer_id <= 63);
+  VERIFY_V3CBITSTREAM(0 < nal_temporal_id_plus1 && nal_temporal_id_plus1 <= 7);
 }
 
 auto operator<<(ostream &stream, const NalUnitHeader &x) -> ostream & {
@@ -128,11 +142,11 @@ auto operator<<(ostream &stream, const NalUnitHeader &x) -> ostream & {
 auto NalUnitHeader::decodeFrom(istream &stream) -> NalUnitHeader {
   InputBitstream bitstream{stream};
   const auto nal_forbidden_zero_bit = bitstream.getFlag();
-  VERIFY_VPCCBITSTREAM(!nal_forbidden_zero_bit);
+  VERIFY_V3CBITSTREAM(!nal_forbidden_zero_bit);
   const auto nal_unit_type = bitstream.readBits<NalUnitType>(6);
   const auto nal_layer_id = bitstream.readBits<int>(6);
   const auto nal_temporal_id_plus1 = bitstream.readBits<int>(3);
-  VERIFY_VPCCBITSTREAM(nal_temporal_id_plus1 > 0);
+  VERIFY_V3CBITSTREAM(nal_temporal_id_plus1 > 0);
   return NalUnitHeader{nal_unit_type, nal_layer_id, nal_temporal_id_plus1};
 }
 
@@ -148,7 +162,7 @@ NalUnit::NalUnit(const NalUnitHeader &nal_unit_header, string rbsp)
     : m_nal_unit_header{nal_unit_header}, m_rbsp{std::move(std::move(rbsp))} {}
 
 auto operator<<(ostream &stream, const NalUnit &x) -> ostream & {
-  return stream << x.m_nal_unit_header << "NumBytesInRbsp=" << x.m_rbsp.size() << "\n";
+  return stream << x.m_nal_unit_header << "NumBytesInRbsp=" << x.m_rbsp.size() << '\n';
 }
 
 auto NalUnit::decodeFrom(istream &stream, size_t numBytesInNalUnit) -> NalUnit {

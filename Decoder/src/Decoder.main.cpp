@@ -36,10 +36,10 @@
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
 #include <TMIV/IO/IO.h>
-#include <TMIV/IO/IvMetadataReader.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 #include <TMIV/Renderer/RecoverPrunedViews.h>
+
+#include "IvMetadataReader.h"
 
 #include <iostream>
 #include <map>
@@ -49,24 +49,21 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
-
 namespace TMIV::Decoder {
+void registerComponents();
+
 class Application : public Common::Application {
 private:
-  IO::IvMetadataReader m_metadataReader;
+  IvMetadataReader m_metadataReader;
   unique_ptr<IDecoder> m_decoder;
   multimap<int, int> m_inputToOutputFrameIdMap;
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Decoder", move(argv)},                 // Load configuration
-        m_metadataReader{json()},                                   // Read MIV bitstream
-        m_decoder{create<IDecoder>("Decoder")},                     // Decoder/renderer
-        m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} { // Handle pose traces
-
+      : Common::Application{"Decoder", move(argv)}
+      , m_metadataReader{json()}
+      , m_decoder{create<IDecoder>("Decoder")}
+      , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {
     m_metadataReader.decoder().onFrame.emplace_back([this](const AccessUnit &frame) {
       auto range = m_inputToOutputFrameIdMap.equal_range(frame.frameId);
       for (auto i = range.first; i != range.second; ++i) {
@@ -95,9 +92,9 @@ private:
       IO::saveBlockToPatchMaps(json(), outputFrameId, frame);
     }
 
-    if (json().optional("PrunedViewTexturePathFmt")    // format: yuv444p10
-        || json().optional("PrunedViewDepthPathFmt")   // format: yuv420p10
-        || json().optional("PrunedViewMaskPathFmt")) { // format: yuv420p
+    if (json().optional("PrunedViewAttributePathFmt")   // format: yuv444p10
+        || json().optional("PrunedViewGeometryPathFmt") // format: yuv420p10
+        || json().optional("PrunedViewMaskPathFmt")) {  // format: yuv420p
       cout << "Dumping recovered pruned views to disk" << endl;
       IO::savePrunedFrame(json(), outputFrameId, Renderer::recoverPrunedViewAndMask(frame));
     }
@@ -142,8 +139,6 @@ private:
   }
 };
 } // namespace TMIV::Decoder
-
-#include "Decoder.reg.hpp"
 
 auto main(int argc, char *argv[]) -> int {
   try {

@@ -34,9 +34,10 @@
 #ifndef _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 #define _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
 
 namespace TMIV::MivBitstream {
 struct IvSequenceParams {
@@ -44,15 +45,35 @@ struct IvSequenceParams {
   explicit IvSequenceParams(bool haveTexture);
   IvSequenceParams(const Common::SizeVector &atlasSizes, bool haveTexture);
 
-  VpccParameterSet vps;
-  ViewParamsList viewParamsList;
+  V3cParameterSet vps;
+  AtlasAdaptationParameterSetRBSP aaps;
   std::optional<ViewingSpace> viewingSpace{};
 
-  // Convenience function to access the MIV sequence params
-  [[nodiscard]] auto msp() const noexcept -> const MivSequenceParams &;
-  auto msp() noexcept -> MivSequenceParams &;
+  // Encoder-internal variables
+  double frameRate{};
+  ViewParamsList viewParamsList;
 
-  friend auto operator<<(std::ostream &stream, const IvSequenceParams &x) -> std::ostream &;
+  // Write the MIV view params list within the AAPS
+  void updateMvpl();
+
+  // Convenience function to access the VPS MIV extension
+  [[nodiscard]] auto vme() const noexcept -> const VpsMivExtension &;
+
+  // Convenience function to create and access the VPS MIV extension
+  [[nodiscard]] auto vme() noexcept -> VpsMivExtension &;
+
+  // Convenience function to access the AAPS MIV extension
+  [[nodiscard]] auto aame() const noexcept -> const AapsMivExtension &;
+
+  // Convenience function to create and access the AAPS MIV extension
+  [[nodiscard]] auto aame() noexcept -> AapsMivExtension &;
+
+  // Convenience function to access the MIV view parameter list
+  [[nodiscard]] auto mvpl() const noexcept -> const MivViewParamsList &;
+
+  // Convenience function to create and access the MIV view parameter list
+  [[nodiscard]] auto mvpl() noexcept -> MivViewParamsList &;
+
   auto operator==(const IvSequenceParams &other) const -> bool;
   auto operator!=(const IvSequenceParams &other) const -> bool { return !operator==(other); }
 };

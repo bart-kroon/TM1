@@ -35,24 +35,50 @@
 
 #include <TMIV/Common/Factory.h>
 
+#include <cassert>
+
 using namespace std;
-using namespace TMIV::AtlasConstructor;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::ViewOptimizer;
-using namespace TMIV::DepthOccupancy;
+
+// Encoder sub-component interfaces
+using TMIV::Aggregator::IAggregator;
+using TMIV::GeometryQuantizer::IGeometryQuantizer;
+using TMIV::Packer::IPacker;
+using TMIV::Pruner::IPruner;
+using TMIV::ViewOptimizer::IViewOptimizer;
 
 namespace TMIV::Encoder {
-auto viewOptimizers() -> const auto & { return Factory<IViewOptimizer>::getInstance(); }
-auto atlasConstructors() -> const auto & { return Factory<IAtlasConstructor>::getInstance(); }
-auto depthOccupancies() -> const auto & { return Factory<IDepthOccupancy>::getInstance(); }
+namespace {
+template <typename Interface>
+auto create(const char *name, const Json &rootNode, const Json &componentNode) {
+  const auto &instance = Factory<Interface>::getInstance();
+  return instance.create(name, rootNode, componentNode);
+}
+
+void runtimeCheck(bool cond, const char *what) {
+  if (!cond) {
+    throw runtime_error(what);
+  }
+}
+} // namespace
 
 Encoder::Encoder(const Json &rootNode, const Json &componentNode)
-    : m_viewOptimizer{viewOptimizers().create("ViewOptimizer", rootNode, componentNode)},
-      m_atlasConstructor{atlasConstructors().create("AtlasConstructor", rootNode, componentNode)},
-      m_depthOccupancy{depthOccupancies().create("DepthOccupancy", rootNode, componentNode)},
-      m_geometryDownscaler{rootNode, componentNode} {}
+    : m_viewOptimizer{create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
+    , m_pruner{create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
+    , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}
+    , m_packer{create<IPacker>("Packer", rootNode, componentNode)}
+    , m_depthOccupancy{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
+    , m_geometryDownscaler{rootNode, componentNode} {
+  // Parameters
+  const auto numGroups = rootNode.require("numGroups").asInt();
+  m_blockSize = rootNode.require("blockSize").asInt();
+  const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
+  const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
+  const auto maxAtlases = rootNode.require("maxAtlases").asInt();
+  m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
 
+<<<<<<< HEAD
 auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
     -> const MivBitstream::IvSequenceParams & {
   auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
@@ -68,26 +94,40 @@ auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
   return m_geometryDownscaler.transformSequenceParams(m_depthOccupancy->transformSequenceParams(
       m_atlasConstructor->prepareSequence(move(optimal.first), move(optimal.second))));
 }
+=======
+  if (auto node = componentNode.require("Packer").optional("dilate"); node) {
+    m_dilationIter = node.asInt();
+  }
+>>>>>>> integration
 
-void Encoder::prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) {
-  m_atlasConstructor->prepareAccessUnit(move(ivAccessUnitParams));
+  // Check parameters
+  runtimeCheck(1 <= numGroups, "numGroups should be at least one");
+  runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
+  runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
+  if (maxLumaSampleRate == 0) {
+    runtimeCheck(maxLumaPictureSize == 0 && maxAtlases == 0,
+                 "Either specify all constraints or none");
+  } else {
+    runtimeCheck(maxLumaPictureSize > 0 && maxAtlases > 0,
+                 "Either specify all constraints or none");
+    runtimeCheck(numGroups <= maxAtlases, "There should be at least one atlas per group");
+  }
+
+  // Translate parameters to concrete constraints
+  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
+  m_maxBlockRate = maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * sqr(m_blockSize));
+  m_maxBlocksPerAtlas = maxLumaPictureSize / sqr(m_blockSize);
+  m_maxAtlases = maxAtlases / numGroups;
+
+  // Read the entity encoding range if exisited
+  if (auto subnode = componentNode.optional("EntityEncodeRange")) {
+    m_entityEncRange = subnode.asIntVector<2>();
+  }
+
+  if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
+    throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
+  }
 }
 
-void Encoder::pushFrame(Common::MVD16Frame views) {
-  return m_atlasConstructor->pushFrame(m_viewOptimizer->optimizeFrame(move(views)));
-}
-
-auto Encoder::completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & {
-  return m_geometryDownscaler.transformAccessUnitParams(
-      m_depthOccupancy->transformAccessUnitParams(m_atlasConstructor->completeAccessUnit()));
-}
-
-auto Encoder::popAtlas() -> Common::MVD10Frame {
-  return m_geometryDownscaler.transformFrame(
-      m_depthOccupancy->transformAtlases(m_atlasConstructor->popAtlas()));
-}
-
-auto Encoder::maxLumaSamplesPerFrame() const -> size_t {
-  return m_atlasConstructor->maxLumaSamplesPerFrame();
-}
+auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
 } // namespace TMIV::Encoder

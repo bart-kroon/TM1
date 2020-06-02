@@ -40,14 +40,14 @@ using namespace TMIV::MivBitstream;
 TEST_CASE("access_unit_delimiter_rbsp", "[Access Unit Delimiter RBSP]") {
   auto x = AccessUnitDelimiterRBSP{};
 
-  REQUIRE(toString(x) == R"(aframe_type=I_TILE_GRP
+  REQUIRE(toString(x) == R"(aframe_type=I_TILE
 )");
   REQUIRE(byteCodingTest(x, 1));
 
   SECTION("Example 1") {
     x.aframe_type(AframeType::SKIP_P_and_I);
 
-    REQUIRE(toString(x) == R"(aframe_type=SKIP_TILE_GRP, P_TILE_GRP and I_TILE_GRP
+    REQUIRE(toString(x) == R"(aframe_type=SKIP_TILE, P_TILE and I_TILE
 )");
 
     REQUIRE(byteCodingTest(x, 1));

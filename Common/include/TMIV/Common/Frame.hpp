@@ -217,4 +217,49 @@ void Frame<FORMAT>::filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {
     }
   }
 }
+
+template <typename FORMAT> AnyFrame::AnyFrame(const Frame<FORMAT> &frame) {
+  static_assert(frame.getPlanes() <= planes.size());
+  const auto &inputPlanes = frame.getPlanes();
+
+  for (size_t k = 0; k < inputPlanes.size(); ++k) {
+    std::copy(std::cbegin(inputPlanes[k]), std::cend(inputPlanes[k]), std::begin(planes[k]));
+    bitdepth[k] = frame.getBitDepth();
+  }
+}
+
+template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
+  auto outputFrame = Frame<FORMAT>{int(planes.front().width()), int(planes.front().height())};
+  auto &outputPlanes = outputFrame.getPlanes();
+  auto maxOutputValue = (uint64_t(1) << outputFrame.getBitDepth()) - 1;
+
+  for (size_t k = 0; k < outputPlanes.size(); ++k) {
+    if (planes[k].empty()) {
+      // Fill neutral when a plane is missing
+      std::fill(std::begin(outputPlanes[k]), std::end(outputPlanes[k]), outputFrame.neutralColor());
+    } else {
+      const auto maxInputValue = (uint64_t(1) << bitdepth[k]) - 1;
+
+      if (planes[k].size() == outputPlanes[k].size() && maxInputValue == maxOutputValue) {
+        // Plane with same format: direct copy (optimization)
+        std::copy(std::cbegin(planes[k]), std::cend(planes[k]), std::begin(outputPlanes[k]));
+      } else {
+        // Plane with different format: spatial and range scaling
+        for (size_t i = 0; i < outputPlanes[k].height(); ++i) {
+          const size_t n = i * planes[k].height() / outputPlanes[k].height();
+          for (size_t j = 0; j < outputPlanes[k].width(); ++j) {
+            const size_t m = j * planes[k].width() / outputPlanes[k].width();
+            assert(planes[k](n, m) <= maxInputValue);
+            using base_type = typename Frame<FORMAT>::base_type;
+            outputPlanes[k](i, j) = static_cast<base_type>(
+                (planes[k](n, m) * maxOutputValue + maxInputValue / 2) / maxInputValue);
+            assert(outputPlanes[k](i, j) <= maxOutputValue);
+          }
+        }
+      }
+    }
+  }
+
+  return outputFrame;
+}
 } // namespace TMIV::Common

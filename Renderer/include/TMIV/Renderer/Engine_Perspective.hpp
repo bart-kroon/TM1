@@ -45,8 +45,10 @@ template <> struct Engine<MivBitstream::CiCamType::perspective> {
   const float c_y;
 
   explicit Engine(const MivBitstream::CameraIntrinsics &ci)
-      : f_x{ci.ci_perspective_focal_hor()}, f_y{ci.ci_perspective_focal_ver()},
-        c_x{ci.ci_perspective_center_hor()}, c_y{ci.ci_perspective_center_ver()} {}
+      : f_x{ci.ci_perspective_focal_hor()}
+      , f_y{ci.ci_perspective_focal_ver()}
+      , c_x{ci.ci_perspective_center_hor()}
+      , c_y{ci.ci_perspective_center_ver()} {}
 
   // Unprojection equation
   [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f {
@@ -69,8 +71,8 @@ template <> struct Engine<MivBitstream::CiCamType::perspective> {
 
   // Project mesh to target view
   template <typename... T>
-  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
-               std::tuple<std::vector<T>...> attributes) {
+  auto project(const SceneVertexDescriptorList &sceneVertices,
+               const TriangleDescriptorList &triangles, std::tuple<std::vector<T>...> attributes) {
     ImageVertexDescriptorList imageVertices;
     imageVertices.reserve(sceneVertices.size());
     for (const SceneVertexDescriptor &v : sceneVertices) {

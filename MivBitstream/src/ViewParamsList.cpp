@@ -34,8 +34,7 @@
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 #include <TMIV/Common/Common.h>
-
-#include "verify.h"
+#include <TMIV/MivBitstream/verify.h>
 
 #include <stdexcept>
 
@@ -55,14 +54,14 @@ auto ViewParams::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
   stream << "hasOccupancy[ " << viewId << "]=" << boolalpha << hasOccupancy
          << "  # encoder-internal\n";
 
-  if (pc) {
-    pc->printTo(stream, viewId);
+  if (pp) {
+    pp->printTo(stream, viewId);
   }
   return stream;
 }
 
 auto ViewParams::operator==(const ViewParams &other) const -> bool {
-  return ci == other.ci && ce == other.ce && dq == other.dq && pc == other.pc;
+  return ci == other.ci && ce == other.ce && dq == other.dq && pp == other.pp;
 }
 
 auto ViewParams::loadFromJson(const Json &node) -> ViewParams {

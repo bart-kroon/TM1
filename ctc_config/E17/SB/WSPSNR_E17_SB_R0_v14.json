@@ -1,0 +1,15 @@
+{
+    "BitDepth": 10,
+    "ColorSpace": "YUV420",
+    "Latitude_range_of_ERP": 180,
+    "Longitude_range_of_ERP": 180,
+    "NumberOfFrames": 17,
+    "Original_file_path": "v14_texture_2048x2048_yuv420p10le.yuv",
+    "Peak_value_of_10bits": 1020,
+    "Projection": "Equirectangular",
+    "Reconstructed_file_path": "E17_SB_R0_Tt_v14_2048x2048_yuv420p10le.yuv",
+    "Start_frame_of_original_file": 100,
+    "Version": "2.0",
+    "Video_height": 2048,
+    "Video_width": 2048
+}

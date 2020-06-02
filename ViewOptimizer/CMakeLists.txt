@@ -2,30 +2,27 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(ViewOptimizerLib
     "src/ViewReducer.cpp"
-	"src/ViewOptimizer.reg.hpp"
-	"include/TMIV/ViewOptimizer/IViewOptimizer.h"
+    "include/TMIV/ViewOptimizer/IViewOptimizer.h"
     "include/TMIV/ViewOptimizer/ViewReducer.h"
-	)
+    )
 
 add_library(TMIV::ViewOptimizerLib
-	ALIAS ViewOptimizerLib)
+    ALIAS ViewOptimizerLib)
 
 target_link_libraries(ViewOptimizerLib
-	PUBLIC
-		TMIV::CommonLib
-		TMIV::MivBitstreamLib
-		TMIV::RendererLib)
+    PUBLIC
+        TMIV::RendererLib)
 
 target_include_directories(ViewOptimizerLib
-	PUBLIC
-		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 install(
-	TARGETS
-		ViewOptimizerLib
-	EXPORT TMIVTargets
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    TARGETS
+        ViewOptimizerLib
+    EXPORT TMIVTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
-	DIRECTORY "include/"
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    DIRECTORY "include/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

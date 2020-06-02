@@ -116,7 +116,42 @@ inline auto isValidDepth(float d) -> bool { return (0.F < d); }
 using PointCloud = std::vector<Common::Vec3f>;
 using PointCloudList = std::vector<PointCloud>;
 
-template <MivBitstream::CiCamType camType> class ProjectionHelper {
+namespace MetaEngine {
+class Base {
+public:
+  Base() = default;
+  virtual ~Base() = default;
+  Base(const Base &) = default;
+  Base(Base &&) = default;
+  auto operator=(Base &&) -> Base & = default;
+  auto operator=(const Base &) -> Base & = default;
+  virtual auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f = 0;
+  virtual auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor const = 0;
+};
+
+template <MivBitstream::CiCamType camType> class Variant : public Base, public Engine<camType> {
+public:
+  using engine_type = Engine<camType>;
+
+public:
+  using engine_type::Engine;
+  using engine_type::operator=;
+  auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f override {
+    return engine_type::unprojectVertex(uv, depth);
+  }
+  auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const override {
+    return engine_type::projectVertex(v);
+  }
+};
+
+using Perspective = Variant<MivBitstream::CiCamType::perspective>;
+using Equirectangular = Variant<MivBitstream::CiCamType::equirectangular>;
+using Orthographic = Variant<MivBitstream::CiCamType::orthographic>;
+
+} // namespace MetaEngine
+
+class ProjectionHelper {
 public:
   class List : public std::vector<ProjectionHelper> {
   public:
@@ -128,21 +163,21 @@ public:
   };
 
 private:
-  const MivBitstream::ViewParams &m_viewParams;
-  Engine<camType> m_engine;
+  std::reference_wrapper<const MivBitstream::ViewParams> m_viewParams;
+  std::unique_ptr<MetaEngine::Base> m_engine;
   Common::QuatF m_rotation;
 
 public:
   ProjectionHelper(const MivBitstream::ViewParams &viewParams);
-  ProjectionHelper(const ProjectionHelper &) = default;
+  ProjectionHelper(const ProjectionHelper &) = delete;
   ProjectionHelper(ProjectionHelper &&) = default;
-  auto operator=(const ProjectionHelper &) -> ProjectionHelper & = default;
-  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = default;
+  auto operator=(const ProjectionHelper &) -> ProjectionHelper & = delete;
+  auto operator=(ProjectionHelper &&) -> ProjectionHelper & = delete;
   [[nodiscard]] auto getViewParams() const -> const MivBitstream::ViewParams & {
-    return m_viewParams;
+    return m_viewParams.get();
   }
   [[nodiscard]] auto getViewingPosition() const -> Common::Vec3f {
-    return m_viewParams.ce.position();
+    return m_viewParams.get().ce.position();
   }
   [[nodiscard]] auto getViewingDirection() const -> Common::Vec3f;
   [[nodiscard]] auto changeFrame(const Common::Vec3f &P) const -> Common::Vec3f;
@@ -157,24 +192,17 @@ public:
   [[nodiscard]] auto getPointCloud(unsigned N = 8) const -> PointCloud;
 };
 
-template <MivBitstream::CiCamType camType>
-using ProjectionHelperList = typename ProjectionHelper<camType>::List;
+using ProjectionHelperList = typename ProjectionHelper::List;
 
-template <MivBitstream::CiCamType camType>
-auto getPointCloudList(const ProjectionHelperList<camType> &sourceHelperList, unsigned N = 16)
+auto getPointCloudList(const ProjectionHelperList &sourceHelperList, unsigned N = 16)
     -> PointCloudList;
 
-template <MivBitstream::CiCamType camType>
-auto getOverlapping(const ProjectionHelperList<camType> &sourceHelperList,
+auto getOverlapping(const ProjectionHelperList &sourceHelperList,
                     const PointCloudList &pointCloudList, std::size_t firstId, std::size_t secondId)
     -> float;
 
-template <MivBitstream::CiCamType camType>
-static auto computeOverlappingMatrix(const ProjectionHelperList<camType> &sourceHelperList)
-    -> Common::Mat<float>;
+auto computeOverlappingMatrix(const ProjectionHelperList &sourceHelperList) -> Common::Mat<float>;
 
 } // namespace TMIV::Renderer
-
-#include "reprojectPoints.hpp"
 
 #endif

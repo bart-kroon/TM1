@@ -34,14 +34,14 @@
 #ifndef _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
 #define _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
 
-#include <TMIV/MivBitstream/AdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasTileGroupLayerRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/PatchParamsList.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
-#include <TMIV/MivBitstream/VpccParameterSet.h>
 
 #include <TMIV/Common/Frame.h>
 
@@ -49,7 +49,7 @@ namespace TMIV::MivBitstream {
 struct AtlasAccessUnit {
   AtlasSequenceParameterSetRBSP asps;
   AtlasFrameParameterSetRBSP afps;
-  AtlasTileGroupHeader atgh;
+  AtlasTileHeader ath;
   Common::Depth10Frame decGeoFrame;
   Common::Depth10Frame geoFrame;
   Common::Texture444Frame attrFrame;
@@ -64,7 +64,7 @@ struct AtlasAccessUnit {
   [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
 
   // Geometry frame size
-  [[nodiscard]] auto decGeoFrameSize(const VpccParameterSet &vps) const noexcept -> Common::Vec2i;
+  [[nodiscard]] auto decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
 
   // Occupancy frame size
   [[nodiscard]] auto decOccFrameSize(const VpccParameterSet &vps) const noexcept -> Common::Vec2i;
@@ -74,7 +74,7 @@ struct AtlasAccessUnit {
 };
 
 struct AccessUnit {
-  const VpccParameterSet *vps = nullptr;
+  const V3cParameterSet *vps = nullptr;
   std::vector<AtlasAccessUnit> atlas;
   std::uint32_t frameId{};
   std::optional<ViewingSpace> vs;

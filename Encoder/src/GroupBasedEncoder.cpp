@@ -108,7 +108,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
   auto grouping = Grouping{};
 
   const auto &viewParamsList = ivSequenceParams.viewParamsList;
-  const auto numGroups = ivSequenceParams.msp().msp_num_groups_minus1() + 1;
+  const auto numGroups = ivSequenceParams.vme().vme_num_groups_minus1() + 1;
 
   // Compute axial ranges and find the dominant one
   auto Tx = vector<float>{};
@@ -200,7 +200,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
         viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
         sep = ", ";
       }
-      cout << "\n";
+      cout << '\n';
 
       auto viewLabelsTemp = vector<uint8_t>{};
       for (size_t i = camerasInGroup.size(); i < viewsLabels.size(); i++) {
@@ -223,7 +223,7 @@ auto GroupBasedEncoder::sourceSplitter(const IvSequenceParams &ivSequenceParams)
         viewsInGroup.push_back(viewsLabels[i]);
         sep = ", ";
       }
-      cout << "\n";
+      cout << '\n';
     }
     for (const auto viewInGroup : viewsInGroup) {
       grouping.emplace_back(gIndex, viewInGroup);
@@ -266,10 +266,10 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
     -> const IvSequenceParams & {
   // Start with first group
   m_ivSequenceParams = *perGroupParams.front();
-  assert(m_ivSequenceParams.msp().msp_num_groups_minus1() + 1 == perGroupParams.size());
+  assert(m_ivSequenceParams.vme().vme_num_groups_minus1() + 1 == perGroupParams.size());
 
-  // Merge V-PCC parameter sets
-  vector<const VpccParameterSet *> vps(perGroupParams.size());
+  // Merge V3C parameter sets
+  vector<const V3cParameterSet *> vps(perGroupParams.size());
   transform(begin(perGroupParams), end(perGroupParams), begin(vps),
             [](const auto &ivs) { return &ivs->vps; });
   m_ivSequenceParams.vps = merge(vps);
@@ -281,9 +281,9 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
               back_inserter(m_ivSequenceParams.viewParamsList),
               [viewIdOffset = uint16_t(m_ivSequenceParams.viewParamsList.size())](ViewParams vp) {
                 // Merging pruning graphs
-                if (vp.pc && !vp.pc->pc_is_leaf_flag()) {
-                  for (uint16_t i = 0; i <= vp.pc->pc_num_children_minus1(); ++i) {
-                    vp.pc->pc_child_id(i, vp.pc->pc_child_id(i) + viewIdOffset);
+                if (vp.pp && !vp.pp->pp_is_root_flag()) {
+                  for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
+                    vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
                   }
                 }
                 return vp;
@@ -309,26 +309,16 @@ auto GroupBasedEncoder::mergeAccessUnitParams(
     for (const auto &atlas : perGroupParams[groupId]->atlas) {
       m_ivAccessUnitParams.atlas.push_back(atlas);
 
-      // Set masp_group_id
-      m_ivAccessUnitParams.atlas.back().asps.miv_atlas_sequence_params().masp_group_id(
-          unsigned(groupId));
-
-      // Unset masp_depth_occ_map_threshold_flag for vai > 0
-      if (m_ivAccessUnitParams.atlas.size() > 1) {
-        m_ivAccessUnitParams.atlas.back()
-            .asps.miv_atlas_sequence_params()
-            .reset_masp_omaf_v1_compatible_flag();
-      }
+      // Set group ID
+      m_ivAccessUnitParams.atlas.back().asme().asme_group_id(unsigned(groupId));
     }
   }
 
-  // Modify bit depth of pdu_view_id
+  // Modify bit depth of pdu_projection_id
   for (auto &atlas : m_ivAccessUnitParams.atlas) {
-    atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_projections_minus1(
+    atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_number_projections_minus1(
         uint16_t(m_ivSequenceParams.viewParamsList.size() - 1));
   }
-
-  const auto atlasSizes = m_ivAccessUnitParams.atlasSizes();
 
   // Renumber atlas and view ID's
   uint16_t atlasIdOffset = 0;

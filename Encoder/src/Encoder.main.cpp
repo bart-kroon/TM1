@@ -35,11 +35,10 @@
 
 #include <TMIV/Common/Application.h>
 #include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/IDecoder.h>
 #include <TMIV/DepthQualityAssessor/IDepthQualityAssessor.h>
 #include <TMIV/IO/IO.h>
-#include <TMIV/IO/IvMetadataWriter.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
+
+#include "IvMetadataWriter.h"
 
 #include <iostream>
 
@@ -47,16 +46,13 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::IO;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Decoder;
 using namespace TMIV::DepthQualityAssessor;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
-
 namespace TMIV::Encoder {
+void registerComponents();
+
 class Application : public Common::Application {
 private:
   unique_ptr<IEncoder> m_encoder;
@@ -68,17 +64,19 @@ private:
 
 public:
   explicit Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)}, m_encoder{create<IEncoder>("Encoder")},
-        m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")},
-        m_metadataWriter{json()}, m_numberOfFrames{json().require("numberOfFrames").asInt()},
-        m_intraPeriod{json().require("intraPeriod").asInt()} {}
+      : Common::Application{"Encoder", move(argv)}
+      , m_encoder{create<IEncoder>("Encoder")}
+      , m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")}
+      , m_metadataWriter{json()}
+      , m_numberOfFrames{json().require("numberOfFrames").asInt()}
+      , m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
     auto sourceSequenceParams = loadSourceIvSequenceParams(json());
     m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
 
     if (!json().isPresent("depthLowQualityFlag")) {
-      sourceSequenceParams.msp().msp_depth_low_quality_flag(
+      sourceSequenceParams.vme().vme_depth_low_quality_flag(
           m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
@@ -93,12 +91,13 @@ public:
 
     const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
     cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
+    m_metadataWriter.reportSummary(cout);
   }
 
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_encoder->prepareAccessUnit(loadSourceIvAccessUnitParams(json()));
+    m_encoder->prepareAccessUnit({});
     pushFrames(firstFrame, lastFrame);
     m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit(),
                                              lastFrame - firstFrame);
@@ -119,13 +118,9 @@ private:
 };
 } // namespace TMIV::Encoder
 
-#include "../../Decoder/src/Decoder.reg.hpp"
-#include "Encoder.reg.hpp"
-
 auto main(int argc, char *argv[]) -> int {
   try {
     TMIV::Encoder::registerComponents();
-    TMIV::Decoder::registerComponents();
     TMIV::Encoder::Application app{{argv, argv + argc}};
     app.startTime();
     app.run();

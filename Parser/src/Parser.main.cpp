@@ -31,20 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/MivDecoder.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
+#include <TMIV/Decoder/MivDecoder.h>
 
 #include <cstring>
 #include <fstream>
 #include <iostream>
 
-namespace TMIV::MivBitstream {
-const MivDecoderMode mode = MivDecoderMode::MIV;
-}
-
 using namespace std;
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
+using namespace TMIV::Decoder;
 
 auto main(int argc, char *argv[]) -> int {
   try {
@@ -61,6 +56,7 @@ auto main(int argc, char *argv[]) -> int {
       return 1;
     }
 
+<<<<<<< HEAD
     auto decoder = MivDecoder{stream,
                               [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
                                 return Depth10Frame{frameSize.x(), frameSize.y()};
@@ -71,7 +67,19 @@ auto main(int argc, char *argv[]) -> int {
                               [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
                                 return Texture444Frame{frameSize.x(), frameSize.y()};
                               }};
+=======
+    auto decoder = MivDecoder{stream};
+    decoder.setGeoFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+      return Depth10Frame{frameSize.x(), frameSize.y()};
+    });
+    decoder.setAttrFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+      return Texture444Frame{frameSize.x(), frameSize.y()};
+    });
+    decoder.enableBitrateReporting();
+>>>>>>> integration
     decoder.decode();
+    ofstream bitrateReport{string(args[2]) + ".csv"};
+    decoder.printBitrateReport(bitrateReport);
     return 0;
   } catch (runtime_error &e) {
     clog << e.what() << endl;

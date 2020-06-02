@@ -52,18 +52,16 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
   const float dv_dtheta;
 
   explicit Engine(const MivBitstream::CameraIntrinsics &ci)
-      : // Precomputed values used in te unprojection equation
-        phi0{ci.ci_erp_phi_max()}, theta0{ci.ci_erp_theta_max()},
-        dphi_du{-(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()) / ci.projectionPlaneSize().x()},
-        dtheta_dv{-(ci.ci_erp_theta_max() - ci.ci_erp_theta_min()) / ci.projectionPlaneSize().y()},
-
-        // Precomputed values used in the projection equation
-        u0{ci.projectionPlaneSize().x() * ci.ci_erp_phi_max() /
-           (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())},
-        v0{ci.projectionPlaneSize().y() * ci.ci_erp_theta_max() /
-           (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())},
-        du_dphi{-ci.projectionPlaneSize().x() / (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())},
-        dv_dtheta{-ci.projectionPlaneSize().y() / (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())} {
+      : phi0{ci.ci_erp_phi_max()}
+      , theta0{ci.ci_erp_theta_max()}
+      , dphi_du{-(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()) / ci.projectionPlaneSize().x()}
+      , dtheta_dv{-(ci.ci_erp_theta_max() - ci.ci_erp_theta_min()) / ci.projectionPlaneSize().y()}
+      , u0{ci.projectionPlaneSize().x() * ci.ci_erp_phi_max() /
+           (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())}
+      , v0{ci.projectionPlaneSize().y() * ci.ci_erp_theta_max() /
+           (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())}
+      , du_dphi{-ci.projectionPlaneSize().x() / (ci.ci_erp_phi_max() - ci.ci_erp_phi_min())}
+      , dv_dtheta{-ci.projectionPlaneSize().y() / (ci.ci_erp_theta_max() - ci.ci_erp_theta_min())} {
   }
 
   // Unprojection equation
@@ -89,7 +87,7 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
 
   // Project mesh to target view
   template <typename... T>
-  auto project(SceneVertexDescriptorList sceneVertices, TriangleDescriptorList triangles,
+  auto project(const SceneVertexDescriptorList &sceneVertices, TriangleDescriptorList triangles,
                std::tuple<std::vector<T>...> attributes) {
     ImageVertexDescriptorList imageVertices;
     imageVertices.reserve(sceneVertices.size());

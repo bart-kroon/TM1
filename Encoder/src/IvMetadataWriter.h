@@ -52,6 +52,7 @@ private:
   std::unique_ptr<Encoder::MivEncoder> m_encoder;
 
   double m_frameRate{};
+  int m_frameCount{};
   std::streampos m_bytesWritten{};
 };
 } // namespace TMIV::Encoder

@@ -50,14 +50,14 @@ auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept
 
 auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Vec2i {
   if (vps.vps_miv_extension_flag()) {
-    if (asps.miv_atlas_sequence_params().asme_occupancy_scale_present_flag()) {
+    if (asps.asps_miv_extension().asme_occupancy_scale_present_flag()) {
 		// account for padded occupancy maps
       int codedOccupancyWidth =
           asps.asps_frame_width() /
-          (asps.miv_atlas_sequence_params().asme_occupancy_scale_x_minus1() + 1);
+                    (asps.asps_miv_extension().asme_occupancy_scale_x_minus1() + 1);
       int codedOccupancyHeight =
           asps.asps_frame_height() /
-          (asps.miv_atlas_sequence_params().asme_occupancy_scale_y_minus1() + 1);
+                                 (asps.asps_miv_extension().asme_occupancy_scale_y_minus1() + 1);
       codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
       codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
       return Vec2i{codedOccupancyWidth, codedOccupancyHeight};

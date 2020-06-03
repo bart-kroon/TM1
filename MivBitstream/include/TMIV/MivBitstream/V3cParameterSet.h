@@ -276,7 +276,7 @@ public:
   inline auto vme_fully_occupied_flag(std::uint8_t atlasIndex, const bool value) noexcept -> auto &;
   inline auto vme_occupancy_subbitstream_present_flag(std::uint8_t atlasIndex, const bool value) noexcept -> auto &;
   inline void allocateFlagVectors(std::uint8_t size);
-  inline void insertFlagVectors(const MivSequenceParams &other);
+  inline void insertFlagVectors(const VpsMivExtension &other);
   constexpr auto vme_vui_params_present_flag(bool value) noexcept -> auto &;
   auto miv_vui_parameters(const MivVuiParams &value) noexcept -> VpsMivExtension &;
 

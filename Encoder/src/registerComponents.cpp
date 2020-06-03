@@ -37,6 +37,7 @@
 #include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Encoder/GroupBasedEncoder.h>
 #include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
+#include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
 #include <TMIV/Packer/Packer.h>
 #include <TMIV/Pruner/HierarchicalPruner.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
@@ -58,6 +59,7 @@ void registerComponents() {
 
   auto &geometryQuantizers = Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
   geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
+  geometryQuantizers.registerAs<GeometryQuantizer::ExplicitOccupancy>("ExplicitOccupancy");
 
   auto &packers = Factory<Packer::IPacker>::getInstance();
   packers.registerAs<Packer::Packer>("Packer");

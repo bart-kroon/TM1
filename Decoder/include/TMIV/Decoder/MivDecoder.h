@@ -68,6 +68,12 @@ public: // Decoder interface
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setGeoFrameServer(GeoFrameServer value);
 
+  // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
+  // within the bistreams take presedence.
+  using OccFrameServer = std::function<Common::Mask(
+      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+  void setOccFrameServer(OccFrameServer value);
+
   // Provide a frame server for out-of-band attribute video data (AVD). AVD video sub bitstreams
   // within the bistreams take presedence.
   //
@@ -169,6 +175,7 @@ private: // Parsers
 private: // Internal decoder state
   std::istream &m_stream;
   GeoFrameServer m_geoFrameServer;
+  OccFrameServer m_occFrameServer;
   AttrFrameServer m_attrFrameServer;
   SampleStreamV3cHeader m_ssvh;
 

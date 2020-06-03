@@ -31,15 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DEPTHOCCUPANCY_EXPLICITOCCUPANCY_H_
-#define _TMIV_DEPTHOCCUPANCY_EXPLICITOCCUPANCY_H_
+#ifndef _TMIV_GEOMETRYQUANTIZER_EXPLICITOCCUPANCY_H_
+#define _TMIV_GEOMETRYQUANTIZER_EXPLICITOCCUPANCY_H_
 
-#include <TMIV/DepthOccupancy/IDepthOccupancy.h>
+#include <TMIV/GEOMETRYQUANTIZER/IGeometryQuantizer.h>
 
 #include <TMIV/Common/Json.h>
 
-namespace TMIV::DepthOccupancy {
-class ExplicitOccupancy : public IDepthOccupancy {
+namespace TMIV::GeometryQuantizer {
+class ExplicitOccupancy : public IGeometryQuantizer {
 public:
   // Initialize with specified depthOccMapThresholdIfSet
   //

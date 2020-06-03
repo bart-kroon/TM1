@@ -162,7 +162,7 @@ asps_extension_6bits=0
         .vps_miv_extension_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
-        .vme_num_groups_minus1(10);
+        .vme_num_groups_minus1(10)
 		.vme_fully_occupied_flag(15, false)
         .vme_occupancy_subbitstream_present_flag(15, true);
 
@@ -189,9 +189,9 @@ asps_extension_6bits=0
     x.asps_miv_extension()
         .asme_auxiliary_atlas_flag(true)
         .asme_depth_occ_threshold_flag(false)
-		.masp_occupancy_scale_present_flag(true)
-        .masp_occupancy_scale_x_minus1(0)
-        .masp_occupancy_scale_y_minus1(7)
+		.asme_occupancy_scale_present_flag(true)
+        .asme_occupancy_scale_x_minus1(0)
+        .asme_occupancy_scale_y_minus1(7)
         .asme_geometry_frame_width_minus1(300)
         .asme_geometry_frame_height_minus1(100)
         .asme_group_id(3);

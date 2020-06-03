@@ -69,9 +69,9 @@ void extractOccupancy(AccessUnit &frame) {
   for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
     auto &atlas = frame.atlas[i];
     atlas.occFrame = Mask{atlas.frameSize().x(), atlas.frameSize().y()};
-    if (!frame.vps->miv_sequence_params().msp_occupancy_subbitstream_present_flag(i)) {
+    if (!frame.vps->vps_miv_extension().vme_occupancy_subbitstream_present_flag(i)) {
       atlas.occFrame.fillOne();
-      if (!frame.vps->miv_sequence_params().msp_fully_occupied_flag(i)) {
+      if (!frame.vps->vps_miv_extension().vme_fully_occupied_flag(i)) {
         // embedded occupancy case: Implementation assumes geoFrame (full size depth) is available
         Vec2i sz = atlas.blockToPatchMap.getSize();
         for (auto y = 0; y < atlas.frameSize().y(); y++)
@@ -93,10 +93,10 @@ void extractOccupancy(AccessUnit &frame) {
       // Account for padding in case done to the coded occupancy video
       int origWidth =
           frame.atlas[i].occFrame.getWidth() /
-          (frame.atlas[i].asps.miv_atlas_sequence_params().masp_occupancy_scale_x_minus1() + 1);
+          (frame.atlas[i].asps.asps_miv_extension().asme_occupancy_scale_x_minus1() + 1);
       int origHeight =
           frame.atlas[i].occFrame.getHeight() /
-          (frame.atlas[i].asps.miv_atlas_sequence_params().masp_occupancy_scale_y_minus1() + 1);
+          (frame.atlas[i].asps.asps_miv_extension().asme_occupancy_scale_y_minus1() + 1);
       int xPad = origWidth % 2;
       int yPad = origHeight % 2;
       // upscale Nearest Neighbor (External occupancy coding case)

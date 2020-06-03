@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(GeometryQuantizerLib
     "src/GeometryQuantizer.cpp"
-    "src/ExplicitOccuapncy.cpp"
-    "include/TMIV/GeometryQuantizer/ExplicitOccuapncy.h"
+    "src/ExplicitOccupancy.cpp"
+    "include/TMIV/GeometryQuantizer/ExplicitOccupancy.h"
     "include/TMIV/GeometryQuantizer/IGeometryQuantizer.h"
     "include/TMIV/GeometryQuantizer/GeometryQuantizer.h"
     )

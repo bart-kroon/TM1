@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/DepthOccupancy/ExplicitOccupancy.h>
+#include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
 
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 
@@ -42,7 +42,7 @@ using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
-namespace TMIV::DepthOccupancy {
+namespace TMIV::GeometryQuantizer {
 //ExplicitOccupancy::ExplicitOccupancy(uint16_t depthOccMapThresholdIfSet)
 //    : m_depthOccMapThresholdIfSet{depthOccMapThresholdIfSet} {}
 

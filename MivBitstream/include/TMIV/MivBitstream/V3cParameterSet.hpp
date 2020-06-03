@@ -211,7 +211,6 @@ constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
   return m_vme_vui_params_present_flag;
 }
 
-<<<<<<< HEAD:MivBitstream/include/TMIV/MivBitstream/VpccParameterSet.hpp
 inline auto VpsMivExtension::vme_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
   return m_vme_fully_occupied_flag[atlasIndex];
 }
@@ -242,8 +241,8 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) no
 }
 
 inline void VpsMivExtension::allocateFlagVectors(std::uint8_t size) {
-  m_mve_fully_occupied_flag.resize(size);
-  m_mve_occupancy_subbitstream_present_flag.resize(size);
+  m_vme_fully_occupied_flag.resize(size);
+  m_vme_occupancy_subbitstream_present_flag.resize(size);
 }
 
 inline void VpsMivExtension::insertFlagVectors(const VpsMivExtension &other) {

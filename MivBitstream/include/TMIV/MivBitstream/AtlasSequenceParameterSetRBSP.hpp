@@ -86,7 +86,6 @@ constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(const bool value)
   return *this;
 }
 
-<<<<<<< HEAD
 constexpr auto AspsMivExtension::asme_occupancy_scale_present_flag(const bool value) noexcept
     -> auto & {
   m_asme_occupancy_scale_present_flag = value;

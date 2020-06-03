@@ -111,6 +111,7 @@ private: // Encoder_completeAccessUnit.cpp
   double m_maxBlockRate{};
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};
+  std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
   int m_geometryScaleEnabledFlag{};
   int m_dilationIter{};
   Common::Vec2i m_entityEncRange;

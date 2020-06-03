@@ -36,6 +36,7 @@
 #include <TMIV/Common/Factory.h>
 
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 using namespace TMIV::Common;
@@ -80,6 +81,14 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
 
   if (auto node = componentNode.optional("dilate"); node) {
     m_dilationIter = node.asInt();
+  }
+
+  if (auto node = componentNode.optional("overrideAtlasFrameSizes"); node) {
+    cout << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
+            "only.\n";
+    for (size_t i = 0; i < node.size(); ++i) {
+      m_overrideAtlasFrameSizes.push_back(node.at(i).asIntVector<2>());
+    }
   }
 
   // Check parameters

@@ -91,7 +91,7 @@ public:
 
     const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
     cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
-    m_metadataWriter.reportSummary(cout);
+    m_metadataWriter.reportSummary(cout, m_numberOfFrames);
   }
 
 private:
@@ -99,8 +99,7 @@ private:
     cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
-    m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit(),
-                                             lastFrame - firstFrame);
+    m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit());
     popAtlases(firstFrame, lastFrame);
   }
 

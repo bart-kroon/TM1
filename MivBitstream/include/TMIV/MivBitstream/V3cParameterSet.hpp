@@ -212,11 +212,15 @@ constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
 }
 
 inline auto VpsMivExtension::vme_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
+  if (m_vme_fully_occupied_flag.size() == 0)
+    return false;
   return m_vme_fully_occupied_flag[atlasIndex];
 }
 
 inline auto VpsMivExtension::vme_occupancy_subbitstream_present_flag(uint8_t atlasIndex) const
     noexcept {
+  if (m_vme_occupancy_subbitstream_present_flag.size() == 0)
+    return false;
   return m_vme_occupancy_subbitstream_present_flag[atlasIndex];
 }
 

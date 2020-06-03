@@ -70,20 +70,22 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   }
 
   if (config.require("GroupBasedEncoder")
-          .require("AtlasConstructor")
-          .isPresent("ExternalOccupancyCoding")) {
-    auto m_ExternalOccupancyCoding = config.require("GroupBasedEncoder")
+          .require("GeometryQuantizerMethod")
+          .asString()=="ExplicitOccupancy") {
+    /*
+	   auto m_ExternalOccupancyCoding = config.require("GroupBasedEncoder")
                                          .require("AtlasConstructor")
                                          .optional("ExternalOccupancyCoding")
                                          .asBool();// TODo Basel
-    uint8_t maxNumberOfAtlases = 64;
+    */
+	uint8_t maxNumberOfAtlases = 64;
     x.vme().allocateFlagVectors(maxNumberOfAtlases); // allocate to max number of atlases (since
                                                      // #atlases are not known ahead)
     for (auto i = 0; i < maxNumberOfAtlases; i++) {
       // initalized values here need to be revisited after generating atlases, hence should be
       // written to bitstream after
       x.vme().vme_fully_occupied_flag(i, false);
-      x.vme().vme_occupancy_subbitstream_present_flag(i, m_ExternalOccupancyCoding);
+      x.vme().vme_occupancy_subbitstream_present_flag(i, true);
     }
   }
 

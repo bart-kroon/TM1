@@ -78,7 +78,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   const auto maxAtlases = rootNode.require("maxAtlases").asInt();
   m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
 
-  if (auto node = componentNode.require("Packer").optional("dilate"); node) {
+  if (auto node = componentNode.optional("dilate"); node) {
     m_dilationIter = node.asInt();
   }
 

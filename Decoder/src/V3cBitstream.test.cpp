@@ -152,14 +152,10 @@ TEST_CASE("Decode", "[V3C bitstream]") {
   const auto bitstreamPath = GENERATE(testBitstreams[0]);
   cout << "\n\nTEST_CASE Decode: bitstreamPath=" << bitstreamPath.string() << '\n';
   ifstream stream{bitstreamPath, ios::binary};
-<<<<<<< HEAD:MivBitstream/src/VpccBitstream.test.cpp
-  auto decoder = MivDecoder{stream, geoFrameServer, occFrameServer, attrFrameServer};
-  decoder.decode();
-=======
   auto decoder = MivDecoder{stream};
   decoder.setGeoFrameServer(geoFrameServer);
+  decoder.setOccFrameServer(occFrameServer);
   decoder.setAttrFrameServer(attrFrameServer);
   // TODO(BK): Need a bitstream that implements M53122
   // decoder.decode();
->>>>>>> integration:Decoder/src/V3cBitstream.test.cpp
 }

@@ -247,36 +247,12 @@ private:
 // 23090-5: vps_vpcc_extension()
 class VpsVpccExtension {
 public:
-<<<<<<< HEAD:MivBitstream/include/TMIV/MivBitstream/VpccParameterSet.h
-  [[nodiscard]] constexpr auto msp_depth_low_quality_flag() const noexcept;
-  [[nodiscard]] constexpr auto msp_geometry_scale_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto msp_num_groups_minus1() const noexcept;
-  [[nodiscard]] constexpr auto msp_max_entities_minus1() const noexcept;
-  [[nodiscard]] inline auto msp_fully_occupied_flag(std::uint8_t atlasIndex) const noexcept;
-  [[nodiscard]] inline auto
-  msp_occupancy_subbitstream_present_flag(std::uint8_t atlasIndex) const noexcept;
-
-  constexpr auto msp_depth_low_quality_flag(const bool value) noexcept -> auto &;
-  constexpr auto msp_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto msp_num_groups_minus1(const unsigned value) noexcept -> auto &;
-  constexpr auto msp_max_entities_minus1(const unsigned value) noexcept -> auto &;
-  inline auto msp_fully_occupied_flag(std::uint8_t atlasIndex, const bool value) noexcept
-      -> auto &;
-  inline auto
-  msp_occupancy_subbitstream_present_flag(std::uint8_t atlasIndex, const bool value) noexcept
-      -> auto &;
-
-  inline void allocateFlagVectors(std::uint8_t size);
-
-  inline void insertFlagVectors(const MivSequenceParams &other);
-=======
   friend constexpr decltype(auto) operator<<(std::ostream &stream, const VpsVpccExtension &x);
 
   constexpr auto operator==(const VpsVpccExtension &other) const noexcept;
   constexpr auto operator!=(const VpsVpccExtension &other) const noexcept;
 
   static constexpr auto decodeFrom(Common::InputBitstream &bitstream) -> VpsVpccExtension;
->>>>>>> integration:MivBitstream/include/TMIV/MivBitstream/V3cParameterSet.h
 
   constexpr void encodeTo(Common::OutputBitstream &bitstream) const;
 };
@@ -288,6 +264,8 @@ public:
   [[nodiscard]] constexpr auto vme_geometry_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_num_groups_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_max_entities_minus1() const noexcept;
+  [[nodiscard]] inline auto vme_fully_occupied_flag(std::uint8_t atlasIndex) const noexcept;
+  [[nodiscard]] inline auto vme_occupancy_subbitstream_present_flag(std::uint8_t atlasIndex) const noexcept;
   [[nodiscard]] constexpr auto vme_vui_params_present_flag() const noexcept;
   [[nodiscard]] auto miv_vui_parameters() const noexcept -> const MivVuiParams &;
 
@@ -295,39 +273,31 @@ public:
   constexpr auto vme_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto vme_num_groups_minus1(const unsigned value) noexcept -> auto &;
   constexpr auto vme_max_entities_minus1(const unsigned value) noexcept -> auto &;
+  inline auto vme_fully_occupied_flag(std::uint8_t atlasIndex, const bool value) noexcept -> auto &;
+  inline auto vme_occupancy_subbitstream_present_flag(std::uint8_t atlasIndex, const bool value) noexcept -> auto &;
+  inline void allocateFlagVectors(std::uint8_t size);
+  inline void insertFlagVectors(const MivSequenceParams &other);
   constexpr auto vme_vui_params_present_flag(bool value) noexcept -> auto &;
   auto miv_vui_parameters(const MivVuiParams &value) noexcept -> VpsMivExtension &;
 
-<<<<<<< HEAD:MivBitstream/include/TMIV/MivBitstream/VpccParameterSet.h
-  static auto decodeFrom(Common::InputBitstream &bitstream, std::uint8_t vps_atlas_count_minus1)
-      -> MivSequenceParams;
-=======
   friend auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream &;
 
   constexpr auto operator==(const VpsMivExtension &other) const noexcept;
   constexpr auto operator!=(const VpsMivExtension &other) const noexcept;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> VpsMivExtension;
->>>>>>> integration:MivBitstream/include/TMIV/MivBitstream/V3cParameterSet.h
 
-  void encodeTo(Common::OutputBitstream &bitstream, std::uint8_t vps_atlas_count_minus1) const;
+  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-<<<<<<< HEAD:MivBitstream/include/TMIV/MivBitstream/VpccParameterSet.h
-  bool m_msp_depth_low_quality_flag{};
-  bool m_msp_geometry_scale_enabled_flag{};
-  unsigned m_msp_num_groups_minus1{};
-  unsigned m_msp_max_entities_minus1{};
-  std::vector<bool> m_msp_fully_occupied_flag{};
-  std::vector<bool> m_msp_occupancy_subbitstream_present_flag{};
-=======
   bool m_vme_depth_low_quality_flag{};
   bool m_vme_geometry_scale_enabled_flag{};
   unsigned m_vme_num_groups_minus1{};
   unsigned m_vme_max_entities_minus1{};
+  std::vector<bool> m_vme_fully_occupied_flag{};
+  std::vector<bool> m_vme_occupancy_subbitstream_present_flag{};
   bool m_vme_vui_params_present_flag{};
   std::optional<MivVuiParams> m_mvp;
->>>>>>> integration:MivBitstream/include/TMIV/MivBitstream/V3cParameterSet.h
 };
 
 constexpr uint8_t specialAtlasId = 0x3F;

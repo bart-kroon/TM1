@@ -81,28 +81,6 @@ private:
 //   * asps_point_local_reconstruction_enabled_flag == 0
 class AspsVpccExtension {
 public:
-<<<<<<< HEAD
-  [[nodiscard]] auto masp_omaf_v1_compatible_flag() const noexcept;
-  [[nodiscard]] constexpr auto masp_group_id() const noexcept;
-  [[nodiscard]] constexpr auto masp_auxiliary_atlas_flag() const noexcept;
-  [[nodiscard]] constexpr auto masp_depth_occ_map_threshold_flag() const noexcept;
-  [[nodiscard]] constexpr auto masp_occupancy_scale_present_flag() const noexcept;
-  [[nodiscard]] auto masp_occupancy_scale_x_minus1() const noexcept -> uint8_t;
-  [[nodiscard]] auto masp_occupancy_scale_y_minus1() const noexcept -> uint8_t;
-  [[nodiscard]] auto masp_geometry_frame_width_minus1() const noexcept -> uint16_t;
-  [[nodiscard]] auto masp_geometry_frame_height_minus1() const noexcept -> uint16_t;
-
-  constexpr auto masp_omaf_v1_compatible_flag(const bool value) noexcept -> auto &;
-  constexpr auto reset_masp_omaf_v1_compatible_flag() noexcept -> auto &;
-  constexpr auto masp_group_id(const unsigned value) noexcept -> auto &;
-  constexpr auto masp_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
-  constexpr auto masp_depth_occ_map_threshold_flag(const bool value) noexcept -> auto &;
-  constexpr auto masp_occupancy_scale_present_flag(const bool value) noexcept -> auto &;
-  constexpr auto masp_occupancy_scale_x_minus1(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto masp_occupancy_scale_y_minus1(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto masp_geometry_frame_width_minus1(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto masp_geometry_frame_height_minus1(const std::uint16_t value) noexcept -> auto &;
-=======
   [[nodiscard]] constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag() const noexcept;
 
   constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag(const unsigned value) noexcept
@@ -129,15 +107,20 @@ public:
   [[nodiscard]] constexpr auto asme_group_id() const noexcept;
   [[nodiscard]] constexpr auto asme_auxiliary_atlas_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
+  [[nodiscard]] constexpr auto asme_occupancy_scale_present_flag() const noexcept;
+  [[nodiscard]] auto asme_occupancy_scale_x_minus1() const noexcept -> uint8_t;
+  [[nodiscard]] auto asme_occupancy_scale_y_minus1() const noexcept -> uint8_t;
   [[nodiscard]] auto asme_geometry_frame_width_minus1() const noexcept -> uint16_t;
   [[nodiscard]] auto asme_geometry_frame_height_minus1() const noexcept -> uint16_t;
 
   constexpr auto asme_group_id(const unsigned value) noexcept -> auto &;
   constexpr auto asme_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
   constexpr auto asme_depth_occ_threshold_flag(const bool value) noexcept -> auto &;
+  constexpr auto asme_occupancy_scale_present_flag(const bool value) noexcept -> auto &;
+  constexpr auto asme_occupancy_scale_x_minus1(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto asme_occupancy_scale_y_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto asme_geometry_frame_width_minus1(const std::uint16_t value) noexcept -> auto &;
   constexpr auto asme_geometry_frame_height_minus1(const std::uint16_t value) noexcept -> auto &;
->>>>>>> integration
 
   friend auto operator<<(std::ostream &stream, const AspsMivExtension &) -> std::ostream &;
 
@@ -151,23 +134,14 @@ public:
                 const V3cParameterSet &vps) const;
 
 private:
-<<<<<<< HEAD
-  std::optional<bool> m_masp_omaf_v1_compatible_flag;
-  unsigned m_masp_group_id{};
-  bool m_masp_auxiliary_atlas_flag{};
-  bool m_masp_depth_occ_map_threshold_flag{};
-  std::optional<bool> m_masp_occupancy_scale_present_flag;
-  std::optional<std::uint8_t> m_masp_occupancy_scale_x_minus1;
-  std::optional<std::uint8_t> m_masp_occupancy_scale_y_minus1;
-  std::optional<std::uint16_t> m_masp_geometry_frame_width_minus1;
-  std::optional<std::uint16_t> m_masp_geometry_frame_height_minus1;
-=======
   unsigned m_asme_group_id{};
   bool m_asme_auxiliary_atlas_flag{};
   bool m_asme_depth_occ_map_threshold_flag{};
+  std::optional<bool> m_asme_occupancy_scale_present_flag;
+  std::optional<std::uint8_t> m_asme_occupancy_scale_x_minus1;
+  std::optional<std::uint8_t> m_asme_occupancy_scale_y_minus1;
   std::optional<std::uint16_t> m_asme_geometry_frame_width_minus1;
   std::optional<std::uint16_t> m_asme_geometry_frame_height_minus1;
->>>>>>> integration
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp( )

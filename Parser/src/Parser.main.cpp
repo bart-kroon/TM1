@@ -56,27 +56,17 @@ auto main(int argc, char *argv[]) -> int {
       return 1;
     }
 
-<<<<<<< HEAD
-    auto decoder = MivDecoder{stream,
-                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-                                return Depth10Frame{frameSize.x(), frameSize.y()};
-                              },
-                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-                                return Mask{frameSize.x(), frameSize.y()};
-                              },
-                              [](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-                                return Texture444Frame{frameSize.x(), frameSize.y()};
-                              }};
-=======
     auto decoder = MivDecoder{stream};
     decoder.setGeoFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
       return Depth10Frame{frameSize.x(), frameSize.y()};
+    });
+	decoder.setOccFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
+      return Mask{frameSize.x(), frameSize.y()};
     });
     decoder.setAttrFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
       return Texture444Frame{frameSize.x(), frameSize.y()};
     });
     decoder.enableBitrateReporting();
->>>>>>> integration
     decoder.decode();
     ofstream bitrateReport{string(args[2]) + ".csv"};
     decoder.printBitrateReport(bitrateReport);

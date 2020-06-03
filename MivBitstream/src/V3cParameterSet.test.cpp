@@ -189,25 +189,13 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_frame_height(0, 1080);
     vps.vps_extension_present_flag(true);
     vps.vps_miv_extension_flag(true);
-<<<<<<< HEAD:MivBitstream/src/VpccParameterSet.test.cpp
-    vps.miv_sequence_params()
-        .msp_depth_low_quality_flag(true)
-        .msp_geometry_scale_enabled_flag(true)
-        .msp_num_groups_minus1(3)
-        .msp_max_entities_minus1(20)
-		.msp_fully_occupied_flag(0,false)
-		.msp_occupancy_subbitstream_present_flag(0,true);
-    vps.vps_miv_sequence_vui_params_present_flag(true)
-        .miv_vui_params()
-        .coordinate_axis_system_params()
-        .cas_forward_axis(2);
-=======
     vps.vps_miv_extension()
         .vme_depth_low_quality_flag(true)
         .vme_geometry_scale_enabled_flag(true)
         .vme_num_groups_minus1(3)
         .vme_max_entities_minus1(20);
->>>>>>> integration:MivBitstream/src/V3cParameterSet.test.cpp
+		.vme_fully_occupied_flag(0,false)
+		.vme_occupancy_subbitstream_present_flag(0,true);
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -312,28 +300,13 @@ ai_attribute_count( 2 )=0
 vps_extension_present_flag=true
 vps_vpcc_extension_flag=true
 vps_miv_extension_flag=true
-<<<<<<< HEAD:MivBitstream/src/VpccParameterSet.test.cpp
-msp_depth_low_quality_flag=true
-msp_geometry_scale_enabled_flag=true
-msp_num_groups_minus1=3
-msp_max_entities_minus1=20
-msp_fully_occupied_flag( 0 )=false
-msp_occupancy_subbitstream_present_flag( 0 )=true
-vps_miv_sequence_vui_params_present_flag=true
-cas_forward_axis=2
-cas_delta_left_axis_minus1=0
-cas_forward_sign=true
-cas_left_sign=true
-cas_up_sign=true
-)");
-
-    REQUIRE(byteCodingTest(vps, 26));
-=======
 vps_extension_6bits=63
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0
 vme_max_entities_minus1=0
+vme_fully_occupied_flag( 0 )=false
+vme_occupancy_subbitstream_present_flag( 0 )=true
 vps_extension_length_minus1=2
 vps_extension_data_byte=2
 vps_extension_data_byte=250
@@ -341,6 +314,5 @@ vps_extension_data_byte=15
 )");
 
     REQUIRE(byteCodingTest(vps, 40));
->>>>>>> integration:MivBitstream/src/V3cParameterSet.test.cpp
   }
 }

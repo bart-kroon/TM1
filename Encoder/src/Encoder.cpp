@@ -78,7 +78,6 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   const auto maxAtlases = rootNode.require("maxAtlases").asInt();
   m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
 
-<<<<<<< HEAD
 auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
     -> const MivBitstream::IvSequenceParams & {
   auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
@@ -94,11 +93,10 @@ auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
   return m_geometryDownscaler.transformSequenceParams(m_depthOccupancy->transformSequenceParams(
       m_atlasConstructor->prepareSequence(move(optimal.first), move(optimal.second))));
 }
-=======
+
   if (auto node = componentNode.require("Packer").optional("dilate"); node) {
     m_dilationIter = node.asInt();
   }
->>>>>>> integration
 
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");

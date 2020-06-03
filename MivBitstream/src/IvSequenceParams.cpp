@@ -53,7 +53,7 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
   vps.vps_atlas_count_minus1(uint8_t(atlasSizes.size() - 1));
-  
+
   for (size_t atlasId = 0; atlasId < atlasSizes.size(); ++atlasId) {
     const auto a = uint8_t(atlasId);
     vps.vps_atlas_id(a, a)

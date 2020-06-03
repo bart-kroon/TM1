@@ -91,8 +91,7 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
 
   for (const auto &inAtlas : inAtlases) {
     outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
-                            inAtlas.occupancy);
+                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }
 
   for (const auto &patch : m_accessUnitParams.patchParamsList) {

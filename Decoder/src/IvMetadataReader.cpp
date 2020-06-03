@@ -54,31 +54,18 @@ IvMetadataReader::IvMetadataReader(const Json &config)
     what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
     throw runtime_error(what.str());
   }
-<<<<<<< HEAD:IO/src/IvMetadataReader.cpp
-  m_decoder = make_unique<MivDecoder>(
-      m_stream,
-      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-        return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
-                                    frameSize, int(atlasId));
-      },
-      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-        return readFrame<YUV400P8>(config, "OutputDirectory", "OccupancyVideoDataPathFmt", frameId,
-                                   frameSize, int(atlasId));
-      },
-      [&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-        return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
-                                            frameId, frameSize, int(atlasId)));
-      });
-=======
   m_decoder = make_unique<MivDecoder>(m_stream);
   m_decoder->setGeoFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
     return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
+                                frameSize, int(atlasId));
+  });
+  m_decoder->setOccFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+    return readFrame<YUV400P8>(config, "OutputDirectory", "OccupancyVideoDataPathFmt", frameId,
                                 frameSize, int(atlasId));
   });
   m_decoder->setAttrFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
     return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
                                         frameId, frameSize, "T", int(atlasId)));
   });
->>>>>>> integration:Decoder/src/IvMetadataReader.cpp
 }
 } // namespace TMIV::Decoder

@@ -212,21 +212,17 @@ constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
 }
 
 <<<<<<< HEAD:MivBitstream/include/TMIV/MivBitstream/VpccParameterSet.hpp
-inline auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
-  return m_msp_fully_occupied_flag[atlasIndex];
+inline auto VpsMivExtension::vme_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
+  return m_vme_fully_occupied_flag[atlasIndex];
 }
 
-inline auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(uint8_t atlasIndex) const
+inline auto VpsMivExtension::vme_occupancy_subbitstream_present_flag(uint8_t atlasIndex) const
     noexcept {
-  return m_msp_occupancy_subbitstream_present_flag[atlasIndex];
+  return m_vme_occupancy_subbitstream_present_flag[atlasIndex];
 }
 
-constexpr auto MivSequenceParams::msp_depth_low_quality_flag(const bool value) noexcept -> auto & {
-  m_msp_depth_low_quality_flag = value;
-=======
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag(const bool value) noexcept -> auto & {
   m_vme_depth_low_quality_flag = value;
->>>>>>> integration:MivBitstream/include/TMIV/MivBitstream/V3cParameterSet.hpp
   return *this;
 }
 
@@ -245,58 +241,50 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) no
   return *this;
 }
 
-<<<<<<< HEAD:MivBitstream/include/TMIV/MivBitstream/VpccParameterSet.hpp
-inline void MivSequenceParams::allocateFlagVectors(std::uint8_t size) {
-  m_msp_fully_occupied_flag.resize(size);
-  m_msp_occupancy_subbitstream_present_flag.resize(size);
+inline void VpsMivExtension::allocateFlagVectors(std::uint8_t size) {
+  m_mve_fully_occupied_flag.resize(size);
+  m_mve_occupancy_subbitstream_present_flag.resize(size);
 }
 
-inline void MivSequenceParams::insertFlagVectors(const MivSequenceParams &other) {
-  for (auto i = 0; i < other.m_msp_fully_occupied_flag.size(); i++) {
-    m_msp_fully_occupied_flag.push_back(other.msp_fully_occupied_flag(i));
-    m_msp_occupancy_subbitstream_present_flag.push_back(
-        other.msp_occupancy_subbitstream_present_flag(i));
+inline void VpsMivExtension::insertFlagVectors(const VpsMivExtension &other) {
+  for (auto i = 0; i < other.m_vme_fully_occupied_flag.size(); i++) {
+    m_vme_fully_occupied_flag.push_back(other.vme_fully_occupied_flag(i));
+    m_vme_occupancy_subbitstream_present_flag.push_back(
+        other.vme_occupancy_subbitstream_present_flag(i));
   }
 }
 
-inline auto MivSequenceParams::msp_fully_occupied_flag(uint8_t atlasIndex,
+inline auto VpsMivExtension::vme_fully_occupied_flag(uint8_t atlasIndex,
                                                          const bool value) noexcept
     -> auto & {
-  if (m_msp_fully_occupied_flag.size() < atlasIndex + 1 && atlasIndex < 64)
+  if (m_vme_fully_occupied_flag.size() < atlasIndex + 1 && atlasIndex < 64)
     allocateFlagVectors(atlasIndex+1);
-  m_msp_fully_occupied_flag[atlasIndex] = value;
+  m_vme_fully_occupied_flag[atlasIndex] = value;
   return *this;
 }
 
-inline auto MivSequenceParams::msp_occupancy_subbitstream_present_flag(
+inline auto VpsMivExtension::vme_occupancy_subbitstream_present_flag(
     uint8_t atlasIndex, const bool value) noexcept
     -> auto & {
-  if (m_msp_occupancy_subbitstream_present_flag.size() < atlasIndex + 1 && atlasIndex < 64)
+  if (m_vme_occupancy_subbitstream_present_flag.size() < atlasIndex + 1 && atlasIndex < 64)
     allocateFlagVectors(atlasIndex + 1);
-  m_msp_occupancy_subbitstream_present_flag[atlasIndex] = value;
+  m_vme_occupancy_subbitstream_present_flag[atlasIndex] = value;
   return *this;
 }
 
-constexpr auto MivSequenceParams::operator==(const MivSequenceParams &other) const noexcept {
-  return msp_depth_low_quality_flag() == other.msp_depth_low_quality_flag() &&
-         msp_geometry_scale_enabled_flag() == other.msp_geometry_scale_enabled_flag() &&
-         msp_num_groups_minus1() == other.msp_num_groups_minus1() &&
-         msp_max_entities_minus1() == other.msp_max_entities_minus1() &&
-         msp_fully_occupied_flag(0) == other.msp_fully_occupied_flag(0) &&
-         msp_occupancy_subbitstream_present_flag(0) ==
-             other.msp_occupancy_subbitstream_present_flag(0);
-=======
 constexpr auto VpsMivExtension::vme_vui_params_present_flag(bool value) noexcept -> auto & {
   m_vme_vui_params_present_flag = value;
   return *this;
->>>>>>> integration:MivBitstream/include/TMIV/MivBitstream/V3cParameterSet.hpp
 }
 
 constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const noexcept {
   return vme_depth_low_quality_flag() == other.vme_depth_low_quality_flag() &&
          vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
          vme_num_groups_minus1() == other.vme_num_groups_minus1() &&
-         vme_max_entities_minus1() == other.vme_max_entities_minus1();
+         vme_max_entities_minus1() == other.vme_max_entities_minus1() &&
+		 vme_fully_occupied_flag(0) == other.vme_fully_occupied_flag(0) &&
+         vme_occupancy_subbitstream_present_flag(0) ==
+             other.vme_occupancy_subbitstream_present_flag(0);
 }
 
 constexpr auto VpsMivExtension::operator!=(const VpsMivExtension &other) const noexcept {

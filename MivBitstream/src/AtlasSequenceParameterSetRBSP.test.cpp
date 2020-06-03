@@ -160,17 +160,11 @@ asps_extension_6bits=0
         .vps_map_count_minus1(0, 1)
         .vps_extension_present_flag(true)
         .vps_miv_extension_flag(true)
-<<<<<<< HEAD
-        .miv_sequence_params()
-        .msp_geometry_scale_enabled_flag(true)
-        .msp_num_groups_minus1(10)
-        .msp_fully_occupied_flag(15, false)
-        .msp_occupancy_subbitstream_present_flag(15, true);
-=======
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
         .vme_num_groups_minus1(10);
->>>>>>> integration
+		.vme_fully_occupied_flag(15, false)
+        .vme_occupancy_subbitstream_present_flag(15, true);
 
     x.asps_atlas_sequence_parameter_set_id(15)
         .asps_frame_width(0xFFFF)
@@ -188,31 +182,20 @@ asps_extension_6bits=0
         .asps_patch_size_quantizer_present_flag(true)
         .asps_map_count_minus1(1)
         .asps_extension_present_flag(true)
-<<<<<<< HEAD
-        .asps_miv_extension_present_flag(true)
-        .miv_atlas_sequence_params()
-        .masp_auxiliary_atlas_flag(true)
-        .masp_depth_occ_map_threshold_flag(false)
-        .masp_occupancy_scale_present_flag(true)
-        .masp_occupancy_scale_x_minus1(0)
-        .masp_occupancy_scale_y_minus1(7)
-        .masp_omaf_v1_compatible_flag(true)
-        .masp_geometry_frame_width_minus1(300)
-        .masp_geometry_frame_height_minus1(100)
-        .masp_group_id(3);
-=======
         .asps_vpcc_extension_flag(true)
         .asps_miv_extension_flag(true)
         .asps_extension_6bits(63);
     x.asps_vpcc_extension().asps_vpcc_remove_duplicate_point_enabled_flag(true);
     x.asps_miv_extension()
         .asme_auxiliary_atlas_flag(true)
-        .asme_depth_occ_threshold_flag(true)
+        .asme_depth_occ_threshold_flag(false)
+		.masp_occupancy_scale_present_flag(true)
+        .masp_occupancy_scale_x_minus1(0)
+        .masp_occupancy_scale_y_minus1(7)
         .asme_geometry_frame_width_minus1(300)
         .asme_geometry_frame_height_minus1(100)
         .asme_group_id(3);
     x.aspsExtensionData({false, true, true});
->>>>>>> integration
 
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=15
 asps_frame_width=65535
@@ -236,32 +219,21 @@ asps_raw_patch_enabled_flag=false
 asps_point_local_reconstruction_enabled_flag=false
 asps_vui_parameters_present_flag=false
 asps_extension_present_flag=true
-<<<<<<< HEAD
-asps_miv_extension_present_flag=true
-masp_omaf_v1_compatible_flag=true
-masp_group_id=3
-masp_auxiliary_atlas_flag=true
-masp_depth_occ_map_threshold_flag=false
-masp_occupancy_scale_present_flag=true
-masp_occupancy_scale_x_minus1=0
-masp_occupancy_scale_y_minus1=7
-masp_geometry_frame_width_minus1=300
-masp_geometry_frame_height_minus1=100
-asps_extension2_present_flag=false
-=======
 asps_vpcc_extension_flag=true
 asps_miv_extension_flag=true
 asps_extension_6bits=63
 asps_vpcc_remove_duplicate_point_enabled_flag=true
 asme_group_id=3
 asme_auxiliary_atlas_flag=true
-asme_depth_occ_map_threshold_flag=true
+asme_depth_occ_map_threshold_flag=false
+asme_occupancy_scale_present_flag=true
+asme_occupancy_scale_x_minus1=0
+asme_occupancy_scale_y_minus1=7
 asme_geometry_frame_width_minus1=300
 asme_geometry_frame_height_minus1=100
 asps_extension_data_flag=false
 asps_extension_data_flag=true
 asps_extension_data_flag=true
->>>>>>> integration
 )");
 
     REQUIRE(byteCodingTest(x, 18, vuh, vps));

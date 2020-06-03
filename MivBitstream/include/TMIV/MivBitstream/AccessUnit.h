@@ -67,7 +67,7 @@ struct AtlasAccessUnit {
   [[nodiscard]] auto decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
 
   // Occupancy frame size
-  [[nodiscard]] auto decOccFrameSize(const VpccParameterSet &vps) const noexcept -> Common::Vec2i;
+  [[nodiscard]] auto decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
 
   // Index into the block to patch map using nominal atlas coordinates
   [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;

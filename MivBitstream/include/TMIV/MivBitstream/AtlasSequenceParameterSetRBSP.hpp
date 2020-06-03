@@ -52,18 +52,8 @@ constexpr auto AspsVpccExtension::operator==(const AspsVpccExtension &other) con
          other.asps_vpcc_remove_duplicate_point_enabled_flag();
 }
 
-<<<<<<< HEAD
-constexpr auto MivAtlasSequenceParams::masp_occupancy_scale_present_flag() const noexcept {
-  return m_masp_occupancy_scale_present_flag;
-}
-
-constexpr auto MivAtlasSequenceParams::masp_group_id(const unsigned value) noexcept -> auto & {
-  m_masp_group_id = value;
-  return *this;
-=======
 constexpr auto AspsVpccExtension::operator!=(const AspsVpccExtension &other) const noexcept {
   return !operator==(other);
->>>>>>> integration
 }
 
 constexpr auto AspsMivExtension::asme_group_id() const noexcept { return m_asme_group_id; }
@@ -74,6 +64,10 @@ constexpr auto AspsMivExtension::asme_auxiliary_atlas_flag() const noexcept {
 
 constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag() const noexcept {
   return m_asme_depth_occ_map_threshold_flag;
+}
+
+constexpr auto AspsMivExtension::asme_occupancy_scale_present_flag() const noexcept {
+  return m_asme_occupancy_scale_present_flag;
 }
 
 constexpr auto AspsMivExtension::asme_group_id(const unsigned value) noexcept -> auto & {
@@ -93,32 +87,26 @@ constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(const bool value)
 }
 
 <<<<<<< HEAD
-constexpr auto MivAtlasSequenceParams::masp_occupancy_scale_present_flag(const bool value) noexcept
+constexpr auto AspsMivExtension::asme_occupancy_scale_present_flag(const bool value) noexcept
     -> auto & {
-  m_masp_occupancy_scale_present_flag = value;
+  m_asme_occupancy_scale_present_flag = value;
   return *this;
 }
 
-constexpr auto
-MivAtlasSequenceParams::masp_occupancy_scale_x_minus1(const uint8_t value) noexcept -> auto & {
-  m_masp_occupancy_scale_x_minus1 = value;
+constexpr auto AspsMivExtension::asme_occupancy_scale_x_minus1(const uint8_t value) noexcept -> auto & {
+  m_asme_occupancy_scale_x_minus1 = value;
   return *this;
 }
 
-constexpr auto MivAtlasSequenceParams::masp_occupancy_scale_y_minus1(const uint8_t value) noexcept
+constexpr auto AspsMivExtension::asme_occupancy_scale_y_minus1(const uint8_t value) noexcept
     -> auto & {
-  m_masp_occupancy_scale_y_minus1 = value;
+  m_asme_occupancy_scale_y_minus1 = value;
   return *this;
 }
 
-constexpr auto
-MivAtlasSequenceParams::masp_geometry_frame_width_minus1(const uint16_t value) noexcept -> auto & {
-  m_masp_geometry_frame_width_minus1 = value;
-=======
 constexpr auto AspsMivExtension::asme_geometry_frame_width_minus1(const uint16_t value) noexcept
     -> auto & {
   m_asme_geometry_frame_width_minus1 = value;
->>>>>>> integration
   return *this;
 }
 
@@ -128,26 +116,15 @@ constexpr auto AspsMivExtension::asme_geometry_frame_height_minus1(const uint16_
   return *this;
 }
 
-<<<<<<< HEAD
-constexpr auto
-MivAtlasSequenceParams::operator==(const MivAtlasSequenceParams &other) const noexcept {
-  return m_masp_omaf_v1_compatible_flag == other.m_masp_omaf_v1_compatible_flag &&
-         masp_group_id() == other.masp_group_id() &&
-         masp_auxiliary_atlas_flag() == other.masp_auxiliary_atlas_flag() &&
-         m_masp_depth_occ_map_threshold_flag == other.m_masp_depth_occ_map_threshold_flag &&
-         m_masp_occupancy_scale_present_flag == other.m_masp_occupancy_scale_present_flag &&
-         m_masp_occupancy_scale_x_minus1 == other.m_masp_occupancy_scale_x_minus1 &&
-         m_masp_occupancy_scale_y_minus1 == other.m_masp_occupancy_scale_y_minus1 &&
-         m_masp_geometry_frame_width_minus1 == other.m_masp_geometry_frame_width_minus1 &&
-         m_masp_geometry_frame_height_minus1 == other.m_masp_geometry_frame_height_minus1;
-=======
 constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const noexcept {
   return asme_group_id() == other.asme_group_id() &&
          asme_auxiliary_atlas_flag() == other.asme_auxiliary_atlas_flag() &&
          asme_depth_occ_threshold_flag() == other.asme_depth_occ_threshold_flag() &&
+		 m_asme_occupancy_scale_present_flag == other.m_asme_occupancy_scale_present_flag &&
+         m_asme_occupancy_scale_x_minus1 == other.m_asme_occupancy_scale_x_minus1 &&
+         m_asme_occupancy_scale_y_minus1 == other.m_asme_occupancy_scale_y_minus1 &&
          m_asme_geometry_frame_width_minus1 == other.m_asme_geometry_frame_width_minus1 &&
          m_asme_geometry_frame_height_minus1 == other.m_asme_geometry_frame_height_minus1;
->>>>>>> integration
 }
 
 constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const noexcept {

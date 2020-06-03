@@ -31,16 +31,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-<<<<<<< HEAD:DepthOccupancy/src/DepthOccupancy.reg.hpp
-#include <TMIV/DepthOccupancy/DepthOccupancy.h>
-#include <TMIV/DepthOccupancy/ExplicitOccupancy.h>
-#include <TMIV/Common/Factory.h>
-
-namespace TMIV::DepthOccupancy {
-inline void registerComponents() {
-  Common::Factory<IDepthOccupancy>::getInstance().registerAs<DepthOccupancy>("DepthOccupancy");
-  Common::Factory<IDepthOccupancy>::getInstance().registerAs<ExplicitOccupancy>("ExplicitOccupancy");
-=======
 #include <TMIV/Encoder/Encoder.h>
 
 using namespace std;
@@ -52,6 +42,5 @@ auto Encoder::popAtlas() -> MVD10Frame {
       m_depthOccupancy->transformAtlases(m_videoFrameBuffer.front()));
   m_videoFrameBuffer.pop_front();
   return atlas;
->>>>>>> integration:Encoder/src/Encoder_popFrame.cpp
 }
 } // namespace TMIV::Encoder

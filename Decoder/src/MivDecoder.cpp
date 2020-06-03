@@ -64,6 +64,8 @@ MivDecoder::~MivDecoder() = default;
 
 void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = move(value); }
 
+void MivDecoder::setOccFrameServer(OccFrameServer value) { m_occFrameServer = move(value); }
+
 void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = move(value); }
 
 void MivDecoder::decode() {

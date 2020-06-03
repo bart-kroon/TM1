@@ -31,8 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/Decoder.h>
+
+#include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 

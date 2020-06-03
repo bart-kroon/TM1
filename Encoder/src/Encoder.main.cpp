@@ -97,7 +97,7 @@ public:
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_encoder->prepareAccessUnit({});
+    m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
     m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit(),
                                              lastFrame - firstFrame);

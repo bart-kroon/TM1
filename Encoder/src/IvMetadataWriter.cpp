@@ -61,9 +61,9 @@ void IvMetadataWriter::writeIvSequenceParams(const IvSequenceParams &ivSequenceP
 }
 
 void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
-                                               int intraPeriodFrameCount) {
-  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams, intraPeriodFrameCount);
-  m_frameCount += intraPeriodFrameCount;
+                                               int frameCount) {
+  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams);
+  m_frameCount += frameCount;
   m_bytesWritten = m_stream.tellp();
 }
 

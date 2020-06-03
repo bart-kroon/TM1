@@ -38,8 +38,7 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-void Encoder::prepareAccessUnit(IvAccessUnitParams sourceIvau) {
-  m_ivau = move(sourceIvau);
+void Encoder::prepareAccessUnit() {
   resetNonAggregatedMask();
   m_transportViews.clear();
   m_aggregatedEntityMask.clear();

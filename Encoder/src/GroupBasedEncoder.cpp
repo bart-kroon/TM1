@@ -64,9 +64,9 @@ auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
   return mergeSequenceParams(perGroupIvSequenceParams);
 }
 
-void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams) {
+void GroupBasedEncoder::prepareAccessUnit() {
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    m_encoders[groupId].prepareAccessUnit(ivAccessUnitParams);
+    m_encoders[groupId].prepareAccessUnit();
   }
 }
 

@@ -198,6 +198,13 @@ auto AtlasSequenceParameterSetRBSP::aspsExtensionData() const noexcept -> const 
   return *m_aspsExtensionData;
 }
 
+auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4(
+    const uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP & {
+  VERIFY_V3CBITSTREAM(value <= 12);
+  m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
+  return *this;
+}
+
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const size_t value)
     -> AtlasSequenceParameterSetRBSP & {
   m_ref_list_structs.resize(value);
@@ -338,8 +345,8 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
   return stream;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator==(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator==(const AtlasSequenceParameterSetRBSP &other) const
+    noexcept -> bool {
   if (asps_atlas_sequence_parameter_set_id() != other.asps_atlas_sequence_parameter_set_id() ||
       asps_frame_width() != other.asps_frame_width() ||
       asps_frame_height() != other.asps_frame_height() ||
@@ -396,8 +403,8 @@ auto AtlasSequenceParameterSetRBSP::operator==(
   return true;
 }
 
-auto AtlasSequenceParameterSetRBSP::operator!=(
-    const AtlasSequenceParameterSetRBSP &other) const noexcept -> bool {
+auto AtlasSequenceParameterSetRBSP::operator!=(const AtlasSequenceParameterSetRBSP &other) const
+    noexcept -> bool {
   return !operator==(other);
 }
 

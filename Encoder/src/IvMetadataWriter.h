@@ -44,7 +44,7 @@ public:
   explicit IvMetadataWriter(const Common::Json &config);
 
   void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
-  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
+  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int frameCount);
   void reportSummary(std::ostream &) const;
 
 private:

@@ -155,6 +155,10 @@ void Encoder::enableOccupancyPerView() {
     if (!m_isBasicView[viewId] || m_ivs.vme().vme_max_entities_minus1() > 0) {
       m_ivs.viewParamsList[viewId].hasOccupancy = true;
     }
+    if (m_ExternalOccupancyCoding) {
+      m_ivs.viewParamsList[viewId].dq.dq_depth_occ_map_threshold_default(0);
+    }
   }
+  m_ivs.vme().allocateFlagVectors(m_ivs.vps.vps_atlas_count_minus1() + 1);
 }
 } // namespace TMIV::Encoder

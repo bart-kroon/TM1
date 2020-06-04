@@ -118,6 +118,11 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
+
+  // Check if running in explicit occupancy coding mode
+  if ((componentNode.require("GeometryQuantizerMethod").asString() == "ExplicitOccupancy")) {
+    m_ExternalOccupancyCoding = true;
+  }
 }
 
 /*

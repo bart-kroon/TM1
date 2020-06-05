@@ -66,10 +66,6 @@ constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag() const noexcept 
   return m_asme_depth_occ_map_threshold_flag;
 }
 
-constexpr auto AspsMivExtension::asme_occupancy_scale_present_flag() const noexcept {
-  return m_asme_occupancy_scale_present_flag;
-}
-
 constexpr auto AspsMivExtension::asme_group_id(const unsigned value) noexcept -> auto & {
   m_asme_group_id = value;
   return *this;
@@ -83,23 +79,6 @@ constexpr auto AspsMivExtension::asme_auxiliary_atlas_flag(const bool value) noe
 constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(const bool value) noexcept
     -> auto & {
   m_asme_depth_occ_map_threshold_flag = value;
-  return *this;
-}
-
-constexpr auto AspsMivExtension::asme_occupancy_scale_present_flag(const bool value) noexcept
-    -> auto & {
-  m_asme_occupancy_scale_present_flag = value;
-  return *this;
-}
-
-constexpr auto AspsMivExtension::asme_occupancy_scale_x_minus1(const uint8_t value) noexcept -> auto & {
-  m_asme_occupancy_scale_x_minus1 = value;
-  return *this;
-}
-
-constexpr auto AspsMivExtension::asme_occupancy_scale_y_minus1(const uint8_t value) noexcept
-    -> auto & {
-  m_asme_occupancy_scale_y_minus1 = value;
   return *this;
 }
 
@@ -119,9 +98,6 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
   return asme_group_id() == other.asme_group_id() &&
          asme_auxiliary_atlas_flag() == other.asme_auxiliary_atlas_flag() &&
          asme_depth_occ_threshold_flag() == other.asme_depth_occ_threshold_flag() &&
-		 m_asme_occupancy_scale_present_flag == other.m_asme_occupancy_scale_present_flag &&
-         m_asme_occupancy_scale_x_minus1 == other.m_asme_occupancy_scale_x_minus1 &&
-         m_asme_occupancy_scale_y_minus1 == other.m_asme_occupancy_scale_y_minus1 &&
          m_asme_geometry_frame_width_minus1 == other.m_asme_geometry_frame_width_minus1 &&
          m_asme_geometry_frame_height_minus1 == other.m_asme_geometry_frame_height_minus1;
 }

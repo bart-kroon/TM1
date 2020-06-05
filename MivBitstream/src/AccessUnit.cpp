@@ -50,23 +50,17 @@ auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept
 
 auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Vec2i {
   if (vps.vps_miv_extension_flag()) {
-    if (asps.asps_miv_extension().asme_occupancy_scale_present_flag()) {
-		// account for padded occupancy maps
-      int codedOccupancyWidth =
-          asps.asps_frame_width() /
-                    (asps.asps_miv_extension().asme_occupancy_scale_x_minus1() + 1);
-      int codedOccupancyHeight =
-          asps.asps_frame_height() /
-                                 (asps.asps_miv_extension().asme_occupancy_scale_y_minus1() + 1);
-      codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
-      codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
+    //if (asps.asps_miv_extension().asme_occupancy_scale_present_flag()) {
+      // account for padded occupancy maps
+      int codedUnpaddedOccupancyWidth =
+          asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size();
+      int codedUnpadedOccupancyHeight =
+          asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size();
+      int codedOccupancyWidth = codedUnpaddedOccupancyWidth + codedUnpaddedOccupancyWidth % 2;
+      int codedOccupancyHeight = codedUnpadedOccupancyHeight + codedUnpadedOccupancyHeight % 2;
       return Vec2i{codedOccupancyWidth, codedOccupancyHeight};
-    } else
-      return Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
-    /*
-    return Vec2i{asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
-                 asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
-				 */
+   // } else
+   //   return Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
   }
   return frameSize();
 }

@@ -1041,7 +1041,6 @@ auto merge(const vector<const V3cParameterSet *> &vps) -> V3cParameterSet {
 
     if (x.vps_miv_extension_flag()) {
       VERIFY_MIVBITSTREAM(x.vps_miv_extension() == y.vps_miv_extension());
-      x.vps_miv_extension().insertFlagVectors(y.vps_miv_extension());
     }
   }
   for (uint8_t i = 0; i <= x.vps_atlas_count_minus1(); ++i) {

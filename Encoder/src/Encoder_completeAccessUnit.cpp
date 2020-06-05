@@ -100,17 +100,6 @@ void Encoder::completeIvau() {
     atlas.ath.ath_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
     atlas.ath.ath_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.ath.ath_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
-
-	// Set ASME occupancy scale parameters to generate occupancy maps of equal size to
-    // BlockToPatchMap
-    if (m_ivs.vps.vps_miv_extension().vme_occupancy_subbitstream_present_flag(
-            uint8_t(i))) {
-      atlas.asps.asps_miv_extension().asme_occupancy_scale_present_flag(true);
-      atlas.asps.asps_miv_extension().asme_occupancy_scale_x_minus1(
-          uint8_t(pow(2, atlas.asps.asps_log2_patch_packing_block_size())) - 1);
-      atlas.asps.asps_miv_extension().asme_occupancy_scale_y_minus1(
-          uint8_t(pow(2, atlas.asps.asps_log2_patch_packing_block_size())) - 1);
-    }
   }
 }
 
@@ -123,7 +112,8 @@ void Encoder::constructVideoFrames() {
       const auto frameWidth = m_ivs.vps.vps_frame_width(i);
       const auto frameHeight = m_ivs.vps.vps_frame_height(i);
       TextureDepth16Frame frame;
-      if (m_ExternalOccupancyCoding && !m_ivs.vme().vme_fully_occupied_flag(uint8_t(i))) {
+      if (m_ExternalOccupancyCoding &&
+          !m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
         int codedOccupancyWidth =
             frameWidth >> m_ivau.atlas[i].asps.asps_log2_patch_packing_block_size();
         int codedOccupancyHeight =
@@ -137,7 +127,7 @@ void Encoder::constructVideoFrames() {
         frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
       frame.texture.fillNeutral();
       frame.depth.fillZero();
-      if (m_ExternalOccupancyCoding && !m_ivs.vme().vme_fully_occupied_flag(uint8_t(i)))
+      if (m_ExternalOccupancyCoding && !m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i)))
         frame.occupancy.fillZero();
       atlasList.push_back(move(frame));
     }
@@ -219,7 +209,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
             if (m_ExternalOccupancyCoding &&
-                !m_ivs.vme().vme_fully_occupied_flag(patchParams.vuhAtlasId))
+                !m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
               occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 0;
             continue;
           }
@@ -243,7 +233,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
           if (depth > 0 && m_ExternalOccupancyCoding &&
-              !m_ivs.vme().vme_fully_occupied_flag(patchParams.vuhAtlasId))
+              !m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
             occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
         }
       }

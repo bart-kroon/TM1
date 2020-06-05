@@ -68,16 +68,10 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     auto node = config.optional("depthLowQualityFlag");
     x.vme().vme_depth_low_quality_flag(node.asBool());
   }
-
+  /*
   if (config.require("GroupBasedEncoder")
           .require("GeometryQuantizerMethod")
           .asString()=="ExplicitOccupancy") {
-    /*
-	   auto m_ExternalOccupancyCoding = config.require("GroupBasedEncoder")
-                                         .require("AtlasConstructor")
-                                         .optional("ExternalOccupancyCoding")
-                                         .asBool();// TODo Basel
-    */
 	uint8_t maxNumberOfAtlases = 64;
     x.vme().allocateFlagVectors(maxNumberOfAtlases); // allocate to max number of atlases (since
                                                      // #atlases are not known ahead)
@@ -88,7 +82,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
       x.vme().vme_occupancy_subbitstream_present_flag(i, true);
     }
   }
-
+  */
   const auto numGroups = unsigned(config.require("numGroups").asInt());
   if (numGroups < 1) {
     throw runtime_error("Require numGroups >= 1");

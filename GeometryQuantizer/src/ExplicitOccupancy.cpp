@@ -53,12 +53,12 @@ auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams s
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
   // Always assume that first atlas is a complete one (include basic view) and second atlas is an incomplete one (i.e. include patches)
-  m_outSequenceParams.vme().vme_fully_occupied_flag(0, true);
-  m_outSequenceParams.vme().vme_fully_occupied_flag(1, false);
-  m_outSequenceParams.vme().vme_occupancy_subbitstream_present_flag(0, true);// to be Removed, Basel
-  m_outSequenceParams.vme().vme_occupancy_subbitstream_present_flag(1,false);// to be Removed, Basel
-  //m_outSequenceParams.vps.vps_occupancy_video_present_flag(0, false);
-  //m_outSequenceParams.vps.vps_occupancy_video_present_flag(1, true);
+  //m_outSequenceParams.vme().vme_fully_occupied_flag(0, true);
+  //m_outSequenceParams.vme().vme_fully_occupied_flag(1, false);
+  //m_outSequenceParams.vme().vme_occupancy_subbitstream_present_flag(0, true);// to be Removed, Basel
+  //m_outSequenceParams.vme().vme_occupancy_subbitstream_present_flag(1,false);// to be Removed, Basel
+  m_outSequenceParams.vps.vps_occupancy_video_present_flag(0, false);
+  m_outSequenceParams.vps.vps_occupancy_video_present_flag(1, true);
   /*
   for (auto &x : m_outSequenceParams.viewParamsList) {
     if (x.hasOccupancy) {

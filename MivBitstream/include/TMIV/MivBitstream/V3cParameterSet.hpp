@@ -211,19 +211,6 @@ constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
   return m_vme_vui_params_present_flag;
 }
 
-inline auto VpsMivExtension::vme_fully_occupied_flag(uint8_t atlasIndex) const noexcept {
-  if (m_vme_fully_occupied_flag.size() == 0)
-    return false;
-  return m_vme_fully_occupied_flag[atlasIndex];
-}
-
-inline auto VpsMivExtension::vme_occupancy_subbitstream_present_flag(uint8_t atlasIndex) const
-    noexcept {
-  if (m_vme_occupancy_subbitstream_present_flag.size() == 0)
-    return false;
-  return m_vme_occupancy_subbitstream_present_flag[atlasIndex];
-}
-
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag(const bool value) noexcept -> auto & {
   m_vme_depth_low_quality_flag = value;
   return *this;
@@ -244,37 +231,6 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) no
   return *this;
 }
 
-inline void VpsMivExtension::allocateFlagVectors(std::uint8_t size) {
-  m_vme_fully_occupied_flag.resize(size);
-  m_vme_occupancy_subbitstream_present_flag.resize(size);
-}
-
-inline void VpsMivExtension::insertFlagVectors(const VpsMivExtension &other) {
-  for (auto i = 0; i < other.m_vme_fully_occupied_flag.size(); i++) {
-    m_vme_fully_occupied_flag.push_back(other.vme_fully_occupied_flag(i));
-    m_vme_occupancy_subbitstream_present_flag.push_back(
-        other.vme_occupancy_subbitstream_present_flag(i));
-  }
-}
-
-inline auto VpsMivExtension::vme_fully_occupied_flag(uint8_t atlasIndex,
-                                                         const bool value) noexcept
-    -> auto & {
-  if (m_vme_fully_occupied_flag.size() < atlasIndex + 1 && atlasIndex < 64)
-    allocateFlagVectors(atlasIndex+1);
-  m_vme_fully_occupied_flag[atlasIndex] = value;
-  return *this;
-}
-
-inline auto VpsMivExtension::vme_occupancy_subbitstream_present_flag(
-    uint8_t atlasIndex, const bool value) noexcept
-    -> auto & {
-  if (m_vme_occupancy_subbitstream_present_flag.size() < atlasIndex + 1 && atlasIndex < 64)
-    allocateFlagVectors(atlasIndex + 1);
-  m_vme_occupancy_subbitstream_present_flag[atlasIndex] = value;
-  return *this;
-}
-
 constexpr auto VpsMivExtension::vme_vui_params_present_flag(bool value) noexcept -> auto & {
   m_vme_vui_params_present_flag = value;
   return *this;
@@ -284,10 +240,7 @@ constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const n
   return vme_depth_low_quality_flag() == other.vme_depth_low_quality_flag() &&
          vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
          vme_num_groups_minus1() == other.vme_num_groups_minus1() &&
-         vme_max_entities_minus1() == other.vme_max_entities_minus1() &&
-		 vme_fully_occupied_flag(0) == other.vme_fully_occupied_flag(0) &&
-         vme_occupancy_subbitstream_present_flag(0) ==
-             other.vme_occupancy_subbitstream_present_flag(0);
+         vme_max_entities_minus1() == other.vme_max_entities_minus1();
 }
 
 constexpr auto VpsMivExtension::operator!=(const VpsMivExtension &other) const noexcept {

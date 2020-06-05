@@ -159,6 +159,5 @@ void Encoder::enableOccupancyPerView() {
       m_ivs.viewParamsList[viewId].dq.dq_depth_occ_map_threshold_default(0);
     }
   }
-  m_ivs.vme().allocateFlagVectors(m_ivs.vps.vps_atlas_count_minus1() + 1);
 }
 } // namespace TMIV::Encoder

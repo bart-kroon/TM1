@@ -162,9 +162,7 @@ asps_extension_6bits=0
         .vps_miv_extension_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
-        .vme_num_groups_minus1(10)
-		.vme_fully_occupied_flag(15, false)
-        .vme_occupancy_subbitstream_present_flag(15, true);
+        .vme_num_groups_minus1(10);
 
     x.asps_atlas_sequence_parameter_set_id(15)
         .asps_frame_width(0xFFFF)
@@ -188,10 +186,7 @@ asps_extension_6bits=0
     x.asps_vpcc_extension().asps_vpcc_remove_duplicate_point_enabled_flag(true);
     x.asps_miv_extension()
         .asme_auxiliary_atlas_flag(true)
-        .asme_depth_occ_threshold_flag(false)
-		.asme_occupancy_scale_present_flag(true)
-        .asme_occupancy_scale_x_minus1(0)
-        .asme_occupancy_scale_y_minus1(7)
+        .asme_depth_occ_threshold_flag(true)
         .asme_geometry_frame_width_minus1(300)
         .asme_geometry_frame_height_minus1(100)
         .asme_group_id(3);
@@ -225,10 +220,7 @@ asps_extension_6bits=63
 asps_vpcc_remove_duplicate_point_enabled_flag=true
 asme_group_id=3
 asme_auxiliary_atlas_flag=true
-asme_depth_occ_map_threshold_flag=false
-asme_occupancy_scale_present_flag=true
-asme_occupancy_scale_x_minus1=0
-asme_occupancy_scale_y_minus1=7
+asme_depth_occ_map_threshold_flag=true
 asme_geometry_frame_width_minus1=300
 asme_geometry_frame_height_minus1=100
 asps_extension_data_flag=false

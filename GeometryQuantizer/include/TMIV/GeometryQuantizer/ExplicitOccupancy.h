@@ -34,7 +34,7 @@
 #ifndef _TMIV_GEOMETRYQUANTIZER_EXPLICITOCCUPANCY_H_
 #define _TMIV_GEOMETRYQUANTIZER_EXPLICITOCCUPANCY_H_
 
-#include <TMIV/GEOMETRYQUANTIZER/IGeometryQuantizer.h>
+#include <TMIV/GeometryQuantizer/IGeometryQuantizer.h>
 
 #include <TMIV/Common/Json.h>
 

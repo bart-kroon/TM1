@@ -72,6 +72,7 @@ private: // Encoder_prepareSequence.cpp
       -> Common::Vec2i;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   auto haveTexture() const -> bool;
+  auto haveOccupancy() const -> bool;
   void enableOccupancyPerView();
 
 private: // Encoder_prepareAccessUnit.cpp
@@ -115,7 +116,7 @@ private: // Encoder_completeAccessUnit.cpp
   int m_geometryScaleEnabledFlag{};
   int m_dilationIter{};
   Common::Vec2i m_entityEncRange;
-  bool m_ExternalOccupancyCoding = false;
+  bool m_ExplicitOccupancyCoding = false;
 
   // View-optimized encoder input
   MivBitstream::IvSequenceParams m_transportIvs;

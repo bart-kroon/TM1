@@ -121,7 +121,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
 
   // Check if running in explicit occupancy coding mode
   if ((componentNode.require("GeometryQuantizerMethod").asString() == "ExplicitOccupancy")) {
-    m_ExternalOccupancyCoding = true;
+    m_ExplicitOccupancyCoding = true;
   }
 }
 

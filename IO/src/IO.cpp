@@ -48,10 +48,18 @@ namespace {
 // The TMIV encoder always loads texture (and may use it internally) but attribute video data (AVD)
 // is an optional output in MIV WD4.
 auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
+
+// check if explicit occupancy coding mode
+auto haveOccupancy(const Json &config) {
+  bool m_ExplicitOccupanycCoding =
+      (config.require("GroupBasedEncoder").require("GeometryQuantizerMethod").asString() ==
+       "ExplicitOccupancy");
+  return m_ExplicitOccupanycCoding;
+}
 } // namespace
 
 auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
-  auto x = IvSequenceParams{haveTexture(config)};
+  auto x = IvSequenceParams{haveTexture(config), haveOccupancy(config)};
 
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -72,7 +80,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   if (config.require("GroupBasedEncoder")
           .require("GeometryQuantizerMethod")
           .asString()=="ExplicitOccupancy") {
-	uint8_t maxNumberOfAtlases = 64;
+        uint8_t maxNumberOfAtlases = 64;
     x.vme().allocateFlagVectors(maxNumberOfAtlases); // allocate to max number of atlases (since
                                                      // #atlases are not known ahead)
     for (auto i = 0; i < maxNumberOfAtlases; i++) {

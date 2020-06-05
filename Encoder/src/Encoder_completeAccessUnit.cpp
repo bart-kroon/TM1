@@ -112,8 +112,7 @@ void Encoder::constructVideoFrames() {
       const auto frameWidth = m_ivs.vps.vps_frame_width(i);
       const auto frameHeight = m_ivs.vps.vps_frame_height(i);
       TextureDepth16Frame frame;
-      if (m_ExternalOccupancyCoding &&
-          !m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+      if (m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
         int codedOccupancyWidth =
             frameWidth >> m_ivau.atlas[i].asps.asps_log2_patch_packing_block_size();
         int codedOccupancyHeight =
@@ -127,7 +126,7 @@ void Encoder::constructVideoFrames() {
         frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
       frame.texture.fillNeutral();
       frame.depth.fillZero();
-      if (m_ExternalOccupancyCoding && !m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i)))
+      if (m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i)))
         frame.occupancy.fillZero();
       atlasList.push_back(move(frame));
     }
@@ -208,8 +207,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-            if (m_ExternalOccupancyCoding &&
-                !m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
+            if (m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
               occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 0;
             continue;
           }
@@ -232,8 +230,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
-          if (depth > 0 && m_ExternalOccupancyCoding &&
-              !m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
+          if (depth > 0 && m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
             occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
         }
       }

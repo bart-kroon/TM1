@@ -39,12 +39,12 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-IvSequenceParams::IvSequenceParams() : IvSequenceParams{false} {}
+IvSequenceParams::IvSequenceParams() : IvSequenceParams{false, false} {}
 
-IvSequenceParams::IvSequenceParams(bool haveTexture)
-    : IvSequenceParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture} {}
+IvSequenceParams::IvSequenceParams(bool haveTexture, bool haveOccupancy)
+    : IvSequenceParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture, haveOccupancy} {}
 
-IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTexture) {
+IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTexture, bool haveOccupancy) {
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_0)
       .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
@@ -60,9 +60,18 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
         .vps_frame_width(a, atlasSizes[atlasId].x())
         .vps_frame_height(a, atlasSizes[atlasId].y())
         .vps_geometry_video_present_flag(a, true)
+        .vps_occupancy_video_present_flag(a, haveOccupancy)
         .vps_attribute_video_present_flag(a, haveTexture);
 
     vps.geometry_information(a).gi_geometry_nominal_2d_bitdepth_minus1(9);
+
+	if (haveOccupancy) {
+      vps.occupancy_information(a)
+          .oi_occupancy_codec_id(0)
+		  .oi_lossy_occupancy_map_compression_threshold(0) // set similar to V-PCC
+          .oi_occupancy_nominal_2d_bitdepth_minus1(7) // doing binary lossless coding for now but writing as yuv420p (8bit) files
+		  .oi_occupancy_MSB_align_flag(false);
+    }
 
     if (haveTexture) {
       vps.attribute_information(a)

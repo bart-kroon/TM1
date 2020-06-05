@@ -54,7 +54,7 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
   cout << " }\n";
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_ivs = IvSequenceParams{atlasFrameSizes, haveTexture()};
+  m_ivs = IvSequenceParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
   m_ivs.vme() = m_transportIvs.vme();
   m_ivs.viewParamsList = m_transportIvs.viewParamsList;
   m_ivs.viewingSpace = m_transportIvs.viewingSpace;
@@ -68,8 +68,9 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
   enableOccupancyPerView();
 
   // Further transform sequence parameters: geometry downscaling and depth/occupancy coding
-  return m_geometryDownscaler.transformSequenceParams(
+  m_ivs = m_geometryDownscaler.transformSequenceParams(
       m_depthOccupancy->transformSequenceParams(m_ivs));
+  return m_ivs;
 }
 
 // Calculate atlas frame sizes [MPEG/M52994 v2]
@@ -150,12 +151,19 @@ auto Encoder::haveTexture() const -> bool {
          ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 }
 
+auto Encoder::haveOccupancy() const -> bool {
+  assert(m_transportIvs.vps.vps_atlas_count_minus1() == 0);
+//  const auto &oi = m_transportIvs.vps.occupancy_information(0);
+  return m_ExplicitOccupancyCoding;
+  //&&m_transportIvs.vps.vps_occupancy_video_present_flag(0); // ToDo-Basel: check if vps_occupancy_video_present_flag needed here
+}
+
 void Encoder::enableOccupancyPerView() {
   for (size_t viewId = 0; viewId < m_ivs.viewParamsList.size(); ++viewId) {
     if (!m_isBasicView[viewId] || m_ivs.vme().vme_max_entities_minus1() > 0) {
       m_ivs.viewParamsList[viewId].hasOccupancy = true;
     }
-    if (m_ExternalOccupancyCoding) {
+    if (m_ExplicitOccupancyCoding) {
       m_ivs.viewParamsList[viewId].dq.dq_depth_occ_map_threshold_default(0);
     }
   }

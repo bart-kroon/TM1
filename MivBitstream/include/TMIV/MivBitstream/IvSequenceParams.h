@@ -42,8 +42,8 @@
 namespace TMIV::MivBitstream {
 struct IvSequenceParams {
   IvSequenceParams();
-  explicit IvSequenceParams(bool haveTexture);
-  IvSequenceParams(const Common::SizeVector &atlasSizes, bool haveTexture);
+  explicit IvSequenceParams(bool haveTexture, bool haveOccupancy);
+  IvSequenceParams(const Common::SizeVector &atlasSizes, bool haveTexture, bool haveOccupancy);
 
   V3cParameterSet vps;
   AtlasAdaptationParameterSetRBSP aaps;

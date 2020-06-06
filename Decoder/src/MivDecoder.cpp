@@ -207,7 +207,7 @@ void MivDecoder::decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Pa
 void MivDecoder::decodeVps(const V3cUnitHeader & /* vuh */, const V3cParameterSet &vps) {
   for (uint8_t j = 0; j <= vps.vps_atlas_count_minus1(); ++j) {
     VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(j));
-    VERIFY_MIVBITSTREAM(!vps.vps_occupancy_video_present_flag(j));
+    // VERIFY_MIVBITSTREAM(!vps.vps_occupancy_video_present_flag(j));
     VERIFY_MIVBITSTREAM(vps.vps_geometry_video_present_flag(j));
     LIMITATION(vps.vps_atlas_id(j) == j);
   }
@@ -286,7 +286,7 @@ void MivDecoder::startOccVideoDecoders(const V3cParameterSet &vps) {
 
   // Measure video decoding time
   const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
-  cout << "Time taken for decoding all geometry video sub bitstreams, first frame: " << dt
+  cout << "Time taken for decoding all occupancy video sub bitstreams, first frame: " << dt
        << " s\n";
   m_totalGeoVideoDecodingTime += dt;
 }
@@ -336,20 +336,21 @@ void MivDecoder::outputOccVideoData(AccessUnit &au) {
   const auto t0 = clock();
 
   for (size_t j = 0; j < au.atlas.size(); ++j) {
-    auto &aau = au.atlas[j];
-    auto &atlas_ = sequence_.atlas[j];
-
-    // Get an occupancy frame in-band or out-of-band
-    if (atlas_.occVideoServer) {
-      auto frame = atlas_.occVideoServer->getFrame();
-      VERIFY_MIVBITSTREAM(frame);
-      aau.decOccFrame = frame->as<YUV400P8>();
-      atlas_.occVideoServer->wait();
-    } else if (m_occFrameServer) {
-      aau.decOccFrame =
-          m_occFrameServer(uint8_t(j), sequence_.frameId, aau.decOccFrameSize(*au.vps));
-    } else {
-      MIVBITSTREAM_ERROR("Out-of-band occupancy video data but no frame server provided");
+    if (au.vps->vps_occupancy_video_present_flag(j)) {
+      auto &aau = au.atlas[j];
+      auto &atlas_ = sequence_.atlas[j];
+      // Get an occupancy frame in-band or out-of-band
+      if (atlas_.occVideoServer) {
+        auto frame = atlas_.occVideoServer->getFrame();
+        VERIFY_MIVBITSTREAM(frame);
+        aau.decOccFrame = frame->as<YUV400P8>();
+        atlas_.occVideoServer->wait();
+      } else if (m_occFrameServer) {
+        aau.decOccFrame =
+            m_occFrameServer(uint8_t(j), sequence_.frameId, aau.decOccFrameSize(*au.vps));
+      } else {
+        MIVBITSTREAM_ERROR("Out-of-band occupancy video data but no frame server provided");
+      }
     }
   }
 

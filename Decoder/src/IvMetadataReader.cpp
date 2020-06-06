@@ -55,12 +55,12 @@ IvMetadataReader::IvMetadataReader(const Json &config)
     throw runtime_error(what.str());
   }
   m_decoder = make_unique<MivDecoder>(m_stream);
-  m_decoder->setGeoFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
-    return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
-                                frameSize, int(atlasId));
-  });
   m_decoder->setOccFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
     return readFrame<YUV400P8>(config, "OutputDirectory", "OccupancyVideoDataPathFmt", frameId,
+                               frameSize, int(atlasId));
+  });
+  m_decoder->setGeoFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
+    return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
                                 frameSize, int(atlasId));
   });
   m_decoder->setAttrFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {

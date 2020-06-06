@@ -49,11 +49,12 @@ TEST_CASE("MivDecoder", "[MIV decoder]") {
     auto decoder = MivDecoder{stream};
 
     SECTION("Callbacks") {
+
+      decoder.setOccFrameServer(
+          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Mask{}; });
+
       decoder.setGeoFrameServer(
           [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Depth10Frame{}; });
-
-	  decoder.setOccFrameServer(
-          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Mask{}; });
 		  
       decoder.setAttrFrameServer(
           [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Texture444Frame{}; });

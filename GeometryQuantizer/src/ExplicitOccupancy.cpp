@@ -43,35 +43,16 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::GeometryQuantizer {
-//ExplicitOccupancy::ExplicitOccupancy(uint16_t depthOccMapThresholdIfSet)
-//    : m_depthOccMapThresholdIfSet{depthOccMapThresholdIfSet} {}
-
 ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json & /*unused*/) {}
 
 auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
     -> const MivBitstream::IvSequenceParams & {
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
-  // Always assume that first atlas is a complete one (include basic view) and second atlas is an incomplete one (i.e. include patches)
-  //m_outSequenceParams.vme().vme_fully_occupied_flag(0, true);
-  //m_outSequenceParams.vme().vme_fully_occupied_flag(1, false);
-  //m_outSequenceParams.vme().vme_occupancy_subbitstream_present_flag(0, true);// to be Removed, Basel
-  //m_outSequenceParams.vme().vme_occupancy_subbitstream_present_flag(1,false);// to be Removed, Basel
+  // Always assume that first atlas is a complete one (include basic view(s)) and second atlas is an incomplete one (i.e. include patches)
   m_outSequenceParams.vps.vps_occupancy_video_present_flag(0, false);
   m_outSequenceParams.vps.vps_occupancy_video_present_flag(1, true);
-  /*
-  for (auto &x : m_outSequenceParams.viewParamsList) {
-    if (x.hasOccupancy) {
-      x.dq.dq_depth_occ_map_threshold_default(m_depthOccMapThresholdIfSet); // =T
-      const auto nearLevel = 1023.F;
-      const auto farLevel = float(2 * m_depthOccMapThresholdIfSet);
-      // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
-      x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
-                            (0.F - farLevel) / (nearLevel - farLevel) *
-                                (x.dq.dq_norm_disp_high() - x.dq.dq_norm_disp_low()));
-    }
-  }
-  */
+
   return m_outSequenceParams;
 }
 

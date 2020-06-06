@@ -152,10 +152,7 @@ auto Encoder::haveTexture() const -> bool {
 }
 
 auto Encoder::haveOccupancy() const -> bool {
-  assert(m_transportIvs.vps.vps_atlas_count_minus1() == 0);
-//  const auto &oi = m_transportIvs.vps.occupancy_information(0);
   return m_ExplicitOccupancyCoding;
-  //&&m_transportIvs.vps.vps_occupancy_video_present_flag(0); // ToDo-Basel: check if vps_occupancy_video_present_flag needed here
 }
 
 void Encoder::enableOccupancyPerView() {

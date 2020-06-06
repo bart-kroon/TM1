@@ -52,8 +52,9 @@ auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept
   if (vps.vps_miv_extension_flag()) {
     //if (asps.asps_miv_extension().asme_occupancy_scale_present_flag()) {
       // account for padded occupancy maps
+    // ToDo-Basel: Should update to read size from the decoded stream for the in-band case
       int codedUnpaddedOccupancyWidth =
-          asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size();
+          asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(); 
       int codedUnpadedOccupancyHeight =
           asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size();
       int codedOccupancyWidth = codedUnpaddedOccupancyWidth + codedUnpaddedOccupancyWidth % 2;

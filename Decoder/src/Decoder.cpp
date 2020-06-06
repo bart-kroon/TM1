@@ -66,12 +66,17 @@ void checkRestrictions(const AccessUnit &frame) {
 }
 
 void extractOccupancy(AccessUnit &frame) {
+  bool explicitOccupancyMode = false;
+  for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++)
+    if (frame.vps->vps_occupancy_video_present_flag(i))
+      explicitOccupancyMode = true;
+
   for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
     auto &atlas = frame.atlas[i];
     atlas.occFrame = Mask{atlas.frameSize().x(), atlas.frameSize().y()};
     if (!frame.vps->vps_occupancy_video_present_flag(i)) {
       atlas.occFrame.fillOne();
-      if (!frame.atlas[i].patchParamsList[0].pduDepthOccMapThreshold()!=0) { //ToDo-Basel: should be updated to asme_depth_occ_map_threshold _flag
+      if (!explicitOccupancyMode) {
         // embedded occupancy case: Implementation assumes geoFrame (full size depth) is available
         Vec2i sz = atlas.blockToPatchMap.getSize();
         for (auto y = 0; y < atlas.frameSize().y(); y++)
@@ -91,10 +96,11 @@ void extractOccupancy(AccessUnit &frame) {
       }
     } else {
       // Account for padding in case done to the coded occupancy video
-      int occScaleX = floor(frame.atlas[i].occFrame.getWidth() / frame.atlas[i].decOccFrame.getWidth()); 
+      int occScaleX =
+          ceil((float) frame.atlas[i].occFrame.getWidth() / (float) frame.atlas[i].decOccFrame.getWidth());
       int origWidth = frame.atlas[i].occFrame.getWidth() / occScaleX;
       int occScaleY =
-          floor(frame.atlas[i].occFrame.getHeight() / frame.atlas[i].decOccFrame.getHeight()); 
+          ceil((float) frame.atlas[i].occFrame.getHeight() / (float) frame.atlas[i].decOccFrame.getHeight());
       int origHeight = frame.atlas[i].occFrame.getHeight() / occScaleY;
       int xPad = origWidth % 2;
       int yPad = origHeight % 2;

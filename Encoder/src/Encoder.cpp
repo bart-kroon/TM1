@@ -125,23 +125,5 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   }
 }
 
-/*
-auto Encoder::prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
-    -> const MivBitstream::IvSequenceParams & {
-  auto optimal = m_viewOptimizer->optimizeSequence(move(ivSequenceParams));
-  int index = 0;
-  for (auto i = 0; i < optimal.second.size(); i++)
-    if (optimal.second[i]) {
-      optimal.first.vps.vps_miv_extension().vme_fully_occupied_flag(
-          index, true); // assuming atlas size is equal to view size and basic views
-                        // are packed in atlases first
-      optimal.first.vps.vps_miv_extension().vme_occupancy_subbitstream_present_flag(index, false);
-      index++;
-    }
-  return m_geometryDownscaler.transformSequenceParams(m_depthOccupancy->transformSequenceParams(
-      m_atlasConstructor->prepareSequence(move(optimal.first), move(optimal.second)))); // ToDo Basel
-}
-*/
-
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }
 } // namespace TMIV::Encoder

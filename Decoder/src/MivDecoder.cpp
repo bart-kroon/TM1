@@ -70,10 +70,13 @@ void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer =
 
 void MivDecoder::decode() {
   m_totalGeoVideoDecodingTime = 0.;
+  m_totalOccVideoDecodingTime = 0.;
   m_totalAttrVideoDecodingTime = 0.;
 
   auto report = [this]() {
     cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
+         << " s\n";
+    cout << "Total ocupancy video sub bitstream decoding time: " << m_totalOccVideoDecodingTime
          << " s\n";
     cout << "Total attribute video sub bitstream decoding time: " << m_totalAttrVideoDecodingTime
          << " s\n";
@@ -143,6 +146,7 @@ void MivDecoder::outputFrame(const V3cUnitHeader &vuh) {
   auto au = AccessUnit{};
   au.vps = &vps(vuh);
   outputAtlasData(au);
+  outputOccVideoData(au);
   outputGeoVideoData(au);
   outputAttrVideoData(au);
 
@@ -220,6 +224,7 @@ void MivDecoder::decodeVps(const V3cUnitHeader & /* vuh */, const V3cParameterSe
   outputSequence(vps);
 
   if (decodeVideoSubBitstreams(vps)) {
+    startOccVideoDecoders(vps);
     startGeoVideoDecoders(vps);
     startAttrVideoDecoders(vps);
   }
@@ -240,6 +245,12 @@ auto MivDecoder::decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool {
     const auto vuh = V3cUnitHeader::decodeFrom(substream, m_vpsV);
 
     if (vuh.vuh_v3c_parameter_set_id() == vps.vps_v3c_parameter_set_id()) {
+      if (vuh.vuh_unit_type() == VuhUnitType::V3C_OVD &&
+          vps.vps_occupancy_video_present_flag(vuh.vuh_atlas_id())) {
+        haveVideo = true;
+        const auto j = vps.atlasIdxOf(vuh.vuh_atlas_id());
+        sequence(vuh).atlas[j].occVideoData += ssvu.ssvu_v3c_unit().substr(4);
+      }
       if (vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
         haveVideo = true;
         const auto j = vps.atlasIdxOf(vuh.vuh_atlas_id());
@@ -258,6 +269,26 @@ auto MivDecoder::decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool {
   m_stream.seekg(initialStreamPosition);
   m_stream.clear();
   return haveVideo;
+}
+
+void MivDecoder::startOccVideoDecoders(const V3cParameterSet &vps) {
+  auto &sequence_ = m_sequenceV[vps.vps_v3c_parameter_set_id()];
+  const auto codecGroupIdc = vps.profile_tier_level().ptl_profile_codec_group_idc();
+  const auto t0 = clock();
+
+  for (uint8_t j = 0; j <= vps.vps_atlas_count_minus1(); ++j) {
+    if (vps.vps_occupancy_video_present_flag(j)) {
+      sequence_.atlas[j].occVideoServer = make_unique<VideoServer>(
+          IVideoDecoder::create(codecGroupIdc), sequence_.atlas[j].occVideoData);
+      sequence_.atlas[j].occVideoServer->wait();
+    }
+  }
+
+  // Measure video decoding time
+  const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
+  cout << "Time taken for decoding all geometry video sub bitstreams, first frame: " << dt
+       << " s\n";
+  m_totalGeoVideoDecodingTime += dt;
 }
 
 void MivDecoder::startGeoVideoDecoders(const V3cParameterSet &vps) {
@@ -298,6 +329,34 @@ void MivDecoder::startAttrVideoDecoders(const V3cParameterSet &vps) {
   cout << "Time taken for decoding all attribute video sub bitstreams, first frame: " << dt
        << " s\n";
   m_totalAttrVideoDecodingTime += dt;
+}
+
+void MivDecoder::outputOccVideoData(AccessUnit &au) {
+  auto &sequence_ = m_sequenceV[au.vps->vps_v3c_parameter_set_id()];
+  const auto t0 = clock();
+
+  for (size_t j = 0; j < au.atlas.size(); ++j) {
+    auto &aau = au.atlas[j];
+    auto &atlas_ = sequence_.atlas[j];
+
+    // Get an occupancy frame in-band or out-of-band
+    if (atlas_.occVideoServer) {
+      auto frame = atlas_.occVideoServer->getFrame();
+      VERIFY_MIVBITSTREAM(frame);
+      aau.decOccFrame = frame->as<YUV400P8>();
+      atlas_.occVideoServer->wait();
+    } else if (m_occFrameServer) {
+      aau.decOccFrame =
+          m_occFrameServer(uint8_t(j), sequence_.frameId, aau.decOccFrameSize(*au.vps));
+    } else {
+      MIVBITSTREAM_ERROR("Out-of-band occupancy video data but no frame server provided");
+    }
+  }
+
+  // Measure video decoding time
+  const auto dt = double(clock() - t0) / CLOCKS_PER_SEC;
+  cout << "Time taken for decoding all occupancy video sub bitstreams, one frame: " << dt << " s\n";
+  m_totalOccVideoDecodingTime += dt;
 }
 
 void MivDecoder::outputGeoVideoData(AccessUnit &au) {

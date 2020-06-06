@@ -116,8 +116,10 @@ private: // Decoder output
 private: // Video deecoding processes
   auto decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool;
   void startGeoVideoDecoders(const V3cParameterSet &vps);
+  void startOccVideoDecoders(const V3cParameterSet &vps);
   void startAttrVideoDecoders(const V3cParameterSet &vps);
   void outputGeoVideoData(AccessUnit &au);
+  void outputOccVideoData(AccessUnit &au);
   void outputAttrVideoData(AccessUnit &au);
 
 private: // Decoding processes
@@ -196,8 +198,10 @@ private: // Internal decoder state
     std::shared_ptr<Frame> intraFrame;
 
     std::string geoVideoData;
+    std::string occVideoData;
     std::string attrVideoData;
     std::unique_ptr<VideoDecoder::VideoServer> geoVideoServer;
+    std::unique_ptr<VideoDecoder::VideoServer> occVideoServer;
     std::unique_ptr<VideoDecoder::VideoServer> attrVideoServer;
   };
 
@@ -212,6 +216,7 @@ private: // Internal decoder state
 
   bool m_stop{};
   double m_totalGeoVideoDecodingTime{};
+  double m_totalOccVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};
 
 private: // Bitrate reporting (pimpl idiom)

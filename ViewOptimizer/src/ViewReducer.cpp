@@ -69,6 +69,8 @@ auto ViewReducer::optimizeSequence(IvSequenceParams ivSequenceParams) -> Output 
 
   // Decide whether number of high priority list is one
   bool isoneview = false;
+  if (ivSequenceParams.vme().vme_num_groups_minus1()>0)
+    isoneview = true; // limit to only one basic view per group
 
   size_t id_i = 0;
   size_t id_j = 0;

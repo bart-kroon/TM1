@@ -107,6 +107,49 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
     }
   }
 
+  // Apply depth padding
+  padGeometryWithAvg(outAtlases);
+
   return outAtlases;
 }
+
+static vector<uint16_t> avg;
+static bool isFirstFrame = true;
+void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
+  if (isFirstFrame)
+    for (uint8_t i = 0; i < atlases.size(); ++i)
+      avg.push_back(0);
+
+  for (uint8_t i = 0; i < atlases.size(); ++i) {
+    if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+      auto &depthAtlasMap = atlases[i].depth;
+      if (isFirstFrame) {
+        // Find Average geometry value per atlas at first frame in IRAP only
+        double sum = 0, count = 0;
+        for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+          for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
+            auto depth = depthAtlasMap.getPlane(0)(y, x);
+            if (depth > 0) {
+              sum = sum + (double)depth;
+              count++;
+            }
+          }
+        }
+        avg[i] = sum / count;
+        cout << "Sum = " << sum << ", count = " << count << endl;
+        cout << "Padded depth value for group's atlas " << (int)i << " is " << avg[i] << endl;
+      }
+      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+        for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
+          auto depth = depthAtlasMap.getPlane(0)(y, x);
+          if (depth == 0) {
+            depthAtlasMap.getPlane(0)(y, x) = avg[i];
+          }
+        }
+      }
+    }
+  }
+  isFirstFrame = false;
+}
+
 } // namespace TMIV::DepthOccupancy

@@ -43,15 +43,27 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::GeometryQuantizer {
-ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json & /*unused*/) {}
+ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &componentNode) {
+  if(auto subnode = componentNode.optional("isAtlasCompletePerGroupFlag")){
+    for (size_t i = 0; i < subnode.size(); ++i) {
+      m_isAtlasCompleteFlag.push_back(subnode.at(i).asBool());
+    }
+  }
+}
 
 auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
     -> const MivBitstream::IvSequenceParams & {
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
-  // Always assume that first atlas is a complete one (include basic view(s)) and second atlas is an incomplete one (i.e. include patches)
-  m_outSequenceParams.vps.vps_occupancy_video_present_flag(0, false);
-  m_outSequenceParams.vps.vps_occupancy_video_present_flag(1, true);
+  // Always assume that first atlas is a complete one (include basic view(s)) and second atlas is an
+  // incomplete one (i.e. include patches)
+  // m_outSequenceParams.vps.vps_occupancy_video_present_flag(0, false);
+  // m_outSequenceParams.vps.vps_occupancy_video_present_flag(1, true); 
+  for (uint8_t i = 0; i <= m_outSequenceParams.vps.vps_atlas_count_minus1(); i++)
+    if (m_isAtlasCompleteFlag.size() > i)
+      m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
+    else
+      m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, true);
 
   return m_outSequenceParams;
 }
@@ -136,8 +148,7 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
           }
         }
         avg[i] = sum / count;
-        cout << "Sum = " << sum << ", count = " << count << endl;
-        cout << "Padded depth value for group's atlas " << (int)i << " is " << avg[i] << endl;
+        cout << "Padded depth value is " << avg[i] << endl;
       }
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
@@ -152,4 +163,4 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
   isFirstFrame = false;
 }
 
-} // namespace TMIV::DepthOccupancy
+} // namespace TMIV::GeometryQuantizer

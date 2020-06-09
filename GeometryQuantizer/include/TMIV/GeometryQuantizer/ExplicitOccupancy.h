@@ -45,7 +45,7 @@ public:
   //
   // When incoming view parameters have useOccupancy() set, then the outgoing view parameters
   // will have the specified depthOccMapThresholdIfSet value.
-  //explicit ExplicitOccupancy(uint16_t depthOccMapThresholdIfSet);
+  // explicit ExplicitOccupancy(uint16_t depthOccMapThresholdIfSet);
 
   ExplicitOccupancy(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
   ExplicitOccupancy(const ExplicitOccupancy &) = default;
@@ -73,7 +73,8 @@ private:
   MivBitstream::IvSequenceParams m_inSequenceParams;
   MivBitstream::IvSequenceParams m_outSequenceParams;
   MivBitstream::IvAccessUnitParams m_accessUnitParams;
+  std::vector<bool> m_isAtlasCompleteFlag{};
 };
-} // namespace TMIV::DepthOccupancy
+} // namespace TMIV::GeometryQuantizer
 
 #endif

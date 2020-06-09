@@ -127,7 +127,7 @@ void Encoder::constructVideoFrames() {
       frame.texture.fillNeutral();
       frame.depth.fillZero();
       if (m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i)))
-        frame.occupancy.fillZero();
+        frame.occupancy.fillOne();
       atlasList.push_back(move(frame));
     }
 
@@ -193,7 +193,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patchParams.viewToAtlas(pView);
 
-		  yOcc = pAtlas.y() >>
+          yOcc = pAtlas.y() >>
                  m_ivau.atlas[patchParams.vuhAtlasId].asps.asps_log2_patch_packing_block_size();
           xOcc = pAtlas.x() >>
                  m_ivau.atlas[patchParams.vuhAtlasId].asps.asps_log2_patch_packing_block_size();
@@ -230,8 +230,10 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
-          if (depth > 0 && m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
+          if (depth > 0 && outViewParams.hasOccupancy &&
+              m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
             occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
+          ;
         }
       }
     }

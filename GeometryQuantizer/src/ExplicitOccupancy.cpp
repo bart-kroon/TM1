@@ -44,7 +44,7 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::GeometryQuantizer {
 ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &componentNode) {
-  if(auto subnode = componentNode.optional("isAtlasCompletePerGroupFlag")){
+  if (auto subnode = componentNode.optional("isAtlasCompletePerGroupFlag")) {
     for (size_t i = 0; i < subnode.size(); ++i) {
       m_isAtlasCompleteFlag.push_back(subnode.at(i).asBool());
     }
@@ -55,10 +55,7 @@ auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams s
     -> const MivBitstream::IvSequenceParams & {
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
-  // Always assume that first atlas is a complete one (include basic view(s)) and second atlas is an
-  // incomplete one (i.e. include patches)
-  // m_outSequenceParams.vps.vps_occupancy_video_present_flag(0, false);
-  // m_outSequenceParams.vps.vps_occupancy_video_present_flag(1, true); 
+
   for (uint8_t i = 0; i <= m_outSequenceParams.vps.vps_atlas_count_minus1(); i++)
     if (m_isAtlasCompleteFlag.size() > i)
       m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
@@ -135,13 +132,18 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
   for (uint8_t i = 0; i < atlases.size(); ++i) {
     if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
       auto &depthAtlasMap = atlases[i].depth;
+      const auto &occupancyAtlasMap = atlases[i].occupancy;
+      int yOcc, xOcc;
+
       if (isFirstFrame) {
         // Find Average geometry value per atlas at first frame in IRAP only
         double sum = 0, count = 0;
         for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
           for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
             auto depth = depthAtlasMap.getPlane(0)(y, x);
-            if (depth > 0) {
+            yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+            xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+            if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) > 0) {
               sum = sum + (double)depth;
               count++;
             }
@@ -152,8 +154,9 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
       }
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
-          auto depth = depthAtlasMap.getPlane(0)(y, x);
-          if (depth == 0) {
+          yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0) {
             depthAtlasMap.getPlane(0)(y, x) = avg[i];
           }
         }

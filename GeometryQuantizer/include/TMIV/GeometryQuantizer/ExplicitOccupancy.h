@@ -63,7 +63,7 @@ public:
   auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
       -> const MivBitstream::IvAccessUnitParams & override;
 
-  void ExplicitOccupancy::padGeometryWithAvg(Common::MVD10Frame &atlases);
+  void padGeometryWithAvg(Common::MVD10Frame &atlases);
 
   // Transform depth bit depth and range
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;

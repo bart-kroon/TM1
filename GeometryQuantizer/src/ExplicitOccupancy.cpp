@@ -132,9 +132,11 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
   for (uint8_t i = 0; i < atlases.size(); ++i) {
     if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
       auto &depthAtlasMap = atlases[i].depth;
+      int depthScale[2] = {
+          m_accessUnitParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+          m_accessUnitParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
       const auto &occupancyAtlasMap = atlases[i].occupancy;
       int yOcc, xOcc;
-
       if (isFirstFrame) {
         // Find Average geometry value per atlas at first frame in IRAP only
         double sum = 0, count = 0;
@@ -143,7 +145,7 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
             auto depth = depthAtlasMap.getPlane(0)(y, x);
             yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
             xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
-            if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) > 0) {
+            if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) > 0 && depth != 0) {
               sum = sum + (double)depth;
               count++;
             }
@@ -154,9 +156,12 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
       }
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
+          auto depth = depthAtlasMap.getPlane(0)(y, x);
           yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
           xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
-          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0) {
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
+              (depth == 0 &&
+               atlases[i].texture.getPlane(0)(y * depthScale[1], x * depthScale[0]) == 512)) {
             depthAtlasMap.getPlane(0)(y, x) = avg[i];
           }
         }

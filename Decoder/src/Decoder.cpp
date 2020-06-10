@@ -91,6 +91,31 @@ void writeOccupancy(const std::string &path, const Common::Mask &frame, int fram
     throw std::runtime_error("Failed to write to file");
   }
 }
+
+void writeGeometry(const std::string &path, const Common::Depth10Frame &frame, int frameIndex) {
+
+  std::cout << "Writing geometry of " << frameIndex << " to " << path << '\n';
+
+  std::fstream stream(path, frameIndex == 0 ? std::ios::out | std::ios::binary
+                                            : std::ios::in | std::ios::out | std::ios::binary);
+  if (!stream.good()) {
+    throw std::runtime_error("Failed to open file for writing");
+  }
+
+  stream.seekp(int64_t(frameIndex) * frame.getDiskSize());
+
+  frame.dump(stream);
+  int bytes = frame.getDiskSize() - frame.getMemorySize();
+  constexpr auto fillValue = Common::neutralColor<YUV420P10>();
+  const auto padding = std::vector(bytes / sizeof(fillValue), fillValue);
+  auto buffer = std::vector<char>(bytes);
+  std::memcpy(buffer.data(), padding.data(), buffer.size());
+  stream.write(buffer.data(), buffer.size());
+
+  if (!stream.good()) {
+    throw std::runtime_error("Failed to write to file");
+  }
+}
 */
 void extractOccupancy(AccessUnit &frame) {
   bool explicitOccupancyMode = false;
@@ -121,23 +146,24 @@ void extractOccupancy(AccessUnit &frame) {
       }
     } else {
       // Account for padding in case done to the coded occupancy video
-      int occScaleX = ceil((float)atlas.occFrame.getWidth() / (float)atlas.decOccFrame.getWidth());
+      Vec2i decOccSize = atlas.decOccFrameSize(*frame.vps);
+      int occScaleX = ceil((float)atlas.occFrame.getWidth() / (float)decOccSize[0]);
       int origWidth = atlas.occFrame.getWidth() / occScaleX;
-      int occScaleY =
-          ceil((float)atlas.occFrame.getHeight() / (float)atlas.decOccFrame.getHeight());
+      int occScaleY = ceil((float)atlas.occFrame.getHeight() / (float)decOccSize[1]);
       int origHeight = atlas.occFrame.getHeight() / occScaleY;
       int xPad = origWidth % 2;
       int yPad = origHeight % 2;
       // upscale Nearest Neighbor (External occupancy coding case)
       for (int yo = 0; yo < atlas.occFrame.getHeight(); ++yo) {
         for (int xo = 0; xo < atlas.occFrame.getWidth(); ++xo) {
-          const auto xi = xo * (atlas.decOccFrame.getWidth() - xPad) / atlas.occFrame.getWidth();
-          const auto yi = yo * (atlas.decOccFrame.getHeight() - yPad) / atlas.occFrame.getHeight();
+          const auto xi = xo * (decOccSize[0] - xPad) / atlas.occFrame.getWidth();
+          const auto yi = yo * (decOccSize[1] - yPad) / atlas.occFrame.getHeight();
           atlas.occFrame.getPlane(0)(yo, xo) = atlas.decOccFrame.getPlane(0)(yi, xi);
         }
       }
     }
-    //writeOccupancy("F:/Test_c" + to_string(i) + (string) "_1920x4640_yuv420p.yuv", frame.atlas[i].occFrame, 0);
+    //writeOccupancy("F:/Test_TO_c" + to_string(i) + (string) "_1920x4640_yuv420p_ExpOcc.yuv", frame.atlas[i].occFrame, 0);
+    //writeGeometry("F:/Test_TG_c" + to_string(i) + (string) "_1920x4640_yuv420p10le_ExpOcc.yuv", frame.atlas[i].geoFrame, 0);
   }
 }
 } // namespace

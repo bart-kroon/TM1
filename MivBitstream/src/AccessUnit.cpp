@@ -50,9 +50,6 @@ auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept
 
 auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept -> Vec2i {
   if (vps.vps_miv_extension_flag()) {
-    //if (asps.asps_miv_extension().asme_occupancy_scale_present_flag()) {
-      // account for padded occupancy maps
-    // ToDo-Basel: Should update to read size from the decoded stream for the in-band case
       int codedUnpaddedOccupancyWidth =
           asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(); 
       int codedUnpadedOccupancyHeight =
@@ -60,8 +57,6 @@ auto AtlasAccessUnit::decOccFrameSize(const V3cParameterSet &vps) const noexcept
       int codedOccupancyWidth = codedUnpaddedOccupancyWidth + codedUnpaddedOccupancyWidth % 2;
       int codedOccupancyHeight = codedUnpadedOccupancyHeight + codedUnpadedOccupancyHeight % 2;
       return Vec2i{codedOccupancyWidth, codedOccupancyHeight};
-   // } else
-   //   return Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
   }
   return frameSize();
 }

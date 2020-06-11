@@ -63,7 +63,10 @@ public:
   auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
       -> const MivBitstream::IvAccessUnitParams & override;
 
-  void padGeometryWithAvg(Common::MVD10Frame &atlases);
+  //void padGeometryWithAvg(Common::MVD10Frame &atlases);
+  void padGeometryFromLeft(Common::MVD10Frame &atlases);
+  //void padGeometryFromTopLeft(Common::MVD10Frame &atlases);
+  //void padGeometryWithMidRange(Common::MVD10Frame &atlases);
 
   // Transform depth bit depth and range
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
@@ -74,6 +77,7 @@ private:
   MivBitstream::IvSequenceParams m_outSequenceParams;
   MivBitstream::IvAccessUnitParams m_accessUnitParams;
   std::vector<bool> m_isAtlasCompleteFlag{};
+  bool m_depthLowQualityFlag;
 };
 } // namespace TMIV::GeometryQuantizer
 

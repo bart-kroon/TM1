@@ -61,7 +61,7 @@ auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams s
       m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
     else
       m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, true);
-
+  m_depthLowQualityFlag=m_outSequenceParams.vme().vme_depth_low_quality_flag();
   return m_outSequenceParams;
 }
 
@@ -117,9 +117,93 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   }
 
   // Apply depth padding
-  padGeometryWithAvg(outAtlases);
+  if (!m_depthLowQualityFlag) {
+	padGeometryFromLeft(outAtlases);
+  }
+  //padGeometryWithAvg(outAtlases);
+  //padGeometryFromTopLeft(outAtlases);
+  //padGeometryWithMidRange(outAtlases);
 
   return outAtlases;
+}
+
+void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
+  for (uint8_t i = 0; i < atlases.size(); ++i) {
+    if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+      auto &depthAtlasMap = atlases[i].depth;
+      int depthScale[2] = {
+          m_accessUnitParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+          m_accessUnitParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+      const auto &occupancyAtlasMap = atlases[i].occupancy;
+      int yOcc, xOcc;
+      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+        for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
+          auto depth = depthAtlasMap.getPlane(0)(y, x);
+          yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
+              (depth == 0 &&
+               atlases[i].texture.getPlane(0)(y * depthScale[1], x * depthScale[0]) == 512)) {
+            depthAtlasMap.getPlane(0)(y, x) = depthAtlasMap.getPlane(0)(y, x - 1);
+          }
+        }
+      }
+    }
+  }
+}
+/*
+void ExplicitOccupancy::padGeometryWithMidRange(MVD10Frame &atlases) {
+  for (uint8_t i = 0; i < atlases.size(); ++i) {
+    if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+      auto &depthAtlasMap = atlases[i].depth;
+      int depthScale[2] = {
+          m_accessUnitParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+          m_accessUnitParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+      const auto &occupancyAtlasMap = atlases[i].occupancy;
+      int yOcc, xOcc;
+      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+        for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
+          auto depth = depthAtlasMap.getPlane(0)(y, x);
+          yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
+              (depth == 0 &&
+               atlases[i].texture.getPlane(0)(y * depthScale[1], x * depthScale[0]) == 512)) {
+            depthAtlasMap.getPlane(0)(y, x) = 512;
+          }
+        }
+      }
+    }
+  }
+}
+
+void ExplicitOccupancy::padGeometryFromTopLeft(MVD10Frame &atlases) {
+  for (uint8_t i = 0; i < atlases.size(); ++i) {
+    if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+      auto &depthAtlasMap = atlases[i].depth;
+      int depthScale[2] = {
+          m_accessUnitParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+          m_accessUnitParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+      const auto &occupancyAtlasMap = atlases[i].occupancy;
+      int yOcc, xOcc;
+      uint32_t avgValue;
+      for (int y = 1; y < depthAtlasMap.getHeight(); y++) {
+        for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
+          auto depth = depthAtlasMap.getPlane(0)(y, x);
+          yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
+              (depth == 0 &&
+               atlases[i].texture.getPlane(0)(y * depthScale[1], x * depthScale[0]) == 512)) {
+            avgValue = ((uint32_t)depthAtlasMap.getPlane(0)(y, x - 1) +
+                       (uint32_t)depthAtlasMap.getPlane(0)(y - 1, x) +
+                       (uint32_t)depthAtlasMap.getPlane(0)(y - 1, x - 1))/3;
+            depthAtlasMap.getPlane(0)(y, x) = (uint16_t) avgValue;
+          }
+        }
+      }
+    }
+  }
 }
 
 static vector<uint16_t> avg;
@@ -170,5 +254,5 @@ void ExplicitOccupancy::padGeometryWithAvg(MVD10Frame &atlases) {
   }
   isFirstFrame = false;
 }
-
+*/
 } // namespace TMIV::GeometryQuantizer

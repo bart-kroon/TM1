@@ -175,10 +175,13 @@ MPEG-internal repository.
 Morocco.
 
   * [2] B. Salahieh, B. Kroon, J. Jung, A. Dziembowski (Eds.), *Test Model 5 for Immersive Video*,
-ISO/IEC JTC1/SC29/WG11 MPEG/N19213, Apr. 2020, Online / Alpbach, Austria.
+[ISO/IEC JTC1/SC29/WG11 MPEG/N19213](https://isotc.iso.org/livelink/livelink?func=ll&objId=21282497&objAction=Open&nexturl=%2Flivelink%2Flivelink%3Ffunc%3Dll%26objId%3D21274865%26objAction%3Dbrowse%26viewType%3D1),
+Apr. 2020, Online / Alpbach, Austria.
 
   * [3] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Working Draft 5 of Immersive Video*,
-ISO/IEC JTC1/SC29/WG11 MPEG/N19212, Apr. 2020, Online / Alpbach, Austria.
+[ISO/IEC JTC1/SC29/WG11 MPEG/N19212](https://isotc.iso.org/livelink/livelink?func=ll&objId=21277683&objAction=Open&nexturl=%2Flivelink%2Flivelink%3Ffunc%3Dll%26objId%3D21274865%26objAction%3Dbrowse%26viewType%3D1),
+Apr. 2020, Online / Alpbach, Austria.
 
-  * [4] J. Jung, B. Kroon, J. Boyce, *Common Test Conditions for Immersive Video*, ISO/IEC JTC1/SC29/WG11
-MPEG/N19214, Apr. 2020, Online / Alpbach, Austria.
+  * [4] J. Jung, B. Kroon, J. Boyce, *Common Test Conditions for Immersive Video*,
+[ISO/IEC JTC1/SC29/WG11 MPEG/N19214](https://isotc.iso.org/livelink/livelink?func=ll&objId=21279101&objAction=Open&nexturl=%2Flivelink%2Flivelink%3Ffunc%3Dll%26objId%3D21274865%26objAction%3Dbrowse%26viewType%3D1),
+Apr. 2020, Online / Alpbach, Austria.

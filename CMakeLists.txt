@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(
     TMIV
     DESCRIPTION "Test Model for Immersive Video"
-    VERSION 5.1.0
+    VERSION 5.2.0
     LANGUAGES C CXX)
 
 set(CMAKE_CXX_EXTENSIONS OFF)

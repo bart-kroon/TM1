@@ -117,12 +117,13 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   }
 
   // Apply depth padding
-  if (!m_depthLowQualityFlag) {
-	padGeometryFromLeft(outAtlases);
-  }
-  //padGeometryWithAvg(outAtlases);
-  //padGeometryFromTopLeft(outAtlases);
-  //padGeometryWithMidRange(outAtlases);
+   if (!m_depthLowQualityFlag)
+	   padGeometryFromLeft(outAtlases);
+  // padGeometryWithAvg(outAtlases);
+  // padGeometryWithBlockAvg(outAtlases);
+  // padGeometryFromTopLeft(outAtlases);
+  // padGeometryFromLeft(outAtlases);
+  // padGeometryWithMidRange(outAtlases);
 
   return outAtlases;
 }
@@ -152,6 +153,76 @@ void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
   }
 }
 /*
+void ExplicitOccupancy::padGeometryWithBlockAvg(MVD10Frame &atlases) {
+  int codingUnitSize[] = {64, 64}; // MaxCUWidth & MaxCUHeight per HM config
+  for (uint8_t i = 0; i < atlases.size(); ++i) {
+    if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+      auto &depthAtlasMap = atlases[i].depth;
+      Mask padMask = Mask{depthAtlasMap.getWidth(), depthAtlasMap.getHeight()};
+      const auto &occupancyAtlasMap = atlases[i].occupancy;
+      int yOcc, xOcc;
+      for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+        for (int x = 0; x < depthAtlasMap.getWidth(); x++) {
+          yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc)) {
+            padMask.getPlane(0)(y, x) = 1;
+          }
+        }
+      }
+      for (int y = 0; y < depthAtlasMap.getHeight(); y = y + codingUnitSize[1]) {
+        for (int x = 0; x < depthAtlasMap.getWidth(); x = x + codingUnitSize[0]) {
+          double blcokAvg = 0;
+          int count = 0;
+          int blockEnd[] = {min(x + codingUnitSize[0], depthAtlasMap.getWidth()),
+                            min(y + codingUnitSize[1], depthAtlasMap.getHeight())};
+          for (int yBlock = y; yBlock < blockEnd[1]; yBlock++) {
+            for (int xBlock = x; xBlock < blockEnd[0]; xBlock++) {
+              blcokAvg = blcokAvg + (double)padMask.getPlane(0)(yBlock, xBlock) *
+                                        depthAtlasMap.getPlane(0)(yBlock, xBlock);
+              count = count + padMask.getPlane(0)(yBlock, xBlock);
+            }
+          }
+          blcokAvg = blcokAvg / count;
+          if (count > 0) {
+            for (int yBlock = y; yBlock < blockEnd[1]; yBlock++) {
+              for (int xBlock = x; xBlock < blockEnd[0]; xBlock++) {
+                if (!padMask.getPlane(0)(yBlock, xBlock))
+                  depthAtlasMap.getPlane(0)(yBlock, xBlock) = (uint16_t)blcokAvg;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
+for (uint8_t i = 0; i < atlases.size(); ++i) {
+  if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+    auto &depthAtlasMap = atlases[i].depth;
+    int depthScale[2] = {
+        m_accessUnitParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+        m_accessUnitParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+    const auto &occupancyAtlasMap = atlases[i].occupancy;
+    int yOcc, xOcc;
+    for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
+      for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
+        auto depth = depthAtlasMap.getPlane(0)(y, x);
+        yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+        xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+        if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
+            (depth == 0 &&
+             atlases[i].texture.getPlane(0)(y * depthScale[1], x * depthScale[0]) == 512)) {
+          depthAtlasMap.getPlane(0)(y, x) = depthAtlasMap.getPlane(0)(y, x - 1);
+        }
+      }
+    }
+  }
+}
+}
+
 void ExplicitOccupancy::padGeometryWithMidRange(MVD10Frame &atlases) {
   for (uint8_t i = 0; i < atlases.size(); ++i) {
     if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {

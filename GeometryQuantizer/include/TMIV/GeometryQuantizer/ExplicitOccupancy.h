@@ -62,7 +62,8 @@ public:
   // depthOccupancyParamsPresentFlags = zeros
   auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
       -> const MivBitstream::IvAccessUnitParams & override;
-
+  
+  //void padGeometryWithBlockAvg(Common::MVD10Frame &atlases);
   //void padGeometryWithAvg(Common::MVD10Frame &atlases);
   void padGeometryFromLeft(Common::MVD10Frame &atlases);
   //void padGeometryFromTopLeft(Common::MVD10Frame &atlases);

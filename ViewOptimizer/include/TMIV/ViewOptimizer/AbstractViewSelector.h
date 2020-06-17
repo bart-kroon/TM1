@@ -31,44 +31,35 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Aggregator/Aggregator.h>
-#include <TMIV/Common/Factory.h>
-#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/Encoder/GroupBasedEncoder.h>
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
-#include <TMIV/Packer/Packer.h>
-#include <TMIV/Pruner/HierarchicalPruner.h>
-#include <TMIV/ViewOptimizer/BasicViewAllocator.h>
-#include <TMIV/ViewOptimizer/NoViewOptimizer.h>
-#include <TMIV/ViewOptimizer/ViewReducer.h>
+#ifndef _TMIV_VIEWOPTIMIZER_ABSTRACTVIEWSELECTOR_H_
+#define _TMIV_VIEWOPTIMIZER_ABSTRACTVIEWSELECTOR_H_
 
-namespace TMIV::Encoder {
-void registerComponents() {
-  using Common::Factory;
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-  auto &aggregators = Factory<Aggregator::IAggregator>::getInstance();
-  aggregators.registerAs<Aggregator::Aggregator>("Aggregator");
+#include <TMIV/Common/Json.h>
 
-  auto &assesors = Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
-  assesors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
+#include <memory>
 
-  auto &encoders = Factory<IEncoder>::getInstance();
-  encoders.registerAs<Encoder>("Encoder");
-  encoders.registerAs<GroupBasedEncoder>("GroupBasedEncoder");
+namespace TMIV::ViewOptimizer {
+class AbstractViewSelector : public IViewOptimizer {
+public:
+  AbstractViewSelector(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  auto &geometryQuantizers = Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
-  geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
+  auto optimizeSequence(MivBitstream::IvSequenceParams ivs) -> Output override;
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override;
 
-  auto &packers = Factory<Packer::IPacker>::getInstance();
-  packers.registerAs<Packer::Packer>("Packer");
+protected:
+  virtual auto isBasicView() const -> std::vector<bool> = 0;
+  constexpr auto ivs() const noexcept -> auto & { return m_ivs; }
 
-  auto &pruners = Factory<Pruner::IPruner>::getInstance();
-  pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
+private:
+  template <typename T> void inplaceEraseAdditionalViews(std::vector<T> &) const;
+  void printSummary() const;
 
-  auto &viewOptimizers = Factory<ViewOptimizer::IViewOptimizer>::getInstance();
-  viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
-  viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
-  viewOptimizers.registerAs<ViewOptimizer::ViewReducer>("ViewReducer");
-}
-} // namespace TMIV::Encoder
+  bool m_outputAdditionalViews;
+  MivBitstream::IvSequenceParams m_ivs;
+  std::vector<bool> m_isBasicView;
+};
+} // namespace TMIV::ViewOptimizer
+
+#endif

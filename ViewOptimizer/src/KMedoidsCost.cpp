@@ -31,44 +31,36 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Aggregator/Aggregator.h>
-#include <TMIV/Common/Factory.h>
-#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/Encoder/GroupBasedEncoder.h>
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
-#include <TMIV/Packer/Packer.h>
-#include <TMIV/Pruner/HierarchicalPruner.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>
-#include <TMIV/ViewOptimizer/NoViewOptimizer.h>
-#include <TMIV/ViewOptimizer/ViewReducer.h>
 
-namespace TMIV::Encoder {
-void registerComponents() {
-  using Common::Factory;
+#include <TMIV/Common/Common.h>
+#include <TMIV/Common/LinAlg.h>
 
-  auto &aggregators = Factory<Aggregator::IAggregator>::getInstance();
-  aggregators.registerAs<Aggregator::Aggregator>("Aggregator");
+#include <algorithm>
+#include <limits>
 
-  auto &assesors = Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
-  assesors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
+namespace TMIV::ViewOptimizer {
+KMedoidsCost::KMedoidsCost(Common::Mat<double> sqDist) : m_sqDist{std::move(sqDist)} {}
 
-  auto &encoders = Factory<IEncoder>::getInstance();
-  encoders.registerAs<Encoder>("Encoder");
-  encoders.registerAs<GroupBasedEncoder>("GroupBasedEncoder");
-
-  auto &geometryQuantizers = Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
-  geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
-
-  auto &packers = Factory<Packer::IPacker>::getInstance();
-  packers.registerAs<Packer::Packer>("Packer");
-
-  auto &pruners = Factory<Pruner::IPruner>::getInstance();
-  pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
-
-  auto &viewOptimizers = Factory<ViewOptimizer::IViewOptimizer>::getInstance();
-  viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
-  viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
-  viewOptimizers.registerAs<ViewOptimizer::ViewReducer>("ViewReducer");
+auto KMedoidsCost::operator()(const Centroids &centroids) const -> double {
+  auto totalCost = 0.;
+  if (centroids.size() == 1) {
+    // Sum of attractive forces (regardless of direction and up to scale)
+    for (size_t i = 0; i < N(); ++i) {
+      if (i != centroids.front()) {
+        totalCost -= 1. / m_sqDist(i, centroids.front());
+      }
+    }
+  } else {
+    // Sum of repulsive forces (regardless of direction and up to scale)
+    for (auto i : centroids) {
+      for (auto j : centroids) {
+        if (i != j) {
+          totalCost += 1. / m_sqDist(i, j);
+        }
+      }
+    }
+  }
+  return totalCost;
 }
-} // namespace TMIV::Encoder
+} // namespace TMIV::ViewOptimizer

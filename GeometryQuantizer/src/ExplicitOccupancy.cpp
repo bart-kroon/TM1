@@ -117,8 +117,8 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   }
 
   // Apply depth padding
-   if (!m_depthLowQualityFlag)
-	   padGeometryFromLeft(outAtlases);
+  if (!m_depthLowQualityFlag)
+    padGeometryFromLeft(outAtlases);
   // padGeometryWithAvg(outAtlases);
   // padGeometryWithBlockAvg(outAtlases);
   // padGeometryFromTopLeft(outAtlases);

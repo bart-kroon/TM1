@@ -69,6 +69,7 @@ private:
 
   const float m_maxDepthError{};
   const float m_maxStretching{};
+  const int m_alignment{};
   const int m_erode{};
   const int m_dilate{};
   const AccumulatingPixel<Vec3f> m_config;
@@ -83,6 +84,7 @@ public:
   explicit Impl(const Json &nodeConfig)
       : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()}
       , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
+      , m_alignment{nodeConfig.require("alignment").asInt()}
       , m_erode{nodeConfig.require("erode").asInt()}
       , m_dilate{nodeConfig.require("dilate").asInt()}
       , m_config{nodeConfig.require("rayAngleParameter").asFloat(),
@@ -199,13 +201,17 @@ private:
   }
 
   void createInitialMasks(const MVD16Frame &views) {
+    int m_align = m_alignment;
     m_masks.clear();
     m_masks.reserve(views.size());
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_masks),
-              [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto mask = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
-                                            viewParams.ci.projectionPlaneSize().y()};
+              [m_align](const ViewParams &viewParams, const TextureDepth16Frame &view) {
+                // auto mask = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
+                //                            viewParams.ci.projectionPlaneSize().y()};
+                auto mask =
+                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), m_align),
+                                    align(viewParams.ci.projectionPlaneSize().y(), m_align)};
                 transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
@@ -219,9 +225,12 @@ private:
     m_status.reserve(views.size());
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_status),
-              [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
-                                              viewParams.ci.projectionPlaneSize().y()};
+              [m_align](const ViewParams &viewParams, const TextureDepth16Frame &view) {
+                //auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
+                //                              viewParams.ci.projectionPlaneSize().y()};
+                auto status =
+                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), m_align),
+                                    align(viewParams.ci.projectionPlaneSize().y(), m_align)};
                 transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be

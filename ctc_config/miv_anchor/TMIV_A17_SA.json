@@ -31,8 +31,12 @@
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",
-        "ViewOptimizerMethod": "ViewReducer",
-        "ViewReducer": {},
+        "ViewOptimizerMethod": "BasicViewAllocator",
+        "BasicViewAllocator": {
+            "maxBasicViewFraction": 0.8,
+            "outputAdditionalViews": true,
+            "minNonCodedViews": 3
+        },
         "dilate": 16
     },
     "OmafV1CompatibleFlag": false,

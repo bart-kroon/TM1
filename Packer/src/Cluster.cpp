@@ -42,9 +42,8 @@ namespace TMIV::Packer {
 static const uint16_t ACTIVE = 65534;
 static const uint16_t INVALID = 65535;
 
-Cluster::Cluster(int viewId, int clusterId) : viewId_(viewId), clusterId_(clusterId) {}
-Cluster::Cluster(int viewId, int clusterId, int entityId)
-    : viewId_(viewId), clusterId_(clusterId), entityId_(entityId) {}
+Cluster::Cluster(int viewId, bool isBasicView, int clusterId, int entityId)
+    : viewId_(viewId), m_isBasicView{isBasicView}, clusterId_(clusterId), entityId_(entityId) {}
 
 void Cluster::push(int i, int j) {
   if (i < imin_) {
@@ -64,7 +63,7 @@ void Cluster::push(int i, int j) {
 }
 
 auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
-  Cluster d(c.viewId_, c.clusterId_, entityId);
+  Cluster d(c.viewId_, c.isBasicView(), c.clusterId_, entityId);
   d.imin_ = c.imin_;
   d.imax_ = c.imax_;
   d.jmin_ = c.jmin_;
@@ -75,7 +74,7 @@ auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
 }
 
 auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
-  Cluster d(c.viewId_, c.clusterId_, c.entityId_);
+  Cluster d(c.viewId_, c.isBasicView(), c.clusterId_, c.entityId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
   d.imax_ = c.imax_; // modification to align the imin,jmin to even values to
@@ -92,7 +91,8 @@ auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
 }
 
 auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
-  Cluster c(c1.viewId_, c1.clusterId_, c1.entityId_);
+  assert(!c1.isBasicView() && !c2.isBasicView());
+  Cluster c(c1.viewId_, false, c1.clusterId_, c1.entityId_);
 
   c.imin_ = min(c1.imin_, c2.imin_);
   c.imax_ = max(c1.imax_, c2.imax_);
@@ -134,8 +134,8 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, vector
   }
 
   if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
@@ -204,8 +204,8 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
 
     int bestSplitPos = roundToAlignment(W, alignment);
 
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
@@ -274,8 +274,8 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector
 
     int bestSplitPos = roundToAlignment(H, alignment);
 
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
@@ -329,8 +329,8 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<C
   }
 
   if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
@@ -482,8 +482,9 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
-  Cluster c1(c.getViewId(), c.getClusterId(), c.getEntityId());
-  Cluster c2(c.getViewId(), c.getClusterId(), c.getEntityId());
+  assert(!c.isBasicView());
+  Cluster c1(c.getViewId(), false, c.getClusterId(), c.getEntityId());
+  Cluster c2(c.getViewId(), false, c.getClusterId(), c.getEntityId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
@@ -531,7 +532,7 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
   return pair<Cluster, Cluster>(c1, c2);
 }
 
-auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool shouldNotBeSplit)
+auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool isBasicView)
     -> pair<ClusterList, ClusteringMap> {
 
   pair<ClusterList, ClusteringMap> out(ClusterList(),
@@ -564,7 +565,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
 
   while (iter_seed != activeList.end()) {
     div_t dv = div(*iter_seed, B);
-    Cluster cluster(viewId, clusterId);
+    Cluster cluster(viewId, isBasicView, clusterId, 0);
     queue<array<int, 2>> candidates;
 
     cluster.push(dv.quot, dv.rem);
@@ -627,7 +628,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
     cluster.numActivePixels_ = counter;
 
     // Updating output
-    if (shouldNotBeSplit) {
+    if (isBasicView) {
       if (!clusterList.empty()) {
         clusterList[0] = Cluster::merge(clusterList[0], cluster);
       } else {

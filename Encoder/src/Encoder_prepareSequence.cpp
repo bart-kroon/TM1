@@ -42,6 +42,14 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequenceParams & {
+  if (sourceIvs.vme().vme_depth_low_quality_flag()) // m54152
+    m_blockSize = 32;
+  else
+    m_blockSize = 16;
+  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
+  m_maxBlockRate =
+      m_maxLumaSampleRate / ((sourceIvs.vme().vme_num_groups_minus1()+1)* lumaSamplesPerAtlasSample * sqr(m_blockSize));
+  m_maxBlocksPerAtlas = m_maxLumaPictureSize / sqr(m_blockSize);
   // Transform source to transport view sequence parameters
   tie(m_transportIvs, m_isBasicView) = m_viewOptimizer->optimizeSequence(move(sourceIvs));
 
@@ -151,9 +159,7 @@ auto Encoder::haveTexture() const -> bool {
          ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 }
 
-auto Encoder::haveOccupancy() const -> bool {
-  return m_ExplicitOccupancyCoding;
-}
+auto Encoder::haveOccupancy() const -> bool { return m_ExplicitOccupancyCoding; }
 
 void Encoder::enableOccupancyPerView() {
   for (size_t viewId = 0; viewId < m_ivs.viewParamsList.size(); ++viewId) {

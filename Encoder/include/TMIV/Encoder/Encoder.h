@@ -109,6 +109,8 @@ private: // Encoder_completeAccessUnit.cpp
 
   // Encoder parameters
   int m_blockSize{};
+  double m_maxLumaSampleRate{};
+  int m_maxLumaPictureSize{};
   double m_maxBlockRate{};
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};

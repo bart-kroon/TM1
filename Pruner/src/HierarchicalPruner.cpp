@@ -69,7 +69,6 @@ private:
 
   const float m_maxDepthError{};
   const float m_maxStretching{};
-  const int m_alignment{};
   const int m_erode{};
   const int m_dilate{};
   const AccumulatingPixel<Vec3f> m_config;
@@ -84,7 +83,6 @@ public:
   explicit Impl(const Json &nodeConfig)
       : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()}
       , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
-      , m_alignment{nodeConfig.require("alignment").asInt()}
       , m_erode{nodeConfig.require("erode").asInt()}
       , m_dilate{nodeConfig.require("dilate").asInt()}
       , m_config{nodeConfig.require("rayAngleParameter").asFloat(),
@@ -201,7 +199,11 @@ private:
   }
 
   void createInitialMasks(const MVD16Frame &views) {
-    int m_align = m_alignment;
+    int m_align;
+    if (m_ivSequenceParams.vme().vme_depth_low_quality_flag()) // m54152
+      m_align = 32;
+    else
+      m_align = 16;
     m_masks.clear();
     m_masks.reserve(views.size());
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
@@ -226,7 +228,7 @@ private:
     transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
               cbegin(views), back_inserter(m_status),
               [m_align](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                //auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
+                // auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
                 //                              viewParams.ci.projectionPlaneSize().y()};
                 auto status =
                     Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), m_align),

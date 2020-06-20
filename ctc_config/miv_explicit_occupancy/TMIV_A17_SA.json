@@ -1,20 +1,19 @@
 {
     "BitstreamPath": "ATL_SA.bit",
     "AttributeVideoDataPathFmt": "ATL_SA_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
+    "GeometryVideoDataPathFmt": "ATL_SA_TG_c{:02}_{}x{}_yuv420p10le.yuv",
+	"OccupancyVideoDataPathFmt":"ATL_SA_TO_c{:02}_{}x{}_yuv420p.yuv",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
     },
     "DepthQualityAssessorMethod": "DepthQualityAssessor",
     "EncoderMethod": "GroupBasedEncoder",
-    "GeometryVideoDataPathFmt": "ATL_SA_TG_c{:02}_{}x{}_yuv420p10le.yuv",
     "GroupBasedEncoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
-        "GeometryQuantizer": {
-            "depthOccThresholdIfSet": 64
-        },
-        "GeometryQuantizerMethod": "GeometryQuantizer",
+        "ExplicitOccupancy": {},
+        "GeometryQuantizerMethod": "ExplicitOccupancy",
         "HierarchicalPruner": {
             "depthParameter": 50,
             "dilate": 5,

@@ -120,14 +120,14 @@ void AspsVpccExtension::encodeTo(Common::OutputBitstream &bitstream,
   VERIFY_BITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
 }
 
-auto AspsMivExtension::asme_geometry_frame_width_minus1() const noexcept -> uint16_t {
-  VERIFY_MIVBITSTREAM(m_asme_geometry_frame_width_minus1.has_value());
-  return *m_asme_geometry_frame_width_minus1;
+auto AspsMivExtension::asme_geometry_scale_factor_x_minus1() const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(m_asme_geometry_scale_factor_x_minus1.has_value());
+  return *m_asme_geometry_scale_factor_x_minus1;
 }
 
-auto AspsMivExtension::asme_geometry_frame_height_minus1() const noexcept -> uint16_t {
-  VERIFY_MIVBITSTREAM(m_asme_geometry_frame_height_minus1.has_value());
-  return *m_asme_geometry_frame_height_minus1;
+auto AspsMivExtension::asme_geometry_scale_factor_y_minus1() const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(m_asme_geometry_scale_factor_y_minus1.has_value());
+  return *m_asme_geometry_scale_factor_y_minus1;
 }
 
 auto operator<<(ostream &stream, const AspsMivExtension &x) -> ostream & {
@@ -135,9 +135,9 @@ auto operator<<(ostream &stream, const AspsMivExtension &x) -> ostream & {
   stream << "asme_auxiliary_atlas_flag=" << boolalpha << x.asme_auxiliary_atlas_flag() << '\n';
   stream << "asme_depth_occ_map_threshold_flag=" << boolalpha << x.asme_depth_occ_threshold_flag()
          << '\n';
-  if (x.m_asme_geometry_frame_width_minus1 || x.m_asme_geometry_frame_height_minus1) {
-    stream << "asme_geometry_frame_width_minus1=" << x.asme_geometry_frame_width_minus1() << '\n';
-    stream << "asme_geometry_frame_height_minus1=" << x.asme_geometry_frame_height_minus1() << '\n';
+  if (x.m_asme_geometry_scale_factor_x_minus1 || x.m_asme_geometry_scale_factor_y_minus1) {
+    stream << "asme_geometry_scale_factor_x_minus1=" << x.asme_geometry_scale_factor_x_minus1() << '\n';
+    stream << "asme_geometry_scale_factor_y_minus1=" << x.asme_geometry_scale_factor_y_minus1() << '\n';
   }
   return stream;
 }
@@ -150,8 +150,8 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader
   x.asme_depth_occ_threshold_flag(bitstream.getFlag());
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     const auto j = vps.atlasIdxOf(vuh.vuh_atlas_id());
-    x.asme_geometry_frame_width_minus1(bitstream.getUVar<uint16_t>(vps.vps_frame_width(j)));
-    x.asme_geometry_frame_height_minus1(bitstream.getUVar<uint16_t>(vps.vps_frame_height(j)));
+    x.asme_geometry_scale_factor_x_minus1(bitstream.getUExpGolomb<uint16_t>());
+    x.asme_geometry_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
   return x;
 }
@@ -163,8 +163,8 @@ void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader 
   bitstream.putFlag(asme_depth_occ_threshold_flag());
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     const auto j = vps.atlasIdxOf(vuh.vuh_atlas_id());
-    bitstream.putUVar(asme_geometry_frame_width_minus1(), vps.vps_frame_width(j));
-    bitstream.putUVar(asme_geometry_frame_height_minus1(), vps.vps_frame_height(j));
+    bitstream.putUExpGolomb(asme_geometry_scale_factor_x_minus1());
+    bitstream.putUExpGolomb(asme_geometry_scale_factor_y_minus1());
   }
 }
 

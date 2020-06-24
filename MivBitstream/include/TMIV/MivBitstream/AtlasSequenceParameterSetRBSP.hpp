@@ -82,15 +82,15 @@ constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(const bool value)
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_geometry_frame_width_minus1(const uint16_t value) noexcept
+constexpr auto AspsMivExtension::asme_geometry_scale_factor_x_minus1(const uint16_t value) noexcept
     -> auto & {
-  m_asme_geometry_frame_width_minus1 = value;
+  m_asme_geometry_scale_factor_x_minus1 = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_geometry_frame_height_minus1(const uint16_t value) noexcept
+constexpr auto AspsMivExtension::asme_geometry_scale_factor_y_minus1(const uint16_t value) noexcept
     -> auto & {
-  m_asme_geometry_frame_height_minus1 = value;
+  m_asme_geometry_scale_factor_y_minus1 = value;
   return *this;
 }
 
@@ -98,8 +98,8 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
   return asme_group_id() == other.asme_group_id() &&
          asme_auxiliary_atlas_flag() == other.asme_auxiliary_atlas_flag() &&
          asme_depth_occ_threshold_flag() == other.asme_depth_occ_threshold_flag() &&
-         m_asme_geometry_frame_width_minus1 == other.m_asme_geometry_frame_width_minus1 &&
-         m_asme_geometry_frame_height_minus1 == other.m_asme_geometry_frame_height_minus1;
+         m_asme_geometry_scale_factor_x_minus1 == other.m_asme_geometry_scale_factor_x_minus1 &&
+         m_asme_geometry_scale_factor_y_minus1 == other.m_asme_geometry_scale_factor_y_minus1;
 }
 
 constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const noexcept {

@@ -91,12 +91,10 @@ public:
 
   void computePruningOrder(const Mat<float> &overlappingMatrix,
                            const std::vector<bool> &isBasicView) {
-
     std::vector<NodeId> processedList;
     std::vector<NodeId> pendingList;
 
     for (NodeId i = 0; i < overlappingMatrix.m(); i++) {
-
       if (!isBasicView[i]) {
         pendingList.emplace_back(i);
       } else {
@@ -107,7 +105,6 @@ public:
     m_pruningOrder.clear();
 
     while (!pendingList.empty()) {
-
       float worseOverlapping = std::numeric_limits<float>::max();
       NodeId bestPendingNodeId = 0;
 
@@ -133,7 +130,6 @@ public:
 
   void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
                                const std::vector<bool> &isBasicView) {
-
     auto &viewParamsList = ivSequenceParams.viewParamsList;
     ProjectionHelperList cameraHelperList{viewParamsList};
 
@@ -160,7 +156,6 @@ public:
 
     // Pruning mask
     for (auto camId = 0U; camId < viewParamsList.size(); camId++) {
-
       const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
 
       if (neighbourhood.empty()) {
@@ -181,7 +176,6 @@ public:
 
   auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams, const MVD16Frame &views,
              const vector<bool> &isBasicView) -> MaskList {
-
     m_ivSequenceParams = ivSequenceParams;
     m_isBasicView = isBasicView;
 
@@ -259,8 +253,12 @@ private:
   }
 
   void pruneFrame(const MVD16Frame &views) {
-
-    pruneInterFrame(views);
+    for (auto i : m_pruningOrder) {
+      auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
+                        [i](const auto &s) { return s->index == i; });
+      m_synthesizers.erase(it);
+      synthesizeViews(i, views[i]);
+    }
 
     auto sumValues = 0.;
     for (const auto &mask : m_masks) {
@@ -268,15 +266,6 @@ private:
     }
     const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
     cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
-  }
-
-  void pruneInterFrame(const MVD16Frame &views) {
-    for (auto i : m_pruningOrder) {
-      auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
-                        [i](const auto &s) { return s->index == i; });
-      m_synthesizers.erase(it);
-      synthesizeViews(i, views[i]);
-    }
   }
 
   // Synthesize the specified view to all remaining partial views.
@@ -360,7 +349,6 @@ private:
   }
 
   void updateMask(IncrementalSynthesizer &synthesizer) {
-
     auto &mask = m_masks[synthesizer.index].getPlane(0);
     auto &status = m_status[synthesizer.index].getPlane(0);
 

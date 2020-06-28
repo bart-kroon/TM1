@@ -254,13 +254,14 @@ public:
   [[nodiscard]] auto pruning_parent(const std::uint16_t viewId) const noexcept
       -> const PruningParent &;
 
-  // Calling this function will set the mvp_view_enabled_in_atlas_flag for a given view in a given
-  // atlas
+  // Calling this function will allocate the camera extrinsics list
+  auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
+
+  // Calling this function will set mvp_view_enabled_in_atlas_flag for a given view in a given atlas
   auto mvp_view_enabled_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
                                       const bool value) noexcept -> MivViewParamsList &;
 
-  // Calling this function will set the mvp_view_complete_in_atlas_flag for a given view in a given
-  // atlas
+  // Calling this function will set mvp_view_complete_in_atlas_flag for a given view in a given atlas
   auto mvp_view_complete_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
                                        const bool value) noexcept -> MivViewParamsList &;
 
@@ -270,9 +271,6 @@ public:
   // Calling this function will set the mvp_view_id for a given view v
   auto mvp_view_id(const std::uint16_t viewIdx, const std::uint16_t viewId) noexcept
       -> MivViewParamsList &;
-
-  // Calling this function will allocate the camera extrinsics list
-  auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
 
   // Calling this function will allocate the camera intrinsics list
   auto mvp_intrinsic_params_equal_flag(const bool value) noexcept -> MivViewParamsList &;

@@ -534,6 +534,29 @@ auto MivViewParamsList::pruning_parent(const uint16_t viewId) noexcept -> Prunin
 
 auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
+  
+  for (uint8_t a = 0; a < x.m_mvp_view_enabled_in_atlas_flag.size(); ++a) {
+     stream << "mvp_view_enabled_in_atlas_flag[" << a << "]=[";
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
+       stream << boolalpha << x.mvp_view_enabled_in_atlas_flag(a, v) << ", ";
+    stream << "]\n";
+  }
+  
+  for (uint8_t a = 0; a < x.m_mvp_view_complete_in_atlas_flag.size(); ++a) {
+    stream << "mvp_view_complete_in_atlas_flag[" << a << "]=[";
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
+      stream << boolalpha << x.mvp_view_complete_in_atlas_flag(a, v) << ", ";
+    stream << "]\n";
+  }
+  
+  stream << "mvp_explicit_view_id_flag=" << boolalpha << x.mvp_explicit_view_id_flag() << '\n';
+  if (x.mvp_explicit_view_id_flag()) {
+    stream << "mvp_view_id=[";
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
+      stream << x.mvp_view_id[v] << ", ";
+    stream << "]\n";
+  }
+
   for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
     x.camera_extrinsics(v).printTo(stream, v);
   }
@@ -569,7 +592,11 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
 }
 
 auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcept -> bool {
-  return m_camera_extrinsics == other.m_camera_extrinsics &&
+  return m_mvp_view_enabled_in_atlas_flag == other.m_mvp_view_enabled_in_atlas_flag &&
+         m_mvp_view_complete_in_atlas_flag == other.m_mvp_view_complete_in_atlas_flag &&
+         m_mvp_explicit_view_id_flag == other.m_mvp_explicit_view_id_flag &&
+         m_mvp_view_id == other.m_mvp_view_id &&
+         m_camera_extrinsics == other.m_camera_extrinsics &&
          m_mvp_intrinsic_params_equal_flag == other.m_mvp_intrinsic_params_equal_flag &&
          m_camera_intrinsics == other.m_camera_intrinsics &&
          m_mvp_depth_quantization_params_equal_flag ==
@@ -587,6 +614,19 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream) -> MivViewParamsLi
   auto x = MivViewParamsList{};
 
   x.mvp_num_views_minus1(bitstream.getUint16());
+
+  for (uint8_t a = 0; a <= x.vps_atlas_count_minus1(); ++a) // ToDo
+	for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
+      x.mvp_view_enabled_in_atlas_flag(a,v,bitstream.getFlag());
+
+  for (uint8_t a = 0; a <= x.vps_atlas_count_minus1(); ++a) // ToDo
+    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
+      x.mvp_view_complete_in_atlas_flag(a, v, bitstream.getFlag());
+
+  x.mvp_explicit_view_id_flag(bitstream.getFlag());
+  if (x.mvp_explicit_view_id_flag())
+	for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
+		x.mvp_view_id(v, bitstream.getUint16());
 
   for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
     x.camera_extrinsics(v) = CameraExtrinsics::decodeFrom(bitstream);
@@ -624,6 +664,19 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream) -> MivViewParamsLi
 
 void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint16(mvp_num_views_minus1());
+  
+  for (uint8_t a = 0; a <= vps_atlas_count_minus1(); ++a) // ToDo
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v)
+      bitstream.putFlag(mvp_view_enabled_in_atlas_flag(a, v));
+  
+  for (uint8_t a = 0; a <= vps_atlas_count_minus1(); ++a) // ToDo
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v)
+      bitstream.putFlag(mvp_view_complete_in_atlas_flag(a, v));
+
+  bitstream.putFlag(mvp_explicit_view_id_flag());
+  if (mvp_explicit_view_id_flag())
+    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v)
+      bitstream.putUint16(mvp_view_id(v));
 
   for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
     camera_extrinsics(v).encodeTo(bitstream);

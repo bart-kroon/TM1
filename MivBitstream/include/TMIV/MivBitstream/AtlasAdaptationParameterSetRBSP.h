@@ -256,12 +256,16 @@ public:
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
+  
+  // Calling this function will set the m_atlasCountMinus1
+  auto setAtlasCountMinus1(const std::uint8_t value) noexcept -> MivViewParamsList &;
 
   // Calling this function will set mvp_view_enabled_in_atlas_flag for a given view in a given atlas
   auto mvp_view_enabled_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
                                       const bool value) noexcept -> MivViewParamsList &;
 
-  // Calling this function will set mvp_view_complete_in_atlas_flag for a given view in a given atlas
+  // Calling this function will set mvp_view_complete_in_atlas_flag for a given view in a given
+  // atlas
   auto mvp_view_complete_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
                                        const bool value) noexcept -> MivViewParamsList &;
 
@@ -293,14 +297,16 @@ public:
   auto operator==(const MivViewParamsList &) const noexcept -> bool;
   auto operator!=(const MivViewParamsList &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsList;
+  static auto decodeFrom(Common::InputBitstream &bitstream)
+      -> MivViewParamsList;
 
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  bool m_mvp_explicit_view_id_flag{};
+  std::uint8_t m_atlasCountMinus1{};
   std::vector<std::vector<bool>> m_mvp_view_enabled_in_atlas_flag;
   std::vector<std::vector<bool>> m_mvp_view_complete_in_atlas_flag;
+  bool m_mvp_explicit_view_id_flag{};
   std::vector<std::uint16_t> m_mvp_view_id;
   std::vector<CameraExtrinsics> m_camera_extrinsics;
   bool m_mvp_intrinsic_params_equal_flag{};
@@ -465,7 +471,8 @@ public:
   auto operator==(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
   auto operator!=(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream) -> AtlasAdaptationParameterSetRBSP;
+  static auto decodeFrom(std::istream &stream)
+      -> AtlasAdaptationParameterSetRBSP;
 
   void encodeTo(std::ostream &stream) const;
 

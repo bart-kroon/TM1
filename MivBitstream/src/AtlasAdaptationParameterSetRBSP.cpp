@@ -449,13 +449,18 @@ auto MivViewParamsList::mvp_num_views_minus1(const uint16_t value) noexcept -> M
   return *this;
 }
 
+// setAtlasCountMinus1 should be called before setting mvp_view_enabled_in_atlas_flag & mvp_view_complete_in_atlas_flag
+auto MivViewParamsList::setAtlasCountMinus1(const uint8_t value) noexcept -> MivViewParamsList & {
+  m_atlasCountMinus1 = value;
+  return *this;
+}
+
 auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(const uint8_t atlasIdx,
                                                        const uint16_t viewIdx,
                                                        const bool value) noexcept
     -> MivViewParamsList & {
   if (atlasIdx >= m_mvp_view_enabled_in_atlas_flag.size())
-    m_mvp_view_enabled_in_atlas_flag.resize(atlasIdx +
-                                            1); // ToDo: find access to vps_atlas_count_minus1()
+    m_mvp_view_enabled_in_atlas_flag.resize(m_atlasCountMinus1 + 1);
   if (viewIdx >= m_mvp_view_enabled_in_atlas_flag[atlasIdx].size())
     m_mvp_view_enabled_in_atlas_flag[atlasIdx].resize(m_camera_extrinsics.size());
   m_mvp_view_enabled_in_atlas_flag[atlasIdx][viewIdx] = value;
@@ -467,8 +472,7 @@ auto MivViewParamsList::mvp_view_complete_in_atlas_flag(const uint8_t atlasIdx,
                                                         const bool value) noexcept
     -> MivViewParamsList & {
   if (atlasIdx >= m_mvp_view_complete_in_atlas_flag.size())
-    m_mvp_view_complete_in_atlas_flag.resize(atlasIdx +
-                                             1); // ToDo: find access to vps_atlas_count_minus1()
+    m_mvp_view_complete_in_atlas_flag.resize(m_atlasCountMinus1 + 1);
   if (viewIdx >= m_mvp_view_complete_in_atlas_flag[atlasIdx].size())
     m_mvp_view_complete_in_atlas_flag[atlasIdx].resize(m_camera_extrinsics.size());
   m_mvp_view_complete_in_atlas_flag[atlasIdx][viewIdx] = value;
@@ -535,14 +539,14 @@ auto MivViewParamsList::pruning_parent(const uint16_t viewId) noexcept -> Prunin
 auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
   
-  for (uint8_t a = 0; a < x.m_mvp_view_enabled_in_atlas_flag.size(); ++a) {
+  for (uint8_t a = 0; a < x.m_atlasCountMinus1; ++a) {
      stream << "mvp_view_enabled_in_atlas_flag[" << a << "]=[";
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
        stream << boolalpha << x.mvp_view_enabled_in_atlas_flag(a, v) << ", ";
     stream << "]\n";
   }
   
-  for (uint8_t a = 0; a < x.m_mvp_view_complete_in_atlas_flag.size(); ++a) {
+  for (uint8_t a = 0; a < x.m_atlasCountMinus1; ++a) {
     stream << "mvp_view_complete_in_atlas_flag[" << a << "]=[";
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
       stream << boolalpha << x.mvp_view_complete_in_atlas_flag(a, v) << ", ";
@@ -553,7 +557,7 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
   if (x.mvp_explicit_view_id_flag()) {
     stream << "mvp_view_id=[";
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
-      stream << x.mvp_view_id[v] << ", ";
+      stream << x.mvp_view_id(v) << ", ";
     stream << "]\n";
   }
 
@@ -614,12 +618,14 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream) -> MivViewParamsLi
   auto x = MivViewParamsList{};
 
   x.mvp_num_views_minus1(bitstream.getUint16());
-
-  for (uint8_t a = 0; a <= x.vps_atlas_count_minus1(); ++a) // ToDo
+  // Need to read mvp_atlas_count_minus1 from the stream as it is hard to relay that from parent structures and avoid parsing dependancy...
+  //x.mvp_atlas_count_minus1(bitstream.getUint8());
+  //atlasCountMinus1 = x.mvp_atlas_count_minus1;
+  for (uint8_t a = 0; a <= atlasCountMinus1; ++a) // ToDo
 	for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
       x.mvp_view_enabled_in_atlas_flag(a,v,bitstream.getFlag());
 
-  for (uint8_t a = 0; a <= x.vps_atlas_count_minus1(); ++a) // ToDo
+  for (uint8_t a = 0; a <= atlasCountMinus1; ++a) // ToDo
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
       x.mvp_view_complete_in_atlas_flag(a, v, bitstream.getFlag());
 
@@ -665,11 +671,11 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream) -> MivViewParamsLi
 void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint16(mvp_num_views_minus1());
   
-  for (uint8_t a = 0; a <= vps_atlas_count_minus1(); ++a) // ToDo
+  for (uint8_t a = 0; a <= m_atlasCountMinus1; ++a) // ToDo
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v)
       bitstream.putFlag(mvp_view_enabled_in_atlas_flag(a, v));
   
-  for (uint8_t a = 0; a <= vps_atlas_count_minus1(); ++a) // ToDo
+  for (uint8_t a = 0; a <= m_atlasCountMinus1; ++a) // ToDo
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v)
       bitstream.putFlag(mvp_view_complete_in_atlas_flag(a, v));
 
@@ -826,7 +832,8 @@ auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept 
   return !operator==(other);
 }
 
-auto AapsMivExtension::decodeFrom(InputBitstream &bitstream) -> AapsMivExtension {
+auto AapsMivExtension::decodeFrom(InputBitstream &bitstream)
+    -> AapsMivExtension {
   auto x = AapsMivExtension{};
   x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
   x.aame_miv_view_params_list_update_mode(bitstream.readBits<MvpUpdateMode>(2));

@@ -75,7 +75,13 @@ private:
   IvSequenceParams m_ivSequenceParams;
   vector<bool> m_isBasicView;
   vector<unique_ptr<IncrementalSynthesizer>> m_synthesizers;
-  vector<size_t> m_pruningOrder;
+  vector<size_t> m_clusterIds;
+  struct Cluster {
+    vector<size_t> basicViewId;
+    vector<size_t> additionalViewId;
+    vector<size_t> pruningOrder;
+  };
+  vector<Cluster> m_clusters;
   vector<Frame<YUV400P8>> m_masks;
   vector<Frame<YUV400P8>> m_status;
 
@@ -89,68 +95,90 @@ public:
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  void computePruningOrder(const Mat<float> &overlappingMatrix,
-                           const std::vector<bool> &isBasicView) {
-    std::vector<NodeId> processedList;
-    std::vector<NodeId> pendingList;
-
-    for (NodeId i = 0; i < overlappingMatrix.m(); i++) {
-      if (!isBasicView[i]) {
-        pendingList.emplace_back(i);
+  void clusterViews(const Mat<float> &overlappingMatrix, const vector<bool> &isBasicView) {
+    cout << "WARNING: clusterViews is STUBBED\n";
+    constexpr auto N = 1;
+    m_clusters = vector<Cluster>(N);
+    m_clusterIds.clear();
+    for (size_t i = 0; i < overlappingMatrix.m(); ++i) {
+      m_clusterIds.push_back(i % N);
+      if (isBasicView[i]) {
+        m_clusters[i % N].basicViewId.push_back(i);
       } else {
-        processedList.emplace_back(i);
+        m_clusters[i % N].additionalViewId.push_back(i);
       }
     }
+  }
 
-    m_pruningOrder.clear();
+  void computePruningOrder(const Mat<float> &overlappingMatrix, const vector<bool> &isBasicView) {
+    for (auto &cluster : m_clusters) {
+      auto processedList = cluster.basicViewId;
+      auto pendingList = cluster.additionalViewId;
+      cluster.pruningOrder.clear();
 
-    while (!pendingList.empty()) {
-      float worseOverlapping = std::numeric_limits<float>::max();
-      NodeId bestPendingNodeId = 0;
+      while (!pendingList.empty()) {
+        float worseOverlapping = numeric_limits<float>::max();
+        size_t bestPendingNodeId = 0;
 
-      for (auto pendingNodeId : pendingList) {
-        for (auto processNodeId : processedList) {
-          float overlapping = overlappingMatrix(processNodeId, pendingNodeId);
+        for (auto pendingNodeId : pendingList) {
+          for (auto processNodeId : processedList) {
+            float overlapping = overlappingMatrix(processNodeId, pendingNodeId);
 
-          if (overlapping < worseOverlapping) {
-            bestPendingNodeId = pendingNodeId;
-            worseOverlapping = overlapping;
+            if (overlapping < worseOverlapping) {
+              bestPendingNodeId = pendingNodeId;
+              worseOverlapping = overlapping;
+            }
           }
         }
+
+        processedList.emplace_back(bestPendingNodeId);
+
+        auto iter = find(pendingList.begin(), pendingList.end(), bestPendingNodeId);
+        pendingList.erase(iter);
+
+        cluster.pruningOrder.push_back(bestPendingNodeId);
       }
+    }
+  }
 
-      processedList.emplace_back(bestPendingNodeId);
-
-      auto iter = std::find(pendingList.begin(), pendingList.end(), bestPendingNodeId);
-      pendingList.erase(iter);
-
-      m_pruningOrder.push_back(bestPendingNodeId);
+  void printClusters(const ViewParamsList &vpl) const {
+    cout << "Pruning graph:\n";
+    for (auto &cluster : m_clusters) {
+      cout << "  (";
+      for (auto i : cluster.basicViewId) {
+        cout << ' ' << vpl[i].name;
+      }
+      cout << " )";
+      for (auto i : cluster.pruningOrder) {
+        cout << " <- " << vpl[i].name;
+      }
+      cout << '\n';
     }
   }
 
   void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
-                               const std::vector<bool> &isBasicView) {
+                               const vector<bool> &isBasicView) {
     auto &viewParamsList = ivSequenceParams.viewParamsList;
     ProjectionHelperList cameraHelperList{viewParamsList};
 
-    // Overlapping matrix
+    // Create clusters and pruning order
     auto overlappingMatrix = computeOverlappingMatrix(cameraHelperList);
-
-    // Pruning order
+    clusterViews(overlappingMatrix, isBasicView);
     computePruningOrder(overlappingMatrix, isBasicView);
+    printClusters(viewParamsList);
 
     // Pruning graph
     Graph::BuiltIn::Sparse<float> pruningGraph(viewParamsList.size());
 
-    if (!m_pruningOrder.empty()) {
-      for (size_t i = 0; i < viewParamsList.size(); ++i) {
-        if (isBasicView[i]) {
-          pruningGraph.connect(m_pruningOrder[0], i, 1.F, LinkType::Directed);
+    for (auto &cluster : m_clusters) {
+      if (!cluster.pruningOrder.empty()) {
+        for (auto i : cluster.basicViewId) {
+          pruningGraph.connect(cluster.pruningOrder.front(), i, 1.F, LinkType::Directed);
         }
-      }
-
-      for (size_t i = 0; i < (m_pruningOrder.size() - 1); ++i) {
-        pruningGraph.connect(m_pruningOrder[i + 1], m_pruningOrder[i], 1.F, LinkType::Directed);
+        for (size_t i = 1; i < cluster.pruningOrder.size(); ++i) {
+          pruningGraph.connect(cluster.pruningOrder[i], cluster.pruningOrder[i - 1], 1.F,
+                               LinkType::Directed);
+        }
       }
     }
 
@@ -161,15 +189,15 @@ public:
       if (neighbourhood.empty()) {
         viewParamsList[camId].pp = PruningParent{};
       } else {
-        std::vector<std::uint16_t> parentIdList;
+        vector<uint16_t> parentIdList;
 
         parentIdList.reserve(neighbourhood.size());
 
         for (const auto &link : neighbourhood) {
-          parentIdList.emplace_back(static_cast<std::uint16_t>(link.node()));
+          parentIdList.emplace_back(static_cast<uint16_t>(link.node()));
         }
 
-        viewParamsList[camId].pp = PruningParent{std::move(parentIdList)};
+        viewParamsList[camId].pp = PruningParent{move(parentIdList)};
       }
     }
   }
@@ -245,19 +273,21 @@ private:
       return;
     }
 
-    for (size_t i = 0; i < m_ivSequenceParams.viewParamsList.size(); ++i) {
-      if (m_isBasicView[i]) {
-        synthesizeViews(i, views[i]);
+    for (auto &cluster : m_clusters) {
+      for (size_t i : cluster.basicViewId) {
+        synthesizeViews(i, views[i], cluster.additionalViewId);
       }
     }
   }
 
   void pruneFrame(const MVD16Frame &views) {
-    for (auto i : m_pruningOrder) {
-      auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
-                        [i](const auto &s) { return s->index == i; });
-      m_synthesizers.erase(it);
-      synthesizeViews(i, views[i]);
+    for (auto &cluster : m_clusters) {
+      for (auto i : cluster.pruningOrder) {
+        auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
+                          [i](const auto &s) { return s->index == i; });
+        m_synthesizers.erase(it);
+        synthesizeViews(i, views[i], cluster.additionalViewId);
+      }
     }
 
     auto sumValues = 0.;
@@ -272,7 +302,8 @@ private:
   //
   // Special care is taken to make a pruned (masked) mesh once and re-use that
   // multiple times.
-  void synthesizeViews(size_t index, const TextureDepth16Frame &view) {
+  void synthesizeViews(size_t index, const TextureDepth16Frame &view,
+                       const vector<size_t> &viewIds) {
     auto [ivertices, triangles, attributes] = unprojectPrunedView(
         view, m_ivSequenceParams.viewParamsList[index], m_masks[index].getPlane(0));
 
@@ -292,12 +323,14 @@ private:
     cout.setf(flags);
 
     for (auto &s : m_synthesizers) {
-      auto overtices = project(ivertices, m_ivSequenceParams.viewParamsList[index],
-                               m_ivSequenceParams.viewParamsList[s->index]);
-      weightedSphere(m_ivSequenceParams.viewParamsList[s->index].ci, overtices, triangles);
-      s->rasterizer.submit(overtices, attributes, triangles);
-      s->rasterizer.run();
-      updateMask(*s);
+      if (contains(viewIds, s->index)) {
+        auto overtices = project(ivertices, m_ivSequenceParams.viewParamsList[index],
+                                 m_ivSequenceParams.viewParamsList[s->index]);
+        weightedSphere(m_ivSequenceParams.viewParamsList[s->index].ci, overtices, triangles);
+        s->rasterizer.submit(overtices, attributes, triangles);
+        s->rasterizer.run();
+        updateMask(*s);
+      }
     }
   }
 
@@ -360,7 +393,7 @@ private:
       if (x.normDisp > 0) {
         const auto depthError = (x.depth() / *j - 1.F);
 
-        if (std::abs(depthError) < m_maxDepthError) {
+        if (abs(depthError) < m_maxDepthError) {
           if (*k != 0) {
             *i = 0;
           }
@@ -387,7 +420,7 @@ private:
     synthesizer.maskAverage = float(accumulate(begin(mask), end(mask), 0)) /
                               (2.55F * float(mask.width() * mask.height()));
   }
-};
+}; // namespace TMIV::Pruner
 
 HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &nodeConfig)
     : m_impl(new Impl{nodeConfig}) {}
@@ -395,14 +428,14 @@ HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &no
 HierarchicalPruner::~HierarchicalPruner() = default;
 
 void HierarchicalPruner::registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
-                                                 const std::vector<bool> &isBasicView) {
+                                                 const vector<bool> &isBasicView) {
 
   return m_impl->registerPruningRelation(ivSequenceParams, isBasicView);
 }
 
 auto HierarchicalPruner::prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
-                               const Common::MVD16Frame &views,
-                               const std::vector<bool> &isBasicView) -> Common::MaskList {
+                               const Common::MVD16Frame &views, const vector<bool> &isBasicView)
+    -> Common::MaskList {
   return m_impl->prune(ivSequenceParams, views, isBasicView);
 }
 } // namespace TMIV::Pruner

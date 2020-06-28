@@ -71,6 +71,7 @@ private:
   const float m_maxStretching{};
   const int m_erode{};
   const int m_dilate{};
+  const int m_maxBasicViewsPerGraph{};
   const AccumulatingPixel<Vec3f> m_config;
   IvSequenceParams m_ivSequenceParams;
   vector<bool> m_isBasicView;
@@ -91,21 +92,129 @@ public:
       , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
       , m_erode{nodeConfig.require("erode").asInt()}
       , m_dilate{nodeConfig.require("dilate").asInt()}
+      , m_maxBasicViewsPerGraph{nodeConfig.require("maxBasicViewsPerGraph").asInt()}
       , m_config{nodeConfig.require("rayAngleParameter").asFloat(),
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  void clusterViews(const Mat<float> &overlappingMatrix, const vector<bool> &isBasicView) {
-    cout << "WARNING: clusterViews is STUBBED\n";
-    constexpr auto N = 1;
-    m_clusters = vector<Cluster>(N);
-    m_clusterIds.clear();
-    for (size_t i = 0; i < overlappingMatrix.m(); ++i) {
-      m_clusterIds.push_back(i % N);
+  void assignAdditionalViews(const Mat<float> &overlap, const vector<bool> &isBasicView,
+                             size_t numClusters, vector<size_t> &clusterIds) {
+    const auto N = isBasicView.size();
+    auto numViewsPerCluster = vector<size_t>(numClusters, 0);
+    for (size_t i = 0; i < N; ++i) {
       if (isBasicView[i]) {
-        m_clusters[i % N].basicViewId.push_back(i);
+        const auto c = clusterIds[i];
+        ++numViewsPerCluster[c];
+      }
+    }
+    for (;;) {
+      auto minCount = N;
+      auto maxOverlap = 0.F;
+      size_t basicViewId = 0;
+      size_t additionalViewId = 0;
+
+      for (size_t i = 0; i < N; ++i) {
+        const auto c_i = clusterIds[i];
+        if (isBasicView[i]) {
+          for (size_t j = 0; j < N; ++j) {
+            if (!isBasicView[j] && clusterIds[j] == numClusters) {
+              if (minCount > numViewsPerCluster[c_i] ||
+                  (minCount == numViewsPerCluster[c_i] && maxOverlap < overlap(i, j))) {
+                minCount = numViewsPerCluster[c_i];
+                maxOverlap = overlap(i, j);
+                basicViewId = i;
+                additionalViewId = j;
+              }
+            }
+          }
+        }
+      }
+      if (minCount == N) {
+        break;
+      }
+      const auto c = clusterIds[basicViewId];
+      ++numViewsPerCluster[c];
+      clusterIds[additionalViewId] = c;
+    }
+  }
+
+  auto scoreClustering(const Mat<float> &overlap, const vector<bool> &isBasicView,
+                       const vector<size_t> &clusterIds) -> double {
+    auto score = 0.;
+    const auto N = isBasicView.size();
+
+    for (size_t i = 0; i < N; ++i) {
+      for (size_t j = i + 1; j < N; ++j) {
+        if (clusterIds[i] == clusterIds[j]) {
+          score += overlap(i, j);
+        }
+      }
+    }
+    return score;
+  }
+
+  auto exhaustiveSearch(const Mat<float> &overlap, const vector<bool> &isBasicView)
+      -> vector<size_t> {
+    auto basicViewIds = vector<size_t>{};
+    for (size_t i = 0; i < isBasicView.size(); ++i) {
+      if (isBasicView[i]) {
+        basicViewIds.push_back(i);
+      }
+    }
+
+    const size_t maxBasicViews = m_maxBasicViewsPerGraph;
+    const auto numClusters = (basicViewIds.size() + maxBasicViews - 1) / maxBasicViews;
+    assert(numClusters >= 1);
+
+    size_t numPermutations = 1;
+    for (size_t i = 0; i < basicViewIds.size(); ++i) {
+      numPermutations *= numClusters;
+    }
+
+    auto clusterIds = vector<size_t>(isBasicView.size());
+    auto numBasicViewsPerCluster = vector<size_t>(numClusters);
+
+    auto bestScore = 0.;
+    auto bestClusterIds = vector<size_t>{};
+
+    for (size_t p = 0; p < numPermutations; ++p) {
+      auto q = p;
+      fill(clusterIds.begin(), clusterIds.end(), numClusters);
+      fill(numBasicViewsPerCluster.begin(), numBasicViewsPerCluster.end(), 0);
+      auto valid = true;
+      for (auto i : basicViewIds) {
+        const auto j = q % numClusters;
+        q /= numClusters;
+        clusterIds[i] = j;
+        if (++numBasicViewsPerCluster[j] > maxBasicViews) {
+          valid = false;
+          break;
+        }
+      }
+      if (valid) {
+        assignAdditionalViews(overlap, isBasicView, numClusters, clusterIds);
+        const auto score = scoreClustering(overlap, isBasicView, clusterIds);
+
+        if (bestScore < score) {
+          bestScore = score;
+          bestClusterIds = clusterIds;
+        }
+      }
+    }
+
+    assert(!bestClusterIds.empty());
+    return bestClusterIds;
+  }
+
+  void clusterViews(const Mat<float> &overlap, const vector<bool> &isBasicView) {
+    const auto clusterIds = exhaustiveSearch(overlap, isBasicView);
+
+    m_clusters = vector<Cluster>(1 + *max_element(clusterIds.cbegin(), clusterIds.cend()));
+    for (size_t i = 0; i < clusterIds.size(); ++i) {
+      if (isBasicView[i]) {
+        m_clusters[clusterIds[i]].basicViewId.push_back(i);
       } else {
-        m_clusters[i % N].additionalViewId.push_back(i);
+        m_clusters[clusterIds[i]].additionalViewId.push_back(i);
       }
     }
   }
@@ -420,7 +529,7 @@ private:
     synthesizer.maskAverage = float(accumulate(begin(mask), end(mask), 0)) /
                               (2.55F * float(mask.width() * mask.height()));
   }
-}; // namespace TMIV::Pruner
+};
 
 HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &nodeConfig)
     : m_impl(new Impl{nodeConfig}) {}

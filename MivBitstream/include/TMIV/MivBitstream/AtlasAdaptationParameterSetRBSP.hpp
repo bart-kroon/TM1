@@ -233,6 +233,10 @@ constexpr auto DepthQuantization::operator!=(const DepthQuantization &other) con
   return !operator==(other);
 }
 
+constexpr auto MivViewParamsList::mvp_explicit_view_id_flag() const noexcept {
+  return m_mvp_explicit_view_id_flag;
+}
+
 constexpr auto MivViewParamsList::mvp_intrinsic_params_equal_flag() const noexcept {
   return m_mvp_intrinsic_params_equal_flag;
 }

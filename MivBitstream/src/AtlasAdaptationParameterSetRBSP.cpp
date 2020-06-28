@@ -391,6 +391,28 @@ auto MivViewParamsList::mvp_num_views_minus1() const noexcept -> uint16_t {
   return uint16_t(m_camera_extrinsics.size() - 1);
 }
 
+auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(
+    const uint8_t atlasIdx, const uint16_t viewIdx) const noexcept
+    -> bool {
+  VERIFY_MIVBITSTREAM(viewIdx < m_camera_extrinsics.size());
+  //VERIFY_MIVBITSTREAM(atlasIdx < vps.vps_atlas_count_minus1()); // ToDo: need to get atlas count
+  return m_mvp_view_enabled_in_atlas_flag[atlasIdx][viewIdx];
+}
+
+auto MivViewParamsList::mvp_view_complete_in_atlas_flag(const uint8_t atlasIdx,
+                                                       const uint16_t viewIdx) const noexcept
+    -> bool {
+  VERIFY_MIVBITSTREAM(viewIdx < m_camera_extrinsics.size());
+  // VERIFY_MIVBITSTREAM(atlasIdx < vps.vps_atlas_count_minus1()); // ToDo: need to get atlas count
+  return m_mvp_view_complete_in_atlas_flag[atlasIdx][viewIdx];
+}
+
+auto MivViewParamsList::mvp_view_id(const uint16_t viewIdx) const noexcept
+    -> uint16_t {
+  VERIFY_MIVBITSTREAM(viewIdx < m_camera_extrinsics.size());
+  return m_mvp_view_id[viewIdx];
+}
+
 auto MivViewParamsList::camera_extrinsics(const uint16_t viewId) const noexcept
     -> const CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
@@ -424,6 +446,48 @@ auto MivViewParamsList::pruning_parent(const uint16_t viewId) const noexcept
 
 auto MivViewParamsList::mvp_num_views_minus1(const uint16_t value) noexcept -> MivViewParamsList & {
   m_camera_extrinsics.resize(value + 1);
+  return *this;
+}
+
+auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(const uint8_t atlasIdx,
+                                                       const uint16_t viewIdx,
+                                                       const bool value) noexcept
+    -> MivViewParamsList & {
+  if (atlasIdx >= m_mvp_view_enabled_in_atlas_flag.size())
+    m_mvp_view_enabled_in_atlas_flag.resize(atlasIdx +
+                                            1); // ToDo: find access to vps_atlas_count_minus1()
+  if (viewIdx >= m_mvp_view_enabled_in_atlas_flag[atlasIdx].size())
+    m_mvp_view_enabled_in_atlas_flag[atlasIdx].resize(m_camera_extrinsics.size());
+  m_mvp_view_enabled_in_atlas_flag[atlasIdx][viewIdx] = value;
+  return *this;
+}
+
+auto MivViewParamsList::mvp_view_complete_in_atlas_flag(const uint8_t atlasIdx,
+                                                        const uint16_t viewIdx,
+                                                        const bool value) noexcept
+    -> MivViewParamsList & {
+  if (atlasIdx >= m_mvp_view_complete_in_atlas_flag.size())
+    m_mvp_view_complete_in_atlas_flag.resize(atlasIdx +
+                                             1); // ToDo: find access to vps_atlas_count_minus1()
+  if (viewIdx >= m_mvp_view_complete_in_atlas_flag[atlasIdx].size())
+    m_mvp_view_complete_in_atlas_flag[atlasIdx].resize(m_camera_extrinsics.size());
+  m_mvp_view_complete_in_atlas_flag[atlasIdx][viewIdx] = value;
+  return *this;
+}
+
+auto MivViewParamsList::mvp_explicit_view_id_flag(const bool value) noexcept
+    -> MivViewParamsList & {
+  m_mvp_explicit_view_id_flag = value;
+  return *this;
+}
+
+auto MivViewParamsList::mvp_view_id(const uint16_t viewIdx,
+                                    const uint16_t viewId) noexcept
+    -> MivViewParamsList & {
+  VERIFY_MIVBITSTREAM(mvp_explicit_view_id_flag());
+  if (viewIdx >= m_mvp_view_id.size())
+    m_mvp_view_id.resize(m_camera_extrinsics.size());
+  m_mvp_view_id[viewIdx] = viewId;
   return *this;
 }
 

@@ -221,6 +221,22 @@ public:
   [[nodiscard]] constexpr auto mvp_depth_quantization_params_equal_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
 
+  // Return whether the view is enabled in a given atlas
+  [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(const std::uint8_t atlasIdx,
+                                                    const std::uint16_t viewIdx) const noexcept
+      -> bool;
+
+  // Return whether the view is complete in a given atlas (in case it is enabled)
+  [[nodiscard]] auto mvp_view_complete_in_atlas_flag(const std::uint8_t atlasIdx,
+                                                     const std::uint16_t viewIdx) const noexcept
+      -> bool;
+
+  // Return mvp_explicit_view_id_flag
+  [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
+
+  // Return the view index of a given signaled view parameters if (mvp_explicit_view_id_flag==1)
+  [[nodiscard]] auto mvp_view_id(const std::uint16_t viewIdx) const noexcept -> std::uint16_t;
+
   // Return camera extrinsics for the specified view ID.
   [[nodiscard]] auto camera_extrinsics(const std::uint16_t viewId) const noexcept
       -> const CameraExtrinsics &;
@@ -237,6 +253,23 @@ public:
 
   [[nodiscard]] auto pruning_parent(const std::uint16_t viewId) const noexcept
       -> const PruningParent &;
+
+  // Calling this function will set the mvp_view_enabled_in_atlas_flag for a given view in a given
+  // atlas
+  auto mvp_view_enabled_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
+                                      const bool value) noexcept -> MivViewParamsList &;
+
+  // Calling this function will set the mvp_view_complete_in_atlas_flag for a given view in a given
+  // atlas
+  auto mvp_view_complete_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
+                                       const bool value) noexcept -> MivViewParamsList &;
+
+  // Calling this function will set the mvp_explicit_view_id_flag
+  auto mvp_explicit_view_id_flag(const bool value) noexcept -> MivViewParamsList &;
+
+  // Calling this function will set the mvp_view_id for a given view v
+  auto mvp_view_id(const std::uint16_t viewIdx, const std::uint16_t viewId) noexcept
+      -> MivViewParamsList &;
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
@@ -267,6 +300,10 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  bool m_mvp_explicit_view_id_flag{};
+  std::vector<std::vector<bool>> m_mvp_view_enabled_in_atlas_flag;
+  std::vector<std::vector<bool>> m_mvp_view_complete_in_atlas_flag;
+  std::vector<std::uint16_t> m_mvp_view_id;
   std::vector<CameraExtrinsics> m_camera_extrinsics;
   bool m_mvp_intrinsic_params_equal_flag{};
   std::vector<CameraIntrinsics> m_camera_intrinsics;

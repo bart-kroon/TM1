@@ -84,7 +84,9 @@ Look in the CTC document for the version of HM and corresponding URL. This
 description uses 16.16.
 
     cd /Workspace
-    svn co https://hevc.hhi.fraunhofer.de/svn/svn_HEVCSoftware/tags/HM-16.16
+    git clone https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git HM-16.16
+    cd HM-16.16
+    git checkout HM-16.16
 
 TMIV includes a build script for HM.
 

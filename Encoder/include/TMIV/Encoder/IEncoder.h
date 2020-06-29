@@ -48,7 +48,8 @@ public:
   auto operator=(IEncoder &&) -> IEncoder & = default;
   virtual ~IEncoder() = default;
 
-  virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+  virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams,
+                               std::uint16_t startViewId)
       -> const MivBitstream::IvSequenceParams & = 0;
   virtual void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;

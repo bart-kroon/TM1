@@ -57,7 +57,7 @@ public:
   auto operator=(Encoder &&) -> Encoder & = default;
   ~Encoder() override = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams sourceIvs)
+  auto prepareSequence(MivBitstream::IvSequenceParams sourceIvs, std::uint16_t startViewId)
       -> const MivBitstream::IvSequenceParams & override;
   void prepareAccessUnit(MivBitstream::IvAccessUnitParams sourceIvau) override;
   void pushFrame(Common::MVD16Frame sourceViews) override;

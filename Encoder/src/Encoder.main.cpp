@@ -80,8 +80,10 @@ public:
           m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
-
-    const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
+    string firstViewName = sourceSequenceParams.viewParamsList[0].name;
+    uint16_t startViewId = std::stoi(firstViewName.erase(
+        0, 1)); // Needed to populate mvp_view_id correctly (fix the issue for SE starting with v1)
+    const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams, startViewId);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {

@@ -49,7 +49,7 @@ public:
   ~GroupBasedEncoder() override = default;
 
   // Let each per-group encoder prepare the sequence and merge the metadata
-  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+  auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams, std::uint16_t startViewId)
       -> const MivBitstream::IvSequenceParams & override;
 
   // Let each per-group encoder prepare the access unit

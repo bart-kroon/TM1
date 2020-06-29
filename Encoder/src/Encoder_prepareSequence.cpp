@@ -39,6 +39,7 @@
 using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
+static uint16_t startViewId = 0; 
 
 namespace TMIV::Encoder {
 auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequenceParams & {
@@ -60,6 +61,26 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
   m_ivs.viewingSpace = m_transportIvs.viewingSpace;
   m_ivs.frameRate = m_transportIvs.frameRate;
   setGiGeometry3dCoordinatesBitdepthMinus1();
+
+  // Update views per atlas info
+  m_ivs.mvpl().setAtlasCountMinus1(m_ivs.vps.vps_atlas_count_minus1());
+  m_ivs.mvpl().mvp_num_views_minus1(m_isBasicView.size() - 1);
+  for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a)
+    for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
+      // It is acceptable to set mvp_view_enabled_in_atlas_flag here since it is enabled and not
+      // existed flag, it is possible to update it to be more accurate after after the packing (so
+      // we know what views included per atlas) if writing the VPS can be delayed till that stage
+      m_ivs.mvpl().mvp_view_enabled_in_atlas_flag(a, v, true);
+      m_ivs.mvpl().mvp_view_complete_in_atlas_flag(a, v, m_isBasicView[v]);
+    }
+  m_ivs.mvpl().mvp_explicit_view_id_flag(true);
+  string firstViewName = m_ivs.viewParamsList[0].name;
+  if (std::stoi(firstViewName.erase(0, 1)) == 1) // Temporary fix to handle shift needed for SE
+    startViewId = 1;
+  for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
+    uint16_t viewId = std::stoi(m_ivs.viewParamsList[v].name.erase(0, 1)) - startViewId;
+    m_ivs.mvpl().mvp_view_id(v, viewId);
+  }
 
   // Register pruning relation
   m_pruner->registerPruningRelation(m_ivs, m_isBasicView);

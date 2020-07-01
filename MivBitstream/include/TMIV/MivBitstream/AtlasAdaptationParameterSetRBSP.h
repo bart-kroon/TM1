@@ -217,6 +217,7 @@ private:
 class MivViewParamsList {
 public:
   [[nodiscard]] auto mvp_num_views_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto mvp_atlas_count_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_depth_quantization_params_equal_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
@@ -258,7 +259,7 @@ public:
   auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
   
   // Calling this function will set the m_atlasCountMinus1
-  auto setAtlasCountMinus1(const std::uint8_t value) noexcept -> MivViewParamsList &;
+  auto mvp_atlas_count_minus1(const std::uint8_t value) noexcept -> MivViewParamsList &;
 
   // Calling this function will set mvp_view_enabled_in_atlas_flag for a given view in a given atlas
   auto mvp_view_enabled_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
@@ -303,7 +304,7 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  std::uint8_t m_atlasCountMinus1{};
+  std::uint8_t m_mvp_atlas_count_minus1{};
   std::vector<std::vector<bool>> m_mvp_view_enabled_in_atlas_flag;
   std::vector<std::vector<bool>> m_mvp_view_complete_in_atlas_flag;
   bool m_mvp_explicit_view_id_flag{};

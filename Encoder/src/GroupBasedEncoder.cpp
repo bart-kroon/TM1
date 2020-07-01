@@ -294,8 +294,8 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
   }
 
   // Merge MVPL across groups
-  m_ivSequenceParams.mvpl().setAtlasCountMinus1(m_ivSequenceParams.vps.vps_atlas_count_minus1());
   m_ivSequenceParams.mvpl().mvp_num_views_minus1(m_ivSequenceParams.viewParamsList.size() - 1);
+  m_ivSequenceParams.mvpl().mvp_atlas_count_minus1(m_ivSequenceParams.vps.vps_atlas_count_minus1());
   int aIndex = 0;
   for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++)
     for (uint8_t a = 0; a <= perGroupParams[g]->vps.vps_atlas_count_minus1(); a++) {

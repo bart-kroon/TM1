@@ -63,8 +63,8 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs, uint16_t startViewId)
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
   // Update views per atlas info
-  m_ivs.mvpl().setAtlasCountMinus1(m_ivs.vps.vps_atlas_count_minus1());
   m_ivs.mvpl().mvp_num_views_minus1(m_isBasicView.size() - 1);
+  m_ivs.mvpl().mvp_atlas_count_minus1(m_ivs.vps.vps_atlas_count_minus1());
   for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a)
     for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
       // It is acceptable to set mvp_view_enabled_in_atlas_flag here since it is enabled and not

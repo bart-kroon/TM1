@@ -41,7 +41,7 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-auto Encoder::prepareSequence(IvSequenceParams sourceIvs, uint16_t startViewId)
+auto Encoder::prepareSequence(IvSequenceParams sourceIvs)
     -> const IvSequenceParams & {
   // Transform source to transport view sequence parameters
   tie(m_transportIvs, m_isBasicView) = m_viewOptimizer->optimizeSequence(move(sourceIvs));
@@ -76,7 +76,7 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs, uint16_t startViewId)
     }
   m_ivs.mvpl().mvp_explicit_view_id_flag(true);
   for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
-    uint16_t viewId = std::stoi(m_ivs.viewParamsList[v].name.erase(0, 1)) - startViewId;
+    uint16_t viewId = std::stoi(m_ivs.viewParamsList[v].name.erase(0, 1));
     m_ivs.mvpl().mvp_view_id(v, viewId);
   }
 

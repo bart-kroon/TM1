@@ -400,6 +400,9 @@ auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(
     -> bool {
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
   VERIFY_MIVBITSTREAM(atlasIdx <= mvp_atlas_count_minus1());
+  if (atlasIdx >= m_mvp_view_enabled_in_atlas_flag.size() |
+      viewIdx >= m_mvp_view_enabled_in_atlas_flag[atlasIdx].size())
+    return false;
   return m_mvp_view_enabled_in_atlas_flag[atlasIdx][viewIdx];
 }
 
@@ -408,6 +411,9 @@ auto MivViewParamsList::mvp_view_complete_in_atlas_flag(const uint8_t atlasIdx,
     -> bool {
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
   VERIFY_MIVBITSTREAM(atlasIdx <= mvp_atlas_count_minus1());
+  if (atlasIdx >= m_mvp_view_complete_in_atlas_flag.size() |
+      viewIdx >= m_mvp_view_complete_in_atlas_flag[atlasIdx].size())
+    return false;
   return m_mvp_view_complete_in_atlas_flag[atlasIdx][viewIdx];
 }
 
@@ -453,7 +459,6 @@ auto MivViewParamsList::mvp_num_views_minus1(const uint16_t value) noexcept -> M
   return *this;
 }
 
-// setAtlasCountMinus1 should be called before setting mvp_view_enabled_in_atlas_flag & mvp_view_complete_in_atlas_flag
 auto MivViewParamsList::mvp_atlas_count_minus1(const uint8_t value) noexcept -> MivViewParamsList & {
   m_mvp_atlas_count_minus1=value;
   return *this;

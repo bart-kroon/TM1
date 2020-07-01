@@ -296,19 +296,21 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
   // Merge MVPL across groups
   m_ivSequenceParams.mvpl().mvp_num_views_minus1(m_ivSequenceParams.viewParamsList.size() - 1);
   m_ivSequenceParams.mvpl().mvp_atlas_count_minus1(m_ivSequenceParams.vps.vps_atlas_count_minus1());
-  int aIndex = 0;
-  for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++)
+  int aIndex = 0, vIndex = 0, sumViewsInGroups = 0;
+  for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
     for (uint8_t a = 0; a <= perGroupParams[g]->vps.vps_atlas_count_minus1(); a++) {
       for (uint16_t v = 0; v <= perGroupParams[g]->mvpl().mvp_num_views_minus1(); v++) {
+        // ToDo: v vs perGroupParams[g]->mvpl().view_id(v)
+        vIndex = v + sumViewsInGroups;
         m_ivSequenceParams.mvpl().mvp_view_enabled_in_atlas_flag(
-            aIndex, perGroupParams[g]->mvpl().mvp_view_id(v),
-            perGroupParams[g]->mvpl().mvp_view_enabled_in_atlas_flag(a, v));
+            aIndex, vIndex, perGroupParams[g]->mvpl().mvp_view_enabled_in_atlas_flag(a, v));
         m_ivSequenceParams.mvpl().mvp_view_complete_in_atlas_flag(
-            aIndex, perGroupParams[g]->mvpl().mvp_view_id(v),
-            perGroupParams[g]->mvpl().mvp_view_complete_in_atlas_flag(a, v));
+            aIndex, vIndex, perGroupParams[g]->mvpl().mvp_view_complete_in_atlas_flag(a, v));
       }
       aIndex++;
     }
+    sumViewsInGroups = sumViewsInGroups+perGroupParams[g]->mvpl().mvp_num_views_minus1() + 1;
+  }
   m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag(false);
   for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++)
     if (perGroupParams[g]->mvpl().mvp_explicit_view_id_flag())

@@ -68,8 +68,9 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs, uint16_t startViewId)
   for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a)
     for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
       // It is acceptable to set mvp_view_enabled_in_atlas_flag here since it is enabled and not
-      // existed flag, it is possible to update it to be more accurate after after the packing (so
-      // we know what views included per atlas) if writing the VPS can be delayed till that stage
+      // existed flag, it is possible to update it to be more accurate after the packing (so
+      // we know what views included per atlas) if writing the MVPL into the bitstream can be
+      // delayed till that stage
       m_ivs.mvpl().mvp_view_enabled_in_atlas_flag(a, v, true);
       m_ivs.mvpl().mvp_view_complete_in_atlas_flag(a, v, m_isBasicView[v]);
     }

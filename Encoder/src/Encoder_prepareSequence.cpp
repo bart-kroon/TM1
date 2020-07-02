@@ -76,8 +76,8 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs)
     }
   m_ivs.mvpl().mvp_explicit_view_id_flag(true);
   for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
-    uint16_t viewId = std::stoi(m_ivs.viewParamsList[v].name.erase(0, 1));
-    m_ivs.mvpl().mvp_view_id(v, viewId);
+    //uint16_t viewId = std::stoi(m_ivs.viewParamsList[v].name.erase(0, 1));
+    m_ivs.mvpl().mvp_view_id(v, v);//viewId);
   }
 
   // Register pruning relation

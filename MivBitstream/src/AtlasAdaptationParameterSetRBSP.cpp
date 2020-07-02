@@ -555,7 +555,7 @@ auto MivViewParamsList::pruning_parent(const uint16_t viewId) noexcept -> Prunin
 auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
   
-  stream << "mvp_atlas_count_minus1=" << (int) x.mvp_atlas_count_minus1() << '\n';
+  //stream << "mvp_atlas_count_minus1=" << (int) x.mvp_atlas_count_minus1() << '\n';
 
   for (uint8_t a = 0; a <= x.mvp_atlas_count_minus1(); ++a) {
      stream << "mvp_view_enabled_in_atlas_flag[ " << (int) a << " ]=[ ";
@@ -632,17 +632,17 @@ auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcep
   return !operator==(other);
 }
 
-auto MivViewParamsList::decodeFrom(InputBitstream &bitstream)
+auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const uint8_t atlasCountMinus1)
     -> MivViewParamsList {
   auto x = MivViewParamsList{};
 
   x.mvp_num_views_minus1(bitstream.getUint16());
-  x.mvp_atlas_count_minus1(bitstream.readBits<uint8_t>(6));
-  for (uint8_t a = 0; a <= x.mvp_atlas_count_minus1(); ++a)
+  x.mvp_atlas_count_minus1(atlasCountMinus1); //bitstream.readBits<uint8_t>(6)
+  for (uint8_t a = 0; a <= atlasCountMinus1; ++a)
 	for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
       x.mvp_view_enabled_in_atlas_flag(a,v,bitstream.getFlag());
 
-  for (uint8_t a = 0; a <= x.mvp_atlas_count_minus1(); ++a)
+  for (uint8_t a = 0; a <= atlasCountMinus1; ++a)
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v)
       x.mvp_view_complete_in_atlas_flag(a, v, bitstream.getFlag());
 
@@ -688,7 +688,7 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream)
 void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint16(mvp_num_views_minus1());
 
-  bitstream.writeBits(mvp_atlas_count_minus1(), 6);
+  //bitstream.writeBits(mvp_atlas_count_minus1(), 6);
   for (uint8_t a = 0; a <= mvp_atlas_count_minus1(); ++a)
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v)
       bitstream.putFlag(mvp_view_enabled_in_atlas_flag(a, v));
@@ -850,7 +850,7 @@ auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept 
   return !operator==(other);
 }
 
-auto AapsMivExtension::decodeFrom(InputBitstream &bitstream)
+auto AapsMivExtension::decodeFrom(InputBitstream &bitstream, const uint8_t atlasCountMinus1)
     -> AapsMivExtension {
   auto x = AapsMivExtension{};
   x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
@@ -858,7 +858,7 @@ auto AapsMivExtension::decodeFrom(InputBitstream &bitstream)
 
   switch (x.aame_miv_view_params_list_update_mode()) {
   case MvpUpdateMode::VPL_INITLIST:
-    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream);
+    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, atlasCountMinus1);
     break;
   case MvpUpdateMode::VPL_UPD_EXT:
     x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
@@ -1040,7 +1040,7 @@ auto AtlasAdaptationParameterSetRBSP::operator!=(
   return !operator==(other);
 }
 
-auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream)
+auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const uint8_t atlasCountMinus1)
     -> AtlasAdaptationParameterSetRBSP {
   InputBitstream bitstream{stream};
 
@@ -1063,7 +1063,7 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream)
     x.aaps_vpcc_extension(AapsVpccExtension::decodeFrom(bitstream));
   }
   if (x.aaps_miv_extension_flag()) {
-    x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream));
+    x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream, atlasCountMinus1));
   }
   if (x.aaps_extension_6bits() != 0) {
     auto aapsExtensionData = vector<bool>{};

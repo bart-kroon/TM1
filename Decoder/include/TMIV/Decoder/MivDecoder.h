@@ -117,9 +117,9 @@ private: // Video deecoding processes
 private: // Decoding processes
   void decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Payload &payload);
   void decodeVps(const V3cUnitHeader &vuh, const V3cParameterSet &vps);
-  void decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb);
+  void decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb, const std::uint8_t atlasCountMinus1);
 
-  void decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
+  void decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu, const std::uint8_t atlasCountMinus1);
   static void decodeUnknownNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
 
   void decodeAtl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, const AtlasTileLayerRBSP &atl);
@@ -152,7 +152,7 @@ private: // Decoding processes
 private: // Parsers
   void parseAsps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu);
-  void parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu);
+  void parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu, const uint8_t atlasCountMinus1);
   void parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAtl(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseAud(const V3cUnitHeader &vuh, const NalUnit &nu);

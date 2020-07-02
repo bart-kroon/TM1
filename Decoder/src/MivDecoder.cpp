@@ -186,7 +186,7 @@ void MivDecoder::decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Pa
   case VuhUnitType::V3C_VPS:
     return decodeVps(vuh, get<V3cParameterSet>(payload));
   case VuhUnitType::V3C_AD:
-    return decodeAsb(vuh, get<AtlasSubBitstream>(payload));
+    return decodeAsb(vuh, get<AtlasSubBitstream>(payload), vps(vuh).vps_atlas_count_minus1());
   case VuhUnitType::V3C_AVD:
   case VuhUnitType::V3C_GVD:
   case VuhUnitType::V3C_OVD:
@@ -360,13 +360,14 @@ void MivDecoder::outputAttrVideoData(AccessUnit &au) {
   m_totalAttrVideoDecodingTime += dt;
 }
 
-void MivDecoder::decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb) {
+void MivDecoder::decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb, const uint8_t atlasCountMinus1) {
   for (const auto &nu : asb.nal_units()) {
-    decodeNalUnit(vuh, nu);
+    decodeNalUnit(vuh, nu, atlasCountMinus1);
   }
 }
 
-void MivDecoder::decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu) {
+void MivDecoder::decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu,
+                               const uint8_t atlasCountMinus1) {
   cout << "--- NAL unit " << string(100 - 13, '-') << '\n' << nu;
 
   if (nu.nal_unit_header().nal_layer_id() != 0) {
@@ -407,7 +408,7 @@ void MivDecoder::decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu) {
   case NalUnitType::NAL_SUFFIX_ESEI:
     return parseSuffixESei(vuh, nu);
   case NalUnitType::NAL_AAPS:
-    return parseAaps(vuh, nu);
+    return parseAaps(vuh, nu, atlasCountMinus1);
   case NalUnitType::NAL_FOC:
     return parseFoc(vuh, nu);
   default:
@@ -640,9 +641,10 @@ void MivDecoder::parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu) {
   decodeAfps(vuh, nu.nal_unit_header(), AtlasFrameParameterSetRBSP::decodeFrom(stream, aspsV(vuh)));
 }
 
-void MivDecoder::parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu) {
+void MivDecoder::parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu, const uint8_t atlasCountMinus1) {
   istringstream stream{nu.rbsp()};
-  decodeAaps(vuh, nu.nal_unit_header(), AtlasAdaptationParameterSetRBSP::decodeFrom(stream));
+  decodeAaps(vuh, nu.nal_unit_header(),
+             AtlasAdaptationParameterSetRBSP::decodeFrom(stream, atlasCountMinus1));
 }
 
 void MivDecoder::parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu) {

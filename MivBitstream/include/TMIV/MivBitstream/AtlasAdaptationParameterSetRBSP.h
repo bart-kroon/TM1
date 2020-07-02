@@ -298,7 +298,7 @@ public:
   auto operator==(const MivViewParamsList &) const noexcept -> bool;
   auto operator!=(const MivViewParamsList &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream)
+  static auto decodeFrom(Common::InputBitstream &bitstream, const uint8_t atlasCountMinus1)
       -> MivViewParamsList;
 
   void encodeTo(Common::OutputBitstream &bitstream) const;
@@ -424,7 +424,7 @@ public:
   auto operator==(const AapsMivExtension &) const noexcept -> bool;
   auto operator!=(const AapsMivExtension &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &stream) -> AapsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &stream, const uint8_t atlasCountMinus1) -> AapsMivExtension;
 
   void encodeTo(Common::OutputBitstream &stream) const;
 
@@ -472,7 +472,7 @@ public:
   auto operator==(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
   auto operator!=(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream)
+  static auto decodeFrom(std::istream &stream, const std::uint8_t atlasCountMinus1)
       -> AtlasAdaptationParameterSetRBSP;
 
   void encodeTo(std::ostream &stream) const;

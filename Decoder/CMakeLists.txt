@@ -3,11 +3,13 @@ cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 add_library(DecoderLib
     "src/Decoder.cpp"
     "src/GeometryScaler.cpp"
+	"src/OccupancyExtractor.cpp"
     "src/EntityBasedPatchMapFilter.cpp"
     "src/MivDecoder.cpp"
     "include/TMIV/Decoder/IDecoder.h"
     "include/TMIV/Decoder/Decoder.h"
     "include/TMIV/Decoder/GeometryScaler.h"
+	"include/TMIV/Decoder/OccupancyExtractor.h"
     "include/TMIV/Decoder/EntityBasedPatchMapFilter.h"
     "include/TMIV/Decoder/MivDecoder.h"
     )

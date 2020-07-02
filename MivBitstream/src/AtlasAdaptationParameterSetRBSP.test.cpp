@@ -200,7 +200,6 @@ TEST_CASE("miv_view_params_list", "[Atlas Adaptation Parameter Set RBSP]") {
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
-mvp_atlas_count_minus1=0
 mvp_view_enabled_in_atlas_flag[ 0 ]=[ true ]
 mvp_view_complete_in_atlas_flag[ 0 ]=[ true ]
 mvp_explicit_view_id_flag=false
@@ -224,7 +223,7 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 397));
+    REQUIRE(bitCodingTest_decodeArgs(x, 391, x.mvp_atlas_count_minus1()));
   }
 
   SECTION("Example 2") {
@@ -247,7 +246,6 @@ mvp_pruning_graph_params_present_flag=false
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
-mvp_atlas_count_minus1=1
 mvp_view_enabled_in_atlas_flag[ 0 ]=[ true true false ]
 mvp_view_enabled_in_atlas_flag[ 1 ]=[ false false true ]
 mvp_view_complete_in_atlas_flag[ 0 ]=[ true false false ]
@@ -289,7 +287,7 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 842));
+    REQUIRE(bitCodingTest_decodeArgs(x, 836, x.mvp_atlas_count_minus1()));
   }
 }
 
@@ -301,7 +299,7 @@ aaps_log2_max_afoc_present_flag=false
 aaps_extension_present_flag=false
 )");
 
-  REQUIRE(byteCodingTest(x, 1));
+  REQUIRE(byteCodingTest_decodeArgs(x, 1, 0));
 
   SECTION("Example 1") {
     x.aaps_atlas_adaptation_parameter_set_id(63)
@@ -340,7 +338,6 @@ aaps_vpcc_camera_parameters_present_flag=false
 aame_omaf_v1_compatible_flag=false
 aame_miv_view_params_list_update_mode=VPL_INITLIST
 mvp_num_views_minus1=2
-mvp_atlas_count_minus1=0
 mvp_view_enabled_in_atlas_flag[ 0 ]=[ false false false ]
 mvp_view_complete_in_atlas_flag[ 0 ]=[ false false false ]
 mvp_explicit_view_id_flag=false
@@ -380,7 +377,7 @@ pp_is_root_flag[ 2 ]=true
 aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 103));
+    REQUIRE(byteCodingTest_decodeArgs(x, 103, x.aaps_miv_extension().miv_view_params_list().mvp_atlas_count_minus1()));
   }
 }
 

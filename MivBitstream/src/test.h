@@ -56,6 +56,18 @@ auto byteCodingTest(const Type &reference, int size, Args &&... args) -> bool {
 }
 
 template <typename Type, typename... Args>
+auto byteCodingTest_decodeArgs(const Type &reference, int size, Args &&... args) -> bool {
+  std::stringstream stream;
+  reference.encodeTo(stream);
+  REQUIRE(size == stream.tellp());
+
+  const auto actual = Type::decodeFrom(stream, std::forward<Args>(args)...);
+  REQUIRE(size == stream.tellg());
+
+  return actual == reference;
+}
+
+template <typename Type, typename... Args>
 auto unitCodingTest(const Type &reference, int size, Args &&... args) -> bool {
   std::stringstream stream;
   REQUIRE(size == static_cast<int>(reference.encodeTo(stream, args...)));
@@ -72,6 +84,21 @@ auto bitCodingTest(const Type &reference, int bitsize, Args &&... args) -> bool 
   std::stringstream stream;
   TMIV::Common::OutputBitstream obitstream{stream};
   reference.encodeTo(obitstream, args...);
+  REQUIRE(bitsize == obitstream.tellp());
+  obitstream.zeroAlign();
+
+  TMIV::Common::InputBitstream ibitstream{stream};
+  const auto actual = Type::decodeFrom(ibitstream, std::forward<Args>(args)...);
+  REQUIRE(bitsize == ibitstream.tellg());
+
+  return actual == reference;
+}
+
+template <typename Type, typename... Args>
+auto bitCodingTest_decodeArgs(const Type &reference, int bitsize, Args &&... args) -> bool {
+  std::stringstream stream;
+  TMIV::Common::OutputBitstream obitstream{stream};
+  reference.encodeTo(obitstream);
   REQUIRE(bitsize == obitstream.tellp());
   obitstream.zeroAlign();
 

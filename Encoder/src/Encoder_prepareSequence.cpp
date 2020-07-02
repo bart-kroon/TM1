@@ -43,9 +43,9 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Encoder {
 auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequenceParams & {
   if (sourceIvs.vme().vme_depth_low_quality_flag()) // m54152
-    m_blockSize = 32;
+    m_alignment = m_blockSize = 32;
   else
-    m_blockSize = 16;
+    m_alignment = m_blockSize = 16;
   const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
   m_maxBlockRate =
       m_maxLumaSampleRate / ((sourceIvs.vme().vme_num_groups_minus1()+1)* lumaSamplesPerAtlasSample * sqr(m_blockSize));

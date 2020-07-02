@@ -109,6 +109,7 @@ private: // Encoder_completeAccessUnit.cpp
 
   // Encoder parameters
   int m_blockSize{};
+  int m_alignment{};
   double m_maxLumaSampleRate{};
   int m_maxLumaPictureSize{};
   double m_maxBlockRate{};

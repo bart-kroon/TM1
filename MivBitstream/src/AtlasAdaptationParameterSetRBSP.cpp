@@ -563,8 +563,6 @@ auto MivViewParamsList::pruning_parent(const uint16_t viewId) noexcept -> Prunin
 auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
 
-  // stream << "mvp_atlas_count_minus1=" << (int) x.mvp_atlas_count_minus1() << '\n';
-
   for (uint8_t a = 0; a <= x.mvp_atlas_count_minus1(); ++a) {
     stream << "mvp_view_enabled_in_atlas_flag[ " << (int)a << " ]=[ ";
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
@@ -648,7 +646,7 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const uint8_t atla
   auto x = MivViewParamsList{};
 
   x.mvp_num_views_minus1(bitstream.getUint16());
-  x.mvp_atlas_count_minus1(atlasCountMinus1); // bitstream.readBits<uint8_t>(6)
+  x.mvp_atlas_count_minus1(atlasCountMinus1);
   for (uint8_t a = 0; a <= atlasCountMinus1; ++a) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       x.mvp_view_enabled_in_atlas_flag(a, v, bitstream.getFlag());
@@ -705,7 +703,6 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const uint8_t atla
 void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint16(mvp_num_views_minus1());
 
-  // bitstream.writeBits(mvp_atlas_count_minus1(), 6);
   for (uint8_t a = 0; a <= mvp_atlas_count_minus1(); ++a) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
       bitstream.putFlag(mvp_view_enabled_in_atlas_flag(a, v));

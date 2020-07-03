@@ -301,7 +301,6 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
   for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
     for (uint8_t a = 0; a <= perGroupParams[g]->vps.vps_atlas_count_minus1(); a++) {
       for (uint16_t v = 0; v <= perGroupParams[g]->mvpl().mvp_num_views_minus1(); v++) {
-        // ToDo: v vs perGroupParams[g]->mvpl().view_id(v)
         vIndex = v + sumViewsInGroups;
         m_ivSequenceParams.mvpl().mvp_view_enabled_in_atlas_flag(
             aIndex, vIndex, perGroupParams[g]->mvpl().mvp_view_enabled_in_atlas_flag(a, v));

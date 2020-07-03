@@ -34,6 +34,8 @@
 #ifndef _TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H_
 #define _TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H_
 
+#include <TMIV/MivBitstream/V3cParameterSet.h>
+
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Matrix.h>
 #include <TMIV/Common/Quaternion.h>
@@ -217,72 +219,68 @@ private:
 class MivViewParamsList {
 public:
   [[nodiscard]] auto mvp_num_views_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto mvp_atlas_count_minus1() const noexcept -> std::uint8_t;
+
+  [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx,
+                                                    std::uint16_t viewIdx) const noexcept -> bool;
+  [[nodiscard]] auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx,
+                                                     std::uint16_t viewIdx) const noexcept -> bool;
+  [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
+  [[nodiscard]] auto mvp_view_id(std::uint16_t viewIdx) const noexcept -> std::uint16_t;
   [[nodiscard]] constexpr auto mvp_intrinsic_params_equal_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_depth_quantization_params_equal_flag() const noexcept;
   [[nodiscard]] constexpr auto mvp_pruning_graph_params_present_flag() const noexcept;
-  
-  [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(const std::uint8_t atlasIdx,
-                                                    const std::uint16_t viewIdx) const noexcept
-      -> bool;
-  [[nodiscard]] auto mvp_view_complete_in_atlas_flag(const std::uint8_t atlasIdx,
-                                                     const std::uint16_t viewIdx) const noexcept
-      -> bool;
-  [[nodiscard]] constexpr auto mvp_explicit_view_id_flag() const noexcept;
-  [[nodiscard]] auto mvp_view_id(const std::uint16_t viewIdx) const noexcept -> std::uint16_t;
-  
-  [[nodiscard]] auto camera_extrinsics(const std::uint16_t viewId) const noexcept
+
+  [[nodiscard]] auto camera_extrinsics(std::uint16_t viewId) const noexcept
       -> const CameraExtrinsics &;
   [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept
       -> const CameraIntrinsics &;
-
   [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const noexcept
       -> const DepthQuantization &;
-  [[nodiscard]] auto pruning_parent(const std::uint16_t viewId) const noexcept
-      -> const PruningParent &;
+  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) const noexcept -> const PruningParent &;
 
   // Calling this function will allocate the camera extrinsics list
-  auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
-  
-  auto mvp_atlas_count_minus1(const std::uint8_t value) noexcept -> MivViewParamsList &;
-  auto mvp_view_enabled_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
-                                      const bool value) noexcept -> MivViewParamsList &;
-  auto mvp_view_complete_in_atlas_flag(const std::uint8_t atlasIdx, const std::uint16_t viewIdx,
-                                       const bool value) noexcept -> MivViewParamsList &;
-  auto mvp_explicit_view_id_flag(const bool value) noexcept -> MivViewParamsList &;
-  auto mvp_view_id(const std::uint16_t viewIdx, const std::uint16_t viewId) noexcept
-      -> MivViewParamsList &;
+  auto mvp_num_views_minus1(std::uint16_t value) noexcept -> MivViewParamsList &;
+
+  auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx,
+                                      bool value) noexcept -> MivViewParamsList &;
+  auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx,
+                                       bool value) noexcept -> MivViewParamsList &;
+  auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
+  auto mvp_view_id(std::uint16_t viewIdx, std::uint16_t viewId) noexcept -> MivViewParamsList &;
 
   // Calling this function will allocate the camera intrinsics list
-  auto mvp_intrinsic_params_equal_flag(const bool value) noexcept -> MivViewParamsList &;
+  auto mvp_intrinsic_params_equal_flag(bool value) noexcept -> MivViewParamsList &;
 
   // Calling this function will allocate the depth quantization list
-  auto mvp_depth_quantization_params_equal_flag(const bool value) noexcept -> MivViewParamsList &;
+  auto mvp_depth_quantization_params_equal_flag(bool value) noexcept -> MivViewParamsList &;
 
   // Calling this function will allocate the pruning graph list
-  auto mvp_pruning_graph_params_present_flag(const bool value) noexcept -> MivViewParamsList &;
+  auto mvp_pruning_graph_params_present_flag(bool value) noexcept -> MivViewParamsList &;
 
-  [[nodiscard]] auto camera_extrinsics(const std::uint16_t viewId) noexcept -> CameraExtrinsics &;
-  [[nodiscard]] auto camera_intrinsics(const std::uint16_t viewId = 0) noexcept
-      -> CameraIntrinsics &;
-  [[nodiscard]] auto depth_quantization(const std::uint16_t viewId = 0) noexcept
-      -> DepthQuantization &;
-  [[nodiscard]] auto pruning_parent(const std::uint16_t viewId) noexcept -> PruningParent &;
+  [[nodiscard]] auto camera_extrinsics(std::uint16_t viewId) noexcept -> CameraExtrinsics &;
+  [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
+  [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) noexcept -> DepthQuantization &;
+  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) noexcept -> PruningParent &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 
   auto operator==(const MivViewParamsList &) const noexcept -> bool;
   auto operator!=(const MivViewParamsList &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const uint8_t atlasCountMinus1)
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
       -> MivViewParamsList;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
 
 private:
-  std::uint8_t m_mvp_atlas_count_minus1{};
-  std::vector<std::vector<bool>> m_mvp_view_enabled_in_atlas_flag;
-  std::vector<std::vector<bool>> m_mvp_view_complete_in_atlas_flag;
+  struct ViewInAtlas {
+    bool enabled{};
+    std::optional<bool> complete{};
+
+    constexpr auto operator==(const ViewInAtlas &other) const noexcept;
+    constexpr auto operator!=(const ViewInAtlas &other) const noexcept;
+  };
+  std::vector<std::vector<ViewInAtlas>> m_viewInAtlas;
   bool m_mvp_explicit_view_id_flag{};
   std::vector<std::uint16_t> m_mvp_view_id;
   std::vector<CameraExtrinsics> m_camera_extrinsics;
@@ -400,10 +398,10 @@ public:
   auto operator==(const AapsMivExtension &) const noexcept -> bool;
   auto operator!=(const AapsMivExtension &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &stream, const uint8_t atlasCountMinus1)
+  static auto decodeFrom(Common::InputBitstream &stream, const V3cParameterSet &vps)
       -> AapsMivExtension;
 
-  void encodeTo(Common::OutputBitstream &stream) const;
+  void encodeTo(Common::OutputBitstream &stream, const V3cParameterSet &vps) const;
 
 private:
   bool m_aame_omaf_v1_compatible_flag{};
@@ -449,10 +447,10 @@ public:
   auto operator==(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
   auto operator!=(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const std::uint8_t atlasCountMinus1)
+  static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps)
       -> AtlasAdaptationParameterSetRBSP;
 
-  void encodeTo(std::ostream &stream) const;
+  void encodeTo(std::ostream &stream, const V3cParameterSet &vps) const;
 
 private:
   std::uint8_t m_aaps_atlas_adaptation_parameter_set_id{};

@@ -184,10 +184,10 @@ pp_parent_id[ 5 ][ 3 ]=8
 
 TEST_CASE("miv_view_params_list", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = MivViewParamsList{};
+  auto vps = V3cParameterSet{};
 
   SECTION("Example 1") {
     x.mvp_num_views_minus1(0)
-        .mvp_atlas_count_minus1(0)
         .mvp_view_enabled_in_atlas_flag(0, 0, true)
         .mvp_view_complete_in_atlas_flag(0, 0, true)
         .mvp_explicit_view_id_flag(false)
@@ -200,8 +200,8 @@ TEST_CASE("miv_view_params_list", "[Atlas Adaptation Parameter Set RBSP]") {
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
-mvp_view_enabled_in_atlas_flag[ 0 ]=[ true ]
-mvp_view_complete_in_atlas_flag[ 0 ]=[ true ]
+mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
+mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0
 ce_view_pos_y[ 0 ]=0
@@ -223,16 +223,22 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest_decodeArgs(x, 391, x.mvp_atlas_count_minus1()));
+    REQUIRE(bitCodingTest(x, 391, vps));
   }
 
   SECTION("Example 2") {
+    vps.vps_atlas_count_minus1(1);
+
     x.mvp_num_views_minus1(2)
-        .mvp_atlas_count_minus1(1)
         .mvp_view_enabled_in_atlas_flag(0, 0, true)
-        .mvp_view_enabled_in_atlas_flag(0, 1, true)
-        .mvp_view_enabled_in_atlas_flag(1, 2, true)
         .mvp_view_complete_in_atlas_flag(0, 0, true)
+        .mvp_view_enabled_in_atlas_flag(0, 1, true)
+        .mvp_view_complete_in_atlas_flag(0, 1, true)
+        .mvp_view_enabled_in_atlas_flag(0, 2, false)
+        .mvp_view_enabled_in_atlas_flag(1, 0, false)
+        .mvp_view_enabled_in_atlas_flag(1, 1, false)
+        .mvp_view_enabled_in_atlas_flag(1, 2, true)
+        .mvp_view_complete_in_atlas_flag(1, 2, false)
         .mvp_explicit_view_id_flag(true)
         .mvp_view_id(0, 0)
         .mvp_view_id(1, 2)
@@ -246,10 +252,15 @@ mvp_pruning_graph_params_present_flag=false
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
-mvp_view_enabled_in_atlas_flag[ 0 ]=[ true true false ]
-mvp_view_enabled_in_atlas_flag[ 1 ]=[ false false true ]
-mvp_view_complete_in_atlas_flag[ 0 ]=[ true false false ]
-mvp_view_complete_in_atlas_flag[ 1 ]=[ false false false ]
+mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
+mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
+mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=true
+mvp_view_complete_in_atlas_flag[ 0 ][ 1 ]=true
+mvp_view_enabled_in_atlas_flag[ 0 ][ 2 ]=false
+mvp_view_enabled_in_atlas_flag[ 1 ][ 0 ]=false
+mvp_view_enabled_in_atlas_flag[ 1 ][ 1 ]=false
+mvp_view_enabled_in_atlas_flag[ 1 ][ 2 ]=true
+mvp_view_complete_in_atlas_flag[ 1 ][ 2 ]=false
 mvp_explicit_view_id_flag=true
 mvp_view_id=[ 0 2 1 ]
 ce_view_pos_x[ 0 ]=0
@@ -287,19 +298,20 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest_decodeArgs(x, 836, x.mvp_atlas_count_minus1()));
+    REQUIRE(bitCodingTest(x, 833, vps));
   }
 }
 
 TEST_CASE("atlas_adaptation_parameter_set_rbsp", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = AtlasAdaptationParameterSetRBSP{};
+  const auto vps = V3cParameterSet{};
 
   REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=0
 aaps_log2_max_afoc_present_flag=false
 aaps_extension_present_flag=false
 )");
 
-  REQUIRE(byteCodingTest_decodeArgs(x, 1, 0));
+  REQUIRE(byteCodingTest(x, 1, vps));
 
   SECTION("Example 1") {
     x.aaps_atlas_adaptation_parameter_set_id(63)
@@ -315,9 +327,9 @@ aaps_extension_present_flag=false
         .aame_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
         .miv_view_params_list()
         .mvp_num_views_minus1(2)
-        .mvp_atlas_count_minus1(0)
         .mvp_view_enabled_in_atlas_flag(0, 0, false)
-        .mvp_view_complete_in_atlas_flag(0, 0, false)
+        .mvp_view_enabled_in_atlas_flag(0, 1, false)
+        .mvp_view_enabled_in_atlas_flag(0, 2, false)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
@@ -338,8 +350,9 @@ aaps_vpcc_camera_parameters_present_flag=false
 aame_omaf_v1_compatible_flag=false
 aame_miv_view_params_list_update_mode=VPL_INITLIST
 mvp_num_views_minus1=2
-mvp_view_enabled_in_atlas_flag[ 0 ]=[ false false false ]
-mvp_view_complete_in_atlas_flag[ 0 ]=[ false false false ]
+mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=false
+mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=false
+mvp_view_enabled_in_atlas_flag[ 0 ][ 2 ]=false
 mvp_explicit_view_id_flag=false
 ce_view_pos_x[ 0 ]=0
 ce_view_pos_y[ 0 ]=0
@@ -377,8 +390,7 @@ pp_is_root_flag[ 2 ]=true
 aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest_decodeArgs(
-        x, 103, x.aaps_miv_extension().miv_view_params_list().mvp_atlas_count_minus1()));
+    REQUIRE(byteCodingTest(x, 102, vps));
   }
 }
 

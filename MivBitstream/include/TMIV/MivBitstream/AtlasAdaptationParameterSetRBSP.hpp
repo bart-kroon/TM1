@@ -249,6 +249,14 @@ constexpr auto MivViewParamsList::mvp_pruning_graph_params_present_flag() const 
   return m_mvp_pruning_graph_params_present_flag;
 }
 
+constexpr auto MivViewParamsList::ViewInAtlas::operator==(const ViewInAtlas &other) const noexcept {
+  return enabled == other.enabled && complete == other.complete;
+}
+
+constexpr auto MivViewParamsList::ViewInAtlas::operator!=(const ViewInAtlas &other) const noexcept {
+  return !operator==(other);
+}
+
 constexpr auto AapsVpccExtension::operator==(const AapsVpccExtension & /* other */) const noexcept {
   return true;
 }

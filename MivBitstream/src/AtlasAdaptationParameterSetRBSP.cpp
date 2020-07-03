@@ -391,40 +391,26 @@ auto MivViewParamsList::mvp_num_views_minus1() const noexcept -> uint16_t {
   return uint16_t(m_camera_extrinsics.size() - 1);
 }
 
-auto MivViewParamsList::mvp_atlas_count_minus1() const noexcept -> uint8_t {
-  return m_mvp_atlas_count_minus1;
-}
-
-auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(const uint8_t atlasIdx,
-                                                       const uint16_t viewIdx) const noexcept
-    -> bool {
+auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx,
+                                                       uint16_t viewIdx) const noexcept -> bool {
+  VERIFY_MIVBITSTREAM(atlasIdx < m_viewInAtlas.size());
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
-  VERIFY_MIVBITSTREAM(atlasIdx <= mvp_atlas_count_minus1());
-  if (atlasIdx >= m_mvp_view_enabled_in_atlas_flag.size() ||
-      viewIdx >= m_mvp_view_enabled_in_atlas_flag[atlasIdx].size()) {
-    return false;
-  }
-  return m_mvp_view_enabled_in_atlas_flag[atlasIdx][viewIdx];
+  return m_viewInAtlas[atlasIdx][viewIdx].enabled;
 }
 
-auto MivViewParamsList::mvp_view_complete_in_atlas_flag(const uint8_t atlasIdx,
-                                                        const uint16_t viewIdx) const noexcept
-    -> bool {
-  VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
-  VERIFY_MIVBITSTREAM(atlasIdx <= mvp_atlas_count_minus1());
-  if (atlasIdx >= m_mvp_view_complete_in_atlas_flag.size() ||
-      viewIdx >= m_mvp_view_complete_in_atlas_flag[atlasIdx].size()) {
-    return false;
-  }
-  return m_mvp_view_complete_in_atlas_flag[atlasIdx][viewIdx];
+auto MivViewParamsList::mvp_view_complete_in_atlas_flag(uint8_t atlasIdx,
+                                                        uint16_t viewIdx) const noexcept -> bool {
+  VERIFY_MIVBITSTREAM(mvp_view_enabled_in_atlas_flag(atlasIdx, viewIdx));
+  VERIFY_MIVBITSTREAM(m_viewInAtlas[atlasIdx][viewIdx].complete.has_value());
+  return *m_viewInAtlas[atlasIdx][viewIdx].complete;
 }
 
-auto MivViewParamsList::mvp_view_id(const uint16_t viewIdx) const noexcept -> uint16_t {
+auto MivViewParamsList::mvp_view_id(uint16_t viewIdx) const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
   return m_mvp_view_id[viewIdx];
 }
 
-auto MivViewParamsList::camera_extrinsics(const uint16_t viewId) const noexcept
+auto MivViewParamsList::camera_extrinsics(uint16_t viewId) const noexcept
     -> const CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
   return m_camera_extrinsics[viewId];
@@ -448,67 +434,42 @@ auto MivViewParamsList::depth_quantization(uint16_t viewId) const noexcept
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_parent(const uint16_t viewId) const noexcept
-    -> const PruningParent & {
+auto MivViewParamsList::pruning_parent(uint16_t viewId) const noexcept -> const PruningParent & {
   VERIFY_MIVBITSTREAM(mvp_pruning_graph_params_present_flag());
   VERIFY_MIVBITSTREAM(viewId < m_pruning_parent.size());
   return m_pruning_parent[viewId];
 }
 
-auto MivViewParamsList::mvp_num_views_minus1(const uint16_t value) noexcept -> MivViewParamsList & {
+auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) noexcept -> MivViewParamsList & {
+  VERIFY_MIVBITSTREAM(m_viewInAtlas.empty()); // First set mvp_num_views_minus1
   m_camera_extrinsics.resize(value + 1);
   return *this;
 }
 
-auto MivViewParamsList::mvp_atlas_count_minus1(const uint8_t value) noexcept
-    -> MivViewParamsList & {
-  m_mvp_atlas_count_minus1 = value;
-  return *this;
-}
-
-auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(const uint8_t atlasIdx,
-                                                       const uint16_t viewIdx,
-                                                       const bool value) noexcept
-    -> MivViewParamsList & {
-  if (m_mvp_view_enabled_in_atlas_flag.size() < mvp_atlas_count_minus1() + 1) {
-    m_mvp_view_enabled_in_atlas_flag.resize(mvp_atlas_count_minus1() + 1);
-  }
-  if (m_mvp_view_enabled_in_atlas_flag[atlasIdx].size() < mvp_num_views_minus1() + 1) {
-    for (uint8_t a = 0; a <= mvp_atlas_count_minus1(); a++) {
-      m_mvp_view_enabled_in_atlas_flag[a].resize(mvp_num_views_minus1() + 1);
-    }
-  }
-  VERIFY_MIVBITSTREAM(atlasIdx <= mvp_atlas_count_minus1());
+auto MivViewParamsList::mvp_view_enabled_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx,
+                                                       bool value) noexcept -> MivViewParamsList & {
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
-  m_mvp_view_enabled_in_atlas_flag[atlasIdx][viewIdx] = value;
+  while (atlasIdx >= m_viewInAtlas.size()) {
+    m_viewInAtlas.emplace_back(mvp_num_views_minus1() + 1);
+  }
+  m_viewInAtlas[atlasIdx][viewIdx].enabled = value;
   return *this;
 }
 
-auto MivViewParamsList::mvp_view_complete_in_atlas_flag(const uint8_t atlasIdx,
-                                                        const uint16_t viewIdx,
-                                                        const bool value) noexcept
+auto MivViewParamsList::mvp_view_complete_in_atlas_flag(uint8_t atlasIdx, uint16_t viewIdx,
+                                                        bool value) noexcept
     -> MivViewParamsList & {
-  if (m_mvp_view_complete_in_atlas_flag.size() < mvp_atlas_count_minus1() + 1) {
-    m_mvp_view_complete_in_atlas_flag.resize(mvp_atlas_count_minus1() + 1);
-  }
-  if (m_mvp_view_complete_in_atlas_flag[atlasIdx].size() < mvp_num_views_minus1() + 1) {
-    for (uint8_t a = 0; a <= mvp_atlas_count_minus1(); a++) {
-      m_mvp_view_complete_in_atlas_flag[a].resize(mvp_num_views_minus1() + 1);
-    }
-  }
-  VERIFY_MIVBITSTREAM(atlasIdx <= mvp_atlas_count_minus1());
-  VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());
-  m_mvp_view_complete_in_atlas_flag[atlasIdx][viewIdx] = value;
+  VERIFY_MIVBITSTREAM(mvp_view_enabled_in_atlas_flag(atlasIdx, viewIdx));
+  m_viewInAtlas[atlasIdx][viewIdx].complete = value;
   return *this;
 }
 
-auto MivViewParamsList::mvp_explicit_view_id_flag(const bool value) noexcept
-    -> MivViewParamsList & {
+auto MivViewParamsList::mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList & {
   m_mvp_explicit_view_id_flag = value;
   return *this;
 }
 
-auto MivViewParamsList::mvp_view_id(const uint16_t viewIdx, const uint16_t viewId) noexcept
+auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) noexcept
     -> MivViewParamsList & {
   VERIFY_MIVBITSTREAM(mvp_explicit_view_id_flag());
   if (m_mvp_view_id.size() < mvp_num_views_minus1() + 1) {
@@ -519,43 +480,43 @@ auto MivViewParamsList::mvp_view_id(const uint16_t viewIdx, const uint16_t viewI
   return *this;
 }
 
-auto MivViewParamsList::mvp_intrinsic_params_equal_flag(const bool value) noexcept
+auto MivViewParamsList::mvp_intrinsic_params_equal_flag(bool value) noexcept
     -> MivViewParamsList & {
   m_mvp_intrinsic_params_equal_flag = value;
   m_camera_intrinsics.resize(value ? 1U : m_camera_extrinsics.size());
   return *this;
 }
 
-auto MivViewParamsList::mvp_depth_quantization_params_equal_flag(const bool value) noexcept
+auto MivViewParamsList::mvp_depth_quantization_params_equal_flag(bool value) noexcept
     -> MivViewParamsList & {
   m_mvp_depth_quantization_params_equal_flag = value;
   m_depth_quantization.resize(value ? 1U : m_camera_extrinsics.size());
   return *this;
 }
 
-auto MivViewParamsList::mvp_pruning_graph_params_present_flag(const bool value) noexcept
+auto MivViewParamsList::mvp_pruning_graph_params_present_flag(bool value) noexcept
     -> MivViewParamsList & {
   m_mvp_pruning_graph_params_present_flag = value;
   m_pruning_parent.resize(value ? m_camera_extrinsics.size() : 0U);
   return *this;
 }
 
-auto MivViewParamsList::camera_extrinsics(const uint16_t viewId) noexcept -> CameraExtrinsics & {
+auto MivViewParamsList::camera_extrinsics(uint16_t viewId) noexcept -> CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(viewId < m_camera_extrinsics.size());
   return m_camera_extrinsics[viewId];
 }
 
-auto MivViewParamsList::camera_intrinsics(const uint16_t viewId) noexcept -> CameraIntrinsics & {
+auto MivViewParamsList::camera_intrinsics(uint16_t viewId) noexcept -> CameraIntrinsics & {
   VERIFY_MIVBITSTREAM(viewId < m_camera_intrinsics.size());
   return m_camera_intrinsics[viewId];
 }
 
-auto MivViewParamsList::depth_quantization(const uint16_t viewId) noexcept -> DepthQuantization & {
+auto MivViewParamsList::depth_quantization(uint16_t viewId) noexcept -> DepthQuantization & {
   VERIFY_MIVBITSTREAM(viewId < m_depth_quantization.size());
   return m_depth_quantization[viewId];
 }
 
-auto MivViewParamsList::pruning_parent(const uint16_t viewId) noexcept -> PruningParent & {
+auto MivViewParamsList::pruning_parent(uint16_t viewId) noexcept -> PruningParent & {
   VERIFY_MIVBITSTREAM(viewId < m_pruning_parent.size());
   return m_pruning_parent[viewId];
 }
@@ -563,20 +524,15 @@ auto MivViewParamsList::pruning_parent(const uint16_t viewId) noexcept -> Prunin
 auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
 
-  for (uint8_t a = 0; a <= x.mvp_atlas_count_minus1(); ++a) {
-    stream << "mvp_view_enabled_in_atlas_flag[ " << (int)a << " ]=[ ";
+  for (size_t a = 0; a < x.m_viewInAtlas.size(); ++a) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      stream << boolalpha << x.mvp_view_enabled_in_atlas_flag(a, v) << " ";
+      stream << "mvp_view_enabled_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
+             << x.mvp_view_enabled_in_atlas_flag(a, v) << '\n';
+      if (x.mvp_view_enabled_in_atlas_flag(a, v)) {
+        stream << "mvp_view_complete_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
+               << x.mvp_view_complete_in_atlas_flag(a, v) << '\n';
+      }
     }
-    stream << "]\n";
-  }
-
-  for (uint8_t a = 0; a <= x.mvp_atlas_count_minus1(); ++a) {
-    stream << "mvp_view_complete_in_atlas_flag[ " << (int)a << " ]=[ ";
-    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      stream << boolalpha << x.mvp_view_complete_in_atlas_flag(a, v) << " ";
-    }
-    stream << "]\n";
   }
 
   stream << "mvp_explicit_view_id_flag=" << boolalpha << x.mvp_explicit_view_id_flag() << '\n';
@@ -623,9 +579,7 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
 }
 
 auto MivViewParamsList::operator==(const MivViewParamsList &other) const noexcept -> bool {
-  return m_mvp_atlas_count_minus1 == other.m_mvp_atlas_count_minus1 &&
-         m_mvp_view_enabled_in_atlas_flag == other.m_mvp_view_enabled_in_atlas_flag &&
-         m_mvp_view_complete_in_atlas_flag == other.m_mvp_view_complete_in_atlas_flag &&
+  return m_viewInAtlas == other.m_viewInAtlas &&
          m_mvp_explicit_view_id_flag == other.m_mvp_explicit_view_id_flag &&
          m_mvp_view_id == other.m_mvp_view_id && m_camera_extrinsics == other.m_camera_extrinsics &&
          m_mvp_intrinsic_params_equal_flag == other.m_mvp_intrinsic_params_equal_flag &&
@@ -641,21 +595,17 @@ auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcep
   return !operator==(other);
 }
 
-auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const uint8_t atlasCountMinus1)
+auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
     -> MivViewParamsList {
   auto x = MivViewParamsList{};
 
   x.mvp_num_views_minus1(bitstream.getUint16());
-  x.mvp_atlas_count_minus1(atlasCountMinus1);
-  for (uint8_t a = 0; a <= atlasCountMinus1; ++a) {
+  for (uint8_t a = 0; a <= vps.vps_atlas_count_minus1(); ++a) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       x.mvp_view_enabled_in_atlas_flag(a, v, bitstream.getFlag());
-    }
-  }
-
-  for (uint8_t a = 0; a <= atlasCountMinus1; ++a) {
-    for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.mvp_view_complete_in_atlas_flag(a, v, bitstream.getFlag());
+      if (x.mvp_view_enabled_in_atlas_flag(a, v)) {
+        x.mvp_view_complete_in_atlas_flag(a, v, bitstream.getFlag());
+      }
     }
   }
 
@@ -700,18 +650,15 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const uint8_t atla
   return x;
 }
 
-void MivViewParamsList::encodeTo(OutputBitstream &bitstream) const {
+void MivViewParamsList::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.putUint16(mvp_num_views_minus1());
 
-  for (uint8_t a = 0; a <= mvp_atlas_count_minus1(); ++a) {
+  for (uint8_t a = 0; a <= vps.vps_atlas_count_minus1(); ++a) {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
       bitstream.putFlag(mvp_view_enabled_in_atlas_flag(a, v));
-    }
-  }
-
-  for (uint8_t a = 0; a <= mvp_atlas_count_minus1(); ++a) {
-    for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      bitstream.putFlag(mvp_view_complete_in_atlas_flag(a, v));
+      if (mvp_view_enabled_in_atlas_flag(a, v)) {
+        bitstream.putFlag(mvp_view_complete_in_atlas_flag(a, v));
+      }
     }
   }
 
@@ -870,7 +817,7 @@ auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept 
   return !operator==(other);
 }
 
-auto AapsMivExtension::decodeFrom(InputBitstream &bitstream, const uint8_t atlasCountMinus1)
+auto AapsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
     -> AapsMivExtension {
   auto x = AapsMivExtension{};
   x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
@@ -878,7 +825,7 @@ auto AapsMivExtension::decodeFrom(InputBitstream &bitstream, const uint8_t atlas
 
   switch (x.aame_miv_view_params_list_update_mode()) {
   case MvpUpdateMode::VPL_INITLIST:
-    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, atlasCountMinus1);
+    x.miv_view_params_list() = MivViewParamsList::decodeFrom(bitstream, vps);
     break;
   case MvpUpdateMode::VPL_UPD_EXT:
     x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
@@ -894,13 +841,13 @@ auto AapsMivExtension::decodeFrom(InputBitstream &bitstream, const uint8_t atlas
   return x;
 }
 
-void AapsMivExtension::encodeTo(OutputBitstream &bitstream) const {
+void AapsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.putFlag(aame_omaf_v1_compatible_flag());
   bitstream.writeBits(aame_miv_view_params_list_update_mode(), 2);
 
   switch (aame_miv_view_params_list_update_mode()) {
   case MvpUpdateMode::VPL_INITLIST:
-    miv_view_params_list().encodeTo(bitstream);
+    miv_view_params_list().encodeTo(bitstream, vps);
     break;
   case MvpUpdateMode::VPL_UPD_EXT:
     miv_view_params_update_extrinsics().encodeTo(bitstream);
@@ -1060,7 +1007,7 @@ auto AtlasAdaptationParameterSetRBSP::operator!=(
   return !operator==(other);
 }
 
-auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const uint8_t atlasCountMinus1)
+auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const V3cParameterSet &vps)
     -> AtlasAdaptationParameterSetRBSP {
   InputBitstream bitstream{stream};
 
@@ -1083,7 +1030,7 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const uint8_t 
     x.aaps_vpcc_extension(AapsVpccExtension::decodeFrom(bitstream));
   }
   if (x.aaps_miv_extension_flag()) {
-    x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream, atlasCountMinus1));
+    x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream, vps));
   }
   if (x.aaps_extension_6bits() != 0) {
     auto aapsExtensionData = vector<bool>{};
@@ -1097,7 +1044,7 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const uint8_t 
   return x;
 }
 
-void AtlasAdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
+void AtlasAdaptationParameterSetRBSP::encodeTo(ostream &stream, const V3cParameterSet &vps) const {
   OutputBitstream bitstream{stream};
 
   bitstream.putUExpGolomb(aaps_atlas_adaptation_parameter_set_id());
@@ -1117,7 +1064,7 @@ void AtlasAdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
     aaps_vpcc_extension().encodeTo(bitstream);
   }
   if (aaps_miv_extension_flag()) {
-    aaps_miv_extension().encodeTo(bitstream);
+    aaps_miv_extension().encodeTo(bitstream, vps);
   }
   if (aaps_extension_6bits() != 0) {
     for (auto bit : aapsExtensionData()) {

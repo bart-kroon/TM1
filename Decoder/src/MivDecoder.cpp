@@ -360,7 +360,8 @@ void MivDecoder::outputAttrVideoData(AccessUnit &au) {
   m_totalAttrVideoDecodingTime += dt;
 }
 
-void MivDecoder::decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb, const uint8_t atlasCountMinus1) {
+void MivDecoder::decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb,
+                           const uint8_t atlasCountMinus1) {
   for (const auto &nu : asb.nal_units()) {
     decodeNalUnit(vuh, nu, atlasCountMinus1);
   }
@@ -641,7 +642,8 @@ void MivDecoder::parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu) {
   decodeAfps(vuh, nu.nal_unit_header(), AtlasFrameParameterSetRBSP::decodeFrom(stream, aspsV(vuh)));
 }
 
-void MivDecoder::parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu, const uint8_t atlasCountMinus1) {
+void MivDecoder::parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu,
+                           const uint8_t atlasCountMinus1) {
   istringstream stream{nu.rbsp()};
   decodeAaps(vuh, nu.nal_unit_header(),
              AtlasAdaptationParameterSetRBSP::decodeFrom(stream, atlasCountMinus1));

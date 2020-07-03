@@ -57,8 +57,8 @@ auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
   auto perGroupIvSequenceParams = vector<const IvSequenceParams *>(numGroups(), nullptr);
 
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    perGroupIvSequenceParams[groupId] = &m_encoders[groupId].prepareSequence(
-        splitSequenceParams(groupId, ivSequenceParams));
+    perGroupIvSequenceParams[groupId] =
+        &m_encoders[groupId].prepareSequence(splitSequenceParams(groupId, ivSequenceParams));
   }
 
   return mergeSequenceParams(perGroupIvSequenceParams);
@@ -294,7 +294,8 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
   }
 
   // Merge MVPL across groups
-  m_ivSequenceParams.mvpl().mvp_num_views_minus1(uint16_t(m_ivSequenceParams.viewParamsList.size() - 1));
+  m_ivSequenceParams.mvpl().mvp_num_views_minus1(
+      uint16_t(m_ivSequenceParams.viewParamsList.size() - 1));
   m_ivSequenceParams.mvpl().mvp_atlas_count_minus1(m_ivSequenceParams.vps.vps_atlas_count_minus1());
   int aIndex = 0, vIndex = 0, sumViewsInGroups = 0;
   for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
@@ -309,7 +310,7 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
       }
       aIndex++;
     }
-    sumViewsInGroups = sumViewsInGroups+perGroupParams[g]->mvpl().mvp_num_views_minus1() + 1;
+    sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl().mvp_num_views_minus1() + 1;
   }
   m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag(false);
   for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
@@ -323,7 +324,7 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
     for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
       for (uint16_t v = 0; v <= perGroupParams[g]->mvpl().mvp_num_views_minus1(); v++) {
         m_ivSequenceParams.mvpl().mvp_view_id(vIndex++, perGroupParams[g]->mvpl().mvp_view_id(v) +
-                                                            (uint16_t) sumViewsInGroups);
+                                                            (uint16_t)sumViewsInGroups);
       }
       sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl().mvp_num_views_minus1() + 1;
     }

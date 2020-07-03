@@ -136,8 +136,10 @@ auto operator<<(ostream &stream, const AspsMivExtension &x) -> ostream & {
   stream << "asme_depth_occ_map_threshold_flag=" << boolalpha << x.asme_depth_occ_threshold_flag()
          << '\n';
   if (x.m_asme_geometry_scale_factor_x_minus1 || x.m_asme_geometry_scale_factor_y_minus1) {
-    stream << "asme_geometry_scale_factor_x_minus1=" << x.asme_geometry_scale_factor_x_minus1() << '\n';
-    stream << "asme_geometry_scale_factor_y_minus1=" << x.asme_geometry_scale_factor_y_minus1() << '\n';
+    stream << "asme_geometry_scale_factor_x_minus1=" << x.asme_geometry_scale_factor_x_minus1()
+           << '\n';
+    stream << "asme_geometry_scale_factor_y_minus1=" << x.asme_geometry_scale_factor_y_minus1()
+           << '\n';
   }
   return stream;
 }

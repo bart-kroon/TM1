@@ -257,7 +257,7 @@ public:
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(const std::uint16_t value) noexcept -> MivViewParamsList &;
-  
+
   // Calling this function will set the m_atlasCountMinus1
   auto mvp_atlas_count_minus1(const std::uint8_t value) noexcept -> MivViewParamsList &;
 
@@ -424,7 +424,8 @@ public:
   auto operator==(const AapsMivExtension &) const noexcept -> bool;
   auto operator!=(const AapsMivExtension &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &stream, const uint8_t atlasCountMinus1) -> AapsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &stream, const uint8_t atlasCountMinus1)
+      -> AapsMivExtension;
 
   void encodeTo(Common::OutputBitstream &stream) const;
 

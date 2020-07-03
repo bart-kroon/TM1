@@ -188,8 +188,8 @@ TEST_CASE("miv_view_params_list", "[Atlas Adaptation Parameter Set RBSP]") {
   SECTION("Example 1") {
     x.mvp_num_views_minus1(0)
         .mvp_atlas_count_minus1(0)
-        .mvp_view_enabled_in_atlas_flag(0,0,true)
-        .mvp_view_complete_in_atlas_flag(0,0,true)
+        .mvp_view_enabled_in_atlas_flag(0, 0, true)
+        .mvp_view_complete_in_atlas_flag(0, 0, true)
         .mvp_explicit_view_id_flag(false)
         .mvp_intrinsic_params_equal_flag(false)
         .mvp_depth_quantization_params_equal_flag(false)
@@ -237,7 +237,7 @@ mvp_pruning_graph_params_present_flag=false
         .mvp_view_id(0, 0)
         .mvp_view_id(1, 2)
         .mvp_view_id(2, 1)
-		.mvp_intrinsic_params_equal_flag(true)
+        .mvp_intrinsic_params_equal_flag(true)
         .mvp_depth_quantization_params_equal_flag(true)
         .mvp_pruning_graph_params_present_flag(true);
     x.camera_intrinsics(0)
@@ -377,7 +377,8 @@ pp_is_root_flag[ 2 ]=true
 aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest_decodeArgs(x, 103, x.aaps_miv_extension().miv_view_params_list().mvp_atlas_count_minus1()));
+    REQUIRE(byteCodingTest_decodeArgs(
+        x, 103, x.aaps_miv_extension().miv_view_params_list().mvp_atlas_count_minus1()));
   }
 }
 

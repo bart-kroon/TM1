@@ -441,7 +441,7 @@ auto MivViewParamsList::pruning_parent(uint16_t viewId) const noexcept -> const 
 }
 
 auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) noexcept -> MivViewParamsList & {
-  VERIFY_MIVBITSTREAM(m_viewInAtlas.empty()); // First set mvp_num_views_minus1
+  m_viewInAtlas.clear();
   m_camera_extrinsics.resize(value + 1);
   return *this;
 }
@@ -527,10 +527,10 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
   for (size_t a = 0; a < x.m_viewInAtlas.size(); ++a) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       stream << "mvp_view_enabled_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
-             << x.mvp_view_enabled_in_atlas_flag(a, v) << '\n';
-      if (x.mvp_view_enabled_in_atlas_flag(a, v)) {
+             << x.mvp_view_enabled_in_atlas_flag(uint8_t(a), v) << '\n';
+      if (x.mvp_view_enabled_in_atlas_flag(uint8_t(a), v)) {
         stream << "mvp_view_complete_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
-               << x.mvp_view_complete_in_atlas_flag(a, v) << '\n';
+               << x.mvp_view_complete_in_atlas_flag(uint8_t(a), v) << '\n';
       }
     }
   }

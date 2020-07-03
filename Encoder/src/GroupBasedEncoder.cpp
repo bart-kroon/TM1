@@ -298,7 +298,7 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
       uint16_t(m_ivSequenceParams.viewParamsList.size() - 1));
   m_ivSequenceParams.mvpl().mvp_atlas_count_minus1(m_ivSequenceParams.vps.vps_atlas_count_minus1());
   int aIndex = 0, vIndex = 0, sumViewsInGroups = 0;
-  for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
+  for (unsigned g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
     for (uint8_t a = 0; a <= perGroupParams[g]->vps.vps_atlas_count_minus1(); a++) {
       for (uint16_t v = 0; v <= perGroupParams[g]->mvpl().mvp_num_views_minus1(); v++) {
         vIndex = v + sumViewsInGroups;
@@ -312,7 +312,7 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
     sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl().mvp_num_views_minus1() + 1;
   }
   m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag(false);
-  for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
+  for (unsigned g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
     if (perGroupParams[g]->mvpl().mvp_explicit_view_id_flag()) {
       m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag(true);
     }
@@ -320,7 +320,7 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
   if (m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag()) {
     int vIndex = 0;
     sumViewsInGroups = 0;
-    for (uint8_t g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
+    for (unsigned g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
       for (uint16_t v = 0; v <= perGroupParams[g]->mvpl().mvp_num_views_minus1(); v++) {
         m_ivSequenceParams.mvpl().mvp_view_id(vIndex++, perGroupParams[g]->mvpl().mvp_view_id(v) +
                                                             (uint16_t)sumViewsInGroups);

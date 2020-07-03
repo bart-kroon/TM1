@@ -62,7 +62,7 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
   // Update views per atlas info
- // TODO(BK): Extract function
+  // TODO(BK): Extract function
   m_ivs.mvpl().mvp_num_views_minus1(uint16_t(m_isBasicView.size() - 1));
   m_ivs.mvpl().mvp_atlas_count_minus1(m_ivs.vps.vps_atlas_count_minus1());
   for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a) {

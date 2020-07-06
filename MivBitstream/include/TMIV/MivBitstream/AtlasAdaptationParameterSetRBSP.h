@@ -232,10 +232,17 @@ public:
 
   [[nodiscard]] auto camera_extrinsics(std::uint16_t viewId) const noexcept
       -> const CameraExtrinsics &;
+  
+  // Return camera intrinsics for the specified view ID. The
+  // mvp_intrinsic_params_equal_flag() case is handled for convenience.
   [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) const noexcept
       -> const CameraIntrinsics &;
+  
+  // Return depth quantization for the specified view ID. The
+  // mvp_depth_quantization_params_equal_flag() case is handled for convenience.
   [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const noexcept
       -> const DepthQuantization &;
+  
   [[nodiscard]] auto pruning_parent(std::uint16_t viewId) const noexcept -> const PruningParent &;
 
   // Calling this function will allocate the camera extrinsics list

@@ -211,7 +211,7 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
   }
 
   x.ath_atlas_frm_order_cnt_lsb(
-      bitstream.readBits<uint8_t>(asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
+      bitstream.readBits<uint16_t>(asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
 
   if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {
     x.ath_ref_atlas_frame_list_sps_flag(bitstream.getFlag());

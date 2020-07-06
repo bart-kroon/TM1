@@ -38,9 +38,23 @@ using namespace TMIV::Common;
 
 namespace TMIV::Encoder {
 auto Encoder::popAtlas() -> MVD10Frame {
+  incrementFoc();
+
   auto atlas = m_geometryDownscaler.transformFrame(
       m_depthOccupancy->transformAtlases(m_videoFrameBuffer.front()));
   m_videoFrameBuffer.pop_front();
   return atlas;
+}
+
+void Encoder::incrementFoc() {
+  const auto &atlas0 = m_ivau.atlas.front();
+  const auto log2FocLsb = atlas0.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U;
+  auto focLsb = atlas0.ath.ath_atlas_frm_order_cnt_lsb();
+  if (++focLsb >> log2FocLsb == 1U) {
+    focLsb = 0;
+  }
+  for (auto &atlas : m_ivau.atlas) {
+    atlas.ath.ath_atlas_frm_order_cnt_lsb(focLsb);
+  }
 }
 } // namespace TMIV::Encoder

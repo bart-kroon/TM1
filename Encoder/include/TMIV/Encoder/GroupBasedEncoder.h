@@ -53,7 +53,7 @@ public:
       -> const MivBitstream::IvSequenceParams & override;
 
   // Let each per-group encoder prepare the access unit
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) override;
+  void prepareAccessUnit() override;
 
   // Push frame to each per-group encoder
   void pushFrame(Common::MVD16Frame views) override;

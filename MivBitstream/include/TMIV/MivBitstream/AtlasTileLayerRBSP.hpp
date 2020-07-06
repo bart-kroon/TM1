@@ -92,7 +92,7 @@ constexpr auto AtlasTileHeader::ath_atlas_output_flag(const bool value) noexcept
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb(const std::uint16_t value) noexcept
     -> auto & {
   m_ath_atlas_frm_order_cnt_lsb = value;
   return *this;

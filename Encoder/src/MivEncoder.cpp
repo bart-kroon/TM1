@@ -33,6 +33,8 @@
 
 #include <TMIV/Encoder/MivEncoder.h>
 
+#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
+
 #include <TMIV/MivBitstream/verify.h>
 
 #include <iostream>
@@ -58,8 +60,7 @@ void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams)
   writeV3cUnit(VuhUnitType::V3C_AD, specialAtlasId, specialAtlasSubBitstream());
 }
 
-void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
-                                         int intraPeriodFrameCount) {
+void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
   m_ivau = ivAccessUnitParams;
 
   if (m_writeNonAcl) {
@@ -69,7 +70,7 @@ void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitP
   }
 
   for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
-    writeV3cUnit(VuhUnitType::V3C_AD, vai, aclAtlasSubBitstream(vai, intraPeriodFrameCount));
+    writeV3cUnit(VuhUnitType::V3C_AD, vai, aclAtlasSubBitstream(vai));
   }
 
   m_writeNonAcl = false;
@@ -81,7 +82,6 @@ const auto nuhAsps = NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1};
 const auto nuhAfps = NalUnitHeader{NalUnitType::NAL_AFPS, 0, 1};
 const auto nuhIdr = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
 const auto nuhCra = NalUnitHeader{NalUnitType::NAL_CRA, 0, 1};
-const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP_N, 0, 2};
 } // namespace
 
 auto MivEncoder::specialAtlasSubBitstream() -> AtlasSubBitstream {
@@ -104,8 +104,7 @@ auto MivEncoder::nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream 
   return asb;
 }
 
-auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount)
-    -> AtlasSubBitstream {
+auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
   auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
@@ -117,10 +116,6 @@ auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCoun
 
   const auto nuh = m_writeNonAcl ? nuhIdr : nuhCra;
   writeNalUnit(asb, nuh, atlasTileGroupLayer(vai), vuh, m_ivs.vps, aspsV, afpsV);
-
-  for (int frameId = 1; frameId < intraPeriodFrameCount; ++frameId) {
-    writeNalUnit(asb, nuhSkip, skipAtlasTileGroupLayer(), vuh, m_ivs.vps, aspsV, afpsV);
-  }
 
   return asb;
 }
@@ -177,13 +172,6 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
   }
 
   return AtlasTileLayerRBSP{aau.ath, AtlasTileDataUnit{patchData}};
-}
-
-auto MivEncoder::skipAtlasTileGroupLayer() -> AtlasTileLayerRBSP {
-  auto ath = AtlasTileHeader{};
-  ath.ath_type(AthType::SKIP_TILE).ath_ref_atlas_frame_list_sps_flag(true);
-
-  return AtlasTileLayerRBSP{ath};
 }
 
 template <typename Payload>

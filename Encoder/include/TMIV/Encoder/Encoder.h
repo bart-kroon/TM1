@@ -59,7 +59,7 @@ public:
 
   auto prepareSequence(MivBitstream::IvSequenceParams sourceIvs)
       -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams sourceIvau) override;
+  void prepareAccessUnit() override;
   void pushFrame(Common::MVD16Frame sourceViews) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
@@ -73,6 +73,7 @@ private: // Encoder_prepareSequence.cpp
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   auto haveTexture() const -> bool;
   void enableOccupancyPerView();
+  void prepareIvau();
 
 private: // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();
@@ -92,11 +93,13 @@ private: // Encoder_pushFrame.cpp
 
 private: // Encoder_completeAccessUnit.cpp
   void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
-  void completeIvau();
   void constructVideoFrames();
   void writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &atlas,
                          int frameId);
+
+private: // Encoder_popFrame.cpp
+  void incrementFoc();
 
   // Encoder sub-components
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
@@ -107,6 +110,7 @@ private: // Encoder_completeAccessUnit.cpp
   GeometryDownscaler m_geometryDownscaler;
 
   // Encoder parameters
+  int m_intraPeriod{};
   int m_blockSize{};
   double m_maxBlockRate{};
   int m_maxBlocksPerAtlas{};

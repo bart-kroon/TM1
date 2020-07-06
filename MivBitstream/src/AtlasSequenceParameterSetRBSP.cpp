@@ -136,14 +136,16 @@ auto operator<<(ostream &stream, const AspsMivExtension &x) -> ostream & {
   stream << "asme_depth_occ_map_threshold_flag=" << boolalpha << x.asme_depth_occ_threshold_flag()
          << '\n';
   if (x.m_asme_geometry_scale_factor_x_minus1 || x.m_asme_geometry_scale_factor_y_minus1) {
-    stream << "asme_geometry_scale_factor_x_minus1=" << x.asme_geometry_scale_factor_x_minus1() << '\n';
-    stream << "asme_geometry_scale_factor_y_minus1=" << x.asme_geometry_scale_factor_y_minus1() << '\n';
+    stream << "asme_geometry_scale_factor_x_minus1=" << x.asme_geometry_scale_factor_x_minus1()
+           << '\n';
+    stream << "asme_geometry_scale_factor_y_minus1=" << x.asme_geometry_scale_factor_y_minus1()
+           << '\n';
   }
   return stream;
 }
 
-auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                  const V3cParameterSet &vps) -> AspsMivExtension {
+auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+    -> AspsMivExtension {
   auto x = AspsMivExtension{};
   x.asme_group_id(bitstream.getUVar<unsigned>(vps.vps_miv_extension().vme_num_groups_minus1() + 1));
   x.asme_auxiliary_atlas_flag(bitstream.getFlag());
@@ -155,8 +157,7 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader
   return x;
 }
 
-void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                const V3cParameterSet &vps) const {
+void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.putUVar(asme_group_id(), vps.vps_miv_extension().vme_num_groups_minus1() + 1);
   bitstream.putFlag(asme_auxiliary_atlas_flag());
   bitstream.putFlag(asme_depth_occ_threshold_flag());
@@ -473,7 +474,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const V3cUnitHea
     x.asps_vpcc_extension() = AspsVpccExtension::decodeFrom(bitstream, x);
   }
   if (x.asps_miv_extension_flag()) {
-    x.asps_miv_extension() = AspsMivExtension::decodeFrom(bitstream, vuh, vps);
+    x.asps_miv_extension() = AspsMivExtension::decodeFrom(bitstream, vps);
   }
   if (x.asps_extension_6bits() != 0) {
     auto aspsExtensionData = vector<bool>{};
@@ -561,7 +562,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const V3cUnitHeade
     asps_vpcc_extension().encodeTo(bitstream, *this);
   }
   if (asps_miv_extension_flag()) {
-    asps_miv_extension().encodeTo(bitstream, vuh, vps);
+    asps_miv_extension().encodeTo(bitstream, vps);
   }
   if (asps_extension_6bits() != 0) {
     for (auto bit : aspsExtensionData()) {

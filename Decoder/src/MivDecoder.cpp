@@ -642,7 +642,8 @@ void MivDecoder::parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu) {
 
 void MivDecoder::parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
-  decodeAaps(vuh, nu.nal_unit_header(), AtlasAdaptationParameterSetRBSP::decodeFrom(stream));
+  decodeAaps(vuh, nu.nal_unit_header(),
+             AtlasAdaptationParameterSetRBSP::decodeFrom(stream, vps(vuh)));
 }
 
 void MivDecoder::parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu) {

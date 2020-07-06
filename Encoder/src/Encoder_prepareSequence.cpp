@@ -61,6 +61,21 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
   m_ivs.frameRate = m_transportIvs.frameRate;
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
+  // Update views per atlas info
+  // TODO(BK): Extract function
+  // TODO(BK): Update or set after packing to be more useful
+  m_ivs.mvpl().mvp_num_views_minus1(uint16_t(m_isBasicView.size() - 1));
+  for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a) {
+    for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
+      m_ivs.mvpl().mvp_view_enabled_in_atlas_flag(a, v, true);
+      m_ivs.mvpl().mvp_view_complete_in_atlas_flag(a, v, m_isBasicView[v]);
+    }
+  }
+  m_ivs.mvpl().mvp_explicit_view_id_flag(true);
+  for (uint16_t v = 0; v <= m_ivs.mvpl().mvp_num_views_minus1(); ++v) {
+    m_ivs.mvpl().mvp_view_id(v, v);
+  }
+
   // Register pruning relation
   m_pruner->registerPruningRelation(m_ivs, m_isBasicView);
 

@@ -121,11 +121,10 @@ public:
   constexpr auto operator==(const AspsMivExtension &other) const noexcept;
   constexpr auto operator!=(const AspsMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                         const V3cParameterSet &vps) -> AspsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+      -> AspsMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
 
 private:
   unsigned m_asme_group_id{};

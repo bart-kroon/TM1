@@ -80,7 +80,6 @@ public:
           m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
-
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
 

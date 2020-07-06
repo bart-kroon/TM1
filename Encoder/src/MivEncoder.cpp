@@ -87,7 +87,7 @@ const auto nuhSkip = NalUnitHeader{NalUnitType::NAL_SKIP_N, 0, 2};
 auto MivEncoder::specialAtlasSubBitstream() -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
   m_ivs.updateMvpl();
-  writeNalUnit(asb, nuhAps, m_ivs.aaps);
+  writeNalUnit(asb, nuhAps, m_ivs.aaps, m_ivs.vps);
   return asb;
 }
 

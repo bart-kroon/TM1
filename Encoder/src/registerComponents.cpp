@@ -41,7 +41,6 @@
 #include <TMIV/Pruner/HierarchicalPruner.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>
 #include <TMIV/ViewOptimizer/NoViewOptimizer.h>
-#include <TMIV/ViewOptimizer/ViewReducer.h>
 
 namespace TMIV::Encoder {
 void registerComponents() {
@@ -69,6 +68,5 @@ void registerComponents() {
   auto &viewOptimizers = Factory<ViewOptimizer::IViewOptimizer>::getInstance();
   viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
   viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
-  viewOptimizers.registerAs<ViewOptimizer::ViewReducer>("ViewReducer");
 }
 } // namespace TMIV::Encoder

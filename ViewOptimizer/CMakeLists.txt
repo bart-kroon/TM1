@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(ViewOptimizerLib
-    "src/ViewReducer.cpp"
     "src/AbstractViewSelector.cpp"
     "src/BasicViewAllocator.cpp"
     "src/KMedoidsCost.cpp"
     "include/TMIV/ViewOptimizer/IViewOptimizer.h"
-    "include/TMIV/ViewOptimizer/ViewReducer.h"
     "include/TMIV/ViewOptimizer/AbstractViewSelector.h"
     "include/TMIV/ViewOptimizer/BasicViewAllocator.h"
     "include/TMIV/ViewOptimizer/KMedoidsCost.h"

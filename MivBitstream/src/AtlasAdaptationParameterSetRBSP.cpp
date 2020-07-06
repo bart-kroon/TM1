@@ -441,8 +441,10 @@ auto MivViewParamsList::pruning_parent(uint16_t viewId) const noexcept -> const 
 }
 
 auto MivViewParamsList::mvp_num_views_minus1(uint16_t value) noexcept -> MivViewParamsList & {
-  m_viewInAtlas.clear();
-  m_camera_extrinsics.resize(value + 1);
+  for (auto &x : m_viewInAtlas) {
+    x.resize(size_t(value) + 1);
+  }
+  m_camera_extrinsics.resize(size_t(value) + 1);
   return *this;
 }
 

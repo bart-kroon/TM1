@@ -156,10 +156,18 @@ public:
   auto exhaustiveSearch(const Mat<float> &overlap, const vector<bool> &isBasicView)
       -> vector<size_t> {
     auto basicViewIds = vector<size_t>{};
+    auto haveAdditionalViews = false;
     for (size_t i = 0; i < isBasicView.size(); ++i) {
       if (isBasicView[i]) {
         basicViewIds.push_back(i);
+      } else {
+        haveAdditionalViews = true;
       }
+    }
+
+    if (!haveAdditionalViews) {
+      // NOTE(BK): Avoid exhaustive search on R17 SB
+      return vector<size_t>(isBasicView.size(), 0);
     }
 
     const size_t maxBasicViews = m_maxBasicViewsPerGraph;

@@ -34,7 +34,7 @@
         "PrunerMethod": "HierarchicalPruner",
         "ViewOptimizerMethod": "BasicViewAllocator",
         "BasicViewAllocator": {
-            "maxBasicViewFraction": 0.8,
+            "maxBasicViewFraction": 0.5,
             "outputAdditionalViews": true,
             "minNonCodedViews": 3
         },

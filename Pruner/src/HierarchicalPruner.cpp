@@ -219,7 +219,7 @@ public:
     }
   }
 
-  void computePruningOrder(const Mat<float> &overlappingMatrix, const vector<bool> &isBasicView) {
+  void computePruningOrder(const Mat<float> &overlappingMatrix) {
     for (auto &cluster : m_clusters) {
       auto processedList = cluster.basicViewId;
       auto pendingList = cluster.additionalViewId;
@@ -273,7 +273,7 @@ public:
     // Create clusters and pruning order
     auto overlappingMatrix = computeOverlappingMatrix(cameraHelperList);
     clusterViews(overlappingMatrix, isBasicView);
-    computePruningOrder(overlappingMatrix, isBasicView);
+    computePruningOrder(overlappingMatrix);
     printClusters(viewParamsList);
 
     // Pruning graph

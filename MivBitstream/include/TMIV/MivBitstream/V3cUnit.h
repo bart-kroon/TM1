@@ -81,7 +81,7 @@ public:
   void encodeTo(std::ostream &stream, const std::vector<V3cParameterSet> &vpses) const;
 
 private:
-  const VuhUnitType m_vuh_unit_type;
+  VuhUnitType m_vuh_unit_type;
   std::uint8_t m_vuh_v3c_parameter_set_id{};
   std::uint8_t m_vuh_atlas_id{};
   std::uint8_t m_vuh_attribute_index{};

@@ -37,9 +37,11 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
+#include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
+#include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
 #include <fstream>
 #include <iostream>
@@ -162,13 +164,38 @@ public:
 
   void parseSei(std::istream &stream) {
     const auto sei = TMIV::MivBitstream::SeiRBSP::decodeFrom(stream);
-    m_log << sei;
+    for (const auto &message : sei.messages()) {
+      parseSeiMessage(message);
+    }
   }
 
   void parseAaps(std::istream &stream) {
     const auto aaps =
         TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream, *m_vps);
     m_log << aaps;
+  }
+
+  void parseSeiMessage(const TMIV::MivBitstream::SeiMessage &message) {
+    m_log << message;
+    std::istringstream stream{message.payload()};
+    TMIV::Common::InputBitstream bitstream{stream};
+
+    switch (message.payloadType()) {
+    case TMIV::MivBitstream::PayloadType::viewing_space_handling:
+      return parseViewingSpaceHandlingSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::rec_viewport:
+      return parseRecViewportSei(bitstream);
+    }
+  }
+
+  void parseViewingSpaceHandlingSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto vsh = TMIV::MivBitstream::ViewingSpaceHandling::decodeFrom(bitstream);
+    m_log << vsh;
+  }
+
+  void parseRecViewportSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto rv = TMIV::MivBitstream::RecViewport::decodeFrom(bitstream);
+    m_log << rv;
   }
 
 private:

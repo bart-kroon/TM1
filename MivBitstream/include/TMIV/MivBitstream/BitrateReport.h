@@ -101,7 +101,7 @@ struct CompareNuh {
 
 class BitrateReport {
 public:
-  void printTo(ostream &stream) {
+  void printTo(ostream &stream) const {
     stream << "vuh_unit_type,vuh_atlas_id,vuh_map_index,vuh_attribute_index,count,sum,average\n";
     for (const auto &[vuh, stats] : m_vuhStats) {
       stream << vuh.vuh_unit_type() << ',';

@@ -31,45 +31,83 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/MivDecoder.h>
+#include <TMIV/MivBitstream/BitrateReport.h>
+#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
-#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <variant>
+#include <vector>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Decoder;
+class PartialParser {
+public:
+  void parseV3cSampleStream(std::istream &stream) {
+    const auto ssvh = TMIV::MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
+
+    while (stream.peek(), !stream.eof()) {
+      const auto ssvu = TMIV::MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+      std::istringstream substream{ssvu.ssvu_v3c_unit()};
+      parseV3cUnit(substream, ssvu.ssvu_v3c_unit_size());
+    }
+  }
+
+  void parseV3cUnit(std::istream &stream, size_t numBytesInV3CUnit) {
+    auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, m_vpsV, numBytesInV3CUnit);
+    m_report.add(vu.v3c_unit_header(), numBytesInV3CUnit);
+    std::visit([this](const auto &x) { parseV3cPayload(x); }, vu.v3c_payload().payload());
+  }
+
+  void parseV3cPayload(const std::monostate & /* unused */) {}
+
+  void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {
+    for (auto &x : m_vpsV) {
+      if (x.vps_v3c_parameter_set_id() == vps.vps_v3c_parameter_set_id()) {
+        x = vps;
+        return;
+      }
+    }
+    m_vpsV.push_back(vps);
+  }
+
+  void parseV3cPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
+    for (auto &nu : asb.nal_units()) {
+      m_report.add(nu.nal_unit_header(), nu.size());
+    }
+  }
+
+  void parseV3cPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
+
+  auto report() const -> auto & { return m_report; }
+
+private:
+  std::vector<TMIV::MivBitstream::V3cParameterSet> m_vpsV;
+  TMIV::MivBitstream::BitrateReport m_report;
+};
 
 auto main(int argc, char *argv[]) -> int {
   try {
-    const auto args = vector(argv, argv + argc);
+    const auto args = std::vector(argv, argv + argc);
 
     if (args.size() != 3 || strcmp(args[1], "-b") != 0) {
-      clog << "Usage: BitrateReport -b BITSTREAM" << endl;
+      std::clog << "Usage: BitrateReport -b BITSTREAM" << std::endl;
       return 1;
     }
 
-    ifstream stream{args[2], ios::binary};
+    std::ifstream stream{args[2], std::ios::binary};
     if (!stream.good()) {
-      clog << "Failed to open bitstream for reading" << endl;
+      std::clog << "Failed to open bitstream for reading" << std::endl;
       return 1;
     }
 
-    auto decoder = MivDecoder{stream};
-    decoder.setGeoFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-      return Depth10Frame{frameSize.x(), frameSize.y()};
-    });
-    decoder.setAttrFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-      return Texture444Frame{frameSize.x(), frameSize.y()};
-    });
-    decoder.enableBitrateReporting();
-    decoder.decode();
-    ofstream bitrateReport{string(args[2]) + ".csv"};
-    decoder.printBitrateReport(bitrateReport);
+    PartialParser parser;
+    parser.parseV3cSampleStream(stream);
+    parser.report().printTo(std::cout);
     return 0;
-  } catch (runtime_error &e) {
-    clog << e.what() << endl;
+  } catch (std::runtime_error &e) {
+    std::clog << e.what() << std::endl;
     return 1;
   }
 }

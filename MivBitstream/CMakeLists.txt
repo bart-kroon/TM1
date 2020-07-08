@@ -37,7 +37,6 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/AtlasSubBitstream.h"
     "include/TMIV/MivBitstream/AtlasTileLayerRBSP.h"
     "include/TMIV/MivBitstream/AtlasTileLayerRBSP.hpp"
-    "include/TMIV/MivBitstream/BitrateReport.h"
     "include/TMIV/MivBitstream/DepthOccupancyTransform.h"
     "include/TMIV/MivBitstream/DepthOccupancyTransform.hpp"
     "include/TMIV/MivBitstream/FrameOrderCountRBSP.h"

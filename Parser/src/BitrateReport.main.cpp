@@ -31,16 +31,122 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/BitrateReport.h>
+#include <TMIV/MivBitstream/NalUnit.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <variant>
 #include <vector>
+
+using namespace std;
+using namespace TMIV::Common;
+
+class StatisticalVariable {
+public:
+  auto &operator<<(std::size_t value) {
+    ++m_count;
+    m_sum += value;
+    return *this;
+  }
+
+  friend auto operator<<(std::ostream &stream, const StatisticalVariable &x) -> std::ostream & {
+    auto average =
+        x.m_count > 0 ? double(x.m_sum) / x.m_count : numeric_limits<double>::quiet_NaN();
+    return stream << x.m_count << ',' << x.m_sum << ',' << average;
+  }
+
+private:
+  std::size_t m_count{};
+  std::size_t m_sum{};
+};
+
+struct CompareVuh {
+  auto operator()(const TMIV::MivBitstream::V3cUnitHeader &vuh1,
+                  const TMIV::MivBitstream::V3cUnitHeader &vuh2) const -> bool {
+    if (vuh1.vuh_unit_type() != vuh2.vuh_unit_type()) {
+      return vuh1.vuh_unit_type() < vuh2.vuh_unit_type();
+    }
+    if (vuh1.vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_VPS) {
+      return false;
+    }
+    if (vuh1.vuh_atlas_id() != vuh2.vuh_atlas_id()) {
+      return vuh1.vuh_atlas_id() < vuh2.vuh_atlas_id();
+    }
+    if (vuh1.vuh_unit_type() != TMIV::MivBitstream::VuhUnitType::V3C_GVD &&
+        vuh1.vuh_unit_type() != TMIV::MivBitstream::VuhUnitType::V3C_AVD) {
+      return false;
+    }
+    if (vuh1.vuh_map_index() != vuh2.vuh_map_index()) {
+      return vuh1.vuh_map_index() < vuh2.vuh_map_index();
+    }
+    if (vuh1.vuh_unit_type() != TMIV::MivBitstream::VuhUnitType::V3C_AVD) {
+      return false;
+    }
+    return vuh1.vuh_attribute_index() < vuh2.vuh_attribute_index();
+  }
+};
+
+struct CompareNuh {
+  auto operator()(const TMIV::MivBitstream::NalUnitHeader &nuh1,
+                  const TMIV::MivBitstream::NalUnitHeader &nuh2) const -> bool {
+    if (nuh1.nal_unit_type() != nuh2.nal_unit_type()) {
+      return nuh1.nal_unit_type() < nuh2.nal_unit_type();
+    }
+    if (nuh1.nal_layer_id() != nuh2.nal_layer_id()) {
+      return nuh1.nal_layer_id() < nuh2.nal_layer_id();
+    }
+    return nuh1.nal_temporal_id_plus1() < nuh2.nal_temporal_id_plus1();
+  }
+};
+
+class BitrateReport {
+public:
+  void printTo(std::ostream &stream) const {
+    stream << "vuh_unit_type,vuh_atlas_id,vuh_map_index,vuh_attribute_index,count,sum,average\n";
+    for (const auto &[vuh, stats] : m_vuhStats) {
+      stream << vuh.vuh_unit_type() << ',';
+      switch (vuh.vuh_unit_type()) {
+      case TMIV::MivBitstream::VuhUnitType::V3C_VPS:
+        stream << ",,";
+        break;
+      case TMIV::MivBitstream::VuhUnitType::V3C_AD:
+      case TMIV::MivBitstream::VuhUnitType::V3C_OVD:
+        stream << int(vuh.vuh_atlas_id()) << ",,";
+        break;
+      case TMIV::MivBitstream::VuhUnitType::V3C_GVD:
+        stream << int(vuh.vuh_atlas_id()) << ',' << int(vuh.vuh_map_index()) << ',';
+        break;
+      case TMIV::MivBitstream::VuhUnitType::V3C_AVD:
+        stream << int(vuh.vuh_atlas_id()) << ',' << int(vuh.vuh_map_index()) << ','
+               << int(vuh.vuh_attribute_index());
+        break;
+      default:
+        abort();
+      }
+      stream << ',' << stats << '\n';
+    }
+
+    stream << ",,,,,,\n";
+    stream << "nal_unit_type,nal_layer_id,nal_temporal_id,,count,sum,average\n";
+
+    for (const auto &[nuh, stats] : m_nuhStats) {
+      stream << nuh.nal_unit_type() << ',' << int(nuh.nal_layer_id()) << ','
+             << (nuh.nal_temporal_id_plus1() - 1) << ",," << stats << '\n';
+    }
+  }
+
+  void add(const TMIV::MivBitstream::V3cUnitHeader &vuh, std::size_t size) { m_vuhStats[vuh] << size; }
+  auto add(const TMIV::MivBitstream::NalUnitHeader &nuh, std::size_t size) { m_nuhStats[nuh] << size; }
+
+private:
+  std::map<TMIV::MivBitstream::V3cUnitHeader, StatisticalVariable, CompareVuh> m_vuhStats;
+  std::map<TMIV::MivBitstream::NalUnitHeader, StatisticalVariable, CompareNuh> m_nuhStats;
+};
 
 class PartialParser {
 public:
@@ -54,7 +160,7 @@ public:
     }
   }
 
-  void parseV3cUnit(std::istream &stream, size_t numBytesInV3CUnit) {
+  void parseV3cUnit(std::istream &stream, std::size_t numBytesInV3CUnit) {
     auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, m_vpsV, numBytesInV3CUnit);
     m_report.add(vu.v3c_unit_header(), numBytesInV3CUnit);
     std::visit([this](const auto &x) { parseV3cPayload(x); }, vu.v3c_payload().payload());
@@ -84,7 +190,7 @@ public:
 
 private:
   std::vector<TMIV::MivBitstream::V3cParameterSet> m_vpsV;
-  TMIV::MivBitstream::BitrateReport m_report;
+  BitrateReport m_report;
 };
 
 auto main(int argc, char *argv[]) -> int {

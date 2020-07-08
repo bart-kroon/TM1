@@ -37,7 +37,6 @@
 #include <TMIV/MivBitstream/AccessUnit.h>
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
-#include <TMIV/MivBitstream/BitrateReport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
@@ -82,10 +81,6 @@ public: // Decoder interface
   // Register listeners to obtain output. The decoding is stopped prematurely when any of the
   // listeners returns false.
   void decode();
-
-  // Optional bitrate reporting
-  void enableBitrateReporting();
-  void printBitrateReport(std::ostream &stream) const;
 
 public: // Callback signatures
   // Callback that will be called when a VPS is decoded.
@@ -192,9 +187,6 @@ private: // Internal decoder state
   bool m_stop{};
   double m_totalGeoVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};
-
-private: // Bitrate reporting (pimpl idiom)
-  std::unique_ptr<BitrateReport> m_bitrateReport;
 
 private: // Access internal decoder state
   [[nodiscard]] auto vps(const V3cUnitHeader &vuh) const -> const V3cParameterSet &;

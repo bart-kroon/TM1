@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Bitstream.h>
 #include <TMIV/Common/Bytestream.h>
-#include <TMIV/MivBitstream/BitrateReport.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 
 #include <cassert>
@@ -83,10 +82,6 @@ void MivDecoder::decode() {
     const auto vu = V3cUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_v3c_unit_size());
     const auto &vuh = vu.v3c_unit_header();
 
-    if (m_bitrateReport) {
-      m_bitrateReport->add(vuh, ssvu.ssvu_v3c_unit_size());
-    }
-
     decodeV3cPayload(vuh, vu.v3c_payload().payload());
 
     if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
@@ -103,17 +98,6 @@ void MivDecoder::decode() {
   }
 
   report();
-}
-
-void MivDecoder::enableBitrateReporting() {
-  assert(!m_bitrateReport);
-  m_bitrateReport = make_unique<BitrateReport>();
-}
-
-void MivDecoder::printBitrateReport(std::ostream &stream) const {
-  if (m_bitrateReport) {
-    m_bitrateReport->printTo(stream);
-  }
 }
 
 // Decoder output //////////////////////////////////////////////////////////////////////////////////
@@ -359,10 +343,6 @@ void MivDecoder::decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu) {
   if (nu.nal_unit_header().nal_layer_id() != 0) {
     cout << "WARNING: Ignoring NAL unit with nal_layer_id != 0\n";
     return;
-  }
-
-  if (m_bitrateReport) {
-    m_bitrateReport->add(nu.nal_unit_header(), nu.size());
   }
 
   if (NalUnitType::NAL_TRAIL_N <= nu.nal_unit_header().nal_unit_type() &&

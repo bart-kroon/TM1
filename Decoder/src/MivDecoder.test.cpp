@@ -44,7 +44,7 @@ using namespace TMIV::MivBitstream;
 
 TEST_CASE("MivDecoder", "[MIV decoder]") {
   SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
+    std::istringstream stream{"Invalid bitsream"};
 
     auto decoder = MivDecoder{stream};
 
@@ -56,12 +56,12 @@ TEST_CASE("MivDecoder", "[MIV decoder]") {
           [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Texture444Frame{}; });
 
       decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
-        cout << "Sequence:\n" << vps;
+        std::cout << "Sequence:\n" << vps;
         return true;
       });
 
       decoder.onFrame.emplace_back([](const AccessUnit &au) {
-        cout << "Frame " << au.frameId << '\n';
+        std::cout << "Frame " << au.frameId << '\n';
         return true;
       });
     }

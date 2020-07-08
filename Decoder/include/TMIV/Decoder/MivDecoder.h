@@ -38,13 +38,10 @@
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/BitrateReport.h>
-#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
-#include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
-#include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 #include <TMIV/VideoDecoder/VideoServer.h>
 
 #include <TMIV/Common/Frame.h>
@@ -135,8 +132,6 @@ private: // Decoding processes
                   const AtlasFrameParameterSetRBSP &afps);
   void decodeAaps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                   const AtlasAdaptationParameterSetRBSP &aaps);
-  void decodeFoc(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                 const FrameOrderCountRBSP &foc);
   static void decodeAud(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                         AccessUnitDelimiterRBSP aud);
   void decodeEos(const V3cUnitHeader &vuh, const NalUnitHeader &nuh);
@@ -144,16 +139,11 @@ private: // Decoding processes
   static void decodeSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, const SeiRBSP &sei);
   static void decodeSeiMessage(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                const SeiMessage &message);
-  static void decodeViewingSpaceHandling(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                                         const ViewingSpaceHandling &vh);
-  static void decodeRecViewport(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                                const RecViewport &vh);
 
 private: // Parsers
   void parseAsps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu);
-  void parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAtl(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseAud(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseV3cAud(const V3cUnitHeader &vuh, const NalUnit &nu);
@@ -161,10 +151,6 @@ private: // Parsers
   static void parseSuffixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parsePrefixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseSuffixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void parseViewingSpaceHandlingSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                                           const SeiMessage &message);
-  static void parseRecViewportSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                                  const SeiMessage &message);
 
 private: // Internal decoder state
   std::istream &m_stream;

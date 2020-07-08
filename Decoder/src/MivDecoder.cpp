@@ -54,11 +54,7 @@ namespace TMIV::Decoder {
 // Decoder interface ///////////////////////////////////////////////////////////////////////////////
 
 MivDecoder::MivDecoder(istream &stream)
-    : m_stream{stream}, m_ssvh{SampleStreamV3cHeader::decodeFrom(stream)} {
-  cout << "=== Sample stream V3C header " << string(100 - 31, '=') << '\n'
-       << m_ssvh << string(100, '=') << '\n'
-       << endl;
-}
+    : m_stream{stream}, m_ssvh{SampleStreamV3cHeader::decodeFrom(stream)} {}
 
 MivDecoder::~MivDecoder() = default;
 
@@ -78,17 +74,13 @@ void MivDecoder::decode() {
   };
 
   while (!m_stop && !m_stream.eof()) {
-    cout << "\n=== V3C unit " << string(100 - 15, '=') << '\n';
     VERIFY_V3CBITSTREAM(m_stream.good());
 
     const auto ssvu = SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
-    cout << ssvu;
     VERIFY_V3CBITSTREAM(m_stream.good());
 
     istringstream substream{ssvu.ssvu_v3c_unit()};
     const auto vu = V3cUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_v3c_unit_size());
-    cout << vu;
-
     const auto &vuh = vu.v3c_unit_header();
 
     if (m_bitrateReport) {
@@ -96,7 +88,6 @@ void MivDecoder::decode() {
     }
 
     decodeV3cPayload(vuh, vu.v3c_payload().payload());
-    cout << string(100, '=') << '\n' << endl;
 
     if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
       while (haveFrame(vuh)) {
@@ -190,8 +181,6 @@ void MivDecoder::decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Pa
   case VuhUnitType::V3C_AVD:
   case VuhUnitType::V3C_GVD:
   case VuhUnitType::V3C_OVD:
-    cout << "WARNING: Ignoring video sub bitstreams in this version of "
-            "TMIV\n";
     return;
   default:
     V3CBITSTREAM_ERROR("V3C unit of unknown type");
@@ -367,8 +356,6 @@ void MivDecoder::decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &as
 }
 
 void MivDecoder::decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu) {
-  cout << "--- NAL unit " << string(100 - 13, '-') << '\n' << nu;
-
   if (nu.nal_unit_header().nal_layer_id() != 0) {
     cout << "WARNING: Ignoring NAL unit with nal_layer_id != 0\n";
     return;
@@ -408,8 +395,6 @@ void MivDecoder::decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu) {
     return parseSuffixESei(vuh, nu);
   case NalUnitType::NAL_AAPS:
     return parseAaps(vuh, nu);
-  case NalUnitType::NAL_FOC:
-    return parseFoc(vuh, nu);
   default:
     return decodeUnknownNalUnit(vuh, nu);
   }
@@ -422,8 +407,6 @@ void MivDecoder::decodeUnknownNalUnit(const V3cUnitHeader & /*vuh*/, const NalUn
 
 void MivDecoder::decodeAtl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                            const AtlasTileLayerRBSP &atl) {
-  cout << atl;
-
   const auto &ath = atl.atlas_tile_header();
   auto &x = atlas(vuh);
 
@@ -541,9 +524,6 @@ auto MivDecoder::decodeBlockToPatchMap(const AtlasTileDataUnit &atdu,
 void MivDecoder::decodeAsps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                             AtlasSequenceParameterSetRBSP asps) {
   VERIFY_V3CBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
-
-  cout << asps;
-
   auto &x = atlas(vuh);
   while (x.aspsV.size() <= asps.asps_atlas_sequence_parameter_set_id()) {
     x.aspsV.emplace_back();
@@ -553,8 +533,6 @@ void MivDecoder::decodeAsps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
 
 void MivDecoder::decodeAfps(const V3cUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
                             const AtlasFrameParameterSetRBSP &afps) {
-  cout << afps;
-
   auto &x = atlas(vuh);
   while (x.afpsV.size() <= afps.afps_atlas_frame_parameter_set_id()) {
     x.afpsV.emplace_back();
@@ -564,8 +542,6 @@ void MivDecoder::decodeAfps(const V3cUnitHeader &vuh, const NalUnitHeader & /*nu
 
 void MivDecoder::decodeAaps(const V3cUnitHeader &vuh, const NalUnitHeader & /*nuh*/,
                             const AtlasAdaptationParameterSetRBSP &aaps) {
-  cout << aaps;
-
   auto &x = atlas(vuh);
   while (x.aapsV.size() <= aaps.aaps_atlas_adaptation_parameter_set_id()) {
     x.aapsV.emplace_back();
@@ -573,16 +549,8 @@ void MivDecoder::decodeAaps(const V3cUnitHeader &vuh, const NalUnitHeader & /*nu
   x.aapsV[aaps.aaps_atlas_adaptation_parameter_set_id()] = aaps;
 }
 
-void MivDecoder::decodeFoc(const V3cUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                           const FrameOrderCountRBSP &foc) {
-  cout << foc;
-  NOT_IMPLEMENTED("Decoding of NAL_FOC");
-}
-
 void MivDecoder::decodeAud(const V3cUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                           AccessUnitDelimiterRBSP aud) {
-  cout << aud;
-}
+                           AccessUnitDelimiterRBSP aud) {}
 
 void MivDecoder::decodeEos(const V3cUnitHeader &vuh, const NalUnitHeader &nuh) {
   VERIFY_V3CBITSTREAM(nuh.nal_temporal_id_plus1() - 1 == 0);
@@ -604,27 +572,7 @@ void MivDecoder::decodeSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, c
 
 void MivDecoder::decodeSeiMessage(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                   const SeiMessage &message) {
-  cout << message;
-
-  switch (message.payloadType()) {
-  case PayloadType::viewing_space_handling:
-    return parseViewingSpaceHandlingSei(vuh, nuh, message);
-  case PayloadType::rec_viewport:
-    return parseRecViewportSei(vuh, nuh, message);
-  default:
-    cout << "WARNING: Ignoring SEI message\n";
-  }
-}
-
-void MivDecoder::decodeViewingSpaceHandling(const V3cUnitHeader & /* vuh */,
-                                            const NalUnitHeader & /* nuh */,
-                                            const ViewingSpaceHandling &vh) {
-  cout << vh;
-}
-
-void MivDecoder::decodeRecViewport(const V3cUnitHeader & /* vuh */, const NalUnitHeader & /* nuh */,
-                                   const RecViewport &vh) {
-  cout << vh;
+  cout << "WARNING: Ignoring SEI message\n";
 }
 
 // Parsers /////////////////////////////////////////////////////////////////////////////////////////
@@ -644,19 +592,6 @@ void MivDecoder::parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   decodeAaps(vuh, nu.nal_unit_header(),
              AtlasAdaptationParameterSetRBSP::decodeFrom(stream, vps(vuh)));
-}
-
-void MivDecoder::parseFoc(const V3cUnitHeader &vuh, const NalUnit &nu) {
-  istringstream stream{nu.rbsp()};
-  if (vuh.vuh_atlas_id() == specialAtlasId) {
-    // TODO(BK): Introduce notion of active AAPS
-    decodeFoc(vuh, nu.nal_unit_header(),
-              FrameOrderCountRBSP::decodeFrom(stream, aapsV(vuh).front()));
-  } else {
-    // TODO(BK): Introduce notion of active ASPS
-    decodeFoc(vuh, nu.nal_unit_header(),
-              FrameOrderCountRBSP::decodeFrom(stream, aspsV(vuh).front()));
-  }
 }
 
 void MivDecoder::parseAtl(const V3cUnitHeader &vuh, const NalUnit &nu) {
@@ -693,20 +628,6 @@ void MivDecoder::parsePrefixESei(const V3cUnitHeader &vuh, const NalUnit &nu) {
 void MivDecoder::parseSuffixESei(const V3cUnitHeader &vuh, const NalUnit &nu) {
   istringstream stream{nu.rbsp()};
   decodeSei(vuh, nu.nal_unit_header(), SeiRBSP::decodeFrom(stream));
-}
-
-void MivDecoder::parseViewingSpaceHandlingSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                                              const SeiMessage &message) {
-  istringstream stream{message.payload()};
-  InputBitstream bitstream{stream};
-  decodeViewingSpaceHandling(vuh, nuh, ViewingSpaceHandling::decodeFrom(bitstream));
-}
-
-void MivDecoder::parseRecViewportSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                                     const SeiMessage &message) {
-  istringstream stream{message.payload()};
-  InputBitstream bitstream{stream};
-  decodeRecViewport(vuh, nuh, RecViewport::decodeFrom(bitstream));
 }
 
 // Access internal decoder state ///////////////////////////////////////////////////////////////////

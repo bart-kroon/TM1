@@ -53,80 +53,72 @@ namespace TMIV::Decoder {
 // Decoder interface ///////////////////////////////////////////////////////////////////////////////
 
 MivDecoder::MivDecoder(istream &stream)
-    : m_stream{stream}, m_ssvh{SampleStreamV3cHeader::decodeFrom(stream)} {}
+    : m_stream{stream}, m_ssvh{SampleStreamV3cHeader::decodeFrom(stream)} {
+  VERIFY_V3CBITSTREAM(m_stream.good());
+}
 
-MivDecoder::~MivDecoder() = default;
+MivDecoder::~MivDecoder() {
+  if (m_totalGeoVideoDecodingTime > 0.) {
+    cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
+         << " s\n";
+  }
+  if (m_totalAttrVideoDecodingTime > 0.) {
+    cout << "Total attribute video sub bitstream decoding time: " << m_totalAttrVideoDecodingTime
+         << " s\n";
+  }
+}
 
 void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = move(value); }
 
 void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = move(value); }
 
-void MivDecoder::decode() {
-  m_totalGeoVideoDecodingTime = 0.;
-  m_totalAttrVideoDecodingTime = 0.;
-
-  auto report = [this]() {
-    cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
-         << " s\n";
-    cout << "Total attribute video sub bitstream decoding time: " << m_totalAttrVideoDecodingTime
-         << " s\n";
-  };
-
-  while (!m_stop && !m_stream.eof()) {
-    VERIFY_V3CBITSTREAM(m_stream.good());
-
-    const auto ssvu = SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
-    VERIFY_V3CBITSTREAM(m_stream.good());
-
-    istringstream substream{ssvu.ssvu_v3c_unit()};
-    const auto vu = V3cUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_v3c_unit_size());
-    const auto &vuh = vu.v3c_unit_header();
-
-    decodeV3cPayload(vuh, vu.v3c_payload().payload());
-
-    if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
-      while (haveFrame(vuh)) {
-        outputFrame(vuh);
-        if (m_stop) {
-          report();
-          return;
-        }
-      }
-    }
-
-    m_stream.peek();
+auto MivDecoder::decode() -> std::optional<AccessUnit> {
+  while (m_outputBuffer.empty() && decodeV3cUnit()) {
+    // Deliberately empty
   }
+  if (m_outputBuffer.empty()) {
+    return {};
+  }
+  auto result = std::move(m_outputBuffer.front());
+  m_outputBuffer.pop_front();
+  return result;
+}
 
-  report();
+auto MivDecoder::decodeV3cUnit() -> bool {
+  m_stream.peek();
+  if (m_stream.eof()) {
+    return false;
+  }
+  const auto ssvu = SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
+  VERIFY_V3CBITSTREAM(m_stream.good());
+
+  istringstream substream{ssvu.ssvu_v3c_unit()};
+  const auto vu = V3cUnit::decodeFrom(substream, m_vpsV, ssvu.ssvu_v3c_unit_size());
+  const auto &vuh = vu.v3c_unit_header();
+
+  decodeV3cPayload(vuh, vu.v3c_payload().payload());
+
+  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
+    while (haveFrame(vuh)) {
+      pushFrame(vuh);
+    }
+  }
+  return true;
 }
 
 // Decoder output //////////////////////////////////////////////////////////////////////////////////
 
-void MivDecoder::outputSequence(const V3cParameterSet &vps) {
-  for (const auto &x : onSequence) {
-    if (!x(vps)) {
-      m_stop = true;
-    }
-  }
+void MivDecoder::pushFrame(const V3cUnitHeader &vuh) {
+  assert(haveFrame(vuh));
+
+  auto &au = m_outputBuffer.emplace_back();
+  au.vps = make_shared<V3cParameterSet>(vps(vuh));
+  pullAtlasData(au);
+  pullGeoVideoData(au);
+  pullAttrVideoData(au);  
 }
 
-void MivDecoder::outputFrame(const V3cUnitHeader &vuh) {
-  assert(haveFrame(vuh) && !m_stop);
-
-  auto au = AccessUnit{};
-  au.vps = &vps(vuh);
-  outputAtlasData(au);
-  outputGeoVideoData(au);
-  outputAttrVideoData(au);
-
-  for (const auto &x : onFrame) {
-    if (!x(au)) {
-      m_stop = true;
-    }
-  }
-}
-
-void MivDecoder::outputAtlasData(AccessUnit &au) {
+void MivDecoder::pullAtlasData(AccessUnit &au) {
   auto &sequence_ = m_sequenceV[au.vps->vps_v3c_parameter_set_id()];
   au.frameId = ++sequence_.frameId;
   au.atlas.resize(sequence_.atlas.size());
@@ -187,8 +179,6 @@ void MivDecoder::decodeVps(const V3cUnitHeader & /* vuh */, const V3cParameterSe
   m_vpsV[vps.vps_v3c_parameter_set_id()] = vps;
   m_sequenceV[vps.vps_v3c_parameter_set_id()] = Sequence{};
   m_sequenceV[vps.vps_v3c_parameter_set_id()].atlas.resize(vps.vps_atlas_count_minus1() + 1U);
-
-  outputSequence(vps);
 
   if (decodeVideoSubBitstreams(vps)) {
     startGeoVideoDecoders(vps);
@@ -271,7 +261,7 @@ void MivDecoder::startAttrVideoDecoders(const V3cParameterSet &vps) {
   m_totalAttrVideoDecodingTime += dt;
 }
 
-void MivDecoder::outputGeoVideoData(AccessUnit &au) {
+void MivDecoder::pullGeoVideoData(AccessUnit &au) {
   auto &sequence_ = m_sequenceV[au.vps->vps_v3c_parameter_set_id()];
   const auto t0 = clock();
 
@@ -299,7 +289,7 @@ void MivDecoder::outputGeoVideoData(AccessUnit &au) {
   m_totalGeoVideoDecodingTime += dt;
 }
 
-void MivDecoder::outputAttrVideoData(AccessUnit &au) {
+void MivDecoder::pullAttrVideoData(AccessUnit &au) {
   auto &sequence_ = m_sequenceV[au.vps->vps_v3c_parameter_set_id()];
   const auto t0 = clock();
 

@@ -63,18 +63,19 @@ public:
       : Common::Application{"Decoder", move(argv)}
       , m_metadataReader{json()}
       , m_decoder{create<IDecoder>("Decoder")}
-      , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {
-    m_metadataReader.decoder().onFrame.emplace_back([this](const AccessUnit &frame) {
-      auto range = m_inputToOutputFrameIdMap.equal_range(frame.frameId);
-      for (auto i = range.first; i != range.second; ++i) {
-        renderDecodedFrame(frame, i->second);
-      }
-      return m_inputToOutputFrameIdMap.upper_bound(frame.frameId) !=
-             m_inputToOutputFrameIdMap.end();
-    });
-  }
+      , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {}
 
-  void run() override { m_metadataReader.decoder().decode(); }
+  void run() override {
+    while (auto frame = m_metadataReader.decoder().decode()) {
+      auto range = m_inputToOutputFrameIdMap.equal_range(frame->frameId);
+      if (range.first == range.second) {
+        return; // TODO(BK): Test with A97 pose trace, then remove this comment
+      }
+      for (auto i = range.first; i != range.second; ++i) {
+        renderDecodedFrame(*frame, i->second);
+      }
+    }
+  }
 
 private:
   void renderDecodedFrame(AccessUnit frame, int outputFrameId) {

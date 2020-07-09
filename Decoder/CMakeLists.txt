@@ -49,17 +49,6 @@ install(
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 if (CMAKE_TESTING_ENABLED)
-    add_executable(DecoderTest
-        "src/MivDecoder.test.cpp"
-        )
-
-    target_link_libraries(DecoderTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::DecoderLib)
-
-    catch_discover_tests(DecoderTest)
-
     add_executable(V3cBitstreamTest
         "src/V3cBitstream.test.cpp")
 

@@ -76,35 +76,20 @@ public: // Decoder interface
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setAttrFrameServer(AttrFrameServer value);
 
-  // Decode V3C sample bitstream
-  //
-  // Register listeners to obtain output. The decoding is stopped prematurely when any of the
-  // listeners returns false.
-  void decode();
+  auto decode() -> std::optional<AccessUnit>;
 
-public: // Callback signatures
-  // Callback that will be called when a VPS is decoded.
-  using SequenceListener = std::function<bool(const V3cParameterSet &)>;
-
-  // Callback that will be called when an access unit (frame) is decoded.
-  using FrameListener = std::function<bool(const AccessUnit &)>;
-
-public: // Callback registrations
-  std::vector<SequenceListener> onSequence;
-  std::vector<FrameListener> onFrame;
-
-private: // Decoder output
-  void outputSequence(const V3cParameterSet &vps);
-  void outputFrame(const V3cUnitHeader &vuh);
-  void outputAtlasData(AccessUnit &au);
+private:
+  auto decodeV3cUnit() -> bool;
+  void pushFrame(const V3cUnitHeader &vuh);
+  void pullAtlasData(AccessUnit &au);
   [[nodiscard]] auto haveFrame(const V3cUnitHeader &vuh) const -> bool;
 
 private: // Video deecoding processes
   auto decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool;
   void startGeoVideoDecoders(const V3cParameterSet &vps);
   void startAttrVideoDecoders(const V3cParameterSet &vps);
-  void outputGeoVideoData(AccessUnit &au);
-  void outputAttrVideoData(AccessUnit &au);
+  void pullGeoVideoData(AccessUnit &au);
+  void pullAttrVideoData(AccessUnit &au);
 
 private: // Decoding processes
   void decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Payload &payload);
@@ -182,9 +167,10 @@ private: // Internal decoder state
   };
 
   std::vector<V3cParameterSet> m_vpsV;
-  std::vector<Sequence> m_sequenceV;
+  std::vector<Sequence> m_sequenceV; // TODO(BK): There is only one sequence at a time
 
-  bool m_stop{};
+  std::list<AccessUnit> m_outputBuffer;
+
   double m_totalGeoVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};
 

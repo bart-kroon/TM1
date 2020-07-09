@@ -140,8 +140,12 @@ public:
     }
   }
 
-  void add(const TMIV::MivBitstream::V3cUnitHeader &vuh, std::size_t size) { m_vuhStats[vuh] << size; }
-  auto add(const TMIV::MivBitstream::NalUnitHeader &nuh, std::size_t size) { m_nuhStats[nuh] << size; }
+  void add(const TMIV::MivBitstream::V3cUnitHeader &vuh, std::size_t size) {
+    m_vuhStats[vuh] << size;
+  }
+  auto add(const TMIV::MivBitstream::NalUnitHeader &nuh, std::size_t size) {
+    m_nuhStats[nuh] << size;
+  }
 
 private:
   std::map<TMIV::MivBitstream::V3cUnitHeader, StatisticalVariable, CompareVuh> m_vuhStats;
@@ -161,22 +165,14 @@ public:
   }
 
   void parseV3cUnit(std::istream &stream, std::size_t numBytesInV3CUnit) {
-    auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, m_vpsV, numBytesInV3CUnit);
+    auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
     m_report.add(vu.v3c_unit_header(), numBytesInV3CUnit);
     std::visit([this](const auto &x) { parseV3cPayload(x); }, vu.v3c_payload().payload());
   }
 
   void parseV3cPayload(const std::monostate & /* unused */) {}
 
-  void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {
-    for (auto &x : m_vpsV) {
-      if (x.vps_v3c_parameter_set_id() == vps.vps_v3c_parameter_set_id()) {
-        x = vps;
-        return;
-      }
-    }
-    m_vpsV.push_back(vps);
-  }
+  void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {}
 
   void parseV3cPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
     for (auto &nu : asb.nal_units()) {
@@ -189,7 +185,6 @@ public:
   auto report() const -> auto & { return m_report; }
 
 private:
-  std::vector<TMIV::MivBitstream::V3cParameterSet> m_vpsV;
   BitrateReport m_report;
 };
 

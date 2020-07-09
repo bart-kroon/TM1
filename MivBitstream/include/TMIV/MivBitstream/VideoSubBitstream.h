@@ -35,22 +35,28 @@
 #define _TMIV_MIVBITSTREAM_VIDEOSUBBITSTREAM_H_
 
 #include <iosfwd>
+#include <string>
 
 namespace TMIV::MivBitstream {
 // 23090-5: video_sub_bitstream()
 class VideoSubBitstream {
 public:
-  friend auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */)
-      -> std::ostream & {
-    return stream;
-  }
+  VideoSubBitstream() = default;
+  explicit VideoSubBitstream(std::string data);
 
-  constexpr auto operator==(const VideoSubBitstream & /* other */) const noexcept { return true; }
-  constexpr auto operator!=(const VideoSubBitstream & /* other */) const noexcept { return false; }
+  constexpr auto data() const noexcept -> auto & { return m_data; }
 
-  static auto decodeFrom(std::istream & /* stream */) -> VideoSubBitstream { return {}; }
+  friend auto operator<<(std::ostream &stream, const VideoSubBitstream &x) -> std::ostream &;
 
-  void encodeTo(std::ostream & /* stream */) const {}
+  auto operator==(const VideoSubBitstream &other) const noexcept -> bool;
+  auto operator!=(const VideoSubBitstream &other) const noexcept -> bool;
+
+  static auto decodeFrom(std::istream &stream) -> VideoSubBitstream;
+
+  void encodeTo(std::ostream &stream) const;
+
+private:
+  std::string m_data;
 };
 } // namespace TMIV::MivBitstream
 

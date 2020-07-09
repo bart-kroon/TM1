@@ -70,7 +70,7 @@ struct AtlasAccessUnit {
 
 struct AccessUnit {
   bool irap{}; // TODO(BK): set this flag to true on the first access unit of a new sequence
-  std::shared_ptr<V3cParameterSet> vps;
+  V3cParameterSet vps;
   std::vector<AtlasAccessUnit> atlas;
   std::uint32_t frameId{};
   std::optional<ViewingSpace> vs;

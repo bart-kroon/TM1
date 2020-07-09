@@ -19,6 +19,7 @@ add_library(MivBitstreamLib
     "src/RecViewport.cpp"
     "src/SeiRBSP.cpp"
     "src/verify.cpp"
+    "src/VideoSubBitstream.cpp"
     "src/ViewingSpace.cpp"
     "src/ViewingSpaceHandling.cpp"
     "src/ViewParamsList.cpp"

@@ -173,7 +173,7 @@ auto MultipassRenderer::renderFrame(const AccessUnit &frame, const ViewParams &v
     }
   }
 
-  if (frame.vps->vps_miv_extension().vme_max_entities_minus1() == 0) {
+  if (frame.vps.vps_miv_extension().vme_max_entities_minus1() == 0) {
     m_inpainter->inplaceInpaint(viewport, viewportParams);
   }
 

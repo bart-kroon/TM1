@@ -51,10 +51,33 @@
 namespace TMIV::Decoder {
 using namespace MivBitstream;
 
+using V3cUnitSource = std::function<std::optional<V3cUnit>()>;
+
+class V3cSampleStreamDecoder {
+public:
+  explicit V3cSampleStreamDecoder(std::istream &stream);
+
+  auto operator()() -> std::optional<V3cUnit>;
+
+private:
+  std::istream &m_stream;
+  SampleStreamV3cHeader m_ssvh;
+};
+
+class V3cUnitBuffer {
+public:
+  explicit V3cUnitBuffer(V3cUnitSource source);
+
+  auto operator()(const V3cUnitHeader &vuh) -> std::optional<V3cUnit>;
+
+private:
+  V3cUnitSource m_source;
+  std::list<V3cUnit> m_buffer;
+};
+
 class MivDecoder {
 public: // Decoder interface
-  // Construct a MivDecoder and read the sample stream V3C header
-  explicit MivDecoder(std::istream &stream);
+  explicit MivDecoder(V3cUnitSource source);
 
   ~MivDecoder();
 
@@ -79,21 +102,18 @@ public: // Decoder interface
   auto decode() -> std::optional<AccessUnit>;
 
 private:
-  auto decodeV3cUnit() -> bool;
-  void pushFrame(const V3cUnitHeader &vuh);
-  void pullAtlasData(AccessUnit &au);
-  [[nodiscard]] auto haveFrame(const V3cUnitHeader &vuh) const -> bool;
+  auto decodeSequence() -> bool;
+  void checkCapabilities();
+  auto startVideoDecoder(const V3cUnitHeader &vuh, double &totalTime)
+      -> std::unique_ptr<VideoDecoder::VideoServer>;
 
-private: // Video deecoding processes
-  auto decodeVideoSubBitstreams(const V3cParameterSet &vps) -> bool;
-  void startGeoVideoDecoders(const V3cParameterSet &vps);
-  void startAttrVideoDecoders(const V3cParameterSet &vps);
+  auto pullFrame() -> AccessUnit;
+  void pullAtlasData(AccessUnit &au);
+  [[nodiscard]] auto haveFrame() const -> bool;
+
   void pullGeoVideoData(AccessUnit &au);
   void pullAttrVideoData(AccessUnit &au);
 
-private: // Decoding processes
-  void decodeV3cPayload(const V3cUnitHeader &vuh, const V3cPayload::Payload &payload);
-  void decodeVps(const V3cUnitHeader &vuh, const V3cParameterSet &vps);
   void decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb);
 
   void decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
@@ -106,43 +126,31 @@ private: // Decoding processes
   static auto decodeBlockToPatchMap(const AtlasTileDataUnit &atdu,
                                     const AtlasSequenceParameterSetRBSP &asps)
       -> Common::BlockToPatchMap;
-  void decodeAsps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                  AtlasSequenceParameterSetRBSP asps);
-  void decodeAfps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                  const AtlasFrameParameterSetRBSP &afps);
-  void decodeAaps(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                  const AtlasAdaptationParameterSetRBSP &aaps);
-  static void decodeAud(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                        AccessUnitDelimiterRBSP aud);
-  void decodeEos(const V3cUnitHeader &vuh, const NalUnitHeader &nuh);
-  void decodeEob(const V3cUnitHeader &vuh, const NalUnitHeader &nuh);
+  void decodeAsps(AtlasSequenceParameterSetRBSP asps);
+  void decodeAfps(AtlasFrameParameterSetRBSP afps);
+  void decodeAaps(AtlasAdaptationParameterSetRBSP aaps);
   static void decodeSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, const SeiRBSP &sei);
   static void decodeSeiMessage(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
                                const SeiMessage &message);
 
-private: // Parsers
   void parseAsps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu);
   void parseAtl(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void parseAud(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void parseV3cAud(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parsePrefixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseSuffixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parsePrefixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
   static void parseSuffixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
 
-private: // Internal decoder state
-  std::istream &m_stream;
+  auto aspsById(int id) const noexcept -> const AtlasSequenceParameterSetRBSP &;
+  auto afpsById(int id) const noexcept -> const AtlasFrameParameterSetRBSP &;
+  auto aapsById(int id) const noexcept -> const AtlasAdaptationParameterSetRBSP &;
+
+  V3cUnitBuffer m_inputBuffer;
   GeoFrameServer m_geoFrameServer;
   AttrFrameServer m_attrFrameServer;
-  SampleStreamV3cHeader m_ssvh;
 
   struct Atlas {
-    std::vector<AtlasSequenceParameterSetRBSP> aspsV;
-    std::vector<AtlasFrameParameterSetRBSP> afpsV;
-    std::vector<AtlasAdaptationParameterSetRBSP> aapsV;
-
     struct Frame {
       AtlasTileHeader ath;
       ViewParamsList viewParamsList;
@@ -160,34 +168,18 @@ private: // Internal decoder state
     std::unique_ptr<VideoDecoder::VideoServer> attrVideoServer;
   };
 
-  struct Sequence {
-    std::vector<Atlas> atlas;
-    Atlas specialAtlas;
-    std::int32_t frameId{-1}; // picture order count
-  };
+  auto atlasById(int id) noexcept -> Atlas &;
 
-  std::vector<V3cParameterSet> m_vpsV;
-  std::vector<Sequence> m_sequenceV; // TODO(BK): There is only one sequence at a time
-
-  std::list<AccessUnit> m_outputBuffer;
+  V3cParameterSet m_vps;
+  std::vector<Atlas> m_atlas;
+  std::optional<Atlas> m_specialAtlas;
+  std::vector<AtlasSequenceParameterSetRBSP> m_aspsV;
+  std::vector<AtlasFrameParameterSetRBSP> m_afpsV;
+  std::vector<AtlasAdaptationParameterSetRBSP> m_aapsV;
+  std::int32_t m_frameId{-1}; // picture order count
 
   double m_totalGeoVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};
-
-private: // Access internal decoder state
-  [[nodiscard]] auto vps(const V3cUnitHeader &vuh) const -> const V3cParameterSet &;
-  [[nodiscard]] auto sequence(const V3cUnitHeader &vuh) const -> const Sequence &;
-  auto sequence(const V3cUnitHeader &vuh) -> Sequence &;
-  [[nodiscard]] auto atlas(const V3cUnitHeader &vuh) const -> const Atlas &;
-  auto atlas(const V3cUnitHeader &vuh) -> Atlas &;
-  [[nodiscard]] auto specialAtlas(const V3cUnitHeader &vuh) const -> const Atlas &;
-  auto specialAtlas(const V3cUnitHeader &vuh) -> Atlas &;
-  [[nodiscard]] auto aspsV(const V3cUnitHeader &vuh) const
-      -> const std::vector<AtlasSequenceParameterSetRBSP> &;
-  [[nodiscard]] auto afpsV(const V3cUnitHeader &vuh) const
-      -> const std::vector<AtlasFrameParameterSetRBSP> &;
-  [[nodiscard]] auto aapsV(const V3cUnitHeader &vuh) const
-      -> const std::vector<AtlasAdaptationParameterSetRBSP> &;
 };
 } // namespace TMIV::Decoder
 

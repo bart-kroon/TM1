@@ -183,7 +183,7 @@ void MivEncoder::writeV3cUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
   const auto vu = V3cUnit{vuh, forward<Payload>(payload)};
 
   ostringstream substream;
-  vu.encodeTo(substream, {m_ivs.vps});
+  vu.encodeTo(substream);
 
   const auto ssvu = SampleStreamV3cUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);

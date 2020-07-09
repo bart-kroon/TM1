@@ -75,10 +75,9 @@ public:
   auto operator==(const V3cUnitHeader &other) const noexcept -> bool;
   auto operator!=(const V3cUnitHeader &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const std::vector<V3cParameterSet> &vpses)
-      -> V3cUnitHeader;
+  static auto decodeFrom(std::istream &stream) -> V3cUnitHeader;
 
-  void encodeTo(std::ostream &stream, const std::vector<V3cParameterSet> &vpses) const;
+  void encodeTo(std::ostream &stream) const;
 
 private:
   VuhUnitType m_vuh_unit_type;
@@ -135,11 +134,9 @@ public:
   auto operator==(const V3cUnit &other) const noexcept -> bool;
   auto operator!=(const V3cUnit &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const std::vector<V3cParameterSet> &vpses,
-                         std::size_t numBytesInV3CUnit) -> V3cUnit;
+  static auto decodeFrom(std::istream &stream, std::size_t numBytesInV3CUnit) -> V3cUnit;
 
-  auto encodeTo(std::ostream &stream, const std::vector<V3cParameterSet> &vpses) const
-      -> std::size_t;
+  auto encodeTo(std::ostream &stream) const -> std::size_t;
 
 private:
   V3cUnitHeader m_v3c_unit_header;

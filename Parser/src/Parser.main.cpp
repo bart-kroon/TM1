@@ -68,7 +68,7 @@ public:
   }
 
   void parseV3cUnit(std::istream &stream, size_t numBytesInV3CUnit) {
-    auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, m_vpsV, numBytesInV3CUnit);
+    auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
     m_log << vu.v3c_unit_header();
     m_vuh = vu.v3c_unit_header();
     std::visit([this](const auto &x) { parseV3cPayload(x); }, vu.v3c_payload().payload());
@@ -78,13 +78,6 @@ public:
 
   void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {
     m_log << vps;
-    for (auto &x : m_vpsV) {
-      if (x.vps_v3c_parameter_set_id() == vps.vps_v3c_parameter_set_id()) {
-        x = vps;
-        return;
-      }
-    }
-    m_vpsV.push_back(vps);
     m_vps = vps;
   }
 
@@ -127,14 +120,14 @@ public:
   }
 
   void parseAtl(std::istream &stream) {
-    const auto atl = TMIV::MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, *m_vuh, *m_vps,
-                                                                        m_aspsV, m_afpsV);
+    const auto atl =
+        TMIV::MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, *m_vuh, m_vps, m_aspsV, m_afpsV);
     m_log << atl;
   }
 
   void parseAsps(std::istream &stream) {
     const auto asps =
-        TMIV::MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream, *m_vuh, *m_vps);
+        TMIV::MivBitstream::AtlasSequenceParameterSetRBSP::decodeFrom(stream, *m_vuh, m_vps);
     m_log << asps;
     for (auto &x : m_aspsV) {
       if (x.asps_atlas_sequence_parameter_set_id() == asps.asps_atlas_sequence_parameter_set_id()) {
@@ -171,7 +164,7 @@ public:
 
   void parseAaps(std::istream &stream) {
     const auto aaps =
-        TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream, *m_vps);
+        TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream, m_vps);
     m_log << aaps;
   }
 
@@ -200,11 +193,10 @@ public:
 
 private:
   std::ostream &m_log;
-  std::vector<TMIV::MivBitstream::V3cParameterSet> m_vpsV;
   std::vector<TMIV::MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
   std::vector<TMIV::MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
   std::optional<TMIV::MivBitstream::V3cUnitHeader> m_vuh;
-  std::optional<TMIV::MivBitstream::V3cParameterSet> m_vps;
+  TMIV::MivBitstream::V3cParameterSet m_vps;
 };
 
 auto main(int argc, char *argv[]) -> int {

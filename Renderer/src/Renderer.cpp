@@ -51,7 +51,7 @@ auto Renderer::renderFrame(const AccessUnit &frame, const ViewParams &viewportPa
     -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
 
-  if (frame.vps->vps_miv_extension().vme_max_entities_minus1() == 0) {
+  if (frame.vps.vps_miv_extension().vme_max_entities_minus1() == 0) {
     m_inpainter->inplaceInpaint(viewport, viewportParams);
   }
 

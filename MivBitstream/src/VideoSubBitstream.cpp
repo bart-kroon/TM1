@@ -31,46 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Decoder/Decoder.h>
+#include <TMIV/MivBitstream/VideoSubBitstream.h>
 
-#include <TMIV/Common/Factory.h>
-#include <TMIV/Decoder/GeometryScaler.h>
+#include <sstream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
+namespace TMIV::MivBitstream {
+VideoSubBitstream::VideoSubBitstream(std::string data) : m_data{data} {}
 
-namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
-    : m_geometryScaler{rootNode, componentNode}
-    , m_entityBasedPatchMapFilter{rootNode, componentNode} {
-  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
+auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */) -> std::ostream & {
+  return stream;
 }
 
-namespace {
-void checkRestrictions(const AccessUnit &frame) {
-  if (frame.vps.vps_miv_extension_flag()) {
-    const auto &vme = frame.vps.vps_miv_extension();
-    if (vme.vme_vui_params_present_flag()) {
-      const auto &mvp = vme.miv_vui_parameters();
-      if (!mvp.coordinate_axis_system_params().isOmafCas()) {
-        throw runtime_error(
-            "The VUI indicates that a coordinate axis system other than that of OMAF is used. The "
-            "TMIV decoder/renderer is not yet able to convert between coordinate axis systems.");
-      }
-    }
-  }
+auto VideoSubBitstream::operator==(const VideoSubBitstream &other) const noexcept -> bool {
+  return data() == other.data();
 }
-} // namespace
+auto VideoSubBitstream::operator!=(const VideoSubBitstream &other) const noexcept -> bool {
+  return !operator==(other);
+}
 
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  checkRestrictions(frame);
-  m_geometryScaler.inplaceScale(frame);
-  m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
-  m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
-  return m_renderer->renderFrame(frame, viewportParams);
+auto VideoSubBitstream::decodeFrom(std::istream &stream) -> VideoSubBitstream {
+  std::ostringstream buffer;
+  buffer << stream.rdbuf();
+  return VideoSubBitstream{buffer.str()};
 }
-} // namespace TMIV::Decoder
+
+void VideoSubBitstream::encodeTo(std::ostream &stream) const {
+  stream.write(m_data.data(), m_data.size());
+}
+} // namespace TMIV::MivBitstream

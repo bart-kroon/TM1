@@ -55,7 +55,7 @@ GroupBasedRenderer::GroupBasedRenderer(const Json &rootNode, const Json &compone
 auto GroupBasedRenderer::renderFrame(const AccessUnit &frame,
                                      const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
-  const auto &vme = frame.vps->vps_miv_extension();
+  const auto &vme = frame.vps.vps_miv_extension();
   if (vme.vme_num_groups_minus1() >= GroupIdMask{}.size()) {
     throw runtime_error("This decoder implementation is limited to a maximum number of groups");
   }
@@ -93,7 +93,7 @@ auto GroupBasedRenderer::renderFrame(const AccessUnit &frame,
 
 auto GroupBasedRenderer::groupRenderOrder(const AccessUnit &frame, const ViewParams &viewportParams)
     -> std::vector<unsigned> {
-  const auto &vme = frame.vps->vps_miv_extension();
+  const auto &vme = frame.vps.vps_miv_extension();
   auto groupPriorities = vector<Priority>();
   auto result = vector<unsigned>();
 

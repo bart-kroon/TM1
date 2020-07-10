@@ -207,7 +207,7 @@ auto main(int argc, char *argv[]) -> int {
     parser.parseV3cSampleStream(stream);
     parser.report().printTo(std::cout);
     return 0;
-  } catch (std::runtime_error &e) {
+  } catch (std::exception &e) {
     std::clog << e.what() << std::endl;
     return 1;
   }

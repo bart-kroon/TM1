@@ -134,10 +134,10 @@ auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth
   return Depth10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto occFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Mask {
+auto occFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Occupancy10Frame {
   cout << "occFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
        << ", frameSize=" << frameSize << '\n';
-  return Mask{frameSize.x(), frameSize.y()};
+  return Occupancy10Frame{frameSize.x(), frameSize.y()};
 }
 
 auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {

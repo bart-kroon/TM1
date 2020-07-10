@@ -69,7 +69,7 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
       vps.occupancy_information(a)
           .oi_occupancy_codec_id(0)
 		  .oi_lossy_occupancy_map_compression_threshold(0) // set similar to V-PCC
-          .oi_occupancy_nominal_2d_bitdepth_minus1(7) // doing binary lossless coding for now but writing as yuv420p (8bit) files
+          .oi_occupancy_nominal_2d_bitdepth_minus1(9) // doing binary lossless coding for now but writing as yuv420p10le files
 		  .oi_occupancy_MSB_align_flag(false);
     }
 

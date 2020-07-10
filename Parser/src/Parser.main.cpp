@@ -58,7 +58,7 @@ auto main(int argc, char *argv[]) -> int {
 
     auto decoder = MivDecoder{stream};
     decoder.setOccFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
-      return Mask{frameSize.x(), frameSize.y()};
+      return Occupancy10Frame{frameSize.x(), frameSize.y()};
     });
     decoder.setGeoFrameServer([](uint8_t /* atlasId */, uint32_t /* frameId */, Vec2i frameSize) {
       return Depth10Frame{frameSize.x(), frameSize.y()};

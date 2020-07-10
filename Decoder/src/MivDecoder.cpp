@@ -343,7 +343,7 @@ void MivDecoder::outputOccVideoData(AccessUnit &au) {
       if (atlas_.occVideoServer) {
         auto frame = atlas_.occVideoServer->getFrame();
         VERIFY_MIVBITSTREAM(frame);
-        aau.decOccFrame = frame->as<YUV400P8>();
+        aau.decOccFrame = frame->as<YUV400P10>();
         atlas_.occVideoServer->wait();
       } else if (m_occFrameServer) {
         aau.decOccFrame =

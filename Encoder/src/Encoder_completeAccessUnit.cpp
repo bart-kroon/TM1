@@ -121,7 +121,7 @@ void Encoder::constructVideoFrames() {
         codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
         codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
         frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
-                 Mask(codedOccupancyWidth, codedOccupancyHeight)};
+                 Occupancy10Frame(codedOccupancyWidth, codedOccupancyHeight)};
       } else
         frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
       frame.texture.fillNeutral();

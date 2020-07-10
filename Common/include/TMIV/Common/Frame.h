@@ -176,6 +176,7 @@ using TextureFrame = Frame<YUV420P10>;
 using Texture444Frame = Frame<YUV444P10>; // The renderer uses 4:4:4 internally
 using Depth10Frame = Frame<YUV400P10>;    // Decoder side
 using Depth16Frame = Frame<YUV400P16>;    // Encoder side
+using Occupancy10Frame = Frame<YUV400P10>;
 using Mask = Frame<YUV400P8>;
 using BlockToPatchMap = Frame<YUV400P16>;
 const auto unusedPatchId = std::uint16_t(65535);
@@ -188,12 +189,12 @@ template <typename FORMAT> struct TextureDepthFrame {
   TextureFrame texture;
   Frame<FORMAT> depth;
   EntityMap entities{};
-  Mask occupancy{};
+  Occupancy10Frame occupancy{};
 
   TextureDepthFrame() = default;
   TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_)
       : texture{std::move(texture_)}, depth{std::move(depth_)} {}
-  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, Mask occupancy_)
+  TextureDepthFrame(TextureFrame texture_, Frame<FORMAT> depth_, Occupancy10Frame occupancy_)
       : texture{std::move(texture_)}, depth{std::move(depth_)}, occupancy{std::move(occupancy_)} {}
 };
 using TextureDepth10Frame = TextureDepthFrame<YUV400P10>;

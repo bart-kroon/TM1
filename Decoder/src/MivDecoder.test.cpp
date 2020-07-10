@@ -51,7 +51,7 @@ TEST_CASE("MivDecoder", "[MIV decoder]") {
     SECTION("Callbacks") {
 
       decoder.setOccFrameServer(
-          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Mask{}; });
+          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Occupancy10Frame{}; });
 
       decoder.setGeoFrameServer(
           [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Depth10Frame{}; });

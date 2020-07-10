@@ -70,7 +70,7 @@ public: // Decoder interface
 
   // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
   // within the bistreams take presedence.
-  using OccFrameServer = std::function<Common::Mask(
+  using OccFrameServer = std::function<Common::Occupancy10Frame(
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setOccFrameServer(OccFrameServer value);
 

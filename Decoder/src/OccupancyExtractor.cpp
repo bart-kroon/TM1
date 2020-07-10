@@ -48,7 +48,7 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Decoder {
 namespace {
 /*
-void writeOccupancy(const std::string &path, const Common::Mask &frame, int frameIndex) {
+void writeOccupancy(const std::string &path, const Common::Occupancy10Frame &frame, int frameIndex) {
 
   std::cout << "Writing occupancyAtlasMap " << frameIndex << " to " << path << '\n';
 
@@ -110,7 +110,7 @@ void OccupancyExtractor::extract(MivBitstream::AccessUnit &frame) const {
 
   for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
     auto &atlas = frame.atlas[i];
-    atlas.occFrame = Mask{atlas.frameSize().x(), atlas.frameSize().y()};
+    atlas.occFrame = Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
     if (!frame.vps->vps_occupancy_video_present_flag(i)) {
       atlas.occFrame.fillOne();
       if (!explicitOccupancyMode) {

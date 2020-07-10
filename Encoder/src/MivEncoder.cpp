@@ -37,7 +37,6 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-#include <iostream>
 #include <sstream>
 
 using namespace std;
@@ -45,10 +44,6 @@ using namespace TMIV::Common;
 
 namespace TMIV::Encoder {
 MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
-  cout << "=== Sample stream V3C header " << string(100 - 31, '=') << '\n'
-       << m_ssvh << string(100, '=') << '\n'
-       << endl;
-
   m_ssvh.encodeTo(m_stream);
   m_stream.flush();
 }
@@ -63,17 +58,11 @@ void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams)
 void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
   m_ivau = ivAccessUnitParams;
 
-  if (m_writeNonAcl) {
-    for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
-      writeV3cUnit(VuhUnitType::V3C_AD, vai, nonAclAtlasSubBitstream(vai));
-    }
-  }
-
   for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
-    writeV3cUnit(VuhUnitType::V3C_AD, vai, aclAtlasSubBitstream(vai));
+    writeV3cUnit(VuhUnitType::V3C_AD, vai, atlasSubBitstream(vai));
   }
 
-  m_writeNonAcl = false;
+  m_irap = false;
 }
 
 namespace {
@@ -91,20 +80,7 @@ auto MivEncoder::specialAtlasSubBitstream() -> AtlasSubBitstream {
   return asb;
 }
 
-auto MivEncoder::nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
-  auto asb = AtlasSubBitstream{m_ssnh};
-
-  auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-  vuh.vuh_atlas_id(vai);
-
-  const auto &aau = m_ivau.atlas[vai];
-
-  writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_ivs.vps);
-  writeNalUnit(asb, nuhAfps, aau.afps, vector<AtlasSequenceParameterSetRBSP>{aau.asps});
-  return asb;
-}
-
-auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
+auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
   auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
@@ -114,8 +90,13 @@ auto MivEncoder::aclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   const auto aspsV = vector<AtlasSequenceParameterSetRBSP>{aau.asps};
   const auto afpsV = vector<AtlasFrameParameterSetRBSP>{aau.afps};
 
-  const auto nuh = m_writeNonAcl ? nuhIdr : nuhCra;
-  writeNalUnit(asb, nuh, atlasTileGroupLayer(vai), vuh, m_ivs.vps, aspsV, afpsV);
+  if (m_irap) {
+    writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_ivs.vps);
+    writeNalUnit(asb, nuhAfps, aau.afps, vector<AtlasSequenceParameterSetRBSP>{aau.asps});
+    writeNalUnit(asb, nuhIdr, atlasTileGroupLayer(vai), vuh, m_ivs.vps, aspsV, afpsV);
+  } else {
+    writeNalUnit(asb, nuhCra, atlasTileGroupLayer(vai), vuh, m_ivs.vps, aspsV, afpsV);
+  }
 
   return asb;
 }
@@ -187,11 +168,6 @@ void MivEncoder::writeV3cUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
 
   const auto ssvu = SampleStreamV3cUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
-  cout << "\n=== V3C unit " << string(100 - 15, '=') << '\n'
-       << ssvu << vu << m_nalUnitLog.str() << string(100, '=') << '\n'
-       << endl;
-
-  m_nalUnitLog.str("");
 }
 
 template <typename Payload, typename... Args>
@@ -200,7 +176,5 @@ void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload
   ostringstream substream1;
   payload.encodeTo(substream1, forward<Args>(args)...);
   asb.nal_units().emplace_back(nuh, substream1.str());
-  m_nalUnitLog << "--- NAL unit " << string(100 - 13, '-') << '\n'
-               << asb.nal_units().back() << payload;
 }
 } // namespace TMIV::Encoder

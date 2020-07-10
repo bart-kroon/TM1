@@ -120,6 +120,8 @@ public:
       return parseAaps(stream);
     case TMIV::MivBitstream::NalUnitType::NAL_CAF:
       return parseCaf(stream);
+    default:
+      std::cout << "Unknown NAL unit:\n" << nu;
     }
   }
 
@@ -191,6 +193,8 @@ public:
       return parseViewingSpaceHandlingSei(bitstream);
     case TMIV::MivBitstream::PayloadType::rec_viewport:
       return parseRecViewportSei(bitstream);
+    default:
+      std::cout << "Unknown SEI message:\n" << message;
     }
   }
 

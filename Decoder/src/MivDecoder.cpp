@@ -39,7 +39,6 @@
 #include <iostream>
 #include <utility>
 
-
 namespace TMIV::Decoder {
 MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{std::move(source)} {}
 

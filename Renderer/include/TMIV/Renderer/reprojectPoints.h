@@ -125,7 +125,8 @@ public:
   Base(Base &&) = default;
   auto operator=(Base &&) -> Base & = default;
   auto operator=(const Base &) -> Base & = default;
-  [[nodiscard]] virtual auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f = 0;
+  [[nodiscard]] virtual auto unprojectVertex(Common::Vec2f uv, float depth) const
+      -> Common::Vec3f = 0;
   [[nodiscard]] virtual auto projectVertex(const SceneVertexDescriptor &v) const
       -> ImageVertexDescriptor const = 0;
 };
@@ -137,10 +138,12 @@ public:
 public:
   using engine_type::Engine;
   using engine_type::operator=;
-  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const -> Common::Vec3f override {
+  [[nodiscard]] auto unprojectVertex(Common::Vec2f uv, float depth) const
+      -> Common::Vec3f override {
     return engine_type::unprojectVertex(uv, depth);
   }
-  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const -> ImageVertexDescriptor const override {
+  [[nodiscard]] auto projectVertex(const SceneVertexDescriptor &v) const
+      -> ImageVertexDescriptor const override {
     return engine_type::projectVertex(v);
   }
 };

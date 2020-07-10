@@ -324,7 +324,7 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
     for (unsigned g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
       for (uint16_t v = 0; v <= perGroupParams[g]->mvpl.mvp_num_views_minus1(); v++) {
         m_ivSequenceParams.mvpl.mvp_view_id(vIndex++, perGroupParams[g]->mvpl.mvp_view_id(v) +
-                                                            (uint16_t)sumViewsInGroups);
+                                                          (uint16_t)sumViewsInGroups);
       }
       sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl.mvp_num_views_minus1() + 1;
     }

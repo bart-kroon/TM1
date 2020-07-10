@@ -36,7 +36,6 @@
 #include <iostream>
 #include <utility>
 
-
 namespace TMIV::Decoder {
 V3cUnitBuffer::V3cUnitBuffer(V3cUnitSource source) : m_source{std::move(source)} {}
 

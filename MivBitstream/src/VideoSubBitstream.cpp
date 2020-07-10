@@ -36,7 +36,6 @@
 #include <sstream>
 #include <utility>
 
-
 namespace TMIV::MivBitstream {
 VideoSubBitstream::VideoSubBitstream(std::string data) : m_data{std::move(data)} {}
 

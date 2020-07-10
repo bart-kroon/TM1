@@ -173,7 +173,7 @@ public:
 
   void parseV3cPayload(const std::monostate & /* unused */) {}
 
-  void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet &/* vps */) {}
+  void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet & /* vps */) {}
 
   void parseV3cPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
     for (auto &nu : asb.nal_units()) {

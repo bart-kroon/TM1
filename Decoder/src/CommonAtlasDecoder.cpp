@@ -41,10 +41,9 @@
 #include <sstream>
 #include <utility>
 
-
 namespace TMIV::Decoder {
-CommonAtlasDecoder::CommonAtlasDecoder(V3cUnitSource source,
-                                       MivBitstream::V3cParameterSet vps, int32_t foc)
+CommonAtlasDecoder::CommonAtlasDecoder(V3cUnitSource source, MivBitstream::V3cParameterSet vps,
+                                       int32_t foc)
     : m_source{std::move(source)}, m_vps{std::move(vps)}, m_foc{foc} {}
 
 auto CommonAtlasDecoder::operator()() -> std::optional<AccessUnit> {

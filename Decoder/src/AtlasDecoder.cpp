@@ -41,7 +41,6 @@
 #include <sstream>
 #include <utility>
 
-
 namespace TMIV::Decoder {
 AtlasDecoder::AtlasDecoder(V3cUnitSource source, const MivBitstream::V3cUnitHeader &vuh,
                            MivBitstream::V3cParameterSet vps, int32_t foc)

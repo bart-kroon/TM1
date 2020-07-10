@@ -225,7 +225,8 @@ auto AtlasAdaptationParameterSetRBSP::operator!=(
   return !operator==(other);
 }
 
-auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AtlasAdaptationParameterSetRBSP {
+auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream)
+    -> AtlasAdaptationParameterSetRBSP {
   InputBitstream bitstream{stream};
 
   auto x = AtlasAdaptationParameterSetRBSP{};

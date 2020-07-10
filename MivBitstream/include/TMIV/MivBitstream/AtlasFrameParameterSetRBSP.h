@@ -164,7 +164,7 @@ private:
 };
 
 auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id) noexcept
--> const AtlasFrameParameterSetRBSP &;
+    -> const AtlasFrameParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 
 #include "AtlasFrameParameterSetRBSP.hpp"

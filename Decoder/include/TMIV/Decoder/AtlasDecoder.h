@@ -50,7 +50,7 @@ class AtlasDecoder {
 public:
   AtlasDecoder() = default;
   explicit AtlasDecoder(V3cUnitSource source, const MivBitstream::V3cUnitHeader &vuh,
-                        const MivBitstream::V3cParameterSet &vps, int32_t foc);
+                        MivBitstream::V3cParameterSet vps, int32_t foc);
 
   struct AccessUnit {
     int32_t foc{};

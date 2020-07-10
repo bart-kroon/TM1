@@ -34,9 +34,11 @@
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
 
 #include <sstream>
+#include <utility>
+
 
 namespace TMIV::MivBitstream {
-VideoSubBitstream::VideoSubBitstream(std::string data) : m_data{data} {}
+VideoSubBitstream::VideoSubBitstream(std::string data) : m_data{std::move(data)} {}
 
 auto operator<<(std::ostream &stream, const VideoSubBitstream & /* x */) -> std::ostream & {
   return stream;

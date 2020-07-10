@@ -34,9 +34,11 @@
 #include <TMIV/Decoder/V3cUnitBuffer.h>
 
 #include <iostream>
+#include <utility>
+
 
 namespace TMIV::Decoder {
-V3cUnitBuffer::V3cUnitBuffer(V3cUnitSource source) : m_source{source} {}
+V3cUnitBuffer::V3cUnitBuffer(V3cUnitSource source) : m_source{std::move(source)} {}
 
 auto V3cUnitBuffer::operator()(const MivBitstream::V3cUnitHeader &vuh)
     -> std::optional<MivBitstream::V3cUnit> {

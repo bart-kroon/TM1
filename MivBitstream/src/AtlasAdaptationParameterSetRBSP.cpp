@@ -70,14 +70,13 @@ auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept 
   return !operator==(other);
 }
 
-auto AapsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
-    -> AapsMivExtension {
+auto AapsMivExtension::decodeFrom(InputBitstream &bitstream) -> AapsMivExtension {
   auto x = AapsMivExtension{};
   x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
   return x;
 }
 
-void AapsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
+void AapsMivExtension::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(aame_omaf_v1_compatible_flag());
 }
 
@@ -226,8 +225,7 @@ auto AtlasAdaptationParameterSetRBSP::operator!=(
   return !operator==(other);
 }
 
-auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const V3cParameterSet &vps)
-    -> AtlasAdaptationParameterSetRBSP {
+auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream) -> AtlasAdaptationParameterSetRBSP {
   InputBitstream bitstream{stream};
 
   auto x = AtlasAdaptationParameterSetRBSP{};
@@ -249,7 +247,7 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const V3cParam
     x.aaps_vpcc_extension(AapsVpccExtension::decodeFrom(bitstream));
   }
   if (x.aaps_miv_extension_flag()) {
-    x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream, vps));
+    x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream));
   }
   if (x.aaps_extension_6bits() != 0) {
     auto aapsExtensionData = vector<bool>{};
@@ -263,7 +261,7 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream, const V3cParam
   return x;
 }
 
-void AtlasAdaptationParameterSetRBSP::encodeTo(ostream &stream, const V3cParameterSet &vps) const {
+void AtlasAdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
   OutputBitstream bitstream{stream};
 
   bitstream.putUExpGolomb(aaps_atlas_adaptation_parameter_set_id());
@@ -283,7 +281,7 @@ void AtlasAdaptationParameterSetRBSP::encodeTo(ostream &stream, const V3cParamet
     aaps_vpcc_extension().encodeTo(bitstream);
   }
   if (aaps_miv_extension_flag()) {
-    aaps_miv_extension().encodeTo(bitstream, vps);
+    aaps_miv_extension().encodeTo(bitstream);
   }
   if (aaps_extension_6bits() != 0) {
     for (auto bit : aapsExtensionData()) {

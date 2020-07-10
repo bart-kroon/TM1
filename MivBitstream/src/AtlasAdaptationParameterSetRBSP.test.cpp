@@ -39,14 +39,13 @@ using namespace TMIV::MivBitstream;
 
 TEST_CASE("atlas_adaptation_parameter_set_rbsp", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = AtlasAdaptationParameterSetRBSP{};
-  const auto vps = V3cParameterSet{};
 
   REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=0
 aaps_log2_max_afoc_present_flag=false
 aaps_extension_present_flag=false
 )");
 
-  REQUIRE(byteCodingTest(x, 1, vps));
+  REQUIRE(byteCodingTest(x, 1));
 
   SECTION("Example 1") {
     x.aaps_atlas_adaptation_parameter_set_id(63)
@@ -73,6 +72,6 @@ aame_omaf_v1_compatible_flag=false
 aaps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 5, vps));
+    REQUIRE(byteCodingTest(x, 5));
   }
 }

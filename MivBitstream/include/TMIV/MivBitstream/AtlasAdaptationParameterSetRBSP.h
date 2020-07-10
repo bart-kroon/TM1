@@ -71,10 +71,9 @@ public:
   auto operator==(const AapsMivExtension &) const noexcept -> bool;
   auto operator!=(const AapsMivExtension &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &stream, const V3cParameterSet &vps)
-      -> AapsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &stream) -> AapsMivExtension;
 
-  void encodeTo(Common::OutputBitstream &stream, const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &stream) const;
 
 private:
   bool m_aame_omaf_v1_compatible_flag{};
@@ -116,10 +115,9 @@ public:
   auto operator==(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
   auto operator!=(const AtlasAdaptationParameterSetRBSP &) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps)
-      -> AtlasAdaptationParameterSetRBSP;
+  static auto decodeFrom(std::istream &stream) -> AtlasAdaptationParameterSetRBSP;
 
-  void encodeTo(std::ostream &stream, const V3cParameterSet &vps) const;
+  void encodeTo(std::ostream &stream) const;
 
 private:
   std::uint8_t m_aaps_atlas_adaptation_parameter_set_id{};

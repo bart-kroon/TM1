@@ -73,18 +73,19 @@ public:
     return result;
   }
 
-  static auto atlasVertices(const AtlasAccessUnit &atlas, const ViewParams &viewportParams) {
+  static auto atlasVertices(const AccessUnit &frame, const AtlasAccessUnit &atlas,
+                            const ViewParams &viewportParams) {
     SceneVertexDescriptorList result;
     const auto rows = atlas.frameSize().y();
     const auto cols = atlas.frameSize().x();
     result.reserve(rows * cols);
 
-    const auto transformList = affineTransformList(atlas.viewParamsList, viewportParams.ce);
+    const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.ce);
 
     vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());
     for (const auto &patch : atlas.patchParamsList) {
-      depthTransform.emplace_back(atlas.viewParamsList[patch.pduViewId()].dq, patch);
+      depthTransform.emplace_back(frame.viewParamsList[patch.pduViewId()].dq, patch);
     }
 
     // For each used pixel in the atlas...
@@ -101,8 +102,8 @@ public:
         // Look up metadata
         assert(patchId < atlas.patchParamsList.size());
         const auto &patch = atlas.patchParamsList[patchId];
-        assert(patch.pduViewId() < atlas.viewParamsList.size());
-        const auto &viewParams = atlas.viewParamsList[patch.pduViewId()];
+        assert(patch.pduViewId() < frame.viewParamsList.size());
+        const auto &viewParams = frame.viewParamsList[patch.pduViewId()];
 
         // Look up depth value and affine parameters
         const auto uv = Vec2f(patch.atlasToView({j_atlas, i_atlas}));
@@ -172,8 +173,9 @@ public:
     return result;
   }
 
-  static auto unprojectAtlas(const AtlasAccessUnit &atlas, const ViewParams &viewportParams) {
-    return tuple{atlasVertices(atlas, viewportParams), atlasTriangles(atlas),
+  static auto unprojectAtlas(const AccessUnit &frame, const AtlasAccessUnit &atlas,
+                             const ViewParams &viewportParams) {
+    return tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
                  tuple{atlasColors(atlas)}};
   }
 
@@ -189,7 +191,7 @@ public:
 
     for (const auto &atlas : frame.atlas) {
       // Generate a reprojected mesh
-      auto [vertices, triangles, attributes] = unprojectAtlas(atlas, viewportParams);
+      auto [vertices, triangles, attributes] = unprojectAtlas(frame, atlas, viewportParams);
       auto mesh = project(move(vertices), move(triangles), move(attributes), viewportParams.ci);
 
       // Compensate for resolution difference between source and target view
@@ -235,7 +237,7 @@ public:
     auto count = 0;
 
     for (const auto &atlas : frame.atlas) {
-      for (const auto &viewParams : atlas.viewParamsList) {
+      for (const auto &viewParams : frame.viewParamsList) {
         sum += resolution(viewParams);
         ++count;
       }

@@ -49,13 +49,12 @@ namespace TMIV::MivBitstream {
 struct AtlasAccessUnit {
   AtlasSequenceParameterSetRBSP asps;
   AtlasFrameParameterSetRBSP afps;
-  AtlasTileHeader ath;
+
   Common::Depth10Frame decGeoFrame;
   Common::Depth10Frame geoFrame;
   Common::Texture444Frame attrFrame;
 
   Common::BlockToPatchMap blockToPatchMap;
-  ViewParamsList viewParamsList;
   PatchParamsList patchParamsList;
 
   // Nominal atlas frame size
@@ -69,10 +68,11 @@ struct AtlasAccessUnit {
 };
 
 struct AccessUnit {
-  bool irap{}; // TODO(BK): set this flag to true on the first access unit of a new sequence
+  bool irap{};
+  std::int32_t foc{-1};
   V3cParameterSet vps;
+  ViewParamsList viewParamsList;
   std::vector<AtlasAccessUnit> atlas;
-  std::uint32_t frameId{};
   std::optional<ViewingSpace> vs;
 };
 } // namespace TMIV::MivBitstream

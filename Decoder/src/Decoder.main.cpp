@@ -66,8 +66,8 @@ public:
       , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {}
 
   void run() override {
-    while (auto frame = m_metadataReader.decoder().decode()) {
-      auto range = m_inputToOutputFrameIdMap.equal_range(frame->frameId);
+    while (auto frame = m_metadataReader.decoder()()) {
+      auto range = m_inputToOutputFrameIdMap.equal_range(frame->foc);
       if (range.first == range.second) {
         return; // TODO(BK): Test with A97 pose trace, then remove this comment
       }
@@ -79,7 +79,7 @@ public:
 
 private:
   void renderDecodedFrame(AccessUnit frame, int outputFrameId) {
-    cout << "Rendering input frame " << frame.frameId << " to output frame " << outputFrameId
+    cout << "Rendering input frame " << frame.foc << " to output frame " << outputFrameId
          << ", with target viewport:\n";
     const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);
     viewportParams.printTo(cout, 0);

@@ -192,11 +192,8 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
 
   x.ath_atlas_frame_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_V3CBITSTREAM(x.ath_atlas_frame_parameter_set_id() <= 63);
-  VERIFY_V3CBITSTREAM(x.ath_atlas_frame_parameter_set_id() < afpsV.size());
-  const auto &afps = afpsV[x.ath_atlas_frame_parameter_set_id()];
-
-  VERIFY_V3CBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
-  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
+  const auto &afps = afpsById(afpsV, x.ath_atlas_frame_parameter_set_id());
+  const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
 
   x.ath_atlas_adaptation_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
 
@@ -252,12 +249,10 @@ void AtlasTileHeader::encodeTo(OutputBitstream &bitstream,
                                const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                const vector<AtlasFrameParameterSetRBSP> &afpsV) const {
   VERIFY_V3CBITSTREAM(ath_atlas_frame_parameter_set_id() <= 63);
-  VERIFY_V3CBITSTREAM(ath_atlas_frame_parameter_set_id() < afpsV.size());
   bitstream.putUExpGolomb(ath_atlas_frame_parameter_set_id());
-  const auto &afps = afpsV[ath_atlas_frame_parameter_set_id()];
 
-  VERIFY_V3CBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
-  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
+  const auto &afps = afpsById(afpsV, ath_atlas_frame_parameter_set_id());
+  const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
 
   bitstream.putUExpGolomb(ath_atlas_adaptation_parameter_set_id());
 
@@ -404,11 +399,8 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
                                const AtlasTileHeader &ath) -> PatchDataUnit {
   auto x = PatchDataUnit{};
 
-  VERIFY_V3CBITSTREAM(ath.ath_atlas_frame_parameter_set_id() < afpsV.size());
-  const auto &afps = afpsV[ath.ath_atlas_frame_parameter_set_id()];
-
-  VERIFY_V3CBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
-  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
+  const auto &afps = afpsById(afpsV, ath.ath_atlas_frame_parameter_set_id());
+  const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
 
   x.pdu_2d_pos_x(bitstream.getUExpGolomb<uint16_t>());
   VERIFY_V3CBITSTREAM(x.pdu_2d_pos_x() < asps.asps_frame_width());
@@ -461,11 +453,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
                              const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                              const vector<AtlasFrameParameterSetRBSP> &afpsV,
                              const AtlasTileHeader &ath) const {
-  VERIFY_V3CBITSTREAM(ath.ath_atlas_frame_parameter_set_id() < afpsV.size());
-  const auto &afps = afpsV[ath.ath_atlas_frame_parameter_set_id()];
-
-  VERIFY_V3CBITSTREAM(afps.afps_atlas_sequence_parameter_set_id() < aspsV.size());
-  const auto &asps = aspsV[afps.afps_atlas_sequence_parameter_set_id()];
+  const auto &afps = afpsById(afpsV, ath.ath_atlas_frame_parameter_set_id());
+  const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
 
   bitstream.putUExpGolomb(pdu_2d_pos_x());
   bitstream.putUExpGolomb(pdu_2d_pos_y());

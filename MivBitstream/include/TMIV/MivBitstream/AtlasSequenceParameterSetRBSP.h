@@ -254,6 +254,9 @@ private:
   std::optional<AspsMivExtension> m_asme;
   std::optional<std::vector<bool>> m_aspsExtensionData;
 };
+
+auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
+    -> const AtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 
 #include "AtlasSequenceParameterSetRBSP.hpp"

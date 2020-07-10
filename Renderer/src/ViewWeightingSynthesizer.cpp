@@ -171,7 +171,7 @@ public:
 
   auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams)
       -> Texture444Depth16Frame {
-    const auto &viewParamsList = frame.atlas.front().viewParamsList;
+    const auto &viewParamsList = frame.viewParamsList;
     const auto sourceHelperList = ProjectionHelperList{viewParamsList};
     const auto targetHelper = ProjectionHelper{viewportParams};
 
@@ -959,24 +959,9 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
-namespace {
-auto checkLimitations(const AccessUnit &frame) {
-  const auto &viewParamsList = frame.atlas.front().viewParamsList;
-
-  for (size_t atlasId = 1; atlasId < frame.atlas.size(); ++atlasId) {
-    if (viewParamsList != frame.atlas[atlasId].viewParamsList) {
-      throw runtime_error("Support for per-atlas view parameters lists has not yet been "
-                          "implemented for the ViewWeightingSynthesizer.");
-    }
-  }
-}
-} // namespace
-
 auto ViewWeightingSynthesizer::renderFrame(const AccessUnit &frame,
                                            const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
-  checkLimitations(frame);
-
   return m_impl->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Renderer

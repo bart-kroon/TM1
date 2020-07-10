@@ -75,6 +75,64 @@ private:
   std::list<V3cUnit> m_buffer;
 };
 
+class SpecialAtlasDecoder {
+public:
+  SpecialAtlasDecoder() = default;
+  explicit SpecialAtlasDecoder(V3cUnitSource source, const V3cParameterSet &vps);
+
+  struct AccessUnit {
+    int32_t foc{};
+    AtlasAdaptationParameterSetRBSP aaps;
+  };
+
+  auto operator()() -> std::optional<AccessUnit>;
+
+private:
+  V3cUnitSource m_source;
+  V3cParameterSet m_vps;
+};
+
+class AtlasDecoder {
+public:
+  AtlasDecoder() = default;
+  explicit AtlasDecoder(V3cUnitSource source, const V3cUnitHeader &vuh, const V3cParameterSet &vps);
+
+  struct AccessUnit {
+    int32_t foc{};
+    AtlasSequenceParameterSetRBSP asps;
+    AtlasFrameParameterSetRBSP afps;
+    AtlasTileLayerRBSP atl;
+    std::vector<SeiMessage> prefixNSei;
+    std::vector<SeiMessage> prefixESei;
+    std::vector<SeiMessage> suffixNSei;
+    std::vector<SeiMessage> suffixESei;
+  };
+
+  auto operator()() -> std::optional<AccessUnit>;
+
+private:
+  auto decodeAsb() -> bool;
+  auto decodeAu() -> AccessUnit;
+  void decodePrefixNalUnit(AccessUnit &au, const NalUnit &nu);
+  void decodeAclNalUnit(AccessUnit &au, const NalUnit &nu);
+  void decodeSuffixNalUnit(AccessUnit &au, const NalUnit &nu);
+  void decodeAsps(std::istream &stream);
+  void decodeAfps(std::istream &stream);
+  void decodeAaps(std::istream &stream);
+  void decodeSei(std::vector<SeiMessage> &messages, std::istream &stream);
+
+  V3cUnitSource m_source;
+  V3cUnitHeader m_vuh{VuhUnitType::V3C_AD};
+  V3cParameterSet m_vps;
+
+  std::list<NalUnit> m_buffer;
+  int32_t m_foc{-1};
+
+  std::vector<AtlasSequenceParameterSetRBSP> m_aspsV;
+  std::vector<AtlasFrameParameterSetRBSP> m_afpsV;
+  std::vector<AtlasAdaptationParameterSetRBSP> m_aapsV;
+};
+
 class MivDecoder {
 public: // Decoder interface
   explicit MivDecoder(V3cUnitSource source);
@@ -99,84 +157,38 @@ public: // Decoder interface
       std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setAttrFrameServer(AttrFrameServer value);
 
-  auto decode() -> std::optional<AccessUnit>;
+  auto operator()() -> std::optional<AccessUnit>;
 
 private:
-  auto decodeSequence() -> bool;
+  auto expectIrap() const -> bool;
+  auto decodeVps() -> bool;
   void checkCapabilities();
   auto startVideoDecoder(const V3cUnitHeader &vuh, double &totalTime)
       -> std::unique_ptr<VideoDecoder::VideoServer>;
 
-  auto pullFrame() -> AccessUnit;
-  void pullAtlasData(AccessUnit &au);
-  [[nodiscard]] auto haveFrame() const -> bool;
+  void decodeSpecialAtlas();
+  void decodeViewParamsList();
 
-  void pullGeoVideoData(AccessUnit &au);
-  void pullAttrVideoData(AccessUnit &au);
+  void decodeAtlas(uint8_t j);
+  void decodeBlockToPatchMap(uint8_t j);
+  void decodePatchParamsList(uint8_t j);
 
-  void decodeAsb(const V3cUnitHeader &vuh, const AtlasSubBitstream &asb);
-
-  void decodeNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void decodeUnknownNalUnit(const V3cUnitHeader &vuh, const NalUnit &nu);
-
-  void decodeAtl(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, const AtlasTileLayerRBSP &atl);
-  static auto decodeMvpl(const MivViewParamsList &mvpl) -> ViewParamsList;
-  static auto decodeAtdu(const AtlasTileDataUnit &atdu, const AtlasTileHeader &ath,
-                         const AtlasSequenceParameterSetRBSP &asps) -> PatchParamsList;
-  static auto decodeBlockToPatchMap(const AtlasTileDataUnit &atdu,
-                                    const AtlasSequenceParameterSetRBSP &asps)
-      -> Common::BlockToPatchMap;
-  void decodeAsps(AtlasSequenceParameterSetRBSP asps);
-  void decodeAfps(AtlasFrameParameterSetRBSP afps);
-  void decodeAaps(AtlasAdaptationParameterSetRBSP aaps);
-  static void decodeSei(const V3cUnitHeader &vuh, const NalUnitHeader &nuh, const SeiRBSP &sei);
-  static void decodeSeiMessage(const V3cUnitHeader &vuh, const NalUnitHeader &nuh,
-                               const SeiMessage &message);
-
-  void parseAsps(const V3cUnitHeader &vuh, const NalUnit &nu);
-  void parseAfps(const V3cUnitHeader &vuh, const NalUnit &nu);
-  void parseAaps(const V3cUnitHeader &vuh, const NalUnit &nu);
-  void parseAtl(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void parsePrefixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void parseSuffixNSei(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void parsePrefixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
-  static void parseSuffixESei(const V3cUnitHeader &vuh, const NalUnit &nu);
-
-  auto aspsById(int id) const noexcept -> const AtlasSequenceParameterSetRBSP &;
-  auto afpsById(int id) const noexcept -> const AtlasFrameParameterSetRBSP &;
-  auto aapsById(int id) const noexcept -> const AtlasAdaptationParameterSetRBSP &;
+  auto decodeGeoVideo(uint8_t j) -> bool;
+  auto decodeAttrVideo(uint8_t j) -> bool;
 
   V3cUnitBuffer m_inputBuffer;
   GeoFrameServer m_geoFrameServer;
   AttrFrameServer m_attrFrameServer;
 
-  struct Atlas {
-    struct Frame {
-      AtlasTileHeader ath;
-      ViewParamsList viewParamsList;
-      PatchParamsList patchParamsList;
-      Common::BlockToPatchMap blockToPatchMap;
-    };
-
-    std::vector<std::shared_ptr<Frame>> frames;
-
-    std::shared_ptr<Frame> intraFrame;
-
-    std::string geoVideoData;
-    std::string attrVideoData;
-    std::unique_ptr<VideoDecoder::VideoServer> geoVideoServer;
-    std::unique_ptr<VideoDecoder::VideoServer> attrVideoServer;
-  };
-
-  auto atlasById(int id) noexcept -> Atlas &;
+  std::unique_ptr<SpecialAtlasDecoder> m_specialAtlasDecoder;
+  std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_geoVideoDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_attrVideoDecoder;
 
   V3cParameterSet m_vps;
-  std::vector<Atlas> m_atlas;
-  std::optional<Atlas> m_specialAtlas;
-  std::vector<AtlasSequenceParameterSetRBSP> m_aspsV;
-  std::vector<AtlasFrameParameterSetRBSP> m_afpsV;
-  std::vector<AtlasAdaptationParameterSetRBSP> m_aapsV;
-  std::int32_t m_frameId{-1}; // picture order count
+  std::optional<SpecialAtlasDecoder::AccessUnit> m_specialAtlasAu;
+  std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;
+  AccessUnit m_au;
 
   double m_totalGeoVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};

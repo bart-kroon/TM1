@@ -51,7 +51,7 @@ auto recoverPrunedViewAndMask(const AccessUnit &frame)
   auto prunedView = vector<Texture444Depth10Frame>{};
   auto prunedMasks = MaskList{};
 
-  const auto &viewParamsList = frame.atlas.front().viewParamsList;
+  const auto &viewParamsList = frame.viewParamsList;
 
   for (const auto &viewParams : viewParamsList) {
     const auto size = viewParams.ci.projectionPlaneSize();
@@ -74,7 +74,7 @@ auto recoverPrunedViewAndMask(const AccessUnit &frame)
         // Index patch and view parameters
         const auto &patchParams = atlas.patchParamsList[patchId];
         const auto viewId = patchParams.pduViewId();
-        const auto &viewParams = atlas.viewParamsList[viewId];
+        const auto &viewParams = frame.viewParamsList[viewId];
 
         // Test for occupancy
         const auto occupancyTransform = OccupancyTransform{viewParams, patchParams};

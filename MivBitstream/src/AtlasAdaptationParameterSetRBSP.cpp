@@ -1225,4 +1225,13 @@ auto MivViewParamsUpdateIntrinsics::operator!=(
   return !operator==(other);
 }
 
+auto aapsById(const std::vector<AtlasAdaptationParameterSetRBSP> &aapsV, int id) noexcept
+    -> const AtlasAdaptationParameterSetRBSP & {
+  for (auto &x : aapsV) {
+    if (id == x.aaps_atlas_adaptation_parameter_set_id()) {
+      return x;
+    }
+  }
+  V3CBITSTREAM_ERROR("Unknown AAPS ID");
+}
 } // namespace TMIV::MivBitstream

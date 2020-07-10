@@ -471,6 +471,9 @@ private:
   std::optional<AapsMivExtension> m_aaps_miv_extension{};
   std::optional<std::vector<bool>> m_aapsExtensionData{};
 };
+
+auto aapsById(const std::vector<AtlasAdaptationParameterSetRBSP> &aapsV, int id) noexcept
+    -> const AtlasAdaptationParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 
 #include "AtlasAdaptationParameterSetRBSP.hpp"

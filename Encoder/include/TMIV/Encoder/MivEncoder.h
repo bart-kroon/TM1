@@ -54,7 +54,7 @@ public:
 private:
   auto commonAtlasSubBitstream() -> AtlasSubBitstream;
   auto atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
-  auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
+  [[nodiscard]] auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
 
   template <typename Payload>
   void writeV3cUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);

@@ -349,7 +349,7 @@ public:
   [[nodiscard]] auto attribute_information(std::uint8_t j) -> AttributeInformation &;
   [[nodiscard]] auto vps_miv_extension() noexcept -> VpsMivExtension &;
 
-  auto atlasIdxOf(std::uint8_t atlasId) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto atlasIdxOf(std::uint8_t atlasId) const noexcept -> std::uint8_t;
 
   friend auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream &;
 

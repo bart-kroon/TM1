@@ -44,7 +44,7 @@ public:
   VideoSubBitstream() = default;
   explicit VideoSubBitstream(std::string data);
 
-  constexpr auto data() const noexcept -> auto & { return m_data; }
+  [[nodiscard]] constexpr auto data() const noexcept -> auto & { return m_data; }
 
   friend auto operator<<(std::ostream &stream, const VideoSubBitstream &x) -> std::ostream &;
 

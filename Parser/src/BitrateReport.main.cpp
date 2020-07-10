@@ -182,7 +182,7 @@ public:
 
   void parseV3cPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
 
-  auto report() const -> auto & { return m_report; }
+  [[nodiscard]] auto report() const -> auto & { return m_report; }
 
 private:
   BitrateReport m_report;

@@ -66,12 +66,12 @@ public:
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
 private: // Encoder_prepareSequence.cpp
-  auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+  [[nodiscard]] auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
       -> Common::SizeVector;
-  auto calculateViewGridSize(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+  [[nodiscard]] auto calculateViewGridSize(const MivBitstream::IvSequenceParams &ivSequenceParams) const
       -> Common::Vec2i;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
-  auto haveTexture() const -> bool;
+  [[nodiscard]] auto haveTexture() const -> bool;
   void enableOccupancyPerView();
   void prepareIvau();
   auto log2FocLsbMinus4() -> std::uint8_t;

@@ -69,7 +69,7 @@ public: // Decoder interface
   auto operator()() -> std::optional<AccessUnit>;
 
 private:
-  auto expectIrap() const -> bool;
+  [[nodiscard]] auto expectIrap() const -> bool;
   auto decodeVps() -> bool;
   void checkCapabilities();
   auto startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)

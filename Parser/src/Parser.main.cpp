@@ -210,7 +210,7 @@ private:
   std::vector<TMIV::MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
   std::optional<TMIV::MivBitstream::V3cUnitHeader> m_vuh;
   TMIV::MivBitstream::V3cParameterSet m_vps;
-  unsigned m_maxCommonAtlasFrmOrderCntLsb;
+  unsigned m_maxCommonAtlasFrmOrderCntLsb{};
 };
 
 auto main(int argc, char *argv[]) -> int {

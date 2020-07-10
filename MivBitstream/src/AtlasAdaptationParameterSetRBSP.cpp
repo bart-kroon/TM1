@@ -145,7 +145,7 @@ auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension(const AapsVpccExtensio
 auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension(AapsMivExtension value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(aaps_miv_extension_flag());
-  m_aaps_miv_extension = move(value);
+  m_aaps_miv_extension = value;
   return *this;
 }
 

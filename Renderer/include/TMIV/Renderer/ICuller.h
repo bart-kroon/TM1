@@ -35,7 +35,7 @@
 #define _TMIV_RENDERER_ICULLER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/Decoder/AccessUnit.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Renderer {
@@ -49,12 +49,13 @@ public:
   virtual ~ICuller() = default;
 
   // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] virtual auto filterBlockToPatchMap(
-      const MivBitstream::AccessUnit &frame, const MivBitstream::AtlasAccessUnit &atlas,
-      const MivBitstream::ViewParams &viewportParams) const -> Common::BlockToPatchMap = 0;
+  [[nodiscard]] virtual auto
+  filterBlockToPatchMap(const Decoder::AccessUnit &frame, const Decoder::AtlasAccessUnit &atlas,
+                        const MivBitstream::ViewParams &viewportParams) const
+      -> Common::BlockToPatchMap = 0;
 
   // Do culling and update the block to patch maps for all atlases
-  auto inplaceFilterBlockToPatchMaps(MivBitstream::AccessUnit &frame,
+  auto inplaceFilterBlockToPatchMaps(Decoder::AccessUnit &frame,
                                      const MivBitstream::ViewParams &viewportParams) const {
     for (auto &atlas : frame.atlas) {
       atlas.blockToPatchMap = filterBlockToPatchMap(frame, atlas, viewportParams);

@@ -31,29 +31,58 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/AccessUnit.h>
+#ifndef _TMIV_DECODER_COMMONATLASDECODER_H_
+#define _TMIV_DECODER_COMMONATLASDECODER_H_
 
-using namespace TMIV::Common;
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/SeiRBSP.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
-namespace TMIV::MivBitstream {
-auto AtlasAccessUnit::frameSize() const noexcept -> Vec2i {
-  return Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
-}
+#include <TMIV/Common/Frame.h>
 
-auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Vec2i {
-  if (vps.vps_miv_extension_flag()) {
-    const auto &vme = vps.vps_miv_extension();
-    if (vme.vme_geometry_scale_enabled_flag()) {
-      const auto &asme = asps.asps_miv_extension();
-      return Vec2i{asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
-                   asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
-    }
-  }
-  return frameSize();
-}
+#include <array>
+#include <functional>
 
-auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> uint16_t {
-  const auto k = asps.asps_log2_patch_packing_block_size();
-  return blockToPatchMap.getPlane(0)(row >> k, column >> k);
-}
-} // namespace TMIV::MivBitstream
+namespace TMIV::Decoder {
+using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
+
+class CommonAtlasDecoder {
+public:
+  CommonAtlasDecoder() = default;
+  explicit CommonAtlasDecoder(V3cUnitSource source, const MivBitstream::V3cParameterSet &vps);
+
+  struct AccessUnit {
+    int32_t foc{};
+    MivBitstream::AtlasAdaptationParameterSetRBSP aaps;
+    MivBitstream::CommonAtlasFrameRBSP caf;
+    std::vector<MivBitstream::SeiMessage> prefixNSei;
+    std::vector<MivBitstream::SeiMessage> prefixESei;
+    std::vector<MivBitstream::SeiMessage> suffixNSei;
+    std::vector<MivBitstream::SeiMessage> suffixESei;
+  };
+
+  auto operator()() -> std::optional<AccessUnit>;
+
+private:
+  auto decodeAsb() -> bool;
+  auto decodeAu() -> AccessUnit;
+  void decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  void decodeCafNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  void decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  void decodeAaps(std::istream &stream);
+  void decodeSei(std::vector<MivBitstream::SeiMessage> &messages, std::istream &stream);
+
+  V3cUnitSource m_source;
+  MivBitstream::V3cParameterSet m_vps;
+
+  std::list<MivBitstream::NalUnit> m_buffer;
+  int32_t m_foc{-1};
+
+  std::vector<MivBitstream::AtlasAdaptationParameterSetRBSP> m_aapsV;
+  unsigned m_maxFrmOrderCntLsb{};
+};
+} // namespace TMIV::Decoder
+
+#endif

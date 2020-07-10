@@ -45,7 +45,7 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 // NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
 // patch ordering anymore.
-auto recoverPrunedViewAndMask(const AccessUnit &frame)
+auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
     -> pair<vector<Texture444Depth10Frame>, MaskList> {
   // Initialization
   auto prunedView = vector<Texture444Depth10Frame>{};

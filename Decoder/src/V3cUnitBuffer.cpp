@@ -31,28 +31,37 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_IVMETADATAREADER_H_
-#define _TMIV_DECODER_IVMETADATAREADER_H_
+#include <TMIV/Decoder/V3cUnitBuffer.h>
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/MivDecoder.h>
-#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
-
-#include <fstream>
+#include <iostream>
 
 namespace TMIV::Decoder {
-class IvMetadataReader {
-public:
-  explicit IvMetadataReader(const Common::Json &config);
+V3cUnitBuffer::V3cUnitBuffer(V3cUnitSource source) : m_source{source} {}
 
-  auto decoder() noexcept -> auto & { return *m_decoder; }
+auto V3cUnitBuffer::operator()(const MivBitstream::V3cUnitHeader &vuh)
+    -> std::optional<MivBitstream::V3cUnit> {
+  auto i = m_buffer.begin();
 
-private:
-  std::ifstream m_stream;
-  std::unique_ptr<Decoder::V3cSampleStreamDecoder> m_vssDecoder;
-  std::unique_ptr<Decoder::MivDecoder> m_decoder;
-};
-
+  for (;;) {
+    if (i == m_buffer.end()) {
+      if (auto vu = m_source()) {
+        m_buffer.push_back(std::move(*vu));
+        i = std::prev(m_buffer.end());
+      } else {
+        return {};
+      }
+    }
+    if (i->v3c_unit_header() == vuh) {
+      auto vu = std::move(*i);
+      i = m_buffer.erase(i);
+      return vu;
+    }
+    if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_VPS) {
+      std::cout << "WARNING: Ignoring V3C unit:\n" << *i;
+      i = m_buffer.erase(i);
+    } else {
+      ++i;
+    }
+  }
+}
 } // namespace TMIV::Decoder
-
-#endif

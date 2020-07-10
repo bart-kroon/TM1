@@ -31,28 +31,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_IVMETADATAREADER_H_
-#define _TMIV_DECODER_IVMETADATAREADER_H_
+#include <TMIV/Decoder/AccessUnit.h>
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/MivDecoder.h>
-#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
-
-#include <fstream>
+using namespace TMIV::Common;
 
 namespace TMIV::Decoder {
-class IvMetadataReader {
-public:
-  explicit IvMetadataReader(const Common::Json &config);
+auto AtlasAccessUnit::frameSize() const noexcept -> Common::Vec2i {
+  return Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
+}
 
-  auto decoder() noexcept -> auto & { return *m_decoder; }
+auto AtlasAccessUnit::decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
+    -> Common::Vec2i {
+  if (vps.vps_miv_extension_flag()) {
+    const auto &vme = vps.vps_miv_extension();
+    if (vme.vme_geometry_scale_enabled_flag()) {
+      const auto &asme = asps.asps_miv_extension();
+      return Common::Vec2i{
+          asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
+          asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
+    }
+  }
+  return frameSize();
+}
 
-private:
-  std::ifstream m_stream;
-  std::unique_ptr<Decoder::V3cSampleStreamDecoder> m_vssDecoder;
-  std::unique_ptr<Decoder::MivDecoder> m_decoder;
-};
-
+auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> std::uint16_t {
+  const auto k = asps.asps_log2_patch_packing_block_size();
+  return blockToPatchMap.getPlane(0)(row >> k, column >> k);
+}
 } // namespace TMIV::Decoder
-
-#endif

@@ -31,50 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
-#define _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
+#ifndef _TMIV_DECODER_NALUNITSEMANTICS_H_
+#define _TMIV_DECODER_NALUNITSEMANTICS_H_
 
-#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
+#include <TMIV/MivBitstream/NalUnit.h>
 
-#include <TMIV/Common/Frame.h>
+namespace TMIV::Decoder {
+constexpr bool isAud(MivBitstream::NalUnitType nut) noexcept {
+  return nut == MivBitstream::NalUnitType::NAL_AUD || nut == MivBitstream::NalUnitType::NAL_V3C_AUD;
+}
 
-namespace TMIV::MivBitstream {
-struct AtlasAccessUnit {
-  AtlasSequenceParameterSetRBSP asps;
-  AtlasFrameParameterSetRBSP afps;
+constexpr bool isPrefixNalUnit(MivBitstream::NalUnitType nut) noexcept {
+  return nut == MivBitstream::NalUnitType::NAL_ASPS || nut == MivBitstream::NalUnitType::NAL_AFPS ||
+         nut == MivBitstream::NalUnitType::NAL_PREFIX_NSEI ||
+         nut == MivBitstream::NalUnitType::NAL_PREFIX_ESEI ||
+         (MivBitstream::NalUnitType::NAL_AAPS <= nut &&
+          nut <= MivBitstream::NalUnitType::NAL_RSV_NACL_50) ||
+         (MivBitstream::NalUnitType::NAL_UNSPEC_53 <= nut &&
+          nut <= MivBitstream::NalUnitType::NAL_UNSPEC_57);
+}
 
-  Common::Depth10Frame decGeoFrame;
-  Common::Depth10Frame geoFrame;
-  Common::Texture444Frame attrFrame;
+constexpr bool isAcl(MivBitstream::NalUnitType nut) noexcept {
+  return nut <= MivBitstream::NalUnitType::NAL_RSV_ACL_35;
+}
 
-  Common::BlockToPatchMap blockToPatchMap;
-  PatchParamsList patchParamsList;
+constexpr bool isCaf(MivBitstream::NalUnitType nut) noexcept {
+  return nut == MivBitstream::NalUnitType::NAL_CAF;
+}
 
-  // Nominal atlas frame size
-  [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
+constexpr bool isSuffixNalUnit(MivBitstream::NalUnitType nut) noexcept {
+  return nut == MivBitstream::NalUnitType::NAL_FD ||
+         nut == MivBitstream::NalUnitType::NAL_SUFFIX_NSEI ||
+         nut == MivBitstream::NalUnitType::NAL_SUFFIX_ESEI ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_51 ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_52 ||
+         MivBitstream::NalUnitType::NAL_UNSPEC_58 <= nut;
+}
 
-  // Geometry frame size
-  [[nodiscard]] auto decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
+constexpr bool isEos(MivBitstream::NalUnitType nut) noexcept {
+  return nut == MivBitstream::NalUnitType::NAL_EOS;
+}
 
-  // Index into the block to patch map using nominal atlas coordinates
-  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;
-};
-
-struct AccessUnit {
-  bool irap{};
-  std::int32_t foc{-1};
-  V3cParameterSet vps;
-  ViewParamsList viewParamsList;
-  std::vector<AtlasAccessUnit> atlas;
-  std::optional<ViewingSpace> vs;
-};
-} // namespace TMIV::MivBitstream
+constexpr bool isEob(MivBitstream::NalUnitType nut) noexcept {
+  return nut == MivBitstream::NalUnitType::NAL_EOB;
+}
+} // namespace TMIV::Decoder
 
 #endif

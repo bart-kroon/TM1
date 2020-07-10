@@ -200,7 +200,7 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   }
 }
 
-void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &frame) {
+void saveBlockToPatchMaps(const Json &config, int frameIndex, const Decoder::AccessUnit &frame) {
   for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
     writeFrame(config, "AtlasPatchOccupancyMapFmt", frame.atlas[atlasId].blockToPatchMap,
                frameIndex, int(atlasId));

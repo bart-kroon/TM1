@@ -53,7 +53,7 @@ public:
   ~ViewWeightingSynthesizer() override;
 
   // Render from a texture atlas to a viewport
-  auto renderFrame(const MivBitstream::AccessUnit &frame,
+  auto renderFrame(const Decoder::AccessUnit &frame,
                    const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 };

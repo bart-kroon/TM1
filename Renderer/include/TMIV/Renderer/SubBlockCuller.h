@@ -48,8 +48,8 @@ public:
   ~SubBlockCuller() override = default;
 
   // Do culling and update the block to patch map for a single atlas
-  [[nodiscard]] auto filterBlockToPatchMap(const MivBitstream::AccessUnit &frame,
-                                           const MivBitstream::AtlasAccessUnit &atlas,
+  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
+                                           const Decoder::AtlasAccessUnit &atlas,
                                            const MivBitstream::ViewParams &viewportParams) const
       -> Common::BlockToPatchMap override;
 

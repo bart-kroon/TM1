@@ -31,28 +31,51 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_IVMETADATAREADER_H_
-#define _TMIV_DECODER_IVMETADATAREADER_H_
+#ifndef _TMIV_DECODER_ACCESSUNIT_H_
+#define _TMIV_DECODER_ACCESSUNIT_H_
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/MivDecoder.h>
-#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 
-#include <fstream>
+#include <TMIV/Common/Frame.h>
 
 namespace TMIV::Decoder {
-class IvMetadataReader {
-public:
-  explicit IvMetadataReader(const Common::Json &config);
+struct AtlasAccessUnit {
+  MivBitstream::AtlasSequenceParameterSetRBSP asps;
+  MivBitstream::AtlasFrameParameterSetRBSP afps;
 
-  auto decoder() noexcept -> auto & { return *m_decoder; }
+  Common::Depth10Frame decGeoFrame;
+  Common::Depth10Frame geoFrame;
+  Common::Texture444Frame attrFrame;
 
-private:
-  std::ifstream m_stream;
-  std::unique_ptr<Decoder::V3cSampleStreamDecoder> m_vssDecoder;
-  std::unique_ptr<Decoder::MivDecoder> m_decoder;
+  Common::BlockToPatchMap blockToPatchMap;
+  MivBitstream::PatchParamsList patchParamsList;
+
+  // Nominal atlas frame size
+  [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
+
+  // Geometry frame size
+  [[nodiscard]] auto decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
+      -> Common::Vec2i;
+
+  // Index into the block to patch map using nominal atlas coordinates
+  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;
 };
 
+struct AccessUnit {
+  bool irap{};
+  std::int32_t foc{-1};
+  MivBitstream::V3cParameterSet vps;
+  MivBitstream::ViewParamsList viewParamsList;
+  std::vector<AtlasAccessUnit> atlas;
+  std::optional<MivBitstream::ViewingSpace> vs;
+};
 } // namespace TMIV::Decoder
 
 #endif

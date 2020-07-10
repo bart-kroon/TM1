@@ -33,422 +33,22 @@
 
 #include <TMIV/Decoder/MivDecoder.h>
 
-#include <TMIV/Common/Bitstream.h>
-#include <TMIV/Common/Bytestream.h>
-#include <TMIV/MivBitstream/MivDecoderMode.h>
-
-#include <cassert>
-#include <istream>
-#include <sstream>
-#include <thread>
-#include <variant>
-
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::VideoDecoder;
+#include <ctime>
+#include <iostream>
 
 namespace TMIV::Decoder {
-V3cSampleStreamDecoder::V3cSampleStreamDecoder(std::istream &stream)
-    : m_stream{stream}, m_ssvh{SampleStreamV3cHeader::decodeFrom(stream)} {
-  VERIFY_V3CBITSTREAM(m_stream.good());
-}
-
-auto V3cSampleStreamDecoder::operator()() -> std::optional<V3cUnit> {
-  m_stream.peek();
-  if (m_stream.eof()) {
-    return {};
-  }
-  auto ssvu = SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
-  istringstream substream{ssvu.ssvu_v3c_unit()};
-  return V3cUnit::decodeFrom(substream, ssvu.ssvu_v3c_unit_size());
-}
-
-V3cUnitBuffer::V3cUnitBuffer(V3cUnitSource source) : m_source{source} {}
-
-auto V3cUnitBuffer::operator()(const V3cUnitHeader &vuh) -> std::optional<V3cUnit> {
-  auto i = m_buffer.begin();
-
-  for (;;) {
-    if (i == m_buffer.end()) {
-      if (auto vu = m_source()) {
-        m_buffer.push_back(std::move(*vu));
-        i = std::prev(m_buffer.end());
-      } else {
-        return {};
-      }
-    }
-    if (i->v3c_unit_header() == vuh) {
-      auto vu = std::move(*i);
-      i = m_buffer.erase(i);
-      return vu;
-    }
-    if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS) {
-      std::cout << "WARNING: Ignoring V3C unit:\n" << *i;
-      i = m_buffer.erase(i);
-    } else {
-      ++i;
-    }
-  }
-}
-
-CommonAtlasDecoder::CommonAtlasDecoder(V3cUnitSource source, const V3cParameterSet &vps)
-    : m_source{source}, m_vps{vps} {}
-
-auto CommonAtlasDecoder::operator()() -> std::optional<AccessUnit> {
-  if (!m_buffer.empty() || decodeAsb()) {
-    return decodeAu();
-  }
-  return {};
-}
-
-auto CommonAtlasDecoder::decodeAsb() -> bool {
-  if (auto asb = m_source()) {
-    for (auto &nu : asb->v3c_payload().atlas_sub_bitstream().nal_units()) {
-      if (nu.nal_unit_header().nal_layer_id() == 0) {
-        m_buffer.push_back(nu);
-      } else {
-        std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
-      }
-    }
-    VERIFY_V3CBITSTREAM(!m_buffer.empty());
-    return true;
-  }
-  return false;
-}
-
-namespace {
-constexpr bool isAud(NalUnitType nut) noexcept {
-  return nut == NalUnitType::NAL_AUD || nut == NalUnitType::NAL_V3C_AUD;
-}
-
-constexpr bool isPrefixNalUnit(NalUnitType nut) noexcept {
-  return nut == NalUnitType::NAL_ASPS || nut == NalUnitType::NAL_AFPS ||
-         nut == NalUnitType::NAL_PREFIX_NSEI || nut == NalUnitType::NAL_PREFIX_ESEI ||
-         (NalUnitType::NAL_AAPS <= nut && nut <= NalUnitType::NAL_RSV_NACL_50) ||
-         (NalUnitType::NAL_UNSPEC_53 <= nut && nut <= NalUnitType::NAL_UNSPEC_57);
-}
-
-constexpr bool isAcl(NalUnitType nut) noexcept { return nut <= NalUnitType::NAL_RSV_ACL_35; }
-
-constexpr bool isCaf(NalUnitType nut) noexcept { return nut == NalUnitType::NAL_CAF; }
-
-constexpr bool isSuffixNalUnit(NalUnitType nut) noexcept {
-  return nut == NalUnitType::NAL_FD || nut == NalUnitType::NAL_SUFFIX_NSEI ||
-         nut == NalUnitType::NAL_SUFFIX_ESEI || nut == NalUnitType::NAL_RSV_NACL_51 ||
-         nut == NalUnitType::NAL_RSV_NACL_52 || NalUnitType::NAL_UNSPEC_58 <= nut;
-}
-
-constexpr bool isEos(NalUnitType nut) noexcept { return nut == NalUnitType::NAL_EOS; }
-
-constexpr bool isEob(NalUnitType nut) noexcept { return nut == NalUnitType::NAL_EOB; }
-} // namespace
-
-auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
-  auto au = AccessUnit{};
-  au.foc = ++m_foc;
-
-  const auto nut = [this]() { return m_buffer.front().nal_unit_header().nal_unit_type(); };
-
-  if (!m_buffer.empty() && isAud(nut())) {
-    m_buffer.pop_front();
-  }
-
-  while (!m_buffer.empty() && isPrefixNalUnit(nut())) {
-    decodePrefixNalUnit(au, m_buffer.front());
-    m_buffer.pop_front();
-  }
-
-  VERIFY_V3CBITSTREAM(!m_buffer.empty() && isCaf(nut()));
-  decodeCafNalUnit(au, m_buffer.front());
-  m_buffer.pop_front();
-
-  while (!m_buffer.empty() && isSuffixNalUnit(nut())) {
-    decodeSuffixNalUnit(au, m_buffer.front());
-    m_buffer.pop_front();
-  }
-
-  if (!m_buffer.empty() && isEos(nut())) {
-    m_buffer.pop_front();
-  }
-
-  if (!m_buffer.empty() && isEob(nut())) {
-    m_buffer.pop_front();
-  }
-
-  const auto focLsb = au.caf.caf_frm_order_cnt_lsb();
-  VERIFY_V3CBITSTREAM(focLsb < m_maxFrmOrderCntLsb);
-  au.foc += focLsb - (au.foc % m_maxFrmOrderCntLsb);
-  std::cout << "Common atlas frame: foc=" << au.foc << '\n';
-
-  return au;
-}
-
-void CommonAtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nuh;
-    return;
-  }
-
-  istringstream stream{nu.rbsp()};
-
-  switch (nuh.nal_unit_type()) {
-  case NalUnitType::NAL_AAPS:
-    return decodeAaps(stream);
-  case NalUnitType::NAL_PREFIX_ESEI:
-    return decodeSei(au.prefixESei, stream);
-  case NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au.prefixNSei, stream);
-  default:
-    std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
-  }
-}
-
-void CommonAtlasDecoder::decodeCafNalUnit(AccessUnit &au, const NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nu;
-    return;
-  }
-
-  istringstream stream{nu.rbsp()};
-
-  VERIFY_MIVBITSTREAM(0 < m_maxFrmOrderCntLsb);
-  au.caf = CommonAtlasFrameRBSP::decodeFrom(stream, m_vps, m_maxFrmOrderCntLsb);
-  au.aaps = aapsById(m_aapsV, au.caf.caf_atlas_adaptation_parameter_set_id());
-}
-
-void CommonAtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nu;
-    return;
-  }
-
-  istringstream stream{nu.rbsp()};
-
-  switch (nuh.nal_unit_type()) {
-  case NalUnitType::NAL_FD:
-    return;
-  case NalUnitType::NAL_SUFFIX_ESEI:
-    return decodeSei(au.suffixESei, stream);
-  case NalUnitType::NAL_SUFFIX_NSEI:
-    return decodeSei(au.suffixNSei, stream);
-  default:
-    std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
-  }
-}
-
-void CommonAtlasDecoder::decodeAaps(std::istream &stream) {
-  auto aaps = AtlasAdaptationParameterSetRBSP::decodeFrom(stream, m_vps);
-
-  if (aaps.aaps_log2_max_afoc_present_flag()) {
-    const auto x = 1U << (aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 1U);
-    VERIFY_MIVBITSTREAM(m_maxFrmOrderCntLsb == 0 || m_maxFrmOrderCntLsb == x);
-    m_maxFrmOrderCntLsb = x;
-  }
-
-  for (auto &x : m_aapsV) {
-    if (x.aaps_atlas_adaptation_parameter_set_id() ==
-        aaps.aaps_atlas_adaptation_parameter_set_id()) {
-      x = std::move(aaps);
-      return;
-    }
-  }
-  return m_aapsV.push_back(aaps);
-}
-
-void CommonAtlasDecoder::decodeSei(std::vector<SeiMessage> &messages, std::istream &stream) {
-  auto sei = SeiRBSP::decodeFrom(stream);
-  for (auto &x : sei.messages()) {
-    messages.push_back(x);
-  }
-}
-
-AtlasDecoder::AtlasDecoder(V3cUnitSource source, const V3cUnitHeader &vuh,
-                           const V3cParameterSet &vps)
-    : m_source{source}, m_vuh{vuh}, m_vps{vps} {}
-
-auto AtlasDecoder::operator()() -> std::optional<AccessUnit> {
-  if (!m_buffer.empty() || decodeAsb()) {
-    return decodeAu();
-  }
-  return {};
-}
-
-auto AtlasDecoder::decodeAsb() -> bool {
-  if (auto asb = m_source()) {
-    assert(m_vuh == asb->v3c_unit_header());
-    for (auto &nu : asb->v3c_payload().atlas_sub_bitstream().nal_units()) {
-      if (nu.nal_unit_header().nal_layer_id() == 0) {
-        m_buffer.push_back(nu);
-      } else {
-        std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
-      }
-    }
-    VERIFY_V3CBITSTREAM(!m_buffer.empty());
-    return true;
-  }
-  return false;
-}
-
-auto AtlasDecoder::decodeAu() -> AccessUnit {
-  auto au = AccessUnit{};
-  au.foc = ++m_foc;
-
-  const auto nut = [this]() { return m_buffer.front().nal_unit_header().nal_unit_type(); };
-
-  if (!m_buffer.empty() && isAud(nut())) {
-    m_buffer.pop_front();
-  }
-
-  while (!m_buffer.empty() && isPrefixNalUnit(nut())) {
-    decodePrefixNalUnit(au, m_buffer.front());
-    m_buffer.pop_front();
-  }
-
-  VERIFY_V3CBITSTREAM(!m_buffer.empty() && isAcl(nut()));
-  decodeAclNalUnit(au, m_buffer.front());
-  m_buffer.pop_front();
-
-  while (!m_buffer.empty() && isSuffixNalUnit(nut())) {
-    decodeSuffixNalUnit(au, m_buffer.front());
-    m_buffer.pop_front();
-  }
-
-  if (!m_buffer.empty() && isEos(nut())) {
-    m_buffer.pop_front();
-  }
-
-  if (!m_buffer.empty() && isEob(nut())) {
-    m_buffer.pop_front();
-  }
-
-  const auto focLsb = au.atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb();
-  VERIFY_V3CBITSTREAM(focLsb < m_maxAtlasFrmOrderCntLsb);
-  au.foc += focLsb - (au.foc % m_maxAtlasFrmOrderCntLsb);
-  std::cout << "Atlas frame: vuh_atlas_id=" << int(m_vuh.vuh_atlas_id()) << ", foc=" << au.foc
-            << '\n';
-
-  return au;
-}
-
-void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nuh;
-    return;
-  }
-
-  istringstream stream{nu.rbsp()};
-
-  switch (nuh.nal_unit_type()) {
-  case NalUnitType::NAL_ASPS:
-    return decodeAsps(stream);
-  case NalUnitType::NAL_AFPS:
-    return decodeAfps(stream);
-  case NalUnitType::NAL_AAPS:
-    return decodeAaps(stream);
-  case NalUnitType::NAL_PREFIX_ESEI:
-    return decodeSei(au.prefixESei, stream);
-  case NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au.prefixNSei, stream);
-  default:
-    std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
-  }
-}
-
-void AtlasDecoder::decodeAclNalUnit(AccessUnit &au, const NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nu;
-    return;
-  }
-
-  istringstream stream{nu.rbsp()};
-
-  au.atl = AtlasTileLayerRBSP::decodeFrom(stream, m_vuh, m_vps, m_aspsV, m_afpsV);
-  au.afps = afpsById(m_afpsV, au.atl.atlas_tile_header().ath_atlas_frame_parameter_set_id());
-  au.asps = aspsById(m_aspsV, au.afps.afps_atlas_sequence_parameter_set_id());
-}
-
-void AtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nu;
-    return;
-  }
-
-  istringstream stream{nu.rbsp()};
-
-  switch (nuh.nal_unit_type()) {
-  case NalUnitType::NAL_FD:
-    return;
-  case NalUnitType::NAL_SUFFIX_ESEI:
-    return decodeSei(au.suffixESei, stream);
-  case NalUnitType::NAL_SUFFIX_NSEI:
-    return decodeSei(au.suffixNSei, stream);
-  default:
-    std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
-  }
-}
-
-void AtlasDecoder::decodeAsps(std::istream &stream) {
-  auto asps = AtlasSequenceParameterSetRBSP::decodeFrom(stream, m_vuh, m_vps);
-
-  m_maxAtlasFrmOrderCntLsb = 1U << (asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
-
-  for (auto &x : m_aspsV) {
-    if (x.asps_atlas_sequence_parameter_set_id() == asps.asps_atlas_sequence_parameter_set_id()) {
-      VERIFY_V3CBITSTREAM(x == asps);
-      return;
-    }
-  }
-  return m_aspsV.push_back(asps);
-}
-
-void AtlasDecoder::decodeAfps(std::istream &stream) {
-  auto afps = AtlasFrameParameterSetRBSP::decodeFrom(stream, m_aspsV);
-  for (auto &x : m_afpsV) {
-    if (x.afps_atlas_frame_parameter_set_id() == afps.afps_atlas_frame_parameter_set_id()) {
-      x = std::move(afps);
-      return;
-    }
-  }
-  return m_afpsV.push_back(afps);
-}
-
-void AtlasDecoder::decodeAaps(std::istream &stream) {
-  auto aaps = AtlasAdaptationParameterSetRBSP::decodeFrom(stream, m_vps);
-  for (auto &x : m_aapsV) {
-    if (x.aaps_atlas_adaptation_parameter_set_id() ==
-        aaps.aaps_atlas_adaptation_parameter_set_id()) {
-      x = std::move(aaps);
-      return;
-    }
-  }
-  return m_aapsV.push_back(aaps);
-}
-
-void AtlasDecoder::decodeSei(std::vector<SeiMessage> &messages, std::istream &stream) {
-  auto sei = SeiRBSP::decodeFrom(stream);
-  for (auto &x : sei.messages()) {
-    messages.push_back(x);
-  }
-}
-
 MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{source} {}
 
 MivDecoder::~MivDecoder() {
   if (m_totalGeoVideoDecodingTime > 0.) {
-    cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
-         << " s\n";
+    std::cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
+              << " s\n";
   }
   if (m_totalAttrVideoDecodingTime > 0.) {
-    cout << "Total attribute video sub bitstream decoding time: " << m_totalAttrVideoDecodingTime
-         << " s\n";
+    std::cout << "Total attribute video sub bitstream decoding time: "
+              << m_totalAttrVideoDecodingTime << " s\n";
   }
 }
 
@@ -494,7 +94,7 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
   }
 
   if (result[false] && result[true]) {
-    throw runtime_error("One of the video streams is truncated");
+    throw std::runtime_error("One of the video streams is truncated");
   }
   if (result[true]) {
     // TODO(BK): This copies the video frames.
@@ -506,7 +106,7 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
 auto MivDecoder::expectIrap() const -> bool { return !m_commonAtlasDecoder; }
 
 auto MivDecoder::decodeVps() -> bool {
-  auto vu = m_inputBuffer(V3cUnitHeader{VuhUnitType::V3C_VPS});
+  auto vu = m_inputBuffer(MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_VPS});
   if (!vu) {
     return false;
   }
@@ -514,9 +114,9 @@ auto MivDecoder::decodeVps() -> bool {
 
   checkCapabilities();
 
-  auto vuh = V3cUnitHeader{VuhUnitType::V3C_CAD};
+  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_CAD};
   m_commonAtlasDecoder =
-      make_unique<CommonAtlasDecoder>([this, vuh]() { return m_inputBuffer(vuh); }, m_au.vps);
+      std::make_unique<CommonAtlasDecoder>([this, vuh]() { return m_inputBuffer(vuh); }, m_au.vps);
 
   m_atlasDecoder.clear();
   m_atlasAu.assign(m_au.vps.vps_atlas_count_minus1() + size_t(1), {});
@@ -525,21 +125,21 @@ auto MivDecoder::decodeVps() -> bool {
   m_attrVideoDecoder.clear();
 
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
-    auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
     vuh.vuh_atlas_id(m_au.vps.vps_atlas_id(j));
-    m_atlasDecoder.push_back(
-        make_unique<AtlasDecoder>([this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps));
+    m_atlasDecoder.push_back(std::make_unique<AtlasDecoder>(
+        [this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps));
     m_au.atlas.emplace_back();
 
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
+      auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
           .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
       m_geoVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
     }
 
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
+      auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
           .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
       m_attrVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
@@ -560,7 +160,7 @@ void MivDecoder::checkCapabilities() {
   }
 }
 
-auto MivDecoder::startVideoDecoder(const V3cUnitHeader &vuh, double &totalTime)
+auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
     -> std::unique_ptr<VideoDecoder::VideoServer> {
   std::string data;
   while (auto vu = m_inputBuffer(vuh)) {
@@ -574,11 +174,13 @@ auto MivDecoder::startVideoDecoder(const V3cUnitHeader &vuh, double &totalTime)
     return {}; // Out-of-band?
   }
 
-  const double t0 = clock();
-  auto server = make_unique<VideoServer>(
-      IVideoDecoder::create(m_au.vps.profile_tier_level().ptl_profile_codec_group_idc()), data);
+  const double t0 = std::clock();
+  auto server = std::make_unique<VideoDecoder::VideoServer>(
+      VideoDecoder::IVideoDecoder::create(
+          m_au.vps.profile_tier_level().ptl_profile_codec_group_idc()),
+      data);
   server->wait();
-  totalTime += (clock() - t0) / CLOCKS_PER_SEC;
+  totalTime += (std::clock() - t0) / CLOCKS_PER_SEC;
   return server;
 }
 
@@ -610,28 +212,32 @@ void MivDecoder::decodeAtlas(uint8_t j) {
 void MivDecoder::decodeBlockToPatchMap(uint8_t j) {
   auto &btpm = m_au.atlas[j].blockToPatchMap;
   const auto &asps = m_au.atlas[j].asps;
-  btpm = BlockToPatchMap{asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
-                         asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
-  fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), unusedPatchId);
+  btpm = Common::BlockToPatchMap{
+      asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
+      asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
+  std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
 
-  m_atlasAu[j]->atl.atlas_tile_data_unit().visit(
-      [&btpm](size_t p, AtduPatchMode /* unused */, const PatchInformationData &pid) {
-        const auto &pdu = pid.patch_data_unit();
-        const auto first = Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()};
-        const auto last = first + Vec2i{pdu.pdu_2d_size_x_minus1(), pdu.pdu_2d_size_y_minus1()};
+  m_atlasAu[j]->atl.atlas_tile_data_unit().visit([&btpm](size_t p,
+                                                         MivBitstream::AtduPatchMode /* unused */,
+                                                         const MivBitstream::PatchInformationData
+                                                             &pid) {
+    const auto &pdu = pid.patch_data_unit();
+    const auto first = Common::Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()};
+    const auto last = first + Common::Vec2i{pdu.pdu_2d_size_x_minus1(), pdu.pdu_2d_size_y_minus1()};
 
-        for (int y = first.y(); y <= last.y(); ++y) {
-          for (int x = first.x(); x <= last.x(); ++x) {
-            btpm.getPlane(0)(y, x) = uint16_t(p);
-          }
-        }
-      });
+    for (int y = first.y(); y <= last.y(); ++y) {
+      for (int x = first.x(); x <= last.x(); ++x) {
+        btpm.getPlane(0)(y, x) = uint16_t(p);
+      }
+    }
+  });
 }
 
 void MivDecoder::decodePatchParamsList(uint8_t j) {
   const auto &ath = m_atlasAu[j]->atl.atlas_tile_header();
-  VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
-  if (ath.ath_type() == AthType::SKIP_TILE) {
+  VERIFY_MIVBITSTREAM(ath.ath_type() == MivBitstream::AthType::I_TILE ||
+                      ath.ath_type() == MivBitstream::AthType::SKIP_TILE);
+  if (ath.ath_type() == MivBitstream::AthType::SKIP_TILE) {
     return;
   }
 
@@ -640,7 +246,8 @@ void MivDecoder::decodePatchParamsList(uint8_t j) {
   auto &ppl = m_au.atlas[j].patchParamsList;
   ppl.assign(atdu.atduTotalNumberOfPatches(), {});
 
-  atdu.visit([&](size_t p, AtduPatchMode /* unused */, const PatchInformationData &pid) {
+  atdu.visit([&](size_t p, MivBitstream::AtduPatchMode /* unused */,
+                 const MivBitstream::PatchInformationData &pid) {
     const auto &pdu = pid.patch_data_unit();
     const auto k = asps.asps_log2_patch_packing_block_size();
 
@@ -673,7 +280,7 @@ auto MivDecoder::decodeGeoVideo(uint8_t j) -> bool {
     if (!frame) {
       return false;
     }
-    m_au.atlas[j].decGeoFrame = frame->as<YUV400P10>();
+    m_au.atlas[j].decGeoFrame = frame->as<Common::YUV400P10>();
     m_geoVideoDecoder[j]->wait();
   } else if (m_geoFrameServer) {
     m_au.atlas[j].decGeoFrame = m_geoFrameServer(m_au.vps.vps_atlas_id(j), m_au.foc,
@@ -697,7 +304,7 @@ auto MivDecoder::decodeAttrVideo(uint8_t j) -> bool {
     if (!frame) {
       return false;
     }
-    m_au.atlas[j].attrFrame = frame->as<YUV444P10>();
+    m_au.atlas[j].attrFrame = frame->as<Common::YUV444P10>();
     m_attrVideoDecoder[j]->wait();
   } else if (m_attrFrameServer) {
     m_au.atlas[j].attrFrame =

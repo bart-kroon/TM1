@@ -44,6 +44,7 @@ add_library(TMIV::RendererLib
 
 target_link_libraries(RendererLib
     PUBLIC
+        TMIV::DecoderLib
         TMIV::ViewingSpaceLib
     PRIVATE
         Threads::Threads

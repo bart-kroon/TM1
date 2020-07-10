@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(MivBitstreamLib
-    "src/AccessUnit.cpp"
     "src/AccessUnitDelimiterRBSP.cpp"
     "src/AtlasAdaptationParameterSetRBSP.cpp"
     "src/AtlasFrameParameterSetRBSP.cpp"
@@ -26,7 +25,6 @@ add_library(MivBitstreamLib
     "src/V3cParameterSet.cpp"
     "src/V3cSampleStreamFormat.cpp"
     "src/V3cUnit.cpp"
-    "include/TMIV/MivBitstream/AccessUnit.h"
     "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.h"
     "include/TMIV/MivBitstream/AccessUnitDelimiterRBSP.hpp"
     "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h"

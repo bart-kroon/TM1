@@ -34,125 +34,14 @@
 #ifndef _TMIV_DECODER_MIVDECODER_H_
 #define _TMIV_DECODER_MIVDECODER_H_
 
-#include <TMIV/MivBitstream/AccessUnit.h>
-#include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
-#include <TMIV/MivBitstream/AtlasSubBitstream.h>
-#include <TMIV/MivBitstream/SeiRBSP.h>
-#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
-#include <TMIV/MivBitstream/V3cUnit.h>
-#include <TMIV/MivBitstream/VideoSubBitstream.h>
+#include <TMIV/Common/Frame.h>
+#include <TMIV/Decoder/AccessUnit.h>
+#include <TMIV/Decoder/AtlasDecoder.h>
+#include <TMIV/Decoder/CommonAtlasDecoder.h>
+#include <TMIV/Decoder/V3cUnitBuffer.h>
 #include <TMIV/VideoDecoder/VideoServer.h>
 
-#include <TMIV/Common/Frame.h>
-
-#include <array>
-#include <functional>
-
 namespace TMIV::Decoder {
-using namespace MivBitstream;
-
-using V3cUnitSource = std::function<std::optional<V3cUnit>()>;
-
-class V3cSampleStreamDecoder {
-public:
-  explicit V3cSampleStreamDecoder(std::istream &stream);
-
-  auto operator()() -> std::optional<V3cUnit>;
-
-private:
-  std::istream &m_stream;
-  SampleStreamV3cHeader m_ssvh;
-};
-
-class V3cUnitBuffer {
-public:
-  explicit V3cUnitBuffer(V3cUnitSource source);
-
-  auto operator()(const V3cUnitHeader &vuh) -> std::optional<V3cUnit>;
-
-private:
-  V3cUnitSource m_source;
-  std::list<V3cUnit> m_buffer;
-};
-
-class CommonAtlasDecoder {
-public:
-  CommonAtlasDecoder() = default;
-  explicit CommonAtlasDecoder(V3cUnitSource source, const V3cParameterSet &vps);
-
-  struct AccessUnit {
-    int32_t foc{};
-    AtlasAdaptationParameterSetRBSP aaps;
-    CommonAtlasFrameRBSP caf;
-    std::vector<SeiMessage> prefixNSei;
-    std::vector<SeiMessage> prefixESei;
-    std::vector<SeiMessage> suffixNSei;
-    std::vector<SeiMessage> suffixESei;
-  };
-
-  auto operator()() -> std::optional<AccessUnit>;
-
-private:
-  auto decodeAsb() -> bool;
-  auto decodeAu() -> AccessUnit;
-  void decodePrefixNalUnit(AccessUnit &au, const NalUnit &nu);
-  void decodeCafNalUnit(AccessUnit &au, const NalUnit &nu);
-  void decodeSuffixNalUnit(AccessUnit &au, const NalUnit &nu);
-  void decodeAaps(std::istream &stream);
-  void decodeSei(std::vector<SeiMessage> &messages, std::istream &stream);
-
-  V3cUnitSource m_source;
-  V3cParameterSet m_vps;
-
-  std::list<NalUnit> m_buffer;
-  int32_t m_foc{-1};
-
-  std::vector<AtlasAdaptationParameterSetRBSP> m_aapsV;
-  unsigned m_maxFrmOrderCntLsb{};
-};
-
-class AtlasDecoder {
-public:
-  AtlasDecoder() = default;
-  explicit AtlasDecoder(V3cUnitSource source, const V3cUnitHeader &vuh, const V3cParameterSet &vps);
-
-  struct AccessUnit {
-    int32_t foc{};
-    AtlasSequenceParameterSetRBSP asps;
-    AtlasFrameParameterSetRBSP afps;
-    AtlasTileLayerRBSP atl;
-    std::vector<SeiMessage> prefixNSei;
-    std::vector<SeiMessage> prefixESei;
-    std::vector<SeiMessage> suffixNSei;
-    std::vector<SeiMessage> suffixESei;
-  };
-
-  auto operator()() -> std::optional<AccessUnit>;
-
-private:
-  auto decodeAsb() -> bool;
-  auto decodeAu() -> AccessUnit;
-  void decodePrefixNalUnit(AccessUnit &au, const NalUnit &nu);
-  void decodeAclNalUnit(AccessUnit &au, const NalUnit &nu);
-  void decodeSuffixNalUnit(AccessUnit &au, const NalUnit &nu);
-  void decodeAsps(std::istream &stream);
-  void decodeAfps(std::istream &stream);
-  void decodeAaps(std::istream &stream);
-  void decodeSei(std::vector<SeiMessage> &messages, std::istream &stream);
-
-  V3cUnitSource m_source;
-  V3cUnitHeader m_vuh{VuhUnitType::V3C_AD};
-  V3cParameterSet m_vps;
-
-  std::list<NalUnit> m_buffer;
-  int32_t m_foc{-1};
-
-  std::vector<AtlasSequenceParameterSetRBSP> m_aspsV;
-  std::vector<AtlasFrameParameterSetRBSP> m_afpsV;
-  std::vector<AtlasAdaptationParameterSetRBSP> m_aapsV;
-  unsigned m_maxAtlasFrmOrderCntLsb{};
-};
-
 class MivDecoder {
 public: // Decoder interface
   explicit MivDecoder(V3cUnitSource source);
@@ -183,7 +72,7 @@ private:
   auto expectIrap() const -> bool;
   auto decodeVps() -> bool;
   void checkCapabilities();
-  auto startVideoDecoder(const V3cUnitHeader &vuh, double &totalTime)
+  auto startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
       -> std::unique_ptr<VideoDecoder::VideoServer>;
 
   void decodeCommonAtlas();

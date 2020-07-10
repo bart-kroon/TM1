@@ -382,7 +382,7 @@ auto GeometryScaler::scale(const AtlasAccessUnit &atlas) const -> Depth10Frame {
   return upscaler(atlas);
 }
 
-void GeometryScaler::inplaceScale(MivBitstream::AccessUnit &frame) const {
+void GeometryScaler::inplaceScale(AccessUnit &frame) const {
   for (auto &atlas : frame.atlas) {
     if (!atlas.attrFrame.empty() && atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
       atlas.geoFrame = scale(atlas);

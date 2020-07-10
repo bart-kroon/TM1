@@ -31,28 +31,23 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_IVMETADATAREADER_H_
-#define _TMIV_DECODER_IVMETADATAREADER_H_
+#ifndef _TMIV_DECODER_V3CSAMPLESTREAMDECODER_H_
+#define _TMIV_DECODER_V3CSAMPLESTREAMDECODER_H_
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/MivDecoder.h>
-#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
-
-#include <fstream>
+#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
 namespace TMIV::Decoder {
-class IvMetadataReader {
+class V3cSampleStreamDecoder {
 public:
-  explicit IvMetadataReader(const Common::Json &config);
+  explicit V3cSampleStreamDecoder(std::istream &stream);
 
-  auto decoder() noexcept -> auto & { return *m_decoder; }
+  auto operator()() -> std::optional<MivBitstream::V3cUnit>;
 
 private:
-  std::ifstream m_stream;
-  std::unique_ptr<Decoder::V3cSampleStreamDecoder> m_vssDecoder;
-  std::unique_ptr<Decoder::MivDecoder> m_decoder;
+  std::istream &m_stream;
+  MivBitstream::SampleStreamV3cHeader m_ssvh;
 };
-
 } // namespace TMIV::Decoder
 
 #endif

@@ -73,7 +73,7 @@ public:
     return result;
   }
 
-  static auto atlasVertices(const AccessUnit &frame, const AtlasAccessUnit &atlas,
+  static auto atlasVertices(const Decoder::AccessUnit &frame, const Decoder::AtlasAccessUnit &atlas,
                             const ViewParams &viewportParams) {
     SceneVertexDescriptorList result;
     const auto rows = atlas.frameSize().y();
@@ -130,7 +130,7 @@ public:
     return result;
   }
 
-  static auto atlasTriangles(const AtlasAccessUnit &atlas) {
+  static auto atlasTriangles(const Decoder::AtlasAccessUnit &atlas) {
     TriangleDescriptorList result;
     const auto rows = atlas.frameSize().y();
     const auto cols = atlas.frameSize().x();
@@ -165,7 +165,7 @@ public:
     return result;
   }
 
-  static auto atlasColors(const AtlasAccessUnit &atlas) {
+  static auto atlasColors(const Decoder::AtlasAccessUnit &atlas) {
     vector<Vec3f> result;
     auto yuv444 = expandTexture(atlas.attrFrame);
     result.reserve(distance(begin(result), end(result)));
@@ -173,13 +173,14 @@ public:
     return result;
   }
 
-  static auto unprojectAtlas(const AccessUnit &frame, const AtlasAccessUnit &atlas,
+  static auto unprojectAtlas(const Decoder::AccessUnit &frame,
+                             const Decoder::AtlasAccessUnit &atlas,
                              const ViewParams &viewportParams) {
     return tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
                  tuple{atlasColors(atlas)}};
   }
 
-  [[nodiscard]] auto rasterFrame(const AccessUnit &frame, const ViewParams &viewportParams,
+  [[nodiscard]] auto rasterFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams,
                                  float compensation) const -> Rasterizer<Vec3f> {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
@@ -232,7 +233,8 @@ public:
     return square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
-  static auto resolutionRatio(const AccessUnit &frame, const ViewParams &viewportParams) -> float {
+  static auto resolutionRatio(const Decoder::AccessUnit &frame, const ViewParams &viewportParams)
+      -> float {
     auto sum = 0.;
     auto count = 0;
 
@@ -245,8 +247,8 @@ public:
     return float(resolution(viewportParams) * count / sum);
   }
 
-  [[nodiscard]] auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
-      -> Texture444Depth16Frame {
+  [[nodiscard]] auto renderFrame(const Decoder::AccessUnit &frame,
+                                 const ViewParams &viewportParams) const -> Texture444Depth16Frame {
     auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
 
     const auto depthTransform = DepthTransform<16>{viewportParams.dq};
@@ -277,7 +279,7 @@ AdditiveSynthesizer::AdditiveSynthesizer(float rayAngleParam, float depthParam,
 
 AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
-auto AdditiveSynthesizer::renderFrame(const AccessUnit &frame,
+auto AdditiveSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
                                       const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);

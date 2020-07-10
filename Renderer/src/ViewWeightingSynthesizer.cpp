@@ -169,7 +169,7 @@ public:
     m_filteringPass = filteringPass;
   }
 
-  auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams)
+  auto renderFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams)
       -> Texture444Depth16Frame {
     const auto &viewParamsList = frame.viewParamsList;
     const auto sourceHelperList = ProjectionHelperList{viewParamsList};
@@ -338,7 +338,8 @@ private:
     }
   }
 
-  void recoverPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList) {
+  void recoverPrunedSource(const Decoder::AccessUnit &frame,
+                           const ProjectionHelperList &sourceHelperList) {
     // Recover pruned views
     const auto [prunedViews, prunedMasks] = recoverPrunedViewAndMask(frame);
 
@@ -358,7 +359,8 @@ private:
                 [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NaN; });
     }
   }
-  void reprojectPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList,
+  void reprojectPrunedSource(const Decoder::AccessUnit &frame,
+                             const ProjectionHelperList &sourceHelperList,
                              const ProjectionHelper &targetHelper) {
     m_sourceUnprojection.resize(m_sourceDepth.size());
     m_sourceReprojection.resize(m_sourceDepth.size());
@@ -419,7 +421,7 @@ private:
     }
   }
 
-  void warpPrunedSource(const AccessUnit &frame, const ProjectionHelper &targetHelper) {
+  void warpPrunedSource(const Decoder::AccessUnit &frame, const ProjectionHelper &targetHelper) {
     struct Splat {
       Vec2f center{};
       Vec2f firstAxis{};
@@ -959,7 +961,7 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
-auto ViewWeightingSynthesizer::renderFrame(const AccessUnit &frame,
+auto ViewWeightingSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
                                            const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);

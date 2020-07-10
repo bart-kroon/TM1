@@ -31,28 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_IVMETADATAREADER_H_
-#define _TMIV_DECODER_IVMETADATAREADER_H_
-
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/MivDecoder.h>
 #include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 
-#include <fstream>
+#include <sstream>
+
+#include <TMIV/MivBitstream/verify.h>
 
 namespace TMIV::Decoder {
-class IvMetadataReader {
-public:
-  explicit IvMetadataReader(const Common::Json &config);
+V3cSampleStreamDecoder::V3cSampleStreamDecoder(std::istream &stream)
+    : m_stream{stream}, m_ssvh{MivBitstream::SampleStreamV3cHeader::decodeFrom(stream)} {
+  VERIFY_V3CBITSTREAM(m_stream.good());
+}
 
-  auto decoder() noexcept -> auto & { return *m_decoder; }
-
-private:
-  std::ifstream m_stream;
-  std::unique_ptr<Decoder::V3cSampleStreamDecoder> m_vssDecoder;
-  std::unique_ptr<Decoder::MivDecoder> m_decoder;
-};
-
+auto V3cSampleStreamDecoder::operator()() -> std::optional<MivBitstream::V3cUnit> {
+  m_stream.peek();
+  if (m_stream.eof()) {
+    return {};
+  }
+  auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
+  std::istringstream substream{ssvu.ssvu_v3c_unit()};
+  return MivBitstream::V3cUnit::decodeFrom(substream, ssvu.ssvu_v3c_unit_size());
+}
 } // namespace TMIV::Decoder
-
-#endif

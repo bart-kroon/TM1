@@ -1,6 +1,6 @@
 {
     "BoundingBox_center": [ -0.5, -0.5, 1.0 ],
-    "Content_name": "NokiaChess",
+    "Content_name": "Chess",
     "Fps": 30,
     "Frames_number": 300,
     "Informative": {

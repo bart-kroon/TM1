@@ -48,7 +48,7 @@ using namespace TMIV::Common;
 
 class StatisticalVariable {
 public:
-  auto &operator<<(std::size_t value) {
+  auto operator<<(std::size_t value) -> auto & {
     ++m_count;
     m_sum += value;
     return *this;

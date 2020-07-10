@@ -37,11 +37,11 @@
 #include <TMIV/MivBitstream/NalUnit.h>
 
 namespace TMIV::Decoder {
-constexpr bool isAud(MivBitstream::NalUnitType nut) noexcept {
+constexpr auto isAud(MivBitstream::NalUnitType nut) noexcept -> bool {
   return nut == MivBitstream::NalUnitType::NAL_AUD || nut == MivBitstream::NalUnitType::NAL_V3C_AUD;
 }
 
-constexpr bool isPrefixNalUnit(MivBitstream::NalUnitType nut) noexcept {
+constexpr auto isPrefixNalUnit(MivBitstream::NalUnitType nut) noexcept -> bool {
   return nut == MivBitstream::NalUnitType::NAL_ASPS || nut == MivBitstream::NalUnitType::NAL_AFPS ||
          nut == MivBitstream::NalUnitType::NAL_PREFIX_NSEI ||
          nut == MivBitstream::NalUnitType::NAL_PREFIX_ESEI ||
@@ -52,15 +52,15 @@ constexpr bool isPrefixNalUnit(MivBitstream::NalUnitType nut) noexcept {
           nut <= MivBitstream::NalUnitType::NAL_UNSPEC_57);
 }
 
-constexpr bool isAcl(MivBitstream::NalUnitType nut) noexcept {
+constexpr auto isAcl(MivBitstream::NalUnitType nut) noexcept -> bool {
   return nut <= MivBitstream::NalUnitType::NAL_RSV_ACL_35;
 }
 
-constexpr bool isCaf(MivBitstream::NalUnitType nut) noexcept {
+constexpr auto isCaf(MivBitstream::NalUnitType nut) noexcept -> bool {
   return nut == MivBitstream::NalUnitType::NAL_CAF;
 }
 
-constexpr bool isSuffixNalUnit(MivBitstream::NalUnitType nut) noexcept {
+constexpr auto isSuffixNalUnit(MivBitstream::NalUnitType nut) noexcept -> bool {
   return nut == MivBitstream::NalUnitType::NAL_FD ||
          nut == MivBitstream::NalUnitType::NAL_SUFFIX_NSEI ||
          nut == MivBitstream::NalUnitType::NAL_SUFFIX_ESEI ||
@@ -69,11 +69,11 @@ constexpr bool isSuffixNalUnit(MivBitstream::NalUnitType nut) noexcept {
          MivBitstream::NalUnitType::NAL_UNSPEC_58 <= nut;
 }
 
-constexpr bool isEos(MivBitstream::NalUnitType nut) noexcept {
+constexpr auto isEos(MivBitstream::NalUnitType nut) noexcept -> bool {
   return nut == MivBitstream::NalUnitType::NAL_EOS;
 }
 
-constexpr bool isEob(MivBitstream::NalUnitType nut) noexcept {
+constexpr auto isEob(MivBitstream::NalUnitType nut) noexcept -> bool {
   return nut == MivBitstream::NalUnitType::NAL_EOB;
 }
 } // namespace TMIV::Decoder

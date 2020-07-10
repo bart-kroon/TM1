@@ -45,8 +45,9 @@ constexpr bool isPrefixNalUnit(MivBitstream::NalUnitType nut) noexcept {
   return nut == MivBitstream::NalUnitType::NAL_ASPS || nut == MivBitstream::NalUnitType::NAL_AFPS ||
          nut == MivBitstream::NalUnitType::NAL_PREFIX_NSEI ||
          nut == MivBitstream::NalUnitType::NAL_PREFIX_ESEI ||
-         (MivBitstream::NalUnitType::NAL_AAPS <= nut &&
-          nut <= MivBitstream::NalUnitType::NAL_RSV_NACL_50) ||
+         nut == MivBitstream::NalUnitType::NAL_AAPS ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_49 ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_50 ||
          (MivBitstream::NalUnitType::NAL_UNSPEC_53 <= nut &&
           nut <= MivBitstream::NalUnitType::NAL_UNSPEC_57);
 }

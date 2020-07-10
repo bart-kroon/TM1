@@ -57,12 +57,13 @@ void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = mo
 void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = move(value); }
 
 auto MivDecoder::operator()() -> std::optional<AccessUnit> {
-  ++m_au.foc;
   m_au.irap = expectIrap();
 
   if (m_au.irap && !decodeVps()) {
     return {};
   }
+
+  ++m_au.foc;
 
   if (!m_commonAtlasAu || m_commonAtlasAu->foc < m_au.foc) {
     m_commonAtlasAu = (*m_commonAtlasDecoder)();

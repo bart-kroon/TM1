@@ -110,15 +110,9 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
 }
 
 void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nuh;
-    return;
-  }
-
   std::istringstream stream{nu.rbsp()};
 
-  switch (nuh.nal_unit_type()) {
+  switch (nu.nal_unit_header().nal_unit_type()) {
   case MivBitstream::NalUnitType::NAL_ASPS:
     return decodeAsps(stream);
   case MivBitstream::NalUnitType::NAL_AFPS:
@@ -133,29 +127,16 @@ void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUn
 }
 
 void AtlasDecoder::decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nu;
-    return;
-  }
-
   std::istringstream stream{nu.rbsp()};
-
   au.atl = MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, m_vuh, m_vps, m_aspsV, m_afpsV);
   au.afps = afpsById(m_afpsV, au.atl.atlas_tile_header().ath_atlas_frame_parameter_set_id());
   au.asps = aspsById(m_aspsV, au.afps.afps_atlas_sequence_parameter_set_id());
 }
 
 void AtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
-  const auto &nuh = nu.nal_unit_header();
-  if (nuh.nal_layer_id() != 0) {
-    std::cout << " WARNING: Ignoring NAL unit:\n" << nu;
-    return;
-  }
-
   std::istringstream stream{nu.rbsp()};
 
-  switch (nuh.nal_unit_type()) {
+  switch (nu.nal_unit_header().nal_unit_type()) {
   case MivBitstream::NalUnitType::NAL_FD:
     return;
   case MivBitstream::NalUnitType::NAL_SUFFIX_ESEI:

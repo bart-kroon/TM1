@@ -61,10 +61,12 @@ public:
 
     while (stream.peek(), !stream.eof()) {
       const auto ssvu = TMIV::MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
-      m_log << ssvu;
+      m_log << '\n' << std::string(100, '=') << '\n' << ssvu;
       std::istringstream substream{ssvu.ssvu_v3c_unit()};
       parseV3cUnit(substream, ssvu.ssvu_v3c_unit_size());
     }
+
+    m_log << '\n' << std::string(100, '=') << '\n';
   }
 
   void parseV3cUnit(std::istream &stream, size_t numBytesInV3CUnit) {
@@ -92,7 +94,7 @@ public:
   void parseV3cPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
 
   void parseNalUnit(const TMIV::MivBitstream::NalUnit &nu) {
-    m_log << nu;
+    m_log << '\n' << std::string(100, '-') << '\n' << nu;
     std::istringstream stream{nu.rbsp()};
     if (nu.nal_unit_header().nal_unit_type() < TMIV::MivBitstream::NalUnitType::NAL_ASPS) {
       return parseAtl(stream);

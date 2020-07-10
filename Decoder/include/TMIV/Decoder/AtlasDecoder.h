@@ -41,6 +41,7 @@
 #include <TMIV/MivBitstream/V3cUnit.h>
 
 #include <functional>
+#include <list>
 
 namespace TMIV::Decoder {
 using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;

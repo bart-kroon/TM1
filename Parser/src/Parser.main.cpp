@@ -167,8 +167,7 @@ public:
   }
 
   void parseAaps(std::istream &stream) {
-    const auto aaps =
-        TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream, m_vps);
+    const auto aaps = TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream);
     m_log << aaps;
     if (aaps.aaps_log2_max_afoc_present_flag()) {
       m_maxCommonAtlasFrmOrderCntLsb =

@@ -77,7 +77,7 @@ auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
 
   if (m_irap) {
     m_ivs.updateMvpl();
-    writeNalUnit(asb, nuhAaps, m_ivs.aaps, m_ivs.vps);
+    writeNalUnit(asb, nuhAaps, m_ivs.aaps);
   }
 
   const auto maxCommonAtlasFrmOrderCntLsb =

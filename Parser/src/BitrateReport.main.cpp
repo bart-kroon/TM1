@@ -35,6 +35,7 @@
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cUnit.h>
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <map>

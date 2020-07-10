@@ -43,6 +43,7 @@
 #include <TMIV/MivBitstream/V3cUnit.h>
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <optional>

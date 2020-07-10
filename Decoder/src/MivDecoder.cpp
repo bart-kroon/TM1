@@ -37,9 +37,11 @@
 
 #include <ctime>
 #include <iostream>
+#include <utility>
+
 
 namespace TMIV::Decoder {
-MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{source} {}
+MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{std::move(source)} {}
 
 MivDecoder::~MivDecoder() {
   if (m_totalGeoVideoDecodingTime > 0.) {

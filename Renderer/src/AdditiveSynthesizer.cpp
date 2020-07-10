@@ -238,11 +238,9 @@ public:
     auto sum = 0.;
     auto count = 0;
 
-    for (const auto &atlas : frame.atlas) {
-      for (const auto &viewParams : frame.viewParamsList) {
-        sum += resolution(viewParams);
-        ++count;
-      }
+    for (const auto &viewParams : frame.viewParamsList) {
+      sum += resolution(viewParams);
+      ++count;
     }
     return float(resolution(viewportParams) * count / sum);
   }

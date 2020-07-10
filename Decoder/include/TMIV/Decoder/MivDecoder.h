@@ -185,7 +185,6 @@ private:
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_geoVideoDecoder;
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_attrVideoDecoder;
 
-  V3cParameterSet m_vps;
   std::optional<SpecialAtlasDecoder::AccessUnit> m_specialAtlasAu;
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;
   AccessUnit m_au;

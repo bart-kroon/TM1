@@ -111,7 +111,8 @@ public:
   static auto align(const Cluster &c, int alignment) -> Cluster;
   static auto merge(const Cluster &c1, const Cluster &c2) -> Cluster;
   static auto retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId = 0,
-                       bool shouldNotBeSplit = false) -> std::pair<ClusterList, ClusteringMap>;
+                       bool shouldNotBeSplit = false, bool isMergingOn = true)
+      -> std::pair<ClusterList, ClusteringMap>;
 };
 } // namespace TMIV::Packer
 

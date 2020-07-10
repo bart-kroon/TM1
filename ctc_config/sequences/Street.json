@@ -5,7 +5,7 @@
         "Converted_by": "VSRS_to_JSON.py"
     },
     "cameras": [
-	    {
+        {
             "Principle_point": [
                 943.231169,
                 548.84504
@@ -29,7 +29,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -41,7 +41,7 @@
             "Depthmap": 1,
             "Projection": "Perspective"
         },
-        {
+		{
             "Principle_point": [
                 943.231169,
                 548.84504
@@ -65,7 +65,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -101,7 +101,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -137,7 +137,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -173,7 +173,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -209,7 +209,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -245,7 +245,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -281,7 +281,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -317,7 +317,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -353,7 +353,7 @@
             "BitDepthColor": 8,
             "ColorSpace": "YUV420",
             "Depth_range": [
-                18.5064,
+                34.5064,
                 2760.511
             ],
             "Background": 0,
@@ -366,13 +366,13 @@
             "Projection": "Perspective"
         }
     ],
-    "Content_name": "PoznanHall",
+    "Content_name": "Street",
     "BoundingBox_center": [
         0,
         0,
         0
     ],
-    "Frames_number": 500,
+    "Frames_number": 250,
     "Fps": 25,
     "Version": "2.0"
 }

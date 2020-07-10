@@ -67,7 +67,7 @@
         "v23",
         "v24"
     ],
-    "SourceCameraParameters": "TechnicolorMuseum.json",
+    "SourceCameraParameters": "Museum.json",
     "SourceGeometryBitDepth": 16,
     "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",

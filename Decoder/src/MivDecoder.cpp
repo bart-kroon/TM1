@@ -115,8 +115,8 @@ auto MivDecoder::decodeVps() -> bool {
   checkCapabilities();
 
   auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_CAD};
-  m_commonAtlasDecoder =
-      std::make_unique<CommonAtlasDecoder>([this, vuh]() { return m_inputBuffer(vuh); }, m_au.vps);
+  m_commonAtlasDecoder = std::make_unique<CommonAtlasDecoder>(
+      [this, vuh]() { return m_inputBuffer(vuh); }, m_au.vps, m_au.foc);
 
   m_atlasDecoder.clear();
   m_atlasAu.assign(m_au.vps.vps_atlas_count_minus1() + size_t(1), {});
@@ -128,7 +128,7 @@ auto MivDecoder::decodeVps() -> bool {
     auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
     vuh.vuh_atlas_id(m_au.vps.vps_atlas_id(j));
     m_atlasDecoder.push_back(std::make_unique<AtlasDecoder>(
-        [this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps));
+        [this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps, m_au.foc));
     m_au.atlas.emplace_back();
 
     if (m_au.vps.vps_geometry_video_present_flag(j)) {

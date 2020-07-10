@@ -55,6 +55,8 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_ivs = IvSequenceParams{atlasFrameSizes, haveTexture()};
+  m_ivs.aaps.aaps_log2_max_afoc_present_flag(true).aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(
+      log2FocLsbMinus4());
   m_ivs.vme() = m_transportIvs.vme();
   m_ivs.viewParamsList = m_transportIvs.viewParamsList;
   m_ivs.viewingSpace = m_transportIvs.viewingSpace;
@@ -177,11 +179,7 @@ void Encoder::enableOccupancyPerView() {
 }
 
 void Encoder::prepareIvau() {
-  m_ivau.atlas.resize(m_ivs.vps.vps_atlas_count_minus1() + 1);
-
-  // Avoid confusion but test MSB/LSB logic in decoder
-  const auto log2FocLsbMinus4 = max(4U, ceilLog2(m_intraPeriod) + 1U) - 4U;
-  assert(log2FocLsbMinus4 <= 4U);
+  m_ivau.atlas.resize(m_ivs.vps.vps_atlas_count_minus1() + size_t(1));
 
   for (uint8_t i = 0; i <= m_ivs.vps.vps_atlas_count_minus1(); ++i) {
     auto &atlas = m_ivau.atlas[i];
@@ -189,7 +187,7 @@ void Encoder::prepareIvau() {
     // Set ASPS parameters
     atlas.asps.asps_frame_width(m_ivs.vps.vps_frame_width(i))
         .asps_frame_height(m_ivs.vps.vps_frame_height(i))
-        .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(uint8_t(log2FocLsbMinus4))
+        .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
@@ -213,5 +211,10 @@ void Encoder::prepareIvau() {
     atlas.ath.ath_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.ath.ath_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }
+}
+
+auto Encoder::log2FocLsbMinus4() -> std::uint8_t {
+  // Avoid confusion but test MSB/LSB logic in decoder
+  return max(4U, ceilLog2(m_intraPeriod) + 1U) - 4U;
 }
 } // namespace TMIV::Encoder

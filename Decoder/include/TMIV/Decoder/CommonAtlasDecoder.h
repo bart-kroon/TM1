@@ -51,7 +51,8 @@ using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
 class CommonAtlasDecoder {
 public:
   CommonAtlasDecoder() = default;
-  explicit CommonAtlasDecoder(V3cUnitSource source, const MivBitstream::V3cParameterSet &vps);
+  explicit CommonAtlasDecoder(V3cUnitSource source, const MivBitstream::V3cParameterSet &vps,
+                              int32_t foc);
 
   struct AccessUnit {
     int32_t foc{};
@@ -78,7 +79,7 @@ private:
   MivBitstream::V3cParameterSet m_vps;
 
   std::list<MivBitstream::NalUnit> m_buffer;
-  int32_t m_foc{-1};
+  int32_t m_foc{};
 
   std::vector<MivBitstream::AtlasAdaptationParameterSetRBSP> m_aapsV;
   unsigned m_maxFrmOrderCntLsb{};

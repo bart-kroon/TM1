@@ -42,8 +42,8 @@
 
 namespace TMIV::Decoder {
 AtlasDecoder::AtlasDecoder(V3cUnitSource source, const MivBitstream::V3cUnitHeader &vuh,
-                           const MivBitstream::V3cParameterSet &vps)
-    : m_source{source}, m_vuh{vuh}, m_vps{vps} {}
+                           const MivBitstream::V3cParameterSet &vps, int32_t foc)
+    : m_source{source}, m_vuh{vuh}, m_vps{vps}, m_foc{foc} {}
 
 auto AtlasDecoder::operator()() -> std::optional<AccessUnit> {
   if (!m_buffer.empty() || decodeAsb()) {

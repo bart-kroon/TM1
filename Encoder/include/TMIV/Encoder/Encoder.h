@@ -74,6 +74,7 @@ private: // Encoder_prepareSequence.cpp
   auto haveTexture() const -> bool;
   void enableOccupancyPerView();
   void prepareIvau();
+  auto log2FocLsbMinus4() -> std::uint8_t;
 
 private: // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();

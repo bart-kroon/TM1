@@ -49,7 +49,7 @@ class AtlasDecoder {
 public:
   AtlasDecoder() = default;
   explicit AtlasDecoder(V3cUnitSource source, const MivBitstream::V3cUnitHeader &vuh,
-                        const MivBitstream::V3cParameterSet &vps);
+                        const MivBitstream::V3cParameterSet &vps, int32_t foc);
 
   struct AccessUnit {
     int32_t foc{};
@@ -79,7 +79,7 @@ private:
   MivBitstream::V3cParameterSet m_vps;
 
   std::list<MivBitstream::NalUnit> m_buffer;
-  int32_t m_foc{-1};
+  int32_t m_foc{};
 
   std::vector<MivBitstream::AtlasSequenceParameterSetRBSP> m_aspsV;
   std::vector<MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;

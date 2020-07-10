@@ -570,10 +570,10 @@ auto MivDecoder::decodeAttrVideo(uint8_t j) -> bool {
       return false;
     }
   } else {
-    MIVBITSTREAM_ERROR("Out-of-band geometry video data but no frame server provided");
+    MIVBITSTREAM_ERROR("Out-of-band attribute video data but no frame server provided");
   }
 
-  m_totalGeoVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
+  m_totalAttrVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
   return true;
 }
 } // namespace TMIV::Decoder

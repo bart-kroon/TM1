@@ -96,8 +96,12 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
 namespace {
 auto loadSourceTexture(const Json &config, const Vec2i &size, const string &viewName,
                        int frameIndex) {
-  return readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex, size,
-                              viewName);
+  auto frame = readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex,
+                                    size, viewName);
+  if (frame.empty()) {
+    throw runtime_error("Failed to read source texture frame");
+  }
+  return frame;
 }
 
 template <typename FORMAT>
@@ -107,6 +111,9 @@ auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const str
 
   const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceGeometryPathFmt",
                                        frameIndex, size, viewName);
+  if (depth.empty()) {
+    throw runtime_error("Failed to read source geometry frame");
+  }
 
   transform(begin(depth.getPlane(0)), end(depth.getPlane(0)), begin(depth16.getPlane(0)),
             [bits](unsigned x) {
@@ -140,6 +147,9 @@ auto loadSourceEntities_(const Json &config, const Vec2i size, const string &vie
 
   const auto entities = readFrame<FORMAT>(config, "SourceDirectory", "SourceEntityPathFmt",
                                           frameIndex, size, viewName);
+  if (entities.empty()) {
+    throw runtime_error("Failed to read source entities frame");
+  }
 
   copy(entities.getPlane(0).begin(), entities.getPlane(0).end(), entities16.getPlane(0).begin());
 

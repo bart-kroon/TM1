@@ -149,7 +149,7 @@ void CommonAtlasDecoder::decodeAaps(std::istream &stream) {
   auto aaps = MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream, m_vps);
 
   if (aaps.aaps_log2_max_afoc_present_flag()) {
-    const auto x = 1U << (aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 1U);
+    const auto x = 1U << (aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
     VERIFY_MIVBITSTREAM(m_maxFrmOrderCntLsb == 0 || m_maxFrmOrderCntLsb == x);
     m_maxFrmOrderCntLsb = x;
   }

@@ -33,8 +33,6 @@
 
 #include <TMIV/Encoder/MivEncoder.h>
 
-#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
-
 #include <TMIV/MivBitstream/verify.h>
 
 #include <sstream>
@@ -52,7 +50,7 @@ void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams)
   m_ivs = ivSequenceParams;
 
   writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_ivs.vps);
-  writeV3cUnit(VuhUnitType::V3C_AD, specialAtlasId, specialAtlasSubBitstream());
+  writeV3cUnit(VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
 }
 
 void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
@@ -66,17 +64,32 @@ void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitP
 }
 
 namespace {
-const auto nuhAps = NalUnitHeader{NalUnitType::NAL_AAPS, 0, 1};
+const auto nuhAaps = NalUnitHeader{NalUnitType::NAL_AAPS, 0, 1};
 const auto nuhAsps = NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1};
 const auto nuhAfps = NalUnitHeader{NalUnitType::NAL_AFPS, 0, 1};
 const auto nuhIdr = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
 const auto nuhCra = NalUnitHeader{NalUnitType::NAL_CRA, 0, 1};
+const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
 } // namespace
 
-auto MivEncoder::specialAtlasSubBitstream() -> AtlasSubBitstream {
+auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
-  m_ivs.updateMvpl();
-  writeNalUnit(asb, nuhAps, m_ivs.aaps, m_ivs.vps);
+
+  if (m_irap) {
+    m_ivs.updateMvpl();
+    writeNalUnit(asb, nuhAaps, m_ivs.aaps, m_ivs.vps);
+  }
+
+  const auto maxCommonAtlasFrmOrderCntLsb =
+      1U << (m_ivs.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
+
+  auto caf = CommonAtlasFrameRBSP{};
+  caf.caf_atlas_adaptation_parameter_set_id(0)
+      .caf_frm_order_cnt_lsb(0)
+      .caf_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
+      .miv_view_params_list() = m_ivs.mvpl;
+  writeNalUnit(asb, nuhCaf, caf, m_ivs.vps, maxCommonAtlasFrmOrderCntLsb);
+
   return asb;
 }
 

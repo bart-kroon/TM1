@@ -52,7 +52,7 @@ public:
   void writeIvAccessUnitParams(const IvAccessUnitParams &);
 
 private:
-  auto specialAtlasSubBitstream() -> AtlasSubBitstream;
+  auto commonAtlasSubBitstream() -> AtlasSubBitstream;
   auto atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
   auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
 

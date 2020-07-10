@@ -75,21 +75,40 @@ private:
   std::list<V3cUnit> m_buffer;
 };
 
-class SpecialAtlasDecoder {
+class CommonAtlasDecoder {
 public:
-  SpecialAtlasDecoder() = default;
-  explicit SpecialAtlasDecoder(V3cUnitSource source, const V3cParameterSet &vps);
+  CommonAtlasDecoder() = default;
+  explicit CommonAtlasDecoder(V3cUnitSource source, const V3cParameterSet &vps);
 
   struct AccessUnit {
     int32_t foc{};
     AtlasAdaptationParameterSetRBSP aaps;
+    CommonAtlasFrameRBSP caf;
+    std::vector<SeiMessage> prefixNSei;
+    std::vector<SeiMessage> prefixESei;
+    std::vector<SeiMessage> suffixNSei;
+    std::vector<SeiMessage> suffixESei;
   };
 
   auto operator()() -> std::optional<AccessUnit>;
 
 private:
+  auto decodeAsb() -> bool;
+  auto decodeAu() -> AccessUnit;
+  void decodePrefixNalUnit(AccessUnit &au, const NalUnit &nu);
+  void decodeCafNalUnit(AccessUnit &au, const NalUnit &nu);
+  void decodeSuffixNalUnit(AccessUnit &au, const NalUnit &nu);
+  void decodeAaps(std::istream &stream);
+  void decodeSei(std::vector<SeiMessage> &messages, std::istream &stream);
+
   V3cUnitSource m_source;
   V3cParameterSet m_vps;
+
+  std::list<NalUnit> m_buffer;
+  int32_t m_foc{-1};
+
+  std::vector<AtlasAdaptationParameterSetRBSP> m_aapsV;
+  unsigned m_maxFrmOrderCntLsb{};
 };
 
 class AtlasDecoder {
@@ -131,6 +150,7 @@ private:
   std::vector<AtlasSequenceParameterSetRBSP> m_aspsV;
   std::vector<AtlasFrameParameterSetRBSP> m_afpsV;
   std::vector<AtlasAdaptationParameterSetRBSP> m_aapsV;
+  unsigned m_maxAtlasFrmOrderCntLsb{};
 };
 
 class MivDecoder {
@@ -166,7 +186,7 @@ private:
   auto startVideoDecoder(const V3cUnitHeader &vuh, double &totalTime)
       -> std::unique_ptr<VideoDecoder::VideoServer>;
 
-  void decodeSpecialAtlas();
+  void decodeCommonAtlas();
   void decodeViewParamsList();
 
   void decodeAtlas(uint8_t j);
@@ -180,12 +200,12 @@ private:
   GeoFrameServer m_geoFrameServer;
   AttrFrameServer m_attrFrameServer;
 
-  std::unique_ptr<SpecialAtlasDecoder> m_specialAtlasDecoder;
+  std::unique_ptr<CommonAtlasDecoder> m_commonAtlasDecoder;
   std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_geoVideoDecoder;
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_attrVideoDecoder;
 
-  std::optional<SpecialAtlasDecoder::AccessUnit> m_specialAtlasAu;
+  std::optional<CommonAtlasDecoder::AccessUnit> m_commonAtlasAu;
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;
   AccessUnit m_au;
 

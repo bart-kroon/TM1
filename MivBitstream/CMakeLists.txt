@@ -7,7 +7,7 @@ add_library(MivBitstreamLib
     "src/AtlasFrameParameterSetRBSP.cpp"
     "src/AtlasSequenceParameterSetRBSP.cpp"
     "src/AtlasTileLayerRBSP.cpp"
-    "src/FrameOrderCountRBSP.cpp"
+    "src/CommonAtlasFrameRBSP.cpp"
     "src/IvSequenceParams.cpp"
     "src/IvAccessUnitParams.cpp"
     "src/MivDecoderMode.cpp"
@@ -38,10 +38,10 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/AtlasSubBitstream.h"
     "include/TMIV/MivBitstream/AtlasTileLayerRBSP.h"
     "include/TMIV/MivBitstream/AtlasTileLayerRBSP.hpp"
+    "include/TMIV/MivBitstream/CommonAtlasFrameRBSP.h"
+    "include/TMIV/MivBitstream/CommonAtlasFrameRBSP.hpp"
     "include/TMIV/MivBitstream/DepthOccupancyTransform.h"
     "include/TMIV/MivBitstream/DepthOccupancyTransform.hpp"
-    "include/TMIV/MivBitstream/FrameOrderCountRBSP.h"
-    "include/TMIV/MivBitstream/FrameOrderCountRBSP.hpp"
     "include/TMIV/MivBitstream/IvSequenceParams.h"
     "include/TMIV/MivBitstream/IvAccessUnitParams.h"
     "include/TMIV/MivBitstream/IvAccessUnitParams.hpp"
@@ -62,7 +62,6 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/V3cParameterSet.hpp"
     "include/TMIV/MivBitstream/V3cSampleStreamFormat.h"
     "include/TMIV/MivBitstream/V3cUnit.h"
-    "include/TMIV/MivBitstream/V3cUnit.hpp"
     )
 
 add_library(TMIV::MivBitstreamLib
@@ -93,7 +92,7 @@ if (CMAKE_TESTING_ENABLED)
         "src/AtlasFrameParameterSetRBSP.test.cpp"
         "src/AtlasSequenceParameterSetRBSP.test.cpp"
         "src/AtlasTileLayerRBSP.test.cpp"
-        "src/FrameOrderCountRBSP.test.cpp"
+        "src/CommonAtlasFrameRBSP.test.cpp"
         "src/MivVuiParams.test.cpp"
         "src/NalSampleStreamFormat.test.cpp"
         "src/NalUnit.test.cpp"

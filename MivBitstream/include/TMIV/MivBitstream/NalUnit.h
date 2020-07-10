@@ -78,7 +78,7 @@ enum class NalUnitType : std::uint8_t {
   NAL_PREFIX_ESEI,
   NAL_SUFFIX_ESEI,
   NAL_AAPS,
-  NAL_FOC,
+  NAL_CAF,
   NAL_RSV_NACL_49 = 49,
   NAL_RSV_NACL_50,
   NAL_RSV_NACL_51,

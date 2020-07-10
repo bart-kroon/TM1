@@ -47,14 +47,18 @@ auto operator<<(ostream &stream, const VuhUnitType x) -> ostream & {
   switch (x) {
   case VuhUnitType::V3C_VPS:
     return stream << "V3C_VPS";
-  case VuhUnitType::V3C_AVD:
-    return stream << "V3C_AVD";
-  case VuhUnitType::V3C_GVD:
-    return stream << "V3C_GVD";
-  case VuhUnitType::V3C_OVD:
-    return stream << "V3C_OVD";
   case VuhUnitType::V3C_AD:
     return stream << "V3C_AD";
+  case VuhUnitType::V3C_OVD:
+    return stream << "V3C_OVD";
+  case VuhUnitType::V3C_GVD:
+    return stream << "V3C_GVD";
+  case VuhUnitType::V3C_AVD:
+    return stream << "V3C_AVD";
+  case VuhUnitType::V3C_PVD:
+    return stream << "V3C_PVD";
+  case VuhUnitType::V3C_CAD:
+    return stream << "V3C_CAD";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }
@@ -63,7 +67,8 @@ auto operator<<(ostream &stream, const VuhUnitType x) -> ostream & {
 auto V3cUnitHeader::vuh_v3c_parameter_set_id() const noexcept -> std::uint8_t {
   VERIFY_V3CBITSTREAM(
       m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD ||
-      m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD);
+      m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD ||
+      m_vuh_unit_type == VuhUnitType::V3C_CAD);
   return m_vuh_v3c_parameter_set_id;
 }
 
@@ -99,7 +104,8 @@ auto V3cUnitHeader::vuh_raw_video_flag() const noexcept -> bool {
 auto V3cUnitHeader::vuh_v3c_parameter_set_id(const uint8_t value) noexcept -> V3cUnitHeader & {
   VERIFY_V3CBITSTREAM(
       m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD ||
-      m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD);
+      m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD ||
+      m_vuh_unit_type == VuhUnitType::V3C_CAD);
   m_vuh_v3c_parameter_set_id = value;
   return *this;
 }
@@ -141,9 +147,13 @@ auto V3cUnitHeader::vuh_raw_video_flag(const bool value) noexcept -> V3cUnitHead
 auto operator<<(ostream &stream, const V3cUnitHeader &x) -> ostream & {
   stream << "vuh_unit_type=" << x.vuh_unit_type();
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
+      x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD ||
+      x.vuh_unit_type() == VuhUnitType::V3C_CAD) {
+    stream << "\nvuh_v3c_parameter_set_id=" << int(x.vuh_v3c_parameter_set_id());
+  }
+  if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD) {
-    stream << "\nvuh_v3c_parameter_set_id=" << int(x.vuh_v3c_parameter_set_id())
-           << "\nvuh_atlas_id=" << int(x.vuh_atlas_id());
+    stream << "\nvuh_atlas_id=" << int(x.vuh_atlas_id());
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD) {
     stream << "\nvuh_attribute_index=" << int(x.vuh_attribute_index())
@@ -164,8 +174,13 @@ auto V3cUnitHeader::operator==(const V3cUnitHeader &other) const noexcept -> boo
   if (vuh_unit_type() == VuhUnitType::V3C_VPS) {
     return true;
   }
-  if (vuh_v3c_parameter_set_id() != other.vuh_v3c_parameter_set_id() ||
-      vuh_atlas_id() != other.vuh_atlas_id()) {
+  if (vuh_v3c_parameter_set_id() != other.vuh_v3c_parameter_set_id()) {
+    return false;
+  }
+  if (vuh_unit_type() == VuhUnitType::V3C_CAD) {
+    return true;
+  }
+  if (vuh_atlas_id() != other.vuh_atlas_id()) {
     return false;
   }
   if (vuh_unit_type() == VuhUnitType::V3C_OVD || vuh_unit_type() == VuhUnitType::V3C_AD) {
@@ -276,7 +291,7 @@ auto V3cPayload::decodeFrom(istream &stream, const V3cUnitHeader &vuh) -> V3cPay
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS) {
     return V3cPayload{V3cParameterSet::decodeFrom(stream)};
   }
-  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
+  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD || vuh.vuh_unit_type() == VuhUnitType::V3C_CAD) {
     return V3cPayload{AtlasSubBitstream::decodeFrom(stream)};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_OVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD ||

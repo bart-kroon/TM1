@@ -35,6 +35,7 @@
 #define _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
@@ -47,13 +48,14 @@ struct IvSequenceParams {
 
   V3cParameterSet vps;
   AtlasAdaptationParameterSetRBSP aaps;
+  MivViewParamsList mvpl;
   std::optional<ViewingSpace> viewingSpace{};
 
   // Encoder-internal variables
   double frameRate{};
   ViewParamsList viewParamsList;
 
-  // Write the MIV view params list within the AAPS
+  // Write the viewParamsList into the MVPL structure
   void updateMvpl();
 
   // Convenience function to access the VPS MIV extension
@@ -61,18 +63,6 @@ struct IvSequenceParams {
 
   // Convenience function to create and access the VPS MIV extension
   [[nodiscard]] auto vme() noexcept -> VpsMivExtension &;
-
-  // Convenience function to access the AAPS MIV extension
-  [[nodiscard]] auto aame() const noexcept -> const AapsMivExtension &;
-
-  // Convenience function to create and access the AAPS MIV extension
-  [[nodiscard]] auto aame() noexcept -> AapsMivExtension &;
-
-  // Convenience function to access the MIV view parameter list
-  [[nodiscard]] auto mvpl() const noexcept -> const MivViewParamsList &;
-
-  // Convenience function to create and access the MIV view parameter list
-  [[nodiscard]] auto mvpl() noexcept -> MivViewParamsList &;
 
   auto operator==(const IvSequenceParams &other) const -> bool;
   auto operator!=(const IvSequenceParams &other) const -> bool { return !operator==(other); }

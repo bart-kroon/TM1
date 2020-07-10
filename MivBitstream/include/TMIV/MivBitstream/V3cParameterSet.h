@@ -292,8 +292,6 @@ private:
   std::optional<MivVuiParams> m_mvp;
 };
 
-constexpr uint8_t specialAtlasId = 0x3F;
-
 // 23090-5: v3c_parameter_set()
 //
 // 23090-12 restrictions:

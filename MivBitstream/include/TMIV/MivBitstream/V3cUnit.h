@@ -45,7 +45,15 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-enum class VuhUnitType : std::uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD };
+enum class VuhUnitType : std::uint8_t {
+  V3C_VPS,
+  V3C_AD,
+  V3C_OVD,
+  V3C_GVD,
+  V3C_AVD,
+  V3C_PVD,
+  V3C_CAD
+};
 
 auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream &;
 

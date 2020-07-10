@@ -36,7 +36,7 @@
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
+#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 #include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
@@ -116,6 +116,8 @@ public:
       return parseSei(stream);
     case TMIV::MivBitstream::NalUnitType::NAL_AAPS:
       return parseAaps(stream);
+    case TMIV::MivBitstream::NalUnitType::NAL_CAF:
+      return parseCaf(stream);
     }
   }
 
@@ -166,6 +168,16 @@ public:
     const auto aaps =
         TMIV::MivBitstream::AtlasAdaptationParameterSetRBSP::decodeFrom(stream, m_vps);
     m_log << aaps;
+    if (aaps.aaps_log2_max_afoc_present_flag()) {
+      m_maxCommonAtlasFrmOrderCntLsb =
+          1U << (aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
+    }
+  }
+
+  void parseCaf(std::istream &stream) {
+    const auto caf = TMIV::MivBitstream::CommonAtlasFrameRBSP::decodeFrom(
+        stream, m_vps, m_maxCommonAtlasFrmOrderCntLsb);
+    m_log << caf;
   }
 
   void parseSeiMessage(const TMIV::MivBitstream::SeiMessage &message) {
@@ -197,6 +209,7 @@ private:
   std::vector<TMIV::MivBitstream::AtlasFrameParameterSetRBSP> m_afpsV;
   std::optional<TMIV::MivBitstream::V3cUnitHeader> m_vuh;
   TMIV::MivBitstream::V3cParameterSet m_vps;
+  unsigned m_maxCommonAtlasFrmOrderCntLsb;
 };
 
 auto main(int argc, char *argv[]) -> int {

@@ -797,8 +797,6 @@ auto V3cParameterSet::vps_miv_extension() noexcept -> VpsMivExtension & {
 }
 
 auto V3cParameterSet::atlasIdxOf(uint8_t atlasId) const noexcept -> uint8_t {
-  VERIFY_V3CBITSTREAM(atlasId != specialAtlasId);
-
   for (uint8_t j = 0; j <= vps_atlas_count_minus1(); ++j) {
     if (vps_atlas_id(j) == atlasId) {
       return j;
@@ -1027,7 +1025,7 @@ auto merge(const vector<const V3cParameterSet *> &vps) -> V3cParameterSet {
   VERIFY_MIVBITSTREAM(!vps.empty());
   auto x = *vps.front();
 
-  VERIFY_MIVBITSTREAM(x.vps_miv_extension().vme_num_groups_minus1() + 1 == vps.size());
+  VERIFY_MIVBITSTREAM(x.vps_miv_extension().vme_num_groups_minus1() + size_t(1) == vps.size());
 
   for (auto i = begin(vps) + 1; i != end(vps); ++i) {
     const auto &y = **i;

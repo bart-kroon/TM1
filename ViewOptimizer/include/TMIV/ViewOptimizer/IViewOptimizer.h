@@ -47,10 +47,9 @@ public:
   auto operator=(IViewOptimizer &&) -> IViewOptimizer & = default;
   virtual ~IViewOptimizer() = default;
 
-  using Output = std::pair<MivBitstream::IvSequenceParams, std::vector<bool>>;
-
   // Optimize camera parameters for the sequence
-  virtual auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output = 0;
+  virtual auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams)
+      -> const MivBitstream::IvSequenceParams & = 0;
 
   // Optimize a frame in the intra period
   [[nodiscard]] virtual auto optimizeFrame(Common::MVD16Frame views) const

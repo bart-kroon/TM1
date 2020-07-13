@@ -125,7 +125,6 @@ private: // Encoder_popFrame.cpp
 
   // View-optimized encoder input
   MivBitstream::IvSequenceParams m_transportIvs;
-  std::vector<bool> m_isBasicView;
   std::vector<Common::MVD16Frame> m_transportViews;
 
   // Encoder output (ready for HM)

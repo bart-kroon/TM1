@@ -50,7 +50,8 @@ auto Encoder::completeAccessUnit() -> const IvAccessUnitParams & {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  m_ivau.patchParamsList = m_packer->pack(m_ivau.atlasSizes(), aggregatedMask, m_isBasicView);
+  m_ivau.patchParamsList =
+      m_packer->pack(m_ivau.atlasSizes(), aggregatedMask, m_transportIvs.viewParamsList);
 
   constructVideoFrames();
 

@@ -45,7 +45,8 @@ class AbstractViewSelector : public IViewOptimizer {
 public:
   AbstractViewSelector(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  auto optimizeSequence(MivBitstream::IvSequenceParams ivs) -> Output override;
+  auto optimizeSequence(MivBitstream::IvSequenceParams ivs)
+      -> const MivBitstream::IvSequenceParams & override;
   [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override;
 
 protected:

@@ -43,15 +43,19 @@ AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
                                            const Common::Json &componentNode)
     : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").asBool()} {}
 
-auto AbstractViewSelector::optimizeSequence(MivBitstream::IvSequenceParams ivs) -> Output {
+auto AbstractViewSelector::optimizeSequence(MivBitstream::IvSequenceParams ivs)
+    -> const MivBitstream::IvSequenceParams & {
   m_ivs = std::move(ivs);
   m_isBasicView = isBasicView();
+
+  for (size_t i = 0; i < m_ivs.viewParamsList.size(); ++i) {
+    m_ivs.viewParamsList[i].isBasicView = m_isBasicView[i];
+  }
+
   printSummary();
 
-  auto result = Output{m_ivs, m_isBasicView};
-  inplaceEraseAdditionalViews(result.first.viewParamsList);
-  inplaceEraseAdditionalViews(result.second);
-  return result;
+  inplaceEraseAdditionalViews(m_ivs.viewParamsList);
+  return m_ivs;
 }
 
 auto AbstractViewSelector::optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame {

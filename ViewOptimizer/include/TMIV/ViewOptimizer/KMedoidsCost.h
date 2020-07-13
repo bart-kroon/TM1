@@ -31,42 +31,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Aggregator/Aggregator.h>
-#include <TMIV/Common/Factory.h>
-#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/Encoder/GroupBasedEncoder.h>
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
-#include <TMIV/Packer/Packer.h>
-#include <TMIV/Pruner/HierarchicalPruner.h>
-#include <TMIV/ViewOptimizer/BasicViewAllocator.h>
-#include <TMIV/ViewOptimizer/NoViewOptimizer.h>
+#ifndef _TMIV_VIEWOPTIMIZER_KMEDOIDSCOST_H_
+#define _TMIV_VIEWOPTIMIZER_KMEDOIDSCOST_H_
 
-namespace TMIV::Encoder {
-void registerComponents() {
-  using Common::Factory;
+#include <TMIV/Common/Matrix.h>
 
-  auto &aggregators = Factory<Aggregator::IAggregator>::getInstance();
-  aggregators.registerAs<Aggregator::Aggregator>("Aggregator");
+namespace TMIV::ViewOptimizer {
+class KMedoidsCost {
+public:
+  using Centroids = std::vector<std::size_t>;
 
-  auto &assesors = Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
-  assesors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
+  explicit KMedoidsCost(Common::Mat<double> sqDist);
 
-  auto &encoders = Factory<IEncoder>::getInstance();
-  encoders.registerAs<Encoder>("Encoder");
-  encoders.registerAs<GroupBasedEncoder>("GroupBasedEncoder");
+  auto operator()(const Centroids &centroids) const -> double;
+  auto N() const noexcept { return m_sqDist.width(); }
 
-  auto &geometryQuantizers = Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
-  geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
+private:
+  Common::Mat<double> m_sqDist;
+};
+} // namespace TMIV::ViewOptimizer
 
-  auto &packers = Factory<Packer::IPacker>::getInstance();
-  packers.registerAs<Packer::Packer>("Packer");
-
-  auto &pruners = Factory<Pruner::IPruner>::getInstance();
-  pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
-
-  auto &viewOptimizers = Factory<ViewOptimizer::IViewOptimizer>::getInstance();
-  viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
-  viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
-}
-} // namespace TMIV::Encoder
+#endif

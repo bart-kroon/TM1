@@ -31,42 +31,65 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_VIEWOPTIMIZER_VIEWREDUCER_H_
-#define _TMIV_VIEWOPTIMIZER_VIEWREDUCER_H_
+#include <TMIV/ViewOptimizer/AbstractViewSelector.h>
 
-#include <TMIV/ViewOptimizer/IViewOptimizer.h>
+#include <TMIV/Common/Common.h>
 
-#include <TMIV/Common/Json.h>
-#include <vector>
+#include <cassert>
+#include <iostream>
 
 namespace TMIV::ViewOptimizer {
-class ViewReducer : public IViewOptimizer {
-private:
-  std::vector<bool> m_isBasicView;
+AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
+                                           const Common::Json &componentNode)
+    : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").asBool()} {}
 
-public:
-  ViewReducer(const Common::Json & /*unused*/, const Common::Json & /*unused*/);
-  ViewReducer(const ViewReducer &) = default;
-  ViewReducer(ViewReducer &&) = default;
-  auto operator=(const ViewReducer &) -> ViewReducer & = default;
-  auto operator=(ViewReducer &&) -> ViewReducer & = default;
-  ~ViewReducer() override = default;
+auto AbstractViewSelector::optimizeSequence(MivBitstream::IvSequenceParams ivs) -> Output {
+  m_ivs = std::move(ivs);
+  m_isBasicView = isBasicView();
+  printSummary();
 
-  auto optimizeSequence(MivBitstream::IvSequenceParams ivSequenceParams) -> Output override;
+  auto result = Output{m_ivs, m_isBasicView};
+  inplaceEraseAdditionalViews(result.first.viewParamsList);
+  inplaceEraseAdditionalViews(result.second);
+  return result;
+}
 
-  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
-    return views;
+auto AbstractViewSelector::optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame {
+  inplaceEraseAdditionalViews(views);
+  return views;
+}
+
+template <typename T>
+void AbstractViewSelector::inplaceEraseAdditionalViews(std::vector<T> &views) const {
+  assert(views.size() == m_isBasicView.size());
+  if (!m_outputAdditionalViews) {
+    for (int i = int(views.size()) - 1; i >= 0; --i) {
+      if (!m_isBasicView[i]) {
+        views.erase(views.begin() + i);
+      }
+    }
   }
+}
 
-private:
-  static auto calculateFOV(const MivBitstream::ViewParams &viewParams) -> float;
+void AbstractViewSelector::printSummary() const {
+  std::cout << "Basic views:";
+  for (size_t i = 0; i < m_isBasicView.size(); ++i) {
+    if (m_isBasicView[i]) {
+      std::cout << ' ' << m_ivs.viewParamsList[i].name;
+    }
+  }
+  std::cout << '\n';
 
-  static auto calculateDistance(const MivBitstream::ViewParams &camera_1,
-                                const MivBitstream::ViewParams &camera_2) -> float;
-
-  static auto calculateOverlapping(const MivBitstream::ViewParams &camera_from,
-                                   const MivBitstream::ViewParams &camera_to) -> float;
-};
+  if (m_outputAdditionalViews) {
+    std::cout << "Additional views:";
+    for (size_t i = 0; i < m_isBasicView.size(); ++i) {
+      if (!m_isBasicView[i]) {
+        std::cout << ' ' << m_ivs.viewParamsList[i].name;
+      }
+    }
+    std::cout << '\n';
+  } else {
+    std::cout << "No additional views.\n";
+  }
+}
 } // namespace TMIV::ViewOptimizer
-
-#endif

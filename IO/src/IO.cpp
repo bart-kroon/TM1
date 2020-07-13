@@ -50,8 +50,8 @@ namespace {
 auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
 } // namespace
 
-auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
-  auto x = IvSequenceParams{haveTexture(config)};
+auto loadSourceParams(const Json &config) -> EncoderParams {
+  auto x = EncoderParams{haveTexture(config)};
 
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 

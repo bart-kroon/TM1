@@ -35,7 +35,7 @@
 #define _TMIV_PACKER_IPACKER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Packer {

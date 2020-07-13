@@ -74,10 +74,9 @@ auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> vector<typename MAT::
   return fetchedValues;
 }
 
-auto isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
-                       const MVD16Frame &sourceViews, float blendingFactor, float maxOutlierRatio)
-    -> bool {
-  const auto sourceHelperList = ProjectionHelperList{ivSequenceParams.viewParamsList};
+auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Frame &sourceViews,
+                       float blendingFactor, float maxOutlierRatio) -> bool {
+  const auto sourceHelperList = ProjectionHelperList{params.viewParamsList};
 
   // Expand depth
   vector<Mat<float>> sourceDepthExpandedList;
@@ -176,10 +175,10 @@ DepthQualityAssessor::DepthQualityAssessor(const Json & /*unused*/, const Json &
   m_maxOutlierRatio = componentNode.require("maxOutlierRatio").asFloat();
 }
 
-auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::IvSequenceParams &ivSequenceParams,
+auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::EncoderParams &params,
                                              const MVD16Frame &sourceViews) -> bool {
 
-  return TMIV::DepthQualityAssessor::isLowDepthQuality(ivSequenceParams, sourceViews,
-                                                       m_blendingFactor, m_maxOutlierRatio);
+  return TMIV::DepthQualityAssessor::isLowDepthQuality(params, sourceViews, m_blendingFactor,
+                                                       m_maxOutlierRatio);
 }
 } // namespace TMIV::DepthQualityAssessor

@@ -57,20 +57,18 @@ public:
   auto operator=(Encoder &&) -> Encoder & = default;
   ~Encoder() override = default;
 
-  auto prepareSequence(MivBitstream::IvSequenceParams sourceIvs)
-      -> const MivBitstream::IvSequenceParams & override;
+  void prepareSequence(MivBitstream::EncoderParams params) override;
   void prepareAccessUnit() override;
   void pushFrame(Common::MVD16Frame sourceViews) override;
-  auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
+  auto completeAccessUnit() -> const MivBitstream::EncoderParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
 private: // Encoder_prepareSequence.cpp
   [[nodiscard]] auto
-  calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+  calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams &params) const
       -> Common::SizeVector;
-  [[nodiscard]] auto
-  calculateViewGridSize(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+  [[nodiscard]] auto calculateViewGridSize(const MivBitstream::EncoderParams &params) const
       -> Common::Vec2i;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   [[nodiscard]] auto haveTexture() const -> bool;
@@ -124,12 +122,11 @@ private: // Encoder_popFrame.cpp
   Common::Vec2i m_entityEncRange;
 
   // View-optimized encoder input
-  MivBitstream::IvSequenceParams m_transportIvs;
+  MivBitstream::EncoderParams m_transportParams;
   std::vector<Common::MVD16Frame> m_transportViews;
 
   // Encoder output (ready for HM)
-  MivBitstream::IvSequenceParams m_ivs;
-  MivBitstream::IvAccessUnitParams m_ivau;
+  MivBitstream::EncoderParams m_params;
   std::deque<Common::MVD16Frame> m_videoFrameBuffer;
 
   // Mask aggregation state

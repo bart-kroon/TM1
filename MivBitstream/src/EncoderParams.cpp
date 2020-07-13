@@ -31,20 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
 #include <TMIV/MivBitstream/verify.h>
+
+#include <algorithm>
 
 using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-IvSequenceParams::IvSequenceParams() : IvSequenceParams{false} {}
+auto EncoderAtlasParams::asme() const noexcept -> const AspsMivExtension & {
+  return asps.asps_miv_extension();
+}
 
-IvSequenceParams::IvSequenceParams(bool haveTexture)
-    : IvSequenceParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture} {}
+auto EncoderAtlasParams::asme() noexcept -> AspsMivExtension & {
+  return asps.asps_extension_present_flag(true).asps_miv_extension_flag(true).asps_miv_extension();
+}
 
-IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTexture) {
+EncoderParams::EncoderParams() : EncoderParams{false} {}
+
+EncoderParams::EncoderParams(bool haveTexture)
+    : EncoderParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture} {}
+
+EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture) {
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_0)
       .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
@@ -74,16 +84,28 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
   }
 }
 
-auto IvSequenceParams::vme() const noexcept -> const VpsMivExtension & {
+auto EncoderParams::vme() const noexcept -> const VpsMivExtension & {
   return vps.vps_miv_extension();
 }
 
-auto IvSequenceParams::vme() noexcept -> VpsMivExtension & {
+auto EncoderParams::vme() noexcept -> VpsMivExtension & {
   return vps.vps_extension_present_flag(true).vps_miv_extension_flag(true).vps_miv_extension();
 }
 
-auto IvSequenceParams::operator==(const IvSequenceParams &other) const -> bool {
+auto EncoderParams::operator==(const EncoderParams &other) const -> bool {
   return vps == other.vps && aaps == other.aaps && viewingSpace == other.viewingSpace &&
-         viewParamsList == other.viewParamsList;
+         viewParamsList == other.viewParamsList && atlas == other.atlas &&
+         patchParamsList == other.patchParamsList;
+}
+
+auto EncoderParams::atlasSizes() const -> SizeVector {
+  auto x = SizeVector{};
+  x.reserve(atlas.size());
+
+  transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
+    return Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
+  });
+
+  return x;
 }
 } // namespace TMIV::MivBitstream

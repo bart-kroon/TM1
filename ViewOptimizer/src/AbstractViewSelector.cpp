@@ -43,19 +43,19 @@ AbstractViewSelector::AbstractViewSelector(const Common::Json & /* rootNode */,
                                            const Common::Json &componentNode)
     : m_outputAdditionalViews{componentNode.require("outputAdditionalViews").asBool()} {}
 
-auto AbstractViewSelector::optimizeSequence(MivBitstream::IvSequenceParams ivs)
-    -> const MivBitstream::IvSequenceParams & {
-  m_ivs = std::move(ivs);
+auto AbstractViewSelector::optimizeParams(MivBitstream::EncoderParams params)
+    -> const MivBitstream::EncoderParams & {
+  m_params = std::move(params);
   m_isBasicView = isBasicView();
 
-  for (size_t i = 0; i < m_ivs.viewParamsList.size(); ++i) {
-    m_ivs.viewParamsList[i].isBasicView = m_isBasicView[i];
+  for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
+    m_params.viewParamsList[i].isBasicView = m_isBasicView[i];
   }
 
   printSummary();
 
-  inplaceEraseAdditionalViews(m_ivs.viewParamsList);
-  return m_ivs;
+  inplaceEraseAdditionalViews(m_params.viewParamsList);
+  return m_params;
 }
 
 auto AbstractViewSelector::optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame {
@@ -79,7 +79,7 @@ void AbstractViewSelector::printSummary() const {
   std::cout << "Basic views:";
   for (size_t i = 0; i < m_isBasicView.size(); ++i) {
     if (m_isBasicView[i]) {
-      std::cout << ' ' << m_ivs.viewParamsList[i].name;
+      std::cout << ' ' << m_params.viewParamsList[i].name;
     }
   }
   std::cout << '\n';
@@ -88,7 +88,7 @@ void AbstractViewSelector::printSummary() const {
     std::cout << "Additional views:";
     for (size_t i = 0; i < m_isBasicView.size(); ++i) {
       if (!m_isBasicView[i]) {
-        std::cout << ' ' << m_ivs.viewParamsList[i].name;
+        std::cout << ' ' << m_params.viewParamsList[i].name;
       }
     }
     std::cout << '\n';

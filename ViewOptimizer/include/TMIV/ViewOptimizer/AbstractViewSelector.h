@@ -45,20 +45,20 @@ class AbstractViewSelector : public IViewOptimizer {
 public:
   AbstractViewSelector(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  auto optimizeSequence(MivBitstream::IvSequenceParams ivs)
-      -> const MivBitstream::IvSequenceParams & override;
+  auto optimizeParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & override;
   [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override;
 
 protected:
   virtual auto isBasicView() const -> std::vector<bool> = 0;
-  constexpr auto ivs() const noexcept -> auto & { return m_ivs; }
+  constexpr auto params() const noexcept -> auto & { return m_params; }
 
 private:
   template <typename T> void inplaceEraseAdditionalViews(std::vector<T> &) const;
   void printSummary() const;
 
   bool m_outputAdditionalViews;
-  MivBitstream::IvSequenceParams m_ivs;
+  MivBitstream::EncoderParams m_params;
   std::vector<bool> m_isBasicView;
 };
 } // namespace TMIV::ViewOptimizer

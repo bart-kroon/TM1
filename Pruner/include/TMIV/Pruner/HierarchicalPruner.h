@@ -50,9 +50,9 @@ public:
   auto operator=(HierarchicalPruner &&) -> HierarchicalPruner & = delete;
   ~HierarchicalPruner() override;
 
-  void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams) override;
-  auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
-             const Common::MVD16Frame &views) -> Common::MaskList override;
+  void registerPruningRelation(MivBitstream::EncoderParams &params) override;
+  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
+      -> Common::MaskList override;
 
 private:
   class Impl;

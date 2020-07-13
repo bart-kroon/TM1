@@ -34,8 +34,7 @@
 #ifndef _TMIV_ENCODER_MIVENCODER_H_
 #define _TMIV_ENCODER_MIVENCODER_H_
 
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 #include <TMIV/MivBitstream/NalSampleStreamFormat.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
 
@@ -48,8 +47,7 @@ class MivEncoder {
 public:
   MivEncoder(std::ostream &stream);
 
-  void writeIvSequenceParams(const IvSequenceParams &);
-  void writeIvAccessUnitParams(const IvAccessUnitParams &);
+  void writeAccessUnit(const EncoderParams &);
 
 private:
   auto commonAtlasSubBitstream() -> AtlasSubBitstream;
@@ -65,8 +63,7 @@ private:
   std::ostream &m_stream;
   SampleStreamV3cHeader m_ssvh{2};
   SampleStreamNalHeader m_ssnh{2};
-  IvSequenceParams m_ivs;
-  IvAccessUnitParams m_ivau;
+  EncoderParams m_params;
   bool m_irap{true};
 };
 } // namespace TMIV::Encoder

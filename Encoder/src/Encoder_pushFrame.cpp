@@ -44,7 +44,7 @@ namespace TMIV::Encoder {
 constexpr auto neutralChroma = TextureFrame::neutralColor();
 
 void Encoder::pushFrame(MVD16Frame sourceViews) {
-  if (m_ivs.vme().vme_max_entities_minus1() == 0) {
+  if (m_params.vme().vme_max_entities_minus1() == 0) {
     pushSingleEntityFrame(move(sourceViews));
   } else {
     pushMultiEntityFrame(move(sourceViews));
@@ -53,7 +53,7 @@ void Encoder::pushFrame(MVD16Frame sourceViews) {
 
 void Encoder::pushSingleEntityFrame(MVD16Frame sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(move(sourceViews));
-  const auto masks = m_pruner->prune(m_transportIvs, transportViews);
+  const auto masks = m_pruner->prune(m_transportParams, transportViews);
   updateNonAggregatedMask(transportViews, masks);
   m_transportViews.push_back(move(transportViews));
   m_aggregator->pushMask(masks);
@@ -103,7 +103,7 @@ void Encoder::updateNonAggregatedMask(const MVD16Frame &transportViews, const Ma
   MaskList dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
-  if (m_ivs.vps.vps_miv_extension().vme_depth_low_quality_flag()) {
+  if (m_params.vps.vps_miv_extension().vme_depth_low_quality_flag()) {
     for (size_t viewId = 0; viewId < masks.size(); ++viewId) {
       for (int n = 0; n < m_dilationIter; ++n) {
         dilatedMasks[viewId].getPlane(0) = dilate(dilatedMasks[viewId].getPlane(0));
@@ -137,7 +137,7 @@ void Encoder::pushMultiEntityFrame(MVD16Frame sourceViews) {
     cout << "Processing entity " << entityId << '\n';
 
     const auto transportEntityViews = entitySeparator(transportViews, entityId);
-    auto masks = m_pruner->prune(m_transportIvs, transportEntityViews);
+    auto masks = m_pruner->prune(m_transportParams, transportEntityViews);
     updateMasks(transportEntityViews, masks);
     aggregateEntityMasks(masks, entityId);
     mergeMasks(mergedMasks, masks);

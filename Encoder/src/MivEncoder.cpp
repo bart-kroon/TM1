@@ -46,20 +46,15 @@ MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
   m_stream.flush();
 }
 
-void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams) {
-  m_ivs = ivSequenceParams;
-
-  writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_ivs.vps);
-}
-
-void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
-  m_ivau = ivAccessUnitParams;
+void MivEncoder::writeAccessUnit(const EncoderParams &params) {
+  m_params = params;
 
   if (m_irap) {
+    writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_params.vps);
     writeV3cUnit(VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
   }
 
-  for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
+  for (uint8_t vai = 0; vai <= m_params.vps.vps_atlas_count_minus1(); ++vai) {
     writeV3cUnit(VuhUnitType::V3C_AD, vai, atlasSubBitstream(vai));
   }
 
@@ -78,24 +73,25 @@ const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
 auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
-  writeNalUnit(asb, nuhAaps, m_ivs.aaps);
+  assert(m_irap);
+  writeNalUnit(asb, nuhAaps, m_params.aaps);
 
   const auto maxCommonAtlasFrmOrderCntLsb =
-      1U << (m_ivs.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
+      1U << (m_params.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
 
   auto caf = CommonAtlasFrameRBSP{};
   caf.caf_atlas_adaptation_parameter_set_id(0)
       .caf_frm_order_cnt_lsb(0)
       .caf_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
       .miv_view_params_list() = mivViewParamsList();
-  writeNalUnit(asb, nuhCaf, caf, m_ivs.vps, maxCommonAtlasFrmOrderCntLsb);
+  writeNalUnit(asb, nuhCaf, caf, m_params.vps, maxCommonAtlasFrmOrderCntLsb);
 
   return asb;
 }
 
 auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
   auto mvpl = MivViewParamsList{};
-  auto &vpl = m_ivs.viewParamsList;
+  auto &vpl = m_params.viewParamsList;
 
   assert(!vpl.empty());
   mvpl.mvp_num_views_minus1(uint16_t(vpl.size() - 1));
@@ -121,11 +117,11 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
     }
   }
 
-  mvpl.mvp_num_views_minus1(uint16_t(m_ivs.viewParamsList.size() - 1));
-  for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a) {
+  mvpl.mvp_num_views_minus1(uint16_t(m_params.viewParamsList.size() - 1));
+  for (uint8_t a = 0; a <= m_params.vps.vps_atlas_count_minus1(); ++a) {
     for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
       mvpl.mvp_view_enabled_in_atlas_flag(a, v, true);
-      mvpl.mvp_view_complete_in_atlas_flag(a, v, m_ivs.viewParamsList[v].isBasicView);
+      mvpl.mvp_view_complete_in_atlas_flag(a, v, m_params.viewParamsList[v].isBasicView);
     }
   }
   mvpl.mvp_explicit_view_id_flag(true);
@@ -142,30 +138,30 @@ auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
   vuh.vuh_atlas_id(vai);
 
-  const auto &aau = m_ivau.atlas[vai];
-  const auto aspsV = vector<AtlasSequenceParameterSetRBSP>{aau.asps};
-  const auto afpsV = vector<AtlasFrameParameterSetRBSP>{aau.afps};
+  const auto &aau = m_params.atlas[vai];
 
   if (m_irap) {
-    writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_ivs.vps);
+    writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_params.vps);
     writeNalUnit(asb, nuhAfps, aau.afps, vector<AtlasSequenceParameterSetRBSP>{aau.asps});
-    writeNalUnit(asb, nuhIdr, atlasTileGroupLayer(vai), vuh, m_ivs.vps, aspsV, afpsV);
-  } else {
-    writeNalUnit(asb, nuhCra, atlasTileGroupLayer(vai), vuh, m_ivs.vps, aspsV, afpsV);
   }
+
+  const auto aspsV = vector<AtlasSequenceParameterSetRBSP>{aau.asps};
+  const auto afpsV = vector<AtlasFrameParameterSetRBSP>{aau.afps};
+  writeNalUnit(asb, m_irap ? nuhIdr : nuhCra, atlasTileGroupLayer(vai), vuh, m_params.vps, aspsV,
+               afpsV);
 
   return asb;
 }
 
 auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP {
   auto patchData = AtlasTileDataUnit::Vector{};
-  patchData.reserve(m_ivau.patchParamsList.size());
+  patchData.reserve(m_params.patchParamsList.size());
 
-  const auto &aau = m_ivau.atlas[vai];
+  const auto &aau = m_params.atlas[vai];
 
   const auto k = aau.asps.asps_log2_patch_packing_block_size();
 
-  for (const auto &pp : m_ivau.patchParamsList) {
+  for (const auto &pp : m_params.patchParamsList) {
     if (pp.vuhAtlasId == vai) {
       auto pdu = PatchDataUnit{};
 

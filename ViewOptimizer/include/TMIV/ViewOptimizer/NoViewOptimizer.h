@@ -48,10 +48,10 @@ public:
   auto operator=(NoViewOptimizer &&) -> NoViewOptimizer & = default;
   ~NoViewOptimizer() override = default;
 
-  auto optimizeSequence(MivBitstream::IvSequenceParams ivs)
-      -> const MivBitstream::IvSequenceParams & override {
-    m_ivs = ivs;
-    return m_ivs;
+  auto optimizeParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & override {
+    m_params = std::move(params);
+    return m_params;
   }
 
   [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override {
@@ -59,7 +59,7 @@ public:
   }
 
 private:
-  MivBitstream::IvSequenceParams m_ivs;
+  MivBitstream::EncoderParams m_params;
 };
 
 } // namespace TMIV::ViewOptimizer

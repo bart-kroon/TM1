@@ -74,36 +74,6 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
   }
 }
 
-void IvSequenceParams::updateMvpl() {
-  auto &x = this->mvpl;
-
-  VERIFY_MIVBITSTREAM(!viewParamsList.empty());
-  x.mvp_num_views_minus1(uint16_t(viewParamsList.size() - 1));
-  x.mvp_intrinsic_params_equal_flag(
-      all_of(viewParamsList.begin(), viewParamsList.end(),
-             [this](const auto &x) { return x.ci == viewParamsList.front().ci; }));
-  x.mvp_depth_quantization_params_equal_flag(
-      all_of(viewParamsList.begin(), viewParamsList.end(),
-             [this](const auto &x) { return x.dq == viewParamsList.front().dq; }));
-  x.mvp_pruning_graph_params_present_flag(viewParamsList.front().pp.has_value());
-
-  for (uint16_t i = 0; i <= x.mvp_num_views_minus1(); ++i) {
-    const auto &vp = viewParamsList[i];
-    x.camera_extrinsics(i) = vp.ce;
-
-    if (i == 0 || !x.mvp_intrinsic_params_equal_flag()) {
-      x.camera_intrinsics(i) = vp.ci;
-    }
-    if (i == 0 || !x.mvp_depth_quantization_params_equal_flag()) {
-      x.depth_quantization(i) = vp.dq;
-    }
-    VERIFY_MIVBITSTREAM(vp.pp.has_value() == x.mvp_pruning_graph_params_present_flag());
-    if (vp.pp.has_value()) {
-      x.pruning_parent(i) = *vp.pp;
-    }
-  }
-}
-
 auto IvSequenceParams::vme() const noexcept -> const VpsMivExtension & {
   return vps.vps_miv_extension();
 }
@@ -113,7 +83,7 @@ auto IvSequenceParams::vme() noexcept -> VpsMivExtension & {
 }
 
 auto IvSequenceParams::operator==(const IvSequenceParams &other) const -> bool {
-  return vps == other.vps && aaps == other.aaps && mvpl == other.mvpl &&
-         viewingSpace == other.viewingSpace && viewParamsList == other.viewParamsList;
+  return vps == other.vps && aaps == other.aaps && viewingSpace == other.viewingSpace &&
+         viewParamsList == other.viewParamsList;
 }
 } // namespace TMIV::MivBitstream

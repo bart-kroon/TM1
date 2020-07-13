@@ -48,15 +48,11 @@ struct IvSequenceParams {
 
   V3cParameterSet vps;
   AtlasAdaptationParameterSetRBSP aaps;
-  MivViewParamsList mvpl;
   std::optional<ViewingSpace> viewingSpace{};
 
   // Encoder-internal variables
   double frameRate{};
   ViewParamsList viewParamsList;
-
-  // Write the viewParamsList into the MVPL structure
-  void updateMvpl();
 
   // Convenience function to access the VPS MIV extension
   [[nodiscard]] auto vme() const noexcept -> const VpsMivExtension &;

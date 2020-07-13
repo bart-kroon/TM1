@@ -50,11 +50,14 @@ void MivEncoder::writeIvSequenceParams(const IvSequenceParams &ivSequenceParams)
   m_ivs = ivSequenceParams;
 
   writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_ivs.vps);
-  writeV3cUnit(VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
 }
 
 void MivEncoder::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
   m_ivau = ivAccessUnitParams;
+
+  if (m_irap) {
+    writeV3cUnit(VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
+  }
 
   for (uint8_t vai = 0; vai <= m_ivs.vps.vps_atlas_count_minus1(); ++vai) {
     writeV3cUnit(VuhUnitType::V3C_AD, vai, atlasSubBitstream(vai));
@@ -75,10 +78,7 @@ const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
 auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
-  if (m_irap) {
-    m_ivs.updateMvpl();
-    writeNalUnit(asb, nuhAaps, m_ivs.aaps);
-  }
+  writeNalUnit(asb, nuhAaps, m_ivs.aaps);
 
   const auto maxCommonAtlasFrmOrderCntLsb =
       1U << (m_ivs.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
@@ -87,10 +87,53 @@ auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
   caf.caf_atlas_adaptation_parameter_set_id(0)
       .caf_frm_order_cnt_lsb(0)
       .caf_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
-      .miv_view_params_list() = m_ivs.mvpl;
+      .miv_view_params_list() = mivViewParamsList();
   writeNalUnit(asb, nuhCaf, caf, m_ivs.vps, maxCommonAtlasFrmOrderCntLsb);
 
   return asb;
+}
+
+auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
+  auto mvpl = MivViewParamsList{};
+  auto &vpl = m_ivs.viewParamsList;
+
+  assert(!vpl.empty());
+  mvpl.mvp_num_views_minus1(uint16_t(vpl.size() - 1));
+  mvpl.mvp_intrinsic_params_equal_flag(
+      all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.ci == vpl.front().ci; }));
+  mvpl.mvp_depth_quantization_params_equal_flag(
+      all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.dq == vpl.front().dq; }));
+  mvpl.mvp_pruning_graph_params_present_flag(vpl.front().pp.has_value());
+
+  for (uint16_t i = 0; i <= mvpl.mvp_num_views_minus1(); ++i) {
+    const auto &vp = vpl[i];
+    mvpl.camera_extrinsics(i) = vp.ce;
+
+    if (i == 0 || !mvpl.mvp_intrinsic_params_equal_flag()) {
+      mvpl.camera_intrinsics(i) = vp.ci;
+    }
+    if (i == 0 || !mvpl.mvp_depth_quantization_params_equal_flag()) {
+      mvpl.depth_quantization(i) = vp.dq;
+    }
+    assert(vp.pp.has_value() == mvpl.mvp_pruning_graph_params_present_flag());
+    if (vp.pp.has_value()) {
+      mvpl.pruning_parent(i) = *vp.pp;
+    }
+  }
+
+  mvpl.mvp_num_views_minus1(uint16_t(m_ivs.viewParamsList.size() - 1));
+  for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a) {
+    for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
+      mvpl.mvp_view_enabled_in_atlas_flag(a, v, true);
+      mvpl.mvp_view_complete_in_atlas_flag(a, v, m_ivs.viewParamsList[v].isBasicView);
+    }
+  }
+  mvpl.mvp_explicit_view_id_flag(true);
+  for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
+    mvpl.mvp_view_id(v, v);
+  }
+
+  return mvpl;
 }
 
 auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {

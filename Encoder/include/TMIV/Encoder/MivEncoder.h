@@ -53,6 +53,7 @@ public:
 
 private:
   auto commonAtlasSubBitstream() -> AtlasSubBitstream;
+  auto mivViewParamsList() const -> MivViewParamsList;
   auto atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
   [[nodiscard]] auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
 

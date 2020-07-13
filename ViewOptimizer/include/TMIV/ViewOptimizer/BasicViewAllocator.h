@@ -31,42 +31,45 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/Aggregator/Aggregator.h>
-#include <TMIV/Common/Factory.h>
-#include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
-#include <TMIV/Encoder/Encoder.h>
-#include <TMIV/Encoder/GroupBasedEncoder.h>
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
-#include <TMIV/Packer/Packer.h>
-#include <TMIV/Pruner/HierarchicalPruner.h>
-#include <TMIV/ViewOptimizer/BasicViewAllocator.h>
-#include <TMIV/ViewOptimizer/NoViewOptimizer.h>
+#ifndef _TMIV_VIEWOPTIMIZER_BASICVIEWALLOCATOR_H_
+#define _TMIV_VIEWOPTIMIZER_BASICVIEWALLOCATOR_H_
 
-namespace TMIV::Encoder {
-void registerComponents() {
-  using Common::Factory;
+#include <TMIV/ViewOptimizer/AbstractViewSelector.h>
+#include <TMIV/ViewOptimizer/KMedoidsCost.h>
 
-  auto &aggregators = Factory<Aggregator::IAggregator>::getInstance();
-  aggregators.registerAs<Aggregator::Aggregator>("Aggregator");
+namespace TMIV::ViewOptimizer {
+class BasicViewAllocator : public AbstractViewSelector {
+public:
+  using Centroids = KMedoidsCost::Centroids;
+  using Positions = std::vector<Common::Vec3d>;
 
-  auto &assesors = Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
-  assesors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
+  BasicViewAllocator(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  auto &encoders = Factory<IEncoder>::getInstance();
-  encoders.registerAs<Encoder>("Encoder");
-  encoders.registerAs<GroupBasedEncoder>("GroupBasedEncoder");
+protected:
+  auto isBasicView() const -> std::vector<bool> override;
 
-  auto &geometryQuantizers = Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
-  geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
+private:
+  // Calculate 'k'
+  auto basicViewCount() const -> size_t;
+  auto lumaSamplesPerSourceViewSortedDesc() const -> std::vector<size_t>;
 
-  auto &packers = Factory<Packer::IPacker>::getInstance();
-  packers.registerAs<Packer::Packer>("Packer");
+  // Prepare cost calculation
+  auto viewPositions() const -> Positions;
+  auto forwardView(const Positions &pos) const -> std::size_t;
+  static auto sqDistanceMatrix(const Positions &pos) -> Common::Mat<double>;
 
-  auto &pruners = Factory<Pruner::IPruner>::getInstance();
-  pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
+  // Partitioning around medians [https://en.wikipedia.org/wiki/K-medoids#Algorithms]
+  auto selectInitialCentroids(const KMedoidsCost &cost, std::size_t first, std::size_t k) const
+      -> Centroids;
+  auto updateCentroids(const KMedoidsCost &cost, Centroids centroids) const
+      -> std::optional<Centroids>;
 
-  auto &viewOptimizers = Factory<ViewOptimizer::IViewOptimizer>::getInstance();
-  viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
-  viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
-}
-} // namespace TMIV::Encoder
+  int m_numGroups{};
+  int m_maxLumaPictureSize{};
+  int m_maxAtlases{};
+  int m_minNonCodedViews{}; // for evaluation purposes
+  double m_maxBasicViewFraction{};
+};
+} // namespace TMIV::ViewOptimizer
+
+#endif

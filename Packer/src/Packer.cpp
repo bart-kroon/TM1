@@ -131,14 +131,18 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
       return isBasicView[p2.getViewId()];
     }
-    return p1.getArea() < p2.getArea();
+    if (p1.getArea() != p2.getArea()) {
+      return p1.getArea() < p2.getArea();
+    }
+    // NOTE(BK): Stable ordering
+    return p1.getClusterId() > p2.getClusterId();
   };
 
   priority_queue<Cluster, vector<Cluster>, decltype(comp)> clusterToPack(comp);
 
   std::vector<Cluster> out;
   for (const auto &cluster : clusterList) {
-    if (m_maxEntities > 1) {
+    if (m_maxEntities > 1 || cluster.isBasicView()) {
       out.push_back(cluster);
     } else {
       cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_blockSize, m_minPatchSize);
@@ -210,6 +214,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
       if (!packed) {
         if (m_maxEntities > 1) {
           cout << "Spliting cluster " << cluster.getClusterId() << endl;
+        }
+        if (cluster.isBasicView()) {
+          throw runtime_error("Failed to pack basic view");
         }
         auto cc = cluster.split(clusteringMap[clusteringMap_viewId], m_overlap);
 

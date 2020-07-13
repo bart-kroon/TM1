@@ -474,7 +474,7 @@ auto MivViewParamsList::mvp_explicit_view_id_flag(bool value) noexcept -> MivVie
 auto MivViewParamsList::mvp_view_id(uint16_t viewIdx, uint16_t viewId) noexcept
     -> MivViewParamsList & {
   VERIFY_MIVBITSTREAM(mvp_explicit_view_id_flag());
-  if (m_mvp_view_id.size() < mvp_num_views_minus1() + 1) {
+  if (m_mvp_view_id.size() < size_t(mvp_num_views_minus1()) + 1) {
     m_mvp_view_id.resize(mvp_num_views_minus1() + 1);
   }
   VERIFY_MIVBITSTREAM(viewIdx <= mvp_num_views_minus1());

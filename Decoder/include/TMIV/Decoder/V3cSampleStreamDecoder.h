@@ -31,28 +31,23 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "test.h"
+#ifndef _TMIV_DECODER_V3CSAMPLESTREAMDECODER_H_
+#define _TMIV_DECODER_V3CSAMPLESTREAMDECODER_H_
 
-#include <TMIV/MivBitstream/FrameOrderCountRBSP.h>
+#include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
-using namespace TMIV::MivBitstream;
+namespace TMIV::Decoder {
+class V3cSampleStreamDecoder {
+public:
+  explicit V3cSampleStreamDecoder(std::istream &stream);
 
-TEST_CASE("frame_order_count_rbsp", "[Frame Order Count RBSP]") {
-  auto x = FrameOrderCountRBSP{1437};
+  auto operator()() -> std::optional<MivBitstream::V3cUnit>;
 
-  REQUIRE(toString(x) == R"(frm_order_cnt_lsb=1437
-)");
+private:
+  std::istream &m_stream;
+  MivBitstream::SampleStreamV3cHeader m_ssvh;
+};
+} // namespace TMIV::Decoder
 
-  SECTION("Regular atlas") {
-    auto asps = AtlasSequenceParameterSetRBSP{};
-    asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4(12);
-    REQUIRE(byteCodingTest(x, 3, asps));
-  }
-
-  SECTION("Special atlas") {
-    auto aaps = AtlasAdaptationParameterSetRBSP{};
-    aaps.aaps_log2_max_afoc_present_flag(true);
-    aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(11);
-    REQUIRE(byteCodingTest(x, 2, aaps));
-  }
-}
+#endif

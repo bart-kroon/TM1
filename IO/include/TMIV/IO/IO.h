@@ -36,7 +36,7 @@
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
-#include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/Decoder/AccessUnit.h>
 #include <TMIV/MivBitstream/IvAccessUnitParams.h>
 #include <TMIV/MivBitstream/IvSequenceParams.h>
 
@@ -57,7 +57,7 @@ auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes
 void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame);
 
 void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
-                          const MivBitstream::AccessUnit &frame);
+                          const Decoder::AccessUnit &frame);
 void savePrunedFrame(const Common::Json &config, int frameIndex,
                      const std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>
                          &prunedViewsAndMasks);

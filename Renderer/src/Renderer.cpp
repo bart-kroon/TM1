@@ -47,11 +47,11 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
     , m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
           "ViewingSpaceController", rootNode, componentNode)} {}
 
-auto Renderer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
+auto Renderer::renderFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
 
-  if (frame.vps->vps_miv_extension().vme_max_entities_minus1() == 0) {
+  if (frame.vps.vps_miv_extension().vme_max_entities_minus1() == 0) {
     m_inpainter->inplaceInpaint(viewport, viewportParams);
   }
 

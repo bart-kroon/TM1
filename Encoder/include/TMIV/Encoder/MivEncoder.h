@@ -49,14 +49,12 @@ public:
   MivEncoder(std::ostream &stream);
 
   void writeIvSequenceParams(const IvSequenceParams &);
-  void writeIvAccessUnitParams(const IvAccessUnitParams &, int intraPeriodFrameCount);
+  void writeIvAccessUnitParams(const IvAccessUnitParams &);
 
 private:
-  auto specialAtlasSubBitstream() -> AtlasSubBitstream;
-  auto nonAclAtlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
-  auto aclAtlasSubBitstream(std::uint8_t vai, int intraPeriodFrameCount) -> AtlasSubBitstream;
-  auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
-  static auto skipAtlasTileGroupLayer() -> AtlasTileLayerRBSP;
+  auto commonAtlasSubBitstream() -> AtlasSubBitstream;
+  auto atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
+  [[nodiscard]] auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
 
   template <typename Payload>
   void writeV3cUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);
@@ -68,8 +66,7 @@ private:
   SampleStreamNalHeader m_ssnh{2};
   IvSequenceParams m_ivs;
   IvAccessUnitParams m_ivau;
-  bool m_writeNonAcl{true};
-  std::ostringstream m_nalUnitLog;
+  bool m_irap{true};
 };
 } // namespace TMIV::Encoder
 

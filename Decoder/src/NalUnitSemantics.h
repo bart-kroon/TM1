@@ -31,28 +31,51 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_IVMETADATAREADER_H_
-#define _TMIV_DECODER_IVMETADATAREADER_H_
+#ifndef _TMIV_DECODER_NALUNITSEMANTICS_H_
+#define _TMIV_DECODER_NALUNITSEMANTICS_H_
 
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/MivDecoder.h>
-#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
-
-#include <fstream>
+#include <TMIV/MivBitstream/NalUnit.h>
 
 namespace TMIV::Decoder {
-class IvMetadataReader {
-public:
-  explicit IvMetadataReader(const Common::Json &config);
+constexpr auto isAud(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut == MivBitstream::NalUnitType::NAL_AUD || nut == MivBitstream::NalUnitType::NAL_V3C_AUD;
+}
 
-  auto decoder() noexcept -> auto & { return *m_decoder; }
+constexpr auto isPrefixNalUnit(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut == MivBitstream::NalUnitType::NAL_ASPS || nut == MivBitstream::NalUnitType::NAL_AFPS ||
+         nut == MivBitstream::NalUnitType::NAL_PREFIX_NSEI ||
+         nut == MivBitstream::NalUnitType::NAL_PREFIX_ESEI ||
+         nut == MivBitstream::NalUnitType::NAL_AAPS ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_49 ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_50 ||
+         (MivBitstream::NalUnitType::NAL_UNSPEC_53 <= nut &&
+          nut <= MivBitstream::NalUnitType::NAL_UNSPEC_57);
+}
 
-private:
-  std::ifstream m_stream;
-  std::unique_ptr<Decoder::V3cSampleStreamDecoder> m_vssDecoder;
-  std::unique_ptr<Decoder::MivDecoder> m_decoder;
-};
+constexpr auto isAcl(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut <= MivBitstream::NalUnitType::NAL_RSV_ACL_35;
+}
 
+constexpr auto isCaf(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut == MivBitstream::NalUnitType::NAL_CAF;
+}
+
+constexpr auto isSuffixNalUnit(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut == MivBitstream::NalUnitType::NAL_FD ||
+         nut == MivBitstream::NalUnitType::NAL_SUFFIX_NSEI ||
+         nut == MivBitstream::NalUnitType::NAL_SUFFIX_ESEI ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_51 ||
+         nut == MivBitstream::NalUnitType::NAL_RSV_NACL_52 ||
+         MivBitstream::NalUnitType::NAL_UNSPEC_58 <= nut;
+}
+
+constexpr auto isEos(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut == MivBitstream::NalUnitType::NAL_EOS;
+}
+
+constexpr auto isEob(MivBitstream::NalUnitType nut) noexcept -> bool {
+  return nut == MivBitstream::NalUnitType::NAL_EOB;
+}
 } // namespace TMIV::Decoder
 
 #endif

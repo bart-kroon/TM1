@@ -31,39 +31,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#ifndef _TMIV_DECODER_V3CUNITBUFFER_H_
+#define _TMIV_DECODER_V3CUNITBUFFER_H_
 
-#include <TMIV/Decoder/MivDecoder.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
 
-#include <sstream>
+#include <functional>
+#include <list>
 
-using namespace TMIV::Common;
-using namespace TMIV::Decoder;
-using namespace TMIV::MivBitstream;
+namespace TMIV::Decoder {
+using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
 
-TEST_CASE("MivDecoder", "[MIV decoder]") {
-  SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
+class V3cUnitBuffer {
+public:
+  explicit V3cUnitBuffer(V3cUnitSource source);
 
-    auto decoder = MivDecoder{stream};
+  auto operator()(const MivBitstream::V3cUnitHeader &vuh) -> std::optional<MivBitstream::V3cUnit>;
 
-    SECTION("Callbacks") {
-      decoder.setGeoFrameServer(
-          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Depth10Frame{}; });
+private:
+  V3cUnitSource m_source;
+  std::list<MivBitstream::V3cUnit> m_buffer;
+};
+} // namespace TMIV::Decoder
 
-      decoder.setAttrFrameServer(
-          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Texture444Frame{}; });
-
-      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
-        cout << "Sequence:\n" << vps;
-        return true;
-      });
-
-      decoder.onFrame.emplace_back([](const AccessUnit &au) {
-        cout << "Frame " << au.frameId << '\n';
-        return true;
-      });
-    }
-  }
-}
+#endif

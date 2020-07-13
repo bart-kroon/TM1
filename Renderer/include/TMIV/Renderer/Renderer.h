@@ -55,7 +55,7 @@ public:
   auto operator=(Renderer &&) -> Renderer & = default;
   ~Renderer() override = default;
 
-  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
+  [[nodiscard]] auto renderFrame(const Decoder::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame override;
 };

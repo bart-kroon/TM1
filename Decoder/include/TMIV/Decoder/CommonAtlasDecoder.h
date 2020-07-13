@@ -31,28 +31,58 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
-#error "Include the .hpp, not the .h"
+#ifndef _TMIV_DECODER_COMMONATLASDECODER_H_
+#define _TMIV_DECODER_COMMONATLASDECODER_H_
+
+#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/SeiRBSP.h>
+#include <TMIV/MivBitstream/V3cUnit.h>
+
+#include <TMIV/Common/Frame.h>
+
+#include <functional>
+#include <list>
+
+namespace TMIV::Decoder {
+using V3cUnitSource = std::function<std::optional<MivBitstream::V3cUnit>()>;
+
+class CommonAtlasDecoder {
+public:
+  CommonAtlasDecoder() = default;
+  explicit CommonAtlasDecoder(V3cUnitSource source, MivBitstream::V3cParameterSet vps, int32_t foc);
+
+  struct AccessUnit {
+    int32_t foc{};
+    MivBitstream::AtlasAdaptationParameterSetRBSP aaps;
+    MivBitstream::CommonAtlasFrameRBSP caf;
+    std::vector<MivBitstream::SeiMessage> prefixNSei;
+    std::vector<MivBitstream::SeiMessage> prefixESei;
+    std::vector<MivBitstream::SeiMessage> suffixNSei;
+    std::vector<MivBitstream::SeiMessage> suffixESei;
+  };
+
+  auto operator()() -> std::optional<AccessUnit>;
+
+private:
+  auto decodeAsb() -> bool;
+  auto decodeAu() -> AccessUnit;
+  void decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  void decodeCafNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  void decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  void decodeAaps(std::istream &stream);
+  void decodeSei(std::vector<MivBitstream::SeiMessage> &messages, std::istream &stream);
+
+  V3cUnitSource m_source;
+  MivBitstream::V3cParameterSet m_vps;
+
+  std::list<MivBitstream::NalUnit> m_buffer;
+  int32_t m_foc{};
+
+  std::vector<MivBitstream::AtlasAdaptationParameterSetRBSP> m_aapsV;
+  unsigned m_maxFrmOrderCntLsb{};
+};
+} // namespace TMIV::Decoder
+
 #endif
-
-namespace TMIV::MivBitstream {
-constexpr FrameOrderCountRBSP::FrameOrderCountRBSP(std::uint16_t frm_order_cnt_lsb) noexcept
-    : m_frm_order_cnt_lsb{frm_order_cnt_lsb} {}
-
-constexpr auto FrameOrderCountRBSP::frm_order_cnt_lsb() const noexcept {
-  return m_frm_order_cnt_lsb;
-}
-
-constexpr auto FrameOrderCountRBSP::frm_order_cnt_lsb(uint16_t value) noexcept -> auto & {
-  m_frm_order_cnt_lsb = value;
-  return *this;
-}
-
-constexpr auto FrameOrderCountRBSP::operator==(const FrameOrderCountRBSP &other) const noexcept {
-  return frm_order_cnt_lsb() == other.frm_order_cnt_lsb();
-}
-
-constexpr auto FrameOrderCountRBSP::operator!=(const FrameOrderCountRBSP &other) const noexcept {
-  return !operator==(other);
-}
-} // namespace TMIV::MivBitstream

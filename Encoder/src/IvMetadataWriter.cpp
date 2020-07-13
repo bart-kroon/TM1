@@ -60,17 +60,15 @@ void IvMetadataWriter::writeIvSequenceParams(const IvSequenceParams &ivSequenceP
   m_frameRate = ivSequenceParams.frameRate;
 }
 
-void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams,
-                                               int intraPeriodFrameCount) {
-  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams, intraPeriodFrameCount);
-  m_frameCount += intraPeriodFrameCount;
+void IvMetadataWriter::writeIvAccessUnitParams(const IvAccessUnitParams &ivAccessUnitParams) {
+  m_encoder->writeIvAccessUnitParams(ivAccessUnitParams);
   m_bytesWritten = m_stream.tellp();
 }
 
-void IvMetadataWriter::reportSummary(std::ostream &out) const {
+void IvMetadataWriter::reportSummary(std::ostream &out, int32_t numberOfFrames) const {
   out << "Total size is " << m_bytesWritten << " B (" << (8e-3 * m_bytesWritten) << " kb)\n";
-  out << "Frame count is " << m_frameCount << '\n';
+  out << "Frame count is " << numberOfFrames << '\n';
   out << "Frame rate is " << m_frameRate << " Hz\n";
-  out << "Total bitrate is " << (8e-3 * m_bytesWritten * m_frameRate / m_frameCount) << " kbps\n";
+  out << "Total bitrate is " << (8e-3 * m_bytesWritten * m_frameRate / numberOfFrames) << " kbps\n";
 }
 } // namespace TMIV::Encoder

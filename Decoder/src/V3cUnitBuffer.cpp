@@ -31,38 +31,38 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_RENDERER_MULTIPASSRENDERER_H_
-#define _TMIV_RENDERER_MULTIPASSRENDERER_H_
+#include <TMIV/Decoder/V3cUnitBuffer.h>
 
-#include <TMIV/Renderer/IInpainter.h>
-#include <TMIV/Renderer/IRenderer.h>
-#include <TMIV/Renderer/ISynthesizer.h>
-#include <TMIV/Renderer/IViewingSpaceController.h>
+#include <iostream>
+#include <utility>
 
-namespace TMIV::Renderer {
+namespace TMIV::Decoder {
+V3cUnitBuffer::V3cUnitBuffer(V3cUnitSource source) : m_source{std::move(source)} {}
 
-// Advanced multipass implementation of IRenderer
-class MultipassRenderer : public IRenderer {
-private:
-  std::unique_ptr<ISynthesizer> m_synthesizer;
-  std::unique_ptr<IInpainter> m_inpainter;
-  std::unique_ptr<IViewingSpaceController> m_viewingSpaceController;
-  std::size_t m_numberOfPasses{};
-  std::vector<std::size_t> m_numberOfViewsPerPass;
+auto V3cUnitBuffer::operator()(const MivBitstream::V3cUnitHeader &vuh)
+    -> std::optional<MivBitstream::V3cUnit> {
+  auto i = m_buffer.begin();
 
-public:
-  MultipassRenderer(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/);
-  MultipassRenderer(const MultipassRenderer &) = delete;
-  MultipassRenderer(MultipassRenderer &&) = default;
-  auto operator=(const MultipassRenderer &) -> MultipassRenderer & = delete;
-  auto operator=(MultipassRenderer &&) -> MultipassRenderer & = default;
-  ~MultipassRenderer() override = default;
-
-  // Render from a texture atlas to a viewport
-  [[nodiscard]] auto renderFrame(const MivBitstream::AccessUnit &frame,
-                                 const MivBitstream::ViewParams &viewportParams) const
-      -> Common::Texture444Depth16Frame override;
-};
-} // namespace TMIV::Renderer
-
-#endif
+  for (;;) {
+    if (i == m_buffer.end()) {
+      if (auto vu = m_source()) {
+        m_buffer.push_back(std::move(*vu));
+        i = std::prev(m_buffer.end());
+      } else {
+        return {};
+      }
+    }
+    if (i->v3c_unit_header() == vuh) {
+      auto vu = std::move(*i);
+      i = m_buffer.erase(i);
+      return vu;
+    }
+    if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_VPS) {
+      std::cout << "WARNING: Ignoring V3C unit:\n" << *i;
+      i = m_buffer.erase(i);
+    } else {
+      ++i;
+    }
+  }
+}
+} // namespace TMIV::Decoder

@@ -36,67 +36,67 @@
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto &RecViewport::rec_viewport_id(const std::uint16_t value) noexcept {
+constexpr auto RecViewport::rec_viewport_id(const std::uint16_t value) noexcept -> auto & {
   m_rec_viewport_id = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_cancel_flag(const bool value) noexcept {
+constexpr auto RecViewport::rec_viewport_cancel_flag(const bool value) noexcept -> auto & {
   m_rec_viewport_cancel_flag = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_persistence_flag(const bool value) noexcept {
+constexpr auto RecViewport::rec_viewport_persistence_flag(const bool value) noexcept -> auto & {
   m_rec_viewport_persistence_flag = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_center_view_flag(const bool value) noexcept {
+constexpr auto RecViewport::rec_viewport_center_view_flag(const bool value) noexcept -> auto & {
   m_rec_viewport_center_view_flag = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_left_view_flag(const bool value) noexcept {
+constexpr auto RecViewport::rec_viewport_left_view_flag(const bool value) noexcept -> auto & {
   m_rec_viewport_left_view_flag = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_pos_x(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_pos_x(const float value) noexcept -> auto & {
   m_rec_viewport_pos_x = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_pos_y(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_pos_y(const float value) noexcept -> auto & {
   m_rec_viewport_pos_y = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_pos_z(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_pos_z(const float value) noexcept -> auto & {
   m_rec_viewport_pos_z = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_quat_x(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_quat_x(const float value) noexcept -> auto & {
   m_rec_viewport_quat_x = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_quat_y(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_quat_y(const float value) noexcept -> auto & {
   m_rec_viewport_quat_y = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_quat_z(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_quat_z(const float value) noexcept -> auto & {
   m_rec_viewport_quat_z = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_hor_range(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_hor_range(const float value) noexcept -> auto & {
   m_rec_viewport_hor_range = value;
   return *this;
 }
 
-constexpr auto &RecViewport::rec_viewport_ver_range(const float value) noexcept {
+constexpr auto RecViewport::rec_viewport_ver_range(const float value) noexcept -> auto & {
   m_rec_viewport_ver_range = value;
   return *this;
 }

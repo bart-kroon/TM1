@@ -31,47 +31,51 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
-#define _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
+#ifndef _TMIV_DECODER_ACCESSUNIT_H_
+#define _TMIV_DECODER_ACCESSUNIT_H_
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
+#include <TMIV/MivBitstream/V3cParameterSet.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
+#include <TMIV/MivBitstream/ViewingSpace.h>
 
-#include <TMIV/Common/Bitstream.h>
+#include <TMIV/Common/Frame.h>
 
-#include <cstdint>
-#include <cstdlib>
-#include <iosfwd>
+namespace TMIV::Decoder {
+struct AtlasAccessUnit {
+  MivBitstream::AtlasSequenceParameterSetRBSP asps;
+  MivBitstream::AtlasFrameParameterSetRBSP afps;
 
-namespace TMIV::MivBitstream {
-// 23090-5: frame_order_count_rbsp( )
-class FrameOrderCountRBSP {
-public:
-  FrameOrderCountRBSP() noexcept = default;
-  explicit constexpr FrameOrderCountRBSP(std::uint16_t frm_order_cnt_lsb) noexcept;
+  Common::Depth10Frame decGeoFrame;
+  Common::Depth10Frame geoFrame;
+  Common::Texture444Frame attrFrame;
 
-  [[nodiscard]] constexpr auto frm_order_cnt_lsb() const noexcept;
+  Common::BlockToPatchMap blockToPatchMap;
+  MivBitstream::PatchParamsList patchParamsList;
 
-  constexpr auto frm_order_cnt_lsb(uint16_t value) noexcept -> auto &;
+  // Nominal atlas frame size
+  [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
 
-  friend auto operator<<(std::ostream &stream, const FrameOrderCountRBSP &x) -> std::ostream &;
+  // Geometry frame size
+  [[nodiscard]] auto decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
+      -> Common::Vec2i;
 
-  constexpr auto operator==(const FrameOrderCountRBSP &other) const noexcept;
-  constexpr auto operator!=(const FrameOrderCountRBSP &other) const noexcept;
-
-  static auto decodeFrom(std::istream &stream, const AtlasAdaptationParameterSetRBSP &aaps)
-      -> FrameOrderCountRBSP;
-  static auto decodeFrom(std::istream &stream, const AtlasSequenceParameterSetRBSP &asps)
-      -> FrameOrderCountRBSP;
-
-  void encodeTo(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &aaps) const;
-  void encodeTo(std::ostream &stream, const AtlasSequenceParameterSetRBSP &asps) const;
-
-private:
-  std::uint16_t m_frm_order_cnt_lsb{};
+  // Index into the block to patch map using nominal atlas coordinates
+  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;
 };
-} // namespace TMIV::MivBitstream
 
-#include "FrameOrderCountRBSP.hpp"
+struct AccessUnit {
+  bool irap{};
+  std::int32_t foc{-1};
+  MivBitstream::V3cParameterSet vps;
+  MivBitstream::ViewParamsList viewParamsList;
+  std::vector<AtlasAccessUnit> atlas;
+  std::optional<MivBitstream::ViewingSpace> vs;
+};
+} // namespace TMIV::Decoder
 
 #endif

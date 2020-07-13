@@ -179,8 +179,8 @@ public:
   constexpr auto asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto asps_frame_width(const std::uint16_t value) noexcept -> auto &;
   constexpr auto asps_frame_height(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
-      -> auto &;
+  auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
+      -> AtlasSequenceParameterSetRBSP &;
   constexpr auto asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept
       -> auto &;
   constexpr auto asps_long_term_ref_atlas_frames_flag(const bool value) noexcept -> auto &;
@@ -254,6 +254,9 @@ private:
   std::optional<AspsMivExtension> m_asme;
   std::optional<std::vector<bool>> m_aspsExtensionData;
 };
+
+auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
+    -> const AtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 
 #include "AtlasSequenceParameterSetRBSP.hpp"

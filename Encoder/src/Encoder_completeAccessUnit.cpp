@@ -45,7 +45,6 @@ auto Encoder::completeAccessUnit() -> const IvAccessUnitParams & {
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
 
   updateAggregationStatistics(aggregatedMask);
-  completeIvau();
 
   if (m_ivs.vme().vme_max_entities_minus1() > 0) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
@@ -67,40 +66,6 @@ void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {
       });
   cout << "Aggregated luma samples per frame is " << (1e-6 * lumaSamplesPerFrame) << "M\n";
   m_maxLumaSamplesPerFrame = max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
-}
-
-void Encoder::completeIvau() {
-  m_ivau.atlas.resize(m_ivs.vps.vps_atlas_count_minus1() + 1);
-
-  for (uint8_t i = 0; i <= m_ivs.vps.vps_atlas_count_minus1(); ++i) {
-    auto &atlas = m_ivau.atlas[i];
-
-    // Set ASPS parameters
-    atlas.asps.asps_frame_width(m_ivs.vps.vps_frame_width(i))
-        .asps_frame_height(m_ivs.vps.vps_frame_height(i))
-        .asps_use_eight_orientations_flag(true)
-        .asps_extended_projection_enabled_flag(true)
-        .asps_normal_axis_limits_quantization_enabled_flag(true)
-        .asps_max_number_projections_minus1(uint16_t(m_ivs.viewParamsList.size() - 1))
-        .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
-
-    // Signalling pdu_entity_id requires ASME to be present
-    if (m_ivs.vps.vps_miv_extension_flag() && m_ivs.vme().vme_max_entities_minus1() > 0) {
-      // There is nothing entity-related in ASME so a reference is obtained but discarded
-      static_cast<void>(atlas.asme());
-    }
-
-    // Set AFPS parameters
-    const auto &gi = m_ivs.vps.geometry_information(i);
-    atlas.afps.afps_3d_pos_x_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
-    atlas.afps.afps_3d_pos_y_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
-
-    // Set ATH parameters
-    atlas.ath.ath_ref_atlas_frame_list_sps_flag(true);
-    atlas.ath.ath_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
-    atlas.ath.ath_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
-    atlas.ath.ath_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
-  }
 }
 
 void Encoder::constructVideoFrames() {

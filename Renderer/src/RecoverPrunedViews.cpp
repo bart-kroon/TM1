@@ -45,13 +45,13 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 // NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
 // patch ordering anymore.
-auto recoverPrunedViewAndMask(const AccessUnit &frame)
+auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
     -> pair<vector<Texture444Depth10Frame>, MaskList> {
   // Initialization
   auto prunedView = vector<Texture444Depth10Frame>{};
   auto prunedMasks = MaskList{};
 
-  const auto &viewParamsList = frame.atlas.front().viewParamsList;
+  const auto &viewParamsList = frame.viewParamsList;
 
   for (const auto &viewParams : viewParamsList) {
     const auto size = viewParams.ci.projectionPlaneSize();
@@ -74,7 +74,7 @@ auto recoverPrunedViewAndMask(const AccessUnit &frame)
         // Index patch and view parameters
         const auto &patchParams = atlas.patchParamsList[patchId];
         const auto viewId = patchParams.pduViewId();
-        const auto &viewParams = atlas.viewParamsList[viewId];
+        const auto &viewParams = frame.viewParamsList[viewId];
 
         // Test for occupancy
         const auto occupancyTransform = OccupancyTransform{viewParams, patchParams};

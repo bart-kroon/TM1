@@ -51,8 +51,8 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
 
 namespace {
 void checkRestrictions(const AccessUnit &frame) {
-  if (frame.vps->vps_miv_extension_flag()) {
-    const auto &vme = frame.vps->vps_miv_extension();
+  if (frame.vps.vps_miv_extension_flag()) {
+    const auto &vme = frame.vps.vps_miv_extension();
     if (vme.vme_vui_params_present_flag()) {
       const auto &mvp = vme.miv_vui_parameters();
       if (!mvp.coordinate_axis_system_params().isOmafCas()) {

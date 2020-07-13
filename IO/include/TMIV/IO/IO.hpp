@@ -81,7 +81,7 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
   result.read(stream);
 
   if (!stream.good()) {
-    throw std::runtime_error("Failed to read from file");
+    return Common::Frame<FORMAT>{};
   }
 
   return result;

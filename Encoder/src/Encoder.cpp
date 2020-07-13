@@ -72,6 +72,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     , m_depthOccupancy{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
     , m_geometryDownscaler{rootNode, componentNode} {
   // Parameters
+  m_intraPeriod = rootNode.require("intraPeriod").asInt();
   const auto numGroups = rootNode.require("numGroups").asInt();
   m_blockSize = rootNode.require("blockSize").asInt();
   const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
@@ -115,7 +116,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     m_entityEncRange = subnode.asIntVector<2>();
   }
 
-  if (rootNode.require("intraPeriod").asInt() > maxIntraPeriod) {
+  if (m_intraPeriod > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 }

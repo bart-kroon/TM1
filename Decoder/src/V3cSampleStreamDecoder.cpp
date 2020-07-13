@@ -31,29 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 
-using namespace TMIV::Common;
+#include <sstream>
 
-namespace TMIV::MivBitstream {
-auto AtlasAccessUnit::frameSize() const noexcept -> Vec2i {
-  return Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
+#include <TMIV/MivBitstream/verify.h>
+
+namespace TMIV::Decoder {
+V3cSampleStreamDecoder::V3cSampleStreamDecoder(std::istream &stream)
+    : m_stream{stream}, m_ssvh{MivBitstream::SampleStreamV3cHeader::decodeFrom(stream)} {
+  VERIFY_V3CBITSTREAM(m_stream.good());
 }
 
-auto AtlasAccessUnit::decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Vec2i {
-  if (vps.vps_miv_extension_flag()) {
-    const auto &vme = vps.vps_miv_extension();
-    if (vme.vme_geometry_scale_enabled_flag()) {
-      const auto &asme = asps.asps_miv_extension();
-      return Vec2i{asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
-                   asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
-    }
+auto V3cSampleStreamDecoder::operator()() -> std::optional<MivBitstream::V3cUnit> {
+  m_stream.peek();
+  if (m_stream.eof()) {
+    return {};
   }
-  return frameSize();
+  auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
+  std::istringstream substream{ssvu.ssvu_v3c_unit()};
+  return MivBitstream::V3cUnit::decodeFrom(substream, ssvu.ssvu_v3c_unit_size());
 }
-
-auto AtlasAccessUnit::patchId(unsigned row, unsigned column) const -> uint16_t {
-  const auto k = asps.asps_log2_patch_packing_block_size();
-  return blockToPatchMap.getPlane(0)(row >> k, column >> k);
-}
-} // namespace TMIV::MivBitstream
+} // namespace TMIV::Decoder

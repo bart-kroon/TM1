@@ -11,7 +11,7 @@ add_library(TMIV::IOLib
 
 target_link_libraries(IOLib
     PUBLIC
-        TMIV::MivBitstreamLib)
+        TMIV::DecoderLib)
 
 target_include_directories(IOLib
     PUBLIC

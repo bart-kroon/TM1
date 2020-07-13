@@ -37,8 +37,8 @@
 #include <TMIV/Renderer/AccumulatingPixel.h>
 #include <TMIV/Renderer/Engine.h>
 #include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/Rasterizer.h>
+#include <TMIV/Renderer/Renderer.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 
 #include <algorithm>

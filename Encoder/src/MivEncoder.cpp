@@ -51,7 +51,15 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
 
   if (m_irap) {
     writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_params.vps);
+    m_log2MaxFrmOrderCntLsbMinus4 = m_params.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4();
+  }
+
+  m_frmOrderCntLsb = m_params.atlas.front().ath.ath_atlas_frm_order_cnt_lsb();
+  VERIFY_MIVBITSTREAM(m_frmOrderCntLsb < maxFrmOrderCntLsb());
+
+  if (m_irap || m_viewParamsList != params.viewParamsList) {
     writeV3cUnit(VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
+    m_viewParamsList = params.viewParamsList;
   }
 
   for (uint8_t vai = 0; vai <= m_params.vps.vps_atlas_count_minus1(); ++vai) {
@@ -73,20 +81,56 @@ const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
 auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
-  assert(m_irap);
-  writeNalUnit(asb, nuhAaps, m_params.aaps);
+  if (m_irap) {
+    writeNalUnit(asb, nuhAaps, m_params.aaps);
+  }
 
-  const auto maxCommonAtlasFrmOrderCntLsb =
-      1U << (m_params.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4U);
-
-  auto caf = CommonAtlasFrameRBSP{};
-  caf.caf_atlas_adaptation_parameter_set_id(0)
-      .caf_frm_order_cnt_lsb(0)
-      .caf_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
-      .miv_view_params_list() = mivViewParamsList();
-  writeNalUnit(asb, nuhCaf, caf, m_params.vps, maxCommonAtlasFrmOrderCntLsb);
-
+  writeNalUnit(asb, nuhCaf, commonAtlasFrame(), m_params.vps, maxFrmOrderCntLsb());
   return asb;
+}
+
+auto MivEncoder::commonAtlasFrame() const -> CommonAtlasFrameRBSP {
+  auto caf = CommonAtlasFrameRBSP{};
+
+  const auto mode = mvpUpdateMode();
+  caf.caf_atlas_adaptation_parameter_set_id(0)
+      .caf_frm_order_cnt_lsb(m_frmOrderCntLsb)
+      .caf_miv_view_params_list_update_mode(mode);
+
+  if (mode == MvpUpdateMode::VPL_INITLIST) {
+    caf.miv_view_params_list() = mivViewParamsList();
+  } else {
+    if (mode == MvpUpdateMode::VPL_UPD_EXT || mode == MvpUpdateMode::VPL_EXT_INT) {
+      caf.miv_view_params_update_extrinsics() = mivViewParamsUpdateExtrinsics();
+    }
+    if (mode == MvpUpdateMode::VPL_UPD_INT || mode == MvpUpdateMode::VPL_EXT_INT) {
+      caf.miv_view_params_update_intrinsics() = mivViewParamsUpdateIntrinsics();
+    }
+  }
+  return caf;
+}
+
+auto MivEncoder::mvpUpdateMode() const -> MvpUpdateMode {
+  if (m_irap) {
+    return MvpUpdateMode::VPL_INITLIST;
+  }
+  auto updExt = false;
+  auto updInt = false;
+  VERIFY_MIVBITSTREAM(m_viewParamsList.size() == m_params.viewParamsList.size());
+  for (size_t i = 0; i < m_viewParamsList.size(); ++i) {
+    updExt = updExt || m_viewParamsList[i].ce != m_params.viewParamsList[i].ce;
+    updInt = updInt || m_viewParamsList[i].ci != m_params.viewParamsList[i].ci;
+  }
+  if (updExt && updInt) {
+    return MvpUpdateMode::VPL_EXT_INT;
+  }
+  if (updExt) {
+    return MvpUpdateMode::VPL_UPD_EXT;
+  }
+  if (updInt) {
+    return MvpUpdateMode::VPL_UPD_INT;
+  }
+  MIVBITSTREAM_ERROR("It is not possible to have a CAF that does not update view parameters.");
 }
 
 auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
@@ -132,6 +176,14 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
   return mvpl;
 }
 
+auto MivEncoder::mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics {
+  NOT_IMPLEMENTED(__FUNCTION__);
+}
+
+auto MivEncoder::mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics {
+  NOT_IMPLEMENTED(__FUNCTION__);
+}
+
 auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
@@ -141,6 +193,8 @@ auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   const auto &aau = m_params.atlas[vai];
 
   if (m_irap) {
+    VERIFY_MIVBITSTREAM(m_log2MaxFrmOrderCntLsbMinus4 ==
+                        aau.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4());
     writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_params.vps);
     writeNalUnit(asb, nuhAfps, aau.afps, vector<AtlasSequenceParameterSetRBSP>{aau.asps});
   }

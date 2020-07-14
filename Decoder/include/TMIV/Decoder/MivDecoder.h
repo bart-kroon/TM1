@@ -77,6 +77,10 @@ private:
 
   void decodeCommonAtlas();
   void decodeViewParamsList();
+  void decodeMvpl(const MivBitstream::MivViewParamsList &mvpl);
+  void decodeMvpue(const MivBitstream::MivViewParamsUpdateExtrinsics &mvpue);
+  void decodeMvpui(const MivBitstream::MivViewParamsUpdateIntrinsics &mvpui);
+  void decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuantization &mvpudq);
 
   void decodeAtlas(uint8_t j);
   void decodeBlockToPatchMap(uint8_t j);

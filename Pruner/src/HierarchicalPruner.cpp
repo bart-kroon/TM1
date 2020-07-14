@@ -74,7 +74,6 @@ private:
   const int m_maxBasicViewsPerGraph{};
   const AccumulatingPixel<Vec3f> m_config;
   EncoderParams m_params;
-  vector<bool> m_isBasicView;
   vector<unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   vector<size_t> m_clusterIds;
   struct Cluster {
@@ -420,7 +419,7 @@ private:
     auto [ivertices, triangles, attributes] =
         unprojectPrunedView(view, m_params.viewParamsList[index], m_masks[index].getPlane(0));
 
-    if (m_isBasicView[index]) {
+    if (m_params.viewParamsList[index].isBasicView) {
       cout << "Basic view ";
     } else {
       cout << "Prune view ";

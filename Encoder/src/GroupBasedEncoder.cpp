@@ -307,17 +307,17 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
   uint16_t atlasIdOffset = 0;
   uint16_t viewIdOffset = 0;
 
-  for (size_t groupId = 0; groupId < perGroupParams.size(); ++groupId) {
+  for (auto perGroupParam : perGroupParams) {
     // Copy patches in group order
-    for (const auto &patch : perGroupParams[groupId]->patchParamsList) {
+    for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);
       m_params.patchParamsList.back().vuhAtlasId += atlasIdOffset;
       m_params.patchParamsList.back().pduViewId(patch.pduViewId() + viewIdOffset);
     }
 
     // Renumber atlases and views
-    atlasIdOffset += uint16_t(perGroupParams[groupId]->atlas.size());
-    viewIdOffset += uint16_t(perGroupParams[groupId]->viewParamsList.size());
+    atlasIdOffset += uint16_t(perGroupParam->atlas.size());
+    viewIdOffset += uint16_t(perGroupParam->viewParamsList.size());
   }
 
   return m_params;

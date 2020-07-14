@@ -41,7 +41,7 @@ auto Encoder::popAtlas() -> MVD10Frame {
   incrementFoc();
 
   auto atlas = m_geometryDownscaler.transformFrame(
-      m_depthOccupancy->transformAtlases(m_videoFrameBuffer.front()));
+      m_geometryQuantizer->transformAtlases(m_videoFrameBuffer.front()));
   m_videoFrameBuffer.pop_front();
   return atlas;
 }

@@ -55,7 +55,9 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
 
   constructVideoFrames();
 
-  return m_geometryDownscaler.transformParams(m_depthOccupancy->transformParams(m_params));
+  const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params, m_transportViews);
+  const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
+  return paramsScaled;
 }
 
 void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {

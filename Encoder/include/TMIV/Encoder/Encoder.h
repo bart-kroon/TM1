@@ -107,7 +107,7 @@ private: // Encoder_popFrame.cpp
   std::unique_ptr<Pruner::IPruner> m_pruner;
   std::unique_ptr<Aggregator::IAggregator> m_aggregator;
   std::unique_ptr<Packer::IPacker> m_packer;
-  std::unique_ptr<GeometryQuantizer::IGeometryQuantizer> m_depthOccupancy;
+  std::unique_ptr<GeometryQuantizer::IGeometryQuantizer> m_geometryQuantizer;
   GeometryDownscaler m_geometryDownscaler;
 
   // Encoder parameters

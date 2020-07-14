@@ -56,6 +56,7 @@ private:
   auto mivViewParamsList() const -> MivViewParamsList;
   auto mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics;
   auto mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics;
+  auto mivViewParamsUpdateDepthQuantization() const -> MivViewParamsUpdateDepthQuantization;
   auto atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
   [[nodiscard]] auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
   constexpr auto maxFrmOrderCntLsb() const { return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U); }

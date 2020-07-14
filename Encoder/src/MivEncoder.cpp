@@ -185,16 +185,55 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
 }
 
 auto MivEncoder::mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics {
-  NOT_IMPLEMENTED(__FUNCTION__);
+  auto mvpue = MivViewParamsUpdateExtrinsics{};
+  auto viewIdx = vector<uint16_t>{};
+  for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
+    if (m_viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
+      viewIdx.push_back(uint16_t(v));
+    }
+  }
+  VERIFY_MIVBITSTREAM(!viewIdx.empty());
+  mvpue.mvpue_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  for (uint16_t i = 0; i <= mvpue.mvpue_num_view_updates_minus1(); ++i) {
+    mvpue.mvpue_view_idx(i, viewIdx[i]);
+    mvpue.camera_extrinsics(i) = m_params.viewParamsList[viewIdx[i]].ce;
+  }
+  return mvpue;
 }
 
 auto MivEncoder::mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics {
-  NOT_IMPLEMENTED(__FUNCTION__);
+  auto mvpui = MivViewParamsUpdateIntrinsics{};
+  auto viewIdx = vector<uint16_t>{};
+  for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
+    if (m_viewParamsList[v].ci != m_params.viewParamsList[v].ci) {
+      viewIdx.push_back(uint16_t(v));
+    }
+  }
+  VERIFY_MIVBITSTREAM(!viewIdx.empty());
+  mvpui.mvpui_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  for (uint16_t i = 0; i <= mvpui.mvpui_num_view_updates_minus1(); ++i) {
+    mvpui.mvpui_view_idx(i, viewIdx[i]);
+    mvpui.camera_intrinsics(i) = m_params.viewParamsList[viewIdx[i]].ci;
+  }
+  return mvpui;
 }
 
 auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
     -> MivViewParamsUpdateDepthQuantization {
-  NOT_IMPLEMENTED(__FUNCTION__);
+  auto mvpudq = MivViewParamsUpdateDepthQuantization{};
+  auto viewIdx = vector<uint16_t>{};
+  for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
+    if (m_viewParamsList[v].dq != m_params.viewParamsList[v].dq) {
+      viewIdx.push_back(uint16_t(v));
+    }
+  }
+  VERIFY_MIVBITSTREAM(!viewIdx.empty());
+  mvpudq.mvpudq_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  for (uint16_t i = 0; i <= mvpudq.mvpudq_num_view_updates_minus1(); ++i) {
+    mvpudq.mvpudq_view_idx(i, viewIdx[i]);
+    mvpudq.depth_quantization(i) = m_params.viewParamsList[viewIdx[i]].dq;
+  }
+  return mvpudq;
 }
 
 auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {

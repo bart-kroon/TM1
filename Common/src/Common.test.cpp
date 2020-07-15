@@ -48,7 +48,6 @@ using Catch::Matchers::Contains;
 using namespace std;
 
 namespace TMIV::Common {
-
 TEST_CASE("Array, Vector, Matrix, LinAlg") {
   const float EPS = 1e-5F;
 

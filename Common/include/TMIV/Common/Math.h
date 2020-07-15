@@ -39,7 +39,6 @@
 #include <limits>
 
 namespace TMIV::Common {
-
 #ifndef M_PI
 constexpr double M_PI = 3.141592653589793238462643383279;
 #endif

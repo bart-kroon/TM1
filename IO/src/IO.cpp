@@ -247,7 +247,6 @@ auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
   while (getline(stream, line)) {
     smatch match;
     if (!trailing_empty_lines && regex_match(line, match, re_row)) {
-
       if (currentFrameIndex == frameIndex) {
         return {Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
                 Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};

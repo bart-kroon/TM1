@@ -118,7 +118,6 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
   for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
-
       bool isAggregatedMaskBlockNonEmpty = false;
       for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         if (dy + yM >= textureViewMap.getHeight() || dy + yM < 0) {
@@ -140,7 +139,6 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
       for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
-
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patchParams.viewToAtlas(pView);
 

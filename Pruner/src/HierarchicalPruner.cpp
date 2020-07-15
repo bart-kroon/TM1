@@ -546,7 +546,6 @@ HierarchicalPruner::~HierarchicalPruner() = default;
 
 void HierarchicalPruner::registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
                                                  const vector<bool> &isBasicView) {
-
   return m_impl->registerPruningRelation(ivSequenceParams, isBasicView);
 }
 

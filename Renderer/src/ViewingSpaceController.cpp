@@ -43,9 +43,7 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
-
 namespace {
-
 auto computeIndex(const ViewParams &metadata, const MivBitstream::ViewingSpace &vs) -> float {
   TMIV::ViewingSpace::ViewingParams vp;
   vp.viewPosition = metadata.ce.position();

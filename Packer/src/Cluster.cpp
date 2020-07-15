@@ -162,7 +162,6 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, vector
 
 auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                                     int alignment, int minPatchSize) const -> bool {
-
   double splitThresholdC = 0.3;
 
   const Cluster &c = (*this);
@@ -175,7 +174,6 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
 
   for (int h = 0; h < H; h += alignment) {
     for (int w = 0; w < W; w += alignment) {
-
       bool isEmpty = true;
 
       for (int hh = h; hh < min(h + alignment, H); hh++) {
@@ -201,7 +199,6 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
   }   // h
 
   if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
-
     int bestSplitPos = roundToAlignment(W, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
@@ -232,7 +229,6 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
 
 auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                                       int alignment, int minPatchSize) const -> bool {
-
   double splitThresholdC = 0.3;
 
   const Cluster &c = (*this);
@@ -245,7 +241,6 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector
 
   for (int h = 0; h < H; h += alignment) {
     for (int w = 0; w < W; w += alignment) {
-
       bool isEmpty = true;
 
       for (int hh = h; hh < min(h + alignment, H); hh++) {
@@ -271,7 +266,6 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector
   }   // h
 
   if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
-
     int bestSplitPos = roundToAlignment(H, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
@@ -304,7 +298,6 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<C
                                     int alignment, int minPatchSize,
                                     const array<deque<int>, 2> &min_h_agg,
                                     const array<deque<int>, 2> &max_h_agg) const -> bool {
-
   double splitThresholdL = 0.9;
 
   const Cluster &c = (*this);
@@ -357,7 +350,6 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<C
 
 auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                              int alignment, int minPatchSize) const -> vector<Cluster> {
-
   bool splitted = false;
 
   int maxNonsplittableSize = 64;
@@ -479,7 +471,6 @@ auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, vector<Cluster>
 
 auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
     -> pair<Cluster, Cluster> {
-
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
   assert(!c.isBasicView());
@@ -534,7 +525,6 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
 
 auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool isBasicView,
                        bool isMergingOn) -> pair<ClusterList, ClusteringMap> {
-
   pair<ClusterList, ClusteringMap> out(ClusterList(),
                                        ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
   ClusterList &clusterList = out.first;

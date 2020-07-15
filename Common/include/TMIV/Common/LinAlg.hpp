@@ -185,7 +185,6 @@ template <typename T, size_t M> auto abs(const stack::Vector<T, M> &A) -> stack:
 namespace detail {
 template <typename T>
 void matprod(shallow::Matrix<T> A, char mA, shallow::Matrix<T> B, char mB, shallow::Matrix<T> C) {
-
   using size_type = Array::size_type;
 
   if (mA == 'N') {
@@ -560,7 +559,6 @@ template <typename MAT> auto det(const MAT &A, int *info) -> typename MAT::value
 namespace detail {
 template <typename T>
 auto mldivide(shallow::Matrix<T> A, shallow::Matrix<T> B, shallow::Matrix<T> out) -> int {
-
   using size_type = Array::size_type;
 
   // PLU decomposition

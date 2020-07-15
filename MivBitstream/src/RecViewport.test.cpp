@@ -38,7 +38,6 @@
 using namespace TMIV::MivBitstream;
 
 TEST_CASE("rec_viewport", "[Rec Viewport SEI payload syntax]") {
-
   SECTION("Example 1") {
     RecViewport x = RecViewport{0, true};
     REQUIRE(toString(x) == R"(rec_viewport_id=0

@@ -44,7 +44,6 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::ViewingSpace {
-
 using DirectionConstraint = PrimitiveShape::ViewingDirectionConstraint;
 
 struct ViewingSpaceEvaluation {
@@ -139,7 +138,6 @@ static auto evaluateAddition(const PrimitiveShapeVector &primitives,
 }
 
 namespace MiscInterpolation {
-
 auto normalToPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3) -> Vec3f {
   Vec3f normal = cross(pos2 - pos1, pos3 - pos1);
   normal /= norm(normal);

@@ -42,7 +42,6 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace examples {
-
 inline auto deg2HalfQuat(const float yawDeg, const float pitchDeg, const float rollDeg = 0.F)
     -> QuatF {
   QuatF q = euler2quat(radperdeg * Vec3f{yawDeg, pitchDeg, rollDeg});

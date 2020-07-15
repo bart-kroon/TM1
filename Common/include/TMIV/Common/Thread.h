@@ -62,7 +62,6 @@ inline void parallel_for(std::size_t nbIter, std::function<void(std::size_t)> fu
 
 inline void parallel_for(std::size_t w, std::size_t h,
                          std::function<void(std::size_t, std::size_t)> fun) {
-
   std::size_t nbIter = w * h;
 
   auto segment_execute = [&](std::size_t first, std::size_t last) {

@@ -524,7 +524,7 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
 }
 
 auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool isBasicView,
-                       bool isMergingOn) -> pair<ClusterList, ClusteringMap> {
+                       bool enableMerging) -> pair<ClusterList, ClusteringMap> {
   pair<ClusterList, ClusteringMap> out(ClusterList(),
                                        ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
   ClusterList &clusterList = out.first;
@@ -611,7 +611,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
 
     int subClusterId = clusterId;
 
-    if (isMergingOn) {
+    if (enableMerging) {
       // Patch Merging
       int i_top = cluster.imin(), i_bottom = cluster.imax();
       int j_left = cluster.jmin(), j_right = cluster.jmax();

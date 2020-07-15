@@ -49,7 +49,7 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   m_minPatchSize = componentNode.require("MinPatchSize").asInt();
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
-  m_isMergingOn = componentNode.require("ClusterMergingOn").asInt();
+  m_enableMerging = componentNode.require("enableMerging").asBool();
   m_maxEntities = rootNode.require("maxEntities").asInt();
   if (m_maxEntities > 1) {
     m_entityEncodeRange =
@@ -84,7 +84,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
 
         auto clusteringOutput = Cluster::retrieve(
-            viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId], m_isMergingOn);
+            viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId], m_enableMerging);
 
         for (auto &cluster : clusteringOutput.first) {
           cluster = Cluster::setEntityId(cluster, entityId);
@@ -107,7 +107,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     } else {
       auto clusteringOutput =
           Cluster::retrieve(viewId, masks[viewId], static_cast<int>(clusterList.size()),
-                            isBasicView[viewId], m_isMergingOn);
+                            isBasicView[viewId], m_enableMerging);
 
       move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
            back_inserter(clusterList));

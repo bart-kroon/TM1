@@ -627,7 +627,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       int j_left = cluster.jmin(), j_right = cluster.jmax();
 
       auto subRegionGrowing = [&](int ID) {
-        Cluster subCluster(viewId, subClusterId);
+        Cluster subCluster(viewId, isBasicView, subClusterId, cluster.getEntityId());
         while (!candidates.empty()) {
           const std::array<int, 2> &current = candidates.front();
           int a = current[0];
@@ -728,7 +728,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
           }
         }
       }
-      if (!shouldNotBeSplit) {
+      if (!isBasicView) {
         for (int i_inter = i_top; i_inter <= i_bottom; i_inter++) {
           for (int j_inter = j_left; j_inter <= j_right; j_inter++) {
             if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {

@@ -45,7 +45,15 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-enum class VuhUnitType : std::uint8_t { V3C_VPS, V3C_AD, V3C_OVD, V3C_GVD, V3C_AVD };
+enum class VuhUnitType : std::uint8_t {
+  V3C_VPS,
+  V3C_AD,
+  V3C_OVD,
+  V3C_GVD,
+  V3C_AVD,
+  V3C_PVD,
+  V3C_CAD
+};
 
 auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream &;
 
@@ -75,13 +83,12 @@ public:
   auto operator==(const V3cUnitHeader &other) const noexcept -> bool;
   auto operator!=(const V3cUnitHeader &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const std::vector<V3cParameterSet> &vpses)
-      -> V3cUnitHeader;
+  static auto decodeFrom(std::istream &stream) -> V3cUnitHeader;
 
-  void encodeTo(std::ostream &stream, const std::vector<V3cParameterSet> &vpses) const;
+  void encodeTo(std::ostream &stream) const;
 
 private:
-  const VuhUnitType m_vuh_unit_type;
+  VuhUnitType m_vuh_unit_type;
   std::uint8_t m_vuh_v3c_parameter_set_id{};
   std::uint8_t m_vuh_atlas_id{};
   std::uint8_t m_vuh_attribute_index{};
@@ -135,11 +142,9 @@ public:
   auto operator==(const V3cUnit &other) const noexcept -> bool;
   auto operator!=(const V3cUnit &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const std::vector<V3cParameterSet> &vpses,
-                         std::size_t numBytesInV3CUnit) -> V3cUnit;
+  static auto decodeFrom(std::istream &stream, std::size_t numBytesInV3CUnit) -> V3cUnit;
 
-  auto encodeTo(std::ostream &stream, const std::vector<V3cParameterSet> &vpses) const
-      -> std::size_t;
+  auto encodeTo(std::ostream &stream) const -> std::size_t;
 
 private:
   V3cUnitHeader m_v3c_unit_header;

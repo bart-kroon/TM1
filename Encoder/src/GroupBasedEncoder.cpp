@@ -64,9 +64,9 @@ auto GroupBasedEncoder::prepareSequence(IvSequenceParams ivSequenceParams)
   return mergeSequenceParams(perGroupIvSequenceParams);
 }
 
-void GroupBasedEncoder::prepareAccessUnit(IvAccessUnitParams ivAccessUnitParams) {
+void GroupBasedEncoder::prepareAccessUnit() {
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    m_encoders[groupId].prepareAccessUnit(ivAccessUnitParams);
+    m_encoders[groupId].prepareAccessUnit();
   }
 }
 
@@ -294,39 +294,39 @@ auto GroupBasedEncoder::mergeSequenceParams(const vector<const IvSequenceParams 
   }
 
   // Merge MVPL across groups
-  m_ivSequenceParams.mvpl().mvp_num_views_minus1(
+  m_ivSequenceParams.mvpl.mvp_num_views_minus1(
       uint16_t(m_ivSequenceParams.viewParamsList.size() - 1));
   int aIndex = 0, vIndex = 0, sumViewsInGroups = 0;
   for (unsigned g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
     for (uint8_t a = 0; a <= perGroupParams[g]->vps.vps_atlas_count_minus1(); a++) {
-      for (uint16_t v = 0; v <= perGroupParams[g]->mvpl().mvp_num_views_minus1(); v++) {
+      for (uint16_t v = 0; v <= perGroupParams[g]->mvpl.mvp_num_views_minus1(); v++) {
         vIndex = v + sumViewsInGroups;
-        m_ivSequenceParams.mvpl().mvp_view_enabled_in_atlas_flag(
-            aIndex, vIndex, perGroupParams[g]->mvpl().mvp_view_enabled_in_atlas_flag(a, v));
-        if (perGroupParams[g]->mvpl().mvp_view_enabled_in_atlas_flag(a, v)) {
-          m_ivSequenceParams.mvpl().mvp_view_complete_in_atlas_flag(
-              aIndex, vIndex, perGroupParams[g]->mvpl().mvp_view_complete_in_atlas_flag(a, v));
+        m_ivSequenceParams.mvpl.mvp_view_enabled_in_atlas_flag(
+            aIndex, vIndex, perGroupParams[g]->mvpl.mvp_view_enabled_in_atlas_flag(a, v));
+        if (perGroupParams[g]->mvpl.mvp_view_enabled_in_atlas_flag(a, v)) {
+          m_ivSequenceParams.mvpl.mvp_view_complete_in_atlas_flag(
+              aIndex, vIndex, perGroupParams[g]->mvpl.mvp_view_complete_in_atlas_flag(a, v));
         }
       }
       aIndex++;
     }
-    sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl().mvp_num_views_minus1() + 1;
+    sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl.mvp_num_views_minus1() + 1;
   }
-  m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag(false);
+  m_ivSequenceParams.mvpl.mvp_explicit_view_id_flag(false);
   for (unsigned g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
-    if (perGroupParams[g]->mvpl().mvp_explicit_view_id_flag()) {
-      m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag(true);
+    if (perGroupParams[g]->mvpl.mvp_explicit_view_id_flag()) {
+      m_ivSequenceParams.mvpl.mvp_explicit_view_id_flag(true);
     }
   }
-  if (m_ivSequenceParams.mvpl().mvp_explicit_view_id_flag()) {
+  if (m_ivSequenceParams.mvpl.mvp_explicit_view_id_flag()) {
     int vIndex = 0;
     sumViewsInGroups = 0;
     for (unsigned g = 0; g <= m_ivSequenceParams.vme().vme_num_groups_minus1(); g++) {
-      for (uint16_t v = 0; v <= perGroupParams[g]->mvpl().mvp_num_views_minus1(); v++) {
-        m_ivSequenceParams.mvpl().mvp_view_id(vIndex++, perGroupParams[g]->mvpl().mvp_view_id(v) +
-                                                            (uint16_t)sumViewsInGroups);
+      for (uint16_t v = 0; v <= perGroupParams[g]->mvpl.mvp_num_views_minus1(); v++) {
+        m_ivSequenceParams.mvpl.mvp_view_id(vIndex++, perGroupParams[g]->mvpl.mvp_view_id(v) +
+                                                          (uint16_t)sumViewsInGroups);
       }
-      sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl().mvp_num_views_minus1() + 1;
+      sumViewsInGroups = sumViewsInGroups + perGroupParams[g]->mvpl.mvp_num_views_minus1() + 1;
     }
   }
 

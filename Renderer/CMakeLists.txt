@@ -5,8 +5,6 @@ find_package(Threads REQUIRED)
 
 add_library(RendererLib
     "src/Renderer.cpp"
-    "src/MultipassRenderer.cpp"
-    "src/GroupBasedRenderer.cpp"
     "src/Inpainter.cpp"
     "src/SubBlockCuller.cpp"
     "src/AdditiveSynthesizer.cpp"
@@ -20,8 +18,6 @@ add_library(RendererLib
     "include/TMIV/Renderer/ISynthesizer.h"
     "include/TMIV/Renderer/IViewingSpaceController.h"
     "include/TMIV/Renderer/Renderer.h"
-    "include/TMIV/Renderer/MultipassRenderer.h"
-    "include/TMIV/Renderer/GroupBasedRenderer.h"
     "include/TMIV/Renderer/SubBlockCuller.h"
     "include/TMIV/Renderer/NoCuller.h"
     "include/TMIV/Renderer/ICuller.h"
@@ -48,6 +44,7 @@ add_library(TMIV::RendererLib
 
 target_link_libraries(RendererLib
     PUBLIC
+        TMIV::DecoderLib
         TMIV::ViewingSpaceLib
     PRIVATE
         Threads::Threads

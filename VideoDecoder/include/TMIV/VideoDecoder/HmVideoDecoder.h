@@ -48,8 +48,8 @@ public:
   HmVideoDecoder();
   HmVideoDecoder(const HmVideoDecoder &) = delete;
   HmVideoDecoder(HmVideoDecoder &&) = default;
-  HmVideoDecoder &operator=(const HmVideoDecoder &) = delete;
-  HmVideoDecoder &operator=(HmVideoDecoder &&) = default;
+  auto operator=(const HmVideoDecoder &) -> HmVideoDecoder & = delete;
+  auto operator=(HmVideoDecoder &&) -> HmVideoDecoder & = default;
   virtual ~HmVideoDecoder();
 
   void decode(std::istream &stream) override;

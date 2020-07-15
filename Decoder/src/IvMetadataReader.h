@@ -36,6 +36,7 @@
 
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/MivDecoder.h>
+#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 
 #include <fstream>
 
@@ -48,6 +49,7 @@ public:
 
 private:
   std::ifstream m_stream;
+  std::unique_ptr<Decoder::V3cSampleStreamDecoder> m_vssDecoder;
   std::unique_ptr<Decoder::MivDecoder> m_decoder;
 };
 

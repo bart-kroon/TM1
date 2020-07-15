@@ -31,47 +31,45 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
-#define _TMIV_MIVBITSTREAM_FRAMEORDERCOUNTRBSP_H_
+#ifndef _TMIV_VIEWOPTIMIZER_BASICVIEWALLOCATOR_H_
+#define _TMIV_VIEWOPTIMIZER_BASICVIEWALLOCATOR_H_
 
-#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+#include <TMIV/ViewOptimizer/AbstractViewSelector.h>
+#include <TMIV/ViewOptimizer/KMedoidsCost.h>
 
-#include <TMIV/Common/Bitstream.h>
-
-#include <cstdint>
-#include <cstdlib>
-#include <iosfwd>
-
-namespace TMIV::MivBitstream {
-// 23090-5: frame_order_count_rbsp( )
-class FrameOrderCountRBSP {
+namespace TMIV::ViewOptimizer {
+class BasicViewAllocator : public AbstractViewSelector {
 public:
-  FrameOrderCountRBSP() noexcept = default;
-  explicit constexpr FrameOrderCountRBSP(std::uint16_t frm_order_cnt_lsb) noexcept;
+  using Centroids = KMedoidsCost::Centroids;
+  using Positions = std::vector<Common::Vec3d>;
 
-  [[nodiscard]] constexpr auto frm_order_cnt_lsb() const noexcept;
+  BasicViewAllocator(const Common::Json &rootNode, const Common::Json &componentNode);
 
-  constexpr auto frm_order_cnt_lsb(uint16_t value) noexcept -> auto &;
-
-  friend auto operator<<(std::ostream &stream, const FrameOrderCountRBSP &x) -> std::ostream &;
-
-  constexpr auto operator==(const FrameOrderCountRBSP &other) const noexcept;
-  constexpr auto operator!=(const FrameOrderCountRBSP &other) const noexcept;
-
-  static auto decodeFrom(std::istream &stream, const AtlasAdaptationParameterSetRBSP &aaps)
-      -> FrameOrderCountRBSP;
-  static auto decodeFrom(std::istream &stream, const AtlasSequenceParameterSetRBSP &asps)
-      -> FrameOrderCountRBSP;
-
-  void encodeTo(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &aaps) const;
-  void encodeTo(std::ostream &stream, const AtlasSequenceParameterSetRBSP &asps) const;
+protected:
+  auto isBasicView() const -> std::vector<bool> override;
 
 private:
-  std::uint16_t m_frm_order_cnt_lsb{};
-};
-} // namespace TMIV::MivBitstream
+  // Calculate 'k'
+  auto basicViewCount() const -> size_t;
+  auto lumaSamplesPerSourceViewSortedDesc() const -> std::vector<size_t>;
 
-#include "FrameOrderCountRBSP.hpp"
+  // Prepare cost calculation
+  auto viewPositions() const -> Positions;
+  auto forwardView(const Positions &pos) const -> std::size_t;
+  static auto sqDistanceMatrix(const Positions &pos) -> Common::Mat<double>;
+
+  // Partitioning around medians [https://en.wikipedia.org/wiki/K-medoids#Algorithms]
+  auto selectInitialCentroids(const KMedoidsCost &cost, std::size_t first, std::size_t k) const
+      -> Centroids;
+  auto updateCentroids(const KMedoidsCost &cost, Centroids centroids) const
+      -> std::optional<Centroids>;
+
+  int m_numGroups{};
+  int m_maxLumaPictureSize{};
+  int m_maxAtlases{};
+  int m_minNonCodedViews{}; // for evaluation purposes
+  double m_maxBasicViewFraction{};
+};
+} // namespace TMIV::ViewOptimizer
 
 #endif

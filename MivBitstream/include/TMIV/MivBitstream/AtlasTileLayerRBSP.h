@@ -110,7 +110,7 @@ public:
   constexpr auto ath_atlas_output_flag(const bool value) noexcept -> auto &;
   constexpr auto ath_pos_min_z_quantizer(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto ath_atlas_frm_order_cnt_lsb(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto ath_atlas_frm_order_cnt_lsb(const std::uint16_t value) noexcept -> auto &;
   constexpr auto ath_ref_atlas_frame_list_sps_flag(const bool value) noexcept -> auto &;
   auto ath_patch_size_x_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
   auto ath_patch_size_y_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
@@ -134,7 +134,7 @@ private:
   std::uint8_t m_ath_id{};
   AthType m_ath_type{};
   std::optional<bool> m_ath_atlas_output_flag{};
-  std::uint8_t m_ath_atlas_frm_order_cnt_lsb{};
+  std::uint16_t m_ath_atlas_frm_order_cnt_lsb{};
   std::optional<bool> m_ath_ref_atlas_frame_list_sps_flag{};
   std::optional<std::uint8_t> m_ath_pos_min_z_quantizer{};
   std::optional<std::uint8_t> m_ath_pos_delta_max_z_quantizer{};

@@ -50,7 +50,7 @@ public:
 
   virtual auto prepareSequence(MivBitstream::IvSequenceParams ivSequenceParams)
       -> const MivBitstream::IvSequenceParams & = 0;
-  virtual void prepareAccessUnit(MivBitstream::IvAccessUnitParams ivAccessUnitParams) = 0;
+  virtual void prepareAccessUnit() = 0;
   virtual void pushFrame(Common::MVD16Frame views) = 0;
   virtual auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & = 0;
   virtual auto popAtlas() -> Common::MVD10Frame = 0;

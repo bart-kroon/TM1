@@ -47,8 +47,9 @@ public:
   auto operator=(SubBlockCuller &&) -> SubBlockCuller & = default;
   ~SubBlockCuller() override = default;
 
-  // Do sub-block culling and update the PatchIdMap
-  [[nodiscard]] auto filterBlockToPatchMap(const MivBitstream::AtlasAccessUnit &atlas,
+  // Do culling and update the block to patch map for a single atlas
+  [[nodiscard]] auto filterBlockToPatchMap(const Decoder::AccessUnit &frame,
+                                           const Decoder::AtlasAccessUnit &atlas,
                                            const MivBitstream::ViewParams &viewportParams) const
       -> Common::BlockToPatchMap override;
 

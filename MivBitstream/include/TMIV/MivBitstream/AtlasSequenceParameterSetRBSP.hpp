@@ -233,12 +233,6 @@ AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size(const uint8_t 
   return *this;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4(
-    const uint8_t value) noexcept -> auto & {
-  m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
-  return *this;
-}
-
 constexpr auto AtlasSequenceParameterSetRBSP::asps_max_dec_atlas_frame_buffering_minus1(
     const uint8_t value) noexcept -> auto & {
   m_asps_max_dec_atlas_frame_buffering_minus1 = value;

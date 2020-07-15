@@ -1,15 +1,26 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 add_library(DecoderLib
+    "src/AccessUnit.cpp"
+    "src/AtlasDecoder.cpp"
+    "src/CommonAtlasDecoder.cpp"
     "src/Decoder.cpp"
     "src/GeometryScaler.cpp"
     "src/EntityBasedPatchMapFilter.cpp"
     "src/MivDecoder.cpp"
+    "src/NalUnitSemantics.h"
+    "src/V3cSampleStreamDecoder.cpp"
+    "src/V3cUnitBuffer.cpp"
     "include/TMIV/Decoder/IDecoder.h"
+    "include/TMIV/Decoder/AccessUnit.h"
+    "include/TMIV/Decoder/AtlasDecoder.h"
+    "include/TMIV/Decoder/CommonAtlasDecoder.h"
     "include/TMIV/Decoder/Decoder.h"
     "include/TMIV/Decoder/GeometryScaler.h"
     "include/TMIV/Decoder/EntityBasedPatchMapFilter.h"
     "include/TMIV/Decoder/MivDecoder.h"
+    "include/TMIV/Decoder/V3cSampleStreamDecoder.h"
+    "include/TMIV/Decoder/V3cUnitBuffer.h"
     )
 
 add_library(TMIV::DecoderLib
@@ -48,26 +59,15 @@ install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-if (CMAKE_TESTING_ENABLED)
-    add_executable(DecoderTest
-        "src/MivDecoder.test.cpp"
-        )
-
-    target_link_libraries(DecoderTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::DecoderLib)
-
-    catch_discover_tests(DecoderTest)
-
-    add_executable(V3cBitstreamTest
-        "src/V3cBitstream.test.cpp")
-
-    target_link_libraries(V3cBitstreamTest
-        PRIVATE
-            Catch2::Catch2
-            TMIV::DecoderLib
-            TMIV::IOLib)
-
-    catch_discover_tests(V3cBitstreamTest)
-endif()
+# if (CMAKE_TESTING_ENABLED)
+#     add_executable(V3cBitstreamTest
+#         "src/V3cBitstream.test.cpp")
+# 
+#     target_link_libraries(V3cBitstreamTest
+#         PRIVATE
+#             Catch2::Catch2
+#             TMIV::DecoderLib
+#             TMIV::IOLib)
+# 
+#     catch_discover_tests(V3cBitstreamTest)
+# endif()

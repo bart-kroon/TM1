@@ -48,46 +48,27 @@ auto vps() {
   x.vps_extension_present_flag(true);
   return x;
 }
-
-auto vpses() {
-  auto x = V3cParameterSet{};
-  x.vps_atlas_count_minus1(2);
-  for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
-    x.vps_frame_width(j, 640);
-    x.vps_frame_height(j, 480);
-    x.vps_occupancy_video_present_flag(j, true);
-    x.vps_geometry_video_present_flag(j, true);
-    x.vps_attribute_video_present_flag(j, true);
-    x.occupancy_information(j).oi_occupancy_nominal_2d_bitdepth_minus1(7);
-    x.geometry_information(j).gi_geometry_nominal_2d_bitdepth_minus1(8);
-    x.geometry_information(j).gi_geometry_3d_coordinates_bitdepth_minus1(10);
-    x.attribute_information(j).ai_attribute_count(4);
-  }
-  return std::vector<V3cParameterSet>{3, x};
-}
 } // namespace examples
 
 TEST_CASE("v3c_unit_header", "[V3C Unit]") {
   SECTION("VPS") {
     const auto x = V3cUnitHeader{VuhUnitType::V3C_VPS};
-    const auto vpses = std::vector<V3cParameterSet>{};
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 )");
 
-    REQUIRE(byteCodingTest(x, 4, vpses));
+    REQUIRE(byteCodingTest(x, 4));
   }
 
   SECTION("AD") {
     auto x = V3cUnitHeader{VuhUnitType::V3C_AD};
-    const auto vpses = examples::vpses();
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AD
 vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 )");
 
-    REQUIRE(byteCodingTest(x, 4, vpses));
+    REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
       x.vuh_v3c_parameter_set_id(1).vuh_atlas_id(2);
@@ -97,20 +78,19 @@ vuh_v3c_parameter_set_id=1
 vuh_atlas_id=2
 )");
 
-      REQUIRE(byteCodingTest(x, 4, vpses));
+      REQUIRE(byteCodingTest(x, 4));
     }
   }
 
   SECTION("OVD") {
     auto x = V3cUnitHeader{VuhUnitType::V3C_OVD};
-    const auto vpses = examples::vpses();
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_OVD
 vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 )");
 
-    REQUIRE(byteCodingTest(x, 4, vpses));
+    REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
       x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(1);
@@ -120,13 +100,12 @@ vuh_v3c_parameter_set_id=2
 vuh_atlas_id=1
 )");
 
-      REQUIRE(byteCodingTest(x, 4, vpses));
+      REQUIRE(byteCodingTest(x, 4));
     }
   }
 
   SECTION("GVD") {
     auto x = V3cUnitHeader{VuhUnitType::V3C_GVD};
-    const auto vpses = examples::vpses();
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
 vuh_v3c_parameter_set_id=0
@@ -135,7 +114,7 @@ vuh_map_index=0
 vuh_raw_video_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 4, vpses));
+    REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
       x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_raw_video_flag(false);
@@ -147,13 +126,12 @@ vuh_map_index=0
 vuh_raw_video_flag=false
 )");
 
-      REQUIRE(byteCodingTest(x, 4, vpses));
+      REQUIRE(byteCodingTest(x, 4));
     }
   }
 
   SECTION("AVD") {
     auto x = V3cUnitHeader{VuhUnitType::V3C_AVD};
-    const auto vpses = examples::vpses();
 
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
 vuh_v3c_parameter_set_id=0
@@ -164,7 +142,7 @@ vuh_map_index=0
 vuh_raw_video_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 4, vpses));
+    REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
       x.vuh_v3c_parameter_set_id(2)
@@ -183,7 +161,7 @@ vuh_map_index=0
 vuh_raw_video_flag=false
 )");
 
-      REQUIRE(byteCodingTest(x, 4, vpses));
+      REQUIRE(byteCodingTest(x, 4));
     }
   }
 }
@@ -264,7 +242,6 @@ vps_extension_6bits=0
 
 TEST_CASE("v3c_unit", "[V3C Unit]") {
   SECTION("Example 1") {
-    const auto vpses = std::vector<V3cParameterSet>{};
     const auto vps = examples::vps();
     const auto x = V3cUnit{V3cUnitHeader{VuhUnitType::V3C_VPS}, vps};
 
@@ -297,11 +274,10 @@ vps_miv_extension_flag=false
 vps_extension_6bits=0
 )");
 
-    REQUIRE(unitCodingTest(x, 25, vpses));
+    REQUIRE(unitCodingTest(x, 25));
   }
 
   SECTION("Example 2") {
-    const auto vpses = examples::vpses();
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
     vuh.vuh_v3c_parameter_set_id(2)
         .vuh_atlas_id(1)
@@ -321,6 +297,6 @@ vuh_map_index=0
 vuh_raw_video_flag=false
 )");
 
-    REQUIRE(unitCodingTest(x, 4, vpses));
+    REQUIRE(unitCodingTest(x, 4));
   }
 }

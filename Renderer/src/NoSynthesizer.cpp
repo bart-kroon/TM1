@@ -43,8 +43,8 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::Renderer {
 NoSynthesizer::NoSynthesizer(const Json & /*unused*/, const Json & /*componentNode*/) {}
 
-auto NoSynthesizer::renderFrame(const AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
+auto NoSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
+                                const ViewParams &viewportParams) const -> Texture444Depth16Frame {
   auto viewport = Texture444Depth16Frame{
       Texture444Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
                       viewportParams.ci.ci_projection_plane_height_minus1() + 1},

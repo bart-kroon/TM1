@@ -31,49 +31,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
-#define _TMIV_MIVBITSTREAM_ACCESSUNIT_H_
+#include <TMIV/Decoder/V3cSampleStreamDecoder.h>
 
-#include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
-#include <TMIV/MivBitstream/PatchParamsList.h>
-#include <TMIV/MivBitstream/V3cParameterSet.h>
-#include <TMIV/MivBitstream/ViewParamsList.h>
-#include <TMIV/MivBitstream/ViewingSpace.h>
+#include <sstream>
 
-#include <TMIV/Common/Frame.h>
+#include <TMIV/MivBitstream/verify.h>
 
-namespace TMIV::MivBitstream {
-struct AtlasAccessUnit {
-  AtlasSequenceParameterSetRBSP asps;
-  AtlasFrameParameterSetRBSP afps;
-  AtlasTileHeader ath;
-  Common::Depth10Frame decGeoFrame;
-  Common::Depth10Frame geoFrame;
-  Common::Texture444Frame attrFrame;
+namespace TMIV::Decoder {
+V3cSampleStreamDecoder::V3cSampleStreamDecoder(std::istream &stream)
+    : m_stream{stream}, m_ssvh{MivBitstream::SampleStreamV3cHeader::decodeFrom(stream)} {
+  VERIFY_V3CBITSTREAM(m_stream.good());
+}
 
-  Common::BlockToPatchMap blockToPatchMap;
-  ViewParamsList viewParamsList;
-  PatchParamsList patchParamsList;
-
-  // Nominal atlas frame size
-  [[nodiscard]] auto frameSize() const noexcept -> Common::Vec2i;
-
-  // Geometry frame size
-  [[nodiscard]] auto decGeoFrameSize(const V3cParameterSet &vps) const noexcept -> Common::Vec2i;
-
-  // Index into the block to patch map using nominal atlas coordinates
-  [[nodiscard]] auto patchId(unsigned row, unsigned column) const -> uint16_t;
-};
-
-struct AccessUnit {
-  const V3cParameterSet *vps = nullptr;
-  std::vector<AtlasAccessUnit> atlas;
-  std::uint32_t frameId{};
-  std::optional<ViewingSpace> vs;
-};
-} // namespace TMIV::MivBitstream
-
-#endif
+auto V3cSampleStreamDecoder::operator()() -> std::optional<MivBitstream::V3cUnit> {
+  m_stream.peek();
+  if (m_stream.eof()) {
+    return {};
+  }
+  auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(m_stream, m_ssvh);
+  std::istringstream substream{ssvu.ssvu_v3c_unit()};
+  return MivBitstream::V3cUnit::decodeFrom(substream, ssvu.ssvu_v3c_unit_size());
+}
+} // namespace TMIV::Decoder

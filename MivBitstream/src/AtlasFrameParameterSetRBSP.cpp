@@ -247,8 +247,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
 
   x.afps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_V3CBITSTREAM(x.afps_atlas_sequence_parameter_set_id() <= 15);
-  VERIFY_V3CBITSTREAM(x.afps_atlas_sequence_parameter_set_id() < aspsV.size());
-  const auto &asps = aspsV[x.afps_atlas_sequence_parameter_set_id()];
+  const auto &asps = aspsById(aspsV, x.afps_atlas_sequence_parameter_set_id());
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
 
@@ -300,9 +299,8 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.putUExpGolomb(afps_atlas_frame_parameter_set_id());
 
   VERIFY_V3CBITSTREAM(afps_atlas_sequence_parameter_set_id() <= 15);
-  VERIFY_V3CBITSTREAM(afps_atlas_sequence_parameter_set_id() < aspsV.size());
   bitstream.putUExpGolomb(afps_atlas_sequence_parameter_set_id());
-  const auto &asps = aspsV[afps_atlas_sequence_parameter_set_id()];
+  const auto &asps = aspsById(aspsV, afps_atlas_sequence_parameter_set_id());
 
   atlas_frame_tile_information().encodeTo(bitstream);
 
@@ -344,5 +342,15 @@ void AtlasFrameParameterSetRBSP::encodeTo(
     }
   }
   bitstream.rbspTrailingBits();
+}
+
+auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id) noexcept
+    -> const AtlasFrameParameterSetRBSP & {
+  for (auto &x : afpsV) {
+    if (id == x.afps_atlas_frame_parameter_set_id()) {
+      return x;
+    }
+  }
+  V3CBITSTREAM_ERROR("Unknown AFPS ID");
 }
 } // namespace TMIV::MivBitstream

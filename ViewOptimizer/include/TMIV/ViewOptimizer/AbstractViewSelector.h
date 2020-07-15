@@ -31,39 +31,35 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#ifndef _TMIV_VIEWOPTIMIZER_ABSTRACTVIEWSELECTOR_H_
+#define _TMIV_VIEWOPTIMIZER_ABSTRACTVIEWSELECTOR_H_
 
-#include <TMIV/Decoder/MivDecoder.h>
+#include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
-#include <sstream>
+#include <TMIV/Common/Json.h>
 
-using namespace TMIV::Common;
-using namespace TMIV::Decoder;
-using namespace TMIV::MivBitstream;
+#include <memory>
 
-TEST_CASE("MivDecoder", "[MIV decoder]") {
-  SECTION("Construction") {
-    istringstream stream{"Invalid bitsream"};
+namespace TMIV::ViewOptimizer {
+class AbstractViewSelector : public IViewOptimizer {
+public:
+  AbstractViewSelector(const Common::Json &rootNode, const Common::Json &componentNode);
 
-    auto decoder = MivDecoder{stream};
+  auto optimizeSequence(MivBitstream::IvSequenceParams ivs) -> Output override;
+  [[nodiscard]] auto optimizeFrame(Common::MVD16Frame views) const -> Common::MVD16Frame override;
 
-    SECTION("Callbacks") {
-      decoder.setGeoFrameServer(
-          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Depth10Frame{}; });
+protected:
+  virtual auto isBasicView() const -> std::vector<bool> = 0;
+  constexpr auto ivs() const noexcept -> auto & { return m_ivs; }
 
-      decoder.setAttrFrameServer(
-          [](auto /*unused*/, auto /*unused*/, auto /*unused*/) { return Texture444Frame{}; });
+private:
+  template <typename T> void inplaceEraseAdditionalViews(std::vector<T> &) const;
+  void printSummary() const;
 
-      decoder.onSequence.emplace_back([](const V3cParameterSet &vps) {
-        cout << "Sequence:\n" << vps;
-        return true;
-      });
+  bool m_outputAdditionalViews;
+  MivBitstream::IvSequenceParams m_ivs;
+  std::vector<bool> m_isBasicView;
+};
+} // namespace TMIV::ViewOptimizer
 
-      decoder.onFrame.emplace_back([](const AccessUnit &au) {
-        cout << "Frame " << au.frameId << '\n';
-        return true;
-      });
-    }
-  }
-}
+#endif

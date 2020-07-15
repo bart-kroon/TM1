@@ -197,6 +197,13 @@ auto AtlasSequenceParameterSetRBSP::aspsExtensionData() const noexcept -> const 
   return *m_aspsExtensionData;
 }
 
+auto AtlasSequenceParameterSetRBSP::asps_log2_max_atlas_frame_order_cnt_lsb_minus4(
+    const uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP & {
+  VERIFY_V3CBITSTREAM(value <= 12);
+  m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4 = value;
+  return *this;
+}
+
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const size_t value)
     -> AtlasSequenceParameterSetRBSP & {
   m_ref_list_structs.resize(value);
@@ -570,5 +577,15 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const V3cUnitHeade
     }
   }
   bitstream.rbspTrailingBits();
+}
+
+auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
+    -> const AtlasSequenceParameterSetRBSP & {
+  for (auto &x : aspsV) {
+    if (id == x.asps_atlas_sequence_parameter_set_id()) {
+      return x;
+    }
+  }
+  V3CBITSTREAM_ERROR("Unknown ASPS ID");
 }
 } // namespace TMIV::MivBitstream

@@ -105,8 +105,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         ++index;
       }
     } else {
-      auto clusteringOutput = Cluster::retrieve(
-          viewId, masks[viewId], static_cast<int>(clusterList.size()), isBasicView[viewId], m_isMergingOn);
+      auto clusteringOutput =
+          Cluster::retrieve(viewId, masks[viewId], static_cast<int>(clusterList.size()),
+                            isBasicView[viewId], m_isMergingOn);
 
       move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
            back_inserter(clusterList));

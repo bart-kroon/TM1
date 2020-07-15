@@ -532,7 +532,7 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
   return pair<Cluster, Cluster>(c1, c2);
 }
 
-auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool isBasicView)
+auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool isBasicView, bool isMergingOn)
     -> pair<ClusterList, ClusteringMap> {
 
   pair<ClusterList, ClusteringMap> out(ClusterList(),
@@ -619,6 +619,127 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       candidates.pop();
     }
 
+    int subClusterId = clusterId;
+
+		if (isMergingOn) {
+		// Patch Merging
+			int i_top = cluster.imin(), i_bottom = cluster.imax();
+			int j_left = cluster.jmin(), j_right = cluster.jmax();
+
+			auto subRegionGrowing = [&](int ID) {
+				Cluster subCluster(viewId, subClusterId);
+				while (!candidates.empty()) {
+					const std::array<int, 2> &current = candidates.front();
+					int a = current[0];
+					int b = current[1];
+
+					subCluster.push(a, b);
+					clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
+
+					if (0 < a) {
+						if (clusteringBuffer(a - 1, b) == ACTIVE) {
+							candidates.push({a - 1, b});
+							subCluster.push(a - 1, b);
+							clusteringBuffer(a - 1, b) = static_cast<uint16_t>(ID);
+						}
+						if (0 < b) {
+							if (clusteringBuffer(a - 1, b - 1) == ACTIVE) {
+								candidates.push({a - 1, b - 1});
+								subCluster.push(a - 1, b - 1);
+								clusteringBuffer(a - 1, b - 1) = static_cast<uint16_t>(ID);
+							}
+						}
+						if (b < B - 1) {
+							if (clusteringBuffer(a - 1, b + 1) == ACTIVE) {
+								candidates.push({a - 1, b + 1});
+								subCluster.push(a - 1, b + 1);
+								clusteringBuffer(a - 1, b + 1) = static_cast<uint16_t>(ID);
+							}
+						}
+					}
+					if (a < A - 1) {
+						if (clusteringBuffer(a + 1, b) == ACTIVE) {
+							candidates.push({a + 1, b});
+							subCluster.push(a + 1, b);
+							clusteringBuffer(a + 1, b) = static_cast<uint16_t>(ID);
+						}
+						if (0 < b) {
+							if (clusteringBuffer(a + 1, b - 1) == ACTIVE) {
+								candidates.push({a + 1, b - 1});
+								subCluster.push(a + 1, b - 1);
+								clusteringBuffer(a + 1, b - 1) = static_cast<uint16_t>(ID);
+							}
+						}
+						if (b < B - 1) {
+							if (clusteringBuffer(a + 1, b + 1) == ACTIVE) {
+								candidates.push({a + 1, b + 1});
+								subCluster.push(a + 1, b + 1);
+								clusteringBuffer(a + 1, b + 1) = static_cast<uint16_t>(ID);
+							}
+						}
+					}
+					if (0 < b) {
+						if (clusteringBuffer(a, b - 1) == ACTIVE) {
+							candidates.push({a, b - 1});
+							subCluster.push(a, b - 1);
+							clusteringBuffer(a, b - 1) = static_cast<uint16_t>(ID);
+						}
+					}
+					if (b < B - 1) {
+						if (clusteringBuffer(a, b + 1) == ACTIVE) {
+							candidates.push({a, b + 1});
+							subCluster.push(a, b + 1);
+							clusteringBuffer(a, b + 1) = static_cast<uint16_t>(ID);
+						}
+					}
+					candidates.pop();
+				}
+				clusterList.push_back(subCluster);
+				clustered += subCluster.getFilling();
+			};
+
+			// left side
+			if (j_left != 0) {
+				for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+					if (clusteringBuffer(i_unit, j_left - 1) == ACTIVE) {
+						subClusterId = subClusterId + 1;
+						candidates.push({i_unit, j_left - 1});
+						subRegionGrowing(subClusterId);
+					}
+				}
+			}
+			// right side
+			if (j_right != B - 1) {
+				for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+					if (clusteringBuffer(i_unit, j_right + 1) == ACTIVE) {
+						subClusterId = subClusterId + 1;
+						candidates.push({i_unit, j_right + 1});
+						subRegionGrowing(subClusterId);
+					}
+				}
+			}
+			// bottom side
+			if (i_bottom != A - 1) {
+				for (int j_unit = j_left; j_unit <= j_right; j_unit++) {
+					if (clusteringBuffer(i_bottom + 1, j_unit) == ACTIVE) {
+						subClusterId = subClusterId + 1;
+						candidates.push({i_bottom + 1, j_unit});
+						subRegionGrowing(subClusterId);
+					}
+				}
+			}
+			if (!shouldNotBeSplit) {
+				for (int i_inter = i_top; i_inter <= i_bottom; i_inter++) {
+					for (int j_inter = j_left; j_inter <= j_right; j_inter++) {
+						if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {
+							clusteringBuffer(i_inter, j_inter) = static_cast<uint16_t>(clusterId);
+						}
+					}
+				}
+			}
+    // Patch Merging END
+		}
+
     // Update seed & compute # Active Pixels In Patch
     auto prevIter = iter_seed;
     iter_seed = find_if(iter_seed + 1, activeList.end(),
@@ -640,7 +761,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       clustered += cluster.getFilling();
 
       clusterList.push_back(cluster);
-      clusterId++;
+      clusterId = subClusterId + 1; // Patch Merging
     }
   }
 

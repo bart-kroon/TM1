@@ -257,6 +257,27 @@ Most of the parameters are defined in the root. The exception is:
  * **minNonCodedViews:** int; the minimum number of source views that will not
  be coded as basic view.
 
+## Overview of TMIV decoder/renderer parameters
+
+### Decoder
+
+ * **geometryEdgeMagnitudeTh:** int; parameter of the geometry upscaling, in 
+ line with the hypothetical reference renderer.
+ * **maxCurvature:** int;  parameter of the geometry upscaling, in line with the
+ hypothetical refrence renderer.
+ * **minForegroundConfidence:** float; parameter of the geometry upscaling, in
+ line with the hypothetical reference renderer.
+
+### Renderer
+
+ * **angularScaling:** float; Drives the splat size at the warping stage.
+ * **minimalWeight:** float; Allows for splat degeneracy test at the warping stage.
+ * **stretchFactor:** float; Limits the splat max size at the warping stage.
+ * **overloadFactor:** float; Geometry selection parameter at the selection stage.
+ * **filteringPass:** int; Number of median filtering pass to apply to the visibility map.
+ * **blendingFactor:** float; Used to control the blending at the shading stage.
+
+
 ## Improving the test model
 
 Core experiments are expected to include the reference software as a subproject

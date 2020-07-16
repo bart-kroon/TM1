@@ -43,7 +43,6 @@ using namespace TMIV::Renderer;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::DepthQualityAssessor {
-
 namespace {
 template <typename MAT>
 auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> vector<typename MAT::value_type> {
@@ -86,7 +85,6 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
   sourceUnprojectionList.reserve(sourceHelperList.size());
 
   for (size_t viewId = 0; viewId < sourceHelperList.size(); viewId++) {
-
     const auto &sourceHelper = sourceHelperList[viewId];
     const auto occupancyTransform = OccupancyTransform{sourceHelper.getViewParams()};
 
@@ -117,14 +115,11 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
 
   // Repojection for outlier detection
   for (size_t firstId = 0; firstId < sourceHelperList.size(); firstId++) {
-
     const auto &firstHelper = sourceHelperList[firstId];
     const auto &firstDepth = sourceDepthExpandedList[firstId];
 
     for (size_t secondId = 0; secondId < sourceHelperList.size(); secondId++) {
-
       if (firstId != secondId) {
-
         const auto &secondUnprojection = sourceUnprojectionList[secondId];
         atomic<size_t> outliers = 0U;
 
@@ -137,7 +132,6 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
 
                          if (firstHelper.isValidDepth(p.second) &&
                              firstHelper.isStrictlyInsideViewport(p.first)) {
-
                            auto zOnFirst = textureNeighbourhood(firstDepth, p.first);
 
                            if (all_of(zOnFirst.begin(), zOnFirst.end(), [&](float z) {
@@ -177,7 +171,6 @@ DepthQualityAssessor::DepthQualityAssessor(const Json & /*unused*/, const Json &
 
 auto DepthQualityAssessor::isLowDepthQuality(const MivBitstream::EncoderParams &params,
                                              const MVD16Frame &sourceViews) -> bool {
-
   return TMIV::DepthQualityAssessor::isLowDepthQuality(params, sourceViews, m_blendingFactor,
                                                        m_maxOutlierRatio);
 }

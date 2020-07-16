@@ -58,6 +58,7 @@ private:
   int m_minPatchSize{};
   int m_overlap{};
   bool m_pip{};
+  bool m_enableMerging{};
   int m_maxEntities{1};
   std::vector<Common::MaskList> m_aggregatedEntityMasks{};
   Common::Vec2i m_entityEncodeRange;

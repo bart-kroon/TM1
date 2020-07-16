@@ -38,7 +38,6 @@
 #include "Math.h"
 
 namespace TMIV::Common {
-
 struct Matrix {
   enum Property { None, Symmetric, Hermitian, Positive, Lower, Upper };
 };

@@ -38,7 +38,6 @@
 #include <TMIV/ViewOptimizer/IViewOptimizer.h>
 
 namespace TMIV::ViewOptimizer {
-
 class NoViewOptimizer : public IViewOptimizer {
 public:
   NoViewOptimizer(const Common::Json & /*unused*/, const Common::Json & /*unused*/) {}

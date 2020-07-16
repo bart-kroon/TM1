@@ -26,7 +26,7 @@ The terminology in the test model reflects that of V3C and MIV.
 ## Scope
 
 The normative decoding process for MPEG Immersive Video (MIV) is specified in
-*Working Draft 5 of Immersive Video* [3]. The TMIV reference software provides a reference implementation
+*Text of ISO/IEC CD 23090-12 MPEG Immersive Video* [3]. The TMIV reference software provides a reference implementation
 of non-normative encoding and rendering techniques and the normative decoding process for the MIV 
 standard.
 
@@ -123,7 +123,7 @@ INSTALL target. For Unix Makefiles CMake generators installation is through
 After this the TMIV executables Encoder and Decoder will be available under the
 directory /Workspace/TM1-master/bin. By default TMIV only builds the HM modules
 that are required for TMIV (TLibCommon and TLibDecoder). When
-HM_BUILD_TAPPDECODER and HM_BUILD¬_TAPPENCODER are selected, then the
+HM_BUILD_TAPPDECODER and HM_BUILD_TAPPENCODER are selected, then the
 TAppDecoder and TAppEncoder tools respectively will also be installed to this
 directory. 
 
@@ -290,14 +290,14 @@ MPEG-internal repository.
   * [1] *Call for Proposals on 3DoF+ Visual*, ISO/IEC JTC1/SC29/WG11 MPEG/N18145, Jan. 2019, Marrakesh,
 Morocco.
 
-  * [2] B. Salahieh, B. Kroon, J. Jung, A. Dziembowski (Eds.), *Test Model 5 for Immersive Video*,
-[ISO/IEC JTC1/SC29/WG11 MPEG/N19213](https://isotc.iso.org/livelink/livelink?func=ll&objId=21282497&objAction=Open&nexturl=%2Flivelink%2Flivelink%3Ffunc%3Dll%26objId%3D21274865%26objAction%3Dbrowse%26viewType%3D1),
-Apr. 2020, Online / Alpbach, Austria.
+  * [2] B. Salahieh, B. Kroon, J. Jung, A. Dziembowski (Eds.), *Test Model 6 for MPEG Immersive Video*,
+ISO/IEC JTC1/SC29/WG11 MPEG/N19483,
+July 2020, Online.
 
-  * [3] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Working Draft 5 of Immersive Video*,
-[ISO/IEC JTC1/SC29/WG11 MPEG/N19212](https://isotc.iso.org/livelink/livelink?func=ll&objId=21277683&objAction=Open&nexturl=%2Flivelink%2Flivelink%3Ffunc%3Dll%26objId%3D21274865%26objAction%3Dbrowse%26viewType%3D1),
-Apr. 2020, Online / Alpbach, Austria.
+  * [3] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Text of ISO/IEC CD 23090-12 MPEG Immersive Video*,
+ISO/IEC JTC1/SC29/WG11 MPEG/N19482,
+July 2020, Online.
 
-  * [4] J. Jung, B. Kroon, J. Boyce, *Common Test Conditions for Immersive Video*,
-[ISO/IEC JTC1/SC29/WG11 MPEG/N19214](https://isotc.iso.org/livelink/livelink?func=ll&objId=21279101&objAction=Open&nexturl=%2Flivelink%2Flivelink%3Ffunc%3Dll%26objId%3D21274865%26objAction%3Dbrowse%26viewType%3D1),
-Apr. 2020, Online / Alpbach, Austria.
+  * [4] J. Jung, B. Kroon, J. Boyce, *Common Test Conditions for MPEG Immersive Video*,
+ISO/IEC JTC1/SC29/WG11 MPEG/N19484,
+July 2020, Online.

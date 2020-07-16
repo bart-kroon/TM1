@@ -164,6 +164,99 @@ interface and some interfaces have multiple alternative components. For instance
 the ViewOptimizerLib includes an IViewOptimizer interface with NoViewOptimizer
 and ViewReducer components that implement that interface.
 
+## Overview of TMIV encoder parameters
+
+Some of the algorithmic components of the test model have parameters. This 
+section provides a short description of these parameters in reference to [2] and
+the template configuration files. The usage of non-algorithmic parameters such 
+as filename patterns should be clear from the template configuration files.
+
+### Common encoder parameters
+
+ * **blockSize:** int; width and height of the blocks in the block to patch map.
+ This is the patch alignment value.
+ * **geometryScaleEnabledFlag:** bool; when true geometry is downscaled by a 
+ factor of two in respect to the atlas frame size. Otherwise geometry is at full
+ resolution.
+ * **intraPeriod:** int; the intra patch frame period. This is the step in frame 
+ order count between consecutive frames that have an atlas tile layer of type
+ I_TILE. The test model is not aware of the intra period of the video codec. 
+ This other intra period is configured independently.
+ * **maxAtlases:** int; the maximum number of transmitted atlases in total.
+ * **maxEntities:** int; the maximum number of entities whereby "1" disables 
+ entity-based coding.
+ * **maxLumaSamplerate:** float; the maximum number of luma samples per second 
+ counted over all atlases, groups and components. This parameter communicates
+ the equally-named CTC constraint.
+ * **maxLumaPictureSize:** int; the maximum number of samples per atlas frame,
+ which corresponds to the maximum number of samples per texture attribute
+ video frame. This parameter communicates the equally-named CTC constraint.
+ * **numGroups:** int; the number of groups of views (at least 1). The groups are
+ formed only when the group-based encoder is selected, but other components use 
+ this value for instance to calculate suitable atlas frame sizes per group.
+ * **numberOfFrames:** int; the number of frames to encode.
+ * **startFrame:** int; skip this many source frames.
+ * **OmafV1CompatibleFlag:** bool; when enabled the equally-named flag is
+ written in the bitstream.
+
+
+### Geometry quality assessment
+
+ * **blendingFactor:** float; for every reprojected pixel it is checked if 
+reprojected geometry value is higher than 1.0 - _blendingFactor_ of geometry
+value of collocated pixel or any of its neighbors in the target view. 
+ * **maxOutlierRatio:** float; pixel outlier threshold above which the geometry 
+quality is judged to be low.
+
+### Encoder and group-based encoder
+
+Most of the parameters are defined in the root. The exception is:
+
+ * **dilate:** int; number of dilation steps on the aggregated pruning mask.
+ This parameter is only in effect for low depth quality.
+
+### Geometry quantizer
+
+ * **depthOccThresholdIfSet:** int; the value of the depth-occupancy map 
+ threshold when occupancy information is encoded in the geometry video data of
+ a specific view.
+
+### Hierarchical pruner
+
+ * **depthParameter:** float; weighting parameter of depth ordering in the trial
+ view synthesis that is performed as part of the pruning process.
+ * **rayAngleParameter:** float; weighting parameter of ray angle in the trial
+ view synthesis that is perforemd as part of the pruning process.
+ * **stretchingParameter:** float; weighting parameter of triangle stretching in
+ in the trial view synthesis that is performed as part of the pruning process.
+ * **maxStretching:** float; the maximum stretching of a trangle in pixel units
+ above which the triangle is dropped.
+ * **dilate:** int; number of dilation steps on the pruning mask.
+ * **erode:** int; number of erosion steps on the pruning mask.
+ * **maxDepthError:** float; the maximum relative difference in depth value below which
+ the pixel is pruned.
+ * **maxBasicViewsPerGraph:** int; parameter to control the maximum number of basic
+ views per pruning cluster.
+
+### Packer
+
+ * **MinPatchSize:** int; is the number of pixels of the smallest border of the 
+ patch, below which the patch is discarded. Default value is 8.
+ * **Overlap:** int; is the number of pixels which will be added to a frontier 
+ of a newly split patch; it prevents seam artefacts. Default value is 1.
+ * **PiP:** int; is a flag enabling the Patch-in-Patch feature when equal to 1.
+ It allows the insertion of patches into other patches. Default value is 1.
+ * **enableMerging:** bool; enable the patch merging step.
+
+### Basic view allocator
+
+ * **maxBasicViewFraction:** float; the maximum number of available luma samples
+ that is used for coding views completely.
+ * **outputAdditionalViews:** bool; when true output basic views and additional 
+ views. when false output only basic views.
+ * **minNonCodedViews:** int; the minimum number of source views that will not
+ be coded as basic view.
+
 ## Improving the test model
 
 Core experiments are expected to include the reference software as a subproject

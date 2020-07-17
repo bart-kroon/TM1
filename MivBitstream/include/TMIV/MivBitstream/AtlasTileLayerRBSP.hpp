@@ -283,7 +283,19 @@ template <typename Visitor> void AtlasTileDataUnit::visit(Visitor &&visitor) con
   }
 }
 
-constexpr auto AtlasTileLayerRBSP::atlas_tile_header() const noexcept -> const AtlasTileHeader & {
+constexpr auto AtlasTileLayerRBSP::atlas_tile_header() const noexcept -> auto & {
   return m_atlas_tile_header;
+}
+
+constexpr auto AtlasTileLayerRBSP::atlas_tile_data_unit() const noexcept -> auto & {
+  return m_atlas_tile_data_unit;
+}
+
+constexpr auto AtlasTileLayerRBSP::atlas_tile_header() noexcept -> auto & {
+  return m_atlas_tile_header;
+}
+
+constexpr auto AtlasTileLayerRBSP::atlas_tile_data_unit() noexcept -> auto & {
+  return m_atlas_tile_data_unit;
 }
 } // namespace TMIV::MivBitstream

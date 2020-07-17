@@ -307,7 +307,7 @@ TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
     const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    REQUIRE(bitCodingTest(x, 8, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 7, vuh, vps, aspsV, afpsV, ath));
   }
 
   SECTION("P_TILE") {
@@ -380,7 +380,7 @@ pdu_orientation_index( 1 )=FPO_NULL
     auto ath = AtlasTileHeader{};
     ath.ath_type(AthType::I_TILE);
 
-    REQUIRE(bitCodingTest(x, 40, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, ath));
   }
 }
 
@@ -398,10 +398,8 @@ TEST_CASE("atlas_tile_layer_rbsp", "[Atlas Tile Layer RBSP]") {
 
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    auto ath = AtlasTileHeader{};
-    ath.ath_type(AthType::SKIP_TILE).ath_ref_atlas_frame_list_sps_flag(true);
-
-    const auto x = AtlasTileLayerRBSP{ath};
+    auto x = AtlasTileLayerRBSP{};
+    x.atlas_tile_header().ath_type(AthType::SKIP_TILE).ath_ref_atlas_frame_list_sps_flag(true);
 
     REQUIRE(toString(x) == R"(ath_atlas_frame_parameter_set_id=0
 ath_atlas_adaptation_parameter_set_id=0
@@ -427,9 +425,6 @@ ath_ref_atlas_frame_list_sps_flag=true
 
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    auto ath = AtlasTileHeader{};
-    ath.ath_type(AthType::I_TILE).ath_ref_atlas_frame_list_sps_flag(true);
-
     auto pdu1 = PatchDataUnit{};
     pdu1.pdu_2d_size_x_minus1(10).pdu_2d_size_y_minus1(20);
     auto pdu2 = PatchDataUnit{};
@@ -437,10 +432,12 @@ ath_ref_atlas_frame_list_sps_flag=true
     auto pdu3 = PatchDataUnit{};
     pdu3.pdu_2d_size_x_minus1(50).pdu_2d_size_y_minus1(60);
 
-    const auto x = AtlasTileLayerRBSP{
-        ath, std::in_place, std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}},
-        std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu2}},
-        std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu3}}};
+    auto x = AtlasTileLayerRBSP{};
+    x.atlas_tile_header().ath_type(AthType::I_TILE).ath_ref_atlas_frame_list_sps_flag(true);
+    x.atlas_tile_data_unit() =
+        AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}},
+                          std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu2}},
+                          std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu3}}};
 
     REQUIRE(toString(x) == R"(ath_atlas_frame_parameter_set_id=0
 ath_atlas_adaptation_parameter_set_id=0
@@ -481,7 +478,7 @@ pdu_depth_start( 2 )=0
 pdu_projection_id( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 16, vuh, vps, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 15, vuh, vps, aspsV, afpsV));
   }
 
   SECTION("I_TILE with quantizers") {
@@ -502,17 +499,17 @@ pdu_orientation_index( 2 )=FPO_NULL
 
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    auto ath = AtlasTileHeader{};
-    ath.ath_type(AthType::I_TILE)
-        .ath_ref_atlas_frame_list_sps_flag(true)
-        .ath_pos_min_z_quantizer(7)
-        .ath_pos_delta_max_z_quantizer(5);
-
     auto pdu1 = PatchDataUnit{};
     pdu1.pdu_2d_size_x_minus1(10).pdu_2d_size_y_minus1(20).pdu_depth_start(31).pdu_depth_end(127);
 
-    const auto x = AtlasTileLayerRBSP{
-        ath, std::in_place, std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}}};
+    auto x = AtlasTileLayerRBSP{};
+    x.atlas_tile_header()
+        .ath_type(AthType::I_TILE)
+        .ath_ref_atlas_frame_list_sps_flag(true)
+        .ath_pos_min_z_quantizer(7)
+        .ath_pos_delta_max_z_quantizer(5);
+    x.atlas_tile_data_unit() =
+        AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}}};
 
     REQUIRE(toString(x) == R"(ath_atlas_frame_parameter_set_id=0
 ath_atlas_adaptation_parameter_set_id=0
@@ -536,6 +533,6 @@ pdu_depth_end( 0 )=127
 pdu_projection_id( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 10, vuh, vps, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 9, vuh, vps, aspsV, afpsV));
   }
 }

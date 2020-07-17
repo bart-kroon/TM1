@@ -63,6 +63,8 @@ auto GeometryQuantizer::transformSequenceParams(MivBitstream::IvSequenceParams s
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
 
+  m_outSequenceParams.vme().vme_embedded_occupancy_flag(true);
+
   for (auto &x : m_outSequenceParams.viewParamsList) {
     if (x.hasOccupancy) {
       x.dq.dq_depth_occ_map_threshold_default(m_depthOccThresholdIfSet); // =T

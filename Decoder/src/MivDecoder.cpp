@@ -175,7 +175,7 @@ void MivDecoder::checkCapabilities() {
 
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
     VERIFY_MIVBITSTREAM(!m_au.vps.vps_auxiliary_video_present_flag(j));
-    VERIFY_MIVBITSTREAM(!m_au.vps.vps_occupancy_video_present_flag(j));
+    //VERIFY_MIVBITSTREAM(!m_au.vps.vps_occupancy_video_present_flag(j));// the flag can be true or false
     VERIFY_MIVBITSTREAM(m_au.vps.vps_geometry_video_present_flag(j));
     // TODO(BK): Add more constraints (map count, attribute count, EOM, etc.)
   }

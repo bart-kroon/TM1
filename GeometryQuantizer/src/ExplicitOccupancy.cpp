@@ -56,6 +56,8 @@ auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams s
   m_inSequenceParams = move(sequenceParams);
   m_outSequenceParams = m_inSequenceParams;
 
+  m_outSequenceParams.vme().vme_embedded_occupancy_flag(false);
+  m_outSequenceParams.vme().vme_occupancy_scale_enabled_flag(true);
   for (uint8_t i = 0; i <= m_outSequenceParams.vps.vps_atlas_count_minus1(); i++)
     if (m_isAtlasCompleteFlag.size() > i)
       m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);

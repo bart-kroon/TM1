@@ -48,7 +48,7 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_0)
       .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-      .ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
+      .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
       .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());

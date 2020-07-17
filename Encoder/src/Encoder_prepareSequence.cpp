@@ -189,7 +189,7 @@ void Encoder::prepareIvau() {
     atlas.asps.asps_frame_width(m_ivs.vps.vps_frame_width(i))
         .asps_frame_height(m_ivs.vps.vps_frame_height(i))
         .asps_geometry_3d_bitdepth_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1())
-        .asps_geometry_3d_bitdepth_minus1(gi.gi_geometry_nominal_2d_bitdepth_minus1())
+        .asps_geometry_2d_bitdepth_minus1(gi.gi_geometry_nominal_2d_bitdepth_minus1())
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)

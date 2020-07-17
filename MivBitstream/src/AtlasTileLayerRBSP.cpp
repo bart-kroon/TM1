@@ -440,7 +440,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
       bitstream.readBits<FlexiblePatchOrientation>(pdu_orientation_index_num_bits));
 
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
-  VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
+  VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
     x.pdu_miv_extension(PduMivExtension::decodeFrom(bitstream, vuh, vps, asps));
@@ -495,7 +495,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   }
 
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
-  VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
+  VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
     pdu_miv_extension().encodeTo(bitstream, vuh, vps, asps);

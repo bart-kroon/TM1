@@ -179,8 +179,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag() cons
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag() const noexcept {
-  return m_asps_point_local_reconstruction_enabled_flag;
+AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag() const noexcept {
+  return m_asps_plr_enabled_flag;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_map_count_minus1() const noexcept {
@@ -304,9 +304,9 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag(const 
   return *this;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag(
+constexpr auto AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag(
     const bool value) noexcept -> auto & {
-  m_asps_point_local_reconstruction_enabled_flag = value;
+  m_asps_plr_enabled_flag = value;
   return *this;
 }
 

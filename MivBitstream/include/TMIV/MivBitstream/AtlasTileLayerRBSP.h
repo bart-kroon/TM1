@@ -185,7 +185,7 @@ private:
 //
 // 23090-12 limitations:
 //   * afps_lod_mode_enabled_flag == 0
-//   * asps_point_local_reconstruction_enabled_flag == 0
+//   * asps_plr_enabled_flag == 0
 class PatchDataUnit {
 public:
   [[nodiscard]] constexpr auto pdu_2d_pos_x() const noexcept;

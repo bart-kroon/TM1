@@ -304,7 +304,7 @@ public:
       const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
 
       if (neighbourhood.empty()) {
-        viewParamsList[camId].pp = PruningParent{};
+        viewParamsList[camId].pp = PruningParents{};
       } else {
         vector<uint16_t> parentIdList;
 
@@ -314,7 +314,7 @@ public:
           parentIdList.emplace_back(static_cast<uint16_t>(link.node()));
         }
 
-        viewParamsList[camId].pp = PruningParent{move(parentIdList)};
+        viewParamsList[camId].pp = PruningParents{move(parentIdList)};
       }
     }
   }

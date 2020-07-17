@@ -44,7 +44,7 @@ struct ViewParams {
   CameraIntrinsics ci;
   CameraExtrinsics ce;
   DepthQuantization dq;
-  std::optional<PruningParent> pp;
+  std::optional<PruningParents> pp;
 
   // Not in the specification. Just to improve screen output
   std::string name{};

@@ -95,10 +95,10 @@ auto V3cUnitHeader::vuh_map_index() const noexcept -> std::uint8_t {
   return m_vuh_map_index;
 }
 
-auto V3cUnitHeader::vuh_raw_video_flag() const noexcept -> bool {
+auto V3cUnitHeader::vuh_auxiliary_video_flag() const noexcept -> bool {
   VERIFY_V3CBITSTREAM(m_vuh_unit_type == VuhUnitType::V3C_AVD ||
                       m_vuh_unit_type == VuhUnitType::V3C_GVD);
-  return m_vuh_raw_video_flag;
+  return m_vuh_auxiliary_video_flag;
 }
 
 auto V3cUnitHeader::vuh_v3c_parameter_set_id(const uint8_t value) noexcept -> V3cUnitHeader & {
@@ -137,10 +137,10 @@ auto V3cUnitHeader::vuh_map_index(const uint8_t value) noexcept -> V3cUnitHeader
   return *this;
 }
 
-auto V3cUnitHeader::vuh_raw_video_flag(const bool value) noexcept -> V3cUnitHeader & {
+auto V3cUnitHeader::vuh_auxiliary_video_flag(const bool value) noexcept -> V3cUnitHeader & {
   VERIFY_V3CBITSTREAM(m_vuh_unit_type == VuhUnitType::V3C_AVD ||
                       m_vuh_unit_type == VuhUnitType::V3C_GVD);
-  m_vuh_raw_video_flag = value;
+  m_vuh_auxiliary_video_flag = value;
   return *this;
 }
 
@@ -158,11 +158,11 @@ auto operator<<(ostream &stream, const V3cUnitHeader &x) -> ostream & {
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD) {
     stream << "\nvuh_attribute_index=" << int(x.vuh_attribute_index())
            << "\nvuh_attribute_partition_index=" << int(x.vuh_attribute_partition_index())
-           << "\nvuh_map_index=" << int(x.vuh_map_index()) << "\nvuh_raw_video_flag=" << boolalpha
-           << x.vuh_raw_video_flag();
+           << "\nvuh_map_index=" << int(x.vuh_map_index())
+           << "\nvuh_auxiliary_video_flag=" << boolalpha << x.vuh_auxiliary_video_flag();
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    stream << "\nvuh_map_index=" << int(x.vuh_map_index()) << "\nvuh_raw_video_flag=" << boolalpha
-           << x.vuh_raw_video_flag();
+    stream << "\nvuh_map_index=" << int(x.vuh_map_index())
+           << "\nvuh_auxiliary_video_flag=" << boolalpha << x.vuh_auxiliary_video_flag();
   }
   return stream << '\n';
 }
@@ -187,7 +187,7 @@ auto V3cUnitHeader::operator==(const V3cUnitHeader &other) const noexcept -> boo
     return true;
   }
   if (vuh_map_index() != other.vuh_map_index() ||
-      vuh_raw_video_flag() != other.vuh_raw_video_flag()) {
+      vuh_auxiliary_video_flag() != other.vuh_auxiliary_video_flag()) {
     return false;
   }
   if (vuh_unit_type() == VuhUnitType::V3C_GVD) {
@@ -217,10 +217,10 @@ auto V3cUnitHeader::decodeFrom(istream &stream) -> V3cUnitHeader {
     x.vuh_attribute_index(bitstream.readBits<uint8_t>(7));
     x.vuh_attribute_partition_index(bitstream.readBits<uint8_t>(5));
     x.vuh_map_index(bitstream.readBits<uint8_t>(4));
-    x.vuh_raw_video_flag(bitstream.getFlag());
+    x.vuh_auxiliary_video_flag(bitstream.getFlag());
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_GVD) {
     x.vuh_map_index(bitstream.readBits<uint8_t>(4));
-    x.vuh_raw_video_flag(bitstream.getFlag());
+    x.vuh_auxiliary_video_flag(bitstream.getFlag());
     bitstream.readBits<uint16_t>(12);
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_OVD ||
              x.vuh_unit_type() == VuhUnitType::V3C_AD) {
@@ -245,10 +245,10 @@ void V3cUnitHeader::encodeTo(ostream &stream) const {
     bitstream.writeBits(vuh_attribute_index(), 7);
     bitstream.writeBits(vuh_attribute_partition_index(), 5);
     bitstream.writeBits(vuh_map_index(), 4);
-    bitstream.putFlag(vuh_raw_video_flag());
+    bitstream.putFlag(vuh_auxiliary_video_flag());
   } else if (vuh_unit_type() == VuhUnitType::V3C_GVD) {
     bitstream.writeBits(vuh_map_index(), 4);
-    bitstream.putFlag(vuh_raw_video_flag());
+    bitstream.putFlag(vuh_auxiliary_video_flag());
     bitstream.writeBits(0, 12);
   } else if (vuh_unit_type() == VuhUnitType::V3C_OVD || vuh_unit_type() == VuhUnitType::V3C_AD) {
     bitstream.writeBits(0, 17);

@@ -111,19 +111,20 @@ vuh_atlas_id=1
 vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
     REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_raw_video_flag(false);
+      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_auxiliary_video_flag(
+          false);
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
 vuh_v3c_parameter_set_id=2
 vuh_atlas_id=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
       REQUIRE(byteCodingTest(x, 4));
@@ -139,7 +140,7 @@ vuh_atlas_id=0
 vuh_attribute_index=0
 vuh_attribute_partition_index=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
     REQUIRE(byteCodingTest(x, 4));
@@ -150,7 +151,7 @@ vuh_raw_video_flag=false
           .vuh_attribute_index(3)
           .vuh_attribute_partition_index(0)
           .vuh_map_index(0)
-          .vuh_raw_video_flag(false);
+          .vuh_auxiliary_video_flag(false);
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
 vuh_v3c_parameter_set_id=2
@@ -158,7 +159,7 @@ vuh_atlas_id=2
 vuh_attribute_index=3
 vuh_attribute_partition_index=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
       REQUIRE(byteCodingTest(x, 4));
@@ -284,7 +285,7 @@ vps_extension_6bits=0
         .vuh_attribute_index(2)
         .vuh_attribute_partition_index(0)
         .vuh_map_index(0)
-        .vuh_raw_video_flag(false);
+        .vuh_auxiliary_video_flag(false);
 
     const auto x = V3cUnit{vuh, VideoSubBitstream{}};
 
@@ -294,7 +295,7 @@ vuh_atlas_id=1
 vuh_attribute_index=2
 vuh_attribute_partition_index=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
     REQUIRE(unitCodingTest(x, 4));

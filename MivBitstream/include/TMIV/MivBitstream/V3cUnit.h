@@ -69,14 +69,14 @@ public:
   [[nodiscard]] auto vuh_attribute_index() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_attribute_partition_index() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_map_index() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto vuh_raw_video_flag() const noexcept -> bool;
+  [[nodiscard]] auto vuh_auxiliary_video_flag() const noexcept -> bool;
 
   auto vuh_v3c_parameter_set_id(const std::uint8_t value) noexcept -> V3cUnitHeader &;
   auto vuh_atlas_id(const std::uint8_t value) noexcept -> V3cUnitHeader &;
   auto vuh_attribute_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
   auto vuh_attribute_partition_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
   auto vuh_map_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_raw_video_flag(const bool value) noexcept -> V3cUnitHeader &;
+  auto vuh_auxiliary_video_flag(const bool value) noexcept -> V3cUnitHeader &;
 
   friend auto operator<<(std::ostream &stream, const V3cUnitHeader &x) -> std::ostream &;
 
@@ -94,7 +94,7 @@ private:
   std::uint8_t m_vuh_attribute_index{};
   std::uint8_t m_vuh_attribute_partition_index{};
   std::uint8_t m_vuh_map_index{};
-  bool m_vuh_raw_video_flag{};
+  bool m_vuh_auxiliary_video_flag{};
 };
 
 // 23090-5: v3c_payload()

@@ -60,7 +60,7 @@ auto dumpV3cUnitPayload(streampos position, const SampleStreamV3cUnit &ssvu,
          << int(vuh.vuh_attribute_partition_index());
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    path << '_' << int(vuh.vuh_map_index()) << '_' << boolalpha << vuh.vuh_raw_video_flag();
+    path << '_' << int(vuh.vuh_map_index()) << '_' << boolalpha << vuh.vuh_auxiliary_video_flag();
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS || vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
     path << ".bit";

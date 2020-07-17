@@ -98,8 +98,6 @@ public:
   [[nodiscard]] constexpr auto afps_output_flag_present_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
-  [[nodiscard]] constexpr auto afps_3d_pos_x_bit_count_minus1() const noexcept;
-  [[nodiscard]] constexpr auto afps_3d_pos_y_bit_count_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_lod_mode_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_extension_present_flag() const noexcept;
@@ -118,8 +116,6 @@ public:
   constexpr auto afps_num_ref_idx_default_active_minus1(const std::uint8_t value) noexcept
       -> auto &;
   constexpr auto afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto afps_3d_pos_x_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto afps_3d_pos_y_bit_count_minus1(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_lod_mode_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept -> auto &;
   constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
@@ -150,8 +146,6 @@ private:
   bool m_afps_output_flag_present_flag{};
   std::uint8_t m_afps_num_ref_idx_default_active_minus1{};
   std::uint8_t m_afps_additional_lt_afoc_lsb_len{};
-  std::uint8_t m_afps_3d_pos_x_bit_count_minus1{};
-  std::uint8_t m_afps_3d_pos_y_bit_count_minus1{};
   bool m_afps_lod_enabled_flag{};
   bool m_afps_raw_3d_pos_bit_count_explicit_mode_flag{};
   bool m_afps_extension_present_flag{};

@@ -410,8 +410,8 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
 
   x.pdu_2d_size_x_minus1(bitstream.getUExpGolomb<uint16_t>());
   x.pdu_2d_size_y_minus1(bitstream.getUExpGolomb<uint16_t>());
-  x.pdu_view_pos_x(bitstream.readBits<uint16_t>(afps.afps_3d_pos_x_bit_count_minus1() + 1));
-  x.pdu_view_pos_y(bitstream.readBits<uint16_t>(afps.afps_3d_pos_y_bit_count_minus1() + 1));
+  x.pdu_view_pos_x(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bitdepth_minus1() + 1));
+  x.pdu_view_pos_y(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bitdepth_minus1() + 1));
 
   VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
   const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());
@@ -460,8 +460,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   bitstream.putUExpGolomb(pdu_2d_pos_y());
   bitstream.putUExpGolomb(pdu_2d_size_x_minus1());
   bitstream.putUExpGolomb(pdu_2d_size_y_minus1());
-  bitstream.writeBits(pdu_view_pos_x(), afps.afps_3d_pos_x_bit_count_minus1() + 1);
-  bitstream.writeBits(pdu_view_pos_y(), afps.afps_3d_pos_y_bit_count_minus1() + 1);
+  bitstream.writeBits(pdu_view_pos_x(), asps.asps_geometry_3d_bitdepth_minus1() + 1);
+  bitstream.writeBits(pdu_view_pos_y(), asps.asps_geometry_3d_bitdepth_minus1() + 1);
 
   VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
   const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());

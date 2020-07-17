@@ -94,14 +94,6 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_additional_lt_afoc_lsb_len() con
   return m_afps_additional_lt_afoc_lsb_len;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_3d_pos_x_bit_count_minus1() const noexcept {
-  return m_afps_3d_pos_x_bit_count_minus1;
-}
-
-constexpr auto AtlasFrameParameterSetRBSP::afps_3d_pos_y_bit_count_minus1() const noexcept {
-  return m_afps_3d_pos_y_bit_count_minus1;
-}
-
 constexpr auto AtlasFrameParameterSetRBSP::afps_lod_mode_enabled_flag() const noexcept {
   return m_afps_lod_enabled_flag;
 }
@@ -151,20 +143,6 @@ constexpr auto
 AtlasFrameParameterSetRBSP::afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept
     -> auto & {
   m_afps_additional_lt_afoc_lsb_len = value;
-  return *this;
-}
-
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_3d_pos_x_bit_count_minus1(const std::uint8_t value) noexcept
-    -> auto & {
-  m_afps_3d_pos_x_bit_count_minus1 = value;
-  return *this;
-}
-
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_3d_pos_y_bit_count_minus1(const std::uint8_t value) noexcept
-    -> auto & {
-  m_afps_3d_pos_y_bit_count_minus1 = value;
   return *this;
 }
 

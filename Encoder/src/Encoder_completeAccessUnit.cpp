@@ -84,7 +84,7 @@ void Encoder::constructVideoFrames() {
     }
 
     for (const auto &patch : m_ivau.patchParamsList) {
-      const auto &view = views[patch.pduViewId()];
+      const auto &view = views[patch.pduViewIdx()];
       if (m_ivs.vme().vme_max_entities_minus1() > 0) {
         MVD16Frame tempViews;
         tempViews.push_back(view);
@@ -113,8 +113,8 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
   int xM = patchParams.pduViewPos().x();
   int yM = patchParams.pduViewPos().y();
 
-  const auto &inViewParams = m_transportIvs.viewParamsList[patchParams.pduViewId()];
-  const auto &outViewParams = m_ivs.viewParamsList[patchParams.pduViewId()];
+  const auto &inViewParams = m_transportIvs.viewParamsList[patchParams.pduViewIdx()];
+  const auto &outViewParams = m_ivs.viewParamsList[patchParams.pduViewIdx()];
 
   for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
@@ -127,7 +127,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patchParams.pduViewId()](dy + yM, dx + xM)[frameId]) {
+          if (m_nonAggregatedMask[patchParams.pduViewIdx()](dy + yM, dx + xM)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

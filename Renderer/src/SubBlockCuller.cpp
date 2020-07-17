@@ -50,8 +50,8 @@ SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*compone
 
 auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const ViewParams &target)
     -> bool {
-  const auto &camera = cameras[patch.pduViewId()];
-  const auto R_t = AffineTransform(cameras[patch.pduViewId()].ce, target.ce);
+  const auto &camera = cameras[patch.pduViewIdx()];
+  const auto R_t = AffineTransform(cameras[patch.pduViewIdx()].ce, target.ce);
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
@@ -146,7 +146,7 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
 
   for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {
     const auto &patch = atlas.patchParamsList[patchIdx];
-    const auto &view = frame.viewParamsList[patch.pduViewId()];
+    const auto &view = frame.viewParamsList[patch.pduViewIdx()];
 
     if (patch.pduViewSize() == view.ci.projectionPlaneSize()) {
       // The size of the sub-block is fixed for now

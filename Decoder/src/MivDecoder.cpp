@@ -259,7 +259,7 @@ void MivDecoder::decodePatchParamsList(uint8_t j) {
         {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     ppl[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
     ppl[p].pduDepthStart(pdu.pdu_depth_start() << ath.ath_pos_min_z_quantizer());
-    ppl[p].pduViewId(pdu.pdu_projection_id());
+    ppl[p].pduViewIdx(pdu.pdu_view_idx());
 
     if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
       ppl[p].pduDepthEnd(pdu.pdu_depth_end() << ath.ath_pos_delta_max_z_quantizer());

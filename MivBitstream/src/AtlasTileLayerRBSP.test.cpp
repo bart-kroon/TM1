@@ -128,7 +128,7 @@ pdu_2d_size_y_minus1( 101 )=0
 pdu_view_pos_x( 101 )=0
 pdu_view_pos_y( 101 )=0
 pdu_depth_start( 101 )=0
-pdu_projection_id( 101 )=0
+pdu_view_idx( 101 )=0
 pdu_orientation_index( 101 )=FPO_NULL
 )");
 
@@ -166,7 +166,7 @@ pdu_orientation_index( 101 )=FPO_NULL
         .pdu_view_pos_y(21345)
         .pdu_depth_start(623)
         .pdu_depth_end(789)
-        .pdu_projection_id(300)
+        .pdu_view_idx(300)
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
         .pdu_miv_extension()
         .pdu_entity_id(35)
@@ -180,7 +180,7 @@ pdu_view_pos_x( 102 )=1234
 pdu_view_pos_y( 102 )=21345
 pdu_depth_start( 102 )=623
 pdu_depth_end( 102 )=789
-pdu_projection_id( 102 )=300
+pdu_view_idx( 102 )=300
 pdu_orientation_index( 102 )=FPO_MROT180
 pdu_entity_id( 102 )=35
 pdu_depth_occ_threshold( 102 )=600
@@ -222,7 +222,7 @@ pdu_depth_occ_threshold( 102 )=600
         .pdu_view_pos_y(21345)
         .pdu_depth_start(623)
         .pdu_depth_end(789)
-        .pdu_projection_id(300)
+        .pdu_view_idx(300)
         .pdu_orientation_index(FlexiblePatchOrientation::FPO_MROT180)
         .pdu_miv_extension()
         .pdu_entity_id(35);
@@ -235,7 +235,7 @@ pdu_view_pos_x( 102 )=1234
 pdu_view_pos_y( 102 )=21345
 pdu_depth_start( 102 )=623
 pdu_depth_end( 102 )=789
-pdu_projection_id( 102 )=300
+pdu_view_idx( 102 )=300
 pdu_orientation_index( 102 )=FPO_MROT180
 pdu_entity_id( 102 )=35
 )");
@@ -285,7 +285,7 @@ pdu_2d_size_y_minus1( 99 )=0
 pdu_view_pos_x( 99 )=0
 pdu_view_pos_y( 99 )=0
 pdu_depth_start( 99 )=0
-pdu_projection_id( 99 )=0
+pdu_view_idx( 99 )=0
 pdu_orientation_index( 99 )=FPO_NULL
 )");
     REQUIRE(bitCodingTest(x, 12, vuh, vps, aspsV, afpsV, ath, patchMode));
@@ -328,7 +328,7 @@ pdu_2d_size_y_minus1( 2 )=0
 pdu_view_pos_x( 2 )=0
 pdu_view_pos_y( 2 )=0
 pdu_depth_start( 2 )=0
-pdu_projection_id( 2 )=0
+pdu_view_idx( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 atdu_patch_mode[ 3 ]=P_SKIP
 )");
@@ -349,7 +349,7 @@ pdu_2d_size_y_minus1( 0 )=0
 pdu_view_pos_x( 0 )=0
 pdu_view_pos_y( 0 )=0
 pdu_depth_start( 0 )=0
-pdu_projection_id( 0 )=0
+pdu_view_idx( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 atdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
@@ -359,7 +359,7 @@ pdu_2d_size_y_minus1( 1 )=0
 pdu_view_pos_x( 1 )=0
 pdu_view_pos_y( 1 )=0
 pdu_depth_start( 1 )=0
-pdu_projection_id( 1 )=0
+pdu_view_idx( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
 )");
 
@@ -458,7 +458,7 @@ pdu_2d_size_y_minus1( 0 )=20
 pdu_view_pos_x( 0 )=0
 pdu_view_pos_y( 0 )=0
 pdu_depth_start( 0 )=0
-pdu_projection_id( 0 )=0
+pdu_view_idx( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 atdu_patch_mode[ 1 ]=I_INTRA
 pdu_2d_pos_x( 1 )=0
@@ -468,7 +468,7 @@ pdu_2d_size_y_minus1( 1 )=40
 pdu_view_pos_x( 1 )=0
 pdu_view_pos_y( 1 )=0
 pdu_depth_start( 1 )=0
-pdu_projection_id( 1 )=0
+pdu_view_idx( 1 )=0
 pdu_orientation_index( 1 )=FPO_NULL
 atdu_patch_mode[ 2 ]=I_INTRA
 pdu_2d_pos_x( 2 )=0
@@ -478,7 +478,7 @@ pdu_2d_size_y_minus1( 2 )=60
 pdu_view_pos_x( 2 )=0
 pdu_view_pos_y( 2 )=0
 pdu_depth_start( 2 )=0
-pdu_projection_id( 2 )=0
+pdu_view_idx( 2 )=0
 pdu_orientation_index( 2 )=FPO_NULL
 )");
     REQUIRE(byteCodingTest(x, 16, vuh, vps, aspsV, afpsV));
@@ -533,7 +533,7 @@ pdu_view_pos_x( 0 )=0
 pdu_view_pos_y( 0 )=0
 pdu_depth_start( 0 )=31
 pdu_depth_end( 0 )=127
-pdu_projection_id( 0 )=0
+pdu_view_idx( 0 )=0
 pdu_orientation_index( 0 )=FPO_NULL
 )");
     REQUIRE(byteCodingTest(x, 10, vuh, vps, aspsV, afpsV));

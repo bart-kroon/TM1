@@ -95,8 +95,8 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
   }
 
   for (const auto &patch : m_accessUnitParams.patchParamsList) {
-    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.pduViewId()];
-    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.pduViewId()];
+    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.pduViewIdx()];
+    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.pduViewIdx()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
 #ifndef NDEBUG
     const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};

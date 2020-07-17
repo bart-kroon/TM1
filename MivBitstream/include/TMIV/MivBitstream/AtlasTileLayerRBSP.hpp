@@ -192,7 +192,7 @@ constexpr auto PatchDataUnit::pdu_view_pos_y() const noexcept { return m_pdu_vie
 
 constexpr auto PatchDataUnit::pdu_depth_start() const noexcept { return m_pdu_depth_start; }
 
-constexpr auto PatchDataUnit::pdu_projection_id() const noexcept { return m_pdu_view_id; }
+constexpr auto PatchDataUnit::pdu_view_idx() const noexcept { return m_pdu_view_id; }
 
 constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
@@ -242,7 +242,7 @@ constexpr auto PatchDataUnit::pdu_depth_end(const std::uint32_t value) noexcept 
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_projection_id(const std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_view_idx(const std::uint16_t value) noexcept -> auto & {
   m_pdu_view_id = value;
   return *this;
 }
@@ -266,7 +266,7 @@ constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexc
          pdu_2d_size_y_minus1() == other.pdu_2d_size_y_minus1() &&
          pdu_view_pos_x() == other.pdu_view_pos_x() && pdu_view_pos_y() == other.pdu_view_pos_y() &&
          pdu_depth_start() == other.pdu_depth_start() && m_pdu_depth_end == other.m_pdu_depth_end &&
-         pdu_projection_id() == other.pdu_projection_id() &&
+         pdu_view_idx() == other.pdu_view_idx() &&
          pdu_orientation_index() == other.pdu_orientation_index() &&
          m_pdu_miv_extension == other.m_pdu_miv_extension;
 }

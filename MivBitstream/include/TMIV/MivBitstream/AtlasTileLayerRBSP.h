@@ -196,7 +196,7 @@ public:
   [[nodiscard]] constexpr auto pdu_view_pos_y() const noexcept;
   [[nodiscard]] constexpr auto pdu_depth_start() const noexcept;
   [[nodiscard]] auto pdu_depth_end() const noexcept -> std::uint32_t;
-  [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
+  [[nodiscard]] constexpr auto pdu_view_idx() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
   [[nodiscard]] constexpr auto pdu_miv_extension() const noexcept -> PduMivExtension;
 
@@ -208,7 +208,7 @@ public:
   constexpr auto pdu_view_pos_y(const std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_depth_start(const std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_depth_end(const std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_projection_id(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_view_idx(const std::uint16_t value) noexcept -> auto &;
   constexpr auto pdu_orientation_index(const FlexiblePatchOrientation value) noexcept -> auto &;
   auto pdu_miv_extension(const PduMivExtension &value) noexcept -> PatchDataUnit &;
 

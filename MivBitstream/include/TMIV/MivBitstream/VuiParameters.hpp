@@ -31,7 +31,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_MIVVUIPARAMS_H_
+#ifndef _TMIV_MIVBITSTREAM_VUIPARAMETERS_H_
 #error "Include the .h, not the .hpp"
 #endif
 
@@ -98,17 +98,17 @@ CoordinateAxisSystemParams::operator!=(const CoordinateAxisSystemParams &other) 
   return !operator==(other);
 }
 
-constexpr auto MivVuiParams::coordinate_axis_system_params() const noexcept -> auto & {
+constexpr auto VuiParameters::coordinate_axis_system_params() const noexcept -> auto & {
   return m_cas;
 }
 
-constexpr auto MivVuiParams::coordinate_axis_system_params() noexcept -> auto & { return m_cas; }
+constexpr auto VuiParameters::coordinate_axis_system_params() noexcept -> auto & { return m_cas; }
 
-constexpr auto MivVuiParams::operator==(const MivVuiParams &other) const noexcept {
+constexpr auto VuiParameters::operator==(const VuiParameters &other) const noexcept {
   return coordinate_axis_system_params() == other.coordinate_axis_system_params();
 }
 
-constexpr auto MivVuiParams::operator!=(const MivVuiParams &other) const noexcept {
+constexpr auto VuiParameters::operator!=(const VuiParameters &other) const noexcept {
   return !operator==(other);
 }
 } // namespace TMIV::MivBitstream

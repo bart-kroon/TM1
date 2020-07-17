@@ -31,52 +31,62 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/MivVuiParams.h>
+#include "test.h"
 
-using namespace std;
-using namespace TMIV::Common;
+#include <TMIV/MivBitstream/VuiParameters.h>
 
-namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const CoordinateAxisSystemParams &x) -> ostream & {
-  stream << "cas_forward_axis=" << int(x.cas_forward_axis()) << '\n';
-  stream << "cas_delta_left_axis_minus1=" << int(x.cas_delta_left_axis_minus1()) << '\n';
-  stream << "cas_forward_sign=" << boolalpha << x.cas_forward_sign() << '\n';
-  stream << "cas_left_sign=" << boolalpha << x.cas_left_sign() << '\n';
-  stream << "cas_up_sign=" << boolalpha << x.cas_up_sign() << '\n';
-  return stream;
-}
+using namespace TMIV::MivBitstream;
 
-auto CoordinateAxisSystemParams::decodeFrom(InputBitstream &bitstream)
-    -> CoordinateAxisSystemParams {
+namespace {
+constexpr auto openGlCas() noexcept {
   auto x = CoordinateAxisSystemParams{};
-
-  x.cas_forward_axis(bitstream.readBits<uint8_t>(2))
-      .cas_delta_left_axis_minus1(bitstream.readBits<uint8_t>(1))
-      .cas_forward_sign(bitstream.getFlag())
-      .cas_left_sign(bitstream.getFlag())
-      .cas_up_sign(bitstream.getFlag());
-
+  x.cas_forward_axis(2);           // -z points forward
+  x.cas_delta_left_axis_minus1(0); // -x points left
+  x.cas_forward_sign(false);       // z points back
+  x.cas_left_sign(false);          // x points right
+  x.cas_up_sign(false);            // y points down
   return x;
 }
+} // namespace
 
-void CoordinateAxisSystemParams::encodeTo(OutputBitstream &bitstream) const {
-  bitstream.writeBits(cas_forward_axis(), 2);
-  bitstream.writeBits(cas_delta_left_axis_minus1(), 1);
-  bitstream.putFlag(cas_forward_sign());
-  bitstream.putFlag(cas_left_sign());
-  bitstream.putFlag(cas_up_sign());
+TEST_CASE("coordinate_axis_system_params", "[MIV VUI Params]") {
+  SECTION("Default construction (OMAF CAS)") {
+    constexpr auto x = CoordinateAxisSystemParams{};
+
+    // Default construction corresponds to the OMAF coordinate axis system
+    static_assert(x.isOmafCas());
+
+    REQUIRE(toString(x) == R"(cas_forward_axis=0
+cas_delta_left_axis_minus1=0
+cas_forward_sign=true
+cas_left_sign=true
+cas_up_sign=true
+)");
+
+    REQUIRE(bitCodingTest(x, 6));
+  }
+
+  SECTION("Custom initialization") {
+    constexpr auto x = openGlCas();
+
+    // OpenGL uses a different convention than OMAF
+    static_assert(!x.isOmafCas());
+
+    REQUIRE(toString(x) == R"(cas_forward_axis=2
+cas_delta_left_axis_minus1=0
+cas_forward_sign=false
+cas_left_sign=false
+cas_up_sign=false
+)");
+
+    REQUIRE(bitCodingTest(x, 6));
+  }
 }
 
-auto operator<<(ostream &stream, const MivVuiParams &x) -> ostream & {
-  return stream << x.coordinate_axis_system_params();
+TEST_CASE("miv_vui_params", "[MIV VUI Params]") {
+  SECTION("Default construction") {
+    constexpr auto x = VuiParameters{};
+    REQUIRE(toString(x) == toString(CoordinateAxisSystemParams{}));
+    REQUIRE(bitCodingTest(x, 6));
+  }
 }
-
-auto MivVuiParams::decodeFrom(InputBitstream &bitstream) -> MivVuiParams {
-  const auto cas = CoordinateAxisSystemParams::decodeFrom(bitstream);
-  return MivVuiParams{cas};
-}
-
-void MivVuiParams::encodeTo(OutputBitstream &bitstream) const {
-  coordinate_axis_system_params().encodeTo(bitstream);
-}
-} // namespace TMIV::MivBitstream

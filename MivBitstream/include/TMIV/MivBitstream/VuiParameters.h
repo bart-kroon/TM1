@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_MIVVUIPARAMS_H_
-#define _TMIV_MIVBITSTREAM_MIVVUIPARAMS_H_
+#ifndef _TMIV_MIVBITSTREAM_VUIPARAMETERS_H_
+#define _TMIV_MIVBITSTREAM_VUIPARAMETERS_H_
 
 #include <TMIV/Common/Bitstream.h>
 
@@ -72,21 +72,21 @@ private:
   bool m_cas_up_sign{true};
 };
 
-// 23090-12: miv_vui_params()
-class MivVuiParams {
+// 23090-5: miv_vui_params()
+class VuiParameters {
 public:
-  constexpr MivVuiParams() = default;
-  explicit constexpr MivVuiParams(const CoordinateAxisSystemParams &cas) : m_cas{cas} {}
+  constexpr VuiParameters() = default;
+  explicit constexpr VuiParameters(const CoordinateAxisSystemParams &cas) : m_cas{cas} {}
 
   [[nodiscard]] constexpr auto coordinate_axis_system_params() const noexcept -> auto &;
   constexpr auto coordinate_axis_system_params() noexcept -> auto &;
 
-  friend auto operator<<(std::ostream &stream, const MivVuiParams &x) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream &;
 
-  constexpr auto operator==(const MivVuiParams &other) const noexcept;
-  constexpr auto operator!=(const MivVuiParams &other) const noexcept;
+  constexpr auto operator==(const VuiParameters &other) const noexcept;
+  constexpr auto operator!=(const VuiParameters &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivVuiParams;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> VuiParameters;
 
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
@@ -95,6 +95,6 @@ private:
 };
 } // namespace TMIV::MivBitstream
 
-#include "MivVuiParams.hpp"
+#include "VuiParameters.hpp"
 
 #endif

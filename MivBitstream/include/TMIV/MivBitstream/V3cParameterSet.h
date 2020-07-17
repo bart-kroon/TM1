@@ -34,9 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 #define _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 
-#include <TMIV/MivBitstream/MivVuiParams.h>
-
-#include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/VuiParameters.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -265,14 +263,14 @@ public:
   [[nodiscard]] constexpr auto vme_num_groups_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_max_entities_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_vui_params_present_flag() const noexcept;
-  [[nodiscard]] auto miv_vui_parameters() const noexcept -> const MivVuiParams &;
+  [[nodiscard]] auto vui_parameters() const noexcept -> const VuiParameters &;
 
   constexpr auto vme_depth_low_quality_flag(const bool value) noexcept -> auto &;
   constexpr auto vme_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto vme_num_groups_minus1(const unsigned value) noexcept -> auto &;
   constexpr auto vme_max_entities_minus1(const unsigned value) noexcept -> auto &;
   constexpr auto vme_vui_params_present_flag(bool value) noexcept -> auto &;
-  auto miv_vui_parameters(const MivVuiParams &value) noexcept -> VpsMivExtension &;
+  auto vui_parameters(const VuiParameters &value) noexcept -> VpsMivExtension &;
 
   friend auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream &;
 
@@ -289,7 +287,7 @@ private:
   unsigned m_vme_num_groups_minus1{};
   unsigned m_vme_max_entities_minus1{};
   bool m_vme_vui_params_present_flag{};
-  std::optional<MivVuiParams> m_mvp;
+  std::optional<VuiParameters> m_mvp;
 };
 
 // 23090-5: v3c_parameter_set()

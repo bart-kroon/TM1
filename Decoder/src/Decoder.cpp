@@ -54,7 +54,7 @@ void checkRestrictions(const AccessUnit &frame) {
   if (frame.vps.vps_miv_extension_flag()) {
     const auto &vme = frame.vps.vps_miv_extension();
     if (vme.vme_vui_params_present_flag()) {
-      const auto &mvp = vme.miv_vui_parameters();
+      const auto &mvp = vme.vui_parameters();
       if (!mvp.coordinate_axis_system_params().isOmafCas()) {
         throw runtime_error(
             "The VUI indicates that a coordinate axis system other than that of OMAF is used. The "

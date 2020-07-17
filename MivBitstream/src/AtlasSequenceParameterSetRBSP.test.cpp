@@ -91,6 +91,8 @@ TEST_CASE("atlas_sequence_parameter_set_rbsp", "[Atlas Sequence Parameter Set RB
   REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=0
 asps_frame_width=0
 asps_frame_height=0
+asps_geometry_3d_bitdepth_minus1=0
+asps_geometry_2d_bitdepth_minus1=0
 asps_log2_max_atlas_frame_order_cnt_lsb_minus4=0
 asps_max_dec_atlas_frame_buffering_minus1=0
 asps_long_term_ref_atlas_frames_flag=false
@@ -124,6 +126,8 @@ asps_extension_present_flag=false
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=0
 asps_frame_width=1
 asps_frame_height=1
+asps_geometry_3d_bitdepth_minus1=0
+asps_geometry_2d_bitdepth_minus1=0
 asps_log2_max_atlas_frame_order_cnt_lsb_minus4=0
 asps_max_dec_atlas_frame_buffering_minus1=0
 asps_long_term_ref_atlas_frames_flag=false
@@ -149,7 +153,7 @@ asps_miv_extension_flag=false
 asps_extension_6bits=0
 )");
 
-    REQUIRE(byteCodingTest(x, 9, vuh, vps));
+    REQUIRE(byteCodingTest(x, 10, vuh, vps));
   }
 
   SECTION("Example 2") {
@@ -167,6 +171,8 @@ asps_extension_6bits=0
     x.asps_atlas_sequence_parameter_set_id(15)
         .asps_frame_width(0xFFFF)
         .asps_frame_height(0xFFFF)
+        .asps_geometry_3d_bitdepth_minus1(10)
+        .asps_geometry_2d_bitdepth_minus1(13)
         .asps_log2_patch_packing_block_size(7)
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(12)
         .asps_max_dec_atlas_frame_buffering_minus1(41)
@@ -195,6 +201,8 @@ asps_extension_6bits=0
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=15
 asps_frame_width=65535
 asps_frame_height=65535
+asps_geometry_3d_bitdepth_minus1=10
+asps_geometry_2d_bitdepth_minus1=13
 asps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
 asps_max_dec_atlas_frame_buffering_minus1=41
 asps_long_term_ref_atlas_frames_flag=true
@@ -228,6 +236,6 @@ asps_extension_data_flag=true
 asps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 15, vuh, vps));
+    REQUIRE(byteCodingTest(x, 16, vuh, vps));
   }
 }

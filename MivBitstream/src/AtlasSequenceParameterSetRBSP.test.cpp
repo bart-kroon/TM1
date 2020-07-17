@@ -189,7 +189,8 @@ asps_extension_6bits=0
         .asme_depth_occ_threshold_flag(true)
         .asme_geometry_scale_factor_x_minus1(1)
         .asme_geometry_scale_factor_y_minus1(2)
-        .asme_group_id(3);
+        .asme_group_id(3)
+        .asme_patch_constant_depth_flag(true);
     x.aspsExtensionData({false, true, true});
 
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=15
@@ -223,6 +224,7 @@ asme_auxiliary_atlas_flag=true
 asme_depth_occ_map_threshold_flag=true
 asme_geometry_scale_factor_x_minus1=1
 asme_geometry_scale_factor_y_minus1=2
+asme_patch_constant_depth_flag=true
 asps_extension_data_flag=false
 asps_extension_data_flag=true
 asps_extension_data_flag=true

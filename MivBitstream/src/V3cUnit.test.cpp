@@ -137,7 +137,7 @@ vuh_raw_video_flag=false
 vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 vuh_attribute_index=0
-vuh_attribute_dimension_index=0
+vuh_attribute_partition_index=0
 vuh_map_index=0
 vuh_raw_video_flag=false
 )");
@@ -148,7 +148,7 @@ vuh_raw_video_flag=false
       x.vuh_v3c_parameter_set_id(2)
           .vuh_atlas_id(2)
           .vuh_attribute_index(3)
-          .vuh_attribute_dimension_index(0)
+          .vuh_attribute_partition_index(0)
           .vuh_map_index(0)
           .vuh_raw_video_flag(false);
 
@@ -156,7 +156,7 @@ vuh_raw_video_flag=false
 vuh_v3c_parameter_set_id=2
 vuh_atlas_id=2
 vuh_attribute_index=3
-vuh_attribute_dimension_index=0
+vuh_attribute_partition_index=0
 vuh_map_index=0
 vuh_raw_video_flag=false
 )");
@@ -282,7 +282,7 @@ vps_extension_6bits=0
     vuh.vuh_v3c_parameter_set_id(2)
         .vuh_atlas_id(1)
         .vuh_attribute_index(2)
-        .vuh_attribute_dimension_index(0)
+        .vuh_attribute_partition_index(0)
         .vuh_map_index(0)
         .vuh_raw_video_flag(false);
 
@@ -292,7 +292,7 @@ vps_extension_6bits=0
 vuh_v3c_parameter_set_id=2
 vuh_atlas_id=1
 vuh_attribute_index=2
-vuh_attribute_dimension_index=0
+vuh_attribute_partition_index=0
 vuh_map_index=0
 vuh_raw_video_flag=false
 )");

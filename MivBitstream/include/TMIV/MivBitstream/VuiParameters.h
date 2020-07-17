@@ -34,11 +34,14 @@
 #ifndef _TMIV_MIVBITSTREAM_VUIPARAMETERS_H_
 #define _TMIV_MIVBITSTREAM_VUIPARAMETERS_H_
 
-#include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+
+#include <array>
+#include <optional>
 
 namespace TMIV::MivBitstream {
-// 23090-12: coordinate_axis_system_params()
-class CoordinateAxisSystemParams {
+// 23090-5: coordinate_system_parameters()
+class CoordinateSystemParameters {
 public:
   [[nodiscard]] constexpr auto cas_forward_axis() const noexcept;
   [[nodiscard]] constexpr auto cas_delta_left_axis_minus1() const noexcept;
@@ -54,13 +57,13 @@ public:
 
   [[nodiscard]] constexpr auto isOmafCas() const noexcept;
 
-  friend auto operator<<(std::ostream &stream, const CoordinateAxisSystemParams &x)
+  friend auto operator<<(std::ostream &stream, const CoordinateSystemParameters &x)
       -> std::ostream &;
 
-  constexpr auto operator==(const CoordinateAxisSystemParams &other) const noexcept;
-  constexpr auto operator!=(const CoordinateAxisSystemParams &other) const noexcept;
+  constexpr auto operator==(const CoordinateSystemParameters &other) const noexcept;
+  constexpr auto operator!=(const CoordinateSystemParameters &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> CoordinateAxisSystemParams;
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> CoordinateSystemParameters;
 
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
@@ -72,26 +75,112 @@ private:
   bool m_cas_up_sign{true};
 };
 
+// 23090-5: hrd_parameters( )
+class HrdParameters {
+public:
+  friend auto operator<<(std::ostream &stream, const HrdParameters &x) -> std::ostream &;
+
+  constexpr auto operator==(const HrdParameters &other) const noexcept;
+  constexpr auto operator!=(const HrdParameters &other) const noexcept;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> HrdParameters;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+};
+
 // 23090-5: miv_vui_params()
 class VuiParameters {
 public:
-  constexpr VuiParameters() = default;
-  explicit constexpr VuiParameters(const CoordinateAxisSystemParams &cas) : m_cas{cas} {}
+  constexpr auto vui_timing_info_present_flag() const noexcept;
+  auto vui_num_units_in_tick() const noexcept -> std::uint32_t;
+  auto vui_time_scale() const noexcept -> std::uint32_t;
+  auto vui_poc_proportional_to_timing_flag() const noexcept -> bool;
+  auto vui_num_ticks_poc_diff_one_minus1() const noexcept -> std::uint32_t;
+  auto vui_hrd_parameters_present_flag() const noexcept -> bool;
+  auto hrd_parameters() const noexcept -> const HrdParameters &;
 
-  [[nodiscard]] constexpr auto coordinate_axis_system_params() const noexcept -> auto &;
-  constexpr auto coordinate_axis_system_params() noexcept -> auto &;
+  constexpr auto vui_bitstream_restriction_present_flag() const noexcept;
+  auto vui_tiles_fixed_structure_for_atlas_flag() const noexcept -> bool;
+  auto vui_tiles_fixed_structure_for_video_substreams_flag() const noexcept -> bool;
+  auto vui_constrained_tiles_across_v3c_components_idc() const noexcept -> std::uint8_t;
+  auto vui_max_num_tiles_per_atlas_minus1() const noexcept -> unsigned;
+
+  constexpr auto vui_coordinate_system_parameters_present_flag() const noexcept;
+  auto coordinate_system_parameters() const noexcept -> const CoordinateSystemParameters &;
+
+  constexpr auto vui_unit_in_metres_flag() const noexcept;
+
+  constexpr auto vui_display_box_info_present_flag() const noexcept;
+  auto vui_display_box_origin(int d) const noexcept -> std::uint32_t;
+  auto vui_display_box_size(int d) const noexcept -> std::uint32_t;
+
+  constexpr auto vui_anchor_point_present_flag() const noexcept;
+  auto vui_anchor_point(int d) const noexcept -> std::uint32_t;
+
+  constexpr auto vui_timing_info_present_flag(bool value) noexcept -> auto &;
+  auto vui_num_units_in_tick(std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_time_scale(std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_poc_proportional_to_timing_flag(bool value) noexcept -> VuiParameters &;
+  auto vui_num_ticks_poc_diff_one_minus1(std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters &;
+  [[nodiscard]] auto hrd_parameters() noexcept -> HrdParameters &;
+
+  constexpr auto vui_bitstream_restriction_present_flag(bool value) noexcept -> auto &;
+  auto vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept -> VuiParameters &;
+  auto vui_tiles_fixed_structure_for_video_substreams_flag(bool value) noexcept -> VuiParameters &;
+  auto vui_constrained_tiles_across_v3c_components_idc(std::uint8_t value) noexcept
+      -> VuiParameters &;
+  auto vui_max_num_tiles_per_atlas_minus1(unsigned value) noexcept -> VuiParameters &;
+
+  constexpr auto vui_coordinate_system_parameters_present_flag(bool value) noexcept -> auto &;
+  [[nodiscard]] auto coordinate_system_parameters() noexcept -> CoordinateSystemParameters &;
+
+  constexpr auto vui_unit_in_metres_flag(bool value) noexcept -> auto &;
+
+  constexpr auto vui_display_box_info_present_flag(bool value) noexcept -> auto &;
+  auto vui_display_box_origin(int d, std::uint32_t value) noexcept -> VuiParameters &;
+  auto vui_display_box_size(int d, std::uint32_t value) noexcept -> VuiParameters &;
+
+  constexpr auto vui_anchor_point_present_flag(bool value) noexcept -> auto &;
+  auto vui_anchor_point(int d, std::uint32_t value) noexcept -> VuiParameters &;
 
   friend auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream &;
 
-  constexpr auto operator==(const VuiParameters &other) const noexcept;
-  constexpr auto operator!=(const VuiParameters &other) const noexcept;
+  auto operator==(const VuiParameters &other) const noexcept -> bool;
+  auto operator!=(const VuiParameters &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> VuiParameters;
+  static auto decodeFrom(Common::InputBitstream &bitstream,
+                         const AtlasSequenceParameterSetRBSP *asps) -> VuiParameters;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream,
+                const AtlasSequenceParameterSetRBSP *asps) const;
 
 private:
-  CoordinateAxisSystemParams m_cas;
+  bool m_vui_timing_info_present_flag{};
+  std::optional<std::uint32_t> m_vui_num_units_in_tick;
+  std::optional<std::uint32_t> m_vui_time_scale;
+  std::optional<bool> m_vui_poc_proportional_to_timing_flag;
+  std::optional<std::uint32_t> m_vui_num_ticks_poc_diff_one_minus1;
+  std::optional<bool> m_vui_hrd_parameters_present_flag;
+  std::optional<HrdParameters> m_hrd_parameters;
+
+  bool m_vui_bitstream_restriction_present_flag{};
+  std::optional<bool> m_vui_tiles_fixed_structure_for_atlas_flag;
+  std::optional<bool> m_vui_tiles_fixed_structure_for_video_substreams_flag;
+  std::optional<std::uint8_t> m_vui_constrained_tiles_across_v3c_components_idc;
+  std::optional<unsigned> m_vui_max_num_tiles_per_atlas_minus1;
+
+  bool m_vui_coordinate_system_parameters_present_flag{};
+  std::optional<CoordinateSystemParameters> m_coordinate_system_parameters;
+
+  bool m_vui_unit_in_metres_flag{};
+
+  bool m_vui_display_box_info_present_flag{};
+  std::optional<std::array<std::uint32_t, 3>> m_vui_display_box_origin;
+  std::optional<std::array<std::uint32_t, 3>> m_vui_display_box_size;
+
+  bool m_vui_anchor_point_present_flag{};
+  std::optional<std::array<std::uint32_t, 3>> m_vui_anchor_point;
 };
 } // namespace TMIV::MivBitstream
 

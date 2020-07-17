@@ -36,57 +36,57 @@
 #endif
 
 namespace TMIV::MivBitstream {
-constexpr auto CoordinateAxisSystemParams::cas_forward_axis() const noexcept {
+constexpr auto CoordinateSystemParameters::cas_forward_axis() const noexcept {
   return m_cas_forward_axis;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_delta_left_axis_minus1() const noexcept {
+constexpr auto CoordinateSystemParameters::cas_delta_left_axis_minus1() const noexcept {
   return m_cas_delta_left_axis_minus1;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_forward_sign() const noexcept {
+constexpr auto CoordinateSystemParameters::cas_forward_sign() const noexcept {
   return m_cas_forward_sign;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_left_sign() const noexcept {
+constexpr auto CoordinateSystemParameters::cas_left_sign() const noexcept {
   return m_cas_left_sign;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_up_sign() const noexcept { return m_cas_up_sign; }
+constexpr auto CoordinateSystemParameters::cas_up_sign() const noexcept { return m_cas_up_sign; }
 
-constexpr auto CoordinateAxisSystemParams::cas_forward_axis(std::uint8_t value) noexcept -> auto & {
+constexpr auto CoordinateSystemParameters::cas_forward_axis(std::uint8_t value) noexcept -> auto & {
   m_cas_forward_axis = value;
   return *this;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_delta_left_axis_minus1(std::uint8_t value) noexcept
+constexpr auto CoordinateSystemParameters::cas_delta_left_axis_minus1(std::uint8_t value) noexcept
     -> auto & {
   m_cas_delta_left_axis_minus1 = value;
   return *this;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_forward_sign(bool value) noexcept -> auto & {
+constexpr auto CoordinateSystemParameters::cas_forward_sign(bool value) noexcept -> auto & {
   m_cas_forward_sign = value;
   return *this;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_left_sign(bool value) noexcept -> auto & {
+constexpr auto CoordinateSystemParameters::cas_left_sign(bool value) noexcept -> auto & {
   m_cas_left_sign = value;
   return *this;
 }
 
-constexpr auto CoordinateAxisSystemParams::cas_up_sign(bool value) noexcept -> auto & {
+constexpr auto CoordinateSystemParameters::cas_up_sign(bool value) noexcept -> auto & {
   m_cas_up_sign = value;
   return *this;
 }
 
-constexpr auto CoordinateAxisSystemParams::isOmafCas() const noexcept {
+constexpr auto CoordinateSystemParameters::isOmafCas() const noexcept {
   return cas_forward_axis() == 0 && cas_delta_left_axis_minus1() == 0 && cas_forward_sign() &&
          cas_left_sign() && cas_up_sign();
 }
 
 constexpr auto
-CoordinateAxisSystemParams::operator==(const CoordinateAxisSystemParams &other) const noexcept {
+CoordinateSystemParameters::operator==(const CoordinateSystemParameters &other) const noexcept {
   return cas_forward_axis() == other.cas_forward_axis() &&
          cas_delta_left_axis_minus1() == other.cas_delta_left_axis_minus1() &&
          cas_forward_sign() == other.cas_forward_sign() &&
@@ -94,21 +94,63 @@ CoordinateAxisSystemParams::operator==(const CoordinateAxisSystemParams &other) 
 }
 
 constexpr auto
-CoordinateAxisSystemParams::operator!=(const CoordinateAxisSystemParams &other) const noexcept {
+CoordinateSystemParameters::operator!=(const CoordinateSystemParameters &other) const noexcept {
   return !operator==(other);
 }
 
-constexpr auto VuiParameters::coordinate_axis_system_params() const noexcept -> auto & {
-  return m_cas;
+constexpr auto VuiParameters::vui_timing_info_present_flag() const noexcept {
+  return m_vui_timing_info_present_flag;
 }
 
-constexpr auto VuiParameters::coordinate_axis_system_params() noexcept -> auto & { return m_cas; }
-
-constexpr auto VuiParameters::operator==(const VuiParameters &other) const noexcept {
-  return coordinate_axis_system_params() == other.coordinate_axis_system_params();
+constexpr auto VuiParameters::vui_bitstream_restriction_present_flag() const noexcept {
+  return m_vui_bitstream_restriction_present_flag;
 }
 
-constexpr auto VuiParameters::operator!=(const VuiParameters &other) const noexcept {
-  return !operator==(other);
+constexpr auto VuiParameters::vui_coordinate_system_parameters_present_flag() const noexcept {
+  return m_vui_coordinate_system_parameters_present_flag;
+}
+
+constexpr auto VuiParameters::vui_unit_in_metres_flag() const noexcept {
+  return m_vui_unit_in_metres_flag;
+}
+
+constexpr auto VuiParameters::vui_display_box_info_present_flag() const noexcept {
+  return m_vui_display_box_info_present_flag;
+}
+
+constexpr auto VuiParameters::vui_anchor_point_present_flag() const noexcept {
+  return m_vui_anchor_point_present_flag;
+}
+
+constexpr auto VuiParameters::vui_timing_info_present_flag(bool value) noexcept -> auto & {
+  m_vui_timing_info_present_flag = value;
+  return *this;
+}
+
+constexpr auto VuiParameters::vui_bitstream_restriction_present_flag(bool value) noexcept
+    -> auto & {
+  m_vui_bitstream_restriction_present_flag = value;
+  return *this;
+}
+
+constexpr auto VuiParameters::vui_coordinate_system_parameters_present_flag(bool value) noexcept
+    -> auto & {
+  m_vui_coordinate_system_parameters_present_flag = value;
+  return *this;
+}
+
+constexpr auto VuiParameters::vui_unit_in_metres_flag(bool value) noexcept -> auto & {
+  m_vui_unit_in_metres_flag = value;
+  return *this;
+}
+
+constexpr auto VuiParameters::vui_display_box_info_present_flag(bool value) noexcept -> auto & {
+  m_vui_display_box_info_present_flag = value;
+  return *this;
+}
+
+constexpr auto VuiParameters::vui_anchor_point_present_flag(bool value) noexcept -> auto & {
+  m_vui_anchor_point_present_flag = value;
+  return *this;
 }
 } // namespace TMIV::MivBitstream

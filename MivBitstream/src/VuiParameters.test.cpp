@@ -39,7 +39,7 @@ using namespace TMIV::MivBitstream;
 
 namespace {
 constexpr auto openGlCas() noexcept {
-  auto x = CoordinateAxisSystemParams{};
+  auto x = CoordinateSystemParameters{};
   x.cas_forward_axis(2);           // -z points forward
   x.cas_delta_left_axis_minus1(0); // -x points left
   x.cas_forward_sign(false);       // z points back
@@ -51,7 +51,7 @@ constexpr auto openGlCas() noexcept {
 
 TEST_CASE("coordinate_axis_system_params", "[MIV VUI Params]") {
   SECTION("Default construction (OMAF CAS)") {
-    constexpr auto x = CoordinateAxisSystemParams{};
+    constexpr auto x = CoordinateSystemParameters{};
 
     // Default construction corresponds to the OMAF coordinate axis system
     static_assert(x.isOmafCas());
@@ -86,7 +86,7 @@ cas_up_sign=false
 TEST_CASE("miv_vui_params", "[MIV VUI Params]") {
   SECTION("Default construction") {
     constexpr auto x = VuiParameters{};
-    REQUIRE(toString(x) == toString(CoordinateAxisSystemParams{}));
+    REQUIRE(toString(x) == toString(CoordinateSystemParameters{}));
     REQUIRE(bitCodingTest(x, 6));
   }
 }

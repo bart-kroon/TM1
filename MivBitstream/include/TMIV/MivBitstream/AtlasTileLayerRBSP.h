@@ -164,7 +164,7 @@ public:
   constexpr auto pdu_entity_id(std::uint32_t value) noexcept -> auto &;
   constexpr auto pdu_depth_occ_threshold(std::uint32_t value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
 
   constexpr auto operator==(const PduMivExtension &other) const noexcept;
   constexpr auto operator!=(const PduMivExtension &other) const noexcept;
@@ -214,7 +214,7 @@ public:
 
   [[nodiscard]] constexpr auto pdu_miv_extension() noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
 
   constexpr auto operator==(const PatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
@@ -264,7 +264,7 @@ public:
   [[nodiscard]] auto skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit &;
   [[nodiscard]] auto patch_data_unit() const noexcept -> const PatchDataUnit &;
 
-  auto printTo(std::ostream &stream, std::size_t patchIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, unsigned tileId, std::size_t patchIdx) const -> std::ostream &;
 
   auto operator==(const PatchInformationData &other) const noexcept -> bool;
   auto operator!=(const PatchInformationData &other) const noexcept -> bool;
@@ -303,7 +303,7 @@ public:
   // the visitor is: void(std::size_t p, AtduPatchMode, const PatchInformationData &)
   template <typename Visitor> void visit(Visitor &&visitor) const;
 
-  auto printTo(std::ostream &stream, AthType ath_type) const -> std::ostream &;
+  auto printTo(std::ostream &stream, const AtlasTileHeader &ath) const -> std::ostream &;
 
   auto operator==(const AtlasTileDataUnit &other) const -> bool;
   auto operator!=(const AtlasTileDataUnit &other) const -> bool;

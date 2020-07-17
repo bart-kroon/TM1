@@ -35,7 +35,7 @@
 #define _TMIV_DECODER_IDECODER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/AccessUnit.h>
+#include <TMIV/Decoder/AccessUnit.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Decoder {
@@ -51,7 +51,7 @@ public:
   // Render a decoded frame to a target viewport
   //
   // The AccessUnit may be filtered in-place
-  virtual auto decodeFrame(MivBitstream::AccessUnit &frame,
+  virtual auto decodeFrame(Decoder::AccessUnit &frame,
                            const MivBitstream::ViewParams &viewportParams) const
       -> Common::Texture444Depth16Frame = 0;
 };

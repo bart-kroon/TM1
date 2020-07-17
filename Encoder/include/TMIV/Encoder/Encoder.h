@@ -59,21 +59,25 @@ public:
 
   auto prepareSequence(MivBitstream::IvSequenceParams sourceIvs)
       -> const MivBitstream::IvSequenceParams & override;
-  void prepareAccessUnit(MivBitstream::IvAccessUnitParams sourceIvau) override;
+  void prepareAccessUnit() override;
   void pushFrame(Common::MVD16Frame sourceViews) override;
   auto completeAccessUnit() -> const MivBitstream::IvAccessUnitParams & override;
   auto popAtlas() -> Common::MVD10Frame override;
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
 private: // Encoder_prepareSequence.cpp
-  auto calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+  [[nodiscard]] auto
+  calculateNominalAtlasFrameSizes(const MivBitstream::IvSequenceParams &ivSequenceParams) const
       -> Common::SizeVector;
-  auto calculateViewGridSize(const MivBitstream::IvSequenceParams &ivSequenceParams) const
+  [[nodiscard]] auto
+  calculateViewGridSize(const MivBitstream::IvSequenceParams &ivSequenceParams) const
       -> Common::Vec2i;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
-  auto haveTexture() const -> bool;
-  auto haveOccupancy() const -> bool;
+  [[nodiscard]]  auto haveTexture() const -> bool;
+  [[nodiscard]]  auto haveOccupancy() const -> bool;
   void enableOccupancyPerView();
+  void prepareIvau();
+  auto log2FocLsbMinus4() -> std::uint8_t;
 
 private: // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();
@@ -93,11 +97,13 @@ private: // Encoder_pushFrame.cpp
 
 private: // Encoder_completeAccessUnit.cpp
   void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
-  void completeIvau();
   void constructVideoFrames();
   void writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
                          const Common::TextureDepth16Frame &view, Common::MVD16Frame &atlas,
                          int frameId);
+
+private: // Encoder_popFrame.cpp
+  void incrementFoc();
 
   // Encoder sub-components
   std::unique_ptr<ViewOptimizer::IViewOptimizer> m_viewOptimizer;
@@ -108,6 +114,7 @@ private: // Encoder_completeAccessUnit.cpp
   GeometryDownscaler m_geometryDownscaler;
 
   // Encoder parameters
+  int m_intraPeriod{};
   int m_blockSize{};
   int m_alignment{};
   double m_maxLumaSampleRate{};

@@ -30,7 +30,7 @@
     "OutputDirectory": ".",
     "OutputAttributePath": "E17_SB_T{}_p01_{}x{}_yuv420p10le.yuv",
     "PoseTracePath": "Bp01.csv",
-    "SourceCameraParameters": "TechnicolorMuseum.json",
+    "SourceCameraParameters": "Museum.json",
     "SourceDirectory": ".",
     "numberOfFrames": 3
 }

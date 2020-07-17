@@ -80,7 +80,6 @@ public:
           m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
                                                     loadSourceFrame(json(), m_viewSizes, 0)));
     }
-
     const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
     m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
 
@@ -91,16 +90,15 @@ public:
 
     const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
     cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
-    m_metadataWriter.reportSummary(cout);
+    m_metadataWriter.reportSummary(cout, m_numberOfFrames);
   }
 
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
     cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
-    m_encoder->prepareAccessUnit({});
+    m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
-    m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit(),
-                                             lastFrame - firstFrame);
+    m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit());
     popAtlases(firstFrame, lastFrame);
   }
 

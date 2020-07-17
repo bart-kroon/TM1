@@ -523,10 +523,10 @@ auto operator<<(ostream &stream, const VpsMivExtension &x) -> ostream & {
          << '\n';
   stream << "vme_num_groups_minus1=" << x.vme_num_groups_minus1() << '\n';
   stream << "vme_max_entities_minus1=" << x.vme_max_entities_minus1() << '\n';
-  stream << "vme_embedded_occupancy_flag=" << boolalpha << x.vme_embedded_occupancy_flag() << '\n';
-  if (!x.vme_embedded_occupancy_flag())
-    stream << "vme_occupancy_scale_enabled_flag=" << boolalpha
-           << x.vme_occupancy_scale_enabled_flag() << '\n';
+  //stream << "vme_embedded_occupancy_flag=" << boolalpha << x.vme_embedded_occupancy_flag() << '\n';
+  //if (!x.vme_embedded_occupancy_flag())
+  //  stream << "vme_occupancy_scale_enabled_flag=" << boolalpha
+  //         << x.vme_occupancy_scale_enabled_flag() << '\n';
   if (x.vme_vui_params_present_flag()) {
     stream << x.miv_vui_parameters();
   }
@@ -539,9 +539,9 @@ auto VpsMivExtension::decodeFrom(InputBitstream &bitstream) -> VpsMivExtension {
   x.vme_geometry_scale_enabled_flag(bitstream.getFlag());
   x.vme_num_groups_minus1(bitstream.getUExpGolomb<unsigned>());
   x.vme_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
-  x.vme_embedded_occupancy_flag(bitstream.getFlag());
-  if (!x.vme_embedded_occupancy_flag())
-    x.vme_occupancy_scale_enabled_flag(bitstream.getFlag());
+  //x.vme_embedded_occupancy_flag(bitstream.getFlag());
+  //if (!x.vme_embedded_occupancy_flag())
+  //  x.vme_occupancy_scale_enabled_flag(bitstream.getFlag());
   x.vme_vui_params_present_flag(bitstream.getFlag());
   if (x.vme_vui_params_present_flag()) {
     x.miv_vui_parameters(MivVuiParams::decodeFrom(bitstream));
@@ -554,9 +554,9 @@ void VpsMivExtension::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
   bitstream.putUExpGolomb(vme_num_groups_minus1());
   bitstream.putUExpGolomb(vme_max_entities_minus1());
-  bitstream.putFlag(vme_embedded_occupancy_flag());
-  if (!vme_embedded_occupancy_flag())
-    bitstream.putFlag(vme_occupancy_scale_enabled_flag());
+  //bitstream.putFlag(vme_embedded_occupancy_flag());
+  //if (!vme_embedded_occupancy_flag())
+  //  bitstream.putFlag(vme_occupancy_scale_enabled_flag());
   bitstream.putFlag(vme_vui_params_present_flag());
   if (vme_vui_params_present_flag()) {
     miv_vui_parameters().encodeTo(bitstream);
@@ -807,8 +807,6 @@ auto V3cParameterSet::vps_miv_extension() noexcept -> VpsMivExtension & {
 }
 
 auto V3cParameterSet::atlasIdxOf(uint8_t atlasId) const noexcept -> uint8_t {
-  VERIFY_V3CBITSTREAM(atlasId != specialAtlasId);
-
   for (uint8_t j = 0; j <= vps_atlas_count_minus1(); ++j) {
     if (vps_atlas_id(j) == atlasId) {
       return j;
@@ -1037,7 +1035,7 @@ auto merge(const vector<const V3cParameterSet *> &vps) -> V3cParameterSet {
   VERIFY_MIVBITSTREAM(!vps.empty());
   auto x = *vps.front();
 
-  VERIFY_MIVBITSTREAM(x.vps_miv_extension().vme_num_groups_minus1() + 1 == vps.size());
+  VERIFY_MIVBITSTREAM(x.vps_miv_extension().vme_num_groups_minus1() + size_t(1) == vps.size());
 
   for (auto i = begin(vps) + 1; i != end(vps); ++i) {
     const auto &y = **i;

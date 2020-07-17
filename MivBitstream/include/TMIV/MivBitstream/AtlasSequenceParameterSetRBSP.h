@@ -107,32 +107,31 @@ public:
   [[nodiscard]] constexpr auto asme_group_id() const noexcept;
   [[nodiscard]] constexpr auto asme_auxiliary_atlas_flag() const noexcept;
   [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
-  [[nodiscard]] auto asme_geometry_frame_width_minus1() const noexcept -> uint16_t;
-  [[nodiscard]] auto asme_geometry_frame_height_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto asme_geometry_scale_factor_x_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto asme_geometry_scale_factor_y_minus1() const noexcept -> uint16_t;
 
   constexpr auto asme_group_id(const unsigned value) noexcept -> auto &;
   constexpr auto asme_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
   constexpr auto asme_depth_occ_threshold_flag(const bool value) noexcept -> auto &;
-  constexpr auto asme_geometry_frame_width_minus1(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto asme_geometry_frame_height_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_geometry_scale_factor_x_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_geometry_scale_factor_y_minus1(const std::uint16_t value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsMivExtension &) -> std::ostream &;
 
   constexpr auto operator==(const AspsMivExtension &other) const noexcept;
   constexpr auto operator!=(const AspsMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                         const V3cParameterSet &vps) -> AspsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+      -> AspsMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                const V3cParameterSet &vps) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
 
 private:
   unsigned m_asme_group_id{};
   bool m_asme_auxiliary_atlas_flag{};
   bool m_asme_depth_occ_map_threshold_flag{};
-  std::optional<std::uint16_t> m_asme_geometry_frame_width_minus1;
-  std::optional<std::uint16_t> m_asme_geometry_frame_height_minus1;
+  std::optional<std::uint16_t> m_asme_geometry_scale_factor_x_minus1;
+  std::optional<std::uint16_t> m_asme_geometry_scale_factor_y_minus1;
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp( )
@@ -180,8 +179,8 @@ public:
   constexpr auto asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto asps_frame_width(const std::uint16_t value) noexcept -> auto &;
   constexpr auto asps_frame_height(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
-      -> auto &;
+  auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
+      -> AtlasSequenceParameterSetRBSP &;
   constexpr auto asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept
       -> auto &;
   constexpr auto asps_long_term_ref_atlas_frames_flag(const bool value) noexcept -> auto &;
@@ -255,6 +254,9 @@ private:
   std::optional<AspsMivExtension> m_asme;
   std::optional<std::vector<bool>> m_aspsExtensionData;
 };
+
+auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
+    -> const AtlasSequenceParameterSetRBSP &;
 } // namespace TMIV::MivBitstream
 
 #include "AtlasSequenceParameterSetRBSP.hpp"

@@ -124,8 +124,7 @@ private:
 
     // Decode the VPS
     istringstream substream{ssvu0.ssvu_v3c_unit()};
-    const auto vpses = vector<V3cParameterSet>{};
-    const auto vuh = V3cUnitHeader::decodeFrom(substream, vpses);
+    const auto vuh = V3cUnitHeader::decodeFrom(substream);
     if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
       throw runtime_error("the first V3C unit has to be the VPS");
     }
@@ -185,8 +184,7 @@ private:
           format("Failed to open sub bitstream ({}) for reading", subBitstreamPath));
     }
     ostringstream substream;
-    const auto vpses = vector<V3cParameterSet>{m_vps};
-    vuh.encodeTo(substream, vpses);
+    vuh.encodeTo(substream);
     substream << inStream.rdbuf();
 
     cout << "Appended " << subBitstreamPath << '\n';
@@ -220,7 +218,7 @@ private:
 
       // Print the V3C unit header (for fun, why not)
       istringstream stream{unit};
-      const auto vuh = V3cUnitHeader::decodeFrom(stream, {m_vps});
+      const auto vuh = V3cUnitHeader::decodeFrom(stream);
       cout << vuh;
     }
   }

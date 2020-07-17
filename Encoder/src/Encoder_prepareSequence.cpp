@@ -63,17 +63,37 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_ivs = IvSequenceParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
+  m_ivs.aaps.aaps_log2_max_afoc_present_flag(true).aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(
+      log2FocLsbMinus4());
   m_ivs.vme() = m_transportIvs.vme();
   m_ivs.viewParamsList = m_transportIvs.viewParamsList;
   m_ivs.viewingSpace = m_transportIvs.viewingSpace;
   m_ivs.frameRate = m_transportIvs.frameRate;
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
+  // Update views per atlas info
+  // TODO(BK): Extract function
+  // TODO(BK): Update or set after packing to be more useful
+  m_ivs.mvpl.mvp_num_views_minus1(uint16_t(m_isBasicView.size() - 1));
+  for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a) {
+    for (uint16_t v = 0; v <= m_ivs.mvpl.mvp_num_views_minus1(); ++v) {
+      m_ivs.mvpl.mvp_view_enabled_in_atlas_flag(a, v, true);
+      m_ivs.mvpl.mvp_view_complete_in_atlas_flag(a, v, m_isBasicView[v]);
+    }
+  }
+  m_ivs.mvpl.mvp_explicit_view_id_flag(true);
+  for (uint16_t v = 0; v <= m_ivs.mvpl.mvp_num_views_minus1(); ++v) {
+    m_ivs.mvpl.mvp_view_id(v, v);
+  }
+
   // Register pruning relation
   m_pruner->registerPruningRelation(m_ivs, m_isBasicView);
 
   // Turn on occupancy coding per view
   enableOccupancyPerView();
+
+  // Set-up ASPS and AFPS
+  prepareIvau();
 
   // Further transform sequence parameters: geometry downscaling and depth/occupancy coding
   m_ivs = m_geometryDownscaler.transformSequenceParams(
@@ -170,5 +190,45 @@ void Encoder::enableOccupancyPerView() {
       m_ivs.viewParamsList[viewId].dq.dq_depth_occ_map_threshold_default(0);
     }
   }
+}
+
+void Encoder::prepareIvau() {
+  m_ivau.atlas.resize(m_ivs.vps.vps_atlas_count_minus1() + size_t(1));
+
+  for (uint8_t i = 0; i <= m_ivs.vps.vps_atlas_count_minus1(); ++i) {
+    auto &atlas = m_ivau.atlas[i];
+
+    // Set ASPS parameters
+    atlas.asps.asps_frame_width(m_ivs.vps.vps_frame_width(i))
+        .asps_frame_height(m_ivs.vps.vps_frame_height(i))
+        .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
+        .asps_use_eight_orientations_flag(true)
+        .asps_extended_projection_enabled_flag(true)
+        .asps_normal_axis_limits_quantization_enabled_flag(true)
+        .asps_max_number_projections_minus1(uint16_t(m_ivs.viewParamsList.size() - 1))
+        .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
+
+    // Signalling pdu_entity_id requires ASME to be present
+    if (m_ivs.vps.vps_miv_extension_flag() && m_ivs.vme().vme_max_entities_minus1() > 0) {
+      // There is nothing entity-related in ASME so a reference is obtained but discarded
+      static_cast<void>(atlas.asme());
+    }
+
+    // Set AFPS parameters
+    const auto &gi = m_ivs.vps.geometry_information(i);
+    atlas.afps.afps_3d_pos_x_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
+    atlas.afps.afps_3d_pos_y_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
+
+    // Set ATH parameters
+    atlas.ath.ath_ref_atlas_frame_list_sps_flag(true);
+    atlas.ath.ath_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
+    atlas.ath.ath_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+    atlas.ath.ath_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
+  }
+}
+
+auto Encoder::log2FocLsbMinus4() -> std::uint8_t {
+  // Avoid confusion but test MSB/LSB logic in decoder
+  return max(4U, ceilLog2(m_intraPeriod) + 1U) - 4U;
 }
 } // namespace TMIV::Encoder

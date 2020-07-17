@@ -291,7 +291,6 @@ auto operator+(std::ptrdiff_t a, const dim_iterator<T> &rhs) -> dim_iterator<T> 
 } // namespace Array
 
 namespace stack {
-
 using size_type = TMIV::Common::Array::size_type;
 
 template <size_type D, typename T, size_type... I> struct _Array {};
@@ -658,7 +657,6 @@ template <typename T, size_type... I> typename Array<T, I...>::Helper Array<T, I
 } // namespace stack
 
 namespace heap {
-
 using size_type = TMIV::Common::Array::size_type;
 
 template <size_type D, typename T> class Array {
@@ -1005,7 +1003,6 @@ protected:
 } // namespace heap
 
 namespace shallow {
-
 using size_type = TMIV::Common::Array::size_type;
 
 template <size_type D, typename T> class Array {

@@ -298,8 +298,6 @@ private:
   std::optional<MivVuiParams> m_mvp;
 };
 
-constexpr uint8_t specialAtlasId = 0x3F;
-
 // 23090-5: v3c_parameter_set()
 //
 // 23090-12 restrictions:
@@ -357,7 +355,7 @@ public:
   [[nodiscard]] auto attribute_information(std::uint8_t j) -> AttributeInformation &;
   [[nodiscard]] auto vps_miv_extension() noexcept -> VpsMivExtension &;
 
-  auto atlasIdxOf(std::uint8_t atlasId) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto atlasIdxOf(std::uint8_t atlasId) const noexcept -> std::uint8_t;
 
   friend auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream &;
 

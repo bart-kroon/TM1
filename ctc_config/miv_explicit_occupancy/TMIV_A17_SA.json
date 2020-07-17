@@ -18,6 +18,7 @@
             "depthParameter": 50,
             "dilate": 5,
             "erode": 2,
+            "maxBasicViewsPerGraph": 3,
             "maxDepthError": 0.1,
             "maxStretching": 5,
             "rayAngleParameter": 10,
@@ -26,12 +27,17 @@
         "Packer": {
             "MinPatchSize": 16,
             "Overlap": 1,
-            "PiP": 1
+            "PiP": 1,
+            "enableMerging": true
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",
-        "ViewOptimizerMethod": "ViewReducer",
-        "ViewReducer": {},
+        "ViewOptimizerMethod": "BasicViewAllocator",
+        "BasicViewAllocator": {
+            "maxBasicViewFraction": 0.5,
+            "outputAdditionalViews": true,
+            "minNonCodedViews": 3
+        },
         "dilate": 16
     },
     "OmafV1CompatibleFlag": false,

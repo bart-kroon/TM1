@@ -34,9 +34,7 @@
 #include <TMIV/Common/Factory.h>
 #include <TMIV/Decoder/Decoder.h>
 #include <TMIV/Renderer/AdditiveSynthesizer.h>
-#include <TMIV/Renderer/GroupBasedRenderer.h>
 #include <TMIV/Renderer/Inpainter.h>
-#include <TMIV/Renderer/MultipassRenderer.h>
 #include <TMIV/Renderer/NoCuller.h>
 #include <TMIV/Renderer/NoInpainter.h>
 #include <TMIV/Renderer/NoSynthesizer.h>
@@ -61,9 +59,7 @@ void registerComponents() {
   inpainters.registerAs<Renderer::NoInpainter>("NoInpainter");
 
   auto &renderers = Factory<Renderer::IRenderer>::getInstance();
-  renderers.registerAs<Renderer::GroupBasedRenderer>("GroupBasedRenderer");
   renderers.registerAs<Renderer::Renderer>("Renderer");
-  renderers.registerAs<Renderer::MultipassRenderer>("MultipassRenderer");
 
   auto &synthesizers = Factory<Renderer::ISynthesizer>::getInstance();
   synthesizers.registerAs<Renderer::AdditiveSynthesizer>("AdditiveSynthesizer");

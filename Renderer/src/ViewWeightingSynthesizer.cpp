@@ -169,9 +169,9 @@ public:
     m_filteringPass = filteringPass;
   }
 
-  auto renderFrame(const AccessUnit &frame, const ViewParams &viewportParams)
+  auto renderFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams)
       -> Texture444Depth16Frame {
-    const auto &viewParamsList = frame.atlas.front().viewParamsList;
+    const auto &viewParamsList = frame.viewParamsList;
     const auto sourceHelperList = ProjectionHelperList{viewParamsList};
     const auto targetHelper = ProjectionHelper{viewportParams};
 
@@ -193,7 +193,7 @@ public:
     recoverPrunedWeight(sourceHelperList, targetHelper);
 
     // 5) Selection
-    selectViewportDepth(!frame.vps->vps_miv_extension().vme_depth_low_quality_flag(), targetHelper);
+    selectViewportDepth(!frame.vps.vps_miv_extension().vme_depth_low_quality_flag(), targetHelper);
 
     // 6) Filtering
     filterVisibilityMap();
@@ -338,7 +338,8 @@ private:
     }
   }
 
-  void recoverPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList) {
+  void recoverPrunedSource(const Decoder::AccessUnit &frame,
+                           const ProjectionHelperList &sourceHelperList) {
     // Recover pruned views
     const auto [prunedViews, prunedMasks] = recoverPrunedViewAndMask(frame);
 
@@ -358,7 +359,8 @@ private:
                 [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NaN; });
     }
   }
-  void reprojectPrunedSource(const AccessUnit &frame, const ProjectionHelperList &sourceHelperList,
+  void reprojectPrunedSource(const Decoder::AccessUnit &frame,
+                             const ProjectionHelperList &sourceHelperList,
                              const ProjectionHelper &targetHelper) {
     m_sourceUnprojection.resize(m_sourceDepth.size());
     m_sourceReprojection.resize(m_sourceDepth.size());
@@ -424,7 +426,7 @@ private:
     }
   }
 
-  void warpPrunedSource(const AccessUnit &frame, const ProjectionHelper &targetHelper) {
+  void warpPrunedSource(const Decoder::AccessUnit &frame, const ProjectionHelper &targetHelper) {
     struct Splat {
       Vec2f center{};
       Vec2f firstAxis{};
@@ -969,24 +971,9 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
-namespace {
-auto checkLimitations(const AccessUnit &frame) {
-  const auto &viewParamsList = frame.atlas.front().viewParamsList;
-
-  for (size_t atlasId = 1; atlasId < frame.atlas.size(); ++atlasId) {
-    if (viewParamsList != frame.atlas[atlasId].viewParamsList) {
-      throw runtime_error("Support for per-atlas view parameters lists has not yet been "
-                          "implemented for the ViewWeightingSynthesizer.");
-    }
-  }
-}
-} // namespace
-
-auto ViewWeightingSynthesizer::renderFrame(const AccessUnit &frame,
+auto ViewWeightingSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
                                            const ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
-  checkLimitations(frame);
-
   return m_impl->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Renderer

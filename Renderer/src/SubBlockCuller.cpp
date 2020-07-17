@@ -138,26 +138,27 @@ auto divideInBlocks(const PatchParams &patch, Vec2i blockSize) {
   return subblock;
 }
 
-auto SubBlockCuller::filterBlockToPatchMap(const AtlasAccessUnit &atlas,
+auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
+                                           const Decoder::AtlasAccessUnit &atlas,
                                            const ViewParams &viewportParams) const
     -> BlockToPatchMap {
   auto result = atlas.blockToPatchMap;
 
   for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {
     const auto &patch = atlas.patchParamsList[patchIdx];
-    const auto &view = atlas.viewParamsList[patch.pduViewId()];
+    const auto &view = frame.viewParamsList[patch.pduViewId()];
 
     if (patch.pduViewSize() == view.ci.projectionPlaneSize()) {
       // The size of the sub-block is fixed for now
       const auto blockSize = Vec2i{128, 128};
 
       for (const auto &block : divideInBlocks(patch, blockSize)) {
-        if (!choosePatch(block, atlas.viewParamsList, viewportParams)) {
+        if (!choosePatch(block, frame.viewParamsList, viewportParams)) {
           inplaceErasePatch(result, block, uint16_t(patchIdx), atlas.asps);
         }
       }
     } else {
-      if (!choosePatch(patch, atlas.viewParamsList, viewportParams)) {
+      if (!choosePatch(patch, frame.viewParamsList, viewportParams)) {
         inplaceErasePatch(result, patch, uint16_t(patchIdx), atlas.asps);
       }
     }

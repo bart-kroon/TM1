@@ -117,7 +117,8 @@ auto MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Outp
   int w = align(c.width(), m_alignment);
   int h = align(c.height(), m_alignment);
 
-  if ((m_pip && pushInUsedSpace(w, h, packerOutput)) || pushInFreeSpace(w, h, packerOutput)) {
+  if ((m_pip && pushInUsedSpace(w, h, c.isBasicView(), packerOutput)) ||
+      pushInFreeSpace(w, h, c.isBasicView(), packerOutput)) {
     // Update occupancy map
     if (m_pip) {
       updateOccupancyMap(c, clusteringMap, packerOutput);
@@ -181,8 +182,8 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
   }
 }
 
-auto MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output &packerOutput) -> bool {
-
+auto MaxRectPiP::pushInUsedSpace(int w, int h, bool isBasicView, MaxRectPiP::Output &packerOutput)
+    -> bool {
   int W = w / m_alignment;
   int H = h / m_alignment;
 
@@ -211,7 +212,7 @@ auto MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output &packerOutput)
       }
 
       // With Rotation
-      if (isGoodCandidate(X, X + H - 1, Y, Y + W - 1)) {
+      if (!isBasicView && isGoodCandidate(X, X + H - 1, Y, Y + W - 1)) {
         packerOutput.set(X * m_alignment, Y * m_alignment, true);
         return true;
       }
@@ -221,7 +222,8 @@ auto MaxRectPiP::pushInUsedSpace(int w, int h, MaxRectPiP::Output &packerOutput)
   return false;
 }
 
-auto MaxRectPiP::pushInFreeSpace(int w, int h, MaxRectPiP::Output &packerOutput) -> bool {
+auto MaxRectPiP::pushInFreeSpace(int w, int h, bool isBasicView, MaxRectPiP::Output &packerOutput)
+    -> bool {
   // Select best free rectangles that fit current patch (BSSF criterion)
   auto best_iter = m_F.cend();
   float best_score = numeric_limits<float>::max();
@@ -232,11 +234,11 @@ auto MaxRectPiP::pushInFreeSpace(int w, int h, MaxRectPiP::Output &packerOutput)
     float score_regular = r.getShortSideFitScore(w, h);
     float score_rotated = r.getShortSideFitScore(h, w);
 
-    if ((score_regular <= score_rotated) && (score_regular < best_score)) {
+    if ((isBasicView || score_regular <= score_rotated) && (score_regular < best_score)) {
       best_iter = iter;
       best_score = score_regular;
       best_rotation = false;
-    } else if (score_rotated < best_score) {
+    } else if (!isBasicView && score_rotated < best_score) {
       best_iter = iter;
       best_score = score_rotated;
       best_rotation = true;

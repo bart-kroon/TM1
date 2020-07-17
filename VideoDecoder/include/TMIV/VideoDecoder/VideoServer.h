@@ -43,8 +43,8 @@ public:
   explicit VideoServer(std::unique_ptr<IVideoDecoder> decoder, const std::string &bitstream);
   VideoServer(const VideoServer &) = delete;
   VideoServer(VideoServer &&) = default;
-  VideoServer &operator=(const VideoServer &) = delete;
-  VideoServer &operator=(VideoServer &&) = default;
+  auto operator=(const VideoServer &) -> VideoServer & = delete;
+  auto operator=(VideoServer &&) -> VideoServer & = default;
   ~VideoServer();
 
   // Wait for the video server to block or stop

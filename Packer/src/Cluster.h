@@ -48,6 +48,7 @@ using ClusterList = std::vector<Cluster>;
 class Cluster {
 protected:
   int viewId_ = 0;
+  bool m_isBasicView{};
   int clusterId_ = 0;
   int entityId_ = 0;
   int numActivePixels_ = 0;
@@ -59,8 +60,7 @@ protected:
 
 public:
   Cluster() = default;
-  Cluster(int viewId, int clusterId);
-  Cluster(int viewId, int clusterId, int entityId);
+  Cluster(int viewId, bool isBasicView, int clusterId, int entityId);
   Cluster(const Cluster &) = default;
   Cluster(Cluster &&) = default;
   auto operator=(const Cluster &) -> Cluster & = default;
@@ -83,6 +83,7 @@ public:
   [[nodiscard]] auto getMinSize() const -> int { return std::min(width(), height()); }
   [[nodiscard]] auto split(const ClusteringMap &clusteringMap, int overlap) const
       -> std::pair<Cluster, Cluster>;
+  [[nodiscard]] constexpr auto isBasicView() const noexcept { return m_isBasicView; }
 
   auto splitLPatchVertically(const ClusteringMap &clusteringMap, std::vector<Cluster> &out,
                              int alignment, int minPatchSize,
@@ -110,8 +111,9 @@ public:
   static auto setEntityId(Cluster &c, int entityId) -> Cluster;
   static auto align(const Cluster &c, int alignment) -> Cluster;
   static auto merge(const Cluster &c1, const Cluster &c2) -> Cluster;
-  static auto retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId = 0,
-                       bool shouldNotBeSplit = false) -> std::pair<ClusterList, ClusteringMap>;
+  static auto retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId,
+                       bool isBasicView, bool enableMerging)
+      -> std::pair<ClusterList, ClusteringMap>;
 };
 } // namespace TMIV::Packer
 

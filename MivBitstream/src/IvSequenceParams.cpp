@@ -84,7 +84,7 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
 }
 
 void IvSequenceParams::updateMvpl() {
-  auto &x = this->mvpl();
+  auto &x = this->mvpl;
 
   VERIFY_MIVBITSTREAM(!viewParamsList.empty());
   x.mvp_num_views_minus1(uint16_t(viewParamsList.size() - 1));
@@ -121,25 +121,8 @@ auto IvSequenceParams::vme() noexcept -> VpsMivExtension & {
   return vps.vps_extension_present_flag(true).vps_miv_extension_flag(true).vps_miv_extension();
 }
 
-auto IvSequenceParams::aame() const noexcept -> const AapsMivExtension & {
-  return aaps.aaps_miv_extension();
-}
-
-auto IvSequenceParams::aame() noexcept -> AapsMivExtension & {
-  return aaps.aaps_extension_present_flag(true).aaps_miv_extension_flag(true).aaps_miv_extension();
-}
-
-auto IvSequenceParams::mvpl() const noexcept -> const MivViewParamsList & {
-  return aame().miv_view_params_list();
-}
-
-auto IvSequenceParams::mvpl() noexcept -> MivViewParamsList & {
-  return aame()
-      .aame_miv_view_params_list_update_mode(MvpUpdateMode::VPL_INITLIST)
-      .miv_view_params_list();
-}
-
 auto IvSequenceParams::operator==(const IvSequenceParams &other) const -> bool {
-  return vps == other.vps && aaps == other.aaps && viewingSpace == other.viewingSpace;
+  return vps == other.vps && aaps == other.aaps && mvpl == other.mvpl &&
+         viewingSpace == other.viewingSpace && viewParamsList == other.viewParamsList;
 }
 } // namespace TMIV::MivBitstream

@@ -39,7 +39,6 @@
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 namespace TMIV::ViewingSpace {
-
 //! \brief Represents a distance from the surface of a shape.
 struct SignedDistance {
   float value;

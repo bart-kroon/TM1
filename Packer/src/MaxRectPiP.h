@@ -95,8 +95,8 @@ public:
 protected:
   void updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
                           const Output &packerOutput);
-  auto pushInUsedSpace(int w, int h, Output &packerOutput) -> bool;
-  auto pushInFreeSpace(int w, int h, Output &packerOutput) -> bool;
+  auto pushInUsedSpace(int w, int h, bool isBasicView, Output &packerOutput) -> bool;
+  auto pushInFreeSpace(int w, int h, bool isBasicView, Output &packerOutput) -> bool;
 };
 } // namespace TMIV::Packer
 

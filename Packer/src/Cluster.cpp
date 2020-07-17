@@ -42,9 +42,8 @@ namespace TMIV::Packer {
 static const uint16_t ACTIVE = 65534;
 static const uint16_t INVALID = 65535;
 
-Cluster::Cluster(int viewId, int clusterId) : viewId_(viewId), clusterId_(clusterId) {}
-Cluster::Cluster(int viewId, int clusterId, int entityId)
-    : viewId_(viewId), clusterId_(clusterId), entityId_(entityId) {}
+Cluster::Cluster(int viewId, bool isBasicView, int clusterId, int entityId)
+    : viewId_(viewId), m_isBasicView{isBasicView}, clusterId_(clusterId), entityId_(entityId) {}
 
 void Cluster::push(int i, int j) {
   if (i < imin_) {
@@ -64,7 +63,7 @@ void Cluster::push(int i, int j) {
 }
 
 auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
-  Cluster d(c.viewId_, c.clusterId_, entityId);
+  Cluster d(c.viewId_, c.isBasicView(), c.clusterId_, entityId);
   d.imin_ = c.imin_;
   d.imax_ = c.imax_;
   d.jmin_ = c.jmin_;
@@ -75,7 +74,7 @@ auto Cluster::setEntityId(Cluster &c, int entityId) -> Cluster {
 }
 
 auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
-  Cluster d(c.viewId_, c.clusterId_, c.entityId_);
+  Cluster d(c.viewId_, c.isBasicView(), c.clusterId_, c.entityId_);
 
   d.imin_ = c.imin_ - (c.imin_ % alignment);
   d.imax_ = c.imax_; // modification to align the imin,jmin to even values to
@@ -92,7 +91,8 @@ auto Cluster::align(const Cluster &c, int alignment) -> Cluster {
 }
 
 auto Cluster::merge(const Cluster &c1, const Cluster &c2) -> Cluster {
-  Cluster c(c1.viewId_, c1.clusterId_, c1.entityId_);
+  assert(!c1.isBasicView() && !c2.isBasicView());
+  Cluster c(c1.viewId_, false, c1.clusterId_, c1.entityId_);
 
   c.imin_ = min(c1.imin_, c2.imin_);
   c.imax_ = max(c1.imax_, c2.imax_);
@@ -134,8 +134,8 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, vector
   }
 
   if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
@@ -162,7 +162,6 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, vector
 
 auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                                     int alignment, int minPatchSize) const -> bool {
-
   double splitThresholdC = 0.3;
 
   const Cluster &c = (*this);
@@ -175,7 +174,6 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
 
   for (int h = 0; h < H; h += alignment) {
     for (int w = 0; w < W; w += alignment) {
-
       bool isEmpty = true;
 
       for (int hh = h; hh < min(h + alignment, H); hh++) {
@@ -201,11 +199,10 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
   }   // h
 
   if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
-
     int bestSplitPos = roundToAlignment(W, alignment);
 
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
@@ -232,7 +229,6 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
 
 auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                                       int alignment, int minPatchSize) const -> bool {
-
   double splitThresholdC = 0.3;
 
   const Cluster &c = (*this);
@@ -245,7 +241,6 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector
 
   for (int h = 0; h < H; h += alignment) {
     for (int w = 0; w < W; w += alignment) {
-
       bool isEmpty = true;
 
       for (int hh = h; hh < min(h + alignment, H); hh++) {
@@ -271,11 +266,10 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector
   }   // h
 
   if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
-
     int bestSplitPos = roundToAlignment(H, alignment);
 
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i < c.imin() + bestSplitPos + 1; i++) {
       for (int j = c.jmin(); j <= c.jmax(); j++) {
@@ -304,7 +298,6 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<C
                                     int alignment, int minPatchSize,
                                     const array<deque<int>, 2> &min_h_agg,
                                     const array<deque<int>, 2> &max_h_agg) const -> bool {
-
   double splitThresholdL = 0.9;
 
   const Cluster &c = (*this);
@@ -329,8 +322,8 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<C
   }
 
   if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
-    Cluster c1(c.getViewId(), c.getClusterId());
-    Cluster c2(c.getViewId(), c.getClusterId());
+    Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
+    Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
     for (int i = c.imin(); i <= c.imax(); i++) {
       for (int j = c.jmin(); j < c.jmin() + bestSplitPos + 1; j++) {
@@ -357,7 +350,6 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<C
 
 auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, vector<Cluster> &out,
                              int alignment, int minPatchSize) const -> vector<Cluster> {
-
   bool splitted = false;
 
   int maxNonsplittableSize = 64;
@@ -479,11 +471,11 @@ auto Cluster::recursiveSplit(const ClusteringMap &clusteringMap, vector<Cluster>
 
 auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
     -> pair<Cluster, Cluster> {
-
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   const Cluster &c = *this;
-  Cluster c1(c.getViewId(), c.getClusterId(), c.getEntityId());
-  Cluster c2(c.getViewId(), c.getClusterId(), c.getEntityId());
+  assert(!c.isBasicView());
+  Cluster c1(c.getViewId(), false, c.getClusterId(), c.getEntityId());
+  Cluster c2(c.getViewId(), false, c.getClusterId(), c.getEntityId());
 
   if (c.width() < c.height()) {
     int imid = (c.imin() + c.imax()) / 2;
@@ -531,9 +523,8 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
   return pair<Cluster, Cluster>(c1, c2);
 }
 
-auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool shouldNotBeSplit)
-    -> pair<ClusterList, ClusteringMap> {
-
+auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool isBasicView,
+                       bool enableMerging) -> pair<ClusterList, ClusteringMap> {
   pair<ClusterList, ClusteringMap> out(ClusterList(),
                                        ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
   ClusterList &clusterList = out.first;
@@ -564,7 +555,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
 
   while (iter_seed != activeList.end()) {
     div_t dv = div(*iter_seed, B);
-    Cluster cluster(viewId, clusterId);
+    Cluster cluster(viewId, isBasicView, clusterId, 0);
     queue<array<int, 2>> candidates;
 
     cluster.push(dv.quot, dv.rem);
@@ -618,6 +609,127 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       candidates.pop();
     }
 
+    int subClusterId = clusterId;
+
+    if (enableMerging) {
+      // Patch Merging
+      int i_top = cluster.imin(), i_bottom = cluster.imax();
+      int j_left = cluster.jmin(), j_right = cluster.jmax();
+
+      auto subRegionGrowing = [&](int ID) {
+        Cluster subCluster(viewId, isBasicView, subClusterId, cluster.getEntityId());
+        while (!candidates.empty()) {
+          const std::array<int, 2> &current = candidates.front();
+          int a = current[0];
+          int b = current[1];
+
+          subCluster.push(a, b);
+          clusteringBuffer(a, b) = static_cast<uint16_t>(ID);
+
+          if (0 < a) {
+            if (clusteringBuffer(a - 1, b) == ACTIVE) {
+              candidates.push({a - 1, b});
+              subCluster.push(a - 1, b);
+              clusteringBuffer(a - 1, b) = static_cast<uint16_t>(ID);
+            }
+            if (0 < b) {
+              if (clusteringBuffer(a - 1, b - 1) == ACTIVE) {
+                candidates.push({a - 1, b - 1});
+                subCluster.push(a - 1, b - 1);
+                clusteringBuffer(a - 1, b - 1) = static_cast<uint16_t>(ID);
+              }
+            }
+            if (b < B - 1) {
+              if (clusteringBuffer(a - 1, b + 1) == ACTIVE) {
+                candidates.push({a - 1, b + 1});
+                subCluster.push(a - 1, b + 1);
+                clusteringBuffer(a - 1, b + 1) = static_cast<uint16_t>(ID);
+              }
+            }
+          }
+          if (a < A - 1) {
+            if (clusteringBuffer(a + 1, b) == ACTIVE) {
+              candidates.push({a + 1, b});
+              subCluster.push(a + 1, b);
+              clusteringBuffer(a + 1, b) = static_cast<uint16_t>(ID);
+            }
+            if (0 < b) {
+              if (clusteringBuffer(a + 1, b - 1) == ACTIVE) {
+                candidates.push({a + 1, b - 1});
+                subCluster.push(a + 1, b - 1);
+                clusteringBuffer(a + 1, b - 1) = static_cast<uint16_t>(ID);
+              }
+            }
+            if (b < B - 1) {
+              if (clusteringBuffer(a + 1, b + 1) == ACTIVE) {
+                candidates.push({a + 1, b + 1});
+                subCluster.push(a + 1, b + 1);
+                clusteringBuffer(a + 1, b + 1) = static_cast<uint16_t>(ID);
+              }
+            }
+          }
+          if (0 < b) {
+            if (clusteringBuffer(a, b - 1) == ACTIVE) {
+              candidates.push({a, b - 1});
+              subCluster.push(a, b - 1);
+              clusteringBuffer(a, b - 1) = static_cast<uint16_t>(ID);
+            }
+          }
+          if (b < B - 1) {
+            if (clusteringBuffer(a, b + 1) == ACTIVE) {
+              candidates.push({a, b + 1});
+              subCluster.push(a, b + 1);
+              clusteringBuffer(a, b + 1) = static_cast<uint16_t>(ID);
+            }
+          }
+          candidates.pop();
+        }
+        clusterList.push_back(subCluster);
+        clustered += subCluster.getFilling();
+      };
+
+      // left side
+      if (j_left != 0) {
+        for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+          if (clusteringBuffer(i_unit, j_left - 1) == ACTIVE) {
+            subClusterId = subClusterId + 1;
+            candidates.push({i_unit, j_left - 1});
+            subRegionGrowing(subClusterId);
+          }
+        }
+      }
+      // right side
+      if (j_right != B - 1) {
+        for (int i_unit = i_top; i_unit <= i_bottom; i_unit++) {
+          if (clusteringBuffer(i_unit, j_right + 1) == ACTIVE) {
+            subClusterId = subClusterId + 1;
+            candidates.push({i_unit, j_right + 1});
+            subRegionGrowing(subClusterId);
+          }
+        }
+      }
+      // bottom side
+      if (i_bottom != A - 1) {
+        for (int j_unit = j_left; j_unit <= j_right; j_unit++) {
+          if (clusteringBuffer(i_bottom + 1, j_unit) == ACTIVE) {
+            subClusterId = subClusterId + 1;
+            candidates.push({i_bottom + 1, j_unit});
+            subRegionGrowing(subClusterId);
+          }
+        }
+      }
+      if (!isBasicView) {
+        for (int i_inter = i_top; i_inter <= i_bottom; i_inter++) {
+          for (int j_inter = j_left; j_inter <= j_right; j_inter++) {
+            if (clusteringBuffer(i_inter, j_inter) == ACTIVE) {
+              clusteringBuffer(i_inter, j_inter) = static_cast<uint16_t>(clusterId);
+            }
+          }
+        }
+      }
+      // Patch Merging END
+    }
+
     // Update seed & compute # Active Pixels In Patch
     auto prevIter = iter_seed;
     iter_seed = find_if(iter_seed + 1, activeList.end(),
@@ -627,7 +739,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
     cluster.numActivePixels_ = counter;
 
     // Updating output
-    if (shouldNotBeSplit) {
+    if (isBasicView) {
       if (!clusterList.empty()) {
         clusterList[0] = Cluster::merge(clusterList[0], cluster);
       } else {
@@ -639,7 +751,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
       clustered += cluster.getFilling();
 
       clusterList.push_back(cluster);
-      clusterId++;
+      clusterId = subClusterId + 1; // Patch Merging
     }
   }
 

@@ -99,8 +99,8 @@ public:
   auto quantizeNormDisp(const Common::Mat<float> &matrix, uint16_t minLevel) const -> DepthFrame;
 
 private:
-  const float m_normDispLow;
-  const float m_normDispHigh;
+  const float m_normDispLow{};
+  const float m_normDispHigh{};
   uint16_t m_depthStart{};
   uint16_t m_depthEnd{UINT16_MAX};
 };

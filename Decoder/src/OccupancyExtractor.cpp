@@ -102,16 +102,16 @@ void writeGeometry(const std::string &path, const Common::Depth10Frame &frame, i
 
 OccupancyExtractor::OccupancyExtractor(const Json & /*rootNode*/, const Json &componentNode) {}
 
-void OccupancyExtractor::extract(MivBitstream::AccessUnit &frame) const {
+void OccupancyExtractor::extract(AccessUnit &frame) const {
   bool explicitOccupancyMode = false;
-  for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++)
-    if (frame.vps->vps_occupancy_video_present_flag(i))
+  for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++)
+    if (frame.vps.vps_occupancy_video_present_flag(i))
       explicitOccupancyMode = true;
 
-  for (auto i = 0; i <= frame.vps->vps_atlas_count_minus1(); i++) {
+  for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++) {
     auto &atlas = frame.atlas[i];
     atlas.occFrame = Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
-    if (!frame.vps->vps_occupancy_video_present_flag(i)) {
+    if (!frame.vps.vps_occupancy_video_present_flag(i)) {
       atlas.occFrame.fillOne();
       if (!explicitOccupancyMode) {
         // embedded occupancy case: Implementation assumes geoFrame (full size depth) is available
@@ -122,7 +122,7 @@ void OccupancyExtractor::extract(MivBitstream::AccessUnit &frame) const {
               continue;
             const auto &patchParams = atlas.patchParamsList[patchId];
             const auto &viewParams =
-                atlas.viewParamsList[atlas.patchParamsList[patchId].pduViewId()];
+                frame.viewParamsList[atlas.patchParamsList[patchId].pduViewId()];
             const auto occupancyTransform = OccupancyTransform{viewParams, patchParams};
 
             if (!occupancyTransform.occupant(atlas.geoFrame.getPlane(0)(y, x)))
@@ -131,7 +131,7 @@ void OccupancyExtractor::extract(MivBitstream::AccessUnit &frame) const {
       }
     } else {
       // Account for padding in case done to the coded occupancy video
-      Vec2i decOccSize = atlas.decOccFrameSize(*frame.vps);
+      Vec2i decOccSize = atlas.decOccFrameSize(frame.vps);
       int occScaleX = ceil((float)atlas.occFrame.getWidth() / (float)decOccSize[0]);
       int origWidth = atlas.occFrame.getWidth() / occScaleX;
       int occScaleY = ceil((float)atlas.occFrame.getHeight() / (float)decOccSize[1]);

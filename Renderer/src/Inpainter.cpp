@@ -52,7 +52,6 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
                            int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/,
                            const Mat<int> &nonEmptyNeighbor1, const Mat<int> &nonEmptyNeighbor2,
                            const Mat<int> &mapERP2Cassini = Mat<int>()) {
-
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
@@ -63,7 +62,6 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
 
   for (int h = 0, pp = 0; h < height; h++) {
     for (int w = 0; w < width; w++, pp++) {
-
       if (D(h, w) != 0) {
         continue;
       }
@@ -106,7 +104,6 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
 
       if (nonEmptyNeighbor1(h0, w0) != -1) {
         if (nonEmptyNeighbor2(h0, w0) != -1) {
-
           float farthestDepth = D(h1, w1) < D(h2, w2) ? D(h1, w1) : D(h2, w2);
           if (D(h1, w1) - farthestDepth <= DepthBlendingThreshold) {
             use1 = true;
@@ -168,7 +165,6 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
 }
 
 template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
-
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
@@ -193,7 +189,6 @@ template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
 template <typename YUVD>
 void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold,
                                 const double &fullOmniRangePercentage) {
-
   auto &Y = yuvd.first.getPlane(0);
   auto &D = yuvd.second.getPlane(0);
 
@@ -267,7 +262,6 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
 
   for (int h = 0; h < height; h++) {
     for (int w = 0; w < width; w++) {
-
       nonEmptyNeighborL(h, w) = mapCassini2ERP(h, w);
       if (isHole(h, w)) {
         if (w > 0) {
@@ -284,7 +278,6 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
 
   for (int h = height - 1; h >= 0; h--) {
     for (int w = width - 1; w >= 0; w--) {
-
       nonEmptyNeighborR(h, w) = mapCassini2ERP(h, w);
       if (isHole(h, w)) {
         if (w < width - 1) {
@@ -305,7 +298,6 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
 
 template <typename YUVD>
 void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
-
   auto &D = yuvd.second.getPlane(0);
 
   const int width = int(D.width());
@@ -327,7 +319,6 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
   for (int h = 0; h < height; h++) {
     for (int w = 0; w < width; w++) {
-
       nonEmptyNeighborL(h, w) = w;
 
       if (D(h, w) == 0) {
@@ -345,7 +336,6 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
   for (int h = height - 1; h >= 0; h--) {
     for (int w = width - 1; w >= 0; w--) {
-
       nonEmptyNeighborR(h, w) = w;
 
       if (D(h, w) == 0) {
@@ -367,7 +357,6 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
   for (int h = 0; h < height; h++) {
     for (int w = 0; w < width; w++) {
-
       nonEmptyNeighborT(h, w) = h;
 
       if (D(h, w) == 0) {
@@ -385,7 +374,6 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
   for (int h = height - 1; h >= 0; h--) {
     for (int w = width - 1; w >= 0; w--) {
-
       nonEmptyNeighborB(h, w) = h;
 
       if (D(h, w) == 0) {

@@ -31,7 +31,8 @@
         "Packer": {
             "MinPatchSize": 16,
             "Overlap": 1,
-            "PiP": 1
+            "PiP": 1,
+            "enableMerging": true
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",
@@ -54,7 +55,7 @@
         "v10",
         "v11"
     ],
-    "SourceCameraParameters": "TechnicolorMuseum.json",
+    "SourceCameraParameters": "Museum.json",
     "SourceGeometryBitDepth": 16,
     "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",

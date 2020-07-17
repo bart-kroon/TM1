@@ -110,7 +110,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
   x.frameRate = sequenceConfig.require("Fps").asDouble();
 
   if (config.require("OmafV1CompatibleFlag").asBool()) {
-    x.aame().aame_omaf_v1_compatible_flag(true);
+    x.aaps.aaps_miv_extension_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(true);
   }
   return x;
 }
@@ -118,8 +118,12 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
 namespace {
 auto loadSourceTexture(const Json &config, const Vec2i &size, const string &viewName,
                        int frameIndex) {
-  return readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex, size,
-                              viewName);
+  auto frame = readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex,
+                                    size, viewName);
+  if (frame.empty()) {
+    throw runtime_error("Failed to read source texture frame");
+  }
+  return frame;
 }
 
 template <typename FORMAT>
@@ -129,6 +133,9 @@ auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const str
 
   const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceGeometryPathFmt",
                                        frameIndex, size, viewName);
+  if (depth.empty()) {
+    throw runtime_error("Failed to read source geometry frame");
+  }
 
   transform(begin(depth.getPlane(0)), end(depth.getPlane(0)), begin(depth16.getPlane(0)),
             [bits](unsigned x) {
@@ -162,6 +169,9 @@ auto loadSourceEntities_(const Json &config, const Vec2i size, const string &vie
 
   const auto entities = readFrame<FORMAT>(config, "SourceDirectory", "SourceEntityPathFmt",
                                           frameIndex, size, viewName);
+  if (entities.empty()) {
+    throw runtime_error("Failed to read source entities frame");
+  }
 
   copy(entities.getPlane(0).begin(), entities.getPlane(0).end(), entities16.getPlane(0).begin());
 
@@ -215,7 +225,7 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   }
 }
 
-void saveBlockToPatchMaps(const Json &config, int frameIndex, const AccessUnit &frame) {
+void saveBlockToPatchMaps(const Json &config, int frameIndex, const Decoder::AccessUnit &frame) {
   for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
     writeFrame(config, "AtlasPatchOccupancyMapFmt", frame.atlas[atlasId].blockToPatchMap,
                frameIndex, int(atlasId));
@@ -262,7 +272,6 @@ auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
   while (getline(stream, line)) {
     smatch match;
     if (!trailing_empty_lines && regex_match(line, match, re_row)) {
-
       if (currentFrameIndex == frameIndex) {
         return {Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
                 Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};

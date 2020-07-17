@@ -44,15 +44,14 @@ public:
   explicit IvMetadataWriter(const Common::Json &config);
 
   void writeIvSequenceParams(const MivBitstream::IvSequenceParams &);
-  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &, int intraPeriodFrameCount);
-  void reportSummary(std::ostream &) const;
+  void writeIvAccessUnitParams(const MivBitstream::IvAccessUnitParams &);
+  void reportSummary(std::ostream &out, int32_t numberOfFrames) const;
 
 private:
   std::ofstream m_stream;
   std::unique_ptr<Encoder::MivEncoder> m_encoder;
 
   double m_frameRate{};
-  int m_frameCount{};
   std::streampos m_bytesWritten{};
 };
 } // namespace TMIV::Encoder

@@ -523,6 +523,10 @@ auto operator<<(ostream &stream, const VpsMivExtension &x) -> ostream & {
          << '\n';
   stream << "vme_num_groups_minus1=" << x.vme_num_groups_minus1() << '\n';
   stream << "vme_max_entities_minus1=" << x.vme_max_entities_minus1() << '\n';
+  stream << "vme_embedded_occupancy_flag=" << boolalpha << x.vme_embedded_occupancy_flag() << '\n';
+  if (!x.vme_embedded_occupancy_flag())
+    stream << "vme_occupancy_scale_enabled_flag=" << boolalpha
+           << x.vme_occupancy_scale_enabled_flag() << '\n';
   if (x.vme_vui_params_present_flag()) {
     stream << x.miv_vui_parameters();
   }
@@ -535,6 +539,9 @@ auto VpsMivExtension::decodeFrom(InputBitstream &bitstream) -> VpsMivExtension {
   x.vme_geometry_scale_enabled_flag(bitstream.getFlag());
   x.vme_num_groups_minus1(bitstream.getUExpGolomb<unsigned>());
   x.vme_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
+  x.vme_embedded_occupancy_flag(bitstream.getFlag());
+  if (!x.vme_embedded_occupancy_flag())
+    x.vme_occupancy_scale_enabled_flag(bitstream.getFlag());
   x.vme_vui_params_present_flag(bitstream.getFlag());
   if (x.vme_vui_params_present_flag()) {
     x.miv_vui_parameters(MivVuiParams::decodeFrom(bitstream));
@@ -547,6 +554,9 @@ void VpsMivExtension::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
   bitstream.putUExpGolomb(vme_num_groups_minus1());
   bitstream.putUExpGolomb(vme_max_entities_minus1());
+  bitstream.putFlag(vme_embedded_occupancy_flag());
+  if (!vme_embedded_occupancy_flag())
+    bitstream.putFlag(vme_occupancy_scale_enabled_flag());
   bitstream.putFlag(vme_vui_params_present_flag());
   if (vme_vui_params_present_flag()) {
     miv_vui_parameters().encodeTo(bitstream);

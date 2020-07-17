@@ -33,6 +33,7 @@
 
 #include <TMIV/MivBitstream/VuiParameters.h>
 
+#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/verify.h>
 
 using namespace std;
@@ -97,12 +98,6 @@ auto VuiParameters::vui_hrd_parameters_present_flag() const noexcept -> bool {
   VERIFY_V3CBITSTREAM(vui_timing_info_present_flag());
   VERIFY_V3CBITSTREAM(m_vui_hrd_parameters_present_flag.has_value());
   return *m_vui_hrd_parameters_present_flag;
-}
-
-auto VuiParameters::hrd_parameters() const noexcept -> const HrdParameters & {
-  VERIFY_V3CBITSTREAM(vui_hrd_parameters_present_flag());
-  VERIFY_V3CBITSTREAM(m_hrd_parameters.has_value());
-  return *m_hrd_parameters;
 }
 
 auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag() const noexcept -> bool {
@@ -186,14 +181,6 @@ auto VuiParameters::vui_hrd_parameters_present_flag(bool value) noexcept -> VuiP
   return *this;
 }
 
-auto VuiParameters::hrd_parameters() noexcept -> HrdParameters & {
-  VERIFY_V3CBITSTREAM(vui_hrd_parameters_present_flag());
-  if (!m_hrd_parameters) {
-    m_hrd_parameters = HrdParameters{};
-  }
-  return *m_hrd_parameters;
-}
-
 auto VuiParameters::vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept
     -> VuiParameters & {
   VERIFY_V3CBITSTREAM(vui_bitstream_restriction_present_flag());
@@ -264,10 +251,13 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
     stream << "vui_time_scale=" << x.vui_time_scale() << '\n';
     stream << "vui_poc_proportional_to_timing_flag=" << boolalpha
            << x.vui_poc_proportional_to_timing_flag() << '\n';
-    stream << "vui_num_ticks_poc_diff_one_minus1=" << x.vui_num_ticks_poc_diff_one_minus1() << '\n';
+    if (x.vui_poc_proportional_to_timing_flag()) {
+      stream << "vui_num_ticks_poc_diff_one_minus1=" << x.vui_num_ticks_poc_diff_one_minus1()
+             << '\n';
+    }
     stream << "vui_hrd_parameters_present_flag=" << boolalpha << x.vui_hrd_parameters_present_flag()
            << '\n';
-    stream << "hrd_parameters=" << x.hrd_parameters() << '\n';
+    LIMITATION(!x.vui_hrd_parameters_present_flag());
   }
 
   stream << "vui_bitstream_restriction_present_flag=" << boolalpha
@@ -286,7 +276,7 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
   stream << "vui_coordinate_system_parameters_present_flag=" << boolalpha
          << x.vui_coordinate_system_parameters_present_flag() << '\n';
   if (x.vui_coordinate_system_parameters_present_flag()) {
-    stream << "coordinate_system_parameters=" << x.coordinate_system_parameters() << '\n';
+    stream << x.coordinate_system_parameters();
   }
 
   stream << "vui_unit_in_metres_flag=" << boolalpha << x.vui_unit_in_metres_flag() << '\n';
@@ -321,12 +311,13 @@ auto VuiParameters::operator==(const VuiParameters &other) const noexcept -> boo
     return false;
   }
 
+  LIMITATION(!vui_timing_info_present_flag() || !vui_hrd_parameters_present_flag());
+
   if (vui_timing_info_present_flag() &&
       (vui_num_units_in_tick() != other.vui_num_units_in_tick() ||
        vui_time_scale() != other.vui_time_scale() ||
        vui_poc_proportional_to_timing_flag() != other.vui_poc_proportional_to_timing_flag() ||
-       vui_hrd_parameters_present_flag() != other.vui_hrd_parameters_present_flag() ||
-       hrd_parameters() != other.hrd_parameters())) {
+       vui_hrd_parameters_present_flag() != other.vui_hrd_parameters_present_flag())) {
     return false;
   }
 
@@ -386,6 +377,8 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
     if (x.vui_poc_proportional_to_timing_flag()) {
       x.vui_num_ticks_poc_diff_one_minus1(bitstream.getUExpGolomb<uint32_t>());
     }
+    x.vui_hrd_parameters_present_flag(bitstream.getFlag());
+    LIMITATION(!x.vui_hrd_parameters_present_flag());
   }
 
   x.vui_bitstream_restriction_present_flag(bitstream.getFlag());
@@ -408,16 +401,17 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
     VERIFY_MIVBITSTREAM(asps != nullptr);
     for (int d = 0; d < 3; ++d) {
       x.vui_display_box_origin(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1()));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
       x.vui_display_box_size(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1()));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
     }
   }
 
   x.vui_anchor_point_present_flag(bitstream.getFlag());
   if (x.vui_anchor_point_present_flag()) {
     for (int d = 0; d < 3; ++d) {
-      x.vui_anchor_point(d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1()));
+      x.vui_anchor_point(
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
     }
   }
 
@@ -435,7 +429,7 @@ void VuiParameters::encodeTo(Common::OutputBitstream &bitstream,
       bitstream.putUExpGolomb(vui_num_ticks_poc_diff_one_minus1());
     }
     bitstream.putFlag(vui_hrd_parameters_present_flag());
-    hrd_parameters().encodeTo(bitstream);
+    LIMITATION(!vui_hrd_parameters_present_flag());
   }
 
   bitstream.putFlag(vui_bitstream_restriction_present_flag());
@@ -462,6 +456,7 @@ void VuiParameters::encodeTo(Common::OutputBitstream &bitstream,
     }
   }
 
+  bitstream.putFlag(vui_anchor_point_present_flag());
   if (vui_anchor_point_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr); // ASPS parsing dependency
     for (int d = 0; d < 3; ++d) {

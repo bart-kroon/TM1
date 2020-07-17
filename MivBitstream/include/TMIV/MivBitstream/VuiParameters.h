@@ -34,7 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_VUIPARAMETERS_H_
 #define _TMIV_MIVBITSTREAM_VUIPARAMETERS_H_
 
-#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
+#include <TMIV/Common/Bitstream.h>
 
 #include <array>
 #include <optional>
@@ -75,20 +75,12 @@ private:
   bool m_cas_up_sign{true};
 };
 
-// 23090-5: hrd_parameters( )
-class HrdParameters {
-public:
-  friend auto operator<<(std::ostream &stream, const HrdParameters &x) -> std::ostream &;
+class AtlasSequenceParameterSetRBSP;
 
-  constexpr auto operator==(const HrdParameters &other) const noexcept;
-  constexpr auto operator!=(const HrdParameters &other) const noexcept;
-
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> HrdParameters;
-
-  void encodeTo(Common::OutputBitstream &bitstream) const;
-};
-
-// 23090-5: miv_vui_params()
+// 23090-5: vui_parameters()
+//
+// Limitations:
+//  * vui_hrd_parameters_present_flag = 0
 class VuiParameters {
 public:
   constexpr auto vui_timing_info_present_flag() const noexcept;
@@ -97,7 +89,6 @@ public:
   auto vui_poc_proportional_to_timing_flag() const noexcept -> bool;
   auto vui_num_ticks_poc_diff_one_minus1() const noexcept -> std::uint32_t;
   auto vui_hrd_parameters_present_flag() const noexcept -> bool;
-  auto hrd_parameters() const noexcept -> const HrdParameters &;
 
   constexpr auto vui_bitstream_restriction_present_flag() const noexcept;
   auto vui_tiles_fixed_structure_for_atlas_flag() const noexcept -> bool;
@@ -123,7 +114,6 @@ public:
   auto vui_poc_proportional_to_timing_flag(bool value) noexcept -> VuiParameters &;
   auto vui_num_ticks_poc_diff_one_minus1(std::uint32_t value) noexcept -> VuiParameters &;
   auto vui_hrd_parameters_present_flag(bool value) noexcept -> VuiParameters &;
-  [[nodiscard]] auto hrd_parameters() noexcept -> HrdParameters &;
 
   constexpr auto vui_bitstream_restriction_present_flag(bool value) noexcept -> auto &;
   auto vui_tiles_fixed_structure_for_atlas_flag(bool value) noexcept -> VuiParameters &;
@@ -162,7 +152,6 @@ private:
   std::optional<bool> m_vui_poc_proportional_to_timing_flag;
   std::optional<std::uint32_t> m_vui_num_ticks_poc_diff_one_minus1;
   std::optional<bool> m_vui_hrd_parameters_present_flag;
-  std::optional<HrdParameters> m_hrd_parameters;
 
   bool m_vui_bitstream_restriction_present_flag{};
   std::optional<bool> m_vui_tiles_fixed_structure_for_atlas_flag;

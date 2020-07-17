@@ -537,7 +537,7 @@ auto VpsMivExtension::decodeFrom(InputBitstream &bitstream) -> VpsMivExtension {
   x.vme_max_entities_minus1(bitstream.getUExpGolomb<unsigned>());
   x.vme_vui_params_present_flag(bitstream.getFlag());
   if (x.vme_vui_params_present_flag()) {
-    x.vui_parameters(VuiParameters::decodeFrom(bitstream));
+    x.vui_parameters(VuiParameters::decodeFrom(bitstream, nullptr));
   }
   return x;
 }
@@ -549,7 +549,7 @@ void VpsMivExtension::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(vme_max_entities_minus1());
   bitstream.putFlag(vme_vui_params_present_flag());
   if (vme_vui_params_present_flag()) {
-    vui_parameters().encodeTo(bitstream);
+    vui_parameters().encodeTo(bitstream, nullptr);
   }
 }
 

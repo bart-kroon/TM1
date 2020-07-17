@@ -220,6 +220,7 @@ class MivViewParamsList {
 public:
   [[nodiscard]] auto mvp_num_views_minus1() const noexcept -> std::uint16_t;
 
+  [[nodiscard]] auto mvp_view_enabled_present_flag() const noexcept -> bool;
   [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx,
                                                     std::uint16_t viewIdx) const noexcept -> bool;
   [[nodiscard]] auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx,
@@ -248,8 +249,13 @@ public:
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(std::uint16_t value) noexcept -> MivViewParamsList &;
 
+  auto mvp_view_enabled_present_flag(bool value) noexcept -> MivViewParamsList &;
+
+  // Sets mvp_view_enabled_in_atlas_flag[ a ][ i ] and also enables mvp_view_enabled_present_flag
+  // for convenience
   auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx,
                                       bool value) noexcept -> MivViewParamsList &;
+
   auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx,
                                        bool value) noexcept -> MivViewParamsList &;
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
@@ -287,6 +293,7 @@ private:
     constexpr auto operator==(const ViewInAtlas &other) const noexcept;
     constexpr auto operator!=(const ViewInAtlas &other) const noexcept;
   };
+  bool m_mvp_view_enabled_present_flag{};
   std::vector<std::vector<ViewInAtlas>> m_viewInAtlas;
   bool m_mvp_explicit_view_id_flag{};
   std::vector<std::uint16_t> m_mvp_view_id;

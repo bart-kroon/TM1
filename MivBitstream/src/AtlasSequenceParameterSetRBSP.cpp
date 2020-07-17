@@ -147,7 +147,8 @@ auto operator<<(ostream &stream, const AspsMivExtension &x) -> ostream & {
 auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
     -> AspsMivExtension {
   auto x = AspsMivExtension{};
-  x.asme_group_id(bitstream.getUVar<unsigned>(vps.vps_miv_extension().vme_num_groups_minus1() + 1));
+  x.asme_group_id(
+      bitstream.getUVar<unsigned>(vps.vps_miv_extension().vme_num_groups_minus1() + uint64_t(1)));
   x.asme_auxiliary_atlas_flag(bitstream.getFlag());
   x.asme_depth_occ_threshold_flag(bitstream.getFlag());
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
@@ -158,7 +159,7 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterS
 }
 
 void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
-  bitstream.putUVar(asme_group_id(), vps.vps_miv_extension().vme_num_groups_minus1() + 1);
+  bitstream.putUVar(asme_group_id(), vps.vps_miv_extension().vme_num_groups_minus1() + uint64_t(1));
   bitstream.putFlag(asme_auxiliary_atlas_flag());
   bitstream.putFlag(asme_depth_occ_threshold_flag());
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
@@ -286,6 +287,10 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
          << '\n';
   stream << "asps_frame_width=" << x.asps_frame_width() << '\n';
   stream << "asps_frame_height=" << x.asps_frame_height() << '\n';
+  stream << "asps_geometry_3d_bitdepth_minus1=" << int(x.asps_geometry_3d_bitdepth_minus1())
+         << '\n';
+  stream << "asps_geometry_2d_bitdepth_minus1=" << int(x.asps_geometry_2d_bitdepth_minus1())
+         << '\n';
   stream << "asps_log2_max_atlas_frame_order_cnt_lsb_minus4="
          << int(x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4()) << '\n';
   stream << "asps_max_dec_atlas_frame_buffering_minus1="
@@ -349,6 +354,8 @@ auto AtlasSequenceParameterSetRBSP::operator==(
   if (asps_atlas_sequence_parameter_set_id() != other.asps_atlas_sequence_parameter_set_id() ||
       asps_frame_width() != other.asps_frame_width() ||
       asps_frame_height() != other.asps_frame_height() ||
+      asps_geometry_3d_bitdepth_minus1() != other.asps_geometry_3d_bitdepth_minus1() ||
+      asps_geometry_2d_bitdepth_minus1() != other.asps_geometry_2d_bitdepth_minus1() ||
       asps_log2_max_atlas_frame_order_cnt_lsb_minus4() !=
           other.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() ||
       asps_max_dec_atlas_frame_buffering_minus1() !=
@@ -422,6 +429,9 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const V3cUnitHea
 
   x.asps_frame_height(bitstream.getUint16());
   VERIFY_V3CBITSTREAM(vps.vps_frame_height(atlasIdx) == x.asps_frame_height());
+
+  x.asps_geometry_3d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
+  x.asps_geometry_2d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
 
   x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_V3CBITSTREAM(x.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() <= 12);
@@ -509,6 +519,9 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const V3cUnitHeade
 
   VERIFY_V3CBITSTREAM(asps_frame_height() == vps.vps_frame_height(atlasIdx));
   bitstream.putUint16(asps_frame_height());
+
+  bitstream.writeBits(asps_geometry_3d_bitdepth_minus1(), 5);
+  bitstream.writeBits(asps_geometry_2d_bitdepth_minus1(), 5);
 
   VERIFY_V3CBITSTREAM(asps_log2_max_atlas_frame_order_cnt_lsb_minus4() <= 12);
   bitstream.putUExpGolomb(asps_log2_max_atlas_frame_order_cnt_lsb_minus4());

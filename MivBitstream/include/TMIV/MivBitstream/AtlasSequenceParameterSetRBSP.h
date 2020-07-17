@@ -149,6 +149,8 @@ public:
   [[nodiscard]] constexpr auto asps_atlas_sequence_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto asps_frame_width() const noexcept;
   [[nodiscard]] constexpr auto asps_frame_height() const noexcept;
+  [[nodiscard]] constexpr auto asps_geometry_3d_bitdepth_minus1() const noexcept;
+  [[nodiscard]] constexpr auto asps_geometry_2d_bitdepth_minus1() const noexcept;
   [[nodiscard]] constexpr auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4() const noexcept;
   [[nodiscard]] constexpr auto asps_max_dec_atlas_frame_buffering_minus1() const noexcept;
   [[nodiscard]] constexpr auto asps_long_term_ref_atlas_frames_flag() const noexcept;
@@ -179,6 +181,8 @@ public:
   constexpr auto asps_atlas_sequence_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto asps_frame_width(const std::uint16_t value) noexcept -> auto &;
   constexpr auto asps_frame_height(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asps_geometry_3d_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto asps_geometry_2d_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
   auto asps_log2_max_atlas_frame_order_cnt_lsb_minus4(const std::uint8_t value) noexcept
       -> AtlasSequenceParameterSetRBSP &;
   constexpr auto asps_max_dec_atlas_frame_buffering_minus1(const std::uint8_t value) noexcept
@@ -228,6 +232,8 @@ private:
   std::uint8_t m_asps_atlas_sequence_parameter_set_id{};
   std::uint16_t m_asps_frame_width{};
   std::uint16_t m_asps_frame_height{};
+  std::uint8_t m_asps_geometry_3d_bitdepth_minus1{};
+  std::uint8_t m_asps_geometry_2d_bitdepth_minus1{};
   std::uint8_t m_asps_log2_patch_packing_block_size{};
   std::uint8_t m_asps_log2_max_atlas_frame_order_cnt_lsb_minus4{};
   std::size_t m_asps_max_dec_atlas_frame_buffering_minus1{};

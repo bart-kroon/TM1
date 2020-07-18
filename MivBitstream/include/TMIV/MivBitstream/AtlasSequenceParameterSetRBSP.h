@@ -109,12 +109,16 @@ public:
   [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
   [[nodiscard]] auto asme_geometry_scale_factor_x_minus1() const noexcept -> uint16_t;
   [[nodiscard]] auto asme_geometry_scale_factor_y_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto asme_occupancy_scale_factor_x_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] auto asme_occupancy_scale_factor_y_minus1() const noexcept -> uint16_t;
 
   constexpr auto asme_group_id(const unsigned value) noexcept -> auto &;
   constexpr auto asme_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
   constexpr auto asme_depth_occ_threshold_flag(const bool value) noexcept -> auto &;
   constexpr auto asme_geometry_scale_factor_x_minus1(const std::uint16_t value) noexcept -> auto &;
   constexpr auto asme_geometry_scale_factor_y_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_occupancy_scale_factor_x_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_occupancy_scale_factor_y_minus1(const std::uint16_t value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsMivExtension &) -> std::ostream &;
 
@@ -132,6 +136,8 @@ private:
   bool m_asme_depth_occ_map_threshold_flag{};
   std::optional<std::uint16_t> m_asme_geometry_scale_factor_x_minus1;
   std::optional<std::uint16_t> m_asme_geometry_scale_factor_y_minus1;
+  std::optional<std::uint16_t> m_asme_occupancy_scale_factor_x_minus1;
+  std::optional<std::uint16_t> m_asme_occupancy_scale_factor_y_minus1;
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp( )

@@ -78,7 +78,11 @@ private:
   MivBitstream::IvSequenceParams m_outSequenceParams;
   MivBitstream::IvAccessUnitParams m_accessUnitParams;
   std::vector<bool> m_isAtlasCompleteFlag{};
+  Common::Vec2i m_occupancyScale;
+  bool m_occupancyScaleConfig;
   bool m_depthLowQualityFlag;
+  bool m_embeddedOccupancyFlag;
+  bool m_occupancyScaleEnabledFlag;
 };
 } // namespace TMIV::GeometryQuantizer
 

@@ -49,6 +49,11 @@ ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &compon
       m_isAtlasCompleteFlag.push_back(subnode.at(i).asBool());
     }
   }
+  if (auto subnode = componentNode.optional("occupancyScale")) {
+    m_occupancyScaleConfig = true;
+    m_occupancyScale = subnode.asIntVector<2>();
+  }else
+    m_occupancyScaleConfig = false;
 }
 
 auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
@@ -63,13 +68,29 @@ auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams s
       m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
     else
       m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, true);
-  m_depthLowQualityFlag=m_outSequenceParams.vme().vme_depth_low_quality_flag();
+  m_depthLowQualityFlag = m_outSequenceParams.vme().vme_depth_low_quality_flag();
+
+  m_embeddedOccupancyFlag = m_outSequenceParams.vme().vme_embedded_occupancy_flag();
+  m_occupancyScaleEnabledFlag = m_outSequenceParams.vme().vme_occupancy_scale_enabled_flag();
   return m_outSequenceParams;
 }
 
 auto ExplicitOccupancy::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
     -> const MivBitstream::IvAccessUnitParams & {
   m_accessUnitParams = accessUnitParams;
+  if (!m_embeddedOccupancyFlag && m_occupancyScaleEnabledFlag) {
+    for (auto &atlas : m_accessUnitParams.atlas) {
+      if (m_occupancyScaleConfig) {
+        atlas.asme().asme_occupancy_scale_factor_x_minus1(m_occupancyScale[0]-1);
+        atlas.asme().asme_occupancy_scale_factor_y_minus1(m_occupancyScale[1]-1);
+      } else {
+        atlas.asme().asme_occupancy_scale_factor_x_minus1(
+            std::pow(2,atlas.asps.asps_log2_patch_packing_block_size())-1);
+        atlas.asme().asme_occupancy_scale_factor_y_minus1(
+            std::pow(2,atlas.asps.asps_log2_patch_packing_block_size())-1);
+      }
+    }
+  }
   return m_accessUnitParams;
 }
 
@@ -142,8 +163,8 @@ void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
           auto depth = depthAtlasMap.getPlane(0)(y, x);
-          yOcc = y >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
-          xOcc = x >> m_accessUnitParams.atlas[i].asps.asps_log2_patch_packing_block_size();
+          yOcc = y >> (m_accessUnitParams.atlas[i].asme().asme_geometry_scale_factor_y_minus1()+1);
+          xOcc = x >> (m_accessUnitParams.atlas[i].asme().asme_geometry_scale_factor_x_minus1()+1);
           if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
               (depth == 0 &&
                atlases[i].texture.getPlane(0)(y * depthScale[1], x * depthScale[0]) == 512)) {

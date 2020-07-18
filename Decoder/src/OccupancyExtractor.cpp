@@ -103,17 +103,12 @@ void writeGeometry(const std::string &path, const Common::Depth10Frame &frame, i
 OccupancyExtractor::OccupancyExtractor(const Json & /*rootNode*/, const Json &componentNode) {}
 
 void OccupancyExtractor::extract(AccessUnit &frame) const {
-  bool explicitOccupancyMode = false;
-  for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++)
-    if (frame.vps.vps_occupancy_video_present_flag(i))
-      explicitOccupancyMode = true;
-
   for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++) {
     auto &atlas = frame.atlas[i];
     atlas.occFrame = Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
     if (!frame.vps.vps_occupancy_video_present_flag(i)) {
       atlas.occFrame.fillOne();
-      if (!explicitOccupancyMode) {
+      if (frame.vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
         // embedded occupancy case: Implementation assumes geoFrame (full size depth) is available
         for (auto y = 0; y < atlas.frameSize().y(); y++)
           for (auto x = 0; x < atlas.frameSize().x(); x++) {

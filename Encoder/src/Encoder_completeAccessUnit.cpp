@@ -50,12 +50,14 @@ auto Encoder::completeAccessUnit() -> const IvAccessUnitParams & {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  m_ivau.patchParamsList = m_packer->pack(m_ivau.atlasSizes(), aggregatedMask, m_isBasicView, m_blockSize, m_alignment);
+  m_ivau.patchParamsList =
+      m_packer->pack(m_ivau.atlasSizes(), aggregatedMask, m_isBasicView, m_blockSize, m_alignment);
+
+  m_ivau=m_depthOccupancy->transformAccessUnitParams(m_ivau);
 
   constructVideoFrames();
 
-  return m_geometryDownscaler.transformAccessUnitParams(
-      m_depthOccupancy->transformAccessUnitParams(m_ivau));
+  return m_geometryDownscaler.transformAccessUnitParams(m_ivau);
 }
 
 void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {
@@ -78,15 +80,21 @@ void Encoder::constructVideoFrames() {
       const auto frameHeight = m_ivs.vps.vps_frame_height(i);
       TextureDepth16Frame frame;
       if (m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
-        int codedOccupancyWidth =
-            frameWidth >> m_ivau.atlas[i].asps.asps_log2_patch_packing_block_size();
-        int codedOccupancyHeight =
-            frameHeight >> m_ivau.atlas[i].asps.asps_log2_patch_packing_block_size();
-        // make sure coded occupancy maps are divisible by 2 for HM coding functionality
-        codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
-        codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
-        frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
-                 Occupancy10Frame(codedOccupancyWidth, codedOccupancyHeight)};
+        if (!m_ivs.vps.vps_miv_extension().vme_embedded_occupancy_flag() &&
+            m_ivs.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
+          int codedOccupancyWidth =
+              frameWidth / (m_ivau.atlas[i].asme().asme_occupancy_scale_factor_x_minus1() + 1);
+          int codedOccupancyHeight =
+              frameHeight / (m_ivau.atlas[i].asme().asme_occupancy_scale_factor_y_minus1() + 1);
+          // make sure coded occupancy maps are divisible by 2 for HM coding functionality
+          codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
+          codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
+          frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
+                   Occupancy10Frame(codedOccupancyWidth, codedOccupancyHeight)};
+        } else {
+          frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
+                   Occupancy10Frame(frameWidth, frameHeight)};
+        }
       } else
         frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
       frame.texture.fillNeutral();
@@ -155,12 +163,20 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patchParams.viewToAtlas(pView);
-
-          yOcc = pAtlas.y() >>
-                 m_ivau.atlas[patchParams.vuhAtlasId].asps.asps_log2_patch_packing_block_size();
-          xOcc = pAtlas.x() >>
-                 m_ivau.atlas[patchParams.vuhAtlasId].asps.asps_log2_patch_packing_block_size();
-
+          if (!m_ivs.vme().vme_embedded_occupancy_flag() &&
+              m_ivs.vme().vme_occupancy_scale_enabled_flag()) {
+            yOcc = pAtlas.y() / (m_ivau.atlas[patchParams.vuhAtlasId]
+                                     .asme()
+                                     .asme_occupancy_scale_factor_y_minus1() +
+                                 1);
+            xOcc = pAtlas.x() / (m_ivau.atlas[patchParams.vuhAtlasId]
+                                     .asme()
+                                     .asme_occupancy_scale_factor_x_minus1() +
+                                 1);
+          } else {
+            yOcc = pAtlas.y();
+            xOcc = pAtlas.x();
+          }
           if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
               pAtlas.y() >= textureAtlasMap.getHeight() ||
               pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||

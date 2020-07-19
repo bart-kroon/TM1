@@ -50,32 +50,22 @@ auto Encoder::scaleGeometryDynamicRange() -> void {
     int maxDepthMapValWithinGOP = 0;
 
     for (int f = 0; f < numOfFrames; f++) {
-      auto DM = m_transportViews[f][v].depth.getPlane(0);
-      int W = DM.width();
-      int H = DM.height();
-      for (int h = 0; h < H; h++) {
-        for (int w = 0; w < W; w++) {
-          if (DM(h, w) < minDepthMapValWithinGOP) {
-            minDepthMapValWithinGOP = DM(h, w);
-          }
-          if (DM(h, w) > maxDepthMapValWithinGOP) {
-            maxDepthMapValWithinGOP = DM(h, w);
-          }
+      for (const auto geometry : m_transportViews[f][v].depth.getPlane(0)) {
+        if (geometry < minDepthMapValWithinGOP) {
+          minDepthMapValWithinGOP = geometry;
+        }
+        if (geometry > maxDepthMapValWithinGOP) {
+          maxDepthMapValWithinGOP = geometry;
         }
       }
     }
 
     for (int f = 0; f < numOfFrames; f++) {
-      auto &DM = m_transportViews[f][v].depth.getPlane(0);
-      int W = DM.width();
-      int H = DM.height();
-      for (int h = 0; h < H; h++) {
-        for (int w = 0; w < W; w++) {
-          DM(h, w) = (DM(h, w) + 0.5 - minDepthMapValWithinGOP) /
-                     (maxDepthMapValWithinGOP - minDepthMapValWithinGOP) * 65535.0;
-          if (lowDepthQuality) {
-            DM(h, w) /= 2;
-          }
+      for (auto &geometry : m_transportViews[f][v].depth.getPlane(0)) {
+        geometry = (geometry + 0.5 - minDepthMapValWithinGOP) /
+                   (maxDepthMapValWithinGOP - minDepthMapValWithinGOP) * 65535.0;
+        if (lowDepthQuality) {
+          geometry /= 2;
         }
       }
     }
@@ -93,7 +83,7 @@ auto Encoder::scaleGeometryDynamicRange() -> void {
     m_params.viewParamsList[v].dq.dq_norm_disp_high(NDH);
     m_params.viewParamsList[v].dq.dq_norm_disp_low(NDL);
   }
-}
+} // namespace TMIV::Encoder
 
 auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_aggregator->completeAccessUnit();

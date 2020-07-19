@@ -40,7 +40,7 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-auto Encoder::scaleGeometryDynamicRange() -> void {
+void Encoder::scaleGeometryDynamicRange() {
   auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
   auto numOfFrames = m_transportViews.size();
   auto numOfViews = m_transportViews[0].size();

@@ -70,18 +70,20 @@ void Encoder::scaleGeometryDynamicRange() {
       }
     }
 
-    const double NDH_orig = m_params.norm_disp_high_orig[v];
-    const double NDL_orig = m_params.norm_disp_low_orig[v];
+    const double normDispHighOrig = m_params.norm_disp_high_orig[v];
+    const double normDispLowOrig = m_params.norm_disp_low_orig[v];
 
-    double NDH = maxDepthMapValWithinGOP / 65535.0 * (NDH_orig - NDL_orig) + NDL_orig;
-    const double NDL = minDepthMapValWithinGOP / 65535.0 * (NDH_orig - NDL_orig) + NDL_orig;
+    double normDispHigh =
+        maxDepthMapValWithinGOP / 65535.0 * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
+    const double normDispLow =
+        minDepthMapValWithinGOP / 65535.0 * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
 
     if (lowDepthQuality) {
-      NDH = 2 * NDH - NDL;
+      normDispHigh = 2 * normDispHigh - normDispLow;
     }
 
-    m_params.viewParamsList[v].dq.dq_norm_disp_high(float(NDH));
-    m_params.viewParamsList[v].dq.dq_norm_disp_low(float(NDL));
+    m_params.viewParamsList[v].dq.dq_norm_disp_high(float(normDispHigh));
+    m_params.viewParamsList[v].dq.dq_norm_disp_low(float(normDispLow));
   }
 } // namespace TMIV::Encoder
 

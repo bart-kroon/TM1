@@ -63,6 +63,14 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
   }
 
   for (uint8_t vai = 0; vai <= m_params.vps.vps_atlas_count_minus1(); ++vai) {
+    // Clause 7.4.5.3.2 of V-PCC DIS d85 [N19329]: AXPS regardless of atlas ID (and temporal ID)
+    // share the same value space for AXPS ID
+    auto &aau = m_params.atlas[vai];
+    aau.asps.asps_atlas_sequence_parameter_set_id(vai);
+    aau.afps.afps_atlas_frame_parameter_set_id(vai);
+    aau.afps.afps_atlas_sequence_parameter_set_id(vai);
+    aau.ath.ath_atlas_frame_parameter_set_id(vai);
+
     writeV3cUnit(VuhUnitType::V3C_AD, vai, atlasSubBitstream(vai));
   }
 

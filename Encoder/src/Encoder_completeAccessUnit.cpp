@@ -70,8 +70,8 @@ void Encoder::scaleGeometryDynamicRange() {
       }
     }
 
-    const double normDispHighOrig = m_params.norm_disp_high_orig[v];
-    const double normDispLowOrig = m_params.norm_disp_low_orig[v];
+    const double normDispHighOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_high();
+    const double normDispLowOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_low();
 
     double normDispHigh =
         maxDepthMapValWithinGOP / 65535.0 * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;

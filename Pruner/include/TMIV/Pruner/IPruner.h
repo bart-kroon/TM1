@@ -35,7 +35,7 @@
 #define _TMIV_PRUNER_IPRUNER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
 namespace TMIV::Pruner {
 class IPruner {
@@ -47,10 +47,8 @@ public:
   auto operator=(IPruner &&) -> IPruner & = default;
   virtual ~IPruner() = default;
 
-  virtual void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
-                                       const std::vector<bool> &isBasicView) = 0;
-  virtual auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
-                     const Common::MVD16Frame &views, const std::vector<bool> &isBasicView)
+  virtual void registerPruningRelation(MivBitstream::EncoderParams &params) = 0;
+  virtual auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
       -> Common::MaskList = 0;
 };
 } // namespace TMIV::Pruner

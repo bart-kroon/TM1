@@ -69,7 +69,7 @@ BasicViewAllocator::BasicViewAllocator(const Common::Json &rootNode,
 }
 
 auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
-  const auto viewCount = ivs().viewParamsList.size();
+  const auto viewCount = params().viewParamsList.size();
   const auto count = basicViewCount();
   VERIFY(0 < count && count <= viewCount);
 
@@ -80,7 +80,7 @@ auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
   auto centroids = selectInitialCentroids(cost, first, count);
   std::cout << "Initial centroids:";
   for (auto i : centroids) {
-    std::cout << ' ' << ivs().viewParamsList[i].name;
+    std::cout << ' ' << params().viewParamsList[i].name;
   }
   std::cout << " (cost: " << cost(centroids) << " m^-2)\n";
 
@@ -88,7 +88,7 @@ auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
     std::swap(*update, centroids);
     std::cout << "Updated centroids:";
     for (auto i : centroids) {
-      std::cout << ' ' << ivs().viewParamsList[i].name;
+      std::cout << ' ' << params().viewParamsList[i].name;
     }
     std::cout << " (cost: " << cost(centroids) << " m^-2)\n";
   }
@@ -123,20 +123,20 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
       }
     }
 
-    if (++count + m_minNonCodedViews >= ivs().viewParamsList.size()) {
+    if (++count + m_minNonCodedViews >= params().viewParamsList.size()) {
       std::cout << "Basic view count is limited by minimum non-coded view count.\n";
       break;
     }
   }
 
-  VERIFY(0 < count && count <= ivs().viewParamsList.size());
+  VERIFY(0 < count && count <= params().viewParamsList.size());
   return count;
 }
 
 auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vector<std::size_t> {
   auto result = std::vector<std::size_t>{};
-  result.reserve(ivs().viewParamsList.size());
-  transform(ivs().viewParamsList.cbegin(), ivs().viewParamsList.cend(), std::back_inserter(result),
+  result.reserve(params().viewParamsList.size());
+  transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(), std::back_inserter(result),
             [](const MivBitstream::ViewParams &vp) {
               return (vp.ci.ci_projection_plane_width_minus1() + 1) *
                      (vp.ci.ci_projection_plane_height_minus1() + 1);
@@ -146,8 +146,8 @@ auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vect
 }
 
 auto BasicViewAllocator::viewPositions() const -> std::vector<Common::Vec3d> {
-  auto result = std::vector<Common::Vec3d>(ivs().viewParamsList.size());
-  std::transform(ivs().viewParamsList.cbegin(), ivs().viewParamsList.cend(), result.begin(),
+  auto result = std::vector<Common::Vec3d>(params().viewParamsList.size());
+  std::transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(), result.begin(),
                  [](const MivBitstream::ViewParams &vp) { return vp.ce.position(); });
   return result;
 }
@@ -167,7 +167,7 @@ auto BasicViewAllocator::forwardView(const Positions &pos) const -> std::size_t 
                  [&target](const auto &p) { return Common::norm2(p - target); });
   const auto nearest = std::min_element(dist2.cbegin(), dist2.cend());
   const auto index = size_t(nearest - dist2.cbegin());
-  std::cout << "Forward central view is " << ivs().viewParamsList[index].name << ".\n";
+  std::cout << "Forward central view is " << params().viewParamsList[index].name << ".\n";
 
   return index;
 }

@@ -489,8 +489,8 @@ TEST_CASE("miv_view_params_update_intrinsics", "[Common Atlas Frame RBSP]") {
   auto x = MivViewParamsUpdateIntrinsics{};
 
   SECTION("Example 1: Test with 1 update.") {
-    x.mvpue_num_view_updates_minus1(0);
-    x.mvpue_view_idx(0, 6)
+    x.mvpui_num_view_updates_minus1(0);
+    x.mvpui_view_idx(0, 6)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::equirectangular)
         .ci_erp_phi_min(-2.F)
@@ -498,8 +498,8 @@ TEST_CASE("miv_view_params_update_intrinsics", "[Common Atlas Frame RBSP]") {
         .ci_erp_theta_min(-1.F)
         .ci_erp_theta_max(1.F);
 
-    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=0
-mvpue_view_idx[ 0 ]=6
+    REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=0
+mvpui_view_idx[ 0 ]=6
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
 ci_projection_plane_height_minus1[ 0 ]=0
@@ -512,15 +512,15 @@ ci_erp_theta_max[ 0 ]=1
   }
 
   SECTION("Example 1: Test with 2 updates.") {
-    x.mvpue_num_view_updates_minus1(1);
-    x.mvpue_view_idx(0, 3)
+    x.mvpui_num_view_updates_minus1(1);
+    x.mvpui_view_idx(0, 3)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::equirectangular)
         .ci_erp_phi_min(-90.F)
         .ci_erp_phi_max(90.F)
         .ci_erp_theta_min(-180.F)
         .ci_erp_theta_max(90.F);
-    x.mvpue_view_idx(1, 12)
+    x.mvpui_view_idx(1, 12)
         .camera_intrinsics(1)
         .ci_cam_type(CiCamType::orthographic)
         .ci_projection_plane_width_minus1(1023)
@@ -528,8 +528,8 @@ ci_erp_theta_max[ 0 ]=1
         .ci_ortho_width(100.F)
         .ci_ortho_height(50.F);
 
-    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=1
-mvpue_view_idx[ 0 ]=3
+    REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=1
+mvpui_view_idx[ 0 ]=3
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
 ci_projection_plane_height_minus1[ 0 ]=0
@@ -537,7 +537,7 @@ ci_erp_phi_min[ 0 ]=-90
 ci_erp_phi_max[ 0 ]=90
 ci_erp_theta_min[ 0 ]=-180
 ci_erp_theta_max[ 0 ]=90
-mvpue_view_idx[ 1 ]=12
+mvpui_view_idx[ 1 ]=12
 ci_cam_type[ 1 ]=orthographic
 ci_projection_plane_width_minus1[ 1 ]=1023
 ci_projection_plane_height_minus1[ 1 ]=767
@@ -545,5 +545,27 @@ ci_ortho_width[ 1 ]=100
 ci_ortho_height[ 1 ]=50
 )");
     REQUIRE(bitCodingTest(x, 320));
+  }
+}
+
+TEST_CASE("miv_view_params_update_depth_quantization", "[Common Atlas Frame RBSP]") {
+  auto x = MivViewParamsUpdateDepthQuantization{};
+
+  SECTION("Example 1: Test with 1 update.") {
+    x.mvpudq_num_view_updates_minus1(0);
+    x.mvpudq_view_idx(0, 6)
+        .depth_quantization(0)
+        .dq_depth_occ_map_threshold_default(64)
+        .dq_norm_disp_low(1.F)
+        .dq_norm_disp_high(100.F);
+
+    REQUIRE(toString(x) == R"(mvpudq_num_view_updates_minus1=0
+mvpudq_view_idx[ 0 ]=6
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=1
+dq_norm_disp_high[ 0 ]=100
+dq_depth_occ_map_threshold_default[ 0 ]=64
+)");
+    REQUIRE(bitCodingTest(x, 117));
   }
 }

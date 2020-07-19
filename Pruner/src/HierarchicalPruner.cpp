@@ -73,8 +73,7 @@ private:
   const int m_dilate{};
   const int m_maxBasicViewsPerGraph{};
   const AccumulatingPixel<Vec3f> m_config;
-  IvSequenceParams m_ivSequenceParams;
-  vector<bool> m_isBasicView;
+  EncoderParams m_params;
   vector<unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   vector<size_t> m_clusterIds;
   struct Cluster {
@@ -97,12 +96,12 @@ public:
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  void assignAdditionalViews(const Mat<float> &overlap, const vector<bool> &isBasicView,
+  void assignAdditionalViews(const Mat<float> &overlap, const ViewParamsList &viewParamsList,
                              size_t numClusters, vector<size_t> &clusterIds) {
-    const auto N = isBasicView.size();
+    const auto N = viewParamsList.size();
     auto numViewsPerCluster = vector<size_t>(numClusters, 0);
     for (size_t i = 0; i < N; ++i) {
-      if (isBasicView[i]) {
+      if (viewParamsList[i].isBasicView) {
         const auto c = clusterIds[i];
         ++numViewsPerCluster[c];
       }
@@ -115,9 +114,9 @@ public:
 
       for (size_t i = 0; i < N; ++i) {
         const auto c_i = clusterIds[i];
-        if (isBasicView[i]) {
+        if (viewParamsList[i].isBasicView) {
           for (size_t j = 0; j < N; ++j) {
-            if (!isBasicView[j] && clusterIds[j] == numClusters) {
+            if (!viewParamsList[j].isBasicView && clusterIds[j] == numClusters) {
               if (minCount > numViewsPerCluster[c_i] ||
                   (minCount == numViewsPerCluster[c_i] && maxOverlap < overlap(i, j))) {
                 minCount = numViewsPerCluster[c_i];
@@ -138,10 +137,9 @@ public:
     }
   }
 
-  auto scoreClustering(const Mat<float> &overlap, const vector<bool> &isBasicView,
-                       const vector<size_t> &clusterIds) -> double {
+  auto scoreClustering(const Mat<float> &overlap, const vector<size_t> &clusterIds) -> double {
     auto score = 0.;
-    const auto N = isBasicView.size();
+    const auto N = overlap.height();
 
     for (size_t i = 0; i < N; ++i) {
       for (size_t j = i + 1; j < N; ++j) {
@@ -153,12 +151,12 @@ public:
     return score;
   }
 
-  auto exhaustiveSearch(const Mat<float> &overlap, const vector<bool> &isBasicView)
+  auto exhaustiveSearch(const Mat<float> &overlap, const ViewParamsList &viewParamsList)
       -> vector<size_t> {
     auto basicViewIds = vector<size_t>{};
     auto haveAdditionalViews = false;
-    for (size_t i = 0; i < isBasicView.size(); ++i) {
-      if (isBasicView[i]) {
+    for (size_t i = 0; i < viewParamsList.size(); ++i) {
+      if (viewParamsList[i].isBasicView) {
         basicViewIds.push_back(i);
       } else {
         haveAdditionalViews = true;
@@ -167,7 +165,7 @@ public:
 
     if (!haveAdditionalViews) {
       // NOTE(BK): Avoid exhaustive search on R17 SB
-      return vector<size_t>(isBasicView.size(), 0);
+      return vector<size_t>(viewParamsList.size(), 0);
     }
 
     const size_t maxBasicViews = m_maxBasicViewsPerGraph;
@@ -179,7 +177,7 @@ public:
       numPermutations *= numClusters;
     }
 
-    auto clusterIds = vector<size_t>(isBasicView.size());
+    auto clusterIds = vector<size_t>(viewParamsList.size());
     auto numBasicViewsPerCluster = vector<size_t>(numClusters);
 
     auto bestScore = 0.;
@@ -200,8 +198,8 @@ public:
         }
       }
       if (valid) {
-        assignAdditionalViews(overlap, isBasicView, numClusters, clusterIds);
-        const auto score = scoreClustering(overlap, isBasicView, clusterIds);
+        assignAdditionalViews(overlap, viewParamsList, numClusters, clusterIds);
+        const auto score = scoreClustering(overlap, clusterIds);
 
         if (bestScore < score) {
           bestScore = score;
@@ -214,12 +212,12 @@ public:
     return bestClusterIds;
   }
 
-  void clusterViews(const Mat<float> &overlap, const vector<bool> &isBasicView) {
-    const auto clusterIds = exhaustiveSearch(overlap, isBasicView);
+  void clusterViews(const Mat<float> &overlap, const ViewParamsList &viewParamsList) {
+    const auto clusterIds = exhaustiveSearch(overlap, viewParamsList);
 
     m_clusters = vector<Cluster>(1 + *max_element(clusterIds.cbegin(), clusterIds.cend()));
     for (size_t i = 0; i < clusterIds.size(); ++i) {
-      if (isBasicView[i]) {
+      if (viewParamsList[i].isBasicView) {
         m_clusters[clusterIds[i]].basicViewId.push_back(i);
       } else {
         m_clusters[clusterIds[i]].additionalViewId.push_back(i);
@@ -273,14 +271,13 @@ public:
     }
   }
 
-  void registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
-                               const vector<bool> &isBasicView) {
-    auto &viewParamsList = ivSequenceParams.viewParamsList;
+  void registerPruningRelation(MivBitstream::EncoderParams &params) {
+    auto &viewParamsList = params.viewParamsList;
     ProjectionHelperList cameraHelperList{viewParamsList};
 
     // Create clusters and pruning order
     auto overlappingMatrix = computeOverlappingMatrix(cameraHelperList);
-    clusterViews(overlappingMatrix, isBasicView);
+    clusterViews(overlappingMatrix, viewParamsList);
     computePruningOrder(overlappingMatrix);
     printClusters(viewParamsList);
 
@@ -319,10 +316,8 @@ public:
     }
   }
 
-  auto prune(const MivBitstream::IvSequenceParams &ivSequenceParams, const MVD16Frame &views,
-             const vector<bool> &isBasicView) -> MaskList {
-    m_ivSequenceParams = ivSequenceParams;
-    m_isBasicView = isBasicView;
+  auto prune(const MivBitstream::EncoderParams &params, const MVD16Frame &views) -> MaskList {
+    m_params = params;
 
     prepareFrame(views);
     pruneFrame(views);
@@ -340,8 +335,8 @@ private:
   void createInitialMasks(const MVD16Frame &views) {
     m_masks.clear();
     m_masks.reserve(views.size());
-    transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
-              cbegin(views), back_inserter(m_masks),
+    transform(cbegin(m_params.viewParamsList), cend(m_params.viewParamsList), cbegin(views),
+              back_inserter(m_masks),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
                 auto mask = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
                                             viewParams.ci.projectionPlaneSize().y()};
@@ -356,8 +351,8 @@ private:
 
     m_status.clear();
     m_status.reserve(views.size());
-    transform(cbegin(m_ivSequenceParams.viewParamsList), cend(m_ivSequenceParams.viewParamsList),
-              cbegin(views), back_inserter(m_status),
+    transform(cbegin(m_params.viewParamsList), cend(m_params.viewParamsList), cbegin(views),
+              back_inserter(m_status),
               [](const ViewParams &viewParams, const TextureDepth16Frame &view) {
                 auto status = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
                                               viewParams.ci.projectionPlaneSize().y()};
@@ -373,11 +368,11 @@ private:
 
   void createSynthesizerPerPartialView(const MVD16Frame &views) {
     m_synthesizers.clear();
-    for (size_t i = 0; i < m_ivSequenceParams.viewParamsList.size(); ++i) {
-      if (!m_isBasicView[i]) {
-        const auto depthTransform = DepthTransform<16>{m_ivSequenceParams.viewParamsList[i].dq};
+    for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
+      if (!m_params.viewParamsList[i].isBasicView) {
+        const auto depthTransform = DepthTransform<16>{m_params.viewParamsList[i].dq};
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
-            m_config, m_ivSequenceParams.viewParamsList[i].ci.projectionPlaneSize(), i,
+            m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
             depthTransform.expandDepth(views[i].depth)));
       }
     }
@@ -421,10 +416,10 @@ private:
   // multiple times.
   void synthesizeViews(size_t index, const TextureDepth16Frame &view,
                        const vector<size_t> &viewIds) {
-    auto [ivertices, triangles, attributes] = unprojectPrunedView(
-        view, m_ivSequenceParams.viewParamsList[index], m_masks[index].getPlane(0));
+    auto [ivertices, triangles, attributes] =
+        unprojectPrunedView(view, m_params.viewParamsList[index], m_masks[index].getPlane(0));
 
-    if (m_isBasicView[index]) {
+    if (m_params.viewParamsList[index].isBasicView) {
       cout << "Basic view ";
     } else {
       cout << "Prune view ";
@@ -432,7 +427,7 @@ private:
 
     const auto prec = cout.precision(2);
     const auto flags = cout.setf(ios::fixed, ios::floatfield);
-    cout << setw(2) << index << " (" << setw(3) << m_ivSequenceParams.viewParamsList[index].name
+    cout << setw(2) << index << " (" << setw(3) << m_params.viewParamsList[index].name
          << "): " << ivertices.size() << " vertices ("
          << 100. * double(ivertices.size()) / (view.texture.getWidth() * view.texture.getHeight())
          << "% of full view)\n";
@@ -441,9 +436,9 @@ private:
 
     for (auto &s : m_synthesizers) {
       if (contains(viewIds, s->index)) {
-        auto overtices = project(ivertices, m_ivSequenceParams.viewParamsList[index],
-                                 m_ivSequenceParams.viewParamsList[s->index]);
-        weightedSphere(m_ivSequenceParams.viewParamsList[s->index].ci, overtices, triangles);
+        auto overtices =
+            project(ivertices, m_params.viewParamsList[index], m_params.viewParamsList[s->index]);
+        weightedSphere(m_params.viewParamsList[s->index].ci, overtices, triangles);
         s->rasterizer.submit(overtices, attributes, triangles);
         s->rasterizer.run();
         updateMask(*s);
@@ -514,7 +509,7 @@ private:
           if (*k != 0) {
             *i = 0;
           }
-        } else if (m_ivSequenceParams.vme().vme_depth_low_quality_flag() && (depthError < 0.F)) {
+        } else if (m_params.vme().vme_depth_low_quality_flag() && (depthError < 0.F)) {
           if (*k != 0) {
             *k = 0;
             *i = 255;
@@ -544,14 +539,12 @@ HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &no
 
 HierarchicalPruner::~HierarchicalPruner() = default;
 
-void HierarchicalPruner::registerPruningRelation(MivBitstream::IvSequenceParams &ivSequenceParams,
-                                                 const vector<bool> &isBasicView) {
-  return m_impl->registerPruningRelation(ivSequenceParams, isBasicView);
+void HierarchicalPruner::registerPruningRelation(MivBitstream::EncoderParams &params) {
+  return m_impl->registerPruningRelation(params);
 }
 
-auto HierarchicalPruner::prune(const MivBitstream::IvSequenceParams &ivSequenceParams,
-                               const Common::MVD16Frame &views, const vector<bool> &isBasicView)
-    -> Common::MaskList {
-  return m_impl->prune(ivSequenceParams, views, isBasicView);
+auto HierarchicalPruner::prune(const MivBitstream::EncoderParams &params,
+                               const Common::MVD16Frame &views) -> Common::MaskList {
+  return m_impl->prune(params, views);
 }
 } // namespace TMIV::Pruner

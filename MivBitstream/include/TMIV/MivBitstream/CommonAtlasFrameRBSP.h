@@ -340,16 +340,16 @@ private:
 // 23090-12: miv_view_params_update_intrinsics
 class MivViewParamsUpdateIntrinsics {
 public:
-  [[nodiscard]] auto mvpue_num_view_updates_minus1() const noexcept -> std::uint16_t;
-  [[nodiscard]] auto mvpue_view_idx(const std::uint16_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto mvpui_num_view_updates_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto mvpui_view_idx(const std::uint16_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto camera_intrinsics(const std::uint16_t i) const noexcept
       -> const CameraIntrinsics &;
   [[nodiscard]] auto camera_intrinsics(const std::uint16_t i) noexcept -> CameraIntrinsics &;
 
   // Calling this function will allocate the camera intrinsics update list
-  auto mvpue_num_view_updates_minus1(const std::uint16_t value) noexcept
+  auto mvpui_num_view_updates_minus1(const std::uint16_t value) noexcept
       -> MivViewParamsUpdateIntrinsics &;
-  auto mvpue_view_idx(const uint16_t i, const std::uint16_t value) noexcept
+  auto mvpui_view_idx(const uint16_t i, const std::uint16_t value) noexcept
       -> MivViewParamsUpdateIntrinsics &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateIntrinsics &x)
@@ -363,13 +363,50 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  uint16_t m_mvpue_num_view_updates_minus1{};
-  std::vector<uint16_t> m_mvpue_view_idx;
+  uint16_t m_mvpui_num_view_updates_minus1{};
+  std::vector<uint16_t> m_mvpui_view_idx;
   std::vector<CameraIntrinsics> m_camera_intrinsics;
 };
 
+// 23090-12: miv_view_params_update_depth_quantization
+class MivViewParamsUpdateDepthQuantization {
+public:
+  [[nodiscard]] auto mvpudq_num_view_updates_minus1() const noexcept -> std::uint16_t;
+  [[nodiscard]] auto mvpudq_view_idx(const std::uint16_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto depth_quantization(const std::uint16_t i) const noexcept
+      -> const DepthQuantization &;
+  [[nodiscard]] auto depth_quantization(const std::uint16_t i) noexcept -> DepthQuantization &;
+
+  // Calling this function will allocate the depth quantization update list
+  auto mvpudq_num_view_updates_minus1(const std::uint16_t value) noexcept
+      -> MivViewParamsUpdateDepthQuantization &;
+  auto mvpudq_view_idx(const uint16_t i, const std::uint16_t value) noexcept
+      -> MivViewParamsUpdateDepthQuantization &;
+
+  friend auto operator<<(std::ostream &stream, const MivViewParamsUpdateDepthQuantization &x)
+      -> std::ostream &;
+
+  auto operator==(const MivViewParamsUpdateDepthQuantization &) const noexcept -> bool;
+  auto operator!=(const MivViewParamsUpdateDepthQuantization &) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateDepthQuantization;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  uint16_t m_mvpudq_num_view_updates_minus1{};
+  std::vector<uint16_t> m_mvpudq_view_idx;
+  std::vector<DepthQuantization> m_depth_quantization;
+};
+
 // 23090-12: ap_miv_view_params_list_update_mode
-enum class MvpUpdateMode : std::uint8_t { VPL_INITLIST, VPL_UPD_EXT, VPL_UPD_INT, VPL_EXT_INT };
+enum class MvpUpdateMode : std::uint8_t {
+  VPL_INITLIST,
+  VPL_UPD_EXT,
+  VPL_UPD_INT,
+  VPL_UPD_DQ,
+  VPL_ALL
+};
 auto operator<<(std::ostream &stream, const MvpUpdateMode x) -> std::ostream &;
 
 // 23090-12: common_atlas_frame_rbsp( )
@@ -383,6 +420,8 @@ public:
       -> const MivViewParamsUpdateExtrinsics &;
   [[nodiscard]] auto miv_view_params_update_intrinsics() const noexcept
       -> const MivViewParamsUpdateIntrinsics &;
+  [[nodiscard]] auto miv_view_params_update_depth_quantization() const noexcept
+      -> const MivViewParamsUpdateDepthQuantization &;
   [[nodiscard]] constexpr auto caf_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto caf_extension_8bits() const noexcept;
   [[nodiscard]] auto cafExtensionData() const noexcept -> const std::vector<bool> &;
@@ -395,6 +434,8 @@ public:
       -> MivViewParamsUpdateExtrinsics &;
   [[nodiscard]] auto miv_view_params_update_intrinsics() noexcept
       -> MivViewParamsUpdateIntrinsics &;
+  [[nodiscard]] auto miv_view_params_update_depth_quantization() noexcept
+      -> MivViewParamsUpdateDepthQuantization &;
   constexpr auto caf_extension_present_flag(bool value) noexcept -> auto &;
   auto caf_extension_8bits(std::uint8_t value) noexcept -> CommonAtlasFrameRBSP &;
   auto cafExtensionData(std::vector<bool> value) noexcept -> CommonAtlasFrameRBSP &;
@@ -417,6 +458,7 @@ private:
   std::optional<MivViewParamsList> m_miv_view_params_list;
   std::optional<MivViewParamsUpdateExtrinsics> m_miv_view_params_update_extrinsics;
   std::optional<MivViewParamsUpdateIntrinsics> m_miv_view_params_update_intrinsics;
+  std::optional<MivViewParamsUpdateDepthQuantization> m_miv_view_params_update_depth_quantization;
   bool m_caf_extension_present_flag{};
   std::optional<std::uint8_t> m_caf_extension_8bits{};
   std::optional<std::vector<bool>> m_cafExtensionData{};

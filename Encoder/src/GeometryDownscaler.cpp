@@ -43,29 +43,19 @@ namespace TMIV::Encoder {
 GeometryDownscaler::GeometryDownscaler(const Json &rootNode, const Json & /* componentNode */)
     : m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").asBool()} {}
 
-auto GeometryDownscaler::transformSequenceParams(IvSequenceParams ivSequenceParams)
-    -> const IvSequenceParams & {
-  m_ivSequenceParams = move(ivSequenceParams);
+auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderParams & {
+  m_params = move(params);
 
   if (m_geometryScaleEnabledFlag) {
-    m_ivSequenceParams.vps.vps_miv_extension_flag(true);
-    m_ivSequenceParams.vme().vme_geometry_scale_enabled_flag(true);
-  }
+    m_params.vps.vps_miv_extension_flag(true);
+    m_params.vme().vme_geometry_scale_enabled_flag(true);
 
-  return m_ivSequenceParams;
-}
-
-auto GeometryDownscaler::transformAccessUnitParams(IvAccessUnitParams ivAccessUnitParams)
-    -> const IvAccessUnitParams & {
-  m_ivAccessUnitParams = move(ivAccessUnitParams);
-
-  if (m_geometryScaleEnabledFlag) {
-    for (auto &atlas : m_ivAccessUnitParams.atlas) {
+    for (auto &atlas : m_params.atlas) {
       atlas.asme().asme_geometry_scale_factor_x_minus1(1).asme_geometry_scale_factor_y_minus1(1);
     }
   }
 
-  return m_ivAccessUnitParams;
+  return m_params;
 }
 
 namespace {
@@ -97,9 +87,9 @@ auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
 } // namespace
 
 auto GeometryDownscaler::transformFrame(MVD10Frame frame) -> MVD10Frame {
-  if (m_ivSequenceParams.vme().vme_geometry_scale_enabled_flag()) {
+  if (m_params.vme().vme_geometry_scale_enabled_flag()) {
     for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
-      const auto &asps = m_ivAccessUnitParams.atlas[atlasId].asps;
+      const auto &asps = m_params.atlas[atlasId].asps;
       const auto &asme = asps.asps_miv_extension();
       const auto frameSize =
           Vec2i{asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),

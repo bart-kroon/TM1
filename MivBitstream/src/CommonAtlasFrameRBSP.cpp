@@ -49,8 +49,10 @@ auto operator<<(ostream &stream, const MvpUpdateMode x) -> ostream & {
     return stream << "VPL_UPD_EXT";
   case MvpUpdateMode::VPL_UPD_INT:
     return stream << "VPL_UPD_INT";
-  case MvpUpdateMode::VPL_EXT_INT:
-    return stream << "VPL_EXT_INT";
+  case MvpUpdateMode::VPL_UPD_DQ:
+    return stream << "VPL_UPD_DQ";
+  case MvpUpdateMode::VPL_ALL:
+    return stream << "VPL_ALL";
   default:
     MIVBITSTREAM_ERROR("Unknown update mode");
   }
@@ -732,7 +734,7 @@ auto CommonAtlasFrameRBSP::miv_view_params_list() const noexcept -> const MivVie
 
 auto CommonAtlasFrameRBSP::miv_view_params_update_extrinsics() const noexcept
     -> const MivViewParamsUpdateExtrinsics & {
-  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_EXT_INT ||
+  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_ALL ||
                       caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_UPD_EXT);
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_extrinsics.has_value());
   return *m_miv_view_params_update_extrinsics;
@@ -740,10 +742,18 @@ auto CommonAtlasFrameRBSP::miv_view_params_update_extrinsics() const noexcept
 
 auto CommonAtlasFrameRBSP::miv_view_params_update_intrinsics() const noexcept
     -> const MivViewParamsUpdateIntrinsics & {
-  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_EXT_INT ||
+  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_ALL ||
                       caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_UPD_INT);
   VERIFY_MIVBITSTREAM(m_miv_view_params_update_intrinsics.has_value());
   return *m_miv_view_params_update_intrinsics;
+}
+
+auto CommonAtlasFrameRBSP::miv_view_params_update_depth_quantization() const noexcept
+    -> const MivViewParamsUpdateDepthQuantization & {
+  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_ALL ||
+                      caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_UPD_DQ);
+  VERIFY_MIVBITSTREAM(m_miv_view_params_update_depth_quantization.has_value());
+  return *m_miv_view_params_update_depth_quantization;
 }
 
 auto CommonAtlasFrameRBSP::miv_view_params_list() noexcept -> MivViewParamsList & {
@@ -756,7 +766,7 @@ auto CommonAtlasFrameRBSP::miv_view_params_list() noexcept -> MivViewParamsList 
 
 auto CommonAtlasFrameRBSP::miv_view_params_update_extrinsics() noexcept
     -> MivViewParamsUpdateExtrinsics & {
-  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_EXT_INT ||
+  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_ALL ||
                       caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_UPD_EXT);
   if (!m_miv_view_params_update_extrinsics) {
     m_miv_view_params_update_extrinsics = MivViewParamsUpdateExtrinsics{};
@@ -766,12 +776,22 @@ auto CommonAtlasFrameRBSP::miv_view_params_update_extrinsics() noexcept
 
 auto CommonAtlasFrameRBSP::miv_view_params_update_intrinsics() noexcept
     -> MivViewParamsUpdateIntrinsics & {
-  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_EXT_INT ||
+  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_ALL ||
                       caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_UPD_INT);
   if (!m_miv_view_params_update_intrinsics) {
     m_miv_view_params_update_intrinsics = MivViewParamsUpdateIntrinsics{};
   }
   return *m_miv_view_params_update_intrinsics;
+}
+
+auto CommonAtlasFrameRBSP::miv_view_params_update_depth_quantization() noexcept
+    -> MivViewParamsUpdateDepthQuantization & {
+  VERIFY_MIVBITSTREAM(caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_ALL ||
+                      caf_miv_view_params_list_update_mode() == MvpUpdateMode::VPL_UPD_DQ);
+  if (!m_miv_view_params_update_depth_quantization) {
+    m_miv_view_params_update_depth_quantization = MivViewParamsUpdateDepthQuantization{};
+  }
+  return *m_miv_view_params_update_depth_quantization;
 }
 
 auto CommonAtlasFrameRBSP::cafExtensionData() const noexcept -> const vector<bool> & {
@@ -810,9 +830,13 @@ auto operator<<(ostream &stream, const CommonAtlasFrameRBSP &x) -> ostream & {
   case MvpUpdateMode::VPL_UPD_INT:
     stream << x.miv_view_params_update_intrinsics();
     break;
-  case MvpUpdateMode::VPL_EXT_INT:
+  case MvpUpdateMode::VPL_UPD_DQ:
+    stream << x.miv_view_params_update_depth_quantization();
+    break;
+  case MvpUpdateMode::VPL_ALL:
     stream << x.miv_view_params_update_extrinsics();
     stream << x.miv_view_params_update_intrinsics();
+    stream << x.miv_view_params_update_depth_quantization();
     break;
   default:
     MIVBITSTREAM_ERROR("Unknown update mode");
@@ -846,9 +870,14 @@ auto CommonAtlasFrameRBSP::operator==(const CommonAtlasFrameRBSP &other) const n
     return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics();
   case MvpUpdateMode::VPL_UPD_INT:
     return miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
-  case MvpUpdateMode::VPL_EXT_INT:
+  case MvpUpdateMode::VPL_UPD_DQ:
+    return miv_view_params_update_depth_quantization() ==
+           other.miv_view_params_update_depth_quantization();
+  case MvpUpdateMode::VPL_ALL:
     return miv_view_params_update_extrinsics() == other.miv_view_params_update_extrinsics() &&
-           miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics();
+           miv_view_params_update_intrinsics() == other.miv_view_params_update_intrinsics() &&
+           miv_view_params_update_depth_quantization() ==
+               other.miv_view_params_update_depth_quantization();
   default:
     MIVBITSTREAM_ERROR("Unknown update mode");
   }
@@ -884,9 +913,15 @@ auto CommonAtlasFrameRBSP::decodeFrom(istream &stream, const V3cParameterSet &vp
   case MvpUpdateMode::VPL_UPD_INT:
     x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
     break;
-  case MvpUpdateMode::VPL_EXT_INT:
+  case MvpUpdateMode::VPL_UPD_DQ:
+    x.miv_view_params_update_depth_quantization() =
+        MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream);
+    break;
+  case MvpUpdateMode::VPL_ALL:
     x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
     x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
+    x.miv_view_params_update_depth_quantization() =
+        MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream);
     break;
   }
 
@@ -925,9 +960,13 @@ void CommonAtlasFrameRBSP::encodeTo(ostream &stream, const V3cParameterSet &vps,
   case MvpUpdateMode::VPL_UPD_INT:
     miv_view_params_update_intrinsics().encodeTo(bitstream);
     break;
-  case MvpUpdateMode::VPL_EXT_INT:
+  case MvpUpdateMode::VPL_UPD_DQ:
+    miv_view_params_update_depth_quantization().encodeTo(bitstream);
+    break;
+  case MvpUpdateMode::VPL_ALL:
     miv_view_params_update_extrinsics().encodeTo(bitstream);
     miv_view_params_update_intrinsics().encodeTo(bitstream);
+    miv_view_params_update_depth_quantization().encodeTo(bitstream);
     break;
   }
 
@@ -950,18 +989,18 @@ auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1() const noexce
 
 auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const uint16_t i) const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(i < m_mvpue_view_idx.size());
-  return m_mvpue_view_idx.at(i);
+  return m_mvpue_view_idx[i];
 }
 
 auto MivViewParamsUpdateExtrinsics::camera_extrinsics(const uint16_t i) const noexcept
     -> const CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
-  return m_camera_extrinsics.at(i);
+  return m_camera_extrinsics[i];
 }
 auto MivViewParamsUpdateExtrinsics::camera_extrinsics(const uint16_t i) noexcept
     -> CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
-  return m_camera_extrinsics.at(i);
+  return m_camera_extrinsics[i];
 }
 
 auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1(const uint16_t value) noexcept
@@ -974,7 +1013,7 @@ auto MivViewParamsUpdateExtrinsics::mvpue_num_view_updates_minus1(const uint16_t
 auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const uint16_t i, const uint16_t value) noexcept
     -> MivViewParamsUpdateExtrinsics & {
   VERIFY_MIVBITSTREAM(i < m_camera_extrinsics.size());
-  m_mvpue_view_idx.at(i) = value;
+  m_mvpue_view_idx[i] = value;
   return *this;
 }
 
@@ -1009,7 +1048,7 @@ auto MivViewParamsUpdateExtrinsics::decodeFrom(InputBitstream &bitstream)
 auto MivViewParamsUpdateExtrinsics::operator==(
     const MivViewParamsUpdateExtrinsics &other) const noexcept -> bool {
   return m_mvpue_num_view_updates_minus1 == other.m_mvpue_num_view_updates_minus1 &&
-         equal(m_mvpue_view_idx.begin(), m_mvpue_view_idx.end(), other.m_mvpue_view_idx.begin()) &&
+         m_mvpue_view_idx == other.m_mvpue_view_idx &&
          m_camera_extrinsics == other.m_camera_extrinsics;
 }
 
@@ -1018,54 +1057,55 @@ auto MivViewParamsUpdateExtrinsics::operator!=(
   return !operator==(other);
 }
 
-auto MivViewParamsUpdateIntrinsics::mvpue_num_view_updates_minus1() const noexcept -> uint16_t {
-  return m_mvpue_num_view_updates_minus1;
+auto MivViewParamsUpdateIntrinsics::mvpui_num_view_updates_minus1() const noexcept -> uint16_t {
+  return m_mvpui_num_view_updates_minus1;
 }
 
-auto MivViewParamsUpdateIntrinsics::mvpue_view_idx(const uint16_t i) const noexcept -> uint16_t {
-  VERIFY_MIVBITSTREAM(i < m_mvpue_view_idx.size());
-  return m_mvpue_view_idx.at(i);
+auto MivViewParamsUpdateIntrinsics::mvpui_view_idx(const uint16_t i) const noexcept -> uint16_t {
+  VERIFY_MIVBITSTREAM(i < m_mvpui_view_idx.size());
+  return m_mvpui_view_idx[i];
 }
 
 auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) const noexcept
     -> const CameraIntrinsics & {
   VERIFY_MIVBITSTREAM(i < m_camera_intrinsics.size());
-  return m_camera_intrinsics.at(i);
+  return m_camera_intrinsics[i];
 }
 
 auto MivViewParamsUpdateIntrinsics::camera_intrinsics(const uint16_t i) noexcept
     -> CameraIntrinsics & {
   VERIFY_MIVBITSTREAM(i < m_camera_intrinsics.size());
-  return m_camera_intrinsics.at(i);
+  return m_camera_intrinsics[i];
 }
 
-auto MivViewParamsUpdateIntrinsics::mvpue_num_view_updates_minus1(const uint16_t value) noexcept
+auto MivViewParamsUpdateIntrinsics::mvpui_num_view_updates_minus1(const uint16_t value) noexcept
     -> MivViewParamsUpdateIntrinsics & {
-  m_mvpue_num_view_updates_minus1 = value;
-  m_mvpue_view_idx.resize(m_mvpue_num_view_updates_minus1 + size_t(1));
-  m_camera_intrinsics.resize(m_mvpue_num_view_updates_minus1 + size_t(1));
+  m_mvpui_num_view_updates_minus1 = value;
+  m_mvpui_view_idx.resize(m_mvpui_num_view_updates_minus1 + size_t(1));
+  m_camera_intrinsics.resize(m_mvpui_num_view_updates_minus1 + size_t(1));
   return *this;
 }
-auto MivViewParamsUpdateIntrinsics::mvpue_view_idx(const uint16_t i, const uint16_t value) noexcept
+
+auto MivViewParamsUpdateIntrinsics::mvpui_view_idx(const uint16_t i, const uint16_t value) noexcept
     -> MivViewParamsUpdateIntrinsics & {
-  VERIFY_MIVBITSTREAM(i < m_mvpue_view_idx.size());
-  m_mvpue_view_idx.at(i) = value;
+  VERIFY_MIVBITSTREAM(i < m_mvpui_view_idx.size());
+  m_mvpui_view_idx[i] = value;
   return *this;
 }
 
 auto operator<<(ostream &stream, const MivViewParamsUpdateIntrinsics &x) -> ostream & {
-  stream << "mvpue_num_view_updates_minus1=" << x.mvpue_num_view_updates_minus1() << '\n';
-  for (uint16_t i = 0; i <= x.mvpue_num_view_updates_minus1(); ++i) {
-    stream << "mvpue_view_idx[ " << i << " ]=" << x.mvpue_view_idx(i) << '\n';
+  stream << "mvpui_num_view_updates_minus1=" << x.mvpui_num_view_updates_minus1() << '\n';
+  for (uint16_t i = 0; i <= x.mvpui_num_view_updates_minus1(); ++i) {
+    stream << "mvpui_view_idx[ " << i << " ]=" << x.mvpui_view_idx(i) << '\n';
     x.camera_intrinsics(i).printTo(stream, i);
   }
   return stream;
 }
 
 void MivViewParamsUpdateIntrinsics::encodeTo(OutputBitstream &bitstream) const {
-  bitstream.putUint16(mvpue_num_view_updates_minus1());
-  for (uint16_t i = 0; i <= mvpue_num_view_updates_minus1(); ++i) {
-    bitstream.putUint16(mvpue_view_idx(i));
+  bitstream.putUint16(mvpui_num_view_updates_minus1());
+  for (uint16_t i = 0; i <= mvpui_num_view_updates_minus1(); ++i) {
+    bitstream.putUint16(mvpui_view_idx(i));
     camera_intrinsics(i).encodeTo(bitstream);
   }
 }
@@ -1073,9 +1113,9 @@ void MivViewParamsUpdateIntrinsics::encodeTo(OutputBitstream &bitstream) const {
 auto MivViewParamsUpdateIntrinsics::decodeFrom(InputBitstream &bitstream)
     -> MivViewParamsUpdateIntrinsics {
   auto x = MivViewParamsUpdateIntrinsics{};
-  x.mvpue_num_view_updates_minus1(bitstream.getUint16());
-  for (uint16_t i = 0; i <= x.mvpue_num_view_updates_minus1(); ++i) {
-    x.mvpue_view_idx(i, bitstream.getUint16());
+  x.mvpui_num_view_updates_minus1(bitstream.getUint16());
+  for (uint16_t i = 0; i <= x.mvpui_num_view_updates_minus1(); ++i) {
+    x.mvpui_view_idx(i, bitstream.getUint16());
     x.camera_intrinsics(i) = CameraIntrinsics::decodeFrom(bitstream);
   }
   return x;
@@ -1083,13 +1123,91 @@ auto MivViewParamsUpdateIntrinsics::decodeFrom(InputBitstream &bitstream)
 
 auto MivViewParamsUpdateIntrinsics::operator==(
     const MivViewParamsUpdateIntrinsics &other) const noexcept -> bool {
-  return m_mvpue_num_view_updates_minus1 == other.m_mvpue_num_view_updates_minus1 &&
-         equal(m_mvpue_view_idx.begin(), m_mvpue_view_idx.end(), other.m_mvpue_view_idx.begin()) &&
+  return m_mvpui_num_view_updates_minus1 == other.m_mvpui_num_view_updates_minus1 &&
+         m_mvpui_view_idx == other.m_mvpui_view_idx &&
          m_camera_intrinsics == other.m_camera_intrinsics;
 }
 
 auto MivViewParamsUpdateIntrinsics::operator!=(
     const MivViewParamsUpdateIntrinsics &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
+auto MivViewParamsUpdateDepthQuantization::mvpudq_num_view_updates_minus1() const noexcept
+    -> uint16_t {
+  return m_mvpudq_num_view_updates_minus1;
+}
+
+auto MivViewParamsUpdateDepthQuantization::mvpudq_view_idx(const uint16_t i) const noexcept
+    -> uint16_t {
+  VERIFY_MIVBITSTREAM(i < m_mvpudq_view_idx.size());
+  return m_mvpudq_view_idx[i];
+}
+
+auto MivViewParamsUpdateDepthQuantization::depth_quantization(const uint16_t i) const noexcept
+    -> const DepthQuantization & {
+  VERIFY_MIVBITSTREAM(i < m_depth_quantization.size());
+  return m_depth_quantization[i];
+}
+
+auto MivViewParamsUpdateDepthQuantization::depth_quantization(const uint16_t i) noexcept
+    -> DepthQuantization & {
+  VERIFY_MIVBITSTREAM(i < m_depth_quantization.size());
+  return m_depth_quantization[i];
+}
+
+auto MivViewParamsUpdateDepthQuantization::mvpudq_num_view_updates_minus1(
+    const uint16_t value) noexcept -> MivViewParamsUpdateDepthQuantization & {
+  m_mvpudq_num_view_updates_minus1 = value;
+  m_mvpudq_view_idx.resize(m_mvpudq_num_view_updates_minus1 + size_t(1));
+  m_depth_quantization.resize(m_mvpudq_num_view_updates_minus1 + size_t(1));
+  return *this;
+}
+auto MivViewParamsUpdateDepthQuantization::mvpudq_view_idx(const uint16_t i,
+                                                           const uint16_t value) noexcept
+    -> MivViewParamsUpdateDepthQuantization & {
+  VERIFY_MIVBITSTREAM(i < m_mvpudq_view_idx.size());
+  m_mvpudq_view_idx[i] = value;
+  return *this;
+}
+
+auto operator<<(ostream &stream, const MivViewParamsUpdateDepthQuantization &x) -> ostream & {
+  stream << "mvpudq_num_view_updates_minus1=" << x.mvpudq_num_view_updates_minus1() << '\n';
+  for (uint16_t i = 0; i <= x.mvpudq_num_view_updates_minus1(); ++i) {
+    stream << "mvpudq_view_idx[ " << i << " ]=" << x.mvpudq_view_idx(i) << '\n';
+    x.depth_quantization(i).printTo(stream, i);
+  }
+  return stream;
+}
+
+void MivViewParamsUpdateDepthQuantization::encodeTo(OutputBitstream &bitstream) const {
+  bitstream.putUint16(mvpudq_num_view_updates_minus1());
+  for (uint16_t i = 0; i <= mvpudq_num_view_updates_minus1(); ++i) {
+    bitstream.putUint16(mvpudq_view_idx(i));
+    depth_quantization(i).encodeTo(bitstream);
+  }
+}
+
+auto MivViewParamsUpdateDepthQuantization::decodeFrom(InputBitstream &bitstream)
+    -> MivViewParamsUpdateDepthQuantization {
+  auto x = MivViewParamsUpdateDepthQuantization{};
+  x.mvpudq_num_view_updates_minus1(bitstream.getUint16());
+  for (uint16_t i = 0; i <= x.mvpudq_num_view_updates_minus1(); ++i) {
+    x.mvpudq_view_idx(i, bitstream.getUint16());
+    x.depth_quantization(i) = DepthQuantization::decodeFrom(bitstream);
+  }
+  return x;
+}
+
+auto MivViewParamsUpdateDepthQuantization::operator==(
+    const MivViewParamsUpdateDepthQuantization &other) const noexcept -> bool {
+  return m_mvpudq_num_view_updates_minus1 == other.m_mvpudq_num_view_updates_minus1 &&
+         m_mvpudq_view_idx == other.m_mvpudq_view_idx &&
+         m_depth_quantization == other.m_depth_quantization;
+}
+
+auto MivViewParamsUpdateDepthQuantization::operator!=(
+    const MivViewParamsUpdateDepthQuantization &other) const noexcept -> bool {
   return !operator==(other);
 }
 } // namespace TMIV::MivBitstream

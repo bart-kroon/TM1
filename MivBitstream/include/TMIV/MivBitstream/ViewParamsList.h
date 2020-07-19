@@ -52,6 +52,9 @@ struct ViewParams {
   // Not part of the bitstream. Does the depth map have invalid/non-occupied?
   bool hasOccupancy{};
 
+  // Is this a basic view or an additional view?
+  bool isBasicView{true};
+
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
   auto operator==(const ViewParams &other) const -> bool;
   auto operator!=(const ViewParams &other) const -> bool { return !operator==(other); }

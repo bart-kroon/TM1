@@ -31,32 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
-#define _TMIV_MIVBITSTREAM_IVSEQUENCEPARAMS_H_
+#ifndef _TMIV_MIVBITSTREAM_ENCODERPARAMS_H_
+#define _TMIV_MIVBITSTREAM_ENCODERPARAMS_H_
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
+#include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
 namespace TMIV::MivBitstream {
-struct IvSequenceParams {
-  IvSequenceParams();
-  explicit IvSequenceParams(bool haveTexture);
-  IvSequenceParams(const Common::SizeVector &atlasSizes, bool haveTexture);
+struct EncoderAtlasParams {
+  EncoderAtlasParams();
+
+  AtlasSequenceParameterSetRBSP asps;
+  AtlasFrameParameterSetRBSP afps;
+  AtlasTileHeader ath;
+
+  // Convenience function to access the ASPS MIV extension
+  [[nodiscard]] auto asme() const noexcept -> const AspsMivExtension &;
+
+  // Convenience function to create and access the ASPS MIV extension
+  [[nodiscard]] auto asme() noexcept -> AspsMivExtension &;
+
+  friend auto operator<<(std::ostream &, const EncoderAtlasParams &) -> std::ostream &;
+  auto operator==(const EncoderAtlasParams &other) const -> bool;
+  auto operator!=(const EncoderAtlasParams &other) const -> bool { return !operator==(other); }
+};
+
+struct EncoderParams {
+  EncoderParams();
+  explicit EncoderParams(bool haveTexture);
+  EncoderParams(const Common::SizeVector &atlasSizes, bool haveTexture);
 
   V3cParameterSet vps;
   AtlasAdaptationParameterSetRBSP aaps;
-  MivViewParamsList mvpl;
   std::optional<ViewingSpace> viewingSpace{};
 
-  // Encoder-internal variables
   double frameRate{};
   ViewParamsList viewParamsList;
+  PatchParamsList patchParamsList;
 
-  // Write the viewParamsList into the MVPL structure
-  void updateMvpl();
+  std::vector<EncoderAtlasParams> atlas;
 
   // Convenience function to access the VPS MIV extension
   [[nodiscard]] auto vme() const noexcept -> const VpsMivExtension &;
@@ -64,9 +82,15 @@ struct IvSequenceParams {
   // Convenience function to create and access the VPS MIV extension
   [[nodiscard]] auto vme() noexcept -> VpsMivExtension &;
 
-  auto operator==(const IvSequenceParams &other) const -> bool;
-  auto operator!=(const IvSequenceParams &other) const -> bool { return !operator==(other); }
+  // Convenience function to help the transition
+  [[nodiscard]] auto atlasSizes() const -> Common::SizeVector;
+
+  friend auto operator<<(std::ostream &, const EncoderParams &) -> std::ostream &;
+  auto operator==(const EncoderParams &other) const -> bool;
+  auto operator!=(const EncoderParams &other) const -> bool { return !operator==(other); }
 };
 } // namespace TMIV::MivBitstream
+
+#include "EncoderParams.hpp"
 
 #endif

@@ -72,16 +72,14 @@ public:
       , m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
-    auto sourceSequenceParams = loadSourceIvSequenceParams(json());
-    m_viewSizes = sourceSequenceParams.viewParamsList.viewSizes();
+    auto sourceParams = loadSourceParams(json());
+    m_viewSizes = sourceParams.viewParamsList.viewSizes();
 
     if (!json().isPresent("depthLowQualityFlag")) {
-      sourceSequenceParams.vme().vme_depth_low_quality_flag(
-          m_depthQualityAssessor->isLowDepthQuality(sourceSequenceParams,
-                                                    loadSourceFrame(json(), m_viewSizes, 0)));
+      sourceParams.vme().vme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
+          sourceParams, loadSourceFrame(json(), m_viewSizes, 0)));
     }
-    const auto &codedSequenceParams = m_encoder->prepareSequence(sourceSequenceParams);
-    m_metadataWriter.writeIvSequenceParams(codedSequenceParams);
+    m_encoder->prepareSequence(sourceParams);
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
       int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
@@ -98,7 +96,7 @@ private:
     cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
-    m_metadataWriter.writeIvAccessUnitParams(m_encoder->completeAccessUnit());
+    m_metadataWriter.writeAccessUnit(m_encoder->completeAccessUnit());
     popAtlases(firstFrame, lastFrame);
   }
 

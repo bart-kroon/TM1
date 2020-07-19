@@ -35,8 +35,7 @@
 #define _TMIV_GEOMETRYQUANTIZER_IGEOMETRYQUANTIZER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
 namespace TMIV::GeometryQuantizer {
 class IGeometryQuantizer {
@@ -48,10 +47,8 @@ public:
   auto operator=(IGeometryQuantizer &&) -> IGeometryQuantizer & = default;
   virtual ~IGeometryQuantizer() = default;
 
-  virtual auto transformSequenceParams(MivBitstream::IvSequenceParams)
-      -> const MivBitstream::IvSequenceParams & = 0;
-  virtual auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
-      -> const MivBitstream::IvAccessUnitParams & = 0;
+  virtual auto transformParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & = 0;
   virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
 };
 } // namespace TMIV::GeometryQuantizer

@@ -56,21 +56,16 @@ public:
 
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccThresholdIfSet and adjust the normalized disparity range.
-  auto transformSequenceParams(MivBitstream::IvSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-
-  // depthOccupancyParamsPresentFlags = zeros
-  auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
-      -> const MivBitstream::IvAccessUnitParams & override;
+  auto transformParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & override;
 
   // Transform depth bit depth and range
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
 
 private:
   uint16_t m_depthOccThresholdIfSet{};
-  MivBitstream::IvSequenceParams m_inSequenceParams;
-  MivBitstream::IvSequenceParams m_outSequenceParams;
-  MivBitstream::IvAccessUnitParams m_accessUnitParams;
+  MivBitstream::EncoderParams m_inParams;
+  MivBitstream::EncoderParams m_outParams;
 };
 } // namespace TMIV::GeometryQuantizer
 

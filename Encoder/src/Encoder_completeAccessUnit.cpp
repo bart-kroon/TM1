@@ -41,15 +41,15 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 auto Encoder::scaleGeometryDynamicRange() -> void {
-  bool lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
-  int numOfFrames = m_transportViews.size();
-  int numOfViews = m_transportViews[0].size();
+  auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
+  auto numOfFrames = m_transportViews.size();
+  auto numOfViews = m_transportViews[0].size();
 
-  for (int v = 0; v < numOfViews; v++) {
+  for (size_t v = 0; v < numOfViews; v++) {
     int minDepthMapValWithinGOP = 65535;
     int maxDepthMapValWithinGOP = 0;
 
-    for (int f = 0; f < numOfFrames; f++) {
+    for (size_t f = 0; f < numOfFrames; f++) {
       for (const auto geometry : m_transportViews[f][v].depth.getPlane(0)) {
         if (geometry < minDepthMapValWithinGOP) {
           minDepthMapValWithinGOP = geometry;
@@ -60,28 +60,28 @@ auto Encoder::scaleGeometryDynamicRange() -> void {
       }
     }
 
-    for (int f = 0; f < numOfFrames; f++) {
+    for (size_t f = 0; f < numOfFrames; f++) {
       for (auto &geometry : m_transportViews[f][v].depth.getPlane(0)) {
-        geometry = (geometry + 0.5 - minDepthMapValWithinGOP) /
-                   (maxDepthMapValWithinGOP - minDepthMapValWithinGOP) * 65535.0;
+        geometry = uint16_t((geometry + 0.5 - minDepthMapValWithinGOP) /
+                            (double(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * 65535.0);
         if (lowDepthQuality) {
           geometry /= 2;
         }
       }
     }
 
-    double NDH_orig = m_params.norm_disp_high_orig[v];
-    double NDL_orig = m_params.norm_disp_low_orig[v];
+    const double NDH_orig = m_params.norm_disp_high_orig[v];
+    const double NDL_orig = m_params.norm_disp_low_orig[v];
 
     double NDH = maxDepthMapValWithinGOP / 65535.0 * (NDH_orig - NDL_orig) + NDL_orig;
-    double NDL = minDepthMapValWithinGOP / 65535.0 * (NDH_orig - NDL_orig) + NDL_orig;
+    const double NDL = minDepthMapValWithinGOP / 65535.0 * (NDH_orig - NDL_orig) + NDL_orig;
 
     if (lowDepthQuality) {
       NDH = 2 * NDH - NDL;
     }
 
-    m_params.viewParamsList[v].dq.dq_norm_disp_high(NDH);
-    m_params.viewParamsList[v].dq.dq_norm_disp_low(NDL);
+    m_params.viewParamsList[v].dq.dq_norm_disp_high(float(NDH));
+    m_params.viewParamsList[v].dq.dq_norm_disp_low(float(NDL));
   }
 } // namespace TMIV::Encoder
 

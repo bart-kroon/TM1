@@ -64,7 +64,7 @@ void Packer::updateAggregatedEntityMasks(const vector<MaskList> &entityMasks) {
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
-                  const vector<bool> &isBasicView) -> PatchParamsList {
+                  const ViewParamsList &viewParamsList) -> PatchParamsList {
   // Check atlas size
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % m_blockSize) != 0) || ((sz.y() % m_blockSize) != 0)) {
@@ -84,7 +84,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
 
         auto clusteringOutput = Cluster::retrieve(
-            viewId, mask, static_cast<int>(clusterList.size()), isBasicView[viewId], m_enableMerging);
+            viewId, mask, static_cast<int>(clusterList.size()), viewParamsList[viewId].isBasicView,
+            m_enableMerging);
 
         for (auto &cluster : clusteringOutput.first) {
           cluster = Cluster::setEntityId(cluster, entityId);
@@ -107,7 +108,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     } else {
       auto clusteringOutput =
           Cluster::retrieve(viewId, masks[viewId], static_cast<int>(clusterList.size()),
-                            isBasicView[viewId], m_enableMerging);
+                            viewParamsList[viewId].isBasicView, m_enableMerging);
 
       move(clusteringOutput.first.begin(), clusteringOutput.first.end(),
            back_inserter(clusterList));
@@ -130,8 +131,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   }
 
   auto comp = [&](const Cluster &p1, const Cluster &p2) -> bool {
-    if (isBasicView[p1.getViewId()] != isBasicView[p2.getViewId()]) {
-      return isBasicView[p2.getViewId()];
+    if (viewParamsList[p1.getViewId()].isBasicView != viewParamsList[p2.getViewId()].isBasicView) {
+      return viewParamsList[p2.getViewId()].isBasicView;
     }
     if (p1.getArea() != p2.getArea()) {
       return p1.getArea() < p2.getArea();

@@ -31,34 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_MIVBITSTREAM_IVACCESSUNITPARAMS_H_
+#ifndef _TMIV_MIVBITSTREAM_ENCODERPARAMS_H_
 #error "Include the .h, not the .hpp"
 #endif
 
 namespace TMIV::MivBitstream {
-inline AtlasAccessUnitParams::AtlasAccessUnitParams() {
+inline EncoderAtlasParams::EncoderAtlasParams() {
   asps.asps_num_ref_atlas_frame_lists_in_asps(1);
   ath.ath_type(AthType::I_TILE);
 }
 
-inline auto operator<<(std::ostream &stream, const AtlasAccessUnitParams &x) -> std::ostream & {
+inline auto operator<<(std::ostream &stream, const EncoderAtlasParams &x) -> std::ostream & {
   stream << x.asps << x.afps << x.ath;
   return stream;
 }
 
-inline auto AtlasAccessUnitParams::operator==(const AtlasAccessUnitParams &other) const -> bool {
+inline auto EncoderAtlasParams::operator==(const EncoderAtlasParams &other) const -> bool {
   return asps == other.asps && afps == other.afps && ath == other.ath;
 }
 
-inline auto operator<<(std::ostream &stream, const IvAccessUnitParams &x) -> std::ostream & {
+inline auto operator<<(std::ostream &stream, const EncoderParams &x) -> std::ostream & {
   for (const auto &atlas : x.atlas) {
     stream << atlas.asps << atlas.afps << atlas.ath;
   }
   stream << "Total number of patches: " << x.patchParamsList.size() << '\n';
   return stream;
-}
-
-inline auto IvAccessUnitParams::operator==(const IvAccessUnitParams &other) const -> bool {
-  return atlas == other.atlas && patchParamsList == other.patchParamsList;
 }
 } // namespace TMIV::MivBitstream

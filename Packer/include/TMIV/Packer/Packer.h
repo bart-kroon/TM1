@@ -49,7 +49,8 @@ public:
   ~Packer() override = default;
 
   auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-            const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList override;
+            const MivBitstream::ViewParamsList &viewParamsList)
+      -> MivBitstream::PatchParamsList override;
   void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) override;
 
 private:

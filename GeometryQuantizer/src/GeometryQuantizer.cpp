@@ -58,8 +58,7 @@ GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
 GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeConfig)
     : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
-auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params,
-                                        const std::vector<Common::MVD16Frame> &transportViews)
+auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
   m_inParams = move(params);
   m_outParams = m_inParams;

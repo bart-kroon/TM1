@@ -47,8 +47,7 @@ public:
   auto operator=(IGeometryQuantizer &&) -> IGeometryQuantizer & = default;
   virtual ~IGeometryQuantizer() = default;
 
-  virtual auto transformParams(MivBitstream::EncoderParams params,
-                               const std::vector<Common::MVD16Frame> &transportViews)
+  virtual auto transformParams(MivBitstream::EncoderParams params)
       -> const MivBitstream::EncoderParams & = 0;
   virtual auto transformAtlases(const Common::MVD16Frame &) -> Common::MVD10Frame = 0;
 };

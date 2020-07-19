@@ -62,7 +62,7 @@ SCENARIO("Geometry quantization") {
     sourceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
-      const auto codedParams = depthOccupancy.transformParams(sourceParams, {});
+      const auto codedParams = depthOccupancy.transformParams(sourceParams);
 
       THEN("The camera parameters are unmodified") { REQUIRE(codedParams == sourceParams); }
     }
@@ -74,7 +74,7 @@ SCENARIO("Geometry quantization") {
     sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
-      const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams, {});
+      const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
       THEN("pduDepthOccMapThreshold (T) >> 0") {

@@ -39,7 +39,7 @@
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/EntityBasedPatchMapFilter.h>
 #include <TMIV/Decoder/GeometryScaler.h>
-#include <TMIV/Decoder/OccupancyExtractor.h>
+#include <TMIV/Decoder/OccupancyReconstructor.h>
 #include <TMIV/Renderer/ICuller.h>
 #include <TMIV/Renderer/IRenderer.h>
 
@@ -47,7 +47,7 @@ namespace TMIV::Decoder {
 class Decoder : public IDecoder {
 private:
   GeometryScaler m_geometryScaler;
-  OccupancyExtractor m_occupancyExtractor;
+  OccupancyReconstructor m_occupancyReconstructor;
   EntityBasedPatchMapFilter m_entityBasedPatchMapFilter;
   std::unique_ptr<Renderer::ICuller> m_culler;
   std::unique_ptr<Renderer::IRenderer> m_renderer;

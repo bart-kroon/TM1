@@ -31,8 +31,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_OCCUPANCYEXTRACTOR_H_
-#define _TMIV_DECODER_OCCUPANCYEXTRACTOR_H_
+#ifndef _TMIV_DECODER_OCCUPANCYRECONSTRUCTOR_H_
+#define _TMIV_DECODER_OCCUPANCYRECONSTRUCTOR_H_
 
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
@@ -45,11 +45,11 @@
 #include <vector>
 
 namespace TMIV::Decoder {
-class OccupancyExtractor {
+class OccupancyReconstructor {
 public:
-  OccupancyExtractor(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
+  OccupancyReconstructor(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
-  void extract(AccessUnit &frame) const;
+  void reconstruct(AccessUnit &frame) const;
 
 private:
   

@@ -34,7 +34,7 @@
 #ifndef _TMIV_MIVBITSTREAM_DEPTHOCCUPANCYTRANSFORM_H_
 #define _TMIV_MIVBITSTREAM_DEPTHOCCUPANCYTRANSFORM_H_
 
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/PatchParamsList.h>
 #include <TMIV/MivBitstream/ViewParamsList.h>
 
 #include <TMIV/Common/Frame.h>

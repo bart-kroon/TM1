@@ -35,7 +35,8 @@
 #define _TMIV_PACKER_IPACKER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
+#include <TMIV/MivBitstream/ViewParamsList.h>
 
 namespace TMIV::Packer {
 class IPacker {
@@ -48,7 +49,8 @@ public:
   virtual ~IPacker() = default;
 
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-                    const std::vector<bool> &isBasicView) -> MivBitstream::PatchParamsList = 0;
+                    const MivBitstream::ViewParamsList &viewParamsList)
+      -> MivBitstream::PatchParamsList = 0;
   virtual void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) = 0;
 };
 } // namespace TMIV::Packer

@@ -117,7 +117,7 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
 
   constructVideoFrames();
 
-  const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params, m_transportViews);
+  const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params);
   const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
   return paramsScaled;
 }

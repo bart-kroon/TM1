@@ -56,8 +56,7 @@ public:
 
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccThresholdIfSet and adjust the normalized disparity range.
-  auto transformParams(MivBitstream::EncoderParams params,
-                       const std::vector<Common::MVD16Frame> &transportViews)
+  auto transformParams(MivBitstream::EncoderParams params)
       -> const MivBitstream::EncoderParams & override;
 
   // Transform depth bit depth and range

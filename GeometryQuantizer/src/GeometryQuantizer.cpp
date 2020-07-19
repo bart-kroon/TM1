@@ -58,12 +58,12 @@ GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
 GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeConfig)
     : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
-auto GeometryQuantizer::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
-    -> const MivBitstream::IvSequenceParams & {
-  m_inSequenceParams = move(sequenceParams);
-  m_outSequenceParams = m_inSequenceParams;
+auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
+    -> const MivBitstream::EncoderParams & {
+  m_inParams = move(params);
+  m_outParams = m_inParams;
 
-  for (auto &x : m_outSequenceParams.viewParamsList) {
+  for (auto &x : m_outParams.viewParamsList) {
     if (x.hasOccupancy) {
       x.dq.dq_depth_occ_map_threshold_default(m_depthOccThresholdIfSet); // =T
       const auto nearLevel = 1023.F;
@@ -75,13 +75,7 @@ auto GeometryQuantizer::transformSequenceParams(MivBitstream::IvSequenceParams s
     }
   }
 
-  return m_outSequenceParams;
-}
-
-auto GeometryQuantizer::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
-    -> const MivBitstream::IvAccessUnitParams & {
-  m_accessUnitParams = accessUnitParams;
-  return m_accessUnitParams;
+  return m_outParams;
 }
 
 auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
@@ -94,9 +88,9 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
                             Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }
 
-  for (const auto &patch : m_accessUnitParams.patchParamsList) {
-    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.pduViewIdx()];
-    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.pduViewIdx()];
+  for (const auto &patch : m_outParams.patchParamsList) {
+    const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
+    const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
 #ifndef NDEBUG
     const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};

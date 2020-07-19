@@ -31,7 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
+
+#include <TMIV/MivBitstream/verify.h>
 
 #include <algorithm>
 
@@ -39,15 +41,64 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto AtlasAccessUnitParams::asme() const noexcept -> const AspsMivExtension & {
+auto EncoderAtlasParams::asme() const noexcept -> const AspsMivExtension & {
   return asps.asps_miv_extension();
 }
 
-auto AtlasAccessUnitParams::asme() noexcept -> AspsMivExtension & {
+auto EncoderAtlasParams::asme() noexcept -> AspsMivExtension & {
   return asps.asps_extension_present_flag(true).asps_miv_extension_flag(true).asps_miv_extension();
 }
 
-auto IvAccessUnitParams::atlasSizes() const -> SizeVector {
+EncoderParams::EncoderParams() : EncoderParams{false} {}
+
+EncoderParams::EncoderParams(bool haveTexture)
+    : EncoderParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture} {}
+
+EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture) {
+  vps.profile_tier_level()
+      .ptl_level_idc(PtlLevelIdc::Level_3_0)
+      .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
+      .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
+      .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
+
+  VERIFY_MIVBITSTREAM(!atlasSizes.empty());
+  vps.vps_atlas_count_minus1(uint8_t(atlasSizes.size() - 1));
+
+  for (size_t atlasId = 0; atlasId < atlasSizes.size(); ++atlasId) {
+    const auto a = uint8_t(atlasId);
+    vps.vps_atlas_id(a, a)
+        .vps_frame_width(a, atlasSizes[atlasId].x())
+        .vps_frame_height(a, atlasSizes[atlasId].y())
+        .vps_geometry_video_present_flag(a, true)
+        .vps_attribute_video_present_flag(a, haveTexture);
+
+    vps.geometry_information(a).gi_geometry_nominal_2d_bitdepth_minus1(9);
+
+    if (haveTexture) {
+      vps.attribute_information(a)
+          .ai_attribute_count(1)
+          .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
+          .ai_attribute_dimension_minus1(0, 2)
+          .ai_attribute_nominal_2d_bitdepth_minus1(0, 9);
+    }
+  }
+}
+
+auto EncoderParams::vme() const noexcept -> const VpsMivExtension & {
+  return vps.vps_miv_extension();
+}
+
+auto EncoderParams::vme() noexcept -> VpsMivExtension & {
+  return vps.vps_extension_present_flag(true).vps_miv_extension_flag(true).vps_miv_extension();
+}
+
+auto EncoderParams::operator==(const EncoderParams &other) const -> bool {
+  return vps == other.vps && aaps == other.aaps && viewingSpace == other.viewingSpace &&
+         viewParamsList == other.viewParamsList && atlas == other.atlas &&
+         patchParamsList == other.patchParamsList;
+}
+
+auto EncoderParams::atlasSizes() const -> SizeVector {
   auto x = SizeVector{};
   x.reserve(atlas.size());
 

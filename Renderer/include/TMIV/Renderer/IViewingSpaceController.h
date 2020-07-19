@@ -35,7 +35,7 @@
 #define _TMIV_RENDERER_IVIEWINGSPACECONTROLLER_H_
 
 #include <TMIV/Common/Frame.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
 namespace TMIV::Renderer {
 class IViewingSpaceController {

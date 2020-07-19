@@ -557,7 +557,6 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const V3cUnitHeade
   LIMITATION(!asps_vui_parameters_present_flag());
   bitstream.putFlag(asps_vui_parameters_present_flag());
 
-  VERIFY_MIVBITSTREAM(asps_extension_present_flag());
   bitstream.putFlag(asps_extension_present_flag());
 
   if (asps_extension_present_flag()) {

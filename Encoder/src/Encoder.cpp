@@ -69,7 +69,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     , m_pruner{create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}
     , m_packer{create<IPacker>("Packer", rootNode, componentNode)}
-    , m_depthOccupancy{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
+    , m_geometryQuantizer{create<IGeometryQuantizer>("GeometryQuantizer", rootNode, componentNode)}
     , m_geometryDownscaler{rootNode, componentNode} {
   // Parameters
   m_intraPeriod = rootNode.require("intraPeriod").asInt();

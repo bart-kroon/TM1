@@ -47,7 +47,7 @@ void Encoder::prepareAccessUnit() {
 
 void Encoder::resetNonAggregatedMask() {
   m_nonAggregatedMask.clear();
-  for (const auto &viewParams : m_transportIvs.viewParamsList) {
+  for (const auto &viewParams : m_transportParams.viewParamsList) {
     m_nonAggregatedMask.push_back(
         NonAggregatedMask{{size_t(viewParams.ci.ci_projection_plane_height_minus1() + 1),
                            size_t(viewParams.ci.ci_projection_plane_width_minus1() + 1)}});

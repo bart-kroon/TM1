@@ -41,12 +41,12 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequenceParams & {
+void Encoder::prepareSequence(EncoderParams sourceParams) {
   // Transform source to transport view sequence parameters
-  tie(m_transportIvs, m_isBasicView) = m_viewOptimizer->optimizeSequence(move(sourceIvs));
+  m_transportParams = m_viewOptimizer->optimizeParams(move(sourceParams));
 
   // Calculate nominal atlas frame sizes
-  const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_transportIvs);
+  const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_transportParams);
   cout << "Nominal atlas frame sizes: { ";
   for (auto &size : atlasFrameSizes) {
     cout << ' ' << size;
@@ -54,52 +54,32 @@ auto Encoder::prepareSequence(IvSequenceParams sourceIvs) -> const IvSequencePar
   cout << " }\n";
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_ivs = IvSequenceParams{atlasFrameSizes, haveTexture()};
-  m_ivs.aaps.aaps_log2_max_afoc_present_flag(true).aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(
-      log2FocLsbMinus4());
-  m_ivs.vme() = m_transportIvs.vme();
-  m_ivs.viewParamsList = m_transportIvs.viewParamsList;
-  m_ivs.viewingSpace = m_transportIvs.viewingSpace;
-  m_ivs.frameRate = m_transportIvs.frameRate;
+  m_params = EncoderParams{atlasFrameSizes, haveTexture()};
+  m_params.aaps.aaps_log2_max_afoc_present_flag(true)
+      .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4());
+  m_params.vme() = m_transportParams.vme();
+  m_params.viewParamsList = m_transportParams.viewParamsList;
+  m_params.viewingSpace = m_transportParams.viewingSpace;
+  m_params.frameRate = m_transportParams.frameRate;
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
-  // Update views per atlas info
-  // TODO(BK): Extract function
-  // TODO(BK): Update or set after packing to be more useful
-  m_ivs.mvpl.mvp_num_views_minus1(uint16_t(m_isBasicView.size() - 1));
-  for (uint8_t a = 0; a <= m_ivs.vps.vps_atlas_count_minus1(); ++a) {
-    for (uint16_t v = 0; v <= m_ivs.mvpl.mvp_num_views_minus1(); ++v) {
-      m_ivs.mvpl.mvp_view_enabled_in_atlas_flag(a, v, true);
-      m_ivs.mvpl.mvp_view_complete_in_atlas_flag(a, v, m_isBasicView[v]);
-    }
-  }
-  m_ivs.mvpl.mvp_explicit_view_id_flag(true);
-  for (uint16_t v = 0; v <= m_ivs.mvpl.mvp_num_views_minus1(); ++v) {
-    m_ivs.mvpl.mvp_view_id(v, v);
-  }
-
   // Register pruning relation
-  m_pruner->registerPruningRelation(m_ivs, m_isBasicView);
+  m_pruner->registerPruningRelation(m_params);
 
   // Turn on occupancy coding per view
   enableOccupancyPerView();
 
   // Set-up ASPS and AFPS
   prepareIvau();
-
-  // Further transform sequence parameters: geometry downscaling and depth/occupancy coding
-  return m_geometryDownscaler.transformSequenceParams(
-      m_depthOccupancy->transformSequenceParams(m_ivs));
 }
 
 // Calculate atlas frame sizes [MPEG/M52994 v2]
-auto Encoder::calculateNominalAtlasFrameSizes(const IvSequenceParams &ivSequenceParams) const
-    -> SizeVector {
+auto Encoder::calculateNominalAtlasFrameSizes(const EncoderParams &params) const -> SizeVector {
   if (m_maxBlockRate == 0) {
     // No constraints: one atlas per transport view
-    auto result = SizeVector(ivSequenceParams.viewParamsList.size());
-    transform(cbegin(ivSequenceParams.viewParamsList), cend(ivSequenceParams.viewParamsList),
-              begin(result), [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
+    auto result = SizeVector(params.viewParamsList.size());
+    transform(cbegin(params.viewParamsList), cend(params.viewParamsList), begin(result),
+              [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
     return result;
   }
 
@@ -109,7 +89,7 @@ auto Encoder::calculateNominalAtlasFrameSizes(const IvSequenceParams &ivSequence
   }
 
   // Translate block rate into a maximum number of blocks
-  const auto maxBlocks = int(m_maxBlockRate / ivSequenceParams.frameRate);
+  const auto maxBlocks = int(m_maxBlockRate / params.frameRate);
 
   // Calculate the number of atlases
   auto numAtlases = (maxBlocks + m_maxBlocksPerAtlas - 1) / m_maxBlocksPerAtlas;
@@ -126,7 +106,7 @@ auto Encoder::calculateNominalAtlasFrameSizes(const IvSequenceParams &ivSequence
   }
 
   // Take the smallest reasonable width
-  const auto viewGridSize = calculateViewGridSize(ivSequenceParams);
+  const auto viewGridSize = calculateViewGridSize(params);
   const auto atlasGridWidth = viewGridSize.x();
   const auto atlasGridHeight = maxBlocksPerAtlas / atlasGridWidth;
 
@@ -138,11 +118,11 @@ auto Encoder::calculateNominalAtlasFrameSizes(const IvSequenceParams &ivSequence
   return SizeVector(numAtlases, {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
 }
 
-auto Encoder::calculateViewGridSize(const IvSequenceParams &ivSequenceParams) const -> Vec2i {
+auto Encoder::calculateViewGridSize(const EncoderParams &params) const -> Vec2i {
   int x{};
   int y{};
 
-  for (const auto &viewParams : ivSequenceParams.viewParamsList) {
+  for (const auto &viewParams : params.viewParamsList) {
     x = max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_blockSize) / m_blockSize);
     y = max(y, (viewParams.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
   }
@@ -152,56 +132,57 @@ auto Encoder::calculateViewGridSize(const IvSequenceParams &ivSequenceParams) co
 
 void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
   uint8_t numBitsMinus1 = 9; // Main 10
-  for (auto &vp : m_ivs.viewParamsList) {
+  for (auto &vp : m_params.viewParamsList) {
     const auto size = max(vp.ci.ci_projection_plane_width_minus1() + 1,
                           vp.ci.ci_projection_plane_height_minus1() + 1);
     numBitsMinus1 = max(numBitsMinus1, static_cast<uint8_t>(ceilLog2(size) - 1));
   }
-  for (uint8_t atlasId = 0; atlasId <= m_ivs.vps.vps_atlas_count_minus1(); ++atlasId) {
-    m_ivs.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bitdepth_minus1(
+  for (uint8_t atlasId = 0; atlasId <= m_params.vps.vps_atlas_count_minus1(); ++atlasId) {
+    m_params.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bitdepth_minus1(
         numBitsMinus1);
   }
 }
 
 auto Encoder::haveTexture() const -> bool {
-  assert(m_transportIvs.vps.vps_atlas_count_minus1() == 0);
-  const auto &ai = m_transportIvs.vps.attribute_information(0);
+  assert(m_transportParams.vps.vps_atlas_count_minus1() == 0);
+  const auto &ai = m_transportParams.vps.attribute_information(0);
   return ai.ai_attribute_count() >= 1 &&
          ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 }
 
 void Encoder::enableOccupancyPerView() {
-  for (size_t viewId = 0; viewId < m_ivs.viewParamsList.size(); ++viewId) {
-    if (!m_isBasicView[viewId] || m_ivs.vme().vme_max_entities_minus1() > 0) {
-      m_ivs.viewParamsList[viewId].hasOccupancy = true;
+  for (size_t viewId = 0; viewId < m_params.viewParamsList.size(); ++viewId) {
+    if (!m_params.viewParamsList[viewId].isBasicView ||
+        m_params.vme().vme_max_entities_minus1() > 0) {
+      m_params.viewParamsList[viewId].hasOccupancy = true;
     }
   }
 }
 
 void Encoder::prepareIvau() {
-  m_ivau.atlas.resize(m_ivs.vps.vps_atlas_count_minus1() + size_t(1));
+  m_params.atlas.resize(m_params.vps.vps_atlas_count_minus1() + size_t(1));
 
-  for (uint8_t i = 0; i <= m_ivs.vps.vps_atlas_count_minus1(); ++i) {
-    auto &atlas = m_ivau.atlas[i];
+  for (uint8_t i = 0; i <= m_params.vps.vps_atlas_count_minus1(); ++i) {
+    auto &atlas = m_params.atlas[i];
 
     // Set ASPS parameters
-    atlas.asps.asps_frame_width(m_ivs.vps.vps_frame_width(i))
-        .asps_frame_height(m_ivs.vps.vps_frame_height(i))
+    atlas.asps.asps_frame_width(m_params.vps.vps_frame_width(i))
+        .asps_frame_height(m_params.vps.vps_frame_height(i))
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
-        .asps_max_number_projections_minus1(uint16_t(m_ivs.viewParamsList.size() - 1))
+        .asps_max_number_projections_minus1(uint16_t(m_params.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
 
     // Signalling pdu_entity_id requires ASME to be present
-    if (m_ivs.vps.vps_miv_extension_flag() && m_ivs.vme().vme_max_entities_minus1() > 0) {
+    if (m_params.vps.vps_miv_extension_flag() && m_params.vme().vme_max_entities_minus1() > 0) {
       // There is nothing entity-related in ASME so a reference is obtained but discarded
       static_cast<void>(atlas.asme());
     }
 
     // Set AFPS parameters
-    const auto &gi = m_ivs.vps.geometry_information(i);
+    const auto &gi = m_params.vps.geometry_information(i);
     atlas.afps.afps_3d_pos_x_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
     atlas.afps.afps_3d_pos_y_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
 

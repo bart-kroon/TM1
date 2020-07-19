@@ -58,25 +58,23 @@ SCENARIO("Geometry quantization") {
   sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
 
   GIVEN("View parameters without invalid depth") {
-    auto sourceSequenceParams = IvSequenceParams{};
-    sourceSequenceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
+    auto sourceParams = EncoderParams{};
+    sourceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
-      const auto codedSequenceParams = depthOccupancy.transformSequenceParams(sourceSequenceParams);
+      const auto codedParams = depthOccupancy.transformParams(sourceParams, {});
 
-      THEN("The camera parameters are unmodified") {
-        REQUIRE(codedSequenceParams == sourceSequenceParams);
-      }
+      THEN("The camera parameters are unmodified") { REQUIRE(codedParams == sourceParams); }
     }
   }
 
   GIVEN("View parameters with invalid depth") {
     sourceViewParams.hasOccupancy = true;
-    auto sourceSeqParams = IvSequenceParams{};
+    auto sourceSeqParams = EncoderParams{};
     sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
-      const auto codedSeqParams = depthOccupancy.transformSequenceParams(sourceSeqParams);
+      const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams, {});
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
       THEN("pduDepthOccMapThreshold (T) >> 0") {

@@ -40,22 +40,24 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-auto Encoder::completeAccessUnit() -> const IvAccessUnitParams & {
+auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
 
   updateAggregationStatistics(aggregatedMask);
 
-  if (m_ivs.vme().vme_max_entities_minus1() > 0) {
+  if (m_params.vme().vme_max_entities_minus1() > 0) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  m_ivau.patchParamsList = m_packer->pack(m_ivau.atlasSizes(), aggregatedMask, m_isBasicView);
+  m_params.patchParamsList =
+      m_packer->pack(m_params.atlasSizes(), aggregatedMask, m_transportParams.viewParamsList);
 
   constructVideoFrames();
 
-  return m_geometryDownscaler.transformAccessUnitParams(
-      m_depthOccupancy->transformAccessUnitParams(m_ivau));
+  const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params, m_transportViews);
+  const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
+  return paramsScaled;
 }
 
 void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {
@@ -73,9 +75,9 @@ void Encoder::constructVideoFrames() {
   for (const auto &views : m_transportViews) {
     MVD16Frame atlasList;
 
-    for (uint8_t i = 0; i <= m_ivs.vps.vps_atlas_count_minus1(); ++i) {
-      const auto frameWidth = m_ivs.vps.vps_frame_width(i);
-      const auto frameHeight = m_ivs.vps.vps_frame_height(i);
+    for (uint8_t i = 0; i <= m_params.vps.vps_atlas_count_minus1(); ++i) {
+      const auto frameWidth = m_params.vps.vps_frame_width(i);
+      const auto frameHeight = m_params.vps.vps_frame_height(i);
       TextureDepth16Frame frame = {TextureFrame(frameWidth, frameHeight),
                                    Depth16Frame(frameWidth, frameHeight)};
       frame.texture.fillNeutral();
@@ -83,9 +85,9 @@ void Encoder::constructVideoFrames() {
       atlasList.push_back(move(frame));
     }
 
-    for (const auto &patch : m_ivau.patchParamsList) {
+    for (const auto &patch : m_params.patchParamsList) {
       const auto &view = views[patch.pduViewId()];
-      if (m_ivs.vme().vme_max_entities_minus1() > 0) {
+      if (m_params.vme().vme_max_entities_minus1() > 0) {
         MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
@@ -113,8 +115,8 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
   int xM = patchParams.pduViewPos().x();
   int yM = patchParams.pduViewPos().y();
 
-  const auto &inViewParams = m_transportIvs.viewParamsList[patchParams.pduViewId()];
-  const auto &outViewParams = m_ivs.viewParamsList[patchParams.pduViewId()];
+  const auto &inViewParams = m_transportParams.viewParamsList[patchParams.pduViewId()];
+  const auto &outViewParams = m_params.viewParamsList[patchParams.pduViewId()];
 
   for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
@@ -168,7 +170,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           // Depth
           auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
           if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
-              m_ivs.vme().vme_max_entities_minus1() == 0) {
+              m_params.vme().vme_max_entities_minus1() == 0) {
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;

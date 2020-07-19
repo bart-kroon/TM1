@@ -37,8 +37,7 @@
 #include <TMIV/Common/Frame.h>
 #include <TMIV/Common/Json.h>
 #include <TMIV/Decoder/AccessUnit.h>
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
 // Functions for file I/O
 //
@@ -48,7 +47,7 @@ namespace TMIV::IO {
 // Load sequence metadata from the configuration files. It is up to the Encoder to comply (or
 // ignore) fields such as num_groups. The in-memory metadata representation has to be complete
 // only after IEncoder.
-auto loadSourceIvSequenceParams(const Common::Json &config) -> MivBitstream::IvSequenceParams;
+auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams;
 
 // Loads a source frame including entity maps when applicable
 auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes, int frameIndex)

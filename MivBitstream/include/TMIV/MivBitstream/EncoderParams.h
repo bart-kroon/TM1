@@ -76,6 +76,9 @@ struct EncoderParams {
 
   std::vector<EncoderAtlasParams> atlas;
 
+  std::vector<float> norm_disp_low_orig;
+  std::vector<float> norm_disp_high_orig;
+
   // Convenience function to access the VPS MIV extension
   [[nodiscard]] auto vme() const noexcept -> const VpsMivExtension &;
 

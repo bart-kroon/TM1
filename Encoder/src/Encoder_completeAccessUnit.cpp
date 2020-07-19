@@ -40,11 +40,73 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
+
+auto Encoder::scaleGeometryDynamicRange() -> void {
+
+  bool lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
+  int numOfFrames = m_transportViews.size();
+  int numOfViews = m_transportViews[0].size();
+
+  for (int v = 0; v < numOfViews; v++) {
+
+    int minDepthMapValWithinGOP = 65535;
+    int maxDepthMapValWithinGOP = 0;
+
+    for (int f = 0; f < numOfFrames; f++) {
+      auto DM = m_transportViews[f][v].depth.getPlane(0);
+      int W = DM.width();
+      int H = DM.height();
+      for (int h = 0; h < H; h++) {
+        for (int w = 0; w < W; w++) {
+          if (DM(h, w) < minDepthMapValWithinGOP) {
+            minDepthMapValWithinGOP = DM(h, w);
+          }
+          if (DM(h, w) > maxDepthMapValWithinGOP) {
+            maxDepthMapValWithinGOP = DM(h, w);
+          }
+        } // w
+      }   // h
+    }     // f
+
+    for (int f = 0; f < numOfFrames; f++) {
+      auto &DM = m_transportViews[f][v].depth.getPlane(0);
+      int W = DM.width();
+      int H = DM.height();
+      for (int h = 0; h < H; h++) {
+        for (int w = 0; w < W; w++) {
+          DM(h, w) = (DM(h, w) + 0.5 - minDepthMapValWithinGOP) /
+                     (maxDepthMapValWithinGOP - minDepthMapValWithinGOP) * 65535.0;
+          if (lowDepthQuality) {
+            DM(h, w) /= 2;
+          }
+        } // w
+      }   // h
+    }     // f
+
+    double NDH_orig = m_params.norm_disp_high_orig[v];
+    double NDL_orig = m_params.norm_disp_low_orig[v];
+
+    double NDH = maxDepthMapValWithinGOP / 65535.0 * (NDH_orig - NDL_orig) + NDL_orig;
+    double NDL = minDepthMapValWithinGOP / 65535.0 * (NDH_orig - NDL_orig) + NDL_orig;
+
+    if (lowDepthQuality) {
+      NDH = 2 * NDH - NDL;
+    }
+
+    m_params.viewParamsList[v].dq.dq_norm_disp_high(NDH);
+    m_params.viewParamsList[v].dq.dq_norm_disp_low(NDL);
+  } // v
+
+  return;
+}
+
 auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
 
   updateAggregationStatistics(aggregatedMask);
+
+  scaleGeometryDynamicRange();
 
   if (m_params.vme().vme_max_entities_minus1() > 0) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);

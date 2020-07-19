@@ -61,6 +61,14 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.viewingSpace = m_transportParams.viewingSpace;
   m_params.frameRate = m_transportParams.frameRate;
+
+  for (int v = 0; v < m_transportParams.viewParamsList.size(); v++) {
+    m_params.norm_disp_high_orig.push_back(
+        m_transportParams.viewParamsList[v].dq.dq_norm_disp_high());
+    m_params.norm_disp_low_orig.push_back(
+        m_transportParams.viewParamsList[v].dq.dq_norm_disp_low());
+  }
+
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
   // Register pruning relation

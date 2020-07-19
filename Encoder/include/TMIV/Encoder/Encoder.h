@@ -93,6 +93,7 @@ private: // Encoder_pushFrame.cpp
   void aggregateEntityMasks(Common::MaskList &masks, std::uint16_t entityId);
 
 private: // Encoder_completeAccessUnit.cpp
+  void scaleGeometryDynamicRange();
   void updateAggregationStatistics(const Common::MaskList &aggregatedMask);
   void constructVideoFrames();
   void writePatchInAtlas(const MivBitstream::PatchParams &patchParams,

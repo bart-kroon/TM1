@@ -384,7 +384,7 @@ auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream &
   if (m_pdu_depth_end) {
     stream << "pdu_depth_end( " << patchIdx << " )=" << pdu_depth_end() << '\n';
   }
-  stream << "pdu_projection_id( " << patchIdx << " )=" << pdu_projection_id() << '\n';
+  stream << "pdu_view_idx( " << patchIdx << " )=" << pdu_view_idx() << '\n';
   stream << "pdu_orientation_index( " << patchIdx << " )=" << pdu_orientation_index() << '\n';
   if (m_pdu_miv_extension) {
     m_pdu_miv_extension->printTo(stream, patchIdx);
@@ -433,14 +433,14 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
       asps.asps_extended_projection_enabled_flag()
           ? ceilLog2(asps.asps_max_number_projections_minus1() + 1)
           : 3U;
-  x.pdu_projection_id(bitstream.readBits<uint16_t>(pdu_projection_id_num_bits));
+  x.pdu_view_idx(bitstream.readBits<uint16_t>(pdu_projection_id_num_bits));
 
   const auto pdu_orientation_index_num_bits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
   x.pdu_orientation_index(
       bitstream.readBits<FlexiblePatchOrientation>(pdu_orientation_index_num_bits));
 
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
-  VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
+  VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
     x.pdu_miv_extension(PduMivExtension::decodeFrom(bitstream, vuh, vps, asps));
@@ -483,8 +483,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
       asps.asps_extended_projection_enabled_flag()
           ? ceilLog2(asps.asps_max_number_projections_minus1() + 1)
           : 3U;
-  VERIFY_V3CBITSTREAM((pdu_projection_id() >> pdu_projection_id_num_bits) == 0);
-  bitstream.writeBits(pdu_projection_id(), pdu_projection_id_num_bits);
+  VERIFY_V3CBITSTREAM((pdu_view_idx() >> pdu_projection_id_num_bits) == 0);
+  bitstream.writeBits(pdu_view_idx(), pdu_projection_id_num_bits);
 
   if (asps.asps_use_eight_orientations_flag()) {
     bitstream.writeBits(pdu_orientation_index(), 3);
@@ -495,7 +495,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   }
 
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
-  VERIFY_MIVBITSTREAM(!asps.asps_point_local_reconstruction_enabled_flag());
+  VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
     pdu_miv_extension().encodeTo(bitstream, vuh, vps, asps);

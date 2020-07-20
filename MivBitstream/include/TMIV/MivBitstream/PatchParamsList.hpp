@@ -53,7 +53,7 @@ inline auto PatchParams::pduDepthStart() const noexcept { return m_pduDepthStart
 
 inline auto PatchParams::pduDepthEnd() const noexcept { return m_pduDepthEnd; }
 
-inline auto PatchParams::pduViewId() const noexcept { return m_pduViewId; }
+inline auto PatchParams::pduViewIdx() const noexcept { return m_pduViewIdx; }
 
 inline auto PatchParams::pduOrientationIndex() const noexcept { return m_pduOrientationIndex; }
 
@@ -98,8 +98,8 @@ inline auto PatchParams::pduDepthEnd(const std::uint16_t value) noexcept -> Patc
   return *this;
 }
 
-inline auto PatchParams::pduViewId(const std::uint16_t value) noexcept -> PatchParams & {
-  m_pduViewId = value;
+inline auto PatchParams::pduViewIdx(const std::uint16_t value) noexcept -> PatchParams & {
+  m_pduViewIdx = value;
   return *this;
 }
 
@@ -121,7 +121,7 @@ inline auto PatchParams::pduDepthOccMapThreshold(const std::uint16_t value) noex
 }
 
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
-  return vuhAtlasId == other.vuhAtlasId && pduViewId() == other.pduViewId() &&
+  return vuhAtlasId == other.vuhAtlasId && pduViewIdx() == other.pduViewIdx() &&
          pduEntityId() == other.pduEntityId() && pduViewSize() == other.pduViewSize() &&
          pduViewPos() == other.pduViewPos() && pdu2dPos() == other.pdu2dPos() &&
          pduOrientationIndex() == other.pduOrientationIndex() &&

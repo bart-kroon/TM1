@@ -55,7 +55,7 @@ struct PatchParams {
   [[nodiscard]] auto pduViewSize() const noexcept;
   [[nodiscard]] auto pduDepthStart() const noexcept;
   [[nodiscard]] auto pduDepthEnd() const noexcept;
-  [[nodiscard]] auto pduViewId() const noexcept;
+  [[nodiscard]] auto pduViewIdx() const noexcept;
   [[nodiscard]] auto pduOrientationIndex() const noexcept;
   [[nodiscard]] auto pduEntityId() const noexcept;
   [[nodiscard]] auto pduDepthOccMapThreshold() const noexcept;
@@ -66,7 +66,7 @@ struct PatchParams {
   auto pduViewPos(const Common::Vec2i value) noexcept -> PatchParams &;
   auto pduDepthStart(const std::uint16_t value) noexcept -> PatchParams &;
   auto pduDepthEnd(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduViewId(const std::uint16_t value) noexcept -> PatchParams &;
+  auto pduViewIdx(const std::uint16_t value) noexcept -> PatchParams &;
   auto pduOrientationIndex(const FlexiblePatchOrientation value) noexcept -> PatchParams &;
   auto pduEntityId(const std::uint16_t value) noexcept -> PatchParams &;
   auto pduDepthOccMapThreshold(const std::uint16_t value) noexcept -> PatchParams &;
@@ -87,7 +87,7 @@ private:
   Common::Vec2i m_pduViewPos;
   std::uint16_t m_pduDepthStart{};
   std::optional<std::uint16_t> m_pduDepthEnd;
-  std::uint16_t m_pduViewId{};
+  std::uint16_t m_pduViewIdx{};
   FlexiblePatchOrientation m_pduOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<std::uint16_t> m_pduEntityId;
   std::optional<std::uint16_t> m_pduDepthOccMapThreshold;

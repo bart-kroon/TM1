@@ -78,7 +78,7 @@ private:
 // 23090-5: asps_vpcc_extension( )
 //
 // 2309-12 restrictions:
-//   * asps_point_local_reconstruction_enabled_flag == 0
+//   * asps_plr_enabled_flag == 0
 class AspsVpccExtension {
 public:
   [[nodiscard]] constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag() const noexcept;
@@ -140,7 +140,7 @@ private:
 //   * asps_pixel_deinterleaving_enabled_flag == 0
 //   * asps_eom_patch_enabled_flag == 0
 //   * asps_raw_patch_enabled_flag == 0
-//   * asps_point_local_reconstruction_enabled_flag == 0
+//   * asps_plr_enabled_flag == 0
 //
 // Limitations of this implementation:
 //   * asps_vui_parameters_present_flag == 0
@@ -166,7 +166,7 @@ public:
   [[nodiscard]] constexpr auto asps_pixel_deinterleaving_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_eom_patch_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_raw_patch_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto asps_point_local_reconstruction_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_plr_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_vui_parameters_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_vpcc_extension_flag() const noexcept;
@@ -201,7 +201,7 @@ public:
   constexpr auto asps_pixel_deinterleaving_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_raw_patch_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_eom_patch_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_point_local_reconstruction_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_plr_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_vui_parameters_present_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_extension_present_flag(const bool value) noexcept -> auto &;
   auto asps_vpcc_extension_flag(const bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
@@ -243,7 +243,7 @@ private:
   bool m_asps_patch_size_quantizer_present_flag{};
   bool m_asps_raw_patch_enabled_flag{};
   bool m_asps_eom_patch_enabled_flag{};
-  bool m_asps_point_local_reconstruction_enabled_flag{};
+  bool m_asps_plr_enabled_flag{};
   std::uint8_t m_asps_map_count_minus1{};
   bool m_asps_vui_parameters_present_flag{};
   bool m_asps_extension_present_flag{};

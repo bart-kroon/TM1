@@ -61,8 +61,8 @@ constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag(
   return m_aaps_log2_max_afoc_present_flag;
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_present_flag() const noexcept {
-  return m_aaps_extension_present_flag;
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_flag() const noexcept {
+  return m_aaps_extension_flag;
 }
 
 constexpr auto AtlasAdaptationParameterSetRBSP::aaps_vpcc_extension_flag() const noexcept {
@@ -89,9 +89,9 @@ constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag(
   return *this;
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_present_flag(bool value) noexcept
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_flag(bool value) noexcept
     -> auto & {
-  m_aaps_extension_present_flag = value;
+  m_aaps_extension_flag = value;
   return *this;
 }
 } // namespace TMIV::MivBitstream

@@ -85,7 +85,7 @@ class ProfileTierLevel {
 public:
   [[nodiscard]] constexpr auto ptl_tier_flag() const noexcept;
   [[nodiscard]] constexpr auto ptl_profile_codec_group_idc() const noexcept;
-  [[nodiscard]] constexpr auto ptl_profile_pcc_toolset_idc() const noexcept;
+  [[nodiscard]] constexpr auto ptl_profile_toolset_idc() const noexcept;
   [[nodiscard]] constexpr auto ptl_profile_reconstruction_idc() const noexcept;
   [[nodiscard]] constexpr auto ptl_level_idc() const noexcept;
   [[nodiscard]] auto ptl_num_sub_profiles() const noexcept -> std::uint8_t;
@@ -95,7 +95,7 @@ public:
 
   constexpr auto ptl_tier_flag(bool value) noexcept -> auto &;
   constexpr auto ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc value) noexcept -> auto &;
-  constexpr auto ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc value) noexcept -> auto &;
+  constexpr auto ptl_profile_toolset_idc(PtlProfilePccToolsetIdc value) noexcept -> auto &;
   constexpr auto ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept
       -> auto &;
   constexpr auto ptl_level_idc(PtlLevelIdc value) noexcept -> auto &;
@@ -116,7 +116,7 @@ public:
 private:
   bool m_ptl_tier_flag{};
   PtlProfileCodecGroupIdc m_ptl_profile_codec_group_idc{};
-  PtlProfilePccToolsetIdc m_ptl_profile_pcc_toolset_idc{};
+  PtlProfilePccToolsetIdc m_ptl_profile_toolset_idc{};
   PtlProfileReconstructionIdc m_ptl_profile_reconstruction_idc{};
   PtlLevelIdc m_ptl_level_idc{};
   std::vector<std::uint64_t> m_subProfileIdcs;

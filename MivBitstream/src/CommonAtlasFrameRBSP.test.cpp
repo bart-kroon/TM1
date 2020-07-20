@@ -159,7 +159,7 @@ dq_depth_occ_map_threshold_default[ 2 ]=200
 
 TEST_CASE("pruning_parent", "[Common Atlas Frame RBSP]") {
   SECTION("Example 1") {
-    const auto x = PruningParent{};
+    const auto x = PruningParents{};
     REQUIRE(toString(x, 3) == R"(pp_is_root_flag[ 3 ]=true
 )");
 
@@ -168,7 +168,7 @@ TEST_CASE("pruning_parent", "[Common Atlas Frame RBSP]") {
   }
 
   SECTION("Example 2") {
-    const auto x = PruningParent{{2, 3, 5, 8}};
+    const auto x = PruningParents{{2, 3, 5, 8}};
     REQUIRE(toString(x, 5) == R"(pp_is_root_flag[ 5 ]=false
 pp_num_parent_minus1[ 5 ]=3
 pp_parent_id[ 5 ][ 0 ]=2

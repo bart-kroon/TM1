@@ -597,8 +597,11 @@ auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeade
                                    const vector<AtlasSequenceParameterSetRBSP> &asps,
                                    const vector<AtlasFrameParameterSetRBSP> &afps,
                                    const AtlasTileHeader &ath) -> AtlasTileDataUnit {
-  VERIFY_V3CBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::P_TILE);
-  VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE);
+  VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
+
+  if (ath.ath_type() == AthType::SKIP_TILE) {
+    return {};
+  }
 
   auto x = AtlasTileDataUnit::Vector{};
   auto patch_mode = bitstream.getUExpGolomb<AtduPatchMode>();
@@ -610,7 +613,6 @@ auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeade
     patch_mode = bitstream.getUExpGolomb<AtduPatchMode>();
   }
 
-  bitstream.byteAlignment();
   return AtlasTileDataUnit{x};
 }
 
@@ -619,35 +621,28 @@ void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader
                                  const vector<AtlasSequenceParameterSetRBSP> &asps,
                                  const vector<AtlasFrameParameterSetRBSP> &afps,
                                  const AtlasTileHeader &ath) const {
-  VERIFY_V3CBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::P_TILE);
-  VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE);
+  VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
 
-  visit([&](const auto /* p */, const AtduPatchMode patch_mode,
-            const PatchInformationData &patch_information_data) {
-    bitstream.putUExpGolomb(patch_mode);
-    patch_information_data.encodeTo(bitstream, vuh, vps, asps, afps, ath, patch_mode);
-  });
+  if (ath.ath_type() == AthType::I_TILE) {
+    visit([&](const auto /* p */, const AtduPatchMode patch_mode,
+              const PatchInformationData &patch_information_data) {
+      bitstream.putUExpGolomb(patch_mode);
+      patch_information_data.encodeTo(bitstream, vuh, vps, asps, afps, ath, patch_mode);
+    });
 
-  bitstream.putUExpGolomb(AtduPatchMode::I_END);
-  bitstream.byteAlignment();
-}
-
-auto AtlasTileLayerRBSP::atlas_tile_data_unit() const noexcept -> const AtlasTileDataUnit & {
-  VERIFY_V3CBITSTREAM(m_atlas_tile_data_unit);
-  return *m_atlas_tile_data_unit;
+    bitstream.putUExpGolomb(AtduPatchMode::I_END);
+  }
 }
 
 auto operator<<(ostream &stream, const AtlasTileLayerRBSP &x) -> ostream & {
   stream << x.atlas_tile_header();
-  if (x.atlas_tile_header().ath_type() != AthType::SKIP_TILE) {
-    x.atlas_tile_data_unit().printTo(stream, x.atlas_tile_header().ath_type());
-  }
+  x.atlas_tile_data_unit().printTo(stream, x.atlas_tile_header().ath_type());
   return stream;
 }
 
 auto AtlasTileLayerRBSP::operator==(const AtlasTileLayerRBSP &other) const noexcept -> bool {
   return atlas_tile_header() == other.atlas_tile_header() &&
-         m_atlas_tile_data_unit == other.m_atlas_tile_data_unit;
+         atlas_tile_data_unit() == other.atlas_tile_data_unit();
 }
 
 auto AtlasTileLayerRBSP::operator!=(const AtlasTileLayerRBSP &other) const noexcept -> bool {
@@ -661,14 +656,12 @@ auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cUnitHeader &vuh,
     -> AtlasTileLayerRBSP {
   InputBitstream bitstream{stream};
 
-  const auto ath = AtlasTileHeader::decodeFrom(bitstream, asps, afps);
-  auto atl = AtlasTileLayerRBSP{ath};
-
-  if (ath.ath_type() != AthType::SKIP_TILE) {
-    atl = {ath, AtlasTileDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, ath)};
-  }
-
+  auto atl = AtlasTileLayerRBSP{};
+  atl.atlas_tile_header() = AtlasTileHeader::decodeFrom(bitstream, asps, afps);
+  atl.atlas_tile_data_unit() =
+      AtlasTileDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, atl.atlas_tile_header());
   bitstream.rbspTrailingBits();
+
   return atl;
 }
 
@@ -678,13 +671,8 @@ void AtlasTileLayerRBSP::encodeTo(ostream &stream, const V3cUnitHeader &vuh,
                                   const vector<AtlasFrameParameterSetRBSP> &afps) const {
   OutputBitstream bitstream{stream};
 
-  const auto &ath = atlas_tile_header();
-  ath.encodeTo(bitstream, asps, afps);
-
-  if (ath.ath_type() != AthType::SKIP_TILE) {
-    atlas_tile_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, ath);
-  }
-
+  atlas_tile_header().encodeTo(bitstream, asps, afps);
+  atlas_tile_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atlas_tile_header());
   bitstream.rbspTrailingBits();
 }
 } // namespace TMIV::MivBitstream

@@ -326,19 +326,11 @@ private:
 // 23090-5: atlas_tile_layer_rbsp( )
 class AtlasTileLayerRBSP {
 public:
-  AtlasTileLayerRBSP() = default;
-  explicit AtlasTileLayerRBSP(AtlasTileHeader header) : m_atlas_tile_header{header} {}
+  [[nodiscard]] constexpr auto atlas_tile_header() const noexcept -> auto &;
+  [[nodiscard]] constexpr auto atlas_tile_data_unit() const noexcept -> auto &;
 
-  AtlasTileLayerRBSP(AtlasTileHeader header, AtlasTileDataUnit unit)
-      : m_atlas_tile_header{header}, m_atlas_tile_data_unit{std::move(unit)} {}
-
-  template <typename... AtduArgs>
-  AtlasTileLayerRBSP(AtlasTileHeader header, std::in_place_t in_place, AtduArgs &&... args)
-      : m_atlas_tile_header{header}
-      , m_atlas_tile_data_unit{in_place, std::forward<AtduArgs>(args)...} {}
-
-  [[nodiscard]] constexpr auto atlas_tile_header() const noexcept -> const AtlasTileHeader &;
-  [[nodiscard]] auto atlas_tile_data_unit() const noexcept -> const AtlasTileDataUnit &;
+  [[nodiscard]] constexpr auto atlas_tile_header() noexcept -> auto &;
+  [[nodiscard]] constexpr auto atlas_tile_data_unit() noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AtlasTileLayerRBSP &x) -> std::ostream &;
 
@@ -356,7 +348,7 @@ public:
 
 private:
   AtlasTileHeader m_atlas_tile_header;
-  std::optional<AtlasTileDataUnit> m_atlas_tile_data_unit;
+  AtlasTileDataUnit m_atlas_tile_data_unit;
 };
 } // namespace TMIV::MivBitstream
 

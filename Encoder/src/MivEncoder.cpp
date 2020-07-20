@@ -318,7 +318,10 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
     }
   }
 
-  return AtlasTileLayerRBSP{aau.ath, AtlasTileDataUnit{patchData}};
+  auto x = AtlasTileLayerRBSP{};
+  x.atlas_tile_header() = aau.ath;
+  x.atlas_tile_data_unit() = AtlasTileDataUnit{patchData};
+  return x;
 }
 
 template <typename Payload>

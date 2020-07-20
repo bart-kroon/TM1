@@ -55,8 +55,6 @@ afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=false
 afps_num_ref_idx_default_active_minus1=0
 afps_additional_lt_afoc_lsb_len=0
-afps_3d_pos_x_bit_count_minus1=0
-afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_extension_present_flag=false
@@ -72,20 +70,19 @@ afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=false
 afps_num_ref_idx_default_active_minus1=0
 afps_additional_lt_afoc_lsb_len=0
-afps_3d_pos_x_bit_count_minus1=0
-afps_3d_pos_y_bit_count_minus1=0
 afps_lod_mode_enabled_flag=false
 afps_raw_3d_pos_bit_count_explicit_mode_flag=false
 afps_extension_present_flag=false
 )");
 
-    REQUIRE(byteCodingTest(x, 3, aspsV));
+    REQUIRE(byteCodingTest(x, 2, aspsV));
   }
 
   SECTION("Example 2") {
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(3);
     aspsV.back()
         .asps_atlas_sequence_parameter_set_id(12)
+        .asps_geometry_3d_bitdepth_minus1(31)
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(3)
         .asps_long_term_ref_atlas_frames_flag(true);
 
@@ -94,8 +91,6 @@ afps_extension_present_flag=false
         .afps_output_flag_present_flag(true)
         .afps_num_ref_idx_default_active_minus1(14)
         .afps_additional_lt_afoc_lsb_len(25)
-        .afps_3d_pos_x_bit_count_minus1(31)
-        .afps_3d_pos_y_bit_count_minus1(31)
         .afps_lod_mode_enabled_flag(true)
         .afps_raw_3d_pos_bit_count_explicit_mode_flag(true)
         .afps_extension_present_flag(true)
@@ -113,8 +108,6 @@ afti_signalled_tile_id_flag=false
 afps_output_flag_present_flag=true
 afps_num_ref_idx_default_active_minus1=14
 afps_additional_lt_afoc_lsb_len=25
-afps_3d_pos_x_bit_count_minus1=31
-afps_3d_pos_y_bit_count_minus1=31
 afps_lod_mode_enabled_flag=true
 afps_raw_3d_pos_bit_count_explicit_mode_flag=true
 afps_extension_present_flag=true
@@ -125,6 +118,6 @@ afps_extension_data_flag=false
 afps_extension_data_flag=true
 )");
 
-    REQUIRE(byteCodingTest(x, 8, aspsV));
+    REQUIRE(byteCodingTest(x, 7, aspsV));
   }
 }

@@ -139,7 +139,7 @@ pdu_orientation_index( 101 )=FPO_NULL
 
     vps.vps_geometry_video_present_flag(0, true)
         .geometry_information(atlasIdx)
-        .gi_geometry_3d_coordinates_bitdepth_minus1(9)
+        .gi_geometry_3d_coordinates_bitdepth_minus1(14)
         .gi_geometry_nominal_2d_bitdepth_minus1(9);
     vps.vps_extension_present_flag(true)
         .vps_miv_extension_flag(true)
@@ -147,6 +147,8 @@ pdu_orientation_index( 101 )=FPO_NULL
         .vme_max_entities_minus1(100);
 
     aspsV.front()
+        .asps_geometry_3d_bitdepth_minus1(14)
+        .asps_geometry_2d_bitdepth_minus1(9)
         .asps_use_eight_orientations_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)
@@ -155,8 +157,6 @@ pdu_orientation_index( 101 )=FPO_NULL
         .asps_miv_extension_flag(true)
         .asps_miv_extension()
         .asme_depth_occ_threshold_flag(true);
-
-    afpsV.front().afps_3d_pos_x_bit_count_minus1(10).afps_3d_pos_y_bit_count_minus1(14);
 
     x.pdu_2d_pos_x(34)
         .pdu_2d_pos_y(57)
@@ -186,7 +186,7 @@ pdu_entity_id( 102 )=35
 pdu_depth_occ_threshold( 102 )=600
 )");
 
-    REQUIRE(bitCodingTest(x, 139, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 153, vuh, vps, aspsV, afpsV, ath));
   }
 
   SECTION("Extend with only pdu_entity_id") {
@@ -202,6 +202,7 @@ pdu_depth_occ_threshold( 102 )=600
         .vme_max_entities_minus1(100);
 
     aspsV.front()
+        .asps_geometry_3d_bitdepth_minus1(14)
         .asps_use_eight_orientations_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)
@@ -211,8 +212,6 @@ pdu_depth_occ_threshold( 102 )=600
 
     // Create ASME with default values
     static_cast<void>(aspsV.front().asps_miv_extension());
-
-    afpsV.front().afps_3d_pos_x_bit_count_minus1(10).afps_3d_pos_y_bit_count_minus1(14);
 
     x.pdu_2d_pos_x(34)
         .pdu_2d_pos_y(57)
@@ -240,7 +239,7 @@ pdu_orientation_index( 102 )=FPO_MROT180
 pdu_entity_id( 102 )=35
 )");
 
-    REQUIRE(bitCodingTest(x, 129, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 133, vuh, vps, aspsV, afpsV, ath));
   }
 }
 

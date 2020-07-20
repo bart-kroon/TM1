@@ -128,6 +128,14 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height() const noexcept
   return m_asps_frame_height;
 }
 
+constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_3d_bitdepth_minus1() const noexcept {
+  return m_asps_geometry_3d_bitdepth_minus1;
+}
+
+constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_2d_bitdepth_minus1() const noexcept {
+  return m_asps_geometry_2d_bitdepth_minus1;
+}
+
 constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size() const noexcept {
   return m_asps_log2_patch_packing_block_size;
 }
@@ -232,6 +240,20 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_width(const uint16_t va
 constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height(const uint16_t value) noexcept
     -> auto & {
   m_asps_frame_height = value;
+  return *this;
+}
+
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_geometry_3d_bitdepth_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_asps_geometry_3d_bitdepth_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_geometry_2d_bitdepth_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_asps_geometry_2d_bitdepth_minus1 = value;
   return *this;
 }
 

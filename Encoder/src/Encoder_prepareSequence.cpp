@@ -165,10 +165,13 @@ void Encoder::prepareIvau() {
 
   for (uint8_t i = 0; i <= m_params.vps.vps_atlas_count_minus1(); ++i) {
     auto &atlas = m_params.atlas[i];
+    const auto &gi = m_params.vps.geometry_information(i);
 
     // Set ASPS parameters
     atlas.asps.asps_frame_width(m_params.vps.vps_frame_width(i))
         .asps_frame_height(m_params.vps.vps_frame_height(i))
+        .asps_geometry_3d_bitdepth_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1())
+        .asps_geometry_2d_bitdepth_minus1(gi.gi_geometry_nominal_2d_bitdepth_minus1())
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
@@ -181,11 +184,6 @@ void Encoder::prepareIvau() {
       // There is nothing entity-related in ASME so a reference is obtained but discarded
       static_cast<void>(atlas.asme());
     }
-
-    // Set AFPS parameters
-    const auto &gi = m_params.vps.geometry_information(i);
-    atlas.afps.afps_3d_pos_x_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
-    atlas.afps.afps_3d_pos_y_bit_count_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1());
 
     // Set ATH parameters
     atlas.ath.ath_ref_atlas_frame_list_sps_flag(true);

@@ -176,9 +176,10 @@ public:
   constexpr auto operator==(const DepthQuantization &) const noexcept;
   constexpr auto operator!=(const DepthQuantization &) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+      -> DepthQuantization;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
 
 private:
   float m_dq_norm_disp_low{};

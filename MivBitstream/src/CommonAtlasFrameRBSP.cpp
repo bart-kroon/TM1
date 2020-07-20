@@ -298,7 +298,8 @@ auto DepthQuantization::printTo(ostream &stream, uint16_t viewId) const -> ostre
   return stream;
 }
 
-auto DepthQuantization::decodeFrom(InputBitstream &bitstream) -> DepthQuantization {
+auto DepthQuantization::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+    -> DepthQuantization {
   auto x = DepthQuantization{};
 
   const auto dq_quantization_law = bitstream.getUint8();
@@ -306,18 +307,18 @@ auto DepthQuantization::decodeFrom(InputBitstream &bitstream) -> DepthQuantizati
 
   x.dq_norm_disp_low(bitstream.getFloat32());
   x.dq_norm_disp_high(bitstream.getFloat32());
-
-  x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
+	x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
 
   return x;
 }
 
-void DepthQuantization::encodeTo(OutputBitstream &bitstream) const {
+void DepthQuantization::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.putUint8(dq_quantization_law());
   bitstream.putFloat32(dq_norm_disp_low());
   bitstream.putFloat32(dq_norm_disp_high());
-
-  bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
+	bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
 }
 
 PruningParent::PruningParent(vector<uint16_t> pp_parent_id) : m_pp_parent_id{move(pp_parent_id)} {}
@@ -635,10 +636,10 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const V3cParameter
   x.mvp_depth_quantization_params_equal_flag(bitstream.getFlag());
 
   if (x.mvp_depth_quantization_params_equal_flag()) {
-    x.depth_quantization() = DepthQuantization::decodeFrom(bitstream);
+    x.depth_quantization() = DepthQuantization::decodeFrom(bitstream, vps);
   } else {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.depth_quantization(v) = DepthQuantization::decodeFrom(bitstream);
+      x.depth_quantization(v) = DepthQuantization::decodeFrom(bitstream, vps);
     }
   }
 
@@ -688,10 +689,10 @@ void MivViewParamsList::encodeTo(OutputBitstream &bitstream, const V3cParameterS
   bitstream.putFlag(mvp_depth_quantization_params_equal_flag());
 
   if (mvp_depth_quantization_params_equal_flag()) {
-    depth_quantization().encodeTo(bitstream);
+    depth_quantization().encodeTo(bitstream, vps);
   } else {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      depth_quantization(v).encodeTo(bitstream);
+      depth_quantization(v).encodeTo(bitstream, vps);
     }
   }
 

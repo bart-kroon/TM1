@@ -165,7 +165,8 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterS
   auto x = AspsMivExtension{};
   x.asme_group_id(bitstream.getUVar<unsigned>(vps.vps_miv_extension().vme_num_groups_minus1() + 1));
   x.asme_auxiliary_atlas_flag(bitstream.getFlag());
-  x.asme_depth_occ_threshold_flag(bitstream.getFlag());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
+	x.asme_depth_occ_threshold_flag(bitstream.getFlag());
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     x.asme_geometry_scale_factor_x_minus1(bitstream.getUExpGolomb<uint16_t>());
     x.asme_geometry_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
@@ -181,7 +182,8 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterS
 void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.putUVar(asme_group_id(), vps.vps_miv_extension().vme_num_groups_minus1() + 1);
   bitstream.putFlag(asme_auxiliary_atlas_flag());
-  bitstream.putFlag(asme_depth_occ_threshold_flag());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
+	bitstream.putFlag(asme_depth_occ_threshold_flag());
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     bitstream.putUExpGolomb(asme_geometry_scale_factor_x_minus1());
     bitstream.putUExpGolomb(asme_geometry_scale_factor_y_minus1());

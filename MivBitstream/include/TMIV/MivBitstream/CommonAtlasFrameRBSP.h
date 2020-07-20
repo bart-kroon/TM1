@@ -186,28 +186,28 @@ private:
   std::uint32_t m_dq_depth_occ_map_threshold_default{};
 };
 
-// 23090-12: pruning_parent()
-class PruningParent {
+// 23090-12: pruning_parents()
+class PruningParents {
 public:
-  PruningParent() = default;
-  explicit PruningParent(std::vector<std::uint16_t> pp_parent_id);
+  PruningParents() = default;
+  explicit PruningParents(std::vector<std::uint16_t> pp_parent_id);
 
   [[nodiscard]] auto pp_is_root_flag() const noexcept -> bool;
   [[nodiscard]] auto pp_num_parent_minus1() const noexcept -> std::uint16_t;
   [[nodiscard]] auto pp_parent_id(std::uint16_t i) const noexcept -> std::uint16_t;
 
-  auto pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningParent &;
+  auto pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept -> PruningParents &;
 
   [[nodiscard]] auto begin() const noexcept { return m_pp_parent_id.begin(); }
   [[nodiscard]] auto end() const noexcept { return m_pp_parent_id.end(); }
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
 
-  auto operator==(const PruningParent &) const noexcept -> bool;
-  auto operator!=(const PruningParent &) const noexcept -> bool;
+  auto operator==(const PruningParents &) const noexcept -> bool;
+  auto operator!=(const PruningParents &) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream, std::uint16_t mvp_num_views_minus1)
-      -> PruningParent;
+      -> PruningParents;
 
   void encodeTo(Common::OutputBitstream &bitstream, std::uint16_t mvp_num_views_minus1) const;
 
@@ -220,6 +220,7 @@ class MivViewParamsList {
 public:
   [[nodiscard]] auto mvp_num_views_minus1() const noexcept -> std::uint16_t;
 
+  [[nodiscard]] auto mvp_view_enabled_present_flag() const noexcept -> bool;
   [[nodiscard]] auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx,
                                                     std::uint16_t viewIdx) const noexcept -> bool;
   [[nodiscard]] auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx,
@@ -243,13 +244,18 @@ public:
   [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) const noexcept
       -> const DepthQuantization &;
 
-  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) const noexcept -> const PruningParent &;
+  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) const noexcept -> const PruningParents &;
 
   // Calling this function will allocate the camera extrinsics list
   auto mvp_num_views_minus1(std::uint16_t value) noexcept -> MivViewParamsList &;
 
+  auto mvp_view_enabled_present_flag(bool value) noexcept -> MivViewParamsList &;
+
+  // Sets mvp_view_enabled_in_atlas_flag[ a ][ i ] and also enables mvp_view_enabled_present_flag
+  // for convenience
   auto mvp_view_enabled_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx,
                                       bool value) noexcept -> MivViewParamsList &;
+
   auto mvp_view_complete_in_atlas_flag(std::uint8_t atlasIdx, std::uint16_t viewIdx,
                                        bool value) noexcept -> MivViewParamsList &;
   auto mvp_explicit_view_id_flag(bool value) noexcept -> MivViewParamsList &;
@@ -267,7 +273,7 @@ public:
   [[nodiscard]] auto camera_extrinsics(std::uint16_t viewId) noexcept -> CameraExtrinsics &;
   [[nodiscard]] auto camera_intrinsics(std::uint16_t viewId = 0) noexcept -> CameraIntrinsics &;
   [[nodiscard]] auto depth_quantization(std::uint16_t viewId = 0) noexcept -> DepthQuantization &;
-  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) noexcept -> PruningParent &;
+  [[nodiscard]] auto pruning_parent(std::uint16_t viewId) noexcept -> PruningParents &;
 
   friend auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream &;
 
@@ -287,6 +293,7 @@ private:
     constexpr auto operator==(const ViewInAtlas &other) const noexcept;
     constexpr auto operator!=(const ViewInAtlas &other) const noexcept;
   };
+  bool m_mvp_view_enabled_present_flag{};
   std::vector<std::vector<ViewInAtlas>> m_viewInAtlas;
   bool m_mvp_explicit_view_id_flag{};
   std::vector<std::uint16_t> m_mvp_view_id;
@@ -296,7 +303,7 @@ private:
   bool m_mvp_depth_quantization_params_equal_flag{};
   std::vector<DepthQuantization> m_depth_quantization;
   bool m_mvp_pruning_graph_params_present_flag{};
-  std::vector<PruningParent> m_pruning_parent;
+  std::vector<PruningParents> m_pruning_parent;
 };
 
 // 23090-12: miv_view_params_update_extrinsics

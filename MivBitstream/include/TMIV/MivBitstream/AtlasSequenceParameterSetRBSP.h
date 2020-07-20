@@ -78,7 +78,7 @@ private:
 // 23090-5: asps_vpcc_extension( )
 //
 // 2309-12 restrictions:
-//   * asps_point_local_reconstruction_enabled_flag == 0
+//   * asps_plr_enabled_flag == 0
 class AspsVpccExtension {
 public:
   [[nodiscard]] constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag() const noexcept;
@@ -109,12 +109,14 @@ public:
   [[nodiscard]] constexpr auto asme_depth_occ_threshold_flag() const noexcept;
   [[nodiscard]] auto asme_geometry_scale_factor_x_minus1() const noexcept -> uint16_t;
   [[nodiscard]] auto asme_geometry_scale_factor_y_minus1() const noexcept -> uint16_t;
+  [[nodiscard]] constexpr auto asme_patch_constant_depth_flag() const noexcept;
 
-  constexpr auto asme_group_id(const unsigned value) noexcept -> auto &;
-  constexpr auto asme_auxiliary_atlas_flag(const bool value) noexcept -> auto &;
-  constexpr auto asme_depth_occ_threshold_flag(const bool value) noexcept -> auto &;
-  constexpr auto asme_geometry_scale_factor_x_minus1(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto asme_geometry_scale_factor_y_minus1(const std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_group_id(unsigned value) noexcept -> auto &;
+  constexpr auto asme_auxiliary_atlas_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_depth_occ_threshold_flag(bool value) noexcept -> auto &;
+  constexpr auto asme_geometry_scale_factor_x_minus1(std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_geometry_scale_factor_y_minus1(std::uint16_t value) noexcept -> auto &;
+  constexpr auto asme_patch_constant_depth_flag(bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsMivExtension &) -> std::ostream &;
 
@@ -132,6 +134,7 @@ private:
   bool m_asme_depth_occ_map_threshold_flag{};
   std::optional<std::uint16_t> m_asme_geometry_scale_factor_x_minus1;
   std::optional<std::uint16_t> m_asme_geometry_scale_factor_y_minus1;
+  bool m_asme_patch_constant_depth_flag{};
 };
 
 // 23090-5: atlas_sequence_parameter_set_rbsp( )
@@ -140,7 +143,7 @@ private:
 //   * asps_pixel_deinterleaving_enabled_flag == 0
 //   * asps_eom_patch_enabled_flag == 0
 //   * asps_raw_patch_enabled_flag == 0
-//   * asps_point_local_reconstruction_enabled_flag == 0
+//   * asps_plr_enabled_flag == 0
 //
 // Limitations of this implementation:
 //   * asps_vui_parameters_present_flag == 0
@@ -168,7 +171,7 @@ public:
   [[nodiscard]] constexpr auto asps_pixel_deinterleaving_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_eom_patch_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_raw_patch_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto asps_point_local_reconstruction_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_plr_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_vui_parameters_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_vpcc_extension_flag() const noexcept;
@@ -205,7 +208,7 @@ public:
   constexpr auto asps_pixel_deinterleaving_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_raw_patch_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_eom_patch_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto asps_point_local_reconstruction_enabled_flag(const bool value) noexcept -> auto &;
+  constexpr auto asps_plr_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_vui_parameters_present_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_extension_present_flag(const bool value) noexcept -> auto &;
   auto asps_vpcc_extension_flag(const bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
@@ -249,7 +252,7 @@ private:
   bool m_asps_patch_size_quantizer_present_flag{};
   bool m_asps_raw_patch_enabled_flag{};
   bool m_asps_eom_patch_enabled_flag{};
-  bool m_asps_point_local_reconstruction_enabled_flag{};
+  bool m_asps_plr_enabled_flag{};
   std::uint8_t m_asps_map_count_minus1{};
   bool m_asps_vui_parameters_present_flag{};
   bool m_asps_extension_present_flag{};

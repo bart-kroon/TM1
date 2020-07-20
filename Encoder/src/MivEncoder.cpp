@@ -306,7 +306,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
       }
 
       pdu.pdu_orientation_index(pp.pduOrientationIndex());
-      pdu.pdu_projection_id(pp.pduViewId());
+      pdu.pdu_view_idx(pp.pduViewIdx());
 
       if (pp.pduEntityId()) {
         pdu.pdu_miv_extension().pdu_entity_id(*pp.pduEntityId());
@@ -318,7 +318,10 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
     }
   }
 
-  return AtlasTileLayerRBSP{aau.ath, AtlasTileDataUnit{patchData}};
+  auto x = AtlasTileLayerRBSP{};
+  x.atlas_tile_header() = aau.ath;
+  x.atlas_tile_data_unit() = AtlasTileDataUnit{patchData};
+  return x;
 }
 
 template <typename Payload>

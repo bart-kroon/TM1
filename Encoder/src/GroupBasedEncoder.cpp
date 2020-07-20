@@ -297,7 +297,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
     }
   }
 
-  // Modify bit depth of pdu_projection_id
+  // Modify bit depth of pdu_view_idx
   for (auto &atlas : m_params.atlas) {
     atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_number_projections_minus1(
         uint16_t(m_params.viewParamsList.size() - 1));
@@ -312,7 +312,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
     for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);
       m_params.patchParamsList.back().vuhAtlasId += atlasIdOffset;
-      m_params.patchParamsList.back().pduViewId(patch.pduViewId() + viewIdOffset);
+      m_params.patchParamsList.back().pduViewIdx(patch.pduViewIdx() + viewIdOffset);
     }
 
     // Renumber atlases and views

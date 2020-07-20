@@ -200,6 +200,7 @@ TEST_CASE("miv_view_params_list", "[Common Atlas Frame RBSP]") {
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_explicit_view_id_flag=false
@@ -223,13 +224,14 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 391, vps));
+    REQUIRE(bitCodingTest(x, 392, vps));
   }
 
   SECTION("Example 2") {
     vps.vps_atlas_count_minus1(1);
 
     x.mvp_num_views_minus1(2)
+        .mvp_view_enabled_present_flag(true)
         .mvp_view_enabled_in_atlas_flag(0, 0, true)
         .mvp_view_complete_in_atlas_flag(0, 0, true)
         .mvp_view_enabled_in_atlas_flag(0, 1, true)
@@ -252,6 +254,7 @@ mvp_pruning_graph_params_present_flag=false
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
+mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=true
@@ -262,7 +265,9 @@ mvp_view_enabled_in_atlas_flag[ 1 ][ 1 ]=false
 mvp_view_enabled_in_atlas_flag[ 1 ][ 2 ]=true
 mvp_view_complete_in_atlas_flag[ 1 ][ 2 ]=false
 mvp_explicit_view_id_flag=true
-mvp_view_id=[ 0 2 1 ]
+mvp_view_id[ 0 ]=0
+mvp_view_id[ 1 ]=2
+mvp_view_id[ 2 ]=1
 ce_view_pos_x[ 0 ]=0
 ce_view_pos_y[ 0 ]=0
 ce_view_pos_z[ 0 ]=0
@@ -298,7 +303,43 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 833, vps));
+    REQUIRE(bitCodingTest(x, 834, vps));
+  }
+
+  SECTION("mvp_view_enabled_present_flag=0") {
+    x.mvp_num_views_minus1(0)
+        .mvp_intrinsic_params_equal_flag(false)
+        .mvp_depth_quantization_params_equal_flag(false)
+        .mvp_pruning_graph_params_present_flag(false)
+        .camera_intrinsics(0)
+        .ci_cam_type(CiCamType::orthographic)
+        .ci_ortho_width(4.F)
+        .ci_ortho_height(3.F);
+
+    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=false
+mvp_explicit_view_id_flag=false
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
+ce_view_quat_x[ 0 ]=0
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=0
+mvp_intrinsic_params_equal_flag=false
+ci_cam_type[ 0 ]=orthographic
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_ortho_width[ 0 ]=4
+ci_ortho_height[ 0 ]=3
+mvp_depth_quantization_params_equal_flag=false
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=0
+dq_norm_disp_high[ 0 ]=0
+dq_depth_occ_map_threshold_default[ 0 ]=0
+mvp_pruning_graph_params_present_flag=false
+)");
+
+    REQUIRE(bitCodingTest(x, 390, vps));
   }
 }
 
@@ -331,6 +372,7 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
 caf_frm_order_cnt_lsb=15
 caf_miv_view_params_list_update_mode=VPL_INITLIST
 mvp_num_views_minus1=2
+mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=false
 mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=false
 mvp_view_enabled_in_atlas_flag[ 0 ][ 2 ]=false

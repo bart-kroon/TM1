@@ -49,7 +49,7 @@ void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
       for (auto x = 0; x < atlas.frameSize().x(); x++) {
         auto patchId = atlas.patchId(y, x);
         if (patchId == unusedPatchId)
-          atlas.occFrame.getPlane(0)(y, x) = 1; // Need to be set to 0 per openned issue
+          atlas.occFrame.getPlane(0)(y, x) = 0;
         else if (!frame.vps.vps_occupancy_video_present_flag(i)) {
           if (frame.vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
             // occupancy is embedded in geometry

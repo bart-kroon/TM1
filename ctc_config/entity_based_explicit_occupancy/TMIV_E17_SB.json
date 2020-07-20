@@ -2,6 +2,7 @@
     "BitstreamPath": "ATL_SB.bit",
     "AttributeVideoDataPathFmt": "ATL_SB_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
     "GeometryVideoDataPathFmt": "ATL_SB_TG_c{:02}_{}x{}_yuv420p10le.yuv",
+	"OccupancyVideoDataPathFmt":"ATL_SB_TO_c{:02}_{}x{}_yuv420p10le.yuv",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
@@ -11,10 +12,8 @@
     "GroupBasedEncoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
-        "GeometryQuantizer": {
-            "depthOccThresholdIfSet": 64
-        },
-        "GeometryQuantizerMethod": "GeometryQuantizer",
+        "ExplicitOccupancy": {},
+        "GeometryQuantizerMethod": "ExplicitOccupancy",
         "EntityEncodeRange": [
             8,
             16

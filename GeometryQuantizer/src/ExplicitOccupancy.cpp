@@ -154,15 +154,18 @@ void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
           m_accessUnitParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
           m_accessUnitParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
       const auto &occupancyAtlasMap = atlases[i].occupancy;
+      int occupancyScale[2] = {
+          m_accessUnitParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
+          m_accessUnitParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
       int yOcc, xOcc;
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
           auto depth = depthAtlasMap.getPlane(0)(y, x);
-          yOcc = y >> (m_accessUnitParams.atlas[i].asme().asme_geometry_scale_factor_y_minus1()+1);
-          xOcc = x >> (m_accessUnitParams.atlas[i].asme().asme_geometry_scale_factor_x_minus1()+1);
+          yOcc = y * depthScale[0] / occupancyScale[0];
+          xOcc = x * depthScale[1] / occupancyScale[1];
           if (occupancyAtlasMap.getPlane(0)(yOcc, xOcc) == 0 ||
               (depth == 0 &&
-               atlases[i].texture.getPlane(0)(y * depthScale[1], x * depthScale[0]) == 512)) {
+               atlases[i].texture.getPlane(0)(y * depthScale[0], x * depthScale[1]) == 512)) {
             depthAtlasMap.getPlane(0)(y, x) = depthAtlasMap.getPlane(0)(y, x - 1);
           }
         }

@@ -66,31 +66,39 @@ constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag() const noexcept 
   return m_asme_depth_occ_map_threshold_flag;
 }
 
-constexpr auto AspsMivExtension::asme_group_id(const unsigned value) noexcept -> auto & {
+constexpr auto AspsMivExtension::asme_patch_constant_depth_flag() const noexcept {
+    return m_asme_patch_constant_depth_flag;
+}
+
+constexpr auto AspsMivExtension::asme_group_id(unsigned value) noexcept -> auto & {
   m_asme_group_id = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_auxiliary_atlas_flag(const bool value) noexcept -> auto & {
+constexpr auto AspsMivExtension::asme_auxiliary_atlas_flag(bool value) noexcept -> auto & {
   m_asme_auxiliary_atlas_flag = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(const bool value) noexcept
-    -> auto & {
+constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag(bool value) noexcept -> auto & {
   m_asme_depth_occ_map_threshold_flag = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_geometry_scale_factor_x_minus1(const uint16_t value) noexcept
+constexpr auto AspsMivExtension::asme_geometry_scale_factor_x_minus1(uint16_t value) noexcept
     -> auto & {
   m_asme_geometry_scale_factor_x_minus1 = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_geometry_scale_factor_y_minus1(const uint16_t value) noexcept
+constexpr auto AspsMivExtension::asme_geometry_scale_factor_y_minus1(uint16_t value) noexcept
     -> auto & {
   m_asme_geometry_scale_factor_y_minus1 = value;
+  return *this;
+}
+
+constexpr auto AspsMivExtension::asme_patch_constant_depth_flag(bool value) noexcept -> auto & {
+  m_asme_patch_constant_depth_flag = value;
   return *this;
 }
 
@@ -99,7 +107,8 @@ constexpr auto AspsMivExtension::operator==(const AspsMivExtension &other) const
          asme_auxiliary_atlas_flag() == other.asme_auxiliary_atlas_flag() &&
          asme_depth_occ_threshold_flag() == other.asme_depth_occ_threshold_flag() &&
          m_asme_geometry_scale_factor_x_minus1 == other.m_asme_geometry_scale_factor_x_minus1 &&
-         m_asme_geometry_scale_factor_y_minus1 == other.m_asme_geometry_scale_factor_y_minus1;
+         m_asme_geometry_scale_factor_y_minus1 == other.m_asme_geometry_scale_factor_y_minus1 &&
+         asme_patch_constant_depth_flag() == other.asme_patch_constant_depth_flag();
 }
 
 constexpr auto AspsMivExtension::operator!=(const AspsMivExtension &other) const noexcept {
@@ -117,6 +126,14 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_width() const noexcept 
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height() const noexcept {
   return m_asps_frame_height;
+}
+
+constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_3d_bitdepth_minus1() const noexcept {
+  return m_asps_geometry_3d_bitdepth_minus1;
+}
+
+constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_2d_bitdepth_minus1() const noexcept {
+  return m_asps_geometry_2d_bitdepth_minus1;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size() const noexcept {
@@ -179,8 +196,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag() cons
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag() const noexcept {
-  return m_asps_point_local_reconstruction_enabled_flag;
+AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag() const noexcept {
+  return m_asps_plr_enabled_flag;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_map_count_minus1() const noexcept {
@@ -223,6 +240,20 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_width(const uint16_t va
 constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height(const uint16_t value) noexcept
     -> auto & {
   m_asps_frame_height = value;
+  return *this;
+}
+
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_geometry_3d_bitdepth_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_asps_geometry_3d_bitdepth_minus1 = value;
+  return *this;
+}
+
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_geometry_2d_bitdepth_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_asps_geometry_2d_bitdepth_minus1 = value;
   return *this;
 }
 
@@ -304,9 +335,9 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag(const 
   return *this;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_point_local_reconstruction_enabled_flag(
+constexpr auto AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag(
     const bool value) noexcept -> auto & {
-  m_asps_point_local_reconstruction_enabled_flag = value;
+  m_asps_plr_enabled_flag = value;
   return *this;
 }
 

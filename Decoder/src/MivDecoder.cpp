@@ -125,7 +125,7 @@ auto MivDecoder::decodeVps() -> bool {
   m_au.atlas.clear();
   m_geoVideoDecoder.clear();
   m_attrVideoDecoder.clear();
-
+  int numVideoDecodes = 0;
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
     auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
     vuh.vuh_atlas_id(m_au.vps.vps_atlas_id(j));
@@ -133,11 +133,20 @@ auto MivDecoder::decodeVps() -> bool {
         [this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps, m_au.foc));
     m_au.atlas.emplace_back();
 
+    if (m_au.vps.vps_occupancy_video_present_flag(j)) {
+      auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
+      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
+          .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
+      // m_occVideoDecoder.push_back(startVideoDecoder(vuh, m_totalOccVideoDecodingTime));
+      numVideoDecodes++;
+    }
+
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
           .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
       m_geoVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
+      numVideoDecodes++;
     }
 
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
@@ -145,10 +154,50 @@ auto MivDecoder::decodeVps() -> bool {
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
           .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
       m_attrVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
+      numVideoDecodes++;
     }
   }
 
+  int MaxDecodes = findMaxDecodes(m_au.vps.profile_tier_level().ptl_max_decodes_idc());
+  VERIFY_V3CBITSTREAM(numVideoDecodes <= MaxDecodes);
+  std::cout << "Number of Video Decodes = " << (int)numVideoDecodes << std::endl;
   return true;
+}
+
+int MivDecoder::findMaxDecodes(uint8_t m_ptl_max_decodes_idc) {
+  switch (m_ptl_max_decodes_idc) {
+  case 0:
+    return 1;
+  case 1:
+    return 2;
+    break;
+  case 2:
+    return 3;
+  case 3:
+    return 4;
+  case 4:
+    return 6;
+  case 5:
+    return 8;
+  case 6:
+    return 12;
+  case 7:
+    return 16;
+  case 8:
+    return 24;
+  case 9:
+    return 32;
+  case 10:
+  case 11:
+  case 12:
+  case 13:
+  case 14:
+    std::cout << "Warning: MaxDecodes is set to a reserved value\n";
+    return 0;
+  case 15:
+    std::cout << "MaxDecodes is set to an unconstrained value\n";
+    return UINT16_MAX;
+  }
 }
 
 void MivDecoder::checkCapabilities() {

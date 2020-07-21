@@ -61,6 +61,7 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.viewingSpace = m_transportParams.viewingSpace;
   m_params.frameRate = m_transportParams.frameRate;
+  m_params.vps.profile_tier_level().ptl_max_decodes_idc(15); // setting MaxDecodes to Unconstrained
 
   setGiGeometry3dCoordinatesBitdepthMinus1();
 

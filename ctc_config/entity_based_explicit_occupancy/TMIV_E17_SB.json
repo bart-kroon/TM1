@@ -12,7 +12,9 @@
     "GroupBasedEncoder": {
         "Aggregator": {},
         "AggregatorMethod": "Aggregator",
-        "ExplicitOccupancy": {},
+        "ExplicitOccupancy": {
+			"occupancyScale":[1,1]
+		},
         "GeometryQuantizerMethod": "ExplicitOccupancy",
         "EntityEncodeRange": [
             8,

@@ -72,7 +72,8 @@ struct CompareVuh {
     if (vuh1.vuh_unit_type() != vuh2.vuh_unit_type()) {
       return vuh1.vuh_unit_type() < vuh2.vuh_unit_type();
     }
-    if (vuh1.vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_VPS) {
+    if (vuh1.vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_VPS ||
+        vuh1.vuh_unit_type() == TMIV::MivBitstream::VuhUnitType::V3C_CAD) {
       return false;
     }
     if (vuh1.vuh_atlas_id() != vuh2.vuh_atlas_id()) {
@@ -113,6 +114,7 @@ public:
       stream << vuh.vuh_unit_type() << ',';
       switch (vuh.vuh_unit_type()) {
       case TMIV::MivBitstream::VuhUnitType::V3C_VPS:
+      case TMIV::MivBitstream::VuhUnitType::V3C_CAD:
         stream << ",,";
         break;
       case TMIV::MivBitstream::VuhUnitType::V3C_AD:

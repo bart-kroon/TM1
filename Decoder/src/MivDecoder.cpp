@@ -208,8 +208,30 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
 void MivDecoder::decodeCommonAtlas() { decodeViewParamsList(); }
 
 void MivDecoder::decodeViewParamsList() {
-  // TODO(BK): Implement view parameter updates
-  const auto &mvpl = m_commonAtlasAu->caf.miv_view_params_list();
+  switch (m_commonAtlasAu->caf.caf_miv_view_params_list_update_mode()) {
+  case MivBitstream::MvpUpdateMode::VPL_INITLIST:
+    decodeMvpl(m_commonAtlasAu->caf.miv_view_params_list());
+    break;
+  case MivBitstream::MvpUpdateMode::VPL_UPD_EXT:
+    decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
+    break;
+  case MivBitstream::MvpUpdateMode::VPL_UPD_INT:
+    decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
+    break;
+  case MivBitstream::MvpUpdateMode::VPL_UPD_DQ:
+    decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
+    break;
+  case MivBitstream::MvpUpdateMode::VPL_ALL:
+    decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
+    decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
+    decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
+    break;
+  default:
+    MIVBITSTREAM_ERROR("Unknown MVP update mode");
+  }
+}
+
+void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl) {
   m_au.viewParamsList.assign(mvpl.mvp_num_views_minus1() + size_t(1), {});
 
   for (uint16_t viewId = 0; viewId <= mvpl.mvp_num_views_minus1(); ++viewId) {
@@ -220,6 +242,24 @@ void MivDecoder::decodeViewParamsList() {
     if (mvpl.mvp_pruning_graph_params_present_flag()) {
       m_au.viewParamsList[viewId].pp = mvpl.pruning_parent(viewId);
     }
+  }
+}
+
+void MivDecoder::decodeMvpue(const MivBitstream::MivViewParamsUpdateExtrinsics &mvpue) {
+  for (uint16_t i = 0; i <= mvpue.mvpue_num_view_updates_minus1(); ++i) {
+    m_au.viewParamsList[mvpue.mvpue_view_idx(i)].ce = mvpue.camera_extrinsics(i);
+  }
+}
+
+void MivDecoder::decodeMvpui(const MivBitstream::MivViewParamsUpdateIntrinsics &mvpui) {
+  for (uint16_t i = 0; i <= mvpui.mvpui_num_view_updates_minus1(); ++i) {
+    m_au.viewParamsList[mvpui.mvpui_view_idx(i)].ci = mvpui.camera_intrinsics(i);
+  }
+}
+
+void MivDecoder::decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuantization &mvpudq) {
+  for (uint16_t i = 0; i <= mvpudq.mvpudq_num_view_updates_minus1(); ++i) {
+    m_au.viewParamsList[mvpudq.mvpudq_view_idx(i)].dq = mvpudq.depth_quantization(i);
   }
 }
 
@@ -278,7 +318,7 @@ void MivDecoder::decodePatchParamsList(uint8_t j) {
         {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     ppl[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
     ppl[p].pduDepthStart(pdu.pdu_depth_start() << ath.ath_pos_min_z_quantizer());
-    ppl[p].pduViewId(pdu.pdu_projection_id());
+    ppl[p].pduViewIdx(pdu.pdu_view_idx());
 
     if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
       ppl[p].pduDepthEnd(pdu.pdu_depth_end() << ath.ath_pos_delta_max_z_quantizer());

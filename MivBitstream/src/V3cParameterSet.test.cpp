@@ -42,7 +42,7 @@ TEST_CASE("profile_tier_level", "[V3C Parameter Set]") {
 
   REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
-ptl_profile_pcc_toolset_idc=Basic
+ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -55,7 +55,7 @@ ptl_tool_constraints_present_flag=false
   SECTION("Example") {
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-        .ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc::Extended)
+        .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::Extended)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Unconstrained)
         .ptl_level_idc(PtlLevelIdc::Level_2_0)
         .ptl_num_sub_profiles(2)
@@ -66,7 +66,7 @@ ptl_tool_constraints_present_flag=false
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=true
 ptl_profile_codec_group_idc=HEVC Main10
-ptl_profile_pcc_toolset_idc=Extended
+ptl_profile_toolset_idc=Extended
 ptl_profile_reconstruction_idc=Unconstrained
 ptl_level_idc=Level 2.0
 ptl_num_sub_profiles=2
@@ -198,7 +198,7 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
-ptl_profile_pcc_toolset_idc=Basic
+ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -256,7 +256,7 @@ vme_embedded_occupancy_flag=true
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
-ptl_profile_pcc_toolset_idc=Basic
+ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0

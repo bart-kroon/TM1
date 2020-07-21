@@ -111,19 +111,20 @@ vuh_atlas_id=1
 vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
     REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_raw_video_flag(false);
+      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_auxiliary_video_flag(
+          false);
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
 vuh_v3c_parameter_set_id=2
 vuh_atlas_id=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
       REQUIRE(byteCodingTest(x, 4));
@@ -137,9 +138,9 @@ vuh_raw_video_flag=false
 vuh_v3c_parameter_set_id=0
 vuh_atlas_id=0
 vuh_attribute_index=0
-vuh_attribute_dimension_index=0
+vuh_attribute_partition_index=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
     REQUIRE(byteCodingTest(x, 4));
@@ -148,17 +149,17 @@ vuh_raw_video_flag=false
       x.vuh_v3c_parameter_set_id(2)
           .vuh_atlas_id(2)
           .vuh_attribute_index(3)
-          .vuh_attribute_dimension_index(0)
+          .vuh_attribute_partition_index(0)
           .vuh_map_index(0)
-          .vuh_raw_video_flag(false);
+          .vuh_auxiliary_video_flag(false);
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AVD
 vuh_v3c_parameter_set_id=2
 vuh_atlas_id=2
 vuh_attribute_index=3
-vuh_attribute_dimension_index=0
+vuh_attribute_partition_index=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
       REQUIRE(byteCodingTest(x, 4));
@@ -173,7 +174,7 @@ TEST_CASE("v3c_unit_payload", "[V3C Unit]") {
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
-ptl_profile_pcc_toolset_idc=Basic
+ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -248,7 +249,7 @@ TEST_CASE("v3c_unit", "[V3C Unit]") {
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
-ptl_profile_pcc_toolset_idc=Basic
+ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -282,9 +283,9 @@ vps_extension_6bits=0
     vuh.vuh_v3c_parameter_set_id(2)
         .vuh_atlas_id(1)
         .vuh_attribute_index(2)
-        .vuh_attribute_dimension_index(0)
+        .vuh_attribute_partition_index(0)
         .vuh_map_index(0)
-        .vuh_raw_video_flag(false);
+        .vuh_auxiliary_video_flag(false);
 
     const auto x = V3cUnit{vuh, VideoSubBitstream{}};
 
@@ -292,9 +293,9 @@ vps_extension_6bits=0
 vuh_v3c_parameter_set_id=2
 vuh_atlas_id=1
 vuh_attribute_index=2
-vuh_attribute_dimension_index=0
+vuh_attribute_partition_index=0
 vuh_map_index=0
-vuh_raw_video_flag=false
+vuh_auxiliary_video_flag=false
 )");
 
     REQUIRE(unitCodingTest(x, 4));

@@ -56,27 +56,17 @@ public:
 
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
-  auto transformSequenceParams(MivBitstream::IvSequenceParams)
-      -> const MivBitstream::IvSequenceParams & override;
-
-  // depthOccupancyParamsPresentFlags = zeros
-  auto transformAccessUnitParams(MivBitstream::IvAccessUnitParams)
-      -> const MivBitstream::IvAccessUnitParams & override;
+  auto transformParams(MivBitstream::EncoderParams) -> const MivBitstream::EncoderParams & override;
   
-  //void padGeometryWithBlockAvg(Common::MVD10Frame &atlases);
-  //void padGeometryWithAvg(Common::MVD10Frame &atlases);
   void padGeometryFromLeft(Common::MVD10Frame &atlases);
-  //void padGeometryFromTopLeft(Common::MVD10Frame &atlases);
-  //void padGeometryWithMidRange(Common::MVD10Frame &atlases);
 
   // Transform depth bit depth and range
   auto transformAtlases(const Common::MVD16Frame &inAtlases) -> Common::MVD10Frame override;
 
 private:
   // uint16_t m_depthOccMapThresholdIfSet{};
-  MivBitstream::IvSequenceParams m_inSequenceParams;
-  MivBitstream::IvSequenceParams m_outSequenceParams;
-  MivBitstream::IvAccessUnitParams m_accessUnitParams;
+  MivBitstream::EncoderParams m_inParams;
+  MivBitstream::EncoderParams m_outParams;
   std::vector<bool> m_isAtlasCompleteFlag{};
   Common::Vec2i m_occupancyScale;
   bool m_occupancyScaleConfig;

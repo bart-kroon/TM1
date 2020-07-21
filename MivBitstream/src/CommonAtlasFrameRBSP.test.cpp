@@ -163,7 +163,7 @@ dq_depth_occ_map_threshold_default[ 2 ]=200
 
 TEST_CASE("pruning_parent", "[Common Atlas Frame RBSP]") {
   SECTION("Example 1") {
-    const auto x = PruningParent{};
+    const auto x = PruningParents{};
     REQUIRE(toString(x, 3) == R"(pp_is_root_flag[ 3 ]=true
 )");
 
@@ -172,7 +172,7 @@ TEST_CASE("pruning_parent", "[Common Atlas Frame RBSP]") {
   }
 
   SECTION("Example 2") {
-    const auto x = PruningParent{{2, 3, 5, 8}};
+    const auto x = PruningParents{{2, 3, 5, 8}};
     REQUIRE(toString(x, 5) == R"(pp_is_root_flag[ 5 ]=false
 pp_num_parent_minus1[ 5 ]=3
 pp_parent_id[ 5 ][ 0 ]=2
@@ -207,6 +207,7 @@ TEST_CASE("miv_view_params_list", "[Common Atlas Frame RBSP]") {
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_explicit_view_id_flag=false
@@ -230,13 +231,14 @@ dq_depth_occ_map_threshold_default[ 0 ]=0
 mvp_pruning_graph_params_present_flag=false
 )");
 
-    REQUIRE(bitCodingTest(x, 391, vps));
+    REQUIRE(bitCodingTest(x, 392, vps));
   }
 
   SECTION("Example 2") {
     vps.vps_atlas_count_minus1(1);
 
     x.mvp_num_views_minus1(2)
+        .mvp_view_enabled_present_flag(true)
         .mvp_view_enabled_in_atlas_flag(0, 0, true)
         .mvp_view_complete_in_atlas_flag(0, 0, true)
         .mvp_view_enabled_in_atlas_flag(0, 1, true)
@@ -259,6 +261,7 @@ mvp_pruning_graph_params_present_flag=false
         .ci_ortho_height(3.F);
 
     REQUIRE(toString(x) == R"(mvp_num_views_minus1=2
+mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_view_complete_in_atlas_flag[ 0 ][ 0 ]=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=true
@@ -269,7 +272,9 @@ mvp_view_enabled_in_atlas_flag[ 1 ][ 1 ]=false
 mvp_view_enabled_in_atlas_flag[ 1 ][ 2 ]=true
 mvp_view_complete_in_atlas_flag[ 1 ][ 2 ]=false
 mvp_explicit_view_id_flag=true
-mvp_view_id=[ 0 2 1 ]
+mvp_view_id[ 0 ]=0
+mvp_view_id[ 1 ]=2
+mvp_view_id[ 2 ]=1
 ce_view_pos_x[ 0 ]=0
 ce_view_pos_y[ 0 ]=0
 ce_view_pos_z[ 0 ]=0
@@ -305,7 +310,43 @@ pp_is_root_flag[ 1 ]=true
 pp_is_root_flag[ 2 ]=true
 )");
 
-    REQUIRE(bitCodingTest(x, 833, vps));
+    REQUIRE(bitCodingTest(x, 834, vps));
+  }
+
+  SECTION("mvp_view_enabled_present_flag=0") {
+    x.mvp_num_views_minus1(0)
+        .mvp_intrinsic_params_equal_flag(false)
+        .mvp_depth_quantization_params_equal_flag(false)
+        .mvp_pruning_graph_params_present_flag(false)
+        .camera_intrinsics(0)
+        .ci_cam_type(CiCamType::orthographic)
+        .ci_ortho_width(4.F)
+        .ci_ortho_height(3.F);
+
+    REQUIRE(toString(x) == R"(mvp_num_views_minus1=0
+mvp_view_enabled_present_flag=false
+mvp_explicit_view_id_flag=false
+ce_view_pos_x[ 0 ]=0
+ce_view_pos_y[ 0 ]=0
+ce_view_pos_z[ 0 ]=0
+ce_view_quat_x[ 0 ]=0
+ce_view_quat_y[ 0 ]=0
+ce_view_quat_z[ 0 ]=0
+mvp_intrinsic_params_equal_flag=false
+ci_cam_type[ 0 ]=orthographic
+ci_projection_plane_width_minus1[ 0 ]=0
+ci_projection_plane_height_minus1[ 0 ]=0
+ci_ortho_width[ 0 ]=4
+ci_ortho_height[ 0 ]=3
+mvp_depth_quantization_params_equal_flag=false
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=0
+dq_norm_disp_high[ 0 ]=0
+dq_depth_occ_map_threshold_default[ 0 ]=0
+mvp_pruning_graph_params_present_flag=false
+)");
+
+    REQUIRE(bitCodingTest(x, 390, vps));
   }
 }
 
@@ -341,6 +382,7 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
 caf_frm_order_cnt_lsb=15
 caf_miv_view_params_list_update_mode=VPL_INITLIST
 mvp_num_views_minus1=2
+mvp_view_enabled_present_flag=true
 mvp_view_enabled_in_atlas_flag[ 0 ][ 0 ]=false
 mvp_view_enabled_in_atlas_flag[ 0 ][ 1 ]=false
 mvp_view_enabled_in_atlas_flag[ 0 ][ 2 ]=false
@@ -457,8 +499,8 @@ TEST_CASE("miv_view_params_update_intrinsics", "[Common Atlas Frame RBSP]") {
   auto x = MivViewParamsUpdateIntrinsics{};
 
   SECTION("Example 1: Test with 1 update.") {
-    x.mvpue_num_view_updates_minus1(0);
-    x.mvpue_view_idx(0, 6)
+    x.mvpui_num_view_updates_minus1(0);
+    x.mvpui_view_idx(0, 6)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::equirectangular)
         .ci_erp_phi_min(-2.F)
@@ -466,8 +508,8 @@ TEST_CASE("miv_view_params_update_intrinsics", "[Common Atlas Frame RBSP]") {
         .ci_erp_theta_min(-1.F)
         .ci_erp_theta_max(1.F);
 
-    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=0
-mvpue_view_idx[ 0 ]=6
+    REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=0
+mvpui_view_idx[ 0 ]=6
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
 ci_projection_plane_height_minus1[ 0 ]=0
@@ -480,15 +522,15 @@ ci_erp_theta_max[ 0 ]=1
   }
 
   SECTION("Example 1: Test with 2 updates.") {
-    x.mvpue_num_view_updates_minus1(1);
-    x.mvpue_view_idx(0, 3)
+    x.mvpui_num_view_updates_minus1(1);
+    x.mvpui_view_idx(0, 3)
         .camera_intrinsics(0)
         .ci_cam_type(CiCamType::equirectangular)
         .ci_erp_phi_min(-90.F)
         .ci_erp_phi_max(90.F)
         .ci_erp_theta_min(-180.F)
         .ci_erp_theta_max(90.F);
-    x.mvpue_view_idx(1, 12)
+    x.mvpui_view_idx(1, 12)
         .camera_intrinsics(1)
         .ci_cam_type(CiCamType::orthographic)
         .ci_projection_plane_width_minus1(1023)
@@ -496,8 +538,8 @@ ci_erp_theta_max[ 0 ]=1
         .ci_ortho_width(100.F)
         .ci_ortho_height(50.F);
 
-    REQUIRE(toString(x) == R"(mvpue_num_view_updates_minus1=1
-mvpue_view_idx[ 0 ]=3
+    REQUIRE(toString(x) == R"(mvpui_num_view_updates_minus1=1
+mvpui_view_idx[ 0 ]=3
 ci_cam_type[ 0 ]=equirectangular
 ci_projection_plane_width_minus1[ 0 ]=0
 ci_projection_plane_height_minus1[ 0 ]=0
@@ -505,7 +547,7 @@ ci_erp_phi_min[ 0 ]=-90
 ci_erp_phi_max[ 0 ]=90
 ci_erp_theta_min[ 0 ]=-180
 ci_erp_theta_max[ 0 ]=90
-mvpue_view_idx[ 1 ]=12
+mvpui_view_idx[ 1 ]=12
 ci_cam_type[ 1 ]=orthographic
 ci_projection_plane_width_minus1[ 1 ]=1023
 ci_projection_plane_height_minus1[ 1 ]=767
@@ -513,5 +555,31 @@ ci_ortho_width[ 1 ]=100
 ci_ortho_height[ 1 ]=50
 )");
     REQUIRE(bitCodingTest(x, 320));
+  }
+}
+
+TEST_CASE("miv_view_params_update_depth_quantization", "[Common Atlas Frame RBSP]") {
+  auto x = MivViewParamsUpdateDepthQuantization{};
+  auto vps = V3cParameterSet{};
+  vps.vps_extension_present_flag(true);
+  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
+
+  SECTION("Example 1: Test with 1 update.") {
+    x.mvpudq_num_view_updates_minus1(0);
+    x.mvpudq_view_idx(0, 6)
+        .depth_quantization(0)
+        .dq_depth_occ_map_threshold_default(64)
+        .dq_norm_disp_low(1.F)
+        .dq_norm_disp_high(100.F);
+
+    REQUIRE(toString(x) == R"(mvpudq_num_view_updates_minus1=0
+mvpudq_view_idx[ 0 ]=6
+dq_quantization_law[ 0 ]=0
+dq_norm_disp_low[ 0 ]=1
+dq_norm_disp_high[ 0 ]=100
+dq_depth_occ_map_threshold_default[ 0 ]=64
+)");
+    REQUIRE(bitCodingTest(x, 117, vps));
   }
 }

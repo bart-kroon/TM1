@@ -44,13 +44,16 @@ struct ViewParams {
   CameraIntrinsics ci;
   CameraExtrinsics ce;
   DepthQuantization dq;
-  std::optional<PruningParent> pp;
+  std::optional<PruningParents> pp;
 
   // Not in the specification. Just to improve screen output
   std::string name{};
 
   // Not part of the bitstream. Does the depth map have invalid/non-occupied?
   bool hasOccupancy{};
+
+  // Is this a basic view or an additional view?
+  bool isBasicView{true};
 
   auto printTo(std::ostream &stream, std::uint16_t viewId) const -> std::ostream &;
   auto operator==(const ViewParams &other) const -> bool;

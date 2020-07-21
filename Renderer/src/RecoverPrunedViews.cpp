@@ -73,7 +73,7 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
 
         // Index patch and view parameters
         const auto &patchParams = atlas.patchParamsList[patchId];
-        const auto viewId = patchParams.pduViewId();
+        const auto viewId = patchParams.pduViewIdx();
 
         // Test for occupancy
         if (atlas.occFrame.getPlane(0)(i, j)==0)

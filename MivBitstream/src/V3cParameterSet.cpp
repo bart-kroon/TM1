@@ -168,7 +168,7 @@ auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value) 
 auto operator<<(ostream &stream, const ProfileTierLevel &x) -> ostream & {
   stream << "ptl_tier_flag=" << boolalpha << x.ptl_tier_flag() << '\n';
   stream << "ptl_profile_codec_group_idc=" << x.ptl_profile_codec_group_idc() << '\n';
-  stream << "ptl_profile_pcc_toolset_idc=" << x.ptl_profile_pcc_toolset_idc() << '\n';
+  stream << "ptl_profile_toolset_idc=" << x.ptl_profile_toolset_idc() << '\n';
   stream << "ptl_profile_reconstruction_idc=" << x.ptl_profile_reconstruction_idc() << '\n';
   stream << "ptl_level_idc=" << x.ptl_level_idc() << '\n';
   stream << "ptl_num_sub_profiles=" << int(x.ptl_num_sub_profiles()) << '\n';
@@ -185,7 +185,7 @@ auto operator<<(ostream &stream, const ProfileTierLevel &x) -> ostream & {
 auto ProfileTierLevel::operator==(const ProfileTierLevel &other) const noexcept -> bool {
   return ptl_tier_flag() == other.ptl_tier_flag() &&
          ptl_profile_codec_group_idc() == other.ptl_profile_codec_group_idc() &&
-         ptl_profile_pcc_toolset_idc() == other.ptl_profile_pcc_toolset_idc() &&
+         ptl_profile_toolset_idc() == other.ptl_profile_toolset_idc() &&
          ptl_profile_reconstruction_idc() == other.ptl_profile_reconstruction_idc() &&
          ptl_level_idc() == other.ptl_level_idc() &&
          ptl_extended_sub_profile_flag() == other.ptl_extended_sub_profile_flag() &&
@@ -201,7 +201,7 @@ auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel
   auto x = ProfileTierLevel{};
   x.ptl_tier_flag(bitstream.getFlag());
   x.ptl_profile_codec_group_idc(bitstream.readBits<PtlProfileCodecGroupIdc>(7));
-  x.ptl_profile_pcc_toolset_idc(bitstream.readBits<PtlProfilePccToolsetIdc>(8));
+  x.ptl_profile_toolset_idc(bitstream.readBits<PtlProfilePccToolsetIdc>(8));
   x.ptl_profile_reconstruction_idc(bitstream.readBits<PtlProfileReconstructionIdc>(8));
   bitstream.getUint32();
   x.ptl_level_idc(bitstream.readBits<PtlLevelIdc>(8));
@@ -222,7 +222,7 @@ auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel
 void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(ptl_tier_flag());
   bitstream.writeBits(ptl_profile_codec_group_idc(), 7);
-  bitstream.writeBits(ptl_profile_pcc_toolset_idc(), 8);
+  bitstream.writeBits(ptl_profile_toolset_idc(), 8);
   bitstream.writeBits(ptl_profile_reconstruction_idc(), 8);
   bitstream.putUint32(0);
   bitstream.writeBits(ptl_level_idc(), 8);

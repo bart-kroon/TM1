@@ -58,8 +58,8 @@ auto haveOccupancy(const Json &config) {
 }
 } // namespace
 
-auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
-  auto x = IvSequenceParams{haveTexture(config), haveOccupancy(config)};
+auto loadSourceParams(const Json &config) -> EncoderParams {
+    auto x = EncoderParams{haveTexture(config), haveOccupancy(config)};
 
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -76,21 +76,7 @@ auto loadSourceIvSequenceParams(const Json &config) -> IvSequenceParams {
     auto node = config.optional("depthLowQualityFlag");
     x.vme().vme_depth_low_quality_flag(node.asBool());
   }
-  /*
-  if (config.require("GroupBasedEncoder")
-          .require("GeometryQuantizerMethod")
-          .asString()=="ExplicitOccupancy") {
-        uint8_t maxNumberOfAtlases = 64;
-    x.vme().allocateFlagVectors(maxNumberOfAtlases); // allocate to max number of atlases (since
-                                                     // #atlases are not known ahead)
-    for (auto i = 0; i < maxNumberOfAtlases; i++) {
-      // initalized values here need to be revisited after generating atlases, hence should be
-      // written to bitstream after
-      x.vme().vme_fully_occupied_flag(i, false);
-      x.vme().vme_occupancy_subbitstream_present_flag(i, true);
-    }
-  }
-  */
+  
   const auto numGroups = unsigned(config.require("numGroups").asInt());
   if (numGroups < 1) {
     throw runtime_error("Require numGroups >= 1");

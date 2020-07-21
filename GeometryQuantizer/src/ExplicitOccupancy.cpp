@@ -56,42 +56,37 @@ ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &compon
     m_occupancyScaleConfig = false;
 }
 
-auto ExplicitOccupancy::transformSequenceParams(MivBitstream::IvSequenceParams sequenceParams)
-    -> const MivBitstream::IvSequenceParams & {
-  m_inSequenceParams = move(sequenceParams);
-  m_outSequenceParams = m_inSequenceParams;
+auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
+    -> const MivBitstream::EncoderParams & {
+  m_inParams = move(params);
+  m_outParams = m_inParams;
 
-  m_outSequenceParams.vme().vme_embedded_occupancy_flag(false);
-  m_outSequenceParams.vme().vme_occupancy_scale_enabled_flag(true);
-  for (uint8_t i = 0; i <= m_outSequenceParams.vps.vps_atlas_count_minus1(); i++)
+  m_outParams.vme().vme_embedded_occupancy_flag(false);
+  m_outParams.vme().vme_occupancy_scale_enabled_flag(true);
+  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); i++)
     if (m_isAtlasCompleteFlag.size() > i)
-      m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
+      m_outParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
     else
-      m_outSequenceParams.vps.vps_occupancy_video_present_flag(i, true);
-  m_depthLowQualityFlag = m_outSequenceParams.vme().vme_depth_low_quality_flag();
+      m_outParams.vps.vps_occupancy_video_present_flag(i, true);
+  m_depthLowQualityFlag = m_outParams.vme().vme_depth_low_quality_flag();
 
-  m_embeddedOccupancyFlag = m_outSequenceParams.vme().vme_embedded_occupancy_flag();
-  m_occupancyScaleEnabledFlag = m_outSequenceParams.vme().vme_occupancy_scale_enabled_flag();
-  return m_outSequenceParams;
-}
+  m_embeddedOccupancyFlag = m_outParams.vme().vme_embedded_occupancy_flag();
+  m_occupancyScaleEnabledFlag = m_outParams.vme().vme_occupancy_scale_enabled_flag();
 
-auto ExplicitOccupancy::transformAccessUnitParams(MivBitstream::IvAccessUnitParams accessUnitParams)
-    -> const MivBitstream::IvAccessUnitParams & {
-  m_accessUnitParams = accessUnitParams;
   if (!m_embeddedOccupancyFlag && m_occupancyScaleEnabledFlag) {
-    for (auto &atlas : m_accessUnitParams.atlas) {
+    for (auto &atlas : m_outParams.atlas) {
       if (m_occupancyScaleConfig) {
-        atlas.asme().asme_occupancy_scale_factor_x_minus1(m_occupancyScale[0]-1);
-        atlas.asme().asme_occupancy_scale_factor_y_minus1(m_occupancyScale[1]-1);
+        atlas.asme().asme_occupancy_scale_factor_x_minus1(m_occupancyScale[0] - 1);
+        atlas.asme().asme_occupancy_scale_factor_y_minus1(m_occupancyScale[1] - 1);
       } else {
         atlas.asme().asme_occupancy_scale_factor_x_minus1(
-            std::pow(2,atlas.asps.asps_log2_patch_packing_block_size())-1);
+            std::pow(2, atlas.asps.asps_log2_patch_packing_block_size()) - 1);
         atlas.asme().asme_occupancy_scale_factor_y_minus1(
-            std::pow(2,atlas.asps.asps_log2_patch_packing_block_size())-1);
+            std::pow(2, atlas.asps.asps_log2_patch_packing_block_size()) - 1);
       }
-    }
+	}
   }
-  return m_accessUnitParams;
+  return m_outParams;
 }
 
 auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
@@ -105,9 +100,9 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
                             inAtlas.occupancy);
   }
 
-  for (const auto &patch : m_accessUnitParams.patchParamsList) {
-    const auto &inViewParams = m_inSequenceParams.viewParamsList[patch.pduViewId()];
-    const auto &outViewParams = m_outSequenceParams.viewParamsList[patch.pduViewId()];
+  for (const auto &patch : m_outParams.patchParamsList) {
+    const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
+    const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
 #ifndef NDEBUG
     const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
@@ -148,15 +143,15 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
 
 void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
   for (uint8_t i = 0; i < atlases.size(); ++i) {
-    if (m_outSequenceParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+    if (m_outParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
       auto &depthAtlasMap = atlases[i].depth;
-      int depthScale[2] = {
-          m_accessUnitParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
-          m_accessUnitParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+      int depthScale[2] = {m_outParams.atlas[i].asps.asps_frame_height() /
+                               depthAtlasMap.getHeight(),
+                           m_outParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
       const auto &occupancyAtlasMap = atlases[i].occupancy;
       int occupancyScale[2] = {
-          m_accessUnitParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
-          m_accessUnitParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
+          m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
+          m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
       int yOcc, xOcc;
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 1; x < depthAtlasMap.getWidth(); x++) {

@@ -392,7 +392,7 @@ private:
             }
 
             const auto &patchParams = atlas.patchParamsList[patchId];
-            const auto viewId = patchParams.pduViewId();
+            const auto viewId = patchParams.pduViewIdx();
 
             if (!m_cameraVisibility[viewId]) {
               return;
@@ -594,7 +594,7 @@ private:
 
       for (const auto &atlas : frame.atlas) {
         for (const auto &patchParams : atlas.patchParamsList) {
-          if (patchParams.pduViewId() != visibleSourceId[id]) {
+          if (patchParams.pduViewIdx() != visibleSourceId[id]) {
             continue;
           }
 

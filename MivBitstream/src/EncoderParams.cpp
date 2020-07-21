@@ -31,24 +31,34 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/IvSequenceParams.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 
 #include <TMIV/MivBitstream/verify.h>
+
+#include <algorithm>
 
 using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-IvSequenceParams::IvSequenceParams() : IvSequenceParams{false, false} {}
+auto EncoderAtlasParams::asme() const noexcept -> const AspsMivExtension & {
+  return asps.asps_miv_extension();
+}
 
-IvSequenceParams::IvSequenceParams(bool haveTexture, bool haveOccupancy)
-    : IvSequenceParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture, haveOccupancy} {}
+auto EncoderAtlasParams::asme() noexcept -> AspsMivExtension & {
+  return asps.asps_extension_present_flag(true).asps_miv_extension_flag(true).asps_miv_extension();
+}
 
-IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTexture, bool haveOccupancy) {
+EncoderParams::EncoderParams() : EncoderParams{false, false} {}
+
+EncoderParams::EncoderParams(bool haveTexture, bool haveOccupancy)
+    : EncoderParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture, haveOccupancy} {}
+
+EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture, bool haveOccupancy) {
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_0)
       .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
-      .ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
+      .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::MIV_Main)
       .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
@@ -83,46 +93,28 @@ IvSequenceParams::IvSequenceParams(const SizeVector &atlasSizes, bool haveTextur
   }
 }
 
-void IvSequenceParams::updateMvpl() {
-  auto &x = this->mvpl;
-
-  VERIFY_MIVBITSTREAM(!viewParamsList.empty());
-  x.mvp_num_views_minus1(uint16_t(viewParamsList.size() - 1));
-  x.mvp_intrinsic_params_equal_flag(
-      all_of(viewParamsList.begin(), viewParamsList.end(),
-             [this](const auto &x) { return x.ci == viewParamsList.front().ci; }));
-  x.mvp_depth_quantization_params_equal_flag(
-      all_of(viewParamsList.begin(), viewParamsList.end(),
-             [this](const auto &x) { return x.dq == viewParamsList.front().dq; }));
-  x.mvp_pruning_graph_params_present_flag(viewParamsList.front().pp.has_value());
-
-  for (uint16_t i = 0; i <= x.mvp_num_views_minus1(); ++i) {
-    const auto &vp = viewParamsList[i];
-    x.camera_extrinsics(i) = vp.ce;
-
-    if (i == 0 || !x.mvp_intrinsic_params_equal_flag()) {
-      x.camera_intrinsics(i) = vp.ci;
-    }
-    if (i == 0 || !x.mvp_depth_quantization_params_equal_flag()) {
-      x.depth_quantization(i) = vp.dq;
-    }
-    VERIFY_MIVBITSTREAM(vp.pp.has_value() == x.mvp_pruning_graph_params_present_flag());
-    if (vp.pp.has_value()) {
-      x.pruning_parent(i) = *vp.pp;
-    }
-  }
-}
-
-auto IvSequenceParams::vme() const noexcept -> const VpsMivExtension & {
+auto EncoderParams::vme() const noexcept -> const VpsMivExtension & {
   return vps.vps_miv_extension();
 }
 
-auto IvSequenceParams::vme() noexcept -> VpsMivExtension & {
+auto EncoderParams::vme() noexcept -> VpsMivExtension & {
   return vps.vps_extension_present_flag(true).vps_miv_extension_flag(true).vps_miv_extension();
 }
 
-auto IvSequenceParams::operator==(const IvSequenceParams &other) const -> bool {
-  return vps == other.vps && aaps == other.aaps && mvpl == other.mvpl &&
-         viewingSpace == other.viewingSpace && viewParamsList == other.viewParamsList;
+auto EncoderParams::operator==(const EncoderParams &other) const -> bool {
+  return vps == other.vps && aaps == other.aaps && viewingSpace == other.viewingSpace &&
+         viewParamsList == other.viewParamsList && atlas == other.atlas &&
+         patchParamsList == other.patchParamsList;
+}
+
+auto EncoderParams::atlasSizes() const -> SizeVector {
+  auto x = SizeVector{};
+  x.reserve(atlas.size());
+
+  transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
+    return Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
+  });
+
+  return x;
 }
 } // namespace TMIV::MivBitstream

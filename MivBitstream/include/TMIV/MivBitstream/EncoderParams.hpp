@@ -31,30 +31,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <TMIV/MivBitstream/IvAccessUnitParams.h>
-
-#include <algorithm>
-
-using namespace std;
-using namespace TMIV::Common;
+#ifndef _TMIV_MIVBITSTREAM_ENCODERPARAMS_H_
+#error "Include the .h, not the .hpp"
+#endif
 
 namespace TMIV::MivBitstream {
-auto AtlasAccessUnitParams::asme() const noexcept -> const AspsMivExtension & {
-  return asps.asps_miv_extension();
+inline EncoderAtlasParams::EncoderAtlasParams() {
+  asps.asps_num_ref_atlas_frame_lists_in_asps(1);
+  ath.ath_type(AthType::I_TILE);
 }
 
-auto AtlasAccessUnitParams::asme() noexcept -> AspsMivExtension & {
-  return asps.asps_extension_present_flag(true).asps_miv_extension_flag(true).asps_miv_extension();
+inline auto operator<<(std::ostream &stream, const EncoderAtlasParams &x) -> std::ostream & {
+  stream << x.asps << x.afps << x.ath;
+  return stream;
 }
 
-auto IvAccessUnitParams::atlasSizes() const -> SizeVector {
-  auto x = SizeVector{};
-  x.reserve(atlas.size());
+inline auto EncoderAtlasParams::operator==(const EncoderAtlasParams &other) const -> bool {
+  return asps == other.asps && afps == other.afps && ath == other.ath;
+}
 
-  transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
-    return Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
-  });
-
-  return x;
+inline auto operator<<(std::ostream &stream, const EncoderParams &x) -> std::ostream & {
+  for (const auto &atlas : x.atlas) {
+    stream << atlas.asps << atlas.afps << atlas.ath;
+  }
+  stream << "Total number of patches: " << x.patchParamsList.size() << '\n';
+  return stream;
 }
 } // namespace TMIV::MivBitstream

@@ -55,7 +55,7 @@ void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
             // occupancy is embedded in geometry
             uint32_t depthOccupancyThreshold;
             if (!atlas.asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
-              uint16_t v = atlas.patchParamsList[patchId].pduViewId();
+              uint16_t v = atlas.patchParamsList[patchId].pduViewIdx();
               depthOccupancyThreshold =
                   frame.viewParamsList[v].dq.dq_depth_occ_map_threshold_default();
             } else

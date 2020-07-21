@@ -42,8 +42,8 @@ constexpr auto ProfileTierLevel::ptl_profile_codec_group_idc() const noexcept {
   return m_ptl_profile_codec_group_idc;
 }
 
-constexpr auto ProfileTierLevel::ptl_profile_pcc_toolset_idc() const noexcept {
-  return m_ptl_profile_pcc_toolset_idc;
+constexpr auto ProfileTierLevel::ptl_profile_toolset_idc() const noexcept {
+  return m_ptl_profile_toolset_idc;
 }
 
 constexpr auto ProfileTierLevel::ptl_profile_reconstruction_idc() const noexcept {
@@ -71,9 +71,9 @@ constexpr auto ProfileTierLevel::ptl_profile_codec_group_idc(PtlProfileCodecGrou
   return *this;
 }
 
-constexpr auto ProfileTierLevel::ptl_profile_pcc_toolset_idc(PtlProfilePccToolsetIdc value) noexcept
+constexpr auto ProfileTierLevel::ptl_profile_toolset_idc(PtlProfilePccToolsetIdc value) noexcept
     -> auto & {
-  m_ptl_profile_pcc_toolset_idc = value;
+  m_ptl_profile_toolset_idc = value;
   return *this;
 }
 

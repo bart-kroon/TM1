@@ -40,24 +40,75 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-auto Encoder::completeAccessUnit() -> const IvAccessUnitParams & {
+void Encoder::scaleGeometryDynamicRange() {
+  auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
+  auto numOfFrames = m_transportViews.size();
+  auto numOfViews = m_transportViews[0].size();
+
+  for (size_t v = 0; v < numOfViews; v++) {
+    int minDepthMapValWithinGOP = 65535;
+    int maxDepthMapValWithinGOP = 0;
+
+    for (size_t f = 0; f < numOfFrames; f++) {
+      for (const auto geometry : m_transportViews[f][v].depth.getPlane(0)) {
+        if (geometry < minDepthMapValWithinGOP) {
+          minDepthMapValWithinGOP = geometry;
+        }
+        if (geometry > maxDepthMapValWithinGOP) {
+          maxDepthMapValWithinGOP = geometry;
+        }
+      }
+    }
+
+    for (size_t f = 0; f < numOfFrames; f++) {
+      for (auto &geometry : m_transportViews[f][v].depth.getPlane(0)) {
+        geometry = uint16_t((geometry + 0.5 - minDepthMapValWithinGOP) /
+                            (double(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * 65535.0);
+        if (lowDepthQuality) {
+          geometry /= 2;
+        }
+      }
+    }
+
+    const double normDispHighOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_high();
+    const double normDispLowOrig = m_transportParams.viewParamsList[v].dq.dq_norm_disp_low();
+
+    double normDispHigh =
+        maxDepthMapValWithinGOP / 65535.0 * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
+    const double normDispLow =
+        minDepthMapValWithinGOP / 65535.0 * (normDispHighOrig - normDispLowOrig) + normDispLowOrig;
+
+    if (lowDepthQuality) {
+      normDispHigh = 2 * normDispHigh - normDispLow;
+    }
+
+    m_params.viewParamsList[v].dq.dq_norm_disp_high(float(normDispHigh));
+    m_params.viewParamsList[v].dq.dq_norm_disp_low(float(normDispLow));
+  }
+} // namespace TMIV::Encoder
+
+auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
 
   updateAggregationStatistics(aggregatedMask);
 
-  if (m_ivs.vme().vme_max_entities_minus1() > 0) {
+  scaleGeometryDynamicRange();
+
+  if (m_params.vme().vme_max_entities_minus1() > 0) {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  m_ivau.patchParamsList =
-      m_packer->pack(m_ivau.atlasSizes(), aggregatedMask, m_isBasicView, m_blockSize, m_alignment);
+  m_params.patchParamsList =
+               m_packer->pack(m_params.atlasSizes(), aggregatedMask,
+                              m_transportParams.viewParamsList, m_blockSize, m_alignment);
 
-  m_ivau=m_depthOccupancy->transformAccessUnitParams(m_ivau);
+  const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params);
 
   constructVideoFrames();
 
-  return m_geometryDownscaler.transformAccessUnitParams(m_ivau);
+  const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
+  return paramsScaled;
 }
 
 void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {
@@ -75,17 +126,17 @@ void Encoder::constructVideoFrames() {
   for (const auto &views : m_transportViews) {
     MVD16Frame atlasList;
 
-    for (uint8_t i = 0; i <= m_ivs.vps.vps_atlas_count_minus1(); ++i) {
-      const auto frameWidth = m_ivs.vps.vps_frame_width(i);
-      const auto frameHeight = m_ivs.vps.vps_frame_height(i);
+    for (uint8_t i = 0; i <= m_params.vps.vps_atlas_count_minus1(); ++i) {
+      const auto frameWidth = m_params.vps.vps_frame_width(i);
+      const auto frameHeight = m_params.vps.vps_frame_height(i);
       TextureDepth16Frame frame;
-      if (m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
-        if (!m_ivs.vps.vps_miv_extension().vme_embedded_occupancy_flag() &&
-            m_ivs.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
+      if (m_params.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+        if (!m_params.vps.vps_miv_extension().vme_embedded_occupancy_flag() &&
+            m_params.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
           int codedOccupancyWidth =
-              frameWidth / (m_ivau.atlas[i].asme().asme_occupancy_scale_factor_x_minus1() + 1);
+              frameWidth / (m_params.atlas[i].asme().asme_occupancy_scale_factor_x_minus1() + 1);
           int codedOccupancyHeight =
-              frameHeight / (m_ivau.atlas[i].asme().asme_occupancy_scale_factor_y_minus1() + 1);
+              frameHeight / (m_params.atlas[i].asme().asme_occupancy_scale_factor_y_minus1() + 1);
           // make sure coded occupancy maps are divisible by 2 for HM coding functionality
           codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
           codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
@@ -97,16 +148,17 @@ void Encoder::constructVideoFrames() {
         }
       } else
         frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
+
       frame.texture.fillNeutral();
       frame.depth.fillZero();
-      if (m_ivs.vps.vps_occupancy_video_present_flag(uint8_t(i)))
+      if (m_params.vps.vps_occupancy_video_present_flag(uint8_t(i)))
         frame.occupancy.fillZero();
       atlasList.push_back(move(frame));
     }
 
-    for (const auto &patch : m_ivau.patchParamsList) {
-      const auto &view = views[patch.pduViewId()];
-      if (m_ivs.vme().vme_max_entities_minus1() > 0) {
+    for (const auto &patch : m_params.patchParamsList) {
+      const auto &view = views[patch.pduViewIdx()];
+      if (m_params.vme().vme_max_entities_minus1() > 0) {
         MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
@@ -135,8 +187,8 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
   int xM = patchParams.pduViewPos().x();
   int yM = patchParams.pduViewPos().y();
 
-  const auto &inViewParams = m_transportIvs.viewParamsList[patchParams.pduViewId()];
-  const auto &outViewParams = m_ivs.viewParamsList[patchParams.pduViewId()];
+  const auto &inViewParams = m_transportParams.viewParamsList[patchParams.pduViewIdx()];
+  const auto &outViewParams = m_params.viewParamsList[patchParams.pduViewIdx()];
 
   for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
@@ -149,7 +201,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patchParams.pduViewId()](dy + yM, dx + xM)[frameId]) {
+          if (m_nonAggregatedMask[patchParams.pduViewIdx()](dy + yM, dx + xM)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }
@@ -163,13 +215,13 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patchParams.viewToAtlas(pView);
-          if (!m_ivs.vme().vme_embedded_occupancy_flag() &&
-              m_ivs.vme().vme_occupancy_scale_enabled_flag()) {
-            yOcc = pAtlas.y() / (m_ivau.atlas[patchParams.vuhAtlasId]
+          if (!m_params.vme().vme_embedded_occupancy_flag() &&
+              m_params.vme().vme_occupancy_scale_enabled_flag()) {
+            yOcc = pAtlas.y() / (m_params.atlas[patchParams.vuhAtlasId]
                                      .asme()
                                      .asme_occupancy_scale_factor_y_minus1() +
                                  1);
-            xOcc = pAtlas.x() / (m_ivau.atlas[patchParams.vuhAtlasId]
+            xOcc = pAtlas.x() / (m_params.atlas[patchParams.vuhAtlasId]
                                      .asme()
                                      .asme_occupancy_scale_factor_x_minus1() +
                                  1);
@@ -186,7 +238,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-            if (m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
+            if (m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
               occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 0;
             continue;
           }
@@ -205,12 +257,12 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           // Depth
           auto depth = depthViewMap.getPlane(0)(pView.y(), pView.x());
           if (depth == 0 && !inViewParams.hasOccupancy && outViewParams.hasOccupancy &&
-              m_ivs.vme().vme_max_entities_minus1() == 0) {
+              m_params.vme().vme_max_entities_minus1() == 0) {
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
           if (depth > 0 && //outViewParams.hasOccupancy &&
-              m_ivs.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
+              m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
             occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
           ;
         }

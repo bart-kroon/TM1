@@ -58,13 +58,14 @@ class HierarchicalPruner::Impl {
 private:
   struct IncrementalSynthesizer {
     IncrementalSynthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_,
-                           Mat<float> reference_)
-        : rasterizer{config, size}, index{index_}, reference{move(reference_)} {}
+                           Mat<float> reference_, Mat<uint16_t> referenceY_)
+        : rasterizer{config, size}, index{index_}, reference{move(reference_)}, referenceY{move(referenceY_)} {}
 
     Rasterizer<Vec3f> rasterizer;
     const size_t index;
     float maskAverage{0.F};
     const Mat<float> reference;
+    const Mat<uint16_t> referenceY;
   };
 
   const float m_maxDepthError{};
@@ -373,7 +374,7 @@ private:
         const auto depthTransform = DepthTransform<16>{m_params.viewParamsList[i].dq};
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
-            depthTransform.expandDepth(views[i].depth)));
+            depthTransform.expandDepth(views[i].depth), views[i].texture.getPlane(0)));
       }
     }
   }
@@ -499,13 +500,34 @@ private:
 
     auto i = begin(mask);
     auto j = begin(synthesizer.reference);
+    auto jY = begin(synthesizer.referenceY);
     auto k = begin(status);
+
+    int pp = 0;
+    int W = mask.width();
+    int H = mask.height();
+    float maxLumaError = 40.0;
 
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {
         const auto depthError = (x.depth() / *j - 1.F);
+        auto lumaError = abs(std::get<0>(x.attributes()).x() * 1023 - *(jY));
 
-        if (abs(depthError) < m_maxDepthError) {
+        int h = pp / W;
+        int w = pp % W;
+
+        for (int hh = -1; hh <= 1; hh++) {
+          for (int ww = -1; ww <= 1; ww++) {
+            if (h + hh < 0 || h + hh >= H || w + ww < 0 || w + ww >= W) {
+              continue;
+            }
+            int offset = hh * W + ww;
+            lumaError =
+                min(lumaError, abs(std::get<0>(x.attributes()).x() * 1023 - *(jY + offset)));
+          }
+        }
+
+        if (abs(depthError) < m_maxDepthError && lumaError < maxLumaError) {
           if (*k != 0) {
             *i = 0;
           }
@@ -519,7 +541,9 @@ private:
 
       i++;
       j++;
+      jY++;
       k++;
+      pp++;
 
       return true;
     });

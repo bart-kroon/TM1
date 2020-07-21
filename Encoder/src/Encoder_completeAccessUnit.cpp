@@ -103,11 +103,11 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
                m_packer->pack(m_params.atlasSizes(), aggregatedMask,
                               m_transportParams.viewParamsList, m_blockSize, m_alignment);
 
-  const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params);
+  m_params = m_geometryQuantizer->transformParams(m_params);
 
   constructVideoFrames();
 
-  const auto &paramsScaled = m_geometryDownscaler.transformParams(paramsQuantized);
+  const auto &paramsScaled = m_geometryDownscaler.transformParams(m_params);
   return paramsScaled;
 }
 

@@ -170,6 +170,9 @@ auto operator<<(ostream &stream, const ProfileTierLevel &x) -> ostream & {
   stream << "ptl_profile_codec_group_idc=" << x.ptl_profile_codec_group_idc() << '\n';
   stream << "ptl_profile_toolset_idc=" << x.ptl_profile_toolset_idc() << '\n';
   stream << "ptl_profile_reconstruction_idc=" << x.ptl_profile_reconstruction_idc() << '\n';
+  stream << "ptl_reserved_zero_16bits=" << (int) x.ptl_reserved_zero_16bits() << '\n';
+  stream << "ptl_max_decodes_idc=" << (int) x.ptl_max_decodes_idc() << '\n';
+  stream << "ptl_reserved_0xfff_12bits=" << (int) x.ptl_reserved_0xfff_12bits() << '\n';
   stream << "ptl_level_idc=" << x.ptl_level_idc() << '\n';
   stream << "ptl_num_sub_profiles=" << int(x.ptl_num_sub_profiles()) << '\n';
   stream << "ptl_extended_sub_profile_flag=" << boolalpha << x.ptl_extended_sub_profile_flag()
@@ -187,6 +190,9 @@ auto ProfileTierLevel::operator==(const ProfileTierLevel &other) const noexcept 
          ptl_profile_codec_group_idc() == other.ptl_profile_codec_group_idc() &&
          ptl_profile_toolset_idc() == other.ptl_profile_toolset_idc() &&
          ptl_profile_reconstruction_idc() == other.ptl_profile_reconstruction_idc() &&
+         ptl_reserved_zero_16bits() == other.ptl_reserved_zero_16bits() &&
+         ptl_max_decodes_idc() == other.ptl_max_decodes_idc() &&
+         ptl_reserved_0xfff_12bits() == other.ptl_reserved_0xfff_12bits() &&
          ptl_level_idc() == other.ptl_level_idc() &&
          ptl_extended_sub_profile_flag() == other.ptl_extended_sub_profile_flag() &&
          m_subProfileIdcs == other.m_subProfileIdcs &&
@@ -203,7 +209,9 @@ auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel
   x.ptl_profile_codec_group_idc(bitstream.readBits<PtlProfileCodecGroupIdc>(7));
   x.ptl_profile_toolset_idc(bitstream.readBits<PtlProfilePccToolsetIdc>(8));
   x.ptl_profile_reconstruction_idc(bitstream.readBits<PtlProfileReconstructionIdc>(8));
-  bitstream.getUint32();
+  bitstream.getUint16();
+  x.ptl_max_decodes_idc(bitstream.readBits<uint8_t>(4));
+  bitstream.readBits<uint16_t>(12); // bitstream.getUVar<uint16_t>(12);
   x.ptl_level_idc(bitstream.readBits<PtlLevelIdc>(8));
   x.ptl_num_sub_profiles(bitstream.readBits<uint8_t>(6));
   x.ptl_extended_sub_profile_flag(bitstream.getFlag());
@@ -224,7 +232,9 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
   bitstream.writeBits(ptl_profile_codec_group_idc(), 7);
   bitstream.writeBits(ptl_profile_toolset_idc(), 8);
   bitstream.writeBits(ptl_profile_reconstruction_idc(), 8);
-  bitstream.putUint32(0);
+  bitstream.writeBits(ptl_reserved_zero_16bits(), 16);
+  bitstream.writeBits(ptl_max_decodes_idc(), 4);
+  bitstream.writeBits(ptl_reserved_0xfff_12bits(), 12);
   bitstream.writeBits(ptl_level_idc(), 8);
   bitstream.writeBits(ptl_num_sub_profiles(), 6);
   bitstream.putFlag(ptl_extended_sub_profile_flag());

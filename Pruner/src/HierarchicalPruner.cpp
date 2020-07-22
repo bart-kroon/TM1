@@ -72,6 +72,7 @@ private:
   };
 
   const float m_maxDepthError{};
+  const float m_maxLumaError{};
   const float m_maxStretching{};
   const int m_erode{};
   const int m_dilate{};
@@ -92,6 +93,7 @@ private:
 public:
   explicit Impl(const Json &nodeConfig)
       : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()}
+      , m_maxLumaError{nodeConfig.require("maxLumaError").asFloat()}
       , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
       , m_erode{nodeConfig.require("erode").asInt()}
       , m_dilate{nodeConfig.require("dilate").asInt()}
@@ -510,7 +512,6 @@ private:
     int pp = 0;
     const auto W = mask.width();
     const auto H = mask.height();
-    float maxLumaError = 40.0;
 
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {
@@ -530,7 +531,7 @@ private:
           }
         }
 
-        if (abs(depthError) < m_maxDepthError && lumaError < maxLumaError) {
+        if (abs(depthError) < m_maxDepthError && lumaError < m_maxLumaError) {
           if (*k != 0) {
             *i = 0;
           }

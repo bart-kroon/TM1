@@ -278,13 +278,17 @@ public:
   [[nodiscard]] constexpr auto vme_geometry_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_num_groups_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_max_entities_minus1() const noexcept;
+  [[nodiscard]] constexpr auto vme_embedded_occupancy_flag() const noexcept;
+  [[nodiscard]] constexpr auto vme_occupancy_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_vui_params_present_flag() const noexcept;
   [[nodiscard]] auto vui_parameters() const noexcept -> const VuiParameters &;
 
-  constexpr auto vme_depth_low_quality_flag(const bool value) noexcept -> auto &;
-  constexpr auto vme_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto vme_num_groups_minus1(const unsigned value) noexcept -> auto &;
-  constexpr auto vme_max_entities_minus1(const unsigned value) noexcept -> auto &;
+  constexpr auto vme_depth_low_quality_flag(bool value) noexcept -> auto &;
+  constexpr auto vme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto vme_num_groups_minus1(unsigned value) noexcept -> auto &;
+  constexpr auto vme_max_entities_minus1(unsigned value) noexcept -> auto &;
+  constexpr auto vme_embedded_occupancy_flag(bool value) noexcept -> auto &;
+  auto vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension &;
   constexpr auto vme_vui_params_present_flag(bool value) noexcept -> auto &;
   auto vui_parameters(const VuiParameters &value) noexcept -> VpsMivExtension &;
 
@@ -302,6 +306,8 @@ private:
   bool m_vme_geometry_scale_enabled_flag{};
   unsigned m_vme_num_groups_minus1{};
   unsigned m_vme_max_entities_minus1{};
+  bool m_vme_embedded_occupancy_flag{true};
+  bool m_vme_occupancy_scale_enabled_flag{};
   bool m_vme_vui_params_present_flag{};
   std::optional<VuiParameters> m_mvp;
 };

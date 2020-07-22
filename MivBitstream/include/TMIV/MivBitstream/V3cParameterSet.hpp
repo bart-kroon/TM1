@@ -216,6 +216,14 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1() const noexcept {
   return m_vme_max_entities_minus1;
 }
 
+constexpr auto VpsMivExtension::vme_embedded_occupancy_flag() const noexcept {
+  return m_vme_embedded_occupancy_flag;
+}
+
+constexpr auto VpsMivExtension::vme_occupancy_scale_enabled_flag() const noexcept {
+  return !vme_embedded_occupancy_flag() && m_vme_occupancy_scale_enabled_flag;
+}
+
 constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
   return m_vme_vui_params_present_flag;
 }
@@ -240,6 +248,11 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) no
   return *this;
 }
 
+constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) noexcept -> auto & {
+  m_vme_embedded_occupancy_flag = value;
+  return *this;
+}
+
 constexpr auto VpsMivExtension::vme_vui_params_present_flag(bool value) noexcept -> auto & {
   m_vme_vui_params_present_flag = value;
   return *this;
@@ -249,7 +262,9 @@ constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const n
   return vme_depth_low_quality_flag() == other.vme_depth_low_quality_flag() &&
          vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
          vme_num_groups_minus1() == other.vme_num_groups_minus1() &&
-         vme_max_entities_minus1() == other.vme_max_entities_minus1();
+         vme_max_entities_minus1() == other.vme_max_entities_minus1() &&
+         vme_embedded_occupancy_flag() == other.vme_embedded_occupancy_flag() &&
+         vme_occupancy_scale_enabled_flag() == other.vme_occupancy_scale_enabled_flag();
 }
 
 constexpr auto VpsMivExtension::operator!=(const VpsMivExtension &other) const noexcept {

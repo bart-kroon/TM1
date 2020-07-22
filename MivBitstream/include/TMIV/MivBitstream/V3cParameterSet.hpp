@@ -50,13 +50,9 @@ constexpr auto ProfileTierLevel::ptl_profile_reconstruction_idc() const noexcept
   return m_ptl_profile_reconstruction_idc;
 }
 
-constexpr auto ProfileTierLevel::ptl_reserved_zero_16bits() const noexcept { return 0; }
-
 constexpr auto ProfileTierLevel::ptl_max_decodes_idc() const noexcept {
   return m_ptl_max_decodes_idc;
 }
-
-constexpr auto ProfileTierLevel::ptl_reserved_0xfff_12bits() const noexcept { return 0xfff; }
 
 constexpr auto ProfileTierLevel::ptl_level_idc() const noexcept { return m_ptl_level_idc; }
 

@@ -85,27 +85,27 @@ auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostrea
   }
 }
 
-auto operator<<(std::ostream &stream, const PtlProfileMaxDecodesIdc &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, const PtlMaxDecodesIdc &x) -> std::ostream & {
   switch (x) {
-  case PtlProfileMaxDecodesIdc::max_1:
+  case PtlMaxDecodesIdc::max_1:
     return stream << "max_1";
-  case PtlProfileMaxDecodesIdc::max_2:
+  case PtlMaxDecodesIdc::max_2:
     return stream << "max_2";
-  case PtlProfileMaxDecodesIdc::max_3:
+  case PtlMaxDecodesIdc::max_3:
     return stream << "max_3";
-  case PtlProfileMaxDecodesIdc::max_4:
+  case PtlMaxDecodesIdc::max_4:
     return stream << "max_4";
-  case PtlProfileMaxDecodesIdc::max_6:
+  case PtlMaxDecodesIdc::max_6:
     return stream << "max_6";
-  case PtlProfileMaxDecodesIdc::max_12:
+  case PtlMaxDecodesIdc::max_12:
     return stream << "max_12";
-  case PtlProfileMaxDecodesIdc::max_16:
+  case PtlMaxDecodesIdc::max_16:
     return stream << "max_16";
-  case PtlProfileMaxDecodesIdc::max_24:
+  case PtlMaxDecodesIdc::max_24:
     return stream << "max_24";
-  case PtlProfileMaxDecodesIdc::max_32:
+  case PtlMaxDecodesIdc::max_32:
     return stream << "max_32";
-  case PtlProfileMaxDecodesIdc::unconstrained:
+  case PtlMaxDecodesIdc::unconstrained:
     return stream << "unconstrained";
   default:
     return stream << "[reserved:" << int(x) << "]";
@@ -233,7 +233,7 @@ auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel
   x.ptl_profile_toolset_idc(bitstream.readBits<PtlProfilePccToolsetIdc>(8));
   x.ptl_profile_reconstruction_idc(bitstream.readBits<PtlProfileReconstructionIdc>(8));
   bitstream.getUint16();
-  x.ptl_max_decodes_idc(bitstream.readBits<PtlProfileMaxDecodesIdc>(4));
+  x.ptl_max_decodes_idc(bitstream.readBits<PtlMaxDecodesIdc>(4));
   bitstream.readBits<uint16_t>(12);
   x.ptl_level_idc(bitstream.readBits<PtlLevelIdc>(8));
   x.ptl_num_sub_profiles(bitstream.readBits<uint8_t>(6));

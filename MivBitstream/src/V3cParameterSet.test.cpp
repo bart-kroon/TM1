@@ -44,7 +44,7 @@ TEST_CASE("profile_tier_level", "[V3C Parameter Set]") {
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
-ptl_max_decodes_idc=max_1
+ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
 ptl_extended_sub_profile_flag=false
@@ -58,7 +58,7 @@ ptl_tool_constraints_present_flag=false
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
         .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::Extended)
         .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Unconstrained)
-        .ptl_max_decodes_idc(PtlProfileMaxDecodesIdc::max_4)
+        .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
         .ptl_level_idc(PtlLevelIdc::Level_2_0)
         .ptl_num_sub_profiles(2)
         .ptl_extended_sub_profile_flag(true)
@@ -202,7 +202,7 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
-ptl_max_decodes_idc=max_1
+ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
 ptl_extended_sub_profile_flag=false
@@ -260,7 +260,7 @@ vme_max_entities_minus1=20
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=Basic
 ptl_profile_reconstruction_idc=Rec0
-ptl_max_decodes_idc=max_1
+ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
 ptl_extended_sub_profile_flag=false

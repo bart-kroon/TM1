@@ -88,7 +88,7 @@ ProfileTierLevel::ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc val
   return *this;
 }
 
-constexpr auto ProfileTierLevel::ptl_max_decodes_idc(PtlProfileMaxDecodesIdc value) noexcept
+constexpr auto ProfileTierLevel::ptl_max_decodes_idc(PtlMaxDecodesIdc value) noexcept
     -> auto & {
   m_ptl_max_decodes_idc = value;
   return *this;

@@ -50,6 +50,7 @@ public:
   void writeAccessUnit(const EncoderParams &);
 
 private:
+  auto ptlMaxDecodesIdc() const -> PtlMaxDecodesIdc;
   auto commonAtlasSubBitstream() -> AtlasSubBitstream;
   auto commonAtlasFrame() const -> CommonAtlasFrameRBSP;
   auto mvpUpdateMode() const -> MvpUpdateMode;

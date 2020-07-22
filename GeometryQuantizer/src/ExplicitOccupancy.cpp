@@ -152,7 +152,7 @@ void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
       int occupancyScale[2] = {
           m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
           m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
-      int yOcc, xOcc;
+      int yOcc = 0, xOcc = 0;
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
           auto depth = depthAtlasMap.getPlane(0)(y, x);

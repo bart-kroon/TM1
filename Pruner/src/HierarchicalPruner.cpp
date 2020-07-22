@@ -339,7 +339,7 @@ private:
   }
 
   void createInitialMasks(const MVD16Frame &views) {
-    int m_align;
+    int m_align = 0;
     if (m_params.vme().vme_depth_low_quality_flag()) // m54152
       m_align = 32;
     else

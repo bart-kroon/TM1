@@ -210,7 +210,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           break;
         }
       }
-      int yOcc, xOcc = 0;
+      int yOcc = 0, xOcc = 0;
       for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
           Vec2i pView = {xM + dx, yM + dy};

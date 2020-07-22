@@ -25,6 +25,7 @@
             "erode": 2,
             "maxBasicViewsPerGraph": 3,
             "maxDepthError": 0.1,
+            "maxLumaError": 0.04,
             "maxStretching": 5,
             "rayAngleParameter": 10,
             "stretchingParameter": 3

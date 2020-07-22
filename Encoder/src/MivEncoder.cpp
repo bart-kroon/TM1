@@ -50,6 +50,7 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
   m_params = params;
 
   if (m_irap) {
+    m_params.vps.profile_tier_level().ptl_max_decodes_idc(ptlMaxDecodesIdc());
     writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_params.vps);
     m_log2MaxFrmOrderCntLsbMinus4 = m_params.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4();
   }
@@ -75,6 +76,51 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
   }
 
   m_irap = false;
+}
+
+auto MivEncoder::ptlMaxDecodesIdc() const -> PtlMaxDecodesIdc {
+  auto numDecodes = 0;
+  for (uint8_t j = 0; j < m_params.vps.vps_atlas_count_minus1() + 1; ++j) {
+    numDecodes += m_params.vps.vps_auxiliary_video_present_flag(j);
+    numDecodes += m_params.vps.vps_occupancy_video_present_flag(j);
+    numDecodes += m_params.vps.vps_geometry_video_present_flag(j) *
+                  (m_params.vps.vps_map_count_minus1(j) + 1);
+    if (m_params.vps.vps_attribute_video_present_flag(j)) {
+      numDecodes += m_params.vps.attribute_information(j).ai_attribute_count() *
+                    (m_params.vps.vps_map_count_minus1(j) + 1);
+    }
+  }
+  if (numDecodes <= 1) {
+    return PtlMaxDecodesIdc::max_1;
+  }
+  if (numDecodes <= 2) {
+    return PtlMaxDecodesIdc::max_2;
+  }
+  if (numDecodes <= 3) {
+    return PtlMaxDecodesIdc::max_3;
+  }
+  if (numDecodes <= 4) {
+    return PtlMaxDecodesIdc::max_4;
+  }
+  if (numDecodes <= 6) {
+    return PtlMaxDecodesIdc::max_6;
+  }
+  if (numDecodes <= 12) {
+    return PtlMaxDecodesIdc::max_12;
+  }
+  if (numDecodes <= 16) {
+    return PtlMaxDecodesIdc::max_16;
+  }
+  if (numDecodes <= 24) {
+    return PtlMaxDecodesIdc::max_24;
+  }
+  if (numDecodes <= 24) {
+    return PtlMaxDecodesIdc::max_24;
+  }
+  if (numDecodes <= 32) {
+    return PtlMaxDecodesIdc::max_32;
+  }
+  return PtlMaxDecodesIdc::unconstrained;
 }
 
 namespace {

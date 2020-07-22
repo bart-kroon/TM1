@@ -170,7 +170,7 @@ auto MivDecoder::decodeVps() -> bool {
   return true;
 }
 
-void MivDecoder::checkCapabilities() {
+void MivDecoder::checkCapabilities() const {
   VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_flag());
 
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {

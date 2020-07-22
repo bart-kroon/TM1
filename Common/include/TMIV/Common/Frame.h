@@ -212,6 +212,9 @@ using MaskList = std::vector<Mask>;
 // linear transfer and nearest interpolation for chroma
 auto expandTexture(const Common::Frame<Common::YUV444P10> &inYuv) -> Common::Mat<Common::Vec3f>;
 
+// Expand a YUV 4:2:0 10-bit texture to 32-bit float luma map with linear transfer
+auto expandLuma(const Common::Frame<Common::YUV420P10> &inYuv) -> Common::Mat<float>;
+
 // Quantize a packed 4:4:4 32-bit float texture as YUV 4:4:4 10-bit texture with
 // linear transfer and area interpolation for chroma
 auto quantizeTexture(const Common::Mat<Common::Vec3f> &in) -> Common::Frame<Common::YUV444P10>;

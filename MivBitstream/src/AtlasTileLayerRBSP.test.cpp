@@ -121,15 +121,15 @@ TEST_CASE("patch_data_unit", "[Atlas Tile Layer RBSP]") {
 
   auto x = PatchDataUnit{};
 
-  REQUIRE(toString(x, 101) == R"(pdu_2d_pos_x( 101 )=0
-pdu_2d_pos_y( 101 )=0
-pdu_2d_size_x_minus1( 101 )=0
-pdu_2d_size_y_minus1( 101 )=0
-pdu_view_pos_x( 101 )=0
-pdu_view_pos_y( 101 )=0
-pdu_depth_start( 101 )=0
-pdu_view_idx( 101 )=0
-pdu_orientation_index( 101 )=FPO_NULL
+  REQUIRE(toString(x, 0, 101) == R"(pdu_2d_pos_x[ 0 ][ 101 ]=0
+pdu_2d_pos_y[ 0 ][ 101 ]=0
+pdu_2d_size_x_minus1[ 0 ][ 101 ]=0
+pdu_2d_size_y_minus1[ 0 ][ 101 ]=0
+pdu_view_pos_x[ 0 ][ 101 ]=0
+pdu_view_pos_y[ 0 ][ 101 ]=0
+pdu_depth_start[ 0 ][ 101 ]=0
+pdu_view_idx[ 0 ][ 101 ]=0
+pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
 )");
 
   REQUIRE(bitCodingTest(x, 12, vuh, vps, aspsV, afpsV, ath));
@@ -172,18 +172,18 @@ pdu_orientation_index( 101 )=FPO_NULL
         .pdu_entity_id(35)
         .pdu_depth_occ_threshold(600);
 
-    REQUIRE(toString(x, 102) == R"(pdu_2d_pos_x( 102 )=34
-pdu_2d_pos_y( 102 )=57
-pdu_2d_size_x_minus1( 102 )=1234
-pdu_2d_size_y_minus1( 102 )=1002
-pdu_view_pos_x( 102 )=1234
-pdu_view_pos_y( 102 )=21345
-pdu_depth_start( 102 )=623
-pdu_depth_end( 102 )=789
-pdu_view_idx( 102 )=300
-pdu_orientation_index( 102 )=FPO_MROT180
-pdu_entity_id( 102 )=35
-pdu_depth_occ_threshold( 102 )=600
+    REQUIRE(toString(x, 12, 102) == R"(pdu_2d_pos_x[ 12 ][ 102 ]=34
+pdu_2d_pos_y[ 12 ][ 102 ]=57
+pdu_2d_size_x_minus1[ 12 ][ 102 ]=1234
+pdu_2d_size_y_minus1[ 12 ][ 102 ]=1002
+pdu_view_pos_x[ 12 ][ 102 ]=1234
+pdu_view_pos_y[ 12 ][ 102 ]=21345
+pdu_depth_start[ 12 ][ 102 ]=623
+pdu_depth_end[ 12 ][ 102 ]=789
+pdu_view_idx[ 12 ][ 102 ]=300
+pdu_orientation_index[ 12 ][ 102 ]=FPO_MROT180
+pdu_entity_id[ 12 ][ 102 ]=35
+pdu_depth_occ_threshold[ 12 ][ 102 ]=600
 )");
 
     REQUIRE(bitCodingTest(x, 153, vuh, vps, aspsV, afpsV, ath));
@@ -226,17 +226,17 @@ pdu_depth_occ_threshold( 102 )=600
         .pdu_miv_extension()
         .pdu_entity_id(35);
 
-    REQUIRE(toString(x, 102) == R"(pdu_2d_pos_x( 102 )=34
-pdu_2d_pos_y( 102 )=57
-pdu_2d_size_x_minus1( 102 )=1234
-pdu_2d_size_y_minus1( 102 )=1002
-pdu_view_pos_x( 102 )=1234
-pdu_view_pos_y( 102 )=21345
-pdu_depth_start( 102 )=623
-pdu_depth_end( 102 )=789
-pdu_view_idx( 102 )=300
-pdu_orientation_index( 102 )=FPO_MROT180
-pdu_entity_id( 102 )=35
+    REQUIRE(toString(x, 12, 102) == R"(pdu_2d_pos_x[ 12 ][ 102 ]=34
+pdu_2d_pos_y[ 12 ][ 102 ]=57
+pdu_2d_size_x_minus1[ 12 ][ 102 ]=1234
+pdu_2d_size_y_minus1[ 12 ][ 102 ]=1002
+pdu_view_pos_x[ 12 ][ 102 ]=1234
+pdu_view_pos_y[ 12 ][ 102 ]=21345
+pdu_depth_start[ 12 ][ 102 ]=623
+pdu_depth_end[ 12 ][ 102 ]=789
+pdu_view_idx[ 12 ][ 102 ]=300
+pdu_orientation_index[ 12 ][ 102 ]=FPO_MROT180
+pdu_entity_id[ 12 ][ 102 ]=35
 )");
 
     REQUIRE(bitCodingTest(x, 133, vuh, vps, aspsV, afpsV, ath));
@@ -258,7 +258,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
 
   auto x = PatchInformationData{};
 
-  REQUIRE(toString(x, 77) == R"([unknown]
+  REQUIRE(toString(x, 0, 77) == R"([unknown]
 )");
 
   SECTION("Example skip_patch_data_unit") {
@@ -267,7 +267,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
     const auto patchMode = AtduPatchMode::P_SKIP;
     x = PatchInformationData{SkipPatchDataUnit{}};
 
-    REQUIRE(toString(x, 88).empty());
+    REQUIRE(toString(x, 77, 88).empty());
     REQUIRE(bitCodingTest(x, 0, vuh, vps, aspsV, afpsV, ath, patchMode));
   }
 
@@ -277,15 +277,15 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
     const auto patchMode = AtduPatchMode::I_INTRA;
     x = PatchInformationData{pdu};
 
-    REQUIRE(toString(x, 99) == R"(pdu_2d_pos_x( 99 )=0
-pdu_2d_pos_y( 99 )=0
-pdu_2d_size_x_minus1( 99 )=0
-pdu_2d_size_y_minus1( 99 )=0
-pdu_view_pos_x( 99 )=0
-pdu_view_pos_y( 99 )=0
-pdu_depth_start( 99 )=0
-pdu_view_idx( 99 )=0
-pdu_orientation_index( 99 )=FPO_NULL
+    REQUIRE(toString(x, 13, 99) == R"(pdu_2d_pos_x[ 13 ][ 99 ]=0
+pdu_2d_pos_y[ 13 ][ 99 ]=0
+pdu_2d_size_x_minus1[ 13 ][ 99 ]=0
+pdu_2d_size_y_minus1[ 13 ][ 99 ]=0
+pdu_view_pos_x[ 13 ][ 99 ]=0
+pdu_view_pos_y[ 13 ][ 99 ]=0
+pdu_depth_start[ 13 ][ 99 ]=0
+pdu_view_idx[ 13 ][ 99 ]=0
+pdu_orientation_index[ 13 ][ 99 ]=FPO_NULL
 )");
     REQUIRE(bitCodingTest(x, 12, vuh, vps, aspsV, afpsV, ath, patchMode));
   }
@@ -299,7 +299,7 @@ TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
     ath.ath_type(AthType::I_TILE);
 
     const auto x = AtlasTileDataUnit{};
-    REQUIRE(toString(x, ath.ath_type()).empty());
+    REQUIRE(toString(x, ath).empty());
 
     const auto vps = V3cParameterSet{};
 
@@ -316,19 +316,23 @@ TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
         {AtduPatchMode::P_INTRA, PatchInformationData{PatchDataUnit{}}},
         {AtduPatchMode::P_SKIP, PatchInformationData{SkipPatchDataUnit{}}}};
 
+    auto ath = AtlasTileHeader{};
+    ath.ath_type(AthType::P_TILE);
+
     const auto x = AtlasTileDataUnit{vec};
-    REQUIRE(toString(x, AthType::P_TILE) == R"(atdu_patch_mode[ 0 ]=P_SKIP
+
+    REQUIRE(toString(x, ath) == R"(atdu_patch_mode[ 0 ]=P_SKIP
 atdu_patch_mode[ 1 ]=P_SKIP
 atdu_patch_mode[ 2 ]=P_INTRA
-pdu_2d_pos_x( 2 )=0
-pdu_2d_pos_y( 2 )=0
-pdu_2d_size_x_minus1( 2 )=0
-pdu_2d_size_y_minus1( 2 )=0
-pdu_view_pos_x( 2 )=0
-pdu_view_pos_y( 2 )=0
-pdu_depth_start( 2 )=0
-pdu_view_idx( 2 )=0
-pdu_orientation_index( 2 )=FPO_NULL
+pdu_2d_pos_x[ 0 ][ 2 ]=0
+pdu_2d_pos_y[ 0 ][ 2 ]=0
+pdu_2d_size_x_minus1[ 0 ][ 2 ]=0
+pdu_2d_size_y_minus1[ 0 ][ 2 ]=0
+pdu_view_pos_x[ 0 ][ 2 ]=0
+pdu_view_pos_y[ 0 ][ 2 ]=0
+pdu_depth_start[ 0 ][ 2 ]=0
+pdu_view_idx[ 0 ][ 2 ]=0
+pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
 atdu_patch_mode[ 3 ]=P_SKIP
 )");
   }
@@ -339,27 +343,31 @@ atdu_patch_mode[ 3 ]=P_SKIP
     auto vec = AtlasTileDataUnit::Vector{{AtduPatchMode::I_INTRA, PatchInformationData{pdu}},
                                          {AtduPatchMode::I_INTRA, PatchInformationData{pdu}}};
 
+    auto ath = AtlasTileHeader{};
+    ath.ath_type(AthType::I_TILE).ath_id(7);
+
     const auto x = AtlasTileDataUnit{vec};
-    REQUIRE(toString(x, AthType::I_TILE) == R"(atdu_patch_mode[ 0 ]=I_INTRA
-pdu_2d_pos_x( 0 )=0
-pdu_2d_pos_y( 0 )=0
-pdu_2d_size_x_minus1( 0 )=0
-pdu_2d_size_y_minus1( 0 )=0
-pdu_view_pos_x( 0 )=0
-pdu_view_pos_y( 0 )=0
-pdu_depth_start( 0 )=0
-pdu_view_idx( 0 )=0
-pdu_orientation_index( 0 )=FPO_NULL
+
+    REQUIRE(toString(x, ath) == R"(atdu_patch_mode[ 0 ]=I_INTRA
+pdu_2d_pos_x[ 7 ][ 0 ]=0
+pdu_2d_pos_y[ 7 ][ 0 ]=0
+pdu_2d_size_x_minus1[ 7 ][ 0 ]=0
+pdu_2d_size_y_minus1[ 7 ][ 0 ]=0
+pdu_view_pos_x[ 7 ][ 0 ]=0
+pdu_view_pos_y[ 7 ][ 0 ]=0
+pdu_depth_start[ 7 ][ 0 ]=0
+pdu_view_idx[ 7 ][ 0 ]=0
+pdu_orientation_index[ 7 ][ 0 ]=FPO_NULL
 atdu_patch_mode[ 1 ]=I_INTRA
-pdu_2d_pos_x( 1 )=0
-pdu_2d_pos_y( 1 )=0
-pdu_2d_size_x_minus1( 1 )=0
-pdu_2d_size_y_minus1( 1 )=0
-pdu_view_pos_x( 1 )=0
-pdu_view_pos_y( 1 )=0
-pdu_depth_start( 1 )=0
-pdu_view_idx( 1 )=0
-pdu_orientation_index( 1 )=FPO_NULL
+pdu_2d_pos_x[ 7 ][ 1 ]=0
+pdu_2d_pos_y[ 7 ][ 1 ]=0
+pdu_2d_size_x_minus1[ 7 ][ 1 ]=0
+pdu_2d_size_y_minus1[ 7 ][ 1 ]=0
+pdu_view_pos_x[ 7 ][ 1 ]=0
+pdu_view_pos_y[ 7 ][ 1 ]=0
+pdu_depth_start[ 7 ][ 1 ]=0
+pdu_view_idx[ 7 ][ 1 ]=0
+pdu_orientation_index[ 7 ][ 1 ]=FPO_NULL
 )");
 
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
@@ -375,9 +383,6 @@ pdu_orientation_index( 1 )=FPO_NULL
     aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
 
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
-
-    auto ath = AtlasTileHeader{};
-    ath.ath_type(AthType::I_TILE);
 
     REQUIRE(bitCodingTest(x, 33, vuh, vps, aspsV, afpsV, ath));
   }
@@ -447,35 +452,35 @@ ath_ref_atlas_frame_list_sps_flag=true
 ath_patch_size_x_info_quantizer=0
 ath_patch_size_y_info_quantizer=0
 atdu_patch_mode[ 0 ]=I_INTRA
-pdu_2d_pos_x( 0 )=0
-pdu_2d_pos_y( 0 )=0
-pdu_2d_size_x_minus1( 0 )=10
-pdu_2d_size_y_minus1( 0 )=20
-pdu_view_pos_x( 0 )=0
-pdu_view_pos_y( 0 )=0
-pdu_depth_start( 0 )=0
-pdu_view_idx( 0 )=0
-pdu_orientation_index( 0 )=FPO_NULL
+pdu_2d_pos_x[ 0 ][ 0 ]=0
+pdu_2d_pos_y[ 0 ][ 0 ]=0
+pdu_2d_size_x_minus1[ 0 ][ 0 ]=10
+pdu_2d_size_y_minus1[ 0 ][ 0 ]=20
+pdu_view_pos_x[ 0 ][ 0 ]=0
+pdu_view_pos_y[ 0 ][ 0 ]=0
+pdu_depth_start[ 0 ][ 0 ]=0
+pdu_view_idx[ 0 ][ 0 ]=0
+pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
 atdu_patch_mode[ 1 ]=I_INTRA
-pdu_2d_pos_x( 1 )=0
-pdu_2d_pos_y( 1 )=0
-pdu_2d_size_x_minus1( 1 )=30
-pdu_2d_size_y_minus1( 1 )=40
-pdu_view_pos_x( 1 )=0
-pdu_view_pos_y( 1 )=0
-pdu_depth_start( 1 )=0
-pdu_view_idx( 1 )=0
-pdu_orientation_index( 1 )=FPO_NULL
+pdu_2d_pos_x[ 0 ][ 1 ]=0
+pdu_2d_pos_y[ 0 ][ 1 ]=0
+pdu_2d_size_x_minus1[ 0 ][ 1 ]=30
+pdu_2d_size_y_minus1[ 0 ][ 1 ]=40
+pdu_view_pos_x[ 0 ][ 1 ]=0
+pdu_view_pos_y[ 0 ][ 1 ]=0
+pdu_depth_start[ 0 ][ 1 ]=0
+pdu_view_idx[ 0 ][ 1 ]=0
+pdu_orientation_index[ 0 ][ 1 ]=FPO_NULL
 atdu_patch_mode[ 2 ]=I_INTRA
-pdu_2d_pos_x( 2 )=0
-pdu_2d_pos_y( 2 )=0
-pdu_2d_size_x_minus1( 2 )=50
-pdu_2d_size_y_minus1( 2 )=60
-pdu_view_pos_x( 2 )=0
-pdu_view_pos_y( 2 )=0
-pdu_depth_start( 2 )=0
-pdu_view_idx( 2 )=0
-pdu_orientation_index( 2 )=FPO_NULL
+pdu_2d_pos_x[ 0 ][ 2 ]=0
+pdu_2d_pos_y[ 0 ][ 2 ]=0
+pdu_2d_size_x_minus1[ 0 ][ 2 ]=50
+pdu_2d_size_y_minus1[ 0 ][ 2 ]=60
+pdu_view_pos_x[ 0 ][ 2 ]=0
+pdu_view_pos_y[ 0 ][ 2 ]=0
+pdu_depth_start[ 0 ][ 2 ]=0
+pdu_view_idx[ 0 ][ 2 ]=0
+pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
 )");
     REQUIRE(byteCodingTest(x, 15, vuh, vps, aspsV, afpsV));
   }
@@ -521,16 +526,16 @@ ath_pos_delta_max_z_quantizer=5
 ath_patch_size_x_info_quantizer=0
 ath_patch_size_y_info_quantizer=0
 atdu_patch_mode[ 0 ]=I_INTRA
-pdu_2d_pos_x( 0 )=0
-pdu_2d_pos_y( 0 )=0
-pdu_2d_size_x_minus1( 0 )=10
-pdu_2d_size_y_minus1( 0 )=20
-pdu_view_pos_x( 0 )=0
-pdu_view_pos_y( 0 )=0
-pdu_depth_start( 0 )=31
-pdu_depth_end( 0 )=127
-pdu_view_idx( 0 )=0
-pdu_orientation_index( 0 )=FPO_NULL
+pdu_2d_pos_x[ 0 ][ 0 ]=0
+pdu_2d_pos_y[ 0 ][ 0 ]=0
+pdu_2d_size_x_minus1[ 0 ][ 0 ]=10
+pdu_2d_size_y_minus1[ 0 ][ 0 ]=20
+pdu_view_pos_x[ 0 ][ 0 ]=0
+pdu_view_pos_y[ 0 ][ 0 ]=0
+pdu_depth_start[ 0 ][ 0 ]=31
+pdu_depth_end[ 0 ][ 0 ]=127
+pdu_view_idx[ 0 ][ 0 ]=0
+pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
 )");
     REQUIRE(byteCodingTest(x, 9, vuh, vps, aspsV, afpsV));
   }

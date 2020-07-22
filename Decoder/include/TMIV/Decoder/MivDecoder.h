@@ -77,7 +77,7 @@ public: // Decoder interface
 private:
   [[nodiscard]] auto expectIrap() const -> bool;
   auto decodeVps() -> bool;
-  void checkCapabilities();
+  void checkCapabilities() const;
   auto startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, double &totalTime)
       -> std::unique_ptr<VideoDecoder::VideoServer>;
 

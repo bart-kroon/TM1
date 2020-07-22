@@ -58,16 +58,21 @@ class HierarchicalPruner::Impl {
 private:
   struct IncrementalSynthesizer {
     IncrementalSynthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_,
-                           Mat<float> reference_)
-        : rasterizer{config, size}, index{index_}, reference{move(reference_)} {}
+                           Mat<float> reference_, Mat<float> referenceY_)
+        : rasterizer{config, size}
+        , index{index_}
+        , reference{move(reference_)}
+        , referenceY{move(referenceY_)} {}
 
     Rasterizer<Vec3f> rasterizer;
     const size_t index;
     float maskAverage{0.F};
     const Mat<float> reference;
+    const Mat<float> referenceY;
   };
 
   const float m_maxDepthError{};
+  const float m_maxLumaError{};
   const float m_maxStretching{};
   const int m_erode{};
   const int m_dilate{};
@@ -88,6 +93,7 @@ private:
 public:
   explicit Impl(const Json &nodeConfig)
       : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()}
+      , m_maxLumaError{nodeConfig.require("maxLumaError").asFloat()}
       , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
       , m_erode{nodeConfig.require("erode").asInt()}
       , m_dilate{nodeConfig.require("dilate").asInt()}
@@ -387,7 +393,7 @@ private:
         const auto depthTransform = DepthTransform<16>{m_params.viewParamsList[i].dq};
         m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
-            depthTransform.expandDepth(views[i].depth)));
+            depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture)));
       }
     }
   }
@@ -443,7 +449,8 @@ private:
     const auto flags = cout.setf(ios::fixed, ios::floatfield);
     cout << setw(2) << index << " (" << setw(3) << m_params.viewParamsList[index].name
          << "): " << ivertices.size() << " vertices ("
-         << 100. * double(ivertices.size()) / (view.texture.getWidth() * view.texture.getHeight())
+         << 100. * double(ivertices.size()) /
+                (double(view.texture.getWidth()) * view.texture.getHeight())
          << "% of full view)\n";
     cout.precision(prec);
     cout.setf(flags);
@@ -513,13 +520,32 @@ private:
 
     auto i = begin(mask);
     auto j = begin(synthesizer.reference);
+    auto jY = begin(synthesizer.referenceY);
     auto k = begin(status);
+
+    int pp = 0;
+    const auto W = int(mask.width());
+    const auto H = int(mask.height());
 
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {
         const auto depthError = (x.depth() / *j - 1.F);
+        auto lumaError = abs(std::get<0>(x.attributes()).x() - *(jY));
 
-        if (abs(depthError) < m_maxDepthError) {
+        const auto h = pp / W;
+        const auto w = pp % W;
+
+        for (int hh = -1; hh <= 1; hh++) {
+          for (int ww = -1; ww <= 1; ww++) {
+            if (h + hh < 0 || h + hh >= H || w + ww < 0 || w + ww >= W) {
+              continue;
+            }
+            const auto offset = hh * W + ww;
+            lumaError = min(lumaError, abs(std::get<0>(x.attributes()).x() - *(jY + offset)));
+          }
+        }
+
+        if (abs(depthError) < m_maxDepthError && lumaError < m_maxLumaError) {
           if (*k != 0) {
             *i = 0;
           }
@@ -533,7 +559,9 @@ private:
 
       i++;
       j++;
+      jY++;
       k++;
+      pp++;
 
       return true;
     });

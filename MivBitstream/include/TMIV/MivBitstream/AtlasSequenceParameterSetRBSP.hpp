@@ -67,7 +67,7 @@ constexpr auto AspsMivExtension::asme_depth_occ_threshold_flag() const noexcept 
 }
 
 constexpr auto AspsMivExtension::asme_patch_constant_depth_flag() const noexcept {
-    return m_asme_patch_constant_depth_flag;
+  return m_asme_patch_constant_depth_flag;
 }
 
 constexpr auto AspsMivExtension::asme_group_id(unsigned value) noexcept -> auto & {
@@ -195,8 +195,7 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag() cons
   return m_asps_eom_patch_enabled_flag;
 }
 
-constexpr auto
-AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag() const noexcept {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag() const noexcept {
   return m_asps_plr_enabled_flag;
 }
 
@@ -335,8 +334,8 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_eom_patch_enabled_flag(const 
   return *this;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag(
-    const bool value) noexcept -> auto & {
+constexpr auto AtlasSequenceParameterSetRBSP::asps_plr_enabled_flag(const bool value) noexcept
+    -> auto & {
   m_asps_plr_enabled_flag = value;
   return *this;
 }

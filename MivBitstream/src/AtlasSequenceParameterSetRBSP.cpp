@@ -175,8 +175,7 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterS
     x.asme_geometry_scale_factor_x_minus1(bitstream.getUExpGolomb<uint16_t>());
     x.asme_geometry_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
-  if (!vps.vps_miv_extension().vme_embedded_occupancy_flag() &&
-      vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
+  if (vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
     x.asme_occupancy_scale_factor_x_minus1(bitstream.getUExpGolomb<uint16_t>());
     x.asme_occupancy_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
@@ -194,8 +193,7 @@ void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSe
     bitstream.putUExpGolomb(asme_geometry_scale_factor_x_minus1());
     bitstream.putUExpGolomb(asme_geometry_scale_factor_y_minus1());
   }
-  if (!vps.vps_miv_extension().vme_embedded_occupancy_flag() &&
-      vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
+  if (vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
     bitstream.putUExpGolomb(asme_occupancy_scale_factor_x_minus1());
     bitstream.putUExpGolomb(asme_occupancy_scale_factor_y_minus1());
   }

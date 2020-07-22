@@ -51,18 +51,14 @@ Decoder::Decoder(const Json &rootNode, const Json &componentNode)
 
 namespace {
 void checkRestrictions(const AccessUnit &frame) {
-  if (frame.vps.vps_miv_extension_flag()) {
-    const auto &vme = frame.vps.vps_miv_extension();
-    if (vme.vme_vui_params_present_flag()) {
-      const auto &vui = vme.vui_parameters();
-      if (vui.vui_coordinate_system_parameters_present_flag()) {
-        const auto &csp = vui.coordinate_system_parameters();
-        if (!csp.isOmafCas()) {
-          throw runtime_error(
-              "The VUI indicates that a coordinate axis system other than that of OMAF is used. "
-              "The TMIV decoder/renderer is not yet able to convert between coordinate axis "
-              "systems.");
-        }
+  if (frame.vui) {
+    if (frame.vui->vui_coordinate_system_parameters_present_flag()) {
+      const auto &csp = frame.vui->coordinate_system_parameters();
+      if (!csp.isOmafCas()) {
+        throw runtime_error(
+            "The VUI indicates that a coordinate axis system other than that of OMAF is used. "
+            "The TMIV decoder/renderer is not yet able to convert between coordinate axis "
+            "systems.");
       }
     }
   }

@@ -69,6 +69,7 @@ aaps_miv_extension_flag=true
 aaps_extension_6bits=63
 aaps_vpcc_camera_parameters_present_flag=false
 aame_omaf_v1_compatible_flag=false
+aame_vui_params_present_flag=false
 aaps_extension_data_flag=true
 )");
 

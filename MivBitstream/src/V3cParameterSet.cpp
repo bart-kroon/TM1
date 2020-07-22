@@ -541,20 +541,9 @@ void AttributeInformation::encodeTo(OutputBitstream &bitstream, const V3cParamet
   }
 }
 
-auto VpsMivExtension::vui_parameters() const noexcept -> const VuiParameters & {
-  VERIFY_V3CBITSTREAM(vme_vui_params_present_flag());
-  VERIFY_V3CBITSTREAM(m_mvp.has_value());
-  return *m_mvp;
-}
-
 auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension & {
   VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_flag());
   m_vme_occupancy_scale_enabled_flag = value;
-  return *this;
-}
-
-auto VpsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> VpsMivExtension & {
-  m_mvp = value;
   return *this;
 }
 
@@ -569,9 +558,6 @@ auto operator<<(ostream &stream, const VpsMivExtension &x) -> ostream & {
     stream << "vme_occupancy_scale_enabled_flag=" << boolalpha
            << x.vme_occupancy_scale_enabled_flag() << '\n';
   }
-  if (x.vme_vui_params_present_flag()) {
-    stream << x.vui_parameters();
-  }
   return stream;
 }
 
@@ -585,10 +571,6 @@ auto VpsMivExtension::decodeFrom(InputBitstream &bitstream) -> VpsMivExtension {
   if (!x.vme_embedded_occupancy_flag()) {
     x.vme_occupancy_scale_enabled_flag(bitstream.getFlag());
   }
-  x.vme_vui_params_present_flag(bitstream.getFlag());
-  if (x.vme_vui_params_present_flag()) {
-    x.vui_parameters(VuiParameters::decodeFrom(bitstream, nullptr));
-  }
   return x;
 }
 
@@ -600,10 +582,6 @@ void VpsMivExtension::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(vme_embedded_occupancy_flag());
   if (!vme_embedded_occupancy_flag()) {
     bitstream.putFlag(vme_occupancy_scale_enabled_flag());
-  }
-  bitstream.putFlag(vme_vui_params_present_flag());
-  if (vme_vui_params_present_flag()) {
-    vui_parameters().encodeTo(bitstream, nullptr);
   }
 }
 

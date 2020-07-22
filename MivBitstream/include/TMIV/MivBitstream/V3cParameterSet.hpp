@@ -224,10 +224,6 @@ constexpr auto VpsMivExtension::vme_occupancy_scale_enabled_flag() const noexcep
   return !vme_embedded_occupancy_flag() && m_vme_occupancy_scale_enabled_flag;
 }
 
-constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
-  return m_vme_vui_params_present_flag;
-}
-
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag(const bool value) noexcept -> auto & {
   m_vme_depth_low_quality_flag = value;
   return *this;
@@ -250,11 +246,6 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) no
 
 constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) noexcept -> auto & {
   m_vme_embedded_occupancy_flag = value;
-  return *this;
-}
-
-constexpr auto VpsMivExtension::vme_vui_params_present_flag(bool value) noexcept -> auto & {
-  m_vme_vui_params_present_flag = value;
   return *this;
 }
 

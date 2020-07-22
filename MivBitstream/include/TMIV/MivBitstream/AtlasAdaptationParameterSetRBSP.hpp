@@ -47,8 +47,17 @@ constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag() const noexcept {
   return m_aame_omaf_v1_compatible_flag;
 }
 
+constexpr auto AapsMivExtension::aame_vui_params_present_flag() const noexcept {
+  return m_aame_vui_params_present_flag;
+}
+
 constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag(bool value) noexcept -> auto & {
   m_aame_omaf_v1_compatible_flag = value;
+  return *this;
+}
+
+constexpr auto AapsMivExtension::aame_vui_params_present_flag(bool value) noexcept -> auto & {
+  m_aame_vui_params_present_flag = value;
   return *this;
 }
 

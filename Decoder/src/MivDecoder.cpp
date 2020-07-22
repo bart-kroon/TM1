@@ -210,6 +210,15 @@ void MivDecoder::decodeViewParamsList() {
   default:
     MIVBITSTREAM_ERROR("Unknown MVP update mode");
   }
+
+  if (m_commonAtlasAu->aaps.aaps_miv_extension_flag()) {
+    const auto &aame = m_commonAtlasAu->aaps.aaps_miv_extension();
+    if (aame.aame_vui_params_present_flag()) {
+      const auto &vui = aame.vui_parameters();
+      VERIFY_MIVBITSTREAM(!m_au.vui || *m_au.vui == vui);
+      m_au.vui = vui;
+    }
+  }
 }
 
 void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl) {

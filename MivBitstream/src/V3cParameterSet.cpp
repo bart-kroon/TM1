@@ -547,6 +547,12 @@ auto VpsMivExtension::miv_vui_parameters() const noexcept -> const MivVuiParams 
   return *m_mvp;
 }
 
+auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension & {
+  VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_flag());
+  m_vme_occupancy_scale_enabled_flag = value;
+  return *this;
+}
+
 auto VpsMivExtension::miv_vui_parameters(const MivVuiParams &value) noexcept -> VpsMivExtension & {
   m_mvp = value;
   return *this;

@@ -169,12 +169,11 @@ public:
   constexpr auto operator==(const PduMivExtension &other) const noexcept;
   constexpr auto operator!=(const PduMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                         const V3cParameterSet &vps, const AtlasSequenceParameterSetRBSP &asps)
-      -> PduMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
+                         const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                const V3cParameterSet &vps, const AtlasSequenceParameterSetRBSP &asps) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                const AtlasSequenceParameterSetRBSP &asps) const;
 
 private:
   std::optional<std::uint32_t> m_pdu_entity_id;

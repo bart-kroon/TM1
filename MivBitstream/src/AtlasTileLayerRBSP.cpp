@@ -325,8 +325,7 @@ auto PduMivExtension::printTo(ostream &stream, unsigned tileId, size_t patchIdx)
   return stream;
 }
 
-auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                 const V3cParameterSet &vps,
+auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
                                  const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension {
   auto x = PduMivExtension{};
 
@@ -346,8 +345,7 @@ auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader 
   return x;
 }
 
-void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                               const V3cParameterSet &vps,
+void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
                                const AtlasSequenceParameterSetRBSP &asps) const {
   if (vps.vps_miv_extension_flag() && vps.vps_miv_extension().vme_max_entities_minus1() > 0) {
     bitstream.putUVar(pdu_entity_id(),
@@ -446,7 +444,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
-    x.pdu_miv_extension(PduMivExtension::decodeFrom(bitstream, vuh, vps, asps));
+    x.pdu_miv_extension(PduMivExtension::decodeFrom(bitstream, vps, asps));
   }
   return x;
 }
@@ -501,7 +499,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
-    pdu_miv_extension().encodeTo(bitstream, vuh, vps, asps);
+    pdu_miv_extension().encodeTo(bitstream, vps, asps);
   } else {
     VERIFY_V3CBITSTREAM(!m_pdu_miv_extension);
   }

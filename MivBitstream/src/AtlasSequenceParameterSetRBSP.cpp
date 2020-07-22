@@ -329,8 +329,7 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
          << '\n';
   stream << "asps_eom_patch_enabled_flag=" << boolalpha << x.asps_eom_patch_enabled_flag() << '\n';
   stream << "asps_raw_patch_enabled_flag=" << boolalpha << x.asps_raw_patch_enabled_flag() << '\n';
-  stream << "asps_plr_enabled_flag=" << boolalpha
-         << x.asps_plr_enabled_flag() << '\n';
+  stream << "asps_plr_enabled_flag=" << boolalpha << x.asps_plr_enabled_flag() << '\n';
   stream << "asps_vui_parameters_present_flag=" << boolalpha << x.asps_vui_parameters_present_flag()
          << '\n';
   stream << "asps_extension_present_flag=" << boolalpha << x.asps_extension_present_flag() << '\n';
@@ -392,8 +391,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(
       asps_pixel_deinterleaving_flag() != other.asps_pixel_deinterleaving_flag() ||
       asps_eom_patch_enabled_flag() != other.asps_eom_patch_enabled_flag() ||
       asps_raw_patch_enabled_flag() != other.asps_raw_patch_enabled_flag() ||
-      asps_plr_enabled_flag() !=
-          other.asps_plr_enabled_flag() ||
+      asps_plr_enabled_flag() != other.asps_plr_enabled_flag() ||
       asps_vui_parameters_present_flag() != other.asps_vui_parameters_present_flag() ||
       asps_extension_present_flag() != other.asps_extension_present_flag() ||
       asps_vpcc_extension_flag() != other.asps_vpcc_extension_flag() ||

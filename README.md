@@ -235,6 +235,8 @@ Most of the parameters are defined in the root. The exception is:
  * **erode:** int; number of erosion steps on the pruning mask.
  * **maxDepthError:** float; the maximum relative difference in depth value below which
  the pixel is pruned.
+ * **maxLumaError:** float; the maximum difference in texture value [0, 1] 
+ below which the pixel is pruned.
  * **maxBasicViewsPerGraph:** int; parameter to control the maximum number of basic
  views per pruning cluster.
 

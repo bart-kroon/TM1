@@ -89,8 +89,7 @@ constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag(
   return *this;
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_flag(bool value) noexcept
-    -> auto & {
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_flag(bool value) noexcept -> auto & {
   m_aaps_extension_flag = value;
   return *this;
 }

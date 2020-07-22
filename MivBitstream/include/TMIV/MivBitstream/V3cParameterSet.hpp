@@ -50,6 +50,10 @@ constexpr auto ProfileTierLevel::ptl_profile_reconstruction_idc() const noexcept
   return m_ptl_profile_reconstruction_idc;
 }
 
+constexpr auto ProfileTierLevel::ptl_max_decodes_idc() const noexcept {
+  return m_ptl_max_decodes_idc;
+}
+
 constexpr auto ProfileTierLevel::ptl_level_idc() const noexcept { return m_ptl_level_idc; }
 
 constexpr auto ProfileTierLevel::ptl_extended_sub_profile_flag() const noexcept {
@@ -81,6 +85,11 @@ constexpr auto
 ProfileTierLevel::ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept
     -> auto & {
   m_ptl_profile_reconstruction_idc = value;
+  return *this;
+}
+
+constexpr auto ProfileTierLevel::ptl_max_decodes_idc(PtlMaxDecodesIdc value) noexcept -> auto & {
+  m_ptl_max_decodes_idc = value;
   return *this;
 }
 

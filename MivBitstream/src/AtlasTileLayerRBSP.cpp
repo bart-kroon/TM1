@@ -313,18 +313,19 @@ auto PduMivExtension::pdu_depth_occ_threshold() const noexcept -> uint32_t {
   return *m_pdu_depth_occ_threshold;
 }
 
-auto PduMivExtension::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
+auto PduMivExtension::printTo(ostream &stream, unsigned tileId, size_t patchIdx) const
+    -> ostream & {
   if (m_pdu_entity_id) {
-    stream << "pdu_entity_id( " << patchIdx << " )=" << pdu_entity_id() << '\n';
+    stream << "pdu_entity_id[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_entity_id() << '\n';
   }
   if (m_pdu_depth_occ_threshold) {
-    stream << "pdu_depth_occ_threshold( " << patchIdx << " )=" << pdu_depth_occ_threshold() << '\n';
+    stream << "pdu_depth_occ_threshold[ " << tileId << " ][ " << patchIdx
+           << " ]=" << pdu_depth_occ_threshold() << '\n';
   }
   return stream;
 }
 
-auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                 const V3cParameterSet &vps,
+auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
                                  const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension {
   auto x = PduMivExtension{};
 
@@ -344,8 +345,7 @@ auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader 
   return x;
 }
 
-void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                               const V3cParameterSet &vps,
+void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
                                const AtlasSequenceParameterSetRBSP &asps) const {
   if (vps.vps_miv_extension_flag() && vps.vps_miv_extension().vme_max_entities_minus1() > 0) {
     bitstream.putUVar(pdu_entity_id(),
@@ -370,21 +370,25 @@ auto PatchDataUnit::pdu_miv_extension(const PduMivExtension &value) noexcept -> 
   return *this;
 }
 
-auto PatchDataUnit::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
-  stream << "pdu_2d_pos_x( " << patchIdx << " )=" << pdu_2d_pos_x() << '\n';
-  stream << "pdu_2d_pos_y( " << patchIdx << " )=" << pdu_2d_pos_y() << '\n';
-  stream << "pdu_2d_size_x_minus1( " << patchIdx << " )=" << pdu_2d_size_x_minus1() << '\n';
-  stream << "pdu_2d_size_y_minus1( " << patchIdx << " )=" << pdu_2d_size_y_minus1() << '\n';
-  stream << "pdu_view_pos_x( " << patchIdx << " )=" << pdu_view_pos_x() << '\n';
-  stream << "pdu_view_pos_y( " << patchIdx << " )=" << pdu_view_pos_y() << '\n';
-  stream << "pdu_depth_start( " << patchIdx << " )=" << pdu_depth_start() << '\n';
+auto PatchDataUnit::printTo(ostream &stream, unsigned tileId, size_t patchIdx) const -> ostream & {
+  stream << "pdu_2d_pos_x[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_2d_pos_x() << '\n';
+  stream << "pdu_2d_pos_y[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_2d_pos_y() << '\n';
+  stream << "pdu_2d_size_x_minus1[ " << tileId << " ][ " << patchIdx
+         << " ]=" << pdu_2d_size_x_minus1() << '\n';
+  stream << "pdu_2d_size_y_minus1[ " << tileId << " ][ " << patchIdx
+         << " ]=" << pdu_2d_size_y_minus1() << '\n';
+  stream << "pdu_view_pos_x[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_view_pos_x() << '\n';
+  stream << "pdu_view_pos_y[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_view_pos_y() << '\n';
+  stream << "pdu_depth_start[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_depth_start()
+         << '\n';
   if (m_pdu_depth_end) {
-    stream << "pdu_depth_end( " << patchIdx << " )=" << pdu_depth_end() << '\n';
+    stream << "pdu_depth_end[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_depth_end() << '\n';
   }
-  stream << "pdu_view_idx( " << patchIdx << " )=" << pdu_view_idx() << '\n';
-  stream << "pdu_orientation_index( " << patchIdx << " )=" << pdu_orientation_index() << '\n';
+  stream << "pdu_view_idx[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_view_idx() << '\n';
+  stream << "pdu_orientation_index[ " << tileId << " ][ " << patchIdx
+         << " ]=" << pdu_orientation_index() << '\n';
   if (m_pdu_miv_extension) {
-    m_pdu_miv_extension->printTo(stream, patchIdx);
+    m_pdu_miv_extension->printTo(stream, tileId, patchIdx);
   }
   return stream;
 }
@@ -440,7 +444,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
-    x.pdu_miv_extension(PduMivExtension::decodeFrom(bitstream, vuh, vps, asps));
+    x.pdu_miv_extension(PduMivExtension::decodeFrom(bitstream, vps, asps));
   }
   return x;
 }
@@ -495,7 +499,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
   if (asps.asps_miv_extension_flag()) {
-    pdu_miv_extension().encodeTo(bitstream, vuh, vps, asps);
+    pdu_miv_extension().encodeTo(bitstream, vps, asps);
   } else {
     VERIFY_V3CBITSTREAM(!m_pdu_miv_extension);
   }
@@ -511,10 +515,11 @@ auto PatchInformationData::patch_data_unit() const noexcept -> const PatchDataUn
   return *get_if<PatchDataUnit>(&m_data);
 }
 
-auto PatchInformationData::printTo(ostream &stream, size_t patchIdx) const -> ostream & {
+auto PatchInformationData::printTo(ostream &stream, unsigned tileId, size_t patchIdx) const
+    -> ostream & {
   visit(overload([&](const monostate & /* unused */) { stream << "[unknown]\n"; },
                  [&](const SkipPatchDataUnit &x) { stream << x; },
-                 [&](const PatchDataUnit &x) { x.printTo(stream, patchIdx); }),
+                 [&](const PatchDataUnit &x) { x.printTo(stream, tileId, patchIdx); }),
         m_data);
   return stream;
 }
@@ -574,12 +579,12 @@ auto AtlasTileDataUnit::patch_information_data(size_t p) const -> const PatchInf
   return m_vector[p].second;
 }
 
-auto AtlasTileDataUnit::printTo(ostream &stream, AthType ath_type) const -> ostream & {
+auto AtlasTileDataUnit::printTo(ostream &stream, const AtlasTileHeader &ath) const -> ostream & {
   visit([&](const auto p, const AtduPatchMode patch_mode,
             const PatchInformationData &patch_information_data) {
     stream << "atdu_patch_mode[ " << p << " ]=";
-    MivBitstream::printTo(stream, patch_mode, ath_type) << '\n';
-    patch_information_data.printTo(stream, p);
+    MivBitstream::printTo(stream, patch_mode, ath.ath_type()) << '\n';
+    patch_information_data.printTo(stream, ath.ath_id(), p);
   });
   return stream;
 }
@@ -636,7 +641,7 @@ void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader
 
 auto operator<<(ostream &stream, const AtlasTileLayerRBSP &x) -> ostream & {
   stream << x.atlas_tile_header();
-  x.atlas_tile_data_unit().printTo(stream, x.atlas_tile_header().ath_type());
+  x.atlas_tile_data_unit().printTo(stream, x.atlas_tile_header());
   return stream;
 }
 

@@ -54,7 +54,6 @@ void GroupBasedEncoder::prepareSequence(EncoderParams params) {
   m_grouping = sourceSplitter(params);
 
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
-
     m_encoders[groupId].prepareSequence(splitParams(groupId, params));
   }
 }

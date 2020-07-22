@@ -510,8 +510,8 @@ private:
     auto k = begin(status);
 
     int pp = 0;
-    const auto W = mask.width();
-    const auto H = mask.height();
+    const auto W = int(mask.width());
+    const auto H = int(mask.height());
 
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {

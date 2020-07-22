@@ -133,6 +133,10 @@ ce_view_quat_z[ 1 ]=14
 
 TEST_CASE("depth_quantization", "[Common Atlas Frame RBSP]") {
   auto x = DepthQuantization{};
+  auto vps = V3cParameterSet{};
+  vps.vps_extension_present_flag(true);
+  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
 
   REQUIRE(toString(x, 7) == R"(dq_quantization_law[ 7 ]=0
 dq_norm_disp_low[ 7 ]=0
@@ -140,7 +144,7 @@ dq_norm_disp_high[ 7 ]=0
 dq_depth_occ_map_threshold_default[ 7 ]=0
 )");
 
-  REQUIRE(bitCodingTest(x, 73));
+  REQUIRE(bitCodingTest(x, 73, vps));
 
   SECTION("Example 2") {
     x.dq_norm_disp_low(0.02F);
@@ -153,7 +157,7 @@ dq_norm_disp_high[ 2 ]=2
 dq_depth_occ_map_threshold_default[ 2 ]=200
 )");
 
-    REQUIRE(bitCodingTest(x, 87));
+    REQUIRE(bitCodingTest(x, 87, vps));
   }
 }
 
@@ -185,6 +189,9 @@ pp_parent_id[ 5 ][ 3 ]=8
 TEST_CASE("miv_view_params_list", "[Common Atlas Frame RBSP]") {
   auto x = MivViewParamsList{};
   auto vps = V3cParameterSet{};
+  vps.vps_extension_present_flag(true);
+  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
 
   SECTION("Example 1") {
     x.mvp_num_views_minus1(0)
@@ -345,7 +352,10 @@ mvp_pruning_graph_params_present_flag=false
 
 TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
   auto x = CommonAtlasFrameRBSP{};
-  const auto vps = V3cParameterSet{};
+  auto vps = V3cParameterSet{};
+  vps.vps_extension_present_flag(true);
+  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
   const auto maxCommonAtlasFrmOrderCntLsb = 16;
 
   SECTION("Example 1") {
@@ -550,6 +560,10 @@ ci_ortho_height[ 1 ]=50
 
 TEST_CASE("miv_view_params_update_depth_quantization", "[Common Atlas Frame RBSP]") {
   auto x = MivViewParamsUpdateDepthQuantization{};
+  auto vps = V3cParameterSet{};
+  vps.vps_extension_present_flag(true);
+  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
 
   SECTION("Example 1: Test with 1 update.") {
     x.mvpudq_num_view_updates_minus1(0);
@@ -566,6 +580,6 @@ dq_norm_disp_low[ 0 ]=1
 dq_norm_disp_high[ 0 ]=100
 dq_depth_occ_map_threshold_default[ 0 ]=64
 )");
-    REQUIRE(bitCodingTest(x, 117));
+    REQUIRE(bitCodingTest(x, 117, vps));
   }
 }

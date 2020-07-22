@@ -300,7 +300,8 @@ auto DepthQuantization::printTo(ostream &stream, uint16_t viewId) const -> ostre
   return stream;
 }
 
-auto DepthQuantization::decodeFrom(InputBitstream &bitstream) -> DepthQuantization {
+auto DepthQuantization::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+    -> DepthQuantization {
   auto x = DepthQuantization{};
 
   const auto dq_quantization_law = bitstream.getUint8();
@@ -308,18 +309,18 @@ auto DepthQuantization::decodeFrom(InputBitstream &bitstream) -> DepthQuantizati
 
   x.dq_norm_disp_low(bitstream.getFloat32());
   x.dq_norm_disp_high(bitstream.getFloat32());
-
-  x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
+	x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
 
   return x;
 }
 
-void DepthQuantization::encodeTo(OutputBitstream &bitstream) const {
+void DepthQuantization::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.putUint8(dq_quantization_law());
   bitstream.putFloat32(dq_norm_disp_low());
   bitstream.putFloat32(dq_norm_disp_high());
-
-  bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
+	bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
 }
 
 PruningParents::PruningParents(vector<uint16_t> pp_parent_id)
@@ -656,10 +657,10 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const V3cParameter
   x.mvp_depth_quantization_params_equal_flag(bitstream.getFlag());
 
   if (x.mvp_depth_quantization_params_equal_flag()) {
-    x.depth_quantization() = DepthQuantization::decodeFrom(bitstream);
+    x.depth_quantization() = DepthQuantization::decodeFrom(bitstream, vps);
   } else {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-      x.depth_quantization(v) = DepthQuantization::decodeFrom(bitstream);
+      x.depth_quantization(v) = DepthQuantization::decodeFrom(bitstream, vps);
     }
   }
 
@@ -712,10 +713,10 @@ void MivViewParamsList::encodeTo(OutputBitstream &bitstream, const V3cParameterS
   bitstream.putFlag(mvp_depth_quantization_params_equal_flag());
 
   if (mvp_depth_quantization_params_equal_flag()) {
-    depth_quantization().encodeTo(bitstream);
+    depth_quantization().encodeTo(bitstream, vps);
   } else {
     for (uint16_t v = 0; v <= mvp_num_views_minus1(); ++v) {
-      depth_quantization(v).encodeTo(bitstream);
+      depth_quantization(v).encodeTo(bitstream, vps);
     }
   }
 
@@ -917,13 +918,13 @@ auto CommonAtlasFrameRBSP::decodeFrom(istream &stream, const V3cParameterSet &vp
     break;
   case MvpUpdateMode::VPL_UPD_DQ:
     x.miv_view_params_update_depth_quantization() =
-        MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream);
+        MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream, vps);
     break;
   case MvpUpdateMode::VPL_ALL:
     x.miv_view_params_update_extrinsics() = MivViewParamsUpdateExtrinsics::decodeFrom(bitstream);
     x.miv_view_params_update_intrinsics() = MivViewParamsUpdateIntrinsics::decodeFrom(bitstream);
     x.miv_view_params_update_depth_quantization() =
-        MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream);
+        MivViewParamsUpdateDepthQuantization::decodeFrom(bitstream, vps);
     break;
   }
 
@@ -963,12 +964,12 @@ void CommonAtlasFrameRBSP::encodeTo(ostream &stream, const V3cParameterSet &vps,
     miv_view_params_update_intrinsics().encodeTo(bitstream);
     break;
   case MvpUpdateMode::VPL_UPD_DQ:
-    miv_view_params_update_depth_quantization().encodeTo(bitstream);
+    miv_view_params_update_depth_quantization().encodeTo(bitstream, vps);
     break;
   case MvpUpdateMode::VPL_ALL:
     miv_view_params_update_extrinsics().encodeTo(bitstream);
     miv_view_params_update_intrinsics().encodeTo(bitstream);
-    miv_view_params_update_depth_quantization().encodeTo(bitstream);
+    miv_view_params_update_depth_quantization().encodeTo(bitstream, vps);
     break;
   }
 
@@ -1182,21 +1183,23 @@ auto operator<<(ostream &stream, const MivViewParamsUpdateDepthQuantization &x) 
   return stream;
 }
 
-void MivViewParamsUpdateDepthQuantization::encodeTo(OutputBitstream &bitstream) const {
+void MivViewParamsUpdateDepthQuantization::encodeTo(OutputBitstream &bitstream,
+                                                    const V3cParameterSet &vps) const {
   bitstream.putUint16(mvpudq_num_view_updates_minus1());
   for (uint16_t i = 0; i <= mvpudq_num_view_updates_minus1(); ++i) {
     bitstream.putUint16(mvpudq_view_idx(i));
-    depth_quantization(i).encodeTo(bitstream);
+    depth_quantization(i).encodeTo(bitstream, vps);
   }
 }
 
-auto MivViewParamsUpdateDepthQuantization::decodeFrom(InputBitstream &bitstream)
+auto MivViewParamsUpdateDepthQuantization::decodeFrom(InputBitstream &bitstream,
+                                                      const V3cParameterSet &vps)
     -> MivViewParamsUpdateDepthQuantization {
   auto x = MivViewParamsUpdateDepthQuantization{};
   x.mvpudq_num_view_updates_minus1(bitstream.getUint16());
   for (uint16_t i = 0; i <= x.mvpudq_num_view_updates_minus1(); ++i) {
     x.mvpudq_view_idx(i, bitstream.getUint16());
-    x.depth_quantization(i) = DepthQuantization::decodeFrom(bitstream);
+    x.depth_quantization(i) = DepthQuantization::decodeFrom(bitstream, vps);
   }
   return x;
 }

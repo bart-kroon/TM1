@@ -176,9 +176,10 @@ public:
   constexpr auto operator==(const DepthQuantization &) const noexcept;
   constexpr auto operator!=(const DepthQuantization &) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> DepthQuantization;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+      -> DepthQuantization;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
 
 private:
   float m_dq_norm_disp_low{};
@@ -389,9 +390,10 @@ public:
   auto operator==(const MivViewParamsUpdateDepthQuantization &) const noexcept -> bool;
   auto operator!=(const MivViewParamsUpdateDepthQuantization &) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> MivViewParamsUpdateDepthQuantization;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+      -> MivViewParamsUpdateDepthQuantization;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
 
 private:
   uint16_t m_mvpudq_num_view_updates_minus1{};

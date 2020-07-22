@@ -196,7 +196,8 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
         .vme_depth_low_quality_flag(true)
         .vme_geometry_scale_enabled_flag(true)
         .vme_num_groups_minus1(3)
-        .vme_max_entities_minus1(20);
+        .vme_max_entities_minus1(20)
+		.vme_embedded_occupancy_flag(true);
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -225,6 +226,7 @@ vme_depth_low_quality_flag=true
 vme_geometry_scale_enabled_flag=true
 vme_num_groups_minus1=3
 vme_max_entities_minus1=20
+vme_embedded_occupancy_flag=true
 )");
 
     REQUIRE(byteCodingTest(vps, 21));
@@ -308,12 +310,14 @@ vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0
 vme_max_entities_minus1=0
+vme_embedded_occupancy_flag=false
+vme_occupancy_scale_enabled_flag=false
 vps_extension_length_minus1=2
 vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
 
-    REQUIRE(byteCodingTest(vps, 40));
+    REQUIRE(byteCodingTest(vps, 41));
   }
 }

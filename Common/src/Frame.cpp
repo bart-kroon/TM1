@@ -121,6 +121,15 @@ auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f> {
   return out;
 }
 
+auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float> {
+  auto out = Mat<float>(inYuv.getPlane(0).sizes());
+  transform(inYuv.getPlane(0).cbegin(), inYuv.getPlane(0).cend(), out.begin(), [](auto value) {
+    constexpr auto bitDepth = 10U;
+    return expandValue<bitDepth>(value);
+  });
+  return out;
+}
+
 auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
   Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
   const auto width = in.width();

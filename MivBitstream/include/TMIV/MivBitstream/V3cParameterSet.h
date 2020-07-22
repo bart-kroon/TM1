@@ -57,6 +57,18 @@ enum class PtlProfileCodecGroupIdc : std::uint8_t {
 
 enum class PtlProfilePccToolsetIdc : std::uint8_t { Basic, Extended, MIV_Main = 64 };
 enum class PtlProfileReconstructionIdc : std::uint8_t { Rec0, Rec1, Unconstrained, MIV_Main = 64 };
+enum class PtlProfileMaxDecodesIdc : std::uint8_t {
+  max_1,
+  max_2,
+  max_3,
+  max_4,
+  max_6,
+  max_12,
+  max_16,
+  max_24,
+  max_32,
+  unconstrained = 15
+};
 enum class PtlLevelIdc : std::uint8_t { Level_1_0 = 30, Level_2_0 = 60, Level_3_0 = 90 };
 
 enum class AiAttributeTypeId : std::uint8_t {
@@ -71,6 +83,7 @@ enum class AiAttributeTypeId : std::uint8_t {
 auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> std::ostream &;
+auto operator<<(std::ostream &stream, const PtlProfileMaxDecodesIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const PtlLevelIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const AiAttributeTypeId &x) -> std::ostream &;
 
@@ -99,7 +112,7 @@ public:
   constexpr auto ptl_profile_toolset_idc(PtlProfilePccToolsetIdc value) noexcept -> auto &;
   constexpr auto ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc value) noexcept
       -> auto &;
-  constexpr auto ptl_max_decodes_idc(std::uint8_t value) noexcept -> auto &;
+  constexpr auto ptl_max_decodes_idc(PtlProfileMaxDecodesIdc value) noexcept -> auto &;
   constexpr auto ptl_level_idc(PtlLevelIdc value) noexcept -> auto &;
   auto ptl_num_sub_profiles(std::uint8_t value) noexcept -> ProfileTierLevel &;
   auto ptl_extended_sub_profile_flag(bool value) noexcept -> ProfileTierLevel &;
@@ -120,7 +133,7 @@ private:
   PtlProfileCodecGroupIdc m_ptl_profile_codec_group_idc{};
   PtlProfilePccToolsetIdc m_ptl_profile_toolset_idc{};
   PtlProfileReconstructionIdc m_ptl_profile_reconstruction_idc{};
-  std::uint8_t m_ptl_max_decodes_idc{};
+  PtlProfileMaxDecodesIdc m_ptl_max_decodes_idc{};
   PtlLevelIdc m_ptl_level_idc{};
   std::vector<std::uint64_t> m_subProfileIdcs;
   bool m_ptl_extended_sub_profile_flag{};

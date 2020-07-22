@@ -248,8 +248,7 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) no
   return *this;
 }
 
-constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) noexcept
-    -> auto & {
+constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) noexcept -> auto & {
   m_vme_embedded_occupancy_flag = value;
   return *this;
 }

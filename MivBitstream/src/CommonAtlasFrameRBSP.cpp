@@ -309,8 +309,9 @@ auto DepthQuantization::decodeFrom(InputBitstream &bitstream, const V3cParameter
 
   x.dq_norm_disp_low(bitstream.getFloat32());
   x.dq_norm_disp_high(bitstream.getFloat32());
-  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
-	x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
+    x.dq_depth_occ_map_threshold_default(bitstream.getUExpGolomb<uint32_t>());
+  }
 
   return x;
 }
@@ -319,8 +320,9 @@ void DepthQuantization::encodeTo(OutputBitstream &bitstream, const V3cParameterS
   bitstream.putUint8(dq_quantization_law());
   bitstream.putFloat32(dq_norm_disp_low());
   bitstream.putFloat32(dq_norm_disp_high());
-  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
-	bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
+    bitstream.putUExpGolomb(dq_depth_occ_map_threshold_default());
+  }
 }
 
 PruningParents::PruningParents(vector<uint16_t> pp_parent_id)

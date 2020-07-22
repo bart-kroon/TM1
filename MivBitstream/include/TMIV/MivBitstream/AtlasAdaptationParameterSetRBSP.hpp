@@ -47,8 +47,17 @@ constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag() const noexcept {
   return m_aame_omaf_v1_compatible_flag;
 }
 
+constexpr auto AapsMivExtension::aame_vui_params_present_flag() const noexcept {
+  return m_aame_vui_params_present_flag;
+}
+
 constexpr auto AapsMivExtension::aame_omaf_v1_compatible_flag(bool value) noexcept -> auto & {
   m_aame_omaf_v1_compatible_flag = value;
+  return *this;
+}
+
+constexpr auto AapsMivExtension::aame_vui_params_present_flag(bool value) noexcept -> auto & {
+  m_aame_vui_params_present_flag = value;
   return *this;
 }
 
@@ -89,8 +98,7 @@ constexpr auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_afoc_present_flag(
   return *this;
 }
 
-constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_flag(bool value) noexcept
-    -> auto & {
+constexpr auto AtlasAdaptationParameterSetRBSP::aaps_extension_flag(bool value) noexcept -> auto & {
   m_aaps_extension_flag = value;
   return *this;
 }

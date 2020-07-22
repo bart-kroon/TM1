@@ -33,6 +33,8 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
+#include <TMIV/MivBitstream/verify.h>
+
 #include <cassert>
 #include <iostream>
 
@@ -64,12 +66,17 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_params = EncoderParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
-  m_params.aaps.aaps_log2_max_afoc_present_flag(true)
-      .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4());
   m_params.vme() = m_transportParams.vme();
   m_params.viewParamsList = m_transportParams.viewParamsList;
-  m_params.viewingSpace = m_transportParams.viewingSpace;
   m_params.frameRate = m_transportParams.frameRate;
+  m_params.aaps.aaps_log2_max_afoc_present_flag(true)
+      .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
+      .aaps_extension_flag(true)
+      .aaps_miv_extension_flag(true)
+      .aaps_miv_extension()
+      .aame_vui_params_present_flag(true)
+      .vui_parameters(vuiParameters());
+  m_params.viewingSpace = m_transportParams.viewingSpace;
 
   setGiGeometry3dCoordinatesBitdepthMinus1();
 
@@ -138,6 +145,22 @@ auto Encoder::calculateViewGridSize(const EncoderParams &params) const -> Vec2i 
   }
 
   return {x, y};
+}
+
+auto Encoder::vuiParameters() const -> VuiParameters {
+  auto numUnitsInTick = 1;
+  auto timeScale = int(numUnitsInTick * m_params.frameRate);
+  LIMITATION(timeScale == numUnitsInTick * m_params.frameRate);
+
+  auto vui = VuiParameters{};
+  vui.vui_timing_info_present_flag(true)
+      .vui_num_units_in_tick(numUnitsInTick)
+      .vui_time_scale(timeScale)
+      .vui_poc_proportional_to_timing_flag(false)
+      .vui_hrd_parameters_present_flag(false);
+  vui.vui_unit_in_metres_flag(true);
+  vui.vui_coordinate_system_parameters_present_flag(true).coordinate_system_parameters() = {};
+  return vui;
 }
 
 void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {

@@ -81,6 +81,7 @@ struct AccessUnit {
   MivBitstream::ViewParamsList viewParamsList;
   std::vector<AtlasAccessUnit> atlas;
   std::optional<MivBitstream::ViewingSpace> vs;
+  std::optional<MivBitstream::VuiParameters> vui;
 };
 } // namespace TMIV::Decoder
 

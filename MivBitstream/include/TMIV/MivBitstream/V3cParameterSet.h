@@ -34,8 +34,6 @@
 #ifndef _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 #define _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 
-#include <TMIV/MivBitstream/MivVuiParams.h>
-
 #include <TMIV/Common/Bitstream.h>
 
 #include <cstdint>
@@ -282,17 +280,13 @@ public:
   [[nodiscard]] constexpr auto vme_max_entities_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_embedded_occupancy_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_occupancy_scale_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto vme_vui_params_present_flag() const noexcept;
-  [[nodiscard]] auto miv_vui_parameters() const noexcept -> const MivVuiParams &;
 
-  constexpr auto vme_depth_low_quality_flag(const bool value) noexcept -> auto &;
-  constexpr auto vme_geometry_scale_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto vme_num_groups_minus1(const unsigned value) noexcept -> auto &;
-  constexpr auto vme_max_entities_minus1(const unsigned value) noexcept -> auto &;
-  constexpr auto vme_embedded_occupancy_flag(const bool value) noexcept -> auto &;
-  constexpr auto vme_occupancy_scale_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto vme_vui_params_present_flag(bool value) noexcept -> auto &;
-  auto miv_vui_parameters(const MivVuiParams &value) noexcept -> VpsMivExtension &;
+  constexpr auto vme_depth_low_quality_flag(bool value) noexcept -> auto &;
+  constexpr auto vme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
+  constexpr auto vme_num_groups_minus1(unsigned value) noexcept -> auto &;
+  constexpr auto vme_max_entities_minus1(unsigned value) noexcept -> auto &;
+  constexpr auto vme_embedded_occupancy_flag(bool value) noexcept -> auto &;
+  auto vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension &;
 
   friend auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream &;
 
@@ -308,10 +302,8 @@ private:
   bool m_vme_geometry_scale_enabled_flag{};
   unsigned m_vme_num_groups_minus1{};
   unsigned m_vme_max_entities_minus1{};
-  bool m_vme_embedded_occupancy_flag{};
+  bool m_vme_embedded_occupancy_flag{true};
   bool m_vme_occupancy_scale_enabled_flag{};
-  bool m_vme_vui_params_present_flag{};
-  std::optional<MivVuiParams> m_mvp;
 };
 
 // 23090-5: v3c_parameter_set()

@@ -70,6 +70,7 @@ private: // Encoder_prepareSequence.cpp
       -> Common::SizeVector;
   [[nodiscard]] auto calculateViewGridSize(const MivBitstream::EncoderParams &params) const
       -> Common::Vec2i;
+  auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   [[nodiscard]]  auto haveTexture() const -> bool;
   [[nodiscard]]  auto haveOccupancy() const -> bool;

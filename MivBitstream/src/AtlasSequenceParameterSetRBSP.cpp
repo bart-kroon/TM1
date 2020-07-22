@@ -168,14 +168,14 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterS
   x.asme_group_id(
       bitstream.getUVar<unsigned>(vps.vps_miv_extension().vme_num_groups_minus1() + uint64_t(1)));
   x.asme_auxiliary_atlas_flag(bitstream.getFlag());
-  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
-	x.asme_depth_occ_threshold_flag(bitstream.getFlag());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
+    x.asme_depth_occ_threshold_flag(bitstream.getFlag());
+  }
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     x.asme_geometry_scale_factor_x_minus1(bitstream.getUExpGolomb<uint16_t>());
     x.asme_geometry_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
-  if (!vps.vps_miv_extension().vme_embedded_occupancy_flag() &&
-      vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
+  if (vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
     x.asme_occupancy_scale_factor_x_minus1(bitstream.getUExpGolomb<uint16_t>());
     x.asme_occupancy_scale_factor_y_minus1(bitstream.getUExpGolomb<uint16_t>());
   }
@@ -186,14 +186,14 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterS
 void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
   bitstream.putUVar(asme_group_id(), vps.vps_miv_extension().vme_num_groups_minus1() + uint64_t(1));
   bitstream.putFlag(asme_auxiliary_atlas_flag());
-  if (vps.vps_miv_extension().vme_embedded_occupancy_flag())
-	bitstream.putFlag(asme_depth_occ_threshold_flag());
+  if (vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
+    bitstream.putFlag(asme_depth_occ_threshold_flag());
+  }
   if (vps.vps_miv_extension().vme_geometry_scale_enabled_flag()) {
     bitstream.putUExpGolomb(asme_geometry_scale_factor_x_minus1());
     bitstream.putUExpGolomb(asme_geometry_scale_factor_y_minus1());
   }
-  if (!vps.vps_miv_extension().vme_embedded_occupancy_flag() &&
-      vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
+  if (vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
     bitstream.putUExpGolomb(asme_occupancy_scale_factor_x_minus1());
     bitstream.putUExpGolomb(asme_occupancy_scale_factor_y_minus1());
   }
@@ -357,8 +357,7 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
          << '\n';
   stream << "asps_eom_patch_enabled_flag=" << boolalpha << x.asps_eom_patch_enabled_flag() << '\n';
   stream << "asps_raw_patch_enabled_flag=" << boolalpha << x.asps_raw_patch_enabled_flag() << '\n';
-  stream << "asps_plr_enabled_flag=" << boolalpha
-         << x.asps_plr_enabled_flag() << '\n';
+  stream << "asps_plr_enabled_flag=" << boolalpha << x.asps_plr_enabled_flag() << '\n';
   stream << "asps_vui_parameters_present_flag=" << boolalpha << x.asps_vui_parameters_present_flag()
          << '\n';
   stream << "asps_extension_present_flag=" << boolalpha << x.asps_extension_present_flag() << '\n';
@@ -420,8 +419,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(
       asps_pixel_deinterleaving_flag() != other.asps_pixel_deinterleaving_flag() ||
       asps_eom_patch_enabled_flag() != other.asps_eom_patch_enabled_flag() ||
       asps_raw_patch_enabled_flag() != other.asps_raw_patch_enabled_flag() ||
-      asps_plr_enabled_flag() !=
-          other.asps_plr_enabled_flag() ||
+      asps_plr_enabled_flag() != other.asps_plr_enabled_flag() ||
       asps_vui_parameters_present_flag() != other.asps_vui_parameters_present_flag() ||
       asps_extension_present_flag() != other.asps_extension_present_flag() ||
       asps_vpcc_extension_flag() != other.asps_vpcc_extension_flag() ||

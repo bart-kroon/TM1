@@ -97,20 +97,19 @@ constexpr auto AspsMivExtension::asme_geometry_scale_factor_y_minus1(uint16_t va
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1(const uint16_t value) noexcept
+constexpr auto AspsMivExtension::asme_occupancy_scale_factor_x_minus1(uint16_t value) noexcept
     -> auto & {
   m_asme_occupancy_scale_factor_x_minus1 = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1(const uint16_t value) noexcept
+constexpr auto AspsMivExtension::asme_occupancy_scale_factor_y_minus1(uint16_t value) noexcept
     -> auto & {
   m_asme_occupancy_scale_factor_y_minus1 = value;
   return *this;
 }
 
-constexpr auto AspsMivExtension::asme_patch_constant_depth_flag(bool value) noexcept
-           -> auto & {
+constexpr auto AspsMivExtension::asme_patch_constant_depth_flag(bool value) noexcept -> auto & {
   m_asme_patch_constant_depth_flag = value;
   return *this;
 }

@@ -84,9 +84,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         // Entity clustering
         Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
 
-        auto clusteringOutput = Cluster::retrieve(
-            viewId, mask, static_cast<int>(clusterList.size()), viewParamsList[viewId].isBasicView,
-            m_enableMerging);
+        auto clusteringOutput =
+            Cluster::retrieve(viewId, mask, static_cast<int>(clusterList.size()),
+                              viewParamsList[viewId].isBasicView, m_enableMerging);
 
         for (auto &cluster : clusteringOutput.first) {
           cluster = Cluster::setEntityId(cluster, entityId);

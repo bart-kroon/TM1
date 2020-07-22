@@ -88,8 +88,7 @@ ProfileTierLevel::ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc val
   return *this;
 }
 
-constexpr auto ProfileTierLevel::ptl_max_decodes_idc(PtlMaxDecodesIdc value) noexcept
-    -> auto & {
+constexpr auto ProfileTierLevel::ptl_max_decodes_idc(PtlMaxDecodesIdc value) noexcept -> auto & {
   m_ptl_max_decodes_idc = value;
   return *this;
 }
@@ -222,11 +221,7 @@ constexpr auto VpsMivExtension::vme_embedded_occupancy_flag() const noexcept {
 }
 
 constexpr auto VpsMivExtension::vme_occupancy_scale_enabled_flag() const noexcept {
-  return m_vme_occupancy_scale_enabled_flag;
-}
-
-constexpr auto VpsMivExtension::vme_vui_params_present_flag() const noexcept {
-  return m_vme_vui_params_present_flag;
+  return !vme_embedded_occupancy_flag() && m_vme_occupancy_scale_enabled_flag;
 }
 
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag(const bool value) noexcept -> auto & {
@@ -249,20 +244,8 @@ constexpr auto VpsMivExtension::vme_max_entities_minus1(const unsigned value) no
   return *this;
 }
 
-constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) noexcept
-    -> auto & {
+constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) noexcept -> auto & {
   m_vme_embedded_occupancy_flag = value;
-  return *this;
-}
-
-constexpr auto VpsMivExtension::vme_occupancy_scale_enabled_flag(const bool value) noexcept
-    -> auto & {
-  m_vme_occupancy_scale_enabled_flag = value;
-  return *this;
-}
-
-constexpr auto VpsMivExtension::vme_vui_params_present_flag(bool value) noexcept -> auto & {
-  m_vme_vui_params_present_flag = value;
   return *this;
 }
 

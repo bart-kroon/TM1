@@ -33,13 +33,15 @@
 
 #include "test.h"
 
-#include <TMIV/MivBitstream/MivVuiParams.h>
+#include <TMIV/MivBitstream/VuiParameters.h>
+
+#include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
 using namespace TMIV::MivBitstream;
 
 namespace {
 constexpr auto openGlCas() noexcept {
-  auto x = CoordinateAxisSystemParams{};
+  auto x = CoordinateSystemParameters{};
   x.cas_forward_axis(2);           // -z points forward
   x.cas_delta_left_axis_minus1(0); // -x points left
   x.cas_forward_sign(false);       // z points back
@@ -51,7 +53,7 @@ constexpr auto openGlCas() noexcept {
 
 TEST_CASE("coordinate_axis_system_params", "[MIV VUI Params]") {
   SECTION("Default construction (OMAF CAS)") {
-    constexpr auto x = CoordinateAxisSystemParams{};
+    constexpr auto x = CoordinateSystemParameters{};
 
     // Default construction corresponds to the OMAF coordinate axis system
     static_assert(x.isOmafCas());
@@ -83,10 +85,87 @@ cas_up_sign=false
   }
 }
 
-TEST_CASE("miv_vui_params", "[MIV VUI Params]") {
+TEST_CASE("vui_parameters", "[VUI Parameters]") {
   SECTION("Default construction") {
-    constexpr auto x = MivVuiParams{};
-    REQUIRE(toString(x) == toString(CoordinateAxisSystemParams{}));
-    REQUIRE(bitCodingTest(x, 6));
+    constexpr auto x = VuiParameters{};
+    REQUIRE(toString(x) == R"(vui_timing_info_present_flag=false
+vui_bitstream_restriction_present_flag=false
+vui_coordinate_system_parameters_present_flag=false
+vui_unit_in_metres_flag=false
+vui_display_box_info_present_flag=false
+vui_anchor_point_present_flag=false
+)");
+    REQUIRE(bitCodingTest(x, 6, nullptr));
+  }
+
+  SECTION("Enable flags") {
+    auto x = VuiParameters{};
+
+    x.vui_timing_info_present_flag(true)
+        .vui_num_units_in_tick(1000)
+        .vui_time_scale(32521)
+        .vui_poc_proportional_to_timing_flag(true)
+        .vui_num_ticks_poc_diff_one_minus1(143)
+        .vui_hrd_parameters_present_flag(false);
+
+    x.vui_bitstream_restriction_present_flag(true)
+        .vui_tiles_fixed_structure_for_atlas_flag(true)
+        .vui_tiles_fixed_structure_for_video_substreams_flag(true)
+        .vui_constrained_tiles_across_v3c_components_idc(33)
+        .vui_max_num_tiles_per_atlas_minus1(17);
+
+    x.vui_coordinate_system_parameters_present_flag(true).coordinate_system_parameters() =
+        openGlCas();
+
+    x.vui_unit_in_metres_flag(true);
+
+    x.vui_display_box_info_present_flag(true)
+        .vui_display_box_origin(0, 10)
+        .vui_display_box_origin(1, 20)
+        .vui_display_box_origin(2, 30)
+        .vui_display_box_size(0, 40)
+        .vui_display_box_size(1, 50)
+        .vui_display_box_size(2, 60);
+
+    x.vui_anchor_point_present_flag(true)
+        .vui_anchor_point(0, 70)
+        .vui_anchor_point(1, 80)
+        .vui_anchor_point(2, 90);
+
+    REQUIRE(toString(x) == R"(vui_timing_info_present_flag=true
+vui_num_units_in_tick=1000
+vui_time_scale=32521
+vui_poc_proportional_to_timing_flag=true
+vui_num_ticks_poc_diff_one_minus1=143
+vui_hrd_parameters_present_flag=false
+vui_bitstream_restriction_present_flag=true
+vui_tiles_fixed_structure_for_atlas_flag=true
+vui_tiles_fixed_structure_for_video_substreams_flag=true
+vui_constrained_tiles_across_v3c_components_idc=33
+vui_max_num_tiles_per_atlas_minus1=17
+vui_coordinate_system_parameters_present_flag=true
+cas_forward_axis=2
+cas_delta_left_axis_minus1=0
+cas_forward_sign=false
+cas_left_sign=false
+cas_up_sign=false
+vui_unit_in_metres_flag=true
+vui_display_box_info_present_flag=true
+vui_display_box_origin[ 0 ]=10
+vui_display_box_size[ 0 ]=40
+vui_display_box_origin[ 1 ]=20
+vui_display_box_size[ 1 ]=50
+vui_display_box_origin[ 2 ]=30
+vui_display_box_size[ 2 ]=60
+vui_anchor_point_present_flag=true
+vui_anchor_point[ 0 ]=70
+vui_anchor_point[ 1 ]=80
+vui_anchor_point[ 2 ]=90
+)");
+
+    auto asps = AtlasSequenceParameterSetRBSP{};
+    asps.asps_geometry_3d_bitdepth_minus1(15);
+
+    REQUIRE(bitCodingTest(x, 259, &asps));
   }
 }

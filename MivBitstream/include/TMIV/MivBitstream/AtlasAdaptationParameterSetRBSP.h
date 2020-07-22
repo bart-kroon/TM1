@@ -35,8 +35,7 @@
 #define _TMIV_MIVBITSTREAM_ATLASADAPTATIONPARAMETERSETRBSP_H_
 
 #include <TMIV/MivBitstream/V3cParameterSet.h>
-
-#include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/VuiParameters.h>
 
 #include <iosfwd>
 #include <optional>
@@ -63,8 +62,12 @@ public:
 class AapsMivExtension {
 public:
   [[nodiscard]] constexpr auto aame_omaf_v1_compatible_flag() const noexcept;
+  [[nodiscard]] constexpr auto aame_vui_params_present_flag() const noexcept;
+  [[nodiscard]] auto vui_parameters() const noexcept -> const VuiParameters &;
 
   constexpr auto aame_omaf_v1_compatible_flag(bool value) noexcept -> auto &;
+  constexpr auto aame_vui_params_present_flag(bool value) noexcept -> auto &;
+  auto vui_parameters(const VuiParameters &value) noexcept -> AapsMivExtension &;
 
   friend auto operator<<(std::ostream &stream, const AapsMivExtension &x) -> std::ostream &;
 
@@ -77,6 +80,8 @@ public:
 
 private:
   bool m_aame_omaf_v1_compatible_flag{};
+  bool m_aame_vui_params_present_flag{};
+  std::optional<VuiParameters> m_vui_parameters;
 };
 
 // 23090-5: atlas_adaptation_parameter_set_rbsp( )

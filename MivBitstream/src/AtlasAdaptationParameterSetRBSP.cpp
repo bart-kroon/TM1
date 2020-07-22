@@ -57,9 +57,27 @@ void AapsVpccExtension::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }
 
+auto AapsMivExtension::vui_parameters() const noexcept -> const VuiParameters & {
+  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
+  VERIFY_MIVBITSTREAM(m_vui_parameters.has_value());
+  return *m_vui_parameters;
+}
+
+auto AapsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> AapsMivExtension & {
+  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
+  m_vui_parameters = value;
+  return *this;
+}
+
 auto operator<<(ostream &stream, const AapsMivExtension &x) -> ostream & {
-  return stream << "aame_omaf_v1_compatible_flag=" << boolalpha << x.aame_omaf_v1_compatible_flag()
-                << '\n';
+  stream << "aame_omaf_v1_compatible_flag=" << boolalpha << x.aame_omaf_v1_compatible_flag()
+         << '\n';
+  stream << "aame_vui_params_present_flag=" << boolalpha << x.aame_vui_params_present_flag()
+         << '\n';
+  if (x.aame_vui_params_present_flag()) {
+    stream << x.vui_parameters();
+  }
+  return stream;
 }
 
 auto AapsMivExtension::operator==(const AapsMivExtension &other) const noexcept -> bool {
@@ -73,11 +91,19 @@ auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept 
 auto AapsMivExtension::decodeFrom(InputBitstream &bitstream) -> AapsMivExtension {
   auto x = AapsMivExtension{};
   x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
+  x.aame_vui_params_present_flag(bitstream.getFlag());
+  if (x.aame_vui_params_present_flag()) {
+    x.vui_parameters(VuiParameters::decodeFrom(bitstream, nullptr));
+  }
   return x;
 }
 
 void AapsMivExtension::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFlag(aame_omaf_v1_compatible_flag());
+  bitstream.putFlag(aame_vui_params_present_flag());
+  if (aame_vui_params_present_flag()) {
+    vui_parameters().encodeTo(bitstream, nullptr);
+  }
 }
 
 auto AtlasAdaptationParameterSetRBSP::aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()

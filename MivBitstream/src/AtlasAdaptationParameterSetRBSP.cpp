@@ -58,12 +58,13 @@ void AapsVpccExtension::encodeTo(OutputBitstream &bitstream) const {
 }
 
 auto AapsMivExtension::vui_parameters() const noexcept -> const VuiParameters & {
-  VERIFY_V3CBITSTREAM(aame_vui_params_present_flag());
-  VERIFY_V3CBITSTREAM(m_vui_parameters.has_value());
+  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
+  VERIFY_MIVBITSTREAM(m_vui_parameters.has_value());
   return *m_vui_parameters;
 }
 
 auto AapsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> AapsMivExtension & {
+  VERIFY_MIVBITSTREAM(aame_vui_params_present_flag());
   m_vui_parameters = value;
   return *this;
 }

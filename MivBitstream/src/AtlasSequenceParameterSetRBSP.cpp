@@ -451,7 +451,6 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const V3cUnitHea
   InputBitstream bitstream{stream};
 
   x.asps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
-  VERIFY_V3CBITSTREAM(x.asps_atlas_sequence_parameter_set_id() <= 15);
 
   x.asps_frame_width(bitstream.getUint16());
   const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());
@@ -540,7 +539,6 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const V3cUnitHeade
                                              const V3cParameterSet &vps) const {
   OutputBitstream bitstream{stream};
 
-  VERIFY_V3CBITSTREAM(asps_atlas_sequence_parameter_set_id() <= 15);
   bitstream.putUExpGolomb(asps_atlas_sequence_parameter_set_id());
 
   const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());

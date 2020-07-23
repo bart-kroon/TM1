@@ -242,7 +242,6 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
   VERIFY_V3CBITSTREAM(x.afps_atlas_frame_parameter_set_id() <= 63);
 
   x.afps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
-  VERIFY_V3CBITSTREAM(x.afps_atlas_sequence_parameter_set_id() <= 15);
   const auto &asps = aspsById(aspsV, x.afps_atlas_sequence_parameter_set_id());
 
   x.atlas_frame_tile_information(AtlasFrameTileInformation::decodeFrom(bitstream));
@@ -292,7 +291,6 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   VERIFY_V3CBITSTREAM(afps_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(afps_atlas_frame_parameter_set_id());
 
-  VERIFY_V3CBITSTREAM(afps_atlas_sequence_parameter_set_id() <= 15);
   bitstream.putUExpGolomb(afps_atlas_sequence_parameter_set_id());
   const auto &asps = aspsById(aspsV, afps_atlas_sequence_parameter_set_id());
 

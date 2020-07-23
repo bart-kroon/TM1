@@ -274,12 +274,16 @@ public:
 // 23090-12: vps_miv_extension()
 class VpsMivExtension {
 public:
+  VpsMivExtension() = default;
+  explicit VpsMivExtension(const unsigned vps_atlas_count_minus1);
+
   [[nodiscard]] constexpr auto vme_depth_low_quality_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_geometry_scale_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_num_groups_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_max_entities_minus1() const noexcept;
   [[nodiscard]] constexpr auto vme_embedded_occupancy_flag() const noexcept;
   [[nodiscard]] constexpr auto vme_occupancy_scale_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto vme_packed_video_present_flag(unsigned atlas_idx) const noexcept;
 
   constexpr auto vme_depth_low_quality_flag(bool value) noexcept -> auto &;
   constexpr auto vme_geometry_scale_enabled_flag(bool value) noexcept -> auto &;
@@ -287,23 +291,27 @@ public:
   constexpr auto vme_max_entities_minus1(unsigned value) noexcept -> auto &;
   constexpr auto vme_embedded_occupancy_flag(bool value) noexcept -> auto &;
   auto vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension &;
+  constexpr auto vme_packed_video_present_flag(bool value) noexcept -> VpsMivExtension &;
 
   friend auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream &;
 
   constexpr auto operator==(const VpsMivExtension &other) const noexcept;
   constexpr auto operator!=(const VpsMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream) -> VpsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const unsigned vps_atlas_count_minus1)
+      -> VpsMivExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const unsigned vps_atlas_count_minus1) const;
 
 private:
+  unsigned m_vps_atlas_count_minus1{};
   bool m_vme_depth_low_quality_flag{};
   bool m_vme_geometry_scale_enabled_flag{};
   unsigned m_vme_num_groups_minus1{};
   unsigned m_vme_max_entities_minus1{};
   bool m_vme_embedded_occupancy_flag{true};
   bool m_vme_occupancy_scale_enabled_flag{};
+  std::vector<bool> m_vme_packed_video_present_flag{};
 };
 
 // 23090-5: v3c_parameter_set()

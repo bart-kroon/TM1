@@ -61,13 +61,13 @@ auto AtlasAccessUnit::decOccFrameSize(const MivBitstream::V3cParameterSet &vps) 
     if (!vme.vme_embedded_occupancy_flag() && vme.vme_occupancy_scale_enabled_flag()) {
       const auto &asme = asps.asps_miv_extension();
       int codedUnpaddedOccupancyWidth =
-          asps.asps_frame_width() / (asme.asme_occupancy_scale_factor_x_minus1() + 1); 
+          asps.asps_frame_width() / (asme.asme_occupancy_scale_factor_x_minus1() + 1);
       int codedUnpadedOccupancyHeight =
           asps.asps_frame_height() / (asme.asme_occupancy_scale_factor_y_minus1() + 1);
       int codedOccupancyWidth = codedUnpaddedOccupancyWidth + codedUnpaddedOccupancyWidth % 2;
       int codedOccupancyHeight = codedUnpadedOccupancyHeight + codedUnpadedOccupancyHeight % 2;
       return Vec2i{codedOccupancyWidth, codedOccupancyHeight};
-	  }
+    }
   }
   return frameSize();
 }

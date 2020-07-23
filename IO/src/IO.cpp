@@ -59,7 +59,7 @@ auto haveOccupancy(const Json &config) {
 } // namespace
 
 auto loadSourceParams(const Json &config) -> EncoderParams {
-    auto x = EncoderParams{haveTexture(config), haveOccupancy(config)};
+  auto x = EncoderParams{haveTexture(config), haveOccupancy(config)};
 
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -76,7 +76,7 @@ auto loadSourceParams(const Json &config) -> EncoderParams {
     auto node = config.optional("depthLowQualityFlag");
     x.vme().vme_depth_low_quality_flag(node.asBool());
   }
-  
+
   const auto numGroups = unsigned(config.require("numGroups").asInt());
   if (numGroups < 1) {
     throw runtime_error("Require numGroups >= 1");

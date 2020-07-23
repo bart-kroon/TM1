@@ -99,9 +99,8 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  m_params.patchParamsList =
-               m_packer->pack(m_params.atlasSizes(), aggregatedMask,
-                              m_transportParams.viewParamsList, m_blockSize);
+  m_params.patchParamsList = m_packer->pack(m_params.atlasSizes(), aggregatedMask,
+                                            m_transportParams.viewParamsList, m_blockSize);
 
   m_params = m_geometryQuantizer->transformParams(m_params);
 
@@ -267,8 +266,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           if (depth > 0 && // outViewParams.hasOccupancy &&
               m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId)) {
             occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
-          }
-          ;
+          };
         }
       }
     }

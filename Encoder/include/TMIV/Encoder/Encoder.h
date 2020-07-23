@@ -72,8 +72,8 @@ private: // Encoder_prepareSequence.cpp
       -> Common::Vec2i;
   auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
-  [[nodiscard]]  auto haveTexture() const -> bool;
-  [[nodiscard]]  auto haveOccupancy() const -> bool;
+  [[nodiscard]] auto haveTexture() const -> bool;
+  [[nodiscard]] auto haveOccupancy() const -> bool;
   void enableOccupancyPerView();
   void prepareIvau();
   auto log2FocLsbMinus4() -> std::uint8_t;

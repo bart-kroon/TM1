@@ -79,13 +79,13 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
         if (atlas.occFrame.getPlane(0)(i, j) == 0) {
           continue;
         }
-        
+
         // Map to view position
         const auto viewPos = patchParams.atlasToView({j, i});
         const auto x = viewPos.x();
         const auto y = viewPos.y();
 
-		// temporary use only view dimensions
+        // temporary use only view dimensions
         if (y >= prunedView[viewId].first.getSize()[1] ||
             x >= prunedView[viewId].first.getSize()[0]) {
           continue;

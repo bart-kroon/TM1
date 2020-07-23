@@ -322,7 +322,8 @@ public:
     }
   }
 
-  auto prune(const MivBitstream::EncoderParams &params, const MVD16Frame &views, const int blockSize) -> MaskList {
+  auto prune(const MivBitstream::EncoderParams &params, const MVD16Frame &views,
+             const int blockSize) -> MaskList {
     m_params = params;
 
     prepareFrame(views, blockSize);

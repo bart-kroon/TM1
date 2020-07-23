@@ -36,8 +36,8 @@
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 #include <TMIV/Encoder/Encoder.h>
 #include <TMIV/Encoder/GroupBasedEncoder.h>
-#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 #include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
+#include <TMIV/GeometryQuantizer/GeometryQuantizer.h>
 #include <TMIV/Packer/Packer.h>
 #include <TMIV/Pruner/HierarchicalPruner.h>
 #include <TMIV/ViewOptimizer/BasicViewAllocator.h>

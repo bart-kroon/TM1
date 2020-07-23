@@ -116,7 +116,7 @@ private: // Encoder_popFrame.cpp
   // Encoder parameters
   int m_intraPeriod{};
   int m_blockSize{};
-  int m_alignment{};
+  Common::Vec2i m_blockSizeDepthQualityDependent;
   double m_maxLumaSampleRate{};
   int m_maxLumaPictureSize{};
   double m_maxBlockRate{};

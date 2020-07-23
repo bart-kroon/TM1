@@ -403,8 +403,9 @@ private:
             const auto y = sourceViewPos.y();
 
 			// temporary use only view dimensions
-            if (y >= m_sourceDepth[viewId].height() || x >= m_sourceDepth[viewId].width())
+            if (y >= (int) m_sourceDepth[viewId].height() || x >= (int) m_sourceDepth[viewId].width()) {
               return;
+            }
 
             const auto d = m_sourceDepth[viewId](y, x);
 
@@ -607,9 +608,10 @@ private:
           for (int y = y0; y < y1; y++) {
             for (int x = x0; x < x1; x++) {
               // temporary use only view dimensions
-              if (y >= m_sourceReprojection[viewId].height() ||
-                  x >= m_sourceReprojection[viewId].width())
+              if (y >= (int) m_sourceReprojection[viewId].height() ||
+                  x >= (int) m_sourceReprojection[viewId].width()) {
                 continue;
+              }
 
               auto P = m_sourceReprojection[viewId](y, x);
 

@@ -322,38 +322,31 @@ public:
     }
   }
 
-  auto prune(const MivBitstream::EncoderParams &params, const MVD16Frame &views) -> MaskList {
+  auto prune(const MivBitstream::EncoderParams &params, const MVD16Frame &views, const int blockSize) -> MaskList {
     m_params = params;
 
-    prepareFrame(views);
+    prepareFrame(views, blockSize);
     pruneFrame(views);
 
     return move(m_masks);
   }
 
 private:
-  void prepareFrame(const MVD16Frame &views) {
-    createInitialMasks(views);
+  void prepareFrame(const MVD16Frame &views, const int blockSize) {
+    createInitialMasks(views, blockSize);
     createSynthesizerPerPartialView(views);
     synthesizeReferenceViews(views);
   }
 
-  void createInitialMasks(const MVD16Frame &views) {
-    int m_align = 0;
-    if (m_params.vme().vme_depth_low_quality_flag()) // m54152
-      m_align = 32;
-    else
-      m_align = 16;
+  void createInitialMasks(const MVD16Frame &views, const int blockSize) {
     m_masks.clear();
     m_masks.reserve(views.size());
     transform(cbegin(m_params.viewParamsList), cend(m_params.viewParamsList), cbegin(views),
               back_inserter(m_masks),
-              [m_align](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                // auto mask = Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
-                //                            viewParams.ci.projectionPlaneSize().y()};
+              [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
                 auto mask =
-                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), m_align),
-                                    align(viewParams.ci.projectionPlaneSize().y(), m_align)};
+                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
+                                    align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
                 transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
@@ -368,13 +361,10 @@ private:
     m_status.reserve(views.size());
     transform(cbegin(m_params.viewParamsList), cend(m_params.viewParamsList), cbegin(views),
               back_inserter(m_status),
-              [m_align](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                // auto status =
-                // Frame<YUV400P8>{viewParams.ci.projectionPlaneSize().x(),
-                //                              viewParams.ci.projectionPlaneSize().y()};
+              [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
                 auto status =
-                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), m_align),
-                                    align(viewParams.ci.projectionPlaneSize().y(), m_align)};
+                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
+                                    align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
                 transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
                           begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
@@ -524,8 +514,8 @@ private:
     auto k = begin(status);
 
     int pp = 0;
-    const auto W = int(mask.width());
-    const auto H = int(mask.height());
+    const auto W = synthesizer.reference.width();
+    const auto H = synthesizer.reference.height();
 
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {
@@ -586,7 +576,8 @@ void HierarchicalPruner::registerPruningRelation(MivBitstream::EncoderParams &pa
 }
 
 auto HierarchicalPruner::prune(const MivBitstream::EncoderParams &params,
-                               const Common::MVD16Frame &views) -> Common::MaskList {
-  return m_impl->prune(params, views);
+                               const Common::MVD16Frame &views, const int blockSize)
+    -> Common::MaskList {
+  return m_impl->prune(params, views, blockSize);
 }
 } // namespace TMIV::Pruner

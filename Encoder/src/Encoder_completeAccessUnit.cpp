@@ -101,7 +101,7 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
 
   m_params.patchParamsList =
                m_packer->pack(m_params.atlasSizes(), aggregatedMask,
-                              m_transportParams.viewParamsList, m_blockSize, m_alignment);
+                              m_transportParams.viewParamsList, m_blockSize);
 
   m_params = m_geometryQuantizer->transformParams(m_params);
 
@@ -146,13 +146,15 @@ void Encoder::constructVideoFrames() {
           frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
                    Occupancy10Frame(frameWidth, frameHeight)};
         }
-      } else
+      } else {
         frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
+      }
 
       frame.texture.fillNeutral();
       frame.depth.fillZero();
-      if (m_params.vps.vps_occupancy_video_present_flag(uint8_t(i)))
+      if (m_params.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
         frame.occupancy.fillZero();
+      }
       atlasList.push_back(move(frame));
     }
 
@@ -238,8 +240,9 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
-            if (m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
+            if (m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId)) {
               occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 0;
+            }
             continue;
           }
 
@@ -261,9 +264,10 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
-          if (depth > 0 && //outViewParams.hasOccupancy &&
-              m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId))
+          if (depth > 0 && // outViewParams.hasOccupancy &&
+              m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId)) {
             occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
+          }
           ;
         }
       }

@@ -44,14 +44,15 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 void Encoder::prepareSequence(EncoderParams sourceParams) {
-    if (sourceParams.vme().vme_depth_low_quality_flag())
-      m_alignment = m_blockSize = 32;
-    else
-      m_alignment = m_blockSize = 16;
-    const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
-    m_maxBlockRate = m_maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1) *
-                                            lumaSamplesPerAtlasSample * sqr(m_blockSize));
-    m_maxBlocksPerAtlas = m_maxLumaPictureSize / sqr(m_blockSize);
+  if (sourceParams.vme().vme_depth_low_quality_flag()) {
+    m_blockSize = m_blockSizeDepthQualityDependent[1];
+  } else {
+    m_blockSize = m_blockSizeDepthQualityDependent[0];
+  }
+  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
+  m_maxBlockRate = m_maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1) *
+                                          lumaSamplesPerAtlasSample * sqr(m_blockSize));
+  m_maxBlocksPerAtlas = m_maxLumaPictureSize / sqr(m_blockSize);
 
   // Transform source to transport view sequence parameters
   m_transportParams = m_viewOptimizer->optimizeParams(move(sourceParams));

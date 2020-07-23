@@ -64,12 +64,11 @@ void Packer::updateAggregatedEntityMasks(const vector<MaskList> &entityMasks) {
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
-                  const ViewParamsList &viewParamsList, const int m_blockSize,
-                  const int m_alignment) -> PatchParamsList {
+                  const ViewParamsList &viewParamsList, const int m_blockSize) -> PatchParamsList {
   // Check atlas size
   for (const auto &sz : atlasSizes) {
-    if (((sz.x() % m_alignment) != 0) || ((sz.y() % m_alignment) != 0)) {
-      throw std::runtime_error("Atlas size should be a multiple of aligment");
+    if (((sz.x() % m_blockSize) != 0) || ((sz.y() % m_blockSize) != 0)) {
+      throw std::runtime_error("Atlas size should be a multiple of blocksize");
     }
   }
 
@@ -128,7 +127,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
   packerList.reserve(atlasSizes.size());
   for (const auto &sz : atlasSizes) {
-    packerList.emplace_back(sz.x(), sz.y(), m_alignment, m_pip);
+    packerList.emplace_back(sz.x(), sz.y(), m_blockSize, m_pip);
   }
 
   auto comp = [&](const Cluster &p1, const Cluster &p2) -> bool {
@@ -149,7 +148,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (m_maxEntities > 1 || cluster.isBasicView()) {
       out.push_back(cluster);
     } else {
-      cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_alignment, m_minPatchSize);
+      cluster.recursiveSplit(clusteringMap[cluster.getViewId()], out, m_blockSize, m_minPatchSize);
     }
   }
 

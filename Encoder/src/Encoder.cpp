@@ -74,7 +74,8 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   // Parameters
   m_intraPeriod = rootNode.require("intraPeriod").asInt();
   const auto numGroups = rootNode.require("numGroups").asInt();
-  //m_blockSize = rootNode.require("blockSize").asInt(); // should be set to 32 when depth_low_quality_flag is true and 16 otherwise.
+  m_blockSizeDepthQualityDependent =
+      rootNode.require("blockSizeDepthQualityDependent").asIntVector<2>();
   const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
   m_maxLumaSampleRate = maxLumaSampleRate;
   const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
@@ -96,8 +97,6 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
 
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");
-  //runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
-  //runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
   if (maxLumaSampleRate == 0) {
     runtimeCheck(maxLumaPictureSize == 0 && maxAtlases == 0,
                  "Either specify all constraints or none");
@@ -108,9 +107,6 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   }
 
   // Translate parameters to concrete constraints
-  // const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
-  // m_maxBlockRate = maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * sqr(m_blockSize));
-  // m_maxBlocksPerAtlas = maxLumaPictureSize / sqr(m_blockSize);
   m_maxAtlases = maxAtlases / numGroups;
 
   // Read the entity encoding range if exisited

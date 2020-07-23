@@ -76,8 +76,9 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
         const auto viewId = patchParams.pduViewIdx();
 
         // Test for occupancy
-        if (atlas.occFrame.getPlane(0)(i, j)==0)
+        if (atlas.occFrame.getPlane(0)(i, j) == 0) {
           continue;
+        }
         
         // Map to view position
         const auto viewPos = patchParams.atlasToView({j, i});
@@ -86,8 +87,9 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
 
 		// temporary use only view dimensions
         if (y >= prunedView[viewId].first.getSize()[1] ||
-            x >= prunedView[viewId].first.getSize()[0])
+            x >= prunedView[viewId].first.getSize()[0]) {
           continue;
+        }
 
         // Copy geometry
         prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);

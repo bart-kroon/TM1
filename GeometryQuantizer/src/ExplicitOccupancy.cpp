@@ -52,8 +52,9 @@ ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &compon
   if (auto subnode = componentNode.optional("occupancyScale")) {
     m_occupancyScaleConfig = true;
     m_occupancyScale = subnode.asIntVector<2>();
-  }else
+  } else {
     m_occupancyScaleConfig = false;
+  }
 }
 
 auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
@@ -63,11 +64,13 @@ auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
 
   m_outParams.vme().vme_embedded_occupancy_flag(false);
   m_outParams.vme().vme_occupancy_scale_enabled_flag(true);
-  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); i++)
-    if (m_isAtlasCompleteFlag.size() > i)
+  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); i++) {
+    if (m_isAtlasCompleteFlag.size() > i) {
       m_outParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
-    else
+    } else {
       m_outParams.vps.vps_occupancy_video_present_flag(i, true);
+    }
+  }
   m_depthLowQualityFlag = m_outParams.vme().vme_depth_low_quality_flag();
 
   m_embeddedOccupancyFlag = m_outParams.vme().vme_embedded_occupancy_flag();
@@ -80,11 +83,11 @@ auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
         atlas.asme().asme_occupancy_scale_factor_y_minus1(m_occupancyScale[1] - 1);
       } else {
         atlas.asme().asme_occupancy_scale_factor_x_minus1(
-            std::pow(2, atlas.asps.asps_log2_patch_packing_block_size()) - 1);
+            (1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1);
         atlas.asme().asme_occupancy_scale_factor_y_minus1(
-            std::pow(2, atlas.asps.asps_log2_patch_packing_block_size()) - 1);
+            (1 << atlas.asps.asps_log2_patch_packing_block_size()) - 1);
       }
-	}
+    }
   }
   return m_outParams;
 }
@@ -135,23 +138,24 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   }
 
   // Apply depth padding
-  if (!m_depthLowQualityFlag)
+  if (!m_depthLowQualityFlag) {
     padGeometryFromLeft(outAtlases);
+  }
 
   return outAtlases;
 }
 
 void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
-  for (uint8_t i = 0; i < atlases.size(); ++i) {
+  for (size_t i = 0; i < atlases.size(); ++i) {
     if (m_outParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
       auto &depthAtlasMap = atlases[i].depth;
-      int depthScale[2] = {m_outParams.atlas[i].asps.asps_frame_height() /
-                               depthAtlasMap.getHeight(),
-                           m_outParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
+      auto depthScale =
+          std::array{m_outParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
+                     m_outParams.atlas[i].asps.asps_frame_width() / depthAtlasMap.getWidth()};
       const auto &occupancyAtlasMap = atlases[i].occupancy;
-      int occupancyScale[2] = {
-          m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
-          m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
+      auto occupancyScale =
+          std::array{m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
+                     m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
       int yOcc = 0, xOcc = 0;
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 1; x < depthAtlasMap.getWidth(); x++) {

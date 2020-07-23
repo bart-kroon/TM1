@@ -39,7 +39,7 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
 OccupancyReconstructor::OccupancyReconstructor(const Json & /*rootNode*/,
-                                               const Json &componentNode) {}
+                                               const Json & /*componentNode*/) {}
 
 void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
   for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++) {
@@ -48,9 +48,9 @@ void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
     for (auto y = 0; y < atlas.frameSize().y(); y++) {
       for (auto x = 0; x < atlas.frameSize().x(); x++) {
         auto patchId = atlas.patchId(y, x);
-        if (patchId == unusedPatchId)
+        if (patchId == unusedPatchId) {
           atlas.occFrame.getPlane(0)(y, x) = 0;
-        else if (!frame.vps.vps_occupancy_video_present_flag(i)) {
+        } else if (!frame.vps.vps_occupancy_video_present_flag(i)) {
           if (frame.vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
             // occupancy is embedded in geometry
             uint32_t depthOccupancyThreshold = 0;
@@ -58,8 +58,9 @@ void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
               uint16_t v = atlas.patchParamsList[patchId].pduViewIdx();
               depthOccupancyThreshold =
                   frame.viewParamsList[v].dq.dq_depth_occ_map_threshold_default();
-            } else
+            } else {
               depthOccupancyThreshold = *atlas.patchParamsList[patchId].pduDepthOccMapThreshold();
+            }
             atlas.occFrame.getPlane(0)(y, x) =
                 (atlas.geoFrame.getPlane(0)(y, x) < depthOccupancyThreshold) ? 0 : 1;
           } else {

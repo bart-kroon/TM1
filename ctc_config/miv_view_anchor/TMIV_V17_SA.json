@@ -66,7 +66,7 @@
     "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
-    "blockSize": 8,
+	"blockSizeDepthQualityDependent": [16, 32],
     "geometryScaleEnabledFlag": true,
     "intraPeriod": 32,
     "maxAtlases": 2,

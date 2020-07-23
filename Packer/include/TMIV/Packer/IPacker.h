@@ -49,8 +49,8 @@ public:
   virtual ~IPacker() = default;
 
   virtual auto pack(const Common::SizeVector &atlasSize, const Common::MaskList &masks,
-                    const MivBitstream::ViewParamsList &viewParamsList, const int blockSize,
-                    const int alignment) -> MivBitstream::PatchParamsList = 0;
+                    const MivBitstream::ViewParamsList &viewParamsList, const int blockSize)
+      -> MivBitstream::PatchParamsList = 0;
   virtual void updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) = 0;
 };
 } // namespace TMIV::Packer

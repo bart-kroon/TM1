@@ -74,12 +74,6 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
   std::ifstream stream{path, std::ios::binary};
 
   if (!stream.good()) {
-    if (fileNameField == "OccupancyVideoDataPathFmt") {
-      std::cout << "No occupancy info, either the file is corrupted or atlas is fully occupied or "
-                   "occupancy is embedded in geometry\n";
-      return result; // Handling the case of embeded occupancy since not known ahead (occupancy
-                     // signaling elements are not read yet)
-    }
     throw std::runtime_error("Failed to open file");
   }
 

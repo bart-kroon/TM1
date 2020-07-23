@@ -51,10 +51,8 @@ auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
 
 // check if explicit occupancy coding mode
 auto haveOccupancy(const Json &config) {
-  bool m_ExplicitOccupanycCoding =
-      (config.require("GroupBasedEncoder").require("GeometryQuantizerMethod").asString() ==
-       "ExplicitOccupancy");
-  return m_ExplicitOccupanycCoding;
+  return config.require("GroupBasedEncoder").require("GeometryQuantizerMethod").asString() ==
+         "ExplicitOccupancy";
 }
 } // namespace
 

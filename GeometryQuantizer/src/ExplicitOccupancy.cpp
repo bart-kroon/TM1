@@ -107,9 +107,6 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
     const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
     const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
-#ifndef NDEBUG
-    const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
-#endif
     const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
     const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
 
@@ -129,8 +126,6 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
-          assert(outOccupancyTransform.occupant(outLevel));
-
           outAtlases[patch.vuhAtlasId].depth.getPlane(0)(n, m) = outLevel;
         }
       }

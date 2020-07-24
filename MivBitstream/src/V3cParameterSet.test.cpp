@@ -226,7 +226,6 @@ vme_geometry_scale_enabled_flag=true
 vme_num_groups_minus1=3
 vme_max_entities_minus1=20
 vme_embedded_occupancy_flag=true
-vme_packed_video_present_flag( 0 )=false
 )");
 
     REQUIRE(byteCodingTest(vps, 21));
@@ -254,7 +253,7 @@ vme_packed_video_present_flag( 0 )=false
         .vps_vpcc_extension_flag(true)
         .vps_vpcc_extension(VpsVpccExtension{})
         .vps_miv_extension_flag(true)
-        .vps_miv_extension(VpsMivExtension{2})
+        .vps_miv_extension(VpsMivExtension{})
         .vps_extension_6bits(63)
         .vpsExtensionData({2, 250, 15});
 
@@ -311,9 +310,6 @@ vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0
 vme_max_entities_minus1=0
 vme_embedded_occupancy_flag=true
-vme_packed_video_present_flag( 0 )=false
-vme_packed_video_present_flag( 1 )=false
-vme_packed_video_present_flag( 2 )=false
 vps_extension_length_minus1=2
 vps_extension_data_byte=2
 vps_extension_data_byte=250

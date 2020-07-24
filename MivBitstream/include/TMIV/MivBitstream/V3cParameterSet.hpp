@@ -224,10 +224,6 @@ constexpr auto VpsMivExtension::vme_occupancy_scale_enabled_flag() const noexcep
   return !vme_embedded_occupancy_flag() && m_vme_occupancy_scale_enabled_flag;
 }
 
-constexpr auto VpsMivExtension::vme_packed_video_present_flag(unsigned atlasIdx) const noexcept {
-  return m_vme_packed_video_present_flag.at(atlasIdx);
-}
-
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag(const bool value) noexcept -> auto & {
   m_vme_depth_low_quality_flag = value;
   return *this;
@@ -253,29 +249,13 @@ constexpr auto VpsMivExtension::vme_embedded_occupancy_flag(const bool value) no
   return *this;
 }
 
-constexpr auto VpsMivExtension::vme_packed_video_present_flag(const bool value) noexcept
-    -> VpsMivExtension & {
-  m_vme_packed_video_present_flag.push_back(value);
-  return *this;
-}
-
 constexpr auto VpsMivExtension::operator==(const VpsMivExtension &other) const noexcept {
-  if (vme_depth_low_quality_flag() != other.vme_depth_low_quality_flag() ||
-      vme_geometry_scale_enabled_flag() != other.vme_geometry_scale_enabled_flag() ||
-      vme_num_groups_minus1() != other.vme_num_groups_minus1() ||
-      vme_max_entities_minus1() != other.vme_max_entities_minus1() ||
-      vme_embedded_occupancy_flag() != other.vme_embedded_occupancy_flag() ||
-      vme_occupancy_scale_enabled_flag() != other.vme_occupancy_scale_enabled_flag()) {
-    return false;
-  }
-
-  for (unsigned atlasIdx = 0; atlasIdx <= m_vps_atlas_count_minus1; ++atlasIdx) {
-    if (vme_packed_video_present_flag(atlasIdx) != other.vme_packed_video_present_flag(atlasIdx)) {
-      return false;
-    }
-  }
-
-  return true;
+  return vme_depth_low_quality_flag() == other.vme_depth_low_quality_flag() &&
+         vme_geometry_scale_enabled_flag() == other.vme_geometry_scale_enabled_flag() &&
+         vme_num_groups_minus1() == other.vme_num_groups_minus1() &&
+         vme_max_entities_minus1() == other.vme_max_entities_minus1() &&
+         vme_embedded_occupancy_flag() == other.vme_embedded_occupancy_flag() &&
+         vme_occupancy_scale_enabled_flag() == other.vme_occupancy_scale_enabled_flag();
 }
 
 constexpr auto VpsMivExtension::operator!=(const VpsMivExtension &other) const noexcept {

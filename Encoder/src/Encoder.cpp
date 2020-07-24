@@ -118,9 +118,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 
-  // Check if running in explicit occupancy coding mode
-  m_explicitOccupancyCoding = dynamic_cast<const GeometryQuantizer::ExplicitOccupancy *>(
-                                  m_geometryQuantizer.get()) != nullptr;
+  m_explicitOccupancy = rootNode.require("explicitOccupancy").asBool();
 }
 
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }

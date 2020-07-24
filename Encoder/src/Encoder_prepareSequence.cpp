@@ -191,7 +191,7 @@ auto Encoder::haveTexture() const -> bool {
          ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 }
 
-auto Encoder::haveOccupancy() const -> bool { return m_explicitOccupancyCoding; }
+auto Encoder::haveOccupancy() const -> bool { return m_explicitOccupancy; }
 
 void Encoder::enableOccupancyPerView() {
   for (size_t viewId = 0; viewId < m_params.viewParamsList.size(); ++viewId) {
@@ -199,7 +199,7 @@ void Encoder::enableOccupancyPerView() {
         m_params.vme().vme_max_entities_minus1() > 0) {
       m_params.viewParamsList[viewId].hasOccupancy = true;
     }
-    if (m_explicitOccupancyCoding) {
+    if (m_explicitOccupancy) {
       m_params.viewParamsList[viewId].dq.dq_depth_occ_map_threshold_default(0);
     }
   }

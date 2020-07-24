@@ -126,7 +126,7 @@ private: // Encoder_popFrame.cpp
   int m_geometryScaleEnabledFlag{};
   int m_dilationIter{};
   Common::Vec2i m_entityEncRange;
-  bool m_explicitOccupancyCoding{};
+  bool m_explicitOccupancy{};
 
   // View-optimized encoder input
   MivBitstream::EncoderParams m_transportParams;

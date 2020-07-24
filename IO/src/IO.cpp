@@ -50,13 +50,11 @@ namespace {
 auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
 
 // check if explicit occupancy coding mode
-auto haveOccupancy(const Json &config) {
-  return config.require("haveOccupancy").asBool();
-}
+auto explicitOccupancy(const Json &config) { return config.require("explicitOccupancy").asBool(); }
 } // namespace
 
 auto loadSourceParams(const Json &config) -> EncoderParams {
-  auto x = EncoderParams{haveTexture(config), haveOccupancy(config)};
+  auto x = EncoderParams{haveTexture(config), explicitOccupancy(config)};
 
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 

@@ -63,7 +63,7 @@
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
     "blockSize": 8,
     "geometryScaleEnabledFlag": false,
-	"haveOccupancy": false,
+    "explicitOccupancy": false,
     "intraPeriod": 32,
     "maxAtlases": 0,
     "maxEntities": 1,

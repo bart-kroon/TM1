@@ -2,7 +2,7 @@
     "BitstreamPath": "ATL_SA.bit",
     "AttributeVideoDataPathFmt": "ATL_SA_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
     "GeometryVideoDataPathFmt": "ATL_SA_TG_c{:02}_{}x{}_yuv420p10le.yuv",
-	"OccupancyVideoDataPathFmt":"ATL_SA_TO_c{:02}_{}x{}_yuv420p10le.yuv",
+    "OccupancyVideoDataPathFmt": "ATL_SA_TO_c{:02}_{}x{}_yuv420p10le.yuv",
     "DepthQualityAssessor": {
         "blendingFactor": 0.03,
         "maxOutlierRatio": 0.001
@@ -65,9 +65,9 @@
     "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
-	"blockSizeDepthQualityDependent": [16, 32],
+    "blockSizeDepthQualityDependent": [ 16, 32 ],
     "geometryScaleEnabledFlag": true,
-	"haveOccupancy": true,
+    "explicitOccupancy": true,
     "intraPeriod": 32,
     "maxAtlases": 2,
     "maxEntities": 1,

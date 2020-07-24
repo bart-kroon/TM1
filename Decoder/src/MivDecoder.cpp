@@ -89,7 +89,7 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
   }
 
   auto result = std::array{false, false};
-
+  
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
       result[decodeOccVideo(j)] = true;
@@ -150,6 +150,8 @@ auto MivDecoder::decodeVps() -> bool {
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
           .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
       m_occVideoDecoder.push_back(startVideoDecoder(vuh, m_totalOccVideoDecodingTime));
+    } else {
+      m_occVideoDecoder.push_back(nullptr);
     }
 
     if (m_au.vps.vps_geometry_video_present_flag(j)) {

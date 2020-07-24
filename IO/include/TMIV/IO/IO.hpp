@@ -74,6 +74,9 @@ auto readFrame(const Common::Json &config, const std::string &baseDirectoryField
   std::ifstream stream{path, std::ios::binary};
 
   if (!stream.good()) {
+    if (fileNameField == "OccupancyVideoDataPathFmt") {
+      return result;
+    }
     throw std::runtime_error("Failed to open file");
   }
 

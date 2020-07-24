@@ -67,7 +67,6 @@ private:
   // uint16_t m_depthOccMapThresholdIfSet{};
   MivBitstream::EncoderParams m_inParams;
   MivBitstream::EncoderParams m_outParams;
-  std::vector<bool> m_isAtlasCompleteFlag{};
   Common::Vec2i m_occupancyScale;
   bool m_occupancyScaleConfig;
   bool m_depthLowQualityFlag{};

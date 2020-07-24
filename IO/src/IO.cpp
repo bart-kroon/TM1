@@ -200,7 +200,7 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
                  int(atlasId));
     }
     writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
-    if (frame[atlasId].occupancy.getHeight() != 0 && frame[atlasId].occupancy.getWidth() != 0) {
+    if (!frame[atlasId].occupancy.empty()) {
       writeFrame(config, "OccupancyVideoDataPathFmt", frame[atlasId].occupancy, frameIndex,
                  int(atlasId));
     }

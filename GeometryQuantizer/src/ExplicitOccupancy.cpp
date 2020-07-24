@@ -44,11 +44,6 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::GeometryQuantizer {
 ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &componentNode) {
-  if (auto subnode = componentNode.optional("isAtlasCompletePerGroupFlag")) {
-    for (size_t i = 0; i < subnode.size(); ++i) {
-      m_isAtlasCompleteFlag.push_back(subnode.at(i).asBool());
-    }
-  }
   if (auto subnode = componentNode.optional("occupancyScale")) {
     m_occupancyScaleConfig = true;
     m_occupancyScale = subnode.asIntVector<2>();
@@ -65,11 +60,7 @@ auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
   m_outParams.vme().vme_embedded_occupancy_flag(false);
   m_outParams.vme().vme_occupancy_scale_enabled_flag(true);
   for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); i++) {
-    if (m_isAtlasCompleteFlag.size() > i) {
-      m_outParams.vps.vps_occupancy_video_present_flag(i, !m_isAtlasCompleteFlag[i]);
-    } else {
-      m_outParams.vps.vps_occupancy_video_present_flag(i, true);
-    }
+    m_outParams.vps.vps_occupancy_video_present_flag(i, true);
   }
   m_depthLowQualityFlag = m_outParams.vme().vme_depth_low_quality_flag();
 

@@ -45,7 +45,6 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::Packer {
 Packer::Packer(const Json &rootNode, const Json &componentNode) {
-  // m_blockSize = rootNode.require("blockSize").asInt();
   m_minPatchSize = componentNode.require("MinPatchSize").asInt();
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;

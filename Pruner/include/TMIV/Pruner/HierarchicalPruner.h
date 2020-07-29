@@ -51,8 +51,8 @@ public:
   ~HierarchicalPruner() override;
 
   void registerPruningRelation(MivBitstream::EncoderParams &params) override;
-  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views)
-      -> Common::MaskList override;
+  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
+             const int blockSize) -> Common::MaskList override;
 
 private:
   class Impl;

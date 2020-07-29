@@ -69,7 +69,7 @@
     "SourceEntityBitDepth": 8,
     "SourceEntityPathFmt": "{}_entity_{}x{}_yuv420p.yuv",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
-    "blockSizeDepthQualityDependent": [ 16, 32 ],
+    "blockSize": 8,
     "geometryScaleEnabledFlag": false,
     "explicitOccupancy": false,
     "intraPeriod": 32,

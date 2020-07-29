@@ -43,24 +43,7 @@ using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
-namespace {
-void runtimeCheck(bool cond, const char *what) {
-  if (!cond) {
-    throw runtime_error(what);
-  }
-}
-} // namespace
-
 void Encoder::prepareSequence(EncoderParams sourceParams) {
-  m_blockSize = m_blockSizeDepthQualityDependent[sourceParams.vme().vme_depth_low_quality_flag()];
-  runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
-  runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
-
-  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
-  m_maxBlockRate = m_maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1.) *
-                                          lumaSamplesPerAtlasSample * sqr(m_blockSize));
-  m_maxBlocksPerAtlas = m_maxLumaPictureSize / sqr(m_blockSize);
-
   // Transform source to transport view sequence parameters
   m_transportParams = m_viewOptimizer->optimizeParams(move(sourceParams));
 
@@ -198,9 +181,6 @@ void Encoder::enableOccupancyPerView() {
     if (!m_params.viewParamsList[viewId].isBasicView ||
         m_params.vme().vme_max_entities_minus1() > 0) {
       m_params.viewParamsList[viewId].hasOccupancy = true;
-    }
-    if (m_explicitOccupancy) {
-      m_params.viewParamsList[viewId].dq.dq_depth_occ_map_threshold_default(0);
     }
   }
 }

@@ -402,12 +402,6 @@ private:
             const auto x = sourceViewPos.x();
             const auto y = sourceViewPos.y();
 
-            // temporary use only view dimensions
-            if (y >= int(m_sourceDepth[viewId].height()) ||
-                x >= int(m_sourceDepth[viewId].width())) {
-              return;
-            }
-
             const auto d = m_sourceDepth[viewId](y, x);
 
             if (!sourceHelperList[viewId].isValidDepth(d)) {
@@ -608,11 +602,6 @@ private:
 
           for (int y = y0; y < y1; y++) {
             for (int x = x0; x < x1; x++) {
-              // temporary use only view dimensions
-              if (y >= int(m_sourceReprojection[viewId].height()) ||
-                  x >= int(m_sourceReprojection[viewId].width())) {
-                continue;
-              }
 
               auto P = m_sourceReprojection[viewId](y, x);
 

@@ -85,12 +85,6 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
         const auto x = viewPos.x();
         const auto y = viewPos.y();
 
-        // temporary use only view dimensions
-        if (y >= prunedView[viewId].first.getSize()[1] ||
-            x >= prunedView[viewId].first.getSize()[0]) {
-          continue;
-        }
-
         // Copy geometry
         prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
 

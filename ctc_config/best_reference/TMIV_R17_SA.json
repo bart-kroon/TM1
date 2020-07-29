@@ -61,7 +61,7 @@
     "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
     "SourceDirectory": ".",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
-    "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "blockSize": 8,
     "geometryScaleEnabledFlag": false,
     "explicitOccupancy": false,
     "intraPeriod": 32,

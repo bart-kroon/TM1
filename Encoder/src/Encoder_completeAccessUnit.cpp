@@ -100,7 +100,7 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   }
 
   m_params.patchParamsList = m_packer->pack(m_params.atlasSizes(), aggregatedMask,
-                                            m_transportParams.viewParamsList, m_blockSize);
+                                            m_transportParams.viewParamsList);
 
   m_params = m_geometryQuantizer->transformParams(m_params);
 

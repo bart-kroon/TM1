@@ -71,7 +71,6 @@ auto AtlasDecoder::decodeAsb() -> bool {
 
 auto AtlasDecoder::decodeAu() -> AccessUnit {
   auto au = AccessUnit{};
-  au.foc = ++m_foc;
 
   const auto nut = [this]() { return m_buffer.front().nal_unit_header().nal_unit_type(); };
 
@@ -103,9 +102,12 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
 
   const auto focLsb = au.atl.atlas_tile_header().ath_atlas_frm_order_cnt_lsb();
   VERIFY_V3CBITSTREAM(focLsb < m_maxAtlasFrmOrderCntLsb);
-  au.foc += focLsb - (au.foc % m_maxAtlasFrmOrderCntLsb);
-  std::cout << "Atlas frame: foc=" << au.foc << ", vuh_atlas_id=" << int(m_vuh.vuh_atlas_id())
+  while (++m_foc % m_maxAtlasFrmOrderCntLsb != focLsb) {
+    // deliberately empty
+  }
+  std::cout << "Atlas frame: foc=" << m_foc << ", vuh_atlas_id=" << int(m_vuh.vuh_atlas_id())
             << '\n';
+  au.foc = m_foc;
 
   return au;
 }

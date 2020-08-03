@@ -317,6 +317,6 @@ vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
 
-    REQUIRE(byteCodingTest(vps, 40));
+    REQUIRE(byteCodingTest(vps, 41));
   }
 }

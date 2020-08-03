@@ -295,13 +295,13 @@ MPEG-internal repository.
 Morocco.
 
   * [2] B. Salahieh, B. Kroon, J. Jung, A. Dziembowski (Eds.), *Test Model 6 for MPEG Immersive Video*,
-ISO/IEC JTC1/SC29/WG11 MPEG/N19483,
+[ISO/IEC JTC1/SC29/WG11 MPEG/N19483](https://isotc.iso.org/livelink/livelink?func=ll&objId=21345387&objAction=download&viewType=1),
 July 2020, Online.
 
   * [3] J. Boyce, R. Doré, V. Kumar Malamal Vadakital (Eds.), *Text of ISO/IEC CD 23090-12 MPEG Immersive Video*,
-ISO/IEC JTC1/SC29/WG11 MPEG/N19482,
+[ISO/IEC JTC1/SC29/WG11 MPEG/N19482](https://isotc.iso.org/livelink/livelink?func=ll&objId=21346255&objAction=download&viewType=1),
 July 2020, Online.
 
   * [4] J. Jung, B. Kroon, J. Boyce, *Common Test Conditions for MPEG Immersive Video*,
-ISO/IEC JTC1/SC29/WG11 MPEG/N19484,
+[ISO/IEC JTC1/SC29/WG11 MPEG/N19484](https://isotc.iso.org/livelink/livelink?func=ll&objId=21346724&objAction=download&viewType=1),
 July 2020, Online.

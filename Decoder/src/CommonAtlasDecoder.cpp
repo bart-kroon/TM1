@@ -70,7 +70,6 @@ auto CommonAtlasDecoder::decodeAsb() -> bool {
 
 auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
   auto au = AccessUnit{};
-  au.foc = ++m_foc;
 
   const auto nut = [this]() { return m_buffer.front().nal_unit_header().nal_unit_type(); };
 
@@ -102,8 +101,11 @@ auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
 
   const auto focLsb = au.caf.caf_frm_order_cnt_lsb();
   VERIFY_V3CBITSTREAM(focLsb < m_maxFrmOrderCntLsb);
-  au.foc += focLsb - (au.foc % m_maxFrmOrderCntLsb);
-  std::cout << "Common atlas frame: foc=" << au.foc << '\n';
+  while (++m_foc % m_maxFrmOrderCntLsb != focLsb) {
+    // deliberately empty
+  }
+  std::cout << "Common atlas frame: foc=" << m_foc << '\n';
+  au.foc = m_foc;
 
   return au;
 }

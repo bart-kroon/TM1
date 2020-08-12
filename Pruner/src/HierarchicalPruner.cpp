@@ -515,8 +515,8 @@ private:
     auto k = begin(status);
 
     int pp = 0;
-    const auto W = synthesizer.reference.width();
-    const auto H = synthesizer.reference.height();
+    const auto W = int(synthesizer.reference.width());
+    const auto H = int(synthesizer.reference.height());
 
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {

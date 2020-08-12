@@ -293,9 +293,10 @@ public:
   constexpr auto operator==(const VpsMivExtension &other) const noexcept;
   constexpr auto operator!=(const VpsMivExtension &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps) -> VpsMivExtension;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
+      -> VpsMivExtension;
   void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps) const;
-  
+
 private:
   bool m_vme_depth_low_quality_flag{};
   bool m_vme_geometry_scale_enabled_flag{};

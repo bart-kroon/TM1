@@ -23,6 +23,7 @@
             "depthParameter": 50,
             "dilate": 5,
             "erode": 2,
+            "maxBasicViewsPerGraph": 3,
             "maxDepthError": 0.1,
             "maxLumaError": 0.04,
             "maxStretching": 5,
@@ -37,8 +38,13 @@
         },
         "PackerMethod": "Packer",
         "PrunerMethod": "HierarchicalPruner",
-        "ViewOptimizerMethod": "ViewReducer",
-        "ViewReducer": {}
+        "ViewOptimizerMethod": "BasicViewAllocator",
+        "BasicViewAllocator": {
+            "maxBasicViewFraction": 0.5,
+            "outputAdditionalViews": true,
+            "minNonCodedViews": 3
+        },
+        "dilate": 16
     },
     "OmafV1CompatibleFlag": false,
     "OutputDirectory": ".",
@@ -63,7 +69,7 @@
     "SourceEntityBitDepth": 8,
     "SourceEntityPathFmt": "{}_entity_{}x{}_yuv420p.yuv",
     "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
-    "blockSize": 8,
+    "blockSizeDepthQualityDependent": [ 8, 8 ],
     "geometryScaleEnabledFlag": false,
     "intraPeriod": 32,
     "maxAtlases": 2,

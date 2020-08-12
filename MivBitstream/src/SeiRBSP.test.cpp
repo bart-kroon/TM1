@@ -39,6 +39,7 @@ using namespace TMIV::MivBitstream;
 
 TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
   REQUIRE(toString(PayloadType::viewing_space_handling) == "viewing_space_handling");
+  REQUIRE(toString(PayloadType::geometry_upscaling_parameters) == "geometry_upscaling_parameters");
   REQUIRE(toString(PayloadType(42)) == "reserved_sei_message (42)");
 }
 

@@ -37,6 +37,7 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
+#include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 #include <TMIV/MivBitstream/RecViewport.h>
 #include <TMIV/MivBitstream/SeiRBSP.h>
 #include <TMIV/MivBitstream/V3cSampleStreamFormat.h>
@@ -194,6 +195,8 @@ public:
       return parseViewingSpaceHandlingSei(bitstream);
     case TMIV::MivBitstream::PayloadType::rec_viewport:
       return parseRecViewportSei(bitstream);
+    case TMIV::MivBitstream::PayloadType::geometry_upscaling_parameters:
+      return parseGeometryUpscalingParametersSei(bitstream);
     default:
       std::cout << "Unknown SEI message:\n" << message;
     }
@@ -207,6 +210,11 @@ public:
   void parseRecViewportSei(TMIV::Common::InputBitstream &bitstream) {
     const auto rv = TMIV::MivBitstream::RecViewport::decodeFrom(bitstream);
     m_log << rv;
+  }
+
+  void parseGeometryUpscalingParametersSei(TMIV::Common::InputBitstream &bitstream) {
+    const auto gup = TMIV::MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
+    m_log << gup;
   }
 
 private:

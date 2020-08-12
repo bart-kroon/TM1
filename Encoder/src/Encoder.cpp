@@ -76,9 +76,10 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   // Parameters
   m_intraPeriod = rootNode.require("intraPeriod").asInt();
   const auto numGroups = rootNode.require("numGroups").asInt();
-  m_blockSize = rootNode.require("blockSize").asInt();
-  const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
-  const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
+  m_blockSizeDepthQualityDependent =
+      rootNode.require("blockSizeDepthQualityDependent").asIntVector<2>();
+  m_maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
+  m_maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
   const auto maxAtlases = rootNode.require("maxAtlases").asInt();
   m_geometryScaleEnabledFlag = rootNode.require("geometryScaleEnabledFlag").asBool();
 
@@ -96,21 +97,16 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
 
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");
-  runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
-  runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
-  if (maxLumaSampleRate == 0) {
-    runtimeCheck(maxLumaPictureSize == 0 && maxAtlases == 0,
+  if (m_maxLumaSampleRate == 0) {
+    runtimeCheck(m_maxLumaPictureSize == 0 && maxAtlases == 0,
                  "Either specify all constraints or none");
   } else {
-    runtimeCheck(maxLumaPictureSize > 0 && maxAtlases > 0,
+    runtimeCheck(m_maxLumaPictureSize > 0 && maxAtlases > 0,
                  "Either specify all constraints or none");
     runtimeCheck(numGroups <= maxAtlases, "There should be at least one atlas per group");
   }
 
   // Translate parameters to concrete constraints
-  const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
-  m_maxBlockRate = maxLumaSampleRate / (numGroups * lumaSamplesPerAtlasSample * sqr(m_blockSize));
-  m_maxBlocksPerAtlas = maxLumaPictureSize / sqr(m_blockSize);
   m_maxAtlases = maxAtlases / numGroups;
 
   // Read the entity encoding range if exisited

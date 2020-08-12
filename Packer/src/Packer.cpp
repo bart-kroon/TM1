@@ -45,7 +45,6 @@ using namespace TMIV::MivBitstream;
 
 namespace TMIV::Packer {
 Packer::Packer(const Json &rootNode, const Json &componentNode) {
-  m_blockSize = rootNode.require("blockSize").asInt();
   m_minPatchSize = componentNode.require("MinPatchSize").asInt();
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
@@ -64,7 +63,7 @@ void Packer::updateAggregatedEntityMasks(const vector<MaskList> &entityMasks) {
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
-                  const ViewParamsList &viewParamsList) -> PatchParamsList {
+                  const ViewParamsList &viewParamsList, const int m_blockSize) -> PatchParamsList {
   // Check atlas size
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % m_blockSize) != 0) || ((sz.y() % m_blockSize) != 0)) {

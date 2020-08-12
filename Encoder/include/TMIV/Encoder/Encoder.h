@@ -116,6 +116,9 @@ private: // Encoder_popFrame.cpp
   // Encoder parameters
   int m_intraPeriod{};
   int m_blockSize{};
+  Common::Vec2i m_blockSizeDepthQualityDependent;
+  double m_maxLumaSampleRate{};
+  int m_maxLumaPictureSize{};
   double m_maxBlockRate{};
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};

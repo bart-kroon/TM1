@@ -76,7 +76,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   // Parameters
   m_intraPeriod = rootNode.require("intraPeriod").asInt();
   const auto numGroups = rootNode.require("numGroups").asInt();
-    m_blockSize = rootNode.require("blockSize").asInt();
+  m_blockSize = rootNode.require("blockSize").asInt();
   const auto maxLumaSampleRate = rootNode.require("maxLumaSampleRate").asDouble();
   const auto maxLumaPictureSize = rootNode.require("maxLumaPictureSize").asInt();
   const auto maxAtlases = rootNode.require("maxAtlases").asInt();

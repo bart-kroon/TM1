@@ -89,7 +89,7 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
   }
 
   auto result = std::array{false, false};
-  
+
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
       result[decodeOccVideo(j)] = true;

@@ -99,8 +99,8 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
     m_packer->updateAggregatedEntityMasks(m_aggregatedEntityMask);
   }
 
-  m_params.patchParamsList = m_packer->pack(m_params.atlasSizes(), aggregatedMask,
-                                            m_transportParams.viewParamsList);
+  m_params.patchParamsList =
+      m_packer->pack(m_params.atlasSizes(), aggregatedMask, m_transportParams.viewParamsList);
 
   m_params = m_geometryQuantizer->transformParams(m_params);
 

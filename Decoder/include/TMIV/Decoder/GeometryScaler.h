@@ -49,13 +49,13 @@ class GeometryScaler {
 public:
   GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
-  [[nodiscard]] auto scale(const AtlasAccessUnit &atlas) const -> Common::Depth10Frame;
+  [[nodiscard]] auto scale(const AtlasAccessUnit &atlas,
+                           const MivBitstream::GeometryUpscalingParameters &gup) const
+      -> Common::Depth10Frame;
   void inplaceScale(AccessUnit &frame) const;
 
 private:
-  int m_geometryEdgeMagnitudeTh{};
-  float m_minForegroundConfidence{};
-  int m_maxCurvature{};
+  MivBitstream::GeometryUpscalingParameters m_defaultGup;
 };
 } // namespace TMIV::Decoder
 

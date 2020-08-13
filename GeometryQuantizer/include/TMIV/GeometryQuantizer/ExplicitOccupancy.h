@@ -54,6 +54,8 @@ public:
   auto operator=(ExplicitOccupancy &&) -> ExplicitOccupancy & = default;
   ~ExplicitOccupancy() override = default;
 
+  auto setOccupancyParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & override;
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccMapThresholdIfSet and adjust the normalized disparity range.
   auto transformParams(MivBitstream::EncoderParams) -> const MivBitstream::EncoderParams & override;

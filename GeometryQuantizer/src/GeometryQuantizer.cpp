@@ -58,12 +58,19 @@ GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
 GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeConfig)
     : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
-auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
+auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
   m_inParams = move(params);
   m_outParams = m_inParams;
 
   m_outParams.vme().vme_embedded_occupancy_flag(true);
+  return m_outParams;
+}
+
+  auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
+    -> const MivBitstream::EncoderParams & {
+  m_inParams = move(params);
+  m_outParams = m_inParams;
 
   for (auto &x : m_outParams.viewParamsList) {
     if (x.hasOccupancy) {

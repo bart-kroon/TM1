@@ -52,7 +52,7 @@ ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &compon
   }
 }
 
-auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
+auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
   m_inParams = move(params);
   m_outParams = m_inParams;
@@ -80,6 +80,14 @@ auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
       }
     }
   }
+  return m_outParams;
+}
+
+auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
+    -> const MivBitstream::EncoderParams & {
+  m_inParams = move(params);
+  m_outParams = m_inParams;
+
   return m_outParams;
 }
 

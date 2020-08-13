@@ -103,10 +103,6 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
                                             m_transportParams.viewParamsList, m_blockSize);
 
   m_params = m_geometryQuantizer->transformParams(m_params);
-  
-  if (m_maxBlockRate == 0) {//no occupancy info case
-    m_params.vme().vme_embedded_occupancy_flag(false); 
-  }
 
   constructVideoFrames();
 

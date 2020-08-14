@@ -219,26 +219,18 @@ void MivDecoder::decodeCommonAtlas() {
 }
 
 void MivDecoder::decodeViewParamsList() {
-  switch (m_commonAtlasAu->caf.caf_miv_view_params_list_update_mode()) {
-  case MivBitstream::MvpUpdateMode::VPL_INITLIST:
+  if (m_commonAtlasAu->caf.caf_irap_flag()) {
     decodeMvpl(m_commonAtlasAu->caf.miv_view_params_list());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_UPD_EXT:
-    decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_UPD_INT:
-    decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_UPD_DQ:
-    decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
-    break;
-  case MivBitstream::MvpUpdateMode::VPL_ALL:
-    decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
-    decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
-    decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
-    break;
-  default:
-    MIVBITSTREAM_ERROR("Unknown MVP update mode");
+  } else {
+    if (m_commonAtlasAu->caf.caf_update_extrinsics_flag()) {
+      decodeMvpue(m_commonAtlasAu->caf.miv_view_params_update_extrinsics());
+    }
+    if (m_commonAtlasAu->caf.caf_update_intrinsics_flag()) {
+      decodeMvpui(m_commonAtlasAu->caf.miv_view_params_update_intrinsics());
+    }
+    if (m_commonAtlasAu->caf.caf_update_depth_quantization_flag()) {
+      decodeMvpudq(m_commonAtlasAu->caf.miv_view_params_update_depth_quantization());
+    }
   }
 
   if (m_commonAtlasAu->aaps.aaps_miv_extension_flag()) {

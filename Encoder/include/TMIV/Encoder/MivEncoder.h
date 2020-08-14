@@ -53,7 +53,6 @@ private:
   auto ptlMaxDecodesIdc() const -> PtlMaxDecodesIdc;
   auto commonAtlasSubBitstream() -> AtlasSubBitstream;
   auto commonAtlasFrame() const -> CommonAtlasFrameRBSP;
-  auto mvpUpdateMode() const -> MvpUpdateMode;
   auto mivViewParamsList() const -> MivViewParamsList;
   auto mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics;
   auto mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics;

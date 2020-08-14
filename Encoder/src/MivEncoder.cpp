@@ -145,54 +145,35 @@ auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
 
 auto MivEncoder::commonAtlasFrame() const -> CommonAtlasFrameRBSP {
   auto caf = CommonAtlasFrameRBSP{};
-
-  const auto mode = mvpUpdateMode();
   caf.caf_atlas_adaptation_parameter_set_id(0)
       .caf_frm_order_cnt_lsb(m_frmOrderCntLsb)
-      .caf_miv_view_params_list_update_mode(mode);
-
-  if (mode == MvpUpdateMode::VPL_INITLIST) {
+      .caf_irap_flag(m_irap);
+  if (m_irap) {
     caf.miv_view_params_list() = mivViewParamsList();
   } else {
-    if (mode == MvpUpdateMode::VPL_UPD_EXT || mode == MvpUpdateMode::VPL_ALL) {
+    VERIFY_MIVBITSTREAM(m_viewParamsList.size() == m_params.viewParamsList.size());
+    for (size_t i = 0; i < m_viewParamsList.size(); ++i) {
+      if (m_viewParamsList[i].ce != m_params.viewParamsList[i].ce) {
+        caf.caf_update_extrinsics_flag(true);
+      }
+      if (m_viewParamsList[i].ci != m_params.viewParamsList[i].ci) {
+        caf.caf_update_intrinsics_flag(true);
+      }
+      if (m_viewParamsList[i].dq != m_params.viewParamsList[i].dq) {
+        caf.caf_update_depth_quantization_flag(true);
+      }
+    }
+    if (caf.caf_update_extrinsics_flag()) {
       caf.miv_view_params_update_extrinsics() = mivViewParamsUpdateExtrinsics();
     }
-    if (mode == MvpUpdateMode::VPL_UPD_INT || mode == MvpUpdateMode::VPL_ALL) {
+    if (caf.caf_update_intrinsics_flag()) {
       caf.miv_view_params_update_intrinsics() = mivViewParamsUpdateIntrinsics();
     }
-    if (mode == MvpUpdateMode::VPL_UPD_DQ || mode == MvpUpdateMode::VPL_ALL) {
+    if (caf.caf_update_depth_quantization_flag()) {
       caf.miv_view_params_update_depth_quantization() = mivViewParamsUpdateDepthQuantization();
     }
   }
   return caf;
-}
-
-auto MivEncoder::mvpUpdateMode() const -> MvpUpdateMode {
-  if (m_irap) {
-    return MvpUpdateMode::VPL_INITLIST;
-  }
-  auto updExt = false;
-  auto updInt = false;
-  auto updDq = false;
-  VERIFY_MIVBITSTREAM(m_viewParamsList.size() == m_params.viewParamsList.size());
-  for (size_t i = 0; i < m_viewParamsList.size(); ++i) {
-    updExt = updExt || m_viewParamsList[i].ce != m_params.viewParamsList[i].ce;
-    updInt = updInt || m_viewParamsList[i].ci != m_params.viewParamsList[i].ci;
-    updDq = updDq || m_viewParamsList[i].dq != m_params.viewParamsList[i].dq;
-  }
-  if (int(updExt) + int(updInt) + int(updDq) > 1) {
-    return MvpUpdateMode::VPL_ALL;
-  }
-  if (updExt) {
-    return MvpUpdateMode::VPL_UPD_EXT;
-  }
-  if (updInt) {
-    return MvpUpdateMode::VPL_UPD_INT;
-  }
-  if (updDq) {
-    return MvpUpdateMode::VPL_UPD_DQ;
-  }
-  MIVBITSTREAM_ERROR("It is not possible to have a CAF that does not update view parameters.");
 }
 
 auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {

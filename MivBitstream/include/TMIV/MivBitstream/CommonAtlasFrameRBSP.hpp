@@ -257,22 +257,16 @@ constexpr auto MivViewParamsList::ViewInAtlas::operator!=(const ViewInAtlas &oth
   return !operator==(other);
 }
 
-constexpr auto CommonAtlasFrameRBSP::caf_miv_view_params_list_update_mode() const noexcept {
-  return m_caf_miv_view_params_list_update_mode;
-}
-
-constexpr auto
-CommonAtlasFrameRBSP::caf_miv_view_params_list_update_mode(MvpUpdateMode value) noexcept -> auto & {
-  m_caf_miv_view_params_list_update_mode = value;
-  return *this;
-}
-
 constexpr auto CommonAtlasFrameRBSP::caf_atlas_adaptation_parameter_set_id() const noexcept {
   return m_caf_atlas_adaptation_parameter_set_id;
 }
 
 constexpr auto CommonAtlasFrameRBSP::caf_frm_order_cnt_lsb() const noexcept {
   return m_caf_frm_order_cnt_lsb;
+}
+
+constexpr auto CommonAtlasFrameRBSP::caf_irap_flag() const noexcept {
+    return m_caf_irap_flag;
 }
 
 constexpr auto CommonAtlasFrameRBSP::caf_extension_present_flag() const noexcept {
@@ -293,6 +287,11 @@ CommonAtlasFrameRBSP::caf_atlas_adaptation_parameter_set_id(const std::uint8_t v
 constexpr auto CommonAtlasFrameRBSP::caf_frm_order_cnt_lsb(std::uint16_t value) noexcept -> auto & {
   m_caf_frm_order_cnt_lsb = value;
   return *this;
+}
+
+constexpr auto CommonAtlasFrameRBSP::caf_irap_flag(bool value) noexcept -> auto & {
+    m_caf_irap_flag = value;
+    return *this;
 }
 
 constexpr auto CommonAtlasFrameRBSP::caf_extension_present_flag(bool value) noexcept -> auto & {

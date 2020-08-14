@@ -198,7 +198,9 @@ as filename patterns should be clear from the template configuration files.
  * **startFrame:** int; skip this many source frames.
  * **OmafV1CompatibleFlag:** bool; when enabled the equally-named flag is
  written in the bitstream.
-
+ * **explicitOccupancy:** bool; use occupancy video data (OVD) instead of 
+ depth/occupancy coding within geometry video data (GVD). Make sure to use 
+ ExplicitOccupancy as the geometry quantizer.
 
 ### Geometry quality assessment
 

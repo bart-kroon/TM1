@@ -63,8 +63,8 @@ struct EncoderAtlasParams {
 
 struct EncoderParams {
   EncoderParams();
-  explicit EncoderParams(bool haveTexture);
-  EncoderParams(const Common::SizeVector &atlasSizes, bool haveTexture);
+  explicit EncoderParams(bool haveTexture, bool haveOccupancy);
+  EncoderParams(const Common::SizeVector &atlasSizes, bool haveTexture, bool haveOccupancy);
 
   V3cParameterSet vps;
   AtlasAdaptationParameterSetRBSP aaps;

@@ -48,10 +48,13 @@ namespace {
 // The TMIV encoder always loads texture (and may use it internally) but attribute video data (AVD)
 // is an optional output in MIV WD4.
 auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
+
+// check if explicit occupancy coding mode
+auto explicitOccupancy(const Json &config) { return config.require("explicitOccupancy").asBool(); }
 } // namespace
 
 auto loadSourceParams(const Json &config) -> EncoderParams {
-  auto x = EncoderParams{haveTexture(config)};
+  auto x = EncoderParams{haveTexture(config), explicitOccupancy(config)};
 
   string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -197,6 +200,10 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
                  int(atlasId));
     }
     writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
+    if (!frame[atlasId].occupancy.empty()) {
+      writeFrame(config, "OccupancyVideoDataPathFmt", frame[atlasId].occupancy, frameIndex,
+                 int(atlasId));
+    }
   }
 }
 

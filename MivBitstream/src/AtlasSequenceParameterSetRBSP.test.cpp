@@ -166,6 +166,7 @@ asps_extension_6bits=0
         .vps_miv_extension_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
+        .vme_embedded_occupancy_flag(true)
         .vme_num_groups_minus1(10);
 
     x.asps_atlas_sequence_parameter_set_id(15)

@@ -196,6 +196,12 @@ template <typename FORMAT> void Frame<FORMAT>::fillNeutral() {
   }
 }
 
+template <typename FORMAT> void Frame<FORMAT>::fillOne() {
+  for (int k = 0; k < getNumberOfPlanes(); ++k) {
+    std::fill(std::begin(getPlane(k)), std::end(getPlane(k)), 1);
+  }
+}
+
 template <typename FORMAT>
 template <typename OTHER_FORMAT, typename>
 void Frame<FORMAT>::filIInvalidWithNeutral(const Frame<OTHER_FORMAT> &depth) {

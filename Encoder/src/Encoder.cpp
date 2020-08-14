@@ -35,6 +35,8 @@
 
 #include <TMIV/Common/Factory.h>
 
+#include <TMIV/GeometryQuantizer/ExplicitOccupancy.h>
+
 #include <cassert>
 #include <iostream>
 
@@ -115,6 +117,8 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   if (m_intraPeriod > maxIntraPeriod) {
     throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
+
+  m_explicitOccupancy = rootNode.require("explicitOccupancy").asBool();
 }
 
 auto Encoder::maxLumaSamplesPerFrame() const -> size_t { return m_maxLumaSamplesPerFrame; }

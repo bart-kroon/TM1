@@ -102,6 +102,8 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
   m_params.patchParamsList = m_packer->pack(m_params.atlasSizes(), aggregatedMask,
                                             m_transportParams.viewParamsList, m_blockSize);
 
+  m_params = m_geometryQuantizer->setOccupancyParams(m_params);
+
   constructVideoFrames();
 
   const auto &paramsQuantized = m_geometryQuantizer->transformParams(m_params);
@@ -127,10 +129,31 @@ void Encoder::constructVideoFrames() {
     for (uint8_t i = 0; i <= m_params.vps.vps_atlas_count_minus1(); ++i) {
       const auto frameWidth = m_params.vps.vps_frame_width(i);
       const auto frameHeight = m_params.vps.vps_frame_height(i);
-      TextureDepth16Frame frame = {TextureFrame(frameWidth, frameHeight),
-                                   Depth16Frame(frameWidth, frameHeight)};
+      TextureDepth16Frame frame;
+      if (m_params.vps.vps_occupancy_video_present_flag(i)) {
+        if (m_params.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
+          int codedOccupancyWidth =
+              frameWidth / (m_params.atlas[i].asme().asme_occupancy_scale_factor_x_minus1() + 1);
+          int codedOccupancyHeight =
+              frameHeight / (m_params.atlas[i].asme().asme_occupancy_scale_factor_y_minus1() + 1);
+          // make sure coded occupancy maps are divisible by 2 for HM coding functionality
+          codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
+          codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
+          frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
+                   Occupancy10Frame(codedOccupancyWidth, codedOccupancyHeight)};
+        } else {
+          frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
+                   Occupancy10Frame(frameWidth, frameHeight)};
+        }
+      } else {
+        frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
+      }
+
       frame.texture.fillNeutral();
       frame.depth.fillZero();
+      if (m_params.vps.vps_occupancy_video_present_flag(i)) {
+        frame.occupancy.fillZero();
+      }
       atlasList.push_back(move(frame));
     }
 
@@ -156,6 +179,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
   auto &textureAtlasMap = currentAtlas.texture;
   auto &depthAtlasMap = currentAtlas.depth;
+  auto &occupancyAtlasMap = currentAtlas.occupancy;
 
   const auto &textureViewMap = view.texture;
   const auto &depthViewMap = view.depth;
@@ -187,12 +211,19 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           break;
         }
       }
-
+      int yOcc = 0, xOcc = 0;
       for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
           Vec2i pView = {xM + dx, yM + dy};
           Vec2i pAtlas = patchParams.viewToAtlas(pView);
-
+          if (m_params.vme().vme_occupancy_scale_enabled_flag()) {
+            const auto &asme = m_params.atlas[patchParams.vuhAtlasId].asme();
+            yOcc = pAtlas.y() / (asme.asme_occupancy_scale_factor_y_minus1() + 1);
+            xOcc = pAtlas.x() / (asme.asme_occupancy_scale_factor_x_minus1() + 1);
+          } else {
+            yOcc = pAtlas.y();
+            xOcc = pAtlas.x();
+          }
           if (pView.y() >= textureViewMap.getHeight() || pView.x() >= textureViewMap.getWidth() ||
               pAtlas.y() >= textureAtlasMap.getHeight() ||
               pAtlas.x() >= textureAtlasMap.getWidth() || pView.y() < 0 || pView.x() < 0 ||
@@ -202,6 +233,9 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
           if (!isAggregatedMaskBlockNonEmpty) {
             depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = 0;
+            if (m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId)) {
+              occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 0;
+            }
             continue;
           }
 
@@ -223,6 +257,9 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
             depth = 1; // Avoid marking valid depth as invalid
           }
           depthAtlasMap.getPlane(0)(pAtlas.y(), pAtlas.x()) = depth;
+          if (depth > 0 && m_params.vps.vps_occupancy_video_present_flag(patchParams.vuhAtlasId)) {
+            occupancyAtlasMap.getPlane(0)(yOcc, xOcc) = 1;
+          };
         }
       }
     }

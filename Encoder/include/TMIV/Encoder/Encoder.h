@@ -73,6 +73,7 @@ private: // Encoder_prepareSequence.cpp
   auto vuiParameters() const -> MivBitstream::VuiParameters;
   void setGiGeometry3dCoordinatesBitdepthMinus1();
   [[nodiscard]] auto haveTexture() const -> bool;
+  [[nodiscard]] auto haveOccupancy() const -> bool;
   void enableOccupancyPerView();
   void prepareIvau();
   auto log2FocLsbMinus4() -> std::uint8_t;
@@ -125,6 +126,7 @@ private: // Encoder_popFrame.cpp
   int m_geometryScaleEnabledFlag{};
   int m_dilationIter{};
   Common::Vec2i m_entityEncRange;
+  bool m_explicitOccupancy{};
 
   // View-optimized encoder input
   MivBitstream::EncoderParams m_transportParams;

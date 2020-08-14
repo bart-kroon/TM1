@@ -73,7 +73,7 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
   cout << " }\n";
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_params = EncoderParams{atlasFrameSizes, haveTexture()};
+  m_params = EncoderParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
   m_params.vme() = m_transportParams.vme();
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.frameRate = m_transportParams.frameRate;
@@ -190,6 +190,8 @@ auto Encoder::haveTexture() const -> bool {
   return ai.ai_attribute_count() >= 1 &&
          ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 }
+
+auto Encoder::haveOccupancy() const -> bool { return m_explicitOccupancy; }
 
 void Encoder::enableOccupancyPerView() {
   for (size_t viewId = 0; viewId < m_params.viewParamsList.size(); ++viewId) {

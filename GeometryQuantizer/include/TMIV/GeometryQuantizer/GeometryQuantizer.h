@@ -54,6 +54,8 @@ public:
   auto operator=(GeometryQuantizer &&) -> GeometryQuantizer & = default;
   ~GeometryQuantizer() override = default;
 
+  auto setOccupancyParams(MivBitstream::EncoderParams params)
+      -> const MivBitstream::EncoderParams & override;
   // No change when useOccupancy() is false. Otherwise set the depth/occupancy map threshold
   // to depthOccThresholdIfSet and adjust the normalized disparity range.
   auto transformParams(MivBitstream::EncoderParams params)

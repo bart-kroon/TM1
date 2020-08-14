@@ -43,6 +43,10 @@ namespace TMIV::Decoder {
 MivDecoder::MivDecoder(V3cUnitSource source) : m_inputBuffer{std::move(source)} {}
 
 MivDecoder::~MivDecoder() {
+  if (m_totalOccVideoDecodingTime > 0.) {
+    std::cout << "Total ocupancy video sub bitstream decoding time: " << m_totalOccVideoDecodingTime
+              << " s\n";
+  }
   if (m_totalGeoVideoDecodingTime > 0.) {
     std::cout << "Total geometry video sub bitstream decoding time: " << m_totalGeoVideoDecodingTime
               << " s\n";
@@ -52,6 +56,8 @@ MivDecoder::~MivDecoder() {
               << m_totalAttrVideoDecodingTime << " s\n";
   }
 }
+
+void MivDecoder::setOccFrameServer(OccFrameServer value) { m_occFrameServer = move(value); }
 
 void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = move(value); }
 
@@ -84,6 +90,11 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
 
   auto result = std::array{false, false};
 
+  for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
+    if (m_au.vps.vps_occupancy_video_present_flag(j)) {
+      result[decodeOccVideo(j)] = true;
+    }
+  }
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
       result[decodeGeoVideo(j)] = true;
@@ -123,6 +134,7 @@ auto MivDecoder::decodeVps() -> bool {
   m_atlasDecoder.clear();
   m_atlasAu.assign(m_au.vps.vps_atlas_count_minus1() + size_t(1), {});
   m_au.atlas.clear();
+  m_occVideoDecoder.clear();
   m_geoVideoDecoder.clear();
   m_attrVideoDecoder.clear();
 
@@ -132,6 +144,15 @@ auto MivDecoder::decodeVps() -> bool {
     m_atlasDecoder.push_back(std::make_unique<AtlasDecoder>(
         [this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps, m_au.foc));
     m_au.atlas.emplace_back();
+
+    if (m_au.vps.vps_occupancy_video_present_flag(j)) {
+      auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
+      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
+          .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
+      m_occVideoDecoder.push_back(startVideoDecoder(vuh, m_totalOccVideoDecodingTime));
+    } else {
+      m_occVideoDecoder.push_back(nullptr);
+    }
 
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
@@ -144,7 +165,7 @@ auto MivDecoder::decodeVps() -> bool {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
       vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
           .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
-      m_attrVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
+      m_attrVideoDecoder.push_back(startVideoDecoder(vuh, m_totalAttrVideoDecodingTime));
     }
   }
 
@@ -156,7 +177,6 @@ void MivDecoder::checkCapabilities() const {
 
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
     VERIFY_MIVBITSTREAM(!m_au.vps.vps_auxiliary_video_present_flag(j));
-    VERIFY_MIVBITSTREAM(!m_au.vps.vps_occupancy_video_present_flag(j));
     VERIFY_MIVBITSTREAM(m_au.vps.vps_geometry_video_present_flag(j));
     // TODO(BK): Add more constraints (map count, attribute count, EOM, etc.)
   }
@@ -331,6 +351,30 @@ void MivDecoder::decodePatchParamsList(uint8_t j) {
       }
     }
   });
+}
+
+auto MivDecoder::decodeOccVideo(uint8_t j) -> bool {
+  const double t0 = clock();
+
+  if (m_occVideoDecoder[j]) {
+    auto frame = m_occVideoDecoder[j]->getFrame();
+    if (!frame) {
+      return false;
+    }
+    m_au.atlas[j].decOccFrame = frame->as<Common::YUV400P10>();
+    m_occVideoDecoder[j]->wait();
+  } else if (m_occFrameServer) {
+    m_au.atlas[j].decOccFrame = m_occFrameServer(m_au.vps.vps_atlas_id(j), m_au.foc,
+                                                 m_au.atlas[j].decOccFrameSize(m_au.vps));
+    if (m_au.atlas[j].decOccFrame.empty()) {
+      return false;
+    }
+  } else {
+    MIVBITSTREAM_ERROR("Out-of-band occupancy video data but no frame server provided");
+  }
+
+  m_totalOccVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
+  return true;
 }
 
 auto MivDecoder::decodeGeoVideo(uint8_t j) -> bool {

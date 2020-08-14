@@ -1,0 +1,79 @@
+{
+    "BitstreamPath": "ATL_SA.bit",
+    "AttributeVideoDataPathFmt": "ATL_SA_T{}_c{:02}_{}x{}_yuv420p10le.yuv",
+    "GeometryVideoDataPathFmt": "ATL_SA_TG_c{:02}_{}x{}_yuv420p10le.yuv",
+    "OccupancyVideoDataPathFmt": "ATL_SA_TO_c{:02}_{}x{}_yuv420p10le.yuv",
+    "DepthQualityAssessor": {
+        "blendingFactor": 0.03,
+        "maxOutlierRatio": 0.001
+    },
+    "DepthQualityAssessorMethod": "DepthQualityAssessor",
+    "EncoderMethod": "GroupBasedEncoder",
+    "GroupBasedEncoder": {
+        "Aggregator": {},
+        "AggregatorMethod": "Aggregator",
+        "ExplicitOccupancy": {},
+        "GeometryQuantizerMethod": "ExplicitOccupancy",
+        "HierarchicalPruner": {
+            "depthParameter": 50,
+            "dilate": 5,
+            "erode": 2,
+            "maxBasicViewsPerGraph": 3,
+            "maxDepthError": 0.1,
+            "maxLumaError": 0.04,
+            "maxStretching": 5,
+            "rayAngleParameter": 10,
+            "stretchingParameter": 3
+        },
+        "Packer": {
+            "MinPatchSize": 16,
+            "Overlap": 1,
+            "PiP": 1,
+            "enableMerging": true
+        },
+        "PackerMethod": "Packer",
+        "PrunerMethod": "HierarchicalPruner",
+        "ViewOptimizerMethod": "BasicViewAllocator",
+        "BasicViewAllocator": {
+            "maxBasicViewFraction": 0.5,
+            "outputAdditionalViews": true,
+            "minNonCodedViews": 3
+        },
+        "dilate": 16
+    },
+    "OmafV1CompatibleFlag": false,
+    "OutputDirectory": ".",
+    "SourceCameraNames": [
+        "v0",
+        "v1",
+        "v2",
+        "v3",
+        "v4",
+        "v5",
+        "v6",
+        "v7",
+        "v8",
+        "v9",
+        "v10",
+        "v11",
+        "v12",
+        "v13",
+        "v14"
+    ],
+    "SourceCameraParameters": "ClassroomVideo.json",
+    "SourceGeometryBitDepth": 16,
+    "SourceGeometryPathFmt": "{}_depth_{}x{}_yuv420p16le.yuv",
+    "SourceDirectory": ".",
+    "SourceTexturePathFmt": "{}_texture_{}x{}_yuv420p10le.yuv",
+    "blockSizeDepthQualityDependent": [ 8, 8 ],
+    "geometryScaleEnabledFlag": true,
+    "explicitOccupancy": true,
+    "intraPeriod": 32,
+    "maxAtlases": 2,
+    "maxEntities": 1,
+    "maxLumaSampleRate": 1069547520.0,
+    "maxLumaPictureSize": 8912896,
+    "numGroups": 1,
+    "numberOfFrames": 17,
+    "startFrame": 23
+}

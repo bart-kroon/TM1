@@ -196,7 +196,8 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
         .vme_depth_low_quality_flag(true)
         .vme_geometry_scale_enabled_flag(true)
         .vme_num_groups_minus1(3)
-        .vme_max_entities_minus1(20);
+        .vme_max_entities_minus1(20)
+        .vme_embedded_occupancy_flag(true);
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High

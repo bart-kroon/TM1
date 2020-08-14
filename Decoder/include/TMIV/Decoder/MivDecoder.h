@@ -48,6 +48,12 @@ public: // Decoder interface
 
   ~MivDecoder();
 
+  // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
+  // within the bistreams take presedence.
+  using OccFrameServer = std::function<Common::Occupancy10Frame(
+      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+  void setOccFrameServer(OccFrameServer value);
+
   // Provide a frame server for out-of-band geometry video data (GVD). GVD video sub bitstreams
   // within the bistreams take presedence.
   using GeoFrameServer = std::function<Common::Depth10Frame(
@@ -86,15 +92,18 @@ private:
   void decodeBlockToPatchMap(uint8_t j);
   void decodePatchParamsList(uint8_t j);
 
+  auto decodeOccVideo(uint8_t j) -> bool;
   auto decodeGeoVideo(uint8_t j) -> bool;
   auto decodeAttrVideo(uint8_t j) -> bool;
 
   V3cUnitBuffer m_inputBuffer;
+  OccFrameServer m_occFrameServer;
   GeoFrameServer m_geoFrameServer;
   AttrFrameServer m_attrFrameServer;
 
   std::unique_ptr<CommonAtlasDecoder> m_commonAtlasDecoder;
   std::vector<std::unique_ptr<AtlasDecoder>> m_atlasDecoder;
+  std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_occVideoDecoder;
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_geoVideoDecoder;
   std::vector<std::unique_ptr<VideoDecoder::VideoServer>> m_attrVideoDecoder;
 
@@ -102,6 +111,7 @@ private:
   std::vector<std::optional<AtlasDecoder::AccessUnit>> m_atlasAu;
   AccessUnit m_au;
 
+  double m_totalOccVideoDecodingTime{};
   double m_totalGeoVideoDecodingTime{};
   double m_totalAttrVideoDecodingTime{};
 };

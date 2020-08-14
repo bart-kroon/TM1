@@ -59,6 +59,9 @@ SCENARIO("Geometry quantization") {
 
   GIVEN("View parameters without invalid depth") {
     auto sourceParams = EncoderParams{};
+    sourceParams.vps.vps_extension_present_flag(true);
+    sourceParams.vps.vps_miv_extension_flag(true);
+    sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
     sourceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {

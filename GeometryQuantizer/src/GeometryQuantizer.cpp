@@ -67,7 +67,7 @@ auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
   return m_outParams;
 }
 
-  auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
+auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
   m_inParams = move(params);
   m_outParams = m_inParams;

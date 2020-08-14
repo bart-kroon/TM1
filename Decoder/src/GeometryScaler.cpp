@@ -370,14 +370,17 @@ private:
 } // namespace
 
 GeometryScaler::GeometryScaler(const Json & /*rootNode*/, const Json &componentNode) {
-  m_geometryEdgeMagnitudeTh = componentNode.require("geometryEdgeMagnitudeTh").asInt();
-  m_maxCurvature = componentNode.require("maxCurvature").asInt();
-  m_minForegroundConfidence = componentNode.require("minForegroundConfidence").asFloat();
+  m_defaultGup.gup_type(GupType::HVR)
+      .gup_erode_threshold(Half(componentNode.require("minForegroundConfidence").asFloat()))
+      .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").asInt())
+      .gup_max_curvature(uint8_t(componentNode.require("maxCurvature").asInt()));
 }
 
-auto GeometryScaler::scale(const AtlasAccessUnit &atlas) const -> Depth10Frame {
-  auto upscaler =
-      DepthUpscaler{m_geometryEdgeMagnitudeTh, m_minForegroundConfidence, m_maxCurvature};
+auto GeometryScaler::scale(const AtlasAccessUnit &atlas,
+                           const MivBitstream::GeometryUpscalingParameters &gup) const
+    -> Depth10Frame {
+  auto upscaler = DepthUpscaler{int(gup.gup_delta_threshold()), gup.gup_erode_threshold(),
+                                gup.gup_max_curvature()};
 
   return upscaler(atlas);
 }
@@ -385,7 +388,7 @@ auto GeometryScaler::scale(const AtlasAccessUnit &atlas) const -> Depth10Frame {
 void GeometryScaler::inplaceScale(AccessUnit &frame) const {
   for (auto &atlas : frame.atlas) {
     if (!atlas.attrFrame.empty() && atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
-      atlas.geoFrame = scale(atlas);
+      atlas.geoFrame = scale(atlas, frame.gup.value_or(m_defaultGup));
     } else {
       atlas.geoFrame = atlas.decGeoFrame;
     }

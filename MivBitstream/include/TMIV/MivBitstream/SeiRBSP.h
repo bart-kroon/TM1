@@ -61,7 +61,8 @@ enum class PayloadType {
   attribute_smoothing,
   viewing_space = 64,
   rec_viewport,
-  viewing_space_handling
+  viewing_space_handling,
+  geometry_upscaling_parameters
 };
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;

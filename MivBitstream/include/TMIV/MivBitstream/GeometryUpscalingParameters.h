@@ -31,32 +31,50 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_GEOMETRYSCALER_H_
-#define _TMIV_DECODER_GEOMETRYSCALER_H_
+#ifndef _TMIV_MIVBITSTREAM_GEOMETRYUPSCALINGPARAMETERS_H_
+#define _TMIV_MIVBITSTREAM_GEOMETRYUPSCALINGPARAMETERS_H_
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/AccessUnit.h>
+#include <TMIV/Common/Bitstream.h>
 
-#include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <numeric>
 #include <vector>
 
-namespace TMIV::Decoder {
-class GeometryScaler {
-public:
-  GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
+namespace TMIV::MivBitstream {
+// 23090-12: Geometry upscaling parameter types
+enum class GupType : std::uint8_t {
+  HVR // Hypothetical view renderer
+};
 
-  [[nodiscard]] auto scale(const AtlasAccessUnit &atlas,
-                           const MivBitstream::GeometryUpscalingParameters &gup) const
-      -> Common::Depth10Frame;
-  void inplaceScale(AccessUnit &frame) const;
+auto operator<<(std::ostream &, GupType) -> std::ostream &;
+
+// 23090-12: geometry_upscaling_parameters( payloadSize )
+class GeometryUpscalingParameters {
+public:
+  [[nodiscard]] auto gup_type() const noexcept -> GupType;
+  [[nodiscard]] auto gup_erode_threshold() const noexcept -> Common::Half;
+  [[nodiscard]] auto gup_delta_threshold() const noexcept -> unsigned;
+  [[nodiscard]] auto gup_max_curvature() const noexcept -> std::uint8_t;
+
+  auto gup_type(GupType value) noexcept -> GeometryUpscalingParameters &;
+  auto gup_erode_threshold(Common::Half value) noexcept -> GeometryUpscalingParameters &;
+  auto gup_delta_threshold(unsigned value) noexcept -> GeometryUpscalingParameters &;
+  auto gup_max_curvature(std::uint8_t value) noexcept -> GeometryUpscalingParameters &;
+
+  friend auto operator<<(std::ostream &stream, const GeometryUpscalingParameters &x)
+      -> std::ostream &;
+
+  auto operator==(const GeometryUpscalingParameters &other) const noexcept -> bool;
+  auto operator!=(const GeometryUpscalingParameters &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> GeometryUpscalingParameters;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  MivBitstream::GeometryUpscalingParameters m_defaultGup;
+  GupType m_gup_type{};
+  Common::Half m_gup_erode_threshold{};
+  unsigned m_gup_delta_threshold{};
+  std::uint8_t m_gup_max_curvature{};
 };
-} // namespace TMIV::Decoder
+} // namespace TMIV::MivBitstream
 
 #endif

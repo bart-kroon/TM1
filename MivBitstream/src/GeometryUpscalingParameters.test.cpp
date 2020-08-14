@@ -31,32 +31,45 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _TMIV_DECODER_GEOMETRYSCALER_H_
-#define _TMIV_DECODER_GEOMETRYSCALER_H_
+#include "test.h"
 
-#include <TMIV/Common/Frame.h>
-#include <TMIV/Common/Json.h>
-#include <TMIV/Decoder/AccessUnit.h>
+#include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 
-#include <algorithm>
-#include <cassert>
-#include <iostream>
-#include <numeric>
-#include <vector>
+using namespace TMIV::MivBitstream;
 
-namespace TMIV::Decoder {
-class GeometryScaler {
-public:
-  GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
+TEST_CASE("geometry_upscaling_parameters", "[Geometry upscaling parameters SEI payload syntax]") {
+  SECTION("Null example") {
+    const auto x = GeometryUpscalingParameters{};
+    REQUIRE(toString(x) == R"(gup_type=HVR
+gup_erode_threshold=0
+gup_delta_threshold=0
+gup_max_curvature=0
+)");
+    REQUIRE(bitCodingTest(x, 21));
+  }
 
-  [[nodiscard]] auto scale(const AtlasAccessUnit &atlas,
-                           const MivBitstream::GeometryUpscalingParameters &gup) const
-      -> Common::Depth10Frame;
-  void inplaceScale(AccessUnit &frame) const;
+  SECTION("GupType HVR") {
+    auto x = GeometryUpscalingParameters{};
+    x.gup_type(GupType::HVR)
+        .gup_max_curvature(7)
+        .gup_erode_threshold(TMIV::Common::Half(3.5F))
+        .gup_delta_threshold(3);
+    REQUIRE(toString(x) == R"(gup_type=HVR
+gup_erode_threshold=3.5
+gup_delta_threshold=3
+gup_max_curvature=7
+)");
+    REQUIRE(bitCodingTest(x, 25));
+  }
 
-private:
-  MivBitstream::GeometryUpscalingParameters m_defaultGup;
-};
-} // namespace TMIV::Decoder
-
-#endif
+  SECTION("GupType unknown") {
+    auto x = GeometryUpscalingParameters{};
+    x.gup_type(GupType(100));
+    REQUIRE(toString(x) == R"(gup_type=[unknown:100]
+)");
+    REQUIRE(bitCodingTest(x, 13));
+    REQUIRE(x.gup_erode_threshold() == 1.F);
+    REQUIRE(x.gup_delta_threshold() == 10);
+    REQUIRE(x.gup_max_curvature() == 5);
+  }
+}

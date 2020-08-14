@@ -206,7 +206,17 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
   return server;
 }
 
-void MivDecoder::decodeCommonAtlas() { decodeViewParamsList(); }
+void MivDecoder::decodeCommonAtlas() {
+  decodeViewParamsList();
+
+  for (const auto &sei : m_commonAtlasAu->prefixNSei) {
+    if (sei.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
+      std::istringstream stream{sei.payload()};
+      Common::InputBitstream bitstream{stream};
+      m_au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
+    }
+  }
+}
 
 void MivDecoder::decodeViewParamsList() {
   switch (m_commonAtlasAu->caf.caf_miv_view_params_list_update_mode()) {

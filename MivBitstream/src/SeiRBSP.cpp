@@ -89,6 +89,8 @@ auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
     return stream << "rec_viewport";
   case PayloadType::viewing_space_handling:
     return stream << "viewing_space_handling";
+  case PayloadType::geometry_upscaling_parameters:
+    return stream << "geometry_upscaling_parameters";
   default:
     return stream << "reserved_sei_message (" << int(pt) << ")";
   }

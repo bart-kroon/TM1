@@ -308,7 +308,8 @@ auto MivEncoder::atlasSubBitstream(size_t k) -> AtlasSubBitstream {
 
   const auto aspsV = vector<AtlasSequenceParameterSetRBSP>{aau.asps};
   const auto afpsV = vector<AtlasFrameParameterSetRBSP>{aau.afps};
-  writeNalUnit(asb, m_irap ? nuhIdr : nuhCra, atlasTileLayer(k), vuh, m_params.vps, aspsV, afpsV);
+  const auto nuh = m_irap ? nuhIdr : nuhCra;
+  writeNalUnit(asb, nuh, atlasTileLayer(k), vuh, m_params.vps, nuh, aspsV, afpsV);
 
   return asb;
 }

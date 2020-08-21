@@ -91,6 +91,7 @@ auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::os
 //   * ath_ref_atlas_frame_list_sps_flag == 1
 class AtlasTileHeader {
 public:
+  [[nodiscard]] constexpr auto ath_no_output_of_prior_atlas_frames_flag() const noexcept;
   [[nodiscard]] constexpr auto ath_atlas_frame_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto ath_atlas_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto ath_id() const noexcept;
@@ -103,6 +104,7 @@ public:
   [[nodiscard]] auto ath_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
   [[nodiscard]] auto ath_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
 
+  constexpr auto ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept -> auto &;
   constexpr auto ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_atlas_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_id(const std::uint8_t value) noexcept -> auto &;
@@ -120,15 +122,16 @@ public:
   constexpr auto operator==(const AtlasTileHeader &other) const noexcept;
   constexpr auto operator!=(const AtlasTileHeader &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const NalUnitHeader &nuh,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV) -> AtlasTileHeader;
 
-  void encodeTo(Common::OutputBitstream &bitstream,
+  void encodeTo(Common::OutputBitstream &bitstream, const NalUnitHeader &nuh,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 
 private:
+  std::optional<bool> m_ath_no_output_of_prior_atlas_frames_flag{};
   std::uint8_t m_ath_atlas_frame_parameter_set_id{};
   std::uint8_t m_ath_adaptation_parameter_set_id{};
   std::uint8_t m_ath_id{};
@@ -337,12 +340,13 @@ public:
   auto operator!=(const AtlasTileLayerRBSP &other) const noexcept -> bool;
 
   static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps,
+                         const NalUnitHeader &nuh,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
       -> AtlasTileLayerRBSP;
 
   void encodeTo(std::ostream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps,
-                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                const NalUnitHeader &nuh, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 
 private:

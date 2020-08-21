@@ -154,6 +154,10 @@ auto AtlasTileHeader::ath_patch_size_y_info_quantizer(const uint8_t value) noexc
 }
 
 auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
+  if (x.m_ath_no_output_of_prior_atlas_frames_flag.has_value()) {
+    stream << "ath_no_output_of_prior_atlas_frames_flag=" << boolalpha
+           << x.ath_no_output_of_prior_atlas_frames_flag() << '\n';
+  }
   stream << "ath_atlas_frame_parameter_set_id=" << int(x.ath_atlas_frame_parameter_set_id())
          << '\n';
   stream << "ath_atlas_adaptation_parameter_set_id=" << int(x.m_ath_adaptation_parameter_set_id)
@@ -184,11 +188,16 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
   return stream;
 }
 
-auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
+auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream, const NalUnitHeader &nuh,
                                  const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                  const vector<AtlasFrameParameterSetRBSP> &afpsV)
     -> AtlasTileHeader {
   auto x = AtlasTileHeader{};
+
+  if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
+      nuh.nal_unit_type() <= NalUnitType::NAL_RSV_IRAP_ACL_29) {
+    x.ath_no_output_of_prior_atlas_frames_flag(bitstream.getFlag());
+  }
 
   x.ath_atlas_frame_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_V3CBITSTREAM(x.ath_atlas_frame_parameter_set_id() <= 63);
@@ -245,9 +254,14 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
   return x;
 }
 
-void AtlasTileHeader::encodeTo(OutputBitstream &bitstream,
+void AtlasTileHeader::encodeTo(OutputBitstream &bitstream, const NalUnitHeader &nuh,
                                const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                const vector<AtlasFrameParameterSetRBSP> &afpsV) const {
+  if (NalUnitType::NAL_BLA_W_LP <= nuh.nal_unit_type() &&
+      nuh.nal_unit_type() <= NalUnitType::NAL_RSV_IRAP_ACL_29) {
+    bitstream.putFlag(ath_no_output_of_prior_atlas_frames_flag());
+  }
+
   VERIFY_V3CBITSTREAM(ath_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(ath_atlas_frame_parameter_set_id());
 
@@ -653,14 +667,14 @@ auto AtlasTileLayerRBSP::operator!=(const AtlasTileLayerRBSP &other) const noexc
 }
 
 auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cUnitHeader &vuh,
-                                    const V3cParameterSet &vps,
+                                    const V3cParameterSet &vps, const NalUnitHeader &nuh,
                                     const vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const vector<AtlasFrameParameterSetRBSP> &afps)
     -> AtlasTileLayerRBSP {
   InputBitstream bitstream{stream};
 
   auto atl = AtlasTileLayerRBSP{};
-  atl.atlas_tile_header() = AtlasTileHeader::decodeFrom(bitstream, asps, afps);
+  atl.atlas_tile_header() = AtlasTileHeader::decodeFrom(bitstream, nuh, asps, afps);
   atl.atlas_tile_data_unit() =
       AtlasTileDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, atl.atlas_tile_header());
   bitstream.rbspTrailingBits();
@@ -669,12 +683,12 @@ auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cUnitHeader &vuh,
 }
 
 void AtlasTileLayerRBSP::encodeTo(ostream &stream, const V3cUnitHeader &vuh,
-                                  const V3cParameterSet &vps,
+                                  const V3cParameterSet &vps, const NalUnitHeader &nuh,
                                   const vector<AtlasSequenceParameterSetRBSP> &asps,
                                   const vector<AtlasFrameParameterSetRBSP> &afps) const {
   OutputBitstream bitstream{stream};
 
-  atlas_tile_header().encodeTo(bitstream, asps, afps);
+  atlas_tile_header().encodeTo(bitstream, nuh, asps, afps);
   atlas_tile_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atlas_tile_header());
   bitstream.rbspTrailingBits();
 }

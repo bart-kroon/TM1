@@ -65,6 +65,7 @@ enum class NalUnitType : std::uint8_t {
   NAL_GIDR_N_LP,
   NAL_CRA,
   NAL_GCRA,
+  NAL_RSV_IRAP_ACL_29 = 29,
   NAL_RSV_ACL_35 = 35,
   NAL_ASPS = 36,
   NAL_AFPS,

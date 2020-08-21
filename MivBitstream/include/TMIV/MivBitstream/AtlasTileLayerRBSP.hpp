@@ -36,6 +36,10 @@
 #endif
 
 namespace TMIV::MivBitstream {
+constexpr auto AtlasTileHeader::ath_no_output_of_prior_atlas_frames_flag() const noexcept {
+  return m_ath_no_output_of_prior_atlas_frames_flag.value_or(false);
+}
+
 constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id() const noexcept {
   return m_ath_atlas_frame_parameter_set_id;
 }
@@ -62,6 +66,12 @@ constexpr auto AtlasTileHeader::ath_pos_min_z_quantizer() const noexcept {
 
 constexpr auto AtlasTileHeader::ath_pos_delta_max_z_quantizer() const noexcept {
   return m_ath_pos_delta_max_z_quantizer.value_or(0);
+}
+
+constexpr auto AtlasTileHeader::ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept
+    -> auto & {
+  m_ath_no_output_of_prior_atlas_frames_flag = value;
+  return *this;
 }
 
 constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept

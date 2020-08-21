@@ -130,7 +130,8 @@ void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUn
 
 void AtlasDecoder::decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
-  au.atl = MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, m_vuh, m_vps, m_aspsV, m_afpsV);
+  au.atl = MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, m_vuh, m_vps, nu.nal_unit_header(),
+                                                        m_aspsV, m_afpsV);
   au.afps = afpsById(m_afpsV, au.atl.atlas_tile_header().ath_atlas_frame_parameter_set_id());
   au.asps = aspsById(m_aspsV, au.afps.afps_atlas_sequence_parameter_set_id());
 }

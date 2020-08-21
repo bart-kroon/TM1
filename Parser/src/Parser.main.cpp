@@ -99,7 +99,7 @@ public:
     m_log << '\n' << std::string(100, '-') << '\n' << nu;
     std::istringstream stream{nu.rbsp()};
     if (nu.nal_unit_header().nal_unit_type() < TMIV::MivBitstream::NalUnitType::NAL_ASPS) {
-      return parseAtl(stream);
+      return parseAtl(stream, nu.nal_unit_header());
     }
     switch (nu.nal_unit_header().nal_unit_type()) {
     case TMIV::MivBitstream::NalUnitType::NAL_ASPS:
@@ -127,9 +127,9 @@ public:
     }
   }
 
-  void parseAtl(std::istream &stream) {
-    const auto atl =
-        TMIV::MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, *m_vuh, m_vps, m_aspsV, m_afpsV);
+  void parseAtl(std::istream &stream, const TMIV::MivBitstream::NalUnitHeader &nuh) {
+    const auto atl = TMIV::MivBitstream::AtlasTileLayerRBSP::decodeFrom(stream, *m_vuh, m_vps, nuh,
+                                                                        m_aspsV, m_afpsV);
     m_log << atl;
   }
 

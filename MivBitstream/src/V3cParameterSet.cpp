@@ -278,10 +278,10 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
 auto OccupancyInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
   stream << "oi_occupancy_codec_id( " << int(atlasIdx) << " )=" << int(oi_occupancy_codec_id())
          << '\n';
-  stream << "oi_lossy_occupancy_map_compression_threshold( " << int(atlasIdx)
-         << " )=" << int(oi_lossy_occupancy_map_compression_threshold()) << '\n';
-  stream << "oi_occupancy_nominal_2d_bitdepth_minus1( " << int(atlasIdx)
-         << " )=" << int(oi_occupancy_nominal_2d_bitdepth_minus1()) << '\n';
+  stream << "oi_lossy_occupancy_compression_threshold( " << int(atlasIdx)
+         << " )=" << int(oi_lossy_occupancy_compression_threshold()) << '\n';
+  stream << "oi_occupancy_2d_bit_depth_minus1( " << int(atlasIdx)
+         << " )=" << int(oi_occupancy_2d_bit_depth_minus1()) << '\n';
   stream << "oi_occupancy_MSB_align_flag( " << int(atlasIdx) << " )=" << boolalpha
          << oi_occupancy_MSB_align_flag() << '\n';
   return stream;
@@ -289,10 +289,9 @@ auto OccupancyInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> o
 
 auto OccupancyInformation::operator==(const OccupancyInformation &other) const noexcept -> bool {
   return oi_occupancy_codec_id() == other.oi_occupancy_codec_id() &&
-         oi_lossy_occupancy_map_compression_threshold() ==
-             other.oi_lossy_occupancy_map_compression_threshold() &&
-         oi_occupancy_nominal_2d_bitdepth_minus1() ==
-             other.oi_occupancy_nominal_2d_bitdepth_minus1() &&
+         oi_lossy_occupancy_compression_threshold() ==
+             other.oi_lossy_occupancy_compression_threshold() &&
+         oi_occupancy_2d_bit_depth_minus1() == other.oi_occupancy_2d_bit_depth_minus1() &&
          oi_occupancy_MSB_align_flag() == other.oi_occupancy_MSB_align_flag();
 }
 
@@ -303,16 +302,16 @@ auto OccupancyInformation::operator!=(const OccupancyInformation &other) const n
 auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInformation {
   auto x = OccupancyInformation{};
   x.oi_occupancy_codec_id(bitstream.getUint8());
-  x.oi_lossy_occupancy_map_compression_threshold(bitstream.getUint8());
-  x.oi_occupancy_nominal_2d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
+  x.oi_lossy_occupancy_compression_threshold(bitstream.getUint8());
+  x.oi_occupancy_2d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
   x.oi_occupancy_MSB_align_flag(bitstream.getFlag());
   return x;
 }
 
 void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint8(oi_occupancy_codec_id());
-  bitstream.putUint8(oi_lossy_occupancy_map_compression_threshold());
-  bitstream.writeBits(oi_occupancy_nominal_2d_bitdepth_minus1(), 5);
+  bitstream.putUint8(oi_lossy_occupancy_compression_threshold());
+  bitstream.writeBits(oi_occupancy_2d_bit_depth_minus1(), 5);
   bitstream.putFlag(oi_occupancy_MSB_align_flag());
 }
 

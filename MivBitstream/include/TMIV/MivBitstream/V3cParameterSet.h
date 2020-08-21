@@ -142,14 +142,13 @@ private:
 class OccupancyInformation {
 public:
   [[nodiscard]] constexpr auto oi_occupancy_codec_id() const noexcept;
-  [[nodiscard]] constexpr auto oi_lossy_occupancy_map_compression_threshold() const noexcept;
-  [[nodiscard]] constexpr auto oi_occupancy_nominal_2d_bitdepth_minus1() const noexcept;
+  [[nodiscard]] constexpr auto oi_lossy_occupancy_compression_threshold() const noexcept;
+  [[nodiscard]] constexpr auto oi_occupancy_2d_bit_depth_minus1() const noexcept;
   [[nodiscard]] constexpr auto oi_occupancy_MSB_align_flag() const noexcept;
 
   constexpr auto oi_occupancy_codec_id(std::uint8_t value) noexcept -> auto &;
-  constexpr auto oi_lossy_occupancy_map_compression_threshold(std::uint8_t value) noexcept
-      -> auto &;
-  constexpr auto oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto oi_lossy_occupancy_compression_threshold(std::uint8_t value) noexcept -> auto &;
+  constexpr auto oi_occupancy_2d_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
   constexpr auto oi_occupancy_MSB_align_flag(bool value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, std::uint8_t atlasIdx) const -> std::ostream &;
@@ -163,8 +162,8 @@ public:
 
 private:
   std::uint8_t m_oi_occupancy_codec_id{};
-  std::uint8_t m_oi_lossy_occupancy_map_compression_threshold{};
-  std::uint8_t m_oi_occupancy_nominal_2d_bitdepth_minus1{};
+  std::uint8_t m_oi_lossy_occupancy_compression_threshold{};
+  std::uint8_t m_oi_occupancy_2d_bit_depth_minus1{};
   bool m_oi_occupancy_MSB_align_flag{};
 };
 

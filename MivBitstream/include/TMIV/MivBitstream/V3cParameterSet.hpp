@@ -107,12 +107,12 @@ constexpr auto OccupancyInformation::oi_occupancy_codec_id() const noexcept {
   return m_oi_occupancy_codec_id;
 }
 
-constexpr auto OccupancyInformation::oi_lossy_occupancy_map_compression_threshold() const noexcept {
-  return m_oi_lossy_occupancy_map_compression_threshold;
+constexpr auto OccupancyInformation::oi_lossy_occupancy_compression_threshold() const noexcept {
+  return m_oi_lossy_occupancy_compression_threshold;
 }
 
-constexpr auto OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1() const noexcept {
-  return m_oi_occupancy_nominal_2d_bitdepth_minus1;
+constexpr auto OccupancyInformation::oi_occupancy_2d_bit_depth_minus1() const noexcept {
+  return m_oi_occupancy_2d_bit_depth_minus1;
 }
 
 constexpr auto OccupancyInformation::oi_occupancy_MSB_align_flag() const noexcept {
@@ -125,16 +125,15 @@ constexpr auto OccupancyInformation::oi_occupancy_codec_id(std::uint8_t value) n
 }
 
 constexpr auto
-OccupancyInformation::oi_lossy_occupancy_map_compression_threshold(std::uint8_t value) noexcept
+OccupancyInformation::oi_lossy_occupancy_compression_threshold(std::uint8_t value) noexcept
     -> auto & {
-  m_oi_lossy_occupancy_map_compression_threshold = value;
+  m_oi_lossy_occupancy_compression_threshold = value;
   return *this;
 }
 
-constexpr auto
-OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept
+constexpr auto OccupancyInformation::oi_occupancy_2d_bit_depth_minus1(std::uint8_t value) noexcept
     -> auto & {
-  m_oi_occupancy_nominal_2d_bitdepth_minus1 = value;
+  m_oi_occupancy_2d_bit_depth_minus1 = value;
   return *this;
 }
 

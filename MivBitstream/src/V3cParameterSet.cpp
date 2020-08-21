@@ -384,10 +384,9 @@ auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId) co
   return m_aiAttributes[attributeId].ai_attribute_dimension_minus1;
 }
 
-auto AttributeInformation::ai_attribute_nominal_2d_bitdepth_minus1(uint8_t attributeId) const
-    -> uint8_t {
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attributeId) const -> uint8_t {
   VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  return m_aiAttributes[attributeId].ai_attribute_nominal_2d_bitdepth_minus1;
+  return m_aiAttributes[attributeId].ai_attribute_2d_bit_depth_minus1;
 }
 
 auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId) const -> bool {
@@ -436,11 +435,10 @@ auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId, ui
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_nominal_2d_bitdepth_minus1(uint8_t attributeId,
-                                                                   uint8_t value)
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attributeId, uint8_t value)
     -> AttributeInformation & {
   VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_nominal_2d_bitdepth_minus1 = value;
+  m_aiAttributes[attributeId].ai_attribute_2d_bit_depth_minus1 = value;
   return *this;
 }
 
@@ -465,8 +463,8 @@ auto AttributeInformation::printTo(ostream &stream, AtlasId j) const -> ostream 
     }
     stream << "ai_attribute_dimension_minus1( " << j << ", " << i
            << " )=" << int(ai_attribute_dimension_minus1(i)) << '\n';
-    stream << "ai_attribute_nominal_2d_bitdepth_minus1( " << j << ", " << i
-           << " )=" << int(ai_attribute_nominal_2d_bitdepth_minus1(i));
+    stream << "ai_attribute_2d_bit_depth_minus1( " << j << ", " << i
+           << " )=" << int(ai_attribute_2d_bit_depth_minus1(i));
     stream << '\n';
     stream << "ai_attribute_MSB_align_flag( " << j << ", " << i << " )=" << boolalpha
            << ai_attribute_MSB_align_flag(i) << '\n';
@@ -484,8 +482,7 @@ auto AttributeInformation::operator==(const AttributeInformation &other) const n
         m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag !=
             other.m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag ||
         ai_attribute_dimension_minus1(i) != other.ai_attribute_dimension_minus1(i) ||
-        ai_attribute_nominal_2d_bitdepth_minus1(i) !=
-            other.ai_attribute_nominal_2d_bitdepth_minus1(i) ||
+        ai_attribute_2d_bit_depth_minus1(i) != other.ai_attribute_2d_bit_depth_minus1(i) ||
         ai_attribute_MSB_align_flag(i) != other.ai_attribute_MSB_align_flag(i)) {
       return false;
     }
@@ -516,7 +513,7 @@ auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const V3cParame
     const auto ai_attribute_dimension_partitions_minus1 = bitstream.readBits<uint8_t>(6);
     VERIFY_MIVBITSTREAM(ai_attribute_dimension_partitions_minus1 == 0);
 
-    x.ai_attribute_nominal_2d_bitdepth_minus1(i, bitstream.readBits<uint8_t>(5));
+    x.ai_attribute_2d_bit_depth_minus1(i, bitstream.readBits<uint8_t>(5));
     x.ai_attribute_MSB_align_flag(i, bitstream.getFlag());
   }
   return x;
@@ -539,8 +536,8 @@ void AttributeInformation::encodeTo(OutputBitstream &bitstream, const V3cParamet
     constexpr auto ai_attribute_dimension_partitions_minus1 = 0;
     bitstream.writeBits(ai_attribute_dimension_partitions_minus1, 6);
 
-    VERIFY_V3CBITSTREAM(ai_attribute_nominal_2d_bitdepth_minus1(i) < 32);
-    bitstream.writeBits(ai_attribute_nominal_2d_bitdepth_minus1(i), 5);
+    VERIFY_V3CBITSTREAM(ai_attribute_2d_bit_depth_minus1(i) < 32);
+    bitstream.writeBits(ai_attribute_2d_bit_depth_minus1(i), 5);
     bitstream.putFlag(ai_attribute_MSB_align_flag(i));
   }
 }

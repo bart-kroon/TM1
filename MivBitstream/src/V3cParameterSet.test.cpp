@@ -180,20 +180,20 @@ TEST_CASE("attribute_information", "[V3C Parameter Set]") {
         .ai_attribute_codec_id(1, 255)
         .ai_attribute_dimension_minus1(0, 6)
         .ai_attribute_dimension_minus1(1, 1)
-        .ai_attribute_nominal_2d_bitdepth_minus1(0, 31)
-        .ai_attribute_nominal_2d_bitdepth_minus1(1, 12);
+        .ai_attribute_2d_bit_depth_minus1(0, 31)
+        .ai_attribute_2d_bit_depth_minus1(1, 12);
 
     REQUIRE(toString(x, AtlasId{7}) ==
             R"(ai_attribute_count( 7 )=2
 ai_attribute_type_id( 7, 0 )=ATTR_REFLECTANCE
 ai_attribute_codec_id( 7, 0 )=0
 ai_attribute_dimension_minus1( 7, 0 )=6
-ai_attribute_nominal_2d_bitdepth_minus1( 7, 0 )=31
+ai_attribute_2d_bit_depth_minus1( 7, 0 )=31
 ai_attribute_MSB_align_flag( 7, 0 )=false
 ai_attribute_type_id( 7, 1 )=ATTR_TEXTURE
 ai_attribute_codec_id( 7, 1 )=255
 ai_attribute_dimension_minus1( 7, 1 )=1
-ai_attribute_nominal_2d_bitdepth_minus1( 7, 1 )=12
+ai_attribute_2d_bit_depth_minus1( 7, 1 )=12
 ai_attribute_MSB_align_flag( 7, 1 )=true
 )");
 

@@ -89,7 +89,7 @@ EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture, boo
           .ai_attribute_count(1)
           .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
           .ai_attribute_dimension_minus1(0, 2)
-          .ai_attribute_nominal_2d_bitdepth_minus1(0, 9);
+          .ai_attribute_2d_bit_depth_minus1(0, 9);
     }
   }
 }

@@ -237,7 +237,7 @@ public:
   [[nodiscard]] auto
   ai_attribute_map_absolute_coding_persistence_flag(std::uint8_t attributeId) const -> bool;
   [[nodiscard]] auto ai_attribute_dimension_minus1(std::uint8_t attributeId) const -> std::uint8_t;
-  [[nodiscard]] auto ai_attribute_nominal_2d_bitdepth_minus1(std::uint8_t attributeId) const
+  [[nodiscard]] auto ai_attribute_2d_bit_depth_minus1(std::uint8_t attributeId) const
       -> std::uint8_t;
   [[nodiscard]] auto ai_attribute_MSB_align_flag(std::uint8_t attributeId) const -> bool;
 
@@ -250,7 +250,7 @@ public:
       -> AttributeInformation &;
   auto ai_attribute_dimension_minus1(std::uint8_t attributeId, std::uint8_t value)
       -> AttributeInformation &;
-  auto ai_attribute_nominal_2d_bitdepth_minus1(std::uint8_t attributeId, std::uint8_t value)
+  auto ai_attribute_2d_bit_depth_minus1(std::uint8_t attributeId, std::uint8_t value)
       -> AttributeInformation &;
   auto ai_attribute_MSB_align_flag(std::uint8_t attributeId, bool value) -> AttributeInformation &;
 
@@ -270,7 +270,7 @@ private:
     std::uint8_t ai_attribute_codec_id{};
     std::optional<bool> ai_attribute_map_absolute_coding_persistence_flag{};
     std::uint8_t ai_attribute_dimension_minus1{};
-    std::uint8_t ai_attribute_nominal_2d_bitdepth_minus1{};
+    std::uint8_t ai_attribute_2d_bit_depth_minus1{};
     bool ai_attribute_MSB_align_flag{};
   };
 

@@ -219,9 +219,9 @@ public:
 
 private:
   std::uint8_t m_gi_geometry_codec_id{};
-  std::uint8_t m_gi_geometry_nominal_2d_bitdepth_minus1{};
+  std::uint8_t m_gi_geometry_2d_bit_depth_minus1{};
   bool m_gi_geometry_MSB_align_flag{};
-  std::uint8_t m_gi_geometry_3d_coordinates_bitdepth_minus1{};
+  std::uint8_t m_gi_geometry_3d_coordinates_bit_depth_minus1{};
 };
 
 // 23090-5: attribute_information( j )

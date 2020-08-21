@@ -231,7 +231,7 @@ void Encoder::prepareIvau() {
 
     // Set ATH parameters
     atlas.ath.ath_ref_atlas_frame_list_sps_flag(true);
-    atlas.ath.ath_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 2);
+    atlas.ath.ath_pos_min_d_quantizer(gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 2);
     atlas.ath.ath_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.ath.ath_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }

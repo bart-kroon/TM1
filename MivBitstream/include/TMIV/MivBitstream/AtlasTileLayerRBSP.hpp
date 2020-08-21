@@ -60,12 +60,12 @@ constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag() const noexce
   return m_ath_ref_atlas_frame_list_sps_flag.value_or(false);
 }
 
-constexpr auto AtlasTileHeader::ath_pos_min_z_quantizer() const noexcept {
-  return m_ath_pos_min_z_quantizer.value_or(0);
+constexpr auto AtlasTileHeader::ath_pos_min_d_quantizer() const noexcept {
+  return m_ath_pos_min_d_quantizer.value_or(0);
 }
 
-constexpr auto AtlasTileHeader::ath_pos_delta_max_z_quantizer() const noexcept {
-  return m_ath_pos_delta_max_z_quantizer.value_or(0);
+constexpr auto AtlasTileHeader::ath_pos_delta_max_d_quantizer() const noexcept {
+  return m_ath_pos_delta_max_d_quantizer.value_or(0);
 }
 
 constexpr auto AtlasTileHeader::ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept
@@ -114,15 +114,15 @@ constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag(const bool val
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_pos_min_z_quantizer(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_pos_min_d_quantizer(const std::uint8_t value) noexcept
     -> auto & {
-  m_ath_pos_min_z_quantizer = value;
+  m_ath_pos_min_d_quantizer = value;
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_pos_delta_max_d_quantizer(const std::uint8_t value) noexcept
     -> auto & {
-  m_ath_pos_delta_max_z_quantizer = value;
+  m_ath_pos_delta_max_d_quantizer = value;
   return *this;
 }
 
@@ -137,8 +137,8 @@ constexpr auto AtlasTileHeader::operator==(const AtlasTileHeader &other) const n
   if (ath_type() == AthType::SKIP_TILE) {
     return true;
   }
-  return ath_pos_min_z_quantizer() == other.ath_pos_min_z_quantizer() &&
-         ath_pos_delta_max_z_quantizer() == other.ath_pos_delta_max_z_quantizer() &&
+  return ath_pos_min_d_quantizer() == other.ath_pos_min_d_quantizer() &&
+         ath_pos_delta_max_d_quantizer() == other.ath_pos_delta_max_d_quantizer() &&
          ath_patch_size_x_info_quantizer() == other.ath_patch_size_x_info_quantizer() &&
          ath_patch_size_y_info_quantizer() == other.ath_patch_size_y_info_quantizer();
 }

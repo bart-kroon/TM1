@@ -86,8 +86,8 @@ ath_ref_atlas_frame_list_sps_flag=true
         .ath_patch_size_x_info_quantizer(6)
         .ath_patch_size_y_info_quantizer(5)
         .ath_atlas_adaptation_parameter_set_id(4)
-        .ath_pos_min_z_quantizer(3)
-        .ath_pos_delta_max_z_quantizer(7);
+        .ath_pos_min_d_quantizer(3)
+        .ath_pos_delta_max_d_quantizer(7);
 
     const auto nuh = NalUnitHeader{NalUnitType::NAL_TSA_R, 0, 2};
 
@@ -97,8 +97,8 @@ ath_id=0
 ath_type=I_TILE
 ath_atlas_frm_order_cnt_lsb=0
 ath_ref_atlas_frame_list_sps_flag=true
-ath_pos_min_z_quantizer=3
-ath_pos_delta_max_z_quantizer=7
+ath_pos_min_d_quantizer=3
+ath_pos_delta_max_d_quantizer=7
 ath_patch_size_x_info_quantizer=6
 ath_patch_size_y_info_quantizer=5
 )");
@@ -524,8 +524,8 @@ pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
         .ath_no_output_of_prior_atlas_frames_flag(false)
         .ath_type(AthType::I_TILE)
         .ath_ref_atlas_frame_list_sps_flag(true)
-        .ath_pos_min_z_quantizer(7)
-        .ath_pos_delta_max_z_quantizer(5);
+        .ath_pos_min_d_quantizer(7)
+        .ath_pos_delta_max_d_quantizer(5);
     x.atlas_tile_data_unit() =
         AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}}};
 
@@ -536,8 +536,8 @@ ath_id=0
 ath_type=I_TILE
 ath_atlas_frm_order_cnt_lsb=0
 ath_ref_atlas_frame_list_sps_flag=true
-ath_pos_min_z_quantizer=7
-ath_pos_delta_max_z_quantizer=5
+ath_pos_min_d_quantizer=7
+ath_pos_delta_max_d_quantizer=5
 ath_patch_size_x_info_quantizer=0
 ath_patch_size_y_info_quantizer=0
 atdu_patch_mode[ 0 ]=I_INTRA

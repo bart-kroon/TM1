@@ -343,13 +343,13 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> AtlasTileLayerRBSP {
       pdu.pdu_view_pos_x(pp.pduViewPos().x());
       pdu.pdu_view_pos_y(pp.pduViewPos().y());
 
-      VERIFY_MIVBITSTREAM(pp.pduDepthStart() % (1 << aau.ath.ath_pos_min_z_quantizer()) == 0);
-      pdu.pdu_depth_start(pp.pduDepthStart() >> aau.ath.ath_pos_min_z_quantizer());
+      VERIFY_MIVBITSTREAM(pp.pduDepthStart() % (1 << aau.ath.ath_pos_min_d_quantizer()) == 0);
+      pdu.pdu_depth_start(pp.pduDepthStart() >> aau.ath.ath_pos_min_d_quantizer());
 
       if (pp.pduDepthEnd()) {
-        const auto ath_pos_delta_max_z_quantizer = aau.ath.ath_pos_delta_max_z_quantizer();
-        VERIFY_MIVBITSTREAM(*pp.pduDepthEnd() % (1 << ath_pos_delta_max_z_quantizer) == 0);
-        pdu.pdu_depth_end(*pp.pduDepthEnd() >> ath_pos_delta_max_z_quantizer);
+        const auto ath_pos_delta_max_d_quantizer = aau.ath.ath_pos_delta_max_d_quantizer();
+        VERIFY_MIVBITSTREAM(*pp.pduDepthEnd() % (1 << ath_pos_delta_max_d_quantizer) == 0);
+        pdu.pdu_depth_end(*pp.pduDepthEnd() >> ath_pos_delta_max_d_quantizer);
       }
 
       pdu.pdu_orientation_index(pp.pduOrientationIndex());

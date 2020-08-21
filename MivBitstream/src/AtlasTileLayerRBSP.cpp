@@ -173,10 +173,10 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
            << *x.m_ath_ref_atlas_frame_list_sps_flag << '\n';
   }
   if (x.ath_type() != AthType::SKIP_TILE) {
-    if (x.m_ath_pos_min_z_quantizer) {
-      stream << "ath_pos_min_z_quantizer=" << int(*x.m_ath_pos_min_z_quantizer) << '\n';
-      if (x.m_ath_pos_delta_max_z_quantizer) {
-        stream << "ath_pos_delta_max_z_quantizer=" << int(*x.m_ath_pos_delta_max_z_quantizer)
+    if (x.m_ath_pos_min_d_quantizer) {
+      stream << "ath_pos_min_d_quantizer=" << int(*x.m_ath_pos_min_d_quantizer) << '\n';
+      if (x.m_ath_pos_delta_max_d_quantizer) {
+        stream << "ath_pos_delta_max_d_quantizer=" << int(*x.m_ath_pos_delta_max_d_quantizer)
                << '\n';
       }
     }
@@ -228,9 +228,9 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream, const NalUnitHeader 
 
   if (x.ath_type() != AthType::SKIP_TILE) {
     if (asps.asps_normal_axis_limits_quantization_enabled_flag()) {
-      x.ath_pos_min_z_quantizer(bitstream.readBits<uint8_t>(5));
+      x.ath_pos_min_d_quantizer(bitstream.readBits<uint8_t>(5));
       if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-        x.ath_pos_delta_max_z_quantizer(bitstream.readBits<uint8_t>(5));
+        x.ath_pos_delta_max_d_quantizer(bitstream.readBits<uint8_t>(5));
       }
     }
     if (asps.asps_patch_size_quantizer_present_flag()) {
@@ -294,9 +294,9 @@ void AtlasTileHeader::encodeTo(OutputBitstream &bitstream, const NalUnitHeader &
 
   if (ath_type() != AthType::SKIP_TILE) {
     if (asps.asps_normal_axis_limits_quantization_enabled_flag()) {
-      bitstream.writeBits(ath_pos_min_z_quantizer(), 5);
+      bitstream.writeBits(ath_pos_min_d_quantizer(), 5);
       if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-        bitstream.writeBits(ath_pos_delta_max_z_quantizer(), 5);
+        bitstream.writeBits(ath_pos_delta_max_d_quantizer(), 5);
       }
     }
     if (asps.asps_patch_size_quantizer_present_flag()) {
@@ -432,13 +432,13 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
   const auto pdu_depth_start_num_bits =
-      gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_min_z_quantizer() + 2;
+      gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 2;
   VERIFY_V3CBITSTREAM(pdu_depth_start_num_bits >= 0);
   x.pdu_depth_start(bitstream.readBits<uint32_t>(pdu_depth_start_num_bits));
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto pdu_depth_end_num_bits =
-        gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_delta_max_z_quantizer() + 2;
+        gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_delta_max_d_quantizer() + 2;
     VERIFY_V3CBITSTREAM(pdu_depth_end_num_bits >= 0);
     x.pdu_depth_end(bitstream.readBits<uint32_t>(pdu_depth_end_num_bits));
   }
@@ -481,13 +481,13 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
   const auto pdu_depth_start_num_bits =
-      gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_min_z_quantizer() + 2;
+      gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 2;
   VERIFY_V3CBITSTREAM(pdu_depth_start_num_bits >= 0);
   bitstream.writeBits(pdu_depth_start(), pdu_depth_start_num_bits);
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
     const auto pdu_depth_end_num_bits =
-        gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_delta_max_z_quantizer() + 2;
+        gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_delta_max_d_quantizer() + 2;
     VERIFY_V3CBITSTREAM(pdu_depth_end_num_bits >= 0);
     bitstream.writeBits(pdu_depth_end(), pdu_depth_end_num_bits);
   }

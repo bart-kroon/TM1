@@ -73,7 +73,7 @@ EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture, boo
         .vps_occupancy_video_present_flag(j, haveOccupancy)
         .vps_attribute_video_present_flag(j, haveTexture);
 
-    vps.geometry_information(j).gi_geometry_nominal_2d_bitdepth_minus1(9);
+    vps.geometry_information(j).gi_geometry_2d_bit_depth_minus1(9);
 
     if (haveOccupancy) {
       vps.occupancy_information(j)

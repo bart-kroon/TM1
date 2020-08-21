@@ -137,8 +137,8 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
   SECTION("Example 1") {
     vps.vps_geometry_video_present_flag({}, true)
         .geometry_information({})
-        .gi_geometry_3d_coordinates_bitdepth_minus1(14)
-        .gi_geometry_nominal_2d_bitdepth_minus1(9);
+        .gi_geometry_3d_coordinates_bit_depth_minus1(14)
+        .gi_geometry_2d_bit_depth_minus1(9);
     vps.vps_extension_present_flag(true)
         .vps_miv_extension_flag(true)
         .vps_miv_extension()
@@ -190,8 +190,8 @@ pdu_depth_occ_threshold[ 12 ][ 102 ]=600
   SECTION("Extend with only pdu_entity_id") {
     vps.vps_geometry_video_present_flag({}, true)
         .geometry_information({})
-        .gi_geometry_3d_coordinates_bitdepth_minus1(9)
-        .gi_geometry_nominal_2d_bitdepth_minus1(9);
+        .gi_geometry_3d_coordinates_bit_depth_minus1(9)
+        .gi_geometry_2d_bit_depth_minus1(9);
     vps.vps_extension_present_flag(true)
         .vps_miv_extension_flag(true)
         .vps_miv_extension()
@@ -491,7 +491,7 @@ pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
     auto vps = V3cParameterSet{};
     vps.vps_geometry_video_present_flag({}, true)
         .geometry_information({})
-        .gi_geometry_3d_coordinates_bitdepth_minus1(10);
+        .gi_geometry_3d_coordinates_bit_depth_minus1(10);
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()

@@ -198,14 +198,14 @@ class V3cParameterSet;
 class GeometryInformation {
 public:
   [[nodiscard]] constexpr auto gi_geometry_codec_id() const noexcept;
-  [[nodiscard]] constexpr auto gi_geometry_nominal_2d_bitdepth_minus1() const noexcept;
+  [[nodiscard]] constexpr auto gi_geometry_2d_bit_depth_minus1() const noexcept;
   [[nodiscard]] constexpr auto gi_geometry_MSB_align_flag() const noexcept;
-  [[nodiscard]] constexpr auto gi_geometry_3d_coordinates_bitdepth_minus1() const noexcept;
+  [[nodiscard]] constexpr auto gi_geometry_3d_coordinates_bit_depth_minus1() const noexcept;
 
   constexpr auto gi_geometry_codec_id(std::uint8_t value) noexcept -> auto &;
-  constexpr auto gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto gi_geometry_2d_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
   constexpr auto gi_geometry_MSB_align_flag(bool value) noexcept -> auto &;
-  constexpr auto gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto gi_geometry_3d_coordinates_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
 
   auto printTo(std::ostream &stream, AtlasId j) const -> std::ostream &;
 

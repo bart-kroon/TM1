@@ -180,7 +180,7 @@ void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
   }
   for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_params.vps.vps_atlas_id(k);
-    m_params.vps.geometry_information(j).gi_geometry_3d_coordinates_bitdepth_minus1(numBitsMinus1);
+    m_params.vps.geometry_information(j).gi_geometry_3d_coordinates_bit_depth_minus1(numBitsMinus1);
   }
 }
 
@@ -214,8 +214,8 @@ void Encoder::prepareIvau() {
     // Set ASPS parameters
     atlas.asps.asps_frame_width(m_params.vps.vps_frame_width(j))
         .asps_frame_height(m_params.vps.vps_frame_height(j))
-        .asps_geometry_3d_bitdepth_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1())
-        .asps_geometry_2d_bitdepth_minus1(gi.gi_geometry_nominal_2d_bitdepth_minus1())
+        .asps_geometry_3d_bitdepth_minus1(gi.gi_geometry_3d_coordinates_bit_depth_minus1())
+        .asps_geometry_2d_bitdepth_minus1(gi.gi_geometry_2d_bit_depth_minus1())
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
@@ -231,7 +231,7 @@ void Encoder::prepareIvau() {
 
     // Set ATH parameters
     atlas.ath.ath_ref_atlas_frame_list_sps_flag(true);
-    atlas.ath.ath_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bitdepth_minus1() + 2);
+    atlas.ath.ath_pos_min_z_quantizer(gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 2);
     atlas.ath.ath_patch_size_x_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
     atlas.ath.ath_patch_size_y_info_quantizer(atlas.asps.asps_log2_patch_packing_block_size());
   }

@@ -44,8 +44,8 @@ auto vps() {
   x.vps_frame_width({}, 640);
   x.vps_frame_height({}, 480);
   x.vps_geometry_video_present_flag({}, true);
-  x.geometry_information({}).gi_geometry_nominal_2d_bitdepth_minus1(8);
-  x.geometry_information({}).gi_geometry_3d_coordinates_bitdepth_minus1(10);
+  x.geometry_information({}).gi_geometry_2d_bit_depth_minus1(8);
+  x.geometry_information({}).gi_geometry_3d_coordinates_bit_depth_minus1(10);
   x.vps_extension_present_flag(true);
   return x;
 }
@@ -193,9 +193,9 @@ vps_occupancy_video_present_flag( 0 )=false
 vps_geometry_video_present_flag( 0 )=true
 vps_attribute_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
-gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
+gi_geometry_2d_bit_depth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
+gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=10
 vps_extension_present_flag=true
 vps_vpcc_extension_flag=false
 vps_miv_extension_flag=false
@@ -269,9 +269,9 @@ vps_occupancy_video_present_flag( 0 )=false
 vps_geometry_video_present_flag( 0 )=true
 vps_attribute_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
-gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
+gi_geometry_2d_bit_depth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
+gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=10
 vps_extension_present_flag=true
 vps_vpcc_extension_flag=false
 vps_miv_extension_flag=false

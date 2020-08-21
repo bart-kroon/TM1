@@ -324,22 +324,21 @@ void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
 
 auto GeometryInformation::printTo(ostream &stream, AtlasId j) const -> ostream & {
   stream << "gi_geometry_codec_id( " << j << " )=" << int(gi_geometry_codec_id()) << '\n';
-  stream << "gi_geometry_nominal_2d_bitdepth_minus1( " << j
-         << " )=" << int(gi_geometry_nominal_2d_bitdepth_minus1()) << '\n';
+  stream << "gi_geometry_2d_bit_depth_minus1( " << j
+         << " )=" << int(gi_geometry_2d_bit_depth_minus1()) << '\n';
   stream << "gi_geometry_MSB_align_flag( " << j << " )=" << boolalpha
          << gi_geometry_MSB_align_flag() << '\n';
-  stream << "gi_geometry_3d_coordinates_bitdepth_minus1( " << j
-         << " )=" << int(gi_geometry_3d_coordinates_bitdepth_minus1()) << '\n';
+  stream << "gi_geometry_3d_coordinates_bit_depth_minus1( " << j
+         << " )=" << int(gi_geometry_3d_coordinates_bit_depth_minus1()) << '\n';
   return stream;
 }
 
 auto GeometryInformation::operator==(const GeometryInformation &other) const noexcept -> bool {
   return gi_geometry_codec_id() == other.gi_geometry_codec_id() &&
-         gi_geometry_nominal_2d_bitdepth_minus1() ==
-             other.gi_geometry_nominal_2d_bitdepth_minus1() &&
+         gi_geometry_2d_bit_depth_minus1() == other.gi_geometry_2d_bit_depth_minus1() &&
          gi_geometry_MSB_align_flag() == other.gi_geometry_MSB_align_flag() &&
-         gi_geometry_3d_coordinates_bitdepth_minus1() ==
-             other.gi_geometry_3d_coordinates_bitdepth_minus1();
+         gi_geometry_3d_coordinates_bit_depth_minus1() ==
+             other.gi_geometry_3d_coordinates_bit_depth_minus1();
 }
 
 auto GeometryInformation::operator!=(const GeometryInformation &other) const noexcept -> bool {
@@ -350,9 +349,9 @@ auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const V3cParamet
                                      AtlasId j) -> GeometryInformation {
   auto x = GeometryInformation{};
   x.gi_geometry_codec_id(bitstream.getUint8());
-  x.gi_geometry_nominal_2d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
+  x.gi_geometry_2d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
   x.gi_geometry_MSB_align_flag(bitstream.getFlag());
-  x.gi_geometry_3d_coordinates_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
+  x.gi_geometry_3d_coordinates_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
   VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(j));
   return x;
 }
@@ -360,9 +359,9 @@ auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const V3cParamet
 void GeometryInformation::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
                                    AtlasId j) const {
   bitstream.putUint8(gi_geometry_codec_id());
-  bitstream.writeBits(gi_geometry_nominal_2d_bitdepth_minus1(), 5);
+  bitstream.writeBits(gi_geometry_2d_bit_depth_minus1(), 5);
   bitstream.putFlag(gi_geometry_MSB_align_flag());
-  bitstream.writeBits(gi_geometry_3d_coordinates_bitdepth_minus1(), 5);
+  bitstream.writeBits(gi_geometry_3d_coordinates_bit_depth_minus1(), 5);
   VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(j));
 }
 

@@ -51,13 +51,13 @@ public: // Decoder interface
   // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
   // within the bistreams take presedence.
   using OccFrameServer = std::function<Common::Occupancy10Frame(
-      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId j, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setOccFrameServer(OccFrameServer value);
 
   // Provide a frame server for out-of-band geometry video data (GVD). GVD video sub bitstreams
   // within the bistreams take presedence.
   using GeoFrameServer = std::function<Common::Depth10Frame(
-      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId j, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setGeoFrameServer(GeoFrameServer value);
 
   // Provide a frame server for out-of-band attribute video data (AVD). AVD video sub bitstreams
@@ -69,7 +69,7 @@ public: // Decoder interface
   // NOTE 2: This version of the test model only supports zero or one attributes, and if there is an
   //         attribute it has to be texture. This is evident from the AttrFrameServer signature.
   using AttrFrameServer = std::function<Common::Texture444Frame(
-      std::uint8_t atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
+      MivBitstream::AtlasId j, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setAttrFrameServer(AttrFrameServer value);
 
   auto operator()() -> std::optional<AccessUnit>;
@@ -88,13 +88,13 @@ private:
   void decodeMvpui(const MivBitstream::MivViewParamsUpdateIntrinsics &mvpui);
   void decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuantization &mvpudq);
 
-  void decodeAtlas(uint8_t j);
-  void decodeBlockToPatchMap(uint8_t j);
-  void decodePatchParamsList(uint8_t j);
+  void decodeAtlas(size_t k);
+  void decodeBlockToPatchMap(size_t k);
+  void decodePatchParamsList(size_t k);
 
-  auto decodeOccVideo(uint8_t j) -> bool;
-  auto decodeGeoVideo(uint8_t j) -> bool;
-  auto decodeAttrVideo(uint8_t j) -> bool;
+  auto decodeOccVideo(size_t k) -> bool;
+  auto decodeGeoVideo(size_t k) -> bool;
+  auto decodeAttrVideo(size_t k) -> bool;
 
   V3cUnitBuffer m_inputBuffer;
   OccFrameServer m_occFrameServer;

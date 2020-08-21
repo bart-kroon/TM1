@@ -116,7 +116,7 @@ asps_extension_present_flag=false
   SECTION("Example 1") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
     auto vps = V3cParameterSet{};
-    vps.vps_frame_width(0, 1).vps_frame_height(0, 1);
+    vps.vps_frame_width({}, 1).vps_frame_height({}, 1);
 
     x.asps_frame_width(1)
         .asps_frame_height(1)
@@ -159,9 +159,10 @@ asps_extension_6bits=0
   SECTION("Example 2") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
     auto vps = V3cParameterSet{};
-    vps.vps_frame_width(0, 0xFFFF)
-        .vps_frame_height(0, 0xFFFF)
-        .vps_map_count_minus1(0, 1)
+    vps.vps_atlas_id(0, {})
+        .vps_frame_width({}, 0xFFFF)
+        .vps_frame_height({}, 0xFFFF)
+        .vps_map_count_minus1({}, 1)
         .vps_extension_present_flag(true)
         .vps_miv_extension_flag(true)
         .vps_miv_extension()

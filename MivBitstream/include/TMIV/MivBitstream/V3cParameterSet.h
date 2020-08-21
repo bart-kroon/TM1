@@ -78,6 +78,28 @@ enum class AiAttributeTypeId : std::uint8_t {
   ATTR_UNSPECIFIED = 15
 };
 
+// Use a type to avoid confusing atlas index and ID
+//
+// NOTE(BK): The class interface deliberately disallows integer computations
+class AtlasId {
+public:
+  constexpr AtlasId() noexcept = default;
+  constexpr explicit AtlasId(std::uint8_t j) noexcept : m_j{j} {}
+
+  friend std::ostream &operator<<(std::ostream &stream, AtlasId j);
+
+  constexpr auto operator==(AtlasId other) const noexcept { return m_j == other.m_j; }
+  constexpr auto operator!=(AtlasId other) const noexcept { return m_j != other.m_j; }
+  constexpr auto operator<(AtlasId other) const noexcept { return m_j < other.m_j; }
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasId;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  std::uint8_t m_j{};
+};
+
 auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::ostream &;
 auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> std::ostream &;
@@ -138,7 +160,7 @@ private:
   bool m_ptl_tool_constraints_present_flag{};
 };
 
-// 23090-5: occupancy_information( atlasIdx )
+// 23090-5: occupancy_information( j )
 class OccupancyInformation {
 public:
   [[nodiscard]] constexpr auto oi_occupancy_codec_id() const noexcept;
@@ -151,7 +173,7 @@ public:
   constexpr auto oi_occupancy_2d_bit_depth_minus1(std::uint8_t value) noexcept -> auto &;
   constexpr auto oi_occupancy_MSB_align_flag(bool value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, std::uint8_t atlasIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, AtlasId j) const -> std::ostream &;
 
   auto operator==(const OccupancyInformation &other) const noexcept -> bool;
   auto operator!=(const OccupancyInformation &other) const noexcept -> bool;
@@ -169,7 +191,7 @@ private:
 
 class V3cParameterSet;
 
-// 23090-5: geometry_information( atlasIdx )
+// 23090-5: geometry_information( j )
 //
 // 23090-12 restrictions:
 //   * vps_auxiliary_video_present_flag[ ] == 0
@@ -185,16 +207,15 @@ public:
   constexpr auto gi_geometry_MSB_align_flag(bool value) noexcept -> auto &;
   constexpr auto gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept -> auto &;
 
-  auto printTo(std::ostream &stream, std::uint8_t atlasIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, AtlasId j) const -> std::ostream &;
 
   auto operator==(const GeometryInformation &other) const noexcept -> bool;
   auto operator!=(const GeometryInformation &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
-                         uint8_t atlasIdx) -> GeometryInformation;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps, AtlasId j)
+      -> GeometryInformation;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
-                uint8_t atlasIdx) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps, AtlasId j) const;
 
 private:
   std::uint8_t m_gi_geometry_codec_id{};
@@ -203,7 +224,7 @@ private:
   std::uint8_t m_gi_geometry_3d_coordinates_bitdepth_minus1{};
 };
 
-// 23090-5: attribute_information( atlasIdx )
+// 23090-5: attribute_information( j )
 //
 // 23090-12 restrictions:
 //   * vps_auxiliary_video_present_flag[ ] == 0
@@ -233,16 +254,15 @@ public:
       -> AttributeInformation &;
   auto ai_attribute_MSB_align_flag(std::uint8_t attributeId, bool value) -> AttributeInformation &;
 
-  auto printTo(std::ostream &stream, std::uint8_t atlasIdx) const -> std::ostream &;
+  auto printTo(std::ostream &stream, AtlasId j) const -> std::ostream &;
 
   auto operator==(const AttributeInformation &other) const noexcept -> bool;
   auto operator!=(const AttributeInformation &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
-                         std::uint8_t atlasIdx) -> AttributeInformation;
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps, AtlasId j)
+      -> AttributeInformation;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
-                std::uint8_t atlasIdx) const;
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps, AtlasId j) const;
 
 private:
   struct AiAttribute {
@@ -314,17 +334,17 @@ public:
   [[nodiscard]] auto profile_tier_level() const noexcept -> const ProfileTierLevel &;
   [[nodiscard]] constexpr auto vps_v3c_parameter_set_id() const noexcept;
   [[nodiscard]] auto vps_atlas_count_minus1() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto vps_atlas_id(std::uint8_t j) const -> std::uint8_t;
-  [[nodiscard]] auto vps_frame_width(std::uint8_t j) const -> std::uint16_t;
-  [[nodiscard]] auto vps_frame_height(std::uint8_t j) const -> std::uint16_t;
-  [[nodiscard]] auto vps_map_count_minus1(std::uint8_t j) const -> std::uint8_t;
-  [[nodiscard]] auto vps_auxiliary_video_present_flag(std::uint8_t j) const -> bool;
-  [[nodiscard]] auto vps_occupancy_video_present_flag(std::uint8_t j) const -> bool;
-  [[nodiscard]] auto vps_geometry_video_present_flag(std::uint8_t j) const -> bool;
-  [[nodiscard]] auto vps_attribute_video_present_flag(std::uint8_t j) const -> bool;
-  [[nodiscard]] auto occupancy_information(std::uint8_t j) const -> const OccupancyInformation &;
-  [[nodiscard]] auto geometry_information(std::uint8_t j) const -> const GeometryInformation &;
-  [[nodiscard]] auto attribute_information(std::uint8_t j) const -> const AttributeInformation &;
+  [[nodiscard]] auto vps_atlas_id(size_t k) const -> AtlasId;
+  [[nodiscard]] auto vps_frame_width(AtlasId j) const -> std::uint16_t;
+  [[nodiscard]] auto vps_frame_height(AtlasId j) const -> std::uint16_t;
+  [[nodiscard]] auto vps_map_count_minus1(AtlasId j) const -> std::uint8_t;
+  [[nodiscard]] auto vps_auxiliary_video_present_flag(AtlasId j) const -> bool;
+  [[nodiscard]] auto vps_occupancy_video_present_flag(AtlasId j) const -> bool;
+  [[nodiscard]] auto vps_geometry_video_present_flag(AtlasId j) const -> bool;
+  [[nodiscard]] auto vps_attribute_video_present_flag(AtlasId j) const -> bool;
+  [[nodiscard]] auto occupancy_information(AtlasId j) const -> const OccupancyInformation &;
+  [[nodiscard]] auto geometry_information(AtlasId j) const -> const GeometryInformation &;
+  [[nodiscard]] auto attribute_information(AtlasId j) const -> const AttributeInformation &;
   [[nodiscard]] constexpr auto vps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto vps_vpcc_extension_flag() const noexcept;
   [[nodiscard]] constexpr auto vps_miv_extension_flag() const noexcept;
@@ -337,17 +357,17 @@ public:
   auto profile_tier_level(ProfileTierLevel value) noexcept -> V3cParameterSet &;
   constexpr auto vps_v3c_parameter_set_id(std::uint8_t value) noexcept -> auto &;
   auto vps_atlas_count_minus1(std::uint8_t value) -> V3cParameterSet &;
-  auto vps_atlas_id(std::uint8_t j, std::uint8_t value) -> V3cParameterSet &;
-  auto vps_frame_width(std::uint8_t j, std::uint16_t value) -> V3cParameterSet &;
-  auto vps_frame_height(std::uint8_t j, std::uint16_t value) -> V3cParameterSet &;
-  auto vps_map_count_minus1(std::uint8_t j, std::uint8_t value) -> V3cParameterSet &;
-  auto vps_auxiliary_video_present_flag(std::uint8_t j, bool value) -> V3cParameterSet &;
-  auto vps_occupancy_video_present_flag(std::uint8_t j, bool value) -> V3cParameterSet &;
-  auto vps_geometry_video_present_flag(std::uint8_t j, bool value) -> V3cParameterSet &;
-  auto vps_attribute_video_present_flag(std::uint8_t j, bool value) -> V3cParameterSet &;
-  auto occupancy_information(std::uint8_t j, OccupancyInformation value) -> V3cParameterSet &;
-  auto geometry_information(std::uint8_t j, GeometryInformation value) -> V3cParameterSet &;
-  auto attribute_information(std::uint8_t j, AttributeInformation value) -> V3cParameterSet &;
+  auto vps_atlas_id(size_t k, AtlasId value) -> V3cParameterSet &;
+  auto vps_frame_width(AtlasId j, std::uint16_t value) -> V3cParameterSet &;
+  auto vps_frame_height(AtlasId j, std::uint16_t value) -> V3cParameterSet &;
+  auto vps_map_count_minus1(AtlasId j, std::uint8_t value) -> V3cParameterSet &;
+  auto vps_auxiliary_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
+  auto vps_occupancy_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
+  auto vps_geometry_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
+  auto vps_attribute_video_present_flag(AtlasId j, bool value) -> V3cParameterSet &;
+  auto occupancy_information(AtlasId j, OccupancyInformation value) -> V3cParameterSet &;
+  auto geometry_information(AtlasId j, GeometryInformation value) -> V3cParameterSet &;
+  auto attribute_information(AtlasId j, AttributeInformation value) -> V3cParameterSet &;
   constexpr auto vps_extension_present_flag(bool value) noexcept -> auto &;
   auto vps_vpcc_extension_flag(bool value) noexcept -> V3cParameterSet &;
   auto vps_miv_extension_flag(bool value) noexcept -> V3cParameterSet &;
@@ -357,12 +377,13 @@ public:
   auto vpsExtensionData(std::vector<std::uint8_t> value) noexcept -> V3cParameterSet &;
 
   constexpr auto profile_tier_level() noexcept -> auto &;
-  [[nodiscard]] auto occupancy_information(std::uint8_t j) -> OccupancyInformation &;
-  [[nodiscard]] auto geometry_information(std::uint8_t j) -> GeometryInformation &;
-  [[nodiscard]] auto attribute_information(std::uint8_t j) -> AttributeInformation &;
+  [[nodiscard]] auto occupancy_information(AtlasId j) -> OccupancyInformation &;
+  [[nodiscard]] auto geometry_information(AtlasId j) -> GeometryInformation &;
+  [[nodiscard]] auto attribute_information(AtlasId j) -> AttributeInformation &;
   [[nodiscard]] auto vps_miv_extension() noexcept -> VpsMivExtension &;
 
-  [[nodiscard]] auto atlasIdxOf(std::uint8_t atlasId) const noexcept -> std::uint8_t;
+  // Convenience function
+  [[nodiscard]] auto indexOf(AtlasId j) const noexcept -> std::size_t;
 
   friend auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream &;
 
@@ -373,11 +394,9 @@ public:
 
   void encodeTo(std::ostream &stream) const;
 
-  friend auto merge(const std::vector<const V3cParameterSet *> &vps) -> V3cParameterSet;
-
 private:
   struct VpsAtlas {
-    std::uint8_t vps_atlas_id{};
+    AtlasId vps_atlas_id{};
     std::uint16_t vps_frame_width{};
     std::uint16_t vps_frame_height{};
     std::uint8_t vps_map_count_minus1{};
@@ -389,6 +408,9 @@ private:
     std::optional<GeometryInformation> geometry_information{};
     std::optional<AttributeInformation> attribute_information{};
   };
+
+  [[nodiscard]] auto atlas(AtlasId j) const noexcept -> const VpsAtlas &;
+  [[nodiscard]] auto atlas(AtlasId j) noexcept -> VpsAtlas &;
 
   ProfileTierLevel m_profile_tier_level;
   std::uint8_t m_vps_v3c_parameter_set_id{};

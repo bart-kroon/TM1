@@ -177,7 +177,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
           PatchParams p;
 
-          p.vuhAtlasId = static_cast<uint8_t>(atlasId);
+          p.atlasId = AtlasId{uint8_t(atlasId)};
 
           p.pduViewIdx(static_cast<uint16_t>(cluster.getViewId()))
               .pduViewSize(
@@ -201,8 +201,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
             p.pduEntityId(cluster.getEntityId());
             cout << "Packing patch " << patchId << " of entity " << *p.pduEntityId()
                  << " from view " << p.pduViewIdx() << " with #active pixels "
-                 << cluster.getNumActivePixels() << " in atlas " << static_cast<int>(p.vuhAtlasId)
-                 << endl;
+                 << cluster.getNumActivePixels() << " in atlas " << p.atlasId << endl;
           }
 
           atlasParamsVector.push_back(p);

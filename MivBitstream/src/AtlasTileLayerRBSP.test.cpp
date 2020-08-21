@@ -110,7 +110,7 @@ TEST_CASE("patch_data_unit", "[Atlas Tile Layer RBSP]") {
   const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
 
   auto vps = V3cParameterSet{};
-  vps.vps_geometry_video_present_flag(0, true).geometry_information(0, {});
+  vps.vps_geometry_video_present_flag({}, true).geometry_information({}, {});
 
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -135,10 +135,8 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
   REQUIRE(bitCodingTest(x, 12, vuh, vps, aspsV, afpsV, ath));
 
   SECTION("Example 1") {
-    const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());
-
-    vps.vps_geometry_video_present_flag(0, true)
-        .geometry_information(atlasIdx)
+    vps.vps_geometry_video_present_flag({}, true)
+        .geometry_information({})
         .gi_geometry_3d_coordinates_bitdepth_minus1(14)
         .gi_geometry_nominal_2d_bitdepth_minus1(9);
     vps.vps_extension_present_flag(true)
@@ -190,10 +188,8 @@ pdu_depth_occ_threshold[ 12 ][ 102 ]=600
   }
 
   SECTION("Extend with only pdu_entity_id") {
-    const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());
-
-    vps.vps_geometry_video_present_flag(0, true)
-        .geometry_information(atlasIdx)
+    vps.vps_geometry_video_present_flag({}, true)
+        .geometry_information({})
         .gi_geometry_3d_coordinates_bitdepth_minus1(9)
         .gi_geometry_nominal_2d_bitdepth_minus1(9);
     vps.vps_extension_present_flag(true)
@@ -247,7 +243,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
   const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
 
   auto vps = V3cParameterSet{};
-  vps.vps_geometry_video_present_flag(0, true).geometry_information(0, {});
+  vps.vps_geometry_video_present_flag({}, true).geometry_information({}, {});
 
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -371,13 +367,17 @@ pdu_orientation_index[ 7 ][ 1 ]=FPO_NULL
 )");
 
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+    const auto j0 = AtlasId{0};
+    const auto j1 = AtlasId{1};
 
     auto vps = V3cParameterSet{};
     vps.vps_atlas_count_minus1(1)
-        .vps_geometry_video_present_flag(0, true)
-        .vps_geometry_video_present_flag(1, true)
-        .geometry_information(0, {})
-        .geometry_information(1, {});
+        .vps_atlas_id(0, j0)
+        .vps_atlas_id(1, j1)
+        .vps_geometry_video_present_flag(j0, true)
+        .vps_geometry_video_present_flag(j1, true)
+        .geometry_information(j0, {})
+        .geometry_information(j1, {});
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front().asps_frame_width(4000).asps_frame_height(2000);
@@ -419,7 +419,7 @@ ath_ref_atlas_frame_list_sps_flag=true
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
 
     auto vps = V3cParameterSet{};
-    vps.vps_geometry_video_present_flag(0, true).geometry_information(0, {});
+    vps.vps_geometry_video_present_flag({}, true).geometry_information({}, {});
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     aspsV.front()
@@ -489,8 +489,8 @@ pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
 
     auto vps = V3cParameterSet{};
-    vps.vps_geometry_video_present_flag(0, true)
-        .geometry_information(0)
+    vps.vps_geometry_video_present_flag({}, true)
+        .geometry_information({})
         .gi_geometry_3d_coordinates_bitdepth_minus1(10);
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);

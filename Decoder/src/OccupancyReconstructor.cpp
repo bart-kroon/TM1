@@ -42,15 +42,15 @@ OccupancyReconstructor::OccupancyReconstructor(const Json & /*rootNode*/,
                                                const Json & /*componentNode*/) {}
 
 void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
-  for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++) {
-    auto &atlas = frame.atlas[i];
+  for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
+    auto &atlas = frame.atlas[k];
     atlas.occFrame = Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
     for (auto y = 0; y < atlas.frameSize().y(); y++) {
       for (auto x = 0; x < atlas.frameSize().x(); x++) {
         auto patchId = atlas.patchId(y, x);
         if (patchId == unusedPatchId) {
           atlas.occFrame.getPlane(0)(y, x) = 0;
-        } else if (!frame.vps.vps_occupancy_video_present_flag(i)) {
+        } else if (!frame.vps.vps_occupancy_video_present_flag(frame.vps.vps_atlas_id(k))) {
           if (frame.vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
             // occupancy is embedded in geometry
             uint32_t depthOccupancyThreshold = 0;

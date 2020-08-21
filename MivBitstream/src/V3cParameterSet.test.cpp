@@ -37,6 +37,23 @@
 
 using namespace TMIV::MivBitstream;
 
+TEST_CASE("AtlasId", "[V3C Parameter Set]") {
+  SECTION("Default constructor") {
+    const auto j = AtlasId{};
+    REQUIRE(toString(j) == "0");
+    REQUIRE(j == j);
+    REQUIRE(bitCodingTest(j, 6));
+  }
+
+  SECTION("Explicit conversion constructor") {
+    const auto j = AtlasId{42};
+    REQUIRE(toString(j) == "42");
+    REQUIRE(j == j);
+    REQUIRE(j != AtlasId{});
+    REQUIRE(bitCodingTest(j, 6));
+  }
+}
+
 TEST_CASE("profile_tier_level", "[V3C Parameter Set]") {
   auto x = ProfileTierLevel{};
 
@@ -86,7 +103,7 @@ ptl_tool_constraints_present_flag=false
 TEST_CASE("occupancy_information", "[V3C Parameter Set]") {
   auto x = OccupancyInformation{};
 
-  REQUIRE(toString(x, 3) == R"(oi_occupancy_codec_id( 3 )=0
+  REQUIRE(toString(x, AtlasId{3}) == R"(oi_occupancy_codec_id( 3 )=0
 oi_lossy_occupancy_compression_threshold( 3 )=0
 oi_occupancy_2d_bit_depth_minus1( 3 )=0
 oi_occupancy_MSB_align_flag( 3 )=false
@@ -100,7 +117,7 @@ oi_occupancy_MSB_align_flag( 3 )=false
         .oi_occupancy_2d_bit_depth_minus1(31)
         .oi_occupancy_MSB_align_flag(true);
 
-    REQUIRE(toString(x, 4) == R"(oi_occupancy_codec_id( 4 )=255
+    REQUIRE(toString(x, AtlasId{4}) == R"(oi_occupancy_codec_id( 4 )=255
 oi_lossy_occupancy_compression_threshold( 4 )=255
 oi_occupancy_2d_bit_depth_minus1( 4 )=31
 oi_occupancy_MSB_align_flag( 4 )=true
@@ -112,12 +129,12 @@ oi_occupancy_MSB_align_flag( 4 )=true
 
 TEST_CASE("geometry_information", "[V3C Parameter Set]") {
   auto vps = V3cParameterSet{};
-  const auto atlasId = uint8_t(0);
+  const auto atlasId = AtlasId{0};
   vps.vps_auxiliary_video_present_flag(atlasId, false);
 
   auto x = GeometryInformation{};
 
-  REQUIRE(toString(x, 0) == R"(gi_geometry_codec_id( 0 )=0
+  REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id( 0 )=0
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=0
 gi_geometry_MSB_align_flag( 0 )=false
 gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=0
@@ -131,7 +148,7 @@ gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=0
         .gi_geometry_MSB_align_flag(true)
         .gi_geometry_3d_coordinates_bitdepth_minus1(31);
 
-    REQUIRE(toString(x, 0) == R"(gi_geometry_codec_id( 0 )=255
+    REQUIRE(toString(x, AtlasId{0}) == R"(gi_geometry_codec_id( 0 )=255
 gi_geometry_nominal_2d_bitdepth_minus1( 0 )=31
 gi_geometry_MSB_align_flag( 0 )=true
 gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=31
@@ -143,13 +160,13 @@ gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=31
 
 TEST_CASE("attribute_information", "[V3C Parameter Set]") {
   auto vps = V3cParameterSet{};
-  vps.vps_atlas_count_minus1(1);
-  const auto atlasId = 1;
+  const auto atlasId = AtlasId{1};
+  vps.vps_atlas_count_minus1(1).vps_atlas_id(1, atlasId);
 
   SECTION("No attributes") {
     const auto x = AttributeInformation{};
 
-    REQUIRE(toString(x, 5) == R"(ai_attribute_count( 5 )=0
+    REQUIRE(toString(x, AtlasId{5}) == R"(ai_attribute_count( 5 )=0
 )");
 
     REQUIRE(bitCodingTest(x, 7, vps, atlasId));
@@ -166,7 +183,7 @@ TEST_CASE("attribute_information", "[V3C Parameter Set]") {
         .ai_attribute_nominal_2d_bitdepth_minus1(0, 31)
         .ai_attribute_nominal_2d_bitdepth_minus1(1, 12);
 
-    REQUIRE(toString(x, 7) ==
+    REQUIRE(toString(x, AtlasId{7}) ==
             R"(ai_attribute_count( 7 )=2
 ai_attribute_type_id( 7, 0 )=ATTR_REFLECTANCE
 ai_attribute_codec_id( 7, 0 )=0
@@ -188,8 +205,9 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
   auto vps = V3cParameterSet{};
 
   SECTION("Example 1") {
-    vps.vps_frame_width(0, 1920);
-    vps.vps_frame_height(0, 1080);
+    vps.vps_atlas_id(0, {});
+    vps.vps_frame_width({}, 1920);
+    vps.vps_frame_height({}, 1080);
     vps.vps_extension_present_flag(true);
     vps.vps_miv_extension_flag(true);
     vps.vps_miv_extension()
@@ -233,23 +251,26 @@ vme_embedded_occupancy_flag=true
   }
 
   SECTION("Example 2") {
+    const auto j0 = AtlasId{30};
+    const auto j1 = AtlasId{31};
+    const auto j2 = AtlasId{32};
     vps.vps_v3c_parameter_set_id(15)
         .vps_atlas_count_minus1(2)
-        .vps_atlas_id(0, 30)
-        .vps_atlas_id(1, 31)
-        .vps_atlas_id(2, 32)
-        .vps_frame_width(0, 1920)
-        .vps_frame_width(1, 2048)
-        .vps_frame_height(0, 1080)
-        .vps_frame_height(1, 2080)
-        .vps_map_count_minus1(2, 15)
-        .vps_auxiliary_video_present_flag(0, false)
-        .vps_occupancy_video_present_flag(0, true)
-        .occupancy_information(0, {})
-        .vps_geometry_video_present_flag(1, true)
-        .geometry_information(1, {})
-        .vps_attribute_video_present_flag(2, true)
-        .attribute_information(2, {})
+        .vps_atlas_id(0, j0)
+        .vps_atlas_id(1, j1)
+        .vps_atlas_id(2, j2)
+        .vps_frame_width(j0, 1920)
+        .vps_frame_width(j1, 2048)
+        .vps_frame_height(j0, 1080)
+        .vps_frame_height(j1, 2080)
+        .vps_map_count_minus1(j2, 15)
+        .vps_auxiliary_video_present_flag(j0, false)
+        .vps_occupancy_video_present_flag(j0, true)
+        .occupancy_information(j0, {})
+        .vps_geometry_video_present_flag(j1, true)
+        .geometry_information(j1, {})
+        .vps_attribute_video_present_flag(j2, true)
+        .attribute_information(j2, {})
         .vps_extension_present_flag(true)
         .vps_vpcc_extension_flag(true)
         .vps_vpcc_extension(VpsVpccExtension{})
@@ -270,38 +291,38 @@ ptl_tool_constraints_present_flag=false
 vps_v3c_parameter_set_id=15
 vps_atlas_count_minus1=2
 vps_atlas_id( 0 )=30
-vps_frame_width( 0 )=1920
-vps_frame_height( 0 )=1080
-vps_map_count_minus1( 0 )=0
-vps_auxiliary_video_present_flag( 0 )=false
-vps_occupancy_video_present_flag( 0 )=true
-vps_geometry_video_present_flag( 0 )=false
-vps_attribute_video_present_flag( 0 )=false
-oi_occupancy_codec_id( 0 )=0
-oi_lossy_occupancy_compression_threshold( 0 )=0
-oi_occupancy_2d_bit_depth_minus1( 0 )=0
-oi_occupancy_MSB_align_flag( 0 )=false
+vps_frame_width( 30 )=1920
+vps_frame_height( 30 )=1080
+vps_map_count_minus1( 30 )=0
+vps_auxiliary_video_present_flag( 30 )=false
+vps_occupancy_video_present_flag( 30 )=true
+vps_geometry_video_present_flag( 30 )=false
+vps_attribute_video_present_flag( 30 )=false
+oi_occupancy_codec_id( 30 )=0
+oi_lossy_occupancy_compression_threshold( 30 )=0
+oi_occupancy_2d_bit_depth_minus1( 30 )=0
+oi_occupancy_MSB_align_flag( 30 )=false
 vps_atlas_id( 1 )=31
-vps_frame_width( 1 )=2048
-vps_frame_height( 1 )=2080
-vps_map_count_minus1( 1 )=0
-vps_auxiliary_video_present_flag( 1 )=false
-vps_occupancy_video_present_flag( 1 )=false
-vps_geometry_video_present_flag( 1 )=true
-vps_attribute_video_present_flag( 1 )=false
-gi_geometry_codec_id( 1 )=0
-gi_geometry_nominal_2d_bitdepth_minus1( 1 )=0
-gi_geometry_MSB_align_flag( 1 )=false
-gi_geometry_3d_coordinates_bitdepth_minus1( 1 )=0
+vps_frame_width( 31 )=2048
+vps_frame_height( 31 )=2080
+vps_map_count_minus1( 31 )=0
+vps_auxiliary_video_present_flag( 31 )=false
+vps_occupancy_video_present_flag( 31 )=false
+vps_geometry_video_present_flag( 31 )=true
+vps_attribute_video_present_flag( 31 )=false
+gi_geometry_codec_id( 31 )=0
+gi_geometry_nominal_2d_bitdepth_minus1( 31 )=0
+gi_geometry_MSB_align_flag( 31 )=false
+gi_geometry_3d_coordinates_bitdepth_minus1( 31 )=0
 vps_atlas_id( 2 )=32
-vps_frame_width( 2 )=0
-vps_frame_height( 2 )=0
-vps_map_count_minus1( 2 )=15
-vps_auxiliary_video_present_flag( 2 )=false
-vps_occupancy_video_present_flag( 2 )=false
-vps_geometry_video_present_flag( 2 )=false
-vps_attribute_video_present_flag( 2 )=true
-ai_attribute_count( 2 )=0
+vps_frame_width( 32 )=0
+vps_frame_height( 32 )=0
+vps_map_count_minus1( 32 )=15
+vps_auxiliary_video_present_flag( 32 )=false
+vps_occupancy_video_present_flag( 32 )=false
+vps_geometry_video_present_flag( 32 )=false
+vps_attribute_video_present_flag( 32 )=true
+ai_attribute_count( 32 )=0
 vps_extension_present_flag=true
 vps_vpcc_extension_flag=true
 vps_miv_extension_flag=true

@@ -64,19 +64,19 @@ EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture, boo
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
   vps.vps_atlas_count_minus1(uint8_t(atlasSizes.size() - 1));
 
-  for (size_t atlasId = 0; atlasId < atlasSizes.size(); ++atlasId) {
-    const auto a = uint8_t(atlasId);
-    vps.vps_atlas_id(a, a)
-        .vps_frame_width(a, atlasSizes[atlasId].x())
-        .vps_frame_height(a, atlasSizes[atlasId].y())
-        .vps_geometry_video_present_flag(a, true)
-        .vps_occupancy_video_present_flag(a, haveOccupancy)
-        .vps_attribute_video_present_flag(a, haveTexture);
+  for (size_t k = 0; k < atlasSizes.size(); ++k) {
+    const auto j = AtlasId{uint8_t(k)};
+    vps.vps_atlas_id(k, j)
+        .vps_frame_width(j, atlasSizes[k].x())
+        .vps_frame_height(j, atlasSizes[k].y())
+        .vps_geometry_video_present_flag(j, true)
+        .vps_occupancy_video_present_flag(j, haveOccupancy)
+        .vps_attribute_video_present_flag(j, haveTexture);
 
-    vps.geometry_information(a).gi_geometry_nominal_2d_bitdepth_minus1(9);
+    vps.geometry_information(j).gi_geometry_nominal_2d_bitdepth_minus1(9);
 
     if (haveOccupancy) {
-      vps.occupancy_information(a)
+      vps.occupancy_information(j)
           .oi_occupancy_codec_id(0)
           .oi_lossy_occupancy_compression_threshold(0) // set similar to V-PCC
           .oi_occupancy_2d_bit_depth_minus1(
@@ -85,7 +85,7 @@ EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture, boo
     }
 
     if (haveTexture) {
-      vps.attribute_information(a)
+      vps.attribute_information(j)
           .ai_attribute_count(1)
           .ai_attribute_type_id(0, AiAttributeTypeId::ATTR_TEXTURE)
           .ai_attribute_dimension_minus1(0, 2)

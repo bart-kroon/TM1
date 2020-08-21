@@ -79,30 +79,33 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
     decodeCommonAtlas();
   }
 
-  for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
-    if (!m_atlasAu[j] || m_atlasAu[j]->foc < m_au.foc) {
-      m_atlasAu[j] = (*m_atlasDecoder[j])();
+  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
+    if (!m_atlasAu[k] || m_atlasAu[k]->foc < m_au.foc) {
+      m_atlasAu[k] = (*m_atlasDecoder[k])();
     }
-    if (m_atlasAu[j] && m_atlasAu[j]->foc == m_au.foc) {
-      decodeAtlas(j);
+    if (m_atlasAu[k] && m_atlasAu[k]->foc == m_au.foc) {
+      decodeAtlas(k);
     }
   }
 
   auto result = std::array{false, false};
 
-  for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
+  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_au.vps.vps_atlas_id(k);
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      result[decodeOccVideo(j)] = true;
+      result[decodeOccVideo(k)] = true;
     }
   }
-  for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
+  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_au.vps.vps_atlas_id(k);
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      result[decodeGeoVideo(j)] = true;
+      result[decodeGeoVideo(k)] = true;
     }
   }
-  for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
+  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_au.vps.vps_atlas_id(k);
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      result[decodeAttrVideo(j)] = true;
+      result[decodeAttrVideo(k)] = true;
     }
   }
 
@@ -138,17 +141,17 @@ auto MivDecoder::decodeVps() -> bool {
   m_geoVideoDecoder.clear();
   m_attrVideoDecoder.clear();
 
-  for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
+  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_au.vps.vps_atlas_id(k);
     auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
-    vuh.vuh_atlas_id(m_au.vps.vps_atlas_id(j));
+    vuh.vuh_atlas_id(j);
     m_atlasDecoder.push_back(std::make_unique<AtlasDecoder>(
         [this, vuh]() { return m_inputBuffer(vuh); }, vuh, m_au.vps, m_au.foc));
     m_au.atlas.emplace_back();
 
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
-      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
-          .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
+      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
       m_occVideoDecoder.push_back(startVideoDecoder(vuh, m_totalOccVideoDecodingTime));
     } else {
       m_occVideoDecoder.push_back(nullptr);
@@ -156,15 +159,13 @@ auto MivDecoder::decodeVps() -> bool {
 
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
-      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
-          .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
+      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
       m_geoVideoDecoder.push_back(startVideoDecoder(vuh, m_totalGeoVideoDecodingTime));
     }
 
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
       auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
-      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id())
-          .vuh_atlas_id(m_au.vps.vps_atlas_id(j));
+      vuh.vuh_v3c_parameter_set_id(m_au.vps.vps_v3c_parameter_set_id()).vuh_atlas_id(j);
       m_attrVideoDecoder.push_back(startVideoDecoder(vuh, m_totalAttrVideoDecodingTime));
     }
   }
@@ -175,7 +176,8 @@ auto MivDecoder::decodeVps() -> bool {
 void MivDecoder::checkCapabilities() const {
   VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_flag());
 
-  for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
+  for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_au.vps.vps_atlas_id(k);
     VERIFY_MIVBITSTREAM(!m_au.vps.vps_auxiliary_video_present_flag(j));
     VERIFY_MIVBITSTREAM(m_au.vps.vps_geometry_video_present_flag(j));
     // TODO(BK): Add more constraints (map count, attribute count, EOM, etc.)
@@ -283,22 +285,22 @@ void MivDecoder::decodeMvpudq(const MivBitstream::MivViewParamsUpdateDepthQuanti
   }
 }
 
-void MivDecoder::decodeAtlas(uint8_t j) {
-  m_au.atlas[j].asps = m_atlasAu[j]->asps;
-  m_au.atlas[j].afps = m_atlasAu[j]->afps;
-  decodeBlockToPatchMap(j);
-  decodePatchParamsList(j);
+void MivDecoder::decodeAtlas(size_t k) {
+  m_au.atlas[k].asps = m_atlasAu[k]->asps;
+  m_au.atlas[k].afps = m_atlasAu[k]->afps;
+  decodeBlockToPatchMap(k);
+  decodePatchParamsList(k);
 }
 
-void MivDecoder::decodeBlockToPatchMap(uint8_t j) {
-  auto &btpm = m_au.atlas[j].blockToPatchMap;
-  const auto &asps = m_au.atlas[j].asps;
+void MivDecoder::decodeBlockToPatchMap(size_t k) {
+  auto &btpm = m_au.atlas[k].blockToPatchMap;
+  const auto &asps = m_au.atlas[k].asps;
   btpm = Common::BlockToPatchMap{
       asps.asps_frame_width() >> asps.asps_log2_patch_packing_block_size(),
       asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
   std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
 
-  m_atlasAu[j]->atl.atlas_tile_data_unit().visit([&btpm](size_t p,
+  m_atlasAu[k]->atl.atlas_tile_data_unit().visit([&btpm](size_t p,
                                                          MivBitstream::AtduPatchMode /* unused */,
                                                          const MivBitstream::PatchInformationData
                                                              &pid) {
@@ -314,17 +316,17 @@ void MivDecoder::decodeBlockToPatchMap(uint8_t j) {
   });
 }
 
-void MivDecoder::decodePatchParamsList(uint8_t j) {
-  const auto &ath = m_atlasAu[j]->atl.atlas_tile_header();
+void MivDecoder::decodePatchParamsList(size_t k) {
+  const auto &ath = m_atlasAu[k]->atl.atlas_tile_header();
   VERIFY_MIVBITSTREAM(ath.ath_type() == MivBitstream::AthType::I_TILE ||
                       ath.ath_type() == MivBitstream::AthType::SKIP_TILE);
   if (ath.ath_type() == MivBitstream::AthType::SKIP_TILE) {
     return;
   }
 
-  const auto &atdu = m_atlasAu[j]->atl.atlas_tile_data_unit();
-  const auto &asps = m_atlasAu[j]->asps;
-  auto &ppl = m_au.atlas[j].patchParamsList;
+  const auto &atdu = m_atlasAu[k]->atl.atlas_tile_data_unit();
+  const auto &asps = m_atlasAu[k]->asps;
+  auto &ppl = m_au.atlas[k].patchParamsList;
   ppl.assign(atdu.atduTotalNumberOfPatches(), {});
 
   atdu.visit([&](size_t p, MivBitstream::AtduPatchMode /* unused */,
@@ -353,20 +355,20 @@ void MivDecoder::decodePatchParamsList(uint8_t j) {
   });
 }
 
-auto MivDecoder::decodeOccVideo(uint8_t j) -> bool {
+auto MivDecoder::decodeOccVideo(size_t k) -> bool {
   const double t0 = clock();
 
-  if (m_occVideoDecoder[j]) {
-    auto frame = m_occVideoDecoder[j]->getFrame();
+  if (m_occVideoDecoder[k]) {
+    auto frame = m_occVideoDecoder[k]->getFrame();
     if (!frame) {
       return false;
     }
-    m_au.atlas[j].decOccFrame = frame->as<Common::YUV400P10>();
-    m_occVideoDecoder[j]->wait();
+    m_au.atlas[k].decOccFrame = frame->as<Common::YUV400P10>();
+    m_occVideoDecoder[k]->wait();
   } else if (m_occFrameServer) {
-    m_au.atlas[j].decOccFrame = m_occFrameServer(m_au.vps.vps_atlas_id(j), m_au.foc,
-                                                 m_au.atlas[j].decOccFrameSize(m_au.vps));
-    if (m_au.atlas[j].decOccFrame.empty()) {
+    m_au.atlas[k].decOccFrame = m_occFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc,
+                                                 m_au.atlas[k].decOccFrameSize(m_au.vps));
+    if (m_au.atlas[k].decOccFrame.empty()) {
       return false;
     }
   } else {
@@ -377,20 +379,20 @@ auto MivDecoder::decodeOccVideo(uint8_t j) -> bool {
   return true;
 }
 
-auto MivDecoder::decodeGeoVideo(uint8_t j) -> bool {
+auto MivDecoder::decodeGeoVideo(size_t k) -> bool {
   const double t0 = clock();
 
-  if (m_geoVideoDecoder[j]) {
-    auto frame = m_geoVideoDecoder[j]->getFrame();
+  if (m_geoVideoDecoder[k]) {
+    auto frame = m_geoVideoDecoder[k]->getFrame();
     if (!frame) {
       return false;
     }
-    m_au.atlas[j].decGeoFrame = frame->as<Common::YUV400P10>();
-    m_geoVideoDecoder[j]->wait();
+    m_au.atlas[k].decGeoFrame = frame->as<Common::YUV400P10>();
+    m_geoVideoDecoder[k]->wait();
   } else if (m_geoFrameServer) {
-    m_au.atlas[j].decGeoFrame = m_geoFrameServer(m_au.vps.vps_atlas_id(j), m_au.foc,
-                                                 m_au.atlas[j].decGeoFrameSize(m_au.vps));
-    if (m_au.atlas[j].decGeoFrame.empty()) {
+    m_au.atlas[k].decGeoFrame = m_geoFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc,
+                                                 m_au.atlas[k].decGeoFrameSize(m_au.vps));
+    if (m_au.atlas[k].decGeoFrame.empty()) {
       return false;
     }
   } else {
@@ -401,20 +403,20 @@ auto MivDecoder::decodeGeoVideo(uint8_t j) -> bool {
   return true;
 }
 
-auto MivDecoder::decodeAttrVideo(uint8_t j) -> bool {
+auto MivDecoder::decodeAttrVideo(size_t k) -> bool {
   const double t0 = clock();
 
-  if (m_attrVideoDecoder[j]) {
-    auto frame = m_attrVideoDecoder[j]->getFrame();
+  if (m_attrVideoDecoder[k]) {
+    auto frame = m_attrVideoDecoder[k]->getFrame();
     if (!frame) {
       return false;
     }
-    m_au.atlas[j].attrFrame = frame->as<Common::YUV444P10>();
-    m_attrVideoDecoder[j]->wait();
+    m_au.atlas[k].attrFrame = frame->as<Common::YUV444P10>();
+    m_attrVideoDecoder[k]->wait();
   } else if (m_attrFrameServer) {
-    m_au.atlas[j].attrFrame =
-        m_attrFrameServer(m_au.vps.vps_atlas_id(j), m_au.foc, m_au.atlas[j].frameSize());
-    if (m_au.atlas[j].attrFrame.empty()) {
+    m_au.atlas[k].attrFrame =
+        m_attrFrameServer(m_au.vps.vps_atlas_id(k), m_au.foc, m_au.atlas[k].frameSize());
+    if (m_au.atlas[k].attrFrame.empty()) {
       return false;
     }
   } else {

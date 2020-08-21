@@ -121,7 +121,7 @@ inline auto PatchParams::pduDepthOccMapThreshold(const std::uint16_t value) noex
 }
 
 inline auto PatchParams::operator==(const PatchParams &other) const -> bool {
-  return vuhAtlasId == other.vuhAtlasId && pduViewIdx() == other.pduViewIdx() &&
+  return atlasId == other.atlasId && pduViewIdx() == other.pduViewIdx() &&
          pduEntityId() == other.pduEntityId() && pduViewSize() == other.pduViewSize() &&
          pduViewPos() == other.pduViewPos() && pdu2dPos() == other.pdu2dPos() &&
          pduOrientationIndex() == other.pduOrientationIndex() &&

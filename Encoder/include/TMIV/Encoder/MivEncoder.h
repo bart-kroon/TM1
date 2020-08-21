@@ -58,12 +58,11 @@ private:
   auto mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics;
   auto mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics;
   auto mivViewParamsUpdateDepthQuantization() const -> MivViewParamsUpdateDepthQuantization;
-  auto atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
-  [[nodiscard]] auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
+  auto atlasSubBitstream(std::size_t k) -> AtlasSubBitstream;
+  [[nodiscard]] auto atlasTileLayer(std::size_t k) const -> AtlasTileLayerRBSP;
   constexpr auto maxFrmOrderCntLsb() const { return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U); }
 
-  template <typename Payload>
-  void writeV3cUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);
+  template <typename Payload> void writeV3cUnit(VuhUnitType vut, AtlasId j, Payload &&payload);
   template <typename Payload, typename... Args>
   void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload, Args &&... args);
 

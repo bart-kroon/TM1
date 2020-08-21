@@ -119,13 +119,13 @@ public:
         break;
       case TMIV::MivBitstream::VuhUnitType::V3C_AD:
       case TMIV::MivBitstream::VuhUnitType::V3C_OVD:
-        stream << int(vuh.vuh_atlas_id()) << ",,";
+        stream << vuh.vuh_atlas_id() << ",,";
         break;
       case TMIV::MivBitstream::VuhUnitType::V3C_GVD:
-        stream << int(vuh.vuh_atlas_id()) << ',' << int(vuh.vuh_map_index()) << ',';
+        stream << vuh.vuh_atlas_id() << ',' << int(vuh.vuh_map_index()) << ',';
         break;
       case TMIV::MivBitstream::VuhUnitType::V3C_AVD:
-        stream << int(vuh.vuh_atlas_id()) << ',' << int(vuh.vuh_map_index()) << ','
+        stream << vuh.vuh_atlas_id() << ',' << int(vuh.vuh_map_index()) << ','
                << int(vuh.vuh_attribute_index());
         break;
       default:

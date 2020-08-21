@@ -178,15 +178,16 @@ void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
                           vp.ci.ci_projection_plane_height_minus1() + 1);
     numBitsMinus1 = max(numBitsMinus1, static_cast<uint8_t>(ceilLog2(size) - 1));
   }
-  for (uint8_t atlasId = 0; atlasId <= m_params.vps.vps_atlas_count_minus1(); ++atlasId) {
-    m_params.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bitdepth_minus1(
-        numBitsMinus1);
+  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_params.vps.vps_atlas_id(k);
+    m_params.vps.geometry_information(j).gi_geometry_3d_coordinates_bitdepth_minus1(numBitsMinus1);
   }
 }
 
 auto Encoder::haveTexture() const -> bool {
   assert(m_transportParams.vps.vps_atlas_count_minus1() == 0);
-  const auto &ai = m_transportParams.vps.attribute_information(0);
+  const auto j0 = m_transportParams.vps.vps_atlas_id(0);
+  const auto &ai = m_transportParams.vps.attribute_information(j0);
   return ai.ai_attribute_count() >= 1 &&
          ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
 }
@@ -205,13 +206,14 @@ void Encoder::enableOccupancyPerView() {
 void Encoder::prepareIvau() {
   m_params.atlas.resize(m_params.vps.vps_atlas_count_minus1() + size_t(1));
 
-  for (uint8_t i = 0; i <= m_params.vps.vps_atlas_count_minus1(); ++i) {
-    auto &atlas = m_params.atlas[i];
-    const auto &gi = m_params.vps.geometry_information(i);
+  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+    auto &atlas = m_params.atlas[k];
+    const auto j = m_params.vps.vps_atlas_id(k);
+    const auto &gi = m_params.vps.geometry_information(j);
 
     // Set ASPS parameters
-    atlas.asps.asps_frame_width(m_params.vps.vps_frame_width(i))
-        .asps_frame_height(m_params.vps.vps_frame_height(i))
+    atlas.asps.asps_frame_width(m_params.vps.vps_frame_width(j))
+        .asps_frame_height(m_params.vps.vps_frame_height(j))
         .asps_geometry_3d_bitdepth_minus1(gi.gi_geometry_3d_coordinates_bitdepth_minus1())
         .asps_geometry_2d_bitdepth_minus1(gi.gi_geometry_nominal_2d_bitdepth_minus1())
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())

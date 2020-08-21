@@ -415,8 +415,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   x.pdu_view_pos_y(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bitdepth_minus1() + 1));
 
   VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
-  const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());
-  const auto &gi = vps.geometry_information(atlasIdx);
+  const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
   const auto pdu_depth_start_num_bits =
       gi.gi_geometry_3d_coordinates_bitdepth_minus1() - ath.ath_pos_min_z_quantizer() + 2;
@@ -465,8 +464,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   bitstream.writeBits(pdu_view_pos_y(), asps.asps_geometry_3d_bitdepth_minus1() + 1);
 
   VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
-  const auto atlasIdx = vps.atlasIdxOf(vuh.vuh_atlas_id());
-  const auto &gi = vps.geometry_information(atlasIdx);
+  const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
 
   const auto pdu_depth_start_num_bits =
       gi.gi_geometry_3d_coordinates_bitdepth_minus1() - ath.ath_pos_min_z_quantizer() + 2;

@@ -83,7 +83,7 @@ auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::os
 //
 // 23090-12 restrictions:
 //   * asps_long_term_ref_atlas_frames_flag == 0
-//   * afps_raw_3d_pos_bit_count_explicit_mode_flag == 0
+//   * afps_raw_3d_offset_bit_count_explicit_mode_flag == 0
 //   * ath_type in { I_TILE, SKIP_TILE }
 //
 // Limitations of the implementation:

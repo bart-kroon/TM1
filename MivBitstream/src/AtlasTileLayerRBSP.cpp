@@ -237,7 +237,7 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
       x.ath_patch_size_y_info_quantizer(asps.asps_log2_patch_packing_block_size());
     }
 
-    VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_pos_bit_count_explicit_mode_flag());
+    VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
   }
 
   bitstream.byteAlignment();
@@ -300,7 +300,7 @@ void AtlasTileHeader::encodeTo(OutputBitstream &bitstream,
                           asps.asps_log2_patch_packing_block_size());
     }
 
-    VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_pos_bit_count_explicit_mode_flag());
+    VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
   }
 
   bitstream.byteAlignment();

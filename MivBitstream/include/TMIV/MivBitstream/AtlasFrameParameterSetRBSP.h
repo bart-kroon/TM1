@@ -99,7 +99,7 @@ public:
   [[nodiscard]] constexpr auto afps_num_ref_idx_default_active_minus1() const noexcept;
   [[nodiscard]] constexpr auto afps_additional_lt_afoc_lsb_len() const noexcept;
   [[nodiscard]] constexpr auto afps_lod_mode_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_raw_3d_offset_bit_count_explicit_mode_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_vpcc_extension_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_miv_extension_flag() const noexcept;
@@ -117,7 +117,8 @@ public:
       -> auto &;
   constexpr auto afps_additional_lt_afoc_lsb_len(const std::uint8_t value) noexcept -> auto &;
   constexpr auto afps_lod_mode_enabled_flag(const bool value) noexcept -> auto &;
-  constexpr auto afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept -> auto &;
+  constexpr auto afps_raw_3d_offset_bit_count_explicit_mode_flag(const bool value) noexcept
+      -> auto &;
   constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
   auto afps_vpcc_extension_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
   auto afps_miv_extension_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
@@ -147,7 +148,7 @@ private:
   std::uint8_t m_afps_num_ref_idx_default_active_minus1{};
   std::uint8_t m_afps_additional_lt_afoc_lsb_len{};
   bool m_afps_lod_enabled_flag{};
-  bool m_afps_raw_3d_pos_bit_count_explicit_mode_flag{};
+  bool m_afps_raw_3d_offset_bit_count_explicit_mode_flag{};
   bool m_afps_extension_present_flag{};
   std::optional<bool> m_afps_vpcc_extension_flag{};
   std::optional<bool> m_afps_miv_extension_flag{};

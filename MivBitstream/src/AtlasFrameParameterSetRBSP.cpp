@@ -176,8 +176,8 @@ auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream
          << int(x.afps_num_ref_idx_default_active_minus1()) << '\n';
   stream << "afps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len()) << '\n';
   stream << "afps_lod_mode_enabled_flag=" << boolalpha << x.afps_lod_mode_enabled_flag() << '\n';
-  stream << "afps_raw_3d_pos_bit_count_explicit_mode_flag=" << boolalpha
-         << x.afps_raw_3d_pos_bit_count_explicit_mode_flag() << '\n';
+  stream << "afps_raw_3d_offset_bit_count_explicit_mode_flag=" << boolalpha
+         << x.afps_raw_3d_offset_bit_count_explicit_mode_flag() << '\n';
   stream << "afps_extension_present_flag=" << boolalpha << x.afps_extension_present_flag() << '\n';
   if (x.afps_extension_present_flag()) {
     stream << "afps_vpcc_extension_flag=" << boolalpha << x.afps_vpcc_extension_flag() << '\n';
@@ -207,8 +207,8 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
       afps_num_ref_idx_default_active_minus1() != other.afps_num_ref_idx_default_active_minus1() ||
       afps_additional_lt_afoc_lsb_len() != other.afps_additional_lt_afoc_lsb_len() ||
       afps_lod_mode_enabled_flag() != other.afps_lod_mode_enabled_flag() ||
-      afps_raw_3d_pos_bit_count_explicit_mode_flag() !=
-          other.afps_raw_3d_pos_bit_count_explicit_mode_flag() ||
+      afps_raw_3d_offset_bit_count_explicit_mode_flag() !=
+          other.afps_raw_3d_offset_bit_count_explicit_mode_flag() ||
       afps_extension_present_flag() != other.afps_extension_present_flag() ||
       afps_vpcc_extension_flag() != other.afps_vpcc_extension_flag() ||
       afps_miv_extension_flag() != other.afps_miv_extension_flag() ||
@@ -258,7 +258,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
                       x.afps_additional_lt_afoc_lsb_len() == 0);
 
   x.afps_lod_mode_enabled_flag(bitstream.getFlag());
-  x.afps_raw_3d_pos_bit_count_explicit_mode_flag(bitstream.getFlag());
+  x.afps_raw_3d_offset_bit_count_explicit_mode_flag(bitstream.getFlag());
   x.afps_extension_present_flag(bitstream.getFlag());
 
   if (x.afps_extension_present_flag()) {
@@ -308,7 +308,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.putUExpGolomb(afps_additional_lt_afoc_lsb_len());
 
   bitstream.putFlag(afps_lod_mode_enabled_flag());
-  bitstream.putFlag(afps_raw_3d_pos_bit_count_explicit_mode_flag());
+  bitstream.putFlag(afps_raw_3d_offset_bit_count_explicit_mode_flag());
   bitstream.putFlag(afps_extension_present_flag());
 
   if (afps_extension_present_flag()) {

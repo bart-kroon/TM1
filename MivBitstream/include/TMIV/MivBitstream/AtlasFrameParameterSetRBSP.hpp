@@ -99,8 +99,8 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_lod_mode_enabled_flag() const no
 }
 
 constexpr auto
-AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept {
-  return m_afps_raw_3d_pos_bit_count_explicit_mode_flag;
+AtlasFrameParameterSetRBSP::afps_raw_3d_offset_bit_count_explicit_mode_flag() const noexcept {
+  return m_afps_raw_3d_offset_bit_count_explicit_mode_flag;
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag() const noexcept {
@@ -152,10 +152,9 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_lod_mode_enabled_flag(const bool
   return *this;
 }
 
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept
-    -> auto & {
-  m_afps_raw_3d_pos_bit_count_explicit_mode_flag = value;
+constexpr auto AtlasFrameParameterSetRBSP::afps_raw_3d_offset_bit_count_explicit_mode_flag(
+    const bool value) noexcept -> auto & {
+  m_afps_raw_3d_offset_bit_count_explicit_mode_flag = value;
   return *this;
 }
 

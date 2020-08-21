@@ -145,8 +145,8 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .vme_max_entities_minus1(100);
 
     aspsV.front()
-        .asps_geometry_3d_bitdepth_minus1(14)
-        .asps_geometry_2d_bitdepth_minus1(9)
+        .asps_geometry_3d_bit_depth_minus1(14)
+        .asps_geometry_2d_bit_depth_minus1(9)
         .asps_use_eight_orientations_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)
@@ -198,7 +198,7 @@ pdu_depth_occ_threshold[ 12 ][ 102 ]=600
         .vme_max_entities_minus1(100);
 
     aspsV.front()
-        .asps_geometry_3d_bitdepth_minus1(14)
+        .asps_geometry_3d_bit_depth_minus1(14)
         .asps_use_eight_orientations_flag(true)
         .asps_normal_axis_max_delta_value_enabled_flag(true)
         .asps_extended_projection_enabled_flag(true)

@@ -401,9 +401,9 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
     VERIFY_MIVBITSTREAM(asps != nullptr);
     for (int d = 0; d < 3; ++d) {
       x.vui_display_box_origin(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
       x.vui_display_box_size(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
     }
   }
 
@@ -411,7 +411,7 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
   if (x.vui_anchor_point_present_flag()) {
     for (int d = 0; d < 3; ++d) {
       x.vui_anchor_point(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
     }
   }
 
@@ -451,8 +451,8 @@ void VuiParameters::encodeTo(Common::OutputBitstream &bitstream,
   if (vui_display_box_info_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr); // ASPS parsing dependency
     for (int d = 0; d < 3; ++d) {
-      bitstream.writeBits(vui_display_box_origin(d), asps->asps_geometry_3d_bitdepth_minus1() + 1);
-      bitstream.writeBits(vui_display_box_size(d), asps->asps_geometry_3d_bitdepth_minus1() + 1);
+      bitstream.writeBits(vui_display_box_origin(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
+      bitstream.writeBits(vui_display_box_size(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
     }
   }
 
@@ -460,7 +460,7 @@ void VuiParameters::encodeTo(Common::OutputBitstream &bitstream,
   if (vui_anchor_point_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr); // ASPS parsing dependency
     for (int d = 0; d < 3; ++d) {
-      bitstream.writeBits(vui_anchor_point(d), asps->asps_geometry_3d_bitdepth_minus1() + 1);
+      bitstream.writeBits(vui_anchor_point(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
     }
   }
 }

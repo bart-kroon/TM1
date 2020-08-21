@@ -82,7 +82,7 @@ afps_extension_present_flag=false
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(3);
     aspsV.back()
         .asps_atlas_sequence_parameter_set_id(12)
-        .asps_geometry_3d_bitdepth_minus1(31)
+        .asps_geometry_3d_bit_depth_minus1(31)
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(3)
         .asps_long_term_ref_atlas_frames_flag(true);
 

@@ -164,7 +164,7 @@ vui_anchor_point[ 2 ]=90
 )");
 
     auto asps = AtlasSequenceParameterSetRBSP{};
-    asps.asps_geometry_3d_bitdepth_minus1(15);
+    asps.asps_geometry_3d_bit_depth_minus1(15);
 
     REQUIRE(bitCodingTest(x, 259, &asps));
   }

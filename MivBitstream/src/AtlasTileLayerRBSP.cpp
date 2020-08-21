@@ -339,7 +339,7 @@ auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSe
     const auto &asme = asps.asps_miv_extension();
     if (asme.asme_depth_occ_threshold_flag()) {
       x.pdu_depth_occ_threshold(
-          bitstream.readBits<uint32_t>(asps.asps_geometry_2d_bitdepth_minus1() + 1));
+          bitstream.readBits<uint32_t>(asps.asps_geometry_2d_bit_depth_minus1() + 1));
     }
   }
   return x;
@@ -354,7 +354,7 @@ void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet
     VERIFY_MIVBITSTREAM(!m_pdu_entity_id.has_value());
   }
   if (asps.asps_miv_extension_flag() && asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
-    bitstream.writeBits(pdu_depth_occ_threshold(), asps.asps_geometry_2d_bitdepth_minus1() + 1);
+    bitstream.writeBits(pdu_depth_occ_threshold(), asps.asps_geometry_2d_bit_depth_minus1() + 1);
   } else {
     VERIFY_MIVBITSTREAM(!m_pdu_depth_occ_threshold.has_value());
   }
@@ -411,8 +411,8 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
 
   x.pdu_2d_size_x_minus1(bitstream.getUExpGolomb<uint16_t>());
   x.pdu_2d_size_y_minus1(bitstream.getUExpGolomb<uint16_t>());
-  x.pdu_view_pos_x(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bitdepth_minus1() + 1));
-  x.pdu_view_pos_y(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bitdepth_minus1() + 1));
+  x.pdu_view_pos_x(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bit_depth_minus1() + 1));
+  x.pdu_view_pos_y(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bit_depth_minus1() + 1));
 
   VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
@@ -460,8 +460,8 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   bitstream.putUExpGolomb(pdu_2d_pos_y());
   bitstream.putUExpGolomb(pdu_2d_size_x_minus1());
   bitstream.putUExpGolomb(pdu_2d_size_y_minus1());
-  bitstream.writeBits(pdu_view_pos_x(), asps.asps_geometry_3d_bitdepth_minus1() + 1);
-  bitstream.writeBits(pdu_view_pos_y(), asps.asps_geometry_3d_bitdepth_minus1() + 1);
+  bitstream.writeBits(pdu_view_pos_x(), asps.asps_geometry_3d_bit_depth_minus1() + 1);
+  bitstream.writeBits(pdu_view_pos_y(), asps.asps_geometry_3d_bit_depth_minus1() + 1);
 
   VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
   const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());

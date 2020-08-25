@@ -94,11 +94,9 @@ afps_extension_present_flag=false
         .afps_lod_mode_enabled_flag(true)
         .afps_raw_3d_offset_bit_count_explicit_mode_flag(true)
         .afps_extension_present_flag(true)
-        .afps_vpcc_extension_present_flag(true)
-        .afps_vpcc_extension({})
         .afps_miv_extension_present_flag(true)
         .afps_miv_extension({})
-        .afps_extension_6bits(63)
+        .afps_extension_7bits(127)
         .afpsExtensionData({false, true});
 
     REQUIRE(toString(x) == R"(afps_atlas_frame_parameter_set_id=63
@@ -111,9 +109,8 @@ afps_additional_lt_afoc_lsb_len=25
 afps_lod_mode_enabled_flag=true
 afps_raw_3d_offset_bit_count_explicit_mode_flag=true
 afps_extension_present_flag=true
-afps_vpcc_extension_present_flag=true
 afps_miv_extension_present_flag=true
-afps_extension_6bits=63
+afps_extension_7bits=127
 afps_extension_data_flag=false
 afps_extension_data_flag=true
 )");

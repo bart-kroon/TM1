@@ -54,14 +54,6 @@ constexpr auto AtlasFrameTileInformation::operator!=(
   return false;
 }
 
-constexpr auto AfpsVpccExtension::operator==(const AfpsVpccExtension & /* other */) const noexcept {
-  return true;
-}
-
-constexpr auto AfpsVpccExtension::operator!=(const AfpsVpccExtension &other) const noexcept {
-  return !operator==(other);
-}
-
 constexpr auto AfpsMivExtension::operator==(const AfpsMivExtension & /* other */) const noexcept {
   return true;
 }
@@ -164,15 +156,11 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag(const boo
   return *this;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_vpcc_extension_present_flag() const noexcept {
-  return m_afps_vpcc_extension_present_flag.value_or(false);
-}
-
 constexpr auto AtlasFrameParameterSetRBSP::afps_miv_extension_present_flag() const noexcept {
   return m_afps_miv_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_extension_6bits() const noexcept {
-  return m_afps_extension_6bits.value_or(0);
+constexpr auto AtlasFrameParameterSetRBSP::afps_extension_7bits() const noexcept {
+  return m_afps_extension_7bits.value_or(0);
 }
 } // namespace TMIV::MivBitstream

@@ -86,7 +86,7 @@ public:
   constexpr AtlasId() noexcept = default;
   constexpr explicit AtlasId(std::uint8_t j) noexcept : m_j{j} {}
 
-  friend std::ostream &operator<<(std::ostream &stream, AtlasId j);
+  friend auto operator<<(std::ostream &stream, AtlasId j) -> std::ostream &;
 
   constexpr auto operator==(AtlasId other) const noexcept { return m_j == other.m_j; }
   constexpr auto operator!=(AtlasId other) const noexcept { return m_j != other.m_j; }

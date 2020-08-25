@@ -161,7 +161,7 @@ auto codeOf(AiAttributeTypeId typeId) -> char {
   }
 }
 
-std::ostream &operator<<(std::ostream &stream, AtlasId j) { return stream << int{j.m_j}; }
+auto operator<<(std::ostream &stream, AtlasId j) -> std::ostream & { return stream << int{j.m_j}; }
 
 auto AtlasId::decodeFrom(Common::InputBitstream &bitstream) -> AtlasId {
   return AtlasId(bitstream.readBits<std::uint8_t>(6));

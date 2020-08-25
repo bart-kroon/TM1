@@ -181,24 +181,6 @@ GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1(std::uint8_t va
   return *this;
 }
 
-constexpr decltype(auto) operator<<(std::ostream &stream, const VpsVpccExtension & /* x */) {
-  return stream;
-}
-
-constexpr auto VpsVpccExtension::operator==(const VpsVpccExtension & /* other */) const noexcept {
-  return true;
-}
-constexpr auto VpsVpccExtension::operator!=(const VpsVpccExtension & /* other */) const noexcept {
-  return false;
-}
-
-constexpr auto VpsVpccExtension::decodeFrom(Common::InputBitstream & /* bitstream */)
-    -> VpsVpccExtension {
-  return {};
-}
-
-constexpr void VpsVpccExtension::encodeTo(Common::OutputBitstream & /* bitstream */) const {}
-
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag() const noexcept {
   return m_vme_depth_low_quality_flag;
 }
@@ -269,16 +251,12 @@ constexpr auto V3cParameterSet::vps_extension_present_flag() const noexcept {
   return m_vps_extension_present_flag;
 }
 
-constexpr auto V3cParameterSet::vps_vpcc_extension_present_flag() const noexcept {
-  return m_vps_vpcc_extension_present_flag.value_or(false);
-}
-
 constexpr auto V3cParameterSet::vps_miv_extension_present_flag() const noexcept {
   return m_vps_miv_extension_present_flag.value_or(false);
 }
 
-constexpr auto V3cParameterSet::vps_extension_6bits() const noexcept {
-  return m_vps_extension_6bits.value_or(0);
+constexpr auto V3cParameterSet::vps_extension_7bits() const noexcept {
+  return m_vps_extension_7bits.value_or(0);
 }
 
 constexpr auto V3cParameterSet::vps_v3c_parameter_set_id(std::uint8_t value) noexcept -> auto & {

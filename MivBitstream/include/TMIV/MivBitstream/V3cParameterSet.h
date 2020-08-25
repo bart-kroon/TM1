@@ -277,19 +277,6 @@ private:
   std::vector<AiAttribute> m_aiAttributes; // 23090-5: ai_attribute_count
 };
 
-// 23090-5: vps_vpcc_extension()
-class VpsVpccExtension {
-public:
-  friend constexpr decltype(auto) operator<<(std::ostream &stream, const VpsVpccExtension &x);
-
-  constexpr auto operator==(const VpsVpccExtension &other) const noexcept;
-  constexpr auto operator!=(const VpsVpccExtension &other) const noexcept;
-
-  static constexpr auto decodeFrom(Common::InputBitstream &bitstream) -> VpsVpccExtension;
-
-  constexpr void encodeTo(Common::OutputBitstream &bitstream) const;
-};
-
 // 23090-12: vps_miv_extension()
 class VpsMivExtension {
 public:
@@ -346,10 +333,8 @@ public:
   [[nodiscard]] auto geometry_information(AtlasId j) const -> const GeometryInformation &;
   [[nodiscard]] auto attribute_information(AtlasId j) const -> const AttributeInformation &;
   [[nodiscard]] constexpr auto vps_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_vpcc_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto vps_miv_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_extension_6bits() const noexcept;
-  [[nodiscard]] auto vps_vpcc_extension() const noexcept -> const VpsVpccExtension &;
+  [[nodiscard]] constexpr auto vps_extension_7bits() const noexcept;
   [[nodiscard]] auto vps_miv_extension() const noexcept -> const VpsMivExtension &;
   [[nodiscard]] auto vps_extension_length_minus1() const noexcept -> std::size_t;
   [[nodiscard]] auto vpsExtensionData() const noexcept -> const std::vector<std::uint8_t> &;
@@ -369,10 +354,8 @@ public:
   auto geometry_information(AtlasId j, GeometryInformation value) -> V3cParameterSet &;
   auto attribute_information(AtlasId j, AttributeInformation value) -> V3cParameterSet &;
   constexpr auto vps_extension_present_flag(bool value) noexcept -> auto &;
-  auto vps_vpcc_extension_present_flag(bool value) noexcept -> V3cParameterSet &;
   auto vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet &;
-  auto vps_extension_6bits(std::uint8_t value) noexcept -> V3cParameterSet &;
-  auto vps_vpcc_extension(VpsVpccExtension value) noexcept -> V3cParameterSet &;
+  auto vps_extension_7bits(std::uint8_t value) noexcept -> V3cParameterSet &;
   auto vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet &;
   auto vpsExtensionData(std::vector<std::uint8_t> value) noexcept -> V3cParameterSet &;
 
@@ -416,10 +399,8 @@ private:
   std::uint8_t m_vps_v3c_parameter_set_id{};
   std::vector<VpsAtlas> m_vpsAtlases{VpsAtlas{}};
   bool m_vps_extension_present_flag{};
-  std::optional<bool> m_vps_vpcc_extension_present_flag{};
   std::optional<bool> m_vps_miv_extension_present_flag{};
-  std::optional<std::uint8_t> m_vps_extension_6bits{};
-  std::optional<VpsVpccExtension> m_vps_vpcc_extension;
+  std::optional<std::uint8_t> m_vps_extension_7bits{};
   std::optional<VpsMivExtension> m_vps_miv_extension;
   std::optional<std::vector<std::uint8_t>> m_vpsExtensionData;
 };

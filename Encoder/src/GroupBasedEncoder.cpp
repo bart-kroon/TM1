@@ -276,8 +276,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const V3cParameterSet *> &vps
     assert(v->profile_tier_level() == x.profile_tier_level());
     assert(v->vps_v3c_parameter_set_id() == x.vps_v3c_parameter_set_id());
     assert(v->vps_miv_extension_present_flag());
-    assert(!v->vps_vpcc_extension_present_flag());
-    assert(v->vps_extension_6bits() == 0);
+    assert(v->vps_extension_7bits() == 0);
     assert(v->vps_miv_extension() == x.vps_miv_extension());
 
     for (uint8_t kIn = 0; kIn <= v->vps_atlas_count_minus1(); ++kIn, ++kOut) {

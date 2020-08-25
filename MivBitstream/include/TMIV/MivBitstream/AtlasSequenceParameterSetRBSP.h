@@ -175,8 +175,8 @@ public:
   [[nodiscard]] constexpr auto asps_patch_size_quantizer_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_map_count_minus1() const noexcept;
   [[nodiscard]] constexpr auto asps_pixel_deinterleaving_enabled_flag() const noexcept;
-  [[nodiscard]] constexpr auto asps_eom_patch_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_raw_patch_enabled_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_eom_patch_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_plr_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_vui_parameters_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extension_present_flag() const noexcept;

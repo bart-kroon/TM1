@@ -293,7 +293,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const V3cParameterSet *> &vps
       x.vps_auxiliary_video_present_flag(jOut, v->vps_auxiliary_video_present_flag(jIn));
       x.vps_occupancy_video_present_flag(jOut, v->vps_occupancy_video_present_flag(jIn));
       x.vps_geometry_video_present_flag(jOut, v->vps_geometry_video_present_flag(jIn));
-      x.vps_attribute_video_present_flag(jOut, v->vps_auxiliary_video_present_flag(jIn));
+      x.vps_attribute_video_present_flag(jOut, v->vps_attribute_video_present_flag(jIn));
 
       if (x.vps_occupancy_video_present_flag(jOut)) {
         x.occupancy_information(jOut) = v->occupancy_information(jIn);

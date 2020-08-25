@@ -46,7 +46,9 @@ auto EncoderAtlasParams::asme() const noexcept -> const AspsMivExtension & {
 }
 
 auto EncoderAtlasParams::asme() noexcept -> AspsMivExtension & {
-  return asps.asps_extension_present_flag(true).asps_miv_extension_flag(true).asps_miv_extension();
+  return asps.asps_extension_present_flag(true)
+      .asps_miv_extension_present_flag(true)
+      .asps_miv_extension();
 }
 
 EncoderParams::EncoderParams() : EncoderParams{false, false} {}
@@ -99,7 +101,9 @@ auto EncoderParams::vme() const noexcept -> const VpsMivExtension & {
 }
 
 auto EncoderParams::vme() noexcept -> VpsMivExtension & {
-  return vps.vps_extension_present_flag(true).vps_miv_extension_flag(true).vps_miv_extension();
+  return vps.vps_extension_present_flag(true)
+      .vps_miv_extension_present_flag(true)
+      .vps_miv_extension();
 }
 
 auto EncoderParams::operator==(const EncoderParams &other) const -> bool {

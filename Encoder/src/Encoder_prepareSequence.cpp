@@ -79,8 +79,8 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
   m_params.frameRate = m_transportParams.frameRate;
   m_params.aaps.aaps_log2_max_afoc_present_flag(true)
       .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(log2FocLsbMinus4())
-      .aaps_extension_flag(true)
-      .aaps_miv_extension_flag(true)
+      .aaps_extension_present_flag(true)
+      .aaps_miv_extension_present_flag(true)
       .aaps_miv_extension()
       .aame_vui_params_present_flag(true)
       .vui_parameters(vuiParameters());
@@ -224,7 +224,8 @@ void Encoder::prepareIvau() {
         .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
 
     // Signalling pdu_entity_id requires ASME to be present
-    if (m_params.vps.vps_miv_extension_flag() && m_params.vme().vme_max_entities_minus1() > 0) {
+    if (m_params.vps.vps_miv_extension_present_flag() &&
+        m_params.vme().vme_max_entities_minus1() > 0) {
       // There is nothing entity-related in ASME so a reference is obtained but discarded
       static_cast<void>(atlas.asme());
     }

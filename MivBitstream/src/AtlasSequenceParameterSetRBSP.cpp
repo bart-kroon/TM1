@@ -212,14 +212,14 @@ auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) const -> con
 
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() const noexcept
     -> const AspsVpccExtension & {
-  VERIFY_V3CBITSTREAM(asps_vpcc_extension_flag());
+  VERIFY_V3CBITSTREAM(asps_vpcc_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_asve.has_value());
   return *m_asve;
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_miv_extension() const noexcept
     -> const AspsMivExtension & {
-  VERIFY_V3CBITSTREAM(asps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(asps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_asme.has_value());
   return *m_asme;
 }
@@ -243,17 +243,17 @@ auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps(const
   return *this;
 }
 
-auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_flag(const bool value) noexcept
+auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_present_flag(const bool value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(asps_extension_present_flag());
-  m_asps_vpcc_extension_flag = value;
+  m_asps_vpcc_extension_present_flag = value;
   return *this;
 }
 
-auto AtlasSequenceParameterSetRBSP::asps_miv_extension_flag(const bool value) noexcept
+auto AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag(const bool value) noexcept
     -> AtlasSequenceParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(asps_extension_present_flag());
-  m_asps_miv_extension_flag = value;
+  m_asps_miv_extension_present_flag = value;
   return *this;
 }
 
@@ -299,7 +299,7 @@ auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1(
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() noexcept -> AspsVpccExtension & {
-  VERIFY_MIVBITSTREAM(asps_vpcc_extension_flag());
+  VERIFY_MIVBITSTREAM(asps_vpcc_extension_present_flag());
   if (!m_asve) {
     m_asve = AspsVpccExtension{};
   }
@@ -307,7 +307,7 @@ auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension() noexcept -> AspsVpccEx
 }
 
 auto AtlasSequenceParameterSetRBSP::asps_miv_extension() noexcept -> AspsMivExtension & {
-  VERIFY_MIVBITSTREAM(asps_miv_extension_flag());
+  VERIFY_MIVBITSTREAM(asps_miv_extension_present_flag());
   if (!m_asme) {
     m_asme = AspsMivExtension{};
   }
@@ -362,14 +362,16 @@ auto operator<<(ostream &stream, const AtlasSequenceParameterSetRBSP &x) -> ostr
          << '\n';
   stream << "asps_extension_present_flag=" << boolalpha << x.asps_extension_present_flag() << '\n';
   if (x.asps_extension_present_flag()) {
-    stream << "asps_vpcc_extension_flag=" << boolalpha << x.asps_vpcc_extension_flag() << '\n';
-    stream << "asps_miv_extension_flag=" << boolalpha << x.asps_miv_extension_flag() << '\n';
+    stream << "asps_vpcc_extension_present_flag=" << boolalpha
+           << x.asps_vpcc_extension_present_flag() << '\n';
+    stream << "asps_miv_extension_present_flag=" << boolalpha << x.asps_miv_extension_present_flag()
+           << '\n';
     stream << "asps_extension_6bits=" << int(x.asps_extension_6bits()) << '\n';
   }
-  if (x.asps_vpcc_extension_flag()) {
+  if (x.asps_vpcc_extension_present_flag()) {
     stream << x.asps_vpcc_extension();
   }
-  if (x.asps_miv_extension_flag()) {
+  if (x.asps_miv_extension_present_flag()) {
     stream << x.asps_miv_extension();
   }
   if (x.asps_extension_6bits()) {
@@ -422,15 +424,15 @@ auto AtlasSequenceParameterSetRBSP::operator==(
       asps_plr_enabled_flag() != other.asps_plr_enabled_flag() ||
       asps_vui_parameters_present_flag() != other.asps_vui_parameters_present_flag() ||
       asps_extension_present_flag() != other.asps_extension_present_flag() ||
-      asps_vpcc_extension_flag() != other.asps_vpcc_extension_flag() ||
-      asps_miv_extension_flag() != other.asps_miv_extension_flag() ||
+      asps_vpcc_extension_present_flag() != other.asps_vpcc_extension_present_flag() ||
+      asps_miv_extension_present_flag() != other.asps_miv_extension_present_flag() ||
       asps_extension_6bits() != other.asps_extension_6bits()) {
     return false;
   }
-  if (asps_vpcc_extension_flag() && asps_vpcc_extension() != other.asps_vpcc_extension()) {
+  if (asps_vpcc_extension_present_flag() && asps_vpcc_extension() != other.asps_vpcc_extension()) {
     return false;
   }
-  if (asps_miv_extension_flag() && asps_miv_extension() != other.asps_miv_extension()) {
+  if (asps_miv_extension_present_flag() && asps_miv_extension() != other.asps_miv_extension()) {
     return false;
   }
   if (asps_extension_6bits() && aspsExtensionData() != other.aspsExtensionData()) {
@@ -511,14 +513,14 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(istream &stream, const V3cUnitHea
   x.asps_extension_present_flag(bitstream.getFlag());
 
   if (x.asps_extension_present_flag()) {
-    x.asps_vpcc_extension_flag(bitstream.getFlag());
-    x.asps_miv_extension_flag(bitstream.getFlag());
+    x.asps_vpcc_extension_present_flag(bitstream.getFlag());
+    x.asps_miv_extension_present_flag(bitstream.getFlag());
     x.asps_extension_6bits(bitstream.readBits<uint8_t>(6));
   }
-  if (x.asps_vpcc_extension_flag()) {
+  if (x.asps_vpcc_extension_present_flag()) {
     x.asps_vpcc_extension() = AspsVpccExtension::decodeFrom(bitstream, x);
   }
-  if (x.asps_miv_extension_flag()) {
+  if (x.asps_miv_extension_present_flag()) {
     x.asps_miv_extension() = AspsMivExtension::decodeFrom(bitstream, vps);
   }
   if (x.asps_extension_6bits() != 0) {
@@ -599,14 +601,14 @@ void AtlasSequenceParameterSetRBSP::encodeTo(ostream &stream, const V3cUnitHeade
   bitstream.putFlag(asps_extension_present_flag());
 
   if (asps_extension_present_flag()) {
-    bitstream.putFlag(asps_vpcc_extension_flag());
-    bitstream.putFlag(asps_miv_extension_flag());
+    bitstream.putFlag(asps_vpcc_extension_present_flag());
+    bitstream.putFlag(asps_miv_extension_present_flag());
     bitstream.writeBits(asps_extension_6bits(), 6);
   }
-  if (asps_vpcc_extension_flag()) {
+  if (asps_vpcc_extension_present_flag()) {
     asps_vpcc_extension().encodeTo(bitstream, *this);
   }
-  if (asps_miv_extension_flag()) {
+  if (asps_miv_extension_present_flag()) {
     asps_miv_extension().encodeTo(bitstream, vps);
   }
   if (asps_extension_6bits() != 0) {

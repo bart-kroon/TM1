@@ -180,8 +180,8 @@ public:
   [[nodiscard]] constexpr auto asps_plr_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_vui_parameters_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto asps_vpcc_extension_flag() const noexcept;
-  [[nodiscard]] constexpr auto asps_miv_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_vpcc_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto asps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extension_6bits() const noexcept;
   [[nodiscard]] auto asps_vpcc_extension() const noexcept -> const AspsVpccExtension &;
   [[nodiscard]] auto asps_miv_extension() const noexcept -> const AspsMivExtension &;
@@ -217,8 +217,10 @@ public:
   constexpr auto asps_plr_enabled_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_vui_parameters_present_flag(const bool value) noexcept -> auto &;
   constexpr auto asps_extension_present_flag(const bool value) noexcept -> auto &;
-  auto asps_vpcc_extension_flag(const bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
-  auto asps_miv_extension_flag(const bool value) noexcept -> AtlasSequenceParameterSetRBSP &;
+  auto asps_vpcc_extension_present_flag(const bool value) noexcept
+      -> AtlasSequenceParameterSetRBSP &;
+  auto asps_miv_extension_present_flag(const bool value) noexcept
+      -> AtlasSequenceParameterSetRBSP &;
   auto asps_extension_6bits(const std::uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP &;
   auto aspsExtensionData(std::vector<bool> value) noexcept -> AtlasSequenceParameterSetRBSP &;
 
@@ -262,8 +264,8 @@ private:
   std::uint8_t m_asps_map_count_minus1{};
   bool m_asps_vui_parameters_present_flag{};
   bool m_asps_extension_present_flag{};
-  std::optional<bool> m_asps_vpcc_extension_flag{};
-  std::optional<bool> m_asps_miv_extension_flag{};
+  std::optional<bool> m_asps_vpcc_extension_present_flag{};
+  std::optional<bool> m_asps_miv_extension_present_flag{};
   std::optional<std::uint8_t> m_asps_extension_6bits{};
   std::optional<AspsVpccExtension> m_asve;
   std::optional<AspsMivExtension> m_asme;

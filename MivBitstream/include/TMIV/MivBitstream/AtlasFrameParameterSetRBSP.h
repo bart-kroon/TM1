@@ -101,8 +101,8 @@ public:
   [[nodiscard]] constexpr auto afps_lod_mode_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_raw_3d_offset_bit_count_explicit_mode_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto afps_vpcc_extension_flag() const noexcept;
-  [[nodiscard]] constexpr auto afps_miv_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_vpcc_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto afps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto afps_extension_6bits() const noexcept;
   [[nodiscard]] auto afps_vpcc_extension() const noexcept -> AfpsVpccExtension;
   [[nodiscard]] auto afps_miv_extension() const noexcept -> AfpsMivExtension;
@@ -120,8 +120,8 @@ public:
   constexpr auto afps_raw_3d_offset_bit_count_explicit_mode_flag(const bool value) noexcept
       -> auto &;
   constexpr auto afps_extension_present_flag(const bool value) noexcept -> auto &;
-  auto afps_vpcc_extension_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
-  auto afps_miv_extension_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afps_vpcc_extension_present_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
+  auto afps_miv_extension_present_flag(bool value) noexcept -> AtlasFrameParameterSetRBSP &;
   auto afps_extension_6bits(std::uint8_t value) noexcept -> AtlasFrameParameterSetRBSP &;
   auto afps_vpcc_extension(const AfpsVpccExtension &value) noexcept -> AtlasFrameParameterSetRBSP &;
   auto afps_miv_extension(const AfpsMivExtension &value) noexcept -> AtlasFrameParameterSetRBSP &;
@@ -150,8 +150,8 @@ private:
   bool m_afps_lod_enabled_flag{};
   bool m_afps_raw_3d_offset_bit_count_explicit_mode_flag{};
   bool m_afps_extension_present_flag{};
-  std::optional<bool> m_afps_vpcc_extension_flag{};
-  std::optional<bool> m_afps_miv_extension_flag{};
+  std::optional<bool> m_afps_vpcc_extension_present_flag{};
+  std::optional<bool> m_afps_miv_extension_present_flag{};
   std::optional<std::uint8_t> m_afps_extension_6bits{};
   std::optional<AfpsVpccExtension> m_afve;
   std::optional<AfpsMivExtension> m_afme;

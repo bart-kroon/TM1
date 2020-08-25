@@ -147,7 +147,7 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .gi_geometry_3d_coordinates_bit_depth_minus1(14)
         .gi_geometry_2d_bit_depth_minus1(9);
     vps.vps_extension_present_flag(true)
-        .vps_miv_extension_flag(true)
+        .vps_miv_extension_present_flag(true)
         .vps_miv_extension()
         .vme_max_entities_minus1(100);
 
@@ -159,7 +159,7 @@ pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
         .asps_extended_projection_enabled_flag(true)
         .asps_max_number_projections_minus1(511)
         .asps_extension_present_flag(true)
-        .asps_miv_extension_flag(true)
+        .asps_miv_extension_present_flag(true)
         .asps_miv_extension()
         .asme_depth_occ_threshold_flag(true);
 
@@ -200,7 +200,7 @@ pdu_depth_occ_threshold[ 12 ][ 102 ]=600
         .gi_geometry_3d_coordinates_bit_depth_minus1(9)
         .gi_geometry_2d_bit_depth_minus1(9);
     vps.vps_extension_present_flag(true)
-        .vps_miv_extension_flag(true)
+        .vps_miv_extension_present_flag(true)
         .vps_miv_extension()
         .vme_max_entities_minus1(100);
 
@@ -211,7 +211,7 @@ pdu_depth_occ_threshold[ 12 ][ 102 ]=600
         .asps_extended_projection_enabled_flag(true)
         .asps_max_number_projections_minus1(511)
         .asps_extension_present_flag(true)
-        .asps_miv_extension_flag(true);
+        .asps_miv_extension_present_flag(true);
 
     // Create ASME with default values
     static_cast<void>(aspsV.front().asps_miv_extension());

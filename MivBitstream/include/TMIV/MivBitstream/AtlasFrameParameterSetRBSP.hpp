@@ -164,12 +164,12 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag(const boo
   return *this;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_vpcc_extension_flag() const noexcept {
-  return m_afps_vpcc_extension_flag.value_or(false);
+constexpr auto AtlasFrameParameterSetRBSP::afps_vpcc_extension_present_flag() const noexcept {
+  return m_afps_vpcc_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_miv_extension_flag() const noexcept {
-  return m_afps_miv_extension_flag.value_or(false);
+constexpr auto AtlasFrameParameterSetRBSP::afps_miv_extension_present_flag() const noexcept {
+  return m_afps_miv_extension_present_flag.value_or(false);
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_extension_6bits() const noexcept {

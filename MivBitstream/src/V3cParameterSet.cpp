@@ -654,13 +654,13 @@ auto V3cParameterSet::attribute_information(AtlasId j) const -> const AttributeI
 }
 
 auto V3cParameterSet::vps_vpcc_extension() const noexcept -> const VpsVpccExtension & {
-  VERIFY_V3CBITSTREAM(vps_vpcc_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_vpcc_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_vps_vpcc_extension.has_value());
   return *m_vps_vpcc_extension;
 }
 
 auto V3cParameterSet::vps_miv_extension() const noexcept -> const VpsMivExtension & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_vps_miv_extension.has_value());
   return *m_vps_miv_extension;
 }
@@ -748,15 +748,15 @@ auto V3cParameterSet::attribute_information(AtlasId j, AttributeInformation valu
   return *this;
 }
 
-auto V3cParameterSet::vps_vpcc_extension_flag(bool value) noexcept -> V3cParameterSet & {
+auto V3cParameterSet::vps_vpcc_extension_present_flag(bool value) noexcept -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_extension_present_flag());
-  m_vps_vpcc_extension_flag = value;
+  m_vps_vpcc_extension_present_flag = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_miv_extension_flag(bool value) noexcept -> V3cParameterSet & {
+auto V3cParameterSet::vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_extension_present_flag());
-  m_vps_miv_extension_flag = value;
+  m_vps_miv_extension_present_flag = value;
   return *this;
 }
 
@@ -768,13 +768,13 @@ auto V3cParameterSet::vps_extension_6bits(uint8_t value) noexcept -> V3cParamete
 }
 
 auto V3cParameterSet::vps_vpcc_extension(VpsVpccExtension value) noexcept -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_vpcc_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_vpcc_extension_present_flag());
   m_vps_vpcc_extension = value;
   return *this;
 }
 
 auto V3cParameterSet::vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   m_vps_miv_extension = value;
   return *this;
 }
@@ -813,7 +813,7 @@ auto V3cParameterSet::attribute_information(AtlasId j) -> AttributeInformation &
 }
 
 auto V3cParameterSet::vps_miv_extension() noexcept -> VpsMivExtension & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   if (!m_vps_miv_extension) {
     m_vps_miv_extension = VpsMivExtension{};
   }
@@ -859,14 +859,16 @@ auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
   }
   stream << "vps_extension_present_flag=" << boolalpha << x.vps_extension_present_flag() << '\n';
   if (x.vps_extension_present_flag()) {
-    stream << "vps_vpcc_extension_flag=" << boolalpha << x.vps_vpcc_extension_flag() << '\n';
-    stream << "vps_miv_extension_flag=" << boolalpha << x.vps_miv_extension_flag() << '\n';
+    stream << "vps_vpcc_extension_present_flag=" << boolalpha << x.vps_vpcc_extension_present_flag()
+           << '\n';
+    stream << "vps_miv_extension_present_flag=" << boolalpha << x.vps_miv_extension_present_flag()
+           << '\n';
     stream << "vps_extension_6bits=" << int(x.vps_extension_6bits()) << '\n';
   }
-  if (x.vps_vpcc_extension_flag()) {
+  if (x.vps_vpcc_extension_present_flag()) {
     stream << x.vps_vpcc_extension();
   }
-  if (x.vps_miv_extension_flag()) {
+  if (x.vps_miv_extension_present_flag()) {
     stream << x.vps_miv_extension();
   }
   if (x.vps_extension_6bits() != 0) {
@@ -883,8 +885,8 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
       vps_v3c_parameter_set_id() != other.vps_v3c_parameter_set_id() ||
       vps_atlas_count_minus1() != other.vps_atlas_count_minus1() ||
       vps_extension_present_flag() != other.vps_extension_present_flag() ||
-      vps_vpcc_extension_flag() != other.vps_vpcc_extension_flag() ||
-      vps_miv_extension_flag() != other.vps_miv_extension_flag() ||
+      vps_vpcc_extension_present_flag() != other.vps_vpcc_extension_present_flag() ||
+      vps_miv_extension_present_flag() != other.vps_miv_extension_present_flag() ||
       vps_extension_6bits() != other.vps_extension_6bits()) {
     return false;
   }
@@ -915,10 +917,10 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
       return false;
     }
   }
-  if (vps_vpcc_extension_flag() && vps_vpcc_extension() != other.vps_vpcc_extension()) {
+  if (vps_vpcc_extension_present_flag() && vps_vpcc_extension() != other.vps_vpcc_extension()) {
     return false;
   }
-  if (vps_miv_extension_flag() && vps_miv_extension() != other.vps_miv_extension()) {
+  if (vps_miv_extension_present_flag() && vps_miv_extension() != other.vps_miv_extension()) {
     return false;
   }
   if (vps_extension_6bits() && vpsExtensionData() != other.vpsExtensionData()) {
@@ -971,14 +973,14 @@ auto V3cParameterSet::decodeFrom(istream &stream) -> V3cParameterSet {
   x.vps_extension_present_flag(bitstream.getFlag());
 
   if (x.vps_extension_present_flag()) {
-    x.vps_vpcc_extension_flag(bitstream.getFlag());
-    x.vps_miv_extension_flag(bitstream.getFlag());
+    x.vps_vpcc_extension_present_flag(bitstream.getFlag());
+    x.vps_miv_extension_present_flag(bitstream.getFlag());
     x.vps_extension_6bits(bitstream.readBits<uint8_t>(6));
   }
-  if (x.vps_vpcc_extension_flag()) {
+  if (x.vps_vpcc_extension_present_flag()) {
     x.vps_vpcc_extension(VpsVpccExtension::decodeFrom(bitstream));
   }
-  if (x.vps_miv_extension_flag()) {
+  if (x.vps_miv_extension_present_flag()) {
     x.vps_miv_extension(VpsMivExtension::decodeFrom(bitstream, x));
   }
   if (x.vps_extension_6bits()) {
@@ -1032,14 +1034,14 @@ void V3cParameterSet::encodeTo(ostream &stream) const {
   bitstream.putFlag(vps_extension_present_flag());
 
   if (vps_extension_present_flag()) {
-    bitstream.putFlag(vps_vpcc_extension_flag());
-    bitstream.putFlag(vps_miv_extension_flag());
+    bitstream.putFlag(vps_vpcc_extension_present_flag());
+    bitstream.putFlag(vps_miv_extension_present_flag());
     bitstream.writeBits(vps_extension_6bits(), 6);
   }
-  if (vps_vpcc_extension_flag()) {
+  if (vps_vpcc_extension_present_flag()) {
     vps_vpcc_extension().encodeTo(bitstream);
   }
-  if (vps_miv_extension_flag()) {
+  if (vps_miv_extension_present_flag()) {
     vps_miv_extension().encodeTo(bitstream, *this);
   }
   if (vps_extension_6bits()) {

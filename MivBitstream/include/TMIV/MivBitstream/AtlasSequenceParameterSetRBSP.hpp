@@ -226,12 +226,12 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_present_flag() cons
   return m_asps_extension_present_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_flag() const noexcept {
-  return m_asps_vpcc_extension_flag.value_or(false);
+constexpr auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_present_flag() const noexcept {
+  return m_asps_vpcc_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_miv_extension_flag() const noexcept {
-  return m_asps_miv_extension_flag.value_or(false);
+constexpr auto AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag() const noexcept {
+  return m_asps_miv_extension_present_flag.value_or(false);
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_6bits() const noexcept {

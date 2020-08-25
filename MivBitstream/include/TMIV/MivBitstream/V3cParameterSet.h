@@ -346,8 +346,8 @@ public:
   [[nodiscard]] auto geometry_information(AtlasId j) const -> const GeometryInformation &;
   [[nodiscard]] auto attribute_information(AtlasId j) const -> const AttributeInformation &;
   [[nodiscard]] constexpr auto vps_extension_present_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_vpcc_extension_flag() const noexcept;
-  [[nodiscard]] constexpr auto vps_miv_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto vps_vpcc_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto vps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto vps_extension_6bits() const noexcept;
   [[nodiscard]] auto vps_vpcc_extension() const noexcept -> const VpsVpccExtension &;
   [[nodiscard]] auto vps_miv_extension() const noexcept -> const VpsMivExtension &;
@@ -369,8 +369,8 @@ public:
   auto geometry_information(AtlasId j, GeometryInformation value) -> V3cParameterSet &;
   auto attribute_information(AtlasId j, AttributeInformation value) -> V3cParameterSet &;
   constexpr auto vps_extension_present_flag(bool value) noexcept -> auto &;
-  auto vps_vpcc_extension_flag(bool value) noexcept -> V3cParameterSet &;
-  auto vps_miv_extension_flag(bool value) noexcept -> V3cParameterSet &;
+  auto vps_vpcc_extension_present_flag(bool value) noexcept -> V3cParameterSet &;
+  auto vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet &;
   auto vps_extension_6bits(std::uint8_t value) noexcept -> V3cParameterSet &;
   auto vps_vpcc_extension(VpsVpccExtension value) noexcept -> V3cParameterSet &;
   auto vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet &;
@@ -416,8 +416,8 @@ private:
   std::uint8_t m_vps_v3c_parameter_set_id{};
   std::vector<VpsAtlas> m_vpsAtlases{VpsAtlas{}};
   bool m_vps_extension_present_flag{};
-  std::optional<bool> m_vps_vpcc_extension_flag{};
-  std::optional<bool> m_vps_miv_extension_flag{};
+  std::optional<bool> m_vps_vpcc_extension_present_flag{};
+  std::optional<bool> m_vps_miv_extension_present_flag{};
   std::optional<std::uint8_t> m_vps_extension_6bits{};
   std::optional<VpsVpccExtension> m_vps_vpcc_extension;
   std::optional<VpsMivExtension> m_vps_miv_extension;

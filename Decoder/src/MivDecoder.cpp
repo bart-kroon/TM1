@@ -174,7 +174,7 @@ auto MivDecoder::decodeVps() -> bool {
 }
 
 void MivDecoder::checkCapabilities() const {
-  VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_flag());
+  VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_present_flag());
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
@@ -243,7 +243,7 @@ void MivDecoder::decodeViewParamsList() {
     MIVBITSTREAM_ERROR("Unknown MVP update mode");
   }
 
-  if (m_commonAtlasAu->aaps.aaps_miv_extension_flag()) {
+  if (m_commonAtlasAu->aaps.aaps_miv_extension_present_flag()) {
     const auto &aame = m_commonAtlasAu->aaps.aaps_miv_extension();
     if (aame.aame_vui_params_present_flag()) {
       const auto &vui = aame.vui_parameters();
@@ -345,7 +345,7 @@ void MivDecoder::decodePatchParamsList(size_t k) {
     if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
       ppl[p].pduDepthEnd(pdu.pdu_depth_end() << ath.ath_pos_delta_max_d_quantizer());
     }
-    if (asps.asps_miv_extension_flag()) {
+    if (asps.asps_miv_extension_present_flag()) {
       ppl[p].pduEntityId(pdu.pdu_miv_extension().pdu_entity_id());
 
       if (asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {

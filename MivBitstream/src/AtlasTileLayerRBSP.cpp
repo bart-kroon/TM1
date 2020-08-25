@@ -343,13 +343,13 @@ auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSe
                                  const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension {
   auto x = PduMivExtension{};
 
-  if (vps.vps_miv_extension_flag()) {
+  if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (vme.vme_max_entities_minus1() > 0) {
       x.pdu_entity_id(bitstream.getUVar<uint32_t>(vme.vme_max_entities_minus1() + uint64_t(1)));
     }
   }
-  if (asps.asps_miv_extension_flag()) {
+  if (asps.asps_miv_extension_present_flag()) {
     const auto &asme = asps.asps_miv_extension();
     if (asme.asme_depth_occ_threshold_flag()) {
       x.pdu_depth_occ_threshold(
@@ -361,13 +361,15 @@ auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSe
 
 void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
                                const AtlasSequenceParameterSetRBSP &asps) const {
-  if (vps.vps_miv_extension_flag() && vps.vps_miv_extension().vme_max_entities_minus1() > 0) {
+  if (vps.vps_miv_extension_present_flag() &&
+      vps.vps_miv_extension().vme_max_entities_minus1() > 0) {
     bitstream.putUVar(pdu_entity_id(),
                       vps.vps_miv_extension().vme_max_entities_minus1() + uint64_t(1));
   } else {
     VERIFY_MIVBITSTREAM(!m_pdu_entity_id.has_value());
   }
-  if (asps.asps_miv_extension_flag() && asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
+  if (asps.asps_miv_extension_present_flag() &&
+      asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
     bitstream.writeBits(pdu_depth_occ_threshold(), asps.asps_geometry_2d_bit_depth_minus1() + 1);
   } else {
     VERIFY_MIVBITSTREAM(!m_pdu_depth_occ_threshold.has_value());
@@ -456,7 +458,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
-  if (asps.asps_miv_extension_flag()) {
+  if (asps.asps_miv_extension_present_flag()) {
     x.pdu_miv_extension(PduMivExtension::decodeFrom(bitstream, vps, asps));
   }
   return x;
@@ -510,7 +512,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
 
-  if (asps.asps_miv_extension_flag()) {
+  if (asps.asps_miv_extension_present_flag()) {
     pdu_miv_extension().encodeTo(bitstream, vps, asps);
   } else {
     VERIFY_V3CBITSTREAM(!m_pdu_miv_extension);

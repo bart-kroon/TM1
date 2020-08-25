@@ -148,8 +148,8 @@ asps_raw_patch_enabled_flag=false
 asps_plr_enabled_flag=false
 asps_vui_parameters_present_flag=false
 asps_extension_present_flag=true
-asps_vpcc_extension_flag=false
-asps_miv_extension_flag=false
+asps_vpcc_extension_present_flag=false
+asps_miv_extension_present_flag=false
 asps_extension_6bits=0
 )");
 
@@ -164,7 +164,7 @@ asps_extension_6bits=0
         .vps_frame_height({}, 0xFFFF)
         .vps_map_count_minus1({}, 1)
         .vps_extension_present_flag(true)
-        .vps_miv_extension_flag(true)
+        .vps_miv_extension_present_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
         .vme_embedded_occupancy_flag(true)
@@ -188,8 +188,8 @@ asps_extension_6bits=0
         .asps_patch_size_quantizer_present_flag(true)
         .asps_map_count_minus1(1)
         .asps_extension_present_flag(true)
-        .asps_vpcc_extension_flag(true)
-        .asps_miv_extension_flag(true)
+        .asps_vpcc_extension_present_flag(true)
+        .asps_miv_extension_present_flag(true)
         .asps_extension_6bits(63);
     x.asps_vpcc_extension().asps_vpcc_remove_duplicate_point_enabled_flag(true);
     x.asps_miv_extension()
@@ -225,8 +225,8 @@ asps_raw_patch_enabled_flag=false
 asps_plr_enabled_flag=false
 asps_vui_parameters_present_flag=false
 asps_extension_present_flag=true
-asps_vpcc_extension_flag=true
-asps_miv_extension_flag=true
+asps_vpcc_extension_present_flag=true
+asps_miv_extension_present_flag=true
 asps_extension_6bits=63
 asps_vpcc_remove_duplicate_point_enabled_flag=true
 asme_group_id=3

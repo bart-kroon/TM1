@@ -62,7 +62,8 @@ private:
   [[nodiscard]] auto atlasTileLayer(std::size_t k) const -> AtlasTileLayerRBSP;
   constexpr auto maxFrmOrderCntLsb() const { return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U); }
 
-  template <typename Payload> void writeV3cUnit(VuhUnitType vut, AtlasId j, Payload &&payload);
+  template <typename Payload>
+  void writeV3cUnit(VuhUnitType vut, AtlasId atlasId, Payload &&payload);
   template <typename Payload, typename... Args>
   void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload, Args &&... args);
 

@@ -146,35 +146,35 @@ private:
          << " V3C units including the VPS\n";
   }
 
-  void checkRestrictions(AtlasId j) const {
-    if (m_vps.vps_map_count_minus1(j) > 0) {
+  void checkRestrictions(AtlasId atlasId) const {
+    if (m_vps.vps_map_count_minus1(atlasId) > 0) {
       throw runtime_error("Having multiple maps is not supported.");
     }
-    if (m_vps.vps_auxiliary_video_present_flag(j)) {
+    if (m_vps.vps_auxiliary_video_present_flag(atlasId)) {
       throw runtime_error("Auxiliary video is not supported.");
     }
   }
 
-  void appendGvd(AtlasId j) {
+  void appendGvd(AtlasId atlasId) {
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-    vuh.vuh_atlas_id(j);
-    appendSubBitstream(vuh, format(m_gvdSubBitstreamPathFmt, j));
+    vuh.vuh_atlas_id(atlasId);
+    appendSubBitstream(vuh, format(m_gvdSubBitstreamPathFmt, atlasId));
   }
 
-  void appendOvd(AtlasId j) {
+  void appendOvd(AtlasId atlasId) {
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-    vuh.vuh_atlas_id(j);
-    appendSubBitstream(vuh, format(*m_ovdSubBitstreamPathFmt, j));
+    vuh.vuh_atlas_id(atlasId);
+    appendSubBitstream(vuh, format(*m_ovdSubBitstreamPathFmt, atlasId));
   }
 
-  void appendAvd(AtlasId j, uint8_t attributeIdx, AiAttributeTypeId typeId) {
+  void appendAvd(AtlasId atlasId, uint8_t attributeIdx, AiAttributeTypeId typeId) {
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
-    vuh.vuh_atlas_id(j);
+    vuh.vuh_atlas_id(atlasId);
     vuh.vuh_attribute_index(attributeIdx);
-    appendSubBitstream(vuh, format(*m_avdSubBitstreamPathFmt, codeOf(typeId), j));
+    appendSubBitstream(vuh, format(*m_avdSubBitstreamPathFmt, codeOf(typeId), atlasId));
   }
 
   void appendSubBitstream(const V3cUnitHeader &vuh, const path &subBitstreamPath) {

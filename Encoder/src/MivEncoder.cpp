@@ -372,10 +372,10 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> AtlasTileLayerRBSP {
 }
 
 template <typename Payload>
-void MivEncoder::writeV3cUnit(VuhUnitType vut, AtlasId j, Payload &&payload) {
+void MivEncoder::writeV3cUnit(VuhUnitType vut, AtlasId atlasId, Payload &&payload) {
   auto vuh = V3cUnitHeader{vut};
   if (vut != VuhUnitType::V3C_VPS && vut != VuhUnitType::V3C_CAD) {
-    vuh.vuh_atlas_id(j);
+    vuh.vuh_atlas_id(atlasId);
   }
   const auto vu = V3cUnit{vuh, forward<Payload>(payload)};
 

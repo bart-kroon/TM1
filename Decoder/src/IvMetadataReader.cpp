@@ -59,17 +59,17 @@ IvMetadataReader::IvMetadataReader(const Json &config)
   m_vssDecoder = make_unique<V3cSampleStreamDecoder>(m_stream);
   m_decoder = make_unique<MivDecoder>([this]() { return (*m_vssDecoder)(); });
 
-  m_decoder->setOccFrameServer([&config](AtlasId j, uint32_t frameId, Vec2i frameSize) {
+  m_decoder->setOccFrameServer([&config](AtlasId atlasId, uint32_t frameId, Vec2i frameSize) {
     return readFrame<YUV400P10>(config, "OutputDirectory", "OccupancyVideoDataPathFmt", frameId,
-                                frameSize, j);
+                                frameSize, atlasId);
   });
-  m_decoder->setGeoFrameServer([&config](AtlasId j, uint32_t frameId, Vec2i frameSize) {
+  m_decoder->setGeoFrameServer([&config](AtlasId atlasId, uint32_t frameId, Vec2i frameSize) {
     return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
-                                frameSize, j);
+                                frameSize, atlasId);
   });
-  m_decoder->setAttrFrameServer([&config](AtlasId j, uint32_t frameId, Vec2i frameSize) {
+  m_decoder->setAttrFrameServer([&config](AtlasId atlasId, uint32_t frameId, Vec2i frameSize) {
     return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
-                                        frameId, frameSize, "T", j));
+                                        frameId, frameSize, "T", atlasId));
   });
 }
 } // namespace TMIV::Decoder

@@ -56,8 +56,8 @@ constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb() const noexcept {
   return m_ath_atlas_frm_order_cnt_lsb;
 }
 
-constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag() const noexcept {
-  return m_ath_ref_atlas_frame_list_sps_flag.value_or(false);
+constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_asps_flag() const noexcept {
+  return m_ath_ref_atlas_frame_list_asps_flag.value_or(false);
 }
 
 constexpr auto AtlasTileHeader::ath_pos_min_d_quantizer() const noexcept {
@@ -108,9 +108,9 @@ constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb(const std::uint16_t 
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag(const bool value) noexcept
+constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_asps_flag(const bool value) noexcept
     -> auto & {
-  m_ath_ref_atlas_frame_list_sps_flag = value;
+  m_ath_ref_atlas_frame_list_asps_flag = value;
   return *this;
 }
 
@@ -131,7 +131,7 @@ constexpr auto AtlasTileHeader::operator==(const AtlasTileHeader &other) const n
       ath_id() != other.ath_id() || ath_type() != other.ath_type() ||
       m_ath_atlas_output_flag != other.m_ath_atlas_output_flag ||
       ath_atlas_frm_order_cnt_lsb() != other.ath_atlas_frm_order_cnt_lsb() ||
-      ath_ref_atlas_frame_list_sps_flag() != other.ath_ref_atlas_frame_list_sps_flag()) {
+      ath_ref_atlas_frame_list_asps_flag() != other.ath_ref_atlas_frame_list_asps_flag()) {
     return false;
   }
   if (ath_type() == AthType::SKIP_TILE) {

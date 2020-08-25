@@ -168,9 +168,9 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
     stream << "ath_atlas_output_flag=" << boolalpha << *x.m_ath_atlas_output_flag << '\n';
   }
   stream << "ath_atlas_frm_order_cnt_lsb=" << int(x.ath_atlas_frm_order_cnt_lsb()) << '\n';
-  if (x.m_ath_ref_atlas_frame_list_sps_flag) {
-    stream << "ath_ref_atlas_frame_list_sps_flag=" << boolalpha
-           << *x.m_ath_ref_atlas_frame_list_sps_flag << '\n';
+  if (x.m_ath_ref_atlas_frame_list_asps_flag) {
+    stream << "ath_ref_atlas_frame_list_asps_flag=" << boolalpha
+           << *x.m_ath_ref_atlas_frame_list_asps_flag << '\n';
   }
   if (x.ath_type() != AthType::SKIP_TILE) {
     if (x.m_ath_pos_min_d_quantizer) {
@@ -220,10 +220,10 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream, const NalUnitHeader 
       bitstream.readBits<uint16_t>(asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4));
 
   if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {
-    x.ath_ref_atlas_frame_list_sps_flag(bitstream.getFlag());
+    x.ath_ref_atlas_frame_list_asps_flag(bitstream.getFlag());
   }
 
-  LIMITATION(x.ath_ref_atlas_frame_list_sps_flag());
+  LIMITATION(x.ath_ref_atlas_frame_list_asps_flag());
   LIMITATION(asps.ref_list_struct(0).num_ref_entries() <= 1);
 
   if (x.ath_type() != AthType::SKIP_TILE) {
@@ -283,13 +283,13 @@ void AtlasTileHeader::encodeTo(OutputBitstream &bitstream, const NalUnitHeader &
   bitstream.writeBits(ath_atlas_frm_order_cnt_lsb(),
                       asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4() + 4);
 
-  LIMITATION(ath_ref_atlas_frame_list_sps_flag());
+  LIMITATION(ath_ref_atlas_frame_list_asps_flag());
   LIMITATION(asps.ref_list_struct(0).num_ref_entries() <= 1);
 
   VERIFY_V3CBITSTREAM(asps.asps_num_ref_atlas_frame_lists_in_asps() > 0 ||
-                      !ath_ref_atlas_frame_list_sps_flag());
+                      !ath_ref_atlas_frame_list_asps_flag());
   if (asps.asps_num_ref_atlas_frame_lists_in_asps() > 0) {
-    bitstream.putFlag(ath_ref_atlas_frame_list_sps_flag());
+    bitstream.putFlag(ath_ref_atlas_frame_list_asps_flag());
   }
 
   if (ath_type() != AthType::SKIP_TILE) {

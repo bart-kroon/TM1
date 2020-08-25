@@ -59,7 +59,7 @@ ath_patch_size_y_info_quantizer=7
   SECTION("Example 1") {
     x.ath_no_output_of_prior_atlas_frames_flag(true)
         .ath_type(AthType::SKIP_TILE)
-        .ath_ref_atlas_frame_list_sps_flag(true);
+        .ath_ref_atlas_frame_list_asps_flag(true);
 
     const auto nuh = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
 
@@ -69,7 +69,7 @@ ath_atlas_adaptation_parameter_set_id=0
 ath_id=0
 ath_type=SKIP_TILE
 ath_atlas_frm_order_cnt_lsb=0
-ath_ref_atlas_frame_list_sps_flag=true
+ath_ref_atlas_frame_list_asps_flag=true
 )");
 
     REQUIRE(bitCodingTest(x, 16, nuh, aspsV, afpsV));
@@ -82,7 +82,7 @@ ath_ref_atlas_frame_list_sps_flag=true
         .asps_normal_axis_max_delta_value_enabled_flag(true);
 
     x.ath_type(AthType::I_TILE)
-        .ath_ref_atlas_frame_list_sps_flag(true)
+        .ath_ref_atlas_frame_list_asps_flag(true)
         .ath_patch_size_x_info_quantizer(6)
         .ath_patch_size_y_info_quantizer(5)
         .ath_atlas_adaptation_parameter_set_id(4)
@@ -96,7 +96,7 @@ ath_atlas_adaptation_parameter_set_id=4
 ath_id=0
 ath_type=I_TILE
 ath_atlas_frm_order_cnt_lsb=0
-ath_ref_atlas_frame_list_sps_flag=true
+ath_ref_atlas_frame_list_asps_flag=true
 ath_pos_min_d_quantizer=3
 ath_pos_delta_max_d_quantizer=7
 ath_patch_size_x_info_quantizer=6
@@ -412,14 +412,14 @@ TEST_CASE("atlas_tile_layer_rbsp", "[Atlas Tile Layer RBSP]") {
     const auto nuh = NalUnitHeader{NalUnitType::NAL_TSA_R, 0, 2};
 
     auto x = AtlasTileLayerRBSP{};
-    x.atlas_tile_header().ath_type(AthType::SKIP_TILE).ath_ref_atlas_frame_list_sps_flag(true);
+    x.atlas_tile_header().ath_type(AthType::SKIP_TILE).ath_ref_atlas_frame_list_asps_flag(true);
 
     REQUIRE(toString(x) == R"(ath_atlas_frame_parameter_set_id=0
 ath_atlas_adaptation_parameter_set_id=0
 ath_id=0
 ath_type=SKIP_TILE
 ath_atlas_frm_order_cnt_lsb=0
-ath_ref_atlas_frame_list_sps_flag=true
+ath_ref_atlas_frame_list_asps_flag=true
 )");
     REQUIRE(byteCodingTest(x, 3, vuh, vps, nuh, aspsV, afpsV));
   }
@@ -448,7 +448,7 @@ ath_ref_atlas_frame_list_sps_flag=true
     const auto nuh = NalUnitHeader{NalUnitType::NAL_RSV_ACL_35, 0, 2};
 
     auto x = AtlasTileLayerRBSP{};
-    x.atlas_tile_header().ath_type(AthType::I_TILE).ath_ref_atlas_frame_list_sps_flag(true);
+    x.atlas_tile_header().ath_type(AthType::I_TILE).ath_ref_atlas_frame_list_asps_flag(true);
     x.atlas_tile_data_unit() =
         AtlasTileDataUnit{std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu1}},
                           std::pair{AtduPatchMode::I_INTRA, PatchInformationData{pdu2}},
@@ -459,7 +459,7 @@ ath_atlas_adaptation_parameter_set_id=0
 ath_id=0
 ath_type=I_TILE
 ath_atlas_frm_order_cnt_lsb=0
-ath_ref_atlas_frame_list_sps_flag=true
+ath_ref_atlas_frame_list_asps_flag=true
 ath_patch_size_x_info_quantizer=0
 ath_patch_size_y_info_quantizer=0
 atdu_patch_mode[ 0 ]=I_INTRA
@@ -523,7 +523,7 @@ pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
     x.atlas_tile_header()
         .ath_no_output_of_prior_atlas_frames_flag(false)
         .ath_type(AthType::I_TILE)
-        .ath_ref_atlas_frame_list_sps_flag(true)
+        .ath_ref_atlas_frame_list_asps_flag(true)
         .ath_pos_min_d_quantizer(7)
         .ath_pos_delta_max_d_quantizer(5);
     x.atlas_tile_data_unit() =
@@ -535,7 +535,7 @@ ath_atlas_adaptation_parameter_set_id=0
 ath_id=0
 ath_type=I_TILE
 ath_atlas_frm_order_cnt_lsb=0
-ath_ref_atlas_frame_list_sps_flag=true
+ath_ref_atlas_frame_list_asps_flag=true
 ath_pos_min_d_quantizer=7
 ath_pos_delta_max_d_quantizer=5
 ath_patch_size_x_info_quantizer=0

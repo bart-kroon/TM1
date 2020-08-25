@@ -88,7 +88,7 @@ auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::os
 //
 // Limitations of the implementation:
 //   * asps_num_ref_atlas_frame_lists_in_asps == 1
-//   * ath_ref_atlas_frame_list_sps_flag == 1
+//   * ath_ref_atlas_frame_list_asps_flag == 1
 class AtlasTileHeader {
 public:
   [[nodiscard]] constexpr auto ath_no_output_of_prior_atlas_frames_flag() const noexcept;
@@ -98,7 +98,7 @@ public:
   [[nodiscard]] constexpr auto ath_type() const noexcept;
   [[nodiscard]] auto ath_atlas_output_flag() const noexcept -> bool;
   [[nodiscard]] constexpr auto ath_atlas_frm_order_cnt_lsb() const noexcept;
-  [[nodiscard]] constexpr auto ath_ref_atlas_frame_list_sps_flag() const noexcept;
+  [[nodiscard]] constexpr auto ath_ref_atlas_frame_list_asps_flag() const noexcept;
   [[nodiscard]] constexpr auto ath_pos_min_d_quantizer() const noexcept;
   [[nodiscard]] constexpr auto ath_pos_delta_max_d_quantizer() const noexcept;
   [[nodiscard]] auto ath_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
@@ -113,7 +113,7 @@ public:
   constexpr auto ath_pos_min_d_quantizer(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_pos_delta_max_d_quantizer(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_atlas_frm_order_cnt_lsb(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto ath_ref_atlas_frame_list_sps_flag(const bool value) noexcept -> auto &;
+  constexpr auto ath_ref_atlas_frame_list_asps_flag(const bool value) noexcept -> auto &;
   auto ath_patch_size_x_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
   auto ath_patch_size_y_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
 
@@ -138,7 +138,7 @@ private:
   AthType m_ath_type{};
   std::optional<bool> m_ath_atlas_output_flag{};
   std::uint16_t m_ath_atlas_frm_order_cnt_lsb{};
-  std::optional<bool> m_ath_ref_atlas_frame_list_sps_flag{};
+  std::optional<bool> m_ath_ref_atlas_frame_list_asps_flag{};
   std::optional<std::uint8_t> m_ath_pos_min_d_quantizer{};
   std::optional<std::uint8_t> m_ath_pos_delta_max_d_quantizer{};
   std::uint8_t m_ath_patch_size_x_info_quantizer{};

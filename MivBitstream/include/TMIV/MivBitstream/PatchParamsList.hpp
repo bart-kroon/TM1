@@ -153,11 +153,19 @@ constexpr auto PatchParams::isRotated() const noexcept {
 }
 
 constexpr auto PatchParams::atlasPatch3dSizeU() const noexcept {
-  return isRotated() ? atlasPatch2dPosY() : atlasPatch2dPosX();
+  return isRotated() ? atlasPatch2dSizeY() : atlasPatch2dSizeX();
 }
 
 constexpr auto PatchParams::atlasPatch3dSizeV() const noexcept {
-  return isRotated() ? atlasPatch2dPosX() : atlasPatch2dPosY();
+  return isRotated() ? atlasPatch2dSizeX() : atlasPatch2dSizeY();
+}
+
+constexpr auto PatchParams::atlasPatch3dSizeU(std::uint32_t value) noexcept {
+  return isRotated() ? atlasPatch2dSizeY(value) : atlasPatch2dSizeX(value);
+}
+
+constexpr auto PatchParams::atlasPatch3dSizeV(std::uint32_t value) noexcept {
+  return isRotated() ? atlasPatch2dSizeX(value) : atlasPatch2dSizeY(value);
 }
 
 inline auto PatchParams::viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i {

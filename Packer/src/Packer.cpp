@@ -183,25 +183,20 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           p.atlasPatch2dPosY(packerOutput.y());
           p.atlasPatch3dOffsetU(cluster.jmin());
           p.atlasPatch3dOffsetV(cluster.imin());
-
-          if (packerOutput.isRotated()) {
-            p.atlasPatch2dSizeX(align(cluster.height(), m_blockSize));
-            p.atlasPatch2dSizeY(align(cluster.width(), m_blockSize));
-            p.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270);
-          } else {
-            p.atlasPatch2dSizeX(align(cluster.width(), m_blockSize));
-            p.atlasPatch2dSizeY(align(cluster.height(), m_blockSize));
-            p.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_NULL);
-          }
+          p.atlasPatchOrientationIndex(packerOutput.isRotated()
+                                           ? FlexiblePatchOrientation::FPO_ROT270
+                                           : FlexiblePatchOrientation::FPO_NULL);
+          p.atlasPatch3dSizeU(align(cluster.width(), m_blockSize));
+          p.atlasPatch3dSizeV(align(cluster.height(), m_blockSize));
 
           const uint32_t maskWidth = masks[cluster.getViewId()].getWidth();
           const uint32_t maskHeight = masks[cluster.getViewId()].getHeight();
 
           if (p.atlasPatch3dOffsetU() + p.atlasPatch3dSizeU() > maskWidth) {
-            p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU() - p.atlasPatch3dOffsetU());
+            p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU());
           }
           if (p.atlasPatch3dOffsetV() + p.atlasPatch3dSizeV() > maskHeight) {
-            p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV() - p.atlasPatch3dOffsetV());
+            p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV());
           }
 
           if (m_maxEntities > 1) {

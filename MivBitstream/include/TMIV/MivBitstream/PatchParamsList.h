@@ -80,6 +80,8 @@ struct PatchParams {
   [[nodiscard]] constexpr auto isRotated() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch3dSizeU() const noexcept;
   [[nodiscard]] constexpr auto atlasPatch3dSizeV() const noexcept;
+  constexpr auto atlasPatch3dSizeU(std::uint32_t value) noexcept;
+  constexpr auto atlasPatch3dSizeV(std::uint32_t value) noexcept;
 
   // Pixel position conversion from atlas to/from view
   [[nodiscard]] auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;
@@ -96,7 +98,7 @@ private:
   std::uint32_t m_atlasPatch3dOffsetU{};
   std::uint32_t m_atlasPatch3dOffsetV{};
   std::uint32_t m_atlasPatch3dOffsetD{};
-  std::uint32_t m_atlasPatch3dRangeD;
+  std::uint32_t m_atlasPatch3dRangeD{};
   std::uint16_t m_atlasPatchProjectionId{};
   FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
   std::optional<std::uint16_t> m_atlasPatchEntityId;

@@ -116,7 +116,7 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
 
         const auto &plane = inAtlases[kIn].depth.getPlane(0);
 
-        if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
+        if (n >= plane.height() || m >= plane.width()) {
           abort();
         }
 

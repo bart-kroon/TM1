@@ -110,7 +110,6 @@ TEST_CASE("skip_patch_data_unit", "[Atlas Tile Layer RBSP]") {
 }
 
 TEST_CASE("patch_data_unit", "[Atlas Tile Layer RBSP]") {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
   auto vps = V3cParameterSet{};
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
@@ -129,7 +128,7 @@ pdu_projection_id[ 0 ][ 101 ]=0
 pdu_orientation_index[ 0 ][ 101 ]=FPO_NULL
 )");
 
-  REQUIRE(bitCodingTest(x, 11, vuh, vps, aspsV, afpsV, ath));
+  REQUIRE(bitCodingTest(x, 11, vps, aspsV, afpsV, ath));
 
   SECTION("Example 1") {
     vps.vps_extension_present_flag(true)
@@ -177,7 +176,7 @@ pdu_entity_id[ 12 ][ 102 ]=35
 pdu_depth_occ_threshold[ 12 ][ 102 ]=600
 )");
 
-    REQUIRE(bitCodingTest(x, 146, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 146, vps, aspsV, afpsV, ath));
   }
 
   SECTION("Extend with only pdu_entity_id") {
@@ -225,13 +224,11 @@ pdu_orientation_index[ 12 ][ 102 ]=FPO_MROT180
 pdu_entity_id[ 12 ][ 102 ]=35
 )");
 
-    REQUIRE(bitCodingTest(x, 136, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 136, vps, aspsV, afpsV, ath));
   }
 }
 
 TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
-  const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-
   auto vps = V3cParameterSet{};
   vps.vps_geometry_video_present_flag({}, true).geometry_information({}, {});
 
@@ -254,7 +251,7 @@ TEST_CASE("patch_information_data", "[Atlas Tile Layer RBSP]") {
     x = PatchInformationData{SkipPatchDataUnit{}};
 
     REQUIRE(toString(x, 77, 88).empty());
-    REQUIRE(bitCodingTest(x, 0, vuh, vps, aspsV, afpsV, ath, patchMode));
+    REQUIRE(bitCodingTest(x, 0, vps, aspsV, afpsV, ath, patchMode));
   }
 
   SECTION("Example patch_data_unit") {
@@ -273,14 +270,12 @@ pdu_3d_offset_d[ 13 ][ 99 ]=0
 pdu_projection_id[ 13 ][ 99 ]=0
 pdu_orientation_index[ 13 ][ 99 ]=FPO_NULL
 )");
-    REQUIRE(bitCodingTest(x, 11, vuh, vps, aspsV, afpsV, ath, patchMode));
+    REQUIRE(bitCodingTest(x, 11, vps, aspsV, afpsV, ath, patchMode));
   }
 }
 
 TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
   SECTION("Empty") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-
     auto ath = AtlasTileHeader{};
     ath.ath_type(AthType::I_TILE);
 
@@ -292,7 +287,7 @@ TEST_CASE("atlas_tile_data_unit", "[Atlas Tile Layer RBSP]") {
     const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    REQUIRE(bitCodingTest(x, 7, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 7, vps, aspsV, afpsV, ath));
   }
 
   SECTION("P_TILE") {
@@ -356,7 +351,6 @@ pdu_projection_id[ 7 ][ 1 ]=0
 pdu_orientation_index[ 7 ][ 1 ]=FPO_NULL
 )");
 
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
     const auto j0 = AtlasId{0};
     const auto j1 = AtlasId{1};
 
@@ -374,14 +368,12 @@ pdu_orientation_index[ 7 ][ 1 ]=FPO_NULL
 
     const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>(1);
 
-    REQUIRE(bitCodingTest(x, 31, vuh, vps, aspsV, afpsV, ath));
+    REQUIRE(bitCodingTest(x, 31, vps, aspsV, afpsV, ath));
   }
 }
 
 TEST_CASE("atlas_tile_layer_rbsp", "[Atlas Tile Layer RBSP]") {
   SECTION("SKIP_TILE") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-
     const auto vps = V3cParameterSet{};
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
@@ -404,12 +396,10 @@ ath_type=SKIP_TILE
 ath_atlas_frm_order_cnt_lsb=0
 ath_ref_atlas_frame_list_asps_flag=true
 )");
-    REQUIRE(byteCodingTest(x, 3, vuh, vps, nuh, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 3, vps, nuh, aspsV, afpsV));
   }
 
   SECTION("I_TILE") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-
     auto vps = V3cParameterSet{};
     vps.vps_geometry_video_present_flag({}, true).geometry_information({}, {});
 
@@ -474,12 +464,10 @@ pdu_3d_offset_d[ 0 ][ 2 ]=0
 pdu_projection_id[ 0 ][ 2 ]=0
 pdu_orientation_index[ 0 ][ 2 ]=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 14, vuh, vps, nuh, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 14, vps, nuh, aspsV, afpsV));
   }
 
   SECTION("I_TILE with quantizers") {
-    const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-
     const auto vps = V3cParameterSet{};
 
     auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
@@ -528,6 +516,6 @@ pdu_3d_range_d[ 0 ][ 0 ]=127
 pdu_projection_id[ 0 ][ 0 ]=0
 pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
 )");
-    REQUIRE(byteCodingTest(x, 12, vuh, vps, nuh, aspsV, afpsV));
+    REQUIRE(byteCodingTest(x, 12, vps, nuh, aspsV, afpsV));
   }
 }

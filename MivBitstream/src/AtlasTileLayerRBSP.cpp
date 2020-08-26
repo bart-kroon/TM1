@@ -409,8 +409,7 @@ auto PatchDataUnit::printTo(ostream &stream, unsigned tileId, size_t patchIdx) c
   return stream;
 }
 
-auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                               const V3cParameterSet &vps,
+auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
                                const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                const vector<AtlasFrameParameterSetRBSP> &afpsV,
                                const AtlasTileHeader &ath) -> PatchDataUnit {
@@ -455,8 +454,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   return x;
 }
 
-void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                             const V3cParameterSet &vps,
+void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
                              const vector<AtlasSequenceParameterSetRBSP> &aspsV,
                              const vector<AtlasFrameParameterSetRBSP> &afpsV,
                              const AtlasTileHeader &ath) const {
@@ -527,15 +525,14 @@ auto PatchInformationData::operator!=(const PatchInformationData &other) const n
   return !operator==(other);
 }
 
-auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                      const V3cParameterSet &vps,
+auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
                                       const vector<AtlasSequenceParameterSetRBSP> &asps,
                                       const vector<AtlasFrameParameterSetRBSP> &afps,
                                       const AtlasTileHeader &ath, AtduPatchMode patchMode)
     -> PatchInformationData {
   if (ath.ath_type() == AthType::I_TILE) {
     VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::I_INTRA);
-    return PatchInformationData{PatchDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, ath)};
+    return PatchInformationData{PatchDataUnit::decodeFrom(bitstream, vps, asps, afps, ath)};
   }
   if (ath.ath_type() == AthType::SKIP_TILE) {
     VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::P_SKIP);
@@ -544,14 +541,13 @@ auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const V3cUnitHe
   V3CBITSTREAM_ERROR("Unknown or unsupported tile/patch mode combination");
 }
 
-void PatchInformationData::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                    const V3cParameterSet &vps,
+void PatchInformationData::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
                                     const vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const vector<AtlasFrameParameterSetRBSP> &afps,
                                     const AtlasTileHeader &ath, AtduPatchMode patchMode) const {
   if (ath.ath_type() == AthType::I_TILE) {
     VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::I_INTRA);
-    return patch_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, ath);
+    return patch_data_unit().encodeTo(bitstream, vps, asps, afps, ath);
   }
   if (ath.ath_type() == AthType::SKIP_TILE) {
     VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::P_SKIP);
@@ -592,8 +588,7 @@ auto AtlasTileDataUnit::operator!=(const AtlasTileDataUnit &other) const -> bool
   return !operator==(other);
 }
 
-auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                   const V3cParameterSet &vps,
+auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
                                    const vector<AtlasSequenceParameterSetRBSP> &asps,
                                    const vector<AtlasFrameParameterSetRBSP> &afps,
                                    const AtlasTileHeader &ath) -> AtlasTileDataUnit {
@@ -607,8 +602,8 @@ auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeade
   auto patch_mode = bitstream.getUExpGolomb<AtduPatchMode>();
 
   while (patch_mode != AtduPatchMode::I_END) {
-    x.emplace_back(patch_mode, PatchInformationData::decodeFrom(bitstream, vuh, vps, asps, afps,
-                                                                ath, patch_mode));
+    x.emplace_back(patch_mode,
+                   PatchInformationData::decodeFrom(bitstream, vps, asps, afps, ath, patch_mode));
     VERIFY_MIVBITSTREAM(patch_mode == AtduPatchMode::I_INTRA);
     patch_mode = bitstream.getUExpGolomb<AtduPatchMode>();
   }
@@ -616,8 +611,7 @@ auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeade
   return AtlasTileDataUnit{x};
 }
 
-void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                                 const V3cParameterSet &vps,
+void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
                                  const vector<AtlasSequenceParameterSetRBSP> &asps,
                                  const vector<AtlasFrameParameterSetRBSP> &afps,
                                  const AtlasTileHeader &ath) const {
@@ -627,7 +621,7 @@ void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader
     visit([&](const auto /* p */, const AtduPatchMode patch_mode,
               const PatchInformationData &patch_information_data) {
       bitstream.putUExpGolomb(patch_mode);
-      patch_information_data.encodeTo(bitstream, vuh, vps, asps, afps, ath, patch_mode);
+      patch_information_data.encodeTo(bitstream, vps, asps, afps, ath, patch_mode);
     });
 
     bitstream.putUExpGolomb(AtduPatchMode::I_END);
@@ -649,7 +643,7 @@ auto AtlasTileLayerRBSP::operator!=(const AtlasTileLayerRBSP &other) const noexc
   return !operator==(other);
 }
 
-auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cUnitHeader &vuh,
+auto AtlasTileLayerRBSP::decodeFrom(istream &stream, 
                                     const V3cParameterSet &vps, const NalUnitHeader &nuh,
                                     const vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const vector<AtlasFrameParameterSetRBSP> &afps)
@@ -659,20 +653,20 @@ auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cUnitHeader &vuh,
   auto atl = AtlasTileLayerRBSP{};
   atl.atlas_tile_header() = AtlasTileHeader::decodeFrom(bitstream, nuh, asps, afps);
   atl.atlas_tile_data_unit() =
-      AtlasTileDataUnit::decodeFrom(bitstream, vuh, vps, asps, afps, atl.atlas_tile_header());
+      AtlasTileDataUnit::decodeFrom(bitstream,  vps, asps, afps, atl.atlas_tile_header());
   bitstream.rbspTrailingBits();
 
   return atl;
 }
 
-void AtlasTileLayerRBSP::encodeTo(ostream &stream, const V3cUnitHeader &vuh,
+void AtlasTileLayerRBSP::encodeTo(ostream &stream, 
                                   const V3cParameterSet &vps, const NalUnitHeader &nuh,
                                   const vector<AtlasSequenceParameterSetRBSP> &asps,
                                   const vector<AtlasFrameParameterSetRBSP> &afps) const {
   OutputBitstream bitstream{stream};
 
   atlas_tile_header().encodeTo(bitstream, nuh, asps, afps);
-  atlas_tile_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atlas_tile_header());
+  atlas_tile_data_unit().encodeTo(bitstream,  vps, asps, afps, atlas_tile_header());
   bitstream.rbspTrailingBits();
 }
 } // namespace TMIV::MivBitstream

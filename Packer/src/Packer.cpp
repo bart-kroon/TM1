@@ -179,6 +179,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
 
           p.atlasId = AtlasId{uint8_t(atlasId)};
           p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewId()));
+          p.atlasPatch2dPosX(packerOutput.x());
+          p.atlasPatch2dPosY(packerOutput.y());
           p.atlasPatch3dOffsetU(cluster.jmin());
           p.atlasPatch3dOffsetV(cluster.imin());
 

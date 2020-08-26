@@ -198,10 +198,10 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           const uint32_t maskHeight = masks[cluster.getViewId()].getHeight();
 
           if (p.atlasPatch3dOffsetU() + p.atlasPatch3dSizeU() > maskWidth) {
-            p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU());
+            p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU() - p.atlasPatch3dOffsetU());
           }
           if (p.atlasPatch3dOffsetV() + p.atlasPatch3dSizeV() > maskHeight) {
-            p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV());
+            p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV() - p.atlasPatch3dOffsetV());
           }
 
           if (m_maxEntities > 1) {

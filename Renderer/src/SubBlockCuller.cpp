@@ -158,8 +158,8 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
     const auto &patch = atlas.patchParamsList[patchIdx];
     const auto &view = frame.viewParamsList[patch.atlasPatchProjectionId()];
 
-    if (patch.atlasPatch3dSizeU() == view.ci.ci_projection_plane_width_minus1() + 1 &&
-        patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1 &&
+    if (patch.atlasPatch3dSizeU() == view.ci.ci_projection_plane_width_minus1() + 1U &&
+        patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1U &&
         patch.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_NULL) {
       for (const auto &block : divideInBlocks(patch)) {
         if (!choosePatch(block, frame.viewParamsList, viewportParams)) {

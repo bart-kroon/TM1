@@ -300,20 +300,21 @@ void MivDecoder::decodeBlockToPatchMap(size_t k) {
       asps.asps_frame_height() >> asps.asps_log2_patch_packing_block_size()};
   std::fill(btpm.getPlane(0).begin(), btpm.getPlane(0).end(), Common::unusedPatchId);
 
-  m_atlasAu[k]->atl.atlas_tile_data_unit().visit([&btpm](size_t p,
-                                                         MivBitstream::AtduPatchMode /* unused */,
-                                                         const MivBitstream::PatchInformationData
-                                                             &pid) {
-    const auto &pdu = pid.patch_data_unit();
-    const auto first = Common::Vec2i{pdu.pdu_2d_pos_x(), pdu.pdu_2d_pos_y()};
-    const auto last = first + Common::Vec2i{pdu.pdu_2d_size_x_minus1(), pdu.pdu_2d_size_y_minus1()};
+  m_atlasAu[k]->atl.atlas_tile_data_unit().visit(
+      [&btpm](size_t p, MivBitstream::AtduPatchMode /* unused */,
+              const MivBitstream::PatchInformationData &pid) {
+        const auto &pdu = pid.patch_data_unit();
+        const auto firstX = pdu.pdu_2d_pos_x();
+        const auto firstY = pdu.pdu_2d_pos_y();
+        const auto lastX = firstX + pdu.pdu_2d_size_x_minus1();
+        const auto lastY = firstY + pdu.pdu_2d_size_y_minus1();
 
-    for (int y = first.y(); y <= last.y(); ++y) {
-      for (int x = first.x(); x <= last.x(); ++x) {
-        btpm.getPlane(0)(y, x) = uint16_t(p);
-      }
-    }
-  });
+        for (auto y = firstY; y <= lastY; ++y) {
+          for (auto x = firstX; x <= lastX; ++x) {
+            btpm.getPlane(0)(y, x) = uint16_t(p);
+          }
+        }
+      });
 }
 
 void MivDecoder::decodePatchParamsList(size_t k) {
@@ -329,27 +330,46 @@ void MivDecoder::decodePatchParamsList(size_t k) {
   auto &ppl = m_au.atlas[k].patchParamsList;
   ppl.assign(atdu.atduTotalNumberOfPatches(), {});
 
+  const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
+  const auto offsetDQuantizer = 1U << ath.ath_pos_min_d_quantizer();
+  const auto rangeDQuantizer = 1U << ath.ath_pos_delta_max_d_quantizer();
+  const auto rangeZBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
+                                       asps.asps_geometry_3d_bit_depth_minus1() + 1U);
+  const auto rangeZ = 1U << rangeZBitDepth;
+  const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
+                                       ? 1U << ath.ath_patch_size_x_info_quantizer()
+                                       : patchPackingBlockSize;
+  const auto patchSizeYQuantizer = asps.asps_patch_size_quantizer_present_flag()
+                                       ? 1U << ath.ath_patch_size_y_info_quantizer()
+                                       : patchPackingBlockSize;
+
   atdu.visit([&](size_t p, MivBitstream::AtduPatchMode /* unused */,
                  const MivBitstream::PatchInformationData &pid) {
     const auto &pdu = pid.patch_data_unit();
-    const auto k = asps.asps_log2_patch_packing_block_size();
 
-    ppl[p].pduOrientationIndex(pdu.pdu_orientation_index());
-    ppl[p].pdu2dPos({int(pdu.pdu_2d_pos_x() << k), int(pdu.pdu_2d_pos_y() << k)});
-    ppl[p].pdu2dSize(
-        {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
-    ppl[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
-    ppl[p].pduDepthStart(pdu.pdu_depth_start() << ath.ath_pos_min_d_quantizer());
-    ppl[p].pduViewIdx(pdu.pdu_view_idx());
+    ppl[p].atlasPatch2dPosX(pdu.pdu_2d_pos_x() * patchPackingBlockSize);
+    ppl[p].atlasPatch2dPosY(pdu.pdu_2d_pos_y() * patchPackingBlockSize);
+    ppl[p].atlasPatch3dOffsetU(pdu.pdu_3d_offset_u());
+    ppl[p].atlasPatch3dOffsetV(pdu.pdu_3d_offset_v());
+    ppl[p].atlasPatch3dOffsetD(pdu.pdu_3d_offset_d() * offsetDQuantizer);
 
     if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-      ppl[p].pduDepthEnd(pdu.pdu_depth_end() << ath.ath_pos_delta_max_d_quantizer());
+      ppl[p].atlasPatch3dRangeD(
+          pdu.pdu_3d_range_d() == 0 ? 0 : (pdu.pdu_3d_range_d() * rangeDQuantizer) - 1);
+    } else {
+      ppl[p].atlasPatch3dRangeD(rangeZ - 1);
     }
+
+    ppl[p].atlasPatchProjectionId(pdu.pdu_projection_id());
+    ppl[p].atlasPatchOrientationIndex(pdu.pdu_orientation_index());
+    ppl[p].atlasPatch2dSizeX((pdu.pdu_2d_size_x_minus1() + 1) * patchSizeXQuantizer);
+    ppl[p].atlasPatch2dSizeY((pdu.pdu_2d_size_y_minus1() + 1) * patchSizeYQuantizer);
+
     if (asps.asps_miv_extension_present_flag()) {
-      ppl[p].pduEntityId(pdu.pdu_miv_extension().pdu_entity_id());
+      ppl[p].atlasPatchEntityId(pdu.pdu_miv_extension().pdu_entity_id());
 
       if (asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
-        ppl[p].pduDepthOccMapThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
+        ppl[p].atlasPatchDepthOccMapThreshold(pdu.pdu_miv_extension().pdu_depth_occ_threshold());
       }
     }
   });

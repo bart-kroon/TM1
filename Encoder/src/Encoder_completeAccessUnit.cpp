@@ -159,11 +159,11 @@ void Encoder::constructVideoFrames() {
     }
 
     for (const auto &patch : m_params.patchParamsList) {
-      const auto &view = views[patch.pduViewIdx()];
+      const auto &view = views[patch.atlasPatchProjectionId()];
       if (m_params.vme().vme_max_entities_minus1() > 0) {
         MVD16Frame tempViews;
         tempViews.push_back(view);
-        const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
+        const auto &entityViews = entitySeparator(tempViews, *patch.atlasPatchEntityId());
         writePatchInAtlas(patch, entityViews[0], atlasList, frame);
       } else {
         writePatchInAtlas(patch, view, atlasList, frame);
@@ -185,13 +185,13 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
 
   const auto &textureViewMap = view.texture;
   const auto &depthViewMap = view.depth;
-  int w = patchParams.pduViewSize().x();
-  int h = patchParams.pduViewSize().y();
-  int xM = patchParams.pduViewPos().x();
-  int yM = patchParams.pduViewPos().y();
+  const auto w = static_cast<int>(patchParams.atlasPatch3dSizeU());
+  const auto h = static_cast<int>(patchParams.atlasPatch3dSizeV());
+  const auto xM = static_cast<int>(patchParams.atlasPatch3dOffsetU());
+  const auto yM = static_cast<int>(patchParams.atlasPatch3dOffsetV());
 
-  const auto &inViewParams = m_transportParams.viewParamsList[patchParams.pduViewIdx()];
-  const auto &outViewParams = m_params.viewParamsList[patchParams.pduViewIdx()];
+  const auto &inViewParams = m_transportParams.viewParamsList[patchParams.atlasPatchProjectionId()];
+  const auto &outViewParams = m_params.viewParamsList[patchParams.atlasPatchProjectionId()];
 
   for (int dyAligned = 0; dyAligned < h; dyAligned += m_blockSize) {
     for (int dxAligned = 0; dxAligned < w; dxAligned += m_blockSize) {
@@ -204,7 +204,7 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patchParams.pduViewIdx()](dy + yM, dx + xM)[frameId]) {
+          if (m_nonAggregatedMask[patchParams.atlasPatchProjectionId()](dy + yM, dx + xM)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

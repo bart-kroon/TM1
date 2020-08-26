@@ -56,11 +56,12 @@ void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
             uint32_t depthOccupancyThreshold = 0;
             if (!atlas.asps.asps_miv_extension_present_flag() ||
                 !atlas.asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
-              uint16_t v = atlas.patchParamsList[patchId].pduViewIdx();
+              uint16_t v = atlas.patchParamsList[patchId].atlasPatchProjectionId();
               depthOccupancyThreshold =
                   frame.viewParamsList[v].dq.dq_depth_occ_map_threshold_default();
             } else {
-              depthOccupancyThreshold = *atlas.patchParamsList[patchId].pduDepthOccMapThreshold();
+              depthOccupancyThreshold =
+                  *atlas.patchParamsList[patchId].atlasPatchDepthOccMapThreshold();
             }
             atlas.occFrame.getPlane(0)(y, x) =
                 (atlas.geoFrame.getPlane(0)(y, x) < depthOccupancyThreshold) ? 0 : 1;

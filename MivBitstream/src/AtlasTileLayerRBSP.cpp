@@ -131,12 +131,14 @@ auto AtlasTileHeader::ath_atlas_output_flag() const noexcept -> bool {
 
 auto AtlasTileHeader::ath_patch_size_x_info_quantizer() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(ath_type() != AthType::SKIP_TILE);
-  return m_ath_patch_size_x_info_quantizer;
+  VERIFY_V3CBITSTREAM(m_ath_patch_size_x_info_quantizer.has_value());
+  return *m_ath_patch_size_x_info_quantizer;
 }
 
 auto AtlasTileHeader::ath_patch_size_y_info_quantizer() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(ath_type() != AthType::SKIP_TILE);
-  return m_ath_patch_size_y_info_quantizer;
+  VERIFY_V3CBITSTREAM(m_ath_patch_size_x_info_quantizer.has_value());
+  return *m_ath_patch_size_y_info_quantizer;
 }
 
 auto AtlasTileHeader::ath_patch_size_x_info_quantizer(const uint8_t value) noexcept
@@ -180,10 +182,12 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
                << '\n';
       }
     }
-    stream << "ath_patch_size_x_info_quantizer=" << int(x.ath_patch_size_x_info_quantizer())
-           << '\n';
-    stream << "ath_patch_size_y_info_quantizer=" << int(x.ath_patch_size_y_info_quantizer())
-           << '\n';
+    if (x.m_ath_patch_size_x_info_quantizer || x.m_ath_patch_size_y_info_quantizer) {
+      stream << "ath_patch_size_x_info_quantizer=" << int(x.ath_patch_size_x_info_quantizer())
+             << '\n';
+      stream << "ath_patch_size_y_info_quantizer=" << int(x.ath_patch_size_y_info_quantizer())
+             << '\n';
+    }
   }
   return stream;
 }
@@ -241,9 +245,6 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream, const NalUnitHeader 
       x.ath_patch_size_y_info_quantizer(bitstream.readBits<uint8_t>(3));
       VERIFY_V3CBITSTREAM(x.ath_patch_size_y_info_quantizer() <=
                           asps.asps_log2_patch_packing_block_size());
-    } else {
-      x.ath_patch_size_x_info_quantizer(asps.asps_log2_patch_packing_block_size());
-      x.ath_patch_size_y_info_quantizer(asps.asps_log2_patch_packing_block_size());
     }
 
     VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
@@ -307,11 +308,6 @@ void AtlasTileHeader::encodeTo(OutputBitstream &bitstream, const NalUnitHeader &
       VERIFY_V3CBITSTREAM(ath_patch_size_y_info_quantizer() <=
                           asps.asps_log2_patch_packing_block_size());
       bitstream.writeBits(ath_patch_size_y_info_quantizer(), 3);
-    } else {
-      VERIFY_V3CBITSTREAM(ath_patch_size_x_info_quantizer() ==
-                          asps.asps_log2_patch_packing_block_size());
-      VERIFY_V3CBITSTREAM(ath_patch_size_y_info_quantizer() ==
-                          asps.asps_log2_patch_packing_block_size());
     }
 
     VERIFY_MIVBITSTREAM(!afps.afps_raw_3d_offset_bit_count_explicit_mode_flag());
@@ -376,9 +372,9 @@ void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet
   }
 }
 
-auto PatchDataUnit::pdu_depth_end() const noexcept -> uint32_t {
-  VERIFY_V3CBITSTREAM(m_pdu_depth_end.has_value());
-  return *m_pdu_depth_end;
+auto PatchDataUnit::pdu_3d_range_d() const noexcept -> uint32_t {
+  VERIFY_V3CBITSTREAM(m_pdu_3d_range_d.has_value());
+  return *m_pdu_3d_range_d;
 }
 
 auto PatchDataUnit::pdu_miv_extension(const PduMivExtension &value) noexcept -> PatchDataUnit & {
@@ -393,14 +389,18 @@ auto PatchDataUnit::printTo(ostream &stream, unsigned tileId, size_t patchIdx) c
          << " ]=" << pdu_2d_size_x_minus1() << '\n';
   stream << "pdu_2d_size_y_minus1[ " << tileId << " ][ " << patchIdx
          << " ]=" << pdu_2d_size_y_minus1() << '\n';
-  stream << "pdu_view_pos_x[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_view_pos_x() << '\n';
-  stream << "pdu_view_pos_y[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_view_pos_y() << '\n';
-  stream << "pdu_depth_start[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_depth_start()
+  stream << "pdu_3d_offset_u[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_offset_u()
          << '\n';
-  if (m_pdu_depth_end) {
-    stream << "pdu_depth_end[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_depth_end() << '\n';
+  stream << "pdu_3d_offset_v[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_offset_v()
+         << '\n';
+  stream << "pdu_3d_offset_d[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_offset_d()
+         << '\n';
+  if (m_pdu_3d_range_d) {
+    stream << "pdu_3d_range_d[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_3d_range_d()
+           << '\n';
   }
-  stream << "pdu_view_idx[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_view_idx() << '\n';
+  stream << "pdu_projection_id[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_projection_id()
+         << '\n';
   stream << "pdu_orientation_index[ " << tileId << " ][ " << patchIdx
          << " ]=" << pdu_orientation_index() << '\n';
   if (m_pdu_miv_extension) {
@@ -419,41 +419,32 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   const auto &afps = afpsById(afpsV, ath.ath_atlas_frame_parameter_set_id());
   const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
 
-  x.pdu_2d_pos_x(bitstream.getUExpGolomb<uint16_t>());
-  VERIFY_V3CBITSTREAM(x.pdu_2d_pos_x() < asps.asps_frame_width());
+  const auto pdu3dOffsetUVNumBits = asps.asps_geometry_3d_bit_depth_minus1() + 1U;
+  const auto pdu3dOffsetDNumBits =
+      asps.asps_geometry_3d_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 1;
+  const auto rangeZBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1,
+                                       asps.asps_geometry_3d_bit_depth_minus1() + 1);
+  const auto pdu3dRangeDNumBits = rangeZBitDepth - ath.ath_pos_delta_max_d_quantizer();
+  const auto pduProjectionIdNumBits = ceilLog2(asps.asps_max_number_projections_minus1() + 1ULL);
+  const auto pduOrientationIndexNumBits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
 
-  x.pdu_2d_pos_y(bitstream.getUExpGolomb<uint16_t>());
-  VERIFY_V3CBITSTREAM(x.pdu_2d_pos_y() < asps.asps_frame_height());
+  x.pdu_2d_pos_x(bitstream.getUExpGolomb<uint32_t>());
+  x.pdu_2d_pos_y(bitstream.getUExpGolomb<uint32_t>());
+  x.pdu_2d_size_x_minus1(bitstream.getUExpGolomb<uint32_t>());
+  x.pdu_2d_size_y_minus1(bitstream.getUExpGolomb<uint32_t>());
+  x.pdu_3d_offset_u(bitstream.readBits<uint32_t>(pdu3dOffsetUVNumBits));
+  x.pdu_3d_offset_v(bitstream.readBits<uint32_t>(pdu3dOffsetUVNumBits));
 
-  x.pdu_2d_size_x_minus1(bitstream.getUExpGolomb<uint16_t>());
-  x.pdu_2d_size_y_minus1(bitstream.getUExpGolomb<uint16_t>());
-  x.pdu_view_pos_x(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bit_depth_minus1() + 1));
-  x.pdu_view_pos_y(bitstream.readBits<uint16_t>(asps.asps_geometry_3d_bit_depth_minus1() + 1));
-
-  VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
-  const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
-
-  const auto pdu_depth_start_num_bits =
-      gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 2;
-  VERIFY_V3CBITSTREAM(pdu_depth_start_num_bits >= 0);
-  x.pdu_depth_start(bitstream.readBits<uint32_t>(pdu_depth_start_num_bits));
+  VERIFY_V3CBITSTREAM(pdu3dOffsetDNumBits >= 0);
+  x.pdu_3d_offset_d(bitstream.readBits<uint32_t>(pdu3dOffsetDNumBits));
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto pdu_depth_end_num_bits =
-        gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_delta_max_d_quantizer() + 2;
-    VERIFY_V3CBITSTREAM(pdu_depth_end_num_bits >= 0);
-    x.pdu_depth_end(bitstream.readBits<uint32_t>(pdu_depth_end_num_bits));
+    VERIFY_V3CBITSTREAM(pdu3dRangeDNumBits >= 0);
+    x.pdu_3d_range_d(bitstream.readBits<uint32_t>(pdu3dRangeDNumBits));
   }
 
-  const auto pdu_projection_id_num_bits =
-      asps.asps_extended_projection_enabled_flag()
-          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
-          : 3U;
-  x.pdu_view_idx(bitstream.readBits<uint16_t>(pdu_projection_id_num_bits));
-
-  const auto pdu_orientation_index_num_bits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
-  x.pdu_orientation_index(
-      bitstream.readBits<FlexiblePatchOrientation>(pdu_orientation_index_num_bits));
+  x.pdu_projection_id(bitstream.readBits<uint16_t>(pduProjectionIdNumBits));
+  x.pdu_orientation_index(bitstream.readBits<FlexiblePatchOrientation>(pduOrientationIndexNumBits));
 
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());
@@ -472,42 +463,32 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
   const auto &afps = afpsById(afpsV, ath.ath_atlas_frame_parameter_set_id());
   const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
 
+  const auto pdu3dOffsetUVNumBits = asps.asps_geometry_3d_bit_depth_minus1() + 1U;
+  const auto pdu3dOffsetDNumBits =
+      asps.asps_geometry_3d_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 1;
+  const auto rangeZBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1,
+                                       asps.asps_geometry_3d_bit_depth_minus1() + 1);
+  const auto pdu3dRangeDNumBits = rangeZBitDepth - ath.ath_pos_delta_max_d_quantizer();
+  const auto pduProjectionIdNumBits = ceilLog2(asps.asps_max_number_projections_minus1() + 1ULL);
+  const auto pduOrientationIndexNumBits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
+
   bitstream.putUExpGolomb(pdu_2d_pos_x());
   bitstream.putUExpGolomb(pdu_2d_pos_y());
   bitstream.putUExpGolomb(pdu_2d_size_x_minus1());
   bitstream.putUExpGolomb(pdu_2d_size_y_minus1());
-  bitstream.writeBits(pdu_view_pos_x(), asps.asps_geometry_3d_bit_depth_minus1() + 1);
-  bitstream.writeBits(pdu_view_pos_y(), asps.asps_geometry_3d_bit_depth_minus1() + 1);
+  bitstream.writeBits(pdu_3d_offset_u(), pdu3dOffsetUVNumBits);
+  bitstream.writeBits(pdu_3d_offset_v(), pdu3dOffsetUVNumBits);
 
-  VERIFY_V3CBITSTREAM(vuh.vuh_unit_type() == VuhUnitType::V3C_AD);
-  const auto &gi = vps.geometry_information(vuh.vuh_atlas_id());
-
-  const auto pdu_depth_start_num_bits =
-      gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 2;
-  VERIFY_V3CBITSTREAM(pdu_depth_start_num_bits >= 0);
-  bitstream.writeBits(pdu_depth_start(), pdu_depth_start_num_bits);
+  VERIFY_V3CBITSTREAM(pdu3dOffsetDNumBits >= 0);
+  bitstream.writeBits(pdu_3d_offset_d(), pdu3dOffsetDNumBits);
 
   if (asps.asps_normal_axis_max_delta_value_enabled_flag()) {
-    const auto pdu_depth_end_num_bits =
-        gi.gi_geometry_3d_coordinates_bit_depth_minus1() - ath.ath_pos_delta_max_d_quantizer() + 2;
-    VERIFY_V3CBITSTREAM(pdu_depth_end_num_bits >= 0);
-    bitstream.writeBits(pdu_depth_end(), pdu_depth_end_num_bits);
+    VERIFY_V3CBITSTREAM(pdu3dRangeDNumBits >= 0);
+    bitstream.writeBits(pdu_3d_range_d(), pdu3dRangeDNumBits);
   }
 
-  const auto pdu_projection_id_num_bits =
-      asps.asps_extended_projection_enabled_flag()
-          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
-          : 3U;
-  VERIFY_V3CBITSTREAM((pdu_view_idx() >> pdu_projection_id_num_bits) == 0);
-  bitstream.writeBits(pdu_view_idx(), pdu_projection_id_num_bits);
-
-  if (asps.asps_use_eight_orientations_flag()) {
-    bitstream.writeBits(pdu_orientation_index(), 3);
-  } else {
-    VERIFY_V3CBITSTREAM(pdu_orientation_index() == FlexiblePatchOrientation::FPO_NULL ||
-                        pdu_orientation_index() == FlexiblePatchOrientation::FPO_SWAP);
-    bitstream.writeBits(pdu_orientation_index(), 1);
-  }
+  bitstream.writeBits(pdu_projection_id(), pduProjectionIdNumBits);
+  bitstream.writeBits(pdu_orientation_index(), pduOrientationIndexNumBits);
 
   VERIFY_MIVBITSTREAM(!afps.afps_lod_mode_enabled_flag());
   VERIFY_MIVBITSTREAM(!asps.asps_plr_enabled_flag());

@@ -167,7 +167,7 @@ public:
   [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) const -> const RefListStruct &;
   [[nodiscard]] constexpr auto asps_use_eight_orientations_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_extended_projection_enabled_flag() const noexcept;
-  [[nodiscard]] auto asps_max_number_projections_minus1() const noexcept -> unsigned;
+  [[nodiscard]] constexpr auto asps_max_number_projections_minus1() const noexcept;
   [[nodiscard]] constexpr auto asps_normal_axis_limits_quantization_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_normal_axis_max_delta_value_enabled_flag() const noexcept;
   [[nodiscard]] constexpr auto asps_patch_precedence_order_flag() const noexcept;

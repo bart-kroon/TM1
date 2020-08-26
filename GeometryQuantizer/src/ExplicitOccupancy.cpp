@@ -104,22 +104,22 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
-    const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
-    const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
+    const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
+    const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
     const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
     const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
     const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
     const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 
-    for (auto i = 0; i < patch.pdu2dSize().y(); ++i) {
-      for (auto j = 0; j < patch.pdu2dSize().x(); ++j) {
-        const auto n = i + patch.pdu2dPos().y();
-        const auto m = j + patch.pdu2dPos().x();
+    for (auto i = 0U; i < patch.atlasPatch2dSizeY(); ++i) {
+      for (auto j = 0U; j < patch.atlasPatch2dSizeX(); ++j) {
+        const auto n = i + patch.atlasPatch2dPosY();
+        const auto m = j + patch.atlasPatch2dPosX();
 
         const auto &plane = inAtlases[kIn].depth.getPlane(0);
 
-        if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
+        if (n >= plane.height() || m >= plane.width()) {
           abort();
         }
 

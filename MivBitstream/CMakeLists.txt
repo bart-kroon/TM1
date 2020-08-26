@@ -14,7 +14,6 @@ add_library(MivBitstreamLib
     "src/NalSampleStreamFormat.cpp"
     "src/NalUnit.cpp"
     "src/NalSampleStream.cpp"
-    "src/PatchParamsList.cpp"
     "src/RecViewport.cpp"
     "src/SeiRBSP.cpp"
     "src/verify.cpp"

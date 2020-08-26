@@ -284,13 +284,6 @@ auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) -> RefListSt
   return m_ref_list_structs[rlsIdx];
 }
 
-auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1() const noexcept
-    -> unsigned {
-  VERIFY_V3CBITSTREAM(asps_extended_projection_enabled_flag());
-  VERIFY_V3CBITSTREAM(m_asps_max_number_projections_minus1.has_value());
-  return *m_asps_max_number_projections_minus1;
-}
-
 auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1(
     const unsigned value) noexcept -> AtlasSequenceParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(asps_extended_projection_enabled_flag());

@@ -305,6 +305,10 @@ AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag(const bool 
   return *this;
 }
 
+constexpr auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1() const noexcept {
+  return m_asps_max_number_projections_minus1.value_or(5U);
+}
+
 constexpr auto AtlasSequenceParameterSetRBSP::asps_normal_axis_limits_quantization_enabled_flag(
     const bool value) noexcept -> auto & {
   m_asps_normal_axis_limits_quantization_enabled_flag = value;

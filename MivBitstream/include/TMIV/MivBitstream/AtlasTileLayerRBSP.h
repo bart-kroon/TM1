@@ -141,8 +141,8 @@ private:
   std::optional<bool> m_ath_ref_atlas_frame_list_asps_flag{};
   std::optional<std::uint8_t> m_ath_pos_min_d_quantizer{};
   std::optional<std::uint8_t> m_ath_pos_delta_max_d_quantizer{};
-  std::uint8_t m_ath_patch_size_x_info_quantizer{};
-  std::uint8_t m_ath_patch_size_y_info_quantizer{};
+  std::optional<std::uint8_t> m_ath_patch_size_x_info_quantizer{};
+  std::optional<std::uint8_t> m_ath_patch_size_y_info_quantizer{};
 };
 
 // 23090-5: skip_patch_data_unit( patchIdx )
@@ -194,24 +194,24 @@ public:
   [[nodiscard]] constexpr auto pdu_2d_pos_y() const noexcept;
   [[nodiscard]] constexpr auto pdu_2d_size_x_minus1() const noexcept;
   [[nodiscard]] constexpr auto pdu_2d_size_y_minus1() const noexcept;
-  [[nodiscard]] constexpr auto pdu_view_pos_x() const noexcept;
-  [[nodiscard]] constexpr auto pdu_view_pos_y() const noexcept;
-  [[nodiscard]] constexpr auto pdu_depth_start() const noexcept;
-  [[nodiscard]] auto pdu_depth_end() const noexcept -> std::uint32_t;
-  [[nodiscard]] constexpr auto pdu_view_idx() const noexcept;
+  [[nodiscard]] constexpr auto pdu_3d_offset_u() const noexcept;
+  [[nodiscard]] constexpr auto pdu_3d_offset_v() const noexcept;
+  [[nodiscard]] constexpr auto pdu_3d_offset_d() const noexcept;
+  [[nodiscard]] auto pdu_3d_range_d() const noexcept -> std::uint32_t;
+  [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
   [[nodiscard]] constexpr auto pdu_miv_extension() const noexcept -> PduMivExtension;
 
-  constexpr auto pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_pos_y(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_size_x_minus1(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_size_y_minus1(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_view_pos_x(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_view_pos_y(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_depth_start(const std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_depth_end(const std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_view_idx(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_orientation_index(const FlexiblePatchOrientation value) noexcept -> auto &;
+  constexpr auto pdu_2d_pos_x(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_pos_y(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_x_minus1(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_y_minus1(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_u(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_v(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_d(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_range_d(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_projection_id(std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_orientation_index(FlexiblePatchOrientation value) noexcept -> auto &;
   auto pdu_miv_extension(const PduMivExtension &value) noexcept -> PatchDataUnit &;
 
   [[nodiscard]] constexpr auto pdu_miv_extension() noexcept -> auto &;
@@ -234,14 +234,14 @@ public:
                 const AtlasTileHeader &ath) const;
 
 private:
-  std::uint16_t m_pdu_2d_pos_x{};
-  std::uint16_t m_pdu_2d_pos_y{};
-  std::uint16_t m_pdu_2d_size_x_minus1{};
-  std::uint16_t m_pdu_2d_size_y_minus1{};
-  std::uint16_t m_pdu_view_pos_x{};
-  std::uint16_t m_pdu_view_pos_y{};
-  std::uint32_t m_pdu_depth_start{};
-  std::optional<std::uint32_t> m_pdu_depth_end;
+  std::uint32_t m_pdu_2d_pos_x{};
+  std::uint32_t m_pdu_2d_pos_y{};
+  std::uint32_t m_pdu_2d_size_x_minus1{};
+  std::uint32_t m_pdu_2d_size_y_minus1{};
+  std::uint32_t m_pdu_3d_offset_u{};
+  std::uint32_t m_pdu_3d_offset_v{};
+  std::uint32_t m_pdu_3d_offset_d{};
+  std::optional<std::uint32_t> m_pdu_3d_range_d{};
   std::uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
   std::optional<PduMivExtension> m_pdu_miv_extension;

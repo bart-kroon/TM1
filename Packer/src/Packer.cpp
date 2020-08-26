@@ -178,29 +178,34 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           PatchParams p;
 
           p.atlasId = AtlasId{uint8_t(atlasId)};
+          p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewId()));
+          p.atlasPatch3dOffsetU(cluster.jmin());
+          p.atlasPatch3dOffsetV(cluster.imin());
 
-          p.pduViewIdx(static_cast<uint16_t>(cluster.getViewId()))
-              .pduViewSize(
-                  {align(cluster.width(), m_blockSize), align(cluster.height(), m_blockSize)})
-              .pduViewPos({cluster.jmin(), cluster.imin()})
-              .pdu2dPos({packerOutput.x(), packerOutput.y()});
-
-          p.pduOrientationIndex(packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
-                                                         : FlexiblePatchOrientation::FPO_NULL);
-
-          auto patchOverflow =
-              (p.pduViewPos() + p.pduViewSize()) - masks[cluster.getViewId()].getSize();
-          if (patchOverflow.x() > 0) {
-            p.pduViewPos({p.pduViewPos().x() - patchOverflow.x(), p.pduViewPos().y()});
+          if (packerOutput.isRotated()) {
+            p.atlasPatch2dSizeX(align(cluster.height(), m_blockSize));
+            p.atlasPatch2dSizeY(align(cluster.width(), m_blockSize));
+            p.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_ROT270);
+          } else {
+            p.atlasPatch2dSizeX(align(cluster.width(), m_blockSize));
+            p.atlasPatch2dSizeY(align(cluster.height(), m_blockSize));
+            p.atlasPatchOrientationIndex(FlexiblePatchOrientation::FPO_NULL);
           }
-          if (patchOverflow.y() > 0) {
-            p.pduViewPos({p.pduViewPos().x(), p.pduViewPos().y() - patchOverflow.y()});
+
+          const uint32_t maskWidth = masks[cluster.getViewId()].getWidth();
+          const uint32_t maskHeight = masks[cluster.getViewId()].getHeight();
+
+          if (p.atlasPatch3dOffsetU() + p.atlasPatch3dSizeU() > maskWidth) {
+            p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU());
+          }
+          if (p.atlasPatch3dOffsetV() + p.atlasPatch3dSizeV() > maskHeight) {
+            p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV());
           }
 
           if (m_maxEntities > 1) {
-            p.pduEntityId(cluster.getEntityId());
-            cout << "Packing patch " << patchId << " of entity " << *p.pduEntityId()
-                 << " from view " << p.pduViewIdx() << " with #active pixels "
+            p.atlasPatchEntityId(cluster.getEntityId());
+            cout << "Packing patch " << patchId << " of entity " << *p.atlasPatchEntityId()
+                 << " from view " << p.atlasPatchProjectionId() << " with #active pixels "
                  << cluster.getNumActivePixels() << " in atlas " << p.atlasId << endl;
           }
 

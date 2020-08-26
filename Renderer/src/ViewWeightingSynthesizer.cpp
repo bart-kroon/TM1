@@ -392,7 +392,7 @@ private:
             }
 
             const auto &patchParams = atlas.patchParamsList[patchId];
-            const auto viewId = patchParams.pduViewIdx();
+            const auto viewId = patchParams.atlasPatchProjectionId();
 
             if (!m_cameraVisibility[viewId]) {
               return;
@@ -596,15 +596,15 @@ private:
 
       for (const auto &atlas : frame.atlas) {
         for (const auto &patchParams : atlas.patchParamsList) {
-          if (patchParams.pduViewIdx() != visibleSourceId[id]) {
+          if (patchParams.atlasPatchProjectionId() != visibleSourceId[id]) {
             continue;
           }
 
-          int x0 = patchParams.pduViewPos().x();
-          int x1 = x0 + patchParams.pduViewSize().x();
+          int x0 = patchParams.atlasPatch3dOffsetU();
+          int x1 = x0 + patchParams.atlasPatch3dSizeU();
 
-          int y0 = patchParams.pduViewPos().y();
-          int y1 = y0 + patchParams.pduViewSize().y();
+          int y0 = patchParams.atlasPatch3dOffsetV();
+          int y1 = y0 + patchParams.atlasPatch3dSizeV();
 
           for (int y = y0; y < y1; y++) {
             for (int x = x0; x < x1; x++) {

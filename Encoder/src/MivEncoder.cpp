@@ -323,9 +323,6 @@ auto MivEncoder::atlasTileLayer(size_t k) const -> AtlasTileLayerRBSP {
   const auto patchPackingBlockSize = 1U << aau.asps.asps_log2_patch_packing_block_size();
   const auto offsetDQuantizer = 1U << aau.ath.ath_pos_min_d_quantizer();
   const auto rangeDQuantizer = 1U << aau.ath.ath_pos_delta_max_d_quantizer();
-  const auto rangeZBitDepth = std::min(aau.asps.asps_geometry_2d_bit_depth_minus1() + 1U,
-                                       aau.asps.asps_geometry_3d_bit_depth_minus1() + 1U);
-  const auto rangeZ = 1U << rangeZBitDepth;
   const auto patchSizeXQuantizer = aau.asps.asps_patch_size_quantizer_present_flag()
                                        ? 1U << aau.ath.ath_patch_size_x_info_quantizer()
                                        : patchPackingBlockSize;

@@ -333,9 +333,9 @@ void MivDecoder::decodePatchParamsList(size_t k) {
   const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
   const auto offsetDQuantizer = 1U << ath.ath_pos_min_d_quantizer();
   const auto rangeDQuantizer = 1U << ath.ath_pos_delta_max_d_quantizer();
-  const auto rangeZBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
+  const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1U,
                                        asps.asps_geometry_3d_bit_depth_minus1() + 1U);
-  const auto rangeZ = 1U << rangeZBitDepth;
+  const auto rangeD = 1U << rangeDBitDepth;
   const auto patchSizeXQuantizer = asps.asps_patch_size_quantizer_present_flag()
                                        ? 1U << ath.ath_patch_size_x_info_quantizer()
                                        : patchPackingBlockSize;
@@ -357,7 +357,7 @@ void MivDecoder::decodePatchParamsList(size_t k) {
       ppl[p].atlasPatch3dRangeD(
           pdu.pdu_3d_range_d() == 0 ? 0 : (pdu.pdu_3d_range_d() * rangeDQuantizer) - 1);
     } else {
-      ppl[p].atlasPatch3dRangeD(rangeZ - 1);
+      ppl[p].atlasPatch3dRangeD(rangeD - 1);
     }
 
     ppl[p].atlasPatchProjectionId(pdu.pdu_projection_id());

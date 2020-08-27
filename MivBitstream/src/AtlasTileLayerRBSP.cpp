@@ -421,9 +421,9 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cParameterSet 
   const auto pdu3dOffsetUVNumBits = asps.asps_geometry_3d_bit_depth_minus1() + 1U;
   const auto pdu3dOffsetDNumBits =
       asps.asps_geometry_3d_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 1;
-  const auto rangeZBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1,
+  const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1,
                                        asps.asps_geometry_3d_bit_depth_minus1() + 1);
-  const auto pdu3dRangeDNumBits = rangeZBitDepth - ath.ath_pos_delta_max_d_quantizer();
+  const auto pdu3dRangeDNumBits = rangeDBitDepth - ath.ath_pos_delta_max_d_quantizer();
   const auto pduProjectionIdNumBits = ceilLog2(asps.asps_max_number_projections_minus1() + 1ULL);
   const auto pduOrientationIndexNumBits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
 
@@ -464,9 +464,9 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &
   const auto pdu3dOffsetUVNumBits = asps.asps_geometry_3d_bit_depth_minus1() + 1U;
   const auto pdu3dOffsetDNumBits =
       asps.asps_geometry_3d_bit_depth_minus1() - ath.ath_pos_min_d_quantizer() + 1;
-  const auto rangeZBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1,
+  const auto rangeDBitDepth = std::min(asps.asps_geometry_2d_bit_depth_minus1() + 1,
                                        asps.asps_geometry_3d_bit_depth_minus1() + 1);
-  const auto pdu3dRangeDNumBits = rangeZBitDepth - ath.ath_pos_delta_max_d_quantizer();
+  const auto pdu3dRangeDNumBits = rangeDBitDepth - ath.ath_pos_delta_max_d_quantizer();
   const auto pduProjectionIdNumBits = ceilLog2(asps.asps_max_number_projections_minus1() + 1ULL);
   const auto pduOrientationIndexNumBits = asps.asps_use_eight_orientations_flag() ? 3 : 1;
 

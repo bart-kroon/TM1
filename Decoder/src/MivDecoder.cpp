@@ -128,6 +128,7 @@ auto MivDecoder::decodeVps() -> bool {
   }
   m_au.vps = vu->v3c_payload().v3c_parameter_set();
 
+  summarizeVps();
   checkCapabilities();
 
   auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_CAD};
@@ -174,8 +175,6 @@ auto MivDecoder::decodeVps() -> bool {
 }
 
 void MivDecoder::checkCapabilities() const {
-  std::cout << m_au.vps.profile_tier_level();
-
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_codec_group_idc() ==
                 MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10);
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
@@ -455,5 +454,54 @@ auto MivDecoder::decodeAttrVideo(size_t k) -> bool {
 
   m_totalAttrVideoDecodingTime += (clock() - t0) / CLOCKS_PER_SEC;
   return true;
+}
+
+void MivDecoder::summarizeVps() const {
+  const auto &vps = m_au.vps;
+  const auto &ptl = vps.profile_tier_level();
+
+  std::cout << "V3C parameter set " << int{vps.vps_v3c_parameter_set_id()} << ":\n";
+  std::cout << "  Tier " << int{ptl.ptl_tier_flag()} << ", " << ptl.ptl_level_idc()
+            << ", codec group " << ptl.ptl_profile_codec_group_idc() << ", toolset "
+            << ptl.ptl_profile_toolset_idc() << ", recon " << ptl.ptl_profile_reconstruction_idc()
+            << ", decodes " << ptl.ptl_max_decodes_idc() << '\n';
+  for (size_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = vps.vps_atlas_id(k);
+    std::cout << "  Atlas " << j << ": " << vps.vps_frame_width(j) << " x "
+              << vps.vps_frame_height(j);
+    if (vps.vps_occupancy_video_present_flag(j)) {
+      const auto &oi = vps.occupancy_information(j);
+      std::cout << "; [OI: codec " << int{oi.oi_occupancy_codec_id()} << ", "
+                << int{oi.oi_lossy_occupancy_compression_threshold()} << ", 2D "
+                << (oi.oi_occupancy_2d_bit_depth_minus1() + 1) << ", align " << std::boolalpha
+                << oi.oi_occupancy_MSB_align_flag() << ']';
+    }
+    if (vps.vps_geometry_video_present_flag(j)) {
+      const auto &gi = vps.geometry_information(j);
+      std::cout << "; [GI: codec " << int{gi.gi_geometry_codec_id()} << ", 2D "
+                << (gi.gi_geometry_2d_bit_depth_minus1() + 1) << ", align " << std::boolalpha
+                << gi.gi_geometry_MSB_align_flag() << ", 3D "
+                << (gi.gi_geometry_3d_coordinates_bit_depth_minus1() + 1) << ']';
+    }
+    if (vps.vps_attribute_video_present_flag(j)) {
+      const auto &ai = vps.attribute_information(j);
+      std::cout << "; [AI: " << int{ai.ai_attribute_count()};
+      for (uint8_t i = 0; i < ai.ai_attribute_count(); ++i) {
+        std::cout << ", " << ai.ai_attribute_type_id(i) << ", codec "
+                  << int{ai.ai_attribute_codec_id(i)} << ", dims "
+                  << (ai.ai_attribute_dimension_minus1(i) + 1) << ", 2D "
+                  << (ai.ai_attribute_2d_bit_depth_minus1(i) + 1) << ", align " << std::boolalpha
+                  << ai.ai_attribute_MSB_align_flag(i) << ']';
+      }
+    }
+    std::cout << '\n';
+  }
+  const auto &vme = vps.vps_miv_extension();
+  std::cout << "  MIV: depth low quality " << std::boolalpha << vme.vme_depth_low_quality_flag()
+            << ", geometry scaling " << std::boolalpha << vme.vme_geometry_scale_enabled_flag()
+            << ", groups " << (vme.vme_num_groups_minus1() + 1) << ", entities "
+            << (vme.vme_max_entities_minus1() + 1) << ", embedded occupancy " << std::boolalpha
+            << vme.vme_embedded_occupancy_flag() << ", occupancy scaling "
+            << vme.vme_occupancy_scale_enabled_flag() << '\n';
 }
 } // namespace TMIV::Decoder

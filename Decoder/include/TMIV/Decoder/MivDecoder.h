@@ -96,6 +96,8 @@ private:
   auto decodeGeoVideo(size_t k) -> bool;
   auto decodeAttrVideo(size_t k) -> bool;
 
+  void summarizeVps() const;
+
   V3cUnitBuffer m_inputBuffer;
   OccFrameServer m_occFrameServer;
   GeoFrameServer m_geoFrameServer;

@@ -83,35 +83,37 @@ auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::os
 //
 // 23090-12 restrictions:
 //   * asps_long_term_ref_atlas_frames_flag == 0
-//   * afps_raw_3d_pos_bit_count_explicit_mode_flag == 0
+//   * afps_raw_3d_offset_bit_count_explicit_mode_flag == 0
 //   * ath_type in { I_TILE, SKIP_TILE }
 //
 // Limitations of the implementation:
 //   * asps_num_ref_atlas_frame_lists_in_asps == 1
-//   * ath_ref_atlas_frame_list_sps_flag == 1
+//   * ath_ref_atlas_frame_list_asps_flag == 1
 class AtlasTileHeader {
 public:
+  [[nodiscard]] constexpr auto ath_no_output_of_prior_atlas_frames_flag() const noexcept;
   [[nodiscard]] constexpr auto ath_atlas_frame_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto ath_atlas_adaptation_parameter_set_id() const noexcept;
   [[nodiscard]] constexpr auto ath_id() const noexcept;
   [[nodiscard]] constexpr auto ath_type() const noexcept;
   [[nodiscard]] auto ath_atlas_output_flag() const noexcept -> bool;
   [[nodiscard]] constexpr auto ath_atlas_frm_order_cnt_lsb() const noexcept;
-  [[nodiscard]] constexpr auto ath_ref_atlas_frame_list_sps_flag() const noexcept;
-  [[nodiscard]] constexpr auto ath_pos_min_z_quantizer() const noexcept;
-  [[nodiscard]] constexpr auto ath_pos_delta_max_z_quantizer() const noexcept;
+  [[nodiscard]] constexpr auto ath_ref_atlas_frame_list_asps_flag() const noexcept;
+  [[nodiscard]] constexpr auto ath_pos_min_d_quantizer() const noexcept;
+  [[nodiscard]] constexpr auto ath_pos_delta_max_d_quantizer() const noexcept;
   [[nodiscard]] auto ath_patch_size_x_info_quantizer() const noexcept -> std::uint8_t;
   [[nodiscard]] auto ath_patch_size_y_info_quantizer() const noexcept -> std::uint8_t;
 
+  constexpr auto ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept -> auto &;
   constexpr auto ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_atlas_adaptation_parameter_set_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_id(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_type(const AthType value) noexcept -> auto &;
   constexpr auto ath_atlas_output_flag(const bool value) noexcept -> auto &;
-  constexpr auto ath_pos_min_z_quantizer(const std::uint8_t value) noexcept -> auto &;
-  constexpr auto ath_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto ath_pos_min_d_quantizer(const std::uint8_t value) noexcept -> auto &;
+  constexpr auto ath_pos_delta_max_d_quantizer(const std::uint8_t value) noexcept -> auto &;
   constexpr auto ath_atlas_frm_order_cnt_lsb(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto ath_ref_atlas_frame_list_sps_flag(const bool value) noexcept -> auto &;
+  constexpr auto ath_ref_atlas_frame_list_asps_flag(const bool value) noexcept -> auto &;
   auto ath_patch_size_x_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
   auto ath_patch_size_y_info_quantizer(const std::uint8_t value) noexcept -> AtlasTileHeader &;
 
@@ -120,26 +122,27 @@ public:
   constexpr auto operator==(const AtlasTileHeader &other) const noexcept;
   constexpr auto operator!=(const AtlasTileHeader &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const NalUnitHeader &nuh,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV) -> AtlasTileHeader;
 
-  void encodeTo(Common::OutputBitstream &bitstream,
+  void encodeTo(Common::OutputBitstream &bitstream, const NalUnitHeader &nuh,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 
 private:
+  std::optional<bool> m_ath_no_output_of_prior_atlas_frames_flag{};
   std::uint8_t m_ath_atlas_frame_parameter_set_id{};
   std::uint8_t m_ath_adaptation_parameter_set_id{};
   std::uint8_t m_ath_id{};
   AthType m_ath_type{};
   std::optional<bool> m_ath_atlas_output_flag{};
   std::uint16_t m_ath_atlas_frm_order_cnt_lsb{};
-  std::optional<bool> m_ath_ref_atlas_frame_list_sps_flag{};
-  std::optional<std::uint8_t> m_ath_pos_min_z_quantizer{};
-  std::optional<std::uint8_t> m_ath_pos_delta_max_z_quantizer{};
-  std::uint8_t m_ath_patch_size_x_info_quantizer{};
-  std::uint8_t m_ath_patch_size_y_info_quantizer{};
+  std::optional<bool> m_ath_ref_atlas_frame_list_asps_flag{};
+  std::optional<std::uint8_t> m_ath_pos_min_d_quantizer{};
+  std::optional<std::uint8_t> m_ath_pos_delta_max_d_quantizer{};
+  std::optional<std::uint8_t> m_ath_patch_size_x_info_quantizer{};
+  std::optional<std::uint8_t> m_ath_patch_size_y_info_quantizer{};
 };
 
 // 23090-5: skip_patch_data_unit( patchIdx )
@@ -191,24 +194,24 @@ public:
   [[nodiscard]] constexpr auto pdu_2d_pos_y() const noexcept;
   [[nodiscard]] constexpr auto pdu_2d_size_x_minus1() const noexcept;
   [[nodiscard]] constexpr auto pdu_2d_size_y_minus1() const noexcept;
-  [[nodiscard]] constexpr auto pdu_view_pos_x() const noexcept;
-  [[nodiscard]] constexpr auto pdu_view_pos_y() const noexcept;
-  [[nodiscard]] constexpr auto pdu_depth_start() const noexcept;
-  [[nodiscard]] auto pdu_depth_end() const noexcept -> std::uint32_t;
-  [[nodiscard]] constexpr auto pdu_view_idx() const noexcept;
+  [[nodiscard]] constexpr auto pdu_3d_offset_u() const noexcept;
+  [[nodiscard]] constexpr auto pdu_3d_offset_v() const noexcept;
+  [[nodiscard]] constexpr auto pdu_3d_offset_d() const noexcept;
+  [[nodiscard]] auto pdu_3d_range_d() const noexcept -> std::uint32_t;
+  [[nodiscard]] constexpr auto pdu_projection_id() const noexcept;
   [[nodiscard]] constexpr auto pdu_orientation_index() const noexcept;
   [[nodiscard]] constexpr auto pdu_miv_extension() const noexcept -> PduMivExtension;
 
-  constexpr auto pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_pos_y(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_size_x_minus1(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_2d_size_y_minus1(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_view_pos_x(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_view_pos_y(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_depth_start(const std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_depth_end(const std::uint32_t value) noexcept -> auto &;
-  constexpr auto pdu_view_idx(const std::uint16_t value) noexcept -> auto &;
-  constexpr auto pdu_orientation_index(const FlexiblePatchOrientation value) noexcept -> auto &;
+  constexpr auto pdu_2d_pos_x(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_pos_y(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_x_minus1(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_2d_size_y_minus1(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_u(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_v(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_offset_d(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_3d_range_d(std::uint32_t value) noexcept -> auto &;
+  constexpr auto pdu_projection_id(std::uint16_t value) noexcept -> auto &;
+  constexpr auto pdu_orientation_index(FlexiblePatchOrientation value) noexcept -> auto &;
   auto pdu_miv_extension(const PduMivExtension &value) noexcept -> PatchDataUnit &;
 
   [[nodiscard]] constexpr auto pdu_miv_extension() noexcept -> auto &;
@@ -218,27 +221,25 @@ public:
   constexpr auto operator==(const PatchDataUnit &other) const noexcept;
   constexpr auto operator!=(const PatchDataUnit &other) const noexcept;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                         const V3cParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
                          const AtlasTileHeader &ath) -> PatchDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                const V3cParameterSet &vps,
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsVector,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsVector,
                 const AtlasTileHeader &ath) const;
 
 private:
-  std::uint16_t m_pdu_2d_pos_x{};
-  std::uint16_t m_pdu_2d_pos_y{};
-  std::uint16_t m_pdu_2d_size_x_minus1{};
-  std::uint16_t m_pdu_2d_size_y_minus1{};
-  std::uint16_t m_pdu_view_pos_x{};
-  std::uint16_t m_pdu_view_pos_y{};
-  std::uint32_t m_pdu_depth_start{};
-  std::optional<std::uint32_t> m_pdu_depth_end;
+  std::uint32_t m_pdu_2d_pos_x{};
+  std::uint32_t m_pdu_2d_pos_y{};
+  std::uint32_t m_pdu_2d_size_x_minus1{};
+  std::uint32_t m_pdu_2d_size_y_minus1{};
+  std::uint32_t m_pdu_3d_offset_u{};
+  std::uint32_t m_pdu_3d_offset_v{};
+  std::uint32_t m_pdu_3d_offset_d{};
+  std::optional<std::uint32_t> m_pdu_3d_range_d{};
   std::uint16_t m_pdu_view_id{};
   FlexiblePatchOrientation m_pdu_orientation_index{};
   std::optional<PduMivExtension> m_pdu_miv_extension;
@@ -268,15 +269,14 @@ public:
   auto operator==(const PatchInformationData &other) const noexcept -> bool;
   auto operator!=(const PatchInformationData &other) const noexcept -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                         const V3cParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                          const AtlasTileHeader &ath, AtduPatchMode patchMode)
       -> PatchInformationData;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                const V3cParameterSet &vps, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV, const AtlasTileHeader &ath,
                 AtduPatchMode patchMode) const;
 
@@ -307,14 +307,13 @@ public:
   auto operator==(const AtlasTileDataUnit &other) const -> bool;
   auto operator!=(const AtlasTileDataUnit &other) const -> bool;
 
-  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
-                         const V3cParameterSet &vps,
+  static auto decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                          const AtlasTileHeader &ath) -> AtlasTileDataUnit;
 
-  void encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
-                const V3cParameterSet &vps, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+  void encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
+                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                 const AtlasTileHeader &ath) const;
 
@@ -336,12 +335,12 @@ public:
   auto operator==(const AtlasTileLayerRBSP &other) const noexcept -> bool;
   auto operator!=(const AtlasTileLayerRBSP &other) const noexcept -> bool;
 
-  static auto decodeFrom(std::istream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps,
+  static auto decodeFrom(std::istream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
                          const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                          const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
       -> AtlasTileLayerRBSP;
 
-  void encodeTo(std::ostream &stream, const V3cUnitHeader &vuh, const V3cParameterSet &vps,
+  void encodeTo(std::ostream &stream, const V3cParameterSet &vps, const NalUnitHeader &nuh,
                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const;
 

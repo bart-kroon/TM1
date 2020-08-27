@@ -49,12 +49,18 @@ enum class PtlProfileCodecGroupIdc : std::uint8_t {
   AVC_Progressive_High,
   HEVC_Main10,
   HEVC444,
-  MP4RA,
-  count
+  VVC_Main10,
+  MP4RA = 127
 };
 
-enum class PtlProfilePccToolsetIdc : std::uint8_t { Basic, Extended, MIV_Main = 64 };
-enum class PtlProfileReconstructionIdc : std::uint8_t { Rec0, Rec1, Unconstrained, MIV_Main = 64 };
+enum class PtlProfilePccToolsetIdc : std::uint8_t { VPCC_Basic, VPCC_Extended, MIV_Main = 64 };
+enum class PtlProfileReconstructionIdc : std::uint8_t {
+  Unconstrained = 1,
+  VPCC_Rec0,
+  VPCC_Rec1,
+  VPCC_Rec2,
+  MIV_Main = 64
+};
 enum class PtlMaxDecodesIdc : std::uint8_t {
   max_1,
   max_2,
@@ -67,7 +73,14 @@ enum class PtlMaxDecodesIdc : std::uint8_t {
   max_32,
   unconstrained = 15
 };
-enum class PtlLevelIdc : std::uint8_t { Level_1_0 = 30, Level_2_0 = 60, Level_3_0 = 90 };
+enum class PtlLevelIdc : std::uint8_t {
+  Level_1_0 = 30,
+  Level_1_5 = 45,
+  Level_2_0 = 60,
+  Level_2_5 = 75,
+  Level_3_0 = 90,
+  Level_3_5 = 105
+};
 
 enum class AiAttributeTypeId : std::uint8_t {
   ATTR_TEXTURE,

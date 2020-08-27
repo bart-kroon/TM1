@@ -50,6 +50,8 @@ auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & 
     return stream << "HEVC Main10";
   case PtlProfileCodecGroupIdc::HEVC444:
     return stream << "HEVC444";
+  case PtlProfileCodecGroupIdc::VVC_Main10:
+    return stream << "VVC Main10";
   case PtlProfileCodecGroupIdc::MP4RA:
     return stream << "MP4RA";
   default:
@@ -59,10 +61,10 @@ auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & 
 
 auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & {
   switch (x) {
-  case PtlProfilePccToolsetIdc::Basic:
-    return stream << "Basic";
-  case PtlProfilePccToolsetIdc::Extended:
-    return stream << "Extended";
+  case PtlProfilePccToolsetIdc::VPCC_Basic:
+    return stream << "V-PCC Basic";
+  case PtlProfilePccToolsetIdc::VPCC_Extended:
+    return stream << "V-PCC Extended";
   case PtlProfilePccToolsetIdc::MIV_Main:
     return stream << "MIV Main";
   default:
@@ -72,12 +74,14 @@ auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & 
 
 auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostream & {
   switch (x) {
-  case PtlProfileReconstructionIdc::Rec0:
-    return stream << "Rec0";
-  case PtlProfileReconstructionIdc::Rec1:
-    return stream << "Rec1";
   case PtlProfileReconstructionIdc::Unconstrained:
     return stream << "Unconstrained";
+  case PtlProfileReconstructionIdc::VPCC_Rec0:
+    return stream << "V-PCC Rec0";
+  case PtlProfileReconstructionIdc::VPCC_Rec1:
+    return stream << "V-PCC Rec1";
+  case PtlProfileReconstructionIdc::VPCC_Rec2:
+    return stream << "V-PCC Rec2";
   case PtlProfileReconstructionIdc::MIV_Main:
     return stream << "MIV Main";
   default:
@@ -116,10 +120,16 @@ auto operator<<(ostream &stream, const PtlLevelIdc &x) -> ostream & {
   switch (x) {
   case PtlLevelIdc::Level_1_0:
     return stream << "Level 1.0";
+  case PtlLevelIdc::Level_1_5:
+    return stream << "Level 1.5";
   case PtlLevelIdc::Level_2_0:
     return stream << "Level 2.0";
+  case PtlLevelIdc::Level_2_5:
+    return stream << "Level 2.5";
   case PtlLevelIdc::Level_3_0:
     return stream << "Level 3.0";
+  case PtlLevelIdc::Level_3_5:
+    return stream << "Level 3.5";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }
@@ -169,7 +179,9 @@ auto AtlasId::decodeFrom(Common::InputBitstream &bitstream) -> AtlasId {
   return AtlasId(bitstream.readBits<std::uint8_t>(6));
 }
 
-void AtlasId::encodeTo(Common::OutputBitstream &bitstream) const { bitstream.writeBits(m_atlasId, 6); }
+void AtlasId::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.writeBits(m_atlasId, 6);
+}
 
 auto ProfileTierLevel::ptl_num_sub_profiles() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(m_subProfileIdcs.size() <= UINT8_MAX);

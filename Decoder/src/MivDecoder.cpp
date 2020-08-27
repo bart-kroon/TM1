@@ -173,6 +173,8 @@ auto MivDecoder::decodeVps() -> bool {
 }
 
 void MivDecoder::checkCapabilities() const {
+  std::cout << m_au.vps.profile_tier_level();
+
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_codec_group_idc() ==
                 MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10);
   CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==

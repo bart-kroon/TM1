@@ -174,13 +174,23 @@ auto MivDecoder::decodeVps() -> bool {
 }
 
 void MivDecoder::checkCapabilities() const {
+  std::cout << m_au.vps.profile_tier_level();
+
+  CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_codec_group_idc() ==
+                MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10);
+  CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_toolset_idc() ==
+                MivBitstream::PtlProfilePccToolsetIdc::MIV_Main);
+  CONSTRAIN_PTL(m_au.vps.profile_tier_level().ptl_profile_reconstruction_idc() ==
+                MivBitstream::PtlProfileReconstructionIdc::MIV_Main);
+
   VERIFY_MIVBITSTREAM(m_au.vps.vps_miv_extension_present_flag());
+  VERIFY_V3CBITSTREAM(m_au.vps.vps_extension_7bits() == 0);
 
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
+    VERIFY_MIVBITSTREAM(m_au.vps.vps_map_count_minus1(j) == 0);
     VERIFY_MIVBITSTREAM(!m_au.vps.vps_auxiliary_video_present_flag(j));
     VERIFY_MIVBITSTREAM(m_au.vps.vps_geometry_video_present_flag(j));
-    // TODO(BK): Add more constraints (map count, attribute count, EOM, etc.)
   }
 }
 

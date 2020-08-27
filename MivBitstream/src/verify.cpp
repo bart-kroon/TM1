@@ -35,24 +35,32 @@
 
 #include <iostream>
 
-using namespace std;
-
 namespace TMIV::MivBitstream {
+namespace {
+void message(bool error, char const *introduction, char const *condition, char const *file,
+             int line) {
+  std::cerr << (error ? "ERROR: " : "WARNING: ") << introduction << ":\n\t" << condition << "\n\t["
+            << file << "@" << line << "]\n";
+  if (error) {
+    abort();
+  }
+}
+} // namespace
+
 [[noreturn]] void v3cError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode V3C bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
+  message(true, "Failed to encode/decode V3C bitstream", condition, file, line);
 }
 
 [[noreturn]] void mivError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode MIV bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
-  abort();
+  message(true, "Failed to encode/decode MIV bitstream", condition, file, line);
 }
 
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line) {
-  cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file
-       << "@" << line << '\n';
-  abort();
+  message(true, "This aspect of MIV/3VC has not yet been implemented", condition, file, line);
+}
+
+void ptlWarning(char const *condition, char const *file, int line) {
+  message(false, "This bitstream is outside of the profile-tier-level (PTL) limits of this decoder",
+          condition, file, line);
 }
 } // namespace TMIV::MivBitstream

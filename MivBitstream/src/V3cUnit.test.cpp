@@ -176,7 +176,7 @@ TEST_CASE("v3c_unit_payload", "[V3C Unit]") {
     REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=[unknown:0]
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -251,7 +251,7 @@ TEST_CASE("v3c_unit", "[V3C Unit]") {
 ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=[unknown:0]
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0

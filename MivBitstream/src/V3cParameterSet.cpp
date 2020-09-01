@@ -74,16 +74,16 @@ auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & 
 
 auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostream & {
   switch (x) {
-  case PtlProfileReconstructionIdc::Unconstrained:
-    return stream << "Unconstrained";
-  case PtlProfileReconstructionIdc::VPCC_Rec0:
-    return stream << "V-PCC Rec0";
-  case PtlProfileReconstructionIdc::VPCC_Rec1:
-    return stream << "V-PCC Rec1";
-  case PtlProfileReconstructionIdc::VPCC_Rec2:
-    return stream << "V-PCC Rec2";
+  case PtlProfileReconstructionIdc::Rec0:
+    return stream << "Rec0 (V-PCC)";
+  case PtlProfileReconstructionIdc::Rec1:
+    return stream << "Rec1 (V-PCC)";
+  case PtlProfileReconstructionIdc::Rec2:
+    return stream << "Rec2 (V-PCC)";
   case PtlProfileReconstructionIdc::MIV_Main:
     return stream << "MIV Main";
+  case PtlProfileReconstructionIdc::Rec_Unconstrained:
+      return stream << "Rec Unconstrained";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }

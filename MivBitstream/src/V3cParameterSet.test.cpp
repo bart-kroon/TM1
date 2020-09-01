@@ -60,7 +60,7 @@ TEST_CASE("profile_tier_level", "[V3C Parameter Set]") {
   REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=[unknown:0]
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -74,7 +74,7 @@ ptl_tool_constraints_present_flag=false
     x.ptl_tier_flag(true)
         .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
         .ptl_profile_toolset_idc(PtlProfilePccToolsetIdc::VPCC_Extended)
-        .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Unconstrained)
+        .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::Rec_Unconstrained)
         .ptl_max_decodes_idc(PtlMaxDecodesIdc::max_4)
         .ptl_level_idc(PtlLevelIdc::Level_2_0)
         .ptl_num_sub_profiles(2)
@@ -86,7 +86,7 @@ ptl_tool_constraints_present_flag=false
     REQUIRE(toString(x) == R"(ptl_tier_flag=true
 ptl_profile_codec_group_idc=HEVC Main10
 ptl_profile_toolset_idc=V-PCC Extended
-ptl_profile_reconstruction_idc=Unconstrained
+ptl_profile_reconstruction_idc=Rec Unconstrained
 ptl_max_decodes_idc=max_4
 ptl_level_idc=Level 2.0
 ptl_num_sub_profiles=2
@@ -220,7 +220,7 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=[unknown:0]
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -279,7 +279,7 @@ vme_embedded_occupancy_flag=true
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
 ptl_profile_toolset_idc=V-PCC Basic
-ptl_profile_reconstruction_idc=[unknown:0]
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0

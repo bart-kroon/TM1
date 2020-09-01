@@ -55,11 +55,11 @@ enum class PtlProfileCodecGroupIdc : std::uint8_t {
 
 enum class PtlProfilePccToolsetIdc : std::uint8_t { VPCC_Basic, VPCC_Extended, MIV_Main = 64 };
 enum class PtlProfileReconstructionIdc : std::uint8_t {
-  Unconstrained = 1,
-  VPCC_Rec0,
-  VPCC_Rec1,
-  VPCC_Rec2,
-  MIV_Main = 64
+  Rec0, // (V-PCC)
+  Rec1, // (V-PCC)
+  Rec2, // (V-PCC)
+  MIV_Main = 64,
+  Rec_Unconstrained = 255
 };
 enum class PtlMaxDecodesIdc : std::uint8_t {
   max_1,

@@ -105,7 +105,7 @@ cd TM1
 git checkout master
 ```
 
-To obtain the latest release of TMIV instead:
+To obtain the latest public release of TMIV instead:
 
 ```shell
     cd /Workspace

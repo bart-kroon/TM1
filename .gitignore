@@ -6,3 +6,5 @@ build.*
 install
 install.*
 Catch2
+.idea/
+cmake-build-debug/

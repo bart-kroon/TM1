@@ -10,12 +10,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CMake/clang_tidy.cmake)
 
-include(CMake/catch2.cmake)
+include(CMake/downloadcatch2.cmake)
 
-find_package(Catch2 2.10.2 QUIET)
-if (Catch2_FOUND)
-    enable_testing()
-    include(Catch)
+# find_package(Catch2 2.10.2 QUIET)
+if (BUILD_CATCH2)
+    # add_subdirectory(${Catch2_DIR})
+    add_subdirectory(${CMAKE_BINARY_DIR}/catch/src/catch_src)
+    include_directories(${CATCH_INCLUDE_DIR} ${COMMON_INCLUDES})
+    enable_testing(true)  # Enables unit-testing.
+
+    # enable_testing()
 endif()
 
 include(GNUInstallDirs)

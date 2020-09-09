@@ -10,8 +10,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CMake/clang_tidy.cmake)
 
-# To enable testing, clone https://github.com/catchorg/Catch2 2.10.2 or newer, build and install.
-# Then in the CMake GUI set Catch2_DIR to the lib/cmake/Catch2 directory of the Catch2 installation.
+include(CMake/catch2.cmake)
+
 find_package(Catch2 2.10.2 QUIET)
 if (Catch2_FOUND)
     enable_testing()

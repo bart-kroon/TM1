@@ -283,7 +283,9 @@ private:
   }
   void computeCameraVisibility(const ProjectionHelperList &sourceHelperList,
                                const ProjectionHelper &targetHelper) {
-    const unsigned N = 4;
+    //m54417-proposal-of-new-patches-for-MIV (FT): for testing only , should be removed !!!!!
+    //to ensure cameras frustum are intersecting when a small FOV camera falls inside a wide FOV camera
+    const unsigned N = 128 /*4*/; 
     const Vec2f depthRange = {0.5F, 10.F};
 
     vector<Vec3f> pointCloud;

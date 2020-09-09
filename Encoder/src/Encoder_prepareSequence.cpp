@@ -72,6 +72,12 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
   }
   cout << " }\n";
 
+  // m54417-proposal-of-new-patches-for-MIV (FT): for testing only , should be removed !!!!!
+  // check number of atlas is greater than constantPatchAtlasNumber
+  runtimeCheck(m_constantPatchAtlasNumber < (int)(atlasFrameSizes.size()),
+               "number of atlases should be strictly greater than constantPatchAtlasNumber");
+
+
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_params = EncoderParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
   m_params.vme() = m_transportParams.vme();
@@ -225,6 +231,13 @@ void Encoder::prepareIvau() {
     if (m_params.vps.vps_miv_extension_flag() && m_params.vme().vme_max_entities_minus1() > 0) {
       // There is nothing entity-related in ASME so a reference is obtained but discarded
       static_cast<void>(atlas.asme());
+    }
+
+    // m54417-proposal-of-new-patches-for-MIV (FT): for testing only , should be removed !!!!!
+    // Signalling constant patch requires ASME to be present
+    if (0 < m_constantPatchAtlasNumber && (int)(i) == 1 ) {
+      atlas.asme().asme_patch_constant_depth_flag(true);
+      m_params.vps.vps_geometry_video_present_flag(i, false);
     }
 
     // Set ATH parameters

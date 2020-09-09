@@ -95,6 +95,18 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
     }
   }
 
+  // m54417-proposal-of-new-patches-for-MIV (FT): for testing only , should be removed !!!!!
+  if (auto node = rootNode.optional("constantPatchAtlasNumber"); node) {
+    m_constantPatchAtlasNumber = node.asInt();
+    std::cout << "Number of atlases with constant patches = " << m_constantPatchAtlasNumber
+              << std::endl;
+    if (auto node = rootNode.optional("constantPatchViews"); node) {
+      m_constantPatchViews = node.asStringVector();
+    }
+    runtimeCheck(size_t(0) < m_constantPatchViews.size(),
+                 " please add at least one view in constantPatchViews");
+  }
+
   // Check parameters
   runtimeCheck(1 <= numGroups, "numGroups should be at least one");
   if (m_maxLumaSampleRate == 0) {

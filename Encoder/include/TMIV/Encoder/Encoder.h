@@ -123,11 +123,6 @@ private: // Encoder_popFrame.cpp
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};
   std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-
-  //m54417-proposal-of-new-patches-for-MIV (FT): for testing only , should be removed !!!!!
-  int m_constantPatchAtlasNumber = 0;
-  std::vector<std::string> m_constantPatchViews{};
-
   int m_geometryScaleEnabledFlag{};
   int m_dilationIter{};
   Common::Vec2i m_entityEncRange;

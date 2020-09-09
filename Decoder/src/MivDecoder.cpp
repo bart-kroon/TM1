@@ -177,7 +177,10 @@ void MivDecoder::checkCapabilities() const {
 
   for (uint8_t j = 0; j <= m_au.vps.vps_atlas_count_minus1(); ++j) {
     VERIFY_MIVBITSTREAM(!m_au.vps.vps_auxiliary_video_present_flag(j));
-    VERIFY_MIVBITSTREAM(m_au.vps.vps_geometry_video_present_flag(j));
+    
+    // m54417-proposal-of-new-patches-for-MIV (FT): the following verification line should be removed since no decoding of geometry is called when constant patch
+    //VERIFY_MIVBITSTREAM(m_au.vps.vps_geometry_video_present_flag(j));
+    
     // TODO(BK): Add more constraints (map count, attribute count, EOM, etc.)
   }
 }

@@ -386,11 +386,19 @@ auto GeometryScaler::scale(const AtlasAccessUnit &atlas,
 }
 
 void GeometryScaler::inplaceScale(AccessUnit &frame) const {
-  for (auto &atlas : frame.atlas) {
-    if (!atlas.attrFrame.empty() && atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
-      atlas.geoFrame = scale(atlas, frame.gup.value_or(m_defaultGup));
-    } else {
-      atlas.geoFrame = atlas.decGeoFrame;
+  for (uint8_t atlasId = 0; atlasId <= frame.vps.vps_atlas_count_minus1(); ++atlasId) {
+    auto &atlas = frame.atlas[atlasId];
+    // only try to upscale the depth is the geometry present flag is true
+    if (frame.vps.vps_geometry_video_present_flag(atlasId)) {
+      if (!atlas.attrFrame.empty() && atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
+        atlas.geoFrame = scale(atlas, frame.gup.value_or(m_defaultGup));
+      } else {
+        atlas.geoFrame = atlas.decGeoFrame;
+      }
+    } else //m54417-proposal-of-new-patches-for-MIV (FT): this case has been added for compatibility with AdditiveSynthesizer
+    {
+      atlas.geoFrame = Depth10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
+      atlas.geoFrame.fillZero();
     }
   }
 }

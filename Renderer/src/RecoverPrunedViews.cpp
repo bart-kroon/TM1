@@ -91,11 +91,9 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
           continue;
         }
 
-        //m54417-proposal-of-new-patches-for-MIV (FT): Copy geometry, only if present
-        if (atlas.asps.asps_miv_extension_flag() &&
-            atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
-          // do nothing with geometry
-        } else {
+        // Copy geometry
+        if (!atlas.asps.asps_miv_extension_flag() ||
+            !atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
           prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
         }
 

@@ -395,10 +395,9 @@ void GeometryScaler::inplaceScale(AccessUnit &frame) const {
       } else {
         atlas.geoFrame = atlas.decGeoFrame;
       }
-    } else //m54417-proposal-of-new-patches-for-MIV (FT): this case has been added for compatibility with AdditiveSynthesizer
+    } else 
     {
-      atlas.geoFrame = Depth10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
-      atlas.geoFrame.fillZero();
+      // TODO(BK): Add support for asme_patch_constant_depth_flag to the AdditiveSynthesizer
     }
   }
 }

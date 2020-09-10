@@ -293,8 +293,8 @@ Most of the parameters are defined in the root. The exception is:
 
 Core experiments are expected to include the reference software as a subproject
 and introduce new components. Alternatively core experiments may branch the test
-model. Contributions should be in the form of git pull requests to the
-MPEG-internal repository.
+model. Contributions should be in the form of git merge requests to the
+MPEG-internal repository. See [CONTRIBUING.md](CONTRIBUTING.md) for further info.
 
 ## References
 

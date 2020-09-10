@@ -8,12 +8,12 @@ if(BUILD_CATCH2)
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
         GIT_TAG "v2.11.1"
     )
-
     fetchcontent_makeavailable(CATCH2)
 
-    set(CATCH2_CMAKE_FOLDER ${CMAKE_BINARY_DIR}/_deps/catch2-src/contrib/)
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CATCH2_CMAKE_FOLDER)
+    # Make catch2 cmake scripts available
+    set(CMAKE_MODULE_PATH
+        ${CMAKE_MODULE_PATH} "${CMAKE_BINARY_DIR}/_deps/catch2-src/contrib/")
 
-    set(CATCH2_INCLUDE_FOLDER ${CMAKE_BINARY_DIR}/_deps/catch2-src/single_include/)
-    include_directories(CATCH2_INCLUDE_FOLDER)
+    # Make catch2 header file available
+    include_directories(${CMAKE_BINARY_DIR}/_deps/catch2-src/single_include/)
 endif()

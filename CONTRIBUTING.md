@@ -1,14 +1,14 @@
 # Contributing
 
-Currently, merge requests are not accepted at the [public gitlab repository](https://gitlab.com/mpeg-i-visual/tmiv.git), only in the [internal MPEG gitlab repository](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1.git).
+Contribution are expected to be in the form of merge requests to the [MPEG-internal repository](http://mpegx.int-evry.fr/software/MPEG/MIV/RS/TM1.git). The [public repository](https://gitlab.com/mpeg-i-visual/tmiv.git) is a mirror of the `master` branch.
 
 ## Semantic versioning of releases
 
 Releases have semantic versioning x.y.z:
 
-- x: No compatibility between major releases
-- y: Since TMIV 6, we require forward bitstream compatibility for minor releases (6.1 can read 6.0 bitstream)
-- z: bug fixes and non-code improvements (e.g. license, manual)
+- x: Major releases, no compatibility required between them
+- y: Minor releases, we require forward bitstream compatibility (e.g. 6.1 can read the bitstream produced by 6.0)
+- z: Bug fixes and non-code improvements (e.g. license, manual)
 
 ## Branches
 
@@ -20,4 +20,4 @@ This repository has the following branch model:
 - Branch `m12345` is the proponent branch to document m12345 and will be deleted after the MPEG meeting when integrated or rejected
 - Issue branches as created by gitlab, will be deleted after the merge request
 
-Currently, masters are @fleureauj, @franck.thudor, @vinod_mv and @bartkroon. In holiday season, we sometimes struggle with this and we cannot always keep this rule.
+Masters are @fleureauj, @franck.thudor, @vinod_mv and @bartkroon.

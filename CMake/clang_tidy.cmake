@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 option(ENABLE_CLANG_TIDY "Turn on clang_tidy processing if available" ON)
 

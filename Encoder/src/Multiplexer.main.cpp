@@ -43,7 +43,6 @@
 #include <stdexcept>
 
 using namespace TMIV::Common;
-using namespace TMIV::IO;
 using namespace TMIV::MivBitstream;
 
 using std::filesystem::path;

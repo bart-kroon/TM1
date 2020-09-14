@@ -37,11 +37,10 @@
 
 using namespace TMIV::Common;
 using namespace TMIV::Encoder;
-using namespace TMIV::IO;
 
 namespace TMIV::Encoder {
 auto bitstreamPath(const Json &config) -> std::string {
-  return getFullPath(config, "OutputDirectory", "BitstreamPath");
+  return IO::getFullPath(config, "OutputDirectory", "BitstreamPath");
 }
 
 IvMetadataWriter::IvMetadataWriter(const Json &config)

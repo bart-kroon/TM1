@@ -43,7 +43,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::IO;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::DepthQualityAssessor;
 
@@ -71,12 +70,12 @@ public:
       , m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
-    auto sourceParams = loadSourceParams(json());
+    auto sourceParams = IO::loadSourceParams(json());
     m_viewSizes = sourceParams.viewParamsList.viewSizes();
 
     if (!json().isPresent("depthLowQualityFlag")) {
       sourceParams.vme().vme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
-          sourceParams, loadSourceFrame(json(), m_viewSizes, 0)));
+          sourceParams, IO::loadSourceFrame(json(), m_viewSizes, 0)));
     }
     m_encoder->prepareSequence(sourceParams);
 
@@ -101,13 +100,13 @@ private:
 
   void pushFrames(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      m_encoder->pushFrame(loadSourceFrame(json(), m_viewSizes, i));
+      m_encoder->pushFrame(IO::loadSourceFrame(json(), m_viewSizes, i));
     }
   }
 
   void popAtlases(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      saveAtlas(json(), i, m_encoder->popAtlas());
+      IO::saveAtlas(json(), i, m_encoder->popAtlas());
     }
   }
 };

@@ -45,7 +45,6 @@
 #include <fstream>
 
 using namespace TMIV::Common;
-using namespace TMIV::Decoder;
 
 auto dumpV3cUnitPayload(std::streampos position, const SampleStreamV3cUnit &ssvu,
                         const V3cUnitHeader &vuh) {

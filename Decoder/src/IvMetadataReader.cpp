@@ -38,7 +38,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::Decoder;
 
 namespace TMIV::Decoder {
 auto bitstreamPath(const Json &config) -> std::string {

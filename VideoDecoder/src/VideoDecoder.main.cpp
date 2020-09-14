@@ -43,7 +43,6 @@
 
 using namespace std::literals;
 using namespace TMIV::Common;
-using namespace TMIV::VideoDecoder;
 
 constexpr auto defaultCodecGroupIdc = TMIV::MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10;
 
@@ -125,10 +124,10 @@ auto main(int argc, char *argv[]) -> int {
     // Stress-test the video server
     std::ostringstream buffer;
     buffer << in.rdbuf();
-    auto servers = std::vector<std::unique_ptr<VideoServer>>{};
+    auto servers = std::vector<std::unique_ptr<TMIV::VideoDecoder::VideoServer>>{};
     for (int i = 0; i < 20; ++i) {
-      servers.push_back(
-          std::make_unique<VideoServer>(IVideoDecoder::create(*codecGroupIdc), buffer.str()));
+      servers.push_back(std::make_unique<TMIV::VideoDecoder::VideoServer>(
+          TMIV::VideoDecoder::IVideoDecoder::create(*codecGroupIdc), buffer.str()));
     }
     for (;;) {
       auto frame = std::unique_ptr<AnyFrame>{};
@@ -144,7 +143,8 @@ auto main(int argc, char *argv[]) -> int {
     // Example of using the video server (with the decoder on a separate thread)
     std::ostringstream buffer;
     buffer << in.rdbuf();
-    auto server = VideoServer{IVideoDecoder::create(*codecGroupIdc), buffer.str()};
+    auto server = TMIV::VideoDecoder::VideoServer{
+        TMIV::VideoDecoder::IVideoDecoder::create(*codecGroupIdc), buffer.str()};
     auto frame = server.getFrame();
     while (frame) {
       frame->as<YUV420P10>().dump(out);
@@ -152,7 +152,7 @@ auto main(int argc, char *argv[]) -> int {
     }
   } else {
     // Example of using the video decoder on the same thread
-    auto decoder = IVideoDecoder::create(*codecGroupIdc);
+    auto decoder = TMIV::VideoDecoder::IVideoDecoder::create(*codecGroupIdc);
 
     decoder->addFrameListener([&out](const AnyFrame &picture) {
       auto frame = picture.as<YUV420P10>();

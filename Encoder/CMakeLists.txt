@@ -52,7 +52,8 @@ add_executable(Multiplexer
 target_link_libraries(Multiplexer
     PRIVATE
         TMIV::MivBitstreamLib
-        TMIV::IOLib)
+        TMIV::IOLib
+        stdc++fs)
 
 install(
     TARGETS

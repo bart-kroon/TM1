@@ -58,28 +58,6 @@ Prerequisites are:
 
 This description works for Windows and Linux.
 
-### Instructions to build and install Catch2
-
-Catch2 is optional but highly recommended. Clone a recent version of
-[Catch2](https://github.com/catchorg/Catch2.git) to enable the tests:
-
-```shell
-cd /Workspace
-git clone https://github.com/catchorg/Catch2.git
-cd Catch2
-git checkout v2.11.1
-```
-
-Open the CMake GUI and specify:
-
-* Where is the source directory: /Workspace/Catch2
-* Where to build the binaries: /Workspace/Catch2/build
-* Click Configure, Yes, Finish
-* Set CMAKE_INSTALL_PREFIX to /Workspace/Catch2-2.11.1
-* Click Generate
-
-Build and install the generated project.
-
 ### Instructions to download HM
 
 Look in the CTC document for the version of HM and corresponding URL. This
@@ -118,7 +96,9 @@ Open the CMake GUI and specify:
 * Where to build the binaries: /Workspace/TM1/build
 * Click Configure, Yes, Finish
 * Set CMAKE_INSTALL_PREFIX to /Workspace/TM1-master
-* Set Catch2_DIR to /Workspace/Catch2-v2.11.1/lib/cmake/Catch2
+* Optional: To disable [Catch2](https://github.com/catchorg/Catch2.git)-based
+  unit tests, set BUILD_CATCH2 to false. Leaving tests enabled (skipping this
+  step) is highly recommended, however.
 * Set HM_SOURCE_DIR to /Workspace/HM-16.16
 * Click Generate
 

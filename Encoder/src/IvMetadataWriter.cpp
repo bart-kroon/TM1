@@ -52,7 +52,7 @@ IvMetadataWriter::IvMetadataWriter(const Json &config)
   m_encoder = std::make_unique<MivEncoder>(m_stream);
 }
 
-void IvMetadataWriter::writeAccessUnit(const EncoderParams &params) {
+void IvMetadataWriter::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   m_encoder->writeAccessUnit(params);
   m_frameRate = params.frameRate;
   m_bytesWritten = m_stream.tellp();

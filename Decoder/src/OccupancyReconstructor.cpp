@@ -34,7 +34,6 @@
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
 OccupancyReconstructor::OccupancyReconstructor(const Json & /*rootNode*/,

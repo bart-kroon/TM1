@@ -38,12 +38,11 @@
 
 #include <cassert>
 
-using namespace TMIV::MivBitstream;
 using namespace TMIV::Common;
 
 namespace TMIV::Pruner {
-auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &viewParams,
-                         const Mat<uint8_t> &mask)
+auto unprojectPrunedView(const TextureDepth16Frame &view,
+                         const MivBitstream::ViewParams &viewParams, const Mat<uint8_t> &mask)
     -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
                   std::vector<Vec3f>> {
   return viewParams.ci.dispatch([&](auto camType) {
@@ -71,7 +70,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
     std::vector<int> key;
     key.reserve(vertices.size());
 
-    const auto depthTransform = DepthTransform<16>{viewParams.dq};
+    const auto depthTransform = MivBitstream::DepthTransform<16>{viewParams.dq};
 
     for (int y = 0; y < size.y(); ++y) {
       for (int x = 0; x < size.x(); ++x) {
@@ -120,8 +119,9 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
   });
 }
 
-auto project(const Renderer::SceneVertexDescriptorList &vertices, const ViewParams &source,
-             const ViewParams &target) -> Renderer::ImageVertexDescriptorList {
+auto project(const Renderer::SceneVertexDescriptorList &vertices,
+             const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target)
+    -> Renderer::ImageVertexDescriptorList {
   return target.ci.dispatch([&](auto camType) {
     Renderer::ImageVertexDescriptorList result;
     Renderer::Engine<camType.value> engine{target.ci};
@@ -136,10 +136,11 @@ auto project(const Renderer::SceneVertexDescriptorList &vertices, const ViewPara
   });
 }
 
-void weightedSphere(const CameraIntrinsics &ci, const Renderer::ImageVertexDescriptorList &vertices,
+void weightedSphere(const MivBitstream::CameraIntrinsics &ci,
+                    const Renderer::ImageVertexDescriptorList &vertices,
                     Renderer::TriangleDescriptorList &triangles) {
-  if (ci.ci_cam_type() == CiCamType::equirectangular) {
-    Renderer::Engine<CiCamType::equirectangular> engine{ci};
+  if (ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
+    Renderer::Engine<MivBitstream::CiCamType::equirectangular> engine{ci};
     for (auto &triangle : triangles) {
       auto v = 0.F;
       for (auto index : triangle.indices) {

@@ -36,13 +36,13 @@
 #include <algorithm>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 GeometryDownscaler::GeometryDownscaler(const Json &rootNode, const Json & /* componentNode */)
     : m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").asBool()} {}
 
-auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderParams & {
+auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
+    -> const MivBitstream::EncoderParams & {
   m_params = std::move(params);
 
   if (m_geometryScaleEnabledFlag) {

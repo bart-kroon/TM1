@@ -48,7 +48,6 @@
 #include <numeric>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Pruner {
 class HierarchicalPruner::Impl {
@@ -75,7 +74,7 @@ private:
   const int m_dilate{};
   const int m_maxBasicViewsPerGraph{};
   const Renderer::AccumulatingPixel<Vec3f> m_config;
-  EncoderParams m_params;
+  MivBitstream::EncoderParams m_params;
   std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   std::vector<size_t> m_clusterIds;
   struct Cluster {
@@ -99,8 +98,9 @@ public:
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  void assignAdditionalViews(const Mat<float> &overlap, const ViewParamsList &viewParamsList,
-                             size_t numClusters, std::vector<size_t> &clusterIds) {
+  void assignAdditionalViews(const Mat<float> &overlap,
+                             const MivBitstream::ViewParamsList &viewParamsList, size_t numClusters,
+                             std::vector<size_t> &clusterIds) {
     const auto N = viewParamsList.size();
     auto numViewsPerCluster = std::vector<size_t>(numClusters, 0);
     for (size_t i = 0; i < N; ++i) {
@@ -154,8 +154,8 @@ public:
     return score;
   }
 
-  auto exhaustiveSearch(const Mat<float> &overlap, const ViewParamsList &viewParamsList)
-      -> std::vector<size_t> {
+  auto exhaustiveSearch(const Mat<float> &overlap,
+                        const MivBitstream::ViewParamsList &viewParamsList) -> std::vector<size_t> {
     auto basicViewIds = std::vector<size_t>{};
     auto haveAdditionalViews = false;
     for (size_t i = 0; i < viewParamsList.size(); ++i) {
@@ -215,7 +215,7 @@ public:
     return bestClusterIds;
   }
 
-  void clusterViews(const Mat<float> &overlap, const ViewParamsList &viewParamsList) {
+  void clusterViews(const Mat<float> &overlap, const MivBitstream::ViewParamsList &viewParamsList) {
     const auto clusterIds = exhaustiveSearch(overlap, viewParamsList);
 
     m_clusters = std::vector<Cluster>(1 + *max_element(clusterIds.cbegin(), clusterIds.cend()));
@@ -259,7 +259,7 @@ public:
     }
   }
 
-  void printClusters(const ViewParamsList &vpl) const {
+  void printClusters(const MivBitstream::ViewParamsList &vpl) const {
     std::cout << "Pruning graph:\n";
     for (auto &cluster : m_clusters) {
       std::cout << "  (";
@@ -305,7 +305,7 @@ public:
       const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
 
       if (neighbourhood.empty()) {
-        viewParamsList[camId].pp = PruningParents{};
+        viewParamsList[camId].pp = MivBitstream::PruningParents{};
       } else {
         std::vector<uint16_t> parentIdList;
 
@@ -315,7 +315,7 @@ public:
           parentIdList.emplace_back(static_cast<uint16_t>(link.node()));
         }
 
-        viewParamsList[camId].pp = PruningParents{std::move(parentIdList)};
+        viewParamsList[camId].pp = MivBitstream::PruningParents{std::move(parentIdList)};
       }
     }
   }
@@ -340,35 +340,35 @@ private:
   void createInitialMasks(const MVD16Frame &views, const int blockSize) {
     m_masks.clear();
     m_masks.reserve(views.size());
-    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
-                   std::cbegin(views), back_inserter(m_masks),
-                   [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                     auto mask =
-                         Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
-                                         align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
+    std::transform(
+        std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+        std::cbegin(views), back_inserter(m_masks),
+        [blockSize](const MivBitstream::ViewParams &viewParams, const TextureDepth16Frame &view) {
+          auto mask = Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
+                                      align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
-                     std::transform(std::cbegin(view.depth.getPlane(0)),
-                                    std::cend(view.depth.getPlane(0)), std::begin(mask.getPlane(0)),
-                                    [ot = OccupancyTransform{viewParams}](auto x) {
-                                      // #94: When there are invalid pixels in a basic view, these
-                                      // should be excluded from the pruning mask
-                                      return uint8_t(ot.occupant(x) ? 255 : 0);
-                                    });
-                     return mask;
-                   });
+          std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
+                         std::begin(mask.getPlane(0)),
+                         [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                           // #94: When there are invalid pixels in a basic view, these
+                           // should be excluded from the pruning mask
+                           return uint8_t(ot.occupant(x) ? 255 : 0);
+                         });
+          return mask;
+        });
 
     m_status.clear();
     m_status.reserve(views.size());
     std::transform(
         std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
         std::cbegin(views), back_inserter(m_status),
-        [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
+        [blockSize](const MivBitstream::ViewParams &viewParams, const TextureDepth16Frame &view) {
           auto status = Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
                                         align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
           std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
                          std::begin(status.getPlane(0)),
-                         [ot = OccupancyTransform{viewParams}](auto x) {
+                         [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
                            // #94: When there are invalid pixels in a basic view, these
                            // should be freezed from pruning
                            return uint8_t(ot.occupant(x) ? 255 : 0);
@@ -381,7 +381,7 @@ private:
     m_synthesizers.clear();
     for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
       if (!m_params.viewParamsList[i].isBasicView) {
-        const auto depthTransform = DepthTransform<16>{m_params.viewParamsList[i].dq};
+        const auto depthTransform = MivBitstream::DepthTransform<16>{m_params.viewParamsList[i].dq};
         m_synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
             depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture)));

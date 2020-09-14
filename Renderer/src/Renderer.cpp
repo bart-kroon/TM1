@@ -36,7 +36,6 @@
 #include <TMIV/Common/Factory.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 Renderer::Renderer(const Json &rootNode, const Json &componentNode)
@@ -46,7 +45,8 @@ Renderer::Renderer(const Json &rootNode, const Json &componentNode)
     , m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
           "ViewingSpaceController", rootNode, componentNode)} {}
 
-auto Renderer::renderFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams) const
+auto Renderer::renderFrame(const Decoder::AccessUnit &frame,
+                           const MivBitstream::ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
 

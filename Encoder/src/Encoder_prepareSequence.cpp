@@ -39,7 +39,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 namespace {
@@ -50,7 +49,7 @@ void runtimeCheck(bool cond, const char *what) {
 }
 } // namespace
 
-void Encoder::prepareSequence(EncoderParams sourceParams) {
+void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   m_blockSize = m_blockSizeDepthQualityDependent[sourceParams.vme().vme_depth_low_quality_flag()];
   runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
   runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
@@ -72,7 +71,7 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
   std::cout << " }\n";
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
-  m_params = EncoderParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
+  m_params = MivBitstream::EncoderParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
   m_params.vme() = m_transportParams.vme();
   m_params.viewParamsList = m_transportParams.viewParamsList;
   m_params.frameRate = m_transportParams.frameRate;
@@ -98,13 +97,14 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
 }
 
 // Calculate atlas frame sizes [MPEG/M52994 v2]
-auto Encoder::calculateNominalAtlasFrameSizes(const EncoderParams &params) const -> SizeVector {
+auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams &params) const
+    -> SizeVector {
   if (m_maxBlockRate == 0) {
     // No constraints: one atlas per transport view
     auto result = SizeVector(params.viewParamsList.size());
     std::transform(std::cbegin(params.viewParamsList), std::cend(params.viewParamsList),
                    std::begin(result),
-                   [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
+                   [](const MivBitstream::ViewParams &x) { return x.ci.projectionPlaneSize(); });
     return result;
   }
 
@@ -144,7 +144,7 @@ auto Encoder::calculateNominalAtlasFrameSizes(const EncoderParams &params) const
   return SizeVector(numAtlases, {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
 }
 
-auto Encoder::calculateViewGridSize(const EncoderParams &params) const -> Vec2i {
+auto Encoder::calculateViewGridSize(const MivBitstream::EncoderParams &params) const -> Vec2i {
   int x{};
   int y{};
 
@@ -157,12 +157,12 @@ auto Encoder::calculateViewGridSize(const EncoderParams &params) const -> Vec2i 
   return {x, y};
 }
 
-auto Encoder::vuiParameters() const -> VuiParameters {
+auto Encoder::vuiParameters() const -> MivBitstream::VuiParameters {
   auto numUnitsInTick = 1;
   auto timeScale = int(numUnitsInTick * m_params.frameRate);
   LIMITATION(timeScale == numUnitsInTick * m_params.frameRate);
 
-  auto vui = VuiParameters{};
+  auto vui = MivBitstream::VuiParameters{};
   vui.vui_timing_info_present_flag(true)
       .vui_num_units_in_tick(numUnitsInTick)
       .vui_time_scale(timeScale)
@@ -190,7 +190,7 @@ auto Encoder::haveTexture() const -> bool {
   assert(m_transportParams.vps.vps_atlas_count_minus1() == 0);
   const auto &ai = m_transportParams.vps.attribute_information(0);
   return ai.ai_attribute_count() >= 1 &&
-         ai.ai_attribute_type_id(0) == AiAttributeTypeId::ATTR_TEXTURE;
+         ai.ai_attribute_type_id(0) == MivBitstream::AiAttributeTypeId::ATTR_TEXTURE;
 }
 
 auto Encoder::haveOccupancy() const -> bool { return m_explicitOccupancy; }

@@ -38,7 +38,6 @@
 #include <cmath>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 namespace {
@@ -391,7 +390,8 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
   perform2WayInpainting(yuvd, DepthBlendingThreshold, 0, nonEmptyNeighborT, nonEmptyNeighborB);
 }
 
-template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &meta) {
+template <typename YUVD>
+void inplaceInpaint_impl(YUVD &yuvd, const MivBitstream::ViewParams &meta) {
   static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
                 std::is_same_v<YUVD, Texture444Depth16Frame>);
 
@@ -405,7 +405,7 @@ template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &
 
   fillVerticalCracks(yuvd);
 
-  if (meta.ci.ci_cam_type() == CiCamType::equirectangular) {
+  if (meta.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
     const auto fullOmniRangePercentage =
         (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / fullCycle;
     inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, fullOmniRangePercentage);
@@ -417,11 +417,13 @@ template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &
 
 Inpainter::Inpainter(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport, const ViewParams &metadata) const {
+void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport,
+                               const MivBitstream::ViewParams &metadata) const {
   inplaceInpaint_impl(viewport, metadata);
 }
 
-void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport, const ViewParams &metadata) const {
+void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport,
+                               const MivBitstream::ViewParams &metadata) const {
   inplaceInpaint_impl(viewport, metadata);
 }
 } // namespace TMIV::Renderer

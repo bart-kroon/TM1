@@ -40,16 +40,15 @@
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::GeometryQuantizer;
 
+namespace TMIV::GeometryQuantizer {
 SCENARIO("Geometry quantization") {
   GeometryQuantizer depthOccupancy{37};
 
-  auto sourceViewParams = ViewParams{};
+  auto sourceViewParams = MivBitstream::ViewParams{};
   sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
       .ci_projection_plane_height_minus1(1079)
-      .ci_cam_type(CiCamType::equirectangular)
+      .ci_cam_type(MivBitstream::CiCamType::equirectangular)
       .ci_erp_phi_min(-halfCycle)
       .ci_erp_phi_max(halfCycle)
       .ci_erp_theta_min(-quarterCycle)
@@ -57,11 +56,11 @@ SCENARIO("Geometry quantization") {
   sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
 
   GIVEN("View parameters without invalid depth") {
-    auto sourceParams = EncoderParams{};
+    auto sourceParams = MivBitstream::EncoderParams{};
     sourceParams.vps.vps_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension_flag(true);
     sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
-    sourceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
+    sourceParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedParams = depthOccupancy.transformParams(sourceParams);
@@ -72,8 +71,8 @@ SCENARIO("Geometry quantization") {
 
   GIVEN("View parameters with invalid depth") {
     sourceViewParams.hasOccupancy = true;
-    auto sourceSeqParams = EncoderParams{};
-    sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
+    auto sourceSeqParams = MivBitstream::EncoderParams{};
+    sourceSeqParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
@@ -98,3 +97,4 @@ SCENARIO("Geometry quantization") {
     }
   }
 }
+} // namespace TMIV::GeometryQuantizer

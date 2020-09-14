@@ -39,11 +39,11 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 namespace {
-auto computeIndex(const ViewParams &metadata, const MivBitstream::ViewingSpace &vs) -> float {
+auto computeIndex(const MivBitstream::ViewParams &metadata, const MivBitstream::ViewingSpace &vs)
+    -> float {
   TMIV::ViewingSpace::ViewingParams vp;
   vp.viewPosition = metadata.ce.position();
   vp.viewRotation = metadata.ce.rotation();
@@ -55,7 +55,7 @@ auto computeIndex(const ViewParams &metadata, const MivBitstream::ViewingSpace &
 }
 
 template <typename YUVD>
-void inplaceFading_impl(YUVD &yuvd, const ViewParams & /* unused */, float index) {
+void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused */, float index) {
   // TO DO
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
@@ -118,13 +118,13 @@ ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/,
                                                const Json & /*componentNode*/) {}
 
 void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport,
-                                           const ViewParams &viewportParams,
+                                           const MivBitstream::ViewParams &viewportParams,
                                            const MivBitstream::ViewingSpace &viewingSpace) const {
   inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));
 }
 
 void ViewingSpaceController::inplaceFading(Texture444Depth16Frame &viewport,
-                                           const ViewParams &viewportParams,
+                                           const MivBitstream::ViewParams &viewportParams,
                                            const MivBitstream::ViewingSpace &viewingSpace) const {
   inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));
 }

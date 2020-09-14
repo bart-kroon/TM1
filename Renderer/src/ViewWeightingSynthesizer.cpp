@@ -46,7 +46,6 @@
 #include <cmath>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 namespace {
@@ -168,7 +167,7 @@ public:
     m_filteringPass = filteringPass;
   }
 
-  auto renderFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams)
+  auto renderFrame(const Decoder::AccessUnit &frame, const MivBitstream::ViewParams &viewportParams)
       -> Texture444Depth16Frame {
     const auto &viewParamsList = frame.viewParamsList;
     const auto sourceHelperList = ProjectionHelperList{viewParamsList};
@@ -214,9 +213,10 @@ public:
       }
     }
 
-    auto viewport = Texture444Depth16Frame{
-        quantizeTexture(m_viewportColor),
-        DepthTransform<16>{viewportParams.dq}.quantizeNormDisp(m_viewportVisibility, 1)};
+    auto viewport =
+        Texture444Depth16Frame{quantizeTexture(m_viewportColor),
+                               MivBitstream::DepthTransform<16>{viewportParams.dq}.quantizeNormDisp(
+                                   m_viewportVisibility, 1)};
     viewport.first.filIInvalidWithNeutral(viewport.second);
     return viewport;
   }
@@ -351,8 +351,8 @@ private:
       const auto &viewParams = sourceHelperList[sourceId].getViewParams();
 
       m_sourceColor.emplace_back(expandTexture(prunedViews[sourceId].first));
-      m_sourceDepth.emplace_back(
-          DepthTransform<10>{viewParams.dq}.expandDepth(prunedViews[sourceId].second));
+      m_sourceDepth.emplace_back(MivBitstream::DepthTransform<10>{viewParams.dq}.expandDepth(
+          prunedViews[sourceId].second));
 
       std::transform(
           prunedMasks[sourceId].getPlane(0).begin(), prunedMasks[sourceId].getPlane(0).end(),
@@ -977,7 +977,7 @@ ViewWeightingSynthesizer::ViewWeightingSynthesizer(float angularScaling, float m
 ViewWeightingSynthesizer::~ViewWeightingSynthesizer() = default;
 
 auto ViewWeightingSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
-                                           const ViewParams &viewportParams) const
+                                           const MivBitstream::ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);
 }

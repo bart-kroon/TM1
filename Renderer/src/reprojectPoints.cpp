@@ -36,12 +36,11 @@
 #include <TMIV/Common/Thread.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 constexpr auto halfPixel = 0.5F;
 
-auto imagePositions(const CameraIntrinsics &ci) -> Mat<Vec2f> {
+auto imagePositions(const MivBitstream::CameraIntrinsics &ci) -> Mat<Vec2f> {
   Mat<Vec2f> result;
   result.resize(ci.projectionPlaneSize().y(), ci.projectionPlaneSize().x());
   for (unsigned i = 0; i != result.height(); ++i) {
@@ -52,7 +51,7 @@ auto imagePositions(const CameraIntrinsics &ci) -> Mat<Vec2f> {
   return result;
 }
 
-auto unprojectPoints(const CameraIntrinsics &ci, const Mat<Vec2f> &positions,
+auto unprojectPoints(const MivBitstream::CameraIntrinsics &ci, const Mat<Vec2f> &positions,
                      const Mat<float> &depth) -> Mat<Vec3f> {
   assert(positions.sizes() == depth.sizes());
   return ci.dispatch([&](auto camType) {
@@ -66,8 +65,9 @@ auto unprojectPoints(const CameraIntrinsics &ci, const Mat<Vec2f> &positions,
   });
 }
 
-auto changeReferenceFrame(const CameraExtrinsics &source, const CameraExtrinsics &target,
-                          const Mat<Vec3f> &points) -> Mat<Vec3f> {
+auto changeReferenceFrame(const MivBitstream::CameraExtrinsics &source,
+                          const MivBitstream::CameraExtrinsics &target, const Mat<Vec3f> &points)
+    -> Mat<Vec3f> {
   Mat<Vec3f> result(points.sizes());
   const auto R_t = AffineTransform{source, target};
 
@@ -75,7 +75,7 @@ auto changeReferenceFrame(const CameraExtrinsics &source, const CameraExtrinsics
   return result;
 }
 
-auto projectPoints(const CameraIntrinsics &ci, const Mat<Vec3f> &points)
+auto projectPoints(const MivBitstream::CameraIntrinsics &ci, const Mat<Vec3f> &points)
     -> std::pair<Mat<Vec2f>, Mat<float>> {
   return ci.dispatch([&](auto camType) {
     Engine<camType.value> engine{ci};
@@ -93,7 +93,7 @@ auto projectPoints(const CameraIntrinsics &ci, const Mat<Vec3f> &points)
   });
 }
 
-auto reprojectPoints(const ViewParams &source, const ViewParams &target,
+auto reprojectPoints(const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target,
                      const Mat<Vec2f> &positions, const Mat<float> &depth)
     -> std::pair<Mat<Vec2f>, Mat<float>> {
   auto points = unprojectPoints(source.ci, positions, depth);
@@ -101,8 +101,9 @@ auto reprojectPoints(const ViewParams &source, const ViewParams &target,
   return projectPoints(target.ci, points);
 }
 
-auto calculateRayAngles(const CameraExtrinsics &source, const CameraExtrinsics &target,
-                        const Mat<Vec3f> &points) -> Mat<float> {
+auto calculateRayAngles(const MivBitstream::CameraExtrinsics &source,
+                        const MivBitstream::CameraExtrinsics &target, const Mat<Vec3f> &points)
+    -> Mat<float> {
   Mat<float> result(points.sizes());
   const auto t = AffineTransform(source, target).translation();
   std::transform(std::begin(points), std::end(points), std::begin(result),
@@ -110,7 +111,8 @@ auto calculateRayAngles(const CameraExtrinsics &source, const CameraExtrinsics &
   return result;
 }
 
-AffineTransform::AffineTransform(const CameraExtrinsics &source, const CameraExtrinsics &target) {
+AffineTransform::AffineTransform(const MivBitstream::CameraExtrinsics &source,
+                                 const MivBitstream::CameraExtrinsics &target) {
   const auto r1 = QuatD(source.rotation());
   const auto r2 = QuatD(target.rotation());
   const auto t1 = Vec3d(source.position());
@@ -125,14 +127,16 @@ AffineTransform::AffineTransform(const CameraExtrinsics &source, const CameraExt
 
 auto AffineTransform::operator()(Vec3f x) const -> Vec3f { return m_R * x + m_t; }
 
-auto unprojectVertex(Vec2f position, float depth, const CameraIntrinsics &ci) -> Vec3f {
+auto unprojectVertex(Vec2f position, float depth, const MivBitstream::CameraIntrinsics &ci)
+    -> Vec3f {
   return ci.dispatch([&](auto camType) {
     Engine<camType> engine{ci};
     return engine.unprojectVertex(position, depth);
   });
 }
 
-auto projectVertex(const Vec3f &position, const CameraIntrinsics &ci) -> std::pair<Vec2f, float> {
+auto projectVertex(const Vec3f &position, const MivBitstream::CameraIntrinsics &ci)
+    -> std::pair<Vec2f, float> {
   return ci.dispatch([&](auto camType) {
     Engine<camType> engine{ci};
     auto imageVertexDescriptor = engine.projectVertex(SceneVertexDescriptor{position, 0.F});
@@ -149,13 +153,13 @@ ProjectionHelper::List::List(const MivBitstream::ViewParamsList &viewParamsList)
 ProjectionHelper::ProjectionHelper(const MivBitstream::ViewParams &viewParams)
     : m_viewParams{viewParams}, m_rotation{viewParams.ce.rotation()} {
   switch (viewParams.ci.ci_cam_type()) {
-  case CiCamType::equirectangular:
+  case MivBitstream::CiCamType::equirectangular:
     m_engine = std::make_unique<MetaEngine::Equirectangular>(viewParams.ci);
     break;
-  case CiCamType::perspective:
+  case MivBitstream::CiCamType::perspective:
     m_engine = std::make_unique<MetaEngine::Perspective>(viewParams.ci);
     break;
-  case CiCamType::orthographic:
+  case MivBitstream::CiCamType::orthographic:
     m_engine = std::make_unique<MetaEngine::Orthographic>(viewParams.ci);
     break;
   default:
@@ -204,14 +208,14 @@ auto ProjectionHelper::getAngularResolution() const -> float {
   const auto &ci = m_viewParams.get().ci;
 
   switch (ci.ci_cam_type()) {
-  case CiCamType::equirectangular: {
+  case MivBitstream::CiCamType::equirectangular: {
     auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
     float DT = ci.ci_erp_phi_max() - ci.ci_erp_phi_min();
     float DS = std::sin(ci.ci_erp_theta_max()) - std::sin(ci.ci_erp_theta_min());
 
     return nbPixel / (DS * DT);
   }
-  case CiCamType::perspective: {
+  case MivBitstream::CiCamType::perspective: {
     auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
     const auto projectionFocalLength =
         (ci.ci_perspective_focal_hor() + ci.ci_perspective_focal_ver()) / 2.F;
@@ -223,7 +227,7 @@ auto ProjectionHelper::getAngularResolution() const -> float {
 
     return nbPixel / omega;
   }
-  case CiCamType::orthographic: {
+  case MivBitstream::CiCamType::orthographic: {
     auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
     return nbPixel / hemiSphere;
   }
@@ -239,11 +243,11 @@ auto ProjectionHelper::getDepthRange() const -> Common::Vec2f {
 
 auto ProjectionHelper::getRadialRange() const -> Vec2f {
   switch (m_viewParams.get().ci.ci_cam_type()) {
-  case CiCamType::equirectangular: {
+  case MivBitstream::CiCamType::equirectangular: {
     return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
             1.F / m_viewParams.get().dq.dq_norm_disp_low()};
   }
-  case CiCamType::perspective: {
+  case MivBitstream::CiCamType::perspective: {
     const auto &ci = m_viewParams.get().ci;
     float x = (static_cast<float>(m_viewParams.get().ci.projectionPlaneSize().x()) -
                ci.ci_perspective_center_hor()) /
@@ -255,7 +259,7 @@ auto ProjectionHelper::getRadialRange() const -> Vec2f {
     return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
             norm(Vec3f{x, y, 1.F}) / m_viewParams.get().dq.dq_norm_disp_low()};
   }
-  case CiCamType::orthographic: {
+  case MivBitstream::CiCamType::orthographic: {
     return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
             1.F / m_viewParams.get().dq.dq_norm_disp_low()};
   }

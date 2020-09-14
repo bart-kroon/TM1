@@ -38,7 +38,6 @@
 #endif
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::VideoDecoder {
 IVideoDecoder::~IVideoDecoder() = default;
@@ -46,7 +45,7 @@ IVideoDecoder::~IVideoDecoder() = default;
 auto IVideoDecoder::create(TMIV::MivBitstream::PtlProfileCodecGroupIdc codecGroupIdc)
     -> std::unique_ptr<IVideoDecoder> {
 #ifdef HAVE_HM
-  if (codecGroupIdc == PtlProfileCodecGroupIdc::HEVC_Main10) {
+  if (codecGroupIdc == MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10) {
     return std::make_unique<HmVideoDecoder>();
   }
 #endif

@@ -45,12 +45,12 @@ MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
   m_stream.flush();
 }
 
-void MivEncoder::writeAccessUnit(const EncoderParams &params) {
+void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   m_params = params;
 
   if (m_irap) {
     m_params.vps.profile_tier_level().ptl_max_decodes_idc(ptlMaxDecodesIdc());
-    writeV3cUnit(VuhUnitType::V3C_VPS, 0, m_params.vps);
+    writeV3cUnit(MivBitstream::VuhUnitType::V3C_VPS, 0, m_params.vps);
     m_log2MaxFrmOrderCntLsbMinus4 = m_params.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4();
   }
 
@@ -58,7 +58,7 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
   VERIFY_MIVBITSTREAM(m_frmOrderCntLsb < maxFrmOrderCntLsb());
 
   if (m_irap || m_viewParamsList != params.viewParamsList) {
-    writeV3cUnit(VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
+    writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
     m_viewParamsList = params.viewParamsList;
   }
 
@@ -71,7 +71,7 @@ void MivEncoder::writeAccessUnit(const EncoderParams &params) {
     aau.afps.afps_atlas_sequence_parameter_set_id(vai);
     aau.ath.ath_atlas_frame_parameter_set_id(vai);
 
-    writeV3cUnit(VuhUnitType::V3C_AD, vai, atlasSubBitstream(vai));
+    writeV3cUnit(MivBitstream::VuhUnitType::V3C_AD, vai, atlasSubBitstream(vai));
   }
 
   m_irap = false;
@@ -292,7 +292,7 @@ auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
 auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   auto asb = AtlasSubBitstream{m_ssnh};
 
-  auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
+  auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
   vuh.vuh_atlas_id(vai);
 
   const auto &aau = m_params.atlas[vai];
@@ -301,11 +301,11 @@ auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
     VERIFY_MIVBITSTREAM(m_log2MaxFrmOrderCntLsbMinus4 ==
                         aau.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4());
     writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_params.vps);
-    writeNalUnit(asb, nuhAfps, aau.afps, std::vector<AtlasSequenceParameterSetRBSP>{aau.asps});
+    writeNalUnit(asb, nuhAfps, aau.afps, std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps});
   }
 
-  const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>{aau.asps};
-  const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>{aau.afps};
+  const auto aspsV = std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps};
+  const auto afpsV = std::vector<MivBitstream::AtlasFrameParameterSetRBSP>{aau.afps};
   writeNalUnit(asb, m_irap ? nuhIdr : nuhCra, atlasTileGroupLayer(vai), vuh, m_params.vps, aspsV,
                afpsV);
 
@@ -370,8 +370,8 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
 }
 
 template <typename Payload>
-void MivEncoder::writeV3cUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
-  auto vuh = V3cUnitHeader{vut};
+void MivEncoder::writeV3cUnit(MivBitstream::VuhUnitType vut, uint8_t vai, Payload &&payload) {
+  auto vuh = MivBitstream::V3cUnitHeader{vut};
   if (vai != 0) {
     vuh.vuh_atlas_id(vai);
   }
@@ -380,7 +380,7 @@ void MivEncoder::writeV3cUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
   std::ostringstream substream;
   vu.encodeTo(substream);
 
-  const auto ssvu = SampleStreamV3cUnit{substream.str()};
+  const auto ssvu = MivBitstream::SampleStreamV3cUnit{substream.str()};
   ssvu.encodeTo(m_stream, m_ssvh);
 }
 

@@ -36,7 +36,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 void Encoder::scaleGeometryDynamicRange() {
@@ -86,7 +85,7 @@ void Encoder::scaleGeometryDynamicRange() {
   }
 } // namespace TMIV::Encoder
 
-auto Encoder::completeAccessUnit() -> const EncoderParams & {
+auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
   m_aggregator->completeAccessUnit();
   const auto &aggregatedMask = m_aggregator->getAggregatedMask();
 
@@ -172,8 +171,8 @@ void Encoder::constructVideoFrames() {
   }
 }
 
-void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDepth16Frame &view,
-                                MVD16Frame &atlas, int frameId) {
+void Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
+                                const TextureDepth16Frame &view, MVD16Frame &atlas, int frameId) {
   auto &currentAtlas = atlas[patchParams.vuhAtlasId];
 
   auto &textureAtlasMap = currentAtlas.texture;

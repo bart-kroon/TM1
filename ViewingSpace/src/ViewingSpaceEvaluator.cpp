@@ -41,10 +41,9 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::ViewingSpace {
-using DirectionConstraint = PrimitiveShape::ViewingDirectionConstraint;
+using DirectionConstraint = MivBitstream::PrimitiveShape::ViewingDirectionConstraint;
 
 struct ViewingSpaceEvaluation {
   SignedDistance sdBoundary;
@@ -110,7 +109,7 @@ static auto blend(const std::optional<DirectionConstraint> &ao,
   return result;
 }
 
-static auto evaluate(const PrimitiveShape &shape, const ViewingParams &viewingParams)
+static auto evaluate(const MivBitstream::PrimitiveShape &shape, const ViewingParams &viewingParams)
     -> ViewingSpaceEvaluation {
   ViewingSpaceEvaluation result;
   result.sdBoundary = signedDistance(shape, viewingParams.viewPosition);
@@ -119,7 +118,7 @@ static auto evaluate(const PrimitiveShape &shape, const ViewingParams &viewingPa
   return result;
 }
 
-static auto evaluateAddition(const PrimitiveShapeVector &primitives,
+static auto evaluateAddition(const MivBitstream::PrimitiveShapeVector &primitives,
                              const ViewingParams &viewingParams) -> ViewingSpaceEvaluation {
   ViewingSpaceEvaluation result;
   float accumulatedDirectionWeight = 0.F;
@@ -193,14 +192,15 @@ auto projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) -> Vec3f
   return pp;
 }
 
-static auto computeBisectPlanes(const PrimitiveShapeVector &primitives) -> std::vector<Vec4f> {
+static auto computeBisectPlanes(const MivBitstream::PrimitiveShapeVector &primitives)
+    -> std::vector<Vec4f> {
   auto nvb = primitives.size();
   std::vector<Vec3f> center(nvb);
   for (size_t i = 0; i < nvb; i++) {
-    if (primitives[i].shapeType() == PrimitiveShapeType::spheroid) {
-      center[i] = std::get<Spheroid>(primitives[i].primitive).center;
-    } else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid) {
-      center[i] = std::get<Cuboid>(primitives[i].primitive).center;
+    if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
+      center[i] = std::get<MivBitstream::Spheroid>(primitives[i].primitive).center;
+    } else if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::cuboid) {
+      center[i] = std::get<MivBitstream::Cuboid>(primitives[i].primitive).center;
     }
   }
 
@@ -223,29 +223,30 @@ static auto computeBisectPlanes(const PrimitiveShapeVector &primitives) -> std::
 }
 } // namespace MiscInterpolation
 
-auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f center, float w)
-    -> PrimitiveShape {
-  PrimitiveShape output(a);
+auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::PrimitiveShape b,
+                      Vec3f center, float w) -> MivBitstream::PrimitiveShape {
+  MivBitstream::PrimitiveShape output(a);
   assert(a.shapeType() == b.shapeType());
-  assert(a.shapeType() == PrimitiveShapeType::spheroid ||
-         (a.shapeType() == PrimitiveShapeType::cuboid));
+  assert(a.shapeType() == MivBitstream::PrimitiveShapeType::spheroid ||
+         (a.shapeType() == MivBitstream::PrimitiveShapeType::cuboid));
 
   // dimension and position
-  if (a.shapeType() == PrimitiveShapeType::spheroid) {
-    Vec3f ra = std::get<Spheroid>(a.primitive).radius;
-    Vec3f rb = std::get<Spheroid>(b.primitive).radius;
-    std::get<Spheroid>(output.primitive).radius = (1.F - w) * ra + w * rb;
-    std::get<Spheroid>(output.primitive).center = center;
+  if (a.shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
+    Vec3f ra = std::get<MivBitstream::Spheroid>(a.primitive).radius;
+    Vec3f rb = std::get<MivBitstream::Spheroid>(b.primitive).radius;
+    std::get<MivBitstream::Spheroid>(output.primitive).radius = (1.F - w) * ra + w * rb;
+    std::get<MivBitstream::Spheroid>(output.primitive).center = center;
 #ifdef _VERBOSE
     std::cout << "interpolated shape:" << std::endl;
     std::cout << "  center = " << center << std::endl;
-    std::cout << "  radius = " << std::get<Spheroid>(output.primitive).radius << std::endl;
+    std::cout << "  radius = " << std::get<MivBitstream::Spheroid>(output.primitive).radius
+              << std::endl;
 #endif
-  } else if (a.shapeType() == PrimitiveShapeType::cuboid) {
-    Vec3f sa = std::get<Cuboid>(a.primitive).size;
-    Vec3f sb = std::get<Cuboid>(b.primitive).size;
-    std::get<Cuboid>(output.primitive).size = (1. - w) * sa + w * sb;
-    std::get<Spheroid>(output.primitive).center = center;
+  } else if (a.shapeType() == MivBitstream::PrimitiveShapeType::cuboid) {
+    Vec3f sa = std::get<MivBitstream::Cuboid>(a.primitive).size;
+    Vec3f sb = std::get<MivBitstream::Cuboid>(b.primitive).size;
+    std::get<MivBitstream::Cuboid>(output.primitive).size = (1. - w) * sa + w * sb;
+    std::get<MivBitstream::Spheroid>(output.primitive).center = center;
   }
 
   // rotation
@@ -283,7 +284,7 @@ auto interpolateShape(const PrimitiveShape a, const PrimitiveShape b, Vec3f cent
 #endif
   return output;
 }
-static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
+static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &primitives,
                                   const ViewingParams &viewingParams) -> ViewingSpaceEvaluation {
   ViewingSpaceEvaluation result;
 
@@ -300,10 +301,10 @@ static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
     std::vector<Vec3f> center(nvb);
     std::vector<float> dist;
     for (auto i = 0; i < nvb; i++) {
-      if (primitives[i].shapeType() == PrimitiveShapeType::spheroid) {
-        center[i] = std::get<Spheroid>(primitives[i].primitive).center;
-      } else if (primitives[i].shapeType() == PrimitiveShapeType::cuboid) {
-        center[i] = std::get<Cuboid>(primitives[i].primitive).center;
+      if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
+        center[i] = std::get<MivBitstream::Spheroid>(primitives[i].primitive).center;
+      } else if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::cuboid) {
+        center[i] = std::get<MivBitstream::Cuboid>(primitives[i].primitive).center;
       }
       dist.push_back(norm(pos - center[i]));
     }
@@ -345,7 +346,7 @@ static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
     Vec3f p = MiscInterpolation::projectedPointOnPlane(center[start], center[end], n_proj, pos);
 
     // interpolate shape dimension, rotation, guard band size, viewing direction constraint
-    PrimitiveShape shape = interpolateShape(primitives[start], primitives[end], p, w);
+    MivBitstream::PrimitiveShape shape = interpolateShape(primitives[start], primitives[end], p, w);
 
     // evaluate distance to interpolated shape
     result = evaluate(shape, viewingParams);
@@ -361,12 +362,12 @@ static auto evaluateInterpolation(const PrimitiveShapeVector &primitives,
   return result;
 }
 
-static auto evaluate(const ElementaryShape &shape, const ViewingParams &viewingParams)
+static auto evaluate(const MivBitstream::ElementaryShape &shape, const ViewingParams &viewingParams)
     -> ViewingSpaceEvaluation {
-  if (shape.primitiveOperation == PrimitiveShapeOperation::add) {
+  if (shape.primitiveOperation == MivBitstream::PrimitiveShapeOperation::add) {
     return evaluateAddition(shape.primitives, viewingParams);
   }
-  if (shape.primitiveOperation == PrimitiveShapeOperation::interpolate) {
+  if (shape.primitiveOperation == MivBitstream::PrimitiveShapeOperation::interpolate) {
     return evaluateInterpolation(shape.primitives, viewingParams);
   }
   abort();
@@ -409,15 +410,15 @@ auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &v
   float accumulatedDirectionWeight = 0.F;
   for (const auto &e : viewingSpace.elementaryShapes) {
     const auto eval = evaluate(e.second, viewingParams);
-    if (e.first == ElementaryShapeOperation::add) {
+    if (e.first == MivBitstream::ElementaryShapeOperation::add) {
       global.sdBoundary += eval.sdBoundary;
       global.sdGuardBand += eval.sdGuardBand;
     }
-    if (e.first == ElementaryShapeOperation::subtract) {
+    if (e.first == MivBitstream::ElementaryShapeOperation::subtract) {
       global.sdBoundary -= eval.sdGuardBand;
       global.sdGuardBand -= eval.sdBoundary;
     }
-    if (e.first == ElementaryShapeOperation::intersect) {
+    if (e.first == MivBitstream::ElementaryShapeOperation::intersect) {
       global.sdBoundary &= eval.sdBoundary;
       global.sdGuardBand &= eval.sdGuardBand;
     }

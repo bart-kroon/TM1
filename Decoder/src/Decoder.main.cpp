@@ -46,7 +46,6 @@
 #include <memory>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
 void registerComponents();

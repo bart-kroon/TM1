@@ -39,7 +39,6 @@
 #include <stdexcept>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::GeometryQuantizer {
 ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &componentNode) {
@@ -104,9 +103,9 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   for (const auto &patch : m_outParams.patchParamsList) {
     const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
     const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
-    const auto inOccupancyTransform = OccupancyTransform{inViewParams};
-    const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
-    const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
+    const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
+    const auto inDepthTransform = MivBitstream::DepthTransform<16>{inViewParams.dq};
+    const auto outDepthTransform = MivBitstream::DepthTransform<10>{outViewParams.dq, patch};
 
     for (auto i = 0; i < patch.pdu2dSize().y(); ++i) {
       for (auto j = 0; j < patch.pdu2dSize().x(); ++j) {

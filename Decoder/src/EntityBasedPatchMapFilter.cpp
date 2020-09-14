@@ -37,7 +37,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
 EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json & /*rootNode*/,

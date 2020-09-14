@@ -43,7 +43,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 

@@ -42,13 +42,13 @@
 #include <TMIV/Renderer/reprojectPoints.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
 
-auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const ViewParams &target)
-    -> bool {
+auto choosePatch(const MivBitstream::PatchParams &patch,
+                 const MivBitstream::ViewParamsList &cameras,
+                 const MivBitstream::ViewParams &target) -> bool {
   const auto &camera = cameras[patch.pduViewIdx()];
   const auto R_t = AffineTransform(cameras[patch.pduViewIdx()].ce, target.ce);
 
@@ -116,13 +116,13 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
             xy_v_ymax != xy_v_ymax));
 }
 
-auto divideInBlocks(const PatchParams &patch, Vec2i blockSize) {
-  assert(patch.pduOrientationIndex() == FlexiblePatchOrientation::FPO_NULL);
+auto divideInBlocks(const MivBitstream::PatchParams &patch, Vec2i blockSize) {
+  assert(patch.pduOrientationIndex() == MivBitstream::FlexiblePatchOrientation::FPO_NULL);
 
   int blocknums_w = patch.pduViewSize().x() / blockSize.x();
   int blocknums_h = patch.pduViewSize().y() / blockSize.y();
   int blocknums_all = blocknums_w * blocknums_h;
-  PatchParamsList subblock(blocknums_all, patch);
+  MivBitstream::PatchParamsList subblock(blocknums_all, patch);
 
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
@@ -139,7 +139,7 @@ auto divideInBlocks(const PatchParams &patch, Vec2i blockSize) {
 
 auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
                                            const Decoder::AtlasAccessUnit &atlas,
-                                           const ViewParams &viewportParams) const
+                                           const MivBitstream::ViewParams &viewportParams) const
     -> BlockToPatchMap {
   auto result = atlas.blockToPatchMap;
 
@@ -165,9 +165,9 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
   return result;
 }
 
-void SubBlockCuller::inplaceErasePatch(BlockToPatchMap &patchMap, const PatchParams &patch,
-                                       uint16_t patchId,
-                                       const AtlasSequenceParameterSetRBSP &asps) {
+void SubBlockCuller::inplaceErasePatch(BlockToPatchMap &patchMap,
+                                       const MivBitstream::PatchParams &patch, uint16_t patchId,
+                                       const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
   const auto n = 1 << asps.asps_log2_patch_packing_block_size();
   const auto first = patch.pdu2dPos() / n;
   const auto last = first + patch.pdu2dSize() / n;

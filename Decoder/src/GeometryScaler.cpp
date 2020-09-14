@@ -39,7 +39,6 @@
 #include <utility>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
 namespace {
@@ -369,7 +368,7 @@ private:
 } // namespace
 
 GeometryScaler::GeometryScaler(const Json & /*rootNode*/, const Json &componentNode) {
-  m_defaultGup.gup_type(GupType::HVR)
+  m_defaultGup.gup_type(MivBitstream::GupType::HVR)
       .gup_erode_threshold(Half(componentNode.require("minForegroundConfidence").asFloat()))
       .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").asInt())
       .gup_max_curvature(uint8_t(componentNode.require("maxCurvature").asInt()));

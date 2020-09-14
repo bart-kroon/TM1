@@ -45,7 +45,6 @@
 #include <numeric>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 class AdditiveSynthesizer::Impl {
@@ -62,8 +61,8 @@ public:
   auto operator=(Impl &&) -> Impl & = delete;
   ~Impl() = default;
 
-  static auto affineTransformList(const ViewParamsList &viewParamsList,
-                                  const CameraExtrinsics &target) {
+  static auto affineTransformList(const MivBitstream::ViewParamsList &viewParamsList,
+                                  const MivBitstream::CameraExtrinsics &target) {
     std::vector<AffineTransform> result;
     result.reserve(viewParamsList.size());
     for (const auto &source : viewParamsList) {
@@ -73,7 +72,7 @@ public:
   }
 
   static auto atlasVertices(const Decoder::AccessUnit &frame, const Decoder::AtlasAccessUnit &atlas,
-                            const ViewParams &viewportParams) {
+                            const MivBitstream::ViewParams &viewportParams) {
     SceneVertexDescriptorList result;
     const auto rows = atlas.frameSize().y();
     const auto cols = atlas.frameSize().x();
@@ -81,7 +80,7 @@ public:
 
     const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.ce);
 
-    std::vector<DepthTransform<10>> depthTransform;
+    std::vector<MivBitstream::DepthTransform<10>> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());
     for (const auto &patch : atlas.patchParamsList) {
       depthTransform.emplace_back(frame.viewParamsList[patch.pduViewIdx()].dq, patch);
@@ -109,7 +108,7 @@ public:
         assert(atlas.geoFrame.getSize() == atlas.frameSize());
         auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
 
-        const auto occupancyTransform = OccupancyTransform{viewParams, patch};
+        const auto occupancyTransform = MivBitstream::OccupancyTransform{viewParams, patch};
         if (!occupancyTransform.occupant(level)) {
           result.emplace_back();
           continue;
@@ -174,12 +173,13 @@ public:
 
   static auto unprojectAtlas(const Decoder::AccessUnit &frame,
                              const Decoder::AtlasAccessUnit &atlas,
-                             const ViewParams &viewportParams) {
+                             const MivBitstream::ViewParams &viewportParams) {
     return std::tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
                       std::tuple{atlasColors(atlas)}};
   }
 
-  [[nodiscard]] auto rasterFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams,
+  [[nodiscard]] auto rasterFrame(const Decoder::AccessUnit &frame,
+                                 const MivBitstream::ViewParams &viewportParams,
                                  float compensation) const -> Rasterizer<Vec3f> {
     // Incremental view synthesis and blending
     Rasterizer<Vec3f> rasterizer{
@@ -219,26 +219,26 @@ public:
   }
 
   // Field of view [rad]
-  static auto xFoV(const ViewParams &viewParams) -> float {
+  static auto xFoV(const MivBitstream::ViewParams &viewParams) -> float {
     const auto &ci = viewParams.ci;
     return ci.dispatch(overload(
-        [&](Equirectangular /*unused*/) {
+        [&](MivBitstream::Equirectangular /*unused*/) {
           return std::abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min());
         },
-        [&](Perspective /*unused*/) {
+        [&](MivBitstream::Perspective /*unused*/) {
           return 2.F *
                  std::atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
         },
-        [&](Orthographic /*unused*/) { return halfCycle; }));
+        [&](MivBitstream::Orthographic /*unused*/) { return halfCycle; }));
   }
 
   // Resolution in px^2/rad^2
-  static auto resolution(const ViewParams &viewParams) -> float {
+  static auto resolution(const MivBitstream::ViewParams &viewParams) -> float {
     return square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
-  static auto resolutionRatio(const Decoder::AccessUnit &frame, const ViewParams &viewportParams)
-      -> float {
+  static auto resolutionRatio(const Decoder::AccessUnit &frame,
+                              const MivBitstream::ViewParams &viewportParams) -> float {
     auto sum = 0.;
     auto count = 0;
 
@@ -250,10 +250,11 @@ public:
   }
 
   [[nodiscard]] auto renderFrame(const Decoder::AccessUnit &frame,
-                                 const ViewParams &viewportParams) const -> Texture444Depth16Frame {
+                                 const MivBitstream::ViewParams &viewportParams) const
+      -> Texture444Depth16Frame {
     auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
 
-    const auto depthTransform = DepthTransform<16>{viewportParams.dq};
+    const auto depthTransform = MivBitstream::DepthTransform<16>{viewportParams.dq};
     auto viewport =
         Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
                                depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
@@ -282,7 +283,7 @@ AdditiveSynthesizer::AdditiveSynthesizer(float rayAngleParam, float depthParam,
 AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
 auto AdditiveSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
-                                      const ViewParams &viewportParams) const
+                                      const MivBitstream::ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);
 }

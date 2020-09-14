@@ -34,7 +34,6 @@
 #include <TMIV/Encoder/Encoder.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 void Encoder::prepareAccessUnit() {

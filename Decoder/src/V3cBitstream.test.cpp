@@ -46,22 +46,24 @@
 
 using namespace TMIV::Common;
 
-auto dumpV3cUnitPayload(std::streampos position, const SampleStreamV3cUnit &ssvu,
-                        const V3cUnitHeader &vuh) {
+auto dumpV3cUnitPayload(std::streampos position, const MivBitstream::SampleStreamV3cUnit &ssvu,
+                        const MivBitstream::V3cUnitHeader &vuh) {
   std::ostringstream path;
   path << "v3c_unit_" << position << '_' << vuh.vuh_unit_type();
-  if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
+  if (vuh.vuh_unit_type() != MivBitstream::VuhUnitType::V3C_VPS) {
     path << '_' << int(vuh.vuh_v3c_parameter_set_id()) << '_' << int(vuh.vuh_atlas_id());
   }
-  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
+  if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AVD) {
     path << '_' << int(vuh.vuh_attribute_index()) << '_'
          << int(vuh.vuh_attribute_partition_index());
   }
-  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
+  if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AVD ||
+      vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_GVD) {
     path << '_' << int(vuh.vuh_map_index()) << '_' << std::boolalpha
          << vuh.vuh_auxiliary_video_flag();
   }
-  if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS || vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
+  if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_VPS ||
+      vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AD) {
     path << ".bit";
   } else {
     path << ".mp4";
@@ -80,19 +82,19 @@ void demultiplex(std::istream &stream) {
   stream.seekg(0);
 
   std::cout << "[ " << stream.tellg() << " ]: ";
-  const auto ssvh = SampleStreamV3cHeader::decodeFrom(stream);
+  const auto ssvh = MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
   std::cout << ssvh;
 
-  auto vpses = std::vector<V3cParameterSet>{};
+  auto vpses = std::vector<MivBitstream::V3cParameterSet>{};
 
   while (stream.tellg() != filesize) {
     const auto position = stream.tellg();
     std::cout << "[ " << position << " ]: ";
-    const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+    const auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
     std::cout << ssvu;
 
     std::istringstream substream{ssvu.ssvu_v3c_unit()};
-    const auto vuh = V3cUnitHeader::decodeFrom(substream, vpses);
+    const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(substream, vpses);
     std::cout << vuh;
 
     dumpV3cUnitPayload(position, ssvu, vuh);
@@ -100,7 +102,8 @@ void demultiplex(std::istream &stream) {
     const auto vp = V3cPayload::decodeFrom(substream, vuh);
     std::cout << vp;
 
-    if (const auto *vps = std::get_if<V3cParameterSet>(&vp.payload()); vps != nullptr) {
+    if (const auto *vps = std::get_if<MivBitstream::V3cParameterSet>(&vp.payload());
+        vps != nullptr) {
       while (vps->vps_v3c_parameter_set_id() >= vpses.size()) {
         vpses.emplace_back();
       }

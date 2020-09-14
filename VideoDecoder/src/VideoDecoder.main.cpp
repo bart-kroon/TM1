@@ -43,10 +43,9 @@
 
 using namespace std::literals;
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 using namespace TMIV::VideoDecoder;
 
-constexpr auto defaultCodecGroupIdc = PtlProfileCodecGroupIdc::HEVC_Main10;
+constexpr auto defaultCodecGroupIdc = TMIV::MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10;
 
 auto usage() -> int {
   std::cout << "Usage: -b BITSTREAM -o RECONSTRUCTION [-c CODEC_GROUP_IDC] [-s] [-S]\n";
@@ -61,7 +60,7 @@ auto main(int argc, char *argv[]) -> int {
   auto args = std::vector(argv, argv + argc);
   auto bitstreamPath = std::optional<std::string>{};
   auto reconstructionPath = std::optional<std::string>{};
-  auto codecGroupIdc = std::optional<PtlProfileCodecGroupIdc>{};
+  auto codecGroupIdc = std::optional<TMIV::MivBitstream::PtlProfileCodecGroupIdc>{};
   auto useServer = false;
   auto stressTest = false;
 
@@ -84,7 +83,7 @@ auto main(int argc, char *argv[]) -> int {
       if (args.size() == 1) {
         return usage();
       }
-      codecGroupIdc = PtlProfileCodecGroupIdc(std::stoi(args[1]));
+      codecGroupIdc = TMIV::MivBitstream::PtlProfileCodecGroupIdc(std::stoi(args[1]));
       args.erase(args.begin(), args.begin() + 2);
     } else if (args.front() == "-s"s) {
       useServer = true;

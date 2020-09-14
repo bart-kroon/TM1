@@ -39,7 +39,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::DepthQualityAssessor {
 namespace {
@@ -85,10 +84,11 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
 
   for (size_t viewId = 0; viewId < sourceHelperList.size(); viewId++) {
     const auto &sourceHelper = sourceHelperList[viewId];
-    const auto occupancyTransform = OccupancyTransform{sourceHelper.getViewParams()};
+    const auto occupancyTransform = MivBitstream::OccupancyTransform{sourceHelper.getViewParams()};
 
     auto sourceDepthExpanded =
-        DepthTransform<16>{sourceHelper.getViewParams().dq}.expandDepth(sourceViews[viewId].depth);
+        MivBitstream::DepthTransform<16>{sourceHelper.getViewParams().dq}.expandDepth(
+            sourceViews[viewId].depth);
 
     std::transform(sourceViews[viewId].depth.getPlane(0).begin(),
                    sourceViews[viewId].depth.getPlane(0).end(), sourceDepthExpanded.begin(),

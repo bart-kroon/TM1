@@ -40,7 +40,6 @@
 #include <regex>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::IO {
 namespace {
@@ -52,8 +51,8 @@ auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
 auto explicitOccupancy(const Json &config) { return config.require("explicitOccupancy").asBool(); }
 } // namespace
 
-auto loadSourceParams(const Json &config) -> EncoderParams {
-  auto x = EncoderParams{haveTexture(config), explicitOccupancy(config)};
+auto loadSourceParams(const Json &config) -> MivBitstream::EncoderParams {
+  auto x = MivBitstream::EncoderParams{haveTexture(config), explicitOccupancy(config)};
 
   std::string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
@@ -63,7 +62,7 @@ auto loadSourceParams(const Json &config) -> EncoderParams {
   }
   const auto sequenceConfig = Json{stream};
 
-  x.viewParamsList = ViewParamsList::loadFromJson(
+  x.viewParamsList = MivBitstream::ViewParamsList::loadFromJson(
       sequenceConfig.require("cameras"), config.require("SourceCameraNames").asStringVector());
 
   if (config.isPresent("depthLowQualityFlag")) {
@@ -84,7 +83,7 @@ auto loadSourceParams(const Json &config) -> EncoderParams {
   x.vme().vme_max_entities_minus1(maxEntities - 1U);
 
   if (auto subnode = config.optional("ViewingSpace"); subnode) {
-    x.viewingSpace = ViewingSpace::loadFromJson(subnode, config);
+    x.viewingSpace = MivBitstream::ViewingSpace::loadFromJson(subnode, config);
   }
 
   x.frameRate = sequenceConfig.require("Fps").asDouble();
@@ -271,7 +270,7 @@ auto loadPoseFromCSV(std::istream &stream, int frameIndex) -> Pose {
 }
 } // namespace
 
-auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
+auto loadViewportMetadata(const Json &config, int frameIndex) -> MivBitstream::ViewParams {
   const auto cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   std::ifstream stream{cameraPath};
@@ -282,13 +281,13 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
   auto outputviewName = config.require("OutputCameraName").asString();
 
   auto viewParamsList =
-      ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputviewName});
+      MivBitstream::ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputviewName});
 
   if (viewParamsList.empty()) {
     throw std::runtime_error("Unknown OutputCameraName " + outputviewName);
   }
 
-  ViewParams &result = viewParamsList.front();
+  MivBitstream::ViewParams &result = viewParamsList.front();
 
   // The result may have invalid depth values
   result.hasOccupancy = true;

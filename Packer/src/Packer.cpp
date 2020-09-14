@@ -40,7 +40,6 @@
 #include <stdexcept>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Packer {
 Packer::Packer(const Json &rootNode, const Json &componentNode) {
@@ -62,7 +61,8 @@ void Packer::updateAggregatedEntityMasks(const std::vector<MaskList> &entityMask
 }
 
 auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
-                  const ViewParamsList &viewParamsList, const int m_blockSize) -> PatchParamsList {
+                  const MivBitstream::ViewParamsList &viewParamsList, const int m_blockSize)
+    -> MivBitstream::PatchParamsList {
   // Check atlas size
   for (const auto &sz : atlasSizes) {
     if (((sz.x() % m_blockSize) != 0) || ((sz.y() % m_blockSize) != 0)) {
@@ -119,7 +119,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   }
 
   // Packing
-  PatchParamsList atlasParamsVector;
+  MivBitstream::PatchParamsList atlasParamsVector;
   std::vector<MaxRectPiP> packerList;
   MaxRectPiP::Output packerOutput;
 
@@ -174,7 +174,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
         MaxRectPiP &packer = packerList[atlasId];
 
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
-          PatchParams p;
+          MivBitstream::PatchParams p;
 
           p.vuhAtlasId = static_cast<uint8_t>(atlasId);
 
@@ -184,8 +184,9 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
               .pduViewPos({cluster.jmin(), cluster.imin()})
               .pdu2dPos({packerOutput.x(), packerOutput.y()});
 
-          p.pduOrientationIndex(packerOutput.isRotated() ? FlexiblePatchOrientation::FPO_ROT270
-                                                         : FlexiblePatchOrientation::FPO_NULL);
+          p.pduOrientationIndex(packerOutput.isRotated()
+                                    ? MivBitstream::FlexiblePatchOrientation::FPO_ROT270
+                                    : MivBitstream::FlexiblePatchOrientation::FPO_NULL);
 
           auto patchOverflow =
               (p.pduViewPos() + p.pduViewSize()) - masks[cluster.getViewId()].getSize();

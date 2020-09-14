@@ -39,7 +39,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 // NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on

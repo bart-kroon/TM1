@@ -41,7 +41,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 // Encoder sub-component interfaces
 using TMIV::Aggregator::IAggregator;

@@ -38,7 +38,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &componentNode) {
@@ -49,7 +48,7 @@ GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &component
   }
 }
 
-void GroupBasedEncoder::prepareSequence(EncoderParams params) {
+void GroupBasedEncoder::prepareSequence(MivBitstream::EncoderParams params) {
   m_grouping = sourceSplitter(params);
 
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
@@ -70,8 +69,8 @@ void GroupBasedEncoder::pushFrame(MVD16Frame views) {
   }
 }
 
-auto GroupBasedEncoder::completeAccessUnit() -> const EncoderParams & {
-  auto perGroupParams = std::vector<const EncoderParams *>(numGroups(), nullptr);
+auto GroupBasedEncoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
+  auto perGroupParams = std::vector<const MivBitstream::EncoderParams *>(numGroups(), nullptr);
 
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
     perGroupParams[groupId] = &m_encoders[groupId].completeAccessUnit();
@@ -98,7 +97,7 @@ auto GroupBasedEncoder::maxLumaSamplesPerFrame() const -> size_t {
       [](size_t sum, const auto &x) { return sum + x.maxLumaSamplesPerFrame(); });
 }
 
-auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping {
+auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params) -> Grouping {
   auto grouping = Grouping{};
 
   const auto &viewParamsList = params.viewParamsList;
@@ -133,7 +132,7 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
   }
 
   // Select views per group
-  auto viewsPool = std::vector<ViewParams>{};
+  auto viewsPool = std::vector<MivBitstream::ViewParams>{};
   auto viewsLabels = std::vector<uint8_t>{};
   auto viewsInGroup = std::vector<uint8_t>{};
   auto numViewsPerGroup = std::vector<int>{};
@@ -145,8 +144,8 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
     viewsInGroup.clear();
-    auto camerasInGroup = ViewParamsList{};
-    auto camerasOutGroup = ViewParamsList{};
+    auto camerasInGroup = MivBitstream::ViewParamsList{};
+    auto camerasOutGroup = MivBitstream::ViewParamsList{};
     if (gIndex < numGroups - 1) {
       numViewsPerGroup.push_back(int(std::floor(viewParamsList.size() / numGroups)));
       int64_t maxElementIndex = 0;
@@ -227,8 +226,8 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
   return grouping;
 }
 
-auto GroupBasedEncoder::splitParams(size_t groupId, const EncoderParams &params) const
-    -> EncoderParams {
+auto GroupBasedEncoder::splitParams(size_t groupId, const MivBitstream::EncoderParams &params) const
+    -> MivBitstream::EncoderParams {
   // Independent metadata should work automatically. Just copy all metadata to all groups.
   auto result = params;
   result.viewParamsList.clear();
@@ -256,14 +255,15 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
   return result;
 }
 
-auto GroupBasedEncoder::mergeParams(const std::vector<const EncoderParams *> &perGroupParams)
-    -> const EncoderParams & {
+auto GroupBasedEncoder::mergeParams(
+    const std::vector<const MivBitstream::EncoderParams *> &perGroupParams)
+    -> const MivBitstream::EncoderParams & {
   // Start with first group
   m_params = *perGroupParams.front();
   assert(m_params.vme().vme_num_groups_minus1() + size_t(1) == perGroupParams.size());
 
   // Merge V3C parameter sets
-  std::vector<const V3cParameterSet *> vps(perGroupParams.size());
+  std::vector<const MivBitstream::V3cParameterSet *> vps(perGroupParams.size());
   std::transform(std::begin(perGroupParams), std::end(perGroupParams), std::begin(vps),
                  [](const auto &ivs) { return &ivs->vps; });
   m_params.vps = merge(vps);
@@ -271,17 +271,18 @@ auto GroupBasedEncoder::mergeParams(const std::vector<const EncoderParams *> &pe
   // For each other group
   for (auto ivs = std::begin(perGroupParams) + 1; ivs != std::end(perGroupParams); ++ivs) {
     // Merge view parameters
-    std::transform(std::begin((*ivs)->viewParamsList), std::end((*ivs)->viewParamsList),
-                   back_inserter(m_params.viewParamsList),
-                   [viewIdOffset = uint16_t(m_params.viewParamsList.size())](ViewParams vp) {
-                     // Merging pruning graphs
-                     if (vp.pp && !vp.pp->pp_is_root_flag()) {
-                       for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
-                         vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
-                       }
-                     }
-                     return vp;
-                   });
+    std::transform(
+        std::begin((*ivs)->viewParamsList), std::end((*ivs)->viewParamsList),
+        back_inserter(m_params.viewParamsList),
+        [viewIdOffset = uint16_t(m_params.viewParamsList.size())](MivBitstream::ViewParams vp) {
+          // Merging pruning graphs
+          if (vp.pp && !vp.pp->pp_is_root_flag()) {
+            for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
+              vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
+            }
+          }
+          return vp;
+        });
 
     // Merge viewing space
     assert(m_params.viewingSpace == (*ivs)->viewingSpace);

@@ -38,7 +38,6 @@
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
 Decoder::Decoder(const Json &rootNode, const Json &componentNode)
@@ -66,7 +65,7 @@ void checkRestrictions(const AccessUnit &frame) {
 }
 } // namespace
 
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
+auto Decoder::decodeFrame(AccessUnit &frame, const MivBitstream::ViewParams &viewportParams) const
     -> Texture444Depth16Frame {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);

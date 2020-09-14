@@ -45,15 +45,14 @@
 #include <cmath>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
 auto makeFullERPCamera() {
-  auto x = ViewParams{};
+  auto x = MivBitstream::ViewParams{};
 
   x.ci.ci_projection_plane_width_minus1(9)
       .ci_projection_plane_height_minus1(4)
-      .ci_cam_type(CiCamType::equirectangular)
+      .ci_cam_type(MivBitstream::CiCamType::equirectangular)
       .ci_erp_phi_min(-halfCycle)
       .ci_erp_phi_max(halfCycle)
       .ci_erp_theta_min(-quarterCycle)
@@ -69,7 +68,7 @@ auto makeFullERPCamera() {
 }
 
 TEST_CASE("Changing the reference frame", "[Render engine]") {
-  const auto neutral = CameraExtrinsics{};
+  const auto neutral = MivBitstream::CameraExtrinsics{};
 
   auto translated = neutral;
   translated.ce_view_pos_x(1.F).ce_view_pos_y(2.F).ce_view_pos_z(3.F);
@@ -490,13 +489,13 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
 
 TEST_CASE("Engine<orthographic>", "[Render engine]") {
   const auto engine = []() {
-    auto ci = CameraIntrinsics{};
-    ci.ci_cam_type(CiCamType::orthographic)
+    auto ci = MivBitstream::CameraIntrinsics{};
+    ci.ci_cam_type(MivBitstream::CiCamType::orthographic)
         .ci_projection_plane_width_minus1(999)
         .ci_projection_plane_height_minus1(499)
         .ci_ortho_width(5.F)   // dy/du = 0.005
         .ci_ortho_height(2.F); // dz/dv = 0.004
-    return Engine<CiCamType::orthographic>{ci};
+    return Engine<MivBitstream::CiCamType::orthographic>{ci};
   }();
 
   const auto refPoints = std::array{Vec3f{}, Vec3f{1.F, 2.F, 3.F}, Vec3f{-6.F, -2.5F, 7.F}};

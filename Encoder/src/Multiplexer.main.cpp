@@ -43,7 +43,6 @@
 #include <stdexcept>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 using std::filesystem::path;
 
@@ -116,18 +115,18 @@ private:
     }
 
     // Decode SSVH
-    const auto ssvh = SampleStreamV3cHeader::decodeFrom(stream);
+    const auto ssvh = MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
 
     // Decode first V3C unit, which has to contain the VPS
-    const auto ssvu0 = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+    const auto ssvu0 = MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
 
     // Decode the VPS
     std::istringstream substream{ssvu0.ssvu_v3c_unit()};
-    const auto vuh = V3cUnitHeader::decodeFrom(substream);
-    if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
+    const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(substream);
+    if (vuh.vuh_unit_type() != MivBitstream::VuhUnitType::V3C_VPS) {
       throw std::runtime_error("the first V3C unit has to be the VPS");
     }
-    m_vps = V3cParameterSet::decodeFrom(substream);
+    m_vps = MivBitstream::V3cParameterSet::decodeFrom(substream);
     std::cout << m_vps;
 
     // Append the first V3C unit
@@ -135,7 +134,7 @@ private:
 
     // Append the remaining V3C units
     while (!stream.eof()) {
-      const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+      const auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
       m_units.push_back(ssvu.ssvu_v3c_unit());
       stream.peek();
     }
@@ -154,28 +153,28 @@ private:
   }
 
   void appendGvd(uint8_t atlasId) {
-    auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
+    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     appendSubBitstream(vuh, format(m_gvdSubBitstreamPathFmt, int(atlasId)));
   }
 
   void appendOvd(uint8_t atlasId) {
-    auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
+    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     appendSubBitstream(vuh, format(*m_ovdSubBitstreamPathFmt, int(atlasId)));
   }
 
-  void appendAvd(int atlasId, uint8_t attributeIdx, AiAttributeTypeId typeId) {
-    auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
+  void appendAvd(int atlasId, uint8_t attributeIdx, MivBitstream::AiAttributeTypeId typeId) {
+    auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     vuh.vuh_attribute_index(attributeIdx);
     appendSubBitstream(vuh, format(*m_avdSubBitstreamPathFmt, codeOf(typeId), int(atlasId)));
   }
 
-  void appendSubBitstream(const V3cUnitHeader &vuh, const path &subBitstreamPath) {
+  void appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh, const path &subBitstreamPath) {
     std::ifstream inStream{subBitstreamPath, std::ios::binary};
     if (!inStream.good()) {
       throw std::runtime_error(
@@ -204,19 +203,19 @@ private:
 
     // Write the sample stream header
     std::ofstream stream{m_outputBitstreamPath, std::ios::binary};
-    const auto ssvh = SampleStreamV3cHeader{precisionBytesMinus1};
+    const auto ssvh = MivBitstream::SampleStreamV3cHeader{precisionBytesMinus1};
     ssvh.encodeTo(stream);
     std::cout << '\n' << ssvh;
 
     // Write the units
     for (const auto &unit : m_units) {
-      const auto ssvu = SampleStreamV3cUnit{unit};
+      const auto ssvu = MivBitstream::SampleStreamV3cUnit{unit};
       ssvu.encodeTo(stream, ssvh);
       std::cout << '\n' << ssvu;
 
       // Print the V3C unit header (for fun, why not)
       std::istringstream stream{unit};
-      const auto vuh = V3cUnitHeader::decodeFrom(stream);
+      const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(stream);
       std::cout << vuh;
     }
   }
@@ -227,7 +226,7 @@ private:
   std::optional<std::string> m_avdSubBitstreamPathFmt;
   std::optional<std::string> m_ovdSubBitstreamPathFmt;
 
-  V3cParameterSet m_vps;
+  MivBitstream::V3cParameterSet m_vps;
   std::vector<std::string> m_units;
 };
 } // namespace TMIV::Encoder

@@ -37,7 +37,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
 
 namespace TMIV::Encoder {
 constexpr auto neutralChroma = TextureFrame::neutralColor();

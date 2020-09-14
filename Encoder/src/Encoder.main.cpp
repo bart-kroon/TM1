@@ -44,7 +44,6 @@
 
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::DepthQualityAssessor;
 
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 
@@ -54,7 +53,7 @@ void registerComponents();
 class Application : public Common::Application {
 private:
   std::unique_ptr<IEncoder> m_encoder;
-  std::unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
+  std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   IvMetadataWriter m_metadataWriter;
   int m_numberOfFrames{};
   int m_intraPeriod{};
@@ -64,7 +63,8 @@ public:
   explicit Application(std::vector<const char *> argv)
       : Common::Application{"Encoder", std::move(argv)}
       , m_encoder{create<IEncoder>("Encoder")}
-      , m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")}
+      , m_depthQualityAssessor{create<DepthQualityAssessor::IDepthQualityAssessor>(
+            "DepthQualityAssessor")}
       , m_metadataWriter{json()}
       , m_numberOfFrames{json().require("numberOfFrames").asInt()}
       , m_intraPeriod{json().require("intraPeriod").asInt()} {}

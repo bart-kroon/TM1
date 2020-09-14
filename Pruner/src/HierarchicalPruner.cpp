@@ -50,20 +50,19 @@
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
 
 namespace TMIV::Pruner {
 class HierarchicalPruner::Impl {
 private:
   struct IncrementalSynthesizer {
-    IncrementalSynthesizer(const AccumulatingPixel<Vec3f> &config, Vec2i size, size_t index_,
-                           Mat<float> reference_, Mat<float> referenceY_)
+    IncrementalSynthesizer(const Renderer::AccumulatingPixel<Vec3f> &config, Vec2i size,
+                           size_t index_, Mat<float> reference_, Mat<float> referenceY_)
         : rasterizer{config, size}
         , index{index_}
         , reference{std::move(reference_)}
         , referenceY{std::move(referenceY_)} {}
 
-    Rasterizer<Vec3f> rasterizer;
+    Renderer::Rasterizer<Vec3f> rasterizer;
     const size_t index;
     float maskAverage{0.F};
     const Mat<float> reference;
@@ -76,7 +75,7 @@ private:
   const int m_erode{};
   const int m_dilate{};
   const int m_maxBasicViewsPerGraph{};
-  const AccumulatingPixel<Vec3f> m_config;
+  const Renderer::AccumulatingPixel<Vec3f> m_config;
   EncoderParams m_params;
   std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   std::vector<size_t> m_clusterIds;
@@ -278,7 +277,7 @@ public:
 
   void registerPruningRelation(MivBitstream::EncoderParams &params) {
     auto &viewParamsList = params.viewParamsList;
-    ProjectionHelperList cameraHelperList{viewParamsList};
+    Renderer::ProjectionHelperList cameraHelperList{viewParamsList};
 
     // Create clusters and pruning order
     auto overlappingMatrix = computeOverlappingMatrix(cameraHelperList);
@@ -520,7 +519,7 @@ private:
     const auto W = int(synthesizer.reference.width());
     const auto H = int(synthesizer.reference.height());
 
-    synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
+    synthesizer.rasterizer.visit([&](const Renderer::PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {
         const auto depthError = (x.depth() / *j - 1.F);
         auto lumaError = std::abs(std::get<0>(x.attributes()).x() - *(jY));

@@ -46,8 +46,8 @@
 
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
 
+namespace TMIV::Renderer {
 auto makeFullERPCamera() {
   auto x = ViewParams{};
 
@@ -522,3 +522,4 @@ TEST_CASE("Engine<orthographic>", "[Render engine]") {
     }
   }
 }
+} // namespace TMIV::Renderer

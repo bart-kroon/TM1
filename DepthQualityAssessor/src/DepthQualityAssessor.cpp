@@ -39,7 +39,6 @@
 #include <iostream>
 
 using namespace TMIV::Common;
-using namespace TMIV::Renderer;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::DepthQualityAssessor {
@@ -75,7 +74,7 @@ auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> std::vector<typename 
 
 auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Frame &sourceViews,
                        float blendingFactor, float maxOutlierRatio) -> bool {
-  const auto sourceHelperList = ProjectionHelperList{params.viewParamsList};
+  const auto sourceHelperList = Renderer::ProjectionHelperList{params.viewParamsList};
 
   // Expand depth
   std::vector<Mat<float>> sourceDepthExpandedList;

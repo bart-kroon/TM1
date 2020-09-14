@@ -40,19 +40,21 @@
 
 using namespace TMIV::MivBitstream;
 using namespace TMIV::Common;
-using namespace TMIV::Renderer;
 
 namespace TMIV::Pruner {
 auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &viewParams,
                          const Mat<uint8_t> &mask)
-    -> std::tuple<SceneVertexDescriptorList, TriangleDescriptorList, std::vector<Vec3f>> {
+    -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
+                  std::vector<Vec3f>> {
   return viewParams.ci.dispatch([&](auto camType) {
-    std::tuple<SceneVertexDescriptorList, TriangleDescriptorList, std::vector<Vec3f>> mesh;
+    std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
+               std::vector<Vec3f>>
+        mesh;
     auto &vertices = std::get<0>(mesh);
     auto &triangles = std::get<1>(mesh);
     auto &attributes = std::get<2>(mesh);
 
-    Engine<camType> engine{viewParams.ci};
+    Renderer::Engine<camType> engine{viewParams.ci};
     const auto size = viewParams.ci.projectionPlaneSize();
     const auto numPixels = size.x() * size.y();
 
@@ -118,15 +120,15 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
   });
 }
 
-auto project(const SceneVertexDescriptorList &vertices, const ViewParams &source,
-             const ViewParams &target) -> ImageVertexDescriptorList {
+auto project(const Renderer::SceneVertexDescriptorList &vertices, const ViewParams &source,
+             const ViewParams &target) -> Renderer::ImageVertexDescriptorList {
   return target.ci.dispatch([&](auto camType) {
-    ImageVertexDescriptorList result;
-    Engine<camType.value> engine{target.ci};
-    const auto R_t = AffineTransform{source.ce, target.ce};
+    Renderer::ImageVertexDescriptorList result;
+    Renderer::Engine<camType.value> engine{target.ci};
+    const auto R_t = Renderer::AffineTransform{source.ce, target.ce};
     result.reserve(result.size());
     std::transform(std::begin(vertices), std::end(vertices), back_inserter(result),
-                   [&](SceneVertexDescriptor v) {
+                   [&](Renderer::SceneVertexDescriptor v) {
                      const auto p = R_t(v.position);
                      return engine.projectVertex({p, angle(p, p - R_t.translation())});
                    });
@@ -134,10 +136,10 @@ auto project(const SceneVertexDescriptorList &vertices, const ViewParams &source
   });
 }
 
-void weightedSphere(const CameraIntrinsics &ci, const ImageVertexDescriptorList &vertices,
-                    TriangleDescriptorList &triangles) {
+void weightedSphere(const CameraIntrinsics &ci, const Renderer::ImageVertexDescriptorList &vertices,
+                    Renderer::TriangleDescriptorList &triangles) {
   if (ci.ci_cam_type() == CiCamType::equirectangular) {
-    Engine<CiCamType::equirectangular> engine{ci};
+    Renderer::Engine<CiCamType::equirectangular> engine{ci};
     for (auto &triangle : triangles) {
       auto v = 0.F;
       for (auto index : triangle.indices) {

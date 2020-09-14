@@ -63,8 +63,14 @@ void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
               depthOccupancyThreshold =
                   *atlas.patchParamsList[patchId].atlasPatchDepthOccMapThreshold();
             }
-            atlas.occFrame.getPlane(0)(y, x) =
-                (atlas.geoFrame.getPlane(0)(y, x) < depthOccupancyThreshold) ? 0 : 1;
+            //m54417-proposal-of-new-patches-for-MIV (FT): occupancy is forced by the constant patch flag
+            if (atlas.asps.asps_miv_extension_flag() &&
+                atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
+              atlas.occFrame.getPlane(0)(y, x) = 1;
+            } else {
+              atlas.occFrame.getPlane(0)(y, x) =
+                  (atlas.geoFrame.getPlane(0)(y, x) < depthOccupancyThreshold) ? 0 : 1;
+            }
           } else {
             // no occupancy information is available (i.e. atlas is complete)
             atlas.occFrame.getPlane(0)(y, x) = 1;

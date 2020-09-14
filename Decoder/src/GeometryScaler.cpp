@@ -282,7 +282,7 @@ public:
     const int depthLow = depthCentral - m_geometryEdgeMagnitudeTh;
 
     int depthCurvature3x3 = 0;
-    for (auto i = 1U; i < depthValues.size(); ++i) {
+    for (size_t i = 1; i < depthValues.size(); ++i) {
       if (int(depthValues[i]) < depthLow) {
         depthCurvature3x3++;
       }

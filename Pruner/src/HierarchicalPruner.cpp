@@ -303,7 +303,7 @@ public:
     }
 
     // Pruning mask
-    for (auto camId = 0U; camId < viewParamsList.size(); camId++) {
+    for (size_t camId = 0; camId < viewParamsList.size(); camId++) {
       const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
 
       if (neighbourhood.empty()) {

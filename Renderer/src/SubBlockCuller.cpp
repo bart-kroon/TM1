@@ -50,14 +50,15 @@ SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*compone
 
 auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const ViewParams &target)
     -> bool {
-  const auto &camera = cameras[patch.pduViewIdx()];
-  const auto R_t = AffineTransform(cameras[patch.pduViewIdx()].ce, target.ce);
+  const auto &camera = cameras[patch.atlasPatchProjectionId()];
+  const auto R_t = AffineTransform(cameras[patch.atlasPatchProjectionId()].ce, target.ce);
 
   auto uv = array<Vec2f, 4>{};
   auto xy_v = array<Vec2f, 8>{};
-  const auto w = static_cast<float>(patch.pduViewSize().x());
-  const auto h = static_cast<float>(patch.pduViewSize().y());
-  uv[0] = Vec2f(patch.pduViewPos());
+  const auto w = static_cast<float>(patch.atlasPatch3dSizeU());
+  const auto h = static_cast<float>(patch.atlasPatch3dSizeV());
+  uv[0].x() = static_cast<float>(patch.atlasPatch3dOffsetU());
+  uv[0].y() = static_cast<float>(patch.atlasPatch3dOffsetV());
   uv[1] = uv[0] + Vec2f{w, 0};
   uv[2] = uv[0] + Vec2f{0, h};
   uv[3] = uv[0] + Vec2f{w, h};
@@ -117,22 +118,31 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
             xy_v_ymax != xy_v_ymax));
 }
 
-auto divideInBlocks(const PatchParams &patch, Vec2i blockSize) {
-  assert(patch.pduOrientationIndex() == FlexiblePatchOrientation::FPO_NULL);
+auto divideInBlocks(const PatchParams &patch) {
+  // The size of the sub-block is fixed for now
+  constexpr auto blockSize = 128U;
 
-  int blocknums_w = patch.pduViewSize().x() / blockSize.x();
-  int blocknums_h = patch.pduViewSize().y() / blockSize.y();
-  int blocknums_all = blocknums_w * blocknums_h;
-  PatchParamsList subblock(blocknums_all, patch);
+  const auto gridWidth = (patch.atlasPatch2dSizeX() + blockSize - 1) / blockSize;
+  const auto gridHeight = (patch.atlasPatch2dSizeY() + blockSize - 1) / blockSize;
+  PatchParamsList subblock(gridWidth * size_t(gridHeight), patch);
 
-  for (int i = 0; i < blocknums_h; i++) {
-    for (int j = 0; j < blocknums_w; j++) {
-      const auto offset = Vec2i{j * blockSize.x(), i * blockSize.y()};
+  for (uint32_t blockY = 0; blockY < gridHeight; ++blockY) {
+    for (uint32_t blockX = 0; blockX < gridWidth; ++blockX) {
+      auto &b = subblock[blockY * size_t(gridWidth) + blockX];
 
-      auto &b = subblock[i * blocknums_w + j];
-      b.pduViewSize(blockSize);
-      b.pduViewPos(b.pduViewPos() + offset);
-      b.pdu2dPos(b.pdu2dPos() + offset);
+      const auto x1 = blockX * blockSize;
+      const auto y1 = blockY * blockSize;
+      const auto x2 = min(x1 + blockSize, patch.atlasPatch2dSizeX());
+      const auto y2 = min(y1 + blockSize, patch.atlasPatch2dSizeY());
+
+      b.atlasPatch2dPosX(patch.atlasPatch2dPosX() + x1);
+      b.atlasPatch2dPosY(patch.atlasPatch2dPosY() + y1);
+      b.atlasPatch2dSizeX(x2 - x1);
+      b.atlasPatch2dSizeY(y2 - y1);
+
+      assert(patch.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_NULL);
+      b.atlasPatch3dOffsetU(b.atlasPatch3dOffsetU() + x1);
+      b.atlasPatch3dOffsetV(b.atlasPatch3dOffsetV() + y1);
     }
   }
   return subblock;
@@ -146,13 +156,12 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
 
   for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {
     const auto &patch = atlas.patchParamsList[patchIdx];
-    const auto &view = frame.viewParamsList[patch.pduViewIdx()];
+    const auto &view = frame.viewParamsList[patch.atlasPatchProjectionId()];
 
-    if (patch.pduViewSize() == view.ci.projectionPlaneSize()) {
-      // The size of the sub-block is fixed for now
-      const auto blockSize = Vec2i{128, 128};
-
-      for (const auto &block : divideInBlocks(patch, blockSize)) {
+    if (patch.atlasPatch3dSizeU() == view.ci.ci_projection_plane_width_minus1() + 1U &&
+        patch.atlasPatch3dSizeV() == view.ci.ci_projection_plane_height_minus1() + 1U &&
+        patch.atlasPatchOrientationIndex() == FlexiblePatchOrientation::FPO_NULL) {
+      for (const auto &block : divideInBlocks(patch)) {
         if (!choosePatch(block, frame.viewParamsList, viewportParams)) {
           inplaceErasePatch(result, block, uint16_t(patchIdx), atlas.asps);
         }
@@ -169,12 +178,14 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
 void SubBlockCuller::inplaceErasePatch(BlockToPatchMap &patchMap, const PatchParams &patch,
                                        uint16_t patchId,
                                        const AtlasSequenceParameterSetRBSP &asps) {
-  const auto n = 1 << asps.asps_log2_patch_packing_block_size();
-  const auto first = patch.pdu2dPos() / n;
-  const auto last = first + patch.pdu2dSize() / n;
+  const auto patchPackingBlockSize = 1U << asps.asps_log2_patch_packing_block_size();
+  const auto firstX = patch.atlasPatch2dPosX() / patchPackingBlockSize;
+  const auto firstY = patch.atlasPatch2dPosY() / patchPackingBlockSize;
+  const auto lastX = firstX + patch.atlasPatch2dSizeX() / patchPackingBlockSize;
+  const auto lastY = firstY + patch.atlasPatch2dSizeY() / patchPackingBlockSize;
 
-  for (auto y = first.y(); y < last.y(); ++y) {
-    for (auto x = first.x(); x < last.x(); ++x) {
+  for (auto y = firstY; y < lastY; ++y) {
+    for (auto x = firstX; x < lastX; ++x) {
       if (patchMap.getPlane(0)(y, x) == patchId) {
         patchMap.getPlane(0)(y, x) = unusedPatchId;
       }

@@ -88,14 +88,6 @@ void AtlasFrameTileInformation::encodeTo(OutputBitstream &bitstream) {
   bitstream.putFlag(afti_signalled_tile_id_flag);
 }
 
-auto operator<<(ostream &stream, const AfpsVpccExtension & /* x */) -> ostream & { return stream; }
-
-auto AfpsVpccExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsVpccExtension {
-  return {};
-}
-
-void AfpsVpccExtension::encodeTo(OutputBitstream & /* stream */) const {}
-
 auto operator<<(ostream &stream, const AfpsMivExtension & /* x */) -> ostream & { return stream; }
 
 auto AfpsMivExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsMivExtension {
@@ -104,62 +96,42 @@ auto AfpsMivExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsMivEx
 
 void AfpsMivExtension::encodeTo(OutputBitstream & /* stream */) const {}
 
-auto AtlasFrameParameterSetRBSP::afps_vpcc_extension() const noexcept -> AfpsVpccExtension {
-  VERIFY_V3CBITSTREAM(afps_vpcc_extension_flag());
-  VERIFY_V3CBITSTREAM(m_afve.has_value());
-  return *m_afve;
-}
-
 auto AtlasFrameParameterSetRBSP::afps_miv_extension() const noexcept -> AfpsMivExtension {
-  VERIFY_V3CBITSTREAM(afps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_afme.has_value());
   return *m_afme;
 }
 
 auto AtlasFrameParameterSetRBSP::afpsExtensionData() const noexcept -> const vector<bool> & {
-  VERIFY_V3CBITSTREAM(afps_extension_6bits() != 0);
+  VERIFY_V3CBITSTREAM(afps_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(m_afpsExtensionData.has_value());
   return *m_afpsExtensionData;
 }
 
-auto AtlasFrameParameterSetRBSP::afps_vpcc_extension_flag(bool value) noexcept
+auto AtlasFrameParameterSetRBSP::afps_miv_extension_present_flag(bool value) noexcept
     -> AtlasFrameParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(afps_extension_present_flag());
-  m_afps_vpcc_extension_flag = value;
+  m_afps_miv_extension_present_flag = value;
   return *this;
 }
 
-auto AtlasFrameParameterSetRBSP::afps_miv_extension_flag(bool value) noexcept
+auto AtlasFrameParameterSetRBSP::afps_extension_7bits(uint8_t value) noexcept
     -> AtlasFrameParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(afps_extension_present_flag());
-  m_afps_miv_extension_flag = value;
-  return *this;
-}
-
-auto AtlasFrameParameterSetRBSP::afps_extension_6bits(uint8_t value) noexcept
-    -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_extension_present_flag());
-  m_afps_extension_6bits = value;
-  return *this;
-}
-
-auto AtlasFrameParameterSetRBSP::afps_vpcc_extension(const AfpsVpccExtension &value) noexcept
-    -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_vpcc_extension_flag());
-  m_afve = value;
+  m_afps_extension_7bits = value;
   return *this;
 }
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension(const AfpsMivExtension &value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
   m_afme = value;
   return *this;
 }
 
 auto AtlasFrameParameterSetRBSP::afpsExtensionData(vector<bool> value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_extension_6bits() != 0);
+  VERIFY_V3CBITSTREAM(afps_extension_7bits() != 0);
   m_afpsExtensionData = move(value);
   return *this;
 }
@@ -176,21 +148,18 @@ auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream
          << int(x.afps_num_ref_idx_default_active_minus1()) << '\n';
   stream << "afps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len()) << '\n';
   stream << "afps_lod_mode_enabled_flag=" << boolalpha << x.afps_lod_mode_enabled_flag() << '\n';
-  stream << "afps_raw_3d_pos_bit_count_explicit_mode_flag=" << boolalpha
-         << x.afps_raw_3d_pos_bit_count_explicit_mode_flag() << '\n';
+  stream << "afps_raw_3d_offset_bit_count_explicit_mode_flag=" << boolalpha
+         << x.afps_raw_3d_offset_bit_count_explicit_mode_flag() << '\n';
   stream << "afps_extension_present_flag=" << boolalpha << x.afps_extension_present_flag() << '\n';
   if (x.afps_extension_present_flag()) {
-    stream << "afps_vpcc_extension_flag=" << boolalpha << x.afps_vpcc_extension_flag() << '\n';
-    stream << "afps_miv_extension_flag=" << boolalpha << x.afps_miv_extension_flag() << '\n';
-    stream << "afps_extension_6bits=" << int(x.afps_extension_6bits()) << '\n';
+    stream << "afps_miv_extension_present_flag=" << boolalpha << x.afps_miv_extension_present_flag()
+           << '\n';
+    stream << "afps_extension_7bits=" << int(x.afps_extension_7bits()) << '\n';
   }
-  if (x.afps_vpcc_extension_flag()) {
-    stream << x.afps_vpcc_extension();
-  }
-  if (x.afps_miv_extension_flag()) {
+  if (x.afps_miv_extension_present_flag()) {
     stream << x.afps_miv_extension();
   }
-  if (x.afps_extension_6bits() != 0) {
+  if (x.afps_extension_7bits() != 0) {
     for (auto bit : x.afpsExtensionData()) {
       stream << "afps_extension_data_flag=" << boolalpha << bit << '\n';
     }
@@ -207,21 +176,17 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
       afps_num_ref_idx_default_active_minus1() != other.afps_num_ref_idx_default_active_minus1() ||
       afps_additional_lt_afoc_lsb_len() != other.afps_additional_lt_afoc_lsb_len() ||
       afps_lod_mode_enabled_flag() != other.afps_lod_mode_enabled_flag() ||
-      afps_raw_3d_pos_bit_count_explicit_mode_flag() !=
-          other.afps_raw_3d_pos_bit_count_explicit_mode_flag() ||
+      afps_raw_3d_offset_bit_count_explicit_mode_flag() !=
+          other.afps_raw_3d_offset_bit_count_explicit_mode_flag() ||
       afps_extension_present_flag() != other.afps_extension_present_flag() ||
-      afps_vpcc_extension_flag() != other.afps_vpcc_extension_flag() ||
-      afps_miv_extension_flag() != other.afps_miv_extension_flag() ||
-      afps_extension_6bits() != other.afps_extension_6bits()) {
+      afps_miv_extension_present_flag() != other.afps_miv_extension_present_flag() ||
+      afps_extension_7bits() != other.afps_extension_7bits()) {
     return false;
   }
-  if (afps_vpcc_extension_flag() && afps_vpcc_extension() != other.afps_vpcc_extension()) {
+  if (afps_miv_extension_present_flag() && afps_miv_extension() != other.afps_miv_extension()) {
     return false;
   }
-  if (afps_miv_extension_flag() && afps_miv_extension() != other.afps_miv_extension()) {
-    return false;
-  }
-  if (afps_extension_6bits() && afpsExtensionData() != other.afpsExtensionData()) {
+  if (afps_extension_7bits() && afpsExtensionData() != other.afpsExtensionData()) {
     return false;
   }
   return true;
@@ -258,21 +223,17 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
                       x.afps_additional_lt_afoc_lsb_len() == 0);
 
   x.afps_lod_mode_enabled_flag(bitstream.getFlag());
-  x.afps_raw_3d_pos_bit_count_explicit_mode_flag(bitstream.getFlag());
+  x.afps_raw_3d_offset_bit_count_explicit_mode_flag(bitstream.getFlag());
   x.afps_extension_present_flag(bitstream.getFlag());
 
   if (x.afps_extension_present_flag()) {
-    x.afps_vpcc_extension_flag(bitstream.getFlag());
-    x.afps_miv_extension_flag(bitstream.getFlag());
-    x.afps_extension_6bits(bitstream.readBits<uint8_t>(6));
+    x.afps_miv_extension_present_flag(bitstream.getFlag());
+    x.afps_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
-  if (x.afps_vpcc_extension_flag()) {
-    x.afps_vpcc_extension(AfpsVpccExtension::decodeFrom(bitstream));
-  }
-  if (x.afps_miv_extension_flag()) {
+  if (x.afps_miv_extension_present_flag()) {
     x.afps_miv_extension(AfpsMivExtension::decodeFrom(bitstream));
   }
-  if (x.afps_extension_6bits() != 0) {
+  if (x.afps_extension_7bits() != 0) {
     auto afpsExtensionData = vector<bool>{};
     while (bitstream.moreRbspData()) {
       afpsExtensionData.push_back(bitstream.getFlag());
@@ -308,21 +269,17 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.putUExpGolomb(afps_additional_lt_afoc_lsb_len());
 
   bitstream.putFlag(afps_lod_mode_enabled_flag());
-  bitstream.putFlag(afps_raw_3d_pos_bit_count_explicit_mode_flag());
+  bitstream.putFlag(afps_raw_3d_offset_bit_count_explicit_mode_flag());
   bitstream.putFlag(afps_extension_present_flag());
 
   if (afps_extension_present_flag()) {
-    bitstream.putFlag(afps_vpcc_extension_flag());
-    bitstream.putFlag(afps_miv_extension_flag());
-    bitstream.writeBits(afps_extension_6bits(), 6);
+    bitstream.putFlag(afps_miv_extension_present_flag());
+    bitstream.writeBits(afps_extension_7bits(), 7);
   }
-  if (afps_vpcc_extension_flag()) {
-    afps_vpcc_extension().encodeTo(bitstream);
-  }
-  if (afps_miv_extension_flag()) {
+  if (afps_miv_extension_present_flag()) {
     afps_miv_extension().encodeTo(bitstream);
   }
-  if (afps_extension_6bits() != 0) {
+  if (afps_extension_7bits() != 0) {
     for (auto bit : afpsExtensionData()) {
       bitstream.putFlag(bit);
     }

@@ -52,8 +52,8 @@ inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams) {
 
 inline OccupancyTransform::OccupancyTransform(const ViewParams &viewParams,
                                               const PatchParams &patchParams) {
-  m_threshold = patchParams.pduDepthOccMapThreshold()
-                    ? *patchParams.pduDepthOccMapThreshold()
+  m_threshold = patchParams.atlasPatchDepthOccMapThreshold()
+                    ? *patchParams.atlasPatchDepthOccMapThreshold()
                     : viewParams.dq.dq_depth_occ_map_threshold_default();
   if (m_threshold == 0 && viewParams.hasOccupancy) {
     m_threshold = 1; // Handle invalid depth for source views, transport views and viewports
@@ -69,10 +69,8 @@ DepthTransform<bits>::DepthTransform(const DepthQuantization &dq)
 template <unsigned bits>
 DepthTransform<bits>::DepthTransform(const DepthQuantization &dq, const PatchParams &patchParams)
     : DepthTransform{dq} {
-  m_depthStart = patchParams.pduDepthStart();
-  if (patchParams.pduDepthEnd()) {
-    m_depthEnd = *patchParams.pduDepthEnd();
-  }
+  m_depthStart = patchParams.atlasPatch3dOffsetD();
+  m_depthEnd = m_depthStart + patchParams.atlasPatch3dRangeD();
 }
 
 template <unsigned bits> auto DepthTransform<bits>::expandNormDisp(uint16_t x) const -> float {

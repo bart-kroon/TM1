@@ -50,6 +50,8 @@ auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & 
     return stream << "HEVC Main10";
   case PtlProfileCodecGroupIdc::HEVC444:
     return stream << "HEVC444";
+  case PtlProfileCodecGroupIdc::VVC_Main10:
+    return stream << "VVC Main10";
   case PtlProfileCodecGroupIdc::MP4RA:
     return stream << "MP4RA";
   default:
@@ -59,10 +61,10 @@ auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & 
 
 auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & {
   switch (x) {
-  case PtlProfilePccToolsetIdc::Basic:
-    return stream << "Basic";
-  case PtlProfilePccToolsetIdc::Extended:
-    return stream << "Extended";
+  case PtlProfilePccToolsetIdc::VPCC_Basic:
+    return stream << "V-PCC Basic";
+  case PtlProfilePccToolsetIdc::VPCC_Extended:
+    return stream << "V-PCC Extended";
   case PtlProfilePccToolsetIdc::MIV_Main:
     return stream << "MIV Main";
   default:
@@ -73,13 +75,15 @@ auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & 
 auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostream & {
   switch (x) {
   case PtlProfileReconstructionIdc::Rec0:
-    return stream << "Rec0";
+    return stream << "Rec0 (V-PCC)";
   case PtlProfileReconstructionIdc::Rec1:
-    return stream << "Rec1";
-  case PtlProfileReconstructionIdc::Unconstrained:
-    return stream << "Unconstrained";
+    return stream << "Rec1 (V-PCC)";
+  case PtlProfileReconstructionIdc::Rec2:
+    return stream << "Rec2 (V-PCC)";
   case PtlProfileReconstructionIdc::MIV_Main:
     return stream << "MIV Main";
+  case PtlProfileReconstructionIdc::Rec_Unconstrained:
+      return stream << "Rec Unconstrained";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }
@@ -116,10 +120,16 @@ auto operator<<(ostream &stream, const PtlLevelIdc &x) -> ostream & {
   switch (x) {
   case PtlLevelIdc::Level_1_0:
     return stream << "Level 1.0";
+  case PtlLevelIdc::Level_1_5:
+    return stream << "Level 1.5";
   case PtlLevelIdc::Level_2_0:
     return stream << "Level 2.0";
+  case PtlLevelIdc::Level_2_5:
+    return stream << "Level 2.5";
   case PtlLevelIdc::Level_3_0:
     return stream << "Level 3.0";
+  case PtlLevelIdc::Level_3_5:
+    return stream << "Level 3.5";
   default:
     return stream << "[unknown:" << int(x) << "]";
   }
@@ -159,6 +169,18 @@ auto codeOf(AiAttributeTypeId typeId) -> char {
   default:
     V3CBITSTREAM_ERROR("Unknown attribute type ID");
   }
+}
+
+auto operator<<(std::ostream &stream, AtlasId atlasId) -> std::ostream & {
+  return stream << int{atlasId.m_atlasId};
+}
+
+auto AtlasId::decodeFrom(Common::InputBitstream &bitstream) -> AtlasId {
+  return AtlasId(bitstream.readBits<std::uint8_t>(6));
+}
+
+void AtlasId::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.writeBits(m_atlasId, 6);
 }
 
 auto ProfileTierLevel::ptl_num_sub_profiles() const noexcept -> uint8_t {
@@ -275,24 +297,22 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
   LIMITATION(!ptl_tool_constraints_present_flag());
 }
 
-auto OccupancyInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "oi_occupancy_codec_id( " << int(atlasIdx) << " )=" << int(oi_occupancy_codec_id())
-         << '\n';
-  stream << "oi_lossy_occupancy_map_compression_threshold( " << int(atlasIdx)
-         << " )=" << int(oi_lossy_occupancy_map_compression_threshold()) << '\n';
-  stream << "oi_occupancy_nominal_2d_bitdepth_minus1( " << int(atlasIdx)
-         << " )=" << int(oi_occupancy_nominal_2d_bitdepth_minus1()) << '\n';
-  stream << "oi_occupancy_MSB_align_flag( " << int(atlasIdx) << " )=" << boolalpha
+auto OccupancyInformation::printTo(ostream &stream, AtlasId atlasId) const -> ostream & {
+  stream << "oi_occupancy_codec_id( " << atlasId << " )=" << int(oi_occupancy_codec_id()) << '\n';
+  stream << "oi_lossy_occupancy_compression_threshold( " << atlasId
+         << " )=" << int(oi_lossy_occupancy_compression_threshold()) << '\n';
+  stream << "oi_occupancy_2d_bit_depth_minus1( " << atlasId
+         << " )=" << int(oi_occupancy_2d_bit_depth_minus1()) << '\n';
+  stream << "oi_occupancy_MSB_align_flag( " << atlasId << " )=" << boolalpha
          << oi_occupancy_MSB_align_flag() << '\n';
   return stream;
 }
 
 auto OccupancyInformation::operator==(const OccupancyInformation &other) const noexcept -> bool {
   return oi_occupancy_codec_id() == other.oi_occupancy_codec_id() &&
-         oi_lossy_occupancy_map_compression_threshold() ==
-             other.oi_lossy_occupancy_map_compression_threshold() &&
-         oi_occupancy_nominal_2d_bitdepth_minus1() ==
-             other.oi_occupancy_nominal_2d_bitdepth_minus1() &&
+         oi_lossy_occupancy_compression_threshold() ==
+             other.oi_lossy_occupancy_compression_threshold() &&
+         oi_occupancy_2d_bit_depth_minus1() == other.oi_occupancy_2d_bit_depth_minus1() &&
          oi_occupancy_MSB_align_flag() == other.oi_occupancy_MSB_align_flag();
 }
 
@@ -303,38 +323,36 @@ auto OccupancyInformation::operator!=(const OccupancyInformation &other) const n
 auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInformation {
   auto x = OccupancyInformation{};
   x.oi_occupancy_codec_id(bitstream.getUint8());
-  x.oi_lossy_occupancy_map_compression_threshold(bitstream.getUint8());
-  x.oi_occupancy_nominal_2d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
+  x.oi_lossy_occupancy_compression_threshold(bitstream.getUint8());
+  x.oi_occupancy_2d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
   x.oi_occupancy_MSB_align_flag(bitstream.getFlag());
   return x;
 }
 
 void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putUint8(oi_occupancy_codec_id());
-  bitstream.putUint8(oi_lossy_occupancy_map_compression_threshold());
-  bitstream.writeBits(oi_occupancy_nominal_2d_bitdepth_minus1(), 5);
+  bitstream.putUint8(oi_lossy_occupancy_compression_threshold());
+  bitstream.writeBits(oi_occupancy_2d_bit_depth_minus1(), 5);
   bitstream.putFlag(oi_occupancy_MSB_align_flag());
 }
 
-auto GeometryInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "gi_geometry_codec_id( " << int(atlasIdx) << " )=" << int(gi_geometry_codec_id())
-         << '\n';
-  stream << "gi_geometry_nominal_2d_bitdepth_minus1( " << int(atlasIdx)
-         << " )=" << int(gi_geometry_nominal_2d_bitdepth_minus1()) << '\n';
-  stream << "gi_geometry_MSB_align_flag( " << int(atlasIdx) << " )=" << boolalpha
+auto GeometryInformation::printTo(ostream &stream, AtlasId atlasId) const -> ostream & {
+  stream << "gi_geometry_codec_id( " << atlasId << " )=" << int(gi_geometry_codec_id()) << '\n';
+  stream << "gi_geometry_2d_bit_depth_minus1( " << atlasId
+         << " )=" << int(gi_geometry_2d_bit_depth_minus1()) << '\n';
+  stream << "gi_geometry_MSB_align_flag( " << atlasId << " )=" << boolalpha
          << gi_geometry_MSB_align_flag() << '\n';
-  stream << "gi_geometry_3d_coordinates_bitdepth_minus1( " << int(atlasIdx)
-         << " )=" << int(gi_geometry_3d_coordinates_bitdepth_minus1()) << '\n';
+  stream << "gi_geometry_3d_coordinates_bit_depth_minus1( " << atlasId
+         << " )=" << int(gi_geometry_3d_coordinates_bit_depth_minus1()) << '\n';
   return stream;
 }
 
 auto GeometryInformation::operator==(const GeometryInformation &other) const noexcept -> bool {
   return gi_geometry_codec_id() == other.gi_geometry_codec_id() &&
-         gi_geometry_nominal_2d_bitdepth_minus1() ==
-             other.gi_geometry_nominal_2d_bitdepth_minus1() &&
+         gi_geometry_2d_bit_depth_minus1() == other.gi_geometry_2d_bit_depth_minus1() &&
          gi_geometry_MSB_align_flag() == other.gi_geometry_MSB_align_flag() &&
-         gi_geometry_3d_coordinates_bitdepth_minus1() ==
-             other.gi_geometry_3d_coordinates_bitdepth_minus1();
+         gi_geometry_3d_coordinates_bit_depth_minus1() ==
+             other.gi_geometry_3d_coordinates_bit_depth_minus1();
 }
 
 auto GeometryInformation::operator!=(const GeometryInformation &other) const noexcept -> bool {
@@ -342,23 +360,23 @@ auto GeometryInformation::operator!=(const GeometryInformation &other) const noe
 }
 
 auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
-                                     uint8_t atlasIdx) -> GeometryInformation {
+                                     AtlasId atlasId) -> GeometryInformation {
   auto x = GeometryInformation{};
   x.gi_geometry_codec_id(bitstream.getUint8());
-  x.gi_geometry_nominal_2d_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
+  x.gi_geometry_2d_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
   x.gi_geometry_MSB_align_flag(bitstream.getFlag());
-  x.gi_geometry_3d_coordinates_bitdepth_minus1(bitstream.readBits<uint8_t>(5));
-  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasIdx));
+  x.gi_geometry_3d_coordinates_bit_depth_minus1(bitstream.readBits<uint8_t>(5));
+  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
   return x;
 }
 
 void GeometryInformation::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
-                                   uint8_t atlasIdx) const {
+                                   AtlasId atlasId) const {
   bitstream.putUint8(gi_geometry_codec_id());
-  bitstream.writeBits(gi_geometry_nominal_2d_bitdepth_minus1(), 5);
+  bitstream.writeBits(gi_geometry_2d_bit_depth_minus1(), 5);
   bitstream.putFlag(gi_geometry_MSB_align_flag());
-  bitstream.writeBits(gi_geometry_3d_coordinates_bitdepth_minus1(), 5);
-  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasIdx));
+  bitstream.writeBits(gi_geometry_3d_coordinates_bit_depth_minus1(), 5);
+  VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
 }
 
 auto AttributeInformation::ai_attribute_count() const noexcept -> uint8_t {
@@ -380,10 +398,9 @@ auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId) co
   return m_aiAttributes[attributeId].ai_attribute_dimension_minus1;
 }
 
-auto AttributeInformation::ai_attribute_nominal_2d_bitdepth_minus1(uint8_t attributeId) const
-    -> uint8_t {
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attributeId) const -> uint8_t {
   VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  return m_aiAttributes[attributeId].ai_attribute_nominal_2d_bitdepth_minus1;
+  return m_aiAttributes[attributeId].ai_attribute_2d_bit_depth_minus1;
 }
 
 auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId) const -> bool {
@@ -432,11 +449,10 @@ auto AttributeInformation::ai_attribute_dimension_minus1(uint8_t attributeId, ui
   return *this;
 }
 
-auto AttributeInformation::ai_attribute_nominal_2d_bitdepth_minus1(uint8_t attributeId,
-                                                                   uint8_t value)
+auto AttributeInformation::ai_attribute_2d_bit_depth_minus1(uint8_t attributeId, uint8_t value)
     -> AttributeInformation & {
   VERIFY_V3CBITSTREAM(attributeId < ai_attribute_count());
-  m_aiAttributes[attributeId].ai_attribute_nominal_2d_bitdepth_minus1 = value;
+  m_aiAttributes[attributeId].ai_attribute_2d_bit_depth_minus1 = value;
   return *this;
 }
 
@@ -447,24 +463,24 @@ auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId, bool
   return *this;
 }
 
-auto AttributeInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "ai_attribute_count( " << int(atlasIdx) << " )=" << int(ai_attribute_count()) << '\n';
+auto AttributeInformation::printTo(ostream &stream, AtlasId atlasId) const -> ostream & {
+  stream << "ai_attribute_count( " << atlasId << " )=" << int(ai_attribute_count()) << '\n';
   for (auto i = 0; i < ai_attribute_count(); ++i) {
-    stream << "ai_attribute_type_id( " << int(atlasIdx) << ", " << i
-           << " )=" << ai_attribute_type_id(i) << '\n';
-    stream << "ai_attribute_codec_id( " << int(atlasIdx) << ", " << i
+    stream << "ai_attribute_type_id( " << atlasId << ", " << i << " )=" << ai_attribute_type_id(i)
+           << '\n';
+    stream << "ai_attribute_codec_id( " << atlasId << ", " << i
            << " )=" << int(ai_attribute_codec_id(i)) << '\n';
     if (m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag) {
-      stream << "ai_attribute_map_absolute_coding_persistence_flag( " << int(atlasIdx) << ", " << i
+      stream << "ai_attribute_map_absolute_coding_persistence_flag( " << atlasId << ", " << i
              << " )=" << boolalpha
              << *m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag << '\n';
     }
-    stream << "ai_attribute_dimension_minus1( " << int(atlasIdx) << ", " << i
+    stream << "ai_attribute_dimension_minus1( " << atlasId << ", " << i
            << " )=" << int(ai_attribute_dimension_minus1(i)) << '\n';
-    stream << "ai_attribute_nominal_2d_bitdepth_minus1( " << int(atlasIdx) << ", " << i
-           << " )=" << int(ai_attribute_nominal_2d_bitdepth_minus1(i));
+    stream << "ai_attribute_2d_bit_depth_minus1( " << atlasId << ", " << i
+           << " )=" << int(ai_attribute_2d_bit_depth_minus1(i));
     stream << '\n';
-    stream << "ai_attribute_MSB_align_flag( " << int(atlasIdx) << ", " << i << " )=" << boolalpha
+    stream << "ai_attribute_MSB_align_flag( " << atlasId << ", " << i << " )=" << boolalpha
            << ai_attribute_MSB_align_flag(i) << '\n';
   }
   return stream;
@@ -480,8 +496,7 @@ auto AttributeInformation::operator==(const AttributeInformation &other) const n
         m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag !=
             other.m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag ||
         ai_attribute_dimension_minus1(i) != other.ai_attribute_dimension_minus1(i) ||
-        ai_attribute_nominal_2d_bitdepth_minus1(i) !=
-            other.ai_attribute_nominal_2d_bitdepth_minus1(i) ||
+        ai_attribute_2d_bit_depth_minus1(i) != other.ai_attribute_2d_bit_depth_minus1(i) ||
         ai_attribute_MSB_align_flag(i) != other.ai_attribute_MSB_align_flag(i)) {
       return false;
     }
@@ -494,16 +509,16 @@ auto AttributeInformation::operator!=(const AttributeInformation &other) const n
 }
 
 auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
-                                      uint8_t atlasIdx) -> AttributeInformation {
+                                      AtlasId atlasId) -> AttributeInformation {
   auto x = AttributeInformation{};
   x.ai_attribute_count(bitstream.readBits<uint8_t>(7));
   for (auto i = 0; i < x.ai_attribute_count(); ++i) {
     x.ai_attribute_type_id(i, bitstream.readBits<AiAttributeTypeId>(4));
     x.ai_attribute_codec_id(i, bitstream.getUint8());
 
-    VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasIdx));
+    VERIFY_MIVBITSTREAM(!vps.vps_auxiliary_video_present_flag(atlasId));
 
-    if (vps.vps_map_count_minus1(atlasIdx) > 0) {
+    if (vps.vps_map_count_minus1(atlasId) > 0) {
       x.ai_attribute_map_absolute_coding_persistence_flag(i, bitstream.getFlag());
     }
 
@@ -512,20 +527,20 @@ auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const V3cParame
     const auto ai_attribute_dimension_partitions_minus1 = bitstream.readBits<uint8_t>(6);
     VERIFY_MIVBITSTREAM(ai_attribute_dimension_partitions_minus1 == 0);
 
-    x.ai_attribute_nominal_2d_bitdepth_minus1(i, bitstream.readBits<uint8_t>(5));
+    x.ai_attribute_2d_bit_depth_minus1(i, bitstream.readBits<uint8_t>(5));
     x.ai_attribute_MSB_align_flag(i, bitstream.getFlag());
   }
   return x;
 }
 
 void AttributeInformation::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
-                                    uint8_t atlasIdx) const {
+                                    AtlasId atlasId) const {
   bitstream.writeBits(ai_attribute_count(), 7);
   for (auto i = 0; i < ai_attribute_count(); ++i) {
     bitstream.writeBits(ai_attribute_type_id(i), 4);
     bitstream.writeBits(ai_attribute_codec_id(i), 8);
 
-    if (vps.vps_map_count_minus1(atlasIdx) > 0) {
+    if (vps.vps_map_count_minus1(atlasId) > 0) {
       bitstream.putFlag(ai_attribute_map_absolute_coding_persistence_flag(i));
     }
 
@@ -535,8 +550,8 @@ void AttributeInformation::encodeTo(OutputBitstream &bitstream, const V3cParamet
     constexpr auto ai_attribute_dimension_partitions_minus1 = 0;
     bitstream.writeBits(ai_attribute_dimension_partitions_minus1, 6);
 
-    VERIFY_V3CBITSTREAM(ai_attribute_nominal_2d_bitdepth_minus1(i) < 32);
-    bitstream.writeBits(ai_attribute_nominal_2d_bitdepth_minus1(i), 5);
+    VERIFY_V3CBITSTREAM(ai_attribute_2d_bit_depth_minus1(i) < 32);
+    bitstream.writeBits(ai_attribute_2d_bit_depth_minus1(i), 5);
     bitstream.putFlag(ai_attribute_MSB_align_flag(i));
   }
 }
@@ -601,84 +616,71 @@ auto V3cParameterSet::vps_atlas_count_minus1() const noexcept -> uint8_t {
   return uint8_t(m_vpsAtlases.size() - 1U);
 }
 
-auto V3cParameterSet::vps_atlas_id(uint8_t j) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_atlas_id;
+auto V3cParameterSet::vps_atlas_id(size_t k) const -> AtlasId {
+  VERIFY_V3CBITSTREAM(k <= vps_atlas_count_minus1());
+  return m_vpsAtlases[k].vps_atlas_id;
 }
 
-auto V3cParameterSet::vps_frame_width(uint8_t j) const -> uint16_t {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_frame_width;
+auto V3cParameterSet::vps_frame_width(AtlasId j) const -> uint16_t {
+  return atlas(j).vps_frame_width;
 }
 
-auto V3cParameterSet::vps_frame_height(uint8_t j) const -> uint16_t {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_frame_height;
+auto V3cParameterSet::vps_frame_height(AtlasId j) const -> uint16_t {
+  return atlas(j).vps_frame_height;
 }
 
-auto V3cParameterSet::vps_map_count_minus1(uint8_t j) const -> uint8_t {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_map_count_minus1;
+auto V3cParameterSet::vps_map_count_minus1(AtlasId j) const -> uint8_t {
+  return atlas(j).vps_map_count_minus1;
 }
 
-auto V3cParameterSet::vps_auxiliary_video_present_flag(uint8_t j) const -> bool {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_auxiliary_video_present_flag;
+auto V3cParameterSet::vps_auxiliary_video_present_flag(AtlasId j) const -> bool {
+  return atlas(j).vps_auxiliary_video_present_flag;
 }
 
-auto V3cParameterSet::vps_occupancy_video_present_flag(uint8_t j) const -> bool {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_occupancy_video_present_flag;
+auto V3cParameterSet::vps_occupancy_video_present_flag(AtlasId j) const -> bool {
+  return atlas(j).vps_occupancy_video_present_flag;
 }
 
-auto V3cParameterSet::vps_geometry_video_present_flag(uint8_t j) const -> bool {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_geometry_video_present_flag;
+auto V3cParameterSet::vps_geometry_video_present_flag(AtlasId j) const -> bool {
+  return atlas(j).vps_geometry_video_present_flag;
 }
 
-auto V3cParameterSet::vps_attribute_video_present_flag(uint8_t j) const -> bool {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  return m_vpsAtlases[j].vps_attribute_video_present_flag;
+auto V3cParameterSet::vps_attribute_video_present_flag(AtlasId j) const -> bool {
+  return atlas(j).vps_attribute_video_present_flag;
 }
 
-auto V3cParameterSet::occupancy_information(uint8_t j) const -> const OccupancyInformation & {
+auto V3cParameterSet::occupancy_information(AtlasId j) const -> const OccupancyInformation & {
   VERIFY_V3CBITSTREAM(vps_occupancy_video_present_flag(j));
-  VERIFY_V3CBITSTREAM(m_vpsAtlases[j].occupancy_information.has_value());
-  return *m_vpsAtlases[j].occupancy_information;
+  VERIFY_V3CBITSTREAM(atlas(j).occupancy_information.has_value());
+  return *atlas(j).occupancy_information;
 }
 
-auto V3cParameterSet::geometry_information(uint8_t j) const -> const GeometryInformation & {
+auto V3cParameterSet::geometry_information(AtlasId j) const -> const GeometryInformation & {
   VERIFY_V3CBITSTREAM(vps_geometry_video_present_flag(j));
-  VERIFY_V3CBITSTREAM(m_vpsAtlases[j].geometry_information.has_value());
-  return *m_vpsAtlases[j].geometry_information;
+  VERIFY_V3CBITSTREAM(atlas(j).geometry_information.has_value());
+  return *atlas(j).geometry_information;
 }
 
-auto V3cParameterSet::attribute_information(uint8_t j) const -> const AttributeInformation & {
+auto V3cParameterSet::attribute_information(AtlasId j) const -> const AttributeInformation & {
   VERIFY_V3CBITSTREAM(vps_attribute_video_present_flag(j));
-  VERIFY_V3CBITSTREAM(m_vpsAtlases[j].attribute_information.has_value());
-  return *m_vpsAtlases[j].attribute_information;
-}
-
-auto V3cParameterSet::vps_vpcc_extension() const noexcept -> const VpsVpccExtension & {
-  VERIFY_V3CBITSTREAM(vps_vpcc_extension_flag());
-  VERIFY_V3CBITSTREAM(m_vps_vpcc_extension.has_value());
-  return *m_vps_vpcc_extension;
+  VERIFY_V3CBITSTREAM(atlas(j).attribute_information.has_value());
+  return *atlas(j).attribute_information;
 }
 
 auto V3cParameterSet::vps_miv_extension() const noexcept -> const VpsMivExtension & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_vps_miv_extension.has_value());
   return *m_vps_miv_extension;
 }
 
 auto V3cParameterSet::vps_extension_length_minus1() const noexcept -> size_t {
-  VERIFY_V3CBITSTREAM(vps_extension_6bits());
+  VERIFY_V3CBITSTREAM(vps_extension_7bits());
   VERIFY_V3CBITSTREAM(m_vpsExtensionData.has_value());
   return m_vpsExtensionData->size() - 1;
 }
 
 auto V3cParameterSet::vpsExtensionData() const noexcept -> const vector<uint8_t> & {
-  VERIFY_V3CBITSTREAM(vps_extension_6bits());
+  VERIFY_V3CBITSTREAM(vps_extension_7bits());
   return *m_vpsExtensionData;
 }
 
@@ -692,135 +694,114 @@ auto V3cParameterSet::vps_atlas_count_minus1(uint8_t value) -> V3cParameterSet &
   return *this;
 }
 
-auto V3cParameterSet::vps_atlas_id(uint8_t j, uint8_t value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_atlas_id = value;
+auto V3cParameterSet::vps_atlas_id(size_t k, AtlasId value) -> V3cParameterSet & {
+  VERIFY_V3CBITSTREAM(k <= vps_atlas_count_minus1());
+  m_vpsAtlases[k].vps_atlas_id = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_frame_width(uint8_t j, uint16_t value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_frame_width = value;
+auto V3cParameterSet::vps_frame_width(AtlasId j, uint16_t value) -> V3cParameterSet & {
+  atlas(j).vps_frame_width = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_frame_height(uint8_t j, uint16_t value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_frame_height = value;
+auto V3cParameterSet::vps_frame_height(AtlasId j, uint16_t value) -> V3cParameterSet & {
+  atlas(j).vps_frame_height = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_map_count_minus1(uint8_t j, uint8_t value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_map_count_minus1 = value;
+auto V3cParameterSet::vps_map_count_minus1(AtlasId j, uint8_t value) -> V3cParameterSet & {
+  atlas(j).vps_map_count_minus1 = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_auxiliary_video_present_flag(uint8_t j, bool value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_auxiliary_video_present_flag = value;
+auto V3cParameterSet::vps_auxiliary_video_present_flag(AtlasId j, bool value) -> V3cParameterSet & {
+  atlas(j).vps_auxiliary_video_present_flag = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_occupancy_video_present_flag(uint8_t j, bool value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_occupancy_video_present_flag = value;
+auto V3cParameterSet::vps_occupancy_video_present_flag(AtlasId j, bool value) -> V3cParameterSet & {
+  atlas(j).vps_occupancy_video_present_flag = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_geometry_video_present_flag(uint8_t j, bool value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_geometry_video_present_flag = value;
+auto V3cParameterSet::vps_geometry_video_present_flag(AtlasId j, bool value) -> V3cParameterSet & {
+  atlas(j).vps_geometry_video_present_flag = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_attribute_video_present_flag(uint8_t j, bool value) -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  m_vpsAtlases[j].vps_attribute_video_present_flag = value;
+auto V3cParameterSet::vps_attribute_video_present_flag(AtlasId j, bool value) -> V3cParameterSet & {
+  atlas(j).vps_attribute_video_present_flag = value;
   return *this;
 }
 
-auto V3cParameterSet::occupancy_information(uint8_t j, OccupancyInformation value)
+auto V3cParameterSet::occupancy_information(AtlasId j, OccupancyInformation value)
     -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_occupancy_video_present_flag(j));
-  m_vpsAtlases[j].occupancy_information = value;
+  atlas(j).occupancy_information = value;
   return *this;
 }
 
-auto V3cParameterSet::geometry_information(uint8_t j, GeometryInformation value)
+auto V3cParameterSet::geometry_information(AtlasId j, GeometryInformation value)
     -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_geometry_video_present_flag(j));
-  m_vpsAtlases[j].geometry_information = value;
+  atlas(j).geometry_information = value;
   return *this;
 }
 
-auto V3cParameterSet::attribute_information(uint8_t j, AttributeInformation value)
+auto V3cParameterSet::attribute_information(AtlasId j, AttributeInformation value)
     -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_attribute_video_present_flag(j));
-  m_vpsAtlases[j].attribute_information = move(value);
+  atlas(j).attribute_information = move(value);
   return *this;
 }
 
-auto V3cParameterSet::vps_vpcc_extension_flag(bool value) noexcept -> V3cParameterSet & {
+auto V3cParameterSet::vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_extension_present_flag());
-  m_vps_vpcc_extension_flag = value;
+  m_vps_miv_extension_present_flag = value;
   return *this;
 }
 
-auto V3cParameterSet::vps_miv_extension_flag(bool value) noexcept -> V3cParameterSet & {
+auto V3cParameterSet::vps_extension_7bits(uint8_t value) noexcept -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_extension_present_flag());
-  m_vps_miv_extension_flag = value;
-  return *this;
-}
-
-auto V3cParameterSet::vps_extension_6bits(uint8_t value) noexcept -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_extension_present_flag());
-  VERIFY_V3CBITSTREAM(value < 0x40);
-  m_vps_extension_6bits = value;
-  return *this;
-}
-
-auto V3cParameterSet::vps_vpcc_extension(VpsVpccExtension value) noexcept -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_vpcc_extension_flag());
-  m_vps_vpcc_extension = value;
+  VERIFY_V3CBITSTREAM(value < 0x80);
+  m_vps_extension_7bits = value;
   return *this;
 }
 
 auto V3cParameterSet::vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   m_vps_miv_extension = value;
   return *this;
 }
 
 auto V3cParameterSet::vpsExtensionData(std::vector<std::uint8_t> value) noexcept
     -> V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(vps_extension_6bits() != 0);
+  VERIFY_V3CBITSTREAM(vps_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(!value.empty());
   m_vpsExtensionData = move(value);
   return *this;
 }
 
-auto V3cParameterSet::occupancy_information(uint8_t j) -> OccupancyInformation & {
+auto V3cParameterSet::occupancy_information(AtlasId j) -> OccupancyInformation & {
   VERIFY_V3CBITSTREAM(vps_occupancy_video_present_flag(j));
-  auto &oi = m_vpsAtlases[j].occupancy_information;
+  auto &oi = atlas(j).occupancy_information;
   if (!oi) {
     oi = OccupancyInformation{};
   }
   return *oi;
 }
 
-auto V3cParameterSet::geometry_information(uint8_t j) -> GeometryInformation & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  auto &gi = m_vpsAtlases[j].geometry_information;
+auto V3cParameterSet::geometry_information(AtlasId j) -> GeometryInformation & {
+  auto &gi = atlas(j).geometry_information;
   if (!gi) {
     gi = GeometryInformation{};
   }
   return *gi;
 }
 
-auto V3cParameterSet::attribute_information(uint8_t j) -> AttributeInformation & {
-  VERIFY_V3CBITSTREAM(j <= vps_atlas_count_minus1());
-  auto &ai = m_vpsAtlases[j].attribute_information;
+auto V3cParameterSet::attribute_information(AtlasId j) -> AttributeInformation & {
+  auto &ai = atlas(j).attribute_information;
   if (!ai) {
     ai = AttributeInformation{};
   }
@@ -828,28 +809,29 @@ auto V3cParameterSet::attribute_information(uint8_t j) -> AttributeInformation &
 }
 
 auto V3cParameterSet::vps_miv_extension() noexcept -> VpsMivExtension & {
-  VERIFY_V3CBITSTREAM(vps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   if (!m_vps_miv_extension) {
     m_vps_miv_extension = VpsMivExtension{};
   }
   return *m_vps_miv_extension;
 }
 
-auto V3cParameterSet::atlasIdxOf(uint8_t atlasId) const noexcept -> uint8_t {
-  for (uint8_t j = 0; j <= vps_atlas_count_minus1(); ++j) {
-    if (vps_atlas_id(j) == atlasId) {
-      return j;
+auto V3cParameterSet::indexOf(AtlasId atlasId) const noexcept -> size_t {
+  for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
+    if (vps_atlas_id(k) == atlasId) {
+      return k;
     }
   }
-  V3CBITSTREAM_ERROR("The atlasId is not in the VPS");
+  V3CBITSTREAM_ERROR("Invalid atlas ID");
 }
 
 auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
   stream << x.profile_tier_level();
   stream << "vps_v3c_parameter_set_id=" << int(x.vps_v3c_parameter_set_id()) << '\n';
   stream << "vps_atlas_count_minus1=" << int(x.vps_atlas_count_minus1()) << '\n';
-  for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
-    stream << "vps_atlas_id( " << j << " )=" << int(x.vps_atlas_id(j)) << '\n';
+  for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
+    const auto j = x.vps_atlas_id(k);
+    stream << "vps_atlas_id( " << k << " )=" << j << '\n';
     stream << "vps_frame_width( " << j << " )=" << x.vps_frame_width(j) << '\n';
     stream << "vps_frame_height( " << j << " )=" << x.vps_frame_height(j) << '\n';
     stream << "vps_map_count_minus1( " << j << " )=" << int(x.vps_map_count_minus1(j)) << '\n';
@@ -873,17 +855,14 @@ auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
   }
   stream << "vps_extension_present_flag=" << boolalpha << x.vps_extension_present_flag() << '\n';
   if (x.vps_extension_present_flag()) {
-    stream << "vps_vpcc_extension_flag=" << boolalpha << x.vps_vpcc_extension_flag() << '\n';
-    stream << "vps_miv_extension_flag=" << boolalpha << x.vps_miv_extension_flag() << '\n';
-    stream << "vps_extension_6bits=" << int(x.vps_extension_6bits()) << '\n';
+    stream << "vps_miv_extension_present_flag=" << boolalpha << x.vps_miv_extension_present_flag()
+           << '\n';
+    stream << "vps_extension_7bits=" << int(x.vps_extension_7bits()) << '\n';
   }
-  if (x.vps_vpcc_extension_flag()) {
-    stream << x.vps_vpcc_extension();
-  }
-  if (x.vps_miv_extension_flag()) {
+  if (x.vps_miv_extension_present_flag()) {
     stream << x.vps_miv_extension();
   }
-  if (x.vps_extension_6bits() != 0) {
+  if (x.vps_extension_7bits() != 0) {
     stream << "vps_extension_length_minus1=" << x.vps_extension_length_minus1() << '\n';
     for (uint8_t byte : x.vpsExtensionData()) {
       stream << "vps_extension_data_byte=" << int(byte) << '\n';
@@ -897,14 +876,16 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
       vps_v3c_parameter_set_id() != other.vps_v3c_parameter_set_id() ||
       vps_atlas_count_minus1() != other.vps_atlas_count_minus1() ||
       vps_extension_present_flag() != other.vps_extension_present_flag() ||
-      vps_vpcc_extension_flag() != other.vps_vpcc_extension_flag() ||
-      vps_miv_extension_flag() != other.vps_miv_extension_flag() ||
-      vps_extension_6bits() != other.vps_extension_6bits()) {
+      vps_miv_extension_present_flag() != other.vps_miv_extension_present_flag() ||
+      vps_extension_7bits() != other.vps_extension_7bits()) {
     return false;
   }
-  for (int j = 0; j <= vps_atlas_count_minus1(); ++j) {
-    if (vps_atlas_id(j) != other.vps_atlas_id(j) ||
-        vps_frame_width(j) != other.vps_frame_width(j) ||
+  for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
+    const auto j = vps_atlas_id(k);
+    if (j != other.vps_atlas_id(k)) {
+      return false;
+    }
+    if (vps_frame_width(j) != other.vps_frame_width(j) ||
         vps_frame_height(j) != other.vps_frame_height(j) ||
         vps_map_count_minus1(j) != other.vps_map_count_minus1(j) ||
         vps_auxiliary_video_present_flag(j) != other.vps_auxiliary_video_present_flag(j) ||
@@ -926,13 +907,10 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
       return false;
     }
   }
-  if (vps_vpcc_extension_flag() && vps_vpcc_extension() != other.vps_vpcc_extension()) {
+  if (vps_miv_extension_present_flag() && vps_miv_extension() != other.vps_miv_extension()) {
     return false;
   }
-  if (vps_miv_extension_flag() && vps_miv_extension() != other.vps_miv_extension()) {
-    return false;
-  }
-  if (vps_extension_6bits() && vpsExtensionData() != other.vpsExtensionData()) {
+  if (vps_extension_7bits() && vpsExtensionData() != other.vpsExtensionData()) {
     return false;
   }
   return true;
@@ -951,8 +929,9 @@ auto V3cParameterSet::decodeFrom(istream &stream) -> V3cParameterSet {
   bitstream.getUint8(); // vps_reserved_zero_8bits
   x.vps_atlas_count_minus1(bitstream.readBits<uint8_t>(6));
 
-  for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
-    x.vps_atlas_id(j, bitstream.readBits<uint8_t>(6));
+  for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
+    x.vps_atlas_id(k, AtlasId::decodeFrom(bitstream));
+    const auto j = x.vps_atlas_id(k);
     x.vps_frame_width(j, bitstream.getUint16());
     x.vps_frame_height(j, bitstream.getUint16());
     x.vps_map_count_minus1(j, bitstream.readBits<uint8_t>(4));
@@ -981,17 +960,13 @@ auto V3cParameterSet::decodeFrom(istream &stream) -> V3cParameterSet {
   x.vps_extension_present_flag(bitstream.getFlag());
 
   if (x.vps_extension_present_flag()) {
-    x.vps_vpcc_extension_flag(bitstream.getFlag());
-    x.vps_miv_extension_flag(bitstream.getFlag());
-    x.vps_extension_6bits(bitstream.readBits<uint8_t>(6));
+    x.vps_miv_extension_present_flag(bitstream.getFlag());
+    x.vps_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
-  if (x.vps_vpcc_extension_flag()) {
-    x.vps_vpcc_extension(VpsVpccExtension::decodeFrom(bitstream));
-  }
-  if (x.vps_miv_extension_flag()) {
+  if (x.vps_miv_extension_present_flag()) {
     x.vps_miv_extension(VpsMivExtension::decodeFrom(bitstream, x));
   }
-  if (x.vps_extension_6bits()) {
+  if (x.vps_extension_7bits()) {
     const auto vps_extension_length_minus1 = bitstream.getUExpGolomb<size_t>();
     auto vpsExtensionData = vector<uint8_t>();
     vpsExtensionData.reserve(vps_extension_length_minus1 + 1);
@@ -1011,8 +986,9 @@ void V3cParameterSet::encodeTo(ostream &stream) const {
   bitstream.putUint8(0); // vps_reserved_zero_8bits
   bitstream.writeBits(vps_atlas_count_minus1(), 6);
 
-  for (int j = 0; j <= vps_atlas_count_minus1(); ++j) {
-    bitstream.writeBits(vps_atlas_id(j), 6);
+  for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
+    const auto j = vps_atlas_id(k);
+    j.encodeTo(bitstream);
     bitstream.putUint16(vps_frame_width(j));
     bitstream.putUint16(vps_frame_height(j));
     bitstream.writeBits(vps_map_count_minus1(j), 4);
@@ -1041,17 +1017,13 @@ void V3cParameterSet::encodeTo(ostream &stream) const {
   bitstream.putFlag(vps_extension_present_flag());
 
   if (vps_extension_present_flag()) {
-    bitstream.putFlag(vps_vpcc_extension_flag());
-    bitstream.putFlag(vps_miv_extension_flag());
-    bitstream.writeBits(vps_extension_6bits(), 6);
+    bitstream.putFlag(vps_miv_extension_present_flag());
+    bitstream.writeBits(vps_extension_7bits(), 7);
   }
-  if (vps_vpcc_extension_flag()) {
-    vps_vpcc_extension().encodeTo(bitstream);
-  }
-  if (vps_miv_extension_flag()) {
+  if (vps_miv_extension_present_flag()) {
     vps_miv_extension().encodeTo(bitstream, *this);
   }
-  if (vps_extension_6bits()) {
+  if (vps_extension_7bits()) {
     bitstream.putUExpGolomb(vps_extension_length_minus1());
     for (uint8_t byte : vpsExtensionData()) {
       bitstream.putUint8(byte);
@@ -1060,30 +1032,12 @@ void V3cParameterSet::encodeTo(ostream &stream) const {
   bitstream.byteAlignment();
 }
 
-auto merge(const vector<const V3cParameterSet *> &vps) -> V3cParameterSet {
-  VERIFY_MIVBITSTREAM(!vps.empty());
-  auto x = *vps.front();
+auto V3cParameterSet::atlas(AtlasId atlasId) const noexcept -> const VpsAtlas & {
+  return m_vpsAtlases[indexOf(atlasId)];
+}
 
-  VERIFY_MIVBITSTREAM(x.vps_miv_extension().vme_num_groups_minus1() + size_t(1) == vps.size());
-
-  for (auto i = begin(vps) + 1; i != end(vps); ++i) {
-    const auto &y = **i;
-    VERIFY_MIVBITSTREAM(x.profile_tier_level() == y.profile_tier_level());
-    VERIFY_MIVBITSTREAM(x.vps_v3c_parameter_set_id() == y.vps_v3c_parameter_set_id());
-
-    x.m_vpsAtlases.insert(x.m_vpsAtlases.end(), begin(y.m_vpsAtlases), end(y.m_vpsAtlases));
-
-    VERIFY_MIVBITSTREAM(x.vps_extension_present_flag() && y.vps_extension_present_flag());
-    VERIFY_MIVBITSTREAM(x.vps_miv_extension_flag() == y.vps_miv_extension_flag());
-
-    if (x.vps_miv_extension_flag()) {
-      VERIFY_MIVBITSTREAM(x.vps_miv_extension() == y.vps_miv_extension());
-    }
-  }
-  for (uint8_t i = 0; i <= x.vps_atlas_count_minus1(); ++i) {
-    x.vps_atlas_id(i, i);
-  }
-  return x;
+auto V3cParameterSet::atlas(AtlasId atlasId) noexcept -> VpsAtlas & {
+  return m_vpsAtlases[indexOf(atlasId)];
 }
 
 } // namespace TMIV::MivBitstream

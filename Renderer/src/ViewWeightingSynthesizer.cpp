@@ -45,7 +45,6 @@
 #include <algorithm>
 #include <cmath>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;
@@ -59,11 +58,11 @@ auto textureGather(const MAT &m, const Vec2f &p) -> stack::Vec4<typename MAT::va
   int w_last = static_cast<int>(m.width()) - 1;
   int h_last = static_cast<int>(m.height()) - 1;
 
-  int x0 = clamp(ifloor(p.x() - 0.5F), 0, w_last);
-  int y0 = clamp(ifloor(p.y() - 0.5F), 0, h_last);
+  int x0 = std::clamp(ifloor(p.x() - 0.5F), 0, w_last);
+  int y0 = std::clamp(ifloor(p.y() - 0.5F), 0, h_last);
 
-  int x1 = min(x0 + 1, w_last);
-  int y1 = min(y0 + 1, h_last);
+  int x1 = std::min(x0 + 1, w_last);
+  int y1 = std::min(y0 + 1, h_last);
 
   fetchedValues[0] = m(y1, x0);
   fetchedValues[1] = m(y1, x1);
@@ -73,11 +72,12 @@ auto textureGather(const MAT &m, const Vec2f &p) -> stack::Vec4<typename MAT::va
   return fetchedValues;
 }
 
-void insertWeightedDepthInStack(vector<Vec2f> &stack, float weight, float z, float blendingFactor) {
+void insertWeightedDepthInStack(std::vector<Vec2f> &stack, float weight, float z,
+                                float blendingFactor) {
   if (0.F < weight) {
     for (size_t i = 0; i <= stack.size(); i++) {
       float zAfter =
-          (i < stack.size()) ? (stack[i].x() / stack[i].y()) : numeric_limits<float>::max();
+          (i < stack.size()) ? (stack[i].x() / stack[i].y()) : std::numeric_limits<float>::max();
 
       if (z < zAfter) {
         float zBefore = (0 < i) ? (stack[i - 1].x() / stack[i - 1].y()) : -1.F;
@@ -113,8 +113,8 @@ void insertWeightedDepthInStack(vector<Vec2f> &stack, float weight, float z, flo
   }
 }
 
-auto getEnabledIdList(const vector<bool> &inputList) -> vector<size_t> {
-  vector<size_t> outputList;
+auto getEnabledIdList(const std::vector<bool> &inputList) -> std::vector<size_t> {
+  std::vector<size_t> outputList;
 
   for (size_t id = 0; id < inputList.size(); id++) {
     if (inputList[id]) {
@@ -128,17 +128,17 @@ auto getEnabledIdList(const vector<bool> &inputList) -> vector<size_t> {
 
 class ViewWeightingSynthesizer::Impl {
 private:
-  vector<float> m_cameraWeight;
-  vector<bool> m_cameraVisibility;
-  vector<float> m_cameraDistortion;
-  vector<Mat<Vec3f>> m_sourceColor;
-  vector<Mat<float>> m_sourceDepth;
-  vector<Mat<Vec3f>> m_sourceUnprojection;
-  vector<Mat<pair<Vec2f, float>>> m_sourceReprojection;
-  vector<Mat<Vec3f>> m_sourceRayDirection;
-  vector<Mat<Vec3f>> m_viewportUnprojection;
-  vector<Mat<float>> m_viewportDepth;
-  vector<Mat<float>> m_viewportWeight;
+  std::vector<float> m_cameraWeight;
+  std::vector<bool> m_cameraVisibility;
+  std::vector<float> m_cameraDistortion;
+  std::vector<Mat<Vec3f>> m_sourceColor;
+  std::vector<Mat<float>> m_sourceDepth;
+  std::vector<Mat<Vec3f>> m_sourceUnprojection;
+  std::vector<Mat<std::pair<Vec2f, float>>> m_sourceReprojection;
+  std::vector<Mat<Vec3f>> m_sourceRayDirection;
+  std::vector<Mat<Vec3f>> m_viewportUnprojection;
+  std::vector<Mat<float>> m_viewportDepth;
+  std::vector<Mat<float>> m_viewportWeight;
   Mat<float> m_viewportVisibility;
   Mat<Vec3f> m_viewportColor;
 
@@ -209,8 +209,8 @@ public:
           m_viewportColor[i] = Vec3f{};
         } else {
           m_viewportVisibility[i] =
-              clamp(1.F / m_viewportVisibility[i], viewportParams.dq.dq_norm_disp_low(),
-                    viewportParams.dq.dq_norm_disp_high());
+              std::clamp(1.F / m_viewportVisibility[i], viewportParams.dq.dq_norm_disp_low(),
+                         viewportParams.dq.dq_norm_disp_high());
         }
       }
     }
@@ -243,7 +243,7 @@ private:
       bool is3D = isTridimensional();
 
       const Vec3f &viewportPosition = targetHelper.getViewingPosition();
-      vector<float> cameraDistance;
+      std::vector<float> cameraDistance;
 
       for (const auto &helper : sourceHelperList) {
         const Vec3f &cameraPosition = helper.getViewingPosition();
@@ -255,16 +255,17 @@ private:
       }
 
       // Camera sorting
-      vector<unsigned> closestCamera(cameraDistance.size());
+      std::vector<unsigned> closestCamera(cameraDistance.size());
 
       iota(closestCamera.begin(), closestCamera.end(), 0);
-      sort(closestCamera.begin(), closestCamera.end(),
-           [&](unsigned i1, unsigned i2) { return (cameraDistance[i1] < cameraDistance[i2]); });
+      std::sort(closestCamera.begin(), closestCamera.end(), [&](unsigned i1, unsigned i2) {
+        return (cameraDistance[i1] < cameraDistance[i2]);
+      });
 
       // Reference distance
       float refDistance = 0.F;
 
-      for (size_t id = 1; refDistance <= numeric_limits<float>::epsilon(); id++) {
+      for (size_t id = 1; refDistance <= std::numeric_limits<float>::epsilon(); id++) {
         refDistance = norm(sourceHelperList[closestCamera[0]].getViewingPosition() -
                            sourceHelperList[closestCamera[id]].getViewingPosition()) *
                       0.25F;
@@ -286,7 +287,7 @@ private:
     const unsigned N = 4;
     const Vec2f depthRange = {0.5F, 10.F};
 
-    vector<Vec3f> pointCloud;
+    std::vector<Vec3f> pointCloud;
     float x = 0.F;
     float step = 1.F / static_cast<float>(N - 1);
 
@@ -354,9 +355,10 @@ private:
       m_sourceDepth.emplace_back(
           DepthTransform<10>{viewParams.dq}.expandDepth(prunedViews[sourceId].second));
 
-      transform(prunedMasks[sourceId].getPlane(0).begin(), prunedMasks[sourceId].getPlane(0).end(),
-                m_sourceDepth.back().begin(), m_sourceDepth.back().begin(),
-                [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NaN; });
+      std::transform(
+          prunedMasks[sourceId].getPlane(0).begin(), prunedMasks[sourceId].getPlane(0).end(),
+          m_sourceDepth.back().begin(), m_sourceDepth.back().begin(),
+          [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NaN; });
     }
   }
   void reprojectPrunedSource(const Decoder::AccessUnit &frame,
@@ -369,18 +371,18 @@ private:
     for (size_t sourceId = 0; sourceId < m_sourceDepth.size(); sourceId++) {
       m_sourceUnprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
-      fill(m_sourceUnprojection[sourceId].begin(), m_sourceUnprojection[sourceId].end(),
-           Vec3f{NaN, NaN, NaN});
+      std::fill(m_sourceUnprojection[sourceId].begin(), m_sourceUnprojection[sourceId].end(),
+                Vec3f{NaN, NaN, NaN});
 
       m_sourceReprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
-      fill(m_sourceReprojection[sourceId].begin(), m_sourceReprojection[sourceId].end(),
-           make_pair(Vec2f{NaN, NaN}, NaN));
+      std::fill(m_sourceReprojection[sourceId].begin(), m_sourceReprojection[sourceId].end(),
+                std::pair{Vec2f{NaN, NaN}, NaN});
 
       m_sourceRayDirection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
-      fill(m_sourceRayDirection[sourceId].begin(), m_sourceRayDirection[sourceId].end(),
-           Vec3f{NaN, NaN, NaN});
+      std::fill(m_sourceRayDirection[sourceId].begin(), m_sourceRayDirection[sourceId].end(),
+                Vec3f{NaN, NaN, NaN});
     }
 
     for (const auto &atlas : frame.atlas) {
@@ -437,16 +439,16 @@ private:
     };
 
     auto getSplatParameters = [&](unsigned viewId, int x, int y,
-                                  const pair<Vec2f, float> &P) -> Splat {
-      static const array<Vec2i, 8> offsetList = {Vec2i({1, 0}),  Vec2i({1, 1}),  Vec2i({0, 1}),
-                                                 Vec2i({-1, 1}), Vec2i({-1, 0}), Vec2i({-1, -1}),
-                                                 Vec2i({0, -1}), Vec2i({1, -1})};
+                                  const std::pair<Vec2f, float> &P) -> Splat {
+      static const std::array<Vec2i, 8> offsetList = {
+          Vec2i({1, 0}),  Vec2i({1, 1}),   Vec2i({0, 1}),  Vec2i({-1, 1}),
+          Vec2i({-1, 0}), Vec2i({-1, -1}), Vec2i({0, -1}), Vec2i({1, -1})};
 
       int w_last = static_cast<int>(m_sourceReprojection[viewId].width()) - 1;
       int h_last = static_cast<int>(m_sourceReprojection[viewId].height()) - 1;
 
-      array<pair<Vec2f, float>, 8> Q;
-      array<float, 8> W{};
+      std::array<std::pair<Vec2f, float>, 8> Q;
+      std::array<float, 8> W{};
       float WT{0.F};
 
       // Center
@@ -455,8 +457,8 @@ private:
       auto OP = m_sourceRayDirection[viewId](y, x);
 
       for (size_t i = 0U; i < offsetList.size(); i++) {
-        int xo = clamp(x + offsetList[i].x(), 0, w_last);
-        int yo = clamp(y + offsetList[i].y(), 0, h_last);
+        int xo = std::clamp(x + offsetList[i].x(), 0, w_last);
+        int yo = std::clamp(y + offsetList[i].y(), 0, h_last);
 
         Q[i] = m_sourceReprojection[viewId](yo, xo);
 
@@ -495,7 +497,7 @@ private:
         float delta = (b * b - 4.F * c);
 
         if ((0.F < c) && (0. < delta)) {
-          float sqrt_delta = sqrt(delta);
+          float sqrt_delta = std::sqrt(delta);
           float l1 = 0.5F * (b + sqrt_delta);
           float l2 = 0.5F * (b - sqrt_delta);
 
@@ -511,8 +513,8 @@ private:
               e2 = Vec2f{-e1.y(), e1.x()};
             }
 
-            float r1 = sqrt(2.F * l1 / WT);
-            float r2 = sqrt(2.F * l2 / WT);
+            float r1 = std::sqrt(2.F * l1 / WT);
+            float r2 = std::sqrt(2.F * l2 / WT);
 
             if (r1 < m_stretchFactor) {
               return {P.first, r1 * e1, r2 * e2, 2.F * r1};
@@ -535,14 +537,14 @@ private:
       float radius = 0.5F * splat.pointSize;
 
       // Bounding box
-      float xLow = max(0.F, splat.center.x() - radius);
+      float xLow = std::max(0.F, splat.center.x() - radius);
       float xHigh = splat.center.x() + radius;
-      float yLow = max(0.F, splat.center.y() - radius);
+      float yLow = std::max(0.F, splat.center.y() - radius);
       float yHigh = splat.center.y() + radius;
-      int x0 = max(0, ifloor(xLow));
-      int x1 = min(w_last, iceil(xHigh));
-      int y0 = max(0, ifloor(yLow));
-      int y1 = min(h_last, iceil(yHigh));
+      int x0 = std::max(0, ifloor(xLow));
+      int x1 = std::min(w_last, iceil(xHigh));
+      int y0 = std::max(0, ifloor(yLow));
+      int y1 = std::min(h_last, iceil(yHigh));
 
       // Looping on all pixels within the bounding box
       for (int y = y0; y <= y1; y++) {
@@ -556,8 +558,8 @@ private:
             if (0.F < R1) {
               Vec2f dp{dx, dy};
 
-              float f1 = abs(dot(splat.firstAxis, dp));
-              float f2 = abs(dot(splat.secondAxis, dp));
+              float f1 = std::abs(dot(splat.firstAxis, dp));
+              float f2 = std::abs(dot(splat.secondAxis, dp));
 
               if ((f1 <= R1) && (f2 <= R2)) {
                 m_viewportUnprojection[viewId](y, x) = P;
@@ -580,12 +582,12 @@ private:
         m_viewportUnprojection[viewId].resize(
             targetHelper.getViewParams().ci.projectionPlaneSize().y(),
             targetHelper.getViewParams().ci.projectionPlaneSize().x());
-        fill(m_viewportUnprojection[viewId].begin(), m_viewportUnprojection[viewId].end(),
-             Vec3f{NaN, NaN, NaN});
+        std::fill(m_viewportUnprojection[viewId].begin(), m_viewportUnprojection[viewId].end(),
+                  Vec3f{NaN, NaN, NaN});
 
         m_viewportDepth[viewId].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                                        targetHelper.getViewParams().ci.projectionPlaneSize().x());
-        fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), NaN);
+        std::fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), NaN);
       }
     }
 
@@ -648,8 +650,8 @@ private:
     for (size_t viewId = 0; viewId < m_viewportWeight.size(); viewId++) {
       m_viewportWeight[viewId].resize(m_viewportDepth[viewId].height(),
                                       m_viewportDepth[viewId].width());
-      fill(m_viewportWeight[viewId].begin(), m_viewportWeight[viewId].end(),
-           hasPruningRelation ? 0.F : m_cameraWeight[viewId]);
+      std::fill(m_viewportWeight[viewId].begin(), m_viewportWeight[viewId].end(),
+                hasPruningRelation ? 0.F : m_cameraWeight[viewId]);
     }
 
     if (hasPruningRelation) {
@@ -678,7 +680,7 @@ private:
                 auto zPruned = m_viewportDepth[prunedNodeId](y, x);
 
                 // Retrieve candidate
-                queue<NodeId> nodeQueue;
+                std::queue<NodeId> nodeQueue;
 
                 for (const auto &linkToParent : pruningGraph.getNeighbourhood(prunedNodeId)) {
                   nodeQueue.push(linkToParent.node());
@@ -687,7 +689,7 @@ private:
                 int w_last = static_cast<int>(m_sourceDepth[prunedNodeId].width()) - 1;
                 int h_last = static_cast<int>(m_sourceDepth[prunedNodeId].height()) - 1;
 
-                vector<pair<NodeId, float>> candidateList;
+                std::vector<std::pair<NodeId, float>> candidateList;
 
                 while (!nodeQueue.empty()) {
                   auto unprunedNodeId = nodeQueue.front();
@@ -709,8 +711,8 @@ private:
                   nodeQueue.pop();
                 }
 
-                sort(candidateList.begin(), candidateList.end(),
-                     [](const auto &p1, const auto &p2) { return (p1.second < p2.second); });
+                std::sort(candidateList.begin(), candidateList.end(),
+                          [](const auto &p1, const auto &p2) { return (p1.second < p2.second); });
 
                 // Find best
                 const auto &prunedHelper = sourceHelperList[prunedNodeId];
@@ -720,7 +722,7 @@ private:
                   auto p = prunedHelper.doProjection(m_viewportUnprojection[candidate.first](y, x));
 
                   if (isValidDepth(p.second) && prunedHelper.isInsideViewport(p.first)) {
-                    static const array<Vec2i, 9> offsetList = {
+                    static const std::array<Vec2i, 9> offsetList = {
                         Vec2i({-1, -1}), Vec2i({0, -1}), Vec2i({1, -1}),
                         Vec2i({-1, 0}),  Vec2i({0, 0}),  Vec2i({1, 0}),
                         Vec2i({-1, 1}),  Vec2i({0, 1}),  Vec2i({1, 1})};
@@ -729,8 +731,8 @@ private:
                     auto Y = ifloor(p.first.y());
 
                     for (const auto &offset : offsetList) {
-                      int xo = clamp(X + offset.x(), 0, w_last);
-                      int yo = clamp(Y + offset.y(), 0, h_last);
+                      int xo = std::clamp(X + offset.x(), 0, w_last);
+                      int yo = std::clamp(Y + offset.y(), 0, h_last);
 
                       float zOnPruned = m_sourceDepth[prunedNodeId](yo, xo);
 
@@ -758,7 +760,7 @@ private:
 
     parallel_for(
         m_viewportVisibility.width(), m_viewportVisibility.height(), [&](size_t y, size_t x) {
-          vector<Vec2f> stack;
+          std::vector<Vec2f> stack;
 
           for (size_t viewId = 0; viewId < m_viewportDepth.size(); viewId++) {
             if (m_cameraVisibility[viewId]) {
@@ -789,15 +791,15 @@ private:
         });
   }
   void filterVisibilityMap() {
-    static const array<Vec2i, 9> offsetList = {Vec2i({-1, -1}), Vec2i({0, -1}), Vec2i({1, -1}),
-                                               Vec2i({-1, 0}),  Vec2i({0, 0}),  Vec2i({1, 0}),
-                                               Vec2i({-1, 1}),  Vec2i({0, 1}),  Vec2i({1, 1})};
+    static const std::array<Vec2i, 9> offsetList = {Vec2i({-1, -1}), Vec2i({0, -1}), Vec2i({1, -1}),
+                                                    Vec2i({-1, 0}),  Vec2i({0, 0}),  Vec2i({1, 0}),
+                                                    Vec2i({-1, 1}),  Vec2i({0, 1}),  Vec2i({1, 1})};
 
     static Mat<float> flipVisibility;
 
-    reference_wrapper<Mat<float>> firstWrapper =
+    std::reference_wrapper<Mat<float>> firstWrapper =
         ((m_filteringPass % 2) != 0) ? flipVisibility : m_viewportVisibility;
-    reference_wrapper<Mat<float>> secondWrapper =
+    std::reference_wrapper<Mat<float>> secondWrapper =
         ((m_filteringPass % 2) != 0) ? m_viewportVisibility : flipVisibility;
 
     size_t w = m_viewportVisibility.width();
@@ -809,7 +811,7 @@ private:
     flipVisibility.resize(m_viewportVisibility.sizes());
 
     if ((m_filteringPass % 2) != 0) {
-      copy(m_viewportVisibility.begin(), m_viewportVisibility.end(), flipVisibility.begin());
+      std::copy(m_viewportVisibility.begin(), m_viewportVisibility.end(), flipVisibility.begin());
     }
 
     for (int iter = 0U; iter < m_filteringPass; iter++) {
@@ -817,18 +819,18 @@ private:
       Mat<float> &secondDepth = secondWrapper.get();
 
       parallel_for(w, h, [&](size_t y, size_t x) {
-        array<float, 9> depthBuffer{};
+        std::array<float, 9> depthBuffer{};
 
         for (size_t i = 0; i < depthBuffer.size(); i++) {
-          int xo = clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
-          int yo = clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
+          int xo = std::clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
+          int yo = std::clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
 
           float z = firstDepth(yo, xo);
 
           depthBuffer[i] = isValidDepth(z) ? z : 0.F;
         }
 
-        sort(depthBuffer.begin(), depthBuffer.end());
+        std::sort(depthBuffer.begin(), depthBuffer.end());
 
         for (size_t i = 4; i < 6; i++) {
           if (0.F < depthBuffer[i]) {
@@ -845,10 +847,10 @@ private:
   }
   void computeShadingMap(const ProjectionHelperList &sourceHelperList,
                          const ProjectionHelper &targetHelper) {
-    auto isProneToGhosting = [&](unsigned sourceId, const pair<Vec2f, float> &p,
+    auto isProneToGhosting = [&](unsigned sourceId, const std::pair<Vec2f, float> &p,
                                  const Vec3f &OP) -> bool {
-      static const array<Vec2i, 4> offsetList = {Vec2i({1, 0}), Vec2i({-1, 0}), Vec2i({0, 1}),
-                                                 Vec2i({0, -1})};
+      static const std::array<Vec2i, 4> offsetList = {Vec2i({1, 0}), Vec2i({-1, 0}), Vec2i({0, 1}),
+                                                      Vec2i({0, -1})};
 
       int w_last = static_cast<int>(m_sourceDepth[sourceId].width()) - 1;
       int h_last = static_cast<int>(m_sourceDepth[sourceId].height()) - 1;
@@ -857,15 +859,15 @@ private:
       int y = ifloor(p.first.y());
 
       for (const auto &offset : offsetList) {
-        int xo = clamp(x + offset.x(), 0, w_last);
-        int yo = clamp(y + offset.y(), 0, h_last);
+        int xo = std::clamp(x + offset.x(), 0, w_last);
+        int yo = std::clamp(y + offset.y(), 0, h_last);
 
         float z = m_sourceDepth[sourceId](yo, xo);
 
         if (sourceHelperList[sourceId].isValidDepth(z)) {
           auto OQ = m_sourceRayDirection[sourceId](yo, xo);
 
-          if (2.F * m_cameraDistortion[sourceId] < abs(acos(dot(OP, OQ)))) {
+          if (2.F * m_cameraDistortion[sourceId] < std::abs(acos(dot(OP, OQ)))) {
             return true;
           }
         } else {
@@ -876,11 +878,11 @@ private:
       return false;
     };
 
-    static const array<Vec2i, 9> offsetList = {Vec2i({0, 0}),   Vec2i({1, 0}),  Vec2i({1, 1}),
-                                               Vec2i({0, -1}),  Vec2i({1, -1}), Vec2i({0, 1}),
-                                               Vec2i({-1, -1}), Vec2i({-1, 0}), Vec2i({-1, 1})};
+    static const std::array<Vec2i, 9> offsetList = {
+        Vec2i({0, 0}), Vec2i({1, 0}),   Vec2i({1, 1}),  Vec2i({0, -1}), Vec2i({1, -1}),
+        Vec2i({0, 1}), Vec2i({-1, -1}), Vec2i({-1, 0}), Vec2i({-1, 1})};
 
-    static const array<float, 9> d2 = {0.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F};
+    static const std::array<float, 9> d2 = {0.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F, 1.F, 2.F};
 
     int w_last = static_cast<int>(m_viewportVisibility.width()) - 1;
     int h_last = static_cast<int>(m_viewportVisibility.height()) - 1;
@@ -893,11 +895,11 @@ private:
           Vec3f oColor{};
           float oWeight = 0.F;
 
-          vector<Vec2f> stack;
+          std::vector<Vec2f> stack;
 
           for (size_t i = 0U; i < offsetList.size(); i++) {
-            int xo = clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
-            int yo = clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
+            int xo = std::clamp(static_cast<int>(x) + offsetList[i].x(), 0, w_last);
+            int yo = std::clamp(static_cast<int>(y) + offsetList[i].y(), 0, h_last);
 
             float z = m_viewportVisibility(yo, xo);
 
@@ -930,7 +932,7 @@ private:
                     auto cRef = textureGather(m_sourceColor[sourceId], pn2.first);
 
                     Vec2f q = {pn2.first.x() - 0.5F, pn2.first.y() - 0.5F};
-                    Vec2f f = {q.x() - floor(q.x()), q.y() - floor(q.y())};
+                    Vec2f f = {q.x() - std::floor(q.x()), q.y() - std::floor(q.y())};
                     Vec2f fb = {1.F - f.x(), 1.F - f.y()};
 
                     Vec4f wColor{fb.x() * f.y(), f.x() * f.y(), f.x() * fb.y(), fb.x() * fb.y()};

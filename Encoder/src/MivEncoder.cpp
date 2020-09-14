@@ -37,7 +37,6 @@
 
 #include <sstream>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Encoder {
@@ -202,9 +201,9 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
   assert(!vpl.empty());
   mvpl.mvp_num_views_minus1(uint16_t(vpl.size() - 1));
   mvpl.mvp_intrinsic_params_equal_flag(
-      all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.ci == vpl.front().ci; }));
+      std::all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.ci == vpl.front().ci; }));
   mvpl.mvp_depth_quantization_params_equal_flag(
-      all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.dq == vpl.front().dq; }));
+      std::all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.dq == vpl.front().dq; }));
   mvpl.mvp_pruning_graph_params_present_flag(vpl.front().pp.has_value());
 
   for (uint16_t i = 0; i <= mvpl.mvp_num_views_minus1(); ++i) {
@@ -240,7 +239,7 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
 
 auto MivEncoder::mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics {
   auto mvpue = MivViewParamsUpdateExtrinsics{};
-  auto viewIdx = vector<uint16_t>{};
+  auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
       viewIdx.push_back(uint16_t(v));
@@ -257,7 +256,7 @@ auto MivEncoder::mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExt
 
 auto MivEncoder::mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics {
   auto mvpui = MivViewParamsUpdateIntrinsics{};
-  auto viewIdx = vector<uint16_t>{};
+  auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ci != m_params.viewParamsList[v].ci) {
       viewIdx.push_back(uint16_t(v));
@@ -275,7 +274,7 @@ auto MivEncoder::mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateInt
 auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
     -> MivViewParamsUpdateDepthQuantization {
   auto mvpudq = MivViewParamsUpdateDepthQuantization{};
-  auto viewIdx = vector<uint16_t>{};
+  auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].dq != m_params.viewParamsList[v].dq) {
       viewIdx.push_back(uint16_t(v));
@@ -302,11 +301,11 @@ auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
     VERIFY_MIVBITSTREAM(m_log2MaxFrmOrderCntLsbMinus4 ==
                         aau.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4());
     writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_params.vps);
-    writeNalUnit(asb, nuhAfps, aau.afps, vector<AtlasSequenceParameterSetRBSP>{aau.asps});
+    writeNalUnit(asb, nuhAfps, aau.afps, std::vector<AtlasSequenceParameterSetRBSP>{aau.asps});
   }
 
-  const auto aspsV = vector<AtlasSequenceParameterSetRBSP>{aau.asps};
-  const auto afpsV = vector<AtlasFrameParameterSetRBSP>{aau.afps};
+  const auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>{aau.asps};
+  const auto afpsV = std::vector<AtlasFrameParameterSetRBSP>{aau.afps};
   writeNalUnit(asb, m_irap ? nuhIdr : nuhCra, atlasTileGroupLayer(vai), vuh, m_params.vps, aspsV,
                afpsV);
 
@@ -376,9 +375,9 @@ void MivEncoder::writeV3cUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
   if (vai != 0) {
     vuh.vuh_atlas_id(vai);
   }
-  const auto vu = V3cUnit{vuh, forward<Payload>(payload)};
+  const auto vu = V3cUnit{vuh, std::forward<Payload>(payload)};
 
-  ostringstream substream;
+  std::ostringstream substream;
   vu.encodeTo(substream);
 
   const auto ssvu = SampleStreamV3cUnit{substream.str()};
@@ -388,8 +387,8 @@ void MivEncoder::writeV3cUnit(VuhUnitType vut, uint8_t vai, Payload &&payload) {
 template <typename Payload, typename... Args>
 void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload,
                               Args &&... args) {
-  ostringstream substream1;
-  payload.encodeTo(substream1, forward<Args>(args)...);
+  std::ostringstream substream1;
+  payload.encodeTo(substream1, std::forward<Args>(args)...);
   asb.nal_units().emplace_back(nuh, substream1.str());
 }
 } // namespace TMIV::Encoder

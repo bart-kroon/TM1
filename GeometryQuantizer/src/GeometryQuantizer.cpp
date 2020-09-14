@@ -38,7 +38,6 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -46,12 +45,13 @@ namespace TMIV::GeometryQuantizer {
 GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
     : m_depthOccThresholdIfSet{depthOccThresholdIfSet} {
   if (depthOccThresholdIfSet < 1) {
-    throw runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
-                        "needs to use occupancy. The value 0 is not allowed.");
+    throw std::runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
+                             "needs to use occupancy. The value 0 is not allowed.");
   }
   if (depthOccThresholdIfSet >= 500) {
-    throw runtime_error("The GeometryQuantizer component takes a margin equal to the threshold, so "
-                        "setting the threshold this high will make it impossible to encode depth.");
+    throw std::runtime_error(
+        "The GeometryQuantizer component takes a margin equal to the threshold, so "
+        "setting the threshold this high will make it impossible to encode depth.");
   }
 }
 
@@ -60,7 +60,7 @@ GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeCo
 
 auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   m_outParams.vme().vme_embedded_occupancy_flag(true);
@@ -69,7 +69,7 @@ auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
 
 auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   for (auto &x : m_outParams.viewParamsList) {

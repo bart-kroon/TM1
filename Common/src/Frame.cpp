@@ -37,13 +37,12 @@
 
 #include <cassert>
 
-using namespace std;
-
 namespace TMIV::Common {
 namespace {
 template <class TO, class FROM> auto yuv420p_impl(const Frame<FROM> &frame) -> Frame<TO> {
   Frame<TO> result(frame.getWidth(), frame.getHeight());
-  copy(begin(frame.getPlane(0)), end(frame.getPlane(0)), begin(result.getPlane(0)));
+  std::copy(std::begin(frame.getPlane(0)), std::end(frame.getPlane(0)),
+            std::begin(result.getPlane(0)));
 
   assert(frame.getWidth() % 2 == 0 && frame.getHeight() % 2 == 0);
   const int rows = result.getHeight() / 2;
@@ -123,7 +122,7 @@ auto expandTexture(const Frame<YUV444P10> &inYuv) -> Mat<Vec3f> {
 
 auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float> {
   auto out = Mat<float>(inYuv.getPlane(0).sizes());
-  transform(inYuv.getPlane(0).cbegin(), inYuv.getPlane(0).cend(), out.begin(), [](auto value) {
+  std::transform(inYuv.getPlane(0).cbegin(), inYuv.getPlane(0).cend(), out.begin(), [](auto value) {
     constexpr auto bitDepth = 10U;
     return expandValue<bitDepth>(value);
   });

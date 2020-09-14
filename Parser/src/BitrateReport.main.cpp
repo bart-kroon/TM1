@@ -44,7 +44,6 @@
 #include <variant>
 #include <vector>
 
-using namespace std;
 using namespace TMIV::Common;
 
 class StatisticalVariable {
@@ -57,7 +56,7 @@ public:
 
   friend auto operator<<(std::ostream &stream, const StatisticalVariable &x) -> std::ostream & {
     auto average =
-        x.m_count > 0 ? double(x.m_sum) / x.m_count : numeric_limits<double>::quiet_NaN();
+        x.m_count > 0 ? double(x.m_sum) / x.m_count : std::numeric_limits<double>::quiet_NaN();
     return stream << x.m_count << ',' << x.m_sum << ',' << average;
   }
 

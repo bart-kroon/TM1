@@ -37,7 +37,6 @@
 
 #include <cmath>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -124,8 +123,8 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
 
       if (use1) {
         if (use2) {
-          auto dist1 = sqrt(static_cast<float>((h - h1) * (h - h1) + (w - w1) * (w - w1)));
-          auto dist2 = sqrt(static_cast<float>((h - h2) * (h - h2) + (w - w2) * (w - w2)));
+          auto dist1 = std::sqrt(static_cast<float>((h - h1) * (h - h1) + (w - w1) * (w - w1)));
+          auto dist2 = std::sqrt(static_cast<float>((h - h2) * (h - h2) + (w - w2) * (w - w2)));
           float sumdist = dist1 + dist2;
           float weight1 = dist2 / sumdist;
           float weight2 = dist1 / sumdist;
@@ -228,14 +227,14 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
       auto oldPP = h * width + w;
 
       auto oldW = w - width2;
-      auto tmpH = sqrt(height * h - h * h);
+      auto tmpH = std::sqrt(height * h - h * h);
       if (tmpH / height2 > fullOmniRangePercentage) {
         tmpH = height2 * fullOmniRangePercentage;
       }
       auto newW = oldW * tmpH / height2;
       newW += width2;
 
-      auto tmpW = sqrt(width * newW - newW * newW);
+      auto tmpW = std::sqrt(width * newW - newW * newW);
       auto newH = oldH * width2 / tmpW;
       newH += height2;
 
@@ -393,13 +392,14 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 }
 
 template <typename YUVD> void inplaceInpaint_impl(YUVD &yuvd, const ViewParams &meta) {
-  static_assert(is_same_v<YUVD, Texture444Depth10Frame> || is_same_v<YUVD, Texture444Depth16Frame>);
+  static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
+                std::is_same_v<YUVD, Texture444Depth16Frame>);
 
   double DepthBlendingThreshold = depthBlendingThreshold8;
-  if (is_same_v<YUVD, Texture444Depth10Frame>) {
+  if (std::is_same_v<YUVD, Texture444Depth10Frame>) {
     DepthBlendingThreshold = depthBlendingThreshold10;
   }
-  if (is_same_v<YUVD, Texture444Depth16Frame>) {
+  if (std::is_same_v<YUVD, Texture444Depth16Frame>) {
     DepthBlendingThreshold = depthBlendingThreshold16;
   }
 

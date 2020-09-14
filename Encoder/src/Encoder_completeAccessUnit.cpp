@@ -35,7 +35,6 @@
 
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -112,13 +111,13 @@ auto Encoder::completeAccessUnit() -> const EncoderParams & {
 }
 
 void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {
-  const auto lumaSamplesPerFrame = accumulate(
+  const auto lumaSamplesPerFrame = std::accumulate(
       aggregatedMask.begin(), aggregatedMask.end(), size_t{}, [](size_t sum, const auto &mask) {
-        return sum + 2 * count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
-                                  [](auto x) { return x > 0; });
+        return sum + 2 * std::count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
+                                       [](auto x) { return x > 0; });
       });
-  cout << "Aggregated luma samples per frame is " << (1e-6 * lumaSamplesPerFrame) << "M\n";
-  m_maxLumaSamplesPerFrame = max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
+  std::cout << "Aggregated luma samples per frame is " << (1e-6 * lumaSamplesPerFrame) << "M\n";
+  m_maxLumaSamplesPerFrame = std::max(m_maxLumaSamplesPerFrame, lumaSamplesPerFrame);
 }
 
 void Encoder::constructVideoFrames() {
@@ -154,7 +153,7 @@ void Encoder::constructVideoFrames() {
       if (m_params.vps.vps_occupancy_video_present_flag(i)) {
         frame.occupancy.fillZero();
       }
-      atlasList.push_back(move(frame));
+      atlasList.push_back(std::move(frame));
     }
 
     for (const auto &patch : m_params.patchParamsList) {
@@ -168,7 +167,7 @@ void Encoder::constructVideoFrames() {
         writePatchInAtlas(patch, view, atlasList, frame);
       }
     }
-    m_videoFrameBuffer.push_back(move(atlasList));
+    m_videoFrameBuffer.push_back(std::move(atlasList));
     frame++;
   }
 }

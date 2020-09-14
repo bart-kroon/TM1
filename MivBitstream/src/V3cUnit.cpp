@@ -38,12 +38,11 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
 using TMIV::Common::overload;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const VuhUnitType x) -> ostream & {
+auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream & {
   switch (x) {
   case VuhUnitType::V3C_VPS:
     return stream << "V3C_VPS";
@@ -144,7 +143,7 @@ auto V3cUnitHeader::vuh_auxiliary_video_flag(const bool value) noexcept -> V3cUn
   return *this;
 }
 
-auto operator<<(ostream &stream, const V3cUnitHeader &x) -> ostream & {
+auto operator<<(std::ostream &stream, const V3cUnitHeader &x) -> std::ostream & {
   stream << "vuh_unit_type=" << x.vuh_unit_type();
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD ||
@@ -159,10 +158,10 @@ auto operator<<(ostream &stream, const V3cUnitHeader &x) -> ostream & {
     stream << "\nvuh_attribute_index=" << int(x.vuh_attribute_index())
            << "\nvuh_attribute_partition_index=" << int(x.vuh_attribute_partition_index())
            << "\nvuh_map_index=" << int(x.vuh_map_index())
-           << "\nvuh_auxiliary_video_flag=" << boolalpha << x.vuh_auxiliary_video_flag();
+           << "\nvuh_auxiliary_video_flag=" << std::boolalpha << x.vuh_auxiliary_video_flag();
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_GVD) {
     stream << "\nvuh_map_index=" << int(x.vuh_map_index())
-           << "\nvuh_auxiliary_video_flag=" << boolalpha << x.vuh_auxiliary_video_flag();
+           << "\nvuh_auxiliary_video_flag=" << std::boolalpha << x.vuh_auxiliary_video_flag();
   }
   return stream << '\n';
 }
@@ -204,7 +203,7 @@ auto V3cUnitHeader::operator!=(const V3cUnitHeader &other) const noexcept -> boo
   return !operator==(other);
 }
 
-auto V3cUnitHeader::decodeFrom(istream &stream) -> V3cUnitHeader {
+auto V3cUnitHeader::decodeFrom(std::istream &stream) -> V3cUnitHeader {
   InputBitstream bitstream{stream};
   auto x = V3cUnitHeader{bitstream.readBits<VuhUnitType>(5)};
 
@@ -232,7 +231,7 @@ auto V3cUnitHeader::decodeFrom(istream &stream) -> V3cUnitHeader {
   return x;
 }
 
-void V3cUnitHeader::encodeTo(ostream &stream) const {
+void V3cUnitHeader::encodeTo(std::ostream &stream) const {
   OutputBitstream bitstream{stream};
   bitstream.writeBits(vuh_unit_type(), 5);
 
@@ -258,22 +257,22 @@ void V3cUnitHeader::encodeTo(ostream &stream) const {
 }
 
 auto V3cPayload::v3c_parameter_set() const noexcept -> const V3cParameterSet & {
-  VERIFY_V3CBITSTREAM(holds_alternative<V3cParameterSet>(m_payload));
-  return *get_if<V3cParameterSet>(&m_payload);
+  VERIFY_V3CBITSTREAM(std::holds_alternative<V3cParameterSet>(m_payload));
+  return *std::get_if<V3cParameterSet>(&m_payload);
 }
 
 auto V3cPayload::atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream & {
-  VERIFY_V3CBITSTREAM(holds_alternative<AtlasSubBitstream>(m_payload));
-  return *get_if<AtlasSubBitstream>(&m_payload);
+  VERIFY_V3CBITSTREAM(std::holds_alternative<AtlasSubBitstream>(m_payload));
+  return *std::get_if<AtlasSubBitstream>(&m_payload);
 }
 
 auto V3cPayload::video_sub_bitstream() const noexcept -> const VideoSubBitstream & {
-  VERIFY_V3CBITSTREAM(holds_alternative<VideoSubBitstream>(m_payload));
-  return *get_if<VideoSubBitstream>(&m_payload);
+  VERIFY_V3CBITSTREAM(std::holds_alternative<VideoSubBitstream>(m_payload));
+  return *std::get_if<VideoSubBitstream>(&m_payload);
 }
 
-auto operator<<(ostream &stream, const V3cPayload &x) -> ostream & {
-  visit(overload([&](const monostate & /* unused */) { stream << "[unknown]\n"; },
+auto operator<<(std::ostream &stream, const V3cPayload &x) -> std::ostream & {
+  visit(overload([&](const std::monostate & /* unused */) { stream << "[unknown]\n"; },
                  [&](const auto &payload) { stream << payload; }),
         x.payload());
   return stream;
@@ -287,7 +286,7 @@ auto V3cPayload::operator!=(const V3cPayload &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto V3cPayload::decodeFrom(istream &stream, const V3cUnitHeader &vuh) -> V3cPayload {
+auto V3cPayload::decodeFrom(std::istream &stream, const V3cUnitHeader &vuh) -> V3cPayload {
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS) {
     return V3cPayload{V3cParameterSet::decodeFrom(stream)};
   }
@@ -298,16 +297,16 @@ auto V3cPayload::decodeFrom(istream &stream, const V3cUnitHeader &vuh) -> V3cPay
       vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
     return V3cPayload{VideoSubBitstream::decodeFrom(stream)};
   }
-  return V3cPayload{monostate{}};
+  return V3cPayload{std::monostate{}};
 }
 
-void V3cPayload::encodeTo(ostream &stream, const V3cUnitHeader & /* vuh */) const {
-  visit(overload([&](const monostate & /* unused */) { V3CBITSTREAM_ERROR("No payload"); },
+void V3cPayload::encodeTo(std::ostream &stream, const V3cUnitHeader & /* vuh */) const {
+  visit(overload([&](const std::monostate & /* unused */) { V3CBITSTREAM_ERROR("No payload"); },
                  [&](const auto &payload) { payload.encodeTo(stream); }),
         payload());
 }
 
-auto operator<<(ostream &stream, const V3cUnit &x) -> ostream & {
+auto operator<<(std::ostream &stream, const V3cUnit &x) -> std::ostream & {
   return stream << x.v3c_unit_header() << x.v3c_payload();
 }
 
@@ -317,15 +316,15 @@ auto V3cUnit::operator==(const V3cUnit &other) const noexcept -> bool {
 
 auto V3cUnit::operator!=(const V3cUnit &other) const noexcept -> bool { return !operator==(other); }
 
-auto V3cUnit::decodeFrom(istream &stream, size_t numBytesInV3CUnit) -> V3cUnit {
-  const auto endPosition = stream.tellg() + streamoff(numBytesInV3CUnit);
+auto V3cUnit::decodeFrom(std::istream &stream, size_t numBytesInV3CUnit) -> V3cUnit {
+  const auto endPosition = stream.tellg() + std::streamoff(numBytesInV3CUnit);
   const auto v3c_unit_header = V3cUnitHeader::decodeFrom(stream);
   const auto v3c_payload = V3cPayload::decodeFrom(stream, v3c_unit_header);
   VERIFY_V3CBITSTREAM(stream.tellg() <= endPosition);
   return V3cUnit{v3c_unit_header, v3c_payload};
 }
 
-auto V3cUnit::encodeTo(ostream &stream) const -> size_t {
+auto V3cUnit::encodeTo(std::ostream &stream) const -> size_t {
   const auto position = stream.tellp();
   v3c_unit_header().encodeTo(stream);
   v3c_payload().encodeTo(stream, v3c_unit_header());

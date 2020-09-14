@@ -38,8 +38,6 @@
 #include <TMIV/Common/Half.h>
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
-
 namespace TMIV::MivBitstream {
 using Common::Half;
 using Common::Json;
@@ -69,10 +67,10 @@ static auto equalRotation(const QuatF &a, const QuatF &b) -> bool {
 }
 
 auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
-  stream << "Viewing space:" << endl;
+  stream << "Viewing space:" << std::endl;
   for (const auto &s : viewingSpace.elementaryShapes) {
     stream << (s.first == ElementaryShapeOperation::add ? "add " : "subtract ");
-    stream << '(' << s.second << ')' << endl;
+    stream << '(' << s.second << ')' << std::endl;
   }
   return stream;
 }
@@ -385,7 +383,7 @@ auto ViewingSpace::loadFromJson(const Json &node, const Common::Json &config) ->
     if (str == "intersect") {
       return ElementaryShapeOperation::intersect;
     }
-    throw runtime_error("Invalid elementary shape operation in the metadata JSON file");
+    throw std::runtime_error("Invalid elementary shape operation in the metadata JSON file");
   };
 
   ViewingSpace viewingSpace{};
@@ -441,7 +439,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
     if (str == "interpolate") {
       return PrimitiveShapeOperation::interpolate;
     };
-    throw runtime_error("Invalid primitive shape operation in the metadata JSON file");
+    throw std::runtime_error("Invalid primitive shape operation in the metadata JSON file");
   };
 
   ElementaryShape elementaryShape{};
@@ -459,7 +457,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
         }
       }
       if (idx == sourceCameraNames.size()) {
-        throw runtime_error("Invalid inferred view in the metadata JSON file");
+        throw std::runtime_error("Invalid inferred view in the metadata JSON file");
       }
       elementaryShape.inferringViews.push_back(idx);
     }
@@ -480,7 +478,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
   // check consistency
   if (inferredView &&
       (elementaryShape.primitives.size() != elementaryShape.inferringViews.size())) {
-    throw runtime_error(
+    throw std::runtime_error(
         "Incompatible number of inferring views and primitive shapes in the metadata JSON file");
   }
 

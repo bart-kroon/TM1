@@ -136,11 +136,11 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
 auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vector<std::size_t> {
   auto result = std::vector<std::size_t>{};
   result.reserve(params().viewParamsList.size());
-  transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(),
-            std::back_inserter(result), [](const MivBitstream::ViewParams &vp) {
-              return (vp.ci.ci_projection_plane_width_minus1() + 1) *
-                     (vp.ci.ci_projection_plane_height_minus1() + 1);
-            });
+  std::transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(),
+                 std::back_inserter(result), [](const MivBitstream::ViewParams &vp) {
+                   return (vp.ci.ci_projection_plane_width_minus1() + 1) *
+                          (vp.ci.ci_projection_plane_height_minus1() + 1);
+                 });
   std::sort(result.begin(), result.end(), std::greater<>());
   return result;
 }

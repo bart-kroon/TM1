@@ -34,15 +34,14 @@
 #include "MaxRectPiP.h"
 #include <TMIV/Common/LinAlg.h>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Packer {
 constexpr auto occupied = uint8_t(128);
 
 ////////////////////////////////////////////////////////////////////////////////
-auto MaxRectPiP::Rectangle::split(int w, int h) const -> vector<MaxRectPiP::Rectangle> {
-  vector<Rectangle> out;
+auto MaxRectPiP::Rectangle::split(int w, int h) const -> std::vector<MaxRectPiP::Rectangle> {
+  std::vector<Rectangle> out;
 
   if (h < height()) {
     out.emplace_back(m_x0, m_y0 + h, m_x1, m_y1);
@@ -55,8 +54,8 @@ auto MaxRectPiP::Rectangle::split(int w, int h) const -> vector<MaxRectPiP::Rect
   return out;
 }
 
-auto MaxRectPiP::Rectangle::remove(const Rectangle &r) const -> vector<MaxRectPiP::Rectangle> {
-  vector<Rectangle> out;
+auto MaxRectPiP::Rectangle::remove(const Rectangle &r) const -> std::vector<MaxRectPiP::Rectangle> {
+  std::vector<Rectangle> out;
 
   if (!((r.m_x1 <= m_x0) || (m_x1 <= r.m_x0) || (r.m_y1 <= m_y0) || (m_y1 <= r.m_y0))) {
     // Left part
@@ -93,9 +92,9 @@ auto MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const -> float {
   int dh = height() - h;
 
   if ((0 <= dw) && (0 <= dh)) {
-    return static_cast<float>((min)(dw, dh));
+    return static_cast<float>(std::min(dw, dh));
   }
-  { return numeric_limits<float>::max(); }
+  { return std::numeric_limits<float>::max(); }
 }
 
 //////////////////////////////////////////////////////////////
@@ -106,7 +105,7 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
   auto ha = unsigned(h / a);
 
   m_occupancyMap.resize({ha, wa});
-  fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t(0));
+  std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t(0));
 
   // Push full rectangle
   m_F.emplace_back(0, 0, w - 1, h - 1);
@@ -151,7 +150,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
   int YLast = (q0.y() + (isRotated ? w : h) - 1) / m_alignment + 1;
 
   for (auto Y = YMin; Y < YLast; Y++) {
-    fill(m_occupancyMap.row_begin(Y) + XMin, m_occupancyMap.row_begin(Y) + XLast, occupied);
+    std::fill(m_occupancyMap.row_begin(Y) + XMin, m_occupancyMap.row_begin(Y) + XLast, occupied);
   }
 
   // Step #1 (in projection)
@@ -226,7 +225,7 @@ auto MaxRectPiP::pushInFreeSpace(int w, int h, bool isBasicView, MaxRectPiP::Out
     -> bool {
   // Select best free rectangles that fit current patch (BSSF criterion)
   auto best_iter = m_F.cend();
-  float best_score = numeric_limits<float>::max();
+  float best_score = std::numeric_limits<float>::max();
   bool best_rotation = false;
 
   for (auto iter = m_F.cbegin(); iter != m_F.cend(); iter++) {
@@ -255,21 +254,21 @@ auto MaxRectPiP::pushInFreeSpace(int w, int h, bool isBasicView, MaxRectPiP::Out
               best_iter->bottom() + ((best_rotation ? w : h) - 1));
 
   // Split current free rectangle
-  vector<Rectangle> splitted = best_iter->split(B.width(), B.height());
-  move(splitted.begin(), splitted.end(), back_inserter(m_F));
+  std::vector<Rectangle> splitted = best_iter->split(B.width(), B.height());
+  std::move(splitted.begin(), splitted.end(), back_inserter(m_F));
 
   m_F.erase(best_iter);
 
   // Intersection with existing free rectangles
-  vector<list<Rectangle>::const_iterator> intersected;
+  std::vector<std::list<Rectangle>::const_iterator> intersected;
   auto last = m_F.cend();
 
   for (auto iter = m_F.cbegin(); iter != last; iter++) {
-    vector<Rectangle> intersecting = iter->remove(B);
+    std::vector<Rectangle> intersecting = iter->remove(B);
 
     if (!intersecting.empty()) {
       intersected.push_back(iter);
-      move(intersecting.begin(), intersecting.end(), back_inserter(m_F));
+      std::move(intersecting.begin(), intersecting.end(), back_inserter(m_F));
     }
   }
 
@@ -278,7 +277,7 @@ auto MaxRectPiP::pushInFreeSpace(int w, int h, bool isBasicView, MaxRectPiP::Out
   }
 
   // Degenerated free rectangles
-  vector<list<Rectangle>::const_iterator> degenerated;
+  std::vector<std::list<Rectangle>::const_iterator> degenerated;
 
   for (auto iter1 = m_F.cbegin(); iter1 != m_F.cend(); iter1++) {
     for (auto iter2 = m_F.cbegin(); iter2 != m_F.cend(); iter2++) {

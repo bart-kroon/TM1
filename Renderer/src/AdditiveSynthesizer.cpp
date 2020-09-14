@@ -44,7 +44,6 @@
 #include <future>
 #include <numeric>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -65,7 +64,7 @@ public:
 
   static auto affineTransformList(const ViewParamsList &viewParamsList,
                                   const CameraExtrinsics &target) {
-    vector<AffineTransform> result;
+    std::vector<AffineTransform> result;
     result.reserve(viewParamsList.size());
     for (const auto &source : viewParamsList) {
       result.emplace_back(source.ce, target);
@@ -82,7 +81,7 @@ public:
 
     const auto transformList = affineTransformList(frame.viewParamsList, viewportParams.ce);
 
-    vector<DepthTransform<10>> depthTransform;
+    std::vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());
     for (const auto &patch : atlas.patchParamsList) {
       depthTransform.emplace_back(frame.viewParamsList[patch.pduViewIdx()].dq, patch);
@@ -117,7 +116,7 @@ public:
         }
 
         const auto d = depthTransform[patchId].expandDepth(level);
-        assert(d > 0.F && isfinite(d));
+        assert(d > 0.F && std::isfinite(d));
 
         // Reproject and calculate ray angle
         const auto &R_t = transformList[patch.pduViewIdx()];
@@ -166,18 +165,18 @@ public:
   }
 
   static auto atlasColors(const Decoder::AtlasAccessUnit &atlas) {
-    vector<Vec3f> result;
+    std::vector<Vec3f> result;
     auto yuv444 = expandTexture(atlas.attrFrame);
-    result.reserve(distance(begin(result), end(result)));
-    copy(begin(yuv444), end(yuv444), back_inserter(result));
+    result.reserve(distance(std::begin(result), std::end(result)));
+    std::copy(std::begin(yuv444), std::end(yuv444), back_inserter(result));
     return result;
   }
 
   static auto unprojectAtlas(const Decoder::AccessUnit &frame,
                              const Decoder::AtlasAccessUnit &atlas,
                              const ViewParams &viewportParams) {
-    return tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
-                 tuple{atlasColors(atlas)}};
+    return std::tuple{atlasVertices(frame, atlas, viewportParams), atlasTriangles(atlas),
+                      std::tuple{atlasColors(atlas)}};
   }
 
   [[nodiscard]] auto rasterFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams,
@@ -188,15 +187,16 @@ public:
         viewportParams.ci.projectionPlaneSize()};
 
     // Pipeline mesh generation and rasterization
-    future<void> runner = async(launch::deferred, []() {});
+    std::future<void> runner = std::async(std::launch::deferred, []() {});
 
     for (const auto &atlas : frame.atlas) {
       // Generate a reprojected mesh
       auto [vertices, triangles, attributes] = unprojectAtlas(frame, atlas, viewportParams);
-      auto mesh = project(move(vertices), move(triangles), move(attributes), viewportParams.ci);
+      auto mesh = project(std::move(vertices), std::move(triangles), std::move(attributes),
+                          viewportParams.ci);
 
       // Compensate for resolution difference between source and target view
-      for (auto &triangle : get<1>(mesh)) {
+      for (auto &triangle : std::get<1>(mesh)) {
         triangle.area *= compensation;
       }
 
@@ -206,10 +206,11 @@ public:
       // Raster the mesh (asynchronously)
       runner = async(
           [&rasterizer](auto mesh) {
-            rasterizer.submit(move(get<0>(mesh)), move(get<2>(mesh)), move(get<1>(mesh)));
+            rasterizer.submit(std::move(std::get<0>(mesh)), std::move(std::get<2>(mesh)),
+                              std::move(std::get<1>(mesh)));
             rasterizer.run();
           },
-          move(mesh));
+          std::move(mesh));
     }
 
     // Synchronize with the rasterer
@@ -221,9 +222,12 @@ public:
   static auto xFoV(const ViewParams &viewParams) -> float {
     const auto &ci = viewParams.ci;
     return ci.dispatch(overload(
-        [&](Equirectangular /*unused*/) { return abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min()); },
+        [&](Equirectangular /*unused*/) {
+          return std::abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min());
+        },
         [&](Perspective /*unused*/) {
-          return 2.F * atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
+          return 2.F *
+                 std::atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
         },
         [&](Orthographic /*unused*/) { return halfCycle; }));
   }

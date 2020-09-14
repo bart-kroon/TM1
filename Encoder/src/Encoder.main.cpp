@@ -42,7 +42,6 @@
 
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::IO;
 using namespace TMIV::MivBitstream;
@@ -55,16 +54,16 @@ void registerComponents();
 
 class Application : public Common::Application {
 private:
-  unique_ptr<IEncoder> m_encoder;
-  unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
+  std::unique_ptr<IEncoder> m_encoder;
+  std::unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
   IvMetadataWriter m_metadataWriter;
   int m_numberOfFrames{};
   int m_intraPeriod{};
   SizeVector m_viewSizes;
 
 public:
-  explicit Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)}
+  explicit Application(std::vector<const char *> argv)
+      : Common::Application{"Encoder", std::move(argv)}
       , m_encoder{create<IEncoder>("Encoder")}
       , m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")}
       , m_metadataWriter{json()}
@@ -82,18 +81,18 @@ public:
     m_encoder->prepareSequence(sourceParams);
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
-      int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      int lastFrame = std::min(m_numberOfFrames, i + m_intraPeriod);
       encodeAccessUnit(i, lastFrame);
     }
 
     const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
-    cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
-    m_metadataWriter.reportSummary(cout, m_numberOfFrames);
+    std::cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
+    m_metadataWriter.reportSummary(std::cout, m_numberOfFrames);
   }
 
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
-    cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
+    std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
     m_metadataWriter.writeAccessUnit(m_encoder->completeAccessUnit());
@@ -122,8 +121,8 @@ auto main(int argc, char *argv[]) -> int {
     app.run();
     app.printTime();
     return 0;
-  } catch (runtime_error &e) {
-    cerr << e.what() << endl;
+  } catch (std::runtime_error &e) {
+    std::cerr << e.what() << std::endl;
     return 1;
   }
 }

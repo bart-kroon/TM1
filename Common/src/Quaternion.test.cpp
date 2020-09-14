@@ -40,14 +40,13 @@
 
 #include <cmath>
 
-using namespace std;
 using namespace TMIV::Common;
 
 TEST_CASE("Quanternion<T>", "[quaternion]") {
-  static_assert(is_same_v<QuatF, Quaternion<float>>);
-  static_assert(is_same_v<QuatD, Quaternion<double>>);
-  static_assert(is_same_v<QuatF, Vec4f>);
-  static_assert(is_same_v<QuatD, Vec4d>);
+  static_assert(std::is_same_v<QuatF, Quaternion<float>>);
+  static_assert(std::is_same_v<QuatD, Quaternion<double>>);
+  static_assert(std::is_same_v<QuatF, Vec4f>);
+  static_assert(std::is_same_v<QuatD, Vec4d>);
 
   const auto p = QuatF{1.F, -2.F, 3.F, -4.F};     // some quaternion
   const auto q = QuatF{1.F, 3.F, 4.F, 7.F};       // another quaternion
@@ -96,13 +95,13 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     // Below examples are derived from the equation at
     // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Euler_Angles_to_Quaternion_Conversion
 
-    REQUIRE(norm(euler2quat(Vec3d{2., 0., 0.}) - QuatD{0., 0., sin(1.), cos(1.)}) < eps);
-    REQUIRE(norm(euler2quat(Vec3d{0., 2., 0.}) - QuatD{0., sin(1.), 0., cos(1.)}) < eps);
-    REQUIRE(norm(euler2quat(Vec3d{0., 0., 2.}) - QuatD{sin(1.), 0., 0., cos(1.)}) < eps);
+    REQUIRE(norm(euler2quat(Vec3d{2., 0., 0.}) - QuatD{0., 0., std::sin(1.), std::cos(1.)}) < eps);
+    REQUIRE(norm(euler2quat(Vec3d{0., 2., 0.}) - QuatD{0., std::sin(1.), 0., std::cos(1.)}) < eps);
+    REQUIRE(norm(euler2quat(Vec3d{0., 0., 2.}) - QuatD{std::sin(1.), 0., 0., std::cos(1.)}) < eps);
     REQUIRE(norm(euler2quat(Vec3d{quarterCycle, quarterCycle, quarterCycle}) -
-                 QuatD{0., sqrt(0.5), 0., sqrt(0.5)}) < eps);
+                 QuatD{0., std::sqrt(0.5), 0., std::sqrt(0.5)}) < eps);
     REQUIRE(norm(euler2quat(Vec3d{quarterCycle, -quarterCycle, quarterCycle}) -
-                 QuatD{sqrt(0.5), 0., sqrt(0.5), 0.}) < eps);
+                 QuatD{std::sqrt(0.5), 0., std::sqrt(0.5), 0.}) < eps);
   }
 
   SECTION("Convert Euler angles to quaternion (2)") {

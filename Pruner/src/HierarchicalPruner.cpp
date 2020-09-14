@@ -51,7 +51,6 @@ using namespace TMIV::Common;
 using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
-using namespace std;
 
 namespace TMIV::Pruner {
 class HierarchicalPruner::Impl {
@@ -61,8 +60,8 @@ private:
                            Mat<float> reference_, Mat<float> referenceY_)
         : rasterizer{config, size}
         , index{index_}
-        , reference{move(reference_)}
-        , referenceY{move(referenceY_)} {}
+        , reference{std::move(reference_)}
+        , referenceY{std::move(referenceY_)} {}
 
     Rasterizer<Vec3f> rasterizer;
     const size_t index;
@@ -79,16 +78,16 @@ private:
   const int m_maxBasicViewsPerGraph{};
   const AccumulatingPixel<Vec3f> m_config;
   EncoderParams m_params;
-  vector<unique_ptr<IncrementalSynthesizer>> m_synthesizers;
-  vector<size_t> m_clusterIds;
+  std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;
+  std::vector<size_t> m_clusterIds;
   struct Cluster {
-    vector<size_t> basicViewId;
-    vector<size_t> additionalViewId;
-    vector<size_t> pruningOrder;
+    std::vector<size_t> basicViewId;
+    std::vector<size_t> additionalViewId;
+    std::vector<size_t> pruningOrder;
   };
-  vector<Cluster> m_clusters;
-  vector<Frame<YUV400P8>> m_masks;
-  vector<Frame<YUV400P8>> m_status;
+  std::vector<Cluster> m_clusters;
+  std::vector<Frame<YUV400P8>> m_masks;
+  std::vector<Frame<YUV400P8>> m_status;
 
 public:
   explicit Impl(const Json &nodeConfig)
@@ -103,9 +102,9 @@ public:
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
   void assignAdditionalViews(const Mat<float> &overlap, const ViewParamsList &viewParamsList,
-                             size_t numClusters, vector<size_t> &clusterIds) {
+                             size_t numClusters, std::vector<size_t> &clusterIds) {
     const auto N = viewParamsList.size();
-    auto numViewsPerCluster = vector<size_t>(numClusters, 0);
+    auto numViewsPerCluster = std::vector<size_t>(numClusters, 0);
     for (size_t i = 0; i < N; ++i) {
       if (viewParamsList[i].isBasicView) {
         const auto c = clusterIds[i];
@@ -143,7 +142,7 @@ public:
     }
   }
 
-  auto scoreClustering(const Mat<float> &overlap, const vector<size_t> &clusterIds) -> double {
+  auto scoreClustering(const Mat<float> &overlap, const std::vector<size_t> &clusterIds) -> double {
     auto score = 0.;
     const auto N = overlap.height();
 
@@ -158,8 +157,8 @@ public:
   }
 
   auto exhaustiveSearch(const Mat<float> &overlap, const ViewParamsList &viewParamsList)
-      -> vector<size_t> {
-    auto basicViewIds = vector<size_t>{};
+      -> std::vector<size_t> {
+    auto basicViewIds = std::vector<size_t>{};
     auto haveAdditionalViews = false;
     for (size_t i = 0; i < viewParamsList.size(); ++i) {
       if (viewParamsList[i].isBasicView) {
@@ -171,7 +170,7 @@ public:
 
     if (!haveAdditionalViews) {
       // NOTE(BK): Avoid exhaustive search on R17 SB
-      return vector<size_t>(viewParamsList.size(), 0);
+      return std::vector<size_t>(viewParamsList.size(), 0);
     }
 
     const size_t maxBasicViews = m_maxBasicViewsPerGraph;
@@ -183,16 +182,16 @@ public:
       numPermutations *= numClusters;
     }
 
-    auto clusterIds = vector<size_t>(viewParamsList.size());
-    auto numBasicViewsPerCluster = vector<size_t>(numClusters);
+    auto clusterIds = std::vector<size_t>(viewParamsList.size());
+    auto numBasicViewsPerCluster = std::vector<size_t>(numClusters);
 
     auto bestScore = 0.;
-    auto bestClusterIds = vector<size_t>{};
+    auto bestClusterIds = std::vector<size_t>{};
 
     for (size_t p = 0; p < numPermutations; ++p) {
       auto q = p;
-      fill(clusterIds.begin(), clusterIds.end(), numClusters);
-      fill(numBasicViewsPerCluster.begin(), numBasicViewsPerCluster.end(), 0);
+      std::fill(clusterIds.begin(), clusterIds.end(), numClusters);
+      std::fill(numBasicViewsPerCluster.begin(), numBasicViewsPerCluster.end(), 0);
       auto valid = true;
       for (auto i : basicViewIds) {
         const auto j = q % numClusters;
@@ -221,7 +220,7 @@ public:
   void clusterViews(const Mat<float> &overlap, const ViewParamsList &viewParamsList) {
     const auto clusterIds = exhaustiveSearch(overlap, viewParamsList);
 
-    m_clusters = vector<Cluster>(1 + *max_element(clusterIds.cbegin(), clusterIds.cend()));
+    m_clusters = std::vector<Cluster>(1 + *max_element(clusterIds.cbegin(), clusterIds.cend()));
     for (size_t i = 0; i < clusterIds.size(); ++i) {
       if (viewParamsList[i].isBasicView) {
         m_clusters[clusterIds[i]].basicViewId.push_back(i);
@@ -238,7 +237,7 @@ public:
       cluster.pruningOrder.clear();
 
       while (!pendingList.empty()) {
-        float worseOverlapping = numeric_limits<float>::max();
+        float worseOverlapping = std::numeric_limits<float>::max();
         size_t bestPendingNodeId = 0;
 
         for (auto pendingNodeId : pendingList) {
@@ -263,17 +262,17 @@ public:
   }
 
   void printClusters(const ViewParamsList &vpl) const {
-    cout << "Pruning graph:\n";
+    std::cout << "Pruning graph:\n";
     for (auto &cluster : m_clusters) {
-      cout << "  (";
+      std::cout << "  (";
       for (auto i : cluster.basicViewId) {
-        cout << ' ' << vpl[i].name;
+        std::cout << ' ' << vpl[i].name;
       }
-      cout << " )";
+      std::cout << " )";
       for (auto i : cluster.pruningOrder) {
-        cout << " <- " << vpl[i].name;
+        std::cout << " <- " << vpl[i].name;
       }
-      cout << '\n';
+      std::cout << '\n';
     }
   }
 
@@ -309,7 +308,7 @@ public:
       if (neighbourhood.empty()) {
         viewParamsList[camId].pp = PruningParents{};
       } else {
-        vector<uint16_t> parentIdList;
+        std::vector<uint16_t> parentIdList;
 
         parentIdList.reserve(neighbourhood.size());
 
@@ -317,7 +316,7 @@ public:
           parentIdList.emplace_back(static_cast<uint16_t>(link.node()));
         }
 
-        viewParamsList[camId].pp = PruningParents{move(parentIdList)};
+        viewParamsList[camId].pp = PruningParents{std::move(parentIdList)};
       }
     }
   }
@@ -329,7 +328,7 @@ public:
     prepareFrame(views, blockSize);
     pruneFrame(views);
 
-    return move(m_masks);
+    return std::move(m_masks);
   }
 
 private:
@@ -342,39 +341,41 @@ private:
   void createInitialMasks(const MVD16Frame &views, const int blockSize) {
     m_masks.clear();
     m_masks.reserve(views.size());
-    transform(cbegin(m_params.viewParamsList), cend(m_params.viewParamsList), cbegin(views),
-              back_inserter(m_masks),
-              [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto mask =
-                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
-                                    align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
+    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+                   std::cbegin(views), back_inserter(m_masks),
+                   [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
+                     auto mask =
+                         Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
+                                         align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
-                transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
-                          begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
-                            // #94: When there are invalid pixels in a basic view, these should be
-                            // excluded from the pruning mask
-                            return uint8_t(ot.occupant(x) ? 255 : 0);
-                          });
-                return mask;
-              });
+                     std::transform(std::cbegin(view.depth.getPlane(0)),
+                                    std::cend(view.depth.getPlane(0)), std::begin(mask.getPlane(0)),
+                                    [ot = OccupancyTransform{viewParams}](auto x) {
+                                      // #94: When there are invalid pixels in a basic view, these
+                                      // should be excluded from the pruning mask
+                                      return uint8_t(ot.occupant(x) ? 255 : 0);
+                                    });
+                     return mask;
+                   });
 
     m_status.clear();
     m_status.reserve(views.size());
-    transform(cbegin(m_params.viewParamsList), cend(m_params.viewParamsList), cbegin(views),
-              back_inserter(m_status),
-              [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
-                auto status =
-                    Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
-                                    align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
+    std::transform(
+        std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+        std::cbegin(views), back_inserter(m_status),
+        [blockSize](const ViewParams &viewParams, const TextureDepth16Frame &view) {
+          auto status = Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
+                                        align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
-                transform(cbegin(view.depth.getPlane(0)), cend(view.depth.getPlane(0)),
-                          begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
-                            // #94: When there are invalid pixels in a basic view, these should be
-                            // freezed from pruning
-                            return uint8_t(ot.occupant(x) ? 255 : 0);
-                          });
-                return status;
-              });
+          std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
+                         std::begin(status.getPlane(0)),
+                         [ot = OccupancyTransform{viewParams}](auto x) {
+                           // #94: When there are invalid pixels in a basic view, these
+                           // should be freezed from pruning
+                           return uint8_t(ot.occupant(x) ? 255 : 0);
+                         });
+          return status;
+        });
   }
 
   void createSynthesizerPerPartialView(const MVD16Frame &views) {
@@ -382,7 +383,7 @@ private:
     for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
       if (!m_params.viewParamsList[i].isBasicView) {
         const auto depthTransform = DepthTransform<16>{m_params.viewParamsList[i].dq};
-        m_synthesizers.emplace_back(make_unique<IncrementalSynthesizer>(
+        m_synthesizers.emplace_back(std::make_unique<IncrementalSynthesizer>(
             m_config, m_params.viewParamsList[i].ci.projectionPlaneSize(), i,
             depthTransform.expandDepth(views[i].depth), expandLuma(views[i].texture)));
       }
@@ -392,7 +393,7 @@ private:
   void synthesizeReferenceViews(const MVD16Frame &views) {
     if (m_synthesizers.empty()) {
       // Skip generation the meshes
-      cout << "Nothing to prune: only basic views\n";
+      std::cout << "Nothing to prune: only basic views\n";
       return;
     }
 
@@ -406,7 +407,7 @@ private:
   void pruneFrame(const MVD16Frame &views) {
     for (auto &cluster : m_clusters) {
       for (auto i : cluster.pruningOrder) {
-        auto it = find_if(begin(m_synthesizers), end(m_synthesizers),
+        auto it = find_if(std::begin(m_synthesizers), std::end(m_synthesizers),
                           [i](const auto &s) { return s->index == i; });
         m_synthesizers.erase(it);
         synthesizeViews(i, views[i], cluster.additionalViewId);
@@ -415,10 +416,11 @@ private:
 
     auto sumValues = 0.;
     for (const auto &mask : m_masks) {
-      sumValues = accumulate(begin(mask.getPlane(0)), end(mask.getPlane(0)), sumValues);
+      sumValues =
+          std::accumulate(std::begin(mask.getPlane(0)), std::end(mask.getPlane(0)), sumValues);
     }
     const auto lumaSamplesPerFrame = 2. * sumValues / 255e6;
-    cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
+    std::cout << "Non-pruned luma samples per frame is " << lumaSamplesPerFrame << "M\n";
   }
 
   // Synthesize the specified view to all remaining partial views.
@@ -426,25 +428,25 @@ private:
   // Special care is taken to make a pruned (masked) mesh once and re-use that
   // multiple times.
   void synthesizeViews(size_t index, const TextureDepth16Frame &view,
-                       const vector<size_t> &viewIds) {
+                       const std::vector<size_t> &viewIds) {
     auto [ivertices, triangles, attributes] =
         unprojectPrunedView(view, m_params.viewParamsList[index], m_masks[index].getPlane(0));
 
     if (m_params.viewParamsList[index].isBasicView) {
-      cout << "Basic view ";
+      std::cout << "Basic view ";
     } else {
-      cout << "Prune view ";
+      std::cout << "Prune view ";
     }
 
-    const auto prec = cout.precision(2);
-    const auto flags = cout.setf(ios::fixed, ios::floatfield);
-    cout << setw(2) << index << " (" << setw(3) << m_params.viewParamsList[index].name
-         << "): " << ivertices.size() << " vertices ("
-         << 100. * double(ivertices.size()) /
-                (double(view.texture.getWidth()) * view.texture.getHeight())
-         << "% of full view)\n";
-    cout.precision(prec);
-    cout.setf(flags);
+    const auto prec = std::cout.precision(2);
+    const auto flags = std::cout.setf(std::ios::fixed, std::ios::floatfield);
+    std::cout << std::setw(2) << index << " (" << std::setw(3)
+              << m_params.viewParamsList[index].name << "): " << ivertices.size() << " vertices ("
+              << 100. * double(ivertices.size()) /
+                     (double(view.texture.getWidth()) * view.texture.getHeight())
+              << "% of full view)\n";
+    std::cout.precision(prec);
+    std::cout.setf(flags);
 
     for (auto &s : m_synthesizers) {
       if (contains(viewIds, s->index)) {
@@ -459,7 +461,7 @@ private:
   }
 
   // Visit all pixels
-  template <typename F> static void forPixels(array<size_t, 2> sizes, F f) {
+  template <typename F> static void forPixels(std::array<size_t, 2> sizes, F f) {
     for (int i = 0; i < int(sizes[0]); ++i) {
       for (int j = 0; j < int(sizes[1]); ++j) {
         f(i, j);
@@ -469,11 +471,11 @@ private:
 
   // Visit all pixel neighbors (in between 3 and 8)
   template <typename F>
-  static auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
-    const int n1 = max(0, i - 1);
-    const int n2 = min(int(sizes[0]), i + 2);
-    const int m1 = max(0, j - 1);
-    const int m2 = min(int(sizes[1]), j + 2);
+  static auto forNeighbors(int i, int j, std::array<size_t, 2> sizes, F f) -> bool {
+    const int n1 = std::max(0, i - 1);
+    const int n2 = std::min(int(sizes[0]), i + 2);
+    const int m1 = std::max(0, j - 1);
+    const int m2 = std::min(int(sizes[1]), j + 2);
 
     for (int n = n1; n < n2; ++n) {
       for (int m = m1; m < m2; ++m) {
@@ -509,10 +511,10 @@ private:
     auto &mask = m_masks[synthesizer.index].getPlane(0);
     auto &status = m_status[synthesizer.index].getPlane(0);
 
-    auto i = begin(mask);
-    auto j = begin(synthesizer.reference);
-    auto jY = begin(synthesizer.referenceY);
-    auto k = begin(status);
+    auto i = std::begin(mask);
+    auto j = std::begin(synthesizer.reference);
+    auto jY = std::begin(synthesizer.referenceY);
+    auto k = std::begin(status);
 
     int pp = 0;
     const auto W = int(synthesizer.reference.width());
@@ -521,7 +523,7 @@ private:
     synthesizer.rasterizer.visit([&](const PixelValue<Vec3f> &x) {
       if (x.normDisp > 0) {
         const auto depthError = (x.depth() / *j - 1.F);
-        auto lumaError = abs(std::get<0>(x.attributes()).x() - *(jY));
+        auto lumaError = std::abs(std::get<0>(x.attributes()).x() - *(jY));
 
         const auto h = pp / W;
         const auto w = pp % W;
@@ -532,11 +534,12 @@ private:
               continue;
             }
             const auto offset = hh * W + ww;
-            lumaError = min(lumaError, abs(std::get<0>(x.attributes()).x() - *(jY + offset)));
+            lumaError =
+                std::min(lumaError, std::abs(std::get<0>(x.attributes()).x() - *(jY + offset)));
           }
         }
 
-        if (abs(depthError) < m_maxDepthError && lumaError < m_maxLumaError) {
+        if (std::abs(depthError) < m_maxDepthError && lumaError < m_maxLumaError) {
           if (*k != 0) {
             *i = 0;
           }
@@ -562,7 +565,7 @@ private:
     for (int n = 0; n < m_dilate; ++n) {
       mask = dilate(mask);
     }
-    synthesizer.maskAverage = float(accumulate(begin(mask), end(mask), 0)) /
+    synthesizer.maskAverage = float(std::accumulate(std::begin(mask), std::end(mask), 0)) /
                               (2.55F * float(mask.width() * mask.height()));
   }
 };

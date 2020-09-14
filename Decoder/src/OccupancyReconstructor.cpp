@@ -33,7 +33,6 @@
 
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 

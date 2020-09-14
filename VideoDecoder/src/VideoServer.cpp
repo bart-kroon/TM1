@@ -41,14 +41,13 @@
 #include <sstream>
 #include <thread>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::VideoDecoder {
 class VideoServer::Impl {
 public:
-  Impl(unique_ptr<IVideoDecoder> decoder, const string &bitstream)
-      : m_decoder{move(decoder)}, m_bitstream{bitstream}, m_thread{[this]() { decode(); }} {}
+  Impl(std::unique_ptr<IVideoDecoder> decoder, const std::string &bitstream)
+      : m_decoder{std::move(decoder)}, m_bitstream{bitstream}, m_thread{[this]() { decode(); }} {}
 
   Impl(const Impl &) = delete;
   Impl(Impl &&) = delete;
@@ -62,15 +61,15 @@ public:
   }
 
   void wait() {
-    unique_lock<mutex> lock{m_mutex};
+    std::unique_lock<std::mutex> lock{m_mutex};
     m_cv.wait(lock, [this] { return m_frame || m_hasStopped; });
   }
 
-  auto getFrame() -> unique_ptr<AnyFrame> {
-    unique_lock<mutex> lock{m_mutex};
+  auto getFrame() -> std::unique_ptr<AnyFrame> {
+    std::unique_lock<std::mutex> lock{m_mutex};
     m_cv.wait(lock, [this] { return m_frame || m_hasStopped; });
     if (m_frame) {
-      auto frame = unique_ptr<AnyFrame>{};
+      auto frame = std::unique_ptr<AnyFrame>{};
       swap(frame, m_frame);
       m_cv.notify_all();
       return frame;
@@ -89,38 +88,38 @@ private:
       m_cv.notify_all();
     } catch (Stop & /* unused */) {
       m_hasStopped = true;
-    } catch (exception &e) {
-      cout << "Exception in video decoder: " << e.what() << '\n';
+    } catch (std::exception &e) {
+      std::cout << "Exception in video decoder: " << e.what() << '\n';
       abort();
     }
   }
 
   void listen(const AnyFrame &picture) {
-    unique_lock<mutex> lock{m_mutex};
+    std::unique_lock<std::mutex> lock{m_mutex};
     m_cv.wait(lock, [this] { return !m_frame || m_requestStop; });
     if (m_requestStop) {
       throw Stop{};
     }
-    m_frame = make_unique<AnyFrame>(picture);
+    m_frame = std::make_unique<AnyFrame>(picture);
     m_cv.notify_all();
   }
 
-  unique_ptr<IVideoDecoder> m_decoder;
-  istringstream m_bitstream;
-  thread m_thread;
-  mutex m_mutex;
-  condition_variable m_cv;
+  std::unique_ptr<IVideoDecoder> m_decoder;
+  std::istringstream m_bitstream;
+  std::thread m_thread;
+  std::mutex m_mutex;
+  std::condition_variable m_cv;
   bool m_requestStop{};
   bool m_hasStopped{};
-  unique_ptr<AnyFrame> m_frame{};
+  std::unique_ptr<AnyFrame> m_frame{};
 };
 
-VideoServer::VideoServer(std::unique_ptr<IVideoDecoder> decoder, const string &bitstream)
-    : m_impl{new Impl{move(decoder), bitstream}} {}
+VideoServer::VideoServer(std::unique_ptr<IVideoDecoder> decoder, const std::string &bitstream)
+    : m_impl{new Impl{std::move(decoder), bitstream}} {}
 
 VideoServer::~VideoServer() = default;
 
 void VideoServer::wait() { return m_impl->wait(); }
 
-auto VideoServer::getFrame() -> unique_ptr<AnyFrame> { return m_impl->getFrame(); }
+auto VideoServer::getFrame() -> std::unique_ptr<AnyFrame> { return m_impl->getFrame(); }
 } // namespace TMIV::VideoDecoder

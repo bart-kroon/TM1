@@ -37,23 +37,21 @@
 
 #include <iostream>
 
-using namespace std;
-
 namespace {
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define VERIFY_BYTESTREAM(condition)                                                               \
   (void)(!!(condition) || verifyBytestreamFailed(#condition, __FILE__, __LINE__))
 
 auto verifyBytestreamFailed(char const *condition, char const *file, int line) -> bool {
-  cerr << "Failed to encode/decode byte stream: " << condition << " [" << file << "@" << line
-       << endl;
+  std::cerr << "Failed to encode/decode byte stream: " << condition << " [" << file << "@" << line
+            << std::endl;
   abort();
   return false;
 }
 } // namespace
 
 namespace TMIV::Common {
-auto readBytes(istream &stream, size_t bytes) -> uint64_t {
+auto readBytes(std::istream &stream, size_t bytes) -> uint64_t {
   VERIFY_BYTESTREAM(bytes <= 8);
   auto result = uint64_t{0};
   while (bytes-- > 0) {
@@ -65,29 +63,29 @@ auto readBytes(istream &stream, size_t bytes) -> uint64_t {
   return result;
 }
 
-auto getUint8(istream &stream) -> uint8_t { return uint8_t(readBytes(stream, 1)); }
-auto getUint16(istream &stream) -> uint16_t { return uint16_t(readBytes(stream, 2)); }
-auto getUint32(istream &stream) -> uint32_t { return uint32_t(readBytes(stream, 4)); }
-auto getUint64(istream &stream) -> uint64_t { return uint64_t(readBytes(stream, 8)); }
+auto getUint8(std::istream &stream) -> uint8_t { return uint8_t(readBytes(stream, 1)); }
+auto getUint16(std::istream &stream) -> uint16_t { return uint16_t(readBytes(stream, 2)); }
+auto getUint32(std::istream &stream) -> uint32_t { return uint32_t(readBytes(stream, 4)); }
+auto getUint64(std::istream &stream) -> uint64_t { return uint64_t(readBytes(stream, 8)); }
 
-auto readString(istream &stream, size_t bytes) -> string {
-  auto result = string(bytes, '\0');
+auto readString(std::istream &stream, size_t bytes) -> std::string {
+  auto result = std::string(bytes, '\0');
   stream.read(result.data(), bytes);
   VERIFY_BYTESTREAM(stream.good());
   return result;
 }
 
-auto moreRbspData(istream &stream) -> bool {
+auto moreRbspData(std::istream &stream) -> bool {
   InputBitstream bitstream{stream};
   return bitstream.moreRbspData();
 }
 
-void rbspTrailingBits(istream &stream) {
+void rbspTrailingBits(std::istream &stream) {
   InputBitstream bitstream{stream};
   bitstream.rbspTrailingBits();
 }
 
-void writeBytes(ostream &stream, uint64_t value, size_t bytes) {
+void writeBytes(std::ostream &stream, uint64_t value, size_t bytes) {
   VERIFY_BYTESTREAM(bytes <= 8);
   if (bytes > 1) {
     writeBytes(stream, value >> 8, bytes - 1);
@@ -98,17 +96,17 @@ void writeBytes(ostream &stream, uint64_t value, size_t bytes) {
   VERIFY_BYTESTREAM(stream.good());
 }
 
-void putUint8(ostream &stream, uint8_t value) { writeBytes(stream, value, 1); }
-void putUint16(ostream &stream, uint8_t value) { writeBytes(stream, value, 2); }
-void putUint32(ostream &stream, uint8_t value) { writeBytes(stream, value, 4); }
-void putUint64(ostream &stream, uint8_t value) { writeBytes(stream, value, 8); }
+void putUint8(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 1); }
+void putUint16(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 2); }
+void putUint32(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 4); }
+void putUint64(std::ostream &stream, uint8_t value) { writeBytes(stream, value, 8); }
 
-void writeString(ostream &stream, const string &buffer) {
+void writeString(std::ostream &stream, const std::string &buffer) {
   stream.write(buffer.data(), buffer.size());
   VERIFY_BYTESTREAM(stream.good());
 }
 
-void rbspTrailingBits(ostream &stream) {
+void rbspTrailingBits(std::ostream &stream) {
   OutputBitstream bitstream{stream};
   bitstream.rbspTrailingBits();
 }

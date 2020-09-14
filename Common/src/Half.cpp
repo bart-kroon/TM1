@@ -35,31 +35,29 @@
 
 #include <sstream>
 
-using namespace std;
-
 namespace TMIV::Common {
 namespace {
-auto message(uint16_t code) -> string {
-  ostringstream what;
+auto message(uint16_t code) -> std::string {
+  std::ostringstream what;
   what << "Special half code ";
-  what.setf(ios::hex, ios::basefield);
-  what.setf(ios::showbase);
-  what.setf(ios::uppercase);
+  what.setf(std::ios::hex, std::ios::basefield);
+  what.setf(std::ios::showbase);
+  what.setf(std::ios::uppercase);
   what.fill('0');
   what.width(4);
   what << code << " is not supported by the specification";
   return what.str();
 }
 
-auto message(float value) -> string {
-  ostringstream what;
-  what << "Floating-point value " << hexfloat << showbase << value
+auto message(float value) -> std::string {
+  std::ostringstream what;
+  what << "Floating-point value " << std::hexfloat << std::showbase << value
        << " cannot be encoded as fl(16)";
   return what.str();
 }
 } // namespace
 
-HalfError::HalfError(uint16_t code) : runtime_error(message(code)) {}
+HalfError::HalfError(uint16_t code) : std::runtime_error(message(code)) {}
 
-HalfError::HalfError(float value) : runtime_error(message(value)) {}
+HalfError::HalfError(float value) : std::runtime_error(message(value)) {}
 } // namespace TMIV::Common

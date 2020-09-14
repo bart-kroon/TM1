@@ -45,7 +45,6 @@
 #include <map>
 #include <memory>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -55,12 +54,12 @@ void registerComponents();
 class Application : public Common::Application {
 private:
   IvMetadataReader m_metadataReader;
-  unique_ptr<IDecoder> m_decoder;
-  multimap<int, int> m_inputToOutputFrameIdMap;
+  std::unique_ptr<IDecoder> m_decoder;
+  std::multimap<int, int> m_inputToOutputFrameIdMap;
 
 public:
-  explicit Application(vector<const char *> argv)
-      : Common::Application{"Decoder", move(argv)}
+  explicit Application(std::vector<const char *> argv)
+      : Common::Application{"Decoder", std::move(argv)}
       , m_metadataReader{json()}
       , m_decoder{create<IDecoder>("Decoder")}
       , m_inputToOutputFrameIdMap{mapInputToOutputFrames(json())} {}
@@ -79,24 +78,24 @@ public:
 
 private:
   void renderDecodedFrame(AccessUnit frame, int outputFrameId) {
-    cout << "Rendering input frame " << frame.foc << " to output frame " << outputFrameId
-         << ", with target viewport:\n";
+    std::cout << "Rendering input frame " << frame.foc << " to output frame " << outputFrameId
+              << ", with target viewport:\n";
     const auto viewportParams = IO::loadViewportMetadata(json(), outputFrameId);
-    viewportParams.printTo(cout, 0);
+    viewportParams.printTo(std::cout, 0);
 
     const auto viewport = m_decoder->decodeFrame(frame, viewportParams);
 
     IO::saveViewport(json(), outputFrameId, {yuv420p(viewport.first), viewport.second});
 
     if (json().optional("AtlasPatchOccupancyMapFmt")) {
-      cout << "Dumping patch ID maps to disk" << endl;
+      std::cout << "Dumping patch ID maps to disk" << std::endl;
       IO::saveBlockToPatchMaps(json(), outputFrameId, frame);
     }
 
     if (json().optional("PrunedViewAttributePathFmt")   // format: yuv444p10
         || json().optional("PrunedViewGeometryPathFmt") // format: yuv420p10
         || json().optional("PrunedViewMaskPathFmt")) {  // format: yuv420p
-      cout << "Dumping recovered pruned views to disk" << endl;
+      std::cout << "Dumping recovered pruned views to disk" << std::endl;
       IO::savePrunedFrame(json(), outputFrameId, Renderer::recoverPrunedViewAndMask(frame));
     }
   }
@@ -110,8 +109,8 @@ private:
     return (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
   }
 
-  static auto mapInputToOutputFrames(const Json &config) -> multimap<int, int> {
-    auto x = multimap<int, int>{};
+  static auto mapInputToOutputFrames(const Json &config) -> std::multimap<int, int> {
+    auto x = std::multimap<int, int>{};
 
     const auto numberOfFrames = config.require("numberOfFrames").asInt();
     auto extraFrames = 0;
@@ -149,8 +148,8 @@ auto main(int argc, char *argv[]) -> int {
     app.run();
     app.printTime();
     return 0;
-  } catch (runtime_error &e) {
-    cerr << e.what() << endl;
+  } catch (std::runtime_error &e) {
+    std::cerr << e.what() << std::endl;
     return 1;
   }
 }

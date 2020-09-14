@@ -37,7 +37,6 @@
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -55,7 +54,7 @@ inline auto deg2HalfQuat(const float yawDeg, const float pitchDeg, const float r
 
 const std::vector<int> myInferringViews{1};
 
-const auto viewingSpace = array{
+const auto viewingSpace = std::array{
     ViewingSpace{
         {{ElementaryShapeOperation::add, ElementaryShape{{PrimitiveShape{
                                                              Cuboid{{}, {}}, // primitive
@@ -136,7 +135,7 @@ const auto viewingSpace = array{
 
 };
 
-const auto viewingSpaceJson = array{
+const auto viewingSpaceJson = std::array{
     "{\"ElementaryShapes\":[{\"ElementaryShapeOperation\":\"add\",\"ElementaryShape\": "
     "{\"PrimitiveShapeOperation\": \"add\",\"PrimitiveShapes\": [{\"PrimitiveShapeType\": "
     "\"cuboid\",\"Center\":[0,0,0],\"Size\":[0,0,0]}]}}]}",
@@ -163,7 +162,7 @@ const auto viewingSpaceJson = array{
     "   }"
     "}]}"};
 
-const auto configJson = array{R"({"SourceCameraNames": ["v00","v01","v02"]})"};
+const auto configJson = std::array{R"({"SourceCameraNames": ["v00","v01","v02"]})"};
 
 const auto viewParamsList = TMIV::MivBitstream::ViewParamsList{std::vector<ViewParams>{
     ViewParams{CameraIntrinsics{}, CameraExtrinsics{}, DepthQuantization{}, {}, "v00"},
@@ -175,9 +174,9 @@ const auto viewParamsList = TMIV::MivBitstream::ViewParamsList{std::vector<ViewP
 namespace {
 template <typename Type>
 auto loadJson(const std::string &strNode, const std::string &strConfig) -> Type {
-  istringstream streamNode(strNode);
+  std::istringstream streamNode(strNode);
   Json jsonNode(streamNode);
-  istringstream streamConfig(strConfig);
+  std::istringstream streamConfig(strConfig);
   Json jsonConfig(streamConfig);
   return Type::loadFromJson(jsonNode, jsonConfig);
 }

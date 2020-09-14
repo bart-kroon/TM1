@@ -37,26 +37,25 @@
 
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Decoder;
 using namespace TMIV::IO;
 
 namespace TMIV::Decoder {
-auto bitstreamPath(const Json &config) -> string {
+auto bitstreamPath(const Json &config) -> std::string {
   return getFullPath(config, "OutputDirectory", "BitstreamPath");
 }
 
 IvMetadataReader::IvMetadataReader(const Json &config)
-    : m_stream{bitstreamPath(config), ios::binary} {
+    : m_stream{bitstreamPath(config), std::ios::binary} {
   if (!m_stream.good()) {
-    ostringstream what;
+    std::ostringstream what;
     what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
-    throw runtime_error(what.str());
+    throw std::runtime_error(what.str());
   }
 
-  m_vssDecoder = make_unique<V3cSampleStreamDecoder>(m_stream);
-  m_decoder = make_unique<MivDecoder>([this]() { return (*m_vssDecoder)(); });
+  m_vssDecoder = std::make_unique<V3cSampleStreamDecoder>(m_stream);
+  m_decoder = std::make_unique<MivDecoder>([this]() { return (*m_vssDecoder)(); });
 
   m_decoder->setOccFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
     return readFrame<YUV400P10>(config, "OutputDirectory", "OccupancyVideoDataPathFmt", frameId,

@@ -35,7 +35,6 @@
 
 #include <TMIV/Common/Factory.h>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 

@@ -38,22 +38,21 @@
 #include <functional>
 #include <utility>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Decoder {
 namespace {
-auto getNeighborhood5() -> vector<Vec2i> {
+auto getNeighborhood5() -> std::vector<Vec2i> {
   return {Vec2i{0, 0}, Vec2i{0, -1}, Vec2i{1, 0}, Vec2i{0, 1}, Vec2i{-1, 0}};
 }
 
-auto getNeighborhood3x3() -> vector<Vec2i> {
+auto getNeighborhood3x3() -> std::vector<Vec2i> {
   return {Vec2i{0, 0}, Vec2i{0, -1}, Vec2i{1, -1}, Vec2i{1, 0},  Vec2i{1, 1},
           Vec2i{0, 1}, Vec2i{-1, 1}, Vec2i{-1, 0}, Vec2i{-1, -1}};
 }
 
-auto getNeighborhood5x5() -> vector<Vec2i> {
+auto getNeighborhood5x5() -> std::vector<Vec2i> {
   return {Vec2i{0, 0},  Vec2i{0, -1}, Vec2i{1, -1},  Vec2i{1, 0},   Vec2i{1, 1},
           Vec2i{0, 1},  Vec2i{-1, 1}, Vec2i{-1, 0},  Vec2i{-1, -1}, Vec2i{0, -2},
           Vec2i{1, -2}, Vec2i{2, -2}, Vec2i{2, -1},  Vec2i{2, 0},   Vec2i{2, 1},
@@ -62,8 +61,8 @@ auto getNeighborhood5x5() -> vector<Vec2i> {
 }
 
 template <typename T>
-auto sampleKernel(const Mat<T> &mat, const Vec2i &loc, const vector<Vec2i> &kernelPoints) {
-  vector<T> samples(kernelPoints.size());
+auto sampleKernel(const Mat<T> &mat, const Vec2i &loc, const std::vector<Vec2i> &kernelPoints) {
+  std::vector<T> samples(kernelPoints.size());
 
   auto s = samples.begin();
   for (const auto &pnt : kernelPoints) {
@@ -75,14 +74,14 @@ auto sampleKernel(const Mat<T> &mat, const Vec2i &loc, const vector<Vec2i> &kern
 }
 
 auto sampleKernel(const Texture444Frame &attrFrame, const Vec2i &loc,
-                  const vector<Vec2i> &kernelPoints) {
-  auto channels = array<vector<uint16_t>, 3>{};
+                  const std::vector<Vec2i> &kernelPoints) {
+  auto channels = std::array<std::vector<uint16_t>, 3>{};
 
   for (int d = 0; d < 3; ++d) {
     channels[d] = sampleKernel(attrFrame.getPlane(d), loc, kernelPoints);
   }
 
-  auto samples = vector<Vec3w>(channels.front().size());
+  auto samples = std::vector<Vec3w>(channels.front().size());
 
   for (size_t i = 0; i < channels.front().size(); ++i) {
     for (int d = 0; d < 3; ++d) {
@@ -93,14 +92,14 @@ auto sampleKernel(const Texture444Frame &attrFrame, const Vec2i &loc,
   return samples;
 }
 
-auto minMasked(const vector<uint16_t> &values, const vector<uint8_t> &mask) {
+auto minMasked(const std::vector<uint16_t> &values, const std::vector<uint8_t> &mask) {
   auto minValue = values[0]; // original foreground value
   assert(mask[0] != 0);
 
   auto m = mask.begin();
   for (const auto &v : values) {
     if (*m++ == 0) {
-      minValue = min(v, minValue);
+      minValue = std::min(v, minValue);
     }
   }
 
@@ -108,7 +107,7 @@ auto minMasked(const vector<uint16_t> &values, const vector<uint8_t> &mask) {
 }
 
 inline auto colorDistance(const Vec3w &a, const Vec3w &b) {
-  auto dist = float(abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[2] - b[2]));
+  auto dist = float(std::abs(a[0] - b[0]) + std::abs(a[1] - b[1]) + std::abs(a[2] - b[2]));
   return dist;
 }
 
@@ -134,9 +133,9 @@ auto findForegroundEdges(const Mat<uint16_t> &depth) -> Mat<uint8_t> {
       const auto s = sampleKernel(depth, Vec2i{j, i}, m_kernelPoints);
 
       auto e4 = Vec4i{s[0] - s[1], s[0] - s[3], s[0] - s[5], s[0] - s[7]};
-      auto m = max(e4[0], max(e4[1], max(e4[2], e4[3])));
+      auto m = std::max(e4[0], std::max(e4[1], std::max(e4[2], e4[3])));
 
-      edgeMask(i, j) = static_cast<uint8_t>(min(255, m));
+      edgeMask(i, j) = static_cast<uint8_t>(std::min(255, m));
     }
   }
   return edgeMask;
@@ -159,8 +158,8 @@ auto findForegroundEdges(const Mat<uint16_t> &depth, const Mat<uint16_t> &region
     -> Mat<uint8_t> {
   auto edges = findForegroundEdges(depth);
   const auto bounds = findRegionBoundaries(regionLabels);
-  transform(begin(edges), end(edges), begin(bounds), begin(edges),
-            [](uint8_t e, uint8_t b) { return b != 0 ? uint8_t(0) : e; });
+  std::transform(std::begin(edges), std::end(edges), std::begin(bounds), std::begin(edges),
+                 [](uint8_t e, uint8_t b) { return b != 0 ? uint8_t(0) : e; });
   return edges;
 }
 
@@ -187,9 +186,9 @@ public:
       , m_minForegroundConfidence{minForegroundConfidence}
       , m_kernelPoints{getNeighborhood5x5()} {}
 
-  [[nodiscard]] auto colorConfidence(const vector<uint16_t> &depthValues,
-                                     const vector<Vec3w> &colorValues,
-                                     const vector<uint8_t> &edgeMagnitudes) const -> float {
+  [[nodiscard]] auto colorConfidence(const std::vector<uint16_t> &depthValues,
+                                     const std::vector<Vec3w> &colorValues,
+                                     const std::vector<uint8_t> &edgeMagnitudes) const -> float {
     const auto N = depthValues.size();
     assert(N == colorValues.size());
     assert(N == edgeMagnitudes.size());
@@ -201,8 +200,8 @@ public:
 
     // split colors samples in kernel in foreground and background
     // exclude the (uncertain) depth edges and pixels beyond foreground
-    vector<Vec3w> colorsFG;
-    vector<Vec3w> colorsBG;
+    std::vector<Vec3w> colorsFG;
+    std::vector<Vec3w> colorsBG;
     for (auto i = 1U; i < N; ++i) {
       if (edgeMagnitudes[i] < m_geometryEdgeMagnitudeTh && depthValues[i] < depthHigh) {
         if (depthValues[i] > depthLow) {
@@ -214,7 +213,7 @@ public:
     }
 
     // make the groups of equal size
-    int groupSize = int(min(colorsFG.size(), colorsBG.size()));
+    int groupSize = int(std::min(colorsFG.size(), colorsBG.size()));
 
     float foregroundColorConfidence = 1.F;
     if (groupSize > 0) {
@@ -266,7 +265,7 @@ public:
 private:
   int m_geometryEdgeMagnitudeTh;
   float m_minForegroundConfidence;
-  vector<Vec2i> m_kernelPoints;
+  std::vector<Vec2i> m_kernelPoints;
   int m_B = 2;
 };
 
@@ -277,7 +276,7 @@ public:
       , m_maxCurvature(maxCurvature)
       , m_kernelPoints{getNeighborhood3x3()} {}
 
-  [[nodiscard]] auto curvature(const vector<uint16_t> &depthValues) const -> int {
+  [[nodiscard]] auto curvature(const std::vector<uint16_t> &depthValues) const -> int {
     const int depthCentral = depthValues[0];
     const int depthLow = depthCentral - m_geometryEdgeMagnitudeTh;
 
@@ -320,7 +319,7 @@ public:
 private:
   int m_geometryEdgeMagnitudeTh = 11;
   int m_maxCurvature = 6;
-  vector<Vec2i> m_kernelPoints;
+  std::vector<Vec2i> m_kernelPoints;
   int m_B = 1;
 };
 

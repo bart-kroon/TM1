@@ -38,7 +38,6 @@
 
 #include <cassert>
 
-using namespace std;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::Common;
 using namespace TMIV::Renderer;
@@ -46,9 +45,9 @@ using namespace TMIV::Renderer;
 namespace TMIV::Pruner {
 auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &viewParams,
                          const Mat<uint8_t> &mask)
-    -> tuple<SceneVertexDescriptorList, TriangleDescriptorList, vector<Vec3f>> {
+    -> std::tuple<SceneVertexDescriptorList, TriangleDescriptorList, std::vector<Vec3f>> {
   return viewParams.ci.dispatch([&](auto camType) {
-    tuple<SceneVertexDescriptorList, TriangleDescriptorList, vector<Vec3f>> mesh;
+    std::tuple<SceneVertexDescriptorList, TriangleDescriptorList, std::vector<Vec3f>> mesh;
     auto &vertices = std::get<0>(mesh);
     auto &triangles = std::get<1>(mesh);
     auto &attributes = std::get<2>(mesh);
@@ -67,7 +66,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
     assert(attributes.empty());
     attributes.reserve(numPixels);
 
-    vector<int> key;
+    std::vector<int> key;
     key.reserve(vertices.size());
 
     const auto depthTransform = DepthTransform<16>{viewParams.dq};
@@ -126,10 +125,11 @@ auto project(const SceneVertexDescriptorList &vertices, const ViewParams &source
     Engine<camType.value> engine{target.ci};
     const auto R_t = AffineTransform{source.ce, target.ce};
     result.reserve(result.size());
-    transform(begin(vertices), end(vertices), back_inserter(result), [&](SceneVertexDescriptor v) {
-      const auto p = R_t(v.position);
-      return engine.projectVertex({p, angle(p, p - R_t.translation())});
-    });
+    std::transform(std::begin(vertices), std::end(vertices), back_inserter(result),
+                   [&](SceneVertexDescriptor v) {
+                     const auto p = R_t(v.position);
+                     return engine.projectVertex({p, angle(p, p - R_t.translation())});
+                   });
     return result;
   });
 }
@@ -144,7 +144,7 @@ void weightedSphere(const CameraIntrinsics &ci, const ImageVertexDescriptorList 
         v += vertices[index].position.y() / 3.F;
       }
       const auto theta = engine.theta0 + engine.dtheta_dv * v;
-      triangle.area = 0.5F / cos(theta);
+      triangle.area = 0.5F / std::cos(theta);
     }
   }
 }

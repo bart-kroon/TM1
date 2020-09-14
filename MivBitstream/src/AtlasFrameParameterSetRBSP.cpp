@@ -39,14 +39,14 @@
 
 #include <ostream>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const AtlasFrameTileInformation &x) -> ostream & {
-  stream << "afti_single_tile_in_atlas_frame_flag=" << boolalpha
+auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std::ostream & {
+  stream << "afti_single_tile_in_atlas_frame_flag=" << std::boolalpha
          << x.afti_single_tile_in_atlas_frame_flag() << '\n';
-  stream << "afti_signalled_tile_id_flag=" << boolalpha << x.afti_signalled_tile_id_flag() << '\n';
+  stream << "afti_signalled_tile_id_flag=" << std::boolalpha << x.afti_signalled_tile_id_flag()
+         << '\n';
   return stream;
 }
 
@@ -88,7 +88,9 @@ void AtlasFrameTileInformation::encodeTo(OutputBitstream &bitstream) {
   bitstream.putFlag(afti_signalled_tile_id_flag);
 }
 
-auto operator<<(ostream &stream, const AfpsVpccExtension & /* x */) -> ostream & { return stream; }
+auto operator<<(std::ostream &stream, const AfpsVpccExtension & /* x */) -> std::ostream & {
+  return stream;
+}
 
 auto AfpsVpccExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsVpccExtension {
   return {};
@@ -96,7 +98,9 @@ auto AfpsVpccExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsVpcc
 
 void AfpsVpccExtension::encodeTo(OutputBitstream & /* stream */) const {}
 
-auto operator<<(ostream &stream, const AfpsMivExtension & /* x */) -> ostream & { return stream; }
+auto operator<<(std::ostream &stream, const AfpsMivExtension & /* x */) -> std::ostream & {
+  return stream;
+}
 
 auto AfpsMivExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsMivExtension {
   return {};
@@ -116,7 +120,7 @@ auto AtlasFrameParameterSetRBSP::afps_miv_extension() const noexcept -> AfpsMivE
   return *m_afme;
 }
 
-auto AtlasFrameParameterSetRBSP::afpsExtensionData() const noexcept -> const vector<bool> & {
+auto AtlasFrameParameterSetRBSP::afpsExtensionData() const noexcept -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(afps_extension_6bits() != 0);
   VERIFY_V3CBITSTREAM(m_afpsExtensionData.has_value());
   return *m_afpsExtensionData;
@@ -157,31 +161,33 @@ auto AtlasFrameParameterSetRBSP::afps_miv_extension(const AfpsMivExtension &valu
   return *this;
 }
 
-auto AtlasFrameParameterSetRBSP::afpsExtensionData(vector<bool> value) noexcept
+auto AtlasFrameParameterSetRBSP::afpsExtensionData(std::vector<bool> value) noexcept
     -> AtlasFrameParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(afps_extension_6bits() != 0);
-  m_afpsExtensionData = move(value);
+  m_afpsExtensionData = std::move(value);
   return *this;
 }
 
-auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream & {
+auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x) -> std::ostream & {
   stream << "afps_atlas_frame_parameter_set_id=" << int(x.afps_atlas_frame_parameter_set_id())
          << '\n';
   stream << "afps_atlas_sequence_parameter_set_id=" << int(x.afps_atlas_sequence_parameter_set_id())
          << '\n';
   stream << x.atlas_frame_tile_information();
-  stream << "afps_output_flag_present_flag=" << boolalpha << x.afps_output_flag_present_flag()
+  stream << "afps_output_flag_present_flag=" << std::boolalpha << x.afps_output_flag_present_flag()
          << '\n';
   stream << "afps_num_ref_idx_default_active_minus1="
          << int(x.afps_num_ref_idx_default_active_minus1()) << '\n';
   stream << "afps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len()) << '\n';
-  stream << "afps_lod_mode_enabled_flag=" << boolalpha << x.afps_lod_mode_enabled_flag() << '\n';
-  stream << "afps_raw_3d_pos_bit_count_explicit_mode_flag=" << boolalpha
+  stream << "afps_lod_mode_enabled_flag=" << std::boolalpha << x.afps_lod_mode_enabled_flag()
+         << '\n';
+  stream << "afps_raw_3d_pos_bit_count_explicit_mode_flag=" << std::boolalpha
          << x.afps_raw_3d_pos_bit_count_explicit_mode_flag() << '\n';
-  stream << "afps_extension_present_flag=" << boolalpha << x.afps_extension_present_flag() << '\n';
+  stream << "afps_extension_present_flag=" << std::boolalpha << x.afps_extension_present_flag()
+         << '\n';
   if (x.afps_extension_present_flag()) {
-    stream << "afps_vpcc_extension_flag=" << boolalpha << x.afps_vpcc_extension_flag() << '\n';
-    stream << "afps_miv_extension_flag=" << boolalpha << x.afps_miv_extension_flag() << '\n';
+    stream << "afps_vpcc_extension_flag=" << std::boolalpha << x.afps_vpcc_extension_flag() << '\n';
+    stream << "afps_miv_extension_flag=" << std::boolalpha << x.afps_miv_extension_flag() << '\n';
     stream << "afps_extension_6bits=" << int(x.afps_extension_6bits()) << '\n';
   }
   if (x.afps_vpcc_extension_flag()) {
@@ -192,7 +198,7 @@ auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream
   }
   if (x.afps_extension_6bits() != 0) {
     for (auto bit : x.afpsExtensionData()) {
-      stream << "afps_extension_data_flag=" << boolalpha << bit << '\n';
+      stream << "afps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
   }
   return stream;
@@ -232,8 +238,8 @@ auto AtlasFrameParameterSetRBSP::operator!=(const AtlasFrameParameterSetRBSP &ot
   return !operator==(other);
 }
 
-auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
-                                            const vector<AtlasSequenceParameterSetRBSP> &aspsV)
+auto AtlasFrameParameterSetRBSP::decodeFrom(std::istream &stream,
+                                            const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
     -> AtlasFrameParameterSetRBSP {
   auto x = AtlasFrameParameterSetRBSP{};
   InputBitstream bitstream{stream};
@@ -273,11 +279,11 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
     x.afps_miv_extension(AfpsMivExtension::decodeFrom(bitstream));
   }
   if (x.afps_extension_6bits() != 0) {
-    auto afpsExtensionData = vector<bool>{};
+    auto afpsExtensionData = std::vector<bool>{};
     while (bitstream.moreRbspData()) {
       afpsExtensionData.push_back(bitstream.getFlag());
     }
-    x.afpsExtensionData(move(afpsExtensionData));
+    x.afpsExtensionData(std::move(afpsExtensionData));
   }
   bitstream.rbspTrailingBits();
 
@@ -285,7 +291,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
 }
 
 void AtlasFrameParameterSetRBSP::encodeTo(
-    ostream &stream, const vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
+    std::ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
   OutputBitstream bitstream{stream};
 
   VERIFY_V3CBITSTREAM(afps_atlas_frame_parameter_set_id() <= 63);

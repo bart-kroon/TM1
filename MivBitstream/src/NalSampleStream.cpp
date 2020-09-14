@@ -38,10 +38,8 @@
 
 #include <sstream>
 
-using namespace std;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const NalSampleStream &x) -> ostream & {
+auto operator<<(std::ostream &stream, const NalSampleStream &x) -> std::ostream & {
   return stream << x.sample_stream_nal_header();
 }
 
@@ -54,9 +52,9 @@ auto NalSampleStream::operator!=(const NalSampleStream &other) const noexcept ->
   return !operator==(other);
 }
 
-auto NalSampleStream::decodeFrom(istream &stream) -> NalSampleStream {
+auto NalSampleStream::decodeFrom(std::istream &stream) -> NalSampleStream {
   const auto streamStart = stream.tellg();
-  stream.seekg(0, ios::end);
+  stream.seekg(0, std::ios::end);
   const auto streamEnd = stream.tellg();
   stream.seekg(streamStart);
 
@@ -65,18 +63,18 @@ auto NalSampleStream::decodeFrom(istream &stream) -> NalSampleStream {
   while (stream.tellg() != streamEnd) {
     const auto ssnu = SampleStreamNalUnit::decodeFrom(stream, asb.sample_stream_nal_header());
 
-    istringstream substream{ssnu.ssnu_nal_unit()};
+    std::istringstream substream{ssnu.ssnu_nal_unit()};
     asb.nal_units().push_back(NalUnit::decodeFrom(substream, ssnu.ssnu_nal_unit().size()));
   }
 
   return asb;
 }
 
-void NalSampleStream::encodeTo(ostream &stream) const {
+void NalSampleStream::encodeTo(std::ostream &stream) const {
   sample_stream_nal_header().encodeTo(stream);
 
   for (const auto &nal_unit : m_nal_units) {
-    ostringstream substream;
+    std::ostringstream substream;
     nal_unit.encodeTo(substream);
 
     const auto ssnu = SampleStreamNalUnit{substream.str()};

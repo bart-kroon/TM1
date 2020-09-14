@@ -39,7 +39,6 @@
 #include <iostream>
 #include <regex>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -56,11 +55,11 @@ auto explicitOccupancy(const Json &config) { return config.require("explicitOccu
 auto loadSourceParams(const Json &config) -> EncoderParams {
   auto x = EncoderParams{haveTexture(config), explicitOccupancy(config)};
 
-  string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
+  std::string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
-  ifstream stream{viewPath};
+  std::ifstream stream{viewPath};
   if (!stream.good()) {
-    throw runtime_error("Failed to load source camera parameters\n" + viewPath);
+    throw std::runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
   const auto sequenceConfig = Json{stream};
 
@@ -74,13 +73,13 @@ auto loadSourceParams(const Json &config) -> EncoderParams {
 
   const auto numGroups = unsigned(config.require("numGroups").asInt());
   if (numGroups < 1) {
-    throw runtime_error("Require numGroups >= 1");
+    throw std::runtime_error("Require numGroups >= 1");
   }
   x.vme().vme_num_groups_minus1(numGroups - 1U);
 
   const auto maxEntities = unsigned(config.require("maxEntities").asInt());
   if (maxEntities < 1) {
-    throw runtime_error("Require maxEntities >= 1");
+    throw std::runtime_error("Require maxEntities >= 1");
   }
   x.vme().vme_max_entities_minus1(maxEntities - 1U);
 
@@ -97,40 +96,40 @@ auto loadSourceParams(const Json &config) -> EncoderParams {
 }
 
 namespace {
-auto loadSourceTexture(const Json &config, const Vec2i &size, const string &viewName,
+auto loadSourceTexture(const Json &config, const Vec2i &size, const std::string &viewName,
                        int frameIndex) {
   auto frame = readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex,
                                     size, viewName);
   if (frame.empty()) {
-    throw runtime_error("Failed to read source texture frame");
+    throw std::runtime_error("Failed to read source texture frame");
   }
   return frame;
 }
 
 template <typename FORMAT>
-auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const string &viewName,
+auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const std::string &viewName,
                       int frameIndex) {
   auto depth16 = Depth16Frame{size.x(), size.y()};
 
   const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceGeometryPathFmt",
                                        frameIndex, size, viewName);
   if (depth.empty()) {
-    throw runtime_error("Failed to read source geometry frame");
+    throw std::runtime_error("Failed to read source geometry frame");
   }
 
-  transform(begin(depth.getPlane(0)), end(depth.getPlane(0)), begin(depth16.getPlane(0)),
-            [bits](unsigned x) {
-              const auto x_max = maxLevel(bits);
-              assert(0 <= x && x <= x_max);
-              const auto y = (0xFFFF * x + x_max / 2) / x_max;
-              assert(0 <= y && y <= UINT16_MAX);
-              return uint16_t(y);
-            });
+  std::transform(std::begin(depth.getPlane(0)), std::end(depth.getPlane(0)),
+                 std::begin(depth16.getPlane(0)), [bits](unsigned x) {
+                   const auto x_max = maxLevel(bits);
+                   assert(0 <= x && x <= x_max);
+                   const auto y = (0xFFFF * x + x_max / 2) / x_max;
+                   assert(0 <= y && y <= UINT16_MAX);
+                   return uint16_t(y);
+                 });
 
   return depth16;
 }
 
-auto loadSourceDepth(const Json &config, const Vec2i &size, const string &viewName,
+auto loadSourceDepth(const Json &config, const Vec2i &size, const std::string &viewName,
                      int frameIndex) {
   const auto bits = config.require("SourceGeometryBitDepth").asInt();
 
@@ -140,26 +139,27 @@ auto loadSourceDepth(const Json &config, const Vec2i &size, const string &viewNa
   if (8 < bits && bits <= 16) {
     return loadSourceDepth_<YUV400P16>(bits, config, size, viewName, frameIndex);
   }
-  throw runtime_error("Invalid SourceGeometryBitDepth");
+  throw std::runtime_error("Invalid SourceGeometryBitDepth");
 }
 
 template <typename FORMAT>
-auto loadSourceEntities_(const Json &config, const Vec2i size, const string &viewName,
+auto loadSourceEntities_(const Json &config, const Vec2i size, const std::string &viewName,
                          int frameIndex) {
   auto entities16 = EntityMap{size.x(), size.y()};
 
   const auto entities = readFrame<FORMAT>(config, "SourceDirectory", "SourceEntityPathFmt",
                                           frameIndex, size, viewName);
   if (entities.empty()) {
-    throw runtime_error("Failed to read source entities frame");
+    throw std::runtime_error("Failed to read source entities frame");
   }
 
-  copy(entities.getPlane(0).begin(), entities.getPlane(0).end(), entities16.getPlane(0).begin());
+  std::copy(entities.getPlane(0).begin(), entities.getPlane(0).end(),
+            entities16.getPlane(0).begin());
 
   return entities16;
 }
 
-auto loadSourceEntities(const Json &config, const Vec2i size, const string &viewName,
+auto loadSourceEntities(const Json &config, const Vec2i size, const std::string &viewName,
                         int frameIndex) {
   if (auto node = config.optional("SourceEntityBitDepth"); node) {
     const auto bits = node.asInt();
@@ -169,7 +169,7 @@ auto loadSourceEntities(const Json &config, const Vec2i size, const string &view
     if (8 < bits && bits <= 16) {
       return loadSourceEntities_<YUV400P16>(config, size, viewName, frameIndex);
     }
-    throw runtime_error("Invalid SourceEntityBitDepth");
+    throw std::runtime_error("Invalid SourceEntityBitDepth");
   }
   return EntityMap{};
 }
@@ -214,8 +214,9 @@ void saveBlockToPatchMaps(const Json &config, int frameIndex, const Decoder::Acc
   }
 }
 
-void savePrunedFrame(const Json &config, int frameIndex,
-                     const pair<vector<Texture444Depth10Frame>, MaskList> &prunedViewsAndMasks) {
+void savePrunedFrame(
+    const Json &config, int frameIndex,
+    const std::pair<std::vector<Texture444Depth10Frame>, MaskList> &prunedViewsAndMasks) {
   for (size_t viewId = 0; viewId < prunedViewsAndMasks.first.size(); ++viewId) {
     const auto &view = prunedViewsAndMasks.first[viewId];
     if (config.optional("PrunedViewAttributePathFmt")) {
@@ -237,45 +238,45 @@ struct Pose {
   Vec3f rotation;
 };
 
-auto loadPoseFromCSV(istream &stream, int frameIndex) -> Pose {
-  string line;
+auto loadPoseFromCSV(std::istream &stream, int frameIndex) -> Pose {
+  std::string line;
   getline(stream, line);
 
-  regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
-  if (!regex_match(line, re_header)) {
-    throw runtime_error("Format error in the pose trace header");
+  std::regex re_header(R"(\s*X\s*,\s*Y\s*,\s*Z\s*,\s*Yaw\s*,\s*Pitch\s*,\s*Roll\s*)");
+  if (!std::regex_match(line, re_header)) {
+    throw std::runtime_error("Format error in the pose trace header");
   }
 
   int currentFrameIndex = 0;
-  regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
-  regex re_empty("\\s*");
+  std::regex re_row("([^,]+),([^,]+),([^,]+),([^,]+),([^,]+),([^,]+)");
+  std::regex re_empty("\\s*");
   bool trailing_empty_lines = false;
 
   while (getline(stream, line)) {
-    smatch match;
-    if (!trailing_empty_lines && regex_match(line, match, re_row)) {
+    std::smatch match;
+    if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
       if (currentFrameIndex == frameIndex) {
         return {Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
                 Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};
       }
       { currentFrameIndex++; }
-    } else if (regex_match(line, re_empty)) {
+    } else if (std::regex_match(line, re_empty)) {
       trailing_empty_lines = true;
     } else {
-      throw runtime_error("Format error in a pose trace row");
+      throw std::runtime_error("Format error in a pose trace row");
     }
   }
 
-  throw runtime_error("Unable to load required frame index " + to_string(frameIndex));
+  throw std::runtime_error("Unable to load required frame index " + std::to_string(frameIndex));
 }
 } // namespace
 
 auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
   const auto cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
-  ifstream stream{cameraPath};
+  std::ifstream stream{cameraPath};
   if (!stream.good()) {
-    throw runtime_error("Failed to load camera parameters\n " + cameraPath);
+    throw std::runtime_error("Failed to load camera parameters\n " + cameraPath);
   }
 
   auto outputviewName = config.require("OutputCameraName").asString();
@@ -284,7 +285,7 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
       ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputviewName});
 
   if (viewParamsList.empty()) {
-    throw runtime_error("Unknown OutputCameraName " + outputviewName);
+    throw std::runtime_error("Unknown OutputCameraName " + outputviewName);
   }
 
   ViewParams &result = viewParamsList.front();
@@ -293,11 +294,11 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> ViewParams {
   result.hasOccupancy = true;
 
   if (auto nodeOutputCameraPoseTrace = config.optional("PoseTracePath")) {
-    string poseTracePath = getFullPath(config, "SourceDirectory", "PoseTracePath");
-    ifstream stream{poseTracePath};
+    std::string poseTracePath = getFullPath(config, "SourceDirectory", "PoseTracePath");
+    std::ifstream stream{poseTracePath};
 
     if (!stream.good()) {
-      throw runtime_error("Failed to load pose trace file\n " + poseTracePath);
+      throw std::runtime_error("Failed to load pose trace file\n " + poseTracePath);
     }
 
     auto pose = loadPoseFromCSV(stream, frameIndex);

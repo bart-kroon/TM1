@@ -57,11 +57,11 @@ MivDecoder::~MivDecoder() {
   }
 }
 
-void MivDecoder::setOccFrameServer(OccFrameServer value) { m_occFrameServer = move(value); }
+void MivDecoder::setOccFrameServer(OccFrameServer value) { m_occFrameServer = std::move(value); }
 
-void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = move(value); }
+void MivDecoder::setGeoFrameServer(GeoFrameServer value) { m_geoFrameServer = std::move(value); }
 
-void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = move(value); }
+void MivDecoder::setAttrFrameServer(AttrFrameServer value) { m_attrFrameServer = std::move(value); }
 
 auto MivDecoder::operator()() -> std::optional<AccessUnit> {
   m_au.irap = expectIrap();

@@ -36,7 +36,6 @@
 #include <cassert>
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 

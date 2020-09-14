@@ -42,7 +42,6 @@
 #include <numeric>
 #include <stdexcept>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::IO;
 using namespace TMIV::MivBitstream;
@@ -52,8 +51,8 @@ using std::filesystem::path;
 namespace TMIV::Encoder {
 class Multiplexer : public Common::Application {
 public:
-  explicit Multiplexer(vector<const char *> argv)
-      : Common::Application{"Multiplexer", move(argv)}
+  explicit Multiplexer(std::vector<const char *> argv)
+      : Common::Application{"Multiplexer", std::move(argv)}
       , m_intermediateBitstreamPath{json().require("IntermediateBitstreamPath").asString()}
       , m_outputBitstreamPath{json().require("OutputBitstreamPath").asString()}
       , m_gvdSubBitstreamPathFmt{
@@ -96,24 +95,25 @@ public:
 private:
   void checkParameters() {
     if (!exists(m_intermediateBitstreamPath)) {
-      throw runtime_error(format("The intermediate bitstream file ({}) does not exist.",
-                                 m_intermediateBitstreamPath));
+      throw std::runtime_error(format("The intermediate bitstream file ({}) does not exist.",
+                                      m_intermediateBitstreamPath));
     }
     // We are daring enough to overwrite an existing bitstream, but we refuse to overwrite the
     // input bitstream. (Because we know we are stupid enough to do that at least once.)
     if (exists(m_outputBitstreamPath) &&
         equivalent(m_intermediateBitstreamPath, m_outputBitstreamPath)) {
-      throw runtime_error(format("The intermediate bitstream file ({}) and the output bitstream "
-                                 "file ({}) cannot be the same file.",
-                                 m_intermediateBitstreamPath, m_outputBitstreamPath));
+      throw std::runtime_error(
+          format("The intermediate bitstream file ({}) and the output bitstream "
+                 "file ({}) cannot be the same file.",
+                 m_intermediateBitstreamPath, m_outputBitstreamPath));
     }
   }
 
   void readIntermediateBitstream() {
-    ifstream stream{m_intermediateBitstreamPath, ios::binary};
+    std::ifstream stream{m_intermediateBitstreamPath, std::ios::binary};
     if (!stream.good()) {
-      throw runtime_error(format("Failed to open intermediate bitstream ({}) for reading.",
-                                 m_intermediateBitstreamPath));
+      throw std::runtime_error(format("Failed to open intermediate bitstream ({}) for reading.",
+                                      m_intermediateBitstreamPath));
     }
 
     // Decode SSVH
@@ -123,13 +123,13 @@ private:
     const auto ssvu0 = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
 
     // Decode the VPS
-    istringstream substream{ssvu0.ssvu_v3c_unit()};
+    std::istringstream substream{ssvu0.ssvu_v3c_unit()};
     const auto vuh = V3cUnitHeader::decodeFrom(substream);
     if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
-      throw runtime_error("the first V3C unit has to be the VPS");
+      throw std::runtime_error("the first V3C unit has to be the VPS");
     }
     m_vps = V3cParameterSet::decodeFrom(substream);
-    cout << m_vps;
+    std::cout << m_vps;
 
     // Append the first V3C unit
     m_units.push_back(ssvu0.ssvu_v3c_unit());
@@ -141,16 +141,16 @@ private:
       stream.peek();
     }
 
-    cout << "Appended " << m_intermediateBitstreamPath << " with a total of " << m_units.size()
-         << " V3C units including the VPS\n";
+    std::cout << "Appended " << m_intermediateBitstreamPath << " with a total of " << m_units.size()
+              << " V3C units including the VPS\n";
   }
 
   void checkRestrictions(uint8_t atlasIdx) const {
     if (m_vps.vps_map_count_minus1(atlasIdx) > 0) {
-      throw runtime_error("Having multiple maps is not supported.");
+      throw std::runtime_error("Having multiple maps is not supported.");
     }
     if (m_vps.vps_auxiliary_video_present_flag(atlasIdx)) {
-      throw runtime_error("Auxiliary video is not supported.");
+      throw std::runtime_error("Auxiliary video is not supported.");
     }
   }
 
@@ -177,25 +177,25 @@ private:
   }
 
   void appendSubBitstream(const V3cUnitHeader &vuh, const path &subBitstreamPath) {
-    ifstream inStream{subBitstreamPath, ios::binary};
+    std::ifstream inStream{subBitstreamPath, std::ios::binary};
     if (!inStream.good()) {
-      throw runtime_error(
+      throw std::runtime_error(
           format("Failed to open sub bitstream ({}) for reading", subBitstreamPath));
     }
-    ostringstream substream;
+    std::ostringstream substream;
     vuh.encodeTo(substream);
     substream << inStream.rdbuf();
 
-    cout << "Appended " << subBitstreamPath << '\n';
+    std::cout << "Appended " << subBitstreamPath << '\n';
     m_units.push_back(substream.str());
   }
 
   void writeOutputBitstream() const {
     // Find size of largest unit
     const auto maxSize =
-        max_element(cbegin(m_units), cend(m_units), [](const string &a, const string &b) {
-          return a.size() < b.size();
-        })->size();
+        max_element(std::cbegin(m_units), std::cend(m_units),
+                    [](const std::string &a, const std::string &b) { return a.size() < b.size(); })
+            ->size();
 
     // Calculate how many bytes are needed to store that size
     auto precisionBytesMinus1 = uint8_t{};
@@ -204,32 +204,32 @@ private:
     }
 
     // Write the sample stream header
-    ofstream stream{m_outputBitstreamPath, ios::binary};
+    std::ofstream stream{m_outputBitstreamPath, std::ios::binary};
     const auto ssvh = SampleStreamV3cHeader{precisionBytesMinus1};
     ssvh.encodeTo(stream);
-    cout << '\n' << ssvh;
+    std::cout << '\n' << ssvh;
 
     // Write the units
     for (const auto &unit : m_units) {
       const auto ssvu = SampleStreamV3cUnit{unit};
       ssvu.encodeTo(stream, ssvh);
-      cout << '\n' << ssvu;
+      std::cout << '\n' << ssvu;
 
       // Print the V3C unit header (for fun, why not)
-      istringstream stream{unit};
+      std::istringstream stream{unit};
       const auto vuh = V3cUnitHeader::decodeFrom(stream);
-      cout << vuh;
+      std::cout << vuh;
     }
   }
 
   path m_intermediateBitstreamPath;
   path m_outputBitstreamPath;
-  string m_gvdSubBitstreamPathFmt;
-  optional<string> m_avdSubBitstreamPathFmt;
-  optional<string> m_ovdSubBitstreamPathFmt;
+  std::string m_gvdSubBitstreamPathFmt;
+  std::optional<std::string> m_avdSubBitstreamPathFmt;
+  std::optional<std::string> m_ovdSubBitstreamPathFmt;
 
   V3cParameterSet m_vps;
-  vector<string> m_units;
+  std::vector<std::string> m_units;
 };
 } // namespace TMIV::Encoder
 
@@ -240,8 +240,8 @@ auto main(int argc, char *argv[]) -> int {
     app.run();
     app.printTime();
     return 0;
-  } catch (runtime_error &e) {
-    cerr << e.what() << endl;
+  } catch (std::runtime_error &e) {
+    std::cerr << e.what() << std::endl;
     return 1;
   }
 }

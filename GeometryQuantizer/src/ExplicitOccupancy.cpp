@@ -38,7 +38,6 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -54,7 +53,7 @@ ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &compon
 
 auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   m_outParams.vme().vme_embedded_occupancy_flag(false);
@@ -85,7 +84,7 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
 
 auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   return m_outParams;

@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -46,9 +45,9 @@ namespace TMIV::Renderer {
 // NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
 // patch ordering anymore.
 auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
-    -> pair<vector<Texture444Depth10Frame>, MaskList> {
+    -> std::pair<std::vector<Texture444Depth10Frame>, MaskList> {
   // Initialization
-  auto prunedView = vector<Texture444Depth10Frame>{};
+  auto prunedView = std::vector<Texture444Depth10Frame>{};
   auto prunedMasks = MaskList{};
 
   const auto &viewParamsList = frame.viewParamsList;
@@ -105,6 +104,6 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
     }
   }
 
-  return pair{prunedView, prunedMasks};
+  return std::pair{prunedView, prunedMasks};
 }
 } // namespace TMIV::Renderer

@@ -37,7 +37,6 @@
 #include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::Renderer;
@@ -57,7 +56,7 @@ void checkRestrictions(const AccessUnit &frame) {
     if (frame.vui->vui_coordinate_system_parameters_present_flag()) {
       const auto &csp = frame.vui->coordinate_system_parameters();
       if (!csp.isOmafCas()) {
-        throw runtime_error(
+        throw std::runtime_error(
             "The VUI indicates that a coordinate axis system other than that of OMAF is used. "
             "The TMIV decoder/renderer is not yet able to convert between coordinate axis "
             "systems.");

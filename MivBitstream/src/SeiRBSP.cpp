@@ -39,11 +39,10 @@
 
 #include <utility>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
+auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
   switch (pt) {
   case PayloadType::buffering_period:
     return stream << "buffering_period";
@@ -96,16 +95,16 @@ auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
   }
 }
 
-SeiMessage::SeiMessage(PayloadType pt, string payload)
+SeiMessage::SeiMessage(PayloadType pt, std::string payload)
     : m_payloadType{pt}, m_payload{std::move(std::move(payload))} {}
 
 auto SeiMessage::payloadType() const noexcept -> PayloadType { return m_payloadType; }
 
 auto SeiMessage::payloadSize() const noexcept -> size_t { return payload().size(); }
 
-auto SeiMessage::payload() const noexcept -> const string & { return m_payload; }
+auto SeiMessage::payload() const noexcept -> const std::string & { return m_payload; }
 
-auto operator<<(ostream &stream, const SeiMessage &x) -> ostream & {
+auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream & {
   stream << "payloadType=" << x.payloadType() << '\n';
   stream << "payloadSize=" << x.payloadSize() << '\n';
   return stream;
@@ -121,7 +120,7 @@ auto SeiMessage::operator!=(const SeiMessage &other) const noexcept -> bool {
 }
 
 namespace {
-auto decodeSeiHeaderValue(istream &stream) -> size_t {
+auto decodeSeiHeaderValue(std::istream &stream) -> size_t {
   size_t value = 0;
   uint8_t sm_payload_type_byte = 0;
   do {
@@ -132,16 +131,16 @@ auto decodeSeiHeaderValue(istream &stream) -> size_t {
 }
 } // namespace
 
-auto SeiMessage::decodeFrom(istream &stream) -> SeiMessage {
+auto SeiMessage::decodeFrom(std::istream &stream) -> SeiMessage {
   const auto payloadType = PayloadType(decodeSeiHeaderValue(stream));
   const auto payloadSize = decodeSeiHeaderValue(stream);
-  auto buffer = vector<char>(payloadSize);
+  auto buffer = std::vector<char>(payloadSize);
   stream.read(buffer.data(), buffer.size());
-  return {payloadType, string(buffer.data(), buffer.size())};
+  return {payloadType, std::string(buffer.data(), buffer.size())};
 }
 
 namespace {
-void encodeSeiHeaderValue(ostream &stream, size_t value) {
+void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
   while (value >= UINT8_MAX) {
     putUint8(stream, UINT8_MAX);
     value -= UINT8_MAX;
@@ -150,15 +149,15 @@ void encodeSeiHeaderValue(ostream &stream, size_t value) {
 }
 } // namespace
 
-void SeiMessage::encodeTo(ostream &stream) const {
+void SeiMessage::encodeTo(std::ostream &stream) const {
   encodeSeiHeaderValue(stream, unsigned(payloadType()));
   encodeSeiHeaderValue(stream, payloadSize());
   stream.write(payload().data(), payload().size());
 }
 
-SeiRBSP::SeiRBSP(vector<SeiMessage> messages) : m_messages{move(messages)} {}
+SeiRBSP::SeiRBSP(std::vector<SeiMessage> messages) : m_messages{move(messages)} {}
 
-auto operator<<(ostream &stream, const SeiRBSP &x) -> ostream & {
+auto operator<<(std::ostream &stream, const SeiRBSP &x) -> std::ostream & {
   for (const auto &x : x.messages()) {
     stream << x;
   }
@@ -171,8 +170,8 @@ auto SeiRBSP::operator==(const SeiRBSP &other) const noexcept -> bool {
 
 auto SeiRBSP::operator!=(const SeiRBSP &other) const noexcept -> bool { return !operator==(other); }
 
-auto SeiRBSP::decodeFrom(istream &stream) -> SeiRBSP {
-  auto messages = vector<SeiMessage>{};
+auto SeiRBSP::decodeFrom(std::istream &stream) -> SeiRBSP {
+  auto messages = std::vector<SeiMessage>{};
 
   do {
     messages.push_back(SeiMessage::decodeFrom(stream));
@@ -184,7 +183,7 @@ auto SeiRBSP::decodeFrom(istream &stream) -> SeiRBSP {
   return SeiRBSP{messages};
 }
 
-void SeiRBSP::encodeTo(ostream &stream) const {
+void SeiRBSP::encodeTo(std::ostream &stream) const {
   VERIFY_MIVBITSTREAM(!messages().empty());
 
   for (const auto &x : messages()) {

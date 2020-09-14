@@ -37,7 +37,6 @@
 #include <TMIV/VideoDecoder/HmVideoDecoder.h>
 #endif
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -48,11 +47,11 @@ auto IVideoDecoder::create(TMIV::MivBitstream::PtlProfileCodecGroupIdc codecGrou
     -> std::unique_ptr<IVideoDecoder> {
 #ifdef HAVE_HM
   if (codecGroupIdc == PtlProfileCodecGroupIdc::HEVC_Main10) {
-    return make_unique<HmVideoDecoder>();
+    return std::make_unique<HmVideoDecoder>();
   }
 #endif
-  ostringstream what;
+  std::ostringstream what;
   what << "TMIV does not include a " << codecGroupIdc << " video decoder";
-  throw runtime_error(what.str());
+  throw std::runtime_error(what.str());
 }
 } // namespace TMIV::VideoDecoder

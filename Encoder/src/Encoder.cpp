@@ -40,7 +40,6 @@
 #include <cassert>
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -61,7 +60,7 @@ auto create(const char *name, const Json &rootNode, const Json &componentNode) {
 
 void runtimeCheck(bool cond, const char *what) {
   if (!cond) {
-    throw runtime_error(what);
+    throw std::runtime_error(what);
   }
 }
 } // namespace
@@ -88,8 +87,9 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   }
 
   if (auto node = componentNode.optional("overrideAtlasFrameSizes"); node) {
-    cout << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
-            "only.\n";
+    std::cout
+        << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
+           "only.\n";
     for (size_t i = 0; i < node.size(); ++i) {
       m_overrideAtlasFrameSizes.push_back(node.at(i).asIntVector<2>());
     }
@@ -115,7 +115,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   }
 
   if (m_intraPeriod > maxIntraPeriod) {
-    throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
+    throw std::runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 
   m_explicitOccupancy = rootNode.require("explicitOccupancy").asBool();

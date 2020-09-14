@@ -35,7 +35,6 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {

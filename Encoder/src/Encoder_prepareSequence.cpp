@@ -38,7 +38,6 @@
 #include <cassert>
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -46,7 +45,7 @@ namespace TMIV::Encoder {
 namespace {
 void runtimeCheck(bool cond, const char *what) {
   if (!cond) {
-    throw runtime_error(what);
+    throw std::runtime_error(what);
   }
 }
 } // namespace
@@ -62,15 +61,15 @@ void Encoder::prepareSequence(EncoderParams sourceParams) {
   m_maxBlocksPerAtlas = m_maxLumaPictureSize / sqr(m_blockSize);
 
   // Transform source to transport view sequence parameters
-  m_transportParams = m_viewOptimizer->optimizeParams(move(sourceParams));
+  m_transportParams = m_viewOptimizer->optimizeParams(std::move(sourceParams));
 
   // Calculate nominal atlas frame sizes
   const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_transportParams);
-  cout << "Nominal atlas frame sizes: { ";
+  std::cout << "Nominal atlas frame sizes: { ";
   for (auto &size : atlasFrameSizes) {
-    cout << ' ' << size;
+    std::cout << ' ' << size;
   }
-  cout << " }\n";
+  std::cout << " }\n";
 
   // Create IVS with VPS with right number of atlases but copy other parts from input IVS
   m_params = EncoderParams{atlasFrameSizes, haveTexture(), haveOccupancy()};
@@ -103,13 +102,15 @@ auto Encoder::calculateNominalAtlasFrameSizes(const EncoderParams &params) const
   if (m_maxBlockRate == 0) {
     // No constraints: one atlas per transport view
     auto result = SizeVector(params.viewParamsList.size());
-    transform(cbegin(params.viewParamsList), cend(params.viewParamsList), begin(result),
-              [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
+    std::transform(std::cbegin(params.viewParamsList), std::cend(params.viewParamsList),
+                   std::begin(result),
+                   [](const ViewParams &x) { return x.ci.projectionPlaneSize(); });
     return result;
   }
 
   if (!m_overrideAtlasFrameSizes.empty()) {
-    cout << "WARNING: When overriding nominal atlas frame sizes, constraints are not checked.\n";
+    std::cout
+        << "WARNING: When overriding nominal atlas frame sizes, constraints are not checked.\n";
     return m_overrideAtlasFrameSizes;
   }
 
@@ -119,14 +120,14 @@ auto Encoder::calculateNominalAtlasFrameSizes(const EncoderParams &params) const
   // Calculate the number of atlases
   auto numAtlases = (maxBlocks + m_maxBlocksPerAtlas - 1) / m_maxBlocksPerAtlas;
   if (numAtlases > m_maxAtlases) {
-    cout << "The maxAtlases constraint is a limiting factor.\n";
+    std::cout << "The maxAtlases constraint is a limiting factor.\n";
     numAtlases = m_maxAtlases;
   }
 
   // Calculate the number of blocks per atlas
   auto maxBlocksPerAtlas = maxBlocks / numAtlases;
   if (maxBlocksPerAtlas > m_maxBlocksPerAtlas) {
-    cout << "The maxLumaPictureSize constraint is a limiting factor.\n";
+    std::cout << "The maxLumaPictureSize constraint is a limiting factor.\n";
     maxBlocksPerAtlas = m_maxBlocksPerAtlas;
   }
 
@@ -137,7 +138,7 @@ auto Encoder::calculateNominalAtlasFrameSizes(const EncoderParams &params) const
 
   // Warn if the aspect ratio is outside of HEVC limits (unlikely)
   if (atlasGridWidth * 8 < atlasGridHeight || atlasGridHeight * 8 < atlasGridWidth) {
-    cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
+    std::cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
   }
 
   return SizeVector(numAtlases, {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
@@ -148,8 +149,9 @@ auto Encoder::calculateViewGridSize(const EncoderParams &params) const -> Vec2i 
   int y{};
 
   for (const auto &viewParams : params.viewParamsList) {
-    x = max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_blockSize) / m_blockSize);
-    y = max(y, (viewParams.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
+    x = std::max(x, (viewParams.ci.ci_projection_plane_width_minus1() + m_blockSize) / m_blockSize);
+    y = std::max(y,
+                 (viewParams.ci.ci_projection_plane_height_minus1() + m_blockSize) / m_blockSize);
   }
 
   return {x, y};
@@ -174,9 +176,9 @@ auto Encoder::vuiParameters() const -> VuiParameters {
 void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
   uint8_t numBitsMinus1 = 9; // Main 10
   for (auto &vp : m_params.viewParamsList) {
-    const auto size = max(vp.ci.ci_projection_plane_width_minus1() + 1,
-                          vp.ci.ci_projection_plane_height_minus1() + 1);
-    numBitsMinus1 = max(numBitsMinus1, static_cast<uint8_t>(ceilLog2(size) - 1));
+    const auto size = std::max(vp.ci.ci_projection_plane_width_minus1() + 1,
+                               vp.ci.ci_projection_plane_height_minus1() + 1);
+    numBitsMinus1 = std::max(numBitsMinus1, static_cast<uint8_t>(ceilLog2(size) - 1));
   }
   for (uint8_t atlasId = 0; atlasId <= m_params.vps.vps_atlas_count_minus1(); ++atlasId) {
     m_params.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bitdepth_minus1(
@@ -237,6 +239,6 @@ void Encoder::prepareIvau() {
 
 auto Encoder::log2FocLsbMinus4() -> std::uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
-  return max(4U, ceilLog2(m_intraPeriod) + 1U) - 4U;
+  return std::max(4U, ceilLog2(m_intraPeriod) + 1U) - 4U;
 }
 } // namespace TMIV::Encoder

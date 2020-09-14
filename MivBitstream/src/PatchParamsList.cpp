@@ -37,7 +37,6 @@
 
 #include <algorithm>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {

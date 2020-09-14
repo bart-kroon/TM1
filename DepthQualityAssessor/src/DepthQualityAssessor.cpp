@@ -34,10 +34,10 @@
 #include <TMIV/Common/Thread.h>
 #include <TMIV/DepthQualityAssessor/DepthQualityAssessor.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
+#include <TMIV/MivBitstream/EncoderParams.h>
 #include <TMIV/Renderer/reprojectPoints.h>
 #include <iostream>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::Renderer;
 using namespace TMIV::MivBitstream;
@@ -45,22 +45,22 @@ using namespace TMIV::MivBitstream;
 namespace TMIV::DepthQualityAssessor {
 namespace {
 template <typename MAT>
-auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> vector<typename MAT::value_type> {
-  vector<typename MAT::value_type> fetchedValues;
+auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> std::vector<typename MAT::value_type> {
+  std::vector<typename MAT::value_type> fetchedValues;
 
   const int N = 1;
 
   int w_last = static_cast<int>(m.width()) - 1;
   int h_last = static_cast<int>(m.height()) - 1;
 
-  int xc = clamp(ifloor(p.x() + 0.5F), 0, w_last);
-  int yc = clamp(ifloor(p.y() + 0.5F), 0, h_last);
+  int xc = std::clamp(ifloor(p.x() + 0.5F), 0, w_last);
+  int yc = std::clamp(ifloor(p.y() + 0.5F), 0, h_last);
 
-  int x0 = max(0, xc - N);
-  int y0 = max(0, yc - N);
+  int x0 = std::max(0, xc - N);
+  int y0 = std::max(0, yc - N);
 
-  int x1 = min(xc + N, w_last);
-  int y1 = min(yc + N, h_last);
+  int x1 = std::min(xc + N, w_last);
+  int y1 = std::min(yc + N, h_last);
 
   fetchedValues.reserve((x1 - x0 + 1) * (y1 - y0 + 1));
 
@@ -78,8 +78,8 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
   const auto sourceHelperList = ProjectionHelperList{params.viewParamsList};
 
   // Expand depth
-  vector<Mat<float>> sourceDepthExpandedList;
-  vector<Mat<Vec3f>> sourceUnprojectionList;
+  std::vector<Mat<float>> sourceDepthExpandedList;
+  std::vector<Mat<Vec3f>> sourceUnprojectionList;
 
   sourceDepthExpandedList.reserve(sourceHelperList.size());
   sourceUnprojectionList.reserve(sourceHelperList.size());
@@ -91,11 +91,11 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
     auto sourceDepthExpanded =
         DepthTransform<16>{sourceHelper.getViewParams().dq}.expandDepth(sourceViews[viewId].depth);
 
-    transform(sourceViews[viewId].depth.getPlane(0).begin(),
-              sourceViews[viewId].depth.getPlane(0).end(), sourceDepthExpanded.begin(),
-              sourceDepthExpanded.begin(), [&](uint16_t normDisp, float depthValue) {
-                return occupancyTransform.occupant(normDisp) ? depthValue : NaN;
-              });
+    std::transform(sourceViews[viewId].depth.getPlane(0).begin(),
+                   sourceViews[viewId].depth.getPlane(0).end(), sourceDepthExpanded.begin(),
+                   sourceDepthExpanded.begin(), [&](uint16_t normDisp, float depthValue) {
+                     return occupancyTransform.occupant(normDisp) ? depthValue : NaN;
+                   });
 
     Mat<Vec3f> sourceUnprojection({sourceDepthExpanded.height(), sourceDepthExpanded.width()});
 
@@ -109,8 +109,8 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
       }
     });
 
-    sourceDepthExpandedList.emplace_back(move(sourceDepthExpanded));
-    sourceUnprojectionList.emplace_back(move(sourceUnprojection));
+    sourceDepthExpandedList.emplace_back(std::move(sourceDepthExpanded));
+    sourceUnprojectionList.emplace_back(std::move(sourceUnprojection));
   }
 
   // Repojection for outlier detection
@@ -121,7 +121,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
     for (size_t secondId = 0; secondId < sourceHelperList.size(); secondId++) {
       if (firstId != secondId) {
         const auto &secondUnprojection = sourceUnprojectionList[secondId];
-        atomic<size_t> outliers = 0U;
+        std::atomic<size_t> outliers = 0U;
 
         parallel_for(secondUnprojection.width(), secondUnprojection.height(),
                      [&](size_t y, size_t x) {
@@ -134,7 +134,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
                              firstHelper.isStrictlyInsideViewport(p.first)) {
                            auto zOnFirst = textureNeighbourhood(firstDepth, p.first);
 
-                           if (all_of(zOnFirst.begin(), zOnFirst.end(), [&](float z) {
+                           if (std::all_of(zOnFirst.begin(), zOnFirst.end(), [&](float z) {
                                  return (!isnan(z) && (p.second < z * (1.F - blendingFactor)));
                                })) {
                              outliers++;
@@ -148,17 +148,17 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
             static_cast<float>(secondUnprojection.width() * secondUnprojection.height());
 
         if (maxOutlierRatio < outlierRatio) {
-          cout << "DepthQualityAssessor -> Threshold exceeded (" << outlierRatio * 100.F << "%)"
-               << endl;
+          std::cout << "DepthQualityAssessor -> Threshold exceeded (" << outlierRatio * 100.F
+                    << "%)" << std::endl;
           return true;
         }
       }
     }
 
-    cout << "DepthQualityAssessor -> View #" << firstId << " done !" << endl;
+    std::cout << "DepthQualityAssessor -> View #" << firstId << " done !" << std::endl;
   }
 
-  cout << "DepthQualityAssessor -> OK" << endl;
+  std::cout << "DepthQualityAssessor -> OK" << std::endl;
 
   return false;
 }

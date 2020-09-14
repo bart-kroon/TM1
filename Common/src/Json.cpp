@@ -43,11 +43,9 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
 namespace TMIV::Common {
 namespace {
-void skipWhitespaceAndLineComments(istream &stream) {
+void skipWhitespaceAndLineComments(std::istream &stream) {
   for (;;) {
     // Skip whitespace
     while (!stream.eof() && (isspace(stream.peek()) != 0)) {
@@ -62,12 +60,12 @@ void skipWhitespaceAndLineComments(istream &stream) {
     // Skip line comment
     stream.get();
     if (stream.eof()) {
-      throw runtime_error("Stray '/' at end of file");
+      throw std::runtime_error("Stray '/' at end of file");
     }
     if (stream.peek() != '/') {
-      ostringstream what;
-      what << "Stray character 0x" << hex << stream.peek() << " at end of file\n";
-      throw runtime_error(what.str());
+      std::ostringstream what;
+      what << "Stray character 0x" << std::hex << stream.peek() << " at std::end of file\n";
+      throw std::runtime_error(what.str());
     }
     while (!stream.eof() && stream.peek() != '\n') {
       stream.get();
@@ -75,25 +73,25 @@ void skipWhitespaceAndLineComments(istream &stream) {
   }
 }
 
-void matchCharacter(istream &stream, istream::int_type expected) {
+void matchCharacter(std::istream &stream, std::istream::int_type expected) {
   auto actual = stream.get();
 
   if (actual != expected) {
-    ostringstream what;
+    std::ostringstream what;
     what << "Expected '" << static_cast<char>(expected) << "' but found '"
-         << static_cast<char>(actual) << "' (0x" << hex << actual << ")";
-    throw runtime_error(what.str());
+         << static_cast<char>(actual) << "' (0x" << std::hex << actual << ")";
+    throw std::runtime_error(what.str());
   }
 }
 
-void matchText(istream &stream, string const &text) {
+void matchText(std::istream &stream, std::string const &text) {
   for (auto ch : text) {
     matchCharacter(stream, ch);
   }
 }
 } // namespace
 
-static auto readValue(istream &stream) -> shared_ptr<impl::Value>;
+static auto readValue(std::istream &stream) -> std::shared_ptr<impl::Value>;
 
 namespace impl {
 struct Value {
@@ -109,7 +107,7 @@ struct Value {
 
 struct String : public Value {
 public:
-  explicit String(istream &stream) : Value(Json::Type::string) {
+  explicit String(std::istream &stream) : Value(Json::Type::string) {
     matchCharacter(stream, '"');
     auto ch = stream.get();
 
@@ -141,9 +139,9 @@ public:
           value.push_back('\t');
           break;
         case 'u':
-          throw runtime_error("JSON parser: unicode string escaping not yet implemented");
+          throw std::runtime_error("JSON parser: unicode std::string escaping not yet implemented");
         default:
-          throw runtime_error("JSON parser: invalid string escape character");
+          throw std::runtime_error("JSON parser: invalid std::string escape character");
         }
       } else {
         value.push_back(static_cast<char>(ch));
@@ -152,17 +150,17 @@ public:
     }
   }
 
-  string value;
+  std::string value;
 };
 
 struct Number : public Value {
-  explicit Number(istream &stream) : Value(Json::Type::number) { stream >> value; }
+  explicit Number(std::istream &stream) : Value(Json::Type::number) { stream >> value; }
 
   double value{};
 };
 
 struct Object : public Value {
-  explicit Object(istream &stream) : Value(Json::Type::object) {
+  explicit Object(std::istream &stream) : Value(Json::Type::object) {
     matchCharacter(stream, '{');
     skipWhitespaceAndLineComments(stream);
 
@@ -183,11 +181,11 @@ struct Object : public Value {
     stream.get();
   }
 
-  map<string, shared_ptr<Value>> value;
+  std::map<std::string, std::shared_ptr<Value>> value;
 };
 
 struct Array : public Value {
-  explicit Array(istream &stream) : Value(Json::Type::array) {
+  explicit Array(std::istream &stream) : Value(Json::Type::array) {
     matchCharacter(stream, '[');
     skipWhitespaceAndLineComments(stream);
 
@@ -205,12 +203,12 @@ struct Array : public Value {
     matchCharacter(stream, ']');
   }
 
-  vector<shared_ptr<Value>> value;
+  std::vector<std::shared_ptr<Value>> value;
 };
 
 struct Bool : public Value {
 public:
-  explicit Bool(istream &stream) : Value(Json::Type::boolean) {
+  explicit Bool(std::istream &stream) : Value(Json::Type::boolean) {
     value = stream.peek() == 't';
     matchText(stream, value ? "true" : "false");
   }
@@ -221,30 +219,30 @@ public:
 struct Null : public Value {
   Null() : Value(Json::Type::null) {}
 
-  explicit Null(istream &stream) : Null() { matchText(stream, "null"); }
+  explicit Null(std::istream &stream) : Null() { matchText(stream, "null"); }
 };
 } // namespace impl
 
 Json::Json() : m_value(new impl::Null) {}
 
-Json::Json(shared_ptr<impl::Value> value) : m_value(move(value)) {}
+Json::Json(std::shared_ptr<impl::Value> value) : m_value(std::move(value)) {}
 
-Json::Json(istream &stream) {
+Json::Json(std::istream &stream) {
   try {
-    stream.exceptions(ios::badbit | ios::failbit);
+    stream.exceptions(std::ios::badbit | std::ios::failbit);
     auto value = readValue(stream);
     skipWhitespaceAndLineComments(stream);
 
     if (!stream.eof()) {
       auto ch = stream.get();
-      ostringstream what;
-      what << "Stray character " << static_cast<char>(ch) << " (0x" << ios::hex << ch << ")";
-      throw runtime_error(what.str());
+      std::ostringstream what;
+      what << "Stray character " << static_cast<char>(ch) << " (0x" << std::ios::hex << ch << ")";
+      throw std::runtime_error(what.str());
     }
 
-    m_value = move(value);
-  } catch (runtime_error &e) {
-    throw runtime_error(string("JSON parser: ") + e.what());
+    m_value = std::move(value);
+  } catch (std::runtime_error &e) {
+    throw std::runtime_error(std::string("JSON parser: ") + e.what());
   }
 }
 
@@ -254,42 +252,42 @@ void Json::setOverrides(const Json &overrides) {
       dynamic_cast<impl::Object &>(*m_value).value[kvp.first] = kvp.second;
     }
   } else {
-    throw runtime_error("Overrides should be a JSON object, e.g. {...}");
+    throw std::runtime_error("Overrides should be a JSON object, e.g. {...}");
   }
 }
 
 auto Json::type() const -> Json::Type { return m_value->type; }
 
-auto Json::optional(string const &key) const -> Json {
+auto Json::optional(std::string const &key) const -> Json {
   try {
     return Json{dynamic_cast<impl::Object &>(*m_value).value.at(key)};
-  } catch (out_of_range &) {
+  } catch (std::out_of_range &) {
     return {};
-  } catch (bad_cast &) {
-    ostringstream what;
+  } catch (std::bad_cast &) {
+    std::ostringstream what;
     what << "JSON parser: Querying optional key '" << key << "', but node is not an object";
-    throw runtime_error(what.str());
+    throw std::runtime_error(what.str());
   }
 }
 
-auto Json::require(string const &key) const -> Json {
+auto Json::require(std::string const &key) const -> Json {
   auto node = optional(key);
   if (node.type() != Type::null) {
     return node;
   }
-  ostringstream stream;
+  std::ostringstream stream;
   stream << "JSON parser: Parameter " << key << " is required but missing";
-  throw runtime_error(stream.str());
+  throw std::runtime_error(stream.str());
 }
 
-auto Json::isPresent(string const &key) const -> bool {
+auto Json::isPresent(std::string const &key) const -> bool {
   auto node = optional(key);
   return node.type() != Type::null;
 }
 
 auto Json::at(size_t index) const -> Json {
   if (type() != Type::array) {
-    throw runtime_error("JSON parser: Expected an array");
+    throw std::runtime_error("JSON parser: Expected an array");
   }
   return Json{dynamic_cast<impl::Array &>(*m_value).value.at(index)};
 }
@@ -301,13 +299,13 @@ auto Json::size() const -> size_t {
   case Type::object:
     return dynamic_cast<impl::Object &>(*m_value).value.size();
   default:
-    throw runtime_error("JSON parser: Expected an array or object");
+    throw std::runtime_error("JSON parser: Expected an array or object");
   }
 }
 
 auto Json::asDouble() const -> double {
   if (type() != Type::number) {
-    throw runtime_error("JSON parser: Expected a number");
+    throw std::runtime_error("JSON parser: Expected a number");
   }
   return dynamic_cast<impl::Number &>(*m_value).value;
 }
@@ -320,27 +318,27 @@ auto Json::asInt() const -> int {
   auto error = value - rounded;
   constexpr auto eps = 1e-6;
   if (error > eps) {
-    throw runtime_error("JSON parser: Expected an integer value");
+    throw std::runtime_error("JSON parser: Expected an integer value");
   }
   return rounded;
 }
 
-auto Json::asString() const -> string const & {
+auto Json::asString() const -> std::string const & {
   if (type() != Type::string) {
-    throw runtime_error("JSON parser: Expected a string");
+    throw std::runtime_error("JSON parser: Expected a std::string");
   }
   return dynamic_cast<impl::String &>(*m_value).value;
 }
 
 auto Json::asBool() const -> bool {
   if (type() != Type::boolean) {
-    throw runtime_error("JSON parser: Expected a boolean");
+    throw std::runtime_error("JSON parser: Expected a boolean");
   }
   return dynamic_cast<impl::Bool &>(*m_value).value;
 }
 
-auto Json::asStringVector() const -> vector<string> {
-  auto v = vector<string>();
+auto Json::asStringVector() const -> std::vector<std::string> {
+  auto v = std::vector<std::string>();
   v.reserve(size());
   for (size_t i = 0; i < size(); ++i) {
     v.emplace_back(at(i).asString());
@@ -359,32 +357,32 @@ Json::operator bool() const {
   }
 }
 
-static auto readValue(istream &stream) -> shared_ptr<impl::Value> {
+static auto readValue(std::istream &stream) -> std::shared_ptr<impl::Value> {
   skipWhitespaceAndLineComments(stream);
   auto ch = stream.peek();
 
   switch (ch) {
   case '{':
-    return make_shared<impl::Object>(stream);
+    return std::make_shared<impl::Object>(stream);
   case '[':
-    return make_shared<impl::Array>(stream);
+    return std::make_shared<impl::Array>(stream);
   case '"':
-    return make_shared<impl::String>(stream);
+    return std::make_shared<impl::String>(stream);
   case 't':
   case 'f':
-    return make_shared<impl::Bool>(stream);
+    return std::make_shared<impl::Bool>(stream);
   case 'n':
-    return make_shared<impl::Null>(stream);
+    return std::make_shared<impl::Null>(stream);
   default:
     break;
   }
 
   if (ch == '-' || (isdigit(ch) != 0)) {
-    return make_shared<impl::Number>(stream);
+    return std::make_shared<impl::Number>(stream);
   }
 
-  ostringstream what;
-  what << "Invalid character " << static_cast<char>(ch) << " (0x" << ios::hex << ch << ")";
-  throw runtime_error(what.str());
+  std::ostringstream what;
+  what << "Invalid character " << static_cast<char>(ch) << " (0x" << std::ios::hex << ch << ")";
+  throw std::runtime_error(what.str());
 }
 } // namespace TMIV::Common

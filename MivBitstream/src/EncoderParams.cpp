@@ -37,7 +37,6 @@
 
 #include <algorithm>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
@@ -112,7 +111,7 @@ auto EncoderParams::atlasSizes() const -> SizeVector {
   auto x = SizeVector{};
   x.reserve(atlas.size());
 
-  transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
+  std::transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
     return Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
   });
 

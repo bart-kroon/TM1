@@ -38,11 +38,10 @@
 
 #include <TMIV/Common/Common.h>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, AthType x) -> ostream & {
+auto operator<<(std::ostream &stream, AthType x) -> std::ostream & {
   switch (x) {
   case AthType::P_TILE:
     return stream << "P_TILE";
@@ -55,7 +54,7 @@ auto operator<<(ostream &stream, AthType x) -> ostream & {
   }
 }
 
-auto operator<<(ostream &stream, FlexiblePatchOrientation x) -> ostream & {
+auto operator<<(std::ostream &stream, FlexiblePatchOrientation x) -> std::ostream & {
   switch (x) {
   case FlexiblePatchOrientation::FPO_NULL:
     return stream << "FPO_NULL";
@@ -78,7 +77,7 @@ auto operator<<(ostream &stream, FlexiblePatchOrientation x) -> ostream & {
   }
 }
 
-auto printTo(ostream &stream, AtduPatchMode x, AthType ath_type) -> ostream & {
+auto printTo(std::ostream &stream, AtduPatchMode x, AthType ath_type) -> std::ostream & {
   switch (ath_type) {
   case AthType::I_TILE:
     switch (x) {
@@ -153,7 +152,7 @@ auto AtlasTileHeader::ath_patch_size_y_info_quantizer(const uint8_t value) noexc
   return *this;
 }
 
-auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
+auto operator<<(std::ostream &stream, const AtlasTileHeader &x) -> std::ostream & {
   stream << "ath_atlas_frame_parameter_set_id=" << int(x.ath_atlas_frame_parameter_set_id())
          << '\n';
   stream << "ath_atlas_adaptation_parameter_set_id=" << int(x.m_ath_adaptation_parameter_set_id)
@@ -161,11 +160,11 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
   stream << "ath_id=" << int(x.ath_id()) << '\n';
   stream << "ath_type=" << x.ath_type() << '\n';
   if (x.m_ath_atlas_output_flag) {
-    stream << "ath_atlas_output_flag=" << boolalpha << *x.m_ath_atlas_output_flag << '\n';
+    stream << "ath_atlas_output_flag=" << std::boolalpha << *x.m_ath_atlas_output_flag << '\n';
   }
   stream << "ath_atlas_frm_order_cnt_lsb=" << int(x.ath_atlas_frm_order_cnt_lsb()) << '\n';
   if (x.m_ath_ref_atlas_frame_list_sps_flag) {
-    stream << "ath_ref_atlas_frame_list_sps_flag=" << boolalpha
+    stream << "ath_ref_atlas_frame_list_sps_flag=" << std::boolalpha
            << *x.m_ath_ref_atlas_frame_list_sps_flag << '\n';
   }
   if (x.ath_type() != AthType::SKIP_TILE) {
@@ -185,8 +184,8 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
 }
 
 auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
-                                 const vector<AtlasSequenceParameterSetRBSP> &aspsV,
-                                 const vector<AtlasFrameParameterSetRBSP> &afpsV)
+                                 const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                                 const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
     -> AtlasTileHeader {
   auto x = AtlasTileHeader{};
 
@@ -246,8 +245,8 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
 }
 
 void AtlasTileHeader::encodeTo(OutputBitstream &bitstream,
-                               const vector<AtlasSequenceParameterSetRBSP> &aspsV,
-                               const vector<AtlasFrameParameterSetRBSP> &afpsV) const {
+                               const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                               const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const {
   VERIFY_V3CBITSTREAM(ath_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(ath_atlas_frame_parameter_set_id());
 
@@ -306,15 +305,17 @@ void AtlasTileHeader::encodeTo(OutputBitstream &bitstream,
   bitstream.byteAlignment();
 }
 
-auto operator<<(ostream &stream, const SkipPatchDataUnit & /* x */) -> ostream & { return stream; }
+auto operator<<(std::ostream &stream, const SkipPatchDataUnit & /* x */) -> std::ostream & {
+  return stream;
+}
 
 auto PduMivExtension::pdu_depth_occ_threshold() const noexcept -> uint32_t {
   VERIFY_MIVBITSTREAM(m_pdu_depth_occ_threshold.has_value());
   return *m_pdu_depth_occ_threshold;
 }
 
-auto PduMivExtension::printTo(ostream &stream, unsigned tileId, size_t patchIdx) const
-    -> ostream & {
+auto PduMivExtension::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
+    -> std::ostream & {
   if (m_pdu_entity_id) {
     stream << "pdu_entity_id[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_entity_id() << '\n';
   }
@@ -370,7 +371,8 @@ auto PatchDataUnit::pdu_miv_extension(const PduMivExtension &value) noexcept -> 
   return *this;
 }
 
-auto PatchDataUnit::printTo(ostream &stream, unsigned tileId, size_t patchIdx) const -> ostream & {
+auto PatchDataUnit::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
+    -> std::ostream & {
   stream << "pdu_2d_pos_x[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_2d_pos_x() << '\n';
   stream << "pdu_2d_pos_y[ " << tileId << " ][ " << patchIdx << " ]=" << pdu_2d_pos_y() << '\n';
   stream << "pdu_2d_size_x_minus1[ " << tileId << " ][ " << patchIdx
@@ -395,8 +397,8 @@ auto PatchDataUnit::printTo(ostream &stream, unsigned tileId, size_t patchIdx) c
 
 auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
                                const V3cParameterSet &vps,
-                               const vector<AtlasSequenceParameterSetRBSP> &aspsV,
-                               const vector<AtlasFrameParameterSetRBSP> &afpsV,
+                               const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                               const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                                const AtlasTileHeader &ath) -> PatchDataUnit {
   auto x = PatchDataUnit{};
 
@@ -451,8 +453,8 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
 
 void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
                              const V3cParameterSet &vps,
-                             const vector<AtlasSequenceParameterSetRBSP> &aspsV,
-                             const vector<AtlasFrameParameterSetRBSP> &afpsV,
+                             const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
+                             const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
                              const AtlasTileHeader &ath) const {
   const auto &afps = afpsById(afpsV, ath.ath_atlas_frame_parameter_set_id());
   const auto &asps = aspsById(aspsV, afps.afps_atlas_sequence_parameter_set_id());
@@ -506,18 +508,18 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
 }
 
 auto PatchInformationData::skip_patch_data_unit() const noexcept -> const SkipPatchDataUnit & {
-  VERIFY_V3CBITSTREAM(holds_alternative<SkipPatchDataUnit>(m_data));
-  return *get_if<SkipPatchDataUnit>(&m_data);
+  VERIFY_V3CBITSTREAM(std::holds_alternative<SkipPatchDataUnit>(m_data));
+  return *std::get_if<SkipPatchDataUnit>(&m_data);
 }
 
 auto PatchInformationData::patch_data_unit() const noexcept -> const PatchDataUnit & {
-  VERIFY_V3CBITSTREAM(holds_alternative<PatchDataUnit>(m_data));
-  return *get_if<PatchDataUnit>(&m_data);
+  VERIFY_V3CBITSTREAM(std::holds_alternative<PatchDataUnit>(m_data));
+  return *std::get_if<PatchDataUnit>(&m_data);
 }
 
-auto PatchInformationData::printTo(ostream &stream, unsigned tileId, size_t patchIdx) const
-    -> ostream & {
-  visit(overload([&](const monostate & /* unused */) { stream << "[unknown]\n"; },
+auto PatchInformationData::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
+    -> std::ostream & {
+  visit(overload([&](const std::monostate & /* unused */) { stream << "[unknown]\n"; },
                  [&](const SkipPatchDataUnit &x) { stream << x; },
                  [&](const PatchDataUnit &x) { x.printTo(stream, tileId, patchIdx); }),
         m_data);
@@ -534,8 +536,8 @@ auto PatchInformationData::operator!=(const PatchInformationData &other) const n
 
 auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
                                       const V3cParameterSet &vps,
-                                      const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                      const vector<AtlasFrameParameterSetRBSP> &afps,
+                                      const std::vector<AtlasSequenceParameterSetRBSP> &asps,
+                                      const std::vector<AtlasFrameParameterSetRBSP> &afps,
                                       const AtlasTileHeader &ath, AtduPatchMode patchMode)
     -> PatchInformationData {
   if (ath.ath_type() == AthType::I_TILE) {
@@ -551,8 +553,8 @@ auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const V3cUnitHe
 
 void PatchInformationData::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
                                     const V3cParameterSet &vps,
-                                    const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                    const vector<AtlasFrameParameterSetRBSP> &afps,
+                                    const std::vector<AtlasSequenceParameterSetRBSP> &asps,
+                                    const std::vector<AtlasFrameParameterSetRBSP> &afps,
                                     const AtlasTileHeader &ath, AtduPatchMode patchMode) const {
   if (ath.ath_type() == AthType::I_TILE) {
     VERIFY_V3CBITSTREAM(patchMode == AtduPatchMode::I_INTRA);
@@ -579,7 +581,8 @@ auto AtlasTileDataUnit::patch_information_data(size_t p) const -> const PatchInf
   return m_vector[p].second;
 }
 
-auto AtlasTileDataUnit::printTo(ostream &stream, const AtlasTileHeader &ath) const -> ostream & {
+auto AtlasTileDataUnit::printTo(std::ostream &stream, const AtlasTileHeader &ath) const
+    -> std::ostream & {
   visit([&](const auto p, const AtduPatchMode patch_mode,
             const PatchInformationData &patch_information_data) {
     stream << "atdu_patch_mode[ " << p << " ]=";
@@ -599,8 +602,8 @@ auto AtlasTileDataUnit::operator!=(const AtlasTileDataUnit &other) const -> bool
 
 auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
                                    const V3cParameterSet &vps,
-                                   const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                   const vector<AtlasFrameParameterSetRBSP> &afps,
+                                   const std::vector<AtlasSequenceParameterSetRBSP> &asps,
+                                   const std::vector<AtlasFrameParameterSetRBSP> &afps,
                                    const AtlasTileHeader &ath) -> AtlasTileDataUnit {
   VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
 
@@ -623,8 +626,8 @@ auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeade
 
 void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
                                  const V3cParameterSet &vps,
-                                 const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                 const vector<AtlasFrameParameterSetRBSP> &afps,
+                                 const std::vector<AtlasSequenceParameterSetRBSP> &asps,
+                                 const std::vector<AtlasFrameParameterSetRBSP> &afps,
                                  const AtlasTileHeader &ath) const {
   VERIFY_MIVBITSTREAM(ath.ath_type() == AthType::I_TILE || ath.ath_type() == AthType::SKIP_TILE);
 
@@ -639,7 +642,7 @@ void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader
   }
 }
 
-auto operator<<(ostream &stream, const AtlasTileLayerRBSP &x) -> ostream & {
+auto operator<<(std::ostream &stream, const AtlasTileLayerRBSP &x) -> std::ostream & {
   stream << x.atlas_tile_header();
   x.atlas_tile_data_unit().printTo(stream, x.atlas_tile_header());
   return stream;
@@ -654,10 +657,10 @@ auto AtlasTileLayerRBSP::operator!=(const AtlasTileLayerRBSP &other) const noexc
   return !operator==(other);
 }
 
-auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cUnitHeader &vuh,
+auto AtlasTileLayerRBSP::decodeFrom(std::istream &stream, const V3cUnitHeader &vuh,
                                     const V3cParameterSet &vps,
-                                    const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                    const vector<AtlasFrameParameterSetRBSP> &afps)
+                                    const std::vector<AtlasSequenceParameterSetRBSP> &asps,
+                                    const std::vector<AtlasFrameParameterSetRBSP> &afps)
     -> AtlasTileLayerRBSP {
   InputBitstream bitstream{stream};
 
@@ -670,10 +673,10 @@ auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cUnitHeader &vuh,
   return atl;
 }
 
-void AtlasTileLayerRBSP::encodeTo(ostream &stream, const V3cUnitHeader &vuh,
+void AtlasTileLayerRBSP::encodeTo(std::ostream &stream, const V3cUnitHeader &vuh,
                                   const V3cParameterSet &vps,
-                                  const vector<AtlasSequenceParameterSetRBSP> &asps,
-                                  const vector<AtlasFrameParameterSetRBSP> &afps) const {
+                                  const std::vector<AtlasSequenceParameterSetRBSP> &asps,
+                                  const std::vector<AtlasFrameParameterSetRBSP> &afps) const {
   OutputBitstream bitstream{stream};
 
   atlas_tile_header().encodeTo(bitstream, asps, afps);

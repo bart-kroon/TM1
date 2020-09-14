@@ -41,7 +41,6 @@
 #include "TMIV/Renderer/Engine.h"
 #include <TMIV/Renderer/reprojectPoints.h>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -53,8 +52,8 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
   const auto &camera = cameras[patch.pduViewIdx()];
   const auto R_t = AffineTransform(cameras[patch.pduViewIdx()].ce, target.ce);
 
-  auto uv = array<Vec2f, 4>{};
-  auto xy_v = array<Vec2f, 8>{};
+  auto uv = std::array<Vec2f, 4>{};
+  auto xy_v = std::array<Vec2f, 8>{};
   const auto w = static_cast<float>(patch.pduViewSize().x());
   const auto h = static_cast<float>(patch.pduViewSize().y());
   uv[0] = Vec2f(patch.pduViewPos());
@@ -64,9 +63,9 @@ auto choosePatch(const PatchParams &patch, const ViewParamsList &cameras, const 
 
   // Using Camera depth
   const auto patch_dep_near =
-      1.F / max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_low());
+      1.F / std::max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_low());
   const auto patch_dep_far =
-      1.F / max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_high());
+      1.F / std::max(MivBitstream::impl::minNormDisp, camera.dq.dq_norm_disp_high());
 
   for (int i = 0; i < 4; i++) {
     const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_near, camera.ci));
@@ -149,7 +148,7 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
     const auto &view = frame.viewParamsList[patch.pduViewIdx()];
 
     if (patch.pduViewSize() == view.ci.projectionPlaneSize()) {
-      // The size of the sub-block is fixed for now
+      // The size of the sub-block is std::fixed for now
       const auto blockSize = Vec2i{128, 128};
 
       for (const auto &block : divideInBlocks(patch, blockSize)) {

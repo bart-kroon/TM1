@@ -35,7 +35,6 @@
 
 #include <algorithm>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 
@@ -44,7 +43,7 @@ GeometryDownscaler::GeometryDownscaler(const Json &rootNode, const Json & /* com
     : m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").asBool()} {}
 
 auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderParams & {
-  m_params = move(params);
+  m_params = std::move(params);
 
   if (m_geometryScaleEnabledFlag) {
     m_params.vps.vps_miv_extension_flag(true);
@@ -74,7 +73,7 @@ auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
 
       for (int i = i1; i < i2; ++i) {
         for (int j = j1; j < j2; ++j) {
-          maximum = max(maximum, frame.getPlane(0)(i, j));
+          maximum = std::max(maximum, frame.getPlane(0)(i, j));
         }
       }
 

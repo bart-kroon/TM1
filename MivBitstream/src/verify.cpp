@@ -35,24 +35,22 @@
 
 #include <iostream>
 
-using namespace std;
-
 namespace TMIV::MivBitstream {
 [[noreturn]] void v3cError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode V3C bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
+  std::cerr << "Failed to encode/decode V3C bitstream: " << condition << " [" << file << "@" << line
+            << '\n';
   abort();
 }
 
 [[noreturn]] void mivError(char const *condition, char const *file, int line) {
-  cerr << "Failed to encode/decode MIV bitstream: " << condition << " [" << file << "@" << line
-       << '\n';
+  std::cerr << "Failed to encode/decode MIV bitstream: " << condition << " [" << file << "@" << line
+            << '\n';
   abort();
 }
 
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line) {
-  cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file
-       << "@" << line << '\n';
+  std::cerr << "This aspect of MIV/3VC has not yet been implemented: " << condition << " [" << file
+            << "@" << line << '\n';
   abort();
 }
 } // namespace TMIV::MivBitstream

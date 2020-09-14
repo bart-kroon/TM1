@@ -39,7 +39,6 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 
-using namespace std;
 using namespace TMIV::Common;
 using namespace TMIV::MivBitstream;
 using namespace TMIV::GeometryQuantizer;

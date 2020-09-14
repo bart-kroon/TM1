@@ -35,7 +35,6 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
@@ -133,14 +132,14 @@ RecViewport::RecViewport(uint16_t value1, bool value2) {
   rec_viewport_cancel_flag(value2);
 }
 
-auto operator<<(ostream &stream, const RecViewport &x) -> ostream & {
+auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream & {
   stream << "rec_viewport_id=" << x.rec_viewport_id() << '\n';
-  stream << "rec_viewport_cancel_flag=" << boolalpha << x.rec_viewport_cancel_flag() << '\n';
+  stream << "rec_viewport_cancel_flag=" << std::boolalpha << x.rec_viewport_cancel_flag() << '\n';
   if (!x.rec_viewport_cancel_flag()) {
-    stream << "rec_viewport_persistence_flag=" << boolalpha << x.rec_viewport_persistence_flag()
-           << '\n';
-    stream << "rec_viewport_center_view_flag=" << boolalpha << x.rec_viewport_center_view_flag()
-           << '\n';
+    stream << "rec_viewport_persistence_flag=" << std::boolalpha
+           << x.rec_viewport_persistence_flag() << '\n';
+    stream << "rec_viewport_center_view_flag=" << std::boolalpha
+           << x.rec_viewport_center_view_flag() << '\n';
     if (!x.rec_viewport_center_view_flag()) {
       stream << "rec_viewport_left_view_flag=" << x.rec_viewport_left_view_flag() << '\n';
     }

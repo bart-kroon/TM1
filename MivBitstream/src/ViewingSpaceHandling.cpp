@@ -35,11 +35,10 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, VhDeviceClass x) -> ostream & {
+auto operator<<(std::ostream &stream, VhDeviceClass x) -> std::ostream & {
   switch (x) {
   case VhDeviceClass::VHDC_ALL:
     return stream << "VHDC_ALL";
@@ -54,7 +53,7 @@ auto operator<<(ostream &stream, VhDeviceClass x) -> ostream & {
   }
 }
 
-auto operator<<(ostream &stream, VhApplicationClass x) -> ostream & {
+auto operator<<(std::ostream &stream, VhApplicationClass x) -> std::ostream & {
   switch (x) {
   case VhApplicationClass::VHAC_ALL:
     return stream << "VHAC_ALL";
@@ -71,7 +70,7 @@ auto operator<<(ostream &stream, VhApplicationClass x) -> ostream & {
   }
 }
 
-auto operator<<(ostream &stream, VhMethod x) -> ostream & {
+auto operator<<(std::ostream &stream, VhMethod x) -> std::ostream & {
   switch (x) {
   case VhMethod::VHM_NULL:
     return stream << "VHM_NULL";
@@ -125,7 +124,7 @@ auto ViewingSpaceHandling::vs_handling_method(size_t h) const noexcept -> VhMeth
   return m_handlingOptionList[h].vs_handling_method;
 }
 
-auto operator<<(ostream &stream, const ViewingSpaceHandling &x) -> ostream & {
+auto operator<<(std::ostream &stream, const ViewingSpaceHandling &x) -> std::ostream & {
   stream << "vs_handling_options_count=" << x.vs_handling_options_count() << '\n';
 
   for (size_t h = 0; h < x.vs_handling_options_count(); ++h) {

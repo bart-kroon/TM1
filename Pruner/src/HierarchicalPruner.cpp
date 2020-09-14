@@ -48,7 +48,6 @@
 #include <numeric>
 
 using namespace TMIV::Common;
-using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Pruner {
@@ -291,11 +290,12 @@ public:
     for (auto &cluster : m_clusters) {
       if (!cluster.pruningOrder.empty()) {
         for (auto i : cluster.basicViewId) {
-          pruningGraph.connect(cluster.pruningOrder.front(), i, 1.F, LinkType::Directed);
+          pruningGraph.connect(cluster.pruningOrder.front(), i, 1.F,
+                               Common::Graph::LinkType::Directed);
         }
         for (size_t i = 1; i < cluster.pruningOrder.size(); ++i) {
           pruningGraph.connect(cluster.pruningOrder[i], cluster.pruningOrder[i - 1], 1.F,
-                               LinkType::Directed);
+                               Common::Graph::LinkType::Directed);
         }
       }
     }

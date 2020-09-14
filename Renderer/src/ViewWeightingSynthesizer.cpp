@@ -46,7 +46,6 @@
 #include <cmath>
 
 using namespace TMIV::Common;
-using namespace TMIV::Common::Graph;
 using namespace TMIV::MivBitstream;
 
 namespace TMIV::Renderer {
@@ -663,7 +662,8 @@ private:
 
         if (viewParams.pp) {
           for (auto parentId : *viewParams.pp) {
-            pruningGraph.connect(nodeId, static_cast<size_t>(parentId), 1.F, LinkType::Directed);
+            pruningGraph.connect(nodeId, static_cast<size_t>(parentId), 1.F,
+                                 Common::Graph::LinkType::Directed);
           }
         }
       }
@@ -680,7 +680,7 @@ private:
                 auto zPruned = m_viewportDepth[prunedNodeId](y, x);
 
                 // Retrieve candidate
-                std::queue<NodeId> nodeQueue;
+                std::queue<Common::Graph::NodeId> nodeQueue;
 
                 for (const auto &linkToParent : pruningGraph.getNeighbourhood(prunedNodeId)) {
                   nodeQueue.push(linkToParent.node());
@@ -689,7 +689,7 @@ private:
                 int w_last = static_cast<int>(m_sourceDepth[prunedNodeId].width()) - 1;
                 int h_last = static_cast<int>(m_sourceDepth[prunedNodeId].height()) - 1;
 
-                std::vector<std::pair<NodeId, float>> candidateList;
+                std::vector<std::pair<Common::Graph::NodeId, float>> candidateList;
 
                 while (!nodeQueue.empty()) {
                   auto unprunedNodeId = nodeQueue.front();
@@ -716,7 +716,7 @@ private:
 
                 // Find best
                 const auto &prunedHelper = sourceHelperList[prunedNodeId];
-                NodeId representativeNodeId = prunedNodeId;
+                Common::Graph::NodeId representativeNodeId = prunedNodeId;
 
                 for (const auto &candidate : candidateList) {
                   auto p = prunedHelper.doProjection(m_viewportUnprojection[candidate.first](y, x));

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 file(GLOB_RECURSE ALL_SOURCE_FILES "${ANALYZE_DIR}/*.cpp")
 file(GLOB_RECURSE ALL_HEADER_FILES "${ANALYZE_DIR}/*.h")

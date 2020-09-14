@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(
     TMIV
@@ -10,12 +10,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CMake/clang_tidy.cmake)
 
-# To enable testing, clone https://github.com/catchorg/Catch2 2.10.2 or newer, build and install.
-# Then in the CMake GUI set Catch2_DIR to the lib/cmake/Catch2 directory of the Catch2 installation.
-find_package(Catch2 2.10.2 QUIET)
-if (Catch2_FOUND)
-    enable_testing()
+include(CMake/catch2.cmake)
+
+if (BUILD_CATCH2)
+    include(CTest)
     include(Catch)
+    enable_testing()
 endif()
 
 include(GNUInstallDirs)

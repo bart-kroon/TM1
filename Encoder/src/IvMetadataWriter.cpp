@@ -36,7 +36,6 @@
 #include <TMIV/IO/IO.h>
 
 using namespace TMIV::Common;
-using namespace TMIV::Encoder;
 
 namespace TMIV::Encoder {
 auto bitstreamPath(const Json &config) -> std::string {

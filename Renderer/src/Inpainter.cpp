@@ -236,8 +236,8 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
       auto newH = oldH * width2 / tmpW;
       newH += height2;
 
-      auto iNewH = lround(newH);
-      auto iNewW = lround(newW);
+      auto iNewH = std::lround(newH);
+      auto iNewW = std::lround(newW);
 
       if (iNewH < 0 || iNewH >= height) {
         continue;

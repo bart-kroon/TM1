@@ -314,7 +314,7 @@ auto Json::asFloat() const -> float { return static_cast<float>(asDouble()); }
 
 auto Json::asInt() const -> int {
   auto value = asDouble();
-  auto rounded = static_cast<int>(lround(value));
+  auto rounded = static_cast<int>(std::lround(value));
   auto error = value - rounded;
   constexpr auto eps = 1e-6;
   if (error > eps) {

@@ -466,8 +466,8 @@ private:
         if (isValidDepth(Q[i].second)) {
           auto OQ = m_sourceRayDirection[viewId](yo, xo);
 
-          float a = acos(dot(OP, OQ)) / m_cameraDistortion[viewId];
-          float wi = exp(-a * a);
+          float a = std::acos(dot(OP, OQ)) / m_cameraDistortion[viewId];
+          float wi = std::exp(-a * a);
 
           W[i] = wi;
           C += wi * Q[i].first;
@@ -871,7 +871,7 @@ private:
         if (sourceHelperList[sourceId].isValidDepth(z)) {
           auto OQ = m_sourceRayDirection[sourceId](yo, xo);
 
-          if (2.F * m_cameraDistortion[sourceId] < std::abs(acos(dot(OP, OQ)))) {
+          if (2.F * m_cameraDistortion[sourceId] < std::abs(std::acos(dot(OP, OQ)))) {
             return true;
           }
         } else {

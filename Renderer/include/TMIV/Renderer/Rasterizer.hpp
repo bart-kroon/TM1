@@ -281,7 +281,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
   if (area <= 0) {
     return; // Cull
   }
-  const auto area_f = ldexp(float(area), -2 * bits);
+  const auto area_f = std::ldexp(float(area), -2 * bits);
   const auto inv_area = 1.F / float(area);
 
   // Calculate feature values for determining blending weights

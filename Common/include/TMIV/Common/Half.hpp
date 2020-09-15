@@ -49,7 +49,7 @@ inline Half::operator float() const {
 
   const auto exponent = int((m_code & 0x7C00U) >> 10U);
   const auto mantissa = (m_code & 0x03FFU) | 0x400U;
-  return sign * ldexp(float(mantissa), exponent - 25);
+  return sign * std::ldexp(float(mantissa), exponent - 25);
 }
 
 inline Half::Half(float value) {
@@ -63,8 +63,8 @@ inline Half::Half(float value) {
     m_code = 0; // the WD excludes subnormal numbers
   } else {
     int exponent{};
-    const auto mantissa_f = frexp(x, &exponent);
-    const auto mantissa = unsigned(lround(ldexp(mantissa_f, 11)));
+    const auto mantissa_f = std::frexp(x, &exponent);
+    const auto mantissa = unsigned(std::lround(std::ldexp(mantissa_f, 11)));
     m_code = uint16_t((unsigned(exponent + 14) << 10) | (mantissa & 0x3FF));
   }
 

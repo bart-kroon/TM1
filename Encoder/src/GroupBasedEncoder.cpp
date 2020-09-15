@@ -140,7 +140,7 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
 
   for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
     viewsPool.push_back(viewParamsList[camIndex]);
-    viewsLabels.push_back(uint8_t(camIndex));
+    viewsLabels.push_back(static_cast<uint8_t>(camIndex));
   }
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {

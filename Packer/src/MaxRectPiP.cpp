@@ -38,7 +38,7 @@ using namespace std;
 using namespace TMIV::Common;
 
 namespace TMIV::Packer {
-constexpr auto occupied = uint8_t(128);
+constexpr auto occupied = static_cast<uint8_t>(128);
 
 ////////////////////////////////////////////////////////////////////////////////
 auto MaxRectPiP::Rectangle::split(int w, int h) const -> vector<MaxRectPiP::Rectangle> {
@@ -106,7 +106,7 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
   auto ha = unsigned(h / a);
 
   m_occupancyMap.resize({ha, wa});
-  fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t(0));
+  fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t{});
 
   // Push full rectangle
   m_F.emplace_back(0, 0, w - 1, h - 1);

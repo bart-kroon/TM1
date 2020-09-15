@@ -177,7 +177,7 @@ auto Encoder::yuvSampler(const EntityMapList &in) -> vector<Frame<YUV420P16>> {
 void Encoder::mergeMasks(MaskList &mergedMasks, MaskList masks) {
   for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
     for (size_t i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
-      if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
+      if (masks[viewId].getPlane(0)[i] != uint8_t{}) {
         mergedMasks[viewId].getPlane(0)[i] = masks[viewId].getPlane(0)[i];
       }
     }
@@ -189,7 +189,7 @@ void Encoder::updateMasks(const MVD16Frame &views, MaskList &masks) {
     for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].texture.getPlane(0)[i] == neutralChroma) &&
           (views[viewId].depth.getPlane(0)[i] == uint16_t{})) {
-        masks[viewId].getPlane(0)[i] = uint8_t(0);
+        masks[viewId].getPlane(0)[i] = uint8_t{};
       }
     }
   }

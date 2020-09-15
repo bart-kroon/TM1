@@ -160,7 +160,7 @@ auto findForegroundEdges(const Mat<uint16_t> &depth, const Mat<uint16_t> &region
   auto edges = findForegroundEdges(depth);
   const auto bounds = findRegionBoundaries(regionLabels);
   transform(begin(edges), end(edges), begin(bounds), begin(edges),
-            [](uint8_t e, uint8_t b) { return b != 0 ? uint8_t(0) : e; });
+            [](uint8_t e, uint8_t b) { return b != 0 ? uint8_t{} : e; });
   return edges;
 }
 
@@ -373,7 +373,7 @@ GeometryScaler::GeometryScaler(const Json & /*rootNode*/, const Json &componentN
   m_defaultGup.gup_type(GupType::HVR)
       .gup_erode_threshold(Half(componentNode.require("minForegroundConfidence").asFloat()))
       .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").asInt())
-      .gup_max_curvature(uint8_t(componentNode.require("maxCurvature").asInt()));
+      .gup_max_curvature(static_cast<uint8_t>(componentNode.require("maxCurvature").asInt()));
 }
 
 auto GeometryScaler::scale(const AtlasAccessUnit &atlas,

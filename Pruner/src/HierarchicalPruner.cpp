@@ -353,7 +353,7 @@ private:
                           begin(mask.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
                             // excluded from the pruning mask
-                            return uint8_t(ot.occupant(x) ? 255 : 0);
+                            return static_cast<uint8_t>(ot.occupant(x) ? 255 : 0);
                           });
                 return mask;
               });
@@ -371,7 +371,7 @@ private:
                           begin(status.getPlane(0)), [ot = OccupancyTransform{viewParams}](auto x) {
                             // #94: When there are invalid pixels in a basic view, these should be
                             // freezed from pruning
-                            return uint8_t(ot.occupant(x) ? 255 : 0);
+                            return static_cast<uint8_t>(ot.occupant(x) ? 255 : 0);
                           });
                 return status;
               });

@@ -42,7 +42,8 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 SampleStreamNalHeader::SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1)
-    : m_ssnh_unit_size_precision_bytes_minus1{uint8_t(ssnh_unit_size_precision_bytes_minus1)} {
+    : m_ssnh_unit_size_precision_bytes_minus1{
+          static_cast<uint8_t>(ssnh_unit_size_precision_bytes_minus1)} {
   VERIFY_V3CBITSTREAM(ssnh_unit_size_precision_bytes_minus1 < 8);
 }
 

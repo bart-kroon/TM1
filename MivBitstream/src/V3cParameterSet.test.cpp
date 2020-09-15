@@ -112,7 +112,7 @@ oi_occupancy_MSB_align_flag( 4 )=true
 
 TEST_CASE("geometry_information", "[V3C Parameter Set]") {
   auto vps = V3cParameterSet{};
-  const auto atlasId = uint8_t(0);
+  const auto atlasId = uint8_t{};
   vps.vps_auxiliary_video_present_flag(atlasId, false);
 
   auto x = GeometryInformation{};

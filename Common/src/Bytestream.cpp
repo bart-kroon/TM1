@@ -59,13 +59,13 @@ auto readBytes(istream &stream, size_t bytes) -> uint64_t {
   while (bytes-- > 0) {
     char buffer = 0;
     stream.get(buffer);
-    result = (result << 8) | uint8_t(buffer);
+    result = (result << 8) | static_cast<uint8_t>(buffer);
   }
   VERIFY_BYTESTREAM(stream.good());
   return result;
 }
 
-auto getUint8(istream &stream) -> uint8_t { return uint8_t(readBytes(stream, 1)); }
+auto getUint8(istream &stream) -> uint8_t { return static_cast<uint8_t>(readBytes(stream, 1)); }
 auto getUint16(istream &stream) -> uint16_t { return static_cast<uint16_t>(readBytes(stream, 2)); }
 auto getUint32(istream &stream) -> uint32_t { return uint32_t(readBytes(stream, 4)); }
 auto getUint64(istream &stream) -> uint64_t { return uint64_t(readBytes(stream, 8)); }

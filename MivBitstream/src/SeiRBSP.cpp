@@ -146,7 +146,7 @@ void encodeSeiHeaderValue(ostream &stream, size_t value) {
     putUint8(stream, UINT8_MAX);
     value -= UINT8_MAX;
   }
-  putUint8(stream, uint8_t(value));
+  putUint8(stream, static_cast<uint8_t>(value));
 }
 } // namespace
 

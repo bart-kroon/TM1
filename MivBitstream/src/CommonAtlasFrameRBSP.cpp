@@ -201,7 +201,7 @@ auto CameraIntrinsics::decodeFrom(InputBitstream &bitstream) -> CameraIntrinsics
 }
 
 void CameraIntrinsics::encodeTo(OutputBitstream &bitstream) const {
-  bitstream.putUint8(uint8_t(ci_cam_type()));
+  bitstream.putUint8(static_cast<uint8_t>(ci_cam_type()));
   bitstream.putUint16(ci_projection_plane_width_minus1());
   bitstream.putUint16(ci_projection_plane_height_minus1());
 
@@ -550,10 +550,10 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
     for (size_t a = 0; a < x.m_viewInAtlas.size(); ++a) {
       for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
         stream << "mvp_view_enabled_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
-               << x.mvp_view_enabled_in_atlas_flag(uint8_t(a), v) << '\n';
-        if (x.mvp_view_enabled_in_atlas_flag(uint8_t(a), v)) {
+               << x.mvp_view_enabled_in_atlas_flag(static_cast<uint8_t>(a), v) << '\n';
+        if (x.mvp_view_enabled_in_atlas_flag(static_cast<uint8_t>(a), v)) {
           stream << "mvp_view_complete_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
-                 << x.mvp_view_complete_in_atlas_flag(uint8_t(a), v) << '\n';
+                 << x.mvp_view_complete_in_atlas_flag(static_cast<uint8_t>(a), v) << '\n';
         }
       }
     }

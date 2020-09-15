@@ -202,7 +202,7 @@ void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSe
 
 auto AtlasSequenceParameterSetRBSP::asps_num_ref_atlas_frame_lists_in_asps() const noexcept
     -> uint8_t {
-  return uint8_t(m_ref_list_structs.size());
+  return static_cast<uint8_t>(m_ref_list_structs.size());
 }
 
 auto AtlasSequenceParameterSetRBSP::ref_list_struct(uint8_t rlsIdx) const -> const RefListStruct & {

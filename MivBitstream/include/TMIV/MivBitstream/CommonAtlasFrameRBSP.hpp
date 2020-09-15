@@ -196,7 +196,7 @@ constexpr auto CameraExtrinsics::operator!=(const CameraExtrinsics &other) const
   return !operator==(other);
 }
 
-constexpr auto DepthQuantization::dq_quantization_law() const noexcept { return uint8_t(0); }
+constexpr auto DepthQuantization::dq_quantization_law() const noexcept { return uint8_t{}; }
 
 constexpr auto DepthQuantization::dq_norm_disp_low() const noexcept { return m_dq_norm_disp_low; }
 

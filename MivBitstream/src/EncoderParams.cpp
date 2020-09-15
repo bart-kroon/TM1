@@ -62,10 +62,10 @@ EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture, boo
       .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
-  vps.vps_atlas_count_minus1(uint8_t(atlasSizes.size() - 1));
+  vps.vps_atlas_count_minus1(static_cast<uint8_t>(atlasSizes.size() - 1));
 
   for (size_t atlasId = 0; atlasId < atlasSizes.size(); ++atlasId) {
-    const auto a = uint8_t(atlasId);
+    const auto a = static_cast<uint8_t>(atlasId);
     vps.vps_atlas_id(a, a)
         .vps_frame_width(a, atlasSizes[atlasId].x())
         .vps_frame_height(a, atlasSizes[atlasId].y())

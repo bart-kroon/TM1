@@ -163,7 +163,7 @@ auto codeOf(AiAttributeTypeId typeId) -> char {
 
 auto ProfileTierLevel::ptl_num_sub_profiles() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(m_subProfileIdcs.size() <= UINT8_MAX);
-  return uint8_t(m_subProfileIdcs.size());
+  return static_cast<uint8_t>(m_subProfileIdcs.size());
 }
 
 auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i) const noexcept -> uint64_t {
@@ -362,7 +362,7 @@ void GeometryInformation::encodeTo(OutputBitstream &bitstream, const V3cParamete
 }
 
 auto AttributeInformation::ai_attribute_count() const noexcept -> uint8_t {
-  return uint8_t(m_aiAttributes.size());
+  return static_cast<uint8_t>(m_aiAttributes.size());
 }
 
 auto AttributeInformation::ai_attribute_type_id(uint8_t attributeId) const -> AiAttributeTypeId {
@@ -598,7 +598,7 @@ auto V3cParameterSet::profile_tier_level() const noexcept -> const ProfileTierLe
 
 auto V3cParameterSet::vps_atlas_count_minus1() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(!m_vpsAtlases.empty());
-  return uint8_t(m_vpsAtlases.size() - 1U);
+  return static_cast<uint8_t>(m_vpsAtlases.size() - 1U);
 }
 
 auto V3cParameterSet::vps_atlas_id(uint8_t j) const -> uint8_t {

@@ -81,10 +81,10 @@ template <typename Integer> auto InputBitstream::getUExpGolomb() -> Integer {
 
 template <typename Integer> auto InputBitstream::getSExpGolomb() -> Integer {
   const auto codeNum = getUExpGolomb<uint64_t>();
-  const auto absValue = int64_t((codeNum + 1) / 2);
+  const auto absValue = static_cast<int64_t>((codeNum + 1) / 2);
   const auto value = (codeNum & 1) == 1 ? absValue : -absValue;
 
-  VERIFY_BITSTREAM(int64_t(Integer(value)) == value);
+  VERIFY_BITSTREAM(static_cast<int64_t>(Integer(value)) == value);
   return Integer(value);
 }
 

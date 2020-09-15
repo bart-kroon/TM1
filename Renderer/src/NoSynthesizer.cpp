@@ -36,18 +36,17 @@
 #include <algorithm>
 #include <iostream>
 
-using namespace TMIV::Common;
 
 namespace TMIV::Renderer {
-NoSynthesizer::NoSynthesizer(const Json & /*unused*/, const Json & /*componentNode*/) {}
+NoSynthesizer::NoSynthesizer(const Common::Json & /*unused*/, const Common::Json & /*componentNode*/) {}
 
 auto NoSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
                                 const MivBitstream::ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
-  auto viewport = Texture444Depth16Frame{
-      Texture444Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+    -> Common::Texture444Depth16Frame {
+  auto viewport = Common::Texture444Depth16Frame{
+      Common::Texture444Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
                       viewportParams.ci.ci_projection_plane_height_minus1() + 1},
-      Depth16Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+      Common::Depth16Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
                    viewportParams.ci.ci_projection_plane_height_minus1() + 1}};
 
   assert(!frame.atlas.empty());

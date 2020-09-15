@@ -35,8 +35,6 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, VhDeviceClass x) -> std::ostream & {
   switch (x) {
@@ -144,7 +142,7 @@ auto ViewingSpaceHandling::operator!=(const ViewingSpaceHandling &other) const n
   return !operator==(other);
 }
 
-auto ViewingSpaceHandling::decodeFrom(InputBitstream &bitstream) -> ViewingSpaceHandling {
+auto ViewingSpaceHandling::decodeFrom(Common::InputBitstream &bitstream) -> ViewingSpaceHandling {
   auto x = HandlingOptionList(bitstream.getUExpGolomb<size_t>());
 
   for (auto &el : x) {
@@ -156,7 +154,7 @@ auto ViewingSpaceHandling::decodeFrom(InputBitstream &bitstream) -> ViewingSpace
   return ViewingSpaceHandling{x};
 }
 
-void ViewingSpaceHandling::encodeTo(OutputBitstream &bitstream) const {
+void ViewingSpaceHandling::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(vs_handling_options_count());
 
   for (size_t h = 0; h < vs_handling_options_count(); ++h) {

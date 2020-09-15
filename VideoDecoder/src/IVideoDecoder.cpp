@@ -37,8 +37,6 @@
 #include <TMIV/VideoDecoder/HmVideoDecoder.h>
 #endif
 
-using namespace TMIV::Common;
-
 namespace TMIV::VideoDecoder {
 IVideoDecoder::~IVideoDecoder() = default;
 

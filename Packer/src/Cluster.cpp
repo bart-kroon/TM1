@@ -35,8 +35,6 @@
 
 auto roundToAlignment(int val, int alignment) -> int { return ((val) / alignment + 1); }
 
-using namespace TMIV::Common;
-
 namespace TMIV::Packer {
 static const uint16_t ACTIVE = 65534;
 static const uint16_t INVALID = 65535;
@@ -523,8 +521,9 @@ auto Cluster::split(const ClusteringMap &clusteringMap, int overlap) const
   return std::pair<Cluster, Cluster>(c1, c2);
 }
 
-auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool isBasicView,
-                       bool enableMerging) -> std::pair<ClusterList, ClusteringMap> {
+auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstClusterId,
+                       bool isBasicView, bool enableMerging)
+    -> std::pair<ClusterList, ClusteringMap> {
   std::pair<ClusterList, ClusteringMap> out(ClusterList(),
                                             ClusteringMap(maskMap.getWidth(), maskMap.getHeight()));
   ClusterList &clusterList = out.first;

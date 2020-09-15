@@ -37,8 +37,6 @@
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 SampleStreamNalHeader::SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1)
     : m_ssnh_unit_size_precision_bytes_minus1{uint8_t(ssnh_unit_size_precision_bytes_minus1)} {
@@ -51,13 +49,13 @@ auto operator<<(std::ostream &stream, const SampleStreamNalHeader &x) -> std::os
 }
 
 auto SampleStreamNalHeader::decodeFrom(std::istream &stream) -> SampleStreamNalHeader {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
   const auto ssnh_unit_size_precision_bytes_minus1 = bitstream.readBits<int>(3);
   return SampleStreamNalHeader{ssnh_unit_size_precision_bytes_minus1};
 }
 
 void SampleStreamNalHeader::encodeTo(std::ostream &stream) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
   bitstream.writeBits(m_ssnh_unit_size_precision_bytes_minus1, 3);
 }
 
@@ -79,13 +77,14 @@ auto SampleStreamNalUnit::operator!=(const SampleStreamNalUnit &other) const noe
 auto SampleStreamNalUnit::decodeFrom(std::istream &stream, const SampleStreamNalHeader &header)
     -> SampleStreamNalUnit {
   const auto ssnu_nal_unit_size =
-      readBytes(stream, header.ssnh_unit_size_precision_bytes_minus1() + 1);
-  return SampleStreamNalUnit{readString(stream, size_t(ssnu_nal_unit_size))};
+      Common::readBytes(stream, header.ssnh_unit_size_precision_bytes_minus1() + 1);
+  return SampleStreamNalUnit{Common::readString(stream, size_t(ssnu_nal_unit_size))};
 }
 
 void SampleStreamNalUnit::encodeTo(std::ostream &stream,
                                    const SampleStreamNalHeader &header) const {
-  writeBytes(stream, m_ssnu_nal_unit.size(), header.ssnh_unit_size_precision_bytes_minus1() + 1);
+  Common::writeBytes(stream, m_ssnu_nal_unit.size(),
+                     header.ssnh_unit_size_precision_bytes_minus1() + 1);
   stream.write(m_ssnu_nal_unit.data(), m_ssnu_nal_unit.size());
 }
 } // namespace TMIV::MivBitstream

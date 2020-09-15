@@ -38,10 +38,9 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace TMIV::Common;
-
 namespace TMIV::GeometryQuantizer {
-ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &componentNode) {
+ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
+                                     const Common::Json &componentNode) {
   if (auto subnode = componentNode.optional("occupancyScale")) {
     m_occupancyScaleConfig = true;
     m_occupancyScale = subnode.asIntVector<2>();
@@ -91,13 +90,13 @@ auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
 
 auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
     -> Common::MVD10Frame {
-  auto outAtlases = MVD10Frame{};
+  auto outAtlases = Common::MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
   for (const auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
-                            inAtlas.occupancy);
+    outAtlases.emplace_back(
+        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
+        inAtlas.occupancy);
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
@@ -137,7 +136,7 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   return outAtlases;
 }
 
-void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
+void ExplicitOccupancy::padGeometryFromLeft(Common::MVD10Frame &atlases) {
   for (size_t i = 0; i < atlases.size(); ++i) {
     if (m_outParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
       auto &depthAtlasMap = atlases[i].depth;

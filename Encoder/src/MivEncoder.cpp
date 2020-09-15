@@ -37,8 +37,6 @@
 
 #include <sstream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
 MivEncoder::MivEncoder(std::ostream &stream) : m_stream{stream} {
   m_ssvh.encodeTo(m_stream);
@@ -301,7 +299,8 @@ auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
     VERIFY_MIVBITSTREAM(m_log2MaxFrmOrderCntLsbMinus4 ==
                         aau.asps.asps_log2_max_atlas_frame_order_cnt_lsb_minus4());
     writeNalUnit(asb, nuhAsps, aau.asps, vuh, m_params.vps);
-    writeNalUnit(asb, nuhAfps, aau.afps, std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps});
+    writeNalUnit(asb, nuhAfps, aau.afps,
+                 std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps});
   }
 
   const auto aspsV = std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps};

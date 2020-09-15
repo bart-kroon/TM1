@@ -39,8 +39,6 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::GeometryQuantizer {
 SCENARIO("Geometry quantization") {
   GeometryQuantizer depthOccupancy{37};
@@ -49,10 +47,10 @@ SCENARIO("Geometry quantization") {
   sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
       .ci_projection_plane_height_minus1(1079)
       .ci_cam_type(MivBitstream::CiCamType::equirectangular)
-      .ci_erp_phi_min(-halfCycle)
-      .ci_erp_phi_max(halfCycle)
-      .ci_erp_theta_min(-quarterCycle)
-      .ci_erp_theta_max(quarterCycle);
+      .ci_erp_phi_min(-Common::halfCycle)
+      .ci_erp_phi_max(Common::halfCycle)
+      .ci_erp_theta_min(-Common::quarterCycle)
+      .ci_erp_theta_max(Common::quarterCycle);
   sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
 
   GIVEN("View parameters without invalid depth") {

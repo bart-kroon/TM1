@@ -39,8 +39,6 @@
 
 #include <utility>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
   switch (pt) {
@@ -124,7 +122,7 @@ auto decodeSeiHeaderValue(std::istream &stream) -> size_t {
   size_t value = 0;
   uint8_t sm_payload_type_byte = 0;
   do {
-    sm_payload_type_byte = getUint8(stream);
+    sm_payload_type_byte = Common::getUint8(stream);
     value += sm_payload_type_byte;
   } while (sm_payload_type_byte == UINT8_MAX);
   return value;
@@ -142,10 +140,10 @@ auto SeiMessage::decodeFrom(std::istream &stream) -> SeiMessage {
 namespace {
 void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
   while (value >= UINT8_MAX) {
-    putUint8(stream, UINT8_MAX);
+    Common::putUint8(stream, UINT8_MAX);
     value -= UINT8_MAX;
   }
-  putUint8(stream, uint8_t(value));
+  Common::putUint8(stream, uint8_t(value));
 }
 } // namespace
 
@@ -175,9 +173,9 @@ auto SeiRBSP::decodeFrom(std::istream &stream) -> SeiRBSP {
 
   do {
     messages.push_back(SeiMessage::decodeFrom(stream));
-  } while (moreRbspData(stream));
+  } while (Common::moreRbspData(stream));
   if (mode != MivDecoderMode::TMC2) {
-    rbspTrailingBits(stream);
+    Common::rbspTrailingBits(stream);
   }
 
   return SeiRBSP{messages};
@@ -189,6 +187,6 @@ void SeiRBSP::encodeTo(std::ostream &stream) const {
   for (const auto &x : messages()) {
     x.encodeTo(stream);
   }
-  rbspTrailingBits(stream);
+  Common::rbspTrailingBits(stream);
 }
 } // namespace TMIV::MivBitstream

@@ -40,8 +40,6 @@
 #include <algorithm>
 #include <utility>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream & {
   switch (x) {
@@ -139,7 +137,7 @@ auto operator<<(std::ostream &stream, const NalUnitHeader &x) -> std::ostream & 
 }
 
 auto NalUnitHeader::decodeFrom(std::istream &stream) -> NalUnitHeader {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
   const auto nal_forbidden_zero_bit = bitstream.getFlag();
   VERIFY_V3CBITSTREAM(!nal_forbidden_zero_bit);
   const auto nal_unit_type = bitstream.readBits<NalUnitType>(6);
@@ -150,7 +148,7 @@ auto NalUnitHeader::decodeFrom(std::istream &stream) -> NalUnitHeader {
 }
 
 void NalUnitHeader::encodeTo(std::ostream &stream) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
   bitstream.putFlag(false);
   bitstream.writeBits(m_nal_unit_type, 6);
   bitstream.writeBits(m_nal_layer_id, 6);
@@ -169,7 +167,7 @@ auto NalUnit::decodeFrom(std::istream &stream, size_t numBytesInNalUnit) -> NalU
   if (numBytesInNalUnit == 2) {
     return NalUnit{nal_unit_header, {}};
   }
-  auto rbsp = readString(stream, numBytesInNalUnit - 2);
+  auto rbsp = Common::readString(stream, numBytesInNalUnit - 2);
   return NalUnit{nal_unit_header, rbsp};
 }
 

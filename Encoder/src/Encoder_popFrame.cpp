@@ -33,10 +33,8 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
-auto Encoder::popAtlas() -> MVD10Frame {
+auto Encoder::popAtlas() -> Common::MVD10Frame {
   incrementFoc();
 
   auto atlas = m_geometryDownscaler.transformFrame(

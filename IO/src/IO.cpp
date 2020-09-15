@@ -39,19 +39,19 @@
 #include <iostream>
 #include <regex>
 
-using namespace TMIV::Common;
-
 namespace TMIV::IO {
 namespace {
 // The TMIV encoder always loads texture (and may use it internally) but attribute video data (AVD)
 // is an optional output in MIV WD4.
-auto haveTexture(const Json &config) { return !config.optional("noTexture"); }
+auto haveTexture(const Common::Json &config) { return !config.optional("noTexture"); }
 
 // check if explicit occupancy coding mode
-auto explicitOccupancy(const Json &config) { return config.require("explicitOccupancy").asBool(); }
+auto explicitOccupancy(const Common::Json &config) {
+  return config.require("explicitOccupancy").asBool();
+}
 } // namespace
 
-auto loadSourceParams(const Json &config) -> MivBitstream::EncoderParams {
+auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams {
   auto x = MivBitstream::EncoderParams{haveTexture(config), explicitOccupancy(config)};
 
   std::string viewPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
@@ -60,7 +60,7 @@ auto loadSourceParams(const Json &config) -> MivBitstream::EncoderParams {
   if (!stream.good()) {
     throw std::runtime_error("Failed to load source camera parameters\n" + viewPath);
   }
-  const auto sequenceConfig = Json{stream};
+  const auto sequenceConfig = Common::Json{stream};
 
   x.viewParamsList = MivBitstream::ViewParamsList::loadFromJson(
       sequenceConfig.require("cameras"), config.require("SourceCameraNames").asStringVector());
@@ -95,10 +95,10 @@ auto loadSourceParams(const Json &config) -> MivBitstream::EncoderParams {
 }
 
 namespace {
-auto loadSourceTexture(const Json &config, const Vec2i &size, const std::string &viewName,
-                       int frameIndex) {
-  auto frame = readFrame<YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt", frameIndex,
-                                    size, viewName);
+auto loadSourceTexture(const Common::Json &config, const Common::Vec2i &size,
+                       const std::string &viewName, int frameIndex) {
+  auto frame = readFrame<Common::YUV420P10>(config, "SourceDirectory", "SourceTexturePathFmt",
+                                            frameIndex, size, viewName);
   if (frame.empty()) {
     throw std::runtime_error("Failed to read source texture frame");
   }
@@ -106,9 +106,9 @@ auto loadSourceTexture(const Json &config, const Vec2i &size, const std::string 
 }
 
 template <typename FORMAT>
-auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const std::string &viewName,
-                      int frameIndex) {
-  auto depth16 = Depth16Frame{size.x(), size.y()};
+auto loadSourceDepth_(int bits, const Common::Json &config, const Common::Vec2i &size,
+                      const std::string &viewName, int frameIndex) {
+  auto depth16 = Common::Depth16Frame{size.x(), size.y()};
 
   const auto depth = readFrame<FORMAT>(config, "SourceDirectory", "SourceGeometryPathFmt",
                                        frameIndex, size, viewName);
@@ -118,7 +118,7 @@ auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const std
 
   std::transform(std::begin(depth.getPlane(0)), std::end(depth.getPlane(0)),
                  std::begin(depth16.getPlane(0)), [bits](unsigned x) {
-                   const auto x_max = maxLevel(bits);
+                   const auto x_max = Common::maxLevel(bits);
                    assert(0 <= x && x <= x_max);
                    const auto y = (0xFFFF * x + x_max / 2) / x_max;
                    assert(0 <= y && y <= UINT16_MAX);
@@ -128,23 +128,23 @@ auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const std
   return depth16;
 }
 
-auto loadSourceDepth(const Json &config, const Vec2i &size, const std::string &viewName,
-                     int frameIndex) {
+auto loadSourceDepth(const Common::Json &config, const Common::Vec2i &size,
+                     const std::string &viewName, int frameIndex) {
   const auto bits = config.require("SourceGeometryBitDepth").asInt();
 
   if (0 < bits && bits <= 8) {
-    return loadSourceDepth_<YUV400P8>(bits, config, size, viewName, frameIndex);
+    return loadSourceDepth_<Common::YUV400P8>(bits, config, size, viewName, frameIndex);
   }
   if (8 < bits && bits <= 16) {
-    return loadSourceDepth_<YUV400P16>(bits, config, size, viewName, frameIndex);
+    return loadSourceDepth_<Common::YUV400P16>(bits, config, size, viewName, frameIndex);
   }
   throw std::runtime_error("Invalid SourceGeometryBitDepth");
 }
 
 template <typename FORMAT>
-auto loadSourceEntities_(const Json &config, const Vec2i size, const std::string &viewName,
-                         int frameIndex) {
-  auto entities16 = EntityMap{size.x(), size.y()};
+auto loadSourceEntities_(const Common::Json &config, const Common::Vec2i size,
+                         const std::string &viewName, int frameIndex) {
+  auto entities16 = Common::EntityMap{size.x(), size.y()};
 
   const auto entities = readFrame<FORMAT>(config, "SourceDirectory", "SourceEntityPathFmt",
                                           frameIndex, size, viewName);
@@ -158,24 +158,25 @@ auto loadSourceEntities_(const Json &config, const Vec2i size, const std::string
   return entities16;
 }
 
-auto loadSourceEntities(const Json &config, const Vec2i size, const std::string &viewName,
-                        int frameIndex) {
+auto loadSourceEntities(const Common::Json &config, const Common::Vec2i size,
+                        const std::string &viewName, int frameIndex) {
   if (auto node = config.optional("SourceEntityBitDepth"); node) {
     const auto bits = node.asInt();
     if (0 < bits && bits <= 8) {
-      return loadSourceEntities_<YUV400P8>(config, size, viewName, frameIndex);
+      return loadSourceEntities_<Common::YUV400P8>(config, size, viewName, frameIndex);
     }
     if (8 < bits && bits <= 16) {
-      return loadSourceEntities_<YUV400P16>(config, size, viewName, frameIndex);
+      return loadSourceEntities_<Common::YUV400P16>(config, size, viewName, frameIndex);
     }
     throw std::runtime_error("Invalid SourceEntityBitDepth");
   }
-  return EntityMap{};
+  return Common::EntityMap{};
 }
 } // namespace
 
-auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex) -> MVD16Frame {
-  auto frame = MVD16Frame(sizes.size());
+auto loadSourceFrame(const Common::Json &config, const Common::SizeVector &sizes, int frameIndex)
+    -> Common::MVD16Frame {
+  auto frame = Common::MVD16Frame(sizes.size());
 
   frameIndex += config.require("startFrame").asInt();
 
@@ -192,7 +193,7 @@ auto loadSourceFrame(const Json &config, const SizeVector &sizes, int frameIndex
   return frame;
 }
 
-void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
+void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Frame &frame) {
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
     if (haveTexture(config)) {
       writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex, "T",
@@ -206,16 +207,17 @@ void saveAtlas(const Json &config, int frameIndex, const MVD10Frame &frame) {
   }
 }
 
-void saveBlockToPatchMaps(const Json &config, int frameIndex, const Decoder::AccessUnit &frame) {
+void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
+                          const Decoder::AccessUnit &frame) {
   for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
     writeFrame(config, "AtlasPatchOccupancyMapFmt", frame.atlas[atlasId].blockToPatchMap,
                frameIndex, int(atlasId));
   }
 }
 
-void savePrunedFrame(
-    const Json &config, int frameIndex,
-    const std::pair<std::vector<Texture444Depth10Frame>, MaskList> &prunedViewsAndMasks) {
+void savePrunedFrame(const Common::Json &config, int frameIndex,
+                     const std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList>
+                         &prunedViewsAndMasks) {
   for (size_t viewId = 0; viewId < prunedViewsAndMasks.first.size(); ++viewId) {
     const auto &view = prunedViewsAndMasks.first[viewId];
     if (config.optional("PrunedViewAttributePathFmt")) {
@@ -233,8 +235,8 @@ void savePrunedFrame(
 
 namespace {
 struct Pose {
-  Vec3f position;
-  Vec3f rotation;
+  Common::Vec3f position;
+  Common::Vec3f rotation;
 };
 
 auto loadPoseFromCSV(std::istream &stream, int frameIndex) -> Pose {
@@ -255,8 +257,8 @@ auto loadPoseFromCSV(std::istream &stream, int frameIndex) -> Pose {
     std::smatch match;
     if (!trailing_empty_lines && std::regex_match(line, match, re_row)) {
       if (currentFrameIndex == frameIndex) {
-        return {Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
-                Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};
+        return {Common::Vec3f({stof(match[1].str()), stof(match[2].str()), stof(match[3].str())}),
+                Common::Vec3f({stof(match[4].str()), stof(match[5].str()), stof(match[6].str())})};
       }
       { currentFrameIndex++; }
     } else if (std::regex_match(line, re_empty)) {
@@ -270,7 +272,7 @@ auto loadPoseFromCSV(std::istream &stream, int frameIndex) -> Pose {
 }
 } // namespace
 
-auto loadViewportMetadata(const Json &config, int frameIndex) -> MivBitstream::ViewParams {
+auto loadViewportMetadata(const Common::Json &config, int frameIndex) -> MivBitstream::ViewParams {
   const auto cameraPath = getFullPath(config, "SourceDirectory", "SourceCameraParameters");
 
   std::ifstream stream{cameraPath};
@@ -280,8 +282,8 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> MivBitstream::V
 
   auto outputviewName = config.require("OutputCameraName").asString();
 
-  auto viewParamsList =
-      MivBitstream::ViewParamsList::loadFromJson(Json{stream}.require("cameras"), {outputviewName});
+  auto viewParamsList = MivBitstream::ViewParamsList::loadFromJson(
+      Common::Json{stream}.require("cameras"), {outputviewName});
 
   if (viewParamsList.empty()) {
     throw std::runtime_error("Unknown OutputCameraName " + outputviewName);
@@ -303,13 +305,14 @@ auto loadViewportMetadata(const Json &config, int frameIndex) -> MivBitstream::V
     auto pose = loadPoseFromCSV(stream, frameIndex);
 
     result.ce.position(result.ce.position() + pose.position);
-    result.ce.rotation(euler2quat(radperdeg * pose.rotation));
+    result.ce.rotation(euler2quat(Common::radperdeg * pose.rotation));
   }
 
   return result;
 }
 
-void saveViewport(const Json &config, int frameIndex, const TextureDepth16Frame &frame) {
+void saveViewport(const Common::Json &config, int frameIndex,
+                  const Common::TextureDepth16Frame &frame) {
   if (config.optional("OutputAttributePath")) {
     writeFrame(config, "OutputAttributePath", frame.texture, frameIndex, "T");
   }

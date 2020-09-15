@@ -37,7 +37,6 @@
 #include <TMIV/MivBitstream/verify.h>
 
 using namespace std;
-using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, const CoordinateSystemParameters &x) -> ostream & {
@@ -49,7 +48,7 @@ auto operator<<(ostream &stream, const CoordinateSystemParameters &x) -> ostream
   return stream;
 }
 
-auto CoordinateSystemParameters::decodeFrom(InputBitstream &bitstream)
+auto CoordinateSystemParameters::decodeFrom(Common::InputBitstream &bitstream)
     -> CoordinateSystemParameters {
   auto x = CoordinateSystemParameters{};
 
@@ -62,7 +61,7 @@ auto CoordinateSystemParameters::decodeFrom(InputBitstream &bitstream)
   return x;
 }
 
-void CoordinateSystemParameters::encodeTo(OutputBitstream &bitstream) const {
+void CoordinateSystemParameters::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.writeBits(cas_forward_axis(), 2);
   bitstream.writeBits(cas_delta_left_axis_minus1(), 1);
   bitstream.putFlag(cas_forward_sign());

@@ -42,8 +42,6 @@
 
 #include <iostream>
 
-using namespace TMIV::Common;
-
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 
 namespace TMIV::Encoder {
@@ -56,7 +54,7 @@ private:
   IvMetadataWriter m_metadataWriter;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  SizeVector m_viewSizes;
+  Common::SizeVector m_viewSizes;
 
 public:
   explicit Application(std::vector<const char *> argv)

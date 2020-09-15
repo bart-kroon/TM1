@@ -38,16 +38,15 @@
 
 #include <cassert>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Pruner {
-auto unprojectPrunedView(const TextureDepth16Frame &view,
-                         const MivBitstream::ViewParams &viewParams, const Mat<uint8_t> &mask)
+auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
+                         const MivBitstream::ViewParams &viewParams,
+                         const Common::Mat<uint8_t> &mask)
     -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
-                  std::vector<Vec3f>> {
+                  std::vector<Common::Vec3f>> {
   return viewParams.ci.dispatch([&](auto camType) {
     std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
-               std::vector<Vec3f>>
+               std::vector<Common::Vec3f>>
         mesh;
     auto &vertices = std::get<0>(mesh);
     auto &triangles = std::get<1>(mesh);
@@ -78,12 +77,12 @@ auto unprojectPrunedView(const TextureDepth16Frame &view,
         const auto D_yx = D(y, x);
 
         if (mask(y, x) > 0) {
-          const auto uv = Vec2f{float(x) + 0.5F, float(y) + 0.5F};
+          const auto uv = Common::Vec2f{float(x) + 0.5F, float(y) + 0.5F};
           const auto d = depthTransform.expandDepth(D_yx);
-          vertices.push_back({engine.unprojectVertex(uv, d), NaN});
-          attributes.emplace_back(Vec3f{expandValue<10U>(Y(y, x)),
-                                        expandValue<10U>(U(y / 2, x / 2)),
-                                        expandValue<10U>(V(y / 2, x / 2))});
+          vertices.push_back({engine.unprojectVertex(uv, d), Common::NaN});
+          attributes.emplace_back(Common::Vec3f{Common::expandValue<10U>(Y(y, x)),
+                                                Common::expandValue<10U>(U(y / 2, x / 2)),
+                                                Common::expandValue<10U>(V(y / 2, x / 2))});
         }
       }
     }
@@ -97,7 +96,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view,
     const auto maxTriangles = 2 * vertices.size();
     triangles.reserve(maxTriangles);
 
-    const auto considerTriangle = [&](Vec2i a, Vec2i b, Vec2i c) {
+    const auto considerTriangle = [&](Common::Vec2i a, Common::Vec2i b, Common::Vec2i c) {
       if (mask(a.y(), a.x()) == 0 || mask(b.y(), b.x()) == 0 || mask(c.y(), c.x()) == 0) {
         return;
       }
@@ -130,7 +129,7 @@ auto project(const Renderer::SceneVertexDescriptorList &vertices,
     std::transform(std::begin(vertices), std::end(vertices), back_inserter(result),
                    [&](Renderer::SceneVertexDescriptor v) {
                      const auto p = R_t(v.position);
-                     return engine.projectVertex({p, angle(p, p - R_t.translation())});
+                     return engine.projectVertex({p, Common::angle(p, p - R_t.translation())});
                    });
     return result;
   });

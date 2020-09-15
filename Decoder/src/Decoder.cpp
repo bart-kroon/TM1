@@ -37,16 +37,15 @@
 #include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
+Decoder::Decoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_geometryScaler{rootNode, componentNode}
     , m_occupancyReconstructor{rootNode, componentNode}
     , m_entityBasedPatchMapFilter{rootNode, componentNode} {
-  m_culler = Factory<Renderer::ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer =
-      Factory<Renderer::IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
+  m_culler =
+      Common::Factory<Renderer::ICuller>::getInstance().create("Culler", rootNode, componentNode);
+  m_renderer = Common::Factory<Renderer::IRenderer>::getInstance().create("Renderer", rootNode,
+                                                                          componentNode);
 }
 
 namespace {
@@ -66,7 +65,7 @@ void checkRestrictions(const AccessUnit &frame) {
 } // namespace
 
 auto Decoder::decodeFrame(AccessUnit &frame, const MivBitstream::ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
+    -> Common::Texture444Depth16Frame {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
   m_occupancyReconstructor.reconstruct(frame);

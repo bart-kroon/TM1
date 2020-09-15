@@ -36,12 +36,10 @@
 #include <cassert>
 #include <iostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
-constexpr auto neutralChroma = TextureFrame::neutralColor();
+constexpr auto neutralChroma = Common::TextureFrame::neutralColor();
 
-void Encoder::pushFrame(MVD16Frame sourceViews) {
+void Encoder::pushFrame(Common::MVD16Frame sourceViews) {
   if (m_params.vme().vme_max_entities_minus1() == 0) {
     pushSingleEntityFrame(std::move(sourceViews));
   } else {
@@ -49,7 +47,7 @@ void Encoder::pushFrame(MVD16Frame sourceViews) {
   }
 }
 
-void Encoder::pushSingleEntityFrame(MVD16Frame sourceViews) {
+void Encoder::pushSingleEntityFrame(Common::MVD16Frame sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
   const auto masks = m_pruner->prune(m_transportParams, transportViews, m_blockSize);
   updateNonAggregatedMask(transportViews, masks);
@@ -85,8 +83,8 @@ template <typename F> auto forNeighbors(int i, int j, std::array<size_t, 2> size
   return true;
 }
 
-auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
-  Mat<uint8_t> result{mask.sizes()};
+auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
+  Common::Mat<uint8_t> result{mask.sizes()};
   forPixels(mask.sizes(), [&](int i, int j) {
     result(i, j) =
         forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) == 0; }) ? 0
@@ -96,9 +94,10 @@ auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
 }
 } // namespace
 
-void Encoder::updateNonAggregatedMask(const MVD16Frame &transportViews, const MaskList &masks) {
+void Encoder::updateNonAggregatedMask(const Common::MVD16Frame &transportViews,
+                                      const Common::MaskList &masks) {
   const auto frameId = m_transportViews.size();
-  MaskList dilatedMasks = masks; // Atlas dilation
+  Common::MaskList dilatedMasks = masks; // Atlas dilation
 
   // Atlas dilation
   if (m_params.vps.vps_miv_extension().vme_depth_low_quality_flag()) {
@@ -123,10 +122,10 @@ void Encoder::updateNonAggregatedMask(const MVD16Frame &transportViews, const Ma
   }
 }
 
-void Encoder::pushMultiEntityFrame(MVD16Frame sourceViews) {
+void Encoder::pushMultiEntityFrame(Common::MVD16Frame sourceViews) {
   auto transportViews = m_viewOptimizer->optimizeFrame(std::move(sourceViews));
 
-  MaskList mergedMasks;
+  Common::MaskList mergedMasks;
   for (const auto &transportView : transportViews) {
     mergedMasks.emplace_back(transportView.texture.getWidth(), transportView.texture.getHeight());
   }
@@ -146,10 +145,11 @@ void Encoder::pushMultiEntityFrame(MVD16Frame sourceViews) {
   m_aggregator->pushMask(mergedMasks);
 }
 
-auto Encoder::yuvSampler(const EntityMapList &in) -> std::vector<Frame<YUV420P16>> {
-  std::vector<Frame<YUV420P16>> outYuvAll;
+auto Encoder::yuvSampler(const Common::EntityMapList &in)
+    -> std::vector<Common::Frame<Common::YUV420P16>> {
+  std::vector<Common::Frame<Common::YUV420P16>> outYuvAll;
   for (const auto &viewId : in) {
-    Frame<YUV420P16> outYuv(int(viewId.getWidth()), int(viewId.getHeight()));
+    Common::Frame<Common::YUV420P16> outYuv(int(viewId.getWidth()), int(viewId.getHeight()));
     const auto width = viewId.getWidth();
     const auto height = viewId.getHeight();
     int step = 1;
@@ -172,7 +172,7 @@ auto Encoder::yuvSampler(const EntityMapList &in) -> std::vector<Frame<YUV420P16
   return outYuvAll;
 }
 
-void Encoder::mergeMasks(MaskList &mergedMasks, MaskList masks) {
+void Encoder::mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks) {
   for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
     for (size_t i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
       if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
@@ -182,7 +182,7 @@ void Encoder::mergeMasks(MaskList &mergedMasks, MaskList masks) {
   }
 }
 
-void Encoder::updateMasks(const MVD16Frame &views, MaskList &masks) {
+void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &masks) {
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
     for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].texture.getPlane(0)[i] == neutralChroma) &&
@@ -193,7 +193,7 @@ void Encoder::updateMasks(const MVD16Frame &views, MaskList &masks) {
   }
 }
 
-void Encoder::aggregateEntityMasks(MaskList &masks, uint16_t entityId) {
+void Encoder::aggregateEntityMasks(Common::MaskList &masks, uint16_t entityId) {
   if (int(m_aggregatedEntityMask.size()) < m_entityEncRange[1] - m_entityEncRange[0]) {
     m_aggregatedEntityMask.push_back(masks);
   } else {
@@ -207,16 +207,17 @@ void Encoder::aggregateEntityMasks(MaskList &masks, uint16_t entityId) {
   }
 }
 
-auto Encoder::entitySeparator(const MVD16Frame &transportViews, uint16_t entityId) -> MVD16Frame {
+auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews, uint16_t entityId)
+    -> Common::MVD16Frame {
   // Initalize entityViews
-  MVD16Frame entityViews;
+  Common::MVD16Frame entityViews;
   for (const auto &transportView : transportViews) {
-    TextureDepth16Frame entityView = {
-        TextureFrame(transportView.texture.getWidth(), transportView.texture.getHeight()),
-        Depth16Frame(transportView.depth.getWidth(), transportView.depth.getHeight())};
+    Common::TextureDepth16Frame entityView = {
+        Common::TextureFrame(transportView.texture.getWidth(), transportView.texture.getHeight()),
+        Common::Depth16Frame(transportView.depth.getWidth(), transportView.depth.getHeight())};
     entityViews.push_back(std::move(entityView));
   }
-  EntityMapList entityMaps;
+  Common::EntityMapList entityMaps;
   for (const auto &transportView : transportViews) {
     entityMaps.push_back(transportView.entities);
   }

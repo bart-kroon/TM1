@@ -38,8 +38,6 @@
 #include <cassert>
 #include <iostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
 namespace {
 void runtimeCheck(bool cond, const char *what) {
@@ -56,8 +54,8 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
 
   const auto lumaSamplesPerAtlasSample = m_geometryScaleEnabledFlag ? 1.25 : 2.;
   m_maxBlockRate = m_maxLumaSampleRate / ((sourceParams.vme().vme_num_groups_minus1() + 1.) *
-                                          lumaSamplesPerAtlasSample * sqr(m_blockSize));
-  m_maxBlocksPerAtlas = m_maxLumaPictureSize / sqr(m_blockSize);
+                                          lumaSamplesPerAtlasSample * Common::sqr(m_blockSize));
+  m_maxBlocksPerAtlas = m_maxLumaPictureSize / Common::sqr(m_blockSize);
 
   // Transform source to transport view sequence parameters
   m_transportParams = m_viewOptimizer->optimizeParams(std::move(sourceParams));
@@ -98,10 +96,10 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
 
 // Calculate atlas frame sizes [MPEG/M52994 v2]
 auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams &params) const
-    -> SizeVector {
+    -> Common::SizeVector {
   if (m_maxBlockRate == 0) {
     // No constraints: one atlas per transport view
-    auto result = SizeVector(params.viewParamsList.size());
+    auto result = Common::SizeVector(params.viewParamsList.size());
     std::transform(std::cbegin(params.viewParamsList), std::cend(params.viewParamsList),
                    std::begin(result),
                    [](const MivBitstream::ViewParams &x) { return x.ci.projectionPlaneSize(); });
@@ -141,10 +139,12 @@ auto Encoder::calculateNominalAtlasFrameSizes(const MivBitstream::EncoderParams 
     std::cout << "WARNING: Atlas aspect ratio is outside of HEVC general tier and level limits\n";
   }
 
-  return SizeVector(numAtlases, {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
+  return Common::SizeVector(numAtlases,
+                            {atlasGridWidth * m_blockSize, atlasGridHeight * m_blockSize});
 }
 
-auto Encoder::calculateViewGridSize(const MivBitstream::EncoderParams &params) const -> Vec2i {
+auto Encoder::calculateViewGridSize(const MivBitstream::EncoderParams &params) const
+    -> Common::Vec2i {
   int x{};
   int y{};
 
@@ -178,7 +178,7 @@ void Encoder::setGiGeometry3dCoordinatesBitdepthMinus1() {
   for (auto &vp : m_params.viewParamsList) {
     const auto size = std::max(vp.ci.ci_projection_plane_width_minus1() + 1,
                                vp.ci.ci_projection_plane_height_minus1() + 1);
-    numBitsMinus1 = std::max(numBitsMinus1, static_cast<uint8_t>(ceilLog2(size) - 1));
+    numBitsMinus1 = std::max(numBitsMinus1, static_cast<uint8_t>(Common::ceilLog2(size) - 1));
   }
   for (uint8_t atlasId = 0; atlasId <= m_params.vps.vps_atlas_count_minus1(); ++atlasId) {
     m_params.vps.geometry_information(atlasId).gi_geometry_3d_coordinates_bitdepth_minus1(
@@ -221,7 +221,7 @@ void Encoder::prepareIvau() {
         .asps_extended_projection_enabled_flag(true)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
         .asps_max_number_projections_minus1(uint16_t(m_params.viewParamsList.size() - 1))
-        .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
+        .asps_log2_patch_packing_block_size(Common::ceilLog2(m_blockSize));
 
     // Signalling pdu_entity_id requires ASME to be present
     if (m_params.vps.vps_miv_extension_flag() && m_params.vme().vme_max_entities_minus1() > 0) {
@@ -239,6 +239,6 @@ void Encoder::prepareIvau() {
 
 auto Encoder::log2FocLsbMinus4() -> std::uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
-  return std::max(4U, ceilLog2(m_intraPeriod) + 1U) - 4U;
+  return std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U;
 }
 } // namespace TMIV::Encoder

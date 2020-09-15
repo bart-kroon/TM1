@@ -39,7 +39,6 @@
 #include <stdexcept>
 
 using namespace std;
-using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto ViewParams::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
@@ -64,7 +63,7 @@ auto ViewParams::operator==(const ViewParams &other) const -> bool {
   return ci == other.ci && ce == other.ce && dq == other.dq && pp == other.pp;
 }
 
-auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
+auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
   auto x = ViewParams{};
   x.name = node.require("Name").asString();
 
@@ -73,7 +72,7 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
   x.ci.ci_projection_plane_height_minus1(resolution.y() - 1);
 
   x.ce.position(node.require("Position").asFloatVector<3>());
-  x.ce.rotation(euler2quat(radperdeg * node.require("Rotation").asFloatVector<3>()));
+  x.ce.rotation(euler2quat(Common::radperdeg * node.require("Rotation").asFloatVector<3>()));
 
   const auto depthRange = node.require("Depth_range").asFloatVector<2>();
   constexpr auto kilometer = 1000.F;
@@ -86,8 +85,8 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
 
   auto proj = node.require("Projection").asString();
   if (proj == "Equirectangular") {
-    const auto phiRange = radperdeg * node.require("Hor_range").asFloatVector<2>();
-    const auto thetaRange = radperdeg * node.require("Ver_range").asFloatVector<2>();
+    const auto phiRange = Common::radperdeg * node.require("Hor_range").asFloatVector<2>();
+    const auto thetaRange = Common::radperdeg * node.require("Ver_range").asFloatVector<2>();
 
     x.ci.ci_cam_type(CiCamType::equirectangular);
     x.ci.ci_erp_phi_min(phiRange.x());
@@ -119,8 +118,8 @@ auto ViewParams::loadFromJson(const Json &node) -> ViewParams {
 ViewParamsList::ViewParamsList(vector<ViewParams> viewParamsList)
     : vector<ViewParams>{move(viewParamsList)} {}
 
-auto ViewParamsList::viewSizes() const -> SizeVector {
-  SizeVector sizes;
+auto ViewParamsList::viewSizes() const -> Common::SizeVector {
+  Common::SizeVector sizes;
   sizes.reserve(size());
   transform(begin(), end(), back_inserter(sizes),
             [](const ViewParams &viewParams) { return viewParams.ci.projectionPlaneSize(); });
@@ -138,7 +137,8 @@ auto ViewParamsList::operator==(const ViewParamsList &other) const -> bool {
   return equal(begin(), end(), other.begin(), other.end());
 }
 
-auto ViewParamsList::loadFromJson(const Json &node, const vector<string> &names) -> ViewParamsList {
+auto ViewParamsList::loadFromJson(const Common::Json &node, const vector<string> &names)
+    -> ViewParamsList {
   ViewParamsList result;
   for (const auto &name : names) {
     for (size_t i = 0; i != node.size(); ++i) {

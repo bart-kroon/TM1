@@ -37,18 +37,16 @@
 #include <TMIV/MivBitstream/ViewParamsList.h>
 #include <TMIV/MivBitstream/ViewingSpace.h>
 
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 namespace examples {
 inline auto deg2HalfQuat(const float yawDeg, const float pitchDeg, const float rollDeg = 0.F)
-    -> QuatF {
-  QuatF q = euler2quat(radperdeg * Vec3f{yawDeg, pitchDeg, rollDeg});
-  q.x() = Half(q.x());
-  q.y() = Half(q.y());
-  q.z() = Half(q.z());
+    -> Common::QuatF {
+  Common::QuatF q = euler2quat(Common::radperdeg * Common::Vec3f{yawDeg, pitchDeg, rollDeg});
+  q.x() = Common::Half(q.x());
+  q.y() = Common::Half(q.y());
+  q.z() = Common::Half(q.z());
   q.w() = 0.F;
-  q.w() = Half(std::sqrt(1.F - norm2(q)));
+  q.w() = Common::Half(std::sqrt(1.F - norm2(q)));
   return q;
 }
 
@@ -87,14 +85,14 @@ const auto viewingSpace = std::array{
                                           }}}}}}},
     ViewingSpace{
         {{ElementaryShapeOperation::intersect,
-          ElementaryShape{
-              {PrimitiveShape{Cuboid{{}, {}}, 1.F, euler2quat(radperdeg *Vec3f{30.F, 45.F, 60.F}),
-                              PrimitiveShape::ViewingDirectionConstraint{
-                                  15.F,                          // guard_band_direction_size
-                                  deg2HalfQuat(90.F, 45.F, 0.F), // viewing_direction
-                                  30.F,                          // yaw_range,
-                                  60.F                           // pitch_range
-                              }}}}},
+          ElementaryShape{{PrimitiveShape{
+              Cuboid{{}, {}}, 1.F, euler2quat(Common::radperdeg *Common::Vec3f{30.F, 45.F, 60.F}),
+              PrimitiveShape::ViewingDirectionConstraint{
+                  15.F,                          // guard_band_direction_size
+                  deg2HalfQuat(90.F, 45.F, 0.F), // viewing_direction
+                  30.F,                          // yaw_range,
+                  60.F                           // pitch_range
+              }}}}},
          {ElementaryShapeOperation::subtract,
           ElementaryShape{{PrimitiveShape{Cuboid{{-1.F, 0.F, 1.F}, {1.F, 2.F, 3.F}}, {}, {}, {}},
                            PrimitiveShape{Spheroid{{-2.F, 2.F, 2.F}, {3.F, 2.F, 1.F}}, {}, {}, {}},
@@ -109,21 +107,21 @@ const auto viewingSpace = std::array{
                                           {}}},
                           {}}}}},
 
-    ViewingSpace{
-        {{ElementaryShapeOperation::add,
-          ElementaryShape{
-              {PrimitiveShape{Spheroid{{1.F, 2.F, 3.F}, {4.F, 5.F, 6.F}},     // primitive
-                              15.F,                                           // guard band size
-                              euler2quat(radperdeg *Vec3f{30.F, 45.F, 60.F}), // orientation
-                              //{}}},
-                              PrimitiveShape::ViewingDirectionConstraint{
-                                  // viewing direction constraint
-                                  10.F,                              // guard_band_direction_size
-                                  deg2HalfQuat(28.08F, 1.814F, 0.F), // viewing_direction
-                                  30.F,                              // yaw_range,
-                                  60.F                               // pitch_range
-                              }}},
-              PrimitiveShapeOperation::interpolate}}}},
+    ViewingSpace{{{ElementaryShapeOperation::add,
+                   ElementaryShape{
+                       {PrimitiveShape{Spheroid{{1.F, 2.F, 3.F}, {4.F, 5.F, 6.F}}, // primitive
+                                       15.F, // guard band size
+                                       euler2quat(Common::radperdeg *Common::Vec3f{
+                                           30.F, 45.F, 60.F}), // orientation
+                                       //{}}},
+                                       PrimitiveShape::ViewingDirectionConstraint{
+                                           // viewing direction constraint
+                                           10.F, // guard_band_direction_size
+                                           deg2HalfQuat(28.08F, 1.814F, 0.F), // viewing_direction
+                                           30.F,                              // yaw_range,
+                                           60.F                               // pitch_range
+                                       }}},
+                       PrimitiveShapeOperation::interpolate}}}},
 
     ViewingSpace{{{ElementaryShapeOperation::add,
                    ElementaryShape{{PrimitiveShape{Spheroid{{}, {}}, // primitive
@@ -175,9 +173,9 @@ namespace {
 template <typename Type>
 auto loadJson(const std::string &strNode, const std::string &strConfig) -> Type {
   std::istringstream streamNode(strNode);
-  Json jsonNode(streamNode);
+  Common::Json jsonNode(streamNode);
   std::istringstream streamConfig(strConfig);
-  Json jsonConfig(streamConfig);
+  Common::Json jsonConfig(streamConfig);
   return Type::loadFromJson(jsonNode, jsonConfig);
 }
 } // namespace
@@ -201,3 +199,4 @@ TEST_CASE("Viewing space JSON") {
   REQUIRE(loadJson<ViewingSpace>(examples::viewingSpaceJson[2], examples::configJson[0]) ==
           examples::viewingSpace[7]);
 }
+} // namespace TMIV::MivBitstream

@@ -40,8 +40,6 @@
 #include <fstream>
 #include <iostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::ViewingSpace {
 using DirectionConstraint = MivBitstream::PrimitiveShape::ViewingDirectionConstraint;
 
@@ -55,14 +53,14 @@ struct ViewingDirection {
   float yaw, pitch;
 };
 
-static auto viewingDirection(const QuatF &rotation) -> ViewingDirection {
+static auto viewingDirection(const Common::QuatF &rotation) -> ViewingDirection {
   assert(normalized(rotation));
-  static const Vec3f forwardAxis{1.F, 0.F, 0.F};
+  static const Common::Vec3f forwardAxis{1.F, 0.F, 0.F};
   const auto directionVector = rotate(forwardAxis, rotation);
 
   ViewingDirection d{};
-  d.yaw = degperrad * std::atan2(directionVector.y(), directionVector.x());
-  d.pitch = degperrad * std::acos(-directionVector.z());
+  d.yaw = Common::degperrad * std::atan2(directionVector.y(), directionVector.x());
+  d.pitch = Common::degperrad * std::acos(-directionVector.z());
   return d;
 }
 
@@ -137,53 +135,56 @@ static auto evaluateAddition(const MivBitstream::PrimitiveShapeVector &primitive
 }
 
 namespace MiscInterpolation {
-auto normalToPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3) -> Vec3f {
-  Vec3f normal = cross(pos2 - pos1, pos3 - pos1);
+auto normalToPlane(Common::Vec3f pos1, Common::Vec3f pos2, Common::Vec3f pos3) -> Common::Vec3f {
+  Common::Vec3f normal = cross(pos2 - pos1, pos3 - pos1);
   normal /= norm(normal);
   return normal;
 }
 
-auto orthogonalPlane(Vec3f pos1, Vec3f pos2, Vec4f predecessor) -> Vec4f {
-  Vec3f normal = (pos1 - pos2) / norm(pos2 - pos1);
-  Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
+auto orthogonalPlane(Common::Vec3f pos1, Common::Vec3f pos2, Common::Vec4f predecessor)
+    -> Common::Vec4f {
+  Common::Vec3f normal = (pos1 - pos2) / norm(pos2 - pos1);
+  Common::Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
   if (dot(normal, normal_pred) < 0) {
     normal *= -1;
   }
-  return Vec4f({normal[0], normal[1], normal[2], -dot(pos1, normal)});
+  return Common::Vec4f({normal[0], normal[1], normal[2], -dot(pos1, normal)});
 }
 
-auto bisectingPlane(Vec3f pos1, Vec3f pos2, Vec3f pos3, Vec4f predecessor) -> Vec4f {
-  Vec3f vec1 = pos1 - pos2;
+auto bisectingPlane(Common::Vec3f pos1, Common::Vec3f pos2, Common::Vec3f pos3,
+                    Common::Vec4f predecessor) -> Common::Vec4f {
+  Common::Vec3f vec1 = pos1 - pos2;
   vec1 /= norm(vec1);
-  Vec3f vec3 = pos3 - pos2;
+  Common::Vec3f vec3 = pos3 - pos2;
   vec3 /= norm(vec3);
-  Vec3f bisecting_dir = vec1 + vec3;
+  Common::Vec3f bisecting_dir = vec1 + vec3;
   if (norm(bisecting_dir) > 0) {
     bisecting_dir /= norm(bisecting_dir);
-    Vec3f normal1 = normalToPlane(pos1, pos2, pos3);
-    Vec3f normal2 = cross(bisecting_dir, normal1);
-    Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
+    Common::Vec3f normal1 = normalToPlane(pos1, pos2, pos3);
+    Common::Vec3f normal2 = cross(bisecting_dir, normal1);
+    Common::Vec3f normal_pred({predecessor[0], predecessor[1], predecessor[2]});
     if (dot(normal2, normal_pred) < 0) {
       normal2 *= -1;
     }
-    return Vec4f({normal2[0], normal2[1], normal2[2], -dot(pos2, normal2)});
+    return Common::Vec4f({normal2[0], normal2[1], normal2[2], -dot(pos2, normal2)});
   }
   { // note: degenerate case, 3 aligned points
     return orthogonalPlane(pos2, pos1, predecessor);
   }
 }
 
-auto distanceToPlane(Vec4f plane, Vec3f point) -> float {
-  Vec3f normal({plane[0], plane[1], plane[2]});
+auto distanceToPlane(Common::Vec4f plane, Common::Vec3f point) -> float {
+  Common::Vec3f normal({plane[0], plane[1], plane[2]});
   return dot(point, normal) + plane[3];
 }
 
-auto projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) -> Vec3f {
-  Vec3f pp;
+auto projectedPointOnPlane(Common::Vec3f a, Common::Vec3f b, Common::Vec3f normal,
+                           Common::Vec3f point) -> Common::Vec3f {
+  Common::Vec3f pp;
   if (a == b) {
     pp = a;
   } else {
-    Vec4f pplane = Vec4f({normal[0], normal[1], normal[2], -dot(point, normal)});
+    Common::Vec4f pplane = Common::Vec4f({normal[0], normal[1], normal[2], -dot(point, normal)});
     float aap = std::abs(distanceToPlane(pplane, a));
     float bbp = std::abs(distanceToPlane(pplane, b));
     float app = aap / (aap + bbp);
@@ -193,9 +194,9 @@ auto projectedPointOnPlane(Vec3f a, Vec3f b, Vec3f normal, Vec3f point) -> Vec3f
 }
 
 static auto computeBisectPlanes(const MivBitstream::PrimitiveShapeVector &primitives)
-    -> std::vector<Vec4f> {
+    -> std::vector<Common::Vec4f> {
   auto nvb = primitives.size();
-  std::vector<Vec3f> center(nvb);
+  std::vector<Common::Vec3f> center(nvb);
   for (size_t i = 0; i < nvb; i++) {
     if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
       center[i] = std::get<MivBitstream::Spheroid>(primitives[i].primitive).center;
@@ -204,8 +205,8 @@ static auto computeBisectPlanes(const MivBitstream::PrimitiveShapeVector &primit
     }
   }
 
-  std::vector<Vec4f> bisect;
-  Vec4f predecessor;
+  std::vector<Common::Vec4f> bisect;
+  Common::Vec4f predecessor;
   for (size_t i = 0; i < nvb; i++) {
     if (i == 0) {
       predecessor = {1, 0, 0, 0};
@@ -224,7 +225,7 @@ static auto computeBisectPlanes(const MivBitstream::PrimitiveShapeVector &primit
 } // namespace MiscInterpolation
 
 auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::PrimitiveShape b,
-                      Vec3f center, float w) -> MivBitstream::PrimitiveShape {
+                      Common::Vec3f center, float w) -> MivBitstream::PrimitiveShape {
   MivBitstream::PrimitiveShape output(a);
   assert(a.shapeType() == b.shapeType());
   assert(a.shapeType() == MivBitstream::PrimitiveShapeType::spheroid ||
@@ -232,8 +233,8 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
 
   // dimension and position
   if (a.shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
-    Vec3f ra = std::get<MivBitstream::Spheroid>(a.primitive).radius;
-    Vec3f rb = std::get<MivBitstream::Spheroid>(b.primitive).radius;
+    Common::Vec3f ra = std::get<MivBitstream::Spheroid>(a.primitive).radius;
+    Common::Vec3f rb = std::get<MivBitstream::Spheroid>(b.primitive).radius;
     std::get<MivBitstream::Spheroid>(output.primitive).radius = (1.F - w) * ra + w * rb;
     std::get<MivBitstream::Spheroid>(output.primitive).center = center;
 #ifdef _VERBOSE
@@ -243,15 +244,15 @@ auto interpolateShape(const MivBitstream::PrimitiveShape a, const MivBitstream::
               << std::endl;
 #endif
   } else if (a.shapeType() == MivBitstream::PrimitiveShapeType::cuboid) {
-    Vec3f sa = std::get<MivBitstream::Cuboid>(a.primitive).size;
-    Vec3f sb = std::get<MivBitstream::Cuboid>(b.primitive).size;
+    Common::Vec3f sa = std::get<MivBitstream::Cuboid>(a.primitive).size;
+    Common::Vec3f sb = std::get<MivBitstream::Cuboid>(b.primitive).size;
     std::get<MivBitstream::Cuboid>(output.primitive).size = (1. - w) * sa + w * sb;
     std::get<MivBitstream::Spheroid>(output.primitive).center = center;
   }
 
   // rotation
-  const auto rota = a.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F});
-  const auto rotb = b.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F});
+  const auto rota = a.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F});
+  const auto rotb = b.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F});
   output.rotation = (1. - w) * rota + w * rotb;
 #ifdef _VERBOSE
   std::cout << "  rotation = " << output.rotation.value() << std::endl;
@@ -294,11 +295,11 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
   // interpolate primitive shape and evaluate distance
   int nvb = static_cast<int>(primitives.size());
   if (nvb > 1) {
-    Vec2i segment;
-    Vec3f pos = viewingParams.viewPosition;
+    Common::Vec2i segment;
+    Common::Vec3f pos = viewingParams.viewPosition;
 
     // distance to shape centers
-    std::vector<Vec3f> center(nvb);
+    std::vector<Common::Vec3f> center(nvb);
     std::vector<float> dist;
     for (auto i = 0; i < nvb; i++) {
       if (primitives[i].shapeType() == MivBitstream::PrimitiveShapeType::spheroid) {
@@ -318,32 +319,33 @@ static auto evaluateInterpolation(const MivBitstream::PrimitiveShapeVector &prim
     if (closest == 0) {
       segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[0], pos)) ==
                  std::signbit(MiscInterpolation::distanceToPlane(bisect[1], pos)))
-                    ? Vec2i({0, 0})
-                    : Vec2i({0, 1});
+                    ? Common::Vec2i({0, 0})
+                    : Common::Vec2i({0, 1});
     } else if (closest == nvb - 1) {
       segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[nvb - 1], pos)) ==
                  std::signbit(MiscInterpolation::distanceToPlane(bisect[nvb - 2], pos)))
-                    ? Vec2i({nvb - 1, nvb - 1})
-                    : Vec2i({nvb - 2, nvb - 1});
+                    ? Common::Vec2i({nvb - 1, nvb - 1})
+                    : Common::Vec2i({nvb - 2, nvb - 1});
     } else {
       segment = (std::signbit(MiscInterpolation::distanceToPlane(bisect[closest - 1], pos)) ==
                  std::signbit(MiscInterpolation::distanceToPlane(bisect[closest], pos)))
-                    ? Vec2i({closest, closest + 1})
-                    : Vec2i({closest - 1, closest});
+                    ? Common::Vec2i({closest, closest + 1})
+                    : Common::Vec2i({closest - 1, closest});
     }
 
     // compute position of interpolated shape within segment of attachment
     int start(segment[0]);
     int end(segment[1]);
     float w = (start != end) ? dist[start] / (dist[start] + dist[end]) : 0;
-    Vec3f n_start({bisect[start][0], bisect[start][1], bisect[start][2]});
-    Vec3f n_end({bisect[end][0], bisect[end][1], bisect[end][2]});
-    Vec3f n_proj = w * n_end + (1 - w) * n_start;
+    Common::Vec3f n_start({bisect[start][0], bisect[start][1], bisect[start][2]});
+    Common::Vec3f n_end({bisect[end][0], bisect[end][1], bisect[end][2]});
+    Common::Vec3f n_proj = w * n_end + (1 - w) * n_start;
 #ifdef _VERBOSE
     std::cout << "segment <" << start << "," << end << "> ";
     std::cout << "weight = " << w << std::endl;
 #endif
-    Vec3f p = MiscInterpolation::projectedPointOnPlane(center[start], center[end], n_proj, pos);
+    Common::Vec3f p =
+        MiscInterpolation::projectedPointOnPlane(center[start], center[end], n_proj, pos);
 
     // interpolate shape dimension, rotation, guard band size, viewing direction constraint
     MivBitstream::PrimitiveShape shape = interpolateShape(primitives[start], primitives[end], p, w);
@@ -383,7 +385,7 @@ static auto distanceInclusion(const SignedDistance sdBoundary, const SignedDista
   }
   const float guardBandDepth = sdGuard.value - sdBoundary.value; // note sdGuard > sdBoundary
   const float inclusion = -sdBoundary.value / guardBandDepth;
-  assert(inRange(inclusion, 0.F, 1.F));
+  assert(Common::inRange(inclusion, 0.F, 1.F));
   return inclusion;
 }
 
@@ -400,7 +402,7 @@ static auto angleInclusion(const float deltaAngle, const float range, const floa
   }
   const float inclusion = (maxDelta - absDelta) / guardBand;
 
-  assert(inRange(inclusion, 0.F, 1.F));
+  assert(Common::inRange(inclusion, 0.F, 1.F));
   return inclusion;
 }
 
@@ -454,7 +456,7 @@ auto ViewingSpaceEvaluator::computeInclusion(const MivBitstream::ViewingSpace &v
   }
 #endif
 
-  assert(inRange(result, 0.F, 1.F));
+  assert(Common::inRange(result, 0.F, 1.F));
   return result;
 }
 

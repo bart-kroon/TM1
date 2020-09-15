@@ -40,8 +40,6 @@
 #include <cassert>
 #include <iostream>
 
-using namespace TMIV::Common;
-
 // Encoder sub-component interfaces
 using TMIV::Aggregator::IAggregator;
 using TMIV::GeometryQuantizer::IGeometryQuantizer;
@@ -52,8 +50,8 @@ using TMIV::ViewOptimizer::IViewOptimizer;
 namespace TMIV::Encoder {
 namespace {
 template <typename Interface>
-auto create(const char *name, const Json &rootNode, const Json &componentNode) {
-  const auto &instance = Factory<Interface>::getInstance();
+auto create(const char *name, const Common::Json &rootNode, const Common::Json &componentNode) {
+  const auto &instance = Common::Factory<Interface>::getInstance();
   return instance.create(name, rootNode, componentNode);
 }
 
@@ -64,7 +62,7 @@ void runtimeCheck(bool cond, const char *what) {
 }
 } // namespace
 
-Encoder::Encoder(const Json &rootNode, const Json &componentNode)
+Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_viewOptimizer{create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
     , m_pruner{create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}

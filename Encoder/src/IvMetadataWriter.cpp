@@ -35,14 +35,12 @@
 
 #include <TMIV/IO/IO.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
-auto bitstreamPath(const Json &config) -> std::string {
+auto bitstreamPath(const Common::Json &config) -> std::string {
   return IO::getFullPath(config, "OutputDirectory", "BitstreamPath");
 }
 
-IvMetadataWriter::IvMetadataWriter(const Json &config)
+IvMetadataWriter::IvMetadataWriter(const Common::Json &config)
     : m_stream{bitstreamPath(config), std::ios::binary} {
   if (!m_stream.good()) {
     std::ostringstream what;

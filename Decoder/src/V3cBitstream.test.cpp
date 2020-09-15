@@ -44,8 +44,6 @@
 #include <filesystem>
 #include <fstream>
 
-using namespace TMIV::Common;
-
 auto dumpV3cUnitPayload(std::streampos position, const MivBitstream::SampleStreamV3cUnit &ssvu,
                         const MivBitstream::V3cUnitHeader &vuh) {
   std::ostringstream path;
@@ -130,22 +128,25 @@ TEST_CASE("Demultiplex", "[V3C bitstream]") {
   // demultiplex(stream);
 }
 
-auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth10Frame {
+auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Common::Depth10Frame {
   std::cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
             << ", frameSize=" << frameSize << '\n';
-  return Depth10Frame{frameSize.x(), frameSize.y()};
+  return Common::Depth10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto occFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Occupancy10Frame {
+auto occFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Common::Occupancy10Frame {
   std::cout << "occFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
             << ", frameSize=" << frameSize << '\n';
-  return Occupancy10Frame{frameSize.x(), frameSize.y()};
+  return Common::Occupancy10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {
+auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Common::Texture444Frame {
   std::cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
             << ", frameSize=" << frameSize << '\n';
-  return Texture444Frame{frameSize.x(), frameSize.y()};
+  return Common::Texture444Frame{frameSize.x(), frameSize.y()};
 }
 
 TEST_CASE("Decode", "[V3C bitstream]") {

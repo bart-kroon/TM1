@@ -41,10 +41,9 @@
 #include "TMIV/Renderer/Engine.h"
 #include <TMIV/Renderer/reprojectPoints.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Renderer {
-SubBlockCuller::SubBlockCuller(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+SubBlockCuller::SubBlockCuller(const Common::Json & /*rootNode*/,
+                               const Common::Json & /*componentNode*/) {}
 
 auto choosePatch(const MivBitstream::PatchParams &patch,
                  const MivBitstream::ViewParamsList &cameras,
@@ -52,14 +51,14 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
   const auto &camera = cameras[patch.pduViewIdx()];
   const auto R_t = AffineTransform(cameras[patch.pduViewIdx()].ce, target.ce);
 
-  auto uv = std::array<Vec2f, 4>{};
-  auto xy_v = std::array<Vec2f, 8>{};
+  auto uv = std::array<Common::Vec2f, 4>{};
+  auto xy_v = std::array<Common::Vec2f, 8>{};
   const auto w = static_cast<float>(patch.pduViewSize().x());
   const auto h = static_cast<float>(patch.pduViewSize().y());
-  uv[0] = Vec2f(patch.pduViewPos());
-  uv[1] = uv[0] + Vec2f{w, 0};
-  uv[2] = uv[0] + Vec2f{0, h};
-  uv[3] = uv[0] + Vec2f{w, h};
+  uv[0] = Common::Vec2f(patch.pduViewPos());
+  uv[1] = uv[0] + Common::Vec2f{w, 0};
+  uv[2] = uv[0] + Common::Vec2f{0, h};
+  uv[3] = uv[0] + Common::Vec2f{w, h};
 
   // Using Camera depth
   const auto patch_dep_near =
@@ -69,7 +68,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
 
   for (int i = 0; i < 4; i++) {
     const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_near, camera.ci));
-    const auto rayAngle = angle(xyz, xyz - R_t.translation());
+    const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
     v.position = xyz;
     v.rayAngle = rayAngle;
@@ -81,7 +80,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
   }
   for (int i = 0; i < 4; i++) {
     const auto xyz = R_t(unprojectVertex(uv[i], patch_dep_far, camera.ci));
-    const auto rayAngle = angle(xyz, xyz - R_t.translation());
+    const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
     SceneVertexDescriptor v;
     v.position = xyz;
     v.rayAngle = rayAngle;
@@ -116,7 +115,7 @@ auto choosePatch(const MivBitstream::PatchParams &patch,
             xy_v_ymax != xy_v_ymax));
 }
 
-auto divideInBlocks(const MivBitstream::PatchParams &patch, Vec2i blockSize) {
+auto divideInBlocks(const MivBitstream::PatchParams &patch, Common::Vec2i blockSize) {
   assert(patch.pduOrientationIndex() == MivBitstream::FlexiblePatchOrientation::FPO_NULL);
 
   int blocknums_w = patch.pduViewSize().x() / blockSize.x();
@@ -126,7 +125,7 @@ auto divideInBlocks(const MivBitstream::PatchParams &patch, Vec2i blockSize) {
 
   for (int i = 0; i < blocknums_h; i++) {
     for (int j = 0; j < blocknums_w; j++) {
-      const auto offset = Vec2i{j * blockSize.x(), i * blockSize.y()};
+      const auto offset = Common::Vec2i{j * blockSize.x(), i * blockSize.y()};
 
       auto &b = subblock[i * blocknums_w + j];
       b.pduViewSize(blockSize);
@@ -140,7 +139,7 @@ auto divideInBlocks(const MivBitstream::PatchParams &patch, Vec2i blockSize) {
 auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
                                            const Decoder::AtlasAccessUnit &atlas,
                                            const MivBitstream::ViewParams &viewportParams) const
-    -> BlockToPatchMap {
+    -> Common::BlockToPatchMap {
   auto result = atlas.blockToPatchMap;
 
   for (size_t patchIdx = 0; patchIdx < atlas.patchParamsList.size(); ++patchIdx) {
@@ -149,7 +148,7 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
 
     if (patch.pduViewSize() == view.ci.projectionPlaneSize()) {
       // The size of the sub-block is std::fixed for now
-      const auto blockSize = Vec2i{128, 128};
+      const auto blockSize = Common::Vec2i{128, 128};
 
       for (const auto &block : divideInBlocks(patch, blockSize)) {
         if (!choosePatch(block, frame.viewParamsList, viewportParams)) {
@@ -165,7 +164,7 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
   return result;
 }
 
-void SubBlockCuller::inplaceErasePatch(BlockToPatchMap &patchMap,
+void SubBlockCuller::inplaceErasePatch(Common::BlockToPatchMap &patchMap,
                                        const MivBitstream::PatchParams &patch, uint16_t patchId,
                                        const MivBitstream::AtlasSequenceParameterSetRBSP &asps) {
   const auto n = 1 << asps.asps_log2_patch_packing_block_size();
@@ -175,7 +174,7 @@ void SubBlockCuller::inplaceErasePatch(BlockToPatchMap &patchMap,
   for (auto y = first.y(); y < last.y(); ++y) {
     for (auto x = first.x(); x < last.x(); ++x) {
       if (patchMap.getPlane(0)(y, x) == patchId) {
-        patchMap.getPlane(0)(y, x) = unusedPatchId;
+        patchMap.getPlane(0)(y, x) = Common::unusedPatchId;
       }
     }
   }

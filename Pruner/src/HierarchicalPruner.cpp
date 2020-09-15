@@ -47,24 +47,23 @@
 #include <iostream>
 #include <numeric>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Pruner {
 class HierarchicalPruner::Impl {
 private:
   struct IncrementalSynthesizer {
-    IncrementalSynthesizer(const Renderer::AccumulatingPixel<Vec3f> &config, Vec2i size,
-                           size_t index_, Mat<float> reference_, Mat<float> referenceY_)
+    IncrementalSynthesizer(const Renderer::AccumulatingPixel<Common::Vec3f> &config,
+                           Common::Vec2i size, size_t index_, Common::Mat<float> reference_,
+                           Common::Mat<float> referenceY_)
         : rasterizer{config, size}
         , index{index_}
         , reference{std::move(reference_)}
         , referenceY{std::move(referenceY_)} {}
 
-    Renderer::Rasterizer<Vec3f> rasterizer;
+    Renderer::Rasterizer<Common::Vec3f> rasterizer;
     const size_t index;
     float maskAverage{0.F};
-    const Mat<float> reference;
-    const Mat<float> referenceY;
+    const Common::Mat<float> reference;
+    const Common::Mat<float> referenceY;
   };
 
   const float m_maxDepthError{};
@@ -73,7 +72,7 @@ private:
   const int m_erode{};
   const int m_dilate{};
   const int m_maxBasicViewsPerGraph{};
-  const Renderer::AccumulatingPixel<Vec3f> m_config;
+  const Renderer::AccumulatingPixel<Common::Vec3f> m_config;
   MivBitstream::EncoderParams m_params;
   std::vector<std::unique_ptr<IncrementalSynthesizer>> m_synthesizers;
   std::vector<size_t> m_clusterIds;
@@ -83,11 +82,11 @@ private:
     std::vector<size_t> pruningOrder;
   };
   std::vector<Cluster> m_clusters;
-  std::vector<Frame<YUV400P8>> m_masks;
-  std::vector<Frame<YUV400P8>> m_status;
+  std::vector<Common::Frame<Common::YUV400P8>> m_masks;
+  std::vector<Common::Frame<Common::YUV400P8>> m_status;
 
 public:
-  explicit Impl(const Json &nodeConfig)
+  explicit Impl(const Common::Json &nodeConfig)
       : m_maxDepthError{nodeConfig.require("maxDepthError").asFloat()}
       , m_maxLumaError{nodeConfig.require("maxLumaError").asFloat()}
       , m_maxStretching{nodeConfig.require("maxStretching").asFloat()}
@@ -98,7 +97,7 @@ public:
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  void assignAdditionalViews(const Mat<float> &overlap,
+  void assignAdditionalViews(const Common::Mat<float> &overlap,
                              const MivBitstream::ViewParamsList &viewParamsList, size_t numClusters,
                              std::vector<size_t> &clusterIds) {
     const auto N = viewParamsList.size();
@@ -140,7 +139,8 @@ public:
     }
   }
 
-  auto scoreClustering(const Mat<float> &overlap, const std::vector<size_t> &clusterIds) -> double {
+  auto scoreClustering(const Common::Mat<float> &overlap, const std::vector<size_t> &clusterIds)
+      -> double {
     auto score = 0.;
     const auto N = overlap.height();
 
@@ -154,7 +154,7 @@ public:
     return score;
   }
 
-  auto exhaustiveSearch(const Mat<float> &overlap,
+  auto exhaustiveSearch(const Common::Mat<float> &overlap,
                         const MivBitstream::ViewParamsList &viewParamsList) -> std::vector<size_t> {
     auto basicViewIds = std::vector<size_t>{};
     auto haveAdditionalViews = false;
@@ -215,7 +215,8 @@ public:
     return bestClusterIds;
   }
 
-  void clusterViews(const Mat<float> &overlap, const MivBitstream::ViewParamsList &viewParamsList) {
+  void clusterViews(const Common::Mat<float> &overlap,
+                    const MivBitstream::ViewParamsList &viewParamsList) {
     const auto clusterIds = exhaustiveSearch(overlap, viewParamsList);
 
     m_clusters = std::vector<Cluster>(1 + *max_element(clusterIds.cbegin(), clusterIds.cend()));
@@ -228,7 +229,7 @@ public:
     }
   }
 
-  void computePruningOrder(const Mat<float> &overlappingMatrix) {
+  void computePruningOrder(const Common::Mat<float> &overlappingMatrix) {
     for (auto &cluster : m_clusters) {
       auto processedList = cluster.basicViewId;
       auto pendingList = cluster.additionalViewId;
@@ -285,7 +286,7 @@ public:
     printClusters(viewParamsList);
 
     // Pruning graph
-    Graph::BuiltIn::Sparse<float> pruningGraph(viewParamsList.size());
+    Common::Graph::BuiltIn::Sparse<float> pruningGraph(viewParamsList.size());
 
     for (auto &cluster : m_clusters) {
       if (!cluster.pruningOrder.empty()) {
@@ -320,8 +321,8 @@ public:
     }
   }
 
-  auto prune(const MivBitstream::EncoderParams &params, const MVD16Frame &views,
-             const int blockSize) -> MaskList {
+  auto prune(const MivBitstream::EncoderParams &params, const Common::MVD16Frame &views,
+             const int blockSize) -> Common::MaskList {
     m_params = params;
 
     prepareFrame(views, blockSize);
@@ -331,53 +332,56 @@ public:
   }
 
 private:
-  void prepareFrame(const MVD16Frame &views, const int blockSize) {
+  void prepareFrame(const Common::MVD16Frame &views, const int blockSize) {
     createInitialMasks(views, blockSize);
     createSynthesizerPerPartialView(views);
     synthesizeReferenceViews(views);
   }
 
-  void createInitialMasks(const MVD16Frame &views, const int blockSize) {
+  void createInitialMasks(const Common::MVD16Frame &views, const int blockSize) {
     m_masks.clear();
     m_masks.reserve(views.size());
-    std::transform(
-        std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
-        std::cbegin(views), back_inserter(m_masks),
-        [blockSize](const MivBitstream::ViewParams &viewParams, const TextureDepth16Frame &view) {
-          auto mask = Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
-                                      align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
+    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+                   std::cbegin(views), back_inserter(m_masks),
+                   [blockSize](const MivBitstream::ViewParams &viewParams,
+                               const Common::TextureDepth16Frame &view) {
+                     auto mask = Common::Frame<Common::YUV400P8>{
+                         Common::align(viewParams.ci.projectionPlaneSize().x(), blockSize),
+                         Common::align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
-          std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
-                         std::begin(mask.getPlane(0)),
-                         [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
-                           // #94: When there are invalid pixels in a basic view, these
-                           // should be excluded from the pruning mask
-                           return uint8_t(ot.occupant(x) ? 255 : 0);
-                         });
-          return mask;
-        });
+                     std::transform(std::cbegin(view.depth.getPlane(0)),
+                                    std::cend(view.depth.getPlane(0)), std::begin(mask.getPlane(0)),
+                                    [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                                      // #94: When there are invalid pixels in a basic view, these
+                                      // should be excluded from the pruning mask
+                                      return uint8_t(ot.occupant(x) ? 255 : 0);
+                                    });
+                     return mask;
+                   });
 
     m_status.clear();
     m_status.reserve(views.size());
-    std::transform(
-        std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
-        std::cbegin(views), back_inserter(m_status),
-        [blockSize](const MivBitstream::ViewParams &viewParams, const TextureDepth16Frame &view) {
-          auto status = Frame<YUV400P8>{align(viewParams.ci.projectionPlaneSize().x(), blockSize),
-                                        align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
+    std::transform(std::cbegin(m_params.viewParamsList), std::cend(m_params.viewParamsList),
+                   std::cbegin(views), back_inserter(m_status),
+                   [blockSize](const MivBitstream::ViewParams &viewParams,
+                               const Common::TextureDepth16Frame &view) {
+                     auto status = Common::Frame<Common::YUV400P8>{
+                         Common::align(viewParams.ci.projectionPlaneSize().x(), blockSize),
+                         Common::align(viewParams.ci.projectionPlaneSize().y(), blockSize)};
 
-          std::transform(std::cbegin(view.depth.getPlane(0)), std::cend(view.depth.getPlane(0)),
-                         std::begin(status.getPlane(0)),
-                         [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
-                           // #94: When there are invalid pixels in a basic view, these
-                           // should be freezed from pruning
-                           return uint8_t(ot.occupant(x) ? 255 : 0);
-                         });
-          return status;
-        });
+                     std::transform(std::cbegin(view.depth.getPlane(0)),
+                                    std::cend(view.depth.getPlane(0)),
+                                    std::begin(status.getPlane(0)),
+                                    [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
+                                      // #94: When there are invalid pixels in a basic view, these
+                                      // should be freezed from pruning
+                                      return uint8_t(ot.occupant(x) ? 255 : 0);
+                                    });
+                     return status;
+                   });
   }
 
-  void createSynthesizerPerPartialView(const MVD16Frame &views) {
+  void createSynthesizerPerPartialView(const Common::MVD16Frame &views) {
     m_synthesizers.clear();
     for (size_t i = 0; i < m_params.viewParamsList.size(); ++i) {
       if (!m_params.viewParamsList[i].isBasicView) {
@@ -389,7 +393,7 @@ private:
     }
   }
 
-  void synthesizeReferenceViews(const MVD16Frame &views) {
+  void synthesizeReferenceViews(const Common::MVD16Frame &views) {
     if (m_synthesizers.empty()) {
       // Skip generation the meshes
       std::cout << "Nothing to prune: only basic views\n";
@@ -403,7 +407,7 @@ private:
     }
   }
 
-  void pruneFrame(const MVD16Frame &views) {
+  void pruneFrame(const Common::MVD16Frame &views) {
     for (auto &cluster : m_clusters) {
       for (auto i : cluster.pruningOrder) {
         auto it = find_if(std::begin(m_synthesizers), std::end(m_synthesizers),
@@ -426,7 +430,7 @@ private:
   //
   // Special care is taken to make a pruned (masked) mesh once and re-use that
   // multiple times.
-  void synthesizeViews(size_t index, const TextureDepth16Frame &view,
+  void synthesizeViews(size_t index, const Common::TextureDepth16Frame &view,
                        const std::vector<size_t> &viewIds) {
     auto [ivertices, triangles, attributes] =
         unprojectPrunedView(view, m_params.viewParamsList[index], m_masks[index].getPlane(0));
@@ -448,7 +452,7 @@ private:
     std::cout.setf(flags);
 
     for (auto &s : m_synthesizers) {
-      if (contains(viewIds, s->index)) {
+      if (Common::contains(viewIds, s->index)) {
         auto overtices =
             project(ivertices, m_params.viewParamsList[index], m_params.viewParamsList[s->index]);
         weightedSphere(m_params.viewParamsList[s->index].ci, overtices, triangles);
@@ -486,8 +490,8 @@ private:
     return true;
   }
 
-  static auto erode(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
-    Mat<uint8_t> result{mask.sizes()};
+  static auto erode(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
+    Common::Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
           forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) > 0; }) ? 255
@@ -496,8 +500,8 @@ private:
     return result;
   }
 
-  static auto dilate(const Mat<uint8_t> &mask) -> Mat<uint8_t> {
-    Mat<uint8_t> result{mask.sizes()};
+  static auto dilate(const Common::Mat<uint8_t> &mask) -> Common::Mat<uint8_t> {
+    Common::Mat<uint8_t> result{mask.sizes()};
     forPixels(mask.sizes(), [&](int i, int j) {
       result(i, j) =
           forNeighbors(i, j, mask.sizes(), [&mask](int n, int m) { return mask(n, m) == 0; }) ? 0
@@ -519,7 +523,7 @@ private:
     const auto W = int(synthesizer.reference.width());
     const auto H = int(synthesizer.reference.height());
 
-    synthesizer.rasterizer.visit([&](const Renderer::PixelValue<Vec3f> &x) {
+    synthesizer.rasterizer.visit([&](const Renderer::PixelValue<Common::Vec3f> &x) {
       if (x.normDisp > 0) {
         const auto depthError = (x.depth() / *j - 1.F);
         auto lumaError = std::abs(std::get<0>(x.attributes()).x() - *(jY));
@@ -569,7 +573,8 @@ private:
   }
 };
 
-HierarchicalPruner::HierarchicalPruner(const Json & /* unused */, const Json &nodeConfig)
+HierarchicalPruner::HierarchicalPruner(const Common::Json & /* unused */,
+                                       const Common::Json &nodeConfig)
     : m_impl(new Impl{nodeConfig}) {}
 
 HierarchicalPruner::~HierarchicalPruner() = default;

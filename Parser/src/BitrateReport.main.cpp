@@ -44,8 +44,6 @@
 #include <variant>
 #include <vector>
 
-using namespace TMIV::Common;
-
 class StatisticalVariable {
 public:
   auto operator<<(std::size_t value) -> auto & {

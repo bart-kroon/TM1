@@ -37,8 +37,6 @@
 
 #include <cmath>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Renderer {
 namespace {
 const auto depthBlendingThreshold8 = 2.56;    // 1% of bit depth
@@ -48,8 +46,9 @@ const auto depthBlendingThreshold16 = 655.36; // 1% of bit depth
 template <typename YUVD>
 void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
                            int inpaintingType /*0 for horizontal, 1 for vertical, 2 for omni*/,
-                           const Mat<int> &nonEmptyNeighbor1, const Mat<int> &nonEmptyNeighbor2,
-                           const Mat<int> &mapERP2Cassini = Mat<int>()) {
+                           const Common::Mat<int> &nonEmptyNeighbor1,
+                           const Common::Mat<int> &nonEmptyNeighbor2,
+                           const Common::Mat<int> &mapERP2Cassini = Common::Mat<int>()) {
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
@@ -193,19 +192,19 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
   const int width = int(Y.width());
   const int height = int(Y.height());
 
-  Mat<int> isHole;
+  Common::Mat<int> isHole;
   isHole.resize(height, width);
 
-  Mat<int> nonEmptyNeighborL;
+  Common::Mat<int> nonEmptyNeighborL;
   nonEmptyNeighborL.resize(height, width);
 
-  Mat<int> nonEmptyNeighborR;
+  Common::Mat<int> nonEmptyNeighborR;
   nonEmptyNeighborR.resize(height, width);
 
-  Mat<int> mapERP2Cassini;
+  Common::Mat<int> mapERP2Cassini;
   mapERP2Cassini.resize(height, width);
 
-  Mat<int> mapCassini2ERP;
+  Common::Mat<int> mapCassini2ERP;
   mapCassini2ERP.resize(height, width);
 
   for (int h = 0; h < height; h++) {
@@ -301,16 +300,16 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
   const int width = int(D.width());
   const int height = int(D.height());
 
-  Mat<int> nonEmptyNeighborL;
+  Common::Mat<int> nonEmptyNeighborL;
   nonEmptyNeighborL.resize(height, width);
 
-  Mat<int> nonEmptyNeighborR;
+  Common::Mat<int> nonEmptyNeighborR;
   nonEmptyNeighborR.resize(height, width);
 
-  Mat<int> nonEmptyNeighborT;
+  Common::Mat<int> nonEmptyNeighborT;
   nonEmptyNeighborT.resize(height, width);
 
-  Mat<int> nonEmptyNeighborB;
+  Common::Mat<int> nonEmptyNeighborB;
   nonEmptyNeighborB.resize(height, width);
 
   // analysis from top-left
@@ -392,14 +391,14 @@ void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
 
 template <typename YUVD>
 void inplaceInpaint_impl(YUVD &yuvd, const MivBitstream::ViewParams &meta) {
-  static_assert(std::is_same_v<YUVD, Texture444Depth10Frame> ||
-                std::is_same_v<YUVD, Texture444Depth16Frame>);
+  static_assert(std::is_same_v<YUVD, Common::Texture444Depth10Frame> ||
+                std::is_same_v<YUVD, Common::Texture444Depth16Frame>);
 
   double DepthBlendingThreshold = depthBlendingThreshold8;
-  if (std::is_same_v<YUVD, Texture444Depth10Frame>) {
+  if (std::is_same_v<YUVD, Common::Texture444Depth10Frame>) {
     DepthBlendingThreshold = depthBlendingThreshold10;
   }
-  if (std::is_same_v<YUVD, Texture444Depth16Frame>) {
+  if (std::is_same_v<YUVD, Common::Texture444Depth16Frame>) {
     DepthBlendingThreshold = depthBlendingThreshold16;
   }
 
@@ -407,7 +406,7 @@ void inplaceInpaint_impl(YUVD &yuvd, const MivBitstream::ViewParams &meta) {
 
   if (meta.ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
     const auto fullOmniRangePercentage =
-        (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / fullCycle;
+        (meta.ci.ci_erp_phi_max() - meta.ci.ci_erp_phi_min()) / Common::fullCycle;
     inpaintOmnidirectionalView(yuvd, DepthBlendingThreshold, fullOmniRangePercentage);
   }
 
@@ -415,14 +414,14 @@ void inplaceInpaint_impl(YUVD &yuvd, const MivBitstream::ViewParams &meta) {
 }
 } // namespace
 
-Inpainter::Inpainter(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+Inpainter::Inpainter(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/) {}
 
-void Inpainter::inplaceInpaint(Texture444Depth10Frame &viewport,
+void Inpainter::inplaceInpaint(Common::Texture444Depth10Frame &viewport,
                                const MivBitstream::ViewParams &metadata) const {
   inplaceInpaint_impl(viewport, metadata);
 }
 
-void Inpainter::inplaceInpaint(Texture444Depth16Frame &viewport,
+void Inpainter::inplaceInpaint(Common::Texture444Depth16Frame &viewport,
                                const MivBitstream::ViewParams &metadata) const {
   inplaceInpaint_impl(viewport, metadata);
 }

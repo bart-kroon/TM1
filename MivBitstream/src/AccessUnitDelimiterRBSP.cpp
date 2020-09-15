@@ -35,8 +35,6 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, AframeType x) -> std::ostream & {
   switch (x) {
@@ -58,7 +56,7 @@ auto operator<<(std::ostream &stream, const AccessUnitDelimiterRBSP &x) -> std::
 }
 
 auto AccessUnitDelimiterRBSP::decodeFrom(std::istream &stream) -> AccessUnitDelimiterRBSP {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
   auto aframe_type = bitstream.readBits<AframeType>(3);
   VERIFY_V3CBITSTREAM(AframeType::I <= aframe_type && aframe_type <= AframeType::SKIP);
 
@@ -70,7 +68,7 @@ auto AccessUnitDelimiterRBSP::decodeFrom(std::istream &stream) -> AccessUnitDeli
 void AccessUnitDelimiterRBSP::encodeTo(std::ostream &stream) const {
   VERIFY_V3CBITSTREAM(AframeType::I <= aframe_type() && aframe_type() <= AframeType::SKIP);
 
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
   bitstream.writeBits(aframe_type(), 3);
 
   bitstream.rbspTrailingBits();

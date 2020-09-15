@@ -40,8 +40,6 @@
 #include <ostream>
 #include <utility>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 RefListStruct::RefListStruct(std::vector<int16_t> deltaAfocSt) : m_deltaAfocSt{move(deltaAfocSt)} {}
 
@@ -68,8 +66,8 @@ auto RefListStruct::operator!=(const RefListStruct &other) const noexcept -> boo
   return !operator==(other);
 }
 
-auto RefListStruct::decodeFrom(InputBitstream &bitstream, const AtlasSequenceParameterSetRBSP &asps)
-    -> RefListStruct {
+auto RefListStruct::decodeFrom(Common::InputBitstream &bitstream,
+                               const AtlasSequenceParameterSetRBSP &asps) -> RefListStruct {
   VERIFY_MIVBITSTREAM(!asps.asps_long_term_ref_atlas_frames_flag());
   auto deltaAfocSt = std::vector<int16_t>(bitstream.getUExpGolomb<size_t>(), 0);
 
@@ -86,7 +84,7 @@ auto RefListStruct::decodeFrom(InputBitstream &bitstream, const AtlasSequencePar
   return RefListStruct{deltaAfocSt};
 }
 
-void RefListStruct::encodeTo(OutputBitstream &bitstream,
+void RefListStruct::encodeTo(Common::OutputBitstream &bitstream,
                              const AtlasSequenceParameterSetRBSP &asps) const {
   VERIFY_MIVBITSTREAM(!asps.asps_long_term_ref_atlas_frames_flag());
   bitstream.putUExpGolomb(num_ref_entries());
@@ -161,7 +159,7 @@ auto operator<<(std::ostream &stream, const AspsMivExtension &x) -> std::ostream
   return stream;
 }
 
-auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+auto AspsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
     -> AspsMivExtension {
   auto x = AspsMivExtension{};
   x.asme_group_id(
@@ -182,7 +180,8 @@ auto AspsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterS
   return x;
 }
 
-void AspsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
+void AspsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
+                                const V3cParameterSet &vps) const {
   bitstream.putUVar(asme_group_id(), vps.vps_miv_extension().vme_num_groups_minus1() + uint64_t(1));
   bitstream.putFlag(asme_auxiliary_atlas_flag());
   if (vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
@@ -451,7 +450,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream, const V3cUn
                                                const V3cParameterSet &vps)
     -> AtlasSequenceParameterSetRBSP {
   auto x = AtlasSequenceParameterSetRBSP{};
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   x.asps_atlas_sequence_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
 
@@ -540,7 +539,7 @@ auto AtlasSequenceParameterSetRBSP::decodeFrom(std::istream &stream, const V3cUn
 
 void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnitHeader &vuh,
                                              const V3cParameterSet &vps) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
 
   bitstream.putUExpGolomb(asps_atlas_sequence_parameter_set_id());
 

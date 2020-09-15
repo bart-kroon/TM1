@@ -44,8 +44,6 @@
 #include <future>
 #include <numeric>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Renderer {
 class AdditiveSynthesizer::Impl {
 public:
@@ -92,7 +90,7 @@ public:
         const auto patchId = atlas.patchId(i_atlas, j_atlas);
 
         // Push dummy vertices to keep indexing simple
-        if (patchId == unusedPatchId) {
+        if (patchId == Common::unusedPatchId) {
           result.emplace_back();
           continue;
         }
@@ -104,7 +102,7 @@ public:
         const auto &viewParams = frame.viewParamsList[patch.pduViewIdx()];
 
         // Look up depth value and affine parameters
-        const auto uv = Vec2f(patch.atlasToView({j_atlas, i_atlas}));
+        const auto uv = Common::Vec2f(patch.atlasToView({j_atlas, i_atlas}));
         assert(atlas.geoFrame.getSize() == atlas.frameSize());
         auto level = atlas.geoFrame.getPlane(0)(i_atlas, j_atlas);
 
@@ -119,8 +117,8 @@ public:
 
         // Reproject and calculate ray angle
         const auto &R_t = transformList[patch.pduViewIdx()];
-        const auto xyz = R_t(unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams.ci));
-        const auto rayAngle = angle(xyz, xyz - R_t.translation());
+        const auto xyz = R_t(unprojectVertex(uv + Common::Vec2f({0.5F, 0.5F}), d, viewParams.ci));
+        const auto rayAngle = Common::angle(xyz, xyz - R_t.translation());
         result.push_back({xyz, rayAngle});
       }
     }
@@ -135,9 +133,9 @@ public:
     const int size = 2 * (rows - 1) * (cols - 1);
     result.reserve(size);
 
-    auto addTriangle = [&](Vec2i v0, Vec2i v1, Vec2i v2) {
+    auto addTriangle = [&](Common::Vec2i v0, Common::Vec2i v1, Common::Vec2i v2) {
       const int patchId = atlas.patchId(v0.y(), v0.x());
-      if (patchId == unusedPatchId || patchId != atlas.patchId(v1.y(), v1.x()) ||
+      if (patchId == Common::unusedPatchId || patchId != atlas.patchId(v1.y(), v1.x()) ||
           patchId != atlas.patchId(v2.y(), v2.x())) {
         return;
       }
@@ -150,10 +148,10 @@ public:
 
     for (int i = 1; i < rows; ++i) {
       for (int j = 1; j < cols; ++j) {
-        const auto tl = Vec2i{j - 1, i - 1};
-        const auto tr = Vec2i{j, i - 1};
-        const auto bl = Vec2i{j - 1, i};
-        const auto br = Vec2i{j, i};
+        const auto tl = Common::Vec2i{j - 1, i - 1};
+        const auto tr = Common::Vec2i{j, i - 1};
+        const auto bl = Common::Vec2i{j - 1, i};
+        const auto br = Common::Vec2i{j, i};
         addTriangle(tl, tr, br);
         addTriangle(tl, br, bl);
       }
@@ -164,7 +162,7 @@ public:
   }
 
   static auto atlasColors(const Decoder::AtlasAccessUnit &atlas) {
-    std::vector<Vec3f> result;
+    std::vector<Common::Vec3f> result;
     auto yuv444 = expandTexture(atlas.attrFrame);
     result.reserve(distance(std::begin(result), std::end(result)));
     std::copy(std::begin(yuv444), std::end(yuv444), back_inserter(result));
@@ -180,9 +178,9 @@ public:
 
   [[nodiscard]] auto rasterFrame(const Decoder::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams,
-                                 float compensation) const -> Rasterizer<Vec3f> {
+                                 float compensation) const -> Rasterizer<Common::Vec3f> {
     // Incremental view synthesis and blending
-    Rasterizer<Vec3f> rasterizer{
+    Rasterizer<Common::Vec3f> rasterizer{
         {m_rayAngleParam, m_depthParam, m_stretchingParam, m_maxStretching},
         viewportParams.ci.projectionPlaneSize()};
 
@@ -221,7 +219,7 @@ public:
   // Field of view [rad]
   static auto xFoV(const MivBitstream::ViewParams &viewParams) -> float {
     const auto &ci = viewParams.ci;
-    return ci.dispatch(overload(
+    return ci.dispatch(Common::overload(
         [&](MivBitstream::Equirectangular /*unused*/) {
           return std::abs(ci.ci_erp_phi_max() - ci.ci_erp_phi_min());
         },
@@ -229,12 +227,12 @@ public:
           return 2.F *
                  std::atan(ci.projectionPlaneSize().x() / (2 * ci.ci_perspective_focal_hor()));
         },
-        [&](MivBitstream::Orthographic /*unused*/) { return halfCycle; }));
+        [&](MivBitstream::Orthographic /*unused*/) { return Common::halfCycle; }));
   }
 
   // Resolution in px^2/rad^2
   static auto resolution(const MivBitstream::ViewParams &viewParams) -> float {
-    return square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
+    return Common::square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
   static auto resolutionRatio(const Decoder::AccessUnit &frame,
@@ -251,13 +249,13 @@ public:
 
   [[nodiscard]] auto renderFrame(const Decoder::AccessUnit &frame,
                                  const MivBitstream::ViewParams &viewportParams) const
-      -> Texture444Depth16Frame {
+      -> Common::Texture444Depth16Frame {
     auto rasterizer = rasterFrame(frame, viewportParams, resolutionRatio(frame, viewportParams));
 
     const auto depthTransform = MivBitstream::DepthTransform<16>{viewportParams.dq};
     auto viewport =
-        Texture444Depth16Frame{quantizeTexture(rasterizer.attribute<0>()),
-                               depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
+        Common::Texture444Depth16Frame{Common::quantizeTexture(rasterizer.attribute<0>()),
+                                       depthTransform.quantizeNormDisp(rasterizer.normDisp(), 1)};
     viewport.first.filIInvalidWithNeutral(viewport.second);
 
     return viewport;
@@ -270,7 +268,8 @@ private:
   float m_maxStretching;
 }; // namespace TMIV::Renderer
 
-AdditiveSynthesizer::AdditiveSynthesizer(const Json & /*rootNode*/, const Json &componentNode)
+AdditiveSynthesizer::AdditiveSynthesizer(const Common::Json & /*rootNode*/,
+                                         const Common::Json &componentNode)
     : m_impl(new Impl(componentNode.require("rayAngleParameter").asFloat(),
                       componentNode.require("depthParameter").asFloat(),
                       componentNode.require("stretchingParameter").asFloat(),
@@ -284,7 +283,7 @@ AdditiveSynthesizer::~AdditiveSynthesizer() = default;
 
 auto AdditiveSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
                                       const MivBitstream::ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
+    -> Common::Texture444Depth16Frame {
   return m_impl->renderFrame(frame, viewportParams);
 }
 } // namespace TMIV::Renderer

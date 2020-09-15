@@ -34,8 +34,6 @@
 #include "MaxRectPiP.h"
 #include <TMIV/Common/LinAlg.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Packer {
 constexpr auto occupied = uint8_t(128);
 
@@ -113,8 +111,8 @@ MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
 
 auto MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Output &packerOutput)
     -> bool {
-  int w = align(c.width(), m_alignment);
-  int h = align(c.height(), m_alignment);
+  int w = Common::align(c.width(), m_alignment);
+  int h = Common::align(c.height(), m_alignment);
 
   if ((m_pip && pushInUsedSpace(w, h, c.isBasicView(), packerOutput)) ||
       pushInFreeSpace(w, h, c.isBasicView(), packerOutput)) {
@@ -130,20 +128,19 @@ auto MaxRectPiP::push(const Cluster &c, const ClusteringMap &clusteringMap, Outp
 
 void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clusteringMap,
                                     const MaxRectPiP::Output &packerOutput) {
-  using namespace TMIV::Common;
 
   const auto &clusteringBuffer = clusteringMap.getPlane(0);
   bool isRotated = packerOutput.isRotated();
   int w = c.width();
   int h = c.height();
-  int w_align = align(c.width(), m_alignment);
-  int h_align = align(c.height(), m_alignment);
+  int w_align = Common::align(c.width(), m_alignment);
+  int h_align = Common::align(c.height(), m_alignment);
   // overflow
-  Vec2i patchOverflow =
-      Vec2i({c.jmin(), c.imin()}) + Vec2i({w_align, h_align}) - clusteringMap.getSize();
+  Common::Vec2i patchOverflow = Common::Vec2i({c.jmin(), c.imin()}) +
+                                Common::Vec2i({w_align, h_align}) - clusteringMap.getSize();
 
   // Step #0 (in atlas)
-  Vec2i q0 = {packerOutput.x(), packerOutput.y()};
+  Common::Vec2i q0 = {packerOutput.x(), packerOutput.y()};
   int XMin = q0.x() / m_alignment;
   int XLast = (q0.x() + (isRotated ? h : w) - 1) / m_alignment + 1;
   int YMin = q0.y() / m_alignment;
@@ -154,7 +151,7 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
   }
 
   // Step #1 (in projection)
-  Vec2i p0 = {c.jmin(), c.imin()};
+  Common::Vec2i p0 = {c.jmin(), c.imin()};
   if (patchOverflow.x() > 0) {
     p0.x() -= patchOverflow.x();
   }
@@ -166,15 +163,16 @@ void MaxRectPiP::updateOccupancyMap(const Cluster &c, const ClusteringMap &clust
   int yMin = p0.y();
   int yMax = p0.y() + h - 1;
 
-  auto p2q = [isRotated, w_align, p0, q0](const Vec2i p) {
-    return isRotated ? (q0 + Vec2i({p.y() - p0.y(), (w_align - 1) - (p.x() - p0.x())}))
+  auto p2q = [isRotated, w_align, p0, q0](const Common::Vec2i p) {
+    return isRotated ? (q0 + Common::Vec2i({p.y() - p0.y(), (w_align - 1) - (p.x() - p0.x())}))
                      : (q0 + (p - p0));
   };
 
   for (auto y = yMin; y <= yMax; y++) {
     for (auto x = xMin; x <= xMax; x++) {
       if (clusteringBuffer(y, x) == c.getClusterId()) {
-        Vec2i q = p2q(Vec2i({static_cast<int>(x), static_cast<int>(y)})) / m_alignment;
+        Common::Vec2i q =
+            p2q(Common::Vec2i({static_cast<int>(x), static_cast<int>(y)})) / m_alignment;
         m_occupancyMap(q.y(), q.x()) = 0;
       }
     }

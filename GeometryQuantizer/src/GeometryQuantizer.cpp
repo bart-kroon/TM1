@@ -38,8 +38,6 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace TMIV::Common;
-
 namespace TMIV::GeometryQuantizer {
 GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
     : m_depthOccThresholdIfSet{depthOccThresholdIfSet} {
@@ -54,7 +52,8 @@ GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
   }
 }
 
-GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeConfig)
+GeometryQuantizer::GeometryQuantizer(const Common::Json & /*unused*/,
+                                     const Common::Json &nodeConfig)
     : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
 auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
@@ -88,12 +87,12 @@ auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
 
 auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
     -> Common::MVD10Frame {
-  auto outAtlases = MVD10Frame{};
+  auto outAtlases = Common::MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
   for (const auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
+    outAtlases.emplace_back(
+        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {

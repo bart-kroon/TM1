@@ -35,8 +35,6 @@
 
 #include <iostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
 void Encoder::scaleGeometryDynamicRange() {
   auto lowDepthQuality = m_params.vps.vps_miv_extension().vme_depth_low_quality_flag();
@@ -109,7 +107,7 @@ auto Encoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
   return paramsScaled;
 }
 
-void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {
+void Encoder::updateAggregationStatistics(const Common::MaskList &aggregatedMask) {
   const auto lumaSamplesPerFrame = std::accumulate(
       aggregatedMask.begin(), aggregatedMask.end(), size_t{}, [](size_t sum, const auto &mask) {
         return sum + 2 * std::count_if(mask.getPlane(0).begin(), mask.getPlane(0).end(),
@@ -122,12 +120,12 @@ void Encoder::updateAggregationStatistics(const MaskList &aggregatedMask) {
 void Encoder::constructVideoFrames() {
   int frame = 0;
   for (const auto &views : m_transportViews) {
-    MVD16Frame atlasList;
+    Common::MVD16Frame atlasList;
 
     for (uint8_t i = 0; i <= m_params.vps.vps_atlas_count_minus1(); ++i) {
       const auto frameWidth = m_params.vps.vps_frame_width(i);
       const auto frameHeight = m_params.vps.vps_frame_height(i);
-      TextureDepth16Frame frame;
+      Common::TextureDepth16Frame frame;
       if (m_params.vps.vps_occupancy_video_present_flag(i)) {
         if (m_params.vps.vps_miv_extension().vme_occupancy_scale_enabled_flag()) {
           int codedOccupancyWidth =
@@ -137,14 +135,17 @@ void Encoder::constructVideoFrames() {
           // make sure coded occupancy maps are divisible by 2 for HM coding functionality
           codedOccupancyWidth = codedOccupancyWidth + codedOccupancyWidth % 2;
           codedOccupancyHeight = codedOccupancyHeight + codedOccupancyHeight % 2;
-          frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
-                   Occupancy10Frame(codedOccupancyWidth, codedOccupancyHeight)};
+          frame = {Common::TextureFrame(frameWidth, frameHeight),
+                   Common::Depth16Frame(frameWidth, frameHeight),
+                   Common::Occupancy10Frame(codedOccupancyWidth, codedOccupancyHeight)};
         } else {
-          frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight),
-                   Occupancy10Frame(frameWidth, frameHeight)};
+          frame = {Common::TextureFrame(frameWidth, frameHeight),
+                   Common::Depth16Frame(frameWidth, frameHeight),
+                   Common::Occupancy10Frame(frameWidth, frameHeight)};
         }
       } else {
-        frame = {TextureFrame(frameWidth, frameHeight), Depth16Frame(frameWidth, frameHeight)};
+        frame = {Common::TextureFrame(frameWidth, frameHeight),
+                 Common::Depth16Frame(frameWidth, frameHeight)};
       }
 
       frame.texture.fillNeutral();
@@ -158,7 +159,7 @@ void Encoder::constructVideoFrames() {
     for (const auto &patch : m_params.patchParamsList) {
       const auto &view = views[patch.pduViewIdx()];
       if (m_params.vme().vme_max_entities_minus1() > 0) {
-        MVD16Frame tempViews;
+        Common::MVD16Frame tempViews;
         tempViews.push_back(view);
         const auto &entityViews = entitySeparator(tempViews, *patch.pduEntityId());
         writePatchInAtlas(patch, entityViews[0], atlasList, frame);
@@ -172,7 +173,8 @@ void Encoder::constructVideoFrames() {
 }
 
 void Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
-                                const TextureDepth16Frame &view, MVD16Frame &atlas, int frameId) {
+                                const Common::TextureDepth16Frame &view, Common::MVD16Frame &atlas,
+                                int frameId) {
   auto &currentAtlas = atlas[patchParams.vuhAtlasId];
 
   auto &textureAtlasMap = currentAtlas.texture;
@@ -212,8 +214,8 @@ void Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
       int yOcc = 0, xOcc = 0;
       for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
-          Vec2i pView = {xM + dx, yM + dy};
-          Vec2i pAtlas = patchParams.viewToAtlas(pView);
+          Common::Vec2i pView = {xM + dx, yM + dy};
+          Common::Vec2i pAtlas = patchParams.viewToAtlas(pView);
           if (m_params.vme().vme_occupancy_scale_enabled_flag()) {
             const auto &asme = m_params.atlas[patchParams.vuhAtlasId].asme();
             yOcc = pAtlas.y() / (asme.asme_occupancy_scale_factor_y_minus1() + 1);

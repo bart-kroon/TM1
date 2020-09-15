@@ -35,13 +35,11 @@
 
 #include <TMIV/Common/Thread.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Renderer {
 constexpr auto halfPixel = 0.5F;
 
-auto imagePositions(const MivBitstream::CameraIntrinsics &ci) -> Mat<Vec2f> {
-  Mat<Vec2f> result;
+auto imagePositions(const MivBitstream::CameraIntrinsics &ci) -> Common::Mat<Common::Vec2f> {
+  Common::Mat<Common::Vec2f> result;
   result.resize(ci.projectionPlaneSize().y(), ci.projectionPlaneSize().x());
   for (unsigned i = 0; i != result.height(); ++i) {
     for (unsigned j = 0; j != result.width(); ++j) {
@@ -51,39 +49,42 @@ auto imagePositions(const MivBitstream::CameraIntrinsics &ci) -> Mat<Vec2f> {
   return result;
 }
 
-auto unprojectPoints(const MivBitstream::CameraIntrinsics &ci, const Mat<Vec2f> &positions,
-                     const Mat<float> &depth) -> Mat<Vec3f> {
+auto unprojectPoints(const MivBitstream::CameraIntrinsics &ci,
+                     const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
+    -> Common::Mat<Common::Vec3f> {
   assert(positions.sizes() == depth.sizes());
   return ci.dispatch([&](auto camType) {
     Engine<camType.value> engine{ci};
-    Mat<Vec3f> points{positions.sizes()};
+    Common::Mat<Common::Vec3f> points{positions.sizes()};
 
-    parallel_for(points.size(),
-                 [&](size_t id) { points[id] = engine.unprojectVertex(positions[id], depth[id]); });
+    Common::parallel_for(points.size(), [&](size_t id) {
+      points[id] = engine.unprojectVertex(positions[id], depth[id]);
+    });
 
     return points;
   });
 }
 
 auto changeReferenceFrame(const MivBitstream::CameraExtrinsics &source,
-                          const MivBitstream::CameraExtrinsics &target, const Mat<Vec3f> &points)
-    -> Mat<Vec3f> {
-  Mat<Vec3f> result(points.sizes());
+                          const MivBitstream::CameraExtrinsics &target,
+                          const Common::Mat<Common::Vec3f> &points) -> Common::Mat<Common::Vec3f> {
+  Common::Mat<Common::Vec3f> result(points.sizes());
   const auto R_t = AffineTransform{source, target};
 
-  parallel_for(points.size(), [&](size_t id) { result[id] = R_t(points[id]); });
+  Common::parallel_for(points.size(), [&](size_t id) { result[id] = R_t(points[id]); });
   return result;
 }
 
-auto projectPoints(const MivBitstream::CameraIntrinsics &ci, const Mat<Vec3f> &points)
-    -> std::pair<Mat<Vec2f>, Mat<float>> {
+auto projectPoints(const MivBitstream::CameraIntrinsics &ci,
+                   const Common::Mat<Common::Vec3f> &points)
+    -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>> {
   return ci.dispatch([&](auto camType) {
     Engine<camType.value> engine{ci};
 
-    Mat<Vec2f> positions{points.sizes()};
-    Mat<float> depth{points.sizes()};
+    Common::Mat<Common::Vec2f> positions{points.sizes()};
+    Common::Mat<float> depth{points.sizes()};
 
-    parallel_for(points.size(), [&](size_t id) {
+    Common::parallel_for(points.size(), [&](size_t id) {
       ImageVertexDescriptor v = engine.projectVertex({points[id], 0.F});
       positions[id] = v.position;
       depth[id] = v.depth;
@@ -94,49 +95,50 @@ auto projectPoints(const MivBitstream::CameraIntrinsics &ci, const Mat<Vec3f> &p
 }
 
 auto reprojectPoints(const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target,
-                     const Mat<Vec2f> &positions, const Mat<float> &depth)
-    -> std::pair<Mat<Vec2f>, Mat<float>> {
+                     const Common::Mat<Common::Vec2f> &positions, const Common::Mat<float> &depth)
+    -> std::pair<Common::Mat<Common::Vec2f>, Common::Mat<float>> {
   auto points = unprojectPoints(source.ci, positions, depth);
   points = changeReferenceFrame(source.ce, target.ce, points);
   return projectPoints(target.ci, points);
 }
 
 auto calculateRayAngles(const MivBitstream::CameraExtrinsics &source,
-                        const MivBitstream::CameraExtrinsics &target, const Mat<Vec3f> &points)
-    -> Mat<float> {
-  Mat<float> result(points.sizes());
+                        const MivBitstream::CameraExtrinsics &target,
+                        const Common::Mat<Common::Vec3f> &points) -> Common::Mat<float> {
+  Common::Mat<float> result(points.sizes());
   const auto t = AffineTransform(source, target).translation();
-  std::transform(std::begin(points), std::end(points), std::begin(result),
-                 [t](Vec3f virtualRay) { return angle(virtualRay, virtualRay - t); });
+  std::transform(
+      std::begin(points), std::end(points), std::begin(result),
+      [t](Common::Vec3f virtualRay) { return Common::angle(virtualRay, virtualRay - t); });
   return result;
 }
 
 AffineTransform::AffineTransform(const MivBitstream::CameraExtrinsics &source,
                                  const MivBitstream::CameraExtrinsics &target) {
-  const auto r1 = QuatD(source.rotation());
-  const auto r2 = QuatD(target.rotation());
-  const auto t1 = Vec3d(source.position());
-  const auto t2 = Vec3d(target.position());
+  const auto r1 = Common::QuatD(source.rotation());
+  const auto r2 = Common::QuatD(target.rotation());
+  const auto t1 = Common::Vec3d(source.position());
+  const auto t2 = Common::Vec3d(target.position());
 
   const auto r = conj(r2) * r1;
   const auto t = rotate(t1 - t2, conj(r2));
 
-  m_R = Mat3x3f(rotationMatrix(r));
-  m_t = Vec3f(t);
+  m_R = Common::Mat3x3f(rotationMatrix(r));
+  m_t = Common::Vec3f(t);
 }
 
-auto AffineTransform::operator()(Vec3f x) const -> Vec3f { return m_R * x + m_t; }
+auto AffineTransform::operator()(Common::Vec3f x) const -> Common::Vec3f { return m_R * x + m_t; }
 
-auto unprojectVertex(Vec2f position, float depth, const MivBitstream::CameraIntrinsics &ci)
-    -> Vec3f {
+auto unprojectVertex(Common::Vec2f position, float depth, const MivBitstream::CameraIntrinsics &ci)
+    -> Common::Vec3f {
   return ci.dispatch([&](auto camType) {
     Engine<camType> engine{ci};
     return engine.unprojectVertex(position, depth);
   });
 }
 
-auto projectVertex(const Vec3f &position, const MivBitstream::CameraIntrinsics &ci)
-    -> std::pair<Vec2f, float> {
+auto projectVertex(const Common::Vec3f &position, const MivBitstream::CameraIntrinsics &ci)
+    -> std::pair<Common::Vec2f, float> {
   return ci.dispatch([&](auto camType) {
     Engine<camType> engine{ci};
     auto imageVertexDescriptor = engine.projectVertex(SceneVertexDescriptor{position, 0.F});
@@ -222,14 +224,15 @@ auto ProjectionHelper::getAngularResolution() const -> float {
     auto w = static_cast<float>(ci.projectionPlaneSize().x());
     auto h = static_cast<float>(ci.projectionPlaneSize().y());
     float omega =
-        4.F * std::atan(nbPixel / (2.F * projectionFocalLength *
-                                   std::sqrt(4.F * sqr(projectionFocalLength) + (w * w + h * h))));
+        4.F * std::atan(nbPixel /
+                        (2.F * projectionFocalLength *
+                         std::sqrt(4.F * Common::sqr(projectionFocalLength) + (w * w + h * h))));
 
     return nbPixel / omega;
   }
   case MivBitstream::CiCamType::orthographic: {
     auto nbPixel = static_cast<float>(ci.projectionPlaneSize().x() * ci.projectionPlaneSize().y());
-    return nbPixel / hemiSphere;
+    return nbPixel / Common::hemiSphere;
   }
   default:
     abort();
@@ -241,7 +244,7 @@ auto ProjectionHelper::getDepthRange() const -> Common::Vec2f {
           1.F / m_viewParams.get().dq.dq_norm_disp_low()};
 }
 
-auto ProjectionHelper::getRadialRange() const -> Vec2f {
+auto ProjectionHelper::getRadialRange() const -> Common::Vec2f {
   switch (m_viewParams.get().ci.ci_cam_type()) {
   case MivBitstream::CiCamType::equirectangular: {
     return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
@@ -257,7 +260,7 @@ auto ProjectionHelper::getRadialRange() const -> Vec2f {
               ci.ci_perspective_focal_ver();
 
     return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),
-            norm(Vec3f{x, y, 1.F}) / m_viewParams.get().dq.dq_norm_disp_low()};
+            norm(Common::Vec3f{x, y, 1.F}) / m_viewParams.get().dq.dq_norm_disp_low()};
   }
   case MivBitstream::CiCamType::orthographic: {
     return {1.F / m_viewParams.get().dq.dq_norm_disp_high(),

@@ -37,21 +37,19 @@
 
 #include <cmath>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const AapsVpccExtension & /* x */) -> std::ostream & {
   stream << "aaps_vpcc_camera_parameters_present_flag=false\n";
   return stream;
 }
 
-auto AapsVpccExtension::decodeFrom(InputBitstream &bitstream) -> AapsVpccExtension {
+auto AapsVpccExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsVpccExtension {
   const auto aaps_vpcc_camera_parameters_present_flag = bitstream.getFlag();
   LIMITATION(!aaps_vpcc_camera_parameters_present_flag);
   return {};
 }
 
-void AapsVpccExtension::encodeTo(OutputBitstream &bitstream) const {
+void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   const auto aaps_vpcc_camera_parameters_present_flag = false;
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }
@@ -87,7 +85,7 @@ auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept 
   return !operator==(other);
 }
 
-auto AapsMivExtension::decodeFrom(InputBitstream &bitstream) -> AapsMivExtension {
+auto AapsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsMivExtension {
   auto x = AapsMivExtension{};
   x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
   x.aame_vui_params_present_flag(bitstream.getFlag());
@@ -97,7 +95,7 @@ auto AapsMivExtension::decodeFrom(InputBitstream &bitstream) -> AapsMivExtension
   return x;
 }
 
-void AapsMivExtension::encodeTo(OutputBitstream &bitstream) const {
+void AapsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(aame_omaf_v1_compatible_flag());
   bitstream.putFlag(aame_vui_params_present_flag());
   if (aame_vui_params_present_flag()) {
@@ -253,7 +251,7 @@ auto AtlasAdaptationParameterSetRBSP::operator!=(
 
 auto AtlasAdaptationParameterSetRBSP::decodeFrom(std::istream &stream)
     -> AtlasAdaptationParameterSetRBSP {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   auto x = AtlasAdaptationParameterSetRBSP{};
 
@@ -289,7 +287,7 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(std::istream &stream)
 }
 
 void AtlasAdaptationParameterSetRBSP::encodeTo(std::ostream &stream) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
 
   bitstream.putUExpGolomb(aaps_atlas_adaptation_parameter_set_id());
   bitstream.putFlag(aaps_log2_max_afoc_present_flag());

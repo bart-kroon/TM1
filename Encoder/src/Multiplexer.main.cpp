@@ -42,8 +42,6 @@
 #include <numeric>
 #include <stdexcept>
 
-using namespace TMIV::Common;
-
 using std::filesystem::path;
 
 namespace TMIV::Encoder {
@@ -93,25 +91,25 @@ public:
 private:
   void checkParameters() {
     if (!exists(m_intermediateBitstreamPath)) {
-      throw std::runtime_error(format("The intermediate bitstream file ({}) does not exist.",
-                                      m_intermediateBitstreamPath));
+      throw std::runtime_error(Common::format(
+          "The intermediate bitstream file ({}) does not exist.", m_intermediateBitstreamPath));
     }
     // We are daring enough to overwrite an existing bitstream, but we refuse to overwrite the
     // input bitstream. (Because we know we are stupid enough to do that at least once.)
     if (exists(m_outputBitstreamPath) &&
         equivalent(m_intermediateBitstreamPath, m_outputBitstreamPath)) {
       throw std::runtime_error(
-          format("The intermediate bitstream file ({}) and the output bitstream "
-                 "file ({}) cannot be the same file.",
-                 m_intermediateBitstreamPath, m_outputBitstreamPath));
+          Common::format("The intermediate bitstream file ({}) and the output bitstream "
+                         "file ({}) cannot be the same file.",
+                         m_intermediateBitstreamPath, m_outputBitstreamPath));
     }
   }
 
   void readIntermediateBitstream() {
     std::ifstream stream{m_intermediateBitstreamPath, std::ios::binary};
     if (!stream.good()) {
-      throw std::runtime_error(format("Failed to open intermediate bitstream ({}) for reading.",
-                                      m_intermediateBitstreamPath));
+      throw std::runtime_error(Common::format(
+          "Failed to open intermediate bitstream ({}) for reading.", m_intermediateBitstreamPath));
     }
 
     // Decode SSVH
@@ -156,14 +154,14 @@ private:
     auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_GVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, format(m_gvdSubBitstreamPathFmt, int(atlasId)));
+    appendSubBitstream(vuh, Common::format(m_gvdSubBitstreamPathFmt, int(atlasId)));
   }
 
   void appendOvd(uint8_t atlasId) {
     auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_OVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, format(*m_ovdSubBitstreamPathFmt, int(atlasId)));
+    appendSubBitstream(vuh, Common::format(*m_ovdSubBitstreamPathFmt, int(atlasId)));
   }
 
   void appendAvd(int atlasId, uint8_t attributeIdx, MivBitstream::AiAttributeTypeId typeId) {
@@ -171,14 +169,15 @@ private:
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     vuh.vuh_attribute_index(attributeIdx);
-    appendSubBitstream(vuh, format(*m_avdSubBitstreamPathFmt, codeOf(typeId), int(atlasId)));
+    appendSubBitstream(vuh,
+                       Common::format(*m_avdSubBitstreamPathFmt, codeOf(typeId), int(atlasId)));
   }
 
   void appendSubBitstream(const MivBitstream::V3cUnitHeader &vuh, const path &subBitstreamPath) {
     std::ifstream inStream{subBitstreamPath, std::ios::binary};
     if (!inStream.good()) {
       throw std::runtime_error(
-          format("Failed to open sub bitstream ({}) for reading", subBitstreamPath));
+          Common::format("Failed to open sub bitstream ({}) for reading", subBitstreamPath));
     }
     std::ostringstream substream;
     vuh.encodeTo(substream);

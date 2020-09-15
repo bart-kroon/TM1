@@ -39,7 +39,6 @@
 #include <TMIV/MivBitstream/verify.h>
 
 using TMIV::Common::overload;
-using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream & {
@@ -204,7 +203,7 @@ auto V3cUnitHeader::operator!=(const V3cUnitHeader &other) const noexcept -> boo
 }
 
 auto V3cUnitHeader::decodeFrom(std::istream &stream) -> V3cUnitHeader {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
   auto x = V3cUnitHeader{bitstream.readBits<VuhUnitType>(5)};
 
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
@@ -232,7 +231,7 @@ auto V3cUnitHeader::decodeFrom(std::istream &stream) -> V3cUnitHeader {
 }
 
 void V3cUnitHeader::encodeTo(std::ostream &stream) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
   bitstream.writeBits(vuh_unit_type(), 5);
 
   if (vuh_unit_type() == VuhUnitType::V3C_AVD || vuh_unit_type() == VuhUnitType::V3C_GVD ||

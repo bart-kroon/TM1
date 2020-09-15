@@ -33,14 +33,12 @@
 
 #include <TMIV/Aggregator/Aggregator.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Aggregator {
-Aggregator::Aggregator(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+Aggregator::Aggregator(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/) {}
 
 void Aggregator::prepareAccessUnit() { m_aggregatedMask.clear(); }
 
-void Aggregator::pushMask(const MaskList &mask) {
+void Aggregator::pushMask(const Common::MaskList &mask) {
   if (m_aggregatedMask.empty()) {
     m_aggregatedMask = mask;
   } else {

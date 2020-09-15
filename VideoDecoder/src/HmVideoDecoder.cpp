@@ -39,8 +39,6 @@
 #include <TLibDecoder/NALread.h>
 #include <TLibDecoder/TDecTop.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::VideoDecoder {
 // This implementation is based on TAppDec.cpp (HM 16.16) with all optional parameters locked to
 // default values and without fields.
@@ -201,8 +199,8 @@ private:
     m_iPOCLastDisplay = -MAX_INT;
   }
 
-  auto anyFrame(TComPicYuv &comPicYuv) const -> AnyFrame {
-    auto x = AnyFrame{};
+  auto anyFrame(TComPicYuv &comPicYuv) const -> Common::AnyFrame {
+    auto x = Common::AnyFrame{};
 
     assert(comPicYuv.getNumberValidComponents() <= x.planes.size());
 
@@ -231,7 +229,7 @@ private:
 
   void xWritePicture(TComPic &comPic) {
     if (!m_frameListeners.empty()) {
-      // Copy into AnyFrame
+      // Copy into Common::AnyFrame
       auto *comPicYuv = comPic.getPicYuvRec();
       assert(comPicYuv);
       const auto picture = anyFrame(*comPicYuv);

@@ -38,8 +38,6 @@
 
 #include <utility>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream & {
   switch (x) {
@@ -225,7 +223,7 @@ auto ProfileTierLevel::operator!=(const ProfileTierLevel &other) const noexcept 
   return !operator==(other);
 }
 
-auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel {
+auto ProfileTierLevel::decodeFrom(Common::InputBitstream &bitstream) -> ProfileTierLevel {
   auto x = ProfileTierLevel{};
   x.ptl_tier_flag(bitstream.getFlag());
   x.ptl_profile_codec_group_idc(bitstream.readBits<PtlProfileCodecGroupIdc>(7));
@@ -249,7 +247,7 @@ auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel
   return x;
 }
 
-void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
+void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(ptl_tier_flag());
   bitstream.writeBits(ptl_profile_codec_group_idc(), 7);
   bitstream.writeBits(ptl_profile_toolset_idc(), 8);
@@ -299,7 +297,7 @@ auto OccupancyInformation::operator!=(const OccupancyInformation &other) const n
   return !operator==(other);
 }
 
-auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInformation {
+auto OccupancyInformation::decodeFrom(Common::InputBitstream &bitstream) -> OccupancyInformation {
   auto x = OccupancyInformation{};
   x.oi_occupancy_codec_id(bitstream.getUint8());
   x.oi_lossy_occupancy_map_compression_threshold(bitstream.getUint8());
@@ -308,7 +306,7 @@ auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInf
   return x;
 }
 
-void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
+void OccupancyInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint8(oi_occupancy_codec_id());
   bitstream.putUint8(oi_lossy_occupancy_map_compression_threshold());
   bitstream.writeBits(oi_occupancy_nominal_2d_bitdepth_minus1(), 5);
@@ -340,7 +338,7 @@ auto GeometryInformation::operator!=(const GeometryInformation &other) const noe
   return !operator==(other);
 }
 
-auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
+auto GeometryInformation::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                                      uint8_t atlasIdx) -> GeometryInformation {
   auto x = GeometryInformation{};
   x.gi_geometry_codec_id(bitstream.getUint8());
@@ -351,7 +349,7 @@ auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const V3cParamet
   return x;
 }
 
-void GeometryInformation::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
+void GeometryInformation::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                                    uint8_t atlasIdx) const {
   bitstream.putUint8(gi_geometry_codec_id());
   bitstream.writeBits(gi_geometry_nominal_2d_bitdepth_minus1(), 5);
@@ -492,7 +490,7 @@ auto AttributeInformation::operator!=(const AttributeInformation &other) const n
   return !operator==(other);
 }
 
-auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
+auto AttributeInformation::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                                       uint8_t atlasIdx) -> AttributeInformation {
   auto x = AttributeInformation{};
   x.ai_attribute_count(bitstream.readBits<uint8_t>(7));
@@ -517,7 +515,7 @@ auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const V3cParame
   return x;
 }
 
-void AttributeInformation::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
+void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                                     uint8_t atlasIdx) const {
   bitstream.writeBits(ai_attribute_count(), 7);
   for (auto i = 0; i < ai_attribute_count(); ++i) {
@@ -562,7 +560,7 @@ auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream 
   return stream;
 }
 
-auto VpsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
     -> VpsMivExtension {
   auto x = VpsMivExtension{};
   x.vme_depth_low_quality_flag(bitstream.getFlag());
@@ -579,7 +577,8 @@ auto VpsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSe
   return x;
 }
 
-void VpsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
+void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
+                               const V3cParameterSet &vps) const {
   bitstream.putFlag(vme_depth_low_quality_flag());
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
   bitstream.putUExpGolomb(vme_num_groups_minus1());
@@ -946,7 +945,7 @@ auto V3cParameterSet::operator!=(const V3cParameterSet &other) const noexcept ->
 
 auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
   auto x = V3cParameterSet{};
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   x.profile_tier_level(ProfileTierLevel::decodeFrom(bitstream));
   x.vps_v3c_parameter_set_id(bitstream.readBits<uint8_t>(4));
@@ -1007,7 +1006,7 @@ auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
 }
 
 void V3cParameterSet::encodeTo(std::ostream &stream) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
   profile_tier_level().encodeTo(bitstream);
   bitstream.writeBits(vps_v3c_parameter_set_id(), 4);
   bitstream.putUint8(0); // vps_reserved_zero_8bits

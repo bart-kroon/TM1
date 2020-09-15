@@ -38,8 +38,6 @@
 
 #include <TMIV/Common/Common.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, AthType x) -> std::ostream & {
   switch (x) {
@@ -183,7 +181,7 @@ auto operator<<(std::ostream &stream, const AtlasTileHeader &x) -> std::ostream 
   return stream;
 }
 
-auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
+auto AtlasTileHeader::decodeFrom(Common::InputBitstream &bitstream,
                                  const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                  const std::vector<AtlasFrameParameterSetRBSP> &afpsV)
     -> AtlasTileHeader {
@@ -244,7 +242,7 @@ auto AtlasTileHeader::decodeFrom(InputBitstream &bitstream,
   return x;
 }
 
-void AtlasTileHeader::encodeTo(OutputBitstream &bitstream,
+void AtlasTileHeader::encodeTo(Common::OutputBitstream &bitstream,
                                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                const std::vector<AtlasFrameParameterSetRBSP> &afpsV) const {
   VERIFY_V3CBITSTREAM(ath_atlas_frame_parameter_set_id() <= 63);
@@ -326,7 +324,7 @@ auto PduMivExtension::printTo(std::ostream &stream, unsigned tileId, size_t patc
   return stream;
 }
 
-auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
+auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                                  const AtlasSequenceParameterSetRBSP &asps) -> PduMivExtension {
   auto x = PduMivExtension{};
 
@@ -346,7 +344,7 @@ auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSe
   return x;
 }
 
-void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
+void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                                const AtlasSequenceParameterSetRBSP &asps) const {
   if (vps.vps_miv_extension_flag() && vps.vps_miv_extension().vme_max_entities_minus1() > 0) {
     bitstream.putUVar(pdu_entity_id(),
@@ -395,7 +393,7 @@ auto PatchDataUnit::printTo(std::ostream &stream, unsigned tileId, size_t patchI
   return stream;
 }
 
-auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
+auto PatchDataUnit::decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
                                const V3cParameterSet &vps,
                                const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                                const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
@@ -434,7 +432,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
 
   const auto pdu_projection_id_num_bits =
       asps.asps_extended_projection_enabled_flag()
-          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
+          ? Common::ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
           : 3U;
   x.pdu_view_idx(bitstream.readBits<uint16_t>(pdu_projection_id_num_bits));
 
@@ -451,7 +449,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
   return x;
 }
 
-void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
+void PatchDataUnit::encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
                              const V3cParameterSet &vps,
                              const std::vector<AtlasSequenceParameterSetRBSP> &aspsV,
                              const std::vector<AtlasFrameParameterSetRBSP> &afpsV,
@@ -484,7 +482,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
 
   const auto pdu_projection_id_num_bits =
       asps.asps_extended_projection_enabled_flag()
-          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
+          ? Common::ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
           : 3U;
   VERIFY_V3CBITSTREAM((pdu_view_idx() >> pdu_projection_id_num_bits) == 0);
   bitstream.writeBits(pdu_view_idx(), pdu_projection_id_num_bits);
@@ -519,9 +517,9 @@ auto PatchInformationData::patch_data_unit() const noexcept -> const PatchDataUn
 
 auto PatchInformationData::printTo(std::ostream &stream, unsigned tileId, size_t patchIdx) const
     -> std::ostream & {
-  visit(overload([&](const std::monostate & /* unused */) { stream << "[unknown]\n"; },
-                 [&](const SkipPatchDataUnit &x) { stream << x; },
-                 [&](const PatchDataUnit &x) { x.printTo(stream, tileId, patchIdx); }),
+  visit(Common::overload([&](const std::monostate & /* unused */) { stream << "[unknown]\n"; },
+                         [&](const SkipPatchDataUnit &x) { stream << x; },
+                         [&](const PatchDataUnit &x) { x.printTo(stream, tileId, patchIdx); }),
         m_data);
   return stream;
 }
@@ -534,7 +532,7 @@ auto PatchInformationData::operator!=(const PatchInformationData &other) const n
   return !operator==(other);
 }
 
-auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
+auto PatchInformationData::decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
                                       const V3cParameterSet &vps,
                                       const std::vector<AtlasSequenceParameterSetRBSP> &asps,
                                       const std::vector<AtlasFrameParameterSetRBSP> &afps,
@@ -551,7 +549,7 @@ auto PatchInformationData::decodeFrom(InputBitstream &bitstream, const V3cUnitHe
   V3CBITSTREAM_ERROR("Unknown or unsupported tile/patch mode combination");
 }
 
-void PatchInformationData::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
+void PatchInformationData::encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
                                     const V3cParameterSet &vps,
                                     const std::vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const std::vector<AtlasFrameParameterSetRBSP> &afps,
@@ -600,7 +598,7 @@ auto AtlasTileDataUnit::operator!=(const AtlasTileDataUnit &other) const -> bool
   return !operator==(other);
 }
 
-auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &vuh,
+auto AtlasTileDataUnit::decodeFrom(Common::InputBitstream &bitstream, const V3cUnitHeader &vuh,
                                    const V3cParameterSet &vps,
                                    const std::vector<AtlasSequenceParameterSetRBSP> &asps,
                                    const std::vector<AtlasFrameParameterSetRBSP> &afps,
@@ -624,7 +622,7 @@ auto AtlasTileDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeade
   return AtlasTileDataUnit{x};
 }
 
-void AtlasTileDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vuh,
+void AtlasTileDataUnit::encodeTo(Common::OutputBitstream &bitstream, const V3cUnitHeader &vuh,
                                  const V3cParameterSet &vps,
                                  const std::vector<AtlasSequenceParameterSetRBSP> &asps,
                                  const std::vector<AtlasFrameParameterSetRBSP> &afps,
@@ -662,7 +660,7 @@ auto AtlasTileLayerRBSP::decodeFrom(std::istream &stream, const V3cUnitHeader &v
                                     const std::vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const std::vector<AtlasFrameParameterSetRBSP> &afps)
     -> AtlasTileLayerRBSP {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   auto atl = AtlasTileLayerRBSP{};
   atl.atlas_tile_header() = AtlasTileHeader::decodeFrom(bitstream, asps, afps);
@@ -677,7 +675,7 @@ void AtlasTileLayerRBSP::encodeTo(std::ostream &stream, const V3cUnitHeader &vuh
                                   const V3cParameterSet &vps,
                                   const std::vector<AtlasSequenceParameterSetRBSP> &asps,
                                   const std::vector<AtlasFrameParameterSetRBSP> &afps) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
 
   atlas_tile_header().encodeTo(bitstream, asps, afps);
   atlas_tile_data_unit().encodeTo(bitstream, vuh, vps, asps, afps, atlas_tile_header());

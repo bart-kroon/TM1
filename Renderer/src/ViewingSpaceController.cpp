@@ -38,8 +38,6 @@
 
 #include <iostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Renderer {
 namespace {
 auto computeIndex(const MivBitstream::ViewParams &metadata, const MivBitstream::ViewingSpace &vs)
@@ -114,16 +112,16 @@ void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused *
 
 } // namespace
 
-ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/,
-                                               const Json & /*componentNode*/) {}
+ViewingSpaceController::ViewingSpaceController(const Common::Json & /*rootNode*/,
+                                               const Common::Json & /*componentNode*/) {}
 
-void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport,
+void ViewingSpaceController::inplaceFading(Common::Texture444Depth10Frame &viewport,
                                            const MivBitstream::ViewParams &viewportParams,
                                            const MivBitstream::ViewingSpace &viewingSpace) const {
   inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));
 }
 
-void ViewingSpaceController::inplaceFading(Texture444Depth16Frame &viewport,
+void ViewingSpaceController::inplaceFading(Common::Texture444Depth16Frame &viewport,
                                            const MivBitstream::ViewParams &viewportParams,
                                            const MivBitstream::ViewingSpace &viewingSpace) const {
   inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));

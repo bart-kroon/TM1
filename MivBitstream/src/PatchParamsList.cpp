@@ -37,8 +37,6 @@
 
 #include <algorithm>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto PatchParams::isRotated() const -> bool {
   VERIFY_MIVBITSTREAM(pduOrientationIndex() != FlexiblePatchOrientation::FPO_INVALID);

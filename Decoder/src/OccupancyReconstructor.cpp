@@ -33,20 +33,18 @@
 
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Decoder {
-OccupancyReconstructor::OccupancyReconstructor(const Json & /*rootNode*/,
-                                               const Json & /*componentNode*/) {}
+OccupancyReconstructor::OccupancyReconstructor(const Common::Json & /*rootNode*/,
+                                               const Common::Json & /*componentNode*/) {}
 
 void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
   for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++) {
     auto &atlas = frame.atlas[i];
-    atlas.occFrame = Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
+    atlas.occFrame = Common::Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
     for (auto y = 0; y < atlas.frameSize().y(); y++) {
       for (auto x = 0; x < atlas.frameSize().x(); x++) {
         auto patchId = atlas.patchId(y, x);
-        if (patchId == unusedPatchId) {
+        if (patchId == Common::unusedPatchId) {
           atlas.occFrame.getPlane(0)(y, x) = 0;
         } else if (!frame.vps.vps_occupancy_video_present_flag(i)) {
           if (frame.vps.vps_miv_extension().vme_embedded_occupancy_flag()) {

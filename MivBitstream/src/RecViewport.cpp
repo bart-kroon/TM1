@@ -35,8 +35,6 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto RecViewport::rec_viewport_id() const noexcept -> std::uint16_t { return m_rec_viewport_id; }
 
@@ -155,7 +153,7 @@ auto operator<<(std::ostream &stream, const RecViewport &x) -> std::ostream & {
   return stream;
 }
 
-auto RecViewport::decodeFrom(InputBitstream &bitstream) -> RecViewport {
+auto RecViewport::decodeFrom(Common::InputBitstream &bitstream) -> RecViewport {
   RecViewport x = RecViewport();
   x.rec_viewport_id(bitstream.readBits<uint16_t>(10));
   x.rec_viewport_cancel_flag(bitstream.getFlag());
@@ -177,7 +175,7 @@ auto RecViewport::decodeFrom(InputBitstream &bitstream) -> RecViewport {
   return x;
 }
 
-void RecViewport::encodeTo(OutputBitstream &bitstream) const {
+void RecViewport::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.writeBits(rec_viewport_id(), 10);
   bitstream.putFlag(rec_viewport_cancel_flag());
   if (!rec_viewport_cancel_flag()) {

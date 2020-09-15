@@ -39,10 +39,8 @@
 #include <queue>
 #include <stdexcept>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Packer {
-Packer::Packer(const Json &rootNode, const Json &componentNode) {
+Packer::Packer(const Common::Json &rootNode, const Common::Json &componentNode) {
   m_minPatchSize = componentNode.require("MinPatchSize").asInt();
   m_overlap = componentNode.require("Overlap").asInt();
   m_pip = componentNode.require("PiP").asInt() != 0;
@@ -54,13 +52,13 @@ Packer::Packer(const Json &rootNode, const Json &componentNode) {
   }
 }
 
-void Packer::updateAggregatedEntityMasks(const std::vector<MaskList> &entityMasks) {
+void Packer::updateAggregatedEntityMasks(const std::vector<Common::MaskList> &entityMasks) {
   for (const auto &entityMask : entityMasks) {
     m_aggregatedEntityMasks.push_back(entityMask);
   }
 }
 
-auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
+auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &masks,
                   const MivBitstream::ViewParamsList &viewParamsList, const int m_blockSize)
     -> MivBitstream::PatchParamsList {
   // Check atlas size
@@ -70,7 +68,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     }
   }
 
-  // Mask clustering
+  // Common::Mask clustering
   ClusterList clusterList;
   ClusteringMapList clusteringMap;
   std::vector<int> clusteringMapIndex;
@@ -79,7 +77,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
     if (m_maxEntities > 1) {
       for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
         // Entity clustering
-        Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
+        Common::Mask mask = m_aggregatedEntityMasks[entityId - m_entityEncodeRange[0]][viewId];
 
         auto clusteringOutput =
             Cluster::retrieve(viewId, mask, static_cast<int>(clusterList.size()),
@@ -179,8 +177,8 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
           p.vuhAtlasId = static_cast<uint8_t>(atlasId);
 
           p.pduViewIdx(static_cast<uint16_t>(cluster.getViewId()))
-              .pduViewSize(
-                  {align(cluster.width(), m_blockSize), align(cluster.height(), m_blockSize)})
+              .pduViewSize({Common::align(cluster.width(), m_blockSize),
+                            Common::align(cluster.height(), m_blockSize)})
               .pduViewPos({cluster.jmin(), cluster.imin()})
               .pdu2dPos({packerOutput.x(), packerOutput.y()});
 

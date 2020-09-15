@@ -44,8 +44,6 @@
 #include <algorithm>
 #include <cmath>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Renderer {
 auto makeFullERPCamera() {
   auto x = MivBitstream::ViewParams{};
@@ -53,10 +51,10 @@ auto makeFullERPCamera() {
   x.ci.ci_projection_plane_width_minus1(9)
       .ci_projection_plane_height_minus1(4)
       .ci_cam_type(MivBitstream::CiCamType::equirectangular)
-      .ci_erp_phi_min(-halfCycle)
-      .ci_erp_phi_max(halfCycle)
-      .ci_erp_theta_min(-quarterCycle)
-      .ci_erp_theta_max(quarterCycle);
+      .ci_erp_phi_min(-Common::halfCycle)
+      .ci_erp_phi_max(Common::halfCycle)
+      .ci_erp_theta_min(-Common::quarterCycle)
+      .ci_erp_theta_max(Common::quarterCycle);
   x.ce.ce_view_pos_x(1.F)
       .ce_view_pos_z(-1.F)
       .ce_view_quat_x(0.01F)
@@ -84,15 +82,16 @@ TEST_CASE("Changing the reference frame", "[Render engine]") {
     auto rn = AffineTransform(rotated, neutral);
 
     SECTION("Translation") {
-      REQUIRE(nn.translation() == Vec3f{});
+      REQUIRE(nn.translation() == Common::Vec3f{});
       REQUIRE(nt.translation() == -translated.position());
       REQUIRE(tn.translation() == translated.position());
-      REQUIRE(nr.translation() == Vec3f{});
-      REQUIRE(rn.translation() == Vec3f{});
+      REQUIRE(nr.translation() == Common::Vec3f{});
+      REQUIRE(rn.translation() == Common::Vec3f{});
     }
 
     SECTION("Transformation") {
-      for (const auto x : {Vec3f{}, Vec3f{1.F, 2.F, 3.F}, Vec3f{-1.F, 0.3F, 0.4F}}) {
+      for (const auto x :
+           {Common::Vec3f{}, Common::Vec3f{1.F, 2.F, 3.F}, Common::Vec3f{-1.F, 0.3F, 0.4F}}) {
         REQUIRE(nn(x) == x);
         REQUIRE(nt(x) == x - translated.position());
         REQUIRE(tn(x) == x + translated.position());
@@ -110,9 +109,9 @@ TEST_CASE("Changing the reference frame", "[Render engine]") {
 }
 
 SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
-  using Pixel = AccumulatingPixel<Vec3f>;
-  using Acc = PixelAccumulator<Vec3f>;
-  using Value = PixelValue<Vec3f>;
+  using Pixel = AccumulatingPixel<Common::Vec3f>;
+  using Acc = PixelAccumulator<Common::Vec3f>;
+  using Value = PixelValue<Common::Vec3f>;
 
   GIVEN("A default-constructed accumulator") {
     Acc acc;
@@ -193,7 +192,7 @@ SCENARIO("Pixel can be blended", "[AccumulatingPixel]") {
 SCENARIO("Reprojecting points", "[reprojectPoints]") {
   GIVEN("A camera and a depth std::map") {
     auto viewParams = makeFullERPCamera();
-    Mat<float> depth({5U, 10U});
+    Common::Mat<float> depth({5U, 10U});
     std::fill(std::begin(depth), std::end(depth), 2.F);
 
     WHEN("Calculating image positions") {
@@ -233,46 +232,46 @@ SCENARIO("Reprojecting points", "[reprojectPoints]") {
 
 SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
-    AccumulatingPixel<Vec3w> pixel{1.F, 1.F, 1.F, 10.F};
-    Rasterizer<Vec3w> rasterizer(pixel, Vec2i{8, 4});
+    AccumulatingPixel<Common::Vec3w> pixel{1.F, 1.F, 1.F, 10.F};
+    Rasterizer<Common::Vec3w> rasterizer(pixel, Common::Vec2i{8, 4});
 
     WHEN("Rastering nothing") {
-      THEN("The depth std::map is a matrix of NaN's or Inf's") {
+      THEN("The depth std::map is a matrix of Common::NaN's or Inf's") {
         auto depth = rasterizer.depth();
-        static_assert(std::is_same_v<decltype(depth), Mat<float>>);
+        static_assert(std::is_same_v<decltype(depth), Common::Mat<float>>);
         REQUIRE(depth.sizes() == std::array{size_t(4), size_t(8)});
         REQUIRE(std::none_of(std::begin(depth), std::end(depth),
                              [](float x) { return std::isfinite(x); }));
       }
       THEN("The normalized disparity std::map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
-        static_assert(std::is_same_v<decltype(normDisp), Mat<float>>);
+        static_assert(std::is_same_v<decltype(normDisp), Common::Mat<float>>);
         REQUIRE(normDisp.sizes() == std::array{size_t(4), size_t(8)});
         REQUIRE(std::all_of(std::begin(normDisp), std::end(normDisp),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) std::map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
-        static_assert(std::is_same_v<decltype(normWeight), Mat<float>>);
+        static_assert(std::is_same_v<decltype(normWeight), Common::Mat<float>>);
         REQUIRE(normWeight.sizes() == std::array{size_t(4), size_t(8)});
         REQUIRE(std::all_of(std::begin(normWeight), std::end(normWeight),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The color std::map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
-        static_assert(std::is_same_v<decltype(color), Mat<Vec3w>>);
+        static_assert(std::is_same_v<decltype(color), Common::Mat<Common::Vec3w>>);
         REQUIRE(color.sizes() == std::array{size_t(4), size_t(8)});
-        REQUIRE(
-            std::all_of(std::begin(color), std::end(color), [](Vec3w x) { return x == Vec3w{}; }));
+        REQUIRE(std::all_of(std::begin(color), std::end(color),
+                            [](Common::Vec3w x) { return x == Common::Vec3w{}; }));
       }
     }
     WHEN("Submitting meshes but not rastering") {
       ImageVertexDescriptorList vs;
       TriangleDescriptorList ts;
-      std::vector<Vec3w> as;
+      std::vector<Common::Vec3w> as;
       rasterizer.submit(vs, std::tuple{as}, ts);
       THEN("Requesting output maps throws a Rasterizer::Exception") {
-        using Ex = Rasterizer<Vec3w>::Exception;
+        using Ex = Rasterizer<Common::Vec3w>::Exception;
         REQUIRE_THROWS_AS(rasterizer.depth(), Ex);
         REQUIRE_THROWS_AS(rasterizer.normDisp(), Ex);
         REQUIRE_THROWS_AS(rasterizer.normWeight(), Ex);
@@ -282,38 +281,38 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
     WHEN("Rastering some empty meshes") {
       ImageVertexDescriptorList vs;
       TriangleDescriptorList ts;
-      std::vector<Vec3w> as;
+      std::vector<Common::Vec3w> as;
       rasterizer.submit(vs, std::tuple{as}, ts);
       rasterizer.submit(vs, std::tuple{as}, ts);
       rasterizer.run();
 
-      THEN("The depth std::map is a matrix of NaN's or Inf's") {
+      THEN("The depth std::map is a matrix of Common::NaN's or Inf's") {
         auto depth = rasterizer.depth();
-        static_assert(std::is_same_v<decltype(depth), Mat<float>>);
+        static_assert(std::is_same_v<decltype(depth), Common::Mat<float>>);
         REQUIRE(depth.sizes() == std::array{size_t(4), size_t(8)});
         REQUIRE(std::none_of(std::begin(depth), std::end(depth),
                              [](float x) { return std::isfinite(x); }));
       }
       THEN("The normalized disparity std::map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
-        static_assert(std::is_same_v<decltype(normDisp), Mat<float>>);
+        static_assert(std::is_same_v<decltype(normDisp), Common::Mat<float>>);
         REQUIRE(normDisp.sizes() == std::array{size_t(4), size_t(8)});
         REQUIRE(std::all_of(std::begin(normDisp), std::end(normDisp),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) std::map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
-        static_assert(std::is_same_v<decltype(normWeight), Mat<float>>);
+        static_assert(std::is_same_v<decltype(normWeight), Common::Mat<float>>);
         REQUIRE(normWeight.sizes() == std::array{size_t(4), size_t(8)});
         REQUIRE(std::all_of(std::begin(normWeight), std::end(normWeight),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The color std::map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
-        static_assert(std::is_same_v<decltype(color), Mat<Vec3w>>);
+        static_assert(std::is_same_v<decltype(color), Common::Mat<Common::Vec3w>>);
         REQUIRE(color.sizes() == std::array{size_t(4), size_t(8)});
-        REQUIRE(
-            std::all_of(std::begin(color), std::end(color), [](Vec3w x) { return x == Vec3w{}; }));
+        REQUIRE(std::all_of(std::begin(color), std::end(color),
+                            [](Common::Vec3w x) { return x == Common::Vec3w{}; }));
       }
     }
     WHEN("Rastering a quad") {
@@ -326,7 +325,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       TriangleDescriptorList ts{{{0, 1, 2}, 3.F}, {{0, 2, 3}, 5.F}};
 
       // Colors correspond to x and y-values times 100
-      std::vector<Vec3w> as{{100, 0, 100}, {700, 0, 100}, {700, 0, 300}, {100, 0, 300}};
+      std::vector<Common::Vec3w> as{{100, 0, 100}, {700, 0, 100}, {700, 0, 300}, {100, 0, 300}};
       rasterizer.submit(vs, std::tuple{as}, ts);
       rasterizer.run();
 
@@ -379,16 +378,16 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       }
       THEN("The color std::map has known values") {
         const auto color = rasterizer.attribute<0>();
-        REQUIRE(color(0, 0) == Vec3w{});
-        REQUIRE(color(1, 1) == Vec3w{150, 0, 150});
-        REQUIRE(color(1, 5) == Vec3w{550, 0, 150});
-        REQUIRE(color(2, 7) == Vec3w{});
-        REQUIRE(color(3, 7) == Vec3w{});
+        REQUIRE(color(0, 0) == Common::Vec3w{});
+        REQUIRE(color(1, 1) == Common::Vec3w{150, 0, 150});
+        REQUIRE(color(1, 5) == Common::Vec3w{550, 0, 150});
+        REQUIRE(color(2, 7) == Common::Vec3w{});
+        REQUIRE(color(3, 7) == Common::Vec3w{});
 
         WHEN("Submitting more meshes but not rastering") {
           rasterizer.submit({}, {}, {});
           THEN("Requesting output maps throws a Rasterizer::Exception") {
-            using Ex = Rasterizer<Vec3w>::Exception;
+            using Ex = Rasterizer<Common::Vec3w>::Exception;
             REQUIRE_THROWS_AS(rasterizer.depth(), Ex);
             REQUIRE_THROWS_AS(rasterizer.normDisp(), Ex);
             REQUIRE_THROWS_AS(rasterizer.normWeight(), Ex);
@@ -401,11 +400,11 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
 
           THEN("This is cumulative") {
             auto color2 = rasterizer.attribute<0>();
-            REQUIRE(color2(0, 0) == Vec3w{});
-            REQUIRE(color2(1, 1) == Vec3w{150, 0, 150});
-            REQUIRE(color2(1, 5) == Vec3w{550, 0, 150});
-            REQUIRE(color2(2, 7) == Vec3w{});
-            REQUIRE(color2(3, 7) == Vec3w{});
+            REQUIRE(color2(0, 0) == Common::Vec3w{});
+            REQUIRE(color2(1, 1) == Common::Vec3w{150, 0, 150});
+            REQUIRE(color2(1, 5) == Common::Vec3w{550, 0, 150});
+            REQUIRE(color2(2, 7) == Common::Vec3w{});
+            REQUIRE(color2(3, 7) == Common::Vec3w{});
           }
         }
       }
@@ -413,33 +412,34 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
   }
 }
 
-SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
+SCENARIO("Rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
   GIVEN("A new rasterizer") {
-    Rasterizer<Vec2f> rasterizer(AccumulatingPixel<Vec2f>{1.F, 1.F, 1.F, 10.F}, Vec2i{8, 4});
+    Rasterizer<Common::Vec2f> rasterizer(AccumulatingPixel<Common::Vec2f>{1.F, 1.F, 1.F, 10.F},
+                                         Common::Vec2i{8, 4});
 
     WHEN("Rastering nothing") {
       THEN("The field std::map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
-        static_assert(std::is_same_v<decltype(field), Mat<Vec2f>>);
+        static_assert(std::is_same_v<decltype(field), Common::Mat<Common::Vec2f>>);
         REQUIRE(field.sizes() == std::array{size_t(4), size_t(8)});
-        REQUIRE(
-            std::all_of(std::begin(field), std::end(field), [](Vec2f x) { return x == Vec2f{}; }));
+        REQUIRE(std::all_of(std::begin(field), std::end(field),
+                            [](Common::Vec2f x) { return x == Common::Vec2f{}; }));
       }
     }
     WHEN("Rastering some empty meshes") {
       ImageVertexDescriptorList vs;
       TriangleDescriptorList ts;
-      std::vector<Vec2f> as;
+      std::vector<Common::Vec2f> as;
       rasterizer.submit(vs, std::tuple{as}, ts);
       rasterizer.submit(vs, std::tuple{as}, ts);
       rasterizer.run();
 
       THEN("The field std::map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
-        static_assert(std::is_same_v<decltype(field), Mat<Vec2f>>);
+        static_assert(std::is_same_v<decltype(field), Common::Mat<Common::Vec2f>>);
         REQUIRE(field.sizes() == std::array{size_t(4), size_t(8)});
-        REQUIRE(
-            std::all_of(std::begin(field), std::end(field), [](Vec2f x) { return x == Vec2f{}; }));
+        REQUIRE(std::all_of(std::begin(field), std::end(field),
+                            [](Common::Vec2f x) { return x == Common::Vec2f{}; }));
       }
     }
     WHEN("Rastering a quad") {
@@ -453,19 +453,19 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
       TriangleDescriptorList ts{{{0, 1, 2}, 6.F}, {{0, 2, 3}, 6.F}};
 
       // Colors correspond to x and y-values times 100
-      std::vector<Vec2f> as{{100.F, 100.F}, {700.F, 100.F}, {700.F, 300.F}, {100.F, 300.F}};
+      std::vector<Common::Vec2f> as{{100.F, 100.F}, {700.F, 100.F}, {700.F, 300.F}, {100.F, 300.F}};
       rasterizer.submit(vs, std::tuple{as}, ts);
       rasterizer.run();
 
       THEN("The field std::map has known values") {
         auto field = rasterizer.attribute<0>();
-        REQUIRE(field(0, 0) == Vec2f{});
+        REQUIRE(field(0, 0) == Common::Vec2f{});
         REQUIRE(field(1, 1).x() == Approx(150.F));
         REQUIRE(field(1, 1).y() == Approx(150.F));
         REQUIRE(field(1, 5).x() == Approx(550.F));
         REQUIRE(field(1, 5).y() == Approx(150.F));
-        REQUIRE(field(2, 7) == Vec2f{});
-        REQUIRE(field(3, 7) == Vec2f{});
+        REQUIRE(field(2, 7) == Common::Vec2f{});
+        REQUIRE(field(3, 7) == Common::Vec2f{});
 
         WHEN("Rastering more meshes") {
           rasterizer.submit({}, {}, {});
@@ -473,13 +473,13 @@ SCENARIO("Rastering meshes with Vec2f as attribute", "[Rasterizer]") {
 
           THEN("This is cumulative") {
             auto field2 = rasterizer.attribute<0>();
-            REQUIRE(field2(0, 0) == Vec2f{});
+            REQUIRE(field2(0, 0) == Common::Vec2f{});
             REQUIRE(field2(1, 1).x() == Approx(150.F));
             REQUIRE(field2(1, 1).y() == Approx(150.F));
             REQUIRE(field2(1, 5).x() == Approx(550.F));
             REQUIRE(field2(1, 5).y() == Approx(150.F));
-            REQUIRE(field2(2, 7) == Vec2f{});
-            REQUIRE(field2(3, 7) == Vec2f{});
+            REQUIRE(field2(2, 7) == Common::Vec2f{});
+            REQUIRE(field2(3, 7) == Common::Vec2f{});
           }
         }
       }
@@ -498,9 +498,10 @@ TEST_CASE("Engine<orthographic>", "[Render engine]") {
     return Engine<MivBitstream::CiCamType::orthographic>{ci};
   }();
 
-  const auto refPoints = std::array{Vec3f{}, Vec3f{1.F, 2.F, 3.F}, Vec3f{-6.F, -2.5F, 7.F}};
-  const auto refPositions =
-      std::array{Vec2f{500.F, 250.F}, Vec2f{900.F, 1000.F}, Vec2f{0.F, 2000.F}};
+  const auto refPoints =
+      std::array{Common::Vec3f{}, Common::Vec3f{1.F, 2.F, 3.F}, Common::Vec3f{-6.F, -2.5F, 7.F}};
+  const auto refPositions = std::array{Common::Vec2f{500.F, 250.F}, Common::Vec2f{900.F, 1000.F},
+                                       Common::Vec2f{0.F, 2000.F}};
   const auto refDepth = std::array{0.F, 1.F, -6.F};
 
   SECTION("unprojectVertex") {

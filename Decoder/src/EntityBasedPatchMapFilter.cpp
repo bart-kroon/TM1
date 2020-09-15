@@ -36,11 +36,9 @@
 #include <cassert>
 #include <iostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Decoder {
-EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json & /*rootNode*/,
-                                                     const Json &componentNode) {
+EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Common::Json & /*rootNode*/,
+                                                     const Common::Json &componentNode) {
   m_entityFiltering = false;
   if (auto subnode = componentNode.optional("EntityDecodeRange")) {
     m_entityDecodeRange = subnode.asIntVector<2>();
@@ -51,14 +49,14 @@ EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Json & /*rootNode*/,
 void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(AccessUnit &frame) const {
   if (m_entityFiltering && 0 < frame.vps.vps_miv_extension().vme_max_entities_minus1()) {
     for (auto &atla : frame.atlas) {
-      Vec2i sz = atla.blockToPatchMap.getSize();
+      Common::Vec2i sz = atla.blockToPatchMap.getSize();
       for (int y = 0; y < sz[1]; y++) {
         for (int x = 0; x < sz[0]; x++) {
           uint16_t patchId = atla.blockToPatchMap.getPlane(0)(y, x);
-          if (patchId != unusedPatchId) {
+          if (patchId != Common::unusedPatchId) {
             auto entityId = static_cast<int>(*atla.patchParamsList[patchId].pduEntityId());
             if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
-              atla.blockToPatchMap.getPlane(0)(y, x) = unusedPatchId;
+              atla.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
             }
           }
         }

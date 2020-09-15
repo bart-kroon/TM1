@@ -45,8 +45,6 @@
 #include <map>
 #include <memory>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Decoder {
 void registerComponents();
 
@@ -101,14 +99,14 @@ private:
 
   // Returns a frame index. If frameIndex is strictly less than the actual number of frames in the
   // encoded stream, then regular values are returned else mirrored indices are computed.
-  static auto getExtendedIndex(const Json &config, int frameIndex) -> int {
+  static auto getExtendedIndex(const Common::Json &config, int frameIndex) -> int {
     int numberOfFrames = config.require("numberOfFrames").asInt();
     int frameGroupId = frameIndex / numberOfFrames;
     int frameRelativeId = frameIndex % numberOfFrames;
     return (frameGroupId % 2) != 0 ? (numberOfFrames - (frameRelativeId + 1)) : frameRelativeId;
   }
 
-  static auto mapInputToOutputFrames(const Json &config) -> std::multimap<int, int> {
+  static auto mapInputToOutputFrames(const Common::Json &config) -> std::multimap<int, int> {
     auto x = std::multimap<int, int>{};
 
     const auto numberOfFrames = config.require("numberOfFrames").asInt();

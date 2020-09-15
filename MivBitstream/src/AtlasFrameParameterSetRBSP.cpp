@@ -39,8 +39,6 @@
 
 #include <ostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std::ostream & {
   stream << "afti_single_tile_in_atlas_frame_flag=" << std::boolalpha
@@ -50,7 +48,8 @@ auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std
   return stream;
 }
 
-auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFrameTileInformation {
+auto AtlasFrameTileInformation::decodeFrom(Common::InputBitstream &bitstream)
+    -> AtlasFrameTileInformation {
   const auto afti_single_tile_in_atlas_frame_flag = bitstream.getFlag();
 
   // NOTE(BK): The proposal is to restrict to afti_single_tile_in_atlas_frame_flag == 1, but for
@@ -80,7 +79,7 @@ auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFr
   return {};
 }
 
-void AtlasFrameTileInformation::encodeTo(OutputBitstream &bitstream) {
+void AtlasFrameTileInformation::encodeTo(Common::OutputBitstream &bitstream) {
   constexpr auto afti_single_tile_in_atlas_frame_flag = true;
   bitstream.putFlag(afti_single_tile_in_atlas_frame_flag);
 
@@ -92,21 +91,21 @@ auto operator<<(std::ostream &stream, const AfpsVpccExtension & /* x */) -> std:
   return stream;
 }
 
-auto AfpsVpccExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsVpccExtension {
+auto AfpsVpccExtension::decodeFrom(Common::InputBitstream & /* bitstream */) -> AfpsVpccExtension {
   return {};
 }
 
-void AfpsVpccExtension::encodeTo(OutputBitstream & /* stream */) const {}
+void AfpsVpccExtension::encodeTo(Common::OutputBitstream & /* stream */) const {}
 
 auto operator<<(std::ostream &stream, const AfpsMivExtension & /* x */) -> std::ostream & {
   return stream;
 }
 
-auto AfpsMivExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsMivExtension {
+auto AfpsMivExtension::decodeFrom(Common::InputBitstream & /* bitstream */) -> AfpsMivExtension {
   return {};
 }
 
-void AfpsMivExtension::encodeTo(OutputBitstream & /* stream */) const {}
+void AfpsMivExtension::encodeTo(Common::OutputBitstream & /* stream */) const {}
 
 auto AtlasFrameParameterSetRBSP::afps_vpcc_extension() const noexcept -> AfpsVpccExtension {
   VERIFY_V3CBITSTREAM(afps_vpcc_extension_flag());
@@ -242,7 +241,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(std::istream &stream,
                                             const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
     -> AtlasFrameParameterSetRBSP {
   auto x = AtlasFrameParameterSetRBSP{};
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   x.afps_atlas_frame_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_V3CBITSTREAM(x.afps_atlas_frame_parameter_set_id() <= 63);
@@ -292,7 +291,7 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(std::istream &stream,
 
 void AtlasFrameParameterSetRBSP::encodeTo(
     std::ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
 
   VERIFY_V3CBITSTREAM(afps_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(afps_atlas_frame_parameter_set_id());

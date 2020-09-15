@@ -37,10 +37,9 @@
 #include <cassert>
 #include <iostream>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
-GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &componentNode) {
+GroupBasedEncoder::GroupBasedEncoder(const Common::Json &rootNode,
+                                     const Common::Json &componentNode) {
   const auto numGroups_ = size_t(rootNode.require("numGroups").asInt());
 
   while (m_encoders.size() < numGroups_) {
@@ -62,7 +61,7 @@ void GroupBasedEncoder::prepareAccessUnit() {
   }
 }
 
-void GroupBasedEncoder::pushFrame(MVD16Frame views) {
+void GroupBasedEncoder::pushFrame(Common::MVD16Frame views) {
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
     std::cout << "Processing group " << groupId << ":\n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
@@ -79,8 +78,8 @@ auto GroupBasedEncoder::completeAccessUnit() -> const MivBitstream::EncoderParam
   return mergeParams(perGroupParams);
 }
 
-auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
-  auto result = MVD10Frame{};
+auto GroupBasedEncoder::popAtlas() -> Common::MVD10Frame {
+  auto result = Common::MVD10Frame{};
 
   for (auto &encoder : m_encoders) {
     for (auto &atlas : encoder.popAtlas()) {
@@ -158,7 +157,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
         maxElementIndex = max_element(Tz.begin(), Tz.end()) - Tz.begin();
       }
 
-      const auto T0 = Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
+      const auto T0 = Common::Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
       auto distance = std::vector<float>();
       distance.reserve(viewsPool.size());
       for (const auto &viewParams : viewsPool) {
@@ -242,8 +241,9 @@ auto GroupBasedEncoder::splitParams(size_t groupId, const MivBitstream::EncoderP
   return result;
 }
 
-auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> MVD16Frame {
-  auto result = MVD16Frame{};
+auto GroupBasedEncoder::splitViews(size_t groupId, Common::MVD16Frame &views) const
+    -> Common::MVD16Frame {
+  auto result = Common::MVD16Frame{};
 
   // Only include the views that are part of this group
   for (const auto &[groupId_, viewId] : m_grouping) {

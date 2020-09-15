@@ -10,6 +10,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CMake/clang_tidy.cmake)
 
+option(SHOW_DOWNLOAD_PROGRESS "Show dependency download progress" ON)
+if(SHOW_DOWNLOAD_PROGRESS)
+    set(FETCHCONTENT_QUIET FALSE)
+endif()
+
 include(CMake/catch2.cmake)
 
 if (BUILD_CATCH2)

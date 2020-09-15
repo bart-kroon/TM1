@@ -7,6 +7,7 @@ if(BUILD_CATCH2)
     fetchcontent_declare(CATCH2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
         GIT_TAG "v2.11.1"
+        GIT_PROGRESS TRUE
     )
     fetchcontent_makeavailable(CATCH2)
 

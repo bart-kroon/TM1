@@ -59,8 +59,6 @@ constexpr auto quarterCycle{0.5F * pi}; // rad
 constexpr auto fullSphere{4.F * pi};    // sr
 constexpr auto hemiSphere{2.F * pi};    // sr
 
-template <typename Float> auto square(Float x) { return x * x; }
-
 // http://open-std.org/JTC1/SC22/WG21/docs/papers/2018/p0051r3.pdf
 template <typename... Ts> struct Overload : public Ts... {
   template <typename... Us> Overload(Us &&... values) : Ts{std::forward<Us>(values)}... {}

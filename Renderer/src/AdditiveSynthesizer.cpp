@@ -34,6 +34,7 @@
 #include <TMIV/Renderer/AdditiveSynthesizer.h>
 
 #include <TMIV/Common/LinAlg.h>
+#include <TMIV/Common/Math.h>
 #include <TMIV/MivBitstream/DepthOccupancyTransform.h>
 #include <TMIV/Renderer/Engine.h>
 #include <TMIV/Renderer/Rasterizer.h>
@@ -230,7 +231,7 @@ public:
 
   // Resolution in px^2/rad^2
   static auto resolution(const ViewParams &viewParams) -> float {
-    return square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
+    return Common::sqr(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
   static auto resolutionRatio(const Decoder::AccessUnit &frame, const ViewParams &viewportParams)

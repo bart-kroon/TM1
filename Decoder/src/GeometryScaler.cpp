@@ -120,7 +120,7 @@ template <typename Range> auto meanColorDistance(const Vec3w &color, const Range
   for (auto &colorInRange : rangeOfColors) {
     meanDistance += colorDistance(color, colorInRange);
   }
-  meanDistance /= float(N);
+  meanDistance /= static_cast<float>(N);
 
   return meanDistance;
 }

@@ -82,8 +82,8 @@ void Encoder::scaleGeometryDynamicRange() {
       normDispHigh = 2 * normDispHigh - normDispLow;
     }
 
-    m_params.viewParamsList[v].dq.dq_norm_disp_high(float(normDispHigh));
-    m_params.viewParamsList[v].dq.dq_norm_disp_low(float(normDispLow));
+    m_params.viewParamsList[v].dq.dq_norm_disp_high(static_cast<float>(normDispHigh));
+    m_params.viewParamsList[v].dq.dq_norm_disp_low(static_cast<float>(normDispLow));
   }
 } // namespace TMIV::Encoder
 

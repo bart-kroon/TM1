@@ -96,7 +96,7 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
     m_strips.push_back(
         {i1, i2, size.x(), {}, std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
   }
-  m_dk_di = float(numStrips) / float(size.y());
+  m_dk_di = static_cast<float>(numStrips) / static_cast<float>(size.y());
 }
 
 template <typename... T>
@@ -281,8 +281,8 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
   if (area <= 0) {
     return; // Cull
   }
-  const auto area_f = ldexp(float(area), -2 * bits);
-  const auto inv_area = 1.F / float(area);
+  const auto area_f = ldexp(static_cast<float>(area), -2 * bits);
+  const auto inv_area = 1.F / static_cast<float>(area);
 
   // Calculate feature values for determining blending weights
   const auto stretching = 0.5F * area_f / descriptor.area;
@@ -319,9 +319,9 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
         continue;
       }
 
-      const auto w0 = inv_area * float(X0);
-      const auto w1 = inv_area * float(X1);
-      const auto w2 = inv_area * float(X2);
+      const auto w0 = inv_area * static_cast<float>(X0);
+      const auto w1 = inv_area * static_cast<float>(X1);
+      const auto w2 = inv_area * static_cast<float>(X2);
 
       // Barycentric interpolation of normalized disparity and attributes
       // (e.g. color)

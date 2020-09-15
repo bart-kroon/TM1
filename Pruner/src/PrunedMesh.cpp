@@ -78,7 +78,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
         const auto D_yx = D(y, x);
 
         if (mask(y, x) > 0) {
-          const auto uv = Vec2f{float(x) + 0.5F, float(y) + 0.5F};
+          const auto uv = Vec2f{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
           const auto d = depthTransform.expandDepth(D_yx);
           vertices.push_back({engine.unprojectVertex(uv, d), NaN});
           attributes.emplace_back(Vec3f{expandValue<10U>(Y(y, x)),

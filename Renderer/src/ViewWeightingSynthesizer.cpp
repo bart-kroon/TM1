@@ -416,7 +416,7 @@ private:
             }
 
             const auto P =
-                sourceHelperList[viewId].doUnprojection({float(x) + 0.5F, float(y) + 0.5F}, d);
+                sourceHelperList[viewId].doUnprojection({static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F}, d);
             const auto p = targetHelper.doProjection(P);
 
             if (isValidDepth(p.second) && targetHelper.isInsideViewport(p.first)) {

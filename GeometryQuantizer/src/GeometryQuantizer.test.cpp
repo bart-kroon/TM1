@@ -86,7 +86,7 @@ SCENARIO("Geometry quantization") {
 
         THEN("Coded level 2T matches with source level 0") {
           // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
-          const auto twoT = float(2 * T);
+          const auto twoT = static_cast<float>(2 * T);
 
           auto refViewParams = sourceViewParams;
           refViewParams.dq.dq_depth_occ_map_threshold_default(T)

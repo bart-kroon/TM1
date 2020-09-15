@@ -47,32 +47,41 @@ namespace TMIV::MivBitstream {
 // PatchParams is the in-memory representation of PatchDataUnit (PDU). The PDU is not suitable for
 // in-memory use because of the delta coding and quantization of some of the fields.
 struct PatchParams {
-  std::uint8_t vuhAtlasId{};
+  AtlasId atlasId{};
 
-  [[nodiscard]] auto pdu2dPos() const noexcept;
-  [[nodiscard]] auto pdu2dSize() const noexcept;
-  [[nodiscard]] auto pduViewPos() const noexcept;
-  [[nodiscard]] auto pduViewSize() const noexcept;
-  [[nodiscard]] auto pduDepthStart() const noexcept;
-  [[nodiscard]] auto pduDepthEnd() const noexcept;
-  [[nodiscard]] auto pduViewIdx() const noexcept;
-  [[nodiscard]] auto pduOrientationIndex() const noexcept;
-  [[nodiscard]] auto pduEntityId() const noexcept;
-  [[nodiscard]] auto pduDepthOccMapThreshold() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch2dPosX() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch2dPosY() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch2dSizeX() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch2dSizeY() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch3dOffsetU() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch3dOffsetV() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch3dOffsetD() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch3dRangeD() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatchProjectionId() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatchOrientationIndex() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatchEntityId() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatchDepthOccMapThreshold() const noexcept;
 
-  auto pdu2dPos(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pdu2dSize(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pduViewSize(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pduViewPos(const Common::Vec2i value) noexcept -> PatchParams &;
-  auto pduDepthStart(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduDepthEnd(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduViewIdx(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduOrientationIndex(const FlexiblePatchOrientation value) noexcept -> PatchParams &;
-  auto pduEntityId(const std::uint16_t value) noexcept -> PatchParams &;
-  auto pduDepthOccMapThreshold(const std::uint16_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dPosX(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dPosY(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dSizeX(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch2dSizeY(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetU(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetV(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dOffsetD(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatch3dRangeD(std::uint32_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchProjectionId(std::uint16_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchOrientationIndex(FlexiblePatchOrientation value) noexcept
+      -> PatchParams &;
+  constexpr auto atlasPatchEntityId(std::uint16_t value) noexcept -> PatchParams &;
+  constexpr auto atlasPatchDepthOccMapThreshold(std::uint32_t value) noexcept -> PatchParams &;
 
   // Is the patch rotated such that width and height swap?
-  [[nodiscard]] auto isRotated() const -> bool;
+  [[nodiscard]] constexpr auto isRotated() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch3dSizeU() const noexcept;
+  [[nodiscard]] constexpr auto atlasPatch3dSizeV() const noexcept;
+  constexpr auto atlasPatch3dSizeU(std::uint32_t value) noexcept;
+  constexpr auto atlasPatch3dSizeV(std::uint32_t value) noexcept;
 
   // Pixel position conversion from atlas to/from view
   [[nodiscard]] auto viewToAtlas(Common::Vec2i viewPosition) const -> Common::Vec2i;
@@ -82,15 +91,18 @@ struct PatchParams {
   auto operator!=(const PatchParams &other) const -> bool { return !operator==(other); };
 
 private:
-  Common::Vec2i m_pdu2dPos;
-  Common::Vec2i m_pduViewSize;
-  Common::Vec2i m_pduViewPos;
-  std::uint16_t m_pduDepthStart{};
-  std::optional<std::uint16_t> m_pduDepthEnd;
-  std::uint16_t m_pduViewIdx{};
-  FlexiblePatchOrientation m_pduOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
-  std::optional<std::uint16_t> m_pduEntityId;
-  std::optional<std::uint16_t> m_pduDepthOccMapThreshold;
+  std::uint32_t m_atlasPatch2dPosX{};
+  std::uint32_t m_atlasPatch2dPosY{};
+  std::uint32_t m_atlasPatch2dSizeX{};
+  std::uint32_t m_atlasPatch2dSizeY{};
+  std::uint32_t m_atlasPatch3dOffsetU{};
+  std::uint32_t m_atlasPatch3dOffsetV{};
+  std::uint32_t m_atlasPatch3dOffsetD{};
+  std::uint32_t m_atlasPatch3dRangeD{};
+  std::uint16_t m_atlasPatchProjectionId{};
+  FlexiblePatchOrientation m_atlasPatchOrientationIndex{FlexiblePatchOrientation::FPO_INVALID};
+  std::optional<std::uint16_t> m_atlasPatchEntityId;
+  std::optional<std::uint32_t> m_atlasPatchDepthOccMapThreshold;
 };
 
 using PatchParamsList = std::vector<PatchParams>;

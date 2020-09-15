@@ -91,7 +91,8 @@ auto loadSourceParams(const Json &config) -> EncoderParams {
   x.frameRate = sequenceConfig.require("Fps").asDouble();
 
   if (config.require("OmafV1CompatibleFlag").asBool()) {
-    x.aaps.aaps_miv_extension_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(true);
+    x.aaps.aaps_miv_extension_present_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(
+        true);
   }
   return x;
 }

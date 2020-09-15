@@ -54,14 +54,6 @@ constexpr auto AtlasFrameTileInformation::operator!=(
   return false;
 }
 
-constexpr auto AfpsVpccExtension::operator==(const AfpsVpccExtension & /* other */) const noexcept {
-  return true;
-}
-
-constexpr auto AfpsVpccExtension::operator!=(const AfpsVpccExtension &other) const noexcept {
-  return !operator==(other);
-}
-
 constexpr auto AfpsMivExtension::operator==(const AfpsMivExtension & /* other */) const noexcept {
   return true;
 }
@@ -99,8 +91,8 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_lod_mode_enabled_flag() const no
 }
 
 constexpr auto
-AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag() const noexcept {
-  return m_afps_raw_3d_pos_bit_count_explicit_mode_flag;
+AtlasFrameParameterSetRBSP::afps_raw_3d_offset_bit_count_explicit_mode_flag() const noexcept {
+  return m_afps_raw_3d_offset_bit_count_explicit_mode_flag;
 }
 
 constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag() const noexcept {
@@ -152,10 +144,9 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_lod_mode_enabled_flag(const bool
   return *this;
 }
 
-constexpr auto
-AtlasFrameParameterSetRBSP::afps_raw_3d_pos_bit_count_explicit_mode_flag(const bool value) noexcept
-    -> auto & {
-  m_afps_raw_3d_pos_bit_count_explicit_mode_flag = value;
+constexpr auto AtlasFrameParameterSetRBSP::afps_raw_3d_offset_bit_count_explicit_mode_flag(
+    const bool value) noexcept -> auto & {
+  m_afps_raw_3d_offset_bit_count_explicit_mode_flag = value;
   return *this;
 }
 
@@ -165,15 +156,11 @@ constexpr auto AtlasFrameParameterSetRBSP::afps_extension_present_flag(const boo
   return *this;
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_vpcc_extension_flag() const noexcept {
-  return m_afps_vpcc_extension_flag.value_or(false);
+constexpr auto AtlasFrameParameterSetRBSP::afps_miv_extension_present_flag() const noexcept {
+  return m_afps_miv_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasFrameParameterSetRBSP::afps_miv_extension_flag() const noexcept {
-  return m_afps_miv_extension_flag.value_or(false);
-}
-
-constexpr auto AtlasFrameParameterSetRBSP::afps_extension_6bits() const noexcept {
-  return m_afps_extension_6bits.value_or(0);
+constexpr auto AtlasFrameParameterSetRBSP::afps_extension_7bits() const noexcept {
+  return m_afps_extension_7bits.value_or(0);
 }
 } // namespace TMIV::MivBitstream

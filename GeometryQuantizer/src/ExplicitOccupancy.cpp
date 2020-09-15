@@ -59,8 +59,9 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
 
   m_outParams.vme().vme_embedded_occupancy_flag(false);
   m_outParams.vme().vme_occupancy_scale_enabled_flag(true);
-  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); i++) {
-    m_outParams.vps.vps_occupancy_video_present_flag(i, true);
+  for (size_t k = 0; k <= m_outParams.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_outParams.vps.vps_atlas_id(k);
+    m_outParams.vps.vps_occupancy_video_present_flag(j, true);
   }
   m_depthLowQualityFlag = m_outParams.vme().vme_depth_low_quality_flag();
 
@@ -103,21 +104,22 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
-    const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
-    const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
+    const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
+    const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto inOccupancyTransform = OccupancyTransform{inViewParams};
     const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
     const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
+    const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
+    const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 
-    for (auto i = 0; i < patch.pdu2dSize().y(); ++i) {
-      for (auto j = 0; j < patch.pdu2dSize().x(); ++j) {
-        const auto n = i + patch.pdu2dPos().y();
-        const auto m = j + patch.pdu2dPos().x();
+    for (auto i = 0U; i < patch.atlasPatch2dSizeY(); ++i) {
+      for (auto j = 0U; j < patch.atlasPatch2dSizeX(); ++j) {
+        const auto n = i + patch.atlasPatch2dPosY();
+        const auto m = j + patch.atlasPatch2dPosX();
 
-        const auto &plane = inAtlases[patch.vuhAtlasId].depth.getPlane(0);
+        const auto &plane = inAtlases[kIn].depth.getPlane(0);
 
-        if (n < 0 || n >= static_cast<int>(plane.height()) || m < 0 ||
-            m >= static_cast<int>(plane.width())) {
+        if (n >= plane.height() || m >= plane.width()) {
           abort();
         }
 
@@ -126,7 +128,7 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
-          outAtlases[patch.vuhAtlasId].depth.getPlane(0)(n, m) = outLevel;
+          outAtlases[kOut].depth.getPlane(0)(n, m) = outLevel;
         }
       }
     }
@@ -142,7 +144,8 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
 
 void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
   for (size_t i = 0; i < atlases.size(); ++i) {
-    if (m_outParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+    const auto j = m_outParams.vps.vps_atlas_id(uint8_t(i));
+    if (m_outParams.vps.vps_occupancy_video_present_flag(j)) {
       auto &depthAtlasMap = atlases[i].depth;
       auto depthScale =
           std::array{m_outParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),

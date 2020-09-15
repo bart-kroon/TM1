@@ -60,10 +60,18 @@
        (::TMIV::MivBitstream::notImplemented(#condition, __FILE__, __LINE__), false)))
 #define NOT_IMPLEMENTED(what) ::TMIV::MivBitstream::notImplemented(what, __FILE__, __LINE__)
 
+// Check against profile-tier-level information and warn when outside of TMIV comfort zone, but
+// bravely carry on
+#define CONSTRAIN_PTL(condition)                                                                   \
+  static_cast<void>((!!(condition) ||                                                              \
+                     (::TMIV::MivBitstream::ptlWarning(#condition, __FILE__, __LINE__), false)))
+#define PTL_WARNING(what) ::TMIV::MivBitstream::ptlWarning(what, __FILE__, __LINE__)
+
 namespace TMIV::MivBitstream {
 [[noreturn]] void v3cError(char const *condition, char const *file, int line);
 [[noreturn]] void mivError(char const *condition, char const *file, int line);
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line);
+void ptlWarning(char const *condition, char const *file, int line);
 } // namespace TMIV::MivBitstream
 
 #endif

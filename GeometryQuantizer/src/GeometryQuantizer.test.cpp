@@ -60,7 +60,7 @@ SCENARIO("Geometry quantization") {
   GIVEN("View parameters without invalid depth") {
     auto sourceParams = EncoderParams{};
     sourceParams.vps.vps_extension_present_flag(true);
-    sourceParams.vps.vps_miv_extension_flag(true);
+    sourceParams.vps.vps_miv_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
     sourceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
 
@@ -80,7 +80,7 @@ SCENARIO("Geometry quantization") {
       const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
-      THEN("pduDepthOccMapThreshold (T) >> 0") {
+      THEN("dq_depth_occ_map_threshold_default (T) >> 0") {
         const auto T = codedViewParams.dq.dq_depth_occ_map_threshold_default();
         REQUIRE(T >= 8);
 

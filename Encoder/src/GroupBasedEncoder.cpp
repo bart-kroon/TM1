@@ -255,6 +255,61 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
   return result;
 }
 
+auto GroupBasedEncoder::mergeVps(const std::vector<const V3cParameterSet *> &vps)
+    -> V3cParameterSet {
+  const auto atlasCount =
+      accumulate(vps.cbegin(), vps.cend(), 0, [](int count, const V3cParameterSet *vps) {
+        return count + vps->vps_atlas_count_minus1() + 1;
+      });
+
+  auto x = V3cParameterSet{};
+  x.profile_tier_level(vps.front()->profile_tier_level())
+      .vps_v3c_parameter_set_id(vps.front()->vps_v3c_parameter_set_id())
+      .vps_atlas_count_minus1(uint8_t(atlasCount - 1))
+      .vps_extension_present_flag(true)
+      .vps_miv_extension_present_flag(true)
+      .vps_miv_extension(vps.front()->vps_miv_extension());
+
+  uint8_t kOut = 0;
+
+  for (auto &v : vps) {
+    assert(v->profile_tier_level() == x.profile_tier_level());
+    assert(v->vps_v3c_parameter_set_id() == x.vps_v3c_parameter_set_id());
+    assert(v->vps_miv_extension_present_flag());
+    assert(v->vps_extension_7bits() == 0);
+    assert(v->vps_miv_extension() == x.vps_miv_extension());
+
+    for (uint8_t kIn = 0; kIn <= v->vps_atlas_count_minus1(); ++kIn, ++kOut) {
+      const auto jIn = v->vps_atlas_id(kIn);
+      const auto jOut = AtlasId{kOut};
+      x.vps_atlas_id(kOut, jOut);
+
+      x.vps_frame_width(jOut, v->vps_frame_width(jIn));
+      x.vps_frame_height(jOut, v->vps_frame_height(jIn));
+      x.vps_map_count_minus1(jOut, v->vps_map_count_minus1(jIn));
+      assert(x.vps_map_count_minus1(jOut) == 0);
+
+      x.vps_auxiliary_video_present_flag(jOut, v->vps_auxiliary_video_present_flag(jIn));
+      x.vps_occupancy_video_present_flag(jOut, v->vps_occupancy_video_present_flag(jIn));
+      x.vps_geometry_video_present_flag(jOut, v->vps_geometry_video_present_flag(jIn));
+      x.vps_attribute_video_present_flag(jOut, v->vps_attribute_video_present_flag(jIn));
+
+      if (x.vps_occupancy_video_present_flag(jOut)) {
+        x.occupancy_information(jOut) = v->occupancy_information(jIn);
+      }
+      if (x.vps_geometry_video_present_flag(jOut)) {
+        x.geometry_information(jOut) = v->geometry_information(jIn);
+      }
+      if (x.vps_attribute_video_present_flag(jOut)) {
+        x.attribute_information(jOut) = v->attribute_information(jIn);
+      }
+    }
+  }
+
+  assert(kOut == atlasCount);
+  return x;
+}
+
 auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGroupParams)
     -> const EncoderParams & {
   // Start with first group
@@ -265,7 +320,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
   vector<const V3cParameterSet *> vps(perGroupParams.size());
   transform(begin(perGroupParams), end(perGroupParams), begin(vps),
             [](const auto &ivs) { return &ivs->vps; });
-  m_params.vps = merge(vps);
+  m_params.vps = mergeVps(vps);
 
   // For each other group
   for (auto ivs = begin(perGroupParams) + 1; ivs != end(perGroupParams); ++ivs) {
@@ -296,7 +351,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
     }
   }
 
-  // Modify bit depth of pdu_view_idx
+  // Modify bit depth of pdu_projection_id
   for (auto &atlas : m_params.atlas) {
     atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_number_projections_minus1(
         uint16_t(m_params.viewParamsList.size() - 1));
@@ -310,8 +365,10 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
     // Copy patches in group order
     for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);
-      m_params.patchParamsList.back().vuhAtlasId += atlasIdOffset;
-      m_params.patchParamsList.back().pduViewIdx(patch.pduViewIdx() + viewIdOffset);
+      m_params.patchParamsList.back().atlasId =
+          AtlasId{uint8_t(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
+      m_params.patchParamsList.back().atlasPatchProjectionId(patch.atlasPatchProjectionId() +
+                                                            viewIdOffset);
     }
 
     // Renumber atlases and views

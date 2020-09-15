@@ -42,7 +42,7 @@ TEST_CASE("atlas_adaptation_parameter_set_rbsp", "[Atlas Adaptation Parameter Se
 
   REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=0
 aaps_log2_max_afoc_present_flag=false
-aaps_extension_flag=false
+aaps_extension_present_flag=false
 )");
 
   REQUIRE(byteCodingTest(x, 1));
@@ -51,10 +51,10 @@ aaps_extension_flag=false
     x.aaps_atlas_adaptation_parameter_set_id(63)
         .aaps_log2_max_afoc_present_flag(true)
         .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(12)
-        .aaps_extension_flag(true)
-        .aaps_vpcc_extension_flag(true)
+        .aaps_extension_present_flag(true)
+        .aaps_vpcc_extension_present_flag(true)
         .aaps_vpcc_extension({})
-        .aaps_miv_extension_flag(true)
+        .aaps_miv_extension_present_flag(true)
         .aaps_extension_6bits(63)
         .aapsExtensionData({true})
         .aaps_miv_extension()
@@ -63,9 +63,9 @@ aaps_extension_flag=false
     REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=63
 aaps_log2_max_afoc_present_flag=true
 aaps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
-aaps_extension_flag=true
-aaps_vpcc_extension_flag=true
-aaps_miv_extension_flag=true
+aaps_extension_present_flag=true
+aaps_vpcc_extension_present_flag=true
+aaps_miv_extension_present_flag=true
 aaps_extension_6bits=63
 aaps_vpcc_camera_parameters_present_flag=false
 aame_omaf_v1_compatible_flag=false
@@ -80,10 +80,10 @@ aaps_extension_data_flag=true
     x.aaps_atlas_adaptation_parameter_set_id(63)
         .aaps_log2_max_afoc_present_flag(true)
         .aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(12)
-        .aaps_extension_flag(true)
-        .aaps_vpcc_extension_flag(true)
+        .aaps_extension_present_flag(true)
+        .aaps_vpcc_extension_present_flag(true)
         .aaps_vpcc_extension({})
-        .aaps_miv_extension_flag(true)
+        .aaps_miv_extension_present_flag(true)
         .aaps_extension_6bits(63)
         .aapsExtensionData({true})
         .aaps_miv_extension()
@@ -94,9 +94,9 @@ aaps_extension_data_flag=true
     REQUIRE(toString(x) == R"(aaps_atlas_adaptation_parameter_set_id=63
 aaps_log2_max_afoc_present_flag=true
 aaps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
-aaps_extension_flag=true
-aaps_vpcc_extension_flag=true
-aaps_miv_extension_flag=true
+aaps_extension_present_flag=true
+aaps_vpcc_extension_present_flag=true
+aaps_miv_extension_present_flag=true
 aaps_extension_6bits=63
 aaps_vpcc_camera_parameters_present_flag=false
 aame_omaf_v1_compatible_flag=true

@@ -42,25 +42,26 @@ OccupancyReconstructor::OccupancyReconstructor(const Json & /*rootNode*/,
                                                const Json & /*componentNode*/) {}
 
 void OccupancyReconstructor::reconstruct(AccessUnit &frame) const {
-  for (auto i = 0; i <= frame.vps.vps_atlas_count_minus1(); i++) {
-    auto &atlas = frame.atlas[i];
+  for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
+    auto &atlas = frame.atlas[k];
     atlas.occFrame = Occupancy10Frame{atlas.frameSize().x(), atlas.frameSize().y()};
     for (auto y = 0; y < atlas.frameSize().y(); y++) {
       for (auto x = 0; x < atlas.frameSize().x(); x++) {
         auto patchId = atlas.patchId(y, x);
         if (patchId == unusedPatchId) {
           atlas.occFrame.getPlane(0)(y, x) = 0;
-        } else if (!frame.vps.vps_occupancy_video_present_flag(i)) {
+        } else if (!frame.vps.vps_occupancy_video_present_flag(frame.vps.vps_atlas_id(k))) {
           if (frame.vps.vps_miv_extension().vme_embedded_occupancy_flag()) {
             // occupancy is embedded in geometry
             uint32_t depthOccupancyThreshold = 0;
-            if (!atlas.asps.asps_miv_extension_flag() ||
+            if (!atlas.asps.asps_miv_extension_present_flag() ||
                 !atlas.asps.asps_miv_extension().asme_depth_occ_threshold_flag()) {
-              uint16_t v = atlas.patchParamsList[patchId].pduViewIdx();
+              uint16_t v = atlas.patchParamsList[patchId].atlasPatchProjectionId();
               depthOccupancyThreshold =
                   frame.viewParamsList[v].dq.dq_depth_occ_map_threshold_default();
             } else {
-              depthOccupancyThreshold = *atlas.patchParamsList[patchId].pduDepthOccMapThreshold();
+              depthOccupancyThreshold =
+                  *atlas.patchParamsList[patchId].atlasPatchDepthOccMapThreshold();
             }
             atlas.occFrame.getPlane(0)(y, x) =
                 (atlas.geoFrame.getPlane(0)(y, x) < depthOccupancyThreshold) ? 0 : 1;

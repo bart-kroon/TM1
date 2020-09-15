@@ -85,7 +85,7 @@ public:
     vector<DepthTransform<10>> depthTransform;
     depthTransform.reserve(atlas.patchParamsList.size());
     for (const auto &patch : atlas.patchParamsList) {
-      depthTransform.emplace_back(frame.viewParamsList[patch.pduViewIdx()].dq, patch);
+      depthTransform.emplace_back(frame.viewParamsList[patch.atlasPatchProjectionId()].dq, patch);
     }
 
     // For each used pixel in the atlas...
@@ -102,8 +102,8 @@ public:
         // Look up metadata
         assert(patchId < atlas.patchParamsList.size());
         const auto &patch = atlas.patchParamsList[patchId];
-        assert(patch.pduViewIdx() < frame.viewParamsList.size());
-        const auto &viewParams = frame.viewParamsList[patch.pduViewIdx()];
+        assert(patch.atlasPatchProjectionId() < frame.viewParamsList.size());
+        const auto &viewParams = frame.viewParamsList[patch.atlasPatchProjectionId()];
 
         // Look up depth value and affine parameters
         const auto uv = Vec2f(patch.atlasToView({j_atlas, i_atlas}));
@@ -120,7 +120,7 @@ public:
         assert(d > 0.F && isfinite(d));
 
         // Reproject and calculate ray angle
-        const auto &R_t = transformList[patch.pduViewIdx()];
+        const auto &R_t = transformList[patch.atlasPatchProjectionId()];
         const auto xyz = R_t(unprojectVertex(uv + Vec2f({0.5F, 0.5F}), d, viewParams.ci));
         const auto rayAngle = angle(xyz, xyz - R_t.translation());
         result.push_back({xyz, rayAngle});

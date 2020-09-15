@@ -72,7 +72,7 @@ auto V3cUnitHeader::vuh_v3c_parameter_set_id() const noexcept -> std::uint8_t {
   return m_vuh_v3c_parameter_set_id;
 }
 
-auto V3cUnitHeader::vuh_atlas_id() const noexcept -> std::uint8_t {
+auto V3cUnitHeader::vuh_atlas_id() const noexcept -> AtlasId {
   VERIFY_V3CBITSTREAM(
       m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD ||
       m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD);
@@ -110,7 +110,7 @@ auto V3cUnitHeader::vuh_v3c_parameter_set_id(const uint8_t value) noexcept -> V3
   return *this;
 }
 
-auto V3cUnitHeader::vuh_atlas_id(const uint8_t value) noexcept -> V3cUnitHeader & {
+auto V3cUnitHeader::vuh_atlas_id(AtlasId value) noexcept -> V3cUnitHeader & {
   VERIFY_V3CBITSTREAM(
       m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD ||
       m_vuh_unit_type == VuhUnitType::V3C_OVD || m_vuh_unit_type == VuhUnitType::V3C_AD);
@@ -153,7 +153,7 @@ auto operator<<(ostream &stream, const V3cUnitHeader &x) -> ostream & {
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD) {
-    stream << "\nvuh_atlas_id=" << int{x.vuh_atlas_id()};
+    stream << "\nvuh_atlas_id=" << x.vuh_atlas_id();
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD) {
     stream << "\nvuh_attribute_index=" << int{x.vuh_attribute_index()}
@@ -211,7 +211,7 @@ auto V3cUnitHeader::decodeFrom(istream &stream) -> V3cUnitHeader {
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD) {
     x.vuh_v3c_parameter_set_id(bitstream.readBits<uint8_t>(4));
-    x.vuh_atlas_id(bitstream.readBits<uint8_t>(6));
+    x.vuh_atlas_id(AtlasId::decodeFrom(bitstream));
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD) {
     x.vuh_attribute_index(bitstream.readBits<uint8_t>(7));
@@ -239,7 +239,7 @@ void V3cUnitHeader::encodeTo(ostream &stream) const {
   if (vuh_unit_type() == VuhUnitType::V3C_AVD || vuh_unit_type() == VuhUnitType::V3C_GVD ||
       vuh_unit_type() == VuhUnitType::V3C_OVD || vuh_unit_type() == VuhUnitType::V3C_AD) {
     bitstream.writeBits(vuh_v3c_parameter_set_id(), 4);
-    bitstream.writeBits(vuh_atlas_id(), 6);
+    vuh_atlas_id().encodeTo(bitstream);
   }
   if (vuh_unit_type() == VuhUnitType::V3C_AVD) {
     bitstream.writeBits(vuh_attribute_index(), 7);

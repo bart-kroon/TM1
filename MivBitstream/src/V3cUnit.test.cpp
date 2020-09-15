@@ -40,11 +40,12 @@ using namespace TMIV::MivBitstream;
 namespace examples {
 auto vps() {
   auto x = V3cParameterSet{};
-  x.vps_frame_width(0, 640);
-  x.vps_frame_height(0, 480);
-  x.vps_geometry_video_present_flag(0, true);
-  x.geometry_information(0).gi_geometry_nominal_2d_bitdepth_minus1(8);
-  x.geometry_information(0).gi_geometry_3d_coordinates_bitdepth_minus1(10);
+  x.vps_atlas_id(0, {});
+  x.vps_frame_width({}, 640);
+  x.vps_frame_height({}, 480);
+  x.vps_geometry_video_present_flag({}, true);
+  x.geometry_information({}).gi_geometry_2d_bit_depth_minus1(8);
+  x.geometry_information({}).gi_geometry_3d_coordinates_bit_depth_minus1(10);
   x.vps_extension_present_flag(true);
   return x;
 }
@@ -71,7 +72,7 @@ vuh_atlas_id=0
     REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(1).vuh_atlas_id(2);
+      x.vuh_v3c_parameter_set_id(1).vuh_atlas_id(AtlasId{2});
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_AD
 vuh_v3c_parameter_set_id=1
@@ -93,7 +94,7 @@ vuh_atlas_id=0
     REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(1);
+      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(AtlasId{1});
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_OVD
 vuh_v3c_parameter_set_id=2
@@ -117,7 +118,7 @@ vuh_auxiliary_video_flag=false
     REQUIRE(byteCodingTest(x, 4));
 
     SECTION("Example") {
-      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id(0).vuh_map_index(0).vuh_auxiliary_video_flag(
+      x.vuh_v3c_parameter_set_id(2).vuh_atlas_id({}).vuh_map_index(0).vuh_auxiliary_video_flag(
           false);
 
       REQUIRE(toString(x) == R"(vuh_unit_type=V3C_GVD
@@ -147,7 +148,7 @@ vuh_auxiliary_video_flag=false
 
     SECTION("Example") {
       x.vuh_v3c_parameter_set_id(2)
-          .vuh_atlas_id(2)
+          .vuh_atlas_id(AtlasId{2})
           .vuh_attribute_index(3)
           .vuh_attribute_partition_index(0)
           .vuh_map_index(0)
@@ -174,8 +175,8 @@ TEST_CASE("v3c_unit_payload", "[V3C Unit]") {
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
-ptl_profile_toolset_idc=Basic
-ptl_profile_reconstruction_idc=Rec0
+ptl_profile_toolset_idc=V-PCC Basic
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -192,13 +193,12 @@ vps_occupancy_video_present_flag( 0 )=false
 vps_geometry_video_present_flag( 0 )=true
 vps_attribute_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
-gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
+gi_geometry_2d_bit_depth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
+gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=10
 vps_extension_present_flag=true
-vps_vpcc_extension_flag=false
-vps_miv_extension_flag=false
-vps_extension_6bits=0
+vps_miv_extension_present_flag=false
+vps_extension_7bits=0
 )");
 
     REQUIRE(byteCodingTest(x, 21, vuh));
@@ -250,8 +250,8 @@ TEST_CASE("v3c_unit", "[V3C Unit]") {
     REQUIRE(toString(x) == R"(vuh_unit_type=V3C_VPS
 ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
-ptl_profile_toolset_idc=Basic
-ptl_profile_reconstruction_idc=Rec0
+ptl_profile_toolset_idc=V-PCC Basic
+ptl_profile_reconstruction_idc=Rec0 (V-PCC)
 ptl_max_decodes_idc=unconstrained
 ptl_level_idc=[unknown:0]
 ptl_num_sub_profiles=0
@@ -268,13 +268,12 @@ vps_occupancy_video_present_flag( 0 )=false
 vps_geometry_video_present_flag( 0 )=true
 vps_attribute_video_present_flag( 0 )=false
 gi_geometry_codec_id( 0 )=0
-gi_geometry_nominal_2d_bitdepth_minus1( 0 )=8
+gi_geometry_2d_bit_depth_minus1( 0 )=8
 gi_geometry_MSB_align_flag( 0 )=false
-gi_geometry_3d_coordinates_bitdepth_minus1( 0 )=10
+gi_geometry_3d_coordinates_bit_depth_minus1( 0 )=10
 vps_extension_present_flag=true
-vps_vpcc_extension_flag=false
-vps_miv_extension_flag=false
-vps_extension_6bits=0
+vps_miv_extension_present_flag=false
+vps_extension_7bits=0
 )");
 
     REQUIRE(unitCodingTest(x, 25));
@@ -283,7 +282,7 @@ vps_extension_6bits=0
   SECTION("Example 2") {
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
     vuh.vuh_v3c_parameter_set_id(2)
-        .vuh_atlas_id(1)
+        .vuh_atlas_id(AtlasId{1})
         .vuh_attribute_index(2)
         .vuh_attribute_partition_index(0)
         .vuh_map_index(0)

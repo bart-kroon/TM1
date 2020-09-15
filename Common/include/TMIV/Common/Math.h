@@ -69,8 +69,6 @@ inline auto squash(double a) -> double {
   return a;
 }
 
-inline auto gcd(int a, int b) -> int { return (b == 0) ? a : gcd(b, a % b); }
-
 template <typename T> inline auto ppd2pps(T ppd) -> T {
   return sqr(ppd * static_cast<T>(180. / M_PI));
 }

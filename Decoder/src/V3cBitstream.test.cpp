@@ -53,14 +53,14 @@ auto dumpV3cUnitPayload(streampos position, const SampleStreamV3cUnit &ssvu,
   ostringstream path;
   path << "v3c_unit_" << position << '_' << vuh.vuh_unit_type();
   if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
-    path << '_' << int(vuh.vuh_v3c_parameter_set_id()) << '_' << int(vuh.vuh_atlas_id());
+    path << '_' << int{vuh.vuh_v3c_parameter_set_id()} << '_' << int{vuh.vuh_atlas_id()};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
-    path << '_' << int(vuh.vuh_attribute_index()) << '_'
-         << int(vuh.vuh_attribute_partition_index());
+    path << '_' << int{vuh.vuh_attribute_index()} << '_'
+         << int{vuh.vuh_attribute_partition_index()};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    path << '_' << int(vuh.vuh_map_index()) << '_' << boolalpha << vuh.vuh_auxiliary_video_flag();
+    path << '_' << int{vuh.vuh_map_index()} << '_' << boolalpha << vuh.vuh_auxiliary_video_flag();
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS || vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
     path << ".bit";
@@ -105,7 +105,7 @@ void demultiplex(istream &stream) {
       while (vps->vps_v3c_parameter_set_id() >= vpses.size()) {
         vpses.emplace_back();
       }
-      cout << "vpses[" << int(vps->vps_v3c_parameter_set_id()) << "] := vps\n";
+      cout << "vpses[" << int{vps->vps_v3c_parameter_set_id()} << "] := vps\n";
       vpses[vps->vps_v3c_parameter_set_id()] = *vps;
     }
   }
@@ -129,19 +129,19 @@ TEST_CASE("Demultiplex", "[V3C bitstream]") {
 }
 
 auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth10Frame {
-  cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+  cout << "geoFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
        << ", frameSize=" << frameSize << '\n';
   return Depth10Frame{frameSize.x(), frameSize.y()};
 }
 
 auto occFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Occupancy10Frame {
-  cout << "occFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+  cout << "occFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
        << ", frameSize=" << frameSize << '\n';
   return Occupancy10Frame{frameSize.x(), frameSize.y()};
 }
 
 auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {
-  cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
+  cout << "attrFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
        << ", frameSize=" << frameSize << '\n';
   return Texture444Frame{frameSize.x(), frameSize.y()};
 }

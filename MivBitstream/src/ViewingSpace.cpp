@@ -197,7 +197,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
   stream.putFlag(orientationPresent);
   stream.putFlag(directionConstraintPresent);
   stream.putFlag(cameraInferred);
-  for (unsigned idx = 0; idx < primitives.size(); idx++) {
+  for (size_t idx = 0; idx < primitives.size(); idx++) {
     const auto &p = primitives[idx];
     if (cameraInferred) {
       stream.putUint16(static_cast<uint16_t>(inferringViews[idx]));
@@ -452,7 +452,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
   if (auto subsubnode = node.optional("InferringViews"); subsubnode) {
     std::vector<std::string> views = subsubnode.asStringVector();
     for (const auto &v : views) {
-      unsigned idx = 0;
+      size_t idx = 0;
       for (; idx < sourceCameraNames.size(); idx++) {
         if (v == sourceCameraNames[idx]) {
           break;
@@ -461,7 +461,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
       if (idx == sourceCameraNames.size()) {
         throw runtime_error("Invalid inferred view in the metadata JSON file");
       }
-      elementaryShape.inferringViews.push_back(idx);
+      elementaryShape.inferringViews.push_back(static_cast<int>(idx));
     }
     inferredView = true;
   }

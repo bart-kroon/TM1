@@ -76,7 +76,7 @@ auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
     if (x.hasOccupancy) {
       x.dq.dq_depth_occ_map_threshold_default(m_depthOccThresholdIfSet); // =T
       const auto nearLevel = 1023.F;
-      const auto farLevel = float(2 * m_depthOccThresholdIfSet);
+      const auto farLevel = static_cast<float>(2 * m_depthOccThresholdIfSet);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
       x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
                             (0.F - farLevel) / (nearLevel - farLevel) *

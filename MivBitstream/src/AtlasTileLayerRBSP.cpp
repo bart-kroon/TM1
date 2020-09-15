@@ -51,7 +51,7 @@ auto operator<<(ostream &stream, AthType x) -> ostream & {
   case AthType::SKIP_TILE:
     return stream << "SKIP_TILE";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -74,7 +74,7 @@ auto operator<<(ostream &stream, FlexiblePatchOrientation x) -> ostream & {
   case FlexiblePatchOrientation::FPO_MROT180:
     return stream << "FPO_MROT180";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -91,7 +91,7 @@ auto printTo(ostream &stream, AtduPatchMode x, AthType ath_type) -> ostream & {
     case AtduPatchMode::I_END:
       return stream << "I_END";
     default:
-      return stream << "[unknown:" << int(x) << "]";
+      return stream << "[unknown:" << int{x} << "]";
     }
   case AthType::P_TILE:
     switch (x) {
@@ -110,17 +110,17 @@ auto printTo(ostream &stream, AtduPatchMode x, AthType ath_type) -> ostream & {
     case AtduPatchMode::P_END:
       return stream << "P_END";
     default:
-      return stream << "[unknown:" << int(x) << "]";
+      return stream << "[unknown:" << int{x} << "]";
     }
   case AthType::SKIP_TILE:
     switch (x) {
     case AtduPatchMode::P_SKIP:
       return stream << "P_SKIP";
     default:
-      return stream << "[unknown:" << int(x) << "]";
+      return stream << "[unknown:" << int{x} << "]";
     }
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -160,32 +160,32 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
     stream << "ath_no_output_of_prior_atlas_frames_flag=" << boolalpha
            << x.ath_no_output_of_prior_atlas_frames_flag() << '\n';
   }
-  stream << "ath_atlas_frame_parameter_set_id=" << int(x.ath_atlas_frame_parameter_set_id())
+  stream << "ath_atlas_frame_parameter_set_id=" << int{x.ath_atlas_frame_parameter_set_id()}
          << '\n';
-  stream << "ath_atlas_adaptation_parameter_set_id=" << int(x.m_ath_adaptation_parameter_set_id)
+  stream << "ath_atlas_adaptation_parameter_set_id=" << int{x.m_ath_adaptation_parameter_set_id}
          << '\n';
-  stream << "ath_id=" << int(x.ath_id()) << '\n';
+  stream << "ath_id=" << int{x.ath_id()} << '\n';
   stream << "ath_type=" << x.ath_type() << '\n';
   if (x.m_ath_atlas_output_flag) {
     stream << "ath_atlas_output_flag=" << boolalpha << *x.m_ath_atlas_output_flag << '\n';
   }
-  stream << "ath_atlas_frm_order_cnt_lsb=" << int(x.ath_atlas_frm_order_cnt_lsb()) << '\n';
+  stream << "ath_atlas_frm_order_cnt_lsb=" << int{x.ath_atlas_frm_order_cnt_lsb()} << '\n';
   if (x.m_ath_ref_atlas_frame_list_asps_flag) {
     stream << "ath_ref_atlas_frame_list_asps_flag=" << boolalpha
            << *x.m_ath_ref_atlas_frame_list_asps_flag << '\n';
   }
   if (x.ath_type() != AthType::SKIP_TILE) {
     if (x.m_ath_pos_min_d_quantizer) {
-      stream << "ath_pos_min_d_quantizer=" << int(*x.m_ath_pos_min_d_quantizer) << '\n';
+      stream << "ath_pos_min_d_quantizer=" << int{*x.m_ath_pos_min_d_quantizer} << '\n';
       if (x.m_ath_pos_delta_max_d_quantizer) {
-        stream << "ath_pos_delta_max_d_quantizer=" << int(*x.m_ath_pos_delta_max_d_quantizer)
+        stream << "ath_pos_delta_max_d_quantizer=" << int{*x.m_ath_pos_delta_max_d_quantizer}
                << '\n';
       }
     }
     if (x.m_ath_patch_size_x_info_quantizer || x.m_ath_patch_size_y_info_quantizer) {
-      stream << "ath_patch_size_x_info_quantizer=" << int(x.ath_patch_size_x_info_quantizer())
+      stream << "ath_patch_size_x_info_quantizer=" << int{x.ath_patch_size_x_info_quantizer()}
              << '\n';
-      stream << "ath_patch_size_y_info_quantizer=" << int(x.ath_patch_size_y_info_quantizer())
+      stream << "ath_patch_size_y_info_quantizer=" << int{x.ath_patch_size_y_info_quantizer()}
              << '\n';
     }
   }

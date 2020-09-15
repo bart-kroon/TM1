@@ -63,8 +63,8 @@ namespace {
 // Atlas dilation
 // Visit all pixels
 template <typename F> void forPixels(array<size_t, 2> sizes, F f) {
-  for (int i = 0; i < int(sizes[0]); ++i) {
-    for (int j = 0; j < int(sizes[1]); ++j) {
+  for (int i = 0; i < static_cast<int>(sizes[0]); ++i) {
+    for (int j = 0; j < static_cast<int>(sizes[1]); ++j) {
       f(i, j);
     }
   }
@@ -73,9 +73,9 @@ template <typename F> void forPixels(array<size_t, 2> sizes, F f) {
 // Visit all pixel neighbors (in between 3 and 8)
 template <typename F> auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
   const int n1 = max(0, i - 1);
-  const int n2 = min(int(sizes[0]), i + 2);
+  const int n2 = min(static_cast<int>(sizes[0]), i + 2);
   const int m1 = max(0, j - 1);
-  const int m2 = min(int(sizes[1]), j + 2);
+  const int m2 = min(static_cast<int>(sizes[1]), j + 2);
 
   for (int n = n1; n < n2; ++n) {
     for (int m = m1; m < m2; ++m) {
@@ -151,7 +151,7 @@ void Encoder::pushMultiEntityFrame(MVD16Frame sourceViews) {
 auto Encoder::yuvSampler(const EntityMapList &in) -> vector<Frame<YUV420P16>> {
   vector<Frame<YUV420P16>> outYuvAll;
   for (const auto &viewId : in) {
-    Frame<YUV420P16> outYuv(int(viewId.getWidth()), int(viewId.getHeight()));
+    Frame<YUV420P16> outYuv(int{viewId.getWidth()}, int{viewId.getHeight()});
     const auto width = viewId.getWidth();
     const auto height = viewId.getHeight();
     int step = 1;
@@ -196,7 +196,7 @@ void Encoder::updateMasks(const MVD16Frame &views, MaskList &masks) {
 }
 
 void Encoder::aggregateEntityMasks(MaskList &masks, uint16_t entityId) {
-  if (int(m_aggregatedEntityMask.size()) < m_entityEncRange[1] - m_entityEncRange[0]) {
+  if (static_cast<int>(m_aggregatedEntityMask.size()) < m_entityEncRange[1] - m_entityEncRange[0]) {
     m_aggregatedEntityMask.push_back(masks);
   } else {
     for (size_t i = 0; i < masks.size(); i++) {

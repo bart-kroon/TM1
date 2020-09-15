@@ -41,8 +41,8 @@ including TMIV-based anchors. Template configuration files are included with the
 The software is ISO C++17 conformant and does not require external libraries.
 The optional dependencies are however highly recommended:
 
-* Catch2 test framework
-* HEVC test model (HM)
+* [Catch2](https://github.com/catchorg/Catch2.git) test framework
+* [HEVC test model](https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git) (HM)
 
 The following steps collect the software projects in a main working directory,
 arbitrary called /Workspace in this description. Other directory names are also
@@ -58,21 +58,7 @@ Prerequisites are:
 
 This description works for Windows and Linux.
 
-### Instructions to download HM
-
-Look in the CTC document for the version of HM and corresponding URL. This
-description uses 16.16.
-
-```shell
-cd /Workspace
-git clone https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git HM-16.16
-cd HM-16.16
-git checkout HM-16.16
-```
-
-TMIV includes a build script for HM.
-
-### Instructions to build and install TMIV
+## Instructions to build and install TMIV
 
 To obtain the branch to this document:
 
@@ -86,30 +72,51 @@ git checkout master
 To obtain the latest public release of TMIV instead:
 
 ```shell
-    cd /Workspace
-    git clone https://gitlab.com/mpeg-i-visual/tmiv.git
+cd /Workspace
+git clone https://gitlab.com/mpeg-i-visual/tmiv.git
 ```
+
+Below are two alternative instructions for building: the first using command
+line tools, typically on Unix. The second instruction set is for GUI tools,
+typically on Windows.
+
+### Using the command line (e.g. Unix)
+
+As a preparation, create a folder to which TMIV shall be installed, e.g.
+
+```shell
+mkdir /Workspace/tm1_install
+```
+
+With that, you can start configuring, building, and installing TMIV:
+
+```shell
+cd /Workspace/TM1
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/Workspace/tm1_install ..
+cmake --build .  # append '--parallel $(nproc)' to speed up building
+make install
+```
+
+### Using a GUI (e.g. Windows)
 
 Open the CMake GUI and specify:
 
 * Where the source directory is: /Workspace/TM1
 * Where to build the binaries: /Workspace/TM1/build
 * Click Configure, Yes, Finish
-* Set CMAKE_INSTALL_PREFIX to /Workspace/TM1-master
-* Optional: To disable [Catch2](https://github.com/catchorg/Catch2.git)-based
-  unit tests, set BUILD_CATCH2 to false. Leaving tests enabled (skipping this
-  step) is highly recommended, however.
-* Set HM_SOURCE_DIR to /Workspace/HM-16.16
+* Set CMAKE_INSTALL_PREFIX to /Workspace/tm1_install
 * Click Generate
 
 Build and install the generated project.
 
 For the Visual Studio CMake generators installation is performed by building the
-INSTALL target. For Unix Makefiles CMake generators installation is through
-`make install`.
+INSTALL target.
 
-After this the TMIV executables Encoder and Decoder will be available under the
-directory /Workspace/TM1-master/bin. By default TMIV only builds the HM modules
+### Installation result
+
+After installation, the TMIV executables Encoder and Decoder will be available under the
+directory /Workspace/tm1_install/bin. By default TMIV only builds the HM modules
 that are required for TMIV (TLibCommon and TLibDecoder). When
 HM_BUILD_TAPPDECODER and HM_BUILD_TAPPENCODER are selected, then the
 TAppDecoder and TAppEncoder tools respectively will also be installed to this

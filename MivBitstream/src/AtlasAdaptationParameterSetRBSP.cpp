@@ -192,12 +192,12 @@ auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension() noexcept -> AapsMivEx
 
 auto operator<<(ostream &stream, const AtlasAdaptationParameterSetRBSP &x) -> ostream & {
   stream << "aaps_atlas_adaptation_parameter_set_id="
-         << int(x.aaps_atlas_adaptation_parameter_set_id()) << '\n';
+         << int{x.aaps_atlas_adaptation_parameter_set_id()} << '\n';
   stream << "aaps_log2_max_afoc_present_flag=" << boolalpha << x.aaps_log2_max_afoc_present_flag()
          << '\n';
   if (x.aaps_log2_max_afoc_present_flag()) {
     stream << "aaps_log2_max_atlas_frame_order_cnt_lsb_minus4="
-           << int(x.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()) << '\n';
+           << int{x.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()} << '\n';
   }
   stream << "aaps_extension_present_flag=" << boolalpha << x.aaps_extension_present_flag() << '\n';
   if (x.aaps_extension_present_flag()) {
@@ -205,7 +205,7 @@ auto operator<<(ostream &stream, const AtlasAdaptationParameterSetRBSP &x) -> os
            << x.aaps_vpcc_extension_present_flag() << '\n';
     stream << "aaps_miv_extension_present_flag=" << boolalpha << x.aaps_miv_extension_present_flag()
            << '\n';
-    stream << "aaps_extension_6bits=" << int(x.aaps_extension_6bits()) << '\n';
+    stream << "aaps_extension_6bits=" << int{x.aaps_extension_6bits()} << '\n';
   }
   if (x.aaps_vpcc_extension_present_flag()) {
     stream << x.aaps_vpcc_extension();

@@ -181,7 +181,7 @@ auto MivEncoder::mvpUpdateMode() const -> MvpUpdateMode {
     updInt = updInt || m_viewParamsList[i].ci != m_params.viewParamsList[i].ci;
     updDq = updDq || m_viewParamsList[i].dq != m_params.viewParamsList[i].dq;
   }
-  if (int(updExt) + int(updInt) + int(updDq) > 1) {
+  if (int{updExt} + int{updInt} + int{updDq} > 1) {
     return MvpUpdateMode::VPL_ALL;
   }
   if (updExt) {

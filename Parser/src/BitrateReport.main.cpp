@@ -122,10 +122,10 @@ public:
         stream << vuh.vuh_atlas_id() << ",,";
         break;
       case TMIV::MivBitstream::VuhUnitType::V3C_GVD:
-        stream << vuh.vuh_atlas_id() << ',' << int(vuh.vuh_map_index()) << ',';
+        stream << vuh.vuh_atlas_id() << ',' << int{vuh.vuh_map_index()} << ',';
         break;
       case TMIV::MivBitstream::VuhUnitType::V3C_AVD:
-        stream << vuh.vuh_atlas_id() << ',' << int(vuh.vuh_map_index()) << ','
+        stream << vuh.vuh_atlas_id() << ',' << int{vuh.vuh_map_index()} << ','
                << int(vuh.vuh_attribute_index());
         break;
       default:
@@ -138,7 +138,7 @@ public:
     stream << "nal_unit_type,nal_layer_id,nal_temporal_id,,count,sum,average\n";
 
     for (const auto &[nuh, stats] : m_nuhStats) {
-      stream << nuh.nal_unit_type() << ',' << int(nuh.nal_layer_id()) << ','
+      stream << nuh.nal_unit_type() << ',' << int{nuh.nal_layer_id()} << ','
              << (nuh.nal_temporal_id_plus1() - 1) << ",," << stats << '\n';
     }
   }

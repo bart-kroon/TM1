@@ -35,10 +35,9 @@
 
 #include <algorithm>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Encoder {
-GeometryDownscaler::GeometryDownscaler(const Json &rootNode, const Json & /* componentNode */)
+GeometryDownscaler::GeometryDownscaler(const Common::Json &rootNode,
+                                       const Common::Json & /* componentNode */)
     : m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").asBool()} {}
 
 auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
@@ -58,8 +57,8 @@ auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
 }
 
 namespace {
-auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
-  auto result = Depth10Frame{frameSize.x(), frameSize.y()};
+auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Common::Depth10Frame {
+  auto result = Common::Depth10Frame{frameSize.x(), frameSize.y()};
 
   for (int y = 0; y < frameSize.y(); ++y) {
     const int i1 = y * frame.getHeight() / frameSize.y();
@@ -85,14 +84,14 @@ auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
 }
 } // namespace
 
-auto GeometryDownscaler::transformFrame(MVD10Frame frame) -> MVD10Frame {
+auto GeometryDownscaler::transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame {
   if (m_params.vme().vme_geometry_scale_enabled_flag()) {
     for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
       const auto &asps = m_params.atlas[atlasId].asps;
       const auto &asme = asps.asps_miv_extension();
-      const auto frameSize =
-          Vec2i{asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
-                asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
+      const auto frameSize = Common::Vec2i{
+          asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
+          asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
       frame[atlasId].depth = maxPool(frame[atlasId].depth, frameSize);
     }
   }

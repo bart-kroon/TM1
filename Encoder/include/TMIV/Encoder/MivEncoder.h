@@ -41,38 +41,39 @@
 #include <sstream>
 
 namespace TMIV::Encoder {
-using namespace MivBitstream;
-
 class MivEncoder {
 public:
   MivEncoder(std::ostream &stream);
 
-  void writeAccessUnit(const EncoderParams &);
+  void writeAccessUnit(const MivBitstream::EncoderParams &);
 
 private:
-  auto ptlMaxDecodesIdc() const -> PtlMaxDecodesIdc;
-  auto commonAtlasSubBitstream() -> AtlasSubBitstream;
-  auto commonAtlasFrame() const -> CommonAtlasFrameRBSP;
-  auto mvpUpdateMode() const -> MvpUpdateMode;
-  auto mivViewParamsList() const -> MivViewParamsList;
-  auto mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics;
-  auto mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics;
-  auto mivViewParamsUpdateDepthQuantization() const -> MivViewParamsUpdateDepthQuantization;
-  auto atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream;
-  [[nodiscard]] auto atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP;
+  auto ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc;
+  auto commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream;
+  auto commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP;
+  auto mvpUpdateMode() const -> MivBitstream::MvpUpdateMode;
+  auto mivViewParamsList() const -> MivBitstream::MivViewParamsList;
+  auto mivViewParamsUpdateExtrinsics() const -> MivBitstream::MivViewParamsUpdateExtrinsics;
+  auto mivViewParamsUpdateIntrinsics() const -> MivBitstream::MivViewParamsUpdateIntrinsics;
+  auto mivViewParamsUpdateDepthQuantization() const
+      -> MivBitstream::MivViewParamsUpdateDepthQuantization;
+  auto atlasSubBitstream(std::uint8_t vai) -> MivBitstream::AtlasSubBitstream;
+  [[nodiscard]] auto atlasTileGroupLayer(std::uint8_t vai) const
+      -> MivBitstream::AtlasTileLayerRBSP;
   constexpr auto maxFrmOrderCntLsb() const { return 1U << (m_log2MaxFrmOrderCntLsbMinus4 + 4U); }
 
   template <typename Payload>
-  void writeV3cUnit(VuhUnitType vut, std::uint8_t vai, Payload &&payload);
+  void writeV3cUnit(MivBitstream::VuhUnitType vut, std::uint8_t vai, Payload &&payload);
   template <typename Payload, typename... Args>
-  void writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload, Args &&... args);
+  void writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
+                    Payload &&payload, Args &&... args);
 
   std::ostream &m_stream;
-  SampleStreamV3cHeader m_ssvh{2};
-  SampleStreamNalHeader m_ssnh{2};
-  EncoderParams m_params;
+  MivBitstream::SampleStreamV3cHeader m_ssvh{2};
+  MivBitstream::SampleStreamNalHeader m_ssnh{2};
+  MivBitstream::EncoderParams m_params;
   bool m_irap{true};
-  ViewParamsList m_viewParamsList;
+  MivBitstream::ViewParamsList m_viewParamsList;
   uint8_t m_log2MaxFrmOrderCntLsbMinus4{};
   uint16_t m_frmOrderCntLsb{};
 };

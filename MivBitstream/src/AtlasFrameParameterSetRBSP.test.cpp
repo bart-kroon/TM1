@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("atlas_frame_tile_information", "[Atlas Frame Parameter Set RBSP]") {
   const auto x = AtlasFrameTileInformation{};
   REQUIRE(toString(x) == R"(afti_single_tile_in_atlas_frame_flag=true
@@ -121,3 +120,4 @@ afps_extension_data_flag=true
     REQUIRE(byteCodingTest(x, 7, aspsV));
   }
 }
+} // namespace TMIV::MivBitstream

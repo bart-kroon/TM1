@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/V3cUnit.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 namespace examples {
 auto vps() {
   auto x = V3cParameterSet{};
@@ -303,3 +302,4 @@ vuh_auxiliary_video_flag=false
     REQUIRE(unitCodingTest(x, 4));
   }
 }
+} // namespace TMIV::MivBitstream

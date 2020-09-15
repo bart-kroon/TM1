@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/SeiRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
   REQUIRE(toString(PayloadType::viewing_space_handling) == "viewing_space_handling");
   REQUIRE(toString(PayloadType::geometry_upscaling_parameters) == "geometry_upscaling_parameters");
@@ -99,3 +98,4 @@ payloadSize=12
     REQUIRE(byteCodingTest(x, 2053));
   }
 }
+} // namespace TMIV::MivBitstream

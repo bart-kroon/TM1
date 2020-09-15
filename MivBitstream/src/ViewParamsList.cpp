@@ -38,10 +38,8 @@
 
 #include <stdexcept>
 
-using namespace std;
-
 namespace TMIV::MivBitstream {
-auto ViewParams::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+auto ViewParams::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   if (!name.empty()) {
     stream << "name[ " << viewId << " ]=\"" << name << "\"  # informative\n";
   }
@@ -50,7 +48,7 @@ auto ViewParams::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
   ci.printTo(stream, viewId);
   dq.printTo(stream, viewId);
 
-  stream << "hasOccupancy[ " << viewId << "]=" << boolalpha << hasOccupancy
+  stream << "hasOccupancy[ " << viewId << "]=" << std::boolalpha << hasOccupancy
          << "  # encoder-internal\n";
 
   if (pp) {
@@ -110,7 +108,7 @@ auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
     x.ci.ci_ortho_width(node.require("OrthoHeight").asFloat());
 
   } else {
-    throw runtime_error("Unknown projection type in metadata JSON file");
+    throw std::runtime_error("Unknown projection type in metadata JSON file");
   }
   return x;
 }
@@ -126,7 +124,7 @@ auto ViewParamsList::viewSizes() const -> Common::SizeVector {
   return sizes;
 }
 
-auto operator<<(ostream &stream, const ViewParamsList &viewParamsList) -> ostream & {
+auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList) -> std::ostream & {
   for (size_t viewId = 0; viewId < viewParamsList.size(); ++viewId) {
     viewParamsList[viewId].printTo(stream, uint16_t(viewId));
   }
@@ -137,7 +135,7 @@ auto ViewParamsList::operator==(const ViewParamsList &other) const -> bool {
   return equal(begin(), end(), other.begin(), other.end());
 }
 
-auto ViewParamsList::loadFromJson(const Common::Json &node, const vector<string> &names)
+auto ViewParamsList::loadFromJson(const Common::Json &node, const vector<std::string> &names)
     -> ViewParamsList {
   ViewParamsList result;
   for (const auto &name : names) {
@@ -149,7 +147,7 @@ auto ViewParamsList::loadFromJson(const Common::Json &node, const vector<string>
     }
   }
   if (result.size() != names.size()) {
-    throw runtime_error("Could not find all requested camera names in the metadata JSON file");
+    throw std::runtime_error("Could not find all requested camera names in the metadata JSON file");
   }
   return result;
 }

@@ -40,8 +40,7 @@
 
 #include <cmath>
 
-using namespace TMIV::Common;
-
+namespace TMIV::Common {
 TEST_CASE("Quanternion<T>", "[quaternion]") {
   static_assert(std::is_same_v<QuatF, Quaternion<float>>);
   static_assert(std::is_same_v<QuatD, Quaternion<double>>);
@@ -138,3 +137,4 @@ TEST_CASE("Quanternion<T>", "[quaternion]") {
     }
   }
 }
+} // namespace TMIV::Common

@@ -75,7 +75,7 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   m_irap = false;
 }
 
-auto MivEncoder::ptlMaxDecodesIdc() const -> PtlMaxDecodesIdc {
+auto MivEncoder::ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc {
   auto numDecodes = 0;
   for (uint8_t j = 0; j < m_params.vps.vps_atlas_count_minus1() + 1; ++j) {
     numDecodes += m_params.vps.vps_auxiliary_video_present_flag(j);
@@ -88,49 +88,49 @@ auto MivEncoder::ptlMaxDecodesIdc() const -> PtlMaxDecodesIdc {
     }
   }
   if (numDecodes <= 1) {
-    return PtlMaxDecodesIdc::max_1;
+    return MivBitstream::PtlMaxDecodesIdc::max_1;
   }
   if (numDecodes <= 2) {
-    return PtlMaxDecodesIdc::max_2;
+    return MivBitstream::PtlMaxDecodesIdc::max_2;
   }
   if (numDecodes <= 3) {
-    return PtlMaxDecodesIdc::max_3;
+    return MivBitstream::PtlMaxDecodesIdc::max_3;
   }
   if (numDecodes <= 4) {
-    return PtlMaxDecodesIdc::max_4;
+    return MivBitstream::PtlMaxDecodesIdc::max_4;
   }
   if (numDecodes <= 6) {
-    return PtlMaxDecodesIdc::max_6;
+    return MivBitstream::PtlMaxDecodesIdc::max_6;
   }
   if (numDecodes <= 12) {
-    return PtlMaxDecodesIdc::max_12;
+    return MivBitstream::PtlMaxDecodesIdc::max_12;
   }
   if (numDecodes <= 16) {
-    return PtlMaxDecodesIdc::max_16;
+    return MivBitstream::PtlMaxDecodesIdc::max_16;
   }
   if (numDecodes <= 24) {
-    return PtlMaxDecodesIdc::max_24;
+    return MivBitstream::PtlMaxDecodesIdc::max_24;
   }
   if (numDecodes <= 24) {
-    return PtlMaxDecodesIdc::max_24;
+    return MivBitstream::PtlMaxDecodesIdc::max_24;
   }
   if (numDecodes <= 32) {
-    return PtlMaxDecodesIdc::max_32;
+    return MivBitstream::PtlMaxDecodesIdc::max_32;
   }
-  return PtlMaxDecodesIdc::unconstrained;
+  return MivBitstream::PtlMaxDecodesIdc::unconstrained;
 }
 
 namespace {
-const auto nuhAaps = NalUnitHeader{NalUnitType::NAL_AAPS, 0, 1};
-const auto nuhAsps = NalUnitHeader{NalUnitType::NAL_ASPS, 0, 1};
-const auto nuhAfps = NalUnitHeader{NalUnitType::NAL_AFPS, 0, 1};
-const auto nuhIdr = NalUnitHeader{NalUnitType::NAL_IDR_N_LP, 0, 1};
-const auto nuhCra = NalUnitHeader{NalUnitType::NAL_CRA, 0, 1};
-const auto nuhCaf = NalUnitHeader{NalUnitType::NAL_CAF, 0, 1};
+const auto nuhAaps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_AAPS, 0, 1};
+const auto nuhAsps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_ASPS, 0, 1};
+const auto nuhAfps = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_AFPS, 0, 1};
+const auto nuhIdr = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_IDR_N_LP, 0, 1};
+const auto nuhCra = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CRA, 0, 1};
+const auto nuhCaf = MivBitstream::NalUnitHeader{MivBitstream::NalUnitType::NAL_CAF, 0, 1};
 } // namespace
 
-auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
-  auto asb = AtlasSubBitstream{m_ssnh};
+auto MivEncoder::commonAtlasSubBitstream() -> MivBitstream::AtlasSubBitstream {
+  auto asb = MivBitstream::AtlasSubBitstream{m_ssnh};
 
   if (m_irap) {
     writeNalUnit(asb, nuhAaps, m_params.aaps);
@@ -140,33 +140,36 @@ auto MivEncoder::commonAtlasSubBitstream() -> AtlasSubBitstream {
   return asb;
 }
 
-auto MivEncoder::commonAtlasFrame() const -> CommonAtlasFrameRBSP {
-  auto caf = CommonAtlasFrameRBSP{};
+auto MivEncoder::commonAtlasFrame() const -> MivBitstream::CommonAtlasFrameRBSP {
+  auto caf = MivBitstream::CommonAtlasFrameRBSP{};
 
   const auto mode = mvpUpdateMode();
   caf.caf_atlas_adaptation_parameter_set_id(0)
       .caf_frm_order_cnt_lsb(m_frmOrderCntLsb)
       .caf_miv_view_params_list_update_mode(mode);
 
-  if (mode == MvpUpdateMode::VPL_INITLIST) {
+  if (mode == MivBitstream::MvpUpdateMode::VPL_INITLIST) {
     caf.miv_view_params_list() = mivViewParamsList();
   } else {
-    if (mode == MvpUpdateMode::VPL_UPD_EXT || mode == MvpUpdateMode::VPL_ALL) {
+    if (mode == MivBitstream::MvpUpdateMode::VPL_UPD_EXT ||
+        mode == MivBitstream::MvpUpdateMode::VPL_ALL) {
       caf.miv_view_params_update_extrinsics() = mivViewParamsUpdateExtrinsics();
     }
-    if (mode == MvpUpdateMode::VPL_UPD_INT || mode == MvpUpdateMode::VPL_ALL) {
+    if (mode == MivBitstream::MvpUpdateMode::VPL_UPD_INT ||
+        mode == MivBitstream::MvpUpdateMode::VPL_ALL) {
       caf.miv_view_params_update_intrinsics() = mivViewParamsUpdateIntrinsics();
     }
-    if (mode == MvpUpdateMode::VPL_UPD_DQ || mode == MvpUpdateMode::VPL_ALL) {
+    if (mode == MivBitstream::MvpUpdateMode::VPL_UPD_DQ ||
+        mode == MivBitstream::MvpUpdateMode::VPL_ALL) {
       caf.miv_view_params_update_depth_quantization() = mivViewParamsUpdateDepthQuantization();
     }
   }
   return caf;
 }
 
-auto MivEncoder::mvpUpdateMode() const -> MvpUpdateMode {
+auto MivEncoder::mvpUpdateMode() const -> MivBitstream::MvpUpdateMode {
   if (m_irap) {
-    return MvpUpdateMode::VPL_INITLIST;
+    return MivBitstream::MvpUpdateMode::VPL_INITLIST;
   }
   auto updExt = false;
   auto updInt = false;
@@ -178,22 +181,22 @@ auto MivEncoder::mvpUpdateMode() const -> MvpUpdateMode {
     updDq = updDq || m_viewParamsList[i].dq != m_params.viewParamsList[i].dq;
   }
   if (int(updExt) + int(updInt) + int(updDq) > 1) {
-    return MvpUpdateMode::VPL_ALL;
+    return MivBitstream::MvpUpdateMode::VPL_ALL;
   }
   if (updExt) {
-    return MvpUpdateMode::VPL_UPD_EXT;
+    return MivBitstream::MvpUpdateMode::VPL_UPD_EXT;
   }
   if (updInt) {
-    return MvpUpdateMode::VPL_UPD_INT;
+    return MivBitstream::MvpUpdateMode::VPL_UPD_INT;
   }
   if (updDq) {
-    return MvpUpdateMode::VPL_UPD_DQ;
+    return MivBitstream::MvpUpdateMode::VPL_UPD_DQ;
   }
   MIVBITSTREAM_ERROR("It is not possible to have a CAF that does not update view parameters.");
 }
 
-auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
-  auto mvpl = MivViewParamsList{};
+auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
+  auto mvpl = MivBitstream::MivViewParamsList{};
   auto &vpl = m_params.viewParamsList;
 
   assert(!vpl.empty());
@@ -235,8 +238,9 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
   return mvpl;
 }
 
-auto MivEncoder::mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExtrinsics {
-  auto mvpue = MivViewParamsUpdateExtrinsics{};
+auto MivEncoder::mivViewParamsUpdateExtrinsics() const
+    -> MivBitstream::MivViewParamsUpdateExtrinsics {
+  auto mvpue = MivBitstream::MivViewParamsUpdateExtrinsics{};
   auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
@@ -252,8 +256,9 @@ auto MivEncoder::mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExt
   return mvpue;
 }
 
-auto MivEncoder::mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateIntrinsics {
-  auto mvpui = MivViewParamsUpdateIntrinsics{};
+auto MivEncoder::mivViewParamsUpdateIntrinsics() const
+    -> MivBitstream::MivViewParamsUpdateIntrinsics {
+  auto mvpui = MivBitstream::MivViewParamsUpdateIntrinsics{};
   auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ci != m_params.viewParamsList[v].ci) {
@@ -270,8 +275,8 @@ auto MivEncoder::mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateInt
 }
 
 auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
-    -> MivViewParamsUpdateDepthQuantization {
-  auto mvpudq = MivViewParamsUpdateDepthQuantization{};
+    -> MivBitstream::MivViewParamsUpdateDepthQuantization {
+  auto mvpudq = MivBitstream::MivViewParamsUpdateDepthQuantization{};
   auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].dq != m_params.viewParamsList[v].dq) {
@@ -287,8 +292,8 @@ auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
   return mvpudq;
 }
 
-auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
-  auto asb = AtlasSubBitstream{m_ssnh};
+auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> MivBitstream::AtlasSubBitstream {
+  auto asb = MivBitstream::AtlasSubBitstream{m_ssnh};
 
   auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
   vuh.vuh_atlas_id(vai);
@@ -311,8 +316,8 @@ auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> AtlasSubBitstream {
   return asb;
 }
 
-auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRBSP {
-  auto patchData = AtlasTileDataUnit::Vector{};
+auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> MivBitstream::AtlasTileLayerRBSP {
+  auto patchData = MivBitstream::AtlasTileDataUnit::Vector{};
   patchData.reserve(m_params.patchParamsList.size());
 
   const auto &aau = m_params.atlas[vai];
@@ -321,7 +326,7 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
 
   for (const auto &pp : m_params.patchParamsList) {
     if (pp.vuhAtlasId == vai) {
-      auto pdu = PatchDataUnit{};
+      auto pdu = MivBitstream::PatchDataUnit{};
 
       VERIFY_MIVBITSTREAM(0 <= pp.pdu2dPos().x() && pp.pdu2dPos().x() <= UINT16_MAX);
       VERIFY_MIVBITSTREAM(0 <= pp.pdu2dPos().y() && pp.pdu2dPos().y() <= UINT16_MAX);
@@ -358,13 +363,13 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
       if (pp.pduDepthOccMapThreshold()) {
         pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.pduDepthOccMapThreshold());
       }
-      patchData.emplace_back(AtduPatchMode::I_INTRA, pdu);
+      patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA, pdu);
     }
   }
 
-  auto x = AtlasTileLayerRBSP{};
+  auto x = MivBitstream::AtlasTileLayerRBSP{};
   x.atlas_tile_header() = aau.ath;
-  x.atlas_tile_data_unit() = AtlasTileDataUnit{patchData};
+  x.atlas_tile_data_unit() = MivBitstream::AtlasTileDataUnit{patchData};
   return x;
 }
 
@@ -374,7 +379,7 @@ void MivEncoder::writeV3cUnit(MivBitstream::VuhUnitType vut, uint8_t vai, Payloa
   if (vai != 0) {
     vuh.vuh_atlas_id(vai);
   }
-  const auto vu = V3cUnit{vuh, std::forward<Payload>(payload)};
+  const auto vu = MivBitstream::V3cUnit{vuh, std::forward<Payload>(payload)};
 
   std::ostringstream substream;
   vu.encodeTo(substream);
@@ -384,8 +389,8 @@ void MivEncoder::writeV3cUnit(MivBitstream::VuhUnitType vut, uint8_t vai, Payloa
 }
 
 template <typename Payload, typename... Args>
-void MivEncoder::writeNalUnit(AtlasSubBitstream &asb, NalUnitHeader nuh, Payload &&payload,
-                              Args &&... args) {
+void MivEncoder::writeNalUnit(MivBitstream::AtlasSubBitstream &asb, MivBitstream::NalUnitHeader nuh,
+                              Payload &&payload, Args &&... args) {
   std::ostringstream substream1;
   payload.encodeTo(substream1, std::forward<Args>(args)...);
   asb.nal_units().emplace_back(nuh, substream1.str());

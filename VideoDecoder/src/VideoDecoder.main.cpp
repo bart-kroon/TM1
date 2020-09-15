@@ -41,7 +41,7 @@
 #include <sstream>
 #include <thread>
 
-using namespace std::literals;
+using namespace std::string_literals;
 
 constexpr auto defaultCodecGroupIdc = TMIV::MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10;
 

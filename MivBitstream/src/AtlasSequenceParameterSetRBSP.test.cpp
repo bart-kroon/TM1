@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("ref_list_struct", "[Atlas Sequence Parameter Set RBSP]") {
   SECTION("Empty list") {
     auto asps = AtlasSequenceParameterSetRBSP{};
@@ -242,3 +241,4 @@ asps_extension_data_flag=true
     REQUIRE(byteCodingTest(x, 16, vuh, vps));
   }
 }
+} // namespace TMIV::MivBitstream

@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("camera_intrinsics", "[Common Atlas Frame RBSP]") {
   auto x = CameraIntrinsics{};
 
@@ -584,3 +583,4 @@ dq_depth_occ_map_threshold_default[ 0 ]=64
     REQUIRE(bitCodingTest(x, 117, vps));
   }
 }
+} // namespace TMIV::MivBitstream

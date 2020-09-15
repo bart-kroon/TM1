@@ -105,7 +105,7 @@ Open the CMake GUI and specify:
 * Where the source directory is: /Workspace/TM1
 * Where to build the binaries: /Workspace/TM1/build
 * Click Configure, Yes, Finish
-* Set CMAKE_INSTALL_PREFIX to /Workspace/TM1-master
+* Set CMAKE_INSTALL_PREFIX to /Workspace/tm1_install
 * Optional: To disable [Catch2](https://github.com/catchorg/Catch2.git)-based
   unit tests, set BUILD_CATCH2 to false. Leaving tests enabled (skipping this
   step) is highly recommended, however.
@@ -119,7 +119,7 @@ INSTALL target.
 ### Installation result
 
 After installation, the TMIV executables Encoder and Decoder will be available under the
-directory /Workspace/TM1-master/bin. By default TMIV only builds the HM modules
+directory /Workspace/tm1_install/bin. By default TMIV only builds the HM modules
 that are required for TMIV (TLibCommon and TLibDecoder). When
 HM_BUILD_TAPPDECODER and HM_BUILD_TAPPENCODER are selected, then the
 TAppDecoder and TAppEncoder tools respectively will also be installed to this

@@ -93,7 +93,7 @@ void writeBytes(ostream &stream, uint64_t value, size_t bytes) {
     writeBytes(stream, value >> 8, bytes - 1);
   }
   if (bytes > 0) {
-    stream.put(char(value));
+    stream.put(static_cast<char>(value));
   }
   VERIFY_BYTESTREAM(stream.good());
 }

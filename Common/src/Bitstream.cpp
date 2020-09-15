@@ -167,7 +167,7 @@ void OutputBitstream::writeBits_(uint64_t value, unsigned bits) {
 
   while (m_size >= charBits) {
     m_size -= charBits;
-    m_stream.put(char(m_buffer >> m_size));
+    m_stream.put(static_cast<char>(m_buffer >> m_size));
   }
 }
 

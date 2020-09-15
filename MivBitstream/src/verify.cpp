@@ -41,22 +41,22 @@ void message(bool error, char const *introduction, char const *condition, char c
              int line) {
   std::cerr << (error ? "ERROR: " : "WARNING: ") << introduction << ":\n\t" << condition << "\n\t["
             << file << "@" << line << "]\n";
-  if (error) {
-    abort();
-  }
 }
 } // namespace
 
 [[noreturn]] void v3cError(char const *condition, char const *file, int line) {
   message(true, "Failed to encode/decode V3C bitstream", condition, file, line);
+  abort();
 }
 
 [[noreturn]] void mivError(char const *condition, char const *file, int line) {
   message(true, "Failed to encode/decode MIV bitstream", condition, file, line);
+  abort();
 }
 
 [[noreturn]] void notImplemented(char const *condition, char const *file, int line) {
   message(true, "This aspect of MIV/3VC has not yet been implemented", condition, file, line);
+  abort();
 }
 
 void ptlWarning(char const *condition, char const *file, int line) {

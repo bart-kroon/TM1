@@ -191,8 +191,8 @@ void OutputBitstream::putSExpGolomb(int64_t value) {
 }
 
 void OutputBitstream::putUint64(uint64_t value) {
-  putUint32(uint32_t(value >> 32));
-  putUint32(uint32_t(value));
+  putUint32(static_cast<uint32_t>(value >> 32));
+  putUint32(static_cast<uint32_t>(value));
 }
 
 void OutputBitstream::putFloat16(Half value) { putUint16(value.encode()); }

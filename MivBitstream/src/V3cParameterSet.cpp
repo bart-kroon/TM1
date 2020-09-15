@@ -268,7 +268,7 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
       bitstream.putUint64(ptl_sub_profile_idc(i));
     } else {
       VERIFY_V3CBITSTREAM(ptl_sub_profile_idc(i) <= UINT32_MAX);
-      bitstream.putUint32(uint32_t(ptl_sub_profile_idc(i)));
+      bitstream.putUint32(static_cast<uint32_t>(ptl_sub_profile_idc(i)));
     }
   }
   bitstream.putFlag(ptl_tool_constraints_present_flag());

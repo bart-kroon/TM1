@@ -212,7 +212,7 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch
     }
     const auto k = y * m_dk_di;
     k1 = std::min(k1, static_cast<int>(std::floor(k)));
-    k2 = std::max(k2, TMIV::Common::iceil(k) + 1);
+    k2 = std::max(k2, static_cast<int>(std::ceil(k)) + 1);
   }
 
   // Cull

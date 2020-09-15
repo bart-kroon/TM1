@@ -540,9 +540,9 @@ private:
       float yLow = max(0.F, splat.center.y() - radius);
       float yHigh = splat.center.y() + radius;
       int x0 = max(0, static_cast<int>(std::floor(xLow)));
-      int x1 = min(w_last, iceil(xHigh));
+      int x1 = min(w_last, static_cast<int>(std::ceil(xHigh)));
       int y0 = max(0, static_cast<int>(std::floor(yLow)));
-      int y1 = min(h_last, iceil(yHigh));
+      int y1 = min(h_last, static_cast<int>(std::ceil(yHigh)));
 
       // Looping on all pixels within the bounding box
       for (int y = y0; y <= y1; y++) {

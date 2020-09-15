@@ -176,14 +176,6 @@ TEST_CASE("Parsing the command-line", "[Application]") {
   }
 }
 
-TEST_CASE("Converting floating point to integer") {
-  REQUIRE(iceil(-2.5F) == -2);
-  REQUIRE(iceil(0.F) == 0);
-  REQUIRE(iceil(1000000.9F) == 1000001);
-  REQUIRE(iceil(1000001.0F) == 1000001);
-  REQUIRE(iceil(1000001.1F) == 1000002);
-}
-
 TEST_CASE("Assignment of fixed size matrix N x 1 to fixed size vector") {
   stack::Matrix<double, 6, 1> A;
   fill(begin(A), end(A), 1.);

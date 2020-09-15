@@ -65,7 +65,7 @@ inline Half::Half(float value) {
     int exponent{};
     const auto mantissa_f = frexp(x, &exponent);
     const auto mantissa = unsigned(lround(ldexp(mantissa_f, 11)));
-    m_code = uint16_t((unsigned(exponent + 14) << 10) | (mantissa & 0x3FF));
+    m_code = static_cast<uint16_t>((unsigned(exponent + 14) << 10) | (mantissa & 0x3FF));
   }
 
   if (std::signbit(value)) {

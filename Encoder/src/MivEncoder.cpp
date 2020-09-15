@@ -329,15 +329,15 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> AtlasTileLayerRB
       VERIFY_MIVBITSTREAM(0 <= pp.pdu2dPos().y() && pp.pdu2dPos().y() <= UINT16_MAX);
       VERIFY_MIVBITSTREAM(pp.pdu2dPos().x() % (1 << k) == 0);
       VERIFY_MIVBITSTREAM(pp.pdu2dPos().y() % (1 << k) == 0);
-      pdu.pdu_2d_pos_x(uint16_t(pp.pdu2dPos().x()) >> k);
-      pdu.pdu_2d_pos_y(uint16_t(pp.pdu2dPos().y()) >> k);
+      pdu.pdu_2d_pos_x(static_cast<uint16_t>(pp.pdu2dPos().x()) >> k);
+      pdu.pdu_2d_pos_y(static_cast<uint16_t>(pp.pdu2dPos().y()) >> k);
 
       VERIFY_MIVBITSTREAM(0 < pp.pdu2dSize().x() && pp.pdu2dSize().x() <= UINT16_MAX + 1);
       VERIFY_MIVBITSTREAM(0 < pp.pdu2dSize().y() && pp.pdu2dSize().y() <= UINT16_MAX + 1);
       VERIFY_MIVBITSTREAM(pp.pdu2dSize().x() % (1 << k) == 0);
       VERIFY_MIVBITSTREAM(pp.pdu2dSize().y() % (1 << k) == 0);
-      pdu.pdu_2d_size_x_minus1(uint16_t(pp.pdu2dSize().x() - 1) >> k);
-      pdu.pdu_2d_size_y_minus1(uint16_t(pp.pdu2dSize().y() - 1) >> k);
+      pdu.pdu_2d_size_x_minus1(static_cast<uint16_t>(pp.pdu2dSize().x() - 1) >> k);
+      pdu.pdu_2d_size_y_minus1(static_cast<uint16_t>(pp.pdu2dSize().y() - 1) >> k);
 
       pdu.pdu_view_pos_x(pp.pduViewPos().x());
       pdu.pdu_view_pos_y(pp.pduViewPos().y());

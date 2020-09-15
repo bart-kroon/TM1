@@ -151,7 +151,7 @@ void Encoder::pushMultiEntityFrame(MVD16Frame sourceViews) {
 auto Encoder::yuvSampler(const EntityMapList &in) -> vector<Frame<YUV420P16>> {
   vector<Frame<YUV420P16>> outYuvAll;
   for (const auto &viewId : in) {
-    Frame<YUV420P16> outYuv(int(viewId.getWidth()), int(viewId.getHeight()));
+    Frame<YUV420P16> outYuv(int{viewId.getWidth()}, int{viewId.getHeight()});
     const auto width = viewId.getWidth();
     const auto height = viewId.getHeight();
     int step = 1;
@@ -196,7 +196,7 @@ void Encoder::updateMasks(const MVD16Frame &views, MaskList &masks) {
 }
 
 void Encoder::aggregateEntityMasks(MaskList &masks, uint16_t entityId) {
-  if (int(m_aggregatedEntityMask.size()) < m_entityEncRange[1] - m_entityEncRange[0]) {
+  if (static_cast<int>(m_aggregatedEntityMask.size()) < m_entityEncRange[1] - m_entityEncRange[0]) {
     m_aggregatedEntityMask.push_back(masks);
   } else {
     for (size_t i = 0; i < masks.size(); i++) {

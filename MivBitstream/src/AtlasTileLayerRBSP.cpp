@@ -154,16 +154,16 @@ auto AtlasTileHeader::ath_patch_size_y_info_quantizer(const uint8_t value) noexc
 }
 
 auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
-  stream << "ath_atlas_frame_parameter_set_id=" << int(x.ath_atlas_frame_parameter_set_id())
+  stream << "ath_atlas_frame_parameter_set_id=" << int{x.ath_atlas_frame_parameter_set_id()}
          << '\n';
   stream << "ath_atlas_adaptation_parameter_set_id=" << int{x.m_ath_adaptation_parameter_set_id}
          << '\n';
-  stream << "ath_id=" << int(x.ath_id()) << '\n';
+  stream << "ath_id=" << int{x.ath_id()} << '\n';
   stream << "ath_type=" << x.ath_type() << '\n';
   if (x.m_ath_atlas_output_flag) {
     stream << "ath_atlas_output_flag=" << boolalpha << *x.m_ath_atlas_output_flag << '\n';
   }
-  stream << "ath_atlas_frm_order_cnt_lsb=" << int(x.ath_atlas_frm_order_cnt_lsb()) << '\n';
+  stream << "ath_atlas_frm_order_cnt_lsb=" << int{x.ath_atlas_frm_order_cnt_lsb()} << '\n';
   if (x.m_ath_ref_atlas_frame_list_sps_flag) {
     stream << "ath_ref_atlas_frame_list_sps_flag=" << boolalpha
            << *x.m_ath_ref_atlas_frame_list_sps_flag << '\n';
@@ -176,9 +176,9 @@ auto operator<<(ostream &stream, const AtlasTileHeader &x) -> ostream & {
                << '\n';
       }
     }
-    stream << "ath_patch_size_x_info_quantizer=" << int(x.ath_patch_size_x_info_quantizer())
+    stream << "ath_patch_size_x_info_quantizer=" << int{x.ath_patch_size_x_info_quantizer()}
            << '\n';
-    stream << "ath_patch_size_y_info_quantizer=" << int(x.ath_patch_size_y_info_quantizer())
+    stream << "ath_patch_size_y_info_quantizer=" << int{x.ath_patch_size_y_info_quantizer()}
            << '\n';
   }
   return stream;

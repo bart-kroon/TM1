@@ -151,7 +151,7 @@ template <class FORMAT> void Frame<FORMAT>::resize(int w, int h) {
 
 template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
   for (auto &plane : m_planes) {
-    int w = int(plane.width()), h = int(plane.height());
+    int w = static_cast<int>(plane.width()), h = static_cast<int>(plane.height());
     base_type *ptr =
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();
@@ -168,7 +168,7 @@ template <class FORMAT> void Frame<FORMAT>::read(std::istream &is, bool vFlip) {
 
 template <class FORMAT> void Frame<FORMAT>::dump(std::ostream &os, bool vFlip) const {
   for (const auto &plane : m_planes) {
-    int w = int(plane.width()), h = int(plane.height());
+    int w = static_cast<int>(plane.width()), h = static_cast<int>(plane.height());
     const base_type *ptr =
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         vFlip ? (plane.data() + plane.size() - plane.width()) : plane.data();

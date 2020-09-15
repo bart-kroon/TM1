@@ -149,19 +149,19 @@ auto operator<<(ostream &stream, const V3cUnitHeader &x) -> ostream & {
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD ||
       x.vuh_unit_type() == VuhUnitType::V3C_CAD) {
-    stream << "\nvuh_v3c_parameter_set_id=" << int(x.vuh_v3c_parameter_set_id());
+    stream << "\nvuh_v3c_parameter_set_id=" << int{x.vuh_v3c_parameter_set_id()};
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD || x.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       x.vuh_unit_type() == VuhUnitType::V3C_OVD || x.vuh_unit_type() == VuhUnitType::V3C_AD) {
-    stream << "\nvuh_atlas_id=" << int(x.vuh_atlas_id());
+    stream << "\nvuh_atlas_id=" << int{x.vuh_atlas_id()};
   }
   if (x.vuh_unit_type() == VuhUnitType::V3C_AVD) {
-    stream << "\nvuh_attribute_index=" << int(x.vuh_attribute_index())
-           << "\nvuh_attribute_partition_index=" << int(x.vuh_attribute_partition_index())
-           << "\nvuh_map_index=" << int(x.vuh_map_index())
+    stream << "\nvuh_attribute_index=" << int{x.vuh_attribute_index()}
+           << "\nvuh_attribute_partition_index=" << int{x.vuh_attribute_partition_index()}
+           << "\nvuh_map_index=" << int{x.vuh_map_index()}
            << "\nvuh_auxiliary_video_flag=" << boolalpha << x.vuh_auxiliary_video_flag();
   } else if (x.vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    stream << "\nvuh_map_index=" << int(x.vuh_map_index())
+    stream << "\nvuh_map_index=" << int{x.vuh_map_index()}
            << "\nvuh_auxiliary_video_flag=" << boolalpha << x.vuh_auxiliary_video_flag();
   }
   return stream << '\n';

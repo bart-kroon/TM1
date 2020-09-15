@@ -93,7 +93,7 @@ auto operator<<(std::ostream &stream, const GeometryUpscalingParameters &x) -> s
   if (x.gup_type() == GupType::HVR) {
     stream << "gup_erode_threshold=" << x.gup_erode_threshold() << '\n';
     stream << "gup_delta_threshold=" << x.gup_delta_threshold() << '\n';
-    stream << "gup_max_curvature=" << int(x.gup_max_curvature()) << '\n';
+    stream << "gup_max_curvature=" << int{x.gup_max_curvature()} << '\n';
   }
   return stream;
 }

@@ -201,7 +201,7 @@ void Rasterizer<T...>::visit(Visitor visitor) const {
 
 template <typename... T>
 void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch &batch) {
-  const auto K = int(m_strips.size());
+  const auto K = static_cast<int>(m_strips.size());
   auto k1 = K;
   auto k2 = 0;
 
@@ -329,7 +329,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
       const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 
       // Blend pixel
-      assert(v * strip.cols + u < int(strip.matrix.size()));
+      assert(v * strip.cols + u < static_cast<int>(strip.matrix.size()));
       auto &P = strip.matrix[v * strip.cols + u];
 
       auto p = m_pixel.construct(a, d, rayAngle, stretching);

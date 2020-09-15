@@ -105,7 +105,7 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
   while (++m_foc % m_maxAtlasFrmOrderCntLsb != focLsb) {
     // deliberately empty
   }
-  std::cout << "Atlas frame: foc=" << m_foc << ", vuh_atlas_id=" << int(m_vuh.vuh_atlas_id())
+  std::cout << "Atlas frame: foc=" << m_foc << ", vuh_atlas_id=" << int{m_vuh.vuh_atlas_id()}
             << '\n';
   au.foc = m_foc;
 

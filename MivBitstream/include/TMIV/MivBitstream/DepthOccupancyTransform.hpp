@@ -121,7 +121,7 @@ template <typename DepthFrame>
 [[nodiscard]] auto DepthTransform<bits>::quantizeNormDisp(const Common::Mat<float> &matrix,
                                                           uint16_t minLevel) const -> DepthFrame {
   static_assert(bits == DepthFrame::getBitDepth());
-  auto frame = DepthFrame{int(matrix.width()), int(matrix.height())};
+  auto frame = DepthFrame{static_cast<int>(matrix.width()), static_cast<int>(matrix.height())};
   std::transform(std::begin(matrix), std::end(matrix), std::begin(frame.getPlane(0)),
                  [=](float x) { return quantizeNormDisp(x, minLevel); });
   return frame;

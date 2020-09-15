@@ -76,7 +76,7 @@ auto Packer::pack(const SizeVector &atlasSizes, const MaskList &masks,
   ClusteringMapList clusteringMap;
   vector<int> clusteringMapIndex;
   int index = 0;
-  for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
+  for (auto viewId = 0; viewId < static_cast<int>(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
       for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
         // Entity clustering

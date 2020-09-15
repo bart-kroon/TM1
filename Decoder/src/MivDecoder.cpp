@@ -333,7 +333,7 @@ void MivDecoder::decodePatchParamsList(uint8_t j) {
     const auto k = asps.asps_log2_patch_packing_block_size();
 
     ppl[p].pduOrientationIndex(pdu.pdu_orientation_index());
-    ppl[p].pdu2dPos({int(pdu.pdu_2d_pos_x() << k), int(pdu.pdu_2d_pos_y() << k)});
+    ppl[p].pdu2dPos({int{pdu.pdu_2d_pos_x() << k}, int{pdu.pdu_2d_pos_y() << k}});
     ppl[p].pdu2dSize(
         {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     ppl[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});

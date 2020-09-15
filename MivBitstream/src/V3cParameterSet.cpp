@@ -199,7 +199,7 @@ auto operator<<(ostream &stream, const ProfileTierLevel &x) -> ostream & {
   stream << "ptl_profile_reconstruction_idc=" << x.ptl_profile_reconstruction_idc() << '\n';
   stream << "ptl_max_decodes_idc=" << x.ptl_max_decodes_idc() << '\n';
   stream << "ptl_level_idc=" << x.ptl_level_idc() << '\n';
-  stream << "ptl_num_sub_profiles=" << int(x.ptl_num_sub_profiles()) << '\n';
+  stream << "ptl_num_sub_profiles=" << int{x.ptl_num_sub_profiles()} << '\n';
   stream << "ptl_extended_sub_profile_flag=" << boolalpha << x.ptl_extended_sub_profile_flag()
          << '\n';
   for (uint8_t i = 0; i < x.ptl_num_sub_profiles(); ++i) {
@@ -276,12 +276,12 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
 }
 
 auto OccupancyInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "oi_occupancy_codec_id( " << int{atlasIdx} << " )=" << int(oi_occupancy_codec_id())
+  stream << "oi_occupancy_codec_id( " << int{atlasIdx} << " )=" << int{oi_occupancy_codec_id()}
          << '\n';
   stream << "oi_lossy_occupancy_map_compression_threshold( " << int{atlasIdx}
-         << " )=" << int(oi_lossy_occupancy_map_compression_threshold()) << '\n';
+         << " )=" << int{oi_lossy_occupancy_map_compression_threshold()} << '\n';
   stream << "oi_occupancy_nominal_2d_bitdepth_minus1( " << int{atlasIdx}
-         << " )=" << int(oi_occupancy_nominal_2d_bitdepth_minus1()) << '\n';
+         << " )=" << int{oi_occupancy_nominal_2d_bitdepth_minus1()} << '\n';
   stream << "oi_occupancy_MSB_align_flag( " << int{atlasIdx} << " )=" << boolalpha
          << oi_occupancy_MSB_align_flag() << '\n';
   return stream;
@@ -317,14 +317,14 @@ void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
 }
 
 auto GeometryInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "gi_geometry_codec_id( " << int{atlasIdx} << " )=" << int(gi_geometry_codec_id())
+  stream << "gi_geometry_codec_id( " << int{atlasIdx} << " )=" << int{gi_geometry_codec_id()}
          << '\n';
   stream << "gi_geometry_nominal_2d_bitdepth_minus1( " << int{atlasIdx}
-         << " )=" << int(gi_geometry_nominal_2d_bitdepth_minus1()) << '\n';
+         << " )=" << int{gi_geometry_nominal_2d_bitdepth_minus1()} << '\n';
   stream << "gi_geometry_MSB_align_flag( " << int{atlasIdx} << " )=" << boolalpha
          << gi_geometry_MSB_align_flag() << '\n';
   stream << "gi_geometry_3d_coordinates_bitdepth_minus1( " << int{atlasIdx}
-         << " )=" << int(gi_geometry_3d_coordinates_bitdepth_minus1()) << '\n';
+         << " )=" << int{gi_geometry_3d_coordinates_bitdepth_minus1()} << '\n';
   return stream;
 }
 
@@ -448,21 +448,21 @@ auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId, bool
 }
 
 auto AttributeInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "ai_attribute_count( " << int{atlasIdx} << " )=" << int(ai_attribute_count()) << '\n';
+  stream << "ai_attribute_count( " << int{atlasIdx} << " )=" << int{ai_attribute_count()} << '\n';
   for (auto i = 0; i < ai_attribute_count(); ++i) {
     stream << "ai_attribute_type_id( " << int{atlasIdx} << ", " << i
            << " )=" << ai_attribute_type_id(i) << '\n';
     stream << "ai_attribute_codec_id( " << int{atlasIdx} << ", " << i
-           << " )=" << int(ai_attribute_codec_id(i)) << '\n';
+           << " )=" << int{ai_attribute_codec_id(i)} << '\n';
     if (m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag) {
       stream << "ai_attribute_map_absolute_coding_persistence_flag( " << int{atlasIdx} << ", " << i
              << " )=" << boolalpha
              << *m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag << '\n';
     }
     stream << "ai_attribute_dimension_minus1( " << int{atlasIdx} << ", " << i
-           << " )=" << int(ai_attribute_dimension_minus1(i)) << '\n';
+           << " )=" << int{ai_attribute_dimension_minus1(i)} << '\n';
     stream << "ai_attribute_nominal_2d_bitdepth_minus1( " << int{atlasIdx} << ", " << i
-           << " )=" << int(ai_attribute_nominal_2d_bitdepth_minus1(i));
+           << " )=" << int{ai_attribute_nominal_2d_bitdepth_minus1(i)};
     stream << '\n';
     stream << "ai_attribute_MSB_align_flag( " << int{atlasIdx} << ", " << i << " )=" << boolalpha
            << ai_attribute_MSB_align_flag(i) << '\n';
@@ -846,13 +846,13 @@ auto V3cParameterSet::atlasIdxOf(uint8_t atlasId) const noexcept -> uint8_t {
 
 auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
   stream << x.profile_tier_level();
-  stream << "vps_v3c_parameter_set_id=" << int(x.vps_v3c_parameter_set_id()) << '\n';
-  stream << "vps_atlas_count_minus1=" << int(x.vps_atlas_count_minus1()) << '\n';
+  stream << "vps_v3c_parameter_set_id=" << int{x.vps_v3c_parameter_set_id()} << '\n';
+  stream << "vps_atlas_count_minus1=" << int{x.vps_atlas_count_minus1()} << '\n';
   for (int j = 0; j <= x.vps_atlas_count_minus1(); ++j) {
-    stream << "vps_atlas_id( " << j << " )=" << int(x.vps_atlas_id(j)) << '\n';
+    stream << "vps_atlas_id( " << j << " )=" << int{x.vps_atlas_id(j)} << '\n';
     stream << "vps_frame_width( " << j << " )=" << x.vps_frame_width(j) << '\n';
     stream << "vps_frame_height( " << j << " )=" << x.vps_frame_height(j) << '\n';
-    stream << "vps_map_count_minus1( " << j << " )=" << int(x.vps_map_count_minus1(j)) << '\n';
+    stream << "vps_map_count_minus1( " << j << " )=" << int{x.vps_map_count_minus1(j)} << '\n';
     stream << "vps_auxiliary_video_present_flag( " << j << " )=" << boolalpha
            << x.vps_auxiliary_video_present_flag(j) << '\n';
     stream << "vps_occupancy_video_present_flag( " << j << " )=" << boolalpha
@@ -875,7 +875,7 @@ auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
   if (x.vps_extension_present_flag()) {
     stream << "vps_vpcc_extension_flag=" << boolalpha << x.vps_vpcc_extension_flag() << '\n';
     stream << "vps_miv_extension_flag=" << boolalpha << x.vps_miv_extension_flag() << '\n';
-    stream << "vps_extension_6bits=" << int(x.vps_extension_6bits()) << '\n';
+    stream << "vps_extension_6bits=" << int{x.vps_extension_6bits()} << '\n';
   }
   if (x.vps_vpcc_extension_flag()) {
     stream << x.vps_vpcc_extension();

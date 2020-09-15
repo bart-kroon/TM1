@@ -116,7 +116,8 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
 
         const auto &plane = inAtlases[patch.vuhAtlasId].depth.getPlane(0);
 
-        if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
+        if (n < 0 || n >= static_cast<int>(plane.height()) || m < 0 ||
+            m >= static_cast<int>(plane.width())) {
           abort();
         }
 

@@ -161,7 +161,7 @@ public:
       }
     }
 
-    assert(int(result.size()) <= size);
+    assert(static_cast<int>(result.size()) <= size);
     return result;
   }
 

@@ -41,8 +41,8 @@ including TMIV-based anchors. Template configuration files are included with the
 The software is ISO C++17 conformant and does not require external libraries.
 The optional dependencies are however highly recommended:
 
-* Catch2 test framework
-* HEVC test model (HM)
+* [Catch2](https://github.com/catchorg/Catch2.git) test framework
+* [HEVC test model](https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git) (HM)
 
 The following steps collect the software projects in a main working directory,
 arbitrary called /Workspace in this description. Other directory names are also
@@ -80,7 +80,7 @@ Below are two alternative instructions for building: the first using command
 line tools, typically on Unix. The second instruction set is for GUI tools,
 typically on Windows.
 
-### Using the command line (Unix)
+### Using the command line (e.g. Unix)
 
 As a preparation, create a folder to which TMIV shall be installed, e.g.
 
@@ -98,7 +98,7 @@ cmake --build .  # append '--parallel $(nproc)' to speed up building
 make install
 ```
 
-### Using a GUI (Windows)
+### Using a GUI (e.g. Windows)
 
 Open the CMake GUI and specify:
 
@@ -106,9 +106,6 @@ Open the CMake GUI and specify:
 * Where to build the binaries: /Workspace/TM1/build
 * Click Configure, Yes, Finish
 * Set CMAKE_INSTALL_PREFIX to /Workspace/tm1_install
-* Optional: To disable [Catch2](https://github.com/catchorg/Catch2.git)-based
-  unit tests, set BUILD_CATCH2 to false. Leaving tests enabled (skipping this
-  step) is highly recommended, however.
 * Click Generate
 
 Build and install the generated project.

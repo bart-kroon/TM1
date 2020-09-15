@@ -83,7 +83,7 @@ auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostrea
   case PtlProfileReconstructionIdc::MIV_Main:
     return stream << "MIV Main";
   case PtlProfileReconstructionIdc::Rec_Unconstrained:
-      return stream << "Rec Unconstrained";
+    return stream << "Rec Unconstrained";
   default:
     return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
@@ -298,7 +298,7 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
 }
 
 auto OccupancyInformation::printTo(ostream &stream, AtlasId atlasId) const -> ostream & {
-    stream << "oi_occupancy_codec_id( " << atlasId << " )=" << int{oi_occupancy_codec_id()} << '\n';
+  stream << "oi_occupancy_codec_id( " << atlasId << " )=" << int{oi_occupancy_codec_id()} << '\n';
   stream << "oi_lossy_occupancy_compression_threshold( " << atlasId
          << " )=" << int{oi_lossy_occupancy_compression_threshold()} << '\n';
   stream << "oi_occupancy_2d_bit_depth_minus1( " << atlasId

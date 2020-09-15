@@ -368,7 +368,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
       m_params.patchParamsList.back().atlasId =
           AtlasId{uint8_t(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
       m_params.patchParamsList.back().atlasPatchProjectionId(patch.atlasPatchProjectionId() +
-                                                            viewIdOffset);
+                                                             viewIdOffset);
     }
 
     // Renumber atlases and views

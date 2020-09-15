@@ -643,8 +643,8 @@ auto AtlasTileLayerRBSP::operator!=(const AtlasTileLayerRBSP &other) const noexc
   return !operator==(other);
 }
 
-auto AtlasTileLayerRBSP::decodeFrom(istream &stream, 
-                                    const V3cParameterSet &vps, const NalUnitHeader &nuh,
+auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cParameterSet &vps,
+                                    const NalUnitHeader &nuh,
                                     const vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const vector<AtlasFrameParameterSetRBSP> &afps)
     -> AtlasTileLayerRBSP {
@@ -653,20 +653,20 @@ auto AtlasTileLayerRBSP::decodeFrom(istream &stream,
   auto atl = AtlasTileLayerRBSP{};
   atl.atlas_tile_header() = AtlasTileHeader::decodeFrom(bitstream, nuh, asps, afps);
   atl.atlas_tile_data_unit() =
-      AtlasTileDataUnit::decodeFrom(bitstream,  vps, asps, afps, atl.atlas_tile_header());
+      AtlasTileDataUnit::decodeFrom(bitstream, vps, asps, afps, atl.atlas_tile_header());
   bitstream.rbspTrailingBits();
 
   return atl;
 }
 
-void AtlasTileLayerRBSP::encodeTo(ostream &stream, 
-                                  const V3cParameterSet &vps, const NalUnitHeader &nuh,
+void AtlasTileLayerRBSP::encodeTo(ostream &stream, const V3cParameterSet &vps,
+                                  const NalUnitHeader &nuh,
                                   const vector<AtlasSequenceParameterSetRBSP> &asps,
                                   const vector<AtlasFrameParameterSetRBSP> &afps) const {
   OutputBitstream bitstream{stream};
 
   atlas_tile_header().encodeTo(bitstream, nuh, asps, afps);
-  atlas_tile_data_unit().encodeTo(bitstream,  vps, asps, afps, atlas_tile_header());
+  atlas_tile_data_unit().encodeTo(bitstream, vps, asps, afps, atlas_tile_header());
   bitstream.rbspTrailingBits();
 }
 } // namespace TMIV::MivBitstream

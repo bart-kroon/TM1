@@ -391,8 +391,8 @@ private:
                        return;
                      }
 
-            const auto &patchParams = atlas.patchParamsList[patchId];
-            const auto viewId = patchParams.atlasPatchProjectionId();
+                     const auto &patchParams = atlas.patchParamsList[patchId];
+                     const auto viewId = patchParams.atlasPatchProjectionId();
 
                      if (!m_cameraVisibility[viewId]) {
                        return;

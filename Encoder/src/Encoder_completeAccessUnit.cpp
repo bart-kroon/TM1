@@ -204,7 +204,8 @@ void Encoder::writePatchInAtlas(const PatchParams &patchParams, const TextureDep
           if (dx + xM >= textureViewMap.getWidth() || dx + xM < 0) {
             continue;
           }
-          if (m_nonAggregatedMask[patchParams.atlasPatchProjectionId()](dy + yM, dx + xM)[frameId]) {
+          if (m_nonAggregatedMask[patchParams.atlasPatchProjectionId()](dy + yM,
+                                                                        dx + xM)[frameId]) {
             isAggregatedMaskBlockNonEmpty = true;
             break;
           }

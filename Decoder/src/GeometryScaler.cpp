@@ -396,8 +396,7 @@ void GeometryScaler::inplaceScale(AccessUnit &frame) const {
       } else {
         atlas.geoFrame = atlas.decGeoFrame;
       }
-    } else 
-    {
+    } else {
       // TODO(BK): Add support for asme_patch_constant_depth_flag to the AdditiveSynthesizer
     }
   }

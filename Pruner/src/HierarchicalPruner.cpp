@@ -440,8 +440,8 @@ private:
     const auto flags = cout.setf(ios::fixed, ios::floatfield);
     cout << setw(2) << index << " (" << setw(3) << m_params.viewParamsList[index].name
          << "): " << ivertices.size() << " vertices ("
-         << 100. * double(ivertices.size()) /
-                (double(view.texture.getWidth()) * view.texture.getHeight())
+         << 100. * static_cast<double>(ivertices.size()) /
+                static_cast<double>(view.texture.getWidth()) * view.texture.getHeight())
          << "% of full view)\n";
     cout.precision(prec);
     cout.setf(flags);

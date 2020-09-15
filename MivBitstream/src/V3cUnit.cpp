@@ -60,7 +60,7 @@ auto operator<<(ostream &stream, const VuhUnitType x) -> ostream & {
   case VuhUnitType::V3C_CAD:
     return stream << "V3C_CAD";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 

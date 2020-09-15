@@ -51,7 +51,7 @@ auto operator<<(ostream &stream, AthType x) -> ostream & {
   case AthType::SKIP_TILE:
     return stream << "SKIP_TILE";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -74,7 +74,7 @@ auto operator<<(ostream &stream, FlexiblePatchOrientation x) -> ostream & {
   case FlexiblePatchOrientation::FPO_MROT180:
     return stream << "FPO_MROT180";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -91,7 +91,7 @@ auto printTo(ostream &stream, AtduPatchMode x, AthType ath_type) -> ostream & {
     case AtduPatchMode::I_END:
       return stream << "I_END";
     default:
-      return stream << "[unknown:" << int{x} << "]";
+      return stream << "[unknown:" << static_cast<int>(x) << "]";
     }
   case AthType::P_TILE:
     switch (x) {
@@ -110,17 +110,17 @@ auto printTo(ostream &stream, AtduPatchMode x, AthType ath_type) -> ostream & {
     case AtduPatchMode::P_END:
       return stream << "P_END";
     default:
-      return stream << "[unknown:" << int{x} << "]";
+      return stream << "[unknown:" << static_cast<int>(x) << "]";
     }
   case AthType::SKIP_TILE:
     switch (x) {
     case AtduPatchMode::P_SKIP:
       return stream << "P_SKIP";
     default:
-      return stream << "[unknown:" << int{x} << "]";
+      return stream << "[unknown:" << static_cast<int>(x) << "]";
     }
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 

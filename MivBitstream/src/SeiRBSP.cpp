@@ -92,7 +92,7 @@ auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
   case PayloadType::geometry_upscaling_parameters:
     return stream << "geometry_upscaling_parameters";
   default:
-    return stream << "reserved_sei_message (" << int{pt} << ")";
+    return stream << "reserved_sei_message (" << static_cast<int>(pt) << ")";
   }
 }
 

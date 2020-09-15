@@ -55,7 +55,7 @@ auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & 
   case PtlProfileCodecGroupIdc::MP4RA:
     return stream << "MP4RA";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -68,7 +68,7 @@ auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & 
   case PtlProfilePccToolsetIdc::MIV_Main:
     return stream << "MIV Main";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -85,7 +85,7 @@ auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostrea
   case PtlProfileReconstructionIdc::Rec_Unconstrained:
       return stream << "Rec Unconstrained";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -112,7 +112,7 @@ auto operator<<(std::ostream &stream, const PtlMaxDecodesIdc &x) -> std::ostream
   case PtlMaxDecodesIdc::unconstrained:
     return stream << "unconstrained";
   default:
-    return stream << "[reserved:" << int{x} << "]";
+    return stream << "[reserved:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -131,7 +131,7 @@ auto operator<<(ostream &stream, const PtlLevelIdc &x) -> ostream & {
   case PtlLevelIdc::Level_3_5:
     return stream << "Level 3.5";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -150,7 +150,7 @@ auto operator<<(ostream &stream, const AiAttributeTypeId &x) -> ostream & {
   case AiAttributeTypeId::ATTR_UNSPECIFIED:
     return stream << "ATTR_UNSPECIFIED";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 

@@ -334,8 +334,8 @@ void MivDecoder::decodePatchParamsList(uint8_t j) {
 
     ppl[p].pduOrientationIndex(pdu.pdu_orientation_index());
     ppl[p].pdu2dPos({int{pdu.pdu_2d_pos_x() << k}, int{pdu.pdu_2d_pos_y() << k}});
-    ppl[p].pdu2dSize(
-        {int((pdu.pdu_2d_size_x_minus1() + 1U) << k), int((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
+    ppl[p].pdu2dSize({static_cast<int>((pdu.pdu_2d_size_x_minus1() + 1U) << k),
+                      static_cast<int>((pdu.pdu_2d_size_y_minus1() + 1U) << k)});
     ppl[p].pduViewPos({pdu.pdu_view_pos_x(), pdu.pdu_view_pos_y()});
     ppl[p].pduDepthStart(pdu.pdu_depth_start() << ath.ath_pos_min_z_quantizer());
     ppl[p].pduViewIdx(pdu.pdu_view_idx());

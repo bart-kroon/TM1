@@ -148,7 +148,7 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
     auto camerasInGroup = ViewParamsList{};
     auto camerasOutGroup = ViewParamsList{};
     if (gIndex < numGroups - 1) {
-      numViewsPerGroup.push_back(int(floor(viewParamsList.size() / numGroups)));
+      numViewsPerGroup.push_back(static_cast<int>(floor(viewParamsList.size() / numGroups)));
       int64_t maxElementIndex = 0;
 
       if (dominantAxis == 0) {
@@ -204,7 +204,7 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
 
       viewsPool = camerasOutGroup;
     } else {
-      numViewsPerGroup.push_back(int(
+      numViewsPerGroup.push_back(static_cast<int>(
           (viewParamsList.size() - (numGroups - 1) * floor(viewParamsList.size() / numGroups))));
 
       camerasInGroup.clear();

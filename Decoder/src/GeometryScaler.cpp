@@ -214,7 +214,7 @@ public:
     }
 
     // make the groups of equal size
-    int groupSize = int(min(colorsFG.size(), colorsBG.size()));
+    int groupSize = static_cast<int>(min(colorsFG.size(), colorsBG.size()));
 
     float foregroundColorConfidence = 1.F;
     if (groupSize > 0) {

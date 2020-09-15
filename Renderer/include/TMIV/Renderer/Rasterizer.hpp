@@ -54,7 +54,7 @@ inline auto numStrips(int rows) -> int {
   if (maximum <= hw) {
     return maximum;
   }
-  return int(std::lround(sqrt(hw * maximum)));
+  return static_cast<int>(std::lround(sqrt(hw * maximum)));
 }
 
 template <typename M0, typename... M>

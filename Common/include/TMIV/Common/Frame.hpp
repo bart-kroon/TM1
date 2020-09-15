@@ -229,7 +229,8 @@ template <typename FORMAT> AnyFrame::AnyFrame(const Frame<FORMAT> &frame) {
 }
 
 template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
-  auto outputFrame = Frame<FORMAT>{int(planes.front().width()), int(planes.front().height())};
+  auto outputFrame = Frame<FORMAT>{static_cast<int>(planes.front().width()),
+                                   static_cast<int>(planes.front().height())};
   auto &outputPlanes = outputFrame.getPlanes();
   auto maxOutputValue = (uint64_t(1) << outputFrame.getBitDepth()) - 1;
 

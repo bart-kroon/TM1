@@ -51,7 +51,7 @@ constexpr auto defaultCodecGroupIdc = PtlProfileCodecGroupIdc::HEVC_Main10;
 auto usage() -> int {
   cout << "Usage: -b BITSTREAM -o RECONSTRUCTION [-c CODEC_GROUP_IDC] [-s] [-S]\n";
   cout << '\n';
-  cout << "The default codec group IDC is " << int(defaultCodecGroupIdc) << " ("
+  cout << "The default codec group IDC is " << int{defaultCodecGroupIdc} << " ("
        << defaultCodecGroupIdc << ")\n";
   cout << "The reconstructed output is in YUV 4:2:0 10le\n";
   return 1;

@@ -113,14 +113,14 @@ inline auto colorDistance(const Vec3w &a, const Vec3w &b) {
 }
 
 template <typename Range> auto meanColorDistance(const Vec3w &color, const Range &rangeOfColors) {
-  int N = int(rangeOfColors.size());
+  auto N = static_cast<int>(rangeOfColors.size());
   assert(N > 0U);
 
   float meanDistance = 0U;
   for (auto &colorInRange : rangeOfColors) {
     meanDistance += colorDistance(color, colorInRange);
   }
-  meanDistance /= float(N);
+  meanDistance /= static_cast<float>(N);
 
   return meanDistance;
 }
@@ -129,8 +129,8 @@ auto findForegroundEdges(const Mat<uint16_t> &depth) -> Mat<uint8_t> {
   using Vec4i = stack::Vec4<int>;
   auto edgeMask = Mat<uint8_t>{depth.sizes()};
   auto m_kernelPoints = getNeighborhood3x3();
-  for (int i = 1; i < int(depth.height()) - 1; ++i) {
-    for (int j = 1; j < int(depth.width()) - 1; ++j) {
+  for (int i = 1; i < static_cast<int>(depth.height()) - 1; ++i) {
+    for (int j = 1; j < static_cast<int>(depth.width()) - 1; ++j) {
       const auto s = sampleKernel(depth, Vec2i{j, i}, m_kernelPoints);
 
       auto e4 = Vec4i{s[0] - s[1], s[0] - s[3], s[0] - s[5], s[0] - s[7]};
@@ -145,8 +145,8 @@ auto findForegroundEdges(const Mat<uint16_t> &depth) -> Mat<uint8_t> {
 auto findRegionBoundaries(const Mat<uint16_t> &regionLabels) -> Mat<uint8_t> {
   auto boundaryMask = Mat<uint8_t>{regionLabels.sizes()};
   auto m_kernelPoints = getNeighborhood5();
-  for (int i = 1; i < int(regionLabels.height()) - 1; ++i) {
-    for (int j = 1; j < int(regionLabels.width()) - 1; ++j) {
+  for (int i = 1; i < static_cast<int>(regionLabels.height()) - 1; ++i) {
+    for (int j = 1; j < static_cast<int>(regionLabels.width()) - 1; ++j) {
       const auto s = sampleKernel(regionLabels, Vec2i{j, i}, m_kernelPoints);
       bool sameRegion = s[0] == s[1] && s[0] == s[2] && s[0] == s[3] && s[0] == s[4];
       boundaryMask(i, j) = sameRegion ? 0 : 255;
@@ -167,8 +167,8 @@ auto findForegroundEdges(const Mat<uint16_t> &depth, const Mat<uint16_t> &region
 auto erodeMasked(const Mat<uint16_t> &depth, const Mat<uint8_t> &mask) -> Mat<uint16_t> {
   auto depthOut = depth;
   auto kernelPoints = getNeighborhood3x3();
-  for (int i = 1; i < int(depth.height()) - 1; ++i) {
-    for (int j = 1; j < int(depth.width()) - 1; ++j) {
+  for (int i = 1; i < static_cast<int>(depth.height()) - 1; ++i) {
+    for (int j = 1; j < static_cast<int>(depth.width()) - 1; ++j) {
       if (mask(i, j) != 0) {
         const auto depthSamples = sampleKernel(depth, Vec2i{j, i}, kernelPoints);
         const auto maskSamples = sampleKernel(mask, Vec2i{j, i}, kernelPoints);
@@ -214,7 +214,7 @@ public:
     }
 
     // make the groups of equal size
-    int groupSize = int(min(colorsFG.size(), colorsBG.size()));
+    int groupSize = static_cast<int>(min(colorsFG.size(), colorsBG.size()));
 
     float foregroundColorConfidence = 1.F;
     if (groupSize > 0) {
@@ -247,8 +247,8 @@ public:
     auto depthIter = depth;
     for (int iter = 0; iter < numIterations; iter++) {
       auto markers = Mat<uint8_t>{depth.sizes()};
-      for (int i = m_B; i < int(depth.height()) - m_B; ++i) {
-        for (int j = m_B; j < int(depth.width()) - m_B; ++j) {
+      for (int i = m_B; i < static_cast<int>(depth.height()) - m_B; ++i) {
+        for (int j = m_B; j < static_cast<int>(depth.width()) - m_B; ++j) {
           if (edgeMagnitudes(i, j) >= m_geometryEdgeMagnitudeTh) {
             auto foregroundConfidence =
                 colorConfidenceAt(attrFrame, depthIter, edgeMagnitudes, {j, i});
@@ -283,7 +283,7 @@ public:
 
     int depthCurvature3x3 = 0;
     for (size_t i = 1; i < depthValues.size(); ++i) {
-      if (int(depthValues[i]) < depthLow) {
+      if (int{depthValues[i]} < depthLow) {
         depthCurvature3x3++;
       }
     }
@@ -301,8 +301,8 @@ public:
     auto depthOut = depth;
     auto markers = Mat<uint8_t>{depth.sizes()};
 
-    for (int i = m_B; i < int(depth.height()) - m_B; ++i) {
-      for (int j = m_B; j < int(depth.width()) - m_B; ++j) {
+    for (int i = m_B; i < static_cast<int>(depth.height()) - m_B; ++i) {
+      for (int j = m_B; j < static_cast<int>(depth.width()) - m_B; ++j) {
         if (edgeMagnitudes(i, j) >= m_geometryEdgeMagnitudeTh) {
           auto curvature = curvatureAt(depth, {j, i});
           if (curvature >= m_maxCurvature) {
@@ -325,7 +325,7 @@ private:
 };
 
 auto upscaleNearest(const Mat<uint16_t> &input, Vec2i outputSize) -> Mat<uint16_t> {
-  const auto inputSize = Vec2i{int(input.width()), int(input.height())};
+  const auto inputSize = Vec2i{static_cast<int>(input.width()), static_cast<int>(input.height())};
   auto output = Mat<uint16_t>({size_t(outputSize.y()), size_t(outputSize.x())});
 
   for (int yo = 0; yo < outputSize.y(); ++yo) {
@@ -379,8 +379,8 @@ GeometryScaler::GeometryScaler(const Json & /*rootNode*/, const Json &componentN
 auto GeometryScaler::scale(const AtlasAccessUnit &atlas,
                            const MivBitstream::GeometryUpscalingParameters &gup) const
     -> Depth10Frame {
-  auto upscaler = DepthUpscaler{int(gup.gup_delta_threshold()), gup.gup_erode_threshold(),
-                                gup.gup_max_curvature()};
+  auto upscaler = DepthUpscaler{static_cast<int>(gup.gup_delta_threshold()),
+                                gup.gup_erode_threshold(), gup.gup_max_curvature()};
 
   return upscaler(atlas);
 }

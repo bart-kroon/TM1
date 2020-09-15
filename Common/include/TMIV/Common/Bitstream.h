@@ -99,7 +99,7 @@ public:
 
   template <typename Integer> void writeBits(const Integer &value, unsigned bits);
 
-  void putFlag(bool value) { writeBits(int(value), 1); }
+  void putFlag(bool value) { writeBits(int{value}, 1); }
   void putUint8(std::uint8_t value) { writeBits(value, 8); }
   void putUint16(std::uint16_t value) { writeBits(value, 16); }
   void putUint32(std::uint32_t value) { writeBits(value, 32); }

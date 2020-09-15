@@ -384,47 +384,48 @@ private:
     }
 
     for (const auto &atlas : frame.atlas) {
-      parallel_for(
-          atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(), [&](size_t Y, size_t X) {
-            const auto patchId = atlas.patchId(int(Y), int(X));
-            if (patchId == unusedPatchId) {
-              return;
-            }
+      parallel_for(atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(),
+                   [&](size_t Y, size_t X) {
+                     const auto patchId = atlas.patchId(static_cast<int>(Y), static_cast<int>(X));
+                     if (patchId == unusedPatchId) {
+                       return;
+                     }
 
             const auto &patchParams = atlas.patchParamsList[patchId];
             const auto viewId = patchParams.atlasPatchProjectionId();
 
-            if (!m_cameraVisibility[viewId]) {
-              return;
-            }
+                     if (!m_cameraVisibility[viewId]) {
+                       return;
+                     }
 
-            const auto sourceViewPos = patchParams.atlasToView({int(X), int(Y)});
-            const auto x = sourceViewPos.x();
-            const auto y = sourceViewPos.y();
+                     const auto sourceViewPos =
+                         patchParams.atlasToView({static_cast<int>(X), static_cast<int>(Y)});
+                     const auto x = sourceViewPos.x();
+                     const auto y = sourceViewPos.y();
 
-            // temporary use only view dimensions
-            if (y >= int(m_sourceDepth[viewId].height()) ||
-                x >= int(m_sourceDepth[viewId].width())) {
-              return;
-            }
+                     // temporary use only view dimensions
+                     if (y >= static_cast<int>(m_sourceDepth[viewId].height()) ||
+                         x >= static_cast<int>(m_sourceDepth[viewId].width())) {
+                       return;
+                     }
 
-            const auto d = m_sourceDepth[viewId](y, x);
+                     const auto d = m_sourceDepth[viewId](y, x);
 
-            if (!sourceHelperList[viewId].isValidDepth(d)) {
-              return;
-            }
+                     if (!sourceHelperList[viewId].isValidDepth(d)) {
+                       return;
+                     }
 
-            const auto P =
-                sourceHelperList[viewId].doUnprojection({float(x) + 0.5F, float(y) + 0.5F}, d);
-            const auto p = targetHelper.doProjection(P);
+                     const auto P = sourceHelperList[viewId].doUnprojection(
+                         {static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F}, d);
+                     const auto p = targetHelper.doProjection(P);
 
-            if (isValidDepth(p.second) && targetHelper.isInsideViewport(p.first)) {
-              m_sourceUnprojection[viewId](y, x) = P;
-              m_sourceReprojection[viewId](y, x) = p;
-              m_sourceRayDirection[viewId](y, x) =
-                  unit(P - targetHelper.getViewParams().ce.position());
-            }
-          });
+                     if (isValidDepth(p.second) && targetHelper.isInsideViewport(p.first)) {
+                       m_sourceUnprojection[viewId](y, x) = P;
+                       m_sourceReprojection[viewId](y, x) = p;
+                       m_sourceRayDirection[viewId](y, x) =
+                           unit(P - targetHelper.getViewParams().ce.position());
+                     }
+                   });
     }
   }
 

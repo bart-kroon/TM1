@@ -50,7 +50,7 @@ auto operator<<(std::ostream &stream, AframeType x) -> std::ostream & {
   case AframeType::SKIP:
     return stream << "SKIP_TILE";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 

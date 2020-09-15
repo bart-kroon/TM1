@@ -203,8 +203,8 @@ auto MaxRectPiP::pushInUsedSpace(int w, int h, bool isBasicView, MaxRectPiP::Out
     { return false; }
   };
 
-  for (auto Y = 0; Y < int(m_occupancyMap.height()); ++Y) {
-    for (auto X = 0; X < int(m_occupancyMap.width()); ++X) {
+  for (auto Y = 0; Y < static_cast<int>(m_occupancyMap.height()); ++Y) {
+    for (auto X = 0; X < static_cast<int>(m_occupancyMap.width()); ++X) {
       // Without Rotation
       if (isGoodCandidate(X, X + W - 1, Y, Y + H - 1)) {
         packerOutput.set(X * m_alignment, Y * m_alignment, false);

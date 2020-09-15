@@ -48,7 +48,7 @@ SampleStreamV3cHeader::SampleStreamV3cHeader(uint8_t ssvh_unit_size_precision_by
 
 auto operator<<(ostream &stream, const SampleStreamV3cHeader &x) -> ostream & {
   return stream << "ssvh_unit_size_precision_bytes_minus1="
-                << int(x.ssvh_unit_size_precision_bytes_minus1()) << '\n';
+                << int{x.ssvh_unit_size_precision_bytes_minus1()} << '\n';
 }
 
 auto SampleStreamV3cHeader::decodeFrom(istream &stream) -> SampleStreamV3cHeader {

@@ -41,8 +41,8 @@ using namespace TMIV::Common;
 
 namespace TMIV::MivBitstream {
 auto operator<<(ostream &stream, const CoordinateSystemParameters &x) -> ostream & {
-  stream << "cas_forward_axis=" << int(x.cas_forward_axis()) << '\n';
-  stream << "cas_delta_left_axis_minus1=" << int(x.cas_delta_left_axis_minus1()) << '\n';
+  stream << "cas_forward_axis=" << int{x.cas_forward_axis()} << '\n';
+  stream << "cas_delta_left_axis_minus1=" << int{x.cas_delta_left_axis_minus1()} << '\n';
   stream << "cas_forward_sign=" << boolalpha << x.cas_forward_sign() << '\n';
   stream << "cas_left_sign=" << boolalpha << x.cas_left_sign() << '\n';
   stream << "cas_up_sign=" << boolalpha << x.cas_up_sign() << '\n';
@@ -268,7 +268,7 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
     stream << "vui_tiles_fixed_structure_for_video_substreams_flag=" << boolalpha
            << x.vui_tiles_fixed_structure_for_video_substreams_flag() << '\n';
     stream << "vui_constrained_tiles_across_v3c_components_idc="
-           << int(x.vui_constrained_tiles_across_v3c_components_idc()) << '\n';
+           << int{x.vui_constrained_tiles_across_v3c_components_idc()} << '\n';
     stream << "vui_max_num_tiles_per_atlas_minus1=" << x.vui_max_num_tiles_per_atlas_minus1()
            << '\n';
   }

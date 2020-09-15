@@ -47,7 +47,7 @@ auto imagePositions(const CameraIntrinsics &ci) -> Mat<Vec2f> {
   result.resize(ci.projectionPlaneSize().y(), ci.projectionPlaneSize().x());
   for (unsigned i = 0; i != result.height(); ++i) {
     for (unsigned j = 0; j != result.width(); ++j) {
-      result(i, j) = {float(j) + halfPixel, float(i) + halfPixel};
+      result(i, j) = {static_cast<float>(j) + halfPixel, static_cast<float>(i) + halfPixel};
     }
   }
   return result;

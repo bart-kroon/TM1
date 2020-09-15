@@ -161,7 +161,7 @@ public:
       }
     }
 
-    assert(int(result.size()) <= size);
+    assert(static_cast<int>(result.size()) <= size);
     return result;
   }
 
@@ -242,7 +242,7 @@ public:
       sum += resolution(viewParams);
       ++count;
     }
-    return float(resolution(viewportParams) * count / sum);
+    return static_cast<float>(resolution(viewportParams) * count / sum);
   }
 
   [[nodiscard]] auto renderFrame(const Decoder::AccessUnit &frame,

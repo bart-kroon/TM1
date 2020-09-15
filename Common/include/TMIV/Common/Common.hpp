@@ -129,13 +129,13 @@ template <typename... Args> auto format(const std::string &fmt, Args &&... args)
 inline constexpr auto maxLevel(unsigned bits) -> unsigned { return (1U << bits) - 1U; }
 
 template <unsigned bits> auto expandValue(uint16_t x) -> float {
-  return float(x) / float(maxLevel(bits));
+  return static_cast<float>(x) / static_cast<float>(maxLevel(bits));
 }
 
 template <unsigned bits> auto quantizeValue(float x) -> uint16_t {
   if (x >= 0.F && x <= 1.F) {
     return static_cast<uint16_t>(
-        std::min(unsigned(std::lround(x * float(maxLevel(bits)))), maxLevel(bits)));
+        std::min(unsigned(std::lround(x * static_cast<float>(maxLevel(bits)))), maxLevel(bits)));
   }
   if (x > 0) {
     return static_cast<uint16_t>(maxLevel(bits));

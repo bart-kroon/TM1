@@ -72,8 +72,8 @@ git checkout master
 To obtain the latest public release of TMIV instead:
 
 ```shell
-    cd /Workspace
-    git clone https://gitlab.com/mpeg-i-visual/tmiv.git
+cd /Workspace
+git clone https://gitlab.com/mpeg-i-visual/tmiv.git
 ```
 
 Open the CMake GUI and specify:

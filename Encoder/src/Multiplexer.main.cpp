@@ -158,14 +158,14 @@ private:
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, format(m_gvdSubBitstreamPathFmt, int(atlasId)));
+    appendSubBitstream(vuh, format(m_gvdSubBitstreamPathFmt, int{atlasId}));
   }
 
   void appendOvd(uint8_t atlasId) {
     auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
-    appendSubBitstream(vuh, format(*m_ovdSubBitstreamPathFmt, int(atlasId)));
+    appendSubBitstream(vuh, format(*m_ovdSubBitstreamPathFmt, int{atlasId}));
   }
 
   void appendAvd(int atlasId, uint8_t attributeIdx, AiAttributeTypeId typeId) {
@@ -173,7 +173,7 @@ private:
     vuh.vuh_v3c_parameter_set_id(m_vps.vps_v3c_parameter_set_id());
     vuh.vuh_atlas_id(atlasId);
     vuh.vuh_attribute_index(attributeIdx);
-    appendSubBitstream(vuh, format(*m_avdSubBitstreamPathFmt, codeOf(typeId), int(atlasId)));
+    appendSubBitstream(vuh, format(*m_avdSubBitstreamPathFmt, codeOf(typeId), int{atlasId}));
   }
 
   void appendSubBitstream(const V3cUnitHeader &vuh, const path &subBitstreamPath) {

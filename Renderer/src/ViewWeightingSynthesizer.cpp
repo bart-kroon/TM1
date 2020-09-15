@@ -386,7 +386,7 @@ private:
     for (const auto &atlas : frame.atlas) {
       parallel_for(
           atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height(), [&](size_t Y, size_t X) {
-            const auto patchId = atlas.patchId(int(Y), int(X));
+            const auto patchId = atlas.patchId(static_cast<int>(Y), static_cast<int>(X));
             if (patchId == unusedPatchId) {
               return;
             }
@@ -398,7 +398,8 @@ private:
               return;
             }
 
-            const auto sourceViewPos = patchParams.atlasToView({int(X), int(Y)});
+            const auto sourceViewPos =
+                patchParams.atlasToView({static_cast<int>(X), static_cast<int>(Y)});
             const auto x = sourceViewPos.x();
             const auto y = sourceViewPos.y();
 

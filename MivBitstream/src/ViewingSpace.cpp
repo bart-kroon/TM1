@@ -461,7 +461,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
       if (idx == sourceCameraNames.size()) {
         throw runtime_error("Invalid inferred view in the metadata JSON file");
       }
-      elementaryShape.inferringViews.push_back(idx);
+      elementaryShape.inferringViews.push_back(static_cast<int>(idx));
     }
     inferredView = true;
   }

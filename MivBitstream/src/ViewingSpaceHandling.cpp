@@ -50,7 +50,7 @@ auto operator<<(ostream &stream, VhDeviceClass x) -> ostream & {
   case VhDeviceClass::VHDC_ASD:
     return stream << "VHDC_ASD";
   default:
-    return stream << "Unknown device class (" << int(x) << ")";
+    return stream << "Unknown device class (" << int{x} << ")";
   }
 }
 
@@ -67,7 +67,7 @@ auto operator<<(ostream &stream, VhApplicationClass x) -> ostream & {
   case VhApplicationClass::VHAC_SD:
     return stream << "VHAC_SD";
   default:
-    return stream << "Unknown application class (" << int(x) << ")";
+    return stream << "Unknown application class (" << int{x} << ")";
   }
 }
 
@@ -88,7 +88,7 @@ auto operator<<(ostream &stream, VhMethod x) -> ostream & {
   case VhMethod::VHM_ROTATE:
     return stream << "VHM_ROTATE";
   default:
-    return stream << "Unknown method (" << int(x) << ")";
+    return stream << "Unknown method (" << int{x} << ")";
   }
 }
 

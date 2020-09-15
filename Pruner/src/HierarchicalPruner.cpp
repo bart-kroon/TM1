@@ -460,8 +460,8 @@ private:
 
   // Visit all pixels
   template <typename F> static void forPixels(array<size_t, 2> sizes, F f) {
-    for (int i = 0; i < int(sizes[0]); ++i) {
-      for (int j = 0; j < int(sizes[1]); ++j) {
+    for (int i = 0; i < static_cast<int>(sizes[0]); ++i) {
+      for (int j = 0; j < static_cast<int>(sizes[1]); ++j) {
         f(i, j);
       }
     }
@@ -471,9 +471,9 @@ private:
   template <typename F>
   static auto forNeighbors(int i, int j, array<size_t, 2> sizes, F f) -> bool {
     const int n1 = max(0, i - 1);
-    const int n2 = min(int(sizes[0]), i + 2);
+    const int n2 = min(static_cast<int>(sizes[0]), i + 2);
     const int m1 = max(0, j - 1);
-    const int m2 = min(int(sizes[1]), j + 2);
+    const int m2 = min(static_cast<int>(sizes[1]), j + 2);
 
     for (int n = n1; n < n2; ++n) {
       for (int m = m1; m < m2; ++m) {

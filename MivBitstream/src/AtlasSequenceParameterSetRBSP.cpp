@@ -54,9 +54,9 @@ auto RefListStruct::deltaAfocSt(size_t i) const noexcept -> int16_t {
 }
 
 auto RefListStruct::printTo(ostream &stream, uint8_t rlsIdx) const -> ostream & {
-  stream << "num_ref_entries( " << int(rlsIdx) << " )=" << int(num_ref_entries()) << '\n';
+  stream << "num_ref_entries( " << int{rlsIdx} << " )=" << int(num_ref_entries()) << '\n';
   for (size_t i = 0; i < num_ref_entries(); ++i) {
-    stream << "DeltaAfocSt( " << int(rlsIdx) << ", " << i << " )=" << deltaAfocSt(i) << '\n';
+    stream << "DeltaAfocSt( " << int{rlsIdx} << ", " << i << " )=" << deltaAfocSt(i) << '\n';
   }
   return stream;
 }

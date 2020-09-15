@@ -114,7 +114,7 @@ auto Encoder::calculateNominalAtlasFrameSizes(const EncoderParams &params) const
   }
 
   // Translate block rate into a maximum number of blocks
-  const auto maxBlocks = int(m_maxBlockRate / params.frameRate);
+  const auto maxBlocks = static_cast<int>(m_maxBlockRate / params.frameRate);
 
   // Calculate the number of atlases
   auto numAtlases = (maxBlocks + m_maxBlocksPerAtlas - 1) / m_maxBlocksPerAtlas;
@@ -157,7 +157,7 @@ auto Encoder::calculateViewGridSize(const EncoderParams &params) const -> Vec2i 
 
 auto Encoder::vuiParameters() const -> VuiParameters {
   auto numUnitsInTick = 1;
-  auto timeScale = int(numUnitsInTick * m_params.frameRate);
+  auto timeScale = static_cast<int>(numUnitsInTick * m_params.frameRate);
   LIMITATION(timeScale == numUnitsInTick * m_params.frameRate);
 
   auto vui = VuiParameters{};

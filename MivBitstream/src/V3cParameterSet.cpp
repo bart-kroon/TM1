@@ -53,7 +53,7 @@ auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & 
   case PtlProfileCodecGroupIdc::MP4RA:
     return stream << "MP4RA";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -66,7 +66,7 @@ auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & 
   case PtlProfilePccToolsetIdc::MIV_Main:
     return stream << "MIV Main";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -81,7 +81,7 @@ auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostrea
   case PtlProfileReconstructionIdc::MIV_Main:
     return stream << "MIV Main";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -108,7 +108,7 @@ auto operator<<(std::ostream &stream, const PtlMaxDecodesIdc &x) -> std::ostream
   case PtlMaxDecodesIdc::unconstrained:
     return stream << "unconstrained";
   default:
-    return stream << "[reserved:" << int(x) << "]";
+    return stream << "[reserved:" << int{x} << "]";
   }
 }
 
@@ -121,7 +121,7 @@ auto operator<<(ostream &stream, const PtlLevelIdc &x) -> ostream & {
   case PtlLevelIdc::Level_3_0:
     return stream << "Level 3.0";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -140,7 +140,7 @@ auto operator<<(ostream &stream, const AiAttributeTypeId &x) -> ostream & {
   case AiAttributeTypeId::ATTR_UNSPECIFIED:
     return stream << "ATTR_UNSPECIFIED";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << int{x} << "]";
   }
 }
 
@@ -203,7 +203,7 @@ auto operator<<(ostream &stream, const ProfileTierLevel &x) -> ostream & {
   stream << "ptl_extended_sub_profile_flag=" << boolalpha << x.ptl_extended_sub_profile_flag()
          << '\n';
   for (uint8_t i = 0; i < x.ptl_num_sub_profiles(); ++i) {
-    stream << "ptl_sub_profile_idc[ " << int(i) << " ]=" << x.ptl_sub_profile_idc(i) << '\n';
+    stream << "ptl_sub_profile_idc[ " << int{i} << " ]=" << x.ptl_sub_profile_idc(i) << '\n';
   }
   stream << "ptl_tool_constraints_present_flag=" << boolalpha
          << x.ptl_tool_constraints_present_flag() << '\n';
@@ -276,13 +276,13 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
 }
 
 auto OccupancyInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "oi_occupancy_codec_id( " << int(atlasIdx) << " )=" << int(oi_occupancy_codec_id())
+  stream << "oi_occupancy_codec_id( " << int{atlasIdx} << " )=" << int(oi_occupancy_codec_id())
          << '\n';
-  stream << "oi_lossy_occupancy_map_compression_threshold( " << int(atlasIdx)
+  stream << "oi_lossy_occupancy_map_compression_threshold( " << int{atlasIdx}
          << " )=" << int(oi_lossy_occupancy_map_compression_threshold()) << '\n';
-  stream << "oi_occupancy_nominal_2d_bitdepth_minus1( " << int(atlasIdx)
+  stream << "oi_occupancy_nominal_2d_bitdepth_minus1( " << int{atlasIdx}
          << " )=" << int(oi_occupancy_nominal_2d_bitdepth_minus1()) << '\n';
-  stream << "oi_occupancy_MSB_align_flag( " << int(atlasIdx) << " )=" << boolalpha
+  stream << "oi_occupancy_MSB_align_flag( " << int{atlasIdx} << " )=" << boolalpha
          << oi_occupancy_MSB_align_flag() << '\n';
   return stream;
 }
@@ -317,13 +317,13 @@ void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
 }
 
 auto GeometryInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "gi_geometry_codec_id( " << int(atlasIdx) << " )=" << int(gi_geometry_codec_id())
+  stream << "gi_geometry_codec_id( " << int{atlasIdx} << " )=" << int(gi_geometry_codec_id())
          << '\n';
-  stream << "gi_geometry_nominal_2d_bitdepth_minus1( " << int(atlasIdx)
+  stream << "gi_geometry_nominal_2d_bitdepth_minus1( " << int{atlasIdx}
          << " )=" << int(gi_geometry_nominal_2d_bitdepth_minus1()) << '\n';
-  stream << "gi_geometry_MSB_align_flag( " << int(atlasIdx) << " )=" << boolalpha
+  stream << "gi_geometry_MSB_align_flag( " << int{atlasIdx} << " )=" << boolalpha
          << gi_geometry_MSB_align_flag() << '\n';
-  stream << "gi_geometry_3d_coordinates_bitdepth_minus1( " << int(atlasIdx)
+  stream << "gi_geometry_3d_coordinates_bitdepth_minus1( " << int{atlasIdx}
          << " )=" << int(gi_geometry_3d_coordinates_bitdepth_minus1()) << '\n';
   return stream;
 }
@@ -448,23 +448,23 @@ auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId, bool
 }
 
 auto AttributeInformation::printTo(ostream &stream, uint8_t atlasIdx) const -> ostream & {
-  stream << "ai_attribute_count( " << int(atlasIdx) << " )=" << int(ai_attribute_count()) << '\n';
+  stream << "ai_attribute_count( " << int{atlasIdx} << " )=" << int(ai_attribute_count()) << '\n';
   for (auto i = 0; i < ai_attribute_count(); ++i) {
-    stream << "ai_attribute_type_id( " << int(atlasIdx) << ", " << i
+    stream << "ai_attribute_type_id( " << int{atlasIdx} << ", " << i
            << " )=" << ai_attribute_type_id(i) << '\n';
-    stream << "ai_attribute_codec_id( " << int(atlasIdx) << ", " << i
+    stream << "ai_attribute_codec_id( " << int{atlasIdx} << ", " << i
            << " )=" << int(ai_attribute_codec_id(i)) << '\n';
     if (m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag) {
-      stream << "ai_attribute_map_absolute_coding_persistence_flag( " << int(atlasIdx) << ", " << i
+      stream << "ai_attribute_map_absolute_coding_persistence_flag( " << int{atlasIdx} << ", " << i
              << " )=" << boolalpha
              << *m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag << '\n';
     }
-    stream << "ai_attribute_dimension_minus1( " << int(atlasIdx) << ", " << i
+    stream << "ai_attribute_dimension_minus1( " << int{atlasIdx} << ", " << i
            << " )=" << int(ai_attribute_dimension_minus1(i)) << '\n';
-    stream << "ai_attribute_nominal_2d_bitdepth_minus1( " << int(atlasIdx) << ", " << i
+    stream << "ai_attribute_nominal_2d_bitdepth_minus1( " << int{atlasIdx} << ", " << i
            << " )=" << int(ai_attribute_nominal_2d_bitdepth_minus1(i));
     stream << '\n';
-    stream << "ai_attribute_MSB_align_flag( " << int(atlasIdx) << ", " << i << " )=" << boolalpha
+    stream << "ai_attribute_MSB_align_flag( " << int{atlasIdx} << ", " << i << " )=" << boolalpha
            << ai_attribute_MSB_align_flag(i) << '\n';
   }
   return stream;
@@ -886,7 +886,7 @@ auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
   if (x.vps_extension_6bits() != 0) {
     stream << "vps_extension_length_minus1=" << x.vps_extension_length_minus1() << '\n';
     for (uint8_t byte : x.vpsExtensionData()) {
-      stream << "vps_extension_data_byte=" << int(byte) << '\n';
+      stream << "vps_extension_data_byte=" << int{byte} << '\n';
     }
   }
   return stream;

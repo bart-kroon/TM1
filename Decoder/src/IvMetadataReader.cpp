@@ -60,15 +60,15 @@ IvMetadataReader::IvMetadataReader(const Json &config)
 
   m_decoder->setOccFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
     return readFrame<YUV400P10>(config, "OutputDirectory", "OccupancyVideoDataPathFmt", frameId,
-                                frameSize, int(atlasId));
+                                frameSize, int{atlasId});
   });
   m_decoder->setGeoFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
     return readFrame<YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt", frameId,
-                                frameSize, int(atlasId));
+                                frameSize, int{atlasId});
   });
   m_decoder->setAttrFrameServer([&config](uint8_t atlasId, uint32_t frameId, Vec2i frameSize) {
     return yuv444p(readFrame<YUV420P10>(config, "OutputDirectory", "AttributeVideoDataPathFmt",
-                                        frameId, frameSize, "T", int(atlasId)));
+                                        frameId, frameSize, "T", int{atlasId}));
   });
 }
 } // namespace TMIV::Decoder

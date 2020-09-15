@@ -205,7 +205,7 @@ public:
     for (size_t i = 0U; i < m_viewportColor.size(); i++) {
       if (isValidDepth(m_viewportVisibility[i])) {
         if (m_viewportColor[i].x() < 0.F) {
-          m_viewportVisibility[i] = NaN;
+          m_viewportVisibility[i] = NAN;
           m_viewportColor[i] = Vec3f{};
         } else {
           m_viewportVisibility[i] =
@@ -356,7 +356,7 @@ private:
 
       transform(prunedMasks[sourceId].getPlane(0).begin(), prunedMasks[sourceId].getPlane(0).end(),
                 m_sourceDepth.back().begin(), m_sourceDepth.back().begin(),
-                [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NaN; });
+                [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NAN; });
     }
   }
   void reprojectPrunedSource(const Decoder::AccessUnit &frame,
@@ -370,17 +370,17 @@ private:
       m_sourceUnprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
       fill(m_sourceUnprojection[sourceId].begin(), m_sourceUnprojection[sourceId].end(),
-           Vec3f{NaN, NaN, NaN});
+           Vec3f{NAN, NAN, NAN});
 
       m_sourceReprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
       fill(m_sourceReprojection[sourceId].begin(), m_sourceReprojection[sourceId].end(),
-           make_pair(Vec2f{NaN, NaN}, NaN));
+           make_pair(Vec2f{NAN, NAN}, NAN));
 
       m_sourceRayDirection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
       fill(m_sourceRayDirection[sourceId].begin(), m_sourceRayDirection[sourceId].end(),
-           Vec3f{NaN, NaN, NaN});
+           Vec3f{NAN, NAN, NAN});
     }
 
     for (const auto &atlas : frame.atlas) {
@@ -581,11 +581,11 @@ private:
             targetHelper.getViewParams().ci.projectionPlaneSize().y(),
             targetHelper.getViewParams().ci.projectionPlaneSize().x());
         fill(m_viewportUnprojection[viewId].begin(), m_viewportUnprojection[viewId].end(),
-             Vec3f{NaN, NaN, NaN});
+             Vec3f{NAN, NAN, NAN});
 
         m_viewportDepth[viewId].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                                        targetHelper.getViewParams().ci.projectionPlaneSize().x());
-        fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), NaN);
+        fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), NAN);
       }
     }
 

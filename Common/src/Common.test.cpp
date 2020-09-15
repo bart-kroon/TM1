@@ -240,7 +240,7 @@ TEST_CASE("Half") {
   SECTION("Explicit conversion from float (lossy)") {
     REQUIRE_THROWS_AS(Half(nextafter(65504.F, 1e6F)), HalfError);
     REQUIRE_THROWS_AS(Half(nextafter(-65504.F, -1e6F)), HalfError);
-    REQUIRE_THROWS_AS(Half(NaN), HalfError);
+    REQUIRE_THROWS_AS(Half(NAN), HalfError);
     REQUIRE_THROWS_AS(Half(inf), HalfError);
     REQUIRE(Half(0x1.p-14F).encode() == 0x0400);   // smallest positive normal number
     REQUIRE(Half(65504.F).encode() == 0x7BFF);     // largest normal number
@@ -268,7 +268,7 @@ TEST_CASE("expandValue", "[quantize_and_expand]") {
 }
 
 TEST_CASE("quantizeValue", "[quantize_and_expand]") {
-  REQUIRE(quantizeValue<10>(NaN) == 0U);
+  REQUIRE(quantizeValue<10>(NAN) == 0U);
   REQUIRE(quantizeValue<10>(inf) == 1023U);
   REQUIRE(quantizeValue<10>(1e20F) == 1023U);
 }

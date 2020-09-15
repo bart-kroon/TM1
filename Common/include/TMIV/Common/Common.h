@@ -58,7 +58,6 @@ constexpr auto halfCycle{pi};           // rad
 constexpr auto quarterCycle{0.5F * pi}; // rad
 constexpr auto fullSphere{4.F * pi};    // sr
 constexpr auto hemiSphere{2.F * pi};    // sr
-constexpr auto NaN{std::numeric_limits<float>::quiet_NaN()};
 constexpr auto inf{std::numeric_limits<float>::infinity()};
 
 template <typename Float> auto ifloor(Float x) -> int { return static_cast<int>(std::floor(x)); }

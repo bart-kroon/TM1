@@ -94,7 +94,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
     transform(sourceViews[viewId].depth.getPlane(0).begin(),
               sourceViews[viewId].depth.getPlane(0).end(), sourceDepthExpanded.begin(),
               sourceDepthExpanded.begin(), [&](uint16_t normDisp, float depthValue) {
-                return occupancyTransform.occupant(normDisp) ? depthValue : NaN;
+                return occupancyTransform.occupant(normDisp) ? depthValue : NAN;
               });
 
     Mat<Vec3f> sourceUnprojection({sourceDepthExpanded.height(), sourceDepthExpanded.width()});
@@ -105,7 +105,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params, const MVD16Fra
         sourceUnprojection(y, x) = sourceHelper.doUnprojection(
             Vec2f({static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F}), z);
       } else {
-        sourceUnprojection(y, x) = Vec3f{NaN, NaN, NaN};
+        sourceUnprojection(y, x) = Vec3f{NAN, NAN, NAN};
       }
     });
 

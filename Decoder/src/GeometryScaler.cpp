@@ -108,7 +108,7 @@ auto minMasked(const vector<uint16_t> &values, const vector<uint8_t> &mask) {
 }
 
 inline auto colorDistance(const Vec3w &a, const Vec3w &b) {
-  auto dist = float(abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[2] - b[2]));
+  auto dist = static_cast<float>(abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[2] - b[2]));
   return dist;
 }
 

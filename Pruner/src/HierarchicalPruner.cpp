@@ -562,8 +562,8 @@ private:
     for (int n = 0; n < m_dilate; ++n) {
       mask = dilate(mask);
     }
-    synthesizer.maskAverage = float(accumulate(begin(mask), end(mask), 0)) /
-                              (2.55F * float(mask.width() * mask.height()));
+    synthesizer.maskAverage = static_cast<float>(accumulate(begin(mask), end(mask), 0)) /
+                              (2.55F * static_cast<float>(mask.width() * mask.height()));
   }
 };
 

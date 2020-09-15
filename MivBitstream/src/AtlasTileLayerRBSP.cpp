@@ -51,7 +51,7 @@ auto operator<<(ostream &stream, AthType x) -> ostream & {
   case AthType::SKIP_TILE:
     return stream << "SKIP_TILE";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -74,7 +74,7 @@ auto operator<<(ostream &stream, FlexiblePatchOrientation x) -> ostream & {
   case FlexiblePatchOrientation::FPO_MROT180:
     return stream << "FPO_MROT180";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -91,7 +91,7 @@ auto printTo(ostream &stream, AtduPatchMode x, AthType ath_type) -> ostream & {
     case AtduPatchMode::I_END:
       return stream << "I_END";
     default:
-      return stream << "[unknown:" << int{x} << "]";
+      return stream << "[unknown:" << static_cast<int>(x) << "]";
     }
   case AthType::P_TILE:
     switch (x) {
@@ -110,17 +110,17 @@ auto printTo(ostream &stream, AtduPatchMode x, AthType ath_type) -> ostream & {
     case AtduPatchMode::P_END:
       return stream << "P_END";
     default:
-      return stream << "[unknown:" << int{x} << "]";
+      return stream << "[unknown:" << static_cast<int>(x) << "]";
     }
   case AthType::SKIP_TILE:
     switch (x) {
     case AtduPatchMode::P_SKIP:
       return stream << "P_SKIP";
     default:
-      return stream << "[unknown:" << int{x} << "]";
+      return stream << "[unknown:" << static_cast<int>(x) << "]";
     }
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -643,8 +643,8 @@ auto AtlasTileLayerRBSP::operator!=(const AtlasTileLayerRBSP &other) const noexc
   return !operator==(other);
 }
 
-auto AtlasTileLayerRBSP::decodeFrom(istream &stream, 
-                                    const V3cParameterSet &vps, const NalUnitHeader &nuh,
+auto AtlasTileLayerRBSP::decodeFrom(istream &stream, const V3cParameterSet &vps,
+                                    const NalUnitHeader &nuh,
                                     const vector<AtlasSequenceParameterSetRBSP> &asps,
                                     const vector<AtlasFrameParameterSetRBSP> &afps)
     -> AtlasTileLayerRBSP {
@@ -653,20 +653,20 @@ auto AtlasTileLayerRBSP::decodeFrom(istream &stream,
   auto atl = AtlasTileLayerRBSP{};
   atl.atlas_tile_header() = AtlasTileHeader::decodeFrom(bitstream, nuh, asps, afps);
   atl.atlas_tile_data_unit() =
-      AtlasTileDataUnit::decodeFrom(bitstream,  vps, asps, afps, atl.atlas_tile_header());
+      AtlasTileDataUnit::decodeFrom(bitstream, vps, asps, afps, atl.atlas_tile_header());
   bitstream.rbspTrailingBits();
 
   return atl;
 }
 
-void AtlasTileLayerRBSP::encodeTo(ostream &stream, 
-                                  const V3cParameterSet &vps, const NalUnitHeader &nuh,
+void AtlasTileLayerRBSP::encodeTo(ostream &stream, const V3cParameterSet &vps,
+                                  const NalUnitHeader &nuh,
                                   const vector<AtlasSequenceParameterSetRBSP> &asps,
                                   const vector<AtlasFrameParameterSetRBSP> &afps) const {
   OutputBitstream bitstream{stream};
 
   atlas_tile_header().encodeTo(bitstream, nuh, asps, afps);
-  atlas_tile_data_unit().encodeTo(bitstream,  vps, asps, afps, atlas_tile_header());
+  atlas_tile_data_unit().encodeTo(bitstream, vps, asps, afps, atlas_tile_header());
   bitstream.rbspTrailingBits();
 }
 } // namespace TMIV::MivBitstream

@@ -386,11 +386,18 @@ auto GeometryScaler::scale(const AtlasAccessUnit &atlas,
 }
 
 void GeometryScaler::inplaceScale(AccessUnit &frame) const {
-  for (auto &atlas : frame.atlas) {
-    if (!atlas.attrFrame.empty() && atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
-      atlas.geoFrame = scale(atlas, frame.gup.value_or(m_defaultGup));
+  for (size_t k = 0; k <= frame.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = frame.vps.vps_atlas_id(k);
+    auto &atlas = frame.atlas[k];
+    // only try to upscale the depth is the geometry present flag is true
+    if (frame.vps.vps_geometry_video_present_flag(j)) {
+      if (!atlas.attrFrame.empty() && atlas.decGeoFrame.getSize() != atlas.attrFrame.getSize()) {
+        atlas.geoFrame = scale(atlas, frame.gup.value_or(m_defaultGup));
+      } else {
+        atlas.geoFrame = atlas.decGeoFrame;
+      }
     } else {
-      atlas.geoFrame = atlas.decGeoFrame;
+      // TODO(BK): Add support for asme_patch_constant_depth_flag to the AdditiveSynthesizer
     }
   }
 }

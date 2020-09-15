@@ -121,7 +121,7 @@ auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
   case NalUnitType::NAL_CAF:
     return stream << "NAL_CAF";
   default:
-    return stream << "[unknown:" << int{x} << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 

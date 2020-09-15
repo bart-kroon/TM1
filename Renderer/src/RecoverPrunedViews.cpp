@@ -92,7 +92,10 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
         }
 
         // Copy geometry
-        prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+        if (!atlas.asps.asps_miv_extension_present_flag() ||
+            !atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
+          prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+        }
 
         // Copy attributes
         for (int d = 0; d < 3; ++d) {

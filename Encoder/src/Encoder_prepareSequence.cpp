@@ -218,7 +218,8 @@ void Encoder::prepareIvau() {
         .asps_use_eight_orientations_flag(true)
         .asps_extended_projection_enabled_flag(true)
         .asps_normal_axis_limits_quantization_enabled_flag(true)
-        .asps_max_number_projections_minus1(uint16_t(m_params.viewParamsList.size() - 1))
+        .asps_max_number_projections_minus1(
+            static_cast<uint16_t>(m_params.viewParamsList.size() - 1))
         .asps_log2_patch_packing_block_size(ceilLog2(m_blockSize));
 
     // Signalling pdu_entity_id requires ASME to be present

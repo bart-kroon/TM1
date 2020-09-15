@@ -308,7 +308,7 @@ void MivDecoder::decodeBlockToPatchMap(uint8_t j) {
 
     for (int y = first.y(); y <= last.y(); ++y) {
       for (int x = first.x(); x <= last.x(); ++x) {
-        btpm.getPlane(0)(y, x) = uint16_t(p);
+        btpm.getPlane(0)(y, x) = static_cast<uint16_t>(p);
       }
     }
   });

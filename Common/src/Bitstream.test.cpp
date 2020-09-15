@@ -73,7 +73,7 @@ TEST_CASE("Bitstream primitives") {
   }
 
   SECTION("u(16)") {
-    const auto reference = std::uint16_t(0x1234);
+    const auto reference = static_cast<uint16_t>(0x1234);
     obitstream.putUint16(reference);
     obitstream.zeroAlign();
     const auto actual = ibitstream.getUint16();

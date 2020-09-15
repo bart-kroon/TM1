@@ -124,7 +124,7 @@ auto loadSourceDepth_(int bits, const Json &config, const Vec2i &size, const str
               assert(0 <= x && x <= x_max);
               const auto y = (0xFFFF * x + x_max / 2) / x_max;
               assert(0 <= y && y <= UINT16_MAX);
-              return uint16_t(y);
+              return static_cast<uint16_t>(y);
             });
 
   return depth16;

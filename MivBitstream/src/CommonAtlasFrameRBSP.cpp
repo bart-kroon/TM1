@@ -332,7 +332,7 @@ auto PruningParents::pp_is_root_flag() const noexcept -> bool { return m_pp_pare
 
 auto PruningParents::pp_num_parent_minus1() const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(!pp_is_root_flag());
-  return uint16_t(m_pp_parent_id.size() - 1);
+  return static_cast<uint16_t>(m_pp_parent_id.size() - 1);
 }
 
 auto PruningParents::pp_parent_id(uint16_t i) const noexcept -> uint16_t {
@@ -395,7 +395,7 @@ void PruningParents::encodeTo(OutputBitstream &bitstream, uint16_t mvp_num_views
 
 auto MivViewParamsList::mvp_num_views_minus1() const noexcept -> uint16_t {
   VERIFY_MIVBITSTREAM(!m_camera_extrinsics.empty());
-  return uint16_t(m_camera_extrinsics.size() - 1);
+  return static_cast<uint16_t>(m_camera_extrinsics.size() - 1);
 }
 
 auto MivViewParamsList::mvp_view_enabled_present_flag() const noexcept -> bool {

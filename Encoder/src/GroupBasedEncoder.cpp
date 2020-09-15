@@ -272,7 +272,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
     // Merge view parameters
     transform(begin((*ivs)->viewParamsList), end((*ivs)->viewParamsList),
               back_inserter(m_params.viewParamsList),
-              [viewIdOffset = uint16_t(m_params.viewParamsList.size())](ViewParams vp) {
+              [viewIdOffset = static_cast<uint16_t>(m_params.viewParamsList.size())](ViewParams vp) {
                 // Merging pruning graphs
                 if (vp.pp && !vp.pp->pp_is_root_flag()) {
                   for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
@@ -299,7 +299,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
   // Modify bit depth of pdu_view_idx
   for (auto &atlas : m_params.atlas) {
     atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_number_projections_minus1(
-        uint16_t(m_params.viewParamsList.size() - 1));
+        static_cast<uint16_t>(m_params.viewParamsList.size() - 1));
   }
 
   // Renumber atlas and view ID's
@@ -315,8 +315,8 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
     }
 
     // Renumber atlases and views
-    atlasIdOffset += uint16_t(perGroupParam->atlas.size());
-    viewIdOffset += uint16_t(perGroupParam->viewParamsList.size());
+    atlasIdOffset += static_cast<uint16_t>(perGroupParam->atlas.size());
+    viewIdOffset += static_cast<uint16_t>(perGroupParam->viewParamsList.size());
   }
 
   return m_params;

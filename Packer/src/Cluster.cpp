@@ -567,7 +567,7 @@ auto Cluster::retrieve(int viewId, const Mask &maskMap, int firstClusterId, bool
 
       if (visitedId == ACTIVE) {
         cluster.push(a, b);
-        visitedId = uint16_t(clusterId);
+        visitedId = static_cast<uint16_t>(clusterId);
         candidates.push({a, b});
       }
     };

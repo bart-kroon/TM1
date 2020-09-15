@@ -188,7 +188,7 @@ void Encoder::updateMasks(const MVD16Frame &views, MaskList &masks) {
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
     for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].texture.getPlane(0)[i] == neutralChroma) &&
-          (views[viewId].depth.getPlane(0)[i] == uint16_t(0))) {
+          (views[viewId].depth.getPlane(0)[i] == uint16_t{})) {
         masks[viewId].getPlane(0)[i] = uint8_t(0);
       }
     }
@@ -238,7 +238,7 @@ auto Encoder::entitySeparator(const MVD16Frame &transportViews, uint16_t entityI
               transportViews[viewId].depth.getPlane(0).end(),   //
               entityMaps[viewId].getPlane(0).begin(),           // j's
               entityViews[viewId].depth.getPlane(0).begin(),    // result
-              [=](auto i, auto j) { return (j == entityId) ? i : uint16_t(0); });
+              [=](auto i, auto j) { return (j == entityId) ? i : uint16_t{}; });
   }
 
   return entityViews;

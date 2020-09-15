@@ -200,7 +200,7 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
   auto &vpl = m_params.viewParamsList;
 
   assert(!vpl.empty());
-  mvpl.mvp_num_views_minus1(uint16_t(vpl.size() - 1));
+  mvpl.mvp_num_views_minus1(static_cast<uint16_t>(vpl.size() - 1));
   mvpl.mvp_intrinsic_params_equal_flag(
       all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.ci == vpl.front().ci; }));
   mvpl.mvp_depth_quantization_params_equal_flag(
@@ -223,7 +223,7 @@ auto MivEncoder::mivViewParamsList() const -> MivViewParamsList {
     }
   }
 
-  mvpl.mvp_num_views_minus1(uint16_t(m_params.viewParamsList.size() - 1));
+  mvpl.mvp_num_views_minus1(static_cast<uint16_t>(m_params.viewParamsList.size() - 1));
   for (uint8_t a = 0; a <= m_params.vps.vps_atlas_count_minus1(); ++a) {
     for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
       mvpl.mvp_view_enabled_in_atlas_flag(a, v, true);
@@ -243,11 +243,11 @@ auto MivEncoder::mivViewParamsUpdateExtrinsics() const -> MivViewParamsUpdateExt
   auto viewIdx = vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
-      viewIdx.push_back(uint16_t(v));
+      viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
   VERIFY_MIVBITSTREAM(!viewIdx.empty());
-  mvpue.mvpue_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  mvpue.mvpue_num_view_updates_minus1(static_cast<uint16_t>(viewIdx.size() - 1));
   for (uint16_t i = 0; i <= mvpue.mvpue_num_view_updates_minus1(); ++i) {
     mvpue.mvpue_view_idx(i, viewIdx[i]);
     mvpue.camera_extrinsics(i) = m_params.viewParamsList[viewIdx[i]].ce;
@@ -260,11 +260,11 @@ auto MivEncoder::mivViewParamsUpdateIntrinsics() const -> MivViewParamsUpdateInt
   auto viewIdx = vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ci != m_params.viewParamsList[v].ci) {
-      viewIdx.push_back(uint16_t(v));
+      viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
   VERIFY_MIVBITSTREAM(!viewIdx.empty());
-  mvpui.mvpui_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  mvpui.mvpui_num_view_updates_minus1(static_cast<uint16_t>(viewIdx.size() - 1));
   for (uint16_t i = 0; i <= mvpui.mvpui_num_view_updates_minus1(); ++i) {
     mvpui.mvpui_view_idx(i, viewIdx[i]);
     mvpui.camera_intrinsics(i) = m_params.viewParamsList[viewIdx[i]].ci;
@@ -278,11 +278,11 @@ auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
   auto viewIdx = vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].dq != m_params.viewParamsList[v].dq) {
-      viewIdx.push_back(uint16_t(v));
+      viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
   VERIFY_MIVBITSTREAM(!viewIdx.empty());
-  mvpudq.mvpudq_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  mvpudq.mvpudq_num_view_updates_minus1(static_cast<uint16_t>(viewIdx.size() - 1));
   for (uint16_t i = 0; i <= mvpudq.mvpudq_num_view_updates_minus1(); ++i) {
     mvpudq.mvpudq_view_idx(i, viewIdx[i]);
     mvpudq.depth_quantization(i) = m_params.viewParamsList[viewIdx[i]].dq;

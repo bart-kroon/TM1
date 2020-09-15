@@ -154,12 +154,12 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
 
       for (const auto &block : divideInBlocks(patch, blockSize)) {
         if (!choosePatch(block, frame.viewParamsList, viewportParams)) {
-          inplaceErasePatch(result, block, uint16_t(patchIdx), atlas.asps);
+          inplaceErasePatch(result, block, static_cast<uint16_t>(patchIdx), atlas.asps);
         }
       }
     } else {
       if (!choosePatch(patch, frame.viewParamsList, viewportParams)) {
-        inplaceErasePatch(result, patch, uint16_t(patchIdx), atlas.asps);
+        inplaceErasePatch(result, patch, static_cast<uint16_t>(patchIdx), atlas.asps);
       }
     }
   }

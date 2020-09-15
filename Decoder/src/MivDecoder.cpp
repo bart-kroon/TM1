@@ -189,7 +189,6 @@ void MivDecoder::checkCapabilities() const {
     const auto j = m_au.vps.vps_atlas_id(k);
     VERIFY_MIVBITSTREAM(m_au.vps.vps_map_count_minus1(j) == 0);
     VERIFY_MIVBITSTREAM(!m_au.vps.vps_auxiliary_video_present_flag(j));
-    VERIFY_MIVBITSTREAM(m_au.vps.vps_geometry_video_present_flag(j));
   }
 }
 

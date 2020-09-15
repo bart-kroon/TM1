@@ -160,7 +160,8 @@ auto BasicViewAllocator::forwardView(const Positions &pos) const -> std::size_t 
   const auto maxX = std::max_element(pos.cbegin(), pos.cend(), lessX)->x();
   const auto sumPos = std::accumulate(pos.cbegin(), pos.cend(), Common::Vec3d{},
                                       [](const auto &p1, const auto &p2) { return p1 + p2; });
-  const auto target = Common::Vec3d{maxX, sumPos.y() / double(N), sumPos.z() / double(N)};
+  const auto target =
+      Common::Vec3d{maxX, sumPos.y() / static_cast<double>(N), sumPos.z() / static_cast<double>(N)};
 
   auto dist2 = std::vector<double>(N);
   std::transform(pos.cbegin(), pos.cend(), dist2.begin(),

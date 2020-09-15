@@ -133,7 +133,7 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, vector
     }
   }
 
-  if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
+  if ((bestSplitPos != 0) && static_cast<double>(minArea) / alignedImsize < splitThresholdL) {
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
     Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
@@ -198,7 +198,8 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, vector<C
     } // w
   }   // h
 
-  if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
+  if (static_cast<double>(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
+      splitThresholdC) {
     int bestSplitPos = roundToAlignment(W, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
@@ -265,7 +266,8 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, vector
     } // w
   }   // h
 
-  if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
+  if (static_cast<double>(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
+      splitThresholdC) {
     int bestSplitPos = roundToAlignment(H, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
@@ -321,7 +323,7 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, vector<C
     }
   }
 
-  if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
+  if ((bestSplitPos != 0) && static_cast<double>(minArea) / alignedImsize < splitThresholdL) {
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
     Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 

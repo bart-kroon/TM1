@@ -59,8 +59,8 @@ auto textureGather(const MAT &m, const Vec2f &p) -> stack::Vec4<typename MAT::va
   int w_last = static_cast<int>(m.width()) - 1;
   int h_last = static_cast<int>(m.height()) - 1;
 
-  int x0 = clamp(ifloor(p.x() - 0.5F), 0, w_last);
-  int y0 = clamp(ifloor(p.y() - 0.5F), 0, h_last);
+  int x0 = clamp(static_cast<int>(std::floor(p.x() - 0.5F)), 0, w_last);
+  int y0 = clamp(static_cast<int>(std::floor(p.y() - 0.5F)), 0, h_last);
 
   int x1 = min(x0 + 1, w_last);
   int y1 = min(y0 + 1, h_last);
@@ -539,9 +539,9 @@ private:
       float xHigh = splat.center.x() + radius;
       float yLow = max(0.F, splat.center.y() - radius);
       float yHigh = splat.center.y() + radius;
-      int x0 = max(0, ifloor(xLow));
+      int x0 = max(0, static_cast<int>(std::floor(xLow)));
       int x1 = min(w_last, iceil(xHigh));
-      int y0 = max(0, ifloor(yLow));
+      int y0 = max(0, static_cast<int>(std::floor(yLow)));
       int y1 = min(h_last, iceil(yHigh));
 
       // Looping on all pixels within the bounding box
@@ -725,8 +725,8 @@ private:
                         Vec2i({-1, 0}),  Vec2i({0, 0}),  Vec2i({1, 0}),
                         Vec2i({-1, 1}),  Vec2i({0, 1}),  Vec2i({1, 1})};
 
-                    auto X = ifloor(p.first.x());
-                    auto Y = ifloor(p.first.y());
+                    auto X = static_cast<int>(std::floor(p.first.x()));
+                    auto Y = static_cast<int>(std::floor(p.first.y()));
 
                     for (const auto &offset : offsetList) {
                       int xo = clamp(X + offset.x(), 0, w_last);
@@ -853,8 +853,8 @@ private:
       int w_last = static_cast<int>(m_sourceDepth[sourceId].width()) - 1;
       int h_last = static_cast<int>(m_sourceDepth[sourceId].height()) - 1;
 
-      int x = ifloor(p.first.x());
-      int y = ifloor(p.first.y());
+      auto x = static_cast<int>(std::floor(p.first.x()));
+      auto y = static_cast<int>(std::floor(p.first.y()));
 
       for (const auto &offset : offsetList) {
         int xo = clamp(x + offset.x(), 0, w_last);

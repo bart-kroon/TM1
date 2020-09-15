@@ -211,7 +211,7 @@ void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch
       return;
     }
     const auto k = y * m_dk_di;
-    k1 = std::min(k1, TMIV::Common::ifloor(k));
+    k1 = std::min(k1, static_cast<int>(std::floor(k)));
     k2 = std::max(k2, TMIV::Common::iceil(k) + 1);
   }
 
@@ -236,8 +236,7 @@ constexpr const auto half = one / intfp{2};
 
 inline auto fixed(float x) -> intfp {
   using std::ldexp;
-  using TMIV::Common::ifloor;
-  return static_cast<intfp>(ifloor(0.5F + ldexp(x, bits)));
+  return static_cast<intfp>(std::floor(0.5F + ldexp(x, bits)));
 }
 inline auto fixed(Common::Vec2f v) -> Vec2fp { return {fixed(v.x()), fixed(v.y())}; }
 inline auto fixed(int x) -> intfp { return static_cast<intfp>(x) << bits; }

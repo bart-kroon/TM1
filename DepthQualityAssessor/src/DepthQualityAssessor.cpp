@@ -53,8 +53,8 @@ auto textureNeighbourhood(const MAT &m, const Vec2f &p) -> vector<typename MAT::
   int w_last = static_cast<int>(m.width()) - 1;
   int h_last = static_cast<int>(m.height()) - 1;
 
-  int xc = clamp(ifloor(p.x() + 0.5F), 0, w_last);
-  int yc = clamp(ifloor(p.y() + 0.5F), 0, h_last);
+  int xc = clamp(static_cast<int>(std::floor(p.x() + 0.5F)), 0, w_last);
+  int yc = clamp(static_cast<int>(std::floor(p.y() + 0.5F)), 0, h_last);
 
   int x0 = max(0, xc - N);
   int y0 = max(0, yc - N);

@@ -58,7 +58,7 @@ Prerequisites are:
 
 This description works for Windows and Linux.
 
-### Instructions to build and install TMIV
+## Instructions to build and install TMIV
 
 To obtain the branch to this document:
 
@@ -76,6 +76,30 @@ cd /Workspace
 git clone https://gitlab.com/mpeg-i-visual/tmiv.git
 ```
 
+Below are two alternative instructions for building: the first using command
+line tools, typically on Unix. The second instruction set is for GUI tools,
+typically on Windows.
+
+### Using the command line (Unix)
+
+As a preparation, create a folder to which TMIV shall be installed, e.g.
+
+```shell
+mkdir /Workspace/tm1_install
+```
+
+With that, you can start configuring, building, and installing TMIV:
+
+```shell
+cd /Workspace/TM1
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/Workspace/tm1_install ..
+cmake --build .  # append '--parallel $(nproc)' to speed up building
+make install
+```
+
+### Using a GUI (Windows)
+
 Open the CMake GUI and specify:
 
 * Where the source directory is: /Workspace/TM1
@@ -90,10 +114,11 @@ Open the CMake GUI and specify:
 Build and install the generated project.
 
 For the Visual Studio CMake generators installation is performed by building the
-INSTALL target. For Unix Makefiles CMake generators installation is through
-`make install`.
+INSTALL target.
 
-After this the TMIV executables Encoder and Decoder will be available under the
+### Installation result
+
+After installation, the TMIV executables Encoder and Decoder will be available under the
 directory /Workspace/TM1-master/bin. By default TMIV only builds the HM modules
 that are required for TMIV (TLibCommon and TLibDecoder). When
 HM_BUILD_TAPPDECODER and HM_BUILD_TAPPENCODER are selected, then the

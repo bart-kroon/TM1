@@ -232,14 +232,14 @@ template <typename FORMAT> auto AnyFrame::as() const -> Frame<FORMAT> {
   auto outputFrame = Frame<FORMAT>{static_cast<int>(planes.front().width()),
                                    static_cast<int>(planes.front().height())};
   auto &outputPlanes = outputFrame.getPlanes();
-  auto maxOutputValue = (uint64_t(1) << outputFrame.getBitDepth()) - 1;
+  auto maxOutputValue = (uint64_t{1} << outputFrame.getBitDepth()) - 1;
 
   for (size_t k = 0; k < outputPlanes.size(); ++k) {
     if (planes[k].empty()) {
       // Fill neutral when a plane is missing
       std::fill(std::begin(outputPlanes[k]), std::end(outputPlanes[k]), outputFrame.neutralColor());
     } else {
-      const auto maxInputValue = (uint64_t(1) << bitdepth[k]) - 1;
+      const auto maxInputValue = (uint64_t{1} << bitdepth[k]) - 1;
 
       if (planes[k].size() == outputPlanes[k].size() && maxInputValue == maxOutputValue) {
         // Plane with same format: direct copy (optimization)

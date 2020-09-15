@@ -332,7 +332,7 @@ auto PduMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSe
   if (vps.vps_miv_extension_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (vme.vme_max_entities_minus1() > 0) {
-      x.pdu_entity_id(bitstream.getUVar<uint32_t>(vme.vme_max_entities_minus1() + uint64_t(1)));
+      x.pdu_entity_id(bitstream.getUVar<uint32_t>(vme.vme_max_entities_minus1() + uint64_t{1}));
     }
   }
   if (asps.asps_miv_extension_flag()) {
@@ -349,7 +349,7 @@ void PduMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet
                                const AtlasSequenceParameterSetRBSP &asps) const {
   if (vps.vps_miv_extension_flag() && vps.vps_miv_extension().vme_max_entities_minus1() > 0) {
     bitstream.putUVar(pdu_entity_id(),
-                      vps.vps_miv_extension().vme_max_entities_minus1() + uint64_t(1));
+                      vps.vps_miv_extension().vme_max_entities_minus1() + uint64_t{1});
   } else {
     VERIFY_MIVBITSTREAM(!m_pdu_entity_id.has_value());
   }
@@ -432,7 +432,7 @@ auto PatchDataUnit::decodeFrom(InputBitstream &bitstream, const V3cUnitHeader &v
 
   const auto pdu_projection_id_num_bits =
       asps.asps_extended_projection_enabled_flag()
-          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
+          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t{1})
           : 3U;
   x.pdu_view_idx(bitstream.readBits<uint16_t>(pdu_projection_id_num_bits));
 
@@ -482,7 +482,7 @@ void PatchDataUnit::encodeTo(OutputBitstream &bitstream, const V3cUnitHeader &vu
 
   const auto pdu_projection_id_num_bits =
       asps.asps_extended_projection_enabled_flag()
-          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t(1))
+          ? ceilLog2(asps.asps_max_number_projections_minus1() + uint64_t{1})
           : 3U;
   VERIFY_V3CBITSTREAM((pdu_view_idx() >> pdu_projection_id_num_bits) == 0);
   bitstream.writeBits(pdu_view_idx(), pdu_projection_id_num_bits);

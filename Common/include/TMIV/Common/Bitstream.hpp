@@ -59,7 +59,7 @@ template <typename Integer> auto InputBitstream::readBits(unsigned bits) -> Inte
   auto value = m_buffer >> m_size;
   m_buffer &= (1 << m_size) - 1;
 
-  VERIFY_BITSTREAM(uint64_t(Integer(value)) == value);
+  VERIFY_BITSTREAM(static_cast<uint64_t>(Integer(value)) == value);
   return Integer(value);
 }
 

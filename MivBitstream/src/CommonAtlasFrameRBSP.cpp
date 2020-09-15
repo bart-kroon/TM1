@@ -377,7 +377,7 @@ auto PruningParents::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_view
   auto x = vector<uint16_t>(pp_num_parent_minus1 + 1);
 
   for (uint16_t &i : x) {
-    i = bitstream.getUVar<uint16_t>(mvp_num_views_minus1 + uint64_t(1));
+    i = bitstream.getUVar<uint16_t>(mvp_num_views_minus1 + uint64_t{1});
   }
 
   return PruningParents{x};
@@ -388,7 +388,7 @@ void PruningParents::encodeTo(OutputBitstream &bitstream, uint16_t mvp_num_views
   if (!pp_is_root_flag()) {
     bitstream.putUVar(pp_num_parent_minus1(), mvp_num_views_minus1);
     for (uint16_t i = 0; i <= pp_num_parent_minus1(); ++i) {
-      bitstream.putUVar(pp_parent_id(i), mvp_num_views_minus1 + uint64_t(1));
+      bitstream.putUVar(pp_parent_id(i), mvp_num_views_minus1 + uint64_t{1});
     }
   }
 }

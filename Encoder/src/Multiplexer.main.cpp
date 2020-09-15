@@ -199,7 +199,7 @@ private:
 
     // Calculate how many bytes are needed to store that size
     auto precisionBytesMinus1 = uint8_t{};
-    while (maxSize >= uint64_t(1) << 8 * (precisionBytesMinus1 + 1)) {
+    while (maxSize >= uint64_t{1} << 8 * (precisionBytesMinus1 + 1)) {
       ++precisionBytesMinus1;
     }
 

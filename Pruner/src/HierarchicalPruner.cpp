@@ -441,7 +441,7 @@ private:
     cout << setw(2) << index << " (" << setw(3) << m_params.viewParamsList[index].name
          << "): " << ivertices.size() << " vertices ("
          << 100. * static_cast<double>(ivertices.size()) /
-                static_cast<double>(view.texture.getWidth()) * view.texture.getHeight())
+                static_cast<double>(view.texture.getWidth()) * view.texture.getHeight()
          << "% of full view)\n";
     cout.precision(prec);
     cout.setf(flags);

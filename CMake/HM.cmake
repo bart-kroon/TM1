@@ -1,19 +1,17 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-option(BUILD_HM "Build and use HM in TMIV when available" ON)
+option(BUILD_HM "Build and use HM in TMIV" ON)
 
 if (BUILD_HM)
-    get_filename_component(defaultHmSourceDir "${CMAKE_SOURCE_DIR}/../HM-16.16" REALPATH)
-    set(HM_SOURCE_DIR ${defaultHmSourceDir} CACHE PATH "Source directory of the HM project")
+    include(FetchContent)
+    fetchcontent_declare(HM
+        GIT_REPOSITORY https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git
+        GIT_TAG "HM-16.16"
+        GIT_PROGRESS TRUE
+    )
+    fetchcontent_makeavailable(HM)
+    set(HM_SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/hm-src/)
 
-    if(EXISTS "${HM_SOURCE_DIR}/source/Lib/TLibCommon/TComSlice.h")
-        set(HAVE_HM ON)
-    else()
-        message(WARNING "HM is disabled.")
-    endif()
-endif()
-
-if (HAVE_HM)
     option(BUILD_TAppDecoder "Build HM exectable TAppDecoder" FALSE)
     option(BUILD_TAppEncoder "Build HM exectable TAppEncoder" FALSE)
 

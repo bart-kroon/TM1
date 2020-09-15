@@ -58,20 +58,6 @@ Prerequisites are:
 
 This description works for Windows and Linux.
 
-### Instructions to download HM
-
-Look in the CTC document for the version of HM and corresponding URL. This
-description uses 16.16.
-
-```shell
-cd /Workspace
-git clone https://vcgit.hhi.fraunhofer.de/jct-vc/HM.git HM-16.16
-cd HM-16.16
-git checkout HM-16.16
-```
-
-TMIV includes a build script for HM.
-
 ### Instructions to build and install TMIV
 
 To obtain the branch to this document:
@@ -86,8 +72,8 @@ git checkout master
 To obtain the latest public release of TMIV instead:
 
 ```shell
-    cd /Workspace
-    git clone https://gitlab.com/mpeg-i-visual/tmiv.git
+cd /Workspace
+git clone https://gitlab.com/mpeg-i-visual/tmiv.git
 ```
 
 Open the CMake GUI and specify:
@@ -99,7 +85,6 @@ Open the CMake GUI and specify:
 * Optional: To disable [Catch2](https://github.com/catchorg/Catch2.git)-based
   unit tests, set BUILD_CATCH2 to false. Leaving tests enabled (skipping this
   step) is highly recommended, however.
-* Set HM_SOURCE_DIR to /Workspace/HM-16.16
 * Click Generate
 
 Build and install the generated project.

@@ -214,7 +214,8 @@ void Encoder::writePatchInAtlas(const MivBitstream::PatchParams &patchParams,
           break;
         }
       }
-      int yOcc = 0, xOcc = 0;
+      int yOcc = 0;
+      int xOcc = 0;
       for (int dy = dyAligned; dy < dyAligned + m_blockSize; dy++) {
         for (int dx = dxAligned; dx < dxAligned + m_blockSize; dx++) {
           Common::Vec2i pView = {xM + dx, yM + dy};

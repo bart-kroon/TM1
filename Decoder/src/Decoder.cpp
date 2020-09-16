@@ -40,7 +40,6 @@
 namespace TMIV::Decoder {
 Decoder::Decoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_geometryScaler{rootNode, componentNode}
-    , m_occupancyReconstructor{rootNode, componentNode}
     , m_entityBasedPatchMapFilter{rootNode, componentNode} {
   m_culler =
       Common::Factory<Renderer::ICuller>::getInstance().create("Culler", rootNode, componentNode);

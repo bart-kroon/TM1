@@ -47,9 +47,7 @@
 namespace TMIV::Decoder {
 class OccupancyReconstructor {
 public:
-  OccupancyReconstructor(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
-
-  static void reconstruct(AccessUnit &frame) ;
+  static void reconstruct(AccessUnit &frame);
 };
 } // namespace TMIV::Decoder
 

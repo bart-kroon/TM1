@@ -150,7 +150,7 @@ Use the following steps for uncoded video (i.e. best_reference):
 
 For this example, we will be using the [miv_anchor config](/ctc_config/miv_anchor/TMIV_A17_SA.json) on the `ClassroomVideo` sequence. This file contains a good choice of parameters, you only need to adapt a few variables:
 
-1. Adjust `SourceCameraParameters` the path to the configuration file that contains the camera configurations, for example to `/path/to/this/repository/ctc_config/scenes/ClassroomVideo.json`. Take care to provide the absolute, not relative path.
+1. Adjust `SourceCameraParameters` the path to the configuration file that contains the camera configurations, for example to `/path/to/this/repository/ctc_config/scenes/ClassroomVideo.json`. It is recommended to provide the absolute, not the relative path, as the relative path depends on where you call the encoder executable from.
 
 1. Create the color and depth videos using blender and the scripts provided [here](https://www.ip.philips.com/standardization/documents.html). Put them in a folder, make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Alternatively, your organization should be able to provide the test sequences to you.
 
@@ -160,8 +160,8 @@ For this example, we will be using the [miv_anchor config](/ctc_config/miv_ancho
     1. Vertical resolution of the video
 
     such that a texture video file from camera `v0` with resolution 4096x2048 pixels should be named `v0_texture_4096x2048_yuv420p10le.yuv`.
-1. Point to the video file directory by providing the absolute path to configuration variable `SourceDirectory`.
-1. You may set `OutputDirectory` to a custom existing directory, again using an absolute path.
+1. Point to the video file directory by providing the path to configuration variable `SourceDirectory`.
+1. You may set `OutputDirectory` to a custom existing directory.
 
 Finally, assuming that you built and installed the encoder application, you can start it from the command line:
 

@@ -889,10 +889,7 @@ auto CommonAtlasFrameRBSP::operator==(const CommonAtlasFrameRBSP &other) const n
     MIVBITSTREAM_ERROR("Unknown update mode");
   }
 
-  if (caf_extension_8bits() != 0 && cafExtensionData() != other.cafExtensionData()) {
-    return false;
-  }
-  return true;
+  return caf_extension_8bits() == 0 || cafExtensionData() == other.cafExtensionData();
 }
 
 auto CommonAtlasFrameRBSP::operator!=(const CommonAtlasFrameRBSP &other) const noexcept -> bool {

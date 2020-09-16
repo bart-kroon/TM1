@@ -262,7 +262,7 @@ public:
 
   void printClusters(const MivBitstream::ViewParamsList &vpl) const {
     std::cout << "Pruning graph:\n";
-    for (auto &cluster : m_clusters) {
+    for (const auto &cluster : m_clusters) {
       std::cout << "  (";
       for (auto i : cluster.basicViewId) {
         std::cout << ' ' << vpl[i].name;

@@ -199,7 +199,7 @@ auto MivEncoder::mvpUpdateMode() const -> MivBitstream::MvpUpdateMode {
 
 auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
   auto mvpl = MivBitstream::MivViewParamsList{};
-  auto &vpl = m_params.viewParamsList;
+  const auto &vpl = m_params.viewParamsList;
 
   assert(!vpl.empty());
   mvpl.mvp_num_views_minus1(uint16_t(vpl.size() - 1));

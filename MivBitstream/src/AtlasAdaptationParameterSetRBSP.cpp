@@ -321,7 +321,7 @@ void AtlasAdaptationParameterSetRBSP::encodeTo(std::ostream &stream) const {
 
 auto aapsById(const std::vector<AtlasAdaptationParameterSetRBSP> &aapsV, int id) noexcept
     -> const AtlasAdaptationParameterSetRBSP & {
-  for (auto &x : aapsV) {
+  for (const auto &x : aapsV) {
     if (id == x.aaps_atlas_adaptation_parameter_set_id()) {
       return x;
     }

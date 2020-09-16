@@ -175,7 +175,7 @@ public:
   void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet & /* vps */) {}
 
   void parseV3cPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
-    for (auto &nu : asb.nal_units()) {
+    for (const auto &nu : asb.nal_units()) {
       m_report.add(nu.nal_unit_header(), nu.size());
     }
   }

@@ -292,7 +292,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
 
 auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id) noexcept
     -> const AtlasFrameParameterSetRBSP & {
-  for (auto &x : afpsV) {
+  for (const auto &x : afpsV) {
     if (id == x.afps_atlas_frame_parameter_set_id()) {
       return x;
     }

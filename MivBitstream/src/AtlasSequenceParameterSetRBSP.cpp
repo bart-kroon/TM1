@@ -617,7 +617,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
 
 auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
     -> const AtlasSequenceParameterSetRBSP & {
-  for (auto &x : aspsV) {
+  for (const auto &x : aspsV) {
     if (id == x.asps_atlas_sequence_parameter_set_id()) {
       return x;
     }

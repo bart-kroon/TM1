@@ -63,7 +63,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   // Calculate nominal atlas frame sizes
   const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_transportParams);
   std::cout << "Nominal atlas frame sizes: { ";
-  for (auto &size : atlasFrameSizes) {
+  for (const auto &size : atlasFrameSizes) {
     std::cout << ' ' << size;
   }
   std::cout << " }\n";

@@ -152,7 +152,7 @@ For this example, we will be using the [miv_anchor config](/ctc_config/miv_ancho
 
 1. Adjust `SourceCameraParameters` the path to the configuration file that contains the camera configurations, for example to `/path/to/this/repository/ctc_config/scenes/ClassroomVideo.json`. It is recommended to provide the absolute, not the relative path, as the relative path depends on where you call the encoder executable from.
 
-1. Create the color and depth videos using blender and the scripts provided [here](https://www.ip.philips.com/standardization/documents.html). Put them in a folder, make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Alternatively, your organization should be able to provide the test sequences to you.
+1. Put the color and depth videos in a folder, make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Your organization or one of the maintainers of this repository should be able to provide the test sequences to you.
 
 1. The files' naming scheme can for example be `{}_depth_{}x{}_yuv420p16le.yuv`. The curly braces are placeholders for (in sequence)
     1. camera name, as defined in `SourceCameraNames` in the [config file](/ctc_config/miv_anchor/TMIV_A17_SA.json)

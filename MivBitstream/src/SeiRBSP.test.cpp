@@ -43,16 +43,25 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
 }
 
 TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
-  const auto x = SeiMessage{};
-  REQUIRE(toString(x) == R"(payloadType=buffering_period
+  SECTION("Default Constructor") {
+    const auto x = SeiMessage{};
+    REQUIRE(toString(x) == R"(payloadType=buffering_period
 payloadSize=0
 )");
-  REQUIRE(byteCodingTest(x, 2));
+    REQUIRE(byteCodingTest(x, 2));
+  }
 
-  SECTION("Example 1") {
-    const auto y = SeiMessage{PayloadType::time_code, "Tick tock"};
-    REQUIRE(toString(y) == R"(payloadType=time_code
+  SECTION("Time Code") {
+    const auto message = SeiMessage{PayloadType::time_code, "Tick tock"};
+    REQUIRE(toString(message) == R"(payloadType=time_code
 payloadSize=9
+)");
+  }
+
+  SECTION("Atlas Object Association") {
+    const auto message = SeiMessage{PayloadType::atlas_object_association, "My Atlas"};
+    REQUIRE(toString(message) == R"(payloadType=atlas_object_association
+payloadSize=8
 )");
   }
 }

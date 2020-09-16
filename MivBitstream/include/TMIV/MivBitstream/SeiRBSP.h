@@ -57,13 +57,16 @@ enum class PayloadType {
   component_codec_mapping,
   volumetric_tiling_info,
   presentation_information,
-  geometry_smoothing,
-  attribute_smoothing,
+  atlas_object_association,  // this one and its friends (e.g. scene info) are structured 
+  // below F.2.12 volumetric annotation. But this doesn't transfer to any changes in table F-1
+  geometry_smoothing,  // Should be 66
+  attribute_smoothing,  // Should be 67
   viewing_space = 64,
   rec_viewport,
   viewing_space_handling,
   geometry_upscaling_parameters
 };
+// TODO: should correspond to table F-1 and below in vpcc fdis d224. But some enum values are wrong
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;
 

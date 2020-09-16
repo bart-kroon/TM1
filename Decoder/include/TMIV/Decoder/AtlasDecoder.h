@@ -57,7 +57,7 @@ public:
     MivBitstream::AtlasSequenceParameterSetRBSP asps;
     MivBitstream::AtlasFrameParameterSetRBSP afps;
     MivBitstream::AtlasTileLayerRBSP atl;
-    std::vector<MivBitstream::SeiMessage> prefixNSei;
+    std::vector<MivBitstream::SeiMessage> prefixNSei;  // Why is this not using SeiRBSP? That is basically a vector<SeiMessage>
     std::vector<MivBitstream::SeiMessage> prefixESei;
     std::vector<MivBitstream::SeiMessage> suffixNSei;
     std::vector<MivBitstream::SeiMessage> suffixESei;

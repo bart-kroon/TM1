@@ -49,7 +49,7 @@ auto AapsVpccExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsVpc
   return {};
 }
 
-void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) const {
+void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) {
   const auto aaps_vpcc_camera_parameters_present_flag = false;
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }

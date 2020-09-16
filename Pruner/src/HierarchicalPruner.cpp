@@ -97,7 +97,7 @@ public:
                  nodeConfig.require("depthParameter").asFloat(),
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
-  void assignAdditionalViews(const Common::Mat<float> &overlap,
+  static void assignAdditionalViews(const Common::Mat<float> &overlap,
                              const MivBitstream::ViewParamsList &viewParamsList, size_t numClusters,
                              std::vector<size_t> &clusterIds) {
     const auto N = viewParamsList.size();
@@ -139,7 +139,7 @@ public:
     }
   }
 
-  auto scoreClustering(const Common::Mat<float> &overlap, const std::vector<size_t> &clusterIds)
+  static auto scoreClustering(const Common::Mat<float> &overlap, const std::vector<size_t> &clusterIds)
       -> double {
     auto score = 0.;
     const auto N = overlap.height();

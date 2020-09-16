@@ -49,7 +49,7 @@ class OccupancyReconstructor {
 public:
   OccupancyReconstructor(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
-  void reconstruct(AccessUnit &frame) const;
+  static void reconstruct(AccessUnit &frame) ;
 };
 } // namespace TMIV::Decoder
 

@@ -59,9 +59,9 @@ private:
   static auto sqDistanceMatrix(const Positions &pos) -> Common::Mat<double>;
 
   // Partitioning around medians [https://en.wikipedia.org/wiki/K-medoids#Algorithms]
-  auto selectInitialCentroids(const KMedoidsCost &cost, std::size_t first, std::size_t k) const
+  static auto selectInitialCentroids(const KMedoidsCost &cost, std::size_t first, std::size_t k) 
       -> Centroids;
-  auto updateCentroids(const KMedoidsCost &cost, Centroids centroids) const
+  static auto updateCentroids(const KMedoidsCost &cost, Centroids centroids) 
       -> std::optional<Centroids>;
 
   int m_numGroups{};

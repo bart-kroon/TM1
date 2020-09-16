@@ -148,13 +148,9 @@ Use the following steps for uncoded video (i.e. best_reference):
 
 ### Example for running TMIV encoder
 
-For this example, we will be using the
-[miv_anchor config](/ctc_config/miv_anchor/TMIV_A17_SA.json) on the `ClassroomVideo` sequence. This file contains a good choice of parameters, you only need to adapt a few variables:
+For this example, we will be using the [miv_anchor config](/ctc_config/miv_anchor/TMIV_A17_SA.json) on the `ClassroomVideo` sequence. This file contains a good choice of parameters, you only need to adapt a few variables:
 
-1. Adjust
-`SourceCameraParameters` the path to the configuration file that contains the camera
-configurations, for example to
-`/path/to/this/repository/ctc_config/scenes/ClassroomVideo.json`. Take care to provide the absolute, not relative path.
+1. Adjust `SourceCameraParameters` the path to the configuration file that contains the camera configurations, for example to `/path/to/this/repository/ctc_config/scenes/ClassroomVideo.json`. Take care to provide the absolute, not relative path.
 
 1. Create the color and depth videos using blender and the scripts provided [here](https://www.ip.philips.com/standardization/documents.html). Put them in a folder, make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Alternatively, your organization should be able to provide the test sequences to you.
 

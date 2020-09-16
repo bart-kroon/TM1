@@ -124,8 +124,9 @@ directory.
 
 ## Instructions to run TMIV
 
-Template configuration files are available under ctc_config/ and test_configs/. The file names of
-and in template configuration files are examples.
+Template configuration files are available under [ctc_config/](/ctc_config) and
+[test_configs/](/test_configs). The file names of and in template configuration
+files are examples.
 
 * *best_reference* uses all source views without coding to achieve the best possible result
 * *miv_anchor* is the MIV anchor with patches
@@ -135,7 +136,7 @@ and in template configuration files are examples.
 
 Use the following steps to encode a bistream and render a viewport:
 
-1. Run TMIV encoder
+1. Run TMIV encoder (see [example](#example-for-running-tmiv-encoder) below)
 1. Run HM encoder on all video sub bitstreams
 1. Run TMIV multiplexer to form the output bitstream
 1. Run TMIV decoder to decode the bitstream and render a viewport
@@ -144,6 +145,29 @@ Use the following steps for uncoded video (i.e. best_reference):
 
 1. Run TMIV encoder
 1. Run TMIV decoder to render a viewport
+
+### Example for running TMIV encoder
+
+For this example, we will be using the [miv_anchor config](/ctc_config/miv_anchor/TMIV_A17_SA.json) on the `ClassroomVideo` sequence. This file contains a good choice of parameters, you only need to adapt a few variables:
+
+1. Adjust `SourceCameraParameters` the path to the configuration file that contains the camera configurations, for example to `/path/to/this/repository/ctc_config/scenes/ClassroomVideo.json`. It is recommended to provide the absolute, not the relative path, as the relative path depends on where you call the encoder executable from.
+
+1. Put the color and depth videos in a folder, make sure to comply to the naming scheme defined in `SourceGeometryPathFmt` and `SourceTexturePathFmt`. Your organization or one of the maintainers of this repository should be able to provide the test sequences to you.
+
+1. The files' naming scheme can for example be `{}_depth_{}x{}_yuv420p16le.yuv`. The curly braces are placeholders for (in sequence)
+    1. camera name, as defined in `SourceCameraNames` in the [config file](/ctc_config/miv_anchor/TMIV_A17_SA.json)
+    1. Horizontal resolution of the video
+    1. Vertical resolution of the video
+
+    such that a texture video file from camera `v0` with resolution 4096x2048 pixels should be named `v0_texture_4096x2048_yuv420p10le.yuv`.
+1. Point to the video file directory by providing the path to configuration variable `SourceDirectory`.
+1. You may set `OutputDirectory` to a custom existing directory.
+
+Finally, assuming that you built and installed the encoder application, you can start it from the command line:
+
+```shell
+/Workspace/tm1_install/bin/Encoder -c /Workspace/TM1/ctc_config/miv_anchor/TMIV_A17_SA.json
+```
 
 ## Structure of the test model
 

@@ -150,7 +150,7 @@ void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
 } // namespace
 
 void SeiMessage::encodeTo(std::ostream &stream) const {
-  encodeSeiHeaderValue(stream, unsigned(payloadType()));
+  encodeSeiHeaderValue(stream, unsigned(payloadType()));  // TODO why does even the method use accessors and not directly the private variables?
   encodeSeiHeaderValue(stream, payloadSize());
   stream.write(payload().data(), payload().size());
 }

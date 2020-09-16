@@ -92,6 +92,7 @@ payloadSize=8
     x.messages().emplace_back(PayloadType::filler_payload, std::string(256, 'c'));
     x.messages().emplace_back(PayloadType::filler_payload, std::string(257, 'd'));
     x.messages().emplace_back(PayloadType::user_data_unregistered, "Unregistered");
+    x.messages().emplace_back(PayloadType::atlas_object_association, std::string(7, 'e'));
 
     REQUIRE(toString(x) == R"(payloadType=filler_payload
 payloadSize=1000
@@ -105,8 +106,15 @@ payloadType=filler_payload
 payloadSize=257
 payloadType=user_data_unregistered
 payloadSize=12
+payloadType=atlas_object_association
+payloadSize=7
 )");
-    REQUIRE(byteCodingTest(x, 2053));
+    const std::size_t where_do_these_atlas_bytes_come_from = 6;
+    const std::size_t where_do_these_bytes_come_from = 6 + 2;
+    const std::size_t expected_number_of_bytes = 13 + 1000 + 254 + 255 + 256 + 257 + 12 +
+                                                 (7 + where_do_these_atlas_bytes_come_from) +
+                                                 where_do_these_bytes_come_from;
+    REQUIRE(byteCodingTest(x, expected_number_of_bytes));
   }
 }
 } // namespace TMIV::MivBitstream

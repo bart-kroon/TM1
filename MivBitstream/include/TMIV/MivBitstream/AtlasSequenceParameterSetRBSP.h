@@ -222,7 +222,7 @@ public:
   auto asps_miv_extension_present_flag(const bool value) noexcept
       -> AtlasSequenceParameterSetRBSP &;
   auto asps_extension_6bits(const std::uint8_t value) noexcept -> AtlasSequenceParameterSetRBSP &;
-  auto aspsExtensionData(std::vector<bool> value) noexcept -> AtlasSequenceParameterSetRBSP &;
+  auto aspsExtensionData(std::vector<bool> data) noexcept -> AtlasSequenceParameterSetRBSP &;
 
   [[nodiscard]] auto ref_list_struct(std::uint8_t rlsIdx) -> RefListStruct &;
   [[nodiscard]] auto asps_vpcc_extension() noexcept -> AspsVpccExtension &;

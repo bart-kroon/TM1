@@ -83,8 +83,7 @@ class AspsVpccExtension {
 public:
   [[nodiscard]] constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag() const noexcept;
 
-  constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag(bool value) noexcept
-      -> auto &;
+  constexpr auto asps_vpcc_remove_duplicate_point_enabled_flag(bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AspsVpccExtension &) -> std::ostream &;
 

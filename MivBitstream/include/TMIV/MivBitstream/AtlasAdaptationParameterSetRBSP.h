@@ -55,7 +55,7 @@ public:
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AapsVpccExtension;
 
-  static void encodeTo(Common::OutputBitstream &bitstream) ;
+  static void encodeTo(Common::OutputBitstream &bitstream);
 };
 
 // 23090-12: aaps_miv_extension( )

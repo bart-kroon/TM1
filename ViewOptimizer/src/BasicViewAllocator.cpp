@@ -216,7 +216,7 @@ auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, std::s
   return result;
 }
 
-auto BasicViewAllocator::updateCentroids(const KMedoidsCost &cost, Centroids centroids) 
+auto BasicViewAllocator::updateCentroids(const KMedoidsCost &cost, Centroids centroids)
     -> std::optional<Centroids> {
   auto lowestCost = cost(centroids);
   auto update = std::optional<Centroids>{};

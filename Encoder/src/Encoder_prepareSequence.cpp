@@ -48,7 +48,8 @@ void runtimeCheck(bool cond, const char *what) {
 } // namespace
 
 void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
-  m_blockSize = m_blockSizeDepthQualityDependent[static_cast<std::size_t>(sourceParams.vme().vme_depth_low_quality_flag())];
+  m_blockSize = m_blockSizeDepthQualityDependent[static_cast<std::size_t>(
+      sourceParams.vme().vme_depth_low_quality_flag())];
   runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
   runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
 

@@ -98,8 +98,8 @@ public:
                  nodeConfig.require("stretchingParameter").asFloat(), m_maxStretching} {}
 
   static void assignAdditionalViews(const Common::Mat<float> &overlap,
-                             const MivBitstream::ViewParamsList &viewParamsList, size_t numClusters,
-                             std::vector<size_t> &clusterIds) {
+                                    const MivBitstream::ViewParamsList &viewParamsList,
+                                    size_t numClusters, std::vector<size_t> &clusterIds) {
     const auto N = viewParamsList.size();
     auto numViewsPerCluster = std::vector<size_t>(numClusters, 0);
     for (size_t i = 0; i < N; ++i) {
@@ -139,8 +139,8 @@ public:
     }
   }
 
-  static auto scoreClustering(const Common::Mat<float> &overlap, const std::vector<size_t> &clusterIds)
-      -> double {
+  static auto scoreClustering(const Common::Mat<float> &overlap,
+                              const std::vector<size_t> &clusterIds) -> double {
     auto score = 0.;
     const auto N = overlap.height();
 
@@ -155,7 +155,8 @@ public:
   }
 
   [[nodiscard]] auto exhaustiveSearch(const Common::Mat<float> &overlap,
-                        const MivBitstream::ViewParamsList &viewParamsList) const -> std::vector<size_t> {
+                                      const MivBitstream::ViewParamsList &viewParamsList) const
+      -> std::vector<size_t> {
     auto basicViewIds = std::vector<size_t>{};
     auto haveAdditionalViews = false;
     for (size_t i = 0; i < viewParamsList.size(); ++i) {

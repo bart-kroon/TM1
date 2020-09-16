@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("atlas_adaptation_parameter_set_rbsp", "[Atlas Adaptation Parameter Set RBSP]") {
   auto x = AtlasAdaptationParameterSetRBSP{};
 
@@ -113,3 +112,4 @@ aaps_extension_data_flag=true
     REQUIRE(byteCodingTest(x, 6));
   }
 }
+} // namespace TMIV::MivBitstream

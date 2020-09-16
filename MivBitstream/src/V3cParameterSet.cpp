@@ -38,11 +38,8 @@
 
 #include <utility>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & {
+auto operator<<(std::ostream &stream, const PtlProfileCodecGroupIdc &x) -> std::ostream & {
   switch (x) {
   case PtlProfileCodecGroupIdc::AVC_Progressive_High:
     return stream << "AVC Progressive High";
@@ -59,7 +56,7 @@ auto operator<<(ostream &stream, const PtlProfileCodecGroupIdc &x) -> ostream & 
   }
 }
 
-auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & {
+auto operator<<(std::ostream &stream, const PtlProfilePccToolsetIdc &x) -> std::ostream & {
   switch (x) {
   case PtlProfilePccToolsetIdc::VPCC_Basic:
     return stream << "V-PCC Basic";
@@ -72,7 +69,7 @@ auto operator<<(ostream &stream, const PtlProfilePccToolsetIdc &x) -> ostream & 
   }
 }
 
-auto operator<<(ostream &stream, const PtlProfileReconstructionIdc &x) -> ostream & {
+auto operator<<(std::ostream &stream, const PtlProfileReconstructionIdc &x) -> std::ostream & {
   switch (x) {
   case PtlProfileReconstructionIdc::Rec0:
     return stream << "Rec0 (V-PCC)";
@@ -116,7 +113,7 @@ auto operator<<(std::ostream &stream, const PtlMaxDecodesIdc &x) -> std::ostream
   }
 }
 
-auto operator<<(ostream &stream, const PtlLevelIdc &x) -> ostream & {
+auto operator<<(std::ostream &stream, const PtlLevelIdc &x) -> std::ostream & {
   switch (x) {
   case PtlLevelIdc::Level_1_0:
     return stream << "Level 1.0";
@@ -135,7 +132,7 @@ auto operator<<(ostream &stream, const PtlLevelIdc &x) -> ostream & {
   }
 }
 
-auto operator<<(ostream &stream, const AiAttributeTypeId &x) -> ostream & {
+auto operator<<(std::ostream &stream, const AiAttributeTypeId &x) -> std::ostream & {
   switch (x) {
   case AiAttributeTypeId::ATTR_TEXTURE:
     return stream << "ATTR_TEXTURE";
@@ -194,7 +191,7 @@ auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i) const noexcept -> uin
 }
 
 auto ProfileTierLevel::ptl_num_sub_profiles(std::uint8_t value) noexcept -> ProfileTierLevel & {
-  m_subProfileIdcs = vector<uint64_t>(value, 0);
+  m_subProfileIdcs = std::vector<uint64_t>(value, 0);
   return *this;
 }
 
@@ -214,20 +211,20 @@ auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i, std::uint64_t value) 
   return *this;
 }
 
-auto operator<<(ostream &stream, const ProfileTierLevel &x) -> ostream & {
-  stream << "ptl_tier_flag=" << boolalpha << x.ptl_tier_flag() << '\n';
+auto operator<<(std::ostream &stream, const ProfileTierLevel &x) -> std::ostream & {
+  stream << "ptl_tier_flag=" << std::boolalpha << x.ptl_tier_flag() << '\n';
   stream << "ptl_profile_codec_group_idc=" << x.ptl_profile_codec_group_idc() << '\n';
   stream << "ptl_profile_toolset_idc=" << x.ptl_profile_toolset_idc() << '\n';
   stream << "ptl_profile_reconstruction_idc=" << x.ptl_profile_reconstruction_idc() << '\n';
   stream << "ptl_max_decodes_idc=" << x.ptl_max_decodes_idc() << '\n';
   stream << "ptl_level_idc=" << x.ptl_level_idc() << '\n';
   stream << "ptl_num_sub_profiles=" << int{x.ptl_num_sub_profiles()} << '\n';
-  stream << "ptl_extended_sub_profile_flag=" << boolalpha << x.ptl_extended_sub_profile_flag()
+  stream << "ptl_extended_sub_profile_flag=" << std::boolalpha << x.ptl_extended_sub_profile_flag()
          << '\n';
   for (uint8_t i = 0; i < x.ptl_num_sub_profiles(); ++i) {
     stream << "ptl_sub_profile_idc[ " << int{i} << " ]=" << x.ptl_sub_profile_idc(i) << '\n';
   }
-  stream << "ptl_tool_constraints_present_flag=" << boolalpha
+  stream << "ptl_tool_constraints_present_flag=" << std::boolalpha
          << x.ptl_tool_constraints_present_flag() << '\n';
   return stream;
 }
@@ -248,7 +245,7 @@ auto ProfileTierLevel::operator!=(const ProfileTierLevel &other) const noexcept 
   return !operator==(other);
 }
 
-auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel {
+auto ProfileTierLevel::decodeFrom(Common::InputBitstream &bitstream) -> ProfileTierLevel {
   auto x = ProfileTierLevel{};
   x.ptl_tier_flag(bitstream.getFlag());
   x.ptl_profile_codec_group_idc(bitstream.readBits<PtlProfileCodecGroupIdc>(7));
@@ -272,7 +269,7 @@ auto ProfileTierLevel::decodeFrom(InputBitstream &bitstream) -> ProfileTierLevel
   return x;
 }
 
-void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
+void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(ptl_tier_flag());
   bitstream.writeBits(ptl_profile_codec_group_idc(), 7);
   bitstream.writeBits(ptl_profile_toolset_idc(), 8);
@@ -297,13 +294,13 @@ void ProfileTierLevel::encodeTo(OutputBitstream &bitstream) const {
   LIMITATION(!ptl_tool_constraints_present_flag());
 }
 
-auto OccupancyInformation::printTo(ostream &stream, AtlasId atlasId) const -> ostream & {
+auto OccupancyInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
   stream << "oi_occupancy_codec_id( " << atlasId << " )=" << int{oi_occupancy_codec_id()} << '\n';
   stream << "oi_lossy_occupancy_compression_threshold( " << atlasId
          << " )=" << int{oi_lossy_occupancy_compression_threshold()} << '\n';
   stream << "oi_occupancy_2d_bit_depth_minus1( " << atlasId
          << " )=" << int{oi_occupancy_2d_bit_depth_minus1()} << '\n';
-  stream << "oi_occupancy_MSB_align_flag( " << atlasId << " )=" << boolalpha
+  stream << "oi_occupancy_MSB_align_flag( " << atlasId << " )=" << std::boolalpha
          << oi_occupancy_MSB_align_flag() << '\n';
   return stream;
 }
@@ -320,7 +317,7 @@ auto OccupancyInformation::operator!=(const OccupancyInformation &other) const n
   return !operator==(other);
 }
 
-auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInformation {
+auto OccupancyInformation::decodeFrom(Common::InputBitstream &bitstream) -> OccupancyInformation {
   auto x = OccupancyInformation{};
   x.oi_occupancy_codec_id(bitstream.getUint8());
   x.oi_lossy_occupancy_compression_threshold(bitstream.getUint8());
@@ -329,18 +326,18 @@ auto OccupancyInformation::decodeFrom(InputBitstream &bitstream) -> OccupancyInf
   return x;
 }
 
-void OccupancyInformation::encodeTo(OutputBitstream &bitstream) const {
+void OccupancyInformation::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint8(oi_occupancy_codec_id());
   bitstream.putUint8(oi_lossy_occupancy_compression_threshold());
   bitstream.writeBits(oi_occupancy_2d_bit_depth_minus1(), 5);
   bitstream.putFlag(oi_occupancy_MSB_align_flag());
 }
 
-auto GeometryInformation::printTo(ostream &stream, AtlasId atlasId) const -> ostream & {
+auto GeometryInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
   stream << "gi_geometry_codec_id( " << atlasId << " )=" << int{gi_geometry_codec_id()} << '\n';
   stream << "gi_geometry_2d_bit_depth_minus1( " << atlasId
          << " )=" << int{gi_geometry_2d_bit_depth_minus1()} << '\n';
-  stream << "gi_geometry_MSB_align_flag( " << atlasId << " )=" << boolalpha
+  stream << "gi_geometry_MSB_align_flag( " << atlasId << " )=" << std::boolalpha
          << gi_geometry_MSB_align_flag() << '\n';
   stream << "gi_geometry_3d_coordinates_bit_depth_minus1( " << atlasId
          << " )=" << int{gi_geometry_3d_coordinates_bit_depth_minus1()} << '\n';
@@ -359,7 +356,7 @@ auto GeometryInformation::operator!=(const GeometryInformation &other) const noe
   return !operator==(other);
 }
 
-auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
+auto GeometryInformation::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                                      AtlasId atlasId) -> GeometryInformation {
   auto x = GeometryInformation{};
   x.gi_geometry_codec_id(bitstream.getUint8());
@@ -370,7 +367,7 @@ auto GeometryInformation::decodeFrom(InputBitstream &bitstream, const V3cParamet
   return x;
 }
 
-void GeometryInformation::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
+void GeometryInformation::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                                    AtlasId atlasId) const {
   bitstream.putUint8(gi_geometry_codec_id());
   bitstream.writeBits(gi_geometry_2d_bit_depth_minus1(), 5);
@@ -463,7 +460,7 @@ auto AttributeInformation::ai_attribute_MSB_align_flag(uint8_t attributeId, bool
   return *this;
 }
 
-auto AttributeInformation::printTo(ostream &stream, AtlasId atlasId) const -> ostream & {
+auto AttributeInformation::printTo(std::ostream &stream, AtlasId atlasId) const -> std::ostream & {
   stream << "ai_attribute_count( " << atlasId << " )=" << int{ai_attribute_count()} << '\n';
   for (auto i = 0; i < ai_attribute_count(); ++i) {
     stream << "ai_attribute_type_id( " << atlasId << ", " << i << " )=" << ai_attribute_type_id(i)
@@ -472,7 +469,7 @@ auto AttributeInformation::printTo(ostream &stream, AtlasId atlasId) const -> os
            << " )=" << int{ai_attribute_codec_id(i)} << '\n';
     if (m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag) {
       stream << "ai_attribute_map_absolute_coding_persistence_flag( " << atlasId << ", " << i
-             << " )=" << boolalpha
+             << " )=" << std::boolalpha
              << *m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag << '\n';
     }
     stream << "ai_attribute_dimension_minus1( " << atlasId << ", " << i
@@ -480,7 +477,7 @@ auto AttributeInformation::printTo(ostream &stream, AtlasId atlasId) const -> os
     stream << "ai_attribute_2d_bit_depth_minus1( " << atlasId << ", " << i
            << " )=" << int(ai_attribute_2d_bit_depth_minus1(i));
     stream << '\n';
-    stream << "ai_attribute_MSB_align_flag( " << atlasId << ", " << i << " )=" << boolalpha
+    stream << "ai_attribute_MSB_align_flag( " << atlasId << ", " << i << " )=" << std::boolalpha
            << ai_attribute_MSB_align_flag(i) << '\n';
   }
   return stream;
@@ -508,7 +505,7 @@ auto AttributeInformation::operator!=(const AttributeInformation &other) const n
   return !operator==(other);
 }
 
-auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps,
+auto AttributeInformation::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps,
                                       AtlasId atlasId) -> AttributeInformation {
   auto x = AttributeInformation{};
   x.ai_attribute_count(bitstream.readBits<uint8_t>(7));
@@ -533,7 +530,7 @@ auto AttributeInformation::decodeFrom(InputBitstream &bitstream, const V3cParame
   return x;
 }
 
-void AttributeInformation::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps,
+void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3cParameterSet &vps,
                                     AtlasId atlasId) const {
   bitstream.writeBits(ai_attribute_count(), 7);
   for (auto i = 0; i < ai_attribute_count(); ++i) {
@@ -562,21 +559,23 @@ auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> V
   return *this;
 }
 
-auto operator<<(ostream &stream, const VpsMivExtension &x) -> ostream & {
-  stream << "vme_depth_low_quality_flag=" << boolalpha << x.vme_depth_low_quality_flag() << '\n';
-  stream << "vme_geometry_scale_enabled_flag=" << boolalpha << x.vme_geometry_scale_enabled_flag()
+auto operator<<(std::ostream &stream, const VpsMivExtension &x) -> std::ostream & {
+  stream << "vme_depth_low_quality_flag=" << std::boolalpha << x.vme_depth_low_quality_flag()
          << '\n';
+  stream << "vme_geometry_scale_enabled_flag=" << std::boolalpha
+         << x.vme_geometry_scale_enabled_flag() << '\n';
   stream << "vme_num_groups_minus1=" << x.vme_num_groups_minus1() << '\n';
   stream << "vme_max_entities_minus1=" << x.vme_max_entities_minus1() << '\n';
-  stream << "vme_embedded_occupancy_flag=" << boolalpha << x.vme_embedded_occupancy_flag() << '\n';
+  stream << "vme_embedded_occupancy_flag=" << std::boolalpha << x.vme_embedded_occupancy_flag()
+         << '\n';
   if (!x.vme_embedded_occupancy_flag()) {
-    stream << "vme_occupancy_scale_enabled_flag=" << boolalpha
+    stream << "vme_occupancy_scale_enabled_flag=" << std::boolalpha
            << x.vme_occupancy_scale_enabled_flag() << '\n';
   }
   return stream;
 }
 
-auto VpsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+auto VpsMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
     -> VpsMivExtension {
   auto x = VpsMivExtension{};
   x.vme_depth_low_quality_flag(bitstream.getFlag());
@@ -593,7 +592,8 @@ auto VpsMivExtension::decodeFrom(InputBitstream &bitstream, const V3cParameterSe
   return x;
 }
 
-void VpsMivExtension::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
+void VpsMivExtension::encodeTo(Common::OutputBitstream &bitstream,
+                               const V3cParameterSet &vps) const {
   bitstream.putFlag(vme_depth_low_quality_flag());
   bitstream.putFlag(vme_geometry_scale_enabled_flag());
   bitstream.putUExpGolomb(vme_num_groups_minus1());
@@ -679,7 +679,7 @@ auto V3cParameterSet::vps_extension_length_minus1() const noexcept -> size_t {
   return m_vpsExtensionData->size() - 1;
 }
 
-auto V3cParameterSet::vpsExtensionData() const noexcept -> const vector<uint8_t> & {
+auto V3cParameterSet::vpsExtensionData() const noexcept -> const std::vector<uint8_t> & {
   VERIFY_V3CBITSTREAM(vps_extension_7bits());
   return *m_vpsExtensionData;
 }
@@ -752,7 +752,7 @@ auto V3cParameterSet::geometry_information(AtlasId j, GeometryInformation value)
 auto V3cParameterSet::attribute_information(AtlasId j, AttributeInformation value)
     -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_attribute_video_present_flag(j));
-  atlas(j).attribute_information = move(value);
+  atlas(j).attribute_information = std::move(value);
   return *this;
 }
 
@@ -779,7 +779,7 @@ auto V3cParameterSet::vpsExtensionData(std::vector<std::uint8_t> value) noexcept
     -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(!value.empty());
-  m_vpsExtensionData = move(value);
+  m_vpsExtensionData = std::move(value);
   return *this;
 }
 
@@ -825,7 +825,7 @@ auto V3cParameterSet::indexOf(AtlasId atlasId) const noexcept -> size_t {
   V3CBITSTREAM_ERROR("Invalid atlas ID");
 }
 
-auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
+auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream & {
   stream << x.profile_tier_level();
   stream << "vps_v3c_parameter_set_id=" << int{x.vps_v3c_parameter_set_id()} << '\n';
   stream << "vps_atlas_count_minus1=" << int{x.vps_atlas_count_minus1()} << '\n';
@@ -835,13 +835,13 @@ auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
     stream << "vps_frame_width( " << j << " )=" << x.vps_frame_width(j) << '\n';
     stream << "vps_frame_height( " << j << " )=" << x.vps_frame_height(j) << '\n';
     stream << "vps_map_count_minus1( " << j << " )=" << int{x.vps_map_count_minus1(j)} << '\n';
-    stream << "vps_auxiliary_video_present_flag( " << j << " )=" << boolalpha
+    stream << "vps_auxiliary_video_present_flag( " << j << " )=" << std::boolalpha
            << x.vps_auxiliary_video_present_flag(j) << '\n';
-    stream << "vps_occupancy_video_present_flag( " << j << " )=" << boolalpha
+    stream << "vps_occupancy_video_present_flag( " << j << " )=" << std::boolalpha
            << x.vps_occupancy_video_present_flag(j) << '\n';
-    stream << "vps_geometry_video_present_flag( " << j << " )=" << boolalpha
+    stream << "vps_geometry_video_present_flag( " << j << " )=" << std::boolalpha
            << x.vps_geometry_video_present_flag(j) << '\n';
-    stream << "vps_attribute_video_present_flag( " << j << " )=" << boolalpha
+    stream << "vps_attribute_video_present_flag( " << j << " )=" << std::boolalpha
            << x.vps_attribute_video_present_flag(j) << '\n';
     if (x.vps_occupancy_video_present_flag(j)) {
       x.occupancy_information(j).printTo(stream, j);
@@ -853,10 +853,11 @@ auto operator<<(ostream &stream, const V3cParameterSet &x) -> ostream & {
       x.attribute_information(j).printTo(stream, j);
     }
   }
-  stream << "vps_extension_present_flag=" << boolalpha << x.vps_extension_present_flag() << '\n';
+  stream << "vps_extension_present_flag=" << std::boolalpha << x.vps_extension_present_flag()
+         << '\n';
   if (x.vps_extension_present_flag()) {
-    stream << "vps_miv_extension_present_flag=" << boolalpha << x.vps_miv_extension_present_flag()
-           << '\n';
+    stream << "vps_miv_extension_present_flag=" << std::boolalpha
+           << x.vps_miv_extension_present_flag() << '\n';
     stream << "vps_extension_7bits=" << int{x.vps_extension_7bits()} << '\n';
   }
   if (x.vps_miv_extension_present_flag()) {
@@ -920,9 +921,9 @@ auto V3cParameterSet::operator!=(const V3cParameterSet &other) const noexcept ->
   return !operator==(other);
 }
 
-auto V3cParameterSet::decodeFrom(istream &stream) -> V3cParameterSet {
+auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
   auto x = V3cParameterSet{};
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   x.profile_tier_level(ProfileTierLevel::decodeFrom(bitstream));
   x.vps_v3c_parameter_set_id(bitstream.readBits<uint8_t>(4));
@@ -968,7 +969,7 @@ auto V3cParameterSet::decodeFrom(istream &stream) -> V3cParameterSet {
   }
   if (x.vps_extension_7bits()) {
     const auto vps_extension_length_minus1 = bitstream.getUExpGolomb<size_t>();
-    auto vpsExtensionData = vector<uint8_t>();
+    auto vpsExtensionData = std::vector<uint8_t>();
     vpsExtensionData.reserve(vps_extension_length_minus1 + 1);
     for (size_t j = 0; j <= vps_extension_length_minus1; ++j) {
       vpsExtensionData.push_back(bitstream.getUint8());
@@ -979,8 +980,8 @@ auto V3cParameterSet::decodeFrom(istream &stream) -> V3cParameterSet {
   return x;
 }
 
-void V3cParameterSet::encodeTo(ostream &stream) const {
-  OutputBitstream bitstream{stream};
+void V3cParameterSet::encodeTo(std::ostream &stream) const {
+  Common::OutputBitstream bitstream{stream};
   profile_tier_level().encodeTo(bitstream);
   bitstream.writeBits(vps_v3c_parameter_set_id(), 4);
   bitstream.putUint8(0); // vps_reserved_zero_8bits

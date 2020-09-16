@@ -38,29 +38,27 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::GeometryQuantizer {
 GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
     : m_depthOccThresholdIfSet{depthOccThresholdIfSet} {
   if (depthOccThresholdIfSet < 1) {
-    throw runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
-                        "needs to use occupancy. The value 0 is not allowed.");
+    throw std::runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
+                             "needs to use occupancy. The value 0 is not allowed.");
   }
   if (depthOccThresholdIfSet >= 500) {
-    throw runtime_error("The GeometryQuantizer component takes a margin equal to the threshold, so "
-                        "setting the threshold this high will make it impossible to encode depth.");
+    throw std::runtime_error(
+        "The GeometryQuantizer component takes a margin equal to the threshold, so "
+        "setting the threshold this high will make it impossible to encode depth.");
   }
 }
 
-GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeConfig)
+GeometryQuantizer::GeometryQuantizer(const Common::Json & /*unused*/,
+                                     const Common::Json &nodeConfig)
     : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
 auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   m_outParams.vme().vme_embedded_occupancy_flag(true);
@@ -69,7 +67,7 @@ auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
 
 auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   for (auto &x : m_outParams.viewParamsList) {
@@ -89,23 +87,23 @@ auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
 
 auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
     -> Common::MVD10Frame {
-  auto outAtlases = MVD10Frame{};
+  auto outAtlases = Common::MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
   for (const auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
+    outAtlases.emplace_back(
+        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
     const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
-    const auto inOccupancyTransform = OccupancyTransform{inViewParams};
+    const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
 #ifndef NDEBUG
-    const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
+    const auto outOccupancyTransform = MivBitstream::OccupancyTransform{outViewParams, patch};
 #endif
-    const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
-    const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
+    const auto inDepthTransform = MivBitstream::DepthTransform<16>{inViewParams.dq};
+    const auto outDepthTransform = MivBitstream::DepthTransform<10>{outViewParams.dq, patch};
     const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
     const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 

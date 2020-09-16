@@ -35,20 +35,18 @@
 
 #include <TMIV/Common/Factory.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Renderer {
-Renderer::Renderer(const Json &rootNode, const Json &componentNode)
-    : m_synthesizer{Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
-                                                                componentNode)}
-    , m_inpainter{Factory<IInpainter>::getInstance().create("Inpainter", rootNode, componentNode)}
-    , m_viewingSpaceController{Factory<IViewingSpaceController>::getInstance().create(
+Renderer::Renderer(const Common::Json &rootNode, const Common::Json &componentNode)
+    : m_synthesizer{Common::Factory<ISynthesizer>::getInstance().create("Synthesizer", rootNode,
+                                                                        componentNode)}
+    , m_inpainter{Common::Factory<IInpainter>::getInstance().create("Inpainter", rootNode,
+                                                                    componentNode)}
+    , m_viewingSpaceController{Common::Factory<IViewingSpaceController>::getInstance().create(
           "ViewingSpaceController", rootNode, componentNode)} {}
 
-auto Renderer::renderFrame(const Decoder::AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
+auto Renderer::renderFrame(const Decoder::AccessUnit &frame,
+                           const MivBitstream::ViewParams &viewportParams) const
+    -> Common::Texture444Depth16Frame {
   auto viewport = m_synthesizer->renderFrame(frame, viewportParams);
 
   if (frame.vps.vps_miv_extension().vme_max_entities_minus1() == 0) {

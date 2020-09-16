@@ -37,22 +37,19 @@
 
 #include <cmath>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const AapsVpccExtension & /* x */) -> ostream & {
+auto operator<<(std::ostream &stream, const AapsVpccExtension & /* x */) -> std::ostream & {
   stream << "aaps_vpcc_camera_parameters_present_flag=false\n";
   return stream;
 }
 
-auto AapsVpccExtension::decodeFrom(InputBitstream &bitstream) -> AapsVpccExtension {
+auto AapsVpccExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsVpccExtension {
   const auto aaps_vpcc_camera_parameters_present_flag = bitstream.getFlag();
   LIMITATION(!aaps_vpcc_camera_parameters_present_flag);
   return {};
 }
 
-void AapsVpccExtension::encodeTo(OutputBitstream &bitstream) const {
+void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   const auto aaps_vpcc_camera_parameters_present_flag = false;
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }
@@ -69,10 +66,10 @@ auto AapsMivExtension::vui_parameters(const VuiParameters &value) noexcept -> Aa
   return *this;
 }
 
-auto operator<<(ostream &stream, const AapsMivExtension &x) -> ostream & {
-  stream << "aame_omaf_v1_compatible_flag=" << boolalpha << x.aame_omaf_v1_compatible_flag()
+auto operator<<(std::ostream &stream, const AapsMivExtension &x) -> std::ostream & {
+  stream << "aame_omaf_v1_compatible_flag=" << std::boolalpha << x.aame_omaf_v1_compatible_flag()
          << '\n';
-  stream << "aame_vui_params_present_flag=" << boolalpha << x.aame_vui_params_present_flag()
+  stream << "aame_vui_params_present_flag=" << std::boolalpha << x.aame_vui_params_present_flag()
          << '\n';
   if (x.aame_vui_params_present_flag()) {
     stream << x.vui_parameters();
@@ -88,7 +85,7 @@ auto AapsMivExtension::operator!=(const AapsMivExtension &other) const noexcept 
   return !operator==(other);
 }
 
-auto AapsMivExtension::decodeFrom(InputBitstream &bitstream) -> AapsMivExtension {
+auto AapsMivExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsMivExtension {
   auto x = AapsMivExtension{};
   x.aame_omaf_v1_compatible_flag(bitstream.getFlag());
   x.aame_vui_params_present_flag(bitstream.getFlag());
@@ -98,7 +95,7 @@ auto AapsMivExtension::decodeFrom(InputBitstream &bitstream) -> AapsMivExtension
   return x;
 }
 
-void AapsMivExtension::encodeTo(OutputBitstream &bitstream) const {
+void AapsMivExtension::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(aame_omaf_v1_compatible_flag());
   bitstream.putFlag(aame_vui_params_present_flag());
   if (aame_vui_params_present_flag()) {
@@ -127,7 +124,8 @@ auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension() const noexcept
   return *m_aaps_miv_extension;
 }
 
-auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const noexcept -> const vector<bool> & {
+auto AtlasAdaptationParameterSetRBSP::aapsExtensionData() const noexcept
+    -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(aaps_extension_6bits() != 0);
   VERIFY_V3CBITSTREAM(m_aapsExtensionData.has_value());
   return *m_aapsExtensionData;
@@ -178,7 +176,7 @@ auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension(AapsMivExtension value)
 auto AtlasAdaptationParameterSetRBSP::aapsExtensionData(std::vector<bool> value) noexcept
     -> AtlasAdaptationParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(aaps_extension_6bits() != 0);
-  m_aapsExtensionData = move(value);
+  m_aapsExtensionData = std::move(value);
   return *this;
 }
 
@@ -190,21 +188,22 @@ auto AtlasAdaptationParameterSetRBSP::aaps_miv_extension() noexcept -> AapsMivEx
   return *m_aaps_miv_extension;
 }
 
-auto operator<<(ostream &stream, const AtlasAdaptationParameterSetRBSP &x) -> ostream & {
+auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) -> std::ostream & {
   stream << "aaps_atlas_adaptation_parameter_set_id="
          << int{x.aaps_atlas_adaptation_parameter_set_id()} << '\n';
-  stream << "aaps_log2_max_afoc_present_flag=" << boolalpha << x.aaps_log2_max_afoc_present_flag()
-         << '\n';
+  stream << "aaps_log2_max_afoc_present_flag=" << std::boolalpha
+         << x.aaps_log2_max_afoc_present_flag() << '\n';
   if (x.aaps_log2_max_afoc_present_flag()) {
     stream << "aaps_log2_max_atlas_frame_order_cnt_lsb_minus4="
            << int{x.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4()} << '\n';
   }
-  stream << "aaps_extension_present_flag=" << boolalpha << x.aaps_extension_present_flag() << '\n';
+  stream << "aaps_extension_present_flag=" << std::boolalpha << x.aaps_extension_present_flag()
+         << '\n';
   if (x.aaps_extension_present_flag()) {
-    stream << "aaps_vpcc_extension_present_flag=" << boolalpha
+    stream << "aaps_vpcc_extension_present_flag=" << std::boolalpha
            << x.aaps_vpcc_extension_present_flag() << '\n';
-    stream << "aaps_miv_extension_present_flag=" << boolalpha << x.aaps_miv_extension_present_flag()
-           << '\n';
+    stream << "aaps_miv_extension_present_flag=" << std::boolalpha
+           << x.aaps_miv_extension_present_flag() << '\n';
     stream << "aaps_extension_6bits=" << int{x.aaps_extension_6bits()} << '\n';
   }
   if (x.aaps_vpcc_extension_present_flag()) {
@@ -215,7 +214,7 @@ auto operator<<(ostream &stream, const AtlasAdaptationParameterSetRBSP &x) -> os
   }
   if (x.aaps_extension_6bits()) {
     for (auto bit : x.aapsExtensionData()) {
-      stream << "aaps_extension_data_flag=" << boolalpha << bit << '\n';
+      stream << "aaps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
   }
   return stream;
@@ -253,9 +252,9 @@ auto AtlasAdaptationParameterSetRBSP::operator!=(
   return !operator==(other);
 }
 
-auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream)
+auto AtlasAdaptationParameterSetRBSP::decodeFrom(std::istream &stream)
     -> AtlasAdaptationParameterSetRBSP {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   auto x = AtlasAdaptationParameterSetRBSP{};
 
@@ -279,19 +278,19 @@ auto AtlasAdaptationParameterSetRBSP::decodeFrom(istream &stream)
     x.aaps_miv_extension(AapsMivExtension::decodeFrom(bitstream));
   }
   if (x.aaps_extension_6bits() != 0) {
-    auto aapsExtensionData = vector<bool>{};
+    auto aapsExtensionData = std::vector<bool>{};
     while (bitstream.moreRbspData()) {
       aapsExtensionData.push_back(bitstream.getFlag());
     }
-    x.aapsExtensionData(move(aapsExtensionData));
+    x.aapsExtensionData(std::move(aapsExtensionData));
   }
   bitstream.rbspTrailingBits();
 
   return x;
 }
 
-void AtlasAdaptationParameterSetRBSP::encodeTo(ostream &stream) const {
-  OutputBitstream bitstream{stream};
+void AtlasAdaptationParameterSetRBSP::encodeTo(std::ostream &stream) const {
+  Common::OutputBitstream bitstream{stream};
 
   bitstream.putUExpGolomb(aaps_atlas_adaptation_parameter_set_id());
   bitstream.putFlag(aaps_log2_max_afoc_present_flag());

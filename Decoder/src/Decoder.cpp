@@ -37,18 +37,15 @@
 #include <TMIV/Decoder/GeometryScaler.h>
 #include <TMIV/Decoder/OccupancyReconstructor.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::Renderer;
-
 namespace TMIV::Decoder {
-Decoder::Decoder(const Json &rootNode, const Json &componentNode)
+Decoder::Decoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_geometryScaler{rootNode, componentNode}
     , m_occupancyReconstructor{rootNode, componentNode}
     , m_entityBasedPatchMapFilter{rootNode, componentNode} {
-  m_culler = Factory<ICuller>::getInstance().create("Culler", rootNode, componentNode);
-  m_renderer = Factory<IRenderer>::getInstance().create("Renderer", rootNode, componentNode);
+  m_culler =
+      Common::Factory<Renderer::ICuller>::getInstance().create("Culler", rootNode, componentNode);
+  m_renderer = Common::Factory<Renderer::IRenderer>::getInstance().create("Renderer", rootNode,
+                                                                          componentNode);
 }
 
 namespace {
@@ -57,7 +54,7 @@ void checkRestrictions(const AccessUnit &frame) {
     if (frame.vui->vui_coordinate_system_parameters_present_flag()) {
       const auto &csp = frame.vui->coordinate_system_parameters();
       if (!csp.isOmafCas()) {
-        throw runtime_error(
+        throw std::runtime_error(
             "The VUI indicates that a coordinate axis system other than that of OMAF is used. "
             "The TMIV decoder/renderer is not yet able to convert between coordinate axis "
             "systems.");
@@ -67,8 +64,8 @@ void checkRestrictions(const AccessUnit &frame) {
 }
 } // namespace
 
-auto Decoder::decodeFrame(AccessUnit &frame, const ViewParams &viewportParams) const
-    -> Texture444Depth16Frame {
+auto Decoder::decodeFrame(AccessUnit &frame, const MivBitstream::ViewParams &viewportParams) const
+    -> Common::Texture444Depth16Frame {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
   m_occupancyReconstructor.reconstruct(frame);

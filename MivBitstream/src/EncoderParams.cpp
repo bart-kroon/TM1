@@ -37,9 +37,6 @@
 
 #include <algorithm>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 auto EncoderAtlasParams::asme() const noexcept -> const AspsMivExtension & {
   return asps.asps_miv_extension();
@@ -54,9 +51,10 @@ auto EncoderAtlasParams::asme() noexcept -> AspsMivExtension & {
 EncoderParams::EncoderParams() : EncoderParams{false, false} {}
 
 EncoderParams::EncoderParams(bool haveTexture, bool haveOccupancy)
-    : EncoderParams{SizeVector{{0xFFFF, 0xFFFF}}, haveTexture, haveOccupancy} {}
+    : EncoderParams{Common::SizeVector{{0xFFFF, 0xFFFF}}, haveTexture, haveOccupancy} {}
 
-EncoderParams::EncoderParams(const SizeVector &atlasSizes, bool haveTexture, bool haveOccupancy) {
+EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveTexture,
+                             bool haveOccupancy) {
   vps.profile_tier_level()
       .ptl_level_idc(PtlLevelIdc::Level_3_5)
       .ptl_profile_codec_group_idc(PtlProfileCodecGroupIdc::HEVC_Main10)
@@ -112,12 +110,12 @@ auto EncoderParams::operator==(const EncoderParams &other) const -> bool {
          patchParamsList == other.patchParamsList;
 }
 
-auto EncoderParams::atlasSizes() const -> SizeVector {
-  auto x = SizeVector{};
+auto EncoderParams::atlasSizes() const -> Common::SizeVector {
+  auto x = Common::SizeVector{};
   x.reserve(atlas.size());
 
-  transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
-    return Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
+  std::transform(cbegin(atlas), cend(atlas), back_inserter(x), [](const auto &atlas) {
+    return Common::Vec2i{atlas.asps.asps_frame_width(), atlas.asps.asps_frame_height()};
   });
 
   return x;

@@ -41,27 +41,24 @@
 #include <sstream>
 #include <thread>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::VideoDecoder;
+using namespace std::string_literals;
 
-constexpr auto defaultCodecGroupIdc = PtlProfileCodecGroupIdc::HEVC_Main10;
+constexpr auto defaultCodecGroupIdc = TMIV::MivBitstream::PtlProfileCodecGroupIdc::HEVC_Main10;
 
 auto usage() -> int {
-  cout << "Usage: -b BITSTREAM -o RECONSTRUCTION [-c CODEC_GROUP_IDC] [-s] [-S]\n";
-  cout << '\n';
-  cout << "The default codec group IDC is " << static_cast<int>(defaultCodecGroupIdc) << " ("
-       << defaultCodecGroupIdc << ")\n";
-  cout << "The reconstructed output is in YUV 4:2:0 10le\n";
+  std::cout << "Usage: -b BITSTREAM -o RECONSTRUCTION [-c CODEC_GROUP_IDC] [-s] [-S]\n";
+  std::cout << '\n';
+  std::cout << "The default codec group IDC is " << static_cast<int>(defaultCodecGroupIdc) << " ("
+            << defaultCodecGroupIdc << ")\n";
+  std::cout << "The reconstructed output is in YUV 4:2:0 10le\n";
   return 1;
 }
 
 auto main(int argc, char *argv[]) -> int {
-  auto args = vector(argv, argv + argc);
-  auto bitstreamPath = optional<string>{};
-  auto reconstructionPath = optional<string>{};
-  auto codecGroupIdc = optional<PtlProfileCodecGroupIdc>{};
+  auto args = std::vector(argv, argv + argc);
+  auto bitstreamPath = std::optional<std::string>{};
+  auto reconstructionPath = std::optional<std::string>{};
+  auto codecGroupIdc = std::optional<TMIV::MivBitstream::PtlProfileCodecGroupIdc>{};
   auto useServer = false;
   auto stressTest = false;
 
@@ -84,7 +81,7 @@ auto main(int argc, char *argv[]) -> int {
       if (args.size() == 1) {
         return usage();
       }
-      codecGroupIdc = PtlProfileCodecGroupIdc(stoi(args[1]));
+      codecGroupIdc = TMIV::MivBitstream::PtlProfileCodecGroupIdc(std::stoi(args[1]));
       args.erase(args.begin(), args.begin() + 2);
     } else if (args.front() == "-s"s) {
       useServer = true;
@@ -102,60 +99,62 @@ auto main(int argc, char *argv[]) -> int {
   }
 
   if (codecGroupIdc) {
-    cout << "Codec group IDC is set to " << *codecGroupIdc << '\n';
+    std::cout << "Codec group IDC is set to " << *codecGroupIdc << '\n';
   } else {
     codecGroupIdc = defaultCodecGroupIdc;
   }
 
-  ifstream in{*bitstreamPath, ios::binary};
+  std::ifstream in{*bitstreamPath, std::ios::binary};
 
   if (!in.good()) {
-    cout << "Failed to open bitstream \"" << *bitstreamPath << "\" for reading\n";
+    std::cout << "Failed to open bitstream \"" << *bitstreamPath << "\" for reading\n";
     return 1;
   }
 
-  ofstream out{*reconstructionPath, ios::binary};
+  std::ofstream out{*reconstructionPath, std::ios::binary};
 
   if (!out.good()) {
-    cout << "Failed to open reconstruction file \"" << *reconstructionPath << "\" for writing\n";
+    std::cout << "Failed to open reconstruction file \"" << *reconstructionPath
+              << "\" for writing\n";
     return 1;
   }
 
   if (stressTest) {
     // Stress-test the video server
-    ostringstream buffer;
+    std::ostringstream buffer;
     buffer << in.rdbuf();
-    auto servers = vector<unique_ptr<VideoServer>>{};
+    auto servers = std::vector<std::unique_ptr<TMIV::VideoDecoder::VideoServer>>{};
     for (int i = 0; i < 20; ++i) {
-      servers.push_back(
-          make_unique<VideoServer>(IVideoDecoder::create(*codecGroupIdc), buffer.str()));
+      servers.push_back(std::make_unique<TMIV::VideoDecoder::VideoServer>(
+          TMIV::VideoDecoder::IVideoDecoder::create(*codecGroupIdc), buffer.str()));
     }
     for (;;) {
-      auto frame = unique_ptr<AnyFrame>{};
+      auto frame = std::unique_ptr<TMIV::Common::AnyFrame>{};
       for (auto &server : servers) {
         frame = server->getFrame();
       }
       if (!frame) {
         return 0;
       }
-      frame->as<YUV420P10>().dump(out);
+      frame->as<TMIV::Common::YUV420P10>().dump(out);
     }
   } else if (useServer) {
     // Example of using the video server (with the decoder on a separate thread)
-    ostringstream buffer;
+    std::ostringstream buffer;
     buffer << in.rdbuf();
-    auto server = VideoServer{IVideoDecoder::create(*codecGroupIdc), buffer.str()};
+    auto server = TMIV::VideoDecoder::VideoServer{
+        TMIV::VideoDecoder::IVideoDecoder::create(*codecGroupIdc), buffer.str()};
     auto frame = server.getFrame();
     while (frame) {
-      frame->as<YUV420P10>().dump(out);
+      frame->as<TMIV::Common::YUV420P10>().dump(out);
       frame = server.getFrame();
     }
   } else {
     // Example of using the video decoder on the same thread
-    auto decoder = IVideoDecoder::create(*codecGroupIdc);
+    auto decoder = TMIV::VideoDecoder::IVideoDecoder::create(*codecGroupIdc);
 
-    decoder->addFrameListener([&out](const AnyFrame &picture) {
-      auto frame = picture.as<YUV420P10>();
+    decoder->addFrameListener([&out](const TMIV::Common::AnyFrame &picture) {
+      auto frame = picture.as<TMIV::Common::YUV420P10>();
       frame.dump(out);
     });
     decoder->decode(in);

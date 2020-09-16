@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("AtlasId", "[V3C Parameter Set]") {
   SECTION("Default constructor") {
     const auto j = AtlasId{};
@@ -337,3 +336,4 @@ vps_extension_data_byte=15
     REQUIRE(byteCodingTest(vps, 41));
   }
 }
+} // namespace TMIV::MivBitstream

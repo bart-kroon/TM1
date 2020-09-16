@@ -36,20 +36,17 @@
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const CoordinateSystemParameters &x) -> ostream & {
+auto operator<<(std::ostream &stream, const CoordinateSystemParameters &x) -> std::ostream & {
   stream << "cas_forward_axis=" << int{x.cas_forward_axis()} << '\n';
   stream << "cas_delta_left_axis_minus1=" << int{x.cas_delta_left_axis_minus1()} << '\n';
-  stream << "cas_forward_sign=" << boolalpha << x.cas_forward_sign() << '\n';
-  stream << "cas_left_sign=" << boolalpha << x.cas_left_sign() << '\n';
-  stream << "cas_up_sign=" << boolalpha << x.cas_up_sign() << '\n';
+  stream << "cas_forward_sign=" << std::boolalpha << x.cas_forward_sign() << '\n';
+  stream << "cas_left_sign=" << std::boolalpha << x.cas_left_sign() << '\n';
+  stream << "cas_up_sign=" << std::boolalpha << x.cas_up_sign() << '\n';
   return stream;
 }
 
-auto CoordinateSystemParameters::decodeFrom(InputBitstream &bitstream)
+auto CoordinateSystemParameters::decodeFrom(Common::InputBitstream &bitstream)
     -> CoordinateSystemParameters {
   auto x = CoordinateSystemParameters{};
 
@@ -62,7 +59,7 @@ auto CoordinateSystemParameters::decodeFrom(InputBitstream &bitstream)
   return x;
 }
 
-void CoordinateSystemParameters::encodeTo(OutputBitstream &bitstream) const {
+void CoordinateSystemParameters::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.writeBits(cas_forward_axis(), 2);
   bitstream.writeBits(cas_delta_left_axis_minus1(), 1);
   bitstream.putFlag(cas_forward_sign());
@@ -219,7 +216,7 @@ auto VuiParameters::coordinate_system_parameters() noexcept -> CoordinateSystemP
 auto VuiParameters::vui_display_box_origin(int d, std::uint32_t value) noexcept -> VuiParameters & {
   VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
   if (!m_vui_display_box_origin) {
-    m_vui_display_box_origin = array<uint32_t, 3>{};
+    m_vui_display_box_origin = std::array<uint32_t, 3>{};
   }
   (*m_vui_display_box_origin)[d] = value;
   return *this;
@@ -228,7 +225,7 @@ auto VuiParameters::vui_display_box_origin(int d, std::uint32_t value) noexcept 
 auto VuiParameters::vui_display_box_size(int d, std::uint32_t value) noexcept -> VuiParameters & {
   VERIFY_V3CBITSTREAM(vui_display_box_info_present_flag());
   if (!m_vui_display_box_size) {
-    m_vui_display_box_size = array<uint32_t, 3>{};
+    m_vui_display_box_size = std::array<uint32_t, 3>{};
   }
   (*m_vui_display_box_size)[d] = value;
   return *this;
@@ -237,35 +234,35 @@ auto VuiParameters::vui_display_box_size(int d, std::uint32_t value) noexcept ->
 auto VuiParameters::vui_anchor_point(int d, std::uint32_t value) noexcept -> VuiParameters & {
   VERIFY_V3CBITSTREAM(vui_anchor_point_present_flag());
   if (!m_vui_anchor_point) {
-    m_vui_anchor_point = array<uint32_t, 3>{};
+    m_vui_anchor_point = std::array<uint32_t, 3>{};
   }
   (*m_vui_anchor_point)[d] = value;
   return *this;
 }
 
 auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & {
-  stream << "vui_timing_info_present_flag=" << boolalpha << x.vui_timing_info_present_flag()
+  stream << "vui_timing_info_present_flag=" << std::boolalpha << x.vui_timing_info_present_flag()
          << '\n';
   if (x.vui_timing_info_present_flag()) {
     stream << "vui_num_units_in_tick=" << x.vui_num_units_in_tick() << '\n';
     stream << "vui_time_scale=" << x.vui_time_scale() << '\n';
-    stream << "vui_poc_proportional_to_timing_flag=" << boolalpha
+    stream << "vui_poc_proportional_to_timing_flag=" << std::boolalpha
            << x.vui_poc_proportional_to_timing_flag() << '\n';
     if (x.vui_poc_proportional_to_timing_flag()) {
       stream << "vui_num_ticks_poc_diff_one_minus1=" << x.vui_num_ticks_poc_diff_one_minus1()
              << '\n';
     }
-    stream << "vui_hrd_parameters_present_flag=" << boolalpha << x.vui_hrd_parameters_present_flag()
-           << '\n';
+    stream << "vui_hrd_parameters_present_flag=" << std::boolalpha
+           << x.vui_hrd_parameters_present_flag() << '\n';
     LIMITATION(!x.vui_hrd_parameters_present_flag());
   }
 
-  stream << "vui_bitstream_restriction_present_flag=" << boolalpha
+  stream << "vui_bitstream_restriction_present_flag=" << std::boolalpha
          << x.vui_bitstream_restriction_present_flag() << '\n';
   if (x.vui_bitstream_restriction_present_flag()) {
-    stream << "vui_tiles_fixed_structure_for_atlas_flag=" << boolalpha
+    stream << "vui_tiles_fixed_structure_for_atlas_flag=" << std::boolalpha
            << x.vui_tiles_fixed_structure_for_atlas_flag() << '\n';
-    stream << "vui_tiles_fixed_structure_for_video_substreams_flag=" << boolalpha
+    stream << "vui_tiles_fixed_structure_for_video_substreams_flag=" << std::boolalpha
            << x.vui_tiles_fixed_structure_for_video_substreams_flag() << '\n';
     stream << "vui_constrained_tiles_across_v3c_components_idc="
            << int{x.vui_constrained_tiles_across_v3c_components_idc()} << '\n';
@@ -273,15 +270,15 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
            << '\n';
   }
 
-  stream << "vui_coordinate_system_parameters_present_flag=" << boolalpha
+  stream << "vui_coordinate_system_parameters_present_flag=" << std::boolalpha
          << x.vui_coordinate_system_parameters_present_flag() << '\n';
   if (x.vui_coordinate_system_parameters_present_flag()) {
     stream << x.coordinate_system_parameters();
   }
 
-  stream << "vui_unit_in_metres_flag=" << boolalpha << x.vui_unit_in_metres_flag() << '\n';
+  stream << "vui_unit_in_metres_flag=" << std::boolalpha << x.vui_unit_in_metres_flag() << '\n';
 
-  stream << "vui_display_box_info_present_flag=" << boolalpha
+  stream << "vui_display_box_info_present_flag=" << std::boolalpha
          << x.vui_display_box_info_present_flag() << '\n';
   if (x.vui_display_box_info_present_flag()) {
     for (int d = 0; d < 3; ++d) {
@@ -290,7 +287,7 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
     }
   }
 
-  stream << "vui_anchor_point_present_flag=" << boolalpha << x.vui_anchor_point_present_flag()
+  stream << "vui_anchor_point_present_flag=" << std::boolalpha << x.vui_anchor_point_present_flag()
          << '\n';
   if (x.vui_anchor_point_present_flag()) {
     for (int d = 0; d < 3; ++d) {

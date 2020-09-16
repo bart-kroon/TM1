@@ -38,12 +38,9 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::GeometryQuantizer {
-ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &componentNode) {
+ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
+                                     const Common::Json &componentNode) {
   if (auto subnode = componentNode.optional("occupancyScale")) {
     m_occupancyScaleConfig = true;
     m_occupancyScale = subnode.asIntVector<2>();
@@ -54,7 +51,7 @@ ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &compon
 
 auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   m_outParams.vme().vme_embedded_occupancy_flag(false);
@@ -86,7 +83,7 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
 
 auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   return m_outParams;
@@ -94,21 +91,21 @@ auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
 
 auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
     -> Common::MVD10Frame {
-  auto outAtlases = MVD10Frame{};
+  auto outAtlases = Common::MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
   for (const auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
-                            inAtlas.occupancy);
+    outAtlases.emplace_back(
+        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
+        inAtlas.occupancy);
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
     const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
     const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
-    const auto inOccupancyTransform = OccupancyTransform{inViewParams};
-    const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
-    const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
+    const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
+    const auto inDepthTransform = MivBitstream::DepthTransform<16>{inViewParams.dq};
+    const auto outDepthTransform = MivBitstream::DepthTransform<10>{outViewParams.dq, patch};
     const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
     const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 
@@ -142,7 +139,7 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   return outAtlases;
 }
 
-void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
+void ExplicitOccupancy::padGeometryFromLeft(Common::MVD10Frame &atlases) {
   for (size_t i = 0; i < atlases.size(); ++i) {
     const auto j = m_outParams.vps.vps_atlas_id(uint8_t(i));
     if (m_outParams.vps.vps_occupancy_video_present_flag(j)) {

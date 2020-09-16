@@ -33,10 +33,6 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Encoder {
 void Encoder::prepareAccessUnit() {
   resetNonAggregatedMask();

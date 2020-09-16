@@ -37,12 +37,9 @@
 #include <cassert>
 #include <iostream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Encoder {
-GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &componentNode) {
+GroupBasedEncoder::GroupBasedEncoder(const Common::Json &rootNode,
+                                     const Common::Json &componentNode) {
   const auto numGroups_ = size_t(rootNode.require("numGroups").asInt());
 
   while (m_encoders.size() < numGroups_) {
@@ -50,7 +47,7 @@ GroupBasedEncoder::GroupBasedEncoder(const Json &rootNode, const Json &component
   }
 }
 
-void GroupBasedEncoder::prepareSequence(EncoderParams params) {
+void GroupBasedEncoder::prepareSequence(MivBitstream::EncoderParams params) {
   m_grouping = sourceSplitter(params);
 
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
@@ -64,15 +61,15 @@ void GroupBasedEncoder::prepareAccessUnit() {
   }
 }
 
-void GroupBasedEncoder::pushFrame(MVD16Frame views) {
+void GroupBasedEncoder::pushFrame(Common::MVD16Frame views) {
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
-    cout << "Processing group " << groupId << ":\n";
+    std::cout << "Processing group " << groupId << ":\n";
     m_encoders[groupId].pushFrame(splitViews(groupId, views));
   }
 }
 
-auto GroupBasedEncoder::completeAccessUnit() -> const EncoderParams & {
-  auto perGroupParams = vector<const EncoderParams *>(numGroups(), nullptr);
+auto GroupBasedEncoder::completeAccessUnit() -> const MivBitstream::EncoderParams & {
+  auto perGroupParams = std::vector<const MivBitstream::EncoderParams *>(numGroups(), nullptr);
 
   for (size_t groupId = 0; groupId != numGroups(); ++groupId) {
     perGroupParams[groupId] = &m_encoders[groupId].completeAccessUnit();
@@ -81,12 +78,12 @@ auto GroupBasedEncoder::completeAccessUnit() -> const EncoderParams & {
   return mergeParams(perGroupParams);
 }
 
-auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
-  auto result = MVD10Frame{};
+auto GroupBasedEncoder::popAtlas() -> Common::MVD10Frame {
+  auto result = Common::MVD10Frame{};
 
   for (auto &encoder : m_encoders) {
     for (auto &atlas : encoder.popAtlas()) {
-      result.push_back(move(atlas));
+      result.push_back(std::move(atlas));
     }
   }
 
@@ -94,20 +91,21 @@ auto GroupBasedEncoder::popAtlas() -> MVD10Frame {
 }
 
 auto GroupBasedEncoder::maxLumaSamplesPerFrame() const -> size_t {
-  return accumulate(m_encoders.begin(), m_encoders.end(), size_t{},
-                    [](size_t sum, const auto &x) { return sum + x.maxLumaSamplesPerFrame(); });
+  return std::accumulate(
+      m_encoders.begin(), m_encoders.end(), size_t{},
+      [](size_t sum, const auto &x) { return sum + x.maxLumaSamplesPerFrame(); });
 }
 
-auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping {
+auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params) -> Grouping {
   auto grouping = Grouping{};
 
   const auto &viewParamsList = params.viewParamsList;
   const auto numGroups = params.vme().vme_num_groups_minus1() + 1;
 
   // Compute axial ranges and find the dominant one
-  auto Tx = vector<float>{};
-  auto Ty = vector<float>{};
-  auto Tz = vector<float>{};
+  auto Tx = std::vector<float>{};
+  auto Ty = std::vector<float>{};
+  auto Tz = std::vector<float>{};
   for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
     Tx.push_back(viewParamsList[camIndex].ce.ce_view_pos_x());
     Ty.push_back(viewParamsList[camIndex].ce.ce_view_pos_y());
@@ -133,10 +131,10 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
   }
 
   // Select views per group
-  auto viewsPool = vector<ViewParams>{};
-  auto viewsLabels = vector<uint8_t>{};
-  auto viewsInGroup = vector<uint8_t>{};
-  auto numViewsPerGroup = vector<int>{};
+  auto viewsPool = std::vector<MivBitstream::ViewParams>{};
+  auto viewsLabels = std::vector<uint8_t>{};
+  auto viewsInGroup = std::vector<uint8_t>{};
+  auto numViewsPerGroup = std::vector<int>{};
 
   for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
     viewsPool.push_back(viewParamsList[camIndex]);
@@ -145,10 +143,10 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
     viewsInGroup.clear();
-    auto camerasInGroup = ViewParamsList{};
-    auto camerasOutGroup = ViewParamsList{};
+    auto camerasInGroup = MivBitstream::ViewParamsList{};
+    auto camerasOutGroup = MivBitstream::ViewParamsList{};
     if (gIndex < numGroups - 1) {
-      numViewsPerGroup.push_back(static_cast<int>(floor(viewParamsList.size() / numGroups)));
+      numViewsPerGroup.push_back(static_cast<int>(std::floor(viewParamsList.size() / numGroups)));
       int64_t maxElementIndex = 0;
 
       if (dominantAxis == 0) {
@@ -159,18 +157,18 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
         maxElementIndex = max_element(Tz.begin(), Tz.end()) - Tz.begin();
       }
 
-      const auto T0 = Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
-      auto distance = vector<float>();
+      const auto T0 = Common::Vec3f{Tx[maxElementIndex], Ty[maxElementIndex], Tz[maxElementIndex]};
+      auto distance = std::vector<float>();
       distance.reserve(viewsPool.size());
       for (const auto &viewParams : viewsPool) {
         distance.push_back(norm(viewParams.ce.position() - T0));
       }
 
       // ascending order
-      vector<size_t> sortedCamerasId(viewsPool.size());
+      std::vector<size_t> sortedCamerasId(viewsPool.size());
       iota(sortedCamerasId.begin(), sortedCamerasId.end(), 0); // initalization
-      sort(sortedCamerasId.begin(), sortedCamerasId.end(),
-           [&distance](size_t i1, size_t i2) { return distance[i1] < distance[i2]; });
+      std::sort(sortedCamerasId.begin(), sortedCamerasId.end(),
+                [&distance](size_t i1, size_t i2) { return distance[i1] < distance[i2]; });
       for (int camIndex = 0; camIndex < numViewsPerGroup[gIndex]; camIndex++) {
         camerasInGroup.push_back(viewsPool[sortedCamerasId[camIndex]]);
       }
@@ -187,16 +185,16 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
         Tz.push_back(viewsPool[sortedCamerasId[camIndex]].ce.ce_view_pos_z());
       }
 
-      cout << "Views selected for group " << gIndex << ": ";
+      std::cout << "Views selected for group " << gIndex << ": ";
       const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        cout << sep << unsigned(viewsLabels[sortedCamerasId[i]]);
+        std::cout << sep << unsigned(viewsLabels[sortedCamerasId[i]]);
         viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
         sep = ", ";
       }
-      cout << '\n';
+      std::cout << '\n';
 
-      auto viewLabelsTemp = vector<uint8_t>{};
+      auto viewLabelsTemp = std::vector<uint8_t>{};
       for (size_t i = camerasInGroup.size(); i < viewsLabels.size(); i++) {
         viewLabelsTemp.push_back(viewsLabels[sortedCamerasId[i]]);
       }
@@ -204,20 +202,21 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
 
       viewsPool = camerasOutGroup;
     } else {
-      numViewsPerGroup.push_back(static_cast<int>(
-          (viewParamsList.size() - (numGroups - 1) * floor(viewParamsList.size() / numGroups))));
+      numViewsPerGroup.push_back(
+          static_cast<int>((viewParamsList.size() -
+                            (numGroups - 1) * std::floor(viewParamsList.size() / numGroups))));
 
       camerasInGroup.clear();
-      copy(cbegin(viewsPool), cend(viewsPool), back_inserter(camerasInGroup));
+      std::copy(std::cbegin(viewsPool), std::cend(viewsPool), back_inserter(camerasInGroup));
 
-      cout << "Views selected for group " << gIndex << ": ";
+      std::cout << "Views selected for group " << gIndex << ": ";
       const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        cout << sep << unsigned(viewsLabels[i]);
+        std::cout << sep << unsigned(viewsLabels[i]);
         viewsInGroup.push_back(viewsLabels[i]);
         sep = ", ";
       }
-      cout << '\n';
+      std::cout << '\n';
     }
     for (const auto viewInGroup : viewsInGroup) {
       grouping.emplace_back(gIndex, viewInGroup);
@@ -226,8 +225,8 @@ auto GroupBasedEncoder::sourceSplitter(const EncoderParams &params) -> Grouping 
   return grouping;
 }
 
-auto GroupBasedEncoder::splitParams(size_t groupId, const EncoderParams &params) const
-    -> EncoderParams {
+auto GroupBasedEncoder::splitParams(size_t groupId, const MivBitstream::EncoderParams &params) const
+    -> MivBitstream::EncoderParams {
   // Independent metadata should work automatically. Just copy all metadata to all groups.
   auto result = params;
   result.viewParamsList.clear();
@@ -242,8 +241,9 @@ auto GroupBasedEncoder::splitParams(size_t groupId, const EncoderParams &params)
   return result;
 }
 
-auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> MVD16Frame {
-  auto result = MVD16Frame{};
+auto GroupBasedEncoder::splitViews(size_t groupId, Common::MVD16Frame &views) const
+    -> Common::MVD16Frame {
+  auto result = Common::MVD16Frame{};
 
   // Only include the views that are part of this group
   for (const auto &[groupId_, viewId] : m_grouping) {
@@ -255,14 +255,14 @@ auto GroupBasedEncoder::splitViews(size_t groupId, MVD16Frame &views) const -> M
   return result;
 }
 
-auto GroupBasedEncoder::mergeVps(const std::vector<const V3cParameterSet *> &vps)
-    -> V3cParameterSet {
-  const auto atlasCount =
-      accumulate(vps.cbegin(), vps.cend(), 0, [](int count, const V3cParameterSet *vps) {
-        return count + vps->vps_atlas_count_minus1() + 1;
-      });
+auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParameterSet *> &vps)
+    -> MivBitstream::V3cParameterSet {
+  const auto atlasCount = accumulate(vps.cbegin(), vps.cend(), 0,
+                                     [](int count, const MivBitstream::V3cParameterSet *vps) {
+                                       return count + vps->vps_atlas_count_minus1() + 1;
+                                     });
 
-  auto x = V3cParameterSet{};
+  auto x = MivBitstream::V3cParameterSet{};
   x.profile_tier_level(vps.front()->profile_tier_level())
       .vps_v3c_parameter_set_id(vps.front()->vps_v3c_parameter_set_id())
       .vps_atlas_count_minus1(uint8_t(atlasCount - 1))
@@ -281,7 +281,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const V3cParameterSet *> &vps
 
     for (uint8_t kIn = 0; kIn <= v->vps_atlas_count_minus1(); ++kIn, ++kOut) {
       const auto jIn = v->vps_atlas_id(kIn);
-      const auto jOut = AtlasId{kOut};
+      const auto jOut = MivBitstream::AtlasId{kOut};
       x.vps_atlas_id(kOut, jOut);
 
       x.vps_frame_width(jOut, v->vps_frame_width(jIn));
@@ -310,32 +310,34 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const V3cParameterSet *> &vps
   return x;
 }
 
-auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGroupParams)
-    -> const EncoderParams & {
+auto GroupBasedEncoder::mergeParams(
+    const std::vector<const MivBitstream::EncoderParams *> &perGroupParams)
+    -> const MivBitstream::EncoderParams & {
   // Start with first group
   m_params = *perGroupParams.front();
   assert(m_params.vme().vme_num_groups_minus1() + size_t(1) == perGroupParams.size());
 
   // Merge V3C parameter sets
-  vector<const V3cParameterSet *> vps(perGroupParams.size());
-  transform(begin(perGroupParams), end(perGroupParams), begin(vps),
+  std::vector<const MivBitstream::V3cParameterSet *> vps(perGroupParams.size());
+  transform(std::begin(perGroupParams), std::end(perGroupParams), std::begin(vps),
             [](const auto &ivs) { return &ivs->vps; });
   m_params.vps = mergeVps(vps);
 
   // For each other group
-  for (auto ivs = begin(perGroupParams) + 1; ivs != end(perGroupParams); ++ivs) {
+  for (auto ivs = std::begin(perGroupParams) + 1; ivs != std::end(perGroupParams); ++ivs) {
     // Merge view parameters
-    transform(begin((*ivs)->viewParamsList), end((*ivs)->viewParamsList),
-              back_inserter(m_params.viewParamsList),
-              [viewIdOffset = uint16_t(m_params.viewParamsList.size())](ViewParams vp) {
-                // Merging pruning graphs
-                if (vp.pp && !vp.pp->pp_is_root_flag()) {
-                  for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
-                    vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
-                  }
-                }
-                return vp;
-              });
+    std::transform(
+        std::begin((*ivs)->viewParamsList), std::end((*ivs)->viewParamsList),
+        back_inserter(m_params.viewParamsList),
+        [viewIdOffset = uint16_t(m_params.viewParamsList.size())](MivBitstream::ViewParams vp) {
+          // Merging pruning graphs
+          if (vp.pp && !vp.pp->pp_is_root_flag()) {
+            for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
+              vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
+            }
+          }
+          return vp;
+        });
 
     // Merge viewing space
     assert(m_params.viewingSpace == (*ivs)->viewingSpace);
@@ -366,7 +368,7 @@ auto GroupBasedEncoder::mergeParams(const vector<const EncoderParams *> &perGrou
     for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);
       m_params.patchParamsList.back().atlasId =
-          AtlasId{uint8_t(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
+          MivBitstream::AtlasId{uint8_t(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
       m_params.patchParamsList.back().atlasPatchProjectionId(patch.atlasPatchProjectionId() +
                                                              viewIdOffset);
     }

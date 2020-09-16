@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("atlas_tile_header", "[Atlas Tile Layer RBSP]") {
   auto aspsV = std::vector<AtlasSequenceParameterSetRBSP>(1);
   aspsV.front().asps_num_ref_atlas_frame_lists_in_asps(1).asps_log2_patch_packing_block_size(7);
@@ -519,3 +518,4 @@ pdu_orientation_index[ 0 ][ 0 ]=FPO_NULL
     REQUIRE(byteCodingTest(x, 12, vps, nuh, aspsV, afpsV));
   }
 }
+} // namespace TMIV::MivBitstream

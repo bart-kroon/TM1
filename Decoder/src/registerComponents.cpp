@@ -47,21 +47,21 @@ namespace TMIV::Decoder {
 void registerComponents() {
   using Common::Factory;
 
-  auto &cullers = Factory<Renderer::ICuller>::getInstance();
+  auto &cullers = Common::Factory<Renderer::ICuller>::getInstance();
   cullers.registerAs<Renderer::NoCuller>("NoCuller");
   cullers.registerAs<Renderer::SubBlockCuller>("SubBlockCuller");
 
-  auto &decoders = Factory<IDecoder>::getInstance();
+  auto &decoders = Common::Factory<IDecoder>::getInstance();
   decoders.registerAs<Decoder>("Decoder");
 
-  auto &inpainters = Factory<Renderer::IInpainter>::getInstance();
+  auto &inpainters = Common::Factory<Renderer::IInpainter>::getInstance();
   inpainters.registerAs<Renderer::Inpainter>("Inpainter");
   inpainters.registerAs<Renderer::NoInpainter>("NoInpainter");
 
-  auto &renderers = Factory<Renderer::IRenderer>::getInstance();
+  auto &renderers = Common::Factory<Renderer::IRenderer>::getInstance();
   renderers.registerAs<Renderer::Renderer>("Renderer");
 
-  auto &synthesizers = Factory<Renderer::ISynthesizer>::getInstance();
+  auto &synthesizers = Common::Factory<Renderer::ISynthesizer>::getInstance();
   synthesizers.registerAs<Renderer::AdditiveSynthesizer>("AdditiveSynthesizer");
   synthesizers.registerAs<Renderer::NoSynthesizer>("NoSynthesizer");
   synthesizers.registerAs<Renderer::ViewWeightingSynthesizer>("ViewWeightingSynthesizer");

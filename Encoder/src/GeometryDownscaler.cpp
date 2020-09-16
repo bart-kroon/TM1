@@ -35,16 +35,14 @@
 
 #include <algorithm>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Encoder {
-GeometryDownscaler::GeometryDownscaler(const Json &rootNode, const Json & /* componentNode */)
+GeometryDownscaler::GeometryDownscaler(const Common::Json &rootNode,
+                                       const Common::Json & /* componentNode */)
     : m_geometryScaleEnabledFlag{rootNode.require("geometryScaleEnabledFlag").asBool()} {}
 
-auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderParams & {
-  m_params = move(params);
+auto GeometryDownscaler::transformParams(MivBitstream::EncoderParams params)
+    -> const MivBitstream::EncoderParams & {
+  m_params = std::move(params);
 
   if (m_geometryScaleEnabledFlag) {
     m_params.vps.vps_miv_extension_present_flag(true);
@@ -59,8 +57,8 @@ auto GeometryDownscaler::transformParams(EncoderParams params) -> const EncoderP
 }
 
 namespace {
-auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
-  auto result = Depth10Frame{frameSize.x(), frameSize.y()};
+auto maxPool(const Common::Depth10Frame &frame, Common::Vec2i frameSize) -> Common::Depth10Frame {
+  auto result = Common::Depth10Frame{frameSize.x(), frameSize.y()};
 
   for (int y = 0; y < frameSize.y(); ++y) {
     const int i1 = y * frame.getHeight() / frameSize.y();
@@ -74,7 +72,7 @@ auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
 
       for (int i = i1; i < i2; ++i) {
         for (int j = j1; j < j2; ++j) {
-          maximum = max(maximum, frame.getPlane(0)(i, j));
+          maximum = std::max(maximum, frame.getPlane(0)(i, j));
         }
       }
 
@@ -86,14 +84,14 @@ auto maxPool(const Depth10Frame &frame, Vec2i frameSize) -> Depth10Frame {
 }
 } // namespace
 
-auto GeometryDownscaler::transformFrame(MVD10Frame frame) -> MVD10Frame {
+auto GeometryDownscaler::transformFrame(Common::MVD10Frame frame) -> Common::MVD10Frame {
   if (m_params.vme().vme_geometry_scale_enabled_flag()) {
     for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
       const auto &asps = m_params.atlas[atlasId].asps;
       const auto &asme = asps.asps_miv_extension();
-      const auto frameSize =
-          Vec2i{asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
-                asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
+      const auto frameSize = Common::Vec2i{
+          asps.asps_frame_width() / (asme.asme_geometry_scale_factor_x_minus1() + 1),
+          asps.asps_frame_height() / (asme.asme_geometry_scale_factor_y_minus1() + 1)};
       frame[atlasId].depth = maxPool(frame[atlasId].depth, frameSize);
     }
   }

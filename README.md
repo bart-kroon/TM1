@@ -136,7 +136,7 @@ files are examples.
 
 Use the following steps to encode a bistream and render a viewport:
 
-1. Run TMIV encoder
+1. Run TMIV encoder (see [example](#example-for-running-tmiv-encoder) below)
 1. Run HM encoder on all video sub bitstreams
 1. Run TMIV multiplexer to form the output bitstream
 1. Run TMIV decoder to decode the bitstream and render a viewport
@@ -157,7 +157,9 @@ For this example, we will be using the [miv_anchor config](/ctc_config/miv_ancho
 1. The files' naming scheme can for example be `{}_depth_{}x{}_yuv420p16le.yuv`. The curly braces are placeholders for (in sequence)
     1. camera name, as defined in `SourceCameraNames` in the [config file](/ctc_config/miv_anchor/TMIV_A17_SA.json)
     1. Horizontal resolution of the video
-    1. Vertical resolution of the video such that a texture video file from camera `v0` with resolution 4096x2048 pixels should be named `v0_texture_4096x2048_yuv420p10le.yuv`.
+    1. Vertical resolution of the video
+
+    such that a texture video file from camera `v0` with resolution 4096x2048 pixels should be named `v0_texture_4096x2048_yuv420p10le.yuv`.
 1. Point to the video file directory by providing the absolute path to configuration variable `SourceDirectory`.
 1. You may set `OutputDirectory` to a custom existing directory, again using an absolute path.
 

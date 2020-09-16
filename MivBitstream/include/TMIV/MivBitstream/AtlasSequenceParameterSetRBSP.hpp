@@ -142,12 +142,12 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height() const noexcept
   return m_asps_frame_height;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_3d_bitdepth_minus1() const noexcept {
-  return m_asps_geometry_3d_bitdepth_minus1;
+constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_3d_bit_depth_minus1() const noexcept {
+  return m_asps_geometry_3d_bit_depth_minus1;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_2d_bitdepth_minus1() const noexcept {
-  return m_asps_geometry_2d_bitdepth_minus1;
+constexpr auto AtlasSequenceParameterSetRBSP::asps_geometry_2d_bit_depth_minus1() const noexcept {
+  return m_asps_geometry_2d_bit_depth_minus1;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_log2_patch_packing_block_size() const noexcept {
@@ -188,8 +188,9 @@ AtlasSequenceParameterSetRBSP::asps_normal_axis_max_delta_value_enabled_flag() c
   return m_asps_normal_axis_max_delta_value_enabled_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_pixel_deinterleaving_flag() const noexcept {
-  return m_asps_pixel_deinterleaving_flag;
+constexpr auto
+AtlasSequenceParameterSetRBSP::asps_pixel_deinterleaving_enabled_flag() const noexcept {
+  return m_asps_pixel_deinterleaving_enabled_flag;
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_patch_precedence_order_flag() const noexcept {
@@ -225,12 +226,12 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_present_flag() cons
   return m_asps_extension_present_flag;
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_flag() const noexcept {
-  return m_asps_vpcc_extension_flag.value_or(false);
+constexpr auto AtlasSequenceParameterSetRBSP::asps_vpcc_extension_present_flag() const noexcept {
+  return m_asps_vpcc_extension_present_flag.value_or(false);
 }
 
-constexpr auto AtlasSequenceParameterSetRBSP::asps_miv_extension_flag() const noexcept {
-  return m_asps_miv_extension_flag.value_or(false);
+constexpr auto AtlasSequenceParameterSetRBSP::asps_miv_extension_present_flag() const noexcept {
+  return m_asps_miv_extension_present_flag.value_or(false);
 }
 
 constexpr auto AtlasSequenceParameterSetRBSP::asps_extension_6bits() const noexcept {
@@ -257,16 +258,16 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_frame_height(const uint16_t v
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_geometry_3d_bitdepth_minus1(std::uint8_t value) noexcept
+AtlasSequenceParameterSetRBSP::asps_geometry_3d_bit_depth_minus1(std::uint8_t value) noexcept
     -> auto & {
-  m_asps_geometry_3d_bitdepth_minus1 = value;
+  m_asps_geometry_3d_bit_depth_minus1 = value;
   return *this;
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_geometry_2d_bitdepth_minus1(std::uint8_t value) noexcept
+AtlasSequenceParameterSetRBSP::asps_geometry_2d_bit_depth_minus1(std::uint8_t value) noexcept
     -> auto & {
-  m_asps_geometry_2d_bitdepth_minus1 = value;
+  m_asps_geometry_2d_bit_depth_minus1 = value;
   return *this;
 }
 
@@ -304,6 +305,10 @@ AtlasSequenceParameterSetRBSP::asps_extended_projection_enabled_flag(const bool 
   return *this;
 }
 
+constexpr auto AtlasSequenceParameterSetRBSP::asps_max_number_projections_minus1() const noexcept {
+  return m_asps_max_number_projections_minus1.value_or(5U);
+}
+
 constexpr auto AtlasSequenceParameterSetRBSP::asps_normal_axis_limits_quantization_enabled_flag(
     const bool value) noexcept -> auto & {
   m_asps_normal_axis_limits_quantization_enabled_flag = value;
@@ -317,8 +322,9 @@ constexpr auto AtlasSequenceParameterSetRBSP::asps_normal_axis_max_delta_value_e
 }
 
 constexpr auto
-AtlasSequenceParameterSetRBSP::asps_pixel_deinterleaving_flag(const bool value) noexcept -> auto & {
-  m_asps_pixel_deinterleaving_flag = value;
+AtlasSequenceParameterSetRBSP::asps_pixel_deinterleaving_enabled_flag(const bool value) noexcept
+    -> auto & {
+  m_asps_pixel_deinterleaving_enabled_flag = value;
   return *this;
 }
 

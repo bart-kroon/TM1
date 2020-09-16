@@ -89,7 +89,7 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
   case PayloadType::geometry_upscaling_parameters:
     return stream << "geometry_upscaling_parameters";
   default:
-    return stream << "reserved_sei_message (" << int(pt) << ")";
+    return stream << "reserved_sei_message (" << static_cast<int>(pt) << ")";
   }
 }
 
@@ -153,7 +153,7 @@ void SeiMessage::encodeTo(std::ostream &stream) const {
   stream.write(payload().data(), payload().size());
 }
 
-SeiRBSP::SeiRBSP(std::vector<SeiMessage> messages) : m_messages{move(messages)} {}
+SeiRBSP::SeiRBSP(std::vector<SeiMessage> messages) : m_messages{std::move(messages)} {}
 
 auto operator<<(std::ostream &stream, const SeiRBSP &x) -> std::ostream & {
   for (const auto &x : x.messages()) {

@@ -190,6 +190,7 @@ using Vec2i = stack::Vec2<int>;
 using Vec2u = stack::Vec2<unsigned int>;
 using Vec2f = stack::Vec2<float>;
 using Vec3i = stack::Vec3<int>;
+using Vec4i = stack::Vec4<int>;
 using Vec3f = stack::Vec3<float>;
 using Vec4f = stack::Vec4<float>;
 using Vec2d = stack::Vec2<double>;

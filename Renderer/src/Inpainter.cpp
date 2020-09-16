@@ -54,8 +54,8 @@ void perform2WayInpainting(YUVD &yuvd, const double &DepthBlendingThreshold,
   auto &V = yuvd.first.getPlane(2);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = int(Y.width());
-  const int height = int(Y.height());
+  const int width = static_cast<int>(Y.width());
+  const int height = static_cast<int>(Y.height());
 
   for (int h = 0, pp = 0; h < height; h++) {
     for (int w = 0; w < width; w++, pp++) {
@@ -167,8 +167,8 @@ template <typename YUVD> void fillVerticalCracks(YUVD &yuvd) {
   auto &V = yuvd.first.getPlane(2);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = int(Y.width());
-  const int height = int(Y.height());
+  const int width = static_cast<int>(Y.width());
+  const int height = static_cast<int>(Y.height());
 
   // fill vertical cracks
   for (int h = 0; h < height; h++) {
@@ -189,8 +189,8 @@ void inpaintOmnidirectionalView(YUVD &yuvd, const double &DepthBlendingThreshold
   auto &Y = yuvd.first.getPlane(0);
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = int(Y.width());
-  const int height = int(Y.height());
+  const int width = static_cast<int>(Y.width());
+  const int height = static_cast<int>(Y.height());
 
   Common::Mat<int> isHole;
   isHole.resize(height, width);
@@ -297,8 +297,8 @@ template <typename YUVD>
 void inpaintPerspectiveView(YUVD &yuvd, const double &DepthBlendingThreshold) {
   auto &D = yuvd.second.getPlane(0);
 
-  const int width = int(D.width());
-  const int height = int(D.height());
+  const int width = static_cast<int>(D.width());
+  const int height = static_cast<int>(D.height());
 
   Common::Mat<int> nonEmptyNeighborL;
   nonEmptyNeighborL.resize(height, width);

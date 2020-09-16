@@ -45,7 +45,7 @@ SampleStreamV3cHeader::SampleStreamV3cHeader(uint8_t ssvh_unit_size_precision_by
 
 auto operator<<(std::ostream &stream, const SampleStreamV3cHeader &x) -> std::ostream & {
   return stream << "ssvh_unit_size_precision_bytes_minus1="
-                << int(x.ssvh_unit_size_precision_bytes_minus1()) << '\n';
+                << int{x.ssvh_unit_size_precision_bytes_minus1()} << '\n';
 }
 
 auto SampleStreamV3cHeader::decodeFrom(std::istream &stream) -> SampleStreamV3cHeader {
@@ -60,7 +60,7 @@ void SampleStreamV3cHeader::encodeTo(std::ostream &stream) const {
 }
 
 SampleStreamV3cUnit::SampleStreamV3cUnit(std::string ssvu_v3c_unit)
-    : m_ssvu_v3c_unit{move(ssvu_v3c_unit)} {}
+    : m_ssvu_v3c_unit{std::move(ssvu_v3c_unit)} {}
 
 auto operator<<(std::ostream &stream, const SampleStreamV3cUnit &x) -> std::ostream & {
   return stream << "v3c_unit(" << x.ssvu_v3c_unit_size() << ")\n";

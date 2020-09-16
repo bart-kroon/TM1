@@ -67,7 +67,7 @@ template <typename T>
 void AbstractViewSelector::inplaceEraseAdditionalViews(std::vector<T> &views) const {
   assert(views.size() == m_isBasicView.size());
   if (!m_outputAdditionalViews) {
-    for (int i = int(views.size()) - 1; i >= 0; --i) {
+    for (int i = static_cast<int>(views.size()) - 1; i >= 0; --i) {
       if (!m_isBasicView[i]) {
         views.erase(views.begin() + i);
       }

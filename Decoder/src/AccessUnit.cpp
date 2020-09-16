@@ -40,7 +40,7 @@ auto AtlasAccessUnit::frameSize() const noexcept -> Common::Vec2i {
 
 auto AtlasAccessUnit::decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
     -> Common::Vec2i {
-  if (vps.vps_miv_extension_flag()) {
+  if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (vme.vme_geometry_scale_enabled_flag()) {
       const auto &asme = asps.asps_miv_extension();
@@ -54,7 +54,7 @@ auto AtlasAccessUnit::decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) 
 
 auto AtlasAccessUnit::decOccFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
     -> Common::Vec2i {
-  if (vps.vps_miv_extension_flag()) {
+  if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (!vme.vme_embedded_occupancy_flag() && vme.vme_occupancy_scale_enabled_flag()) {
       const auto &asme = asps.asps_miv_extension();

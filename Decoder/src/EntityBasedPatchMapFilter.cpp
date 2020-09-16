@@ -48,15 +48,15 @@ EntityBasedPatchMapFilter::EntityBasedPatchMapFilter(const Common::Json & /*root
 
 void EntityBasedPatchMapFilter::inplaceFilterBlockToPatchMaps(AccessUnit &frame) const {
   if (m_entityFiltering && 0 < frame.vps.vps_miv_extension().vme_max_entities_minus1()) {
-    for (auto &atla : frame.atlas) {
-      Common::Vec2i sz = atla.blockToPatchMap.getSize();
+    for (auto &atlas : frame.atlas) {
+      Common::Vec2i sz = atlas.blockToPatchMap.getSize();
       for (int y = 0; y < sz[1]; y++) {
         for (int x = 0; x < sz[0]; x++) {
-          uint16_t patchId = atla.blockToPatchMap.getPlane(0)(y, x);
+          uint16_t patchId = atlas.blockToPatchMap.getPlane(0)(y, x);
           if (patchId != Common::unusedPatchId) {
-            auto entityId = static_cast<int>(*atla.patchParamsList[patchId].pduEntityId());
+            auto entityId = static_cast<int>(*atlas.patchParamsList[patchId].atlasPatchEntityId());
             if (entityId < m_entityDecodeRange[0] || m_entityDecodeRange[1] <= entityId) {
-              atla.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
+              atlas.blockToPatchMap.getPlane(0)(y, x) = Common::unusedPatchId;
             }
           }
         }

@@ -134,7 +134,7 @@ TEST_CASE("depth_quantization", "[Common Atlas Frame RBSP]") {
   auto x = DepthQuantization{};
   auto vps = V3cParameterSet{};
   vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
 
   REQUIRE(toString(x, 7) == R"(dq_quantization_law[ 7 ]=0
@@ -189,7 +189,7 @@ TEST_CASE("miv_view_params_list", "[Common Atlas Frame RBSP]") {
   auto x = MivViewParamsList{};
   auto vps = V3cParameterSet{};
   vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
 
   SECTION("Example 1") {
@@ -353,7 +353,7 @@ TEST_CASE("common_atlas_frame_rbsp", "[Common Atlas Frame RBSP]") {
   auto x = CommonAtlasFrameRBSP{};
   auto vps = V3cParameterSet{};
   vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
 
   const auto maxCommonAtlasFrmOrderCntLsb = 16;
@@ -562,7 +562,7 @@ TEST_CASE("miv_view_params_update_depth_quantization", "[Common Atlas Frame RBSP
   auto x = MivViewParamsUpdateDepthQuantization{};
   auto vps = V3cParameterSet{};
   vps.vps_extension_present_flag(true);
-  vps.vps_miv_extension_flag(true);
+  vps.vps_miv_extension_present_flag(true);
   vps.vps_miv_extension() = {};
 
   SECTION("Example 1: Test with 1 update.") {

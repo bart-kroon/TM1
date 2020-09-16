@@ -59,8 +59,8 @@ void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused *
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
 
-  const int width_Y = int(Y.width());
-  const int height_Y = int(Y.height());
+  const int width_Y = static_cast<int>(Y.width());
+  const int height_Y = static_cast<int>(Y.height());
 
   float weight = index; // for test:just a recopy of the index ==> mapping might be changed
   float R = 0.F;

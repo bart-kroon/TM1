@@ -107,12 +107,12 @@ constexpr auto OccupancyInformation::oi_occupancy_codec_id() const noexcept {
   return m_oi_occupancy_codec_id;
 }
 
-constexpr auto OccupancyInformation::oi_lossy_occupancy_map_compression_threshold() const noexcept {
-  return m_oi_lossy_occupancy_map_compression_threshold;
+constexpr auto OccupancyInformation::oi_lossy_occupancy_compression_threshold() const noexcept {
+  return m_oi_lossy_occupancy_compression_threshold;
 }
 
-constexpr auto OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1() const noexcept {
-  return m_oi_occupancy_nominal_2d_bitdepth_minus1;
+constexpr auto OccupancyInformation::oi_occupancy_2d_bit_depth_minus1() const noexcept {
+  return m_oi_occupancy_2d_bit_depth_minus1;
 }
 
 constexpr auto OccupancyInformation::oi_occupancy_MSB_align_flag() const noexcept {
@@ -125,16 +125,15 @@ constexpr auto OccupancyInformation::oi_occupancy_codec_id(std::uint8_t value) n
 }
 
 constexpr auto
-OccupancyInformation::oi_lossy_occupancy_map_compression_threshold(std::uint8_t value) noexcept
+OccupancyInformation::oi_lossy_occupancy_compression_threshold(std::uint8_t value) noexcept
     -> auto & {
-  m_oi_lossy_occupancy_map_compression_threshold = value;
+  m_oi_lossy_occupancy_compression_threshold = value;
   return *this;
 }
 
-constexpr auto
-OccupancyInformation::oi_occupancy_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept
+constexpr auto OccupancyInformation::oi_occupancy_2d_bit_depth_minus1(std::uint8_t value) noexcept
     -> auto & {
-  m_oi_occupancy_nominal_2d_bitdepth_minus1 = value;
+  m_oi_occupancy_2d_bit_depth_minus1 = value;
   return *this;
 }
 
@@ -147,16 +146,16 @@ constexpr auto GeometryInformation::gi_geometry_codec_id() const noexcept {
   return m_gi_geometry_codec_id;
 }
 
-constexpr auto GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1() const noexcept {
-  return m_gi_geometry_nominal_2d_bitdepth_minus1;
+constexpr auto GeometryInformation::gi_geometry_2d_bit_depth_minus1() const noexcept {
+  return m_gi_geometry_2d_bit_depth_minus1;
 }
 
 constexpr auto GeometryInformation::gi_geometry_MSB_align_flag() const noexcept {
   return m_gi_geometry_MSB_align_flag;
 }
 
-constexpr auto GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1() const noexcept {
-  return m_gi_geometry_3d_coordinates_bitdepth_minus1;
+constexpr auto GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1() const noexcept {
+  return m_gi_geometry_3d_coordinates_bit_depth_minus1;
 }
 
 constexpr auto GeometryInformation::gi_geometry_codec_id(std::uint8_t value) noexcept -> auto & {
@@ -164,9 +163,9 @@ constexpr auto GeometryInformation::gi_geometry_codec_id(std::uint8_t value) noe
   return *this;
 }
 
-constexpr auto
-GeometryInformation::gi_geometry_nominal_2d_bitdepth_minus1(std::uint8_t value) noexcept -> auto & {
-  m_gi_geometry_nominal_2d_bitdepth_minus1 = value;
+constexpr auto GeometryInformation::gi_geometry_2d_bit_depth_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_gi_geometry_2d_bit_depth_minus1 = value;
   return *this;
 }
 
@@ -176,29 +175,11 @@ constexpr auto GeometryInformation::gi_geometry_MSB_align_flag(bool value) noexc
 }
 
 constexpr auto
-GeometryInformation::gi_geometry_3d_coordinates_bitdepth_minus1(std::uint8_t value) noexcept
+GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1(std::uint8_t value) noexcept
     -> auto & {
-  m_gi_geometry_3d_coordinates_bitdepth_minus1 = value;
+  m_gi_geometry_3d_coordinates_bit_depth_minus1 = value;
   return *this;
 }
-
-constexpr decltype(auto) operator<<(std::ostream &stream, const VpsVpccExtension & /* x */) {
-  return stream;
-}
-
-constexpr auto VpsVpccExtension::operator==(const VpsVpccExtension & /* other */) const noexcept {
-  return true;
-}
-constexpr auto VpsVpccExtension::operator!=(const VpsVpccExtension & /* other */) const noexcept {
-  return false;
-}
-
-constexpr auto VpsVpccExtension::decodeFrom(Common::InputBitstream & /* bitstream */)
-    -> VpsVpccExtension {
-  return {};
-}
-
-constexpr void VpsVpccExtension::encodeTo(Common::OutputBitstream & /* bitstream */) const {}
 
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag() const noexcept {
   return m_vme_depth_low_quality_flag;
@@ -270,16 +251,12 @@ constexpr auto V3cParameterSet::vps_extension_present_flag() const noexcept {
   return m_vps_extension_present_flag;
 }
 
-constexpr auto V3cParameterSet::vps_vpcc_extension_flag() const noexcept {
-  return m_vps_vpcc_extension_flag.value_or(false);
+constexpr auto V3cParameterSet::vps_miv_extension_present_flag() const noexcept {
+  return m_vps_miv_extension_present_flag.value_or(false);
 }
 
-constexpr auto V3cParameterSet::vps_miv_extension_flag() const noexcept {
-  return m_vps_miv_extension_flag.value_or(false);
-}
-
-constexpr auto V3cParameterSet::vps_extension_6bits() const noexcept {
-  return m_vps_extension_6bits.value_or(0);
+constexpr auto V3cParameterSet::vps_extension_7bits() const noexcept {
+  return m_vps_extension_7bits.value_or(0);
 }
 
 constexpr auto V3cParameterSet::vps_v3c_parameter_set_id(std::uint8_t value) noexcept -> auto & {

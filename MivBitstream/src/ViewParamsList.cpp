@@ -113,8 +113,8 @@ auto ViewParams::loadFromJson(const Common::Json &node) -> ViewParams {
   return x;
 }
 
-ViewParamsList::ViewParamsList(vector<ViewParams> viewParamsList)
-    : vector<ViewParams>{move(viewParamsList)} {}
+ViewParamsList::ViewParamsList(std::vector<ViewParams> viewParamsList)
+    : std::vector<ViewParams>{std::move(viewParamsList)} {}
 
 auto ViewParamsList::viewSizes() const -> Common::SizeVector {
   Common::SizeVector sizes;
@@ -135,7 +135,7 @@ auto ViewParamsList::operator==(const ViewParamsList &other) const -> bool {
   return equal(begin(), end(), other.begin(), other.end());
 }
 
-auto ViewParamsList::loadFromJson(const Common::Json &node, const vector<std::string> &names)
+auto ViewParamsList::loadFromJson(const Common::Json &node, const std::vector<std::string> &names)
     -> ViewParamsList {
   ViewParamsList result;
   for (const auto &name : names) {

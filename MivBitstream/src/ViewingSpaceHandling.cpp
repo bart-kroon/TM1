@@ -47,7 +47,7 @@ auto operator<<(std::ostream &stream, VhDeviceClass x) -> std::ostream & {
   case VhDeviceClass::VHDC_ASD:
     return stream << "VHDC_ASD";
   default:
-    return stream << "Unknown device class (" << int(x) << ")";
+    return stream << "Unknown device class (" << static_cast<int>(x) << ")";
   }
 }
 
@@ -64,7 +64,7 @@ auto operator<<(std::ostream &stream, VhApplicationClass x) -> std::ostream & {
   case VhApplicationClass::VHAC_SD:
     return stream << "VHAC_SD";
   default:
-    return stream << "Unknown application class (" << int(x) << ")";
+    return stream << "Unknown application class (" << static_cast<int>(x) << ")";
   }
 }
 
@@ -85,7 +85,7 @@ auto operator<<(std::ostream &stream, VhMethod x) -> std::ostream & {
   case VhMethod::VHM_ROTATE:
     return stream << "VHM_ROTATE";
   default:
-    return stream << "Unknown method (" << int(x) << ")";
+    return stream << "Unknown method (" << static_cast<int>(x) << ")";
   }
 }
 
@@ -100,7 +100,7 @@ auto HandlingOption::operator!=(const HandlingOption &other) const noexcept -> b
 }
 
 ViewingSpaceHandling::ViewingSpaceHandling(HandlingOptionList value)
-    : m_handlingOptionList{move(value)} {}
+    : m_handlingOptionList{std::move(value)} {}
 
 auto ViewingSpaceHandling::vs_handling_options_count() const noexcept -> size_t {
   return m_handlingOptionList.size();

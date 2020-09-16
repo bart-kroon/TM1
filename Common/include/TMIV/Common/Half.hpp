@@ -47,9 +47,9 @@ inline Half::operator float() const {
     return sign * 0.F;
   }
 
-  const auto exponent = int((m_code & 0x7C00U) >> 10U);
+  const auto exponent = static_cast<int>((m_code & 0x7C00U) >> 10U);
   const auto mantissa = (m_code & 0x03FFU) | 0x400U;
-  return sign * std::ldexp(float(mantissa), exponent - 25);
+  return sign * ldexp(static_cast<float>(mantissa), exponent - 25);
 }
 
 inline Half::Half(float value) {

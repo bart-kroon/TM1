@@ -118,7 +118,7 @@ auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream & {
   case NalUnitType::NAL_CAF:
     return stream << "NAL_CAF";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -132,8 +132,8 @@ NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int na
 
 auto operator<<(std::ostream &stream, const NalUnitHeader &x) -> std::ostream & {
   return stream << "nal_unit_type=" << x.m_nal_unit_type
-                << "\nnal_layer_id=" << int(x.m_nal_layer_id)
-                << "\nnal_temporal_id_plus1=" << int(x.m_nal_temporal_id_plus1) << '\n';
+                << "\nnal_layer_id=" << int{x.m_nal_layer_id}
+                << "\nnal_temporal_id_plus1=" << int{x.m_nal_temporal_id_plus1} << '\n';
 }
 
 auto NalUnitHeader::decodeFrom(std::istream &stream) -> NalUnitHeader {

@@ -130,7 +130,7 @@ auto expandLuma(const Frame<YUV420P10> &inYuv) -> Mat<float> {
 }
 
 auto quantizeTexture(const Mat<Vec3f> &in) -> Frame<YUV444P10> {
-  Frame<YUV444P10> outYuv(int(in.width()), int(in.height()));
+  Frame<YUV444P10> outYuv(static_cast<int>(in.width()), static_cast<int>(in.height()));
   const auto width = in.width();
   const auto height = in.height();
 

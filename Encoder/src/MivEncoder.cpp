@@ -48,7 +48,7 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
 
   if (m_irap) {
     m_params.vps.profile_tier_level().ptl_max_decodes_idc(ptlMaxDecodesIdc());
-    writeV3cUnit(MivBitstream::VuhUnitType::V3C_VPS, 0, m_params.vps);
+    writeV3cUnit(MivBitstream::VuhUnitType::V3C_VPS, {}, m_params.vps);
     m_log2MaxFrmOrderCntLsbMinus4 = m_params.aaps.aaps_log2_max_atlas_frame_order_cnt_lsb_minus4();
   }
 
@@ -56,20 +56,21 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   VERIFY_MIVBITSTREAM(m_frmOrderCntLsb < maxFrmOrderCntLsb());
 
   if (m_irap || m_viewParamsList != params.viewParamsList) {
-    writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, 0, commonAtlasSubBitstream());
+    writeV3cUnit(MivBitstream::VuhUnitType::V3C_CAD, {}, commonAtlasSubBitstream());
     m_viewParamsList = params.viewParamsList;
   }
 
-  for (uint8_t vai = 0; vai <= m_params.vps.vps_atlas_count_minus1(); ++vai) {
+  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     // Clause 7.4.5.3.2 of V-PCC DIS d85 [N19329]: AXPS regardless of atlas ID (and temporal ID)
     // share the same value space for AXPS ID
-    auto &aau = m_params.atlas[vai];
-    aau.asps.asps_atlas_sequence_parameter_set_id(vai);
-    aau.afps.afps_atlas_frame_parameter_set_id(vai);
-    aau.afps.afps_atlas_sequence_parameter_set_id(vai);
-    aau.ath.ath_atlas_frame_parameter_set_id(vai);
+    auto &aau = m_params.atlas[k];
+    aau.asps.asps_atlas_sequence_parameter_set_id(uint8_t(k));
+    aau.afps.afps_atlas_frame_parameter_set_id(uint8_t(k));
+    aau.afps.afps_atlas_sequence_parameter_set_id(uint8_t(k));
+    aau.ath.ath_atlas_frame_parameter_set_id(uint8_t(k));
 
-    writeV3cUnit(MivBitstream::VuhUnitType::V3C_AD, vai, atlasSubBitstream(vai));
+    writeV3cUnit(MivBitstream::VuhUnitType::V3C_AD, m_params.vps.vps_atlas_id(k),
+                 atlasSubBitstream(k));
   }
 
   m_irap = false;
@@ -77,7 +78,8 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
 
 auto MivEncoder::ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc {
   auto numDecodes = 0;
-  for (uint8_t j = 0; j < m_params.vps.vps_atlas_count_minus1() + 1; ++j) {
+  for (uint8_t k = 0; k < m_params.vps.vps_atlas_count_minus1() + 1; ++k) {
+    const auto j = m_params.vps.vps_atlas_id(k);
     numDecodes += m_params.vps.vps_auxiliary_video_present_flag(j);
     numDecodes += m_params.vps.vps_occupancy_video_present_flag(j);
     numDecodes += m_params.vps.vps_geometry_video_present_flag(j) *
@@ -180,7 +182,7 @@ auto MivEncoder::mvpUpdateMode() const -> MivBitstream::MvpUpdateMode {
     updInt = updInt || m_viewParamsList[i].ci != m_params.viewParamsList[i].ci;
     updDq = updDq || m_viewParamsList[i].dq != m_params.viewParamsList[i].dq;
   }
-  if (int(updExt) + int(updInt) + int(updDq) > 1) {
+  if (int{updExt} + int{updInt} + int{updDq} > 1) {
     return MivBitstream::MvpUpdateMode::VPL_ALL;
   }
   if (updExt) {
@@ -292,13 +294,13 @@ auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
   return mvpudq;
 }
 
-auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> MivBitstream::AtlasSubBitstream {
+auto MivEncoder::atlasSubBitstream(size_t k) -> MivBitstream::AtlasSubBitstream {
   auto asb = MivBitstream::AtlasSubBitstream{m_ssnh};
 
   auto vuh = MivBitstream::V3cUnitHeader{MivBitstream::VuhUnitType::V3C_AD};
-  vuh.vuh_atlas_id(vai);
+  vuh.vuh_atlas_id(m_params.vps.vps_atlas_id(k));
 
-  const auto &aau = m_params.atlas[vai];
+  const auto &aau = m_params.atlas[k];
 
   if (m_irap) {
     VERIFY_MIVBITSTREAM(m_log2MaxFrmOrderCntLsbMinus4 ==
@@ -310,58 +312,61 @@ auto MivEncoder::atlasSubBitstream(std::uint8_t vai) -> MivBitstream::AtlasSubBi
 
   const auto aspsV = std::vector<MivBitstream::AtlasSequenceParameterSetRBSP>{aau.asps};
   const auto afpsV = std::vector<MivBitstream::AtlasFrameParameterSetRBSP>{aau.afps};
-  writeNalUnit(asb, m_irap ? nuhIdr : nuhCra, atlasTileGroupLayer(vai), vuh, m_params.vps, aspsV,
-               afpsV);
+  const auto nuh = m_irap ? nuhIdr : nuhCra;
+  writeNalUnit(asb, nuh, atlasTileLayer(k), m_params.vps, nuh, aspsV, afpsV);
 
   return asb;
 }
 
-auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> MivBitstream::AtlasTileLayerRBSP {
+auto MivEncoder::atlasTileLayer(size_t k) const -> MivBitstream::AtlasTileLayerRBSP {
   auto patchData = MivBitstream::AtlasTileDataUnit::Vector{};
   patchData.reserve(m_params.patchParamsList.size());
 
-  const auto &aau = m_params.atlas[vai];
-
-  const auto k = aau.asps.asps_log2_patch_packing_block_size();
+  const auto &aau = m_params.atlas[k];
+  const auto atlasId = m_params.vps.vps_atlas_id(k);
+  const auto patchPackingBlockSize = 1U << aau.asps.asps_log2_patch_packing_block_size();
+  const auto offsetDQuantizer = 1U << aau.ath.ath_pos_min_d_quantizer();
+  const auto rangeDQuantizer = 1U << aau.ath.ath_pos_delta_max_d_quantizer();
+  const auto patchSizeXQuantizer = aau.asps.asps_patch_size_quantizer_present_flag()
+                                       ? 1U << aau.ath.ath_patch_size_x_info_quantizer()
+                                       : patchPackingBlockSize;
+  const auto patchSizeYQuantizer = aau.asps.asps_patch_size_quantizer_present_flag()
+                                       ? 1U << aau.ath.ath_patch_size_y_info_quantizer()
+                                       : patchPackingBlockSize;
 
   for (const auto &pp : m_params.patchParamsList) {
-    if (pp.vuhAtlasId == vai) {
+    if (pp.atlasId == atlasId) {
       auto pdu = MivBitstream::PatchDataUnit{};
 
-      VERIFY_MIVBITSTREAM(0 <= pp.pdu2dPos().x() && pp.pdu2dPos().x() <= UINT16_MAX);
-      VERIFY_MIVBITSTREAM(0 <= pp.pdu2dPos().y() && pp.pdu2dPos().y() <= UINT16_MAX);
-      VERIFY_MIVBITSTREAM(pp.pdu2dPos().x() % (1 << k) == 0);
-      VERIFY_MIVBITSTREAM(pp.pdu2dPos().y() % (1 << k) == 0);
-      pdu.pdu_2d_pos_x(uint16_t(pp.pdu2dPos().x()) >> k);
-      pdu.pdu_2d_pos_y(uint16_t(pp.pdu2dPos().y()) >> k);
+      VERIFY_MIVBITSTREAM(pp.atlasPatch2dPosX() % patchPackingBlockSize == 0);
+      VERIFY_MIVBITSTREAM(pp.atlasPatch2dPosY() % patchPackingBlockSize == 0);
+      pdu.pdu_2d_pos_x(pp.atlasPatch2dPosX() / patchPackingBlockSize);
+      pdu.pdu_2d_pos_y(pp.atlasPatch2dPosY() / patchPackingBlockSize);
 
-      VERIFY_MIVBITSTREAM(0 < pp.pdu2dSize().x() && pp.pdu2dSize().x() <= UINT16_MAX + 1);
-      VERIFY_MIVBITSTREAM(0 < pp.pdu2dSize().y() && pp.pdu2dSize().y() <= UINT16_MAX + 1);
-      VERIFY_MIVBITSTREAM(pp.pdu2dSize().x() % (1 << k) == 0);
-      VERIFY_MIVBITSTREAM(pp.pdu2dSize().y() % (1 << k) == 0);
-      pdu.pdu_2d_size_x_minus1(uint16_t(pp.pdu2dSize().x() - 1) >> k);
-      pdu.pdu_2d_size_y_minus1(uint16_t(pp.pdu2dSize().y() - 1) >> k);
+      pdu.pdu_3d_offset_u(pp.atlasPatch3dOffsetU());
+      pdu.pdu_3d_offset_v(pp.atlasPatch3dOffsetV());
 
-      pdu.pdu_view_pos_x(pp.pduViewPos().x());
-      pdu.pdu_view_pos_y(pp.pduViewPos().y());
+      VERIFY_MIVBITSTREAM(pp.atlasPatch3dOffsetD() % offsetDQuantizer == 0);
+      pdu.pdu_3d_offset_d(pp.atlasPatch3dOffsetD() / offsetDQuantizer);
 
-      VERIFY_MIVBITSTREAM(pp.pduDepthStart() % (1 << aau.ath.ath_pos_min_z_quantizer()) == 0);
-      pdu.pdu_depth_start(pp.pduDepthStart() >> aau.ath.ath_pos_min_z_quantizer());
-
-      if (pp.pduDepthEnd()) {
-        const auto ath_pos_delta_max_z_quantizer = aau.ath.ath_pos_delta_max_z_quantizer();
-        VERIFY_MIVBITSTREAM(*pp.pduDepthEnd() % (1 << ath_pos_delta_max_z_quantizer) == 0);
-        pdu.pdu_depth_end(*pp.pduDepthEnd() >> ath_pos_delta_max_z_quantizer);
+      if (aau.asps.asps_normal_axis_max_delta_value_enabled_flag()) {
+        VERIFY_MIVBITSTREAM((pp.atlasPatch3dRangeD() + 1) % rangeDQuantizer == 0);
+        pdu.pdu_3d_range_d(pp.atlasPatch3dRangeD() / rangeDQuantizer + 1);
       }
 
-      pdu.pdu_orientation_index(pp.pduOrientationIndex());
-      pdu.pdu_view_idx(pp.pduViewIdx());
+      pdu.pdu_projection_id(pp.atlasPatchProjectionId());
+      pdu.pdu_orientation_index(pp.atlasPatchOrientationIndex());
 
-      if (pp.pduEntityId()) {
-        pdu.pdu_miv_extension().pdu_entity_id(*pp.pduEntityId());
+      VERIFY_MIVBITSTREAM(pp.atlasPatch2dSizeX() % patchSizeXQuantizer == 0);
+      VERIFY_MIVBITSTREAM(pp.atlasPatch2dSizeY() % patchSizeYQuantizer == 0);
+      pdu.pdu_2d_size_x_minus1(pp.atlasPatch2dSizeX() / patchSizeXQuantizer - 1);
+      pdu.pdu_2d_size_y_minus1(pp.atlasPatch2dSizeY() / patchSizeYQuantizer - 1);
+
+      if (pp.atlasPatchEntityId()) {
+        pdu.pdu_miv_extension().pdu_entity_id(*pp.atlasPatchEntityId());
       }
-      if (pp.pduDepthOccMapThreshold()) {
-        pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.pduDepthOccMapThreshold());
+      if (pp.atlasPatchDepthOccMapThreshold()) {
+        pdu.pdu_miv_extension().pdu_depth_occ_threshold(*pp.atlasPatchDepthOccMapThreshold());
       }
       patchData.emplace_back(MivBitstream::AtduPatchMode::I_INTRA, pdu);
     }
@@ -374,10 +379,11 @@ auto MivEncoder::atlasTileGroupLayer(std::uint8_t vai) const -> MivBitstream::At
 }
 
 template <typename Payload>
-void MivEncoder::writeV3cUnit(MivBitstream::VuhUnitType vut, uint8_t vai, Payload &&payload) {
+void MivEncoder::writeV3cUnit(MivBitstream::VuhUnitType vut, MivBitstream::AtlasId atlasId,
+                              Payload &&payload) {
   auto vuh = MivBitstream::V3cUnitHeader{vut};
-  if (vai != 0) {
-    vuh.vuh_atlas_id(vai);
+  if (vut != MivBitstream::VuhUnitType::V3C_VPS && vut != MivBitstream::VuhUnitType::V3C_CAD) {
+    vuh.vuh_atlas_id(atlasId);
   }
   const auto vu = MivBitstream::V3cUnit{vuh, std::forward<Payload>(payload)};
 

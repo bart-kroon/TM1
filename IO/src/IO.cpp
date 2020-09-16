@@ -89,7 +89,8 @@ auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams
   x.frameRate = sequenceConfig.require("Fps").asDouble();
 
   if (config.require("OmafV1CompatibleFlag").asBool()) {
-    x.aaps.aaps_miv_extension_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(true);
+    x.aaps.aaps_miv_extension_present_flag(true).aaps_miv_extension().aame_omaf_v1_compatible_flag(
+        true);
   }
   return x;
 }
@@ -197,12 +198,13 @@ void saveAtlas(const Common::Json &config, int frameIndex, const Common::MVD10Fr
   for (size_t atlasId = 0; atlasId < frame.size(); ++atlasId) {
     if (haveTexture(config)) {
       writeFrame(config, "AttributeVideoDataPathFmt", frame[atlasId].texture, frameIndex, "T",
-                 int(atlasId));
+                 static_cast<int>(atlasId));
     }
-    writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex, int(atlasId));
+    writeFrame(config, "GeometryVideoDataPathFmt", frame[atlasId].depth, frameIndex,
+               static_cast<int>(atlasId));
     if (!frame[atlasId].occupancy.empty()) {
       writeFrame(config, "OccupancyVideoDataPathFmt", frame[atlasId].occupancy, frameIndex,
-                 int(atlasId));
+                 static_cast<int>(atlasId));
     }
   }
 }
@@ -211,7 +213,7 @@ void saveBlockToPatchMaps(const Common::Json &config, int frameIndex,
                           const Decoder::AccessUnit &frame) {
   for (size_t atlasId = 0; atlasId < frame.atlas.size(); ++atlasId) {
     writeFrame(config, "AtlasPatchOccupancyMapFmt", frame.atlas[atlasId].blockToPatchMap,
-               frameIndex, int(atlasId));
+               frameIndex, static_cast<int>(atlasId));
   }
 }
 

@@ -289,7 +289,7 @@ void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
 
 auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
-  stream << "dq_quantization_law[ " << viewId << " ]=" << int(dq_quantization_law())
+  stream << "dq_quantization_law[ " << viewId << " ]=" << int{dq_quantization_law()}
          << "\ndq_norm_disp_low[ " << viewId << " ]=" << dq_norm_disp_low()
          << "\ndq_norm_disp_high[ " << viewId << " ]=" << dq_norm_disp_high()
          << "\ndq_depth_occ_map_threshold_default[ " << viewId
@@ -324,7 +324,7 @@ void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream,
 }
 
 PruningParents::PruningParents(std::vector<uint16_t> pp_parent_id)
-    : m_pp_parent_id{move(pp_parent_id)} {}
+    : m_pp_parent_id{std::move(pp_parent_id)} {}
 
 auto PruningParents::pp_is_root_flag() const noexcept -> bool { return m_pp_parent_id.empty(); }
 
@@ -822,7 +822,7 @@ auto CommonAtlasFrameRBSP::cafExtensionData(std::vector<bool> value) noexcept
 
 auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream & {
   stream << "caf_atlas_adaptation_parameter_set_id="
-         << int(x.caf_atlas_adaptation_parameter_set_id()) << '\n';
+         << int{x.caf_atlas_adaptation_parameter_set_id()} << '\n';
   stream << "caf_frm_order_cnt_lsb=" << x.caf_frm_order_cnt_lsb() << '\n';
   stream << "caf_miv_view_params_list_update_mode=" << x.caf_miv_view_params_list_update_mode()
          << '\n';
@@ -851,7 +851,7 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ost
   stream << "caf_extension_present_flag=" << std::boolalpha << x.caf_extension_present_flag()
          << '\n';
   if (x.caf_extension_present_flag()) {
-    stream << "caf_extension_8bits=" << int(x.caf_extension_8bits()) << '\n';
+    stream << "caf_extension_8bits=" << int{x.caf_extension_8bits()} << '\n';
   }
   if (x.caf_extension_8bits()) {
     for (auto bit : x.cafExtensionData()) {

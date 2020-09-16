@@ -73,11 +73,11 @@ auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
 
     for (int y = 0; y < size.y(); ++y) {
       for (int x = 0; x < size.x(); ++x) {
-        key.push_back(int(vertices.size()));
+        key.push_back(static_cast<int>(vertices.size()));
         const auto D_yx = D(y, x);
 
         if (mask(y, x) > 0) {
-          const auto uv = Common::Vec2f{float(x) + 0.5F, float(y) + 0.5F};
+          const auto uv = Common::Vec2f{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
           const auto d = depthTransform.expandDepth(D_yx);
           vertices.push_back({engine.unprojectVertex(uv, d), Common::NaN});
           attributes.emplace_back(Common::Vec3f{Common::expandValue<10U>(Y(y, x)),

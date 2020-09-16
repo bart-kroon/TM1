@@ -56,7 +56,7 @@ SCENARIO("Geometry quantization") {
   GIVEN("View parameters without invalid depth") {
     auto sourceParams = MivBitstream::EncoderParams{};
     sourceParams.vps.vps_extension_present_flag(true);
-    sourceParams.vps.vps_miv_extension_flag(true);
+    sourceParams.vps.vps_miv_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
     sourceParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
 
@@ -76,13 +76,13 @@ SCENARIO("Geometry quantization") {
       const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
-      THEN("pduDepthOccMapThreshold (T) >> 0") {
+      THEN("dq_depth_occ_map_threshold_default (T) >> 0") {
         const auto T = codedViewParams.dq.dq_depth_occ_map_threshold_default();
         REQUIRE(T >= 8);
 
         THEN("Coded level 2T matches with source level 0") {
           // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
-          const auto twoT = float(2 * T);
+          const auto twoT = static_cast<float>(2 * T);
 
           auto refViewParams = sourceViewParams;
           refViewParams.dq.dq_depth_occ_map_threshold_default(T)

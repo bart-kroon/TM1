@@ -206,7 +206,7 @@ private:
 
     for (const auto componentId : {COMPONENT_Y, COMPONENT_Cb, COMPONENT_Cr}) {
       if (componentId < comPicYuv.getNumberValidComponents()) {
-        const auto k = int(componentId);
+        const auto k = int{componentId};
         const auto width = comPicYuv.getWidth(componentId);
         const auto height = comPicYuv.getHeight(componentId);
 

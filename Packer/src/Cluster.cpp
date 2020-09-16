@@ -530,9 +530,9 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
   auto &clusteringBuffer = out.second.getPlane(0);
 
   const auto &maskBuffer = maskMap.getPlane(0);
-  int A = int(maskBuffer.m());
-  int B = int(maskBuffer.n());
-  int S = int(maskBuffer.size());
+  int A = static_cast<int>(maskBuffer.m());
+  int B = static_cast<int>(maskBuffer.n());
+  int S = static_cast<int>(maskBuffer.size());
 
   // Build active list
   std::vector<int> activeList;
@@ -734,7 +734,7 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
     iter_seed = find_if(iter_seed + 1, activeList.end(),
                         [&clusteringBuffer](int i) { return (clusteringBuffer[i] == ACTIVE); });
     auto currentIter = iter_seed;
-    auto counter = int(distance(prevIter, currentIter));
+    auto counter = static_cast<int>(distance(prevIter, currentIter));
     cluster.numActivePixels_ = counter;
 
     // Updating output

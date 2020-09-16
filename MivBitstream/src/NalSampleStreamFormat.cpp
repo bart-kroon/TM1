@@ -45,7 +45,7 @@ SampleStreamNalHeader::SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_
 
 auto operator<<(std::ostream &stream, const SampleStreamNalHeader &x) -> std::ostream & {
   return stream << "ssnh_unit_size_precision_bytes_minus1="
-                << int(x.ssnh_unit_size_precision_bytes_minus1()) << '\n';
+                << int{x.ssnh_unit_size_precision_bytes_minus1()} << '\n';
 }
 
 auto SampleStreamNalHeader::decodeFrom(std::istream &stream) -> SampleStreamNalHeader {
@@ -60,7 +60,7 @@ void SampleStreamNalHeader::encodeTo(std::ostream &stream) const {
 }
 
 SampleStreamNalUnit::SampleStreamNalUnit(std::string ssnu_nal_unit)
-    : m_ssnu_nal_unit{move(ssnu_nal_unit)} {}
+    : m_ssnu_nal_unit{std::move(ssnu_nal_unit)} {}
 
 auto operator<<(std::ostream &stream, const SampleStreamNalUnit &x) -> std::ostream & {
   return stream << "nal_unit(" << (x.ssnu_nal_unit_size() - 2) << ")\n";

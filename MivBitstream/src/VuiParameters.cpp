@@ -38,8 +38,8 @@
 
 namespace TMIV::MivBitstream {
 auto operator<<(std::ostream &stream, const CoordinateSystemParameters &x) -> std::ostream & {
-  stream << "cas_forward_axis=" << int(x.cas_forward_axis()) << '\n';
-  stream << "cas_delta_left_axis_minus1=" << int(x.cas_delta_left_axis_minus1()) << '\n';
+  stream << "cas_forward_axis=" << int{x.cas_forward_axis()} << '\n';
+  stream << "cas_delta_left_axis_minus1=" << int{x.cas_delta_left_axis_minus1()} << '\n';
   stream << "cas_forward_sign=" << std::boolalpha << x.cas_forward_sign() << '\n';
   stream << "cas_left_sign=" << std::boolalpha << x.cas_left_sign() << '\n';
   stream << "cas_up_sign=" << std::boolalpha << x.cas_up_sign() << '\n';
@@ -265,7 +265,7 @@ auto operator<<(std::ostream &stream, const VuiParameters &x) -> std::ostream & 
     stream << "vui_tiles_fixed_structure_for_video_substreams_flag=" << std::boolalpha
            << x.vui_tiles_fixed_structure_for_video_substreams_flag() << '\n';
     stream << "vui_constrained_tiles_across_v3c_components_idc="
-           << int(x.vui_constrained_tiles_across_v3c_components_idc()) << '\n';
+           << int{x.vui_constrained_tiles_across_v3c_components_idc()} << '\n';
     stream << "vui_max_num_tiles_per_atlas_minus1=" << x.vui_max_num_tiles_per_atlas_minus1()
            << '\n';
   }
@@ -398,9 +398,9 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
     VERIFY_MIVBITSTREAM(asps != nullptr);
     for (int d = 0; d < 3; ++d) {
       x.vui_display_box_origin(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
       x.vui_display_box_size(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
     }
   }
 
@@ -408,7 +408,7 @@ auto VuiParameters::decodeFrom(Common::InputBitstream &bitstream,
   if (x.vui_anchor_point_present_flag()) {
     for (int d = 0; d < 3; ++d) {
       x.vui_anchor_point(
-          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bitdepth_minus1() + 1));
+          d, bitstream.readBits<uint32_t>(asps->asps_geometry_3d_bit_depth_minus1() + 1));
     }
   }
 
@@ -448,8 +448,8 @@ void VuiParameters::encodeTo(Common::OutputBitstream &bitstream,
   if (vui_display_box_info_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr); // ASPS parsing dependency
     for (int d = 0; d < 3; ++d) {
-      bitstream.writeBits(vui_display_box_origin(d), asps->asps_geometry_3d_bitdepth_minus1() + 1);
-      bitstream.writeBits(vui_display_box_size(d), asps->asps_geometry_3d_bitdepth_minus1() + 1);
+      bitstream.writeBits(vui_display_box_origin(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
+      bitstream.writeBits(vui_display_box_size(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
     }
   }
 
@@ -457,7 +457,7 @@ void VuiParameters::encodeTo(Common::OutputBitstream &bitstream,
   if (vui_anchor_point_present_flag()) {
     VERIFY_MIVBITSTREAM(asps != nullptr); // ASPS parsing dependency
     for (int d = 0; d < 3; ++d) {
-      bitstream.writeBits(vui_anchor_point(d), asps->asps_geometry_3d_bitdepth_minus1() + 1);
+      bitstream.writeBits(vui_anchor_point(d), asps->asps_geometry_3d_bit_depth_minus1() + 1);
     }
   }
 }

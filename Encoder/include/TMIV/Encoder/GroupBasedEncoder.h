@@ -66,27 +66,28 @@ public:
   // Maximum aggregated luma samples per frame all groups combined
   [[nodiscard]] auto maxLumaSamplesPerFrame() const -> std::size_t override;
 
-protected:
+private:
   // A grouping as an array of groupId-viewId pairs
   using Grouping = std::vector<std::pair<std::size_t, std::size_t>>;
 
   // Partition the views, thereby forming the groups
   virtual auto sourceSplitter(const MivBitstream::EncoderParams &params) -> Grouping;
 
-protected:
   // Split per-group sequence parameters
   [[nodiscard]] virtual auto splitParams(size_t groupId,
                                          const MivBitstream::EncoderParams &params) const
       -> MivBitstream::EncoderParams;
 
   // Split per-group views
-  virtual auto splitViews(size_t groupId, Common::MVD16Frame &views) const -> Common::MVD16Frame;
+  auto splitViews(size_t groupId, Common::MVD16Frame &views) const -> Common::MVD16Frame;
 
-  // Merge per-group access encoder parameters
-  virtual auto mergeParams(const std::vector<const MivBitstream::EncoderParams *> &)
+  auto mergeVps(const std::vector<const MivBitstream::V3cParameterSet *> &vps)
+      -> MivBitstream::V3cParameterSet;
+
+  // Merge per-group encoder parameters
+  auto mergeParams(const std::vector<const MivBitstream::EncoderParams *> &)
       -> const MivBitstream::EncoderParams &;
 
-private:
   [[nodiscard]] auto numGroups() const -> std::size_t { return m_encoders.size(); }
 
   Grouping m_grouping;

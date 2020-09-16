@@ -73,7 +73,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
   ClusteringMapList clusteringMap;
   std::vector<int> clusteringMapIndex;
   int index = 0;
-  for (auto viewId = 0; viewId < int(masks.size()); viewId++) {
+  for (auto viewId = 0; viewId < static_cast<int>(masks.size()); viewId++) {
     if (m_maxEntities > 1) {
       for (int entityId = m_entityEncodeRange[0]; entityId < m_entityEncodeRange[1]; entityId++) {
         // Entity clustering
@@ -174,33 +174,33 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
           MivBitstream::PatchParams p;
 
-          p.vuhAtlasId = static_cast<uint8_t>(atlasId);
+          p.atlasId = MivBitstream::AtlasId{uint8_t(atlasId)};
+          p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewId()));
+          p.atlasPatch2dPosX(packerOutput.x());
+          p.atlasPatch2dPosY(packerOutput.y());
+          p.atlasPatch3dOffsetU(cluster.jmin());
+          p.atlasPatch3dOffsetV(cluster.imin());
+          p.atlasPatchOrientationIndex(packerOutput.isRotated()
+                                           ? MivBitstream::FlexiblePatchOrientation::FPO_ROT270
+                                           : MivBitstream::FlexiblePatchOrientation::FPO_NULL);
+          p.atlasPatch3dSizeU(Common::align(cluster.width(), m_blockSize));
+          p.atlasPatch3dSizeV(Common::align(cluster.height(), m_blockSize));
 
-          p.pduViewIdx(static_cast<uint16_t>(cluster.getViewId()))
-              .pduViewSize({Common::align(cluster.width(), m_blockSize),
-                            Common::align(cluster.height(), m_blockSize)})
-              .pduViewPos({cluster.jmin(), cluster.imin()})
-              .pdu2dPos({packerOutput.x(), packerOutput.y()});
+          const uint32_t maskWidth = masks[cluster.getViewId()].getWidth();
+          const uint32_t maskHeight = masks[cluster.getViewId()].getHeight();
 
-          p.pduOrientationIndex(packerOutput.isRotated()
-                                    ? MivBitstream::FlexiblePatchOrientation::FPO_ROT270
-                                    : MivBitstream::FlexiblePatchOrientation::FPO_NULL);
-
-          auto patchOverflow =
-              (p.pduViewPos() + p.pduViewSize()) - masks[cluster.getViewId()].getSize();
-          if (patchOverflow.x() > 0) {
-            p.pduViewPos({p.pduViewPos().x() - patchOverflow.x(), p.pduViewPos().y()});
+          if (p.atlasPatch3dOffsetU() + p.atlasPatch3dSizeU() > maskWidth) {
+            p.atlasPatch3dOffsetU(maskWidth - p.atlasPatch3dSizeU());
           }
-          if (patchOverflow.y() > 0) {
-            p.pduViewPos({p.pduViewPos().x(), p.pduViewPos().y() - patchOverflow.y()});
+          if (p.atlasPatch3dOffsetV() + p.atlasPatch3dSizeV() > maskHeight) {
+            p.atlasPatch3dOffsetV(maskHeight - p.atlasPatch3dSizeV());
           }
 
           if (m_maxEntities > 1) {
-            p.pduEntityId(cluster.getEntityId());
-            std::cout << "Packing patch " << patchId << " of entity " << *p.pduEntityId()
-                      << " from view " << p.pduViewIdx() << " with #active pixels "
-                      << cluster.getNumActivePixels() << " in atlas "
-                      << static_cast<int>(p.vuhAtlasId) << std::endl;
+            p.atlasPatchEntityId(cluster.getEntityId());
+            std::cout << "Packing patch " << patchId << " of entity " << *p.atlasPatchEntityId()
+                      << " from view " << p.atlasPatchProjectionId() << " with #active pixels "
+                      << cluster.getNumActivePixels() << " in atlas " << p.atlasId << std::endl;
           }
 
           atlasParamsVector.push_back(p);

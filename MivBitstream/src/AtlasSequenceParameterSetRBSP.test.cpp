@@ -90,8 +90,8 @@ TEST_CASE("atlas_sequence_parameter_set_rbsp", "[Atlas Sequence Parameter Set RB
   REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=0
 asps_frame_width=0
 asps_frame_height=0
-asps_geometry_3d_bitdepth_minus1=0
-asps_geometry_2d_bitdepth_minus1=0
+asps_geometry_3d_bit_depth_minus1=0
+asps_geometry_2d_bit_depth_minus1=0
 asps_log2_max_atlas_frame_order_cnt_lsb_minus4=0
 asps_max_dec_atlas_frame_buffering_minus1=0
 asps_long_term_ref_atlas_frames_flag=false
@@ -104,9 +104,9 @@ asps_patch_precedence_order_flag=false
 asps_log2_patch_packing_block_size=0
 asps_patch_size_quantizer_present_flag=false
 asps_map_count_minus1=0
-asps_pixel_deinterleaving_flag=false
-asps_eom_patch_enabled_flag=false
+asps_pixel_deinterleaving_enabled_flag=false
 asps_raw_patch_enabled_flag=false
+asps_eom_patch_enabled_flag=false
 asps_plr_enabled_flag=false
 asps_vui_parameters_present_flag=false
 asps_extension_present_flag=false
@@ -115,7 +115,7 @@ asps_extension_present_flag=false
   SECTION("Example 1") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
     auto vps = V3cParameterSet{};
-    vps.vps_frame_width(0, 1).vps_frame_height(0, 1);
+    vps.vps_frame_width({}, 1).vps_frame_height({}, 1);
 
     x.asps_frame_width(1)
         .asps_frame_height(1)
@@ -125,8 +125,8 @@ asps_extension_present_flag=false
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=0
 asps_frame_width=1
 asps_frame_height=1
-asps_geometry_3d_bitdepth_minus1=0
-asps_geometry_2d_bitdepth_minus1=0
+asps_geometry_3d_bit_depth_minus1=0
+asps_geometry_2d_bit_depth_minus1=0
 asps_log2_max_atlas_frame_order_cnt_lsb_minus4=0
 asps_max_dec_atlas_frame_buffering_minus1=0
 asps_long_term_ref_atlas_frames_flag=false
@@ -141,14 +141,14 @@ asps_patch_precedence_order_flag=false
 asps_log2_patch_packing_block_size=0
 asps_patch_size_quantizer_present_flag=false
 asps_map_count_minus1=0
-asps_pixel_deinterleaving_flag=false
-asps_eom_patch_enabled_flag=false
+asps_pixel_deinterleaving_enabled_flag=false
 asps_raw_patch_enabled_flag=false
+asps_eom_patch_enabled_flag=false
 asps_plr_enabled_flag=false
 asps_vui_parameters_present_flag=false
 asps_extension_present_flag=true
-asps_vpcc_extension_flag=false
-asps_miv_extension_flag=false
+asps_vpcc_extension_present_flag=false
+asps_miv_extension_present_flag=false
 asps_extension_6bits=0
 )");
 
@@ -158,11 +158,12 @@ asps_extension_6bits=0
   SECTION("Example 2") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
     auto vps = V3cParameterSet{};
-    vps.vps_frame_width(0, 0xFFFF)
-        .vps_frame_height(0, 0xFFFF)
-        .vps_map_count_minus1(0, 1)
+    vps.vps_atlas_id(0, {})
+        .vps_frame_width({}, 0xFFFF)
+        .vps_frame_height({}, 0xFFFF)
+        .vps_map_count_minus1({}, 1)
         .vps_extension_present_flag(true)
-        .vps_miv_extension_flag(true)
+        .vps_miv_extension_present_flag(true)
         .vps_miv_extension()
         .vme_geometry_scale_enabled_flag(true)
         .vme_embedded_occupancy_flag(true)
@@ -171,8 +172,8 @@ asps_extension_6bits=0
     x.asps_atlas_sequence_parameter_set_id(15)
         .asps_frame_width(0xFFFF)
         .asps_frame_height(0xFFFF)
-        .asps_geometry_3d_bitdepth_minus1(10)
-        .asps_geometry_2d_bitdepth_minus1(13)
+        .asps_geometry_3d_bit_depth_minus1(10)
+        .asps_geometry_2d_bit_depth_minus1(13)
         .asps_log2_patch_packing_block_size(7)
         .asps_log2_max_atlas_frame_order_cnt_lsb_minus4(12)
         .asps_max_dec_atlas_frame_buffering_minus1(41)
@@ -186,8 +187,8 @@ asps_extension_6bits=0
         .asps_patch_size_quantizer_present_flag(true)
         .asps_map_count_minus1(1)
         .asps_extension_present_flag(true)
-        .asps_vpcc_extension_flag(true)
-        .asps_miv_extension_flag(true)
+        .asps_vpcc_extension_present_flag(true)
+        .asps_miv_extension_present_flag(true)
         .asps_extension_6bits(63);
     x.asps_vpcc_extension().asps_vpcc_remove_duplicate_point_enabled_flag(true);
     x.asps_miv_extension()
@@ -202,8 +203,8 @@ asps_extension_6bits=0
     REQUIRE(toString(x) == R"(asps_atlas_sequence_parameter_set_id=15
 asps_frame_width=65535
 asps_frame_height=65535
-asps_geometry_3d_bitdepth_minus1=10
-asps_geometry_2d_bitdepth_minus1=13
+asps_geometry_3d_bit_depth_minus1=10
+asps_geometry_2d_bit_depth_minus1=13
 asps_log2_max_atlas_frame_order_cnt_lsb_minus4=12
 asps_max_dec_atlas_frame_buffering_minus1=41
 asps_long_term_ref_atlas_frames_flag=true
@@ -217,14 +218,14 @@ asps_patch_precedence_order_flag=true
 asps_log2_patch_packing_block_size=7
 asps_patch_size_quantizer_present_flag=true
 asps_map_count_minus1=1
-asps_pixel_deinterleaving_flag=false
-asps_eom_patch_enabled_flag=false
+asps_pixel_deinterleaving_enabled_flag=false
 asps_raw_patch_enabled_flag=false
+asps_eom_patch_enabled_flag=false
 asps_plr_enabled_flag=false
 asps_vui_parameters_present_flag=false
 asps_extension_present_flag=true
-asps_vpcc_extension_flag=true
-asps_miv_extension_flag=true
+asps_vpcc_extension_present_flag=true
+asps_miv_extension_present_flag=true
 asps_extension_6bits=63
 asps_vpcc_remove_duplicate_point_enabled_flag=true
 asme_group_id=3

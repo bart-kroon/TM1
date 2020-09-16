@@ -302,7 +302,7 @@ public:
     }
 
     // Pruning mask
-    for (auto camId = 0U; camId < viewParamsList.size(); camId++) {
+    for (size_t camId = 0; camId < viewParamsList.size(); camId++) {
       const auto &neighbourhood = pruningGraph.getNeighbourhood(camId);
 
       if (neighbourhood.empty()) {
@@ -465,8 +465,8 @@ private:
 
   // Visit all pixels
   template <typename F> static void forPixels(std::array<size_t, 2> sizes, F f) {
-    for (int i = 0; i < int(sizes[0]); ++i) {
-      for (int j = 0; j < int(sizes[1]); ++j) {
+    for (int i = 0; i < static_cast<int>(sizes[0]); ++i) {
+      for (int j = 0; j < static_cast<int>(sizes[1]); ++j) {
         f(i, j);
       }
     }
@@ -476,9 +476,9 @@ private:
   template <typename F>
   static auto forNeighbors(int i, int j, std::array<size_t, 2> sizes, F f) -> bool {
     const int n1 = std::max(0, i - 1);
-    const int n2 = std::min(int(sizes[0]), i + 2);
+    const int n2 = std::min(static_cast<int>(sizes[0]), i + 2);
     const int m1 = std::max(0, j - 1);
-    const int m2 = std::min(int(sizes[1]), j + 2);
+    const int m2 = std::min(static_cast<int>(sizes[1]), j + 2);
 
     for (int n = n1; n < n2; ++n) {
       for (int m = m1; m < m2; ++m) {
@@ -520,8 +520,8 @@ private:
     auto k = std::begin(status);
 
     int pp = 0;
-    const auto W = int(synthesizer.reference.width());
-    const auto H = int(synthesizer.reference.height());
+    const auto W = static_cast<int>(synthesizer.reference.width());
+    const auto H = static_cast<int>(synthesizer.reference.height());
 
     synthesizer.rasterizer.visit([&](const Renderer::PixelValue<Common::Vec3f> &x) {
       if (x.normDisp > 0) {

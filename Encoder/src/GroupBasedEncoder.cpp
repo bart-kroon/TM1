@@ -146,7 +146,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
     auto camerasInGroup = MivBitstream::ViewParamsList{};
     auto camerasOutGroup = MivBitstream::ViewParamsList{};
     if (gIndex < numGroups - 1) {
-      numViewsPerGroup.push_back(int(std::floor(viewParamsList.size() / numGroups)));
+      numViewsPerGroup.push_back(static_cast<int>(std::floor(viewParamsList.size() / numGroups)));
       int64_t maxElementIndex = 0;
 
       if (dominantAxis == 0) {
@@ -203,8 +203,8 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
       viewsPool = camerasOutGroup;
     } else {
       numViewsPerGroup.push_back(
-          int((viewParamsList.size() -
-               (numGroups - 1) * std::floor(viewParamsList.size() / numGroups))));
+          static_cast<int>((viewParamsList.size() -
+                            (numGroups - 1) * std::floor(viewParamsList.size() / numGroups))));
 
       camerasInGroup.clear();
       std::copy(std::cbegin(viewsPool), std::cend(viewsPool), back_inserter(camerasInGroup));
@@ -255,6 +255,61 @@ auto GroupBasedEncoder::splitViews(size_t groupId, Common::MVD16Frame &views) co
   return result;
 }
 
+auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParameterSet *> &vps)
+    -> MivBitstream::V3cParameterSet {
+  const auto atlasCount = accumulate(vps.cbegin(), vps.cend(), 0,
+                                     [](int count, const MivBitstream::V3cParameterSet *vps) {
+                                       return count + vps->vps_atlas_count_minus1() + 1;
+                                     });
+
+  auto x = MivBitstream::V3cParameterSet{};
+  x.profile_tier_level(vps.front()->profile_tier_level())
+      .vps_v3c_parameter_set_id(vps.front()->vps_v3c_parameter_set_id())
+      .vps_atlas_count_minus1(uint8_t(atlasCount - 1))
+      .vps_extension_present_flag(true)
+      .vps_miv_extension_present_flag(true)
+      .vps_miv_extension(vps.front()->vps_miv_extension());
+
+  uint8_t kOut = 0;
+
+  for (auto &v : vps) {
+    assert(v->profile_tier_level() == x.profile_tier_level());
+    assert(v->vps_v3c_parameter_set_id() == x.vps_v3c_parameter_set_id());
+    assert(v->vps_miv_extension_present_flag());
+    assert(v->vps_extension_7bits() == 0);
+    assert(v->vps_miv_extension() == x.vps_miv_extension());
+
+    for (uint8_t kIn = 0; kIn <= v->vps_atlas_count_minus1(); ++kIn, ++kOut) {
+      const auto jIn = v->vps_atlas_id(kIn);
+      const auto jOut = MivBitstream::AtlasId{kOut};
+      x.vps_atlas_id(kOut, jOut);
+
+      x.vps_frame_width(jOut, v->vps_frame_width(jIn));
+      x.vps_frame_height(jOut, v->vps_frame_height(jIn));
+      x.vps_map_count_minus1(jOut, v->vps_map_count_minus1(jIn));
+      assert(x.vps_map_count_minus1(jOut) == 0);
+
+      x.vps_auxiliary_video_present_flag(jOut, v->vps_auxiliary_video_present_flag(jIn));
+      x.vps_occupancy_video_present_flag(jOut, v->vps_occupancy_video_present_flag(jIn));
+      x.vps_geometry_video_present_flag(jOut, v->vps_geometry_video_present_flag(jIn));
+      x.vps_attribute_video_present_flag(jOut, v->vps_attribute_video_present_flag(jIn));
+
+      if (x.vps_occupancy_video_present_flag(jOut)) {
+        x.occupancy_information(jOut) = v->occupancy_information(jIn);
+      }
+      if (x.vps_geometry_video_present_flag(jOut)) {
+        x.geometry_information(jOut) = v->geometry_information(jIn);
+      }
+      if (x.vps_attribute_video_present_flag(jOut)) {
+        x.attribute_information(jOut) = v->attribute_information(jIn);
+      }
+    }
+  }
+
+  assert(kOut == atlasCount);
+  return x;
+}
+
 auto GroupBasedEncoder::mergeParams(
     const std::vector<const MivBitstream::EncoderParams *> &perGroupParams)
     -> const MivBitstream::EncoderParams & {
@@ -264,9 +319,9 @@ auto GroupBasedEncoder::mergeParams(
 
   // Merge V3C parameter sets
   std::vector<const MivBitstream::V3cParameterSet *> vps(perGroupParams.size());
-  std::transform(std::begin(perGroupParams), std::end(perGroupParams), std::begin(vps),
-                 [](const auto &ivs) { return &ivs->vps; });
-  m_params.vps = merge(vps);
+  transform(std::begin(perGroupParams), std::end(perGroupParams), std::begin(vps),
+            [](const auto &ivs) { return &ivs->vps; });
+  m_params.vps = mergeVps(vps);
 
   // For each other group
   for (auto ivs = std::begin(perGroupParams) + 1; ivs != std::end(perGroupParams); ++ivs) {
@@ -298,7 +353,7 @@ auto GroupBasedEncoder::mergeParams(
     }
   }
 
-  // Modify bit depth of pdu_view_idx
+  // Modify bit depth of pdu_projection_id
   for (auto &atlas : m_params.atlas) {
     atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_number_projections_minus1(
         uint16_t(m_params.viewParamsList.size() - 1));
@@ -312,8 +367,10 @@ auto GroupBasedEncoder::mergeParams(
     // Copy patches in group order
     for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);
-      m_params.patchParamsList.back().vuhAtlasId += atlasIdOffset;
-      m_params.patchParamsList.back().pduViewIdx(patch.pduViewIdx() + viewIdOffset);
+      m_params.patchParamsList.back().atlasId =
+          MivBitstream::AtlasId{uint8_t(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
+      m_params.patchParamsList.back().atlasPatchProjectionId(patch.atlasPatchProjectionId() +
+                                                             viewIdOffset);
     }
 
     // Renumber atlases and views

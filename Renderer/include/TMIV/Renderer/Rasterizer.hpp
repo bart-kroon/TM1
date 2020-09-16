@@ -54,7 +54,7 @@ inline auto numStrips(int rows) -> int {
   if (maximum <= hw) {
     return maximum;
   }
-  return int(std::lround(sqrt(hw * maximum)));
+  return static_cast<int>(std::lround(sqrt(hw * maximum)));
 }
 
 template <typename M0, typename... M>
@@ -96,13 +96,13 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
     m_strips.push_back(
         {i1, i2, size.x(), {}, std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
   }
-  m_dk_di = float(numStrips) / float(size.y());
+  m_dk_di = static_cast<float>(numStrips) / static_cast<float>(size.y());
 }
 
 template <typename... T>
 void Rasterizer<T...>::submit(const ImageVertexDescriptorList &vertices, AttributeMaps attributes,
                               const TriangleDescriptorList &triangles) {
-  m_batches.push_back(Batch{vertices, move(attributes)});
+  m_batches.push_back(Batch{vertices, std::move(attributes)});
   for (auto &strip : m_strips) {
     strip.batches.emplace_back();
   }
@@ -201,7 +201,7 @@ void Rasterizer<T...>::visit(Visitor visitor) const {
 
 template <typename... T>
 void Rasterizer<T...>::submitTriangle(TriangleDescriptor descriptor, const Batch &batch) {
-  const auto K = int(m_strips.size());
+  const auto K = static_cast<int>(m_strips.size());
   auto k1 = K;
   auto k2 = 0;
 
@@ -264,13 +264,13 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
   const auto uv2 = fixed(batch.vertices[n2].position) - stripOffset;
 
   // Determine triangle bounding box
-  const auto u1 = max(0, fpfloor(min({uv0.x(), uv1.x(), uv2.x()})));
-  const auto u2 = min(strip.cols, 1 + fpceil(max({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u1 = std::max(0, fpfloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u2 = std::min(strip.cols, 1 + fpceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
   if (u1 >= u2) {
     return; // Cull
   }
-  const auto v1 = max(0, fpfloor(min({uv0.y(), uv1.y(), uv2.y()})));
-  const auto v2 = min(strip.rows(), 1 + fpceil(max({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v1 = std::max(0, fpfloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v2 = std::min(strip.rows(), 1 + fpceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
   if (v1 >= v2) {
     return; // Cull
   }
@@ -281,8 +281,8 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
   if (area <= 0) {
     return; // Cull
   }
-  const auto area_f = std::ldexp(float(area), -2 * bits);
-  const auto inv_area = 1.F / float(area);
+  const auto area_f = ldexp(static_cast<float>(area), -2 * bits);
+  const auto inv_area = 1.F / static_cast<float>(area);
 
   // Calculate feature values for determining blending weights
   const auto stretching = 0.5F * area_f / descriptor.area;
@@ -319,9 +319,9 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
         continue;
       }
 
-      const auto w0 = inv_area * float(X0);
-      const auto w1 = inv_area * float(X1);
-      const auto w2 = inv_area * float(X2);
+      const auto w0 = inv_area * static_cast<float>(X0);
+      const auto w1 = inv_area * static_cast<float>(X1);
+      const auto w2 = inv_area * static_cast<float>(X2);
 
       // Barycentric interpolation of normalized disparity and attributes
       // (e.g. color)
@@ -329,7 +329,7 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
       const auto a = blendAttributes(w0, a0, w1, a1, w2, a2);
 
       // Blend pixel
-      assert(v * strip.cols + u < int(strip.matrix.size()));
+      assert(v * strip.cols + u < static_cast<int>(strip.matrix.size()));
       auto &P = strip.matrix[v * strip.cols + u];
 
       auto p = m_pixel.construct(a, d, rayAngle, stretching);

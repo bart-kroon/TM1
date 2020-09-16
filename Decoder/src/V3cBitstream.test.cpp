@@ -48,17 +48,15 @@ auto dumpV3cUnitPayload(std::streampos position, const MivBitstream::SampleStrea
                         const MivBitstream::V3cUnitHeader &vuh) {
   std::ostringstream path;
   path << "v3c_unit_" << position << '_' << vuh.vuh_unit_type();
-  if (vuh.vuh_unit_type() != MivBitstream::VuhUnitType::V3C_VPS) {
-    path << '_' << int(vuh.vuh_v3c_parameter_set_id()) << '_' << int(vuh.vuh_atlas_id());
+  if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
+    path << '_' << int{vuh.vuh_v3c_parameter_set_id()} << '_' << int{vuh.vuh_atlas_id()};
   }
-  if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AVD) {
-    path << '_' << int(vuh.vuh_attribute_index()) << '_'
-         << int(vuh.vuh_attribute_partition_index());
+  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
+    path << '_' << int{vuh.vuh_attribute_index()} << '_'
+         << int{vuh.vuh_attribute_partition_index()};
   }
-  if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AVD ||
-      vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_GVD) {
-    path << '_' << int(vuh.vuh_map_index()) << '_' << std::boolalpha
-         << vuh.vuh_auxiliary_video_flag();
+  if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
+    path << '_' << int{vuh.vuh_map_index()} << '_' << std::boolalpha << vuh.vuh_auxiliary_video_flag();
   }
   if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_VPS ||
       vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AD) {
@@ -105,7 +103,7 @@ void demultiplex(std::istream &stream) {
       while (vps->vps_v3c_parameter_set_id() >= vpses.size()) {
         vpses.emplace_back();
       }
-      std::cout << "vpses[" << int(vps->vps_v3c_parameter_set_id()) << "] := vps\n";
+      std::cout << "vpses[" << int{vps->vps_v3c_parameter_set_id()} << "] := vps\n";
       vpses[vps->vps_v3c_parameter_set_id()] = *vps;
     }
   }
@@ -128,25 +126,22 @@ TEST_CASE("Demultiplex", "[V3C bitstream]") {
   // demultiplex(stream);
 }
 
-auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
-    -> Common::Depth10Frame {
-  std::cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-            << ", frameSize=" << frameSize << '\n';
-  return Common::Depth10Frame{frameSize.x(), frameSize.y()};
+auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) -> Depth10Frame {
+  std::cout << "geoFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Depth10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto occFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
-    -> Common::Occupancy10Frame {
-  std::cout << "occFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-            << ", frameSize=" << frameSize << '\n';
-  return Common::Occupancy10Frame{frameSize.x(), frameSize.y()};
+auto occFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) -> Occupancy10Frame {
+  std::cout << "occFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Occupancy10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
-    -> Common::Texture444Frame {
-  std::cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-            << ", frameSize=" << frameSize << '\n';
-  return Common::Texture444Frame{frameSize.x(), frameSize.y()};
+auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) -> Texture444Frame {
+  std::cout << "attrFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
+       << ", frameSize=" << frameSize << '\n';
+  return Texture444Frame{frameSize.x(), frameSize.y()};
 }
 
 TEST_CASE("Decode", "[V3C bitstream]") {

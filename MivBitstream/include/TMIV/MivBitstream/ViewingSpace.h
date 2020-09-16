@@ -83,9 +83,9 @@ struct ViewingSpace {
   auto operator==(const ViewingSpace &other) const -> bool;
   auto operator!=(const ViewingSpace &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &stream,
+  static auto decodeFrom(Common::InputBitstream &stream,
                          const TMIV::MivBitstream::ViewParamsList &viewParamsList) -> ViewingSpace;
-  void encodeTo(OutputBitstream &stream,
+  void encodeTo(Common::OutputBitstream &stream,
                 const TMIV::MivBitstream::ViewParamsList &viewParamsList) const;
 
   static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ViewingSpace;
@@ -109,10 +109,10 @@ struct ElementaryShape {
   auto operator==(const ElementaryShape &other) const -> bool;
   auto operator!=(const ElementaryShape &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &stream,
+  static auto decodeFrom(Common::InputBitstream &stream,
                          const TMIV::MivBitstream::ViewParamsList &viewParamsList)
       -> ElementaryShape;
-  void encodeTo(OutputBitstream &stream) const;
+  void encodeTo(Common::OutputBitstream &stream) const;
 
   static auto loadFromJson(const Common::Json &node, const Common::Json &config) -> ElementaryShape;
 };
@@ -132,9 +132,9 @@ struct Cuboid {
   auto operator==(const Cuboid &other) const -> bool;
   auto operator!=(const Cuboid &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
+  static auto decodeFrom(Common::InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
       -> Cuboid;
-  void encodeTo(OutputBitstream &stream, bool cameraInferred) const;
+  void encodeTo(Common::OutputBitstream &stream, bool cameraInferred) const;
 
   static auto loadFromJson(const Common::Json &node, bool inferredView) -> Cuboid;
 };
@@ -152,9 +152,9 @@ struct Spheroid {
   auto operator==(const Spheroid &other) const -> bool;
   auto operator!=(const Spheroid &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
+  static auto decodeFrom(Common::InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
       -> Spheroid;
-  void encodeTo(OutputBitstream &stream, bool cameraInferred) const;
+  void encodeTo(Common::OutputBitstream &stream, bool cameraInferred) const;
 
   static auto loadFromJson(const Common::Json &node, bool inferredView) -> Spheroid;
 };
@@ -172,8 +172,8 @@ struct Halfspace {
   auto operator==(const Halfspace &other) const -> bool;
   auto operator!=(const Halfspace &other) const -> bool { return !operator==(other); }
 
-  static auto decodeFrom(InputBitstream &stream) -> Halfspace;
-  void encodeTo(OutputBitstream &stream, bool inferredView) const;
+  static auto decodeFrom(Common::InputBitstream &stream) -> Halfspace;
+  void encodeTo(Common::OutputBitstream &stream, bool inferredView) const;
 
   static auto loadFromJson(const Common::Json &node, bool inferredView) -> Halfspace;
 };

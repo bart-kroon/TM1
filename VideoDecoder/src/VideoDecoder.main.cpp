@@ -48,7 +48,7 @@ constexpr auto defaultCodecGroupIdc = TMIV::MivBitstream::PtlProfileCodecGroupId
 auto usage() -> int {
   std::cout << "Usage: -b BITSTREAM -o RECONSTRUCTION [-c CODEC_GROUP_IDC] [-s] [-S]\n";
   std::cout << '\n';
-  std::cout << "The default codec group IDC is " << int(defaultCodecGroupIdc) << " ("
+  std::cout << "The default codec group IDC is " << static_cast<int>(defaultCodecGroupIdc) << " ("
             << defaultCodecGroupIdc << ")\n";
   std::cout << "The reconstructed output is in YUV 4:2:0 10le\n";
   return 1;

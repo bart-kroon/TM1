@@ -53,21 +53,20 @@ IvMetadataReader::IvMetadataReader(const Common::Json &config)
   m_vssDecoder = std::make_unique<V3cSampleStreamDecoder>(m_stream);
   m_decoder = std::make_unique<MivDecoder>([this]() { return (*m_vssDecoder)(); });
 
-  m_decoder->setOccFrameServer([&config](uint8_t atlasId, uint32_t frameId,
+  m_decoder->setOccFrameServer([&config](MivBitstream::AtlasId atlasId, uint32_t frameId,
                                          Common::Vec2i frameSize) {
     return IO::readFrame<Common::YUV400P10>(config, "OutputDirectory", "OccupancyVideoDataPathFmt",
-                                            frameId, frameSize, int(atlasId));
+                                            frameId, frameSize, atlasId);
   });
-  m_decoder->setGeoFrameServer([&config](uint8_t atlasId, uint32_t frameId,
+  m_decoder->setGeoFrameServer([&config](MivBitstream::AtlasId atlasId, uint32_t frameId,
                                          Common::Vec2i frameSize) {
     return IO::readFrame<Common::YUV400P10>(config, "OutputDirectory", "GeometryVideoDataPathFmt",
-                                            frameId, frameSize, int(atlasId));
+                                            frameId, frameSize, atlasId);
   });
-  m_decoder->setAttrFrameServer(
-      [&config](uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) {
-        return yuv444p(IO::readFrame<Common::YUV420P10>(config, "OutputDirectory",
-                                                        "AttributeVideoDataPathFmt", frameId,
-                                                        frameSize, "T", int(atlasId)));
-      });
+  m_decoder->setAttrFrameServer([&config](MivBitstream::AtlasId atlasId, uint32_t frameId,
+                                          Common::Vec2i frameSize) {
+    return Common::yuv444p(IO::readFrame<Common::YUV420P10>(
+        config, "OutputDirectory", "AttributeVideoDataPathFmt", frameId, frameSize, "T", atlasId));
+  });
 }
 } // namespace TMIV::Decoder

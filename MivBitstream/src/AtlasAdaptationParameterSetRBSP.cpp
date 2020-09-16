@@ -212,7 +212,7 @@ auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) 
   if (x.aaps_miv_extension_present_flag()) {
     stream << x.aaps_miv_extension();
   }
-  if (x.aaps_extension_6bits()) {
+  if (x.aaps_extension_6bits() != 0U) {
     for (auto bit : x.aapsExtensionData()) {
       stream << "aaps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }

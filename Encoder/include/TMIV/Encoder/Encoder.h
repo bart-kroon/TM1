@@ -123,7 +123,7 @@ private: // Encoder_popFrame.cpp
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};
   std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-  int m_geometryScaleEnabledFlag{};
+  bool m_geometryScaleEnabledFlag{};
   int m_dilationIter{};
   Common::Vec2i m_entityEncRange;
   bool m_explicitOccupancy{};

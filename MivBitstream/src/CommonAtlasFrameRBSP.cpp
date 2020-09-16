@@ -853,7 +853,7 @@ auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ost
   if (x.caf_extension_present_flag()) {
     stream << "caf_extension_8bits=" << int{x.caf_extension_8bits()} << '\n';
   }
-  if (x.caf_extension_8bits()) {
+  if (x.caf_extension_8bits() != 0U) {
     for (auto bit : x.cafExtensionData()) {
       stream << "caf_extension_data_flag=" << std::boolalpha << bit << '\n';
     }

@@ -41,7 +41,7 @@ constexpr auto AspsVpccExtension::asps_vpcc_remove_duplicate_point_enabled_flag(
 }
 
 constexpr auto
-AspsVpccExtension::asps_vpcc_remove_duplicate_point_enabled_flag(const unsigned value) noexcept
+AspsVpccExtension::asps_vpcc_remove_duplicate_point_enabled_flag(bool value) noexcept
     -> auto & {
   m_asps_vpcc_remove_duplicate_point_enabled_flag = value;
   return *this;

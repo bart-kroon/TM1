@@ -44,7 +44,7 @@
 
 namespace TMIV::ViewOptimizer {
 namespace {
-[[noreturn]] static void reportError(const char *what, int line) noexcept {
+[[noreturn]] void reportError(const char *what, int line) noexcept {
   std::cerr << "Error in BasicViewAllocator at line " << line << ": " << what << '\n';
   abort();
 

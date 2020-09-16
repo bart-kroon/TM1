@@ -39,7 +39,7 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-enum class PayloadType {
+enum class PayloadType {  // should we define a 2-byte base data type, as required by tests?
   buffering_period,
   atlas_frame_timing,
   filler_payload,

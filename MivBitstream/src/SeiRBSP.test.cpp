@@ -44,11 +44,11 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
 
 TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
   SECTION("Default Constructor") {
-    const auto x = SeiMessage{};
-    REQUIRE(toString(x) == R"(payloadType=buffering_period
+    const auto message = SeiMessage{};
+    REQUIRE(toString(message) == R"(payloadType=buffering_period
 payloadSize=0
 )");
-    REQUIRE(byteCodingTest(x, 2));
+    REQUIRE(byteCodingTest(message, 2));
   }
 
   SECTION("Time Code") {
@@ -56,6 +56,7 @@ payloadSize=0
     REQUIRE(toString(message) == R"(payloadType=time_code
 payloadSize=9
 )");
+    REQUIRE(byteCodingTest(message, 11));
   }
 
   SECTION("Atlas Object Association") {
@@ -63,6 +64,7 @@ payloadSize=9
     REQUIRE(toString(message) == R"(payloadType=atlas_object_association
 payloadSize=8
 )");
+    REQUIRE(byteCodingTest(message, 10));
   }
 }
 

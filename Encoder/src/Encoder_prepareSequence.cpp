@@ -239,7 +239,7 @@ void Encoder::prepareIvau() {
   }
 }
 
-auto Encoder::log2FocLsbMinus4() -> std::uint8_t {
+auto Encoder::log2FocLsbMinus4() const -> std::uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
   return std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U;
 }

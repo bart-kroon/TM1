@@ -155,7 +155,7 @@ public:
   }
 
   auto exhaustiveSearch(const Common::Mat<float> &overlap,
-                        const MivBitstream::ViewParamsList &viewParamsList) -> std::vector<size_t> {
+                        const MivBitstream::ViewParamsList &viewParamsList) const -> std::vector<size_t> {
     auto basicViewIds = std::vector<size_t>{};
     auto haveAdditionalViews = false;
     for (size_t i = 0; i < viewParamsList.size(); ++i) {

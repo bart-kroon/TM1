@@ -76,7 +76,7 @@ private: // Encoder_prepareSequence.cpp
   [[nodiscard]] auto haveOccupancy() const -> bool;
   void enableOccupancyPerView();
   void prepareIvau();
-  auto log2FocLsbMinus4() -> std::uint8_t;
+  auto log2FocLsbMinus4() const -> std::uint8_t;
 
 private: // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();

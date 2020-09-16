@@ -68,7 +68,7 @@ auto Decoder::decodeFrame(AccessUnit &frame, const MivBitstream::ViewParams &vie
     -> Common::Texture444Depth16Frame {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
-  m_occupancyReconstructor.reconstruct(frame);
+  OccupancyReconstructor::reconstruct(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
   return m_renderer->renderFrame(frame, viewportParams);

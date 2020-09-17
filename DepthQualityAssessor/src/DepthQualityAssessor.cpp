@@ -128,7 +128,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params,
             secondUnprojection.width(), secondUnprojection.height(), [&](size_t y, size_t x) {
               const auto &P = secondUnprojection(y, x);
 
-              if (!isnan(P.x())) {
+              if (!std::isnan(P.x())) {
                 auto p = firstHelper.doProjection(P);
 
                 if (firstHelper.isValidDepth(p.second) &&
@@ -136,7 +136,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params,
                   auto zOnFirst = textureNeighbourhood(firstDepth, p.first);
 
                   if (std::all_of(zOnFirst.begin(), zOnFirst.end(), [&](float z) {
-                        return (!isnan(z) && (p.second < z * (1.F - blendingFactor)));
+                        return (!std::isnan(z) && (p.second < z * (1.F - blendingFactor)));
                       })) {
                     outliers++;
                   }

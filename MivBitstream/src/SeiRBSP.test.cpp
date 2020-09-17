@@ -115,13 +115,17 @@ payloadSize=8
   }
 
   SECTION("Example 2") {
+    const std::size_t number_of_bytes_of_atlas_object_association_payload = 7;
+
     x.messages().emplace_back(PayloadType::filler_payload, std::string(1000, 'x'));
     x.messages().emplace_back(PayloadType::filler_payload, std::string(254, 'a'));
     x.messages().emplace_back(PayloadType::filler_payload, std::string(255, 'b'));
     x.messages().emplace_back(PayloadType::filler_payload, std::string(256, 'c'));
     x.messages().emplace_back(PayloadType::filler_payload, std::string(257, 'd'));
     x.messages().emplace_back(PayloadType::user_data_unregistered, "Unregistered");
-    x.messages().emplace_back(PayloadType::atlas_object_association, std::string(7, 'e'));
+    x.messages().emplace_back(
+        PayloadType::atlas_object_association,
+        std::string(number_of_bytes_of_atlas_object_association_payload, 'e'));
 
     REQUIRE(toString(x) == R"(payloadType=filler_payload
 payloadSize=1000
@@ -138,9 +142,16 @@ payloadSize=12
 payloadType=atlas_object_association
 payloadSize=7
 )");
-    const std::size_t where_do_these_bytes_come_from = 6 + 2;
+    const std::size_t number_of_bytes_of_atlas_object_association_header = 2;
+    const std::size_t where_do_these_bytes_come_from =
+        6; // Do we have three additional 2-byte headers?
+    // One for the manifest, one for all the filler_payloads, one for user_data_unregistered?
+
     const std::size_t expected_number_of_bytes =
-        13 + 1000 + 254 + 255 + 256 + 257 + 12 + 7 + where_do_these_bytes_come_from;
+        13 + 1000 + 254 + 255 + 256 + 257 + 12 +
+        number_of_bytes_of_atlas_object_association_payload +
+        number_of_bytes_of_atlas_object_association_header + where_do_these_bytes_come_from;
+
     REQUIRE(byteCodingTest(x, expected_number_of_bytes));
   }
 }

@@ -63,7 +63,7 @@ enum class PayloadType : std::uint16_t {
   occupancy_synthesis,
   geometry_smoothing,
   attribute_smoothing,
-  // MIV extensions below. TODO define their values in the spec!
+  // MIV extensions below. TODO use values from the next MIV specification version
   viewing_space_handling,
   geometry_upscaling_parameters,
   rec_viewport

@@ -40,7 +40,7 @@
 
 namespace TMIV::MivBitstream {
 enum class PayloadType : std::uint16_t {
-  buffering_period = 0,
+  buffering_period,
   atlas_frame_timing,
   filler_payload,
   user_data_registered_itu_t_t35,
@@ -64,6 +64,7 @@ enum class PayloadType : std::uint16_t {
   geometry_smoothing,
   attribute_smoothing,
   // MIV extensions below. TODO use values from the next MIV specification version
+  viewing_space,
   viewing_space_handling,
   geometry_upscaling_parameters,
   rec_viewport

@@ -63,9 +63,10 @@ enum class PayloadType : std::uint16_t {
   occupancy_synthesis,
   geometry_smoothing,
   attribute_smoothing,
-  viewing_space_handling,  // TODO remove
-  geometry_upscaling_parameters,  // TODO remove
-  rec_viewport  // TODO remove
+  // MIV extensions below. TODO define their values in the spec!
+  viewing_space_handling,
+  geometry_upscaling_parameters,
+  rec_viewport
 };
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;

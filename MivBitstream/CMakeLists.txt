@@ -31,7 +31,7 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.hpp"
     "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h"
     "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.hpp"
-    "include/TMIV/MivBitstream/AtlasObjectAssociation.hpp"
+    "include/TMIV/MivBitstream/AtlasObjectAssociation.h"
     "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h"
     "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.hpp"
     "include/TMIV/MivBitstream/AtlasSubBitstream.h"

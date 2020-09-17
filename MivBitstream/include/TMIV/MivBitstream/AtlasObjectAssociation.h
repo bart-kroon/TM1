@@ -42,18 +42,18 @@ namespace TMIV::MivBitstream {
 class AtlasObjectAssociation {
 public:
   AtlasObjectAssociation() = default;
-  explicit AtlasObjectAssociation(HandlingOptionList);
+//  explicit AtlasObjectAssociation(AtlasObjectAssociation);
 
   // TODO enter fields here
 
-  friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
+//  friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
 
-  auto operator==(const AtlasObjectAssociation &other) const noexcept -> bool;
-  auto operator!=(const AtlasObjectAssociation &other) const noexcept -> bool;
+//  auto operator==(const AtlasObjectAssociation &other) const noexcept -> bool;
+//  auto operator!=(const AtlasObjectAssociation &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasObjectAssociation;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+//  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
 };

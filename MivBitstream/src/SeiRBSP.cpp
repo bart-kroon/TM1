@@ -58,38 +58,40 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "no_display";
   case PayloadType::time_code:
     return stream << "time_code";
-  case PayloadType::regional_nesting:
-    return stream << "regional_nesting";
   case PayloadType::sei_manifest:
     return stream << "sei_manifest";
   case PayloadType::sei_prefix_indication:
     return stream << "sei_prefix_indication";
-  case PayloadType::geometry_transformation_params:
-    return stream << "geometry_transformation_params";
-  case PayloadType::attribute_transformation_params:
-    return stream << "attribute_transformation_params";
   case PayloadType::active_sub_bitstreams:
     return stream << "active_sub_bitstreams";
   case PayloadType::component_codec_mapping:
     return stream << "component_codec_mapping";
-  case PayloadType::volumetric_tiling_info:
-    return stream << "volumetric_tiling_info";
-  case PayloadType::presentation_information:
-    return stream << "presentation_information";
+  case PayloadType::scene_object_information:
+    return stream << "scene_object_information";
+  case PayloadType::object_label_information:
+    return stream << "object_label_information";
+  case PayloadType::patch_information:
+    return stream << "patch_information";
+  case PayloadType::volumetric_rectangle_information:
+    return stream << "volumetric_rectangle_information";
+  case PayloadType::atlas_object_association:
+    return stream << "atlas_object_association";
+  case PayloadType::viewport_camera_parameters:
+    return stream << "viewport_camera_parameters";
+  case PayloadType::viewport_position:
+    return stream << "viewport_position";
+  case PayloadType::attribute_transformation_params:
+    return stream << "viewport_position";
   case PayloadType::geometry_smoothing:
     return stream << "geometry_smoothing";
   case PayloadType::attribute_smoothing:
     return stream << "attribute_smoothing";
-  case PayloadType::atlas_object_association:
-    return stream << "atlas_object_association";
-  case PayloadType::viewing_space:
-    return stream << "viewing_space";
-  case PayloadType::rec_viewport:
-    return stream << "rec_viewport";
   case PayloadType::viewing_space_handling:
     return stream << "viewing_space_handling";
   case PayloadType::geometry_upscaling_parameters:
     return stream << "geometry_upscaling_parameters";
+  case PayloadType::rec_viewport:
+    return stream << "rec_viewport";
   default:
     return stream << "reserved_sei_message (" << static_cast<int>(pt) << ")";
   }

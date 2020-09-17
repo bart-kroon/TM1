@@ -39,8 +39,8 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-enum class PayloadType {  // should we define a 2-byte base data type, as required by tests?
-  buffering_period,
+enum class PayloadType : std::uint16_t {
+  buffering_period = 0,
   atlas_frame_timing,
   filler_payload,
   user_data_registered_itu_t_t35,
@@ -48,25 +48,25 @@ enum class PayloadType {  // should we define a 2-byte base data type, as requir
   recovery_point,
   no_display,
   time_code,
-  regional_nesting,
   sei_manifest,
   sei_prefix_indication,
-  geometry_transformation_params,
-  attribute_transformation_params,
   active_sub_bitstreams,
   component_codec_mapping,
-  volumetric_tiling_info,
-  presentation_information,
-  atlas_object_association,  // this one and its friends (e.g. scene info) are structured 
-  // below F.2.12 volumetric annotation. But this doesn't transfer to any changes in table F-1
-  geometry_smoothing,  // Should be 66
-  attribute_smoothing,  // Should be 67
-  viewing_space = 64,
-  rec_viewport,
-  viewing_space_handling,
-  geometry_upscaling_parameters
+  scene_object_information,
+  object_label_information,
+  patch_information,
+  volumetric_rectangle_information,
+  atlas_object_association,
+  viewport_camera_parameters,
+  viewport_position,
+  attribute_transformation_params = 64,
+  occupancy_synthesis,
+  geometry_smoothing,
+  attribute_smoothing,
+  viewing_space_handling,  // TODO remove
+  geometry_upscaling_parameters,  // TODO remove
+  rec_viewport  // TODO remove
 };
-// TODO: should correspond to table F-1 and below in vpcc fdis d224. But some enum values are wrong
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;
 

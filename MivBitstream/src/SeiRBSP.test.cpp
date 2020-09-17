@@ -37,9 +37,38 @@
 
 namespace TMIV::MivBitstream {
 TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
-  REQUIRE(toString(PayloadType::viewing_space_handling) == "viewing_space_handling");
-  REQUIRE(toString(PayloadType::geometry_upscaling_parameters) == "geometry_upscaling_parameters");
-  REQUIRE(toString(PayloadType(42)) == "reserved_sei_message (42)");
+  SECTION("String conversion") {
+    REQUIRE(toString(PayloadType::viewing_space_handling) == "viewing_space_handling");
+    REQUIRE(toString(PayloadType::geometry_upscaling_parameters) ==
+            "geometry_upscaling_parameters");
+    REQUIRE(toString(PayloadType(42)) == "reserved_sei_message (42)");
+  }
+
+  SECTION("Integer conversion - as specified in V3C/V-PCC FDIS d224") {
+    REQUIRE(0U == static_cast<unsigned int>(PayloadType::buffering_period));
+    REQUIRE(1U == static_cast<unsigned int>(PayloadType::atlas_frame_timing));
+    REQUIRE(2U == static_cast<unsigned int>(PayloadType::filler_payload));
+    REQUIRE(3U == static_cast<unsigned int>(PayloadType::user_data_registered_itu_t_t35));
+    REQUIRE(4U == static_cast<unsigned int>(PayloadType::user_data_unregistered));
+    REQUIRE(5U == static_cast<unsigned int>(PayloadType::recovery_point));
+    REQUIRE(6U == static_cast<unsigned int>(PayloadType::no_display));
+    REQUIRE(7U == static_cast<unsigned int>(PayloadType::time_code));
+    REQUIRE(8U == static_cast<unsigned int>(PayloadType::sei_manifest));
+    REQUIRE(9U == static_cast<unsigned int>(PayloadType::sei_prefix_indication));
+    REQUIRE(10U == static_cast<unsigned int>(PayloadType::active_sub_bitstreams));
+    REQUIRE(11U == static_cast<unsigned int>(PayloadType::component_codec_mapping));
+    REQUIRE(12U == static_cast<unsigned int>(PayloadType::scene_object_information));
+    REQUIRE(13U == static_cast<unsigned int>(PayloadType::object_label_information));
+    REQUIRE(14U == static_cast<unsigned int>(PayloadType::patch_information));
+    REQUIRE(15U == static_cast<unsigned int>(PayloadType::volumetric_rectangle_information));
+    REQUIRE(16U == static_cast<unsigned int>(PayloadType::atlas_object_association));
+    REQUIRE(17U == static_cast<unsigned int>(PayloadType::viewport_camera_parameters));
+    REQUIRE(18U == static_cast<unsigned int>(PayloadType::viewport_position));
+    REQUIRE(64U == static_cast<unsigned int>(PayloadType::attribute_transformation_params));
+    REQUIRE(65U == static_cast<unsigned int>(PayloadType::occupancy_synthesis));
+    REQUIRE(66U == static_cast<unsigned int>(PayloadType::geometry_smoothing));
+    REQUIRE(67U == static_cast<unsigned int>(PayloadType::attribute_smoothing));
+  }
 }
 
 TEST_CASE("sei_message", "[Supplemental Enhancement Information RBSP]") {
@@ -109,11 +138,9 @@ payloadSize=12
 payloadType=atlas_object_association
 payloadSize=7
 )");
-    const std::size_t where_do_these_atlas_bytes_come_from = 6;
     const std::size_t where_do_these_bytes_come_from = 6 + 2;
-    const std::size_t expected_number_of_bytes = 13 + 1000 + 254 + 255 + 256 + 257 + 12 +
-                                                 (7 + where_do_these_atlas_bytes_come_from) +
-                                                 where_do_these_bytes_come_from;
+    const std::size_t expected_number_of_bytes =
+        13 + 1000 + 254 + 255 + 256 + 257 + 12 + 7 + where_do_these_bytes_come_from;
     REQUIRE(byteCodingTest(x, expected_number_of_bytes));
   }
 }

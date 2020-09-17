@@ -4,6 +4,7 @@ add_library(MivBitstreamLib
     "src/AccessUnitDelimiterRBSP.cpp"
     "src/AtlasAdaptationParameterSetRBSP.cpp"
     "src/AtlasFrameParameterSetRBSP.cpp"
+    "src/AtlasObjectAssociation.cpp"
     "src/AtlasSequenceParameterSetRBSP.cpp"
     "src/AtlasTileLayerRBSP.cpp"
     "src/CommonAtlasFrameRBSP.cpp"
@@ -30,6 +31,7 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.hpp"
     "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h"
     "include/TMIV/MivBitstream/AtlasFrameParameterSetRBSP.hpp"
+    "include/TMIV/MivBitstream/AtlasObjectAssociation.hpp"
     "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h"
     "include/TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.hpp"
     "include/TMIV/MivBitstream/AtlasSubBitstream.h"
@@ -86,6 +88,7 @@ if (CMAKE_TESTING_ENABLED)
     add_executable(MivBitstreamTest
         "src/AccessUnitDelimiterRBSP.test.cpp"
         "src/AtlasAdaptationParameterSetRBSP.test.cpp"
+        "src/AtlasObjectAssociation.test.cpp"
         "src/AtlasFrameParameterSetRBSP.test.cpp"
         "src/AtlasSequenceParameterSetRBSP.test.cpp"
         "src/AtlasTileLayerRBSP.test.cpp"

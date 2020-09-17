@@ -65,9 +65,9 @@ enum class PayloadType : std::uint16_t {
   attribute_smoothing,
   // MIV extensions below
   viewing_space,
+  rec_viewport,
   viewing_space_handling,
-  geometry_upscaling_parameters,
-  rec_viewport
+  geometry_upscaling_parameters
 };
 
 auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream &;

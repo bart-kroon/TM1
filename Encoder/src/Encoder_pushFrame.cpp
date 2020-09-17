@@ -225,18 +225,17 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews, uint16_t
   auto entityMapsYUV = yuvSampler(entityMaps);
 
   for (size_t viewId = 0; viewId < transportViews.size(); viewId++) {
-    for (int planeId = 0; planeId < transportViews[viewId].texture.getNumberOfPlanes();
-         planeId++) {                                                          //
-      std::transform(transportViews[viewId].texture.getPlane(planeId).begin(), // i's
-                     transportViews[viewId].texture.getPlane(planeId).end(),   //
-                     entityMapsYUV[viewId].getPlane(planeId).begin(),          // j's
-                     entityViews[viewId].texture.getPlane(planeId).begin(),    // result
+    for (int planeId = 0; planeId < Common::TextureFrame::getNumberOfPlanes(); ++planeId) {
+      std::transform(transportViews[viewId].texture.getPlane(planeId).begin(),
+                     transportViews[viewId].texture.getPlane(planeId).end(),
+                     entityMapsYUV[viewId].getPlane(planeId).begin(),
+                     entityViews[viewId].texture.getPlane(planeId).begin(),
                      [=](auto i, auto j) { return (j == entityId) ? i : neutralChroma; });
     }
-    std::transform(transportViews[viewId].depth.getPlane(0).begin(), // i's
-                   transportViews[viewId].depth.getPlane(0).end(),   //
-                   entityMaps[viewId].getPlane(0).begin(),           // j's
-                   entityViews[viewId].depth.getPlane(0).begin(),    // result
+    std::transform(transportViews[viewId].depth.getPlane(0).begin(),
+                   transportViews[viewId].depth.getPlane(0).end(),
+                   entityMaps[viewId].getPlane(0).begin(),
+                   entityViews[viewId].depth.getPlane(0).begin(),
                    [=](auto i, auto j) { return (j == entityId) ? i : uint16_t(0); });
   }
 

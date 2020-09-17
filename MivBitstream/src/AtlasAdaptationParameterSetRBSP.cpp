@@ -49,7 +49,7 @@ auto AapsVpccExtension::decodeFrom(Common::InputBitstream &bitstream) -> AapsVpc
   return {};
 }
 
-void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) const {
+void AapsVpccExtension::encodeTo(Common::OutputBitstream &bitstream) {
   const auto aaps_vpcc_camera_parameters_present_flag = false;
   bitstream.putFlag(aaps_vpcc_camera_parameters_present_flag);
 }
@@ -212,7 +212,7 @@ auto operator<<(std::ostream &stream, const AtlasAdaptationParameterSetRBSP &x) 
   if (x.aaps_miv_extension_present_flag()) {
     stream << x.aaps_miv_extension();
   }
-  if (x.aaps_extension_6bits()) {
+  if (x.aaps_extension_6bits() != 0U) {
     for (auto bit : x.aapsExtensionData()) {
       stream << "aaps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
@@ -321,7 +321,7 @@ void AtlasAdaptationParameterSetRBSP::encodeTo(std::ostream &stream) const {
 
 auto aapsById(const std::vector<AtlasAdaptationParameterSetRBSP> &aapsV, int id) noexcept
     -> const AtlasAdaptationParameterSetRBSP & {
-  for (auto &x : aapsV) {
+  for (const auto &x : aapsV) {
     if (id == x.aaps_atlas_adaptation_parameter_set_id()) {
       return x;
     }

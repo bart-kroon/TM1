@@ -612,8 +612,10 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
 
     if (enableMerging) {
       // Patch Merging
-      int i_top = cluster.imin(), i_bottom = cluster.imax();
-      int j_left = cluster.jmin(), j_right = cluster.jmax();
+      int i_top = cluster.imin();
+      int i_bottom = cluster.imax();
+      int j_left = cluster.jmin();
+      int j_right = cluster.jmax();
 
       auto subRegionGrowing = [&](int ID) {
         Cluster subCluster(viewId, isBasicView, subClusterId, cluster.getEntityId());

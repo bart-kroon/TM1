@@ -40,7 +40,6 @@
 namespace TMIV::Decoder {
 Decoder::Decoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_geometryScaler{rootNode, componentNode}
-    , m_occupancyReconstructor{rootNode, componentNode}
     , m_entityBasedPatchMapFilter{rootNode, componentNode} {
   m_culler =
       Common::Factory<Renderer::ICuller>::getInstance().create("Culler", rootNode, componentNode);
@@ -68,7 +67,7 @@ auto Decoder::decodeFrame(AccessUnit &frame, const MivBitstream::ViewParams &vie
     -> Common::Texture444Depth16Frame {
   checkRestrictions(frame);
   m_geometryScaler.inplaceScale(frame);
-  m_occupancyReconstructor.reconstruct(frame);
+  OccupancyReconstructor::reconstruct(frame);
   m_entityBasedPatchMapFilter.inplaceFilterBlockToPatchMaps(frame);
   m_culler->inplaceFilterBlockToPatchMaps(frame, viewportParams);
   return m_renderer->renderFrame(frame, viewportParams);

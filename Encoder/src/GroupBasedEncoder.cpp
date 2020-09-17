@@ -272,7 +272,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
 
   uint8_t kOut = 0;
 
-  for (auto &v : vps) {
+  for (const auto &v : vps) {
     assert(v->profile_tier_level() == x.profile_tier_level());
     assert(v->vps_v3c_parameter_set_id() == x.vps_v3c_parameter_set_id());
     assert(v->vps_miv_extension_present_flag());
@@ -363,7 +363,7 @@ auto GroupBasedEncoder::mergeParams(
   uint16_t atlasIdOffset = 0;
   uint16_t viewIdOffset = 0;
 
-  for (auto perGroupParam : perGroupParams) {
+  for (const auto *perGroupParam : perGroupParams) {
     // Copy patches in group order
     for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);

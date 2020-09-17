@@ -55,7 +55,7 @@ auto CommonAtlasDecoder::operator()() -> std::optional<AccessUnit> {
 
 auto CommonAtlasDecoder::decodeAsb() -> bool {
   if (auto asb = m_source()) {
-    for (auto &nu : asb->v3c_payload().atlas_sub_bitstream().nal_units()) {
+    for (const auto &nu : asb->v3c_payload().atlas_sub_bitstream().nal_units()) {
       if (nu.nal_unit_header().nal_layer_id() == 0) {
         m_buffer.push_back(nu);
       } else {

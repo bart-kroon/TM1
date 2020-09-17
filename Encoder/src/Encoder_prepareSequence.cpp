@@ -48,7 +48,8 @@ void runtimeCheck(bool cond, const char *what) {
 } // namespace
 
 void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
-  m_blockSize = m_blockSizeDepthQualityDependent[sourceParams.vme().vme_depth_low_quality_flag()];
+  m_blockSize = m_blockSizeDepthQualityDependent[static_cast<std::size_t>(
+      sourceParams.vme().vme_depth_low_quality_flag())];
   runtimeCheck(2 <= m_blockSize, "blockSize should be at least two");
   runtimeCheck((m_blockSize & (m_blockSize - 1)) == 0, "blockSize should be a power of two");
 
@@ -63,7 +64,7 @@ void Encoder::prepareSequence(MivBitstream::EncoderParams sourceParams) {
   // Calculate nominal atlas frame sizes
   const auto atlasFrameSizes = calculateNominalAtlasFrameSizes(m_transportParams);
   std::cout << "Nominal atlas frame sizes: { ";
-  for (auto &size : atlasFrameSizes) {
+  for (const auto &size : atlasFrameSizes) {
     std::cout << ' ' << size;
   }
   std::cout << " }\n";
@@ -239,7 +240,7 @@ void Encoder::prepareIvau() {
   }
 }
 
-auto Encoder::log2FocLsbMinus4() -> std::uint8_t {
+auto Encoder::log2FocLsbMinus4() const -> std::uint8_t {
   // Avoid confusion but test MSB/LSB logic in decoder
   return std::max(4U, Common::ceilLog2(m_intraPeriod) + 1U) - 4U;
 }

@@ -911,7 +911,7 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
   if (vps_miv_extension_present_flag() && vps_miv_extension() != other.vps_miv_extension()) {
     return false;
   }
-  if (vps_extension_7bits() && vpsExtensionData() != other.vpsExtensionData()) {
+  if (vps_extension_7bits() != 0U && vpsExtensionData() != other.vpsExtensionData()) {
     return false;
   }
   return true;
@@ -967,7 +967,7 @@ auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
   if (x.vps_miv_extension_present_flag()) {
     x.vps_miv_extension(VpsMivExtension::decodeFrom(bitstream, x));
   }
-  if (x.vps_extension_7bits()) {
+  if (x.vps_extension_7bits() != 0U) {
     const auto vps_extension_length_minus1 = bitstream.getUExpGolomb<size_t>();
     auto vpsExtensionData = std::vector<uint8_t>();
     vpsExtensionData.reserve(vps_extension_length_minus1 + 1);
@@ -1024,7 +1024,7 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
   if (vps_miv_extension_present_flag()) {
     vps_miv_extension().encodeTo(bitstream, *this);
   }
-  if (vps_extension_7bits()) {
+  if (vps_extension_7bits() != 0U) {
     bitstream.putUExpGolomb(vps_extension_length_minus1());
     for (uint8_t byte : vpsExtensionData()) {
       bitstream.putUint8(byte);

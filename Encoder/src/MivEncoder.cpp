@@ -80,9 +80,9 @@ auto MivEncoder::ptlMaxDecodesIdc() const -> MivBitstream::PtlMaxDecodesIdc {
   auto numDecodes = 0;
   for (uint8_t k = 0; k < m_params.vps.vps_atlas_count_minus1() + 1; ++k) {
     const auto j = m_params.vps.vps_atlas_id(k);
-    numDecodes += m_params.vps.vps_auxiliary_video_present_flag(j);
-    numDecodes += m_params.vps.vps_occupancy_video_present_flag(j);
-    numDecodes += m_params.vps.vps_geometry_video_present_flag(j) *
+    numDecodes += static_cast<int>(m_params.vps.vps_auxiliary_video_present_flag(j));
+    numDecodes += static_cast<int>(m_params.vps.vps_occupancy_video_present_flag(j));
+    numDecodes += static_cast<int>(m_params.vps.vps_geometry_video_present_flag(j)) *
                   (m_params.vps.vps_map_count_minus1(j) + 1);
     if (m_params.vps.vps_attribute_video_present_flag(j)) {
       numDecodes += m_params.vps.attribute_information(j).ai_attribute_count() *
@@ -182,7 +182,7 @@ auto MivEncoder::mvpUpdateMode() const -> MivBitstream::MvpUpdateMode {
     updInt = updInt || m_viewParamsList[i].ci != m_params.viewParamsList[i].ci;
     updDq = updDq || m_viewParamsList[i].dq != m_params.viewParamsList[i].dq;
   }
-  if (int{updExt} + int{updInt} + int{updDq} > 1) {
+  if (static_cast<int>(updExt) + static_cast<int>(updInt) + static_cast<int>(updDq) > 1) {
     return MivBitstream::MvpUpdateMode::VPL_ALL;
   }
   if (updExt) {
@@ -199,7 +199,7 @@ auto MivEncoder::mvpUpdateMode() const -> MivBitstream::MvpUpdateMode {
 
 auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
   auto mvpl = MivBitstream::MivViewParamsList{};
-  auto &vpl = m_params.viewParamsList;
+  const auto &vpl = m_params.viewParamsList;
 
   assert(!vpl.empty());
   mvpl.mvp_num_views_minus1(uint16_t(vpl.size() - 1));

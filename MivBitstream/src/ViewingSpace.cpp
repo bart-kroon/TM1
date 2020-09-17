@@ -180,7 +180,7 @@ void ElementaryShape::encodeTo(Common::OutputBitstream &stream) const {
   bool guardBandPresent{};
   bool orientationPresent{};
   bool directionConstraintPresent{};
-  bool cameraInferred = inferringViews.size() > 0;
+  bool cameraInferred = !inferringViews.empty();
   for (const auto &p : primitives) {
     guardBandPresent |= p.guardBandSize.has_value();
     orientationPresent |= p.rotation.has_value();

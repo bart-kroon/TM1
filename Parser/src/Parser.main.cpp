@@ -88,7 +88,7 @@ public:
   void parseV3cPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
     m_log << asb.sample_stream_nal_header();
 
-    for (auto &nu : asb.nal_units()) {
+    for (const auto &nu : asb.nal_units()) {
       parseNalUnit(nu);
     }
   }

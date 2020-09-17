@@ -385,7 +385,7 @@ GeometryScaler::GeometryScaler(const Common::Json & /*rootNode*/,
 }
 
 auto GeometryScaler::scale(const AtlasAccessUnit &atlas,
-                           const MivBitstream::GeometryUpscalingParameters &gup) const
+                           const MivBitstream::GeometryUpscalingParameters &gup)
     -> Common::Depth10Frame {
   auto upscaler = DepthUpscaler{static_cast<int>(gup.gup_delta_threshold()),
                                 gup.gup_erode_threshold(), gup.gup_max_curvature()};

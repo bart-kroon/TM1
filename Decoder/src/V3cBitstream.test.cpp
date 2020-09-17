@@ -56,7 +56,8 @@ auto dumpV3cUnitPayload(std::streampos position, const MivBitstream::SampleStrea
          << int{vuh.vuh_attribute_partition_index()};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    path << '_' << int{vuh.vuh_map_index()} << '_' << std::boolalpha << vuh.vuh_auxiliary_video_flag();
+    path << '_' << int{vuh.vuh_map_index()} << '_' << std::boolalpha
+         << vuh.vuh_auxiliary_video_flag();
   }
   if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_VPS ||
       vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AD) {
@@ -128,19 +129,21 @@ TEST_CASE("Demultiplex", "[V3C bitstream]") {
 
 auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) -> Depth10Frame {
   std::cout << "geoFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
-       << ", frameSize=" << frameSize << '\n';
+            << ", frameSize=" << frameSize << '\n';
   return Depth10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto occFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) -> Occupancy10Frame {
+auto occFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Occupancy10Frame {
   std::cout << "occFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
-       << ", frameSize=" << frameSize << '\n';
+            << ", frameSize=" << frameSize << '\n';
   return Occupancy10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) -> Texture444Frame {
+auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Texture444Frame {
   std::cout << "attrFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
-       << ", frameSize=" << frameSize << '\n';
+            << ", frameSize=" << frameSize << '\n';
   return Texture444Frame{frameSize.x(), frameSize.y()};
 }
 

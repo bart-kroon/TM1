@@ -44,7 +44,7 @@
 
 namespace TMIV::ViewOptimizer {
 namespace {
-[[noreturn]] static void reportError(const char *what, int line) noexcept {
+[[noreturn]] void reportError(const char *what, int line) noexcept {
   std::cerr << "Error in BasicViewAllocator at line " << line << ": " << what << '\n';
   abort();
 
@@ -184,7 +184,7 @@ auto BasicViewAllocator::sqDistanceMatrix(const Positions &pos) -> Common::Mat<d
 }
 
 auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, std::size_t first,
-                                                std::size_t k) const -> Centroids {
+                                                std::size_t k) -> Centroids {
   auto result = Centroids{};
   result.reserve(cost.N());
   VERIFY(k <= cost.N());
@@ -216,7 +216,7 @@ auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, std::s
   return result;
 }
 
-auto BasicViewAllocator::updateCentroids(const KMedoidsCost &cost, Centroids centroids) const
+auto BasicViewAllocator::updateCentroids(const KMedoidsCost &cost, Centroids centroids)
     -> std::optional<Centroids> {
   auto lowestCost = cost(centroids);
   auto update = std::optional<Centroids>{};

@@ -370,7 +370,7 @@ auto operator<<(std::ostream &stream, const AtlasSequenceParameterSetRBSP &x) ->
   if (x.asps_miv_extension_present_flag()) {
     stream << x.asps_miv_extension();
   }
-  if (x.asps_extension_6bits()) {
+  if (x.asps_extension_6bits() != 0U) {
     for (bool flag : x.aspsExtensionData()) {
       stream << "asps_extension_data_flag=" << std::boolalpha << flag << '\n';
     }
@@ -431,7 +431,7 @@ auto AtlasSequenceParameterSetRBSP::operator==(
   if (asps_miv_extension_present_flag() && asps_miv_extension() != other.asps_miv_extension()) {
     return false;
   }
-  if (asps_extension_6bits() && aspsExtensionData() != other.aspsExtensionData()) {
+  if ((asps_extension_6bits() != 0U) && aspsExtensionData() != other.aspsExtensionData()) {
     return false;
   }
   return true;
@@ -617,7 +617,7 @@ void AtlasSequenceParameterSetRBSP::encodeTo(std::ostream &stream, const V3cUnit
 
 auto aspsById(const std::vector<AtlasSequenceParameterSetRBSP> &aspsV, int id) noexcept
     -> const AtlasSequenceParameterSetRBSP & {
-  for (auto &x : aspsV) {
+  for (const auto &x : aspsV) {
     if (id == x.asps_atlas_sequence_parameter_set_id()) {
       return x;
     }

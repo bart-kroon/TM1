@@ -189,7 +189,7 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
   if (afps_miv_extension_present_flag() && afps_miv_extension() != other.afps_miv_extension()) {
     return false;
   }
-  if (afps_extension_7bits() && afpsExtensionData() != other.afpsExtensionData()) {
+  if (afps_extension_7bits() != 0U && afpsExtensionData() != other.afpsExtensionData()) {
     return false;
   }
   return true;
@@ -292,7 +292,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
 
 auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id) noexcept
     -> const AtlasFrameParameterSetRBSP & {
-  for (auto &x : afpsV) {
+  for (const auto &x : afpsV) {
     if (id == x.afps_atlas_frame_parameter_set_id()) {
       return x;
     }

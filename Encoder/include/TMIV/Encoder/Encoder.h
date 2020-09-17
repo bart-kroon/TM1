@@ -76,7 +76,7 @@ private: // Encoder_prepareSequence.cpp
   [[nodiscard]] auto haveOccupancy() const -> bool;
   void enableOccupancyPerView();
   void prepareIvau();
-  auto log2FocLsbMinus4() -> std::uint8_t;
+  auto log2FocLsbMinus4() const -> std::uint8_t;
 
 private: // Encoder_prepareAccessUnit.cpp
   void resetNonAggregatedMask();
@@ -123,7 +123,7 @@ private: // Encoder_popFrame.cpp
   int m_maxBlocksPerAtlas{};
   int m_maxAtlases{};
   std::vector<Common::Vec2i> m_overrideAtlasFrameSizes{};
-  int m_geometryScaleEnabledFlag{};
+  bool m_geometryScaleEnabledFlag{};
   int m_dilationIter{};
   Common::Vec2i m_entityEncRange;
   bool m_explicitOccupancy{};

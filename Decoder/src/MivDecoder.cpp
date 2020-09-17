@@ -93,26 +93,26 @@ auto MivDecoder::operator()() -> std::optional<AccessUnit> {
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
     if (m_au.vps.vps_occupancy_video_present_flag(j)) {
-      result[decodeOccVideo(k)] = true;
+      result[static_cast<std::size_t>(decodeOccVideo(k))] = true;
     }
   }
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
     if (m_au.vps.vps_geometry_video_present_flag(j)) {
-      result[decodeGeoVideo(k)] = true;
+      result[static_cast<std::size_t>(decodeGeoVideo(k))] = true;
     }
   }
   for (size_t k = 0; k <= m_au.vps.vps_atlas_count_minus1(); ++k) {
     const auto j = m_au.vps.vps_atlas_id(k);
     if (m_au.vps.vps_attribute_video_present_flag(j)) {
-      result[decodeAttrVideo(k)] = true;
+      result[static_cast<std::size_t>(decodeAttrVideo(k))] = true;
     }
   }
 
-  if (result[false] && result[true]) {
+  if (result[0U] && result[1U]) {
     throw std::runtime_error("One of the video streams is truncated");
   }
-  if (result[true]) {
+  if (result[1U]) {
     // TODO(BK): This copies the video frames.
     return m_au;
   }
@@ -460,7 +460,7 @@ void MivDecoder::summarizeVps() const {
   const auto &ptl = vps.profile_tier_level();
 
   std::cout << "V3C parameter set " << int{vps.vps_v3c_parameter_set_id()} << ":\n";
-  std::cout << "  Tier " << int{ptl.ptl_tier_flag()} << ", " << ptl.ptl_level_idc()
+  std::cout << "  Tier " << static_cast<int>(ptl.ptl_tier_flag()) << ", " << ptl.ptl_level_idc()
             << ", codec group " << ptl.ptl_profile_codec_group_idc() << ", toolset "
             << ptl.ptl_profile_toolset_idc() << ", recon " << ptl.ptl_profile_reconstruction_idc()
             << ", decodes " << ptl.ptl_max_decodes_idc() << '\n';

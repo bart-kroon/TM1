@@ -151,7 +151,8 @@ void ExplicitOccupancy::padGeometryFromLeft(Common::MVD10Frame &atlases) {
       auto occupancyScale =
           std::array{m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
                      m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
-      int yOcc = 0, xOcc = 0;
+      int yOcc = 0;
+      int xOcc = 0;
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
           auto depth = depthAtlasMap.getPlane(0)(y, x);

@@ -86,6 +86,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "geometry_smoothing";
   case PayloadType::attribute_smoothing:
     return stream << "attribute_smoothing";
+  case PayloadType::viewing_space:
+    return stream << "viewing_space";
   case PayloadType::viewing_space_handling:
     return stream << "viewing_space_handling";
   case PayloadType::geometry_upscaling_parameters:

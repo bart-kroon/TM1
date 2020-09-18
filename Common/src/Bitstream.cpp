@@ -190,7 +190,7 @@ void OutputBitstream::putUExpGolomb_(uint64_t value) {
 }
 
 void OutputBitstream::putSExpGolomb(int64_t value) {
-  putUExpGolomb((static_cast<uint64_t>(std::abs(value)) << 1U) - uint64_t{value > 0});
+  putUExpGolomb((static_cast<uint64_t>(std::abs(value)) << 1U) - static_cast<uint64_t>(value > 0));
 }
 
 void OutputBitstream::putUint64(uint64_t value) {

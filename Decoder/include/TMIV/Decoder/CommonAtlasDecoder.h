@@ -58,9 +58,6 @@ public:
     MivBitstream::AtlasAdaptationParameterSetRBSP aaps;
     MivBitstream::CommonAtlasFrameRBSP caf;
     std::vector<MivBitstream::SeiMessage> prefixNSei;
-    std::vector<MivBitstream::SeiMessage> prefixESei;
-    std::vector<MivBitstream::SeiMessage> suffixNSei;
-    std::vector<MivBitstream::SeiMessage> suffixESei;
   };
 
   auto operator()() -> std::optional<AccessUnit>;

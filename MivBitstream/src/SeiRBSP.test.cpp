@@ -142,15 +142,13 @@ payloadSize=12
 payloadType=atlas_object_association
 payloadSize=7
 )");
-    const std::size_t number_of_bytes_of_atlas_object_association_header = 2;
-    const std::size_t where_do_these_bytes_come_from =
-        6; // Do we have three additional 2-byte headers?
-    // One for the manifest, one for all the filler_payloads, one for user_data_unregistered?
+    const std::size_t number_of_bytes_per_type_header = 3;
+    const std::size_t number_of_bytes_for_all_headers =
+        number_of_bytes_per_type_header * x.messages().size();
 
     const std::size_t expected_number_of_bytes =
-        13 + 1000 + 254 + 255 + 256 + 257 + 12 +
-        number_of_bytes_of_atlas_object_association_payload +
-        number_of_bytes_of_atlas_object_association_header + where_do_these_bytes_come_from;
+        1000 + 254 + 255 + 256 + 257 + 12 +
+        number_of_bytes_of_atlas_object_association_payload + number_of_bytes_for_all_headers;
 
     REQUIRE(byteCodingTest(x, expected_number_of_bytes));
   }

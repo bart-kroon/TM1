@@ -81,7 +81,7 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
   case PayloadType::viewport_position:
     return stream << "viewport_position";
   case PayloadType::attribute_transformation_params:
-    return stream << "viewport_position";
+    return stream << "attribute_transformation_params";
   case PayloadType::occupancy_synthesis:
     return stream << "occupancy_synthesis";
   case PayloadType::geometry_smoothing:

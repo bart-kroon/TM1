@@ -224,6 +224,7 @@ void MivDecoder::decodeCommonAtlas() {
       std::istringstream stream{sei.payload()};
       Common::InputBitstream bitstream{stream};
       m_au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
+      // How do we handle if theres 0 or >1 gup? Should we break after this line?
     }
   }
 }

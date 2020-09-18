@@ -1,5 +1,5 @@
 ---
-Checks:           '-*,bugprone-*,cppcoreguidelines-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-bounds-constant-array-index,modernize-*,performance-*,readability-*,-readability-magic-numbers,google-readability-braces-around-statements'
+Checks:           '-*,bugprone-*,cppcoreguidelines-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,modernize-*,performance-*,readability-*,-readability-magic-numbers,google-readability-braces-around-statements'
 FormatStyle:      file
-WarningsAsErrors: '*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-performance-type-promotion-in-math-fn'
+WarningsAsErrors: '*'
 

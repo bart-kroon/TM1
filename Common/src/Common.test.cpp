@@ -59,13 +59,13 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(A.size() == 150);
 
   SECTION("Vector norm")
-  REQUIRE(fabs(norm(v1) - 3.7416573F) < EPS);
+  REQUIRE(std::fabs(norm(v1) - 3.7416573F) < EPS);
 
   SECTION("Unit vector")
-  REQUIRE(fabs(norm(unit(v1)) - 1.F) < EPS);
+  REQUIRE(std::fabs(norm(unit(v1)) - 1.F) < EPS);
 
   SECTION("Vector dot product")
-  REQUIRE(fabs(dot(v1, v1) - 14.F) < EPS);
+  REQUIRE(std::fabs(dot(v1, v1) - 14.F) < EPS);
 
   SECTION("Vector cross product")
   REQUIRE(norm_inf(cross(v1, v2) - Vec3f({15.F, 3.F, -7.F})) < EPS);
@@ -96,7 +96,7 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(1.F * m2 == m2);
 
   SECTION("Matrix trace")
-  REQUIRE(fabs(trace(m1) - (-3.F)) < EPS);
+  REQUIRE(std::fabs(trace(m1) - (-3.F)) < EPS);
 
   SECTION("Matrix transpose")
   REQUIRE(norm_inf(transpose(m2) - Mat<float>({3, 4}, {1.F, 4.F, 7.F, 10.F, 2.F, 5.F, 8.F, 11.F,
@@ -120,7 +120,7 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   REQUIRE(norm_inf(mldivide(m1, v1) - Vec3f({-1.F, 2.F, 0.F}) / 3.F) < EPS);
 
   SECTION("Matrix determinant")
-  REQUIRE(fabs(det(m1) - 54.F) < EPS);
+  REQUIRE(std::fabs(det(m1) - 54.F) < EPS);
 
   std::fill(m1.diag_begin(), m1.diag_end(), 0.F);
   SECTION("Matrix iterator")

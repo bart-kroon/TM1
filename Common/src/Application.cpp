@@ -122,13 +122,12 @@ void Application::add_stream(std::istream &stream) {
     m_json = std::make_shared<Json>(std::move(root));
   }
 }
-
 void Application::startTime() { m_startTime = clock(); }
 
 void Application::printTime() const {
-  auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;
+  auto executeTime =
+      (static_cast<double>(clock()) - static_cast<double>(m_startTime)) / CLOCKS_PER_SEC;
   std::cout << "Total Time: " << std::fixed << std::setprecision(3) << executeTime << " sec."
             << std::endl;
 }
-
 } // namespace TMIV::Common

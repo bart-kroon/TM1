@@ -136,7 +136,7 @@ auto MivDecoder::decodeVps() -> bool {
       [this, vuh]() { return m_inputBuffer(vuh); }, m_au.vps, m_au.foc);
 
   m_atlasDecoder.clear();
-  m_atlasAu.assign(m_au.vps.vps_atlas_count_minus1() + size_t(1), {});
+  m_atlasAu.assign(m_au.vps.vps_atlas_count_minus1() + size_t{1}, {});
   m_au.atlas.clear();
   m_occVideoDecoder.clear();
   m_geoVideoDecoder.clear();
@@ -262,7 +262,7 @@ void MivDecoder::decodeViewParamsList() {
 }
 
 void MivDecoder::decodeMvpl(const MivBitstream::MivViewParamsList &mvpl) {
-  m_au.viewParamsList.assign(mvpl.mvp_num_views_minus1() + size_t(1), {});
+  m_au.viewParamsList.assign(mvpl.mvp_num_views_minus1() + size_t{1}, {});
 
   for (uint16_t viewId = 0; viewId <= mvpl.mvp_num_views_minus1(); ++viewId) {
     m_au.viewParamsList[viewId].ce = mvpl.camera_extrinsics(viewId);
@@ -319,7 +319,7 @@ void MivDecoder::decodeBlockToPatchMap(size_t k) {
 
         for (auto y = firstY; y <= lastY; ++y) {
           for (auto x = firstX; x <= lastX; ++x) {
-            btpm.getPlane(0)(y, x) = uint16_t(p);
+            btpm.getPlane(0)(y, x) = static_cast<uint16_t>(p);
           }
         }
       });

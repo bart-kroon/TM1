@@ -239,28 +239,28 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       THEN("The depth std::map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(std::is_same_v<decltype(depth), Common::Mat<float>>);
-        REQUIRE(depth.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(depth.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::none_of(std::begin(depth), std::end(depth),
                              [](float x) { return std::isfinite(x); }));
       }
       THEN("The normalized disparity std::map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(std::is_same_v<decltype(normDisp), Common::Mat<float>>);
-        REQUIRE(normDisp.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(normDisp.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(normDisp), std::end(normDisp),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) std::map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(std::is_same_v<decltype(normWeight), Common::Mat<float>>);
-        REQUIRE(normWeight.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(normWeight.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(normWeight), std::end(normWeight),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The color std::map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(std::is_same_v<decltype(color), Common::Mat<Common::Vec3w>>);
-        REQUIRE(color.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(color.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(color), std::end(color),
                             [](Common::Vec3w x) { return x == Common::Vec3w{}; }));
       }
@@ -289,28 +289,28 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       THEN("The depth std::map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(std::is_same_v<decltype(depth), Common::Mat<float>>);
-        REQUIRE(depth.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(depth.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::none_of(std::begin(depth), std::end(depth),
                              [](float x) { return std::isfinite(x); }));
       }
       THEN("The normalized disparity std::map is a matrix of zeroes") {
         auto normDisp = rasterizer.normDisp();
         static_assert(std::is_same_v<decltype(normDisp), Common::Mat<float>>);
-        REQUIRE(normDisp.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(normDisp.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(normDisp), std::end(normDisp),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The normalized weight (quality) std::map is a matrix of zeros") {
         auto normWeight = rasterizer.normWeight();
         static_assert(std::is_same_v<decltype(normWeight), Common::Mat<float>>);
-        REQUIRE(normWeight.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(normWeight.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(normWeight), std::end(normWeight),
                             [](float x) { return x == 0.F; }));
       }
       THEN("The color std::map is a matrix of zero vectors") {
         auto color = rasterizer.attribute<0>();
         static_assert(std::is_same_v<decltype(color), Common::Mat<Common::Vec3w>>);
-        REQUIRE(color.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(color.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(color), std::end(color),
                             [](Common::Vec3w x) { return x == Common::Vec3w{}; }));
       }
@@ -421,7 +421,7 @@ SCENARIO("Rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
       THEN("The field std::map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
         static_assert(std::is_same_v<decltype(field), Common::Mat<Common::Vec2f>>);
-        REQUIRE(field.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(field.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(field), std::end(field),
                             [](Common::Vec2f x) { return x == Common::Vec2f{}; }));
       }
@@ -437,7 +437,7 @@ SCENARIO("Rastering meshes with Common::Vec2f as attribute", "[Rasterizer]") {
       THEN("The field std::map is a matrix of zero vectors") {
         auto field = rasterizer.attribute<0>();
         static_assert(std::is_same_v<decltype(field), Common::Mat<Common::Vec2f>>);
-        REQUIRE(field.sizes() == std::array{size_t(4), size_t(8)});
+        REQUIRE(field.sizes() == std::array{size_t{4}, size_t{8}});
         REQUIRE(std::all_of(std::begin(field), std::end(field),
                             [](Common::Vec2f x) { return x == Common::Vec2f{}; }));
       }

@@ -110,7 +110,7 @@ void writeFrame(const Common::Json &config, const std::string &fileNameField,
     throw std::runtime_error("Failed to open file for writing");
   }
 
-  stream.seekp(int64_t(frameIndex) * frame.getDiskSize());
+  stream.seekp(int64_t{frameIndex} * frame.getDiskSize());
 
   frame.dump(stream);
   padChroma<FORMAT>(stream, frame.getDiskSize() - frame.getMemorySize());

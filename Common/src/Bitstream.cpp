@@ -170,7 +170,7 @@ void OutputBitstream::writeBits_(uint64_t value, unsigned bits) {
 
   while (m_size >= charBits) {
     m_size -= charBits;
-    m_stream.put(char(m_buffer >> m_size));
+    m_stream.put(static_cast<char>(m_buffer >> m_size));
   }
 }
 
@@ -190,12 +190,12 @@ void OutputBitstream::putUExpGolomb_(uint64_t value) {
 }
 
 void OutputBitstream::putSExpGolomb(int64_t value) {
-  putUExpGolomb((uint64_t(std::abs(value)) << 1U) - uint64_t(value > 0));
+  putUExpGolomb((static_cast<uint64_t>(std::abs(value)) << 1U) - static_cast<uint64_t>(value > 0));
 }
 
 void OutputBitstream::putUint64(uint64_t value) {
-  putUint32(uint32_t(value >> 32));
-  putUint32(uint32_t(value));
+  putUint32(static_cast<uint32_t>(value >> 32));
+  putUint32(static_cast<uint32_t>(value));
 }
 
 void OutputBitstream::putFloat16(Half value) { putUint16(value.encode()); }

@@ -182,7 +182,7 @@ void AtlasId::encodeTo(Common::OutputBitstream &bitstream) const {
 
 auto ProfileTierLevel::ptl_num_sub_profiles() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(m_subProfileIdcs.size() <= UINT8_MAX);
-  return uint8_t(m_subProfileIdcs.size());
+  return static_cast<uint8_t>(m_subProfileIdcs.size());
 }
 
 auto ProfileTierLevel::ptl_sub_profile_idc(std::uint8_t i) const noexcept -> uint64_t {
@@ -287,7 +287,7 @@ void ProfileTierLevel::encodeTo(Common::OutputBitstream &bitstream) const {
       bitstream.putUint64(ptl_sub_profile_idc(i));
     } else {
       VERIFY_V3CBITSTREAM(ptl_sub_profile_idc(i) <= UINT32_MAX);
-      bitstream.putUint32(uint32_t(ptl_sub_profile_idc(i)));
+      bitstream.putUint32(static_cast<uint32_t>(ptl_sub_profile_idc(i)));
     }
   }
   bitstream.putFlag(ptl_tool_constraints_present_flag());
@@ -377,7 +377,7 @@ void GeometryInformation::encodeTo(Common::OutputBitstream &bitstream, const V3c
 }
 
 auto AttributeInformation::ai_attribute_count() const noexcept -> uint8_t {
-  return uint8_t(m_aiAttributes.size());
+  return static_cast<uint8_t>(m_aiAttributes.size());
 }
 
 auto AttributeInformation::ai_attribute_type_id(uint8_t attributeId) const -> AiAttributeTypeId {
@@ -473,9 +473,9 @@ auto AttributeInformation::printTo(std::ostream &stream, AtlasId atlasId) const 
              << *m_aiAttributes[i].ai_attribute_map_absolute_coding_persistence_flag << '\n';
     }
     stream << "ai_attribute_dimension_minus1( " << atlasId << ", " << i
-           << " )=" << int(ai_attribute_dimension_minus1(i)) << '\n';
+           << " )=" << int{ai_attribute_dimension_minus1(i)} << '\n';
     stream << "ai_attribute_2d_bit_depth_minus1( " << atlasId << ", " << i
-           << " )=" << int(ai_attribute_2d_bit_depth_minus1(i));
+           << " )=" << int{ai_attribute_2d_bit_depth_minus1(i)};
     stream << '\n';
     stream << "ai_attribute_MSB_align_flag( " << atlasId << ", " << i << " )=" << std::boolalpha
            << ai_attribute_MSB_align_flag(i) << '\n';
@@ -613,7 +613,7 @@ auto V3cParameterSet::profile_tier_level() const noexcept -> const ProfileTierLe
 
 auto V3cParameterSet::vps_atlas_count_minus1() const noexcept -> uint8_t {
   VERIFY_V3CBITSTREAM(!m_vpsAtlases.empty());
-  return uint8_t(m_vpsAtlases.size() - 1U);
+  return static_cast<uint8_t>(m_vpsAtlases.size() - 1U);
 }
 
 auto V3cParameterSet::vps_atlas_id(size_t k) const -> AtlasId {
@@ -690,7 +690,7 @@ auto V3cParameterSet::profile_tier_level(ProfileTierLevel value) noexcept -> V3c
 }
 
 auto V3cParameterSet::vps_atlas_count_minus1(uint8_t value) -> V3cParameterSet & {
-  m_vpsAtlases.resize(value + size_t(1));
+  m_vpsAtlases.resize(value + size_t{1});
   return *this;
 }
 

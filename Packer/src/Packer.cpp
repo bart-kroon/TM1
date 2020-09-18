@@ -174,7 +174,7 @@ auto Packer::pack(const Common::SizeVector &atlasSizes, const Common::MaskList &
         if (packer.push(cluster, clusteringMap[clusteringMap_viewId], packerOutput)) {
           MivBitstream::PatchParams p;
 
-          p.atlasId = MivBitstream::AtlasId{uint8_t(atlasId)};
+          p.atlasId = MivBitstream::AtlasId{static_cast<uint8_t>(atlasId)};
           p.atlasPatchProjectionId(static_cast<uint16_t>(cluster.getViewId()));
           p.atlasPatch2dPosX(packerOutput.x());
           p.atlasPatch2dPosY(packerOutput.y());

@@ -65,7 +65,7 @@ TEST_CASE("Bitstream primitives") {
   }
 
   SECTION("u(8)") {
-    const auto reference = std::uint8_t(0x12);
+    const auto reference = static_cast<uint8_t>(0x12);
     obitstream.putUint8(reference);
     obitstream.zeroAlign();
     const auto actual = ibitstream.getUint8();
@@ -73,7 +73,7 @@ TEST_CASE("Bitstream primitives") {
   }
 
   SECTION("u(16)") {
-    const auto reference = std::uint16_t(0x1234);
+    const auto reference = static_cast<uint16_t>(0x1234);
     obitstream.putUint16(reference);
     obitstream.zeroAlign();
     const auto actual = ibitstream.getUint16();
@@ -81,7 +81,7 @@ TEST_CASE("Bitstream primitives") {
   }
 
   SECTION("u(32)") {
-    const auto reference = std::uint32_t(0x12345678);
+    const auto reference = static_cast<uint32_t>(0x12345678);
     obitstream.putUint32(reference);
     obitstream.zeroAlign();
     const auto actual = ibitstream.getUint32();

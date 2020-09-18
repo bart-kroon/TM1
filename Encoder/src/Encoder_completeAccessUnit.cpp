@@ -58,8 +58,9 @@ void Encoder::scaleGeometryDynamicRange() {
 
     for (size_t f = 0; f < numOfFrames; f++) {
       for (auto &geometry : m_transportViews[f][v].depth.getPlane(0)) {
-        geometry = uint16_t((geometry + 0.5 - minDepthMapValWithinGOP) /
-                            (double(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * 65535.0);
+        geometry = static_cast<uint16_t>(
+            (geometry + 0.5 - minDepthMapValWithinGOP) /
+            (static_cast<double>(maxDepthMapValWithinGOP) - minDepthMapValWithinGOP) * 65535.0);
         if (lowDepthQuality) {
           geometry /= 2;
         }

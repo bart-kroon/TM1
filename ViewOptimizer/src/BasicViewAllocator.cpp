@@ -102,7 +102,8 @@ auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
 
 auto BasicViewAllocator::basicViewCount() const -> size_t {
   const auto numAtlases = m_maxAtlases / m_numGroups;
-  const auto maxSamples = size_t(m_maxBasicViewFraction * numAtlases * m_maxLumaPictureSize);
+  const auto maxSamples =
+      static_cast<size_t>(m_maxBasicViewFraction * numAtlases * m_maxLumaPictureSize);
 
   size_t count = 0;
   size_t samplesInTotal = 0;
@@ -117,7 +118,7 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
 
     if (count % numAtlases == 0) {
       samplesInAtlas0 += samplesInView;
-      if (samplesInAtlas0 > size_t(m_maxLumaPictureSize)) {
+      if (samplesInAtlas0 > static_cast<size_t>(m_maxLumaPictureSize)) {
         std::cout << "Basic view count is limited by maximum luma picture size.\n";
         break;
       }
@@ -160,13 +161,14 @@ auto BasicViewAllocator::forwardView(const Positions &pos) const -> std::size_t 
   const auto maxX = std::max_element(pos.cbegin(), pos.cend(), lessX)->x();
   const auto sumPos = std::accumulate(pos.cbegin(), pos.cend(), Common::Vec3d{},
                                       [](const auto &p1, const auto &p2) { return p1 + p2; });
-  const auto target = Common::Vec3d{maxX, sumPos.y() / double(N), sumPos.z() / double(N)};
+  const auto target =
+      Common::Vec3d{maxX, sumPos.y() / static_cast<double>(N), sumPos.z() / static_cast<double>(N)};
 
   auto dist2 = std::vector<double>(N);
   std::transform(pos.cbegin(), pos.cend(), dist2.begin(),
                  [&target](const auto &p) { return Common::norm2(p - target); });
   const auto nearest = std::min_element(dist2.cbegin(), dist2.cend());
-  const auto index = size_t(nearest - dist2.cbegin());
+  const auto index = static_cast<size_t>(nearest - dist2.cbegin());
   std::cout << "Forward central view is " << params().viewParamsList[index].name << ".\n";
 
   return index;

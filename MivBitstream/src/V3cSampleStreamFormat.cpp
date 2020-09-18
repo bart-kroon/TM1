@@ -77,14 +77,14 @@ auto SampleStreamV3cUnit::operator!=(const SampleStreamV3cUnit &other) const noe
 auto SampleStreamV3cUnit::decodeFrom(std::istream &stream, const SampleStreamV3cHeader &header)
     -> SampleStreamV3cUnit {
   const auto ssvu_v3c_unit_size =
-      Common::readBytes(stream, header.ssvh_unit_size_precision_bytes_minus1() + 1);
-  return SampleStreamV3cUnit{Common::readString(stream, size_t(ssvu_v3c_unit_size))};
+      Common::readBytes(stream, header.ssvh_unit_size_precision_bytes_minus1() + size_t{1});
+  return SampleStreamV3cUnit{Common::readString(stream, static_cast<size_t>(ssvu_v3c_unit_size))};
 }
 
 void SampleStreamV3cUnit::encodeTo(std::ostream &stream,
                                    const SampleStreamV3cHeader &header) const {
   Common::writeBytes(stream, m_ssvu_v3c_unit.size(),
-                     header.ssvh_unit_size_precision_bytes_minus1() + 1);
+                     header.ssvh_unit_size_precision_bytes_minus1() + size_t{1});
   stream.write(m_ssvu_v3c_unit.data(), m_ssvu_v3c_unit.size());
 }
 } // namespace TMIV::MivBitstream

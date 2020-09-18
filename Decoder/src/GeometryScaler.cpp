@@ -109,8 +109,7 @@ auto minMasked(const std::vector<uint16_t> &values, const std::vector<uint8_t> &
 }
 
 inline auto colorDistance(const Common::Vec3w &a, const Common::Vec3w &b) {
-  auto dist = float(std::abs(a[0] - b[0]) + std::abs(a[1] - b[1]) + std::abs(a[2] - b[2]));
-  return dist;
+  return static_cast<float>(std::abs(a[0] - b[0]) + std::abs(a[1] - b[1]) + std::abs(a[2] - b[2]));
 }
 
 template <typename Range>
@@ -161,7 +160,7 @@ auto findForegroundEdges(const Common::Mat<uint16_t> &depth,
   auto edges = findForegroundEdges(depth);
   const auto bounds = findRegionBoundaries(regionLabels);
   std::transform(std::begin(edges), std::end(edges), std::begin(bounds), std::begin(edges),
-                 [](uint8_t e, uint8_t b) { return b != 0 ? uint8_t(0) : e; });
+                 [](uint8_t e, uint8_t b) { return b != 0 ? uint8_t{} : e; });
   return edges;
 }
 
@@ -333,7 +332,8 @@ auto upscaleNearest(const Common::Mat<uint16_t> &input, Common::Vec2i outputSize
     -> Common::Mat<uint16_t> {
   const auto inputSize =
       Common::Vec2i{static_cast<int>(input.width()), static_cast<int>(input.height())};
-  auto output = Common::Mat<uint16_t>({size_t(outputSize.y()), size_t(outputSize.x())});
+  auto output = Common::Mat<uint16_t>(
+      {static_cast<size_t>(outputSize.y()), static_cast<size_t>(outputSize.x())});
 
   for (int yo = 0; yo < outputSize.y(); ++yo) {
     for (int xo = 0; xo < outputSize.x(); ++xo) {
@@ -381,7 +381,7 @@ GeometryScaler::GeometryScaler(const Common::Json & /*rootNode*/,
   m_defaultGup.gup_type(MivBitstream::GupType::HVR)
       .gup_erode_threshold(Common::Half(componentNode.require("minForegroundConfidence").asFloat()))
       .gup_delta_threshold(componentNode.require("geometryEdgeMagnitudeTh").asInt())
-      .gup_max_curvature(uint8_t(componentNode.require("maxCurvature").asInt()));
+      .gup_max_curvature(static_cast<uint8_t>(componentNode.require("maxCurvature").asInt()));
 }
 
 auto GeometryScaler::scale(const AtlasAccessUnit &atlas,

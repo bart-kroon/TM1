@@ -67,7 +67,8 @@ auto NoSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
       for (int d = 0; d < 3; ++d) {
         viewport.first.getPlane(d)(y, x) = atlas.attrFrame.getPlane(d)(y, x);
       }
-      viewport.second.getPlane(0)(y, x) = uint16_t(atlas.geoFrame.getPlane(0)(y, x) * 64);
+      viewport.second.getPlane(0)(y, x) =
+          static_cast<uint16_t>(atlas.geoFrame.getPlane(0)(y, x) * 64);
     }
   }
 

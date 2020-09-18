@@ -59,7 +59,7 @@ template <typename Integer> auto InputBitstream::readBits(unsigned bits) -> Inte
   auto value = m_buffer >> m_size;
   m_buffer &= (1 << m_size) - 1;
 
-  VERIFY_BITSTREAM(uint64_t(Integer(value)) == value);
+  VERIFY_BITSTREAM(static_cast<uint64_t>(Integer(value)) == value);
   return Integer(value);
 }
 
@@ -75,16 +75,16 @@ template <typename Integer> auto InputBitstream::getUExpGolomb() -> Integer {
   const auto mask = (uint64_t{1} << leadingBits) - 1;
   const auto value = mask + readBits<uint64_t>(leadingBits);
 
-  VERIFY_BITSTREAM(uint64_t(Integer(value)) == value);
+  VERIFY_BITSTREAM(static_cast<uint64_t>(Integer(value)) == value);
   return Integer(value);
 }
 
 template <typename Integer> auto InputBitstream::getSExpGolomb() -> Integer {
   const auto codeNum = getUExpGolomb<uint64_t>();
-  const auto absValue = int64_t((codeNum + 1) / 2);
+  const auto absValue = static_cast<int64_t>((codeNum + 1) / 2);
   const auto value = (codeNum & 1) == 1 ? absValue : -absValue;
 
-  VERIFY_BITSTREAM(int64_t(Integer(value)) == value);
+  VERIFY_BITSTREAM(static_cast<int64_t>(Integer(value)) == value);
   return Integer(value);
 }
 

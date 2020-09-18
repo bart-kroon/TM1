@@ -327,6 +327,6 @@ auto V3cUnit::encodeTo(std::ostream &stream) const -> size_t {
   const auto position = stream.tellp();
   v3c_unit_header().encodeTo(stream);
   v3c_payload().encodeTo(stream, v3c_unit_header());
-  return size_t(stream.tellp() - position);
+  return static_cast<size_t>(stream.tellp() - position);
 }
 } // namespace TMIV::MivBitstream

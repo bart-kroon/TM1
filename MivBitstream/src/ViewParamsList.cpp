@@ -126,7 +126,7 @@ auto ViewParamsList::viewSizes() const -> Common::SizeVector {
 
 auto operator<<(std::ostream &stream, const ViewParamsList &viewParamsList) -> std::ostream & {
   for (size_t viewId = 0; viewId < viewParamsList.size(); ++viewId) {
-    viewParamsList[viewId].printTo(stream, uint16_t(viewId));
+    viewParamsList[viewId].printTo(stream, static_cast<uint16_t>(viewId));
   }
   return stream;
 }

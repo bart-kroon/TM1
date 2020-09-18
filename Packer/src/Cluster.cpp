@@ -131,7 +131,7 @@ auto Cluster::splitLPatchHorizontally(const ClusteringMap &clusteringMap, std::v
     }
   }
 
-  if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
+  if ((bestSplitPos != 0) && static_cast<double>(minArea) / alignedImsize < splitThresholdL) {
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
     Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
@@ -196,7 +196,8 @@ auto Cluster::splitCPatchVertically(const ClusteringMap &clusteringMap, std::vec
     } // w
   }   // h
 
-  if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
+  if (static_cast<double>(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
+      splitThresholdC) {
     int bestSplitPos = roundToAlignment(W, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
@@ -263,7 +264,8 @@ auto Cluster::splitCPatchHorizontally(const ClusteringMap &clusteringMap, std::v
     } // w
   }   // h
 
-  if (double(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) < splitThresholdC) {
+  if (static_cast<double>(numOfNonEmptyBlocks) / (numOfEmptyBlocks + numOfNonEmptyBlocks) <
+      splitThresholdC) {
     int bestSplitPos = roundToAlignment(H, alignment);
 
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
@@ -319,7 +321,7 @@ auto Cluster::splitLPatchVertically(const ClusteringMap &clusteringMap, std::vec
     }
   }
 
-  if ((bestSplitPos != 0) && double(minArea) / alignedImsize < splitThresholdL) {
+  if ((bestSplitPos != 0) && static_cast<double>(minArea) / alignedImsize < splitThresholdL) {
     Cluster c1(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
     Cluster c2(c.getViewId(), c.isBasicView(), c.getClusterId(), c.getEntityId());
 
@@ -566,7 +568,7 @@ auto Cluster::retrieve(int viewId, const Common::Mask &maskMap, int firstCluster
 
       if (visitedId == ACTIVE) {
         cluster.push(a, b);
-        visitedId = uint16_t(clusterId);
+        visitedId = static_cast<uint16_t>(clusterId);
         candidates.push({a, b});
       }
     };

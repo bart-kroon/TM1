@@ -70,13 +70,13 @@ auto loadSourceParams(const Common::Json &config) -> MivBitstream::EncoderParams
     x.vme().vme_depth_low_quality_flag(node.asBool());
   }
 
-  const auto numGroups = unsigned(config.require("numGroups").asInt());
+  const auto numGroups = static_cast<unsigned>(config.require("numGroups").asInt());
   if (numGroups < 1) {
     throw std::runtime_error("Require numGroups >= 1");
   }
   x.vme().vme_num_groups_minus1(numGroups - 1U);
 
-  const auto maxEntities = unsigned(config.require("maxEntities").asInt());
+  const auto maxEntities = static_cast<unsigned>(config.require("maxEntities").asInt());
   if (maxEntities < 1) {
     throw std::runtime_error("Require maxEntities >= 1");
   }
@@ -123,7 +123,7 @@ auto loadSourceDepth_(int bits, const Common::Json &config, const Common::Vec2i 
                    assert(0 <= x && x <= x_max);
                    const auto y = (0xFFFF * x + x_max / 2) / x_max;
                    assert(0 <= y && y <= UINT16_MAX);
-                   return uint16_t(y);
+                   return static_cast<uint16_t>(y);
                  });
 
   return depth16;

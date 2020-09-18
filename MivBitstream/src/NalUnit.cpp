@@ -124,8 +124,8 @@ auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream & {
 
 NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int nal_temporal_id_plus1)
     : m_nal_unit_type{nal_unit_type}
-    , m_nal_layer_id{uint8_t(nal_layer_id)}
-    , m_nal_temporal_id_plus1{uint8_t(nal_temporal_id_plus1)} {
+    , m_nal_layer_id{static_cast<uint8_t>(nal_layer_id)}
+    , m_nal_temporal_id_plus1{static_cast<uint8_t>(nal_temporal_id_plus1)} {
   VERIFY_V3CBITSTREAM(0 <= nal_layer_id && nal_layer_id <= 63);
   VERIFY_V3CBITSTREAM(0 < nal_temporal_id_plus1 && nal_temporal_id_plus1 <= 7);
 }

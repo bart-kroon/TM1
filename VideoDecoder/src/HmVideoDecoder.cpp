@@ -211,7 +211,7 @@ private:
         const auto height = comPicYuv.getHeight(componentId);
 
         x.bitdepth[k] = m_outputBitDepth[toChannelType(componentId)];
-        x.planes[k].resize(size_t(height), size_t(width));
+        x.planes[k].resize(static_cast<size_t>(height), static_cast<size_t>(width));
 
         const auto *row = comPicYuv.getAddr(componentId);
 

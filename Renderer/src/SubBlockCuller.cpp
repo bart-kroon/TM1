@@ -122,11 +122,11 @@ auto divideInBlocks(const MivBitstream::PatchParams &patch) {
 
   const auto gridWidth = (patch.atlasPatch2dSizeX() + blockSize - 1) / blockSize;
   const auto gridHeight = (patch.atlasPatch2dSizeY() + blockSize - 1) / blockSize;
-  MivBitstream::PatchParamsList subblock(gridWidth * size_t(gridHeight), patch);
+  MivBitstream::PatchParamsList subblock(gridWidth * static_cast<size_t>(gridHeight), patch);
 
   for (uint32_t blockY = 0; blockY < gridHeight; ++blockY) {
     for (uint32_t blockX = 0; blockX < gridWidth; ++blockX) {
-      auto &b = subblock[blockY * size_t(gridWidth) + blockX];
+      auto &b = subblock[blockY * static_cast<size_t>(gridWidth) + blockX];
 
       const auto x1 = blockX * blockSize;
       const auto y1 = blockY * blockSize;
@@ -162,12 +162,12 @@ auto SubBlockCuller::filterBlockToPatchMap(const Decoder::AccessUnit &frame,
         patch.atlasPatchOrientationIndex() == MivBitstream::FlexiblePatchOrientation::FPO_NULL) {
       for (const auto &block : divideInBlocks(patch)) {
         if (!choosePatch(block, frame.viewParamsList, viewportParams)) {
-          inplaceErasePatch(result, block, uint16_t(patchIdx), atlas.asps);
+          inplaceErasePatch(result, block, static_cast<uint16_t>(patchIdx), atlas.asps);
         }
       }
     } else {
       if (!choosePatch(patch, frame.viewParamsList, viewportParams)) {
-        inplaceErasePatch(result, patch, uint16_t(patchIdx), atlas.asps);
+        inplaceErasePatch(result, patch, static_cast<uint16_t>(patchIdx), atlas.asps);
       }
     }
   }

@@ -42,12 +42,6 @@
 
 #include <iostream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::IO;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::DepthQualityAssessor;
-
 using Mat1w = TMIV::Common::heap::Matrix<uint16_t>;
 
 namespace TMIV::Encoder {
@@ -55,45 +49,46 @@ void registerComponents();
 
 class Application : public Common::Application {
 private:
-  unique_ptr<IEncoder> m_encoder;
-  unique_ptr<IDepthQualityAssessor> m_depthQualityAssessor;
+  std::unique_ptr<IEncoder> m_encoder;
+  std::unique_ptr<DepthQualityAssessor::IDepthQualityAssessor> m_depthQualityAssessor;
   IvMetadataWriter m_metadataWriter;
   int m_numberOfFrames{};
   int m_intraPeriod{};
-  SizeVector m_viewSizes;
+  Common::SizeVector m_viewSizes;
 
 public:
-  explicit Application(vector<const char *> argv)
-      : Common::Application{"Encoder", move(argv)}
+  explicit Application(std::vector<const char *> argv)
+      : Common::Application{"Encoder", std::move(argv)}
       , m_encoder{create<IEncoder>("Encoder")}
-      , m_depthQualityAssessor{create<IDepthQualityAssessor>("DepthQualityAssessor")}
+      , m_depthQualityAssessor{create<DepthQualityAssessor::IDepthQualityAssessor>(
+            "DepthQualityAssessor")}
       , m_metadataWriter{json()}
       , m_numberOfFrames{json().require("numberOfFrames").asInt()}
       , m_intraPeriod{json().require("intraPeriod").asInt()} {}
 
   void run() override {
-    auto sourceParams = loadSourceParams(json());
+    auto sourceParams = IO::loadSourceParams(json());
     m_viewSizes = sourceParams.viewParamsList.viewSizes();
 
     if (!json().isPresent("depthLowQualityFlag")) {
       sourceParams.vme().vme_depth_low_quality_flag(m_depthQualityAssessor->isLowDepthQuality(
-          sourceParams, loadSourceFrame(json(), m_viewSizes, 0)));
+          sourceParams, IO::loadSourceFrame(json(), m_viewSizes, 0)));
     }
     m_encoder->prepareSequence(sourceParams);
 
     for (int i = 0; i < m_numberOfFrames; i += m_intraPeriod) {
-      int lastFrame = min(m_numberOfFrames, i + m_intraPeriod);
+      int lastFrame = std::min(m_numberOfFrames, i + m_intraPeriod);
       encodeAccessUnit(i, lastFrame);
     }
 
     const auto maxLumaSamplesPerFrame = m_encoder->maxLumaSamplesPerFrame();
-    cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
-    m_metadataWriter.reportSummary(cout, m_numberOfFrames);
+    std::cout << "Maximum luma samples per frame is " << maxLumaSamplesPerFrame << '\n';
+    m_metadataWriter.reportSummary(std::cout, m_numberOfFrames);
   }
 
 private:
   void encodeAccessUnit(int firstFrame, int lastFrame) {
-    cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
+    std::cout << "Access unit: [" << firstFrame << ", " << lastFrame << ")\n";
     m_encoder->prepareAccessUnit();
     pushFrames(firstFrame, lastFrame);
     m_metadataWriter.writeAccessUnit(m_encoder->completeAccessUnit());
@@ -102,13 +97,13 @@ private:
 
   void pushFrames(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      m_encoder->pushFrame(loadSourceFrame(json(), m_viewSizes, i));
+      m_encoder->pushFrame(IO::loadSourceFrame(json(), m_viewSizes, i));
     }
   }
 
   void popAtlases(int firstFrame, int lastFrame) {
     for (int i = firstFrame; i < lastFrame; ++i) {
-      saveAtlas(json(), i, m_encoder->popAtlas());
+      IO::saveAtlas(json(), i, m_encoder->popAtlas());
     }
   }
 };
@@ -122,8 +117,8 @@ auto main(int argc, char *argv[]) -> int {
     app.run();
     app.printTime();
     return 0;
-  } catch (runtime_error &e) {
-    cerr << e.what() << endl;
+  } catch (std::runtime_error &e) {
+    std::cerr << e.what() << std::endl;
     return 1;
   }
 }

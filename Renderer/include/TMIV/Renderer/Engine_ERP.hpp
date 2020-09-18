@@ -105,7 +105,7 @@ template <> struct Engine<MivBitstream::CiCamType::equirectangular> {
       triangle.area /= cos(theta);
     }
 
-    return std::tuple{move(imageVertices), triangles, attributes};
+    return std::tuple{std::move(imageVertices), triangles, attributes};
   }
 };
 } // namespace TMIV::Renderer

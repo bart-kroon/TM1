@@ -40,11 +40,8 @@
 #include <algorithm>
 #include <utility>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
+auto operator<<(std::ostream &stream, NalUnitType x) -> std::ostream & {
   switch (x) {
   case NalUnitType::NAL_TRAIL_N:
     return stream << "NAL_TRAIL_N";
@@ -121,7 +118,7 @@ auto operator<<(ostream &stream, NalUnitType x) -> ostream & {
   case NalUnitType::NAL_CAF:
     return stream << "NAL_CAF";
   default:
-    return stream << "[unknown:" << int(x) << "]";
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
   }
 }
 
@@ -133,14 +130,14 @@ NalUnitHeader::NalUnitHeader(NalUnitType nal_unit_type, int nal_layer_id, int na
   VERIFY_V3CBITSTREAM(0 < nal_temporal_id_plus1 && nal_temporal_id_plus1 <= 7);
 }
 
-auto operator<<(ostream &stream, const NalUnitHeader &x) -> ostream & {
+auto operator<<(std::ostream &stream, const NalUnitHeader &x) -> std::ostream & {
   return stream << "nal_unit_type=" << x.m_nal_unit_type
-                << "\nnal_layer_id=" << int(x.m_nal_layer_id)
-                << "\nnal_temporal_id_plus1=" << int(x.m_nal_temporal_id_plus1) << '\n';
+                << "\nnal_layer_id=" << int{x.m_nal_layer_id}
+                << "\nnal_temporal_id_plus1=" << int{x.m_nal_temporal_id_plus1} << '\n';
 }
 
-auto NalUnitHeader::decodeFrom(istream &stream) -> NalUnitHeader {
-  InputBitstream bitstream{stream};
+auto NalUnitHeader::decodeFrom(std::istream &stream) -> NalUnitHeader {
+  Common::InputBitstream bitstream{stream};
   const auto nal_forbidden_zero_bit = bitstream.getFlag();
   VERIFY_V3CBITSTREAM(!nal_forbidden_zero_bit);
   const auto nal_unit_type = bitstream.readBits<NalUnitType>(6);
@@ -150,27 +147,27 @@ auto NalUnitHeader::decodeFrom(istream &stream) -> NalUnitHeader {
   return NalUnitHeader{nal_unit_type, nal_layer_id, nal_temporal_id_plus1};
 }
 
-void NalUnitHeader::encodeTo(ostream &stream) const {
-  OutputBitstream bitstream{stream};
+void NalUnitHeader::encodeTo(std::ostream &stream) const {
+  Common::OutputBitstream bitstream{stream};
   bitstream.putFlag(false);
   bitstream.writeBits(m_nal_unit_type, 6);
   bitstream.writeBits(m_nal_layer_id, 6);
   bitstream.writeBits(m_nal_temporal_id_plus1, 3);
 }
 
-NalUnit::NalUnit(const NalUnitHeader &nal_unit_header, string rbsp)
+NalUnit::NalUnit(const NalUnitHeader &nal_unit_header, std::string rbsp)
     : m_nal_unit_header{nal_unit_header}, m_rbsp{std::move(std::move(rbsp))} {}
 
-auto operator<<(ostream &stream, const NalUnit &x) -> ostream & {
+auto operator<<(std::ostream &stream, const NalUnit &x) -> std::ostream & {
   return stream << x.m_nal_unit_header << "NumBytesInRbsp=" << x.m_rbsp.size() << '\n';
 }
 
-auto NalUnit::decodeFrom(istream &stream, size_t numBytesInNalUnit) -> NalUnit {
+auto NalUnit::decodeFrom(std::istream &stream, size_t numBytesInNalUnit) -> NalUnit {
   const auto nal_unit_header = NalUnitHeader::decodeFrom(stream);
   if (numBytesInNalUnit == 2) {
     return NalUnit{nal_unit_header, {}};
   }
-  auto rbsp = readString(stream, numBytesInNalUnit - 2);
+  auto rbsp = Common::readString(stream, numBytesInNalUnit - 2);
   return NalUnit{nal_unit_header, rbsp};
 }
 

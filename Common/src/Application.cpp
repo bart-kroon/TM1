@@ -40,7 +40,6 @@
 #include <sstream>
 #include <stdexcept>
 
-using namespace std;
 using namespace std::string_literals;
 
 namespace TMIV::Common {
@@ -48,10 +47,10 @@ const auto configFileOption = "-c"s;
 const auto parameterOption = "-p"s;
 const auto helpOption = "--help"s;
 
-Application::Application(const char *tool, vector<const char *> argv) : m_startTime{} {
+Application::Application(const char *tool, std::vector<const char *> argv) : m_startTime{} {
   auto take = [&argv]() {
     if (argv.empty()) {
-      throw runtime_error("Missing a command-line argument");
+      throw std::runtime_error("Missing a command-line argument");
     }
     const auto *result = argv.front();
     argv.erase(argv.begin());
@@ -72,16 +71,16 @@ Application::Application(const char *tool, vector<const char *> argv) : m_startT
       m_json.reset();
       break;
     } else {
-      ostringstream what;
+      std::ostringstream what;
       what << "Stray argument \"" << option << "\"";
-      throw runtime_error(what.str());
+      throw std::runtime_error(what.str());
     }
   }
 
   if (!m_json) {
-    ostringstream what;
+    std::ostringstream what;
     what << "Usage: " << tool << " [OPTIONS...] (-c CONFIGURATION|-p KEY VALUE)+\n";
-    throw runtime_error(what.str());
+    throw std::runtime_error(what.str());
   }
 }
 
@@ -90,18 +89,18 @@ auto Application::json() const -> const Json & {
   return *m_json;
 }
 
-void Application::add_file(const string &path) {
-  ifstream stream(path);
+void Application::add_file(const std::string &path) {
+  std::ifstream stream(path);
   if (!stream.good()) {
-    ostringstream what;
+    std::ostringstream what;
     what << "Failed to open configuration file \"" << path << "\" for reading\n";
-    throw runtime_error(what.str());
+    throw std::runtime_error(what.str());
   }
   add_stream(stream);
 }
 
-void Application::add_parameter(const string &key, string value) {
-  stringstream stream;
+void Application::add_parameter(const std::string &key, std::string value) {
+  std::stringstream stream;
   stream << "{ \"" << key << "\": ";
   if (value.empty()) {
     stream << "\"\"";
@@ -115,12 +114,12 @@ void Application::add_parameter(const string &key, string value) {
   add_stream(stream);
 }
 
-void Application::add_stream(istream &stream) {
+void Application::add_stream(std::istream &stream) {
   auto root = Json{stream};
   if (m_json) {
     m_json->setOverrides(root);
   } else {
-    m_json = make_shared<Json>(move(root));
+    m_json = std::make_shared<Json>(std::move(root));
   }
 }
 
@@ -128,7 +127,8 @@ void Application::startTime() { m_startTime = clock(); }
 
 void Application::printTime() const {
   auto executeTime = double(clock() - m_startTime) / CLOCKS_PER_SEC;
-  cout << "Total Time: " << fixed << setprecision(3) << executeTime << " sec." << endl;
+  std::cout << "Total Time: " << std::fixed << std::setprecision(3) << executeTime << " sec."
+            << std::endl;
 }
 
 } // namespace TMIV::Common

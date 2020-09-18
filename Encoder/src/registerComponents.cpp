@@ -45,29 +45,27 @@
 
 namespace TMIV::Encoder {
 void registerComponents() {
-  using Common::Factory;
-
-  auto &aggregators = Factory<Aggregator::IAggregator>::getInstance();
+  auto &aggregators = Common::Factory<Aggregator::IAggregator>::getInstance();
   aggregators.registerAs<Aggregator::Aggregator>("Aggregator");
 
-  auto &assesors = Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
+  auto &assesors = Common::Factory<DepthQualityAssessor::IDepthQualityAssessor>::getInstance();
   assesors.registerAs<DepthQualityAssessor::DepthQualityAssessor>("DepthQualityAssessor");
 
-  auto &encoders = Factory<IEncoder>::getInstance();
+  auto &encoders = Common::Factory<IEncoder>::getInstance();
   encoders.registerAs<Encoder>("Encoder");
   encoders.registerAs<GroupBasedEncoder>("GroupBasedEncoder");
 
-  auto &geometryQuantizers = Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
+  auto &geometryQuantizers = Common::Factory<GeometryQuantizer::IGeometryQuantizer>::getInstance();
   geometryQuantizers.registerAs<GeometryQuantizer::GeometryQuantizer>("GeometryQuantizer");
   geometryQuantizers.registerAs<GeometryQuantizer::ExplicitOccupancy>("ExplicitOccupancy");
 
-  auto &packers = Factory<Packer::IPacker>::getInstance();
+  auto &packers = Common::Factory<Packer::IPacker>::getInstance();
   packers.registerAs<Packer::Packer>("Packer");
 
-  auto &pruners = Factory<Pruner::IPruner>::getInstance();
+  auto &pruners = Common::Factory<Pruner::IPruner>::getInstance();
   pruners.registerAs<Pruner::HierarchicalPruner>("HierarchicalPruner");
 
-  auto &viewOptimizers = Factory<ViewOptimizer::IViewOptimizer>::getInstance();
+  auto &viewOptimizers = Common::Factory<ViewOptimizer::IViewOptimizer>::getInstance();
   viewOptimizers.registerAs<ViewOptimizer::BasicViewAllocator>("BasicViewAllocator");
   viewOptimizers.registerAs<ViewOptimizer::NoViewOptimizer>("NoViewOptimizer");
 }

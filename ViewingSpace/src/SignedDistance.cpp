@@ -39,7 +39,6 @@ namespace TMIV::ViewingSpace {
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
 auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::QuatF &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
-  using namespace Common;
   const auto p = rotate(point - cuboid.center, conj(rotation));
   const auto q = abs(p) - 0.5F * cuboid.size;
   return SignedDistance(norm(max(q, 0.F)) + std::min(std::max(q.x(), std::max(q.y(), q.z())), 0.F));
@@ -48,12 +47,11 @@ auto signedDistance(const MivBitstream::Cuboid &cuboid, const Common::QuatF &rot
 // Based on https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
 auto signedDistance(const MivBitstream::Spheroid &spheroid, const Common::QuatF &rotation,
                     const Common::Vec3f &point) -> SignedDistance {
-  using namespace Common;
   const auto p = rotate(point - spheroid.center, conj(rotation));
   const auto r = spheroid.radius;
-  const auto r2 = Vec3f({r.x() * r.x(), r.y() * r.y(), r.z() * r.z()});
-  float k0 = norm(Vec3f({p.x() / r.x(), p.y() / r.y(), p.z() / r.z()}));
-  float k1 = norm(Vec3f({p.x() / r2.x(), p.y() / r2.y(), p.z() / r2.z()}));
+  const auto r2 = Common::Vec3f({r.x() * r.x(), r.y() * r.y(), r.z() * r.z()});
+  float k0 = norm(Common::Vec3f({p.x() / r.x(), p.y() / r.y(), p.z() / r.z()}));
+  float k1 = norm(Common::Vec3f({p.x() / r2.x(), p.y() / r2.y(), p.z() / r2.z()}));
   if (k1 < 1.0e-3F) {
     return SignedDistance(-std::min(r.x(), std::min(r.y(), r.z())));
   }
@@ -68,8 +66,7 @@ auto signedDistance(const MivBitstream::Halfspace &halfspace, const Common::Quat
 
 auto signedDistance(const MivBitstream::PrimitiveShape &shape, const Common::Vec3f &point)
     -> SignedDistance {
-  using namespace Common;
-  const auto rotation = shape.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F});
+  const auto rotation = shape.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F});
   return std::visit([&](auto &&s) { return signedDistance(s, rotation, point); }, shape.primitive);
 }
 

@@ -38,12 +38,9 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::GeometryQuantizer {
-ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &componentNode) {
+ExplicitOccupancy::ExplicitOccupancy(const Common::Json & /*unused*/,
+                                     const Common::Json &componentNode) {
   if (auto subnode = componentNode.optional("occupancyScale")) {
     m_occupancyScaleConfig = true;
     m_occupancyScale = subnode.asIntVector<2>();
@@ -54,13 +51,14 @@ ExplicitOccupancy::ExplicitOccupancy(const Json & /*unused*/, const Json &compon
 
 auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   m_outParams.vme().vme_embedded_occupancy_flag(false);
   m_outParams.vme().vme_occupancy_scale_enabled_flag(true);
-  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); i++) {
-    m_outParams.vps.vps_occupancy_video_present_flag(i, true);
+  for (size_t k = 0; k <= m_outParams.vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = m_outParams.vps.vps_atlas_id(k);
+    m_outParams.vps.vps_occupancy_video_present_flag(j, true);
   }
   m_depthLowQualityFlag = m_outParams.vme().vme_depth_low_quality_flag();
 
@@ -85,7 +83,7 @@ auto ExplicitOccupancy::setOccupancyParams(MivBitstream::EncoderParams params)
 
 auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   return m_outParams;
@@ -93,30 +91,32 @@ auto ExplicitOccupancy::transformParams(MivBitstream::EncoderParams params)
 
 auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
     -> Common::MVD10Frame {
-  auto outAtlases = MVD10Frame{};
+  auto outAtlases = Common::MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
   for (const auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
-                            inAtlas.occupancy);
+    outAtlases.emplace_back(
+        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()},
+        inAtlas.occupancy);
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
-    const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
-    const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
-    const auto inOccupancyTransform = OccupancyTransform{inViewParams};
-    const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
-    const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
+    const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
+    const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
+    const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
+    const auto inDepthTransform = MivBitstream::DepthTransform<16>{inViewParams.dq};
+    const auto outDepthTransform = MivBitstream::DepthTransform<10>{outViewParams.dq, patch};
+    const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
+    const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 
-    for (auto i = 0; i < patch.pdu2dSize().y(); ++i) {
-      for (auto j = 0; j < patch.pdu2dSize().x(); ++j) {
-        const auto n = i + patch.pdu2dPos().y();
-        const auto m = j + patch.pdu2dPos().x();
+    for (auto i = 0U; i < patch.atlasPatch2dSizeY(); ++i) {
+      for (auto j = 0U; j < patch.atlasPatch2dSizeX(); ++j) {
+        const auto n = i + patch.atlasPatch2dPosY();
+        const auto m = j + patch.atlasPatch2dPosX();
 
-        const auto &plane = inAtlases[patch.vuhAtlasId].depth.getPlane(0);
+        const auto &plane = inAtlases[kIn].depth.getPlane(0);
 
-        if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
+        if (n >= plane.height() || m >= plane.width()) {
           abort();
         }
 
@@ -125,7 +125,7 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
         if (inOccupancyTransform.occupant(inLevel)) {
           const auto normDisp = inDepthTransform.expandNormDisp(inLevel);
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
-          outAtlases[patch.vuhAtlasId].depth.getPlane(0)(n, m) = outLevel;
+          outAtlases[kOut].depth.getPlane(0)(n, m) = outLevel;
         }
       }
     }
@@ -139,9 +139,10 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
   return outAtlases;
 }
 
-void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
+void ExplicitOccupancy::padGeometryFromLeft(Common::MVD10Frame &atlases) {
   for (size_t i = 0; i < atlases.size(); ++i) {
-    if (m_outParams.vps.vps_occupancy_video_present_flag(uint8_t(i))) {
+    const auto j = m_outParams.vps.vps_atlas_id(uint8_t(i));
+    if (m_outParams.vps.vps_occupancy_video_present_flag(j)) {
       auto &depthAtlasMap = atlases[i].depth;
       auto depthScale =
           std::array{m_outParams.atlas[i].asps.asps_frame_height() / depthAtlasMap.getHeight(),
@@ -150,7 +151,8 @@ void ExplicitOccupancy::padGeometryFromLeft(MVD10Frame &atlases) {
       auto occupancyScale =
           std::array{m_outParams.atlas[i].asps.asps_frame_height() / occupancyAtlasMap.getHeight(),
                      m_outParams.atlas[i].asps.asps_frame_width() / occupancyAtlasMap.getWidth()};
-      int yOcc = 0, xOcc = 0;
+      int yOcc = 0;
+      int xOcc = 0;
       for (int y = 0; y < depthAtlasMap.getHeight(); y++) {
         for (int x = 1; x < depthAtlasMap.getWidth(); x++) {
           auto depth = depthAtlasMap.getPlane(0)(y, x);

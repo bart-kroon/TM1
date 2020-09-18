@@ -44,7 +44,7 @@ auto operator<<(std::ostream &stream, GupType x) -> std::ostream & {
   if (x == GupType::HVR) {
     return stream << "HVR";
   }
-  return stream << "[unknown:" << int(x) << ']';
+  return stream << "[unknown:" << static_cast<int>(x) << ']';
 }
 
 auto GeometryUpscalingParameters::gup_type() const noexcept -> GupType { return m_gup_type; }
@@ -93,7 +93,7 @@ auto operator<<(std::ostream &stream, const GeometryUpscalingParameters &x) -> s
   if (x.gup_type() == GupType::HVR) {
     stream << "gup_erode_threshold=" << x.gup_erode_threshold() << '\n';
     stream << "gup_delta_threshold=" << x.gup_delta_threshold() << '\n';
-    stream << "gup_max_curvature=" << int(x.gup_max_curvature()) << '\n';
+    stream << "gup_max_curvature=" << int{x.gup_max_curvature()} << '\n';
   }
   return stream;
 }

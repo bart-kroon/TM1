@@ -51,7 +51,7 @@ template <typename T> auto rad2deg(T x) -> T { return x * static_cast<T>(180. / 
 
 template <typename T> auto sqr(T val) -> T { return val * val; }
 template <typename T> auto cube(T val) -> T { return val * val * val; }
-template <typename T> auto sgn(T val) -> int { return int(T(0) < val) - int(val < T(0)); }
+template <typename T> auto sgn(T val) -> int { return int{T(0) < val} - int{val < T(0)}; }
 template <typename T> auto inRange(T val, T min, T max) -> bool {
   return ((min <= val) && (val <= max));
 }

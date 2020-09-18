@@ -37,35 +37,32 @@
 #include <TMIV/Common/Bytestream.h>
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
 SampleStreamNalHeader::SampleStreamNalHeader(int ssnh_unit_size_precision_bytes_minus1)
     : m_ssnh_unit_size_precision_bytes_minus1{uint8_t(ssnh_unit_size_precision_bytes_minus1)} {
   VERIFY_V3CBITSTREAM(ssnh_unit_size_precision_bytes_minus1 < 8);
 }
 
-auto operator<<(ostream &stream, const SampleStreamNalHeader &x) -> ostream & {
+auto operator<<(std::ostream &stream, const SampleStreamNalHeader &x) -> std::ostream & {
   return stream << "ssnh_unit_size_precision_bytes_minus1="
-                << int(x.ssnh_unit_size_precision_bytes_minus1()) << '\n';
+                << int{x.ssnh_unit_size_precision_bytes_minus1()} << '\n';
 }
 
-auto SampleStreamNalHeader::decodeFrom(istream &stream) -> SampleStreamNalHeader {
-  InputBitstream bitstream{stream};
+auto SampleStreamNalHeader::decodeFrom(std::istream &stream) -> SampleStreamNalHeader {
+  Common::InputBitstream bitstream{stream};
   const auto ssnh_unit_size_precision_bytes_minus1 = bitstream.readBits<int>(3);
   return SampleStreamNalHeader{ssnh_unit_size_precision_bytes_minus1};
 }
 
-void SampleStreamNalHeader::encodeTo(ostream &stream) const {
-  OutputBitstream bitstream{stream};
+void SampleStreamNalHeader::encodeTo(std::ostream &stream) const {
+  Common::OutputBitstream bitstream{stream};
   bitstream.writeBits(m_ssnh_unit_size_precision_bytes_minus1, 3);
 }
 
-SampleStreamNalUnit::SampleStreamNalUnit(string ssnu_nal_unit)
-    : m_ssnu_nal_unit{move(ssnu_nal_unit)} {}
+SampleStreamNalUnit::SampleStreamNalUnit(std::string ssnu_nal_unit)
+    : m_ssnu_nal_unit{std::move(ssnu_nal_unit)} {}
 
-auto operator<<(ostream &stream, const SampleStreamNalUnit &x) -> ostream & {
+auto operator<<(std::ostream &stream, const SampleStreamNalUnit &x) -> std::ostream & {
   return stream << "nal_unit(" << (x.ssnu_nal_unit_size() - 2) << ")\n";
 }
 
@@ -77,15 +74,17 @@ auto SampleStreamNalUnit::operator!=(const SampleStreamNalUnit &other) const noe
   return !operator==(other);
 }
 
-auto SampleStreamNalUnit::decodeFrom(istream &stream, const SampleStreamNalHeader &header)
+auto SampleStreamNalUnit::decodeFrom(std::istream &stream, const SampleStreamNalHeader &header)
     -> SampleStreamNalUnit {
   const auto ssnu_nal_unit_size =
-      readBytes(stream, header.ssnh_unit_size_precision_bytes_minus1() + 1);
-  return SampleStreamNalUnit{readString(stream, size_t(ssnu_nal_unit_size))};
+      Common::readBytes(stream, header.ssnh_unit_size_precision_bytes_minus1() + 1);
+  return SampleStreamNalUnit{Common::readString(stream, size_t(ssnu_nal_unit_size))};
 }
 
-void SampleStreamNalUnit::encodeTo(ostream &stream, const SampleStreamNalHeader &header) const {
-  writeBytes(stream, m_ssnu_nal_unit.size(), header.ssnh_unit_size_precision_bytes_minus1() + 1);
+void SampleStreamNalUnit::encodeTo(std::ostream &stream,
+                                   const SampleStreamNalHeader &header) const {
+  Common::writeBytes(stream, m_ssnu_nal_unit.size(),
+                     header.ssnh_unit_size_precision_bytes_minus1() + 1);
   stream.write(m_ssnu_nal_unit.data(), m_ssnu_nal_unit.size());
 }
 } // namespace TMIV::MivBitstream

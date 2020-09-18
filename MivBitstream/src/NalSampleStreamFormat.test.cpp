@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/NalSampleStreamFormat.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("sample_stream_nal_header", "[NAL sample stream format]") {
   const auto sample_stream_nal_header =
       std::array{SampleStreamNalHeader{0}, SampleStreamNalHeader{7}};
@@ -102,3 +101,4 @@ TEST_CASE("NAL sample stream format", "[NAL sample stream format]") {
     REQUIRE(stream.tellg() == bytes.size());
   }
 }
+} // namespace TMIV::MivBitstream

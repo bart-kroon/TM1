@@ -37,8 +37,7 @@
 
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 namespace {
 constexpr auto openGlCas() noexcept {
   auto x = CoordinateSystemParameters{};
@@ -164,8 +163,9 @@ vui_anchor_point[ 2 ]=90
 )");
 
     auto asps = AtlasSequenceParameterSetRBSP{};
-    asps.asps_geometry_3d_bitdepth_minus1(15);
+    asps.asps_geometry_3d_bit_depth_minus1(15);
 
     REQUIRE(bitCodingTest(x, 259, &asps));
   }
 }
+} // namespace TMIV::MivBitstream

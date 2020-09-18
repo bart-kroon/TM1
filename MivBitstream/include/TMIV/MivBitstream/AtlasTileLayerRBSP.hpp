@@ -36,6 +36,10 @@
 #endif
 
 namespace TMIV::MivBitstream {
+constexpr auto AtlasTileHeader::ath_no_output_of_prior_atlas_frames_flag() const noexcept {
+  return m_ath_no_output_of_prior_atlas_frames_flag.value_or(false);
+}
+
 constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id() const noexcept {
   return m_ath_atlas_frame_parameter_set_id;
 }
@@ -52,16 +56,22 @@ constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb() const noexcept {
   return m_ath_atlas_frm_order_cnt_lsb;
 }
 
-constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag() const noexcept {
-  return m_ath_ref_atlas_frame_list_sps_flag.value_or(false);
+constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_asps_flag() const noexcept {
+  return m_ath_ref_atlas_frame_list_asps_flag.value_or(false);
 }
 
-constexpr auto AtlasTileHeader::ath_pos_min_z_quantizer() const noexcept {
-  return m_ath_pos_min_z_quantizer.value_or(0);
+constexpr auto AtlasTileHeader::ath_pos_min_d_quantizer() const noexcept {
+  return m_ath_pos_min_d_quantizer.value_or(0);
 }
 
-constexpr auto AtlasTileHeader::ath_pos_delta_max_z_quantizer() const noexcept {
-  return m_ath_pos_delta_max_z_quantizer.value_or(0);
+constexpr auto AtlasTileHeader::ath_pos_delta_max_d_quantizer() const noexcept {
+  return m_ath_pos_delta_max_d_quantizer.value_or(0);
+}
+
+constexpr auto AtlasTileHeader::ath_no_output_of_prior_atlas_frames_flag(bool value) noexcept
+    -> auto & {
+  m_ath_no_output_of_prior_atlas_frames_flag = value;
+  return *this;
 }
 
 constexpr auto AtlasTileHeader::ath_atlas_frame_parameter_set_id(const std::uint8_t value) noexcept
@@ -98,39 +108,42 @@ constexpr auto AtlasTileHeader::ath_atlas_frm_order_cnt_lsb(const std::uint16_t 
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_sps_flag(const bool value) noexcept
+constexpr auto AtlasTileHeader::ath_ref_atlas_frame_list_asps_flag(const bool value) noexcept
     -> auto & {
-  m_ath_ref_atlas_frame_list_sps_flag = value;
+  m_ath_ref_atlas_frame_list_asps_flag = value;
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_pos_min_z_quantizer(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_pos_min_d_quantizer(const std::uint8_t value) noexcept
     -> auto & {
-  m_ath_pos_min_z_quantizer = value;
+  m_ath_pos_min_d_quantizer = value;
   return *this;
 }
 
-constexpr auto AtlasTileHeader::ath_pos_delta_max_z_quantizer(const std::uint8_t value) noexcept
+constexpr auto AtlasTileHeader::ath_pos_delta_max_d_quantizer(const std::uint8_t value) noexcept
     -> auto & {
-  m_ath_pos_delta_max_z_quantizer = value;
+  m_ath_pos_delta_max_d_quantizer = value;
   return *this;
 }
 
 constexpr auto AtlasTileHeader::operator==(const AtlasTileHeader &other) const noexcept {
-  if (ath_atlas_frame_parameter_set_id() != other.ath_atlas_frame_parameter_set_id() ||
+  if (ath_no_output_of_prior_atlas_frames_flag() !=
+          other.ath_no_output_of_prior_atlas_frames_flag() ||
+      ath_atlas_frame_parameter_set_id() != other.ath_atlas_frame_parameter_set_id() ||
+      ath_atlas_adaptation_parameter_set_id() != other.ath_atlas_adaptation_parameter_set_id() ||
       ath_id() != other.ath_id() || ath_type() != other.ath_type() ||
       m_ath_atlas_output_flag != other.m_ath_atlas_output_flag ||
       ath_atlas_frm_order_cnt_lsb() != other.ath_atlas_frm_order_cnt_lsb() ||
-      ath_ref_atlas_frame_list_sps_flag() != other.ath_ref_atlas_frame_list_sps_flag()) {
+      ath_ref_atlas_frame_list_asps_flag() != other.ath_ref_atlas_frame_list_asps_flag()) {
     return false;
   }
   if (ath_type() == AthType::SKIP_TILE) {
     return true;
   }
-  return ath_pos_min_z_quantizer() == other.ath_pos_min_z_quantizer() &&
-         ath_pos_delta_max_z_quantizer() == other.ath_pos_delta_max_z_quantizer() &&
-         ath_patch_size_x_info_quantizer() == other.ath_patch_size_x_info_quantizer() &&
-         ath_patch_size_y_info_quantizer() == other.ath_patch_size_y_info_quantizer();
+  return ath_pos_min_d_quantizer() == other.ath_pos_min_d_quantizer() &&
+         ath_pos_delta_max_d_quantizer() == other.ath_pos_delta_max_d_quantizer() &&
+         m_ath_patch_size_x_info_quantizer == other.m_ath_patch_size_x_info_quantizer &&
+         m_ath_patch_size_y_info_quantizer == other.m_ath_patch_size_y_info_quantizer;
 }
 
 constexpr auto AtlasTileHeader::operator!=(const AtlasTileHeader &other) const noexcept {
@@ -186,13 +199,13 @@ constexpr auto PatchDataUnit::pdu_2d_size_y_minus1() const noexcept {
   return m_pdu_2d_size_y_minus1;
 }
 
-constexpr auto PatchDataUnit::pdu_view_pos_x() const noexcept { return m_pdu_view_pos_x; }
+constexpr auto PatchDataUnit::pdu_3d_offset_u() const noexcept { return m_pdu_3d_offset_u; }
 
-constexpr auto PatchDataUnit::pdu_view_pos_y() const noexcept { return m_pdu_view_pos_y; }
+constexpr auto PatchDataUnit::pdu_3d_offset_v() const noexcept { return m_pdu_3d_offset_v; }
 
-constexpr auto PatchDataUnit::pdu_depth_start() const noexcept { return m_pdu_depth_start; }
+constexpr auto PatchDataUnit::pdu_3d_offset_d() const noexcept { return m_pdu_3d_offset_d; }
 
-constexpr auto PatchDataUnit::pdu_view_idx() const noexcept { return m_pdu_view_id; }
+constexpr auto PatchDataUnit::pdu_projection_id() const noexcept { return m_pdu_view_id; }
 
 constexpr auto PatchDataUnit::pdu_orientation_index() const noexcept {
   return m_pdu_orientation_index;
@@ -202,47 +215,47 @@ constexpr auto PatchDataUnit::pdu_miv_extension() const noexcept -> PduMivExtens
   return m_pdu_miv_extension.value_or(PduMivExtension{});
 }
 
-constexpr auto PatchDataUnit::pdu_2d_pos_x(const std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_pos_x(std::uint32_t value) noexcept -> auto & {
   m_pdu_2d_pos_x = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_2d_pos_y(const std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_pos_y(std::uint32_t value) noexcept -> auto & {
   m_pdu_2d_pos_y = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_2d_size_x_minus1(const std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_size_x_minus1(std::uint32_t value) noexcept -> auto & {
   m_pdu_2d_size_x_minus1 = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_2d_size_y_minus1(const std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_2d_size_y_minus1(std::uint32_t value) noexcept -> auto & {
   m_pdu_2d_size_y_minus1 = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_view_pos_x(const std::uint16_t value) noexcept -> auto & {
-  m_pdu_view_pos_x = value;
+constexpr auto PatchDataUnit::pdu_3d_offset_u(std::uint32_t value) noexcept -> auto & {
+  m_pdu_3d_offset_u = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_view_pos_y(const std::uint16_t value) noexcept -> auto & {
-  m_pdu_view_pos_y = value;
+constexpr auto PatchDataUnit::pdu_3d_offset_v(std::uint32_t value) noexcept -> auto & {
+  m_pdu_3d_offset_v = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_depth_start(const std::uint32_t value) noexcept -> auto & {
-  m_pdu_depth_start = value;
+constexpr auto PatchDataUnit::pdu_3d_offset_d(std::uint32_t value) noexcept -> auto & {
+  m_pdu_3d_offset_d = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_depth_end(const std::uint32_t value) noexcept -> auto & {
-  m_pdu_depth_end = value;
+constexpr auto PatchDataUnit::pdu_3d_range_d(std::uint32_t value) noexcept -> auto & {
+  m_pdu_3d_range_d = value;
   return *this;
 }
 
-constexpr auto PatchDataUnit::pdu_view_idx(const std::uint16_t value) noexcept -> auto & {
+constexpr auto PatchDataUnit::pdu_projection_id(std::uint16_t value) noexcept -> auto & {
   m_pdu_view_id = value;
   return *this;
 }
@@ -264,9 +277,11 @@ constexpr auto PatchDataUnit::operator==(const PatchDataUnit &other) const noexc
   return pdu_2d_pos_x() == other.pdu_2d_pos_x() && pdu_2d_pos_y() == other.pdu_2d_pos_y() &&
          pdu_2d_size_x_minus1() == other.pdu_2d_size_x_minus1() &&
          pdu_2d_size_y_minus1() == other.pdu_2d_size_y_minus1() &&
-         pdu_view_pos_x() == other.pdu_view_pos_x() && pdu_view_pos_y() == other.pdu_view_pos_y() &&
-         pdu_depth_start() == other.pdu_depth_start() && m_pdu_depth_end == other.m_pdu_depth_end &&
-         pdu_view_idx() == other.pdu_view_idx() &&
+         pdu_3d_offset_u() == other.pdu_3d_offset_u() &&
+         pdu_3d_offset_v() == other.pdu_3d_offset_v() &&
+         pdu_3d_offset_d() == other.pdu_3d_offset_d() &&
+         m_pdu_3d_range_d == other.m_pdu_3d_range_d &&
+         pdu_projection_id() == other.pdu_projection_id() &&
          pdu_orientation_index() == other.pdu_orientation_index() &&
          m_pdu_miv_extension == other.m_pdu_miv_extension;
 }

@@ -39,7 +39,7 @@
 #include <vector>
 
 namespace TMIV::MivBitstream {
-enum class PayloadType {
+enum class PayloadType : std::uint16_t {
   buffering_period,
   atlas_frame_timing,
   filler_payload,
@@ -48,18 +48,22 @@ enum class PayloadType {
   recovery_point,
   no_display,
   time_code,
-  regional_nesting,
   sei_manifest,
   sei_prefix_indication,
-  geometry_transformation_params,
-  attribute_transformation_params,
   active_sub_bitstreams,
   component_codec_mapping,
-  volumetric_tiling_info,
-  presentation_information,
+  scene_object_information,
+  object_label_information,
+  patch_information,
+  volumetric_rectangle_information,
+  atlas_object_association,
+  viewport_camera_parameters,
+  viewport_position,
+  attribute_transformation_params = 64, // V-PCC
+  occupancy_synthesis,
   geometry_smoothing,
   attribute_smoothing,
-  viewing_space = 64,
+  viewing_space = 128, // MIV
   rec_viewport,
   viewing_space_handling,
   geometry_upscaling_parameters
@@ -87,7 +91,7 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  PayloadType m_payloadType;
+  PayloadType m_payloadType{};
   std::string m_payload;
 };
 

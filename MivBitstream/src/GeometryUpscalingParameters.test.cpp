@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/GeometryUpscalingParameters.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("geometry_upscaling_parameters", "[Geometry upscaling parameters SEI payload syntax]") {
   SECTION("Null example") {
     const auto x = GeometryUpscalingParameters{};
@@ -73,3 +72,4 @@ gup_max_curvature=7
     REQUIRE(x.gup_max_curvature() == 5);
   }
 }
+} // namespace TMIV::MivBitstream

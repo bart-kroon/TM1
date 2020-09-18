@@ -9,9 +9,19 @@ add_library(IOLib
 add_library(TMIV::IOLib
     ALIAS IOLib)
 
+# Address this https://en.cppreference.com/w/cpp/filesystem note:
+#   Using this library may require additional compiler/linker options. GNU implementation prior to
+#   9.1 requires linking with -lstdc++fs and LLVM implementation prior to LLVM 9.0 requires linking
+#   with -lc++fs
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9.1)
+    set(CppFilesystemLib stdc++fs)
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9.0)
+    set(CppFilesystemLib c++fs)
+endif()
+
 target_link_libraries(IOLib
     PUBLIC
-        TMIV::DecoderLib)
+        TMIV::DecoderLib ${CppFilesystemLib})
 
 target_include_directories(IOLib
     PUBLIC

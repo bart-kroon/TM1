@@ -38,13 +38,10 @@
 
 #include <iostream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Renderer {
 namespace {
-auto computeIndex(const ViewParams &metadata, const MivBitstream::ViewingSpace &vs) -> float {
+auto computeIndex(const MivBitstream::ViewParams &metadata, const MivBitstream::ViewingSpace &vs)
+    -> float {
   TMIV::ViewingSpace::ViewingParams vp;
   vp.viewPosition = metadata.ce.position();
   vp.viewRotation = metadata.ce.rotation();
@@ -56,14 +53,14 @@ auto computeIndex(const ViewParams &metadata, const MivBitstream::ViewingSpace &
 }
 
 template <typename YUVD>
-void inplaceFading_impl(YUVD &yuvd, const ViewParams & /* unused */, float index) {
+void inplaceFading_impl(YUVD &yuvd, const MivBitstream::ViewParams & /* unused */, float index) {
   // TO DO
   auto &Y = yuvd.first.getPlane(0);
   auto &U = yuvd.first.getPlane(1);
   auto &V = yuvd.first.getPlane(2);
 
-  const int width_Y = int(Y.width());
-  const int height_Y = int(Y.height());
+  const int width_Y = static_cast<int>(Y.width());
+  const int height_Y = static_cast<int>(Y.height());
 
   float weight = index; // for test:just a recopy of the index ==> mapping might be changed
   float R = 0.F;
@@ -87,45 +84,45 @@ void inplaceFading_impl(YUVD &yuvd, const ViewParams & /* unused */, float index
   // 1) get RGB from YUV, 2) then greyish it, 3) then back to YUV
   for (int h = 0; h < height_Y; h++) {
     for (int w = 0; w < width_Y; w++) {
-      R = min(max((Y(h, w) - Cte[0]) * YUVtoR[0] + (U(h, w) - Cte[1]) * YUVtoR[1] +
-                      (V(h, w) - Cte[2]) * YUVtoR[2],
-                  0.F),
-              1023.F) *
+      R = std::min(std::max((Y(h, w) - Cte[0]) * YUVtoR[0] + (U(h, w) - Cte[1]) * YUVtoR[1] +
+                                (V(h, w) - Cte[2]) * YUVtoR[2],
+                            0.F),
+                   1023.F) *
           weight;
-      G = min(max((Y(h, w) - Cte[0]) * YUVtoG[0] + (U(h, w) - Cte[1]) * YUVtoG[1] +
-                      (V(h, w) - Cte[2]) * YUVtoG[2],
-                  0.F),
-              1023.F) *
+      G = std::min(std::max((Y(h, w) - Cte[0]) * YUVtoG[0] + (U(h, w) - Cte[1]) * YUVtoG[1] +
+                                (V(h, w) - Cte[2]) * YUVtoG[2],
+                            0.F),
+                   1023.F) *
           weight;
-      B = min(max((Y(h, w) - Cte[0]) * YUVtoB[0] + (U(h, w) - Cte[1]) * YUVtoB[1] +
-                      (V(h, w) - Cte[2]) * YUVtoB[2],
-                  0.F),
-              1023.F) *
+      B = std::min(std::max((Y(h, w) - Cte[0]) * YUVtoB[0] + (U(h, w) - Cte[1]) * YUVtoB[1] +
+                                (V(h, w) - Cte[2]) * YUVtoB[2],
+                            0.F),
+                   1023.F) *
           weight;
 
       Y(h, w) = static_cast<int>(
-          min(max(R * RGBtoY[0] + G * RGBtoY[1] + B * RGBtoY[2] + Cte[0], 64.F), 940.F));
+          std::min(std::max(R * RGBtoY[0] + G * RGBtoY[1] + B * RGBtoY[2] + Cte[0], 64.F), 940.F));
       U(h, w) = static_cast<int>(
-          min(max(R * RGBtoU[0] + G * RGBtoU[1] + B * RGBtoU[2] + Cte[1], 64.F), 960.F));
+          std::min(std::max(R * RGBtoU[0] + G * RGBtoU[1] + B * RGBtoU[2] + Cte[1], 64.F), 960.F));
       V(h, w) = static_cast<int>(
-          min(max(R * RGBtoV[0] + G * RGBtoV[1] + B * RGBtoV[2] + Cte[2], 64.F), 960.F));
+          std::min(std::max(R * RGBtoV[0] + G * RGBtoV[1] + B * RGBtoV[2] + Cte[2], 64.F), 960.F));
     }
   }
 }
 
 } // namespace
 
-ViewingSpaceController::ViewingSpaceController(const Json & /*rootNode*/,
-                                               const Json & /*componentNode*/) {}
+ViewingSpaceController::ViewingSpaceController(const Common::Json & /*rootNode*/,
+                                               const Common::Json & /*componentNode*/) {}
 
-void ViewingSpaceController::inplaceFading(Texture444Depth10Frame &viewport,
-                                           const ViewParams &viewportParams,
+void ViewingSpaceController::inplaceFading(Common::Texture444Depth10Frame &viewport,
+                                           const MivBitstream::ViewParams &viewportParams,
                                            const MivBitstream::ViewingSpace &viewingSpace) const {
   inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));
 }
 
-void ViewingSpaceController::inplaceFading(Texture444Depth16Frame &viewport,
-                                           const ViewParams &viewportParams,
+void ViewingSpaceController::inplaceFading(Common::Texture444Depth16Frame &viewport,
+                                           const MivBitstream::ViewParams &viewportParams,
                                            const MivBitstream::ViewingSpace &viewingSpace) const {
   inplaceFading_impl(viewport, viewportParams, computeIndex(viewportParams, viewingSpace));
 }

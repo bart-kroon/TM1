@@ -45,8 +45,6 @@ using Catch::Matchers::Contains;
 #include <iostream>
 #include <sstream>
 
-using namespace std;
-
 namespace TMIV::Common {
 TEST_CASE("Array, Vector, Matrix, LinAlg") {
   const float EPS = 1e-5F;
@@ -124,13 +122,13 @@ TEST_CASE("Array, Vector, Matrix, LinAlg") {
   SECTION("Matrix determinant")
   REQUIRE(fabs(det(m1) - 54.F) < EPS);
 
-  fill(m1.diag_begin(), m1.diag_end(), 0.F);
+  std::fill(m1.diag_begin(), m1.diag_end(), 0.F);
   SECTION("Matrix iterator")
   REQUIRE(fabs(trace(m1)) < EPS);
 }
 
 TEST_CASE("Reading a Json", "[Json]") {
-  istringstream stream{R"({ "alpha": true, "beta": false })"};
+  std::istringstream stream{R"({ "alpha": true, "beta": false })"};
   auto json = Json{stream};
   SECTION("Read booleans") {
     REQUIRE(json.require("alpha").asBool());
@@ -158,7 +156,7 @@ TEST_CASE("Parsing the command-line", "[Application]") {
     try {
       FakeApplication app{"Fake", {"command"}};
       REQUIRE(false);
-    } catch (runtime_error &e) {
+    } catch (std::runtime_error &e) {
       REQUIRE_THAT(e.what(), Contains("Usage"));
       REQUIRE_THAT(e.what(), Contains("Fake"));
     }
@@ -176,9 +174,9 @@ TEST_CASE("Parsing the command-line", "[Application]") {
   }
 }
 
-TEST_CASE("Assignment of fixed size matrix N x 1 to fixed size vector") {
+TEST_CASE("Assignment of std::fixed size matrix N x 1 to fixed size vector") {
   stack::Matrix<double, 6, 1> A;
-  fill(begin(A), end(A), 1.);
+  std::fill(std::begin(A), std::end(A), 1.);
   stack::Vector<double, 6> b;
   b = A;
   REQUIRE(b[5] == 1);
@@ -224,8 +222,8 @@ TEST_CASE("Half") {
   }
 
   SECTION("Explicit conversion from float (lossy)") {
-    REQUIRE_THROWS_AS(Half(nextafter(65504.F, 1e6F)), HalfError);
-    REQUIRE_THROWS_AS(Half(nextafter(-65504.F, -1e6F)), HalfError);
+    REQUIRE_THROWS_AS(Half(std::nextafter(65504.F, 1e6F)), HalfError);
+    REQUIRE_THROWS_AS(Half(std::nextafter(-65504.F, -1e6F)), HalfError);
     REQUIRE_THROWS_AS(Half(NAN), HalfError);
     REQUIRE_THROWS_AS(Half(INFINITY), HalfError);
     REQUIRE(Half(0x1.p-14F).encode() == 0x0400);   // smallest positive normal number

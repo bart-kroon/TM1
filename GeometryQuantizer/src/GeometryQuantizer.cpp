@@ -38,29 +38,27 @@
 #include <iostream>
 #include <stdexcept>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::GeometryQuantizer {
 GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
     : m_depthOccThresholdIfSet{depthOccThresholdIfSet} {
   if (depthOccThresholdIfSet < 1) {
-    throw runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
-                        "needs to use occupancy. The value 0 is not allowed.");
+    throw std::runtime_error("The depthOccThresholdIfSet parameter is only used when the encoder "
+                             "needs to use occupancy. The value 0 is not allowed.");
   }
   if (depthOccThresholdIfSet >= 500) {
-    throw runtime_error("The GeometryQuantizer component takes a margin equal to the threshold, so "
-                        "setting the threshold this high will make it impossible to encode depth.");
+    throw std::runtime_error(
+        "The GeometryQuantizer component takes a margin equal to the threshold, so "
+        "setting the threshold this high will make it impossible to encode depth.");
   }
 }
 
-GeometryQuantizer::GeometryQuantizer(const Json & /*unused*/, const Json &nodeConfig)
+GeometryQuantizer::GeometryQuantizer(const Common::Json & /*unused*/,
+                                     const Common::Json &nodeConfig)
     : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
 auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   m_outParams.vme().vme_embedded_occupancy_flag(true);
@@ -69,14 +67,14 @@ auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
 
 auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {
-  m_inParams = move(params);
+  m_inParams = std::move(params);
   m_outParams = m_inParams;
 
   for (auto &x : m_outParams.viewParamsList) {
     if (x.hasOccupancy) {
       x.dq.dq_depth_occ_map_threshold_default(m_depthOccThresholdIfSet); // =T
       const auto nearLevel = 1023.F;
-      const auto farLevel = float(2 * m_depthOccThresholdIfSet);
+      const auto farLevel = static_cast<float>(2 * m_depthOccThresholdIfSet);
       // Mapping is [2T, 1023] --> [old far, near]. What is level 0? (the new far)
       x.dq.dq_norm_disp_low(x.dq.dq_norm_disp_low() +
                             (0.F - farLevel) / (nearLevel - farLevel) *
@@ -89,32 +87,34 @@ auto GeometryQuantizer::transformParams(MivBitstream::EncoderParams params)
 
 auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
     -> Common::MVD10Frame {
-  auto outAtlases = MVD10Frame{};
+  auto outAtlases = Common::MVD10Frame{};
   outAtlases.reserve(inAtlases.size());
 
   for (const auto &inAtlas : inAtlases) {
-    outAtlases.emplace_back(inAtlas.texture,
-                            Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
+    outAtlases.emplace_back(
+        inAtlas.texture, Common::Depth10Frame{inAtlas.depth.getWidth(), inAtlas.depth.getHeight()});
   }
 
   for (const auto &patch : m_outParams.patchParamsList) {
-    const auto &inViewParams = m_inParams.viewParamsList[patch.pduViewIdx()];
-    const auto &outViewParams = m_outParams.viewParamsList[patch.pduViewIdx()];
-    const auto inOccupancyTransform = OccupancyTransform{inViewParams};
+    const auto &inViewParams = m_inParams.viewParamsList[patch.atlasPatchProjectionId()];
+    const auto &outViewParams = m_outParams.viewParamsList[patch.atlasPatchProjectionId()];
+    const auto inOccupancyTransform = MivBitstream::OccupancyTransform{inViewParams};
 #ifndef NDEBUG
-    const auto outOccupancyTransform = OccupancyTransform{outViewParams, patch};
+    const auto outOccupancyTransform = MivBitstream::OccupancyTransform{outViewParams, patch};
 #endif
-    const auto inDepthTransform = DepthTransform<16>{inViewParams.dq};
-    const auto outDepthTransform = DepthTransform<10>{outViewParams.dq, patch};
+    const auto inDepthTransform = MivBitstream::DepthTransform<16>{inViewParams.dq};
+    const auto outDepthTransform = MivBitstream::DepthTransform<10>{outViewParams.dq, patch};
+    const auto kIn = m_inParams.vps.indexOf(patch.atlasId);
+    const auto kOut = m_outParams.vps.indexOf(patch.atlasId);
 
-    for (auto i = 0; i < patch.pdu2dSize().y(); ++i) {
-      for (auto j = 0; j < patch.pdu2dSize().x(); ++j) {
-        const auto n = i + patch.pdu2dPos().y();
-        const auto m = j + patch.pdu2dPos().x();
+    for (auto i = 0U; i < patch.atlasPatch2dSizeY(); ++i) {
+      for (auto j = 0U; j < patch.atlasPatch2dSizeX(); ++j) {
+        const auto n = i + patch.atlasPatch2dPosY();
+        const auto m = j + patch.atlasPatch2dPosX();
 
-        const auto &plane = inAtlases[patch.vuhAtlasId].depth.getPlane(0);
+        const auto &plane = inAtlases[kIn].depth.getPlane(0);
 
-        if (n < 0 || n >= int(plane.height()) || m < 0 || m >= int(plane.width())) {
+        if (n >= plane.height() || m >= plane.width()) {
           abort();
         }
 
@@ -125,7 +125,7 @@ auto GeometryQuantizer::transformAtlases(const Common::MVD16Frame &inAtlases)
           const auto outLevel = outDepthTransform.quantizeNormDisp(normDisp, 0);
           assert(outOccupancyTransform.occupant(outLevel));
 
-          outAtlases[patch.vuhAtlasId].depth.getPlane(0)(n, m) = outLevel;
+          outAtlases[kOut].depth.getPlane(0)(n, m) = outLevel;
         }
       }
     }

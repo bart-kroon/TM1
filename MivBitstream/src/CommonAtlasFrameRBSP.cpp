@@ -37,11 +37,8 @@
 
 #include <cmath>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const MvpUpdateMode x) -> ostream & {
+auto operator<<(std::ostream &stream, const MvpUpdateMode x) -> std::ostream & {
   switch (x) {
   case MvpUpdateMode::VPL_INITLIST:
     return stream << "VPL_INITLIST";
@@ -57,7 +54,7 @@ auto operator<<(ostream &stream, const MvpUpdateMode x) -> ostream & {
     MIVBITSTREAM_ERROR("Unknown update mode");
   }
 }
-auto operator<<(ostream &stream, const CiCamType x) -> ostream & {
+auto operator<<(std::ostream &stream, const CiCamType x) -> std::ostream & {
   switch (x) {
   case CiCamType::equirectangular:
     return stream << "equirectangular";
@@ -70,7 +67,7 @@ auto operator<<(ostream &stream, const CiCamType x) -> ostream & {
   }
 }
 
-auto CameraIntrinsics::projectionPlaneSize() const -> Vec2i {
+auto CameraIntrinsics::projectionPlaneSize() const -> Common::Vec2i {
   return {ci_projection_plane_width_minus1() + 1, ci_projection_plane_height_minus1() + 1};
 }
 
@@ -134,7 +131,7 @@ auto CameraIntrinsics::ci_ortho_height() const noexcept -> float {
   return *m_ci_ortho_height;
 }
 
-auto CameraIntrinsics::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+auto CameraIntrinsics::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   stream << "ci_cam_type[ " << viewId << " ]=" << ci_cam_type() << '\n';
   stream << "ci_projection_plane_width_minus1[ " << viewId
          << " ]=" << ci_projection_plane_width_minus1() << '\n';
@@ -168,7 +165,7 @@ auto CameraIntrinsics::printTo(ostream &stream, uint16_t viewId) const -> ostrea
   }
 }
 
-auto CameraIntrinsics::decodeFrom(InputBitstream &bitstream) -> CameraIntrinsics {
+auto CameraIntrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraIntrinsics {
   auto x = CameraIntrinsics{};
 
   x.ci_cam_type(CiCamType(bitstream.getUint8()));
@@ -200,7 +197,7 @@ auto CameraIntrinsics::decodeFrom(InputBitstream &bitstream) -> CameraIntrinsics
   }
 }
 
-void CameraIntrinsics::encodeTo(OutputBitstream &bitstream) const {
+void CameraIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint8(uint8_t(ci_cam_type()));
   bitstream.putUint16(ci_projection_plane_width_minus1());
   bitstream.putUint16(ci_projection_plane_height_minus1());
@@ -230,27 +227,27 @@ void CameraIntrinsics::encodeTo(OutputBitstream &bitstream) const {
   }
 }
 
-auto CameraExtrinsics::position() const noexcept -> Vec3f {
+auto CameraExtrinsics::position() const noexcept -> Common::Vec3f {
   return {ce_view_pos_x(), ce_view_pos_y(), ce_view_pos_z()};
 }
 
-auto CameraExtrinsics::rotation() const noexcept -> QuatF {
+auto CameraExtrinsics::rotation() const noexcept -> Common::QuatF {
   const auto x = ce_view_quat_x();
   const auto y = ce_view_quat_y();
   const auto z = ce_view_quat_z();
-  const auto w = sqrt(max(0.F, 1.F - x * x - y * y - z * z));
+  const auto w = std::sqrt(std::max(0.F, 1.F - x * x - y * y - z * z));
 
   return {x, y, z, w};
 }
 
-auto CameraExtrinsics::position(Vec3f r) noexcept -> CameraExtrinsics & {
+auto CameraExtrinsics::position(Common::Vec3f r) noexcept -> CameraExtrinsics & {
   ce_view_pos_x(r.x());
   ce_view_pos_y(r.y());
   ce_view_pos_z(r.z());
   return *this;
 }
 
-auto CameraExtrinsics::rotation(QuatF q) noexcept -> CameraExtrinsics & {
+auto CameraExtrinsics::rotation(Common::QuatF q) noexcept -> CameraExtrinsics & {
   VERIFY_MIVBITSTREAM(normalized(q));
   ce_view_quat_x(q.x());
   ce_view_quat_y(q.y());
@@ -258,7 +255,7 @@ auto CameraExtrinsics::rotation(QuatF q) noexcept -> CameraExtrinsics & {
   return *this;
 }
 
-auto CameraExtrinsics::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+auto CameraExtrinsics::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   stream << "ce_view_pos_x[ " << viewId << " ]=" << ce_view_pos_x() << '\n';
   stream << "ce_view_pos_y[ " << viewId << " ]=" << ce_view_pos_y() << '\n';
   stream << "ce_view_pos_z[ " << viewId << " ]=" << ce_view_pos_z() << '\n';
@@ -268,7 +265,7 @@ auto CameraExtrinsics::printTo(ostream &stream, uint16_t viewId) const -> ostrea
   return stream;
 }
 
-auto CameraExtrinsics::decodeFrom(InputBitstream &bitstream) -> CameraExtrinsics {
+auto CameraExtrinsics::decodeFrom(Common::InputBitstream &bitstream) -> CameraExtrinsics {
   auto x = CameraExtrinsics{};
 
   x.ce_view_pos_x(bitstream.getFloat32());
@@ -281,7 +278,7 @@ auto CameraExtrinsics::decodeFrom(InputBitstream &bitstream) -> CameraExtrinsics
   return x;
 }
 
-void CameraExtrinsics::encodeTo(OutputBitstream &bitstream) const {
+void CameraExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFloat32(ce_view_pos_x());
   bitstream.putFloat32(ce_view_pos_y());
   bitstream.putFloat32(ce_view_pos_z());
@@ -290,9 +287,9 @@ void CameraExtrinsics::encodeTo(OutputBitstream &bitstream) const {
   bitstream.putFloat32(ce_view_quat_z());
 }
 
-auto DepthQuantization::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
+auto DepthQuantization::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
   VERIFY_MIVBITSTREAM(dq_quantization_law() == 0);
-  stream << "dq_quantization_law[ " << viewId << " ]=" << int(dq_quantization_law())
+  stream << "dq_quantization_law[ " << viewId << " ]=" << int{dq_quantization_law()}
          << "\ndq_norm_disp_low[ " << viewId << " ]=" << dq_norm_disp_low()
          << "\ndq_norm_disp_high[ " << viewId << " ]=" << dq_norm_disp_high()
          << "\ndq_depth_occ_map_threshold_default[ " << viewId
@@ -300,7 +297,7 @@ auto DepthQuantization::printTo(ostream &stream, uint16_t viewId) const -> ostre
   return stream;
 }
 
-auto DepthQuantization::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+auto DepthQuantization::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
     -> DepthQuantization {
   auto x = DepthQuantization{};
 
@@ -316,7 +313,8 @@ auto DepthQuantization::decodeFrom(InputBitstream &bitstream, const V3cParameter
   return x;
 }
 
-void DepthQuantization::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
+void DepthQuantization::encodeTo(Common::OutputBitstream &bitstream,
+                                 const V3cParameterSet &vps) const {
   bitstream.putUint8(dq_quantization_law());
   bitstream.putFloat32(dq_norm_disp_low());
   bitstream.putFloat32(dq_norm_disp_high());
@@ -325,8 +323,8 @@ void DepthQuantization::encodeTo(OutputBitstream &bitstream, const V3cParameterS
   }
 }
 
-PruningParents::PruningParents(vector<uint16_t> pp_parent_id)
-    : m_pp_parent_id{move(pp_parent_id)} {}
+PruningParents::PruningParents(std::vector<uint16_t> pp_parent_id)
+    : m_pp_parent_id{std::move(pp_parent_id)} {}
 
 auto PruningParents::pp_is_root_flag() const noexcept -> bool { return m_pp_parent_id.empty(); }
 
@@ -347,8 +345,8 @@ auto PruningParents::pp_parent_id(std::uint16_t i, std::uint16_t value) noexcept
   return *this;
 }
 
-auto PruningParents::printTo(ostream &stream, uint16_t viewId) const -> ostream & {
-  stream << "pp_is_root_flag[ " << viewId << " ]=" << boolalpha << pp_is_root_flag() << '\n';
+auto PruningParents::printTo(std::ostream &stream, uint16_t viewId) const -> std::ostream & {
+  stream << "pp_is_root_flag[ " << viewId << " ]=" << std::boolalpha << pp_is_root_flag() << '\n';
   if (!pp_is_root_flag()) {
     stream << "pp_num_parent_minus1[ " << viewId << " ]=" << pp_num_parent_minus1() << '\n';
     for (auto i = 0; i <= pp_num_parent_minus1(); ++i) {
@@ -366,7 +364,7 @@ auto PruningParents::operator!=(const PruningParents &other) const noexcept -> b
   return !operator==(other);
 }
 
-auto PruningParents::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_views_minus1)
+auto PruningParents::decodeFrom(Common::InputBitstream &bitstream, uint16_t mvp_num_views_minus1)
     -> PruningParents {
   const auto pp_is_root_flag = bitstream.getFlag();
   if (pp_is_root_flag) {
@@ -374,7 +372,7 @@ auto PruningParents::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_view
   }
 
   const auto pp_num_parent_minus1 = bitstream.getUVar<size_t>(mvp_num_views_minus1);
-  auto x = vector<uint16_t>(pp_num_parent_minus1 + 1);
+  auto x = std::vector<uint16_t>(pp_num_parent_minus1 + 1);
 
   for (uint16_t &i : x) {
     i = bitstream.getUVar<uint16_t>(mvp_num_views_minus1 + uint64_t(1));
@@ -383,7 +381,8 @@ auto PruningParents::decodeFrom(InputBitstream &bitstream, uint16_t mvp_num_view
   return PruningParents{x};
 }
 
-void PruningParents::encodeTo(OutputBitstream &bitstream, uint16_t mvp_num_views_minus1) const {
+void PruningParents::encodeTo(Common::OutputBitstream &bitstream,
+                              uint16_t mvp_num_views_minus1) const {
   bitstream.putFlag(pp_is_root_flag());
   if (!pp_is_root_flag()) {
     bitstream.putUVar(pp_num_parent_minus1(), mvp_num_views_minus1);
@@ -541,25 +540,26 @@ auto MivViewParamsList::pruning_parent(uint16_t viewId) noexcept -> PruningParen
   return m_pruning_parent[viewId];
 }
 
-auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
+auto operator<<(std::ostream &stream, const MivViewParamsList &x) -> std::ostream & {
   stream << "mvp_num_views_minus1=" << x.mvp_num_views_minus1() << '\n';
-  stream << "mvp_view_enabled_present_flag=" << boolalpha << x.mvp_view_enabled_present_flag()
+  stream << "mvp_view_enabled_present_flag=" << std::boolalpha << x.mvp_view_enabled_present_flag()
          << '\n';
 
   if (x.mvp_view_enabled_present_flag()) {
     for (size_t a = 0; a < x.m_viewInAtlas.size(); ++a) {
       for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
-        stream << "mvp_view_enabled_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
+        stream << "mvp_view_enabled_in_atlas_flag[ " << a << " ][ " << v << " ]=" << std::boolalpha
                << x.mvp_view_enabled_in_atlas_flag(uint8_t(a), v) << '\n';
         if (x.mvp_view_enabled_in_atlas_flag(uint8_t(a), v)) {
-          stream << "mvp_view_complete_in_atlas_flag[ " << a << " ][ " << v << " ]=" << boolalpha
-                 << x.mvp_view_complete_in_atlas_flag(uint8_t(a), v) << '\n';
+          stream << "mvp_view_complete_in_atlas_flag[ " << a << " ][ " << v
+                 << " ]=" << std::boolalpha << x.mvp_view_complete_in_atlas_flag(uint8_t(a), v)
+                 << '\n';
         }
       }
     }
   }
 
-  stream << "mvp_explicit_view_id_flag=" << boolalpha << x.mvp_explicit_view_id_flag() << '\n';
+  stream << "mvp_explicit_view_id_flag=" << std::boolalpha << x.mvp_explicit_view_id_flag() << '\n';
   if (x.mvp_explicit_view_id_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
       stream << "mvp_view_id[ " << v << " ]=" << x.mvp_view_id(v) << '\n';
@@ -570,8 +570,8 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
     x.camera_extrinsics(v).printTo(stream, v);
   }
 
-  stream << "mvp_intrinsic_params_equal_flag=" << boolalpha << x.mvp_intrinsic_params_equal_flag()
-         << '\n';
+  stream << "mvp_intrinsic_params_equal_flag=" << std::boolalpha
+         << x.mvp_intrinsic_params_equal_flag() << '\n';
   if (x.mvp_intrinsic_params_equal_flag()) {
     x.camera_intrinsics(0).printTo(stream, 0);
   } else {
@@ -580,7 +580,7 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
     }
   }
 
-  stream << "mvp_depth_quantization_params_equal_flag=" << boolalpha
+  stream << "mvp_depth_quantization_params_equal_flag=" << std::boolalpha
          << x.mvp_depth_quantization_params_equal_flag() << '\n';
   if (x.mvp_depth_quantization_params_equal_flag()) {
     x.depth_quantization(0).printTo(stream, 0);
@@ -590,7 +590,7 @@ auto operator<<(ostream &stream, const MivViewParamsList &x) -> ostream & {
     }
   }
 
-  stream << "mvp_pruning_graph_params_present_flag=" << boolalpha
+  stream << "mvp_pruning_graph_params_present_flag=" << std::boolalpha
          << x.mvp_pruning_graph_params_present_flag() << '\n';
   if (x.mvp_pruning_graph_params_present_flag()) {
     for (uint16_t v = 0; v <= x.mvp_num_views_minus1(); ++v) {
@@ -617,7 +617,7 @@ auto MivViewParamsList::operator!=(const MivViewParamsList &other) const noexcep
   return !operator==(other);
 }
 
-auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const V3cParameterSet &vps)
+auto MivViewParamsList::decodeFrom(Common::InputBitstream &bitstream, const V3cParameterSet &vps)
     -> MivViewParamsList {
   auto x = MivViewParamsList{};
 
@@ -676,7 +676,8 @@ auto MivViewParamsList::decodeFrom(InputBitstream &bitstream, const V3cParameter
   return x;
 }
 
-void MivViewParamsList::encodeTo(OutputBitstream &bitstream, const V3cParameterSet &vps) const {
+void MivViewParamsList::encodeTo(Common::OutputBitstream &bitstream,
+                                 const V3cParameterSet &vps) const {
   bitstream.putUint16(mvp_num_views_minus1());
   bitstream.putFlag(mvp_view_enabled_present_flag());
 
@@ -799,7 +800,7 @@ auto CommonAtlasFrameRBSP::miv_view_params_update_depth_quantization() noexcept
   return *m_miv_view_params_update_depth_quantization;
 }
 
-auto CommonAtlasFrameRBSP::cafExtensionData() const noexcept -> const vector<bool> & {
+auto CommonAtlasFrameRBSP::cafExtensionData() const noexcept -> const std::vector<bool> & {
   VERIFY_V3CBITSTREAM(caf_extension_8bits() != 0);
   VERIFY_V3CBITSTREAM(m_cafExtensionData.has_value());
   return *m_cafExtensionData;
@@ -815,13 +816,13 @@ auto CommonAtlasFrameRBSP::caf_extension_8bits(std::uint8_t value) noexcept
 auto CommonAtlasFrameRBSP::cafExtensionData(std::vector<bool> value) noexcept
     -> CommonAtlasFrameRBSP & {
   VERIFY_V3CBITSTREAM(caf_extension_8bits() != 0);
-  m_cafExtensionData = move(value);
+  m_cafExtensionData = std::move(value);
   return *this;
 }
 
-auto operator<<(ostream &stream, const CommonAtlasFrameRBSP &x) -> ostream & {
+auto operator<<(std::ostream &stream, const CommonAtlasFrameRBSP &x) -> std::ostream & {
   stream << "caf_atlas_adaptation_parameter_set_id="
-         << int(x.caf_atlas_adaptation_parameter_set_id()) << '\n';
+         << int{x.caf_atlas_adaptation_parameter_set_id()} << '\n';
   stream << "caf_frm_order_cnt_lsb=" << x.caf_frm_order_cnt_lsb() << '\n';
   stream << "caf_miv_view_params_list_update_mode=" << x.caf_miv_view_params_list_update_mode()
          << '\n';
@@ -847,13 +848,14 @@ auto operator<<(ostream &stream, const CommonAtlasFrameRBSP &x) -> ostream & {
     MIVBITSTREAM_ERROR("Unknown update mode");
   }
 
-  stream << "caf_extension_present_flag=" << boolalpha << x.caf_extension_present_flag() << '\n';
+  stream << "caf_extension_present_flag=" << std::boolalpha << x.caf_extension_present_flag()
+         << '\n';
   if (x.caf_extension_present_flag()) {
-    stream << "caf_extension_8bits=" << int(x.caf_extension_8bits()) << '\n';
+    stream << "caf_extension_8bits=" << int{x.caf_extension_8bits()} << '\n';
   }
-  if (x.caf_extension_8bits()) {
+  if (x.caf_extension_8bits() != 0U) {
     for (auto bit : x.cafExtensionData()) {
-      stream << "caf_extension_data_flag=" << boolalpha << bit << '\n';
+      stream << "caf_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
   }
   return stream;
@@ -887,20 +889,17 @@ auto CommonAtlasFrameRBSP::operator==(const CommonAtlasFrameRBSP &other) const n
     MIVBITSTREAM_ERROR("Unknown update mode");
   }
 
-  if (caf_extension_8bits() != 0 && cafExtensionData() != other.cafExtensionData()) {
-    return false;
-  }
-  return true;
+  return caf_extension_8bits() == 0 || cafExtensionData() == other.cafExtensionData();
 }
 
 auto CommonAtlasFrameRBSP::operator!=(const CommonAtlasFrameRBSP &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto CommonAtlasFrameRBSP::decodeFrom(istream &stream, const V3cParameterSet &vps,
+auto CommonAtlasFrameRBSP::decodeFrom(std::istream &stream, const V3cParameterSet &vps,
                                       unsigned maxCommonAtlasFrmOrderCntLsb)
     -> CommonAtlasFrameRBSP {
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   auto x = CommonAtlasFrameRBSP{};
 
@@ -936,20 +935,20 @@ auto CommonAtlasFrameRBSP::decodeFrom(istream &stream, const V3cParameterSet &vp
     x.caf_extension_8bits(bitstream.readBits<uint8_t>(8));
   }
   if (x.caf_extension_8bits() != 0) {
-    auto cafExtensionData = vector<bool>{};
+    auto cafExtensionData = std::vector<bool>{};
     while (bitstream.moreRbspData()) {
       cafExtensionData.push_back(bitstream.getFlag());
     }
-    x.cafExtensionData(move(cafExtensionData));
+    x.cafExtensionData(std::move(cafExtensionData));
   }
   bitstream.rbspTrailingBits();
 
   return x;
 }
 
-void CommonAtlasFrameRBSP::encodeTo(ostream &stream, const V3cParameterSet &vps,
+void CommonAtlasFrameRBSP::encodeTo(std::ostream &stream, const V3cParameterSet &vps,
                                     unsigned maxCommonAtlasFrmOrderCntLsb) const {
-  OutputBitstream bitstream{stream};
+  Common::OutputBitstream bitstream{stream};
 
   bitstream.putUExpGolomb(caf_atlas_adaptation_parameter_set_id());
   bitstream.putUVar(caf_frm_order_cnt_lsb(), maxCommonAtlasFrmOrderCntLsb);
@@ -1022,7 +1021,7 @@ auto MivViewParamsUpdateExtrinsics::mvpue_view_idx(const uint16_t i, const uint1
   return *this;
 }
 
-auto operator<<(ostream &stream, const MivViewParamsUpdateExtrinsics &x) -> ostream & {
+auto operator<<(std::ostream &stream, const MivViewParamsUpdateExtrinsics &x) -> std::ostream & {
   stream << "mvpue_num_view_updates_minus1=" << x.mvpue_num_view_updates_minus1() << '\n';
   for (uint16_t i = 0; i <= x.mvpue_num_view_updates_minus1(); ++i) {
     stream << "mvpue_view_idx[ " << i << " ]=" << x.mvpue_view_idx(i) << '\n';
@@ -1031,7 +1030,7 @@ auto operator<<(ostream &stream, const MivViewParamsUpdateExtrinsics &x) -> ostr
   return stream;
 }
 
-void MivViewParamsUpdateExtrinsics::encodeTo(OutputBitstream &bitstream) const {
+void MivViewParamsUpdateExtrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint16(mvpue_num_view_updates_minus1());
   for (uint16_t i = 0; i <= mvpue_num_view_updates_minus1(); ++i) {
     bitstream.putUint16(mvpue_view_idx(i));
@@ -1039,7 +1038,7 @@ void MivViewParamsUpdateExtrinsics::encodeTo(OutputBitstream &bitstream) const {
   }
 }
 
-auto MivViewParamsUpdateExtrinsics::decodeFrom(InputBitstream &bitstream)
+auto MivViewParamsUpdateExtrinsics::decodeFrom(Common::InputBitstream &bitstream)
     -> MivViewParamsUpdateExtrinsics {
   auto x = MivViewParamsUpdateExtrinsics{};
   x.mvpue_num_view_updates_minus1(bitstream.getUint16());
@@ -1098,7 +1097,7 @@ auto MivViewParamsUpdateIntrinsics::mvpui_view_idx(const uint16_t i, const uint1
   return *this;
 }
 
-auto operator<<(ostream &stream, const MivViewParamsUpdateIntrinsics &x) -> ostream & {
+auto operator<<(std::ostream &stream, const MivViewParamsUpdateIntrinsics &x) -> std::ostream & {
   stream << "mvpui_num_view_updates_minus1=" << x.mvpui_num_view_updates_minus1() << '\n';
   for (uint16_t i = 0; i <= x.mvpui_num_view_updates_minus1(); ++i) {
     stream << "mvpui_view_idx[ " << i << " ]=" << x.mvpui_view_idx(i) << '\n';
@@ -1107,7 +1106,7 @@ auto operator<<(ostream &stream, const MivViewParamsUpdateIntrinsics &x) -> ostr
   return stream;
 }
 
-void MivViewParamsUpdateIntrinsics::encodeTo(OutputBitstream &bitstream) const {
+void MivViewParamsUpdateIntrinsics::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUint16(mvpui_num_view_updates_minus1());
   for (uint16_t i = 0; i <= mvpui_num_view_updates_minus1(); ++i) {
     bitstream.putUint16(mvpui_view_idx(i));
@@ -1115,7 +1114,7 @@ void MivViewParamsUpdateIntrinsics::encodeTo(OutputBitstream &bitstream) const {
   }
 }
 
-auto MivViewParamsUpdateIntrinsics::decodeFrom(InputBitstream &bitstream)
+auto MivViewParamsUpdateIntrinsics::decodeFrom(Common::InputBitstream &bitstream)
     -> MivViewParamsUpdateIntrinsics {
   auto x = MivViewParamsUpdateIntrinsics{};
   x.mvpui_num_view_updates_minus1(bitstream.getUint16());
@@ -1176,7 +1175,8 @@ auto MivViewParamsUpdateDepthQuantization::mvpudq_view_idx(const uint16_t i,
   return *this;
 }
 
-auto operator<<(ostream &stream, const MivViewParamsUpdateDepthQuantization &x) -> ostream & {
+auto operator<<(std::ostream &stream, const MivViewParamsUpdateDepthQuantization &x)
+    -> std::ostream & {
   stream << "mvpudq_num_view_updates_minus1=" << x.mvpudq_num_view_updates_minus1() << '\n';
   for (uint16_t i = 0; i <= x.mvpudq_num_view_updates_minus1(); ++i) {
     stream << "mvpudq_view_idx[ " << i << " ]=" << x.mvpudq_view_idx(i) << '\n';
@@ -1185,7 +1185,7 @@ auto operator<<(ostream &stream, const MivViewParamsUpdateDepthQuantization &x) 
   return stream;
 }
 
-void MivViewParamsUpdateDepthQuantization::encodeTo(OutputBitstream &bitstream,
+void MivViewParamsUpdateDepthQuantization::encodeTo(Common::OutputBitstream &bitstream,
                                                     const V3cParameterSet &vps) const {
   bitstream.putUint16(mvpudq_num_view_updates_minus1());
   for (uint16_t i = 0; i <= mvpudq_num_view_updates_minus1(); ++i) {
@@ -1194,7 +1194,7 @@ void MivViewParamsUpdateDepthQuantization::encodeTo(OutputBitstream &bitstream,
   }
 }
 
-auto MivViewParamsUpdateDepthQuantization::decodeFrom(InputBitstream &bitstream,
+auto MivViewParamsUpdateDepthQuantization::decodeFrom(Common::InputBitstream &bitstream,
                                                       const V3cParameterSet &vps)
     -> MivViewParamsUpdateDepthQuantization {
   auto x = MivViewParamsUpdateDepthQuantization{};

@@ -44,105 +44,106 @@
 #include <filesystem>
 #include <fstream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Decoder;
-
-auto dumpV3cUnitPayload(streampos position, const SampleStreamV3cUnit &ssvu,
-                        const V3cUnitHeader &vuh) {
-  ostringstream path;
+auto dumpV3cUnitPayload(std::streampos position, const MivBitstream::SampleStreamV3cUnit &ssvu,
+                        const MivBitstream::V3cUnitHeader &vuh) {
+  std::ostringstream path;
   path << "v3c_unit_" << position << '_' << vuh.vuh_unit_type();
   if (vuh.vuh_unit_type() != VuhUnitType::V3C_VPS) {
-    path << '_' << int(vuh.vuh_v3c_parameter_set_id()) << '_' << int(vuh.vuh_atlas_id());
+    path << '_' << int{vuh.vuh_v3c_parameter_set_id()} << '_' << int{vuh.vuh_atlas_id()};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
-    path << '_' << int(vuh.vuh_attribute_index()) << '_'
-         << int(vuh.vuh_attribute_partition_index());
+    path << '_' << int{vuh.vuh_attribute_index()} << '_'
+         << int{vuh.vuh_attribute_partition_index()};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_AVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD) {
-    path << '_' << int(vuh.vuh_map_index()) << '_' << boolalpha << vuh.vuh_auxiliary_video_flag();
+    path << '_' << int{vuh.vuh_map_index()} << '_' << std::boolalpha
+         << vuh.vuh_auxiliary_video_flag();
   }
-  if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS || vuh.vuh_unit_type() == VuhUnitType::V3C_AD) {
+  if (vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_VPS ||
+      vuh.vuh_unit_type() == MivBitstream::VuhUnitType::V3C_AD) {
     path << ".bit";
   } else {
     path << ".mp4";
   }
 
-  ofstream file{path.str(), ios::binary};
+  std::ofstream file{path.str(), std::ios::binary};
   auto payload = ssvu.ssvu_v3c_unit();
   payload.erase(payload.begin(), payload.begin() + 4);
   file.write(payload.data(), payload.size());
 }
 
-void demultiplex(istream &stream) {
-  stream.seekg(0, ios::end);
+void demultiplex(std::istream &stream) {
+  stream.seekg(0, std::ios::end);
   const auto filesize = stream.tellg();
-  cout << "[ 0 ]: File size is " << filesize << " bytes\n";
+  std::cout << "[ 0 ]: File size is " << filesize << " bytes\n";
   stream.seekg(0);
 
-  cout << "[ " << stream.tellg() << " ]: ";
-  const auto ssvh = SampleStreamV3cHeader::decodeFrom(stream);
-  cout << ssvh;
+  std::cout << "[ " << stream.tellg() << " ]: ";
+  const auto ssvh = MivBitstream::SampleStreamV3cHeader::decodeFrom(stream);
+  std::cout << ssvh;
 
-  auto vpses = vector<V3cParameterSet>{};
+  auto vpses = std::vector<MivBitstream::V3cParameterSet>{};
 
   while (stream.tellg() != filesize) {
     const auto position = stream.tellg();
-    cout << "[ " << position << " ]: ";
-    const auto ssvu = SampleStreamV3cUnit::decodeFrom(stream, ssvh);
-    cout << ssvu;
+    std::cout << "[ " << position << " ]: ";
+    const auto ssvu = MivBitstream::SampleStreamV3cUnit::decodeFrom(stream, ssvh);
+    std::cout << ssvu;
 
-    istringstream substream{ssvu.ssvu_v3c_unit()};
-    const auto vuh = V3cUnitHeader::decodeFrom(substream, vpses);
-    cout << vuh;
+    std::istringstream substream{ssvu.ssvu_v3c_unit()};
+    const auto vuh = MivBitstream::V3cUnitHeader::decodeFrom(substream, vpses);
+    std::cout << vuh;
 
     dumpV3cUnitPayload(position, ssvu, vuh);
 
     const auto vp = V3cPayload::decodeFrom(substream, vuh);
-    cout << vp;
+    std::cout << vp;
 
-    if (const auto *vps = get_if<V3cParameterSet>(&vp.payload()); vps != nullptr) {
+    if (const auto *vps = std::get_if<MivBitstream::V3cParameterSet>(&vp.payload());
+        vps != nullptr) {
       while (vps->vps_v3c_parameter_set_id() >= vpses.size()) {
         vpses.emplace_back();
       }
-      cout << "vpses[" << int(vps->vps_v3c_parameter_set_id()) << "] := vps\n";
+      std::cout << "vpses[" << int{vps->vps_v3c_parameter_set_id()} << "] := vps\n";
       vpses[vps->vps_v3c_parameter_set_id()] = *vps;
     }
   }
 
-  cout << "[ " << stream.tellg() << " ].\n";
+  std::cout << "[ " << stream.tellg() << " ].\n";
 }
 
 auto testDataDir() { return filesystem::path(__FILE__).parent_path().parent_path() / "test"; }
 
 const auto testBitstreams =
-    array{testDataDir() / "longdress_1frame_vpcc_ctc" / "longdress_vox10_GOF0.bin"};
+    std::array{testDataDir() / "longdress_1frame_vpcc_ctc" / "longdress_vox10_GOF0.bin"};
 
 TEST_CASE("Demultiplex", "[V3C bitstream]") {
   TMIV::MivBitstream::mode = MivDecoderMode::TMC2;
 
   const auto bitstreamPath = GENERATE(testBitstreams[0]);
-  cout << "\n\nTEST_CASE Demultiplex: bitstreamPath=" << bitstreamPath.string() << '\n';
-  ifstream stream{bitstreamPath, ios::binary};
+  std::cout << "\n\nTEST_CASE Demultiplex: bitstreamPath=" << bitstreamPath.string() << '\n';
+  std::ifstream stream{bitstreamPath, std::ios::binary};
   // TODO(BK): Need a bitstream that implements M53122
   // demultiplex(stream);
 }
 
-auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Depth10Frame {
-  cout << "geoFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-       << ", frameSize=" << frameSize << '\n';
+auto geoFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize) -> Depth10Frame {
+  std::cout << "geoFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
+            << ", frameSize=" << frameSize << '\n';
   return Depth10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto occFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Occupancy10Frame {
-  cout << "occFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-       << ", frameSize=" << frameSize << '\n';
+auto occFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Occupancy10Frame {
+  std::cout << "occFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
+            << ", frameSize=" << frameSize << '\n';
   return Occupancy10Frame{frameSize.x(), frameSize.y()};
 }
 
-auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Vec2i frameSize) -> Texture444Frame {
-  cout << "attrFrameServer: atlasId=" << int(atlasId) << ", frameId=" << frameId
-       << ", frameSize=" << frameSize << '\n';
+auto attrFrameServer(uint8_t atlasId, uint32_t frameId, Common::Vec2i frameSize)
+    -> Texture444Frame {
+  std::cout << "attrFrameServer: atlasId=" << int{atlasId} << ", frameId=" << frameId
+            << ", frameSize=" << frameSize << '\n';
   return Texture444Frame{frameSize.x(), frameSize.y()};
 }
 
@@ -150,8 +151,8 @@ TEST_CASE("Decode", "[V3C bitstream]") {
   TMIV::MivBitstream::mode = MivDecoderMode::TMC2;
 
   const auto bitstreamPath = GENERATE(testBitstreams[0]);
-  cout << "\n\nTEST_CASE Decode: bitstreamPath=" << bitstreamPath.string() << '\n';
-  ifstream stream{bitstreamPath, ios::binary};
+  std::cout << "\n\nTEST_CASE Decode: bitstreamPath=" << bitstreamPath.string() << '\n';
+  std::ifstream stream{bitstreamPath, std::ios::binary};
   auto decoder = MivDecoder{stream};
   decoder.setOccFrameServer(occFrameServer);
   decoder.setGeoFrameServer(geoFrameServer);

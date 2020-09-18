@@ -39,18 +39,17 @@
 
 #include <ostream>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, const AtlasFrameTileInformation &x) -> ostream & {
-  stream << "afti_single_tile_in_atlas_frame_flag=" << boolalpha
+auto operator<<(std::ostream &stream, const AtlasFrameTileInformation &x) -> std::ostream & {
+  stream << "afti_single_tile_in_atlas_frame_flag=" << std::boolalpha
          << x.afti_single_tile_in_atlas_frame_flag() << '\n';
-  stream << "afti_signalled_tile_id_flag=" << boolalpha << x.afti_signalled_tile_id_flag() << '\n';
+  stream << "afti_signalled_tile_id_flag=" << std::boolalpha << x.afti_signalled_tile_id_flag()
+         << '\n';
   return stream;
 }
 
-auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFrameTileInformation {
+auto AtlasFrameTileInformation::decodeFrom(Common::InputBitstream &bitstream)
+    -> AtlasFrameTileInformation {
   const auto afti_single_tile_in_atlas_frame_flag = bitstream.getFlag();
 
   // NOTE(BK): The proposal is to restrict to afti_single_tile_in_atlas_frame_flag == 1, but for
@@ -80,7 +79,7 @@ auto AtlasFrameTileInformation::decodeFrom(InputBitstream &bitstream) -> AtlasFr
   return {};
 }
 
-void AtlasFrameTileInformation::encodeTo(OutputBitstream &bitstream) {
+void AtlasFrameTileInformation::encodeTo(Common::OutputBitstream &bitstream) {
   constexpr auto afti_single_tile_in_atlas_frame_flag = true;
   bitstream.putFlag(afti_single_tile_in_atlas_frame_flag);
 
@@ -88,111 +87,84 @@ void AtlasFrameTileInformation::encodeTo(OutputBitstream &bitstream) {
   bitstream.putFlag(afti_signalled_tile_id_flag);
 }
 
-auto operator<<(ostream &stream, const AfpsVpccExtension & /* x */) -> ostream & { return stream; }
+auto operator<<(std::ostream &stream, const AfpsMivExtension & /* x */) -> std::ostream & {
+  return stream;
+}
 
-auto AfpsVpccExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsVpccExtension {
+auto AfpsMivExtension::decodeFrom(Common::InputBitstream & /* bitstream */) -> AfpsMivExtension {
   return {};
 }
 
-void AfpsVpccExtension::encodeTo(OutputBitstream & /* stream */) const {}
-
-auto operator<<(ostream &stream, const AfpsMivExtension & /* x */) -> ostream & { return stream; }
-
-auto AfpsMivExtension::decodeFrom(InputBitstream & /* bitstream */) -> AfpsMivExtension {
-  return {};
-}
-
-void AfpsMivExtension::encodeTo(OutputBitstream & /* stream */) const {}
-
-auto AtlasFrameParameterSetRBSP::afps_vpcc_extension() const noexcept -> AfpsVpccExtension {
-  VERIFY_V3CBITSTREAM(afps_vpcc_extension_flag());
-  VERIFY_V3CBITSTREAM(m_afve.has_value());
-  return *m_afve;
-}
+void AfpsMivExtension::encodeTo(Common::OutputBitstream & /* stream */) const {}
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension() const noexcept -> AfpsMivExtension {
-  VERIFY_V3CBITSTREAM(afps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_afme.has_value());
   return *m_afme;
 }
 
-auto AtlasFrameParameterSetRBSP::afpsExtensionData() const noexcept -> const vector<bool> & {
-  VERIFY_V3CBITSTREAM(afps_extension_6bits() != 0);
+auto AtlasFrameParameterSetRBSP::afpsExtensionData() const noexcept -> const std::vector<bool> & {
+  VERIFY_V3CBITSTREAM(afps_extension_7bits() != 0);
   VERIFY_V3CBITSTREAM(m_afpsExtensionData.has_value());
   return *m_afpsExtensionData;
 }
 
-auto AtlasFrameParameterSetRBSP::afps_vpcc_extension_flag(bool value) noexcept
+auto AtlasFrameParameterSetRBSP::afps_miv_extension_present_flag(bool value) noexcept
     -> AtlasFrameParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(afps_extension_present_flag());
-  m_afps_vpcc_extension_flag = value;
+  m_afps_miv_extension_present_flag = value;
   return *this;
 }
 
-auto AtlasFrameParameterSetRBSP::afps_miv_extension_flag(bool value) noexcept
+auto AtlasFrameParameterSetRBSP::afps_extension_7bits(uint8_t value) noexcept
     -> AtlasFrameParameterSetRBSP & {
   VERIFY_V3CBITSTREAM(afps_extension_present_flag());
-  m_afps_miv_extension_flag = value;
-  return *this;
-}
-
-auto AtlasFrameParameterSetRBSP::afps_extension_6bits(uint8_t value) noexcept
-    -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_extension_present_flag());
-  m_afps_extension_6bits = value;
-  return *this;
-}
-
-auto AtlasFrameParameterSetRBSP::afps_vpcc_extension(const AfpsVpccExtension &value) noexcept
-    -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_vpcc_extension_flag());
-  m_afve = value;
+  m_afps_extension_7bits = value;
   return *this;
 }
 
 auto AtlasFrameParameterSetRBSP::afps_miv_extension(const AfpsMivExtension &value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_miv_extension_flag());
+  VERIFY_V3CBITSTREAM(afps_miv_extension_present_flag());
   m_afme = value;
   return *this;
 }
 
-auto AtlasFrameParameterSetRBSP::afpsExtensionData(vector<bool> value) noexcept
+auto AtlasFrameParameterSetRBSP::afpsExtensionData(std::vector<bool> value) noexcept
     -> AtlasFrameParameterSetRBSP & {
-  VERIFY_V3CBITSTREAM(afps_extension_6bits() != 0);
-  m_afpsExtensionData = move(value);
+  VERIFY_V3CBITSTREAM(afps_extension_7bits() != 0);
+  m_afpsExtensionData = std::move(value);
   return *this;
 }
 
-auto operator<<(ostream &stream, const AtlasFrameParameterSetRBSP &x) -> ostream & {
-  stream << "afps_atlas_frame_parameter_set_id=" << int(x.afps_atlas_frame_parameter_set_id())
+auto operator<<(std::ostream &stream, const AtlasFrameParameterSetRBSP &x) -> std::ostream & {
+  stream << "afps_atlas_frame_parameter_set_id=" << int{x.afps_atlas_frame_parameter_set_id()}
          << '\n';
-  stream << "afps_atlas_sequence_parameter_set_id=" << int(x.afps_atlas_sequence_parameter_set_id())
+  stream << "afps_atlas_sequence_parameter_set_id=" << int{x.afps_atlas_sequence_parameter_set_id()}
          << '\n';
   stream << x.atlas_frame_tile_information();
-  stream << "afps_output_flag_present_flag=" << boolalpha << x.afps_output_flag_present_flag()
+  stream << "afps_output_flag_present_flag=" << std::boolalpha << x.afps_output_flag_present_flag()
          << '\n';
   stream << "afps_num_ref_idx_default_active_minus1="
-         << int(x.afps_num_ref_idx_default_active_minus1()) << '\n';
-  stream << "afps_additional_lt_afoc_lsb_len=" << int(x.afps_additional_lt_afoc_lsb_len()) << '\n';
-  stream << "afps_lod_mode_enabled_flag=" << boolalpha << x.afps_lod_mode_enabled_flag() << '\n';
-  stream << "afps_raw_3d_pos_bit_count_explicit_mode_flag=" << boolalpha
-         << x.afps_raw_3d_pos_bit_count_explicit_mode_flag() << '\n';
-  stream << "afps_extension_present_flag=" << boolalpha << x.afps_extension_present_flag() << '\n';
+         << int{x.afps_num_ref_idx_default_active_minus1()} << '\n';
+  stream << "afps_additional_lt_afoc_lsb_len=" << int{x.afps_additional_lt_afoc_lsb_len()} << '\n';
+  stream << "afps_lod_mode_enabled_flag=" << std::boolalpha << x.afps_lod_mode_enabled_flag()
+         << '\n';
+  stream << "afps_raw_3d_offset_bit_count_explicit_mode_flag=" << std::boolalpha
+         << x.afps_raw_3d_offset_bit_count_explicit_mode_flag() << '\n';
+  stream << "afps_extension_present_flag=" << std::boolalpha << x.afps_extension_present_flag()
+         << '\n';
   if (x.afps_extension_present_flag()) {
-    stream << "afps_vpcc_extension_flag=" << boolalpha << x.afps_vpcc_extension_flag() << '\n';
-    stream << "afps_miv_extension_flag=" << boolalpha << x.afps_miv_extension_flag() << '\n';
-    stream << "afps_extension_6bits=" << int(x.afps_extension_6bits()) << '\n';
+    stream << "afps_miv_extension_present_flag=" << std::boolalpha
+           << x.afps_miv_extension_present_flag() << '\n';
+    stream << "afps_extension_7bits=" << int{x.afps_extension_7bits()} << '\n';
   }
-  if (x.afps_vpcc_extension_flag()) {
-    stream << x.afps_vpcc_extension();
-  }
-  if (x.afps_miv_extension_flag()) {
+  if (x.afps_miv_extension_present_flag()) {
     stream << x.afps_miv_extension();
   }
-  if (x.afps_extension_6bits() != 0) {
+  if (x.afps_extension_7bits() != 0) {
     for (auto bit : x.afpsExtensionData()) {
-      stream << "afps_extension_data_flag=" << boolalpha << bit << '\n';
+      stream << "afps_extension_data_flag=" << std::boolalpha << bit << '\n';
     }
   }
   return stream;
@@ -207,21 +179,17 @@ auto AtlasFrameParameterSetRBSP::operator==(const AtlasFrameParameterSetRBSP &ot
       afps_num_ref_idx_default_active_minus1() != other.afps_num_ref_idx_default_active_minus1() ||
       afps_additional_lt_afoc_lsb_len() != other.afps_additional_lt_afoc_lsb_len() ||
       afps_lod_mode_enabled_flag() != other.afps_lod_mode_enabled_flag() ||
-      afps_raw_3d_pos_bit_count_explicit_mode_flag() !=
-          other.afps_raw_3d_pos_bit_count_explicit_mode_flag() ||
+      afps_raw_3d_offset_bit_count_explicit_mode_flag() !=
+          other.afps_raw_3d_offset_bit_count_explicit_mode_flag() ||
       afps_extension_present_flag() != other.afps_extension_present_flag() ||
-      afps_vpcc_extension_flag() != other.afps_vpcc_extension_flag() ||
-      afps_miv_extension_flag() != other.afps_miv_extension_flag() ||
-      afps_extension_6bits() != other.afps_extension_6bits()) {
+      afps_miv_extension_present_flag() != other.afps_miv_extension_present_flag() ||
+      afps_extension_7bits() != other.afps_extension_7bits()) {
     return false;
   }
-  if (afps_vpcc_extension_flag() && afps_vpcc_extension() != other.afps_vpcc_extension()) {
+  if (afps_miv_extension_present_flag() && afps_miv_extension() != other.afps_miv_extension()) {
     return false;
   }
-  if (afps_miv_extension_flag() && afps_miv_extension() != other.afps_miv_extension()) {
-    return false;
-  }
-  if (afps_extension_6bits() && afpsExtensionData() != other.afpsExtensionData()) {
+  if (afps_extension_7bits() != 0U && afpsExtensionData() != other.afpsExtensionData()) {
     return false;
   }
   return true;
@@ -232,11 +200,11 @@ auto AtlasFrameParameterSetRBSP::operator!=(const AtlasFrameParameterSetRBSP &ot
   return !operator==(other);
 }
 
-auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
-                                            const vector<AtlasSequenceParameterSetRBSP> &aspsV)
+auto AtlasFrameParameterSetRBSP::decodeFrom(std::istream &stream,
+                                            const std::vector<AtlasSequenceParameterSetRBSP> &aspsV)
     -> AtlasFrameParameterSetRBSP {
   auto x = AtlasFrameParameterSetRBSP{};
-  InputBitstream bitstream{stream};
+  Common::InputBitstream bitstream{stream};
 
   x.afps_atlas_frame_parameter_set_id(bitstream.getUExpGolomb<uint8_t>());
   VERIFY_V3CBITSTREAM(x.afps_atlas_frame_parameter_set_id() <= 63);
@@ -258,26 +226,22 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
                       x.afps_additional_lt_afoc_lsb_len() == 0);
 
   x.afps_lod_mode_enabled_flag(bitstream.getFlag());
-  x.afps_raw_3d_pos_bit_count_explicit_mode_flag(bitstream.getFlag());
+  x.afps_raw_3d_offset_bit_count_explicit_mode_flag(bitstream.getFlag());
   x.afps_extension_present_flag(bitstream.getFlag());
 
   if (x.afps_extension_present_flag()) {
-    x.afps_vpcc_extension_flag(bitstream.getFlag());
-    x.afps_miv_extension_flag(bitstream.getFlag());
-    x.afps_extension_6bits(bitstream.readBits<uint8_t>(6));
+    x.afps_miv_extension_present_flag(bitstream.getFlag());
+    x.afps_extension_7bits(bitstream.readBits<uint8_t>(7));
   }
-  if (x.afps_vpcc_extension_flag()) {
-    x.afps_vpcc_extension(AfpsVpccExtension::decodeFrom(bitstream));
-  }
-  if (x.afps_miv_extension_flag()) {
+  if (x.afps_miv_extension_present_flag()) {
     x.afps_miv_extension(AfpsMivExtension::decodeFrom(bitstream));
   }
-  if (x.afps_extension_6bits() != 0) {
-    auto afpsExtensionData = vector<bool>{};
+  if (x.afps_extension_7bits() != 0) {
+    auto afpsExtensionData = std::vector<bool>{};
     while (bitstream.moreRbspData()) {
       afpsExtensionData.push_back(bitstream.getFlag());
     }
-    x.afpsExtensionData(move(afpsExtensionData));
+    x.afpsExtensionData(std::move(afpsExtensionData));
   }
   bitstream.rbspTrailingBits();
 
@@ -285,8 +249,8 @@ auto AtlasFrameParameterSetRBSP::decodeFrom(istream &stream,
 }
 
 void AtlasFrameParameterSetRBSP::encodeTo(
-    ostream &stream, const vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
-  OutputBitstream bitstream{stream};
+    std::ostream &stream, const std::vector<AtlasSequenceParameterSetRBSP> &aspsV) const {
+  Common::OutputBitstream bitstream{stream};
 
   VERIFY_V3CBITSTREAM(afps_atlas_frame_parameter_set_id() <= 63);
   bitstream.putUExpGolomb(afps_atlas_frame_parameter_set_id());
@@ -308,21 +272,17 @@ void AtlasFrameParameterSetRBSP::encodeTo(
   bitstream.putUExpGolomb(afps_additional_lt_afoc_lsb_len());
 
   bitstream.putFlag(afps_lod_mode_enabled_flag());
-  bitstream.putFlag(afps_raw_3d_pos_bit_count_explicit_mode_flag());
+  bitstream.putFlag(afps_raw_3d_offset_bit_count_explicit_mode_flag());
   bitstream.putFlag(afps_extension_present_flag());
 
   if (afps_extension_present_flag()) {
-    bitstream.putFlag(afps_vpcc_extension_flag());
-    bitstream.putFlag(afps_miv_extension_flag());
-    bitstream.writeBits(afps_extension_6bits(), 6);
+    bitstream.putFlag(afps_miv_extension_present_flag());
+    bitstream.writeBits(afps_extension_7bits(), 7);
   }
-  if (afps_vpcc_extension_flag()) {
-    afps_vpcc_extension().encodeTo(bitstream);
-  }
-  if (afps_miv_extension_flag()) {
+  if (afps_miv_extension_present_flag()) {
     afps_miv_extension().encodeTo(bitstream);
   }
-  if (afps_extension_6bits() != 0) {
+  if (afps_extension_7bits() != 0) {
     for (auto bit : afpsExtensionData()) {
       bitstream.putFlag(bit);
     }
@@ -332,7 +292,7 @@ void AtlasFrameParameterSetRBSP::encodeTo(
 
 auto afpsById(const std::vector<AtlasFrameParameterSetRBSP> &afpsV, int id) noexcept
     -> const AtlasFrameParameterSetRBSP & {
-  for (auto &x : afpsV) {
+  for (const auto &x : afpsV) {
     if (id == x.afps_atlas_frame_parameter_set_id()) {
       return x;
     }

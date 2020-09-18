@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/ViewingSpaceHandling.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("viewing_space_handling", "[Viewing space handling SEI payload syntax]") {
   SECTION("Null example") {
     const auto x = ViewingSpaceHandling{};
@@ -75,3 +74,4 @@ vs_handling_method( 2 )=VHM_EXTRAP
     REQUIRE(bitCodingTest(x, 59));
   }
 }
+} // namespace TMIV::MivBitstream

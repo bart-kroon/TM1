@@ -39,30 +39,26 @@
 #include <TMIV/Common/Common.h>
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::GeometryQuantizer;
-
+namespace TMIV::GeometryQuantizer {
 SCENARIO("Geometry quantization") {
   GeometryQuantizer depthOccupancy{37};
 
-  auto sourceViewParams = ViewParams{};
+  auto sourceViewParams = MivBitstream::ViewParams{};
   sourceViewParams.ci.ci_projection_plane_width_minus1(1919)
       .ci_projection_plane_height_minus1(1079)
-      .ci_cam_type(CiCamType::equirectangular)
-      .ci_erp_phi_min(-halfCycle)
-      .ci_erp_phi_max(halfCycle)
-      .ci_erp_theta_min(-quarterCycle)
-      .ci_erp_theta_max(quarterCycle);
+      .ci_cam_type(MivBitstream::CiCamType::equirectangular)
+      .ci_erp_phi_min(-Common::halfCycle)
+      .ci_erp_phi_max(Common::halfCycle)
+      .ci_erp_theta_min(-Common::quarterCycle)
+      .ci_erp_theta_max(Common::quarterCycle);
   sourceViewParams.dq.dq_norm_disp_low(0.2F).dq_norm_disp_high(2.2F);
 
   GIVEN("View parameters without invalid depth") {
-    auto sourceParams = EncoderParams{};
+    auto sourceParams = MivBitstream::EncoderParams{};
     sourceParams.vps.vps_extension_present_flag(true);
-    sourceParams.vps.vps_miv_extension_flag(true);
+    sourceParams.vps.vps_miv_extension_present_flag(true);
     sourceParams.vps.vps_miv_extension().vme_embedded_occupancy_flag(true);
-    sourceParams.viewParamsList = ViewParamsList{{sourceViewParams}};
+    sourceParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedParams = depthOccupancy.transformParams(sourceParams);
@@ -73,20 +69,20 @@ SCENARIO("Geometry quantization") {
 
   GIVEN("View parameters with invalid depth") {
     sourceViewParams.hasOccupancy = true;
-    auto sourceSeqParams = EncoderParams{};
-    sourceSeqParams.viewParamsList = ViewParamsList{{sourceViewParams}};
+    auto sourceSeqParams = MivBitstream::EncoderParams{};
+    sourceSeqParams.viewParamsList = MivBitstream::ViewParamsList{{sourceViewParams}};
 
     WHEN("Modifying the depth range") {
       const auto codedSeqParams = depthOccupancy.transformParams(sourceSeqParams);
       const auto &codedViewParams = codedSeqParams.viewParamsList.front();
 
-      THEN("pduDepthOccMapThreshold (T) >> 0") {
+      THEN("dq_depth_occ_map_threshold_default (T) >> 0") {
         const auto T = codedViewParams.dq.dq_depth_occ_map_threshold_default();
         REQUIRE(T >= 8);
 
         THEN("Coded level 2T matches with source level 0") {
           // Output level 2T .. 1023 --> [0.2, 2.2] => rate = 2/(1023 - 2T), move 2T levels down
-          const auto twoT = float(2 * T);
+          const auto twoT = static_cast<float>(2 * T);
 
           auto refViewParams = sourceViewParams;
           refViewParams.dq.dq_depth_occ_map_threshold_default(T)
@@ -99,3 +95,4 @@ SCENARIO("Geometry quantization") {
     }
   }
 }
+} // namespace TMIV::GeometryQuantizer

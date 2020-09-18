@@ -35,11 +35,8 @@
 
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, VhDeviceClass x) -> ostream & {
+auto operator<<(std::ostream &stream, VhDeviceClass x) -> std::ostream & {
   switch (x) {
   case VhDeviceClass::VHDC_ALL:
     return stream << "VHDC_ALL";
@@ -50,11 +47,11 @@ auto operator<<(ostream &stream, VhDeviceClass x) -> ostream & {
   case VhDeviceClass::VHDC_ASD:
     return stream << "VHDC_ASD";
   default:
-    return stream << "Unknown device class (" << int(x) << ")";
+    return stream << "Unknown device class (" << static_cast<int>(x) << ")";
   }
 }
 
-auto operator<<(ostream &stream, VhApplicationClass x) -> ostream & {
+auto operator<<(std::ostream &stream, VhApplicationClass x) -> std::ostream & {
   switch (x) {
   case VhApplicationClass::VHAC_ALL:
     return stream << "VHAC_ALL";
@@ -67,11 +64,11 @@ auto operator<<(ostream &stream, VhApplicationClass x) -> ostream & {
   case VhApplicationClass::VHAC_SD:
     return stream << "VHAC_SD";
   default:
-    return stream << "Unknown application class (" << int(x) << ")";
+    return stream << "Unknown application class (" << static_cast<int>(x) << ")";
   }
 }
 
-auto operator<<(ostream &stream, VhMethod x) -> ostream & {
+auto operator<<(std::ostream &stream, VhMethod x) -> std::ostream & {
   switch (x) {
   case VhMethod::VHM_NULL:
     return stream << "VHM_NULL";
@@ -88,7 +85,7 @@ auto operator<<(ostream &stream, VhMethod x) -> ostream & {
   case VhMethod::VHM_ROTATE:
     return stream << "VHM_ROTATE";
   default:
-    return stream << "Unknown method (" << int(x) << ")";
+    return stream << "Unknown method (" << static_cast<int>(x) << ")";
   }
 }
 
@@ -103,7 +100,7 @@ auto HandlingOption::operator!=(const HandlingOption &other) const noexcept -> b
 }
 
 ViewingSpaceHandling::ViewingSpaceHandling(HandlingOptionList value)
-    : m_handlingOptionList{move(value)} {}
+    : m_handlingOptionList{std::move(value)} {}
 
 auto ViewingSpaceHandling::vs_handling_options_count() const noexcept -> size_t {
   return m_handlingOptionList.size();
@@ -125,7 +122,7 @@ auto ViewingSpaceHandling::vs_handling_method(size_t h) const noexcept -> VhMeth
   return m_handlingOptionList[h].vs_handling_method;
 }
 
-auto operator<<(ostream &stream, const ViewingSpaceHandling &x) -> ostream & {
+auto operator<<(std::ostream &stream, const ViewingSpaceHandling &x) -> std::ostream & {
   stream << "vs_handling_options_count=" << x.vs_handling_options_count() << '\n';
 
   for (size_t h = 0; h < x.vs_handling_options_count(); ++h) {
@@ -145,7 +142,7 @@ auto ViewingSpaceHandling::operator!=(const ViewingSpaceHandling &other) const n
   return !operator==(other);
 }
 
-auto ViewingSpaceHandling::decodeFrom(InputBitstream &bitstream) -> ViewingSpaceHandling {
+auto ViewingSpaceHandling::decodeFrom(Common::InputBitstream &bitstream) -> ViewingSpaceHandling {
   auto x = HandlingOptionList(bitstream.getUExpGolomb<size_t>());
 
   for (auto &el : x) {
@@ -157,7 +154,7 @@ auto ViewingSpaceHandling::decodeFrom(InputBitstream &bitstream) -> ViewingSpace
   return ViewingSpaceHandling{x};
 }
 
-void ViewingSpaceHandling::encodeTo(OutputBitstream &bitstream) const {
+void ViewingSpaceHandling::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putUExpGolomb(vs_handling_options_count());
 
   for (size_t h = 0; h < vs_handling_options_count(); ++h) {

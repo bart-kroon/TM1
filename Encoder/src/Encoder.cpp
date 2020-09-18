@@ -40,10 +40,6 @@
 #include <cassert>
 #include <iostream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 // Encoder sub-component interfaces
 using TMIV::Aggregator::IAggregator;
 using TMIV::GeometryQuantizer::IGeometryQuantizer;
@@ -54,19 +50,19 @@ using TMIV::ViewOptimizer::IViewOptimizer;
 namespace TMIV::Encoder {
 namespace {
 template <typename Interface>
-auto create(const char *name, const Json &rootNode, const Json &componentNode) {
-  const auto &instance = Factory<Interface>::getInstance();
+auto create(const char *name, const Common::Json &rootNode, const Common::Json &componentNode) {
+  const auto &instance = Common::Factory<Interface>::getInstance();
   return instance.create(name, rootNode, componentNode);
 }
 
 void runtimeCheck(bool cond, const char *what) {
   if (!cond) {
-    throw runtime_error(what);
+    throw std::runtime_error(what);
   }
 }
 } // namespace
 
-Encoder::Encoder(const Json &rootNode, const Json &componentNode)
+Encoder::Encoder(const Common::Json &rootNode, const Common::Json &componentNode)
     : m_viewOptimizer{create<IViewOptimizer>("ViewOptimizer", rootNode, componentNode)}
     , m_pruner{create<Pruner::IPruner>("Pruner", rootNode, componentNode)}
     , m_aggregator{create<IAggregator>("Aggregator", rootNode, componentNode)}
@@ -88,8 +84,9 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   }
 
   if (auto node = componentNode.optional("overrideAtlasFrameSizes"); node) {
-    cout << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
-            "only.\n";
+    std::cout
+        << "WARNING: Overriding atlas frame sizes is meant for internal/preliminary experiments "
+           "only.\n";
     for (size_t i = 0; i < node.size(); ++i) {
       m_overrideAtlasFrameSizes.push_back(node.at(i).asIntVector<2>());
     }
@@ -115,7 +112,7 @@ Encoder::Encoder(const Json &rootNode, const Json &componentNode)
   }
 
   if (m_intraPeriod > maxIntraPeriod) {
-    throw runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
+    throw std::runtime_error("The intraPeriod parameter cannot be greater than maxIntraPeriod.");
   }
 
   m_explicitOccupancy = rootNode.require("explicitOccupancy").asBool();

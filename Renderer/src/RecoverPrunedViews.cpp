@@ -38,24 +38,21 @@
 #include <algorithm>
 #include <iostream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Renderer {
 // NOTE(BK): This new implementation relies on the block to patch map. There is no assumption on
 // patch ordering anymore.
 auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
-    -> pair<vector<Texture444Depth10Frame>, MaskList> {
+    -> std::pair<std::vector<Common::Texture444Depth10Frame>, Common::MaskList> {
   // Initialization
-  auto prunedView = vector<Texture444Depth10Frame>{};
-  auto prunedMasks = MaskList{};
+  auto prunedView = std::vector<Common::Texture444Depth10Frame>{};
+  auto prunedMasks = Common::MaskList{};
 
   const auto &viewParamsList = frame.viewParamsList;
 
   for (const auto &viewParams : viewParamsList) {
     const auto size = viewParams.ci.projectionPlaneSize();
-    prunedView.emplace_back(Texture444Frame{size.x(), size.y()}, Depth10Frame{size.x(), size.y()});
+    prunedView.emplace_back(Common::Texture444Frame{size.x(), size.y()},
+                            Common::Depth10Frame{size.x(), size.y()});
     prunedView.back().first.fillNeutral();
     prunedMasks.emplace_back(size.x(), size.y());
     prunedMasks.back().fillZero();
@@ -67,13 +64,13 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
       for (int j = 0; j < atlas.asps.asps_frame_width(); ++j) {
         // Fetch patch ID
         const auto patchId = atlas.patchId(i, j);
-        if (patchId == unusedPatchId) {
+        if (patchId == Common::unusedPatchId) {
           continue;
         }
 
         // Index patch and view parameters
         const auto &patchParams = atlas.patchParamsList[patchId];
-        const auto viewId = patchParams.pduViewIdx();
+        const auto viewId = patchParams.atlasPatchProjectionId();
 
         // Test for occupancy
         if (atlas.occFrame.getPlane(0)(i, j) == 0) {
@@ -92,7 +89,10 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
         }
 
         // Copy geometry
-        prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+        if (!atlas.asps.asps_miv_extension_present_flag() ||
+            !atlas.asps.asps_miv_extension().asme_patch_constant_depth_flag()) {
+          prunedView[viewId].second.getPlane(0)(y, x) = atlas.geoFrame.getPlane(0)(i, j);
+        }
 
         // Copy attributes
         for (int d = 0; d < 3; ++d) {
@@ -105,6 +105,6 @@ auto recoverPrunedViewAndMask(const Decoder::AccessUnit &frame)
     }
   }
 
-  return pair{prunedView, prunedMasks};
+  return std::pair{prunedView, prunedMasks};
 }
 } // namespace TMIV::Renderer

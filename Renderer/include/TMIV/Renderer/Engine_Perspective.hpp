@@ -78,7 +78,7 @@ template <> struct Engine<MivBitstream::CiCamType::perspective> {
     for (const SceneVertexDescriptor &v : sceneVertices) {
       imageVertices.push_back(projectVertex(v));
     }
-    return std::tuple{move(imageVertices), triangles, attributes};
+    return std::tuple{std::move(imageVertices), triangles, attributes};
   }
 };
 } // namespace TMIV::Renderer

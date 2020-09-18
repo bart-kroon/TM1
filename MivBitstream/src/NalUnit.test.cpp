@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/NalUnit.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("nal_unit_header", "[NAL unit]") {
   SECTION("Example 1") {
     const auto nal_unit_header = NalUnitHeader{NalUnitType::NAL_EOS, 0, 4};
@@ -90,3 +89,4 @@ NumBytesInRbsp=7
     REQUIRE(unitCodingTest(nal_unit, 9));
   }
 }
+} // namespace TMIV::MivBitstream

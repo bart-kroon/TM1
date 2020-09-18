@@ -49,8 +49,8 @@ class GeometryScaler {
 public:
   GeometryScaler(const Common::Json & /*rootNode*/, const Common::Json &componentNode);
 
-  [[nodiscard]] auto scale(const AtlasAccessUnit &atlas,
-                           const MivBitstream::GeometryUpscalingParameters &gup) const
+  [[nodiscard]] static auto scale(const AtlasAccessUnit &atlas,
+                                  const MivBitstream::GeometryUpscalingParameters &gup)
       -> Common::Depth10Frame;
   void inplaceScale(AccessUnit &frame) const;
 

@@ -97,6 +97,16 @@ payloadSize=8
   }
 }
 
+constexpr std::size_t computeHeaderSizeFor(const std::size_t payload_size) {
+  const std::size_t bytes_to_signal_payload_size = (257 + payload_size) / 256;
+  const std::size_t bytes_to_signal_payload_type = 1;
+  return bytes_to_signal_payload_size + bytes_to_signal_payload_type;
+}
+
+constexpr std::size_t computePayloadAndHeaderSizeFor(const std::size_t payload_size) {
+  return payload_size + computeHeaderSizeFor(payload_size);
+}
+
 TEST_CASE("sei_rbsp", "[Supplemental Enhancement Information RBSP]") {
   auto x = SeiRBSP{};
 
@@ -142,13 +152,13 @@ payloadSize=12
 payloadType=atlas_object_association
 payloadSize=7
 )");
-    const std::size_t number_of_bytes_per_type_header = 3;
-    const std::size_t number_of_bytes_for_all_headers =
-        number_of_bytes_per_type_header * x.messages().size();
-
+    const std::size_t trailing_byte = 1;
     const std::size_t expected_number_of_bytes =
-        1000 + 254 + 255 + 256 + 257 + 12 + number_of_bytes_of_atlas_object_association_payload +
-        number_of_bytes_for_all_headers;
+        computePayloadAndHeaderSizeFor(1000) + computePayloadAndHeaderSizeFor(254) +
+        computePayloadAndHeaderSizeFor(255) + computePayloadAndHeaderSizeFor(256) +
+        computePayloadAndHeaderSizeFor(257) + computePayloadAndHeaderSizeFor(12) +
+        computePayloadAndHeaderSizeFor(number_of_bytes_of_atlas_object_association_payload) +
+        trailing_byte;
 
     REQUIRE(byteCodingTest(x, expected_number_of_bytes));
   }

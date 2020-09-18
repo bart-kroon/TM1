@@ -33,10 +33,6 @@
 
 #include <TMIV/Encoder/Encoder.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Encoder {
 void Encoder::prepareAccessUnit() {
   resetNonAggregatedMask();
@@ -49,8 +45,8 @@ void Encoder::resetNonAggregatedMask() {
   m_nonAggregatedMask.clear();
   for (const auto &viewParams : m_transportParams.viewParamsList) {
     m_nonAggregatedMask.push_back(
-        NonAggregatedMask{{size_t(viewParams.ci.ci_projection_plane_height_minus1() + 1),
-                           size_t(viewParams.ci.ci_projection_plane_width_minus1() + 1)}});
+        NonAggregatedMask{{viewParams.ci.ci_projection_plane_height_minus1() + size_t{1},
+                           viewParams.ci.ci_projection_plane_width_minus1() + size_t{1}}});
   }
 }
 } // namespace TMIV::Encoder

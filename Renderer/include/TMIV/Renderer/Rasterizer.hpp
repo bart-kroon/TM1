@@ -86,15 +86,16 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size)
 
 template <typename... T>
 Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
-    : m_pixel{pixel}, m_size{unsigned(size.y()), unsigned(size.x())} {
+    : m_pixel{pixel}, m_size{static_cast<size_t>(size.y()), static_cast<size_t>(size.x())} {
   assert(size.x() >= 0 && size.y() >= 0);
   assert(numStrips > 0);
   m_strips.reserve(numStrips);
   for (int n = 0; n < numStrips; ++n) {
-    const int i1 = size.y() * n / numStrips;
-    const int i2 = size.y() * (n + 1) / numStrips;
-    m_strips.push_back(
-        {i1, i2, size.x(), {}, std::vector<Accumulator>{unsigned(i2 - i1) * size.x()}});
+    const auto i1 = size.y() * n / numStrips;
+    const auto i2 = size.y() * (n + 1) / numStrips;
+    auto accumulator =
+        std::vector<Accumulator>{static_cast<size_t>(i2 - i1) * static_cast<size_t>(size.x())};
+    m_strips.push_back({i1, i2, size.x(), {}, std::move(accumulator)});
   }
   m_dk_di = static_cast<float>(numStrips) / static_cast<float>(size.y());
 }
@@ -102,7 +103,7 @@ Rasterizer<T...>::Rasterizer(Pixel pixel, Common::Vec2i size, int numStrips)
 template <typename... T>
 void Rasterizer<T...>::submit(const ImageVertexDescriptorList &vertices, AttributeMaps attributes,
                               const TriangleDescriptorList &triangles) {
-  m_batches.push_back(Batch{vertices, move(attributes)});
+  m_batches.push_back(Batch{vertices, std::move(attributes)});
   for (auto &strip : m_strips) {
     strip.batches.emplace_back();
   }
@@ -264,13 +265,13 @@ void Rasterizer<T...>::rasterTriangle(TriangleDescriptor descriptor, const Batch
   const auto uv2 = fixed(batch.vertices[n2].position) - stripOffset;
 
   // Determine triangle bounding box
-  const auto u1 = max(0, fpfloor(min({uv0.x(), uv1.x(), uv2.x()})));
-  const auto u2 = min(strip.cols, 1 + fpceil(max({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u1 = std::max(0, fpfloor(std::min({uv0.x(), uv1.x(), uv2.x()})));
+  const auto u2 = std::min(strip.cols, 1 + fpceil(std::max({uv0.x(), uv1.x(), uv2.x()})));
   if (u1 >= u2) {
     return; // Cull
   }
-  const auto v1 = max(0, fpfloor(min({uv0.y(), uv1.y(), uv2.y()})));
-  const auto v2 = min(strip.rows(), 1 + fpceil(max({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v1 = std::max(0, fpfloor(std::min({uv0.y(), uv1.y(), uv2.y()})));
+  const auto v2 = std::min(strip.rows(), 1 + fpceil(std::max({uv0.y(), uv1.y(), uv2.y()})));
   if (v1 >= v2) {
     return; // Cull
   }

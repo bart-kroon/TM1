@@ -43,7 +43,7 @@ namespace TMIV::MivBitstream {
 class RecViewport {
 public:
   RecViewport() = default;
-  explicit RecViewport(std::uint16_t viewportId, bool cancelFlag = true);
+  explicit RecViewport(std::uint16_t value1, bool value2 = true);
 
   [[nodiscard]] auto rec_viewport_id() const noexcept -> std::uint16_t;
   [[nodiscard]] auto rec_viewport_cancel_flag() const noexcept -> bool;

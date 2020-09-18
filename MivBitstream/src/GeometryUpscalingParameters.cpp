@@ -44,7 +44,7 @@ auto operator<<(std::ostream &stream, GupType x) -> std::ostream & {
   if (x == GupType::HVR) {
     return stream << "HVR";
   }
-  return stream << "[unknown:" << int{x} << ']';
+  return stream << "[unknown:" << static_cast<int>(x) << ']';
 }
 
 auto GeometryUpscalingParameters::gup_type() const noexcept -> GupType { return m_gup_type; }

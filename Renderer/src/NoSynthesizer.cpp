@@ -36,20 +36,18 @@
 #include <algorithm>
 #include <iostream>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::MivBitstream;
-
 namespace TMIV::Renderer {
-NoSynthesizer::NoSynthesizer(const Json & /*unused*/, const Json & /*componentNode*/) {}
+NoSynthesizer::NoSynthesizer(const Common::Json & /*unused*/,
+                             const Common::Json & /*componentNode*/) {}
 
 auto NoSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
-                                const ViewParams &viewportParams) const -> Texture444Depth16Frame {
-  auto viewport = Texture444Depth16Frame{
-      Texture444Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
-                      viewportParams.ci.ci_projection_plane_height_minus1() + 1},
-      Depth16Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
-                   viewportParams.ci.ci_projection_plane_height_minus1() + 1}};
+                                const MivBitstream::ViewParams &viewportParams) const
+    -> Common::Texture444Depth16Frame {
+  auto viewport = Common::Texture444Depth16Frame{
+      Common::Texture444Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+                              viewportParams.ci.ci_projection_plane_height_minus1() + 1},
+      Common::Depth16Frame{viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+                           viewportParams.ci.ci_projection_plane_height_minus1() + 1}};
 
   assert(!frame.atlas.empty());
   const auto &atlas = frame.atlas.front();
@@ -57,12 +55,12 @@ auto NoSynthesizer::renderFrame(const Decoder::AccessUnit &frame,
   assert(atlas.attrFrame.getSize() == atlas.frameSize());
   assert(atlas.geoFrame.getSize() == atlas.frameSize());
 
-  const auto rows = min<int>(viewportParams.ci.ci_projection_plane_height_minus1() + 1,
-                             atlas.asps.asps_frame_height());
-  const auto cols = min<int>(viewportParams.ci.ci_projection_plane_width_minus1() + 1,
-                             atlas.asps.asps_frame_width());
+  const auto rows = std::min<int>(viewportParams.ci.ci_projection_plane_height_minus1() + 1,
+                                  atlas.asps.asps_frame_height());
+  const auto cols = std::min<int>(viewportParams.ci.ci_projection_plane_width_minus1() + 1,
+                                  atlas.asps.asps_frame_width());
 
-  cout << "NoSynthesizer: " << rows << " x " << cols << '\n';
+  std::cout << "NoSynthesizer: " << rows << " x " << cols << '\n';
 
   for (int y = 0; y < rows; ++y) {
     for (int x = 0; x < cols; ++x) {

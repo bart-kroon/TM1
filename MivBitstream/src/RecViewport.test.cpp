@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/RecViewport.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("rec_viewport", "[Rec Viewport SEI payload syntax]") {
   SECTION("Example 1") {
     RecViewport x = RecViewport{0, true};
@@ -108,3 +107,4 @@ rec_viewport_ver_range=60.4
     REQUIRE(bitCodingTest(x, 270));
   }
 }
+} // namespace TMIV::MivBitstream

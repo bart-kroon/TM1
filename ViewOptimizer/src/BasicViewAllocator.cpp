@@ -44,7 +44,7 @@
 
 namespace TMIV::ViewOptimizer {
 namespace {
-[[noreturn]] static void reportError(const char *what, int line) noexcept {
+[[noreturn]] void reportError(const char *what, int line) noexcept {
   std::cerr << "Error in BasicViewAllocator at line " << line << ": " << what << '\n';
   abort();
 
@@ -102,7 +102,8 @@ auto BasicViewAllocator::isBasicView() const -> std::vector<bool> {
 
 auto BasicViewAllocator::basicViewCount() const -> size_t {
   const auto numAtlases = m_maxAtlases / m_numGroups;
-  const auto maxSamples = size_t(m_maxBasicViewFraction * numAtlases * m_maxLumaPictureSize);
+  const auto maxSamples =
+      static_cast<size_t>(m_maxBasicViewFraction * numAtlases * m_maxLumaPictureSize);
 
   size_t count = 0;
   size_t samplesInTotal = 0;
@@ -117,7 +118,7 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
 
     if (count % numAtlases == 0) {
       samplesInAtlas0 += samplesInView;
-      if (samplesInAtlas0 > size_t(m_maxLumaPictureSize)) {
+      if (samplesInAtlas0 > static_cast<size_t>(m_maxLumaPictureSize)) {
         std::cout << "Basic view count is limited by maximum luma picture size.\n";
         break;
       }
@@ -136,11 +137,11 @@ auto BasicViewAllocator::basicViewCount() const -> size_t {
 auto BasicViewAllocator::lumaSamplesPerSourceViewSortedDesc() const -> std::vector<std::size_t> {
   auto result = std::vector<std::size_t>{};
   result.reserve(params().viewParamsList.size());
-  transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(),
-            std::back_inserter(result), [](const MivBitstream::ViewParams &vp) {
-              return (vp.ci.ci_projection_plane_width_minus1() + 1) *
-                     (vp.ci.ci_projection_plane_height_minus1() + 1);
-            });
+  std::transform(params().viewParamsList.cbegin(), params().viewParamsList.cend(),
+                 std::back_inserter(result), [](const MivBitstream::ViewParams &vp) {
+                   return (vp.ci.ci_projection_plane_width_minus1() + 1) *
+                          (vp.ci.ci_projection_plane_height_minus1() + 1);
+                 });
   std::sort(result.begin(), result.end(), std::greater<>());
   return result;
 }
@@ -167,7 +168,7 @@ auto BasicViewAllocator::forwardView(const Positions &pos) const -> std::size_t 
   std::transform(pos.cbegin(), pos.cend(), dist2.begin(),
                  [&target](const auto &p) { return Common::norm2(p - target); });
   const auto nearest = std::min_element(dist2.cbegin(), dist2.cend());
-  const auto index = size_t(nearest - dist2.cbegin());
+  const auto index = static_cast<size_t>(nearest - dist2.cbegin());
   std::cout << "Forward central view is " << params().viewParamsList[index].name << ".\n";
 
   return index;
@@ -185,7 +186,7 @@ auto BasicViewAllocator::sqDistanceMatrix(const Positions &pos) -> Common::Mat<d
 }
 
 auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, std::size_t first,
-                                                std::size_t k) const -> Centroids {
+                                                std::size_t k) -> Centroids {
   auto result = Centroids{};
   result.reserve(cost.N());
   VERIFY(k <= cost.N());
@@ -217,7 +218,7 @@ auto BasicViewAllocator::selectInitialCentroids(const KMedoidsCost &cost, std::s
   return result;
 }
 
-auto BasicViewAllocator::updateCentroids(const KMedoidsCost &cost, Centroids centroids) const
+auto BasicViewAllocator::updateCentroids(const KMedoidsCost &cost, Centroids centroids)
     -> std::optional<Centroids> {
   auto lowestCost = cost(centroids);
   auto update = std::optional<Centroids>{};

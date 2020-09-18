@@ -35,27 +35,22 @@
 
 #include <TMIV/IO/IO.h>
 
-using namespace std;
-using namespace TMIV::Common;
-using namespace TMIV::Encoder;
-using namespace TMIV::IO;
-
 namespace TMIV::Encoder {
-auto bitstreamPath(const Json &config) -> string {
-  return getFullPath(config, "OutputDirectory", "BitstreamPath");
+auto bitstreamPath(const Common::Json &config) -> std::string {
+  return IO::getFullPath(config, "OutputDirectory", "BitstreamPath");
 }
 
-IvMetadataWriter::IvMetadataWriter(const Json &config)
-    : m_stream{bitstreamPath(config), ios::binary} {
+IvMetadataWriter::IvMetadataWriter(const Common::Json &config)
+    : m_stream{bitstreamPath(config), std::ios::binary} {
   if (!m_stream.good()) {
-    ostringstream what;
+    std::ostringstream what;
     what << "Failed to open \"" << bitstreamPath(config) << "\" for reading";
-    throw runtime_error(what.str());
+    throw std::runtime_error(what.str());
   }
-  m_encoder = make_unique<MivEncoder>(m_stream);
+  m_encoder = std::make_unique<MivEncoder>(m_stream);
 }
 
-void IvMetadataWriter::writeAccessUnit(const EncoderParams &params) {
+void IvMetadataWriter::writeAccessUnit(const MivBitstream::EncoderParams &params) {
   m_encoder->writeAccessUnit(params);
   m_frameRate = params.frameRate;
   m_bytesWritten = m_stream.tellp();

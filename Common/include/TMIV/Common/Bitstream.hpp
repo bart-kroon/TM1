@@ -75,7 +75,7 @@ template <typename Integer> auto InputBitstream::getUExpGolomb() -> Integer {
   const auto mask = (uint64_t{1} << leadingBits) - 1;
   const auto value = mask + readBits<uint64_t>(leadingBits);
 
-  VERIFY_BITSTREAM(uint64_t(Integer(value)) == value);
+  VERIFY_BITSTREAM(static_cast<uint64_t>(Integer(value)) == value);
   return Integer(value);
 }
 

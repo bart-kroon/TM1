@@ -35,8 +35,7 @@
 
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 
-using namespace TMIV::MivBitstream;
-
+namespace TMIV::MivBitstream {
 TEST_CASE("access_unit_delimiter_rbsp", "[Access Unit Delimiter RBSP]") {
   auto x = AccessUnitDelimiterRBSP{};
 
@@ -53,3 +52,4 @@ TEST_CASE("access_unit_delimiter_rbsp", "[Access Unit Delimiter RBSP]") {
     REQUIRE(byteCodingTest(x, 1));
   }
 }
+} // namespace TMIV::MivBitstream

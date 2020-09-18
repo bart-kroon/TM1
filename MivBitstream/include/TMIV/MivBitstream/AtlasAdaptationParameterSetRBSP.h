@@ -55,7 +55,7 @@ public:
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AapsVpccExtension;
 
-  void encodeTo(Common::OutputBitstream &bitstream) const;
+  static void encodeTo(Common::OutputBitstream &bitstream);
 };
 
 // 23090-12: aaps_miv_extension( )
@@ -91,9 +91,9 @@ public:
   [[nodiscard]] constexpr auto aaps_log2_max_afoc_present_flag() const noexcept;
   [[nodiscard]] auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4() const noexcept
       -> std::uint8_t;
-  [[nodiscard]] constexpr auto aaps_extension_flag() const noexcept;
-  [[nodiscard]] constexpr auto aaps_vpcc_extension_flag() const noexcept;
-  [[nodiscard]] constexpr auto aaps_miv_extension_flag() const noexcept;
+  [[nodiscard]] constexpr auto aaps_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto aaps_vpcc_extension_present_flag() const noexcept;
+  [[nodiscard]] constexpr auto aaps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto aaps_extension_6bits() const noexcept;
   [[nodiscard]] auto aaps_vpcc_extension() const noexcept -> const AapsVpccExtension &;
   [[nodiscard]] auto aaps_miv_extension() const noexcept -> const AapsMivExtension &;
@@ -103,9 +103,9 @@ public:
   constexpr auto aaps_log2_max_afoc_present_flag(bool value) noexcept -> auto &;
   auto aaps_log2_max_atlas_frame_order_cnt_lsb_minus4(std::uint8_t value) noexcept
       -> AtlasAdaptationParameterSetRBSP &;
-  constexpr auto aaps_extension_flag(bool value) noexcept -> auto &;
-  auto aaps_vpcc_extension_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
-  auto aaps_miv_extension_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  constexpr auto aaps_extension_present_flag(bool value) noexcept -> auto &;
+  auto aaps_vpcc_extension_present_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
+  auto aaps_miv_extension_present_flag(bool value) noexcept -> AtlasAdaptationParameterSetRBSP &;
   auto aaps_extension_6bits(std::uint8_t value) noexcept -> AtlasAdaptationParameterSetRBSP &;
   auto aaps_vpcc_extension(const AapsVpccExtension &value) noexcept
       -> AtlasAdaptationParameterSetRBSP &;
@@ -128,9 +128,9 @@ private:
   std::uint8_t m_aaps_atlas_adaptation_parameter_set_id{};
   bool m_aaps_log2_max_afoc_present_flag{};
   std::optional<std::uint8_t> m_aaps_log2_max_atlas_frame_order_cnt_lsb_minus4{};
-  bool m_aaps_extension_flag{};
-  std::optional<bool> m_aaps_vpcc_extension_flag{};
-  std::optional<bool> m_aaps_miv_extension_flag{};
+  bool m_aaps_extension_present_flag{};
+  std::optional<bool> m_aaps_vpcc_extension_present_flag{};
+  std::optional<bool> m_aaps_miv_extension_present_flag{};
   std::optional<std::uint8_t> m_aaps_extension_6bits{};
   std::optional<AapsVpccExtension> m_aaps_vpcc_extension{};
   std::optional<AapsMivExtension> m_aaps_miv_extension{};

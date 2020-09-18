@@ -38,15 +38,13 @@
 #include <TMIV/Common/Half.h>
 #include <TMIV/MivBitstream/verify.h>
 
-using namespace std;
-
 namespace TMIV::MivBitstream {
 using Common::Half;
 using Common::Json;
 using Common::QuatF;
 
-static auto decodeRotation(InputBitstream &stream) -> QuatF {
-  QuatF q;
+static auto decodeRotation(Common::InputBitstream &stream) -> Common::QuatF {
+  Common::QuatF q;
   q.x() = stream.getFloat16();
   q.y() = stream.getFloat16();
   q.z() = stream.getFloat16();
@@ -55,24 +53,24 @@ static auto decodeRotation(InputBitstream &stream) -> QuatF {
   return q;
 }
 
-static void encodeRotation(const QuatF &q, OutputBitstream &stream) {
+static void encodeRotation(const Common::QuatF &q, Common::OutputBitstream &stream) {
   assert(normalized(q, 1.0E-3F));
-  stream.putFloat16(Half(q.x()));
-  stream.putFloat16(Half(q.y()));
-  stream.putFloat16(Half(q.z()));
+  stream.putFloat16(Common::Half(q.x()));
+  stream.putFloat16(Common::Half(q.y()));
+  stream.putFloat16(Common::Half(q.z()));
 }
 
-static auto equalRotation(const QuatF &a, const QuatF &b) -> bool {
+static auto equalRotation(const Common::QuatF &a, const Common::QuatF &b) -> bool {
   assert(normalized(a, 1.0E-3F) && normalized(b, 1.0E-3F));
   const float d = dot(a, b);
   return d > 0.9999F;
 }
 
 auto operator<<(std::ostream &stream, const ViewingSpace &viewingSpace) -> std::ostream & {
-  stream << "Viewing space:" << endl;
+  stream << "Viewing space:" << std::endl;
   for (const auto &s : viewingSpace.elementaryShapes) {
     stream << (s.first == ElementaryShapeOperation::add ? "add " : "subtract ");
-    stream << '(' << s.second << ')' << endl;
+    stream << '(' << s.second << ')' << std::endl;
   }
   return stream;
 }
@@ -81,7 +79,7 @@ auto ViewingSpace::operator==(const ViewingSpace &other) const -> bool {
   return (elementaryShapes == other.elementaryShapes);
 }
 
-auto ViewingSpace::decodeFrom(InputBitstream &stream,
+auto ViewingSpace::decodeFrom(Common::InputBitstream &stream,
                               const TMIV::MivBitstream::ViewParamsList &viewParamsList)
     -> ViewingSpace {
   ViewingSpace vs;
@@ -95,7 +93,7 @@ auto ViewingSpace::decodeFrom(InputBitstream &stream,
   return vs;
 }
 
-void ViewingSpace::encodeTo(OutputBitstream &stream,
+void ViewingSpace::encodeTo(Common::OutputBitstream &stream,
                             const TMIV::MivBitstream::ViewParamsList & /*viewParamsList*/) const {
   VERIFY_MIVBITSTREAM(!elementaryShapes.empty());
   stream.putUExpGolomb(elementaryShapes.size() - 1);
@@ -120,7 +118,7 @@ auto ElementaryShape::operator==(const ElementaryShape &other) const -> bool {
   return (primitives == other.primitives);
 }
 
-auto ElementaryShape::decodeFrom(InputBitstream &stream,
+auto ElementaryShape::decodeFrom(Common::InputBitstream &stream,
                                  const TMIV::MivBitstream::ViewParamsList &viewParamsList)
     -> ElementaryShape {
   ElementaryShape elementaryShape;
@@ -177,12 +175,12 @@ auto ElementaryShape::decodeFrom(InputBitstream &stream,
   return elementaryShape;
 }
 
-void ElementaryShape::encodeTo(OutputBitstream &stream) const {
+void ElementaryShape::encodeTo(Common::OutputBitstream &stream) const {
   VERIFY_MIVBITSTREAM(!primitives.empty());
   bool guardBandPresent{};
   bool orientationPresent{};
   bool directionConstraintPresent{};
-  bool cameraInferred = inferringViews.size() > 0;
+  bool cameraInferred = !inferringViews.empty();
   for (const auto &p : primitives) {
     guardBandPresent |= p.guardBandSize.has_value();
     orientationPresent |= p.rotation.has_value();
@@ -205,7 +203,7 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
     stream.writeBits(p.shapeType(), 2);
     visit([&](const auto &x) { x.encodeTo(stream, cameraInferred); }, p.primitive);
     if (guardBandPresent) {
-      stream.putFloat16(Half(p.guardBandSize.value_or(0.F)));
+      stream.putFloat16(Common::Half(p.guardBandSize.value_or(0.F)));
     }
     if (orientationPresent) {
       if (!cameraInferred) {
@@ -216,13 +214,13 @@ void ElementaryShape::encodeTo(OutputBitstream &stream) const {
       const auto vdc =
           p.viewingDirectionConstraint.value_or(PrimitiveShape::ViewingDirectionConstraint());
       if (guardBandPresent) {
-        stream.putFloat16(Half(vdc.guardBandDirectionSize.value_or(0.F)));
+        stream.putFloat16(Common::Half(vdc.guardBandDirectionSize.value_or(0.F)));
       }
       if (!cameraInferred) {
         encodeRotation(vdc.directionRotation, stream);
       }
-      stream.putFloat16(Half(vdc.yawRange));
-      stream.putFloat16(Half(vdc.pitchRange));
+      stream.putFloat16(Common::Half(vdc.yawRange));
+      stream.putFloat16(Common::Half(vdc.pitchRange));
     }
   }
 }
@@ -253,8 +251,8 @@ auto PrimitiveShape::operator==(const PrimitiveShape &other) const -> bool {
   if (guardBandSize != other.guardBandSize) {
     return false;
   }
-  if (!equalRotation(rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F}),
-                     other.rotation.value_or(QuatF{0.F, 0.F, 0.F, 1.F}))) {
+  if (!equalRotation(rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F}),
+                     other.rotation.value_or(Common::QuatF{0.F, 0.F, 0.F, 1.F}))) {
     return false;
   }
   if (viewingDirectionConstraint != other.viewingDirectionConstraint) {
@@ -286,7 +284,7 @@ auto Cuboid::operator==(const Cuboid &other) const -> bool {
   return center == other.center && size == other.size;
 }
 
-auto Cuboid::decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
+auto Cuboid::decodeFrom(Common::InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
     -> Cuboid {
   Cuboid cuboid;
   if (cameraInferred) {
@@ -302,15 +300,15 @@ auto Cuboid::decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Commo
   return cuboid;
 }
 
-void Cuboid::encodeTo(OutputBitstream &stream, bool cameraInferred) const {
+void Cuboid::encodeTo(Common::OutputBitstream &stream, bool cameraInferred) const {
   if (!cameraInferred) {
-    stream.putFloat16(Half(center.x()));
-    stream.putFloat16(Half(center.y()));
-    stream.putFloat16(Half(center.z()));
+    stream.putFloat16(Common::Half(center.x()));
+    stream.putFloat16(Common::Half(center.y()));
+    stream.putFloat16(Common::Half(center.z()));
   }
-  stream.putFloat16(Half(size.x()));
-  stream.putFloat16(Half(size.y()));
-  stream.putFloat16(Half(size.z()));
+  stream.putFloat16(Common::Half(size.x()));
+  stream.putFloat16(Common::Half(size.y()));
+  stream.putFloat16(Common::Half(size.z()));
 }
 
 auto operator<<(std::ostream &stream, const Spheroid &spheroid) -> std::ostream & {
@@ -322,8 +320,8 @@ auto Spheroid::operator==(const Spheroid &other) const -> bool {
   return center == other.center && radius == other.radius;
 }
 
-auto Spheroid::decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Common::Vec3f c)
-    -> Spheroid {
+auto Spheroid::decodeFrom(Common::InputBitstream &stream, bool cameraInferred,
+                          TMIV::Common::Vec3f c) -> Spheroid {
   Spheroid spheroid;
   if (cameraInferred) {
     spheroid.center = c;
@@ -338,15 +336,15 @@ auto Spheroid::decodeFrom(InputBitstream &stream, bool cameraInferred, TMIV::Com
   return spheroid;
 }
 
-void Spheroid::encodeTo(OutputBitstream &stream, bool cameraInferred) const {
+void Spheroid::encodeTo(Common::OutputBitstream &stream, bool cameraInferred) const {
   if (!cameraInferred) {
-    stream.putFloat16(Half(center.x()));
-    stream.putFloat16(Half(center.y()));
-    stream.putFloat16(Half(center.z()));
+    stream.putFloat16(Common::Half(center.x()));
+    stream.putFloat16(Common::Half(center.y()));
+    stream.putFloat16(Common::Half(center.z()));
   }
-  stream.putFloat16(Half(radius.x()));
-  stream.putFloat16(Half(radius.y()));
-  stream.putFloat16(Half(radius.z()));
+  stream.putFloat16(Common::Half(radius.x()));
+  stream.putFloat16(Common::Half(radius.y()));
+  stream.putFloat16(Common::Half(radius.z()));
 }
 
 auto operator<<(std::ostream &stream, const Halfspace &halfspace) -> std::ostream & {
@@ -358,7 +356,7 @@ auto Halfspace::operator==(const Halfspace &other) const -> bool {
   return normal == other.normal && distance == other.distance;
 }
 
-auto Halfspace::decodeFrom(InputBitstream &stream) -> Halfspace {
+auto Halfspace::decodeFrom(Common::InputBitstream &stream) -> Halfspace {
   Halfspace plane;
   plane.normal.x() = stream.getFloat16();
   plane.normal.y() = stream.getFloat16();
@@ -367,14 +365,15 @@ auto Halfspace::decodeFrom(InputBitstream &stream) -> Halfspace {
   return plane;
 }
 
-void Halfspace::encodeTo(OutputBitstream &stream, bool /*cameraInferred*/) const {
-  stream.putFloat16(Half(normal.x()));
-  stream.putFloat16(Half(normal.y()));
-  stream.putFloat16(Half(normal.z()));
-  stream.putFloat16(Half(distance));
+void Halfspace::encodeTo(Common::OutputBitstream &stream, bool /*cameraInferred*/) const {
+  stream.putFloat16(Common::Half(normal.x()));
+  stream.putFloat16(Common::Half(normal.y()));
+  stream.putFloat16(Common::Half(normal.z()));
+  stream.putFloat16(Common::Half(distance));
 }
 
-auto ViewingSpace::loadFromJson(const Json &node, const Common::Json &config) -> ViewingSpace {
+auto ViewingSpace::loadFromJson(const Common::Json &node, const Common::Json &config)
+    -> ViewingSpace {
   auto parseOperation = [](const std::string &str) -> auto {
     if (str == "add") {
       return ElementaryShapeOperation::add;
@@ -385,7 +384,7 @@ auto ViewingSpace::loadFromJson(const Json &node, const Common::Json &config) ->
     if (str == "intersect") {
       return ElementaryShapeOperation::intersect;
     }
-    throw runtime_error("Invalid elementary shape operation in the metadata JSON file");
+    throw std::runtime_error("Invalid elementary shape operation in the metadata JSON file");
   };
 
   ViewingSpace viewingSpace{};
@@ -416,7 +415,7 @@ auto ViewingSpace::loadFromJson(const Json &node, const Common::Json &config) ->
         primitive.guardBandSize = 0.F;
       }
       if (rotationPresent && !primitive.rotation.has_value()) {
-        primitive.rotation = QuatF();
+        primitive.rotation = Common::QuatF();
       }
       if (directionConstraintPresent) {
         if (!primitive.viewingDirectionConstraint.has_value()) {
@@ -432,7 +431,7 @@ auto ViewingSpace::loadFromJson(const Json &node, const Common::Json &config) ->
   return viewingSpace;
 }
 
-auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
+auto ElementaryShape::loadFromJson(const Common::Json &node, const Common::Json &config)
     -> ElementaryShape {
   auto parseOperation = [](const std::string &str) -> auto {
     if (str == "add") {
@@ -441,7 +440,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
     if (str == "interpolate") {
       return PrimitiveShapeOperation::interpolate;
     };
-    throw runtime_error("Invalid primitive shape operation in the metadata JSON file");
+    throw std::runtime_error("Invalid primitive shape operation in the metadata JSON file");
   };
 
   ElementaryShape elementaryShape{};
@@ -459,7 +458,7 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
         }
       }
       if (idx == sourceCameraNames.size()) {
-        throw runtime_error("Invalid inferred view in the metadata JSON file");
+        throw std::runtime_error("Invalid inferred view in the metadata JSON file");
       }
       elementaryShape.inferringViews.push_back(static_cast<int>(idx));
     }
@@ -480,14 +479,14 @@ auto ElementaryShape::loadFromJson(const Json &node, const Common::Json &config)
   // check consistency
   if (inferredView &&
       (elementaryShape.primitives.size() != elementaryShape.inferringViews.size())) {
-    throw runtime_error(
+    throw std::runtime_error(
         "Incompatible number of inferring views and primitive shapes in the metadata JSON file");
   }
 
   return elementaryShape;
 }
 
-auto PrimitiveShape::loadFromJson(const Json &node, bool inferredView) -> PrimitiveShape {
+auto PrimitiveShape::loadFromJson(const Common::Json &node, bool inferredView) -> PrimitiveShape {
   PrimitiveShape primitiveShape{};
   const auto &shapeType = node.require("PrimitiveShapeType").asString();
   if (shapeType == "cuboid") {
@@ -525,7 +524,7 @@ auto PrimitiveShape::loadFromJson(const Json &node, bool inferredView) -> Primit
   return primitiveShape;
 }
 
-auto Cuboid::loadFromJson(const Json &node, bool inferredView) -> Cuboid {
+auto Cuboid::loadFromJson(const Common::Json &node, bool inferredView) -> Cuboid {
   Cuboid cuboid;
   if (!inferredView) {
     cuboid.center = node.require("Center").asFloatVector<3>();
@@ -534,7 +533,7 @@ auto Cuboid::loadFromJson(const Json &node, bool inferredView) -> Cuboid {
   return cuboid;
 }
 
-auto Spheroid::loadFromJson(const Json &node, bool inferredView) -> Spheroid {
+auto Spheroid::loadFromJson(const Common::Json &node, bool inferredView) -> Spheroid {
   Spheroid spheroid;
   if (!inferredView) {
     spheroid.center = node.require("Center").asFloatVector<3>();
@@ -543,7 +542,7 @@ auto Spheroid::loadFromJson(const Json &node, bool inferredView) -> Spheroid {
   return spheroid;
 }
 
-auto Halfspace::loadFromJson(const Json &node, bool /*inferredView*/) -> Halfspace {
+auto Halfspace::loadFromJson(const Common::Json &node, bool /*inferredView*/) -> Halfspace {
   Halfspace plane;
   plane.normal = node.require("Normal").asFloatVector<3>();
   plane.distance = node.require("Distance").asFloat();

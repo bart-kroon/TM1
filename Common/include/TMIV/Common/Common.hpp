@@ -135,7 +135,7 @@ template <unsigned bits> auto expandValue(uint16_t x) -> float {
 template <unsigned bits> auto quantizeValue(float x) -> uint16_t {
   if (x >= 0.F && x <= 1.F) {
     return static_cast<uint16_t>(
-        std::min(unsigned(std::lround(x * static_cast<float>(maxLevel(bits)))), maxLevel(bits)));
+        std::min(std::lround(x * static_cast<float>(maxLevel(bits))), long{maxLevel(bits)}));
   }
   if (x > 0) {
     return static_cast<uint16_t>(maxLevel(bits));

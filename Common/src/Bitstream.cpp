@@ -39,16 +39,17 @@
 
 #include <cmath>
 
-using namespace std;
-
 namespace TMIV::Common {
 auto verifyBitstreamFailed(char const *condition, char const *file, int line) -> bool {
-  cerr << "Failed to encode/decode bitstream: " << condition << " [" << file << "@" << line << endl;
+  std::cerr << "Failed to encode/decode bitstream: " << condition << " [" << file << "@" << line
+            << std::endl;
   abort();
   return false;
 }
 
-auto InputBitstream::tellg() const -> streampos { return m_stream.tellg() * charBits - m_size; }
+auto InputBitstream::tellg() const -> std::streampos {
+  return m_stream.tellg() * charBits - m_size;
+}
 
 auto InputBitstream::getUint64() -> uint64_t {
   const uint64_t msb = getUint32();
@@ -156,11 +157,13 @@ void InputBitstream::reset() {
   m_buffer = 0;
 }
 
-auto OutputBitstream::tellp() const -> streampos { return charBits * m_stream.tellp() + m_size; }
+auto OutputBitstream::tellp() const -> std::streampos {
+  return charBits * m_stream.tellp() + m_size;
+}
 
 void OutputBitstream::writeBits_(uint64_t value, unsigned bits) {
   VERIFY_BITSTREAM((value >> bits) == 0);
-  VERIFY_BITSTREAM(m_size + bits <= numeric_limits<uint64_t>::digits);
+  VERIFY_BITSTREAM(m_size + bits <= std::numeric_limits<uint64_t>::digits);
 
   m_buffer = (m_buffer << bits) | value;
   m_size += bits;
@@ -187,7 +190,7 @@ void OutputBitstream::putUExpGolomb_(uint64_t value) {
 }
 
 void OutputBitstream::putSExpGolomb(int64_t value) {
-  putUExpGolomb((uint64_t(abs(value)) << 1U) - uint64_t{value > 0});
+  putUExpGolomb((static_cast<uint64_t>(std::abs(value)) << 1U) - uint64_t{value > 0});
 }
 
 void OutputBitstream::putUint64(uint64_t value) {

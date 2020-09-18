@@ -39,9 +39,6 @@
 #include <TLibDecoder/NALread.h>
 #include <TLibDecoder/TDecTop.h>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::VideoDecoder {
 // This implementation is based on TAppDec.cpp (HM 16.16) with all optional parameters locked to
 // default values and without fields.
@@ -70,7 +67,7 @@ public:
        * the process of reading a new slice that is the first slice of a new frame
        * requires the TDecTop::decode() method to be called again with the same
        * nal unit. */
-      streampos location = stream.tellg();
+      std::streampos location = stream.tellg();
       AnnexBStats stats = AnnexBStats();
 
       InputNALUnit nalu;
@@ -79,7 +76,7 @@ public:
       // call actual decoding function
       bool bNewPicture = false;
       if (nalu.getBitstream().getFifo().empty()) {
-        cout << "Warning: Attempt to decode an empty NAL unit\n";
+        std::cout << "Warning: Attempt to decode an empty NAL unit\n";
       } else {
         read(nalu);
         bNewPicture = m_cTDecTop.decode(nalu, m_iSkipFrame, m_iPOCLastDisplay);
@@ -107,7 +104,7 @@ public:
       if (pcListPic) {
         if (m_outputBitDepth.front() == 0) {
           const auto &recon = pcListPic->front()->getPicSym()->getSPS().getBitDepths().recon;
-          copy(cbegin(recon), cend(recon), begin(m_outputBitDepth));
+          std::copy(std::cbegin(recon), std::cend(recon), std::begin(m_outputBitDepth));
         }
 
         if (bNewPicture) {
@@ -145,7 +142,7 @@ public:
     m_cTDecTop.destroy();
   }
 
-  void addFrameListener(FrameListener listener) { m_frameListeners.push_back(move(listener)); }
+  void addFrameListener(FrameListener listener) { m_frameListeners.push_back(std::move(listener)); }
 
 private:
   void xWriteOutput(TComList<TComPic *> &pcListPic, unsigned tId) {
@@ -202,8 +199,8 @@ private:
     m_iPOCLastDisplay = -MAX_INT;
   }
 
-  auto anyFrame(TComPicYuv &comPicYuv) const -> AnyFrame {
-    auto x = AnyFrame{};
+  auto anyFrame(TComPicYuv &comPicYuv) const -> Common::AnyFrame {
+    auto x = Common::AnyFrame{};
 
     assert(comPicYuv.getNumberValidComponents() <= x.planes.size());
 
@@ -214,13 +211,13 @@ private:
         const auto height = comPicYuv.getHeight(componentId);
 
         x.bitdepth[k] = m_outputBitDepth[toChannelType(componentId)];
-        x.planes[k].resize(size_t(height), size_t(width));
+        x.planes[k].resize(static_cast<size_t>(height), static_cast<size_t>(width));
 
         const auto *row = comPicYuv.getAddr(componentId);
 
         for (int i = 0; i < height; ++i) {
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-          copy(row, row + width, x.planes[k].row_begin(i));
+          std::copy(row, row + width, x.planes[k].row_begin(i));
           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
           row += comPicYuv.getStride(componentId);
         }
@@ -232,7 +229,7 @@ private:
 
   void xWritePicture(TComPic &comPic) {
     if (!m_frameListeners.empty()) {
-      // Copy into AnyFrame
+      // Copy into Common::AnyFrame
       auto *comPicYuv = comPic.getPicYuvRec();
       assert(comPicYuv);
       const auto picture = anyFrame(*comPicYuv);
@@ -259,7 +256,7 @@ private:
 
   TDecTop m_cTDecTop{};
 
-  vector<FrameListener> m_frameListeners;
+  std::vector<FrameListener> m_frameListeners;
 
   int m_iPOCLastDisplay{-MAX_INT};
   int m_iSkipFrame{};
@@ -273,6 +270,6 @@ HmVideoDecoder::~HmVideoDecoder() = default;
 void HmVideoDecoder::decode(std::istream &stream) { m_impl->decode(stream); }
 
 void HmVideoDecoder::addFrameListener(FrameListener listener) {
-  return m_impl->addFrameListener(move(listener));
+  return m_impl->addFrameListener(std::move(listener));
 }
 } // namespace TMIV::VideoDecoder

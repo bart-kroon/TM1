@@ -33,22 +33,19 @@
 
 #include <TMIV/Aggregator/Aggregator.h>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::Aggregator {
-Aggregator::Aggregator(const Json & /*rootNode*/, const Json & /*componentNode*/) {}
+Aggregator::Aggregator(const Common::Json & /*rootNode*/, const Common::Json & /*componentNode*/) {}
 
 void Aggregator::prepareAccessUnit() { m_aggregatedMask.clear(); }
 
-void Aggregator::pushMask(const MaskList &mask) {
+void Aggregator::pushMask(const Common::MaskList &mask) {
   if (m_aggregatedMask.empty()) {
     m_aggregatedMask = mask;
   } else {
     for (size_t i = 0; i < mask.size(); i++) {
-      transform(m_aggregatedMask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).end(),
-                mask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).begin(),
-                [](uint8_t v1, uint8_t v2) { return max(v1, v2); });
+      std::transform(m_aggregatedMask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).end(),
+                     mask[i].getPlane(0).begin(), m_aggregatedMask[i].getPlane(0).begin(),
+                     [](uint8_t v1, uint8_t v2) { return std::max(v1, v2); });
     }
   }
 }

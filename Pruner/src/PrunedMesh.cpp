@@ -38,22 +38,21 @@
 
 #include <cassert>
 
-using namespace std;
-using namespace TMIV::MivBitstream;
-using namespace TMIV::Common;
-using namespace TMIV::Renderer;
-
 namespace TMIV::Pruner {
-auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &viewParams,
-                         const Mat<uint8_t> &mask)
-    -> tuple<SceneVertexDescriptorList, TriangleDescriptorList, vector<Vec3f>> {
+auto unprojectPrunedView(const Common::TextureDepth16Frame &view,
+                         const MivBitstream::ViewParams &viewParams,
+                         const Common::Mat<uint8_t> &mask)
+    -> std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
+                  std::vector<Common::Vec3f>> {
   return viewParams.ci.dispatch([&](auto camType) {
-    tuple<SceneVertexDescriptorList, TriangleDescriptorList, vector<Vec3f>> mesh;
+    std::tuple<Renderer::SceneVertexDescriptorList, Renderer::TriangleDescriptorList,
+               std::vector<Common::Vec3f>>
+        mesh;
     auto &vertices = std::get<0>(mesh);
     auto &triangles = std::get<1>(mesh);
     auto &attributes = std::get<2>(mesh);
 
-    Engine<camType> engine{viewParams.ci};
+    Renderer::Engine<camType> engine{viewParams.ci};
     const auto size = viewParams.ci.projectionPlaneSize();
     const auto numPixels = size.x() * size.y();
 
@@ -67,10 +66,10 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
     assert(attributes.empty());
     attributes.reserve(numPixels);
 
-    vector<int> key;
+    std::vector<int> key;
     key.reserve(vertices.size());
 
-    const auto depthTransform = DepthTransform<16>{viewParams.dq};
+    const auto depthTransform = MivBitstream::DepthTransform<16>{viewParams.dq};
 
     for (int y = 0; y < size.y(); ++y) {
       for (int x = 0; x < size.x(); ++x) {
@@ -78,12 +77,12 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
         const auto D_yx = D(y, x);
 
         if (mask(y, x) > 0) {
-          const auto uv = Vec2f{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
+          const auto uv = Common::Vec2f{static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F};
           const auto d = depthTransform.expandDepth(D_yx);
-          vertices.push_back({engine.unprojectVertex(uv, d), NaN});
-          attributes.emplace_back(Vec3f{expandValue<10U>(Y(y, x)),
-                                        expandValue<10U>(U(y / 2, x / 2)),
-                                        expandValue<10U>(V(y / 2, x / 2))});
+          vertices.push_back({engine.unprojectVertex(uv, d), Common::NaN});
+          attributes.emplace_back(Common::Vec3f{Common::expandValue<10U>(Y(y, x)),
+                                                Common::expandValue<10U>(U(y / 2, x / 2)),
+                                                Common::expandValue<10U>(V(y / 2, x / 2))});
         }
       }
     }
@@ -97,7 +96,7 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
     const auto maxTriangles = 2 * vertices.size();
     triangles.reserve(maxTriangles);
 
-    const auto considerTriangle = [&](Vec2i a, Vec2i b, Vec2i c) {
+    const auto considerTriangle = [&](Common::Vec2i a, Common::Vec2i b, Common::Vec2i c) {
       if (mask(a.y(), a.x()) == 0 || mask(b.y(), b.x()) == 0 || mask(c.y(), c.x()) == 0) {
         return;
       }
@@ -119,32 +118,35 @@ auto unprojectPrunedView(const TextureDepth16Frame &view, const ViewParams &view
   });
 }
 
-auto project(const SceneVertexDescriptorList &vertices, const ViewParams &source,
-             const ViewParams &target) -> ImageVertexDescriptorList {
+auto project(const Renderer::SceneVertexDescriptorList &vertices,
+             const MivBitstream::ViewParams &source, const MivBitstream::ViewParams &target)
+    -> Renderer::ImageVertexDescriptorList {
   return target.ci.dispatch([&](auto camType) {
-    ImageVertexDescriptorList result;
-    Engine<camType.value> engine{target.ci};
-    const auto R_t = AffineTransform{source.ce, target.ce};
+    Renderer::ImageVertexDescriptorList result;
+    Renderer::Engine<camType.value> engine{target.ci};
+    const auto R_t = Renderer::AffineTransform{source.ce, target.ce};
     result.reserve(result.size());
-    transform(begin(vertices), end(vertices), back_inserter(result), [&](SceneVertexDescriptor v) {
-      const auto p = R_t(v.position);
-      return engine.projectVertex({p, angle(p, p - R_t.translation())});
-    });
+    std::transform(std::begin(vertices), std::end(vertices), back_inserter(result),
+                   [&](Renderer::SceneVertexDescriptor v) {
+                     const auto p = R_t(v.position);
+                     return engine.projectVertex({p, Common::angle(p, p - R_t.translation())});
+                   });
     return result;
   });
 }
 
-void weightedSphere(const CameraIntrinsics &ci, const ImageVertexDescriptorList &vertices,
-                    TriangleDescriptorList &triangles) {
-  if (ci.ci_cam_type() == CiCamType::equirectangular) {
-    Engine<CiCamType::equirectangular> engine{ci};
+void weightedSphere(const MivBitstream::CameraIntrinsics &ci,
+                    const Renderer::ImageVertexDescriptorList &vertices,
+                    Renderer::TriangleDescriptorList &triangles) {
+  if (ci.ci_cam_type() == MivBitstream::CiCamType::equirectangular) {
+    Renderer::Engine<MivBitstream::CiCamType::equirectangular> engine{ci};
     for (auto &triangle : triangles) {
       auto v = 0.F;
       for (auto index : triangle.indices) {
         v += vertices[index].position.y() / 3.F;
       }
       const auto theta = engine.theta0 + engine.dtheta_dv * v;
-      triangle.area = 0.5F / cos(theta);
+      triangle.area = 0.5F / std::cos(theta);
     }
   }
 }

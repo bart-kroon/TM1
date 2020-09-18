@@ -39,11 +39,8 @@
 
 #include <utility>
 
-using namespace std;
-using namespace TMIV::Common;
-
 namespace TMIV::MivBitstream {
-auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
+auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
   switch (pt) {
   case PayloadType::buffering_period:
     return stream << "buffering_period";
@@ -61,24 +58,32 @@ auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
     return stream << "no_display";
   case PayloadType::time_code:
     return stream << "time_code";
-  case PayloadType::regional_nesting:
-    return stream << "regional_nesting";
   case PayloadType::sei_manifest:
     return stream << "sei_manifest";
   case PayloadType::sei_prefix_indication:
     return stream << "sei_prefix_indication";
-  case PayloadType::geometry_transformation_params:
-    return stream << "geometry_transformation_params";
-  case PayloadType::attribute_transformation_params:
-    return stream << "attribute_transformation_params";
   case PayloadType::active_sub_bitstreams:
     return stream << "active_sub_bitstreams";
   case PayloadType::component_codec_mapping:
     return stream << "component_codec_mapping";
-  case PayloadType::volumetric_tiling_info:
-    return stream << "volumetric_tiling_info";
-  case PayloadType::presentation_information:
-    return stream << "presentation_information";
+  case PayloadType::scene_object_information:
+    return stream << "scene_object_information";
+  case PayloadType::object_label_information:
+    return stream << "object_label_information";
+  case PayloadType::patch_information:
+    return stream << "patch_information";
+  case PayloadType::volumetric_rectangle_information:
+    return stream << "volumetric_rectangle_information";
+  case PayloadType::atlas_object_association:
+    return stream << "atlas_object_association";
+  case PayloadType::viewport_camera_parameters:
+    return stream << "viewport_camera_parameters";
+  case PayloadType::viewport_position:
+    return stream << "viewport_position";
+  case PayloadType::attribute_transformation_params:
+    return stream << "attribute_transformation_params";
+  case PayloadType::occupancy_synthesis:
+    return stream << "occupancy_synthesis";
   case PayloadType::geometry_smoothing:
     return stream << "geometry_smoothing";
   case PayloadType::attribute_smoothing:
@@ -92,20 +97,20 @@ auto operator<<(ostream &stream, PayloadType pt) -> ostream & {
   case PayloadType::geometry_upscaling_parameters:
     return stream << "geometry_upscaling_parameters";
   default:
-    return stream << "reserved_sei_message (" << int{pt} << ")";
+    return stream << "reserved_sei_message (" << static_cast<int>(pt) << ")";
   }
 }
 
-SeiMessage::SeiMessage(PayloadType pt, string payload)
+SeiMessage::SeiMessage(PayloadType pt, std::string payload)
     : m_payloadType{pt}, m_payload{std::move(std::move(payload))} {}
 
 auto SeiMessage::payloadType() const noexcept -> PayloadType { return m_payloadType; }
 
 auto SeiMessage::payloadSize() const noexcept -> size_t { return payload().size(); }
 
-auto SeiMessage::payload() const noexcept -> const string & { return m_payload; }
+auto SeiMessage::payload() const noexcept -> const std::string & { return m_payload; }
 
-auto operator<<(ostream &stream, const SeiMessage &x) -> ostream & {
+auto operator<<(std::ostream &stream, const SeiMessage &x) -> std::ostream & {
   stream << "payloadType=" << x.payloadType() << '\n';
   stream << "payloadSize=" << x.payloadSize() << '\n';
   return stream;
@@ -121,44 +126,44 @@ auto SeiMessage::operator!=(const SeiMessage &other) const noexcept -> bool {
 }
 
 namespace {
-auto decodeSeiHeaderValue(istream &stream) -> size_t {
+auto decodeSeiHeaderValue(std::istream &stream) -> size_t {
   size_t value = 0;
   uint8_t sm_payload_type_byte = 0;
   do {
-    sm_payload_type_byte = getUint8(stream);
+    sm_payload_type_byte = Common::getUint8(stream);
     value += sm_payload_type_byte;
   } while (sm_payload_type_byte == UINT8_MAX);
   return value;
 }
 } // namespace
 
-auto SeiMessage::decodeFrom(istream &stream) -> SeiMessage {
+auto SeiMessage::decodeFrom(std::istream &stream) -> SeiMessage {
   const auto payloadType = PayloadType(decodeSeiHeaderValue(stream));
   const auto payloadSize = decodeSeiHeaderValue(stream);
-  auto buffer = vector<char>(payloadSize);
+  auto buffer = std::vector<char>(payloadSize);
   stream.read(buffer.data(), buffer.size());
-  return {payloadType, string(buffer.data(), buffer.size())};
+  return {payloadType, std::string(buffer.data(), buffer.size())};
 }
 
 namespace {
-void encodeSeiHeaderValue(ostream &stream, size_t value) {
+void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
   while (value >= UINT8_MAX) {
-    putUint8(stream, UINT8_MAX);
+    Common::putUint8(stream, UINT8_MAX);
     value -= UINT8_MAX;
   }
-  putUint8(stream, static_cast<uint8_t>(value));
+  Common::putUint8(stream, static_cast<uint8_t>(value));
 }
 } // namespace
 
-void SeiMessage::encodeTo(ostream &stream) const {
-  encodeSeiHeaderValue(stream, unsigned(payloadType()));
+void SeiMessage::encodeTo(std::ostream &stream) const {
+  encodeSeiHeaderValue(stream, static_cast<unsigned>(payloadType()));
   encodeSeiHeaderValue(stream, payloadSize());
   stream.write(payload().data(), payload().size());
 }
 
-SeiRBSP::SeiRBSP(vector<SeiMessage> messages) : m_messages{move(messages)} {}
+SeiRBSP::SeiRBSP(std::vector<SeiMessage> messages) : m_messages{std::move(messages)} {}
 
-auto operator<<(ostream &stream, const SeiRBSP &x) -> ostream & {
+auto operator<<(std::ostream &stream, const SeiRBSP &x) -> std::ostream & {
   for (const auto &x : x.messages()) {
     stream << x;
   }
@@ -171,25 +176,25 @@ auto SeiRBSP::operator==(const SeiRBSP &other) const noexcept -> bool {
 
 auto SeiRBSP::operator!=(const SeiRBSP &other) const noexcept -> bool { return !operator==(other); }
 
-auto SeiRBSP::decodeFrom(istream &stream) -> SeiRBSP {
-  auto messages = vector<SeiMessage>{};
+auto SeiRBSP::decodeFrom(std::istream &stream) -> SeiRBSP {
+  auto messages = std::vector<SeiMessage>{};
 
   do {
     messages.push_back(SeiMessage::decodeFrom(stream));
-  } while (moreRbspData(stream));
+  } while (Common::moreRbspData(stream));
   if (mode != MivDecoderMode::TMC2) {
-    rbspTrailingBits(stream);
+    Common::rbspTrailingBits(stream);
   }
 
   return SeiRBSP{messages};
 }
 
-void SeiRBSP::encodeTo(ostream &stream) const {
+void SeiRBSP::encodeTo(std::ostream &stream) const {
   VERIFY_MIVBITSTREAM(!messages().empty());
 
   for (const auto &x : messages()) {
     x.encodeTo(stream);
   }
-  rbspTrailingBits(stream);
+  Common::rbspTrailingBits(stream);
 }
 } // namespace TMIV::MivBitstream

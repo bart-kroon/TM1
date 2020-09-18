@@ -33,8 +33,6 @@
 
 #include <TMIV/Decoder/AccessUnit.h>
 
-using namespace TMIV::Common;
-
 namespace TMIV::Decoder {
 auto AtlasAccessUnit::frameSize() const noexcept -> Common::Vec2i {
   return Common::Vec2i{asps.asps_frame_width(), asps.asps_frame_height()};
@@ -42,7 +40,7 @@ auto AtlasAccessUnit::frameSize() const noexcept -> Common::Vec2i {
 
 auto AtlasAccessUnit::decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
     -> Common::Vec2i {
-  if (vps.vps_miv_extension_flag()) {
+  if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (vme.vme_geometry_scale_enabled_flag()) {
       const auto &asme = asps.asps_miv_extension();
@@ -55,8 +53,8 @@ auto AtlasAccessUnit::decGeoFrameSize(const MivBitstream::V3cParameterSet &vps) 
 }
 
 auto AtlasAccessUnit::decOccFrameSize(const MivBitstream::V3cParameterSet &vps) const noexcept
-    -> Vec2i {
-  if (vps.vps_miv_extension_flag()) {
+    -> Common::Vec2i {
+  if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (!vme.vme_embedded_occupancy_flag() && vme.vme_occupancy_scale_enabled_flag()) {
       const auto &asme = asps.asps_miv_extension();
@@ -67,7 +65,7 @@ auto AtlasAccessUnit::decOccFrameSize(const MivBitstream::V3cParameterSet &vps) 
       const int codedOccupancyWidth = codedUnpaddedOccupancyWidth + codedUnpaddedOccupancyWidth % 2;
       const int codedOccupancyHeight =
           codedUnpadedOccupancyHeight + codedUnpadedOccupancyHeight % 2;
-      return Vec2i{codedOccupancyWidth, codedOccupancyHeight};
+      return Common::Vec2i{codedOccupancyWidth, codedOccupancyHeight};
     }
   }
   return frameSize();

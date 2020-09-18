@@ -59,12 +59,11 @@ enum class PayloadType : std::uint16_t {
   atlas_object_association,
   viewport_camera_parameters,
   viewport_position,
-  attribute_transformation_params = 64,
+  attribute_transformation_params = 64, // V-PCC
   occupancy_synthesis,
   geometry_smoothing,
   attribute_smoothing,
-  // MIV extensions below
-  viewing_space,
+  viewing_space = 128, // MIV
   rec_viewport,
   viewing_space_handling,
   geometry_upscaling_parameters

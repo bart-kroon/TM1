@@ -97,13 +97,13 @@ payloadSize=8
   }
 }
 
-constexpr std::size_t computeHeaderSizeFor(const std::size_t payload_size) {
+constexpr auto computeHeaderSizeFor(const std::size_t payload_size) -> std::size_t {
   const std::size_t bytes_to_signal_payload_size = (257 + payload_size) / 256;
   const std::size_t bytes_to_signal_payload_type = 1;
   return bytes_to_signal_payload_size + bytes_to_signal_payload_type;
 }
 
-constexpr std::size_t computePayloadAndHeaderSizeFor(const std::size_t payload_size) {
+constexpr auto computePayloadAndHeaderSizeFor(const std::size_t payload_size) -> std::size_t {
   return payload_size + computeHeaderSizeFor(payload_size);
 }
 

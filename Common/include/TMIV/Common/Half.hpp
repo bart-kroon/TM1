@@ -64,8 +64,9 @@ inline Half::Half(float value) {
   } else {
     int exponent{};
     const auto mantissa_f = std::frexp(x, &exponent);
-    const auto mantissa = unsigned(std::lround(std::ldexp(mantissa_f, 11)));
-    m_code = uint16_t((unsigned(exponent + 14) << 10) | (mantissa & 0x3FF));
+    const auto mantissa = static_cast<unsigned>(std::lround(std::ldexp(mantissa_f, 11)));
+    m_code =
+        static_cast<uint16_t>((static_cast<unsigned>(exponent + 14) << 10) | (mantissa & 0x3FF));
   }
 
   if (std::signbit(value)) {

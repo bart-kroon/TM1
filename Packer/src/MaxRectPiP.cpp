@@ -35,7 +35,7 @@
 #include <TMIV/Common/LinAlg.h>
 
 namespace TMIV::Packer {
-constexpr auto occupied = uint8_t(128);
+constexpr auto occupied = uint8_t{128};
 
 ////////////////////////////////////////////////////////////////////////////////
 auto MaxRectPiP::Rectangle::split(int w, int h) const -> std::vector<MaxRectPiP::Rectangle> {
@@ -99,11 +99,11 @@ auto MaxRectPiP::Rectangle::getShortSideFitScore(int w, int h) const -> float {
 MaxRectPiP::MaxRectPiP(int w, int h, int a, bool pip)
     : m_width(w), m_height(h), m_alignment(a), m_pip(pip) {
   // Maps
-  auto wa = unsigned(w / a);
-  auto ha = unsigned(h / a);
+  auto wa = static_cast<unsigned>(w / a);
+  auto ha = static_cast<unsigned>(h / a);
 
   m_occupancyMap.resize({ha, wa});
-  std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t(0));
+  std::fill(m_occupancyMap.begin(), m_occupancyMap.end(), uint8_t{});
 
   // Push full rectangle
   m_F.emplace_back(0, 0, w - 1, h - 1);

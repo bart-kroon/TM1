@@ -341,7 +341,7 @@ auto PduMivExtension::decodeFrom(Common::InputBitstream &bitstream, const V3cPar
   if (vps.vps_miv_extension_present_flag()) {
     const auto &vme = vps.vps_miv_extension();
     if (vme.vme_max_entities_minus1() > 0) {
-      x.pdu_entity_id(bitstream.getUVar<uint32_t>(vme.vme_max_entities_minus1() + uint64_t(1)));
+      x.pdu_entity_id(bitstream.getUVar<uint32_t>(vme.vme_max_entities_minus1() + uint64_t{1}));
     }
   }
   if (asps.asps_miv_extension_present_flag()) {
@@ -359,7 +359,7 @@ void PduMivExtension::encodeTo(Common::OutputBitstream &bitstream, const V3cPara
   if (vps.vps_miv_extension_present_flag() &&
       vps.vps_miv_extension().vme_max_entities_minus1() > 0) {
     bitstream.putUVar(pdu_entity_id(),
-                      vps.vps_miv_extension().vme_max_entities_minus1() + uint64_t(1));
+                      vps.vps_miv_extension().vme_max_entities_minus1() + uint64_t{1});
   } else {
     VERIFY_MIVBITSTREAM(!m_pdu_entity_id.has_value());
   }

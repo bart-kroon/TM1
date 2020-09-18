@@ -40,7 +40,7 @@
 namespace TMIV::Encoder {
 GroupBasedEncoder::GroupBasedEncoder(const Common::Json &rootNode,
                                      const Common::Json &componentNode) {
-  const auto numGroups_ = size_t(rootNode.require("numGroups").asInt());
+  const auto numGroups_ = static_cast<size_t>(rootNode.require("numGroups").asInt());
 
   while (m_encoders.size() < numGroups_) {
     m_encoders.emplace_back(rootNode, componentNode);
@@ -138,7 +138,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
 
   for (size_t camIndex = 0; camIndex < viewParamsList.size(); camIndex++) {
     viewsPool.push_back(viewParamsList[camIndex]);
-    viewsLabels.push_back(uint8_t(camIndex));
+    viewsLabels.push_back(static_cast<uint8_t>(camIndex));
   }
 
   for (unsigned gIndex = 0; gIndex < numGroups; gIndex++) {
@@ -188,7 +188,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
       std::cout << "Views selected for group " << gIndex << ": ";
       const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        std::cout << sep << unsigned(viewsLabels[sortedCamerasId[i]]);
+        std::cout << sep << unsigned{viewsLabels[sortedCamerasId[i]]};
         viewsInGroup.push_back(viewsLabels[sortedCamerasId[i]]);
         sep = ", ";
       }
@@ -212,7 +212,7 @@ auto GroupBasedEncoder::sourceSplitter(const MivBitstream::EncoderParams &params
       std::cout << "Views selected for group " << gIndex << ": ";
       const auto *sep = "";
       for (size_t i = 0; i < camerasInGroup.size(); i++) {
-        std::cout << sep << unsigned(viewsLabels[i]);
+        std::cout << sep << int{viewsLabels[i]};
         viewsInGroup.push_back(viewsLabels[i]);
         sep = ", ";
       }
@@ -265,7 +265,7 @@ auto GroupBasedEncoder::mergeVps(const std::vector<const MivBitstream::V3cParame
   auto x = MivBitstream::V3cParameterSet{};
   x.profile_tier_level(vps.front()->profile_tier_level())
       .vps_v3c_parameter_set_id(vps.front()->vps_v3c_parameter_set_id())
-      .vps_atlas_count_minus1(uint8_t(atlasCount - 1))
+      .vps_atlas_count_minus1(static_cast<uint8_t>(atlasCount - 1))
       .vps_extension_present_flag(true)
       .vps_miv_extension_present_flag(true)
       .vps_miv_extension(vps.front()->vps_miv_extension());
@@ -315,7 +315,7 @@ auto GroupBasedEncoder::mergeParams(
     -> const MivBitstream::EncoderParams & {
   // Start with first group
   m_params = *perGroupParams.front();
-  assert(m_params.vme().vme_num_groups_minus1() + size_t(1) == perGroupParams.size());
+  assert(m_params.vme().vme_num_groups_minus1() + size_t{1} == perGroupParams.size());
 
   // Merge V3C parameter sets
   std::vector<const MivBitstream::V3cParameterSet *> vps(perGroupParams.size());
@@ -326,18 +326,18 @@ auto GroupBasedEncoder::mergeParams(
   // For each other group
   for (auto ivs = std::begin(perGroupParams) + 1; ivs != std::end(perGroupParams); ++ivs) {
     // Merge view parameters
-    std::transform(
-        std::begin((*ivs)->viewParamsList), std::end((*ivs)->viewParamsList),
-        back_inserter(m_params.viewParamsList),
-        [viewIdOffset = uint16_t(m_params.viewParamsList.size())](MivBitstream::ViewParams vp) {
-          // Merging pruning graphs
-          if (vp.pp && !vp.pp->pp_is_root_flag()) {
-            for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
-              vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
-            }
-          }
-          return vp;
-        });
+    std::transform(std::begin((*ivs)->viewParamsList), std::end((*ivs)->viewParamsList),
+                   back_inserter(m_params.viewParamsList),
+                   [viewIdOffset = static_cast<uint16_t>(m_params.viewParamsList.size())](
+                       MivBitstream::ViewParams vp) {
+                     // Merging pruning graphs
+                     if (vp.pp && !vp.pp->pp_is_root_flag()) {
+                       for (uint16_t i = 0; i <= vp.pp->pp_num_parent_minus1(); ++i) {
+                         vp.pp->pp_parent_id(i, vp.pp->pp_parent_id(i) + viewIdOffset);
+                       }
+                     }
+                     return vp;
+                   });
 
     // Merge viewing space
     assert(m_params.viewingSpace == (*ivs)->viewingSpace);
@@ -349,14 +349,14 @@ auto GroupBasedEncoder::mergeParams(
       m_params.atlas.push_back(atlas);
 
       // Set group ID
-      m_params.atlas.back().asme().asme_group_id(unsigned(groupId));
+      m_params.atlas.back().asme().asme_group_id(static_cast<unsigned>(groupId));
     }
   }
 
   // Modify bit depth of pdu_projection_id
   for (auto &atlas : m_params.atlas) {
     atlas.asps.asps_extended_projection_enabled_flag(true).asps_max_number_projections_minus1(
-        uint16_t(m_params.viewParamsList.size() - 1));
+        static_cast<uint16_t>(m_params.viewParamsList.size() - 1));
   }
 
   // Renumber atlas and view ID's
@@ -367,15 +367,15 @@ auto GroupBasedEncoder::mergeParams(
     // Copy patches in group order
     for (const auto &patch : perGroupParam->patchParamsList) {
       m_params.patchParamsList.push_back(patch);
-      m_params.patchParamsList.back().atlasId =
-          MivBitstream::AtlasId{uint8_t(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
+      m_params.patchParamsList.back().atlasId = MivBitstream::AtlasId{
+          static_cast<uint8_t>(perGroupParam->vps.indexOf(patch.atlasId) + atlasIdOffset)};
       m_params.patchParamsList.back().atlasPatchProjectionId(patch.atlasPatchProjectionId() +
                                                              viewIdOffset);
     }
 
     // Renumber atlases and views
-    atlasIdOffset += uint16_t(perGroupParam->atlas.size());
-    viewIdOffset += uint16_t(perGroupParam->viewParamsList.size());
+    atlasIdOffset += static_cast<uint16_t>(perGroupParam->atlas.size());
+    viewIdOffset += static_cast<uint16_t>(perGroupParam->viewParamsList.size());
   }
 
   return m_params;

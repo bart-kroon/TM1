@@ -54,7 +54,8 @@ GeometryQuantizer::GeometryQuantizer(uint16_t depthOccThresholdIfSet)
 
 GeometryQuantizer::GeometryQuantizer(const Common::Json & /*unused*/,
                                      const Common::Json &nodeConfig)
-    : GeometryQuantizer{uint16_t(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
+    : GeometryQuantizer{
+          static_cast<uint16_t>(nodeConfig.require("depthOccThresholdIfSet").asInt())} {}
 
 auto GeometryQuantizer::setOccupancyParams(MivBitstream::EncoderParams params)
     -> const MivBitstream::EncoderParams & {

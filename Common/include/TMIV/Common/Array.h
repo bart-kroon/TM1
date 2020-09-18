@@ -889,31 +889,29 @@ public:
   }
   //! \brief Returns an iterator to the first diagonal element.
   [[nodiscard]] auto diag_begin() const -> const_diag_iterator {
-    return const_diag_iterator(data(),
-                               std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
+    return const_diag_iterator(data(), std::accumulate(m_step.begin() + 1, m_step.end(), size_t{}));
   }
   auto diag_begin() -> diag_iterator {
-    return diag_iterator(data(), std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
+    return diag_iterator(data(), std::accumulate(m_step.begin() + 1, m_step.end(), size_t{}));
   }
   //! \brief Returns a const iterator to the first diagonal element.
   [[nodiscard]] auto cdiag_begin() const -> const_diag_iterator {
-    return const_diag_iterator(data(),
-                               std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0)));
+    return const_diag_iterator(data(), std::accumulate(m_step.begin() + 1, m_step.end(), size_t{}));
   }
   //! \brief Returns an iterator to the first element afer the last diagonal
   //! element.
   [[nodiscard]] auto diag_end() const -> const_diag_iterator {
-    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0));
+    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t{});
     return const_diag_iterator(data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   auto diag_end() -> diag_iterator {
-    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_type(0));
+    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_type{});
     return diag_iterator(data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   //! \brief Returns a const iterator to the first element afer the last
   //! diagonal element.
   [[nodiscard]] auto cdiag_end() const -> const_diag_iterator {
-    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t(0));
+    size_type d = std::accumulate(m_step.begin() + 1, m_step.end(), size_t{});
     return const_diag_iterator(data() + *std::min_element(m_size.begin(), m_size.end()) * d, d);
   }
   //! \brief Returns m(i, j, k, ...)

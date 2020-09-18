@@ -151,12 +151,12 @@ void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
     Common::putUint8(stream, UINT8_MAX);
     value -= UINT8_MAX;
   }
-  Common::putUint8(stream, uint8_t(value));
+  Common::putUint8(stream, static_cast<uint8_t>(value));
 }
 } // namespace
 
 void SeiMessage::encodeTo(std::ostream &stream) const {
-  encodeSeiHeaderValue(stream, unsigned(payloadType()));
+  encodeSeiHeaderValue(stream, static_cast<unsigned>(payloadType()));
   encodeSeiHeaderValue(stream, payloadSize());
   stream.write(payload().data(), payload().size());
 }

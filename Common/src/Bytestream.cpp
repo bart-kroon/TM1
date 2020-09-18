@@ -57,16 +57,25 @@ auto readBytes(std::istream &stream, size_t bytes) -> uint64_t {
   while (bytes-- > 0) {
     char buffer = 0;
     stream.get(buffer);
-    result = (result << 8) | uint8_t(buffer);
+    result = (result << 8) | static_cast<uint8_t>(buffer);
   }
   VERIFY_BYTESTREAM(stream.good());
   return result;
 }
 
-auto getUint8(std::istream &stream) -> uint8_t { return uint8_t(readBytes(stream, 1)); }
-auto getUint16(std::istream &stream) -> uint16_t { return uint16_t(readBytes(stream, 2)); }
-auto getUint32(std::istream &stream) -> uint32_t { return uint32_t(readBytes(stream, 4)); }
-auto getUint64(std::istream &stream) -> uint64_t { return uint64_t(readBytes(stream, 8)); }
+auto getUint8(std::istream &stream) -> uint8_t {
+  return static_cast<uint8_t>(readBytes(stream, 1));
+}
+
+auto getUint16(std::istream &stream) -> uint16_t {
+  return static_cast<uint16_t>(readBytes(stream, 2));
+}
+
+auto getUint32(std::istream &stream) -> uint32_t {
+  return static_cast<uint32_t>(readBytes(stream, 4));
+}
+
+auto getUint64(std::istream &stream) -> uint64_t { return readBytes(stream, 8); }
 
 auto readString(std::istream &stream, size_t bytes) -> std::string {
   auto result = std::string(bytes, '\0');
@@ -91,7 +100,7 @@ void writeBytes(std::ostream &stream, uint64_t value, size_t bytes) {
     writeBytes(stream, value >> 8, bytes - 1);
   }
   if (bytes > 0) {
-    stream.put(char(value));
+    stream.put(static_cast<char>(value));
   }
   VERIFY_BYTESTREAM(stream.good());
 }

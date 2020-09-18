@@ -53,8 +53,8 @@ public:
   }
 
   friend auto operator<<(std::ostream &stream, const StatisticalVariable &x) -> std::ostream & {
-    auto average =
-        x.m_count > 0 ? double(x.m_sum) / x.m_count : std::numeric_limits<double>::quiet_NaN();
+    auto average = x.m_count > 0 ? static_cast<double>(x.m_sum) / x.m_count
+                                 : std::numeric_limits<double>::quiet_NaN();
     return stream << x.m_count << ',' << x.m_sum << ',' << average;
   }
 
@@ -123,7 +123,7 @@ public:
         break;
       case TMIV::MivBitstream::VuhUnitType::V3C_AVD:
         stream << vuh.vuh_atlas_id() << ',' << int{vuh.vuh_map_index()} << ','
-               << int(vuh.vuh_attribute_index());
+               << int{vuh.vuh_attribute_index()};
         break;
       default:
         abort();

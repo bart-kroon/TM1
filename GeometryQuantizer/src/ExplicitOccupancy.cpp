@@ -140,8 +140,8 @@ auto ExplicitOccupancy::transformAtlases(const Common::MVD16Frame &inAtlases)
 }
 
 void ExplicitOccupancy::padGeometryFromLeft(Common::MVD10Frame &atlases) {
-  for (size_t i = 0; i < atlases.size(); ++i) {
-    const auto j = m_outParams.vps.vps_atlas_id(uint8_t(i));
+  for (uint8_t i = 0; i <= m_outParams.vps.vps_atlas_count_minus1(); ++i) {
+    const auto j = m_outParams.vps.vps_atlas_id(i);
     if (m_outParams.vps.vps_occupancy_video_present_flag(j)) {
       auto &depthAtlasMap = atlases[i].depth;
       auto depthScale =

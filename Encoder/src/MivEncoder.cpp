@@ -60,14 +60,14 @@ void MivEncoder::writeAccessUnit(const MivBitstream::EncoderParams &params) {
     m_viewParamsList = params.viewParamsList;
   }
 
-  for (size_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
+  for (uint8_t k = 0; k <= m_params.vps.vps_atlas_count_minus1(); ++k) {
     // Clause 7.4.5.3.2 of V-PCC DIS d85 [N19329]: AXPS regardless of atlas ID (and temporal ID)
     // share the same value space for AXPS ID
     auto &aau = m_params.atlas[k];
-    aau.asps.asps_atlas_sequence_parameter_set_id(uint8_t(k));
-    aau.afps.afps_atlas_frame_parameter_set_id(uint8_t(k));
-    aau.afps.afps_atlas_sequence_parameter_set_id(uint8_t(k));
-    aau.ath.ath_atlas_frame_parameter_set_id(uint8_t(k));
+    aau.asps.asps_atlas_sequence_parameter_set_id(k);
+    aau.afps.afps_atlas_frame_parameter_set_id(k);
+    aau.afps.afps_atlas_sequence_parameter_set_id(k);
+    aau.ath.ath_atlas_frame_parameter_set_id(k);
 
     writeV3cUnit(MivBitstream::VuhUnitType::V3C_AD, m_params.vps.vps_atlas_id(k),
                  atlasSubBitstream(k));
@@ -202,7 +202,7 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
   const auto &vpl = m_params.viewParamsList;
 
   assert(!vpl.empty());
-  mvpl.mvp_num_views_minus1(uint16_t(vpl.size() - 1));
+  mvpl.mvp_num_views_minus1(static_cast<uint16_t>(vpl.size() - 1));
   mvpl.mvp_intrinsic_params_equal_flag(
       std::all_of(vpl.begin(), vpl.end(), [&](const auto &x) { return x.ci == vpl.front().ci; }));
   mvpl.mvp_depth_quantization_params_equal_flag(
@@ -225,7 +225,7 @@ auto MivEncoder::mivViewParamsList() const -> MivBitstream::MivViewParamsList {
     }
   }
 
-  mvpl.mvp_num_views_minus1(uint16_t(m_params.viewParamsList.size() - 1));
+  mvpl.mvp_num_views_minus1(static_cast<uint16_t>(m_params.viewParamsList.size() - 1));
   for (uint8_t a = 0; a <= m_params.vps.vps_atlas_count_minus1(); ++a) {
     for (uint16_t v = 0; v <= mvpl.mvp_num_views_minus1(); ++v) {
       mvpl.mvp_view_enabled_in_atlas_flag(a, v, true);
@@ -246,11 +246,11 @@ auto MivEncoder::mivViewParamsUpdateExtrinsics() const
   auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ce != m_params.viewParamsList[v].ce) {
-      viewIdx.push_back(uint16_t(v));
+      viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
   VERIFY_MIVBITSTREAM(!viewIdx.empty());
-  mvpue.mvpue_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  mvpue.mvpue_num_view_updates_minus1(static_cast<uint16_t>(viewIdx.size() - 1));
   for (uint16_t i = 0; i <= mvpue.mvpue_num_view_updates_minus1(); ++i) {
     mvpue.mvpue_view_idx(i, viewIdx[i]);
     mvpue.camera_extrinsics(i) = m_params.viewParamsList[viewIdx[i]].ce;
@@ -264,11 +264,11 @@ auto MivEncoder::mivViewParamsUpdateIntrinsics() const
   auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].ci != m_params.viewParamsList[v].ci) {
-      viewIdx.push_back(uint16_t(v));
+      viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
   VERIFY_MIVBITSTREAM(!viewIdx.empty());
-  mvpui.mvpui_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  mvpui.mvpui_num_view_updates_minus1(static_cast<uint16_t>(viewIdx.size() - 1));
   for (uint16_t i = 0; i <= mvpui.mvpui_num_view_updates_minus1(); ++i) {
     mvpui.mvpui_view_idx(i, viewIdx[i]);
     mvpui.camera_intrinsics(i) = m_params.viewParamsList[viewIdx[i]].ci;
@@ -282,11 +282,11 @@ auto MivEncoder::mivViewParamsUpdateDepthQuantization() const
   auto viewIdx = std::vector<uint16_t>{};
   for (size_t v = 0; v < m_viewParamsList.size(); ++v) {
     if (m_viewParamsList[v].dq != m_params.viewParamsList[v].dq) {
-      viewIdx.push_back(uint16_t(v));
+      viewIdx.push_back(static_cast<uint16_t>(v));
     }
   }
   VERIFY_MIVBITSTREAM(!viewIdx.empty());
-  mvpudq.mvpudq_num_view_updates_minus1(uint16_t(viewIdx.size() - 1));
+  mvpudq.mvpudq_num_view_updates_minus1(static_cast<uint16_t>(viewIdx.size() - 1));
   for (uint16_t i = 0; i <= mvpudq.mvpudq_num_view_updates_minus1(); ++i) {
     mvpudq.mvpudq_view_idx(i, viewIdx[i]);
     mvpudq.depth_quantization(i) = m_params.viewParamsList[viewIdx[i]].dq;

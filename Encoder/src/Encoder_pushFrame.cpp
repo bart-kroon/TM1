@@ -175,7 +175,7 @@ auto Encoder::yuvSampler(const Common::EntityMapList &in)
 void Encoder::mergeMasks(Common::MaskList &mergedMasks, Common::MaskList masks) {
   for (size_t viewId = 0; viewId < mergedMasks.size(); viewId++) {
     for (size_t i = 0; i < mergedMasks[viewId].getPlane(0).size(); i++) {
-      if (masks[viewId].getPlane(0)[i] != uint8_t(0)) {
+      if (masks[viewId].getPlane(0)[i] != uint8_t{}) {
         mergedMasks[viewId].getPlane(0)[i] = masks[viewId].getPlane(0)[i];
       }
     }
@@ -186,8 +186,8 @@ void Encoder::updateMasks(const Common::MVD16Frame &views, Common::MaskList &mas
   for (size_t viewId = 0; viewId < views.size(); viewId++) {
     for (size_t i = 0; i < masks[viewId].getPlane(0).size(); i++) {
       if ((views[viewId].texture.getPlane(0)[i] == neutralChroma) &&
-          (views[viewId].depth.getPlane(0)[i] == uint16_t(0))) {
-        masks[viewId].getPlane(0)[i] = uint8_t(0);
+          (views[viewId].depth.getPlane(0)[i] == uint16_t{})) {
+        masks[viewId].getPlane(0)[i] = uint8_t{};
       }
     }
   }
@@ -236,7 +236,7 @@ auto Encoder::entitySeparator(const Common::MVD16Frame &transportViews, uint16_t
                    transportViews[viewId].depth.getPlane(0).end(),
                    entityMaps[viewId].getPlane(0).begin(),
                    entityViews[viewId].depth.getPlane(0).begin(),
-                   [=](auto i, auto j) { return (j == entityId) ? i : uint16_t(0); });
+                   [=](auto i, auto j) { return (j == entityId) ? i : uint16_t{}; });
   }
 
   return entityViews;

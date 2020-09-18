@@ -62,10 +62,10 @@ EncoderParams::EncoderParams(const Common::SizeVector &atlasSizes, bool haveText
       .ptl_profile_reconstruction_idc(PtlProfileReconstructionIdc::MIV_Main);
 
   VERIFY_MIVBITSTREAM(!atlasSizes.empty());
-  vps.vps_atlas_count_minus1(uint8_t(atlasSizes.size() - 1));
+  vps.vps_atlas_count_minus1(static_cast<uint8_t>(atlasSizes.size() - 1));
 
-  for (size_t k = 0; k < atlasSizes.size(); ++k) {
-    const auto j = AtlasId{uint8_t(k)};
+  for (uint8_t k = 0; k <= vps.vps_atlas_count_minus1(); ++k) {
+    const auto j = AtlasId{k};
     vps.vps_atlas_id(k, j)
         .vps_frame_width(j, atlasSizes[k].x())
         .vps_frame_height(j, atlasSizes[k].y())

@@ -355,7 +355,7 @@ private:
                                     [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
                                       // #94: When there are invalid pixels in a basic view, these
                                       // should be excluded from the pruning mask
-                                      return uint8_t(ot.occupant(x) ? 255 : 0);
+                                      return ot.occupant(x) ? uint8_t{255} : uint8_t{};
                                     });
                      return mask;
                    });
@@ -376,7 +376,7 @@ private:
                                     [ot = MivBitstream::OccupancyTransform{viewParams}](auto x) {
                                       // #94: When there are invalid pixels in a basic view, these
                                       // should be freezed from pruning
-                                      return uint8_t(ot.occupant(x) ? 255 : 0);
+                                      return ot.occupant(x) ? uint8_t{255} : uint8_t{};
                                     });
                      return status;
                    });
@@ -446,8 +446,8 @@ private:
     const auto flags = std::cout.setf(std::ios::fixed, std::ios::floatfield);
     std::cout << std::setw(2) << index << " (" << std::setw(3)
               << m_params.viewParamsList[index].name << "): " << ivertices.size() << " vertices ("
-              << 100. * double(ivertices.size()) /
-                     (double(view.texture.getWidth()) * view.texture.getHeight())
+              << 100. * static_cast<double>(ivertices.size()) /
+                     (static_cast<double>(view.texture.getWidth()) * view.texture.getHeight())
               << "% of full view)\n";
     std::cout.precision(prec);
     std::cout.setf(flags);
@@ -569,8 +569,9 @@ private:
     for (int n = 0; n < m_dilate; ++n) {
       mask = dilate(mask);
     }
-    synthesizer.maskAverage = float(std::accumulate(std::begin(mask), std::end(mask), 0)) /
-                              (2.55F * float(mask.width() * mask.height()));
+    synthesizer.maskAverage =
+        static_cast<float>(std::accumulate(std::begin(mask), std::end(mask), 0)) /
+        (2.55F * static_cast<float>(mask.width() * mask.height()));
   }
 };
 

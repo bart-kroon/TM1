@@ -49,19 +49,19 @@ public: // Decoder interface
   ~MivDecoder();
 
   // Provide a frame server for out-of-band occupancy video data (OVD). OVD video sub bitstreams
-  // within the bistreams take presedence.
+  // within the bitstreams take precedence.
   using OccFrameServer = std::function<Common::Occupancy10Frame(
       MivBitstream::AtlasId atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setOccFrameServer(OccFrameServer value);
 
   // Provide a frame server for out-of-band geometry video data (GVD). GVD video sub bitstreams
-  // within the bistreams take presedence.
+  // within the bitstreams take precedence.
   using GeoFrameServer = std::function<Common::Depth10Frame(
       MivBitstream::AtlasId atlasId, std::uint32_t frameId, Common::Vec2i frameSize)>;
   void setGeoFrameServer(GeoFrameServer value);
 
   // Provide a frame server for out-of-band attribute video data (AVD). AVD video sub bitstreams
-  // within the bistreams take presedence.
+  // within the bitstreams take precedence.
   //
   // NOTE 1: There is no harm in setting an attribute frame server for a bitstream that does not
   //          have any attributes, because the callback will never be invoked.

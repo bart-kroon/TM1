@@ -91,7 +91,7 @@ public:
   void encodeTo(std::ostream &stream) const;
 
 private:
-  PayloadType m_payloadType;
+  PayloadType m_payloadType{};
   std::string m_payload;
 };
 

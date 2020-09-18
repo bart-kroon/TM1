@@ -154,7 +154,7 @@ void encodeSeiHeaderValue(std::ostream &stream, size_t value) {
 } // namespace
 
 void SeiMessage::encodeTo(std::ostream &stream) const {
-  encodeSeiHeaderValue(stream, static_cast<std::uint64_t>(payloadType()));
+  encodeSeiHeaderValue(stream, unsigned(payloadType()));
   encodeSeiHeaderValue(stream, payloadSize());
   stream.write(payload().data(), payload().size());
 }

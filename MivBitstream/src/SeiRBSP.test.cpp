@@ -147,8 +147,8 @@ payloadSize=7
         number_of_bytes_per_type_header * x.messages().size();
 
     const std::size_t expected_number_of_bytes =
-        1000 + 254 + 255 + 256 + 257 + 12 +
-        number_of_bytes_of_atlas_object_association_payload + number_of_bytes_for_all_headers;
+        1000 + 254 + 255 + 256 + 257 + 12 + number_of_bytes_of_atlas_object_association_payload +
+        number_of_bytes_for_all_headers;
 
     REQUIRE(byteCodingTest(x, expected_number_of_bytes));
   }

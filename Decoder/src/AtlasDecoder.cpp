@@ -119,10 +119,6 @@ void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUn
     return decodeAsps(stream);
   case MivBitstream::NalUnitType::NAL_AFPS:
     return decodeAfps(stream);
-  case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
-    return decodeSei(au.prefixESei, stream);
-  case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au.prefixNSei, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
@@ -139,16 +135,10 @@ void AtlasDecoder::decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit 
 void AtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
 
-  switch (nu.nal_unit_header().nal_unit_type()) {
-  case MivBitstream::NalUnitType::NAL_FD:
+  if (nu.nal_unit_header().nal_unit_type() == MivBitstream::NalUnitType::NAL_FD) {
     return;
-  case MivBitstream::NalUnitType::NAL_SUFFIX_ESEI:
-    return decodeSei(au.suffixESei, stream);
-  case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
-    return decodeSei(au.suffixNSei, stream);
-  default:
-    std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
+  std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
 }
 
 void AtlasDecoder::decodeAsps(std::istream &stream) {

@@ -179,7 +179,7 @@ using Depth16Frame = Frame<YUV400P16>;    // Encoder side
 using Occupancy10Frame = Frame<YUV400P10>;
 using Mask = Frame<YUV400P8>;
 using BlockToPatchMap = Frame<YUV400P16>;
-const auto unusedPatchId = static_cast<uint16_t>(65535);
+const auto unusedPatchId = UINT16_MAX;
 using EntityMap = Frame<YUV400P16>;
 
 template <typename FORMAT> struct TextureDepthFrame {

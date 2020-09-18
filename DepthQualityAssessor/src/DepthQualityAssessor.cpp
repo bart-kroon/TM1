@@ -50,8 +50,8 @@ auto textureNeighbourhood(const MAT &m, const Common::Vec2f &p)
   int w_last = static_cast<int>(m.width()) - 1;
   int h_last = static_cast<int>(m.height()) - 1;
 
-  int xc = std::clamp(Common::ifloor(p.x() + 0.5F), 0, w_last);
-  int yc = std::clamp(Common::ifloor(p.y() + 0.5F), 0, h_last);
+  int xc = std::clamp(static_cast<int>(std::floor(p.x() + 0.5F)), 0, w_last);
+  int yc = std::clamp(static_cast<int>(std::floor(p.y() + 0.5F)), 0, h_last);
 
   int x0 = std::max(0, xc - N);
   int y0 = std::max(0, yc - N);
@@ -93,7 +93,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params,
     std::transform(sourceViews[viewId].depth.getPlane(0).begin(),
                    sourceViews[viewId].depth.getPlane(0).end(), sourceDepthExpanded.begin(),
                    sourceDepthExpanded.begin(), [&](uint16_t normDisp, float depthValue) {
-                     return occupancyTransform.occupant(normDisp) ? depthValue : Common::NaN;
+                     return occupancyTransform.occupant(normDisp) ? depthValue : NAN;
                    });
 
     Common::Mat<Common::Vec3f> sourceUnprojection(
@@ -106,7 +106,7 @@ auto isLowDepthQuality(const MivBitstream::EncoderParams &params,
             sourceUnprojection(y, x) = sourceHelper.doUnprojection(
                 Common::Vec2f({static_cast<float>(x) + 0.5F, static_cast<float>(y) + 0.5F}), z);
           } else {
-            sourceUnprojection(y, x) = Common::Vec3f{Common::NaN, Common::NaN, Common::NaN};
+            sourceUnprojection(y, x) = Common::Vec3f{NAN, NAN, NAN};
           }
         });
 

@@ -232,7 +232,7 @@ public:
 
   // Resolution in px^2/rad^2
   static auto resolution(const MivBitstream::ViewParams &viewParams) -> float {
-    return Common::square(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
+    return Common::sqr(viewParams.ci.projectionPlaneSize().x() / xFoV(viewParams));
   }
 
   static auto resolutionRatio(const Decoder::AccessUnit &frame,

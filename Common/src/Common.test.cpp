@@ -174,20 +174,6 @@ TEST_CASE("Parsing the command-line", "[Application]") {
   }
 }
 
-TEST_CASE("Converting floating point to integer") {
-  REQUIRE(ifloor(-2.5F) == -3);
-  REQUIRE(ifloor(0.F) == 0);
-  REQUIRE(ifloor(1000000.9F) == 1000000);
-  REQUIRE(ifloor(1000001.0F) == 1000001);
-  REQUIRE(ifloor(1000001.1F) == 1000001);
-
-  REQUIRE(iceil(-2.5F) == -2);
-  REQUIRE(iceil(0.F) == 0);
-  REQUIRE(iceil(1000000.9F) == 1000001);
-  REQUIRE(iceil(1000001.0F) == 1000001);
-  REQUIRE(iceil(1000001.1F) == 1000002);
-}
-
 TEST_CASE("Assignment of std::fixed size matrix N x 1 to fixed size vector") {
   stack::Matrix<double, 6, 1> A;
   std::fill(std::begin(A), std::end(A), 1.);
@@ -238,8 +224,8 @@ TEST_CASE("Half") {
   SECTION("Explicit conversion from float (lossy)") {
     REQUIRE_THROWS_AS(Half(std::nextafter(65504.F, 1e6F)), HalfError);
     REQUIRE_THROWS_AS(Half(std::nextafter(-65504.F, -1e6F)), HalfError);
-    REQUIRE_THROWS_AS(Half(NaN), HalfError);
-    REQUIRE_THROWS_AS(Half(inf), HalfError);
+    REQUIRE_THROWS_AS(Half(NAN), HalfError);
+    REQUIRE_THROWS_AS(Half(INFINITY), HalfError);
     REQUIRE(Half(0x1.p-14F).encode() == 0x0400);   // smallest positive normal number
     REQUIRE(Half(65504.F).encode() == 0x7BFF);     // largest normal number
     REQUIRE(Half(0x1.FFCp-1F).encode() == 0x3BFF); // largest number less than one
@@ -266,8 +252,8 @@ TEST_CASE("expandValue", "[quantize_and_expand]") {
 }
 
 TEST_CASE("quantizeValue", "[quantize_and_expand]") {
-  REQUIRE(quantizeValue<10>(NaN) == 0U);
-  REQUIRE(quantizeValue<10>(inf) == 1023U);
+  REQUIRE(quantizeValue<10>(NAN) == 0U);
+  REQUIRE(quantizeValue<10>(INFINITY) == 1023U);
   REQUIRE(quantizeValue<10>(1e20F) == 1023U);
 }
 

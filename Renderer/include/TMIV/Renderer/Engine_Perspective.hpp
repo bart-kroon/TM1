@@ -55,7 +55,7 @@ template <> struct Engine<MivBitstream::CiCamType::perspective> {
     if (depth > 0.F) {
       return {depth, -(depth / f_x) * (uv.x() - c_x), -(depth / f_y) * (uv.y() - c_y)};
     }
-    return {Common::NaN, Common::NaN, Common::NaN};
+    return {NAN, NAN, NAN};
   }
 
   // Projection equation
@@ -66,7 +66,7 @@ template <> struct Engine<MivBitstream::CiCamType::perspective> {
                               -f_y * v.position.z() / v.position.x() + c_y};
       return {uv, v.position.x(), v.rayAngle};
     }
-    return {{Common::NaN, Common::NaN}, Common::NaN, Common::NaN};
+    return {{NAN, NAN}, NAN, NAN};
   }
 
   // Project mesh to target view

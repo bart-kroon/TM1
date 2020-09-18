@@ -68,23 +68,6 @@ inline auto squash(double a) -> double {
   }
   return a;
 }
-inline auto ipow(int base, int exp) -> int {
-  int result = 1;
-  for (;;) {
-    if ((exp % 2) != 0) {
-      result *= base;
-    }
-    exp /= 2;
-    if (exp == 0) {
-      break;
-    }
-    base *= base;
-  }
-  return result;
-}
-
-inline auto gcd(int a, int b) -> int { return (b == 0) ? a : gcd(b, a % b); }
-inline auto lcm(int a, int b) -> int { return std::abs(a * b) / gcd(a, b); }
 
 template <typename T> inline auto ppd2pps(T ppd) -> T {
   return sqr(ppd * static_cast<T>(180. / M_PI));

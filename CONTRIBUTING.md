@@ -31,7 +31,7 @@ NOTE: This section may be expanded by the software coordinators based on what co
 - The code should be readable when all comments are stripped.
 - Do not add meaningless comments.
 - Do not add `// m12345 Proposal something` lines. (Here m12345 is placeholder for the MPEG document number.)
-- use `// TODO(initials/m12345): Something` when there is somethings that needs improvement that is noted but out-of-scope of the work at hand.
+- use `// TODO(initials/m12345): Something` when there is something that needs improvement that is noted but out-of-scope of the work at hand.
 - Use `// NOTE(initials/m12345): Something` to make mention of something important (e.g. a property of the code) that may go unnoticed otherwise (and accidentall destroyed later):
     - `// NOTE(BK): The class interface deliberately disallows integer computations`
     - `// NOTE(BK): Stable ordering`
@@ -42,6 +42,12 @@ NOTE: This section may be expanded by the software coordinators based on what co
 - Use Clang Tidy with the provided `.clang-tidy` file
 - Preferably use `-Werror -Wall -Wextra -Wpedantic` on GCC and Clang
 - Without access to these tools, you may ask for a build log from the software coordinators
+
+### Formatting
+
+- Preferably use Clang Format with the provided `.clang-format` file
+- When not using Clang Format, at least try to follow the style to keeps diffs small
+- The software coordinators may format contributions in code review
 
 #### Integer casting
 

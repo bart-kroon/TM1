@@ -218,15 +218,9 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
 
 void MivDecoder::decodeCommonAtlas() {
   decodeViewParamsList();
-
-  for (const auto &sei : m_commonAtlasAu->prefixNSei) {
-    if (sei.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
-      std::istringstream stream{sei.payload()};
-      Common::InputBitstream bitstream{stream};
-      m_au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
-      // How do we handle if theres 0 or >1 gup? Should we break after this line?
-    }
-  }
+  std::istringstream stream{m_commonAtlasAu->prefixNSei_gup.payload()};
+  Common::InputBitstream bitstream{stream};
+  m_au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
 }
 
 void MivDecoder::decodeViewParamsList() {

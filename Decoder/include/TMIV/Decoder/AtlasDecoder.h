@@ -57,10 +57,6 @@ public:
     MivBitstream::AtlasSequenceParameterSetRBSP asps;
     MivBitstream::AtlasFrameParameterSetRBSP afps;
     MivBitstream::AtlasTileLayerRBSP atl;
-    std::vector<MivBitstream::SeiMessage> prefixNSei;
-    std::vector<MivBitstream::SeiMessage> prefixESei;
-    std::vector<MivBitstream::SeiMessage> suffixNSei;
-    std::vector<MivBitstream::SeiMessage> suffixESei;
   };
 
   auto operator()() -> std::optional<AccessUnit>;
@@ -73,7 +69,8 @@ private:
   static void decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   void decodeAsps(std::istream &stream);
   void decodeAfps(std::istream &stream);
-  static void decodeSei(std::vector<MivBitstream::SeiMessage> &messages, std::istream &stream);
+  static void decodeSei(AccessUnit &au, std::istream &stream);
+  static void decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage &message);
 
   V3cUnitSource m_source;
   MivBitstream::V3cUnitHeader m_vuh{MivBitstream::VuhUnitType::V3C_AD};

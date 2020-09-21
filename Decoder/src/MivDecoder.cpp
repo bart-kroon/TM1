@@ -218,14 +218,7 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
 
 void MivDecoder::decodeCommonAtlas() {
   decodeViewParamsList();
-
-  for (const auto &sei : m_commonAtlasAu->prefixNSei) {
-    if (sei.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
-      std::istringstream stream{sei.payload()};
-      Common::InputBitstream bitstream{stream};
-      m_au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
-    }
-  }
+  m_au.gup = m_commonAtlasAu->gup;
 }
 
 void MivDecoder::decodeViewParamsList() {

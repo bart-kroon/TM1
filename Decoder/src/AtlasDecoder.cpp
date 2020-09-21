@@ -120,9 +120,8 @@ void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUn
   case MivBitstream::NalUnitType::NAL_AFPS:
     return decodeAfps(stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
-    return decodeSei(au.prefixESei, stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au.prefixNSei, stream);
+    return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
@@ -141,11 +140,10 @@ void AtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUn
 
   switch (nu.nal_unit_header().nal_unit_type()) {
   case MivBitstream::NalUnitType::NAL_FD:
-    return;
-  case MivBitstream::NalUnitType::NAL_SUFFIX_ESEI:
-    return decodeSei(au.suffixESei, stream);
-  case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
-    return decodeSei(au.suffixNSei, stream);
+    return; // Ignore filler data
+  case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
+  case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
+    return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
@@ -176,11 +174,15 @@ void AtlasDecoder::decodeAfps(std::istream &stream) {
   return m_afpsV.push_back(afps);
 }
 
-void AtlasDecoder::decodeSei(std::vector<MivBitstream::SeiMessage> &messages,
-                             std::istream &stream) {
+void AtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {
   auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
-  for (auto &x : sei.messages()) {
-    messages.push_back(x);
+  for (auto &message : sei.messages()) {
+    decodeSeiMessage(au, message);
   }
+}
+
+void AtlasDecoder::decodeSeiMessage(AccessUnit & /* au */,
+                                    const MivBitstream::SeiMessage & /* message */) {
+  // Currently all SEI messages are ignored
 }
 } // namespace TMIV::Decoder

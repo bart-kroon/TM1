@@ -117,9 +117,8 @@ void CommonAtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream:
   case MivBitstream::NalUnitType::NAL_AAPS:
     return decodeAaps(stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
-    return decodeSei(au.prefixESei, stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au.prefixNSei, stream);
+    return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
@@ -140,9 +139,8 @@ void CommonAtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream:
   case MivBitstream::NalUnitType::NAL_FD:
     return;
   case MivBitstream::NalUnitType::NAL_SUFFIX_ESEI:
-    return decodeSei(au.suffixESei, stream);
   case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
-    return decodeSei(au.suffixNSei, stream);
+    return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
@@ -167,11 +165,21 @@ void CommonAtlasDecoder::decodeAaps(std::istream &stream) {
   return m_aapsV.push_back(aaps);
 }
 
-void CommonAtlasDecoder::decodeSei(std::vector<MivBitstream::SeiMessage> &messages,
-                                   std::istream &stream) {
+void CommonAtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {
   auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
-  for (auto &x : sei.messages()) {
-    messages.push_back(x);
+  for (auto &message : sei.messages()) {
+    decodeSeiMessage(au, message);
+  }
+}
+
+void CommonAtlasDecoder::decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage &message) {
+  if (message.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
+    std::istringstream messageStream{message.payload()};
+    Common::InputBitstream bitstream{messageStream};
+    au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
+  } else {
+    // NOTE(BK): Ignore SEI messages that are not handled by TMIV. (You can still print them out
+    // with the Parser executable.)
   }
 }
 } // namespace TMIV::Decoder

@@ -87,7 +87,7 @@ auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
   m_buffer.pop_front();
 
   while (!m_buffer.empty() && isSuffixNalUnit(nut())) {
-    decodeSuffixNalUnit(m_buffer.front());
+    decodeSuffixNalUnit(au, m_buffer.front());
     m_buffer.pop_front();
   }
 
@@ -116,9 +116,8 @@ void CommonAtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream:
   switch (nu.nal_unit_header().nal_unit_type()) {
   case MivBitstream::NalUnitType::NAL_AAPS:
     return decodeAaps(stream);
-  case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au, stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
+  case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
     return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
@@ -133,13 +132,18 @@ void CommonAtlasDecoder::decodeCafNalUnit(AccessUnit &au, const MivBitstream::Na
   au.aaps = aapsById(m_aapsV, au.caf.caf_atlas_adaptation_parameter_set_id());
 }
 
-void CommonAtlasDecoder::decodeSuffixNalUnit(const MivBitstream::NalUnit &nu) {
+void CommonAtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
 
-  if (nu.nal_unit_header().nal_unit_type() == MivBitstream::NalUnitType::NAL_FD) {
+  switch (nu.nal_unit_header().nal_unit_type()) {
+  case MivBitstream::NalUnitType::NAL_FD:
     return;
+  case MivBitstream::NalUnitType::NAL_SUFFIX_ESEI:
+  case MivBitstream::NalUnitType::NAL_SUFFIX_NSEI:
+    return decodeSei(au, stream);
+  default:
+    std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
-  std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
 }
 
 void CommonAtlasDecoder::decodeAaps(std::istream &stream) {

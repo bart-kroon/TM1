@@ -79,7 +79,7 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
   }
 
   while (!m_buffer.empty() && isPrefixNalUnit(nut())) {
-    decodePrefixNalUnit(m_buffer.front());
+    decodePrefixNalUnit(au, m_buffer.front());
     m_buffer.pop_front();
   }
 
@@ -111,7 +111,7 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
   return au;
 }
 
-void AtlasDecoder::decodePrefixNalUnit(const MivBitstream::NalUnit &nu) {
+void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
 
   switch (nu.nal_unit_header().nal_unit_type()) {
@@ -119,6 +119,9 @@ void AtlasDecoder::decodePrefixNalUnit(const MivBitstream::NalUnit &nu) {
     return decodeAsps(stream);
   case MivBitstream::NalUnitType::NAL_AFPS:
     return decodeAfps(stream);
+  case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
+  case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
+    return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
@@ -138,9 +141,8 @@ void AtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUn
   switch (nu.nal_unit_header().nal_unit_type()) {
   case MivBitstream::NalUnitType::NAL_FD:
     return; // Ignore filler data
-  case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au, stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
+  case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
     return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;

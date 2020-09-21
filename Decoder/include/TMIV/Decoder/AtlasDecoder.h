@@ -64,7 +64,7 @@ public:
 private:
   auto decodeAsb() -> bool;
   auto decodeAu() -> AccessUnit;
-  void decodePrefixNalUnit(const MivBitstream::NalUnit &nu);
+  void decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   void decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   static void decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   void decodeAsps(std::istream &stream);

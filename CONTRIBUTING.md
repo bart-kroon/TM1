@@ -62,7 +62,7 @@ NOTE: This section may be expanded by the software coordinators based on what co
 - CMake modules, C++ namespaces and C++ classes are in `UpperCamelCase` notation
 - C++ variables are in `lowerCamelCase` notation, with the following exception:
    - Syntax elements are named exactly like in the specification, e.g. `vps_frame_width`
-   - No such exception is made for parser/formatter of a syntax structure, e.g. `v3c_parameter_set()` --> `V3cParameterSet`
+   - No such exception is made for parser/formatter of a syntax structure (see [below](#syntax-structures)), e.g. `v3c_parameter_set()` --> `V3cParameterSet`
 - Avoid unnecessary abbreviations
    - Abbreviations that are defined in ISO/IEC 23090-12 Clause 3 _Terms and Definitions_ are allowed
    - Some commonly-used TMIV-specific classes are also abbreviated, e.g. `ViewParamsList` --> `vpl`
@@ -74,6 +74,10 @@ NOTE: This section may be expanded by the software coordinators based on what co
 - When you already know your syntax is adopted, preferably work on the specifiation first and implement it *exactly* like edited, thus including any editorial changes by the editors.
 - This is a test model: write for readability and algorithmic complexity, but do not optimize
 
+### Syntax structures
+
+Syntax structures are in this context defined by the MIV and V-PCC/V3C specification and don't refer to C++ syntax. When you parse a syntax structure, you obtain the syntax element values and any variables that are defined as part of the semantics. When you format a syntax structure, you take the syntax element values and variables from the semantics and into a syntax structure.
+
 ### Implementing a new syntax structure
 
 - Add a parser/formatter to the MivBitstreamLib, named exactly like the syntax structure but in `uppperCamelCase` notation, e.g. `v3c_parameter_set()` --> `V3cParameterSet`
@@ -83,5 +87,5 @@ NOTE: This section may be expanded by the software coordinators based on what co
 - Although most current modules (=.cpp/.hpp/.h tuple) are at RBSP level, containing all syntax structures carried within, it is allowed to have a new module for a new syntax structure however small or big.
 - The public interface has to match exactly with the syntax structure.
 - The implementation of the getters and setters shall check all semantics that can be checked in that context.
-- The parser/formatter (decodeFrom/encodeTo) shall check all semantics that that can be checked in that context.
+- The parser/formatter (decodeFrom/encodeTo) shall check all semantics that can be checked in that context.
 

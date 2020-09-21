@@ -160,10 +160,10 @@ void CommonAtlasDecoder::decodeAaps(std::istream &stream) {
 }
 
 void CommonAtlasDecoder::decodeSei(MivBitstream::SeiMessage &gup_message, std::istream &stream) {
-  auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
-  for (auto &x : sei.messages()) {
-    if (x.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
-      gup_message = x;
+  auto sei_rbsp = MivBitstream::SeiRBSP::decodeFrom(stream);
+  for (auto &message : sei_rbsp.messages()) {
+    if (message.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
+      gup_message = message;
       break;
     }
   }

@@ -87,7 +87,7 @@ auto CommonAtlasDecoder::decodeAu() -> AccessUnit {
   m_buffer.pop_front();
 
   while (!m_buffer.empty() && isSuffixNalUnit(nut())) {
-    decodeSuffixNalUnit(au, m_buffer.front());
+    decodeSuffixNalUnit(m_buffer.front());
     m_buffer.pop_front();
   }
 
@@ -131,7 +131,7 @@ void CommonAtlasDecoder::decodeCafNalUnit(AccessUnit &au, const MivBitstream::Na
   au.aaps = aapsById(m_aapsV, au.caf.caf_atlas_adaptation_parameter_set_id());
 }
 
-void CommonAtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
+void CommonAtlasDecoder::decodeSuffixNalUnit(const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
 
   if (nu.nal_unit_header().nal_unit_type() == MivBitstream::NalUnitType::NAL_FD) {

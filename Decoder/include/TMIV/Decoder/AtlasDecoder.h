@@ -64,9 +64,9 @@ public:
 private:
   auto decodeAsb() -> bool;
   auto decodeAu() -> AccessUnit;
-  void decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  void decodePrefixNalUnit(const MivBitstream::NalUnit &nu);
   void decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
-  static void decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
+  static void decodeSuffixNalUnit(const MivBitstream::NalUnit &nu);
   void decodeAsps(std::istream &stream);
   void decodeAfps(std::istream &stream);
   static void decodeSei(std::vector<MivBitstream::SeiMessage> &messages, std::istream &stream);

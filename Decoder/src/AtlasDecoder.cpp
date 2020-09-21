@@ -79,7 +79,7 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
   }
 
   while (!m_buffer.empty() && isPrefixNalUnit(nut())) {
-    decodePrefixNalUnit(au, m_buffer.front());
+    decodePrefixNalUnit(m_buffer.front());
     m_buffer.pop_front();
   }
 
@@ -88,7 +88,7 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
   m_buffer.pop_front();
 
   while (!m_buffer.empty() && isSuffixNalUnit(nut())) {
-    decodeSuffixNalUnit(au, m_buffer.front());
+    decodeSuffixNalUnit(m_buffer.front());
     m_buffer.pop_front();
   }
 
@@ -111,7 +111,7 @@ auto AtlasDecoder::decodeAu() -> AccessUnit {
   return au;
 }
 
-void AtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
+void AtlasDecoder::decodePrefixNalUnit(const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
 
   switch (nu.nal_unit_header().nal_unit_type()) {
@@ -132,7 +132,7 @@ void AtlasDecoder::decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit 
   au.asps = aspsById(m_aspsV, au.afps.afps_atlas_sequence_parameter_set_id());
 }
 
-void AtlasDecoder::decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu) {
+void AtlasDecoder::decodeSuffixNalUnit(const MivBitstream::NalUnit &nu) {
   std::istringstream stream{nu.rbsp()};
 
   if (nu.nal_unit_header().nal_unit_type() == MivBitstream::NalUnitType::NAL_FD) {

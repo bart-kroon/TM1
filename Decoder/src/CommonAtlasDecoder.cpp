@@ -165,8 +165,8 @@ void CommonAtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {
   auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
   for (auto &message : sei.messages()) {
     if (message.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
-      std::istringstream stream{message.payload()};
-      Common::InputBitstream bitstream{stream};
+      std::istringstream message_stream{message.payload()};
+      Common::InputBitstream bitstream{message_stream};
       au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
     } else {
       // NOTE(BK): Ignore SEI messages that are not handled by TMIV. (You can still print them out

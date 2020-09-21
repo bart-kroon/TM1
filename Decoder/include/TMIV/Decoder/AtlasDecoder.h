@@ -70,6 +70,7 @@ private:
   void decodeAsps(std::istream &stream);
   void decodeAfps(std::istream &stream);
   static void decodeSei(AccessUnit &au, std::istream &stream);
+  static void decodeSeiMessage(AccessUnit &au, const MivBitstream::SeiMessage& message);
 
   V3cUnitSource m_source;
   MivBitstream::V3cUnitHeader m_vuh{MivBitstream::VuhUnitType::V3C_AD};

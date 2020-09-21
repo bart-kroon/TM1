@@ -37,15 +37,25 @@
 
 namespace TMIV::MivBitstream {
 TEST_CASE("atlas_object_association", "[Atlas object association SEI payload syntax]") {
-  SECTION("Null example") {
-    const auto x = AtlasObjectAssociation{};
-        REQUIRE(toString(x) == R"(aoa_persistence_flag=false
+  SECTION("Default constructor") {
+    const auto unit = AtlasObjectAssociation{};
+    REQUIRE(toString(unit) == R"(aoa_persistence_flag=false
 aoa_reset_flag=false
 aoa_num_atlases_minus1=0
 aoa_num_updates=0
 )");
-    //    REQUIRE(bitCodingTest(x, 21));
-    //  }
+    const std::size_t expected_number_of_bytes = 0; // TODO compute
+    REQUIRE(bitCodingTest(unit, expected_number_of_bytes));
+  }
+  SECTION("Set all fields") {
+    AtlasObjectAssociationUpdateParameters aoa_parameters{};
+    aoa_parameters.aoa_object_in_atlas_present_flag = {
+        {true, false}, {false, true}, {false, false}};
+    aoa_parameters.aoa_log2_max_object_idx_tracked_minus1 = 2;
+    aoa_parameters.aoa_object_idx = {2, 0, 1};
+    aoa_parameters.aoa_atlas_idx = {1, 0};
+    const auto unit = AtlasObjectAssociation(true, false, std::move(aoa_parameters));
+    REQUIRE(toString(unit) == R"(TODO fill)");
   }
 }
 

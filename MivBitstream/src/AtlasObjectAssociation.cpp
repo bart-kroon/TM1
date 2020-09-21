@@ -38,16 +38,22 @@ auto AtlasObjectAssociation::aoa_persistence_flag() const noexcept -> bool {
   return m_aoa_persistence_flag;
 }
 
-auto AtlasObjectAssociation::aoa_reset_flag() const noexcept -> bool {
-  return m_aoa_reset_flag;
-}
+auto AtlasObjectAssociation::aoa_reset_flag() const noexcept -> bool { return m_aoa_reset_flag; }
 
+
+// TODO this should be part of AtlasObjectAssociationUpdateParameters! Change spec?
 auto AtlasObjectAssociation::aoa_num_atlases_minus1() const noexcept -> std::uint8_t {
-  return m_aoa_num_atlases_minus1;
+  if (!m_aoa_parameters) {
+    return 0U;
+  }
+  return m_aoa_parameters->aoa_atlas_idx.size();
 }
 
 auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::uint8_t {
-  return m_aoa_num_updates;
+  if (!m_aoa_parameters) {
+    return 0U;
+  }
+  return m_aoa_parameters->aoa_object_idx.size();
 }
 
 auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream & {
@@ -57,4 +63,26 @@ auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::o
   stream << "aoa_num_updates=" << static_cast<unsigned>(x.aoa_num_updates()) << "\n";
   return stream;
 }
+
+auto AtlasObjectAssociation::operator==(const AtlasObjectAssociation &other) const noexcept
+    -> bool {
+  return (this->aoa_persistence_flag() == other.aoa_persistence_flag()) &&
+         (this->aoa_reset_flag() == other.aoa_reset_flag()) &&
+         (this->aoa_num_atlases_minus1() == other.aoa_num_atlases_minus1()) &&
+         (this->aoa_num_updates() == other.aoa_num_updates()) &&
+         (this->m_aoa_parameters == other.m_aoa_parameters);
+}
+
+auto AtlasObjectAssociation::operator!=(const AtlasObjectAssociation &other) const noexcept
+    -> bool {
+  return !operator==(other);
+}
+
+auto AtlasObjectAssociation::decodeFrom(Common::InputBitstream &bitstream)
+    -> AtlasObjectAssociation {
+  auto result = AtlasObjectAssociation{};
+  return result;
+}
+
+void AtlasObjectAssociation::encodeTo(Common::OutputBitstream &bitstream) const {}
 } // namespace TMIV::MivBitstream

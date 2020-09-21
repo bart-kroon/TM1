@@ -164,7 +164,6 @@ void CommonAtlasDecoder::decodeSei(MivBitstream::SeiMessage &gup_message, std::i
   for (auto &message : sei_rbsp.messages()) {
     if (message.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
       gup_message = message;
-      break;
     }
   }
 }

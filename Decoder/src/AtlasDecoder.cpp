@@ -176,12 +176,13 @@ void AtlasDecoder::decodeAfps(std::istream &stream) {
 
 void AtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {
   auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
-  for (auto &message: sei.messages()) {
+  for (auto &message : sei.messages()) {
     decodeSeiMessage(au, message);
   }
 }
 
-void AtlasDecoder::decodeSeiMessage(AccessUnit &/* au */, const MivBitstream::SeiMessage& /* message */) {
+void AtlasDecoder::decodeSeiMessage(AccessUnit & /* au */,
+                                    const MivBitstream::SeiMessage & /* message */) {
   // Currently all SEI messages are ignored
 }
 } // namespace TMIV::Decoder

@@ -236,7 +236,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
     Rasterizer<Common::Vec3w> rasterizer(pixel, Common::Vec2i{8, 4});
 
     WHEN("Rastering nothing") {
-      THEN("The depth std::map is a matrix of Common::NaN's or Inf's") {
+      THEN("The depth std::map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(std::is_same_v<decltype(depth), Common::Mat<float>>);
         REQUIRE(depth.sizes() == std::array{size_t{4}, size_t{8}});
@@ -286,7 +286,7 @@ SCENARIO("Rastering meshes with 16-bit color as attribute", "[Rasterizer]") {
       rasterizer.submit(vs, std::tuple{as}, ts);
       rasterizer.run();
 
-      THEN("The depth std::map is a matrix of Common::NaN's or Inf's") {
+      THEN("The depth std::map is a matrix of NaN's or Inf's") {
         auto depth = rasterizer.depth();
         static_assert(std::is_same_v<decltype(depth), Common::Mat<float>>);
         REQUIRE(depth.sizes() == std::array{size_t{4}, size_t{8}});

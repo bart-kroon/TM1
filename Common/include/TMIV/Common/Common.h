@@ -58,14 +58,6 @@ constexpr auto halfCycle{pi};           // rad
 constexpr auto quarterCycle{0.5F * pi}; // rad
 constexpr auto fullSphere{4.F * pi};    // sr
 constexpr auto hemiSphere{2.F * pi};    // sr
-constexpr auto NaN{std::numeric_limits<float>::quiet_NaN()};
-constexpr auto inf{std::numeric_limits<float>::infinity()};
-
-template <typename Float> auto ifloor(Float x) -> int { return static_cast<int>(std::floor(x)); }
-
-template <typename Float> auto iceil(Float x) -> int { return static_cast<int>(std::ceil(x)); }
-
-template <typename Float> auto square(Float x) { return x * x; }
 
 // http://open-std.org/JTC1/SC22/WG21/docs/papers/2018/p0051r3.pdf
 template <typename... Ts> struct Overload : public Ts... {

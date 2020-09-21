@@ -55,8 +55,8 @@ auto textureGather(const MAT &m, const Common::Vec2f &p)
   int w_last = static_cast<int>(m.width()) - 1;
   int h_last = static_cast<int>(m.height()) - 1;
 
-  int x0 = std::clamp(Common::ifloor(p.x() - 0.5F), 0, w_last);
-  int y0 = std::clamp(Common::ifloor(p.y() - 0.5F), 0, h_last);
+  int x0 = std::clamp(static_cast<int>(std::floor(p.x() - 0.5F)), 0, w_last);
+  int y0 = std::clamp(static_cast<int>(std::floor(p.y() - 0.5F)), 0, h_last);
 
   int x1 = std::min(x0 + 1, w_last);
   int y1 = std::min(y0 + 1, h_last);
@@ -202,7 +202,7 @@ public:
     for (size_t i = 0U; i < m_viewportColor.size(); i++) {
       if (isValidDepth(m_viewportVisibility[i])) {
         if (m_viewportColor[i].x() < 0.F) {
-          m_viewportVisibility[i] = Common::NaN;
+          m_viewportVisibility[i] = NAN;
           m_viewportColor[i] = Common::Vec3f{};
         } else {
           m_viewportVisibility[i] =
@@ -354,11 +354,10 @@ private:
       m_sourceDepth.emplace_back(MivBitstream::DepthTransform<10>{viewParams.dq}.expandDepth(
           prunedViews[sourceId].second));
 
-      std::transform(prunedMasks[sourceId].getPlane(0).begin(),
-                     prunedMasks[sourceId].getPlane(0).end(), m_sourceDepth.back().begin(),
-                     m_sourceDepth.back().begin(), [&](auto maskValue, float depthValue) {
-                       return 0 < maskValue ? depthValue : Common::NaN;
-                     });
+      std::transform(
+          prunedMasks[sourceId].getPlane(0).begin(), prunedMasks[sourceId].getPlane(0).end(),
+          m_sourceDepth.back().begin(), m_sourceDepth.back().begin(),
+          [&](auto maskValue, float depthValue) { return 0 < maskValue ? depthValue : NAN; });
     }
   }
   void reprojectPrunedSource(const Decoder::AccessUnit &frame,
@@ -372,17 +371,17 @@ private:
       m_sourceUnprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
       std::fill(m_sourceUnprojection[sourceId].begin(), m_sourceUnprojection[sourceId].end(),
-                Common::Vec3f{Common::NaN, Common::NaN, Common::NaN});
+                Common::Vec3f{NAN, NAN, NAN});
 
       m_sourceReprojection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
       std::fill(m_sourceReprojection[sourceId].begin(), m_sourceReprojection[sourceId].end(),
-                std::pair{Common::Vec2f{Common::NaN, Common::NaN}, Common::NaN});
+                std::pair{Common::Vec2f{NAN, NAN}, NAN});
 
       m_sourceRayDirection[sourceId].resize(m_sourceDepth[sourceId].height(),
                                             m_sourceDepth[sourceId].width());
       std::fill(m_sourceRayDirection[sourceId].begin(), m_sourceRayDirection[sourceId].end(),
-                Common::Vec3f{Common::NaN, Common::NaN, Common::NaN});
+                Common::Vec3f{NAN, NAN, NAN});
     }
 
     for (const auto &atlas : frame.atlas) {
@@ -543,10 +542,10 @@ private:
       float xHigh = splat.center.x() + radius;
       float yLow = std::max(0.F, splat.center.y() - radius);
       float yHigh = splat.center.y() + radius;
-      int x0 = std::max(0, Common::ifloor(xLow));
-      int x1 = std::min(w_last, Common::iceil(xHigh));
-      int y0 = std::max(0, Common::ifloor(yLow));
-      int y1 = std::min(h_last, Common::iceil(yHigh));
+      int x0 = std::max(0, static_cast<int>(std::floor(xLow)));
+      int x1 = std::min(w_last, static_cast<int>(std::ceil(xHigh)));
+      int y0 = std::max(0, static_cast<int>(std::floor(yLow)));
+      int y1 = std::min(h_last, static_cast<int>(std::ceil(yHigh)));
 
       // Looping on all pixels within the bounding box
       for (int y = y0; y <= y1; y++) {
@@ -585,11 +584,11 @@ private:
             targetHelper.getViewParams().ci.projectionPlaneSize().y(),
             targetHelper.getViewParams().ci.projectionPlaneSize().x());
         std::fill(m_viewportUnprojection[viewId].begin(), m_viewportUnprojection[viewId].end(),
-                  Common::Vec3f{Common::NaN, Common::NaN, Common::NaN});
+                  Common::Vec3f{NAN, NAN, NAN});
 
         m_viewportDepth[viewId].resize(targetHelper.getViewParams().ci.projectionPlaneSize().y(),
                                        targetHelper.getViewParams().ci.projectionPlaneSize().x());
-        std::fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), Common::NaN);
+        std::fill(m_viewportDepth[viewId].begin(), m_viewportDepth[viewId].end(), NAN);
       }
     }
 
@@ -730,8 +729,8 @@ private:
                         Common::Vec2i({-1, 0}),  Common::Vec2i({0, 0}),  Common::Vec2i({1, 0}),
                         Common::Vec2i({-1, 1}),  Common::Vec2i({0, 1}),  Common::Vec2i({1, 1})};
 
-                    auto X = Common::ifloor(p.first.x());
-                    auto Y = Common::ifloor(p.first.y());
+                    auto X = static_cast<int>(std::floor(p.first.x()));
+                    auto Y = static_cast<int>(std::floor(p.first.y()));
 
                     for (const auto &offset : offsetList) {
                       int xo = std::clamp(X + offset.x(), 0, w_last);
@@ -860,8 +859,8 @@ private:
       int w_last = static_cast<int>(m_sourceDepth[sourceId].width()) - 1;
       int h_last = static_cast<int>(m_sourceDepth[sourceId].height()) - 1;
 
-      int x = Common::ifloor(p.first.x());
-      int y = Common::ifloor(p.first.y());
+      int x = static_cast<int>(std::floor(p.first.x()));
+      int y = static_cast<int>(std::floor(p.first.y()));
 
       for (const auto &offset : offsetList) {
         int xo = std::clamp(x + offset.x(), 0, w_last);

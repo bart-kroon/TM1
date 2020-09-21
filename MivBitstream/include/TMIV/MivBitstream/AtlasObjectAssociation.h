@@ -36,26 +36,45 @@
 
 #include <TMIV/Common/Bitstream.h>
 
+#include <optional>
+#include <vector>
+
 namespace TMIV::MivBitstream {
+
+struct AtlasObjectAssociationUpdateParameters {
+  std::uint8_t aoa_log2_max_object_idx_tracked_minus1;
+  std::vector<std::uint8_t> aoa_atlas_idx;
+  std::vector<std::uint8_t> aoa_object_idx;
+  std::vector<std::vector<bool>> aoa_object_in_atlas_present_flag;
+};
 
 // 23090-12: atlas_object_association()
 class AtlasObjectAssociation {
 public:
   AtlasObjectAssociation() = default;
-//  explicit AtlasObjectAssociation(AtlasObjectAssociation);
+  //  explicit AtlasObjectAssociation(AtlasObjectAssociationUpdateList);  //TODO do we need this?
 
-  // TODO enter fields here
+  // TODO enter getter fields here
+  [[nodiscard]] auto aoa_persistence_flag() const noexcept -> bool;
+  [[nodiscard]] auto aoa_reset_flag() const noexcept -> bool;
+  [[nodiscard]] auto aoa_num_atlases_minus1() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto aoa_num_updates() const noexcept -> std::uint8_t;
 
-//  friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
+  friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
 
-//  auto operator==(const AtlasObjectAssociation &other) const noexcept -> bool;
-//  auto operator!=(const AtlasObjectAssociation &other) const noexcept -> bool;
+  //  auto operator==(const AtlasObjectAssociation &other) const noexcept -> bool;
+  //  auto operator!=(const AtlasObjectAssociation &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> AtlasObjectAssociation;
 
-//  void encodeTo(Common::OutputBitstream &bitstream) const;
+  //  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  bool m_aoa_persistence_flag;
+  bool m_aoa_reset_flag;
+  std::uint8_t m_aoa_num_atlases_minus1; // TODO replace by content of aoa_parameters
+  std::uint8_t m_aoa_num_updates;        // TODO replace by content of aoa_parameters
+  std::optional<AtlasObjectAssociationUpdateParameters> m_aoa_parameters;
 };
 } // namespace TMIV::MivBitstream
 

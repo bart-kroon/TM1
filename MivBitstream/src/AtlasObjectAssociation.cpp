@@ -32,3 +32,29 @@
  */
 
 #include <TMIV/MivBitstream/AtlasObjectAssociation.h>
+
+namespace TMIV::MivBitstream {
+auto AtlasObjectAssociation::aoa_persistence_flag() const noexcept -> bool {
+  return m_aoa_persistence_flag;
+}
+
+auto AtlasObjectAssociation::aoa_reset_flag() const noexcept -> bool {
+  return m_aoa_reset_flag;
+}
+
+auto AtlasObjectAssociation::aoa_num_atlases_minus1() const noexcept -> std::uint8_t {
+  return m_aoa_num_atlases_minus1;
+}
+
+auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::uint8_t {
+  return m_aoa_num_updates;
+}
+
+auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream & {
+  stream << "aoa_persistence_flag=" << std::boolalpha << x.aoa_persistence_flag() << "\n";
+  stream << "aoa_reset_flag=" << std::boolalpha << x.aoa_reset_flag() << "\n";
+  stream << "aoa_num_atlases_minus1=" << static_cast<unsigned>(x.aoa_num_atlases_minus1()) << "\n";
+  stream << "aoa_num_updates=" << static_cast<unsigned>(x.aoa_num_updates()) << "\n";
+  return stream;
+}
+} // namespace TMIV::MivBitstream

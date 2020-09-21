@@ -34,7 +34,7 @@
 #include <TMIV/MivBitstream/AccessUnitDelimiterRBSP.h>
 #include <TMIV/MivBitstream/AtlasAdaptationParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasFrameParameterSetRBSP.h>
-#include <TMIV/MivBitstream/AtlasObjectAssocation.h>
+#include <TMIV/MivBitstream/AtlasObjectAssociation.h>
 #include <TMIV/MivBitstream/AtlasSequenceParameterSetRBSP.h>
 #include <TMIV/MivBitstream/AtlasTileLayerRBSP.h>
 #include <TMIV/MivBitstream/CommonAtlasFrameRBSP.h>

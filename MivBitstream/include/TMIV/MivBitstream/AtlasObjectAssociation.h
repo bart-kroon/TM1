@@ -77,6 +77,8 @@ public:
       -> bool;
 
   constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
+  constexpr auto aoa_reset_flag(bool value) noexcept -> auto &;
+  constexpr auto aoa_num_atlases_minus1(std::uint8_t value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
 

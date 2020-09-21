@@ -72,6 +72,8 @@ aoa_object_in_atlas_present_flag(1, 1)=true
 aoa_object_in_atlas_present_flag(0, 2)=true
 aoa_object_in_atlas_present_flag(1, 2)=true
 )");
+    const std::size_t expected_number_of_bytes = 0; // TODO compute
+    REQUIRE(bitCodingTest(unit, expected_number_of_bytes));
   }
 }
 

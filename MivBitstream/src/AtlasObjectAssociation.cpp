@@ -83,6 +83,16 @@ constexpr auto AtlasObjectAssociation::aoa_persistence_flag(const bool value) no
   m_aoa_persistence_flag = value;
   return *this;
 }
+constexpr auto AtlasObjectAssociation::aoa_reset_flag(const bool value) noexcept -> auto & {
+  m_aoa_reset_flag = value;
+  return *this;
+}
+
+constexpr auto AtlasObjectAssociation::aoa_num_atlases_minus1(const std::uint8_t value) noexcept
+    -> auto & {
+  m_aoa_num_atlases_minus1 = value;
+  return *this;
+}
 
 auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream & {
   stream << "aoa_persistence_flag=" << std::boolalpha << x.aoa_persistence_flag() << "\n";
@@ -127,7 +137,10 @@ auto AtlasObjectAssociation::decodeFrom(Common::InputBitstream &bitstream)
     -> AtlasObjectAssociation {
   auto result = AtlasObjectAssociation{};
   result.aoa_persistence_flag(bitstream.getFlag());
-  // TODO continue
+  result.aoa_reset_flag(bitstream.getFlag());
+  result.aoa_num_atlases_minus1(bitstream.readBits<std::uint8_t>(6));
+  bitstream.getUExpGolomb<std::size_t>();  // aoa_num_updates, put in class? Or just skip?
+  // TODO continue, start verifying
   return result;
 }
 

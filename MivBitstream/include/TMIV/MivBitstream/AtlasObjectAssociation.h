@@ -43,14 +43,14 @@ namespace TMIV::MivBitstream {
 
 struct AtlasObjectAssociationUpdateParameters {
   std::uint8_t aoa_log2_max_object_idx_tracked_minus1;
-  std::vector<std::uint8_t> aoa_atlas_idx;
+  std::vector<std::uint8_t> aoa_atlas_id;
   std::vector<std::uint8_t> aoa_object_idx;
   std::vector<std::vector<bool>> aoa_object_in_atlas_present_flag;
 
   auto operator==(const AtlasObjectAssociationUpdateParameters &other) const noexcept -> bool {
     return (aoa_log2_max_object_idx_tracked_minus1 ==
             other.aoa_log2_max_object_idx_tracked_minus1) &&
-           (aoa_atlas_idx == other.aoa_atlas_idx) && (aoa_object_idx == other.aoa_object_idx) &&
+           (aoa_atlas_id == other.aoa_atlas_id) && (aoa_object_idx == other.aoa_object_idx) &&
            (aoa_object_in_atlas_present_flag == other.aoa_object_in_atlas_present_flag);
   }
 };
@@ -63,12 +63,20 @@ public:
                          AtlasObjectAssociationUpdateParameters aoa_parameters)
       : m_aoa_persistence_flag{aoa_persistence_flag}
       , m_aoa_reset_flag{aoa_reset_flag}
+      , m_aoa_num_atlases_minus1(aoa_parameters.aoa_atlas_id.size() - 1U)
       , m_aoa_parameters{std::move(aoa_parameters)} {}
 
   [[nodiscard]] auto aoa_persistence_flag() const noexcept -> bool;
   [[nodiscard]] auto aoa_reset_flag() const noexcept -> bool;
   [[nodiscard]] auto aoa_num_atlases_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_num_updates() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto aoa_object_in_atlas_present_flag(std::size_t j, std::size_t i) const noexcept
+      -> bool;
+
+  constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
 
@@ -81,6 +89,7 @@ public:
 private:
   bool m_aoa_persistence_flag;
   bool m_aoa_reset_flag;
+  std::uint8_t m_aoa_num_atlases_minus1;
   std::optional<AtlasObjectAssociationUpdateParameters> m_aoa_parameters;
 };
 } // namespace TMIV::MivBitstream

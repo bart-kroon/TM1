@@ -57,7 +57,7 @@ public:
     int32_t foc{};
     MivBitstream::AtlasAdaptationParameterSetRBSP aaps;
     MivBitstream::CommonAtlasFrameRBSP caf;
-    MivBitstream::SeiMessage prefixNSei_gup;
+    MivBitstream::SeiMessage prefixNSeiGup;
   };
 
   auto operator()() -> std::optional<AccessUnit>;
@@ -69,7 +69,7 @@ private:
   void decodeCafNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   static void decodeSuffixNalUnit(const MivBitstream::NalUnit &nu);
   void decodeAaps(std::istream &stream);
-  static void decodeSei(MivBitstream::SeiMessage &gup_message, std::istream &stream);
+  static void decodeSei(MivBitstream::SeiMessage &message, std::istream &stream);
 
   V3cUnitSource m_source;
   MivBitstream::V3cParameterSet m_vps;

@@ -66,10 +66,10 @@ private:
   auto decodeAu() -> AccessUnit;
   void decodePrefixNalUnit(const MivBitstream::NalUnit &nu);
   void decodeAclNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
-  static void decodeSuffixNalUnit(const MivBitstream::NalUnit &nu);
+  static void decodeSuffixNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   void decodeAsps(std::istream &stream);
   void decodeAfps(std::istream &stream);
-  static void decodeSei(std::vector<MivBitstream::SeiMessage> &messages, std::istream &stream);
+  static void decodeSei(AccessUnit &au, std::istream &stream);
 
   V3cUnitSource m_source;
   MivBitstream::V3cUnitHeader m_vuh{MivBitstream::VuhUnitType::V3C_AD};

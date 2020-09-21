@@ -117,7 +117,9 @@ void CommonAtlasDecoder::decodePrefixNalUnit(AccessUnit &au, const MivBitstream:
   case MivBitstream::NalUnitType::NAL_AAPS:
     return decodeAaps(stream);
   case MivBitstream::NalUnitType::NAL_PREFIX_NSEI:
-    return decodeSei(au.gup, stream);
+    return decodeSei(au, stream);
+  case MivBitstream::NalUnitType::NAL_PREFIX_ESEI:
+    return decodeSei(au, stream);
   default:
     std::cout << "WARNING: Ignoring NAL unit:\n" << nu;
   }
@@ -159,14 +161,16 @@ void CommonAtlasDecoder::decodeAaps(std::istream &stream) {
   return m_aapsV.push_back(aaps);
 }
 
-void CommonAtlasDecoder::decodeSei(MivBitstream::GeometryUpscalingParameters &gup,
-                                   std::istream &stream) {
-  auto sei_rbsp = MivBitstream::SeiRBSP::decodeFrom(stream);
-  for (auto &sei_message : sei_rbsp.messages()) {
-    if (sei_message.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
-      std::istringstream messageStream{sei_message.payload()};
-      Common::InputBitstream bitstream{messageStream};
-      gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
+void CommonAtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {
+  auto sei = MivBitstream::SeiRBSP::decodeFrom(stream);
+  for (auto &message : sei.messages()) {
+    if (message.payloadType() == MivBitstream::PayloadType::geometry_upscaling_parameters) {
+      std::istringstream stream{message.payload()};
+      Common::InputBitstream bitstream{stream};
+      au.gup = MivBitstream::GeometryUpscalingParameters::decodeFrom(bitstream);
+    } else {
+      // NOTE(BK): Ignore SEI messages that are not handled by TMIV. (You can still print them out
+      // with the Parser executable.)
     }
   }
 }

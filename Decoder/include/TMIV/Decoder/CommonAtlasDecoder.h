@@ -70,7 +70,7 @@ private:
   void decodeCafNalUnit(AccessUnit &au, const MivBitstream::NalUnit &nu);
   static void decodeSuffixNalUnit(const MivBitstream::NalUnit &nu);
   void decodeAaps(std::istream &stream);
-  static void decodeSei(MivBitstream::GeometryUpscalingParameters &gup, std::istream &stream);
+  static void decodeSei(AccessUnit &au, std::istream &stream);
 
   V3cUnitSource m_source;
   MivBitstream::V3cParameterSet m_vps;

@@ -181,7 +181,7 @@ void AtlasDecoder::decodeSei(AccessUnit &au, std::istream &stream) {
   }
 }
 
-void AtlasDecoder::decodeSeiMessage(AccessUnit &/* au */, const MivBitstream::SeiMessage& message) {
+void AtlasDecoder::decodeSeiMessage(AccessUnit &/* au */, const MivBitstream::SeiMessage& /* message */) {
   // Currently all SEI messages are ignored
 }
 } // namespace TMIV::Decoder

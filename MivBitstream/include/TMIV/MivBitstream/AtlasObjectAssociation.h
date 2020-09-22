@@ -74,12 +74,18 @@ public:
   [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_object_in_atlas_present_flag(std::size_t j, std::size_t i) const noexcept
+  [[nodiscard]] auto aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j) const noexcept
       -> bool;
 
   constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_reset_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_num_atlases_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto aoa_num_updates(std::size_t value) noexcept -> auto &;
+  constexpr auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
+  auto push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto &;
+  auto push_back_aoa_object_idx(std::uint8_t value) noexcept -> auto &;
+  auto aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j, bool value) noexcept
+      -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
 
@@ -93,7 +99,9 @@ private:
   bool m_aoa_persistence_flag{};
   bool m_aoa_reset_flag{};
   std::uint8_t m_aoa_num_atlases_minus1{};
-  std::size_t m_aoa_num_updates{};
+  std::size_t m_aoa_num_updates{}; // TODO I don't like this too much from a software design
+                                   // perspective: this info is already stored in
+                                   // m_aoa_parameters->aoa_object_idx.size(). Still, keep this?
   std::optional<AtlasObjectAssociationUpdateParameters> m_aoa_parameters{};
 };
 } // namespace TMIV::MivBitstream

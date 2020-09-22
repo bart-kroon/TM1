@@ -63,14 +63,14 @@ aoa_log2_max_object_idx_tracked_minus1=2
 aoa_atlas_id(0)=1
 aoa_atlas_id(1)=0
 aoa_object_idx(0)=2
-aoa_object_idx(1)=0
-aoa_object_idx(2)=1
 aoa_object_in_atlas_present_flag(0, 0)=false
-aoa_object_in_atlas_present_flag(1, 0)=false
 aoa_object_in_atlas_present_flag(0, 1)=false
+aoa_object_idx(1)=0
+aoa_object_in_atlas_present_flag(1, 0)=false
 aoa_object_in_atlas_present_flag(1, 1)=true
-aoa_object_in_atlas_present_flag(0, 2)=true
-aoa_object_in_atlas_present_flag(1, 2)=true
+aoa_object_idx(2)=1
+aoa_object_in_atlas_present_flag(2, 0)=true
+aoa_object_in_atlas_present_flag(2, 1)=true
 )");
     const std::size_t expected_number_of_bytes = 0; // TODO compute
     REQUIRE(bitCodingTest(unit, expected_number_of_bytes));

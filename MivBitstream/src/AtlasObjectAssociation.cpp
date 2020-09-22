@@ -50,28 +50,27 @@ auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::size_t {
 
 [[nodiscard]] auto AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1() const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters.has_value());
+  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
   return m_aoa_parameters->aoa_log2_max_object_idx_tracked_minus1;
 }
 
 [[nodiscard]] auto AtlasObjectAssociation::aoa_atlas_id(std::size_t j) const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters.has_value() &&
-                   j <= aoa_num_atlases_minus1());
+  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && j <= aoa_num_atlases_minus1());
   return m_aoa_parameters->aoa_atlas_id[j];
 }
 
 [[nodiscard]] auto AtlasObjectAssociation::aoa_object_idx(std::size_t i) const noexcept
     -> std::uint8_t {
 
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters.has_value() && i < aoa_num_updates());
+  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && i < aoa_num_updates());
   return m_aoa_parameters->aoa_object_idx[i];
 }
 
 [[nodiscard]] auto
-AtlasObjectAssociation::aoa_object_in_atlas_present_flag(std::size_t j,
-                                                         std::size_t i) const noexcept -> bool {
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters.has_value());
+AtlasObjectAssociation::aoa_object_in_atlas_present_flag(std::size_t i,
+                                                         std::size_t j) const noexcept -> bool {
+  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
   // TODO do we need to check ranges here?
   return m_aoa_parameters->aoa_object_in_atlas_present_flag[aoa_object_idx(i)][aoa_atlas_id(j)];
 }
@@ -91,6 +90,49 @@ constexpr auto AtlasObjectAssociation::aoa_num_atlases_minus1(const std::uint8_t
   return *this;
 }
 
+constexpr auto AtlasObjectAssociation::aoa_num_updates(std::size_t value) noexcept -> auto & {
+  m_aoa_num_updates = value;
+  if (m_aoa_parameters) {
+    m_aoa_parameters.emplace(AtlasObjectAssociationUpdateParameters{});
+    // TODO should we offer an additional public function to set the optional? Or is usage
+    // constrained to this?
+  }
+  for (std::size_t i = 0; i < value; ++i) {
+    m_aoa_parameters->aoa_object_in_atlas_present_flag.emplace_back(
+        std::vector<bool>(aoa_num_atlases_minus1() + 1U));
+  }
+  return *this;
+}
+
+constexpr auto
+AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept
+    -> auto & {
+  m_aoa_parameters->aoa_log2_max_object_idx_tracked_minus1 = value;
+  return *this;
+}
+
+auto AtlasObjectAssociation::push_back_aoa_atlas_id(std::uint8_t value) noexcept
+    -> auto & {
+  VERIFY_BITSTREAM(m_aoa_parameters);
+  m_aoa_parameters->aoa_atlas_id.push_back(value);
+  return *this;
+}
+
+auto AtlasObjectAssociation::push_back_aoa_object_idx(std::uint8_t value) noexcept
+    -> auto & {
+  VERIFY_BITSTREAM(m_aoa_parameters);
+  m_aoa_parameters->aoa_object_idx.push_back(value);
+  return *this;
+}
+
+auto AtlasObjectAssociation::aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j,
+                                                              bool value) noexcept -> auto & {
+  VERIFY_BITSTREAM(m_aoa_parameters && (i < aoa_num_updates()) && (j <= aoa_num_atlases_minus1()));
+  // TODO Cannot constexpr this - is that an issue?
+  m_aoa_parameters->aoa_object_in_atlas_present_flag[aoa_object_idx(i)][aoa_atlas_id(j)] = value;
+  return *this;
+}
+
 auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream & {
   stream << "aoa_persistence_flag=" << std::boolalpha << x.aoa_persistence_flag() << "\n";
   stream << "aoa_reset_flag=" << std::boolalpha << x.aoa_reset_flag() << "\n";
@@ -105,11 +147,9 @@ auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::o
     for (std::size_t i = 0; i < x.aoa_num_updates(); ++i) {
       stream << "aoa_object_idx(" << i << ")=" << static_cast<unsigned>(x.aoa_object_idx(i))
              << "\n";
-    }
-    for (std::size_t i = 0; i < x.aoa_num_updates(); ++i) {
       for (std::size_t j = 0; j <= x.aoa_num_atlases_minus1(); ++j) {
-        stream << "aoa_object_in_atlas_present_flag(" << j << ", " << i << ")=" << std::boolalpha
-               << x.aoa_object_in_atlas_present_flag(j, i) << "\n";
+        stream << "aoa_object_in_atlas_present_flag(" << i << ", " << j << ")=" << std::boolalpha
+               << x.aoa_object_in_atlas_present_flag(i, j) << "\n";
       }
     }
   }
@@ -136,14 +176,40 @@ auto AtlasObjectAssociation::decodeFrom(Common::InputBitstream &bitstream)
   result.aoa_persistence_flag(bitstream.getFlag());
   result.aoa_reset_flag(bitstream.getFlag());
   result.aoa_num_atlases_minus1(bitstream.readBits<std::uint8_t>(6));
-  bitstream.getUExpGolomb<std::size_t>(); // aoa_num_updates, put in class? Or just skip?
-  // TODO continue, start verifying
+  result.aoa_num_updates(bitstream.getUExpGolomb<std::size_t>());
+  if (result.aoa_num_updates() > 0) {
+    result.aoa_log2_max_object_idx_tracked_minus1(bitstream.readBits<std::uint8_t>(5));
+    for (std::size_t j = 0; j <= result.aoa_num_atlases_minus1(); ++j) {
+      result.push_back_aoa_atlas_id(bitstream.readBits<std::uint8_t>(6));
+    }
+    for (std::size_t i = 0; i < result.aoa_num_updates(); ++i) {
+      result.push_back_aoa_object_idx(
+          bitstream.readBits<std::uint8_t>(result.aoa_log2_max_object_idx_tracked_minus1() + 1));
+      for (std::size_t j = 0; j <= result.aoa_num_atlases_minus1(); ++j) {
+        result.aoa_object_in_atlas_present_flag(i, j, bitstream.getFlag());
+      }
+    }
+  }
   return result;
 }
 
 void AtlasObjectAssociation::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.putFlag(aoa_persistence_flag());
   bitstream.putFlag(aoa_reset_flag());
-  // TODO continue
+  bitstream.writeBits(aoa_num_atlases_minus1(), 6);
+  bitstream.putUExpGolomb(aoa_num_updates());
+  if (aoa_num_updates() > 0) {
+    bitstream.writeBits(aoa_log2_max_object_idx_tracked_minus1(), 5);
+    for (std::size_t j = 0; j <= aoa_num_atlases_minus1(); ++j) {
+      bitstream.writeBits(aoa_atlas_id(j), 6);
+    }
+    for (std::size_t i = 0; i < aoa_num_updates(); ++i) {
+      bitstream.writeBits(aoa_object_idx(i), aoa_log2_max_object_idx_tracked_minus1() + 1);
+      for (std::size_t j = 0; j <= aoa_num_atlases_minus1(); ++j) {
+        bitstream.putFlag(aoa_object_in_atlas_present_flag(i, j));
+      }
+    }
+  }
 }
+
 } // namespace TMIV::MivBitstream

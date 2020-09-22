@@ -64,7 +64,6 @@ public:
       : m_aoa_persistence_flag{aoa_persistence_flag}
       , m_aoa_reset_flag{aoa_reset_flag}
       , m_aoa_num_atlases_minus1{static_cast<std::uint8_t>(aoa_parameters.aoa_atlas_id.size() - 1U)}
-      , m_aoa_num_updates{aoa_parameters.aoa_object_idx.size()}
       , m_aoa_parameters{std::move(aoa_parameters)} {}
 
   [[nodiscard]] auto aoa_persistence_flag() const noexcept -> bool;
@@ -80,10 +79,10 @@ public:
   constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_reset_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_num_atlases_minus1(std::uint8_t value) noexcept -> auto &;
-  constexpr auto aoa_num_updates(std::size_t value) noexcept -> auto &;
+  auto aoa_num_updates(std::size_t value) noexcept -> auto &;
   constexpr auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
   auto push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto &;
-  auto push_back_aoa_object_idx(std::uint8_t value) noexcept -> auto &;
+  auto aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto &;
   auto aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j, bool value) noexcept
       -> auto &;
 
@@ -96,14 +95,11 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  constexpr void prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept;
+  void prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept;
 
   bool m_aoa_persistence_flag{};
   bool m_aoa_reset_flag{};
   std::uint8_t m_aoa_num_atlases_minus1{};
-  std::size_t m_aoa_num_updates{}; // TODO I don't like this too much from a software design
-                                   // perspective: this info is already stored in
-                                   // m_aoa_parameters->aoa_object_idx.size(). Still, keep this?
   std::optional<AtlasObjectAssociationUpdateParameters> m_aoa_parameters{};
 };
 } // namespace TMIV::MivBitstream

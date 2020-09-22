@@ -45,7 +45,7 @@ auto AtlasObjectAssociation::aoa_num_atlases_minus1() const noexcept -> std::uin
 }
 
 auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::size_t {
-  return m_aoa_num_updates;
+  return m_aoa_parameters ? m_aoa_parameters->aoa_object_idx.size() : 0;
 }
 
 auto AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1() const noexcept
@@ -78,6 +78,7 @@ constexpr auto AtlasObjectAssociation::aoa_persistence_flag(const bool value) no
   m_aoa_persistence_flag = value;
   return *this;
 }
+
 constexpr auto AtlasObjectAssociation::aoa_reset_flag(const bool value) noexcept -> auto & {
   m_aoa_reset_flag = value;
   return *this;
@@ -89,8 +90,7 @@ constexpr auto AtlasObjectAssociation::aoa_num_atlases_minus1(const std::uint8_t
   return *this;
 }
 
-constexpr auto AtlasObjectAssociation::aoa_num_updates(std::size_t value) noexcept -> auto & {
-  m_aoa_num_updates = value;
+auto AtlasObjectAssociation::aoa_num_updates(std::size_t value) noexcept -> auto & {
   if (value > 0) {
     prepareAoaParameters(value);
   }
@@ -110,23 +110,20 @@ auto AtlasObjectAssociation::push_back_aoa_atlas_id(std::uint8_t value) noexcept
   return *this;
 }
 
-auto AtlasObjectAssociation::push_back_aoa_object_idx(std::uint8_t value) noexcept -> auto & {
-  VERIFY_BITSTREAM(m_aoa_parameters);
-  m_aoa_parameters->aoa_object_idx.push_back(value);
+auto AtlasObjectAssociation::aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto & {
+  VERIFY_BITSTREAM(m_aoa_parameters && i < m_aoa_parameters->aoa_object_idx.size());
+  m_aoa_parameters->aoa_object_idx[i] = value;
   return *this;
 }
 
 auto AtlasObjectAssociation::aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j,
                                                               bool value) noexcept -> auto & {
   VERIFY_BITSTREAM(m_aoa_parameters && (i < aoa_num_updates()) && (j <= aoa_num_atlases_minus1()));
-  // TODO Cannot constexpr this - is that an issue? Same with other functions using vector. We need
-  // vector for dynamic memory
-  // TODO but we can offer noexcept, because the elements of the vectors are PODs
   m_aoa_parameters->aoa_object_in_atlas_present_flag[aoa_object_idx(i)][aoa_atlas_id(j)] = value;
   return *this;
 }
 
-constexpr void AtlasObjectAssociation::prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept {
+void AtlasObjectAssociation::prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept {
   if (!m_aoa_parameters) {
     m_aoa_parameters.emplace(AtlasObjectAssociationUpdateParameters{});
   }
@@ -134,6 +131,7 @@ constexpr void AtlasObjectAssociation::prepareAoaParameters(std::uint8_t aoa_num
     m_aoa_parameters->aoa_object_in_atlas_present_flag.emplace_back(
         std::vector<bool>(aoa_num_atlases_minus1() + 1U));
   }
+  m_aoa_parameters->aoa_object_idx = std::vector<std::uint8_t>(aoa_num_updates);
 }
 
 auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream & {
@@ -186,8 +184,8 @@ auto AtlasObjectAssociation::decodeFrom(Common::InputBitstream &bitstream)
       result.push_back_aoa_atlas_id(bitstream.readBits<std::uint8_t>(6));
     }
     for (std::size_t i = 0; i < result.aoa_num_updates(); ++i) {
-      result.push_back_aoa_object_idx(
-          bitstream.readBits<std::uint8_t>(result.aoa_log2_max_object_idx_tracked_minus1() + 1));
+      result.aoa_object_idx(
+          i, bitstream.readBits<std::uint8_t>(result.aoa_log2_max_object_idx_tracked_minus1() + 1));
       for (std::size_t j = 0; j <= result.aoa_num_atlases_minus1(); ++j) {
         result.aoa_object_in_atlas_present_flag(i, j, bitstream.getFlag());
       }

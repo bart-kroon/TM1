@@ -92,15 +92,7 @@ constexpr auto AtlasObjectAssociation::aoa_num_atlases_minus1(const std::uint8_t
 
 constexpr auto AtlasObjectAssociation::aoa_num_updates(std::size_t value) noexcept -> auto & {
   m_aoa_num_updates = value;
-  if (m_aoa_parameters) {
-    m_aoa_parameters.emplace(AtlasObjectAssociationUpdateParameters{});
-    // TODO should we offer an additional public function to set the optional? Or is usage
-    // constrained to this?
-  }
-  for (std::size_t i = 0; i < value; ++i) {
-    m_aoa_parameters->aoa_object_in_atlas_present_flag.emplace_back(
-        std::vector<bool>(aoa_num_atlases_minus1() + 1U));
-  }
+  prepareAoaParameters(value);
   return *this;
 }
 
@@ -111,15 +103,13 @@ AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1(std::uint8_t valu
   return *this;
 }
 
-auto AtlasObjectAssociation::push_back_aoa_atlas_id(std::uint8_t value) noexcept
-    -> auto & {
+auto AtlasObjectAssociation::push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto & {
   VERIFY_BITSTREAM(m_aoa_parameters);
   m_aoa_parameters->aoa_atlas_id.push_back(value);
   return *this;
 }
 
-auto AtlasObjectAssociation::push_back_aoa_object_idx(std::uint8_t value) noexcept
-    -> auto & {
+auto AtlasObjectAssociation::push_back_aoa_object_idx(std::uint8_t value) noexcept -> auto & {
   VERIFY_BITSTREAM(m_aoa_parameters);
   m_aoa_parameters->aoa_object_idx.push_back(value);
   return *this;
@@ -128,9 +118,21 @@ auto AtlasObjectAssociation::push_back_aoa_object_idx(std::uint8_t value) noexce
 auto AtlasObjectAssociation::aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j,
                                                               bool value) noexcept -> auto & {
   VERIFY_BITSTREAM(m_aoa_parameters && (i < aoa_num_updates()) && (j <= aoa_num_atlases_minus1()));
-  // TODO Cannot constexpr this - is that an issue?
+  // TODO Cannot constexpr this - is that an issue? Same with other functions using vector. We need
+  // vector for dynamic memory
+  // TODO but we can offer noexcept, because the elements of the vectors are PODs
   m_aoa_parameters->aoa_object_in_atlas_present_flag[aoa_object_idx(i)][aoa_atlas_id(j)] = value;
   return *this;
+}
+
+constexpr void AtlasObjectAssociation::prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept {
+  if (!m_aoa_parameters) {
+    m_aoa_parameters.emplace(AtlasObjectAssociationUpdateParameters{});
+  }
+  for (std::size_t i = 0; i < aoa_num_updates; ++i) {
+    m_aoa_parameters->aoa_object_in_atlas_present_flag.emplace_back(
+        std::vector<bool>(aoa_num_atlases_minus1() + 1U));
+  }
 }
 
 auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream & {

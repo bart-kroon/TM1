@@ -88,8 +88,8 @@ if (CMAKE_TESTING_ENABLED)
     add_executable(MivBitstreamTest
         "src/AccessUnitDelimiterRBSP.test.cpp"
         "src/AtlasAdaptationParameterSetRBSP.test.cpp"
-        "src/AtlasObjectAssociation.test.cpp"
         "src/AtlasFrameParameterSetRBSP.test.cpp"
+        "src/AtlasObjectAssociation.test.cpp"
         "src/AtlasSequenceParameterSetRBSP.test.cpp"
         "src/AtlasTileLayerRBSP.test.cpp"
         "src/CommonAtlasFrameRBSP.test.cpp"

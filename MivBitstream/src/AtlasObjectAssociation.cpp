@@ -44,11 +44,8 @@ auto AtlasObjectAssociation::aoa_num_atlases_minus1() const noexcept -> std::uin
   return m_aoa_num_atlases_minus1;
 }
 
-auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::uint8_t {
-  if (!m_aoa_parameters) {
-    return 0U;
-  }
-  return m_aoa_parameters->aoa_object_idx.size();
+auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::size_t {
+  return m_aoa_num_updates;
 }
 
 [[nodiscard]] auto AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1() const noexcept
@@ -139,7 +136,7 @@ auto AtlasObjectAssociation::decodeFrom(Common::InputBitstream &bitstream)
   result.aoa_persistence_flag(bitstream.getFlag());
   result.aoa_reset_flag(bitstream.getFlag());
   result.aoa_num_atlases_minus1(bitstream.readBits<std::uint8_t>(6));
-  bitstream.getUExpGolomb<std::size_t>();  // aoa_num_updates, put in class? Or just skip?
+  bitstream.getUExpGolomb<std::size_t>(); // aoa_num_updates, put in class? Or just skip?
   // TODO continue, start verifying
   return result;
 }

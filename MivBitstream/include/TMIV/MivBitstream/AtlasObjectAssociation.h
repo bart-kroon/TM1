@@ -63,13 +63,14 @@ public:
                          AtlasObjectAssociationUpdateParameters aoa_parameters)
       : m_aoa_persistence_flag{aoa_persistence_flag}
       , m_aoa_reset_flag{aoa_reset_flag}
-      , m_aoa_num_atlases_minus1(aoa_parameters.aoa_atlas_id.size() - 1U)
+      , m_aoa_num_atlases_minus1{static_cast<std::uint8_t>(aoa_parameters.aoa_atlas_id.size() - 1U)}
+      , m_aoa_num_updates{aoa_parameters.aoa_object_idx.size()}
       , m_aoa_parameters{std::move(aoa_parameters)} {}
 
   [[nodiscard]] auto aoa_persistence_flag() const noexcept -> bool;
   [[nodiscard]] auto aoa_reset_flag() const noexcept -> bool;
   [[nodiscard]] auto aoa_num_atlases_minus1() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_num_updates() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto aoa_num_updates() const noexcept -> std::size_t;
   [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t;
@@ -89,10 +90,11 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  bool m_aoa_persistence_flag;
-  bool m_aoa_reset_flag;
-  std::uint8_t m_aoa_num_atlases_minus1;
-  std::optional<AtlasObjectAssociationUpdateParameters> m_aoa_parameters;
+  bool m_aoa_persistence_flag{};
+  bool m_aoa_reset_flag{};
+  std::uint8_t m_aoa_num_atlases_minus1{};
+  std::size_t m_aoa_num_updates{};
+  std::optional<AtlasObjectAssociationUpdateParameters> m_aoa_parameters{};
 };
 } // namespace TMIV::MivBitstream
 

@@ -85,7 +85,7 @@ Syntax structures are in this context defined by the MIV and V-PCC/V3C specifica
     - Indicate if the limitation is due to MIV e.g. `asps_long_term_ref_atlas_frames_flag == 0` in `RefListStruct` (in TMIV 6.1)
     - or due to the implementation, e.g. `vui_hrd_parameters_present_flag = 0` in `VuiParameters` (in TMIV 6.1)
 - Although most current modules (=.cpp/.hpp/.h tuple) are at RBSP level, containing all syntax structures carried within, it is allowed to have a new module for a new syntax structure however small or big.
-- The public interface has to match exactly with the syntax structure.
+- The public interface has to match exactly with the syntax structure. TODO(bartkroon) can we offer addtional API?
 - The implementation of the getters and setters shall check all semantics that can be checked in that context.
 - The parser/formatter (decodeFrom/encodeTo) shall check all semantics that can be checked in that context.
 

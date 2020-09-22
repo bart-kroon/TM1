@@ -221,8 +221,8 @@ public:
   }
 
   void parseAtlasObjectAssociationSei(TMIV::Common::InputBitstream &bitstream) {
-    const auto gup = TMIV::MivBitstream::AtlasObjectAssociation::decodeFrom(bitstream);
-    m_log << gup;
+    const auto aoa = TMIV::MivBitstream::AtlasObjectAssociation::decodeFrom(bitstream);
+    m_log << aoa;
   }
 
 private:

@@ -92,7 +92,9 @@ constexpr auto AtlasObjectAssociation::aoa_num_atlases_minus1(const std::uint8_t
 
 constexpr auto AtlasObjectAssociation::aoa_num_updates(std::size_t value) noexcept -> auto & {
   m_aoa_num_updates = value;
-  prepareAoaParameters(value);
+  if (value > 0) {
+    prepareAoaParameters(value);
+  }
   return *this;
 }
 

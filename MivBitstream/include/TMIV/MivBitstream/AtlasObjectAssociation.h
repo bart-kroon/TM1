@@ -97,6 +97,7 @@ public:
 
 private:
   constexpr void prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept;
+
   bool m_aoa_persistence_flag{};
   bool m_aoa_reset_flag{};
   std::uint8_t m_aoa_num_atlases_minus1{};

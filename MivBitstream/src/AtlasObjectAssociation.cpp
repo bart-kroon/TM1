@@ -48,30 +48,29 @@ auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::size_t {
   return m_aoa_num_updates;
 }
 
-[[nodiscard]] auto AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1() const noexcept
+auto AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1() const noexcept
     -> std::uint8_t {
   VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
   return m_aoa_parameters->aoa_log2_max_object_idx_tracked_minus1;
 }
 
-[[nodiscard]] auto AtlasObjectAssociation::aoa_atlas_id(std::size_t j) const noexcept
-    -> std::uint8_t {
+auto AtlasObjectAssociation::aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && j <= aoa_num_atlases_minus1());
   return m_aoa_parameters->aoa_atlas_id[j];
 }
 
-[[nodiscard]] auto AtlasObjectAssociation::aoa_object_idx(std::size_t i) const noexcept
-    -> std::uint8_t {
-
+auto AtlasObjectAssociation::aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && i < aoa_num_updates());
   return m_aoa_parameters->aoa_object_idx[i];
 }
 
-[[nodiscard]] auto
-AtlasObjectAssociation::aoa_object_in_atlas_present_flag(std::size_t i,
-                                                         std::size_t j) const noexcept -> bool {
+auto AtlasObjectAssociation::aoa_object_in_atlas_present_flag(std::size_t i,
+                                                              std::size_t j) const noexcept
+    -> bool {
   VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
-  // TODO do we need to check ranges here?
+  VERIFY_BITSTREAM(aoa_object_idx(i) < m_aoa_parameters->aoa_object_in_atlas_present_flag.size());
+  VERIFY_BITSTREAM(aoa_atlas_id(j) <
+                   m_aoa_parameters->aoa_object_in_atlas_present_flag[aoa_object_idx(i)].size());
   return m_aoa_parameters->aoa_object_in_atlas_present_flag[aoa_object_idx(i)][aoa_atlas_id(j)];
 }
 

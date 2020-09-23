@@ -31,3 +31,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "test.h"
+
+#include <TMIV/MivBitstream/SceneObjectInformation.h>
+namespace TMIV::MivBitstream {
+TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syntax]") {}
+} // namespace TMIV::MivBitstream

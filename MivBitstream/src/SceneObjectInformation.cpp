@@ -32,3 +32,27 @@
  */
 
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
+
+namespace TMIV::MivBitstream {
+auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream & {
+  return stream;
+}
+
+auto SceneObjectInformation::operator==(const SceneObjectInformation &other) const noexcept
+    -> bool {
+  return true; // TODO implement
+}
+
+auto SceneObjectInformation::operator!=(const SceneObjectInformation &other) const noexcept
+    -> bool {
+  return !operator==(other);
+}
+
+auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
+    -> SceneObjectInformation {
+  SceneObjectInformation result{};
+  return result;
+}
+
+void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const {}
+} // namespace TMIV::MivBitstream

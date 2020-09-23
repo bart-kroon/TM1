@@ -90,6 +90,15 @@ public:
   [[nodiscard]] auto soi_material_id_update_flag(std::size_t k) const noexcept -> bool;
   [[nodiscard]] auto soi_material_id(std::size_t k) const noexcept -> std::uint16_t;
 
+  friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
+
+  auto operator==(const SceneObjectInformation &other) const noexcept -> bool;
+  auto operator!=(const SceneObjectInformation &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> SceneObjectInformation;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
 private:
 };
 } // namespace TMIV::MivBitstream

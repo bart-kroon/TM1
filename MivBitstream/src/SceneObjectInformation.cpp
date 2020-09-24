@@ -39,73 +39,72 @@ auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {
 }
 auto SceneObjectInformation::soi_reset_flag() const noexcept -> bool { return m_soi_reset_flag; }
 auto SceneObjectInformation::soi_num_object_updates() const noexcept -> std::size_t {
-  return m_sceneObjectUpdates.soi_num_object_updates();
+  return m_object_updates.size();
 }
 auto SceneObjectInformation::soi_simple_objects_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_object_label_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_priority_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_object_hidden_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_object_dependency_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_visibility_cones_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_collision_shape_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_point_style_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_material_id_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_extension_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return !m_sceneObjectUpdates.soi_simple_objects_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return !m_soi_simple_objects_flag;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value() &&
-                   m_sceneObjectUpdates.soi_3d_bounding_box_present_flag());
-  return m_sceneObjectUpdates.soi_3d_bounding_box_scale_log2;
+  VERIFY_BITSTREAM(!m_object_updates.empty() && soi_3d_bounding_box_present_flag());
+  return m_soi_3d_bounding_box_scale_log2;
 }
 auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value());
-  return m_sceneObjectUpdates.soi_log2_max_object_idx_updated_minus1;
+  VERIFY_BITSTREAM(!m_object_updates.empty());
+  return m_soi_log2_max_object_idx_updated_minus1;
 }
 auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value() &&
-                   m_sceneObjectUpdates.soi_object_dependency_present_flag());
-  return m_sceneObjectUpdates.soi_log2_max_object_dependency_idx;
+  VERIFY_BITSTREAM(!m_object_updates.empty() && soi_object_dependency_present_flag());
+  return m_soi_log2_max_object_dependency_idx;
 }
 auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(m_sceneObjectUpdates.has_value() && i < soi_num_object_updates());
-  return m_sceneObjectUpdates.m_object_updates[i].soi_object_idx;
+  VERIFY_BITSTREAM(!m_object_updates.empty() && i < soi_num_object_updates());
+  return m_object_updates[i].soi_object_idx;
 }
 auto SceneObjectInformation::soi_object_cancel_flag(std::size_t k) const noexcept -> bool {
-  return m_sceneObjectUpdates.m_object_updates[k].soi_object_cancel_flag;
+  VERIFY_BITSTREAM(!m_object_updates.empty() && k < soi_num_object_updates());
+  return m_object_updates[k].soi_object_cancel_flag;
 }
 auto SceneObjectInformation::soi_object_label_update_flag(std::size_t k) const noexcept -> bool {
   return true;
@@ -243,7 +242,11 @@ auto SceneObjectInformation::operator==(const SceneObjectInformation &other) con
     -> bool {
   return (m_soi_persistence_flag == other.m_soi_persistence_flag) &&
          (m_soi_reset_flag == other.m_soi_reset_flag) &&
-         (m_sceneObjectUpdates == other.m_sceneObjectUpdates);
+         (m_soi_simple_objects_flag == other.m_soi_simple_objects_flag) &&
+         (m_soi_3d_bounding_box_scale_log2 == other.m_soi_3d_bounding_box_scale_log2) &&
+         (m_soi_log2_max_object_idx_updated_minus1 ==
+          other.m_soi_log2_max_object_idx_updated_minus1) &&
+         (m_object_updates == other.m_object_updates);
 }
 
 auto SceneObjectInformation::operator!=(const SceneObjectInformation &other) const noexcept
@@ -257,30 +260,30 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
   result.soi_persistence_flag(bitstream.getFlag());
   result.soi_reset_flag(bitstream.getFlag());
 
-  SceneObjectUpdates sceneObjectUpdates{};
-  sceneObjectUpdates.soi_num_object_updates(bitstream.getUExpGolomb<std::size_t>());
-  if (sceneObjectUpdates.soi_num_object_updates() > 0) {
-    sceneObjectUpdates.soi_simple_objects_flag = bitstream.getFlag();
+  result.soi_num_object_updates(bitstream.getUExpGolomb<std::size_t>());
+  if (result.soi_num_object_updates() > 0) {
+    result.soi_simple_objects_flag(bitstream.getFlag());
     const int numberOfSimpleObjectFlags = 9;
     for (int i = 0; i < numberOfSimpleObjectFlags; ++i) {
       bitstream.getFlag();
     }
-    if (sceneObjectUpdates.soi_3d_bounding_box_present_flag()) {
-      sceneObjectUpdates.soi_3d_bounding_box_scale_log2 = bitstream.readBits<std::uint8_t>(5);
+    if (result.soi_3d_bounding_box_present_flag()) {
+      result.soi_3d_bounding_box_scale_log2(bitstream.readBits<std::uint8_t>(5));
     }
-    sceneObjectUpdates.soi_log2_max_object_idx_updated_minus1 = bitstream.readBits<std::uint8_t>(5);
-    if (sceneObjectUpdates.soi_object_dependency_present_flag()) {
-      sceneObjectUpdates.soi_log2_max_object_dependency_idx = bitstream.readBits<std::uint8_t>(5);
+    result.soi_log2_max_object_idx_updated_minus1(bitstream.readBits<std::uint8_t>(5));
+    if (result.soi_object_dependency_present_flag()) {
+      result.soi_log2_max_object_dependency_idx(bitstream.readBits<std::uint8_t>(5));
     }
   }
-  for (std::size_t i = 0; i < sceneObjectUpdates.soi_num_object_updates(); ++i) {
-    sceneObjectUpdates.m_object_updates[i].soi_object_idx = bitstream.readBits<std::size_t>(
-        sceneObjectUpdates.soi_log2_max_object_idx_updated_minus1 + 1);
-    const auto k = sceneObjectUpdates.m_object_updates[i].soi_object_idx;
-    auto &currentObjectUpdate = sceneObjectUpdates.m_object_updates[k];
+  std::vector<SceneObjectUpdate> updates(result.soi_num_object_updates());
+  for (std::size_t i = 0; i < result.soi_num_object_updates(); ++i) {
+    updates[i].soi_object_idx = bitstream.readBits<std::size_t>(
+        result.soi_log2_max_object_idx_updated_minus1() + 1);
+    const auto k = updates[i].soi_object_idx;
+    auto &currentObjectUpdate = updates[k];
     currentObjectUpdate.soi_object_cancel_flag = bitstream.getFlag();
   }
-  result.setSceneObjectUpdates(std::move(sceneObjectUpdates));
+  result.setSceneObjectUpdates(std::move(updates));
   return result;
 }
 

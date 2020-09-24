@@ -39,18 +39,21 @@
 
 namespace TMIV::MivBitstream {
 namespace {
-auto makeSceneObjectUpdates(bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
-                            std::uint8_t soi_log2_max_object_idx_updated_minus1,
-                            std::uint8_t soi_3d_bounding_box_scale_log2 = 0,
-                            std::uint8_t soi_log2_max_object_dependency_idx = 0)
-    -> SceneObjectUpdates {
-  SceneObjectUpdates updates{};
-  updates.soi_simple_objects_flag = soi_simple_objects_flag;
-  updates.soi_num_object_updates(soi_num_object_updates);
-  updates.soi_3d_bounding_box_scale_log2 = soi_3d_bounding_box_scale_log2;
-  updates.soi_log2_max_object_idx_updated_minus1 = soi_log2_max_object_idx_updated_minus1;
-  updates.soi_log2_max_object_dependency_idx = soi_log2_max_object_dependency_idx;
-  std::generate(updates.m_object_updates.begin(), updates.m_object_updates.end(),
+auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
+                                bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
+                                std::uint8_t soi_log2_max_object_idx_updated_minus1,
+                                std::uint8_t soi_3d_bounding_box_scale_log2 = 0,
+                                std::uint8_t soi_log2_max_object_dependency_idx = 0)
+    -> SceneObjectInformation {
+  SceneObjectInformation soi{};
+  soi.soi_persistence_flag(soi_persistence_flag);
+  soi.soi_reset_flag(soi_reset_flag);
+  soi.soi_simple_objects_flag(soi_simple_objects_flag);
+  soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
+  soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
+  soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
+  auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
+  std::generate(updates.begin(), updates.end(),
                 [soi_object_idx = 0, soi_object_cancel_flag = false]() mutable {
                   SceneObjectUpdate update{};
                   update.soi_object_idx = soi_object_idx++;
@@ -58,7 +61,8 @@ auto makeSceneObjectUpdates(bool soi_simple_objects_flag, std::size_t soi_num_ob
                   soi_object_cancel_flag = !soi_object_cancel_flag;
                   return update;
                 });
-  return updates;
+  soi.setSceneObjectUpdates(std::move(updates));
+  return soi;
 }
 } // namespace
 
@@ -75,7 +79,6 @@ soi_num_object_updates=0
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
-  SceneObjectInformation unit{};
   std::size_t expected_number_of_bits =
       1    // soi_persistence_flag
       + 1  // soi_reset_flag
@@ -84,8 +87,7 @@ soi_num_object_updates=0
       + 5; // soi_log2_max_object_idx_updated_minus1
 
   SECTION("Custom fields, simple objects") {
-    unit.soi_persistence_flag(false).soi_reset_flag(true);
-    unit.setSceneObjectUpdates(makeSceneObjectUpdates(true, 4, 2));
+    const auto unit{makeSceneObjectInformation(false, true, true, 4, 2)};
     REQUIRE(toString(unit) == R"(soi_persistence_flag=false
 soi_reset_flag=true
 soi_num_object_updates=4
@@ -119,8 +121,7 @@ soi_object_cancel_flag=true
   }
 
   SECTION("Custom fields, complex objects") {
-    unit.soi_persistence_flag(true).soi_reset_flag(false);
-    unit.setSceneObjectUpdates(makeSceneObjectUpdates(false, 2, 1, 1, 2));
+    const auto unit{makeSceneObjectInformation(true, false, false, 2, 1, 1, 2)};
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
 soi_num_object_updates=2

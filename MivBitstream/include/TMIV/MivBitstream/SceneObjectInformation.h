@@ -52,41 +52,6 @@ struct SceneObjectUpdate {
   bool soi_object_cancel_flag{};
 };
 
-struct SceneObjectUpdates {
-  [[nodiscard]] auto has_value() const noexcept -> bool { return !m_object_updates.empty(); }
-  [[nodiscard]] auto soi_3d_bounding_box_present_flag() const noexcept -> bool {
-    return !soi_simple_objects_flag;
-  }
-  [[nodiscard]] auto soi_object_dependency_present_flag() const noexcept -> bool {
-    return !soi_simple_objects_flag;
-  }
-  [[nodiscard]] auto soi_num_object_updates() const noexcept -> std::size_t {
-    return m_object_updates.size();
-  }
-
-  auto soi_num_object_updates(std::size_t value) noexcept -> void {
-    m_object_updates = std::vector<SceneObjectUpdate>(value);
-  }
-
-  auto operator==(const SceneObjectUpdates &other) const noexcept -> bool {
-    return (soi_simple_objects_flag == other.soi_simple_objects_flag) &&
-           (soi_3d_bounding_box_scale_log2 == other.soi_3d_bounding_box_scale_log2) &&
-           (soi_log2_max_object_idx_updated_minus1 ==
-            other.soi_log2_max_object_idx_updated_minus1) &&
-           (m_object_updates == other.m_object_updates); // TODO complete
-  }
-
-  auto operator!=(const SceneObjectUpdates &other) const noexcept -> bool {
-    return !operator==(other);
-  }
-
-  bool soi_simple_objects_flag{};
-  std::uint8_t soi_3d_bounding_box_scale_log2{};
-  std::uint8_t soi_log2_max_object_idx_updated_minus1{};
-  std::uint8_t soi_log2_max_object_dependency_idx{};
-  std::vector<SceneObjectUpdate> m_object_updates{};
-};
-
 // 23090-12: scene_object_information ( payloadSize )
 class SceneObjectInformation {
 public:
@@ -146,8 +111,29 @@ public:
     m_soi_reset_flag = value;
     return *this;
   }
-  auto setSceneObjectUpdates(SceneObjectUpdates &&updates) noexcept -> void {
-    m_sceneObjectUpdates = std::move(updates);
+  auto soi_num_object_updates(const std::uint8_t value) noexcept -> auto & {
+    m_object_updates = std::vector<SceneObjectUpdate>(value);
+    return *this;
+  }
+  constexpr auto soi_simple_objects_flag(const bool value) noexcept -> auto & {
+    m_soi_simple_objects_flag = value;
+    return *this;
+  }
+  constexpr auto soi_3d_bounding_box_scale_log2(const std::uint8_t value) noexcept -> auto & {
+    m_soi_3d_bounding_box_scale_log2 = value;
+    return *this;
+  }
+  constexpr auto soi_log2_max_object_idx_updated_minus1(const std::uint8_t value) noexcept
+      -> auto & {
+    m_soi_log2_max_object_idx_updated_minus1 = value;
+    return *this;
+  }
+  constexpr auto soi_log2_max_object_dependency_idx(const std::uint8_t value) noexcept -> auto & {
+    m_soi_log2_max_object_dependency_idx = value;
+    return *this;
+  }
+  auto setSceneObjectUpdates(std::vector<SceneObjectUpdate> &&updates) noexcept -> void {
+    m_object_updates = std::move(updates);
   }
 
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
@@ -162,7 +148,11 @@ public:
 private:
   bool m_soi_persistence_flag{};
   bool m_soi_reset_flag{};
-  SceneObjectUpdates m_sceneObjectUpdates{};
+  bool m_soi_simple_objects_flag{};
+  std::uint8_t m_soi_3d_bounding_box_scale_log2{};
+  std::uint8_t m_soi_log2_max_object_idx_updated_minus1{};
+  std::uint8_t m_soi_log2_max_object_dependency_idx{};
+  std::vector<SceneObjectUpdate> m_object_updates{};
 };
 } // namespace TMIV::MivBitstream
 

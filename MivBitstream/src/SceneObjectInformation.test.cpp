@@ -35,6 +35,8 @@
 
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
 
+#include <utility>
+
 namespace TMIV::MivBitstream {
 TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syntax]") {
   SECTION("Default constructor") {
@@ -49,15 +51,20 @@ soi_num_object_updates=0
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
+  SceneObjectInformation unit{};
+  SceneObjectUpdates updates{};
   std::size_t expected_number_of_bits =
       1    // soi_persistence_flag
       + 1  // soi_reset_flag
       + 1  // soi_simple_objects_flag
-      + 9; // soi_object_label_present_flag ... soi_extension_present_flag
+      + 9  // soi_object_label_present_flag ... soi_extension_present_flag
+      + 5; // soi_log2_max_object_idx_updated_minus1
 
   SECTION("Custom fields, complex objects") {
-    SceneObjectInformation unit{};
-    unit.soi_persistence_flag(true).soi_reset_flag(false).soi_num_object_updates(2);
+    unit.soi_persistence_flag(true).soi_reset_flag(false);
+    updates.soi_num_object_updates(2);
+    updates.soi_3d_bounding_box_scale_log2 = 1;
+    unit.setSceneObjectUpdates(std::move(updates));
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
 soi_num_object_updates=2
@@ -72,15 +79,18 @@ soi_collision_shape_present_flag=true
 soi_point_style_present_flag=true
 soi_material_id_present_flag=true
 soi_extension_present_flag=true
+soi_3d_bounding_box_scale_log2=1
 )");
-    expected_number_of_bits += 3; // soi_num_object_updates
+    expected_number_of_bits += 3    // soi_num_object_updates
+                               + 5; // soi_3d_bounding_box_scale_log2
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
   SECTION("Custom fields, simple objects") {
-    SceneObjectInformation unit{};
-    unit.soi_persistence_flag(false).soi_reset_flag(true).soi_num_object_updates(5);
-    unit.soi_simple_objects_flag(true);
+    unit.soi_persistence_flag(false).soi_reset_flag(true);
+    updates.soi_simple_objects_flag = true;
+    updates.soi_num_object_updates(5);
+    unit.setSceneObjectUpdates(std::move(updates));
     REQUIRE(toString(unit) == R"(soi_persistence_flag=false
 soi_reset_flag=true
 soi_num_object_updates=5

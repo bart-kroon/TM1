@@ -38,45 +38,46 @@
 
 #include <cstdint>
 #include <ostream>
+#include <utility>
 #include <vector>
 
 namespace TMIV::MivBitstream {
 
 struct SceneObjectUpdate {
   auto operator==(const SceneObjectUpdate &other) const noexcept -> bool {
-    return m_soi_object_idx == other.m_soi_object_idx; // TODO complete
+    return soi_object_idx == other.soi_object_idx; // TODO complete
   }
-  std::uint8_t m_soi_object_idx{};
+  std::uint8_t soi_object_idx{};
 };
 
-class SceneObjectUpdates {
-public:
-  //   operator bool?
+struct SceneObjectUpdates {
   [[nodiscard]] auto has_value() const noexcept -> bool { return !m_object_updates.empty(); }
-
+  [[nodiscard]] auto soi_3d_bounding_box_present_flag() const noexcept -> bool {
+    return !soi_simple_objects_flag;
+  }
   [[nodiscard]] auto soi_num_object_updates() const noexcept -> std::size_t {
     return m_object_updates.size();
   }
 
-  [[nodiscard]] auto soi_simple_objects_flag() const noexcept -> bool {
-    return m_soi_simple_objects_flag;
-  }
-
-  auto soi_num_object_updates(const std::size_t value) noexcept -> void {
+  auto soi_num_object_updates(std::size_t value) noexcept -> void {
     m_object_updates = std::vector<SceneObjectUpdate>(value);
   }
 
   auto operator==(const SceneObjectUpdates &other) const noexcept -> bool {
-    return (m_soi_simple_objects_flag == other.m_soi_simple_objects_flag) &&
-           (m_object_updates == other.m_object_updates);
+    return (soi_simple_objects_flag == other.soi_simple_objects_flag) &&
+           (soi_3d_bounding_box_scale_log2 == other.soi_3d_bounding_box_scale_log2) &&
+           (soi_log2_max_object_idx_updated_minus1 ==
+            other.soi_log2_max_object_idx_updated_minus1) &&
+           (m_object_updates == other.m_object_updates); // TODO complete
   }
 
-  constexpr auto soi_simple_objects_flag(const bool value) noexcept -> void {
-    m_soi_simple_objects_flag = value;
+  auto operator!=(const SceneObjectUpdates &other) const noexcept -> bool {
+    return !operator==(other);
   }
 
-private:
-  bool m_soi_simple_objects_flag{};
+  bool soi_simple_objects_flag{};
+  std::uint8_t soi_3d_bounding_box_scale_log2{};
+  std::uint8_t soi_log2_max_object_idx_updated_minus1{};
   std::vector<SceneObjectUpdate> m_object_updates{};
 };
 
@@ -139,13 +140,8 @@ public:
     m_soi_reset_flag = value;
     return *this;
   }
-  auto soi_num_object_updates(const std::size_t value) noexcept -> auto & {
-    m_object_updates.soi_num_object_updates(value);
-    return *this;
-  }
-  constexpr auto soi_simple_objects_flag(const bool value) noexcept -> auto & {
-    m_object_updates.soi_simple_objects_flag(value);
-    return *this;
+  auto setSceneObjectUpdates(SceneObjectUpdates &&updates) noexcept -> void {
+    m_object_updates = std::move(updates);
   }
 
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;

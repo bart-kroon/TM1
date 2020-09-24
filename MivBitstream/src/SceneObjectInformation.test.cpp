@@ -38,7 +38,7 @@
 namespace TMIV::MivBitstream {
 TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syntax]") {
   SECTION("Default constructor") {
-    SceneObjectInformation unit{};
+    const SceneObjectInformation unit{};
     REQUIRE(toString(unit) == R"(soi_persistence_flag=false
 soi_reset_flag=false
 soi_num_object_updates=0
@@ -49,8 +49,55 @@ soi_num_object_updates=0
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
-  //  SECTION("Custom fields") {
-  //    SceneObjectInformation unit{};
-  //  }
+  std::size_t expected_number_of_bits =
+      1    // soi_persistence_flag
+      + 1  // soi_reset_flag
+      + 1  // soi_simple_objects_flag
+      + 9; // soi_object_label_present_flag ... soi_extension_present_flag
+
+  SECTION("Custom fields, complex objects") {
+    SceneObjectInformation unit{};
+    unit.soi_persistence_flag(true).soi_reset_flag(false).soi_num_object_updates(2);
+    REQUIRE(toString(unit) == R"(soi_persistence_flag=true
+soi_reset_flag=false
+soi_num_object_updates=2
+soi_simple_objects_flag=false
+soi_object_label_present_flag=true
+soi_priority_present_flag=true
+soi_object_hidden_present_flag=true
+soi_object_dependency_present_flag=true
+soi_visibility_cones_present_flag=true
+soi_3d_bounding_box_present_flag=true
+soi_collision_shape_present_flag=true
+soi_point_style_present_flag=true
+soi_material_id_present_flag=true
+soi_extension_present_flag=true
+)");
+    expected_number_of_bits += 3; // soi_num_object_updates
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+  }
+
+  SECTION("Custom fields, simple objects") {
+    SceneObjectInformation unit{};
+    unit.soi_persistence_flag(false).soi_reset_flag(true).soi_num_object_updates(5);
+    unit.soi_simple_objects_flag(true);
+    REQUIRE(toString(unit) == R"(soi_persistence_flag=false
+soi_reset_flag=true
+soi_num_object_updates=5
+soi_simple_objects_flag=true
+soi_object_label_present_flag=false
+soi_priority_present_flag=false
+soi_object_hidden_present_flag=false
+soi_object_dependency_present_flag=false
+soi_visibility_cones_present_flag=false
+soi_3d_bounding_box_present_flag=false
+soi_collision_shape_present_flag=false
+soi_point_style_present_flag=false
+soi_material_id_present_flag=false
+soi_extension_present_flag=false
+)");
+    expected_number_of_bits += 5; // soi_num_object_updates
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+  }
 }
 } // namespace TMIV::MivBitstream

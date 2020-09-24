@@ -71,6 +71,10 @@ public:
            (m_object_updates == other.m_object_updates);
   }
 
+  constexpr auto soi_simple_objects_flag(const bool value) noexcept -> void {
+    m_soi_simple_objects_flag = value;
+  }
+
 private:
   bool m_soi_simple_objects_flag{};
   std::vector<SceneObjectUpdate> m_object_updates{};
@@ -84,6 +88,7 @@ public:
   [[nodiscard]] auto soi_num_object_updates() const noexcept -> std::size_t;
   [[nodiscard]] auto soi_simple_objects_flag() const noexcept -> bool;
   [[nodiscard]] auto soi_object_label_present_flag() const noexcept -> bool;
+  [[nodiscard]] auto soi_priority_present_flag() const noexcept -> bool;
   [[nodiscard]] auto soi_object_hidden_present_flag() const noexcept -> bool;
   [[nodiscard]] auto soi_object_dependency_present_flag() const noexcept -> bool;
   [[nodiscard]] auto soi_visibility_cones_present_flag() const noexcept -> bool;
@@ -130,12 +135,16 @@ public:
     m_soi_persistence_flag = value;
     return *this;
   }
-  constexpr auto soi_reset_flag(const bool value) noexcept -> auto &{
+  constexpr auto soi_reset_flag(const bool value) noexcept -> auto & {
     m_soi_reset_flag = value;
     return *this;
   }
-  auto soi_num_object_updates(const std::size_t value) noexcept -> auto &{
+  auto soi_num_object_updates(const std::size_t value) noexcept -> auto & {
     m_object_updates.soi_num_object_updates(value);
+    return *this;
+  }
+  constexpr auto soi_simple_objects_flag(const bool value) noexcept -> auto & {
+    m_object_updates.soi_simple_objects_flag(value);
     return *this;
   }
 

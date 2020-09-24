@@ -49,6 +49,10 @@ auto SceneObjectInformation::soi_object_label_present_flag() const noexcept -> b
   VERIFY_BITSTREAM(m_object_updates.has_value());
   return !m_object_updates.soi_simple_objects_flag();
 }
+auto SceneObjectInformation::soi_priority_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
 auto SceneObjectInformation::soi_object_hidden_present_flag() const noexcept -> bool {
   VERIFY_BITSTREAM(m_object_updates.has_value());
   return !m_object_updates.soi_simple_objects_flag();
@@ -188,6 +192,29 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
   stream << "soi_persistence_flag=" << std::boolalpha << x.soi_persistence_flag() << "\n";
   stream << "soi_reset_flag=" << std::boolalpha << x.soi_reset_flag() << "\n";
   stream << "soi_num_object_updates=" << x.soi_num_object_updates() << "\n";
+  if (x.soi_num_object_updates() > 0) {
+    stream << "soi_simple_objects_flag=" << std::boolalpha << x.soi_simple_objects_flag() << "\n";
+    stream << "soi_object_label_present_flag=" << std::boolalpha
+           << x.soi_object_label_present_flag() << "\n";
+    stream << "soi_priority_present_flag=" << std::boolalpha << x.soi_priority_present_flag()
+           << "\n";
+    stream << "soi_object_hidden_present_flag=" << std::boolalpha
+           << x.soi_object_hidden_present_flag() << "\n";
+    stream << "soi_object_dependency_present_flag=" << std::boolalpha
+           << x.soi_object_dependency_present_flag() << "\n";
+    stream << "soi_visibility_cones_present_flag=" << std::boolalpha
+           << x.soi_visibility_cones_present_flag() << "\n";
+    stream << "soi_3d_bounding_box_present_flag=" << std::boolalpha
+           << x.soi_3d_bounding_box_present_flag() << "\n";
+    stream << "soi_collision_shape_present_flag=" << std::boolalpha
+           << x.soi_collision_shape_present_flag() << "\n";
+    stream << "soi_point_style_present_flag=" << std::boolalpha << x.soi_point_style_present_flag()
+           << "\n";
+    stream << "soi_material_id_present_flag=" << std::boolalpha << x.soi_material_id_present_flag()
+           << "\n";
+    stream << "soi_extension_present_flag=" << std::boolalpha << x.soi_extension_present_flag()
+           << "\n";
+  }
   return stream;
 }
 
@@ -209,6 +236,13 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
   result.soi_persistence_flag(bitstream.getFlag());
   result.soi_reset_flag(bitstream.getFlag());
   result.soi_num_object_updates(bitstream.getUExpGolomb<std::size_t>());
+  if (result.soi_num_object_updates() > 0) {
+    result.soi_simple_objects_flag(bitstream.getFlag());
+    const int numberOfSimpleObjectFlags = 9;
+    for (int i = 0; i < numberOfSimpleObjectFlags; ++i) {
+      bitstream.getFlag();
+    }
+  }
   return result;
 }
 
@@ -216,5 +250,17 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
   bitstream.putFlag(soi_persistence_flag());
   bitstream.putFlag(soi_reset_flag());
   bitstream.putUExpGolomb(soi_num_object_updates());
+  if (soi_num_object_updates() > 0) {
+    bitstream.putFlag(soi_simple_objects_flag());
+    bitstream.putFlag(soi_object_label_present_flag());
+    bitstream.putFlag(soi_priority_present_flag());
+    bitstream.putFlag(soi_object_hidden_present_flag());
+    bitstream.putFlag(soi_visibility_cones_present_flag());
+    bitstream.putFlag(soi_3d_bounding_box_present_flag());
+    bitstream.putFlag(soi_collision_shape_present_flag());
+    bitstream.putFlag(soi_point_style_present_flag());
+    bitstream.putFlag(soi_material_id_present_flag());
+    bitstream.putFlag(soi_extension_present_flag());
+  }
 }
 } // namespace TMIV::MivBitstream

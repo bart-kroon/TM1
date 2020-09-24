@@ -291,7 +291,7 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
     const auto k = updates[i].soi_object_idx;
     auto &currentObjectUpdate = updates[k];
     currentObjectUpdate.soi_object_cancel_flag = bitstream.getFlag();
-    if (currentObjectUpdate.soi_object_cancel_flag) {
+    if (!currentObjectUpdate.soi_object_cancel_flag) {
       if (result.soi_object_label_present_flag()) {
         currentObjectUpdate.soi_object_label_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_object_label_update_flag) {

@@ -59,7 +59,10 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
                   SceneObjectUpdate update{};
                   update.soi_object_idx = soi_object_idx;
                   update.soi_object_cancel_flag = soi_object_cancel_flag;
-                  update.soi_object_label_update_flag = !soi_object_cancel_flag;
+                  update.soi_object_label_update_flag =
+                      !soi_object_cancel_flag; // TODO: this conflicts with soi_simple_objects_flag:
+                                               // it may not be set when that one is true. Use
+                                               // optional to signal unset parameters
                   update.soi_object_label_idx = soi_object_idx;
                   update.soi_priority_update_flag = soi_object_cancel_flag;
                   update.soi_priority_value = soi_object_idx / 2;

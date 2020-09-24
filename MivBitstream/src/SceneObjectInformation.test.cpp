@@ -38,6 +38,28 @@
 #include <utility>
 
 namespace TMIV::MivBitstream {
+namespace {
+auto makeSceneObjectUpdates(bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
+                            std::uint8_t soi_log2_max_object_idx_updated_minus1,
+                            std::uint8_t soi_3d_bounding_box_scale_log2 = 0,
+                            std::uint8_t soi_log2_max_object_dependency_idx = 0)
+    -> SceneObjectUpdates {
+  SceneObjectUpdates updates{};
+  updates.soi_simple_objects_flag = soi_simple_objects_flag;
+  updates.soi_num_object_updates(soi_num_object_updates);
+  updates.soi_3d_bounding_box_scale_log2 = soi_3d_bounding_box_scale_log2;
+  updates.soi_log2_max_object_idx_updated_minus1 = soi_log2_max_object_idx_updated_minus1;
+  updates.soi_log2_max_object_dependency_idx = soi_log2_max_object_dependency_idx;
+  std::generate(updates.m_object_updates.begin(), updates.m_object_updates.end(),
+                [soi_object_idx = 0]() mutable {
+                  SceneObjectUpdate update{};
+                  update.soi_object_idx = soi_object_idx++;
+                  return update;
+                });
+  return updates;
+}
+} // namespace
+
 TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syntax]") {
   SECTION("Default constructor") {
     const SceneObjectInformation unit{};
@@ -52,7 +74,6 @@ soi_num_object_updates=0
   }
 
   SceneObjectInformation unit{};
-  SceneObjectUpdates updates{};
   std::size_t expected_number_of_bits =
       1    // soi_persistence_flag
       + 1  // soi_reset_flag
@@ -62,16 +83,7 @@ soi_num_object_updates=0
 
   SECTION("Custom fields, simple objects") {
     unit.soi_persistence_flag(false).soi_reset_flag(true);
-    updates.soi_simple_objects_flag = true;
-    updates.soi_num_object_updates(4);
-    updates.soi_log2_max_object_idx_updated_minus1 = 2;
-    std::generate(updates.m_object_updates.begin(), updates.m_object_updates.end(),
-                  [soi_object_idx = 0]() mutable {
-                    SceneObjectUpdate result{};
-                    result.soi_object_idx = soi_object_idx++;
-                    return result;
-                  });
-    unit.setSceneObjectUpdates(std::move(updates));
+    unit.setSceneObjectUpdates(makeSceneObjectUpdates(true, 4, 2));
     REQUIRE(toString(unit) == R"(soi_persistence_flag=false
 soi_reset_flag=true
 soi_num_object_updates=4
@@ -101,17 +113,7 @@ soi_object_idx=3
 
   SECTION("Custom fields, complex objects") {
     unit.soi_persistence_flag(true).soi_reset_flag(false);
-    updates.soi_num_object_updates(2); // TODO NOLINT required?
-    updates.soi_3d_bounding_box_scale_log2 = 1;
-    updates.soi_log2_max_object_idx_updated_minus1 = 1;
-    updates.soi_log2_max_object_dependency_idx = 2;
-    std::generate(updates.m_object_updates.begin(), updates.m_object_updates.end(),
-                  [soi_object_idx = 1]() mutable {
-                    SceneObjectUpdate result{};
-                    result.soi_object_idx = soi_object_idx++;
-                    return result;
-                  });
-    unit.setSceneObjectUpdates(std::move(updates));
+    unit.setSceneObjectUpdates(makeSceneObjectUpdates(false, 2, 1, 1, 2));
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
 soi_num_object_updates=2
@@ -129,8 +131,8 @@ soi_extension_present_flag=true
 soi_3d_bounding_box_scale_log2=1
 soi_log2_max_object_idx_updated_minus1=1
 soi_log2_max_object_dependency_idx=2
+soi_object_idx=0
 soi_object_idx=1
-soi_object_idx=2
 )");
     expected_number_of_bits += 3      // soi_num_object_updates
                                + 5    // soi_3d_bounding_box_scale_log2

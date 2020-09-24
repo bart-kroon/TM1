@@ -105,7 +105,7 @@ auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std
   return m_sceneObjectUpdates.m_object_updates[i].soi_object_idx;
 }
 auto SceneObjectInformation::soi_object_cancel_flag(std::size_t k) const noexcept -> bool {
-  return true;
+  return m_sceneObjectUpdates.m_object_updates[k].soi_object_cancel_flag;
 }
 auto SceneObjectInformation::soi_object_label_update_flag(std::size_t k) const noexcept -> bool {
   return true;
@@ -231,8 +231,9 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
              << static_cast<unsigned>(x.soi_log2_max_object_dependency_idx()) << "\n";
     }
     for (std::size_t i = 0; i < x.soi_num_object_updates(); ++i) {
-      stream << "soi_object_idx=" << static_cast<unsigned>(x.soi_object_idx(i))
-             << "\n";
+      stream << "soi_object_idx=" << static_cast<unsigned>(x.soi_object_idx(i)) << "\n";
+      stream << "soi_object_cancel_flag=" << std::boolalpha
+             << x.soi_object_cancel_flag(x.soi_object_idx(i)) << "\n";
     }
   }
   return stream;
@@ -275,6 +276,9 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
   for (std::size_t i = 0; i < sceneObjectUpdates.soi_num_object_updates(); ++i) {
     sceneObjectUpdates.m_object_updates[i].soi_object_idx = bitstream.readBits<std::size_t>(
         sceneObjectUpdates.soi_log2_max_object_idx_updated_minus1 + 1);
+    const auto k = sceneObjectUpdates.m_object_updates[i].soi_object_idx;
+    auto &currentObjectUpdate = sceneObjectUpdates.m_object_updates[k];
+    currentObjectUpdate.soi_object_cancel_flag = bitstream.getFlag();
   }
   result.setSceneObjectUpdates(std::move(sceneObjectUpdates));
   return result;
@@ -304,6 +308,8 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
     }
     for (std::size_t i = 0; i < soi_num_object_updates(); ++i) {
       bitstream.writeBits(soi_object_idx(i), soi_log2_max_object_idx_updated_minus1() + 1);
+      const auto k = soi_object_idx(i);
+      bitstream.putFlag(soi_object_cancel_flag(k));
     }
   }
 }

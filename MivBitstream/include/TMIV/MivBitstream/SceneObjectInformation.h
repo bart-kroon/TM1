@@ -45,9 +45,11 @@ namespace TMIV::MivBitstream {
 
 struct SceneObjectUpdate {
   auto operator==(const SceneObjectUpdate &other) const noexcept -> bool {
-    return soi_object_idx == other.soi_object_idx; // TODO complete
+    return (soi_object_idx == other.soi_object_idx) &&
+           (soi_object_cancel_flag == other.soi_object_cancel_flag); // TODO complete
   }
   std::size_t soi_object_idx{};
+  bool soi_object_cancel_flag{};
 };
 
 struct SceneObjectUpdates {

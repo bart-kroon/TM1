@@ -51,9 +51,11 @@ auto makeSceneObjectUpdates(bool soi_simple_objects_flag, std::size_t soi_num_ob
   updates.soi_log2_max_object_idx_updated_minus1 = soi_log2_max_object_idx_updated_minus1;
   updates.soi_log2_max_object_dependency_idx = soi_log2_max_object_dependency_idx;
   std::generate(updates.m_object_updates.begin(), updates.m_object_updates.end(),
-                [soi_object_idx = 0]() mutable {
+                [soi_object_idx = 0, soi_object_cancel_flag = false]() mutable {
                   SceneObjectUpdate update{};
                   update.soi_object_idx = soi_object_idx++;
+                  update.soi_object_cancel_flag = soi_object_cancel_flag;
+                  soi_object_cancel_flag = !soi_object_cancel_flag;
                   return update;
                 });
   return updates;
@@ -100,14 +102,19 @@ soi_material_id_present_flag=false
 soi_extension_present_flag=false
 soi_log2_max_object_idx_updated_minus1=2
 soi_object_idx=0
+soi_object_cancel_flag=false
 soi_object_idx=1
+soi_object_cancel_flag=true
 soi_object_idx=2
+soi_object_cancel_flag=false
 soi_object_idx=3
+soi_object_cancel_flag=true
 )");
-    expected_number_of_bits += 5      // soi_num_object_updates
-                               + (4 * // soi_num_object_updates
-                                  (3  // soi_object_idx
-                                   + 0));
+    expected_number_of_bits += 5       // soi_num_object_updates
+                               + (4 *  // soi_num_object_updates
+                                  (3   // soi_object_idx
+                                   + 1 // soi_object_cancel_flag
+                                   ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
@@ -132,14 +139,17 @@ soi_3d_bounding_box_scale_log2=1
 soi_log2_max_object_idx_updated_minus1=1
 soi_log2_max_object_dependency_idx=2
 soi_object_idx=0
+soi_object_cancel_flag=false
 soi_object_idx=1
+soi_object_cancel_flag=true
 )");
-    expected_number_of_bits += 3      // soi_num_object_updates
-                               + 5    // soi_3d_bounding_box_scale_log2
-                               + 5    // soi_log2_max_object_dependency_idx
-                               + (2 * // soi_num_object_updates
-                                  (2  // soi_object_idx
-                                   + 0));
+    expected_number_of_bits += 3       // soi_num_object_updates
+                               + 5     // soi_3d_bounding_box_scale_log2
+                               + 5     // soi_log2_max_object_dependency_idx
+                               + (2 *  // soi_num_object_updates
+                                  (2   // soi_object_idx
+                                   + 1 // soi_object_cancel_flag
+                                   ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }

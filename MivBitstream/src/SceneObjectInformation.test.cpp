@@ -60,10 +60,38 @@ soi_num_object_updates=0
       + 9  // soi_object_label_present_flag ... soi_extension_present_flag
       + 5; // soi_log2_max_object_idx_updated_minus1
 
+  SECTION("Custom fields, simple objects") {
+    unit.soi_persistence_flag(false).soi_reset_flag(true);
+    updates.soi_simple_objects_flag = true;
+    updates.soi_num_object_updates(5);
+    updates.soi_log2_max_object_idx_updated_minus1 = 2;
+    unit.setSceneObjectUpdates(std::move(updates));
+    REQUIRE(toString(unit) == R"(soi_persistence_flag=false
+soi_reset_flag=true
+soi_num_object_updates=5
+soi_simple_objects_flag=true
+soi_object_label_present_flag=false
+soi_priority_present_flag=false
+soi_object_hidden_present_flag=false
+soi_object_dependency_present_flag=false
+soi_visibility_cones_present_flag=false
+soi_3d_bounding_box_present_flag=false
+soi_collision_shape_present_flag=false
+soi_point_style_present_flag=false
+soi_material_id_present_flag=false
+soi_extension_present_flag=false
+soi_log2_max_object_idx_updated_minus1=2
+)");
+    expected_number_of_bits += 5; // soi_num_object_updates
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+  }
+
   SECTION("Custom fields, complex objects") {
     unit.soi_persistence_flag(true).soi_reset_flag(false);
-    updates.soi_num_object_updates(2);
+    updates.soi_num_object_updates(2); // TODO NOLINT required?
     updates.soi_3d_bounding_box_scale_log2 = 1;
+    updates.soi_log2_max_object_idx_updated_minus1 = 1;
+    updates.soi_log2_max_object_dependency_idx = 2;
     unit.setSceneObjectUpdates(std::move(updates));
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
@@ -80,33 +108,12 @@ soi_point_style_present_flag=true
 soi_material_id_present_flag=true
 soi_extension_present_flag=true
 soi_3d_bounding_box_scale_log2=1
+soi_log2_max_object_idx_updated_minus1=1
+soi_log2_max_object_dependency_idx=2
 )");
     expected_number_of_bits += 3    // soi_num_object_updates
-                               + 5; // soi_3d_bounding_box_scale_log2
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
-  }
-
-  SECTION("Custom fields, simple objects") {
-    unit.soi_persistence_flag(false).soi_reset_flag(true);
-    updates.soi_simple_objects_flag = true;
-    updates.soi_num_object_updates(5);
-    unit.setSceneObjectUpdates(std::move(updates));
-    REQUIRE(toString(unit) == R"(soi_persistence_flag=false
-soi_reset_flag=true
-soi_num_object_updates=5
-soi_simple_objects_flag=true
-soi_object_label_present_flag=false
-soi_priority_present_flag=false
-soi_object_hidden_present_flag=false
-soi_object_dependency_present_flag=false
-soi_visibility_cones_present_flag=false
-soi_3d_bounding_box_present_flag=false
-soi_collision_shape_present_flag=false
-soi_point_style_present_flag=false
-soi_material_id_present_flag=false
-soi_extension_present_flag=false
-)");
-    expected_number_of_bits += 5; // soi_num_object_updates
+                               + 5  // soi_3d_bounding_box_scale_log2
+                               + 5; // soi_log2_max_object_dependency_idx
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }

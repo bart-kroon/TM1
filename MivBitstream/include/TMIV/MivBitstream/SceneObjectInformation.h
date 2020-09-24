@@ -55,6 +55,9 @@ struct SceneObjectUpdates {
   [[nodiscard]] auto soi_3d_bounding_box_present_flag() const noexcept -> bool {
     return !soi_simple_objects_flag;
   }
+  [[nodiscard]] auto soi_object_dependency_present_flag() const noexcept -> bool {
+    return !soi_simple_objects_flag;
+  }
   [[nodiscard]] auto soi_num_object_updates() const noexcept -> std::size_t {
     return m_object_updates.size();
   }
@@ -78,6 +81,7 @@ struct SceneObjectUpdates {
   bool soi_simple_objects_flag{};
   std::uint8_t soi_3d_bounding_box_scale_log2{};
   std::uint8_t soi_log2_max_object_idx_updated_minus1{};
+  std::uint8_t soi_log2_max_object_dependency_idx{};
   std::vector<SceneObjectUpdate> m_object_updates{};
 };
 

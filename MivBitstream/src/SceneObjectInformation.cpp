@@ -95,7 +95,8 @@ auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const noex
   return m_object_updates.soi_log2_max_object_idx_updated_minus1;
 }
 auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const noexcept -> std::uint8_t {
-  return true;
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return m_object_updates.soi_log2_max_object_dependency_idx;
 }
 auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std::uint8_t {
   return true;
@@ -220,6 +221,12 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
       stream << "soi_3d_bounding_box_scale_log2="
              << static_cast<unsigned>(x.soi_3d_bounding_box_scale_log2()) << "\n";
     }
+    stream << "soi_log2_max_object_idx_updated_minus1="
+           << static_cast<unsigned>(x.soi_log2_max_object_idx_updated_minus1()) << "\n";
+    if (x.soi_object_dependency_present_flag()) {
+      stream << "soi_log2_max_object_dependency_idx="
+             << static_cast<unsigned>(x.soi_log2_max_object_dependency_idx()) << "\n";
+    }
   }
   return stream;
 }
@@ -254,6 +261,9 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       sceneObjectUpdates.soi_3d_bounding_box_scale_log2 = bitstream.readBits<std::uint8_t>(5);
     }
     sceneObjectUpdates.soi_log2_max_object_idx_updated_minus1 = bitstream.readBits<std::uint8_t>(5);
+    if (sceneObjectUpdates.soi_object_dependency_present_flag()) {
+      sceneObjectUpdates.soi_log2_max_object_dependency_idx = bitstream.readBits<std::uint8_t>(5);
+    }
   }
   result.setSceneObjectUpdates(std::move(sceneObjectUpdates));
   return result;
@@ -278,6 +288,9 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
       bitstream.writeBits(soi_3d_bounding_box_scale_log2(), 5);
     }
     bitstream.writeBits(soi_log2_max_object_idx_updated_minus1(), 5);
+    if (soi_object_dependency_present_flag()) {
+      bitstream.writeBits(soi_log2_max_object_dependency_idx(), 5);
+    }
   }
 }
 } // namespace TMIV::MivBitstream

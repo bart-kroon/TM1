@@ -34,6 +34,23 @@
 #include "test.h"
 
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
+
 namespace TMIV::MivBitstream {
-TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syntax]") {}
+TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syntax]") {
+  SECTION("Default constructor") {
+    SceneObjectInformation unit{};
+    REQUIRE(toString(unit) == R"(soi_persistence_flag=false
+soi_reset_flag=false
+soi_num_object_updates=0
+)");
+    const std::size_t expected_number_of_bits = 1    // soi_persistence_flag
+                                                + 1  // soi_reset_flag
+                                                + 1; // soi_num_object_updates
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+  }
+
+  //  SECTION("Custom fields") {
+  //    SceneObjectInformation unit{};
+  //  }
+}
 } // namespace TMIV::MivBitstream

@@ -34,70 +34,168 @@
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
 
 namespace TMIV::MivBitstream {
-auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_reset_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_num_object_updates() const noexcept -> std::size_t {}
-auto SceneObjectInformation::soi_simple_objects_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_object_label_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_object_hidden_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_object_dependency_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_visibility_cones_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_3d_bounding_box_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_collision_shape_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_point_style_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_material_id_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_extension_present_flag() const noexcept -> bool {}
-auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const noexcept -> std::uint8_t {}
-auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const noexcept
-    -> std::uint8_t {}
-auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const noexcept -> std::uint8_t {}
-auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std::uint8_t {}
-auto SceneObjectInformation::soi_object_cancel_flag(std::size_t k) const noexcept -> bool {}
-auto SceneObjectInformation::soi_object_labal_update_flag(std::size_t k) const noexcept -> bool {}
-auto SceneObjectInformation::soi_object_label_idx(std::size_t k) const noexcept -> std::size_t {}
-auto SceneObjectInformation::soi_priority_update_flag(std::size_t k) const noexcept -> bool {}
-auto SceneObjectInformation::soi_priority_value(std::size_t k) const noexcept -> std::uint8_t {}
-auto SceneObjectInformation::soi_object_hidden_flag(std::size_t k) const noexcept -> bool {}
-auto SceneObjectInformation::soi_object_dependency_update_flag(std::size_t k) const noexcept
-    -> bool {}
-auto SceneObjectInformation::soi_object_num_dependencies(std::size_t k) const noexcept
-    -> std::uint8_t {}
-auto SceneObjectInformation::soi_object_dependency_idx(std::size_t k, std::size_t j) const noexcept
-    -> std::uint8_t {}
-auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) const noexcept
-    -> bool {}
-auto SceneObjectInformation::soi_direction_x(std::size_t k) const noexcept -> std::int16_t {}
-auto SceneObjectInformation::soi_direction_y(std::size_t k) const noexcept -> std::int16_t {}
-auto SceneObjectInformation::soi_direction_z(std::size_t k) const noexcept -> std::int16_t {}
-auto SceneObjectInformation::soi_angle(std::size_t k) const noexcept -> std::uint16_t {}
-auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) const noexcept -> bool {
+auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {
+  return m_soi_persistence_flag;
 }
-auto SceneObjectInformation::soi_3d_bounding_box_x(std::size_t k) const noexcept -> std::size_t {}
-auto SceneObjectInformation::soi_3d_bounding_box_y(std::size_t k) const noexcept -> std::size_t {}
-auto SceneObjectInformation::soi_3d_bounding_box_z(std::size_t k) const noexcept -> std::size_t {}
+auto SceneObjectInformation::soi_reset_flag() const noexcept -> bool { return m_soi_reset_flag; }
+auto SceneObjectInformation::soi_num_object_updates() const noexcept -> std::size_t {
+  return m_object_updates.soi_num_object_updates();
+}
+auto SceneObjectInformation::soi_simple_objects_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_object_label_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_object_hidden_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_object_dependency_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_visibility_cones_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_3d_bounding_box_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_collision_shape_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_point_style_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_material_id_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_extension_present_flag() const noexcept -> bool {
+  VERIFY_BITSTREAM(m_object_updates.has_value());
+  return !m_object_updates.soi_simple_objects_flag();
+}
+auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const noexcept -> std::uint8_t {
+  return true;
+}
+auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const noexcept
+    -> std::uint8_t {
+  return true;
+}
+auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const noexcept -> std::uint8_t {
+  return true;
+}
+auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std::uint8_t {
+  return true;
+}
+auto SceneObjectInformation::soi_object_cancel_flag(std::size_t k) const noexcept -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_object_label_update_flag(std::size_t k) const noexcept -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_object_label_idx(std::size_t k) const noexcept -> std::size_t {
+  return true;
+}
+auto SceneObjectInformation::soi_priority_update_flag(std::size_t k) const noexcept -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_priority_value(std::size_t k) const noexcept -> std::uint8_t {
+  return true;
+}
+auto SceneObjectInformation::soi_object_hidden_flag(std::size_t k) const noexcept -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_object_dependency_update_flag(std::size_t k) const noexcept
+    -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_object_num_dependencies(std::size_t k) const noexcept
+    -> std::uint8_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_object_dependency_idx(std::size_t k, std::size_t j) const noexcept
+    -> std::uint8_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) const noexcept
+    -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_direction_x(std::size_t k) const noexcept -> std::int16_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_direction_y(std::size_t k) const noexcept -> std::int16_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_direction_z(std::size_t k) const noexcept -> std::int16_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_angle(std::size_t k) const noexcept -> std::uint16_t { return 0; }
+auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) const noexcept -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_3d_bounding_box_x(std::size_t k) const noexcept -> std::size_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_3d_bounding_box_y(std::size_t k) const noexcept -> std::size_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_3d_bounding_box_z(std::size_t k) const noexcept -> std::size_t {
+  return 0;
+}
 auto SceneObjectInformation::soi_3d_bounding_box_size_x(std::size_t k) const noexcept
-    -> std::size_t {}
+    -> std::size_t {
+  return 0;
+}
 auto SceneObjectInformation::soi_3d_bounding_box_size_y(std::size_t k) const noexcept
-    -> std::size_t {}
+    -> std::size_t {
+  return 0;
+}
 auto SceneObjectInformation::soi_3d_bounding_box_size_z(std::size_t k) const noexcept
-    -> std::size_t {}
+    -> std::size_t {
+  return 0;
+}
 auto SceneObjectInformation::soi_collision_shape_update_flag(std::size_t k) const noexcept -> bool {
+  return true;
 }
 auto SceneObjectInformation::soi_collision_shape_id(std::size_t k) const noexcept -> std::uint16_t {
+  return 0;
 }
-auto SceneObjectInformation::soi_point_style_update_flag(std::size_t k) const noexcept -> bool {}
-auto SceneObjectInformation::soi_point_shape_id(std::size_t k) const noexcept -> std::uint8_t {}
-auto SceneObjectInformation::soi_point_size(std::size_t k) const noexcept -> std::uint16_t {}
-auto SceneObjectInformation::soi_material_id_update_flag(std::size_t k) const noexcept -> bool {}
-auto SceneObjectInformation::soi_material_id(std::size_t k) const noexcept -> std::uint16_t {}
+auto SceneObjectInformation::soi_point_style_update_flag(std::size_t k) const noexcept -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_point_shape_id(std::size_t k) const noexcept -> std::uint8_t {
+  return true;
+}
+auto SceneObjectInformation::soi_point_size(std::size_t k) const noexcept -> std::uint16_t {
+  return 0;
+}
+auto SceneObjectInformation::soi_material_id_update_flag(std::size_t k) const noexcept -> bool {
+  return true;
+}
+auto SceneObjectInformation::soi_material_id(std::size_t k) const noexcept -> std::uint16_t {
+  return 0;
+}
 
 auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream & {
+  stream << "soi_persistence_flag=" << std::boolalpha << x.soi_persistence_flag() << "\n";
+  stream << "soi_reset_flag=" << std::boolalpha << x.soi_reset_flag() << "\n";
+  stream << "soi_num_object_updates=" << x.soi_num_object_updates() << "\n";
   return stream;
 }
 
 auto SceneObjectInformation::operator==(const SceneObjectInformation &other) const noexcept
     -> bool {
-  return true; // TODO implement
+  return (m_soi_persistence_flag == other.m_soi_persistence_flag) &&
+         (m_soi_reset_flag == other.m_soi_reset_flag) &&
+         (m_object_updates == other.m_object_updates);
 }
 
 auto SceneObjectInformation::operator!=(const SceneObjectInformation &other) const noexcept
@@ -108,8 +206,15 @@ auto SceneObjectInformation::operator!=(const SceneObjectInformation &other) con
 auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
     -> SceneObjectInformation {
   SceneObjectInformation result{};
+  result.soi_persistence_flag(bitstream.getFlag());
+  result.soi_reset_flag(bitstream.getFlag());
+  result.soi_num_object_updates(bitstream.getUExpGolomb<std::size_t>());
   return result;
 }
 
-void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const {}
+void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putFlag(soi_persistence_flag());
+  bitstream.putFlag(soi_reset_flag());
+  bitstream.putUExpGolomb(soi_num_object_updates());
+}
 } // namespace TMIV::MivBitstream

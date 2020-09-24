@@ -37,8 +37,44 @@
 #include <TMIV/Common/Bitstream.h>
 
 #include <cstdint>
+#include <ostream>
+#include <vector>
 
 namespace TMIV::MivBitstream {
+
+struct SceneObjectUpdate {
+  auto operator==(const SceneObjectUpdate &other) const noexcept -> bool {
+    return m_soi_object_idx == other.m_soi_object_idx; // TODO complete
+  }
+  std::uint8_t m_soi_object_idx{};
+};
+
+class SceneObjectUpdates {
+public:
+  //   operator bool?
+  [[nodiscard]] auto has_value() const noexcept -> bool { return !m_object_updates.empty(); }
+
+  [[nodiscard]] auto soi_num_object_updates() const noexcept -> std::size_t {
+    return m_object_updates.size();
+  }
+
+  [[nodiscard]] auto soi_simple_objects_flag() const noexcept -> bool {
+    return m_soi_simple_objects_flag;
+  }
+
+  auto soi_num_object_updates(const std::size_t value) noexcept -> void {
+    m_object_updates = std::vector<SceneObjectUpdate>(value);
+  }
+
+  auto operator==(const SceneObjectUpdates &other) const noexcept -> bool {
+    return (m_soi_simple_objects_flag == other.m_soi_simple_objects_flag) &&
+           (m_object_updates == other.m_object_updates);
+  }
+
+private:
+  bool m_soi_simple_objects_flag{};
+  std::vector<SceneObjectUpdate> m_object_updates{};
+};
 
 // 23090-12: scene_object_information ( payloadSize )
 class SceneObjectInformation {
@@ -61,7 +97,7 @@ public:
   [[nodiscard]] auto soi_log2_max_object_dependency_idx() const noexcept -> std::uint8_t;
   [[nodiscard]] auto soi_object_idx(std::size_t i) const noexcept -> std::uint8_t;
   [[nodiscard]] auto soi_object_cancel_flag(std::size_t k) const noexcept -> bool;
-  [[nodiscard]] auto soi_object_labal_update_flag(std::size_t k) const noexcept -> bool;
+  [[nodiscard]] auto soi_object_label_update_flag(std::size_t k) const noexcept -> bool;
   [[nodiscard]] auto soi_object_label_idx(std::size_t k) const noexcept -> std::size_t;
   [[nodiscard]] auto soi_priority_update_flag(std::size_t k) const noexcept -> bool;
   [[nodiscard]] auto soi_priority_value(std::size_t k) const noexcept -> std::uint8_t;
@@ -90,6 +126,19 @@ public:
   [[nodiscard]] auto soi_material_id_update_flag(std::size_t k) const noexcept -> bool;
   [[nodiscard]] auto soi_material_id(std::size_t k) const noexcept -> std::uint16_t;
 
+  constexpr auto soi_persistence_flag(const bool value) noexcept -> auto & {
+    m_soi_persistence_flag = value;
+    return *this;
+  }
+  constexpr auto soi_reset_flag(const bool value) noexcept -> auto &{
+    m_soi_reset_flag = value;
+    return *this;
+  }
+  auto soi_num_object_updates(const std::size_t value) noexcept -> auto &{
+    m_object_updates.soi_num_object_updates(value);
+    return *this;
+  }
+
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
 
   auto operator==(const SceneObjectInformation &other) const noexcept -> bool;
@@ -100,6 +149,9 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  bool m_soi_persistence_flag{};
+  bool m_soi_reset_flag{};
+  SceneObjectUpdates m_object_updates{};
 };
 } // namespace TMIV::MivBitstream
 

@@ -47,7 +47,7 @@ struct SceneObjectUpdate {
   auto operator==(const SceneObjectUpdate &other) const noexcept -> bool {
     return soi_object_idx == other.soi_object_idx; // TODO complete
   }
-  std::uint8_t soi_object_idx{};
+  std::size_t soi_object_idx{};
 };
 
 struct SceneObjectUpdates {
@@ -145,7 +145,7 @@ public:
     return *this;
   }
   auto setSceneObjectUpdates(SceneObjectUpdates &&updates) noexcept -> void {
-    m_object_updates = std::move(updates);
+    m_sceneObjectUpdates = std::move(updates);
   }
 
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
@@ -160,7 +160,7 @@ public:
 private:
   bool m_soi_persistence_flag{};
   bool m_soi_reset_flag{};
-  SceneObjectUpdates m_object_updates{};
+  SceneObjectUpdates m_sceneObjectUpdates{};
 };
 } // namespace TMIV::MivBitstream
 

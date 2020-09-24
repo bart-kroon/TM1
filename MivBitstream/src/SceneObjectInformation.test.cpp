@@ -63,12 +63,18 @@ soi_num_object_updates=0
   SECTION("Custom fields, simple objects") {
     unit.soi_persistence_flag(false).soi_reset_flag(true);
     updates.soi_simple_objects_flag = true;
-    updates.soi_num_object_updates(5);
+    updates.soi_num_object_updates(4);
     updates.soi_log2_max_object_idx_updated_minus1 = 2;
+    std::generate(updates.m_object_updates.begin(), updates.m_object_updates.end(),
+                  [soi_object_idx = 0]() mutable {
+                    SceneObjectUpdate result{};
+                    result.soi_object_idx = soi_object_idx++;
+                    return result;
+                  });
     unit.setSceneObjectUpdates(std::move(updates));
     REQUIRE(toString(unit) == R"(soi_persistence_flag=false
 soi_reset_flag=true
-soi_num_object_updates=5
+soi_num_object_updates=4
 soi_simple_objects_flag=true
 soi_object_label_present_flag=false
 soi_priority_present_flag=false
@@ -81,8 +87,15 @@ soi_point_style_present_flag=false
 soi_material_id_present_flag=false
 soi_extension_present_flag=false
 soi_log2_max_object_idx_updated_minus1=2
+soi_object_idx=0
+soi_object_idx=1
+soi_object_idx=2
+soi_object_idx=3
 )");
-    expected_number_of_bits += 5; // soi_num_object_updates
+    expected_number_of_bits += 5      // soi_num_object_updates
+                               + (4 * // soi_num_object_updates
+                                  (3  // soi_object_idx
+                                   + 0));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
@@ -92,6 +105,12 @@ soi_log2_max_object_idx_updated_minus1=2
     updates.soi_3d_bounding_box_scale_log2 = 1;
     updates.soi_log2_max_object_idx_updated_minus1 = 1;
     updates.soi_log2_max_object_dependency_idx = 2;
+    std::generate(updates.m_object_updates.begin(), updates.m_object_updates.end(),
+                  [soi_object_idx = 1]() mutable {
+                    SceneObjectUpdate result{};
+                    result.soi_object_idx = soi_object_idx++;
+                    return result;
+                  });
     unit.setSceneObjectUpdates(std::move(updates));
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
@@ -110,10 +129,15 @@ soi_extension_present_flag=true
 soi_3d_bounding_box_scale_log2=1
 soi_log2_max_object_idx_updated_minus1=1
 soi_log2_max_object_dependency_idx=2
+soi_object_idx=1
+soi_object_idx=2
 )");
-    expected_number_of_bits += 3    // soi_num_object_updates
-                               + 5  // soi_3d_bounding_box_scale_log2
-                               + 5; // soi_log2_max_object_dependency_idx
+    expected_number_of_bits += 3      // soi_num_object_updates
+                               + 5    // soi_3d_bounding_box_scale_log2
+                               + 5    // soi_log2_max_object_dependency_idx
+                               + (2 * // soi_num_object_updates
+                                  (2  // soi_object_idx
+                                   + 0));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }

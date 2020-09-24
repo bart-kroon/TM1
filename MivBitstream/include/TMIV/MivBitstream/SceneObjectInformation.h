@@ -37,6 +37,7 @@
 #include <TMIV/Common/Bitstream.h>
 
 #include <cstdint>
+#include <optional>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -46,10 +47,24 @@ namespace TMIV::MivBitstream {
 struct SceneObjectUpdate {
   auto operator==(const SceneObjectUpdate &other) const noexcept -> bool {
     return (soi_object_idx == other.soi_object_idx) &&
-           (soi_object_cancel_flag == other.soi_object_cancel_flag); // TODO complete
+           (soi_object_cancel_flag == other.soi_object_cancel_flag) &&
+           (soi_object_label_update_flag == other.soi_object_label_update_flag) &&
+           (soi_object_label_idx == other.soi_object_label_idx) &&
+           (soi_priority_update_flag == other.soi_priority_update_flag) &&
+           (soi_priority_value == other.soi_priority_value) &&
+           (soi_object_hidden_flag == other.soi_object_hidden_flag) &&
+           (soi_object_dependency_update_flag == other.soi_object_dependency_update_flag) &&
+           (soi_object_dependency_idx == other.soi_object_dependency_idx); // TODO complete
   }
   std::size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
+  bool soi_object_label_update_flag{};
+  std::size_t soi_object_label_idx{};
+  bool soi_priority_update_flag{};
+  std::uint8_t soi_priority_value{};
+  bool soi_object_hidden_flag{};
+  bool soi_object_dependency_update_flag{};
+  std::vector<std::size_t> soi_object_dependency_idx{};
 };
 
 // 23090-12: scene_object_information ( payloadSize )
@@ -112,7 +127,7 @@ public:
     return *this;
   }
   auto soi_num_object_updates(const std::uint8_t value) noexcept -> auto & {
-    m_object_updates = std::vector<SceneObjectUpdate>(value);
+    m_temporary_soi_num_object_updates = value;
     return *this;
   }
   constexpr auto soi_simple_objects_flag(const bool value) noexcept -> auto & {
@@ -134,6 +149,7 @@ public:
   }
   auto setSceneObjectUpdates(std::vector<SceneObjectUpdate> &&updates) noexcept -> void {
     m_object_updates = std::move(updates);
+    m_temporary_soi_num_object_updates.reset();
   }
 
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
@@ -148,6 +164,7 @@ public:
 private:
   bool m_soi_persistence_flag{};
   bool m_soi_reset_flag{};
+  std::optional<std::size_t> m_temporary_soi_num_object_updates{};
   bool m_soi_simple_objects_flag{};
   std::uint8_t m_soi_3d_bounding_box_scale_log2{};
   std::uint8_t m_soi_log2_max_object_idx_updated_minus1{};

@@ -52,13 +52,23 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
   soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
   soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
   soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
+  // TODO pull out generation of updates
   auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
   std::generate(updates.begin(), updates.end(),
                 [soi_object_idx = 0, soi_object_cancel_flag = false]() mutable {
                   SceneObjectUpdate update{};
-                  update.soi_object_idx = soi_object_idx++;
+                  update.soi_object_idx = soi_object_idx;
                   update.soi_object_cancel_flag = soi_object_cancel_flag;
+                  update.soi_object_label_update_flag = !soi_object_cancel_flag;
+                  update.soi_object_label_idx = soi_object_idx;
+                  update.soi_priority_update_flag = soi_object_cancel_flag;
+                  update.soi_priority_value = soi_object_idx / 2;
+                  update.soi_object_hidden_flag = !soi_object_cancel_flag;
+                  update.soi_object_dependency_update_flag = soi_object_cancel_flag;
+                  update.soi_object_dependency_idx =
+                      std::vector<std::size_t>(soi_object_idx / 2 + 1);
                   soi_object_cancel_flag = !soi_object_cancel_flag;
+                  ++soi_object_idx;
                   return update;
                 });
   soi.setSceneObjectUpdates(std::move(updates));

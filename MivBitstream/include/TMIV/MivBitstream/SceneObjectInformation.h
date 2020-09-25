@@ -165,7 +165,7 @@ private:
   bool m_soi_persistence_flag{};
   bool m_soi_reset_flag{};
   std::optional<std::size_t> m_temporary_soi_num_object_updates{};
-  bool m_soi_simple_objects_flag{};
+  std::optional<bool> m_soi_simple_objects_flag{};
   std::uint8_t m_soi_3d_bounding_box_scale_log2{};
   std::uint8_t m_soi_log2_max_object_idx_updated_minus1{};
   std::uint8_t m_soi_log2_max_object_dependency_idx{};

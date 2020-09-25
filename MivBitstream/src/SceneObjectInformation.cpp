@@ -42,48 +42,48 @@ auto SceneObjectInformation::soi_num_object_updates() const noexcept -> std::siz
   return m_temporary_soi_num_object_updates.value_or(m_object_updates.size());
 }
 auto SceneObjectInformation::soi_simple_objects_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_object_label_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_priority_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_object_hidden_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_object_dependency_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_visibility_cones_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_collision_shape_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_point_style_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_material_id_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_extension_present_flag() const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0);
-  return !m_soi_simple_objects_flag;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && soi_3d_bounding_box_present_flag());

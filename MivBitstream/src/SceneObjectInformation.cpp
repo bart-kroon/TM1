@@ -86,8 +86,9 @@ auto SceneObjectInformation::soi_extension_present_flag() const noexcept -> bool
   return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && soi_3d_bounding_box_present_flag());
-  return m_soi_3d_bounding_box_scale_log2;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && soi_3d_bounding_box_present_flag() &&
+                   m_soi_3d_bounding_box_scale_log2);
+  return m_soi_3d_bounding_box_scale_log2.value();
 }
 auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const noexcept
     -> std::uint8_t {
@@ -95,8 +96,9 @@ auto SceneObjectInformation::soi_log2_max_object_idx_updated_minus1() const noex
   return m_soi_log2_max_object_idx_updated_minus1;
 }
 auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && soi_object_dependency_present_flag());
-  return m_soi_log2_max_object_dependency_idx;
+  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && soi_object_dependency_present_flag() &&
+                   m_soi_log2_max_object_dependency_idx);
+  return m_soi_log2_max_object_dependency_idx.value();
 }
 auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && i < soi_num_object_updates());
@@ -107,39 +109,45 @@ auto SceneObjectInformation::soi_object_cancel_flag(std::size_t k) const noexcep
   return m_object_updates[k].soi_object_cancel_flag;
 }
 auto SceneObjectInformation::soi_object_label_update_flag(std::size_t k) const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
-  return m_object_updates[k].soi_object_label_update_flag;
+  VERIFY_BITSTREAM(isValid(k) && soi_object_label_present_flag() &&
+                   m_object_updates[k].soi_object_label_update_flag);
+  return m_object_updates[k].soi_object_label_update_flag.value();
 }
 auto SceneObjectInformation::soi_object_label_idx(std::size_t k) const noexcept -> std::size_t {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
-  return m_object_updates[k].soi_object_label_idx;
+  VERIFY_BITSTREAM(isValid(k) && soi_object_label_update_flag(k) &&
+                   m_object_updates[k].soi_object_label_idx);
+  return m_object_updates[k].soi_object_label_idx.value();
 }
 auto SceneObjectInformation::soi_priority_update_flag(std::size_t k) const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
-  return m_object_updates[k].soi_priority_update_flag;
+  VERIFY_BITSTREAM(isValid(k) && soi_priority_present_flag() &&
+                   m_object_updates[k].soi_priority_update_flag);
+  return m_object_updates[k].soi_priority_update_flag.value();
 }
 auto SceneObjectInformation::soi_priority_value(std::size_t k) const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
-  return m_object_updates[k].soi_priority_value;
+  VERIFY_BITSTREAM(isValid(k) && soi_priority_present_flag() && soi_priority_update_flag(k) &&
+                   m_object_updates[k].soi_priority_value);
+  return m_object_updates[k].soi_priority_value.value();
 }
 auto SceneObjectInformation::soi_object_hidden_flag(std::size_t k) const noexcept -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
-  return m_object_updates[k].soi_object_hidden_flag;
+  VERIFY_BITSTREAM(isValid(k) && soi_object_hidden_present_flag() &&
+                   m_object_updates[k].soi_object_hidden_flag);
+  return m_object_updates[k].soi_object_hidden_flag.value();
 }
 auto SceneObjectInformation::soi_object_dependency_update_flag(std::size_t k) const noexcept
     -> bool {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
-  return m_object_updates[k].soi_object_dependency_update_flag;
+  VERIFY_BITSTREAM(isValid(k) && soi_object_dependency_present_flag() &&
+                   m_object_updates[k].soi_object_dependency_update_flag);
+  return m_object_updates[k].soi_object_dependency_update_flag.value();
 }
 auto SceneObjectInformation::soi_object_num_dependencies(std::size_t k) const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates());
+  VERIFY_BITSTREAM(isValid(k) && soi_object_dependency_present_flag());
   return m_object_updates[k].soi_object_dependency_idx.size();
 }
 auto SceneObjectInformation::soi_object_dependency_idx(std::size_t k, std::size_t j) const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(soi_num_object_updates() > 0 && k < soi_num_object_updates() &&
-                   j < soi_object_num_dependencies(k));
+  VERIFY_BITSTREAM(isValid(k) && j < soi_object_num_dependencies(k) &&
+                   soi_object_dependency_present_flag());
   return m_object_updates[k].soi_object_dependency_idx[j];
 }
 auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) const noexcept
@@ -294,13 +302,13 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
     if (!currentObjectUpdate.soi_object_cancel_flag) {
       if (result.soi_object_label_present_flag()) {
         currentObjectUpdate.soi_object_label_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_object_label_update_flag) {
+        if (currentObjectUpdate.soi_object_label_update_flag.value()) {
           currentObjectUpdate.soi_object_label_idx = bitstream.getUExpGolomb<std::size_t>();
         }
       }
       if (result.soi_priority_present_flag()) {
         currentObjectUpdate.soi_priority_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_priority_update_flag) {
+        if (currentObjectUpdate.soi_priority_update_flag.value()) {
           currentObjectUpdate.soi_priority_value = bitstream.readBits<std::uint8_t>(4);
         }
       }
@@ -309,7 +317,7 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       }
       if (result.soi_object_dependency_present_flag()) {
         currentObjectUpdate.soi_object_dependency_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_object_dependency_update_flag) {
+        if (currentObjectUpdate.soi_object_dependency_update_flag.value()) {
           currentObjectUpdate.soi_object_dependency_idx =
               std::vector<std::size_t>(bitstream.readBits<std::size_t>(4));
           for (auto &soi_object_dependency_index : currentObjectUpdate.soi_object_dependency_idx) {

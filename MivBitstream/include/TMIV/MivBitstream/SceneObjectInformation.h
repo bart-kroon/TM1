@@ -58,12 +58,12 @@ struct SceneObjectUpdate {
   }
   std::size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
-  bool soi_object_label_update_flag{};
-  std::size_t soi_object_label_idx{};
-  bool soi_priority_update_flag{};
-  std::uint8_t soi_priority_value{};
-  bool soi_object_hidden_flag{};
-  bool soi_object_dependency_update_flag{};
+  std::optional<bool> soi_object_label_update_flag{};
+  std::optional<std::size_t> soi_object_label_idx{};
+  std::optional<bool> soi_priority_update_flag{};
+  std::optional<std::uint8_t> soi_priority_value{};
+  std::optional<bool> soi_object_hidden_flag{};
+  std::optional<bool> soi_object_dependency_update_flag{};
   std::vector<std::size_t> soi_object_dependency_idx{};
 };
 
@@ -152,6 +152,12 @@ public:
     m_temporary_soi_num_object_updates.reset();
   }
 
+  // TODO find proper name
+  [[nodiscard]] constexpr auto isValid(std::size_t k) const noexcept -> bool {
+    return soi_num_object_updates() > 0 && k < soi_num_object_updates() &&
+           !soi_object_cancel_flag(k);
+  }
+
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
 
   auto operator==(const SceneObjectInformation &other) const noexcept -> bool;
@@ -166,9 +172,9 @@ private:
   bool m_soi_reset_flag{};
   std::optional<std::size_t> m_temporary_soi_num_object_updates{};
   std::optional<bool> m_soi_simple_objects_flag{};
-  std::uint8_t m_soi_3d_bounding_box_scale_log2{};
+  std::optional<std::uint8_t> m_soi_3d_bounding_box_scale_log2{};
   std::uint8_t m_soi_log2_max_object_idx_updated_minus1{};
-  std::uint8_t m_soi_log2_max_object_dependency_idx{};
+  std::optional<std::uint8_t> m_soi_log2_max_object_dependency_idx{};
   std::vector<SceneObjectUpdate> m_object_updates{};
 };
 } // namespace TMIV::MivBitstream

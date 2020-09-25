@@ -153,7 +153,7 @@ public:
   }
 
   // TODO find proper name
-  [[nodiscard]] constexpr auto isValid(std::size_t k) const noexcept -> bool {
+  [[nodiscard]] auto isValid(std::size_t k) const noexcept -> bool {
     return soi_num_object_updates() > 0 && k < soi_num_object_updates() &&
            !soi_object_cancel_flag(k);
   }

@@ -39,6 +39,29 @@
 
 namespace TMIV::MivBitstream {
 namespace {
+std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
+                                           bool soi_simple_objects_flag) {
+  auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
+  std::generate(
+      updates.begin(), updates.end(), [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+        SceneObjectUpdate update{};
+        update.soi_object_idx = soi_object_idx;
+        update.soi_object_cancel_flag = false;
+        if (!soi_simple_objects_flag) {
+          update.soi_object_label_update_flag = true;
+          update.soi_object_label_idx = soi_object_idx;
+          update.soi_priority_update_flag = true;
+          update.soi_priority_value = soi_object_idx / 2;
+          update.soi_object_hidden_flag = true;
+          update.soi_object_dependency_update_flag = true;
+          update.soi_object_dependency_idx = std::vector<std::size_t>(soi_object_idx / 2 + 1);
+        }
+        ++soi_object_idx;
+        return update;
+      });
+  return updates;
+}
+
 auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
                                 bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
                                 std::uint8_t soi_log2_max_object_idx_updated_minus1,
@@ -49,33 +72,12 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
   soi.soi_persistence_flag(soi_persistence_flag);
   soi.soi_reset_flag(soi_reset_flag);
   soi.soi_simple_objects_flag(soi_simple_objects_flag);
-  soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
   soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
-  soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
-  // TODO pull out generation of updates
-  auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
-  std::generate(updates.begin(), updates.end(),
-                [soi_object_idx = 0, soi_object_cancel_flag = false]() mutable {
-                  SceneObjectUpdate update{};
-                  update.soi_object_idx = soi_object_idx;
-                  update.soi_object_cancel_flag = soi_object_cancel_flag;
-                  update.soi_object_label_update_flag =
-                      !soi_object_cancel_flag; // TODO: this conflicts with soi_simple_objects_flag:
-                                               // it may not be set when that one is true. Use
-                                               // optional to signal unset parameters
-                  // TODO generate valid test case
-                  update.soi_object_label_idx = soi_object_idx;
-                  update.soi_priority_update_flag = soi_object_cancel_flag;
-                  update.soi_priority_value = soi_object_idx / 2;
-                  update.soi_object_hidden_flag = !soi_object_cancel_flag;
-                  update.soi_object_dependency_update_flag = soi_object_cancel_flag;
-                  update.soi_object_dependency_idx =
-                      std::vector<std::size_t>(soi_object_idx / 2 + 1);
-                  soi_object_cancel_flag = !soi_object_cancel_flag;
-                  ++soi_object_idx;
-                  return update;
-                });
-  soi.setSceneObjectUpdates(std::move(updates));
+  if (!soi_simple_objects_flag) {
+    soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
+    soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
+  }
+  soi.setSceneObjectUpdates(makeUpdates(soi_num_object_updates, soi_simple_objects_flag));
   return soi;
 }
 } // namespace
@@ -120,11 +122,11 @@ soi_log2_max_object_idx_updated_minus1=2
 soi_object_idx=0
 soi_object_cancel_flag=false
 soi_object_idx=1
-soi_object_cancel_flag=true
+soi_object_cancel_flag=false
 soi_object_idx=2
 soi_object_cancel_flag=false
 soi_object_idx=3
-soi_object_cancel_flag=true
+soi_object_cancel_flag=false
 )");
     expected_number_of_bits += 5       // soi_num_object_updates
                                + (4 *  // soi_num_object_updates

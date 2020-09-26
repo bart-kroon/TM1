@@ -39,6 +39,15 @@
 
 namespace TMIV::MivBitstream {
 namespace {
+auto makeSoiVisibilityCones(std::int16_t value) -> SoiVisibilityCones {
+  SoiVisibilityCones result{};
+  result.soi_direction_x = value++;
+  result.soi_direction_y = value++;
+  result.soi_direction_z = value++;
+  result.soi_angle = value;
+  return result;
+}
+
 std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
                                            bool soi_simple_objects_flag) {
   auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
@@ -56,6 +65,7 @@ std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
                     update.soi_object_dependency_update_flag = true;
                     update.soi_object_dependency_idx = std::vector<std::size_t>(2);
                     update.soi_visibility_cones_update_flag = true;
+                    update.m_soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
                   }
                   ++soi_object_idx;
                   return update;
@@ -172,6 +182,10 @@ soi_object_num_dependencies(0)=2
 soi_object_dependency_idx(0)=0
 soi_object_dependency_idx(0)=0
 soi_visibility_cones_update_flag(0)=true
+soi_direction_x(0)=0
+soi_direction_y(0)=1
+soi_direction_z(0)=2
+soi_angle(0)=3
 soi_object_idx=1
 soi_object_cancel_flag(1)=false
 soi_object_label_update_flag(1)=false
@@ -184,6 +198,10 @@ soi_object_num_dependencies(1)=2
 soi_object_dependency_idx(1)=0
 soi_object_dependency_idx(1)=0
 soi_visibility_cones_update_flag(1)=true
+soi_direction_x(1)=1
+soi_direction_y(1)=2
+soi_direction_z(1)=3
+soi_angle(1)=4
 )");
     expected_number_of_bits += 3           // soi_num_object_updates
                                + 5         // soi_3d_bounding_box_scale_log2
@@ -201,6 +219,10 @@ soi_visibility_cones_update_flag(1)=true
                                    + 4     // soi_object_num_dependencies
                                    + 2 * 2 // soi_object_dependency_idx
                                    + 1     // soi_visibility_cones_update_flag
+                                   + 16    // soi_direction_x
+                                   + 16    // soi_direction_y
+                                   + 16    // soi_direction_z
+                                   + 16    // soi_angle
                                    ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }

@@ -157,15 +157,25 @@ auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) con
   return m_object_updates[k].soi_visibility_cones_update_flag.value();
 }
 auto SceneObjectInformation::soi_direction_x(std::size_t k) const noexcept -> std::int16_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+                   m_object_updates[k].m_soi_visibility_cones);
+  return m_object_updates[k].m_soi_visibility_cones->soi_direction_x;
 }
 auto SceneObjectInformation::soi_direction_y(std::size_t k) const noexcept -> std::int16_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+                   m_object_updates[k].m_soi_visibility_cones);
+  return m_object_updates[k].m_soi_visibility_cones->soi_direction_y;
 }
 auto SceneObjectInformation::soi_direction_z(std::size_t k) const noexcept -> std::int16_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+                   m_object_updates[k].m_soi_visibility_cones);
+  return m_object_updates[k].m_soi_visibility_cones->soi_direction_z;
 }
-auto SceneObjectInformation::soi_angle(std::size_t k) const noexcept -> std::uint16_t { return 0; }
+auto SceneObjectInformation::soi_angle(std::size_t k) const noexcept -> std::uint16_t {
+  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+                   m_object_updates[k].m_soi_visibility_cones);
+  return m_object_updates[k].m_soi_visibility_cones->soi_angle;
+}
 auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) const noexcept -> bool {
   return true;
 }
@@ -253,7 +263,6 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
       stream << "soi_object_idx=" << k << "\n";
       stream << "soi_object_cancel_flag(" << k << ")=" << std::boolalpha
              << x.soi_object_cancel_flag(k) << "\n";
-      // TODO there is an unallowed access below, fix it!
       if (!x.soi_object_cancel_flag(k)) {
         stream << "soi_object_label_update_flag(" << k << ")=" << std::boolalpha
                << x.soi_object_cancel_flag(k) << "\n";
@@ -290,6 +299,12 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
         if (x.soi_visibility_cones_present_flag()) {
           stream << "soi_visibility_cones_update_flag(" << k << ")=" << std::boolalpha
                  << x.soi_visibility_cones_update_flag(k) << "\n";
+          if (x.soi_visibility_cones_update_flag(k)) {
+            stream << "soi_direction_x(" << k << ")=" << x.soi_direction_x(k) << "\n";
+            stream << "soi_direction_y(" << k << ")=" << x.soi_direction_y(k) << "\n";
+            stream << "soi_direction_z(" << k << ")=" << x.soi_direction_z(k) << "\n";
+            stream << "soi_angle(" << k << ")=" << x.soi_angle(k) << "\n";
+          }
         }
       }
     }
@@ -370,6 +385,14 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       }
       if (result.soi_visibility_cones_present_flag()) {
         currentObjectUpdate.soi_visibility_cones_update_flag = bitstream.getFlag();
+        if (currentObjectUpdate.soi_visibility_cones_update_flag) {
+          currentObjectUpdate.m_soi_visibility_cones = SoiVisibilityCones{};
+          auto &cones = currentObjectUpdate.m_soi_visibility_cones.value();
+          cones.soi_direction_x = bitstream.readBits<std::int16_t>(16);
+          cones.soi_direction_y = bitstream.readBits<std::int16_t>(16);
+          cones.soi_direction_z = bitstream.readBits<std::int16_t>(16);
+          cones.soi_angle = bitstream.getUint16();
+        }
       }
     }
   }
@@ -431,6 +454,12 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
         }
         if (soi_visibility_cones_present_flag()) {
           bitstream.putFlag(soi_visibility_cones_update_flag(k));
+          if (soi_visibility_cones_update_flag(k)) {
+            bitstream.writeBits(soi_direction_x(k), 16);
+            bitstream.writeBits(soi_direction_y(k), 16);
+            bitstream.writeBits(soi_direction_z(k), 16);
+            bitstream.writeBits(soi_angle(k), 16);
+          }
         }
       }
     }

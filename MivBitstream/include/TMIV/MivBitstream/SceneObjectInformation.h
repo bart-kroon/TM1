@@ -44,6 +44,19 @@
 
 namespace TMIV::MivBitstream {
 
+struct SoiVisibilityCones {
+  [[nodiscard]] auto operator==(const SoiVisibilityCones &other) const noexcept -> bool {
+    return (soi_direction_x == other.soi_direction_x) &&
+           (soi_direction_y == other.soi_direction_y) &&
+           (soi_direction_z == other.soi_direction_z) && (soi_angle == other.soi_angle);
+  }
+
+  std::int16_t soi_direction_x{};
+  std::int16_t soi_direction_y{};
+  std::int16_t soi_direction_z{};
+  std::uint16_t soi_angle{};
+};
+
 struct SceneObjectUpdate {
   auto operator==(const SceneObjectUpdate &other) const noexcept -> bool {
     return (soi_object_idx == other.soi_object_idx) &&
@@ -56,7 +69,7 @@ struct SceneObjectUpdate {
            (soi_object_dependency_update_flag == other.soi_object_dependency_update_flag) &&
            (soi_object_dependency_idx == other.soi_object_dependency_idx) &&
            (soi_visibility_cones_update_flag ==
-            other.soi_visibility_cones_update_flag); // TODO complete
+            other.soi_visibility_cones_update_flag); // TODO check if complete
   }
   std::size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
@@ -68,6 +81,7 @@ struct SceneObjectUpdate {
   std::optional<bool> soi_object_dependency_update_flag{};
   std::vector<std::size_t> soi_object_dependency_idx{};
   std::optional<bool> soi_visibility_cones_update_flag{};
+  std::optional<SoiVisibilityCones> m_soi_visibility_cones{};
 };
 
 // 23090-12: scene_object_information ( payloadSize )

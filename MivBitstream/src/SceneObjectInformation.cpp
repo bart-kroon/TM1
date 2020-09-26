@@ -247,27 +247,29 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
              << static_cast<unsigned>(x.soi_log2_max_object_dependency_idx()) << "\n";
     }
     for (std::size_t i = 0; i < x.soi_num_object_updates(); ++i) {
-      const auto k = x.soi_object_idx(i);
-      stream << "soi_object_idx=" << static_cast<unsigned>(k) << "\n";
+      const auto k = static_cast<unsigned>(x.soi_object_idx(i));
+      stream << "soi_object_idx=" << k << "\n";
       stream << "soi_object_cancel_flag(" << k << ")=" << std::boolalpha
              << x.soi_object_cancel_flag(k) << "\n";
       // TODO there is an unallowed access below, fix it!
-//      if (!x.soi_object_cancel_flag(k)) {
-//        stream << "soi_object_label_update_flag(" << k << ")=" << std::boolalpha
-//               << x.soi_object_cancel_flag(k) << "\n";
-//        if (x.soi_object_label_update_flag(k)) {
-//          stream << "soi_object_label_idx(" << k
-//                 << ")=" << static_cast<unsigned>(x.soi_object_label_idx(k)) << "\n";
-//        }
-//        if (x.soi_priority_present_flag()) {
-//          stream << "soi_priority_update_flag(" << k << ")=" << std::boolalpha
-//                 << x.soi_priority_update_flag(k) << "\n";
-//          if (x.soi_priority_update_flag(k)) {
-//            stream << "soi_priority_value(" << k
-//                   << ")=" << static_cast<unsigned>(x.soi_priority_value(k)) << "\n";
-//          }
-//        }
-//      }
+      if (!x.soi_object_cancel_flag(k)) {
+        stream << "soi_object_label_update_flag(" << k << ")=" << std::boolalpha
+               << x.soi_object_cancel_flag(k) << "\n";
+        if (x.soi_object_label_present_flag()) {
+          if (x.soi_object_label_update_flag(k)) {
+            stream << "soi_object_label_idx(" << k
+                   << ")=" << static_cast<unsigned>(x.soi_object_label_idx(k)) << "\n";
+          }
+        }
+        if (x.soi_priority_present_flag()) {
+          stream << "soi_priority_update_flag(" << k << ")=" << std::boolalpha
+                 << x.soi_priority_update_flag(k) << "\n";
+          if (x.soi_priority_update_flag(k)) {
+            stream << "soi_priority_value(" << k
+                   << ")=" << static_cast<unsigned>(x.soi_priority_value(k)) << "\n";
+          }
+        }
+      }
     }
   }
   return stream;

@@ -42,23 +42,23 @@ namespace {
 std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
                                            bool soi_simple_objects_flag) {
   auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
-  std::generate(
-      updates.begin(), updates.end(), [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
-        SceneObjectUpdate update{};
-        update.soi_object_idx = soi_object_idx;
-        update.soi_object_cancel_flag = false;
-        if (!soi_simple_objects_flag) {
-          update.soi_object_label_update_flag = true;
-          update.soi_object_label_idx = soi_object_idx;
-          update.soi_priority_update_flag = true;
-          update.soi_priority_value = soi_object_idx / 2;
-          update.soi_object_hidden_flag = true;
-          update.soi_object_dependency_update_flag = true;
-          update.soi_object_dependency_idx = std::vector<std::size_t>(soi_object_idx / 2 + 1);
-        }
-        ++soi_object_idx;
-        return update;
-      });
+  std::generate(updates.begin(), updates.end(),
+                [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+                  SceneObjectUpdate update{};
+                  update.soi_object_idx = soi_object_idx;
+                  update.soi_object_cancel_flag = false;
+                  if (!soi_simple_objects_flag) {
+                    update.soi_object_label_update_flag = true;
+                    update.soi_object_label_idx = soi_object_idx;
+                    update.soi_priority_update_flag = true;
+                    update.soi_priority_value = soi_object_idx / 2;
+                    update.soi_object_hidden_flag = true;
+                    update.soi_object_dependency_update_flag = true;
+                    update.soi_object_dependency_idx = std::vector<std::size_t>(2);
+                  }
+                  ++soi_object_idx;
+                  return update;
+                });
   return updates;
 }
 
@@ -120,19 +120,23 @@ soi_material_id_present_flag=false
 soi_extension_present_flag=false
 soi_log2_max_object_idx_updated_minus1=2
 soi_object_idx=0
-soi_object_cancel_flag=false
+soi_object_cancel_flag(0)=false
+soi_object_label_update_flag(0)=false
 soi_object_idx=1
-soi_object_cancel_flag=false
+soi_object_cancel_flag(1)=false
+soi_object_label_update_flag(1)=false
 soi_object_idx=2
-soi_object_cancel_flag=false
+soi_object_cancel_flag(2)=false
+soi_object_label_update_flag(2)=false
 soi_object_idx=3
-soi_object_cancel_flag=false
+soi_object_cancel_flag(3)=false
+soi_object_label_update_flag(3)=false
 )");
-    expected_number_of_bits += 5       // soi_num_object_updates
-                               + (4 *  // soi_num_object_updates
-                                  (3   // soi_object_idx
-                                   + 1 // soi_object_cancel_flag
-                                   ));
+    expected_number_of_bits += 5          // soi_num_object_updates
+                               + (4 *     // soi_num_object_updates
+                                  (3      // soi_object_idx
+                                   + 1)); // soi_object_cancel_flag
+
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
@@ -156,16 +160,33 @@ soi_3d_bounding_box_scale_log2=1
 soi_log2_max_object_idx_updated_minus1=1
 soi_log2_max_object_dependency_idx=2
 soi_object_idx=0
-soi_object_cancel_flag=false
+soi_object_cancel_flag(0)=false
+soi_object_label_update_flag(0)=false
+soi_object_label_idx(0)=0
+soi_priority_update_flag(0)=true
+soi_priority_value(0)=0
 soi_object_idx=1
-soi_object_cancel_flag=true
+soi_object_cancel_flag(1)=false
+soi_object_label_update_flag(1)=false
+soi_object_label_idx(1)=1
+soi_priority_update_flag(1)=true
+soi_priority_value(1)=0
 )");
-    expected_number_of_bits += 3       // soi_num_object_updates
-                               + 5     // soi_3d_bounding_box_scale_log2
-                               + 5     // soi_log2_max_object_dependency_idx
-                               + (2 *  // soi_num_object_updates
-                                  (2   // soi_object_idx
-                                   + 1 // soi_object_cancel_flag
+    expected_number_of_bits += 3           // soi_num_object_updates
+                               + 5         // soi_3d_bounding_box_scale_log2
+                               + 5         // soi_log2_max_object_dependency_idx
+                               + (2 *      // soi_num_object_updates
+                                  (2       // soi_object_idx
+                                   + 1     // soi_object_cancel_flag
+                                   + 1     // soi_object_update_label_flag
+                                   + 1     // soi_object_label_idx
+                                   + 1     // soi_priority_update_flag
+                                   + 1     // soi_priority_update_flag
+                                   + 4     // soi_priority_value
+                                   + 1     // soi_object_hidden_flag
+                                   + 1     // soi_object_dependency_update_flag
+                                   + 4     // soi_object_num_dependencies
+                                   + 2 * 2 // soi_object_dependency_idx
                                    ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }

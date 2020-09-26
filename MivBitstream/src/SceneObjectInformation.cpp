@@ -126,109 +126,103 @@ auto SceneObjectInformation::soi_object_cancel_flag(std::size_t k) const noexcep
   return m_object_updates[k].soi_object_cancel_flag;
 }
 auto SceneObjectInformation::soi_object_label_update_flag(std::size_t k) const noexcept -> bool {
-  VERIFY_BITSTREAM(isValid(k) && soi_object_label_present_flag() &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_object_label_present_flag() &&
                    m_object_updates[k].soi_object_label_update_flag);
   return m_object_updates[k].soi_object_label_update_flag.value();
 }
 auto SceneObjectInformation::soi_object_label_idx(std::size_t k) const noexcept -> std::size_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_object_label_update_flag(k) &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_object_label_update_flag(k) &&
                    m_object_updates[k].soi_object_label_idx);
   return m_object_updates[k].soi_object_label_idx.value();
 }
 auto SceneObjectInformation::soi_priority_update_flag(std::size_t k) const noexcept -> bool {
-  VERIFY_BITSTREAM(isValid(k) && soi_priority_present_flag() &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_priority_present_flag() &&
                    m_object_updates[k].soi_priority_update_flag);
   return m_object_updates[k].soi_priority_update_flag.value();
 }
 auto SceneObjectInformation::soi_priority_value(std::size_t k) const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_priority_present_flag() && soi_priority_update_flag(k) &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_priority_present_flag() && soi_priority_update_flag(k) &&
                    m_object_updates[k].soi_priority_value);
   return m_object_updates[k].soi_priority_value.value();
 }
 auto SceneObjectInformation::soi_object_hidden_flag(std::size_t k) const noexcept -> bool {
-  VERIFY_BITSTREAM(isValid(k) && soi_object_hidden_present_flag() &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_object_hidden_present_flag() &&
                    m_object_updates[k].soi_object_hidden_flag);
   return m_object_updates[k].soi_object_hidden_flag.value();
 }
 auto SceneObjectInformation::soi_object_dependency_update_flag(std::size_t k) const noexcept
     -> bool {
-  VERIFY_BITSTREAM(isValid(k) && soi_object_dependency_present_flag() &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_object_dependency_present_flag() &&
                    m_object_updates[k].soi_object_dependency_update_flag);
   return m_object_updates[k].soi_object_dependency_update_flag.value();
 }
 auto SceneObjectInformation::soi_object_num_dependencies(std::size_t k) const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_object_dependency_present_flag());
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_object_dependency_present_flag());
   return m_object_updates[k].soi_object_dependency_idx.size();
 }
 auto SceneObjectInformation::soi_object_dependency_idx(std::size_t k, std::size_t j) const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(isValid(k) && j < soi_object_num_dependencies(k) &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && j < soi_object_num_dependencies(k) &&
                    soi_object_dependency_present_flag());
   return m_object_updates[k].soi_object_dependency_idx[j];
 }
 auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) const noexcept
     -> bool {
-  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_present_flag() &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_present_flag() &&
                    m_object_updates[k].soi_visibility_cones_update_flag);
   return m_object_updates[k].soi_visibility_cones_update_flag.value();
 }
 auto SceneObjectInformation::soi_direction_x(std::size_t k) const noexcept -> std::int16_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                    m_object_updates[k].m_soi_visibility_cones);
   return m_object_updates[k].m_soi_visibility_cones->soi_direction_x;
 }
 auto SceneObjectInformation::soi_direction_y(std::size_t k) const noexcept -> std::int16_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                    m_object_updates[k].m_soi_visibility_cones);
   return m_object_updates[k].m_soi_visibility_cones->soi_direction_y;
 }
 auto SceneObjectInformation::soi_direction_z(std::size_t k) const noexcept -> std::int16_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                    m_object_updates[k].m_soi_visibility_cones);
   return m_object_updates[k].m_soi_visibility_cones->soi_direction_z;
 }
 auto SceneObjectInformation::soi_angle(std::size_t k) const noexcept -> std::uint16_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_update_flag(k) &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
                    m_object_updates[k].m_soi_visibility_cones);
   return m_object_updates[k].m_soi_visibility_cones->soi_angle;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) const noexcept -> bool {
-  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_3d_bounding_box_present_flag() &&
                    m_object_updates[k].soi_3d_bounding_box_update_flag);
   return m_object_updates[k].soi_3d_bounding_box_update_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_x(std::size_t k) const noexcept -> std::size_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
-                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  VERIFY_BITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_x;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_y(std::size_t k) const noexcept -> std::size_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
-                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  VERIFY_BITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_y;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_z(std::size_t k) const noexcept -> std::size_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
-                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  VERIFY_BITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_z;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_size_x(std::size_t k) const noexcept
     -> std::size_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
-                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  VERIFY_BITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_x;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_size_y(std::size_t k) const noexcept
     -> std::size_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
-                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  VERIFY_BITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_y;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_size_z(std::size_t k) const noexcept
     -> std::size_t {
-  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
-                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  VERIFY_BITSTREAM(isBoundingBoxValid(k));
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_z;
 }
 auto SceneObjectInformation::soi_collision_shape_update_flag(std::size_t k) const noexcept -> bool {

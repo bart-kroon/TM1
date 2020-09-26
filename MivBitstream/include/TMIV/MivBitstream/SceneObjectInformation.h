@@ -190,10 +190,13 @@ public:
     m_temporary_soi_num_object_updates.reset();
   }
 
-  // TODO find proper name
-  [[nodiscard]] auto isValid(std::size_t k) const noexcept -> bool {
+  [[nodiscard]] auto isUpdateValid(std::size_t k) const noexcept -> bool {
     return soi_num_object_updates() > 0 && k < soi_num_object_updates() &&
            !soi_object_cancel_flag(k);
+  }
+  [[nodiscard]] auto isBoundingBoxValid(std::size_t k) const noexcept -> bool {
+    return isUpdateValid(k) && soi_3d_bounding_box_present_flag() &&
+           soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box;
   }
 
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;

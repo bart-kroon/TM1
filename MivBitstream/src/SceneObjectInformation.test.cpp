@@ -81,6 +81,7 @@ std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
                     update.soi_3d_bounding_box = make3dBoundingBox(soi_object_idx);
                     update.soi_collision_shape_update_flag = true;
                     update.soi_collision_shape_id = 2 * soi_object_idx;
+                    update.soi_point_style_update_flag = true;
                   }
                   ++soi_object_idx;
                   return update;
@@ -206,6 +207,7 @@ soi_3d_bounding_box_size_y(0)=4
 soi_3d_bounding_box_size_z(0)=5
 soi_collision_shape_update_flag(0)=true
 soi_collision_shape_id(0)=0
+soi_point_style_update_flag(0)=true
 soi_object_idx=1
 soi_object_cancel_flag(1)=false
 soi_object_label_update_flag(1)=true
@@ -231,6 +233,7 @@ soi_3d_bounding_box_size_y(1)=5
 soi_3d_bounding_box_size_z(1)=6
 soi_collision_shape_update_flag(1)=true
 soi_collision_shape_id(1)=2
+soi_point_style_update_flag(1)=true
 )");
     expected_number_of_bits += 3           // soi_num_object_updates
                                + 5         // soi_3d_bounding_box_scale_log2
@@ -256,6 +259,7 @@ soi_collision_shape_id(1)=2
                                    + 6 * 4 // soi_3d_bounding_box position and size fields
                                    + 1     // soi_collision_shape_update_flag
                                    + 16    // soi_collision_shape_id
+                                   + 1     // soi_point_style_update_flag
                                    ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }

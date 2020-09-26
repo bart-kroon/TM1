@@ -236,7 +236,9 @@ auto SceneObjectInformation::soi_collision_shape_id(std::size_t k) const noexcep
   return m_object_updates[k].soi_collision_shape_id.value();
 }
 auto SceneObjectInformation::soi_point_style_update_flag(std::size_t k) const noexcept -> bool {
-  return true;
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_point_style_present_flag() &&
+                   m_object_updates[k].soi_point_style_update_flag);
+  return m_object_updates[k].soi_point_style_update_flag.value();
 }
 auto SceneObjectInformation::soi_point_shape_id(std::size_t k) const noexcept -> std::uint8_t {
   return true;
@@ -340,6 +342,10 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
           if (x.soi_collision_shape_update_flag(k)) {
             putIndexedUnsigned(stream, "soi_collision_shape_id", k, x.soi_collision_shape_id(k));
           }
+        }
+        if (x.soi_point_style_present_flag()) {
+          putIndexedFlag(stream, "soi_point_style_update_flag", k,
+                         x.soi_point_style_update_flag(k));
         }
       }
     }
@@ -448,6 +454,9 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
           currentObjectUpdate.soi_collision_shape_id = bitstream.readBits<std::uint16_t>(16);
         }
       }
+      if (result.soi_point_style_present_flag()) {
+        currentObjectUpdate.soi_point_style_update_flag = bitstream.getFlag();
+      }
     }
   }
   result.setSceneObjectUpdates(std::move(updates));
@@ -531,6 +540,9 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
           if (soi_collision_shape_update_flag(k)) {
             bitstream.writeBits(soi_collision_shape_id(k), 16);
           }
+        }
+        if (soi_point_style_present_flag()) {
+          bitstream.putFlag(soi_point_style_update_flag(k));
         }
       }
     }

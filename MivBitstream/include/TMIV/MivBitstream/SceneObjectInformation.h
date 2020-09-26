@@ -68,8 +68,9 @@ struct SceneObjectUpdate {
            (soi_object_hidden_flag == other.soi_object_hidden_flag) &&
            (soi_object_dependency_update_flag == other.soi_object_dependency_update_flag) &&
            (soi_object_dependency_idx == other.soi_object_dependency_idx) &&
-           (soi_visibility_cones_update_flag ==
-            other.soi_visibility_cones_update_flag); // TODO check if complete
+           (soi_visibility_cones_update_flag == other.soi_visibility_cones_update_flag) &&
+           (soi_3d_bounding_box_update_flag ==
+            other.soi_3d_bounding_box_update_flag); // TODO check if complete
   }
   std::size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
@@ -82,6 +83,7 @@ struct SceneObjectUpdate {
   std::vector<std::size_t> soi_object_dependency_idx{};
   std::optional<bool> soi_visibility_cones_update_flag{};
   std::optional<SoiVisibilityCones> m_soi_visibility_cones{};
+  std::optional<bool> soi_3d_bounding_box_update_flag{};
 };
 
 // 23090-12: scene_object_information ( payloadSize )

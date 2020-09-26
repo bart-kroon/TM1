@@ -34,6 +34,12 @@
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
 
 namespace TMIV::MivBitstream {
+namespace {
+auto putIndexedFlag(std::ostream &stream, std::string &&fieldName, const std::size_t index,
+                    bool flagValue) -> std::ostream & {
+  return stream << fieldName << "(" << index << ")=" << std::boolalpha << flagValue << "\n";
+}
+} // namespace
 auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {
   return m_soi_persistence_flag;
 }
@@ -177,7 +183,9 @@ auto SceneObjectInformation::soi_angle(std::size_t k) const noexcept -> std::uin
   return m_object_updates[k].m_soi_visibility_cones->soi_angle;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) const noexcept -> bool {
-  return true;
+  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+                   m_object_updates[k].soi_3d_bounding_box_update_flag);
+  return m_object_updates[k].soi_3d_bounding_box_update_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_x(std::size_t k) const noexcept -> std::size_t {
   return 0;
@@ -261,32 +269,29 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
     for (std::size_t i = 0; i < x.soi_num_object_updates(); ++i) {
       const auto k = static_cast<unsigned>(x.soi_object_idx(i));
       stream << "soi_object_idx=" << k << "\n";
-      stream << "soi_object_cancel_flag(" << k << ")=" << std::boolalpha
-             << x.soi_object_cancel_flag(k) << "\n";
+      putIndexedFlag(stream, "soi_object_cancel_flag", k, x.soi_object_cancel_flag(k));
       if (!x.soi_object_cancel_flag(k)) {
-        stream << "soi_object_label_update_flag(" << k << ")=" << std::boolalpha
-               << x.soi_object_cancel_flag(k) << "\n";
         if (x.soi_object_label_present_flag()) {
+          putIndexedFlag(stream, "soi_object_label_update_flag", k,
+                         x.soi_object_label_update_flag(k));
           if (x.soi_object_label_update_flag(k)) {
             stream << "soi_object_label_idx(" << k
                    << ")=" << static_cast<unsigned>(x.soi_object_label_idx(k)) << "\n";
           }
         }
         if (x.soi_priority_present_flag()) {
-          stream << "soi_priority_update_flag(" << k << ")=" << std::boolalpha
-                 << x.soi_priority_update_flag(k) << "\n";
+          putIndexedFlag(stream, "soi_priority_update_flag", k, x.soi_priority_update_flag(k));
           if (x.soi_priority_update_flag(k)) {
             stream << "soi_priority_value(" << k
                    << ")=" << static_cast<unsigned>(x.soi_priority_value(k)) << "\n";
           }
         }
         if (x.soi_object_hidden_present_flag()) {
-          stream << "soi_object_hidden_flag(" << k << ")=" << std::boolalpha
-                 << x.soi_object_hidden_flag(k) << "\n";
+          putIndexedFlag(stream, "soi_object_hidden_flag", k, x.soi_object_hidden_flag(k));
         }
         if (x.soi_object_dependency_present_flag()) {
-          stream << "soi_object_dependency_update_flag(" << k << ")=" << std::boolalpha
-                 << x.soi_object_dependency_update_flag(k) << "\n";
+          putIndexedFlag(stream, "soi_object_dependency_update_flag", k,
+                         x.soi_object_dependency_update_flag(k));
           if (x.soi_object_dependency_update_flag(k)) {
             stream << "soi_object_num_dependencies(" << k
                    << ")=" << static_cast<unsigned>(x.soi_object_num_dependencies(k)) << "\n";
@@ -297,14 +302,18 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
           }
         }
         if (x.soi_visibility_cones_present_flag()) {
-          stream << "soi_visibility_cones_update_flag(" << k << ")=" << std::boolalpha
-                 << x.soi_visibility_cones_update_flag(k) << "\n";
+          putIndexedFlag(stream, "soi_visibility_cones_update_flag", k,
+                         x.soi_visibility_cones_update_flag(k));
           if (x.soi_visibility_cones_update_flag(k)) {
             stream << "soi_direction_x(" << k << ")=" << x.soi_direction_x(k) << "\n";
             stream << "soi_direction_y(" << k << ")=" << x.soi_direction_y(k) << "\n";
             stream << "soi_direction_z(" << k << ")=" << x.soi_direction_z(k) << "\n";
             stream << "soi_angle(" << k << ")=" << x.soi_angle(k) << "\n";
           }
+        }
+        if (x.soi_3d_bounding_box_present_flag()) {
+          putIndexedFlag(stream, "soi_3d_bounding_box_update_flag", k,
+                         x.soi_3d_bounding_box_update_flag(k));
         }
       }
     }
@@ -394,6 +403,9 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
           cones.soi_angle = bitstream.getUint16();
         }
       }
+      if (result.soi_3d_bounding_box_present_flag()) {
+        currentObjectUpdate.soi_3d_bounding_box_update_flag = bitstream.getFlag();
+      }
     }
   }
   result.setSceneObjectUpdates(std::move(updates));
@@ -460,6 +472,9 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
             bitstream.writeBits(soi_direction_z(k), 16);
             bitstream.writeBits(soi_angle(k), 16);
           }
+        }
+        if (soi_3d_bounding_box_present_flag()) {
+          bitstream.putFlag(soi_3d_bounding_box_update_flag(k));
         }
       }
     }

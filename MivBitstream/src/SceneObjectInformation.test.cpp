@@ -66,6 +66,7 @@ std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
                     update.soi_object_dependency_idx = std::vector<std::size_t>(2);
                     update.soi_visibility_cones_update_flag = true;
                     update.m_soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
+                    update.soi_3d_bounding_box_update_flag = true;
                   }
                   ++soi_object_idx;
                   return update;
@@ -132,16 +133,12 @@ soi_extension_present_flag=false
 soi_log2_max_object_idx_updated_minus1=2
 soi_object_idx=0
 soi_object_cancel_flag(0)=false
-soi_object_label_update_flag(0)=false
 soi_object_idx=1
 soi_object_cancel_flag(1)=false
-soi_object_label_update_flag(1)=false
 soi_object_idx=2
 soi_object_cancel_flag(2)=false
-soi_object_label_update_flag(2)=false
 soi_object_idx=3
 soi_object_cancel_flag(3)=false
-soi_object_label_update_flag(3)=false
 )");
     expected_number_of_bits += 5          // soi_num_object_updates
                                + (4 *     // soi_num_object_updates
@@ -172,7 +169,7 @@ soi_log2_max_object_idx_updated_minus1=1
 soi_log2_max_object_dependency_idx=2
 soi_object_idx=0
 soi_object_cancel_flag(0)=false
-soi_object_label_update_flag(0)=false
+soi_object_label_update_flag(0)=true
 soi_object_label_idx(0)=0
 soi_priority_update_flag(0)=true
 soi_priority_value(0)=0
@@ -186,9 +183,10 @@ soi_direction_x(0)=0
 soi_direction_y(0)=1
 soi_direction_z(0)=2
 soi_angle(0)=3
+soi_3d_bounding_box_update_flag(0)=true
 soi_object_idx=1
 soi_object_cancel_flag(1)=false
-soi_object_label_update_flag(1)=false
+soi_object_label_update_flag(1)=true
 soi_object_label_idx(1)=1
 soi_priority_update_flag(1)=true
 soi_priority_value(1)=0
@@ -202,6 +200,7 @@ soi_direction_x(1)=1
 soi_direction_y(1)=2
 soi_direction_z(1)=3
 soi_angle(1)=4
+soi_3d_bounding_box_update_flag(1)=true
 )");
     expected_number_of_bits += 3           // soi_num_object_updates
                                + 5         // soi_3d_bounding_box_scale_log2
@@ -223,6 +222,7 @@ soi_angle(1)=4
                                    + 16    // soi_direction_y
                                    + 16    // soi_direction_z
                                    + 16    // soi_angle
+                                   + 1     // soi_3d_bounding_box_update_flag
                                    ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }

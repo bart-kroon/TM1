@@ -93,7 +93,9 @@ struct SceneObjectUpdate {
            (soi_collision_shape_id == other.soi_collision_shape_id) &&
            (soi_point_style_update_flag == other.soi_point_style_update_flag) &&
            (soi_point_shape_id == other.soi_point_shape_id) &&
-           (soi_point_size == other.soi_point_size); // TODO check if complete
+           (soi_point_size == other.soi_point_size) &&
+           (soi_material_id_update_flag == other.soi_material_id_update_flag) &&
+           (soi_material_id == other.soi_material_id); // TODO check if complete
   }
   std::size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
@@ -113,6 +115,8 @@ struct SceneObjectUpdate {
   std::optional<bool> soi_point_style_update_flag{};
   std::optional<std::uint8_t> soi_point_shape_id{};
   std::optional<std::uint16_t> soi_point_size{};
+  std::optional<bool> soi_material_id_update_flag{};
+  std::optional<std::uint16_t> soi_material_id{};
 };
 
 // 23090-12: scene_object_information ( payloadSize )

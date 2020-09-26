@@ -251,10 +251,14 @@ auto SceneObjectInformation::soi_point_size(std::size_t k) const noexcept -> std
   return m_object_updates[k].soi_point_size.value();
 }
 auto SceneObjectInformation::soi_material_id_update_flag(std::size_t k) const noexcept -> bool {
-  return true;
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_material_id_present_flag() &&
+                   m_object_updates[k].soi_material_id_update_flag);
+  return m_object_updates[k].soi_material_id_update_flag.value();
 }
 auto SceneObjectInformation::soi_material_id(std::size_t k) const noexcept -> std::uint16_t {
-  return 0;
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_material_id_update_flag(k) &&
+                   m_object_updates[k].soi_material_id);
+  return m_object_updates[k].soi_material_id.value();
 }
 
 auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream & {
@@ -353,6 +357,13 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
           if (x.soi_point_style_update_flag(k)) {
             putIndexedUnsigned(stream, "soi_point_shape_id", k, x.soi_point_shape_id(k));
             putIndexedUnsigned(stream, "soi_point_size", k, x.soi_point_size(k));
+          }
+        }
+        if (x.soi_material_id_present_flag()) {
+          putIndexedFlag(stream, "soi_material_id_update_flag", k,
+                         x.soi_material_id_update_flag(k));
+          if (x.soi_material_id_update_flag(k)) {
+            putIndexedUnsigned(stream, "soi_material_id", k, x.soi_material_id(k));
           }
         }
       }
@@ -469,6 +480,12 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
           currentObjectUpdate.soi_point_size = bitstream.readBits<std::uint16_t>(16);
         }
       }
+      if (result.soi_material_id_present_flag()) {
+        currentObjectUpdate.soi_material_id_update_flag = bitstream.getFlag();
+        if (currentObjectUpdate.soi_material_id_update_flag) {
+          currentObjectUpdate.soi_material_id = bitstream.getUint16();
+        }
+      }
     }
   }
   result.setSceneObjectUpdates(std::move(updates));
@@ -558,6 +575,12 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
           if (soi_point_style_update_flag(k)) {
             bitstream.writeBits(soi_point_shape_id(k), 8);
             bitstream.writeBits(soi_point_size(k), 16);
+          }
+        }
+        if (soi_material_id_present_flag()) {
+          bitstream.putFlag(soi_material_id_update_flag(k));
+          if (soi_material_id_update_flag(k)) {
+            bitstream.putUint16(soi_material_id(k));
           }
         }
       }

@@ -226,7 +226,9 @@ auto SceneObjectInformation::soi_3d_bounding_box_size_z(std::size_t k) const noe
   return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_z;
 }
 auto SceneObjectInformation::soi_collision_shape_update_flag(std::size_t k) const noexcept -> bool {
-  return true;
+  VERIFY_BITSTREAM(isUpdateValid(k) && soi_collision_shape_present_flag() &&
+                   m_object_updates[k].soi_collision_shape_update_flag);
+  return m_object_updates[k].soi_collision_shape_update_flag.value();
 }
 auto SceneObjectInformation::soi_collision_shape_id(std::size_t k) const noexcept -> std::uint16_t {
   return 0;
@@ -330,6 +332,10 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
                                x.soi_3d_bounding_box_size_z(k));
           }
         }
+        if (x.soi_collision_shape_present_flag()) {
+          putIndexedFlag(stream, "soi_collision_shape_update_flag", k,
+                         x.soi_collision_shape_update_flag(k));
+        }
       }
     }
   }
@@ -431,6 +437,9 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
           box.soi_3d_bounding_box_size_z = bitstream.getUExpGolomb<std::size_t>();
         }
       }
+      if (result.soi_collision_shape_present_flag()) {
+        currentObjectUpdate.soi_collision_shape_update_flag = bitstream.getFlag();
+      }
     }
   }
   result.setSceneObjectUpdates(std::move(updates));
@@ -508,6 +517,9 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
             bitstream.putUExpGolomb(soi_3d_bounding_box_size_y(k));
             bitstream.putUExpGolomb(soi_3d_bounding_box_size_z(k));
           }
+        }
+        if (soi_collision_shape_present_flag()) {
+          bitstream.putFlag(soi_collision_shape_update_flag(k));
         }
       }
     }

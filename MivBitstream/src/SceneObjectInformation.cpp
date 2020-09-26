@@ -35,9 +35,20 @@
 
 namespace TMIV::MivBitstream {
 namespace {
-auto putIndexedFlag(std::ostream &stream, std::string &&fieldName, const std::size_t index,
+auto putFlag(std::ostream &stream, std::string &&fieldName, bool flagValue) -> std::ostream & {
+  return stream << fieldName << "=" << std::boolalpha << flagValue << "\n";
+}
+auto putIndexedFlag(std::ostream &stream, std::string &&fieldName, std::size_t index,
                     bool flagValue) -> std::ostream & {
   return stream << fieldName << "(" << index << ")=" << std::boolalpha << flagValue << "\n";
+}
+auto putUnsigned(std::ostream &stream, std::string &&fieldName, unsigned flagValue)
+    -> std::ostream & {
+  return stream << fieldName << "=" << flagValue << "\n";
+}
+auto putIndexedUnsigned(std::ostream &stream, std::string &&fieldName, std::size_t index,
+                        unsigned flagValue) -> std::ostream & {
+  return stream << fieldName << "(" << index << ")=" << flagValue << "\n";
 }
 } // namespace
 auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {
@@ -231,59 +242,46 @@ auto SceneObjectInformation::soi_material_id(std::size_t k) const noexcept -> st
 }
 
 auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream & {
-  stream << "soi_persistence_flag=" << std::boolalpha << x.soi_persistence_flag() << "\n";
-  stream << "soi_reset_flag=" << std::boolalpha << x.soi_reset_flag() << "\n";
-  stream << "soi_num_object_updates=" << x.soi_num_object_updates() << "\n";
+  putFlag(stream, "soi_persistence_flag", x.soi_persistence_flag());
+  putFlag(stream, "soi_reset_flag", x.soi_reset_flag());
+  putUnsigned(stream, "soi_num_object_updates", x.soi_num_object_updates());
   if (x.soi_num_object_updates() > 0) {
-    stream << "soi_simple_objects_flag=" << std::boolalpha << x.soi_simple_objects_flag() << "\n";
-    stream << "soi_object_label_present_flag=" << std::boolalpha
-           << x.soi_object_label_present_flag() << "\n";
-    stream << "soi_priority_present_flag=" << std::boolalpha << x.soi_priority_present_flag()
-           << "\n";
-    stream << "soi_object_hidden_present_flag=" << std::boolalpha
-           << x.soi_object_hidden_present_flag() << "\n";
-    stream << "soi_object_dependency_present_flag=" << std::boolalpha
-           << x.soi_object_dependency_present_flag() << "\n";
-    stream << "soi_visibility_cones_present_flag=" << std::boolalpha
-           << x.soi_visibility_cones_present_flag() << "\n";
-    stream << "soi_3d_bounding_box_present_flag=" << std::boolalpha
-           << x.soi_3d_bounding_box_present_flag() << "\n";
-    stream << "soi_collision_shape_present_flag=" << std::boolalpha
-           << x.soi_collision_shape_present_flag() << "\n";
-    stream << "soi_point_style_present_flag=" << std::boolalpha << x.soi_point_style_present_flag()
-           << "\n";
-    stream << "soi_material_id_present_flag=" << std::boolalpha << x.soi_material_id_present_flag()
-           << "\n";
-    stream << "soi_extension_present_flag=" << std::boolalpha << x.soi_extension_present_flag()
-           << "\n";
+    putFlag(stream, "soi_simple_objects_flag", x.soi_simple_objects_flag());
+    putFlag(stream, "soi_object_label_present_flag", x.soi_object_label_present_flag());
+    putFlag(stream, "soi_priority_present_flag", x.soi_priority_present_flag());
+    putFlag(stream, "soi_object_hidden_present_flag", x.soi_object_hidden_present_flag());
+    putFlag(stream, "soi_object_dependency_present_flag", x.soi_object_dependency_present_flag());
+    putFlag(stream, "soi_visibility_cones_present_flag", x.soi_visibility_cones_present_flag());
+    putFlag(stream, "soi_3d_bounding_box_present_flag", x.soi_3d_bounding_box_present_flag());
+    putFlag(stream, "soi_collision_shape_present_flag", x.soi_collision_shape_present_flag());
+    putFlag(stream, "soi_point_style_present_flag", x.soi_point_style_present_flag());
+    putFlag(stream, "soi_material_id_present_flag", x.soi_material_id_present_flag());
+    putFlag(stream, "soi_extension_present_flag", x.soi_extension_present_flag());
     if (x.soi_3d_bounding_box_present_flag()) {
-      stream << "soi_3d_bounding_box_scale_log2="
-             << static_cast<unsigned>(x.soi_3d_bounding_box_scale_log2()) << "\n";
+      putUnsigned(stream, "soi_3d_bounding_box_scale_log2", x.soi_3d_bounding_box_scale_log2());
     }
-    stream << "soi_log2_max_object_idx_updated_minus1="
-           << static_cast<unsigned>(x.soi_log2_max_object_idx_updated_minus1()) << "\n";
+    putUnsigned(stream, "soi_log2_max_object_idx_updated_minus1",
+                x.soi_log2_max_object_idx_updated_minus1());
     if (x.soi_object_dependency_present_flag()) {
-      stream << "soi_log2_max_object_dependency_idx="
-             << static_cast<unsigned>(x.soi_log2_max_object_dependency_idx()) << "\n";
+      putUnsigned(stream, "soi_log2_max_object_dependency_idx",
+                  x.soi_log2_max_object_dependency_idx());
     }
     for (std::size_t i = 0; i < x.soi_num_object_updates(); ++i) {
       const auto k = static_cast<unsigned>(x.soi_object_idx(i));
-      stream << "soi_object_idx=" << k << "\n";
+      putUnsigned(stream, "soi_object_idx", k);
       putIndexedFlag(stream, "soi_object_cancel_flag", k, x.soi_object_cancel_flag(k));
       if (!x.soi_object_cancel_flag(k)) {
         if (x.soi_object_label_present_flag()) {
           putIndexedFlag(stream, "soi_object_label_update_flag", k,
                          x.soi_object_label_update_flag(k));
           if (x.soi_object_label_update_flag(k)) {
-            stream << "soi_object_label_idx(" << k
-                   << ")=" << static_cast<unsigned>(x.soi_object_label_idx(k)) << "\n";
+            putIndexedUnsigned(stream, "soi_object_label_idx", k, x.soi_object_label_idx(k));
           }
         }
         if (x.soi_priority_present_flag()) {
           putIndexedFlag(stream, "soi_priority_update_flag", k, x.soi_priority_update_flag(k));
           if (x.soi_priority_update_flag(k)) {
-            stream << "soi_priority_value(" << k
-                   << ")=" << static_cast<unsigned>(x.soi_priority_value(k)) << "\n";
+            putIndexedUnsigned(stream, "soi_priority_value", k, x.soi_priority_value(k));
           }
         }
         if (x.soi_object_hidden_present_flag()) {
@@ -293,8 +291,8 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
           putIndexedFlag(stream, "soi_object_dependency_update_flag", k,
                          x.soi_object_dependency_update_flag(k));
           if (x.soi_object_dependency_update_flag(k)) {
-            stream << "soi_object_num_dependencies(" << k
-                   << ")=" << static_cast<unsigned>(x.soi_object_num_dependencies(k)) << "\n";
+            putIndexedUnsigned(stream, "soi_object_num_dependencies", k,
+                               x.soi_object_num_dependencies(k));
             for (std::size_t j = 0; j < x.soi_object_num_dependencies(k); ++j) {
               stream << "soi_object_dependency_idx(" << k
                      << ")=" << static_cast<unsigned>(x.soi_object_dependency_idx(k, j)) << "\n";
@@ -308,7 +306,7 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
             stream << "soi_direction_x(" << k << ")=" << x.soi_direction_x(k) << "\n";
             stream << "soi_direction_y(" << k << ")=" << x.soi_direction_y(k) << "\n";
             stream << "soi_direction_z(" << k << ")=" << x.soi_direction_z(k) << "\n";
-            stream << "soi_angle(" << k << ")=" << x.soi_angle(k) << "\n";
+            putIndexedUnsigned(stream, "soi_angle", k, x.soi_angle(k));
           }
         }
         if (x.soi_3d_bounding_box_present_flag()) {

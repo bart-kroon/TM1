@@ -445,7 +445,7 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       }
       if (result.soi_visibility_cones_present_flag()) {
         currentObjectUpdate.soi_visibility_cones_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_visibility_cones_update_flag) {
+        if (currentObjectUpdate.soi_visibility_cones_update_flag.value()) {
           currentObjectUpdate.m_soi_visibility_cones = SoiVisibilityCones{};
           auto &cones = currentObjectUpdate.m_soi_visibility_cones.value();
           cones.soi_direction_x = bitstream.readBits<std::int16_t>(16);
@@ -456,7 +456,7 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       }
       if (result.soi_3d_bounding_box_present_flag()) {
         currentObjectUpdate.soi_3d_bounding_box_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_3d_bounding_box_update_flag) {
+        if (currentObjectUpdate.soi_3d_bounding_box_update_flag.value()) {
           currentObjectUpdate.soi_3d_bounding_box = BoundingBox3D{};
           auto &box = currentObjectUpdate.soi_3d_bounding_box.value();
           box.soi_3d_bounding_box_x = bitstream.getUExpGolomb<std::size_t>();
@@ -469,20 +469,20 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       }
       if (result.soi_collision_shape_present_flag()) {
         currentObjectUpdate.soi_collision_shape_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_collision_shape_update_flag) {
+        if (currentObjectUpdate.soi_collision_shape_update_flag.value()) {
           currentObjectUpdate.soi_collision_shape_id = bitstream.readBits<std::uint16_t>(16);
         }
       }
       if (result.soi_point_style_present_flag()) {
         currentObjectUpdate.soi_point_style_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_point_style_update_flag) {
+        if (currentObjectUpdate.soi_point_style_update_flag.value()) {
           currentObjectUpdate.soi_point_shape_id = bitstream.readBits<std::uint8_t>(8);
           currentObjectUpdate.soi_point_size = bitstream.readBits<std::uint16_t>(16);
         }
       }
       if (result.soi_material_id_present_flag()) {
         currentObjectUpdate.soi_material_id_update_flag = bitstream.getFlag();
-        if (currentObjectUpdate.soi_material_id_update_flag) {
+        if (currentObjectUpdate.soi_material_id_update_flag.value()) {
           currentObjectUpdate.soi_material_id = bitstream.getUint16();
         }
       }

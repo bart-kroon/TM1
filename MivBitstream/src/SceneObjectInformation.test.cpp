@@ -60,36 +60,58 @@ auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D {
 }
 
 std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
-                                           bool soi_simple_objects_flag) {
+                                           bool soi_simple_objects_flag, bool fillAllFields) {
   auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
-  std::generate(updates.begin(), updates.end(),
-                [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
-                  SceneObjectUpdate update{};
-                  update.soi_object_idx = soi_object_idx;
-                  update.soi_object_cancel_flag = false;
-                  if (!soi_simple_objects_flag) {
-                    update.soi_object_label_update_flag = true;
-                    update.soi_object_label_idx = soi_object_idx;
-                    update.soi_priority_update_flag = true;
-                    update.soi_priority_value = soi_object_idx / 2;
-                    update.soi_object_hidden_flag = true;
-                    update.soi_object_dependency_update_flag = true;
-                    update.soi_object_dependency_idx = std::vector<std::size_t>(2);
-                    update.soi_visibility_cones_update_flag = true;
-                    update.m_soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
-                    update.soi_3d_bounding_box_update_flag = true;
-                    update.soi_3d_bounding_box = make3dBoundingBox(soi_object_idx);
-                    update.soi_collision_shape_update_flag = true;
-                    update.soi_collision_shape_id = 2 * soi_object_idx;
-                    update.soi_point_style_update_flag = true;
-                    update.soi_point_shape_id = 4 * soi_object_idx;
-                    update.soi_point_size = 8 * soi_object_idx;
-                    update.soi_material_id_update_flag = true;
-                    update.soi_material_id = 3 * (soi_object_idx + 1);
-                  }
-                  ++soi_object_idx;
-                  return update;
-                });
+  if (fillAllFields) {
+    std::generate(updates.begin(), updates.end(),
+                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+                    SceneObjectUpdate update{};
+                    update.soi_object_idx = soi_object_idx;
+                    update.soi_object_cancel_flag = false;
+                    if (!soi_simple_objects_flag) {
+                      update.soi_object_label_update_flag = true;
+                      update.soi_object_label_idx = soi_object_idx;
+                      update.soi_priority_update_flag = true;
+                      update.soi_priority_value = soi_object_idx / 2;
+                      update.soi_object_hidden_flag = true;
+                      update.soi_object_dependency_update_flag = true;
+                      update.soi_object_dependency_idx = std::vector<std::size_t>(2);
+                      update.soi_visibility_cones_update_flag = true;
+                      update.m_soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
+                      update.soi_3d_bounding_box_update_flag = true;
+                      update.soi_3d_bounding_box = make3dBoundingBox(soi_object_idx);
+                      update.soi_collision_shape_update_flag = true;
+                      update.soi_collision_shape_id = 2 * soi_object_idx;
+                      update.soi_point_style_update_flag = true;
+                      update.soi_point_shape_id = 4 * soi_object_idx;
+                      update.soi_point_size = 8 * soi_object_idx;
+                      update.soi_material_id_update_flag = true;
+                      update.soi_material_id = 3 * (soi_object_idx + 1);
+                    }
+                    ++soi_object_idx;
+                    return update;
+                  });
+  } else {
+    std::generate(updates.begin(), updates.end(),
+                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+                    SceneObjectUpdate update{};
+                    update.soi_object_idx = soi_object_idx;
+                    update.soi_object_cancel_flag = false;
+                    if (!soi_simple_objects_flag) {
+                      update.soi_object_label_update_flag = false;
+                      update.soi_priority_update_flag = false;
+                      update.soi_object_hidden_flag = false;
+                      update.soi_object_dependency_update_flag = false;
+                      update.soi_visibility_cones_update_flag = false;
+                      update.soi_3d_bounding_box_update_flag = false;
+                      update.soi_collision_shape_update_flag = false;
+                      update.soi_point_style_update_flag = false;
+                      update.soi_material_id_update_flag = false;
+                    }
+                    ++soi_object_idx;
+                    return update;
+                  });
+  }
   return updates;
 }
 
@@ -97,8 +119,8 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
                                 bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
                                 std::uint8_t soi_log2_max_object_idx_updated_minus1,
                                 std::uint8_t soi_3d_bounding_box_scale_log2 = 0,
-                                std::uint8_t soi_log2_max_object_dependency_idx = 0)
-    -> SceneObjectInformation {
+                                std::uint8_t soi_log2_max_object_dependency_idx = 0,
+                                bool fillAllUpdateFields = true) -> SceneObjectInformation {
   SceneObjectInformation soi{};
   soi.soi_persistence_flag(soi_persistence_flag);
   soi.soi_reset_flag(soi_reset_flag);
@@ -108,7 +130,8 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
     soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
     soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
   }
-  soi.setSceneObjectUpdates(makeUpdates(soi_num_object_updates, soi_simple_objects_flag));
+  soi.setSceneObjectUpdates(
+      makeUpdates(soi_num_object_updates, soi_simple_objects_flag, fillAllUpdateFields));
   return soi;
 }
 } // namespace
@@ -167,7 +190,7 @@ soi_object_cancel_flag(3)=false
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
-  SECTION("Custom fields, complex objects") {
+  SECTION("Custom fields, complex objects with all fields filled") {
     const auto unit{makeSceneObjectInformation(true, false, false, 2, 1, 1, 2)};
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
@@ -254,8 +277,7 @@ soi_material_id(1)=6
                                   (2       // soi_object_idx
                                    + 1     // soi_object_cancel_flag
                                    + 1     // soi_object_update_label_flag
-                                   + 1     // soi_object_label_idx
-                                   + 1     // soi_priority_update_flag
+                                   + 2     // soi_object_label_idx
                                    + 1     // soi_priority_update_flag
                                    + 4     // soi_priority_value
                                    + 1     // soi_object_hidden_flag
@@ -279,6 +301,65 @@ soi_material_id(1)=6
                                    ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
-  // TODO add test with some fields set false. This is required for such a comple structure
+  SECTION("Custom fields, complex objects with only flags") {
+    const auto unit{makeSceneObjectInformation(true, false, false, 2, 1, 1, 2, false)};
+    REQUIRE(toString(unit) == R"(soi_persistence_flag=true
+soi_reset_flag=false
+soi_num_object_updates=2
+soi_simple_objects_flag=false
+soi_object_label_present_flag=true
+soi_priority_present_flag=true
+soi_object_hidden_present_flag=true
+soi_object_dependency_present_flag=true
+soi_visibility_cones_present_flag=true
+soi_3d_bounding_box_present_flag=true
+soi_collision_shape_present_flag=true
+soi_point_style_present_flag=true
+soi_material_id_present_flag=true
+soi_extension_present_flag=true
+soi_3d_bounding_box_scale_log2=1
+soi_log2_max_object_idx_updated_minus1=1
+soi_log2_max_object_dependency_idx=2
+soi_object_idx=0
+soi_object_cancel_flag(0)=false
+soi_object_label_update_flag(0)=false
+soi_priority_update_flag(0)=false
+soi_object_hidden_flag(0)=false
+soi_object_dependency_update_flag(0)=false
+soi_visibility_cones_update_flag(0)=false
+soi_3d_bounding_box_update_flag(0)=false
+soi_collision_shape_update_flag(0)=false
+soi_point_style_update_flag(0)=false
+soi_material_id_update_flag(0)=false
+soi_object_idx=1
+soi_object_cancel_flag(1)=false
+soi_object_label_update_flag(1)=false
+soi_priority_update_flag(1)=false
+soi_object_hidden_flag(1)=false
+soi_object_dependency_update_flag(1)=false
+soi_visibility_cones_update_flag(1)=false
+soi_3d_bounding_box_update_flag(1)=false
+soi_collision_shape_update_flag(1)=false
+soi_point_style_update_flag(1)=false
+soi_material_id_update_flag(1)=false
+)");
+    expected_number_of_bits += 3       // soi_num_object_updates
+                               + 5     // soi_3d_bounding_box_scale_log2
+                               + 5     // soi_log2_max_object_dependency_idx
+                               + (2 *  // soi_num_object_updates
+                                  (2   // soi_object_idx
+                                   + 1 // soi_object_cancel_flag
+                                   + 1 // soi_object_update_label_flag
+                                   + 1 // soi_priority_update_flag
+                                   + 1 // soi_object_hidden_flag
+                                   + 1 // soi_object_dependency_update_flag
+                                   + 1 // soi_visibility_cones_update_flag
+                                   + 1 // soi_3d_bounding_box_update_flag
+                                   + 1 // soi_collision_shape_update_flag
+                                   + 1 // soi_point_style_update_flag
+                                   + 1 // soi_material_id_update_flag
+                                   ));
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+  }
 }
 } // namespace TMIV::MivBitstream

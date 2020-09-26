@@ -269,6 +269,22 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
                    << ")=" << static_cast<unsigned>(x.soi_priority_value(k)) << "\n";
           }
         }
+        if (x.soi_object_hidden_present_flag()) {
+          stream << "soi_object_hidden_flag(" << k << ")=" << std::boolalpha
+                 << x.soi_object_hidden_flag(k) << "\n";
+        }
+        if (x.soi_object_dependency_present_flag()) {
+          stream << "soi_object_dependency_update_flag(" << k << ")=" << std::boolalpha
+                 << x.soi_object_dependency_update_flag(k) << "\n";
+          if (x.soi_object_dependency_update_flag(k)) {
+            stream << "soi_object_num_dependencies(" << k
+                   << ")=" << static_cast<unsigned>(x.soi_object_num_dependencies(k)) << "\n";
+            for (std::size_t j = 0; j < x.soi_object_num_dependencies(k); ++j) {
+              stream << "soi_object_dependency_idx(" << k
+                     << ")=" << static_cast<unsigned>(x.soi_object_dependency_idx(k, j)) << "\n";
+            }
+          }
+        }
       }
     }
   }

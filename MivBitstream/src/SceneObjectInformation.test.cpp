@@ -165,12 +165,22 @@ soi_object_label_update_flag(0)=false
 soi_object_label_idx(0)=0
 soi_priority_update_flag(0)=true
 soi_priority_value(0)=0
+soi_object_hidden_flag(0)=true
+soi_object_dependency_update_flag(0)=true
+soi_object_num_dependencies(0)=2
+soi_object_dependency_idx(0)=0
+soi_object_dependency_idx(0)=0
 soi_object_idx=1
 soi_object_cancel_flag(1)=false
 soi_object_label_update_flag(1)=false
 soi_object_label_idx(1)=1
 soi_priority_update_flag(1)=true
 soi_priority_value(1)=0
+soi_object_hidden_flag(1)=true
+soi_object_dependency_update_flag(1)=true
+soi_object_num_dependencies(1)=2
+soi_object_dependency_idx(1)=0
+soi_object_dependency_idx(1)=0
 )");
     expected_number_of_bits += 3           // soi_num_object_updates
                                + 5         // soi_3d_bounding_box_scale_log2

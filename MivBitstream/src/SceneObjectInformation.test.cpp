@@ -39,101 +39,16 @@
 
 namespace TMIV::MivBitstream {
 namespace {
-auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones {
-  SoiVisibilityCones result{};
-  result.soi_direction_x = value++;
-  result.soi_direction_y = value++;
-  result.soi_direction_z = value++;
-  result.soi_angle = value;
-  return result;
-}
-
-auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D {
-  BoundingBox3D result{};
-  result.soi_3d_bounding_box_x = value++;
-  result.soi_3d_bounding_box_y = value++;
-  result.soi_3d_bounding_box_z = value++;
-  result.soi_3d_bounding_box_size_x = value++;
-  result.soi_3d_bounding_box_size_y = value++;
-  result.soi_3d_bounding_box_size_z = value;
-  return result;
-}
-
-std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
-                                           bool soi_simple_objects_flag, bool fillAllFields) {
-  auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
-  if (fillAllFields) {
-    std::generate(updates.begin(), updates.end(),
-                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
-                    SceneObjectUpdate update{};
-                    update.soi_object_idx = soi_object_idx;
-                    update.soi_object_cancel_flag = false;
-                    if (!soi_simple_objects_flag) {
-                      update.soi_object_label_update_flag = true;
-                      update.soi_object_label_idx = soi_object_idx;
-                      update.soi_priority_update_flag = true;
-                      update.soi_priority_value = soi_object_idx / 2;
-                      update.soi_object_hidden_flag = true;
-                      update.soi_object_dependency_update_flag = true;
-                      update.soi_object_dependency_idx = std::vector<std::size_t>(2);
-                      update.soi_visibility_cones_update_flag = true;
-                      update.m_soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
-                      update.soi_3d_bounding_box_update_flag = true;
-                      update.soi_3d_bounding_box = make3dBoundingBox(soi_object_idx);
-                      update.soi_collision_shape_update_flag = true;
-                      update.soi_collision_shape_id = 2 * soi_object_idx;
-                      update.soi_point_style_update_flag = true;
-                      update.soi_point_shape_id = 4 * soi_object_idx;
-                      update.soi_point_size = 8 * soi_object_idx;
-                      update.soi_material_id_update_flag = true;
-                      update.soi_material_id = 3 * (soi_object_idx + 1);
-                    }
-                    ++soi_object_idx;
-                    return update;
-                  });
-  } else {
-    std::generate(updates.begin(), updates.end(),
-                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
-                    SceneObjectUpdate update{};
-                    update.soi_object_idx = soi_object_idx;
-                    update.soi_object_cancel_flag = false;
-                    if (!soi_simple_objects_flag) {
-                      update.soi_object_label_update_flag = false;
-                      update.soi_priority_update_flag = false;
-                      update.soi_object_hidden_flag = false;
-                      update.soi_object_dependency_update_flag = false;
-                      update.soi_visibility_cones_update_flag = false;
-                      update.soi_3d_bounding_box_update_flag = false;
-                      update.soi_collision_shape_update_flag = false;
-                      update.soi_point_style_update_flag = false;
-                      update.soi_material_id_update_flag = false;
-                    }
-                    ++soi_object_idx;
-                    return update;
-                  });
-  }
-  return updates;
-}
-
+auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones;
+auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D;
+auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_flag,
+                 bool fillAllFields) -> std::vector<SceneObjectUpdate>;
 auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
                                 bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
                                 std::uint8_t soi_log2_max_object_idx_updated_minus1,
                                 std::uint8_t soi_3d_bounding_box_scale_log2 = 0,
                                 std::uint8_t soi_log2_max_object_dependency_idx = 0,
-                                bool fillAllUpdateFields = true) -> SceneObjectInformation {
-  SceneObjectInformation soi{};
-  soi.soi_persistence_flag(soi_persistence_flag);
-  soi.soi_reset_flag(soi_reset_flag);
-  soi.soi_simple_objects_flag(soi_simple_objects_flag);
-  soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
-  if (!soi_simple_objects_flag) {
-    soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
-    soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
-  }
-  soi.setSceneObjectUpdates(
-      makeUpdates(soi_num_object_updates, soi_simple_objects_flag, fillAllUpdateFields));
-  return soi;
-}
+                                bool fillAllUpdateFields = true) -> SceneObjectInformation;
 } // namespace
 
 TEST_CASE("scene_object_information", "[Scene Object Information SEI payload syntax]") {
@@ -362,4 +277,103 @@ soi_material_id_update_flag(1)=false
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }
+
+namespace {
+auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones {
+  SoiVisibilityCones result{};
+  result.soi_direction_x = value++;
+  result.soi_direction_y = value++;
+  result.soi_direction_z = value++;
+  result.soi_angle = value;
+  return result;
+}
+
+auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D {
+  BoundingBox3D result{};
+  result.soi_3d_bounding_box_x = value++;
+  result.soi_3d_bounding_box_y = value++;
+  result.soi_3d_bounding_box_z = value++;
+  result.soi_3d_bounding_box_size_x = value++;
+  result.soi_3d_bounding_box_size_y = value++;
+  result.soi_3d_bounding_box_size_z = value;
+  return result;
+}
+
+auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_flag,
+                 bool fillAllFields) -> std::vector<SceneObjectUpdate> {
+  auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
+  if (fillAllFields) {
+    std::generate(updates.begin(), updates.end(),
+                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+                    SceneObjectUpdate update{};
+                    update.soi_object_idx = soi_object_idx;
+                    update.soi_object_cancel_flag = false;
+                    if (!soi_simple_objects_flag) {
+                      update.soi_object_label_update_flag = true;
+                      update.soi_object_label_idx = soi_object_idx;
+                      update.soi_priority_update_flag = true;
+                      update.soi_priority_value = soi_object_idx / 2;
+                      update.soi_object_hidden_flag = true;
+                      update.soi_object_dependency_update_flag = true;
+                      update.soi_object_dependency_idx = std::vector<std::size_t>(2);
+                      update.soi_visibility_cones_update_flag = true;
+                      update.m_soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
+                      update.soi_3d_bounding_box_update_flag = true;
+                      update.soi_3d_bounding_box = make3dBoundingBox(soi_object_idx);
+                      update.soi_collision_shape_update_flag = true;
+                      update.soi_collision_shape_id = 2 * soi_object_idx;
+                      update.soi_point_style_update_flag = true;
+                      update.soi_point_shape_id = 4 * soi_object_idx;
+                      update.soi_point_size = 8 * soi_object_idx;
+                      update.soi_material_id_update_flag = true;
+                      update.soi_material_id = 3 * (soi_object_idx + 1);
+                    }
+                    ++soi_object_idx;
+                    return update;
+                  });
+  } else {
+    std::generate(updates.begin(), updates.end(),
+                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+                    SceneObjectUpdate update{};
+                    update.soi_object_idx = soi_object_idx;
+                    update.soi_object_cancel_flag = false;
+                    if (!soi_simple_objects_flag) {
+                      update.soi_object_label_update_flag = false;
+                      update.soi_priority_update_flag = false;
+                      update.soi_object_hidden_flag = false;
+                      update.soi_object_dependency_update_flag = false;
+                      update.soi_visibility_cones_update_flag = false;
+                      update.soi_3d_bounding_box_update_flag = false;
+                      update.soi_collision_shape_update_flag = false;
+                      update.soi_point_style_update_flag = false;
+                      update.soi_material_id_update_flag = false;
+                    }
+                    ++soi_object_idx;
+                    return update;
+                  });
+  }
+  return updates;
+}
+
+auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
+                                bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
+                                std::uint8_t soi_log2_max_object_idx_updated_minus1,
+                                std::uint8_t soi_3d_bounding_box_scale_log2,
+                                std::uint8_t soi_log2_max_object_dependency_idx,
+                                bool fillAllUpdateFields) -> SceneObjectInformation {
+  SceneObjectInformation soi{};
+  soi.soi_persistence_flag(soi_persistence_flag);
+  soi.soi_reset_flag(soi_reset_flag);
+  soi.soi_simple_objects_flag(soi_simple_objects_flag);
+  soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
+  if (!soi_simple_objects_flag) {
+    soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
+    soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
+  }
+  soi.setSceneObjectUpdates(
+      makeUpdates(soi_num_object_updates, soi_simple_objects_flag, fillAllUpdateFields));
+  return soi;
+}
+} // namespace
+
 } // namespace TMIV::MivBitstream

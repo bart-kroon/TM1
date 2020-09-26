@@ -199,25 +199,37 @@ auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) cons
   return m_object_updates[k].soi_3d_bounding_box_update_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_x(std::size_t k) const noexcept -> std::size_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_x;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_y(std::size_t k) const noexcept -> std::size_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_y;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_z(std::size_t k) const noexcept -> std::size_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_z;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_size_x(std::size_t k) const noexcept
     -> std::size_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_x;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_size_y(std::size_t k) const noexcept
     -> std::size_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_y;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_size_z(std::size_t k) const noexcept
     -> std::size_t {
-  return 0;
+  VERIFY_BITSTREAM(isValid(k) && soi_3d_bounding_box_present_flag() &&
+                   soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box);
+  return m_object_updates[k].soi_3d_bounding_box->soi_3d_bounding_box_size_z;
 }
 auto SceneObjectInformation::soi_collision_shape_update_flag(std::size_t k) const noexcept -> bool {
   return true;
@@ -312,6 +324,17 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
         if (x.soi_3d_bounding_box_present_flag()) {
           putIndexedFlag(stream, "soi_3d_bounding_box_update_flag", k,
                          x.soi_3d_bounding_box_update_flag(k));
+          if (x.soi_3d_bounding_box_update_flag(k)) {
+            putIndexedUnsigned(stream, "soi_3d_bounding_box_x", k, x.soi_3d_bounding_box_x(k));
+            putIndexedUnsigned(stream, "soi_3d_bounding_box_y", k, x.soi_3d_bounding_box_y(k));
+            putIndexedUnsigned(stream, "soi_3d_bounding_box_z", k, x.soi_3d_bounding_box_z(k));
+            putIndexedUnsigned(stream, "soi_3d_bounding_box_size_x", k,
+                               x.soi_3d_bounding_box_size_x(k));
+            putIndexedUnsigned(stream, "soi_3d_bounding_box_size_y", k,
+                               x.soi_3d_bounding_box_size_y(k));
+            putIndexedUnsigned(stream, "soi_3d_bounding_box_size_z", k,
+                               x.soi_3d_bounding_box_size_z(k));
+          }
         }
       }
     }
@@ -403,6 +426,16 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       }
       if (result.soi_3d_bounding_box_present_flag()) {
         currentObjectUpdate.soi_3d_bounding_box_update_flag = bitstream.getFlag();
+        if (currentObjectUpdate.soi_3d_bounding_box_update_flag) {
+          currentObjectUpdate.soi_3d_bounding_box = BoundingBox3D{};
+          auto &box = currentObjectUpdate.soi_3d_bounding_box.value();
+          box.soi_3d_bounding_box_x = bitstream.getUExpGolomb<std::size_t>();
+          box.soi_3d_bounding_box_y = bitstream.getUExpGolomb<std::size_t>();
+          box.soi_3d_bounding_box_z = bitstream.getUExpGolomb<std::size_t>();
+          box.soi_3d_bounding_box_size_x = bitstream.getUExpGolomb<std::size_t>();
+          box.soi_3d_bounding_box_size_y = bitstream.getUExpGolomb<std::size_t>();
+          box.soi_3d_bounding_box_size_z = bitstream.getUExpGolomb<std::size_t>();
+        }
       }
     }
   }
@@ -473,6 +506,14 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
         }
         if (soi_3d_bounding_box_present_flag()) {
           bitstream.putFlag(soi_3d_bounding_box_update_flag(k));
+          if (soi_3d_bounding_box_update_flag(k)) {
+            bitstream.putUExpGolomb(soi_3d_bounding_box_x(k));
+            bitstream.putUExpGolomb(soi_3d_bounding_box_y(k));
+            bitstream.putUExpGolomb(soi_3d_bounding_box_z(k));
+            bitstream.putUExpGolomb(soi_3d_bounding_box_size_x(k));
+            bitstream.putUExpGolomb(soi_3d_bounding_box_size_y(k));
+            bitstream.putUExpGolomb(soi_3d_bounding_box_size_z(k));
+          }
         }
       }
     }

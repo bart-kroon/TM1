@@ -45,7 +45,7 @@
 namespace TMIV::MivBitstream {
 
 struct SoiVisibilityCones {
-  [[nodiscard]] auto operator==(const SoiVisibilityCones &other) const noexcept -> bool {
+  [[nodiscard]] constexpr auto operator==(const SoiVisibilityCones &other) const noexcept -> bool {
     return (soi_direction_x == other.soi_direction_x) &&
            (soi_direction_y == other.soi_direction_y) &&
            (soi_direction_z == other.soi_direction_z) && (soi_angle == other.soi_angle);
@@ -55,6 +55,24 @@ struct SoiVisibilityCones {
   std::int16_t soi_direction_y{};
   std::int16_t soi_direction_z{};
   std::uint16_t soi_angle{};
+};
+
+struct BoundingBox3D {
+  [[nodiscard]] constexpr auto operator==(const BoundingBox3D &other) const noexcept -> bool {
+    return (soi_3d_bounding_box_x == other.soi_3d_bounding_box_x) &&
+           (soi_3d_bounding_box_y == other.soi_3d_bounding_box_y) &&
+           (soi_3d_bounding_box_z == other.soi_3d_bounding_box_z) &&
+           (soi_3d_bounding_box_size_x == other.soi_3d_bounding_box_size_x) &&
+           (soi_3d_bounding_box_size_y == other.soi_3d_bounding_box_size_y) &&
+           (soi_3d_bounding_box_size_z == other.soi_3d_bounding_box_size_z);
+  }
+
+  std::size_t soi_3d_bounding_box_x{};
+  std::size_t soi_3d_bounding_box_y{};
+  std::size_t soi_3d_bounding_box_z{};
+  std::size_t soi_3d_bounding_box_size_x{};
+  std::size_t soi_3d_bounding_box_size_y{};
+  std::size_t soi_3d_bounding_box_size_z{};
 };
 
 struct SceneObjectUpdate {
@@ -69,8 +87,8 @@ struct SceneObjectUpdate {
            (soi_object_dependency_update_flag == other.soi_object_dependency_update_flag) &&
            (soi_object_dependency_idx == other.soi_object_dependency_idx) &&
            (soi_visibility_cones_update_flag == other.soi_visibility_cones_update_flag) &&
-           (soi_3d_bounding_box_update_flag ==
-            other.soi_3d_bounding_box_update_flag); // TODO check if complete
+           (soi_3d_bounding_box_update_flag == other.soi_3d_bounding_box_update_flag) &&
+           (soi_3d_bounding_box == other.soi_3d_bounding_box); // TODO check if complete
   }
   std::size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
@@ -84,6 +102,7 @@ struct SceneObjectUpdate {
   std::optional<bool> soi_visibility_cones_update_flag{};
   std::optional<SoiVisibilityCones> m_soi_visibility_cones{};
   std::optional<bool> soi_3d_bounding_box_update_flag{};
+  std::optional<BoundingBox3D> soi_3d_bounding_box{};
 };
 
 // 23090-12: scene_object_information ( payloadSize )

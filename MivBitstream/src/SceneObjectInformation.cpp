@@ -152,7 +152,9 @@ auto SceneObjectInformation::soi_object_dependency_idx(std::size_t k, std::size_
 }
 auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) const noexcept
     -> bool {
-  return true;
+  VERIFY_BITSTREAM(isValid(k) && soi_visibility_cones_present_flag() &&
+                   m_object_updates[k].soi_visibility_cones_update_flag);
+  return m_object_updates[k].soi_visibility_cones_update_flag.value();
 }
 auto SceneObjectInformation::soi_direction_x(std::size_t k) const noexcept -> std::int16_t {
   return 0;
@@ -285,6 +287,10 @@ auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::o
             }
           }
         }
+        if (x.soi_visibility_cones_present_flag()) {
+          stream << "soi_visibility_cones_update_flag(" << k << ")=" << std::boolalpha
+                 << x.soi_visibility_cones_update_flag(k) << "\n";
+        }
       }
     }
   }
@@ -362,6 +368,9 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
           }
         }
       }
+      if (result.soi_visibility_cones_present_flag()) {
+        currentObjectUpdate.soi_visibility_cones_update_flag = bitstream.getFlag();
+      }
     }
   }
   result.setSceneObjectUpdates(std::move(updates));
@@ -419,6 +428,9 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
                                   soi_log2_max_object_dependency_idx());
             }
           }
+        }
+        if (soi_visibility_cones_present_flag()) {
+          bitstream.putFlag(soi_visibility_cones_update_flag(k));
         }
       }
     }

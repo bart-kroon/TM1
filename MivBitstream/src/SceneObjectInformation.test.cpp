@@ -55,6 +55,7 @@ std::vector<SceneObjectUpdate> makeUpdates(std::size_t soi_num_object_updates,
                     update.soi_object_hidden_flag = true;
                     update.soi_object_dependency_update_flag = true;
                     update.soi_object_dependency_idx = std::vector<std::size_t>(2);
+                    update.soi_visibility_cones_update_flag = true;
                   }
                   ++soi_object_idx;
                   return update;
@@ -170,6 +171,7 @@ soi_object_dependency_update_flag(0)=true
 soi_object_num_dependencies(0)=2
 soi_object_dependency_idx(0)=0
 soi_object_dependency_idx(0)=0
+soi_visibility_cones_update_flag(0)=true
 soi_object_idx=1
 soi_object_cancel_flag(1)=false
 soi_object_label_update_flag(1)=false
@@ -181,6 +183,7 @@ soi_object_dependency_update_flag(1)=true
 soi_object_num_dependencies(1)=2
 soi_object_dependency_idx(1)=0
 soi_object_dependency_idx(1)=0
+soi_visibility_cones_update_flag(1)=true
 )");
     expected_number_of_bits += 3           // soi_num_object_updates
                                + 5         // soi_3d_bounding_box_scale_log2
@@ -197,6 +200,7 @@ soi_object_dependency_idx(1)=0
                                    + 1     // soi_object_dependency_update_flag
                                    + 4     // soi_object_num_dependencies
                                    + 2 * 2 // soi_object_dependency_idx
+                                   + 1     // soi_visibility_cones_update_flag
                                    ));
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }

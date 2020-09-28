@@ -55,39 +55,75 @@ auto SceneObjectInformation::soi_object_label_present_flag() const -> bool {
 }
 auto SceneObjectInformation::soi_priority_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_priority_present_flag);
+  return m_soi_priority_present_flag.value();
 }
 auto SceneObjectInformation::soi_object_hidden_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_object_hidden_present_flag);
+  return m_soi_object_hidden_present_flag.value();
 }
 auto SceneObjectInformation::soi_object_dependency_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_object_dependency_present_flag);
+  return m_soi_object_dependency_present_flag.value();
 }
 auto SceneObjectInformation::soi_visibility_cones_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_visibility_cones_present_flag);
+  return m_soi_visibility_cones_present_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_3d_bounding_box_present_flag);
+  return m_soi_3d_bounding_box_present_flag.value();
 }
 auto SceneObjectInformation::soi_collision_shape_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_collision_shape_present_flag);
+  return m_soi_collision_shape_present_flag.value();
 }
 auto SceneObjectInformation::soi_point_style_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_point_style_present_flag);
+  return m_soi_point_style_present_flag.value();
 }
 auto SceneObjectInformation::soi_material_id_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_material_id_present_flag);
+  return m_soi_material_id_present_flag.value();
 }
 auto SceneObjectInformation::soi_extension_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_extension_present_flag);
+  return m_soi_extension_present_flag.value();
 }
 auto SceneObjectInformation::soi_3d_bounding_box_scale_log2() const -> std::uint8_t {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && soi_3d_bounding_box_present_flag() &&
@@ -410,12 +446,26 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
     result.soi_simple_objects_flag(bitstream.getFlag());
     if (!result.soi_simple_objects_flag()) {
       result.soi_object_label_present_flag(bitstream.getFlag());
-      const int numberOfSimpleObjectFlags = 8;
-      for (int i = 0; i < numberOfSimpleObjectFlags; ++i) {
-        bitstream.getFlag();
-      }
+      result.soi_priority_present_flag(bitstream.getFlag());
+      result.soi_object_hidden_present_flag(bitstream.getFlag());
+      result.soi_object_dependency_present_flag(bitstream.getFlag());
+      result.soi_visibility_cones_present_flag(bitstream.getFlag());
+      result.soi_3d_bounding_box_present_flag(bitstream.getFlag());
+      result.soi_collision_shape_present_flag(bitstream.getFlag());
+      result.soi_point_style_present_flag(bitstream.getFlag());
+      result.soi_material_id_present_flag(bitstream.getFlag());
+      result.soi_extension_present_flag(bitstream.getFlag());
     } else {
       result.soi_object_label_present_flag(false);
+      result.soi_priority_present_flag(false);
+      result.soi_object_hidden_present_flag(false);
+      result.soi_object_dependency_present_flag(false);
+      result.soi_visibility_cones_present_flag(false);
+      result.soi_3d_bounding_box_present_flag(false);
+      result.soi_collision_shape_present_flag(false);
+      result.soi_point_style_present_flag(false);
+      result.soi_material_id_present_flag(false);
+      result.soi_extension_present_flag(false);
     }
     if (result.soi_3d_bounding_box_present_flag()) {
       result.soi_3d_bounding_box_scale_log2(bitstream.readBits<std::uint8_t>(5));
@@ -518,6 +568,7 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
       bitstream.putFlag(soi_object_label_present_flag());
       bitstream.putFlag(soi_priority_present_flag());
       bitstream.putFlag(soi_object_hidden_present_flag());
+      bitstream.putFlag(soi_object_dependency_present_flag());
       bitstream.putFlag(soi_visibility_cones_present_flag());
       bitstream.putFlag(soi_3d_bounding_box_present_flag());
       bitstream.putFlag(soi_collision_shape_present_flag());

@@ -59,6 +59,47 @@ constexpr auto SceneObjectInformation::soi_object_label_present_flag(bool value)
   m_soi_object_label_present_flag = value;
   return *this;
 }
+constexpr auto SceneObjectInformation::soi_priority_present_flag(bool value) noexcept -> auto & {
+  m_soi_priority_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_object_hidden_present_flag(bool value) noexcept
+    -> auto & {
+  m_soi_object_hidden_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_object_dependency_present_flag(bool value) noexcept
+    -> auto & {
+  m_soi_object_dependency_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_visibility_cones_present_flag(bool value) noexcept
+    -> auto & {
+  m_soi_visibility_cones_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_3d_bounding_box_present_flag(bool value) noexcept
+    -> auto & {
+  m_soi_3d_bounding_box_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_collision_shape_present_flag(bool value) noexcept
+    -> auto & {
+  m_soi_collision_shape_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_point_style_present_flag(bool value) noexcept -> auto & {
+  m_soi_point_style_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_material_id_present_flag(bool value) noexcept -> auto & {
+  m_soi_material_id_present_flag = value;
+  return *this;
+}
+constexpr auto SceneObjectInformation::soi_extension_present_flag(bool value) noexcept -> auto & {
+  m_soi_extension_present_flag = value;
+  return *this;
+}
 constexpr auto
 SceneObjectInformation::soi_3d_bounding_box_scale_log2(const std::uint8_t value) noexcept
     -> auto & {

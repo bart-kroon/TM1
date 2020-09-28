@@ -104,7 +104,7 @@ soi_object_cancel_flag(3)=false
   }
 
   expected_number_of_bits += 3       // soi_num_object_updates
-                             + 9     // soi_object_label_present_flag ... soi_extension_present_flag
+                             + 10    // soi_object_label_present_flag ... soi_extension_present_flag
                              + 5     // soi_3d_bounding_box_scale_log2
                              + 5     // soi_log2_max_object_dependency_idx
                              + (2 *  // soi_num_object_updates
@@ -354,8 +354,15 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
   soi.soi_simple_objects_flag(soi_simple_objects_flag);
   if (!soi_simple_objects_flag) {
     soi.soi_object_label_present_flag(true);
-  } else {
-    soi.soi_object_label_present_flag(false); // Shouldn't be needed
+    soi.soi_priority_present_flag(true);
+    soi.soi_object_hidden_present_flag(true);
+    soi.soi_object_dependency_present_flag(true);
+    soi.soi_visibility_cones_present_flag(true);
+    soi.soi_3d_bounding_box_present_flag(true);
+    soi.soi_collision_shape_present_flag(true);
+    soi.soi_point_style_present_flag(true);
+    soi.soi_material_id_present_flag(true);
+    soi.soi_extension_present_flag(true);
   }
   soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
   if (!soi_simple_objects_flag) {
@@ -366,6 +373,7 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
       makeUpdates(soi_num_object_updates, soi_simple_objects_flag, fillAllUpdateFields));
   return soi;
 }
+// TODO add tests in which some non-simple object fields are false?
 } // namespace
 
 } // namespace TMIV::MivBitstream

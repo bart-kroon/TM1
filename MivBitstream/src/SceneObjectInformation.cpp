@@ -47,9 +47,11 @@ auto SceneObjectInformation::soi_simple_objects_flag() const -> bool {
 }
 auto SceneObjectInformation::soi_object_label_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
-  // TODO these values are false only if m_soi_simple_objects_flag==1, otherwise they aren't
-  // constrained?
-  return !m_soi_simple_objects_flag.value();
+  if (m_soi_simple_objects_flag.value()) {
+    return false;
+  }
+  VERIFY_BITSTREAM(m_soi_object_label_present_flag);
+  return m_soi_object_label_present_flag.value();
 }
 auto SceneObjectInformation::soi_priority_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
@@ -406,9 +408,14 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
   result.soi_num_object_updates(bitstream.getUExpGolomb<std::size_t>());
   if (result.soi_num_object_updates() > 0) {
     result.soi_simple_objects_flag(bitstream.getFlag());
-    const int numberOfSimpleObjectFlags = 9;
-    for (int i = 0; i < numberOfSimpleObjectFlags; ++i) {
-      bitstream.getFlag();
+    if (!result.soi_simple_objects_flag()) {
+      result.soi_object_label_present_flag(bitstream.getFlag());
+      const int numberOfSimpleObjectFlags = 8;
+      for (int i = 0; i < numberOfSimpleObjectFlags; ++i) {
+        bitstream.getFlag();
+      }
+    } else {
+      result.soi_object_label_present_flag(false);
     }
     if (result.soi_3d_bounding_box_present_flag()) {
       result.soi_3d_bounding_box_scale_log2(bitstream.readBits<std::uint8_t>(5));
@@ -507,16 +514,17 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
   bitstream.putUExpGolomb(soi_num_object_updates());
   if (soi_num_object_updates() > 0) {
     bitstream.putFlag(soi_simple_objects_flag());
-    // TODO these flags are only put into the bitstream if simple_objects==0? Otherwise, they are inferred?
-    bitstream.putFlag(soi_object_label_present_flag());
-    bitstream.putFlag(soi_priority_present_flag());
-    bitstream.putFlag(soi_object_hidden_present_flag());
-    bitstream.putFlag(soi_visibility_cones_present_flag());
-    bitstream.putFlag(soi_3d_bounding_box_present_flag());
-    bitstream.putFlag(soi_collision_shape_present_flag());
-    bitstream.putFlag(soi_point_style_present_flag());
-    bitstream.putFlag(soi_material_id_present_flag());
-    bitstream.putFlag(soi_extension_present_flag());
+    if (!soi_simple_objects_flag()) {
+      bitstream.putFlag(soi_object_label_present_flag());
+      bitstream.putFlag(soi_priority_present_flag());
+      bitstream.putFlag(soi_object_hidden_present_flag());
+      bitstream.putFlag(soi_visibility_cones_present_flag());
+      bitstream.putFlag(soi_3d_bounding_box_present_flag());
+      bitstream.putFlag(soi_collision_shape_present_flag());
+      bitstream.putFlag(soi_point_style_present_flag());
+      bitstream.putFlag(soi_material_id_present_flag());
+      bitstream.putFlag(soi_extension_present_flag());
+    }
     if (soi_3d_bounding_box_present_flag()) {
       bitstream.writeBits(soi_3d_bounding_box_scale_log2(), 5);
     }

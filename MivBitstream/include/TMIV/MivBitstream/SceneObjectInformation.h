@@ -173,6 +173,7 @@ public:
   constexpr auto soi_reset_flag(bool value) noexcept -> auto &;
   constexpr auto soi_num_object_updates(std::size_t value) noexcept -> auto &;
   constexpr auto soi_simple_objects_flag(bool value) noexcept -> auto &;
+  constexpr auto soi_object_label_present_flag(bool value) noexcept -> auto &;
   constexpr auto soi_3d_bounding_box_scale_log2(std::uint8_t value) noexcept -> auto &;
   constexpr auto soi_log2_max_object_idx_updated_minus1(std::uint8_t value) noexcept -> auto &;
   constexpr auto soi_log2_max_object_dependency_idx(std::uint8_t value) noexcept -> auto &;
@@ -194,6 +195,7 @@ private:
   bool m_soi_reset_flag{};
   std::optional<std::size_t> m_temporary_soi_num_object_updates{};
   std::optional<bool> m_soi_simple_objects_flag{};
+  std::optional<bool> m_soi_object_label_present_flag{};
   std::optional<std::uint8_t> m_soi_3d_bounding_box_scale_log2{};
   std::uint8_t m_soi_log2_max_object_idx_updated_minus1{};
   std::optional<std::uint8_t> m_soi_log2_max_object_dependency_idx{};

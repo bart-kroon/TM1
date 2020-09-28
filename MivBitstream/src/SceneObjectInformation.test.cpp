@@ -64,12 +64,10 @@ soi_num_object_updates=0
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
-  std::size_t expected_number_of_bits =
-      1    // soi_persistence_flag
-      + 1  // soi_reset_flag
-      + 1  // soi_simple_objects_flag
-      + 9  // soi_object_label_present_flag ... soi_extension_present_flag
-      + 5; // soi_log2_max_object_idx_updated_minus1
+  std::size_t expected_number_of_bits = 1    // soi_persistence_flag
+                                        + 1  // soi_reset_flag
+                                        + 1  // soi_simple_objects_flag
+                                        + 5; // soi_log2_max_object_idx_updated_minus1
 
   SECTION("Custom fields, simple objects") {
     const auto unit{makeSceneObjectInformation(false, true, true, 4, 2)};
@@ -102,6 +100,69 @@ soi_object_cancel_flag(3)=false
                                   (3      // soi_object_idx
                                    + 1)); // soi_object_cancel_flag
 
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+  }
+
+  expected_number_of_bits += 3       // soi_num_object_updates
+                             + 9     // soi_object_label_present_flag ... soi_extension_present_flag
+                             + 5     // soi_3d_bounding_box_scale_log2
+                             + 5     // soi_log2_max_object_dependency_idx
+                             + (2 *  // soi_num_object_updates
+                                (2   // soi_object_idx
+                                 + 1 // soi_object_cancel_flag
+                                 + 1 // soi_object_update_label_flag
+                                 + 1 // soi_priority_update_flag
+                                 + 1 // soi_object_hidden_flag
+                                 + 1 // soi_object_dependency_update_flag
+                                 + 1 // soi_visibility_cones_update_flag
+                                 + 1 // soi_3d_bounding_box_update_flag
+                                 + 1 // soi_collision_shape_update_flag
+                                 + 1 // soi_point_style_update_flag
+                                 + 1 // soi_material_id_update_flag
+                                 ));
+
+  SECTION("Custom fields, complex objects with only flags") {
+    const auto unit{makeSceneObjectInformation(true, false, false, 2, 1, 1, 2, false)};
+    REQUIRE(toString(unit) == R"(soi_persistence_flag=true
+soi_reset_flag=false
+soi_num_object_updates=2
+soi_simple_objects_flag=false
+soi_object_label_present_flag=true
+soi_priority_present_flag=true
+soi_object_hidden_present_flag=true
+soi_object_dependency_present_flag=true
+soi_visibility_cones_present_flag=true
+soi_3d_bounding_box_present_flag=true
+soi_collision_shape_present_flag=true
+soi_point_style_present_flag=true
+soi_material_id_present_flag=true
+soi_extension_present_flag=true
+soi_3d_bounding_box_scale_log2=1
+soi_log2_max_object_idx_updated_minus1=1
+soi_log2_max_object_dependency_idx=2
+soi_object_idx=0
+soi_object_cancel_flag(0)=false
+soi_object_label_update_flag(0)=false
+soi_priority_update_flag(0)=false
+soi_object_hidden_flag(0)=false
+soi_object_dependency_update_flag(0)=false
+soi_visibility_cones_update_flag(0)=false
+soi_3d_bounding_box_update_flag(0)=false
+soi_collision_shape_update_flag(0)=false
+soi_point_style_update_flag(0)=false
+soi_material_id_update_flag(0)=false
+soi_object_idx=1
+soi_object_cancel_flag(1)=false
+soi_object_label_update_flag(1)=false
+soi_priority_update_flag(1)=false
+soi_object_hidden_flag(1)=false
+soi_object_dependency_update_flag(1)=false
+soi_visibility_cones_update_flag(1)=false
+soi_3d_bounding_box_update_flag(1)=false
+soi_collision_shape_update_flag(1)=false
+soi_point_style_update_flag(1)=false
+soi_material_id_update_flag(1)=false
+)");
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
@@ -185,95 +246,21 @@ soi_point_size(1)=8
 soi_material_id_update_flag(1)=true
 soi_material_id(1)=6
 )");
-    expected_number_of_bits += 3           // soi_num_object_updates
-                               + 5         // soi_3d_bounding_box_scale_log2
-                               + 5         // soi_log2_max_object_dependency_idx
-                               + (2 *      // soi_num_object_updates
-                                  (2       // soi_object_idx
-                                   + 1     // soi_object_cancel_flag
-                                   + 1     // soi_object_update_label_flag
-                                   + 2     // soi_object_label_idx
-                                   + 1     // soi_priority_update_flag
-                                   + 4     // soi_priority_value
-                                   + 1     // soi_object_hidden_flag
-                                   + 1     // soi_object_dependency_update_flag
-                                   + 4     // soi_object_num_dependencies
-                                   + 2 * 2 // soi_object_dependency_idx
-                                   + 1     // soi_visibility_cones_update_flag
-                                   + 16    // soi_direction_x
-                                   + 16    // soi_direction_y
-                                   + 16    // soi_direction_z
-                                   + 16    // soi_angle
-                                   + 1     // soi_3d_bounding_box_update_flag
-                                   + 6 * 4 // soi_3d_bounding_box position and size fields
-                                   + 1     // soi_collision_shape_update_flag
-                                   + 16    // soi_collision_shape_id
-                                   + 1     // soi_point_style_update_flag
-                                   + 8     // soi_point_shape_id
-                                   + 16    // soi_point_size
-                                   + 1     // soi_material_id_update_flag
-                                   + 16    // soi_material_id
-                                   ));
-    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
-  }
-  SECTION("Custom fields, complex objects with only flags") {
-    const auto unit{makeSceneObjectInformation(true, false, false, 2, 1, 1, 2, false)};
-    REQUIRE(toString(unit) == R"(soi_persistence_flag=true
-soi_reset_flag=false
-soi_num_object_updates=2
-soi_simple_objects_flag=false
-soi_object_label_present_flag=true
-soi_priority_present_flag=true
-soi_object_hidden_present_flag=true
-soi_object_dependency_present_flag=true
-soi_visibility_cones_present_flag=true
-soi_3d_bounding_box_present_flag=true
-soi_collision_shape_present_flag=true
-soi_point_style_present_flag=true
-soi_material_id_present_flag=true
-soi_extension_present_flag=true
-soi_3d_bounding_box_scale_log2=1
-soi_log2_max_object_idx_updated_minus1=1
-soi_log2_max_object_dependency_idx=2
-soi_object_idx=0
-soi_object_cancel_flag(0)=false
-soi_object_label_update_flag(0)=false
-soi_priority_update_flag(0)=false
-soi_object_hidden_flag(0)=false
-soi_object_dependency_update_flag(0)=false
-soi_visibility_cones_update_flag(0)=false
-soi_3d_bounding_box_update_flag(0)=false
-soi_collision_shape_update_flag(0)=false
-soi_point_style_update_flag(0)=false
-soi_material_id_update_flag(0)=false
-soi_object_idx=1
-soi_object_cancel_flag(1)=false
-soi_object_label_update_flag(1)=false
-soi_priority_update_flag(1)=false
-soi_object_hidden_flag(1)=false
-soi_object_dependency_update_flag(1)=false
-soi_visibility_cones_update_flag(1)=false
-soi_3d_bounding_box_update_flag(1)=false
-soi_collision_shape_update_flag(1)=false
-soi_point_style_update_flag(1)=false
-soi_material_id_update_flag(1)=false
-)");
-    expected_number_of_bits += 3       // soi_num_object_updates
-                               + 5     // soi_3d_bounding_box_scale_log2
-                               + 5     // soi_log2_max_object_dependency_idx
-                               + (2 *  // soi_num_object_updates
-                                  (2   // soi_object_idx
-                                   + 1 // soi_object_cancel_flag
-                                   + 1 // soi_object_update_label_flag
-                                   + 1 // soi_priority_update_flag
-                                   + 1 // soi_object_hidden_flag
-                                   + 1 // soi_object_dependency_update_flag
-                                   + 1 // soi_visibility_cones_update_flag
-                                   + 1 // soi_3d_bounding_box_update_flag
-                                   + 1 // soi_collision_shape_update_flag
-                                   + 1 // soi_point_style_update_flag
-                                   + 1 // soi_material_id_update_flag
-                                   ));
+    expected_number_of_bits += 2 * (           // soi_num_object_updates
+                                       +2      // soi_object_label_idx
+                                       + 4     // soi_priority_value
+                                       + 4     // soi_object_num_dependencies
+                                       + 2 * 2 // soi_object_dependency_idx
+                                       + 16    // soi_direction_x
+                                       + 16    // soi_direction_y
+                                       + 16    // soi_direction_z
+                                       + 16    // soi_angle
+                                       + 6 * 4 // soi_3d_bounding_box position and size fields
+                                       + 16    // soi_collision_shape_id
+                                       + 8     // soi_point_shape_id
+                                       + 16    // soi_point_size
+                                       + 16    // soi_material_id
+                                   );
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }
@@ -365,6 +352,11 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
   soi.soi_persistence_flag(soi_persistence_flag);
   soi.soi_reset_flag(soi_reset_flag);
   soi.soi_simple_objects_flag(soi_simple_objects_flag);
+  if (!soi_simple_objects_flag) {
+    soi.soi_object_label_present_flag(true);
+  } else {
+    soi.soi_object_label_present_flag(false); // Shouldn't be needed
+  }
   soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
   if (!soi_simple_objects_flag) {
     soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);

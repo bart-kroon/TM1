@@ -54,6 +54,11 @@ constexpr auto SceneObjectInformation::soi_simple_objects_flag(const bool value)
   m_soi_simple_objects_flag = value;
   return *this;
 }
+constexpr auto SceneObjectInformation::soi_object_label_present_flag(bool value) noexcept
+    -> auto & {
+  m_soi_object_label_present_flag = value;
+  return *this;
+}
 constexpr auto
 SceneObjectInformation::soi_3d_bounding_box_scale_log2(const std::uint8_t value) noexcept
     -> auto & {

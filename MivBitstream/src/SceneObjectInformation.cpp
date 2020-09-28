@@ -34,23 +34,6 @@
 #include <TMIV/MivBitstream/SceneObjectInformation.h>
 
 namespace TMIV::MivBitstream {
-namespace {
-auto putFlag(std::ostream &stream, std::string &&fieldName, bool flagValue) -> std::ostream & {
-  return stream << fieldName << "=" << std::boolalpha << flagValue << "\n";
-}
-auto putIndexedFlag(std::ostream &stream, std::string &&fieldName, std::size_t index,
-                    bool flagValue) -> std::ostream & {
-  return stream << fieldName << "(" << index << ")=" << std::boolalpha << flagValue << "\n";
-}
-auto putUnsigned(std::ostream &stream, std::string &&fieldName, unsigned flagValue)
-    -> std::ostream & {
-  return stream << fieldName << "=" << flagValue << "\n";
-}
-auto putIndexedUnsigned(std::ostream &stream, std::string &&fieldName, std::size_t index,
-                        unsigned flagValue) -> std::ostream & {
-  return stream << fieldName << "(" << index << ")=" << flagValue << "\n";
-}
-} // namespace
 auto SceneObjectInformation::soi_persistence_flag() const noexcept -> bool {
   return m_soi_persistence_flag;
 }
@@ -64,6 +47,8 @@ auto SceneObjectInformation::soi_simple_objects_flag() const -> bool {
 }
 auto SceneObjectInformation::soi_object_label_present_flag() const -> bool {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && m_soi_simple_objects_flag);
+  // TODO these values are false only if m_soi_simple_objects_flag==1, otherwise they aren't
+  // constrained?
   return !m_soi_simple_objects_flag.value();
 }
 auto SceneObjectInformation::soi_priority_present_flag() const -> bool {
@@ -117,7 +102,7 @@ auto SceneObjectInformation::soi_log2_max_object_dependency_idx() const -> std::
                    m_soi_log2_max_object_dependency_idx);
   return m_soi_log2_max_object_dependency_idx.value();
 }
-auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std::uint8_t {
+auto SceneObjectInformation::soi_object_idx(std::size_t i) const noexcept -> std::size_t {
   VERIFY_BITSTREAM(soi_num_object_updates() > 0 && i < soi_num_object_updates());
   return m_object_updates[i].soi_object_idx;
 }
@@ -160,7 +145,7 @@ auto SceneObjectInformation::soi_object_num_dependencies(std::size_t k) const ->
   return m_object_updates[k].soi_object_dependency_idx.size();
 }
 auto SceneObjectInformation::soi_object_dependency_idx(std::size_t k, std::size_t j) const
-    -> std::uint8_t {
+    -> std::size_t {
   VERIFY_BITSTREAM(isUpdateValid(k) && j < soi_object_num_dependencies(k) &&
                    soi_object_dependency_present_flag());
   return m_object_updates[k].soi_object_dependency_idx[j];
@@ -254,6 +239,39 @@ auto SceneObjectInformation::soi_material_id(std::size_t k) const -> std::uint16
                    m_object_updates[k].soi_material_id);
   return m_object_updates[k].soi_material_id.value();
 }
+
+auto SceneObjectInformation::setSceneObjectUpdates(
+    std::vector<SceneObjectUpdate> &&updates) noexcept -> void {
+  m_object_updates = std::move(updates);
+  m_temporary_soi_num_object_updates.reset();
+}
+
+[[nodiscard]] auto SceneObjectInformation::isUpdateValid(std::size_t k) const noexcept -> bool {
+  return soi_num_object_updates() > 0 && k < soi_num_object_updates() && !soi_object_cancel_flag(k);
+}
+[[nodiscard]] auto SceneObjectInformation::isBoundingBoxValid(std::size_t k) const noexcept
+    -> bool {
+  return isUpdateValid(k) && soi_3d_bounding_box_present_flag() &&
+         soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box;
+}
+
+namespace {
+auto putFlag(std::ostream &stream, std::string &&fieldName, bool flagValue) -> std::ostream & {
+  return stream << fieldName << "=" << std::boolalpha << flagValue << "\n";
+}
+auto putIndexedFlag(std::ostream &stream, std::string &&fieldName, std::size_t index,
+                    bool flagValue) -> std::ostream & {
+  return stream << fieldName << "(" << index << ")=" << std::boolalpha << flagValue << "\n";
+}
+auto putUnsigned(std::ostream &stream, std::string &&fieldName, unsigned flagValue)
+    -> std::ostream & {
+  return stream << fieldName << "=" << flagValue << "\n";
+}
+auto putIndexedUnsigned(std::ostream &stream, std::string &&fieldName, std::size_t index,
+                        unsigned flagValue) -> std::ostream & {
+  return stream << fieldName << "(" << index << ")=" << flagValue << "\n";
+}
+} // namespace
 
 auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream & {
   putFlag(stream, "soi_persistence_flag", x.soi_persistence_flag());
@@ -370,16 +388,13 @@ auto SceneObjectInformation::operator==(const SceneObjectInformation &other) con
     -> bool {
   return (m_soi_persistence_flag == other.m_soi_persistence_flag) &&
          (m_soi_reset_flag == other.m_soi_reset_flag) &&
+         (m_temporary_soi_num_object_updates == other.m_temporary_soi_num_object_updates) &&
          (m_soi_simple_objects_flag == other.m_soi_simple_objects_flag) &&
          (m_soi_3d_bounding_box_scale_log2 == other.m_soi_3d_bounding_box_scale_log2) &&
          (m_soi_log2_max_object_idx_updated_minus1 ==
           other.m_soi_log2_max_object_idx_updated_minus1) &&
+         (m_soi_log2_max_object_dependency_idx == other.m_soi_log2_max_object_dependency_idx) &&
          (m_object_updates == other.m_object_updates);
-}
-
-auto SceneObjectInformation::operator!=(const SceneObjectInformation &other) const noexcept
-    -> bool {
-  return !operator==(other);
 }
 
 auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
@@ -492,6 +507,7 @@ void SceneObjectInformation::encodeTo(Common::OutputBitstream &bitstream) const 
   bitstream.putUExpGolomb(soi_num_object_updates());
   if (soi_num_object_updates() > 0) {
     bitstream.putFlag(soi_simple_objects_flag());
+    // TODO these flags are only put into the bitstream if simple_objects==0? Otherwise, they are inferred?
     bitstream.putFlag(soi_object_label_present_flag());
     bitstream.putFlag(soi_priority_present_flag());
     bitstream.putFlag(soi_object_hidden_present_flag());

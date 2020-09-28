@@ -95,7 +95,7 @@ struct SceneObjectUpdate {
            (soi_point_shape_id == other.soi_point_shape_id) &&
            (soi_point_size == other.soi_point_size) &&
            (soi_material_id_update_flag == other.soi_material_id_update_flag) &&
-           (soi_material_id == other.soi_material_id); // TODO check if complete
+           (soi_material_id == other.soi_material_id);
   }
   std::size_t soi_object_idx{};
   bool soi_object_cancel_flag{};
@@ -139,7 +139,7 @@ public:
   [[nodiscard]] auto soi_3d_bounding_box_scale_log2() const -> std::uint8_t;
   [[nodiscard]] auto soi_log2_max_object_idx_updated_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto soi_log2_max_object_dependency_idx() const -> std::uint8_t;
-  [[nodiscard]] auto soi_object_idx(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto soi_object_idx(std::size_t i) const noexcept -> std::size_t;
   [[nodiscard]] auto soi_object_cancel_flag(std::size_t k) const noexcept -> bool;
   [[nodiscard]] auto soi_object_label_update_flag(std::size_t k) const -> bool;
   [[nodiscard]] auto soi_object_label_idx(std::size_t k) const -> std::size_t;
@@ -148,7 +148,7 @@ public:
   [[nodiscard]] auto soi_object_hidden_flag(std::size_t k) const -> bool;
   [[nodiscard]] auto soi_object_dependency_update_flag(std::size_t k) const -> bool;
   [[nodiscard]] auto soi_object_num_dependencies(std::size_t k) const -> std::uint8_t;
-  [[nodiscard]] auto soi_object_dependency_idx(std::size_t k, std::size_t j) const -> std::uint8_t;
+  [[nodiscard]] auto soi_object_dependency_idx(std::size_t k, std::size_t j) const -> std::size_t;
   [[nodiscard]] auto soi_visibility_cones_update_flag(std::size_t k) const -> bool;
   [[nodiscard]] auto soi_direction_x(std::size_t k) const -> std::int16_t;
   [[nodiscard]] auto soi_direction_y(std::size_t k) const -> std::int16_t;
@@ -169,59 +169,27 @@ public:
   [[nodiscard]] auto soi_material_id_update_flag(std::size_t k) const -> bool;
   [[nodiscard]] auto soi_material_id(std::size_t k) const -> std::uint16_t;
 
-  constexpr auto soi_persistence_flag(const bool value) noexcept -> auto & {
-    m_soi_persistence_flag = value;
-    return *this;
-  }
-  constexpr auto soi_reset_flag(const bool value) noexcept -> auto & {
-    m_soi_reset_flag = value;
-    return *this;
-  }
-  auto soi_num_object_updates(const std::uint8_t value) noexcept -> auto & {
-    m_temporary_soi_num_object_updates = value;
-    return *this;
-  }
-  constexpr auto soi_simple_objects_flag(const bool value) noexcept -> auto & {
-    m_soi_simple_objects_flag = value;
-    return *this;
-  }
-  constexpr auto soi_3d_bounding_box_scale_log2(const std::uint8_t value) noexcept -> auto & {
-    m_soi_3d_bounding_box_scale_log2 = value;
-    return *this;
-  }
-  constexpr auto soi_log2_max_object_idx_updated_minus1(const std::uint8_t value) noexcept
-      -> auto & {
-    m_soi_log2_max_object_idx_updated_minus1 = value;
-    return *this;
-  }
-  constexpr auto soi_log2_max_object_dependency_idx(const std::uint8_t value) noexcept -> auto & {
-    m_soi_log2_max_object_dependency_idx = value;
-    return *this;
-  }
-  auto setSceneObjectUpdates(std::vector<SceneObjectUpdate> &&updates) noexcept -> void {
-    m_object_updates = std::move(updates);
-    m_temporary_soi_num_object_updates.reset();
-  }
-
-  [[nodiscard]] auto isUpdateValid(std::size_t k) const noexcept -> bool {
-    return soi_num_object_updates() > 0 && k < soi_num_object_updates() &&
-           !soi_object_cancel_flag(k);
-  }
-  [[nodiscard]] auto isBoundingBoxValid(std::size_t k) const noexcept -> bool {
-    return isUpdateValid(k) && soi_3d_bounding_box_present_flag() &&
-           soi_3d_bounding_box_update_flag(k) && m_object_updates[k].soi_3d_bounding_box;
-  }
+  constexpr auto soi_persistence_flag(bool value) noexcept -> auto &;
+  constexpr auto soi_reset_flag(bool value) noexcept -> auto &;
+  constexpr auto soi_num_object_updates(std::size_t value) noexcept -> auto &;
+  constexpr auto soi_simple_objects_flag(bool value) noexcept -> auto &;
+  constexpr auto soi_3d_bounding_box_scale_log2(std::uint8_t value) noexcept -> auto &;
+  constexpr auto soi_log2_max_object_idx_updated_minus1(std::uint8_t value) noexcept -> auto &;
+  constexpr auto soi_log2_max_object_dependency_idx(std::uint8_t value) noexcept -> auto &;
+  auto setSceneObjectUpdates(std::vector<SceneObjectUpdate> &&updates) noexcept -> void;
 
   friend auto operator<<(std::ostream &stream, const SceneObjectInformation &x) -> std::ostream &;
 
   auto operator==(const SceneObjectInformation &other) const noexcept -> bool;
-  auto operator!=(const SceneObjectInformation &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> SceneObjectInformation;
 
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
+  [[nodiscard]] auto isUpdateValid(std::size_t k) const noexcept -> bool;
+  [[nodiscard]] auto isBoundingBoxValid(std::size_t k) const noexcept -> bool;
+
   bool m_soi_persistence_flag{};
   bool m_soi_reset_flag{};
   std::optional<std::size_t> m_temporary_soi_num_object_updates{};
@@ -232,5 +200,7 @@ private:
   std::vector<SceneObjectUpdate> m_object_updates{};
 };
 } // namespace TMIV::MivBitstream
+
+#include <TMIV/MivBitstream/SceneObjectInformation.hpp>
 
 #endif

@@ -54,6 +54,7 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/RecViewport.h"
     "include/TMIV/MivBitstream/RecViewport.hpp"
     "include/TMIV/MivBitstream/SceneObjectInformation.h"
+    "include/TMIV/MivBitstream/SceneObjectInformation.hpp"
     "include/TMIV/MivBitstream/SeiRBSP.h"
     "include/TMIV/MivBitstream/verify.h"
     "include/TMIV/MivBitstream/ViewingSpace.h"

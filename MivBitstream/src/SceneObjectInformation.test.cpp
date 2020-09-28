@@ -42,9 +42,10 @@ namespace {
 auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones;
 auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D;
 auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_flag,
-                 bool fillAllFields) -> std::vector<SceneObjectUpdate>;
+                 bool soiObjectPresentFlags, bool fillAllFields) -> std::vector<SceneObjectUpdate>;
 auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
-                                bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
+                                bool soi_simple_objects_flag, bool soiObjectPresentFlags,
+                                std::size_t soi_num_object_updates,
                                 std::uint8_t soi_log2_max_object_idx_updated_minus1,
                                 std::uint8_t soi_3d_bounding_box_scale_log2 = 0,
                                 std::uint8_t soi_log2_max_object_dependency_idx = 0,
@@ -70,7 +71,7 @@ soi_num_object_updates=0
                                         + 5; // soi_log2_max_object_idx_updated_minus1
 
   SECTION("Custom fields, simple objects") {
-    const auto unit{makeSceneObjectInformation(false, true, true, 4, 2)};
+    const auto unit{makeSceneObjectInformation(false, true, true, true, 4, 2)};
     REQUIRE(toString(unit) == R"(soi_persistence_flag=false
 soi_reset_flag=true
 soi_num_object_updates=4
@@ -105,12 +106,40 @@ soi_object_cancel_flag(3)=false
 
   expected_number_of_bits += 3       // soi_num_object_updates
                              + 10    // soi_object_label_present_flag ... soi_extension_present_flag
-                             + 5     // soi_3d_bounding_box_scale_log2
-                             + 5     // soi_log2_max_object_dependency_idx
                              + (2 *  // soi_num_object_updates
                                 (2   // soi_object_idx
                                  + 1 // soi_object_cancel_flag
-                                 + 1 // soi_object_update_label_flag
+                                 ));
+
+  SECTION("Custom fields, complex objects with all 'present' flags false") {
+    const auto unit{makeSceneObjectInformation(true, false, false, false, 2, 1, 1, 2)};
+    REQUIRE(toString(unit) == R"(soi_persistence_flag=true
+soi_reset_flag=false
+soi_num_object_updates=2
+soi_simple_objects_flag=false
+soi_object_label_present_flag=false
+soi_priority_present_flag=false
+soi_object_hidden_present_flag=false
+soi_object_dependency_present_flag=false
+soi_visibility_cones_present_flag=false
+soi_3d_bounding_box_present_flag=false
+soi_collision_shape_present_flag=false
+soi_point_style_present_flag=false
+soi_material_id_present_flag=false
+soi_extension_present_flag=false
+soi_log2_max_object_idx_updated_minus1=1
+soi_object_idx=0
+soi_object_cancel_flag(0)=false
+soi_object_idx=1
+soi_object_cancel_flag(1)=false
+)");
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
+  }
+
+  expected_number_of_bits += 5       // soi_3d_bounding_box_scale_log2
+                             + 5     // soi_log2_max_object_dependency_idx
+                             + (2 *  // soi_num_object_updates
+                                (1   // soi_object_update_label_flag
                                  + 1 // soi_priority_update_flag
                                  + 1 // soi_object_hidden_flag
                                  + 1 // soi_object_dependency_update_flag
@@ -122,7 +151,7 @@ soi_object_cancel_flag(3)=false
                                  ));
 
   SECTION("Custom fields, complex objects with only flags") {
-    const auto unit{makeSceneObjectInformation(true, false, false, 2, 1, 1, 2, false)};
+    const auto unit{makeSceneObjectInformation(true, false, false, true, 2, 1, 1, 2, false)};
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
 soi_num_object_updates=2
@@ -167,7 +196,7 @@ soi_material_id_update_flag(1)=false
   }
 
   SECTION("Custom fields, complex objects with all fields filled") {
-    const auto unit{makeSceneObjectInformation(true, false, false, 2, 1, 1, 2)};
+    const auto unit{makeSceneObjectInformation(true, false, false, true, 2, 1, 1, 2)};
     REQUIRE(toString(unit) == R"(soi_persistence_flag=true
 soi_reset_flag=false
 soi_num_object_updates=2
@@ -287,15 +316,15 @@ auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D {
 }
 
 auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_flag,
-                 bool fillAllFields) -> std::vector<SceneObjectUpdate> {
+                 bool soiObjectPresentFlags, bool fillAllFields) -> std::vector<SceneObjectUpdate> {
   auto updates{std::vector<SceneObjectUpdate>(soi_num_object_updates)};
   if (fillAllFields) {
     std::generate(updates.begin(), updates.end(),
-                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+                  [soi_object_idx = 0, soi_simple_objects_flag, soiObjectPresentFlags]() mutable {
                     SceneObjectUpdate update{};
                     update.soi_object_idx = soi_object_idx;
                     update.soi_object_cancel_flag = false;
-                    if (!soi_simple_objects_flag) {
+                    if (!soi_simple_objects_flag && soiObjectPresentFlags) {
                       update.soi_object_label_update_flag = true;
                       update.soi_object_label_idx = soi_object_idx;
                       update.soi_priority_update_flag = true;
@@ -320,11 +349,11 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
                   });
   } else {
     std::generate(updates.begin(), updates.end(),
-                  [soi_object_idx = 0, soi_simple_objects_flag]() mutable {
+                  [soi_object_idx = 0, soi_simple_objects_flag, soiObjectPresentFlags]() mutable {
                     SceneObjectUpdate update{};
                     update.soi_object_idx = soi_object_idx;
                     update.soi_object_cancel_flag = false;
-                    if (!soi_simple_objects_flag) {
+                    if (!soi_simple_objects_flag && soiObjectPresentFlags) {
                       update.soi_object_label_update_flag = false;
                       update.soi_priority_update_flag = false;
                       update.soi_object_hidden_flag = false;
@@ -343,7 +372,8 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
 }
 
 auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
-                                bool soi_simple_objects_flag, std::size_t soi_num_object_updates,
+                                bool soi_simple_objects_flag, bool soiObjectPresentFlags,
+                                std::size_t soi_num_object_updates,
                                 std::uint8_t soi_log2_max_object_idx_updated_minus1,
                                 std::uint8_t soi_3d_bounding_box_scale_log2,
                                 std::uint8_t soi_log2_max_object_dependency_idx,
@@ -353,27 +383,37 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
   soi.soi_reset_flag(soi_reset_flag);
   soi.soi_simple_objects_flag(soi_simple_objects_flag);
   if (!soi_simple_objects_flag) {
-    soi.soi_object_label_present_flag(true);
-    soi.soi_priority_present_flag(true);
-    soi.soi_object_hidden_present_flag(true);
-    soi.soi_object_dependency_present_flag(true);
-    soi.soi_visibility_cones_present_flag(true);
-    soi.soi_3d_bounding_box_present_flag(true);
-    soi.soi_collision_shape_present_flag(true);
-    soi.soi_point_style_present_flag(true);
-    soi.soi_material_id_present_flag(true);
-    soi.soi_extension_present_flag(true);
+    soi.soi_object_label_present_flag(soiObjectPresentFlags);
+    soi.soi_priority_present_flag(soiObjectPresentFlags);
+    soi.soi_object_hidden_present_flag(soiObjectPresentFlags);
+    soi.soi_object_dependency_present_flag(soiObjectPresentFlags);
+    soi.soi_visibility_cones_present_flag(soiObjectPresentFlags);
+    soi.soi_3d_bounding_box_present_flag(soiObjectPresentFlags);
+    soi.soi_collision_shape_present_flag(soiObjectPresentFlags);
+    soi.soi_point_style_present_flag(soiObjectPresentFlags);
+    soi.soi_material_id_present_flag(soiObjectPresentFlags);
+    soi.soi_extension_present_flag(soiObjectPresentFlags);
+  } else {
+    soi.soi_object_label_present_flag(false);
+    soi.soi_priority_present_flag(false);
+    soi.soi_object_hidden_present_flag(false);
+    soi.soi_object_dependency_present_flag(false);
+    soi.soi_visibility_cones_present_flag(false);
+    soi.soi_3d_bounding_box_present_flag(false);
+    soi.soi_collision_shape_present_flag(false);
+    soi.soi_point_style_present_flag(false);
+    soi.soi_material_id_present_flag(false);
+    soi.soi_extension_present_flag(false);
   }
   soi.soi_log2_max_object_idx_updated_minus1(soi_log2_max_object_idx_updated_minus1);
-  if (!soi_simple_objects_flag) {
+  if (!soi_simple_objects_flag && soiObjectPresentFlags) {
     soi.soi_3d_bounding_box_scale_log2(soi_3d_bounding_box_scale_log2);
     soi.soi_log2_max_object_dependency_idx(soi_log2_max_object_dependency_idx);
   }
-  soi.setSceneObjectUpdates(
-      makeUpdates(soi_num_object_updates, soi_simple_objects_flag, fillAllUpdateFields));
+  soi.setSceneObjectUpdates(makeUpdates(soi_num_object_updates, soi_simple_objects_flag,
+                                        soiObjectPresentFlags, fillAllUpdateFields));
   return soi;
 }
-// TODO add tests in which some non-simple object fields are false?
 } // namespace
 
 } // namespace TMIV::MivBitstream

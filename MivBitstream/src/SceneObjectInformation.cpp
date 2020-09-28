@@ -428,6 +428,16 @@ auto SceneObjectInformation::operator==(const SceneObjectInformation &other) con
          (m_soi_reset_flag == other.m_soi_reset_flag) &&
          (m_temporary_soi_num_object_updates == other.m_temporary_soi_num_object_updates) &&
          (m_soi_simple_objects_flag == other.m_soi_simple_objects_flag) &&
+         (m_soi_object_label_present_flag == other.m_soi_object_label_present_flag) &&
+         (m_soi_priority_present_flag == other.m_soi_priority_present_flag) &&
+         (m_soi_object_hidden_present_flag == other.m_soi_object_hidden_present_flag) &&
+         (m_soi_object_dependency_present_flag == other.m_soi_object_dependency_present_flag) &&
+         (m_soi_visibility_cones_present_flag == other.m_soi_visibility_cones_present_flag) &&
+         (m_soi_3d_bounding_box_present_flag == other.m_soi_3d_bounding_box_present_flag) &&
+         (m_soi_collision_shape_present_flag == other.m_soi_collision_shape_present_flag) &&
+         (m_soi_point_style_present_flag == other.m_soi_point_style_present_flag) &&
+         (m_soi_material_id_present_flag == other.m_soi_material_id_present_flag) &&
+         (m_soi_extension_present_flag == other.m_soi_extension_present_flag) &&
          (m_soi_3d_bounding_box_scale_log2 == other.m_soi_3d_bounding_box_scale_log2) &&
          (m_soi_log2_max_object_idx_updated_minus1 ==
           other.m_soi_log2_max_object_idx_updated_minus1) &&

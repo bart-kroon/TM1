@@ -44,5 +44,16 @@ TEST_CASE("packed_independent_regions", "[Packed Independent Regions SEI payload
     const std::size_t expected_number_of_bits = 5; // pir_num_packed_frames_minus1
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
+  SECTION("Frames with zero regions") {
+    PackedIndependentRegions unit{};
+    const std::size_t number_of_frames = 5;
+    unit.pir_num_packed_frames_minus1(number_of_frames);
+    for (std::size_t frame = 0; frame < number_of_frames; ++frame) {
+      // TODO you could invert this
+      unit.pir_packed_frame_id(frame, frame);
+      const auto k = unit.pir_packed_frame_id(frame);
+      unit.pir_description_type_idc(k, frame + 1);
+    }
+  }
 }
 } // namespace TMIV::MivBitstream

@@ -52,6 +52,7 @@ add_library(MivBitstreamLib
     "include/TMIV/MivBitstream/NalUnit.h"
     "include/TMIV/MivBitstream/NalSampleStream.h"
     "include/TMIV/MivBitstream/PackedIndependentRegions.h"
+    "include/TMIV/MivBitstream/PackedIndependentRegions.hpp"
     "include/TMIV/MivBitstream/PatchParamsList.h"
     "include/TMIV/MivBitstream/RecViewport.h"
     "include/TMIV/MivBitstream/RecViewport.hpp"

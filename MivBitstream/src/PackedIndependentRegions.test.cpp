@@ -37,8 +37,12 @@
 
 namespace TMIV::MivBitstream {
 TEST_CASE("packed_independent_regions", "[Packed Independent Regions SEI payload syntax]") {
-  SECTION("Default Constructor"){
+  SECTION("Default Constructor") {
     const PackedIndependentRegions unit{};
+    REQUIRE(toString(unit) == R"(pir_num_packed_frames_minus1=0
+)");
+    const std::size_t expected_number_of_bits = 5; // pir_num_packed_frames_minus1
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }
-}
+} // namespace TMIV::MivBitstream

@@ -40,7 +40,13 @@
 #include <variant>
 #include <vector>
 
+namespace TMIV::MivBitstream {
 struct TileRegion {
+  auto operator==(const TileRegion &other) const noexcept -> bool {
+    return (pir_top_left_tile_idx == other.pir_top_left_tile_idx) &&
+           (pir_bottom_right_tile_idx == other.pir_bottom_right_tile_idx);
+  }
+
   std::size_t pir_top_left_tile_idx{};
   std::size_t pir_bottom_right_tile_idx{};
 };
@@ -49,12 +55,18 @@ using TileRegions = std::vector<TileRegion>;
 using SubPicRegions = std::vector<std::size_t>;
 
 struct PirPackedFrame {
+  auto operator==(const PirPackedFrame &other) const noexcept -> bool {
+    return (pir_packed_frame_id == other.pir_packed_frame_id) &&
+           (pir_description_type_idc == other.pir_description_type_idc) &&
+           (regions == other.regions);
+  }
+
   std::uint8_t pir_packed_frame_id{};
   std::uint8_t pir_description_type_idc{}; // TODO consider enum
   std::variant<TileRegions, SubPicRegions> regions{};
 };
 
-namespace TMIV::MivBitstream {
+// 23090-12: packed_independent_regions ( payloadSize )
 class PackedIndependentRegions {
 public:
   [[nodiscard]] auto pir_num_packed_frames_minus1() const noexcept -> std::uint8_t;
@@ -67,7 +79,7 @@ public:
       -> std::size_t;
   [[nodiscard]] auto pir_subpic_id(std::uint8_t k, std::uint8_t i) const noexcept -> std::size_t;
 
-  auto pir_num_packed_frames(std::uint8_t value) noexcept -> auto &;
+  auto pir_num_packed_frames_minus1(std::uint8_t value) noexcept -> auto &;
   auto pir_packed_frame_id(std::uint8_t j, std::uint8_t value) noexcept -> auto &;
   auto pir_description_type_idc(std::uint8_t k, std::uint8_t value) noexcept -> auto &;
   auto pir_num_regions_minus1(std::uint8_t k, std::uint8_t value) noexcept -> auto &;
@@ -75,11 +87,13 @@ public:
   auto pir_bottom_right_tile_idx(std::uint8_t k, std::uint8_t i, std::size_t value) noexcept
       -> auto &;
   auto pir_subpic_id(std::uint8_t k, std::uint8_t i, std::size_t value) noexcept -> auto &;
-  
+
   friend auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std::ostream &;
 
   auto operator==(const PackedIndependentRegions &other) const noexcept -> bool;
+
   static auto decodeFrom(Common::InputBitstream &bitstream) -> PackedIndependentRegions;
+  void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
   std::vector<PirPackedFrame> m_pirPackedFrames;

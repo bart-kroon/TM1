@@ -32,3 +32,39 @@
  */
 
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
+
+namespace TMIV::MivBitstream {
+[[nodiscard]] auto PackedIndependentRegions::pir_num_packed_frames_minus1() const noexcept
+    -> std::uint8_t {
+  return m_pirPackedFrames.size();
+}
+
+// TODO doesn't this have to go to the .hpp because of the auto return type?
+auto PackedIndependentRegions::pir_num_packed_frames_minus1(std::uint8_t value) noexcept -> auto & {
+  // TODO Really noexcept?
+  m_pirPackedFrames = std::vector<PirPackedFrame>(value);
+  return *this;
+}
+
+auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std::ostream & {
+  stream << "pir_num_packed_frames_minus1="
+         << static_cast<unsigned>(x.pir_num_packed_frames_minus1()) << "\n";
+  return stream;
+}
+
+auto PackedIndependentRegions::operator==(const PackedIndependentRegions &other) const noexcept
+    -> bool {
+  return m_pirPackedFrames == other.m_pirPackedFrames;
+}
+
+auto PackedIndependentRegions::decodeFrom(Common::InputBitstream &bitstream)
+    -> PackedIndependentRegions {
+  PackedIndependentRegions result{};
+  result.pir_num_packed_frames_minus1(bitstream.readBits<std::uint8_t>(5));
+  return result;
+}
+
+void PackedIndependentRegions::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.writeBits(pir_num_packed_frames_minus1(), 5);
+}
+} // namespace TMIV::MivBitstream

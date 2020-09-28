@@ -64,10 +64,14 @@ TEST_CASE("PayloadType", "[Supplemental Enhancement Information RBSP]") {
     REQUIRE(16U == static_cast<unsigned int>(PayloadType::atlas_object_association));
     REQUIRE(17U == static_cast<unsigned int>(PayloadType::viewport_camera_parameters));
     REQUIRE(18U == static_cast<unsigned int>(PayloadType::viewport_position));
+    REQUIRE(19U == static_cast<unsigned int>(PayloadType::packed_independent_regions));
     REQUIRE(64U == static_cast<unsigned int>(PayloadType::attribute_transformation_params));
     REQUIRE(65U == static_cast<unsigned int>(PayloadType::occupancy_synthesis));
     REQUIRE(66U == static_cast<unsigned int>(PayloadType::geometry_smoothing));
     REQUIRE(67U == static_cast<unsigned int>(PayloadType::attribute_smoothing));
+    REQUIRE(128U == static_cast<unsigned int>(PayloadType::viewing_space));
+    REQUIRE(129U == static_cast<unsigned int>(PayloadType::viewing_space_handling));
+    REQUIRE(130U == static_cast<unsigned int>(PayloadType::geometry_upscaling_parameters));
   }
 }
 

@@ -80,6 +80,8 @@ auto operator<<(std::ostream &stream, PayloadType pt) -> std::ostream & {
     return stream << "viewport_camera_parameters";
   case PayloadType::viewport_position:
     return stream << "viewport_position";
+  case PayloadType::packed_independent_regions:
+    return stream << "packed_independent_regions";
   case PayloadType::attribute_transformation_params:
     return stream << "attribute_transformation_params";
   case PayloadType::occupancy_synthesis:

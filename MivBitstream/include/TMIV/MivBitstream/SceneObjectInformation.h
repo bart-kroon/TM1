@@ -198,7 +198,7 @@ public:
 
 private:
   [[nodiscard]] auto isUpdateValid(std::size_t k) const noexcept -> bool;
-  [[nodiscard]] auto isBoundingBoxValid(std::size_t k) const noexcept -> bool;
+  [[nodiscard]] auto isBoundingBoxValid(std::size_t k) const -> bool;
 
   bool m_soi_persistence_flag{};
   bool m_soi_reset_flag{};

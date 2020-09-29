@@ -54,10 +54,9 @@ auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k) const no
 auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k) const noexcept
     -> std::uint8_t {
   VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1());
-  if (pir_description_type_idc(k) == 0) {
-    return std::get<TileRegions>(m_pirPackedFrames[k].regions).size() - 1U;
-  }
-  return std::get<subPicIds>(m_pirPackedFrames[k].regions).size() - 1U;
+  return std::visit([](const auto &regions) { return regions.size(); },
+                    m_pirPackedFrames[k].regions) -
+         1U;
 }
 auto PackedIndependentRegions::pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i) const
     -> std::size_t {

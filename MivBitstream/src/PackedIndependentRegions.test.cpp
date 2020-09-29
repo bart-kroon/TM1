@@ -51,21 +51,21 @@ pir_description_type_idc=0
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
-  SECTION("Frames with zero regions") {
-    // TODO extract make function
+  SECTION("Frames with tile regions") {
+    // TODO extract make function?
     PackedIndependentRegions unit{};
     const std::size_t number_of_frames = 3;
     unit.pir_num_packed_frames_minus1(number_of_frames - 1);
     for (std::size_t j = 0; j < number_of_frames; ++j) {
       unit.pir_packed_frame_id(j, number_of_frames - j - 1);
       const auto k = unit.pir_packed_frame_id(j);
-      unit.pir_description_type_idc(k, j % 4);
+      unit.pir_description_type_idc(k, 0);
     }
     REQUIRE(toString(unit) == R"(pir_num_packed_frames_minus1=2
 pir_packed_frame_id=2
-pir_description_type_idc=2
+pir_description_type_idc=0
 pir_packed_frame_id=1
-pir_description_type_idc=1
+pir_description_type_idc=0
 pir_packed_frame_id=0
 pir_description_type_idc=0
 )");

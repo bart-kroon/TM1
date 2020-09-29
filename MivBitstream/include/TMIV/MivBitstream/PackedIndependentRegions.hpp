@@ -48,7 +48,42 @@ inline auto PackedIndependentRegions::pir_packed_frame_id(std::uint8_t j,
 inline auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k,
                                                                std::uint8_t value) noexcept
     -> auto & {
-  m_pirPackedFrames[k].pir_description_type_idc = value;
+  if (value == 0) {
+    m_pirPackedFrames[k].regions = TileRegions(1U);
+  } else if (value == 1) {
+    m_pirPackedFrames[k].regions = subPicIds(1U);
+  } else {
+    VERIFY_BITSTREAM(false); // Only defined for 0 and 1. Other values are reserved
+  }
+  return *this;
+}
+inline auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k,
+                                                             std::uint8_t value) noexcept
+    -> auto & {
+  if (pir_description_type_idc(k) == 0) {
+    m_pirPackedFrames[k].regions = TileRegions(value + 1U);
+  } else {
+    m_pirPackedFrames[k].regions = subPicIds(value + 1U);
+  }
+  return *this;
+}
+inline auto PackedIndependentRegions::pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i,
+                                                            std::size_t value) noexcept -> auto & {
+  auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
+  tileRegions[i].pir_top_left_tile_idx = value;
+  return *this;
+}
+inline auto PackedIndependentRegions::pir_bottom_right_tile_idx(std::uint8_t k, std::uint8_t i,
+                                                                std::size_t value) noexcept
+    -> auto & {
+  auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
+  tileRegions[i].pir_bottom_right_tile_idx = value;
+  return *this;
+}
+inline auto PackedIndependentRegions::pir_subpic_id(std::uint8_t k, std::uint8_t i,
+                                                    std::size_t value) noexcept -> auto & {
+  auto &subPicId = std::get<subPicIds>(m_pirPackedFrames[k].regions);
+  subPicId[i] = value;
   return *this;
 }
 } // namespace TMIV::MivBitstream

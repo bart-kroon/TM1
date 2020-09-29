@@ -52,18 +52,15 @@ struct TileRegion {
 };
 
 using TileRegions = std::vector<TileRegion>;
-using SubPicRegions = std::vector<std::size_t>;
+using subPicIds = std::vector<std::size_t>;
 
 struct PirPackedFrame {
   auto operator==(const PirPackedFrame &other) const noexcept -> bool {
-    return (pir_packed_frame_id == other.pir_packed_frame_id) &&
-           (pir_description_type_idc == other.pir_description_type_idc) &&
-           (regions == other.regions);
+    return (pir_packed_frame_id == other.pir_packed_frame_id) && (regions == other.regions);
   }
 
   std::uint8_t pir_packed_frame_id{};
-  std::uint8_t pir_description_type_idc{}; // TODO consider enum
-  std::variant<TileRegions, SubPicRegions> regions{};
+  std::variant<TileRegions, subPicIds> regions{TileRegions(1U)};
 };
 
 // 23090-12: packed_independent_regions ( payloadSize )

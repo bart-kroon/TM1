@@ -181,6 +181,62 @@ GeometryInformation::gi_geometry_3d_coordinates_bit_depth_minus1(std::uint8_t va
   return *this;
 }
 
+constexpr auto PackingInformation::pin_codec_id(std::uint8_t value) noexcept -> auto & {
+  m_pin_codec_id = value;
+  return *this;
+}
+inline auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t value) -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_tile_id(std::size_t i, std::size_t value) -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_type_id_minus2(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_top_left_x(std::size_t i, std::size_t value) -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_top_left_y(std::size_t i, std::size_t value) -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_width_minus1(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_height_minus1(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_map_index(std::size_t i, std::size_t value) -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_rotation_flag(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_attr_type_id(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_attr_partition_index(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+inline auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i, std::size_t value)
+    -> auto & {
+  return *this;
+}
+
 constexpr auto VpsMivExtension::vme_depth_low_quality_flag() const noexcept {
   return m_vme_depth_low_quality_flag;
 }

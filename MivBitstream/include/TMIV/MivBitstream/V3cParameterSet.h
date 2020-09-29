@@ -293,6 +293,22 @@ private:
 };
 
 struct PinRegion {
+  auto operator==(const PinRegion &other) const noexcept -> bool {
+    return (pin_region_tile_id == other.pin_region_tile_id) &&
+           (pin_region_type_id_minus2 == other.pin_region_type_id_minus2) &&
+           (pin_region_top_left_x == other.pin_region_top_left_x) &&
+           (pin_region_top_left_y == other.pin_region_top_left_y) &&
+           (pin_region_width_minus1 == other.pin_region_width_minus1) &&
+           (pin_region_height_minus1 == other.pin_region_height_minus1) &&
+           (pin_region_map_index == other.pin_region_map_index) &&
+           (pin_region_rotation_flag == other.pin_region_rotation_flag) &&
+           (pin_region_auxiliary_data_flag == other.pin_region_auxiliary_data_flag) &&
+           (pin_region_attr_type_id == other.pin_region_attr_type_id) &&
+           (pin_region_attr_partitions_flag == other.pin_region_attr_partitions_flag) &&
+           (pin_region_attr_partition_index == other.pin_region_attr_partition_index) &&
+           (pin_region_attr_partitions_minus1 == other.pin_region_attr_partitions_minus1);
+  }
+
   std::uint8_t pin_region_tile_id{};
   std::uint8_t pin_region_type_id_minus2{};
   std::uint16_t pin_region_top_left_x{};
@@ -315,7 +331,7 @@ struct PinRegion {
 class PackingInformation {
 public:
   [[nodiscard]] constexpr auto pin_codec_id() const noexcept -> std::uint8_t;
-  [[nodiscard]] auto pin_region_count_minus1() const noexcept -> std::size_t;
+  [[nodiscard]] auto pin_region_count_minus1() const -> std::size_t;
   [[nodiscard]] auto pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t;
   [[nodiscard]] auto pin_region_type_id_minus2(std::size_t i) const noexcept -> std::uint8_t;
   [[nodiscard]] auto pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t;
@@ -347,11 +363,9 @@ public:
   auto pin_region_attr_partition_index(std::size_t i, std::size_t value) -> auto &;
   auto pin_region_attr_partitions_minus1(std::size_t i, std::size_t value) -> auto &;
 
-  friend auto operator<<(std::ostream &stream, const PackingInformation &packagingInformation)
-      -> std::ostream &;
+  auto printTo(std::ostream &stream, std::uint8_t j) const -> std::ostream &;
 
   auto operator==(const PackingInformation &other) const noexcept -> bool;
-  auto operator!=(const PackingInformation &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation;
 

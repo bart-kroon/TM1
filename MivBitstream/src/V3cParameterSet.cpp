@@ -553,6 +553,41 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
   }
 }
 
+constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t {
+  return m_pin_codec_id;
+}
+// auto PackingInformation::pin_region_count_minus1() const -> std::size_t {}
+// auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {}
+// auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const noexcept -> std::uint8_t
+// {} auto PackingInformation::pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t
+// {} auto PackingInformation::pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t
+// {} auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t
+// {} auto PackingInformation::pin_region_height_minus1(std::size_t i) const noexcept ->
+// std::uint16_t {} auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept ->
+// std::uint8_t {} auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept ->
+// bool {} auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const noexcept ->
+// bool {} auto PackingInformation::pin_region_attr_type_id(std::size_t i) const noexcept ->
+// std::uint8_t {} auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i) const
+// noexcept -> bool {} auto PackingInformation::pin_region_attr_partition_index(std::size_t i) const
+// noexcept
+//    -> std::uint8_t {}
+// auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const noexcept
+//    -> std::uint8_t {}
+
+auto PackingInformation::printTo(std::ostream &stream, std::uint8_t j) const -> std::ostream & {
+  // TODO add functions to common for easier putting to stream
+  stream << "pin_codec_id(" << j << ")=" << static_cast<unsigned>(pin_codec_id()) << "\n";
+  return stream;
+}
+
+auto PackingInformation::operator==(const PackingInformation &other) const noexcept -> bool {
+  return (m_pin_codec_id == other.m_pin_codec_id) && (pinRegions == other.pinRegions);
+}
+
+auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {}
+
+void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {}
+
 auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension & {
   VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_flag());
   m_vme_occupancy_scale_enabled_flag = value;

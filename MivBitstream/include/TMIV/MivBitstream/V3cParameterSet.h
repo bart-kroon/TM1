@@ -292,6 +292,76 @@ private:
   std::vector<AiAttribute> m_aiAttributes; // 23090-5: ai_attribute_count
 };
 
+struct PinRegion {
+  std::uint8_t pin_region_tile_id{};
+  std::uint8_t pin_region_type_id_minus2{};
+  std::uint16_t pin_region_top_left_x{};
+  std::uint16_t pin_region_top_left_y{};
+  std::uint16_t pin_region_width_minus1{};
+  std::uint16_t pin_region_height_minus1{};
+  std::uint8_t pin_region_map_index{};
+  bool pin_region_rotation_flag{};
+  std::optional<bool> pin_region_auxiliary_data_flag{};
+  std::optional<std::uint8_t> pin_region_attr_type_id{};
+  std::optional<bool> pin_region_attr_partitions_flag{};
+  std::optional<std::uint8_t> pin_region_attr_partition_index{};
+  std::optional<std::uint8_t> pin_region_attr_partitions_minus1{};
+};
+
+// 23090-5: packing_information( j )
+//
+// 23090-12 restrictions:
+//   * TODO I didn't see any restrictions, as this was entirely moved from 23090-12 to 23090-5
+class PackingInformation {
+public:
+  [[nodiscard]] constexpr auto pin_codec_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_count_minus1() const noexcept -> std::size_t;
+  [[nodiscard]] auto pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_type_id_minus2(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_rotation_flag(std::size_t i) const noexcept -> bool;
+  [[nodiscard]] auto pin_region_auxiliary_data_flag(std::size_t i) const noexcept -> bool;
+  [[nodiscard]] auto pin_region_attr_type_id(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_attr_partitions_flag(std::size_t i) const noexcept -> bool;
+  [[nodiscard]] auto pin_region_attr_partition_index(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_attr_partitions_minus1(std::size_t i) const noexcept
+      -> std::uint8_t;
+
+  constexpr auto pin_codec_id(std::uint8_t value) noexcept -> auto &;
+  auto pin_region_attr_partitions_minus1(std::size_t value) -> auto &;
+  auto pin_region_tile_id(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_type_id_minus2(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_top_left_x(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_top_left_y(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_width_minus1(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_height_minus1(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_map_index(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_rotation_flag(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_auxiliary_data_flag(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_attr_type_id(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_attr_partitions_flag(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_attr_partition_index(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_attr_partitions_minus1(std::size_t i, std::size_t value) -> auto &;
+
+  friend auto operator<<(std::ostream &stream, const PackingInformation &packagingInformation)
+      -> std::ostream &;
+
+  auto operator==(const PackingInformation &other) const noexcept -> bool;
+  auto operator!=(const PackingInformation &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  std::uint8_t m_pin_codec_id{};
+  std::vector<PinRegion> pinRegions{std::vector<PinRegion>(1U)};
+};
+
 // 23090-12: vps_miv_extension()
 class VpsMivExtension {
 public:

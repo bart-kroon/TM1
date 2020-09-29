@@ -59,23 +59,21 @@ auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k) const noex
   }
   return std::get<subPicIds>(m_pirPackedFrames[k].regions).size() - 1U;
 }
-auto PackedIndependentRegions::pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i) const noexcept
+auto PackedIndependentRegions::pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i) const
     -> std::size_t {
   VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
                    i <= pir_num_regions_minus1(k));
   const auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   return tileRegions[i].pir_top_left_tile_idx;
 }
-auto PackedIndependentRegions::pir_bottom_right_tile_idx(std::uint8_t k,
-                                                         std::uint8_t i) const noexcept
+auto PackedIndependentRegions::pir_bottom_right_tile_idx(std::uint8_t k, std::uint8_t i) const
     -> std::size_t {
   VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
                    i <= pir_num_regions_minus1(k));
   const auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   return tileRegions[i].pir_bottom_right_tile_idx;
 }
-auto PackedIndependentRegions::pir_subpic_id(std::uint8_t k, std::uint8_t i) const noexcept
-    -> std::size_t {
+auto PackedIndependentRegions::pir_subpic_id(std::uint8_t k, std::uint8_t i) const -> std::size_t {
   VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 1 &&
                    i <= pir_num_regions_minus1(k));
   const auto &subPicId = std::get<subPicIds>(m_pirPackedFrames[k].regions);

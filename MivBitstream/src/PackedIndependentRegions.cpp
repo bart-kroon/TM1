@@ -34,8 +34,10 @@
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
 
 namespace TMIV::MivBitstream {
+// TODO does _minus1 mean that there must be at least one? Implemented like this
 auto PackedIndependentRegions::pir_num_packed_frames_minus1() const noexcept -> std::uint8_t {
-  return m_pirPackedFrames.size();
+  VERIFY_BITSTREAM(!m_pirPackedFrames.empty());
+  return m_pirPackedFrames.size() - 1U;
 }
 auto PackedIndependentRegions::pir_packed_frame_id(std::uint8_t j) const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(j < m_pirPackedFrames.size());
@@ -50,6 +52,11 @@ auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k) const no
 auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std::ostream & {
   stream << "pir_num_packed_frames_minus1="
          << static_cast<unsigned>(x.pir_num_packed_frames_minus1()) << "\n";
+  for (int j = 0; j <= x.pir_num_packed_frames_minus1(); ++j) {
+    stream << "pir_packed_frame_id=" << static_cast<unsigned>(x.pir_packed_frame_id(j)) << "\n";
+    stream << "pir_description_type_idc=" << static_cast<unsigned>(x.pir_description_type_idc(j))
+           << "\n";
+  }
   return stream;
 }
 
@@ -62,10 +69,20 @@ auto PackedIndependentRegions::decodeFrom(Common::InputBitstream &bitstream)
     -> PackedIndependentRegions {
   PackedIndependentRegions result{};
   result.pir_num_packed_frames_minus1(bitstream.readBits<std::uint8_t>(5));
+  for (int j = 0; j <= result.pir_num_packed_frames_minus1(); ++j) {
+    result.pir_packed_frame_id(j, bitstream.readBits<std::uint8_t>(5));
+    const auto k = result.pir_packed_frame_id(j);
+    result.pir_description_type_idc(k, bitstream.readBits<std::uint8_t>(2));
+  }
   return result;
 }
 
 void PackedIndependentRegions::encodeTo(Common::OutputBitstream &bitstream) const {
   bitstream.writeBits(pir_num_packed_frames_minus1(), 5);
+  for (int j = 0; j <= pir_num_packed_frames_minus1(); ++j) {
+    bitstream.writeBits(pir_packed_frame_id(j), 5);
+    const auto k = pir_packed_frame_id(j);
+    bitstream.writeBits(pir_description_type_idc(k), 2);
+  }
 }
 } // namespace TMIV::MivBitstream

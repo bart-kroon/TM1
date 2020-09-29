@@ -37,7 +37,7 @@
 
 namespace TMIV::MivBitstream {
 inline auto PackedIndependentRegions::pir_num_packed_frames_minus1(std::uint8_t value) -> auto & {
-  m_pirPackedFrames = std::vector<PirPackedFrame>(value);
+  m_pirPackedFrames = std::vector<PirPackedFrame>(value + 1U);
   return *this;
 }
 inline auto PackedIndependentRegions::pir_packed_frame_id(std::uint8_t j,

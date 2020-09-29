@@ -96,7 +96,7 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  std::vector<PirPackedFrame> m_pirPackedFrames;
+  std::vector<PirPackedFrame> m_pirPackedFrames{std::vector<PirPackedFrame>(1U)};
 };
 
 } // namespace TMIV::MivBitstream

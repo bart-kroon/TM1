@@ -37,23 +37,42 @@
 
 namespace TMIV::MivBitstream {
 TEST_CASE("packed_independent_regions", "[Packed Independent Regions SEI payload syntax]") {
-  SECTION("Default Constructor") {
+  std::size_t expected_number_of_bits = 5; // pir_num_packed_frames_minus1
+
+  SECTION("Default constructor") {
     const PackedIndependentRegions unit{};
     REQUIRE(toString(unit) == R"(pir_num_packed_frames_minus1=0
+pir_packed_frame_id=0
+pir_description_type_idc=0
 )");
-    const std::size_t expected_number_of_bits = 5; // pir_num_packed_frames_minus1
+    expected_number_of_bits += 1 *    // pir_num_packed_frames_minus1 + 1
+                               (5     // pir_packed_frame_id
+                                + 2); // pir_description_type_idc
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
+
   SECTION("Frames with zero regions") {
+    // TODO extract make function
     PackedIndependentRegions unit{};
-    const std::size_t number_of_frames = 5;
-    unit.pir_num_packed_frames_minus1(number_of_frames);
-    for (std::size_t frame = 0; frame < number_of_frames; ++frame) {
-      // TODO you could invert this
-      unit.pir_packed_frame_id(frame, frame);
-      const auto k = unit.pir_packed_frame_id(frame);
-      unit.pir_description_type_idc(k, frame + 1);
+    const std::size_t number_of_frames = 3;
+    unit.pir_num_packed_frames_minus1(number_of_frames - 1);
+    for (std::size_t j = 0; j < number_of_frames; ++j) {
+      unit.pir_packed_frame_id(j, number_of_frames - j - 1);
+      const auto k = unit.pir_packed_frame_id(j);
+      unit.pir_description_type_idc(k, j % 4);
     }
+    REQUIRE(toString(unit) == R"(pir_num_packed_frames_minus1=2
+pir_packed_frame_id=2
+pir_description_type_idc=2
+pir_packed_frame_id=1
+pir_description_type_idc=1
+pir_packed_frame_id=0
+pir_description_type_idc=0
+)");
+    expected_number_of_bits += number_of_frames * (5   // pir_packed_frame_id
+                                                   + 2 // pir_description_type_idc
+                                                  );
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }
 } // namespace TMIV::MivBitstream

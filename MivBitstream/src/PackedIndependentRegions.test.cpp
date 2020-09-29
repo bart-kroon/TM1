@@ -58,48 +58,53 @@ pir_bottom_right_tile_idx=0
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 
-  SECTION("Frames with tile regions") {
-    // TODO extract make function?
+  SECTION("Frames with tile and subpic regions") {
     PackedIndependentRegions unit{};
     const std::size_t number_of_frames = 3;
     unit.pir_num_packed_frames_minus1(number_of_frames - 1);
     for (std::size_t j = 0; j < number_of_frames; ++j) {
       unit.pir_packed_frame_id(j, number_of_frames - j - 1);
       const auto k = unit.pir_packed_frame_id(j);
-      unit.pir_description_type_idc(k, 0);
-      unit.pir_num_regions_minus1(k, k % 2);
+      unit.pir_description_type_idc(k, k % 2);
+      unit.pir_num_regions_minus1(k, k % 3);
       for (std::size_t i = 0; i <= unit.pir_num_regions_minus1(k); ++i) {
-        unit.pir_top_left_tile_idx(k, i, (k + 1) * (i + 1));
-        unit.pir_bottom_right_tile_idx(k, i, (k + 1) * (i + 1));
+        if (unit.pir_description_type_idc(k) == 0) {
+          unit.pir_top_left_tile_idx(k, i, (k + 1) * (i + 1));
+          unit.pir_bottom_right_tile_idx(k, i, (k + 2) * (i + 3));
+        } else {
+          unit.pir_subpic_id(k, i, (k + 1) * (i + 1));
+        }
       }
     }
 
     REQUIRE(toString(unit) == R"(pir_num_packed_frames_minus1=2
 pir_packed_frame_id=2
 pir_description_type_idc=0
-pir_num_regions_minus1=0
+pir_num_regions_minus1=2
 pir_top_left_tile_idx=3
-pir_bottom_right_tile_idx=3
+pir_bottom_right_tile_idx=12
+pir_top_left_tile_idx=6
+pir_bottom_right_tile_idx=16
+pir_top_left_tile_idx=9
+pir_bottom_right_tile_idx=20
 pir_packed_frame_id=1
-pir_description_type_idc=0
+pir_description_type_idc=1
 pir_num_regions_minus1=1
-pir_top_left_tile_idx=2
-pir_bottom_right_tile_idx=2
-pir_top_left_tile_idx=4
-pir_bottom_right_tile_idx=4
+pir_subpic_id=2
+pir_subpic_id=4
 pir_packed_frame_id=0
 pir_description_type_idc=0
 pir_num_regions_minus1=0
 pir_top_left_tile_idx=1
-pir_bottom_right_tile_idx=1
+pir_bottom_right_tile_idx=6
 )");
 
-    expected_number_of_bits +=
-        number_of_frames * (5    // pir_packed_frame_id
-                            + 2  // pir_description_type_idc
-                            + 2  // pir_description_type_idc
-                            + 8) // pir_num_regions_minus1
-        + 26; // variable number of pir_top_left_tile_idx and pir_bottom_right_tile_idx
+    expected_number_of_bits += number_of_frames * (5    // pir_packed_frame_id
+                                                   + 2  // pir_description_type_idc
+                                                   + 2  // pir_description_type_idc
+                                                   + 8) // pir_num_regions_minus1
+                               + 52; // variable number of bits for pir_top_left_tile_idx,
+                                     // pir_bottom_right_tile_idx, and pir_subpic_id
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }

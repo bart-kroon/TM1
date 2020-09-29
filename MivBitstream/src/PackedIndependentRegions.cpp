@@ -76,7 +76,7 @@ auto PackedIndependentRegions::pir_bottom_right_tile_idx(std::uint8_t k,
 }
 auto PackedIndependentRegions::pir_subpic_id(std::uint8_t k, std::uint8_t i) const noexcept
     -> std::size_t {
-  VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
+  VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 1 &&
                    i <= pir_num_regions_minus1(k));
   const auto &subPicId = std::get<subPicIds>(m_pirPackedFrames[k].regions);
   return subPicId[i];

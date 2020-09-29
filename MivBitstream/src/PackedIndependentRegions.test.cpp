@@ -42,11 +42,11 @@ TEST_CASE("packed_independent_regions", "[Packed Independent Regions SEI payload
   SECTION("Default constructor") {
     const PackedIndependentRegions unit{};
     REQUIRE(toString(unit) == R"(pir_num_packed_frames_minus1=0
-pir_packed_frame_id=0
-pir_description_type_idc=0
-pir_num_regions_minus1=0
-pir_top_left_tile_idx=0
-pir_bottom_right_tile_idx=0
+pir_packed_frame_id(0)=0
+pir_description_type_idc(0)=0
+pir_num_regions_minus1(0)=0
+pir_top_left_tile_idx(0,0)=0
+pir_bottom_right_tile_idx(0,0)=0
 )");
     expected_number_of_bits += 1 *  // pir_num_packed_frames_minus1 + 1
                                (5   // pir_packed_frame_id
@@ -78,25 +78,25 @@ pir_bottom_right_tile_idx=0
     }
 
     REQUIRE(toString(unit) == R"(pir_num_packed_frames_minus1=2
-pir_packed_frame_id=2
-pir_description_type_idc=0
-pir_num_regions_minus1=2
-pir_top_left_tile_idx=3
-pir_bottom_right_tile_idx=12
-pir_top_left_tile_idx=6
-pir_bottom_right_tile_idx=16
-pir_top_left_tile_idx=9
-pir_bottom_right_tile_idx=20
-pir_packed_frame_id=1
-pir_description_type_idc=1
-pir_num_regions_minus1=1
-pir_subpic_id=2
-pir_subpic_id=4
-pir_packed_frame_id=0
-pir_description_type_idc=0
-pir_num_regions_minus1=0
-pir_top_left_tile_idx=1
-pir_bottom_right_tile_idx=6
+pir_packed_frame_id(0)=2
+pir_description_type_idc(2)=0
+pir_num_regions_minus1(2)=2
+pir_top_left_tile_idx(2,0)=3
+pir_bottom_right_tile_idx(2,0)=12
+pir_top_left_tile_idx(2,1)=6
+pir_bottom_right_tile_idx(2,1)=16
+pir_top_left_tile_idx(2,2)=9
+pir_bottom_right_tile_idx(2,2)=20
+pir_packed_frame_id(1)=1
+pir_description_type_idc(1)=1
+pir_num_regions_minus1(1)=1
+pir_subpic_id(1,0)=2
+pir_subpic_id(1,1)=4
+pir_packed_frame_id(2)=0
+pir_description_type_idc(0)=0
+pir_num_regions_minus1(0)=0
+pir_top_left_tile_idx(0,0)=1
+pir_bottom_right_tile_idx(0,0)=6
 )");
 
     expected_number_of_bits += number_of_frames * (5    // pir_packed_frame_id

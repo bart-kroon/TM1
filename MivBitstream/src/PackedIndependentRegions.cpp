@@ -86,20 +86,22 @@ auto operator<<(std::ostream &stream, const PackedIndependentRegions &x) -> std:
   stream << "pir_num_packed_frames_minus1="
          << static_cast<unsigned>(x.pir_num_packed_frames_minus1()) << "\n";
   for (int j = 0; j <= x.pir_num_packed_frames_minus1(); ++j) {
-    stream << "pir_packed_frame_id=" << static_cast<unsigned>(x.pir_packed_frame_id(j)) << "\n";
-    const auto k = x.pir_packed_frame_id(j);
-    stream << "pir_description_type_idc=" << static_cast<unsigned>(x.pir_description_type_idc(k))
+    stream << "pir_packed_frame_id(" << j << ")=" << static_cast<unsigned>(x.pir_packed_frame_id(j))
            << "\n";
-    stream << "pir_num_regions_minus1=" << static_cast<unsigned>(x.pir_num_regions_minus1(k))
-           << "\n";
+    const auto k = static_cast<unsigned>(x.pir_packed_frame_id(j));
+    stream << "pir_description_type_idc(" << k
+           << ")=" << static_cast<unsigned>(x.pir_description_type_idc(k)) << "\n";
+    stream << "pir_num_regions_minus1(" << k
+           << ")=" << static_cast<unsigned>(x.pir_num_regions_minus1(k)) << "\n";
     for (std::size_t i = 0; i <= x.pir_num_regions_minus1(k); ++i) {
       if (x.pir_description_type_idc(k) == 0) {
-        stream << "pir_top_left_tile_idx=" << static_cast<unsigned>(x.pir_top_left_tile_idx(k, i))
-               << "\n";
-        stream << "pir_bottom_right_tile_idx="
-               << static_cast<unsigned>(x.pir_bottom_right_tile_idx(k, i)) << "\n";
+        stream << "pir_top_left_tile_idx(" << k << "," << i
+               << ")=" << static_cast<unsigned>(x.pir_top_left_tile_idx(k, i)) << "\n";
+        stream << "pir_bottom_right_tile_idx(" << k << "," << i
+               << ")=" << static_cast<unsigned>(x.pir_bottom_right_tile_idx(k, i)) << "\n";
       } else {
-        stream << "pir_subpic_id=" << static_cast<unsigned>(x.pir_subpic_id(k, i)) << "\n";
+        stream << "pir_subpic_id(" << k << "," << i
+               << ")=" << static_cast<unsigned>(x.pir_subpic_id(k, i)) << "\n";
       }
     }
   }

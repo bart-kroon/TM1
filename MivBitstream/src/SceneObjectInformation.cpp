@@ -278,12 +278,6 @@ auto SceneObjectInformation::soi_material_id(std::size_t k) const -> std::uint16
   return m_object_updates[k].soi_material_id.value();
 }
 
-auto SceneObjectInformation::setSceneObjectUpdates(
-    std::vector<SceneObjectUpdate> &&updates) noexcept -> void {
-  m_object_updates = std::move(updates);
-  m_temporary_soi_num_object_updates.reset();
-}
-
 [[nodiscard]] auto SceneObjectInformation::isUpdateValid(std::size_t k) const noexcept -> bool {
   return soi_num_object_updates() > 0 && k < soi_num_object_updates() && !soi_object_cancel_flag(k);
 }

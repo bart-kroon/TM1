@@ -118,4 +118,11 @@ SceneObjectInformation::soi_log2_max_object_dependency_idx(const std::uint8_t va
   m_soi_log2_max_object_dependency_idx = value;
   return *this;
 }
+inline auto
+SceneObjectInformation::setSceneObjectUpdates(std::vector<SceneObjectUpdate> &&updates) noexcept
+    -> void {
+  m_object_updates = std::move(updates);
+  m_temporary_soi_num_object_updates.reset();
+}
+
 } // namespace TMIV::MivBitstream

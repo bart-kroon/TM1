@@ -341,12 +341,11 @@ public:
   [[nodiscard]] auto pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t;
   [[nodiscard]] auto pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t;
   [[nodiscard]] auto pin_region_rotation_flag(std::size_t i) const noexcept -> bool;
-  [[nodiscard]] auto pin_region_auxiliary_data_flag(std::size_t i) const noexcept -> bool;
-  [[nodiscard]] auto pin_region_attr_type_id(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto pin_region_attr_partitions_flag(std::size_t i) const noexcept -> bool;
-  [[nodiscard]] auto pin_region_attr_partition_index(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto pin_region_attr_partitions_minus1(std::size_t i) const noexcept
-      -> std::uint8_t;
+  [[nodiscard]] auto pin_region_auxiliary_data_flag(std::size_t i) const -> bool;
+  [[nodiscard]] auto pin_region_attr_type_id(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto pin_region_attr_partitions_flag(std::size_t i) const -> bool;
+  [[nodiscard]] auto pin_region_attr_partition_index(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto pin_region_attr_partitions_minus1(std::size_t i) const -> std::uint8_t;
 
   constexpr auto pin_codec_id(std::uint8_t value) noexcept -> auto &;
   auto pin_regions_count_minus1(std::size_t value) -> auto &;

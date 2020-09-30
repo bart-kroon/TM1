@@ -686,7 +686,23 @@ auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> Packin
     result.pin_region_height_minus1(i, bitstream.getUint16());
     result.pin_region_map_index(i, bitstream.readBits<std::uint8_t>(4));
     result.pin_region_rotation_flag(i, bitstream.getFlag());
-    // TODO ifs
+    if (((static_cast<std::uint8_t>(result.pin_region_type_id_minus2(i)) + 2U) ==
+         VuhUnitType::V3C_AVD) ||
+        (static_cast<std::uint8_t>(result.pin_region_type_id_minus2(i)) + 2U) ==
+            VuhUnitType::V3C_GVD) {
+      result.pin_region_auxiliary_data_flag(i, bitstream.getFlag());
+    }
+    if ((static_cast<std::uint8_t>(result.pin_region_type_id_minus2(i)) + 2U) ==
+        VuhUnitType::V3C_AVD) {
+      result.pin_region_attr_type_id(i, bitstream.readBits<std::uint8_t>(4));
+      result.pin_region_attr_partitions_flag(i, bitstream.getFlag());
+      if (result.pin_region_attr_partitions_flag(i)) {
+        result.pin_region_attr_partition_index(i, bitstream.readBits<std::uint8_t>(5));
+        if (result.pin_region_attr_partition_index(i) == 0) {
+          result.pin_region_attr_partitions_minus1(i, bitstream.readBits<std::uint8_t>(6));
+        }
+      }
+    }
   }
   return result;
 }
@@ -703,7 +719,20 @@ void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
     bitstream.putUint16(pin_region_height_minus1(i));
     bitstream.writeBits(pin_region_map_index(i), 4);
     bitstream.putFlag(pin_region_rotation_flag(i));
-    // TODO ifs
+    if (((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) ||
+        (static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_GVD) {
+      bitstream.putFlag(pin_region_auxiliary_data_flag(i));
+    }
+    if ((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) {
+      bitstream.writeBits(pin_region_attr_type_id(i), 4);
+      bitstream.putFlag(pin_region_attr_partitions_flag(i));
+      if (pin_region_attr_partitions_flag(i)) {
+        bitstream.writeBits(pin_region_attr_partition_index(i), 5);
+        if (pin_region_attr_partition_index(i) == 0) {
+          bitstream.writeBits(pin_region_attr_partitions_minus1(i), 6);
+        }
+      }
+    }
   }
 }
 

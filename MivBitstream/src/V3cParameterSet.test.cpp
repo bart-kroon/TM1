@@ -204,7 +204,15 @@ TEST_CASE("packing_information", "[Packing Information]"){
   SECTION("Default Constructor"){
     const PackingInformation unit{};
     REQUIRE(toString(unit, 4) == R"(pin_codec_id(4)=0
-pin_region_count_minus1(4)=0
+pin_regions_count_minus1(4)=0
+pin_region_tile_id(4,0)=0
+pin_region_type_id_minus2(4,0)=V3C_VPS
+pin_region_top_left_x(4,0)=0
+pin_region_top_left_y(4,0)=0
+pin_region_width_minus1(4,0)=0
+pin_region_height_minus1(4,0)=0
+pin_region_map_index(4,0)=0
+pin_region_rotation_flag(4,0)=false
 )");
   }
 }

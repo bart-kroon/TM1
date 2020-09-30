@@ -185,7 +185,7 @@ constexpr auto PackingInformation::pin_codec_id(std::uint8_t value) noexcept -> 
   m_pin_codec_id = value;
   return *this;
 }
-inline auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t value) -> auto & {
+inline auto PackingInformation::pin_regions_count_minus1(std::size_t value) -> auto & {
   return *this;
 }
 inline auto PackingInformation::pin_region_tile_id(std::size_t i, std::size_t value) -> auto & {

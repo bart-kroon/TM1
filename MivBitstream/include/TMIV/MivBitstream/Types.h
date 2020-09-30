@@ -31,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef _TMIV_MIVBITSTREAM_TYPES_H_
 #define _TMIV_MIVBITSTREAM_TYPES_H_
 
 #include <cstdint>
+#include <ostream>
 
 namespace TMIV::MivBitstream {
 enum class VuhUnitType : std::uint8_t {
@@ -47,6 +47,38 @@ enum class VuhUnitType : std::uint8_t {
   V3C_PVD,
   V3C_CAD
 };
+
+constexpr auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream & {
+  switch (x) {
+  case VuhUnitType::V3C_VPS:
+    return stream << "V3C_VPS";
+  case VuhUnitType::V3C_AD:
+    return stream << "V3C_AD";
+  case VuhUnitType::V3C_OVD:
+    return stream << "V3C_OVD";
+  case VuhUnitType::V3C_GVD:
+    return stream << "V3C_GVD";
+  case VuhUnitType::V3C_AVD:
+    return stream << "V3C_AVD";
+  case VuhUnitType::V3C_PVD:
+    return stream << "V3C_PVD";
+  case VuhUnitType::V3C_CAD:
+    return stream << "V3C_CAD";
+  default:
+    return stream << "[unknown:" << static_cast<int>(x) << "]";
+  }
 }
+
+constexpr auto operator==(VuhUnitType vuh_unit_type, std::uint8_t underlying_value) noexcept
+    -> bool {
+  return static_cast<std::uint8_t>(vuh_unit_type) == underlying_value;
+}
+
+constexpr auto operator==(std::uint8_t underlying_value, VuhUnitType vuh_unit_type) noexcept
+    -> bool {
+  return operator==(vuh_unit_type, underlying_value);
+}
+
+} // namespace TMIV::MivBitstream
 
 #endif

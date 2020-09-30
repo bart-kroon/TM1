@@ -46,8 +46,6 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, VuhUnitType x) -> std::ostream &;
-
 // 23090-5: v3c_unit_header()
 class V3cUnitHeader {
 public:

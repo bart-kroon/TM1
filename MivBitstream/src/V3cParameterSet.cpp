@@ -36,6 +36,7 @@
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/verify.h>
 
+#include <type_traits>
 #include <utility>
 
 namespace TMIV::MivBitstream {
@@ -556,42 +557,115 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
 constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t {
   return m_pin_codec_id;
 }
-auto PackingInformation::pin_region_count_minus1() const -> std::size_t {
+auto PackingInformation::pin_regions_count_minus1() const -> std::size_t {
   VERIFY_BITSTREAM(!m_pinRegions.empty());
   return m_pinRegions.size() - 1U;
 }
-// auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {
-//   VERIFY_BITSTREAM(i <= pin_region_count_minus1());
-//   return m_pinRegions[i].pin_region_tile_id;
-// }
-// auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const noexcept -> std::uint8_t
-// {} auto PackingInformation::pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t
-// {} auto PackingInformation::pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t
-// {} auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept ->
-// std::uint16_t
-// {} auto PackingInformation::pin_region_height_minus1(std::size_t i) const noexcept ->
-// std::uint16_t {} auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept ->
-// std::uint8_t {} auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept
-// -> bool {} auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const noexcept
-// -> bool {} auto PackingInformation::pin_region_attr_type_id(std::size_t i) const noexcept ->
-// std::uint8_t {} auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i) const
-// noexcept -> bool {} auto PackingInformation::pin_region_attr_partition_index(std::size_t i) const
-// noexcept
-//    -> std::uint8_t {}
-// auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const noexcept
-//    -> std::uint8_t {}
+auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_tile_id;
+}
+auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const noexcept -> VuhUnitType {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_type_id_minus2;
+}
+auto PackingInformation::pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_top_left_x;
+}
+auto PackingInformation::pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_top_left_y;
+}
+auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_width_minus1;
+}
+auto PackingInformation::pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_height_minus1;
+}
+auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_map_index;
+}
+auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept -> bool {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_rotation_flag;
+}
+auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const noexcept -> bool {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
+                   m_pinRegions[i].pin_region_auxiliary_data_flag);
+  return m_pinRegions[i].pin_region_auxiliary_data_flag.value();
+}
+auto PackingInformation::pin_region_attr_type_id(std::size_t i) const noexcept -> std::uint8_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1() && m_pinRegions[i].pin_region_attr_type_id);
+  return m_pinRegions[i].pin_region_attr_type_id.value();
+}
+auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i) const noexcept -> bool {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
+                   m_pinRegions[i].pin_region_attr_partitions_flag);
+  return m_pinRegions[i].pin_region_attr_partitions_flag.value();
+}
+auto PackingInformation::pin_region_attr_partition_index(std::size_t i) const noexcept
+    -> std::uint8_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
+                   m_pinRegions[i].pin_region_attr_partition_index);
+  return m_pinRegions[i].pin_region_attr_partition_index.value();
+}
+auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const noexcept
+    -> std::uint8_t {
+  VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
+                   m_pinRegions[i].pin_region_attr_partitions_minus1);
+  return m_pinRegions[i].pin_region_attr_partitions_minus1.value();
+}
 
-auto PutFlagDoubleIndexed(std::ostream &stream, unsigned j, unsigned i,
-                          const std::string &fieldName, unsigned fieldValue) {
-  stream << fieldName << "(" << j << "," << i << ")=" << fieldValue << "\n";
+template <typename T>
+auto putTwiceIndexedField(std::ostream &stream, unsigned j, unsigned i,
+                          const std::string &fieldName, T &&fieldValue) {
+  stream << fieldName << "(" << j << "," << i << ")=";
+  if constexpr (std::is_same<std::uint8_t, typename std::decay<T>::type>::value) {
+    stream << static_cast<unsigned>(fieldValue) << "\n";
+  } else if (std::is_same<bool, typename std::decay<T>::type>::value) {
+    stream << std::boolalpha << fieldValue << "\n";
+  } else {
+    stream << fieldValue << "\n";
+  }
 }
 
 auto PackingInformation::printTo(std::ostream &stream, std::uint8_t j) const -> std::ostream & {
-  // TODO add functions to common for easier putting to stream
   stream << "pin_codec_id(" << static_cast<unsigned>(j)
          << ")=" << static_cast<unsigned>(pin_codec_id()) << "\n";
-  stream << "pin_region_count_minus1(" << static_cast<unsigned>(j)
-         << ")=" << static_cast<unsigned>(pin_region_count_minus1()) << "\n";
+  stream << "pin_regions_count_minus1(" << static_cast<unsigned>(j)
+         << ")=" << static_cast<unsigned>(pin_regions_count_minus1()) << "\n";
+  for (std::size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
+    putTwiceIndexedField(stream, j, i, "pin_region_tile_id", pin_region_tile_id(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_type_id_minus2", pin_region_type_id_minus2(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_top_left_x", pin_region_top_left_x(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_top_left_y", pin_region_top_left_y(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_width_minus1", pin_region_width_minus1(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_height_minus1", pin_region_height_minus1(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_map_index", pin_region_map_index(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_rotation_flag", pin_region_rotation_flag(i));
+    if (((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) ||
+        (static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_GVD) {
+      putTwiceIndexedField(stream, j, i, "pin_region_auxiliary_data_flag",
+                           pin_region_auxiliary_data_flag(i));
+    }
+    if ((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) {
+      putTwiceIndexedField(stream, j, i, "pin_region_attr_type_id", pin_region_attr_type_id(i));
+      putTwiceIndexedField(stream, j, i, "pin_region_attr_partitions_flag",
+                           pin_region_attr_partitions_flag(i));
+      if (pin_region_attr_partitions_flag(i)) {
+        putTwiceIndexedField(stream, j, i, "pin_region_attr_partition_index",
+                             pin_region_attr_partition_index(i));
+        if (pin_region_attr_partition_index(i) == 0) {
+          putTwiceIndexedField(stream, j, i, "pin_region_attr_partitions_minus1",
+                               pin_region_attr_partitions_minus1(i));
+        }
+      }
+    }
+  }
   return stream;
 }
 

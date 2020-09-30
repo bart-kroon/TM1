@@ -557,62 +557,76 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
 constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t {
   return m_pin_codec_id;
 }
+
 auto PackingInformation::pin_regions_count_minus1() const -> std::size_t {
   VERIFY_BITSTREAM(!m_pinRegions.empty());
   return m_pinRegions.size() - 1U;
 }
+
 auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_tile_id;
 }
+
 auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const noexcept -> VuhUnitType {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_type_id_minus2;
 }
+
 auto PackingInformation::pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_top_left_x;
 }
+
 auto PackingInformation::pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_top_left_y;
 }
+
 auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_width_minus1;
 }
+
 auto PackingInformation::pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_height_minus1;
 }
+
 auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_map_index;
 }
+
 auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept -> bool {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
   return m_pinRegions[i].pin_region_rotation_flag;
 }
+
 auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const noexcept -> bool {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
                    m_pinRegions[i].pin_region_auxiliary_data_flag);
   return m_pinRegions[i].pin_region_auxiliary_data_flag.value();
 }
+
 auto PackingInformation::pin_region_attr_type_id(std::size_t i) const noexcept -> std::uint8_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1() && m_pinRegions[i].pin_region_attr_type_id);
   return m_pinRegions[i].pin_region_attr_type_id.value();
 }
+
 auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i) const noexcept -> bool {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
                    m_pinRegions[i].pin_region_attr_partitions_flag);
   return m_pinRegions[i].pin_region_attr_partitions_flag.value();
 }
+
 auto PackingInformation::pin_region_attr_partition_index(std::size_t i) const noexcept
     -> std::uint8_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
                    m_pinRegions[i].pin_region_attr_partition_index);
   return m_pinRegions[i].pin_region_attr_partition_index.value();
 }
+
 auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const noexcept
     -> std::uint8_t {
   VERIFY_BITSTREAM(i <= pin_regions_count_minus1() &&
@@ -620,6 +634,7 @@ auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const 
   return m_pinRegions[i].pin_region_attr_partitions_minus1.value();
 }
 
+// TODO(christoph_bachhuber) extract this method to common
 template <typename T>
 auto putTwiceIndexedField(std::ostream &stream, unsigned j, unsigned i,
                           const std::string &fieldName, T &&fieldValue) {

@@ -37,6 +37,7 @@
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
+#include <TMIV/MivBitstream/Types.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -45,16 +46,6 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-enum class VuhUnitType : std::uint8_t {
-  V3C_VPS,
-  V3C_AD,
-  V3C_OVD,
-  V3C_GVD,
-  V3C_AVD,
-  V3C_PVD,
-  V3C_CAD
-};
-
 auto operator<<(std::ostream &stream, VuhUnitType x) -> std::ostream &;
 
 // 23090-5: v3c_unit_header()

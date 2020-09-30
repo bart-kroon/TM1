@@ -624,9 +624,9 @@ template <typename T>
 auto putTwiceIndexedField(std::ostream &stream, unsigned j, unsigned i,
                           const std::string &fieldName, T &&fieldValue) {
   stream << fieldName << "(" << j << "," << i << ")=";
-  if constexpr (std::is_same<std::uint8_t, typename std::decay<T>::type>::value) {
+  if constexpr (std::is_same_v<std::uint8_t, std::decay_t<T>>) {
     stream << static_cast<unsigned>(fieldValue) << "\n";
-  } else if (std::is_same<bool, typename std::decay<T>::type>::value) {
+  } else if (std::is_same_v<bool, std::decay_t<T>>) {
     stream << std::boolalpha << fieldValue << "\n";
   } else {
     stream << fieldValue << "\n";
@@ -675,10 +675,37 @@ auto PackingInformation::operator==(const PackingInformation &other) const noexc
 
 auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {
   PackingInformation result{};
+  result.pin_codec_id(bitstream.getUint8());
+  result.pin_regions_count_minus1(bitstream.getUExpGolomb<std::size_t>());
+  for (std::size_t i = 0; i <= result.pin_regions_count_minus1(); ++i) {
+    result.pin_region_tile_id(i, bitstream.getUint8());
+    result.pin_region_type_id_minus2(i, bitstream.readBits<VuhUnitType>(2));
+    result.pin_region_top_left_x(i, bitstream.getUint16());
+    result.pin_region_top_left_y(i, bitstream.getUint16());
+    result.pin_region_width_minus1(i, bitstream.getUint16());
+    result.pin_region_height_minus1(i, bitstream.getUint16());
+    result.pin_region_map_index(i, bitstream.readBits<std::uint8_t>(4));
+    result.pin_region_rotation_flag(i, bitstream.getFlag());
+    // TODO ifs
+  }
   return result;
 }
 
-void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {}
+void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putUint8(pin_codec_id());
+  bitstream.putUExpGolomb(pin_regions_count_minus1());
+  for (std::size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
+    bitstream.putUint8(pin_region_tile_id(i));
+    bitstream.writeBits(pin_region_type_id_minus2(i), 2);
+    bitstream.putUint16(pin_region_top_left_x(i));
+    bitstream.putUint16(pin_region_top_left_y(i));
+    bitstream.putUint16(pin_region_width_minus1(i));
+    bitstream.putUint16(pin_region_height_minus1(i));
+    bitstream.writeBits(pin_region_map_index(i), 4);
+    bitstream.putFlag(pin_region_rotation_flag(i));
+    // TODO ifs
+  }
+}
 
 auto VpsMivExtension::vme_occupancy_scale_enabled_flag(bool value) noexcept -> VpsMivExtension & {
   VERIFY_MIVBITSTREAM(!vme_embedded_occupancy_flag());

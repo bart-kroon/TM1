@@ -350,19 +350,19 @@ public:
 
   constexpr auto pin_codec_id(std::uint8_t value) noexcept -> auto &;
   auto pin_regions_count_minus1(std::size_t value) -> auto &;
-  auto pin_region_tile_id(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_type_id_minus2(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_top_left_x(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_top_left_y(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_width_minus1(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_height_minus1(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_map_index(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_rotation_flag(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_auxiliary_data_flag(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_attr_type_id(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_attr_partitions_flag(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_attr_partition_index(std::size_t i, std::size_t value) -> auto &;
-  auto pin_region_attr_partitions_minus1(std::size_t i, std::size_t value) -> auto &;
+  auto pin_region_tile_id(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_type_id_minus2(std::size_t i, VuhUnitType value) -> auto &;
+  auto pin_region_top_left_x(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_top_left_y(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_width_minus1(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_height_minus1(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_map_index(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_rotation_flag(std::size_t i, bool value) -> auto &;
+  auto pin_region_auxiliary_data_flag(std::size_t i, bool value) -> auto &;
+  auto pin_region_attr_type_id(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_attr_partitions_flag(std::size_t i, bool value) -> auto &;
+  auto pin_region_attr_partition_index(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_attr_partitions_minus1(std::size_t i, std::uint8_t value) -> auto &;
 
   auto printTo(std::ostream &stream, std::uint8_t j) const -> std::ostream &;
 

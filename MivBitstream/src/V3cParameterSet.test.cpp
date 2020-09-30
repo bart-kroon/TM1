@@ -200,8 +200,20 @@ ai_attribute_MSB_align_flag( 7, 1 )=true
   }
 }
 
-TEST_CASE("packing_information", "[Packing Information]"){
-  SECTION("Default Constructor"){
+TEST_CASE("packing_information", "[Packing Information]") {
+  SECTION("Default Constructor") {
+    const std::size_t expected_number_of_bits = 8       // pin_codec_id
+                                                + 1     // pin_regions_count_minus1
+                                                + 1 * ( // number in pin_regions_count_minus1 + 1
+                                                          +8   // pin_region_tile_id
+                                                          + 2  // pin_region_type_id_minus2
+                                                          + 16 // pin_region_top_left_x
+                                                          + 16 // pin_region_top_left_y
+                                                          + 16 // pin_region_width_minus1
+                                                          + 16 // pin_region_height_minus1
+                                                          + 4  // pin_region_map_index
+                                                          + 1  // pin_region_rotation_flag
+                                                      );
     const PackingInformation unit{};
     REQUIRE(toString(unit, 4) == R"(pin_codec_id(4)=0
 pin_regions_count_minus1(4)=0
@@ -214,6 +226,7 @@ pin_region_height_minus1(4,0)=0
 pin_region_map_index(4,0)=0
 pin_region_rotation_flag(4,0)=false
 )");
+    REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }
 

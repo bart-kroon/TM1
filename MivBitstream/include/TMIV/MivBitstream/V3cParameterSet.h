@@ -374,7 +374,7 @@ public:
 
 private:
   std::uint8_t m_pin_codec_id{};
-  std::vector<PinRegion> pinRegions{std::vector<PinRegion>(1U)};
+  std::vector<PinRegion> m_pinRegions{std::vector<PinRegion>(1U)};
 };
 
 // 23090-12: vps_miv_extension()

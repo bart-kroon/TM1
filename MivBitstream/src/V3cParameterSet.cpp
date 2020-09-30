@@ -556,17 +556,24 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
 constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t {
   return m_pin_codec_id;
 }
-// auto PackingInformation::pin_region_count_minus1() const -> std::size_t {}
-// auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {}
+auto PackingInformation::pin_region_count_minus1() const -> std::size_t {
+  VERIFY_BITSTREAM(!m_pinRegions.empty());
+  return m_pinRegions.size() - 1U;
+}
+// auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {
+//   VERIFY_BITSTREAM(i <= pin_region_count_minus1());
+//   return m_pinRegions[i].pin_region_tile_id;
+// }
 // auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const noexcept -> std::uint8_t
 // {} auto PackingInformation::pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t
 // {} auto PackingInformation::pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t
-// {} auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t
+// {} auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept ->
+// std::uint16_t
 // {} auto PackingInformation::pin_region_height_minus1(std::size_t i) const noexcept ->
 // std::uint16_t {} auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept ->
-// std::uint8_t {} auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept ->
-// bool {} auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const noexcept ->
-// bool {} auto PackingInformation::pin_region_attr_type_id(std::size_t i) const noexcept ->
+// std::uint8_t {} auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept
+// -> bool {} auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const noexcept
+// -> bool {} auto PackingInformation::pin_region_attr_type_id(std::size_t i) const noexcept ->
 // std::uint8_t {} auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i) const
 // noexcept -> bool {} auto PackingInformation::pin_region_attr_partition_index(std::size_t i) const
 // noexcept
@@ -574,17 +581,28 @@ constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t
 // auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const noexcept
 //    -> std::uint8_t {}
 
+auto PutFlagDoubleIndexed(std::ostream &stream, unsigned j, unsigned i,
+                          const std::string &fieldName, unsigned fieldValue) {
+  stream << fieldName << "(" << j << "," << i << ")=" << fieldValue << "\n";
+}
+
 auto PackingInformation::printTo(std::ostream &stream, std::uint8_t j) const -> std::ostream & {
   // TODO add functions to common for easier putting to stream
-  stream << "pin_codec_id(" << j << ")=" << static_cast<unsigned>(pin_codec_id()) << "\n";
+  stream << "pin_codec_id(" << static_cast<unsigned>(j)
+         << ")=" << static_cast<unsigned>(pin_codec_id()) << "\n";
+  stream << "pin_region_count_minus1(" << static_cast<unsigned>(j)
+         << ")=" << static_cast<unsigned>(pin_region_count_minus1()) << "\n";
   return stream;
 }
 
 auto PackingInformation::operator==(const PackingInformation &other) const noexcept -> bool {
-  return (m_pin_codec_id == other.m_pin_codec_id) && (pinRegions == other.pinRegions);
+  return (m_pin_codec_id == other.m_pin_codec_id) && (m_pinRegions == other.m_pinRegions);
 }
 
-auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {}
+auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {
+  PackingInformation result{};
+  return result;
+}
 
 void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {}
 

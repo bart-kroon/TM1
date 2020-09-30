@@ -200,6 +200,15 @@ ai_attribute_MSB_align_flag( 7, 1 )=true
   }
 }
 
+TEST_CASE("packing_information", "[Packing Information]"){
+  SECTION("Default Constructor"){
+    const PackingInformation unit{};
+    REQUIRE(toString(unit, 4) == R"(pin_codec_id(4)=0
+pin_region_count_minus1(4)=0
+)");
+  }
+}
+
 TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
   auto vps = V3cParameterSet{};
 

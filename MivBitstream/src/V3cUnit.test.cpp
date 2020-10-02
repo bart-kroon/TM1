@@ -165,6 +165,46 @@ vuh_auxiliary_video_flag=false
       REQUIRE(byteCodingTest(x, 4));
     }
   }
+
+  SECTION("CAD") {
+    auto unit = V3cUnitHeader{VuhUnitType::V3C_CAD};
+    REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_CAD
+vuh_v3c_parameter_set_id=0
+)");
+
+    REQUIRE(byteCodingTest(unit, 4));
+
+    SECTION("Example") {
+      unit.vuh_v3c_parameter_set_id(2);
+
+      REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_CAD
+vuh_v3c_parameter_set_id=2
+)");
+
+      REQUIRE(byteCodingTest(unit, 4));
+    }
+  }
+
+  SECTION("PVD") {
+    auto unit = V3cUnitHeader{VuhUnitType::V3C_PVD};
+    REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_PVD
+vuh_v3c_parameter_set_id=0
+vuh_atlas_id=0
+)");
+
+    REQUIRE(byteCodingTest(unit, 4));
+
+    SECTION("Example") {
+      unit.vuh_v3c_parameter_set_id(2).vuh_atlas_id({});
+
+      REQUIRE(toString(unit) == R"(vuh_unit_type=V3C_PVD
+vuh_v3c_parameter_set_id=2
+vuh_atlas_id=0
+)");
+
+      REQUIRE(byteCodingTest(unit, 4));
+    }
+  }
 }
 
 TEST_CASE("v3c_unit_payload", "[V3C Unit]") {

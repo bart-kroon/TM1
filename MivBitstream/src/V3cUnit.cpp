@@ -255,51 +255,52 @@ void V3cUnitHeader::encodeTo(std::ostream &stream) const {
   }
 }
 
-auto V3cPayload::v3c_parameter_set() const noexcept -> const V3cParameterSet & {
+auto V3cUnitPayload::v3c_parameter_set() const noexcept -> const V3cParameterSet & {
   VERIFY_V3CBITSTREAM(std::holds_alternative<V3cParameterSet>(m_payload));
   return *std::get_if<V3cParameterSet>(&m_payload);
 }
 
-auto V3cPayload::atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream & {
+auto V3cUnitPayload::atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream & {
+  // TODO do we need a CommonAtlasSubBitstream here?
   VERIFY_V3CBITSTREAM(std::holds_alternative<AtlasSubBitstream>(m_payload));
   return *std::get_if<AtlasSubBitstream>(&m_payload);
 }
 
-auto V3cPayload::video_sub_bitstream() const noexcept -> const VideoSubBitstream & {
+auto V3cUnitPayload::video_sub_bitstream() const noexcept -> const VideoSubBitstream & {
   VERIFY_V3CBITSTREAM(std::holds_alternative<VideoSubBitstream>(m_payload));
   return *std::get_if<VideoSubBitstream>(&m_payload);
 }
 
-auto operator<<(std::ostream &stream, const V3cPayload &x) -> std::ostream & {
+auto operator<<(std::ostream &stream, const V3cUnitPayload &x) -> std::ostream & {
   visit(overload([&](const std::monostate & /* unused */) { stream << "[unknown]\n"; },
                  [&](const auto &payload) { stream << payload; }),
         x.payload());
   return stream;
 }
 
-auto V3cPayload::operator==(const V3cPayload &other) const noexcept -> bool {
+auto V3cUnitPayload::operator==(const V3cUnitPayload &other) const noexcept -> bool {
   return m_payload == other.m_payload;
 }
 
-auto V3cPayload::operator!=(const V3cPayload &other) const noexcept -> bool {
+auto V3cUnitPayload::operator!=(const V3cUnitPayload &other) const noexcept -> bool {
   return !operator==(other);
 }
 
-auto V3cPayload::decodeFrom(std::istream &stream, const V3cUnitHeader &vuh) -> V3cPayload {
+auto V3cUnitPayload::decodeFrom(std::istream &stream, const V3cUnitHeader &vuh) -> V3cUnitPayload {
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_VPS) {
-    return V3cPayload{V3cParameterSet::decodeFrom(stream)};
+    return V3cUnitPayload{V3cParameterSet::decodeFrom(stream)};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_AD || vuh.vuh_unit_type() == VuhUnitType::V3C_CAD) {
-    return V3cPayload{AtlasSubBitstream::decodeFrom(stream)};
+    return V3cUnitPayload{AtlasSubBitstream::decodeFrom(stream)};
   }
   if (vuh.vuh_unit_type() == VuhUnitType::V3C_OVD || vuh.vuh_unit_type() == VuhUnitType::V3C_GVD ||
       vuh.vuh_unit_type() == VuhUnitType::V3C_AVD) {
-    return V3cPayload{VideoSubBitstream::decodeFrom(stream)};
+    return V3cUnitPayload{VideoSubBitstream::decodeFrom(stream)};
   }
-  return V3cPayload{std::monostate{}};
+  return V3cUnitPayload{std::monostate{}};
 }
 
-void V3cPayload::encodeTo(std::ostream &stream, const V3cUnitHeader & /* vuh */) const {
+void V3cUnitPayload::encodeTo(std::ostream &stream, const V3cUnitHeader & /* vuh */) const {
   visit(overload([&](const std::monostate & /* unused */) { V3CBITSTREAM_ERROR("No payload"); },
                  [&](const auto &payload) { payload.encodeTo(stream); }),
         payload());
@@ -318,7 +319,7 @@ auto V3cUnit::operator!=(const V3cUnit &other) const noexcept -> bool { return !
 auto V3cUnit::decodeFrom(std::istream &stream, size_t numBytesInV3CUnit) -> V3cUnit {
   const auto endPosition = stream.tellg() + std::streamoff(numBytesInV3CUnit);
   const auto v3c_unit_header = V3cUnitHeader::decodeFrom(stream);
-  const auto v3c_payload = V3cPayload::decodeFrom(stream, v3c_unit_header);
+  const auto v3c_payload = V3cUnitPayload::decodeFrom(stream, v3c_unit_header);
   VERIFY_V3CBITSTREAM(stream.tellg() <= endPosition);
   return V3cUnit{v3c_unit_header, v3c_payload};
 }

@@ -210,7 +210,7 @@ vuh_atlas_id=0
 TEST_CASE("v3c_unit_payload", "[V3C Unit]") {
   SECTION("VPS") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_VPS};
-    const auto x = V3cPayload{examples::vps()};
+    const auto x = V3cUnitPayload{examples::vps()};
 
     REQUIRE(toString(x) == R"(ptl_tier_flag=false
 ptl_profile_codec_group_idc=AVC Progressive High
@@ -245,7 +245,7 @@ vps_extension_7bits=0
 
   SECTION("AD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AD};
-    const auto x = V3cPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
+    const auto x = V3cUnitPayload{AtlasSubBitstream{SampleStreamNalHeader{4}}};
 
     REQUIRE(toString(x) == R"(ssnh_unit_size_precision_bytes_minus1=4
 )");
@@ -255,7 +255,7 @@ vps_extension_7bits=0
 
   SECTION("OVD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_OVD};
-    const auto x = V3cPayload{VideoSubBitstream{}};
+    const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -264,7 +264,7 @@ vps_extension_7bits=0
 
   SECTION("GVD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_GVD};
-    const auto x = V3cPayload{VideoSubBitstream{}};
+    const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 
@@ -273,7 +273,7 @@ vps_extension_7bits=0
 
   SECTION("AVD") {
     const auto vuh = V3cUnitHeader{VuhUnitType::V3C_AVD};
-    const auto x = V3cPayload{VideoSubBitstream{}};
+    const auto x = V3cUnitPayload{VideoSubBitstream{}};
 
     REQUIRE(toString(x).empty());
 

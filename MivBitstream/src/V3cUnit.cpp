@@ -261,7 +261,6 @@ auto V3cUnitPayload::v3c_parameter_set() const noexcept -> const V3cParameterSet
 }
 
 auto V3cUnitPayload::atlas_sub_bitstream() const noexcept -> const AtlasSubBitstream & {
-  // TODO do we need a CommonAtlasSubBitstream here?
   VERIFY_V3CBITSTREAM(std::holds_alternative<AtlasSubBitstream>(m_payload));
   return *std::get_if<AtlasSubBitstream>(&m_payload);
 }

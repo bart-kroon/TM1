@@ -119,12 +119,14 @@ class V3cUnit {
 public:
   template <typename Payload>
   V3cUnit(const V3cUnitHeader &v3c_unit_header, Payload &&payload)
-      : m_v3c_unit_header{v3c_unit_header}, m_v3c_payload{std::forward<Payload>(payload)} {}
+      : m_v3c_unit_header{v3c_unit_header}, m_v3c_unit_payload{std::forward<Payload>(payload)} {}
 
   [[nodiscard]] constexpr auto v3c_unit_header() const noexcept -> auto & {
     return m_v3c_unit_header;
   }
-  [[nodiscard]] constexpr auto v3c_payload() const noexcept -> auto & { return m_v3c_payload; }
+  [[nodiscard]] constexpr auto v3c_unit_payload() const noexcept -> auto & {
+    return m_v3c_unit_payload;
+  }
 
   friend auto operator<<(std::ostream &stream, const V3cUnit &x) -> std::ostream &;
 
@@ -137,7 +139,7 @@ public:
 
 private:
   V3cUnitHeader m_v3c_unit_header;
-  V3cUnitPayload m_v3c_payload;
+  V3cUnitPayload m_v3c_unit_payload;
 };
 } // namespace TMIV::MivBitstream
 

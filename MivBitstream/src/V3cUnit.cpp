@@ -307,11 +307,12 @@ void V3cUnitPayload::encodeTo(std::ostream &stream, const V3cUnitHeader & /* vuh
 }
 
 auto operator<<(std::ostream &stream, const V3cUnit &x) -> std::ostream & {
-  return stream << x.v3c_unit_header() << x.v3c_payload();
+  return stream << x.v3c_unit_header() << x.v3c_unit_payload();
 }
 
 auto V3cUnit::operator==(const V3cUnit &other) const noexcept -> bool {
-  return v3c_unit_header() == other.v3c_unit_header() && v3c_payload() == other.v3c_payload();
+  return v3c_unit_header() == other.v3c_unit_header() &&
+         v3c_unit_payload() == other.v3c_unit_payload();
 }
 
 auto V3cUnit::operator!=(const V3cUnit &other) const noexcept -> bool { return !operator==(other); }
@@ -327,7 +328,7 @@ auto V3cUnit::decodeFrom(std::istream &stream, size_t numBytesInV3CUnit) -> V3cU
 auto V3cUnit::encodeTo(std::ostream &stream) const -> size_t {
   const auto position = stream.tellp();
   v3c_unit_header().encodeTo(stream);
-  v3c_payload().encodeTo(stream, v3c_unit_header());
+  v3c_unit_payload().encodeTo(stream, v3c_unit_header());
   return static_cast<size_t>(stream.tellp() - position);
 }
 } // namespace TMIV::MivBitstream

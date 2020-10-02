@@ -126,7 +126,7 @@ auto MivDecoder::decodeVps() -> bool {
   if (!vu) {
     return false;
   }
-  m_au.vps = vu->v3c_payload().v3c_parameter_set();
+  m_au.vps = vu->v3c_unit_payload().v3c_parameter_set();
 
   summarizeVps();
   checkCapabilities();
@@ -200,7 +200,7 @@ auto MivDecoder::startVideoDecoder(const MivBitstream::V3cUnitHeader &vuh, doubl
     // short enough to fit in memory. The reason for this shortcut is that the change requires
     // parsing of the Annex B byte stream, which can be easily done but it requires an additional
     // implementation effort.
-    data += vu->v3c_payload().video_sub_bitstream().data();
+    data += vu->v3c_unit_payload().video_sub_bitstream().data();
   }
   if (data.empty()) {
     return {}; // Out-of-band?

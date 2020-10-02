@@ -76,17 +76,17 @@ public:
     auto vu = TMIV::MivBitstream::V3cUnit::decodeFrom(stream, numBytesInV3CUnit);
     m_log << vu.v3c_unit_header();
     m_vuh = vu.v3c_unit_header();
-    std::visit([this](const auto &x) { parseV3cPayload(x); }, vu.v3c_payload().payload());
+    std::visit([this](const auto &x) { parseV3cUnitPayload(x); }, vu.v3c_unit_payload().payload());
   }
 
-  void parseV3cPayload(const std::monostate & /* unused */) {}
+  void parseV3cUnitPayload(const std::monostate & /* unused */) {}
 
-  void parseV3cPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {
+  void parseV3cUnitPayload(const TMIV::MivBitstream::V3cParameterSet &vps) {
     m_log << vps;
     m_vps = vps;
   }
 
-  void parseV3cPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
+  void parseV3cUnitPayload(const TMIV::MivBitstream::AtlasSubBitstream &asb) {
     m_log << asb.sample_stream_nal_header();
 
     for (const auto &nu : asb.nal_units()) {
@@ -94,7 +94,7 @@ public:
     }
   }
 
-  void parseV3cPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
+  void parseV3cUnitPayload(const TMIV::MivBitstream::VideoSubBitstream & /* unused */) {}
 
   void parseNalUnit(const TMIV::MivBitstream::NalUnit &nu) {
     m_log << '\n' << std::string(100, '-') << '\n' << nu;

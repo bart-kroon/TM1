@@ -69,7 +69,7 @@ public:
   [[nodiscard]] auto pir_num_packed_frames_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto pir_packed_frame_id(std::uint8_t j) const noexcept -> std::uint8_t;
   [[nodiscard]] auto pir_description_type_idc(std::uint8_t k) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto pir_num_regions_minus1(std::uint8_t k) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pir_num_regions_minus1(std::uint8_t k) const -> std::uint8_t;
   [[nodiscard]] auto pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i) const -> std::size_t;
   [[nodiscard]] auto pir_bottom_right_tile_idx(std::uint8_t k, std::uint8_t i) const -> std::size_t;
   [[nodiscard]] auto pir_subpic_id(std::uint8_t k, std::uint8_t i) const -> std::size_t;
@@ -77,7 +77,7 @@ public:
   auto pir_num_packed_frames_minus1(std::uint8_t value) -> auto &;
   auto pir_packed_frame_id(std::uint8_t j, std::uint8_t value) noexcept -> auto &;
   auto pir_description_type_idc(std::uint8_t k, std::uint8_t value) noexcept -> auto &;
-  auto pir_num_regions_minus1(std::uint8_t k, std::uint8_t value) noexcept -> auto &;
+  auto pir_num_regions_minus1(std::uint8_t k, std::uint8_t value) -> auto &;
   auto pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i, std::size_t value) noexcept -> auto &;
   auto pir_bottom_right_tile_idx(std::uint8_t k, std::uint8_t i, std::size_t value) noexcept
       -> auto &;

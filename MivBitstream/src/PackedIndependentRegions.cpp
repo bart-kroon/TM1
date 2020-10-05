@@ -51,8 +51,7 @@ auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k) const no
   }
   return 1U;
 }
-auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k) const noexcept
-    -> std::uint8_t {
+auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k) const -> std::uint8_t {
   VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1());
   return std::visit([](const auto &regions) { return regions.size(); },
                     m_pirPackedFrames[k].regions) -

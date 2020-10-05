@@ -57,8 +57,7 @@ inline auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k,
   }
   return *this;
 }
-inline auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k,
-                                                             std::uint8_t value) noexcept
+inline auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k, std::uint8_t value)
     -> auto & {
   if (pir_description_type_idc(k) == 0) {
     m_pirPackedFrames[k].regions = TileRegions(value + 1U);

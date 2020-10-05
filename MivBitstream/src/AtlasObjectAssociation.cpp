@@ -33,6 +33,8 @@
 
 #include <TMIV/MivBitstream/AtlasObjectAssociation.h>
 
+#include <TMIV/MivBitstream/verify.h>
+
 namespace TMIV::MivBitstream {
 auto AtlasObjectAssociation::aoa_persistence_flag() const noexcept -> bool {
   return m_aoa_persistence_flag;
@@ -50,26 +52,26 @@ auto AtlasObjectAssociation::aoa_num_updates() const noexcept -> std::size_t {
 
 auto AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1() const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
+  VERIFY_V3CBITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
   return m_aoa_parameters->aoa_log2_max_object_idx_tracked_minus1;
 }
 
 auto AtlasObjectAssociation::aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && j <= aoa_num_atlases_minus1());
+  VERIFY_V3CBITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && j <= aoa_num_atlases_minus1());
   return m_aoa_parameters->aoa_atlas_id[j];
 }
 
 auto AtlasObjectAssociation::aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && i < aoa_num_updates());
+  VERIFY_V3CBITSTREAM(0 < aoa_num_updates() && m_aoa_parameters && i < aoa_num_updates());
   return m_aoa_parameters->aoa_object_idx[i];
 }
 
 auto AtlasObjectAssociation::aoa_object_in_atlas(std::size_t i, std::size_t j) const noexcept
     -> bool {
-  VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
-  VERIFY_BITSTREAM(aoa_object_idx(i) < m_aoa_parameters->aoa_object_in_atlas.size());
-  VERIFY_BITSTREAM(aoa_atlas_id(j) <
-                   m_aoa_parameters->aoa_object_in_atlas[aoa_object_idx(i)].size());
+  VERIFY_V3CBITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
+  VERIFY_V3CBITSTREAM(aoa_object_idx(i) < m_aoa_parameters->aoa_object_in_atlas.size());
+  VERIFY_V3CBITSTREAM(aoa_atlas_id(j) <
+                      m_aoa_parameters->aoa_object_in_atlas[aoa_object_idx(i)].size());
   return m_aoa_parameters->aoa_object_in_atlas[aoa_object_idx(i)][aoa_atlas_id(j)];
 }
 
@@ -104,20 +106,21 @@ AtlasObjectAssociation::aoa_log2_max_object_idx_tracked_minus1(std::uint8_t valu
 }
 
 auto AtlasObjectAssociation::push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto & {
-  VERIFY_BITSTREAM(m_aoa_parameters);
+  VERIFY_V3CBITSTREAM(m_aoa_parameters);
   m_aoa_parameters->aoa_atlas_id.push_back(value);
   return *this;
 }
 
 auto AtlasObjectAssociation::aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto & {
-  VERIFY_BITSTREAM(m_aoa_parameters && i < m_aoa_parameters->aoa_object_idx.size());
+  VERIFY_V3CBITSTREAM(m_aoa_parameters && i < m_aoa_parameters->aoa_object_idx.size());
   m_aoa_parameters->aoa_object_idx[i] = value;
   return *this;
 }
 
 auto AtlasObjectAssociation::aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept
     -> auto & {
-  VERIFY_BITSTREAM(m_aoa_parameters && (i < aoa_num_updates()) && (j <= aoa_num_atlases_minus1()));
+  VERIFY_V3CBITSTREAM(m_aoa_parameters && (i < aoa_num_updates()) &&
+                      (j <= aoa_num_atlases_minus1()));
   m_aoa_parameters->aoa_object_in_atlas[aoa_object_idx(i)][aoa_atlas_id(j)] = value;
   return *this;
 }

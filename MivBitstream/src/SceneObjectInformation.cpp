@@ -195,23 +195,23 @@ auto SceneObjectInformation::soi_visibility_cones_update_flag(std::size_t k) con
 }
 auto SceneObjectInformation::soi_direction_x(std::size_t k) const -> std::int16_t {
   VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
-                   m_object_updates[k].m_soi_visibility_cones);
-  return m_object_updates[k].m_soi_visibility_cones->soi_direction_x;
+                   m_object_updates[k].soi_visibility_cones);
+  return m_object_updates[k].soi_visibility_cones->soi_direction_x;
 }
 auto SceneObjectInformation::soi_direction_y(std::size_t k) const -> std::int16_t {
   VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
-                   m_object_updates[k].m_soi_visibility_cones);
-  return m_object_updates[k].m_soi_visibility_cones->soi_direction_y;
+                   m_object_updates[k].soi_visibility_cones);
+  return m_object_updates[k].soi_visibility_cones->soi_direction_y;
 }
 auto SceneObjectInformation::soi_direction_z(std::size_t k) const -> std::int16_t {
   VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
-                   m_object_updates[k].m_soi_visibility_cones);
-  return m_object_updates[k].m_soi_visibility_cones->soi_direction_z;
+                   m_object_updates[k].soi_visibility_cones);
+  return m_object_updates[k].soi_visibility_cones->soi_direction_z;
 }
 auto SceneObjectInformation::soi_angle(std::size_t k) const -> std::uint16_t {
   VERIFY_BITSTREAM(isUpdateValid(k) && soi_visibility_cones_update_flag(k) &&
-                   m_object_updates[k].m_soi_visibility_cones);
-  return m_object_updates[k].m_soi_visibility_cones->soi_angle;
+                   m_object_updates[k].soi_visibility_cones);
+  return m_object_updates[k].soi_visibility_cones->soi_angle;
 }
 auto SceneObjectInformation::soi_3d_bounding_box_update_flag(std::size_t k) const -> bool {
   VERIFY_BITSTREAM(isUpdateValid(k) && soi_3d_bounding_box_present_flag() &&
@@ -515,8 +515,8 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       if (result.soi_visibility_cones_present_flag()) {
         currentObjectUpdate.soi_visibility_cones_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_visibility_cones_update_flag.value()) {
-          currentObjectUpdate.m_soi_visibility_cones = SoiVisibilityCones{};
-          auto &cones = currentObjectUpdate.m_soi_visibility_cones.value();
+          currentObjectUpdate.soi_visibility_cones = SoiVisibilityCones{};
+          auto &cones = currentObjectUpdate.soi_visibility_cones.value();
           cones.soi_direction_x = bitstream.readBits<std::int16_t>(16);
           cones.soi_direction_y = bitstream.readBits<std::int16_t>(16);
           cones.soi_direction_z = bitstream.readBits<std::int16_t>(16);
@@ -526,7 +526,7 @@ auto SceneObjectInformation::decodeFrom(Common::InputBitstream &bitstream)
       if (result.soi_3d_bounding_box_present_flag()) {
         currentObjectUpdate.soi_3d_bounding_box_update_flag = bitstream.getFlag();
         if (currentObjectUpdate.soi_3d_bounding_box_update_flag.value()) {
-          currentObjectUpdate.soi_3d_bounding_box = BoundingBox3D{};
+          currentObjectUpdate.soi_3d_bounding_box = Soi3dBoundingBox{};
           auto &box = currentObjectUpdate.soi_3d_bounding_box.value();
           box.soi_3d_bounding_box_x = bitstream.getUExpGolomb<std::size_t>();
           box.soi_3d_bounding_box_y = bitstream.getUExpGolomb<std::size_t>();

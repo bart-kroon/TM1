@@ -57,8 +57,8 @@ struct SoiVisibilityCones {
   std::uint16_t soi_angle{};
 };
 
-struct BoundingBox3D {
-  [[nodiscard]] constexpr auto operator==(const BoundingBox3D &other) const noexcept -> bool {
+struct Soi3dBoundingBox {
+  [[nodiscard]] constexpr auto operator==(const Soi3dBoundingBox &other) const noexcept -> bool {
     return (soi_3d_bounding_box_x == other.soi_3d_bounding_box_x) &&
            (soi_3d_bounding_box_y == other.soi_3d_bounding_box_y) &&
            (soi_3d_bounding_box_z == other.soi_3d_bounding_box_z) &&
@@ -87,6 +87,7 @@ struct SceneObjectUpdate {
            (soi_object_dependency_update_flag == other.soi_object_dependency_update_flag) &&
            (soi_object_dependency_idx == other.soi_object_dependency_idx) &&
            (soi_visibility_cones_update_flag == other.soi_visibility_cones_update_flag) &&
+           (soi_visibility_cones == other.soi_visibility_cones) &&
            (soi_3d_bounding_box_update_flag == other.soi_3d_bounding_box_update_flag) &&
            (soi_3d_bounding_box == other.soi_3d_bounding_box) &&
            (soi_collision_shape_update_flag == other.soi_collision_shape_update_flag) &&
@@ -107,9 +108,9 @@ struct SceneObjectUpdate {
   std::optional<bool> soi_object_dependency_update_flag{};
   std::vector<std::size_t> soi_object_dependency_idx{};
   std::optional<bool> soi_visibility_cones_update_flag{};
-  std::optional<SoiVisibilityCones> m_soi_visibility_cones{};
+  std::optional<SoiVisibilityCones> soi_visibility_cones{};
   std::optional<bool> soi_3d_bounding_box_update_flag{};
-  std::optional<BoundingBox3D> soi_3d_bounding_box{};
+  std::optional<Soi3dBoundingBox> soi_3d_bounding_box{};
   std::optional<bool> soi_collision_shape_update_flag{};
   std::optional<std::uint16_t> soi_collision_shape_id{};
   std::optional<bool> soi_point_style_update_flag{};

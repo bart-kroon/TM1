@@ -340,7 +340,7 @@ auto makeSceneObjectInformation(bool soi_persistence_flag, bool soi_reset_flag,
 }
 
 auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones;
-auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D;
+auto makeSoi3dBoundingBox(std::uint16_t value) -> Soi3dBoundingBox;
 
 auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_flag,
                  bool soiObjectDataPresentFlags, bool fillAllFields)
@@ -362,9 +362,9 @@ auto makeUpdates(std::size_t soi_num_object_updates, bool soi_simple_objects_fla
             update.soi_object_dependency_update_flag = true;
             update.soi_object_dependency_idx = std::vector<std::size_t>(2);
             update.soi_visibility_cones_update_flag = true;
-            update.m_soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
+            update.soi_visibility_cones = makeSoiVisibilityCones(soi_object_idx);
             update.soi_3d_bounding_box_update_flag = true;
-            update.soi_3d_bounding_box = make3dBoundingBox(soi_object_idx);
+            update.soi_3d_bounding_box = makeSoi3dBoundingBox(soi_object_idx);
             update.soi_collision_shape_update_flag = true;
             update.soi_collision_shape_id = 2 * soi_object_idx;
             update.soi_point_style_update_flag = true;
@@ -410,8 +410,8 @@ auto makeSoiVisibilityCones(std::uint16_t value) -> SoiVisibilityCones {
   return result;
 }
 
-auto make3dBoundingBox(std::uint16_t value) -> BoundingBox3D {
-  BoundingBox3D result{};
+auto makeSoi3dBoundingBox(std::uint16_t value) -> Soi3dBoundingBox {
+  Soi3dBoundingBox result{};
   result.soi_3d_bounding_box_x = value++;
   result.soi_3d_bounding_box_y = value++;
   result.soi_3d_bounding_box_z = value++;

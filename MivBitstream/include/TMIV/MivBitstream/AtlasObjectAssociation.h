@@ -45,13 +45,13 @@ struct AtlasObjectAssociationUpdateParameters {
   std::uint8_t aoa_log2_max_object_idx_tracked_minus1;
   std::vector<std::uint8_t> aoa_atlas_id;
   std::vector<std::uint8_t> aoa_object_idx;
-  std::vector<std::vector<bool>> aoa_object_in_atlas_present_flag;
+  std::vector<std::vector<bool>> aoa_object_in_atlas;
 
   auto operator==(const AtlasObjectAssociationUpdateParameters &other) const noexcept -> bool {
     return (aoa_log2_max_object_idx_tracked_minus1 ==
             other.aoa_log2_max_object_idx_tracked_minus1) &&
            (aoa_atlas_id == other.aoa_atlas_id) && (aoa_object_idx == other.aoa_object_idx) &&
-           (aoa_object_in_atlas_present_flag == other.aoa_object_in_atlas_present_flag);
+           (aoa_object_in_atlas == other.aoa_object_in_atlas);
   }
 };
 
@@ -73,7 +73,7 @@ public:
   [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j) const noexcept
+  [[nodiscard]] auto aoa_object_in_atlas(std::size_t i, std::size_t j) const noexcept
       -> bool;
 
   constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
@@ -83,7 +83,7 @@ public:
   constexpr auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
   auto push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto &;
   auto aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto &;
-  auto aoa_object_in_atlas_present_flag(std::size_t i, std::size_t j, bool value) noexcept
+  auto aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept
       -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;

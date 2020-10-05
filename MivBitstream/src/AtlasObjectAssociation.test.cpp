@@ -53,7 +53,7 @@ aoa_num_updates=0
 
   SECTION("Set all fields") {
     AtlasObjectAssociationUpdateParameters aoa_parameters{};
-    aoa_parameters.aoa_object_in_atlas_present_flag = {{true, false}, {true, true}, {false, false}};
+    aoa_parameters.aoa_object_in_atlas = {{true, false}, {true, true}, {false, false}};
     aoa_parameters.aoa_log2_max_object_idx_tracked_minus1 = 2;
     aoa_parameters.aoa_object_idx = {2, 0, 1};
     aoa_parameters.aoa_atlas_id = {1, 0};
@@ -66,14 +66,14 @@ aoa_log2_max_object_idx_tracked_minus1=2
 aoa_atlas_id(0)=1
 aoa_atlas_id(1)=0
 aoa_object_idx(0)=2
-aoa_object_in_atlas_present_flag(0, 0)=false
-aoa_object_in_atlas_present_flag(0, 1)=false
+aoa_object_in_atlas(0, 0)=false
+aoa_object_in_atlas(0, 1)=false
 aoa_object_idx(1)=0
-aoa_object_in_atlas_present_flag(1, 0)=false
-aoa_object_in_atlas_present_flag(1, 1)=true
+aoa_object_in_atlas(1, 0)=false
+aoa_object_in_atlas(1, 1)=true
 aoa_object_idx(2)=1
-aoa_object_in_atlas_present_flag(2, 0)=true
-aoa_object_in_atlas_present_flag(2, 1)=true
+aoa_object_in_atlas(2, 0)=true
+aoa_object_in_atlas(2, 1)=true
 )");
     const std::size_t expected_number_of_bits = 1    // aoa_persistence_flag
                                                 + 1  // aoa_reset_flag
@@ -82,7 +82,7 @@ aoa_object_in_atlas_present_flag(2, 1)=true
                                                 + 5  // aoa_log2_max_object_idx_tracked_minus1
                                                 + 12 // aoa_atlas_id
                                                 + 9  // aoa_object_idx
-                                                + 6; // aoa_object_in_atlas_present_flag
+                                                + 6; // aoa_object_in_atlas
     REQUIRE(bitCodingTest(unit, expected_number_of_bits));
   }
 }

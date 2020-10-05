@@ -318,6 +318,7 @@ TEST_CASE("v3c_parameter_set", "[V3C Parameter Set]") {
     vps.vps_frame_width({}, 1920);
     vps.vps_frame_height({}, 1080);
     vps.vps_extension_present_flag(true);
+    vps.vps_packing_information_present_flag(false);
     vps.vps_miv_extension_present_flag(true);
     vps.vps_miv_extension()
         .vme_depth_low_quality_flag(true)
@@ -346,8 +347,9 @@ vps_occupancy_video_present_flag( 0 )=false
 vps_geometry_video_present_flag( 0 )=false
 vps_attribute_video_present_flag( 0 )=false
 vps_extension_present_flag=true
+vps_packing_information_present_flag=false
 vps_miv_extension_present_flag=true
-vps_extension_7bits=0
+vps_extension_6bits=0
 vme_depth_low_quality_flag=true
 vme_geometry_scale_enabled_flag=true
 vme_num_groups_minus1=3
@@ -381,8 +383,9 @@ vme_embedded_occupancy_flag=true
         .attribute_information(j2, {})
         .vps_extension_present_flag(true)
         .vps_miv_extension_present_flag(true)
+        .vps_packing_information_present_flag(true)
         .vps_miv_extension(VpsMivExtension{})
-        .vps_extension_7bits(127)
+        .vps_extension_6bits(63)
         .vpsExtensionData({2, 250, 15});
 
     REQUIRE(toString(vps) == R"(ptl_tier_flag=false
@@ -430,8 +433,9 @@ vps_geometry_video_present_flag( 32 )=false
 vps_attribute_video_present_flag( 32 )=true
 ai_attribute_count( 32 )=0
 vps_extension_present_flag=true
+vps_packing_information_present_flag=true
 vps_miv_extension_present_flag=true
-vps_extension_7bits=127
+vps_extension_6bits=63
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0

@@ -366,6 +366,7 @@ public:
   auto printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream &;
 
   auto operator==(const PackingInformation &other) const noexcept -> bool;
+  auto operator!=(const PackingInformation &other) const noexcept -> bool;
 
   static auto decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation;
 
@@ -436,6 +437,7 @@ public:
   [[nodiscard]] constexpr auto vps_miv_extension_present_flag() const noexcept;
   [[nodiscard]] constexpr auto vps_extension_6bits() const noexcept;
   [[nodiscard]] auto vps_packed_video_present_flag(const AtlasId &j) const;
+  [[nodiscard]] auto packing_information(const AtlasId &j) const;
   [[nodiscard]] auto vps_miv_extension() const noexcept -> const VpsMivExtension &;
   [[nodiscard]] auto vps_extension_length_minus1() const noexcept -> std::size_t;
   [[nodiscard]] auto vpsExtensionData() const noexcept -> const std::vector<std::uint8_t> &;
@@ -459,6 +461,7 @@ public:
   auto vps_miv_extension_present_flag(bool value) noexcept -> V3cParameterSet &;
   auto vps_extension_6bits(std::uint8_t value) noexcept -> V3cParameterSet &;
   auto vps_packed_video_present_flag(const AtlasId &j, bool value) -> V3cParameterSet &;
+  auto packing_information(const AtlasId &j, PackingInformation value) -> V3cParameterSet &;
   auto vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet &;
   auto vpsExtensionData(std::vector<std::uint8_t> value) noexcept -> V3cParameterSet &;
 
@@ -494,6 +497,7 @@ private:
     std::optional<OccupancyInformation> occupancy_information{};
     std::optional<GeometryInformation> geometry_information{};
     std::optional<AttributeInformation> attribute_information{};
+    std::optional<PackingInformation> packing_information{};
   };
 
   [[nodiscard]] auto atlas(AtlasId atlasId) const noexcept -> const VpsAtlas &;

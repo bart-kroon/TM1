@@ -385,8 +385,10 @@ vme_embedded_occupancy_flag=true
         .vps_miv_extension_present_flag(true)
         .vps_packing_information_present_flag(true)
         .vps_packed_video_present_flag(j0, true)
+        .packing_information(j0, {})
         .vps_packed_video_present_flag(j1, false)
         .vps_packed_video_present_flag(j2, true)
+        .packing_information(j2, {})
         .vps_miv_extension(VpsMivExtension{})
         .vps_extension_6bits(63)
         .vpsExtensionData({2, 250, 15});
@@ -440,8 +442,28 @@ vps_packing_information_present_flag=true
 vps_miv_extension_present_flag=true
 vps_extension_6bits=63
 vps_packed_video_present_flag( 30 )=true
+pin_codec_id(30)=0
+pin_regions_count_minus1(30)=0
+pin_region_tile_id(30,0)=0
+pin_region_type_id_minus2(30,0)=V3C_VPS
+pin_region_top_left_x(30,0)=0
+pin_region_top_left_y(30,0)=0
+pin_region_width_minus1(30,0)=0
+pin_region_height_minus1(30,0)=0
+pin_region_map_index(30,0)=0
+pin_region_rotation_flag(30,0)=false
 vps_packed_video_present_flag( 31 )=false
 vps_packed_video_present_flag( 32 )=true
+pin_codec_id(32)=0
+pin_regions_count_minus1(32)=0
+pin_region_tile_id(32,0)=0
+pin_region_type_id_minus2(32,0)=V3C_VPS
+pin_region_top_left_x(32,0)=0
+pin_region_top_left_y(32,0)=0
+pin_region_width_minus1(32,0)=0
+pin_region_height_minus1(32,0)=0
+pin_region_map_index(32,0)=0
+pin_region_rotation_flag(32,0)=false
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0
@@ -452,8 +474,9 @@ vps_extension_data_byte=2
 vps_extension_data_byte=250
 vps_extension_data_byte=15
 )");
-
-    REQUIRE(byteCodingTest(vps, 41));
+    const std::size_t expected_number_of_bytes = 41 // TODO deconstruct this for explanation
+                                                 + (2 * 11); // two times packing_information
+    REQUIRE(byteCodingTest(vps, expected_number_of_bytes));
   }
 }
 } // namespace TMIV::MivBitstream

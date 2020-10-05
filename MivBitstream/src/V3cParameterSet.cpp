@@ -685,6 +685,10 @@ auto PackingInformation::operator==(const PackingInformation &other) const noexc
   return (m_pin_codec_id == other.m_pin_codec_id) && (m_pinRegions == other.m_pinRegions);
 }
 
+auto PackingInformation::operator!=(const PackingInformation &other) const noexcept -> bool {
+  return !operator==(other);
+}
+
 auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {
   PackingInformation result{};
   result.pin_codec_id(bitstream.getUint8());
@@ -867,6 +871,12 @@ auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j) const {
   return atlas(j).vps_packed_video_present_flag;
 }
 
+auto V3cParameterSet::packing_information(const AtlasId &j) const {
+  VERIFY_V3CBITSTREAM(vps_packed_video_present_flag(j));
+  VERIFY_V3CBITSTREAM(atlas(j).packing_information.has_value());
+  return *atlas(j).packing_information;
+}
+
 auto V3cParameterSet::vps_miv_extension() const noexcept -> const VpsMivExtension & {
   VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   VERIFY_V3CBITSTREAM(m_vps_miv_extension.has_value());
@@ -983,6 +993,13 @@ auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j, bool value
   return *this;
 }
 
+auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation value)
+    -> V3cParameterSet & {
+  VERIFY_BITSTREAM(vps_packed_video_present_flag(j));
+  atlas(j).packing_information.emplace(std::move(value));
+  return *this;
+}
+
 auto V3cParameterSet::vps_miv_extension(VpsMivExtension value) noexcept -> V3cParameterSet & {
   VERIFY_V3CBITSTREAM(vps_miv_extension_present_flag());
   m_vps_miv_extension = value;
@@ -1081,6 +1098,9 @@ auto operator<<(std::ostream &stream, const V3cParameterSet &x) -> std::ostream 
       const auto j = x.vps_atlas_id(k);
       stream << "vps_packed_video_present_flag( " << j << " )=" << std::boolalpha
              << x.vps_packed_video_present_flag(j) << '\n';
+      if (x.vps_packed_video_present_flag(j)) {
+        x.packing_information(j).printTo(stream, j);
+      }
     }
   }
   if (x.vps_miv_extension_present_flag()) {
@@ -1135,7 +1155,11 @@ auto V3cParameterSet::operator==(const V3cParameterSet &other) const noexcept ->
     return false;
     for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
       const auto j = vps_atlas_id(k);
-      if (vps_packed_video_present_flag(j)) {
+      if (vps_packed_video_present_flag(j) != other.vps_packed_video_present_flag(j)) {
+        return false;
+      }
+      if (vps_packed_video_present_flag(j) &&
+          (packing_information(j) != other.packing_information(j))) {
         return false;
       }
     }
@@ -1204,6 +1228,9 @@ auto V3cParameterSet::decodeFrom(std::istream &stream) -> V3cParameterSet {
     for (size_t k = 0; k <= x.vps_atlas_count_minus1(); ++k) {
       const auto j = x.vps_atlas_id(k);
       x.vps_packed_video_present_flag(j, bitstream.getFlag());
+      if (x.vps_packed_video_present_flag(j)) {
+        x.packing_information(j, PackingInformation::decodeFrom(bitstream));
+      }
     }
   }
   if (x.vps_extension_6bits() != 0U) {
@@ -1268,6 +1295,9 @@ void V3cParameterSet::encodeTo(std::ostream &stream) const {
     for (size_t k = 0; k <= vps_atlas_count_minus1(); ++k) {
       const auto j = vps_atlas_id(k);
       bitstream.putFlag(vps_packed_video_present_flag(j));
+      if (vps_packed_video_present_flag(j)) {
+        packing_information(j).encodeTo(bitstream);
+      }
     }
   }
   if (vps_extension_6bits() != 0U) {

@@ -363,7 +363,7 @@ public:
   auto pin_region_attr_partition_index(std::size_t i, std::uint8_t value) -> auto &;
   auto pin_region_attr_partitions_minus1(std::size_t i, std::uint8_t value) -> auto &;
 
-  auto printTo(std::ostream &stream, std::uint8_t j) const -> std::ostream &;
+  auto printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream &;
 
   auto operator==(const PackingInformation &other) const noexcept -> bool;
 

@@ -634,7 +634,7 @@ auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const 
 
 // TODO(christoph_bachhuber) extract this method to common
 template <typename T>
-auto putTwiceIndexedField(std::ostream &stream, unsigned j, unsigned i,
+auto putTwiceIndexedField(std::ostream &stream, const AtlasId &j, unsigned i,
                           const std::string &fieldName, T &&fieldValue) {
   stream << fieldName << "(" << j << "," << i << ")=";
   if constexpr (std::is_same_v<std::uint8_t, std::decay_t<T>>) {
@@ -646,10 +646,9 @@ auto putTwiceIndexedField(std::ostream &stream, unsigned j, unsigned i,
   }
 }
 
-auto PackingInformation::printTo(std::ostream &stream, std::uint8_t j) const -> std::ostream & {
-  stream << "pin_codec_id(" << static_cast<unsigned>(j)
-         << ")=" << static_cast<unsigned>(pin_codec_id()) << "\n";
-  stream << "pin_regions_count_minus1(" << static_cast<unsigned>(j)
+auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream & {
+  stream << "pin_codec_id(" << j << ")=" << static_cast<unsigned>(pin_codec_id()) << "\n";
+  stream << "pin_regions_count_minus1(" << j
          << ")=" << static_cast<unsigned>(pin_regions_count_minus1()) << "\n";
   for (std::size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
     putTwiceIndexedField(stream, j, i, "pin_region_tile_id", pin_region_tile_id(i));

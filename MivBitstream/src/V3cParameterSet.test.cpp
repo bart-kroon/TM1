@@ -204,7 +204,7 @@ TEST_CASE("packing_information", "[V3C Parameter Set]") {
   SECTION("Default Constructor") {
     const PackingInformation unit{};
 
-    REQUIRE(toString(unit, 4) == R"(pin_codec_id(4)=0
+    REQUIRE(toString(unit, AtlasId{4}) == R"(pin_codec_id(4)=0
 pin_regions_count_minus1(4)=0
 pin_region_tile_id(4,0)=0
 pin_region_type_id_minus2(4,0)=V3C_VPS
@@ -253,7 +253,7 @@ pin_region_rotation_flag(4,0)=false
       }
     }
 
-    REQUIRE(toString(unit, 3) == R"(pin_codec_id(3)=2
+    REQUIRE(toString(unit, AtlasId{3}) == R"(pin_codec_id(3)=2
 pin_regions_count_minus1(3)=1
 pin_region_tile_id(3,0)=5
 pin_region_type_id_minus2(3,0)=V3C_OVD

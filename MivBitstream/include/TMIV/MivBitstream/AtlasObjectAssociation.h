@@ -93,7 +93,7 @@ public:
   void encodeTo(Common::OutputBitstream &bitstream) const;
 
 private:
-  void prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept;
+  void prepareAoaParameters(std::size_t aoa_num_updates) noexcept;
 
   bool m_aoa_persistence_flag{};
   bool m_aoa_reset_flag{};

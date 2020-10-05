@@ -122,7 +122,7 @@ auto AtlasObjectAssociation::aoa_object_in_atlas(std::size_t i, std::size_t j, b
   return *this;
 }
 
-void AtlasObjectAssociation::prepareAoaParameters(std::uint8_t aoa_num_updates) noexcept {
+void AtlasObjectAssociation::prepareAoaParameters(std::size_t aoa_num_updates) noexcept {
   if (!m_aoa_parameters) {
     m_aoa_parameters.emplace(AtlasObjectAssociationUpdateParameters{});
   }

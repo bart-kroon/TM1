@@ -200,7 +200,7 @@ ai_attribute_MSB_align_flag( 7, 1 )=true
   }
 }
 
-TEST_CASE("packing_information", "[Packing Information]") {
+TEST_CASE("packing_information", "[V3C Parameter Set]") {
   SECTION("Default Constructor") {
     const PackingInformation unit{};
 

@@ -384,6 +384,9 @@ vme_embedded_occupancy_flag=true
         .vps_extension_present_flag(true)
         .vps_miv_extension_present_flag(true)
         .vps_packing_information_present_flag(true)
+        .vps_packed_video_present_flag(j0, true)
+        .vps_packed_video_present_flag(j1, false)
+        .vps_packed_video_present_flag(j2, true)
         .vps_miv_extension(VpsMivExtension{})
         .vps_extension_6bits(63)
         .vpsExtensionData({2, 250, 15});
@@ -436,6 +439,9 @@ vps_extension_present_flag=true
 vps_packing_information_present_flag=true
 vps_miv_extension_present_flag=true
 vps_extension_6bits=63
+vps_packed_video_present_flag( 30 )=true
+vps_packed_video_present_flag( 31 )=false
+vps_packed_video_present_flag( 32 )=true
 vme_depth_low_quality_flag=false
 vme_geometry_scale_enabled_flag=false
 vme_num_groups_minus1=0

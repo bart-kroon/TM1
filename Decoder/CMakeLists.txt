@@ -60,16 +60,3 @@ install(
 install(
     DIRECTORY "include/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-# if (CMAKE_TESTING_ENABLED)
-#     add_executable(V3cBitstreamTest
-#         "src/V3cBitstream.test.cpp")
-# 
-#     target_link_libraries(V3cBitstreamTest
-#         PRIVATE
-#             Catch2::Catch2
-#             TMIV::DecoderLib
-#             TMIV::IOLib)
-# 
-#     catch_discover_tests(V3cBitstreamTest)
-# endif()

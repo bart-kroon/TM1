@@ -64,8 +64,7 @@ auto AtlasObjectAssociation::aoa_object_idx(std::size_t i) const noexcept -> std
   return m_aoa_parameters->aoa_object_idx[i];
 }
 
-auto AtlasObjectAssociation::aoa_object_in_atlas(std::size_t i,
-                                                              std::size_t j) const noexcept
+auto AtlasObjectAssociation::aoa_object_in_atlas(std::size_t i, std::size_t j) const noexcept
     -> bool {
   VERIFY_BITSTREAM(0 < aoa_num_updates() && m_aoa_parameters);
   VERIFY_BITSTREAM(aoa_object_idx(i) < m_aoa_parameters->aoa_object_in_atlas.size());
@@ -116,8 +115,8 @@ auto AtlasObjectAssociation::aoa_object_idx(std::size_t i, std::uint8_t value) n
   return *this;
 }
 
-auto AtlasObjectAssociation::aoa_object_in_atlas(std::size_t i, std::size_t j,
-                                                              bool value) noexcept -> auto & {
+auto AtlasObjectAssociation::aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept
+    -> auto & {
   VERIFY_BITSTREAM(m_aoa_parameters && (i < aoa_num_updates()) && (j <= aoa_num_atlases_minus1()));
   m_aoa_parameters->aoa_object_in_atlas[aoa_object_idx(i)][aoa_atlas_id(j)] = value;
   return *this;

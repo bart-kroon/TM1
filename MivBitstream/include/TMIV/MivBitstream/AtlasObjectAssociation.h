@@ -73,8 +73,7 @@ public:
   [[nodiscard]] auto aoa_log2_max_object_idx_tracked_minus1() const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_atlas_id(std::size_t j) const noexcept -> std::uint8_t;
   [[nodiscard]] auto aoa_object_idx(std::size_t i) const noexcept -> std::uint8_t;
-  [[nodiscard]] auto aoa_object_in_atlas(std::size_t i, std::size_t j) const noexcept
-      -> bool;
+  [[nodiscard]] auto aoa_object_in_atlas(std::size_t i, std::size_t j) const noexcept -> bool;
 
   constexpr auto aoa_persistence_flag(bool value) noexcept -> auto &;
   constexpr auto aoa_reset_flag(bool value) noexcept -> auto &;
@@ -83,8 +82,7 @@ public:
   constexpr auto aoa_log2_max_object_idx_tracked_minus1(std::uint8_t value) noexcept -> auto &;
   auto push_back_aoa_atlas_id(std::uint8_t value) noexcept -> auto &;
   auto aoa_object_idx(std::size_t i, std::uint8_t value) noexcept -> auto &;
-  auto aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept
-      -> auto &;
+  auto aoa_object_in_atlas(std::size_t i, std::size_t j, bool value) noexcept -> auto &;
 
   friend auto operator<<(std::ostream &stream, const AtlasObjectAssociation &x) -> std::ostream &;
 

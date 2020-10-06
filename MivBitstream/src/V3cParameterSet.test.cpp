@@ -237,19 +237,19 @@ pin_region_rotation_flag(4,0)=false
     unit.pin_regions_count_minus1(1);
     for (std::size_t i = 0; i <= unit.pin_regions_count_minus1(); ++i) {
       // Pseudorandom values
-      unit.pin_region_tile_id(i, i + 5);
-      unit.pin_region_top_left_y(i, i + 6);
-      unit.pin_region_width_minus1(i, 2 * i + 6);
+      unit.pin_region_tile_id(i, static_cast<uint8_t>(i + 5));
+      unit.pin_region_top_left_y(i, static_cast<uint16_t>(i + 6));
+      unit.pin_region_width_minus1(i, static_cast<uint16_t>(2 * i + 6));
       // Testing with V3C_AVD an V3C_GVD
       unit.pin_region_type_id_minus2(
           i, static_cast<VuhUnitType>(static_cast<std::uint8_t>(VuhUnitType::V3C_AVD) - 2U -
                                       static_cast<unsigned>(i)));
       unit.pin_region_auxiliary_data_flag(i, static_cast<bool>(i));
       if (i == 0) {
-        unit.pin_region_attr_type_id(i, i + 1);
+        unit.pin_region_attr_type_id(i, static_cast<uint8_t>(i + 1));
         unit.pin_region_attr_partitions_flag(i, true);
         unit.pin_region_attr_partition_index(i, 0);
-        unit.pin_region_attr_partitions_minus1(i, i + 3);
+        unit.pin_region_attr_partitions_minus1(i, static_cast<uint8_t>(i + 3));
       }
     }
 

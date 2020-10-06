@@ -34,7 +34,6 @@
 #include <TMIV/MivBitstream/PackedIndependentRegions.h>
 
 namespace TMIV::MivBitstream {
-// TODO does _minus1 mean that there must be at least one? Implemented like this
 auto PackedIndependentRegions::pir_num_packed_frames_minus1() const noexcept -> std::uint8_t {
   VERIFY_V3CBITSTREAM(!m_pirPackedFrames.empty());
   return m_pirPackedFrames.size() - 1U;

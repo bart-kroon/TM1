@@ -41,27 +41,6 @@
 using TMIV::Common::overload;
 
 namespace TMIV::MivBitstream {
-auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream & {
-  switch (x) {
-  case VuhUnitType::V3C_VPS:
-    return stream << "V3C_VPS";
-  case VuhUnitType::V3C_AD:
-    return stream << "V3C_AD";
-  case VuhUnitType::V3C_OVD:
-    return stream << "V3C_OVD";
-  case VuhUnitType::V3C_GVD:
-    return stream << "V3C_GVD";
-  case VuhUnitType::V3C_AVD:
-    return stream << "V3C_AVD";
-  case VuhUnitType::V3C_PVD:
-    return stream << "V3C_PVD";
-  case VuhUnitType::V3C_CAD:
-    return stream << "V3C_CAD";
-  default:
-    return stream << "[unknown:" << static_cast<int>(x) << "]";
-  }
-}
-
 auto V3cUnitHeader::vuh_v3c_parameter_set_id() const noexcept -> std::uint8_t {
   VERIFY_V3CBITSTREAM(
       m_vuh_unit_type == VuhUnitType::V3C_AVD || m_vuh_unit_type == VuhUnitType::V3C_GVD ||

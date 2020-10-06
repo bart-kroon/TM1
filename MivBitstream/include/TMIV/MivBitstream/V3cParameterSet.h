@@ -35,6 +35,7 @@
 #define _TMIV_MIVBITSTREAM_V3CPARAMETERSET_H_
 
 #include <TMIV/Common/Bitstream.h>
+#include <TMIV/MivBitstream/Types.h>
 
 #include <cstdint>
 #include <cstdlib>
@@ -290,6 +291,89 @@ private:
   };
 
   std::vector<AiAttribute> m_aiAttributes; // 23090-5: ai_attribute_count
+};
+
+struct PinRegion {
+  auto operator==(const PinRegion &other) const noexcept -> bool {
+    return (pin_region_tile_id == other.pin_region_tile_id) &&
+           (pin_region_type_id_minus2 == other.pin_region_type_id_minus2) &&
+           (pin_region_top_left_x == other.pin_region_top_left_x) &&
+           (pin_region_top_left_y == other.pin_region_top_left_y) &&
+           (pin_region_width_minus1 == other.pin_region_width_minus1) &&
+           (pin_region_height_minus1 == other.pin_region_height_minus1) &&
+           (pin_region_map_index == other.pin_region_map_index) &&
+           (pin_region_rotation_flag == other.pin_region_rotation_flag) &&
+           (pin_region_auxiliary_data_flag == other.pin_region_auxiliary_data_flag) &&
+           (pin_region_attr_type_id == other.pin_region_attr_type_id) &&
+           (pin_region_attr_partitions_flag == other.pin_region_attr_partitions_flag) &&
+           (pin_region_attr_partition_index == other.pin_region_attr_partition_index) &&
+           (pin_region_attr_partitions_minus1 == other.pin_region_attr_partitions_minus1);
+  }
+
+  std::uint8_t pin_region_tile_id{};
+  VuhUnitType pin_region_type_id_minus2{};
+  std::uint16_t pin_region_top_left_x{};
+  std::uint16_t pin_region_top_left_y{};
+  std::uint16_t pin_region_width_minus1{};
+  std::uint16_t pin_region_height_minus1{};
+  std::uint8_t pin_region_map_index{};
+  bool pin_region_rotation_flag{};
+  std::optional<bool> pin_region_auxiliary_data_flag{};
+  std::optional<std::uint8_t> pin_region_attr_type_id{};
+  std::optional<bool> pin_region_attr_partitions_flag{};
+  std::optional<std::uint8_t> pin_region_attr_partition_index{};
+  std::optional<std::uint8_t> pin_region_attr_partitions_minus1{};
+};
+
+// 23090-5: packing_information( j )
+//
+// 23090-12 restrictions:
+//   * TODO I didn't see any restrictions, as this was entirely moved from 23090-12 to 23090-5
+class PackingInformation {
+public:
+  [[nodiscard]] constexpr auto pin_codec_id() const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_regions_count_minus1() const -> std::size_t;
+  [[nodiscard]] auto pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_type_id_minus2(std::size_t i) const noexcept -> VuhUnitType;
+  [[nodiscard]] auto pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t;
+  [[nodiscard]] auto pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t;
+  [[nodiscard]] auto pin_region_rotation_flag(std::size_t i) const noexcept -> bool;
+  [[nodiscard]] auto pin_region_auxiliary_data_flag(std::size_t i) const -> bool;
+  [[nodiscard]] auto pin_region_attr_type_id(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto pin_region_attr_partitions_flag(std::size_t i) const -> bool;
+  [[nodiscard]] auto pin_region_attr_partition_index(std::size_t i) const -> std::uint8_t;
+  [[nodiscard]] auto pin_region_attr_partitions_minus1(std::size_t i) const -> std::uint8_t;
+
+  constexpr auto pin_codec_id(std::uint8_t value) noexcept -> auto &;
+  auto pin_regions_count_minus1(std::size_t value) -> auto &;
+  auto pin_region_tile_id(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_type_id_minus2(std::size_t i, VuhUnitType value) -> auto &;
+  auto pin_region_top_left_x(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_top_left_y(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_width_minus1(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_height_minus1(std::size_t i, std::uint16_t value) -> auto &;
+  auto pin_region_map_index(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_rotation_flag(std::size_t i, bool value) -> auto &;
+  auto pin_region_auxiliary_data_flag(std::size_t i, bool value) -> auto &;
+  auto pin_region_attr_type_id(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_attr_partitions_flag(std::size_t i, bool value) -> auto &;
+  auto pin_region_attr_partition_index(std::size_t i, std::uint8_t value) -> auto &;
+  auto pin_region_attr_partitions_minus1(std::size_t i, std::uint8_t value) -> auto &;
+
+  auto printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream &;
+
+  auto operator==(const PackingInformation &other) const noexcept -> bool;
+
+  static auto decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation;
+
+  void encodeTo(Common::OutputBitstream &bitstream) const;
+
+private:
+  std::uint8_t m_pin_codec_id{};
+  std::vector<PinRegion> m_pinRegions{std::vector<PinRegion>(1U)};
 };
 
 // 23090-12: vps_miv_extension()

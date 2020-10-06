@@ -36,6 +36,7 @@
 #include <TMIV/MivBitstream/MivDecoderMode.h>
 #include <TMIV/MivBitstream/verify.h>
 
+#include <type_traits>
 #include <utility>
 
 namespace TMIV::MivBitstream {
@@ -550,6 +551,200 @@ void AttributeInformation::encodeTo(Common::OutputBitstream &bitstream, const V3
     VERIFY_V3CBITSTREAM(ai_attribute_2d_bit_depth_minus1(i) < 32);
     bitstream.writeBits(ai_attribute_2d_bit_depth_minus1(i), 5);
     bitstream.putFlag(ai_attribute_MSB_align_flag(i));
+  }
+}
+
+constexpr auto PackingInformation::pin_codec_id() const noexcept -> std::uint8_t {
+  return m_pin_codec_id;
+}
+
+auto PackingInformation::pin_regions_count_minus1() const -> std::size_t {
+  VERIFY_V3CBITSTREAM(!m_pinRegions.empty());
+  return m_pinRegions.size() - 1U;
+}
+
+auto PackingInformation::pin_region_tile_id(std::size_t i) const noexcept -> std::uint8_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_tile_id;
+}
+
+auto PackingInformation::pin_region_type_id_minus2(std::size_t i) const noexcept -> VuhUnitType {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_type_id_minus2;
+}
+
+auto PackingInformation::pin_region_top_left_x(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_top_left_x;
+}
+
+auto PackingInformation::pin_region_top_left_y(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_top_left_y;
+}
+
+auto PackingInformation::pin_region_width_minus1(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_width_minus1;
+}
+
+auto PackingInformation::pin_region_height_minus1(std::size_t i) const noexcept -> std::uint16_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_height_minus1;
+}
+
+auto PackingInformation::pin_region_map_index(std::size_t i) const noexcept -> std::uint8_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_map_index;
+}
+
+auto PackingInformation::pin_region_rotation_flag(std::size_t i) const noexcept -> bool {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
+  return m_pinRegions[i].pin_region_rotation_flag;
+}
+
+auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i) const -> bool {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
+                      m_pinRegions[i].pin_region_auxiliary_data_flag);
+  return m_pinRegions[i].pin_region_auxiliary_data_flag.value();
+}
+
+auto PackingInformation::pin_region_attr_type_id(std::size_t i) const -> std::uint8_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() && m_pinRegions[i].pin_region_attr_type_id);
+  return m_pinRegions[i].pin_region_attr_type_id.value();
+}
+
+auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i) const -> bool {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
+                      m_pinRegions[i].pin_region_attr_partitions_flag);
+  return m_pinRegions[i].pin_region_attr_partitions_flag.value();
+}
+
+auto PackingInformation::pin_region_attr_partition_index(std::size_t i) const -> std::uint8_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
+                      m_pinRegions[i].pin_region_attr_partition_index);
+  return m_pinRegions[i].pin_region_attr_partition_index.value();
+}
+
+auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i) const -> std::uint8_t {
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1() &&
+                      m_pinRegions[i].pin_region_attr_partitions_minus1);
+  return m_pinRegions[i].pin_region_attr_partitions_minus1.value();
+}
+
+// TODO(christoph_bachhuber) extract this method to common
+template <typename T>
+auto putTwiceIndexedField(std::ostream &stream, const AtlasId &j, unsigned i,
+                          const std::string &fieldName, T &&fieldValue) {
+  stream << fieldName << "(" << j << "," << i << ")=";
+  if constexpr (std::is_same_v<std::uint8_t, std::decay_t<T>>) {
+    stream << static_cast<unsigned>(fieldValue) << "\n";
+  } else if (std::is_same_v<bool, std::decay_t<T>>) {
+    stream << std::boolalpha << fieldValue << "\n";
+  } else {
+    stream << fieldValue << "\n";
+  }
+}
+
+auto PackingInformation::printTo(std::ostream &stream, const AtlasId &j) const -> std::ostream & {
+  stream << "pin_codec_id(" << j << ")=" << static_cast<unsigned>(pin_codec_id()) << "\n";
+  stream << "pin_regions_count_minus1(" << j
+         << ")=" << static_cast<unsigned>(pin_regions_count_minus1()) << "\n";
+  for (std::size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
+    putTwiceIndexedField(stream, j, i, "pin_region_tile_id", pin_region_tile_id(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_type_id_minus2", pin_region_type_id_minus2(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_top_left_x", pin_region_top_left_x(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_top_left_y", pin_region_top_left_y(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_width_minus1", pin_region_width_minus1(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_height_minus1", pin_region_height_minus1(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_map_index", pin_region_map_index(i));
+    putTwiceIndexedField(stream, j, i, "pin_region_rotation_flag", pin_region_rotation_flag(i));
+    if (((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) ||
+        (static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_GVD) {
+      putTwiceIndexedField(stream, j, i, "pin_region_auxiliary_data_flag",
+                           pin_region_auxiliary_data_flag(i));
+    }
+    if ((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) {
+      putTwiceIndexedField(stream, j, i, "pin_region_attr_type_id", pin_region_attr_type_id(i));
+      putTwiceIndexedField(stream, j, i, "pin_region_attr_partitions_flag",
+                           pin_region_attr_partitions_flag(i));
+      if (pin_region_attr_partitions_flag(i)) {
+        putTwiceIndexedField(stream, j, i, "pin_region_attr_partition_index",
+                             pin_region_attr_partition_index(i));
+        if (pin_region_attr_partition_index(i) == 0) {
+          putTwiceIndexedField(stream, j, i, "pin_region_attr_partitions_minus1",
+                               pin_region_attr_partitions_minus1(i));
+        }
+      }
+    }
+  }
+  return stream;
+}
+
+auto PackingInformation::operator==(const PackingInformation &other) const noexcept -> bool {
+  return (m_pin_codec_id == other.m_pin_codec_id) && (m_pinRegions == other.m_pinRegions);
+}
+
+auto PackingInformation::decodeFrom(Common::InputBitstream &bitstream) -> PackingInformation {
+  PackingInformation result{};
+  result.pin_codec_id(bitstream.getUint8());
+  result.pin_regions_count_minus1(bitstream.getUExpGolomb<std::size_t>());
+  for (std::size_t i = 0; i <= result.pin_regions_count_minus1(); ++i) {
+    result.pin_region_tile_id(i, bitstream.getUint8());
+    result.pin_region_type_id_minus2(i, bitstream.readBits<VuhUnitType>(2));
+    result.pin_region_top_left_x(i, bitstream.getUint16());
+    result.pin_region_top_left_y(i, bitstream.getUint16());
+    result.pin_region_width_minus1(i, bitstream.getUint16());
+    result.pin_region_height_minus1(i, bitstream.getUint16());
+    result.pin_region_map_index(i, bitstream.readBits<std::uint8_t>(4));
+    result.pin_region_rotation_flag(i, bitstream.getFlag());
+    if (((static_cast<std::uint8_t>(result.pin_region_type_id_minus2(i)) + 2U) ==
+         VuhUnitType::V3C_AVD) ||
+        (static_cast<std::uint8_t>(result.pin_region_type_id_minus2(i)) + 2U) ==
+            VuhUnitType::V3C_GVD) {
+      result.pin_region_auxiliary_data_flag(i, bitstream.getFlag());
+    }
+    if ((static_cast<std::uint8_t>(result.pin_region_type_id_minus2(i)) + 2U) ==
+        VuhUnitType::V3C_AVD) {
+      result.pin_region_attr_type_id(i, bitstream.readBits<std::uint8_t>(4));
+      result.pin_region_attr_partitions_flag(i, bitstream.getFlag());
+      if (result.pin_region_attr_partitions_flag(i)) {
+        result.pin_region_attr_partition_index(i, bitstream.readBits<std::uint8_t>(5));
+        if (result.pin_region_attr_partition_index(i) == 0) {
+          result.pin_region_attr_partitions_minus1(i, bitstream.readBits<std::uint8_t>(6));
+        }
+      }
+    }
+  }
+  return result;
+}
+
+void PackingInformation::encodeTo(Common::OutputBitstream &bitstream) const {
+  bitstream.putUint8(pin_codec_id());
+  bitstream.putUExpGolomb(pin_regions_count_minus1());
+  for (std::size_t i = 0; i <= pin_regions_count_minus1(); ++i) {
+    bitstream.putUint8(pin_region_tile_id(i));
+    bitstream.writeBits(pin_region_type_id_minus2(i), 2);
+    bitstream.putUint16(pin_region_top_left_x(i));
+    bitstream.putUint16(pin_region_top_left_y(i));
+    bitstream.putUint16(pin_region_width_minus1(i));
+    bitstream.putUint16(pin_region_height_minus1(i));
+    bitstream.writeBits(pin_region_map_index(i), 4);
+    bitstream.putFlag(pin_region_rotation_flag(i));
+    if (((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) ||
+        (static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_GVD) {
+      bitstream.putFlag(pin_region_auxiliary_data_flag(i));
+    }
+    if ((static_cast<std::uint8_t>(pin_region_type_id_minus2(i)) + 2U) == VuhUnitType::V3C_AVD) {
+      bitstream.writeBits(pin_region_attr_type_id(i), 4);
+      bitstream.putFlag(pin_region_attr_partitions_flag(i));
+      if (pin_region_attr_partitions_flag(i)) {
+        bitstream.writeBits(pin_region_attr_partition_index(i), 5);
+        if (pin_region_attr_partition_index(i) == 0) {
+          bitstream.writeBits(pin_region_attr_partitions_minus1(i), 6);
+        }
+      }
+    }
   }
 }
 

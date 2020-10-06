@@ -35,6 +35,7 @@
 #define _TMIV_MIVBITSTREAM_V3CUNIT_H_
 
 #include <TMIV/MivBitstream/AtlasSubBitstream.h>
+#include <TMIV/MivBitstream/Types.h>
 #include <TMIV/MivBitstream/V3cParameterSet.h>
 #include <TMIV/MivBitstream/VideoSubBitstream.h>
 
@@ -45,18 +46,6 @@
 #include <variant>
 
 namespace TMIV::MivBitstream {
-enum class VuhUnitType : std::uint8_t {
-  V3C_VPS,
-  V3C_AD,
-  V3C_OVD,
-  V3C_GVD,
-  V3C_AVD,
-  V3C_PVD,
-  V3C_CAD
-};
-
-auto operator<<(std::ostream &stream, const VuhUnitType x) -> std::ostream &;
-
 // 23090-5: v3c_unit_header()
 class V3cUnitHeader {
 public:
@@ -71,12 +60,12 @@ public:
   [[nodiscard]] auto vuh_map_index() const noexcept -> std::uint8_t;
   [[nodiscard]] auto vuh_auxiliary_video_flag() const noexcept -> bool;
 
-  auto vuh_v3c_parameter_set_id(const std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_v3c_parameter_set_id(std::uint8_t value) noexcept -> V3cUnitHeader &;
   auto vuh_atlas_id(AtlasId value) noexcept -> V3cUnitHeader &;
-  auto vuh_attribute_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_attribute_partition_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_map_index(const std::uint8_t value) noexcept -> V3cUnitHeader &;
-  auto vuh_auxiliary_video_flag(const bool value) noexcept -> V3cUnitHeader &;
+  auto vuh_attribute_index(std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_attribute_partition_index(std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_map_index(std::uint8_t value) noexcept -> V3cUnitHeader &;
+  auto vuh_auxiliary_video_flag(bool value) noexcept -> V3cUnitHeader &;
 
   friend auto operator<<(std::ostream &stream, const V3cUnitHeader &x) -> std::ostream &;
 

@@ -35,6 +35,8 @@
 #error "Include the .h, not the .hpp"
 #endif
 
+#include <TMIV/MivBitstream/verify.h>
+
 namespace TMIV::MivBitstream {
 inline auto PackedIndependentRegions::pir_num_packed_frames_minus1(std::uint8_t value) -> auto & {
   m_pirPackedFrames = std::vector<PirPackedFrame>(value + 1U);
@@ -53,7 +55,7 @@ inline auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k,
   } else if (value == 1) {
     m_pirPackedFrames[k].regions = subPicIds(1U);
   } else {
-    VERIFY_BITSTREAM(false); // Only defined for 0 and 1. Other values are reserved
+    VERIFY_V3CBITSTREAM(false); // Only defined for 0 and 1. Other values are reserved
   }
   return *this;
 }

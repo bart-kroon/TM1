@@ -36,44 +36,44 @@
 namespace TMIV::MivBitstream {
 // TODO does _minus1 mean that there must be at least one? Implemented like this
 auto PackedIndependentRegions::pir_num_packed_frames_minus1() const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(!m_pirPackedFrames.empty());
+  VERIFY_V3CBITSTREAM(!m_pirPackedFrames.empty());
   return m_pirPackedFrames.size() - 1U;
 }
 auto PackedIndependentRegions::pir_packed_frame_id(std::uint8_t j) const noexcept -> std::uint8_t {
-  VERIFY_BITSTREAM(j <= pir_num_packed_frames_minus1());
+  VERIFY_V3CBITSTREAM(j <= pir_num_packed_frames_minus1());
   return m_pirPackedFrames[j].pir_packed_frame_id;
 }
 auto PackedIndependentRegions::pir_description_type_idc(std::uint8_t k) const noexcept
     -> std::uint8_t {
-  VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1());
+  VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1());
   if (std::holds_alternative<TileRegions>(m_pirPackedFrames[k].regions)) {
     return 0U;
   }
   return 1U;
 }
 auto PackedIndependentRegions::pir_num_regions_minus1(std::uint8_t k) const -> std::uint8_t {
-  VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1());
+  VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1());
   return std::visit([](const auto &regions) { return regions.size(); },
                     m_pirPackedFrames[k].regions) -
          1U;
 }
 auto PackedIndependentRegions::pir_top_left_tile_idx(std::uint8_t k, std::uint8_t i) const
     -> std::size_t {
-  VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
-                   i <= pir_num_regions_minus1(k));
+  VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
+                      i <= pir_num_regions_minus1(k));
   const auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   return tileRegions[i].pir_top_left_tile_idx;
 }
 auto PackedIndependentRegions::pir_bottom_right_tile_idx(std::uint8_t k, std::uint8_t i) const
     -> std::size_t {
-  VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
-                   i <= pir_num_regions_minus1(k));
+  VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 0 &&
+                      i <= pir_num_regions_minus1(k));
   const auto &tileRegions = std::get<TileRegions>(m_pirPackedFrames[k].regions);
   return tileRegions[i].pir_bottom_right_tile_idx;
 }
 auto PackedIndependentRegions::pir_subpic_id(std::uint8_t k, std::uint8_t i) const -> std::size_t {
-  VERIFY_BITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 1 &&
-                   i <= pir_num_regions_minus1(k));
+  VERIFY_V3CBITSTREAM(k <= pir_num_packed_frames_minus1() && pir_description_type_idc(k) == 1 &&
+                      i <= pir_num_regions_minus1(k));
   const auto &subPicId = std::get<subPicIds>(m_pirPackedFrames[k].regions);
   return subPicId[i];
 }

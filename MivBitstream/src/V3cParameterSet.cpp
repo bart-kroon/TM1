@@ -988,14 +988,14 @@ auto V3cParameterSet::vps_extension_6bits(uint8_t value) noexcept -> V3cParamete
 
 auto V3cParameterSet::vps_packed_video_present_flag(const AtlasId &j, bool value)
     -> V3cParameterSet & {
-  VERIFY_BITSTREAM(vps_packing_information_present_flag());
+  VERIFY_V3CBITSTREAM(vps_packing_information_present_flag());
   atlas(j).vps_packed_video_present_flag = value;
   return *this;
 }
 
 auto V3cParameterSet::packing_information(const AtlasId &j, PackingInformation value)
     -> V3cParameterSet & {
-  VERIFY_BITSTREAM(vps_packed_video_present_flag(j));
+  VERIFY_V3CBITSTREAM(vps_packed_video_present_flag(j));
   atlas(j).packing_information.emplace(std::move(value));
   return *this;
 }

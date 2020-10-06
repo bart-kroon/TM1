@@ -35,6 +35,8 @@
 #error "Include the .h, not the .hpp"
 #endif
 
+#include <TMIV/MivBitstream/verify.h>
+
 namespace TMIV::MivBitstream {
 constexpr auto ProfileTierLevel::ptl_tier_flag() const noexcept { return m_ptl_tier_flag; }
 
@@ -192,89 +194,89 @@ inline auto PackingInformation::pin_regions_count_minus1(std::size_t value) -> a
 }
 
 inline auto PackingInformation::pin_region_tile_id(std::size_t i, std::uint8_t value) -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_tile_id = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_type_id_minus2(std::size_t i, VuhUnitType value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_type_id_minus2 = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_top_left_x(std::size_t i, std::uint16_t value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_top_left_x = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_top_left_y(std::size_t i, std::uint16_t value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_top_left_y = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_width_minus1(std::size_t i, std::uint16_t value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_width_minus1 = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_height_minus1(std::size_t i, std::uint16_t value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_height_minus1 = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_map_index(std::size_t i, std::uint8_t value) -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_map_index = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_rotation_flag(std::size_t i, bool value) -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_rotation_flag = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_auxiliary_data_flag(std::size_t i, bool value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_auxiliary_data_flag = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_attr_type_id(std::size_t i, std::uint8_t value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_type_id = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_attr_partitions_flag(std::size_t i, bool value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_partitions_flag = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_attr_partition_index(std::size_t i, std::uint8_t value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_partition_index = value;
   return *this;
 }
 
 inline auto PackingInformation::pin_region_attr_partitions_minus1(std::size_t i, std::uint8_t value)
     -> auto & {
-  VERIFY_BITSTREAM(i <= pin_regions_count_minus1());
+  VERIFY_V3CBITSTREAM(i <= pin_regions_count_minus1());
   m_pinRegions[i].pin_region_attr_partitions_minus1 = value;
   return *this;
 }

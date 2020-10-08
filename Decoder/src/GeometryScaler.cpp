@@ -114,16 +114,15 @@ inline auto colorDistance(const Common::Vec3w &a, const Common::Vec3w &b) {
 
 template <typename Range>
 auto meanColorDistance(const Common::Vec3w &color, const Range &rangeOfColors) {
-  auto N = static_cast<int>(rangeOfColors.size());
+  const auto N = static_cast<unsigned>(rangeOfColors.size());
   assert(N > 0U);
 
-  float meanDistance = 0U;
+  float meanDistance = 0.0F;
   for (auto &colorInRange : rangeOfColors) {
     meanDistance += colorDistance(color, colorInRange);
   }
-  meanDistance /= static_cast<float>(N);
 
-  return meanDistance;
+  return meanDistance / static_cast<float>(N);
 }
 
 auto findForegroundEdges(const Common::Mat<uint16_t> &depth) -> Common::Mat<uint8_t> {

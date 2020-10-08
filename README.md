@@ -122,6 +122,8 @@ HM_BUILD_TAPPDECODER and HM_BUILD_TAPPENCODER are selected, then the
 TAppDecoder and TAppEncoder tools respectively will also be installed to this
 directory.
 
+If you don't want to debug your build binaries, make sure to build in release mode with optimizations enabled, e.g. `cmake -DCMAKE_INSTALL_PREFIX=... -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3" ..`. This shows approximately a 20 times reduction in encoding duration, depending on your platform and compiler.
+
 ## Instructions to run TMIV
 
 Template configuration files are available under [ctc_config/](/ctc_config) and

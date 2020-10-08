@@ -177,6 +177,16 @@ This will result in the following files in the `OutputDirectory`:
 * One Bitstream.bit, as defined by `BitstreamPath`. Contains Atlas metadata
 * yuv files: for each atlas, video data from attributes, Geometry and possibly occupancy, respectively
 
+## Example for running the decoder
+
+You can choose to render to either a camera defined in `SourceCameraNames` above, or to a pose trace. Cameras must be given in the source files by setting the correct `SourceCameraParameters` path. Pose traces for the CTCs are given in [ctc_config/pose_traces](/ctc_config/pose_traces).
+
+### Decode from Encoder result (best reference)
+
+There must be a folder with your encoding results. In your encoder config file (e.g. [ctc_config/best_reference/TMIV_R17_SA_p01.json](/ctc_config/best_reference/TMIV_R17_SA_p01.json)), adjust the `Path`s and `PathFmt`s to point to the correct directories and filter the correct file format. Make sure to set parameter `PoseTracepath`.
+
+### Decode from multiplexed stream
+
 ## Structure of the test model
 
 This software consists of multiple executables and static libraries. Below
